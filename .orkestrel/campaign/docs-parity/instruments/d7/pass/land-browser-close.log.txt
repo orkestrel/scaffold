@@ -1,0 +1,12 @@
+== browser close landing 2026-09-08T01:53:16Z over 1016f4d
+== status
+ M guides/browser.md
+ M src/server/helpers.ts
+ guides/browser.md     | 26 +++++++++++++++++---------
+ src/server/helpers.ts |  4 ++--
+ 2 files changed, 19 insertions(+), 11 deletions(-)
+== stage by path
+ 2 files changed, 19 insertions(+), 11 deletions(-)
+== committed
+547bcef Close browser under the final guide tarball
+(status end)

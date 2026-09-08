@@ -1,0 +1,186 @@
+[
+	{
+		"file": "src/core/constants.ts",
+		"key": "AGENT_TOOL_NAME",
+		"text": "Holds the name {@link import('./factories.js').createAgentTool} advertises by default, `'agent'` — the key a model calls and the `ToolManagerInterface` (`@orkestrel/tool`) registers under."
+	},
+	{
+		"file": "src/core/constants.ts",
+		"key": "AGENT_TOOL_DEPTH",
+		"text": "Holds the maximum nesting depth a delegation chain (agent tool → sub-agent → agent tool → …) may reach, `8` — the bound {@link import('./factories.js').createAgentTool}'s depth/cycle guard enforces."
+	},
+	{
+		"file": "src/core/constants.ts",
+		"key": "AGENT_TOOL_SUMMARY",
+		"text": "Holds the lean {@link import('@orkestrel/tool').ToolInterface.summary} {@link import('./factories.js').createAgentTool} advertises in place of {@link AGENT_TOOL_DESCRIPTION} — one sentence offering sub-agent delegation and pointing at `describe` for the optional overrides.",
+		"remarks": [
+			"A `ToolManagerInterface.definitions()` call (`@orkestrel/tool`) advertises `summary ?? description`, so this one-sentence text stands in for the full teaching description; the full text stays retrievable through {@link import('./factories.js').createDescribeTool}."
+		]
+	},
+	{
+		"file": "src/core/constants.ts",
+		"key": "MAX_WORKFLOW_CHAIN",
+		"text": "Holds the maximum nesting depth a workflow → agent → workflow chain may reach, `8` — the bound {@link import('./factories.js').createAgentFunction} and {@link import('./factories.js').createWorkflowTool}'s depth/cycle guards enforce."
+	},
+	{
+		"file": "src/core/constants.ts",
+		"key": "WORKFLOW_TOOL_NAME",
+		"text": "Holds the name {@link import('./factories.js').createWorkflowTool} advertises by default, `'workflow'` — the key a model calls and the `ToolManagerInterface` (`@orkestrel/tool`) registers under, and the name {@link import('./factories.js').createAgentFunction} binds the depth/cycle-aware workflow tool under onto a wrapped agent's `context.tools`."
+	},
+	{
+		"file": "src/core/constants.ts",
+		"key": "WORKFLOW_TOOL_FLAT_EXAMPLE",
+		"text": "Holds a complete flat authoring example — the primary way a small model authors a workflow through {@link import('./factories.js').createWorkflowTool}: `{ name, steps: [{ name }] }`."
+	},
+	{
+		"file": "src/core/constants.ts",
+		"key": "WORKFLOW_TOOL_NESTED_EXAMPLE",
+		"text": "Holds a minimal nested authoring example — the advanced escape-hatch form a model can use instead of the flat shape: a full `WorkflowDefinition` (`@orkestrel/workflow`)."
+	},
+	{
+		"file": "src/core/constants.ts",
+		"key": "WORKFLOW_TOOL_SUMMARY",
+		"text": "Holds the lean {@link import('@orkestrel/tool').ToolInterface.summary} {@link import('./factories.js').createWorkflowTool} advertises in place of {@link WORKFLOW_TOOL_DESCRIPTION} — one sentence offering multi-phase authoring and pointing at `describe` for the authoring schema and its examples.",
+		"remarks": [
+			"A `ToolManagerInterface.definitions()` call (`@orkestrel/tool`) advertises `summary ?? description`, so this one-sentence text stands in for the full teaching description; the full text stays retrievable through {@link import('./factories.js').createDescribeTool}."
+		]
+	},
+	{
+		"file": "src/core/constants.ts",
+		"key": "WORKSPACE_TOOL_NAME",
+		"text": "Holds the name {@link import('./factories.js').createWorkspaceTool} advertises by default, `'workspace'` — the key a model calls and the `ToolManagerInterface` (`@orkestrel/tool`) registers under."
+	},
+	{
+		"file": "src/core/constants.ts",
+		"key": "WORKSPACE_TOOL_EXAMPLE",
+		"text": "Holds a valid {@link import('./types.js').WorkspaceOperation} object — the canonical example embedded verbatim in {@link WORKSPACE_TOOL_DESCRIPTION}."
+	},
+	{
+		"file": "src/core/constants.ts",
+		"key": "WORKSPACE_TOOL_SUMMARY",
+		"text": "Holds the lean {@link import('@orkestrel/tool').ToolInterface.summary} {@link import('./factories.js').createWorkspaceTool} advertises in place of {@link WORKSPACE_TOOL_DESCRIPTION} — one sentence offering the `operation`-keyed file editing and pointing at `describe` for the operation list and its fields.",
+		"remarks": [
+			"A `ToolManagerInterface.definitions()` call (`@orkestrel/tool`) advertises `summary ?? description`, so this one-sentence text stands in for the full teaching description; the full text stays retrievable through {@link import('./factories.js').createDescribeTool}."
+		]
+	},
+	{
+		"file": "src/core/constants.ts",
+		"key": "DESCRIBE_TOOL_NAME",
+		"text": "Holds the name {@link import('./factories.js').createDescribeTool} advertises by default, `'describe'` — the key a model calls and the `ToolManagerInterface` (`@orkestrel/tool`) registers under."
+	},
+	{
+		"file": "src/core/constants.ts",
+		"key": "DESCRIBE_TOOL_DESCRIPTION",
+		"text": "Holds the description {@link import('./factories.js').createDescribeTool} advertises — the registered tool `name` it requires, and the full description of that tool it returns."
+	},
+	{
+		"file": "src/core/constants.ts",
+		"key": "PROMPT_TOOL_NAME",
+		"text": "Holds the name {@link import('./factories.js').createPromptTool} advertises by default, `'ask'` — the key a model calls and the `ToolManagerInterface` (`@orkestrel/tool`) registers under."
+	},
+	{
+		"file": "src/core/constants.ts",
+		"key": "PROMPT_TOOL_SUMMARY",
+		"text": "Holds the lean {@link import('@orkestrel/tool').ToolInterface.summary} {@link import('./factories.js').createPromptTool} advertises in place of {@link PROMPT_TOOL_DESCRIPTION} — one sentence offering the blocking multi-field ask and pointing at `describe` for the schema.",
+		"remarks": [
+			"A `ToolManagerInterface.definitions()` call (`@orkestrel/tool`) advertises `summary ?? description`, so this one-sentence text stands in for the full teaching description; the full text stays retrievable through {@link import('./factories.js').createDescribeTool}."
+		]
+	},
+	{
+		"file": "src/core/constants.ts",
+		"key": "PROMPT_TOOL_DESCRIPTION",
+		"text": "Holds the form protocol {@link import('./factories.js').createPromptTool} advertises — the required `to` and `schema`, how a field declares its control and its rules, and a worked two-field example."
+	},
+	{
+		"file": "src/core/constants.ts",
+		"key": "ANSWER_TOOL_NAME",
+		"text": "Holds the name {@link import('./factories.js').createAnswerTool} advertises by default, `'answer'` — the key a model calls and the `ToolManagerInterface` (`@orkestrel/tool`) registers under."
+	},
+	{
+		"file": "src/core/constants.ts",
+		"key": "ANSWER_TOOL_SUMMARY",
+		"text": "Holds the lean {@link import('@orkestrel/tool').ToolInterface.summary} {@link import('./factories.js').createAnswerTool} advertises in place of {@link ANSWER_TOOL_DESCRIPTION} — one sentence offering the pending listing and the answer call, and pointing at `describe` for the fields each takes.",
+		"remarks": [
+			"A `ToolManagerInterface.definitions()` call (`@orkestrel/tool`) advertises `summary ?? description`, so this one-sentence text stands in for the full teaching description; the full text stays retrievable through {@link import('./factories.js').createDescribeTool}."
+		]
+	},
+	{
+		"file": "src/core/constants.ts",
+		"key": "ANSWER_TOOL_DESCRIPTION",
+		"text": "Holds the protocol {@link import('./factories.js').createAnswerTool} advertises — the `pending` and `answer` operations and the `values` record an answer supplies, each with a worked example."
+	},
+	{
+		"file": "src/core/constants.ts",
+		"key": "DATABASE_TOOL_NAME",
+		"text": "Holds the name {@link import('./factories.js').createDatabaseTool} advertises by default, `'database'` — the key a model calls and the `ToolManagerInterface` (`@orkestrel/tool`) registers under."
+	},
+	{
+		"file": "src/core/constants.ts",
+		"key": "DATABASE_TOOL_SUMMARY",
+		"text": "Holds the lean {@link import('@orkestrel/tool').ToolInterface.summary} {@link import('./factories.js').createDatabaseTool} advertises in place of {@link DATABASE_TOOL_DESCRIPTION} — one sentence offering the `operation`-keyed database call and pointing at `describe` for the operation list, the query form, and the column DSL.",
+		"remarks": [
+			"A `ToolManagerInterface.definitions()` call (`@orkestrel/tool`) advertises `summary ?? description`, so this one-sentence text stands in for the full teaching description; the full text stays retrievable through {@link import('./factories.js').createDescribeTool}."
+		]
+	},
+	{
+		"file": "src/core/constants.ts",
+		"key": "DATABASE_TOOL_LIMIT",
+		"text": "Holds the default cap on rows a `records` call returns when the caller omits `query.limit`, `1000` — the database tool's default row ceiling."
+	},
+	{
+		"file": "src/core/constants.ts",
+		"key": "RELATION_TOOL_NAME",
+		"text": "Holds the name {@link import('./factories.js').createRelationTool} advertises by default, `'relation'` — the key a model calls and the `ToolManagerInterface` (`@orkestrel/tool`) registers under."
+	},
+	{
+		"file": "src/core/constants.ts",
+		"key": "RELATION_TOOL_SUMMARY",
+		"text": "Holds the lean {@link import('@orkestrel/tool').ToolInterface.summary} {@link import('./factories.js').createRelationTool} advertises in place of {@link RELATION_TOOL_DESCRIPTION} — one sentence offering the `operation`-keyed relationship traversal and pointing at `describe` for the include-path syntax.",
+		"remarks": [
+			"A `ToolManagerInterface.definitions()` call (`@orkestrel/tool`) advertises `summary ?? description`, so this one-sentence text stands in for the full teaching description; the full text stays retrievable through {@link import('./factories.js').createDescribeTool}."
+		]
+	},
+	{
+		"file": "src/core/constants.ts",
+		"key": "RELATION_TOOL_DESCRIPTION",
+		"text": "Holds the description {@link import('./factories.js').createRelationTool} advertises — a multi-line guide that teaches a small model the operation list and the flat dot-path `include` syntax."
+	},
+	{
+		"file": "src/core/constants.ts",
+		"key": "RELATION_TOOL_LIMIT",
+		"text": "Holds the default cap on rows a `find` or `links` call returns when the caller omits `limit`, `1000` — the relation tool's default row ceiling."
+	},
+	{
+		"file": "src/core/constants.ts",
+		"key": "RELATION_TOOL_DEPTH",
+		"text": "Holds the default cap on how many `include` path segments deep a `load` or `find` call may traverse, `3` — the relation tool's default include-depth ceiling."
+	},
+	{
+		"file": "src/core/constants.ts",
+		"key": "INFER_TOOL_NAME",
+		"text": "Holds the name {@link import('./factories.js').createInferTool} advertises by default, `'infer'` — the key a model calls and the `ToolManagerInterface` (`@orkestrel/tool`) registers under."
+	},
+	{
+		"file": "src/core/constants.ts",
+		"key": "INFER_TOOL_SUMMARY",
+		"text": "Holds the lean {@link import('@orkestrel/tool').ToolInterface.summary} {@link import('./factories.js').createInferTool} advertises in place of {@link INFER_TOOL_DESCRIPTION} — one sentence offering schema inference from example values and pointing at `describe` for the fields it takes.",
+		"remarks": [
+			"A `ToolManagerInterface.definitions()` call (`@orkestrel/tool`) advertises `summary ?? description`, so this one-sentence text stands in for the full teaching description; the full text stays retrievable through {@link import('./factories.js').createDescribeTool}."
+		]
+	},
+	{
+		"file": "src/core/constants.ts",
+		"key": "INFER_TOOL_DESCRIPTION",
+		"text": "Holds the schema-inference protocol {@link import('./factories.js').createInferTool} advertises — the required `samples`, the optional `format`, `enum`, and `candidates` arguments, and a worked example of the bare return and of the `candidates`-wrapped return."
+	},
+	{
+		"file": "src/server/constants.ts",
+		"key": "TERMINAL_ROUTES_PATH",
+		"text": "Holds the default `:name`-templated path {@link import('./factories.js').createTerminalRoutes} mounts its GET (SSE) and POST (answer) routes under, `/terminals/:name`."
+	},
+	{
+		"file": "src/server/constants.ts",
+		"key": "TERMINAL_KEEPALIVE_MS",
+		"text": "Holds the default SSE keepalive interval {@link import('./factories.js').createTerminalRoutes} arms per open connection, `15_000` ms — a `: ` comment ping a conforming SSE parser ignores, keeping intermediary proxies from timing out an otherwise-idle stream."
+	}
+]

@@ -1,0 +1,53 @@
+== toolbox P.1 landing 2026-09-08T01:51:44Z, version 0.0.13
+== status before install
+ M README.md
+ M guides/toolbox.md
+ M src/core/constants.ts
+ M src/core/databases/DatabaseResolver.ts
+ M src/core/errors.ts
+ M src/core/factories.ts
+ M src/core/helpers.ts
+ M src/core/shapers.ts
+ M src/core/stores/DatabaseDefinitionStore.ts
+ M src/core/stores/MemoryDefinitionStore.ts
+ M src/core/types.ts
+ M src/core/validators.ts
+ M src/server/constants.ts
+ M src/server/factories.ts
+ M src/server/types.ts
+ M tests/guides.test.ts
+== lockfile-only install
+
+up to date in 290ms
+EXIT 0
+== lockfile root version
+0.0.13 / 0.0.13
+== guide in lockfile
+0.0.17
+== installed guide (head start, untouched)
+0.0.18
+== status after install
+ M README.md
+ M guides/toolbox.md
+ M src/core/constants.ts
+ M src/core/databases/DatabaseResolver.ts
+ M src/core/errors.ts
+ M src/core/factories.ts
+ M src/core/helpers.ts
+ M src/core/shapers.ts
+ M src/core/stores/DatabaseDefinitionStore.ts
+ M src/core/stores/MemoryDefinitionStore.ts
+ M src/core/types.ts
+ M src/core/validators.ts
+ M src/server/constants.ts
+ M src/server/factories.ts
+ M src/server/types.ts
+ M tests/guides.test.ts
+ src/server/types.ts                        |  23 +-
+ tests/guides.test.ts                       |  81 ++++-
+ 16 files changed, 869 insertions(+), 637 deletions(-)
+== stage by path
+ 16 files changed, 869 insertions(+), 637 deletions(-)
+== committed
+9d54594 Prepare toolbox for the equality gate
+(status end)

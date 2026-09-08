@@ -1,0 +1,39 @@
+[
+	{
+		"file": "src/core/validators.ts",
+		"key": "isDatabaseDefinition",
+		"text": "Narrows an unknown value to a {@link DatabaseDefinition} — a non-empty `id` and `driver`, a `tables` record whose every value is a `{ columns }` map of valid column specs, plus optional `primary`, `indexes`, and finite `version` schema configuration.",
+		"remarks": [
+			"The boundary guard a {@link import('./types.js').DefinitionStoreInterface} applies to an untrusted persisted blob before trusting it as a definition, in place of an `as` assertion."
+		]
+	},
+	{
+		"file": "src/core/compilers.ts",
+		"key": "expandTables",
+		"text": "Compiles a {@link TableSpec} into the `@orkestrel/database` {@link TableMap} it configures — each {@link ColumnSpec} maps to its matching primitive shaper, wrapped in `optionalShape` when the column declares `optional: true`.",
+		"remarks": [
+			"The shaper each primitive maps to is `'string'` → `stringShape()`, `'integer'` → `integerShape()`, `'number'` → `numberShape()`, and `'boolean'` → `booleanShape()`. The walk is total and pure."
+		]
+	},
+	{
+		"file": "src/core/shapers.ts",
+		"key": "workspaceToolShape",
+		"text": "Describes the shape of a {@link import('./types.js').WorkspaceOperation} — a descriptive tagged union over the workspace edit, read, and navigation operations, discriminated by the `operation` literal (never a bare `kind`).",
+		"remarks": [
+			"Each variant leads with its `operation` discriminant then its flat fields, every field through `stringShape`, `optionalShape`, `integerShape({ min: 1 })`, or `booleanShape`, each carrying a strong field-level `description`."
+		]
+	},
+	{
+		"file": "src/core/stores/MemoryDefinitionStore.ts",
+		"key": "MemoryDefinitionStore",
+		"text": "Represents the in-memory {@link DefinitionStoreInterface} — a process-lifetime `Map` of database definitions keyed by database id, the default store {@link import('../factories.js').createMemoryDefinitionStore} builds.",
+		"remarks": [
+			"It implements the same {@link DefinitionStoreInterface} contract as {@link import('./DatabaseDefinitionStore.js').DatabaseDefinitionStore}: this store copies on write and on read; the table-backed store narrows an untrusted stored blob and reports `undefined` for a malformed one."
+		]
+	},
+	{
+		"file": "src/core/stores/DatabaseDefinitionStore.ts",
+		"key": "DatabaseDefinitionStore",
+		"text": "Represents a {@link DefinitionStoreInterface} backed by one table of the `@orkestrel/database` layer — a database's durable config state is a row, so persistence reduces to keyed point-access (`get` / `set` / `delete`) over a {@link TableInterface}, the driver-pluggable twin of the plain-`Map` {@link import('./MemoryDefinitionStore.js').MemoryDefinitionStore}."
+	}
+]

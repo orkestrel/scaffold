@@ -1,0 +1,14 @@
+== rater p2-fix landing 2026-09-08T01:51:43Z over 41ae09c
+== status
+ M README.md
+ M guides/rater.md
+ M src/core/types.ts
+ M tests/guides.test.ts
+ src/core/types.ts    |  4 ++--
+ tests/guides.test.ts |  4 ++--
+ 4 files changed, 40 insertions(+), 31 deletions(-)
+== stage by path
+ 4 files changed, 40 insertions(+), 31 deletions(-)
+== committed
+76fab91 Refine rater's convergence on the audit's findings
+(status end)

@@ -1,0 +1,101 @@
+### probe at d06b186, guide guides/probe.md, head start 0.0.18
+-- baseline
+rows read: 1, disagreements found: 0
+   docs exit 0
+Tests  56 passed (56)
+   test:guides exit 0
+-- census
+   guides/probe.md surface {"equal":102,"differ":0,"guideAbsent":0,"sourceAbsent":0,"bothAbsent":0,"unmatched":0} methods {"equal":15,"differ":0,"guideAbsent":0,"sourceAbsent":0,"bothAbsent":0,"unmatched":0} groups 6 findDrift 0
+   unmatched/undocumented/bothAbsent: [[],[],[],[],[]]
+   owner class LintStage methods 2 grouped false undescribed ["destroy","inspect"]
+   owner interface LintStageInterface methods 2 grouped true undescribed []
+   owner class Overlay methods 4 grouped false undescribed []
+   owner interface OverlayInterface methods 4 grouped true undescribed []
+   owner class Probe methods 2 grouped false undescribed ["destroy","prove"]
+   owner interface ProbeInterface methods 2 grouped true undescribed []
+   owner class ProbeServer methods 2 grouped false undescribed ["destroy","start"]
+   owner interface ProbeServerInterface methods 2 grouped true undescribed []
+   owner class RuntimeStage methods 2 grouped false undescribed ["destroy","inspect"]
+   owner interface StageInterface methods 2 grouped true undescribed []
+   owner class TypeStage methods 3 grouped false undescribed ["destroy"]
+   owner interface TypeStageInterface methods 3 grouped true undescribed []
+   examples titledFences 4 titledExamples ["Probe:The claim that earns a receipt"] pairs ["The claim that earns a receipt"]
+-- sites: surface row guides/probe.md:38; methods row guides/probe.md:264; title src/server/Probe.ts:56
+-- control A: one Surface Summary cell altered (guides/probe.md:38)
+guides/probe.md type Stage: guide "Names an inspection a claim passes through, derived from `PROBE_STAGES`. Control." source "Names an inspection a claim passes through, derived from `PROBE_STAGES`."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Package > keeps every compared summary and example equal to its source
+Tests  1 failed | 55 passed (56)
+× keeps every compared summary and example equal to its source 31ms
+   test:guides exit 1
+-- control B: one Methods Summary cell altered (guides/probe.md:264)
+guides/probe.md ProbeInterface.prove: guide "Answers one claim with every stage's evidence. Control." source "Answers one claim with every stage's evidence."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Package > keeps every compared summary and example equal to its source
+Tests  1 failed | 55 passed (56)
+× keeps every compared summary and example equal to its source 26ms
+   test:guides exit 1
+-- control C: the titled block's description paragraph altered (its first line)
+   edited:  * Control Answers claims through its type, lint, and runtime stages.
+guides/probe.md class Probe: guide "Answers claims through its type, lint, and runtime stages." source "Control Answers claims through its type, lint, and runtime stages."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Package > keeps every compared summary and example equal to its source
+Tests  1 failed | 55 passed (56)
+× keeps every compared summary and example equal to its source 27ms
+   test:guides exit 1
+-- control H: another declaration's description paragraph altered (the first exported function or class in src whose block is not the titled one)
+   edited src/core/errors.ts:6:  * Control Reports one probe failure under stable ownership and condition axes.
+guides/probe.md class ProbeError: guide "Reports one probe failure under stable ownership and condition axes." source "Control Reports one probe failure under stable ownership and condition axes."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Package > keeps every compared summary and example equal to its source
+Tests  1 failed | 55 passed (56)
+× keeps every compared summary and example equal to its source 25ms
+   test:guides exit 1
+-- control D: the @example title removed (src/server/Probe.ts:56)
+rows read: 1, disagreements found: 0
+   docs exit 0
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > pairs at least one example title across the guide and the source
+Tests  1 failed | 55 passed (56)
+× pairs at least one example title across the guide and the source 38ms
+   test:guides exit 1
+-- control E: the titled example body altered
+guides/probe.md The claim that earns a receipt: guide "ts\nimport type { Claim } from '@orkestrel/probe'\nimport { Probe } from '@orkestrel/probe/server'\n\nconst claim: Claim = {\n\tproject: 'configs/src/tsconfig.core.json',\n\tcase: {\n\t\tfiles: [\n\t\t\t{\n\t\t\t\tpath: 'src/core/factories.ts',\n\t\t\t\ttext: \"export function createGreeting(): string {\\n\\treturn 'hi'\\n}\\n\",\n\t\t\t},\n\t\t],\n\t\ttest: {\n\t\t\tpath: 'tmp/probe/greeting.test.ts',\n\t\t\ttext: \"import { expect, test } from 'vitest'\\nimport { createGreeting } from '../../src/core/factories.js'\\ntest('greets', () => expect(createGreeting()).toBe('hi'))\\n\",\n\t\t},\n\t},\n\tcontrol: {\n\t\tfiles: [\n\t\t\t{\n\t\t\t\tpath: 'src/core/factories.ts',\n\t\t\t\ttext: \"export function createGreeting(): number {\\n\\treturn 'hi'\\n}\\n\",\n\t\t\t},\n\t\t],\n\t\ttest: {\n\t\t\tpath: 'tmp/probe/greeting.test.ts',\n\t\t\ttext: \"import { expect, test } from 'vitest'\\nimport { createGreeting } from '../../src/core/factories.js'\\ntest('greets', () => expect(createGreeting()).toBe('hi'))\\n\",\n\t\t},\n\t\tstage: 'type',\n\t\treason: 'a string returned as a number must not compile',\n\t},\n}\n\nconst probe = new Probe({ workspace: process.cwd() })\nconst verdict = await probe.prove(claim)\nverdict.digest // 'fcb88a2dee987b8673c1fc7107979470'\nverdict.receipt // 'probe:fcb88a2dee987b8673c1fc7107979470:type:typescript@6.0.3:oxlint@1.81.0:vitest@4.1.11:configs/src/tsconfig.core.json@434f59254d58cf2683d453a26bd0d837'\nawait probe.destroy()" source "ts\nimport type { Claim } from '@orkestrel/probe' // control\nimport { Probe } from '@orkestrel/probe/server'\n\nconst claim: Claim = {\n\tproject: 'configs/src/tsconfig.core.json',\n\tcase: {\n\t\tfiles: [\n\t\t\t{\n\t\t\t\tpath: 'src/core/factories.ts',\n\t\t\t\ttext: \"export function createGreeting(): string {\\n\\treturn 'hi'\\n}\\n\",\n\t\t\t},\n\t\t],\n\t\ttest: {\n\t\t\tpath: 'tmp/probe/greeting.test.ts',\n\t\t\ttext: \"import { expect, test } from 'vitest'\\nimport { createGreeting } from '../../src/core/factories.js'\\ntest('greets', () => expect(createGreeting()).toBe('hi'))\\n\",\n\t\t},\n\t},\n\tcontrol: {\n\t\tfiles: [\n\t\t\t{\n\t\t\t\tpath: 'src/core/factories.ts',\n\t\t\t\ttext: \"export function createGreeting(): number {\\n\\treturn 'hi'\\n}\\n\",\n\t\t\t},\n\t\t],\n\t\ttest: {\n\t\t\tpath: 'tmp/probe/greeting.test.ts',\n\t\t\ttext: \"import { expect, test } from 'vitest'\\nimport { createGreeting } from '../../src/core/factories.js'\\ntest('greets', () => expect(createGreeting()).toBe('hi'))\\n\",\n\t\t},\n\t\tstage: 'type',\n\t\treason: 'a string returned as a number must not compile',\n\t},\n}\n\nconst probe = new Probe({ workspace: process.cwd() })\nconst verdict = await probe.prove(claim)\nverdict.digest // 'fcb88a2dee987b8673c1fc7107979470'\nverdict.receipt // 'probe:fcb88a2dee987b8673c1fc7107979470:type:typescript@6.0.3:oxlint@1.81.0:vitest@4.1.11:configs/src/tsconfig.core.json@434f59254d58cf2683d453a26bd0d837'\nawait probe.destroy()"
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Package > keeps every compared summary and example equal to its source
+Tests  1 failed | 55 passed (56)
+× keeps every compared summary and example equal to its source 28ms
+   test:guides exit 1
+-- control F: the README pitch altered
+guides/probe.md pitch: readme "Control: The claim prover for the `@orkestrel` line: an instrument that runs a claim's case and its negative control through the workspace's own TypeScript, Oxlint, and Vitest, and returns a `Verdict` carrying every issue — and a `receipt` when the case ran clean and the control broke where it said it would." tagline "The claim prover for the `@orkestrel` line: an instrument that runs a claim's case and its negative control through the workspace's own TypeScript, Oxlint, and Vitest, and returns a `Verdict` carrying every issue — and a `receipt` when the case ran clean and the control broke where it said it would."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected 'Control: The claim prover for the `@o…' to be 'The claim prover for the `@orkestrel`…' // Object.is equality
+FAIL  |guides| tests/guides.test.ts > opens the README with the guide tagline
+Tests  1 failed | 55 passed (56)
+× opens the README with the guide tagline 38ms
+   test:guides exit 1
+-- control G: one Summary header renamed to Behavior
+guides/probe.md type ProbeErrorCode: guide absent source "Names the condition that ended a probe operation, derived from `PROBE_ERROR_CODES`."
+guides/probe.md interface ProbeErrorContext: guide absent source "Carries the structured detail one probe failure reports beside its message."
+guides/probe.md interface ProbeErrorOptions: guide absent source "Configures one probe failure at construction."
+rows read: 1, disagreements found: 17
+   docs exit 1
+AssertionError: expected [ …(17) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Package > keeps every compared summary and example equal to its source
+Tests  1 failed | 55 passed (56)
+× keeps every compared summary and example equal to its source 27ms
+   test:guides exit 1
+-- restored
+rows read: 1, disagreements found: 0
+   docs exit 0

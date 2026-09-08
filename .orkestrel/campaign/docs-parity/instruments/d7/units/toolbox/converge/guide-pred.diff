@@ -1,0 +1,312 @@
+diff --git a/guides/toolbox.md b/guides/toolbox.md
+index 662ddbd..71f3a7e 100644
+--- a/guides/toolbox.md
++++ b/guides/toolbox.md
+@@ -62,49 +62,51 @@ Concrete `DefinitionStoreInterface` implementations (AGENTS' Stores rule, point-
+ 
+ The total `(value: unknown) => value is T` guards this package applies at its untrusted boundaries — an authored lineage, a frozen agent adapter, the small-model column DSL, and a persisted database definition read back from a store.
+ 
+-| API                    | Kind     | Behavior                                                                                                                                    |
+-| ---------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+-| `isWorkflowLineage`    | function | Narrow an unknown value to a valid alternating unique lineage beginning with a workflow tag.                                                |
+-| `isAgentFunction`      | function | Narrow an unknown callable to Toolbox's frozen `AgentFunction` metadata shape.                                                              |
+-| `isColumnPrimitive`    | function | Narrow an unknown value to a `ColumnPrimitive` (`'string'` / `'integer'` / `'number'` / `'boolean'`).                                       |
+-| `isColumnSpec`         | function | Narrow an unknown value to a `ColumnSpec` — a valid `ColumnPrimitive` shorthand, or `{ primitive, optional }` with a valid `primitive`.     |
+-| `isDatabaseDefinition` | function | Narrow an unknown value to a `DatabaseDefinition` — the boundary guard a `DefinitionStoreInterface` applies to an untrusted persisted blob. |
++A `Shape` cell holds an interface's data members as bare names in braces, `?` marking an optional member and `plus` introducing its call-signature members, and a type alias's own type literal with a union's arms escaped as `\|`. In a guard table a `Shape` cell holds the type the guard narrows to.
++
++| API | Kind | Shape | Summary |
++| --- | --- | --- | --- |
++| `isWorkflowLineage` | function | `WorkflowLineage` | Narrow an unknown value to a valid alternating unique lineage beginning with a workflow tag. |
++| `isAgentFunction` | function | `AgentFunction` | Narrow an unknown callable to Toolbox's frozen `AgentFunction` metadata shape. |
++| `isColumnPrimitive` | function | `ColumnPrimitive` | Narrow an unknown value to a `ColumnPrimitive` (`'string'` / `'integer'` / `'number'` / `'boolean'`). |
++| `isColumnSpec` | function | `ColumnSpec` | Narrow an unknown value to a `ColumnSpec` — a valid `ColumnPrimitive` shorthand, or `{ primitive, optional }` with a valid `primitive`. |
++| `isDatabaseDefinition` | function | `DatabaseDefinition` | Narrow an unknown value to a `DatabaseDefinition` — the boundary guard a `DefinitionStoreInterface` applies to an untrusted persisted blob. |
+ 
+ ### Helpers
+ 
+ Pure, side-effect-free, exhaustively unit-tested under AGENTS' export-and-test-reusable-logic law and narrow-untrusted-input-with-guards rule — the lenient-authoring synthesis path and the ancestry tags shared by both delegating tools.
+ 
+-| API                      | Kind     | Behavior                                                                                                                                                                                                                               |
+-| ------------------------ | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+-| `tagWorkflow`            | function | The ancestry identifier of a workflow in a run chain — `workflow:<id>`.                                                                                                                                                                |
+-| `tagAgent`               | function | The ancestry identifier of an agent in a run chain — `agent:<name>`.                                                                                                                                                                   |
+-| `summarizeWorkflow`      | function | Project a native workflow result into `{ status, count, durable?, fault? }`, preserving optional durability fields only when present.                                                                                                  |
+-| `extendLineage`          | function | Append one workflow or agent tag and return a validated frozen lineage copy.                                                                                                                                                           |
+-| `normalizeLineage`       | function | Build a validated, copied, and frozen alternating unique workflow/agent lineage; malformed configured input throws `ToolboxError('TOOL')`.                                                                                             |
+-| `deriveWorkflowDepth`    | function | Derive zero-based workflow depth from workflow-tag count: empty/root is `0`, then one per nested workflow.                                                                                                                             |
+-| `completeDraft`          | function | Complete a `WorkflowDraft` into a strict `WorkflowDefinition` — synthesize missing ids positionally, default missing names to their id.                                                                                                |
+-| `completePhaseDraft`     | function | Complete one `PhaseDraft` into a strict phase definition — the per-phase step of `completeDraft`.                                                                                                                                      |
+-| `completeTaskDraft`      | function | Complete one `TaskDraft` into a strict task definition — the per-task leaf step of `completeDraft`.                                                                                                                                    |
+-| `expandSteps`            | function | Expand a flat `WorkflowSteps` blob into a strict `WorkflowDefinition` — each step becomes a one-task phase, in order.                                                                                                                  |
+-| `inferTerminalCode`      | function | Classify a caught error into a `ToolboxErrorCode` for `createPromptTool` / `createAnswerTool` — `TerminalError('DEADLOCK'\|'EXPIRE')` maps 1:1, every other `TerminalError` maps to `TOOL`, a non-`TerminalError` returns `undefined`. |
+-| `inferDatabaseCode`      | function | Map a caught error to the granular `DatabaseErrorCode`, or `undefined` if `error` is not a `DatabaseError` — the classification step `createDatabaseTool` / `createRelationTool` throw a `DATABASE` `ToolboxError` from.               |
+-| `inferRelationCode`      | function | Map a caught error to the granular `RelationErrorCode`, or `undefined` if `error` is not a `RelationError` — the classification step `createRelationTool` throws a `RELATION` `ToolboxError` from.                                     |
+-| `expandInclude`          | function | Expand a flat dot-path `include` list into a live `@orkestrel/relation` `Include` tree; an empty segment or a path exceeding `depth` throws a typed `TOOL` `ToolboxError`.                                                             |
+-| `resolveRelationManager` | function | Resolve which registered `RelationManagerInterface` a relation-tool call addresses — an explicit `name` miss, or an omitted `name` with more/less than one registered manager, throws a typed `TOOL` `ToolboxError`.                   |
+-| `resolveRelationModel`   | function | Resolve a `model` name against a live `RelationManagerInterface` — an unknown model throws a typed `TOOL` `ToolboxError`.                                                                                                              |
+-| `clampQuery`             | function | Clamp a `'records'` call's query to a row cap, and build the PROBE query (`limit` bumped by one) used to detect truncation without a separate `count` round trip.                                                                      |
+-| `resolveLimit`           | function | Pick the effective row limit from a requested count and a cap — clamped down to the cap, floored at `0`; the ceiling `clampQuery` and the relation tool's `'find'` / `'links'` truncation both read.                                   |
+-| `normalizeQuery`         | function | Normalize the database tool's parsed SERIALIZED query into a live `@orkestrel/database` `QueryInput` — defaults each condition's omitted `connector` to `'and'`.                                                                       |
++| API | Kind | Summary |
++| --- | --- | --- |
++| `tagWorkflow` | function | The ancestry identifier of a workflow in a run chain — `workflow:<id>`. |
++| `tagAgent` | function | The ancestry identifier of an agent in a run chain — `agent:<name>`. |
++| `summarizeWorkflow` | function | Project a native workflow result into `{ status, count, durable?, fault? }`, preserving optional durability fields only when present. |
++| `extendLineage` | function | Append one workflow or agent tag and return a validated frozen lineage copy. |
++| `normalizeLineage` | function | Build a validated, copied, and frozen alternating unique workflow/agent lineage; malformed configured input throws `ToolboxError('TOOL')`. |
++| `deriveWorkflowDepth` | function | Derive zero-based workflow depth from workflow-tag count: empty/root is `0`, then one per nested workflow. |
++| `completeDraft` | function | Complete a `WorkflowDraft` into a strict `WorkflowDefinition` — synthesize missing ids positionally, default missing names to their id. |
++| `completePhaseDraft` | function | Complete one `PhaseDraft` into a strict phase definition — the per-phase step of `completeDraft`. |
++| `completeTaskDraft` | function | Complete one `TaskDraft` into a strict task definition — the per-task leaf step of `completeDraft`. |
++| `expandSteps` | function | Expand a flat `WorkflowSteps` blob into a strict `WorkflowDefinition` — each step becomes a one-task phase, in order. |
++| `inferTerminalCode` | function | Classify a caught error into a `ToolboxErrorCode` for `createPromptTool` / `createAnswerTool` — `TerminalError('DEADLOCK'\|'EXPIRE')` maps 1:1, every other `TerminalError` maps to `TOOL`, a non-`TerminalError` returns `undefined`. |
++| `inferDatabaseCode` | function | Map a caught error to the granular `DatabaseErrorCode`, or `undefined` if `error` is not a `DatabaseError` — the classification step `createDatabaseTool` / `createRelationTool` throw a `DATABASE` `ToolboxError` from. |
++| `inferRelationCode` | function | Map a caught error to the granular `RelationErrorCode`, or `undefined` if `error` is not a `RelationError` — the classification step `createRelationTool` throws a `RELATION` `ToolboxError` from. |
++| `expandInclude` | function | Expand a flat dot-path `include` list into a live `@orkestrel/relation` `Include` tree; an empty segment or a path exceeding `depth` throws a typed `TOOL` `ToolboxError`. |
++| `resolveRelationManager` | function | Resolve which registered `RelationManagerInterface` a relation-tool call addresses — an explicit `name` miss, or an omitted `name` with more/less than one registered manager, throws a typed `TOOL` `ToolboxError`. |
++| `resolveRelationModel` | function | Resolve a `model` name against a live `RelationManagerInterface` — an unknown model throws a typed `TOOL` `ToolboxError`. |
++| `clampQuery` | function | Clamp a `'records'` call's query to a row cap, and build the PROBE query (`limit` bumped by one) used to detect truncation without a separate `count` round trip. |
++| `resolveLimit` | function | Pick the effective row limit from a requested count and a cap — clamped down to the cap, floored at `0`; the ceiling `clampQuery` and the relation tool's `'find'` / `'links'` truncation both read. |
++| `normalizeQuery` | function | Normalize the database tool's parsed SERIALIZED query into a live `@orkestrel/database` `QueryInput` — defaults each condition's omitted `connector` to `'and'`. |
+ 
+ ### Compilers
+ 
+ The `TableSpec` column DSL compiled into the live `@orkestrel/database` `TableMap` a `createDatabase` call accepts — one composite walk over the spec, and the `compileColumn` / `compileColumnPrimitive` leaves it maps with.
+ 
+-| API                      | Kind     | Behavior                                                                                                                                                                          |
+-| ------------------------ | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+-| `expandTables`           | function | Compile a `TableSpec` into the `@orkestrel/database` `TableMap` it configures — each `ColumnSpec` maps to its primitive shaper, wrapped in `optionalShape` when `optional: true`. |
+-| `compileColumn`          | function | Compile one `ColumnSpec` into its `@orkestrel/database` column shape — the per-column leaf `expandTables` maps over.                                                              |
+-| `compileColumnPrimitive` | function | Compile one `ColumnPrimitive` into its primitive `@orkestrel/database` shape — the leaf `compileColumn` wraps.                                                                    |
++| API | Kind | Summary |
++| --- | --- | --- |
++| `expandTables` | function | Compile a `TableSpec` into the `@orkestrel/database` `TableMap` it configures — each `ColumnSpec` maps to its primitive shaper, wrapped in `optionalShape` when `optional: true`. |
++| `compileColumn` | function | Compile one `ColumnSpec` into its `@orkestrel/database` column shape — the per-column leaf `expandTables` maps over. |
++| `compileColumnPrimitive` | function | Compile one `ColumnPrimitive` into its primitive `@orkestrel/database` shape — the leaf `compileColumn` wraps. |
+ 
+ ### Shapes
+ 
+@@ -140,82 +142,86 @@ The shape VALUES each `create*Tool` factory (and `createWorkflowDraftContract`)
+ 
+ ### Constants
+ 
+-| Constant                       | Kind  | Value                                                                                                                                                                                    |
+-| ------------------------------ | ----- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+-| `AGENT_TOOL_NAME`              | const | The name (`'agent'`) `createAgentTool` advertises by default.                                                                                                                            |
+-| `AGENT_TOOL_DEPTH`             | const | The maximum sub-agent delegation nesting depth (`8`) — deliberately a SEPARATE constant from `MAX_WORKFLOW_CHAIN`.                                                                       |
+-| `AGENT_TOOL_DESCRIPTION`       | const | The multi-line description `createAgentTool` advertises — `task` required, `provider`/`tools`/`system` per-call overrides.                                                               |
+-| `AGENT_TOOL_SUMMARY`           | const | The lean one-sentence `summary` `createAgentTool` advertises in place of `AGENT_TOOL_DESCRIPTION` (`ToolInterface.summary`).                                                             |
+-| `MAX_WORKFLOW_CHAIN`           | const | The maximum zero-based workflow nesting depth (`8`): root plus eight nested workflows is allowed; a ninth nested workflow is rejected.                                                   |
+-| `WORKFLOW_TOOL_NAME`           | const | The name (`'workflow'`) `createWorkflowTool` advertises by default, and the key `createAgentFunction` binds a nested tool under.                                                         |
+-| `WORKFLOW_TOOL_FLAT_EXAMPLE`   | const | A complete FLAT authoring example (`{ name, steps: [{ name }] }`) embedded verbatim in `WORKFLOW_TOOL_DESCRIPTION`.                                                                      |
+-| `WORKFLOW_TOOL_NESTED_EXAMPLE` | const | A minimal NESTED authoring example (a full `WorkflowDefinition`) — the advanced-form example in the description.                                                                         |
+-| `WORKFLOW_TOOL_DESCRIPTION`    | const | The multi-line description `createWorkflowTool` advertises — the flat form (primary) + the nested form (advanced).                                                                       |
+-| `WORKFLOW_TOOL_SUMMARY`        | const | The lean one-sentence `summary` `createWorkflowTool` advertises in place of `WORKFLOW_TOOL_DESCRIPTION`.                                                                                 |
+-| `WORKSPACE_TOOL_NAME`          | const | The name (`'workspace'`) `createWorkspaceTool` advertises by default.                                                                                                                    |
+-| `WORKSPACE_TOOL_EXAMPLE`       | const | A valid `WorkspaceOperation` (a `'write'` op) embedded verbatim in `WORKSPACE_TOOL_DESCRIPTION`.                                                                                         |
+-| `WORKSPACE_TOOL_DESCRIPTION`   | const | The multi-line description `createWorkspaceTool` advertises — every operation's flat fields + a worked example.                                                                          |
+-| `WORKSPACE_TOOL_SUMMARY`       | const | The lean one-sentence `summary` `createWorkspaceTool` advertises in place of `WORKSPACE_TOOL_DESCRIPTION`.                                                                               |
+-| `DESCRIBE_TOOL_NAME`           | const | The name (`'describe'`) `createDescribeTool` advertises by default.                                                                                                                      |
+-| `DESCRIBE_TOOL_SUMMARY`        | const | The lean one-sentence `summary` `createDescribeTool` advertises (short — this tool needs no teaching).                                                                                   |
+-| `DESCRIBE_TOOL_DESCRIPTION`    | const | The short description `createDescribeTool` advertises — `name` required, returns the named tool's full description.                                                                      |
+-| `PROMPT_TOOL_NAME`             | const | The name (`'ask'`) `createPromptTool` advertises by default.                                                                                                                             |
+-| `PROMPT_TOOL_SUMMARY`          | const | The lean one-sentence `summary` `createPromptTool` advertises in place of `PROMPT_TOOL_DESCRIPTION`.                                                                                     |
+-| `PROMPT_TOOL_DESCRIPTION`      | const | The multi-line description `createPromptTool` advertises — `to`/`schema` required, how a field declares its control and rules, a worked two-field example.                               |
+-| `ANSWER_TOOL_NAME`             | const | The name (`'answer'`) `createAnswerTool` advertises by default.                                                                                                                          |
+-| `ANSWER_TOOL_SUMMARY`          | const | The lean one-sentence `summary` `createAnswerTool` advertises in place of `ANSWER_TOOL_DESCRIPTION`.                                                                                     |
+-| `ANSWER_TOOL_DESCRIPTION`      | const | The multi-line description `createAnswerTool` advertises — the `pending` / `answer` operations and the `values` record an answer supplies, each with a worked example.                   |
+-| `DATABASE_TOOL_NAME`           | const | The name (`'database'`) `createDatabaseTool` advertises by default.                                                                                                                      |
+-| `DATABASE_TOOL_SUMMARY`        | const | The lean one-sentence `summary` `createDatabaseTool` advertises in place of `DATABASE_TOOL_DESCRIPTION`.                                                                                 |
+-| `DATABASE_TOOL_DESCRIPTION`    | const | The multi-line description `createDatabaseTool` advertises — the operations, the SERIALIZED query form, the `TableSpec` column DSL, worked examples.                                     |
+-| `DATABASE_TOOL_LIMIT`          | const | The default cap (`1000`) on rows a `'records'` call returns when the caller omits `query.limit`.                                                                                         |
+-| `DATABASE_TOOL_MUTATIONS`      | const | The runtime-frozen readonly array of database-tool mutations disabled by `DatabaseToolOptions.readonly`.                                                                                 |
+-| `RELATION_TOOL_NAME`           | const | The name (`'relation'`) `createRelationTool` advertises by default.                                                                                                                      |
+-| `RELATION_TOOL_SUMMARY`        | const | The lean one-sentence `summary` `createRelationTool` advertises in place of `RELATION_TOOL_DESCRIPTION`.                                                                                 |
+-| `RELATION_TOOL_DESCRIPTION`    | const | The multi-line description `createRelationTool` advertises — the operations and the flat dot-path `include` syntax, a worked example.                                                    |
+-| `RELATION_TOOL_LIMIT`          | const | The default cap (`1000`) on rows a `'find'` / `'links'` call returns when the caller omits `limit`.                                                                                      |
+-| `RELATION_TOOL_DEPTH`          | const | The default cap (`3`) on how many `include` path segments deep a `'load'` / `'find'` call may traverse.                                                                                  |
+-| `INFER_TOOL_NAME`              | const | The name (`'infer'`) `createInferTool` advertises by default.                                                                                                                            |
+-| `INFER_TOOL_SUMMARY`           | const | The lean one-sentence `summary` `createInferTool` advertises in place of `INFER_TOOL_DESCRIPTION`.                                                                                       |
+-| `INFER_TOOL_DESCRIPTION`       | const | The multi-line description `createInferTool` advertises — `samples` required, `format`/`enum`/`candidates` optional, worked examples for both the bare and `candidates`-wrapped returns. |
++A `Shape` cell holds the constant's declared type.
++
++| Constant | Kind | Shape | Summary |
++| --- | --- | --- | --- |
++| `AGENT_TOOL_NAME` | const | `'agent'` | The name (`'agent'`) `createAgentTool` advertises by default. |
++| `AGENT_TOOL_DEPTH` | const | `8` | The maximum sub-agent delegation nesting depth (`8`) — deliberately a SEPARATE constant from `MAX_WORKFLOW_CHAIN`. |
++| `AGENT_TOOL_DESCRIPTION` | const | `string` | The multi-line description `createAgentTool` advertises — `task` required, `provider`/`tools`/`system` per-call overrides. |
++| `AGENT_TOOL_SUMMARY` | const | `string` | The lean one-sentence `summary` `createAgentTool` advertises in place of `AGENT_TOOL_DESCRIPTION` (`ToolInterface.summary`). |
++| `MAX_WORKFLOW_CHAIN` | const | `8` | The maximum zero-based workflow nesting depth (`8`): root plus eight nested workflows is allowed; a ninth nested workflow is rejected. |
++| `WORKFLOW_TOOL_NAME` | const | `'workflow'` | The name (`'workflow'`) `createWorkflowTool` advertises by default, and the key `createAgentFunction` binds a nested tool under. |
++| `WORKFLOW_TOOL_FLAT_EXAMPLE` | const | `WorkflowSteps` | A complete FLAT authoring example (`{ name, steps: [{ name }] }`) embedded verbatim in `WORKFLOW_TOOL_DESCRIPTION`. |
++| `WORKFLOW_TOOL_NESTED_EXAMPLE` | const | `WorkflowDefinition` | A minimal NESTED authoring example (a full `WorkflowDefinition`) — the advanced-form example in the description. |
++| `WORKFLOW_TOOL_DESCRIPTION` | const | `string` | The multi-line description `createWorkflowTool` advertises — the flat form (primary) + the nested form (advanced). |
++| `WORKFLOW_TOOL_SUMMARY` | const | `string` | The lean one-sentence `summary` `createWorkflowTool` advertises in place of `WORKFLOW_TOOL_DESCRIPTION`. |
++| `WORKSPACE_TOOL_NAME` | const | `'workspace'` | The name (`'workspace'`) `createWorkspaceTool` advertises by default. |
++| `WORKSPACE_TOOL_EXAMPLE` | const | `WorkspaceOperation` | A valid `WorkspaceOperation` (a `'write'` op) embedded verbatim in `WORKSPACE_TOOL_DESCRIPTION`. |
++| `WORKSPACE_TOOL_DESCRIPTION` | const | `string` | The multi-line description `createWorkspaceTool` advertises — every operation's flat fields + a worked example. |
++| `WORKSPACE_TOOL_SUMMARY` | const | `string` | The lean one-sentence `summary` `createWorkspaceTool` advertises in place of `WORKSPACE_TOOL_DESCRIPTION`. |
++| `DESCRIBE_TOOL_NAME` | const | `'describe'` | The name (`'describe'`) `createDescribeTool` advertises by default. |
++| `DESCRIBE_TOOL_SUMMARY` | const | `string` | The lean one-sentence `summary` `createDescribeTool` advertises (short — this tool needs no teaching). |
++| `DESCRIBE_TOOL_DESCRIPTION` | const | `string` | The short description `createDescribeTool` advertises — `name` required, returns the named tool's full description. |
++| `PROMPT_TOOL_NAME` | const | `'ask'` | The name (`'ask'`) `createPromptTool` advertises by default. |
++| `PROMPT_TOOL_SUMMARY` | const | `string` | The lean one-sentence `summary` `createPromptTool` advertises in place of `PROMPT_TOOL_DESCRIPTION`. |
++| `PROMPT_TOOL_DESCRIPTION` | const | `string` | The multi-line description `createPromptTool` advertises — `to`/`schema` required, how a field declares its control and rules, a worked two-field example. |
++| `ANSWER_TOOL_NAME` | const | `'answer'` | The name (`'answer'`) `createAnswerTool` advertises by default. |
++| `ANSWER_TOOL_SUMMARY` | const | `string` | The lean one-sentence `summary` `createAnswerTool` advertises in place of `ANSWER_TOOL_DESCRIPTION`. |
++| `ANSWER_TOOL_DESCRIPTION` | const | `string` | The multi-line description `createAnswerTool` advertises — the `pending` / `answer` operations and the `values` record an answer supplies, each with a worked example. |
++| `DATABASE_TOOL_NAME` | const | `'database'` | The name (`'database'`) `createDatabaseTool` advertises by default. |
++| `DATABASE_TOOL_SUMMARY` | const | `string` | The lean one-sentence `summary` `createDatabaseTool` advertises in place of `DATABASE_TOOL_DESCRIPTION`. |
++| `DATABASE_TOOL_DESCRIPTION` | const | `string` | The multi-line description `createDatabaseTool` advertises — the operations, the SERIALIZED query form, the `TableSpec` column DSL, worked examples. |
++| `DATABASE_TOOL_LIMIT` | const | `1000` | The default cap (`1000`) on rows a `'records'` call returns when the caller omits `query.limit`. |
++| `DATABASE_TOOL_MUTATIONS` | const | `readonly string[]` | The runtime-frozen readonly array of database-tool mutations disabled by `DatabaseToolOptions.readonly`. |
++| `RELATION_TOOL_NAME` | const | `'relation'` | The name (`'relation'`) `createRelationTool` advertises by default. |
++| `RELATION_TOOL_SUMMARY` | const | `string` | The lean one-sentence `summary` `createRelationTool` advertises in place of `RELATION_TOOL_DESCRIPTION`. |
++| `RELATION_TOOL_DESCRIPTION` | const | `string` | The multi-line description `createRelationTool` advertises — the operations and the flat dot-path `include` syntax, a worked example. |
++| `RELATION_TOOL_LIMIT` | const | `1000` | The default cap (`1000`) on rows a `'find'` / `'links'` call returns when the caller omits `limit`. |
++| `RELATION_TOOL_DEPTH` | const | `3` | The default cap (`3`) on how many `include` path segments deep a `'load'` / `'find'` call may traverse. |
++| `INFER_TOOL_NAME` | const | `'infer'` | The name (`'infer'`) `createInferTool` advertises by default. |
++| `INFER_TOOL_SUMMARY` | const | `string` | The lean one-sentence `summary` `createInferTool` advertises in place of `INFER_TOOL_DESCRIPTION`. |
++| `INFER_TOOL_DESCRIPTION` | const | `string` | The multi-line description `createInferTool` advertises — `samples` required, `format`/`enum`/`candidates` optional, worked examples for both the bare and `candidates`-wrapped returns. |
+ 
+ ### Types
+ 
+-| Type                       | Kind      | Shape                                                                                                                                                                                                                                                                                                                       |
+-| -------------------------- | --------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+-| `TaskDraft`                | interface | `{ id?, name?, description?, behavior?, retries?, timeout? }` — a `TaskDefinition` (`@orkestrel/workflow`) with OPTIONAL id/name.                                                                                                                                                                                           |
+-| `PhaseDraft`               | interface | `{ id?, name?, description?, tasks, concurrency?, bail? }` — a `PhaseDefinition` with OPTIONAL id/name + `TaskDraft` tasks.                                                                                                                                                                                                 |
+-| `WorkflowDraft`            | interface | `{ id?, name?, description?, phases, bail? }` — a `WorkflowDefinition` with OPTIONAL id/name at all three levels.                                                                                                                                                                                                           |
+-| `WorkflowStep`             | interface | `{ name }` — one flat step; `name` is a REGISTERED behavior name (becomes the task's `behavior`, not a human label).                                                                                                                                                                                                        |
+-| `WorkflowSteps`            | interface | `{ name?, steps }` — the FLAT authoring blob `createWorkflowTool` advertises; `name` is also the deterministic workflow id, and each step → a one-task phase through `expandSteps`.                                                                                                                                         |
+-| `WorkflowToolResult`       | interface | `{ status, count, durable?, fault? }` — the exact JSON-safe summary returned by `createWorkflowTool`; optional native persistence outcome fields appear only when the runner supplies them.                                                                                                                                 |
+-| `WorkflowLineage`          | type      | `readonly string[]` — an immutable alternating chain of unique `workflow:` / `agent:` tags beginning with a workflow.                                                                                                                                                                                                       |
+-| `WorkflowAgents`           | type      | `Readonly<Record<string, AgentInterface>>` — raw live agents keyed by workflow function name for contextual Toolbox adaptation.                                                                                                                                                                                             |
+-| `AgentFunction`            | type      | A `WorkflowFunction` carrying frozen `{ category: 'agent', lineage }` metadata.                                                                                                                                                                                                                                             |
+-| `AgentFunctionOptions`     | interface | `{ runner?, lineage?, functions?, agents?, store? }` — nested workflow composition, exact context lineage, opaque leaves, raw agents, and native store.                                                                                                                                                                     |
+-| `WorkflowToolOptions`      | interface | `{ lineage?, functions?, agents?, store? }` — target lineage plus opaque leaves, raw agents, and native runner checkpoint store.                                                                                                                                                                                            |
+-| `WorkspaceToolOptions`     | interface | `{ name?, description?, manager?, store? }` — a caller-built `WorkspaceManagerInterface` to drive directly, OR a `WorkspaceStoreInterface` to build one over.                                                                                                                                                               |
+-| `WorkspaceOperation`       | type      | The `operation`-discriminated union `createWorkspaceTool` dispatches — `read` / `list` / `has` / `search` / `replace` / `write` / `splice` / `prepend` / `append` / `move` / `remove` / `workspaces` / `switch`; search/replace options are `{ regex?, sensitive?, limit? }`, and replace returns `{ occurrences, files }`. |
+-| `AgentToolOptions`         | interface | `{ name?, description?, provider?, tools?, system?, depth?, ancestry?, store? }` — `createAgentTool`'s delegation defaults, nesting bookkeeping, and optional `ConversationStoreInterface`.                                                                                                                                 |
+-| `AgentToolArguments`       | interface | `{ task, provider?, tools?, system? }` — the flat call args `createAgentTool` accepts.                                                                                                                                                                                                                                      |
+-| `ToolboxErrorCode`         | type      | `'TOOL' \| 'DEPTH' \| 'DEADLOCK' \| 'EXPIRE' \| 'ANSWER' \| 'DATABASE' \| 'RELATION'` — the machine-readable code a `ToolboxError` carries (`DATABASE` / `RELATION` carrying the granular upstream error code in `context.code`).                                                                                           |
+-| `DescribeToolArguments`    | interface | `{ name }` — the flat call args `createDescribeTool` accepts (the registered tool name to describe).                                                                                                                                                                                                                        |
+-| `PromptToolOptions`        | interface | `{ manager, from, name?, description? }` — `createPromptTool`'s live `TerminalManagerInterface` (whose `ask(from, to, form)` it drives with a constructed form), the FIXED `from` identity, and advertised overrides.                                                                                                       |
+-| `AnswerToolOptions`        | interface | `{ manager, to, name?, description? }` — `createAnswerTool`'s live `TerminalManagerInterface` (whose `pending(to)` / `answer(to, id, values)` it drives), the FIXED `to` identity, and advertised overrides.                                                                                                                |
+-| `ColumnPrimitive`          | type      | `'string' \| 'integer' \| 'number' \| 'boolean'` — one column's declared primitive.                                                                                                                                                                                                                                         |
+-| `ColumnSpec`               | type      | A bare `ColumnPrimitive` shorthand, or `{ primitive, optional? }` when the column may be absent from a row.                                                                                                                                                                                                                 |
+-| `TableSpec`                | type      | A database's table layout — one entry per table, each `{ columns: Record<string, ColumnSpec> }`; `expandTables` compiles it into an `@orkestrel/database` `TableMap`.                                                                                                                                                       |
+-| `DatabaseDefinition`       | interface | `{ id, driver, tables, primary?, indexes?, version? }` — a database's CONFIG-ONLY definition (never a live handle); the durable blueprint `createDatabaseTool` builds a live database from and a `DefinitionStoreInterface` persists.                                                                                       |
+-| `DatabaseDefinitionRow`    | interface | `{ id, definition }` — one opaque persisted row (`definition: unknown`, narrowed with `isDatabaseDefinition` on read) — the shape `DatabaseDefinitionStore`'s backing table reads/writes.                                                                                                                                   |
+-| `DefinitionStoreInterface` | interface | `{ get, set, delete }` — the point-access persistence seam for `DatabaseDefinition` configs under AGENTS' Stores rule; every primitive async, `delete` of an absent id a no-op.                                                                                                                                             |
+-| `DatabaseQueryInput`       | interface | `{ conditions?, order?, limit?, offset? }` — the SERIALIZED wire query a database-tool call carries (`values` always an array, `connector` optional on the last condition); `normalizeQuery` normalizes it into a live `@orkestrel/database` `QueryInput`.                                                                  |
+-| `ClampedQuery`             | interface | `{ query, limit }` — the PROBE query (`limit` bumped by one) and effective row ceiling `clampQuery` returns.                                                                                                                                                                                                                |
+-| `DatabaseToolOptions`      | interface | `{ name?, description?, databases?, store?, drivers?, generator?, limit?, timeout?, readonly? }` — seed handles, store, drivers, generator, row cap, validated table-operation signal timeout, and mutation lock.                                                                                                           |
+-| `RelationToolOptions`      | interface | `{ name?, description?, managers, limit?, depth? }` — `createRelationTool`'s REQUIRED live `RelationManagerInterface` registry, row cap, and `include` depth cap.                                                                                                                                                           |
+-| `InferToolOptions`         | interface | `{ name?, description? }` — `createInferTool`'s advertised overrides; `format`/`enum` are RUNTIME call args, not construction options.                                                                                                                                                                                      |
+-| `EndpointHandler`          | type      | `(args: Readonly<Record<string, unknown>>) => Promise<unknown> \| unknown` — mirrors `@orkestrel/tool`'s `ToolOptions.execute` signature EXACTLY, so `execute: (args) => definition.execute(args)` typechecks with zero assertions.                                                                                         |
+-| `EndpointDefinition`       | interface | `{ name, description, samples, execute }` — one concrete endpoint `createEndpointTool` wraps; `samples` MUST be non-empty (checked at construction).                                                                                                                                                                        |
+-| `EndpointToolOptions`      | interface | `{ format?, enum?, validate? }` — construction-time inference tuning for `createEndpointTool`'s advertised `parameters` (`format`/`enum` default `false`), plus whether that schema is ENFORCED at `execute` time (`validate` defaults `true`; `false` restores raw passthrough).                                           |
++A `Shape` cell holds an interface's data members as bare names in braces, `?` marking an optional member and `plus` introducing its call-signature members, and a type alias's own type literal with a union's arms escaped as `\|`.
++
++| Type | Kind | Shape | Summary |
++| --- | --- | --- | --- |
++| `TaskDraft` | interface | `{ id?, name?, description?, behavior?, retries?, timeout? }` |  |
++| `PhaseDraft` | interface | `{ id?, name?, description?, tasks, concurrency?, bail? }` |  |
++| `WorkflowDraft` | interface | `{ id?, name?, description?, phases, bail? }` |  |
++| `WorkflowStep` | interface | `{ name }` |  |
++| `WorkflowSteps` | interface | `{ name?, steps }` |  |
++| `WorkflowToolResult` | interface | `{ status, count, durable?, fault? }` |  |
++| `WorkflowLineage` | type | `readonly string[]` |  |
++| `WorkflowAgents` | type | `Readonly<Record<string, AgentInterface>>` |  |
++| `AgentFunction` | type | `WorkflowFunction & { category, lineage }` |  |
++| `AgentFunctionOptions` | interface | `{ runner?, lineage?, functions?, agents?, store? }` |  |
++| `WorkflowToolOptions` | interface | `{ lineage?, functions?, agents?, store? }` |  |
++| `WorkspaceToolOptions` | interface | `{ name?, description?, manager?, store? }` |  |
++| `WorkspaceOperation` | type | `{ operation: 'read', path } \| { operation: 'list' } \| { operation: 'has', path } \| { operation: 'search', query, regex?, sensitive?, limit? } \| { operation: 'replace', query, replacement, regex?, sensitive?, limit? } \| { operation: 'write', path, content } \| { operation: 'splice', path, content, fromLine, fromColumn, toLine, toColumn } \| { operation: 'prepend', path, content } \| { operation: 'append', path, content } \| { operation: 'move', from, to } \| { operation: 'remove', path } \| { operation: 'workspaces' } \| { operation: 'switch', id }` |  |
++| `AgentToolOptions` | interface | `{ name?, description?, provider?, tools?, system?, depth?, ancestry?, store? }` |  |
++| `AgentToolArguments` | interface | `{ task, provider?, tools?, system? }` |  |
++| `ToolboxErrorCode` | type | `'TOOL' \| 'DEPTH' \| 'DEADLOCK' \| 'EXPIRE' \| 'ANSWER' \| 'DATABASE' \| 'RELATION'` |  |
++| `DescribeToolArguments` | interface | `{ name }` |  |
++| `PromptToolOptions` | interface | `{ manager, from, name?, description? }` |  |
++| `AnswerToolOptions` | interface | `{ manager, to, name?, description? }` |  |
++| `ColumnPrimitive` | type | `'string' \| 'integer' \| 'number' \| 'boolean'` |  |
++| `ColumnSpec` | type | `ColumnPrimitive \| { primitive, optional? }` |  |
++| `TableSpec` | type | `Readonly<Record<string, { columns }>>` |  |
++| `DatabaseDefinition` | interface | `{ id, driver, tables, primary?, indexes?, version? }` |  |
++| `DatabaseDefinitionRow` | interface | `{ id, definition }` |  |
++| `DefinitionStoreInterface` | interface | `{} plus get, set, delete` |  |
++| `DatabaseQueryInput` | interface | `{ conditions?, order?, limit?, offset? }` |  |
++| `ClampedQuery` | interface | `{ query, limit }` |  |
++| `DatabaseToolOptions` | interface | `{ name?, description?, databases?, store?, drivers?, generator?, limit?, timeout?, readonly? }` |  |
++| `RelationToolOptions` | interface | `{ name?, description?, managers, limit?, depth? }` |  |
++| `InferToolOptions` | interface | `{ name?, description? }` |  |
++| `EndpointHandler` | type | `(args: Readonly<Record<string, unknown>>) => Promise<unknown> \| unknown` |  |
++| `EndpointDefinition` | interface | `{ name, description, samples, execute }` |  |
++| `EndpointToolOptions` | interface | `{ format?, enum?, validate? }` |  |
+ 
+ ### Server routes
+ 
+@@ -223,16 +229,18 @@ The wire bridge for a `TerminalManagerInterface` — a GET SSE stream + a POST a
+ 
+ The POST endpoint takes `{ id, values }`, admits the body only when `id` is a nonempty string and `values` passes `@orkestrel/form`'s `isFormValues`, and returns the manager's own answer `Result` as a JSON body — `200` accepted, `422` an `'unknown'` / `'rejected'` outcome, `404` a `'target'` outcome. The body is what carries a rejection's per-field `errors` back to the answering client, so `PromptClient` can re-render the failed fields instead of guessing from a status code.
+ 
+-| API                     | Kind      | Summary                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+-| ----------------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+-| `createTerminalRoutes`  | function  | Build the two `TerminalRoute` records (GET SSE form stream, POST `{ id, values }` answer) bridging a `TerminalManagerInterface`'s endpoints onto the wire, byte-compatible with `PromptClient`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+-| `TerminalRouteMethod`   | type      | The HTTP method literal a `TerminalRoute` declares — the same union `@orkestrel/router`'s `Method` type accepts.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+-| `TerminalRouteContext`  | interface | `{ params }` — the minimal route-dispatch context a `TerminalRoute` handler reads (the frozen, URL-decoded `:name` path param).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+-| `TerminalRoute`         | interface | `{ method, path, handler }` — one structural route record `createTerminalRoutes` returns.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+-| `TerminalRoutesOptions` | interface | `{ path?, token?, keepalive?, timer?, limit? }` — the shared mount path, optional `TerminalToken` gate, SSE keepalive interval, injected `TimerHandler`, and POST body byte cap (defaults to `@orkestrel/server`'s `DEFAULT_BODY_LIMIT`, 1 MiB; a non-finite limit also defaults, a negative limit clamps to zero, and over-limit input is `413`, ignoring any `Content-Length` header).                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+-| `TerminalToken`         | type      | `string \| ((value: string \| undefined) => boolean)` — the `token` gate: a string is compared for equality against the `x-orkestrel-token` header; a function is a consumer-controlled validator (JWT `exp` checks, revocation lookups, anything time-varying), letting a token expire or rotate mid-stream. Validated at GET connect, on every POST, and RE-VALIDATED on every SSE keepalive tick — a stream whose presented token stops validating is torn down through the same abort/self-heal teardown path (no `shutdown` frame; the client reconnects and re-authenticates). Because re-validation only happens on the keepalive tick, the revocation window equals the keepalive interval — a rejected/expired token keeps streaming until the next tick — and a throwing validator is treated as rejection (fail-closed) at every call site. |
+-| `TERMINAL_ROUTES_PATH`  | const     | The default `:name`-templated path (`/terminals/:name`) `createTerminalRoutes` mounts its routes under.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+-| `TERMINAL_KEEPALIVE_MS` | const     | The default SSE keepalive interval in milliseconds (`15_000`) `createTerminalRoutes` arms per open connection.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
++A `Shape` cell holds an interface's data members as bare names in braces, `?` marking an optional member and `plus` introducing its call-signature members, and a type alias's own type literal with a union's arms escaped as `\|`.
++
++| API | Kind | Shape | Summary |
++| --- | --- | --- | --- |
++| `createTerminalRoutes` | function |  | Build the two `TerminalRoute` records (GET SSE form stream, POST `{ id, values }` answer) bridging a `TerminalManagerInterface`'s endpoints onto the wire, byte-compatible with `PromptClient`. |
++| `TerminalRouteMethod` | type | `'GET' \| 'POST' \| 'PUT' \| 'PATCH' \| 'DELETE' \| 'HEAD' \| 'OPTIONS'` | The HTTP method literal a `TerminalRoute` declares — the same union `@orkestrel/router`'s `Method` type accepts. |
++| `TerminalRouteContext` | interface | `{ params }` | `{ params }` — the minimal route-dispatch context a `TerminalRoute` handler reads (the frozen, URL-decoded `:name` path param). |
++| `TerminalRoute` | interface | `{ method, path, handler }` | `{ method, path, handler }` — one structural route record `createTerminalRoutes` returns. |
++| `TerminalRoutesOptions` | interface | `{ path?, token?, keepalive?, timer?, limit? }` | `{ path?, token?, keepalive?, timer?, limit? }` — the shared mount path, optional `TerminalToken` gate, SSE keepalive interval, injected `TimerHandler`, and POST body byte cap (defaults to `@orkestrel/server`'s `DEFAULT_BODY_LIMIT`, 1 MiB; a non-finite limit also defaults, a negative limit clamps to zero, and over-limit input is `413`, ignoring any `Content-Length` header). |
++| `TerminalToken` | type | `string \| ((value: string \| undefined) => boolean)` | `string \| ((value: string \| undefined) => boolean)` — the `token` gate: a string is compared for equality against the `x-orkestrel-token` header; a function is a consumer-controlled validator (JWT `exp` checks, revocation lookups, anything time-varying), letting a token expire or rotate mid-stream. Validated at GET connect, on every POST, and RE-VALIDATED on every SSE keepalive tick — a stream whose presented token stops validating is torn down through the same abort/self-heal teardown path (no `shutdown` frame; the client reconnects and re-authenticates). Because re-validation only happens on the keepalive tick, the revocation window equals the keepalive interval — a rejected/expired token keeps streaming until the next tick — and a throwing validator is treated as rejection (fail-closed) at every call site. |
++| `TERMINAL_ROUTES_PATH` | const | `'/terminals/:name'` | The default `:name`-templated path (`/terminals/:name`) `createTerminalRoutes` mounts its routes under. |
++| `TERMINAL_KEEPALIVE_MS` | const | `15_000` | The default SSE keepalive interval in milliseconds (`15_000`) `createTerminalRoutes` arms per open connection. |
+ 
+ > A reconnecting SSE client replays every pending form from the top on EVERY (re)connect (the GET handler's replay loop), so a raw `EventSource` (or any hand-rolled consumer that isn't `PromptClient`) MUST dedupe `pending` frames by their SSE `id` — the same form id may arrive more than once across a reconnect. `PromptClient` (`@orkestrel/terminal`) already does this; a consumer bypassing it does not get the dedupe for free.
+ >
+@@ -244,21 +252,21 @@ Every `create*Tool` factory returns a plain `ToolInterface` (`@orkestrel/tool`'s
+ 
+ #### `DefinitionStoreInterface`
+ 
+-| Method   | Returns                                    | Behavior                                                                     |
+-| -------- | ------------------------------------------ | ---------------------------------------------------------------------------- |
+-| `get`    | `Promise<DatabaseDefinition \| undefined>` | Resolve the persisted definition for `id`, or `undefined` if none is stored. |
+-| `set`    | `Promise<void>`                            | Insert / replace under the definition's OWN `id` (no separate id param).     |
+-| `delete` | `Promise<void>`                            | Drop the definition for `id`; an absent id is a no-op (never throws).        |
++| Method | Returns | Summary |
++| --- | --- | --- |
++| `get` | `Promise<DatabaseDefinition \| undefined>` | Resolve the persisted definition for `id`, or `undefined` if none is stored. |
++| `set` | `Promise<void>` | Insert / replace under the definition's OWN `id` (no separate id param). |
++| `delete` | `Promise<void>` | Drop the definition for `id`; an absent id is a no-op (never throws). |
+ 
+ #### `DatabaseResolver`
+ 
+-| Method    | Returns                          | Behavior                                                                |
+-| --------- | -------------------------------- | ----------------------------------------------------------------------- |
+-| `has`     | `boolean`                        | Report whether a live database is cached by id.                         |
+-| `get`     | `DatabaseInterface \| undefined` | Read a cached database without consulting the definition store.         |
+-| `set`     | `void`                           | Cache a live database by id.                                            |
+-| `delete`  | `void`                           | Remove a cached live database by id.                                    |
+-| `resolve` | `Promise<DatabaseInterface>`     | Return a cached live database, or construct one from its stored config. |
++| Method | Returns | Summary |
++| --- | --- | --- |
++| `has` | `boolean` | Report whether a live database is cached by id. |
++| `get` | `DatabaseInterface \| undefined` | Read a cached database without consulting the definition store. |
++| `set` | `void` | Cache a live database by id. |
++| `delete` | `void` | Remove a cached live database by id. |
++| `resolve` | `Promise<DatabaseInterface>` | Return a cached live database, or construct one from its stored config. |
+ 
+ ### Composing lifecycle entities directly
+ 

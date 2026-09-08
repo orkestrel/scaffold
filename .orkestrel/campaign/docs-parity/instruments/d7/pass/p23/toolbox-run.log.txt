@@ -1,0 +1,10 @@
+P23 DONE
+p23b toolbox exit 0
+0
+   guides/toolbox.md surface {"equal":150,"differ":0,"guideAbsent":0,"sourceAbsent":0,"bothAbsent":0,"unmatched":0} methods {"equal":8,"differ":0,"guideAbsent":0,"sourceAbsent":0,"bothAbsent":0,"unmatched":0} groups 2 findDrift 0
+-- restored
+grep: /tmp/claude-0/-home-user-scaffold/6a1fadb4-aa90-52d9-9291-3bbb6ae817fe/scratchpad/docs/d7/pass/land/toolbox-p1.log.txt: No such file or directory
+grep: /tmp/claude-0/-home-user-scaffold/6a1fadb4-aa90-52d9-9291-3bbb6ae817fe/scratchpad/docs/d7/pass/land/toolbox-p1.log.txt: No such file or directory
+/home/user/scaffold/tmp/units/d7n-toolbox-audit-brief.md
+48 /home/user/scaffold/tmp/units/d7n-toolbox-audit-brief.md
+48 tmp/units/d7n-toolbox-audit-brief.md

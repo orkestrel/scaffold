@@ -1,0 +1,93 @@
+### toolbox at d4c724d, guide guides/toolbox.md, head start 0.0.18
+-- baseline
+rows read: 1, disagreements found: 0
+   docs exit 0
+Tests  31 passed (31)
+   test:guides exit 0
+-- census
+   guides/toolbox.md surface {"equal":150,"differ":0,"guideAbsent":0,"sourceAbsent":0,"bothAbsent":0,"unmatched":0} methods {"equal":8,"differ":0,"guideAbsent":0,"sourceAbsent":0,"bothAbsent":0,"unmatched":0} groups 2 findDrift 0
+   unmatched/undocumented/bothAbsent: [[],[],[],[],[]]
+   owner class DatabaseDefinitionStore methods 3 grouped false undescribed []
+   owner class DatabaseResolver methods 5 grouped true undescribed []
+   owner interface DefinitionStoreInterface methods 3 grouped true undescribed []
+   owner class MemoryDefinitionStore methods 3 grouped false undescribed []
+   examples titledFences 19 titledExamples ["createWorkflowTool:Authoring and running a workflow through the tool with a real ToolManager"] pairs ["Authoring and running a workflow through the tool with a real ToolManager"]
+-- sites: surface row guides/toolbox.md:21; methods row guides/toolbox.md:259; title src/core/factories.ts:415
+-- control A: one Surface Summary cell altered (guides/toolbox.md:21)
+guides/toolbox.md function createToolFunction: guide "Wraps a registered tool as a `WorkflowFunction` (`@orkestrel/workflow`) — the opt-in adapter that lets a `function`-form task run a `@orkestrel/tool` tool by name. Control." source "Wraps a registered tool as a `WorkflowFunction` (`@orkestrel/workflow`) — the opt-in adapter that lets a `function`-form task run a `@orkestrel/tool` tool by name."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Toolbox > keeps every compared summary and example equal to its source
+Tests  1 failed | 30 passed (31)
+× keeps every compared summary and example equal to its source 26ms
+   test:guides exit 1
+-- control B: one Methods Summary cell altered (guides/toolbox.md:259)
+guides/toolbox.md DefinitionStoreInterface.get: guide "Resolves the persisted definition for `id`, or `undefined` when none is stored. Control." source "Resolves the persisted definition for `id`, or `undefined` when none is stored."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Toolbox > keeps every compared summary and example equal to its source
+Tests  1 failed | 30 passed (31)
+× keeps every compared summary and example equal to its source 23ms
+   test:guides exit 1
+-- control C: the titled block's description paragraph altered (its first line)
+   edited:  * Control Wraps a {@link WorkflowDefinition} as an LLM-callable tool — it advertises the flat authoring
+guides/toolbox.md function createWorkflowTool: guide "Wraps a `WorkflowDefinition` as an LLM-callable tool — it advertises the flat authoring shape (`{ name?, steps: [{ name }] }`) as its `parameters`, and its handler completes the authored blob, validates it against the strict contract, and runs it through `runner`, forwarding the caller's optional named functions and native checkpoint store." source "Control Wraps a `WorkflowDefinition` as an LLM-callable tool — it advertises the flat authoring shape (`{ name?, steps: [{ name }] }`) as its `parameters`, and its handler completes the authored blob, validates it against the strict contract, and runs it through `runner`, forwarding the caller's optional named functions and native checkpoint store."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Toolbox > keeps every compared summary and example equal to its source
+Tests  1 failed | 30 passed (31)
+× keeps every compared summary and example equal to its source 28ms
+   test:guides exit 1
+-- control H: another declaration's description paragraph altered (the first exported function or class in src whose block is not the titled one)
+   edited src/core/compilers.ts:18:  * Control Compiles a {@link TableSpec} into the `@orkestrel/database` {@link TableMap} it configures —
+guides/toolbox.md function expandTables: guide "Compiles a `TableSpec` into the `@orkestrel/database` `TableMap` it configures — each `ColumnSpec` maps to the matching primitive shaper (`'string'` → `stringShape()`, `'integer'` → `integerShape()`, `'number'` → `numberShape()`, `'boolean'` → `booleanShape()`), wrapped in `optionalShape` when the column declares `optional: true`. Total, pure." source "Control Compiles a `TableSpec` into the `@orkestrel/database` `TableMap` it configures — each `ColumnSpec` maps to the matching primitive shaper (`'string'` → `stringShape()`, `'integer'` → `integerShape()`, `'number'` → `numberShape()`, `'boolean'` → `booleanShape()`), wrapped in `optionalShape` when the column declares `optional: true`. Total, pure."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Toolbox > keeps every compared summary and example equal to its source
+Tests  1 failed | 30 passed (31)
+× keeps every compared summary and example equal to its source 23ms
+   test:guides exit 1
+-- control D: the @example title removed (src/core/factories.ts:415)
+rows read: 1, disagreements found: 0
+   docs exit 0
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > pairs at least one example title across the guide and the source
+Tests  1 failed | 30 passed (31)
+× pairs at least one example title across the guide and the source 48ms
+   test:guides exit 1
+-- control E: the titled example body altered
+guides/toolbox.md Authoring and running a workflow through the tool with a real ToolManager: guide "ts\nimport { createWorkflowTool } from '@orkestrel/toolbox'\nimport { createToolManager } from '@orkestrel/tool'\nimport { createWorkflowRunner } from '@orkestrel/workflow'\nimport type { WorkflowDefinition } from '@orkestrel/workflow'\n\nconst definition: WorkflowDefinition = { id: 'release', name: 'Release', phases: [] }\nconst runner = createWorkflowRunner()\nconst functions = {\n\tcompile: () => 'compiled',\n\tpublish: () => 'published',\n}\nconst tool = createWorkflowTool(definition, runner, { functions })\n\nconst tools = createToolManager()\ntools.add(tool)\n\n// A small model authors the simple flat shape — no ids/names required.\nconst result = await tools.execute({\n\tid: 'call-1',\n\tname: 'workflow',\n\targuments: { name: 'release', steps: [{ name: 'compile' }, { name: 'publish' }] },\n})\nif (!result.success) throw new Error(result.error)\nresult.value // { status: 'completed', count: 2 } — the single-level envelope; no nested { id, name, value }" source "ts\nimport { createWorkflowTool } from '@orkestrel/toolbox' // control\nimport { createToolManager } from '@orkestrel/tool'\nimport { createWorkflowRunner } from '@orkestrel/workflow'\nimport type { WorkflowDefinition } from '@orkestrel/workflow'\n\nconst definition: WorkflowDefinition = { id: 'release', name: 'Release', phases: [] }\nconst runner = createWorkflowRunner()\nconst functions = {\n\tcompile: () => 'compiled',\n\tpublish: () => 'published',\n}\nconst tool = createWorkflowTool(definition, runner, { functions })\n\nconst tools = createToolManager()\ntools.add(tool)\n\n// A small model authors the simple flat shape — no ids/names required.\nconst result = await tools.execute({\n\tid: 'call-1',\n\tname: 'workflow',\n\targuments: { name: 'release', steps: [{ name: 'compile' }, { name: 'publish' }] },\n})\nif (!result.success) throw new Error(result.error)\nresult.value // { status: 'completed', count: 2 } — the single-level envelope; no nested { id, name, value }"
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Toolbox > keeps every compared summary and example equal to its source
+Tests  1 failed | 30 passed (31)
+× keeps every compared summary and example equal to its source 22ms
+   test:guides exit 1
+-- control F: the README pitch altered
+guides/toolbox.md pitch: readme "Control: Concrete, LLM-callable tools for the `@orkestrel` line — workflow authoring, workspace editing, sub-agent delegation, terminal-mediated prompting, database and relation access, schema inference, and endpoint wrapping — over the `@orkestrel/tool` runtime, with pluggable stores." tagline "Concrete, LLM-callable tools for the `@orkestrel` line — workflow authoring, workspace editing, sub-agent delegation, terminal-mediated prompting, database and relation access, schema inference, and endpoint wrapping — over the `@orkestrel/tool` runtime, with pluggable stores."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected 'Control: Concrete, LLM-callable tools…' to be 'Concrete, LLM-callable tools for the …' // Object.is equality
+FAIL  |guides| tests/guides.test.ts > opens the README with the guide tagline
+Tests  1 failed | 30 passed (31)
+× opens the README with the guide tagline 16ms
+   test:guides exit 1
+-- control G: one Summary header renamed to Behavior
+guides/toolbox.md function createDatabaseDefinitionStore: guide absent source "Creates a `DefinitionStoreInterface` backed by one table of the `@orkestrel/database` layer — the driver-pluggable twin of `createMemoryDefinitionStore`, storing each database's definition as one opaque JSON column."
+guides/toolbox.md function createInferTool: guide absent source "Builds a standalone LLM-callable tool that infers a JSON Schema from example values — the utility half of the bridge from an existing API or database into an MCP tool (the other half, `createEndpointTool`, wraps one concrete endpoint)."
+guides/toolbox.md function createEndpointTool: guide absent source "Wraps one concrete endpoint (`EndpointDefinition`) as an LLM-callable `ToolInterface` — the endpoint half of the bridge from an existing API or database into an MCP tool (the other half, `createInferTool`, is a standalone inference utility)."
+rows read: 1, disagreements found: 16
+   docs exit 1
+AssertionError: expected [ …(16) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Toolbox > keeps every compared summary and example equal to its source
+Tests  1 failed | 30 passed (31)
+× keeps every compared summary and example equal to its source 25ms
+   test:guides exit 1
+-- restored
+rows read: 1, disagreements found: 0
+   docs exit 0

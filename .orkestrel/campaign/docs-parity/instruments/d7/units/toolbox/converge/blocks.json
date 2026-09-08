@@ -1,0 +1,157 @@
+[
+	{
+		"file": "src/core/factories.ts",
+		"key": "createToolFunction",
+		"text": "Wraps a registered tool as a {@link WorkflowFunction} (`@orkestrel/workflow`) — the opt-in adapter that lets a `function`-form task run a `@orkestrel/tool` tool by name."
+	},
+	{
+		"file": "src/core/factories.ts",
+		"key": "createWorkflowDraftContract",
+		"text": "Compiles the lenient workflow draft contract {@link createWorkflowTool} parses an authored tree with — a `ContractInterface` over a {@link WorkflowDraft}, whose `id` and `name` are optional at the workflow, phase, and task levels."
+	},
+	{
+		"file": "src/core/factories.ts",
+		"key": "createWorkflowTool",
+		"text": "Wraps a {@link WorkflowDefinition} as an LLM-callable tool — it advertises the flat authoring shape (`{ name?, steps: [{ name }] }`) as its `parameters`, and its handler completes the authored blob, validates it against the strict contract, and runs it through `runner`, forwarding the caller's optional named functions and native checkpoint store."
+	},
+	{
+		"file": "src/core/factories.ts",
+		"key": "createWorkspaceTool",
+		"text": "Builds an LLM-callable workspace-editing tool — it advertises the `operation`-discriminated union ({@link import('./shapers.js').workspaceToolShape}) as its `parameters`, and its handler parses the model-supplied args against that contract and dispatches the matched operation against the manager's active workspace, returning the plain result."
+	},
+	{
+		"file": "src/core/factories.ts",
+		"key": "createAgentTool",
+		"text": "Builds an LLM-callable sub-agent delegation tool — it resolves a live, seeded `AgentInterface` from `registry` and runs it to completion for one delegated `task`."
+	},
+	{
+		"file": "src/core/factories.ts",
+		"key": "createDescribeTool",
+		"text": "Builds an LLM-callable tool that returns the full `description` of another registered tool by name — the counterpart to the lean `summary` the other tools in this package advertise."
+	},
+	{
+		"file": "src/core/factories.ts",
+		"key": "createPromptTool",
+		"text": "Builds an LLM-callable form tool — the ask side of the terminal seam. It asks a multi-field form and blocks until the addressed terminal answers, returning the resolved values record."
+	},
+	{
+		"file": "src/core/factories.ts",
+		"key": "createAnswerTool",
+		"text": "Builds an LLM-callable answer tool — the answer side of the terminal seam. It lists the forms addressed to {@link import('./types.js').AnswerToolOptions.to}, or answers one of them by id."
+	},
+	{
+		"file": "src/core/factories.ts",
+		"key": "createMemoryDefinitionStore",
+		"text": "Creates the in-memory {@link DefinitionStoreInterface} — a process-lifetime `Map` of database definitions, the default store the database and relation tools persist their `DatabaseDefinition` configs through."
+	},
+	{
+		"file": "src/core/factories.ts",
+		"key": "createInferTool",
+		"text": "Builds a standalone LLM-callable tool that infers a JSON Schema from example values — the utility half of the bridge from an existing API or database into an MCP tool (the other half, {@link createEndpointTool}, wraps one concrete endpoint)."
+	},
+	{
+		"file": "src/core/factories.ts",
+		"key": "createEndpointTool",
+		"text": "Wraps one concrete endpoint ({@link import('./types.js').EndpointDefinition}) as an LLM-callable `ToolInterface` — the endpoint half of the bridge from an existing API or database into an MCP tool (the other half, {@link createInferTool}, is a standalone inference utility)."
+	},
+	{
+		"file": "src/core/errors.ts",
+		"key": "isToolboxError",
+		"text": "Narrows an unknown caught value to a {@link ToolboxError}."
+	},
+	{
+		"file": "src/core/helpers.ts",
+		"key": "summarizeWorkflow",
+		"text": "Builds the plain success summary {@link import('./factories.js').createWorkflowTool} returns on a completed run — the universal tool-handler contract: return a plain value on success, appearing identically over both the agent loop and MCP."
+	},
+	{
+		"file": "src/core/helpers.ts",
+		"key": "completeDraft",
+		"text": "Completes a {@link WorkflowDraft} into a strict {@link WorkflowDefinition} — synthesizes a missing `id` deterministically and positionally, and defaults a missing `name` to its resolved `id`."
+	},
+	{
+		"file": "src/core/helpers.ts",
+		"key": "expandSteps",
+		"text": "Expands a flat {@link WorkflowSteps} blob into a strict {@link WorkflowDefinition} — each step becomes a one-task phase, in order."
+	},
+	{
+		"file": "src/core/helpers.ts",
+		"key": "expandInclude",
+		"text": "Expands the relation tool's flat dot-path `include` list into a live `@orkestrel/relation` {@link Include} tree — the pure leaf {@link import('./factories.js').createRelationTool} calls before a `'load'` / `'find'` call."
+	},
+	{
+		"file": "src/core/helpers.ts",
+		"key": "clampQuery",
+		"text": "Clamps a `'records'` call's query to a row cap, and builds the probe query the caller reads with — the pure leaf {@link import('./factories.js').createDatabaseTool}'s `'records'` operation uses to detect truncation without a separate `count` round trip."
+	},
+	{
+		"file": "src/core/helpers.ts",
+		"key": "normalizeQuery",
+		"text": "Returns the canonical live `@orkestrel/database` {@link QueryInput} for the database tool's parsed serialized query — each condition's omitted `connector` defaults to `'and'`."
+	},
+	{
+		"file": "src/core/shapers.ts",
+		"key": "taskDraftShape",
+		"text": "Describes the shape of a {@link import('./types.js').TaskDraft} — identical to a strict task shape except that `id` and `name` are optional."
+	},
+	{
+		"file": "src/core/shapers.ts",
+		"key": "phaseDraftShape",
+		"text": "Describes the shape of a phase in a draft workflow — identical to a strict phase shape except that `id` and `name` are optional and each task takes {@link taskDraftShape}."
+	},
+	{
+		"file": "src/core/shapers.ts",
+		"key": "workflowDraftShape",
+		"text": "Describes the shape of a draft workflow — identical to a strict workflow shape except that `id` and `name` are optional at the workflow, phase, and task levels, so a small model can omit every identity string and let the tool synthesize them positionally."
+	},
+	{
+		"file": "src/core/shapers.ts",
+		"key": "stepShape",
+		"text": "Describes the shape of one flat step — `{ name }` — the building block of {@link workflowStepsShape}."
+	},
+	{
+		"file": "src/core/shapers.ts",
+		"key": "workflowStepsShape",
+		"text": "Describes the flat authoring shape {@link import('./factories.js').createWorkflowTool} advertises as its `parameters` — the simplest surface a small model can fill: `{ name?, steps: [{ name }] }`."
+	},
+	{
+		"file": "src/core/shapers.ts",
+		"key": "databaseToolShape",
+		"text": "Describes the shape of {@link import('./factories.js').createDatabaseTool}'s call arguments — discriminated by `operation` into the database operations `'create'`, `'tables'`, `'get'`, `'records'`, `'count'`, `'aggregate'`, `'add'`, `'set'`, `'update'`, `'remove'`, and `'destroy'`."
+	},
+	{
+		"file": "src/core/shapers.ts",
+		"key": "relationToolShape",
+		"text": "Describes the shape of {@link import('./factories.js').createRelationTool}'s call arguments — discriminated by `operation` into the relation operations `'load'`, `'find'`, `'link'`, `'unlink'`, and `'links'`."
+	},
+	{
+		"file": "src/core/shapers.ts",
+		"key": "keyShape",
+		"text": "Describes one key value for the database tool and the relation tool — a string or number; the array form (multiple keys, positional) resolves first, so an array argument is read as many keys rather than one."
+	},
+	{
+		"file": "src/core/shapers.ts",
+		"key": "rowShape",
+		"text": "Describes a loose row — a flat object of column name to JSON value."
+	},
+	{
+		"file": "src/core/shapers.ts",
+		"key": "rowsShape",
+		"text": "Describes one or many loose rows — the array form resolves first, so an array argument is read as many rows rather than one."
+	},
+	{
+		"file": "src/core/shapers.ts",
+		"key": "conditionShape",
+		"text": "Describes one serialized WHERE condition — `values` is always an array, even for a single-value operator."
+	},
+	{
+		"file": "src/core/shapers.ts",
+		"key": "orderShape",
+		"text": "Describes one sort term — a `column` to sort by and the `direction` to sort it in."
+	},
+	{
+		"file": "src/core/shapers.ts",
+		"key": "queryShape",
+		"text": "Describes the serialized query form — conditions, order, and pagination."
+	}
+]

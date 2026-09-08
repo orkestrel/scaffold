@@ -1,0 +1,20 @@
+== toolbox P.1 landing record, reconstructed 2026-09-08T01:56Z from git: the original log at this path was overwritten at 01:51:44Z by a land-p1.sh run that landed the P.2 diff under the P.1 message (amended to the converge message as d4c724d)
+== committed
+50c9b49 Prepare toolbox for the equality gate
+
+ .oxlintrc.json       |   4 +-
+ configs/helpers.ts   |  15 +-
+ configs/policy.ts    | 534 +++++++++++++++++++++++++++++++++++++++--------
+ package-lock.json    | 384 +---------------------------------
+ package.json         |   5 +-
+ scripts/docs.ts      | 454 ++++++++++++++++++++++++++++++++++++++++
+ src/core/types.ts    |   2 +-
+ tests/config.test.ts | 431 +++++++++++++++++++++++++++++++++++++-
+ tests/guides.test.ts |  36 +++-
+ tests/policy.test.ts | 128 +++++++++++-
+ tests/setup.ts       |  20 +-
+ tests/setupPolicy.ts | 572 ++++++++++++++++++++++++++++++++++++++++++++-------
+ tests/setupServer.ts |   2 +-
+ tsconfig.json        |   4 +-
+ 14 files changed, 2012 insertions(+), 579 deletions(-)
+(status end)

@@ -1,0 +1,120 @@
+[
+	{
+		"file": "src/core/types.ts",
+		"key": "TaskDraft",
+		"text": "Represents a draft task — a `TaskDefinition` (`@orkestrel/workflow`) with optional `id` and `name`."
+	},
+	{
+		"file": "src/core/types.ts",
+		"key": "PhaseDraft",
+		"text": "Represents a draft phase — a `PhaseDefinition` (`@orkestrel/workflow`) with optional `id` and `name` and {@link TaskDraft} tasks."
+	},
+	{
+		"file": "src/core/types.ts",
+		"key": "WorkflowDraft",
+		"text": "Represents a draft workflow — a `WorkflowDefinition` (`@orkestrel/workflow`) with optional `id` and `name` at the workflow, phase, and task levels."
+	},
+	{
+		"file": "src/core/types.ts",
+		"key": "WorkflowSteps",
+		"text": "Represents the flat authoring blob {@link import('./factories.js').createWorkflowTool} advertises — `{ name?, steps }` — the simplest surface a small model can fill."
+	},
+	{
+		"file": "src/core/types.ts",
+		"key": "WorkflowLineage",
+		"text": "Represents one immutable workflow/agent call chain — strictly alternating tags, each unique, beginning with a workflow tag."
+	},
+	{
+		"file": "src/core/types.ts",
+		"key": "AgentFunctionOptions",
+		"text": "Represents the options for {@link import('./factories.js').createAgentFunction} — the opt-in adapter that wraps a live `AgentInterface` (`@orkestrel/agent`) as an {@link AgentFunction} with immutable lineage metadata and optional nested-workflow composition."
+	},
+	{
+		"file": "src/core/types.ts",
+		"key": "WorkspaceToolOptions",
+		"text": "Represents the options for {@link import('./factories.js').createWorkspaceTool} — either a caller-built {@link WorkspaceManagerInterface} to drive directly, or a {@link WorkspaceStoreInterface} the tool constructs a fresh manager over; neither given constructs a manager over `@orkestrel/workspace`'s in-memory store."
+	},
+	{
+		"file": "src/core/types.ts",
+		"key": "WorkspaceOperation",
+		"text": "Represents one operation an agent invokes through {@link import('./factories.js').createWorkspaceTool} — a flat, descriptive tagged union over the workspace edit, read, and navigation actions, discriminated by the `operation` literal (a discriminant is named for its axis — the action being performed — never `kind`)."
+	},
+	{
+		"file": "src/core/types.ts",
+		"key": "AgentToolArguments",
+		"text": "Represents the flat args {@link import('./factories.js').createAgentTool} accepts — a delegated `task` plus the minimal optional `AgentJobInput` (`@orkestrel/agent`) fields a caller may override per-call."
+	},
+	{
+		"file": "src/core/types.ts",
+		"key": "DescribeToolArguments",
+		"text": "Represents the flat args {@link import('./factories.js').createDescribeTool} accepts — the registered tool `name` whose full `description` a model wants back."
+	},
+	{
+		"file": "src/core/types.ts",
+		"key": "DatabaseDefinition",
+		"text": "Represents one database's config-only definition — `id` and `driver` and {@link TableSpec}, with optional `primary`, `indexes`, and `version` schema configuration."
+	},
+	{
+		"file": "src/core/types.ts",
+		"key": "DefinitionStoreInterface",
+		"text": "Represents the point-access persistence seam for {@link DatabaseDefinition} configs — the twin of `@orkestrel/terminal`'s `TerminalStoreInterface`, storing a database's config-only blueprint rather than a live handle. Every primitive is async; `delete` of an absent id is a no-op."
+	},
+	{
+		"file": "src/core/types.ts",
+		"key": "DatabaseQueryInput",
+		"text": "Represents the serialized wire query a database-tool call carries — the parsed form of {@link import('./shapers.js').queryShape}, which {@link import('./helpers.js').normalizeQuery} normalizes into a live `@orkestrel/database` `QueryInput`."
+	},
+	{
+		"file": "src/core/types.ts",
+		"key": "ClampedQuery",
+		"text": "Represents the probe query and effective row limit {@link import('./helpers.js').clampQuery} returns."
+	},
+	{
+		"file": "src/core/types.ts",
+		"key": "RelationToolOptions",
+		"text": "Represents the options for {@link import('./factories.js').createRelationTool} — the required live `RelationManagerInterface` registry a call addresses, the row cap, and the `include` depth cap."
+	},
+	{
+		"file": "src/core/types.ts",
+		"key": "InferToolOptions",
+		"text": "Represents the options for {@link import('./factories.js').createInferTool} — advertised name and description overrides only; `format` and `enum` are runtime call arguments (see {@link import('./shapers.js').inferToolShape}), not construction-time options, because a model chooses them per call."
+	},
+	{
+		"file": "src/core/types.ts",
+		"key": "EndpointHandler",
+		"text": "Represents the handler {@link EndpointDefinition.execute} implements — it mirrors `@orkestrel/tool`'s `ToolOptions.execute` signature exactly (the same `Readonly<Record<string, unknown>>` argument, the same `Promise<unknown> | unknown` return), so `execute: (args) => definition.execute(args)` typechecks with zero assertions in {@link import('./factories.js').createEndpointTool}."
+	},
+	{
+		"file": "src/core/types.ts",
+		"key": "EndpointToolOptions",
+		"text": "Represents the construction-time tuning for {@link import('./factories.js').createEndpointTool} — the inferred `parameters` schema's `format` and `enum` constraints, and whether that same schema is enforced at `execute` time."
+	},
+	{
+		"file": "src/server/types.ts",
+		"key": "TerminalRoute",
+		"text": "Represents one structural route record {@link import('./factories.js').createTerminalRoutes} returns — a plain `{ method, path, handler }` shape carrying no dependency on `@orkestrel/router`'s own `Route` type, so a consumer mounts it against any router that accepts a two-arg `(request, context) => Response | Promise<Response>` handler keyed by `method` and `path`."
+	},
+	{
+		"file": "src/server/types.ts",
+		"key": "TerminalToken",
+		"text": "Represents the `token` gate {@link TerminalRoutesOptions} may configure — a plain string compared for equality against the `x-orkestrel-token` header, or a validator function the consumer fully controls, enabling the expiry and rotation a fixed string cannot express (a JWT `exp` check, a revocation-list lookup, anything time-varying). `undefined` disables the auth check entirely."
+	},
+	{
+		"file": "src/server/factories.ts",
+		"key": "createTerminalRoutes",
+		"text": "Builds the GET SSE stream and POST answer routes that bridge a terminal manager onto the wire.",
+		"remarks": [
+			"The pair stays byte-compatible with `@orkestrel/terminal`'s own `PromptClient`: the same GET url streams, the same POST url answers, the same `{ id, values }` request body, the same JSON answer `Result` response body, and the same `x-orkestrel-token` header."
+		]
+	},
+	{
+		"file": "src/core/databases/DatabaseResolver.ts",
+		"key": "DatabaseResolver",
+		"text": "Resolves a database definition into a cached live handle for a database tool, over the tool's live handles, its stored definitions, its driver registry, and an optional key generator."
+	},
+	{
+		"file": "src/core/databases/DatabaseResolver.ts",
+		"key": "DatabaseResolver.resolve",
+		"text": "Resolves a live database by id — the cached handle when one exists, otherwise a database constructed from its stored definition."
+	}
+]

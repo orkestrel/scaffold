@@ -1,0 +1,106 @@
+{
+ "root": "/tmp/claude-0/-home-user-scaffold/6a1fadb4-aa90-52d9-9291-3bbb6ae817fe/scratchpad/docs/d7/pass/p23/clone-toolbox",
+ "manifestRows": 1,
+ "guides": [
+  {
+   "spec": "guides/toolbox.md",
+   "source": [
+    "src/core",
+    "src/server"
+   ],
+   "surface": {
+    "counts": {
+     "equal": 150,
+     "differ": 0,
+     "guideAbsent": 0,
+     "sourceAbsent": 0,
+     "bothAbsent": 0,
+     "unmatched": 0
+    },
+    "guideAbsent": [],
+    "sourceAbsent": [],
+    "bothAbsent": [],
+    "unmatched": [],
+    "differ": [],
+    "undocumentedInSource": []
+   },
+   "methods": {
+    "groups": 2,
+    "counts": {
+     "equal": 8,
+     "differ": 0,
+     "guideAbsent": 0,
+     "sourceAbsent": 0,
+     "bothAbsent": 0,
+     "unmatched": 0
+    },
+    "guideAbsent": [],
+    "sourceAbsent": [],
+    "bothAbsent": [],
+    "unmatched": [],
+    "differ": []
+   },
+   "owners": [
+    {
+     "name": "DatabaseDefinitionStore",
+     "keyword": "class",
+     "methods": 3,
+     "grouped": false,
+     "undescribed": []
+    },
+    {
+     "name": "DatabaseResolver",
+     "keyword": "class",
+     "methods": 5,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "DefinitionStoreInterface",
+     "keyword": "interface",
+     "methods": 3,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "MemoryDefinitionStore",
+     "keyword": "class",
+     "methods": 3,
+     "grouped": false,
+     "undescribed": []
+    }
+   ],
+   "examples": {
+    "titledFences": [
+     "Composing DatabaseResolver directly",
+     "Authoring and running a workflow through the tool with a real ToolManager",
+     "Plugging a WorkflowStoreInterface and retrieving the persisted snapshot",
+     "Driving the workspace tool with a plugged store",
+     "Delegating to a sub-agent through the agent tool",
+     "Persisting a delegation's conversation through the agent tool's own store slot",
+     "Lean advertisement and on-demand expansion through createDescribeTool",
+     "Composing opaque leaves and raw agents into a workflow registry",
+     "The lenient-authoring helpers, standalone",
+     "Recovering a typed ToolboxError",
+     "Asking and answering through the terminal seam",
+     "The terminal error-classification helper, standalone",
+     "Bridging a TerminalManagerInterface onto the wire",
+     "Driving the database tool: create with metadata, add a row, query with a serialized condition",
+     "Persisting database definitions through DefinitionStoreInterface",
+     "Wiring the relation tool over a live RelationManagerInterface and loading nested includes",
+     "The database and relation helpers, standalone",
+     "Inferring a JSON Schema from example values, through a real ToolManager",
+     "Bridging an existing API endpoint into an LLM-callable tool"
+    ],
+    "titledExamples": [
+     "createWorkflowTool:Authoring and running a workflow through the tool with a real ToolManager"
+    ],
+    "pairs": [
+     "Authoring and running a workflow through the tool with a real ToolManager"
+    ]
+   },
+   "findDrift": 0,
+   "findDriftKeys": []
+  }
+ ]
+}

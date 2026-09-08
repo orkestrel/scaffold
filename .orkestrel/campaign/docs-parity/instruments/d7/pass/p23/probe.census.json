@@ -1,0 +1,162 @@
+{
+ "root": "/tmp/claude-0/-home-user-scaffold/6a1fadb4-aa90-52d9-9291-3bbb6ae817fe/scratchpad/docs/d7/pass/p23/clone-probe",
+ "manifestRows": 1,
+ "guides": [
+  {
+   "spec": "guides/probe.md",
+   "source": [
+    "src/core",
+    "src/server",
+    "src/bin"
+   ],
+   "surface": {
+    "counts": {
+     "equal": 102,
+     "differ": 0,
+     "guideAbsent": 0,
+     "sourceAbsent": 0,
+     "bothAbsent": 0,
+     "unmatched": 0
+    },
+    "guideAbsent": [],
+    "sourceAbsent": [],
+    "bothAbsent": [],
+    "unmatched": [],
+    "differ": [],
+    "undocumentedInSource": []
+   },
+   "methods": {
+    "groups": 6,
+    "counts": {
+     "equal": 15,
+     "differ": 0,
+     "guideAbsent": 0,
+     "sourceAbsent": 0,
+     "bothAbsent": 0,
+     "unmatched": 0
+    },
+    "guideAbsent": [],
+    "sourceAbsent": [],
+    "bothAbsent": [],
+    "unmatched": [],
+    "differ": []
+   },
+   "owners": [
+    {
+     "name": "LintStage",
+     "keyword": "class",
+     "methods": 2,
+     "grouped": false,
+     "undescribed": [
+      "destroy",
+      "inspect"
+     ]
+    },
+    {
+     "name": "LintStageInterface",
+     "keyword": "interface",
+     "methods": 2,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "Overlay",
+     "keyword": "class",
+     "methods": 4,
+     "grouped": false,
+     "undescribed": []
+    },
+    {
+     "name": "OverlayInterface",
+     "keyword": "interface",
+     "methods": 4,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "Probe",
+     "keyword": "class",
+     "methods": 2,
+     "grouped": false,
+     "undescribed": [
+      "destroy",
+      "prove"
+     ]
+    },
+    {
+     "name": "ProbeInterface",
+     "keyword": "interface",
+     "methods": 2,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "ProbeServer",
+     "keyword": "class",
+     "methods": 2,
+     "grouped": false,
+     "undescribed": [
+      "destroy",
+      "start"
+     ]
+    },
+    {
+     "name": "ProbeServerInterface",
+     "keyword": "interface",
+     "methods": 2,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "RuntimeStage",
+     "keyword": "class",
+     "methods": 2,
+     "grouped": false,
+     "undescribed": [
+      "destroy",
+      "inspect"
+     ]
+    },
+    {
+     "name": "StageInterface",
+     "keyword": "interface",
+     "methods": 2,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "TypeStage",
+     "keyword": "class",
+     "methods": 3,
+     "grouped": false,
+     "undescribed": [
+      "destroy"
+     ]
+    },
+    {
+     "name": "TypeStageInterface",
+     "keyword": "interface",
+     "methods": 3,
+     "grouped": true,
+     "undescribed": []
+    }
+   ],
+   "examples": {
+    "titledFences": [
+     "Failures",
+     "Registering the server",
+     "The claim that earns a receipt",
+     "Reading a receipt"
+    ],
+    "titledExamples": [
+     "Probe:The claim that earns a receipt"
+    ],
+    "pairs": [
+     "The claim that earns a receipt"
+    ]
+   },
+   "findDrift": 0,
+   "findDriftKeys": []
+  }
+ ]
+}
