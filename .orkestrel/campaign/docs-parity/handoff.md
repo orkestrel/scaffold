@@ -235,7 +235,7 @@ retained evidence/d7n-foundation-<package>/ metadata for their exact tarball pat
 | codec | 0.0.3 | a492e90fc68c64b29a82ec69181ed69e8c72beb1 | accepted artifact; clean on branch and main |
 | msg | 0.0.10 | 0daaa2a7f7301ae8754f31aa88b2a22887695065 | accepted artifact; clean on branch and main |
 | sse | 0.0.7 | 93d174e43b34daa2f0593cc89741bed587cadf46 | accepted artifact; clean on branch and main |
-| test | 0.0.14 | 1b6ce0468d40c676d1e544cd004c0a5aa09730f0 | accepted artifact; selected-path landing pending |
+| test | 0.0.14 | a3659450f064e566f4701b566a1cd2267b1e03ac | accepted artifact; clean on branch and main |
 
 Ruling 30 records the owner's development-pin clarification. Prepare lower runtime
 layers with tooling tarballs now. Update development pins after tooling publication;
