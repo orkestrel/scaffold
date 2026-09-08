@@ -1,0 +1,18 @@
+== browser p2-fix landing 2026-09-08T01:46:09Z over b41f54c
+== status
+ M README.md
+ M guides/browser.md
+ M src/core/BrowserDiagnostics.ts
+ M src/core/constants.ts
+ M src/core/errors.ts
+ M src/core/helpers.ts
+ M src/core/types.ts
+ M src/server/types.ts
+ src/core/types.ts              |   8 +--
+ src/server/types.ts            |   8 +--
+ 8 files changed, 121 insertions(+), 109 deletions(-)
+== stage by path
+ 8 files changed, 121 insertions(+), 109 deletions(-)
+== committed
+1016f4d Refine browser's convergence on the audit's findings
+(status end)

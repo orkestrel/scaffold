@@ -1,0 +1,17 @@
+== probe p2 landing 2026-09-08T01:46:11Z over 1c150f6
+== status
+ M README.md
+ M guides/probe.md
+ M src/core/constants.ts
+ M src/core/types.ts
+ M src/server/Probe.ts
+ M src/server/types.ts
+ M tests/guides.test.ts
+ src/server/types.ts   |  45 +++++
+ tests/guides.test.ts  | 482 ++++++++++++++++++++++++++++++++++----------------
+ 7 files changed, 697 insertions(+), 367 deletions(-)
+== stage by path
+ 7 files changed, 697 insertions(+), 367 deletions(-)
+== committed
+d06b186 Converge probe under the equality gate
+(status end)
