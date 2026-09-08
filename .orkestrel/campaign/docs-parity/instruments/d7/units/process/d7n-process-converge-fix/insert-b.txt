@@ -1,0 +1,12 @@
+		it('documents at least one Surface function', () => {
+			const named = guide
+				.surface()
+				.filter((symbol) => symbol.keyword === 'function')
+				.map((symbol) => symbol.name)
+			expect(named.length).toBeGreaterThan(0)
+		})
+
+		it('documents at least one method group', () => {
+			expect(guide.methods().length).toBeGreaterThan(0)
+		})
+

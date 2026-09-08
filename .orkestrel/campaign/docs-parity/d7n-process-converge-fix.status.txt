@@ -1,0 +1,6 @@
+ M guides/process.md
+ M src/core/constants.ts
+ M src/core/types.ts
+ M src/server/processes/ProcessManager.ts
+ M tests/guides.test.ts
+ M tests/src/server/processes/Supervisor.test.ts

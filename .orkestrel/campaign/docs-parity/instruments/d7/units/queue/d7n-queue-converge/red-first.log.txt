@@ -1,0 +1,110 @@
+
+> @orkestrel/queue@0.0.13 test:guides
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project guides
+
+
+ RUN  v4.1.11 /home/user/fleet/queue
+
+·xx················x·········
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |guides| tests/guides.test.ts > pairs at least one example title across the guide and the source
+AssertionError: expected [ Array(1) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "guides/queue.md pairs: guide [\"Surface\",\"Guards\",\"Helpers\",\"Persistence\",\"Wiring a store into a queue\",\"Observing\",\"Create a queue\",\"Bounded concurrency\",\"Retries\",\"Per-attempt timeout\",\"Abort\",\"Lifecycle\"] source []",
++ ]
+
+ ❯ tests/guides.test.ts:103:19
+    101|      `${GUIDE_SPEC} pairs: guide ${JSON.stringify(headings)} source ${…
+    102|     ]
+    103|  expect(unpaired).toEqual([])
+       |                   ^
+    104| })
+    105|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  |guides| tests/guides.test.ts > opens the README with the guide tagline
+AssertionError: expected undefined not to be undefined
+ ❯ tests/guides.test.ts:117:20
+    115|  ).tagline()
+    116|
+    117|  expect(pitch).not.toBeUndefined()
+       |                    ^
+    118|  expect(tagline).not.toBeUndefined()
+    119|  expect(pitch).toBe(tagline)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  |guides| tests/guides.test.ts > Queue > keeps every compared summary and example equal to its source
+AssertionError: expected [ …(40) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "guides/queue.md function createQueue: guide \"A `QueueInterface` over a handler, with optional concurrency / retries / timeout.\" source \"Creates a concurrent, cooperative job queue — a bounded-concurrency engine that runs each enqueued input through a handler, with retries and a per-attempt timeout / abort, all over the L1 `Abort` / `Timeout` primitives.\"",
++   "guides/queue.md function createDatabaseQueueStore: guide \"A `QueueStoreInterface` over any `DriverInterface` (memory / JSON / SQLite).\" source \"Creates a `DatabaseQueueStore` over any `DriverInterface` — the durable, driver-pluggable backing for a queue's outstanding entries.\"",
++   "guides/queue.md function createMemoryQueueStore: guide \"The zero-plumbing in-memory `QueueStoreInterface` — a `MemoryQueueStore` over a plain `Map`.\" source \"Creates an in-memory `MemoryQueueStore` — the zero-plumbing DEFAULT queue store over a plain `Map` (the twin of `DatabaseQueueStore`).\"",
++   "guides/queue.md class Queue: guide \"The cooperative concurrent job engine — wake-park loop, retries, timeout, abort.\" source \"Represents a concurrent, cooperative FIFO job queue with optional outstanding-work persistence.\"",
++   "guides/queue.md class QueueError: guide \"A queue failure with a lowercase machine code, optional context, and optional cause.\" source \"Represents a failure carrying a machine-readable queue category and optional context.\"",
++   "guides/queue.md class MemoryQueueStore: guide \"The zero-plumbing DEFAULT store for outstanding entries — a plain process-lifetime `Map`.\" source \"Represents an in-memory store owning validated, immutable JSON snapshots of outstanding entries.\"",
++   "guides/queue.md class DatabaseQueueStore: guide \"The opt-in durable store for outstanding entries over one `database` table (driver-swap).\" source \"Represents a `QueueStoreInterface` backed by one table of the `@orkestrel/database` layer — a queue's durable state IS a table, so persistence reduces to keyed CRUD over a `TableInterface`.\"",
++   "guides/queue.md interface QueueContext: guide absent source \"Represents the per-attempt context a queue handler receives.\"",
++   "guides/queue.md type QueueHandler: guide absent source \"Runs one queued entry's work; may reject to trigger a retry.\"",
++   "guides/queue.md interface QueueEntryOptions: guide absent source \"Represents the per-entry options for `enqueue`.\"",
++   "guides/queue.md interface QueueOptions: guide absent source \"Represents the options for `createQueue`.\"",
++   "guides/queue.md interface QueueInterface: guide absent source \"Represents a concurrent, cooperative job queue.\"",
++   "guides/queue.md type QueueEventMap: guide absent source \"Represents the push observation surface of a `QueueInterface` — the lifecycle moments a fire-and-forget observer (logging, metrics, tracing) subscribes to, ALONGSIDE the per-entry `enqueue` promise.\"",
++   "guides/queue.md type QueueCode: guide absent source \"Represents the machine-readable queue failure categories.\"",
++   "guides/queue.md type QueueOption: guide absent source \"Represents the construction and per-entry option keys a queue validates.\"",
++   "guides/queue.md interface QueueErrorContext: guide absent source \"Represents the structured context carried by a `QueueError`.\"",
++   "guides/queue.md interface QueueErrorOptions: guide absent source \"Represents the construction options for a `QueueError`.\"",
++   "guides/queue.md interface StoredEntry: guide absent source \"Represents a durably persisted, still-outstanding queue entry — re-run after a restart.\"",
++   "guides/queue.md interface QueueStoreInterface: guide absent source \"Represents the durable backing for a Queue's outstanding entries.\"",
++   "guides/queue.md function isQueueError: guide \"Total guard for safely narrowing an unknown caught queue failure.\" source \"Determines whether an unknown value is a `QueueError`.\"",
++   "guides/queue.md function isQueueConcurrency: guide \"Total guard for a positive safe-integer concurrency value.\" source \"Determines whether a value is a valid queue concurrency.\"",
++   "guides/queue.md function isQueueRetries: guide \"Total guard for a nonnegative safe-integer retry count.\" source \"Determines whether a value is a valid queue retry count.\"",
++   "guides/queue.md function isQueueTimeout: guide \"Total guard for integer milliseconds in the native timer range.\" source \"Determines whether a value is a valid queue timeout.\"",
++   "guides/queue.md function isQueueSignal: guide \"Total native-brand guard for an entry abort signal.\" source \"Determines whether a value is a native abort signal usable by the queue.\"",
++   "guides/queue.md function isStoredEntry: guide \"Total guard for a stored entry — a string `id`, an `input`, and a retry-count `attempts`.\" source \"Checks whether a value is a valid stored queue entry.\"",
++   "guides/queue.md function readOption: guide \"One named entry option, read once, with a throwing getter contained as a coded failure.\" source \"Reads one named option from a caller-supplied entry options object.\"",
++   "guides/queue.md function validateOption: guide \"One already-read option checked against its guard, or the coded invalid failure.\" source \"Validates one already-read queue option against its guard.\"",
++   "guides/queue.md QueueInterface.enqueue: guide absent source \"Reserves and submits one FIFO entry.\"",
++   "guides/queue.md QueueInterface.restore: guide absent source \"Re-enqueues outstanding entries loaded from the store; no-op without a store.\"",
++   "guides/queue.md QueueInterface.start: guide absent source \"Begins or restarts worker execution.\"",
++   "guides/queue.md QueueInterface.stop: guide absent source \"Rejects non-active work and awaits current-loop/durable quiescence.\"",
++   "guides/queue.md QueueInterface.pause: guide absent source \"Suspends new execution resumably.\"",
++   "guides/queue.md QueueInterface.resume: guide absent source \"Continues execution after a pause.\"",
++   "guides/queue.md QueueInterface.abort: guide absent source \"Cancels active work, rejects pending work, and awaits cleanup.\"",
++   "guides/queue.md QueueInterface.clear: guide absent source \"Rejects non-active work and awaits its durable cleanup.\"",
++   "guides/queue.md QueueInterface.destroy: guide absent source \"Tears down idempotently and destroys observation last.\"",
++   "guides/queue.md QueueStoreInterface.save: guide absent source absent",
++   "guides/queue.md QueueStoreInterface.remove: guide absent source absent",
++   "guides/queue.md QueueStoreInterface.load: guide absent source absent",
++   "guides/queue.md QueueStoreInterface.clear: guide absent source absent",
++ ]
+
+ ❯ tests/guides.test.ts:198:24
+    196|     disagreeing.push(`${entry.spec} ${drift.key}: guide ${left} source…
+    197|    }
+    198|    expect(disagreeing).toEqual([])
+       |                        ^
+    199|   })
+    200|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  3 failed | 26 passed (29)
+   Start at  21:21:28
+   Duration  503ms (transform 156ms, setup 174ms, import 128ms, tests 67ms, environment 0ms)
+

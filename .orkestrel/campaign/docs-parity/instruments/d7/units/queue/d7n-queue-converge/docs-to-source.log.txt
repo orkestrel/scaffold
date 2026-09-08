@@ -1,0 +1,7 @@
+
+> @orkestrel/queue@0.0.13 docs
+> node --experimental-strip-types scripts/docs.ts --to source
+
+wrote src/core/factories.ts
+rows read: 1, disagreements found: 1, written: 1, reported: 0
+next: npm run format

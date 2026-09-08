@@ -1,0 +1,36 @@
+		// The specifier rule is `extractFenceImports`'s own grammar read off Guide's comment-aware
+		// source projection, not "named-brace imports": every statement it surfaces is checked and
+		// nothing else is. A repository alias and an unmapped true subpath of the root are refused,
+		// the alias because a public guide example must import through a published specifier; a
+		// foreign package stays external and is compared against no face.
+		it('imports through a published specifier in every ts fence', () => {
+			const refused: string[] = []
+			for (const fence of guide.fences().filter((row) => row.language === EXAMPLE_LANGUAGE)) {
+				const projected = extractSourceLines(fence.code)
+					.map((line) => line.code)
+					.join('\n')
+				for (const statement of extractFenceImports(projected)) {
+					const specifier = statement.specifier
+					if (specifier.startsWith('@src/') || specifier.startsWith('@app/')) {
+						refused.push(specifier)
+						continue
+					}
+					if (SOURCES.has(specifier)) continue
+					if (specifier === ROOT || specifier.startsWith(`${ROOT}/`)) refused.push(specifier)
+				}
+			}
+			expect(refused).toEqual([])
+		})
+		// The Tests section is an inventory of what this package proves, so a proof that exists and is
+		// not listed is the defect. Listing is asserted as membership against the real test tree,
+		// because a count passes while the tree grows a file the section never gained.
+		it('lists every test file but the ones named unlisted', () => {
+			const listed = guide.tests().map((href) => resolveLink(entry.spec, href))
+			const present = Object.keys(files).filter((path) => path.endsWith('.test.ts'))
+
+			expect(present.length).toBeGreaterThan(UNLISTED_TESTS.length)
+			expect(
+				present.filter((path) => !listed.includes(path) && !UNLISTED_TESTS.includes(path)),
+			).toEqual([])
+			expect(UNLISTED_TESTS.filter((path) => listed.includes(path))).toEqual([])
+		})

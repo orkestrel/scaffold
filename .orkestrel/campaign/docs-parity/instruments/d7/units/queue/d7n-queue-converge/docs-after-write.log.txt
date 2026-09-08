@@ -1,0 +1,6 @@
+
+> @orkestrel/queue@0.0.13 docs
+> node --experimental-strip-types scripts/docs.ts
+
+guides/queue.md Create a queue: guide "ts\nimport { createQueue } from '@orkestrel/queue'\n\n// Ordered (concurrency defaults to 1): each entry runs to completion before the next.\nconst queue = createQueue<Job, Output>({ handler: (job) => run(job) })\n\nconst output = await queue.enqueue(job)\n\n// Bounded, retried, and time-boxed: four in flight, two extra attempts, 5s per attempt.\nconst fetches = createQueue<string, number>({\n\thandler: async (url, { signal }) => (await fetch(url, { signal })).status,\n\tconcurrency: 4,\n\tretries: 2,\n\ttimeout: 5_000,\n})\n\nconst status = await fetches.enqueue('https://example.com')" source "ts\nimport { createQueue } from '@orkestrel/queue'\n\nconst queue = createQueue<string, number>({\n\thandler: async (url, { signal }) => (await fetch(url, { signal })).status,\n\tconcurrency: 4,\n\tretries: 2,\n\ttimeout: 5_000,\n})\n\nconst status = await queue.enqueue('https://example.com')"
+rows read: 1, disagreements found: 1

@@ -1,0 +1,770 @@
+diff --git a/guides/process.md b/guides/process.md
+index ff0cb42..8b48ebf 100644
+--- a/guides/process.md
++++ b/guides/process.md
+@@ -10,12 +10,13 @@
+ observation channel at one terminal moment through a bounded termination. `Session` publishes one
+ owned `Uint8Array` per stdout chunk instead, with an `end` that closes stdin without terminating
+ anything and the child's own `ending` beside the terminal `exit`. A buffered run settles with an
+-`ExecuteResult` carrying the captured output and the exit, while `detach` returns without waiting
+-for anything. `ProcessManager` launches and stops its children by id and reports each moment through
+-its own emitter. An argument a batch target could corrupt is refused rather than passed, so a
+-metacharacter in an argument is data rather than syntax. The host-independent contracts, errors,
+-constants, and types ship from `@orkestrel/process`, and the Node implementations and Node-side
+-contracts from `@orkestrel/process/server`. Source: [`src/core`](../src/core) (the contracts) and
++`ExecuteResult` carrying the captured output and the exit, while a detached child owns no stdio and
++is unreferenced, so nothing in this process observes its outcome. `ProcessManager` launches and
++stops its children by id and reports each moment through its own emitter. An argument a batch
++target could corrupt is refused rather than passed, so a metacharacter in an argument is data
++rather than syntax. The host-independent contracts, errors, constants, and types ship from
++`@orkestrel/process`, and the Node implementations and Node-side contracts from
++`@orkestrel/process/server`. Source: [`src/core`](../src/core) (the contracts) and
+ [`src/server`](../src/server) (the Node engine).
+ 
+ ## Surface
+@@ -80,16 +81,18 @@ in a Surface row.
+ | `Process`        | class | Supervises one child, frames its standard output into lines under a bounded backlog, and keeps every observation channel aligned at termination. |
+ | `Session`        | class | Supervises one child and publishes its standard output as raw bytes.                                                                             |
+ | `Supervisor`     | class | Supervises one child process and reports each lifecycle moment to the face composing it.                                                         |
+-| `ProcessManager` | class | Represents a keyed registry of live supervised child processes.                                                                                  |
++| `ProcessManager` | class | Launches supervised children under caller-chosen ids, evicts each one as it settles, and destroys every live child on teardown.                  |
+ | `ProcessError`   | class | Represents a child-process failure with a stable machine-readable category.                                                                      |
+ 
+ ### Guards
+ 
+ The total guard, from `@orkestrel/process`.
+ 
+-| API              | Kind     | Summary                                              |
+-| ---------------- | -------- | ---------------------------------------------------- |
+-| `isProcessError` | function | Checks whether an unknown value is a `ProcessError`. |
++In a guard table a `Shape` cell holds the type the guard narrows to.
++
++| API              | Kind     | Shape          | Summary                                              |
++| ---------------- | -------- | -------------- | ---------------------------------------------------- |
++| `isProcessError` | function | `ProcessError` | Checks whether an unknown value is a `ProcessError`. |
+ 
+ ### Error factories
+ 
+@@ -165,17 +168,19 @@ The input refusals every public entry point runs before it spawns anything, from
+ 
+ The defaults and host bounds, from `@orkestrel/process`.
+ 
+-| API                    | Kind  | Value                   | Summary                                                                                                                                                                                             |
+-| ---------------------- | ----- | ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+-| `PROCESS_GRACE`        | const | `5_000`                 | Names the default cooperative POSIX window in milliseconds between `SIGTERM` and `SIGKILL` during termination.                                                                                      |
+-| `PROCESS_CONFIRMATION` | const | `5_000`                 | Names the window in milliseconds a termination waits for the child's native exit after the final kill.                                                                                              |
+-| `PROCESS_DRAIN`        | const | `1_000`                 | Names the default window in milliseconds the package waits for the child's read ends to close after the child's native exit or after a termination this package initiated, before cutting them off. |
+-| `PROCESS_EVIDENCE`     | const | `2_048`                 | Names the default maximum retained stderr tail in bytes for a supervised `ProcessInterface`.                                                                                                        |
+-| `PROCESS_BACKLOG`      | const | `10_485_760`            | Names the default soft high-water mark in bytes for a supervised `ProcessInterface` line backlog.                                                                                                   |
+-| `PROCESS_OUTPUT`       | const | `10_485_760`            | Names the default maximum captured bytes for a one-shot run's stdout and stderr, each.                                                                                                              |
+-| `PROCESS_TIMER`        | const | `2_147_483_647`         | Names the largest timer delay in milliseconds the host schedules without truncating it to one.                                                                                                      |
+-| `PROCESS_PATHEXT`      | const | `'.COM;.EXE;.BAT;.CMD'` | Lists the executable extensions a Windows lookup applies when the environment declares no `PATHEXT`.                                                                                                |
+-| `PROCESS_ERROR_CODES`  | const | the code tuple          | Lists the machine-readable failure categories a `ProcessError` carries, in declaration order.                                                                                                       |
++A `Shape` cell holds the constant's declared type.
++
++| API                    | Kind  | Shape                         | Summary                                                                                                                                                                                       |
++| ---------------------- | ----- | ----------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
++| `PROCESS_GRACE`        | const | `number`                      | Names the default cooperative POSIX window, 5000 ms, between `SIGTERM` and `SIGKILL` during termination.                                                                                      |
++| `PROCESS_CONFIRMATION` | const | `number`                      | Names the window, 5000 ms, a termination waits for the child's native exit after the final kill.                                                                                              |
++| `PROCESS_DRAIN`        | const | `number`                      | Names the default window, 1000 ms, the package waits for the child's read ends to close after the child's native exit or after a termination this package initiated, before cutting them off. |
++| `PROCESS_EVIDENCE`     | const | `number`                      | Names the default maximum retained stderr tail, 2048 bytes, for a supervised `ProcessInterface`.                                                                                              |
++| `PROCESS_BACKLOG`      | const | `number`                      | Names the default soft high-water mark, 10485760 bytes, for a supervised `ProcessInterface` line backlog.                                                                                     |
++| `PROCESS_OUTPUT`       | const | `number`                      | Names the default maximum captured bytes, 10485760 each, for a one-shot run's stdout and stderr.                                                                                              |
++| `PROCESS_TIMER`        | const | `number`                      | Names the largest timer delay, 2147483647 ms, the host schedules without truncating it to one.                                                                                                |
++| `PROCESS_PATHEXT`      | const | `string`                      | Lists the executable extensions a Windows lookup applies when the environment declares no `PATHEXT`, `.COM;.EXE;.BAT;.CMD`.                                                                   |
++| `PROCESS_ERROR_CODES`  | const | `readonly ProcessErrorCode[]` | Lists the machine-readable failure categories a `ProcessError` carries, in declaration order: `spawn`, `timeout`, `input`, `duplicate`, `protocol`, and `invalid`.                            |
+ 
+ ### Types
+ 
+@@ -203,7 +208,7 @@ A `Shape` cell holds an interface's data members as bare names in braces, `?` ma
+ | `ProcessManagerEventMap`  | type      | `{ launch, exit }`                                                                                             | Represents the push observation surface of a `ProcessManagerInterface` — the fleet-level moments a fire-and-forget observer subscribes to.                                   |
+ | `ProcessManagerOptions`   | interface | `{ on?, error? }`                                                                                              | Configures a `ProcessManagerInterface`.                                                                                                                                      |
+ | `ProcessManagerInterface` | interface | `{ emitter, count } plus process, processes, launch, stop, destroy`                                            | Represents a keyed registry of live supervised child processes.                                                                                                              |
+-| `ProcessErrorCode`        | type      | `(typeof PROCESS_ERROR_CODES)[number]`                                                                         | Names the machine-readable `ProcessError` categories, derived from `PROCESS_ERROR_CODES`.                                                                                    |
++| `ProcessErrorCode`        | type      | `(typeof PROCESS_ERROR_CODES)[number]`                                                                         | Names the machine-readable `ProcessError` categories, derived from `PROCESS_ERROR_CODES`: `spawn`, `timeout`, `input`, `duplicate`, `protocol`, and `invalid`.               |
+ | `ProcessErrorContext`     | interface | `{ id?, command?, code?, signal?, value? }`                                                                    | Represents structured context carried by a `ProcessError`.                                                                                                                   |
+ | `ProcessErrorOptions`     | interface | `{ code, context?, cause?, result? }`                                                                          | Configures a `ProcessError`.                                                                                                                                                 |
+ 
+@@ -354,7 +359,7 @@ this package initiated arms it too, so every ending reaches the bound. The cutof
+ observation; it does not terminate the child.
+ 
+ Every numeric option is validated at construction. A timer value outside `[0, PROCESS_TIMER]`, a
+-negative or fractional byte value, and a `backlog` below `1` each throw a `ProcessError` coded
++negative or fractional byte value, and a `backlog` under `1` each throw a `ProcessError` coded
+ `invalid` before anything is spawned, and so does a spawn-bound command string that is empty when
+ required or carries a NUL character. `input` is standard-input payload and carries no NUL
+ restriction.
+@@ -515,7 +520,7 @@ await child.destroy()
+ `PROCESS_DRAIN`. The TSDoc on that constant carries the measurement behind the value and the date it
+ was taken.
+ 
+-Two moments arm the bound. The child's native exit arms it, which is what carries a natural exit to
++The child's native exit arms the bound, which is what carries a natural exit to
+ the terminal moment when a descendant holds the read ends open. The return of a termination this
+ package initiated arms it too, confirmed or not, so a `stop` whose confirmation window elapsed while
+ the child was still running reaches the cutoff with `code` and `signal` still `null`.
+@@ -1028,8 +1033,9 @@ for the other.
+ | Spawn fault     | Reports the host's negative errno in `code`.              | Reports `null` in `code`.                            |
+ | Refusal         | Rejects before spawning, because it is an async function. | Throws before spawning.                              |
+ 
+-Both share the rest: the same resolver and no implicit shell, the same environment merge, the same
+-`input` override, the same `limit` bounding, and the same `strict` behavior.
++`execute` and `executeSync` share the rest: the same resolver and no implicit shell, the same
++environment merge, the same `input` override, the same `limit` bounding, and the same `strict`
++behavior.
+ 
+ `execute` also bounds what follows termination. After a timeout or an abort ends the child,
+ `stopChild` runs and the outcome is then awaited for one further `PROCESS_CONFIRMATION`, so a
+@@ -1243,6 +1249,8 @@ child.emitter.on('exit', ({ code, signal }) => metrics.record('worker.exit', { c
+ 
+ ### Collect output in one call
+ 
++The fence that follows runs one command to completion and reads its captured standard output.
++
+ ```ts
+ import { execute } from '@orkestrel/process/server'
+ 
+@@ -1252,6 +1260,8 @@ const commit = stdout.trim()
+ 
+ ### Stream a long-running child and cancel it
+ 
++The fence that follows reads a child line by line and lets an `AbortController` end it.
++
+ ```ts
+ import { createProcess } from '@orkestrel/process/server'
+ 
+@@ -1274,6 +1284,8 @@ and the `exit` promise is already settled when the loop returns.
+ 
+ ### Close a byte session cooperatively
+ 
++The fence that follows ends the session's input, waits out a window of the caller's own, and terminates the child only when that window elapses.
++
+ ```ts
+ import { createSession } from '@orkestrel/process/server'
+ 
+@@ -1300,6 +1312,8 @@ neither one bounds how long you let a child finish work it was already doing.
+ 
+ ### Supervise a fleet by id
+ 
++The fence that follows launches one child per task under its own id and tears the whole registry down at shutdown.
++
+ ```ts
+ import { createProcessManager } from '@orkestrel/process/server'
+ 
+@@ -1509,8 +1523,8 @@ The pure decision rows do not prove Windows end to end. They prove the decisions
+   the isolated environment, the `invalid` refusals, and `destroy`. The terminal moment carries its
+   own rows: the frozen `evidence` tail read against a descendant that keeps writing, the `stderr`
+   event and the tail stopping together, `lines` ending an in-flight read after its queued lines, the
+-  `exit` promise settling at the cutoff when the streams never close, the `drain` bound driven below
+-  and above a descendant release, `stop` alone reaching the moment with no `destroy` call, the
++  `exit` promise settling at the cutoff when the streams never close, the `drain` bound driven shorter
++  and longer than a descendant release, `stop` alone reaching the moment with no `destroy` call, the
+   latched `stopping` refusing a `send`, the released abort listener, the spawn-fault path, and the
+   `drain` refusals at each end of its range.
+ - [`tests/src/server/processes/Session.test.ts`](../tests/src/server/processes/Session.test.ts) —
+diff --git a/src/core/constants.ts b/src/core/constants.ts
+index f01ff80..f8e6ea4 100644
+--- a/src/core/constants.ts
++++ b/src/core/constants.ts
+@@ -1,12 +1,12 @@
+-/** Names the default cooperative POSIX window in milliseconds between `SIGTERM` and `SIGKILL` during termination. */
++/** Names the default cooperative POSIX window, 5000 ms, between `SIGTERM` and `SIGKILL` during termination. */
+ export const PROCESS_GRACE = 5_000
+ 
+-/** Names the window in milliseconds a termination waits for the child's native exit after the final kill. */
++/** Names the window, 5000 ms, a termination waits for the child's native exit after the final kill. */
+ export const PROCESS_CONFIRMATION = 5_000
+ 
+ /**
+- * Names the default window in milliseconds the package waits for the child's read ends to close after
+- * the child's native exit or after a termination this package initiated, before cutting them off.
++ * Names the default window, 1000 ms, the package waits for the child's read ends to close after the
++ * child's native exit or after a termination this package initiated, before cutting them off.
+  *
+  * @remarks
+  * Measured on Windows 11 with Node v24.18.1 on 2026-08-21, spawning the `tests/src/server/fixtures`
+@@ -21,22 +21,25 @@ export const PROCESS_CONFIRMATION = 5_000
+  */
+ export const PROCESS_DRAIN = 1_000
+ 
+-/** Names the default maximum retained stderr tail in bytes for a supervised {@link ProcessInterface}. */
++/** Names the default maximum retained stderr tail, 2048 bytes, for a supervised {@link ProcessInterface}. */
+ export const PROCESS_EVIDENCE = 2_048
+ 
+-/** Names the default soft high-water mark in bytes for a supervised {@link ProcessInterface} line backlog. */
++/** Names the default soft high-water mark, 10485760 bytes, for a supervised {@link ProcessInterface} line backlog. */
+ export const PROCESS_BACKLOG = 10_485_760
+ 
+-/** Names the default maximum captured bytes for a one-shot run's stdout and stderr, each. */
++/** Names the default maximum captured bytes, 10485760 each, for a one-shot run's stdout and stderr. */
+ export const PROCESS_OUTPUT = 10_485_760
+ 
+-/** Names the largest timer delay in milliseconds the host schedules without truncating it to one. */
++/** Names the largest timer delay, 2147483647 ms, the host schedules without truncating it to one. */
+ export const PROCESS_TIMER = 2_147_483_647
+ 
+-/** Lists the executable extensions a Windows lookup applies when the environment declares no `PATHEXT`. */
++/** Lists the executable extensions a Windows lookup applies when the environment declares no `PATHEXT`, `.COM;.EXE;.BAT;.CMD`. */
+ export const PROCESS_PATHEXT = '.COM;.EXE;.BAT;.CMD'
+ 
+-/** Lists the machine-readable failure categories a {@link ProcessError} carries, in declaration order. */
++/**
++ * Lists the machine-readable failure categories a {@link ProcessError} carries, in declaration order:
++ * `spawn`, `timeout`, `input`, `duplicate`, `protocol`, and `invalid`.
++ */
+ export const PROCESS_ERROR_CODES = Object.freeze([
+ 	'spawn',
+ 	'timeout',
+diff --git a/src/core/types.ts b/src/core/types.ts
+index 6656b52..a94fdf2 100644
+--- a/src/core/types.ts
++++ b/src/core/types.ts
+@@ -809,7 +809,10 @@ export interface ProcessManagerInterface {
+ 	destroy(): Promise<void>
+ }
+ 
+-/** Names the machine-readable {@link ProcessError} categories, derived from {@link PROCESS_ERROR_CODES}. */
++/**
++ * Names the machine-readable {@link ProcessError} categories, derived from {@link PROCESS_ERROR_CODES}:
++ * `spawn`, `timeout`, `input`, `duplicate`, `protocol`, and `invalid`.
++ */
+ export type ProcessErrorCode = (typeof PROCESS_ERROR_CODES)[number]
+ 
+ /** Represents structured context carried by a {@link ProcessError}. */
+diff --git a/src/server/processes/ProcessManager.ts b/src/server/processes/ProcessManager.ts
+index 4b7558f..abe2726 100644
+--- a/src/server/processes/ProcessManager.ts
++++ b/src/server/processes/ProcessManager.ts
+@@ -12,7 +12,8 @@ import { createDuplicateError, createProtocolError } from '@src/core'
+ import { Process } from './Process.js'
+ 
+ /**
+- * Represents a keyed registry of live supervised child processes.
++ * Launches supervised children under caller-chosen ids, evicts each one as it settles, and destroys
++ * every live child on teardown.
+  *
+  * @remarks
+  * A child launched under an id joins the registry and emits `launch`; when it settles it removes
+diff --git a/tests/guides.test.ts b/tests/guides.test.ts
+index cc14023..d153064 100644
+--- a/tests/guides.test.ts
++++ b/tests/guides.test.ts
+@@ -1,8 +1,6 @@
+-// The guides-parity gate: @orkestrel/guide's checks run against this repository's own
+-// `guides/README.md` manifest, and every flagship fence in `guides/process.md` is transcribed
+-// here and asserted against what its comments claim. Name resolution is not a behavioural
+-// proof, so a fence documenting a value the code contradicts is exactly what the transcriptions
+-// catch. Change a fence, change its transcription.
++// The consumer-side guides-parity drop-in: runs `@orkestrel/guide`'s checks against
++// this repo's own `guides/README.md` manifest. The constants that follow are this
++// package's own, as is the executed section that closes the file.
+ 
+ import { Buffer } from 'node:buffer'
+ import { spawn } from 'node:child_process'
+@@ -96,6 +94,117 @@ const MODULES = Object.freeze({
+ 	'@orkestrel/process': 'src/core',
+ 	'@orkestrel/process/server': 'src/server',
+ })
++/**
++ * Declarations deliberately kept out of a barrel, as `computeSymbolKey` strings, keyed by the face
++ * whose module declares each one.
++ *
++ * `POPULATIONS` reads each row against that face's own barrel, and `INTERNAL` flattens every row
++ * into the one scope a guide's source is read as.
++ */
++const INTERNALS: Readonly<Record<string, readonly string[]>> = Object.freeze({
++	'@orkestrel/process': Object.freeze([]),
++	'@orkestrel/process/server': Object.freeze([]),
++})
++/**
++ * Declarations deliberately kept out of the barrel, as `computeSymbolKey` strings.
++ *
++ * A class that one-class-per-file evicted from its single consumer cannot become a
++ * local, so it stays exported without being public. Naming it here is what makes that
++ * intentional rather than forgotten — and the assertion that follows it fails when a name
++ * here stops being stranded, so the list cannot rot.
++ */
++const INTERNAL: readonly string[] = Object.freeze(Object.values(INTERNALS).flat())
++/**
++ * Test files no guide's Tests section lists, as repository-relative paths.
++ *
++ * Each is a vendored fleet-wide proof whose subject is the workspace rather than this package's
++ * public surface. Naming one here is what makes the omission deliberate, and the assertion over
++ * this list fails when a name here stops being omitted, so the list cannot rot.
++ */
++const UNLISTED_TESTS: readonly string[] = Object.freeze([
++	'tests/config.test.ts',
++	'tests/policy.test.ts',
++])
++/** Root-level files this package's guides link to. `readInventory` walks directories only. */
++const ROOT_FILES = Object.freeze(['AGENTS.md', 'README.md'])
++
++const root = new URL('../', import.meta.url)
++const files: Record<string, string> = {
++	...readInventory(root, ['src', 'guides', 'tests'], { extensions: ['.ts', '.md'] }),
++}
++for (const name of ROOT_FILES) files[name] = readFileSync(new URL(name, root), 'utf8')
++const manifest = parseManifest(
++	requireValue(files['guides/README.md'], 'Missing file: guides/README.md'),
++	'guides',
++)
++const sources = createSourceManager({ files, modules: MODULES })
++const own = requireValue(
++	manifest.find((entry) => entry.spec === GUIDE_SPEC),
++	`Missing manifest row: ${GUIDE_SPEC}`,
++)
++
++it('manifest lists at least one guide', () => {
++	expect(manifest.length).toBeGreaterThan(0)
++})
++
++// The example half of the equality case is silent over an empty population: with no
++// title on both sides `findDrift` compares no pair and the case passes on the summaries
++// alone. This pins the population this repository's own guide contributes, so removing
++// every `@example` title reddens the suite instead of quietly retiring half the gate.
++// The failure names both title sets, because a pin reporting only its own emptiness
++// leaves the reader to work out which side dropped the title.
++it('pairs at least one example title across the guide and the source', () => {
++	const guide = createGuide(requireValue(files[GUIDE_SPEC], `Missing file: ${GUIDE_SPEC}`))
++	const source = createSource({ files, module: own.source })
++	const declared = source
++		.examples()
++		.map((example) => example.title)
++		.filter((title) => title !== undefined)
++	const titled = new Set(declared)
++	const headings: string[] = []
++	const paired: string[] = []
++	for (const fence of guide.fences()) {
++		if (fence.title === undefined) continue
++		headings.push(fence.title)
++		if (titled.has(fence.title)) paired.push(fence.title)
++	}
++	const unpaired =
++		paired.length > 0
++			? []
++			: [
++					`${GUIDE_SPEC} pairs: guide ${JSON.stringify(headings)} source ${JSON.stringify(declared)}`,
++				]
++	expect(unpaired).toEqual([])
++})
++
++// The README's pitch and the guide's tagline are one text, each read as the blockquote
++// under its file's H1. `README.md` is outside the concept index, so the reader is
++// applied to it directly rather than through a manifest row. Each side is guarded
++// against `undefined` first, so a file that lost its blockquote reports that rather
++// than reporting two absences as agreement.
++it('opens the README with the guide tagline', () => {
++	const pitch = createGuide(requireValue(files['README.md'], 'Missing file: README.md')).tagline()
++	const tagline = createGuide(
++		requireValue(files[GUIDE_SPEC], `Missing file: ${GUIDE_SPEC}`),
++	).tagline()
++
++	expect(pitch).not.toBeUndefined()
++	expect(tagline).not.toBeUndefined()
++	expect(pitch).toBe(tagline)
++})
++
++// The published faces in one table. `SOURCES`, the refusal rows, and the live population rows
++// all read it, so a face's scope and its export key have one place to be stated.
++const FACES = Object.freeze(
++	Object.entries(MODULES).map(([specifier, module]) => ({ specifier, module })),
++)
++const SOURCES = new Map(
++	FACES.map((face): [string, ReturnType<typeof createSource>] => [
++		face.specifier,
++		requireValue(sources.source(face.specifier), `Unmapped specifier: ${face.specifier}`),
++	]),
++)
++
+ /**
+  * The names each face must refuse from its neighbouring face.
+  *
+@@ -192,109 +301,6 @@ const REFUSALS: Readonly<
+ 		shared: Object.freeze([]),
+ 	}),
+ })
+-/**
+- * Declarations deliberately kept out of a barrel, as `computeSymbolKey` strings, keyed by the face whose
+- * module declares each one.
+- *
+- * Naming one here is what makes it intentional rather than forgotten, and the assertions over this
+- * table fail when a name here stops being stranded, so the table cannot rot.
+- */
+-const INTERNALS: Readonly<Record<string, readonly string[]>> = Object.freeze({
+-	'@orkestrel/process': Object.freeze([]),
+-	'@orkestrel/process/server': Object.freeze([]),
+-})
+-/** Every deliberately stranded declaration, read as one scope the way a guide's source is. */
+-const INTERNAL: readonly string[] = Object.freeze(Object.values(INTERNALS).flat())
+-/**
+- * Test files no guide's Tests section lists, as repository-relative paths.
+- *
+- * Each is a vendored fleet-wide proof whose subject is the workspace rather than this package's
+- * public surface. Naming one here is what makes the omission deliberate, and the assertion over
+- * this list fails when a name here stops being omitted, so the list cannot rot.
+- */
+-const UNLISTED_TESTS: readonly string[] = Object.freeze([
+-	'tests/config.test.ts',
+-	'tests/policy.test.ts',
+-])
+-/** Root-level files this package's guides link to. `readInventory` walks directories only. */
+-const ROOT_FILES = Object.freeze(['AGENTS.md', 'README.md'])
+-
+-const root = new URL('../', import.meta.url)
+-const files: Record<string, string> = {
+-	...readInventory(root, ['src', 'guides', 'tests'], { extensions: ['.ts', '.md'] }),
+-}
+-for (const name of ROOT_FILES) files[name] = readFileSync(new URL(name, root), 'utf8')
+-const manifest = parseManifest(
+-	requireValue(files['guides/README.md'], 'Missing file: guides/README.md'),
+-	'guides',
+-)
+-const sourceManager = createSourceManager({ files, modules: MODULES })
+-const own = requireValue(
+-	manifest.find((entry) => entry.spec === GUIDE_SPEC),
+-	`Missing manifest row: ${GUIDE_SPEC}`,
+-)
+-
+-// The published faces in one table. `SOURCES`, the refusal rows, and the live population rows
+-// all read it, so a face's scope and its export key have one place to be stated.
+-const FACES = Object.freeze(
+-	Object.entries(MODULES).map(([specifier, module]) => ({ specifier, module })),
+-)
+-const SOURCES = new Map(
+-	FACES.map((face): [string, ReturnType<typeof createSource>] => [
+-		face.specifier,
+-		requireValue(sourceManager.source(face.specifier), `Unmapped specifier: ${face.specifier}`),
+-	]),
+-)
+-
+-it('manifest lists at least one guide', () => {
+-	expect(manifest.length).toBeGreaterThan(0)
+-})
+-
+-// The example half of the equality case is silent over an empty population: with no
+-// title on both sides `findDrift` compares no pair and the case passes on the summaries
+-// alone. This pins the population this repository's own guide contributes, so removing
+-// every `@example` title reddens the suite instead of quietly retiring half the gate.
+-// The failure names both title sets, because a pin reporting only its own emptiness
+-// leaves the reader to work out which side dropped the title.
+-it('pairs at least one example title across the guide and the source', () => {
+-	const guide = createGuide(requireValue(files[GUIDE_SPEC], `Missing file: ${GUIDE_SPEC}`))
+-	const source = createSource({ files, module: own.source })
+-	const declared = source
+-		.examples()
+-		.map((example) => example.title)
+-		.filter((title) => title !== undefined)
+-	const titled = new Set(declared)
+-	const headings: string[] = []
+-	const paired: string[] = []
+-	for (const fence of guide.fences()) {
+-		if (fence.title === undefined) continue
+-		headings.push(fence.title)
+-		if (titled.has(fence.title)) paired.push(fence.title)
+-	}
+-	const unpaired =
+-		paired.length > 0
+-			? []
+-			: [
+-					`${GUIDE_SPEC} pairs: guide ${JSON.stringify(headings)} source ${JSON.stringify(declared)}`,
+-				]
+-	expect(unpaired).toEqual([])
+-})
+-
+-// The README's pitch and the guide's tagline are one text, each read as the blockquote
+-// under its file's H1. `README.md` is outside the concept index, so the reader is
+-// applied to it directly rather than through a manifest row. Each side is guarded
+-// against `undefined` first, so a file that lost its blockquote reports that rather
+-// than reporting two absences as agreement.
+-it('opens the README with the guide tagline', () => {
+-	const pitch = createGuide(requireValue(files['README.md'], 'Missing file: README.md')).tagline()
+-	const tagline = createGuide(
+-		requireValue(files[GUIDE_SPEC], `Missing file: ${GUIDE_SPEC}`),
+-	).tagline()
+-
+-	expect(pitch).not.toBeUndefined()
+-	expect(tagline).not.toBeUndefined()
+-	expect(pitch).toBe(tagline)
+-})
+ 
+ describe('public package faces', () => {
+ 	// Each literal refusal list is independent of the live Source that the assertion reads. A
+@@ -410,8 +416,7 @@ for (const entry of manifest) {
+ 			expect(findUnlisted(guide.fences(), FENCE_LANGUAGES)).toEqual([])
+ 		})
+ 
+-		it('extracts non-empty aggregate barrel and documented surfaces', () => {
+-			expect(source.surface().length).toBeGreaterThan(0)
++		it('extracts a non-empty documented surface', () => {
+ 			expect(guide.surface().length).toBeGreaterThan(0)
+ 		})
+ 		it('re-exports every direct declaration that is not named internal', () => {
+@@ -439,7 +444,7 @@ for (const entry of manifest) {
+ 		for (const group of guide.methods()) {
+ 			const members = source.methods(group.interface).map((method) => method.name)
+ 			const documented = group.methods.map((method) => method.name)
+-			const entity = group.interface.replace(/Interface$/u, '')
++			const entity = group.interface.replace(/Interface$/, '')
+ 			describe(`${group.interface}`, () => {
+ 				it('documents at least one method', () => {
+ 					expect(group.methods.length).toBeGreaterThan(0)
+@@ -481,10 +486,6 @@ for (const entry of manifest) {
+ 			expect(disagreeing).toEqual([])
+ 		})
+ 
+-		it('documents at least one method group', () => {
+-			expect(guide.methods().length).toBeGreaterThan(0)
+-		})
+-
+ 		it('documents an example for every Surface function', () => {
+ 			const fences = guide
+ 				.fences()
+@@ -494,7 +495,6 @@ for (const entry of manifest) {
+ 				.surface()
+ 				.filter((symbol) => symbol.keyword === 'function')
+ 				.map((symbol) => symbol.name)
+-			expect(names.length).toBeGreaterThan(0)
+ 			expect(
+ 				findUnexampled(
+ 					names,
+@@ -505,7 +505,7 @@ for (const entry of manifest) {
+ 		})
+ 
+ 		for (const group of guide.methods()) {
+-			const entity = group.interface.replace(/Interface$/u, '')
++			const entity = group.interface.replace(/Interface$/, '')
+ 			const documented = group.methods.map((method) => method.name)
+ 			const examples =
+ 				entity === group.interface
+@@ -525,40 +525,28 @@ for (const entry of manifest) {
+ 			})
+ 		}
+ 
+-		// The membership rule is `extractFenceImports`'s own grammar read off Guide's comment-aware source
+-		// projection, not "named-brace imports": every statement it surfaces is checked and nothing
+-		// else is. A mapped specifier's bindings compare against that face's barrel surface; a
+-		// repository alias and an unmapped true subpath of the root are refused, the alias because a
+-		// public guide example must import through a published specifier; a foreign package stays
+-		// external and is compared against no face.
+-		it('imports only real exports through published specifiers in every ts fence', () => {
+-			const refused: string[] = []
+-			const missing: string[] = []
+-			for (const fence of guide.fences().filter((row) => row.language === EXAMPLE_LANGUAGE)) {
+-				const projected = extractSourceLines(fence.code)
+-					.map((line) => line.code)
+-					.join('\n')
+-				for (const statement of extractFenceImports(projected)) {
+-					const specifier = statement.specifier
+-					if (specifier.startsWith('@src/') || specifier.startsWith('@app/')) {
+-						refused.push(specifier)
+-						continue
+-					}
+-					const face = SOURCES.get(specifier)
+-					if (face === undefined) {
+-						if (specifier === ROOT || specifier.startsWith(`${ROOT}/`)) refused.push(specifier)
+-						continue
+-					}
+-					missing.push(
+-						...findMissing(
+-							statement.names,
+-							face.surface().map((symbol) => symbol.name),
+-						),
+-					)
++		it('documents at least one Surface function', () => {
++			const named = guide
++				.surface()
++				.filter((symbol) => symbol.keyword === 'function')
++				.map((symbol) => symbol.name)
++			expect(named.length).toBeGreaterThan(0)
++		})
++
++		it('documents at least one method group', () => {
++			expect(guide.methods().length).toBeGreaterThan(0)
++		})
++
++		it('imports only real exports in every ```ts fence', () => {
++			const fences = guide.fences().filter((fence) => fence.language === EXAMPLE_LANGUAGE)
++			for (const fence of fences) {
++				for (const { specifier, names } of extractFenceImports(fence.code)) {
++					const imported = sources.source(specifier)
++					if (imported === undefined) continue
++					const surface = imported.surface().map((symbol) => symbol.name)
++					expect(findMissing(names, surface)).toEqual([])
+ 				}
+ 			}
+-			expect(refused).toEqual([])
+-			expect(missing).toEqual([])
+ 		})
+ 
+ 		it('resolves every relative link', () => {
+@@ -574,8 +562,30 @@ for (const entry of manifest) {
+ 				.tests()
+ 				.map((href) => resolveLink(entry.spec, href))
+ 				.filter((path) => !source.exists(path))
+-			expect(missing.length).toBe(0)
+-			expect(guide.tests().length).toBeGreaterThan(0)
++			expect(missing).toEqual([])
++		})
++		// The specifier rule is `extractFenceImports`'s own grammar read off Guide's comment-aware
++		// source projection, not "named-brace imports": every statement it surfaces is checked and
++		// nothing else is. A repository alias and an unmapped true subpath of the root are refused,
++		// the alias because a public guide example must import through a published specifier; a
++		// foreign package stays external and is compared against no face.
++		it('imports through a published specifier in every ts fence', () => {
++			const refused: string[] = []
++			for (const fence of guide.fences().filter((row) => row.language === EXAMPLE_LANGUAGE)) {
++				const projected = extractSourceLines(fence.code)
++					.map((line) => line.code)
++					.join('\n')
++				for (const statement of extractFenceImports(projected)) {
++					const specifier = statement.specifier
++					if (specifier.startsWith('@src/') || specifier.startsWith('@app/')) {
++						refused.push(specifier)
++						continue
++					}
++					if (SOURCES.has(specifier)) continue
++					if (specifier === ROOT || specifier.startsWith(`${ROOT}/`)) refused.push(specifier)
++				}
++			}
++			expect(refused).toEqual([])
+ 		})
+ 		// The Tests section is an inventory of what this package proves, so a proof that exists and is
+ 		// not listed is the defect. Listing is asserted as membership against the real test tree,
+@@ -616,16 +626,6 @@ const CONSTANTS: Readonly<Record<string, number | string | readonly string[]>> =
+ 	PROCESS_PATHEXT,
+ 	PROCESS_ERROR_CODES,
+ })
+-/**
+- * Constants whose `Value` cell is prose rather than a literal, as `API` cell names.
+- *
+- * `PROCESS_ERROR_CODES` prints as `the code tuple`, so no cell text compares against the tuple; the
+- * codes themselves are gated by `tables exactly the error codes the tuple declares`. Naming one
+- * here is what makes the omission deliberate, and the assertion over this list fails when such a
+- * cell becomes a literal, so the list cannot rot.
+- */
+-const PROSE_CONSTANTS: readonly string[] = Object.freeze(['PROCESS_ERROR_CODES'])
+-
+ describe('flagship fences', () => {
+ 	it('bounds one delivered chunk and refuses one that is not a buffer', () => {
+ 		expect(captureChunk(Buffer.from('hello'), 3)?.toString('utf8')).toBe('hel')
+@@ -768,32 +768,29 @@ describe('flagship fences', () => {
+ 		expect(types).toContain('standard-input payload and carries no NUL restriction')
+ 	})
+ 
+-	// The Value column read off the guide itself, so editing a cell fails this row. Comparing the
+-	// imported constants against literals written here would leave that column guarded by nothing,
+-	// under a name that claims to guard exactly it. A cell drops its digit separators and its
+-	// quotes before the comparison, which is the whole difference between the guide's notation and
+-	// the source literal.
+-	it('documents the constant values its Surface table prints', () => {
++	// Ruling 18 puts a constant's literal in its declaration's description paragraph, which the
++	// equality gate carries into the `Summary` cell, so the literal is read from that cell rather
++	// than from a column of its own. The row set is compared against the imported table too, so a
++	// constant that gained no row and a row naming no constant each fail here.
++	it('names every constant literal in the Summary its Constants table prints', () => {
+ 		const guide = requireValue(files['guides/process.md'], 'Missing file: guides/process.md')
+ 		const section = guide.slice(guide.indexOf('### Constants'))
+ 		const table = section.slice(0, section.indexOf('\n\n', section.indexOf('| API')))
+ 		const rows = Array.from(
+-			table.matchAll(/^\| `(\w+)` +\| const +\| ([^|]+?) +\|/gmu),
+-			(match) => ({ name: match[1] ?? '', cell: match[2] ?? '' }),
++			table.matchAll(/^\| `(\w+)` +\| const +\| [^|]+ \| (.+?) +\|$/gmu),
++			(match) => ({ name: match[1] ?? '', summary: match[2] ?? '' }),
+ 		)
+-
+-		const prose = rows.filter((row) => PROSE_CONSTANTS.includes(row.name))
+-		const printed = rows.filter((row) => !PROSE_CONSTANTS.includes(row.name))
++		const unnamed: string[] = []
++		for (const row of rows) {
++			const value = requireValue(CONSTANTS[row.name], `Undeclared constant row: ${row.name}`)
++			const literals = typeof value === 'object' ? [...value] : [String(value)]
++			for (const literal of literals) {
++				if (!row.summary.includes(literal)) unnamed.push(`${row.name} ${literal}`)
++			}
++		}
+ 
+ 		expect(rows.map((row) => row.name).sort()).toEqual(Object.keys(CONSTANTS).sort())
+-		expect(prose.map((row) => row.name)).toEqual([...PROSE_CONSTANTS])
+-		expect(prose.filter((row) => row.cell.startsWith('`')).map((row) => row.name)).toEqual([])
+-		expect(printed.map((row) => `${row.name} ${row.cell.replace(/[`_']/gu, '')}`)).toEqual(
+-			printed.map(
+-				(row) =>
+-					`${row.name} ${String(requireValue(CONSTANTS[row.name], `Undeclared constant row: ${row.name}`))}`,
+-			),
+-		)
++		expect(unnamed).toEqual([])
+ 	})
+ 
+ 	// The guide's error table lists one row per declared code, so the table and the tuple are one
+@@ -1318,8 +1315,9 @@ describe('flagship fences', () => {
+ //
+ // Exports that appear in no `guides/process.md` fence use their TSDoc
+ // `@example` block in place of one. A block satisfies that gate by existing, which leaves the value
+-// its comment claims unasserted. Each row below runs one such block against the real barrel and
+-// asserts that value, so a changed return value fails this gate. Change an `@example`, change its row.
++// its comment claims unasserted. Each row that follows runs one such block against the real barrel
++// and asserts that value, so a changed return value fails this gate. Change an `@example`, change
++// its row.
+ const EXAMPLES = Object.freeze([
+ 	{
+ 		name: 'buildPlatformSpawn',
+@@ -1384,8 +1382,8 @@ describe('unfenced TSDoc examples', () => {
+ 	// `Supervisor`'s class block and its `deliver` member block each spawn a real child and await a
+ 	// promise, so each is its own asynchronous case instead of a row in the table, which holds
+ 	// synchronous leaves. Change either block, change the case beside it.
+-	// The case outlives the condition budget below it, so a condition that never holds reports its
+-	// own description rather than this case's timeout.
++	// The case outlives the condition budget that follows, so a condition that never holds reports
++	// its own description rather than this case's timeout.
+ 	it("returns what Supervisor's example claims", { timeout: 20_000 }, async () => {
+ 		const engine = new Supervisor(
+ 			{ command: { file: 'node', arguments: ['--version'] }, workspace: process.cwd() },
+@@ -1403,8 +1401,8 @@ describe('unfenced TSDoc examples', () => {
+ 		await engine.destroy()
+ 	})
+ 
+-	// The case outlives the condition budget below it, so a condition that never holds reports its
+-	// own description rather than this case's timeout.
++	// The case outlives the condition budget that follows, so a condition that never holds reports
++	// its own description rather than this case's timeout.
+ 	it("returns what deliver's example claims", { timeout: 20_000 }, async () => {
+ 		const engine = new Supervisor(
+ 			{
+diff --git a/tests/src/server/processes/Supervisor.test.ts b/tests/src/server/processes/Supervisor.test.ts
+index e03ff98..4ebdd89 100644
+--- a/tests/src/server/processes/Supervisor.test.ts
++++ b/tests/src/server/processes/Supervisor.test.ts
+@@ -53,8 +53,8 @@ describe('Supervisor moments', () => {
+ 	// the face is told to let go, and it is worth nothing after the termination sequence: by then the
+ 	// signal has already been sent to a child that cannot write.
+ 	//
+-	// The case outlives the condition budget below it, so a condition that never holds reports its
+-	// own description rather than this case's timeout.
++	// The case outlives the condition budget that follows, so a condition that never holds reports
++	// its own description rather than this case's timeout.
+ 	it(
+ 		'releases the face before the termination sequence rather than after it',
+ 		{ timeout: 20_000 },
+@@ -101,17 +101,17 @@ describe('Supervisor moments', () => {
+ 		},
+ 	)
+ 
+-	// The case outlives the condition budget below it, so a condition that never holds reports its
+-	// own description rather than this case's timeout.
++	// The case outlives the condition budget that follows, so a condition that never holds reports
++	// its own description rather than this case's timeout.
+ 	it(
+ 		'settles ending at the native exit while a descendant holds the read ends open',
+ 		{ timeout: 20_000 },
+ 		async () => {
+ 			const moments = createRecorder<readonly [string]>()
+ 			const received: string[] = []
+-			// The drain window is left at its default, so the pendency race below reads the same
+-			// margin the sibling comparator in `Process.test.ts` reads. An override sized past
+-			// the race turns a contended run into a red gate reporting a timeout.
++			// The drain window is left at its default, so the pendency race that follows reads the
++			// same margin the sibling comparator in `Process.test.ts` reads. An override sized
++			// barely past the race turns a contended run into a red gate reporting a timeout.
+ 			const engine = new Supervisor(
+ 				{ command: childCommand('orphan'), workspace: process.cwd(), grace: 20 },
+ 				{

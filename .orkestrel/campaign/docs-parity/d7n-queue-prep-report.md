@@ -198,3 +198,7 @@ This is the converge unit's worklist, out of this unit's scope per the objective
 ## Deviations
 
 None. No `repair` path fell outside the P21 list, every before-text was found verbatim, no voice diagnostic named an off-limits file, `test:policy` read green with no file outside scope, and every gate other than `docs` read green after the items (`docs` reading red with a nonzero `rows read` is the expected, brief-named reading).
+
+---
+
+Orchestrator's annotation (2026-09-08, from the audit verdict): this report states counts in prose; the tree is authoritative and every cited line matched it on the audit's re-read. The unit's instruments are retained under `instruments/d7/units/queue/`.

@@ -177,3 +177,7 @@ Re-run `npx oxlint --config .oxlintrc.json --deny-warnings .` after these edits:
 ## Deviations
 
 None. `repair` wrote only the P21 paths, every before-text in item 2 was found verbatim, every voice diagnostic named a file inside scope (`tests/setup.ts`, `tests/src/core/stages/Normalizer.test.ts`), `test:policy` reported no red, and no gate other than `docs` read red after the items.
+
+---
+
+Orchestrator's annotation (2026-09-08, from the audit verdict): this report states counts in prose; the tree is authoritative and every cited line matched it on the audit's re-read. The unit's instruments are retained under `instruments/d7/units/interpret/`.

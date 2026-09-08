@@ -347,3 +347,7 @@ survived a doc-block rewrite under the P16 comparator.
 None. No cell was unlocatable, no titled body exceeded its block, no test outside
 `tests/guides.test.ts` went red, no vendored file needed an edit, and no reader returned a shape this
 brief does not describe.
+
+---
+
+Orchestrator's annotation (2026-09-08, from the audit verdict): this report states counts in prose; the tree is authoritative and every cited line matched it on the audit's re-read. The unit's instruments are retained under `instruments/d7/units/queue/`.

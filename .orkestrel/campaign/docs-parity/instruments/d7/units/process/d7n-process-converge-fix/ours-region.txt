@@ -1,0 +1,373 @@
+const root = new URL('../', import.meta.url)
+const files: Record<string, string> = {
+	...readInventory(root, ['src', 'guides', 'tests'], { extensions: ['.ts', '.md'] }),
+}
+for (const name of ROOT_FILES) files[name] = readFileSync(new URL(name, root), 'utf8')
+const manifest = parseManifest(
+	requireValue(files['guides/README.md'], 'Missing file: guides/README.md'),
+	'guides',
+)
+const sourceManager = createSourceManager({ files, modules: MODULES })
+const own = requireValue(
+	manifest.find((entry) => entry.spec === GUIDE_SPEC),
+	`Missing manifest row: ${GUIDE_SPEC}`,
+)
+
+// The published faces in one table. `SOURCES`, the refusal rows, and the live population rows
+// all read it, so a face's scope and its export key have one place to be stated.
+const FACES = Object.freeze(
+	Object.entries(MODULES).map(([specifier, module]) => ({ specifier, module })),
+)
+const SOURCES = new Map(
+	FACES.map((face): [string, ReturnType<typeof createSource>] => [
+		face.specifier,
+		requireValue(sourceManager.source(face.specifier), `Unmapped specifier: ${face.specifier}`),
+	]),
+)
+
+it('manifest lists at least one guide', () => {
+	expect(manifest.length).toBeGreaterThan(0)
+})
+
+// The example half of the equality case is silent over an empty population: with no
+// title on both sides `findDrift` compares no pair and the case passes on the summaries
+// alone. This pins the population this repository's own guide contributes, so removing
+// every `@example` title reddens the suite instead of quietly retiring half the gate.
+// The failure names both title sets, because a pin reporting only its own emptiness
+// leaves the reader to work out which side dropped the title.
+it('pairs at least one example title across the guide and the source', () => {
+	const guide = createGuide(requireValue(files[GUIDE_SPEC], `Missing file: ${GUIDE_SPEC}`))
+	const source = createSource({ files, module: own.source })
+	const declared = source
+		.examples()
+		.map((example) => example.title)
+		.filter((title) => title !== undefined)
+	const titled = new Set(declared)
+	const headings: string[] = []
+	const paired: string[] = []
+	for (const fence of guide.fences()) {
+		if (fence.title === undefined) continue
+		headings.push(fence.title)
+		if (titled.has(fence.title)) paired.push(fence.title)
+	}
+	const unpaired =
+		paired.length > 0
+			? []
+			: [
+					`${GUIDE_SPEC} pairs: guide ${JSON.stringify(headings)} source ${JSON.stringify(declared)}`,
+				]
+	expect(unpaired).toEqual([])
+})
+
+// The README's pitch and the guide's tagline are one text, each read as the blockquote
+// under its file's H1. `README.md` is outside the concept index, so the reader is
+// applied to it directly rather than through a manifest row. Each side is guarded
+// against `undefined` first, so a file that lost its blockquote reports that rather
+// than reporting two absences as agreement.
+it('opens the README with the guide tagline', () => {
+	const pitch = createGuide(requireValue(files['README.md'], 'Missing file: README.md')).tagline()
+	const tagline = createGuide(
+		requireValue(files[GUIDE_SPEC], `Missing file: ${GUIDE_SPEC}`),
+	).tagline()
+
+	expect(pitch).not.toBeUndefined()
+	expect(tagline).not.toBeUndefined()
+	expect(pitch).toBe(tagline)
+})
+
+describe('public package faces', () => {
+	// Each literal refusal list is independent of the live Source that the assertion reads. A
+	// widened `module` can therefore leak a neighbouring face without changing its expectation.
+	for (const face of FACES) {
+		const refusal = requireValue(
+			REFUSALS[face.specifier],
+			`Missing refusal list: ${face.specifier}`,
+		)
+		const { foreign, shared } = refusal
+		const neighbour = requireValue(
+			FACES.find((candidate) => candidate.specifier !== face.specifier),
+			`Missing neighbouring face: ${face.specifier}`,
+		)
+		const neighbouring = requireValue(
+			SOURCES.get(neighbour.specifier),
+			`Unmapped neighbouring specifier: ${neighbour.specifier}`,
+		)
+		const neighbouringNames = neighbouring.surface().map((symbol) => symbol.name)
+
+		it(`keeps the refusal list aligned with the neighbouring face for ${face.specifier}`, () => {
+			expect([...foreign].sort()).toEqual(
+				neighbouringNames.filter((name) => !shared.includes(name)).sort(),
+			)
+		})
+
+		it(`publishes none of a neighbouring face's names on ${face.specifier}`, () => {
+			const source = requireValue(SOURCES.get(face.specifier), 'Unmapped specifier')
+			const published = source.surface().map((symbol) => symbol.name)
+			expect(foreign.length).toBeGreaterThan(0)
+			expect(foreign.filter((name) => published.includes(name))).toEqual([])
+			expect(
+				shared.filter((name) => !published.includes(name) || !neighbouringNames.includes(name)),
+			).toEqual([])
+		})
+	}
+
+	it('derives the exact package export keys from the same face map', () => {
+		const parsed: unknown = JSON.parse(readFileSync(new URL('package.json', root), 'utf8'))
+		if (typeof parsed !== 'object' || parsed === null) {
+			throw new Error('The package manifest is not a record')
+		}
+		const exports: unknown = Object.getOwnPropertyDescriptor(parsed, 'exports')?.value
+		if (typeof exports !== 'object' || exports === null) {
+			throw new Error('The package manifest declares no object exports')
+		}
+		const expected = FACES.map((face) =>
+			face.specifier === ROOT ? '.' : `.${face.specifier.slice(ROOT.length)}`,
+		)
+		expect(Object.keys(exports).sort()).toEqual(expected.concat('./package.json').sort())
+	})
+})
+
+// Faces declaring the same class, where only the core barrel re-exports it: the server face
+// strands `Process`, and reading them as one scope hides that. The fixture rows are the
+// instrument's negative control; the live rows cannot play that part, because a union of
+// internally complete barrels is itself internally complete.
+const FIXTURE_FILES: Readonly<Record<string, string>> = Object.freeze({
+	'core/index.ts': "export * from './Process.js'\n",
+	'core/Process.ts': 'export class Process {}\n',
+	'server/index.ts': "export * from './ProcessManager.js'\n",
+	'server/ProcessManager.ts': 'export class ProcessManager {}\n',
+	'server/Process.ts': 'export class Process {}\n',
+})
+
+const POPULATIONS = Object.freeze([
+	...FACES.map((face) => ({
+		name: `${face.specifier} barrel`,
+		files,
+		module: face.module,
+		stranded: requireValue(INTERNALS[face.specifier], `Missing internal list: ${face.specifier}`),
+		phantom: [],
+	})),
+	{
+		name: 'stranded server face',
+		files: FIXTURE_FILES,
+		module: 'server',
+		stranded: ['class Process'],
+		phantom: [],
+	},
+	{
+		name: 'core and server faces read as one scope',
+		files: FIXTURE_FILES,
+		module: ['core', 'server'],
+		stranded: [],
+		phantom: [],
+	},
+])
+
+for (const entry of POPULATIONS) {
+	const source = createSource({ files: entry.files, module: entry.module })
+
+	describe(`${entry.name}`, () => {
+		it('has non-empty direct and barrel populations', () => {
+			expect(source.exports().length).toBeGreaterThan(0)
+			expect(source.surface().length).toBeGreaterThan(0)
+		})
+		it('strands exactly its expected declarations', () => {
+			expect(findMissingSymbols(source.exports(), source.surface())).toEqual(entry.stranded)
+		})
+		it('re-exports exactly its expected phantom symbols', () => {
+			expect(findMissingSymbols(source.surface(), source.exports())).toEqual(entry.phantom)
+		})
+	})
+}
+
+for (const entry of manifest) {
+	const guide = createGuide(requireValue(files[entry.spec], `Missing file: ${entry.spec}`))
+	const source = createSource({ files, module: entry.source })
+
+	describe(`${entry.concept}`, () => {
+		it('uses only listed fence languages', () => {
+			expect(findUnlisted(guide.fences(), FENCE_LANGUAGES)).toEqual([])
+		})
+
+		it('extracts non-empty aggregate barrel and documented surfaces', () => {
+			expect(source.surface().length).toBeGreaterThan(0)
+			expect(guide.surface().length).toBeGreaterThan(0)
+		})
+		it('re-exports every direct declaration that is not named internal', () => {
+			const stranded = findMissingSymbols(source.exports(), source.surface())
+			expect(stranded.filter((key) => !INTERNAL.includes(key))).toEqual([])
+		})
+		it('names no symbol internal that the barrel already exports', () => {
+			const stranded = findMissingSymbols(source.exports(), source.surface())
+			expect(INTERNAL.filter((key) => !stranded.includes(key))).toEqual([])
+		})
+		it('re-exports only direct declarations', () => {
+			expect(findMissingSymbols(source.surface(), source.exports())).toEqual([])
+		})
+		it('documents every barrel export', () => {
+			expect(findMissingSymbols(source.surface(), guide.surface())).toEqual([])
+		})
+		it('documents only barrel exports', () => {
+			expect(findMissingSymbols(guide.surface(), source.surface())).toEqual([])
+		})
+
+		it('exposes no hidden module-scope declarations', () => {
+			expect(source.hidden().map(computeSymbolKey)).toEqual([])
+		})
+
+		for (const group of guide.methods()) {
+			const members = source.methods(group.interface).map((method) => method.name)
+			const documented = group.methods.map((method) => method.name)
+			const entity = group.interface.replace(/Interface$/u, '')
+			describe(`${group.interface}`, () => {
+				it('documents at least one method', () => {
+					expect(group.methods.length).toBeGreaterThan(0)
+				})
+				it('documents every interface method', () => {
+					expect(findMissing(members, documented)).toEqual([])
+				})
+				it('documents no phantom method', () => {
+					expect(findMissing(documented, members)).toEqual([])
+				})
+				it(`${entity} exposes no undocumented method`, () => {
+					const extra =
+						entity === group.interface
+							? []
+							: findMissing(
+									source.methods(entity).map((method) => method.name),
+									documented,
+								)
+					expect(extra).toEqual([])
+				})
+			})
+		}
+
+		// The equality gate: a `Summary` cell against its export's description paragraph, a
+		// titled fence against the `@example` of that title. `findDrift` owns the comparison
+		// and names both sides; converge the two sides with `npm run docs`, never by
+		// weakening this assertion. `findDrift` pairs an example only where a title is
+		// present on both sides, so an untitled `@example` block is outside this case. Each
+		// collected line is the spec, the key, and each side's text or `absent` — the same
+		// worklist `npm run docs` prints, so a failure here is read the way that command's
+		// output is.
+		it('keeps every compared summary and example equal to its source', () => {
+			const disagreeing: string[] = []
+			for (const drift of findDrift(guide, source)) {
+				const left = drift.guide === undefined ? 'absent' : JSON.stringify(drift.guide)
+				const right = drift.source === undefined ? 'absent' : JSON.stringify(drift.source)
+				disagreeing.push(`${entry.spec} ${drift.key}: guide ${left} source ${right}`)
+			}
+			expect(disagreeing).toEqual([])
+		})
+
+		it('documents at least one method group', () => {
+			expect(guide.methods().length).toBeGreaterThan(0)
+		})
+
+		it('documents an example for every Surface function', () => {
+			const fences = guide
+				.fences()
+				.filter((fence) => fence.language === EXAMPLE_LANGUAGE)
+				.map((fence) => fence.code)
+			const names = guide
+				.surface()
+				.filter((symbol) => symbol.keyword === 'function')
+				.map((symbol) => symbol.name)
+			expect(names.length).toBeGreaterThan(0)
+			expect(
+				findUnexampled(
+					names,
+					fences,
+					source.examples().map((example) => example.name),
+				),
+			).toEqual([])
+		})
+
+		for (const group of guide.methods()) {
+			const entity = group.interface.replace(/Interface$/u, '')
+			const documented = group.methods.map((method) => method.name)
+			const examples =
+				entity === group.interface
+					? source.examples(group.interface).map((example) => example.name)
+					: source
+							.examples(group.interface)
+							.map((example) => example.name)
+							.concat(source.examples(entity).map((example) => example.name))
+			describe(`${group.interface} examples`, () => {
+				it('documents an example for every method', () => {
+					const fences = guide
+						.fences()
+						.filter((fence) => fence.language === EXAMPLE_LANGUAGE)
+						.map((fence) => fence.code)
+					expect(findUnexampled(documented, fences, examples)).toEqual([])
+				})
+			})
+		}
+
+		// The membership rule is `extractFenceImports`'s own grammar read off Guide's comment-aware source
+		// projection, not "named-brace imports": every statement it surfaces is checked and nothing
+		// else is. A mapped specifier's bindings compare against that face's barrel surface; a
+		// repository alias and an unmapped true subpath of the root are refused, the alias because a
+		// public guide example must import through a published specifier; a foreign package stays
+		// external and is compared against no face.
+		it('imports only real exports through published specifiers in every ts fence', () => {
+			const refused: string[] = []
+			const missing: string[] = []
+			for (const fence of guide.fences().filter((row) => row.language === EXAMPLE_LANGUAGE)) {
+				const projected = extractSourceLines(fence.code)
+					.map((line) => line.code)
+					.join('\n')
+				for (const statement of extractFenceImports(projected)) {
+					const specifier = statement.specifier
+					if (specifier.startsWith('@src/') || specifier.startsWith('@app/')) {
+						refused.push(specifier)
+						continue
+					}
+					const face = SOURCES.get(specifier)
+					if (face === undefined) {
+						if (specifier === ROOT || specifier.startsWith(`${ROOT}/`)) refused.push(specifier)
+						continue
+					}
+					missing.push(
+						...findMissing(
+							statement.names,
+							face.surface().map((symbol) => symbol.name),
+						),
+					)
+				}
+			}
+			expect(refused).toEqual([])
+			expect(missing).toEqual([])
+		})
+
+		it('resolves every relative link', () => {
+			const broken = guide
+				.links()
+				.filter((href) => !isExternalLink(href))
+				.map((href) => resolveLink(entry.spec, href))
+				.filter((path) => !source.exists(path))
+			expect(broken).toEqual([])
+		})
+		it('links only to test files that exist', () => {
+			const missing = guide
+				.tests()
+				.map((href) => resolveLink(entry.spec, href))
+				.filter((path) => !source.exists(path))
+			expect(missing.length).toBe(0)
+			expect(guide.tests().length).toBeGreaterThan(0)
+		})
+		// The Tests section is an inventory of what this package proves, so a proof that exists and is
+		// not listed is the defect. Listing is asserted as membership against the real test tree,
+		// because a count passes while the tree grows a file the section never gained.
+		it('lists every test file but the ones named unlisted', () => {
+			const listed = guide.tests().map((href) => resolveLink(entry.spec, href))
+			const present = Object.keys(files).filter((path) => path.endsWith('.test.ts'))
+
+			expect(present.length).toBeGreaterThan(UNLISTED_TESTS.length)
+			expect(
+				present.filter((path) => !listed.includes(path) && !UNLISTED_TESTS.includes(path)),
+			).toEqual([])
+			expect(UNLISTED_TESTS.filter((path) => listed.includes(path))).toEqual([])
+		})
+	})
+}

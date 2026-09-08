@@ -200,3 +200,7 @@ Diffstat:
 None. No stop condition fired: every cell the seed had to locate was located, the titled body fit its block, no test outside `tests/guides.test.ts` went red, no vendored file needed an edit, and no residual disagreement survived under the comparator.
 
 Instruments written for this unit live in `/home/user/fleet/interpret/tmp/d7n-interpret-converge/` (`docs2.py`, `members.py`, `guide.py`, `compare.py`, `compare2.py`, `base.md`, `probe.md`), inside the checkout, which git ignores.
+
+---
+
+Orchestrator's annotation (2026-09-08, from the audit verdict): this report states counts in prose; the tree is authoritative and every cited line matched it on the audit's re-read. The unit's instruments are retained under `instruments/d7/units/interpret/`.

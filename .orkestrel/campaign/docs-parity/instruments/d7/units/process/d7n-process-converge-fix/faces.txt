@@ -1,0 +1,11 @@
+// The published faces in one table. `SOURCES`, the refusal rows, and the live population rows
+// all read it, so a face's scope and its export key have one place to be stated.
+const FACES = Object.freeze(
+	Object.entries(MODULES).map(([specifier, module]) => ({ specifier, module })),
+)
+const SOURCES = new Map(
+	FACES.map((face): [string, ReturnType<typeof createSource>] => [
+		face.specifier,
+		requireValue(sourceManager.source(face.specifier), `Unmapped specifier: ${face.specifier}`),
+	]),
+)

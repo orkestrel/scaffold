@@ -1,0 +1,104 @@
+describe('public package faces', () => {
+	// Each literal refusal list is independent of the live Source that the assertion reads. A
+	// widened `module` can therefore leak a neighbouring face without changing its expectation.
+	for (const face of FACES) {
+		const refusal = requireValue(
+			REFUSALS[face.specifier],
+			`Missing refusal list: ${face.specifier}`,
+		)
+		const { foreign, shared } = refusal
+		const neighbour = requireValue(
+			FACES.find((candidate) => candidate.specifier !== face.specifier),
+			`Missing neighbouring face: ${face.specifier}`,
+		)
+		const neighbouring = requireValue(
+			SOURCES.get(neighbour.specifier),
+			`Unmapped neighbouring specifier: ${neighbour.specifier}`,
+		)
+		const neighbouringNames = neighbouring.surface().map((symbol) => symbol.name)
+
+		it(`keeps the refusal list aligned with the neighbouring face for ${face.specifier}`, () => {
+			expect([...foreign].sort()).toEqual(
+				neighbouringNames.filter((name) => !shared.includes(name)).sort(),
+			)
+		})
+
+		it(`publishes none of a neighbouring face's names on ${face.specifier}`, () => {
+			const source = requireValue(SOURCES.get(face.specifier), 'Unmapped specifier')
+			const published = source.surface().map((symbol) => symbol.name)
+			expect(foreign.length).toBeGreaterThan(0)
+			expect(foreign.filter((name) => published.includes(name))).toEqual([])
+			expect(
+				shared.filter((name) => !published.includes(name) || !neighbouringNames.includes(name)),
+			).toEqual([])
+		})
+	}
+
+	it('derives the exact package export keys from the same face map', () => {
+		const parsed: unknown = JSON.parse(readFileSync(new URL('package.json', root), 'utf8'))
+		if (typeof parsed !== 'object' || parsed === null) {
+			throw new Error('The package manifest is not a record')
+		}
+		const exports: unknown = Object.getOwnPropertyDescriptor(parsed, 'exports')?.value
+		if (typeof exports !== 'object' || exports === null) {
+			throw new Error('The package manifest declares no object exports')
+		}
+		const expected = FACES.map((face) =>
+			face.specifier === ROOT ? '.' : `.${face.specifier.slice(ROOT.length)}`,
+		)
+		expect(Object.keys(exports).sort()).toEqual(expected.concat('./package.json').sort())
+	})
+})
+
+// Faces declaring the same class, where only the core barrel re-exports it: the server face
+// strands `Process`, and reading them as one scope hides that. The fixture rows are the
+// instrument's negative control; the live rows cannot play that part, because a union of
+// internally complete barrels is itself internally complete.
+const FIXTURE_FILES: Readonly<Record<string, string>> = Object.freeze({
+	'core/index.ts': "export * from './Process.js'\n",
+	'core/Process.ts': 'export class Process {}\n',
+	'server/index.ts': "export * from './ProcessManager.js'\n",
+	'server/ProcessManager.ts': 'export class ProcessManager {}\n',
+	'server/Process.ts': 'export class Process {}\n',
+})
+
+const POPULATIONS = Object.freeze([
+	...FACES.map((face) => ({
+		name: `${face.specifier} barrel`,
+		files,
+		module: face.module,
+		stranded: requireValue(INTERNALS[face.specifier], `Missing internal list: ${face.specifier}`),
+		phantom: [],
+	})),
+	{
+		name: 'stranded server face',
+		files: FIXTURE_FILES,
+		module: 'server',
+		stranded: ['class Process'],
+		phantom: [],
+	},
+	{
+		name: 'core and server faces read as one scope',
+		files: FIXTURE_FILES,
+		module: ['core', 'server'],
+		stranded: [],
+		phantom: [],
+	},
+])
+
+for (const entry of POPULATIONS) {
+	const source = createSource({ files: entry.files, module: entry.module })
+
+	describe(`${entry.name}`, () => {
+		it('has non-empty direct and barrel populations', () => {
+			expect(source.exports().length).toBeGreaterThan(0)
+			expect(source.surface().length).toBeGreaterThan(0)
+		})
+		it('strands exactly its expected declarations', () => {
+			expect(findMissingSymbols(source.exports(), source.surface())).toEqual(entry.stranded)
+		})
+		it('re-exports exactly its expected phantom symbols', () => {
+			expect(findMissingSymbols(source.surface(), source.exports())).toEqual(entry.phantom)
+		})
+	})
+}

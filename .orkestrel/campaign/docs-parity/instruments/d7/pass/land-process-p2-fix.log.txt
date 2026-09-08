@@ -1,0 +1,16 @@
+== process p2-fix landing 2026-09-08T01:43:42Z over 20b5f3f
+== status
+ M guides/process.md
+ M src/core/constants.ts
+ M src/core/types.ts
+ M src/server/processes/ProcessManager.ts
+ M tests/guides.test.ts
+ M tests/src/server/processes/Supervisor.test.ts
+ tests/guides.test.ts                          | 370 +++++++++++++-------------
+ tests/src/server/processes/Supervisor.test.ts |  14 +-
+ 6 files changed, 252 insertions(+), 233 deletions(-)
+== stage by path
+ 6 files changed, 252 insertions(+), 233 deletions(-)
+== committed
+6a7f96f Refine process's convergence on the audit's findings
+(status end)
