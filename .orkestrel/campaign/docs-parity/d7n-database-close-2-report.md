@@ -261,3 +261,7 @@ diff --git a/tests/guides.test.ts b/tests/guides.test.ts
 
 No off-limits file was touched. No code token moved; every hunk sits inside a doc-block description
 sentence, a guide table cell, or a test case's presence/position within its owning `describe` block.
+
+---
+
+Orchestrator's annotation (2026-09-08): after this unit landed, the owner's `57eb898` on `origin/main` was merged into the branch as `cdbf66a`; the lockfile conflicted, and the Orchestrator regenerated `package-lock.json` from the merged manifest with `npm install --package-lock-only` (root `0.0.14`, guide `0.0.17` as the registry serves) rather than editing it by hand; `npm run docs` read zero and the scoped gates green on the merged tree; the closure's verifier runs the whole chain over it.
