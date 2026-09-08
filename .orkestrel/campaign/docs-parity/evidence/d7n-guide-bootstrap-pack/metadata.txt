@@ -1,0 +1,5 @@
+commit: ef6ada9975d71ce97ac20239f473c02b77e84cd9
+version: 0.0.18
+tarball: /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-guide-bootstrap.47Q7XT/orkestrel-guide-0.0.18.tgz
+tarball-sha256: 3a60e83f4c6319f029106f3d9588ed186639f72c222a34045326439cfff73519
+dist-sha256: 6455f6f9399961cc499631c8e3d7db7e7b5d7c5062c44ffd72144c41f1395205

@@ -1,0 +1,9 @@
+{
+	"target": "C:\\Users\\mikes\\WebstormProjects\\contract",
+	"written": [
+		"tests/setupPolicy.ts",
+		"tests/config.test.ts"
+	],
+	"skipped": [],
+	"removed": []
+}

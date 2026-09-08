@@ -1,0 +1,8 @@
++ npm run format:check
+npm notice run @orkestrel/guide@0.0.18 format:check
+npm notice run oxfmt --config .oxfmtrc.json --check .
+Checking formatting...
+
+All matched files use the correct format.
+Finished in 1233ms on 81 files using 16 threads.
+exit=0

@@ -155,3 +155,21 @@ Preserve Ruling 8's parity requirements, package main closures and guide correct
 Do not use publication to bypass local tarball verification, fabricate registry
 lockfile entries for unpublished versions, or change authentication material. Keep
 every upload subject to the owner's decision and credential.
+
+## Ruling 30 — development pins follow publication without forcing a release
+
+Follow the owner's clarification of 2026-09-08. Prepare and publish by runtime,
+peer and optional dependency order. Use identified Guide and scaffold tarballs to
+prepare lower-layer packages before those tooling packages reach their own release
+layers. Do not hold Contract for future Guide or scaffold development pins.
+
+After tooling publication, update development pins and valid registry locks on main.
+Rebuild and compare the material distributable with the accepted published artifact.
+Ignore sourcemaps and whitespace-only differences. When material content is unchanged,
+commit the development update without a package bump or another publication. When
+tokens, declarations, behavior or another published surface changes, apply the release
+and downstream obligations to that actual change.
+
+Keep runtime, peer and optional pins aligned with the artifacts proved before release.
+Do not fabricate registry locks or represent provisional tooling as registry-served.
+This clarification does not authorize uploads or waive the remaining source closures.

@@ -1,0 +1,34 @@
+$ git -C C:/Users/mikes/WebstormProjects/msg fetch origin
+exit=0
+
+$ git -C C:/Users/mikes/WebstormProjects/msg rev-parse HEAD
+57128e98372d2bc94307236886beb5166d172664
+exit=0
+
+$ git -C C:/Users/mikes/WebstormProjects/msg status --short
+exit=0
+
+$ git -C C:/Users/mikes/WebstormProjects/msg merge-base --is-ancestor origin/main HEAD
+exit=0
+
+$ C:/Users/mikes/scoop/apps/nodejs-lts/current/node.exe C:/Users/mikes/scoop/apps/nodejs-lts/current/node_modules/npm/bin/npm-cli.js view @orkestrel/msg version versions --json
+{
+  "version": "0.0.9",
+  "versions": [
+    "0.0.1",
+    "0.0.2",
+    "0.0.3",
+    "0.0.4",
+    "0.0.5",
+    "0.0.6",
+    "0.0.7",
+    "0.0.8",
+    "0.0.9"
+  ]
+}
+exit=0
+
+$ C:/Users/mikes/scoop/apps/nodejs-lts/current/node.exe tmp/pass/read-package-field.mjs C:/Users/mikes/WebstormProjects/msg/package.json version
+0.0.10
+exit=0
+

@@ -61,9 +61,11 @@ terminal result; retain the result projection with its report and verdict.
 | d7n-guide-path-bootstrap | builder, Terra | accepted selected-path pilot | native layer_capture_fix | author returned; root guide.sh exited 0 | repair applied; configured-policy red became green; full gates pending |
 | d7n-guide-bootstrap-gates | builder, Terra; root run | existing Guide validation script | native layer_capture_fix; tmp/pass/d7n-guide-bootstrap-validate.YO5yk2 | exec 67947 exited 0 | full chain and docs passed; checkpoint 0accc15 pushed |
 | d7n-guide-path-bootstrap-check | mechanical checker, Cursor Grok | driver diff and actual repair receipt | tmp/cursor/d7n-guide-path-bootstrap-check.jsonl; bd38c2d1-0afd-45c0-b100-4ab90e6fdea7 | exec 15980 exited 0 | PASS; selected propagation closed |
-| d7n-guide-heading-close-fix | implementer, Opus | Guide checkpoint 0accc15 | tmp/claude/d7n-guide-heading-close-fix.jsonl; 9adca1da-f1cf-4d9c-96ea-1edb01135f1b | exec 47601 under root cap 2700 seconds | running; owned reader corrections only |
-| d7n-guide-bootstrap-pack | builder, Terra | existing accepted pack runner | native layer_capture_fix | author returned | syntax and package-field controls passed; packing unrun |
-| d7n-foundation-visit | builder, Terra | accepted public repair and existing gate/pack carriers | native layer_capture_fix | native task | authoring bounded bottom-layer visit; no fleet execution |
+| d7n-guide-heading-close-fix | implementer, Opus | Guide checkpoint 0accc15 | tmp/claude/d7n-guide-heading-close-fix.jsonl; 9adca1da-f1cf-4d9c-96ea-1edb01135f1b | exec 47601 exited 0 | independent objective review PASS; root final gates and distribution passed; landed and branch pushed as ef6ada9 |
+| d7n-guide-bootstrap-pack | builder, Terra; root run | Guide ef6ada9 | tmp/pass/d7n-guide-bootstrap-pack.vh8CeQ | root command exited 0 | corrected artifact packed; dist hash prefix 6455f6f9; clean source |
+| d7n-foundation-visit | builder, Terra | accepted public repair and existing gate/pack carriers | native layer_capture_fix | author returned | syntax passed; root visits active |
+| d7n-foundation-contract | root execution | Contract fd3fce2, version 0.0.17 | tmp/pass/d7n-foundation-contract.sAQxNo | exec 28694 exited 0 | prepublish, docs and pack passed; selected-path landing pending |
+| d7n-foundation-codec | root execution | Codec 8c20e15, version 0.0.3 | tmp/pass/d7n-foundation-codec.sYfIas | exec 45155 | running |
 
 The previous probe writer returned and its test changes landed as 93fc01d. The
 owner-main comparison returned; its result projection is retained. Those processes

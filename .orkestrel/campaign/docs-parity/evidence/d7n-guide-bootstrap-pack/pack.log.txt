@@ -1,0 +1,25 @@
++ npm pack --ignore-scripts --pack-destination /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-guide-bootstrap.47Q7XT
+npm notice
+npm notice 📦  @orkestrel/guide@0.0.18
+npm notice Tarball Contents
+npm notice 1.1kB LICENSE
+npm notice 10.0kB README.md
+npm notice 143.3kB dist/src/core/index.cjs
+npm notice 206.8kB dist/src/core/index.cjs.map
+npm notice 117.9kB dist/src/core/index.d.cts
+npm notice 117.9kB dist/src/core/index.d.ts
+npm notice 138.1kB dist/src/core/index.js
+npm notice 205.1kB dist/src/core/index.js.map
+npm notice 3.9kB package.json
+npm notice Tarball Details
+npm notice name: @orkestrel/guide
+npm notice version: 0.0.18
+npm notice filename: orkestrel-guide-0.0.18.tgz
+npm notice package size: 229.2 kB
+npm notice unpacked size: 944.1 kB
+npm notice shasum: b6b16bf964d3ffb33017a9523a12142e8e08e0f3
+npm notice integrity: sha512-oA3/XZXcISDMi[...]k1ISETP/zZHWw==
+npm notice total files: 9
+npm notice
+orkestrel-guide-0.0.18.tgz
+exit=0

@@ -1,0 +1,2 @@
++ cmp /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-guide-bootstrap.47Q7XT/extract.DmGgxv/package/dist/src/core/index.js /c/Users/mikes/WebstormProjects/guide/dist/src/core/index.js
+exit=0

@@ -7,7 +7,7 @@ Written 2026-09-08T03:35Z and revised 2026-09-08T04:05Z at the owner's request, 
 | Repository | Branch | Tip | Notes |
 | --- | --- | --- | --- |
 | `orkestrel/scaffold` | `claude/orkestrel-npm-audit-deps-14ibta` (the working branch), `main`, and `claude/docs-parity-windows-01a0810d` (the designated branch) | the commit carrying this file | push each named ref at the same tip; the campaign folder is the record |
-| `orkestrel/guide` | `claude/orkestrel-npm-audit-deps-14ibta` | `0accc15` | candidate checkpoint pushed; main stays at d3ee1bb; the installed old head-start is still packed from 1d5afa3; corrected packing follows reader acceptance |
+| `orkestrel/guide` | `claude/orkestrel-npm-audit-deps-14ibta` | `ef6ada9` | reader correction accepted and pushed; main stays at d3ee1bb; corrected bootstrap pack has dist hash prefix 6455f6f9 |
 | `orkestrel/<package>` for every package in the table that follows | `claude/orkestrel-npm-audit-deps-14ibta` | per the table | pushed to `main` as each closes |
 
 Branch URLs follow one pattern: `https://github.com/orkestrel/<repo>/tree/claude/orkestrel-npm-audit-deps-14ibta`.
@@ -109,7 +109,7 @@ Tips are the branch tips as pushed. "on main" means the branch tip is `main`.
 | terminal | `0b01536` | retained audit lanes reconciled in `d7n-terminal-audit-verdict.md`; checker recorded as not run | dispatch `d7n-terminal-converge-fix-windows-brief.md`; then checker and verifier; verdict; push `main` |
 | mcp | `a01d5e8` | owner main merged; scoped merge checks passed; branch pushed; audit reconciled in `d7n-mcp-audit-verdict.md`; checker recorded as not run | dispatch `d7n-mcp-converge-fix-windows-brief.md`; closure; push `main`; guide-reader referral remains separate |
 | supervisor | `edf80e6` (`main`) | outside the pass; the owner's API-adoption decision is pending (`d7-fleet-plan.md` § For the owner) | nothing in this campaign |
-| guide | `0accc15` | packed scaffold path propagation closed; full host gate chain and docs passed; candidate checkpoint pushed to its branch; R1–R6 reader successor running | accept the retained reader correction, pack the corrected bootstrap Guide, then use it for bottom-layer artifacts |
+| guide | `ef6ada9` | reader and path corrections accepted; gates and installed distribution passed; branch pushed; replacement bootstrap packed with dist hash prefix 6455f6f9 | use corrected tooling for layer visits; final runtime pins and main closure remain pending |
 
 ## The tail, after every package closes
 
@@ -211,6 +211,28 @@ the package gates and real downstream artifact proofs. Prepare future pins in is
 state; do not make main uninstallable while registry lock generation is unavailable.
 The publish skill and its wave reference have been read for preparation. Registry-final
 visits still follow publication availability; no upload is authorized by preparation.
+
+## Current artifact preparation
+
+The Guide reader correction closed and landed as
+ef6ada9975d71ce97ac20239f473c02b77e84cd9. The corrected 0.0.18 bootstrap artifact is
+tmp/pass/packed/d7n-guide-bootstrap.47Q7XT/orkestrel-guide-0.0.18.tgz, SHA256
+3a60e83f4c6319f029106f3d9588ed186639f72c222a34045326439cfff73519. Its core dist SHA256
+is 6455f6f9399961cc499631c8e3d7db7e7b5d7c5062c44ffd72144c41f1395205. Use this
+replacement in subsequent visits. Earlier old-pack and running-reader statements
+describe the historical sequence, not current state. Guide main remains pending.
+
+Contract's visit exited 0 with the corrected Guide and selected scaffold path repair.
+Its 0.0.17 tarball exists under tmp/pass/packed/d7n-foundation-contract.ZjPTS5/.
+The package manifest and lock stayed unchanged. Evidence inspection and selected-path
+landing follow; Codec's visit is running. The remaining bottom-layer visits follow
+the existing prepare-foundation.sh carrier.
+
+Ruling 30 records the owner's development-pin clarification. Prepare lower runtime
+layers with tooling tarballs now. Update development pins after tooling publication;
+do not bump or republish when the material distributable is unchanged. Keep future
+runtime pins isolated until valid registry locks can be generated. That safe default
+does not block local artifact preparation. No upload is authorized yet.
 
 ## Pending owner decisions carried from the container
 

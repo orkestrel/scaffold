@@ -1,0 +1,31 @@
+$ git -C C:/Users/mikes/WebstormProjects/sse fetch origin
+exit=0
+
+$ git -C C:/Users/mikes/WebstormProjects/sse rev-parse HEAD
+7778cff15ca587fdb12404a31737dc7a91225e1d
+exit=0
+
+$ git -C C:/Users/mikes/WebstormProjects/sse status --short
+exit=0
+
+$ git -C C:/Users/mikes/WebstormProjects/sse merge-base --is-ancestor origin/main HEAD
+exit=0
+
+$ C:/Users/mikes/scoop/apps/nodejs-lts/current/node.exe C:/Users/mikes/scoop/apps/nodejs-lts/current/node_modules/npm/bin/npm-cli.js view @orkestrel/sse version versions --json
+{
+  "version": "0.0.6",
+  "versions": [
+    "0.0.1",
+    "0.0.2",
+    "0.0.3",
+    "0.0.4",
+    "0.0.5",
+    "0.0.6"
+  ]
+}
+exit=0
+
+$ C:/Users/mikes/scoop/apps/nodejs-lts/current/node.exe tmp/pass/read-package-field.mjs C:/Users/mikes/WebstormProjects/sse/package.json version
+0.0.7
+exit=0
+

@@ -1,0 +1,2 @@
++ node /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/path-artifact-pilot/foundation.mjs contract /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/d7n-foundation-contract.sAQxNo/repair
+exit=0

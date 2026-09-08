@@ -1,0 +1,27 @@
+$ git -C C:/Users/mikes/WebstormProjects/codec fetch origin
+exit=0
+
+$ git -C C:/Users/mikes/WebstormProjects/codec rev-parse HEAD
+8c20e1599651647efc1478b86f2b30d685cc8db6
+exit=0
+
+$ git -C C:/Users/mikes/WebstormProjects/codec status --short
+exit=0
+
+$ git -C C:/Users/mikes/WebstormProjects/codec merge-base --is-ancestor origin/main HEAD
+exit=0
+
+$ C:/Users/mikes/scoop/apps/nodejs-lts/current/node.exe C:/Users/mikes/scoop/apps/nodejs-lts/current/node_modules/npm/bin/npm-cli.js view @orkestrel/codec version versions --json
+{
+  "version": "0.0.2",
+  "versions": [
+    "0.0.1",
+    "0.0.2"
+  ]
+}
+exit=0
+
+$ C:/Users/mikes/scoop/apps/nodejs-lts/current/node.exe tmp/pass/read-package-field.mjs C:/Users/mikes/WebstormProjects/codec/package.json version
+0.0.3
+exit=0
+

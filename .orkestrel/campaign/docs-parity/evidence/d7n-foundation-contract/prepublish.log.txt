@@ -1,0 +1,129 @@
++ npm run prepublishOnly
+npm notice run @orkestrel/contract@0.0.17 prepublishOnly
+npm notice run npm run format:check && npm run lint:check && npm run check && npm run build && npm test && npm run test:distribution -- --mode release
+npm notice run @orkestrel/contract@0.0.17 format:check
+npm notice run oxfmt --config .oxfmtrc.json --check .
+Checking formatting...
+
+All matched files use the correct format.
+Finished in 1160ms on 71 files using 16 threads.
+npm notice run @orkestrel/contract@0.0.17 lint:check
+npm notice run oxlint --config .oxlintrc.json --deny-warnings .
+npm notice run @orkestrel/contract@0.0.17 check
+npm notice run tsc --noEmit --project tsconfig.json && npm run check:src
+npm notice run @orkestrel/contract@0.0.17 check:src
+npm notice run npm run check:src:core
+npm notice run @orkestrel/contract@0.0.17 check:src:core
+npm notice run tsc --noEmit -p configs/src/tsconfig.core.json
+npm notice run @orkestrel/contract@0.0.17 build
+npm notice run npm run clean && npm run build:src
+npm notice run @orkestrel/contract@0.0.17 clean
+npm notice run node -e "require('node:fs').rmSync('dist',{recursive:true,force:true})"
+npm notice run @orkestrel/contract@0.0.17 build:src
+npm notice run npm run build:src:core
+npm notice run @orkestrel/contract@0.0.17 build:src:core
+npm notice run vite build --config configs/src/vite.core.config.ts && npm run copy dist/src/core/index.d.ts dist/src/core/index.d.cts
+vite v8.2.2 building client environment for production...
+transforming...
+✓ 22 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/core/index.js  397.46 kB │ gzip: 91.09 kB │ map: 758.18 kB
+
+transforming...
+✓ 22 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/core/index.cjs  402.94 kB │ gzip: 91.83 kB │ map: 758.18 kB
+
+✓ built in 554ms
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+npm notice run @orkestrel/contract@0.0.17 copy
+npm notice run node -e "const fs=require('node:fs'),p=require('node:path'),a=process.argv[1],b=process.argv[2];fs.mkdirSync(p.dirname(b),{recursive:true});fs.cpSync(a,b,{force:true});console.log('Copied: '+a+' to '+b)" dist/src/core/index.d.ts dist/src/core/index.d.cts
+Copied: dist/src/core/index.d.ts to dist/src/core/index.d.cts
+npm notice run @orkestrel/contract@0.0.17 test
+npm notice run npm run test:src && npm run test:policy && npm run test:config && npm run test:setup && npm run test:guides
+npm notice run @orkestrel/contract@0.0.17 test:src
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/contract
+
+······································································································································································································································································································································································································································································································································································································································································································································································································································································································································································································································································································································································································································································································································································································
+
+ Test Files  19 passed (19)
+      Tests  1350 passed (1350)
+   Start at  16:35:31
+   Duration  5.02s (transform 9.81s, setup 10.21s, import 6.27s, tests 10.64s, environment 3ms)
+
+npm notice run @orkestrel/contract@0.0.17 test:policy
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project policy
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/contract
+
+·················································································-·········
+
+ Test Files  1 passed (1)
+      Tests  90 passed | 1 skipped (91)
+   Start at  16:35:37
+   Duration  1.43s (transform 345ms, setup 551ms, import 118ms, tests 600ms, environment 0ms)
+
+npm notice run @orkestrel/contract@0.0.17 test:config
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project config
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/contract
+
+·········································································································································································stdout | tests/config.test.ts > configuration helpers > rolls one face into a single declaration and rewrites its core specifier
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+
+··-stdout | tests/config.test.ts > configuration helpers > rolls one face into a single declaration and rewrites its core specifier
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+
+·
+
+ Test Files  1 passed (1)
+      Tests  172 passed | 1 skipped (173)
+   Start at  16:35:39
+   Duration  3.55s (transform 485ms, setup 559ms, import 463ms, tests 2.37s, environment 0ms)
+
+npm notice run @orkestrel/contract@0.0.17 test:setup
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project setup
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/contract
+
+·····························································
+
+ Test Files  2 passed (2)
+      Tests  61 passed (61)
+   Start at  16:35:43
+   Duration  994ms (transform 602ms, setup 1.11s, import 79ms, tests 340ms, environment 0ms)
+
+npm notice run @orkestrel/contract@0.0.17 test:guides
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project guides
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/contract
+
+······································································
+
+ Test Files  1 passed (1)
+      Tests  70 passed (70)
+   Start at  16:35:45
+   Duration  1.32s (transform 306ms, setup 575ms, import 236ms, tests 351ms, environment 0ms)
+
+npm notice run @orkestrel/contract@0.0.17 test:distribution
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project distribution --mode release
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/contract
+
+(node:27256) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead to security vulnerabilities, as the arguments are not escaped, only concatenated.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+·········
+
+ Test Files  1 passed (1)
+      Tests  9 passed (9)
+   Start at  16:35:47
+   Duration  10.33s (transform 338ms, setup 575ms, import 2.00s, tests 7.61s, environment 0ms)
+
+exit=0

@@ -1,0 +1,2 @@
++ git -C /c/Users/mikes/WebstormProjects/contract fetch origin
+exit=0

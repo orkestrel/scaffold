@@ -1,8 +1,8 @@
 # Artifact-wave design reading
 
 Accept the measured runtime/peer/optional order and the explicit development bootstrap
-boundary. Proceed with the public packed-host pilot and retained source fixes. Hold
-canonical future-pin landing until the owner answers the lockfile-state question.
+boundary. Proceed with the public packed-host pilot and retained source fixes. Keep
+unpublished runtime pins isolated until the registry permits valid canonical locks.
 No publication, future registry lock synthesis or owner dependency replacement is
 authorized by a design proposal.
 
@@ -32,20 +32,22 @@ source-main closures, as the handoff requires. Do not adopt the subjective propo
 earlier pin placement, broad pre-wave repair sweep or new source audits for already
 closed docs surfaces. The guide tool bootstrap is not a final layer acceptance.
 
-Replace provisional tools with the final accepted artifacts and rerun affected full
-gates. A matching Guide entry file does not establish matching Markdown behavior.
+Replace provisional tools with the final accepted artifacts and rerun affected
+gates. Apply Ruling 30: later development pins do not hold a lower-layer release or
+force another publication when the material distributable remains unchanged.
+A matching Guide entry file does not establish matching Markdown behavior.
 A matching Probe entry does not establish its nested MCP resolution. Reject the
 subjective digest-only shortcut. Material emitted differences require identified
 replacement artifacts and downstream revalidation; never silently overwrite a pack.
 
-## Owner choice held open
+## Canonical lock boundary
 
 A future semantic manifest and an old registry lock can be recorded honestly, but that
 does not make npm ci work on main. The lanes' proposals do not authorize making main
-uninstallable. Root asked whether release pins stay in isolated preparation checkouts
-until publication permits valid locks, or whether the owner accepts explicit pending
-locks on main. The recommendation is isolated preparation. Unambiguous bootstrap,
-source corrections and disposable npm probes proceed while that choice is pending.
+uninstallable. Keep future runtime pins in isolated preparation until publication
+permits valid locks. The owner clarified that development pins come later under
+Ruling 30; they do not block lower-layer tarball preparation or publication.
+Unambiguous bootstrap, source corrections and disposable npm probes proceed.
 
 Keep registry-final lock generation for actual registry availability. This is a release
 boundary, not a missing source fix or permission to publish. Final presentation must
@@ -70,4 +72,3 @@ its own artifact and revalidation ruling rather than an absolute campaign freeze
 The Workflow tool remains unavailable following the recorded review refusal. Required
 lanes ran through native and CLI routes, with root-owned caps. No permission bypass
 or dark-bench substitution occurred.
-

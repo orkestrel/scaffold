@@ -1,0 +1,38 @@
+$ git -C C:/Users/mikes/WebstormProjects/test fetch origin
+exit=0
+
+$ git -C C:/Users/mikes/WebstormProjects/test rev-parse HEAD
+1b6ce0468d40c676d1e544cd004c0a5aa09730f0
+exit=0
+
+$ git -C C:/Users/mikes/WebstormProjects/test status --short
+exit=0
+
+$ git -C C:/Users/mikes/WebstormProjects/test merge-base --is-ancestor origin/main HEAD
+exit=0
+
+$ C:/Users/mikes/scoop/apps/nodejs-lts/current/node.exe C:/Users/mikes/scoop/apps/nodejs-lts/current/node_modules/npm/bin/npm-cli.js view @orkestrel/test version versions --json
+{
+  "version": "0.0.13",
+  "versions": [
+    "0.0.1",
+    "0.0.2",
+    "0.0.3",
+    "0.0.4",
+    "0.0.5",
+    "0.0.6",
+    "0.0.7",
+    "0.0.8",
+    "0.0.9",
+    "0.0.10",
+    "0.0.11",
+    "0.0.12",
+    "0.0.13"
+  ]
+}
+exit=0
+
+$ C:/Users/mikes/scoop/apps/nodejs-lts/current/node.exe tmp/pass/read-package-field.mjs C:/Users/mikes/WebstormProjects/test/package.json version
+0.0.14
+exit=0
+

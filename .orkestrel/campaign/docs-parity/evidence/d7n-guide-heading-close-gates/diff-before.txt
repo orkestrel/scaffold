@@ -1,0 +1,169 @@
+diff --git a/guides/guide.md b/guides/guide.md
+index 39a457c..6101635 100644
+--- a/guides/guide.md
++++ b/guides/guide.md
+@@ -321,18 +321,16 @@ caches its projections at construction — `sections`, `tagline`, `surface`, `me
+ of identifiers: every table's column-0 code span (keyword read from the column whose header text
+ is `Kind`, located positionally so it survives reordering) and every H3 entity heading whose
+ trimmed compared inline content is exactly its backticked code-span name (a class documented
+-outside a table, keyword fixed to `'class'`). Heading padding, emphasis, and links preserve that
+-identity. Additional visible text or code spans refuse admission. The heading boundary compares
+-`extractCellText(block.children).trim()` with the raw value from `findFirstCode` before generic
+-normalization. `extractMethods` scopes to
++outside a table, keyword fixed to `'class'`). Surrounding spaces, emphasis, and links preserve
++that identity. `extractSurface` refuses a heading carrying any other visible text or an additional
++code span. Surface entries retain encounter order and deduplicate by name + keyword: the
++first-seen entry wins, so a genuine entity heading before its matching class row keeps the
++summary-less heading entry, while a table row before that heading keeps its `Summary`; the same
++name under another keyword remains distinct. `extractMethods` scopes to
+ `## Methods`: an H4 whose first code span sets the current interface name, and the very next
+ table becomes that interface's `MethodGroup`. Both extractors normalize every identifier
+ through `normalizeIdentifier`, stripping a generic-parameter annotation (`` `WidgetInterface<T>` ``
+-→ `WidgetInterface`) so the bijection key is always the bare name. Surface entries retain
+-encounter order and deduplicate by name + keyword: the first-seen entry wins, so a genuine entity
+-heading before its matching class row keeps the summary-less heading entry, while a table row
+-before that heading keeps its `Summary`; the same name under another keyword remains distinct.
+-`extractLinks` walks the
++→ `WidgetInterface`) so the bijection key is always the bare name. `extractLinks` walks the
+ whole AST for every `link` node (table cells included); `extractTests` does the same walk
+ scoped to the `## Tests` section only; and `extractFences` walks the whole AST for every
+ fenced code block, tagged or not, keeping each fence's info-string language and verbatim body.
+diff --git a/src/core/helpers.ts b/src/core/helpers.ts
+index bbebeba..c8be34a 100644
+--- a/src/core/helpers.ts
++++ b/src/core/helpers.ts
+@@ -973,8 +973,8 @@ export function normalizeIdentifier(code: string): string {
+  * the parity reader compares it. Emphasis drops to its text, a link drops to its text, an image
+  * drops to its alternative text, and the markdown parser has already unescaped `\|`.
+  *
+- * @param cell - The cell's inline nodes
+- * @returns The cell's text, code spans included
++ * @param cell - The inline nodes to flatten
++ * @returns The compared text, code spans included
+  *
+  * @example
+  * ```ts
+@@ -1499,11 +1499,11 @@ export function extractRowSummary(table: TableNode, row: number): string | undef
+  *
+  * @remarks
+  * The heading boundary compares {@link extractCellText} with the raw value from
+- * {@link findFirstCode} before {@link normalizeIdentifier} strips a generic annotation. Heading
+- * padding, emphasis, and links preserve that identity. Additional visible text or code spans
+- * refuse admission. Entries retain encounter order, and the first-seen name + keyword wins: a
+- * genuine heading before its table row keeps the heading's summary-less class entry, while a
+- * table row before that heading keeps its `Summary`.
++ * {@link findFirstCode} before {@link normalizeIdentifier} strips a generic annotation.
++ * Surrounding spaces, emphasis, and links preserve that identity. This reader refuses a heading
++ * carrying any other visible text or an additional code span. Entries retain encounter order, and
++ * the first-seen name + keyword wins: a genuine heading before its table row keeps the heading's
++ * summary-less class entry, while a table row before that heading keeps its `Summary`.
+  *
+  * @param document - The parsed guide document
+  * @returns The documented surface, in encounter order
+diff --git a/tests/setup.ts b/tests/setup.ts
+index bba8f13..599dbc6 100644
+--- a/tests/setup.ts
++++ b/tests/setup.ts
+@@ -1,5 +1,5 @@
+ import type { TableNode } from '@orkestrel/markdown'
+-import type { SourceInterface } from '@src/core'
++import type { SourceInterface, SurfaceSymbol } from '@src/core'
+ import { parseDocument } from '@orkestrel/markdown'
+ import { requireValue } from '@orkestrel/test'
+ 
+@@ -12,7 +12,7 @@ import { requireValue } from '@orkestrel/test'
+ export const TEST_SEED = 42
+ 
+ /** Holds a guide where an embedded demonstration heading precedes the class row it mentions. */
+-export const ENTITY_HEADING_GUIDE = [
++export const DEMONSTRATION_HEADING_GUIDE = [
+ 	'## Surface',
+ 	'',
+ 	'### Bind a `Widget` to a transport',
+@@ -23,6 +23,21 @@ export const ENTITY_HEADING_GUIDE = [
+ 	'',
+ ].join('\n')
+ 
++/** Represents one candidate H3 heading paired with the surface it yields. */
++export type EntityHeadingCase = readonly [heading: string, surface: readonly SurfaceSymbol[]]
++
++/** Holds each candidate H3 heading the entity-heading boundary admits or refuses. */
++export const ENTITY_HEADING_CASES: readonly EntityHeadingCase[] = [
++	['### `Widget`', [{ name: 'Widget', keyword: 'class' }]],
++	['### `Widget<T>`', [{ name: 'Widget', keyword: 'class' }]],
++	['###   `Widget`   ', [{ name: 'Widget', keyword: 'class' }]],
++	['### **`Widget`**', [{ name: 'Widget', keyword: 'class' }]],
++	['### [`Widget`](target)', [{ name: 'Widget', keyword: 'class' }]],
++	['### Bind a `Widget` to a transport', []],
++	['### `Widget` and `Alias`', []],
++	['### `Widget` ` `', []],
++]
++
+ /**
+  * Requires markdown whose first block is a table.
+  *
+diff --git a/tests/src/core/Guide.test.ts b/tests/src/core/Guide.test.ts
+index 49e0623..70c4459 100644
+--- a/tests/src/core/Guide.test.ts
++++ b/tests/src/core/Guide.test.ts
+@@ -1,7 +1,7 @@
+ import { Guide, createSource, isExternalLink, findMissingSymbols, resolveLink } from '@src/core'
+ import { describe, expect, it } from 'vitest'
+ import { readInventory } from '@orkestrel/test/server'
+-import { ENTITY_HEADING_GUIDE, requireText } from '../../setup.js'
++import { DEMONSTRATION_HEADING_GUIDE, requireText } from '../../setup.js'
+ 
+ const FIXTURES = readInventory(new URL('../../fixtures/', import.meta.url), ['.'])
+ 
+@@ -28,7 +28,7 @@ describe('Guide', () => {
+ 	})
+ 
+ 	it('caches a surface that refuses an embedded demonstration heading', () => {
+-		const guide = new Guide(ENTITY_HEADING_GUIDE)
++		const guide = new Guide(DEMONSTRATION_HEADING_GUIDE)
+ 		expect(guide.surface()).toEqual([
+ 			{ name: 'Widget', keyword: 'class', summary: 'Represents a widget.' },
+ 		])
+diff --git a/tests/src/core/helpers.test.ts b/tests/src/core/helpers.test.ts
+index 4ae8588..b0dc776 100644
+--- a/tests/src/core/helpers.test.ts
++++ b/tests/src/core/helpers.test.ts
+@@ -74,7 +74,12 @@ import {
+ import { createMarkdown, isTableNode, renderMarkdown } from '@orkestrel/markdown'
+ import { parseSync } from 'vite'
+ import { describe, expect, it } from 'vitest'
+-import { ENTITY_HEADING_GUIDE, requireTable, requireText } from '../../setup.js'
++import {
++	DEMONSTRATION_HEADING_GUIDE,
++	ENTITY_HEADING_CASES,
++	requireTable,
++	requireText,
++} from '../../setup.js'
+ import { readInventory } from '@orkestrel/test/server'
+ 
+ const FIXTURES = readInventory(new URL('../../fixtures/', import.meta.url), ['.'])
+@@ -1069,22 +1074,13 @@ describe('extractSurface', () => {
+ 		expect(surface).toContainEqual({ name: 'Widget', keyword: 'class' })
+ 	})
+ 
+-	it.each([
+-		['### `Widget`', [{ name: 'Widget', keyword: 'class' }]],
+-		['### `Widget<T>`', [{ name: 'Widget', keyword: 'class' }]],
+-		['###   `Widget`   ', [{ name: 'Widget', keyword: 'class' }]],
+-		['### **`Widget`**', [{ name: 'Widget', keyword: 'class' }]],
+-		['### [`Widget`](target)', [{ name: 'Widget', keyword: 'class' }]],
+-		['### Bind a `Widget` to a transport', []],
+-		['### `Widget` and `Alias`', []],
+-		['### `Widget` ` `', []],
+-	])('applies the entity-heading boundary to %s', (heading, expected) => {
++	it.each(ENTITY_HEADING_CASES)('applies the heading boundary to %s', (heading, expected) => {
+ 		const document = createMarkdown(['## Surface', '', heading, ''].join('\n')).document
+ 		expect(extractSurface(document)).toEqual(expected)
+ 	})
+ 
+ 	it('refuses an embedded demonstration heading and keeps the following row summary', () => {
+-		expect(extractSurface(createMarkdown(ENTITY_HEADING_GUIDE).document)).toEqual([
++		expect(extractSurface(createMarkdown(DEMONSTRATION_HEADING_GUIDE).document)).toEqual([
+ 			{ name: 'Widget', keyword: 'class', summary: 'Represents a widget.' },
+ 		])
+ 	})
