@@ -1,0 +1,93 @@
+{
+	"name": "@orkestrel/budget",
+	"version": "0.0.10",
+	"description": "A typed spending budget — a cumulative tally with an AbortSignal ceiling, start/consume/clear lifecycle, and a token-budget factory. Part of the @orkestrel line.",
+	"keywords": [
+		"abort-signal",
+		"budget",
+		"cancellation",
+		"limit",
+		"quota",
+		"tokens",
+		"typescript"
+	],
+	"homepage": "https://github.com/orkestrel/budget#readme",
+	"bugs": "https://github.com/orkestrel/budget/issues",
+	"license": "MIT",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/orkestrel/budget.git"
+	},
+	"files": [
+		"dist/src",
+		"README.md"
+	],
+	"type": "module",
+	"sideEffects": false,
+	"main": "./dist/src/core/index.cjs",
+	"module": "./dist/src/core/index.js",
+	"types": "./dist/src/core/index.d.ts",
+	"exports": {
+		".": {
+			"import": {
+				"types": "./dist/src/core/index.d.ts",
+				"default": "./dist/src/core/index.js"
+			},
+			"require": {
+				"types": "./dist/src/core/index.d.cts",
+				"default": "./dist/src/core/index.cjs"
+			}
+		},
+		"./package.json": "./package.json"
+	},
+	"publishConfig": {
+		"access": "public"
+	},
+	"scripts": {
+		"clean": "node -e \"require('node:fs').rmSync('dist',{recursive:true,force:true})\"",
+		"copy": "node -e \"const fs=require('node:fs'),p=require('node:path'),a=process.argv[1],b=process.argv[2];fs.mkdirSync(p.dirname(b),{recursive:true});fs.cpSync(a,b,{force:true});console.log('Copied: '+a+' to '+b)\"",
+		"scaffold": "scaffold",
+		"lint": "oxlint --config .oxlintrc.json --fix .",
+		"check": "tsc --noEmit --project tsconfig.json && npm run check:src",
+		"check:src": "npm run check:src:core",
+		"check:src:core": "tsc --noEmit -p configs/src/tsconfig.core.json",
+		"format": "oxfmt --config .oxfmtrc.json --write .",
+		"format:check": "oxfmt --config .oxfmtrc.json --check .",
+		"lint:check": "oxlint --config .oxlintrc.json --deny-warnings .",
+		"test": "npm run test:src && npm run test:policy && npm run test:config && npm run test:setup && npm run test:guides",
+		"test:src": "vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core",
+		"test:src:core": "vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core",
+		"test:policy": "vitest run --config vite.config.ts --no-cache --reporter=dot --project policy",
+		"test:config": "vitest run --config vite.config.ts --no-cache --reporter=dot --project config",
+		"test:guides": "vitest run --config vite.config.ts --no-cache --reporter=dot --project guides",
+		"build": "npm run clean && npm run build:src",
+		"build:src": "npm run build:src:core",
+		"build:src:core": "vite build --config configs/src/vite.core.config.ts && npm run copy dist/src/core/index.d.ts dist/src/core/index.d.cts",
+		"prepublishOnly": "npm run format:check && npm run lint:check && npm run check && npm run build && npm test && npm run test:distribution -- --mode release",
+		"test:distribution": "vitest run --config vite.config.ts --no-cache --reporter=dot --project distribution",
+		"test:probe": "vitest run --config vite.config.ts --no-cache --reporter=verbose --project probe",
+		"test:bench": "vitest bench --config vite.config.ts --no-cache --project probe",
+		"prepack": "npm run build",
+		"test:setup": "vitest run --config vite.config.ts --no-cache --reporter=dot --project setup",
+		"docs": "node --experimental-strip-types scripts/docs.ts"
+	},
+	"dependencies": {
+		"@orkestrel/contract": "^0.0.16"
+	},
+	"devDependencies": {
+		"@microsoft/api-extractor": "^7.59.0",
+		"@orkestrel/guide": "^0.0.17",
+		"@orkestrel/probe": "^0.0.12",
+		"@orkestrel/scaffold": "^0.0.63",
+		"@orkestrel/test": "^0.0.13",
+		"@types/node": "^26.4.1",
+		"oxfmt": "^0.66.0",
+		"oxlint": "^1.81.0",
+		"typescript": "^6.0.3",
+		"vite": "^8.2.2",
+		"vitest": "^4.1.11"
+	},
+	"engines": {
+		"node": ">=22.12.0"
+	}
+}

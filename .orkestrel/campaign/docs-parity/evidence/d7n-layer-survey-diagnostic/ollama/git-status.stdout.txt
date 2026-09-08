@@ -1,0 +1,12 @@
+ M guides/ollama.md
+ M src/server/OllamaProvider.ts
+ M src/server/constants.ts
+ M src/server/factories.ts
+ M src/server/types.ts
+ M tests/guides.test.ts
+ M tests/service/OllamaProvider.test.ts
+ M tests/service/budget.test.ts
+ M tests/service/compaction.test.ts
+ M tests/service/lifecycle.test.ts
+ M tests/service/tools.test.ts
+ M tests/setup.test.ts

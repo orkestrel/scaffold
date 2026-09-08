@@ -1,0 +1,152 @@
+{
+  "_id": "@orkestrel/html@0.0.8",
+  "_rev": "8-89f75a06cd404a7b44bf6e748e1293cc",
+  "name": "@orkestrel/html",
+  "dist-tags": {
+    "latest": "0.0.8"
+  },
+  "versions": [
+    "0.0.1",
+    "0.0.2",
+    "0.0.3",
+    "0.0.4",
+    "0.0.5",
+    "0.0.6",
+    "0.0.7",
+    "0.0.8"
+  ],
+  "time": {
+    "created": "2026-07-30T12:09:52.860Z",
+    "modified": "2026-09-04T20:11:28.021Z",
+    "0.0.1": "2026-07-30T12:09:59.167Z",
+    "0.0.2": "2026-08-05T16:34:56.157Z",
+    "0.0.3": "2026-08-12T11:22:15.282Z",
+    "0.0.4": "2026-08-17T19:53:08.822Z",
+    "0.0.5": "2026-08-22T18:06:49.644Z",
+    "0.0.6": "2026-08-25T16:50:09.468Z",
+    "0.0.7": "2026-08-26T17:32:03.059Z",
+    "0.0.8": "2026-09-04T20:11:27.706Z"
+  },
+  "bugs": {
+    "url": "https://github.com/orkestrel/html/issues"
+  },
+  "license": "MIT",
+  "homepage": "https://github.com/orkestrel/html#readme",
+  "keywords": [
+    "ast",
+    "distill",
+    "html",
+    "llm",
+    "parser",
+    "sanitize",
+    "sanitizer",
+    "scraping",
+    "typescript"
+  ],
+  "repository": {
+    "url": "git+https://github.com/orkestrel/html.git",
+    "type": "git"
+  },
+  "description": "A typed HTML AST: total parsing, canonical rendering, sanitizing against a fixed floor, and distilling a page to the content a language model should read.",
+  "maintainers": [
+    "mikesaintsg <mikesaintg11@gmail.com>"
+  ],
+  "readmeFilename": "README.md",
+  "_contentLength": 36929,
+  "dist": {
+    "shasum": "cf9a1dedb72f372f51064323072c538d1b63b657",
+    "tarball": "https://registry.npmjs.org/@orkestrel/html/-/html-0.0.8.tgz",
+    "fileCount": 9,
+    "integrity": "sha512-GpQ+nkGVuDULHG8A5U8rZMFnjmyAxobwW5Vn/toIQecB2KiG+LDoZSLzYs6+7yO65F9A4agil4js/sCXAtE+mg==",
+    "signatures": [
+      {
+        "sig": "MEYCIQDpmuFwc2d1cyJjEWQBaUEHhNWwZdjhXD4hgyx04nj3IwIhAIZb66Jsr/v1M5osfbqruIa8KWekYzby6/sGJGwb3kz/",
+        "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U"
+      },
+      {
+        "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U",
+        "sig": "MEUCIQDlhShQro3fzIB75wyDcssA5s91NYbkczF+ISXMhNPCPwIgVlhvudsLgmkmmGL8wiJ7cMu7y53Mu8Ml1BEiqku6VE0="
+      }
+    ],
+    "unpackedSize": 877145
+  },
+  "main": "./dist/src/core/index.cjs",
+  "type": "module",
+  "types": "./dist/src/core/index.d.ts",
+  "module": "./dist/src/core/index.js",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/src/core/index.d.ts",
+        "default": "./dist/src/core/index.js"
+      },
+      "require": {
+        "types": "./dist/src/core/index.d.cts",
+        "default": "./dist/src/core/index.cjs"
+      }
+    },
+    "./package.json": "./package.json"
+  },
+  "gitHead": "2b96a5c47f341c93835374eb38e47d19c8537f17",
+  "scripts": {
+    "copy": "node -e \"const fs=require('node:fs'),p=require('node:path'),a=process.argv[1],b=process.argv[2];fs.mkdirSync(p.dirname(b),{recursive:true});fs.cpSync(a,b,{force:true});console.log('Copied: '+a+' to '+b)\"",
+    "lint": "oxlint --config .oxlintrc.json --fix --deny-warnings .",
+    "test": "npm run test:src && npm run test:policy && npm run test:config && npm run test:setup && npm run test:guides",
+    "build": "npm run clean && npm run build:src",
+    "check": "tsc --noEmit --project tsconfig.json && npm run check:src",
+    "clean": "node -e \"require('node:fs').rmSync('dist',{recursive:true,force:true})\"",
+    "format": "oxfmt --config .oxfmtrc.json --write .",
+    "prepack": "npm run build",
+    "scaffold": "scaffold",
+    "test:src": "vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core",
+    "build:src": "npm run build:src:core",
+    "check:src": "npm run check:src:core",
+    "lint:check": "oxlint --config .oxlintrc.json --deny-warnings .",
+    "test:bench": "vitest bench --config vite.config.ts --no-cache --project probe",
+    "test:probe": "vitest run --config vite.config.ts --no-cache --reporter=verbose --project probe",
+    "test:setup": "vitest run --config vite.config.ts --no-cache --reporter=dot --project setup",
+    "test:config": "vitest run --config vite.config.ts --no-cache --reporter=dot --project config",
+    "test:guides": "vitest run --config vite.config.ts --no-cache --reporter=dot --project guides",
+    "test:policy": "vitest run --config vite.config.ts --no-cache --reporter=dot --project policy",
+    "format:check": "oxfmt --config .oxfmtrc.json --check .",
+    "test:src:core": "vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core",
+    "build:src:core": "vite build --config configs/src/vite.core.config.ts && npm run copy dist/src/core/index.d.ts dist/src/core/index.d.cts",
+    "check:src:core": "tsc --noEmit -p configs/src/tsconfig.core.json",
+    "prepublishOnly": "npm run format:check && npm run lint:check && npm run check && npm run build && npm test && npm run test:distribution -- --mode release",
+    "test:distribution": "vitest run --config vite.config.ts --no-cache --reporter=dot --project distribution"
+  },
+  "version": "0.0.8",
+  "_npmUser": "mikesaintsg <mikesaintg11@gmail.com>",
+  "_npmVersion": "11.19.1",
+  "directories": {},
+  "sideEffects": false,
+  "_nodeVersion": "22.22.2",
+  "dependencies": {
+    "@orkestrel/contract": "^0.0.16"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "_hasShrinkwrap": false,
+  "devDependencies": {
+    "vite": "^8.2.2",
+    "oxfmt": "^0.66.0",
+    "oxlint": "^1.81.0",
+    "vitest": "^4.1.11",
+    "typescript": "^6.0.3",
+    "@types/node": "^26.4.1",
+    "@orkestrel/test": "^0.0.13",
+    "vite-plugin-dts": "^5.1.0",
+    "@orkestrel/guide": "^0.0.16",
+    "@orkestrel/probe": "^0.0.11",
+    "@orkestrel/scaffold": "^0.0.61",
+    "@microsoft/api-extractor": "^7.59.0"
+  },
+  "_npmOperationalInternal": {
+    "host": "s3://npm-registry-packages-npm-production",
+    "tmp": "tmp/html_0.0.8_1788552687615_0.7361794255204697"
+  }
+}

@@ -1,0 +1,163 @@
+{
+  "_id": "@orkestrel/lsp@0.0.6",
+  "_rev": "6-c9dac8e66ee9489e40cf5e608e108644",
+  "name": "@orkestrel/lsp",
+  "dist-tags": {
+    "latest": "0.0.6"
+  },
+  "versions": [
+    "0.0.1",
+    "0.0.2",
+    "0.0.3",
+    "0.0.4",
+    "0.0.5",
+    "0.0.6"
+  ],
+  "time": {
+    "created": "2026-08-26T17:56:53.772Z",
+    "modified": "2026-09-04T20:52:20.749Z",
+    "0.0.1": "2026-08-26T17:56:54.119Z",
+    "0.0.2": "2026-08-26T19:44:50.512Z",
+    "0.0.3": "2026-08-27T00:44:49.285Z",
+    "0.0.4": "2026-08-27T16:24:07.035Z",
+    "0.0.5": "2026-08-28T05:40:17.684Z",
+    "0.0.6": "2026-09-04T20:52:20.565Z"
+  },
+  "bugs": {
+    "url": "https://github.com/orkestrel/lsp/issues"
+  },
+  "license": "MIT",
+  "homepage": "https://github.com/orkestrel/lsp#readme",
+  "keywords": [
+    "diagnostics",
+    "json-rpc",
+    "jsonrpc",
+    "language-server",
+    "language-server-protocol",
+    "lsp",
+    "typescript"
+  ],
+  "repository": {
+    "url": "git+https://github.com/orkestrel/lsp.git",
+    "type": "git"
+  },
+  "description": "A typed Language Server Protocol client over an injected byte transport — base-protocol framing, JSON-RPC and protocol guards, and a stdio child-process transport. Part of the @orkestrel line.",
+  "maintainers": [
+    "mikesaintsg <mikesaintg11@gmail.com>"
+  ],
+  "readmeFilename": "README.md",
+  "_contentLength": 33285,
+  "dist": {
+    "shasum": "c6751d9370687ac8b03b07c5b65e0cafe1825bfc",
+    "tarball": "https://registry.npmjs.org/@orkestrel/lsp/-/lsp-0.0.6.tgz",
+    "fileCount": 15,
+    "integrity": "sha512-yxs//kK279ivG8FJEFrFd9nB1ovAJtEg3DLmL8TIiE8NeLI3czvqHzuzj0OB7El7IgmsIFh9XdfmSAMq1YCyUw==",
+    "signatures": [
+      {
+        "sig": "MEUCIQDKTwMl2sjpBq58cxwkt8pMO/D0EOEasY9arHBrhcaPnAIgTwQwqOlXp9o+P/W6XASKo/LYLnureqBbcdpuEo/8SqU=",
+        "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U"
+      },
+      {
+        "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U",
+        "sig": "MEUCIDbY5nMiVpIBQHBHYlkt941irYgqrwiEG19/jm9ndr2LAiEAuOCa4zoXKZGtygqP00cXAReUlo6AWcaqMq5xLKPpAv0="
+      }
+    ],
+    "unpackedSize": 450184
+  },
+  "main": "./dist/src/core/index.cjs",
+  "type": "module",
+  "types": "./dist/src/core/index.d.ts",
+  "module": "./dist/src/core/index.js",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/src/core/index.d.ts",
+        "default": "./dist/src/core/index.js"
+      },
+      "require": {
+        "types": "./dist/src/core/index.d.cts",
+        "default": "./dist/src/core/index.cjs"
+      }
+    },
+    "./server": {
+      "import": {
+        "types": "./dist/src/server/index.d.ts",
+        "default": "./dist/src/server/index.js"
+      },
+      "require": {
+        "types": "./dist/src/server/index.d.cts",
+        "default": "./dist/src/server/index.cjs"
+      }
+    },
+    "./package.json": "./package.json"
+  },
+  "gitHead": "ff004ba50a5cc5af3f1a73d36da6a994e8aab870",
+  "scripts": {
+    "copy": "node -e \"const fs=require('node:fs'),p=require('node:path'),a=process.argv[1],b=process.argv[2];fs.mkdirSync(p.dirname(b),{recursive:true});fs.cpSync(a,b,{force:true});console.log('Copied: '+a+' to '+b)\"",
+    "lint": "oxlint --config .oxlintrc.json --fix .",
+    "test": "npm run test:src && npm run test:policy && npm run test:setup && npm run test:config && npm run test:guides && npm run test:conformance && npm run test:integration",
+    "build": "npm run clean && npm run build:src",
+    "check": "tsc --noEmit --project tsconfig.json && npm run check:src",
+    "clean": "node -e \"require('node:fs').rmSync('dist',{recursive:true,force:true})\"",
+    "format": "oxfmt --config .oxfmtrc.json --write .",
+    "prepack": "npm run build",
+    "test:src": "vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core --project src:server",
+    "build:src": "npm run build:src:core && npm run build:src:server",
+    "check:src": "npm run check:src:core && npm run check:src:server",
+    "lint:check": "oxlint --config .oxlintrc.json --deny-warnings .",
+    "test:bench": "vitest bench --config vite.config.ts --no-cache --project probe",
+    "test:probe": "vitest run --config vite.config.ts --no-cache --reporter=verbose --project probe",
+    "test:setup": "vitest run --config vite.config.ts --no-cache --reporter=dot --project setup",
+    "test:config": "vitest run --config vite.config.ts --no-cache --reporter=dot --project config",
+    "test:guides": "vitest run --config vite.config.ts --no-cache --reporter=dot --project guides",
+    "test:policy": "vitest run --config vite.config.ts --no-cache --reporter=dot --project policy",
+    "format:check": "oxfmt --config .oxfmtrc.json --check .",
+    "test:src:core": "vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core",
+    "build:src:core": "vite build --config configs/src/vite.core.config.ts && npm run copy dist/src/core/index.d.ts dist/src/core/index.d.cts",
+    "check:src:core": "tsc --noEmit -p configs/src/tsconfig.core.json",
+    "prepublishOnly": "npm run format:check && npm run lint:check && npm run check && npm run build && npm test && npm run test:distribution -- --mode release",
+    "test:src:server": "vitest run --config vite.config.ts --no-cache --reporter=dot --project src:server",
+    "build:src:server": "vite build --config configs/src/vite.server.config.ts && npm run copy dist/src/server/index.d.ts dist/src/server/index.d.cts",
+    "check:src:server": "tsc --noEmit -p configs/src/tsconfig.server.json",
+    "test:conformance": "vitest run --config vite.config.ts --no-cache --reporter=dot --project conformance",
+    "test:integration": "vitest run --config vite.config.ts --no-cache --reporter=dot --project integration",
+    "test:distribution": "vitest run --config vite.config.ts --no-cache --reporter=dot --project distribution"
+  },
+  "version": "0.0.6",
+  "_npmUser": "mikesaintsg <mikesaintg11@gmail.com>",
+  "_npmVersion": "11.19.1",
+  "directories": {},
+  "sideEffects": false,
+  "_nodeVersion": "22.22.2",
+  "dependencies": {
+    "@orkestrel/emitter": "^0.0.9",
+    "@orkestrel/process": "^0.0.10",
+    "@orkestrel/contract": "^0.0.16"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "_hasShrinkwrap": false,
+  "devDependencies": {
+    "vite": "^8.2.2",
+    "oxfmt": "^0.66.0",
+    "oxlint": "^1.81.0",
+    "vitest": "^4.1.11",
+    "typescript": "^6.0.3",
+    "@types/node": "^26.4.1",
+    "@orkestrel/test": "^0.0.13",
+    "vite-plugin-dts": "^5.1.0",
+    "@orkestrel/guide": "^0.0.17",
+    "@orkestrel/probe": "^0.0.11",
+    "@orkestrel/scaffold": "^0.0.62",
+    "@microsoft/api-extractor": "^7.59.0",
+    "vscode-languageserver-protocol": "^3.18.2"
+  },
+  "_npmOperationalInternal": {
+    "host": "s3://npm-registry-packages-npm-production",
+    "tmp": "tmp/lsp_0.0.6_1788555140461_0.9185444050829947"
+  }
+}

@@ -163,20 +163,20 @@ Do not run the standalone propagation sweep described by the earlier landing han
 Each layer visit also settles and applies its required package version bump before its
 accepted tarball moves upward. Follow d7n-layer-alignment-plan.md for this re-baseline.
 
-The live layer inventory has not run. Its instrument predecessors failed independent
-checking and actual-mechanism controls. The bounded implementation successor returned
-green controls under d7n-layer-inventory-instrument-3-brief.md; root's independent run
-also passed. Blind objective and subjective reviews returned findings; reconciliation
-is pending under d7n-layer-inventory-instrument-3-audit-return-status.md. Do not
-derive versions or order from an unaccepted inventory result. The owner-directed
-layered closure remains the release-preparation prerequisite.
+The rejected projected inventory remains retired as a prerequisite. The raw survey
+ran and its independent receipt is accepted for graph reconciliation under
+d7n-layer-survey-reading.md. Captured origin/main is cached; refresh it at each visit.
+Read the immutable evidence/d7n-layer-survey-diagnostic/ files and the verifier report.
+This receipt does not establish installed closure or release readiness.
 The supported layer mechanism map returned under d7n-layer-supported-map-report.md.
 Read d7n-layer-supported-map-reading.md beside it for root's acceptance limits and
 the sibling-path correction. It maps public scaffold APIs and retained instrument
 reuse, not live fleet state. The blind reading-boundary design closed under
 d7n-layer-reading-boundary-verdict.md. The raw carrier returned under
-d7n-layer-capture-brief.md; focused independent controls passed and acceptance audits
-are running. The rejected inventory collector remains retired as a prerequisite.
+d7n-layer-capture-brief.md; focused independent controls passed. Audits returned and
+were reconciled in d7n-layer-capture-audit-verdict.md. The bounded source successor
+does not block use of the independently verified raw survey. The graph reconciliation
+is dispatched under d7n-layer-graph-brief.md. No accepted layer artifact exists yet.
 Root's initial Contract reading finds registry 0.0.16 and prepared source 0.0.17;
 that candidate does not require an automatic repeat bump merely to resume the pass.
 Read d7n-layer-contract-reading.md. No accepted layer tarball or new pin exists yet.

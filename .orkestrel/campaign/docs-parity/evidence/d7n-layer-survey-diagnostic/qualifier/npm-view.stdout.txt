@@ -1,0 +1,155 @@
+{
+  "_id": "@orkestrel/qualifier@0.0.13",
+  "_rev": "13-12534a7bdef1fbf337ef44229cd9f763",
+  "name": "@orkestrel/qualifier",
+  "dist-tags": {
+    "latest": "0.0.13"
+  },
+  "versions": [
+    "0.0.1",
+    "0.0.2",
+    "0.0.3",
+    "0.0.4",
+    "0.0.5",
+    "0.0.6",
+    "0.0.7",
+    "0.0.8",
+    "0.0.9",
+    "0.0.10",
+    "0.0.11",
+    "0.0.12",
+    "0.0.13"
+  ],
+  "time": {
+    "created": "2026-07-16T03:43:40.409Z",
+    "modified": "2026-09-04T20:51:11.375Z",
+    "0.0.1": "2026-07-16T03:43:40.859Z",
+    "0.0.2": "2026-07-16T06:07:29.251Z",
+    "0.0.3": "2026-07-18T00:41:26.684Z",
+    "0.0.4": "2026-07-18T15:45:58.052Z",
+    "0.0.5": "2026-07-28T14:20:51.976Z",
+    "0.0.6": "2026-07-28T14:23:10.621Z",
+    "0.0.7": "2026-07-28T18:00:53.670Z",
+    "0.0.8": "2026-08-12T11:59:02.814Z",
+    "0.0.9": "2026-08-17T18:14:08.528Z",
+    "0.0.10": "2026-08-17T21:04:52.427Z",
+    "0.0.11": "2026-08-21T18:49:03.964Z",
+    "0.0.12": "2026-08-27T16:16:18.270Z",
+    "0.0.13": "2026-09-04T20:51:11.195Z"
+  },
+  "bugs": {
+    "url": "https://github.com/orkestrel/qualifier/issues"
+  },
+  "license": "MIT",
+  "homepage": "https://github.com/orkestrel/qualifier#readme",
+  "keywords": [
+    "eligibility",
+    "qualifier",
+    "reasoning",
+    "rules-engine",
+    "typescript"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/orkestrel/qualifier.git"
+  },
+  "description": "A typed eligibility engine: ordered quantitative and logical passes qualify a subject into program-level and scoped eligibility with evidence-rich findings. Part of the @orkestrel line.",
+  "maintainers": [
+    "mikesaintsg <mikesaintg11@gmail.com>"
+  ],
+  "readmeFilename": "README.md",
+  "version": "0.0.13",
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/src/core/index.cjs",
+  "module": "./dist/src/core/index.js",
+  "types": "./dist/src/core/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/src/core/index.d.ts",
+        "default": "./dist/src/core/index.js"
+      },
+      "require": {
+        "types": "./dist/src/core/index.d.cts",
+        "default": "./dist/src/core/index.cjs"
+      }
+    },
+    "./package.json": "./package.json"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "clean": "node -e \"require('node:fs').rmSync('dist',{recursive:true,force:true})\"",
+    "copy": "node -e \"const fs=require('node:fs'),p=require('node:path'),a=process.argv[1],b=process.argv[2];fs.mkdirSync(p.dirname(b),{recursive:true});fs.cpSync(a,b,{force:true});console.log('Copied: '+a+' to '+b)\"",
+    "scaffold": "scaffold",
+    "lint": "oxlint --config .oxlintrc.json --fix --deny-warnings .",
+    "check": "tsc --noEmit --project tsconfig.json && npm run check:src",
+    "check:src": "npm run check:src:core",
+    "check:src:core": "tsc --noEmit -p configs/src/tsconfig.core.json",
+    "format": "oxfmt --config .oxfmtrc.json --write .",
+    "format:check": "oxfmt --config .oxfmtrc.json --check .",
+    "lint:check": "oxlint --config .oxlintrc.json --deny-warnings .",
+    "test": "npm run test:src && npm run test:policy && npm run test:config && npm run test:setup && npm run test:guides",
+    "test:src": "vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core",
+    "test:src:core": "vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core",
+    "test:policy": "vitest run --config vite.config.ts --no-cache --reporter=dot --project policy",
+    "test:config": "vitest run --config vite.config.ts --no-cache --reporter=dot --project config",
+    "test:guides": "vitest run --config vite.config.ts --no-cache --reporter=dot --project guides",
+    "build": "npm run clean && npm run build:src",
+    "build:src": "npm run build:src:core",
+    "build:src:core": "vite build --config configs/src/vite.core.config.ts && npm run copy dist/src/core/index.d.ts dist/src/core/index.d.cts",
+    "prepack": "npm run build",
+    "prepublishOnly": "npm run format:check && npm run lint:check && npm run check && npm run build && npm test && npm run test:distribution -- --mode release",
+    "test:distribution": "vitest run --config vite.config.ts --no-cache --reporter=dot --project distribution",
+    "test:probe": "vitest run --config vite.config.ts --no-cache --reporter=verbose --project probe",
+    "test:bench": "vitest bench --config vite.config.ts --no-cache --project probe",
+    "test:setup": "vitest run --config vite.config.ts --no-cache --reporter=dot --project setup"
+  },
+  "dependencies": {
+    "@orkestrel/contract": "^0.0.16",
+    "@orkestrel/emitter": "^0.0.9",
+    "@orkestrel/reason": "^0.0.9"
+  },
+  "devDependencies": {
+    "@microsoft/api-extractor": "^7.59.0",
+    "@orkestrel/guide": "^0.0.17",
+    "@orkestrel/probe": "^0.0.11",
+    "@orkestrel/scaffold": "^0.0.62",
+    "@orkestrel/test": "^0.0.13",
+    "@types/node": "^26.4.1",
+    "oxfmt": "^0.66.0",
+    "oxlint": "^1.81.0",
+    "typescript": "^6.0.3",
+    "vite": "^8.2.2",
+    "vite-plugin-dts": "^5.1.0",
+    "vitest": "^4.1.11"
+  },
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "gitHead": "a24b3999857708c49e7d7bfe9d0973c43f675180",
+  "_nodeVersion": "22.22.2",
+  "_npmVersion": "11.19.1",
+  "dist": {
+    "integrity": "sha512-KYAYasAmVUMWgiOsiOqgr+ABJwIzYUmfjWmzClavQxnjLoZWOHhoG5mUPqJu4y7NBwWtU/nncXNTOk7JNtpwgA==",
+    "shasum": "225e8185e569f4999051f2e151df5389ccf1ed1c",
+    "tarball": "https://registry.npmjs.org/@orkestrel/qualifier/-/qualifier-0.0.13.tgz",
+    "fileCount": 9,
+    "unpackedSize": 321764,
+    "signatures": [
+      {
+        "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U",
+        "sig": "MEUCIQDqwiKiCU3n0ZNnpaZm65XLe/cn+J4HzPcgTxcaWce88QIgReZRPHMI3Dmkyj/wT3+CZc9084vy1SQlaq2vSV7NvjQ="
+      }
+    ]
+  },
+  "_npmUser": "mikesaintsg <mikesaintg11@gmail.com>",
+  "directories": {},
+  "_npmOperationalInternal": {
+    "host": "s3://npm-registry-packages-npm-production",
+    "tmp": "tmp/qualifier_0.0.13_1788555071055_0.5128206777330129"
+  },
+  "_hasShrinkwrap": false
+}

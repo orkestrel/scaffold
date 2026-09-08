@@ -1,0 +1,158 @@
+{
+  "_id": "@orkestrel/markdown@0.0.13",
+  "_rev": "13-05be6ffa7fc4a3a84359732c05869516",
+  "name": "@orkestrel/markdown",
+  "dist-tags": {
+    "latest": "0.0.13"
+  },
+  "versions": [
+    "0.0.1",
+    "0.0.2",
+    "0.0.3",
+    "0.0.4",
+    "0.0.5",
+    "0.0.6",
+    "0.0.7",
+    "0.0.8",
+    "0.0.9",
+    "0.0.10",
+    "0.0.11",
+    "0.0.12",
+    "0.0.13"
+  ],
+  "time": {
+    "created": "2026-07-12T03:09:43.188Z",
+    "modified": "2026-09-04T20:25:25.422Z",
+    "0.0.1": "2026-07-12T03:09:43.458Z",
+    "0.0.2": "2026-07-17T22:15:36.059Z",
+    "0.0.3": "2026-07-18T05:47:45.111Z",
+    "0.0.4": "2026-07-18T08:41:58.580Z",
+    "0.0.5": "2026-07-18T09:38:21.932Z",
+    "0.0.6": "2026-07-28T17:02:11.160Z",
+    "0.0.7": "2026-07-30T15:41:01.737Z",
+    "0.0.8": "2026-08-12T11:37:47.539Z",
+    "0.0.9": "2026-08-17T20:25:27.692Z",
+    "0.0.10": "2026-08-23T01:10:08.074Z",
+    "0.0.11": "2026-08-25T16:57:01.374Z",
+    "0.0.12": "2026-08-26T17:37:56.353Z",
+    "0.0.13": "2026-09-04T20:25:25.232Z"
+  },
+  "bugs": {
+    "url": "https://github.com/orkestrel/markdown/issues"
+  },
+  "license": "MIT",
+  "homepage": "https://github.com/orkestrel/markdown#readme",
+  "keywords": [
+    "ast",
+    "commonmark",
+    "gfm",
+    "html",
+    "markdown",
+    "markdown-parser",
+    "parser",
+    "typescript"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/orkestrel/markdown.git"
+  },
+  "description": "A types-first markdown layer over @orkestrel/html — typed AST, both conversion directions, and sanitized HTML by default.",
+  "maintainers": [
+    "mikesaintsg <mikesaintg11@gmail.com>"
+  ],
+  "readmeFilename": "README.md",
+  "_contentLength": 57137,
+  "version": "0.0.13",
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/src/core/index.cjs",
+  "module": "./dist/src/core/index.js",
+  "types": "./dist/src/core/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/src/core/index.d.ts",
+        "default": "./dist/src/core/index.js"
+      },
+      "require": {
+        "types": "./dist/src/core/index.d.cts",
+        "default": "./dist/src/core/index.cjs"
+      }
+    },
+    "./package.json": "./package.json"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "clean": "node -e \"require('node:fs').rmSync('dist',{recursive:true,force:true})\"",
+    "copy": "node -e \"const fs=require('node:fs'),p=require('node:path'),a=process.argv[1],b=process.argv[2];fs.mkdirSync(p.dirname(b),{recursive:true});fs.cpSync(a,b,{force:true});console.log('Copied: '+a+' to '+b)\"",
+    "scaffold": "scaffold",
+    "lint": "oxlint --config .oxlintrc.json --fix --deny-warnings .",
+    "check": "tsc --noEmit --project tsconfig.json && npm run check:src",
+    "check:src": "npm run check:src:core",
+    "check:src:core": "tsc --noEmit -p configs/src/tsconfig.core.json",
+    "format": "oxfmt --config .oxfmtrc.json --write .",
+    "format:check": "oxfmt --config .oxfmtrc.json --check .",
+    "lint:check": "oxlint --config .oxlintrc.json --deny-warnings .",
+    "test": "npm run test:src && npm run test:policy && npm run test:config && npm run test:setup && npm run test:guides",
+    "test:src": "vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core",
+    "test:src:core": "vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core",
+    "test:policy": "vitest run --config vite.config.ts --no-cache --reporter=dot --project policy",
+    "test:config": "vitest run --config vite.config.ts --no-cache --reporter=dot --project config",
+    "test:guides": "vitest run --config vite.config.ts --no-cache --reporter=dot --project guides",
+    "build": "npm run clean && npm run build:src",
+    "build:src": "npm run build:src:core",
+    "build:src:core": "vite build --config configs/src/vite.core.config.ts && npm run copy dist/src/core/index.d.ts dist/src/core/index.d.cts",
+    "prepublishOnly": "npm run format:check && npm run lint:check && npm run check && npm run build && npm test && npm run test:distribution -- --mode release",
+    "test:distribution": "vitest run --config vite.config.ts --no-cache --reporter=dot --project distribution",
+    "test:probe": "vitest run --config vite.config.ts --no-cache --reporter=verbose --project probe",
+    "test:bench": "vitest bench --config vite.config.ts --no-cache --project probe",
+    "prepack": "npm run build",
+    "test:setup": "vitest run --config vite.config.ts --no-cache --reporter=dot --project setup"
+  },
+  "dependencies": {
+    "@orkestrel/contract": "^0.0.16",
+    "@orkestrel/html": "^0.0.8"
+  },
+  "devDependencies": {
+    "@microsoft/api-extractor": "^7.59.0",
+    "@orkestrel/guide": "^0.0.16",
+    "@orkestrel/probe": "^0.0.11",
+    "@orkestrel/scaffold": "^0.0.61",
+    "@orkestrel/test": "^0.0.13",
+    "@types/node": "^26.4.1",
+    "oxfmt": "^0.66.0",
+    "oxlint": "^1.81.0",
+    "typescript": "^6.0.3",
+    "vite": "^8.2.2",
+    "vite-plugin-dts": "^5.1.0",
+    "vitest": "^4.1.11"
+  },
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "gitHead": "4d5ec372c9bec435cac94ad441e14b24f129bdf2",
+  "_nodeVersion": "22.22.2",
+  "_npmVersion": "11.19.1",
+  "dist": {
+    "integrity": "sha512-NGfKBPT5pXNR2UfwCCqZPmmT07bfHwEb6Dw5Zfv6dL5iw7YPp8EVS2QfuQc1L44jr3UMp5D8FGKm9FQDR1v4dA==",
+    "shasum": "950d1519d6de93725e9253c471545358ef80abf4",
+    "tarball": "https://registry.npmjs.org/@orkestrel/markdown/-/markdown-0.0.13.tgz",
+    "fileCount": 9,
+    "unpackedSize": 932549,
+    "signatures": [
+      {
+        "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U",
+        "sig": "MEUCIQDFPGXlZk0pg88XX7j6t7bMxZRuwN8Vo+vwbCMW8fV0JwIgUt6DmuJfzXoinkaRRkrOH4LEffYdi5v0G5msBlxZuTs="
+      }
+    ]
+  },
+  "_npmUser": "mikesaintsg <mikesaintg11@gmail.com>",
+  "directories": {},
+  "_npmOperationalInternal": {
+    "host": "s3://npm-registry-packages-npm-production",
+    "tmp": "tmp/markdown_0.0.13_1788553525050_0.6685536247829227"
+  },
+  "_hasShrinkwrap": false
+}

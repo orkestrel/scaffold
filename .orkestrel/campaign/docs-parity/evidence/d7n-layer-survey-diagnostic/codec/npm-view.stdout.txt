@@ -1,0 +1,135 @@
+{
+  "_id": "@orkestrel/codec@0.0.2",
+  "_rev": "2-b55780e2c343669a5ad33c503df0152f",
+  "name": "@orkestrel/codec",
+  "dist-tags": {
+    "latest": "0.0.2"
+  },
+  "versions": [
+    "0.0.1",
+    "0.0.2"
+  ],
+  "time": {
+    "created": "2026-08-28T05:29:10.765Z",
+    "modified": "2026-09-04T19:51:47.236Z",
+    "0.0.1": "2026-08-28T05:29:11.109Z",
+    "0.0.2": "2026-09-04T19:51:47.058Z"
+  },
+  "bugs": {
+    "url": "https://github.com/orkestrel/codec/issues"
+  },
+  "license": "MIT",
+  "homepage": "https://github.com/orkestrel/codec#readme",
+  "keywords": [
+    "base64",
+    "base64url",
+    "bytes",
+    "charset",
+    "codec",
+    "decode",
+    "encode",
+    "hex",
+    "latin1",
+    "rfc4648",
+    "utf16",
+    "utf8",
+    "windows1252"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/orkestrel/codec.git"
+  },
+  "description": "Spec-named byte-to-text codings and their measures as sound encode/decode/guard triples — RFC 4648 Base64, base64url, and hex, UTF-8, Latin-1, Windows-1252, and UTF-16LE — pure ES and canonical in both directions.",
+  "maintainers": [
+    "mikesaintsg <mikesaintg11@gmail.com>"
+  ],
+  "readmeFilename": "README.md",
+  "_contentLength": 20443,
+  "version": "0.0.2",
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/src/core/index.cjs",
+  "module": "./dist/src/core/index.js",
+  "types": "./dist/src/core/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/src/core/index.d.ts",
+        "default": "./dist/src/core/index.js"
+      },
+      "require": {
+        "types": "./dist/src/core/index.d.cts",
+        "default": "./dist/src/core/index.cjs"
+      }
+    },
+    "./package.json": "./package.json"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "clean": "node -e \"require('node:fs').rmSync('dist',{recursive:true,force:true})\"",
+    "copy": "node -e \"const fs=require('node:fs'),p=require('node:path'),a=process.argv[1],b=process.argv[2];fs.mkdirSync(p.dirname(b),{recursive:true});fs.cpSync(a,b,{force:true});console.log('Copied: '+a+' to '+b)\"",
+    "format": "oxfmt --config .oxfmtrc.json --write .",
+    "format:check": "oxfmt --config .oxfmtrc.json --check .",
+    "lint": "oxlint --config .oxlintrc.json --fix .",
+    "lint:check": "oxlint --config .oxlintrc.json --deny-warnings .",
+    "check": "tsc --noEmit --project tsconfig.json && npm run check:src",
+    "check:src": "npm run check:src:core",
+    "check:src:core": "tsc --noEmit -p configs/src/tsconfig.core.json",
+    "test": "npm run test:src && npm run test:policy && npm run test:config && npm run test:guides",
+    "test:src": "vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core",
+    "test:src:core": "vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core",
+    "test:policy": "vitest run --config vite.config.ts --no-cache --reporter=dot --project policy",
+    "test:config": "vitest run --config vite.config.ts --no-cache --reporter=dot --project config",
+    "test:guides": "vitest run --config vite.config.ts --no-cache --reporter=dot --project guides",
+    "test:probe": "vitest run --config vite.config.ts --no-cache --reporter=verbose --project probe",
+    "test:bench": "vitest bench --config vite.config.ts --no-cache --project probe",
+    "test:distribution": "vitest run --config vite.config.ts --no-cache --reporter=dot --project distribution",
+    "build": "npm run clean && npm run build:src",
+    "build:src": "npm run build:src:core",
+    "build:src:core": "vite build --config configs/src/vite.core.config.ts && npm run copy dist/src/core/index.d.ts dist/src/core/index.d.cts",
+    "prepack": "npm run build",
+    "prepublishOnly": "npm run format:check && npm run lint:check && npm run check && npm run build && npm test && npm run test:distribution -- --mode release"
+  },
+  "devDependencies": {
+    "@microsoft/api-extractor": "^7.59.0",
+    "@orkestrel/guide": "^0.0.16",
+    "@orkestrel/probe": "^0.0.11",
+    "@orkestrel/scaffold": "^0.0.61",
+    "@orkestrel/test": "^0.0.12",
+    "@types/node": "^26.4.1",
+    "oxfmt": "^0.66.0",
+    "oxlint": "^1.81.0",
+    "typescript": "^6.0.3",
+    "vite": "^8.2.2",
+    "vite-plugin-dts": "^5.1.0",
+    "vitest": "^4.1.11"
+  },
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "gitHead": "3e5524786b38843013f5ca6771c3d370b8bc5a45",
+  "_nodeVersion": "22.22.2",
+  "_npmVersion": "11.19.1",
+  "dist": {
+    "integrity": "sha512-kfAqCEeHGpN9Iqh8feTkVYYSAqafXjr/TL9oKXtpqCF2aPETo51+fSqgrIJARuN/guudNJ8s+UALGk2u4dAsPQ==",
+    "shasum": "0d109d2b76b660194fcdbb0f81d2f75935968663",
+    "tarball": "https://registry.npmjs.org/@orkestrel/codec/-/codec-0.0.2.tgz",
+    "fileCount": 9,
+    "unpackedSize": 209671,
+    "signatures": [
+      {
+        "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U",
+        "sig": "MEUCIEUUXAuUhtB/B3tbETE8F4ZOx5krdluHzyzg17XYtxycAiEA1NZLZynCCNjiN0xjevWY5iX5rc74X1Q24WyBmEKVIww="
+      }
+    ]
+  },
+  "_npmUser": "mikesaintsg <mikesaintg11@gmail.com>",
+  "directories": {},
+  "_npmOperationalInternal": {
+    "host": "s3://npm-registry-packages-npm-production",
+    "tmp": "tmp/codec_0.0.2_1788551506927_0.517900045741216"
+  },
+  "_hasShrinkwrap": false
+}

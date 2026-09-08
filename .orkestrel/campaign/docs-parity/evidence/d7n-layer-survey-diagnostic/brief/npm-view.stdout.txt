@@ -1,0 +1,146 @@
+{
+  "_id": "@orkestrel/brief@0.0.7",
+  "_rev": "7-c14af01e2c2d396b2a62485c3ee11086",
+  "name": "@orkestrel/brief",
+  "dist-tags": {
+    "latest": "0.0.7"
+  },
+  "versions": [
+    "0.0.1",
+    "0.0.2",
+    "0.0.3",
+    "0.0.4",
+    "0.0.5",
+    "0.0.6",
+    "0.0.7"
+  ],
+  "time": {
+    "created": "2026-08-14T21:12:15.544Z",
+    "modified": "2026-09-04T21:47:32.954Z",
+    "0.0.1": "2026-08-14T21:12:15.926Z",
+    "0.0.2": "2026-08-17T17:36:58.969Z",
+    "0.0.3": "2026-08-17T23:04:02.551Z",
+    "0.0.4": "2026-08-21T18:49:16.754Z",
+    "0.0.5": "2026-08-24T20:51:06.947Z",
+    "0.0.6": "2026-08-25T06:29:44.369Z",
+    "0.0.7": "2026-09-04T21:47:32.754Z"
+  },
+  "bugs": {
+    "url": "https://github.com/orkestrel/brief/issues"
+  },
+  "license": "MIT",
+  "homepage": "https://github.com/orkestrel/brief#readme",
+  "keywords": [
+    "agent",
+    "brief",
+    "contract",
+    "deterministic",
+    "orkestrel",
+    "prompt",
+    "specification",
+    "typescript"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/orkestrel/brief.git"
+  },
+  "description": "A synchronous, deterministic specification compiler: a rough request becomes a closed, content-hashed execution contract another agent can run, gated by a traceable reasoner and projected into every downstream artifact.",
+  "maintainers": [
+    "mikesaintsg <mikesaintg11@gmail.com>"
+  ],
+  "readmeFilename": "README.md",
+  "version": "0.0.7",
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/src/core/index.cjs",
+  "module": "./dist/src/core/index.js",
+  "types": "./dist/src/core/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/src/core/index.d.ts",
+        "default": "./dist/src/core/index.js"
+      },
+      "require": {
+        "types": "./dist/src/core/index.d.cts",
+        "default": "./dist/src/core/index.cjs"
+      }
+    },
+    "./package.json": "./package.json"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "clean": "node -e \"require('node:fs').rmSync('dist',{recursive:true,force:true})\"",
+    "copy": "node -e \"const fs=require('node:fs'),p=require('node:path'),a=process.argv[1],b=process.argv[2];fs.mkdirSync(p.dirname(b),{recursive:true});fs.cpSync(a,b,{force:true});console.log('Copied: '+a+' to '+b)\"",
+    "format": "oxfmt --config .oxfmtrc.json --write .",
+    "format:check": "oxfmt --config .oxfmtrc.json --check .",
+    "lint": "oxlint --config .oxlintrc.json --fix .",
+    "lint:check": "oxlint --config .oxlintrc.json --deny-warnings .",
+    "check": "tsc --noEmit --project tsconfig.json && npm run check:src",
+    "check:src": "npm run check:src:core",
+    "check:src:core": "tsc --noEmit -p configs/src/tsconfig.core.json",
+    "test": "npm run test:src && npm run test:policy && npm run test:config && npm run test:setup && npm run test:guides",
+    "test:src": "vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core",
+    "test:src:core": "vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core",
+    "test:policy": "vitest run --config vite.config.ts --no-cache --reporter=dot --project policy",
+    "test:config": "vitest run --config vite.config.ts --no-cache --reporter=dot --project config",
+    "test:guides": "vitest run --config vite.config.ts --no-cache --reporter=dot --project guides",
+    "test:distribution": "vitest run --config vite.config.ts --no-cache --reporter=dot --project distribution",
+    "test:probe": "vitest run --config vite.config.ts --no-cache --reporter=verbose --project probe",
+    "build": "npm run clean && npm run build:src",
+    "build:src": "npm run build:src:core",
+    "build:src:core": "vite build --config configs/src/vite.core.config.ts && npm run copy dist/src/core/index.d.ts dist/src/core/index.d.cts",
+    "prepack": "npm run build",
+    "prepublishOnly": "npm run format:check && npm run lint:check && npm run check && npm run build && npm test && npm run test:distribution -- --mode release",
+    "test:bench": "vitest bench --config vite.config.ts --no-cache --project probe",
+    "test:setup": "vitest run --config vite.config.ts --no-cache --reporter=dot --project setup"
+  },
+  "dependencies": {
+    "@orkestrel/contract": "^0.0.16",
+    "@orkestrel/emitter": "^0.0.9",
+    "@orkestrel/interpret": "^0.0.12",
+    "@orkestrel/reason": "^0.0.9"
+  },
+  "devDependencies": {
+    "@microsoft/api-extractor": "^7.59.0",
+    "@orkestrel/guide": "^0.0.17",
+    "@orkestrel/probe": "^0.0.11",
+    "@orkestrel/scaffold": "^0.0.62",
+    "@orkestrel/test": "^0.0.13",
+    "@types/node": "^26.4.1",
+    "oxfmt": "^0.66.0",
+    "oxlint": "^1.81.0",
+    "typescript": "^6.0.3",
+    "vite": "^8.2.2",
+    "vite-plugin-dts": "^5.1.0",
+    "vitest": "^4.1.11"
+  },
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "gitHead": "e0986c44efac2033d45781e9a67e3ff0af755b29",
+  "_nodeVersion": "22.22.2",
+  "_npmVersion": "11.19.1",
+  "dist": {
+    "integrity": "sha512-OmDRjPglt+tI6I3O5dKPlYODPDo3csCmiHeC6IrrYZOo0yvp8k9DAp2FwxZUIGu2vwYwRO/jl8nqCjDxi3T/gg==",
+    "shasum": "bfc10e569c0206934a8a4276e20a958671fe49e2",
+    "tarball": "https://registry.npmjs.org/@orkestrel/brief/-/brief-0.0.7.tgz",
+    "fileCount": 9,
+    "unpackedSize": 627778,
+    "signatures": [
+      {
+        "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U",
+        "sig": "MEUCIAcIOcEl3851pfUk8VVbTklFb2/X34qNq/PiNj6aWeiHAiEAowF2B8FV8tLaHFzHtKmUzOBzglswtAxyUmKQExmJeIk="
+      }
+    ]
+  },
+  "_npmUser": "mikesaintsg <mikesaintg11@gmail.com>",
+  "directories": {},
+  "_npmOperationalInternal": {
+    "host": "s3://npm-registry-packages-npm-production",
+    "tmp": "tmp/brief_0.0.7_1788558452609_0.9548617581511298"
+  },
+  "_hasShrinkwrap": false
+}

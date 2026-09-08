@@ -1,0 +1,159 @@
+{
+  "_id": "@orkestrel/sea@0.0.14",
+  "_rev": "14-c6c7fd0147597a49e2bc0ac5d307d814",
+  "name": "@orkestrel/sea",
+  "dist-tags": {
+    "latest": "0.0.14"
+  },
+  "versions": [
+    "0.0.1",
+    "0.0.2",
+    "0.0.3",
+    "0.0.4",
+    "0.0.5",
+    "0.0.6",
+    "0.0.7",
+    "0.0.8",
+    "0.0.9",
+    "0.0.10",
+    "0.0.11",
+    "0.0.12",
+    "0.0.13",
+    "0.0.14"
+  ],
+  "time": {
+    "created": "2026-07-14T14:46:00.262Z",
+    "modified": "2026-09-04T20:51:39.054Z",
+    "0.0.1": "2026-07-14T14:46:00.622Z",
+    "0.0.2": "2026-07-18T00:31:22.057Z",
+    "0.0.3": "2026-07-18T11:06:41.580Z",
+    "0.0.4": "2026-07-29T14:18:01.738Z",
+    "0.0.5": "2026-08-03T15:19:52.608Z",
+    "0.0.6": "2026-08-12T11:38:20.833Z",
+    "0.0.7": "2026-08-17T20:26:57.113Z",
+    "0.0.8": "2026-08-19T04:16:54.831Z",
+    "0.0.9": "2026-08-19T20:51:54.959Z",
+    "0.0.10": "2026-08-21T19:28:10.875Z",
+    "0.0.11": "2026-08-23T01:29:53.206Z",
+    "0.0.12": "2026-08-27T16:24:12.027Z",
+    "0.0.13": "2026-08-28T05:40:29.654Z",
+    "0.0.14": "2026-09-04T20:51:38.856Z"
+  },
+  "bugs": {
+    "url": "https://github.com/orkestrel/sea/issues"
+  },
+  "license": "MIT",
+  "homepage": "https://github.com/orkestrel/sea#readme",
+  "keywords": [
+    "executable",
+    "node",
+    "sea",
+    "server",
+    "single-executable-application",
+    "typescript"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/orkestrel/sea.git"
+  },
+  "description": "A pure-TypeScript Node.js Single Executable Application (SEA) builder — compresses assets, assembles the SEA blob, and injects it into PE/ELF/Mach-O binaries with no size ceiling. Part of the @orkestrel line.",
+  "maintainers": [
+    "mikesaintsg <mikesaintg11@gmail.com>"
+  ],
+  "readmeFilename": "README.md",
+  "version": "0.0.14",
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/src/server/index.cjs",
+  "module": "./dist/src/server/index.js",
+  "types": "./dist/src/server/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/src/server/index.d.ts",
+        "default": "./dist/src/server/index.js"
+      },
+      "require": {
+        "types": "./dist/src/server/index.d.cts",
+        "default": "./dist/src/server/index.cjs"
+      }
+    },
+    "./package.json": "./package.json"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "clean": "node -e \"require('node:fs').rmSync('dist',{recursive:true,force:true})\"",
+    "copy": "node -e \"const fs=require('node:fs'),p=require('node:path'),a=process.argv[1],b=process.argv[2];fs.mkdirSync(p.dirname(b),{recursive:true});fs.cpSync(a,b,{force:true});console.log('Copied: '+a+' to '+b)\"",
+    "scaffold": "scaffold",
+    "lint": "oxlint --config .oxlintrc.json --fix --deny-warnings .",
+    "check": "tsc --noEmit --project tsconfig.json && npm run check:src",
+    "check:src": "npm run check:src:server",
+    "check:src:server": "tsc --noEmit -p configs/src/tsconfig.server.json",
+    "format": "oxfmt --config .oxfmtrc.json --write .",
+    "format:check": "oxfmt --config .oxfmtrc.json --check .",
+    "lint:check": "oxlint --config .oxlintrc.json --deny-warnings .",
+    "test": "npm run test:src && npm run test:policy && npm run test:config && npm run test:setup && npm run test:guides && npm run test:integration",
+    "test:src": "vitest run --config vite.config.ts --no-cache --reporter=dot --project src:server",
+    "test:src:server": "vitest run --config vite.config.ts --no-cache --reporter=dot --project src:server",
+    "test:integration": "vitest run --config vite.config.ts --no-cache --reporter=dot --project integration",
+    "test:policy": "vitest run --config vite.config.ts --no-cache --reporter=dot --project policy",
+    "test:config": "vitest run --config vite.config.ts --no-cache --reporter=dot --project config",
+    "test:guides": "vitest run --config vite.config.ts --no-cache --reporter=dot --project guides",
+    "build": "npm run clean && npm run build:src",
+    "build:src": "npm run build:src:server",
+    "build:src:server": "vite build --config configs/src/vite.server.config.ts && npm run copy dist/src/server/index.d.ts dist/src/server/index.d.cts",
+    "prepack": "npm run build",
+    "prepublishOnly": "npm run format:check && npm run lint:check && npm run check && npm run build && npm test && npm run test:distribution -- --mode release",
+    "test:distribution": "vitest run --config vite.config.ts --no-cache --reporter=dot --project distribution",
+    "test:probe": "vitest run --config vite.config.ts --no-cache --reporter=verbose --project probe",
+    "test:bench": "vitest bench --config vite.config.ts --no-cache --project probe",
+    "test:setup": "vitest run --config vite.config.ts --no-cache --reporter=dot --project setup"
+  },
+  "dependencies": {
+    "@orkestrel/contract": "^0.0.16",
+    "@orkestrel/emitter": "^0.0.9",
+    "@orkestrel/process": "^0.0.10"
+  },
+  "devDependencies": {
+    "@microsoft/api-extractor": "^7.59.0",
+    "@orkestrel/guide": "^0.0.17",
+    "@orkestrel/probe": "^0.0.11",
+    "@orkestrel/scaffold": "^0.0.62",
+    "@orkestrel/test": "^0.0.13",
+    "@types/node": "^26.4.1",
+    "oxfmt": "^0.66.0",
+    "oxlint": "^1.81.0",
+    "typescript": "^6.0.3",
+    "vite": "^8.2.2",
+    "vite-plugin-dts": "^5.1.0",
+    "vitest": "^4.1.11"
+  },
+  "engines": {
+    "node": ">=24.8.0"
+  },
+  "gitHead": "a46be1c3838303ffcaccaa9f8aa2b132643fd82a",
+  "_nodeVersion": "22.22.2",
+  "_npmVersion": "11.19.1",
+  "dist": {
+    "integrity": "sha512-vE0kjLfV3AsYTnIlmii/FqreGNkVx19u3IxCVn53sIO290cW5PN0lecpYwx+WMDRqfPXzk2RTMFAQ0iMYjowUQ==",
+    "shasum": "77f3c2f19dd5ff5e21031477925d99fd363b033e",
+    "tarball": "https://registry.npmjs.org/@orkestrel/sea/-/sea-0.0.14.tgz",
+    "fileCount": 9,
+    "unpackedSize": 679384,
+    "signatures": [
+      {
+        "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U",
+        "sig": "MEUCIFmQE/jTXAQ7KkCmoUDYQ7JRLKIxDqzYmqmqW4JQzPRdAiEAhV32hkG5Y/LXYUO7sk8rzWK3N8xHNjCsltmqAojBiL8="
+      }
+    ]
+  },
+  "_npmUser": "mikesaintsg <mikesaintg11@gmail.com>",
+  "directories": {},
+  "_npmOperationalInternal": {
+    "host": "s3://npm-registry-packages-npm-production",
+    "tmp": "tmp/sea_0.0.14_1788555098720_0.4723161068549062"
+  },
+  "_hasShrinkwrap": false
+}

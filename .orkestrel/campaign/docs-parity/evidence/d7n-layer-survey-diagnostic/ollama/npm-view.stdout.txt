@@ -1,0 +1,168 @@
+{
+  "_id": "@orkestrel/ollama@0.0.14",
+  "_rev": "14-41457c8e3ed27a75d3b75812357099d5",
+  "name": "@orkestrel/ollama",
+  "dist-tags": {
+    "latest": "0.0.14"
+  },
+  "versions": [
+    "0.0.1",
+    "0.0.2",
+    "0.0.3",
+    "0.0.4",
+    "0.0.5",
+    "0.0.6",
+    "0.0.7",
+    "0.0.8",
+    "0.0.9",
+    "0.0.10",
+    "0.0.11",
+    "0.0.12",
+    "0.0.13",
+    "0.0.14"
+  ],
+  "time": {
+    "created": "2026-07-16T23:05:03.384Z",
+    "modified": "2026-09-04T21:59:24.865Z",
+    "0.0.1": "2026-07-16T23:05:03.648Z",
+    "0.0.2": "2026-07-17T18:27:56.977Z",
+    "0.0.3": "2026-07-18T04:47:11.145Z",
+    "0.0.4": "2026-07-18T18:33:21.649Z",
+    "0.0.5": "2026-07-18T19:05:54.200Z",
+    "0.0.6": "2026-07-19T15:58:49.546Z",
+    "0.0.7": "2026-07-29T15:45:14.812Z",
+    "0.0.8": "2026-07-31T13:32:25.927Z",
+    "0.0.9": "2026-08-12T13:23:43.641Z",
+    "0.0.10": "2026-08-18T00:26:21.512Z",
+    "0.0.11": "2026-08-23T03:47:26.673Z",
+    "0.0.12": "2026-08-24T21:05:58.406Z",
+    "0.0.13": "2026-08-27T17:38:49.374Z",
+    "0.0.14": "2026-09-04T21:59:24.705Z"
+  },
+  "bugs": {
+    "url": "https://github.com/orkestrel/ollama/issues"
+  },
+  "license": "MIT",
+  "homepage": "https://github.com/orkestrel/ollama#readme",
+  "keywords": [
+    "ai",
+    "llm",
+    "ollama",
+    "provider",
+    "server",
+    "typescript"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/orkestrel/ollama.git"
+  },
+  "description": "A typed local-LLM provider for the @orkestrel line — a ProviderInterface over a local Ollama daemon's /api/chat with NDJSON streaming and guard-narrowed wire boundaries. Part of the @orkestrel line.",
+  "maintainers": [
+    "mikesaintsg <mikesaintg11@gmail.com>"
+  ],
+  "readmeFilename": "README.md",
+  "version": "0.0.14",
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/src/server/index.cjs",
+  "module": "./dist/src/server/index.js",
+  "types": "./dist/src/server/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/src/server/index.d.ts",
+        "default": "./dist/src/server/index.js"
+      },
+      "require": {
+        "types": "./dist/src/server/index.d.cts",
+        "default": "./dist/src/server/index.cjs"
+      }
+    },
+    "./package.json": "./package.json"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "clean": "node -e \"require('node:fs').rmSync('dist',{recursive:true,force:true})\"",
+    "copy": "node -e \"const fs=require('node:fs'),p=require('node:path'),a=process.argv[1],b=process.argv[2];fs.mkdirSync(p.dirname(b),{recursive:true});fs.cpSync(a,b,{force:true});console.log('Copied: '+a+' to '+b)\"",
+    "scaffold": "scaffold",
+    "lint": "oxlint --config .oxlintrc.json --fix --deny-warnings .",
+    "check": "tsc --noEmit --project tsconfig.json && npm run check:src",
+    "check:src": "npm run check:src:server",
+    "check:src:server": "tsc --noEmit -p configs/src/tsconfig.server.json",
+    "format": "oxfmt --config .oxfmtrc.json --write .",
+    "format:check": "oxfmt --config .oxfmtrc.json --check .",
+    "lint:check": "oxlint --config .oxlintrc.json --deny-warnings .",
+    "test": "npm run test:src && npm run test:setup && npm run test:policy && npm run test:config && npm run test:guides && npm run test:conformance",
+    "test:src": "vitest run --config vite.config.ts --no-cache --reporter=dot --project src:server",
+    "test:src:server": "vitest run --config vite.config.ts --no-cache --reporter=dot --project src:server",
+    "test:conformance": "vitest run --config vite.config.ts --no-cache --reporter=dot --project conformance",
+    "test:service": "vitest run --config vite.config.ts --no-cache --reporter=dot --project service",
+    "test:setup": "vitest run --config vite.config.ts --no-cache --reporter=dot --project setup",
+    "test:policy": "vitest run --config vite.config.ts --no-cache --reporter=dot --project policy",
+    "test:config": "vitest run --config vite.config.ts --no-cache --reporter=dot --project config",
+    "test:guides": "vitest run --config vite.config.ts --no-cache --reporter=dot --project guides",
+    "build": "npm run clean && npm run build:src",
+    "build:src": "npm run build:src:server",
+    "build:src:server": "vite build --config configs/src/vite.server.config.ts && npm run copy dist/src/server/index.d.ts dist/src/server/index.d.cts",
+    "prepublishOnly": "npm run format:check && npm run lint:check && npm run check && npm run build && npm test && npm run test:distribution -- --mode release && npm run test:service",
+    "test:distribution": "vitest run --config vite.config.ts --no-cache --reporter=dot --project distribution",
+    "test:probe": "vitest run --config vite.config.ts --no-cache --reporter=verbose --project probe",
+    "test:bench": "vitest bench --config vite.config.ts --no-cache --project probe",
+    "prepack": "npm run build"
+  },
+  "dependencies": {
+    "@orkestrel/agent": "^0.0.20",
+    "@orkestrel/budget": "^0.0.9",
+    "@orkestrel/contract": "^0.0.16",
+    "@orkestrel/ndjson": "^0.0.9",
+    "@orkestrel/timeout": "^0.0.9",
+    "@orkestrel/tool": "^0.0.13"
+  },
+  "devDependencies": {
+    "@microsoft/api-extractor": "^7.59.0",
+    "@orkestrel/abort": "^0.0.9",
+    "@orkestrel/guide": "^0.0.17",
+    "@orkestrel/probe": "^0.0.12",
+    "@orkestrel/router": "^0.0.13",
+    "@orkestrel/scaffold": "^0.0.62",
+    "@orkestrel/server": "^0.0.18",
+    "@orkestrel/test": "^0.0.13",
+    "@orkestrel/workspace": "^0.0.7",
+    "@types/node": "^26.4.1",
+    "ollama": "0.6.3",
+    "oxfmt": "^0.66.0",
+    "oxlint": "^1.81.0",
+    "typescript": "^6.0.3",
+    "vite": "^8.2.2",
+    "vite-plugin-dts": "^5.1.0",
+    "vitest": "^4.1.11"
+  },
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "gitHead": "76577410fe373572c1db5b2d5c60284b48ab7953",
+  "_nodeVersion": "22.22.2",
+  "_npmVersion": "11.19.1",
+  "dist": {
+    "integrity": "sha512-LQSVeofXqYhPrlDyqQWEZIiCMaeYR4L72R9G2qMj3wuCFf0uVVjHK0Z12ouCLCt9GXOQAqN35NKy/UD99jbWBg==",
+    "shasum": "ca308101a63e974b86a47a3051f097344135d2be",
+    "tarball": "https://registry.npmjs.org/@orkestrel/ollama/-/ollama-0.0.14.tgz",
+    "fileCount": 9,
+    "unpackedSize": 191041,
+    "signatures": [
+      {
+        "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U",
+        "sig": "MEQCIHeJMQHxgcVCUbB06zzG/cC4i9yad+W38LnqZJ1Ut/joAiAnLEBUKaurnl6kbDwZu5ykXwF2B8I6NoYwStR2SWOKZw=="
+      }
+    ]
+  },
+  "_npmUser": "mikesaintsg <mikesaintg11@gmail.com>",
+  "directories": {},
+  "_npmOperationalInternal": {
+    "host": "s3://npm-registry-packages-npm-production",
+    "tmp": "tmp/ollama_0.0.14_1788559164551_0.4492184977143312"
+  },
+  "_hasShrinkwrap": false
+}

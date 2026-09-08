@@ -1,0 +1,155 @@
+{
+  "_id": "@orkestrel/tool@0.0.13",
+  "_rev": "13-f3293611c0151acf71b225873800194c",
+  "name": "@orkestrel/tool",
+  "dist-tags": {
+    "latest": "0.0.13"
+  },
+  "versions": [
+    "0.0.1",
+    "0.0.2",
+    "0.0.3",
+    "0.0.4",
+    "0.0.5",
+    "0.0.6",
+    "0.0.7",
+    "0.0.8",
+    "0.0.9",
+    "0.0.10",
+    "0.0.11",
+    "0.0.12",
+    "0.0.13"
+  ],
+  "time": {
+    "created": "2026-07-17T16:52:05.822Z",
+    "modified": "2026-09-04T20:10:25.032Z",
+    "0.0.1": "2026-07-17T16:52:06.174Z",
+    "0.0.2": "2026-07-18T02:44:57.876Z",
+    "0.0.3": "2026-07-18T18:46:16.342Z",
+    "0.0.4": "2026-07-21T04:17:56.228Z",
+    "0.0.5": "2026-07-28T20:14:41.031Z",
+    "0.0.6": "2026-07-29T19:12:40.535Z",
+    "0.0.7": "2026-07-31T00:40:43.882Z",
+    "0.0.8": "2026-07-31T13:14:29.864Z",
+    "0.0.9": "2026-08-03T05:41:50.107Z",
+    "0.0.10": "2026-08-12T11:24:34.551Z",
+    "0.0.11": "2026-08-17T19:57:23.092Z",
+    "0.0.12": "2026-08-23T00:17:34.326Z",
+    "0.0.13": "2026-09-04T20:10:24.856Z"
+  },
+  "bugs": {
+    "url": "https://github.com/orkestrel/tool/issues"
+  },
+  "license": "MIT",
+  "homepage": "https://github.com/orkestrel/tool#readme",
+  "keywords": [
+    "agent",
+    "llm",
+    "registry",
+    "schema",
+    "tool",
+    "typescript"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/orkestrel/tool.git"
+  },
+  "description": "The tool runtime for the @orkestrel line — JSON-Schema tool definitions, calls, results, executable tools, and a registry with per-call error isolation. Part of the @orkestrel line.",
+  "maintainers": [
+    "mikesaintsg <mikesaintg11@gmail.com>"
+  ],
+  "readmeFilename": "README.md",
+  "_contentLength": 57583,
+  "version": "0.0.13",
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/src/core/index.cjs",
+  "module": "./dist/src/core/index.js",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/src/core/index.d.ts",
+        "default": "./dist/src/core/index.js"
+      },
+      "require": {
+        "types": "./dist/src/core/index.d.cts",
+        "default": "./dist/src/core/index.cjs"
+      }
+    },
+    "./package.json": "./package.json"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "clean": "node -e \"require('node:fs').rmSync('dist',{recursive:true,force:true})\"",
+    "copy": "node -e \"const fs=require('node:fs'),p=require('node:path'),a=process.argv[1],b=process.argv[2];fs.mkdirSync(p.dirname(b),{recursive:true});fs.cpSync(a,b,{force:true});console.log('Copied: '+a+' to '+b)\"",
+    "scaffold": "scaffold",
+    "lint": "oxlint --config .oxlintrc.json --fix --deny-warnings .",
+    "check": "tsc --noEmit --project tsconfig.json && npm run check:src",
+    "check:src": "npm run check:src:core",
+    "check:src:core": "tsc --noEmit -p configs/src/tsconfig.core.json",
+    "format": "oxfmt --config .oxfmtrc.json --write .",
+    "format:check": "oxfmt --config .oxfmtrc.json --check .",
+    "lint:check": "oxlint --config .oxlintrc.json --deny-warnings .",
+    "test": "npm run test:src && npm run test:policy && npm run test:config && npm run test:setup && npm run test:guides",
+    "test:src": "vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core",
+    "test:src:core": "vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core",
+    "test:policy": "vitest run --config vite.config.ts --no-cache --reporter=dot --project policy",
+    "test:config": "vitest run --config vite.config.ts --no-cache --reporter=dot --project config",
+    "test:guides": "vitest run --config vite.config.ts --no-cache --reporter=dot --project guides",
+    "build": "npm run clean && npm run build:src",
+    "build:src": "npm run build:src:core",
+    "build:src:core": "vite build --config configs/src/vite.core.config.ts && npm run copy dist/src/core/index.d.ts dist/src/core/index.d.cts",
+    "prepublishOnly": "npm run format:check && npm run lint:check && npm run check && npm run build && npm test && npm run test:distribution -- --mode release",
+    "test:distribution": "vitest run --config vite.config.ts --no-cache --reporter=dot --project distribution",
+    "test:probe": "vitest run --config vite.config.ts --no-cache --reporter=verbose --project probe",
+    "test:bench": "vitest bench --config vite.config.ts --no-cache --project probe",
+    "prepack": "npm run build",
+    "test:setup": "vitest run --config vite.config.ts --no-cache --reporter=dot --project setup"
+  },
+  "dependencies": {
+    "@orkestrel/contract": "^0.0.16"
+  },
+  "devDependencies": {
+    "@microsoft/api-extractor": "^7.59.0",
+    "@orkestrel/guide": "^0.0.16",
+    "@orkestrel/probe": "^0.0.11",
+    "@orkestrel/scaffold": "^0.0.61",
+    "@orkestrel/test": "^0.0.13",
+    "@types/node": "^26.4.1",
+    "oxfmt": "^0.66.0",
+    "oxlint": "^1.81.0",
+    "typescript": "^6.0.3",
+    "vite": "^8.2.2",
+    "vite-plugin-dts": "^5.1.0",
+    "vitest": "^4.1.11"
+  },
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "gitHead": "6a4a9bca175a782bfd4257ec737314f4c44ca12e",
+  "types": "./dist/src/core/index.d.ts",
+  "_nodeVersion": "22.22.2",
+  "_npmVersion": "11.19.1",
+  "dist": {
+    "integrity": "sha512-Qz2ladxaohgv9j3cWWijcKH3UCEgFp1MoGKnxQiajEfTOcsYLyzViXUoYqQtnTLEF55VN4TjxyEeJCEYoHQzow==",
+    "shasum": "cc8564ba474d4cf6f4307ac26f22391390f50b9d",
+    "tarball": "https://registry.npmjs.org/@orkestrel/tool/-/tool-0.0.13.tgz",
+    "fileCount": 9,
+    "unpackedSize": 70844,
+    "signatures": [
+      {
+        "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U",
+        "sig": "MEUCIQDfrP80C0zUhAIsf3CI393hYglPseiKql5bXiUfmR2aIAIgGCvCqLn8r0FZflXMgoAbm6swCrJIFYSw44sUtaECHjk="
+      }
+    ]
+  },
+  "_npmUser": "mikesaintsg <mikesaintg11@gmail.com>",
+  "directories": {},
+  "_npmOperationalInternal": {
+    "host": "s3://npm-registry-packages-npm-production",
+    "tmp": "tmp/tool_0.0.13_1788552624720_0.749890719668368"
+  },
+  "_hasShrinkwrap": false
+}
