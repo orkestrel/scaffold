@@ -1,0 +1,302 @@
+diff --git a/C:/Users/mikes/WebstormProjects/scaffold/tmp/pass/layer-capture/Capture.mjs b/C:/Users/mikes/WebstormProjects/scaffold/tmp/pass/layer-capture/Capture.mjs
+new file mode 100644
+index 00000000..8a740fdb
+--- /dev/null
++++ b/C:/Users/mikes/WebstormProjects/scaffold/tmp/pass/layer-capture/Capture.mjs
+@@ -0,0 +1,118 @@
++import { appendFile, mkdir, readFile, writeFile } from 'node:fs/promises'
++import { join, resolve } from 'node:path'
++import { execute } from '@orkestrel/process/server'
++import { GIT, LIMIT, REGISTRY, TIMEOUT } from './constants.mjs'
++import { digestBytes, stamp } from './helpers.mjs'
++
++export class Capture {
++	#git
++	#npm
++	#output
++	#rows
++
++	constructor(options) {
++		this.#git = options.git
++		this.#npm = options.npm
++		this.#output = options.output
++		this.#rows = join(options.output, 'rows.jsonl')
++	}
++
++	async begin(input) {
++		await mkdir(this.#output, { recursive: true })
++		await writeFile(join(this.#output, 'run.json'), `${JSON.stringify({
++			...input,
++			encoding: 'Command streams are returned as decoded strings by execute and saved as UTF-8 bytes.',
++			limit: LIMIT,
++			platform: process.platform,
++			population: input.population,
++			registry: REGISTRY,
++			timeout: TIMEOUT,
++			timestamp: stamp(),
++			version: process.version
++		}, undefined, '\t')}\n`)
++	}
++
++	async file(packageName, source, saved) {
++		const started = stamp()
++		try {
++			const bytes = await readFile(source)
++			await writeFile(saved, bytes)
++			const row = { digest: digestBytes(bytes), finish: stamp(), package: packageName, saved, source, started, type: 'file' }
++			await this.#row(row)
++			return row
++		} catch (error) {
++			const row = { error: error instanceof Error ? error.message : String(error), finish: stamp(), package: packageName, saved, source, started, type: 'file' }
++			await this.#row(row)
++			return row
++		}
++	}
++
++	async command(packageName, source, file, arguments_, workspace) {
++		const started = stamp()
++		let result
++		let error
++		try {
++			result = await execute({ arguments: arguments_, file }, { limit: LIMIT, strict: false, timeout: TIMEOUT, workspace })
++		} catch (caught) {
++			error = caught
++		}
++		const folder = join(this.#output, packageName)
++		await mkdir(folder, { recursive: true })
++		const stdout = join(folder, `${source}.stdout.txt`)
++		const stderr = join(folder, `${source}.stderr.txt`)
++		const output = result?.stdout ?? ''
++		const diagnostics = result?.stderr ?? ''
++		await writeFile(stdout, output, 'utf8')
++		await writeFile(stderr, diagnostics, 'utf8')
++		const row = {
++			arguments: arguments_,
++			command: result?.command,
++			cwd: workspace,
++			executable: file,
++			finish: stamp(),
++			package: packageName,
++			requested: packageName === 'scaffold' ? '@orkestrel/scaffold' : `@orkestrel/${packageName}`,
++			source,
++			started,
++			stderr: { digest: digestBytes(Buffer.from(diagnostics, 'utf8')), path: stderr },
++			stdout: { digest: digestBytes(Buffer.from(output, 'utf8')), path: stdout },
++			type: 'command',
++			...(result === undefined ? { error: error instanceof Error ? error.message : String(error) } : {
++				aborted: result.aborted,
++				code: result.code,
++				expired: result.expired,
++				failed: result.failed,
++				signal: result.signal,
++				settlement: result,
++				truncated: result.truncated
++			})
++		}
++		await this.#row(row)
++		return row
++	}
++
++	async package(root, packageName) {
++		const checkout = resolve(root, packageName)
++		const folder = join(this.#output, packageName)
++		await mkdir(folder, { recursive: true })
++		await this.file(packageName, join(checkout, 'package.json'), join(folder, 'package.before.json'))
++		await this.file(packageName, join(checkout, 'package-lock.json'), join(folder, 'package-lock.before.json'))
++		for (const command of GIT) {
++			const row = await this.command(packageName, command.source, this.#git, ['-C', checkout, ...command.arguments], checkout)
++			if (row.expired || row.aborted) return row
++		}
++		const npm = await this.command(packageName, 'npm-view', process.execPath, [this.#npm, 'view', `@orkestrel/${packageName}`, `--registry=${REGISTRY}`, '--json'], checkout)
++		if (npm.expired || npm.aborted) return npm
++		await this.file(packageName, join(checkout, 'package.json'), join(folder, 'package.after.json'))
++		await this.file(packageName, join(checkout, 'package-lock.json'), join(folder, 'package-lock.after.json'))
++		for (const command of GIT) {
++			const row = await this.command(packageName, `${command.source}-after`, this.#git, ['-C', checkout, ...command.arguments], checkout)
++			if (row.expired || row.aborted) return row
++		}
++		return npm
++	}
++
++	async #row(row) {
++		await appendFile(this.#rows, `${JSON.stringify(row)}\n`)
++	}
++}
+
+diff --git a/C:/Users/mikes/WebstormProjects/scaffold/tmp/pass/layer-capture/child.mjs b/C:/Users/mikes/WebstormProjects/scaffold/tmp/pass/layer-capture/child.mjs
+new file mode 100644
+index 00000000..3614d411
+--- /dev/null
++++ b/C:/Users/mikes/WebstormProjects/scaffold/tmp/pass/layer-capture/child.mjs
+@@ -0,0 +1,4 @@
++const [stdout, stderr, code] = process.argv.slice(2)
++process.stdout.write(stdout ?? '')
++process.stderr.write(stderr ?? '')
++process.exitCode = Number(code ?? '0')
+
+diff --git a/C:/Users/mikes/WebstormProjects/scaffold/tmp/pass/layer-capture/constants.mjs b/C:/Users/mikes/WebstormProjects/scaffold/tmp/pass/layer-capture/constants.mjs
+new file mode 100644
+index 00000000..7ac8e565
+--- /dev/null
++++ b/C:/Users/mikes/WebstormProjects/scaffold/tmp/pass/layer-capture/constants.mjs
+@@ -0,0 +1,19 @@
++export const PACKAGES = Object.freeze([
++	'abort', 'agent', 'brief', 'browser', 'budget', 'codec', 'console', 'contract', 'csv',
++	'database', 'emitter', 'form', 'guide', 'html', 'indexeddb', 'interpret', 'lsp', 'markdown',
++	'mcp', 'middleware', 'msg', 'ndjson', 'ollama', 'pool', 'probe', 'process', 'program',
++	'qualifier', 'queue', 'rater', 'reason', 'relation', 'router', 'scaffold', 'sea', 'server',
++	'sqlite', 'sse', 'table', 'template', 'terminal', 'test', 'timeout', 'tool', 'toolbox',
++	'websocket', 'worker', 'workflow', 'workspace'
++])
++
++export const LIMIT = 16_777_216
++export const REGISTRY = 'https://registry.npmjs.org/'
++export const TIMEOUT = 60_000
++export const GIT = Object.freeze([
++	Object.freeze({ arguments: Object.freeze(['status', '--porcelain']), source: 'git-status' }),
++	Object.freeze({ arguments: Object.freeze(['branch', '--show-current']), source: 'git-branch' }),
++	Object.freeze({ arguments: Object.freeze(['rev-parse', 'HEAD']), source: 'git-head' }),
++	Object.freeze({ arguments: Object.freeze(['rev-parse', 'origin/main']), source: 'git-origin' }),
++	Object.freeze({ arguments: Object.freeze(['merge-base', '--is-ancestor', 'origin/main', 'HEAD']), source: 'git-ancestry' })
++])
+
+diff --git a/C:/Users/mikes/WebstormProjects/scaffold/tmp/pass/layer-capture/helpers.mjs b/C:/Users/mikes/WebstormProjects/scaffold/tmp/pass/layer-capture/helpers.mjs
+new file mode 100644
+index 00000000..68c137d4
+--- /dev/null
++++ b/C:/Users/mikes/WebstormProjects/scaffold/tmp/pass/layer-capture/helpers.mjs
+@@ -0,0 +1,15 @@
++import { createHash } from 'node:crypto'
++import { relative, resolve } from 'node:path'
++
++export function digestBytes(bytes) {
++	return createHash('sha256').update(bytes).digest('hex')
++}
++
++export function isInside(root, target) {
++	const path = relative(resolve(root), resolve(target))
++	return path === '' || (!path.startsWith('..') && !path.includes(':'))
++}
++
++export function stamp() {
++	return new Date().toISOString()
++}
+
+diff --git a/C:/Users/mikes/WebstormProjects/scaffold/tmp/pass/layer-capture/main.mjs b/C:/Users/mikes/WebstormProjects/scaffold/tmp/pass/layer-capture/main.mjs
+new file mode 100644
+index 00000000..126a3c7c
+--- /dev/null
++++ b/C:/Users/mikes/WebstormProjects/scaffold/tmp/pass/layer-capture/main.mjs
+@@ -0,0 +1,36 @@
++import { lstat, mkdir, stat } from 'node:fs/promises'
++import { isAbsolute, resolve } from 'node:path'
++import { fileURLToPath } from 'node:url'
++import { Capture } from './Capture.mjs'
++import { PACKAGES } from './constants.mjs'
++import { isInside } from './helpers.mjs'
++
++export async function run(root, output, npm, git) {
++	if (!isAbsolute(root) || !isAbsolute(output) || !isAbsolute(npm) || !isAbsolute(git)) throw new Error('Input paths must be absolute.')
++	if (!(await stat(root)).isDirectory()) throw new Error('Fleet root must be a directory.')
++	if (!(await stat(npm)).isFile()) throw new Error('npm CLI path must be a file.')
++	if (!(await stat(git)).isFile()) throw new Error('Git path must be a file.')
++	for (const packageName of PACKAGES) {
++		if (resolve(output) === resolve(root, packageName)) throw new Error('Output path must not equal a checkout root.')
++	}
++	if (!isInside(resolve(root, 'scaffold', 'tmp', 'pass'), output)) throw new Error('Output path must remain beneath scaffold/tmp/pass.')
++	try {
++		await lstat(output)
++		throw new Error('Output path is occupied.')
++	} catch (error) {
++		if (!(error instanceof Error) || !('code' in error) || error.code !== 'ENOENT') throw error
++	}
++	await mkdir(output)
++	const capture = new Capture({ git, npm, output })
++	await capture.begin({ git, npm, output, population: PACKAGES, root })
++	for (const packageName of PACKAGES) {
++		const row = await capture.package(root, packageName)
++		if (row.expired || row.aborted) break
++	}
++}
++
++if (process.argv[1] !== undefined && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
++	const [root, output, npm, git] = process.argv.slice(2)
++	if (root === undefined || output === undefined || npm === undefined || git === undefined) throw new Error('Expected fleet root, output directory, npm CLI path, and Git path.')
++	await run(root, output, npm, git)
++}
+
+diff --git a/C:/Users/mikes/WebstormProjects/scaffold/tmp/pass/layer-capture/test.mjs b/C:/Users/mikes/WebstormProjects/scaffold/tmp/pass/layer-capture/test.mjs
+new file mode 100644
+index 00000000..adfa7a3d
+--- /dev/null
++++ b/C:/Users/mikes/WebstormProjects/scaffold/tmp/pass/layer-capture/test.mjs
+@@ -0,0 +1,69 @@
++import assert from 'node:assert/strict'
++import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
++import { tmpdir } from 'node:os'
++import { join } from 'node:path'
++import test from 'node:test'
++import { Capture } from './Capture.mjs'
++import { digestBytes } from './helpers.mjs'
++import { run } from './main.mjs'
++
++async function createTemporary() {
++	return mkdtemp(join(tmpdir(), 'layer-capture-'))
++}
++
++test('copies file bytes and records their digest', async () => {
++	const directory = await createTemporary()
++	try {
++		const source = join(directory, 'source.bin')
++		const saved = join(directory, 'saved.bin')
++		const bytes = Buffer.from([0, 255, 16, 128])
++		await writeFile(source, bytes)
++		const capture = new Capture({ git: process.execPath, npm: process.execPath, output: join(directory, 'output') })
++		await capture.begin({ population: [] })
++		const row = await capture.file('fixture', source, saved)
++		assert.deepEqual(await readFile(saved), bytes)
++		assert.equal(row.digest, digestBytes(bytes))
++	} finally { await rm(directory, { force: true, recursive: true }) }
++})
++
++test('retains a missing file failure without contents', async () => {
++	const directory = await createTemporary()
++	try {
++		const capture = new Capture({ git: process.execPath, npm: process.execPath, output: join(directory, 'output') })
++		await capture.begin({ population: [] })
++		const row = await capture.file('fixture', join(directory, 'absent.json'), join(directory, 'saved.json'))
++		assert.equal('error' in row, true)
++		assert.equal('digest' in row, false)
++	} finally { await rm(directory, { force: true, recursive: true }) }
++})
++
++test('refuses an occupied output without changing its sentinel', async () => {
++	const directory = await createTemporary()
++	try {
++		const root = join(directory, 'host')
++		const output = join(root, 'scaffold', 'tmp', 'pass', 'occupied')
++		await mkdir(join(root, 'scaffold', 'tmp', 'pass'), { recursive: true })
++		await writeFile(output, 'sentinel')
++		await assert.rejects(run(root, output, process.execPath, process.execPath), /occupied/)
++		assert.equal(await readFile(output, 'utf8'), 'sentinel')
++	} finally { await rm(directory, { force: true, recursive: true }) }
++})
++
++test('retains unicode malformed output and a nonzero settlement', async () => {
++	const directory = await createTemporary()
++	try {
++		const output = join(directory, 'output')
++		const capture = new Capture({ git: process.execPath, npm: process.execPath, output })
++		await capture.begin({ population: [] })
++		const stdout = '{ malformed: ☃ }'
++		const stderr = 'érror'
++		const row = await capture.command('fixture', 'child', process.execPath, [join(process.cwd(), 'tmp/pass/layer-capture/child.mjs'), stdout, stderr, '7'], directory)
++		assert.equal(row.code, 7)
++		assert.equal(row.failed, true)
++		assert.equal(await readFile(row.stdout.path, 'utf8'), stdout)
++		assert.equal(await readFile(row.stderr.path, 'utf8'), stderr)
++		assert.equal(typeof row.expired, 'boolean')
++		assert.equal(typeof row.aborted, 'boolean')
++		assert.equal(typeof row.truncated, 'boolean')
++	} finally { await rm(directory, { force: true, recursive: true }) }
++})

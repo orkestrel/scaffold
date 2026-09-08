@@ -70,25 +70,26 @@ before visiting the bottom runtime layer. A changed final tool artifact invalida
 affected provisional readings. Do not create a runtime cycle by treating a dev edge as
 a runtime edge.
 
-Version bumps during local preparation do not authorize publication or silently repeal
-Ruling 8. If the measured guide dependencies conflict with its publication hold, carry
-the exact conflict to the owner before freezing the release sequence. Preserve primary
-scaffold's owner package and staged lock edits; prepare overlapping release changes in
-isolation and integrate only the authorized non-conflicting fields.
+Version bumps during local preparation do not authorize publication. The owner's
+latest direction, recorded as Ruling 29, replaces guide-first publication with measured
+dependency-layer order. Prepare the fleet with tarballs, then present that order and
+use orkestrel-publish when ready. Incremental publication is an owner-selectable
+workflow, not an upload authorization. Preserve primary scaffold's owner package and
+staged lock edits; prepare overlapping release changes in isolation and integrate only
+the authorized non-conflicting fields.
 
 ## Next units and routing
 
 | Unit | Role and engine | Prerequisite |
 | --- | --- | --- |
-| supported layer mechanism map | Grok through Cursor, read-only | accepted path source, retained instruments, and public scaffold contracts |
-| live reading boundary ruling | analyst, Sol; planner, Opus; blind | retained inventory audit findings and supported mechanism map; no further blind collector repair |
-| bounded live evidence capture | builder, Terra; root execution and independent checker | accepted reading boundary, exact population and fields; prefer existing public mechanisms and raw CLI evidence |
-| package graph reconciliation | orkestrel, Terra | supplied live manifest, lock, installed, and registry evidence |
+| supported layer mechanism map | Grok through Cursor, read-only | returned; limits and sibling-path correction retained |
+| live reading boundary ruling | analyst, Sol; planner, Opus; blind | closed in d7n-layer-reading-boundary-verdict.md; rejected collector retired as a prerequisite |
+| bounded live evidence capture | builder, Terra; root execution and independent checker | dispatched under d7n-layer-capture-brief.md; capture raw files and npm/Git readings without package verdicts |
+| package graph reconciliation | orkestrel, Terra | supplied manifest, lock and registry evidence with source relations; installed/nested attestations remain in each visit |
 | artifact-wave design | analyst, Sol; planner, Opus; blind | measured graph and unresolved tooling cycles |
 | local artifact preparation | bounded implementer or mechanical builder; root installs and packs | accepted design, clean source baseline, per-layer canonical propagation, applied version decision and dependency closure |
 | package acceptance | independent objective and subjective lanes where source changes; checker and verifier | actual diff, artifact receipt, resolved graph, and final gates |
 
-The publication sequence remains unapproved. Reconcile the local alignment plan with
-Ruling 8's guide-publication hold before freezing release manifests. Report any genuine
-release-order conflict to the owner; do not silently change that ruling or install a
+No upload is approved. Derive the publishing sequence from the accepted graph under
+Ruling 29 and present it when the tarball-prepared fleet is ready. Do not install a
 dependency graph whose overrides conceal incompatible final ranges.

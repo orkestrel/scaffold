@@ -134,3 +134,24 @@ A function row in a table that carries `Shape` holds its signature as a type lit
 ## Ruling 28 — a class row's `Shape` cell
 
 A class row in a table that carries `Shape` holds the interface the class implements, as its code token (`ProbeInterface`), the form probe's guide carries; a class implementing no package interface holds its constructor signature as a type literal, `new (message: string, options?: ErrorOptions) => LSPError`. The table's convention sentence gains "A class row's `Shape` cell holds the interface it implements, or its constructor signature where it implements none." An empty class cell is a defect, as Ruling 26 fixes for a function row. The population sits in console, contract, form, lsp, ollama, and table, each taking the ruling in its next unit.
+
+## Ruling 29 — prepare with tarballs and publish in measured dependency layers
+
+Follow the owner's Windows continuation direction of 2026-09-08: finish fixes and
+dependency alignment using local tarballs, apply required version bumps before
+accepted packing, and prepare every package for publication. Include runtime,
+development, peer and optional declarations in the alignment; retain bundled and
+override observations. Propagate the canonical scaffold correction during each
+dependency-layer visit through scaffold's supported mechanism.
+
+Replace the old guide-first publication sequence with the measured dependency-layer
+order. The default remains local fleet preparation before presenting that order to
+the owner. Consult orkestrel-publish when the prepared release is ready. If the owner
+chooses incremental publication, publish an accepted layer only on the owner's
+go-ahead, confirm registry availability, and then continue its dependents. The latest
+direction permits that workflow choice; it does not authorize an upload now.
+
+Preserve Ruling 8's parity requirements, package main closures and guide correction.
+Do not use publication to bypass local tarball verification, fabricate registry
+lockfile entries for unpublished versions, or change authentication material. Keep
+every upload subject to the owner's decision and credential.

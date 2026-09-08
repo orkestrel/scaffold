@@ -1,0 +1,14 @@
+ M .orkestrel/campaign/docs-parity/d7-fleet-plan.md
+ M .orkestrel/campaign/docs-parity/d7n-layer-alignment-plan.md
+ M .orkestrel/campaign/docs-parity/rulings.md
+M  package-lock.json
+ M package.json
+?? .orkestrel/campaign/docs-parity/d7n-capture-command-reading.md
+?? .orkestrel/campaign/docs-parity/d7n-contract-npm-ls.err.txt
+?? .orkestrel/campaign/docs-parity/d7n-contract-npm-ls.raw.txt
+?? .orkestrel/campaign/docs-parity/d7n-contract-view-full.log.txt
+?? .orkestrel/campaign/docs-parity/d7n-layer-capture-brief.md
+?? .orkestrel/campaign/docs-parity/d7n-layer-capture.diff.txt
+?? .orkestrel/campaign/docs-parity/d7n-layer-reading-boundary-objective-report.md
+?? .orkestrel/campaign/docs-parity/d7n-layer-reading-boundary-subjective-report.md
+?? .orkestrel/campaign/docs-parity/d7n-layer-reading-boundary-verdict.md

@@ -1,0 +1,163 @@
+& 'C:/Users/mikes/scoop/apps/nodejs-lts/current/node.exe' 'C:/Users/mikes/scoop/apps/nodejs-lts/current/node_modules/npm/bin/npm-cli.js' view '@orkestrel/contract' --registry=https://registry.npmjs.org/ --json
+Exit: 0
+Elapsed: 1.0142258 seconds
+
+{
+  "_id": "@orkestrel/contract@0.0.16",
+  "_rev": "16-afd8f8d58580deebcbcedb912b9f0179",
+  "name": "@orkestrel/contract",
+  "dist-tags": {
+    "latest": "0.0.16"
+  },
+  "versions": [
+    "0.0.1",
+    "0.0.2",
+    "0.0.3",
+    "0.0.4",
+    "0.0.5",
+    "0.0.6",
+    "0.0.7",
+    "0.0.8",
+    "0.0.9",
+    "0.0.10",
+    "0.0.11",
+    "0.0.12",
+    "0.0.13",
+    "0.0.14",
+    "0.0.15",
+    "0.0.16"
+  ],
+  "time": {
+    "created": "2026-07-11T20:14:54.079Z",
+    "modified": "2026-09-04T19:51:54.904Z",
+    "0.0.1": "2026-07-11T20:14:54.342Z",
+    "0.0.2": "2026-07-17T22:03:50.452Z",
+    "0.0.3": "2026-07-18T05:45:42.409Z",
+    "0.0.4": "2026-07-18T08:39:18.220Z",
+    "0.0.5": "2026-07-18T09:36:26.130Z",
+    "0.0.6": "2026-07-21T00:26:25.537Z",
+    "0.0.7": "2026-07-21T02:20:22.916Z",
+    "0.0.8": "2026-07-27T23:26:07.831Z",
+    "0.0.9": "2026-07-29T21:13:34.257Z",
+    "0.0.10": "2026-08-09T02:56:16.870Z",
+    "0.0.11": "2026-08-12T11:06:19.239Z",
+    "0.0.12": "2026-08-17T16:37:20.732Z",
+    "0.0.13": "2026-08-21T13:24:24.574Z",
+    "0.0.14": "2026-09-01T10:56:37.759Z",
+    "0.0.15": "2026-09-01T15:29:59.902Z",
+    "0.0.16": "2026-09-04T19:51:54.691Z"
+  },
+  "bugs": {
+    "url": "https://github.com/orkestrel/contract/issues"
+  },
+  "license": "MIT",
+  "homepage": "https://github.com/orkestrel/contract#readme",
+  "keywords": [
+    "contract",
+    "json-schema",
+    "parsers",
+    "type-guards",
+    "typescript",
+    "validation",
+    "zero-dependency"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/orkestrel/contract.git"
+  },
+  "description": "Zero-dependency contract toolkit — type guards, combinators, parsers, and a shape DSL that compiles one contract shape into schema, is, parse, audit, explain, and generate. The foundation package of the @orkestrel line.",
+  "maintainers": [
+    "mikesaintsg <mikesaintg11@gmail.com>"
+  ],
+  "readmeFilename": "README.md",
+  "_contentLength": 67145,
+  "version": "0.0.16",
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/src/core/index.cjs",
+  "module": "./dist/src/core/index.js",
+  "types": "./dist/src/core/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/src/core/index.d.ts",
+        "default": "./dist/src/core/index.js"
+      },
+      "require": {
+        "types": "./dist/src/core/index.d.cts",
+        "default": "./dist/src/core/index.cjs"
+      }
+    },
+    "./package.json": "./package.json"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "clean": "node -e \"require('node:fs').rmSync('dist',{recursive:true,force:true})\"",
+    "copy": "node -e \"const fs=require('node:fs'),p=require('node:path'),a=process.argv[1],b=process.argv[2];fs.mkdirSync(p.dirname(b),{recursive:true});fs.cpSync(a,b,{force:true});console.log('Copied: '+a+' to '+b)\"",
+    "scaffold": "scaffold",
+    "lint": "oxlint --config .oxlintrc.json --fix --deny-warnings .",
+    "check": "tsc --noEmit --project tsconfig.json && npm run check:src",
+    "check:src": "npm run check:src:core",
+    "check:src:core": "tsc --noEmit -p configs/src/tsconfig.core.json",
+    "format": "oxfmt --config .oxfmtrc.json --write .",
+    "format:check": "oxfmt --config .oxfmtrc.json --check .",
+    "lint:check": "oxlint --config .oxlintrc.json --deny-warnings .",
+    "test": "npm run test:src && npm run test:policy && npm run test:config && npm run test:setup && npm run test:guides",
+    "test:src": "vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core",
+    "test:src:core": "vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core",
+    "test:policy": "vitest run --config vite.config.ts --no-cache --reporter=dot --project policy",
+    "test:config": "vitest run --config vite.config.ts --no-cache --reporter=dot --project config",
+    "test:guides": "vitest run --config vite.config.ts --no-cache --reporter=dot --project guides",
+    "build": "npm run clean && npm run build:src",
+    "build:src": "npm run build:src:core",
+    "build:src:core": "vite build --config configs/src/vite.core.config.ts && npm run copy dist/src/core/index.d.ts dist/src/core/index.d.cts",
+    "prepack": "npm run build",
+    "prepublishOnly": "npm run format:check && npm run lint:check && npm run check && npm run build && npm test && npm run test:distribution -- --mode release",
+    "test:distribution": "vitest run --config vite.config.ts --no-cache --reporter=dot --project distribution",
+    "test:probe": "vitest run --config vite.config.ts --no-cache --reporter=verbose --project probe",
+    "test:bench": "vitest bench --config vite.config.ts --no-cache --project probe",
+    "test:setup": "vitest run --config vite.config.ts --no-cache --reporter=dot --project setup"
+  },
+  "devDependencies": {
+    "@microsoft/api-extractor": "^7.59.0",
+    "@orkestrel/guide": "^0.0.16",
+    "@orkestrel/probe": "^0.0.11",
+    "@orkestrel/scaffold": "^0.0.61",
+    "@orkestrel/test": "^0.0.12",
+    "@types/node": "^26.4.1",
+    "oxfmt": "^0.66.0",
+    "oxlint": "^1.81.0",
+    "typescript": "^6.0.3",
+    "vite": "^8.2.2",
+    "vite-plugin-dts": "^5.1.0",
+    "vitest": "^4.1.11"
+  },
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "gitHead": "2ced48e1321fcbf3ef76c66ae670cac8671fe1e6",
+  "_nodeVersion": "22.22.2",
+  "_npmVersion": "11.19.1",
+  "dist": {
+    "integrity": "sha512-wGCzaS39iq2kApv8WU1IfHZVDCzRlLat6VM31HxN3tSeRFtZ3bxvW1ZJzVqIu7r8vHasD+zptEufKG2sZv522w==",
+    "shasum": "37bb9e31ba5e068d134751df8a4abfd55990a746",
+    "tarball": "https://registry.npmjs.org/@orkestrel/contract/-/contract-0.0.16.tgz",
+    "fileCount": 9,
+    "unpackedSize": 2858226,
+    "signatures": [
+      {
+        "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U",
+        "sig": "MEQCIELH3c7/NCoIt76BbMnHujEpN2pkYwGlIdPDnm88m84dAiBdSX4rPqmSdfcTLZqU32BEE6FsCLANMzG+dQd/PiYwbw=="
+      }
+    ]
+  },
+  "_npmUser": "mikesaintsg <mikesaintg11@gmail.com>",
+  "directories": {},
+  "_npmOperationalInternal": {
+    "host": "s3://npm-registry-packages-npm-production",
+    "tmp": "tmp/contract_0.0.16_1788551514542_0.7781644838203821"
+  },
+  "_hasShrinkwrap": false
+}

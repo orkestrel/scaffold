@@ -1,5 +1,13 @@
 # D7.n — reconciliation and plan (2026-09-07)
 
+For the current Windows continuation, apply Ruling 29 and d7n-layer-alignment-plan.md
+over this retained phase sequence. The owner requires tarball-based dependency-layer
+fixes, alignment and version bumps before accepted packing. Prepare the fleet before
+presenting the publishing order; consult orkestrel-publish when ready. The owner may
+choose incremental publication by accepted layer, but no upload is approved now.
+The earlier guide-first publication sequence below is superseded; its parity findings
+and pending owner decisions remain in force.
+
 The design round ran both lanes blind on `d7-fleet-design-brief.md`: `planner` (Opus 5) held the subjective lane, `reviewer` (Opus 5, the recorded substitution for the dark Sol bench) held the objective lane. Their returns are `d7-fleet-design-subjective.md` and `d7-fleet-design-objective.md`. P17 to P19 in `orchestrator-measurements.md` took the measurements the objective lane named missing where a unit's brief needed them; the rest are taken inside the units they size.
 
 ## Rulings per decision

@@ -173,17 +173,19 @@ layered closure remains the release-preparation prerequisite.
 The supported layer mechanism map returned under d7n-layer-supported-map-report.md.
 Read d7n-layer-supported-map-reading.md beside it for root's acceptance limits and
 the sibling-path correction. It maps public scaffold APIs and retained instrument
-reuse, not live fleet state. The blind reading-boundary design lanes are running under
-d7n-layer-reading-boundary-brief.md before another capture instrument is authorized.
+reuse, not live fleet state. The blind reading-boundary design closed under
+d7n-layer-reading-boundary-verdict.md. The raw carrier returned under
+d7n-layer-capture-brief.md; focused independent controls passed and acceptance audits
+are running. The rejected inventory collector remains retired as a prerequisite.
 Root's initial Contract reading finds registry 0.0.16 and prepared source 0.0.17;
 that candidate does not require an automatic repeat bump merely to resume the pass.
 Read d7n-layer-contract-reading.md. No accepted layer tarball or new pin exists yet.
 
-The requested latest dependency pins conflict with the old guide-first publication
-sequence if Guide consumes the prepared Contract and Markdown releases. Root asked
-the owner whether publication may instead follow dependency order after fleet main
-closure, while all publishing still waits for explicit approval. The response is
-pending; no release-order ruling changed. Read d7n-layer-guide-release-reading.md.
+The owner resolved the publication-order question in Ruling 29. Finish fixes and
+alignment with tarballs, applying required bumps before accepted packing, then present
+the measured publishing layer order. Use orkestrel-publish when ready. The owner may
+choose incremental publication after an accepted layer; no upload is authorized now.
+The old guide-first sequence is superseded. Keep parity closures and artifact checks.
 
 ## Pending owner decisions carried from the container
 
