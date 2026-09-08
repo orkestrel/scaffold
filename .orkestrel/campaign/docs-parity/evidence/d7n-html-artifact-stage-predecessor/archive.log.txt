@@ -1,0 +1,2 @@
++ git -C /c/Users/mikes/WebstormProjects/html archive --format=tar -o /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/d7n-html-stage.7nT1Vx/html.tar 0b953169d8a541a8b2bc91f0170c301bd5b9cdca
+exit=0

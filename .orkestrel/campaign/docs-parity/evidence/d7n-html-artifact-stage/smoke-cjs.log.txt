@@ -1,0 +1,6 @@
++ node smoke.cjs /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/d7n-html-stage.FBOpkx/contract/package
+contract-cjs=C:\Users\mikes\WebstormProjects\scaffold\tmp\pass\d7n-html-stage.FBOpkx\consumer\node_modules\@orkestrel\contract\dist\src\core\index.cjs
+contract-cjs-sha256=25b06b99d200048e1b52a5c25709fb89d488651933d3a18fb41992ad31b4c80b
+contract-version=0.0.17
+behavior=html-rendering-and-document-guard
+exit=0

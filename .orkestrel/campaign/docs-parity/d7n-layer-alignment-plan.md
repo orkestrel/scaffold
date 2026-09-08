@@ -86,6 +86,13 @@ the authorized non-conflicting fields.
 
 ## Next units and routing
 
+Ruling 31 fixes the owner choice: finish whole-fleet tarball preparation before any
+publication. Consolidate parity checking under tests/guides.test.ts and test:guides;
+resolve the runner's rewrite behavior before retiring it. Prepare the Guide prerequisite
+chain from accepted tarballs, then pack the revised tooling and compare rebuilt lower
+packages with their preserved accepted artifacts. Include emitted declarations and
+documentation in the comparison. Keep ordinary parity tests non-mutating.
+
 | Unit | Role and engine | Prerequisite |
 | --- | --- | --- |
 | supported layer mechanism map | Grok through Cursor, read-only | returned; limits and sibling-path correction retained |

@@ -1,0 +1,8 @@
++ npm --prefix /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/d7n-html-stage.FBOpkx/html run format:check
+npm notice run @orkestrel/html@0.0.9 format:check
+npm notice run oxfmt --config .oxfmtrc.json --check .
+Checking formatting...
+
+All matched files use the correct format.
+Finished in 1133ms on 47 files using 16 threads.
+exit=0

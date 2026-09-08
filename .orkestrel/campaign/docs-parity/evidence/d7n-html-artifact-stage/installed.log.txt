@@ -1,0 +1,8 @@
++ node /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/html-artifact-stage/inspect.mjs /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/d7n-html-stage.FBOpkx/html/package.json
+@orkestrel/html	0.0.9	C:\Users\mikes\WebstormProjects\scaffold\tmp\pass\d7n-html-stage.FBOpkx\html\package.json
+@orkestrel/contract	0.0.17	C:\Users\mikes\WebstormProjects\scaffold\tmp\pass\d7n-html-stage.FBOpkx\html\node_modules\@orkestrel\contract\package.json
+@orkestrel/guide	0.0.18	C:\Users\mikes\WebstormProjects\scaffold\tmp\pass\d7n-html-stage.FBOpkx\html\node_modules\@orkestrel\guide\package.json
+@orkestrel/test	0.0.14	C:\Users\mikes\WebstormProjects\scaffold\tmp\pass\d7n-html-stage.FBOpkx\html\node_modules\@orkestrel\test\package.json
+contract-entry	C:\Users\mikes\WebstormProjects\scaffold\tmp\pass\d7n-html-stage.FBOpkx\html\node_modules\@orkestrel\contract\dist\src\core\index.cjs
+manifest	C:/Users/mikes/WebstormProjects/scaffold/tmp/pass/d7n-html-stage.FBOpkx/html/package.json
+exit=0

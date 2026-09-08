@@ -78,6 +78,20 @@ The previous probe writer returned and its test changes landed as 93fc01d. The
 owner-main comparison returned; its result projection is retained. Those processes
 are not active units.
 
+## Parity entry consolidation
+
+| Unit | Route | Evidence | State |
+| --- | --- | --- | --- |
+| d7n-parity-route-map | Cursor Grok, read-only | tmp/cursor/d7n-parity-route-map.jsonl and .err; session 8584e515-b1a4-43b8-b880-255cfaa38028; root exec 27416 | returned exit 0; evidence map retained with provenance and prose annotations; no product writes |
+| d7n-html-artifact-stage | native builder, Terra; root execution | native html_artifact_stage; tmp/pass/d7n-html-stage.7nT1Vx | exec 31751 exited 1 after formatter exit 2; inherited tmp ignore rule identified; canonical HTML preserved |
+| d7n-html-artifact-stage-boundary | root execution | tmp/pass/d7n-html-stage.FBOpkx | exec 81669 exited 0; accepted local prerequisite artifact; canonical HTML unchanged |
+| d7n-html-artifact-stage-verify | native verifier, Terra | native html_artifact_stage_verify | GREEN; installed consumers rerun successfully; root carrier boundary accepted; revised parity and registry-final work pending |
+
+Native Monitor and task-registry tools are not exposed in this harness. Root tracks
+the capped command by its exec session and reads terminal results without raw thinking
+events. The native builder has a separate tracked task. Do not treat the unavailable
+Workflow launch as a dark engine.
+
 Prepare agent's successor as a read/edit-only writer with host-owned validation.
 The denied shell commands remain denied; do not change role permissions or invoke
 their binaries through another interpreter. Retain the original denial report and

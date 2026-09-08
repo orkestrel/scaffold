@@ -1,0 +1,2 @@
++ git -C /c/Users/mikes/WebstormProjects/html fetch origin
+exit=0

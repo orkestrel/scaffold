@@ -1,0 +1,29 @@
++ npm --prefix /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/d7n-html-stage.FBOpkx/html run build
+npm notice run @orkestrel/html@0.0.9 build
+npm notice run npm run clean && npm run build:src
+npm notice run @orkestrel/html@0.0.9 clean
+npm notice run node -e "require('node:fs').rmSync('dist',{recursive:true,force:true})"
+npm notice run @orkestrel/html@0.0.9 build:src
+npm notice run npm run build:src:core
+npm notice run @orkestrel/html@0.0.9 build:src:core
+npm notice run vite build --config configs/src/vite.core.config.ts && npm run copy dist/src/core/index.d.ts dist/src/core/index.d.cts
+vite v8.2.2 building client environment for production...
+transforming...
+✓ 10 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/core/index.js  138.93 kB │ gzip: 39.00 kB │ map: 241.05 kB
+
+transforming...
+✓ 10 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/core/index.cjs  141.81 kB │ gzip: 39.35 kB │ map: 241.81 kB
+
+✓ built in 219ms
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+npm notice run @orkestrel/html@0.0.9 copy
+npm notice run node -e "const fs=require('node:fs'),p=require('node:path'),a=process.argv[1],b=process.argv[2];fs.mkdirSync(p.dirname(b),{recursive:true});fs.cpSync(a,b,{force:true});console.log('Copied: '+a+' to '+b)" dist/src/core/index.d.ts dist/src/core/index.d.cts
+Copied: dist/src/core/index.d.ts to dist/src/core/index.d.cts
+exit=0

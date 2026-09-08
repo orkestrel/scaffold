@@ -245,14 +245,18 @@ d7n-contract-abort-stage-verdict.md closes this mechanism proof.
 This settles local runtime dependency staging, not Abort's remaining full layer visit
 or peer behavior. The predecessor's wrong cwd pack is retained but never accepted.
 
-The owner has been offered incremental publication of the prepared bottom layer or
-continued whole-fleet tarball preparation. No answer or upload is recorded yet.
+The owner selected whole-fleet tarball preparation before publication. Ruling 31 holds
+the bottom upload and adds consolidation of parity testing into tests/guides.test.ts
+and test:guides. Resolve the docs runner's separate rewrite behavior before retirement.
+Prepare Guide's runtime prerequisites, pack its revision, then compare rebuilt lower
+layers with the preserved accepted tarballs, including emitted documentation.
 The publish skill's window reference has been read. Windows uploads are operator-run
 in a real terminal; root prepares the commands and confirms the registry. No login,
 credential change or auth-file inspection has run.
 
 Read d7n-foundation-ready.md for the prepared wave, fresh registry evidence and the
-operator script. It is authored and syntax-checked but unrun. The author and verifier
+operator script. Its live tmp copy refuses execution under Ruling 31; its retained
+historical copy remains unchanged. It has never uploaded. The author and verifier
 tasks have returned; no package writer or shell session remains active for this wave.
 
 Ruling 30 records the owner's development-pin clarification. Prepare lower runtime
@@ -260,6 +264,23 @@ layers with tooling tarballs now. Update development pins after tooling publicat
 do not bump or republish when the material distributable is unchanged. Keep future
 runtime pins isolated until valid registry locks can be generated. That safe default
 does not block local artifact preparation. No upload is authorized yet.
+
+The parity entry map returned under d7n-parity-route-map-report.md; read root's
+provenance correction and interpretation in d7n-parity-route-reading.md. The equality
+gate already lives in test:guides. The separate docs runner reports and rewrites;
+root asked whether automatic rewriting should retire or remain an explicit command.
+Do not make that unresolved choice by deleting functionality or making tests mutate.
+
+HTML's isolated prerequisite artifact is accepted in d7n-html-artifact-stage-verdict.md.
+Its version is 0.0.9 with staged Contract ^0.0.17, at
+tmp/pass/d7n-html-stage.FBOpkx/packed/orkestrel-html-0.0.9.tgz, SHA256
+970077f8671a978c271e7a790b78a6b44772d1f60d4e944fc381526c916c334b. Root's package
+chain and installed ESM/CommonJS consumer passed; independent verification is GREEN.
+Canonical HTML remains clean at 0b953169d8a541a8b2bc91f0170c301bd5b9cdca. Prepare
+Markdown with this artifact and Contract 0.0.17, then Guide with that accepted chain.
+Revised parity revalidation and registry-final work remain pending. The archive copy
+needs its own Git boundary so scaffold's ancestor tmp ignore rule does not suppress
+validation; the retained HTML runner establishes it before gates.
 
 ## Pending owner decisions carried from the container
 

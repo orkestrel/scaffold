@@ -1,0 +1,2 @@
++ node /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/path-artifact-pilot/html.mjs /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/d7n-html-stage.FBOpkx /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/d7n-html-stage.FBOpkx/html /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/d7n-html-stage.FBOpkx/repair
+exit=0

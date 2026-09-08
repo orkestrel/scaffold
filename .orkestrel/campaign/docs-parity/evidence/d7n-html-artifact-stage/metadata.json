@@ -1,0 +1,28 @@
+{
+	"artifact": {
+		"path": "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\pass\\d7n-html-stage.FBOpkx\\packed\\orkestrel-html-0.0.9.tgz",
+		"sha256": "970077f8671a978c271e7a790b78a6b44772d1f60d4e944fc381526c916c334b"
+	},
+	"commit": "0b953169d8a541a8b2bc91f0170c301bd5b9cdca",
+	"manifest": {
+		"dependency": "@orkestrel/contract",
+		"from": "^0.0.16",
+		"to": "^0.0.17",
+		"version": "0.0.9"
+	},
+	"pending": "revised parity revalidation",
+	"tooling": {
+		"contract": {
+			"path": "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\pass\\packed\\d7n-foundation-contract.ZjPTS5\\orkestrel-contract-0.0.17.tgz",
+			"sha256": "88ef71a590f33edd9dc28bbdf65dc30ce9e2251fd9805807bb94bef0adcbca5a"
+		},
+		"guide": {
+			"path": "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\pass\\packed\\d7n-guide-bootstrap.47Q7XT\\orkestrel-guide-0.0.18.tgz",
+			"sha256": "3a60e83f4c6319f029106f3d9588ed186639f72c222a34045326439cfff73519"
+		},
+		"test": {
+			"path": "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\pass\\packed\\d7n-foundation-test.ufR41o\\orkestrel-test-0.0.14.tgz",
+			"sha256": "d6ae5e57126d370b3316b528a8bd6dafaf2b64d9bdf52e73fead78065f7c5002"
+		}
+	}
+}

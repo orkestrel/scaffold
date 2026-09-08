@@ -1,0 +1,7 @@
++ npm --prefix /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/d7n-html-stage.7nT1Vx/html run format:check
+npm notice run @orkestrel/html@0.0.9 format:check
+npm notice run oxfmt --config .oxfmtrc.json --check .
+Checking formatting...
+
+Expected at least one target file. All matched files may have been excluded by ignore rules.
+exit=2

@@ -1,0 +1,306 @@
++ npm --prefix /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/d7n-html-stage.7nT1Vx/html ls --all
+@orkestrel/html@0.0.9 C:\Users\mikes\WebstormProjects\scaffold\tmp\pass\d7n-html-stage.7nT1Vx\html
+├─┬ @microsoft/api-extractor@7.59.0
+│ ├─┬ @microsoft/api-extractor-model@7.33.11
+│ │ ├── @microsoft/tsdoc-config@0.18.1 deduped
+│ │ ├── @microsoft/tsdoc@0.16.0 deduped
+│ │ └── @rushstack/node-core-library@5.24.0 deduped
+│ ├─┬ @microsoft/tsdoc-config@0.18.1
+│ │ ├── @microsoft/tsdoc@0.16.0 deduped
+│ │ ├─┬ ajv@8.18.0
+│ │ │ ├── fast-deep-equal@3.1.3
+│ │ │ ├── fast-uri@3.1.7
+│ │ │ ├── json-schema-traverse@1.0.0
+│ │ │ └── require-from-string@2.0.2
+│ │ ├── jju@1.4.0
+│ │ └── resolve@1.22.12 deduped
+│ ├── @microsoft/tsdoc@0.16.0
+│ ├─┬ @rushstack/node-core-library@5.24.0
+│ │ ├── @types/node@26.5.0 deduped
+│ │ ├─┬ ajv-draft-04@1.0.0
+│ │ │ └── ajv@8.18.0 deduped
+│ │ ├─┬ ajv-formats@3.0.1
+│ │ │ └── ajv@8.18.0 deduped
+│ │ ├─┬ ajv@8.20.0
+│ │ │ ├── fast-deep-equal@3.1.3 deduped
+│ │ │ ├── fast-uri@3.1.7 deduped
+│ │ │ ├── json-schema-traverse@1.0.0 deduped
+│ │ │ └── require-from-string@2.0.2 deduped
+│ │ ├─┬ fs-extra@11.3.6
+│ │ │ ├── graceful-fs@4.2.11
+│ │ │ ├─┬ jsonfile@6.2.1
+│ │ │ │ ├── graceful-fs@4.2.11 deduped
+│ │ │ │ └── universalify@2.0.1 deduped
+│ │ │ └── universalify@2.0.1
+│ │ ├── import-lazy@4.0.0
+│ │ ├── jju@1.4.0 deduped
+│ │ ├── resolve@1.22.12 deduped
+│ │ └── semver@7.7.4 deduped
+│ ├─┬ @rushstack/rig-package@0.7.3
+│ │ ├── jju@1.4.0 deduped
+│ │ └── resolve@1.22.12 deduped
+│ ├─┬ @rushstack/terminal@0.24.3
+│ │ ├── @rushstack/node-core-library@5.24.0 deduped
+│ │ ├─┬ @rushstack/problem-matcher@0.2.1
+│ │ │ └── @types/node@26.5.0 deduped
+│ │ ├── @types/node@26.5.0 deduped
+│ │ └─┬ supports-color@8.1.1
+│ │   └── has-flag@4.0.0
+│ ├─┬ @rushstack/ts-command-line@5.3.13
+│ │ ├── @rushstack/terminal@0.24.3 deduped
+│ │ ├── @types/argparse@1.0.38
+│ │ ├─┬ argparse@1.0.10
+│ │ │ └── sprintf-js@1.0.3
+│ │ └── string-argv@0.3.2
+│ ├── diff@8.0.4
+│ ├─┬ minimatch@10.2.3
+│ │ └─┬ brace-expansion@5.0.9
+│ │   └── balanced-match@4.0.4
+│ ├─┬ resolve@1.22.12
+│ │ ├── es-errors@1.3.0
+│ │ ├─┬ is-core-module@2.16.2
+│ │ │ └─┬ hasown@2.0.4
+│ │ │   └── function-bind@1.1.2
+│ │ ├── path-parse@1.0.7
+│ │ └── supports-preserve-symlinks-flag@1.0.0
+│ ├── semver@7.7.4
+│ ├── source-map@0.6.1
+│ └── typescript@5.9.3
+├── @orkestrel/contract@0.0.17
+├─┬ @orkestrel/guide@0.0.18 invalid: "^0.0.17" from the root project
+│ ├── @orkestrel/contract@0.0.16
+│ └─┬ @orkestrel/markdown@0.0.13
+│   ├── @orkestrel/contract@0.0.16
+│   └─┬ @orkestrel/html@0.0.8
+│     └── @orkestrel/contract@0.0.16
+├─┬ @orkestrel/probe@0.0.12
+│ ├── @orkestrel/contract@0.0.16
+│ ├─┬ @orkestrel/emitter@0.0.9
+│ │ └── @orkestrel/contract@0.0.16
+│ ├─┬ @orkestrel/lsp@0.0.6
+│ │ ├── @orkestrel/contract@0.0.16
+│ │ ├── @orkestrel/emitter@0.0.9 deduped
+│ │ └── @orkestrel/process@0.0.10 deduped
+│ ├─┬ @orkestrel/mcp@0.0.28
+│ │ ├── @orkestrel/codec@0.0.2
+│ │ ├── @orkestrel/contract@0.0.16
+│ │ ├── @orkestrel/emitter@0.0.9 deduped
+│ │ ├── @orkestrel/process@0.0.10 deduped
+│ │ ├─┬ @orkestrel/router@0.0.13
+│ │ │ ├── @orkestrel/abort@0.0.9 deduped
+│ │ │ ├── @orkestrel/contract@0.0.16
+│ │ │ └── @orkestrel/emitter@0.0.9 deduped
+│ │ ├─┬ @orkestrel/server@0.0.18
+│ │ │ ├── @orkestrel/abort@0.0.9 deduped
+│ │ │ ├── @orkestrel/codec@0.0.2 deduped
+│ │ │ ├── @orkestrel/contract@0.0.16
+│ │ │ ├── @orkestrel/emitter@0.0.9 deduped
+│ │ │ ├── @orkestrel/router@0.0.13 deduped
+│ │ │ └── @orkestrel/timeout@0.0.9 deduped
+│ │ ├── @orkestrel/sse@0.0.6
+│ │ ├── @orkestrel/tool@0.0.13 deduped
+│ │ └─┬ @orkestrel/websocket@0.0.11
+│ │   └── @orkestrel/emitter@0.0.9 deduped
+│ ├─┬ @orkestrel/queue@0.0.12
+│ │ ├─┬ @orkestrel/abort@0.0.9
+│ │ │ └── @orkestrel/contract@0.0.16
+│ │ ├── @orkestrel/contract@0.0.16
+│ │ ├─┬ @orkestrel/database@0.0.13
+│ │ │ ├── @orkestrel/contract@0.0.16
+│ │ │ ├── @orkestrel/emitter@0.0.9 deduped
+│ │ │ ├─┬ @orkestrel/indexeddb@0.0.10
+│ │ │ │ └── @orkestrel/contract@0.0.16
+│ │ │ └─┬ @orkestrel/sqlite@0.0.10
+│ │ │   └── @orkestrel/contract@0.0.16
+│ │ ├── @orkestrel/emitter@0.0.9 deduped
+│ │ └── @orkestrel/timeout@0.0.9 deduped
+│ ├─┬ @orkestrel/timeout@0.0.9
+│ │ └── @orkestrel/contract@0.0.16
+│ ├─┬ @orkestrel/tool@0.0.13
+│ │ └── @orkestrel/contract@0.0.16
+│ ├── oxlint@1.82.0 deduped
+│ ├── typescript@6.0.3 deduped
+│ └── vitest@4.1.11 deduped
+├─┬ @orkestrel/scaffold@0.0.63
+│ ├─┬ @orkestrel/console@0.0.12
+│ │ ├── @orkestrel/contract@0.0.16
+│ │ └── @orkestrel/emitter@0.0.9 deduped
+│ ├── @orkestrel/contract@0.0.16
+│ ├── @orkestrel/emitter@0.0.9 deduped
+│ ├── @orkestrel/markdown@0.0.13 deduped
+│ ├─┬ @orkestrel/process@0.0.10
+│ │ ├── @orkestrel/contract@0.0.16
+│ │ └── @orkestrel/emitter@0.0.9 deduped
+│ └─┬ @orkestrel/template@0.0.6
+│   ├── @orkestrel/contract@0.0.16
+│   └── @orkestrel/emitter@0.0.9 deduped
+├─┬ @orkestrel/test@0.0.14 invalid: "^0.0.13" from the root project
+│ └── vitest@4.1.11 deduped
+├─┬ @types/node@26.5.0
+│ └── undici-types@8.9.0
+├─┬ oxfmt@0.66.0
+│ ├── UNMET OPTIONAL DEPENDENCY @oxfmt/binding-android-arm-eabi@0.66.0
+│ ├── UNMET OPTIONAL DEPENDENCY @oxfmt/binding-android-arm64@0.66.0
+│ ├── UNMET OPTIONAL DEPENDENCY @oxfmt/binding-darwin-arm64@0.66.0
+│ ├── UNMET OPTIONAL DEPENDENCY @oxfmt/binding-darwin-x64@0.66.0
+│ ├── UNMET OPTIONAL DEPENDENCY @oxfmt/binding-freebsd-x64@0.66.0
+│ ├── UNMET OPTIONAL DEPENDENCY @oxfmt/binding-linux-arm-gnueabihf@0.66.0
+│ ├── UNMET OPTIONAL DEPENDENCY @oxfmt/binding-linux-arm-musleabihf@0.66.0
+│ ├── UNMET OPTIONAL DEPENDENCY @oxfmt/binding-linux-arm64-gnu@0.66.0
+│ ├── UNMET OPTIONAL DEPENDENCY @oxfmt/binding-linux-arm64-musl@0.66.0
+│ ├── UNMET OPTIONAL DEPENDENCY @oxfmt/binding-linux-ppc64-gnu@0.66.0
+│ ├── UNMET OPTIONAL DEPENDENCY @oxfmt/binding-linux-riscv64-gnu@0.66.0
+│ ├── UNMET OPTIONAL DEPENDENCY @oxfmt/binding-linux-riscv64-musl@0.66.0
+│ ├── UNMET OPTIONAL DEPENDENCY @oxfmt/binding-linux-s390x-gnu@0.66.0
+│ ├── UNMET OPTIONAL DEPENDENCY @oxfmt/binding-linux-x64-gnu@0.66.0
+│ ├── UNMET OPTIONAL DEPENDENCY @oxfmt/binding-linux-x64-musl@0.66.0
+│ ├── UNMET OPTIONAL DEPENDENCY @oxfmt/binding-openharmony-arm64@0.66.0
+│ ├── UNMET OPTIONAL DEPENDENCY @oxfmt/binding-win32-arm64-msvc@0.66.0
+│ ├── UNMET OPTIONAL DEPENDENCY @oxfmt/binding-win32-ia32-msvc@0.66.0
+│ ├── @oxfmt/binding-win32-x64-msvc@0.66.0
+│ ├── UNMET OPTIONAL DEPENDENCY svelte@^5.0.0
+│ ├── tinypool@2.1.0
+│ └── UNMET OPTIONAL DEPENDENCY vite-plus@*
+├─┬ oxlint@1.82.0
+│ ├── UNMET OPTIONAL DEPENDENCY @oxlint/binding-android-arm-eabi@1.82.0
+│ ├── UNMET OPTIONAL DEPENDENCY @oxlint/binding-android-arm64@1.82.0
+│ ├── UNMET OPTIONAL DEPENDENCY @oxlint/binding-darwin-arm64@1.82.0
+│ ├── UNMET OPTIONAL DEPENDENCY @oxlint/binding-darwin-x64@1.82.0
+│ ├── UNMET OPTIONAL DEPENDENCY @oxlint/binding-freebsd-x64@1.82.0
+│ ├── UNMET OPTIONAL DEPENDENCY @oxlint/binding-linux-arm-gnueabihf@1.82.0
+│ ├── UNMET OPTIONAL DEPENDENCY @oxlint/binding-linux-arm-musleabihf@1.82.0
+│ ├── UNMET OPTIONAL DEPENDENCY @oxlint/binding-linux-arm64-gnu@1.82.0
+│ ├── UNMET OPTIONAL DEPENDENCY @oxlint/binding-linux-arm64-musl@1.82.0
+│ ├── UNMET OPTIONAL DEPENDENCY @oxlint/binding-linux-ppc64-gnu@1.82.0
+│ ├── UNMET OPTIONAL DEPENDENCY @oxlint/binding-linux-riscv64-gnu@1.82.0
+│ ├── UNMET OPTIONAL DEPENDENCY @oxlint/binding-linux-riscv64-musl@1.82.0
+│ ├── UNMET OPTIONAL DEPENDENCY @oxlint/binding-linux-s390x-gnu@1.82.0
+│ ├── UNMET OPTIONAL DEPENDENCY @oxlint/binding-linux-x64-gnu@1.82.0
+│ ├── UNMET OPTIONAL DEPENDENCY @oxlint/binding-linux-x64-musl@1.82.0
+│ ├── UNMET OPTIONAL DEPENDENCY @oxlint/binding-openharmony-arm64@1.82.0
+│ ├── UNMET OPTIONAL DEPENDENCY @oxlint/binding-win32-arm64-msvc@1.82.0
+│ ├── UNMET OPTIONAL DEPENDENCY @oxlint/binding-win32-ia32-msvc@1.82.0
+│ ├── @oxlint/binding-win32-x64-msvc@1.82.0
+│ ├── UNMET OPTIONAL DEPENDENCY oxlint-tsgolint@>=7.0.2001
+│ └── UNMET OPTIONAL DEPENDENCY vite-plus@*
+├── typescript@6.0.3
+├─┬ vite@8.2.2
+│ ├── @types/node@26.5.0 deduped
+│ ├── UNMET OPTIONAL DEPENDENCY @vitejs/devtools@^0.4.0 || ^0.5.0
+│ ├── UNMET OPTIONAL DEPENDENCY esbuild@^0.27.0 || ^0.28.0
+│ ├── UNMET OPTIONAL DEPENDENCY fsevents@~2.3.3
+│ ├── UNMET OPTIONAL DEPENDENCY jiti@>=1.21.0
+│ ├── UNMET OPTIONAL DEPENDENCY less@^4.0.0
+│ ├─┬ lightningcss@1.33.0
+│ │ ├── detect-libc@2.1.2
+│ │ ├── UNMET OPTIONAL DEPENDENCY lightningcss-android-arm64@1.33.0
+│ │ ├── UNMET OPTIONAL DEPENDENCY lightningcss-darwin-arm64@1.33.0
+│ │ ├── UNMET OPTIONAL DEPENDENCY lightningcss-darwin-x64@1.33.0
+│ │ ├── UNMET OPTIONAL DEPENDENCY lightningcss-freebsd-x64@1.33.0
+│ │ ├── UNMET OPTIONAL DEPENDENCY lightningcss-linux-arm-gnueabihf@1.33.0
+│ │ ├── UNMET OPTIONAL DEPENDENCY lightningcss-linux-arm64-gnu@1.33.0
+│ │ ├── UNMET OPTIONAL DEPENDENCY lightningcss-linux-arm64-musl@1.33.0
+│ │ ├── UNMET OPTIONAL DEPENDENCY lightningcss-linux-x64-gnu@1.33.0
+│ │ ├── UNMET OPTIONAL DEPENDENCY lightningcss-linux-x64-musl@1.33.0
+│ │ ├── UNMET OPTIONAL DEPENDENCY lightningcss-win32-arm64-msvc@1.33.0
+│ │ └── lightningcss-win32-x64-msvc@1.33.0
+│ ├── picomatch@4.0.7
+│ ├─┬ postcss@8.5.28
+│ │ ├── nanoid@3.3.18
+│ │ ├── picocolors@1.1.1
+│ │ └── source-map-js@1.2.1
+│ ├─┬ rolldown@1.2.7
+│ │ ├── @oxc-project/types@0.148.0
+│ │ ├── UNMET OPTIONAL DEPENDENCY @rolldown/binding-android-arm-eabi@1.2.7
+│ │ ├── UNMET OPTIONAL DEPENDENCY @rolldown/binding-android-arm64@1.2.7
+│ │ ├── UNMET OPTIONAL DEPENDENCY @rolldown/binding-darwin-arm64@1.2.7
+│ │ ├── UNMET OPTIONAL DEPENDENCY @rolldown/binding-darwin-x64@1.2.7
+│ │ ├── UNMET OPTIONAL DEPENDENCY @rolldown/binding-freebsd-x64@1.2.7
+│ │ ├── UNMET OPTIONAL DEPENDENCY @rolldown/binding-linux-arm-gnueabihf@1.2.7
+│ │ ├── UNMET OPTIONAL DEPENDENCY @rolldown/binding-linux-arm64-gnu@1.2.7
+│ │ ├── UNMET OPTIONAL DEPENDENCY @rolldown/binding-linux-arm64-musl@1.2.7
+│ │ ├── UNMET OPTIONAL DEPENDENCY @rolldown/binding-linux-ppc64-gnu@1.2.7
+│ │ ├── UNMET OPTIONAL DEPENDENCY @rolldown/binding-linux-s390x-gnu@1.2.7
+│ │ ├── UNMET OPTIONAL DEPENDENCY @rolldown/binding-linux-x64-gnu@1.2.7
+│ │ ├── UNMET OPTIONAL DEPENDENCY @rolldown/binding-linux-x64-musl@1.2.7
+│ │ ├── UNMET OPTIONAL DEPENDENCY @rolldown/binding-openharmony-arm64@1.2.7
+│ │ ├── UNMET OPTIONAL DEPENDENCY @rolldown/binding-win32-arm64-msvc@1.2.7
+│ │ ├── @rolldown/binding-win32-x64-msvc@1.2.7
+│ │ └── @rolldown/pluginutils@1.0.1
+│ ├── UNMET OPTIONAL DEPENDENCY sass-embedded@^1.70.0
+│ ├── UNMET OPTIONAL DEPENDENCY sass@^1.70.0
+│ ├── UNMET OPTIONAL DEPENDENCY stylus@>=0.54.8
+│ ├── UNMET OPTIONAL DEPENDENCY sugarss@^5.0.0
+│ ├── UNMET OPTIONAL DEPENDENCY terser@^5.16.0
+│ ├─┬ tinyglobby@0.2.17
+│ │ ├─┬ fdir@6.5.0
+│ │ │ └── picomatch@4.0.7 deduped
+│ │ └── picomatch@4.0.7 deduped
+│ ├── UNMET OPTIONAL DEPENDENCY tsx@^4.8.1
+│ └── UNMET OPTIONAL DEPENDENCY yaml@^2.4.2
+└─┬ vitest@4.1.11
+  ├── UNMET OPTIONAL DEPENDENCY @edge-runtime/vm@*
+  ├── UNMET OPTIONAL DEPENDENCY @opentelemetry/api@^1.9.0
+  ├── @types/node@26.5.0 deduped
+  ├── UNMET OPTIONAL DEPENDENCY @vitest/browser-playwright@4.1.11
+  ├── UNMET OPTIONAL DEPENDENCY @vitest/browser-preview@4.1.11
+  ├── UNMET OPTIONAL DEPENDENCY @vitest/browser-webdriverio@4.1.11
+  ├── UNMET OPTIONAL DEPENDENCY @vitest/coverage-istanbul@4.1.11
+  ├── UNMET OPTIONAL DEPENDENCY @vitest/coverage-v8@4.1.11
+  ├─┬ @vitest/expect@4.1.11
+  │ ├── @standard-schema/spec@1.1.0
+  │ ├─┬ @types/chai@5.2.3
+  │ │ ├── @types/deep-eql@4.0.2
+  │ │ └── assertion-error@2.0.1
+  │ ├── @vitest/spy@4.1.11 deduped
+  │ ├── @vitest/utils@4.1.11 deduped
+  │ ├── chai@6.2.2
+  │ └── tinyrainbow@3.1.1 deduped
+  ├─┬ @vitest/mocker@4.1.11
+  │ ├── @vitest/spy@4.1.11 deduped
+  │ ├─┬ estree-walker@3.0.3
+  │ │ └── @types/estree@1.0.9
+  │ ├── magic-string@0.30.21 deduped
+  │ ├── UNMET OPTIONAL DEPENDENCY msw@^2.4.9
+  │ └── vite@8.2.2 deduped
+  ├─┬ @vitest/pretty-format@4.1.11
+  │ └── tinyrainbow@3.1.1 deduped
+  ├─┬ @vitest/runner@4.1.11
+  │ ├── @vitest/utils@4.1.11 deduped
+  │ └── pathe@2.0.3 deduped
+  ├─┬ @vitest/snapshot@4.1.11
+  │ ├── @vitest/pretty-format@4.1.11 deduped
+  │ ├── @vitest/utils@4.1.11 deduped
+  │ ├── magic-string@0.30.21 deduped
+  │ └── pathe@2.0.3 deduped
+  ├── @vitest/spy@4.1.11
+  ├── UNMET OPTIONAL DEPENDENCY @vitest/ui@4.1.11
+  ├─┬ @vitest/utils@4.1.11
+  │ ├── @vitest/pretty-format@4.1.11 deduped
+  │ ├── convert-source-map@2.0.0
+  │ └── tinyrainbow@3.1.1 deduped
+  ├── es-module-lexer@2.3.2
+  ├── expect-type@1.4.0
+  ├── UNMET OPTIONAL DEPENDENCY happy-dom@*
+  ├── UNMET OPTIONAL DEPENDENCY jsdom@*
+  ├─┬ magic-string@0.30.21
+  │ └── @jridgewell/sourcemap-codec@1.6.0
+  ├── obug@2.1.4
+  ├── pathe@2.0.3
+  ├── picomatch@4.0.7 deduped
+  ├── std-env@4.2.0
+  ├── tinybench@2.9.0
+  ├── tinyexec@1.3.1
+  ├── tinyglobby@0.2.17 deduped
+  ├── tinyrainbow@3.1.1
+  ├── vite@8.2.2 deduped
+  └─┬ why-is-node-running@2.3.0
+    ├── siginfo@2.0.0
+    └── stackback@0.0.2
+
+npm error code ELSPROBLEMS
+npm error invalid: @orkestrel/guide@0.0.18 C:\Users\mikes\WebstormProjects\scaffold\tmp\pass\d7n-html-stage.7nT1Vx\html\node_modules\@orkestrel\guide
+npm error invalid: @orkestrel/test@0.0.14 C:\Users\mikes\WebstormProjects\scaffold\tmp\pass\d7n-html-stage.7nT1Vx\html\node_modules\@orkestrel\test
+npm error A complete log of this run can be found in: C:\Users\mikes\scoop\persist\nodejs-lts\cache\_logs\2026-09-08T21_33_48_567Z-debug-0.log
+exit=1
+npm ls reported the expected bootstrap invalid-range observation.

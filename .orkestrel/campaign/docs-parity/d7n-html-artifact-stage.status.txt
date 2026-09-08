@@ -1,0 +1,3 @@
+git -C C:/Users/mikes/WebstormProjects/html status --short
+exit=0
+

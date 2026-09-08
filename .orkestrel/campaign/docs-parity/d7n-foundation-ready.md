@@ -1,5 +1,9 @@
 # Prepared bottom publish wave
 
+Publication is held under Ruling 31. The owner selected whole-fleet preparation before
+publishing. The accepted archives below remain comparison baselines for the revised
+Guide and scaffold parity workflow; they are not an upload instruction.
+
 The bottom layer has accepted tarballs, passing release checks and clean source on
 the campaign branch and main. The independent receipts cover package contents and
 installed Guide identity. The Contract-to-Abort downstream proof is closed. Fresh
@@ -21,11 +25,11 @@ It runs login, whoami and serial tarball uploads, stops on error and performs no
 build, install, credential substitution or automatic retry. Syntax checking exited
 0. Login and uploads are unrun. Follow the publish skill's Windows operator route.
 
-If the owner chooses incremental publication, run the script from Git Bash and then
-read the registry before moving dependents to registry pins. After a partial failure,
-do not rerun this whole script; reconcile registry state and resume the unpublished
-scope. If the owner keeps whole-fleet preparation, continue isolated layer visits
-with the accepted archives. No future development pin blocks that work under Ruling 30.
+The live tmp/pass/upload-foundation.sh copy refuses execution before authentication.
+Preserve the retained historical script and do not run it. Continue isolated layer
+visits with the accepted archives. No future development pin blocks that work under
+Ruling 30. The publish skill governs the release only after preparation and owner
+authorization.
 
 The remaining scope includes the higher runtime layers, MCP-to-Probe transport proof,
 retained docs fixes and closures, the parity-pin tail, Guide main and final release

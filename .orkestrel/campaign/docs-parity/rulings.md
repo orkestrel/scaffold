@@ -173,3 +173,24 @@ and downstream obligations to that actual change.
 Keep runtime, peer and optional pins aligned with the artifacts proved before release.
 Do not fabricate registry locks or represent provisional tooling as registry-served.
 This clarification does not authorize uploads or waive the remaining source closures.
+
+## Ruling 31 — prepare the fleet before publication and consolidate parity testing
+
+Follow the owner's direction of 2026-09-08: prepare the whole fleet with tarballs before
+publishing. Hold the prepared bottom-layer upload script. Present publication order
+only after the fleet's remaining closures and artifact alignment are accepted.
+
+Use tests/guides.test.ts through test:guides as the parity-check entry. Resolve the
+separate rewrite behavior of scripts/docs.ts before retiring that script; do not make
+ordinary test execution rewrite source or guides. Change scaffold's canonical seed,
+manifest generation, assertions and instructions together, then propagate through its
+supported mechanism. Never hand-edit vendored target files.
+
+Prepare Guide's runtime prerequisites from accepted lower-layer tarballs before
+accepting its replacement. Pack the revised Guide and use it to revalidate the prepared
+layers. Preserve their accepted tarballs as comparison baselines. Compare rebuilt
+runtime files and emitted declarations, including TSDoc; do not assume a source-comment
+change leaves the distributable unchanged. Record actual movement and replace affected
+unpublished candidates before they feed dependents. Apply Ruling 30 to later
+development-only pins; do not add another bump solely because an unpublished candidate
+was rebuilt.

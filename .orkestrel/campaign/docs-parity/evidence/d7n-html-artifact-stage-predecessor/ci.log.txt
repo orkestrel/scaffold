@@ -1,0 +1,9 @@
++ npm --prefix /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/d7n-html-stage.7nT1Vx/html ci --ignore-scripts
+
+added 120 packages, and audited 121 packages in 2s
+
+28 packages are looking for funding
+  run `npm fund` for details
+
+found 0 vulnerabilities
+exit=0

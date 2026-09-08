@@ -1,0 +1,9 @@
++ npm --prefix /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/d7n-html-stage.FBOpkx/html install --no-save --ignore-scripts --package-lock=false /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-foundation-contract.ZjPTS5/orkestrel-contract-0.0.17.tgz /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-guide-bootstrap.47Q7XT/orkestrel-guide-0.0.18.tgz /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-foundation-test.ufR41o/orkestrel-test-0.0.14.tgz
+
+added 21 packages, removed 1 package, changed 14 packages, and audited 141 packages in 4s
+
+28 packages are looking for funding
+  run `npm fund` for details
+
+found 0 vulnerabilities
+exit=0
