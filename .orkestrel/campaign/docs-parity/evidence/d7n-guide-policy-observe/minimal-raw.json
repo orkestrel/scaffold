@@ -1,0 +1,15 @@
+{
+  "command": [
+    "C:\\Users\\mikes\\scoop\\apps\\nodejs-lts\\current\\node.exe",
+    "C:\\Users\\mikes\\WebstormProjects\\guide\\node_modules\\oxlint\\bin\\oxlint",
+    "--config",
+    "C:/Users/mikes/AppData/Local/Temp/d7n-guide-policy-minimal-s8jmMC/.oxlintrc.json",
+    "--format",
+    "json",
+    "src/violations"
+  ],
+  "status": 1,
+  "signal": null,
+  "stderr": "",
+  "stdout": "{ \"diagnostics\": [{\"message\": \"Replace module mocking with a real injected collaborator; a missing seam is a missing injection point, not an untestable truth.\",\"code\": \"policy(no-mocking)\",\"severity\": \"error\",\"filename\": \"file:///C:/Users/mikes/AppData/Local/Temp/d7n-guide-policy-minimal-s8jmMC/src/violations/fixture.ts\",\"labels\": [{\"span\": {\"offset\": 0,\"length\": 14,\"line\": 1,\"column\": 1}}]}],\n              \"number_of_files\": 1,\n              \"number_of_rules\": 140,\n              \"threads_count\": 16,\n              \"start_time\": 0.1087431\n            }\n            "
+}

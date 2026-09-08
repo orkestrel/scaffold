@@ -1,0 +1,3 @@
++ timeout 120 node /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/guide-policy-observe.mjs /c/Users/mikes/WebstormProjects/guide /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/d7n-guide-policy-observe.quFeOp
+C:/Users/mikes/WebstormProjects/scaffold/tmp/pass/d7n-guide-policy-observe.quFeOp
+exit=0

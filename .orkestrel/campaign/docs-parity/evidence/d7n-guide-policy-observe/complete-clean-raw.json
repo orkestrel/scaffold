@@ -1,0 +1,15 @@
+{
+  "command": [
+    "C:\\Users\\mikes\\scoop\\apps\\nodejs-lts\\current\\node.exe",
+    "C:\\Users\\mikes\\WebstormProjects\\guide\\node_modules\\oxlint\\bin\\oxlint",
+    "--config",
+    "C:/Users/mikes/AppData/Local/Temp/d7n-guide-policy-complete-OyBcYP/.oxlintrc.json",
+    "--format",
+    "json",
+    "src/clean"
+  ],
+  "status": 0,
+  "signal": null,
+  "stderr": "",
+  "stdout": "{ \"diagnostics\": [],\n              \"number_of_files\": 1,\n              \"number_of_rules\": 140,\n              \"threads_count\": 16,\n              \"start_time\": 0.1131485\n            }\n            "
+}

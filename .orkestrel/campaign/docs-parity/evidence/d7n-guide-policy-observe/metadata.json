@@ -1,0 +1,10 @@
+{
+  "entry": "C:/Users/mikes/WebstormProjects/guide/node_modules/oxlint/bin/oxlint",
+  "version": "1.81.0",
+  "node": "v24.20.0",
+  "platform": "win32",
+  "fixtures": {
+    "minimal": "C:/Users/mikes/AppData/Local/Temp/d7n-guide-policy-minimal-s8jmMC",
+    "complete": "C:/Users/mikes/AppData/Local/Temp/d7n-guide-policy-complete-OyBcYP"
+  }
+}

@@ -16,8 +16,8 @@ terminal result; retain the result projection with its report and verdict.
 | d7n-ollama-host-instruments-check | mechanical instrument checker | scratch instruments | native agent_host_instruments_check | native task | successor PASS; final preflight reproduced the audit red |
 | d7n-guide-heading-fix-review | read-only subjective fix audit | guide 1d5afa3 plus supplied diff | tmp/claude/d7n-guide-heading-fix-review.jsonl; 779bc6a0-a3db-4381-9773-38f01d5edfef | exec session 69079 exited 0 | returned; supported fixture and prose corrections recorded in the verdict |
 | d7n-guide-heading-validate | root-owned full gate chain | guide 1d5afa3 plus returned fix | tmp/pass/d7n-guide-heading-validate.YG8PtL | exec session 5158 exited 1 | config policy-rule test failed again in the isolated host rerun |
-| d7n-guide-config-scout | read-only diagnostic evidence map | guide and canonical policy seam | tmp/cursor/d7n-guide-config-scout.jsonl; 01359254-696d-4eda-800d-8a560e54b83c | exec session 58932 exited 0 | returned; raw binary diagnostics remain unmeasured; root observation instruments in preparation |
-| d7n-ollama-converge-fix-host | read/edit-only documentation writer; host owns validation | ollama 98e9c34 | tmp/claude/d7n-ollama-converge-fix-host.jsonl; 3abd79b7-45f4-4714-afef-0e7c44639890 | exec session 6858; cap 5400 seconds | running |
+| d7n-guide-config-scout | read-only diagnostic evidence map | guide and canonical policy seam | tmp/cursor/d7n-guide-config-scout.jsonl; 01359254-696d-4eda-800d-8a560e54b83c | exec session 58932 exited 0 | returned; host observation confirms the rule emits a file-URL diagnostic that the test compares with a relative path |
+| d7n-ollama-converge-fix-host | read/edit-only documentation writer; host owns validation | ollama 98e9c34 | tmp/claude/d7n-ollama-converge-fix-host.jsonl; 3abd79b7-45f4-4714-afef-0e7c44639890 | exec session 6858 exited 0 | returned; report and candidate retained; host validation and independent review pending |
 
 The previous probe writer returned and its test changes landed as 93fc01d. The
 owner-main comparison returned; its result projection is retained. Those processes

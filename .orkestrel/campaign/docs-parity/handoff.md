@@ -103,13 +103,13 @@ Tips are the branch tips as pushed. "on main" means the branch tip is `main`.
 | database | `cdbf66a` | `close-2` landed; owner main merged; prior verifier green; the canon finding remains open; Ruling 20 stays unchanged | dispatch `d7n-database-canon-brief.md` to move the compiler-derived surface into its consuming package case; then checker and verifier; verdict; push `main` |
 | probe | `93fc01d` | resumed test-draft correction landed and branch pushed; scoped gates green; type-load fixture retained by d7n-probe-heavy-ruling-verdict.md after a separate host run; clean; main still b816749 | write the audit-item check brief and generate verification against the final guide artifact; full closure and main push remain pending |
 | agent | `305af91` | fix landed and campaign branch pushed; root host readings passed, including comment-only scope, stable docs directions, core tests, and opening-header comparison; main unchanged | install the accepted final guide artifact; audit-item checker and whole-chain verifier; closure verdict; refresh main ancestry; push main |
-| ollama | `98e9c34` | read/edit-only successor is running from the clean tip after a verified host preflight; the retained container partial diff was not applied | follow d7n-windows-runtime.md and d7n-ollama-converge-fix-host-brief.md; host validation; landing; final-artifact closure |
+| ollama | `98e9c34` | read/edit-only successor returned; uncommitted candidate and report retained; the retained container partial diff was not applied | follow d7n-ollama-fix-return-status.md; host validation and scope review; landing; final-artifact closure |
 | workflow | `1151786` | audit reconciled (`d7n-workflow-audit-verdict.md`, items WF1 to WF7); fix brief written | dispatch `d7n-workflow-converge-fix-brief.md` (implementer, Opus); head-start first (its installed guide is the older pack); then as agent |
 | program | `a60327f` | audit reconciled (`d7n-program-audit-verdict.md`, items PF1 to PF8); fix brief written | dispatch `d7n-program-converge-fix-brief.md` (implementer, Opus); head-start first; then as agent |
 | terminal | `0b01536` | retained audit lanes reconciled in `d7n-terminal-audit-verdict.md`; checker recorded as not run | dispatch `d7n-terminal-converge-fix-windows-brief.md`; then checker and verifier; verdict; push `main` |
 | mcp | `a01d5e8` | owner main merged; scoped merge checks passed; branch pushed; audit reconciled in `d7n-mcp-audit-verdict.md`; checker recorded as not run | dispatch `d7n-mcp-converge-fix-windows-brief.md`; closure; push `main`; guide-reader referral remains separate |
 | supervisor | `edf80e6` (`main`) | outside the pass; the owner's API-adoption decision is pending (`d7-fleet-plan.md` § For the owner) | nothing in this campaign |
-| guide | `1d5afa3` | reader candidate returned; focused red and green recorded; review corrections remain; full chain and isolated config case failed; candidate retained, not committed or packed | follow d7n-guide-heading-fix-verdict.md; diagnose the policy diagnostic, correct the supported review findings from a clean checkpoint, then pack and revalidate the fleet |
+| guide | `1d5afa3` | reader candidate returned; focused red and green recorded; review corrections remain; config failure traced to file-URL versus relative-path comparison; candidate retained, not committed or packed | owner direction on the canonical scaffold correction; follow d7n-guide-config-diagnosis.md and d7n-guide-heading-fix-verdict.md; resolve the gate and review findings, then pack and revalidate the fleet |
 
 ## The tail, after every package closes
 
@@ -131,10 +131,12 @@ replacement. No replacement is installed yet. Publication still needs an explici
 
 The returned candidate and its evidence are retained in d7n-guide-heading-fix-verdict.md
 and the evidence directory. Independent review requires prose and fixture corrections.
-Root's full gate chain and isolated rerun fail in the vendored configured-policy case
-because the real lint binary omits the expected no-mocking diagnostic. The diagnostic
-map is running; no cause or target-side workaround is accepted. Never edit the vendored
-target file. The old head-start artifact remains the installed artifact.
+Root's full gate chain and isolated rerun fail in the vendored configured-policy case.
+The host observation in d7n-guide-config-diagnosis.md shows that the rule fires, but its
+file-URL filename does not equal the relative filename the test expects. The earlier
+description of an omitted diagnostic is superseded. A canonical scaffold correction
+needs owner direction because it changes the vendored surface and release coordination.
+Never edit the vendored target file. The old head-start artifact remains installed.
 
 ## Pending owner decisions carried from the container
 

@@ -1,0 +1,155 @@
+{
+  "minimal": {
+    "diagnostics": [
+      {
+        "code": "policy(no-mocking)",
+        "filename": "file:///C:/Users/mikes/AppData/Local/Temp/d7n-guide-policy-minimal-s8jmMC/src/violations/fixture.ts",
+        "message": "Replace module mocking with a real injected collaborator; a missing seam is a missing injection point, not an untestable truth."
+      }
+    ]
+  },
+  "complete": {
+    "violations": {
+      "diagnostics": [
+        {
+          "code": "policy(no-malformed-domain)",
+          "filename": "file:///C:/Users/mikes/AppData/Local/Temp/d7n-guide-policy-complete-OyBcYP/src/violations/composables.ts",
+          "message": "Make this registered function domain a folder rather than a source file."
+        },
+        {
+          "code": "policy(no-misplaced-data)",
+          "filename": "file:///C:/Users/mikes/AppData/Local/Temp/d7n-guide-policy-complete-OyBcYP/src/violations/composables.ts",
+          "message": "Move this module data to constants.ts or another data-kind file."
+        },
+        {
+          "code": "policy(no-misnamed-factory)",
+          "filename": "file:///C:/Users/mikes/AppData/Local/Temp/d7n-guide-policy-complete-OyBcYP/src/violations/factories.ts",
+          "message": "Name this factories.ts function with the create prefix, or move it to its own kind file."
+        },
+        {
+          "code": "policy(no-misnamed-parser)",
+          "filename": "file:///C:/Users/mikes/AppData/Local/Temp/d7n-guide-policy-complete-OyBcYP/src/violations/parsers.ts",
+          "message": "Name this parsers.ts function with the parse prefix, or move it to its own kind file."
+        },
+        {
+          "code": "policy(no-hidden-declaration)",
+          "filename": "file:///C:/Users/mikes/AppData/Local/Temp/d7n-guide-policy-complete-OyBcYP/src/violations/helpers.ts",
+          "message": "Export this declaration or fold it into its caller; a centralized module hides nothing."
+        },
+        {
+          "code": "policy(no-malformed-constant)",
+          "filename": "file:///C:/Users/mikes/AppData/Local/Temp/d7n-guide-policy-complete-OyBcYP/src/violations/constants.ts",
+          "message": "Name every constants.ts declaration in UPPER_SNAKE_CASE."
+        },
+        {
+          "code": "policy(no-malformed-constant)",
+          "filename": "file:///C:/Users/mikes/AppData/Local/Temp/d7n-guide-policy-complete-OyBcYP/src/violations/constants.ts",
+          "message": "Freeze this collection through a call; constants.ts holds no bare literal."
+        },
+        {
+          "code": "policy(no-malformed-domain)",
+          "filename": "file:///C:/Users/mikes/AppData/Local/Temp/d7n-guide-policy-complete-OyBcYP/app/browser/composables/useTheme.ts",
+          "message": "Give this registered function module imports and one exported function named for its file."
+        },
+        {
+          "code": "eslint(no-debugger)",
+          "filename": "file:///C:/Users/mikes/AppData/Local/Temp/d7n-guide-policy-complete-OyBcYP/scripts/read.ts",
+          "message": "`debugger` statement is not allowed"
+        },
+        {
+          "code": "typescript(parameter-properties)",
+          "filename": "file:///C:/Users/mikes/AppData/Local/Temp/d7n-guide-policy-complete-OyBcYP/src/violations/fixture.ts",
+          "message": "Property value should be declared as a class property."
+        },
+        {
+          "code": "typescript(explicit-member-accessibility)",
+          "filename": "file:///C:/Users/mikes/AppData/Local/Temp/d7n-guide-policy-complete-OyBcYP/src/violations/fixture.ts",
+          "message": "Public accessibility modifier on class property value."
+        },
+        {
+          "code": "policy(no-banned-term)",
+          "filename": "file:///C:/Users/mikes/AppData/Local/Temp/d7n-guide-policy-complete-OyBcYP/src/violations/fixture.ts",
+          "message": "Replace should in this comment: must, can, might, or the imperative."
+        },
+        {
+          "code": "policy(no-malformed-summary)",
+          "filename": "file:///C:/Users/mikes/AppData/Local/Temp/d7n-guide-policy-complete-OyBcYP/src/violations/fixture.ts",
+          "message": "Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether."
+        },
+        {
+          "code": "policy(no-mocking)",
+          "filename": "file:///C:/Users/mikes/AppData/Local/Temp/d7n-guide-policy-complete-OyBcYP/src/violations/fixture.ts",
+          "message": "Replace module mocking with a real injected collaborator; a missing seam is a missing injection point, not an untestable truth."
+        },
+        {
+          "code": "policy(no-misplaced-class)",
+          "filename": "file:///C:/Users/mikes/AppData/Local/Temp/d7n-guide-policy-complete-OyBcYP/src/violations/fixture.ts",
+          "message": "Move this class to a PascalCase implementation file named for it, or to errors.ts."
+        },
+        {
+          "code": "policy(no-keyword-privacy)",
+          "filename": "file:///C:/Users/mikes/AppData/Local/Temp/d7n-guide-policy-complete-OyBcYP/src/violations/fixture.ts",
+          "message": "Use runtime-enforced # privacy; TypeScript private is compile-time-only."
+        },
+        {
+          "code": "policy(no-misplaced-class)",
+          "filename": "file:///C:/Users/mikes/AppData/Local/Temp/d7n-guide-policy-complete-OyBcYP/src/violations/fixture.ts",
+          "message": "Move this class to a PascalCase implementation file named for it, or to errors.ts."
+        },
+        {
+          "code": "policy(no-misplaced-class)",
+          "filename": "file:///C:/Users/mikes/AppData/Local/Temp/d7n-guide-policy-complete-OyBcYP/src/violations/fixture.ts",
+          "message": "Move this class to a PascalCase implementation file named for it, or to errors.ts."
+        },
+        {
+          "code": "policy(no-misplaced-function)",
+          "filename": "file:///C:/Users/mikes/AppData/Local/Temp/d7n-guide-policy-complete-OyBcYP/src/violations/fixture.ts",
+          "message": "Move this function to a function-kind file or a registered function-domain module; only a directly passed callback and a directly returned function may sit in module data."
+        },
+        {
+          "code": "policy(no-nested-functions)",
+          "filename": "file:///C:/Users/mikes/AppData/Local/Temp/d7n-guide-policy-complete-OyBcYP/src/violations/fixture.ts",
+          "message": "Extract the function to module scope or make instance-bound work a method; only direct anonymous callbacks and returned anonymous functions may stay in a function body."
+        },
+        {
+          "code": "policy(no-host-line-endings)",
+          "filename": "file:///C:/Users/mikes/AppData/Local/Temp/d7n-guide-policy-complete-OyBcYP/src/violations/fixture.ts",
+          "message": "Emit a line feed rather than the host line ending."
+        },
+        {
+          "code": "policy(no-misplaced-type)",
+          "filename": "file:///C:/Users/mikes/AppData/Local/Temp/d7n-guide-policy-complete-OyBcYP/src/violations/fixture.ts",
+          "message": "Move this declaration to the module types.ts file, which holds every reusable type."
+        },
+        {
+          "code": "policy(no-misplaced-data)",
+          "filename": "file:///C:/Users/mikes/AppData/Local/Temp/d7n-guide-policy-complete-OyBcYP/src/violations/fixture.ts",
+          "message": "Move this module data to constants.ts or another data-kind file."
+        },
+        {
+          "code": "policy(no-misplaced-data)",
+          "filename": "file:///C:/Users/mikes/AppData/Local/Temp/d7n-guide-policy-complete-OyBcYP/src/violations/fixture.ts",
+          "message": "Move this module data to constants.ts or another data-kind file."
+        },
+        {
+          "code": "policy(no-host-line-endings)",
+          "filename": "file:///C:/Users/mikes/AppData/Local/Temp/d7n-guide-policy-complete-OyBcYP/src/violations/fixture.ts",
+          "message": "Split arrived text on the line-ending pattern, then trim each line."
+        },
+        {
+          "code": "policy(no-misplaced-data)",
+          "filename": "file:///C:/Users/mikes/AppData/Local/Temp/d7n-guide-policy-complete-OyBcYP/src/violations/fixture.ts",
+          "message": "Move this module data to constants.ts or another data-kind file."
+        },
+        {
+          "code": "policy(no-host-line-endings)",
+          "filename": "file:///C:/Users/mikes/AppData/Local/Temp/d7n-guide-policy-complete-OyBcYP/src/violations/fixture.ts",
+          "message": "Emit a line feed rather than the host line ending."
+        }
+      ]
+    },
+    "clean": {
+      "diagnostics": []
+    }
+  }
+}
