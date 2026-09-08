@@ -1,0 +1,38 @@
+diff --git a/host.json b/host.json
+index e87bd7b6..ab7e112b 100644
+--- a/host.json
++++ b/host.json
+@@ -418,7 +418,7 @@
+ 			"storage": "claude/rules/portability.md",
+ 			"destination": ".claude/rules/portability.md",
+ 			"executable": false,
+-			"digest": "b948c92e3409efd01b45ed9e8d917f4713cda0ecd5ea343932613b2977a614ff"
++			"digest": "ee7a2ae15ca0affa4e7176a3a123f01189e80de47c731a66fb7091c0c207b70e"
+ 		},
+ 		{
+ 			"storage": "claude/rules/quality.md",
+@@ -718,7 +718,7 @@
+ 			"storage": "tests/config.test.ts",
+ 			"destination": "tests/config.test.ts",
+ 			"executable": false,
+-			"digest": "f554db125d8cbb844d6a9c379683d7a9c279e7789e270f6eeb4238441e6392a8"
++			"digest": "b880877803d909f83bc2ba4110d795cfecf620402696272e967bb55b90b66578"
+ 		},
+ 		{
+ 			"storage": "tests/policy.test.ts",
+@@ -730,7 +730,7 @@
+ 			"storage": "tests/setupPolicy.ts",
+ 			"destination": "tests/setupPolicy.ts",
+ 			"executable": false,
+-			"digest": "0bd6d748a31976b282b227e7bed540bb8b270f7779b3a6df8d982e6ecd184400"
++			"digest": "ebe2777780193eed9d8d0641d6326535a6b5084d88aee0b6361d0b2409281ded"
+ 		}
+ 	],
+ 	"roots": [
+@@ -778,5 +778,5 @@
+ 		".codex/agents",
+ 		".cursor/rules"
+ 	],
+-	"digest": "7a6eb89939f9097b29741d66ac9ecf9e29bdd3256f55ca0f711cc85c3478f15e"
++	"digest": "886689033d56da74faa4fe1d7093fca1372186ed79bef81b981d2379aeeb75d1"
+ }

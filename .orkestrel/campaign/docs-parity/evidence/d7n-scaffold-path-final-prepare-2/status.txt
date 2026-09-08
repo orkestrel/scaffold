@@ -1,0 +1,21 @@
+﻿ M .orkestrel/campaign/docs-parity/d7n-windows-runtime.md
+ M .orkestrel/campaign/docs-parity/handoff.md
+ M .orkestrel/campaign/docs-parity/ledger.md
+M  package-lock.json
+ M package.json
+?? .orkestrel/campaign/docs-parity/d7n-layer-inventory-instrument-3-audit-brief.md
+?? .orkestrel/campaign/docs-parity/d7n-layer-inventory-instrument-3-report.md
+?? .orkestrel/campaign/docs-parity/d7n-layer-inventory-instrument-3-root.log.txt
+?? .orkestrel/campaign/docs-parity/d7n-scaffold-path-final-check-brief.md
+?? .orkestrel/campaign/docs-parity/d7n-scaffold-path-final-check-report.md
+?? .orkestrel/campaign/docs-parity/d7n-scaffold-path-final-prepare-2-brief.md
+?? .orkestrel/campaign/docs-parity/d7n-scaffold-path-final-prepare-brief.md
+?? .orkestrel/campaign/docs-parity/d7n-scaffold-path-final-prepare-report.md
+?? .orkestrel/campaign/docs-parity/d7n-scaffold-path-final-prepare-run.log.txt
+?? .orkestrel/campaign/docs-parity/d7n-scaffold-path-prepare-check-report.md
+?? .orkestrel/campaign/docs-parity/d7n-scaffold-path-prepare-verdict.md
+?? .orkestrel/campaign/docs-parity/evidence/d7n-layer-inventory-instrument-3/
+?? .orkestrel/campaign/docs-parity/evidence/d7n-scaffold-path-final-prepare-run/
+?? .orkestrel/campaign/docs-parity/evidence/d7n-scaffold-path-final-prepare/
+?? .orkestrel/campaign/docs-parity/instruments/d7/windows/prepare-scaffold-path-final.sh
+?? .orkestrel/campaign/docs-parity/instruments/d7/windows/run-layer-inventory-audit.sh

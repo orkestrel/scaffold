@@ -1,0 +1,204 @@
+command: node --test tmp/pass/layer-inventory.test.mjs
+exit: 1
+
+✖ uses descriptive module helpers without assigned nested callbacks (5.5201ms)
+✖ projects keyed npm identity and rejects malformed dependency maps (0.4818ms)
+✖ projects registry latest and release validity from the payload (0.6698ms)
+✖ reads local manifest and lock roots and rejects malformed dependency maps (0.282ms)
+✖ attests installed identity and preserves an absent optional node (4.6195ms)
+✖ does not infer an Orkestrel lock identity from foreign ancestry (0.3314ms)
+✔ distinguishes negative ancestry from failed Git readings (0.6937ms)
+✖ supplies a fallback reason for every invalid completeness component (0.6506ms)
+✔ refuses an occupied output path and admits only absent paths (2.8154ms)
+✖ settles real child timeout and buffer boundaries with partial evidence (66.7786ms)
+ℹ tests 10
+ℹ suites 0
+ℹ pass 2
+ℹ fail 8
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 307.4451
+
+✖ failing tests:
+
+test at tmp\pass\layer-inventory.test.mjs:68:1
+✖ uses descriptive module helpers without assigned nested callbacks (5.5201ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+    {
+      nested: [],
+  +   wrappers: [
+  +     'export function value',
+  +     'export function message',
+  +     'export function packagePath',
+  +     'export function packageName',
+  +     'export function sleepResult'
+  +   ]
+  -   wrappers: []
+    }
+  
+      at TestContext.<anonymous> (file:///C:/Users/mikes/WebstormProjects/scaffold/tmp/pass/layer-inventory.test.mjs:72:9)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: { wrappers: [ 'export function value', 'export function message', 'export function packagePath', 'export function packageName', 'export function sleepResult' ], nested: [] },
+    expected: { wrappers: [], nested: [] },
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+test at tmp\pass\layer-inventory.test.mjs:75:1
+✖ projects keyed npm identity and rejects malformed dependency maps (0.4818ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  true !== false
+  
+      at TestContext.<anonymous> (file:///C:/Users/mikes/WebstormProjects/scaffold/tmp/pass/layer-inventory.test.mjs:94:9)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1397:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:969:18)
+      at Test.postRun (node:internal/test_runner/test:1537:19)
+      at Test.run (node:internal/test_runner/test:1462:12)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: true,
+    expected: false,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tmp\pass\layer-inventory.test.mjs:98:1
+✖ projects registry latest and release validity from the payload (0.6698ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'undefined'
+  - 'function'
+  
+      at TestContext.<anonymous> (file:///C:/Users/mikes/WebstormProjects/scaffold/tmp/pass/layer-inventory.test.mjs:99:9)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1397:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:969:18)
+      at Test.postRun (node:internal/test_runner/test:1537:19)
+      at Test.run (node:internal/test_runner/test:1462:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'undefined',
+    expected: 'function',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tmp\pass\layer-inventory.test.mjs:119:1
+✖ reads local manifest and lock roots and rejects malformed dependency maps (0.282ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'undefined'
+  - 'function'
+  
+      at TestContext.<anonymous> (file:///C:/Users/mikes/WebstormProjects/scaffold/tmp/pass/layer-inventory.test.mjs:120:9)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1397:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:969:18)
+      at Test.postRun (node:internal/test_runner/test:1537:19)
+      at Test.run (node:internal/test_runner/test:1462:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'undefined',
+    expected: 'function',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tmp\pass\layer-inventory.test.mjs:140:1
+✖ attests installed identity and preserves an absent optional node (4.6195ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + undefined
+  - true
+  
+      at TestContext.<anonymous> (file:///C:/Users/mikes/WebstormProjects/scaffold/tmp/pass/layer-inventory.test.mjs:146:9)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: true,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tmp\pass\layer-inventory.test.mjs:158:1
+✖ does not infer an Orkestrel lock identity from foreign ancestry (0.3314ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  true !== false
+  
+      at TestContext.<anonymous> (file:///C:/Users/mikes/WebstormProjects/scaffold/tmp/pass/layer-inventory.test.mjs:167:9)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1397:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:969:18)
+      at Test.postRun (node:internal/test_runner/test:1537:19)
+      at Test.run (node:internal/test_runner/test:1462:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: true,
+    expected: false,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tmp\pass\layer-inventory.test.mjs:181:1
+✖ supplies a fallback reason for every invalid completeness component (0.6506ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+    {
+  +   complete: true,
+  +   reasons: []
+  -   complete: false,
+  -   reasons: [
+  -     'registry is incomplete'
+  -   ]
+    }
+  
+      at TestContext.<anonymous> (file:///C:/Users/mikes/WebstormProjects/scaffold/tmp/pass/layer-inventory.test.mjs:184:9)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1397:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:969:18)
+      at Test.postRun (node:internal/test_runner/test:1537:19)
+      at Test.run (node:internal/test_runner/test:1462:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: { complete: true, reasons: [] },
+    expected: { complete: false, reasons: [ 'registry is incomplete' ] },
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+test at tmp\pass\layer-inventory.test.mjs:199:1
+✖ settles real child timeout and buffer boundaries with partial evidence (66.7786ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  0 !== 64
+  
+      at TestContext.<anonymous> (file:///C:/Users/mikes/WebstormProjects/scaffold/tmp/pass/layer-inventory.test.mjs:203:9)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 0,
+    expected: 64,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

@@ -1,0 +1,20 @@
+command: node --test tmp/pass/layer-inventory.test.mjs
+exit: 0
+✔ uses descriptive module helpers without assigned nested callbacks (4.3173ms)
+✔ projects keyed npm identity and rejects malformed dependency maps (0.5036ms)
+✔ projects registry latest and release validity from the payload (0.2808ms)
+✔ reads local manifest and lock roots and rejects malformed dependency maps (11.9977ms)
+✔ attests installed identity and preserves an absent optional node (3.7444ms)
+✔ does not infer an Orkestrel lock identity from foreign ancestry (0.365ms)
+✔ distinguishes negative ancestry from failed Git readings (0.232ms)
+✔ supplies a fallback reason for every invalid completeness component (0.1927ms)
+✔ refuses an occupied output path and admits only absent paths (1.6353ms)
+✔ settles real child timeout and buffer boundaries with partial evidence (297.4976ms)
+ℹ tests 10
+ℹ suites 0
+ℹ pass 10
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 419.9347

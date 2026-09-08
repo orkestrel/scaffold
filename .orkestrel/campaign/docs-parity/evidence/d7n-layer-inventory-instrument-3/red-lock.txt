@@ -1,0 +1,40 @@
+command: node --test tmp/pass/layer-inventory.test.mjs
+exit: 1
+
+✔ uses descriptive module helpers without assigned nested callbacks (5.1175ms)
+✔ projects keyed npm identity and rejects malformed dependency maps (0.6541ms)
+✔ projects registry latest and release validity from the payload (0.2985ms)
+✖ reads local manifest and lock roots and rejects malformed dependency maps (12.2191ms)
+✔ attests installed identity and preserves an absent optional node (3.8917ms)
+✔ does not infer an Orkestrel lock identity from foreign ancestry (0.2967ms)
+✔ distinguishes negative ancestry from failed Git readings (0.2402ms)
+✔ supplies a fallback reason for every invalid completeness component (0.1848ms)
+✔ refuses an occupied output path and admits only absent paths (1.5711ms)
+✔ settles real child timeout and buffer boundaries with partial evidence (404.4165ms)
+ℹ tests 10
+ℹ suites 0
+ℹ pass 9
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 522.8611
+
+✖ failing tests:
+
+test at tmp\pass\layer-inventory.test.mjs:147:1
+✖ reads local manifest and lock roots and rejects malformed dependency maps (12.2191ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  true !== false
+  
+      at TestContext.<anonymous> (file:///C:/Users/mikes/WebstormProjects/scaffold/tmp/pass/layer-inventory.test.mjs:207:9)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: true,
+    expected: false,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

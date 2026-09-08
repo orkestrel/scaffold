@@ -151,12 +151,18 @@ independent audit required direct-test controls and fixture/TSDoc corrections, w
 the bounded successor has returned. Root reproduced the permanent test's negative
 controls and restored it green. The earlier setup and root TypeScript failures passed
 after bootstrap guide installation and host/inventory regeneration. Read
-d7n-scaffold-path-audit-verdict.md before final preparation and verification. The
-candidate remains uncommitted; no consumer propagation has run.
+d7n-scaffold-path-audit-verdict.md and d7n-scaffold-path-fix-3-verdict.md. Final isolated
+clean/build staging passed under d7n-scaffold-path-final-prepare-2-run-verdict.md.
+The authoritative acceptance chain is dispatched to native scaffold_path_verify_final
+under d7n-scaffold-path-verify-2-brief.md. The candidate remains uncommitted; no consumer
+propagation has run. Prioritize path acceptance and supported propagation independently
+of the inventory audit.
 
 The live layer inventory has not run. Its instrument predecessors failed independent
-checking and actual-mechanism controls. The bounded implementation successor is
-correcting those failure paths under d7n-layer-inventory-instrument-3-brief.md. Do not
+checking and actual-mechanism controls. The bounded implementation successor returned
+green controls under d7n-layer-inventory-instrument-3-brief.md; root's independent run
+also passed. Blind objective and subjective reviews returned findings; reconciliation
+is pending under d7n-layer-inventory-instrument-3-audit-return-status.md. Do not
 derive versions or order from an unaccepted inventory result. The owner-directed
 layered closure remains the release-preparation prerequisite.
 

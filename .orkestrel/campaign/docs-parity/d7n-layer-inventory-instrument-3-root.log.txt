@@ -1,0 +1,23 @@
+Command: & 'C:/Users/mikes/scoop/apps/nodejs-lts/current/node.exe' --test tmp/pass/layer-inventory.test.mjs
+Checkout: C:/Users/mikes/WebstormProjects/scaffold
+Exit: 0
+
+✔ uses descriptive module helpers without assigned nested callbacks (4.925ms)
+✔ projects keyed npm identity and rejects malformed dependency maps (0.6015ms)
+✔ projects registry latest and release validity from the payload (0.3076ms)
+✔ reads local manifest and lock roots and rejects malformed dependency maps (7.2302ms)
+✔ attests installed identity and preserves an absent optional node (3.0158ms)
+✔ does not infer an Orkestrel lock identity from foreign ancestry (0.3633ms)
+✔ distinguishes negative ancestry from failed Git readings (0.2363ms)
+✔ supplies a fallback reason for every invalid completeness component (0.1925ms)
+✔ refuses an occupied output path and admits only absent paths (2.8246ms)
+✔ settles real child timeout and buffer boundaries with partial evidence (299.9538ms)
+ℹ tests 10
+ℹ suites 0
+ℹ pass 10
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 417.3591
+

@@ -1,0 +1,47 @@
+diff --git a/C:/Users/mikes/WebstormProjects/scaffold/tmp/pass/scaffold-path/tests/setupPolicy.test.ts b/C:/Users/mikes/WebstormProjects/scaffold/tmp/pass/scaffold-path/tests/setupPolicy.test.ts
+new file mode 100644
+index 00000000..832536e4
+--- /dev/null
++++ b/C:/Users/mikes/WebstormProjects/scaffold/tmp/pass/scaffold-path/tests/setupPolicy.test.ts
+@@ -0,0 +1,41 @@
++import { resolve } from 'node:path'
++import { pathToFileURL } from 'node:url'
++import { describe, expect, it } from 'vitest'
++import { POLICY_FILENAMES } from './setup.js'
++import { normalizePolicyFilename, normalizePolicyPath } from './setupPolicy.js'
++
++describe('normalizePolicyFilename', () => {
++	it('normalizes native relative paths, native absolute paths, and generated file URLs', () => {
++		const root = resolve('policy filename root')
++		for (const filename of POLICY_FILENAMES) {
++			const absolute = resolve(root, filename)
++			expect(normalizePolicyFilename(root, filename)).toBe(filename)
++			expect(normalizePolicyFilename(root, absolute)).toBe(filename)
++			expect(normalizePolicyFilename(root, pathToFileURL(absolute).href)).toBe(filename)
++		}
++	})
++
++	it('keeps different files and roots distinguishable', () => {
++		const root = resolve('policy filename root')
++		const nested = resolve(root, 'nested')
++		const first = resolve(root, 'src/first.ts')
++		const second = resolve(root, 'src/second.ts')
++		expect(normalizePolicyFilename(root, first)).not.toBe(normalizePolicyFilename(root, second))
++		expect(normalizePolicyFilename(root, first)).not.toBe(normalizePolicyFilename(nested, first))
++	})
++
++	it('throws for a malformed file URL', () => {
++		expect(() => normalizePolicyFilename(resolve('policy filename root'), 'file:///%')).toThrow(
++			'URI malformed',
++		)
++	})
++})
++
++describe('normalizePolicyPath', () => {
++	it('changes separators without resolving segments or decoding percent text', () => {
++		expect(normalizePolicyPath('src//member.ts')).toBe('src/member.ts')
++		expect(normalizePolicyPath('src\\parent\\..\\literal%20#雪.ts')).toBe(
++			'src/parent/../literal%20#雪.ts',
++		)
++	})
++})

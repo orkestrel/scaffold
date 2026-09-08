@@ -1,0 +1,14 @@
+npm notice run @orkestrel/scaffold@0.0.63 build:host
+npm notice run node -e "import('./dist/src/server/index.js').then((m)=>{const n=m.stageHost(process.cwd(),'dist/host').length;console.log('build-host: staged '+n+' file(s) into dist/host')})"
+file:///C:/Users/mikes/WebstormProjects/scaffold/tmp/pass/scaffold-path/dist/src/server/index.js:1849
+	if (!isVacant(host)) throw new ScaffoldError("TARGET", `Staging host root is not vacant at ${host}`, { host });
+	                           ^
+
+ScaffoldError: Staging host root is not vacant at dist/host
+    at Module.stageHost (file:///C:/Users/mikes/WebstormProjects/scaffold/tmp/pass/scaffold-path/dist/src/server/index.js:1849:29)
+    at [eval]:1:59 {
+  code: 'TARGET',
+  context: { host: 'dist/host' }
+}
+
+Node.js v24.20.0

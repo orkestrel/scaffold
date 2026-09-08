@@ -1,0 +1,3 @@
+npm notice run @orkestrel/scaffold@0.0.63 build:inventory
+npm notice run node -e "import('./dist/src/server/index.js').then((m)=>{const p=process.argv[1]??'host.json',n=m.stageInventory(process.cwd(),p).entries.length;console.log('build-inventory: staged '+n+' file(s) into '+p)})"
+build-inventory: staged 122 file(s) into host.json

@@ -1,0 +1,6 @@
+Command: & 'C:/Users/mikes/scoop/apps/git/current/usr/bin/timeout.exe' 300 'C:/Users/mikes/scoop/apps/git/current/bin/bash.exe' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/prepare-scaffold-path-final.sh
+Checkout: C:/Users/mikes/WebstormProjects/scaffold/tmp/pass/scaffold-path
+Exit: 1
+Evidence: tmp/pass/d7n-scaffold-path-final-prepare.CFfNxy
+
+The process emitted no direct output before stopping. build-src.log.txt records the completed source build. build-host.log.txt records ScaffoldError TARGET: Staging host root is not vacant at dist/host. The inventory build, post-build byte checks and success line were not reached.

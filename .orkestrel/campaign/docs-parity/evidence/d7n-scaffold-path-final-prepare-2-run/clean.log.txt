@@ -1,0 +1,2 @@
+npm notice run @orkestrel/scaffold@0.0.63 clean
+npm notice run node -e "require('node:fs').rmSync('dist',{recursive:true,force:true})"
