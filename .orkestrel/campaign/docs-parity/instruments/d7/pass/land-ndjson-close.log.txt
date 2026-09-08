@@ -1,0 +1,12 @@
+== ndjson close landing 2026-09-08T02:25:39Z over 7ce1e46
+== status
+ M guides/ndjson.md
+ M tests/guides.test.ts
+ guides/ndjson.md     | 16 +++++++++-------
+ tests/guides.test.ts |  8 +++-----
+ 2 files changed, 12 insertions(+), 12 deletions(-)
+== stage by path
+ 2 files changed, 12 insertions(+), 12 deletions(-)
+== committed
+bc2f3df Close ndjson under the final guide tarball
+(status end)

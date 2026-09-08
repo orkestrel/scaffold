@@ -1,0 +1,12 @@
+== timeout close landing 2026-09-08T02:25:39Z over d221dba
+== status
+ M guides/timeout.md
+ M tests/guides.test.ts
+ guides/timeout.md    | 41 ++++++++++++++++++++++++-----------------
+ tests/guides.test.ts |  8 +++-----
+ 2 files changed, 27 insertions(+), 22 deletions(-)
+== stage by path
+ 2 files changed, 27 insertions(+), 22 deletions(-)
+== committed
+7e06bcb Close timeout under the final guide tarball
+(status end)

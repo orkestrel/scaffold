@@ -1,0 +1,58 @@
+diff --git a/guides/tool.md b/guides/tool.md
+index 36f2953..c6439ab 100644
+--- a/guides/tool.md
++++ b/guides/tool.md
+@@ -39,18 +39,20 @@ Source: [`src/core`](../src/core). Published through `@orkestrel/tool`.
+ 
+ The data shapes, from [`types.ts`](../src/core/types.ts). Every property is readonly, and an
+ optional field the caller did not supply is absent from the value. A `Shape` cell holds an
+-interface's members in braces, and a type alias's value.
+-
+-| Name                   | Kind      | Shape                                                              | Summary                                                                          |
+-| ---------------------- | --------- | ------------------------------------------------------------------ | -------------------------------------------------------------------------------- |
+-| `ToolDefinition`       | interface | `{ name, description?, parameters? }`                              | Describes a tool as advertised to a caller.                                      |
+-| `ToolCall`             | interface | `{ id, name, arguments, caller? }`                                 | Describes one request to run a named tool.                                       |
+-| `ToolSuccess`          | interface | `{ id, name, success: true, value }`                               | Reports the successful outcome of executing a `ToolCall`.                        |
+-| `ToolFailure`          | interface | `{ id, name, success: false, error }`                              | Reports the failed outcome of executing a `ToolCall`.                            |
+-| `ToolOptions`          | interface | `{ name, description?, summary?, parameters?, execute }`           | Configures an executable tool.                                                   |
+-| `ToolInterface`        | interface | `{ name, description?, parameters?, summary?, execute }`           | Represents an executable tool: its advertised definition plus its local handler. |
+-| `ToolManagerInterface` | interface | `{ count, add, tool, tools, definitions, execute, remove, clear }` | Represents a registry of executable tools with per-call error isolation.         |
+-| `ToolResult`           | type      | `ToolSuccess \| ToolFailure`                                       | Represents the outcome of executing a `ToolCall`.                                |
++interface's data members as bare names in braces, `?` marking an optional member and `plus`
++introducing its call-signature members, and a type alias's own type literal with a union's arms
++escaped as `\|`. An extended interface's name comes before `plus`, with the members it adds after.
++
++| Name                   | Kind      | Shape                                                                  | Summary                                                                          |
++| ---------------------- | --------- | ---------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
++| `ToolDefinition`       | interface | `{ name, description?, parameters? }`                                  | Describes a tool as advertised to a caller.                                      |
++| `ToolCall`             | interface | `{ id, name, arguments, caller? }`                                     | Describes one request to run a named tool.                                       |
++| `ToolSuccess`          | interface | `Success<unknown> plus { id, name }`                                   | Reports the successful outcome of executing a `ToolCall`.                        |
++| `ToolFailure`          | interface | `Failure<string> plus { id, name }`                                    | Reports the failed outcome of executing a `ToolCall`.                            |
++| `ToolOptions`          | interface | `{ name, description?, summary?, parameters?, execute }`               | Configures an executable tool.                                                   |
++| `ToolInterface`        | interface | `ToolDefinition plus { summary? } plus execute`                        | Represents an executable tool: its advertised definition plus its local handler. |
++| `ToolManagerInterface` | interface | `{ count } plus add, tool, tools, definitions, execute, remove, clear` | Represents a registry of executable tools with per-call error isolation.         |
++| `ToolResult`           | type      | `ToolSuccess \| ToolFailure`                                           | Represents the outcome of executing a `ToolCall`.                                |
+ 
+ `ToolInterface` and `ToolManagerInterface` list every member they declare or inherit. The
+ call-signature members of each are documented under [Methods](#methods); the readonly `count` of
+diff --git a/tests/guides.test.ts b/tests/guides.test.ts
+index e0538fc..3c01c32 100644
+--- a/tests/guides.test.ts
++++ b/tests/guides.test.ts
+@@ -1,6 +1,6 @@
+ // The consumer-side guides-parity drop-in: runs `@orkestrel/guide`'s checks against
+ // this repo's own `guides/README.md` manifest. The constants that follow are this
+-// package's own, and are the only part a sibling package changes.
++// package's own, as is the executed section that closes the file.
+ 
+ import { Tool, createTool, createToolManager, isToolCall } from '@src/core'
+ import { describe, expect, it } from 'vitest'
+@@ -36,7 +36,7 @@ const MODULES = Object.freeze({ '@orkestrel/tool': 'src/core', '@src/core': 'src
+  *
+  * A class that one-class-per-file evicted from its single consumer cannot become a
+  * local, so it stays exported without being public. Naming it here is what makes that
+- * intentional rather than forgotten — and the assertion that follows fails when a name
++ * intentional rather than forgotten — and the assertion that follows it fails when a name
+  * here stops being stranded, so the list cannot rot.
+  */
+ const INTERNAL: readonly string[] = Object.freeze([])

@@ -1,0 +1,51 @@
+diff --git a/guides/ndjson.md b/guides/ndjson.md
+index 75e4ac7..71a9182 100644
+--- a/guides/ndjson.md
++++ b/guides/ndjson.md
+@@ -37,14 +37,13 @@ parser.clear() // drop any buffered partial - ready for a fresh stream
+ 
+ ### Types
+ 
+-A `Shape` cell holds the interface's members in braces.
++A `Shape` cell holds an interface's data members as bare names in braces, `?`
++marking an optional member and `plus` introducing its call-signature members,
++and a type alias's own type literal with a union's arms escaped as `\|`.
+ 
+-| Type                    | Kind      | Shape              | Summary                                                                                                                                                                                                                                |
+-| ----------------------- | --------- | ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+-| `NDJSONParserInterface` | interface | `{ parse, clear }` | Represents the stateful NDJSON (newline-delimited JSON) stream-parser contract a consumer holds — a `parse` that turns each string chunk into the complete records decoded so far, and a `clear` that drops the buffered partial line. |
+-
+-Its `parse` and `clear` members are call-signature methods, documented under
+-[Methods](#methods).
++| Type                    | Kind      | Shape                  | Summary                                                                                                                                                                                                                                |
++| ----------------------- | --------- | ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
++| `NDJSONParserInterface` | interface | `{} plus parse, clear` | Represents the stateful NDJSON (newline-delimited JSON) stream-parser contract a consumer holds — a `parse` that turns each string chunk into the complete records decoded so far, and a `clear` that drops the buffered partial line. |
+ 
+ ```ts
+ import type { NDJSONParserInterface } from '@orkestrel/ndjson'
+@@ -62,6 +61,9 @@ function feed(parser: NDJSONParserInterface, chunk: string): readonly Record<str
+ 
+ #### Create a parser
+ 
++Creates a parser through the factory and feeds it two complete lines, then a
++line that completes only once its own newline arrives:
++
+ ```ts
+ import { createNDJSONParser } from '@orkestrel/ndjson'
+ 
+diff --git a/tests/guides.test.ts b/tests/guides.test.ts
+index 1a058da..53f7d2f 100644
+--- a/tests/guides.test.ts
++++ b/tests/guides.test.ts
+@@ -1,8 +1,6 @@
+-// The guides-parity gate: @orkestrel/guide's checks run against this repository's own
+-// `guides/README.md` manifest, and every flagship fence in `guides/ndjson.md` is transcribed here
+-// and asserted against what its comments claim. Name resolution is not a behavioural proof, so a
+-// fence documenting a value the code contradicts is exactly what the transcriptions catch. Change
+-// a fence, change its transcription.
++// The consumer-side guides-parity drop-in: runs `@orkestrel/guide`'s checks against
++// this repo's own `guides/README.md` manifest. The constants that follow are this
++// package's own, as is the executed section that closes the file.
+ 
+ import type { NDJSONParserInterface } from '@src/core'
+ import { describe, expect, it } from 'vitest'

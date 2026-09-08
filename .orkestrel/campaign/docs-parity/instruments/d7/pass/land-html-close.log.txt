@@ -1,0 +1,13 @@
+== html close landing 2026-09-08T02:25:39Z over 1121b5c
+== status
+ M guides/html.md
+ M src/core/constants.ts
+ M tests/guides.test.ts
+ src/core/constants.ts |  4 +--
+ tests/guides.test.ts  |  4 +--
+ 3 files changed, 59 insertions(+), 35 deletions(-)
+== stage by path
+ 3 files changed, 59 insertions(+), 35 deletions(-)
+== committed
+3325173 Close html under the final guide tarball
+(status end)

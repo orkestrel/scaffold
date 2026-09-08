@@ -1,0 +1,12 @@
+== tool close landing 2026-09-08T02:25:39Z over 6273ea7
+== status
+ M guides/tool.md
+ M tests/guides.test.ts
+ guides/tool.md       | 26 ++++++++++++++------------
+ tests/guides.test.ts |  4 ++--
+ 2 files changed, 16 insertions(+), 14 deletions(-)
+== stage by path
+ 2 files changed, 16 insertions(+), 14 deletions(-)
+== committed
+053d9c1 Close tool under the final guide tarball
+(status end)

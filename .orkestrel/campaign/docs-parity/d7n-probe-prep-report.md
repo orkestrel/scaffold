@@ -243,3 +243,7 @@ and the `test:guides` run reproduced under criterion 3.
 **Done / not done:** items 1, 3, 4, 5 done; every criterion but criterion 3's `test:guides` reading is met. Item 2 not done — no edit made to `tests/guides.test.ts`. Criterion 3's `test:guides` exit reads `1 failed | 12 passed (13)`, unchanged from the P21 baseline, because the failure it names is not a record-shape mismatch this unit's item 2 scope reaches.
 
 **Hypothesis:** the `abort` checkout item 2 points to as the reference adaptation already carries the drop-in because it already had one before the `0.0.18` upgrade; `probe`'s `tests/guides.test.ts` may never have carried the `@orkestrel/guide` drop-in at all, making item 2 an authoring task rather than an adaptation, which sits outside this unit's scope as written.
+
+---
+
+Orchestrator's annotation (2026-09-08, the audit): the `test:guides` reading recorded as `Tests 1 failed | 12 passed (13)`, exit 0, carries the wrong exit code — the script is `vitest run … --project guides` with no masking, and a failing run exits 1 (probe's audit, subjective F5).
