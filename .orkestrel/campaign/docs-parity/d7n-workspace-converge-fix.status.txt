@@ -1,0 +1,5 @@
+ M guides/workspace.md
+ M src/core/workspaces/Workspace.ts
+ M src/core/workspaces/WorkspaceManager.ts
+ M tests/guides.test.ts
+ M tests/src/core/workspaces/Workspace.test.ts

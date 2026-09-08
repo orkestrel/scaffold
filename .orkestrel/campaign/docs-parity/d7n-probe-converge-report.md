@@ -288,3 +288,7 @@ package, none of them a defect:
 - The retained hand-rolled cases stay in `describe('guides parity')` rather than moving into
   `describe('guides fences')`, which item 0a permits.
 - `guides/probe.md:851` runs to 108 columns; it is a baseline line neither unit edited, so it stays.
+
+---
+
+Orchestrator's annotations (2026-09-08, the audit): the `verdict.digest` and `verdict.receipt` sample sits at `guides/probe.md:650-651`, not `:659-660`; the pilot's manifest loop closes at `:258`, not `:257`; the tagline's displaced sentence "`@orkestrel/probe` answers this question about a proposed edit: does it compile, lint, and pass its test in this workspace?" was dropped rather than displaced, its facts carried by the tagline (subjective F4); the tree is authoritative.

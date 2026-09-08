@@ -1,0 +1,15 @@
+== workspace p2-fix landing 2026-09-08T02:27:57Z over 98fc334
+== status
+ M guides/workspace.md
+ M src/core/workspaces/Workspace.ts
+ M src/core/workspaces/WorkspaceManager.ts
+ M tests/guides.test.ts
+ M tests/src/core/workspaces/Workspace.test.ts
+ tests/guides.test.ts                        |  2 +-
+ tests/src/core/workspaces/Workspace.test.ts |  2 +-
+ 5 files changed, 17 insertions(+), 15 deletions(-)
+== stage by path
+ 5 files changed, 17 insertions(+), 15 deletions(-)
+== committed
+eb02ec0 Refine workspace's convergence on the audit's findings
+(status end)

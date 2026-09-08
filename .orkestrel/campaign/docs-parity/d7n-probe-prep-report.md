@@ -247,3 +247,4 @@ and the `test:guides` run reproduced under criterion 3.
 ---
 
 Orchestrator's annotation (2026-09-08, the audit): the `test:guides` reading recorded as `Tests 1 failed | 12 passed (13)`, exit 0, carries the wrong exit code — the script is `vitest run … --project guides` with no masking, and a failing run exits 1 (probe's audit, subjective F5).
+Further: "after these four edits" and "the two files item 3 edited" are counts in prose; the sites are named beside them.

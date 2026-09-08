@@ -423,3 +423,7 @@ Decision 1 (the `#### \`WorkerInterface\`` heading) and decision 2 (the lifecycl
 the brief's enumerated sites and are surfaced here for the Orchestrator's ruling rather than
 carried silently; both are inside `guides/worker.md`, which the brief owns, and both are what the
 brief's own objective and criterion 7 require.
+
+---
+
+Orchestrator's annotation (2026-09-08, the audit): every lane ruled claim 12 FAIL on counts in this report's prose (cases, rows, and steps tallied rather than named); every citation was verified against the tree. The finding 1 site list omits `src/server/factories.ts:55`, which the fix round carries; the ground given for dropping `abort`'s "never retried" was false against the installed queue's contract, which the fix round restores.

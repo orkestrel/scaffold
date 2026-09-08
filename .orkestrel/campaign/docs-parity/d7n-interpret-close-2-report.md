@@ -135,3 +135,7 @@ PATH=/opt/npm11/bin:$PATH npm run test:guides
 ## Deviations
 
 None.
+
+---
+
+Orchestrator's annotation (2026-09-08, closure): the checker ruled claim 2 FAIL on this report's prose alone ("three cells" tallied where the members are the `ProvenanceCategory`, `InterpretErrorCode`, and `RecordEventMap` rows); every citation was verified against the tree, and the tree is authoritative.
