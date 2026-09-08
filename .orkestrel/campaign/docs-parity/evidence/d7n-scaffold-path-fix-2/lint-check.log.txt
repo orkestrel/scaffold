@@ -1,0 +1,2 @@
+npm notice run @orkestrel/scaffold@0.0.63 npx
+npm notice run oxlint --config .oxlintrc.json --deny-warnings tests/setupPolicy.ts tests/config.test.ts tests/setupPolicy.test.ts tests/setup.ts

@@ -1,0 +1,30 @@
+npm notice run @orkestrel/scaffold@0.0.63 npx
+npm notice run tsc --noEmit --project tsconfig.json
+scripts/docs.ts(20,2): error TS2305: Module '"@orkestrel/guide"' has no exported member 'Drift'.
+scripts/docs.ts(24,2): error TS2305: Module '"@orkestrel/guide"' has no exported member 'SourceExample'.
+scripts/docs.ts(27,2): error TS2305: Module '"@orkestrel/guide"' has no exported member 'collectExamples'.
+scripts/docs.ts(28,2): error TS2305: Module '"@orkestrel/guide"' has no exported member 'collectKeys'.
+scripts/docs.ts(29,2): error TS2305: Module '"@orkestrel/guide"' has no exported member 'collectTitles'.
+scripts/docs.ts(34,2): error TS2305: Module '"@orkestrel/guide"' has no exported member 'findDrift'.
+scripts/docs.ts(35,2): error TS2305: Module '"@orkestrel/guide"' has no exported member 'locateComment'.
+scripts/docs.ts(36,2): error TS2305: Module '"@orkestrel/guide"' has no exported member 'normalizeComment'.
+scripts/docs.ts(38,2): error TS2305: Module '"@orkestrel/guide"' has no exported member 'replaceCell'.
+scripts/docs.ts(39,2): error TS2305: Module '"@orkestrel/guide"' has no exported member 'replaceExample'.
+scripts/docs.ts(40,2): error TS2305: Module '"@orkestrel/guide"' has no exported member 'replaceSummary'.
+scripts/docs.ts(42,2): error TS2305: Module '"@orkestrel/guide"' has no exported member 'spliceSpan'.
+scripts/docs.ts(173,75): error TS2339: Property 'name' does not exist on type 'string'.
+scripts/docs.ts(256,60): error TS7006: Parameter 'one' implicitly has an 'any' type.
+scripts/docs.ts(423,38): error TS2339: Property 'tagline' does not exist on type 'GuideInterface'.
+scripts/docs.ts(424,30): error TS2339: Property 'tagline' does not exist on type 'GuideInterface'.
+tests/guides.test.ts(7,2): error TS2305: Module '"@orkestrel/guide"' has no exported member 'findDrift'.
+tests/guides.test.ts(127,30): error TS2339: Property 'name' does not exist on type 'string'.
+tests/guides.test.ts(132,30): error TS2339: Property 'name' does not exist on type 'string'.
+tests/guides.test.ts(140,72): error TS2339: Property 'name' does not exist on type 'string'.
+tests/guides.test.ts(151,32): error TS2339: Property 'name' does not exist on type 'string'.
+tests/guides.test.ts(192,80): error TS2339: Property 'title' does not exist on type 'string'.
+tests/guides.test.ts(195,14): error TS2339: Property 'title' does not exist on type 'GuideFence'.
+tests/guides.test.ts(195,54): error TS2339: Property 'title' does not exist on type 'GuideFence'.
+tests/guides.test.ts(195,80): error TS2339: Property 'title' does not exist on type 'GuideFence'.
+tests/guides.test.ts(204,63): error TS2339: Property 'tagline' does not exist on type 'GuideInterface'.
+tests/guides.test.ts(208,36): error TS2339: Property 'tagline' does not exist on type 'GuideInterface'.
+tests/guides.test.ts(228,63): error TS2339: Property 'name' does not exist on type 'string'.

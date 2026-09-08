@@ -22,8 +22,14 @@ terminal result; retain the result projection with its report and verdict.
 | d7n-scaffold-path-design | objective design | scaffold c87021bd | native scaffold_path_design_objective | native task | returned and reconciled in d7n-scaffold-path-plan.md |
 | d7n-scaffold-path-design | subjective design | scaffold c87021bd | tmp/claude/d7n-scaffold-path-design-subjective.jsonl; 932f3564-5915-4b6a-982d-b09037d6138b | terminal result read; no error or denials | returned and reconciled; projection retained |
 | d7n-scaffold-path-host | isolated bootstrap | scaffold c87021bd | tmp/pass/scaffold-path-log.UOq5l7 | root command exited 1 | install passed; named config regression reproduced; root owner readings unchanged |
-| d7n-scaffold-path-fix | native implementer, Sol | isolated scaffold c87021bd | native scaffold_path_fix | native task | predecessor stopped before edits at npm argument parsing; successor uses measured Bash carrier and is running |
-| d7n-layer-inventory-instrument | native builder, Terra | scratch instrument only | native layer_inventory_instrument | native task | authoring the read-only inventory; collection not started |
+| d7n-scaffold-path-fix | native implementer, Sol | isolated scaffold c87021bd | native scaffold_path_fix | native task | successor returned; real-binary regression green; bootstrap host and guide readings corrected; direct-test audit findings carried to bounded successor |
+| d7n-scaffold-path-fix-3 | native builder, Terra | isolated path candidate | native scaffold_path_fix_controls | native task | returned; mutation controls and scoped checks passed; root independently reproduced negative controls and restored green |
+| d7n-scaffold-path-audit | objective analyst, Sol | frozen path candidate | native scaffold_path_audit_objective | native task | returned; direct-test gap retained in audit verdict |
+| d7n-scaffold-path-audit | subjective reviewer, Opus | frozen path candidate | tmp/claude/d7n-scaffold-path-audit-subjective.jsonl; 2db26d0a-a70f-49a7-bde4-5f61439a7ae2 | terminal result read without error or denials | returned; direct mutation evidence and fixture/TSDoc corrections carried to bounded successor |
+| d7n-scaffold-path-prepare-check | mechanical checker through Cursor Grok | completed isolated preparation run | native scaffold_path_prepare_check bridge | native task | running; root-authored preparation deviation is explicit |
+| d7n-scaffold-path-verify | independent verifier, Terra | final isolated candidate after preparation | no journal | launch refused at thread limit | not run; wait for final source and regenerated host inventory |
+| d7n-layer-inventory-instrument | native builder, Terra | scratch instrument only | native layer_inventory_instrument | native task | predecessor and successor returned; incomplete-state and actual-control gaps rejected; no collection ran |
+| d7n-layer-inventory-instrument-3 | native implementer, Sol | preserved scratch predecessors | native layer_inventory_fix | native task | actual-mechanism controls ran red; correction in progress; independent acceptance precedes live collection |
 
 The previous probe writer returned and its test changes landed as 93fc01d. The
 owner-main comparison returned; its result projection is retained. Those processes

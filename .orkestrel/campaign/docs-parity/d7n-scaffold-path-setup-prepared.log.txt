@@ -1,0 +1,17 @@
+Command: & 'C:/Users/mikes/scoop/apps/nodejs-lts/current/node.exe' C:/Users/mikes/scoop/apps/nodejs-lts/current/node_modules/npm/bin/npm-cli.js run test:setup
+Checkout: C:/Users/mikes/WebstormProjects/scaffold/tmp/pass/scaffold-path
+Exit: 0
+
+
+> @orkestrel/scaffold@0.0.63 test:setup
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project setup
+
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/scaffold/tmp/pass/scaffold-path
+
+··············································································
+
+ Test Files  3 passed (3)
+      Tests  78 passed (78)
+   Start at  12:27:49
+   Duration  2.46s (transform 756ms, setup 1.00s, import 624ms, tests 1.50s, environment 0ms)

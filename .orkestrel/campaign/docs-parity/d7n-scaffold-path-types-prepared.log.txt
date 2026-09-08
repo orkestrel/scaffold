@@ -1,0 +1,3 @@
+Command: & 'C:/Users/mikes/scoop/apps/nodejs-lts/current/node.exe' node_modules/typescript/bin/tsc --noEmit --project tsconfig.json
+Checkout: C:/Users/mikes/WebstormProjects/scaffold/tmp/pass/scaffold-path
+Exit: 0

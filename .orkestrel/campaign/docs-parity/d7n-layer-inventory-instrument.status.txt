@@ -1,0 +1,37 @@
+ M .orkestrel/campaign/docs-parity/d7n-windows-runtime.md
+ M .orkestrel/campaign/docs-parity/handoff.md
+ M .orkestrel/campaign/docs-parity/ledger.md
+M  package-lock.json
+ M package.json
+?? .orkestrel/campaign/docs-parity/d7n-layer-alignment-plan.md
+?? .orkestrel/campaign/docs-parity/d7n-layer-inventory-instrument-brief.md
+?? .orkestrel/campaign/docs-parity/d7n-mcp-legacy-source.log.txt
+?? .orkestrel/campaign/docs-parity/d7n-probe-registered-closure-diagnosis.md
+?? .orkestrel/campaign/docs-parity/d7n-scaffold-path-design-brief.md
+?? .orkestrel/campaign/docs-parity/d7n-scaffold-path-design-objective-report.md
+?? .orkestrel/campaign/docs-parity/d7n-scaffold-path-design-subjective-report.md
+?? .orkestrel/campaign/docs-parity/d7n-scaffold-path-direct-proof.log.txt
+?? .orkestrel/campaign/docs-parity/d7n-scaffold-path-fix-2-brief.md
+?? .orkestrel/campaign/docs-parity/d7n-scaffold-path-fix-brief.md
+?? .orkestrel/campaign/docs-parity/d7n-scaffold-path-fix-report.md
+?? .orkestrel/campaign/docs-parity/d7n-scaffold-path-host-brief.md
+?? .orkestrel/campaign/docs-parity/d7n-scaffold-path-host-check-2-brief.md
+?? .orkestrel/campaign/docs-parity/d7n-scaffold-path-host-check-2-report.md
+?? .orkestrel/campaign/docs-parity/d7n-scaffold-path-host-check-3-brief.md
+?? .orkestrel/campaign/docs-parity/d7n-scaffold-path-host-check-3-report.md
+?? .orkestrel/campaign/docs-parity/d7n-scaffold-path-host-check-brief.md
+?? .orkestrel/campaign/docs-parity/d7n-scaffold-path-host-check-report.md
+?? .orkestrel/campaign/docs-parity/d7n-scaffold-path-host-control.log.txt
+?? .orkestrel/campaign/docs-parity/d7n-scaffold-path-host-report.md
+?? .orkestrel/campaign/docs-parity/d7n-scaffold-path-host.diff.txt
+?? .orkestrel/campaign/docs-parity/d7n-scaffold-path-host.status.txt
+?? .orkestrel/campaign/docs-parity/d7n-scaffold-path-map-brief.md
+?? .orkestrel/campaign/docs-parity/d7n-scaffold-path-map-report.md
+?? .orkestrel/campaign/docs-parity/d7n-scaffold-path-plan.md
+?? .orkestrel/campaign/docs-parity/d7n-scaffold-path-proof.json
+?? .orkestrel/campaign/docs-parity/d7n-scaffold-path-retention-note.md
+?? .orkestrel/campaign/docs-parity/evidence/d7n-ollama-host-readonly/
+?? .orkestrel/campaign/docs-parity/evidence/d7n-scaffold-path-bootstrap/
+?? .orkestrel/campaign/docs-parity/instruments/d7/windows/bootstrap-scaffold-path.sh
+?? .orkestrel/campaign/docs-parity/instruments/d7/windows/run-d7n-scaffold-path-design.sh
+?? .orkestrel/campaign/docs-parity/instruments/d7/windows/run-d7n-scaffold-path-map.sh

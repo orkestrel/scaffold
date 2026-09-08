@@ -1,0 +1,18 @@
+Command: & 'C:/Users/mikes/scoop/apps/git/current/bin/bash.exe' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/scaffold-path/tmp/d7n-scaffold-path-fix-3/setup-policy.sh
+Checkout: C:/Users/mikes/WebstormProjects/scaffold/tmp/pass/scaffold-path
+Exit: 0
+Control: Correct candidate restored.
+
+npm notice run @orkestrel/scaffold@0.0.63 test:setup
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project setup tests/setupPolicy.test.ts
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/scaffold/tmp/pass/scaffold-path
+
+····
+
+ Test Files  1 passed (1)
+      Tests  4 passed (4)
+   Start at  12:44:01
+   Duration  540ms (transform 212ms, setup 315ms, import 71ms, tests 6ms, environment 0ms)
+
+

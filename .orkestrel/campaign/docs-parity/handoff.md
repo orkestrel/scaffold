@@ -146,6 +146,20 @@ was authorized by the owner on 2026-09-08. Follow d7n-scaffold-path-plan.md for 
 isolated canonical correction and propagation preparation; publication remains unapproved.
 Never edit the vendored target file. The old head-start artifact remains installed.
 
+The isolated canonical path candidate passed the named real-binary regression. Its
+independent audit required direct-test controls and fixture/TSDoc corrections, which
+the bounded successor has returned. Root reproduced the permanent test's negative
+controls and restored it green. The earlier setup and root TypeScript failures passed
+after bootstrap guide installation and host/inventory regeneration. Read
+d7n-scaffold-path-audit-verdict.md before final preparation and verification. The
+candidate remains uncommitted; no consumer propagation has run.
+
+The live layer inventory has not run. Its instrument predecessors failed independent
+checking and actual-mechanism controls. The bounded implementation successor is
+correcting those failure paths under d7n-layer-inventory-instrument-3-brief.md. Do not
+derive versions or order from an unaccepted inventory result. The owner-directed
+layered closure remains the release-preparation prerequisite.
+
 ## Pending owner decisions carried from the container
 
 Listed in `d7-fleet-plan.md` § For the owner: supervisor's API-adoption campaign; template's missing sections; implementing-class member blocks; the `--to source` seed guard; timeout's Contract shape; the scaffold findings carried in `d7-fleet-plan.md` § Findings carried (the voice rule's hyphenated-token and noun-opener cases, `land-p1.sh`'s omission of newly tracked files, the seed's trailing empty comment line and empty-cell write, the config test's shared temp-dir cross-talk, the `in order to` sweep sense); the reader limitations carried to the guide package (both-absent pairs, a name exported by more than one face collapsing to one row, underscore identifiers, inherited-member duplication, the line-end hyphen, overload collapse).

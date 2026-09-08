@@ -1,0 +1,27 @@
+npm notice run @orkestrel/scaffold@0.0.63 test:config
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project config tests/config.test.ts -t loads every configured policy rule through the real binary
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/scaffold/tmp/pass/scaffold-path
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------x-----------
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |config| tests/config.test.ts > policy plugin > loads every configured policy rule through the real binary
+AssertionError: expected [ …(27) ] to include 'policy(no-mocking) src/violations/fix…'
+ ❯ tests/config.test.ts:1894:28
+    1892|     'typescript(explicit-member-accessibility) src/violations/fixture.…
+    1893|    ]) {
+    1894|     expect(violationCodes).toContain(reported)
+       |                            ^
+    1895|    }
+    1896|    expect(violationCodes).toContain('eslint(no-debugger) scripts/read.…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 172 skipped (173)
+   Start at  12:08:04
+   Duration  1.29s (transform 309ms, setup 328ms, import 392ms, tests 406ms, environment 0ms)
+

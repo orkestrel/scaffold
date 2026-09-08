@@ -1,0 +1,56 @@
+Command: & 'C:/Users/mikes/scoop/apps/git/current/bin/bash.exe' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/scaffold-path/tmp/d7n-scaffold-path-fix-3/setup-policy.sh
+Checkout: C:/Users/mikes/WebstormProjects/scaffold/tmp/pass/scaffold-path
+Exit: 1
+Control: Replaced fileURLToPath(filename) with new URL(filename).pathname; restored immediately after the run.
+
+npm notice run @orkestrel/scaffold@0.0.63 test:setup
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project setup tests/setupPolicy.test.ts
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/scaffold/tmp/pass/scaffold-path
+
+x·x·
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |setup| tests/setupPolicy.test.ts > normalizePolicyFilename > normalizes native relative paths, native absolute paths, and generated file URLs
+AssertionError: expected '../../../../../../../../C:/Users/mike…' to be 'src/plain.ts' // Object.is equality
+
+Expected: "src/plain.ts"
+Received: "../../../../../../../../C:/Users/mikes/WebstormProjects/scaffold/tmp/pass/scaffold-path/policy%20filename%20root/src/plain.ts"
+
+ ❯ tests/setupPolicy.test.ts:14:72
+     12|    expect(normalizePolicyFilename(root, filename)).toBe(filename)
+     13|    expect(normalizePolicyFilename(root, absolute)).toBe(filename)
+     14|    expect(normalizePolicyFilename(root, pathToFileURL(absolute).href))…
+       |                                                                        ^
+     15|   }
+     16|  })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  |setup| tests/setupPolicy.test.ts > normalizePolicyFilename > throws for a malformed file URL
+AssertionError: expected [Function] to throw an error
+
+- Expected:
+null
+
++ Received:
+undefined
+
+ ❯ tests/setupPolicy.test.ts:28:87
+     26|
+     27|  it('throws for a malformed file URL', () => {
+     28|   expect(() => normalizePolicyFilename(resolve('policy filename root')…
+       |                                                                                       ^
+     29|    'URI malformed',
+     30|   )
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 2 passed (4)
+   Start at  12:44:00
+   Duration  571ms (transform 220ms, setup 327ms, import 70ms, tests 9ms, environment 0ms)
+
+

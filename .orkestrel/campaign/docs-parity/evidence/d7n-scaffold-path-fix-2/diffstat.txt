@@ -1,0 +1,5 @@
+ .claude/rules/portability.md |  2 ++
+ tests/config.test.ts         | 61 +++++++++++++++++++++++++++-----------------
+ tests/setup.ts               | 10 ++++++++
+ tests/setupPolicy.ts         | 17 +++++++++++-
+ 4 files changed, 65 insertions(+), 25 deletions(-)

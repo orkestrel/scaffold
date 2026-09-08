@@ -1,0 +1,6 @@
+npm notice run @orkestrel/scaffold@0.0.63 npx
+npm notice run oxfmt --config .oxfmtrc.json --check tests/setupPolicy.ts tests/config.test.ts tests/setupPolicy.test.ts tests/setup.ts .claude/rules/portability.md
+Checking formatting...
+
+All matched files use the correct format.
+Finished in 242ms on 5 files using 16 threads.

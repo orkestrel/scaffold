@@ -1,0 +1,288 @@
+diff --git a/tmp/pass/layer-inventory.mjs b/tmp/pass/layer-inventory.mjs
+new file mode 100644
+index 00000000..7470f682
+--- /dev/null
++++ b/tmp/pass/layer-inventory.mjs
+@@ -0,0 +1,282 @@
++import { createHash } from 'node:crypto'
++import { access, mkdir, readFile, stat, writeFile } from 'node:fs/promises'
++import { basename, join, resolve } from 'node:path'
++import { spawn } from 'node:child_process'
++import { pathToFileURL } from 'node:url'
++
++export const packages = [
++	'abort', 'agent', 'brief', 'browser', 'budget', 'codec', 'console', 'contract', 'csv',
++	'database', 'emitter', 'form', 'guide', 'html', 'indexeddb', 'interpret', 'lsp', 'markdown',
++	'mcp', 'middleware', 'msg', 'ndjson', 'ollama', 'pool', 'probe', 'process', 'program',
++	'qualifier', 'queue', 'rater', 'reason', 'relation', 'router', 'scaffold', 'sea', 'server',
++	'sqlite', 'sse', 'table', 'template', 'terminal', 'test', 'timeout', 'tool', 'toolbox',
++	'websocket', 'worker', 'workflow', 'workspace',
++]
++
++export const fields = [
++	'engines', 'os', 'cpu', 'exports', 'dependencies', 'devDependencies', 'peerDependencies',
++	'peerDependenciesMeta', 'optionalDependencies', 'bundledDependencies', 'bundleDependencies',
++	'overrides', 'packageManager',
++]
++
++export function value(input) {
++	return input !== null && typeof input === 'object' && !Array.isArray(input)
++}
++
++export function message(error) {
++	return error instanceof Error ? error.message : String(error)
++}
++
++export function selectManifest(manifest) {
++	const selected = {}
++	if (!value(manifest)) return selected
++	for (const field of ['name', 'version', ...fields]) {
++		if (Object.hasOwn(manifest, field)) selected[field] = manifest[field]
++	}
++	return selected
++}
++
++export function selectLock(entry) {
++	const selected = {}
++	if (!value(entry)) return selected
++	for (const field of ['version', 'resolved', 'integrity', 'link', 'peer', 'optional', 'dev', 'engines', 'dependencies', 'devDependencies', 'peerDependencies', 'peerDependenciesMeta', 'optionalDependencies']) {
++		if (Object.hasOwn(entry, field)) selected[field] = entry[field]
++	}
++	return selected
++}
++
++export function projectTree(node) {
++	if (!value(node)) return { failure: 'npm tree node was not an object' }
++	const projected = {}
++	for (const field of ['name', 'version', 'path', 'resolved', 'integrity', 'invalid', 'extraneous', 'missing', 'problems']) {
++		if (Object.hasOwn(node, field)) projected[field] = node[field]
++	}
++	if (value(node.dependencies)) {
++		const dependencies = {}
++		for (const [name, dependency] of Object.entries(node.dependencies)) dependencies[name] = projectTree(dependency)
++		projected.dependencies = dependencies
++	}
++	return projected
++}
++
++export function sha256(bytes) {
++	return createHash('sha256').update(bytes).digest('hex')
++}
++
++export function packagePath(root, name) {
++	return join(root, name)
++}
++
++export function packageName(name) {
++	return `@orkestrel/${name}`
++}
++
++export function sleepResult(command, args, options = {}) {
++	return new Promise((resolveResult) => {
++		const child = spawn(command, args, { cwd: options.cwd, shell: false, windowsHide: true })
++		const stdout = []
++		const stderr = []
++		let size = 0
++		let timedout = false
++		let overflow = false
++		const limit = options.limit ?? 16 * 1024 * 1024
++		const timer = setTimeout(() => {
++			timedout = true
++			child.kill()
++		}, options.timeout ?? 30_000)
++		const capture = (target, chunk) => {
++			const bytes = Buffer.from(chunk)
++			size += bytes.length
++			if (size <= limit) target.push(bytes)
++			else {
++				overflow = true
++				child.kill()
++			}
++		}
++		child.stdout.on('data', (chunk) => capture(stdout, chunk))
++		child.stderr.on('data', (chunk) => capture(stderr, chunk))
++		child.on('error', (error) => {
++			clearTimeout(timer)
++			resolveResult({ stdout: '', stderr: message(error), exit: undefined, signal: undefined, timedout, overflow })
++		})
++		child.on('close', (exit, signal) => {
++			clearTimeout(timer)
++			resolveResult({ stdout: Buffer.concat(stdout).toString('utf8'), stderr: Buffer.concat(stderr).toString('utf8'), exit, signal, timedout, overflow })
++		})
++	})
++}
++
++export async function readJson(path) {
++	const bytes = await readFile(path)
++	return { bytes, json: JSON.parse(bytes.toString('utf8')) }
++}
++
++export async function digest(path) {
++	try {
++		const bytes = await readFile(path)
++		return { path, sha256: sha256(bytes) }
++	} catch (error) {
++		return { path, failure: message(error) }
++	}
++}
++
++export async function git(checkout) {
++	const commands = {
++		status: ['status', '--porcelain'],
++		branch: ['branch', '--show-current'],
++		head: ['rev-parse', 'HEAD'],
++		origin: ['rev-parse', 'origin/main'],
++		ancestor: ['merge-base', '--is-ancestor', 'origin/main', 'HEAD'],
++	}
++	const result = {}
++	for (const [name, args] of Object.entries(commands)) result[name] = await sleepResult('git', ['-C', checkout, ...args])
++	return result
++}
++
++export async function snapshot(checkout) {
++	return {
++		manifest: await digest(join(checkout, 'package.json')),
++		lockfile: await digest(join(checkout, 'package-lock.json')),
++		git: await git(checkout),
++	}
++}
++
++export function matchingLocks(lockfile) {
++	const selected = {}
++	if (!value(lockfile) || !value(lockfile.packages)) return selected
++	for (const [path, entry] of Object.entries(lockfile.packages)) {
++		if (!value(entry)) continue
++		const name = typeof entry.name === 'string' ? entry.name : path.includes('node_modules/@orkestrel/') ? `@orkestrel/${basename(path)}` : undefined
++		if (typeof name === 'string' && name.startsWith('@orkestrel/')) selected[path] = { name, ...selectLock(entry) }
++	}
++	return selected
++}
++
++export async function attest(node) {
++	if (!value(node) || typeof node.name !== 'string' || !node.name.startsWith('@orkestrel/') || typeof node.path !== 'string') return undefined
++	const manifest = join(node.path, 'package.json')
++	const attestation = { path: node.path, manifest }
++	try {
++		const read = await readJson(manifest)
++		attestation.package = selectManifest(read.json)
++		attestation.dist = {}
++		for (const relative of ['dist/src/core/index.js', 'dist/src/server/index.js']) {
++			const hash = await digest(join(node.path, relative))
++			if (!Object.hasOwn(hash, 'failure')) attestation.dist[relative] = hash.sha256
++		}
++	} catch (error) {
++		attestation.failure = message(error)
++	}
++	return attestation
++}
++
++export async function attestTree(node, attestations = {}) {
++	const item = await attest(node)
++	if (item !== undefined) attestations[item.path] = item
++	if (value(node) && value(node.dependencies)) {
++		for (const child of Object.values(node.dependencies)) await attestTree(child, attestations)
++	}
++	return attestations
++}
++
++export async function npm(checkout, cli) {
++	const result = await sleepResult(process.execPath, [cli, 'ls', '--all', '--json', '--long'], { cwd: checkout, timeout: 120_000, limit: 32 * 1024 * 1024 })
++	let raw
++	let projection
++	let attestations = {}
++	try {
++		raw = JSON.parse(result.stdout)
++		projection = projectTree(raw)
++		attestations = await attestTree(raw)
++	} catch (error) {
++		result.parse = message(error)
++	}
++	return { ...result, raw, projection, attestations }
++}
++
++export async function packument(name) {
++	const controller = new AbortController()
++	const timer = setTimeout(() => controller.abort(), 30_000)
++	const url = `https://registry.npmjs.org/${encodeURIComponent(name)}`
++	try {
++		const response = await fetch(url, { headers: { accept: 'application/vnd.npm.install-v1+json' }, signal: controller.signal })
++		const payload = await response.json()
++		if (!response.ok) return { name, url, status: response.status, timestamp: new Date().toISOString(), failure: `registry returned HTTP ${response.status}` }
++		if (!value(payload)) return { name, url, status: response.status, timestamp: new Date().toISOString(), failure: 'registry payload was not an object' }
++		const latest = value(payload['dist-tags']) && typeof payload['dist-tags'].latest === 'string' ? payload['dist-tags'].latest : undefined
++		const release = latest !== undefined && value(payload.versions) ? payload.versions[latest] : undefined
++		const manifest = selectManifest(release)
++		if (value(release) && value(release.dist)) {
++			if (typeof release.dist.integrity === 'string') manifest.integrity = release.dist.integrity
++			if (typeof release.dist.shasum === 'string') manifest.shasum = release.dist.shasum
++		}
++		return { name, url, status: response.status, timestamp: new Date().toISOString(), tags: payload['dist-tags'], versions: value(payload.versions) ? Object.keys(payload.versions) : [], latest, manifest }
++	} catch (error) {
++		return { name, url, timestamp: new Date().toISOString(), failure: message(error) }
++	} finally {
++		clearTimeout(timer)
++	}
++}
++
++export async function collect(root, output, cli) {
++	const summary = { root, output, npm: cli, cachedOrigin: 'origin/main is a cached reading; this instrument does not fetch or refresh it.', packages: {} }
++	for (const short of packages) {
++		const checkout = packagePath(root, short)
++		const record = { package: packageName(short), checkout, complete: true }
++		try {
++			const before = await snapshot(checkout)
++			const manifest = await readJson(join(checkout, 'package.json'))
++			const lockfile = await readJson(join(checkout, 'package-lock.json'))
++			record.local = { manifest: selectManifest(manifest.json), lockfile: { root: selectLock(value(lockfile.json) && value(lockfile.json.packages) ? lockfile.json.packages[''] : undefined), packages: matchingLocks(lockfile.json) } }
++			record.before = before
++			record.npm = await npm(checkout, cli)
++			record.registry = await packument(record.package)
++			record.after = await snapshot(checkout)
++			record.changed = JSON.stringify(record.before) !== JSON.stringify(record.after)
++			record.complete = !record.changed && record.npm.exit === 0 && record.npm.signal === null && record.npm.parse === undefined && record.registry.failure === undefined && record.before.manifest.failure === undefined && record.before.lockfile.failure === undefined
++		} catch (error) {
++			record.failure = message(error)
++			record.complete = false
++		}
++		const target = join(output, `${short}.json`)
++		await writeFile(target, `${JSON.stringify(record, undefined, '\t')}\n`, 'utf8')
++		summary.packages[short] = { path: pathToFileURL(target).href, complete: record.complete }
++	}
++	summary.complete = Object.values(summary.packages).every((entry) => entry.complete)
++	const path = join(output, 'summary.json')
++	await writeFile(path, `${JSON.stringify(summary, undefined, '\t')}\n`, 'utf8')
++	return { path, complete: summary.complete }
++}
++
++export async function validate(root, output, cli) {
++	for (const path of [root, cli]) await access(path)
++	if (!(await stat(root)).isDirectory()) throw new Error(`fleet root is not a directory: ${root}`)
++	if (!(await stat(cli)).isFile()) throw new Error(`npm CLI path is not a file: ${cli}`)
++	try {
++		await access(output)
++		throw new Error(`output directory already exists: ${output}`)
++	} catch (error) {
++		if (error instanceof Error && error.message.startsWith('output directory already exists:')) throw error
++	}
++}
++
++export async function main(args) {
++	if (args.length !== 3) throw new Error('usage: node layer-inventory.mjs <fleet-root> <output-directory> <npm-cli-path>')
++	const [rootArg, outputArg, cliArg] = args
++	const root = resolve(rootArg)
++	const output = resolve(outputArg)
++	const cli = resolve(cliArg)
++	await validate(root, output, cli)
++	await mkdir(output)
++	const result = await collect(root, output, cli)
++	console.log(result.path)
++	console.log(result.complete ? 'complete' : 'incomplete')
++	process.exitCode = result.complete ? 0 : 1
++}
++
++if (import.meta.url === pathToFileURL(process.argv[1]).href) {
++	main(process.argv.slice(2)).catch((error) => {
++		console.error(message(error))
++		process.exitCode = 1
++	})
++}

@@ -1,0 +1,6 @@
+﻿ M .claude/rules/portability.md
+ M host.json
+ M tests/config.test.ts
+ M tests/setup.ts
+ M tests/setupPolicy.ts
+?? tests/setupPolicy.test.ts

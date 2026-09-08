@@ -1,0 +1,29 @@
+npm notice run @orkestrel/scaffold@0.0.63 test:setup
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project setup
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/scaffold/tmp/pass/scaffold-path
+
+····························································x·················
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |setup| tests/setupServer.test.ts > the upstream fixtures > answers the committed inventory and every host-owned path, and leaves a deferred path absent
+ScaffoldError: The vendored host cannot read the declared file at .claude/rules/portability.md
+ ❯ readHostFloor src/server/helpers.ts:1230:10
+    1228|   const hex = readFileHex(host, path)
+    1229|   if (hex === undefined || hexToDigest(hex) !== entry.digest) {
+    1230|    throw new ScaffoldError(
+       |          ^
+    1231|     'TARGET',
+    1232|     `The vendored host cannot read the declared file at ${path}`,
+ ❯ buildInstalledHostReplies tests/setupServer.ts:1893:16
+ ❯ tests/setupServer.test.ts:704:19
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 2 passed (3)
+      Tests  1 failed | 77 passed (78)
+   Start at  12:13:28
+   Duration  2.82s (transform 722ms, setup 932ms, import 642ms, tests 1.86s, environment 0ms)
+

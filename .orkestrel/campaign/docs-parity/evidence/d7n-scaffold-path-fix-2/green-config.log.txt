@@ -1,0 +1,12 @@
+npm notice run @orkestrel/scaffold@0.0.63 test:config
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project config tests/config.test.ts -t loads every configured policy rule through the real binary
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/scaffold/tmp/pass/scaffold-path
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------·-----------
+
+ Test Files  1 passed (1)
+      Tests  1 passed | 172 skipped (173)
+   Start at  12:16:36
+   Duration  1.34s (transform 326ms, setup 323ms, import 420ms, tests 436ms, environment 0ms)
+
