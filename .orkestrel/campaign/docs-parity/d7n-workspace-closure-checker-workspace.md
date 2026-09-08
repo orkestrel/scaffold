@@ -1,0 +1,23 @@
+All evidence confirms the report's claims against the actual tree. Now producing the verdict.
+
+Lane held: checker workspace
+
+Claim 1 — PASS. `git status --short` in `/home/user/fleet/workspace` lists exactly: `guides/workspace.md`, `src/core/workspaces/Workspace.ts`, `src/core/workspaces/WorkspaceManager.ts`, `tests/guides.test.ts`, `tests/src/core/workspaces/Workspace.test.ts` — matching the fix brief's owned-file list and status.txt exactly, no other path. The diff at `/home/user/scaffold/.orkestrel/campaign/docs-parity/d7n-workspace-converge-fix.diff.txt` shows every hunk touching only comment/prose text (doc-block description sentences, guide table cells, guide prose, and test-file comments); no import, identifier, or code token moved. `WorkspaceInterface`/`WorkspaceManagerInterface` names in the new opener prose are references inside comments, not code moves.
+
+Claim 2 — PASS. Every citation in the report resolves against the tree: `guides/workspace.md:108` reads "In a guard table a `Shape` cell holds the type the guard narrows to." (confirmed at `/home/user/fleet/workspace/guides/workspace.md:108`), `guides/workspace.md:56` reads `{} plus get, set, delete` (confirmed), `tests/guides.test.ts:1-3` matches the report's quoted text and the pilot's bytes at `/home/user/fleet/abort/tests/guides.test.ts:1-3` (both read "The constants that follow are this package's own, as is the executed section that closes the file." verbatim), and `src/core/helpers.ts:33` and `:48` carry the `content is TextContent` / `content is BinaryContent` predicate signatures the guide's `isText`/`isBinary` rows now state. No count appears in the report's prose; every number present is a command's output value (test counts from the tool, durations, line numbers) rather than an authored count of a set.
+
+Claim 3 — item by item:
+
+- W1 (class-block openers, `### Classes` rows equal blocks): PASS. `src/core/workspaces/Workspace.ts` opens "Implements `WorkspaceInterface` over one insertion-ordered path map the instance owns, projecting fresh arrays on every read." and `WorkspaceManager.ts` opens with the parallel form naming `WorkspaceManagerInterface`, the id map, `active`'s resolution, and the absent emitter — matching the pilot's shape at `/home/user/fleet/abort/guides/abort.md:58` ("Implements `AbortInterface` over a private `AbortController` the instance owns, resolving the trace `id` at construction..."). The diff shows the `### Classes` table rows carried to match via `--to guide` (rows read: 1, disagreements found: 2, written: 2).
+- W2 (guard sentence stands alone): PASS. `guides/workspace.md:108` holds only "In a guard table a `Shape` cell holds the type the guard narrows to." per Ruling 27's third bullet; the doubled interface sentence is struck from in front of it, and the interface-table's own convention sentence at `guides/workspace.md:36` (untouched, per the report) is unaffected.
+- W3 ("needs to reach"): PASS. Diff confirms "the workspaces that caller needs to reach" replacing "must reach."
+- W4 (`WorkspaceStoreInterface` reads `{} plus get, set, delete`): PASS. Confirmed at `guides/workspace.md:56`, matching Ruling 27's second bullet exactly.
+- W5 ("Built by using the public" in test comment): PASS. Diff and the checked file confirm the exact wording at `tests/src/core/workspaces/Workspace.test.ts:23`, with `/` correctly retained over `or` per the report's cited reasoning (the pair is used together, not as an alternative) — consistent with Ruling 27, which does not mandate `or`.
+- W6 (drop-in lines 1-3 equal pilot's; region equal with appended block): PASS. Lines 1-3 verified byte-identical against the pilot (both quoted above). The report's `diff <(sed -n '63,275p' ...) <(sed -n '47,259p' ...)` exits 0, matching Ruling 13/21's canonical-region requirement; the header text matches Ruling 21's exact prescribed wording, with the struck sibling-package clause absent.
+- W7 (`isText`/`isBinary` predicate signatures): PASS. Guide rows read `(content: FileContent) => content is TextContent` / `content is BinaryContent`, matching the declarations at `src/core/helpers.ts:33` and `:48` verified above, and Ruling 27's guard-signature bullet.
+
+Findings outside the claims: none. The report's Item 8 propagation commands (`oxfmt`, `npm run docs` both directions at zero disagreements) and its Criteria section's cited command outputs are consistent with the diff and status evidence reviewed; the audit verdict's carried findings W1-W7 are each closed by a corresponding hunk with no unaddressed item remaining in `d7n-workspace-audit-verdict.md`.
+
+Referrals: none. Every claim resolved on file:line evidence against the actual checkout at `/home/user/fleet/workspace`; no judgment call required.
+
+VERDICT: PASS
