@@ -6,13 +6,18 @@ Written 2026-09-08T03:35Z and revised 2026-09-08T04:05Z at the owner's request, 
 
 | Repository | Branch | Tip | Notes |
 | --- | --- | --- | --- |
-| `orkestrel/scaffold` | `claude/orkestrel-npm-audit-deps-14ibta` (the working branch), `main`, and `claude/orkestrel-fleet-campaign-complete-hh0qks` (the designated branch) | the commit carrying this file | all three refs pushed at the same tip; the campaign folder is the record |
+| `orkestrel/scaffold` | `claude/orkestrel-npm-audit-deps-14ibta` (the working branch), `main`, and `claude/docs-parity-windows-01a0810d` (the designated branch) | the commit carrying this file | push each named ref at the same tip; the campaign folder is the record |
 | `orkestrel/guide` | `claude/orkestrel-npm-audit-deps-14ibta` | `1d5afa3` | `main` stays at `d3ee1bb` until every package has moved (Ruling 8); the final tarball is packed from this tip |
 | `orkestrel/<package>` for every package in the table that follows | `claude/orkestrel-npm-audit-deps-14ibta` | per the table | pushed to `main` as each closes |
 
 Branch URLs follow one pattern: `https://github.com/orkestrel/<repo>/tree/claude/orkestrel-npm-audit-deps-14ibta`.
 
 ## Owner rulings in force
+
+The Windows continuation uses session `01a0810d-21bf-7f60-8534-488348e05743` and the
+`Claude-Session: codex:01a0810d-21bf-7f60-8534-488348e05743` trailer. See
+`d7n-windows-bootstrap-report.md` for host evidence, route liveness, and bootstrap state.
+The retained container instruments and briefs stay unchanged; dispatch their ported copies.
 
 - Ruling 8 (verbatim in `rulings.md`): every package converges under the guide head start (the packed tip `0.0.18`, installed `--no-save`), each pushed to its branch and `main` as it closes; the guide publishes only after every package has moved; then re-pin, bump, and publish in catalog layer order.
 - Publishing is the owner's decision and credential. Nothing publishes until the owner says so. Never substitute a token or an auth file; never read or copy a secret.
