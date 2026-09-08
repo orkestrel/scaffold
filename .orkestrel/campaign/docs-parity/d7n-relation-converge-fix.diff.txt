@@ -1,0 +1,342 @@
+diff --git a/README.md b/README.md
+index 98c5551..7585808 100644
+--- a/README.md
++++ b/README.md
+@@ -1,7 +1,7 @@
+ # @orkestrel/relation
+ 
+ > A small, declarative ORM layer over the `@orkestrel/database` tables: a table's
+-> relations named once, then `load` / `find` records with their related rows already
++> relations named once, then records loaded or found with their related rows already
+ > attached, batched so a direct relation costs one query across the whole record set and
+ > a `through` relation two.
+ 
+@@ -42,8 +42,8 @@ const manager = createRelationManager({
+ 	database: db,
+ 	relations: {
+ 		accounts: {
+-			classification: belongsTo('classificationId', 'classifications'), // FK on accounts
+-			contacts: hasMany('accountId'), // FK on contacts → back here
++			classification: belongsTo('classificationId', 'classifications'), // foreign key on accounts
++			contacts: hasMany('accountId'), // foreign key on contacts → back here
+ 		},
+ 		contacts: { account: belongsTo('accountId', 'accounts') },
+ 	},
+diff --git a/guides/relation.md b/guides/relation.md
+index 8b4e298..ad8c3f6 100644
+--- a/guides/relation.md
++++ b/guides/relation.md
+@@ -1,7 +1,7 @@
+ # Relation
+ 
+ > A small, declarative ORM layer over the `@orkestrel/database` tables: a table's
+-> relations named once, then `load` / `find` records with their related rows already
++> relations named once, then records loaded or found with their related rows already
+ > attached, batched so a direct relation costs one query across the whole record set and
+ > a `through` relation two.
+ 
+@@ -18,8 +18,8 @@ const manager = createRelationManager({
+ 	database: db, // a typed DatabaseInterface from createDatabase(...)
+ 	relations: {
+ 		accounts: {
+-			classification: belongsTo('classificationId', 'classifications'), // FK on accounts → one classification
+-			contacts: hasMany('accountId'), // FK on contacts → many contacts back here
++			classification: belongsTo('classificationId', 'classifications'), // foreign key on accounts → one classification
++			contacts: hasMany('accountId'), // foreign key on contacts → many contacts back here
+ 			representatives: hasThrough('accountReps', 'accountId', 'repId', 'representatives'), // many-to-many through a junction
+ 		},
+ 		contacts: { account: belongsTo('accountId', 'accounts') }, // so contacts can nest-load its account
+@@ -79,7 +79,7 @@ acme?.contacts // the relation property — broad (Row | readonly Row[] | undefi
+ 
+ ### Types
+ 
+-A `Shape` cell holds an interface's data members as bare names in braces, `?` marking an optional member and `plus` introducing its call-signature members, and a type alias's own type literal with a union's arms escaped as `\|`.
++A `Shape` cell holds an interface's data members as bare names in braces, `?` marking an optional member and `plus` introducing its call-signature members, and a type alias's own type literal with a union's arms escaped as `\|`. An extended interface's name comes before `plus`, with the members it adds after.
+ 
+ | Type                       | Kind      | Shape                                                                                | Summary                                                                                                                                                                               |
+ | -------------------------- | --------- | ------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+@@ -99,7 +99,7 @@ A `Shape` cell holds an interface's data members as bare names in braces, `?` ma
+ | `Loaded`                   | type      | `T & Readonly<LoadedMap>`                                                            | Represents a row with its loaded relation properties attached.                                                                                                                        |
+ | `LoadedMap`                | type      | `Record<string, Row \| readonly Row[] \| undefined>`                                 | Holds the relation properties attached to a `Loaded` row — each relation name mapped to its loaded related row(s), or `undefined` when a `belongs` / `one` relation misses.           |
+ | `RelationContext`          | interface | `{ resolved, primary }`                                                              | Holds a related model's resolved relations and primary-key column, for nested loading.                                                                                                |
+-| `FindOptions`              | interface | `{ limit?, offset?, sort?, direction?, signal? }`                                    | Configures pagination, ordering, and cancellation for `find`.                                                                                                                         |
++| `FindOptions`              | interface | `OperationOptions plus { limit?, offset?, sort?, direction? }`                       | Configures pagination, ordering, and cancellation for `find`.                                                                                                                         |
+ | `ModelEventMap`            | type      | `{ load, link, unlink }`                                                             | Declares the push observation surface of a `ModelInterface` — the eager-load + junction-management moments a fire-and-forget observer (logging, metrics, a sync layer) subscribes to. |
+ | `ModelInterface`           | interface | `{ emitter, name, table, relations } plus load, find, link, unlink, links`           | Represents a typed table paired with relation-aware loading and junction management.                                                                                                  |
+ | `RelationManagerOptions`   | interface | `{ database, relations?, model? }`                                                   | Configures `createRelationManager`.                                                                                                                                                   |
+@@ -113,13 +113,13 @@ The public methods of each behavioral interface — one table per type, keyed by
+ 
+ `load` / `find` batch-load (one query for a direct relation, two for `through`, regardless of result size); `link` / `unlink` / `links` manage a `through` relation's junction rows. Every method accepts the database package's optional `OperationOptions` abort signal; `find` carries the same signal in `FindOptions`.
+ 
+-| Method   | Returns                                      | Summary                                                                                                             |
+-| -------- | -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+-| `load`   | `Promise<Loaded<T> \| undefined>` (or array) | Loads one record by key with the chosen relations populated, or a positional array of records for an array of keys. |
+-| `find`   | `Promise<readonly Loaded<T>[]>`              | Finds many records, paged and sorted through `FindOptions`, with the chosen relations populated.                    |
+-| `link`   | `Promise<void>`                              | Inserts a missing junction row for a `through` relation.                                                            |
+-| `unlink` | `Promise<void>`                              | Removes every matching junction row for a `through` relation inside one transaction.                                |
+-| `links`  | `Promise<readonly Key[]>`                    | Lists the related keys reachable through a `through` relation.                                                      |
++| Method   | Returns                           | Summary                                                                                                             |
++| -------- | --------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
++| `load`   | `Promise<Loaded<T> \| undefined>` | Loads one record by key with the chosen relations populated, or a positional array of records for an array of keys. |
++| `find`   | `Promise<readonly Loaded<T>[]>`   | Finds many records, paged and sorted through `FindOptions`, with the chosen relations populated.                    |
++| `link`   | `Promise<void>`                   | Inserts a missing junction row for a `through` relation.                                                            |
++| `unlink` | `Promise<void>`                   | Removes every matching junction row for a `through` relation inside one transaction.                                |
++| `links`  | `Promise<readonly Key[]>`         | Lists the related keys reachable through a `through` relation.                                                      |
+ 
+ #### `RelationManagerInterface`
+ 
+@@ -150,6 +150,9 @@ Typing each loaded relation property to its exact target row (Prisma-style) is a
+ 
+ ### Defining relations
+ 
++Declare every relationship with its builder, then load a record with the chosen relations
++attached:
++
+ ```ts
+ import {
+ 	createRelationManager,
+@@ -164,9 +167,9 @@ const manager = createRelationManager({
+ 	database: db,
+ 	relations: {
+ 		accounts: {
+-			classification: belongsTo('classificationId', 'classifications'), // FK on accounts
+-			contacts: hasMany('accountId'), // FK on contacts → accounts
+-			profile: hasOne('accountId', 'profiles'), // single, FK on profiles
++			classification: belongsTo('classificationId', 'classifications'), // foreign key on accounts
++			contacts: hasMany('accountId'), // foreign key on contacts → accounts
++			profile: hasOne('accountId', 'profiles'), // single, foreign key on profiles
+ 			representatives: hasThrough('accountReps', 'accountId', 'repId', 'representatives'), // through a junction
+ 			notes: hasMorph('entityId', 'entityType', 'account', 'notes'), // polymorphic
+ 		},
+@@ -187,13 +190,13 @@ Reach for the builders for everything else: they set an explicit `relationship`,
+ 
+ The relationships, and where each foreign key lives:
+ 
+-| Relationship | Builder      | FK location        | Returns               |
+-| ------------ | ------------ | ------------------ | --------------------- |
+-| `belongs`    | `belongsTo`  | the owning table   | single or `undefined` |
+-| `many`       | `hasMany`    | the related table  | array                 |
+-| `one`        | `hasOne`     | the related table  | single or `undefined` |
+-| `through`    | `hasThrough` | the junction table | array                 |
+-| `morph`      | `hasMorph`   | the related table  | array                 |
++| Relationship | Builder      | Foreign key location | Returns               |
++| ------------ | ------------ | -------------------- | --------------------- |
++| `belongs`    | `belongsTo`  | the owning table     | single or `undefined` |
++| `many`       | `hasMany`    | the related table    | array                 |
++| `one`        | `hasOne`     | the related table    | single or `undefined` |
++| `through`    | `hasThrough` | the junction table   | array                 |
++| `morph`      | `hasMorph`   | the related table    | array                 |
+ 
+ ### Resolving relations directly
+ 
+diff --git a/src/core/Model.ts b/src/core/Model.ts
+index 4be9365..58dea8a 100644
+--- a/src/core/Model.ts
++++ b/src/core/Model.ts
+@@ -74,7 +74,7 @@ export class Model<T = Row> implements ModelInterface<T> {
+ 	readonly #relations: RelationMap
+ 	readonly #lookup: (model: string) => RelationContext | undefined
+ 	readonly #database: DatabaseInterface
+-	// The PUSH observation surface — owned, never inherited. The emitter isolates a
++	// The push observation surface — owned, never inherited. The emitter isolates a
+ 	// listener throw (routing it to the `error` handler), so it can never escape into the
+ 	// batched eager-load.
+ 	readonly #emitter: Emitter<ModelEventMap>
+@@ -215,8 +215,8 @@ export class Model<T = Row> implements ModelInterface<T> {
+ 		)
+ 		if (existing > 0) return
+ 		await junction.set({ [resolved.source]: key, [resolved.target]: target }, options)
+-		// Observe the inserted junction row — AFTER the driver write, so a swallowed listener
+-		// throw can't perturb the link (carries the owning key + the relation name).
++		// Observe the inserted junction row — strictly after the driver write, so a swallowed
++		// listener throw can't perturb the link (carries the owning key + the relation name).
+ 		this.#emitter.emit('link', key, relation)
+ 	}
+ 
+@@ -322,9 +322,9 @@ export class Model<T = Row> implements ModelInterface<T> {
+ 				const target = props[index]
+ 				if (target !== undefined) target[resolved.name] = value
+ 			})
+-			// Observe this relation's eager-load — AFTER it resolved + was attached, ONCE per
+-			// relation (not per record — the batched load has no N+1, nor do its events),
+-			// carrying the relation name + the total related rows attached across the set.
++			// Observe this relation's eager-load — strictly after it resolved + was attached,
++			// once per relation (not per record — the batched load has no N+1, nor do its
++			// events), carrying the relation name + the count of rows attached across the set.
+ 			this.#emitter.emit('load', resolved.name, countAttached(values))
+ 		}
+ 		return props
+diff --git a/src/core/factories.ts b/src/core/factories.ts
+index 480d7b4..09506a6 100644
+--- a/src/core/factories.ts
++++ b/src/core/factories.ts
+@@ -29,9 +29,9 @@ import { RelationManager } from './RelationManager.js'
+  * 	database: db,
+  * 	relations: {
+  * 		accounts: {
+- * 			classification: belongsTo('classificationId', 'classifications'), // FK on accounts
+- * 			contacts: hasMany('accountId'), // FK on contacts → accounts
+- * 			profile: hasOne('accountId', 'profiles'), // single, FK on profiles
++ * 			classification: belongsTo('classificationId', 'classifications'), // foreign key on accounts
++ * 			contacts: hasMany('accountId'), // foreign key on contacts → accounts
++ * 			profile: hasOne('accountId', 'profiles'), // single, foreign key on profiles
+  * 			representatives: hasThrough('accountReps', 'accountId', 'repId', 'representatives'), // through a junction
+  * 			notes: hasMorph('entityId', 'entityType', 'account', 'notes'), // polymorphic
+  * 		},
+diff --git a/src/core/helpers.ts b/src/core/helpers.ts
+index 1f2e443..2e65e08 100644
+--- a/src/core/helpers.ts
++++ b/src/core/helpers.ts
+@@ -20,11 +20,11 @@ import { RelationError } from './errors.js'
+  * Resolves one raw {@link Relation} value into a flat {@link ResolvedRelation}.
+  *
+  * @remarks
+- * A `string` is a `belongs` (FK column on this table); a `readonly string[]` is a
+- * `many` (FK column on the related table); a {@link RelationDescriptor} uses its
+- * explicit `relationship`, or infers it from the fields present. The target model
+- * defaults to the relation name. Every column the resolved arm declares is validated
+- * here, which is what lets each arm declare its columns required.
++ * A `string` is a `belongs` (foreign-key column on this table); a `readonly string[]`
++ * is a `many` (foreign-key column on the related table); a {@link RelationDescriptor}
++ * uses its explicit `relationship`, or infers it from the fields present. The target
++ * model defaults to the relation name. Every column the resolved arm declares is
++ * validated here, which is what lets each arm declare its columns required.
+  *
+  * @param name - The relation name (its key in the {@link RelationMap})
+  * @param value - The raw relation value
+@@ -262,7 +262,7 @@ export function groupRows(
+  * Builds a `belongs` relation — a foreign key on the owning table points at the related row
+  * (single).
+  *
+- * @param column - The FK column on this table
++ * @param column - The foreign-key column on this table
+  * @param model - Target table name (defaults to the relation name)
+  * @returns A {@link RelationDescriptor}
+  *
+@@ -279,7 +279,7 @@ export function belongsTo(column: string, model?: string): RelationDescriptor {
+  * Builds a `many` relation — a foreign key on the related table points back at the owning row
+  * (array).
+  *
+- * @param key - The FK column on the related table
++ * @param key - The foreign-key column on the related table
+  * @param model - Target table name (defaults to the relation name)
+  * @returns A {@link RelationDescriptor}
+  */
+@@ -290,7 +290,7 @@ export function hasMany(key: string, model?: string): RelationDescriptor {
+ /**
+  * Builds a `one` relation — like {@link hasMany}, but a single related row.
+  *
+- * @param key - The FK column on the related table
++ * @param key - The foreign-key column on the related table
+  * @param model - Target table name (defaults to the relation name)
+  * @returns A {@link RelationDescriptor}
+  */
+@@ -302,8 +302,8 @@ export function hasOne(key: string, model?: string): RelationDescriptor {
+  * Builds a `through` relation — a junction table links the two sides (many-to-many).
+  *
+  * @param through - The junction table name
+- * @param source - The junction FK column pointing at THIS model
+- * @param target - The junction FK column pointing at the related model
++ * @param source - The junction foreign-key column pointing at the owning model
++ * @param target - The junction foreign-key column pointing at the related model
+  * @param model - Target table name (defaults to the relation name)
+  * @returns A {@link RelationDescriptor}
+  *
+@@ -331,9 +331,9 @@ export function hasThrough(
+  * Builds a `morph` relation — a polymorphic foreign key plus a discriminator column on the
+  * related table (array).
+  *
+- * @param key - The FK column on the related table
++ * @param key - The foreign-key column on the related table
+  * @param tag - The discriminator column on the related table
+- * @param label - The discriminator value identifying THIS model
++ * @param label - The discriminator value identifying the owning model
+  * @param model - Target table name (defaults to the relation name)
+  * @returns A {@link RelationDescriptor}
+  *
+diff --git a/src/core/types.ts b/src/core/types.ts
+index 1063a61..1ebaf75 100644
+--- a/src/core/types.ts
++++ b/src/core/types.ts
+@@ -23,11 +23,11 @@ import type { EmitterErrorHandler, EmitterHooks, EmitterInterface } from '@orkes
+  * Enumerates the relationships a relation can declare.
+  *
+  * @remarks
+- * `belongs` — a foreign key on THIS table points at the related row (single).
+- * `many` — a foreign key on the RELATED table points back here (array).
++ * `belongs` — a foreign key on the owning table points at the related row (single).
++ * `many` — a foreign key on the related table points back here (array).
+  * `one` — like `many`, but a single related row.
+  * `through` — a junction table links the two sides (array, many-to-many).
+- * `morph` — a foreign key plus a discriminator column on the RELATED table (array, polymorphic).
++ * `morph` — a foreign key plus a discriminator column on the related table (array, polymorphic).
+  */
+ export type Relationship = 'belongs' | 'many' | 'one' | 'through' | 'morph'
+ 
+@@ -59,9 +59,9 @@ export interface RelationDescriptor {
+  * Represents a single relation definition.
+  *
+  * @remarks
+- * A `string` is a `belongs` (the FK column on this table); a `readonly string[]`
+- * is a `many` (the first element is the FK column on the related table); a
+- * {@link RelationDescriptor} is the object form for everything else.
++ * A `string` is a `belongs` (the foreign-key column on this table); a `readonly
++ * string[]` is a `many` (the first element is the foreign-key column on the related
++ * table); a {@link RelationDescriptor} is the object form for everything else.
+  */
+ export type Relation = string | readonly string[] | RelationDescriptor
+ 
+@@ -132,9 +132,9 @@ export interface ResolvedOne {
+  * sides.
+  *
+  * @remarks
+- * `through` is the junction table, `source` its foreign-key column pointing at THIS
+- * model, and `target` its foreign-key column pointing at the related model. These are
+- * the columns `link` / `unlink` / `links` write and read.
++ * `through` is the junction table, `source` its foreign-key column pointing at the
++ * owning model, and `target` its foreign-key column pointing at the related model.
++ * These are the columns `link` / `unlink` / `links` write and read.
+  */
+ export interface ResolvedThrough {
+ 	readonly relationship: 'through'
+@@ -151,7 +151,7 @@ export interface ResolvedThrough {
+  *
+  * @remarks
+  * `key` is the foreign key on the related table, `tag` the discriminator column beside
+- * it, and `label` the discriminator value identifying THIS model.
++ * it, and `label` the discriminator value identifying the owning model.
+  */
+ export interface ResolvedMorph {
+ 	readonly relationship: 'morph'
+@@ -251,14 +251,15 @@ export interface FindOptions extends OperationOptions {
+  * a sync layer) subscribes to.
+  *
+  * @remarks
+- * `load` fires once per relation that an eager-load resolves, carrying the relation NAME +
+- * the COUNT of related rows attached for the whole record set (it is the batched load
++ * `load` fires once per relation that an eager-load resolves, carrying the relation name +
++ * the count of related rows attached for the whole record set (it is the batched load
+  * moment, not one event per record — there is no N+1 in the events either). `link` /
+  * `unlink` fire after a junction row is inserted / removed, carrying the owning key + the
+  * relation name. Listener isolation is the emitter's: every event is emitted
+  * directly and a listener throw is routed to the emitter's `error` handler (the `error`
+- * option), never onto this map, and sits AFTER the load resolves / the junction op completes
+- * — so a throwing observer can never corrupt the eager-load batching or a junction write.
++ * option), never onto this map, and sits strictly after the load resolves / the junction op
++ * completes — so a throwing observer can never corrupt the eager-load batching or a
++ * junction write.
+  * `RelationManager` is event-free by design (a stateless
+  * registry that merely vends models — it has no observable lifecycle of its own); the
+  * per-entity {@link ModelInterface} is where loading and linking happen, so the emitter
+diff --git a/tests/guides.test.ts b/tests/guides.test.ts
+index 188ada2..b4e9243 100644
+--- a/tests/guides.test.ts
++++ b/tests/guides.test.ts
+@@ -1,6 +1,6 @@
+ // The consumer-side guides-parity drop-in: runs `@orkestrel/guide`'s checks against
+ // this repo's own `guides/README.md` manifest. The constants that follow are this
+-// package's own, and are the only part a sibling package changes.
++// package's own, as is the executed section that closes the file.
+ 
+ import { describe, expect, it } from 'vitest'
+ import {

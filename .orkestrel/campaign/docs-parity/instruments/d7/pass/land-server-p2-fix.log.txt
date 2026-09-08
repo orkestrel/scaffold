@@ -1,0 +1,17 @@
+== server p2-fix landing 2026-09-08T01:58:21Z over 89f98d1
+== status
+ M guides/server.md
+ M src/server/Server.ts
+ M src/server/constants.ts
+ M src/server/factories.ts
+ M src/server/types.ts
+ M tests/guides.test.ts
+ M tests/setupServer.ts
+ tests/guides.test.ts    | 31 ++++++++++++++++++++--
+ tests/setupServer.ts    |  4 +--
+ 7 files changed, 124 insertions(+), 95 deletions(-)
+== stage by path
+ 7 files changed, 124 insertions(+), 95 deletions(-)
+== committed
+935b856 Refine server's convergence on the audit's findings
+(status end)

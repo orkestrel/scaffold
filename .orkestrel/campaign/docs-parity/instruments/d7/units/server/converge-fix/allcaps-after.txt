@@ -1,0 +1,242 @@
+src/server/factories.ts:39: * Creates a {@link ServerInterface} — the node face's HTTP server facade over
+src/server/factories.ts:58: * dispatcher.add({ method: 'GET', path: '/health', handler: () => new Response('ok') })
+src/server/helpers.ts:29:// The RETURNING onion: each middleware may
+src/server/helpers.ts:109:						new ServerError('NEXT', 'next() was already called by this middleware'),
+src/server/helpers.ts:120:// builds a spec-shaped `Set-Cookie` value with its attributes. The SIGNED
+src/server/helpers.ts:121:// pair reuses the shipped HMAC token primitives rather than a second HMAC
+src/server/helpers.ts:125:// `signToken` value in a `Set-Cookie`, with the SAME secret rotation + tamper
+src/server/helpers.ts:133: * Splits on `;`; the FIRST segment keeps any leading whitespace (a genuine
+src/server/helpers.ts:135: * inter-pair separator (ASCII space/tab) stripped before parsing — so a
+src/server/helpers.ts:136: * whitespace-PADDED name (`'  __Host-x=evil'`) is rejected by
+src/server/helpers.ts:139: * name, is skipped; a later duplicate name wins. TOTAL — an absent/empty/
+src/server/helpers.ts:167: * Checks whether a string is a valid RFC 6265 cookie name — a non-empty run of
+src/server/helpers.ts:171: * A cookie name is an RFC 7230 `token`: `^[!#$%&'*+\-.0-9A-Z^_`a-z|~]+$` —
+src/server/helpers.ts:172: * which excludes every whitespace char (ASCII and Unicode) plus controls,
+src/server/helpers.ts:194: * @returns The URL-decoded value, or the raw value when decoding would throw
+src/server/helpers.ts:217: * folded header), ASCII/Unicode whitespace, or a C0/DEL control char
+src/server/helpers.ts:243: * URL-encodes the value (the inverse of {@link parseCookies}'s decode) and
+src/server/helpers.ts:246: * (default OFF), `SameSite` (default `Lax`). `Domain` / `Path` are validated
+src/server/helpers.ts:247: * with {@link isCookieAttribute} and THROW an {@link HTTPError} on an
+src/server/helpers.ts:248: * injection attempt (a programmer misconfiguration — never a silent drop). A `sameSite: 'None'` cookie is ALWAYS `Secure` regardless of
+src/server/helpers.ts:250: * `secure` here falls to OFF — request-aware callers resolve it first through
+src/server/helpers.ts:254: * @param value - The cookie value (URL-encoded into the output)
+src/server/helpers.ts:268:		throw new HTTPError(500, `invalid cookie Domain: ${JSON.stringify(domain)}`)
+src/server/helpers.ts:271:		throw new HTTPError(500, `invalid cookie Path: ${JSON.stringify(path)}`)
+src/server/helpers.ts:285: * `secure` setting and whether the request arrived over TLS.
+src/server/helpers.ts:289: * the option omitted) resolves to `encrypted` — `Secure` on a TLS
+src/server/helpers.ts:290: * connection, off over plaintext HTTP — so a production HTTPS deployment
+src/server/helpers.ts:291: * gets `Secure` automatically while local-dev HTTP still works.
+src/server/helpers.ts:294: * @param encrypted - The connection's TLS flag
+src/server/helpers.ts:313: * Writes a signed cookie — HMAC-signs `value` with {@link signToken} and
+src/server/helpers.ts:319: * cookie — the same secret rotation and tamper rejection, no second HMAC
+src/server/helpers.ts:380: * a cookie when those MATCH the one it set).
+src/server/helpers.ts:398:// payload a base64url JSON `{ value, exp? }`, the signature an HMAC-SHA256 of
+src/server/helpers.ts:399:// the payload under the secret. Signing always uses the FIRST secret (a
+src/server/helpers.ts:400:// rotation list's current head); verifying accepts ANY secret in the list,
+src/server/helpers.ts:402:// `safeCompare` is RETIRED, never ported. `verifyToken` is TOTAL (never
+src/server/helpers.ts:407: * Signs a value into a stateless, HMAC-SHA256 token — `<payload>.<signature>`.
+src/server/helpers.ts:410: * The payload is a base64url-encoded JSON `{ value, exp }` (`exp` is the
+src/server/helpers.ts:412: * the expiry is HMAC-COVERED — a client cannot extend it without invalidating
+src/server/helpers.ts:413: * the signature), signed by using `crypto.subtle.sign('HMAC', …)` under the FIRST
+src/server/helpers.ts:415: * Blank/whitespace-only secrets are IGNORED ({@link normalizeSecret}); a
+src/server/helpers.ts:416: * misconfigured secret with no usable entry THROWS an {@link HTTPError}
+src/server/helpers.ts:436:	const encoded = encodeBase64URL(new TextEncoder().encode(JSON.stringify({ value, exp })))
+src/server/helpers.ts:440:		{ name: 'HMAC', hash: 'SHA-256' },
+src/server/helpers.ts:444:	const signature = await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(encoded))
+src/server/helpers.ts:456: * HMAC-SHA256 signature against each {@link TokenSecret} candidate through
+src/server/helpers.ts:462: * a hostile/non-JSON payload, an empty secret list, or an elapsed expiry —
+src/server/helpers.ts:488:				{ name: 'HMAC', hash: 'SHA-256' },
+src/server/helpers.ts:492:			const matched = await crypto.subtle.verify('HMAC', key, signature, data)
+src/server/helpers.ts:504: * Decodes and narrows a signed token's base64url JSON payload, honoring its
+src/server/helpers.ts:511: * reads it as UTF-8 JSON, narrows it to a record with a string `value` without
+src/server/helpers.ts:513: * decode/shape/expiry failure yields `undefined`; only `JSON.parse` still
+src/server/helpers.ts:523:		const payload: unknown = JSON.parse(new TextDecoder().decode(bytes))
+src/server/helpers.ts:557:// The content-negotiation helpers (module-scope) — the ONE shared q-value
+src/server/helpers.ts:569: * back to `1`). A `;q=0` entry is KEPT (an explicit rejection a caller must
+src/server/helpers.ts:570: * honor). The result is sorted by `q` DESCENDING, a STABLE sort preserving
+src/server/helpers.ts:572: * so parsing stays linear in the header length (ReDoS-safe). TOTAL — an
+src/server/helpers.ts:614: * Prefers an EXACT named match (including an explicit `;q=0` rejection);
+src/server/helpers.ts:686: * client accepts none of `available` (identity — no compression). TOTAL on
+src/server/helpers.ts:806: * binary (`image/png`, `application/zip`) is NOT compressible. An
+src/server/helpers.ts:807: * absent/empty type is not compressible. TOTAL.
+src/server/helpers.ts:828:// compute/compare (RFC 7232 §2.3.2 WEAK comparison) and the TOTAL `Range`
+src/server/helpers.ts:835: * Hashes `body` with SHA-256 (`crypto.subtle.digest`) and wraps the hex
+src/server/helpers.ts:852:	const digest = await crypto.subtle.digest('SHA-256', body)
+src/server/helpers.ts:860: * before the RFC 7232 §2.3.2 weak comparison.
+src/server/helpers.ts:877: * `ETag` — the RFC 7232 §2.3.2 weak comparison.
+src/server/helpers.ts:910: * Parses an HTTP `Range` request header against a known resource `size` —
+src/server/helpers.ts:916: * `[0, size - 1]` (the HTTP inclusive-end convention). Returns
+src/server/helpers.ts:962:// The security primitives (module-scope) — CORS origin
+src/server/helpers.ts:972: * `undefined` (no header set). SECURITY: the literal `'null'` origin — sent
+src/server/helpers.ts:974: * NEVER reflected even if `'null'` were listed, closing the hostile-context
+src/server/helpers.ts:1044: * resolveSecurityHeader(undefined, 'DENY') // 'DENY'
+src/server/helpers.ts:1045: * resolveSecurityHeader(false, 'DENY') // undefined — omitted
+src/server/helpers.ts:1046: * resolveSecurityHeader('SAMEORIGIN', 'DENY') // 'SAMEORIGIN' — override
+src/server/helpers.ts:1089: * first FOUR (the `/64` prefix), normalizes each (lower-case, no leading
+src/server/helpers.ts:1156:// encoder (the exact inverse of a consuming SSE parser). The stream handle
+src/server/helpers.ts:1161: * Serializes one {@link SSEMessage} to the SSE wire.
+src/server/helpers.ts:1164: * Emits an `event:`/`id:`/`retry:` line for each present field, then ONE
+src/server/helpers.ts:1165: * `data:` line per CRLF-aware-split (`\r\n` / `\r` / `\n`) segment of `data`
+src/server/helpers.ts:1171: * @returns The SSE wire text for the event (terminated by a blank line)
+src/server/helpers.ts:1191:// through a byte-counting `TransformStream` that ABORTS the instant
+src/server/helpers.ts:1193:// BEFORE materializing the bomb, since `DecompressionStream` has no
+src/server/helpers.ts:1196:// parsed JSON body, ported verbatim (pure value-walking logic, unaffected by
+src/server/helpers.ts:1221: * `JSON.parse('{"__proto__":{…}}')` is benign on its own — it produces an own,
+src/server/helpers.ts:1229: * @param value - The freshly `JSON.parse`d value to scrub (mutated in place)
+src/server/helpers.ts:1234: * scrubPrototype(JSON.parse('{"__proto__":{"polluted":true},"name":"ok"}'))
+src/server/helpers.ts:1262: * exceeds `limit` — BEFORE the rest of the stream is buffered — rather than
+src/server/helpers.ts:1309: * Lower-cases + trims and returns the matching {@link Encoding} ONLY for
+src/server/helpers.ts:1313: * TOTAL — never asserts the loose `string | null` header.
+src/server/helpers.ts:1412: * scrubPrototype}); any other type decodes as UTF-8 text.
+src/server/helpers.ts:1414: * A malformed JSON body is total: it decodes rather than throwing, so a handler
+src/server/helpers.ts:1420: * @returns The parsed JSON value, the raw text, or `undefined` — for an empty
+src/server/helpers.ts:1421: *   body, and for an `application/json` body whose text is not valid JSON
+src/server/helpers.ts:1459: * Binds and closes a throwaway TCP server to resolve one available port.
+src/server/helpers.ts:1493: * Finds a free TCP port — binds a throwaway `node:net` server on a `preferred`
+src/server/helpers.ts:1500: * returns it when free; if already in use (`EADDRINUSE`) it falls back to an
+src/server/helpers.ts:1503: * port is free at the instant of the probe (an inherent TOCTOU race — bind it
+src/server/helpers.ts:1511: * @param preferred - An optional port to try first; taken (`EADDRINUSE`) ⇒
+src/server/helpers.ts:1513: * @returns A free TCP port number
+src/server/helpers.ts:1528:		if (error instanceof Error && 'code' in error && error.code === 'EADDRINUSE')
+src/server/Stream.ts:12: * merged OVER them, at `options.status` (default `200`). A caller repeating one
+src/server/Stream.ts:23: * `: text` keep-alive line a conforming SSE parser ignores; `end` closes the
+src/server/Stream.ts:24: * stream. Every method is a SAFE NO-OP once `closed` (ended by `end()`, or
+src/server/Stream.ts:122:	// The CONSUMER cancelled the stream: the handle is closed from the far end,
+src/server/constants.ts:4:// inside THIS package: a capability arrives with its first real consumer,
+src/server/constants.ts:7:// defaults only `@orkestrel/middleware` needs (rate limiting, CSRF, sessions,
+src/server/constants.ts:8:// static serving, multipart) stay OUT of this file; they belong to that
+src/server/constants.ts:50: * ceiling for a legitimate compressed JSON / form body, far below an OOM. A
+src/server/constants.ts:58: * Holds the SSE response headers a `Stream` sets on its response, merged under any
+src/server/constants.ts:62: * `text/event-stream` is the media type browsers dispatch as SSE; `no-cache`
+src/server/constants.ts:81: * An incoming id carrying CRLF, a log-injection payload, a control character,
+src/server/constants.ts:95: * The text-shaped application types worth compressing (JSON / JavaScript /
+src/server/constants.ts:96: * XML / SVG / WASM / a few document formats) — never already-compressed
+src/server/Negotiator.ts:76:	 * Errors thrown by the negotiated handler propagate UNMODIFIED — the
+src/server/Server.ts:32: * Represents the HTTP server facade — an observable `node:http` lifecycle composing this
+src/server/Server.ts:199:				new ServerError('STATUS', `server cannot start from '${this.#status}'`, {
+src/server/Server.ts:259:	// Track the request for draining FIRST — before anything that can throw —
+src/server/Server.ts:260:	// so the sync listener itself never throws; the rest of setup (which CAN
+src/server/Server.ts:273:	// error. `buildRequest` runs behind its OWN inner boundary: a throw there
+src/server/Server.ts:289:		const url = new URL(raw.url)
+src/server/Server.ts:359:	// registration order: the FIRST to return `true` CLAIMS the socket. A
+src/server/Server.ts:360:	// throwing handler is treated as DECLINED — surfaced on `error` — and the
+src/server/Server.ts:455:	// connections. A keep-alive client leaves its socket IDLE after a
+src/server/Server.ts:462:	// the connection set BOTH `closeIdleConnections()` and
+src/server/Server.ts:484:	// Called BEFORE the new unit is counted, so a zero here means nothing was
+src/server/Server.ts:492:	// Fire the current drain wakeup once the LAST unit of drainable work has
+src/server/Server.ts:493:	// left. Called AFTER that unit is uncounted — event-driven, never a
+src/server/Server.ts:513:	// claiming handler still OWNS the socket — this only watches it, so the
+src/server/types.ts:4://  fetch/string-pure (no `node:*`, no DOM):
+src/server/types.ts:15://       SSE ({@link SSEMessage} / {@link StreamOptions} / {@link
+src/server/types.ts:27: * - `url` — the parsed request {@link URL} (mirrors the router's own parse, so
+src/server/types.ts:35: *   decompressed, prototype-scrubbed for JSON), cached so repeated calls (a
+src/server/types.ts:48:	readonly url: URL
+src/server/types.ts:105: * - `encrypted` — whether the connection is TLS, for an auto-`Secure` cookie
+src/server/types.ts:115: * verifying a stateless, HMAC-signed token.
+src/server/types.ts:127: * Options for `signToken` — how a stateless, HMAC-signed token is minted.
+src/server/types.ts:133: *   timestamp is bound into the signed payload (HMAC-covered, tamper-proof);
+src/server/types.ts:154: *   a TLS connection, off over plaintext HTTP ({@link
+src/server/types.ts:331:	/** Requires a single-line value — an embedded newline would corrupt the SSE wire format. */
+src/server/types.ts:333:	/** Requires a single-line value — an embedded newline would corrupt the SSE wire format. */
+src/server/types.ts:342: * @param status - The HTTP status the streaming response is opened with;
+src/server/types.ts:344: * @param headers - Extra response headers merged over the SSE headers the
+src/server/types.ts:359: * Agent-agnostic by design: it speaks only the SSE wire vocabulary ({@link
+src/server/types.ts:366: * (ignored by a conforming SSE parser — no spurious event); `end` closes the
+src/server/types.ts:399:	 * Writes a `: text` SSE comment line — a keep-alive a conforming parser ignores,
+src/server/types.ts:424: * Represents the parsed outcome of an HTTP `Range` request header.
+src/server/types.ts:432: *   (inclusive, the HTTP wire convention), normalized from the header's
+src/server/types.ts:495: * {@link import('./errors.js').ServerError} carries — `'STATUS'` for a lifecycle
+src/server/types.ts:496: * call the current status forbids, `'NEXT'` for a middleware that called its `next`
+src/server/types.ts:508:	| 'STATUS'
+src/server/types.ts:510:	| 'NEXT'
+src/server/types.ts:514: * parsed URL.
+src/server/types.ts:524:	readonly url: URL
+src/server/types.ts:633: *   `TState` from the connection facts (peer IP, TLS flag). `X-Forwarded-For`
+src/server/types.ts:640: * @param port - The TCP port `start()` binds to. Omitted or `0` ⇒ an
+src/server/types.ts:643: *   `EADDRINUSE` — no silent ephemeral fallback (use `discoverPort` to pick a
+src/server/types.ts:708: * Represents the HTTP server facade — an observable `node:http` lifecycle that composes
+src/server/types.ts:738:	 * Holds the bound listener's TCP port — the `port` of {@link address} — or
+src/server/types.ts:773:	 * @returns The actually-bound TCP port
+src/server/types.ts:777:	 * `'STATUS'` when the current {@link ServerStatus} is neither `'idle'` nor
+src/server/errors.ts:2:// the HTTP `status` to send; the server's error boundary turns it into a
+src/server/errors.ts:3:// response of that status. Any OTHER throw is a programmer/runtime error → a
+src/server/errors.ts:6:// NOT declared here: it belongs to `@orkestrel/middleware` with its owner
+src/server/errors.ts:10:// constructed by a DIFFERENT copy of this package (version skew, a linked
+src/server/errors.ts:21:// CALLER programmed wrong, so it keys on a `ServerErrorCode` rather than a
+src/server/errors.ts:23:// `'STATUS'` lifecycle refusal is raised to the caller that invoked the
+src/server/errors.ts:24:// lifecycle method; a `'NEXT'` double-`next` refusal escapes its middleware
+src/server/errors.ts:34: * Represents an error a handler (or middleware) throws to produce an HTTP response of a
+src/server/errors.ts:38: * Carries the HTTP `status` to send and an optional `context` record (the
+src/server/errors.ts:53: * 	const user = await find(new URL(request.url).searchParams.get('id'))
+src/server/errors.ts:142: * entity refuses, carrying `'STATUS'` or `'NEXT'` as its code.
+src/server/errors.ts:147: * no HTTP `status`: a `'STATUS'` lifecycle refusal is raised to the caller that
+src/server/errors.ts:148: * invoked the lifecycle method, and a `'NEXT'` double-`next` refusal escapes its
+src/server/errors.ts:158: * const error = new ServerError('STATUS', "server cannot start from 'listening'", {
+src/server/errors.ts:161: * error.code // 'STATUS'
+src/server/errors.ts:199: * 	if (isServerError(error)) console.log(error.code) // 'STATUS'
+tests/setupServer.ts:23: * Sends a raw, hand-written HTTP request over a bare `node:net` socket and
+tests/setupServer.ts:29: * @param raw - The complete raw HTTP request text (including the trailing
+tests/setupServer.ts:31: * @returns The raw response bytes received, decoded as UTF-8
+tests/setupServer.ts:37: * const response = await rawRequest(port, 'GET / HTTP/1.1\r\nHost: foo bar\r\n\r\n')
+tests/setupServer.ts:55:/** Represents a real HTTP response socket whose readable side starts paused. */
+tests/setupServer.ts:61:	/** Resume reading response bytes from the TCP socket. */
+tests/setupServer.ts:68: * Opens a real HTTP request over TCP while parking the response reader.
+tests/setupServer.ts:96:		`GET ${path} HTTP/1.1\r\nHost: localhost\r\nAccept: text/event-stream\r\nConnection: close\r\n\r\n`,
+tests/setupServer.ts:113: * Probes whether a real TCP connection is dropped before it can carry data.
+tests/setupServer.ts:146: * A host built without IPv6 rejects `::1` with `EAFNOSUPPORT` at `listen`, so a proof whose
+tests/setupServer.ts:212:		`GET ${path} HTTP/1.1\r\nHost: 127.0.0.1\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Key: aGVsZA==\r\nSec-WebSocket-Version: 13\r\n\r\n`,
+tests/setupServer.ts:232: * registered handler CLAIMED the socket, and an ordinary HTTP response or a
+tests/setupServer.ts:235: * @param base - The server's base URL (`http://127.0.0.1:PORT`)
+guides/server.md:3:> A typed HTTP server for the `@orkestrel` line: a node-bound `Server` lifecycle entity
+guides/server.md:31:	method: 'GET',
+guides/server.md:61:| API                | Kind     | Summary                                                                                                                                      |
+guides/server.md:64:| `createServer`     | function | Creates a `ServerInterface` — the node face's HTTP server facade over a consumed `@orkestrel/router` dispatcher.                             |
+guides/server.md:71:| API                          | Kind  | Shape                              | Summary                                                                                                                                                                                                                            |
+guides/server.md:76:| `SSE_HEADERS`                | const | `Readonly<Record<string, string>>` | Holds the SSE response headers a `Stream` sets on its response, merged under any caller `headers` so a caller repeating one of these keys replaces its value.                                                                      |
+guides/server.md:84:| API                      | Kind     | Summary                                                                                                                                                                                                                                                                       |
+guides/server.md:89:| `isCookieName`           | function | Checks whether a string is a valid RFC 6265 cookie name — a non-empty run of cookie-token characters with no surrounding or interior whitespace.                                                                                                                              |
+guides/server.md:93:| `resolveSecure`          | function | Resolves a cookie's effective `Secure` flag from its `CookieOptions` `secure` setting and whether the request arrived over TLS.                                                                                                                                               |
+guides/server.md:94:| `writeSignedCookie`      | function | Writes a signed cookie — HMAC-signs `value` with `signToken` and appends it as a `Set-Cookie` (the inverse of `readSignedCookie`).                                                                                                                                            |
+guides/server.md:97:| `signToken`              | function | Signs a value into a stateless, HMAC-SHA256 token — `<payload>.<signature>`.                                                                                                                                                                                                  |
+guides/server.md:99:| `decodeTokenPayload`     | function | Decodes and narrows a signed token's base64url JSON payload, honoring its expiry — the shared decode step `verifyToken` applies after a signature match.                                                                                                                      |
+guides/server.md:109:| `unwrapETag`             | function | Strips the weak indicator (`W/`) from an entity-tag, returning its opaque comparison body — the reduction `matchesETag` applies to each side before the RFC 7232 §2.3.2 weak comparison.                                                                                      |
+guides/server.md:110:| `matchesETag`            | function | Checks whether a request's `If-None-Match` header matches a resource's current `ETag` — the RFC 7232 §2.3.2 weak comparison.                                                                                                                                                  |
+guides/server.md:111:| `parseRange`             | function | Parses an HTTP `Range` request header against a known resource `size` — total, returning a `RangeSpec` or `undefined`.                                                                                                                                                        |
+guides/server.md:118:| `serializeEvent`         | function | Serializes one `SSEMessage` to the SSE wire.                                                                                                                                                                                                                                  |
+guides/server.md:128:| `probePort`              | function | Binds and closes a throwaway TCP server to resolve one available port.                                                                                                                                                                                                        |
+guides/server.md:129:| `discoverPort`           | function | Finds a free TCP port — binds a throwaway `node:net` server on a `preferred` port where one is given and on an ephemeral port otherwise, reads the bound port, closes the server, and resolves that port.                                                                     |
+guides/server.md:133:| API                    | Kind  | Summary                                                                                                                                                                                                      |
+guides/server.md:135:| `HTTPError`            | class | Represents an error a handler (or middleware) throws to produce an HTTP response of a specific status.                                                                                                       |
+guides/server.md:137:| `ServerError`          | class | Represents the error this package raises when a caller programmed a call the entity refuses, carrying `'STATUS'` or `'NEXT'` as its code.                                                                    |
+guides/server.md:139:| `Server`               | class | Represents the HTTP server facade — an observable `node:http` lifecycle composing this module's own middleware onion around a consumed `@orkestrel/router` dispatcher. Implements exactly `ServerInterface`. |
+guides/server.md:152:| `TokenSecret`             | type      | `string \| readonly string[]`                                                                                          | Represents a secret, or a `[current, ...older]` rotation list, for signing and verifying a stateless, HMAC-signed token.                                                                                     |
+guides/server.md:153:| `TokenOptions`            | interface | `{ secret, ttl? }`                                                                                                     | Options for `signToken` — how a stateless, HMAC-signed token is minted.                                                                                                                                      |
+guides/server.md:163:| `RangeSpec`               | type      | `{ readonly satisfiable: true; readonly start: number; readonly end: number } \| { readonly satisfiable: false }`      | Represents the parsed outcome of an HTTP `Range` request header.                                                                                                                                             |
+guides/server.md:166:| `ServerErrorCode`         | type      | `'STATUS' \| 'NEXT'`                                                                                                   | Represents the machine-readable category a `ServerError` carries — `'STATUS'` for a lifecycle call the current status forbids, `'NEXT'` for a middleware that called its `next` a second time.               |
+guides/server.md:167:| `RequestLine`             | interface | `{ method, url }`                                                                                                      | Identifies the request a server-level fault came from — its method and its parsed URL.                                                                                                                       |
+guides/server.md:173:| `ServerInterface`         | interface | `{ id, status, port, address, dispatcher, emitter } plus use, upgrade, start, stop, destroy`                           | Represents the HTTP server facade — an observable `node:http` lifecycle that composes a middleware onion (this module's own middleware seam) around a consumed `@orkestrel/router` `DispatcherInterface`.    |
+guides/server.md:223:| `comment` | `void`          | Writes a `: text` SSE comment line — a keep-alive a conforming parser ignores, and a no-op once the stream is closed.                                                                                          |
+guides/server.md:260:   `'STATUS'`, carrying that status in its `context` and narrowed by
+guides/server.md:265:   nothing to tear down; `EADDRINUSE` rejects `start()` outright — no silent
+guides/server.md:339:   `__proto__`/`constructor`/`prototype` keys from a parsed JSON body
+guides/server.md:346:   `resolveSecure` derives `Secure` from the connection's TLS fact whenever
+guides/server.md:349:   yield `undefined`, never throw); the expiry is HMAC-covered inside the
+guides/server.md:357:    `ServerError` of code `'NEXT'` (the double-`next` guard) — a middleware can
+guides/server.md:410:19. **SSE producers can cooperate with real process-local transport
+guides/server.md:416:    pump stops pulling while `ServerResponse.write` is backpressured, a slow TCP
+guides/server.md:442:dispatcher.add({ method: 'GET', path: '/health', handler: () => new Response('ok') })
+guides/server.md:463:A CORS handler must claim a preflight `OPTIONS` request before the
+guides/server.md:464:dispatcher's own auto-`OPTIONS` responder ever sees it — mount it earliest in
+guides/server.md:477:	if (request.method === 'OPTIONS') return new Response(null, { status: 204 })
+guides/server.md:488:	middleware: [cors, auth], // CORS claims preflights before dispatcher.handle's auto-OPTIONS
+guides/server.md:512:### SSE route
+guides/server.md:567:	socket.write('HTTP/1.1 101 Switching Protocols\r\n\r\n')
+guides/server.md:611:	socket.write('HTTP/1.1 101 Switching Protocols\r\n\r\n')
+guides/server.md:669:- **Mount CORS before anything that could short-circuit an `OPTIONS`** — the
+guides/server.md:671:  the dispatcher's own auto-`OPTIONS` runs last.
+guides/server.md:697:  README pitch against this guide's tagline. It also runs the flagship fences and
+guides/server.md:716:  the opened SSE response and its header merge order, the serialized wire for
+guides/server.md:728:  bounded startup, `EADDRINUSE` honesty, host/port binds, ephemeral default,
+guides/server.md:735:  stop-signal-reaches-handlers case, and the real slow-TCP proof that an SSE
+guides/server.md:741:- [`AGENTS.md`](../AGENTS.md) — the rules this package is written to, including
+guides/server.md:752:- [`README.md`](README.md) — the guides index.

@@ -108,3 +108,7 @@ An alias whose value is an object literal (`TemplateManagerEventMap`, an event m
 
 - Ruling 15's sentence stands unamended: an alias whose value is an object literal takes bare member names in its cell (Ruling 19), and that cell is "the alias's own type literal" in the sentence's words, because an object type literal is a type literal. No unit rewrites the sentence for it.
 - Where a package's first § Patterns or Quickstart fence demonstrates the product's entry (`createServer`) and the facts block's first-listed factory is a substrate (`createNegotiator`), the titled block sits on the entry (Ruling 17's spirit: the pair pins the code a reader runs first); the substrate factory keeps its own untitled example. A tiebreak by table position yields to product primacy.
+
+## Ruling 24 — a README's fences sit under their headings
+
+The lead-in rule (Ruling 21) binds a guide's fences. A README's `## Install` and `## Usage` fences sit directly under their headings, as the pilot's `/home/user/fleet/abort/README.md` does and every sibling README does; a README's other prose is unchanged by this ruling. The closing brief's fence sweep runs over `guides/<pkg>.md` alone, and a fix brief's criterion that sweeps `README.md` for bare fences is struck. Relation's fix round added two README lead-ins on such a criterion; the Orchestrator removed them before landing and the checker rules the diff. Toolbox's converge unit reached the same reading from the pilot and removed the lead-ins it had added.

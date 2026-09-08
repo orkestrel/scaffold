@@ -1,0 +1,36 @@
+src/core/validators.ts:16: * malformed definition as an `INVALID` `RelationError` instead of resolving a
+src/core/RelationManager.ts:53:	 * @throws An `INVALID` {@link RelationError} when a relation targets a table or a
+src/core/RelationManager.ts:68:						'INVALID',
+src/core/RelationManager.ts:75:						'INVALID',
+src/core/helpers.ts:32: * @throws An `INVALID` {@link RelationError} when the relationship cannot be resolved, or when a
+src/core/helpers.ts:43:				'INVALID',
+src/core/helpers.ts:53:		throw new RelationError('INVALID', `Relation '${name}': not a string, array, or descriptor`, {
+src/core/helpers.ts:73:			'INVALID',
+src/core/helpers.ts:83:				throw new RelationError('INVALID', `Relation '${name}': belongs needs 'column'`, {
+src/core/helpers.ts:92:				throw new RelationError('INVALID', `Relation '${name}': many needs 'key'`, {
+src/core/helpers.ts:101:				throw new RelationError('INVALID', `Relation '${name}': one needs 'key'`, {
+src/core/helpers.ts:111:					'INVALID',
+src/core/helpers.ts:129:					'INVALID',
+src/core/types.ts:13:// Relations — ORM-style eager loading layered on the database. A relation
+src/core/types.ts:72:export type RelationErrorCode = 'INVALID' | 'UNKNOWN_RELATION' | 'NOT_THROUGH'
+src/core/errors.ts:12: * Thrown for: a relation value whose relationship cannot be inferred (`INVALID`), a
+src/core/errors.ts:14: * the manager is created (`INVALID`), a reference to a relation a model does not
+guides/relation.md:3:> A small, declarative ORM layer over the `@orkestrel/database` tables: a table's
+guides/relation.md:40:| API                     | Kind     | Summary                                                                                                 |
+guides/relation.md:48:| API          | Kind     | Summary                                                                                                         |
+guides/relation.md:58:| API                    | Kind     | Summary                                                                       |
+guides/relation.md:66:| API             | Kind     | Summary                                                                |
+guides/relation.md:75:| API               | Kind     | Summary                                                                                             |
+guides/relation.md:97:| `RelationErrorCode`        | type      | `'INVALID' \| 'UNKNOWN_RELATION' \| 'NOT_THROUGH'`                                   | Names a machine-readable `RelationError` code.                                                                                                                                        |
+guides/relation.md:139:2. **Layered on the typed database and validated at construction.** A manager is built over a `DatabaseInterface`; `model(name)` is checked against the database's declared tables and returns a model whose `table` is that table's typed `TableInterface` (a declared table with no relation entry yields a relation-less model — still fully usable for typed CRUD). Related tables are fetched by runtime name at the broad `Row` type. Every resolved target table and `through` junction must appear in `database.export()`; an undeclared table throws `RelationError('INVALID', ...)` when the manager is created, before any operation runs.
+guides/relation.md:141:4. **Resolution is define-time.** Each raw `Relation` is resolved once at construction into a flat `ResolvedRelation` — a union discriminated on `relationship` whose every arm declares its own columns required, so a loader reads them after one narrow and never against an absent member; nothing is inferred during loading. The builders set an explicit `relationship` (so `many` and `one`, otherwise identical as `{ key }`, are unambiguous); a hand-written descriptor with no `relationship` infers one from the fields present (`through` → `through`, `tag` → `morph`, `column` → `belongs`, else `key` → `one`), and a malformed one throws `INVALID` at define-time.
+guides/relation.md:144:7. **Cooperative cancellation.** Every model operation accepts the database package's abort option. Query reads pass the signal to `records`. The keyed `get` read takes no options in the database package, so `load` checks the signal before it and again before each relation in the population walk; a batched `get` already in flight runs to completion. Writes pass it to their database mutation or transaction. An aborted signal surfaces unchanged as the database package's `ABORTED` error.
+guides/relation.md:241:	if (isRelationError(error)) error.code // 'INVALID'
+guides/relation.md:355:- **Reach for typed CRUD through `model.table`** — the table is fully typed; relation loading is the looser layer on top.
+guides/relation.md:362:- [`tests/guides.test.ts`](../tests/guides.test.ts) — the `## Surface` ↔ `src/core` bijection (value + type exports), the `ModelInterface` / `RelationManagerInterface` ↔ `Model` / `RelationManager` method bijections, and the equality gate: every `Summary` cell against its declaration's description paragraph, the titled `Defining relations` fence against the `@example` block of that title (pinned so the titled pair cannot be retired silently), and the README pitch against this guide's tagline. It also runs the guide's value-claiming fences and asserts the values their comments claim.
+guides/relation.md:365:- [`tests/src/core/RelationManager.test.ts`](../tests/src/core/RelationManager.test.ts) — the manager-level surface: the registry (`count` / `names` / `has`), the typed `model(name)` accessor, and construction-time `INVALID` errors for undeclared relation and junction tables.
+guides/relation.md:372:- [`AGENTS.md`](../AGENTS.md) — the coding contract and its rule map.
+guides/relation.md:373:- [`README.md`](README.md) — the guides index.
+README.md:3:> A small, declarative ORM layer over the `@orkestrel/database` tables: a table's
+README.md:25:- ESM (`import`) and CommonJS (`require`) through the `exports` field
+README.md:83:MIT © [Orkestrel](https://github.com/orkestrel) — see [LICENSE](./LICENSE).

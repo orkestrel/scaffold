@@ -1,0 +1,41 @@
+== tagline diff (guide 3-6 vs README 3-6); empty is pass
+== tagline carries 'then `load` / `find`'; empty is pass
+guides/relation.md:4:> relations named once, then `load` / `find` records with their related rows already
+README.md:4:> relations named once, then `load` / `find` records with their related rows already
+== grep -c 'OperationOptions plus' guides/relation.md (want 1)
+0
+== grep -c "An extended interface's name comes before" guides/relation.md (want 1)
+0
+== grep -n 'FK location\|// FK' guides/relation.md README.md; empty is pass
+guides/relation.md:21:			classification: belongsTo('classificationId', 'classifications'), // FK on accounts → one classification
+guides/relation.md:22:			contacts: hasMany('accountId'), // FK on contacts → many contacts back here
+guides/relation.md:167:			classification: belongsTo('classificationId', 'classifications'), // FK on accounts
+guides/relation.md:168:			contacts: hasMany('accountId'), // FK on contacts → accounts
+guides/relation.md:190:| Relationship | Builder      | FK location        | Returns               |
+README.md:45:			classification: belongsTo('classificationId', 'classifications'), // FK on accounts
+README.md:46:			contacts: hasMany('accountId'), // FK on contacts → back here
+== grep -nE '\b(THIS|RELATED|NAME|COUNT|AFTER)\b' src/core/{types,helpers,Model}.ts; empty is pass
+src/core/types.ts:26: * `belongs` — a foreign key on THIS table points at the related row (single).
+src/core/types.ts:27: * `many` — a foreign key on the RELATED table points back here (array).
+src/core/types.ts:30: * `morph` — a foreign key plus a discriminator column on the RELATED table (array, polymorphic).
+src/core/types.ts:135: * `through` is the junction table, `source` its foreign-key column pointing at THIS
+src/core/types.ts:154: * it, and `label` the discriminator value identifying THIS model.
+src/core/types.ts:254: * `load` fires once per relation that an eager-load resolves, carrying the relation NAME +
+src/core/types.ts:255: * the COUNT of related rows attached for the whole record set (it is the batched load
+src/core/types.ts:260: * option), never onto this map, and sits AFTER the load resolves / the junction op completes
+src/core/helpers.ts:305: * @param source - The junction FK column pointing at THIS model
+src/core/helpers.ts:336: * @param label - The discriminator value identifying THIS model
+src/core/Model.ts:218:		// Observe the inserted junction row — AFTER the driver write, so a swallowed listener
+src/core/Model.ts:325:			// Observe this relation's eager-load — AFTER it resolved + was attached, ONCE per
+== drop-in header diff (pilot 1-3 vs this 1-3); empty is pass
+3c3
+< // package's own, as is the executed section that closes the file.
+---
+> // package's own, and are the only part a sibling package changes.
+== grep -c '(or array)' guides/relation.md (want 0)
+1
+== fences directly under a heading; empty is pass
+151 -> 153
+384 -> 386
+395 -> 397
+== done
