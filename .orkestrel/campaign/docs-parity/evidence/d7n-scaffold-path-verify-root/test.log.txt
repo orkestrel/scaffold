@@ -1,0 +1,136 @@
+npm notice run @orkestrel/scaffold@0.0.63 test
+npm notice run npm run test:src:core && npm run test:src:server && npm run test:src:bin && npm run test:policy && npm run test:config && npm run test:setup && npm run test:guides
+npm notice run @orkestrel/scaffold@0.0.63 test:src:core
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/scaffold/tmp/pass/scaffold-path
+
+·····················································································································································································································································································································································································stderr | tests/src/core/templates.test.ts > emitted workspaces under their own gates > refuses a non-object peer dependency declaration at config load
+[33m[MIXED_EXPORTS] [0mEntry module "tmp/scaffold-e2-peers-09Tn1c/malformed/vite.config.ts" is using named (including "config", "default", "distribution", "peers", "policy", "probe", "resolveWorkspacePath", "srcCore") and default exports together. Consumers of your bundle will have to use `chunk.default` to access the default export, which may not be what you want. Use `output.exports: "named"` to disable this warning.
+
+
+stderr | tests/src/core/templates.test.ts > emitted workspaces under their own gates > refuses a non-object peer dependency declaration at config load
+failed to load config from C:\Users\mikes\WebstormProjects\scaffold\tmp\pass\scaffold-path\tmp\scaffold-e2-peers-09Tn1c\malformed\vite.config.ts
+
+·····························
+
+ Test Files  9 passed (9)
+      Tests  402 passed (402)
+   Start at  13:29:15
+   Duration  10.88s (transform 2.14s, setup 2.90s, import 1.38s, tests 12.37s, environment 1ms)
+
+npm notice run @orkestrel/scaffold@0.0.63 test:src:server
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project src:server
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/scaffold/tmp/pass/scaffold-path
+
+·················································································································---··············································································································-···························································································-················································-································································
+
+ Test Files  5 passed (5)
+      Tests  426 passed | 6 skipped (432)
+   Start at  13:29:26
+   Duration  5.58s (transform 2.48s, setup 4.54s, import 469ms, tests 8.28s, environment 0ms)
+
+npm notice run @orkestrel/scaffold@0.0.63 test:src:bin
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project src:bin
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/scaffold/tmp/pass/scaffold-path
+
+···········································································································scaffold <verb> [options]
+
+  scaffold new <name> [--src <list>] [--app <list>] [--bin] [--deps <list>] [--offline] [--from <path>] [--target <path>] [--json]
+      scaffold a workspace
+  scaffold audit [--groups <list>] [--offline] [--from <path>] [--target <path>] [--json]
+      report how the target compares to its plan, writing nothing
+  scaffold repair [--groups <list>] [--offline] [--from <path>] [--target <path>] [--json]
+      write each planned path the target is missing or has let drift
+  scaffold catalog [--all] [--from <path>] [--target <path>] [--json]
+      regenerate the package table and refresh the guide mirrors
+  scaffold overwrite [--groups <list>] [--dirty] [--offline] [--from <path>] [--target <path>] [--json]
+      do everything repair and catalog do, then delete what the plan does not own and re-declare the dependency ranges
+
+options
+  --src <list>                   the published library environments to build: core, browser, server
+  --app <list>                   the private application environments to build: core, browser, server
+  --bin                          scaffold a command-line executable at src/bin/main.ts
+  --deps <list>                  the @orkestrel/* packages the workspace depends on
+  --groups <list>                the artifact groups to cover; every group when absent
+  --all                          fetch a guide for every package the organization publishes, not the declared ones alone
+  --dirty                        delete from a tree carrying uncommitted changes
+  --offline                      use the distributed dependency and vendored-host floors without reading upstream
+  --from <path>                  read the data root from a local path instead of the bundled one; catalog alone accepts it more than once
+  --target <path>                the directory the verb operates on; the working directory when absent
+  --json                         emit one machine-readable value instead of a report
+  ORKESTREL_SCAFFOLD_REGISTRY    the registry base mapped to upstream.registry.base
+  ORKESTREL_SCAFFOLD_REPOSITORY  the repository base mapped to upstream.repository.base
+
+exit codes
+  0  clean
+  1  drift or failure
+  2  usage error
+··········································································································································
+
+ Test Files  3 passed (3)
+      Tests  245 passed (245)
+   Start at  13:29:33
+   Duration  33.85s (transform 976ms, setup 2.16s, import 263ms, tests 33.85s, environment 0ms)
+
+npm notice run @orkestrel/scaffold@0.0.63 test:policy
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project policy
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/scaffold/tmp/pass/scaffold-path
+
+···························································································
+
+ Test Files  1 passed (1)
+      Tests  91 passed (91)
+   Start at  13:30:07
+   Duration  1.26s (transform 213ms, setup 310ms, import 90ms, tests 706ms, environment 0ms)
+
+npm notice run @orkestrel/scaffold@0.0.63 test:config
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project config
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/scaffold/tmp/pass/scaffold-path
+
+·······stdout | tests/config.test.ts > root configuration > keeps the committed host inventory aligned with the vendored checkout bytes
+host-inventory: entries=122
+
+···································································································································································stdout | tests/config.test.ts > configuration helpers > rolls one face into a single declaration and rewrites its core specifier
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+
+·-stdout | tests/config.test.ts > configuration helpers > rolls one face into a single declaration and rewrites its core specifier
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+
+·
+
+ Test Files  1 passed (1)
+      Tests  172 passed | 1 skipped (173)
+   Start at  13:30:09
+   Duration  6.68s (transform 336ms, setup 332ms, import 423ms, tests 5.77s, environment 0ms)
+
+npm notice run @orkestrel/scaffold@0.0.63 test:setup
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project setup
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/scaffold/tmp/pass/scaffold-path
+
+··············································································
+
+ Test Files  3 passed (3)
+      Tests  78 passed (78)
+   Start at  13:30:16
+   Duration  2.18s (transform 666ms, setup 929ms, import 578ms, tests 1.28s, environment 0ms)
+
+npm notice run @orkestrel/scaffold@0.0.63 test:guides
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project guides
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/scaffold/tmp/pass/scaffold-path
+
+····················
+
+ Test Files  1 passed (1)
+      Tests  20 passed (20)
+   Start at  13:30:19
+   Duration  1.98s (transform 322ms, setup 309ms, import 533ms, tests 983ms, environment 0ms)
+

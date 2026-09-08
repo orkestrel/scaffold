@@ -153,10 +153,10 @@ controls and restored it green. The earlier setup and root TypeScript failures p
 after bootstrap guide installation and host/inventory regeneration. Read
 d7n-scaffold-path-audit-verdict.md and d7n-scaffold-path-fix-3-verdict.md. Final isolated
 clean/build staging passed under d7n-scaffold-path-final-prepare-2-run-verdict.md.
-The authoritative acceptance chain is dispatched to native scaffold_path_verify_final
-under d7n-scaffold-path-verify-2-brief.md. The candidate remains uncommitted; no consumer
-propagation has run. Prioritize path acceptance and supported propagation independently
-of the inventory audit.
+The independent verifier and root's subsequent acceptance chain each passed under
+d7n-scaffold-path-closure-verdict.md. The tested canonical source awaits exact integration
+and scoped landing; no consumer propagation has run. Prioritize that landing and supported
+propagation independently of the inventory audit.
 
 The live layer inventory has not run. Its instrument predecessors failed independent
 checking and actual-mechanism controls. The bounded implementation successor returned
