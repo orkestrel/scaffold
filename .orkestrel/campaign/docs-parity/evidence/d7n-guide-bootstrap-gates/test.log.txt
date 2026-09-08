@@ -1,0 +1,72 @@
++ npm test
+npm notice run @orkestrel/guide@0.0.18 test
+npm notice run npm run test:src && npm run test:policy && npm run test:config && npm run test:setup && npm run test:guides
+npm notice run @orkestrel/guide@0.0.18 test:src
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/guide
+
+···················································································································································································································································································································································································································································································································································································································································
+
+ Test Files  8 passed (8)
+      Tests  627 passed (627)
+   Start at  16:06:57
+   Duration  1.85s (transform 1.59s, setup 394ms, import 3.15s, tests 1.21s, environment 1ms)
+
+npm notice run @orkestrel/guide@0.0.18 test:policy
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project policy
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/guide
+
+·················································································-·········
+
+ Test Files  1 passed (1)
+      Tests  90 passed | 1 skipped (91)
+   Start at  16:06:59
+   Duration  946ms (transform 86ms, setup 56ms, import 109ms, tests 634ms, environment 0ms)
+
+npm notice run @orkestrel/guide@0.0.18 test:config
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project config
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/guide
+
+··········································································································································································stdout | tests/config.test.ts > configuration helpers > rolls one face into a single declaration and rewrites its core specifier
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+
+·-stdout | tests/config.test.ts > configuration helpers > rolls one face into a single declaration and rewrites its core specifier
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+
+·
+
+ Test Files  1 passed (1)
+      Tests  172 passed | 1 skipped (173)
+   Start at  16:07:00
+   Duration  2.94s (transform 205ms, setup 58ms, import 441ms, tests 2.29s, environment 0ms)
+
+npm notice run @orkestrel/guide@0.0.18 test:setup
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project setup
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/guide
+
+···········
+
+ Test Files  1 passed (1)
+      Tests  11 passed (11)
+   Start at  16:07:04
+   Duration  443ms (transform 126ms, setup 56ms, import 222ms, tests 18ms, environment 0ms)
+
+npm notice run @orkestrel/guide@0.0.18 test:guides
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project guides
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/guide
+
+······················································
+
+ Test Files  1 passed (1)
+      Tests  54 passed (54)
+   Start at  16:07:05
+   Duration  674ms (transform 131ms, setup 57ms, import 318ms, tests 146ms, environment 0ms)
+
+exit=0

@@ -59,8 +59,11 @@ terminal result; retain the result projection with its report and verdict.
 | d7n-path-artifact-pilot-check | mechanical checker, Cursor Grok | frozen installed pilot and actual root receipt | tmp/cursor/d7n-path-artifact-pilot-check.jsonl; 6225e4d0-7f29-4eda-b7b4-21667b759e7f | exec 95859 exited 0 | PASS; empty-file lookup error annotated |
 | d7n-path-artifact-pilot-verify | independent verifier, Terra | frozen installed pilot | native path_artifact_pilot_verify | direct host command exited 0 | GREEN; pilot closed |
 | d7n-guide-path-bootstrap | builder, Terra | accepted selected-path pilot | native layer_capture_fix | author returned; root guide.sh exited 0 | repair applied; configured-policy red became green; full gates pending |
-| d7n-guide-bootstrap-gates | builder, Terra | existing Guide validation script | native layer_capture_fix | native task | authoring allowlist successor; no Guide writes |
-| d7n-guide-path-bootstrap-check | mechanical checker, Cursor Grok | driver diff and actual repair receipt | tmp/cursor/d7n-guide-path-bootstrap-check.jsonl; session pending | bridge preparation | launch pending |
+| d7n-guide-bootstrap-gates | builder, Terra; root run | existing Guide validation script | native layer_capture_fix; tmp/pass/d7n-guide-bootstrap-validate.YO5yk2 | exec 67947 exited 0 | full chain and docs passed; checkpoint 0accc15 pushed |
+| d7n-guide-path-bootstrap-check | mechanical checker, Cursor Grok | driver diff and actual repair receipt | tmp/cursor/d7n-guide-path-bootstrap-check.jsonl; bd38c2d1-0afd-45c0-b100-4ab90e6fdea7 | exec 15980 exited 0 | PASS; selected propagation closed |
+| d7n-guide-heading-close-fix | implementer, Opus | Guide checkpoint 0accc15 | tmp/claude/d7n-guide-heading-close-fix.jsonl; 9adca1da-f1cf-4d9c-96ea-1edb01135f1b | exec 47601 under root cap 2700 seconds | running; owned reader corrections only |
+| d7n-guide-bootstrap-pack | builder, Terra | existing accepted pack runner | native layer_capture_fix | author returned | syntax and package-field controls passed; packing unrun |
+| d7n-foundation-visit | builder, Terra | accepted public repair and existing gate/pack carriers | native layer_capture_fix | native task | authoring bounded bottom-layer visit; no fleet execution |
 
 The previous probe writer returned and its test changes landed as 93fc01d. The
 owner-main comparison returned; its result projection is retained. Those processes

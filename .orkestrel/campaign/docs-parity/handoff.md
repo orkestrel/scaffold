@@ -7,7 +7,7 @@ Written 2026-09-08T03:35Z and revised 2026-09-08T04:05Z at the owner's request, 
 | Repository | Branch | Tip | Notes |
 | --- | --- | --- | --- |
 | `orkestrel/scaffold` | `claude/orkestrel-npm-audit-deps-14ibta` (the working branch), `main`, and `claude/docs-parity-windows-01a0810d` (the designated branch) | the commit carrying this file | push each named ref at the same tip; the campaign folder is the record |
-| `orkestrel/guide` | `claude/orkestrel-npm-audit-deps-14ibta` | `1d5afa3` | `main` stays at `d3ee1bb` until every package has moved (Ruling 8); the final tarball is packed from this tip |
+| `orkestrel/guide` | `claude/orkestrel-npm-audit-deps-14ibta` | `0accc15` | candidate checkpoint pushed; main stays at d3ee1bb; the installed old head-start is still packed from 1d5afa3; corrected packing follows reader acceptance |
 | `orkestrel/<package>` for every package in the table that follows | `claude/orkestrel-npm-audit-deps-14ibta` | per the table | pushed to `main` as each closes |
 
 Branch URLs follow one pattern: `https://github.com/orkestrel/<repo>/tree/claude/orkestrel-npm-audit-deps-14ibta`.
@@ -109,7 +109,7 @@ Tips are the branch tips as pushed. "on main" means the branch tip is `main`.
 | terminal | `0b01536` | retained audit lanes reconciled in `d7n-terminal-audit-verdict.md`; checker recorded as not run | dispatch `d7n-terminal-converge-fix-windows-brief.md`; then checker and verifier; verdict; push `main` |
 | mcp | `a01d5e8` | owner main merged; scoped merge checks passed; branch pushed; audit reconciled in `d7n-mcp-audit-verdict.md`; checker recorded as not run | dispatch `d7n-mcp-converge-fix-windows-brief.md`; closure; push `main`; guide-reader referral remains separate |
 | supervisor | `edf80e6` (`main`) | outside the pass; the owner's API-adoption decision is pending (`d7-fleet-plan.md` § For the owner) | nothing in this campaign |
-| guide | `1d5afa3` | reader candidate retained; packed scaffold path correction applied through the public API; configured-policy case changed from red to green; source and dependency files preserved | run full gates, checkpoint the candidate, resolve retained reader review findings, then pack and revalidate the aligned fleet |
+| guide | `0accc15` | packed scaffold path propagation closed; full host gate chain and docs passed; candidate checkpoint pushed to its branch; R1–R6 reader successor running | accept the retained reader correction, pack the corrected bootstrap Guide, then use it for bottom-layer artifacts |
 
 ## The tail, after every package closes
 
@@ -185,7 +185,10 @@ d7n-path-artifact-pilot-closure-verdict.md after root and independent verificati
 The Guide bootstrap visit applied tests/setupPolicy.ts and tests/config.test.ts through
 the installed public API. Its configured-policy baseline exited 1 and its repeated
 post-repair case exited 0. Source and dependency bytes stayed unchanged. Read
-evidence/d7n-guide-path-bootstrap/; the full Guide gates and driver check follow.
+evidence/d7n-guide-path-bootstrap/. The full Guide gates and driver check passed;
+d7n-guide-path-bootstrap-verdict.md closes this selected propagation. The source
+checkpoint is 0accc15 on its campaign branch. The live reader successor follows
+d7n-guide-heading-close-fix-brief.md; no corrected Guide pack exists yet.
 Root's initial Contract reading finds registry 0.0.16 and prepared source 0.0.17;
 that candidate does not require an automatic repeat bump merely to resume the pass.
 Read d7n-layer-contract-reading.md. No accepted layer tarball or new pin exists yet.
