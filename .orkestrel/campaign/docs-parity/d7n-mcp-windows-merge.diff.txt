@@ -1,0 +1,548 @@
+diff --git a/guides/mcp.md b/guides/mcp.md
+index 5e3ce47..eb5dd86 100644
+--- a/guides/mcp.md
++++ b/guides/mcp.md
+@@ -552,9 +552,17 @@ with `SyntaxError: Unexpected identifier`, taking every unrelated export in the
+ The same file written with the explicit `finally` runs on that floor and discharges the
+ identical obligation.
+ 
+-A legacy request never reaches a held-open answer: its method set is frozen by a
+-shipped revision, and `MCPLegacy` ends any stream the modern engine hands back
+-before answering `-32000`, because the dated revision has no shape for one. See
++A legacy `tools/call` carrying a string or integer progress token receives a controlled
++stream when the modern execution policy reports progress. `MCPLegacy` forwards only
++`notifications/progress` frames carrying that request's token, then projects the terminal
++complete or error response onto the legacy wire. A call whose executor reports no progress
++still returns its projected terminal through the stream. Stopping the typed or text face
++aborts the modern request lifetime and releases its controlled source.
++
++The fixed legacy method set still refuses every other held-open answer. A `tools/list`
++override stream, a `tools/call` stream without a legal token, and a stream yielding another
++notification or another request's token end with `-32000`, because the dated revision has no
++result shape for them. See
+ [Compose or remove the legacy protocol layer](#compose-or-remove-the-legacy-protocol-layer).
+ 
+ ### Project a host-owned resource, prompt, and completion registry
+@@ -2051,10 +2059,11 @@ The shared cause is worth stating once, plainly: **legacy inherits the modern en
+ because it now runs on it.** `NaN` is not JSON, the modern path always refused it, and a server
+ that refused one caller while silently nulling the other was answering the same question in
+ contradictory ways. Uniform refusal is the coherent answer, and it is the intended consequence of the collapse
+-rather than a side effect of it. `-32000` survives, but only where it carries a meaning no modern
+-code does: a modern result the dated revision has no shape for — a held-open stream, a `task`, an
+-`input_required`, or a capability refusal — which is the one thing the older revision genuinely
+-cannot represent.
++rather than a side effect of it. `-32000` survives where it carries a meaning no modern code does:
++a `task`, an `input_required`, a capability refusal, or an unsupported stream the dated revision
++cannot represent. A legal `tools/call` progress stream is the narrow exception: matching progress
++notifications remain progress notifications, and its final complete or error response becomes the
++legacy answer.
+ 
+ ### Adapt a legacy peer at the client transport boundary
+ 
+diff --git a/src/core/MCPLegacy.ts b/src/core/MCPLegacy.ts
+index f29e4cd..c7dc7cb 100644
+--- a/src/core/MCPLegacy.ts
++++ b/src/core/MCPLegacy.ts
+@@ -9,10 +9,11 @@ import type {
+ 	MCPDispatcherInterface,
+ 	MCPLegacyOptions,
+ 	MCPLimitOptions,
++	MCPStream,
+ 	MCPStreamControllerInterface,
+ 	MCPTextStreamControllerInterface,
+ } from './types.js'
+-import { isRecord, isString, parseJSON } from '@orkestrel/contract'
++import { isInteger, isRecord, isString, parseJSON } from '@orkestrel/contract'
+ import {
+ 	JSONRPC_INVALID_PARAMS,
+ 	JSONRPC_INVALID_REQUEST,
+@@ -26,11 +27,20 @@ import {
+ 	buildInitializeResult,
+ 	buildJSONRPCError,
+ 	buildJSONRPCResult,
++	buildMethodOptions,
+ 	legacyInvocationToModern,
+ 	modernResultToLegacy,
+ } from './helpers.js'
++
++import { MCPStreamController } from './MCPStreamController.js'
++import { MCPTextStreamController } from './MCPTextStreamController.js'
+ import { parseJSONRPCMessage } from './parsers.js'
+-import { isBoundedString, isJSONRPCInvocation, isModernRequest } from './validators.js'
++import {
++	isBoundedString,
++	isJSONRPCInvocation,
++	isMCPProgress,
++	isModernRequest,
++} from './validators.js'
+ 
+ /**
+  * Translates the fixed legacy method set onto one modern dispatcher.
+@@ -106,13 +116,16 @@ export class MCPLegacy implements MCPDispatcherInterface {
+ 			return this.#options.dispatcher.handle(message, options)
+ 		}
+ 		const answer = await this.#legacy(parsed, options)
+-		return answer === undefined ? undefined : JSON.stringify(answer)
++		if (answer === undefined) return undefined
++		return Symbol.asyncIterator in answer
++			? new MCPTextStreamController(answer)
++			: JSON.stringify(answer)
+ 	}
+ 
+ 	async #legacy(
+ 		invocation: JSONRPCInvocation,
+ 		options?: MCPDispatchOptions,
+-	): Promise<JSONRPCResponse | undefined> {
++	): Promise<JSONRPCResponse | MCPStreamControllerInterface | undefined> {
+ 		if (invocation.id === undefined) return undefined
+ 		const id = invocation.id
+ 		// The same bound on the typed door, applied before the switch so a locally answered
+@@ -163,15 +176,65 @@ export class MCPLegacy implements MCPDispatcherInterface {
+ 		}
+ 	}
+ 
+-	async #forward(request: JSONRPCRequest, options?: MCPDispatchOptions): Promise<JSONRPCResponse> {
++	async #forward(
++		request: JSONRPCRequest,
++		options?: MCPDispatchOptions,
++	): Promise<JSONRPCResponse | MCPStreamControllerInterface> {
+ 		const translated = legacyInvocationToModern(request)
+-		const answer = await this.#options.dispatcher.dispatch(translated, options)
+-		if (Symbol.asyncIterator in answer) {
+-			answer.stop()
+-			await answer[Symbol.asyncDispose]()
+-			return this.#unsupported(request.id, 'stream')
++		const metadata = request.method === 'tools/call' ? request.params?.['_meta'] : undefined
++		const candidate = isRecord(metadata) ? metadata['progressToken'] : undefined
++		const token = isString(candidate) || isInteger(candidate) ? candidate : undefined
++		if (token === undefined) {
++			const answer = await this.#options.dispatcher.dispatch(translated, options)
++			if (Symbol.asyncIterator in answer) {
++				answer.stop()
++				await answer[Symbol.asyncDispose]()
++				return this.#unsupported(request.id, 'stream')
++			}
++			return this.#project(answer, request.id)
++		}
++		const closure = new AbortController()
++		const resolved = buildMethodOptions(options ?? {}, closure.signal)
++		try {
++			const answer = await this.#options.dispatcher.dispatch(translated, resolved)
++			if (Symbol.asyncIterator in answer) {
++				return new MCPStreamController(
++					this.#progress(answer, request.id, token),
++					resolved.signal,
++					closure,
++				)
++			}
++			closure.abort()
++			return this.#project(answer, request.id)
++		} catch (error) {
++			closure.abort(error)
++			throw error
++		}
++	}
++
++	async *#progress(
++		stream: MCPStreamControllerInterface,
++		id: JSONRPCId,
++		token: string | number,
++	): MCPStream {
++		try {
++			while (true) {
++				const frame = await stream.next()
++				if (frame.done === true) return this.#project(frame.value, id)
++				const params = frame.value.params
++				if (
++					frame.value.method !== 'notifications/progress' ||
++					!isRecord(params) ||
++					params['progressToken'] !== token ||
++					!isMCPProgress(params)
++				) {
++					return this.#unsupported(id, 'stream')
++				}
++				yield frame.value
++			}
++		} finally {
++			await stream[Symbol.asyncDispose]()
+ 		}
+-		return this.#project(answer, request.id)
+ 	}
+ 
+ 	#project(answer: JSONRPCResponse, id: JSONRPCId): JSONRPCResponse {
+diff --git a/tests/src/core/MCPLegacy.test.ts b/tests/src/core/MCPLegacy.test.ts
+index 503b0a5..68a123b 100644
+--- a/tests/src/core/MCPLegacy.test.ts
++++ b/tests/src/core/MCPLegacy.test.ts
+@@ -24,6 +24,7 @@ import {
+ 	createJSONRPCRequest,
+ 	MemoryResourceManager,
+ 	TestTaskManager,
++	waitForSettlement,
+ } from '../../setup.js'
+ 
+ // Captured before the W07-A production edit; divergences remain explicit named rows.
+@@ -276,7 +277,11 @@ const cases: ReadonlyArray<readonly [string, JSONRPCInvocation, JSONRPCResponse
+ ]
+ 
+ async function* createUnreachableStream(id: JSONRPCId): MCPStream {
+-	yield { jsonrpc: '2.0', method: 'notifications/tools/list_changed' }
++	yield {
++		jsonrpc: '2.0',
++		method: 'notifications/progress',
++		params: { progressToken: 'another-request', progress: 1 },
++	}
+ 	return buildJSONRPCResult(id, { resultType: 'complete' })
+ }
+ 
+@@ -338,6 +343,350 @@ describe('MCP legacy resource exclusions', () => {
+ })
+ 
+ describe('MCPLegacy collapse boundaries', () => {
++	it('projects a tokened legacy tools/call stream with its progress and complete result', async () => {
++		let executions = 0
++		const legacy = createMCPLegacy(
++			createMCPServer({
++				identity: { name: 'progress', version: '1.0.0' },
++				tools,
++				execution: async (context) => {
++					executions += 1
++					if (context.progress === undefined) throw new Error('expected a progress reporter')
++					await context.progress.report({ progress: 1, total: 1, message: 'complete' })
++					return context.tools.execute(context.call)
++				},
++			}),
++		)
++		const answer = await legacy.dispatch({
++			jsonrpc: '2.0',
++			id: 'legacy-progress',
++			method: 'tools/call',
++			params: { name: 'good', arguments: {}, _meta: { progressToken: 0 } },
++		})
++		if (!('next' in answer)) throw new Error('expected a controlled legacy progress stream')
++
++		expect(await answer.next()).toEqual({
++			done: false,
++			value: {
++				jsonrpc: '2.0',
++				method: 'notifications/progress',
++				params: { progressToken: 0, progress: 1, total: 1, message: 'complete' },
++			},
++		})
++		expect(await answer.next()).toEqual({
++			done: true,
++			value: {
++				jsonrpc: '2.0',
++				id: 'legacy-progress',
++				result: { content: [{ type: 'text', text: '5' }], structuredContent: 5 },
++			},
++		})
++		expect(executions).toBe(1)
++	})
++
++	it('mirrors an empty-token call with no reports through the text face', async () => {
++		let signal: AbortSignal | undefined
++		const legacy = createMCPLegacy(
++			createMCPServer({
++				identity: { name: 'progress', version: '1.0.0' },
++				tools,
++				execution: (context) => {
++					signal = context.signal
++					return context.tools.execute(context.call)
++				},
++			}),
++		)
++		const answer = await legacy.handle(
++			JSON.stringify({
++				jsonrpc: '2.0',
++				id: 'empty-token',
++				method: 'tools/call',
++				params: { name: 'good', arguments: {}, _meta: { progressToken: '' } },
++			}),
++		)
++		if (answer === undefined || typeof answer === 'string') {
++			throw new Error('expected a controlled legacy text stream')
++		}
++
++		expect(await answer.next()).toEqual({
++			done: true,
++			value:
++				'{"jsonrpc":"2.0","id":"empty-token","result":{"content":[{"type":"text","text":"5"}],"structuredContent":5}}',
++		})
++		expect(signal?.aborted).toBe(true)
++	})
++
++	it('projects a native tool error result at the tokened terminal', async () => {
++		const legacy = createMCPLegacy(
++			createMCPServer({
++				identity: { name: 'progress', version: '1.0.0' },
++				tools,
++				execution: (context) => context.tools.execute(context.call),
++			}),
++		)
++		const answer = await legacy.dispatch({
++			jsonrpc: '2.0',
++			id: 'native-error',
++			method: 'tools/call',
++			params: { name: 'failure', _meta: { progressToken: 'native-error' } },
++		})
++		if (!('next' in answer)) throw new Error('expected a controlled legacy progress stream')
++
++		expect(await answer.next()).toEqual({
++			done: true,
++			value: {
++				jsonrpc: '2.0',
++				id: 'native-error',
++				result: { content: [{ type: 'text', text: 'frozen failure' }], isError: true },
++			},
++		})
++	})
++
++	it('keeps a stopped tokened call isolated from its live sibling', async () => {
++		const executions: JSONRPCId[] = []
++		const legacy = createMCPLegacy(
++			createMCPServer({
++				identity: { name: 'progress', version: '1.0.0' },
++				tools,
++				execution: async (context) => {
++					executions.push(context.request.id)
++					if (context.progress === undefined) throw new Error('expected a progress reporter')
++					await context.progress.report({ progress: 1 })
++					return context.tools.execute(context.call)
++				},
++			}),
++		)
++		const [stopped, live] = await Promise.all([
++			legacy.dispatch({
++				jsonrpc: '2.0',
++				id: 'stopped',
++				method: 'tools/call',
++				params: { name: 'good', _meta: { progressToken: 'stopped' } },
++			}),
++			legacy.dispatch({
++				jsonrpc: '2.0',
++				id: 'live',
++				method: 'tools/call',
++				params: { name: 'good', _meta: { progressToken: 'live' } },
++			}),
++		])
++		if (!('next' in stopped) || !('next' in live)) {
++			throw new Error('expected independent controlled legacy progress streams')
++		}
++
++		stopped.stop()
++		await expect(stopped.next()).rejects.toBeInstanceOf(DOMException)
++		expect(await live.next()).toMatchObject({
++			done: false,
++			value: { method: 'notifications/progress', params: { progressToken: 'live' } },
++		})
++		expect(await live.next()).toMatchObject({
++			done: true,
++			value: { id: 'live', result: { structuredContent: 5 } },
++		})
++		expect(executions).toEqual(['live'])
++	})
++
++	it('does not execute when the caller aborts before the first read', async () => {
++		const controller = new AbortController()
++		let executions = 0
++		const legacy = createMCPLegacy(
++			createMCPServer({
++				identity: { name: 'progress', version: '1.0.0' },
++				tools,
++				execution: (context) => {
++					executions += 1
++					return context.tools.execute(context.call)
++				},
++			}),
++		)
++		const answer = await legacy.dispatch(
++			{
++				jsonrpc: '2.0',
++				id: 'pre-abort',
++				method: 'tools/call',
++				params: { name: 'good', _meta: { progressToken: 'pre-abort' } },
++			},
++			{ signal: controller.signal },
++		)
++		if (!('next' in answer)) throw new Error('expected a controlled legacy progress stream')
++		const failure = new Error('caller left before reading')
++
++		controller.abort(failure)
++
++		await expect(answer.next()).rejects.toBe(failure)
++		expect(executions).toBe(0)
++	})
++
++	it('aborts an executor immediately during an outstanding read', async () => {
++		const controller = new AbortController()
++		const started = Promise.withResolvers<AbortSignal>()
++		const legacy = createMCPLegacy(
++			createMCPServer({
++				identity: { name: 'progress', version: '1.0.0' },
++				tools,
++				execution: async (context) => {
++					started.resolve(context.signal)
++					if (!context.signal.aborted) {
++						await new Promise<void>((resolve) =>
++							context.signal.addEventListener('abort', () => resolve(), { once: true }),
++						)
++					}
++					return context.tools.execute(context.call)
++				},
++			}),
++		)
++		const answer = await legacy.dispatch(
++			{
++				jsonrpc: '2.0',
++				id: 'parked-abort',
++				method: 'tools/call',
++				params: { name: 'good', _meta: { progressToken: 'parked-abort' } },
++			},
++			{ signal: controller.signal },
++		)
++		if (!('next' in answer)) throw new Error('expected a controlled legacy progress stream')
++		const reading = answer.next()
++		const signal = await waitForSettlement(started.promise)
++		const failure = new Error('caller left during execution')
++
++		controller.abort(failure)
++
++		await expect(waitForSettlement(reading)).rejects.toBe(failure)
++		expect(signal.aborted).toBe(true)
++	})
++
++	it('propagates return through a parked tokened request', async () => {
++		const started = Promise.withResolvers<AbortSignal>()
++		const legacy = createMCPLegacy(
++			createMCPServer({
++				identity: { name: 'progress', version: '1.0.0' },
++				tools,
++				execution: async (context) => {
++					started.resolve(context.signal)
++					if (!context.signal.aborted) {
++						await new Promise<void>((resolve) =>
++							context.signal.addEventListener('abort', () => resolve(), { once: true }),
++						)
++					}
++					return context.tools.execute(context.call)
++				},
++			}),
++		)
++		const answer = await legacy.dispatch({
++			jsonrpc: '2.0',
++			id: 'returned',
++			method: 'tools/call',
++			params: { name: 'good', _meta: { progressToken: 'returned' } },
++		})
++		if (!('next' in answer)) throw new Error('expected a controlled legacy progress stream')
++		const reading = answer.next()
++		const signal = await waitForSettlement(started.promise)
++		const terminal = buildJSONRPCResult('returned', { consumer: true })
++
++		expect(await answer.return(terminal)).toEqual({ done: true, value: terminal })
++		expect(await waitForSettlement(reading)).toEqual({ done: true, value: terminal })
++		expect(signal.aborted).toBe(true)
++	})
++
++	it.each(['stop', 'dispose'])(
++		'aborts the source request when %s ends the adapter before its first read',
++		async (closure) => {
++			const signals: AbortSignal[] = []
++			const server = createMCPServer({
++				identity: { name: 'stream', version: '1.0.0' },
++				tools,
++			})
++			server.methods.add('tools/call', async (request, options) => {
++				signals.push(options.signal)
++				return createUnreachableStream(request.id)
++			})
++			const answer = await createMCPLegacy(server).dispatch({
++				jsonrpc: '2.0',
++				id: closure,
++				method: 'tools/call',
++				params: { name: 'good', _meta: { progressToken: closure } },
++			})
++			if (!('next' in answer)) throw new Error('expected a controlled legacy progress stream')
++
++			if (closure === 'stop') answer.stop()
++			else await answer[Symbol.asyncDispose]()
++
++			expect(signals[0]?.aborted).toBe(true)
++			await expect(answer.next()).rejects.toBeInstanceOf(DOMException)
++		},
++	)
++
++	it('rejects a mismatched progress frame without yielding it', async () => {
++		let signal: AbortSignal | undefined
++		const server = createMCPServer({
++			identity: { name: 'stream', version: '1.0.0' },
++			tools,
++		})
++		server.methods.add('tools/call', async (request, options) => {
++			signal = options.signal
++			return createUnreachableStream(request.id)
++		})
++		const answer = await createMCPLegacy(server).dispatch({
++			jsonrpc: '2.0',
++			id: 'mismatch',
++			method: 'tools/call',
++			params: { name: 'good', _meta: { progressToken: 'expected-request' } },
++		})
++		if (!('next' in answer)) throw new Error('expected a controlled legacy progress stream')
++
++		expect(await answer.next()).toEqual({
++			done: true,
++			value: {
++				jsonrpc: '2.0',
++				id: 'mismatch',
++				error: {
++					code: JSONRPC_SERVER_ERROR,
++					message: 'Legacy protocol 2025-11-25 cannot represent a stream result',
++				},
++			},
++		})
++		expect(signal?.aborted).toBe(true)
++	})
++
++	it('rejects and disposes override streams without a legitimate tools/call token', async () => {
++		const signals: AbortSignal[] = []
++		const server = createMCPServer({
++			identity: { name: 'stream', version: '1.0.0' },
++			tools,
++		})
++		server.methods.add('tools/list', async (request, options) => {
++			signals.push(options.signal)
++			return createUnreachableStream(request.id)
++		})
++		server.methods.add('tools/call', async (request, options) => {
++			signals.push(options.signal)
++			return createUnreachableStream(request.id)
++		})
++		const legacy = createMCPLegacy(server)
++		const list = await legacy.dispatch({
++			jsonrpc: '2.0',
++			id: 'list-stream',
++			method: 'tools/list',
++			params: { _meta: { progressToken: 'irrelevant' } },
++		})
++		const call = await legacy.dispatch({
++			jsonrpc: '2.0',
++			id: 'call-stream',
++			method: 'tools/call',
++			params: { name: 'good' },
++		})
++		if (Symbol.asyncIterator in list || Symbol.asyncIterator in call) {
++			throw new Error('expected unsupported override streams to be closed')
++		}
++
++		expect([list.error?.code, call.error?.code]).toEqual([
++			JSONRPC_SERVER_ERROR,
++			JSONRPC_SERVER_ERROR,
++		])
++		expect(signals.map((entry) => entry.aborted)).toEqual([true, true])
++	})
++
+ 	it('forwards the inner dispatcher emitter as the one shared error feed', () => {
+ 		const server = createMCPServer({
+ 			identity: { name: 'emitter', version: '1.0.0' },

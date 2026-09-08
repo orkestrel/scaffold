@@ -1,0 +1,40 @@
+ guides/mcp.md                    |  23 ++-
+ src/core/MCPLegacy.ts            |  85 ++++++++--
+ tests/src/core/MCPLegacy.test.ts | 351 ++++++++++++++++++++++++++++++++++++++-
+ 3 files changed, 440 insertions(+), 19 deletions(-)
+npm notice run @orkestrel/mcp@0.0.29 check
+npm notice run tsc --noEmit --project tsconfig.json && npm run check:src
+npm notice run @orkestrel/mcp@0.0.29 check:src
+npm notice run npm run check:src:core && npm run check:src:browser && npm run check:src:server
+npm notice run @orkestrel/mcp@0.0.29 check:src:core
+npm notice run tsc --noEmit -p configs/src/tsconfig.core.json
+npm notice run @orkestrel/mcp@0.0.29 check:src:browser
+npm notice run tsc --noEmit -p configs/src/tsconfig.browser.json
+npm notice run @orkestrel/mcp@0.0.29 check:src:server
+npm notice run tsc --noEmit -p configs/src/tsconfig.server.json
+npm notice run @orkestrel/mcp@0.0.29 docs
+npm notice run node --experimental-strip-types scripts/docs.ts
+rows read: 1, disagreements found: 0
+npm notice run @orkestrel/mcp@0.0.29 test:guides
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project guides
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/mcp
+
+···································································································································································
+
+ Test Files  1 passed (1)
+      Tests  163 passed (163)
+   Start at  08:55:46
+   Duration  2.78s (transform 329ms, setup 488ms, import 709ms, tests 1.42s, environment 0ms)
+
+npm notice run @orkestrel/mcp@0.0.29 npx
+npm notice run vitest run --project src:core tests/src/core/MCPLegacy.test.ts
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/mcp
+
+
+ Test Files  1 passed (1)
+      Tests  57 passed (57)
+   Start at  08:55:51
+   Duration  690ms (transform 231ms, setup 449ms, import 35ms, tests 51ms, environment 0ms)
+
