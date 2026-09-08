@@ -1,0 +1,113 @@
+I'll read the scout brief and the orchestration files it depends on, then return only the bounded evidence map.Next I’ll load the named skill and the portability, workspace, tests, and quality rules the brief requires.I’ll load the skill’s required references and locate the named guide files, logs, and policy seams.The logs point at the sibling `guide` checkout. I’ll read that case, the no-mocking rule path, and the matching scaffold copies.I’ll hash the reached seam files so the map can state whether the canonical and vendored copies actually differ.# Evidence map: `policy(no-mocking)` in guide’s real-binary config case
+
+## Chain
+
+**Fixture text**
+- `C:/Users/mikes/WebstormProjects/guide/tests/config.test.ts:1759` — `"vi.mock('./x')"` (same text as the in-process invalid case at `:785`)
+- Written by `createPolicyScratch.write` to scratch `src/violations/fixture.ts` (`:1755–1776`), alongside other violation lines in that same file
+- Scratch root: `mkdtempSync(join(tmpdir(), 'orkestrel-config-policy-'))` — `guide/tests/setupPolicy.ts:62–78`
+- Host path join: `normalizePolicyPath` then `join(root, ...segments)` — `:67–76`, `:276–277`
+
+**Config and rule**
+- Scratch copies workspace `.oxlintrc.json` and `configs/policy.ts` — `config.test.ts:1753–1754`
+- `guide/.oxlintrc.json:4` — `jsPlugins: [{ name: "policy", specifier: "./configs/policy.ts" }]`
+- `guide/.oxlintrc.json:59` — `"policy/no-mocking": "error"` (top-level `rules`, not an override)
+- `guide/configs/policy.ts:1375–1378` — default plugin `meta.name: 'policy'`, `rules['no-mocking'] = MOCKING_RULE`
+- `guide/configs/policy.ts:1076–1094` — `MOCKING_RULE` visitor `CallExpression → reportMocking`
+- `guide/configs/policy.ts:862–888` — `reportMocking`: callee `MemberExpression`, object `Identifier` `vi` or `jest`, member `mock` / `doMock` / `unstable_mockModule` → `messageId: 'mock'`
+- Member read: `identifierToPolicyName` / `expressionToPolicyText` — `:440–464`
+- `reportMocking` has no filename / population gate
+
+**Not on this path**
+- `guide/configs/helpers.ts` — imported at `config.test.ts:22` as `configHelpers`; this `it` never calls it
+- Policy sweep in `setupPolicy.ts` — path/text laws; `no-mocking` is the oxlint plugin instrument (`guides/scaffold.md:1011–1013`, `.claude/rules/workspace.md:254–268`)
+
+**Real binary**
+- Resolve: `createRequire(join(root, 'package.json')).resolve('oxlint/package.json')` then `bin.oxlint` — `config.test.ts:1817–1832`
+- Installed: `guide/node_modules/oxlint/package.json` version `1.81.0`, `"bin": { "oxlint": "bin/oxlint" }`
+- Entry: `guide/node_modules/oxlint/bin/oxlint` — `#!/usr/bin/env node` importing `../dist/cli.js`
+- Native: `guide/node_modules/@oxlint/binding-win32-x64-msvc` `1.81.0`, main `oxlint.win32-x64-msvc.node`
+- Spawn: `process.execPath` `[binary, '--config', scratch/.oxlintrc.json, '--format', 'json', 'src/violations', 'app', 'scripts']`, `cwd: scratch.path` — `config.test.ts:1833–1838`
+- Lock pin: `guide/package-lock.json` `node_modules/oxlint` `1.81.0`
+- Guide manifest: `@orkestrel/guide@0.0.18`, `oxlint` `^1.81.0`, `test:config` → vitest `4.1.11` project `config`
+
+**Parsed diagnostic → expected entry**
+- `JSON.parse(stdout).diagnostics[]` then `` `${code} ${normalizePolicyPath(filename)}` `` — `config.test.ts:1847–1863`
+- `normalizePolicyPath` replaces `\` with `/` only; it does not strip the scratch root — `setupPolicy.ts:276–277`
+- Expected first loop item: `'policy(no-mocking) src/violations/fixture.ts'` — `config.test.ts:1875`
+- Assertion that failed: `:1894` `expect(violationCodes).toContain(reported)`
+
+**Canonical vs vendored (reached seam)**
+Cited line numbers and contents agree for `reportMocking`, `MOCKING_RULE`, plugin export key, `.oxlintrc.json` `jsPlugins` + `policy/no-mocking`, fixture line, expected string, scratch write, and `normalizePolicyPath` between:
+- `C:/Users/mikes/WebstormProjects/scaffold/configs/policy.ts`
+- `C:/Users/mikes/WebstormProjects/scaffold/tests/config.test.ts`
+- `C:/Users/mikes/WebstormProjects/scaffold/tests/setupPolicy.ts`
+- `C:/Users/mikes/WebstormProjects/scaffold/.oxlintrc.json`
+and the guide copies at the same paths under `C:/Users/mikes/WebstormProjects/guide`.
+
+No insertion drift at those anchors. Whole-file hashes were not taken.
+
+## Settled facts
+
+- Host of the logged runs: `C:/Users/mikes/WebstormProjects/guide` (win32).
+- Full chain `npm test` failed this case (`tmp/pass/d7n-guide-heading-validate.YG8PtL/test.log.txt`); isolated `npm run test:config -- tests/config.test.ts -t "loads every configured policy rule through the real binary"` failed the same assertion (`tmp/pass/d7n-guide-config-host.log.txt`). Exit `1` in both.
+- Vitest message: received array length `27` does not include `'policy(no-mocking) src/violations/fix…'`.
+- `JSON.parse(result.stdout)` succeeded (a parse or shape failure throws a different error at `:1847–1852`).
+- Isolated rerun skipped the rest of the config project, including the in-process `tester.run('no-mocking', …)` cases. The full chain did run those other config tests; this real-binary case was the named failure.
+- `oxlint-tsgolint` is not present under `guide/node_modules`.
+- The case does not edit guide’s vendored `configs/policy.ts` or `.oxlintrc.json`; it copies them into `os.tmpdir()`.
+
+## Byte differences
+
+No meaningful difference at the reached no-mocking seam between scaffold canonical and guide vendored copies (same line numbers, same text for the symbols and fixture listed above).
+
+## Unknowns
+
+- The `27` `code` + `filename` strings (log truncates the array).
+- Whether any `policy(*)` code is among them, or whether the miss is a relative-path mismatch after `normalizePolicyPath`.
+- Oxlint stderr / plugin-load text (not in either log).
+- Native AST shape of `vi.mock('./x')` under the binary (RuleTester uses `oxlint/plugins-dev` in-process; the binary also loads `.oxlintrc.json` `plugins: ["import", "typescript", "vitest"]`).
+- Whole-file identity of `policy.ts` outside the cited seam.
+- Attribution of the miss.
+
+## Observation input (no vendored edit)
+
+Durable vector: `guide/tests/config.test.ts:1759` `"vi.mock('./x')"`.
+
+Scratch is destroyed in `finally` (`:1900–1901`). Inspect the binary JSON from a temp copy, not from editing guide:
+
+```bash
+cd /c/Users/mikes/WebstormProjects/guide
+node --input-type=module -e '
+import { spawnSync } from "node:child_process"
+import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs"
+import { createRequire } from "node:module"
+import { tmpdir } from "node:os"
+import { dirname, join, resolve } from "node:path"
+const root = process.cwd()
+const scratch = mkdtempSync(join(tmpdir(), "orkestrel-config-policy-observe-"))
+const write = (target, text) => {
+  const path = join(scratch, ...target.split("/"))
+  mkdirSync(dirname(path), { recursive: true })
+  writeFileSync(path, text)
+}
+write(".oxlintrc.json", readFileSync(resolve(root, ".oxlintrc.json"), "utf8"))
+write("configs/policy.ts", readFileSync(resolve(root, "configs/policy.ts"), "utf8"))
+write("src/violations/fixture.ts", "vi.mock(\"./x\")\n")
+const manifestPath = createRequire(join(root, "package.json")).resolve("oxlint/package.json")
+const manifest = JSON.parse(readFileSync(manifestPath, "utf8"))
+const binary = resolve(dirname(manifestPath), manifest.bin.oxlint)
+const result = spawnSync(
+  process.execPath,
+  [binary, "--config", join(scratch, ".oxlintrc.json"), "--format", "json", "src/violations"],
+  { cwd: scratch, encoding: "utf8", timeout: 15_000 },
+)
+for (const diagnostic of JSON.parse(result.stdout).diagnostics ?? []) {
+  console.log(JSON.stringify({ code: diagnostic.code, filename: diagnostic.filename, message: diagnostic.message }))
+}
+console.error("status", result.status)
+if (result.stderr) console.error(result.stderr)
+'
+```
+
+That prints each native `code` and `filename` for the no-mocking vector. To match the failing case’s exact file, use the full `src/violations/fixture.ts` body at `config.test.ts:1757–1775` and the same spawn args `src/violations`, `app`, `scripts`.

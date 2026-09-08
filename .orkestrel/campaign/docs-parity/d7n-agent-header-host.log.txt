@@ -1,0 +1,2 @@
+Compare the canonical opening header from agent and abort.
+exit=0
