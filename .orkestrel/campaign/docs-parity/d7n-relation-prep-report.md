@@ -217,3 +217,7 @@ This matches the P21 reading exactly and is the converge unit's worklist to clos
 
 - No file item 3 touched sits under the off-limits list; all three summary rewrites landed in `tests/setup.ts`, an owned path.
 - `test:policy` found no `prose` diagnostic in `guides/**` or `README.md`, so no substitution-table edit applied to either file in this unit; every sentence there stays the converge unit's.
+
+---
+
+Orchestrator's annotation (2026-09-08, from `d7n-relation-audit-verdict.md`): this report states counts in prose; the P.2 report's drop-in comparison cites line ranges that include each package's own executed section and states the pilot still reads `below`, which the pilot no longer does; the tree is authoritative. The unit's instruments are retained under `instruments/d7/units/relation/`.

@@ -172,3 +172,7 @@ The `executable guide fences` block at the file's end is this package's own exec
 ## Deviation state
 
 None. No stop condition fired: every cell the seed had to locate was located, the titled body fits the block, no test outside `tests/guides.test.ts` moved, no vendored file needed an edit, every reader returned the shape the brief described, and no residual disagreement remained under the P16 comparator.
+
+---
+
+Orchestrator's annotation (2026-09-08, from `d7n-relation-audit-verdict.md`): this report states counts in prose; the P.2 report's drop-in comparison cites line ranges that include each package's own executed section and states the pilot still reads `below`, which the pilot no longer does; the tree is authoritative. The unit's instruments are retained under `instruments/d7/units/relation/`.
