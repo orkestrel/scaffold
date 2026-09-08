@@ -1,0 +1,19 @@
+All evidence checked. I have sufficient basis to render the verdict.
+
+Lane held: checker pool
+
+Claim 1 — PASS. `git status --short` (`d7n-pool-close.status.txt`) lists exactly `M guides/pool.md` and `M tests/guides.test.ts`. The diff (`d7n-pool-close.diff.txt`) touches only those two files, and every hunk matches an item the closing brief (`d7n-pool-close-brief.md`) names: the three fence lead-ins (item 4), the `Guards` table's `Shape` column (item 1), and the drop-in header correction (item 3). No `src/**` doc block was touched, consistent with the report's finding that no `Shape` cell needed a rewrite.
+
+Claim 2 — PASS. The report's cited diffs (`d7n-pool-close-report.md`) match the actual diff verbatim (guard table, fence lead-ins, header). The report states no bare count in prose; its numeric mentions are either quoted test-run output (`Tests 28 passed (28)`, `Tests 90 passed | 1 skipped (91)`) or durations/exit codes, which `AGENTS.md` § Writing permits as measurements quoted with the run that produced them.
+
+Claim 3 — PASS. `guides/pool.md:64` carries Ruling 15's convention sentence verbatim over the `## Types` table, and `guides/pool.md:54` carries the guard sentence verbatim over `### Guards` (Ruling 20). Every `interface`/`type` row's `Shape` cell was checked against `/home/user/fleet/pool/src/core/types.ts`: `PoolContext` → `{ value?, failures? }` (types.ts:12-17), `PoolErrorOptions` → `{ code, cause?, context? }` (types.ts:23-30), `PoolEventMap` → `{ create, acquire, release, destroy }` bare names per Ruling 19 (types.ts:35-44), `PoolToken` → `{ value } plus release` (types.ts:50-58), `PoolOptions` → `{ on?, error?, create, destroy?, validate?, max? }` in declaration order (types.ts:70-77), `PoolInterface` → `{ emitter, size, idle, active } plus acquire, clear, destroy` (types.ts:83-126), `PoolCode` → the escaped union (types.ts:6). Guard cells (`PoolError`, `number`, `AbortSignal`) match each predicate's narrowed type in `validators.ts:13,30` and `errors.ts`. No constants or shape-value table exists in `guides/pool.md` (grep for `### Constants`/`### Shape` returns no matches), so Rulings 18/21/25 are inapplicable rather than violated, and no extended interface exists, so the parent-`plus` clause is likewise inapplicable. `grep -n '…' guides/pool.md` returns no matches, confirming no ellipsis in any cell.
+
+Claim 4 — PASS. `tests/guides.test.ts` lines 1-3 are byte-identical to the pilot's (`/home/user/fleet/abort/tests/guides.test.ts:1-3`), both reading the Ruling 21 header text. The region from `const root = ` (line 47 in each) through the manifest loop's closing brace (line 258 in each) is identical between the pool copy and the pilot, apart from package-specific constants declared before line 47 (`MODULES`, `GUIDE_SPEC`, imports) which sit outside the canon region per the brief. No package-specific case needed appending inside the region, matching the report's claim and the brief's supplied empty diff.
+
+Claim 5 — PASS. The three fences the brief names as sitting directly under a heading (`### Create a pool` at line 19, `### Validate public boundaries` at line 220, `### Always release and explicitly tear down` at line 233 in the brief's line numbers) each now have a lead-in sentence immediately above the fence (`guides/pool.md:19,224,239` in the landed file). No other fence in `guides/pool.md` sits directly under a heading with no intervening prose (the `## Observing` fence at line 207 follows several paragraphs of prose). No heading in `guides/pool.md` carries a retired term. `README.md`'s `## Install` and `## Usage` fences already sit directly under their headings and were correctly left untouched, per Ruling 24's strike of that fix criterion.
+
+No findings outside the claims.
+
+No referrals — every claim resolved on direct evidence.
+
+VERDICT: PASS

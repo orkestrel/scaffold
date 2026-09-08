@@ -1,0 +1,18 @@
+== toolbox p2-fix landing 2026-09-08T02:36:44Z over d4c724d
+== status
+ M guides/toolbox.md
+ M src/core/errors.ts
+ M src/core/factories.ts
+ M src/core/helpers.ts
+ M src/core/shapers.ts
+ M src/core/types.ts
+ M src/server/types.ts
+ M tests/setup.ts
+ src/server/types.ts   |  6 ++--
+ tests/setup.ts        |  6 ++--
+ 8 files changed, 93 insertions(+), 91 deletions(-)
+== stage by path
+ 8 files changed, 93 insertions(+), 91 deletions(-)
+== committed
+f9a390a Refine toolbox's convergence on the audit's findings
+(status end)

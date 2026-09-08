@@ -1,0 +1,25 @@
+promptToolShape	ObjectShape<{ to, schema }>
+answerToolShape	UnionShape<[{ operation: 'pending' }, { operation: 'answer', id, values }]>
+agentToolShape	ObjectShape<{ task, provider?, tools?, system? }>
+describeToolShape	ObjectShape<{ name }>
+taskDraftShape	ObjectShape<{ id?, name?, description?, behavior?, retries?, timeout? }>
+phaseDraftShape	ObjectShape<{ id?, name?, description?, tasks, concurrency?, bail? }>
+workflowDraftShape	ObjectShape<{ id?, name?, description?, phases, bail? }>
+stepShape	ObjectShape<{ name }>
+workflowStepsShape	ObjectShape<{ name?, steps }>
+workspaceToolShape	UnionShape<[{ operation: 'read', path }, { operation: 'list' }, { operation: 'has', path }, { operation: 'search', query, regex?, sensitive?, limit? }, { operation: 'replace', query, replacement, regex?, sensitive?, limit? }, { operation: 'write', path, content }, { operation: 'splice', path, content, fromLine, fromColumn, toLine, toColumn }, { operation: 'prepend', path, content }, { operation: 'append', path, content }, { operation: 'move', from, to }, { operation: 'remove', path }, { operation: 'workspaces' }, { operation: 'switch', id }]>
+columnPrimitiveShape	LiteralShape<'string' \| 'integer' \| 'number' \| 'boolean'>
+columnSpecShape	UnionShape<[columnPrimitiveShape, { primitive, optional? }]>
+tableSpecShape	ObjectShape<Record<never, never>, ObjectShape<{ columns }>>
+keyShape	UnionShape<[ArrayShape<UnionShape<[StringShape, NumberShape]>>, StringShape, NumberShape]>
+rowShape	ObjectShape<Record<never, never>, JSONShape>
+rowsShape	UnionShape<[ArrayShape<rowShape>, rowShape]>
+conditionShape	ObjectShape<{ column, operator, values, connector? }>
+orderShape	ObjectShape<{ column, direction }>
+queryShape	ObjectShape<{ conditions?, order?, limit?, offset? }>
+databaseToolShape	UnionShape<[{ operation: 'create', id, tables, driver?, primary?, indexes?, version? }, { operation: 'tables', id }, { operation: 'get', id, table, key }, { operation: 'records', id, table, query? }, { operation: 'count', id, table, query? }, { operation: 'aggregate', id, table, function, column, query? }, { operation: 'add', id, table, row }, { operation: 'set', id, table, row }, { operation: 'update', id, table, key, changes }, { operation: 'remove', id, table, key }, { operation: 'destroy', id }]>
+singleKeyShape	UnionShape<[StringShape, NumberShape]>
+includeShape	OptionalShape<ArrayShape<StringShape>>
+managerShape	OptionalShape<StringShape>
+relationToolShape	UnionShape<[{ operation: 'load', manager?, model, key, include? }, { operation: 'find', manager?, model, include?, limit?, offset?, sort?, direction? }, { operation: 'link', manager?, model, key, relation, target }, { operation: 'unlink', manager?, model, key, relation, target }, { operation: 'links', manager?, model, key, relation }]>
+inferToolShape	ObjectShape<{ samples, format?, enum?, candidates? }>

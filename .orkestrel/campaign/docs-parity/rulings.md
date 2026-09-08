@@ -130,3 +130,7 @@ A function row in a table that carries `Shape` holds its signature as a type lit
 - **An alias declared as an indexed access over a tuple (`(typeof CODES)[number]`) holds the resolved union in its `Shape` cell**, the fleet's practice; the indexed-access form is not written.
 - **A guard's `Signature` cell, where a table still carries `Signature`, spells the predicate** (`(value: FileContent) => value is TextContent`), never `boolean`.
 - **A titled example's title that names a topic (`Files and content`) stands** where Ruling 9's trigger did not fire; the closing sweep does not reopen titles per package.
+
+## Ruling 28 — a class row's `Shape` cell
+
+A class row in a table that carries `Shape` holds the interface the class implements, as its code token (`ProbeInterface`), the form probe's guide carries; a class implementing no package interface holds its constructor signature as a type literal, `new (message: string, options?: ErrorOptions) => LSPError`. The table's convention sentence gains "A class row's `Shape` cell holds the interface it implements, or its constructor signature where it implements none." An empty class cell is a defect, as Ruling 26 fixes for a function row. The population sits in console, contract, form, lsp, ollama, and table, each taking the ruling in its next unit.

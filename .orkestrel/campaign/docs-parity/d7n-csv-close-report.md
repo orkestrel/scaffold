@@ -160,3 +160,7 @@ confirmed by the `written: 0` reads above both before and after.
 ---
 
 Orchestrator's annotation (2026-09-08, before landing): the unit wrote the literal U+FEFF character into `BOM`'s description (Ruling 18's literal in the description), which `oxlint` reports as `no-irregular-whitespace` at `src/core/constants.ts:6:50`; the Orchestrator's one-line correction writes the escaped form `'﻿'` in the doc comment, `--to guide` carried the cell, and `lint:check` on the file, `npm run docs` at zero, and `test:guides` re-read green before the landing. The sweep's verifier ran on the unit's tree and reported that lint red; the closure re-verifies.
+
+---
+
+Orchestrator's annotation (2026-09-08, closure): the checker ruled claim 2 FAIL on this report's prose alone (a count stated about a growable set); every citation was verified against the tree, and the tree is authoritative.

@@ -1,0 +1,10 @@
+== test examples landing 2026-09-08T02:36:23Z over 997499c
+== status
+ M guides/test.md
+ M src/core/helpers.ts
+ M src/core/validators.ts
+ M src/server/helpers.ts
+ 4 files changed, 178 insertions(+), 1 deletion(-)
+== committed
+1b6ce04 Document an example for every Surface function of test
+(status end)

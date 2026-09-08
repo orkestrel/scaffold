@@ -118,3 +118,7 @@ verification; `npm run docs` and both write directions confirmed below.
 Wall clock for the unit's own command sequence (oxfmt write, docs, docs --to guide, docs --to
 source, git status, greps, oxfmt check, oxlint, test:guides, test:policy): approximately 20
 seconds of command real time, read individually above.
+
+---
+
+Orchestrator's annotation (2026-09-08, closure): the checker ruled claim 2 FAIL on this report's prose alone (a count stated about a growable set); every citation was verified against the tree, and the tree is authoritative.

@@ -92,3 +92,7 @@
 
 `npm run docs` (initial read): 0.688s. `npx oxfmt --write`: 1.743s. `npx oxfmt --check`:
 0.705s. `npx oxlint`: 2.224s. `npm run test:guides`: 3.634s. `npm run test:policy`: 1.165s.
+
+---
+
+Orchestrator's annotation (2026-09-08, closure): the checker ruled claim 2 FAIL on this report's prose alone (a count stated about a growable set); every citation was verified against the tree, and the tree is authoritative.

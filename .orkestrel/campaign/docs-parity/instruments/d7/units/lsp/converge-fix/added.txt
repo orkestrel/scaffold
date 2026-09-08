@@ -1,0 +1,63 @@
++for (const diagnostic of diagnostics) console.log(diagnostic.message)
++Spawn a language server as a child process and drive it through the stdio transport:
++
++Flatten a retained state, scan that buffer for the header boundary, and take the state's last bytes:
++
++Encode one message, then read its declared length and its body back at the boundary offsets:
++
++### Stdio client transport
++The server surface provides these exports.
++A `Shape` cell holds an interface's data members as bare names in braces, `?` marking an optional member and `plus` introducing its call-signature members, and a type alias's own type literal with a union's arms escaped as `\|`. An extended interface's name comes before `plus`, with the members it adds after. A function row's `Shape` cell holds its signature, and a guard row's the type it narrows to.
++| Export                          | Kind      | Shape                                                                     | Summary                                                                                 |
++| ------------------------------- | --------- | ------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
++| `StdioClientTransport`          | class     |                                                                           | Streams Language Server Protocol bytes between a client and a child process over stdio. |
++| `createStdioClientTransport`    | function  | `(options: StdioClientTransportOptions) => StdioClientTransportInterface` | Creates a byte transport over a Language Server Protocol child process.                 |
++| `StdioClientTransportInterface` | interface | `LSPTransportInterface plus { pid }`                                      | Defines the stdio transport's own surface beyond the byte transport it carries.         |
++| `StdioClientTransportOptions`   | interface | `{ on?, error?, server, grace? }`                                         | Configures a Language Server Protocol child process reached over its standard streams.  |
++### Client and transport contracts
++The client surface provides these entities and configuration contracts.
++A `Shape` cell holds an interface's data members as bare names in braces, `?` marking an optional member and `plus` introducing its call-signature members, and a type alias's own type literal with a union's arms escaped as `\|`. A function row's `Shape` cell holds its signature, and a guard row's the type it narrows to.
++| `createLSPClient`       | function  | `(options: LSPClientOptions) => LSPClientInterface`                                                                                                                                                   | Creates a transport-agnostic Language Server Protocol client.                         |
++The framing, timing, and error surface provides these exports.
++
++A `Shape` cell holds an interface's data members as bare names in braces, `?` marking an optional member and `plus` introducing its call-signature members, and a type alias's own type literal with a union's arms escaped as `\|`. A function row's `Shape` cell holds its signature, and a guard row's the type it narrows to.
++
++| Export             | Kind      | Shape                                                                                                                               | Summary                                                                                     |
++| ------------------ | --------- | ----------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
++| `encodeLSPMessage` | function  | `(message: JSONRPCMessage) => Uint8Array`                                                                                           | Encodes a JSON-RPC message as one byte-accurate LSP base-protocol frame.                    |
++| `parseLSPMessages` | function  | `(chunk: Uint8Array, state?: LSPDecodeState) => readonly [messages: readonly JSONRPCMessage[], state: LSPDecodeState \| undefined]` | Parses a byte chunk into complete LSP base-protocol messages and retained decode state.     |
++| `LSPDecodeState`   | type      | `{ bytes, previous?, size } \| { bytes, previous?, size, boundary, length }`                                                        | Retains incremental base-protocol bytes and resolved framing metadata between decode calls. |
++| `joinLSPSegments`  | function  | `(state: LSPDecodeState) => Uint8Array`                                                                                             | Flattens the retained segments of a decode state into one owned buffer.                     |
++| `takeLSPTail`      | function  | `(state: LSPDecodeState, count: number) => Uint8Array`                                                                              | Takes the last retained bytes of a decode state as an owned buffer.                         |
++| `scanLSPBoundary`  | function  | `(bytes: Uint8Array) => number \| undefined`                                                                                        | Finds the first base-protocol header boundary in a flat buffer.                             |
++| `readLSPHeader`    | function  | `(header: Uint8Array, messages?: readonly JSONRPCMessage[]) => number`                                                              | Reads one base-protocol header block and returns the content length it declares.            |
++| `readLSPBody`      | function  | `(body: Uint8Array, messages?: readonly JSONRPCMessage[]) => JSONRPCMessage`                                                        | Reads one base-protocol content body as a validated JSON-RPC message.                       |
++| `waitForDeadline`  | function  | `(timeout: number) => Promise<void>`                                                                                                | Waits for a deadline to elapse without holding the host event loop open.                    |
++| `LSPError`         | class     |                                                                                                                                     | Reports a package failure with a stable machine-readable category.                          |
++| `isLSPError`       | function  | `LSPError`                                                                                                                          | Checks whether an unknown value is a branded package error.                                 |
++| `LSPErrorCode`     | type      | `'spawn' \| 'framing' \| 'protocol' \| 'duplicate' \| 'server' \| 'timeout' \| 'aborted' \| 'closed'`                               | Identifies a stable package failure category, derived from `LSP_ERROR_CODES`.               |
++| `LSPErrorContext`  | interface | `{ code?, messages?, value? }`                                                                                                      | Describes structured details attached to an `LSPError`.                                     |
++| `LSPErrorOptions`  | interface | `{ code, context?, cause? }`                                                                                                        | Configures an `LSPError` instance.                                                          |
++The JSON-RPC and initialization surface provides these payload types.
++The document and diagnostic surface provides these payload types.
++The validation surface provides these guards.
++The constant surface provides these protocol names, advertisements, and limits.
++ * for (const diagnostic of diagnostics) console.log(diagnostic.message)
++	 * @remarks Pending operations reject with an `LSPError` coded `closed` before the `shutdown`
++	 * request is written. A close failure that settles before the deadline is emitted before the
++	 * emitter is destroyed. At the deadline, the client emits a coded `timeout` error and absorbs the
++	 * later close outcome.
++ * Names the value this process carries in `LSP_FIXTURE_AMBIENT` so a child can report what it
++ * inherited.
++ * @remarks A host adds variables to a child's environment on its own account: Windows copies
++ * `PATH`, `TEMP`, `USERPROFILE`, and the rest of its required set into every child whatever
++ * environment the spawn configured, so `PATH` reports the same value there whether a spawn replaced
++ * the environment or inherited it. No host injects this variable, so a child that reports it
++ * inherited the parent's environment and a child that reports `null` received the configured
++ * environment alone.
++/**
++ * Names the workspace the Oxlint receipt lints, pinned to one rule so its diagnostics stay fixed.
++ */
++ * @remarks A caller that needs the value cannot proceed without it, so an absent or off-shape
++ * member fails here rather than reaching an assertion as a stand-in number.
++ * Encodes a JSON-RPC message with its Content-Length header as one base-protocol buffer.

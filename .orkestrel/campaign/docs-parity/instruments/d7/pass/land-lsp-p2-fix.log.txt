@@ -1,0 +1,15 @@
+== lsp p2-fix landing 2026-09-08T02:35:21Z over edca4bd
+== status
+ M guides/lsp.md
+ M src/core/factories.ts
+ M src/core/types.ts
+ M tests/setupServer.ts
+ M tests/src/server/fixtures/protocol.mjs
+ tests/setupServer.ts                   | 22 +++++----
+ tests/src/server/fixtures/protocol.mjs |  2 +-
+ 5 files changed, 63 insertions(+), 50 deletions(-)
+== stage by path
+ 5 files changed, 63 insertions(+), 50 deletions(-)
+== committed
+d83e0cb Refine lsp's convergence on the audit's findings
+(status end)
