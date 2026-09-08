@@ -233,7 +233,7 @@ retained evidence/d7n-foundation-<package>/ metadata for their exact tarball pat
 | --- | --- | --- | --- |
 | contract | 0.0.17 | 1e235c053e27b6f3f6075367312dfddc75bc3d6b | accepted artifact; clean on branch and main |
 | codec | 0.0.3 | a492e90fc68c64b29a82ec69181ed69e8c72beb1 | accepted artifact; clean on branch and main |
-| msg | 0.0.10 | 57128e98372d2bc94307236886beb5166d172664 | accepted artifact; selected-path landing pending |
+| msg | 0.0.10 | 0daaa2a7f7301ae8754f31aa88b2a22887695065 | accepted artifact; clean on branch and main |
 | sse | 0.0.7 | 7778cff15ca587fdb12404a31737dc7a91225e1d | accepted artifact; selected-path landing pending |
 | test | 0.0.14 | 1b6ce0468d40c676d1e544cd004c0a5aa09730f0 | accepted artifact; selected-path landing pending |
 
