@@ -1,0 +1,827 @@
+diff --git a/README.md b/README.md
+index 43a0e16..a1addf5 100644
+--- a/README.md
++++ b/README.md
+@@ -47,10 +47,8 @@ const handle = compose<State>([boundary, security], async (_request, context) =>
+ ```
+ 
+ Each battery is a typed `options => MiddlewareHandler<TState>` factory that composes with
+-the others through the frozen `@orkestrel/server` seam — mount boundary, telemetry,
+-compression, security headers, CORS, rate limiting, sessions (with `MemorySessionStore` or
+-`DatabaseSessionStore` over `@orkestrel/database`), CSRF, static files, and multipart uploads
+-in any combination, scoped with `only()` / `except()` where needed.
++the others through the frozen `@orkestrel/server` seam, in any combination, scoped with
++`only()` and `except()` where needed.
+ 
+ ## Guides
+ 
+diff --git a/guides/middleware.md b/guides/middleware.md
+index 97bde86..1948d03 100644
+--- a/guides/middleware.md
++++ b/guides/middleware.md
+@@ -26,6 +26,8 @@ seam.
+ 
+ ### Mount a battery
+ 
++The fence composes an error boundary and the security battery over `compose`, then answers with the request identifier `createSecurity` stashed on `context.state`.
++
+ ```ts
+ import { createBoundary, createSecurity } from '@orkestrel/middleware'
+ import type { IdentifierState } from '@orkestrel/middleware'
+@@ -72,7 +74,7 @@ const handle = compose<State>([boundary, security], async (_request, context) =>
+ 
+ ### Types
+ 
+-A `Shape` cell holds an interface's data members as bare names in braces, `?` marking an optional member and `plus` introducing its call-signature members, and a type alias's own type literal with a union's arms escaped as `\|`.
++A `Shape` cell holds an interface's data members as bare names in braces, `?` marking an optional member and `plus` introducing its call-signature members, and a type alias's own type literal with a union's arms escaped as `\|`. An extended interface's name comes before `plus`, with the members it adds after.
+ 
+ | Type                        | Kind      | Shape                                                                                          | Summary                                                                                                                                                                                                                                                                                                 |
+ | --------------------------- | --------- | ---------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+@@ -103,11 +105,11 @@ A `Shape` cell holds an interface's data members as bare names in braces, `?` ma
+ | `SessionOptions`            | interface | `{ transport, store?, ttl?, lifetime?, capacity?, evict?, create?, mint?, required?, clock? }` | Configures `createSession` — the generic session battery.                                                                                                                                                                                                                                               |
+ | `CookieTransportOptions`    | interface | `{ name?, secret, cookie? }`                                                                   | Configures `createCookieTransport` — the signed-cookie `SessionTransportInterface`.                                                                                                                                                                                                                     |
+ | `HeaderTransportOptions`    | interface | `{ header? }`                                                                                  | Configures `createHeaderTransport` — the bare-header `SessionTransportInterface`.                                                                                                                                                                                                                       |
+-| `MemorySessionStoreOptions` | interface | `{ ttl?, lifetime?, capacity?, evict? }`                                                       | Configures `createMemorySessionStore` — the default in-process `SessionStoreInterface`.                                                                                                                                                                                                                 |
++| `MemorySessionStoreOptions` | interface | `SessionLimits plus { capacity?, evict? }`                                                     | Configures `createMemorySessionStore` — the default in-process `SessionStoreInterface`.                                                                                                                                                                                                                 |
+ | `SessionLimits`             | interface | `{ ttl?, lifetime? }`                                                                          | Describes the idle and absolute-lifetime thresholds a session store enforces — `sessionExpired`'s limits argument and both shipped stores' construction options.                                                                                                                                        |
+ | `SessionCursors`            | interface | `{ seen, created }`                                                                            | Describes the per-session instants a store stamps and `sessionExpired` measures against.                                                                                                                                                                                                                |
+-| `SessionRow`                | interface | `{ id, session, seen, created }`                                                               | Represents one persisted session row — an opaque snapshot column plus the store-owned idle/absolute-lifetime cursors, the shape a `DatabaseSessionStore`'s backing table holds.                                                                                                                         |
+-| `SessionEntry`              | interface | `{ session, seen, created }`                                                                   | Represents one in-process session entry — the payload `MemorySessionStore` holds against an id, alongside the same cursors a persisted row carries.                                                                                                                                                     |
++| `SessionRow`                | interface | `SessionCursors plus { id, session }`                                                          | Represents one persisted session row — an opaque snapshot column plus the store-owned idle/absolute-lifetime cursors, the shape a `DatabaseSessionStore`'s backing table holds.                                                                                                                         |
++| `SessionEntry`              | interface | `SessionCursors plus { session }`                                                              | Represents one in-process session entry — the payload `MemorySessionStore` holds against an id, alongside the same cursors a persisted row carries.                                                                                                                                                     |
+ | `SessionSnapshot`           | interface | `{ id, state }`                                                                                | Represents a session's serializable projection — the value `snapshotSession` produces and a durable store's `set` writes.                                                                                                                                                                               |
+ | `SessionRestoreFunction`    | type      | `(value: unknown) => SessionInterface \| undefined`                                            | Rebuilds a session entity from an untrusted stored snapshot, or resolves `undefined` when the value is malformed.                                                                                                                                                                                       |
+ | `CSRFState`                 | interface | `{ csrf? }`                                                                                    | Describes the CSRF state slice `createCSRF` stashes — the raw token a safe-method response exposes for a subsequent mutating request to submit back.                                                                                                                                                    |
+@@ -125,7 +127,7 @@ A `Shape` cell holds an interface's data members as bare names in braces, `?` ma
+ | `NodeCompressionOptions`    | interface | `{ threshold?, filter? }`                                                                      | Configures the node face's `createCompression` — `node:zlib`-backed response compression.                                                                                                                                                                                                               |
+ | `MultipartErrorCode`        | type      | `'limit' \| 'malformed' \| 'rejected'`                                                         | Names the reason `createMultipart` rejected a request — the machine-readable code `MultipartError` carries and maps onto its HTTP status: `'limit'` → 413, `'malformed'` → 400, `'rejected'` → 415.                                                                                                     |
+ | `UploadStatus`              | type      | `'staged' \| 'moved'`                                                                          | Names the lifecycle stage of one staged upload's temp file.                                                                                                                                                                                                                                             |
+-| `UploadedFile`              | interface | `{ field, name, size, mime, validated, status, path }`                                         | Describes one uploaded file's post-parse record — the node-bound, richer sibling of the pure core's `MultipartFile` (identical fields, `status` narrowed to `UploadStatus`). Structurally assignable into `MultipartFile` so a `createMultipart`-built `MultipartBody` satisfies the shared core shape. |
++| `UploadedFile`              | interface | `Omit<MultipartFile, 'status'> plus { status }`                                                | Describes one uploaded file's post-parse record — the node-bound, richer sibling of the pure core's `MultipartFile` (identical fields, `status` narrowed to `UploadStatus`). Structurally assignable into `MultipartFile` so a `createMultipart`-built `MultipartBody` satisfies the shared core shape. |
+ | `PartHeaders`               | interface | `{ name, filename, mime }`                                                                     | Describes one multipart part's parsed header block — `parsePartHeaders`'s return shape.                                                                                                                                                                                                                 |
+ | `ByteRange`                 | interface | `{ start, end }`                                                                               | Describes one inclusive byte range over a file — `streamFile`'s optional `range` argument and the shape `createStatic` builds for a satisfiable `Range` request.                                                                                                                                        |
+ 
+@@ -138,9 +140,9 @@ A `Shape` cell holds the constant's declared type.
+ | `DEFAULT_COMPRESSION_THRESHOLD`   | const | `number`                                       | Holds `1024`, the default minimum buffered body size in bytes `createCompression` will compress.                                                                                                                                                   |
+ | `DEFAULT_COMPRESSION_ENCODINGS`   | const | `readonly Encoding[]`                          | Lists `['gzip', 'deflate']`, the default content-codings `createCompression` offers in preference order — intersected at construction with what the runtime's `CompressionStream` actually supports.                                               |
+ | `DEFAULT_FRAME_OPTIONS`           | const | `string`                                       | Holds `'DENY'`, the default `X-Frame-Options` value `createSecurity` sets.                                                                                                                                                                         |
+-| `DEFAULT_CSP`                     | const | `string`                                       | Holds the default `Content-Security-Policy` value `createSecurity` sets — a custom `csp` option replaces this wholesale, never merges.                                                                                                             |
++| `DEFAULT_CSP`                     | const | `string`                                       | Holds `"default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'self'; form-action 'self'"`, the default `Content-Security-Policy` value `createSecurity` sets — a custom `csp` option replaces this wholesale, never merges.     |
+ | `DEFAULT_REFERRER_POLICY`         | const | `string`                                       | Holds `'strict-origin-when-cross-origin'`, the default `Referrer-Policy` value `createSecurity` sets.                                                                                                                                              |
+-| `DEFAULT_PERMISSIONS_POLICY`      | const | `string`                                       | Holds the default `Permissions-Policy` value `createSecurity` sets.                                                                                                                                                                                |
++| `DEFAULT_PERMISSIONS_POLICY`      | const | `string`                                       | Holds `'camera=(), microphone=(), geolocation=()'`, the default `Permissions-Policy` value `createSecurity` sets.                                                                                                                                  |
+ | `DEFAULT_COOP`                    | const | `string`                                       | Holds `'same-origin'`, the default `Cross-Origin-Opener-Policy` value `createSecurity` sets.                                                                                                                                                       |
+ | `DEFAULT_CORP`                    | const | `string`                                       | Holds `'same-origin'`, the default `Cross-Origin-Resource-Policy` value `createSecurity` sets.                                                                                                                                                     |
+ | `DEFAULT_CLUSTER`                 | const | `string`                                       | Holds `'?1'`, the default `Origin-Agent-Cluster` value `createSecurity` sets.                                                                                                                                                                      |
+@@ -153,7 +155,7 @@ A `Shape` cell holds the constant's declared type.
+ | `DEFAULT_BEARER_HEADER`           | const | `string`                                       | Names `'authorization'`, the default header `createBearer` reads the token from.                                                                                                                                                                   |
+ | `DEFAULT_BEARER_SCHEME`           | const | `string`                                       | Names `'Bearer'`, the default scheme prefix `createBearer` strips before verification.                                                                                                                                                             |
+ | `DEFAULT_LIMITER_CAPACITY`        | const | `number`                                       | Holds `10_000`, the default maximum number of distinct rate-limit keys `createLimiter` tracks before LRU eviction.                                                                                                                                 |
+-| `DEFAULT_LIMITER_MESSAGE`         | const | `string`                                       | Holds the default 429 body message `createLimiter` sends when a key is over budget.                                                                                                                                                                |
++| `DEFAULT_LIMITER_MESSAGE`         | const | `string`                                       | Holds `'rate limit exceeded'`, the default 429 body message `createLimiter` sends when a key is over budget.                                                                                                                                       |
+ | `DEFAULT_SESSION_CAPACITY`        | const | `number`                                       | Holds `10_000`, the default maximum number of distinct session ids `createMemorySessionStore` tracks before LRU (by last write) eviction.                                                                                                          |
+ | `DEFAULT_SESSION_COOKIE`          | const | `string`                                       | Names `'session'`, the default cookie `createCookieTransport` writes the signed session id under.                                                                                                                                                  |
+ | `DEFAULT_SESSION_HEADER`          | const | `string`                                       | Names `'session-id'`, the default header `createHeaderTransport` carries the session id in.                                                                                                                                                        |
+@@ -180,71 +182,75 @@ A `Shape` cell holds the constant's declared type.
+ 
+ ### Shapers
+ 
+-| API              | Kind  | Summary                                                                                                                                                                                                                     |
+-| ---------------- | ----- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+-| `sessionColumns` | const | Holds the `@orkestrel/database` column shape for a `SessionRow` table. Pass it as-is to `createDatabase({ tables: { sessions: sessionColumns } })` so an app declaring a durable session table never hand-writes the shape. |
++A `Shape` cell holds the constant's declared type.
++
++| API              | Kind  | Shape                            | Summary                                                                                                                                                                                                                     |
++| ---------------- | ----- | -------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
++| `sessionColumns` | const | `{ id, session, seen, created }` | Holds the `@orkestrel/database` column shape for a `SessionRow` table. Pass it as-is to `createDatabase({ tables: { sessions: sessionColumns } })` so an app declaring a durable session table never hand-writes the shape. |
+ 
+ ### Helpers — core
+ 
+-| API                         | Kind     | Summary                                                                                                                                                                                                                                                                                |
+-| --------------------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+-| `resolveKey`                | function | Derives `createLimiter`'s default rate-limit bucket key from a request's resolved identity facts.                                                                                                                                                                                      |
+-| `resolveOptInHeader`        | function | Resolves an opt-in, value-bearing security header — `string \| boolean` (off by default, `true` uses the secure default), the shape `createSecurity`'s `coep`/`hsts` options use, distinct from the plain value-or-`false` shape `resolveSecurityHeader` (the peer substrate) handles. |
+-| `buildRetryAfter`           | function | Builds the `Retry-After` header value — whole seconds until a window reset, floored at a minimum of `1`.                                                                                                                                                                               |
+-| `buildRateLimitField`       | function | Builds the draft `RateLimit` structured header field — emitted only when `createLimiter`'s `policy` option is `true`.                                                                                                                                                                  |
+-| `buildRateLimitPolicyField` | function | Builds the draft `RateLimit-Policy` structured header field — emitted only when `createLimiter`'s `policy` option is `true`.                                                                                                                                                           |
+-| `matchesTrustedEntry`       | function | Checks whether a candidate address is a bare (non-CIDR) trusted-hop match — an exact string match, or a simple prefix-CIDR match for IPv4 (`/8`–`/32`). An IPv6 entry matches by exact string only — there is no IPv6 CIDR support.                                                    |
+-| `resolveForwardedFor`       | function | Walks `X-Forwarded-For` right-to-left and resolves the first untrusted hop address — `createForwarded`'s core algorithm.                                                                                                                                                               |
+-| `detectEncodings`           | function | Feature-detects which of `candidates` the runtime's `CompressionStream` actually supports — `createCompression`'s construction-time intersection.                                                                                                                                      |
+-| `compressBytes`             | function | Compresses bytes with the host-independent `CompressionStream` primitive.                                                                                                                                                                                                              |
+-| `isBufferingIneligible`     | function | Checks whether a response is eligible for the compression/ETag buffering pipeline — the shared cheap-skip predicate both batteries apply before ever touching `response.arrayBuffer()`.                                                                                                |
+-| `isCompressionNegotiated`   | function | Checks whether a negotiated `Accept-Encoding` outcome is worth acting on — `createCompression`'s negotiation-eligibility half of the skip list.                                                                                                                                        |
+-| `rebuildResponse`           | function | Rebuilds a `Response` around a replacement body while preserving its status/statusText — the buffered-response reconstruction shared by the compression and ETag batteries after they have consumed `response.arrayBuffer()`.                                                          |
+-| `compressResponse`          | function | Runs the shared negotiate → skip → threshold → compress → header-set skeleton both faces' `createCompression` batteries compose — response-body compression over a caller-supplied set of feature-detected codings.                                                                    |
+-| `transferSessionState`      | function | Copies every entry of one session's `state` into another — the regenerate state-carry `createSession`'s `control.regenerate()` applies.                                                                                                                                                |
+-| `sessionExpired`            | function | Checks whether a session has aged past its idle timeout or absolute lifetime as of `now` — the pure expiry predicate `MemorySessionStore` delegates to.                                                                                                                                |
+-| `snapshotSession`           | function | Snapshots a session's `state` into a plain, serializable record — the projection a durable store's `set` writes to disk.                                                                                                                                                               |
+-| `validateSessionLimits`     | function | Validates a store's idle and absolute-lifetime thresholds, throwing when either is present and malformed — the shared construction gate `MemorySessionStore` and `DatabaseSessionStore` both apply, so one malformed `ttl` is refused identically by whichever store receives it.      |
+-| `isPreflight`               | function | Determines whether a request is a CORS preflight — an `OPTIONS` request carrying an `Access-Control-Request-Method` header.                                                                                                                                                            |
+-| `buildClient`               | function | Builds the `Client` slice `createForwarded` stashes, from the resolved client IP — a leaf shaping helper.                                                                                                                                                                              |
+-| `equalsConstantTime`        | function | Compares two strings in constant time — `createCSRF`'s double-submit token comparison, avoiding a timing oracle on the submitted-vs-cookie match.                                                                                                                                      |
++| API                         | Kind     | Summary                                                                                                                                                                                                                                                                                                                                                           |
++| --------------------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
++| `resolveKey`                | function | Derives `createLimiter`'s default rate-limit bucket key from a request's resolved identity facts.                                                                                                                                                                                                                                                                 |
++| `resolveOptInHeader`        | function | Resolves an opt-in, value-bearing security header — `string \| boolean` (off by default, `true` uses the secure default), the shape `createSecurity`'s `coep`/`hsts` options use, distinct from the plain value-or-`false` shape `resolveSecurityHeader` (the peer substrate) handles.                                                                            |
++| `buildRetryAfter`           | function | Builds the `Retry-After` header value — whole seconds until a window reset, floored at a minimum of `1`.                                                                                                                                                                                                                                                          |
++| `buildRateLimitField`       | function | Builds the draft `RateLimit` structured header field — emitted only when `createLimiter`'s `policy` option is `true`.                                                                                                                                                                                                                                             |
++| `buildRateLimitPolicyField` | function | Builds the draft `RateLimit-Policy` structured header field — emitted only when `createLimiter`'s `policy` option is `true`.                                                                                                                                                                                                                                      |
++| `matchesTrustedEntry`       | function | Checks whether a candidate address is a bare (non-CIDR) trusted-hop match — an exact string match, or a simple prefix-CIDR match for IPv4 (`/8`–`/32`). An IPv6 entry matches by exact string only — there is no IPv6 CIDR support.                                                                                                                               |
++| `resolveForwardedFor`       | function | Walks `X-Forwarded-For` right-to-left and resolves the first untrusted hop address — `createForwarded`'s core algorithm.                                                                                                                                                                                                                                          |
++| `detectEncodings`           | function | Feature-detects which of `candidates` the runtime's `CompressionStream` actually supports — `createCompression`'s construction-time intersection.                                                                                                                                                                                                                 |
++| `compressBytes`             | function | Compresses bytes with the host-independent `CompressionStream` primitive.                                                                                                                                                                                                                                                                                         |
++| `isBufferingIneligible`     | function | Checks whether a response must skip the compression and ETag buffering pipeline — the shared cheap-skip predicate both batteries apply before ever touching `response.arrayBuffer()`, true for a `HEAD` request, a `204`/`304` or otherwise bodyless response, an `event-stream` response, and a response already carrying the header the caller is about to set. |
++| `isCompressionNegotiated`   | function | Checks whether a negotiated `Accept-Encoding` outcome is worth acting on — `createCompression`'s negotiation-eligibility half of the skip list.                                                                                                                                                                                                                   |
++| `rebuildResponse`           | function | Rebuilds a `Response` around a replacement body while preserving its status/statusText — the buffered-response reconstruction shared by the compression and ETag batteries after they have consumed `response.arrayBuffer()`.                                                                                                                                     |
++| `compressResponse`          | function | Runs the shared negotiate → skip → threshold → compress → header-set skeleton both faces' `createCompression` batteries compose — response-body compression over a caller-supplied set of feature-detected codings.                                                                                                                                               |
++| `transferSessionState`      | function | Copies every entry of one session's `state` into another — the regenerate state-carry `createSession`'s `control.regenerate()` applies.                                                                                                                                                                                                                           |
++| `sessionExpired`            | function | Checks whether a session has aged past its idle timeout or absolute lifetime as of `now` — the pure expiry predicate `MemorySessionStore` delegates to.                                                                                                                                                                                                           |
++| `snapshotSession`           | function | Snapshots a session's `state` into a plain, serializable record — the projection a durable store's `set` writes to disk.                                                                                                                                                                                                                                          |
++| `validateSessionLimits`     | function | Validates a store's idle and absolute-lifetime thresholds, throwing when either is present and malformed — the shared construction gate `MemorySessionStore` and `DatabaseSessionStore` both apply, so one malformed `ttl` is refused identically by whichever store receives it.                                                                                 |
++| `isPreflight`               | function | Determines whether a request is a CORS preflight — an `OPTIONS` request carrying an `Access-Control-Request-Method` header.                                                                                                                                                                                                                                       |
++| `buildClient`               | function | Builds the `Client` slice `createForwarded` stashes, from the resolved client IP — a leaf shaping helper.                                                                                                                                                                                                                                                         |
++| `equalsConstantTime`        | function | Compares two strings in constant time — `createCSRF`'s double-submit token comparison, avoiding a timing oracle on the submitted-vs-cookie match.                                                                                                                                                                                                                 |
+ 
+ ### Validators — core
+ 
+ Each guard in the following table is total: it accepts any input, returns `false` off-shape, and never throws.
+ 
+-| API                | Kind     | Summary                                                                                                                                                                                                                                                                                                                                                                       |
+-| ------------------ | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+-| `isSession`        | function | Determines whether a value implements `SessionInterface` — a total structural guard: an `id` string, a `state` `Map`, and the `set`, `delete`, and `clear` mutators. Prototype-agnostic — accepts a plain object, a null-prototype object, and a class instance (a real `Session`), because a restored or stored session is routinely a class instance rather than a literal. |
+-| `isSessionControl` | function | Determines whether a value implements `SessionControlInterface` — a total structural guard: callable `regenerate` and `destroy`.                                                                                                                                                                                                                                              |
+-| `isMultipartFile`  | function | Determines whether a value is one staged `MultipartFile` record — a total structural guard checking every required field's shape.                                                                                                                                                                                                                                             |
+-| `isMultipartBody`  | function | Determines whether a value implements `MultipartBody` — a total structural guard: `files` keyed by field name to arrays of `MultipartFile`, and a `fields` string record.                                                                                                                                                                                                     |
++In a guard table a `Shape` cell holds the type the guard narrows to.
++
++| API                | Kind     | Shape                     | Summary                                                                                                                                                                                                                                                                                                                                                                       |
++| ------------------ | -------- | ------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
++| `isSession`        | function | `SessionInterface`        | Determines whether a value implements `SessionInterface` — a total structural guard: an `id` string, a `state` `Map`, and the `set`, `delete`, and `clear` mutators. Prototype-agnostic — accepts a plain object, a null-prototype object, and a class instance (a real `Session`), because a restored or stored session is routinely a class instance rather than a literal. |
++| `isSessionControl` | function | `SessionControlInterface` | Determines whether a value implements `SessionControlInterface` — a total structural guard: callable `regenerate` and `destroy`.                                                                                                                                                                                                                                              |
++| `isMultipartFile`  | function | `MultipartFile`           | Determines whether a value is one staged `MultipartFile` record — a total structural guard checking every required field's shape.                                                                                                                                                                                                                                             |
++| `isMultipartBody`  | function | `MultipartBody`           | Determines whether a value implements `MultipartBody` — a total structural guard: `files` keyed by field name to arrays of `MultipartFile`, and a `fields` string record.                                                                                                                                                                                                     |
+ 
+ ### Helpers — node
+ 
+-| API                         | Kind     | Summary                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+-| --------------------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+-| `resolveStaticPath`         | function | Resolves a request pathname to an on-disk path under `root`, or `undefined` when it cannot — the traversal guard, whose algorithm and order are exact: strip `prefix` on a segment boundary → `decodeURIComponent` (a malformed escape refuses, never throws) → reject a NUL byte → strip the leading path separator first (so a leading `..` survives `normalize` as a genuine climbing segment) → `normalize` → refuse any Windows reserved- device-name segment (`isReservedDeviceName`) → `resolve` and require the result under `root`. |
+-| `isUnderPath`               | function | Checks whether `pathname` is `prefix` itself or lies under it on a segment boundary — the shared under-path test `resolveStaticPath`'s prefix strip and `createStatic`'s SPA-fallback `exclude` both apply, so `exclude: '/api'` matches `/api` and `/api/x` but never `/apifoo`.                                                                                                                                                                                                                                                            |
+-| `resolveStaticFallbackPath` | function | Resolves the fixed SPA shell path when a static-file miss is eligible for fallback.                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+-| `isContainedPath`           | function | Checks whether `child` is `parent` itself or lies inside it on-disk — the filesystem containment predicate `createStatic` applies to `fs.realpath` output (never to a URL pathname — that is `isUnderPath`'s job).                                                                                                                                                                                                                                                                                                                           |
+-| `resolveContainedRealPath`  | function | Canonicalizes `candidate` and returns it only when it lies inside `rootReal` — the shared realpath-then-contain step `createStatic` applies to a directory index and to its SPA shell.                                                                                                                                                                                                                                                                                                                                                       |
+-| `isReservedDeviceName`      | function | Checks whether a path segment is a Windows reserved device name (CVE-2025-27210).                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+-| `isDotfilePath`             | function | Checks whether a relative path (already resolved under a static root) has any segment starting with `.` — a dotfile or dot-directory.                                                                                                                                                                                                                                                                                                                                                                                                        |
+-| `lookupContentType`         | function | Looks up the MIME type for a static file path by its extension.                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+-| `computeFileETag`           | function | Computes a static file's weak ETag from its size and modification time.                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+-| `detectMIME`                | function | Sniffs a MIME type from a file's leading bytes against a small magic-byte table (jpeg, png, gif87a/89a, webp, pdf, zip).                                                                                                                                                                                                                                                                                                                                                                                                                     |
+-| `matchesBytes`              | function | Checks whether `bytes` contains `signature` at the requested offset.                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+-| `compressNodeBytes`         | function | Compresses response bytes with Node's guaranteed zlib gzip/deflate codecs.                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+-| `extractMultipartBoundary`  | function | Extracts the `boundary` parameter from a `Content-Type` header, or `undefined` when the request is not `multipart/form-data`.                                                                                                                                                                                                                                                                                                                                                                                                                |
+-| `parsePartHeaders`          | function | Parses one multipart part's raw header block into its `name` (from `Content-Disposition`), optional `filename`, and optional `Content-Type`.                                                                                                                                                                                                                                                                                                                                                                                                 |
+-| `resolveMultipartLimits`    | function | Resolves `createMultipart`'s effective `MultipartLimits`, applying every documented default to an omitted leaf.                                                                                                                                                                                                                                                                                                                                                                                                                              |
+-| `createUploadedFile`        | function | Builds a frozen `UploadedFile` record.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+-| `streamFile`                | function | Adapts a `node:fs` read stream over a file path (or an already-open `FileHandle`) into a DOM-compatible `ReadableStream<Uint8Array>` — the single shared node↔web stream bridge every static-file and uploaded-file response body routes through.                                                                                                                                                                                                                                                                                            |
+-| `streamUploadedFile`        | function | Opens a staged/moved uploaded file as a web `ReadableStream`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+-| `readUploadedFile`          | function | Reads a staged/moved uploaded file's full contents into memory.                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+-| `moveUploadedFile`          | function | Moves a staged uploaded file to its final `destination`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+-| `unlinkStagedFiles`         | function | Attempts to unlink every still-`'staged'` file in a parsed `MultipartBody` — the fail-closed cleanup `createMultipart` runs when its downstream handler throws, mirroring `parseMultipartRequest`'s own cleanup pattern (a missing file is already gone; failures are swallowed).                                                                                                                                                                                                                                                            |
++| API                         | Kind     | Summary                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
++| --------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
++| `resolveStaticPath`         | function | Resolves a request pathname to an on-disk path under `root`, or `undefined` when it cannot — the traversal guard, whose algorithm and order are exact: strip `prefix` on a segment boundary → `decodeURIComponent` (a malformed escape refuses, never throws) → reject a NUL byte → strip the leading path separator first (so a leading `..` survives `normalize` as a genuine climbing segment) → `normalize` → refuse any Windows reserved-device-name segment (`isReservedDeviceName`) → `resolve` and require the result under `root`. |
++| `isUnderPath`               | function | Checks whether `pathname` is `prefix` itself or lies under it on a segment boundary — the shared under-path test `resolveStaticPath`'s prefix strip and `createStatic`'s SPA-fallback `exclude` both apply, so `exclude: '/api'` matches `/api` and `/api/x` but never `/apifoo`.                                                                                                                                                                                                                                                           |
++| `resolveStaticFallbackPath` | function | Resolves the fixed SPA shell path when a static-file miss is eligible for fallback.                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
++| `isContainedPath`           | function | Checks whether `child` is `parent` itself or lies inside it on-disk — the filesystem containment predicate `createStatic` applies to `fs.realpath` output (never to a URL pathname — that is `isUnderPath`'s job).                                                                                                                                                                                                                                                                                                                          |
++| `resolveContainedRealPath`  | function | Canonicalizes `candidate` and returns it only when it lies inside `rootReal` — the shared realpath-then-contain step `createStatic` applies to a directory index and to its SPA shell.                                                                                                                                                                                                                                                                                                                                                      |
++| `isReservedDeviceName`      | function | Checks whether a path segment is a Windows reserved device name (CVE-2025-27210).                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
++| `isDotfilePath`             | function | Checks whether a relative path (already resolved under a static root) has any segment starting with `.` — a dotfile or dot-directory.                                                                                                                                                                                                                                                                                                                                                                                                       |
++| `lookupContentType`         | function | Looks up the MIME type for a static file path by its extension.                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
++| `computeFileETag`           | function | Computes a static file's weak ETag from its size and modification time.                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
++| `detectMIME`                | function | Sniffs a MIME type from a file's leading bytes against a small magic-byte table (jpeg, png, gif87a/89a, webp, pdf, zip).                                                                                                                                                                                                                                                                                                                                                                                                                    |
++| `matchesBytes`              | function | Checks whether `bytes` contains `signature` at the requested offset.                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
++| `compressNodeBytes`         | function | Compresses response bytes with Node's guaranteed zlib gzip/deflate codecs.                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
++| `extractMultipartBoundary`  | function | Extracts the `boundary` parameter from a `Content-Type` header, or `undefined` when the request is not `multipart/form-data`.                                                                                                                                                                                                                                                                                                                                                                                                               |
++| `parsePartHeaders`          | function | Parses one multipart part's raw header block into its `name` (from `Content-Disposition`), optional `filename`, and optional `Content-Type`.                                                                                                                                                                                                                                                                                                                                                                                                |
++| `resolveMultipartLimits`    | function | Resolves `createMultipart`'s effective `MultipartLimits`, applying every documented default to an omitted leaf.                                                                                                                                                                                                                                                                                                                                                                                                                             |
++| `createUploadedFile`        | function | Builds a frozen `UploadedFile` record.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
++| `streamFile`                | function | Adapts a `node:fs` read stream over a file path (or an already-open `FileHandle`) into a DOM-compatible `ReadableStream<Uint8Array>` — the single shared node↔web stream bridge every static-file and uploaded-file response body routes through.                                                                                                                                                                                                                                                                                           |
++| `streamUploadedFile`        | function | Opens a staged/moved uploaded file as a web `ReadableStream`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
++| `readUploadedFile`          | function | Reads a staged/moved uploaded file's full contents into memory.                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
++| `moveUploadedFile`          | function | Moves a staged uploaded file to its final `destination`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
++| `unlinkStagedFiles`         | function | Attempts to unlink every still-`'staged'` file in a parsed `MultipartBody` — the fail-closed cleanup `createMultipart` runs when its downstream handler throws, mirroring `parseMultipartRequest`'s own cleanup pattern (a missing file is already gone; failures are swallowed).                                                                                                                                                                                                                                                           |
+ 
+ ### Parsers — node
+ 
+@@ -577,6 +583,8 @@ const handle = compose<State>(onion, async (_request, context) => {
+ 
+ ### Canonical onion — behind `@orkestrel/server`
+ 
++The fence hands the same chain to `createServer` as its `middleware` option, so the server owns the listening socket and the dispatcher the chain terminates in.
++
+ ```ts
+ import { createBoundary, createSecurity } from '@orkestrel/middleware'
+ import type { IdentifierState } from '@orkestrel/middleware'
+@@ -599,6 +607,8 @@ await server.stop()
+ 
+ ### Body: eager cache drive
+ 
++The fence constructs the body battery with no options of its own.
++
+ ```ts
+ import { createBody } from '@orkestrel/middleware'
+ 
+@@ -615,6 +625,8 @@ already carries a `body` field.
+ 
+ ### Session: control handle, header transport, injected store
+ 
++The fence wires the session battery to a header transport and an injected memory store, then rotates and ends the session through the control handle a downstream handler reads.
++
+ ```ts
+ import {
+ 	createHeaderTransport,
+@@ -640,6 +652,8 @@ context.state.control?.destroy() // end the session outright
+ 
+ ### Session store seam — direct calls
+ 
++The fence drives a memory store's `set`, `get`, and `delete` methods directly, with no middleware chain around them.
++
+ ```ts
+ import { createMemorySessionStore } from '@orkestrel/middleware'
+ import { Session } from '@orkestrel/middleware'
+@@ -686,6 +700,8 @@ recreated.
+ 
+ ### Session transport seam — direct calls
+ 
++The fence drives a header transport's `read`, `write`, and `clear` methods over a real `Request` and `Response`.
++
+ ```ts
+ import { createHeaderTransport } from '@orkestrel/middleware'
+ 
+@@ -699,6 +715,8 @@ transport.clear(response) // removes it
+ 
+ ### CSRF: session-bound double-submit
+ 
++The fence mounts the CSRF battery behind a cookie-transport session, which is what binds each minted token to that session's id.
++
+ ```ts
+ import { createCSRF, createSession, createCookieTransport } from '@orkestrel/middleware'
+ import type { CSRFState, SessionState } from '@orkestrel/middleware'
+@@ -713,6 +731,8 @@ const csrf = createCSRF({ secret: 'csrf-secret' }) // session ahead binds the to
+ 
+ ### Multipart: node face, sniffed-type allow-list
+ 
++The fence mounts the node-face multipart battery with a sniffed-type allow-list and narrows its parsed result on `context.state` through the shipped guards.
++
+ ```ts
+ import { createMultipart } from '@orkestrel/middleware/server'
+ import { isMultipartBody, isMultipartFile } from '@orkestrel/middleware'
+@@ -733,6 +753,8 @@ if (isMultipartBody(context.state.multipart)) {
+ 
+ ### Multipart limits — direct resolution
+ 
++The fence resolves one partial limits input into the effective caps, with no battery around it.
++
+ ```ts
+ import { resolveMultipartLimits } from '@orkestrel/middleware/server'
+ 
+@@ -743,6 +765,8 @@ Multipart processing reports no progress.
+ 
+ ### Assets: in-memory source
+ 
++The fence implements an `AssetSourceInterface` over a single in-memory entry and hands it to `createAssets`.
++
+ ```ts
+ import type { AssetSourceInterface } from '@orkestrel/middleware/server'
+ import { createAssets } from '@orkestrel/middleware/server'
+@@ -771,6 +795,8 @@ is never retained, so an absent key is read again on its next request.
+ 
+ ### Static: SPA fallback
+ 
++The fence serves a directory over `node:fs` with the SPA fallback on, which answers an eligible miss with the shell.
++
+ ```ts
+ import { createStatic } from '@orkestrel/middleware/server'
+ 
+diff --git a/src/core/constants.ts b/src/core/constants.ts
+index 9bcfba2..d9b8eb9 100644
+--- a/src/core/constants.ts
++++ b/src/core/constants.ts
+@@ -21,7 +21,8 @@ export const DEFAULT_COMPRESSION_ENCODINGS: readonly Encoding[] = Object.freeze(
+ export const DEFAULT_FRAME_OPTIONS = 'DENY'
+ 
+ /**
+- * Holds the default `Content-Security-Policy` value `createSecurity` sets — a custom
++ * Holds `"default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'self'; form-action 'self'"`,
++ * the default `Content-Security-Policy` value `createSecurity` sets — a custom
+  * `csp` option replaces this wholesale, never merges.
+  */
+ export const DEFAULT_CSP =
+@@ -30,7 +31,7 @@ export const DEFAULT_CSP =
+ /** Holds `'strict-origin-when-cross-origin'`, the default `Referrer-Policy` value `createSecurity` sets. */
+ export const DEFAULT_REFERRER_POLICY = 'strict-origin-when-cross-origin'
+ 
+-/** Holds the default `Permissions-Policy` value `createSecurity` sets. */
++/** Holds `'camera=(), microphone=(), geolocation=()'`, the default `Permissions-Policy` value `createSecurity` sets. */
+ export const DEFAULT_PERMISSIONS_POLICY = 'camera=(), microphone=(), geolocation=()'
+ 
+ /** Holds `'same-origin'`, the default `Cross-Origin-Opener-Policy` value `createSecurity` sets. */
+@@ -82,7 +83,7 @@ export const DEFAULT_LIMITER_CAPACITY = 10_000
+ /** Holds `10_000`, the default maximum number of distinct session ids `createMemorySessionStore` tracks before LRU (by last write) eviction. */
+ export const DEFAULT_SESSION_CAPACITY = 10_000
+ 
+-/** Holds the default 429 body message `createLimiter` sends when a key is over budget. */
++/** Holds `'rate limit exceeded'`, the default 429 body message `createLimiter` sends when a key is over budget. */
+ export const DEFAULT_LIMITER_MESSAGE = 'rate limit exceeded'
+ 
+ /** Names `'session'`, the default cookie `createCookieTransport` writes the signed session id under. */
+diff --git a/src/core/helpers.ts b/src/core/helpers.ts
+index 5b910de..1bb8e11 100644
+--- a/src/core/helpers.ts
++++ b/src/core/helpers.ts
+@@ -115,7 +115,7 @@ export function buildRateLimitPolicyField(max: number, window: number): string {
+  * never claims full CIDR generality beyond IPv4.
+  *
+  * @remarks
+- * An IPv6 `trusted` roster entry is compared as an EXACT string — it must be
++ * An IPv6 `trusted` roster entry is compared as an exact string — it must be
+  * supplied in canonical form (no zero-compression normalization, no case
+  * folding) by the caller; this function performs no IPv6 normalization of
+  * its own.
+@@ -166,7 +166,7 @@ export function matchesTrustedEntry(address: string, entry: string): boolean {
+  * @remarks
+  * Parses `X-Forwarded-For` only. With `proxies` set, trusts exactly that
+  * many hops counted from the right (the closest to this server) and returns
+- * the next one left of them; with `trusted` set, trusts every CONSECUTIVE
++ * the next one left of them; with `trusted` set, trusts every consecutive
+  * hop from the right that matches one of the roster
+  * ({@link matchesTrustedEntry}) and returns the first hop that does not. If
+  * the rightmost hop (the immediate sender) does not match the roster, the
+@@ -176,7 +176,7 @@ export function matchesTrustedEntry(address: string, entry: string): boolean {
+  * socket peer).
+  *
+  * @param header - The raw `X-Forwarded-For` header value (comma-separated hops), if present
+- * @param trust - The {@link ForwardedOptions} form in force — a trusted hop COUNT or a `trusted` CIDR/exact roster
++ * @param trust - The {@link ForwardedOptions} form in force — a trusted hop count or a `trusted` CIDR/exact roster
+  * @returns The first untrusted hop address, or `undefined` when none qualifies
+  *
+  * @example
+@@ -272,16 +272,17 @@ export async function compressBytes(
+ }
+ 
+ /**
+- * Checks whether a response is eligible for the compression/ETag buffering pipeline
++ * Checks whether a response must skip the compression and ETag buffering pipeline
+  * — the shared cheap-skip predicate both batteries apply before ever touching
+- * `response.arrayBuffer()`.
++ * `response.arrayBuffer()`, true for a `HEAD` request, a `204`/`304` or
++ * otherwise bodyless response, an `event-stream` response, and a response
++ * already carrying the header the caller is about to set.
+  *
+  * @remarks
+- * Skips a `HEAD` request, a `204`/`304` or otherwise bodyless response, an
+- * `event-stream` response (SSE — buffering would hang the connection), and a
+- * response that already carries the header the caller is about to set
+- * (`skipHeader`, for example `Content-Encoding` for compression, `ETag` for the
+- * ETag battery).
++ * Buffering an `event-stream` response would hang the connection, so SSE skips
++ * whatever its size. `skipHeader` is the header whose presence already answers
++ * the question — `Content-Encoding` for compression, `ETag` for the ETag
++ * battery.
+  *
+  * @param method - The request's HTTP method
+  * @param response - The candidate response
+@@ -391,7 +392,7 @@ export function rebuildResponse(
+  * even when a later skip declines to compress) → `negotiateEncoding` over
+  * `options.encodings` → {@link isCompressionNegotiated} → `isCompressibleType`
+  * on `Content-Type` → a fast skip when the response already carries a
+- * numeric `Content-Length` BELOW `options.threshold` (avoids buffering a
++ * numeric `Content-Length` below `options.threshold` (avoids buffering a
+  * body known too small to be worth compressing) → buffer through
+  * `response.arrayBuffer()` → a threshold passthrough when the buffered size
+  * is still below `options.threshold` → `options.compress` → set
+@@ -582,7 +583,7 @@ export function validateSessionLimits(limits: SessionLimits | undefined): void {
+  * @remarks
+  * `state` is built on a null-prototype object (`Object.create(null)`), never
+  * a `{}` literal — a session key literally named `__proto__` must round-trip
+- * as an OWN enumerable property instead of hitting `Object.prototype`'s
++ * as an own enumerable property instead of hitting `Object.prototype`'s
+  * `__proto__` accessor (which would silently drop the entry and risk
+  * polluting the shared prototype).
+  *
+diff --git a/src/core/middlewares.ts b/src/core/middlewares.ts
+index 8ab0918..d59dc72 100644
+--- a/src/core/middlewares.ts
++++ b/src/core/middlewares.ts
+@@ -373,7 +373,7 @@ export function createCors<TState>(options?: CorsOptions): MiddlewareHandler<TSt
+  * @throws {TypeError} When `options.ms` or `options.status` is malformed
+  *
+  * @remarks
+- * MUST sit OUTSIDE `createBody` in the chain — it reconstructs the inbound
++ * Mount this battery outside `createBody` in the chain — it reconstructs the inbound
+  * `Request` (to link its `signal` to the deadline `signal`), which throws if
+  * the body was already consumed upstream (for example by `createBody`'s cached read).
+  *
+@@ -655,7 +655,7 @@ export function createLimiter<TState extends BearerState & ClientState & Connect
+  * The shipped `MiddlewareContext.body()` is a parameterless, server-owned
+  * cache (`ServerOptions.limit` governs its size cap) — this battery carries
+  * no `limit`/`decompression` options. `state.body` is
+- * stashed from the SAME awaited call the 400 check reads — `context.body()`
++ * stashed from the same awaited call the 400 check reads — `context.body()`
+  * is never invoked twice.
+  *
+  * @example
+diff --git a/src/core/stores/DatabaseSessionStore.ts b/src/core/stores/DatabaseSessionStore.ts
+index 564c2ee..e4d181d 100644
+--- a/src/core/stores/DatabaseSessionStore.ts
++++ b/src/core/stores/DatabaseSessionStore.ts
+@@ -30,7 +30,7 @@ import { sessionExpired, snapshotSession, validateSessionLimits } from '../helpe
+  * {@link MemorySessionStore}. `delete` of an absent id is a no-op (the
+  * table's `remove` contract).
+  *
+- * A malformed-snapshot or failed-guard `undefined` LEAVES the row in place —
++ * A malformed-snapshot or failed-guard `undefined` leaves the row in place —
+  * unlike the expired path, which removes it. This is deliberate: a
+  * caller-contextual guard may reject a session that is still perfectly
+  * valid for another flow reading the same table (a differently-shaped `S`,
+diff --git a/src/core/stores/MemorySessionStore.ts b/src/core/stores/MemorySessionStore.ts
+index 6c2f461..fc09fba 100644
+--- a/src/core/stores/MemorySessionStore.ts
++++ b/src/core/stores/MemorySessionStore.ts
+@@ -18,7 +18,7 @@ import { isFiniteNumber, isFunction } from '@orkestrel/contract'
+  * @remarks
+  * `get` evicts a session whose idle time (`now - seen >= ttl`) or
+  * absolute lifetime (`now - created >= lifetime`) has elapsed — the
+- * lifetime check fires EVEN IF the session was continuously touched, since
++ * lifetime check fires even if the session was continuously touched, because
+  * `created` is stamped once at the first `set` and preserved across every
+  * later re-`set` of the same id. A live read touches `seen`. `delete` of
+  * an absent id is a no-op.
+diff --git a/src/core/types.ts b/src/core/types.ts
+index e4e96ee..6ff06b4 100644
+--- a/src/core/types.ts
++++ b/src/core/types.ts
+@@ -59,7 +59,7 @@ export interface TelemetryOptions {
+  * - `threshold` — the minimum buffered body size (bytes) worth compressing;
+  *   defaults to {@link DEFAULT_COMPRESSION_THRESHOLD}.
+  * - `encodings` — the codings offered, in preference order, intersected at
+- *   CONSTRUCTION with what the runtime's `CompressionStream` actually
++ *   construction with what the runtime's `CompressionStream` actually
+  *   supports; defaults to {@link DEFAULT_COMPRESSION_ENCODINGS}.
+  * - `filter` — an optional per-response opt-out predicate (the BREACH
+  *   posture escape hatch); a response the predicate declines is never
+@@ -121,11 +121,11 @@ export type SecurityIdentifierOptions = { readonly trust?: boolean } | false
+  * - `coop` — `Cross-Origin-Opener-Policy`; default {@link DEFAULT_COOP}.
+  * - `corp` — `Cross-Origin-Resource-Policy`; default {@link DEFAULT_CORP}.
+  * - `cluster` — `Origin-Agent-Cluster`; default {@link DEFAULT_CLUSTER}.
+- * - `coep` — `Cross-Origin-Embedder-Policy`; `string | boolean`, OFF by
++ * - `coep` — `Cross-Origin-Embedder-Policy`; `string | boolean`, off by
+  *   default (opt-in, breaks cross-origin subresources); `true` → {@link DEFAULT_COEP}.
+- * - `hsts` — `Strict-Transport-Security`; `string | boolean`, OFF by default
++ * - `hsts` — `Strict-Transport-Security`; `string | boolean`, off by default
+  *   (opt-in, destructive if misconfigured); `true` → {@link DEFAULT_HSTS}.
+- * - `identifier` — {@link SecurityIdentifierOptions}; ON by default (mints
++ * - `identifier` — {@link SecurityIdentifierOptions}; on by default (mints
+  *   and stashes {@link IdentifierState}).
+  */
+ export interface SecurityOptions {
+@@ -176,8 +176,8 @@ export interface DeadlineOptions {
+  * Configures `createForwarded` — the trusted-proxy client-IP resolver.
+  *
+  * @remarks
+- * Construction requires EXACTLY ONE of the two forms (a `TypeError` guards
+- * both-set and neither-set):
++ * Construction requires either `proxies` or `trusted`, never both and never
++ * neither (a `TypeError` guards each):
+  * - `proxies` — trust exactly this many hops from the right of
+  *   `X-Forwarded-For` / `Forwarded`.
+  * - `trusted` — trust every hop matching one of these CIDR entries.
+@@ -205,9 +205,9 @@ export interface ETagOptions {
+  *   token against (rotation-aware).
+  * - `header` — the header the token is read from; defaults to
+  *   {@link DEFAULT_BEARER_HEADER}.
+- * - `scheme` — the scheme prefix stripped before verification (case-
+- *   insensitive); defaults to {@link DEFAULT_BEARER_SCHEME}. An empty string
+- *   means the whole header value is the raw token.
++ * - `scheme` — the scheme prefix stripped before verification
++ *   (case-insensitive); defaults to {@link DEFAULT_BEARER_SCHEME}. An empty
++ *   string means the whole header value is the raw token.
+  */
+ export interface BearerOptions {
+ 	readonly secret: TokenSecret
+@@ -334,7 +334,7 @@ export interface SessionInterface {
+  * session itself — the OWASP anti-fixation / logout primitives.
+  *
+  * @remarks
+- * `regenerate` and `destroy` record intent SYNCHRONOUSLY when called; the
++ * `regenerate` and `destroy` record intent synchronously when called; the
+  * store I/O and transport write happen after the handler's `next()` returns
+  * (`destroy` supersedes a prior `regenerate`). `regenerate` mints a new id,
+  * carries the session's `state` over, and invalidates the old id.
+@@ -497,7 +497,7 @@ export type SessionRestoreFunction = (value: unknown) => SessionInterface | unde
+  *
+  * @remarks
+  * `read` is total (a malformed/tampered credential resolves `undefined`,
+- * never throws). `write` and `clear` mutate the RETURNED `Response` on the
++ * never throws). `write` and `clear` mutate the returned `Response` on the
+  * way out — the returning onion makes "before send" automatic. `write` is
+  * called only when a session is freshly minted or regenerated; `clear` is
+  * called on `destroy()`. `write`'s `encrypted` flag is the request's resolved
+@@ -539,10 +539,10 @@ export interface SessionTransportInterface {
+  *   `createMemorySessionStore({ ttl, lifetime, capacity, evict })`.
+  * - `ttl` — the idle timeout in milliseconds.
+  * - `lifetime` — the absolute session lifetime in milliseconds from mint.
+- * - `capacity` — the maximum number of distinct session ids the DEFAULT
++ * - `capacity` — the maximum number of distinct session ids the default
+  *   memory store tracks before LRU eviction; ignored when `store` is
+  *   provided. Defaults to {@link DEFAULT_SESSION_CAPACITY}.
+- * - `evict` — invoked with a session id evicted by the DEFAULT memory
++ * - `evict` — invoked with a session id evicted by the default memory
+  *   store's own policy; ignored when `store` is provided. It is a
+  *   notification sink only — it must never call back into the store
+  *   (no re-entrant `get`/`set`); mutations during eviction are unsupported.
+diff --git a/src/server/helpers.ts b/src/server/helpers.ts
+index d057b3e..9d5fc58 100644
+--- a/src/server/helpers.ts
++++ b/src/server/helpers.ts
+@@ -52,7 +52,7 @@ export function isUnderPath(pathname: string, prefix: string): boolean {
+  * fallback.
+  *
+  * @remarks
+- * `GET` and `HEAD` are both eligible, and resolve the SAME shell: `HEAD` is
++ * `GET` and `HEAD` are both eligible, and resolve the same shell: `HEAD` is
+  * defined as `GET` without a body (RFC 9110 §9.3.2), so a navigation probe
+  * that answered `404` while its `GET` answered `200` would report a resource
+  * the very next request serves.
+@@ -92,7 +92,7 @@ export function resolveStaticFallbackPath(
+  * output (never to a URL pathname — that is {@link isUnderPath}'s job).
+  *
+  * @remarks
+- * Argument order is `(child, parent)` — deliberately the OPPOSITE conceptual
++ * Argument order is `(child, parent)` — deliberately the opposite conceptual
+  * order from {@link isUnderPath}`(pathname, prefix)`, so a call site cannot
+  * casually swap one predicate in for the other. Built on `path.relative`,
+  * this is separator-correct on both POSIX (`/`) and win32 (`\`) — unlike a
+@@ -121,9 +121,9 @@ export function isContainedPath(child: string, parent: string): boolean {
+  * strip `prefix` on a segment boundary → `decodeURIComponent` (a
+  * malformed escape refuses, never throws) → reject a NUL byte → strip the
+  * leading path separator first (so a leading `..` survives `normalize` as a
+- * genuine climbing segment) → `normalize` → refuse any Windows reserved-
+- * device-name segment ({@link isReservedDeviceName}) → `resolve` and require
+- * the result under `root`.
++ * genuine climbing segment) → `normalize` → refuse any Windows
++ * reserved-device-name segment ({@link isReservedDeviceName}) → `resolve` and
++ * require the result under `root`.
+  *
+  * @param root - The absolute root directory every result must resolve under
+  * @param prefix - An optional URL path prefix stripped on a segment boundary
+@@ -201,7 +201,7 @@ export async function resolveContainedRealPath(
+  *
+  * @remarks
+  * Normalizes superscript digits (`¹²³` → `123`) first, strips trailing dots
+- * and spaces (Windows drops them), takes the STEM before the first `.`,
++ * and spaces (Windows drops them), takes the stem before the first `.`,
+  * upper-cases it, and tests it against {@link RESERVED_DEVICE_NAMES}
+  * (`CON PRN AUX NUL COM1-9 LPT1-9`) — an exact-stem match only, so
+  * `console.js` and `nullable.css` are never flagged.
+@@ -500,7 +500,7 @@ export async function unlinkStagedFiles(body: MultipartBody): Promise<void> {
+  * response body routes through.
+  *
+  * @remarks
+- * PULL-driven, not push-driven: the underlying node stream's async iterator
++ * Pull-driven, not push-driven: the underlying node stream's async iterator
+  * is only advanced (`iterator.next()`) from inside `pull(controller)`, which
+  * the web `ReadableStream` invokes exactly when its internal queue has room
+  * for more data. Exactly one disk chunk is read and enqueued per `pull` —
+diff --git a/src/server/middlewares.ts b/src/server/middlewares.ts
+index fa1c8b4..6a42a2c 100644
+--- a/src/server/middlewares.ts
++++ b/src/server/middlewares.ts
+@@ -168,12 +168,12 @@ export function createAssets<TState>(options: AssetOptions): MiddlewareHandler<T
+  * battery, answering conditional, ranged, and SPA-fallback requests.
+  *
+  * @remarks
+- * Containment is enforced on CANONICAL paths, not merely the lexically
++ * Containment is enforced on canonical paths, not merely the lexically
+  * resolved one: `options.root` is canonicalized once (memoized) and every
+  * request's candidate path is re-canonicalized (`fs.realpath`) before it is
+  * served, so a symlink whose target escapes `root` is refused (falls through
+  * to `next()`) even though the lexical path resolved inside `root`. A
+- * symlink that resolves to a target still INSIDE `root` is unaffected and
++ * symlink that resolves to a target still inside `root` is unaffected and
+  * still serves normally. A dangling symlink (`realpath` throws `ENOENT`) or
+  * any other `realpath` failure is treated as a miss — this battery never
+  * throws or 500s on a symlink surprise. On a streamed response (a 200 or 206
+@@ -324,7 +324,7 @@ export function createStatic<TState>(options: StaticOptions): MiddlewareHandler<
+ 				await shellHandle.close().catch(() => {})
+ 				return next()
+ 			}
+-			// The shell answers through the SAME response block the primary path
++			// The shell answers through the same response block the primary path
+ 			// uses, so `cache`, `etag`, conditional revalidation, `HEAD`, and
+ 			// ranges are computed from the shell handle's own `fstat` and cannot
+ 			// diverge between a served file and the shell served in its place.
+@@ -396,7 +396,7 @@ export function createStatic<TState>(options: StaticOptions): MiddlewareHandler<
+  * {@link MultipartError} this battery's parser throws is re-thrown as an
+  * {@link HTTPError} carrying the same status/message, so `createBoundary`
+  * (or any HTTPError-aware renderer) maps it correctly without depending on
+- * this node face's error type. Fail-closed on the DOWNSTREAM handler too: if
++ * this node face's error type. Fail-closed on the downstream handler too: if
+  * `next()` throws, every still-`'staged'` uploaded file is unlinked
+  * (best-effort) before the error is re-thrown, so an unhandled downstream
+  * failure never leaks temp files. A normal return leaves staged files
+diff --git a/src/server/parsers.ts b/src/server/parsers.ts
+index a130d23..99346ff 100644
+--- a/src/server/parsers.ts
++++ b/src/server/parsers.ts
+@@ -10,30 +10,30 @@ import { MultipartParser } from './MultipartParser.js'
+  *
+  * @remarks
+  * Reads `request.body` chunk by chunk through its `ReadableStream` reader —
+- * NEVER buffers the whole body — enforcing every {@link MultipartLimits} cap
++ * never buffers the whole body — enforcing every {@link MultipartLimits} cap
+  * the instant it is exceeded (reading stops, every already-staged temp file
+  * is deleted, throws {@link MultipartError} with code `'limit'`). Each file
+  * part streams to `join(directory, randomUUID())` — the client's declared
+- * filename is METADATA ONLY, never a path component. A field OR file part
++ * filename is metadata only, never a path component. A field or file part
+  * named `__proto__` / `constructor` / `prototype` is silently skipped and
+  * never keyed onto the returned {@link MultipartBody} (a skipped file's
+  * staged temp file is unlinked immediately, since it can never be
+  * referenced). A file part with an empty declared filename (`filename=""`)
+- * AND a zero-byte body — the browser convention for an unselected optional
++ * and a zero-byte body — the browser convention for an unselected optional
+  * `<input type="file">` — is a silent no-op: its temp file is unlinked, it is
+  * never counted against the `file.count` limit, and it never runs the
+  * `allowed` check. A malformed
+  * structure (missing/unterminated boundary, nameless part, an oversized
+  * header block, or a preamble exceeding {@link MULTIPART_MAX_PREAMBLE} before
+  * the first boundary) throws with code `'malformed'`. A file is accepted
+- * against the configured `allowed` MIME list iff its SNIFFED bytes detect a
++ * against the configured `allowed` MIME list exactly when its sniffed bytes detect a
+  * type present in the list — sniff-authoritative, independent of whether the
+  * declared `Content-Type` matches (that agreement is exposed separately as
+  * `validated`); otherwise throws with code `'rejected'`. A
+  * request abort mid-upload triggers the same fail-closed cleanup as a limit
+  * breach. Returns `undefined` for a non-multipart request (untouched).
+  *
+- * Staging defaults to a process-owned directory created ONCE (lazily,
++ * Staging defaults to a process-owned directory created once (lazily,
+  * memoized across calls) with `mkdtemp` under `os.tmpdir()` and locked to
+  * mode `0o700`; `options.directory` overrides it.
+  *
+diff --git a/src/server/types.ts b/src/server/types.ts
+index 8807f72..9e65460 100644
+--- a/src/server/types.ts
++++ b/src/server/types.ts
+@@ -19,7 +19,7 @@ export interface Asset {
+  * @remarks
+  * A successful result is cached by `createAssets`; later source changes do
+  * not alter that path's response. A miss may be read again on a later request.
+- * `read` therefore owes a BOUNDED key set: that cache retains every
++ * `read` therefore owes a bounded key set: that cache retains every
+  * successful result for the factory's lifetime and evicts nothing.
+  */
+ export interface AssetSourceInterface {
+@@ -36,7 +36,7 @@ export interface AssetSourceInterface {
+  * Configures `createAssets` — in-memory identity/Brotli asset serving.
+  *
+  * @remarks
+- * - `source` — the required in-memory asset reader. It MUST answer a bounded
++ * - `source` — the required in-memory asset reader. It must answer a bounded
+  *   key set and return `undefined` for every key outside it, because
+  *   `createAssets` retains every successful result for the factory's lifetime
+  *   and evicts nothing. A `source` that synthesizes a representation for an
+@@ -51,14 +51,14 @@ export interface AssetOptions {
+  * Configures `createStatic` — node `fs`-backed static file serving.
+  *
+  * @remarks
+- * - `root` — the directory every request resolves under, resolved once at
+- *   construction. REQUIRED.
++ * - `root` — the required directory every request resolves under, resolved
++ *   once at construction.
+  * - `prefix` — a URL path prefix stripped (on a segment boundary) before
+  *   resolving under `root`.
+  * - `index` — the filename served for a directory hit and by the SPA
+  *   fallback; defaults to {@link DEFAULT_STATIC_INDEX}. The fallback serves
+- *   it whatever `dotfiles` is set to, because this path is operator-
+- *   configured rather than request-derived.
++ *   it whatever `dotfiles` is set to, because this path is
++ *   operator-configured rather than request-derived.
+  * - `dotfiles` — the policy for a path with a dotfile segment: `'ignore'`
+  *   (falls through to `next()`), `'deny'` (403), or `'allow'` (serves it);
+  *   defaults to {@link DEFAULT_STATIC_DOTFILES}.
+@@ -67,7 +67,7 @@ export interface AssetOptions {
+  * - `fallback` — SPA fallback: `false` (default, off), `true` (on, excluding
+  *   {@link DEFAULT_STATIC_FALLBACK_EXCLUDE}), or `{ exclude }` for a custom
+  *   excluded prefix. An eligible `GET` or `HEAD` navigation miss answers with
+- *   `index` through the SAME handle-`fstat` header block a directly requested
++ *   `index` through the same handle-`fstat` header block a directly requested
+  *   file answers through, so `cache`, `etag`, conditional revalidation,
+  *   `HEAD`, and ranges are identical on both routes; `index` reaches the
+  *   client through this route whatever `dotfiles` is set to.
+@@ -127,7 +127,7 @@ export interface MultipartLimits {
+  *
+  * @remarks
+  * - `limits` — see {@link MultipartLimitsInput}.
+- * - `allowed` — a MIME allow-list validated against SNIFFED (not merely
++ * - `allowed` — a MIME allow-list validated against sniffed (not merely
+  *   declared) bytes; an empty array allows nothing. Omitted ⇒ no type
+  *   rejection.
+  * - `directory` — the directory staged files are written to; defaults to
+@@ -164,13 +164,13 @@ export type UploadStatus = 'staged' | 'moved'
+  *
+  * @remarks
+  * - `field` — the multipart field name the file was submitted under.
+- * - `name` — the client-declared filename (METADATA ONLY — never used to
++ * - `name` — the client-declared filename (metadata only — never used to
+  *   build a filesystem path).
+  * - `size` — the file's byte size.
+- * - `mime` — the SNIFFED (magic-byte-detected) MIME type when a signature
++ * - `mime` — the sniffed (magic-byte-detected) MIME type when a signature
+  *   matches; otherwise the part's declared `Content-Type`; otherwise
+  *   {@link DEFAULT_CONTENT_TYPE}. Read `validated` to tell which.
+- * - `validated` — `true` when a signature matched AND the sniffed type equals
++ * - `validated` — `true` when a signature matched and the sniffed type equals
+  *   the declared `Content-Type`, so `mime` is the sniffed fact. `false` means
+  *   `mime` may be the client-declared value.
+  * - `status` — see {@link UploadStatus}.
+diff --git a/tests/guides.test.ts b/tests/guides.test.ts
+index bbbc96b..71d7daf 100644
+--- a/tests/guides.test.ts
++++ b/tests/guides.test.ts
+@@ -1,6 +1,6 @@
+ // The consumer-side guides-parity drop-in: runs `@orkestrel/guide`'s checks against
+ // this repo's own `guides/README.md` manifest. The constants that follow are this
+-// package's own, and are the only part a sibling package changes.
++// package's own, as is the executed section that closes the file.
+ 
+ import { describe, expect, it } from 'vitest'
+ import {
+@@ -21,6 +21,10 @@ import {
+ import { readFileSync } from 'node:fs'
+ import { requireValue } from '@orkestrel/test'
+ import { readInventory } from '@orkestrel/test/server'
++import { compose } from '@orkestrel/server'
++import type { IdentifierState } from '@src/core'
++import { createBoundary, createSecurity } from '@src/core'
++import { buildRequest, createTestContext } from './setup.js'
+ 
+ /** Every fence language this package's guides are allowed to use. */
+ const FENCE_LANGUAGES = Object.freeze(['ts'])
+@@ -260,3 +264,56 @@ for (const entry of manifest) {
+ 		})
+ 	})
+ }
++
++// The EXECUTED half. Every preceding check reads a name — from the guide text or
++// from the barrel — and a name that resolves proves nothing about the sentence
++// beside it, so a fence whose comment claims a value the code contradicts passes
++// all of them. The cases here run the flagship fences and assert the values their
++// comments claim. Change a fence, change the transcription beside it. Each
++// transcription imports through `@src/core` where the fence imports through
++// `@orkestrel/middleware`: the barrel is the same surface, and the published
++// specifier is this package's own name.
++describe('flagship fences', () => {
++	const guideText = requireValue(files[GUIDE_SPEC], `Missing file: ${GUIDE_SPEC}`)
++
++	it('answers with the request identifier the composed security battery stamped', async () => {
++		// Transcribed from the titled `Mount a battery` fence and driven over one real
++		// request. The fence carries no comment claiming a value, so what it claims is
++		// what it builds: the composed chain reaches the handler, and the handler reads
++		// the identifier `createSecurity` stashed rather than an absent one. The
++		// response header is bound beside the body, because a stashed identifier the
++		// response never carries would satisfy the body on its own.
++		interface State extends IdentifierState {}
++
++		const boundary = createBoundary({ expose: false })
++		const security = createSecurity({ hsts: true })
++
++		const handle = compose<State>([boundary, security], async (_request, context) => {
++			return Response.json({ identifier: context.state.identifier })
++		})
++
++		const request = buildRequest('/')
++		const response = await handle(request, createTestContext<State>(request, {}))
++		const stamped = response.headers.get('x-request-id')
++
++		expect(response.status).toBe(200)
++		expect(stamped).not.toBeNull()
++		await expect(response.json()).resolves.toEqual({ identifier: stamped })
++		expect(response.headers.get('strict-transport-security')).toBe(
++			'max-age=31536000; includeSubDomains',
++		)
++	})
++
++	it('carries the fence lines the transcriptions copy', () => {
++		// The presence guards beside the transcriptions: they prove the transcribed
++		// lines are still the documented ones, and nothing about behavior. Binding the
++		// construction lines alone would leave the demonstration free to move under the
++		// transcription, so every line a case copies is bound.
++		expect(guideText).toContain('const boundary = createBoundary({ expose: false })')
++		expect(guideText).toContain('const security = createSecurity({ hsts: true })')
++		expect(guideText).toContain(
++			'const handle = compose<State>([boundary, security], async (_request, context) => {',
++		)
++		expect(guideText).toContain('return Response.json({ identifier: context.state.identifier })')
++	})
++})

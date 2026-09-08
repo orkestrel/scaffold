@@ -1,0 +1,10 @@
+== test re-repair 2026-09-07T15:37:44Z over 92a50c9
+== status before
+1 written, 46 unchanged, 0 removed in ..
+== status after
+ M tests/config.test.ts
+== test:config
+      Tests  172 passed | 1 skipped (173)
+   exit 0
+== committed
+e62a981 Re-repair from scaffold's tip after the config-test fix

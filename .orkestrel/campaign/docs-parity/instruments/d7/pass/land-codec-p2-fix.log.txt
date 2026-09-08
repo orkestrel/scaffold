@@ -1,0 +1,12 @@
+== codec p2-fix landing 2026-09-07T15:56:47Z over d216f4d
+== status
+ M README.md
+ M guides/codec.md
+ README.md       | 14 +++++++++-
+ guides/codec.md | 83 +++++++++++++++++++++++++++++----------------------------
+ 2 files changed, 55 insertions(+), 42 deletions(-)
+== stage by path
+ 2 files changed, 55 insertions(+), 42 deletions(-)
+== committed
+1effa58 Refine codec's convergence on the audit's findings
+(status end)

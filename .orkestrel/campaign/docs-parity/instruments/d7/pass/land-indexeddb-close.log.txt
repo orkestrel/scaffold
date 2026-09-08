@@ -1,0 +1,12 @@
+== indexeddb close landing 2026-09-08T01:25:44Z over 5d29c45
+== status
+ M guides/indexeddb.md
+ M tests/guides.test.ts
+ guides/indexeddb.md  | 38 ++++++++++++++++++++++++++++++--------
+ tests/guides.test.ts |  6 +++---
+ 2 files changed, 33 insertions(+), 11 deletions(-)
+== stage by path
+ 2 files changed, 33 insertions(+), 11 deletions(-)
+== committed
+951eace Close indexeddb under the final guide tarball
+(status end)

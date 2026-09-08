@@ -1,0 +1,12 @@
+== timeout p2-fix landing 2026-09-07T16:09:57Z over ff14c3a
+== status
+ M guides/timeout.md
+ M tests/guides.test.ts
+ guides/timeout.md    | 33 +++++++++++++++++----------------
+ tests/guides.test.ts | 19 +++++++++----------
+ 2 files changed, 26 insertions(+), 26 deletions(-)
+== stage by path
+ 2 files changed, 26 insertions(+), 26 deletions(-)
+== committed
+d221dba Refine timeout's convergence on the audit's findings
+(status end)

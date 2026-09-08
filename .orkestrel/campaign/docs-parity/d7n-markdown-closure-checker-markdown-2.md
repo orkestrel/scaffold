@@ -1,0 +1,21 @@
+Lane held: checker markdown
+
+## Claim 1 — scope honesty
+PASS. `/home/user/scaffold/.orkestrel/campaign/docs-parity/d7n-markdown-close-2.status.txt:1` reads ` M guides/markdown.md` only — the sole file the brief's Scope section granted (`guides/markdown.md`, `tests/guides.test.ts`; `tests/guides.test.ts` needed no edit per the report). The diff (`d7n-markdown-close-2.diff.txt`) touches exactly one hunk spanning the `### Shapers` sentence/table (lines 149-163) and the `### Validators` sentence/table (lines 165-189) — the brief's items 1 (Ruling 20) and 2 (Ruling 25) — and nothing else changed in that file, confirmed by direct read of the current tree at `/home/user/fleet/markdown/guides/markdown.md:149-189`.
+
+## Claim 2 — citation and count discipline
+PASS. The report's citations resolve against the tree: `src/core/shapers.ts:32,49,66,84,103,123,139` (each constant's `objectShape`/`literalShape` call), confirmed by direct read of `/home/user/fleet/markdown/src/core/shapers.ts`; `src/core/validators.ts` guard signatures, confirmed by direct read. No bare prose count appears in the report; the only numerals are quoted command output (`Test Files 1 passed (1)`, `Tests 63 passed (63)`, `Duration 1.16s`), which `.claude/rules/writing.md` permits as a measurement reported with the run that produced it.
+
+## Claim 3 — the `Shape` idiom, closed in the tree
+PASS.
+- `### Validators` (`guides/markdown.md:165-189`) now heads `Shape` (not `Signature`), under the sentence "In a guard table a `Shape` cell holds the type the guard narrows to." (line 169), with each of 16 rows' cell equal to the `value is X` predicate's `X`, verified row-by-row against `src/core/validators.ts:52-398` (for example `isHeadingNode` → `HeadingNode`, `isInlineNode: Guard<InlineNode>` → `InlineNode`).
+- `### Shapers` (`guides/markdown.md:149-163`) cells now hold each constant's declared type in Ruling 25's form, under "A `Shape` cell holds the constant's declared type." (line 153), verified against `src/core/shapers.ts`: `textShape`/`codeSpanShape`/`lineBreakShape`/`thematicBreakShape` → `ObjectShape<{ ... }>` in declaration-order bare-member form; `codeBlockShape` → `ObjectShape<{ element, lang?, code }>` with `?` on the one `optionalShape` field, in declaration order; `tableAlignShape` → `LiteralShape<'left' \| 'right' \| 'center'>`; `listItemMatchShape` → `ObjectShape<{ ordered, start, content, indent, marker }>` in declaration order. No `Summary` cell was touched.
+- No empty `Shape` cell exists in any table carrying the column (`### Types`, `### Constants`, `### Shapers`, `### Validators` all read cleanly at `guides/markdown.md:14-189`); `### Classes` (line 191-198) carries no `Shape` column at all and is outside Ruling 28's population list in `rulings.md`, so its absence is not a defect this closure owns.
+- Every fence sits under a lead-in sentence: heading-sweep confirms no heading is immediately followed (after only a blank line) by a fence, across the full heading/fence list at `guides/markdown.md:12-961`; `### Scan one inline construct` (line 886) correctly has no added sentence because a paragraph, not the heading, precedes its fence. No heading carries a retired term (no `Entities`, no bare `kind`/`type` axis name).
+- The README's fences sit directly under their headings: `## Install` (line 23) → fence at line 25, `## Usage` (line 35) → fence at line 37, confirmed by direct read of `/home/user/fleet/markdown/README.md:23-52`.
+- The drop-in's lines 1-3 in `tests/guides.test.ts` equal the pilot's `/home/user/fleet/abort/tests/guides.test.ts:1-3` byte-for-byte, confirmed by direct read of both. The region from `const root = new URL('../', import.meta.url)` (markdown line 86, abort line 47) runs the same length in both files (markdown ends its manifest-loop close at line 297 per the prior checker's confirmed side-by-side read at `d7n-markdown-closure-checker-markdown.md:16`; 297−86 = 211 lines, matching abort's 258−47 = 211), and this successor's report confirms `tests/guides.test.ts` needed no edit — nothing in this unit's diff could have disturbed that prior PASS.
+
+## Referrals
+None. Every reading is settled mechanically against the pilot's converged form, the source files' declared types, and the rulings the brief names.
+
+VERDICT: PASS

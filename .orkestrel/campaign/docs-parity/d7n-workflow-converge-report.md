@@ -162,3 +162,7 @@ None. Every row the readers located converged, `--to guide` reported only the ha
 ## Deviation state
 
 No deviation. Nothing was planted for the Orchestrator's lint control, and this unit planted no control of its own to reverse: the red-first reading came from the added gate cases themselves — the equality case, the pin, and the README case — which stay in the tree green.
+
+## Orchestrator annotation, 2026-09-08
+
+The audit (`d7n-workflow-audit-verdict.md`) found counts stated in prose in this report and, where the prep report is concerned, `above`/`below` pointers; the tree is authoritative and the report stands as evidence with this note. The recorded caps-sweep scope is superseded by the fix round.

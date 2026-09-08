@@ -1,0 +1,16 @@
+== tool p2-fix landing 2026-09-07T16:09:57Z over df46d34
+== status
+ M README.md
+ M guides/tool.md
+ M src/core/factories.ts
+ M src/core/helpers.ts
+ M src/core/types.ts
+ M tests/guides.test.ts
+ src/core/types.ts     |  2 +-
+ tests/guides.test.ts  | 14 +++++++-------
+ 6 files changed, 14 insertions(+), 16 deletions(-)
+== stage by path
+ 6 files changed, 14 insertions(+), 16 deletions(-)
+== committed
+6273ea7 Refine tool's convergence on the audit's findings
+(status end)

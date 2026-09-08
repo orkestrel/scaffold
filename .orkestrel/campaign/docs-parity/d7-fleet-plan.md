@@ -52,6 +52,8 @@ The design round ran both lanes blind on `d7-fleet-design-brief.md`: `planner` (
 | Scaffold's guides-test template | both lanes | not taken; recorded for the owner |
 | The width of the seed's cells fleet-wide | subjective risk 1 | Ruling 7 in every P.2; the subjective lane reads a named sample of cells against their sources per slice |
 
+- middleware, test coverage (from `d7n-middleware-converge-fix-report.md` § 7, 2026-09-08): no case drives `createBearer({ secret: [] })` (acceptance bar claim 16), and no limiter case drives an `x-forwarded-for` header without `createForwarded` mounted (claim 17). Carrier: middleware's next hardening unit, outside this campaign.
+
 ## For the owner
 
 - The guide's release `0.0.18` after the pilot returns, then scaffold's release after the pass, then each package's publish in layer order — each on your credential.

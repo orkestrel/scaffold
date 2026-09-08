@@ -1,0 +1,10 @@
+== test p2-fix landing 2026-09-07T16:05:01Z over e62a981
+== status
+ M guides/test.md
+ guides/test.md | 57 +++++++++++++++++++++++++++++++++------------------------
+ 1 file changed, 33 insertions(+), 24 deletions(-)
+== stage by path
+ 1 file changed, 33 insertions(+), 24 deletions(-)
+== committed
+ac44bd4 Refine test's convergence on the audit's findings
+(status end)

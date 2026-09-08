@@ -1,0 +1,10 @@
+== abort close landing 2026-09-08T01:25:36Z over f54ab91
+== status
+ M guides/abort.md
+ guides/abort.md | 20 ++++++++++++--------
+ 1 file changed, 12 insertions(+), 8 deletions(-)
+== stage by path
+ 1 file changed, 12 insertions(+), 8 deletions(-)
+== committed
+3dad185 Close abort under the final guide tarball
+(status end)

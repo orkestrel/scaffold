@@ -1,0 +1,15 @@
+== sse p2-fix landing 2026-09-07T16:03:09Z over 8f767de
+== status
+ M guides/sse.md
+ M src/core/factories.ts
+ M src/core/types.ts
+ M tests/guides.test.ts
+ M tests/setup.ts
+ tests/guides.test.ts  | 14 +++++++-------
+ tests/setup.ts        |  4 ++--
+ 5 files changed, 29 insertions(+), 17 deletions(-)
+== stage by path
+ 5 files changed, 29 insertions(+), 17 deletions(-)
+== committed
+be726e0 Refine sse's convergence on the audit's findings
+(status end)

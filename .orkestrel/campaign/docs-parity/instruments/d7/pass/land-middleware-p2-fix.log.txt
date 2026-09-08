@@ -1,0 +1,23 @@
+== middleware p2-fix landing 2026-09-08T03:20:45Z over 6576d98
+== status
+ M README.md
+ M guides/middleware.md
+ M src/core/constants.ts
+ M src/core/helpers.ts
+ M src/core/middlewares.ts
+ M src/core/stores/DatabaseSessionStore.ts
+ M src/core/stores/MemorySessionStore.ts
+ M src/core/types.ts
+ M src/server/helpers.ts
+ M src/server/middlewares.ts
+ M src/server/parsers.ts
+ M src/server/types.ts
+ M tests/guides.test.ts
+ src/server/types.ts                     |  22 ++---
+ tests/guides.test.ts                    |  59 ++++++++++++-
+ 13 files changed, 209 insertions(+), 126 deletions(-)
+== stage by path
+ 13 files changed, 209 insertions(+), 126 deletions(-)
+== committed
+5747e3f Refine middleware's convergence on the audit's findings
+(status end)

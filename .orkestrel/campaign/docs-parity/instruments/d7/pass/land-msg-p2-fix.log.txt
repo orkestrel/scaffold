@@ -1,0 +1,12 @@
+== msg p2-fix landing 2026-09-07T15:50:25Z over a11b9cb
+== status
+ M guides/msg.md
+ M src/core/factories.ts
+ guides/msg.md         | 6 ++++--
+ src/core/factories.ts | 2 +-
+ 2 files changed, 5 insertions(+), 3 deletions(-)
+== stage by path
+ 2 files changed, 5 insertions(+), 3 deletions(-)
+== committed
+0526a0f Refine msg's convergence on the audit's findings
+(status end)

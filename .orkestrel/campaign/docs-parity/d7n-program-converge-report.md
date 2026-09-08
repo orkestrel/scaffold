@@ -332,3 +332,7 @@ block can hold, no test outside `tests/guides.test.ts` reddened, no vendored fil
 no reader returned an undescribed shape, and no residual disagreement survived a doc-block rewrite.
 No lint control was planted; the Orchestrator's reading is unobstructed. No red-first plant needed
 reversing beyond the gate cases themselves, which are now green.
+
+## Orchestrator annotation, 2026-09-08
+
+The audit (`d7n-program-audit-verdict.md`) found counts stated in prose in this report and, where the prep report is concerned, `above`/`below` pointers; the tree is authoritative and the report stands as evidence with this note. The recorded caps-sweep scope is superseded by the fix round.

@@ -1,0 +1,12 @@
+== codec close-2 landing 2026-09-08T01:25:38Z over caab921
+== status
+ M guides/codec.md
+ M tests/guides.test.ts
+ guides/codec.md      | 23 +++++++++++++++++++++++
+ tests/guides.test.ts |  6 +-----
+ 2 files changed, 24 insertions(+), 5 deletions(-)
+== stage by path
+ 2 files changed, 24 insertions(+), 5 deletions(-)
+== committed
+8c20e15 Close codec under the final guide tarball
+(status end)
