@@ -185,3 +185,7 @@ example for it.
 - `/home/user/fleet/test/tests/guides.test.ts`
 - `/home/user/fleet/test/tmp/d7n-test-close/guide-test-md.diff`
 - `/home/user/fleet/test/tmp/d7n-test-close/tests-guides-test-ts.diff`
+
+---
+
+Orchestrator's annotation (2026-09-08, closure): the first checker ruled claim 2 FAIL on this report's prose (a count) and claim 3 on the `EventSourceInterface` row's retired `alone` device, and the sweep's verifier read `test:guides` red on the pilot's examples case; the successor `d7n-test-examples` closed both, and the second checker and verifier read PASS and GREEN.
