@@ -138,3 +138,8 @@ No deviation stopped the unit. Two ancillary matters were decided and are record
 
 1. **The drop-in's header line moved under this unit.** The brief pinned the canonical header as "The constants that follow are this package's own, and are the only part a sibling package changes" (Ruling 13 and its amendment). While this unit ran, the pilot committed `f54ab91` ("State the drop-in's header without the clause every sibling contradicts"), whose line reads "// package's own, as is the executed section that closes the file." This unit adopted the pilot's live text, because Ruling 13 makes the pilot canonical and the new clause is what makes a package-owned executed section honest. `tests/guides.test.ts:1-3` now reads the pilot's three lines exactly. The generic EXECUTED-half comment was taken from the pilot as well, and agent's own executed cases sit beneath it.
 2. **`### Constants` gained no `Shape` column**, per the reasoning under criterion 2.
+
+---
+
+Orchestrator's annotation (2026-09-08, the audit): every lane ruled claim 12 FAIL on this report — citations a line off their site and counts in prose (for agent), the precedent argument for the mixed table's empty cells and counts (for ollama); the tree is authoritative and the fix round carries the substance.
+Further: the sentence stating that the repeated remark sentences were pruned in `ProviderInterface.stream` and `ConversationInterface.compact` is false — both remarks stayed, and the fix round prunes them (objective F1).

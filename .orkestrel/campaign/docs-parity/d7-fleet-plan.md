@@ -128,3 +128,5 @@ The same successor pins the methods population: a `## Methods` table with no ``#
 
 - **The voice rule accepts a hyphenated noun opener (qualifier's audit, objective F1).** `paragraphToPolicyOpener` strips non-letters before the pattern runs, so `Multi-pass definition …` becomes `Multipass` and passes as a verb. Judge the opener before stripping, or refuse a first word that carried a hyphen, with a `RuleTester` case.
 - **A landing's retained diff omits a newly tracked file (qualifier's audit, objective F2).** `land-p1.sh` captures `git diff`, which cannot show an untracked add such as the `scripts/docs.ts` the seed writes; capture `git show <commit>` beside it.
+
+- **The seed's `--to source` write leaves a trailing empty comment line (agent's audit, objective F3).** Blocks the seed rewrote end ` *` then ` */`, and a block can gain two consecutive empty comment lines; the formatter does not reflow comment prose, so nothing reports it. The block writer must drop a trailing empty comment line and collapse consecutive ones.

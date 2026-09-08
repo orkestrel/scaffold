@@ -1,0 +1,17 @@
+== probe p2-fix landing 2026-09-08T03:15:37Z over d06b186
+== status
+ M guides/probe.md
+ M src/core/types.ts
+ M src/core/validators.ts
+ M src/server/Overlay.ts
+ M src/server/ProbeServer.ts
+ M src/server/types.ts
+ M tests/guides.test.ts
+ src/server/types.ts       |  13 +++---
+ tests/guides.test.ts      |   8 ++--
+ 7 files changed, 82 insertions(+), 65 deletions(-)
+== stage by path
+ 7 files changed, 82 insertions(+), 65 deletions(-)
+== committed
+e522945 Refine probe's convergence on the audit's findings
+(status end)

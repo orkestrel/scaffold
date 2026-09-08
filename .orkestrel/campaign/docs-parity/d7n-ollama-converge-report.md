@@ -190,3 +190,7 @@ Owned files only. `package.json`, the lockfile, `guides/README.md`, every vendor
 ## Reader and seed defects met
 
 None. Every cell the headers exposed was located by `replaceCell`, every doc block accepted its rewrite, `--to source` wrote the titled body without touching a second block, and no residual disagreement survived under the P16 comparator. No seed line reported `no Summary cell carries the key`, `no doc block carries the key`, or `the doc block refused the rewrite` at any point after the header change; the only two `reported` lines of the whole run were the expected `the guide fence owns an example` and `the README pitch is authored by hand` from the `--to guide` pass.
+
+---
+
+Orchestrator's annotation (2026-09-08, the audit): every lane ruled claim 12 FAIL on this report — citations a line off their site and counts in prose (for agent), the precedent argument for the mixed table's empty cells and counts (for ollama); the tree is authoritative and the fix round carries the substance.
