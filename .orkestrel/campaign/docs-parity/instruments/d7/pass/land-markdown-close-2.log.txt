@@ -1,0 +1,10 @@
+== markdown close-2 landing 2026-09-08T03:11:04Z over 40f63bb
+== status
+ M guides/markdown.md
+ guides/markdown.md | 60 ++++++++++++++++++++++++++++--------------------------
+ 1 file changed, 31 insertions(+), 29 deletions(-)
+== stage by path
+ 1 file changed, 31 insertions(+), 29 deletions(-)
+== committed
+ac33037 Close markdown under the final guide tarball
+(status end)

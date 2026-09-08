@@ -1,0 +1,145 @@
+diff --git a/guides/database.md b/guides/database.md
+index 0063560..8816c5b 100644
+--- a/guides/database.md
++++ b/guides/database.md
+@@ -238,8 +238,8 @@ A `Shape` cell holds the constant's declared type.
+ 
+ | Constant                   | Kind  | Shape                    | Summary                                                                                                       |
+ | -------------------------- | ----- | ------------------------ | ------------------------------------------------------------------------------------------------------------- |
+-| `DEFAULT_PRIMARY`          | const | `'id'`                   | Supplies the primary-key column assumed when `PrimaryMap` does not name one.                                  |
+-| `MAX_PATTERN_LENGTH`       | const | `1024`                   | Sets the longest `LIKE` / `GLOB` pattern the wildcard matcher accepts before rejecting it.                    |
++| `DEFAULT_PRIMARY`          | const | `string`                 | Supplies the primary-key column, `'id'`, assumed when `PrimaryMap` does not name one.                         |
++| `MAX_PATTERN_LENGTH`       | const | `number`                 | Sets the longest `LIKE` / `GLOB` pattern the wildcard matcher accepts, 1024 characters, before rejecting it.  |
+ | `CONFORMANCE_USERS_SCHEMA` | const | `TableSchema`            | Describes the `users` table the driver-conformance battery opens — keyed by the default `id` primary column.  |
+ | `CONFORMANCE_POSTS_SCHEMA` | const | `TableSchema`            | Describes the `posts` table the driver-conformance battery opens — keyed by a non-`id` `slug` primary column. |
+ | `CONFORMANCE_SCHEMA`       | const | `readonly TableSchema[]` | Holds the fixed `users` and `posts` schema every driver-conformance phase opens.                              |
+diff --git a/src/core/constants.ts b/src/core/constants.ts
+index c86a2be..d81cfaa 100644
+--- a/src/core/constants.ts
++++ b/src/core/constants.ts
+@@ -3,7 +3,7 @@ import type { ColumnSchema, TableSchema } from './types.js'
+ // Database constants — frozen plain data.
+ 
+ /**
+- * Supplies the primary-key column assumed when {@link PrimaryMap} does not name one.
++ * Supplies the primary-key column, `'id'`, assumed when {@link PrimaryMap} does not name one.
+  *
+  * @remarks
+  * `id` is the convention IndexedDB (`keyPath: 'id'`) and SQL (`id` / rowid) both
+@@ -12,7 +12,8 @@ import type { ColumnSchema, TableSchema } from './types.js'
+ export const DEFAULT_PRIMARY = 'id'
+ 
+ /**
+- * Sets the longest `LIKE` / `GLOB` pattern the wildcard matcher accepts before rejecting it.
++ * Sets the longest `LIKE` / `GLOB` pattern the wildcard matcher accepts, 1024 characters, before
++ * rejecting it.
+  *
+  * @remarks
+  * A `LIKE` / `GLOB` pattern is a caller-supplied operand, so
+diff --git a/tests/guides.test.ts b/tests/guides.test.ts
+index c7f392d..bbddd90 100644
+--- a/tests/guides.test.ts
++++ b/tests/guides.test.ts
+@@ -659,14 +659,6 @@ for (const entry of manifest) {
+ 		it('extracts a non-empty documented surface', () => {
+ 			expect(guide.surface().length).toBeGreaterThan(0)
+ 		})
+-
+-		it('documents every published entry export', () => {
+-			expect(findMissingSymbols(surface, guide.surface())).toEqual([])
+-		})
+-		it('documents only real entry exports', () => {
+-			expect(findMissingSymbols(guide.surface(), surface)).toEqual([])
+-		})
+-
+ 		it('re-exports every direct declaration that is not named internal', () => {
+ 			const stranded = findMissingSymbols(source.exports(), source.surface())
+ 			expect(stranded.filter((key) => !INTERNAL.includes(key))).toEqual([])
+@@ -675,6 +667,15 @@ for (const entry of manifest) {
+ 			const stranded = findMissingSymbols(source.exports(), source.surface())
+ 			expect(INTERNAL.filter((key) => !stranded.includes(key))).toEqual([])
+ 		})
++		it('re-exports only direct declarations', () => {
++			expect(findMissingSymbols(source.surface(), source.exports())).toEqual([])
++		})
++		it('documents every barrel export', () => {
++			expect(findMissingSymbols(source.surface(), guide.surface())).toEqual([])
++		})
++		it('documents only barrel exports', () => {
++			expect(findMissingSymbols(guide.surface(), source.surface())).toEqual([])
++		})
+ 
+ 		it('exposes no hidden module-scope declarations', () => {
+ 			expect(source.hidden().map(computeSymbolKey)).toEqual([])
+@@ -743,19 +744,6 @@ for (const entry of manifest) {
+ 			).toEqual([])
+ 		})
+ 
+-		it('compiles every TypeScript fence against the published entry specifiers', () => {
+-			expect(() =>
+-				checkGuideFences(
+-					join(ROOT, 'tsconfig.json'),
+-					requireValue(files[entry.spec], `Missing file: ${entry.spec}`),
+-					guide
+-						.fences()
+-						.filter((fence) => fence.language === EXAMPLE_LANGUAGE)
+-						.map((fence) => fence.code),
+-				),
+-			).not.toThrow()
+-		}, 60_000)
+-
+ 		for (const group of guide.methods()) {
+ 			const entity = group.interface.replace(/Interface$/, '')
+ 			const documented = group.methods.map((method) => method.name)
+@@ -789,19 +777,6 @@ for (const entry of manifest) {
+ 			}
+ 		})
+ 
+-		it('keeps table, query, and transaction implementations internal', () => {
+-			const names = surface.map((symbol) => symbol.name)
+-			expect(names).not.toContain('Table')
+-			expect(names).not.toContain('Query')
+-			expect(names).not.toContain('DatabaseTransaction')
+-			expect(names).not.toContain('ScopedIterator')
+-			expect(names).not.toContain('TransactionScope')
+-			expect(names).toContain('TableInterface')
+-			expect(names).toContain('QueryInterface')
+-			expect(source.methods('TableInterface').map((method) => method.name)).toContain('count')
+-			expect(source.methods('QueryInterface').map((method) => method.name)).toContain('count')
+-		})
+-
+ 		it('resolves every relative link', () => {
+ 			const broken = guide
+ 				.links()
+@@ -817,5 +792,31 @@ for (const entry of manifest) {
+ 				.filter((path) => !source.exists(path))
+ 			expect(missing).toEqual([])
+ 		})
++
++		it('compiles every TypeScript fence against the published entry specifiers', () => {
++			expect(() =>
++				checkGuideFences(
++					join(ROOT, 'tsconfig.json'),
++					requireValue(files[entry.spec], `Missing file: ${entry.spec}`),
++					guide
++						.fences()
++						.filter((fence) => fence.language === EXAMPLE_LANGUAGE)
++						.map((fence) => fence.code),
++				),
++			).not.toThrow()
++		}, 60_000)
++
++		it('keeps table, query, and transaction implementations internal', () => {
++			const names = surface.map((symbol) => symbol.name)
++			expect(names).not.toContain('Table')
++			expect(names).not.toContain('Query')
++			expect(names).not.toContain('DatabaseTransaction')
++			expect(names).not.toContain('ScopedIterator')
++			expect(names).not.toContain('TransactionScope')
++			expect(names).toContain('TableInterface')
++			expect(names).toContain('QueryInterface')
++			expect(source.methods('TableInterface').map((method) => method.name)).toContain('count')
++			expect(source.methods('QueryInterface').map((method) => method.name)).toContain('count')
++		})
+ 	})
+ }

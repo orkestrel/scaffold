@@ -1,0 +1,10 @@
+== lsp close-2 landing 2026-09-08T03:11:05Z over d83e0cb
+== status
+ M guides/lsp.md
+ guides/lsp.md | 14 +++++++-------
+ 1 file changed, 7 insertions(+), 7 deletions(-)
+== stage by path
+ 1 file changed, 7 insertions(+), 7 deletions(-)
+== committed
+c4842c8 Close lsp under the final guide tarball
+(status end)

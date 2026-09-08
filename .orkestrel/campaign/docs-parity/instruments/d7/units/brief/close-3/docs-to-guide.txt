@@ -1,0 +1,5 @@
+
+> @orkestrel/brief@0.0.8 docs
+> node --experimental-strip-types scripts/docs.ts --to guide
+
+rows read: 1, disagreements found: 0, written: 0, reported: 0

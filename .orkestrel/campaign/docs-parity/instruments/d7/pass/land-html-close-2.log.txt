@@ -1,0 +1,10 @@
+== html close-2 landing 2026-09-08T03:11:04Z over 3325173
+== status
+ M guides/html.md
+ guides/html.md | 34 ++++++++++++++++++----------------
+ 1 file changed, 18 insertions(+), 16 deletions(-)
+== stage by path
+ 1 file changed, 18 insertions(+), 16 deletions(-)
+== committed
+0b95316 Close html under the final guide tarball
+(status end)

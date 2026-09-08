@@ -1,0 +1,5 @@
+
+> @orkestrel/lsp@0.0.7 docs
+> node --experimental-strip-types scripts/docs.ts --to source
+
+rows read: 1, disagreements found: 0, written: 0, reported: 0

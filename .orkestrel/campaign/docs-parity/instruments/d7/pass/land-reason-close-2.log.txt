@@ -1,0 +1,10 @@
+== reason close-2 landing 2026-09-08T03:11:04Z over 7bcc7f5
+== status
+ M guides/reason.md
+ guides/reason.md | 94 +++++++++++++++++++++++++++++---------------------------
+ 1 file changed, 48 insertions(+), 46 deletions(-)
+== stage by path
+ 1 file changed, 48 insertions(+), 46 deletions(-)
+== committed
+82fde71 Close reason under the final guide tarball
+(status end)

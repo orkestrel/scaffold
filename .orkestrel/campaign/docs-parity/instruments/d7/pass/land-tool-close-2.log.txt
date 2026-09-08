@@ -1,0 +1,10 @@
+== tool close-2 landing 2026-09-08T03:11:04Z over 053d9c1
+== status
+ M guides/tool.md
+ guides/tool.md | 9 +++++----
+ 1 file changed, 5 insertions(+), 4 deletions(-)
+== stage by path
+ 1 file changed, 5 insertions(+), 4 deletions(-)
+== committed
+c9755ef Close tool under the final guide tarball
+(status end)

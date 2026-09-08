@@ -1,0 +1,13 @@
+== database close-2 landing 2026-09-08T03:11:05Z over 232d2a1
+== status
+ M guides/database.md
+ M src/core/constants.ts
+ M tests/guides.test.ts
+ src/core/constants.ts |  5 ++--
+ tests/guides.test.ts  | 69 ++++++++++++++++++++++++++-------------------------
+ 3 files changed, 40 insertions(+), 38 deletions(-)
+== stage by path
+ 3 files changed, 40 insertions(+), 38 deletions(-)
+== committed
+59059e2 Close database under the final guide tarball
+(status end)

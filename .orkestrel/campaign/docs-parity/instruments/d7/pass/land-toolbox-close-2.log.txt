@@ -1,0 +1,10 @@
+== toolbox close-2 landing 2026-09-08T03:11:05Z over f9a390a
+== status
+ M guides/toolbox.md
+ guides/toolbox.md | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+== stage by path
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+== committed
+f8175e9 Close toolbox under the final guide tarball
+(status end)
