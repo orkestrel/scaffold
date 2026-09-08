@@ -239,3 +239,7 @@ This is the converge unit's worklist. No other gate read red.
 
 - Voice-rewrite wording for the three summaries and the `should` → `must` substitution were chosen to preserve every fact the sentence carried, per item 3's instruction; recorded above.
 - The instruments this unit produced (`repair.log`, `oxlint1.log`, `oxlint2.log`, `oxlint3.log`, `policy1.log`, `format.log`, `formatcheck.log`, `check.log`, `testguides.log`, `testpolicy2.log`, `testconfig.log`, `docs.log`) sit under `tmp/d7n-workspace-prep/` inside `/home/user/fleet/workspace` and were not committed.
+
+---
+
+Orchestrator's annotation (2026-09-08, the audit): the audit ruled counts in this report's prose (sites, edits, summaries tallied rather than named); the per-site lists that follow each tally name every member, and the tree is authoritative.

@@ -1,0 +1,28 @@
+== interpret close-2 landing 2026-09-08T02:18:44Z over 714b889
+== status
+ M guides/interpret.md
+ M src/core/Interpret.ts
+ M src/core/InterpretContext.ts
+ M src/core/Narrator.ts
+ M src/core/errors.ts
+ M src/core/helpers.ts
+ M src/core/managers/DefinitionManager.ts
+ M src/core/managers/RecordManager.ts
+ M src/core/managers/SubjectManager.ts
+ M src/core/managers/TemplateManager.ts
+ M src/core/parsers.ts
+ M src/core/stages/Clarifier.ts
+ M src/core/stages/Extractor.ts
+ M src/core/stages/Formatter.ts
+ M src/core/stages/Generator.ts
+ M src/core/stages/Normalizer.ts
+ M src/core/types.ts
+ M src/core/validators.ts
+ src/core/types.ts                      |  6 +++---
+ src/core/validators.ts                 | 24 +++++++++++------------
+ 18 files changed, 50 insertions(+), 50 deletions(-)
+== stage by path
+ 18 files changed, 50 insertions(+), 50 deletions(-)
+== committed
+6f3ba38 Close interpret under the final guide tarball
+(status end)

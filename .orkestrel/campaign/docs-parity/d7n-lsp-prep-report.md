@@ -257,3 +257,8 @@ rows read: 1, disagreements found: 108
 ## No deviation
 
 No `repair` write outside the P21 list, every before-text was found verbatim, no voice diagnostic named an off-limits file, `test:policy` reported no red anywhere, and no gate other than `docs` read red after the items.
+
+---
+
+Orchestrator's annotation (2026-09-08, the audit): the audit ruled counts in this report's prose (sites, edits, summaries tallied rather than named); the per-site lists that follow each tally name every member, and the tree is authoritative.
+The citation of the pilot's copied shape as `tests/guides.test.ts:145-227` is unbounded at both ends; the copied regions are `:146-171` and `:191-228` (objective claim 12).

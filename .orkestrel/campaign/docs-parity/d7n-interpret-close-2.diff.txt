@@ -1,0 +1,516 @@
+diff --git a/guides/interpret.md b/guides/interpret.md
+index 2d024aa..7551eb2 100644
+--- a/guides/interpret.md
++++ b/guides/interpret.md
+@@ -75,9 +75,9 @@ A `Shape` cell holds an interface's data members as bare names in braces, `?` ma
+ 
+ | Type                         | Kind      | Shape                                                                                                                                                    | Summary                                                                                                                                                                                                                      |
+ | ---------------------------- | --------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+-| `ProvenanceCategory`         | type      | `'extracted' \| 'carried' \| 'default' \| 'computed' \| 'subject'`                                                                                       | Names how one `FieldMapping` / `Entity` value was obtained.                                                                                                                                                                  |
++| `ProvenanceCategory`         | type      | `'extracted' \| 'carried' \| 'default' \| 'computed' \| 'subject'`                                                                                       | Names how one `FieldMapping` or `Entity` value was obtained.                                                                                                                                                                 |
+ | `InterpretStage`             | type      | `'normalize' \| 'extract' \| 'clarify' \| 'format' \| 'generate'`                                                                                        | Names the fixed pipeline phases an `InterpretInterface#interpret` run produces one `StageRecord` for, in order.                                                                                                              |
+-| `InterpretErrorCode`         | type      | `'NORMALIZE_FAILED' \| 'EXTRACT_FAILED' \| 'CLARIFY_FAILED' \| 'FORMAT_FAILED' \| 'GENERATE_FAILED' \| 'NO_TEMPLATE' \| 'LOW_CONFIDENCE' \| 'DESTROYED'` | Names the coded misuse / failure conditions thrown as an `InterpretError` or carried on a `StageFailure`.                                                                                                                    |
++| `InterpretErrorCode`         | type      | `'NORMALIZE_FAILED' \| 'EXTRACT_FAILED' \| 'CLARIFY_FAILED' \| 'FORMAT_FAILED' \| 'GENERATE_FAILED' \| 'NO_TEMPLATE' \| 'LOW_CONFIDENCE' \| 'DESTROYED'` | Names the coded misuse or failure conditions thrown as an `InterpretError` or carried on a `StageFailure`.                                                                                                                   |
+ | `EntityMapping`              | interface | `{ entity, aliases, field, required? }`                                                                                                                  | Represents one entity-extraction rule inside a `Template`: which literal alias phrases identify a value, and which subject field it lands on.                                                                                |
+ | `FieldDefault`               | interface | `{ field, value }`                                                                                                                                       | Represents a fallback value a `Template` fills onto a field left unresolved by extraction.                                                                                                                                   |
+ | `ComputedField`              | interface | `{ field, expression }`                                                                                                                                  | Represents a declaratively computed field: evaluate `expression` against the entities already resolved for this interpretation, and land the result on `field`.                                                              |
+@@ -100,7 +100,7 @@ A `Shape` cell holds an interface's data members as bare names in braces, `?` ma
+ | `SubjectRecord`              | interface | `{ id, subject, version, hash }`                                                                                                                         | Represents a versioned, content-hashed `Subject` as held by a `SubjectManagerInterface`.                                                                                                                                     |
+ | `DefinitionRecord`           | interface | `{ id, definition, version, hash }`                                                                                                                      | Represents a versioned, content-hashed `Definition` as held by a `DefinitionManagerInterface`.                                                                                                                               |
+ | `InterpretEventMap`          | type      | `{ interpret, add, error, destroy }`                                                                                                                     | Represents the push observation surface of an `InterpretInterface`.                                                                                                                                                          |
+-| `RecordEventMap`             | type      | `{ add, remove, destroy }`                                                                                                                               | Represents the push observation surface shared by every record registry — an id-keyed collection, so `add` / `remove` are the events (never ordered-list `append`/`prepend`).                                                |
++| `RecordEventMap`             | type      | `{ add, remove, destroy }`                                                                                                                               | Represents the push observation surface shared by every record registry — an id-keyed collection, so `add` and `remove` are the events (never ordered-list `append`/`prepend`).                                              |
+ | `TemplateManagerEventMap`    | type      | `RecordEventMap`                                                                                                                                         | Represents the push observation surface of a `TemplateManagerInterface`.                                                                                                                                                     |
+ | `SubjectManagerEventMap`     | type      | `RecordEventMap`                                                                                                                                         | Represents the push observation surface of a `SubjectManagerInterface`, whose `add` carries the own-minted record id.                                                                                                        |
+ | `DefinitionManagerEventMap`  | type      | `RecordEventMap`                                                                                                                                         | Represents the push observation surface of a `DefinitionManagerInterface`.                                                                                                                                                   |
+diff --git a/src/core/Interpret.ts b/src/core/Interpret.ts
+index 28630af..56d6d18 100644
+--- a/src/core/Interpret.ts
++++ b/src/core/Interpret.ts
+@@ -70,7 +70,7 @@ import { Normalizer } from './stages/Normalizer.js'
+  * @example
+  * ```ts
+  * import { createFactorGroup, createFieldFactor, createQuantitativeDefinition } from '@orkestrel/reason'
+- * import { Interpret, Extractor } from '@src/core'
++ * import { Interpret, Extractor } from '@orkestrel/interpret'
+  *
+  * const interpret = new Interpret({
+  * 	extractor: new Extractor({ actions: { calculate: 'calculate' }, domains: { arithmetic: ['arithmetic'] } }),
+diff --git a/src/core/InterpretContext.ts b/src/core/InterpretContext.ts
+index 83eaec2..a4d88f1 100644
+--- a/src/core/InterpretContext.ts
++++ b/src/core/InterpretContext.ts
+@@ -32,7 +32,7 @@ import { SubjectManager } from './managers/SubjectManager.js'
+  *
+  * @example
+  * ```ts
+- * import { InterpretContext } from '@src/core'
++ * import { InterpretContext } from '@orkestrel/interpret'
+  *
+  * const context = new InterpretContext({ session: 's1', history: 8 })
+  * context.session // 's1'
+diff --git a/src/core/Narrator.ts b/src/core/Narrator.ts
+index a007412..2d13e8b 100644
+--- a/src/core/Narrator.ts
++++ b/src/core/Narrator.ts
+@@ -22,7 +22,7 @@ import { DEFAULT_LEXICON } from './constants.js'
+  *
+  * @example
+  * ```ts
+- * import { Narrator } from '@src/core'
++ * import { Narrator } from '@orkestrel/interpret'
+  *
+  * const narrator = new Narrator({
+  * 	lexicon: { phrases: { comparison: { equals: 'is' } } },
+diff --git a/src/core/errors.ts b/src/core/errors.ts
+index 3ca4fe3..d4bd7a0 100644
+--- a/src/core/errors.ts
++++ b/src/core/errors.ts
+@@ -40,7 +40,7 @@ export class InterpretError extends Error {
+  *
+  * @example
+  * ```ts
+- * import { isInterpretError } from '@src/core'
++ * import { isInterpretError } from '@orkestrel/interpret'
+  *
+  * try {
+  * 	interpret.template('missing')
+diff --git a/src/core/helpers.ts b/src/core/helpers.ts
+index 3beba4e..67a0503 100644
+--- a/src/core/helpers.ts
++++ b/src/core/helpers.ts
+@@ -29,7 +29,7 @@ import {
+  *
+  * @example
+  * ```ts
+- * import { escapeRegExp } from '@src/core'
++ * import { escapeRegExp } from '@orkestrel/interpret'
+  *
+  * escapeRegExp('a.b*c') // 'a\\.b\\*c'
+  * new RegExp(escapeRegExp('a.b*c')).test('a.b*c') // true
+@@ -61,7 +61,7 @@ export function escapeRegExp(text: string): string {
+  *
+  * @example
+  * ```ts
+- * import { setField } from '@src/core'
++ * import { setField } from '@orkestrel/interpret'
+  *
+  * setField({ age: 25 }, 'age', 30)               // { age: 30 }
+  * setField({}, ['address', 'city'], 'Reno')      // { address: { city: 'Reno' } }
+@@ -99,7 +99,7 @@ export function setField(subject: Subject, field: FieldPath, value: unknown): Su
+  *
+  * @example
+  * ```ts
+- * import { applyReplacements } from '@src/core'
++ * import { applyReplacements } from '@orkestrel/interpret'
+  *
+  * applyReplacements("can't stop", { "can't": 'cannot' }) // 'cannot stop'
+  * applyReplacements('information', { in: 'IN' })          // 'information' — word-boundary safe
+@@ -122,7 +122,7 @@ export function applyReplacements(text: string, map: Readonly<Record<string, str
+  *
+  * @example
+  * ```ts
+- * import { collapseWhitespace } from '@src/core'
++ * import { collapseWhitespace } from '@orkestrel/interpret'
+  *
+  * collapseWhitespace('  a   b\t c ') // 'a b c'
+  * ```
+@@ -147,7 +147,7 @@ export function collapseWhitespace(text: string): string {
+  *
+  * @example
+  * ```ts
+- * import { tokenize } from '@src/core'
++ * import { tokenize } from '@orkestrel/interpret'
+  *
+  * tokenize('The rate is 85%.') // ['the', 'rate', 'is', '85%.']
+  * ```
+@@ -176,7 +176,7 @@ export function tokenize(text: string): readonly string[] {
+  *
+  * @example
+  * ```ts
+- * import { extractNumbers } from '@src/core'
++ * import { extractNumbers } from '@orkestrel/interpret'
+  *
+  * extractNumbers('income was $50,000, age 25') // [50000, 25]
+  * ```
+@@ -221,7 +221,7 @@ export function extractNumbers(text: string): readonly number[] {
+  *
+  * @example
+  * ```ts
+- * import { assignEntities } from '@src/core'
++ * import { assignEntities } from '@orkestrel/interpret'
+  *
+  * const mappings = [
+  * 	{ entity: 'age', aliases: ['years old'], field: 'age' },
+@@ -399,7 +399,7 @@ export function assignEntities(
+  *
+  * @example
+  * ```ts
+- * import { classifyIntent } from '@src/core'
++ * import { classifyIntent } from '@orkestrel/interpret'
+  *
+  * classifyIntent('calculate my rate', { calculate: 'compute' }, { rating: ['rate'] })
+  * // { action: 'compute', domain: 'rating', confidence: 1 }
+@@ -464,7 +464,7 @@ export function classifyIntent(
+  *
+  * @example
+  * ```ts
+- * import { scoreSimilarity } from '@src/core'
++ * import { scoreSimilarity } from '@orkestrel/interpret'
+  *
+  * scoreSimilarity('rate', 'rate')  // 1
+  * scoreSimilarity('rate', 'value') // 0 — no shared bigrams
+@@ -506,7 +506,7 @@ export function scoreSimilarity(a: string, b: string): number {
+  *
+  * @example
+  * ```ts
+- * import { matchAlias } from '@src/core'
++ * import { matchAlias } from '@orkestrel/interpret'
+  *
+  * matchAlias('valu', ['value', 'amount'], 0.6) // ~0.86 — fuzzy hit on 'value'
+  * matchAlias('xyz', ['value', 'amount'], 0.6)  // 0 — no alias clears the threshold
+@@ -546,7 +546,7 @@ export function matchAlias(token: string, aliases: readonly string[], threshold:
+  *
+  * @example
+  * ```ts
+- * import { canonicalizeNode } from '@src/core'
++ * import { canonicalizeNode } from '@orkestrel/interpret'
+  *
+  * canonicalizeNode({ b: 1, a: 2 }, new Set()) // '{"a":2,"b":1}'
+  * const cyclic = { name: 'root' }
+@@ -585,7 +585,7 @@ export function canonicalizeNode(value: unknown, ancestors: ReadonlySet<object>)
+  *
+  * @example
+  * ```ts
+- * import { canonicalize } from '@src/core'
++ * import { canonicalize } from '@orkestrel/interpret'
+  *
+  * canonicalize({ b: 1, a: 2 }) === canonicalize({ a: 2, b: 1 }) // true
+  * ```
+@@ -608,7 +608,7 @@ export function canonicalize(value: unknown): string {
+  *
+  * @example
+  * ```ts
+- * import { digestValue } from '@src/core'
++ * import { digestValue } from '@orkestrel/interpret'
+  *
+  * digestValue({ a: 1 }) === digestValue({ a: 1 }) // true — deterministic
+  * ```
+@@ -639,7 +639,7 @@ export function digestValue(value: unknown): string {
+  *
+  * @example
+  * ```ts
+- * import { scoreTemplate } from '@src/core'
++ * import { scoreTemplate } from '@orkestrel/interpret'
+  *
+  * scoreTemplate(
+  * 	{ action: 'compute', domain: 'rating', confidence: 1 },
+@@ -675,7 +675,7 @@ export function scoreTemplate(intent: Intent, template: Template): number {
+  *
+  * @example
+  * ```ts
+- * import { matchTemplate } from '@src/core'
++ * import { matchTemplate } from '@orkestrel/interpret'
+  *
+  * matchTemplate({ confidence: 0 }, [], 0.3) // undefined — empty registry
+  * ```
+@@ -709,7 +709,7 @@ export function matchTemplate(
+  * @example
+  * ```ts
+  * import { createConstant, createOperation, createVariable } from '@orkestrel/reason'
+- * import { variablesOf } from '@src/core'
++ * import { variablesOf } from '@orkestrel/interpret'
+  *
+  * variablesOf(createOperation('divide', createVariable('deductible'), createConstant(12))) // ['deductible']
+  * ```
+@@ -758,7 +758,7 @@ export function variablesOf(expression: SymbolicExpression): readonly string[] {
+  * @example
+  * ```ts
+  * import { createConstant, createOperation, createVariable } from '@orkestrel/reason'
+- * import { resolveExpression } from '@src/core'
++ * import { resolveExpression } from '@orkestrel/interpret'
+  *
+  * resolveExpression(createOperation('divide', createVariable('deductible'), createConstant(12)), { deductible: 6000 }) // 500
+  * resolveExpression(createOperation('divide', createConstant(1), createConstant(0)), {}) // undefined — NaN gap
+@@ -803,7 +803,7 @@ export function resolveExpression(
+  *
+  * @example
+  * ```ts
+- * import { createNarrator, renderSubject } from '@src/core'
++ * import { createNarrator, renderSubject } from '@orkestrel/interpret'
+  *
+  * renderSubject({ age: 25, income: 50000 }, createNarrator()) // 'with age: 25, income: 50000'
+  * ```
+diff --git a/src/core/managers/DefinitionManager.ts b/src/core/managers/DefinitionManager.ts
+index 3fa6833..6446e06 100644
+--- a/src/core/managers/DefinitionManager.ts
++++ b/src/core/managers/DefinitionManager.ts
+@@ -25,7 +25,7 @@ import { RecordManager } from './RecordManager.js'
+  * @example
+  * ```ts
+  * import { createSymbolicDefinition } from '@orkestrel/reason'
+- * import { DefinitionManager } from '@src/core'
++ * import { DefinitionManager } from '@orkestrel/interpret'
+  *
+  * const manager = new DefinitionManager()
+  * const record = manager.add(createSymbolicDefinition('rate', 'Rate', []))
+diff --git a/src/core/managers/RecordManager.ts b/src/core/managers/RecordManager.ts
+index a4b5afb..1bd5ed7 100644
+--- a/src/core/managers/RecordManager.ts
++++ b/src/core/managers/RecordManager.ts
+@@ -31,7 +31,7 @@ import { digestValue } from '../helpers.js'
+  *
+  * @example
+  * ```ts
+- * import { RecordManager } from '@src/core'
++ * import { RecordManager } from '@orkestrel/interpret'
+  *
+  * interface NoteRecord {
+  * 	readonly id: string
+diff --git a/src/core/managers/SubjectManager.ts b/src/core/managers/SubjectManager.ts
+index 950bd9b..f5d4d85 100644
+--- a/src/core/managers/SubjectManager.ts
++++ b/src/core/managers/SubjectManager.ts
+@@ -26,7 +26,7 @@ import { RecordManager } from './RecordManager.js'
+  *
+  * @example
+  * ```ts
+- * import { SubjectManager } from '@src/core'
++ * import { SubjectManager } from '@orkestrel/interpret'
+  *
+  * const manager = new SubjectManager()
+  * const first = manager.add({ age: 25 })
+diff --git a/src/core/managers/TemplateManager.ts b/src/core/managers/TemplateManager.ts
+index f6bf5c6..17d7155 100644
+--- a/src/core/managers/TemplateManager.ts
++++ b/src/core/managers/TemplateManager.ts
+@@ -27,7 +27,7 @@ import { RecordManager } from './RecordManager.js'
+  * @example
+  * ```ts
+  * import { createFactorGroup, createFieldFactor, createQuantitativeDefinition } from '@orkestrel/reason'
+- * import { TemplateManager } from '@src/core'
++ * import { TemplateManager } from '@orkestrel/interpret'
+  *
+  * const manager = new TemplateManager()
+  * const record = manager.add({
+diff --git a/src/core/parsers.ts b/src/core/parsers.ts
+index 174bf62..e2794bb 100644
+--- a/src/core/parsers.ts
++++ b/src/core/parsers.ts
+@@ -21,7 +21,7 @@ import { isTemplate } from './validators.js'
+  *
+  * @example
+  * ```ts
+- * import { parseTemplate } from '@src/core'
++ * import { parseTemplate } from '@orkestrel/interpret'
+  *
+  * parseTemplate('not json') // undefined
+  * ```
+diff --git a/src/core/stages/Clarifier.ts b/src/core/stages/Clarifier.ts
+index 8c1933c..3a21ce2 100644
+--- a/src/core/stages/Clarifier.ts
++++ b/src/core/stages/Clarifier.ts
+@@ -48,7 +48,7 @@ import { Narrator } from '../Narrator.js'
+  *
+  * @example
+  * ```ts
+- * import { Clarifier } from '@src/core'
++ * import { Clarifier } from '@orkestrel/interpret'
+  *
+  * const clarifier = new Clarifier({ floor: 0.3 })
+  * clarifier.clarify(
+diff --git a/src/core/stages/Extractor.ts b/src/core/stages/Extractor.ts
+index d0ae2d9..73a1141 100644
+--- a/src/core/stages/Extractor.ts
++++ b/src/core/stages/Extractor.ts
+@@ -15,7 +15,7 @@ import { classifyIntent, extractNumbers } from '../helpers.js'
+  *
+  * @example
+  * ```ts
+- * import { Extractor } from '@src/core'
++ * import { Extractor } from '@orkestrel/interpret'
+  *
+  * const extractor = new Extractor({
+  * 	actions: { calculate: 'compute' },
+diff --git a/src/core/stages/Formatter.ts b/src/core/stages/Formatter.ts
+index 45b63de..0271d62 100644
+--- a/src/core/stages/Formatter.ts
++++ b/src/core/stages/Formatter.ts
+@@ -31,7 +31,7 @@ import { Narrator } from '../Narrator.js'
+  *
+  * @example
+  * ```ts
+- * import { Formatter } from '@src/core'
++ * import { Formatter } from '@orkestrel/interpret'
+  *
+  * const formatter = new Formatter({ verbs: { calculate: 'Calculate' } })
+  * formatter.format(
+diff --git a/src/core/stages/Generator.ts b/src/core/stages/Generator.ts
+index af689cd..382a2ec 100644
+--- a/src/core/stages/Generator.ts
++++ b/src/core/stages/Generator.ts
+@@ -29,7 +29,7 @@ import { setField } from '../helpers.js'
+  *
+  * @example
+  * ```ts
+- * import { Generator } from '@src/core'
++ * import { Generator } from '@orkestrel/interpret'
+  *
+  * const generator = new Generator()
+  * generator.generate(
+diff --git a/src/core/stages/Normalizer.ts b/src/core/stages/Normalizer.ts
+index d4a9e3a..89677f8 100644
+--- a/src/core/stages/Normalizer.ts
++++ b/src/core/stages/Normalizer.ts
+@@ -24,7 +24,7 @@ import { applyReplacements, collapseWhitespace, escapeRegExp } from '../helpers.
+  *
+  * @example
+  * ```ts
+- * import { Normalizer } from '@src/core'
++ * import { Normalizer } from '@orkestrel/interpret'
+  *
+  * const normalizer = new Normalizer({ contractions: { "can't": 'cannot' } })
+  * normalizer.normalize("can't   stop")
+diff --git a/src/core/types.ts b/src/core/types.ts
+index 5c43d3d..2415561 100644
+--- a/src/core/types.ts
++++ b/src/core/types.ts
+@@ -19,7 +19,7 @@ import type { Definition, ReasonResult, Subject, SymbolicExpression } from '@ork
+ // === Vocabulary
+ 
+ /**
+- * Names how one {@link FieldMapping} / {@link Entity} value was obtained.
++ * Names how one {@link FieldMapping} or {@link Entity} value was obtained.
+  *
+  * @remarks
+  * `extracted` — mined from the raw text through keyword / alias / positional
+@@ -43,7 +43,7 @@ export type ProvenanceCategory = 'extracted' | 'carried' | 'default' | 'computed
+ export type InterpretStage = 'normalize' | 'extract' | 'clarify' | 'format' | 'generate'
+ 
+ /**
+- * Names the coded misuse / failure conditions thrown as an {@link InterpretError} or
++ * Names the coded misuse or failure conditions thrown as an {@link InterpretError} or
+  * carried on a {@link StageFailure}.
+  *
+  * @remarks
+@@ -364,7 +364,7 @@ export type InterpretEventMap = {
+ 
+ /**
+  * Represents the push observation surface shared by every record registry — an id-keyed
+- * collection, so `add` / `remove` are the events (never ordered-list
++ * collection, so `add` and `remove` are the events (never ordered-list
+  * `append`/`prepend`).
+  */
+ export type RecordEventMap = {
+diff --git a/src/core/validators.ts b/src/core/validators.ts
+index f4ffc7c..1ff5983 100644
+--- a/src/core/validators.ts
++++ b/src/core/validators.ts
+@@ -48,7 +48,7 @@ import { INTERPRET_ERROR_CODES, INTERPRET_STAGES, PROVENANCE_CATEGORIES } from '
+  *
+  * @example
+  * ```ts
+- * import { isEntityMapping } from '@src/core'
++ * import { isEntityMapping } from '@orkestrel/interpret'
+  *
+  * isEntityMapping({ entity: 'age', aliases: ['years old'], field: 'age' }) // true
+  * isEntityMapping({ entity: 'age', aliases: [/\d+/], field: 'age' })      // false — RegExp alias
+@@ -80,7 +80,7 @@ export function isEntityMapping(value: unknown): value is EntityMapping {
+  *
+  * @example
+  * ```ts
+- * import { isFieldDefault } from '@src/core'
++ * import { isFieldDefault } from '@orkestrel/interpret'
+  *
+  * isFieldDefault({ field: 'term', value: 12 })   // true
+  * isFieldDefault({ field: 'term' })               // false — value missing
+@@ -101,7 +101,7 @@ export function isFieldDefault(value: unknown): value is FieldDefault {
+  * @example
+  * ```ts
+  * import { createConstant, createOperation, createVariable } from '@orkestrel/reason'
+- * import { isComputedField } from '@src/core'
++ * import { isComputedField } from '@orkestrel/interpret'
+  *
+  * isComputedField({
+  * 	field: 'monthly',
+@@ -132,7 +132,7 @@ export function isComputedField(value: unknown): value is ComputedField {
+  * @example
+  * ```ts
+  * import { createFactorGroup, createFieldFactor, createQuantitativeDefinition } from '@orkestrel/reason'
+- * import { isTemplate } from '@src/core'
++ * import { isTemplate } from '@orkestrel/interpret'
+  *
+  * isTemplate({
+  * 	id: 't1',
+@@ -175,7 +175,7 @@ export function isTemplate(value: unknown): value is Template {
+  *
+  * @example
+  * ```ts
+- * import { isProvenance } from '@src/core'
++ * import { isProvenance } from '@orkestrel/interpret'
+  *
+  * isProvenance({ category: 'extracted', detail: 'alias', metadata: true }) // true
+  * isProvenance({ category: 'external' })                                  // false
+@@ -203,7 +203,7 @@ export function isProvenance(value: unknown): value is Provenance {
+  *
+  * @example
+  * ```ts
+- * import { isIntent } from '@src/core'
++ * import { isIntent } from '@orkestrel/interpret'
+  *
+  * isIntent({ action: 'calculate', domain: 'arithmetic', confidence: 1, metadata: true }) // true
+  * isIntent({ confidence: 0 })                                                            // true
+@@ -229,7 +229,7 @@ export function isIntent(value: unknown): value is Intent {
+  *
+  * @example
+  * ```ts
+- * import { isEntity } from '@src/core'
++ * import { isEntity } from '@orkestrel/interpret'
+  *
+  * isEntity({ name: 'age', value: 25, provenance: { category: 'extracted' }, confidence: 1 }) // true
+  * isEntity({ name: 'age', provenance: { category: 'external' }, confidence: 1 })             // false
+@@ -251,7 +251,7 @@ export function isEntity(value: unknown): value is Entity {
+  *
+  * @example
+  * ```ts
+- * import { isFieldMapping } from '@src/core'
++ * import { isFieldMapping } from '@orkestrel/interpret'
+  *
+  * isFieldMapping({ field: 'age', provenance: { category: 'extracted' }, confidence: 1 }) // true
+  * isFieldMapping({ field: [1], provenance: { category: 'extracted' }, confidence: 1 })   // false
+@@ -281,7 +281,7 @@ export function isFieldMapping(value: unknown): value is FieldMapping {
+  *
+  * @example
+  * ```ts
+- * import { isAmbiguity } from '@src/core'
++ * import { isAmbiguity } from '@orkestrel/interpret'
+  *
+  * isAmbiguity({ field: 'age', question: 'Which age?', candidates: ['25'], required: true }) // true
+  * isAmbiguity({ field: 'age', question: 'Which age?', candidates: [25], required: true })   // false
+@@ -309,7 +309,7 @@ export function isAmbiguity(value: unknown): value is Ambiguity {
+  *
+  * @example
+  * ```ts
+- * import { isStageRecord } from '@src/core'
++ * import { isStageRecord } from '@orkestrel/interpret'
+  *
+  * isStageRecord({ stage: 'normalize', input: 'raw', output: 'clean', failed: false }) // true
+  * isStageRecord({ stage: 'publish', failed: false })                                  // false
+@@ -339,7 +339,7 @@ export function isStageRecord(value: unknown): value is StageRecord {
+  *
+  * @example
+  * ```ts
+- * import { isStageFailure } from '@src/core'
++ * import { isStageFailure } from '@orkestrel/interpret'
+  *
+  * isStageFailure({ stage: 'format', code: 'FORMAT_FAILED', message: 'failed' }) // true
+  * isStageFailure({ stage: 'format', code: 'UNKNOWN', message: 'failed' })       // false
+@@ -369,7 +369,7 @@ export function isStageFailure(value: unknown): value is StageFailure {
+  *
+  * @example
+  * ```ts
+- * import { createInterpret, isInterpretation } from '@src/core'
++ * import { createInterpret, isInterpretation } from '@orkestrel/interpret'
+  *
+  * isInterpretation(createInterpret().interpret('unmatched text')) // true
+  * isInterpretation({ text: 'incomplete' })                         // false

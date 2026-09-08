@@ -310,3 +310,8 @@ target's code token on the first `--to guide` pass and stayed equal on the follo
 No deviation. Nothing in the deviation contract fired: every cell the seed located after the headers
 changed, the titled body fitted its block, no test outside `tests/guides.test.ts` went red, no
 vendored file needed an edit, and no reader returned an undescribed shape.
+
+---
+
+Orchestrator's annotation (2026-09-08, the audit): both lanes ruled claim 12 FAIL on counts in this report's prose (tables, members, cases, lines, rows, and paths tallied rather than named); every citation was verified against the tree, and the tree is authoritative.
+Further: the sentence stating that `destroy`'s drained work stayed in the block's `@returns` and `@remarks` is false — the block kept the destroyed emitter and dropped the drain, which the fix round restores (objective claim 5); and the observation naming the fences under `## Transport seam`, `## Stdio client transport`, `## Framing state`, and `## Validation` as lacking a lead-in holds only for the fences at `guides/lsp.md:131`, `:196`, and `:213` (subjective F4).

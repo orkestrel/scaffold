@@ -287,3 +287,7 @@ None. The seed and the `0.0.18` readers behaved as the brief describes at every 
 ## Deviation state
 
 No deviation. Every acceptance criterion is closed on this tree.
+
+---
+
+Orchestrator's annotation (2026-09-08, the audit): both lanes ruled claim 12 FAIL on counts in this report's prose (tables, members, cases, lines, rows, and paths tallied rather than named); every citation was verified against the tree, and the tree is authoritative.
