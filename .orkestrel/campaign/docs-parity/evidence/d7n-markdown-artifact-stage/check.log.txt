@@ -1,0 +1,8 @@
++ npm --prefix /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/d7n-markdown-stage.87s5ja/markdown run check
+npm notice run @orkestrel/markdown@0.0.14 check
+npm notice run tsc --noEmit --project tsconfig.json && npm run check:src
+npm notice run @orkestrel/markdown@0.0.14 check:src
+npm notice run npm run check:src:core
+npm notice run @orkestrel/markdown@0.0.14 check:src:core
+npm notice run tsc --noEmit -p configs/src/tsconfig.core.json
+exit=0

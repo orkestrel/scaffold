@@ -1,0 +1,2 @@
++ git -C /c/Users/mikes/WebstormProjects/markdown archive --format=tar -o /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/d7n-markdown-stage.87s5ja/markdown.tar ac33037b46b751fb1e25ca929556e9d5f107852a
+exit=0

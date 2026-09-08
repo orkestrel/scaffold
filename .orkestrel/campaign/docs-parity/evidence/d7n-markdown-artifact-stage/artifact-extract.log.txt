@@ -1,0 +1,2 @@
++ tar -xzf /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/d7n-markdown-stage.87s5ja/packed/orkestrel-markdown-0.0.14.tgz -C /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/d7n-markdown-stage.87s5ja/extracted
+exit=0

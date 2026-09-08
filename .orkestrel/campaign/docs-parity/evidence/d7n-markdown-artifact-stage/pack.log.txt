@@ -1,0 +1,25 @@
++ npm pack --ignore-scripts --pack-destination /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/d7n-markdown-stage.87s5ja/packed
+npm notice
+npm notice 📦  @orkestrel/markdown@0.0.14
+npm notice Tarball Contents
+npm notice 1.1kB LICENSE
+npm notice 4.5kB README.md
+npm notice 140.8kB dist/src/core/index.cjs
+npm notice 226.3kB dist/src/core/index.cjs.map
+npm notice 102.0kB dist/src/core/index.d.cts
+npm notice 102.0kB dist/src/core/index.d.ts
+npm notice 135.2kB dist/src/core/index.js
+npm notice 224.0kB dist/src/core/index.js.map
+npm notice 3.8kB package.json
+npm notice Tarball Details
+npm notice name: @orkestrel/markdown
+npm notice version: 0.0.14
+npm notice filename: orkestrel-markdown-0.0.14.tgz
+npm notice package size: 211.8 kB
+npm notice unpacked size: 939.8 kB
+npm notice shasum: 9ed7e02d271c91c6160d64472b3017ba1be1bdf4
+npm notice integrity: sha512-wGcxOrceAviPT[...]IE1Rk1kFtjwFw==
+npm notice total files: 9
+npm notice
+orkestrel-markdown-0.0.14.tgz
+exit=0

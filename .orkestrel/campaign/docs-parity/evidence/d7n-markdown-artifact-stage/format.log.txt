@@ -1,0 +1,8 @@
++ npm --prefix /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/d7n-markdown-stage.87s5ja/markdown run format:check
+npm notice run @orkestrel/markdown@0.0.14 format:check
+npm notice run oxfmt --config .oxfmtrc.json --check .
+Checking formatting...
+
+All matched files use the correct format.
+Finished in 1168ms on 48 files using 16 threads.
+exit=0

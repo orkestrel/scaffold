@@ -1,0 +1,72 @@
++ npm --prefix /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/d7n-markdown-stage.87s5ja/markdown test
+npm notice run @orkestrel/markdown@0.0.14 test
+npm notice run npm run test:src && npm run test:policy && npm run test:config && npm run test:setup && npm run test:guides
+npm notice run @orkestrel/markdown@0.0.14 test:src
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/scaffold/tmp/pass/d7n-markdown-stage.87s5ja/markdown
+
+····························································································································································································································································································································································································································································································································································································································
+
+ Test Files  7 passed (7)
+      Tests  604 passed (604)
+   Start at  19:12:31
+   Duration  2.03s (transform 1.29s, setup 1.90s, import 627ms, tests 2.16s, environment 1ms)
+
+npm notice run @orkestrel/markdown@0.0.14 test:policy
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project policy
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/scaffold/tmp/pass/d7n-markdown-stage.87s5ja/markdown
+
+·················································································-·········
+
+ Test Files  1 passed (1)
+      Tests  90 passed | 1 skipped (91)
+   Start at  19:12:34
+   Duration  1.02s (transform 167ms, setup 239ms, import 85ms, tests 524ms, environment 0ms)
+
+npm notice run @orkestrel/markdown@0.0.14 test:config
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project config
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/scaffold/tmp/pass/d7n-markdown-stage.87s5ja/markdown
+
+·········································································································································································stdout | tests/config.test.ts > configuration helpers > rolls one face into a single declaration and rewrites its core specifier
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+
+··-stdout | tests/config.test.ts > configuration helpers > rolls one face into a single declaration and rewrites its core specifier
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+
+·
+
+ Test Files  1 passed (1)
+      Tests  172 passed | 1 skipped (173)
+   Start at  19:12:35
+   Duration  3.20s (transform 271ms, setup 243ms, import 406ms, tests 2.39s, environment 0ms)
+
+npm notice run @orkestrel/markdown@0.0.14 test:setup
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project setup
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/scaffold/tmp/pass/d7n-markdown-stage.87s5ja/markdown
+
+························
+
+ Test Files  1 passed (1)
+      Tests  24 passed (24)
+   Start at  19:12:39
+   Duration  446ms (transform 134ms, setup 244ms, import 25ms, tests 25ms, environment 0ms)
+
+npm notice run @orkestrel/markdown@0.0.14 test:guides
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project guides
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/scaffold/tmp/pass/d7n-markdown-stage.87s5ja/markdown
+
+·······························································
+
+ Test Files  1 passed (1)
+      Tests  63 passed (63)
+   Start at  19:12:40
+   Duration  744ms (transform 142ms, setup 247ms, import 156ms, tests 189ms, environment 0ms)
+
+exit=0
