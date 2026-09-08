@@ -1,0 +1,17 @@
+== lsp p2 landing 2026-09-08T01:24:13Z over 9f1bb34
+== status
+ M README.md
+ M guides/lsp.md
+ M src/core/constants.ts
+ M src/core/factories.ts
+ M src/core/helpers.ts
+ M src/core/types.ts
+ M tests/guides.test.ts
+ src/core/types.ts     |  24 +++-
+ tests/guides.test.ts  | 154 ++++++++++++++++++-------
+ 7 files changed, 354 insertions(+), 194 deletions(-)
+== stage by path
+ 7 files changed, 354 insertions(+), 194 deletions(-)
+== committed
+edca4bd Converge lsp under the equality gate
+(status end)

@@ -484,3 +484,7 @@ No deviation. `repair` wrote no path outside the P21 list (the `audit --offline`
 before-text was found verbatim, no voice diagnostic named an off-limits file, `test:policy` reds on
 nothing, and every gate but `docs` reads green — `docs` reads red as the brief expects, carrying the
 converge unit's worklist.
+
+---
+
+Orchestrator's annotation (2026-09-08, from the audit verdict): this report states counts in prose; the tree is authoritative and every cited line matched it on the audit's re-read (rater's converge report also misstates the pilot's header as still reading `below`, and its diffstat reads one insertion past the committed tree). The unit's instruments are retained under `instruments/d7/units/`.

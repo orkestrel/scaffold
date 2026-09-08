@@ -1,0 +1,23 @@
+src/server/types.ts:260:2: error policy(no-banned-term): Replace e.g. in this comment: for example.
+src/server/types.ts:269:2: error policy(no-banned-term): Replace e.g. in this comment: for example.
+src/server/types.ts:287:2: error policy(no-banned-term): Replace e.g. in this comment: for example.
+src/server/types.ts:532:1: error policy(no-banned-term): Replace just in this comment: delete.
+src/server/types.ts:532:1: error policy(no-banned-term): Replace e.g. in this comment: for example.
+src/server/types.ts:201:1: error policy(no-malformed-summary): State what the symbol does without naming Encoding in the first sentence.
+tests/src/server/Server.test.ts:651:3: error policy(no-banned-term): Replace just in this comment: delete.
+src/server/helpers.ts:123:1: error policy(no-banned-term): Replace just in this comment: delete.
+src/server/helpers.ts:705:1: error policy(no-banned-term): Replace e.g. in this comment: for example.
+src/server/helpers.ts:758:1: error policy(no-banned-term): Replace e.g. in this comment: for example.
+src/server/helpers.ts:1492:1: error policy(no-banned-term): Replace e.g. in this comment: for example.
+src/server/Server.ts:31:1: error policy(no-banned-term): Replace e.g. in this comment: for example.
+src/server/Server.ts:273:2: error policy(no-banned-term): Replace e.g. in this comment: for example.
+tests/setupServer.ts:13:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setupServer.ts:16:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setupServer.ts:22:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setupServer.ts:55:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setupServer.ts:67:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setupServer.ts:112:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setupServer.ts:170:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setupServer.ts:180:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+src/server/errors.ts:103:1: error policy(no-banned-term): Replace e.g. in this comment: for example.
+src/server/errors.ts:175:1: error policy(no-banned-term): Replace just in this comment: delete.

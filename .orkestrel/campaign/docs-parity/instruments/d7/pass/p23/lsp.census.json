@@ -1,0 +1,104 @@
+{
+ "root": "/tmp/claude-0/-home-user-scaffold/6a1fadb4-aa90-52d9-9291-3bbb6ae817fe/scratchpad/docs/d7/pass/p23/clone-lsp",
+ "manifestRows": 1,
+ "guides": [
+  {
+   "spec": "guides/lsp.md",
+   "source": [
+    "src/core",
+    "src/server"
+   ],
+   "surface": {
+    "counts": {
+     "equal": 100,
+     "differ": 0,
+     "guideAbsent": 0,
+     "sourceAbsent": 0,
+     "bothAbsent": 0,
+     "unmatched": 0
+    },
+    "guideAbsent": [],
+    "sourceAbsent": [],
+    "bothAbsent": [],
+    "unmatched": [],
+    "differ": [],
+    "undocumentedInSource": []
+   },
+   "methods": {
+    "groups": 2,
+    "counts": {
+     "equal": 7,
+     "differ": 0,
+     "guideAbsent": 0,
+     "sourceAbsent": 0,
+     "bothAbsent": 0,
+     "unmatched": 0
+    },
+    "guideAbsent": [],
+    "sourceAbsent": [],
+    "bothAbsent": [],
+    "unmatched": [],
+    "differ": []
+   },
+   "owners": [
+    {
+     "name": "LSPClient",
+     "keyword": "class",
+     "methods": 4,
+     "grouped": false,
+     "undescribed": [
+      "close",
+      "destroy",
+      "open",
+      "start"
+     ]
+    },
+    {
+     "name": "LSPClientInterface",
+     "keyword": "interface",
+     "methods": 4,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "LSPTransportInterface",
+     "keyword": "interface",
+     "methods": 3,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "StdioClientTransport",
+     "keyword": "class",
+     "methods": 3,
+     "grouped": false,
+     "undescribed": []
+    },
+    {
+     "name": "StdioClientTransportInterface",
+     "keyword": "interface",
+     "methods": 3,
+     "grouped": false,
+     "undescribed": []
+    }
+   ],
+   "examples": {
+    "titledFences": [
+     "Create a client and inspect a document",
+     "Transport seam",
+     "Stdio client transport",
+     "Framing state",
+     "Validation"
+    ],
+    "titledExamples": [
+     "createLSPClient:Create a client and inspect a document"
+    ],
+    "pairs": [
+     "Create a client and inspect a document"
+    ]
+   },
+   "findDrift": 0,
+   "findDriftKeys": []
+  }
+ ]
+}

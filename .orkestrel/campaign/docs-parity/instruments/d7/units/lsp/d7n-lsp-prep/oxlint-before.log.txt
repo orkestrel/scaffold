@@ -1,0 +1,9 @@
+tests/src/server/fixtures/protocol.mjs:12:1: error policy(no-malformed-summary): State what the symbol does without naming frame in the first sentence.
+tests/setupServer.ts:9:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setupServer.ts:14:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setupServer.ts:19:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setupServer.ts:32:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setupServer.ts:44:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setupServer.ts:47:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setupServer.ts:50:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.
+tests/setupServer.ts:53:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.

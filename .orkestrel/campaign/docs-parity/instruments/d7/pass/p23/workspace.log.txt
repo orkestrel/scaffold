@@ -1,0 +1,96 @@
+### workspace at 98fc334, guide guides/workspace.md, head start 0.0.18
+-- baseline
+rows read: 1, disagreements found: 0
+   docs exit 0
+Tests  40 passed (40)
+   test:guides exit 0
+-- census
+   guides/workspace.md surface {"equal":52,"differ":0,"guideAbsent":0,"sourceAbsent":0,"bothAbsent":0,"unmatched":0} methods {"equal":25,"differ":0,"guideAbsent":0,"sourceAbsent":0,"bothAbsent":0,"unmatched":0} groups 3 findDrift 0
+   unmatched/undocumented/bothAbsent: [[],[],[],[],[]]
+   owner class DatabaseWorkspaceStore methods 3 grouped false undescribed ["delete","get","set"]
+   owner class MemoryWorkspaceStore methods 3 grouped false undescribed ["delete","get","set"]
+   owner class Workspace methods 14 grouped false undescribed ["append","clear","destroy","file","files","has","move","prepend","read","remove","replace","search","snapshot","write"]
+   owner interface WorkspaceInterface methods 14 grouped true undescribed []
+   owner class WorkspaceManager methods 8 grouped false undescribed ["add","clear","open","remove","save","switch","workspace","workspaces"]
+   owner interface WorkspaceManagerInterface methods 8 grouped true undescribed []
+   owner interface WorkspaceStoreInterface methods 3 grouped true undescribed []
+   examples titledFences 8 titledExamples ["createFile:Files and content"] pairs ["Files and content"]
+-- sites: surface row guides/workspace.md:40; methods row guides/workspace.md:192; title src/core/factories.ts:29
+-- control A: one Surface Summary cell altered (guides/workspace.md:40)
+guides/workspace.md type BinaryMIME: guide "Names the MIME labels a binary `FileContent` arm supports. Control." source "Names the MIME labels a binary `FileContent` arm supports."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Workspace > keeps every compared summary and example equal to its source
+Tests  1 failed | 39 passed (40)
+× keeps every compared summary and example equal to its source 11ms
+   test:guides exit 1
+-- control B: one Methods Summary cell altered (guides/workspace.md:192)
+guides/workspace.md WorkspaceInterface.file: guide "Finds the file value stored at one path. Control." source "Finds the file value stored at one path."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Workspace > keeps every compared summary and example equal to its source
+Tests  1 failed | 39 passed (40)
+× keeps every compared summary and example equal to its source 12ms
+   test:guides exit 1
+-- control C: the titled block's description paragraph altered (its first line)
+   edited:  * Control Creates an immutable file with derived size and line counts.
+guides/workspace.md function createFile: guide "Creates an immutable file with derived size and line counts." source "Control Creates an immutable file with derived size and line counts."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Workspace > keeps every compared summary and example equal to its source
+Tests  1 failed | 39 passed (40)
+× keeps every compared summary and example equal to its source 12ms
+   test:guides exit 1
+-- control H: another declaration's description paragraph altered (the first exported function or class in src whose block is not the titled one)
+   edited src/core/errors.ts:4:  * Control Reports an invalid workspace edit or search operation, carrying a {@link WorkspaceErrorCode}
+guides/workspace.md class WorkspaceError: guide "Reports an invalid workspace edit or search operation, carrying a `WorkspaceErrorCode` and, when the operation had one, the context it ran under." source "Control Reports an invalid workspace edit or search operation, carrying a `WorkspaceErrorCode` and, when the operation had one, the context it ran under."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Workspace > keeps every compared summary and example equal to its source
+Tests  1 failed | 39 passed (40)
+× keeps every compared summary and example equal to its source 15ms
+   test:guides exit 1
+-- control D: the @example title removed (src/core/factories.ts:29)
+rows read: 1, disagreements found: 0
+   docs exit 0
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > pairs at least one example title across the guide and the source
+Tests  1 failed | 39 passed (40)
+× pairs at least one example title across the guide and the source 28ms
+   test:guides exit 1
+-- control E: the titled example body altered
+guides/workspace.md Files and content: guide "ts\nimport {\n\tcomputeSize,\n\tcountLines,\n\tcreateBinaryContent,\n\tcreateFile,\n\tcreateTextContent,\n\tinferLanguage,\n\tisBinary,\n\tisText,\n} from '@orkestrel/workspace'\n\nconst note = createFile({\n\tpath: 'notes.md',\n\tcontent: createTextContent('# Title\\nBody', inferLanguage('notes.md')), // 'markdown'\n})\n\nnote.size // 12 — UTF-8 bytes, through computeSize\nnote.lines // 2 — through countLines\nnote.state // 'created'\nisText(note.content) // true\n\nconst icon = createFile({ path: 'icon.png', content: createBinaryContent('AAAA', 'image/png') })\nisBinary(icon.content) // true\nicon.size // 3 — decoded base64 bytes, through computeDecodedSize" source "ts\nimport { // control\n\tcomputeSize,\n\tcountLines,\n\tcreateBinaryContent,\n\tcreateFile,\n\tcreateTextContent,\n\tinferLanguage,\n\tisBinary,\n\tisText,\n} from '@orkestrel/workspace'\n\nconst note = createFile({\n\tpath: 'notes.md',\n\tcontent: createTextContent('# Title\\nBody', inferLanguage('notes.md')), // 'markdown'\n})\n\nnote.size // 12 — UTF-8 bytes, through computeSize\nnote.lines // 2 — through countLines\nnote.state // 'created'\nisText(note.content) // true\n\nconst icon = createFile({ path: 'icon.png', content: createBinaryContent('AAAA', 'image/png') })\nisBinary(icon.content) // true\nicon.size // 3 — decoded base64 bytes, through computeDecodedSize"
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Workspace > keeps every compared summary and example equal to its source
+Tests  1 failed | 39 passed (40)
+× keeps every compared summary and example equal to its source 10ms
+   test:guides exit 1
+-- control F: the README pitch altered
+guides/workspace.md pitch: readme "Control: The virtual file workspace for the `@orkestrel` line: a path-keyed map of immutable files with an editing surface over it, a registry that holds those maps by id under one active selection, and a snapshot store seam that persists them." tagline "The virtual file workspace for the `@orkestrel` line: a path-keyed map of immutable files with an editing surface over it, a registry that holds those maps by id under one active selection, and a snapshot store seam that persists them."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected 'Control: The virtual file workspace f…' to be 'The virtual file workspace for the `@…' // Object.is equality
+FAIL  |guides| tests/guides.test.ts > opens the README with the guide tagline
+Tests  1 failed | 39 passed (40)
+× opens the README with the guide tagline 10ms
+   test:guides exit 1
+-- control G: one Summary header renamed to Behavior
+guides/workspace.md interface WorkspaceInterface: guide absent source "Represents a mutable path-keyed editing surface over immutable file values."
+guides/workspace.md interface WorkspaceManagerOptions: guide absent source "Configures a workspace registry at construction."
+guides/workspace.md interface WorkspaceManagerInterface: guide absent source "Represents an insertion-ordered workspace registry with an active selection and optional durability."
+rows read: 1, disagreements found: 22
+   docs exit 1
+AssertionError: expected [ …(22) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Workspace > keeps every compared summary and example equal to its source
+Tests  1 failed | 39 passed (40)
+× keeps every compared summary and example equal to its source 13ms
+   test:guides exit 1
+-- restored
+rows read: 1, disagreements found: 0
+   docs exit 0

@@ -1,0 +1,93 @@
+### program at a60327f, guide guides/program.md, head start 0.0.18
+-- baseline
+rows read: 1, disagreements found: 0
+   docs exit 0
+Tests  29 passed (29)
+   test:guides exit 0
+-- census
+   guides/program.md surface {"equal":75,"differ":0,"guideAbsent":0,"sourceAbsent":0,"bothAbsent":0,"unmatched":0} methods {"equal":9,"differ":0,"guideAbsent":0,"sourceAbsent":0,"bothAbsent":0,"unmatched":0} groups 2 findDrift 0
+   unmatched/undocumented/bothAbsent: [[],[],[],[],[]]
+   owner class Program methods 3 grouped false undescribed []
+   owner interface ProgramInterface methods 3 grouped true undescribed []
+   owner class ProgramManager methods 6 grouped false undescribed []
+   owner interface ProgramManagerInterface methods 6 grouped true undescribed []
+   examples titledFences 23 titledExamples ["createProgram:Compile a program and a manager"] pairs ["Compile a program and a manager"]
+-- sites: surface row guides/program.md:128; methods row guides/program.md:418; title src/core/factories.ts:25
+-- control A: one Surface Summary cell altered (guides/program.md:128)
+guides/program.md type Decision: guide "Identifies a final authority outcome, derived from global eligibility. Control." source "Identifies a final authority outcome, derived from global eligibility."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Program > keeps every compared summary and example equal to its source
+Tests  1 failed | 28 passed (29)
+× keeps every compared summary and example equal to its source 12ms
+   test:guides exit 1
+-- control B: one Methods Summary cell altered (guides/program.md:418)
+guides/program.md ProgramInterface.execute: guide "Executes a subject list as one aggregate-aware batch. Control." source "Executes a subject list as one aggregate-aware batch."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Program > keeps every compared summary and example equal to its source
+Tests  1 failed | 28 passed (29)
+× keeps every compared summary and example equal to its source 14ms
+   test:guides exit 1
+-- control C: the titled block's description paragraph altered (its first line)
+   edited:  * Control Creates one compiled {@link ProgramInterface} over a qualifier and rater.
+guides/program.md function createProgram: guide "Creates one compiled `ProgramInterface` over a qualifier and rater." source "Control Creates one compiled `ProgramInterface` over a qualifier and rater."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Program > keeps every compared summary and example equal to its source
+Tests  1 failed | 28 passed (29)
+× keeps every compared summary and example equal to its source 14ms
+   test:guides exit 1
+-- control H: another declaration's description paragraph altered (the first exported function or class in src whose block is not the titled one)
+   edited src/core/errors.ts:4:  * Control Reports a coded programmer error thrown by the program layer, carrying a
+guides/program.md class ProgramError: guide "Reports a coded programmer error thrown by the program layer, carrying a machine-readable code and an optional context and cause." source "Control Reports a coded programmer error thrown by the program layer, carrying a machine-readable code and an optional context and cause."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Program > keeps every compared summary and example equal to its source
+Tests  1 failed | 28 passed (29)
+× keeps every compared summary and example equal to its source 15ms
+   test:guides exit 1
+-- control D: the @example title removed (src/core/factories.ts:25)
+rows read: 1, disagreements found: 0
+   docs exit 0
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > pairs at least one example title across the guide and the source
+Tests  1 failed | 28 passed (29)
+× pairs at least one example title across the guide and the source 29ms
+   test:guides exit 1
+-- control E: the titled example body altered
+guides/program.md Compile a program and a manager: guide "ts\nimport { buildProgramDefinition, createProgram, createProgramManager } from '@orkestrel/program'\n\nconst definition = buildProgramDefinition('standard', 'Standard', qualification, rating)\n\nconst program = createProgram(definition)\nconst manager = createProgramManager({ programs: [definition] })\n\nprogram.execute({ id: 'risk-1' })\n\nprogram.destroy()\nmanager.destroy()" source "ts\nimport { buildProgramDefinition, createProgram, createProgramManager } from '@orkestrel/program' // control\n\nconst definition = buildProgramDefinition('standard', 'Standard', qualification, rating)\n\nconst program = createProgram(definition)\nconst manager = createProgramManager({ programs: [definition] })\n\nprogram.execute({ id: 'risk-1' })\n\nprogram.destroy()\nmanager.destroy()"
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Program > keeps every compared summary and example equal to its source
+Tests  1 failed | 28 passed (29)
+× keeps every compared summary and example equal to its source 15ms
+   test:guides exit 1
+-- control F: the README pitch altered
+guides/program.md pitch: readme "Control: The program composition layer: a pure, JSON-serializable `ProgramDefinition` that composes one qualification with an optional rating, plus notices, authority, and batch aggregate policy, and a `Program` that executes them in one direction — qualify, select, rate, derive status, then authorize." tagline "The program composition layer: a pure, JSON-serializable `ProgramDefinition` that composes one qualification with an optional rating, plus notices, authority, and batch aggregate policy, and a `Program` that executes them in one direction — qualify, select, rate, derive status, then authorize."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected 'Control: The program composition laye…' to be 'The program composition layer: a pure…' // Object.is equality
+FAIL  |guides| tests/guides.test.ts > opens the README with the guide tagline
+Tests  1 failed | 28 passed (29)
+× opens the README with the guide tagline 11ms
+   test:guides exit 1
+-- control G: one Summary header renamed to Behavior
+guides/program.md type ProgramManagerEventMap: guide absent source "Describes the push observation surface of a `ProgramManagerInterface`."
+guides/program.md interface ProgramManagerOptions: guide absent source "Describes the options for `createProgramManager` / the `ProgramManager` constructor."
+guides/program.md interface ProgramManagerInterface: guide absent source "Defines an ordered manager over compiled programs, sharing one qualifier and rater."
+rows read: 1, disagreements found: 23
+   docs exit 1
+AssertionError: expected [ …(23) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Program > keeps every compared summary and example equal to its source
+Tests  1 failed | 28 passed (29)
+× keeps every compared summary and example equal to its source 15ms
+   test:guides exit 1
+-- restored
+rows read: 1, disagreements found: 0
+   docs exit 0

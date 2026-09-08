@@ -200,3 +200,7 @@ rows read: 1, disagreements found: 43
 ```
 
 This worklist matches P21's reading exactly and is the converge unit's to close.
+
+---
+
+Orchestrator's annotation (2026-09-08, from the audit verdict): this report states counts in prose; the tree is authoritative and every cited line matched it on the audit's re-read (rater's converge report also misstates the pilot's header as still reading `below`, and its diffstat reads one insertion past the committed tree). The unit's instruments are retained under `instruments/d7/units/`.

@@ -1,0 +1,94 @@
+### lsp at edca4bd, guide guides/lsp.md, head start 0.0.18
+-- baseline
+rows read: 1, disagreements found: 0
+   docs exit 0
+Tests  30 passed (30)
+   test:guides exit 0
+-- census
+   guides/lsp.md surface {"equal":100,"differ":0,"guideAbsent":0,"sourceAbsent":0,"bothAbsent":0,"unmatched":0} methods {"equal":7,"differ":0,"guideAbsent":0,"sourceAbsent":0,"bothAbsent":0,"unmatched":0} groups 2 findDrift 0
+   unmatched/undocumented/bothAbsent: [[],[],[],[],[]]
+   owner class LSPClient methods 4 grouped false undescribed ["close","destroy","open","start"]
+   owner interface LSPClientInterface methods 4 grouped true undescribed []
+   owner interface LSPTransportInterface methods 3 grouped true undescribed []
+   owner class StdioClientTransport methods 3 grouped false undescribed []
+   owner interface StdioClientTransportInterface methods 3 grouped false undescribed []
+   examples titledFences 5 titledExamples ["createLSPClient:Create a client and inspect a document"] pairs ["Create a client and inspect a document"]
+-- sites: surface row guides/lsp.md:315; methods row guides/lsp.md:315; title src/core/factories.ts:11
+-- control A: one Surface Summary cell altered (guides/lsp.md:315)
+guides/lsp.md LSPClientInterface.start: guide "Starts or restarts a transport generation and completes its initialize handshake. Control." source "Starts or restarts a transport generation and completes its initialize handshake."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Package > keeps every compared summary and example equal to its source
+Tests  1 failed | 29 passed (30)
+× keeps every compared summary and example equal to its source 16ms
+   test:guides exit 1
+-- control B: one Methods Summary cell altered (guides/lsp.md:315)
+guides/lsp.md LSPClientInterface.start: guide "Starts or restarts a transport generation and completes its initialize handshake. Control." source "Starts or restarts a transport generation and completes its initialize handshake."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Package > keeps every compared summary and example equal to its source
+Tests  1 failed | 29 passed (30)
+× keeps every compared summary and example equal to its source 15ms
+   test:guides exit 1
+-- control C: the titled block's description paragraph altered (its first line)
+   edited:  * Control Creates a transport-agnostic Language Server Protocol client.
+guides/lsp.md function createLSPClient: guide "Creates a transport-agnostic Language Server Protocol client." source "Control Creates a transport-agnostic Language Server Protocol client."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Package > keeps every compared summary and example equal to its source
+Tests  1 failed | 29 passed (30)
+× keeps every compared summary and example equal to its source 14ms
+   test:guides exit 1
+-- control H: another declaration's description paragraph altered (the first exported function or class in src whose block is not the titled one)
+   edited src/core/LSPClient.ts:45:  * Control Drives a Language Server Protocol peer through an injected byte transport.
+guides/lsp.md class LSPClient: guide "Drives a Language Server Protocol peer through an injected byte transport." source "Control Drives a Language Server Protocol peer through an injected byte transport."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Package > keeps every compared summary and example equal to its source
+Tests  1 failed | 29 passed (30)
+× keeps every compared summary and example equal to its source 14ms
+   test:guides exit 1
+-- control D: the @example title removed (src/core/factories.ts:11)
+rows read: 1, disagreements found: 0
+   docs exit 0
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > pairs at least one example title across the guide and the source
+Tests  1 failed | 29 passed (30)
+× pairs at least one example title across the guide and the source 31ms
+   test:guides exit 1
+-- control E: the titled example body altered
+guides/lsp.md Create a client and inspect a document: guide "ts\nimport type { LSPTransportInterface } from '@orkestrel/lsp'\nimport { createLSPClient } from '@orkestrel/lsp'\nimport { join } from 'node:path'\nimport { pathToFileURL } from 'node:url'\n\ndeclare const transport: LSPTransportInterface\ndeclare const directory: string\n\nconst client = createLSPClient({ transport, workspace: pathToFileURL(directory).href })\nawait client.start()\n\nconst signal = AbortSignal.timeout(30_000)\nconst uri = pathToFileURL(join(directory, 'main.ts')).href\n\nconst diagnostics = await client.open(\n\t{\n\t\turi,\n\t\tlanguageId: 'typescript',\n\t\tversion: 1,\n\t\ttext: 'const value = 1',\n\t},\n\t{ signal },\n)\nawait client.close(uri)\nawait client.destroy()" source "ts\nimport type { LSPTransportInterface } from '@orkestrel/lsp' // control\nimport { createLSPClient } from '@orkestrel/lsp'\nimport { join } from 'node:path'\nimport { pathToFileURL } from 'node:url'\n\ndeclare const transport: LSPTransportInterface\ndeclare const directory: string\n\nconst client = createLSPClient({ transport, workspace: pathToFileURL(directory).href })\nawait client.start()\n\nconst signal = AbortSignal.timeout(30_000)\nconst uri = pathToFileURL(join(directory, 'main.ts')).href\n\nconst diagnostics = await client.open(\n\t{\n\t\turi,\n\t\tlanguageId: 'typescript',\n\t\tversion: 1,\n\t\ttext: 'const value = 1',\n\t},\n\t{ signal },\n)\nawait client.close(uri)\nawait client.destroy()"
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected [ Array(1) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Package > keeps every compared summary and example equal to its source
+Tests  1 failed | 29 passed (30)
+× keeps every compared summary and example equal to its source 16ms
+   test:guides exit 1
+-- control F: the README pitch altered
+guides/lsp.md pitch: readme "Control: A typed Language Server Protocol client over an injected byte transport: a host-independent core carrying the base-protocol framing codec, the JSON-RPC and protocol guards, and an `LSPClient` that completes the initialize handshake, owns opened document URIs, and selects pull or push diagnostics from the server's own capabilities, beside a server environment whose `StdioClientTransport` carries those bytes over a language server run as a child process." tagline "A typed Language Server Protocol client over an injected byte transport: a host-independent core carrying the base-protocol framing codec, the JSON-RPC and protocol guards, and an `LSPClient` that completes the initialize handshake, owns opened document URIs, and selects pull or push diagnostics from the server's own capabilities, beside a server environment whose `StdioClientTransport` carries those bytes over a language server run as a child process."
+rows read: 1, disagreements found: 1
+   docs exit 1
+AssertionError: expected 'Control: A typed Language Server Prot…' to be 'A typed Language Server Protocol clie…' // Object.is equality
+FAIL  |guides| tests/guides.test.ts > opens the README with the guide tagline
+Tests  1 failed | 29 passed (30)
+× opens the README with the guide tagline 13ms
+   test:guides exit 1
+-- control G: one Summary header renamed to Behavior
+guides/lsp.md LSPClientInterface.open: guide absent source "Opens a document and waits for diagnostics through the path selected from the server capabilities."
+guides/lsp.md LSPClientInterface.close: guide absent source "Notifies the server that an owned document closed and releases the URI."
+guides/lsp.md LSPClientInterface.destroy: guide absent source "Tears down the client within the configured timeout."
+rows read: 1, disagreements found: 4
+   docs exit 1
+AssertionError: expected [ …(4) ] to deeply equal []
+FAIL  |guides| tests/guides.test.ts > Package > keeps every compared summary and example equal to its source
+Tests  1 failed | 29 passed (30)
+× keeps every compared summary and example equal to its source 15ms
+   test:guides exit 1
+-- restored
+rows read: 1, disagreements found: 0
+   docs exit 0

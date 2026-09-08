@@ -1,0 +1,154 @@
+
+> @orkestrel/program@0.0.13 test:guides
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project guides
+
+
+ RUN  v4.1.11 /home/user/fleet/program
+
+·xx················x·········
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |guides| tests/guides.test.ts > pairs at least one example title across the guide and the source
+AssertionError: expected [ Array(1) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "guides/program.md pairs: guide [\"Surface\",\"Surface\",\"Surface\",\"Errors\",\"Validators\",\"Helpers\",\"Helpers\",\"Helpers\",\"Factories\",\"ProgramInterface\",\"ProgramManagerInterface\",\"Qualification is terminal\",\"Aggregate projection\",\"Events\",\"Globally ineligible\",\"Eligibility-only\",\"Rating-only\",\"Scoped exclusion\",\"Scoped referral\",\"Conditions\",\"Notices\",\"Authority\",\"Aggregate qualification\",\"Aggregate gates\",\"Shared dependencies\",\"Observing\",\"Gates\"] source []",
++ ]
+
+ ❯ tests/guides.test.ts:103:19
+    101|      `${GUIDE_SPEC} pairs: guide ${JSON.stringify(headings)} source ${…
+    102|     ]
+    103|  expect(unpaired).toEqual([])
+       |                   ^
+    104| })
+    105|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  |guides| tests/guides.test.ts > opens the README with the guide tagline
+AssertionError: expected undefined not to be undefined
+ ❯ tests/guides.test.ts:117:20
+    115|  ).tagline()
+    116|
+    117|  expect(pitch).not.toBeUndefined()
+       |                    ^
+    118|  expect(tagline).not.toBeUndefined()
+    119|  expect(pitch).toBe(tagline)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  |guides| tests/guides.test.ts > Program > keeps every compared summary and example equal to its source
+AssertionError: expected [ …(84) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "guides/program.md type Decision: guide absent source \"Identifies a final authority outcome, derived from global eligibility.\"",
++   "guides/program.md type Status: guide absent source \"Identifies the presentation and tally status derived from eligibility, conditions, and rating success.\"",
++   "guides/program.md type ProgramEffect: guide absent source \"Identifies a post-qualification program determination effect.\"",
++   "guides/program.md type ProgramErrorCode: guide absent source \"Identifies a coded `ProgramError` programmer-error code.\"",
++   "guides/program.md interface ProgramInput: guide absent source \"Describes the optional fields accepted by `buildProgramDefinition`.\"",
++   "guides/program.md interface NoticeInput: guide absent source \"Describes the optional fields accepted by `buildNotice`.\"",
++   "guides/program.md interface AggregateInput: guide absent source \"Describes the optional fields accepted by `buildAggregateDefinition`.\"",
++   "guides/program.md interface Notice: guide absent source \"Describes an authored, unconditional program notice.\"",
++   "guides/program.md interface Determination: guide absent source \"Describes one resolved notice or authority-limit outcome.\"",
++   "guides/program.md interface AggregateDefinition: guide absent source \"Describes batch aggregate fields, an optional partition field, and optional gates.\"",
++   "guides/program.md interface AggregateProjection: guide absent source \"Describes one subject's private aggregate working projection.\"",
++   "guides/program.md interface AggregateGroup: guide absent source \"Describes one batch aggregate partition.\"",
++   "guides/program.md interface Tally: guide absent source \"Describes a status tally — a count plus summed aggregate fields.\"",
++   "guides/program.md interface ProgramDefinition: guide absent source \"Describes a pure authored program definition.\"",
++   "guides/program.md interface ProgramResult: guide absent source \"Describes one subject's complete program outcome.\"",
++   "guides/program.md interface AggregateResult: guide absent source \"Describes a batch program outcome across every subject.\"",
++   "guides/program.md interface ProgramValidationResult: guide absent source \"Describes semantic definition validation.\"",
++   "guides/program.md type ProgramEventMap: guide absent source \"Describes the push observation surface of a `ProgramInterface`.\"",
++   "guides/program.md interface ProgramOptions: guide absent source \"Describes the options for `createProgram` / the `Program` constructor.\"",
++   "guides/program.md interface ProgramInterface: guide absent source \"Defines one compiled program that composes one qualifier and one rater over a shared reason engine.\"",
++   "guides/program.md type ProgramManagerEventMap: guide absent source \"Describes the push observation surface of a `ProgramManagerInterface`.\"",
++   "guides/program.md interface ProgramManagerOptions: guide absent source \"Describes the options for `createProgramManager` / the `ProgramManager` constructor.\"",
++   "guides/program.md interface ProgramManagerInterface: guide absent source \"Defines an ordered manager over compiled programs, sharing one qualifier and rater.\"",
++   "guides/program.md const DEFAULT_PROGRAM_VALIDATE: guide \"`true` — validate a definition at construction.\" source \"Names the default definition validation policy for `createProgram` / `ProgramManager.add`.\"",
++   "guides/program.md const STATUSES: guide \"Every `Status` literal, in tally order.\" source \"Lists every `Status` literal — the source the union and its guard derive from.\"",
++   "guides/program.md const ELIGIBILITY_DECISIONS: guide \"Deterministic decision for each global eligibility.\" source \"Maps each global eligibility to its deterministic authority decision.\"",
++   "guides/program.md const AGGREGATE_KEY: guide \"`'aggregate'` — private aggregate context key.\" source \"Names the reserved working-subject key a batch's aggregate projection is written under.\"",
++   "guides/program.md const OUTCOME_KEY: guide \"`'outcome'` — private authority context key.\" source \"Names the reserved working-subject key the authority's outcome projection is written under.\"",
++   "guides/program.md class ProgramError: guide \"Coded programmer error with optional context and cause.\" source \"Reports a coded programmer error thrown by the program layer.\"",
++   "guides/program.md function isProgramError: guide \"Narrow a caught value to `ProgramError`.\" source \"Determines whether a caught value is a `ProgramError`.\"",
++   "guides/program.md const isDecision: guide absent source \"Determines whether a value is a `Decision` literal.\"",
++   "guides/program.md const isStatus: guide absent source \"Determines whether a value is a `Status` literal.\"",
++   "guides/program.md const isProgramEffect: guide absent source \"Determines whether a value is a `ProgramEffect` literal.\"",
++   "guides/program.md function isNotice: guide absent source \"Determines whether a value is an exact `Notice` record.\"",
++   "guides/program.md function isAggregateDefinition: guide absent source \"Determines whether a value is an exact `AggregateDefinition` record.\"",
++   "guides/program.md function isProgramDefinition: guide absent source \"Determines whether a value is an exact `ProgramDefinition` record.\"",
++   "guides/program.md function isProgramSums: guide absent source \"Determines whether a value is an open program sums record.\"",
++   "guides/program.md const isDetermination: guide absent source \"Determines whether a value is an open result-side `Determination`.\"",
++   "guides/program.md const isAggregateGroup: guide absent source \"Determines whether a value is an open result-side `AggregateGroup`.\"",
++   "guides/program.md const isTally: guide absent source \"Determines whether a value is an open result-side `Tally`.\"",
++   "guides/program.md function isTallies: guide absent source \"Determines whether a value is a total open status-tally record.\"",
++   "guides/program.md const isProgramResult: guide absent source \"Determines whether a value is an open `ProgramResult`.\"",
++   "guides/program.md const isAggregateResult: guide absent source \"Determines whether a value is an open `AggregateResult`.\"",
++   "guides/program.md const isProgramValidationResult: guide absent source \"Determines whether a value is an open `ProgramValidationResult`.\"",
++   "guides/program.md function selectProgramLines: guide \"Select rating-line ids from scoped qualification eligibility.\" source \"Selects the rating lines a subject may be rated on from scoped eligibility.\"",
++   "guides/program.md function deriveStatus: guide \"Derive final status from a program definition's rating policy plus qualification and rating evidence.\" source \"Derives the final program `Status` from a definition's rating policy and qualification/rating evidence.\"",
++   "guides/program.md function decideEligibility: guide \"Map global eligibility to its deterministic decision.\" source \"Maps a global `Eligibility` to its deterministic authority `Decision`.\"",
++   "guides/program.md function buildNoticeDeterminations: guide \"Resolve authored notices into applied determinations.\" source \"Resolves authored `Notice` values into unconditionally-applied `notice` `Determination` values.\"",
++   "guides/program.md function buildLimitDeterminations: guide \"Convert a logical result's applied rules (authority or aggregate gates) into `limit` determinations, with rich premises.\" source \"Converts a logical result's applied rules into `limit` `Determination` values.\"",
++   "guides/program.md function buildProgramResult: guide \"Assemble a program result before or after rating.\" source \"Assembles a `ProgramResult` from its qualification, rating, and determination parts — before or after authority.\"",
++   "guides/program.md function buildOutcomeProjection: guide \"Build the private authority projection.\" source \"Builds the private authority outcome projection from an assembled program result.\"",
++   "guides/program.md function buildQualificationSubject: guide \"Add aggregate context to a private subject copy.\" source \"Adds optional aggregate context to a private subject copy for qualification.\"",
++   "guides/program.md function findMissingScopes: guide \"Find authored scopes absent from the rating definition.\" source \"Returns authored scopes (qualification ruling scopes or notice scopes) that name no rating line on the program.\"",
++   "guides/program.md function hasReservedKey: guide \"Detect `aggregate` or `outcome` on a caller subject.\" source \"Determines whether a caller subject already carries a reserved program key.\"",
++   "guides/program.md function assertProgramSubject: guide \"Assert a subject record and reserved-key safety.\" source \"Asserts a value is a valid program `Subject`, narrowing it in place.\"",
++   "guides/program.md function assertProgramDefinition: guide \"Assert always-on construction invariants — missing scope references and duplicate rating-line or notice ids — regardless of `options.validate`.\" source \"Asserts a program definition's always-on construction invariants — missing scope references and duplicate rating-line or notice ids.\"",
++   "guides/program.md function validateProgramDefinition: guide \"Validate nested definitions, references, authority, and aggregate policy.\" source \"Validates a program definition's shape, references, and nested definitions.\"",
++   "guides/program.md function formatGroupKey: guide \"Coerce a subject's partition-key field to its `String`-coerced group key.\" source \"Coerces a subject's partition-key field to its group-key string.\"",
++   "guides/program.md function sumFields: guide \"Fold one subject's finite aggregate field values into a fresh sums record.\" source \"Folds one subject's finite aggregate field values into a sums record.\"",
++   "guides/program.md function aggregateSums: guide \"Sum configured fields across subjects.\" source \"Sums aggregate fields across a batch of subjects.\"",
++   "guides/program.md function aggregateGroups: guide \"Partition subjects and sum fields per key.\" source \"Partitions a batch of subjects by a field, summing aggregate fields per key.\"",
++   "guides/program.md function buildAggregateProjection: guide \"Build one subject's overall and optional group aggregate context.\" source \"Builds one subject's overall and optional group aggregate projection.\"",
++   "guides/program.md function buildAggregateRecord: guide \"Build the reserved aggregate-gate subject.\" source \"Builds the reserved-key record a batch aggregate-gate definition runs against.\"",
++   "guides/program.md function buildEmptySums: guide \"Build a zero record for configured fields.\" source \"Builds a zero-sum record for a set of aggregate fields.\"",
++   "guides/program.md function buildEmptyTallies: guide \"Build complete zero tallies in status order.\" source \"Builds complete zero status tallies in `STATUSES` order.\"",
++   "guides/program.md function completeTallies: guide \"Fill missing statuses in a partial tally record.\" source \"Completes a partial status tally record with zero entries for every missing `Status`.\"",
++   "guides/program.md function tallySubject: guide \"Add one subject and its fields to the result-status tally.\" source \"Adds one subject's aggregate contribution to a status tally record.\"",
++   "guides/program.md function buildAggregateResult: guide \"Assemble one batch result, folding an optional aggregate-gate evaluation's `trace`/`errors` in and requiring it error-free for `success`.\" source \"Assembles one batch `AggregateResult` from its per-subject and aggregate parts.\"",
++   "guides/program.md function buildProgramDefinition: guide \"Build a fresh `ProgramDefinition`, copying every collection and omitting absent optional keys.\" source \"Builds a fresh `ProgramDefinition`.\"",
++   "guides/program.md function buildNotice: guide \"Build a fresh `Notice`, omitting an absent scope.\" source \"Builds a fresh `Notice`.\"",
++   "guides/program.md function buildAggregateDefinition: guide \"Build a fresh `AggregateDefinition`, copying the fields and omitting absent optional keys.\" source \"Builds a fresh `AggregateDefinition`.\"",
++   "guides/program.md function createProgram: guide absent source \"Creates one compiled program over a qualifier and rater.\"",
++   "guides/program.md function createProgramManager: guide absent source \"Creates one ordered manager over compiled programs.\"",
++   "guides/program.md class Program: guide \"Compiles one definition over a qualifier and rater; executes single subjects or aggregate-aware batches.\" source \"Composes one qualifier and one rater over a shared reason engine and executes single subjects or aggregate-aware batches.\"",
++   "guides/program.md class ProgramManager: guide \"Ordered manager of compiled programs sharing one qualifier and one rater.\" source \"Manages compiled `ProgramInterface` programs in order, sharing one qualifier, rater, and reason engine across every program it compiles.\"",
++   "guides/program.md ProgramInterface.execute: guide absent source \"Executes a subject list as one aggregate-aware batch.\"",
++   "guides/program.md ProgramInterface.validate: guide absent source \"Validates this program's definition and every nested definition.\"",
++   "guides/program.md ProgramInterface.destroy: guide absent source \"Destroys this program, idempotently.\"",
++   "guides/program.md ProgramManagerInterface.has: guide absent source \"Reports whether an id names a compiled program.\"",
++   "guides/program.md ProgramManagerInterface.program: guide absent source \"Looks one compiled program up by id.\"",
++   "guides/program.md ProgramManagerInterface.programs: guide absent source \"Returns every compiled program, in insertion order.\"",
++   "guides/program.md ProgramManagerInterface.add: guide absent source \"Compiles one definition and appends it to the collection.\"",
++   "guides/program.md ProgramManagerInterface.remove: guide absent source \"Removes every listed id, destroying each removed program.\"",
++   "guides/program.md ProgramManagerInterface.destroy: guide absent source \"Destroys this manager, idempotently.\"",
++ ]
+
+ ❯ tests/guides.test.ts:198:24
+    196|     disagreeing.push(`${entry.spec} ${drift.key}: guide ${left} source…
+    197|    }
+    198|    expect(disagreeing).toEqual([])
+       |                        ^
+    199|   })
+    200|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  3 failed | 26 passed (29)
+   Start at  21:38:25
+   Duration  502ms (transform 140ms, setup 160ms, import 128ms, tests 88ms, environment 0ms)
+

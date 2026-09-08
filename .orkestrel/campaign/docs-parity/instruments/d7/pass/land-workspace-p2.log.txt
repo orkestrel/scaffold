@@ -1,0 +1,19 @@
+== workspace p2 landing 2026-09-08T01:24:15Z over e308cae
+== status
+ M README.md
+ M guides/workspace.md
+ M src/core/constants.ts
+ M src/core/errors.ts
+ M src/core/factories.ts
+ M src/core/helpers.ts
+ M src/core/types.ts
+ M src/core/workspaces/Workspace.ts
+ M tests/guides.test.ts
+ src/core/workspaces/Workspace.ts |   2 +-
+ tests/guides.test.ts             |  79 ++++++++++-
+ 9 files changed, 293 insertions(+), 154 deletions(-)
+== stage by path
+ 9 files changed, 293 insertions(+), 154 deletions(-)
+== committed
+98fc334 Converge workspace under the equality gate
+(status end)

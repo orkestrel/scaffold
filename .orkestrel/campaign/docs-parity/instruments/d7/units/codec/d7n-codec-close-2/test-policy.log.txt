@@ -1,0 +1,19 @@
+
+> @orkestrel/codec@0.0.3 test:policy
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project policy
+
+
+ RUN  v4.1.11 /home/user/fleet/codec
+
+·················································································-·········
+
+ Test Files  1 passed (1)
+      Tests  90 passed | 1 skipped (91)
+   Start at  21:45:03
+   Duration  742ms (transform 244ms, setup 212ms, import 121ms, tests 253ms, environment 0ms)
+
+
+real	0m1.310s
+user	0m1.217s
+sys	0m0.207s
+EXIT:0

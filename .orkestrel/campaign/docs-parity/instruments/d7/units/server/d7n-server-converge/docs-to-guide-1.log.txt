@@ -1,0 +1,7 @@
+
+> @orkestrel/server@0.0.19 docs
+> node --experimental-strip-types scripts/docs.ts --to guide
+
+wrote guides/server.md
+rows read: 1, disagreements found: 100, written: 100, reported: 0
+next: npm run format

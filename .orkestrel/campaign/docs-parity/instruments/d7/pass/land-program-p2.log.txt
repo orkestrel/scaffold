@@ -1,0 +1,18 @@
+== program p2 landing 2026-09-08T01:24:17Z over f2ca5ee
+== status
+ M README.md
+ M guides/program.md
+ M src/core/constants.ts
+ M src/core/errors.ts
+ M src/core/factories.ts
+ M src/core/helpers.ts
+ M src/core/programs/Program.ts
+ M tests/guides.test.ts
+ src/core/programs/Program.ts |  12 +-
+ tests/guides.test.ts         |  83 ++++++++++-
+ 8 files changed, 305 insertions(+), 189 deletions(-)
+== stage by path
+ 8 files changed, 305 insertions(+), 189 deletions(-)
+== committed
+a60327f Converge program under the equality gate
+(status end)

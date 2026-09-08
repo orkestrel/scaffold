@@ -1,0 +1,14 @@
+
+> @orkestrel/server@0.0.19 test:guides
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project guides
+
+
+ RUN  v4.1.11 /home/user/fleet/server
+
+····································
+
+ Test Files  1 passed (1)
+      Tests  36 passed (36)
+   Start at  21:16:50
+   Duration  625ms (transform 214ms, setup 33ms, import 347ms, tests 128ms, environment 0ms)
+

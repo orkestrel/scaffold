@@ -1,0 +1,49 @@
+
+> @orkestrel/server@0.0.19 test:policy
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project policy
+
+
+ RUN  v4.1.11 /home/user/fleet/server
+
+·················································································-·x·······
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |policy| tests/policy.test.ts > repository policy > enforces the mirror, suppression, skill, bridge, and portability laws over the real workspace
+AssertionError: expected [ { rule: 'prose', …(3) }, …(1) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   {
++     "line": 298,
++     "message": "prose carries no banned term: e.g. (for example)",
++     "path": "guides/server.md",
++     "rule": "prose",
++   },
++   {
++     "line": 396,
++     "message": "prose carries no banned term: just (delete)",
++     "path": "guides/server.md",
++     "rule": "prose",
++   },
++ ]
+
+ ❯ tests/policy.test.ts:472:49
+    470| describe('repository policy', () => {
+    471|  it('enforces the mirror, suppression, skill, bridge, and portability …
+    472|   expect(inspectPolicyWorkspace(process.cwd())).toEqual([])
+       |                                                 ^
+    473|  })
+    474|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 89 passed | 1 skipped (91)
+   Start at  17:01:34
+   Duration  1.07s (transform 380ms, setup 41ms, import 379ms, tests 430ms, environment 0ms)
+

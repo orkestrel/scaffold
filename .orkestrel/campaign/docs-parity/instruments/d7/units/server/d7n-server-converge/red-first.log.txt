@@ -1,0 +1,170 @@
+
+> @orkestrel/server@0.0.19 test:guides
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project guides
+
+
+ RUN  v4.1.11 /home/user/fleet/server
+
+·xx····················x············
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |guides| tests/guides.test.ts > pairs at least one example title across the guide and the source
+AssertionError: expected [ Array(1) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "guides/server.md pairs: guide [\"Surface\",\"Quickstart: dispatcher, middleware, lifecycle\",\"Middleware ordering idiom\",\"Typed state slices\",\"SSE route\",\"Graceful shutdown\",\"Graceful shutdown\",\"Bounded startup and socket caps\",\"Upgrade attach\",\"Substrate direct use — tokens, cookies, negotiation\"] source []",
++ ]
+
+ ❯ tests/guides.test.ts:102:19
+    100|      `${GUIDE_SPEC} pairs: guide ${JSON.stringify(headings)} source ${…
+    101|     ]
+    102|  expect(unpaired).toEqual([])
+       |                   ^
+    103| })
+    104|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  |guides| tests/guides.test.ts > opens the README with the guide tagline
+AssertionError: expected undefined not to be undefined
+ ❯ tests/guides.test.ts:116:20
+    114|  ).tagline()
+    115|
+    116|  expect(pitch).not.toBeUndefined()
+       |                    ^
+    117|  expect(tagline).not.toBeUndefined()
+    118|  expect(pitch).toBe(tagline)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  |guides| tests/guides.test.ts > Server > keeps every compared summary and example equal to its source
+AssertionError: expected [ …(100) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "guides/server.md function createNegotiator: guide \"Create a `NegotiatorInterface` — the content-negotiation machine.\" source \"Creates a `NegotiatorInterface` — the reusable content-negotiation machine over the weighted `Accept` family.\"",
++   "guides/server.md function createServer: guide \"Create a `ServerInterface<TState>` over a consumed `DispatcherInterface`.\" source \"Creates a `ServerInterface` — the node face's HTTP server facade over a consumed `@orkestrel/router` dispatcher.\"",
++   "guides/server.md function createStream: guide \"Create a `StreamInterface` — an open Server-Sent-Events stream.\" source \"Creates a `StreamInterface` — a generic Server-Sent-Events stream whose `response` is a fetch-standard streaming `Response` a route returns.\"",
++   "guides/server.md const DEFAULT_DRAIN_MS: guide \"Default graceful-stop deadline (ms) `stop()` gives in-flight requests and claimed upgraded sockets.\" source \"Names the default graceful-stop deadline (ms) the server gives in-flight requests on `stop()`.\"",
++   "guides/server.md const DEFAULT_BODY_LIMIT: guide \"Default maximum request body size (bytes) `readBody` accepts before a 413.\" source \"Names the default maximum request body size (bytes) `readBody` accepts before a 413.\"",
++   "guides/server.md const DEFAULT_DECOMPRESSED_LIMIT: guide \"Default maximum DECOMPRESSED body size (bytes) — the zip-bomb cap.\" source \"Names the default maximum DECOMPRESSED request body size (bytes) — the zip-bomb cap the body pipeline's byte-counting `TransformStream` enforces when transparently decompressing a `Content-Encoding` request body.\"",
++   "guides/server.md const SSE_HEADERS: guide \"The SSE response headers a `Stream` merges under any caller `headers` — a caller repeating one of these keys replaces its value.\" source \"Holds the SSE response headers a `Stream` always sets on its response.\"",
++   "guides/server.md const REQUEST_ID_PATTERN: guide \"The strict charset `isValidRequestId` requires an `X-Request-ID` to match.\" source \"Defines the strict charset `isValidRequestId` requires an incoming `X-Request-ID` to match — `^[A-Za-z0-9_-]{1,200}$` — so a CRLF / log-injection / oversized / control-char-bearing incoming id is REJECTED (a fresh id is minted instead) rather than ever riding into a response header or `context.state`. Frozen so a consumer can read but never mutate the shared default.\"",
++   "guides/server.md const COMPRESSIBLE_TYPES: guide \"The bare `Content-Type`s `isCompressibleType` treats as compressible.\" source \"Holds the set of bare `Content-Type`s `isCompressibleType` treats as COMPRESSIBLE, beyond the `text/*` prefix + structured-suffix (`+json` / `+xml`) rules that helper also applies.\"",
++   "guides/server.md const HTTP_ERROR_BRAND: guide \"The `Symbol.for`-interned brand `HTTPError` carries so `isHTTPError` recognizes an instance across package copies. Not a field to set by hand.\" source \"Names the `Symbol.for`-keyed brand `HTTPError` carries so `isHTTPError` recognizes an instance thrown by ANOTHER copy of this package (the dual-package hazard — a version-skewed or workspace-linked duplicate install), where `instanceof` alone fails because the two copies' `HTTPError` constructors are distinct objects.\"",
++   "guides/server.md const DEFAULT_ENCODINGS: guide \"The default `Encoding` content-codings the substrate offers, in preference order.\" source \"Lists the default `Encoding` content-codings the substrate offers, in PREFERENCE order — `gzip` / `deflate`.\"",
++   "guides/server.md function compose: guide \"Compose an ordered middleware chain around a `terminal` handler (the frozen seam).\" source \"Composes an ordered chain of `MiddlewareHandler`s around a `terminal` handler into one request handler — the frozen middleware seam.\"",
++   "guides/server.md function wrapMiddleware: guide \"Wrap one middleware layer around its downstream handler while enforcing the one-call `next` invariant.\" source \"Wraps one middleware layer around its downstream handler.\"",
++   "guides/server.md function parseCookies: guide \"Parse a raw `Cookie:` header into a `name → value` lookup.\" source \"Parses a raw `Cookie:` request header into a `name → value` lookup.\"",
++   "guides/server.md function isCookieName: guide \"Whether a string is a valid RFC 6265 cookie name (no whitespace).\" source \"Checks whether a string is a valid RFC 6265 cookie NAME — a non-empty run of cookie-token chars with NO surrounding (or interior) whitespace.\"",
++   "guides/server.md function decodeCookieValue: guide \"Decode a cookie value, falling back to raw text on malformed escapes.\" source \"Decodes a cookie value with `decodeURIComponent`, falling back to the raw text when the value is not valid percent-encoding.\"",
++   "guides/server.md function isCookieAttribute: guide \"Whether a string is safe to interpolate as a `Domain`/`Path` attribute value.\" source \"Checks whether a string is safe to interpolate as a `Set-Cookie` attribute VALUE (a `Domain` / `Path`) — the guard `serializeCookie` screens those two attributes with before emitting them.\"",
++   "guides/server.md function serializeCookie: guide \"Serialize a cookie into a `Set-Cookie` header value with its attributes.\" source \"Serializes a cookie into a `Set-Cookie` header value — `name=value` plus its attributes.\"",
++   "guides/server.md function resolveSecure: guide \"Resolve a cookie's effective `Secure` flag from its setting + the TLS fact.\" source \"Resolves a cookie's effective `Secure` flag from its `CookieOptions` `secure` setting and whether the request arrived over TLS.\"",
++   "guides/server.md function writeSignedCookie: guide \"Write a SIGNED cookie (`signToken` + `Set-Cookie`).\" source \"Writes a SIGNED cookie — HMAC-signs `value` with `signToken` and appends it as a `Set-Cookie` (the inverse of `readSignedCookie`).\"",
++   "guides/server.md function readSignedCookie: guide \"Read + verify a SIGNED cookie off a request — total, returns `undefined` on any failure.\" source \"Reads + verifies a SIGNED cookie off a request — TOTAL, returning the embedded value or `undefined` (the inverse of `writeSignedCookie`).\"",
++   "guides/server.md function clearCookie: guide \"Clear a cookie by setting an immediately-expiring `Set-Cookie`.\" source \"Clears a cookie — appends a `Set-Cookie` that expires it immediately (`Max-Age=0`).\"",
++   "guides/server.md function signToken: guide \"Sign a value into a stateless, HMAC-SHA256 token.\" source \"Signs a value into a stateless, HMAC-SHA256 token — `<payload>.<signature>`.\"",
++   "guides/server.md function verifyToken: guide \"Verify a stateless token and return its embedded value — total, never throws.\" source \"Verifies a stateless token and returns its embedded value — TOTAL, never throws.\"",
++   "guides/server.md function decodeTokenPayload: guide \"Decode + narrow a signed token's payload, honoring its expiry.\" source \"Decodes + narrows a signed token's base64url JSON payload, honoring its expiry — the shared decode step `verifyToken` applies after a signature match.\"",
++   "guides/server.md function normalizeSecret: guide \"Normalize a `TokenSecret` to a concrete list of usable secrets.\" source \"Normalizes a `TokenSecret` to a concrete list of USABLE secrets — backs both `signToken` and `verifyToken`.\"",
++   "guides/server.md function parseAcceptHeader: guide \"Parse a weighted `Accept`-family header into its q-sorted entries.\" source \"Parses a weighted `Accept` / `Accept-Encoding` / `Accept-Language` header into its q-sorted entries.\"",
++   "guides/server.md function computeCodingQuality: guide \"The client's quality for one content-coding from parsed `Accept-Encoding` entries.\" source \"Computes the client's quality (q) for one content-coding from the parsed `Accept-Encoding` entries — the scoring leaf `resolveCoding` runs over each offered coding.\"",
++   "guides/server.md function resolveCoding: guide \"Pick the highest-scoring offered coding from parsed entries — the leaf both encoding doors run.\" source \"Picks the highest-scoring content-coding the server offers against already parsed `Accept-Encoding` entries.\"",
++   "guides/server.md function negotiateEncoding: guide \"Select the best content-coding for a raw `Accept-Encoding` header.\" source \"Selects the best content-coding for a raw `Accept-Encoding` header from the codings the server offers.\"",
++   "guides/server.md function matchMediaType: guide \"Rank + quality of one candidate media type against parsed `Accept` entries.\" source \"Reports the rank + quality of one `candidate` media type against the parsed `Accept` entries — the generic media-type primitive the `Negotiator`'s `negotiate` uses to score each `available` candidate.\"",
++   "guides/server.md function computeLanguageQuality: guide \"The client's quality for one candidate language from parsed `Accept-Language` entries.\" source \"Computes the client's quality for one `candidate` language from the parsed `Accept-Language` entries — the scoring leaf the `Negotiator`'s `language` axis runs over each offered tag.\"",
++   "guides/server.md function isCompressibleType: guide \"Whether a `Content-Type` is worth compressing.\" source \"Checks whether a `Content-Type` is worth compressing.\"",
++   "guides/server.md function computeBodyETag: guide \"Compute a content `ETag` over a fully-buffered response body by using WebCrypto.\" source \"Computes a CONTENT `ETag` over a fully-buffered response body by using WebCrypto.\"",
++   "guides/server.md function unwrapETag: guide \"Strip the weak indicator (`W/`) from an entity-tag.\" source \"Strips the WEAK indicator (`W/`) from an entity-tag, returning its opaque comparison body — the reduction `matchesETag` applies to both sides before the RFC 7232 §2.3.2 weak comparison.\"",
++   "guides/server.md function matchesETag: guide \"Whether a request's `If-None-Match` matches a resource's current `ETag` (RFC 7232 weak comparison).\" source \"Checks whether a request's `If-None-Match` header matches a resource's current `ETag` — the RFC 7232 §2.3.2 WEAK comparison.\"",
++   "guides/server.md function parseRange: guide \"Parse an HTTP `Range` header against a known resource size — total.\" source \"Parses an HTTP `Range` request header against a known resource `size` — TOTAL, returning a `RangeSpec` or `undefined`.\"",
++   "guides/server.md function resolveOrigin: guide \"Resolve the `Access-Control-Allow-Origin` value for a request.\" source \"Resolves the `Access-Control-Allow-Origin` value for a request.\"",
++   "guides/server.md function mergeVary: guide \"Merge a `Vary` value into an existing `Vary` header without duplication.\" source \"Merges a `Vary` value into an existing `Vary` header without duplication.\"",
++   "guides/server.md function resolveSecurityHeader: guide \"Resolve one opt-out, value-bearing security header.\" source \"Resolves one opt-out, value-bearing security header.\"",
++   "guides/server.md function isValidRequestId: guide \"Whether a client-supplied `X-Request-ID` is safe to echo back.\" source \"Checks whether a client-supplied `X-Request-ID` is SAFE to echo into a response header + `context.state`.\"",
++   "guides/server.md function computeIPv6Network: guide \"Compute the `/64` network of a full IPv6 address, or `undefined`.\" source \"Computes the `/64` network of a full IPv6 address, or `undefined` when the input is not a plain IPv6 address to collapse.\"",
++   "guides/server.md function computeClientKey: guide \"Collapse a client IP into its rate-limit bucket key (IPv6 `/64`, IPv4 unchanged).\" source \"Collapses a client IP into its rate-limit BUCKET key — an IPv6 address to its `/64` network, an IPv4 (or IPv4-mapped) address unchanged.\"",
++   "guides/server.md function serializeEvent: guide \"Serialize one `SSEMessage` to the SSE wire.\" source \"Serializes one `SSEMessage` to the SSE wire.\"",
++   "guides/server.md function isDangerousKey: guide \"Whether a key is a prototype-pollution vector (`__proto__`/`constructor`/`prototype`).\" source \"Checks whether a key is a PROTOTYPE-POLLUTION vector — `__proto__`, `constructor`, or `prototype` — the three keys that, assigned onto a normal object, can reach and mutate `Object.prototype`.\"",
++   "guides/server.md function scrubPrototype: guide \"Recursively strip prototype-pollution keys from a parsed value in place.\" source \"Strips the prototype-pollution keys from a parsed value IN PLACE, recursively.\"",
++   "guides/server.md function collectRequestBody: guide \"Collect a `Request` body into one `Uint8Array`, enforcing a size limit.\" source \"Collects a `Request` body into a single `Uint8Array`, enforcing a size limit.\"",
++   "guides/server.md function parseEncoding: guide \"Parse a raw `Content-Encoding` header into a decompressible `Encoding`.\" source \"Parses a raw `Content-Encoding` header value into a decompressible `Encoding` — the boundary `readBody` coerces through to decide whether a request body needs transparent decompression.\"",
++   "guides/server.md function decompressRequestBody: guide \"Transparently decompress a collected body, capping decompressed output (the zip-bomb defense).\" source \"Decompresses an already-collected, `gzip`/`deflate`-encoded byte sequence transparently through `DecompressionStream`, capping the DECOMPRESSED output — the zip-bomb defense.\"",
++   "guides/server.md function readBody: guide \"Collect + decode a `Request` body — the pipeline behind `context.body()`; an empty body and a malformed `application/json` body both decode to `undefined`.\" source \"Collects + decodes a `Request` body — the shared body-collection pipeline surfaced to middleware and handlers as the middleware context's cached `body()`.\"",
++   "guides/server.md function isHTTPError: guide \"Narrow an unknown caught value to an `HTTPError` (including subclasses) — recognized across package copies through a structural brand fallback.\" source \"Narrows an unknown caught value to an `HTTPError` (including its subclasses, for example `ContentTooLargeError`).\"",
++   "guides/server.md function isServerError: guide \"Narrow an unknown caught value to a `ServerError` — the code-bearing refusal of a call the caller programmed.\" source \"Narrows an unknown caught value to a `ServerError`.\"",
++   "guides/server.md function isAddressInfo: guide \"Whether a `node:net` address is the structured `AddressInfo` shape.\" source \"Checks whether a `node:net` `server.address()` return is the structured `AddressInfo` (carrying a numeric `port`) rather than a pipe `string` or `null` — the total, never-throwing narrow `discoverPort` and the `Server`'s own port resolution read the bound port through.\"",
++   "guides/server.md function probePort: guide \"Bind and close one throwaway TCP server to resolve an available port.\" source \"Binds and closes a throwaway TCP server to resolve one available port.\"",
++   "guides/server.md function discoverPort: guide \"Find a free TCP port — try a `preferred` one first, else an ephemeral port.\" source \"Finds a FREE TCP port — binds a throwaway `node:net` server, reads the OS-assigned port, closes it, and resolves that port.\"",
++   "guides/server.md class HTTPError: guide \"An error a handler throws to produce an HTTP response of a specific status.\" source \"Represents an error a handler (or middleware) throws to produce an HTTP response of a specific status.\"",
++   "guides/server.md class ContentTooLargeError: guide \"The `HTTPError` (413) thrown when a request body exceeds its size limit.\" source \"Represents the `HTTPError` thrown when a request body exceeds the body pipeline's size limit — a `413 Content Too Large`.\"",
++   "guides/server.md class ServerError: guide \"The code-bearing error raised when a caller programmed a call the entity refuses — `'STATUS'` or `'NEXT'`.\" source \"Represents the error this package raises when a caller programmed a call the entity refuses.\"",
++   "guides/server.md class Negotiator: guide \"The content-negotiation machine over the weighted `Accept` family; implements `NegotiatorInterface`.\" source \"Represents the content-negotiation machine over the weighted `Accept` family — a reusable, cross-middleware ENTITY (not a middleware). Implements exactly `NegotiatorInterface`.\"",
++   "guides/server.md class Server: guide \"The `node:http` lifecycle entity composing the middleware onion around a consumed dispatcher; implements `ServerInterface`.\" source \"Represents the HTTP server facade — an observable `node:http` lifecycle composing this module's own middleware onion around a consumed `@orkestrel/router` dispatcher.\"",
++   "guides/server.md class Stream: guide \"The Server-Sent-Events handle over a streaming `Response`; implements `StreamInterface`.\" source \"Represents the Server-Sent-Events handle over an open, fetch-standard streaming `Response`. Implements exactly `StreamInterface`.\"",
++   "guides/server.md interface MiddlewareContext: guide absent source \"Represents the composition context — plain data, one per request, shared by every middleware AND (as `state`) by the route handlers behind the dispatcher.\"",
++   "guides/server.md type NextFunction: guide absent source \"Represents the downstream continuation a `MiddlewareHandler` invokes to run the rest of the onion.\"",
++   "guides/server.md type MiddlewareHandler: guide absent source \"Represents one link in the middleware onion — runs around the rest of the chain.\"",
++   "guides/server.md interface Connection: guide absent source \"Represents the per-request connection facts the server face injects — the ONLY data that genuinely exists solely on the socket, surfaced so middleware and a consumer's `state` factory stay core-pure.\"",
++   "guides/server.md type TokenSecret: guide absent source \"Represents a secret (or rotation list) for signing + verifying a stateless, HMAC-signed token.\"",
++   "guides/server.md interface TokenOptions: guide absent source \"Options for `signToken` — how a stateless, HMAC-signed token is minted.\"",
++   "guides/server.md interface CookieOptions: guide absent source \"Represents the `Set-Cookie` attributes for `serializeCookie` (and any signed-cookie transport built over it).\"",
++   "guides/server.md interface AcceptEntry: guide absent source \"Represents one parsed entry of a weighted `Accept` / `Accept-Encoding` / `Accept-Language` header — a value and its quality weight, the element type `parseAcceptHeader` returns (sorted by `q` descending).\"",
++   "guides/server.md interface MediaMatch: guide absent source \"Rates one candidate media type against a parsed `Accept` header — the quality and specificity `matchMediaType` reports for the best matching `AcceptEntry`.\"",
++   "guides/server.md type Encoding: guide absent source \"Represents a content-coding the substrate compresses / decompresses with. The listed codings are the `Content-Encoding` and `Accept-Encoding` token vocabulary the substrate understands.\"",
++   "guides/server.md type FormatHandlerMap: guide absent source \"Represents a map of media type → handler for `NegotiatorInterface.format` — the content-negotiation dispatch table.\"",
++   "guides/server.md interface NegotiatorInterface: guide absent source \"Represents content negotiation over the weighted `Accept` family — a reusable, cross-middleware machine (not itself a middleware).\"",
++   "guides/server.md interface SSEMessage: guide absent source \"Represents one Server-Sent Event to serialize to the wire.\"",
++   "guides/server.md interface StreamOptions: guide absent source \"Options for a `StreamInterface` — how `createStream` opens the streaming response.\"",
++   "guides/server.md interface StreamInterface: guide absent source \"Represents a handle to write Server-Sent Events to an open, fetch-standard streaming `Response` — the generic streaming surface `createStream` returns over a `ReadableStream`.\"",
++   "guides/server.md type RangeSpec: guide absent source \"Represents the parsed outcome of an HTTP `Range` request header.\"",
++   "guides/server.md interface BodyOptions: guide absent source \"Options for `readBody` — how the shared body-collection pipeline caps and decompresses a request body.\"",
++   "guides/server.md type ServerStatus: guide absent source \"Represents the `Server`'s lifecycle state.\"",
++   "guides/server.md type ServerErrorCode: guide absent source \"Represents the machine-readable category a `ServerError` carries.\"",
++   "guides/server.md interface RequestLine: guide absent source \"Identifies the request a server-level fault came from — its method and its parsed URL.\"",
++   "guides/server.md interface ResponseRecord: guide absent source \"Records one finished request — the payload `ServerEventMap.response` carries.\"",
++   "guides/server.md type ServerEventMap: guide absent source \"Represents the `Server`'s observable lifecycle events.\"",
++   "guides/server.md type UpgradeHandler: guide absent source \"Represents a raw `node:http` protocol-upgrade claimant — registered through `ServerInterface.upgrade`.\"",
++   "guides/server.md type ConnectionStateFunction: guide absent source \"Derives a consumer's per-request `TState` from the adapter-injected `Connection` — `ServerOptions.state`, invoked once per request before the middleware onion runs.\"",
++   "guides/server.md interface ServerOptions: guide absent source \"Options for `createServer`.\"",
++   "guides/server.md interface ServerInterface: guide absent source \"Represents the HTTP server facade — an observable `node:http` lifecycle that composes a middleware onion (this module's own middleware seam) around a consumed `@orkestrel/router` `DispatcherInterface`.\"",
++   "guides/server.md NegotiatorInterface.negotiate: guide absent source \"Picks the best `available` value for a weighted `Accept`-style `header` — the generic media-type primitive (`encoding` / `language` build on it).\"",
++   "guides/server.md NegotiatorInterface.encoding: guide absent source \"Picks the best `available` content-coding for an `Accept-Encoding` header — the coding axis of the same q-value parser (a bare `*` wildcard ⇒ the first `available`).\"",
++   "guides/server.md NegotiatorInterface.language: guide absent source \"Picks the best `available` language for an `Accept-Language` header — `negotiate` with a language-prefix match (`en` accepts `en-US`) and a bare `*` wildcard.\"",
++   "guides/server.md NegotiatorInterface.format: guide absent source \"Dispatches to the handler whose media type the client most prefers — reads the request `Accept`, negotiates against `handlers`' keys, and invokes the winner; `406` when none is acceptable.\"",
++   "guides/server.md StreamInterface.write: guide absent source \"Serializes + enqueues one `SSEMessage` to the wire.\"",
++   "guides/server.md StreamInterface.comment: guide absent source \"Writes a `: text` SSE comment line — a keep-alive a conforming parser ignores.\"",
++   "guides/server.md StreamInterface.drain: guide absent source \"Parks until the process-local stream queue has capacity again.\"",
++   "guides/server.md StreamInterface.end: guide absent source \"Ends the stream, completing the response (a no-op once already `closed`).\"",
++   "guides/server.md ServerInterface.use: guide absent source \"Appends one middleware, or an array of them in order, to the onion.\"",
++   "guides/server.md ServerInterface.upgrade: guide absent source \"Registers a protocol-upgrade claimant that runs in registration order.\"",
++   "guides/server.md ServerInterface.start: guide absent source \"Binds the configured listener and resolves its actually-bound port.\"",
++   "guides/server.md ServerInterface.stop: guide absent source \"Stops gracefully: refuses new connections, fires the stop signal, drains, closes.\"",
++   "guides/server.md ServerInterface.destroy: guide absent source \"Tears down for good: force-closes the listener and every socket, then the emitter.\"",
++ ]
+
+ ❯ tests/guides.test.ts:197:24
+    195|     disagreeing.push(`${entry.spec} ${drift.key}: guide ${left} source…
+    196|    }
+    197|    expect(disagreeing).toEqual([])
+       |                        ^
+    198|   })
+    199|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  3 failed | 33 passed (36)
+   Start at  21:05:37
+   Duration  609ms (transform 167ms, setup 28ms, import 310ms, tests 138ms, environment 0ms)
+

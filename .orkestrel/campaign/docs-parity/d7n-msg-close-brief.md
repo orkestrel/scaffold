@@ -4,6 +4,11 @@
 
 `builder` on Sonnet: a fully specified unit. Sole writer in `/home/user/fleet/msg` from the committed tip `8da702f` (status lines: 0; the final guide head start `0.0.18` installed `--no-save`, `dist/src/core/index.js` sha256 `2b76b363f4b9…`). Perform the assignment directly and spawn nothing. Do not commit, install, or run a discard-class git command; undo an edit by editing. Put every instrument under `tmp/d7n-msg-close/` inside this checkout.
 
+
+## Resumed over a partial tree (the Orchestrator, 2026-09-08T01:25Z)
+
+A predecessor unit on this brief died mid-work (HTTP 429) after editing the files `git status --short` in `/home/user/fleet/msg` lists; it wrote no report. Read `git diff` first and rule each hunk against the items: keep a hunk an item asks for, correct one that is wrong, and discard none silently; record the rulings in the report under "The predecessor's hunks". The "status lines: 0" fact in § Role and engine described the tree before that predecessor ran.
+
 ## Read first
 
 `/home/user/scaffold/AGENTS.md` § Writing; `/home/user/scaffold/.orkestrel/campaign/docs-parity/rulings.md` § Ruling 12, § Ruling 13 and its amendment, § Ruling 15, § Ruling 16, § Ruling 18, § Ruling 20, § Ruling 21; the pilot's Types table `/home/user/fleet/abort/guides/abort.md:58-67` and `/home/user/fleet/budget/guides/budget.md:60-68` (a `plus` row); the pilot's suite `/home/user/fleet/abort/tests/guides.test.ts` whole; `src/**/types.ts` and `src/**/constants.ts` for every declaration the items name.

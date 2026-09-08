@@ -192,3 +192,7 @@ None. The seed located every row after the header changes, `replaceCell` was nev
 ## Deviation state
 
 No deviation. Every acceptance criterion is closed and green.
+
+---
+
+Orchestrator's annotation (2026-09-08, from the audit verdict): this report states counts in prose; the tree is authoritative and every cited line matched it on the audit's re-read (rater's converge report also misstates the pilot's header as still reading `below`, and its diffstat reads one insertion past the committed tree). The unit's instruments are retained under `instruments/d7/units/`.

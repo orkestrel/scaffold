@@ -1,0 +1,145 @@
+{
+ "root": "/tmp/claude-0/-home-user-scaffold/6a1fadb4-aa90-52d9-9291-3bbb6ae817fe/scratchpad/docs/d7/pass/p23/clone-workspace",
+ "manifestRows": 1,
+ "guides": [
+  {
+   "spec": "guides/workspace.md",
+   "source": "src/core",
+   "surface": {
+    "counts": {
+     "equal": 52,
+     "differ": 0,
+     "guideAbsent": 0,
+     "sourceAbsent": 0,
+     "bothAbsent": 0,
+     "unmatched": 0
+    },
+    "guideAbsent": [],
+    "sourceAbsent": [],
+    "bothAbsent": [],
+    "unmatched": [],
+    "differ": [],
+    "undocumentedInSource": []
+   },
+   "methods": {
+    "groups": 3,
+    "counts": {
+     "equal": 25,
+     "differ": 0,
+     "guideAbsent": 0,
+     "sourceAbsent": 0,
+     "bothAbsent": 0,
+     "unmatched": 0
+    },
+    "guideAbsent": [],
+    "sourceAbsent": [],
+    "bothAbsent": [],
+    "unmatched": [],
+    "differ": []
+   },
+   "owners": [
+    {
+     "name": "DatabaseWorkspaceStore",
+     "keyword": "class",
+     "methods": 3,
+     "grouped": false,
+     "undescribed": [
+      "delete",
+      "get",
+      "set"
+     ]
+    },
+    {
+     "name": "MemoryWorkspaceStore",
+     "keyword": "class",
+     "methods": 3,
+     "grouped": false,
+     "undescribed": [
+      "delete",
+      "get",
+      "set"
+     ]
+    },
+    {
+     "name": "Workspace",
+     "keyword": "class",
+     "methods": 14,
+     "grouped": false,
+     "undescribed": [
+      "append",
+      "clear",
+      "destroy",
+      "file",
+      "files",
+      "has",
+      "move",
+      "prepend",
+      "read",
+      "remove",
+      "replace",
+      "search",
+      "snapshot",
+      "write"
+     ]
+    },
+    {
+     "name": "WorkspaceInterface",
+     "keyword": "interface",
+     "methods": 14,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "WorkspaceManager",
+     "keyword": "class",
+     "methods": 8,
+     "grouped": false,
+     "undescribed": [
+      "add",
+      "clear",
+      "open",
+      "remove",
+      "save",
+      "switch",
+      "workspace",
+      "workspaces"
+     ]
+    },
+    {
+     "name": "WorkspaceManagerInterface",
+     "keyword": "interface",
+     "methods": 8,
+     "grouped": true,
+     "undescribed": []
+    },
+    {
+     "name": "WorkspaceStoreInterface",
+     "keyword": "interface",
+     "methods": 3,
+     "grouped": true,
+     "undescribed": []
+    }
+   ],
+   "examples": {
+    "titledFences": [
+     "Files and content",
+     "Editing",
+     "Reading and searching",
+     "Moving, removing, and snapshots",
+     "Lifecycle",
+     "The registry",
+     "Durability",
+     "Failures"
+    ],
+    "titledExamples": [
+     "createFile:Files and content"
+    ],
+    "pairs": [
+     "Files and content"
+    ]
+   },
+   "findDrift": 0,
+   "findDriftKeys": []
+  }
+ ]
+}

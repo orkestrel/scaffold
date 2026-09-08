@@ -1,0 +1,12 @@
+
+> @orkestrel/server@0.0.19 check
+> tsc --noEmit --project tsconfig.json && npm run check:src
+
+
+> @orkestrel/server@0.0.19 check:src
+> npm run check:src:server
+
+
+> @orkestrel/server@0.0.19 check:src:server
+> tsc --noEmit -p configs/src/tsconfig.server.json
+

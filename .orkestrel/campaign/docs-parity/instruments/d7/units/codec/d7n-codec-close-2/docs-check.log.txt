@@ -1,0 +1,9 @@
+
+> @orkestrel/codec@0.0.3 docs
+> node --experimental-strip-types scripts/docs.ts
+
+rows read: 1, disagreements found: 0
+
+real	0m0.253s
+user	0m0.274s
+sys	0m0.063s

@@ -1,0 +1,19 @@
+
+> @orkestrel/codec@0.0.3 test:guides
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project guides
+
+
+ RUN  v4.1.11 /home/user/fleet/codec
+
+···························
+
+ Test Files  1 passed (1)
+      Tests  27 passed (27)
+   Start at  21:44:56
+   Duration  647ms (transform 277ms, setup 273ms, import 155ms, tests 79ms, environment 0ms)
+
+
+real	0m1.201s
+user	0m1.106s
+sys	0m0.312s
+EXIT:0

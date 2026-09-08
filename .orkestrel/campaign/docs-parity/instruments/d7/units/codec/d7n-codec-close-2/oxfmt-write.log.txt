@@ -1,0 +1,5 @@
+Finished in 650ms on 2 files using 4 threads.
+
+real	0m1.119s
+user	0m1.055s
+sys	0m0.139s

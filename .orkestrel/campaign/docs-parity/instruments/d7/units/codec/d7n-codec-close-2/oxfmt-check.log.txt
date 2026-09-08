@@ -1,0 +1,9 @@
+Checking formatting...
+
+All matched files use the correct format.
+Finished in 572ms on 2 files using 4 threads.
+
+real	0m0.952s
+user	0m1.083s
+sys	0m0.141s
+EXIT:0
