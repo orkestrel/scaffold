@@ -224,8 +224,9 @@ describe the historical sequence, not current state. Guide main remains pending.
 
 Contract's visit exited 0 with the corrected Guide and selected scaffold path repair.
 Its 0.0.17 tarball exists under tmp/pass/packed/d7n-foundation-contract.ZjPTS5/.
-The package manifest and lock stayed unchanged. Evidence inspection and selected-path
-landing follow; Codec's visit is running. The remaining bottom-layer visits follow
+The package manifest and lock stayed unchanged. Independent evidence verification and
+selected-path landing closed as 1e235c0 on the campaign branch and main. Codec, Msg and
+SSE packed with exit 0; Test is running. The remaining bottom-layer visits follow
 the existing prepare-foundation.sh carrier.
 
 Ruling 30 records the owner's development-pin clarification. Prepare lower runtime

@@ -64,8 +64,10 @@ terminal result; retain the result projection with its report and verdict.
 | d7n-guide-heading-close-fix | implementer, Opus | Guide checkpoint 0accc15 | tmp/claude/d7n-guide-heading-close-fix.jsonl; 9adca1da-f1cf-4d9c-96ea-1edb01135f1b | exec 47601 exited 0 | independent objective review PASS; root final gates and distribution passed; landed and branch pushed as ef6ada9 |
 | d7n-guide-bootstrap-pack | builder, Terra; root run | Guide ef6ada9 | tmp/pass/d7n-guide-bootstrap-pack.vh8CeQ | root command exited 0 | corrected artifact packed; dist hash prefix 6455f6f9; clean source |
 | d7n-foundation-visit | builder, Terra | accepted public repair and existing gate/pack carriers | native layer_capture_fix | author returned | syntax passed; root visits active |
-| d7n-foundation-contract | root execution | Contract fd3fce2, version 0.0.17 | tmp/pass/d7n-foundation-contract.sAQxNo | exec 28694 exited 0 | prepublish, docs and pack passed; selected-path landing pending |
-| d7n-foundation-codec | root execution | Codec 8c20e15, version 0.0.3 | tmp/pass/d7n-foundation-codec.sYfIas | exec 45155 | running |
+| d7n-foundation-contract | root execution | Contract fd3fce2, version 0.0.17 | tmp/pass/d7n-foundation-contract.sAQxNo | exec 28694 exited 0 | independent receipt GREEN; closed and pushed as 1e235c0 to branch and main |
+| d7n-foundation-codec | root execution | Codec 8c20e15, version 0.0.3 | tmp/pass/d7n-foundation-codec.sYfIas | exec 45155 exited 0 | packed; landing pending |
+| d7n-foundation-msg | root execution | Msg 57128e9, version 0.0.10 | tmp/pass/d7n-foundation-msg.njodFP | exec 62560 exited 0 | packed; landing pending |
+| d7n-foundation-sse | root execution | SSE 7778cff, version 0.0.7 | tmp/pass/d7n-foundation-sse.P4pdtt | exec 5801 exited 0 | packed; landing pending |
 
 The previous probe writer returned and its test changes landed as 93fc01d. The
 owner-main comparison returned; its result projection is retained. Those processes
