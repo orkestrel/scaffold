@@ -1,0 +1,9 @@
+HEAD 98e9c3402f4ce7ac45c4d5b16b37da42399f9ca9
+guide sha256 2b76b363f4b93b8017d42d5fd2de68ab55f2d0b01bad851f9b68fd4e80604d17
+surface: FAIL
+shapes: FAIL
+guide-text: FAIL
+provider-text: FAIL
+budget-text: FAIL
+pointer-text: FAIL
+exit=1

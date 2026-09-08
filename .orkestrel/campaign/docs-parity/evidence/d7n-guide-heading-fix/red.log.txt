@@ -1,0 +1,90 @@
+npm notice run @orkestrel/guide@0.0.18 test:src:core
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core tests/src/core/helpers.test.ts tests/src/core/Guide.test.ts
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/guide
+
+··x··············································································································································xxxx···························································································································································································································································································································
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 5 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:core| tests/src/core/Guide.test.ts > Guide > caches a surface that refuses an embedded demonstration heading
+AssertionError: expected [ Array(1) ] to deeply equal [ { name: 'Widget', …(2) } ]
+
+- Expected
++ Received
+
+  [
+    {
+      "keyword": "class",
+      "name": "Widget",
+-     "summary": "Represents a widget.",
+    },
+  ]
+
+ ❯ tests/src/core/Guide.test.ts:32:27
+     30|  it('caches a surface that refuses an embedded demonstration heading',…
+     31|   const guide = new Guide(ENTITY_HEADING_GUIDE)
+     32|   expect(guide.surface()).toEqual([
+       |                           ^
+     33|    { name: 'Widget', keyword: 'class', summary: 'Represents a widget.'…
+     34|   ])
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/5]⎯
+
+ FAIL  |src:core| tests/src/core/helpers.test.ts > extractSurface > applies the entity-heading boundary to ### Bind a `Widget` to a transport
+ FAIL  |src:core| tests/src/core/helpers.test.ts > extractSurface > applies the entity-heading boundary to ### `Widget` and `Alias`
+ FAIL  |src:core| tests/src/core/helpers.test.ts > extractSurface > applies the entity-heading boundary to ### `Widget` ` `
+AssertionError: expected [ Array(1) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   {
++     "keyword": "class",
++     "name": "Widget",
++   },
++ ]
+
+ ❯ tests/src/core/helpers.test.ts:1083:36
+    1081|  ])('applies the entity-heading boundary to %s', (heading, expected) =…
+    1082|   const document = createMarkdown(['## Surface', '', heading, ''].join…
+    1083|   expect(extractSurface(document)).toEqual(expected)
+       |                                    ^
+    1084|  })
+    1085|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/5]⎯
+
+ FAIL  |src:core| tests/src/core/helpers.test.ts > extractSurface > refuses an embedded demonstration heading and keeps the following row summary
+AssertionError: expected [ Array(1) ] to deeply equal [ { name: 'Widget', …(2) } ]
+
+- Expected
++ Received
+
+  [
+    {
+      "keyword": "class",
+      "name": "Widget",
+-     "summary": "Represents a widget.",
+    },
+  ]
+
+ ❯ tests/src/core/helpers.test.ts:1087:73
+    1085|
+    1086|  it('refuses an embedded demonstration heading and keeps the following…
+    1087|   expect(extractSurface(createMarkdown(ENTITY_HEADING_GUIDE).document)…
+       |                                                                         ^
+    1088|    { name: 'Widget', keyword: 'class', summary: 'Represents a widget.'…
+    1089|   ])
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/5]⎯
+
+
+ Test Files  2 failed (2)
+      Tests  5 failed | 459 passed (464)
+   Start at  10:41:06
+   Duration  1.68s (transform 340ms, setup 110ms, import 788ms, tests 1.04s, environment 0ms)
+
+exit=1

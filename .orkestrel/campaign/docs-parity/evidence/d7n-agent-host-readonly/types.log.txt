@@ -1,0 +1,8 @@
++ npm run check
+npm notice run @orkestrel/agent@0.0.21 check
+npm notice run tsc --noEmit --project tsconfig.json && npm run check:src
+npm notice run @orkestrel/agent@0.0.21 check:src
+npm notice run npm run check:src:core
+npm notice run @orkestrel/agent@0.0.21 check:src:core
+npm notice run tsc --noEmit -p configs/src/tsconfig.core.json
+exit=0

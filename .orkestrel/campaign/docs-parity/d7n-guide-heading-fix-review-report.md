@@ -1,0 +1,59 @@
+# Verdict — subjective lane (design fit, API and vocabulary, architecture fit, simplification, guide voice)
+
+Lane held: **subjective**. Evidence used: the supplied diff, the supplied status, and the source at the paths cited. No execution evidence was supplied to this lane, so every behavioral verdict here is a review of source and is labelled as such.
+
+## Numbered verdicts
+
+**1. G1 — entity-heading boundary expresses the accepted shape: CONFIRMED** (source-read)
+
+Attacks that failed:
+
+- Tried to find an existing entity form the narrowed condition drops. `src/core/helpers.ts:1535` compares `extractCellText(block.children).trim()` against the backticked raw value, and `extractCellText` (`src/core/helpers.ts:984-993`) descends emphasis, link, and image children while `findFirstCode` (`src/core/helpers.ts:919-928`) descends the same set, so a bare, generic, padded, emphasized, or linked heading yields identical strings on both sides and stays admitted. Generic annotation still strips afterwards at `src/core/helpers.ts:1538`.
+- Tried to find an unrelated reader whose policy moved. The table branch (`src/core/helpers.ts:1521-1531`), the section window, the keyword-sensitive key, `extractMethods`, and `extractUnnamed` are untouched in the diff and in source.
+- Tried to find an over-promise. Neither the source description, the `GuideInterface.surface` block (`src/core/types.ts:193-200`), the guide cells, nor the extraction-model prose asserts image validation or identifier validation. A whitespace-only code span still produces an empty name, and no prose claims otherwise.
+- Checked the package's own guide: `guides/guide.md:216`, `:225`, `:244` are bare entity headings and stay admitted; `guides/guide.md:25`, `:53`, `:70`, `:148`, `:157`, `:172`, `:187`, `:203` carry no code span and were already skipped.
+
+**2. G2 — the guide plainly explains the retained first-seen limit: CONFIRMED** (source-read)
+
+Attacks that failed:
+
+- Tried to read a global table preference into `guides/guide.md:331-334`. The sentence is order-based and symmetric in both directions, and it names the keyword axis separately, so no table preference and no backwards summary merge is stated or implied.
+- Tried to find the limit contradicted by the package's own layout. The `Classes` table at `guides/guide.md:210-214` precedes the entity headings at `:216`, `:225`, `:244`, which is the branch the prose says keeps the `Summary`.
+- Checked that examples and the heading-only supported form survive: the diff removes no fence, no pattern, and no heading form.
+
+The plainness of the sentence's *placement* is a separate defect, reported under claim 4 as R3.
+
+**3. G3 — the edit fits the extraction layer and its tests: BROKEN**
+
+Not broken, and it matters that it is not: the condition is folded into its only caller rather than extracted into a wrapper, no export, type, parser, dependency, or second admission engine is added, and the compared-text primitive is reused rather than renamed. The failures are in where the test data lives and what it is called.
+
+- **R5 — `tests/setup.ts:14-15`.** `ENTITY_HEADING_GUIDE` names the document for the form it deliberately does not contain. Its own doc comment on `tests/setup.ts:14` calls the heading a demonstration heading, and the whole change turns on the entity/demonstration distinction. AGENTS.md § Design laws, "One concept, one term", is the rule this crosses; a reader importing `ENTITY_HEADING_GUIDE` expects a document holding an entity heading and gets one holding a refused heading. Right: rename to `DEMONSTRATION_HEADING_GUIDE` and update the two importers at `tests/src/core/Guide.test.ts:4` and `tests/src/core/helpers.test.ts:77`.
+- **R6 — `tests/src/core/helpers.test.ts:1072-1080`.** The heading-to-expectation case matrix is declared inline in the test file. `.claude/rules/tests.md` § Shared test infrastructure states that data tables and case matrices belong in a setup file at any size and that test registration does not. This is the only `it.each` matrix in the workspace's test tree, and the same change moved one fixture document into `tests/setup.ts`, so the change contradicts itself about where its shared data lives. Right: export the matrix from `tests/setup.ts` with its readonly element type, keep `it.each(<exported matrix>)('applies the entity-heading boundary to %s', …)` registration in the test file. The rule's letter is also checker territory; the design-coherence half is ruled here.
+
+**4. G4 — changed prose is self-contained, factual, and obeys the writing rules: BROKEN**
+
+Not broken: no count, no positional list reference, no process diary, no banned substitution-table term, and every changed `Summary` cell matches its doc-block description paragraph (`guides/guide.md:129` against `src/core/helpers.ts:971-974`; `guides/guide.md:112` against `src/core/helpers.ts:1491-1498`; `guides/guide.md:269` against `src/core/types.ts:193-195`), with `@remarks` correctly outside the compared paragraph.
+
+- **R1 — `guides/guide.md:325` and `src/core/helpers.ts:1503-1504.`** "Additional visible text or code spans refuse admission." makes the input the actor. `.claude/rules/writing.md` § Voice and actor requires naming the software component that acts and making it the subject; `refuses` is a sanctioned verb for a component, and text is not one. It matters because the sentence reads as a property of the document when it is a rule the reader applies. Right, in the guide: "`extractSurface` refuses a heading carrying any other visible text or a second code span." In the TSDoc: "This reader refuses a heading carrying any other visible text or a second code span." While editing the same sentence, replace "Heading padding" with "Surrounding spaces" — "padding" is layout jargon for what is a run of spaces.
+- **R2 — `guides/guide.md:325-327.`** "The heading boundary compares `extractCellText(block.children).trim()` with the raw value from `findFirstCode` before generic normalization." puts an implementation expression in the guide, and `block` is a loop variable no reader can resolve. `.claude/rules/documentation.md` § Parity requires every backticked API in a guide to resolve to a real public export, and the parity gate compares only Surface and Methods names, so nothing will catch this. The preceding sentence already states the rule, so the sentence adds detail and no instruction. Right: delete the sentence from the guide. The `@remarks` form at `src/core/helpers.ts:1501-1502` already carries it correctly, through `{@link}` targets that are real exports.
+- **R3 — `guides/guide.md:331-334.`** The `extractSurface` encounter-order and dedup sentence sits after `extractMethods` is introduced at `:327` and after the shared `normalizeIdentifier` sentence at `:329-331`, so a reader looking for the heading reader's rules meets them once the paragraph has moved on to another reader. `.claude/rules/writing.md` § Sentence and paragraph order requires each part to sit where the reader looks for it. Right: move "Surface entries retain encounter order and deduplicate by name + keyword: …" up so it closes the `extractSurface` run, immediately before "`extractMethods` scopes to `## Methods`".
+- **R4 — `src/core/helpers.ts:976-977.`** The description at `:971-974` was widened to "a table cell or candidate entity heading", and the block's tail was left behind: `@param cell - The cell's inline nodes` and `@returns The cell's text, code spans included`. A caller passing heading children reads a contract about cells. Right: `@param cell - The inline nodes to flatten` and `@returns The compared text, code spans included`. Keep the parameter name `cell` so the `Signature` cell at `guides/guide.md:129` and the public signature stay unchanged.
+
+## Findings outside the claims
+
+**F1 — `guides/guide.md:324-325`, `src/core/helpers.ts:1502-1503`.** "Heading padding, emphasis, and links preserve that identity" enumerates the wrappers a heading may carry and omits the image. `extractCellText` descends `isImageNode` children (`src/core/helpers.ts:988-990`) and `findFirstCode` descends them identically (`src/core/helpers.ts:922-925`), so an H3 whose only content is an image whose alternative text is a lone code span is admitted as a class. A reader takes an enumerated list beside a refusal rule as the admissible set and concludes the opposite. It matters because `extractCellText`'s own description already documents the image behavior, so the guide contradicts a helper description in the same change. Right: name the image in the same list, or state the rule once as "any wrapper `extractCellText` flattens" rather than enumerating. Evidence is source-read; running `extractSurface` over `### ![` + `` `Widget` `` + `](widget.png)` inside `## Surface` would settle it.
+
+## Referrals — outside this lane, no verdict from me
+
+- **Ref-1 (root).** No executed evidence reached this lane. The fix brief names red/green logs under `guide/tmp/d7n-guide-heading-fix` and the focused command `npm run test:src:core -- tests/src/core/helpers.test.ts tests/src/core/Guide.test.ts`; neither the logs nor a gate reading was supplied. What would settle the behavioral half of claims 1 and 2: those logs, plus the independent full-chain run the brief says root owns.
+- **Ref-2 (objective lane — test sufficiency).** `tests/setup.test.ts` carries a `describe` block for every existing `tests/setup.ts` export — `TEST_SEED` at `:18`, `requireTable` at `:36`, `requireText` at `:61`, `buildStoreSource` at `:82`, `readStoreReadings` at `:97`. The new `ENTITY_HEADING_GUIDE` export has no sibling proof, and the status output shows `tests/setup.test.ts` unmodified. The fix brief's owned-files list did not name it, so this may be a scope gap rather than an omission.
+- **Ref-3 (objective lane — behavior).** A guide laying a genuine entity heading before its matching class row produces a surface entry with `summary` absent (`src/core/helpers.ts:1539-1543`), and `findDrift` (`src/core/helpers.ts:2396-2402`) then reports a drift naming the source's side. Whether the documented convergence path (`replaceCell`, `npm run docs --to guide`) can close that drift decides whether "keeps the summary-less heading entry" at `guides/guide.md:332-333` understates the cost to a guide author. If it cannot converge, the prose owes the consequence and the recommended layout.
+- **Ref-4 (root — fleet impact).** The narrowed admission drops any decorated entity heading in another package's guide, and that package's surface bijection is where the loss surfaces. This package's own guide is unaffected, per the heading survey under claim 1. What would settle it: running the changed reader over each fleet guide's `## Surface` section and diffing the symbol sets, and the replacement-artifact validation the design verdict already defers this to.
+
+## Attacked and held
+
+- **Adjacent behavior that looks like the defect and is correct.** A refused heading contributes nothing to `extractUnnamed`, which reports table rows only. That is not a silent loss: the class remains in the source's surface, so a consumer's documented-surface bijection reports it by name. No heading-side reporter is owed.
+- **Adjacent behavior that looks like a defect and is out of scope by ruling.** A heading whose only content is a whitespace-only code span still yields an empty-named class symbol, unchanged from before the repair. The design verdict excluded empty-identifier policy from this unit, and no changed prose claims that case is refused.
+- **Simplification held.** Tried to argue the condition should be a named helper. It has one call site and one line, so folding it into `extractSurface` is the correct placement, and the widened `extractCellText` description is the honest consequence of the reuse rather than a new concept.
+
+VERDICT: FAIL 3, 4; outside the claims: F1

@@ -1,0 +1,7 @@
+ guides/guide.md                | 156 ++++++++++++++++++++++-------------------
+ src/core/helpers.ts            |  36 ++++++----
+ src/core/types.ts              |  10 ++-
+ tests/setup.ts                 |  12 ++++
+ tests/src/core/Guide.test.ts   |  10 ++-
+ tests/src/core/helpers.test.ts |  82 +++++++++++++++++++++-
+ 6 files changed, 215 insertions(+), 91 deletions(-)

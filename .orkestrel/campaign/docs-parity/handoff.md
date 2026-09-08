@@ -102,14 +102,14 @@ Tips are the branch tips as pushed. "on main" means the branch tip is `main`.
 | lsp | `c4842c8` | fix round and `close-2` landed; both closure lanes terminated | dispatch the closure: checker on `d7n-lsp-check-brief.md` (the fix round's check brief, which carries the closing items; `d7n-lsp-close-2-brief.md` is the successor it covers), verifier on `d7n-lsp-verify-brief.md`; verdict; push `main` |
 | database | `cdbf66a` | `close-2` landed; owner main merged; prior verifier green; the canon finding remains open; Ruling 20 stays unchanged | dispatch `d7n-database-canon-brief.md` to move the compiler-derived surface into its consuming package case; then checker and verifier; verdict; push `main` |
 | probe | `93fc01d` | resumed test-draft correction landed and branch pushed; scoped gates green; type-load fixture retained by d7n-probe-heavy-ruling-verdict.md after a separate host run; clean; main still b816749 | write the audit-item check brief and generate verification against the final guide artifact; full closure and main push remain pending |
-| agent | `54e7199` | audit reconciled; shell-denied attempt returned without edits; read/edit-only successor is running with host-owned validation | follow d7n-windows-runtime.md and d7n-agent-converge-fix-host-brief.md; validate on host; land with land-p2.sh agent fix; final head-start; closure; push main |
-| ollama | `98e9c34` | audit reconciled (items O1 to O10); the fix unit was terminated at item 3 with partial edits, retained as `d7n-ollama-converge-fix.partial.diff.txt` and not applied | dispatch `d7n-ollama-converge-fix-brief.md` again from the clean tip (the partial diff is evidence of the first two items' wording, not a patch to apply); then as agent |
+| agent | `54e7199` | read/edit-only successor returned; root's read-only host validator passed; candidate diff and report retained; uncommitted | finish comment-only and docs-direction host readings; land with land-p2.sh agent fix; final head-start; closure; push main |
+| ollama | `98e9c34` | read/edit-only successor is running from the clean tip after a verified host preflight; the retained container partial diff was not applied | follow d7n-windows-runtime.md and d7n-ollama-converge-fix-host-brief.md; host validation; landing; final-artifact closure |
 | workflow | `1151786` | audit reconciled (`d7n-workflow-audit-verdict.md`, items WF1 to WF7); fix brief written | dispatch `d7n-workflow-converge-fix-brief.md` (implementer, Opus); head-start first (its installed guide is the older pack); then as agent |
 | program | `a60327f` | audit reconciled (`d7n-program-audit-verdict.md`, items PF1 to PF8); fix brief written | dispatch `d7n-program-converge-fix-brief.md` (implementer, Opus); head-start first; then as agent |
 | terminal | `0b01536` | retained audit lanes reconciled in `d7n-terminal-audit-verdict.md`; checker recorded as not run | dispatch `d7n-terminal-converge-fix-windows-brief.md`; then checker and verifier; verdict; push `main` |
 | mcp | `a01d5e8` | owner main merged; scoped merge checks passed; branch pushed; audit reconciled in `d7n-mcp-audit-verdict.md`; checker recorded as not run | dispatch `d7n-mcp-converge-fix-windows-brief.md`; closure; push `main`; guide-reader referral remains separate |
 | supervisor | `edf80e6` (`main`) | outside the pass; the owner's API-adoption decision is pending (`d7-fleet-plan.md` § For the owner) | nothing in this campaign |
-| guide | `1d5afa3` | branch pushed; main waits; embedded demonstration-heading reader defect reproduced and independently confirmed; owner directed continuation | bounded reader correction under Ruling 8; review, pack, record the replacement hash, and revalidate the fleet; see `d7n-guide-heading-referral.md` |
+| guide | `1d5afa3` | reader candidate returned; focused red and green recorded; review corrections remain; full chain and isolated config case failed; candidate retained, not committed or packed | follow d7n-guide-heading-fix-verdict.md; diagnose the policy diagnostic, correct the supported review findings from a clean checkpoint, then pack and revalidate the fleet |
 
 ## The tail, after every package closes
 
@@ -128,6 +128,13 @@ continuation after the referral and owner-main reconciliation. Follow Ruling 8: 
 the reader, review the change, record the replacement packed artifact and its measured
 hash, then revalidate the fleet. Do not reuse an old-artifact closure as proof of the
 replacement. No replacement is installed yet. Publication still needs an explicit go-ahead.
+
+The returned candidate and its evidence are retained in d7n-guide-heading-fix-verdict.md
+and the evidence directory. Independent review requires prose and fixture corrections.
+Root's full gate chain and isolated rerun fail in the vendored configured-policy case
+because the real lint binary omits the expected no-mocking diagnostic. The diagnostic
+map is running; no cause or target-side workaround is accepted. Never edit the vendored
+target file. The old head-start artifact remains the installed artifact.
 
 ## Pending owner decisions carried from the container
 

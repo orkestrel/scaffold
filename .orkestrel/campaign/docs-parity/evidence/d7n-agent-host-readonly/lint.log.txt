@@ -1,0 +1,4 @@
++ npx --no-install oxlint --config .oxlintrc.json --deny-warnings tests/guides.test.ts src
+npm notice run @orkestrel/agent@0.0.21 npx
+npm notice run oxlint --config .oxlintrc.json --deny-warnings tests/guides.test.ts src
+exit=0

@@ -1,0 +1,8 @@
++ npx --no-install oxfmt --config .oxfmtrc.json --check guides/agent.md README.md tests/guides.test.ts src
+npm notice run @orkestrel/agent@0.0.21 npx
+npm notice run oxfmt --config .oxfmtrc.json --check guides/agent.md README.md tests/guides.test.ts src
+Checking formatting...
+
+All matched files use the correct format.
+Finished in 691ms on 24 files using 16 threads.
+exit=0

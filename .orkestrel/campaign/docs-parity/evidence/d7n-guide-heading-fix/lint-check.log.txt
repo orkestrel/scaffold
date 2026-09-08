@@ -1,0 +1,3 @@
+npm notice run @orkestrel/guide@0.0.18 npx
+npm notice run oxlint --config .oxlintrc.json --deny-warnings src/core/helpers.ts src/core/types.ts tests/setup.ts tests/src/core/helpers.test.ts tests/src/core/Guide.test.ts
+exit=0

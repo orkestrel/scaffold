@@ -1,0 +1,12 @@
+--- /c/Users/mikes/WebstormProjects/scaffold/.orkestrel/campaign/docs-parity/instruments/d7/windows/land-p2-trailers.sh	2026-09-08 09:47:39.335593200 -0400
++++ /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/land-p2.sh	2026-09-08 10:40:04.679981600 -0400
+@@ -58,6 +58,9 @@
+ test "${#paths[@]}" -gt 0
+ 
+ for path in "${paths[@]}"; do
++  case "$package:$stage:$path" in
++    ollama:fix:tests/setup.test.ts | ollama:fix:tests/service/budget.test.ts | ollama:fix:tests/service/tools.test.ts | ollama:fix:tests/service/lifecycle.test.ts | ollama:fix:tests/service/compaction.test.ts | ollama:fix:tests/service/OllamaProvider.test.ts) continue ;;
++  esac
+   case "$stage:$path" in
+     tests:tests/src/server/Probe.test.ts | canon:tests/guides.test.ts | fix:guides/"$package".md | fix:README.md | fix:tests/guides.test.ts | fix:src/*.ts) ;;
+     *)

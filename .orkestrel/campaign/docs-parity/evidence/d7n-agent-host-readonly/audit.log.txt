@@ -1,0 +1,8 @@
++ node /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/agent-audit-controls.mjs /c/Users/mikes/WebstormProjects/agent
+constants: PASS
+validators: PASS
+methods-only: PASS
+topic-headings: PASS
+tallies: PASS
+endings: PASS
+exit=0

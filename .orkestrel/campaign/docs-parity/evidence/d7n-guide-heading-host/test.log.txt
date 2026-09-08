@@ -1,0 +1,63 @@
++ npm test
+npm notice run @orkestrel/guide@0.0.18 test
+npm notice run npm run test:src && npm run test:policy && npm run test:config && npm run test:setup && npm run test:guides
+npm notice run @orkestrel/guide@0.0.18 test:src
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/guide
+
+···················································································································································································································································································································································································································································································································································································································································
+
+ Test Files  8 passed (8)
+      Tests  627 passed (627)
+   Start at  10:58:05
+   Duration  1.75s (transform 1.33s, setup 372ms, import 2.75s, tests 1.18s, environment 1ms)
+
+npm notice run @orkestrel/guide@0.0.18 test:policy
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project policy
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/guide
+
+·················································································-·········
+
+ Test Files  1 passed (1)
+      Tests  90 passed | 1 skipped (91)
+   Start at  10:58:07
+   Duration  935ms (transform 83ms, setup 56ms, import 106ms, tests 625ms, environment 0ms)
+
+npm notice run @orkestrel/guide@0.0.18 test:config
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project config
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/guide
+
+·································································································································································x········stdout | tests/config.test.ts > configuration helpers > rolls one face into a single declaration and rewrites its core specifier
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+
+·-stdout | tests/config.test.ts > configuration helpers > rolls one face into a single declaration and rewrites its core specifier
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+
+·
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |config| tests/config.test.ts > policy plugin > loads every configured policy rule through the real binary
+AssertionError: expected [ …(27) ] to include 'policy(no-mocking) src/violations/fix…'
+ ❯ tests/config.test.ts:1894:28
+    1892|     'typescript(explicit-member-accessibility) src/violations/fixture.…
+    1893|    ]) {
+    1894|     expect(violationCodes).toContain(reported)
+       |                            ^
+    1895|    }
+    1896|    expect(violationCodes).toContain('eslint(no-debugger) scripts/read.…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 171 passed | 1 skipped (173)
+   Start at  10:58:09
+   Duration  3.00s (transform 191ms, setup 56ms, import 428ms, tests 2.38s, environment 0ms)
+
+exit=1

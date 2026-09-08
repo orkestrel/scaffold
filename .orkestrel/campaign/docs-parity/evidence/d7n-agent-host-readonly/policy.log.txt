@@ -1,0 +1,14 @@
++ npm run test:policy
+npm notice run @orkestrel/agent@0.0.21 test:policy
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project policy
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/agent
+
+·················································································-·········
+
+ Test Files  1 passed (1)
+      Tests  90 passed | 1 skipped (91)
+   Start at  11:03:30
+   Duration  1.16s (transform 213ms, setup 381ms, import 102ms, tests 530ms, environment 0ms)
+
+exit=0

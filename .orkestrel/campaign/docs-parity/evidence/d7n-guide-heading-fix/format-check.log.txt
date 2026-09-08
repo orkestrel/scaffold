@@ -1,0 +1,7 @@
+npm notice run @orkestrel/guide@0.0.18 npx
+npm notice run oxfmt --config .oxfmtrc.json --check src/core/helpers.ts src/core/types.ts tests/setup.ts tests/src/core/helpers.test.ts tests/src/core/Guide.test.ts guides/guide.md
+Checking formatting...
+
+All matched files use the correct format.
+Finished in 685ms on 6 files using 16 threads.
+exit=0
