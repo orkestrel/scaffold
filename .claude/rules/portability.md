@@ -52,6 +52,8 @@ and the form of a conditional skip.
   host.
 - Read the temporary directory from `os.tmpdir()`. Never write a `/tmp` literal in source.
 - Build a `file:` URI with `pathToFileURL`. Never format one from a path string.
+- Convert a `file:` URI to a host path with `fileURLToPath`. Never read `URL.pathname` as
+  a host path or strip the scheme, decode escapes, or rewrite a drive prefix by hand.
 
 ## Processes and executables
 

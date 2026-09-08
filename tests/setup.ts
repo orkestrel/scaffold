@@ -864,6 +864,16 @@ export const PATH_CASES: readonly TestPathCase[] = [
 	{ label: 'dotted directory', path: '.claude/rules/names.md', accepted: true },
 ]
 
+/** Lists native diagnostic filenames whose characters and directory context must survive. */
+export const POLICY_FILENAMES: readonly string[] = Object.freeze([
+	'src/plain.ts',
+	'src/space name.ts',
+	'src/percent%name.ts',
+	'src/hash#name.ts',
+	'src/Unicode-雪.ts',
+	'src/literal%20name.ts',
+])
+
 /** Lists every declared range measured against a reported version, with the verdict it owes. */
 export const RANGE_CASES: readonly TestRangeCase[] = [
 	{ range: '^0.0.5', latest: '0.0.5', satisfied: true },
