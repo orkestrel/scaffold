@@ -1,0 +1,285 @@
+diff --git a/README.md b/README.md
+index 2910e36..f022e66 100644
+--- a/README.md
++++ b/README.md
+@@ -8,8 +8,11 @@
+ 
+ Author the passes — quantitative derivations and logical rule gates — hand a subject
+ (a plain data record) to `qualify`, and read what comes back. The caller supplies the
+-definition; `Qualifier` only evaluates what it is given. Environment-agnostic — no
+-I/O, no browser or server assumptions. Part of the `@orkestrel` line.
++definition; `Qualifier` only evaluates what it is given. Inject a
++[`@orkestrel/reason`](https://github.com/orkestrel/reason) `ReasonInterface` where
++qualification shares an engine with the rest of your reasoning, and call `destroy()`
++when the qualifier's work is done. Environment-agnostic — no I/O, no browser or
++server assumptions. Part of the `@orkestrel` line.
+ 
+ ## Install
+ 
+diff --git a/guides/qualifier.md b/guides/qualifier.md
+index 61f1921..a980195 100644
+--- a/guides/qualifier.md
++++ b/guides/qualifier.md
+@@ -99,7 +99,7 @@ A `Shape` cell holds the constant's declared type.
+ | API                          | Kind  | Shape                                                | Summary                                                                                                                                             |
+ | ---------------------------- | ----- | ---------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+ | `DEFAULT_QUALIFIER_VALIDATE` | const | `boolean`                                            | Holds the default definition validation policy for `createQualifier` and `Qualifier.qualify`, `true`.                                               |
+-| `QUALIFICATION_KEY`          | const | `string`                                             | Names the reserved internal projection namespace a pass's working projection is written under, `'qualification'`.                                   |
++| `QUALIFICATION_KEY`          | const | `string`                                             | Names `'qualification'`, the reserved internal projection namespace a pass's working projection is written under.                                   |
+ | `ELIGIBILITY_PRECEDENCE`     | const | `readonly Eligibility[]`                             | Lists the eligibility severities most to least severe: `ineligible`, `referral`, `eligible`.                                                        |
+ | `EFFECT_ELIGIBILITIES`       | const | `Readonly<Record<QualificationEffect, Eligibility>>` | Maps each `QualificationEffect` to its eligibility impact — `restriction` to `ineligible`, `referral` to `referral`, and `condition` to `eligible`. |
+ 
+@@ -147,7 +147,7 @@ arrays where a record is required, returns `false` for hostile reads, and never
+ result belongs to `@orkestrel/reason`, so narrow one with the `isReasonValidationResult` guard from
+ that package.
+ 
+-A `Shape` cell holds an interface's data members as bare names in braces, `?` marking an optional member and `plus` introducing its call-signature members, and a type alias's own type literal with a union's arms escaped as `\|`. In a guard table a `Shape` cell holds the type the guard narrows to.
++In a guard table a `Shape` cell holds the type the guard narrows to.
+ 
+ | API                         | Kind     | Shape                                   | Summary                                                                                     |
+ | --------------------------- | -------- | --------------------------------------- | ------------------------------------------------------------------------------------------- |
+@@ -339,10 +339,14 @@ assertSubject({ id: 's1' }) // narrows to Subject; throws QualifierError('MISMAT
+ | ------------------------------- | -------- | ------------------------------------------------------------------------------ |
+ | `createQualifier`               | function | Creates one `QualifierInterface` over a reason engine.                         |
+ | `createQualificationDefinition` | function | Creates a fresh `QualificationDefinition`, omitting every absent optional key. |
+-| `createRuling`                  | function | Builds a fresh `Ruling` from the rule it reacts to and the effect it applies.  |
++| `createRuling`                  | function | Creates a fresh `Ruling` from the rule it reacts to and the effect it applies. |
+ 
+ #### Create a qualifier
+ 
++This fence adds to the quickstart what the factory family itself contributes: the
++optional `message` and `rulings` inputs, and the fresh value each factory returns
++with every absent optional key omitted.
++
+ ```ts
+ import { createQualificationDefinition, createQualifier, createRuling } from '@orkestrel/qualifier'
+ import { createAtom, createLogicalDefinition, createRule } from '@orkestrel/reason'
+@@ -355,10 +359,22 @@ const gates = createLogicalDefinition('gates', 'Eligibility gates', [
+ 	),
+ ])
+ 
+-const definition = createQualificationDefinition('standard', 'Standard eligibility', [gates], {
+-	rulings: [createRuling('license', 'gates', 'licensed', 'restriction')],
++const bare = createRuling('license', 'gates', 'licensed', 'restriction')
++const messaged = createRuling('license', 'gates', 'licensed', 'restriction', {
++	message: 'A license is required',
++})
++
++'message' in bare // false — an absent optional key is omitted, never written as undefined
++messaged.message // 'A license is required'
++
++const passes = [gates]
++const definition = createQualificationDefinition('standard', 'Standard eligibility', passes, {
++	rulings: [messaged],
+ })
+ 
++'description' in definition // false
++definition.passes === passes // false — the factory copies what it is handed
++
+ const qualifier = createQualifier()
+ qualifier.qualify({ id: 'risk-1', licensed: false }, definition)
+ qualifier.destroy()
+@@ -622,6 +638,8 @@ const selected = items.filter((item) => {
+ 
+ ### Conditions do not block downstream work
+ 
++A conditional ruling is authored like a blocking one, with a scope and a message:
++
+ ```ts
+ const condition = createRuling('vacant', 'gates', 'vacant', 'condition', {
+ 	scope: 'exWind',
+@@ -641,6 +659,8 @@ only. Any downstream status derived from that evidence is outside this package.
+ 
+ ### Referral blocks downstream work
+ 
++A referral ruling names the review a subject needs, and takes no scope here:
++
+ ```ts
+ const referral = createRuling('roof', 'gates', 'roof', 'referral', {
+ 	message: 'Roof age requires manual review',
+@@ -684,6 +704,9 @@ premise's own `label`, which in turn wins over the raw path.
+ 
+ ### Observing
+ 
++The `on` option carries the initial emitter hooks, and `error` handles a listener
++throw:
++
+ ```ts
+ const qualifier = createQualifier({
+ 	on: {
+diff --git a/src/core/Qualifier.ts b/src/core/Qualifier.ts
+index b62432b..5497af0 100644
+--- a/src/core/Qualifier.ts
++++ b/src/core/Qualifier.ts
+@@ -46,7 +46,7 @@ import {
+  * Runs ordered passes over one reason engine and returns eligibility.
+  *
+  * @remarks
+- * The engine is OWNED when self-created (destroyed on `destroy()`) and borrowed
++ * The engine is owned when self-created (destroyed on `destroy()`) and borrowed
+  * when injected (never destroyed). Semantic validation runs before the first pass
+  * whenever the `validate` option is on. `qualify` builds its working subject through
+  * copy-on-write overlays only — the caller's `subject` is never mutated, and the
+diff --git a/src/core/constants.ts b/src/core/constants.ts
+index 503b0c2..8c8a580 100644
+--- a/src/core/constants.ts
++++ b/src/core/constants.ts
+@@ -7,8 +7,8 @@ import type { Eligibility, QualificationEffect } from './types.js'
+ export const DEFAULT_QUALIFIER_VALIDATE = true
+ 
+ /**
+- * Names the reserved internal projection namespace a pass's working projection is written
+- * under, `'qualification'`.
++ * Names `'qualification'`, the reserved internal projection namespace a pass's working
++ * projection is written under.
+  */
+ export const QUALIFICATION_KEY = 'qualification'
+ 
+diff --git a/src/core/factories.ts b/src/core/factories.ts
+index d9b498c..c992ef3 100644
+--- a/src/core/factories.ts
++++ b/src/core/factories.ts
+@@ -14,7 +14,7 @@ import { Qualifier } from './Qualifier.js'
+  * Creates one {@link QualifierInterface} over a reason engine.
+  *
+  * @remarks
+- * A standalone qualifier creates and OWNS one shared quantitative-plus-logical
++ * A standalone qualifier creates and owns one shared quantitative-plus-logical
+  * reason engine, destroying it on `destroy()`. An injected `options.engine`
+  * remains caller-owned and is never destroyed. `validate` runs semantic
+  * validation before every qualification. Default: `true`. `labels` overrides the
+@@ -37,10 +37,22 @@ import { Qualifier } from './Qualifier.js'
+  * 	),
+  * ])
+  *
+- * const definition = createQualificationDefinition('standard', 'Standard eligibility', [gates], {
+- * 	rulings: [createRuling('license', 'gates', 'licensed', 'restriction')],
++ * const bare = createRuling('license', 'gates', 'licensed', 'restriction')
++ * const messaged = createRuling('license', 'gates', 'licensed', 'restriction', {
++ * 	message: 'A license is required',
+  * })
+  *
++ * 'message' in bare // false — an absent optional key is omitted, never written as undefined
++ * messaged.message // 'A license is required'
++ *
++ * const passes = [gates]
++ * const definition = createQualificationDefinition('standard', 'Standard eligibility', passes, {
++ * 	rulings: [messaged],
++ * })
++ *
++ * 'description' in definition // false
++ * definition.passes === passes // false — the factory copies what it is handed
++ *
+  * const qualifier = createQualifier()
+  * qualifier.qualify({ id: 'risk-1', licensed: false }, definition)
+  * qualifier.destroy()
+@@ -87,7 +99,7 @@ export function createQualificationDefinition(
+ }
+ 
+ /**
+- * Builds a fresh {@link Ruling} from the rule it reacts to and the effect it applies.
++ * Creates a fresh {@link Ruling} from the rule it reacts to and the effect it applies.
+  *
+  * @param id - The ruling id
+  * @param pass - The logical pass id the rule lives in
+diff --git a/src/core/helpers.ts b/src/core/helpers.ts
+index f7ca7a2..368ad63 100644
+--- a/src/core/helpers.ts
++++ b/src/core/helpers.ts
+@@ -36,10 +36,10 @@ import {
+  *
+  * @remarks
+  * Each token is split on `.` into a `FieldPath` array and resolved with
+- * `resolveField` (a plain string field is ONE key, never dot-split — the split
++ * `resolveField` (a plain string field is one key, never dot-split — the split
+  * here is the token-to-path bridge). A finite number renders with `en-US`
+  * thousand grouping (`5010` → `5,010`); any other resolved value String-coerces.
+- * An UNRESOLVED path renders as the empty string.
++ * An unresolved path renders as the empty string.
+  *
+  * @param template - The message template carrying `{{dotted.path}}` tokens
+  * @param subject - The record tokens resolve against
+@@ -111,7 +111,7 @@ export function renderComparison(comparison: NonNullable<Premise['comparison']>)
+  * A reason `Bounds`-shaped record (the `between` / `outside` expected value)
+  * renders its present sides joined with the word `and`; an absent side is
+  * omitted. A finite number and everything else fall back to plain `String()` —
+- * a finite number is NOT grouped here (grouping is {@link interpolateMessage}'s
++ * a finite number is not grouped here (grouping is {@link interpolateMessage}'s
+  * message-token-only behavior).
+  *
+  * @param value - The value to render
+@@ -141,7 +141,7 @@ export function renderValue(value: unknown): string {
+  * Renders one {@link Premise} into a display-neutral sentence.
+  *
+  * @remarks
+- * The checked form renders only when `field` and `comparison` are BOTH
++ * The checked form renders only when `field` and `comparison` are both
+  * present, and `description` then goes unused; a premise missing either half
+  * of the checked pair renders as described instead.
+  *
+@@ -214,7 +214,7 @@ export function checkToPremise(
+  * A reason rule result carries only booleans, so this is the qualifier's own
+  * premise-audit projection: each authored premise expression is flattened to its
+  * atom leaves through `extractAtoms`, and each leaf's `Check` is re-evaluated through
+- * the injected `evaluator`. A membership check (`any` / `none`) over an EMPTY
++ * the injected `evaluator`. A membership check (`any` / `none`) over an empty
+  * array value is content-free and is skipped.
+  *
+  * @param rule - The authored rule
+@@ -410,7 +410,7 @@ export function mergeQualificationContext(
+  *
+  * @remarks
+  * `applied` reflects whether the ruling's rule fired. Premises are re-evaluated
+- * against the SAME subject snapshot the pass evaluated, so a conclusion the pass
++ * against the same subject snapshot the pass evaluated, so a conclusion the pass
+  * derived can never satisfy its own reported premise. The message interpolates
+  * against that snapshot.
+  *
+diff --git a/tests/guides.test.ts b/tests/guides.test.ts
+index de1220a..7dff396 100644
+--- a/tests/guides.test.ts
++++ b/tests/guides.test.ts
+@@ -1,6 +1,6 @@
+ // The consumer-side guides-parity drop-in: runs `@orkestrel/guide`'s checks against
+ // this repo's own `guides/README.md` manifest. The constants that follow are this
+-// package's own, and are the only part a sibling package changes.
++// package's own, as is the executed section that closes the file.
+ 
+ import { describe, expect, it } from 'vitest'
+ import {
+@@ -381,4 +381,35 @@ describe('flagship fences', () => {
+ 
+ 		qualifier.destroy()
+ 	})
++
++	it('returns what the titled factory fence claims', () => {
++		const gates = createLogicalDefinition('gates', 'Eligibility gates', [
++			createRule(
++				'licensed',
++				[createAtom('licensed', 'equals', false)],
++				createAtom('blocked', 'equals', true),
++			),
++		])
++		const bare = createRuling('license', 'gates', 'licensed', 'restriction')
++		const messaged = createRuling('license', 'gates', 'licensed', 'restriction', {
++			message: 'A license is required',
++		})
++		const passes = [gates]
++		const definition = createQualificationDefinition('standard', 'Standard eligibility', passes, {
++			rulings: [messaged],
++		})
++
++		expect('message' in bare).toBe(false)
++		expect(messaged.message).toBe('A license is required')
++		expect('description' in definition).toBe(false)
++		expect(definition.passes).not.toBe(passes)
++		expect(guideText).toContain(
++			"'message' in bare // false — an absent optional key is omitted, never written as undefined",
++		)
++		expect(guideText).toContain("messaged.message // 'A license is required'")
++		expect(guideText).toContain("'description' in definition // false")
++		expect(guideText).toContain(
++			'definition.passes === passes // false — the factory copies what it is handed',
++		)
++	})
+ })

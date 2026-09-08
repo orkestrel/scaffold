@@ -7,3 +7,5 @@ Two rounds, 2026-09-08. First: the closing sweep's `verifier` over the closing u
 | contract | `2320ccd` | VERDICT: FAIL 2 (report prose alone; every item and citation verified against the diff and the tree) | GATES: GREEN, no timing red | closed after `d7n-contract-close-2`; the report annotated |
 
 contract pushes to the branch and `main` at `2320ccd`.
+
+The push to `main` was refused: the remote `main` carried the owner's `1792823` (a reentrant-validation fix with regression tests) and its merge commit `e5edd79` on top of the fix-round tip. The Orchestrator merged `origin/main` into the branch as `fd3fce2` (no conflict; the merge brought `src`, `tests/setup.ts`, and `tests/src/core/ShapeValidator.test.ts`), re-read `npm run docs` at zero, `test:guides` green, `check` and `lint:check` green, and the whole `npm test` green (every project passed), then pushed the branch and `main` at `fd3fce2`.

@@ -1,0 +1,17 @@
+== qualifier p2-fix landing 2026-09-08T03:08:55Z over a5764d6
+== status
+ M README.md
+ M guides/qualifier.md
+ M src/core/Qualifier.ts
+ M src/core/constants.ts
+ M src/core/factories.ts
+ M src/core/helpers.ts
+ M tests/guides.test.ts
+ src/core/helpers.ts   | 12 ++++++------
+ tests/guides.test.ts  | 33 ++++++++++++++++++++++++++++++++-
+ 7 files changed, 90 insertions(+), 21 deletions(-)
+== stage by path
+ 7 files changed, 90 insertions(+), 21 deletions(-)
+== committed
+7a65257 Refine qualifier's convergence on the audit's findings
+(status end)
