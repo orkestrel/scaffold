@@ -1,0 +1,29 @@
+{
+  "project": "configs/src/tsconfig.server.json",
+  "case": {
+    "files": [
+      {
+        "path": "src/server/diagnostics/helpers.ts",
+        "text": "import { relative, resolve, sep } from 'node:path'\nimport { fileURLToPath } from 'node:url'\n\n/**\n * Resolves a diagnostic filename relative to its workspace.\n * @param root - The workspace root.\n * @param filename - The native filename or file URL.\n * @returns The relative filename with forward slashes.\n */\nexport function resolveDiagnosticFilename(root: string, filename: string): string {\n\tconst path = filename.startsWith('file:') ? fileURLToPath(filename) : filename\n\treturn relative(resolve(root), resolve(root, path)).split(sep).join('/')\n}\n"
+      }
+    ],
+    "test": {
+      "path": "tests/src/server/diagnostics/helpers.test.ts",
+      "text": "import { tmpdir } from 'node:os'\nimport { join } from 'node:path'\nimport { pathToFileURL } from 'node:url'\nimport { expect, it } from 'vitest'\nimport { resolveDiagnosticFilename } from '../../../../src/server/diagnostics/helpers.js'\n\nit('decodes a file URL relative to the workspace without changing escaped filename characters', () => {\n\tconst root = join(tmpdir(), 'diagnostic root % Ω')\n\tconst filename = join(root, 'src', 'member # %.ts')\n\texpect(resolveDiagnosticFilename(root, pathToFileURL(filename).href)).toBe('src/member # %.ts')\n\texpect(resolveDiagnosticFilename(root, filename)).toBe('src/member # %.ts')\n\texpect(resolveDiagnosticFilename(root, join('src', 'member # %.ts'))).toBe('src/member # %.ts')\n})\n"
+    }
+  },
+  "control": {
+    "files": [
+      {
+        "path": "src/server/diagnostics/helpers.ts",
+        "text": "import { relative, resolve, sep } from 'node:path'\n\n/**\n * Resolves a diagnostic filename relative to its workspace.\n * @param root - The workspace root.\n * @param filename - The native filename or file URL.\n * @returns The relative filename with forward slashes.\n */\nexport function resolveDiagnosticFilename(root: string, filename: string): string {\n\tconst path = filename.startsWith('file:') ? new URL(filename).pathname : filename\n\treturn relative(resolve(root), resolve(root, path)).split(sep).join('/')\n}\n"
+      }
+    ],
+    "test": {
+      "path": "tests/src/server/diagnostics/helpers.test.ts",
+      "text": "import { tmpdir } from 'node:os'\nimport { join } from 'node:path'\nimport { pathToFileURL } from 'node:url'\nimport { expect, it } from 'vitest'\nimport { resolveDiagnosticFilename } from '../../../../src/server/diagnostics/helpers.js'\n\nit('decodes a file URL relative to the workspace without changing escaped filename characters', () => {\n\tconst root = join(tmpdir(), 'diagnostic root % Ω')\n\tconst filename = join(root, 'src', 'member # %.ts')\n\texpect(resolveDiagnosticFilename(root, pathToFileURL(filename).href)).toBe('src/member # %.ts')\n\texpect(resolveDiagnosticFilename(root, filename)).toBe('src/member # %.ts')\n\texpect(resolveDiagnosticFilename(root, join('src', 'member # %.ts'))).toBe('src/member # %.ts')\n})\n"
+    },
+    "stage": "runtime",
+    "reason": "A URL pathname is not a decoded native host path; file URL escapes and the Windows drive are not converted."
+  }
+}

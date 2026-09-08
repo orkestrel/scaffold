@@ -1,0 +1,8 @@
++ npx --no-install oxfmt --config .oxfmtrc.json --check guides/ollama.md README.md tests src
+npm notice run @orkestrel/ollama@0.0.15 npx
+npm notice run oxfmt --config .oxfmtrc.json --check guides/ollama.md README.md tests src
+Checking formatting...
+
+All matched files use the correct format.
+Finished in 390ms on 39 files using 16 threads.
+exit=0

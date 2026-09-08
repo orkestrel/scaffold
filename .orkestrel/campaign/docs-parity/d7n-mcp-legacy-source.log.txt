@@ -1,0 +1,14 @@
+Command executed by root on Windows, 2026-09-08:
+& 'C:/Users/mikes/scoop/apps/nodejs-lts/current/node.exe' C:/Users/mikes/scoop/apps/nodejs-lts/current/node_modules/npm/bin/npm-cli.js run test:src:core -- tests/src/core/MCPLegacy.test.ts
+Working directory: C:/Users/mikes/WebstormProjects/mcp
+Exit code: 0
+
+> @orkestrel/mcp@0.0.29 test:src:core
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core tests/src/core/MCPLegacy.test.ts
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/mcp
+
+ Test Files  1 passed (1)
+      Tests  57 passed (57)
+   Start at  12:04:28
+   Duration  694ms (transform 226ms, setup 464ms, import 35ms, tests 50ms, environment 0ms)

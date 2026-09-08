@@ -1,0 +1,14 @@
++ npm run test:policy
+npm notice run @orkestrel/ollama@0.0.15 test:policy
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project policy
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/ollama
+
+·················································································-·········
+
+ Test Files  1 passed (1)
+      Tests  90 passed | 1 skipped (91)
+   Start at  11:50:29
+   Duration  794ms (transform 83ms, setup 35ms, import 107ms, tests 506ms, environment 0ms)
+
+exit=0

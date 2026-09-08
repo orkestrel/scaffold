@@ -1,0 +1,8 @@
++ node /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/ollama-audit-controls.mjs /c/Users/mikes/WebstormProjects/ollama
+surface: PASS
+shapes: PASS
+guide-text: PASS
+provider-text: PASS
+budget-text: PASS
+pointer-text: PASS
+exit=0

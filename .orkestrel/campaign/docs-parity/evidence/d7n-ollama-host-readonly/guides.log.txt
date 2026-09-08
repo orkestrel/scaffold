@@ -1,0 +1,14 @@
++ npm run test:guides
+npm notice run @orkestrel/ollama@0.0.15 test:guides
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project guides
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/ollama
+
+·······················
+
+ Test Files  1 passed (1)
+      Tests  23 passed (23)
+   Start at  11:50:28
+   Duration  485ms (transform 77ms, setup 35ms, import 258ms, tests 43ms, environment 0ms)
+
+exit=0

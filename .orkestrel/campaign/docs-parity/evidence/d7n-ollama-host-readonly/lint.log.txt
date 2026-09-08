@@ -1,0 +1,4 @@
++ npx --no-install oxlint --config .oxlintrc.json --deny-warnings tests src
+npm notice run @orkestrel/ollama@0.0.15 npx
+npm notice run oxlint --config .oxlintrc.json --deny-warnings tests src
+exit=0

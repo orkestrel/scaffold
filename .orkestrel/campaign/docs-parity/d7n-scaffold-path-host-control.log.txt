@@ -1,0 +1,5 @@
+Command: bash /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/bootstrap-scaffold-path.sh
+Control: an owned ordinary file occupies SCR/scaffold-path; this lies outside the admitted absent-target population.
+The scaffold-path worktree target is occupied.
+exit=1
+The control file was removed by apply_patch before the real bootstrap. No worktree or install started in the control run.

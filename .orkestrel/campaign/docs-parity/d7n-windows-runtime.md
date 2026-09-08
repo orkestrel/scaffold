@@ -18,6 +18,12 @@ terminal result; retain the result projection with its report and verdict.
 | d7n-guide-heading-validate | root-owned full gate chain | guide 1d5afa3 plus returned fix | tmp/pass/d7n-guide-heading-validate.YG8PtL | exec session 5158 exited 1 | config policy-rule test failed again in the isolated host rerun |
 | d7n-guide-config-scout | read-only diagnostic evidence map | guide and canonical policy seam | tmp/cursor/d7n-guide-config-scout.jsonl; 01359254-696d-4eda-800d-8a560e54b83c | exec session 58932 exited 0 | returned; host observation confirms the rule emits a file-URL diagnostic that the test compares with a relative path |
 | d7n-ollama-converge-fix-host | read/edit-only documentation writer; host owns validation | ollama 98e9c34 | tmp/claude/d7n-ollama-converge-fix-host.jsonl; 3abd79b7-45f4-4714-afef-0e7c44639890 | exec session 6858 exited 0 | returned; report and candidate retained; host validation and independent review pending |
+| d7n-scaffold-path-map | bounded read-only diagnostic and propagation map | scaffold c87021bd | tmp/cursor/d7n-scaffold-path-map.jsonl; b7c3d2dd-ed6e-4b61-9e4d-7f9f54330116 | exec session 51231 exited 0 | returned; root confirmed session and terminal result |
+| d7n-scaffold-path-design | objective design | scaffold c87021bd | native scaffold_path_design_objective | native task | returned and reconciled in d7n-scaffold-path-plan.md |
+| d7n-scaffold-path-design | subjective design | scaffold c87021bd | tmp/claude/d7n-scaffold-path-design-subjective.jsonl; 932f3564-5915-4b6a-982d-b09037d6138b | terminal result read; no error or denials | returned and reconciled; projection retained |
+| d7n-scaffold-path-host | isolated bootstrap | scaffold c87021bd | tmp/pass/scaffold-path-log.UOq5l7 | root command exited 1 | install passed; named config regression reproduced; root owner readings unchanged |
+| d7n-scaffold-path-fix | native implementer, Sol | isolated scaffold c87021bd | native scaffold_path_fix | native task | predecessor stopped before edits at npm argument parsing; successor uses measured Bash carrier and is running |
+| d7n-layer-inventory-instrument | native builder, Terra | scratch instrument only | native layer_inventory_instrument | native task | authoring the read-only inventory; collection not started |
 
 The previous probe writer returned and its test changes landed as 93fc01d. The
 owner-main comparison returned; its result projection is retained. Those processes

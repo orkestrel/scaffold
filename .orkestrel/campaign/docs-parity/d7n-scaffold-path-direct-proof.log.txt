@@ -1,0 +1,17 @@
+Direct Probe API invocation; not the registered MCP tool.
+& 'C:/Users/mikes/scoop/apps/git/current/usr/bin/timeout.exe' 600 'C:/Users/mikes/scoop/apps/nodejs-lts/current/node.exe' C:/Users/mikes/WebstormProjects/scaffold/tmp/pass/prove-heading-host.mjs C:/Users/mikes/WebstormProjects/scaffold/tmp/pass/scaffold-path C:/Users/mikes/WebstormProjects/scaffold/tmp/pass/d7n-scaffold-path-proof.json
+Exit code: 0
+
+probe 9e3fcef2-400f-49c6-a4f8-46e476d84165 (1785 ms)
+claim fc059c1c8bc72a11ccb0c80ed4f98edf
+toolchain typescript 6.0.3, oxlint 1.80.0, vitest 4.1.11
+project configs/src/tsconfig.server.json 8a558fae42253d61062900b227379899
+reason A URL pathname is not a decoded native host path; file URL escapes and the Windows drive are not converted.
+case type: 0 issues (605 ms)
+case lint: 0 issues (664 ms)
+case runtime: 0 issues (1241 ms)
+control type: 0 issues (281 ms)
+control lint: 0 issues (335 ms)
+control runtime: 1 issue (531 ms)
+  [claimant] tests/src/server/diagnostics/helpers.test.ts:10 expected '../../../../../../C:/Users/mikes/AppD…' to be 'src/member # %.ts' // Object.is equality
+receipt probe:fc059c1c8bc72a11ccb0c80ed4f98edf:runtime:typescript@6.0.3:oxlint@1.80.0:vitest@4.1.11:configs/src/tsconfig.server.json@8a558fae42253d61062900b227379899
