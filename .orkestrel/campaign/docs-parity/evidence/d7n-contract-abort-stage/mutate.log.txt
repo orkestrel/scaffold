@@ -1,0 +1,2 @@
++ node /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/contract-abort-stage/mutate.mjs /c/Users/mikes/WebstormProjects/scaffold/tmp/probe/d7n-contract-abort-stage.LQv86I/abort/package.json
+exit=0

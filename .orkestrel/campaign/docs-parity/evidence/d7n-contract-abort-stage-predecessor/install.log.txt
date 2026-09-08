@@ -1,0 +1,9 @@
++ npm --prefix /c/Users/mikes/WebstormProjects/scaffold/tmp/probe/d7n-contract-abort-stage.7huRJz/abort install --no-save --ignore-scripts --package-lock=false /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-foundation-contract.ZjPTS5/orkestrel-contract-0.0.17.tgz /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-guide-bootstrap.47Q7XT/orkestrel-guide-0.0.18.tgz
+
+added 20 packages, changed 14 packages, and audited 141 packages in 11s
+
+28 packages are looking for funding
+  run `npm fund` for details
+
+found 0 vulnerabilities
+exit=0

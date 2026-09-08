@@ -1,0 +1,2 @@
++ git -C /c/Users/mikes/WebstormProjects/abort archive --format=tar -o /c/Users/mikes/WebstormProjects/scaffold/tmp/probe/d7n-contract-abort-stage.LQv86I/abort.tar 3dad185df1df4168102c3f49905756e2d7861b6a
+exit=0

@@ -65,12 +65,14 @@ terminal result; retain the result projection with its report and verdict.
 | d7n-guide-bootstrap-pack | builder, Terra; root run | Guide ef6ada9 | tmp/pass/d7n-guide-bootstrap-pack.vh8CeQ | root command exited 0 | corrected artifact packed; dist hash prefix 6455f6f9; clean source |
 | d7n-foundation-visit | builder, Terra | accepted public repair and existing gate/pack carriers | native layer_capture_fix | author returned | syntax passed; root visits active |
 | d7n-foundation-contract | root execution | Contract fd3fce2, version 0.0.17 | tmp/pass/d7n-foundation-contract.sAQxNo | exec 28694 exited 0 | independent receipt GREEN; closed and pushed as 1e235c0 to branch and main |
-| d7n-foundation-codec | root execution | Codec 8c20e15, version 0.0.3 | tmp/pass/d7n-foundation-codec.sYfIas | exec 45155 exited 0 | packed; landing pending |
-| d7n-foundation-msg | root execution | Msg 57128e9, version 0.0.10 | tmp/pass/d7n-foundation-msg.njodFP | exec 62560 exited 0 | packed; landing pending |
-| d7n-foundation-sse | root execution | SSE 7778cff, version 0.0.7 | tmp/pass/d7n-foundation-sse.P4pdtt | exec 5801 exited 0 | packed; landing pending |
-| d7n-foundation-test | root execution | Test 1b6ce04, version 0.0.14 | tmp/pass/d7n-foundation-test.uR3sHv | exec 8389 exited 0 | packed; independent receipt and landing pending |
-| d7n-foundation-receipts-verify | native verifier, Terra | completed Codec, Msg, SSE and Test visits | native foundation_receipts_verify | native task | running; actual receipts only |
-| d7n-contract-abort-stage | native builder, Terra | accepted Contract artifact and clean Abort 3dad185 | native contract_abort_stage | native task | authoring isolated npm proof; campaign path lookup corrected; no package execution |
+| d7n-foundation-codec | root execution | Codec 8c20e15, version 0.0.3 | tmp/pass/d7n-foundation-codec.sYfIas | exec 45155 exited 0 | accepted artifact; a492e90 clean on branch and main |
+| d7n-foundation-msg | root execution | Msg 57128e9, version 0.0.10 | tmp/pass/d7n-foundation-msg.njodFP | exec 62560 exited 0 | accepted artifact; 0daaa2a clean on branch and main |
+| d7n-foundation-sse | root execution | SSE 7778cff, version 0.0.7 | tmp/pass/d7n-foundation-sse.P4pdtt | exec 5801 exited 0 | accepted artifact; 93d174e clean on branch and main |
+| d7n-foundation-test | root execution | Test 1b6ce04, version 0.0.14 | tmp/pass/d7n-foundation-test.uR3sHv | exec 8389 exited 0 | accepted artifact; a365945 clean on branch and main |
+| d7n-foundation-receipts-verify | native verifier, Terra | completed Codec, Msg, SSE and Test visits | native foundation_receipts_verify | native task returned | GREEN; actual receipts and conditional Test export-drive exclusions verified |
+| d7n-contract-abort-stage | native builder, Terra; root run | accepted Contract artifact and clean Abort 3dad185 | native contract_abort_stage; tmp/probe/d7n-contract-abort-stage.7huRJz/logs | exec 24847 exited 1 | source checks passed; pack selected caller directory; corrected cwd successor running in fresh disposable state |
+| d7n-contract-abort-stage-2 | root execution | corrected working-directory runner | tmp/probe/d7n-contract-abort-stage.LQv86I/logs | exec 98577 exited 0 | source and foreign-consumer proofs passed; mechanism closed |
+| d7n-contract-abort-stage-verify | native verifier, Terra | completed successor and installed foreign consumer | native contract_abort_stage_verify | native task returned | GREEN; existing smoke drivers each exited 0 |
 
 The previous probe writer returned and its test changes landed as 93fc01d. The
 owner-main comparison returned; its result projection is retained. Those processes

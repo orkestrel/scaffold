@@ -237,6 +237,20 @@ retained evidence/d7n-foundation-<package>/ metadata for their exact tarball pat
 | sse | 0.0.7 | 93d174e43b34daa2f0593cc89741bed587cadf46 | accepted artifact; clean on branch and main |
 | test | 0.0.14 | a3659450f064e566f4701b566a1cd2267b1e03ac | accepted artifact; clean on branch and main |
 
+The corrected Contract-to-Abort staging run exited 0 under
+tmp/probe/d7n-contract-abort-stage.LQv86I. Source checks and the foreign ESM/CommonJS
+consumer used Contract 0.0.17 with Abort's semantic runtime pin ^0.0.17. Resolved
+Contract files match the accepted archive. Independent smoke verification is GREEN;
+d7n-contract-abort-stage-verdict.md closes this mechanism proof.
+This settles local runtime dependency staging, not Abort's remaining full layer visit
+or peer behavior. The predecessor's wrong cwd pack is retained but never accepted.
+
+The owner has been offered incremental publication of the prepared bottom layer or
+continued whole-fleet tarball preparation. No answer or upload is recorded yet.
+The publish skill's window reference has been read. Windows uploads are operator-run
+in a real terminal; root prepares the commands and confirms the registry. No login,
+credential change or auth-file inspection has run.
+
 Ruling 30 records the owner's development-pin clarification. Prepare lower runtime
 layers with tooling tarballs now. Update development pins after tooling publication;
 do not bump or republish when the material distributable is unchanged. Keep future

@@ -1,0 +1,6 @@
++ node smoke.cjs /c/Users/mikes/WebstormProjects/scaffold/tmp/probe/d7n-contract-abort-stage.LQv86I/contract/package
+contract-cjs=C:\Users\mikes\WebstormProjects\scaffold\tmp\probe\d7n-contract-abort-stage.LQv86I\consumer\node_modules\@orkestrel\contract\dist\src\core\index.cjs
+contract-cjs-sha256=25b06b99d200048e1b52a5c25709fb89d488651933d3a18fb41992ad31b4c80b
+contract-version=0.0.17
+behavior=parent-false-propagates; invalid-id-is-contract-error
+exit=0

@@ -1,0 +1,2 @@
++ tar -xf /c/Users/mikes/WebstormProjects/scaffold/tmp/probe/d7n-contract-abort-stage.LQv86I/abort.tar -C /c/Users/mikes/WebstormProjects/scaffold/tmp/probe/d7n-contract-abort-stage.LQv86I/abort
+exit=0

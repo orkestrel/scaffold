@@ -1,0 +1,14 @@
++ npm --prefix /c/Users/mikes/WebstormProjects/scaffold/tmp/probe/d7n-contract-abort-stage.LQv86I/abort ci --ignore-scripts
+
+added 120 packages, and audited 121 packages in 2s
+
+28 packages are looking for funding
+  run `npm fund` for details
+
+1 high severity vulnerability
+
+To address all issues, run:
+  npm audit fix
+
+Run `npm audit` for details.
+exit=0

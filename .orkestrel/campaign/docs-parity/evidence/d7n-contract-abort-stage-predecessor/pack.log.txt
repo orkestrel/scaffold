@@ -1,0 +1,19 @@
++ npm --prefix /c/Users/mikes/WebstormProjects/scaffold/tmp/probe/d7n-contract-abort-stage.7huRJz/abort pack --ignore-scripts --pack-destination /c/Users/mikes/WebstormProjects/scaffold/tmp/probe/d7n-contract-abort-stage.7huRJz/packed
+npm notice
+npm notice 📦  @orkestrel/scaffold@0.0.63
+npm notice Tarball Contents
+npm notice 1.1kB LICENSE
+npm notice 2.5kB README.md
+npm notice 5.4kB package.json
+npm notice Tarball Details
+npm notice name: @orkestrel/scaffold
+npm notice version: 0.0.63
+npm notice filename: orkestrel-scaffold-0.0.63.tgz
+npm notice package size: 3.5 kB
+npm notice unpacked size: 9.0 kB
+npm notice shasum: d9f843cbbafe3d71200f953230f088f1a69cd15c
+npm notice integrity: sha512-/F4T76UIeRb2v[...]+ny0tsv4QUUkw==
+npm notice total files: 3
+npm notice
+orkestrel-scaffold-0.0.63.tgz
+exit=0

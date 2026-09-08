@@ -1,0 +1,14 @@
++ npm --prefix /c/Users/mikes/WebstormProjects/scaffold/tmp/probe/d7n-contract-abort-stage.7huRJz/abort run test:src
+npm notice run @orkestrel/abort@0.0.10 test:src
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/scaffold/tmp/probe/d7n-contract-abort-stage.7huRJz/abort
+
+···················································
+
+ Test Files  4 passed (4)
+      Tests  51 passed (51)
+   Start at  16:55:31
+   Duration  333ms (transform 236ms, setup 93ms, import 498ms, tests 34ms, environment 0ms)
+
+exit=0

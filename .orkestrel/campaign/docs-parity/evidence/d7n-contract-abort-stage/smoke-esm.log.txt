@@ -1,0 +1,10 @@
++ node smoke.mjs /c/Users/mikes/WebstormProjects/scaffold/tmp/probe/d7n-contract-abort-stage.LQv86I/contract/package
+abort-contract-manifest=C:\Users\mikes\WebstormProjects\scaffold\tmp\probe\d7n-contract-abort-stage.LQv86I\consumer\node_modules\@orkestrel\contract\package.json
+contract-package=C:\Users\mikes\WebstormProjects\scaffold\tmp\probe\d7n-contract-abort-stage.LQv86I\consumer\node_modules\@orkestrel\contract\package.json
+contract-esm=C:\Users\mikes\WebstormProjects\scaffold\tmp\probe\d7n-contract-abort-stage.LQv86I\consumer\node_modules\@orkestrel\contract\dist\src\core\index.js
+contract-cjs=C:\Users\mikes\WebstormProjects\scaffold\tmp\probe\d7n-contract-abort-stage.LQv86I\consumer\node_modules\@orkestrel\contract\dist\src\core\index.cjs
+contract-version=0.0.17
+contract-esm-sha256=94bd1bfed211a25b466167a11cf303c8f19ed273c718d4f4b8af9b55312646c6
+contract-cjs-sha256=25b06b99d200048e1b52a5c25709fb89d488651933d3a18fb41992ad31b4c80b
+behavior=parent-false-propagates; invalid-id-is-contract-error
+exit=0
