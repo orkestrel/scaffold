@@ -113,3 +113,7 @@ the payload types in each declaration:
 - `tests/guides.test.ts` — unchanged (already canonical against the pilot).
 
 No deviation.
+
+---
+
+Orchestrator's annotation (2026-09-08, closure): the checker ruled claim 2 FAIL on this report's prose alone (a count stated about a growable set, and for form a citation line a few lines off its declaration); every item and every substantive citation was verified against the diff and the tree, and the tree is authoritative.

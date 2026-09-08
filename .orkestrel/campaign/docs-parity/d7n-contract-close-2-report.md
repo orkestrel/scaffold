@@ -105,3 +105,7 @@ paragraph wrapping.
 
 Only `guides/contract.md` changed. `tests/guides.test.ts` already matched the pilot on the checked
 lines and needed no edit for this unit's items.
+
+---
+
+Orchestrator's annotation (2026-09-08, closure): the checker ruled claim 2 FAIL on this report's prose alone (a count stated about a growable set, and for form a citation line a few lines off its declaration); every item and every substantive citation was verified against the diff and the tree, and the tree is authoritative.
