@@ -194,3 +194,22 @@ change leaves the distributable unchanged. Record actual movement and replace af
 unpublished candidates before they feed dependents. Apply Ruling 30 to later
 development-only pins; do not add another bump solely because an unpublished candidate
 was rebuilt.
+
+## Ruling 32 — absorb reporting and rewriting into test:guides
+
+Follow the owner's clarification of 2026-09-08. Preserve reporting and automatic
+rewriting under test:guides. Support npm run test:guides -- --to guide and
+npm run test:guides -- --to source. With no direction, report drift and write nothing.
+With an explicit direction, rewrite the selected side and report any unresolved
+drift. Remove the separate docs command and scripts/docs.ts file after their behavior
+has a tested replacement in the guides-testing workflow.
+
+Retain the existing equality, surface, member, example and pitch checks. Keep ordinary
+npm test execution non-mutating. Use the Guide package's shared comparison and
+replacement mechanisms; do not copy its parser or put host filesystem work in core.
+Verify the exact command and its file writes with real temporary workspaces. Reuse
+scaffold's supported propagation mechanism and preserve package-owned test cases.
+
+This clarification resolves Ruling 31's writer-retirement question. Do not retire
+automatic rewriting or introduce a replacement docs command. The tarball preparation,
+distributable comparison and publication hold remain unchanged.

@@ -1,0 +1,11 @@
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/scaffold/tmp/pass/guides-cli-probe
+
+·
+
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+   Start at  19:07:34
+   Duration  184ms (transform 13ms, setup 0ms, import 33ms, tests 2ms, environment 0ms)
+
+Public Vitest launch, provided direction and result inspection passed.

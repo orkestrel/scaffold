@@ -247,7 +247,8 @@ or peer behavior. The predecessor's wrong cwd pack is retained but never accepte
 
 The owner selected whole-fleet tarball preparation before publication. Ruling 31 holds
 the bottom upload and adds consolidation of parity testing into tests/guides.test.ts
-and test:guides. Resolve the docs runner's separate rewrite behavior before retirement.
+and test:guides. Ruling 32 resolves the rewrite behavior: absorb it into test:guides,
+with explicit --to guide / --to source flags, before retiring docs and scripts/docs.ts.
 Prepare Guide's runtime prerequisites, pack its revision, then compare rebuilt lower
 layers with the preserved accepted tarballs, including emitted documentation.
 The publish skill's window reference has been read. Windows uploads are operator-run
@@ -267,9 +268,14 @@ does not block local artifact preparation. No upload is authorized yet.
 
 The parity entry map returned under d7n-parity-route-map-report.md; read root's
 provenance correction and interpretation in d7n-parity-route-reading.md. The equality
-gate already lives in test:guides. The separate docs runner reports and rewrites;
-root asked whether automatic rewriting should retire or remain an explicit command.
-Do not make that unresolved choice by deleting functionality or making tests mutate.
+gate already lives in test:guides. The owner directed that command to absorb reporting
+and automatic directional rewriting. Default test execution remains non-mutating.
+Read d7n-guides-cli-reading.md for the real unknown-option failure and the passing
+public Vitest launch/provide probe. The bounded design uses
+d7n-guides-entry-design-brief.md with d7n-guides-entry-design-host-brief.md. The latter
+permits native file retrieval only; no lane runs product commands or edits source.
+The native objective lane and journaled Opus subjective lane are running blind.
+No Guide/scaffold product change from this entry consolidation is accepted yet.
 
 HTML's isolated prerequisite artifact is accepted in d7n-html-artifact-stage-verdict.md.
 Its version is 0.0.9 with staged Contract ^0.0.17, at
@@ -281,6 +287,15 @@ Markdown with this artifact and Contract 0.0.17, then Guide with that accepted c
 Revised parity revalidation and registry-final work remain pending. The archive copy
 needs its own Git boundary so scaffold's ancestor tmp ignore rule does not suppress
 validation; the retained HTML runner establishes it before gates.
+
+Markdown's prerequisite artifact is accepted in d7n-markdown-artifact-stage-verdict.md.
+Its version is 0.0.14 with staged Contract ^0.0.17 and HTML ^0.0.9, at
+tmp/pass/d7n-markdown-stage.87s5ja/packed/orkestrel-markdown-0.0.14.tgz, SHA256
+02c46ebab1a401365ba73aafc9b644b7d21cf8924ee104364138dada2b10f9c3. Root's package
+chain and installed consumer passed; independent verification is GREEN. Canonical
+Markdown remains clean at ac33037b46b751fb1e25ca929556e9d5f107852a. Prepare Guide
+with this accepted Contract/HTML/Markdown chain. Preserve these archives for the
+revised-parity comparison. No runtime pin has been represented as registry-served.
 
 ## Pending owner decisions carried from the container
 

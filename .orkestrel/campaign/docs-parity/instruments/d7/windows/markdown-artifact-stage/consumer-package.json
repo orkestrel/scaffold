@@ -1,0 +1,5 @@
+{
+	"name": "markdown-artifact-stage-consumer",
+	"private": true,
+	"type": "module"
+}

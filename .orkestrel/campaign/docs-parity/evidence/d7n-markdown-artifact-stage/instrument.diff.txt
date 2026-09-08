@@ -1,0 +1,241 @@
+diff --git "a/C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\pass\\markdown-artifact-stage\\consumer-package.json" "b/C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\pass\\markdown-artifact-stage\\consumer-package.json"
+new file mode 100644
+index 00000000..d17487b5
+--- /dev/null
++++ "b/C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\pass\\markdown-artifact-stage\\consumer-package.json"
+@@ -0,0 +1,5 @@
++{
++	"name": "markdown-artifact-stage-consumer",
++	"private": true,
++	"type": "module"
++}
+diff --git "a/C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\pass\\markdown-artifact-stage\\functions.cjs" "b/C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\pass\\markdown-artifact-stage\\functions.cjs"
+new file mode 100644
+index 00000000..49d9cfd2
+--- /dev/null
++++ "b/C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\pass\\markdown-artifact-stage\\functions.cjs"
+@@ -0,0 +1,8 @@
++const { createHash } = require('node:crypto')
++const { readFileSync } = require('node:fs')
++
++function hashFile(path) {
++	return createHash('sha256').update(readFileSync(path)).digest('hex')
++}
++
++exports.hashFile = hashFile
+diff --git "a/C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\pass\\markdown-artifact-stage\\inspect.mjs" "b/C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\pass\\markdown-artifact-stage\\inspect.mjs"
+new file mode 100644
+index 00000000..538275c2
+--- /dev/null
++++ "b/C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\pass\\markdown-artifact-stage\\inspect.mjs"
+@@ -0,0 +1,18 @@
++import { readFile } from 'node:fs/promises'
++import { createRequire } from 'node:module'
++
++const [manifest] = process.argv.slice(2)
++if (manifest === undefined) throw new Error('Expected a Markdown manifest path.')
++const require = createRequire(manifest)
++for (const name of ['@orkestrel/markdown', '@orkestrel/html', '@orkestrel/contract', '@orkestrel/guide', '@orkestrel/test']) {
++	const path = require.resolve(`${name}/package.json`)
++	const value = JSON.parse(await readFile(path, 'utf8'))
++	console.log(`${name}\t${value.version}\t${path}`)
++}
++const markdown = JSON.parse(await readFile(manifest, 'utf8'))
++const html = JSON.parse(await readFile(require.resolve('@orkestrel/html/package.json'), 'utf8'))
++const contract = JSON.parse(await readFile(require.resolve('@orkestrel/contract/package.json'), 'utf8'))
++if (markdown.dependencies['@orkestrel/html'] !== '^0.0.9' || html.version !== '0.0.9' || markdown.dependencies['@orkestrel/contract'] !== '^0.0.17' || contract.version !== '0.0.17') throw new Error('Markdown does not resolve the staged runtime versions.')
++console.log(`html-entry\t${require.resolve('@orkestrel/html')}`)
++console.log(`contract-entry\t${require.resolve('@orkestrel/contract')}`)
++console.log(`manifest\t${manifest}`)
+diff --git "a/C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\pass\\markdown-artifact-stage\\metadata.mjs" "b/C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\pass\\markdown-artifact-stage\\metadata.mjs"
+new file mode 100644
+index 00000000..1a7ef0b7
+--- /dev/null
++++ "b/C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\pass\\markdown-artifact-stage\\metadata.mjs"
+@@ -0,0 +1,8 @@
++import { writeFile } from 'node:fs/promises'
++import { resolve } from 'node:path'
++import { hashFile } from './functions.cjs'
++
++const [output, commit, artifact, contract, html, guide, test, contractHash, htmlHash, guideHash, testHash] = process.argv.slice(2)
++if ([output, commit, artifact, contract, html, guide, test, contractHash, htmlHash, guideHash, testHash].some((value) => value === undefined)) throw new Error('Expected metadata output and staging inputs.')
++const value = { artifact: { path: resolve(artifact), sha256: hashFile(artifact) }, commit, manifest: { dependencies: { contract: { from: '^0.0.16', to: '^0.0.17' }, html: { from: '^0.0.8', to: '^0.0.9' } }, version: '0.0.14' }, pending: 'revised parity and registry-final validation', tooling: { contract: { path: resolve(contract), sha256: contractHash }, html: { path: resolve(html), sha256: htmlHash }, guide: { path: resolve(guide), sha256: guideHash }, test: { path: resolve(test), sha256: testHash } } }
++await writeFile(output, `${JSON.stringify(value, undefined, '\t')}\n`)
+diff --git "a/C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\pass\\markdown-artifact-stage\\mutate.mjs" "b/C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\pass\\markdown-artifact-stage\\mutate.mjs"
+new file mode 100644
+index 00000000..45c60e3d
+--- /dev/null
++++ "b/C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\pass\\markdown-artifact-stage\\mutate.mjs"
+@@ -0,0 +1,11 @@
++import { readFile, writeFile } from 'node:fs/promises'
++
++const [manifest, view] = process.argv.slice(2)
++if (manifest === undefined || view === undefined) throw new Error('Expected Markdown manifest and registry view paths.')
++const value = JSON.parse(await readFile(manifest, 'utf8'))
++const served = await readFile(view, 'utf8')
++if (typeof value !== 'object' || value === null || Array.isArray(value) || value.name !== '@orkestrel/markdown' || value.version !== '0.0.14' || typeof value.dependencies !== 'object' || value.dependencies === null || Array.isArray(value.dependencies) || value.dependencies['@orkestrel/contract'] !== '^0.0.16' || value.dependencies['@orkestrel/html'] !== '^0.0.8') throw new Error('Markdown manifest does not match the measured runtime dependencies.')
++if (served.includes('"0.0.14"')) throw new Error('Prepared Markdown version 0.0.14 is already registry-served.')
++value.dependencies['@orkestrel/contract'] = '^0.0.17'
++value.dependencies['@orkestrel/html'] = '^0.0.9'
++await writeFile(manifest, `${JSON.stringify(value, undefined, '\t')}\n`)
+diff --git "a/C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\pass\\markdown-artifact-stage\\run.sh" "b/C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\pass\\markdown-artifact-stage\\run.sh"
+new file mode 100644
+index 00000000..8f87a1d3
+--- /dev/null
++++ "b/C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\pass\\markdown-artifact-stage\\run.sh"
+@@ -0,0 +1,41 @@
++#!/usr/bin/env bash
++source /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/pass-env.sh
++set -euo pipefail
++
++MARKDOWN="$FLEET/markdown"
++EXPECTED='ac33037b46b751fb1e25ca929556e9d5f107852a'
++BRANCH='claude/orkestrel-npm-audit-deps-14ibta'
++CONTRACT_TARBALL="$SCR/packed/d7n-foundation-contract.ZjPTS5/orkestrel-contract-0.0.17.tgz"
++CONTRACT_HASH='88ef71a590f33edd9dc28bbdf65dc30ce9e2251fd9805807bb94bef0adcbca5a'
++HTML_TARBALL="$SCR/d7n-html-stage.FBOpkx/packed/orkestrel-html-0.0.9.tgz"
++HTML_HASH='970077f8671a978c271e7a790b78a6b44772d1f60d4e944fc381526c916c334b'
++GUIDE_TARBALL="$SCR/packed/d7n-guide-bootstrap.47Q7XT/orkestrel-guide-0.0.18.tgz"
++GUIDE_HASH='3a60e83f4c6319f029106f3d9588ed186639f72c222a34045326439cfff73519'
++TEST_TARBALL="$SCR/packed/d7n-foundation-test.ufR41o/orkestrel-test-0.0.14.tgz"
++TEST_HASH='d6ae5e57126d370b3316b528a8bd6dafaf2b64d9bdf52e73fead78065f7c5002'
++ROOT="$SCAFFOLD/tmp/pass/markdown-artifact-stage"
++STAGE=$(mktemp -d "$SCAFFOLD/tmp/pass/d7n-markdown-stage.XXXXXX")
++LOGS="$STAGE/logs" COPY="$STAGE/markdown" CONSUMER="$STAGE/consumer" PACKED="$STAGE/packed" EXTRACTED="$STAGE/extracted" CONTRACT_EXTRACT="$STAGE/contract" HTML_EXTRACT="$STAGE/html-artifact" REPAIR="$STAGE/repair"
++mkdir -p "$LOGS" "$COPY" "$PACKED" "$EXTRACTED" "$CONSUMER" "$CONTRACT_EXTRACT" "$HTML_EXTRACT"
++printf '%s\n' "$STAGE"
++run() { local name=$1; shift; local status; { printf '+'; printf ' %q' "$@"; printf '\n'; if "$@"; then status=0; else status=$?; fi; printf 'exit=%s\n' "$status"; } >"$LOGS/$name.log.txt" 2>&1; return "$status"; }
++finish() { local status=$1; set +e; git -C "$MARKDOWN" status --porcelain=v1 --untracked-files=all >"$LOGS/status-after.txt"; git -C "$MARKDOWN" diff --binary >"$LOGS/diff-after.txt"; sha256sum "$MARKDOWN/package.json" >"$LOGS/manifest-after.sha256"; sha256sum "$MARKDOWN/package-lock.json" >"$LOGS/lock-after.sha256"; if [ "$status" -eq 0 ]; then cmp "$LOGS/status-before.txt" "$LOGS/status-after.txt" || status=1; cmp "$LOGS/diff-before.txt" "$LOGS/diff-after.txt" || status=1; cmp "$LOGS/manifest-before.sha256" "$LOGS/manifest-after.sha256" || status=1; cmp "$LOGS/lock-before.sha256" "$LOGS/lock-after.sha256" || status=1; fi; printf 'logs: %s\n' "$LOGS"; exit "$status"; }
++trap 'finish "$?"' EXIT
++[ -d "$MARKDOWN/.git" ] || { printf '%s\n' 'Missing Markdown checkout.' >&2; exit 1; }
++[ -z "$(git -C "$MARKDOWN" status --porcelain=v1 --untracked-files=all)" ] || { printf '%s\n' 'Markdown checkout is dirty.' >&2; exit 1; }
++[ "$(git -C "$MARKDOWN" branch --show-current)" = "$BRANCH" ] || { printf '%s\n' 'Markdown branch differs from the campaign branch.' >&2; exit 1; }
++[ "$(git -C "$MARKDOWN" rev-parse HEAD)" = "$EXPECTED" ] || { printf '%s\n' 'Markdown HEAD differs from the measured commit.' >&2; exit 1; }
++git -C "$MARKDOWN" status --porcelain=v1 --untracked-files=all >"$LOGS/status-before.txt"; git -C "$MARKDOWN" diff --binary >"$LOGS/diff-before.txt"; sha256sum "$MARKDOWN/package.json" >"$LOGS/manifest-before.sha256"; sha256sum "$MARKDOWN/package-lock.json" >"$LOGS/lock-before.sha256"
++run fetch git -C "$MARKDOWN" fetch origin
++git -C "$MARKDOWN" merge-base --is-ancestor origin/main HEAD || { printf '%s\n' 'origin/main is not an ancestor of Markdown HEAD.' >&2; exit 1; }
++[ "$(git -C "$MARKDOWN" branch --show-current)" = "$BRANCH" ] || { printf '%s\n' 'Markdown branch changed after fetch.' >&2; exit 1; }
++[ "$(git -C "$MARKDOWN" rev-parse HEAD)" = "$EXPECTED" ] || { printf '%s\n' 'Markdown HEAD changed after fetch.' >&2; exit 1; }
++run view npm view @orkestrel/markdown version versions --json
++printf '%s  %s\n' "$CONTRACT_HASH" "$CONTRACT_TARBALL" | sha256sum --check --status; printf '%s  %s\n' "$HTML_HASH" "$HTML_TARBALL" | sha256sum --check --status; printf '%s  %s\n' "$GUIDE_HASH" "$GUIDE_TARBALL" | sha256sum --check --status; printf '%s  %s\n' "$TEST_HASH" "$TEST_TARBALL" | sha256sum --check --status
++run archive git -C "$MARKDOWN" archive --format=tar -o "$STAGE/markdown.tar" "$EXPECTED"; run extract tar -xf "$STAGE/markdown.tar" -C "$COPY"; run repository git -C "$COPY" init; run contract-extract tar -xzf "$CONTRACT_TARBALL" -C "$CONTRACT_EXTRACT"; run html-extract tar -xzf "$HTML_TARBALL" -C "$HTML_EXTRACT"
++run ci npm --prefix "$COPY" ci --ignore-scripts; run repair node "$SCAFFOLD/tmp/pass/path-artifact-pilot/markdown.mjs" "$STAGE" "$COPY" "$REPAIR"; run mutate node "$ROOT/mutate.mjs" "$COPY/package.json" "$LOGS/view.log.txt"; sha256sum "$COPY/package.json" >"$LOGS/copy-manifest.sha256"; sha256sum "$COPY/package-lock.json" >"$LOGS/copy-lock.sha256"
++run install npm --prefix "$COPY" install --no-save --ignore-scripts --package-lock=false "$CONTRACT_TARBALL" "$HTML_TARBALL" "$GUIDE_TARBALL" "$TEST_TARBALL"; sha256sum --check "$LOGS/copy-manifest.sha256"; sha256sum --check "$LOGS/copy-lock.sha256"; run installed node "$ROOT/inspect.mjs" "$COPY/package.json"
++if run nested npm --prefix "$COPY" ls --all; then :; else printf '%s\n' 'npm ls reported the expected bootstrap invalid-range observation.' >>"$LOGS/nested.log.txt"; fi
++run format npm --prefix "$COPY" run format:check; run lint npm --prefix "$COPY" run lint:check; run check npm --prefix "$COPY" run check; run build npm --prefix "$COPY" run build; run test npm --prefix "$COPY" test; sha256sum --check "$LOGS/copy-manifest.sha256"; sha256sum --check "$LOGS/copy-lock.sha256"
++cd "$COPY"; run pack npm pack --ignore-scripts --pack-destination "$PACKED"; MARKDOWN_TARBALL="$PACKED/orkestrel-markdown-0.0.14.tgz"; [ -f "$MARKDOWN_TARBALL" ] || { printf '%s\n' 'Markdown staging tarball is missing.' >&2; exit 1; }; sha256sum "$MARKDOWN_TARBALL" >"$LOGS/markdown-artifact.sha256"; run artifact-extract tar -xzf "$MARKDOWN_TARBALL" -C "$EXTRACTED"; cmp "$EXTRACTED/package/package.json" "$COPY/package.json"; diff -qr "$EXTRACTED/package/dist" "$COPY/dist" >"$LOGS/dist-diff.txt"; node "$ROOT/metadata.mjs" "$LOGS/metadata.json" "$EXPECTED" "$MARKDOWN_TARBALL" "$CONTRACT_TARBALL" "$HTML_TARBALL" "$GUIDE_TARBALL" "$TEST_TARBALL" "$CONTRACT_HASH" "$HTML_HASH" "$GUIDE_HASH" "$TEST_HASH"
++cp "$ROOT/consumer-package.json" "$CONSUMER/package.json"; cp "$ROOT/smoke.mjs" "$CONSUMER/smoke.mjs"; cp "$ROOT/smoke.cjs" "$CONSUMER/smoke.cjs"; cp "$ROOT/functions.cjs" "$CONSUMER/functions.cjs"; run consumer-install npm --prefix "$CONSUMER" install --no-save --ignore-scripts --package-lock=false --no-audit --no-fund "$CONTRACT_TARBALL" "$HTML_TARBALL" "$MARKDOWN_TARBALL"; cd "$CONSUMER"; run smoke-esm node smoke.mjs "$CONTRACT_EXTRACT/package" "$HTML_EXTRACT/package"; run smoke-cjs node smoke.cjs "$CONTRACT_EXTRACT/package" "$HTML_EXTRACT/package"; printf '%s\n' 'test:distribution not run: staged runtime versions are not registry-served.' >"$LOGS/registry-final.txt"
+diff --git "a/C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\pass\\markdown-artifact-stage\\smoke.cjs" "b/C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\pass\\markdown-artifact-stage\\smoke.cjs"
+new file mode 100644
+index 00000000..42729cbd
+--- /dev/null
++++ "b/C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\pass\\markdown-artifact-stage\\smoke.cjs"
+@@ -0,0 +1,15 @@
++const { createMarkdown, htmlToMarkdown, renderHTML, renderMarkdown } = require('@orkestrel/markdown')
++const { parseDocument } = require('@orkestrel/html')
++const { hashFile } = require('./functions.cjs')
++const { join } = require('node:path')
++
++const [contractArchive, htmlArchive] = process.argv.slice(2)
++if (contractArchive === undefined || htmlArchive === undefined) throw new Error('Expected extracted Contract and HTML package paths.')
++const document = createMarkdown('# Hi\n\nRead the [guide](./guide.md) for more, *thanks*.').document
++if (renderHTML(document) !== '<h1>Hi</h1><p>Read the <a href="./guide.md">guide</a> for more, <em>thanks</em>.</p>') throw new Error('Markdown renderer returned unexpected markup.')
++if (renderMarkdown(htmlToMarkdown(parseDocument('<h1>Release notes</h1><p>Ship <b>fast</b>.</p>'))) !== '# Release notes\n\nShip **fast**.') throw new Error('Markdown HTML projection returned unexpected Markdown.')
++for (const [name, archive] of [['@orkestrel/html', htmlArchive], ['@orkestrel/contract', contractArchive]]) {
++	const manifest = require(`${name}/package.json`)
++	if (hashFile(join(archive, manifest.main)) !== hashFile(require.resolve(name))) throw new Error(`Installed ${name} CommonJS entry differs from the accepted archive.`)
++}
++console.log('behavior=markdown-rendering-and-html-projection')
+diff --git "a/C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\pass\\markdown-artifact-stage\\smoke.mjs" "b/C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\pass\\markdown-artifact-stage\\smoke.mjs"
+new file mode 100644
+index 00000000..b2ee9b13
+--- /dev/null
++++ "b/C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\pass\\markdown-artifact-stage\\smoke.mjs"
+@@ -0,0 +1,30 @@
++import { readFile, realpath } from 'node:fs/promises'
++import { createRequire } from 'node:module'
++import { join } from 'node:path'
++import { fileURLToPath } from 'node:url'
++import { createMarkdown, htmlToMarkdown, renderHTML, renderMarkdown } from '@orkestrel/markdown'
++import { parseDocument } from '@orkestrel/html'
++import { hashFile } from './functions.cjs'
++
++const [contractArchive, htmlArchive] = process.argv.slice(2)
++if (contractArchive === undefined || htmlArchive === undefined) throw new Error('Expected extracted Contract and HTML package paths.')
++const consumer = createRequire(join(process.cwd(), 'package.json'))
++const markdownManifest = consumer.resolve('@orkestrel/markdown/package.json')
++const markdown = JSON.parse(await readFile(markdownManifest, 'utf8'))
++const htmlManifest = consumer.resolve('@orkestrel/html/package.json')
++const contractManifest = consumer.resolve('@orkestrel/contract/package.json')
++const markdownRequire = createRequire(markdownManifest)
++if (markdown.dependencies['@orkestrel/html'] !== '^0.0.9' || markdown.dependencies['@orkestrel/contract'] !== '^0.0.17') throw new Error('Markdown does not declare the expected runtime pins.')
++for (const [name, root] of [['@orkestrel/html', htmlManifest], ['@orkestrel/contract', contractManifest]]) {
++	const nested = markdownRequire.resolve(`${name}/package.json`)
++	if ((await realpath(nested)) !== (await realpath(root))) throw new Error(`Markdown resolves a different ${name} package from the consumer.`)
++}
++const document = createMarkdown('# Hi\n\nRead the [guide](./guide.md) for more, *thanks*.').document
++if (renderHTML(document) !== '<h1>Hi</h1><p>Read the <a href="./guide.md">guide</a> for more, <em>thanks</em>.</p>') throw new Error('Markdown renderer returned unexpected markup.')
++if (renderMarkdown(htmlToMarkdown(parseDocument('<h1>Release notes</h1><p>Ship <b>fast</b>.</p>'))) !== '# Release notes\n\nShip **fast**.') throw new Error('Markdown HTML projection returned unexpected Markdown.')
++for (const [name, archive] of [['@orkestrel/html', htmlArchive], ['@orkestrel/contract', contractArchive]]) {
++	const manifest = JSON.parse(await readFile(consumer.resolve(`${name}/package.json`), 'utf8'))
++	const installed = fileURLToPath(await import.meta.resolve(name))
++	if (hashFile(join(archive, manifest.module)) !== hashFile(installed)) throw new Error(`Installed ${name} ESM entry differs from the accepted archive.`)
++}
++console.log('behavior=markdown-rendering-and-html-projection')
+diff --git "a/C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\pass\\path-artifact-pilot\\markdown.mjs" "b/C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\pass\\path-artifact-pilot\\markdown.mjs"
+new file mode 100644
+index 00000000..95a24172
+--- /dev/null
++++ "b/C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\pass\\path-artifact-pilot\\markdown.mjs"
+@@ -0,0 +1,51 @@
++import { readFile } from 'node:fs/promises'
++import { createRequire } from 'node:module'
++import { dirname, isAbsolute, resolve } from 'node:path'
++import { Compiler, createBlueprint } from '@orkestrel/scaffold'
++import { Materializer } from '@orkestrel/scaffold/server'
++import { PATHS } from './constants.mjs'
++import { assertBytes, assertHost, assertSelection, createOutput, createPlan, readBytes, writeReceipt } from './functions.mjs'
++import { PRESERVED } from './foundation-constants.mjs'
++import functions from '../markdown-artifact-stage/functions.cjs'
++
++const [stage, target, output] = process.argv.slice(2)
++if (stage === undefined || target === undefined || output === undefined) throw new Error('Expected fresh Markdown stage, Markdown target, and absent evidence output paths.')
++if (!isAbsolute(stage) || !isAbsolute(target) || !isAbsolute(output)) throw new Error('Markdown stage, target, and evidence output paths must be absolute.')
++if (resolve(target) !== resolve(stage, 'markdown')) throw new Error('Markdown target is not the stage child.')
++await createOutput(output)
++const { hashFile } = functions
++const require = createRequire(import.meta.url)
++const manifestPath = require.resolve('@orkestrel/scaffold/package.json')
++const manifest = JSON.parse(await readFile(manifestPath, 'utf8'))
++const installed = dirname(manifestPath)
++const host = resolve(installed, 'dist', 'host')
++const compiler = new Compiler()
++const materializer = new Materializer({ host })
++try {
++	if (hashFile(resolve(host, 'manifest.json')) !== '60f6f1612933be6c5eb022e803e0b0fdf0d50452de8307d2688a3b832df0cf78') throw new Error('Installed scaffold host manifest hash differs from the accepted preparation hash.')
++	if (hashFile(resolve(host, 'tests', 'setupPolicy.ts')) !== 'ebe2777780193eed9d8d0641d6326535a6b5084d88aee0b6361d0b2409281ded') throw new Error('Installed scaffold setup policy hash differs from the accepted preparation hash.')
++	if (hashFile(resolve(host, 'tests', 'config.test.ts')) !== 'b880877803d909f83bc2ba4110d795cfecf620402696272e967bb55b90b66578') throw new Error('Installed scaffold config test hash differs from the accepted preparation hash.')
++	const preservedBefore = await readBytes(target, PRESERVED)
++	const hostMembers = await readBytes(host, PATHS)
++	const scaffolding = compiler.compile(createBlueprint('markdown', { src: ['core'] }), ['tests'])
++	if (scaffolding.plan === undefined) throw new Error('Compiler returned no plan.')
++	const plan = createPlan(scaffolding.plan)
++	assertSelection(plan)
++	const audit = materializer.audit(plan, target)
++	const repair = materializer.repair(plan, audit, target)
++	if (!repair.written.every((path) => PATHS.includes(path))) throw new Error('Repair wrote a path outside the selected paths.')
++	await assertHost(target, host, PATHS)
++	await assertBytes(target, preservedBefore)
++	const settled = materializer.audit(plan, target)
++	if (settled.findings.some((finding) => finding.drift === 'stale' || finding.drift === 'missing')) throw new Error('Settled audit retains selected drift.')
++	const preservedAfter = await readBytes(target, PRESERVED)
++	await writeReceipt(output, 'installed.json', { path: installed, version: manifest.version })
++	await writeReceipt(output, 'host-members.json', hostMembers)
++	await writeReceipt(output, 'audit.json', audit)
++	await writeReceipt(output, 'repair.json', repair)
++	await writeReceipt(output, 'settled.json', settled)
++	await writeReceipt(output, 'preserved.json', { after: preservedAfter, before: preservedBefore })
++} finally {
++	materializer.destroy()
++	compiler.destroy()
++}

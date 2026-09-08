@@ -82,6 +82,12 @@ are not active units.
 
 | Unit | Route | Evidence | State |
 | --- | --- | --- | --- |
+| d7n-guides-cli-map | Cursor Grok, read-only | tmp/cursor/d7n-guides-cli-map.jsonl; session e04e80e9-d41e-4bd9-85d3-3bd30aa9a5f9; root exec 6383 | exit 0; installed public API reading retained; no product writes |
+| d7n-guides-cli-probe | root execution | tmp/pass/guides-cli-probe/run.log.txt | exit 0; public launch and provided direction received in a real fixture |
+| d7n-markdown-artifact-stage | native builder, Terra; root execution | native markdown_artifact_stage; tmp/pass/d7n-markdown-stage.87s5ja | exec 75536 exited 0; local prerequisite accepted; canonical Markdown unchanged |
+| d7n-markdown-artifact-stage-verify | native verifier, Terra | native foundation_receipts_verify, bounded successor task | GREEN; installed consumers rerun; revised-parity and registry-final work pending |
+| d7n-guides-entry-design-objective | native analyst, Sol | native guides_entry_design_objective; base and host briefs | running; file retrieval allowed, no subject execution |
+| d7n-guides-entry-design-subjective | planner, Opus | tmp/claude/d7n-guides-entry-design-subjective.jsonl and .err; root exec 12884 | running under 1800s cap; same base and host briefs |
 | d7n-parity-route-map | Cursor Grok, read-only | tmp/cursor/d7n-parity-route-map.jsonl and .err; session 8584e515-b1a4-43b8-b880-255cfaa38028; root exec 27416 | returned exit 0; evidence map retained with provenance and prose annotations; no product writes |
 | d7n-html-artifact-stage | native builder, Terra; root execution | native html_artifact_stage; tmp/pass/d7n-html-stage.7nT1Vx | exec 31751 exited 1 after formatter exit 2; inherited tmp ignore rule identified; canonical HTML preserved |
 | d7n-html-artifact-stage-boundary | root execution | tmp/pass/d7n-html-stage.FBOpkx | exec 81669 exited 0; accepted local prerequisite artifact; canonical HTML unchanged |
@@ -91,6 +97,14 @@ Native Monitor and task-registry tools are not exposed in this harness. Root tra
 the capped command by its exec session and reads terminal results without raw thinking
 events. The native builder has a separate tracked task. Do not treat the unavailable
 Workflow launch as a dark engine.
+
+The native thread limit refused the fresh objective launch while the staging author
+was active. The launch succeeded after that author returned. The separate planner
+bridge allocation was refused while the objective lane was active. Root used the
+existing planner transport recipe directly for its root-owned launch, after reading
+the route and transport and checking CLI resolution and logged-in status. The named
+planner role still runs on Opus, read-only, with a fresh journal and blind context.
+This records omitted bridge-driver allocation, not a dark engine or lane substitution.
 
 Prepare agent's successor as a read/edit-only writer with host-owned validation.
 The denied shell commands remain denied; do not change role permissions or invoke
