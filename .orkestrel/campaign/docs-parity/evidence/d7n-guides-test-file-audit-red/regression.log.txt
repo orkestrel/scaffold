@@ -1,0 +1,138 @@
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/scaffold
+
+--------------------------------------------------------------------------------------------------xxx-----------
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:core| tests/src/core/compilers.test.ts > the guides entry > runs the native command when VITEST is false
+AssertionError: expected '# Widget\n\n> A widget toolkit the sa…' to be '# Widget\n\n> A widget toolkit the sa…' // Object.is equality
+
+- Expected
++ Received
+
+@@ -4,27 +4,27 @@
+
+  ## Surface
+
+  | Name | Kind | Summary |
+  | --- | --- | --- |
+- | `shape` | function | Shapes a widget from the parts it is given. |
++ | `shape` | function | Shapes a widget from its parts. |
+  | `Widget` | interface | One widget the workspace renders. |
+
+  ## Methods
+
+  #### `Widget`
+
+  | Method | Summary |
+  | --- | --- |
+- | `paint` | Paints the widget onto the frame. |
++ | `paint` | Paints the widget onto the surface. |
+
+  ## Examples
+
+  ### Shape a widget
+
+  ```ts
+- shape('square')
++ shape('round')
+  ```
+
+  ## Tests
+
+  - [`tests/src/core/widget.test.ts`](../tests/src/core/widget.test.ts)
+
+ ❯ tests/src/core/compilers.test.ts:2407:45
+    2405|   try {
+    2406|    const run = runSeed(scratch, ['--to', 'guide'], 'false')
+    2407|    expect(scratch.read('guides/widget.md')).toBe(SEED_GUIDE_WRITTEN)
+       |                                             ^
+    2408|    expect(run.status).toBe(0)
+    2409|   } finally {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  |src:core| tests/src/core/compilers.test.ts > the guides entry > keeps summary and example namespaces distinct toward guide
+AssertionError: expected '# Widget\n\n> A widget toolkit the sa…' to be '# Widget\n\n> A widget toolkit the sa…' // Object.is equality
+
+- Expected
++ Received
+
+@@ -4,11 +4,12 @@
+
+  ## Surface
+
+  | Name | Kind | Summary |
+  | --- | --- | --- |
+- | `shape` | function | Shapes a widget from the parts it is given. |
++ | `shape` | function | ts
++ shape('square') |
+  | `Widget` | interface | One widget the workspace renders. |
+
+  ## Methods
+
+  #### `Widget`
+@@ -20,11 +21,11 @@
+  ## Examples
+
+  ### function shape
+
+  ```ts
+- shape('square')
++ shape('round')
+  ```
+
+  ## Tests
+
+  - [`tests/src/core/widget.test.ts`](../tests/src/core/widget.test.ts)
+
+ ❯ tests/src/core/compilers.test.ts:2420:45
+    2418|   try {
+    2419|    const run = runSeed(scratch, ['--to', direction])
+    2420|    expect(scratch.read('guides/widget.md')).toBe(direction === 'guide'…
+       |                                             ^
+    2421|    expect(scratch.read('src/core/widget.ts')).toBe(direction === 'sour…
+    2422|    expect(run.status).toBe(0)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  |src:core| tests/src/core/compilers.test.ts > the guides entry > keeps summary and example namespaces distinct toward source
+AssertionError: expected '/**\n * ts shape(\'round\')\n *\n * @…' to be '/**\n * Shapes a widget from the part…' // Object.is equality
+
+- Expected
++ Received
+
+@@ -1,14 +1,14 @@
+  /**
+-  * Shapes a widget from the parts it is given.
++  * ts shape('round')
+   *
+   * @param parts - The parts to shape.
+   * @returns The shaped widget.
+   *
+   * @example function shape
+   * ```ts
+-  * shape('round')
++  * shape('square')
+   * ```
+   */
+  export function shape(parts: string): string {
+  	return parts
+  }
+
+ ❯ tests/src/core/compilers.test.ts:2421:47
+    2419|    const run = runSeed(scratch, ['--to', direction])
+    2420|    expect(scratch.read('guides/widget.md')).toBe(direction === 'guide'…
+    2421|    expect(scratch.read('src/core/widget.ts')).toBe(direction === 'sour…
+       |                                               ^
+    2422|    expect(run.status).toBe(0)
+    2423|   } finally {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  3 failed | 109 skipped (112)
+   Start at  06:16:06
+   Duration  2.74s (transform 204ms, setup 307ms, import 97ms, tests 2.17s, environment 0ms)

@@ -10,11 +10,13 @@ checkout instructions and launcher design. The predecessor scaffold candidate is
 now visible in the direct checkout and its local gate chain passed, but the owner
 rejected scripts/guides.ts. The replacement must put command handling, parity and
 explicit authority-driven rewriting in tests/guides.test.ts. The corrected entry
-is implemented in canonical scaffold and the final ordered root gates passed.
-Source remains frozen, uncommitted and unaccepted while the reused objective
-analyst and independent Opus reviewer audit it. Read
-d7n-guides-test-file-root-gates-report.md, d7n-guides-test-file-design-verdict.md
-and d7n-guides-test-file-audit-brief.md before
+is implemented in canonical scaffold and the reviewed ordered root gates passed.
+The returned audit found an inherited-environment dispatch defect and a collision
+between example titles and summary keys. Root reproduced them through the actual
+command. A bounded successor writer now owns the named source files in canonical
+scaffold. Source remains uncommitted and unaccepted. Read
+d7n-guides-test-file-audit-verdict.md, d7n-guides-test-file-audit-fix-brief.md,
+d7n-guides-test-file-root-gates-report.md and d7n-guides-test-file-adoption-plan.md before
 resuming. Preserve the owner's manifest and staged lock edits. No package is newly
 closed by this checkpoint and no publication is authorized.
 
