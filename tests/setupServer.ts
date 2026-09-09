@@ -13,9 +13,12 @@ import type { ServerResponse } from 'node:http'
 import type { ESTree } from 'vite'
 import { execFileSync } from 'node:child_process'
 import { createServer } from 'node:http'
+import { createRequire } from 'node:module'
+import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { gzipSync } from 'node:zlib'
-import { parseSync } from 'vite'
+import { isArray, isRecord } from '@orkestrel/contract'
+import { parseSync, transformWithOxc } from 'vite'
 import {
 	CATALOG_AGENT_PATH,
 	CATALOG_CLOSING_MARKER,
@@ -45,6 +48,7 @@ import {
 	isFilesystemPath,
 	isHostManifest,
 	isInventory,
+	listFiles,
 	isManifestEntry,
 	isManifestRegionSet,
 	isMaterializerHooks,
@@ -70,7 +74,12 @@ import {
 } from '@src/server'
 import { optionToName } from '../src/bin/helpers.js'
 import { createRecorder, resolveRoot } from '@orkestrel/test'
-import { createLoopback, type ScratchInterface, supportsCase } from '@orkestrel/test/server'
+import {
+	createLoopback,
+	createScratch,
+	type ScratchInterface,
+	supportsCase,
+} from '@orkestrel/test/server'
 import {
 	buildBlueprint,
 	buildContentArtifact,
@@ -863,6 +872,36 @@ export function readErrorMessage(call: () => unknown): string | undefined {
 }
 
 /**
+ * Drives expressions against a transformed source module in a fresh real module graph.
+ *
+ * @param source - The TypeScript declarations to transform and export.
+ * @param calls - The expressions to evaluate against the module's `classifier` binding.
+ * @returns The values the drive exported.
+ */
+export async function driveClassifier(
+	source: string,
+	calls: readonly string[],
+): Promise<readonly unknown[]> {
+	const workspace = createScratch({ prefix: 'scaffold-classifier-' })
+	try {
+		const transformed = await transformWithOxc(source, 'classifier.ts', { target: 'esnext' })
+		workspace.write('classifier.mjs', transformed.code)
+		workspace.write(
+			'drive.mjs',
+			`import * as classifier from './classifier.mjs'\nexport const answers = [${calls.join(', ')}]\n`,
+		)
+		const load = createRequire(import.meta.url)
+		const driven: unknown = load(join(workspace.path, 'drive.mjs'))
+		if (!isRecord(driven) || !isArray(driven.answers)) {
+			throw new Error('The emitted classifier drive exported no answer list')
+		}
+		return driven.answers
+	} finally {
+		workspace.destroy()
+	}
+}
+
+/**
  * Reads a module's statements off the parser Vite re-exports.
  *
  * @param source - The module text to parse.
@@ -1242,10 +1281,10 @@ export function createSink(): TestSinkInterface {
  * because the vendored root's own manifest is what decides it. A fixture builds
  * that manifest, so the fixture declares the split. `.claude/skills` is the one
  * declared directory no entry sits beneath, which makes it the empty-directory
- * case every writer has to survive. `HOST_PATHS` holds only files, so every
- * member of this list is a canon member.
+ * case every writer has to survive. `scripts` is the host directory a target owns.
  */
 export const HOST_DIRECTORY_PATHS: readonly string[] = [
+	'scripts',
 	'.agents/skills',
 	'.agents/templates',
 	'.agents/transports',
@@ -1286,15 +1325,31 @@ export const STAGED_PATHS: readonly string[] = [...HOST_PATHS, ...CANON_PATHS]
  * the manifest declares it too: a host missing it refuses every verb the moment
  * the plan is hydrated. It is the only canon destination a host declares, because
  * the pointers a plan claims there carry their own content, and `HOST_PATHS`
- * itself holds only files, so this manifest declares no root at all.
- * {@link buildCheckoutManifest} is where the staged directory shapes are
- * declared.
+ * itself also holds the `scripts` root. The fixture reads its current members so
+ * hydration proves the canonical script membership.
  */
 export function buildFleetManifest(): HostManifest {
-	const entries: ManifestEntry[] = [...HOST_PATHS, CATALOG_AGENT_PATH].map((path) =>
-		buildManifestEntry({ storage: pathToStorage(path), destination: path }),
-	)
-	const membership = { entries, roots: [] }
+	const entries: ManifestEntry[] = []
+	const roots: string[] = []
+	for (const path of [...HOST_PATHS, CATALOG_AGENT_PATH]) {
+		if (!HOST_DIRECTORY_PATHS.includes(path)) {
+			entries.push(buildManifestEntry({ storage: pathToStorage(path), destination: path }))
+			continue
+		}
+		roots.push(path)
+		const directory = fileURLToPath(new URL(`../${path}/`, import.meta.url))
+		for (const name of listFiles(directory)) {
+			const destination = `${path}/${name}`
+			entries.push(
+				buildManifestEntry({
+					storage: pathToStorage(destination),
+					destination,
+					executable: matchesExecutablePath(destination),
+				}),
+			)
+		}
+	}
+	const membership = { entries, roots }
 	return { ...membership, digest: computeManifestDigest(membership.entries, membership.roots) }
 }
 
@@ -1324,7 +1379,8 @@ export function createCheckout(workspace: ScratchInterface, relative: string): s
 		}
 		workspace.ensure(`${relative}/${path}`)
 		if (path === '.claude/skills') continue
-		workspace.write(`${relative}/${path}/sample.md`, `${path}/sample.md\n`)
+		const destination = `${path}/${path === 'scripts' ? 'codex.sh' : 'sample.md'}`
+		workspace.write(`${relative}/${destination}`, `${destination}\n`)
 	}
 	return root
 }
@@ -1358,7 +1414,7 @@ export function buildCheckoutManifest(): HostManifest {
 		}
 		roots.push(path)
 		if (path === '.claude/skills') continue
-		const destination = `${path}/sample.md`
+		const destination = `${path}/${path === 'scripts' ? 'codex.sh' : 'sample.md'}`
 		entries.push(
 			buildManifestEntry({
 				storage: pathToStorage(destination),
@@ -1560,7 +1616,7 @@ export function buildVendoredPlan(fields?: Partial<Plan>): Plan {
 			buildHostArtifact({ path: '.claude/rules', group: 'orchestration' }),
 			buildHostArtifact({ path: '.claude/skills', group: 'orchestration' }),
 			buildHostArtifact({ path: 'guides/guide.md', group: 'guides' }),
-			buildHostArtifact({ path: 'scripts/codex.sh', group: 'orchestration' }),
+			buildHostArtifact({ path: 'scripts', group: 'orchestration' }),
 		],
 		...fields,
 	})

@@ -185,8 +185,7 @@ describe('vendored imports', () => {
 			const source = join(WORKSPACE_ROOT, path)
 			if (!existsSync(source)) return []
 			if (lstatSync(source).isDirectory()) {
-				// `HOST_PATHS` holds only files, so this branch reads a directory the
-				// vendored set gains rather than one it carries.
+				// A host directory contributes every module beneath it.
 				return globSync('**/*.{ts,mts,cts,js,mjs,cjs}', { cwd: source }).map((nested) =>
 					join(path, nested),
 				)
@@ -206,7 +205,7 @@ describe('vendored imports', () => {
 		]
 		expect(paths.length).toBeGreaterThan(0)
 		expect(paths).toContain('tests/config.test.ts')
-		expect(paths).toContain('scripts/docs.ts')
+		expect(paths).not.toContain('tests/guides.test.ts')
 		const modules = [
 			...paths.map((path) => ({
 				path,

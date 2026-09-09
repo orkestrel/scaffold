@@ -177,9 +177,9 @@ describe('the manifest builders', () => {
 		expect(buildVendoredManifest({ roots: [] }).digest).not.toBe(manifest.digest)
 	})
 
-	it('declares one file entry per planned path and no root at all in the fleet manifest', () => {
+	it('declares the script root and planned file membership in the fleet manifest', () => {
 		const manifest = buildFleetManifest()
-		expect(manifest.roots).toStrictEqual([])
+		expect(manifest.roots).toStrictEqual(['scripts'])
 		const destinations = manifest.entries.map((entry) => entry.destination)
 		expect(new Set(destinations).size).toBe(destinations.length)
 		for (const destination of destinations) {
@@ -247,6 +247,9 @@ describe('the real host and checkout fixtures', () => {
 				expect(workspace.read(`checkout/${entry.destination}`)).toBe(`${entry.destination}\n`)
 			}
 			expect(manifest.entries.some((entry) => entry.executable)).toBe(true)
+			expect(
+				manifest.entries.filter((entry) => entry.executable).map((entry) => entry.destination),
+			).toStrictEqual(['scripts/codex.sh'])
 		} finally {
 			workspace.destroy()
 		}
@@ -1001,7 +1004,7 @@ describe('the tables and the derived totals', () => {
 		const vendored = buildVendoredPlan()
 		const paths = vendored.artifacts.map((artifact) => artifact.path)
 		expect(paths).toContain('.claude/skills')
-		expect(paths).toContain('scripts/codex.sh')
+		expect(paths).toContain('scripts')
 		expect(vendored.groups).toStrictEqual(['manifest', 'docs', 'orchestration', 'guides'])
 		expect(buildVendoredPlan({ groups: ['docs'] }).artifacts).toStrictEqual(vendored.artifacts)
 	})

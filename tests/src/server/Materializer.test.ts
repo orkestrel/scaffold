@@ -40,6 +40,7 @@ import {
 	readErrorMessage,
 	TARGET_MANIFEST_TEXT,
 	SCRATCH_PREFIX,
+	WORKSPACE_ROOT,
 } from '../../setupServer.js'
 import { createScratch } from '@orkestrel/test/server'
 
@@ -797,6 +798,47 @@ describe('Materializer audit', () => {
 		}
 	})
 
+	it('owns the scripts directory in raw and staged hosts', () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const plan = buildCompiledPlan()
+			expect(plan.artifacts.filter(({ path }) => path === 'scripts')).toEqual([
+				{ path: 'scripts', group: 'orchestration', ownership: 'presence', origin: 'host' },
+			])
+			const staged = createHostRoot(workspace, 'staged', buildFleetManifest())
+			const hosts = [WORKSPACE_ROOT, staged]
+			for (const [index, host] of hosts.entries()) {
+				const materializer = new Materializer({ host })
+				const target = join(workspace.path, `project-${String(index)}`)
+				try {
+					materializer.materialize(plan, target)
+					for (const path of [
+						'scripts/codex.sh',
+						'scripts/cursor.sh',
+						'scripts/deps.sh',
+						'scripts/ollama.sh',
+					]) {
+						expect(readFileHex(target, path)).toBe(readFileHex(host, path))
+					}
+					workspace.write(`project-${String(index)}/scripts/docs.ts`, 'docs\n')
+					workspace.write(`project-${String(index)}/scripts/custom.ts`, 'custom\n')
+					const foreign = materializer
+						.audit(plan, target)
+						.findings.filter(({ drift }) => drift === 'foreign')
+						.map(({ path }) => path)
+						.toSorted()
+					expect(foreign).toEqual(['scripts/custom.ts', 'scripts/docs.ts'])
+					const excluded = buildVendoredPlan({ groups: ['tests'], artifacts: [] })
+					expect(materializer.audit(excluded, target).findings).toEqual([])
+				} finally {
+					materializer.destroy()
+				}
+			}
+		} finally {
+			workspace.destroy()
+		}
+	})
+
 	it('reports absent deferred paths as missing and a clean terminal audit after repair', () => {
 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
@@ -1441,6 +1483,45 @@ describe('Materializer declare scripts', () => {
 })
 
 describe('Materializer remove', () => {
+	it('removes tracked unplanned scripts and preserves the planned service script', () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const host = createHostRoot(workspace, 'host', buildFleetManifest())
+			const target = join(workspace.path, 'project')
+			const compiler = new Compiler()
+			const materializer = new Materializer({ host })
+			try {
+				const compiled = compiler.compile(buildBlueprint({ vendors: ['ollama'] }))
+				if (compiled.plan === undefined) throw new Error('Expected the service plan to compile')
+				const plan = compiled.plan
+				materializer.materialize(plan, target)
+				const service = requireValue(workspace.read('project/scripts/service.sh'))
+				workspace.write('project/scripts/docs.ts', 'docs\n')
+				workspace.write('project/scripts/custom.ts', 'custom\n')
+				const audit = materializer.audit(plan, target)
+				const result = materializer.remove(
+					plan,
+					audit,
+					{
+						tracked: ['scripts/custom.ts', 'scripts/docs.ts', 'scripts/service.sh'],
+						dirty: [],
+					},
+					target,
+				)
+				expect(result.removed.toSorted()).toEqual(['scripts/custom.ts', 'scripts/docs.ts'])
+				expect(result.skipped).toEqual([])
+				expect(readFileHex(target, 'scripts/custom.ts')).toBeUndefined()
+				expect(readFileHex(target, 'scripts/docs.ts')).toBeUndefined()
+				expect(workspace.read('project/scripts/service.sh')).toBe(service)
+			} finally {
+				materializer.destroy()
+				compiler.destroy()
+			}
+		} finally {
+			workspace.destroy()
+		}
+	})
+
 	it('refuses a fabricated foreign verdict for a path the plan owns', () => {
 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {

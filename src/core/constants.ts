@@ -108,16 +108,13 @@ export const BIN_CONFIGS: readonly string[] = Object.freeze([
 /** Names the executable entry whose presence makes a workspace `bin`. */
 export const BIN_ENTRY_PATH = 'src/bin/main.ts'
 
-/** Names the vendored module `npm run docs` runs. */
-export const DOCS_SEED_PATH = 'scripts/docs.ts'
-
 /**
  * Lists the paths a target receives from the vendored data root, frozen.
  *
  * @remarks
  * These are the files the fleet shares verbatim, and each target holds a copy
  * of the paths it selects: the licence, the harness permission file, the
- * session-start hooks, the documentation-parity seed, the shared policy
+ * session-start hooks, the shared policy
  * register, the shared policy proof, the shared policy plugin, the shared
  * configuration leaf and its proof, the byte-identical root dotfiles, and the
  * guide mirrors a generated workspace starts from. A directory entry vendors
@@ -136,11 +133,7 @@ export const DOCS_SEED_PATH = 'scripts/docs.ts'
 export const HOST_PATHS: readonly string[] = Object.freeze([
 	'LICENSE',
 	'.claude/settings.json',
-	'scripts/deps.sh',
-	'scripts/cursor.sh',
-	'scripts/codex.sh',
-	'scripts/ollama.sh',
-	DOCS_SEED_PATH,
+	'scripts',
 	'tests/setupPolicy.ts',
 	'tests/policy.test.ts',
 	'tests/config.test.ts',
@@ -259,13 +252,13 @@ export const ORCHESTRATION_PATH_PREFIXES: readonly string[] = Object.freeze([
 ])
 
 /**
- * Lists the exact root filenames that wire an agent bench rather than the toolchain, frozen.
+ * Lists the exact root paths that wire an agent bench or own an orchestration directory, frozen.
  *
  * @remarks
- * `.mcp.json` registers MCP servers for the harness. It sits among the root
- * dotfiles but governs agents, so it groups with the harness bridges.
+ * `.mcp.json` registers MCP servers for the harness. `scripts` is the owned
+ * directory whose members wire the development environment.
  */
-export const ORCHESTRATION_PATH_NAMES: readonly string[] = Object.freeze(['.mcp.json'])
+export const ORCHESTRATION_PATH_NAMES: readonly string[] = Object.freeze(['.mcp.json', 'scripts'])
 
 /**
  * Names the agent file whose marker-bounded package table the catalog verb alone owns.
@@ -309,7 +302,7 @@ export const SERVICE_SCRIPT_PATH = 'scripts/service.sh'
 /** Names the shared Vitest global-setup module whose presence makes a workspace `global`. */
 export const GLOBAL_SETUP_PATH = 'tests/setupGlobal.ts'
 
-/** Names the guide-parity proof whose presence selects the planned `guides` project. */
+/** Names the package-owned guide-parity entry used by `test:guides` and to select the `guides` project. */
 export const GUIDES_TEST_PATH = 'tests/guides.test.ts'
 
 /** Names the generated packed-package proof every publishing workspace is planned at. */

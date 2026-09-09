@@ -279,7 +279,6 @@ describe('installed package consumer', () => {
 			'scripts/cursor.sh',
 			'scripts/deps.sh',
 			'scripts/ollama.sh',
-			'scripts/docs.ts',
 			'tests/config.test.ts',
 			'tests/policy.test.ts',
 			'tests/setupPolicy.ts',

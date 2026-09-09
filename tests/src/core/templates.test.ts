@@ -2,14 +2,13 @@ import type { Blueprint, Environment } from '@src/core'
 import type { ScratchInterface } from '@orkestrel/test/server'
 import { execFileSync } from 'node:child_process'
 import { chmodSync, mkdirSync, readFileSync } from 'node:fs'
-import { createRequire } from 'node:module'
 import { join, resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { isArray, isRecord, isString } from '@orkestrel/contract'
 import { requireValue } from '@orkestrel/test'
 import { createScratch } from '@orkestrel/test/server'
 import { fillTemplate, isTemplateError } from '@orkestrel/template'
-import { build, loadConfigFromFile, transformWithOxc } from 'vite'
+import { build, loadConfigFromFile } from 'vite'
 import {
 	ARTIFACT_TEMPLATES,
 	blueprintToConfigArtifacts,
@@ -25,7 +24,7 @@ import {
 	TAB_WIDTH,
 } from '@src/core'
 import { BROWSER_RESOLVER_EXPORTS } from '../../setup.js'
-import { readStatements } from '../../setupServer.js'
+import { driveClassifier, readStatements } from '../../setupServer.js'
 import { describe, expect, it } from 'vitest'
 
 // The vendored `.oxfmtrc.json` a generated workspace receives: a tab prints as
@@ -317,40 +316,6 @@ const CLASSIFIER_CASES: ReadonlyArray<readonly [call: string, answer: unknown]> 
 	[`classifier.isModule('./dist/src/core/index.d.ts')`, false],
 	[`classifier.isModule('./dist/src/core/index.d.cts')`, false],
 ]
-
-// The emitted classifier driven in this process, as the ES module the parser's own
-// text says it is. This driver stays separate from `driveModule`: the classifier
-// assertions distinguish `undefined`, while the JSON transport of a real module
-// drive changes it to `null`. Each drive writes into a temporary directory of its
-// own, so the loader keys the module on a path it has not seen and hands back a
-// fresh instance rather than a cached one, and the call list is a second module
-// that imports the first, so the loader evaluates real modules over a real specifier
-// graph in place of a `vm` context. The load runs
-// through `createRequire` for the reason `configs/helpers.ts` records at its own
-// deferred load: a variable specifier reddens `import/no-dynamic-require`, and Node
-// loads an ES module through `require` from 22.12.0 on, which is `MINIMUM_NODE_VERSION`.
-async function driveClassifier(
-	source: string,
-	calls: readonly string[],
-): Promise<readonly unknown[]> {
-	const workspace = createScratch({ parent: ensureTmpRoot(), prefix: 'scaffold-e2-drive-' })
-	try {
-		const transformed = await transformWithOxc(source, 'classifier.ts', { target: 'esnext' })
-		workspace.write('classifier.mjs', transformed.code)
-		workspace.write(
-			'drive.mjs',
-			`import * as classifier from './classifier.mjs'\nexport const answers = [${calls.join(', ')}]\n`,
-		)
-		const load = createRequire(import.meta.url)
-		const driven: unknown = load(join(workspace.path, 'drive.mjs'))
-		if (!isRecord(driven) || !isArray(driven.answers)) {
-			throw new Error('The emitted classifier drive exported no answer list')
-		}
-		return driven.answers
-	} finally {
-		workspace.destroy()
-	}
-}
 
 // The emitted distribution proof, whose text every lift below reads.
 function buildDistributionProof(): string {

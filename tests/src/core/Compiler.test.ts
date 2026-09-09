@@ -68,10 +68,36 @@ describe('Compiler artifacts', () => {
 			origin: 'template',
 			content: expect.stringContaining('installed package consumer'),
 		})
-		expect(plan.artifacts).toHaveLength(40)
-		expect(plan.artifacts.filter(({ origin }) => origin === 'computed')).toHaveLength(1)
-		expect(plan.artifacts.filter(({ origin }) => origin === 'template')).toHaveLength(17)
-		expect(plan.artifacts.filter(({ origin }) => origin === 'host')).toHaveLength(22)
+		expect(
+			plan.artifacts.filter(({ origin }) => origin === 'computed').map(({ path }) => path),
+		).toStrictEqual(['package.json'])
+		expect(
+			plan.artifacts
+				.filter(({ origin }) => origin === 'host')
+				.map(({ path }) => path)
+				.toSorted(),
+		).toStrictEqual(
+			[
+				'LICENSE',
+				'.claude/settings.json',
+				'scripts',
+				'tests/setupPolicy.ts',
+				'tests/policy.test.ts',
+				'tests/config.test.ts',
+				'configs/helpers.ts',
+				'configs/policy.ts',
+				'.editorconfig',
+				'.gitattributes',
+				'.gitignore',
+				'.oxfmtrc.json',
+				'.oxlintrc.json',
+				'.oxlintignore',
+				'.prettierignore',
+				'guides/guide.md',
+				'guides/scaffold.md',
+				'.claude/agents/orkestrel.md',
+			].toSorted(),
+		)
 	})
 
 	// The canon left the vendored set, so the root instruction documents are

@@ -13,7 +13,7 @@ import {
 	computeBytes,
 	computeHash,
 	contentToHex,
-	DOCS_SEED_PATH,
+	GUIDES_TEST_PATH,
 	extractRangeMajor,
 	EXECUTABLE_PATHS,
 	extractVersion,
@@ -115,6 +115,12 @@ describe('matchesOrchestrationPath', () => {
 		expect(matchesOrchestrationPath('.oxlintrc.json')).toBe(false)
 		expect(matchesOrchestrationPath('.claudeignore')).toBe(false)
 	})
+
+	it('classifies the owned scripts root with its members', () => {
+		expect(matchesOrchestrationPath('scripts')).toBe(true)
+		expect(matchesOrchestrationPath('scripts/deps.sh')).toBe(true)
+		expect(matchesOrchestrationPath('scripts-other')).toBe(false)
+	})
 })
 
 describe('isDeferredPath', () => {
@@ -166,32 +172,23 @@ describe('isCanonPath', () => {
 		).toStrictEqual([])
 		// The control each reading needs, drawn from outside both lists: a path
 		// beneath a canon member and a path beneath a vendored member each report.
-		// Every vendored member is a file after the wiring moved, so the second
-		// reading's prefix arm has no member to fire on and the control supplies it.
+		// The second reading's prefix arm is pinned by a path beneath the owned scripts root.
 		expect(['.claude/rules/names.md'].filter((path) => isCanonPath(path))).toHaveLength(1)
 		expect(
-			['scripts/deps.sh/copy'].filter((canon) =>
+			['scripts/deps.sh'].filter((canon) =>
 				HOST_PATHS.some((host) => canon === host || canon.startsWith(`${host}/`)),
 			),
 		).toHaveLength(1)
 	})
 
-	// The documentation seed is the one vendored script node runs rather than a
-	// shell invokes, so it takes the vendored set and leaves the executable set
-	// alone. A declaration in both would ship it at 0755 and claim an interpreter
-	// it has no shebang for. The shell hook beside it is the control each reading
-	// needs, drawn from the same directory.
-	it('vendors the documentation seed without an executable bit or a canon claim', () => {
-		// The path has one home, and the vendored set reads it: the literal here is
-		// what the constant must carry, so a moved seed reports rather than drifting
-		// apart from the `docs` command and the artifact filter that read it too.
-		expect(DOCS_SEED_PATH).toBe('scripts/docs.ts')
-		expect(HOST_PATHS).toContain('scripts/docs.ts')
-		expect(EXECUTABLE_PATHS).not.toContain('scripts/docs.ts')
-		expect(isCanonPath('scripts/docs.ts')).toBe(false)
-		expect(HOST_PATHS).toContain('scripts/deps.sh')
+	it('keeps the guides proof package-owned', () => {
+		expect(GUIDES_TEST_PATH).toBe('tests/guides.test.ts')
+		expect(HOST_PATHS).not.toContain(GUIDES_TEST_PATH)
+		expect(EXECUTABLE_PATHS).not.toContain(GUIDES_TEST_PATH)
+		expect(isCanonPath(GUIDES_TEST_PATH)).toBe(false)
+		expect(HOST_PATHS).toContain('scripts')
+		expect(HOST_PATHS).not.toContain('scripts/deps.sh')
 		expect(EXECUTABLE_PATHS).toContain('scripts/deps.sh')
-		expect(selectHostPaths(HOST_PATHS, 'scaffold')).toContain('scripts/docs.ts')
 	})
 })
 
@@ -310,14 +307,6 @@ describe('selectHostPaths', () => {
 		expect(selectHostPaths(HOST_PATHS, 'router')).toStrictEqual(HOST_PATHS)
 	})
 
-	// The name is the whole selection this helper makes. The documentation seed is
-	// selected like every other vendored hook, with no guides gate anywhere in the
-	// selection path, so the seed is a candidate here for a workspace of every shape.
-	it('keeps the documentation seed a candidate whatever else selects it', () => {
-		expect(selectHostPaths(HOST_PATHS, 'router')).toContain('scripts/docs.ts')
-		expect(selectHostPaths(HOST_PATHS, 'scaffold')).toContain('scripts/docs.ts')
-	})
-
 	// The selection reads `HOST_PATHS` alone, so no canon member reaches it: a
 	// target reads those files from the package it installs, and the compiler
 	// appends the catalog file to the host selection while the pointers arrive as
@@ -342,12 +331,7 @@ describe('selectHostPaths', () => {
 		]) {
 			expect(selected).not.toContain(path)
 		}
-		for (const path of [
-			'.claude/settings.json',
-			'scripts/deps.sh',
-			'configs/policy.ts',
-			'LICENSE',
-		]) {
+		for (const path of ['.claude/settings.json', 'scripts', 'configs/policy.ts', 'LICENSE']) {
 			expect(selected).toContain(path)
 		}
 	})

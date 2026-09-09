@@ -11,7 +11,7 @@ write the difference back.
 
 That root stages the vendored set and the instruction canon, and a target meets them differently.
 `HOST_PATHS` names the vendored set — the licence, the harness permission file, the
-session-start hooks, the documentation-parity seed, the shared policy register, the shared policy
+session-start hooks, the shared policy register, the shared policy
 proof, the shared policy plugin, the shared configuration leaf and its proof, the byte-identical
 root dotfiles, and the guide mirrors a generated workspace starts from, never its own guide — and
 each target carries its own copy of the paths it selects, which the verbs write and compare.
@@ -120,7 +120,6 @@ Exported from `@orkestrel/scaffold`, and reachable from
 | `DEFAULT_VERSION`                 | const | Names the version a workspace starts at.                                                               |
 | `DEPENDENCY_NAME_PATTERN`         | const | Matches the runtime dependency name syntax: the `@orkestrel` scope and a bare name.                    |
 | `DISTRIBUTION_TEST_PATH`          | const | Names the generated packed-package proof every publishing workspace is planned at.                     |
-| `DOCS_SEED_PATH`                  | const | Names the vendored module `npm run docs` runs.                                                         |
 | `ENGINES_PATTERN`                 | const | Matches the minimum-Node engine syntax a blueprint declares.                                           |
 | `ENVIRONMENTS`                    | const | Lists the `Environment` values, frozen.                                                                |
 | `EXECUTABLE_PATHS`                | const | Lists the vendored paths a target receives with its executable bit set, frozen.                        |
@@ -129,7 +128,7 @@ Exported from `@orkestrel/scaffold`, and reachable from
 | `FOREIGN_NAME_PATTERN`            | const | Matches the package name syntax for a dependency this package does not publish.                        |
 | `GLOBAL_SETUP_PATH`               | const | Names the shared Vitest global-setup module whose presence makes a workspace `global`.                 |
 | `GROUPS`                          | const | Lists the `Group` values in plan order, frozen.                                                        |
-| `GUIDES_TEST_PATH`                | const | Names the guide-parity proof whose presence selects the planned `guides` project.                      |
+| `GUIDES_TEST_PATH`                | const | Names the package-owned guide-parity entry used by `test:guides` and to select the `guides` project.   |
 | `HEX_PATTERN`                     | const | Matches exact lowercase hexadecimal bytes: two digits per byte, and empty content is valid.            |
 | `HOST_PATHS`                      | const | Lists the paths a target receives from the vendored data root, frozen.                                 |
 | `HOST_INVENTORY_PATH`             | const | Names the repository-relative path where the committed vendored-file inventory is served.              |
@@ -151,7 +150,7 @@ Exported from `@orkestrel/scaffold`, and reachable from
 | `MAX_TOTAL_REGISTRY_BYTES`        | const | Caps the decoded bytes accepted across one registry-reading call.                                      |
 | `MINIMUM_NODE_VERSION`            | const | Names the oldest Node version the generated toolchain supports.                                        |
 | `NAME_PATTERN`                    | const | Matches the bare workspace name syntax: lowercase alphanumeric with hyphens, letter first.             |
-| `ORCHESTRATION_PATH_NAMES`        | const | Lists the exact root filenames that wire an agent bench rather than the toolchain, frozen.             |
+| `ORCHESTRATION_PATH_NAMES`        | const | Lists the exact root paths that wire an agent bench or own an orchestration directory, frozen.         |
 | `ORCHESTRATION_PATH_PREFIXES`     | const | Lists the path prefixes whose contents instruct or wire an agent, frozen.                              |
 | `ORKESTREL_RANGE_PATTERN`         | const | Matches the exact caret-pinned pre-1.0 range accepted for an `@orkestrel/*` runtime dependency.        |
 | `PRINT_WIDTH`                     | const | Caps the columns one emitted line may occupy, matching `printWidth` in `.oxfmtrc.json`.                |
@@ -602,8 +601,9 @@ The root Vite configuration defines and registers the fixed `guides` project onl
 blueprint carries `guides`. Reading verbs set that fact only when `tests/guides.test.ts` is a
 physical file with that exact path case. A directory or a case-folded spelling does not select it. A
 fresh workspace therefore carries no guides project or script. When a developer adds the proof,
-`audit` reports the exact `test:guides` and `docs` script lines until `repair` or `overwrite`
-appends them through the writable script region. The rest of the manifest remains birth-owned.
+`audit` reports the exact `test:guides` script until `repair` or `overwrite` appends it through the
+writable script region. That region accepts the prior generated Vitest-only value and preserves a
+customized command. The rest of the manifest remains birth-owned.
 
 The plan-reading verbs compare the Vitest project set named by the target manifest with the
 project set the planned root configuration registers. Every planned proof project must also be
@@ -1020,39 +1020,40 @@ fetched bytes rather than prose this workspace wrote, and it reports a top-level
 neither this package's own, nor `guides/README.md`, nor a catalog row, so an exclusion always
 carries its evidence.
 
-`tests/guides.test.ts` also holds the equality gate: a guide's `Summary` cell against its export's
-description paragraph, a titled guide fence against the `@example` block of that title, and the
-README pitch against the guide tagline. That gate reports and writes nothing. The vendored
-`scripts/docs.ts` seed is the writing half of the pair, and `npm run docs` runs it. It reads the
-inventory the gate reads — the source, the tests, the guides, and the root Markdown — indexes
-`guides/README.md`, and prints one line per disagreement: the guide, the compared key, and the text
-each side carries or `absent`. One further line reports the pitch pair when those two differ: the
-`README.md` blockquote against the tagline of the guide the manifest's own bare name selects,
+`tests/guides.test.ts` invokes the public `GuideCommand` class with this package's inventory policy,
+the Guide reader, and the real Vitest runner. Its anonymous worker callback owns the package
+assertions: a guide's `Summary` cell against its export's description paragraph, a titled guide
+fence against the `@example` block of that title, and the README pitch against the guide tagline.
+With no arguments, the command launches only the real `guides` Vitest project. Its assertions report
+parity failures. With an explicit direction, `GuideCommand` reads the source, tests, guides, and
+root Markdown; indexes `guides/README.md`; rewrites the selected side; and reports each remaining
+disagreement with its guide, compared key, side text or `absent`, and reason. It also reports the
+pitch pair when those values differ: the `README.md` blockquote against the tagline of the guide the
+manifest's own bare name selects,
 `guides/<name>.md`. A workspace whose manifest declares no name, whose index carries no row for that
-guide, or which carries no `README.md` reports no pitch line. A closing line names how many index
-rows the run read and how many disagreements it found. It exits `1` while a disagreement stands and
-`0` when none does. It exits `2` for an argument outside `--to`, printing the usage line, and for an
-input it cannot read — a workspace carrying no `guides/README.md`, or an index row naming a guide
-the workspace does not carry — printing one line naming that file rather than throwing.
+guide, or which carries no `README.md` reports no pitch line. It exits `1` when explicit-write drift
+remains, the project fails, the project collects no module, Vitest reports an unhandled error, or a
+module state is not `passed`. Default parity failures come from the guides project. An invalid
+option exits `2` before Vitest starts. On an explicit-direction run, a missing `guides/README.md` or
+an indexed spec the workspace does not carry also exits `2` before startup.
 
-The seed is vendored into every workspace like the session-start hooks; the `docs` script that runs
-it and the `guides` project are emitted with `guides`, so a workspace that indexes no guides carries
-the seed and no script. In the package that publishes the readers the seed imports,
-`npm run build` precedes `npm run docs`: a package's own name resolves inside its own checkout
-through the `exports` map its manifest publishes, so the import lands on `dist/` and a stale build
-runs stale readers. `npm run check` there is independent of the build, because the generated root
-`tsconfig.json` maps the workspace's own published specifiers to its source.
+The test file is package-owned and stays outside `HOST_PATHS`. The `test:guides` script and
+`guides` project are emitted only with `guides`. The generated command requires that authored file
+to invoke `GuideCommand` directly and register the package assertions. Scaffold neither synthesizes
+nor overwrites the authored proof.
 
-`npm run docs -- --to guide` rewrites each `Summary` cell whose source side carries text, and
-`npm run docs -- --to source` rewrites each description paragraph and each titled `@example` body
-whose guide side carries text. The seed writes files and nothing else. It never writes a guide
-fence from the source, because the suite executes that fence and the guide owns its content; it
-never writes the README pitch, which you author by hand; and it never formats. A key a replacer
-cannot reach is reported on its own line and leaves that file exactly as it found it. Run
-`npm run format` after a write: a rewritten table renders one-space padded, and the formatter
-re-aligns it. A write run's closing line adds `written:`, the rewrites the run carried across, and
-`reported:`, the disagreements it left standing with a reason. A write run exits `0` when it
-carried every disagreement across, and `1` while any disagreement or miss stands reported.
+`npm run test:guides -- --to guide` rewrites reachable `Summary` cells and titled fences from
+source text. `npm run test:guides -- --to source` rewrites reachable description paragraphs and
+titled `@example` bodies from guide text. The README pitch remains authored by hand. A shared
+source file accumulates each selected edit before it is written. After writing changed paths,
+the entry rereads the inventory and reports remaining drift with the reason its requested rewrite
+could not resolve it. The guides project starts from those fresh bytes. The entry never formats;
+after a write it prints `next: npm run format`.
+
+Scaffold owns the `scripts` directory. An audit for the orchestration group reports every unplanned
+member as foreign. `overwrite` deletes an unplanned tracked member only when the tree is clean, its
+observed bytes still match, and the path is not protected. A planned birth-owned
+`scripts/service.sh` survives that deletion pass.
 
 `tests/distribution.test.ts` is the one proof scaffold generates, and the one test artifact it
 claims by presence. Generation is the line, not writing: scaffold writes the vendored
@@ -1240,11 +1241,11 @@ The vendored data root is the shared file set, staged into the published package
 Staging walks `HOST_PATHS` and `CANON_PATHS`, and a release ships what both name.
 
 `HOST_PATHS` is the vendored set, and a target receives a copy of each path it selects: the
-licence, the harness permission file, the session-start hooks, the documentation-parity seed, the
+licence, the harness permission file, the scaffold-owned `scripts` directory, the
 shared policy register, the shared policy proof, the shared policy plugin, the shared configuration
 leaf and its proof, the byte-identical root dotfiles, and the guide mirrors a generated workspace
 starts from. It is a candidate list rather than a plan, because a workspace never mirrors its own
-guide. The seed, like the hooks, reaches every workspace. The session-start hooks split by job:
+guide. The session-start hooks inside `scripts` split by job:
 the bench probe reports whether a bench CLI resolves, and the dependency hook installs the
 lockfile's closure in a remote session. What wires a bench stays in the canon, and a session reads
 it at its primary root.

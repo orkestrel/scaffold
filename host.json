@@ -400,7 +400,7 @@
 			"storage": "claude/rules/documentation.md",
 			"destination": ".claude/rules/documentation.md",
 			"executable": false,
-			"digest": "9baa38c6c0f3a262ddcabab232ea430dc4577e15b1d2eedf2ecb2dc78a8f5780"
+			"digest": "c974197ea9905f23606ad14ae993813f0a5a262dd703b96716561894d6e8a6e2"
 		},
 		{
 			"storage": "claude/rules/names.md",
@@ -676,13 +676,13 @@
 			"storage": "guides/guide.md",
 			"destination": "guides/guide.md",
 			"executable": false,
-			"digest": "1a572acf6b97c9ab26c56288bab83c474e3b43b4e6b3a2ce2da90fd2c208b9f7"
+			"digest": "3ae72c3f2d420a987c45ffbc94b3fe43f005b374d5bb3720c600751fb7197302"
 		},
 		{
 			"storage": "guides/scaffold.md",
 			"destination": "guides/scaffold.md",
 			"executable": false,
-			"digest": "dfc51495aec583bfcb4fc482c33e79e9ff54e1bf558fec4e6a3b460ddb2bcb6f"
+			"digest": "20efe53fba693472aa67068e0eb478f3fe6ef4966bfab65783000076bf1820d2"
 		},
 		{
 			"storage": "scripts/codex.sh",
@@ -701,12 +701,6 @@
 			"destination": "scripts/deps.sh",
 			"executable": true,
 			"digest": "8f4ad360cd43ea3da202892bf2cdea546795c4081e435384754cbffbf73d773e"
-		},
-		{
-			"storage": "scripts/docs.ts",
-			"destination": "scripts/docs.ts",
-			"executable": false,
-			"digest": "ab8ee57843446ad4e6578c16dcf26a11e4144053f464d0981111756f68c35b79"
 		},
 		{
 			"storage": "scripts/ollama.sh",
@@ -776,7 +770,8 @@
 		".claude/skills/orkestrel-prove-journey",
 		".claude/skills/orkestrel-publish",
 		".codex/agents",
-		".cursor/rules"
+		".cursor/rules",
+		"scripts"
 	],
-	"digest": "886689033d56da74faa4fe1d7093fca1372186ed79bef81b981d2379aeeb75d1"
+	"digest": "c26a70a4f99aad1bc33666697a5ac1d9cb3013ef373eda82bff0116381b6a71f"
 }

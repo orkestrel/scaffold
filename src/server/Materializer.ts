@@ -214,8 +214,7 @@ export class Materializer implements MaterializerInterface {
 	 *
 	 * @param plan - The compiled plan to compare.
 	 * @param target - The directory to inspect.
-	 * @returns One finding per hydrated planned path, plus the foreign files
-	 * beneath owned host roots and inside the instruction canon.
+	 * @returns Findings for hydrated planned paths and selected foreign candidates.
 	 * @throws {@link ScaffoldError} coded `INVALID` when an argument is not the
 	 * exact shape, `TARGET` when the host or target cannot be read within its
 	 * bounds, and `DESTROYED` after teardown.
@@ -223,10 +222,10 @@ export class Materializer implements MaterializerInterface {
 	 * @remarks
 	 * Host directories expand before the target is read, so this method and
 	 * {@link repair} compare the same paths with the same ownership. Foreign
-	 * candidates are files beneath those expanded roots and files the target holds
-	 * at a `CANON_PATHS` member, each in a group the plan selects; a file outside
-	 * both populations never becomes a deletion candidate merely because its group
-	 * is selected.
+	 * candidates are files beneath those expanded roots and files the target holds at
+	 * a `CANON_PATHS` member. A
+	 * file outside these populations never becomes a deletion candidate merely
+	 * because its group is selected.
 	 *
 	 * The canon is staged for reading rather than for a target, so a copy of one of
 	 * its paths sitting in a target is a superseded artifact and reports foreign. A
@@ -450,13 +449,12 @@ export class Materializer implements MaterializerInterface {
 	 * recovery mechanism, so a path it cannot restore is not one this verb takes.
 	 * A tree carrying uncommitted work is refused whole for the same reason.
 	 *
-	 * One candidate list carries both foreign populations {@link audit} reports, so
-	 * a superseded instruction copy the target holds inside the canon is deleted in
-	 * the same transaction as a stray beneath an owned root. Membership decides it,
-	 * never byte identity: a copy a release behind no longer matches the bytes the
-	 * canon now stages, and matching bytes is exactly how such a copy would be
-	 * spared. An untracked leftover is left where it sits and stays a finding, which
-	 * is the seam a maintainer keeps a git-ignored file in.
+	 * The candidate list carries every foreign population {@link audit} reports. A
+	 * superseded instruction copy inside the canon and a stray beneath an owned root
+	 * therefore follow the same transaction rules.
+	 * Membership decides it, never byte identity. An untracked leftover stays in
+	 * place and remains a finding, which is the seam a maintainer uses to keep a
+	 * git-ignored file.
 	 *
 	 * The whole call refuses when the preview disagrees with the re-derivation on
 	 * any foreign finding, including one the deletion itself would skip, because a
@@ -631,8 +629,8 @@ export class Materializer implements MaterializerInterface {
 	}
 
 	// Hydrate once, extend the target snapshot beneath the vendored directories
-	// this plan expands and across the instruction canon the target holds, then run
-	// the core comparison over that one population. Repair may supply the hydrated
+	// this plan expands and across the selected instruction canon, then run the core comparison.
+	// Repair may supply the hydrated
 	// plan it already needs for writes, while the public audit lets this method own
 	// the hydration itself.
 	#derive(plan: Plan, target: string, hydrated = this.#hydrate(plan)): Audit {

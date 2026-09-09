@@ -37,8 +37,16 @@ Documentation is an enforced contract, not explanatory decoration. The Writing r
   collapsed, a code span's boundary whitespace trimmed); a titled `@example` equals the guide fence
   under the heading of that title; and the README pitch equals the guide's tagline.
   `tests/guides.test.ts` asserts each through the `findDrift` function and the `tagline` method
-  that `@orkestrel/guide` exports; converge the two sides with `npm run docs`, never by weakening
-  the gate.
+  that `@orkestrel/guide` exports. Invoke the public `GuideCommand` class there with the package's
+  inventory policy and direct host ports, and register the package assertions in the anonymous
+  callback passed to its `execute` method. The command owns argument validation, explicit
+  rewriting, and remaining-drift reporting. Run `npm run test:guides` for read-only parity
+  assertions. Use
+  `npm run test:guides -- --to guide` or `npm run test:guides -- --to source` only when choosing
+  an explicit rewrite direction. Before adopting the generated command, implement its direct
+  entry and rewrite directions in the package-owned `tests/guides.test.ts`. Scaffold must not
+  synthesize or overwrite that authored proof. Update each fleet package's authored file before
+  its release. Never weaken the gate.
 - The TSDoc voice rule governs a doc block, and a `Summary` cell carries that block's description
   paragraph, so the same voice governs the cell. A guide tagline and a README pitch are noun
   phrases, and each is the blockquote under its file's H1.

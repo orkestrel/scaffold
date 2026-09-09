@@ -36,12 +36,12 @@ import {
 	DECLARATION_DEV_DEPENDENCIES,
 	DEPENDENCY_NAME_PATTERN,
 	DISTRIBUTION_TEST_PATH,
-	DOCS_SEED_PATH,
 	ENVIRONMENTS,
 	EXTRA_RANGE_PATTERN,
 	FLOOR_RANGE_PATTERN,
 	FOREIGN_NAME_PATTERN,
 	GLOBAL_SETUP_PATH,
+	GUIDES_TEST_PATH,
 	HOST_PATHS,
 	INTEGRATION_TEST_PATH,
 	MAX_ARTIFACT_BYTES,
@@ -348,8 +348,7 @@ export function blueprintToScripts(blueprint: Blueprint): Readonly<Record<string
 	scripts['test:config'] = `${vitest} --project config`
 	if (blueprint.setup) scripts['test:setup'] = `${vitest} --project setup`
 	if (blueprint.guides) {
-		scripts['test:guides'] = `${vitest} --project guides`
-		scripts.docs = `node --experimental-strip-types ${DOCS_SEED_PATH}`
+		scripts['test:guides'] = `node --experimental-strip-types ${GUIDES_TEST_PATH}`
 	}
 	if (blueprint.conformance) scripts['test:conformance'] = `${vitest} --project conformance`
 	scripts['test:probe'] =
@@ -420,15 +419,16 @@ export function blueprintToScripts(blueprint: Blueprint): Readonly<Record<string
  *
  * @remarks
  * Every direct `test:<project>` script is writable, together with the probe and
- * benchmark workbench scripts. A workspace carrying guides adds `docs`, the
- * documentation-parity seed the same fact selects `test:guides` by, so a target
- * that gains the proof gains the propagation beside it. Publishing adds the pack
- * and publication lifecycle scripts. Aggregate test scripts and maintainer-owned
- * gate chains stay outside the region.
+ * benchmark workbench scripts. A workspace carrying guides adds `test:guides`,
+ * whose package-owned entry runs the guides project and handles explicit parity
+ * rewrites. Publishing adds the pack and publication lifecycle scripts.
+ * Aggregate test scripts and
+ * maintainer-owned gate chains stay outside the region.
  *
  * `accepted` carries each generated predecessor the region can replace. The
- * pack hook accepts the build chain emitted before it delegated to `build`. The
- * publication hook accepts the same gate chain without
+ * guides entry accepts the generated command that invoked the guides project
+ * through Vitest alone. The pack hook accepts the build chain emitted before it
+ * delegated to `build`. The publication hook accepts the same gate chain without
  * {@link RELEASE_PROOF_COMMAND}. The value being written is always writable, so
  * it is not repeated there. Any other value is a script the workspace author
  * customized, and {@link replaceManifestScripts} retains it while writing the
@@ -448,8 +448,15 @@ export function blueprintToWritableScripts(blueprint: Blueprint): readonly Manif
 	const writable: ManifestScript[] = []
 	for (const [name, command] of Object.entries(scripts)) {
 		const direct = name.startsWith('test:') && name !== 'test:src' && name !== 'test:app'
-		if (!direct && name !== 'docs') continue
-		writable.push({ name, command, accepted: [] })
+		if (!direct) continue
+		writable.push({
+			name,
+			command,
+			accepted:
+				name === 'test:guides'
+					? ['vitest run --config vite.config.ts --no-cache --reporter=dot --project guides']
+					: [],
+		})
 	}
 	const prepack = scripts.prepack
 	if (prepack !== undefined) {
@@ -1580,20 +1587,13 @@ export function blueprintToOrchestrationArtifacts(
  * from the installed package, at the locations the `AGENTS.md` and `CLAUDE.md`
  * pointers {@link blueprintToDocumentArtifacts} emits name.
  *
- * The documentation-parity seed is vendored like every other hook. The `docs`
- * script {@link blueprintToScripts} emits and the `guides` project the root
- * configuration registers select with `guides`, so a workspace that indexes
- * no guides carries the seed and no script that runs it; `npm run check`
- * there still resolves the seed's import, because every workspace declares
- * `@orkestrel/guide`.
- *
  * @example
  * ```ts
- * import { blueprintToHostArtifacts, createBlueprint, DOCS_SEED_PATH } from '@orkestrel/scaffold'
+ * import { blueprintToHostArtifacts, createBlueprint } from '@orkestrel/scaffold'
  *
  * const blueprint = createBlueprint('router')
  *
- * blueprintToHostArtifacts(blueprint).some((artifact) => artifact.path === DOCS_SEED_PATH) // true
+ * blueprintToHostArtifacts(blueprint).some((artifact) => artifact.path === 'tests/guides.test.ts') // false
  * blueprintToHostArtifacts(blueprint).some((artifact) => artifact.path === 'guides/router.md') // false
  * ```
  */

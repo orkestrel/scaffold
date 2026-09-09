@@ -2,8 +2,8 @@ import type { ManifestScript } from '@src/core'
 import type { ScratchInterface } from '@orkestrel/test/server'
 import { createScratch, destroyScratch } from '@orkestrel/test/server'
 import { spawnSync } from 'node:child_process'
-import { mkdirSync, readFileSync, symlinkSync } from 'node:fs'
-import { join, resolve } from 'node:path'
+import { existsSync, mkdirSync, readFileSync, symlinkSync } from 'node:fs'
+import { dirname, join, resolve } from 'node:path'
 import {
 	blueprintToConfigArtifacts,
 	blueprintToDevDependencies,
@@ -31,6 +31,7 @@ import {
 	srcToExports,
 } from '@src/core'
 import { buildBlueprint } from '../../setup.js'
+import { readStatements } from '../../setupServer.js'
 import { describe, expect, it } from 'vitest'
 
 describe('FLOOR_RANGE_PATTERN', () => {
@@ -594,9 +595,7 @@ describe('blueprintToScripts config projects', () => {
 			'projects: [srcCore, policy, config, guides, distribution, probe]',
 		)
 		expect(configuration).not.toContain('isExactCaseFile')
-		expect(scripts['test:guides']).toBe(
-			'vitest run --config vite.config.ts --no-cache --reporter=dot --project guides',
-		)
+		expect(scripts['test:guides']).toBe('node --experimental-strip-types tests/guides.test.ts')
 		expect(scripts.test).toContain('npm run test:guides')
 	})
 
@@ -611,19 +610,33 @@ describe('blueprintToScripts config projects', () => {
 		expect(scripts.test).not.toContain('test:guides')
 	})
 
-	// The same fact selects the proof and the propagation: a workspace that
-	// documents a public surface gets the gate that reports drift and the seed
-	// that carries it across. The seed joins the writable region so a target that
-	// adds the proof later receives the script from a repair, and it joins no gate
-	// chain, because writing files is a maintainer's call rather than a check.
-	it('emits the documentation seed beside the guides proof', () => {
+	// The package-owned proof joins the writable script region. Its accepted predecessor
+	// admits the released generated command without admitting a customized value.
+	it('emits the guides command and accepts its generated predecessor', () => {
 		const documented = buildBlueprint({ guides: true })
 		const undocumented = buildBlueprint({ guides: false })
 		const scripts = blueprintToScripts(documented)
-		const names = blueprintToWritableScripts(documented).map((script) => script.name)
+		const writable = blueprintToWritableScripts(documented)
+		const entry = writable.filter(({ name }) => name === 'test:guides')
 
-		expect(scripts.docs).toBe('node --experimental-strip-types scripts/docs.ts')
-		expect(names.indexOf('docs')).toBe(names.indexOf('test:guides') + 1)
+		expect(entry).toEqual([
+			{
+				name: 'test:guides',
+				command: 'node --experimental-strip-types tests/guides.test.ts',
+				accepted: ['vitest run --config vite.config.ts --no-cache --reporter=dot --project guides'],
+			},
+		])
+		const previous =
+			'{\n\t"scripts": {\n\t\t"test:guides": "vitest run --config vite.config.ts --no-cache --reporter=dot --project guides"\n\t}\n}\n'
+		const customized = previous.replace(
+			'vitest run --config vite.config.ts --no-cache --reporter=dot --project guides',
+			'node scripts/custom-guides.js',
+		)
+		expect(replaceManifestScripts(previous, entry)).toContain(
+			'"test:guides": "node --experimental-strip-types tests/guides.test.ts"',
+		)
+		expect(replaceManifestScripts(customized, entry)).toBe(customized)
+		expect(scripts).not.toHaveProperty('docs')
 		expect(blueprintToScripts(undocumented)).not.toHaveProperty('docs')
 		expect(blueprintToWritableScripts(undocumented).map((script) => script.name)).not.toContain(
 			'docs',
@@ -1775,26 +1788,26 @@ describe('content artifact compilers', () => {
 			expect(paths).not.toContain(path)
 		}
 		expect(paths).toContain('.claude/settings.json')
-		expect(paths).toContain('scripts/deps.sh')
+		expect(paths).toContain('scripts')
 		expect(
 			artifacts.every(({ ownership, origin }) => ownership === 'presence' && origin === 'host'),
 		).toBe(true)
 	})
 
-	// The seed reaches every workspace like the other vendored hooks; only the
-	// script that runs it, and the `guides` project registering it, select with
-	// `guides`. A workspace indexing no guides still carries the module, but no
-	// script that would run it.
-	it('vendors the documentation seed for every blueprint and emits its script with guides', () => {
+	// The package owns the guides proof. Scaffold emits its command and Vitest
+	// project only when guides are selected; it never vendors the authored entry.
+	it('runs the package-owned guides proof only when selected', () => {
 		const indexed = buildBlueprint({ name: 'widget', guides: true })
 		const bare = buildBlueprint({ name: 'widget', guides: false })
 		const planned = blueprintToHostArtifacts(indexed).map(({ path }) => path)
 		const withheld = blueprintToHostArtifacts(bare).map(({ path }) => path)
 
-		expect(planned).toContain('scripts/docs.ts')
-		expect(withheld).toContain('scripts/docs.ts')
-		expect(blueprintToScripts(indexed).docs).toBe('node --experimental-strip-types scripts/docs.ts')
-		expect(blueprintToScripts(bare)).not.toHaveProperty('docs')
+		expect(planned).not.toContain('scripts/guides.ts')
+		expect(withheld).not.toContain('scripts/guides.ts')
+		expect(blueprintToScripts(indexed)['test:guides']).toBe(
+			'node --experimental-strip-types tests/guides.test.ts',
+		)
+		expect(blueprintToScripts(bare)).not.toHaveProperty('test:guides')
 		expect(withheld).toStrictEqual(planned)
 	})
 
@@ -1822,33 +1835,38 @@ describe('content artifact compilers', () => {
 	})
 })
 
-// The vendored seed the `docs` script names, driven as the process a target runs
-// rather than imported: it reads `process.cwd()`, resolves `@orkestrel/guide`
-// from the tree it sits in, and writes files. A scratch workspace carrying the
-// seed's own bytes and a link to this checkout's installed copy of the readers is
-// the smallest tree that exercises all of that. The link is fixture wiring, not a
-// distribution proof: what a published tarball resolves is
-// `tests/distribution.test.ts`'s subject.
-const SEED_PATH = 'scripts/docs.ts'
+// The package-owned entry is driven as the process a workspace runs. The synthetic
+// guides project collects its observation at a separate path, so it never replaces
+// the entry's Guide behavior.
+const ENTRY_PATH = 'tests/guides.test.ts'
+const ENTRY_OBSERVATION_PATH = 'tests/fixture.test.ts'
 
-const SEED_MANIFEST = [
+const ENTRY_MANIFEST = [
 	'{',
 	'\t"name": "@sample/widget",',
 	'\t"private": true,',
-	'\t"type": "module"',
+	'\t"type": "module",',
+	'\t"scripts": {',
+	'\t\t"test:guides": "node --experimental-strip-types tests/guides.test.ts"',
+	'\t}',
 	'}',
 	'',
 ].join('\n')
 
-const SEED_README = ['# Widget', '', '> A widget toolkit the sample workspace publishes.', ''].join(
+const ENTRY_README = [
+	'# Widget',
+	'',
+	'> A widget toolkit the sample workspace publishes.',
+	'',
+].join('\n')
+
+// The pair the entry reports and never writes: the README pitch against the
+// guide tagline. Ruling 6 keeps the README authored by hand.
+const ENTRY_PITCH = ['# Widget', '', '> A widget kit the sample workspace publishes.', ''].join(
 	'\n',
 )
 
-// The one pair the seed reports and never writes: the README pitch against the
-// guide tagline. Ruling 6 keeps the README authored by hand.
-const SEED_PITCH = ['# Widget', '', '> A widget kit the sample workspace publishes.', ''].join('\n')
-
-const SEED_INDEX = [
+const ENTRY_INDEX = [
 	'# Guides',
 	'',
 	'## By concept',
@@ -1859,11 +1877,11 @@ const SEED_INDEX = [
 	'',
 ].join('\n')
 
-const SEED_BARREL = ["export * from './widget.js'", ''].join('\n')
+const ENTRY_BARREL = ["export * from './widget.js'", ''].join('\n')
 
-// One Surface cell, one Methods cell, and one titled fence, each planted against
+// Surface and Methods cells and a titled fence, each planted against
 // the source beneath. Every other byte of this file is what a write must leave.
-const SEED_GUIDE = [
+const ENTRY_GUIDE = [
 	'# Widget',
 	'',
 	'> A widget toolkit the sample workspace publishes.',
@@ -1898,10 +1916,10 @@ const SEED_GUIDE = [
 ].join('\n')
 
 // What `--to guide` owes: the planted cells carrying the source text and
-// every other byte of `SEED_GUIDE` unmoved. A sampled reading cannot see a row
+// every other byte of `ENTRY_GUIDE` unmoved. A sampled reading cannot see a row
 // the table re-render drops, a heading it disturbs, or padding it re-aligns,
 // which is the class the claim exists to catch, so the write is compared whole.
-const SEED_GUIDE_WRITTEN = [
+const ENTRY_GUIDE_WRITTEN = [
 	'# Widget',
 	'',
 	'> A widget toolkit the sample workspace publishes.',
@@ -1926,7 +1944,7 @@ const SEED_GUIDE_WRITTEN = [
 	'### Shape a widget',
 	'',
 	'```ts',
-	"shape('round')",
+	"shape('square')",
 	'```',
 	'',
 	'## Tests',
@@ -1935,7 +1953,7 @@ const SEED_GUIDE_WRITTEN = [
 	'',
 ].join('\n')
 
-const SEED_SOURCE = [
+const ENTRY_SOURCE = [
 	'/**',
 	' * Shapes a widget from the parts it is given.',
 	' *',
@@ -1962,7 +1980,7 @@ const SEED_SOURCE = [
 // The reported workspace: every summary and example already agrees, the guide
 // documents one export carrying no doc block, and the pitch differs. Neither
 // disagreement has a side a write can take.
-const SEED_REPORTED_GUIDE = [
+const ENTRY_REPORTED_GUIDE = [
 	'# Widget',
 	'',
 	'> A widget toolkit the sample workspace publishes.',
@@ -1989,7 +2007,7 @@ const SEED_REPORTED_GUIDE = [
 	'',
 ].join('\n')
 
-const SEED_UNDOCUMENTED = [
+const ENTRY_UNDOCUMENTED = [
 	'',
 	'export function measure(parts: string): number {',
 	'\treturn parts.length',
@@ -1997,37 +2015,139 @@ const SEED_UNDOCUMENTED = [
 	'',
 ].join('\n')
 
-const SEED_FILES: Readonly<Record<string, string>> = Object.freeze({
-	'package.json': SEED_MANIFEST,
-	'README.md': SEED_README,
-	'guides/README.md': SEED_INDEX,
-	'guides/widget.md': SEED_GUIDE,
-	'src/core/index.ts': SEED_BARREL,
-	'src/core/widget.ts': SEED_SOURCE,
+const ENTRY_FILES: Readonly<Record<string, string>> = Object.freeze({
+	'package.json': ENTRY_MANIFEST,
+	'README.md': ENTRY_README,
+	'guides/README.md': ENTRY_INDEX,
+	'guides/widget.md': ENTRY_GUIDE,
+	'src/core/index.ts': ENTRY_BARREL,
+	'src/core/widget.ts': ENTRY_SOURCE,
 })
 
-const SEED_REPORTED: Readonly<Record<string, string>> = Object.freeze({
-	...SEED_FILES,
-	'README.md': SEED_PITCH,
-	'guides/widget.md': SEED_REPORTED_GUIDE,
-	'src/core/widget.ts': `${SEED_SOURCE}${SEED_UNDOCUMENTED}`,
+const ENTRY_VITE = [
+	"import { defineConfig } from 'vitest/config'",
+	'',
+	'export default defineConfig({',
+	'\ttest: {',
+	'\t\tprojects: [',
+	'\t\t\t{',
+	"\t\t\t\ttest: { name: { label: 'guides', color: 'green' }, include: ['tests/fixture.test.ts'], environment: 'node' },",
+	'\t\t\t},',
+	'\t\t],',
+	'\t},',
+	'})',
+	'',
+].join('\n')
+
+const ENTRY_AUTHORED_VITE = ENTRY_VITE.replace(ENTRY_OBSERVATION_PATH, ENTRY_PATH)
+
+const ENTRY_AUTHORED_TEST = [
+	"import { GuideCommand } from '@orkestrel/guide/server'",
+	"import { readInventory } from '@orkestrel/test/server'",
+	"import { createVitest } from 'vitest/node'",
+	'',
+	'await new GuideCommand({',
+	"\troot: new URL('../', import.meta.url),",
+	"\tpatterns: ['src/**/*.ts', 'tests/**/*.ts', 'guides/*.md', '*.md'],",
+	"\tmodules: { '@sample/widget': 'src/core' },",
+	"\tlanguages: ['ts'],",
+	"\tlanguage: 'ts',",
+	'\treader: readInventory,',
+	'\trunner: createVitest,',
+	'}).execute(async ({ report }) => {',
+	"\tconst { expect, it } = await import('vitest')",
+	'',
+	"\tit('runs the authored worker callback', () => {",
+	'\t\texpect(report.input).toEqual([])',
+	'\t})',
+	'})',
+	'',
+].join('\n')
+
+const ENTRY_PASSING_TEST = [
+	"import { expect, it } from 'vitest'",
+	'',
+	"it('runs the generated guides project', () => {",
+	'\texpect(true).toBe(true)',
+	'})',
+	'',
+].join('\n')
+
+const ENTRY_FRESH_TEST = [
+	"import { readFileSync } from 'node:fs'",
+	"import { resolve } from 'node:path'",
+	"import { expect, it } from 'vitest'",
+	'',
+	"const source = readFileSync(resolve('src/core/widget.ts'), 'utf8')",
+	'',
+	"it('reads source bytes written before Vitest starts', () => {",
+	"\texpect(source).toContain(' * Shapes a widget from its parts.')",
+	'})',
+	'',
+].join('\n')
+
+const ENTRY_FAILING_TEST = [
+	"import { expect, it } from 'vitest'",
+	'',
+	"it('propagates a guides-project failure', () => {",
+	"\texpect('failed').toBe('passed')",
+	'})',
+	'',
+].join('\n')
+
+const ENTRY_START_TEST = [
+	"import { writeFileSync } from 'node:fs'",
+	"import { expect, it } from 'vitest'",
+	'',
+	"writeFileSync('vitest-started', 'started\\n', 'utf8')",
+	'',
+	"it('records project startup', () => {",
+	'\texpect(true).toBe(true)',
+	'})',
+	'',
+].join('\n')
+
+const ENTRY_UNHANDLED_TEST = [
+	"import { expect, it } from 'vitest'",
+	'',
+	"Promise.reject(new Error('unhandled guides error'))",
+	'',
+	"it('passes while the project reports an unhandled error', () => {",
+	'\texpect(true).toBe(true)',
+	'})',
+	'',
+].join('\n')
+
+const ENTRY_REPORTED: Readonly<Record<string, string>> = Object.freeze({
+	...ENTRY_FILES,
+	'README.md': ENTRY_PITCH,
+	'guides/widget.md': ENTRY_REPORTED_GUIDE,
+	'src/core/widget.ts': `${ENTRY_SOURCE}${ENTRY_UNDOCUMENTED}`,
 })
 
-// A manifest declaring no `name`, so `readShortName` returns `undefined` and
-// the pitch block never runs: the standing drift still prints, and no pitch
-// line ever joins it.
-const SEED_NAMELESS_MANIFEST = ['{', '\t"private": true,', '\t"type": "module"', '}', ''].join('\n')
+// A manifest declaring no `name`, so native own-guide selection finds no package
+// guide: the standing drift still prints, and no pitch line ever joins it.
+const ENTRY_NAMELESS_MANIFEST = [
+	'{',
+	'\t"private": true,',
+	'\t"type": "module",',
+	'\t"scripts": {',
+	'\t\t"test:guides": "node --experimental-strip-types tests/guides.test.ts"',
+	'\t}',
+	'}',
+	'',
+].join('\n')
 
-const SEED_NAMELESS: Readonly<Record<string, string>> = Object.freeze({
-	...SEED_REPORTED,
-	'package.json': SEED_NAMELESS_MANIFEST,
+const ENTRY_NAMELESS: Readonly<Record<string, string>> = Object.freeze({
+	...ENTRY_REPORTED,
+	'package.json': ENTRY_NAMELESS_MANIFEST,
 })
 
 // The index the whole run reads from, naming a guide under a spec other than
-// this workspace's own: `readShortName` still resolves `widget`, but no row's
-// `spec` is `guides/widget.md`, so the own-guide lookup finds nothing and the
+// this workspace's own: the manifest still names `widget`, but no row's `spec`
+// is `guides/widget.md`, so native own-guide selection finds nothing and the
 // pitch block never runs even though the manifest names one.
-const SEED_UNOWNED_INDEX = [
+const ENTRY_UNOWNED_INDEX = [
 	'# Guides',
 	'',
 	'## By concept',
@@ -2038,13 +2158,13 @@ const SEED_UNOWNED_INDEX = [
 	'',
 ].join('\n')
 
-const SEED_UNOWNED: Readonly<Record<string, string>> = Object.freeze({
-	'package.json': SEED_MANIFEST,
-	'README.md': SEED_PITCH,
-	'guides/README.md': SEED_UNOWNED_INDEX,
-	'guides/component.md': SEED_REPORTED_GUIDE,
-	'src/core/index.ts': SEED_BARREL,
-	'src/core/widget.ts': `${SEED_SOURCE}${SEED_UNDOCUMENTED}`,
+const ENTRY_UNOWNED: Readonly<Record<string, string>> = Object.freeze({
+	'package.json': ENTRY_MANIFEST,
+	'README.md': ENTRY_PITCH,
+	'guides/README.md': ENTRY_UNOWNED_INDEX,
+	'guides/component.md': ENTRY_REPORTED_GUIDE,
+	'src/core/index.ts': ENTRY_BARREL,
+	'src/core/widget.ts': `${ENTRY_SOURCE}${ENTRY_UNDOCUMENTED}`,
 })
 
 // The overlapping workspace: a parent row over `src/core` and a child row over
@@ -2053,7 +2173,7 @@ const SEED_UNOWNED: Readonly<Record<string, string>> = Object.freeze({
 // `src/core/panels/panel.ts`, and a run that seeds its texts per row from the
 // frozen inventory writes that file once per row and keeps the later rewrite
 // alone.
-const SEED_OVERLAP_INDEX = [
+const ENTRY_OVERLAP_INDEX = [
 	'# Guides',
 	'',
 	'## By concept',
@@ -2065,7 +2185,7 @@ const SEED_OVERLAP_INDEX = [
 	'',
 ].join('\n')
 
-const SEED_OVERLAP_PARENT = [
+const ENTRY_OVERLAP_PARENT = [
 	'# Widget',
 	'',
 	'> A widget toolkit the sample workspace publishes.',
@@ -2086,7 +2206,7 @@ const SEED_OVERLAP_PARENT = [
 // cell text byte-identical: after the parent row's rewrite, the child row's
 // rewrite of that same block is a no-op, which is the shape that exercises
 // the written-count no-op limb.
-const SEED_OVERLAP_CHILD = [
+const ENTRY_OVERLAP_CHILD = [
 	'# Panel',
 	'',
 	'> A panel the widget toolkit renders into.',
@@ -2104,7 +2224,7 @@ const SEED_OVERLAP_CHILD = [
 	'',
 ].join('\n')
 
-const SEED_OVERLAP_SOURCE = [
+const ENTRY_OVERLAP_SOURCE = [
 	'/**',
 	' * Frames a widget for the panel it sits in.',
 	' *',
@@ -2127,7 +2247,7 @@ const SEED_OVERLAP_SOURCE = [
 	'',
 ].join('\n')
 
-const SEED_OVERLAP_WRITTEN = [
+const ENTRY_OVERLAP_WRITTEN = [
 	'/**',
 	' * Frames a widget for the panel.',
 	' *',
@@ -2150,69 +2270,110 @@ const SEED_OVERLAP_WRITTEN = [
 	'',
 ].join('\n')
 
-const SEED_OVERLAP: Readonly<Record<string, string>> = Object.freeze({
-	'package.json': SEED_MANIFEST,
-	'guides/README.md': SEED_OVERLAP_INDEX,
-	'guides/widget.md': SEED_OVERLAP_PARENT,
-	'guides/panel.md': SEED_OVERLAP_CHILD,
+const ENTRY_OVERLAP: Readonly<Record<string, string>> = Object.freeze({
+	'package.json': ENTRY_MANIFEST,
+	'README.md': ENTRY_README,
+	'guides/README.md': ENTRY_OVERLAP_INDEX,
+	'guides/widget.md': ENTRY_OVERLAP_PARENT,
+	'guides/panel.md': ENTRY_OVERLAP_CHILD,
 	'src/core/index.ts': ["export * from './panels/index.js'", ''].join('\n'),
 	'src/core/panels/index.ts': ["export * from './panel.js'", ''].join('\n'),
-	'src/core/panels/panel.ts': SEED_OVERLAP_SOURCE,
+	'src/core/panels/panel.ts': ENTRY_OVERLAP_SOURCE,
 })
 
 // The index the whole run reads from, absent.
-const SEED_UNINDEXED: Readonly<Record<string, string>> = Object.freeze(
-	Object.fromEntries(Object.entries(SEED_FILES).filter(([path]) => path !== 'guides/README.md')),
+const ENTRY_UNINDEXED: Readonly<Record<string, string>> = Object.freeze(
+	Object.fromEntries(Object.entries(ENTRY_FILES).filter(([path]) => path !== 'guides/README.md')),
 )
 
 // An index row naming a guide the workspace does not carry.
-const SEED_UNCARRIED: Readonly<Record<string, string>> = Object.freeze({
-	...SEED_FILES,
+const ENTRY_UNCARRIED: Readonly<Record<string, string>> = Object.freeze({
+	...ENTRY_FILES,
 	'guides/README.md': [
-		SEED_INDEX.trimEnd(),
+		ENTRY_INDEX.trimEnd(),
 		'| Panel | [`panel.md`](panel.md) | [`src/core`](../src/core) | [`tests/src/core`](../tests/src/core) |',
 		'',
 	].join('\n'),
 })
 
 /**
- * Builds a workspace carrying the seed, its readers, and the planted disagreements.
+ * Links an installed package into the fixture workspace without installing.
+ *
+ * @param scratch - The fixture workspace to receive the package.
+ * @param name - The installed package name to link.
+ * @returns Nothing.
+ */
+function linkPackage(scratch: ScratchInterface, name: string): void {
+	const destination = join(scratch.path, 'node_modules', ...name.split('/'))
+	mkdirSync(dirname(destination), { recursive: true })
+	symlinkSync(resolve('node_modules', ...name.split('/')), destination, 'junction')
+}
+
+/**
+ * Builds a workspace carrying the entry, its readers, and the planted disagreements.
  *
  * @param files - The workspace files to write, keyed root-relative.
+ * @param test - The guides-project module to run.
  * @returns The allocated scratch workspace.
  */
-function buildSeedWorkspace(files: Readonly<Record<string, string>>): ScratchInterface {
-	const scratch = createScratch()
+function buildEntryWorkspace(
+	files: Readonly<Record<string, string>>,
+	test = ENTRY_PASSING_TEST,
+): ScratchInterface {
+	const scratch = createScratch({ prefix: 'scaffold guides ' })
 	for (const [path, text] of Object.entries(files)) scratch.write(path, text)
-	scratch.write(SEED_PATH, readFileSync(resolve(SEED_PATH), 'utf8'))
-	mkdirSync(join(scratch.path, 'node_modules/@orkestrel'), { recursive: true })
-	symlinkSync(
-		resolve('node_modules/@orkestrel/guide'),
-		join(scratch.path, 'node_modules/@orkestrel/guide'),
-		'junction',
-	)
+	scratch.write(ENTRY_PATH, readFileSync(resolve(ENTRY_PATH), 'utf8'))
+	scratch.write('vite.config.ts', ENTRY_VITE)
+	scratch.write(ENTRY_OBSERVATION_PATH, test)
+	linkPackage(scratch, '@orkestrel/contract')
+	linkPackage(scratch, '@orkestrel/guide')
+	linkPackage(scratch, '@orkestrel/test')
+	linkPackage(scratch, 'vite')
+	linkPackage(scratch, 'vitest')
 	return scratch
 }
 
 /**
- * Runs the seed in one workspace and reads what the process reported.
+ * Runs the entry through npm and reads what the process reported.
  *
  * @param scratch - The workspace to run in.
- * @param args - The arguments after the seed's path.
+ * @param args - The arguments forwarded to `test:guides`.
+ * @param vitest - The optional `VITEST` value supplied to the child process.
  * @returns The exit status, the lines the run printed without the trailing blank, and its error stream.
  */
-function runSeed(
+function runEntry(
 	scratch: ScratchInterface,
 	args: readonly string[],
+	vitest?: string,
 ): { readonly status: number | null; readonly lines: readonly string[]; readonly stderr: string } {
-	const run = spawnSync(process.execPath, ['--experimental-strip-types', SEED_PATH, ...args], {
-		cwd: scratch.path,
-		encoding: 'utf8',
-		windowsHide: true,
-	})
+	const adjacent = resolve(dirname(process.execPath), 'node_modules/npm/bin/npm-cli.js')
+	const npm = process.env.npm_execpath ?? (existsSync(adjacent) ? adjacent : undefined)
+	if (npm === undefined) throw new Error('The npm CLI module is unavailable.')
+	const forwarded = args.length === 0 ? [] : ['--', ...args]
+	const env = { ...process.env }
+	if (vitest === undefined) delete env.VITEST
+	else env.VITEST = vitest
+	const run = spawnSync(
+		process.execPath,
+		[npm, '--loglevel=error', 'run', 'test:guides', ...forwarded],
+		{
+			cwd: scratch.path,
+			encoding: 'utf8',
+			env,
+			windowsHide: true,
+		},
+	)
 	return {
 		status: run.status,
-		lines: run.stdout.split(/\r\n|\n/).filter((line) => line !== ''),
+		lines: run.stdout
+			.split(/\r\n|\n/)
+			.filter(
+				(line) =>
+					line.startsWith('guides/') ||
+					line.startsWith('wrote ') ||
+					line.startsWith('next: ') ||
+					line.startsWith('usage: '),
+			),
 		stderr: run.stderr,
 	}
 }
@@ -2270,21 +2431,133 @@ describe('blueprintToRootTsconfig own specifiers', () => {
 	})
 })
 
-describe('the documentation seed', () => {
-	it('names every planted disagreement and writes nothing without a direction', async () => {
-		const scratch = buildSeedWorkspace(SEED_FILES)
-		try {
-			const run = runSeed(scratch, [])
+describe('the guides entry', () => {
+	it('keeps the package-owned entry free of named local command functions', () => {
+		const functions = readStatements(readFileSync(resolve(ENTRY_PATH), 'utf8'), ENTRY_PATH).flatMap(
+			(statement) =>
+				statement.syntax === 'FunctionDeclaration'
+					? statement.declarations.map(({ name }) => name)
+					: [],
+		)
+		const control = readStatements(
+			'function localGuideCommand(): void {}\nnew GuideCommand().execute(async () => {})\n',
+			'guide-command-control.ts',
+		).flatMap((statement) =>
+			statement.syntax === 'FunctionDeclaration'
+				? statement.declarations.map(({ name }) => name)
+				: [],
+		)
 
-			expect(run.lines).toEqual([
-				'guides/widget.md function shape: guide "Shapes a widget from its parts." source "Shapes a widget from the parts it is given."',
-				'guides/widget.md Widget.paint: guide "Paints the widget onto the surface." source "Paints the widget onto the frame."',
-				'guides/widget.md Shape a widget: guide "ts\\nshape(\'round\')" source "ts\\nshape(\'square\')"',
-				'rows read: 1, disagreements found: 3',
-			])
-			expect(run.status).toBe(1)
-			// The gate reports and the seed reports; only a direction writes.
-			for (const [path, text] of Object.entries(SEED_FILES)) {
+		expect(control).toStrictEqual(['localGuideCommand'])
+		expect(functions).toStrictEqual([])
+	})
+
+	it('runs the native command when VITEST is false', async () => {
+		const scratch = buildEntryWorkspace(ENTRY_FILES)
+		try {
+			const run = runEntry(scratch, ['--to', 'guide'], 'false')
+			expect(scratch.read('guides/widget.md')).toBe(ENTRY_GUIDE_WRITTEN)
+			expect(run.status).toBe(0)
+		} finally {
+			await destroyScratch(scratch, { budget: 5000 })
+		}
+	})
+
+	it('registers assertions from an authored entry in the guides worker', async () => {
+		const passing = buildEntryWorkspace(ENTRY_FILES)
+		const failing = buildEntryWorkspace(ENTRY_FILES)
+		try {
+			passing.write(ENTRY_PATH, ENTRY_AUTHORED_TEST)
+			passing.write('vite.config.ts', ENTRY_AUTHORED_VITE)
+			failing.write(
+				ENTRY_PATH,
+				ENTRY_AUTHORED_TEST.replace(
+					'expect(report.input).toEqual([])',
+					"expect(report.input).toEqual([{ text: 'unreachable' }])",
+				),
+			)
+			failing.write('vite.config.ts', ENTRY_AUTHORED_VITE)
+
+			expect(runEntry(passing, []).status).toBe(0)
+			expect(runEntry(failing, []).status).toBe(1)
+		} finally {
+			await destroyScratch(passing, { budget: 5000 })
+			await destroyScratch(failing, { budget: 5000 })
+		}
+	})
+
+	it.each(['guide', 'source'])(
+		'keeps summary and example namespaces distinct toward %s',
+		async (direction) => {
+			const guide = ENTRY_GUIDE_WRITTEN.replace(
+				'Shapes a widget from the parts it is given.',
+				'Shapes a widget from its parts.',
+			)
+				.replace('Shape a widget', 'function shape')
+				.replace("shape('square')", "shape('round')")
+			const source = ENTRY_SOURCE.replace('Shape a widget', 'function shape')
+			const expectedGuide = guide
+				.replace('Shapes a widget from its parts.', 'Shapes a widget from the parts it is given.')
+				.replace("shape('round')", "shape('square')")
+			const expectedSource = source
+				.replace('Shapes a widget from the parts it is given.', 'Shapes a widget from its parts.')
+				.replace("shape('square')", "shape('round')")
+			const scratch = buildEntryWorkspace({
+				...ENTRY_FILES,
+				'guides/widget.md': guide,
+				'src/core/widget.ts': source,
+			})
+			try {
+				const run = runEntry(scratch, ['--to', direction])
+				expect(scratch.read('guides/widget.md')).toBe(direction === 'guide' ? expectedGuide : guide)
+				expect(scratch.read('src/core/widget.ts')).toBe(
+					direction === 'source' ? expectedSource : source,
+				)
+				expect(run.status).toBe(0)
+			} finally {
+				await destroyScratch(scratch, { budget: 5000 })
+			}
+		},
+	)
+
+	it('keeps the first matched title and absent-language comparison boundaries', async () => {
+		const repeatedGuide = `${ENTRY_GUIDE_WRITTEN}\n### Shape a widget\n\n\`\`\`ts\nshape('later')\n\`\`\`\n`
+		const repeated = buildEntryWorkspace({
+			...ENTRY_FILES,
+			'guides/widget.md': repeatedGuide,
+		})
+		const absentGuide = ENTRY_GUIDE_WRITTEN.replace('```ts', '```').replace(
+			"shape('square')",
+			"shape('round')",
+		)
+		const absentSource = ENTRY_SOURCE.replace(' * ```ts', ' * ```')
+		const absent = buildEntryWorkspace({
+			...ENTRY_FILES,
+			'guides/widget.md': absentGuide,
+			'src/core/widget.ts': absentSource,
+		})
+		try {
+			expect(runEntry(repeated, ['--to', 'guide']).status).toBe(0)
+			expect(repeated.read('guides/widget.md')).toBe(repeatedGuide)
+			expect(runEntry(absent, ['--to', 'guide']).status).toBe(0)
+			expect(absent.read('guides/widget.md')).toBe(
+				absentGuide.replace("shape('round')", "shape('square')"),
+			)
+		} finally {
+			await destroyScratch(repeated, { budget: 5000 })
+			await destroyScratch(absent, { budget: 5000 })
+		}
+	})
+
+	it('runs assertion-owned parity without a parent report or write', async () => {
+		const scratch = buildEntryWorkspace(ENTRY_FILES)
+		try {
+			const run = runEntry(scratch, [])
+
+			expect(run.lines).toEqual([])
+			expect(run.status).toBe(0)
+			// Only a direction writes.
+			for (const [path, text] of Object.entries(ENTRY_FILES)) {
 				expect(scratch.read(path)).toBe(text)
 			}
 		} finally {
@@ -2292,53 +2565,44 @@ describe('the documentation seed', () => {
 		}
 	})
 
-	it('carries every summary to the guide and leaves the example and every other byte', async () => {
-		const scratch = buildSeedWorkspace(SEED_FILES)
+	it('carries every summary and example to the guide and leaves every other byte', async () => {
+		const scratch = buildEntryWorkspace(ENTRY_FILES)
 		try {
-			const run = runSeed(scratch, ['--to', 'guide'])
+			const run = runEntry(scratch, ['--to', 'guide'])
 			const guide = scratch.read('guides/widget.md') ?? ''
 
-			expect(run.lines).toEqual([
-				'wrote guides/widget.md',
-				'guides/widget.md Shape a widget: guide "ts\\nshape(\'round\')" source "ts\\nshape(\'square\')"; the guide fence owns an example',
-				'rows read: 1, disagreements found: 3, written: 2, reported: 1',
-				'next: npm run format',
-			])
-			expect(run.status).toBe(1)
+			expect(run.lines).toEqual(['wrote guides/widget.md', 'next: npm run format'])
+			expect(run.status).toBe(0)
 			// The whole file, so a dropped row, a disturbed heading, and re-aligned
 			// padding each report here. The landmarks beneath name what the comparison
 			// is about: the rewritten cells, and the fence, the tagline, and the link
 			// that travel unchanged.
-			expect(guide).toBe(SEED_GUIDE_WRITTEN)
+			expect(guide).toBe(ENTRY_GUIDE_WRITTEN)
 			expect(guide).toContain(
 				'| `shape` | function | Shapes a widget from the parts it is given. |',
 			)
 			expect(guide).toContain('| `paint` | Paints the widget onto the frame. |')
-			expect(guide).toContain("```ts\nshape('round')\n```")
+			expect(guide).toContain("```ts\nshape('square')\n```")
 			expect(guide).toContain('> A widget toolkit the sample workspace publishes.')
 			expect(guide).toContain(
 				'- [`tests/src/core/widget.test.ts`](../tests/src/core/widget.test.ts)',
 			)
-			expect(scratch.read('src/core/widget.ts')).toBe(SEED_SOURCE)
-			expect(scratch.read('README.md')).toBe(SEED_README)
-			expect(scratch.read('guides/README.md')).toBe(SEED_INDEX)
+			expect(scratch.read('src/core/widget.ts')).toBe(ENTRY_SOURCE)
+			expect(scratch.read('README.md')).toBe(ENTRY_README)
+			expect(scratch.read('guides/README.md')).toBe(ENTRY_INDEX)
 		} finally {
 			await destroyScratch(scratch, { budget: 5000 })
 		}
 	})
 
 	it('carries every summary and example to the source, and reads back clean', async () => {
-		const scratch = buildSeedWorkspace(SEED_FILES)
+		const scratch = buildEntryWorkspace(ENTRY_FILES, ENTRY_FRESH_TEST)
 		try {
-			const written = runSeed(scratch, ['--to', 'source'])
+			const written = runEntry(scratch, ['--to', 'source'])
 			const source = scratch.read('src/core/widget.ts') ?? ''
-			const again = runSeed(scratch, [])
+			const again = runEntry(scratch, [])
 
-			expect(written.lines).toEqual([
-				'wrote src/core/widget.ts',
-				'rows read: 1, disagreements found: 3, written: 3, reported: 0',
-				'next: npm run format',
-			])
+			expect(written.lines).toEqual(['wrote src/core/widget.ts', 'next: npm run format'])
 			expect(written.status).toBe(0)
 			expect(source).toContain(' * Shapes a widget from its parts.')
 			expect(source).toContain(" * shape('round')")
@@ -2347,77 +2611,79 @@ describe('the documentation seed', () => {
 			// continuation markers, and the member's indentation.
 			expect(source).toContain(' * @param parts - The parts to shape.')
 			expect(source).toContain(' * @example Shape a widget')
-			expect(scratch.read('guides/widget.md')).toBe(SEED_GUIDE)
-			expect(again.lines).toEqual(['rows read: 1, disagreements found: 0'])
+			expect(scratch.read('guides/widget.md')).toBe(ENTRY_GUIDE)
+			expect(again.lines).toEqual([])
 			expect(again.status).toBe(0)
+			scratch.write(ENTRY_OBSERVATION_PATH, ENTRY_FAILING_TEST)
+			const failed = runEntry(scratch, [])
+			expect(failed.lines).toEqual([])
+			expect(failed.status).toBe(1)
 		} finally {
 			await destroyScratch(scratch, { budget: 5000 })
 		}
 	})
 
 	it('reports a key no doc block carries and the pitch, and leaves both files', async () => {
-		const scratch = buildSeedWorkspace(SEED_REPORTED)
+		const scratch = buildEntryWorkspace(ENTRY_REPORTED)
 		try {
-			const run = runSeed(scratch, ['--to', 'source'])
+			const run = runEntry(scratch, ['--to', 'source'])
 
 			expect(run.lines).toEqual([
-				'guides/widget.md function measure: guide "Measures a widget against the frame it fills." source absent; no doc block carries the key',
-				'guides/widget.md pitch: readme "A widget kit the sample workspace publishes." tagline "A widget toolkit the sample workspace publishes."; the README pitch is authored by hand',
-				'rows read: 1, disagreements found: 2, written: 0, reported: 2',
+				'guides/widget.md summary function measure: guide "Measures a widget against the frame it fills." source absent; the source doc block or its provenance is unavailable',
+				'guides/widget.md pitch: README "A widget kit the sample workspace publishes." guide "A widget toolkit the sample workspace publishes.".',
 			])
 			expect(run.status).toBe(1)
 			// Nothing was written, so no file moved and no formatter step is named.
 			expect(run.lines).not.toContain('next: npm run format')
-			expect(scratch.read('src/core/widget.ts')).toBe(`${SEED_SOURCE}${SEED_UNDOCUMENTED}`)
-			expect(scratch.read('README.md')).toBe(SEED_PITCH)
+			expect(scratch.read('src/core/widget.ts')).toBe(`${ENTRY_SOURCE}${ENTRY_UNDOCUMENTED}`)
+			expect(scratch.read('README.md')).toBe(ENTRY_PITCH)
 		} finally {
 			await destroyScratch(scratch, { budget: 5000 })
 		}
 	})
 
 	it('carries no pitch line for a manifest declaring no name', async () => {
-		const scratch = buildSeedWorkspace(SEED_NAMELESS)
+		const scratch = buildEntryWorkspace(ENTRY_NAMELESS)
 		try {
-			const run = runSeed(scratch, ['--to', 'source'])
+			const run = runEntry(scratch, ['--to', 'source'])
 
 			expect(run.lines).toEqual([
-				'guides/widget.md function measure: guide "Measures a widget against the frame it fills." source absent; no doc block carries the key',
-				'rows read: 1, disagreements found: 1, written: 0, reported: 1',
+				'guides/widget.md summary function measure: guide "Measures a widget against the frame it fills." source absent; the source doc block or its provenance is unavailable',
 			])
 			expect(run.status).toBe(1)
-			expect(scratch.read('README.md')).toBe(SEED_PITCH)
+			expect(scratch.read('README.md')).toBe(ENTRY_PITCH)
 		} finally {
 			await destroyScratch(scratch, { budget: 5000 })
 		}
 	})
 
 	it('carries no pitch line for a manifest naming a guide the index does not index under its own spec', async () => {
-		const scratch = buildSeedWorkspace(SEED_UNOWNED)
+		const scratch = buildEntryWorkspace(ENTRY_UNOWNED)
 		try {
-			const run = runSeed(scratch, ['--to', 'source'])
+			const run = runEntry(scratch, ['--to', 'source'])
 
 			expect(run.lines).toEqual([
-				'guides/component.md function measure: guide "Measures a widget against the frame it fills." source absent; no doc block carries the key',
-				'rows read: 1, disagreements found: 1, written: 0, reported: 1',
+				'guides/component.md summary function measure: guide "Measures a widget against the frame it fills." source absent; the source doc block or its provenance is unavailable',
 			])
 			expect(run.status).toBe(1)
-			expect(scratch.read('README.md')).toBe(SEED_PITCH)
+			expect(scratch.read('README.md')).toBe(ENTRY_PITCH)
 		} finally {
 			await destroyScratch(scratch, { budget: 5000 })
 		}
 	})
 
 	it('prints one usage line and takes exit 2 for an argument outside its option', async () => {
-		const scratch = buildSeedWorkspace(SEED_FILES)
+		const scratch = buildEntryWorkspace(ENTRY_FILES, ENTRY_START_TEST)
 		try {
-			const unknown = runSeed(scratch, ['--to', 'sideways'])
-			const stray = runSeed(scratch, ['--write'])
+			const unknown = runEntry(scratch, ['--to', 'sideways'])
+			const stray = runEntry(scratch, ['--write'])
 
-			expect(unknown.lines).toEqual(['usage: npm run docs [-- --to guide|--to source]'])
+			expect(unknown.lines).toEqual(['usage: npm run test:guides [-- --to guide|--to source]'])
 			expect(unknown.status).toBe(2)
-			expect(stray.lines).toEqual(['usage: npm run docs [-- --to guide|--to source]'])
+			expect(stray.lines).toEqual(['usage: npm run test:guides [-- --to guide|--to source]'])
 			expect(stray.status).toBe(2)
-			expect(scratch.read('guides/widget.md')).toBe(SEED_GUIDE)
+			expect(scratch.read('guides/widget.md')).toBe(ENTRY_GUIDE)
+			expect(scratch.has('vitest-started')).toBe(false)
 		} finally {
 			await destroyScratch(scratch, { budget: 5000 })
 		}
@@ -2428,29 +2694,22 @@ describe('the documentation seed', () => {
 	// rather than the bytes the run started from. A file that moved is written
 	// once, after every row has run.
 	it('carries every overlapping row into one source file and writes that file once', async () => {
-		const scratch = buildSeedWorkspace(SEED_OVERLAP)
+		const scratch = buildEntryWorkspace(ENTRY_OVERLAP)
 		try {
-			const reported = runSeed(scratch, [])
-			const written = runSeed(scratch, ['--to', 'source'])
+			const reported = runEntry(scratch, [])
+			const written = runEntry(scratch, ['--to', 'source'])
 			const source = scratch.read('src/core/panels/panel.ts') ?? ''
 
-			expect(reported.lines).toEqual([
-				'guides/widget.md function frame: guide "Frames a widget for the panel." source "Frames a widget for the panel it sits in."',
-				'guides/panel.md function paint: guide "Paints the panel onto the frame." source "Paints the panel onto the frame it was given."',
-				'guides/panel.md function frame: guide "Frames a widget for the panel." source "Frames a widget for the panel it sits in."',
-				'rows read: 2, disagreements found: 3',
-			])
-			expect(written.lines).toEqual([
-				'wrote src/core/panels/panel.ts',
-				'rows read: 2, disagreements found: 3, written: 2, reported: 0',
-				'next: npm run format',
-			])
+			expect(reported.lines).toEqual([])
+			expect(reported.status).toBe(0)
+			expect(written.lines).toEqual(['wrote src/core/panels/panel.ts', 'next: npm run format'])
+			expect(written.stderr).toBe('')
 			expect(written.status).toBe(0)
 			// Every rewrite in one file, and the file named once: a run that re-seeded
 			// its texts per row keeps the later rewrite alone and names the file again.
-			expect(source).toBe(SEED_OVERLAP_WRITTEN)
+			expect(source).toBe(ENTRY_OVERLAP_WRITTEN)
 			expect(written.lines.filter((line) => line.startsWith('wrote '))).toHaveLength(1)
-			expect(runSeed(scratch, []).lines).toEqual(['rows read: 2, disagreements found: 0'])
+			expect(runEntry(scratch, []).lines).toEqual([])
 		} finally {
 			await destroyScratch(scratch, { budget: 5000 })
 		}
@@ -2461,34 +2720,47 @@ describe('the documentation seed', () => {
 	// disagreements. An uncaught throw would exit 1 with a stack trace, which is
 	// the code a standing disagreement already means.
 	it('names the concept index it cannot read and takes exit 2', async () => {
-		const scratch = buildSeedWorkspace(SEED_UNINDEXED)
+		const scratch = buildEntryWorkspace(ENTRY_UNINDEXED, ENTRY_START_TEST)
 		try {
-			const run = runSeed(scratch, ['--to', 'source'])
+			const run = runEntry(scratch, ['--to', 'source'])
 
 			expect(run.lines).toEqual([
 				'guides/README.md: the workspace carries no concept index to read',
 			])
 			expect(run.status).toBe(2)
 			expect(run.stderr).toBe('')
-			expect(scratch.read('src/core/widget.ts')).toBe(SEED_SOURCE)
+			expect(scratch.read('src/core/widget.ts')).toBe(ENTRY_SOURCE)
+			expect(scratch.has('vitest-started')).toBe(false)
 		} finally {
 			await destroyScratch(scratch, { budget: 5000 })
 		}
 	})
 
 	it('names the indexed guide the workspace does not carry and takes exit 2', async () => {
-		const scratch = buildSeedWorkspace(SEED_UNCARRIED)
+		const scratch = buildEntryWorkspace(ENTRY_UNCARRIED, ENTRY_START_TEST)
 		try {
-			const run = runSeed(scratch, ['--to', 'guide'])
+			const run = runEntry(scratch, ['--to', 'guide'])
 
-			expect(run.lines).toEqual([
-				'guides/panel.md: the concept index names it and the workspace does not carry it',
-			])
+			expect(run.lines).toEqual(['guides/panel.md is absent from the inventory.'])
 			expect(run.status).toBe(2)
 			expect(run.stderr).toBe('')
-			expect(scratch.read('guides/widget.md')).toBe(SEED_GUIDE)
+			expect(scratch.read('guides/widget.md')).toBe(ENTRY_GUIDE)
+			expect(scratch.has('vitest-started')).toBe(false)
 		} finally {
 			await destroyScratch(scratch, { budget: 5000 })
+		}
+	})
+
+	it('rejects an empty guides project and an unhandled project error', async () => {
+		const empty = buildEntryWorkspace(ENTRY_FILES)
+		const unhandled = buildEntryWorkspace(ENTRY_FILES, ENTRY_UNHANDLED_TEST)
+		try {
+			empty.remove(ENTRY_OBSERVATION_PATH)
+			expect(runEntry(empty, []).status).toBe(1)
+			expect(runEntry(unhandled, []).status).toBe(1)
+		} finally {
+			await destroyScratch(empty, { budget: 5000 })
+			await destroyScratch(unhandled, { budget: 5000 })
 		}
 	})
 })

@@ -1895,7 +1895,7 @@ describe('CLI audit', () => {
 			workspace.write('target/tests/guides.test.ts', "export const HTML_GUIDE_PROOF = 'html'\n")
 			const planned = blueprintToScripts(blueprint)
 			const plannedGuides = requireValue(planned['test:guides'])
-			const declaredGuides = plannedGuides.replace(' --no-cache', '')
+			const declaredGuides = 'node scripts/custom-guides.mjs'
 			const scripts: Record<string, string> = {
 				...planned,
 				'test:guides': declaredGuides,
@@ -4258,7 +4258,7 @@ describe('CLI overwrite', () => {
 		}
 	})
 
-	it('overwrites a freshly scaffolded repository without deleting untracked files', async () => {
+	it('deletes tracked unplanned scripts without deleting untracked files', async () => {
 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		const server = await createUpstreamServer({
 			...FLEET_RELEASE_REPLIES,
@@ -4290,7 +4290,10 @@ describe('CLI overwrite', () => {
 					target,
 				]),
 			).toBe(EXIT_CLEAN)
+			workspace.write('fresh/scripts/docs.ts', 'docs\n')
+			workspace.write('fresh/scripts/custom.ts', 'custom\n')
 			createRepository(target)
+			trackFiles(target)
 
 			const overwritten = createSink()
 			expect(
@@ -4305,7 +4308,9 @@ describe('CLI overwrite', () => {
 				]),
 			).toBe(EXIT_CLEAN)
 			const result: OverwriteResult = JSON.parse(overwritten.output[0] ?? '')
-			expect(result.removed).toStrictEqual([])
+			expect(result.removed.toSorted()).toStrictEqual(['scripts/custom.ts', 'scripts/docs.ts'])
+			expect(workspace.read('fresh/scripts/custom.ts')).toBeUndefined()
+			expect(workspace.read('fresh/scripts/docs.ts')).toBeUndefined()
 			expect(result.provenance).toStrictEqual({ versions: 'live', guides: 'live' })
 
 			const controlTarget = workspace.ensure('control')

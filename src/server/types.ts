@@ -190,7 +190,11 @@ export interface MaterializerInterface {
 	 *
 	 * @param plan - The compiled plan to compare.
 	 * @param target - The directory to inspect.
-	 * @returns One finding per hydrated planned path, plus foreign files beneath owned host roots.
+	 * @returns Findings for hydrated planned paths and selected foreign candidates.
+	 *
+	 * @remarks
+	 * Foreign candidates are files beneath expanded host roots and files held at a
+	 * selected instruction-canon path.
 	 */
 	audit(plan: Plan, target: string): Audit
 	/**
@@ -269,7 +273,6 @@ export interface MaterializerInterface {
 	 * unlinked, so a failure part way through restores what it already took.
 	 * The package's own source and application trees are never candidates,
 	 * whatever the audit reports.
-	 *
 	 * The whole audit is guarded before any of it is read, so an audit produced by
 	 * an earlier version of this package is refused at runtime rather than only at
 	 * compile time. Only foreign findings are candidates and those never carried
