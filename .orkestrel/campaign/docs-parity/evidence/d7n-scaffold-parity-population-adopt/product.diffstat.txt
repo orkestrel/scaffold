@@ -1,0 +1,6 @@
+ PROPOSAL.md                      |  20 +-
+ tests/guides.test.ts             | 837 ++++++++++++++++++++-------------------
+ tests/setupServer.ts             |  79 +++-
+ tests/src/core/compilers.test.ts | 590 ++++++++++++++++++---------
+ tests/src/core/templates.test.ts |  39 +-
+ 5 files changed, 907 insertions(+), 658 deletions(-)

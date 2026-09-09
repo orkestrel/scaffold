@@ -1,0 +1,61 @@
+COMMAND: npm run check:src:core
+EXIT: 0
+npm notice run @orkestrel/guide@0.0.18 check:src:core
+npm notice run tsc --noEmit -p configs/src/tsconfig.core.json
+
+COMMAND: npm run test:src:core -- tests/src/core/Parity.test.ts
+EXIT: 0
+npm notice run @orkestrel/guide@0.0.18 test:src:core
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core tests/src/core/Parity.test.ts
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/guide
+
+················
+
+ Test Files  1 passed (1)
+      Tests  16 passed (16)
+   Start at  11:35:44
+   Duration  560ms (transform 159ms, setup 70ms, import 267ms, tests 63ms, environment 0ms)
+
+COMMAND: npm run test:src:core -- tests/src/core/factories.test.ts
+EXIT: 0
+npm notice run @orkestrel/guide@0.0.18 test:src:core
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core tests/src/core/factories.test.ts
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/guide
+
+········
+
+ Test Files  1 passed (1)
+      Tests  8 passed (8)
+   Start at  11:35:44
+   Duration  559ms (transform 164ms, setup 77ms, import 295ms, tests 26ms, environment 0ms)
+
+COMMAND: npm run test:guides
+EXIT: 0
+npm notice run @orkestrel/guide@0.0.18 test:guides
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project guides
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/guide
+
+·····································
+
+ Test Files  1 passed (1)
+      Tests  37 passed (37)
+   Start at  11:35:44
+   Duration  774ms (transform 168ms, setup 73ms, import 504ms, tests 38ms, environment 0ms)
+
+COMMAND: .\node_modules\.bin\oxlint.cmd --config .oxlintrc.json --deny-warnings src/core/types.ts src/core/Parity.ts tests/src/core/Parity.test.ts tests/guides.test.ts
+EXIT: 0
+NO OUTPUT
+
+COMMAND: .\node_modules\.bin\oxfmt.cmd --config .oxfmtrc.json --check src/core/types.ts src/core/Parity.ts tests/src/core/Parity.test.ts tests/guides.test.ts guides/guide.md
+EXIT: 0
+Checking formatting...
+
+All matched files use the correct format.
+Finished in 537ms on 5 files using 16 threads.
+
+COMMAND: git diff HEAD --check
+EXIT: 0
+NO OUTPUT

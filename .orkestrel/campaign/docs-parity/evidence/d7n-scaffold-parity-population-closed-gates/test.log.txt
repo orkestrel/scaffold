@@ -1,0 +1,182 @@
+npm notice run @orkestrel/scaffold@0.0.64 test
+npm notice run npm run test:src:core && npm run test:src:server && npm run test:src:bin && npm run test:policy && npm run test:config && npm run test:setup && npm run test:guides
+npm notice run @orkestrel/scaffold@0.0.64 test:src:core
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/scaffold
+
+················································································································································································································································································································································································stderr | tests/src/core/templates.test.ts > emitted workspaces under their own gates > refuses a non-object peer dependency declaration at config load
+[33m[MIXED_EXPORTS] [0mEntry module "tmp/scaffold-e2-peers-T0GeQC/malformed/vite.config.ts" is using named (including "config", "default", "distribution", "peers", "policy", "probe", "resolveWorkspacePath", "srcCore") and default exports together. Consumers of your bundle will have to use `chunk.default` to access the default export, which may not be what you want. Use `output.exports: "named"` to disable this warning.
+
+
+stderr | tests/src/core/templates.test.ts > emitted workspaces under their own gates > refuses a non-object peer dependency declaration at config load
+failed to load config from C:\Users\mikes\WebstormProjects\scaffold\tmp\scaffold-e2-peers-T0GeQC\malformed\vite.config.ts
+
+·······································
+
+ Test Files  9 passed (9)
+      Tests  407 passed (407)
+   Start at  11:50:36
+   Duration  18.28s (transform 2.15s, setup 2.94s, import 1.33s, tests 27.45s, environment 1ms)
+
+npm notice run @orkestrel/scaffold@0.0.64 test:src:server
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project src:server
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/scaffold
+
+····················---·····················································································································································································································-·················································································-················································-··································································
+
+ Test Files  5 passed (5)
+      Tests  428 passed | 6 skipped (434)
+   Start at  11:50:55
+   Duration  5.20s (transform 2.43s, setup 4.42s, import 495ms, tests 8.91s, environment 0ms)
+
+npm notice run @orkestrel/scaffold@0.0.64 test:src:bin
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project src:bin
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/scaffold
+
+···········································································································scaffold <verb> [options]
+
+  scaffold new <name> [--src <list>] [--app <list>] [--bin] [--deps <list>] [--offline] [--from <path>] [--target <path>] [--json]
+      scaffold a workspace
+  scaffold audit [--groups <list>] [--offline] [--from <path>] [--target <path>] [--json]
+      report how the target compares to its plan, writing nothing
+  scaffold repair [--groups <list>] [--offline] [--from <path>] [--target <path>] [--json]
+      write each planned path the target is missing or has let drift
+  scaffold catalog [--all] [--from <path>] [--target <path>] [--json]
+      regenerate the package table and refresh the guide mirrors
+  scaffold overwrite [--groups <list>] [--dirty] [--offline] [--from <path>] [--target <path>] [--json]
+      do everything repair and catalog do, then delete what the plan does not own and re-declare the dependency ranges
+
+options
+  --src <list>                   the published library environments to build: core, browser, server
+  --app <list>                   the private application environments to build: core, browser, server
+  --bin                          scaffold a command-line executable at src/bin/main.ts
+  --deps <list>                  the @orkestrel/* packages the workspace depends on
+  --groups <list>                the artifact groups to cover; every group when absent
+  --all                          fetch a guide for every package the organization publishes, not the declared ones alone
+  --dirty                        delete from a tree carrying uncommitted changes
+  --offline                      use the distributed dependency and vendored-host floors without reading upstream
+  --from <path>                  read the data root from a local path instead of the bundled one; catalog alone accepts it more than once
+  --target <path>                the directory the verb operates on; the working directory when absent
+  --json                         emit one machine-readable value instead of a report
+  ORKESTREL_SCAFFOLD_REGISTRY    the registry base mapped to upstream.registry.base
+  ORKESTREL_SCAFFOLD_REPOSITORY  the repository base mapped to upstream.repository.base
+
+exit codes
+  0  clean
+  1  drift or failure
+  2  usage error
+··········································································································································
+
+ Test Files  3 passed (3)
+      Tests  245 passed (245)
+   Start at  11:51:01
+   Duration  33.09s (transform 989ms, setup 2.17s, import 252ms, tests 33.15s, environment 0ms)
+
+npm notice run @orkestrel/scaffold@0.0.64 test:policy
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project policy
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/scaffold
+
+···························································································
+
+ Test Files  1 passed (1)
+      Tests  91 passed (91)
+   Start at  11:51:34
+   Duration  1.29s (transform 210ms, setup 312ms, import 88ms, tests 742ms, environment 0ms)
+
+npm notice run @orkestrel/scaffold@0.0.64 test:config
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project config
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/scaffold
+
+······stdout | tests/config.test.ts > root configuration > keeps the committed host inventory aligned with the vendored checkout bytes
+11:51:37 AM [vite] (client) Re-optimizing dependencies because lockfile has changed
+
+·stdout | tests/config.test.ts > root configuration > keeps the committed host inventory aligned with the vendored checkout bytes
+host-inventory: entries=121
+
+···································································································································································stdout | tests/config.test.ts > configuration helpers > rolls one face into a single declaration and rewrites its core specifier
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+
+·-stdout | tests/config.test.ts > configuration helpers > rolls one face into a single declaration and rewrites its core specifier
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+
+·
+
+ Test Files  1 passed (1)
+      Tests  172 passed | 1 skipped (173)
+   Start at  11:51:36
+   Duration  16.76s (transform 303ms, setup 315ms, import 380ms, tests 15.92s, environment 0ms)
+
+npm notice run @orkestrel/scaffold@0.0.64 test:setup
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project setup
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/scaffold
+
+································x··x·········································x
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |setup| tests/setupServer.test.ts > the manifest builders > declares one file entry per planned path and no root at all in the fleet manifest
+AssertionError: expected [ 'scripts' ] to strictly equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "scripts",
++ ]
+
+ ❯ tests/setupServer.test.ts:182:26
+    180|  it('declares one file entry per planned path and no root at all in th…
+    181|   const manifest = buildFleetManifest()
+    182|   expect(manifest.roots).toStrictEqual([])
+       |                          ^
+    183|   const destinations = manifest.entries.map((entry) => entry.destinati…
+    184|   expect(new Set(destinations).size).toBe(destinations.length)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  |setup| tests/setupServer.test.ts > the real host and checkout fixtures > writes every staged path into a checkout and declares exactly it in the manifest
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ tests/setupServer.test.ts:249:63
+    247|     expect(workspace.read(`checkout/${entry.destination}`)).toBe(`${en…
+    248|    }
+    249|    expect(manifest.entries.some((entry) => entry.executable)).toBe(tru…
+       |                                                               ^
+    250|   } finally {
+    251|    workspace.destroy()
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  |setup| tests/setupServer.test.ts > the tables and the derived totals > compiles the default blueprint through a real compiler and plans every vendored shape
+AssertionError: expected [ 'package.json', 'AGENTS.md', …(5) ] to include 'scripts/codex.sh'
+ ❯ tests/setupServer.test.ts:1004:17
+    1002|   const paths = vendored.artifacts.map((artifact) => artifact.path)
+    1003|   expect(paths).toContain('.claude/skills')
+    1004|   expect(paths).toContain('scripts/codex.sh')
+       |                 ^
+    1005|   expect(vendored.groups).toStrictEqual(['manifest', 'docs', 'orchestr…
+    1006|   expect(buildVendoredPlan({ groups: ['docs'] }).artifacts).toStrictEq…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  1 failed | 2 passed (3)
+      Tests  3 failed | 75 passed (78)
+   Start at  11:51:53
+   Duration  2.13s (transform 704ms, setup 947ms, import 600ms, tests 1.22s, environment 0ms)
+

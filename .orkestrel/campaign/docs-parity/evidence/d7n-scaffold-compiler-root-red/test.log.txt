@@ -1,0 +1,45 @@
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/scaffold
+
+x·····
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:core| tests/src/core/Compiler.test.ts > Compiler artifacts > emits every selected group through its correct origin
+AssertionError: expected [ Array(18) ] to strictly equal [ Array(21) ]
+
+- Expected
++ Received
+
+@@ -11,13 +11,10 @@
+    "LICENSE",
+    "configs/helpers.ts",
+    "configs/policy.ts",
+    "guides/guide.md",
+    "guides/scaffold.md",
+-   "scripts/codex.sh",
+-   "scripts/cursor.sh",
+-   "scripts/deps.sh",
+-   "scripts/ollama.sh",
++   "scripts",
+    "tests/config.test.ts",
+    "tests/policy.test.ts",
+    "tests/setupPolicy.ts",
+  ]
+
+ ❯ tests/src/core/Compiler.test.ts:79:5
+     77|     .map(({ path }) => path)
+     78|     .toSorted(),
+     79|   ).toStrictEqual(
+       |     ^
+     80|    [
+     81|     'LICENSE',
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 5 passed (6)
+   Start at  11:46:41
+   Duration  534ms (transform 171ms, setup 314ms, import 22ms, tests 39ms, environment 0ms)
+

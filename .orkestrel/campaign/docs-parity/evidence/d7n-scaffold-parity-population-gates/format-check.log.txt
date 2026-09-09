@@ -1,0 +1,9 @@
+npm notice run @orkestrel/scaffold@0.0.64 format:check
+npm notice run oxfmt --config .oxfmtrc.json --check .
+Checking formatting...
+
+PROPOSAL.md (1392ms)
+guides/scaffold.md (1759ms)
+
+Format issues found in above 2 files. Run without `--check` to fix.
+Finished in 3720ms on 223 files using 16 threads.

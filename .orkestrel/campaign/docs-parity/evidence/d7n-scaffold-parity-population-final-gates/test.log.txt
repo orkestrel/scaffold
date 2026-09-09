@@ -1,0 +1,56 @@
+npm notice run @orkestrel/scaffold@0.0.64 test
+npm notice run npm run test:src:core && npm run test:src:server && npm run test:src:bin && npm run test:policy && npm run test:config && npm run test:setup && npm run test:guides
+npm notice run @orkestrel/scaffold@0.0.64 test:src:core
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/scaffold
+
+·······················x························································································································································································································································································································································stderr | tests/src/core/templates.test.ts > emitted workspaces under their own gates > refuses a non-object peer dependency declaration at config load
+[33m[MIXED_EXPORTS] [0mEntry module "tmp/scaffold-e2-peers-wkpi5v/malformed/vite.config.ts" is using named (including "config", "default", "distribution", "peers", "policy", "probe", "resolveWorkspacePath", "srcCore") and default exports together. Consumers of your bundle will have to use `chunk.default` to access the default export, which may not be what you want. Use `output.exports: "named"` to disable this warning.
+
+
+stderr | tests/src/core/templates.test.ts > emitted workspaces under their own gates > refuses a non-object peer dependency declaration at config load
+failed to load config from C:\Users\mikes\WebstormProjects\scaffold\tmp\scaffold-e2-peers-wkpi5v\malformed\vite.config.ts
+
+·······································
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:core| tests/src/core/Compiler.test.ts > Compiler artifacts > emits every selected group through its correct origin
+AssertionError: expected [ Array(18) ] to strictly equal [ Array(21) ]
+
+- Expected
++ Received
+
+@@ -11,13 +11,10 @@
+    "LICENSE",
+    "configs/helpers.ts",
+    "configs/policy.ts",
+    "guides/guide.md",
+    "guides/scaffold.md",
+-   "scripts/codex.sh",
+-   "scripts/cursor.sh",
+-   "scripts/deps.sh",
+-   "scripts/ollama.sh",
++   "scripts",
+    "tests/config.test.ts",
+    "tests/policy.test.ts",
+    "tests/setupPolicy.ts",
+  ]
+
+ ❯ tests/src/core/Compiler.test.ts:79:5
+     77|     .map(({ path }) => path)
+     78|     .toSorted(),
+     79|   ).toStrictEqual(
+       |     ^
+     80|    [
+     81|     'LICENSE',
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 8 passed (9)
+      Tests  1 failed | 406 passed (407)
+   Start at  11:44:33
+   Duration  18.88s (transform 2.08s, setup 3.08s, import 1.34s, tests 28.70s, environment 1ms)
+

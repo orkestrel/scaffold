@@ -1,0 +1,8 @@
+command: npm run test:src:core -- tests/src/core/Parity.test.ts
+exit: 1
+
+Test Files  1 failed (1)
+Tests       7 failed | 8 passed (15)
+
+The failures show the prior flat examples array, missing sections and declarations groups,
+the empty-string workspace spec sentinel, and absent independent example populations.

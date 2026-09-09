@@ -1,0 +1,12 @@
+npm notice run @orkestrel/scaffold@0.0.64 test:guides
+npm notice run node --experimental-strip-types tests/guides.test.ts
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/scaffold
+
+······················
+
+ Test Files  1 passed (1)
+      Tests  22 passed (22)
+   Start at  11:42:23
+   Duration  2.04s (transform 318ms, setup 322ms, import 880ms, tests 698ms, environment 0ms)
+

@@ -1,0 +1,68 @@
+npm notice run @orkestrel/guide@0.0.18 test:src:core
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core tests/src/core/Parity.test.ts
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/guide
+
+xx·xxxxx·······
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 7 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:core| tests/src/core/Parity.test.ts > Parity > publishes a pure composition with shared rows and a clean complete report
+AssertionError: expected { input: [], surface: [], …(8) } to deeply equal { input: [], sections: [], …(10) }
+
+- Expected
++ Received
+
+  {
+-   "declarations": [],
+    "drift": [],
+-   "examples": {
+-     "fences": [],
+-     "functions": [],
+-     "methods": [],
+-     "titles": [],
+-   },
++   "examples": [],
+    "fences": [],
+    "imports": [],
+    "input": [],
+    "links": [],
+    "methods": [],
+    "pitch": [],
+-   "sections": [],
+    "surface": [],
+    "tests": [],
+  }
+
+ FAIL  |src:core| tests/src/core/Parity.test.ts > Parity > reports missing manifest inputs without constructing a partial row
+AssertionError: expected [ { spec: '', …(1) } ] to deeply equal [ Array(1) ]
+
+- Expected
++ Received
+
+  [
+    {
++     "spec": "",
+      "text": "The manifest has no guide entries.",
+    },
+  ]
+
+ FAIL  |src:core| tests/src/core/Parity.test.ts > Parity > separates function, method, and configured-language example evidence
+TypeError: Cannot read properties of undefined (reading 'map')
+
+ FAIL  |src:core| tests/src/core/Parity.test.ts > Parity > keeps top-level title presence independent from member pairing and equality
+AssertionError: expected undefined to deeply equal []
+
+ FAIL  |src:core| tests/src/core/Parity.test.ts > Parity > keeps title presence scoped to each indexed guide
+TypeError: Cannot read properties of undefined (reading 'map')
+
+ FAIL  |src:core| tests/src/core/Parity.test.ts > Parity > reports required sections and distinguishes absent groups from empty groups
+AssertionError: expected undefined to deeply equal []
+
+ FAIL  |src:core| tests/src/core/Parity.test.ts > Parity > reports source-driven declaration populations without requiring memberless classes
+TypeError: Cannot read properties of undefined (reading 'map')
+
+ Test Files  1 failed (1)
+      Tests  7 failed | 8 passed (15)
+   Start at  11:28:23
+   Duration  526ms (transform 134ms, setup 62ms, import 232ms, tests 66ms, environment 0ms)

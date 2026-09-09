@@ -1,0 +1,2 @@
+npm notice run @orkestrel/scaffold@0.0.64 lint:check
+npm notice run oxlint --config .oxlintrc.json --deny-warnings .
