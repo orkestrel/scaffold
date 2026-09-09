@@ -213,3 +213,40 @@ scaffold's supported propagation mechanism and preserve package-owned test cases
 This clarification resolves Ruling 31's writer-retirement question. Do not retire
 automatic rewriting or introduce a replacement docs command. The tarball preparation,
 distributable comparison and publication hold remain unchanged.
+
+## Ruling 33 — use the direct package checkouts
+
+The owner directed the campaign on 2026-09-09 to work in the package repositories
+directly under C:/Users/mikes/WebstormProjects. Do not create or use a worktree or
+copied package for implementation, builds or validation. Transfer the retained
+scaffold candidate into the direct scaffold checkout, preserving owner changes.
+Keep historical worktrees and staged copies as evidence, not execution targets.
+Serialize writers in each direct checkout. The existing user-authority rule in
+.agents/orchestration.md governs this campaign-specific choice.
+
+The owner authorized reuse of the design analyst and recorded root gates instead
+of a fresh verifier. Keep Opus review independent. Record the reused analyst's
+earlier design context and the scope of every retained gate reading. This permission
+does not convert prior worktree output into a direct-checkout run or authorize
+publication. The dependency-layer tarball preparation remains required.
+
+## Ruling 34 — the test file owns parity and explicit authority
+
+Follow the owner's placement correction and authority clarification of 2026-09-09.
+Put command handling, reporting, explicit rewriting and parity assertions in
+tests/guides.test.ts. Point test:guides at that file. Do not introduce scripts/guides.ts,
+another launcher, or a replacement docs command. Supersede the launcher placement
+in d7n-guides-entry-design-verdict.md; keep its evidence as predecessor evidence.
+
+Run parity without writing when test:guides has no direction or ordinary npm test
+runs it. With --to guide, use source TSDoc as authority and update the guide's matched
+parity summaries and examples. With --to source, use the guide as authority and
+update the matching source TSDoc. Read fresh bytes before assertions. Report missing
+authority, unresolved locations and structural drift without inventing code or
+weakening parity. Keep the README pitch's separate authored boundary.
+
+Preserve package-owned test cases. Use existing Guide comparison and replacement
+exports, including replaceFence for a matched guide example. Do not duplicate a
+parser or move filesystem work into core. Remove launcher host ownership without
+turning package-owned guides tests into a vendored file. Keep the proven exact
+scripts/docs.ts retirement safeguards and the publication hold.

@@ -4,6 +4,17 @@ Written 2026-09-08T03:35Z and revised 2026-09-08T04:05Z at the owner's request, 
 
 ## Where everything is pushed
 
+Current continuation: work directly in the package repositories under
+C:/Users/mikes/WebstormProjects. Rulings 33 and 34 supersede the historical isolated
+checkout instructions and launcher design. The predecessor scaffold candidate is
+now visible in the direct checkout and its local gate chain passed, but the owner
+rejected scripts/guides.ts. The replacement must put command handling, parity and
+explicit authority-driven rewriting in tests/guides.test.ts. Revised design lanes
+are running; source remains uncommitted and unaccepted. Read
+d7n-guides-entry-direct-reading.md and d7n-guides-test-file-design-brief.md before
+resuming. Preserve the owner's manifest and staged lock edits. No package is newly
+closed by this checkpoint and no publication is authorized.
+
 | Repository | Branch | Tip | Notes |
 | --- | --- | --- | --- |
 | `orkestrel/scaffold` | `claude/orkestrel-npm-audit-deps-14ibta` (the working branch), `main`, and `claude/docs-parity-windows-01a0810d` (the designated branch) | the commit carrying this file | push each named ref at the same tip; the campaign folder is the record |

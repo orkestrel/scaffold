@@ -1,0 +1,10 @@
+{
+  "command": "C:/Users/mikes/scoop/apps/git/current/usr/bin/timeout.exe --kill-after=15s 180s node node_modules/vitest/vitest.mjs run --config vite.config.ts --no-cache --reporter=dot --project src:core tests/src/core/compilers.test.ts -t \"keeps the browser application toolchain in an app-only workspace|keeps a generated source workspace manifest byte-stable|registers and gates setup proofs only when the blueprint selects them\" -u",
+  "run": {
+    "chunk_id": "43a73f",
+    "wall_time_seconds": 1.552038,
+    "exit_code": 0,
+    "original_token_count": 95,
+    "output": "\n RUN  v4.1.11 C:/Users/mikes/WebstormProjects/scaffold\n\n-----------------------·----··-------------------------------------------------------------------------------\n\n  Snapshots  3 updated \n Test Files  1 passed (1)\n      Tests  3 passed | 106 skipped (109)\n   Start at  05:08:26\n   Duration  588ms (transform 210ms, setup 323ms, import 98ms, tests 12ms, environment 0ms)\n\n"
+  }
+}
