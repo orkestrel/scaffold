@@ -1,0 +1,52 @@
+{
+	"documented": {
+		"argv": [
+			"C:\\Users\\mikes\\scoop\\apps\\nodejs-lts\\current\\node.exe",
+			"--experimental-strip-types",
+			"tests/guides.test.ts"
+		],
+		"label": "documented",
+		"signal": null,
+		"status": 1,
+		"stderr": "\n⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯\n\n FAIL  |guides| tests/guides.test.ts [ tests/guides.test.ts ]\nError: No test suite found in file C:/Users/mikes/WebstormProjects/scaffold/tmp/pass/guide-api-example-bmzfVq/tests/guides.test.ts\n⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯\n\n",
+		"stdout": "\n RUN  v4.1.11 C:/Users/mikes/WebstormProjects/scaffold/tmp/pass/guide-api-example-bmzfVq\n\n\n\n Test Files  1 failed (1)\n      Tests  no tests\n   Start at  15:09:29\n   Duration  390ms (transform 21ms, setup 0ms, import 244ms, tests 0ms, environment 0ms)\n\n"
+	},
+	"fixture": "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\pass\\guide-api-example-bmzfVq",
+	"observation": {
+		"argv": [
+			"C:\\Users\\mikes\\scoop\\apps\\nodejs-lts\\current\\node.exe",
+			"observation.mjs"
+		],
+		"signal": null,
+		"status": 1,
+		"stderr": "runner creation failed\n",
+		"stdout": "{\"outcome\":\"fulfilled\",\"exitCode\":1}\n"
+	},
+	"positive": {
+		"argv": [
+			"C:\\Users\\mikes\\scoop\\apps\\nodejs-lts\\current\\node.exe",
+			"--experimental-strip-types",
+			"tests/guides.test.ts"
+		],
+		"label": "positive-control",
+		"signal": null,
+		"status": 0,
+		"stderr": "",
+		"stdout": "\n RUN  v4.1.11 C:/Users/mikes/WebstormProjects/scaffold/tmp/pass/guide-api-example-bmzfVq\n\n·\n\n Test Files  1 passed (1)\n      Tests  1 passed (1)\n   Start at  15:09:31\n   Duration  401ms (transform 22ms, setup 0ms, import 246ms, tests 3ms, environment 0ms)\n\n"
+	},
+	"callback": {
+		"argv": [
+			"C:\\Users\\mikes\\scoop\\apps\\nodejs-lts\\current\\node.exe",
+			"--experimental-strip-types",
+			"tests/guides.test.ts"
+		],
+		"label": "callback-import",
+		"signal": null,
+		"status": 1,
+		"stderr": "\n⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯\n\n FAIL  |guides| tests/guides.test.ts [ tests/guides.test.ts ]\nError: No test suite found in file C:/Users/mikes/WebstormProjects/scaffold/tmp/pass/guide-api-example-bmzfVq/tests/guides.test.ts\n⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯\n\n",
+		"stdout": "\n RUN  v4.1.11 C:/Users/mikes/WebstormProjects/scaffold/tmp/pass/guide-api-example-bmzfVq\n\n\n\n Test Files  1 failed (1)\n      Tests  no tests\n   Start at  15:09:30\n   Duration  442ms (transform 21ms, setup 0ms, import 267ms, tests 0ms, environment 0ms)\n\n"
+	},
+	"snippet": {
+		"sha256": "c52341c07dc39ce44e6170cdfa8f63501d8d2f57646956d2b1be15e22ec76493"
+	}
+}

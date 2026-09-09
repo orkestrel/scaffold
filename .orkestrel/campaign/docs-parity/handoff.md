@@ -70,13 +70,18 @@ implementation. The corrected writer has returned frozen. Root's TypeScript,
 changing-getter control, server tests and ordered Guide gates passed. The canonical
 replacement archive is installed in Scaffold with matching core/server bytes and
 declarations; the supported mirror is current. Read d7n-guide-api-rules-landing.md.
-The downstream successor is d7n-scaffold-api-rules-adopt-brief.md with
-d7n-scaffold-api-rules-adopt-artifact.md. It is ready for dispatch on the installed
-artifact. Final review uses d7n-guides-api-close-brief.md after adoption and root
-gates. The command extraction addresses an unmet
+The downstream successor d7n-scaffold-api-rules-adopt-brief.md returned frozen.
+The canonical entry now constructs the installed GuideCommand directly and
+retains no named local command or registration helper. Root's native guides
+command and ordered Scaffold gates passed. Final review uses
+d7n-guides-api-close-brief.md with d7n-guides-api-close-evidence.md. The reused
+objective review returned contract-wording and direct-helper test gaps. The
+separate owner-selected review continues while root probes the printed example
+and native failure settlement. Read d7n-guides-api-adopt-landing.md. Product stays
+frozen until reconciliation. The command extraction addresses an unmet
 part of Ruling35, not a new owner requirement. Settled parity populations and
-script ownership remain unchanged. The scaffold entry still carries its old local
-shell until the new Guide artifact is installed; do not describe adoption as done.
+script ownership remain unchanged. Direct Scaffold adoption has returned, but
+product acceptance and packing remain pending the bounded review corrections.
 Root's explicit npm.cmd
 source-authority command resolved the article drift, leaving the coverage-policy red.
 The held product diffs are retained under evidence/d7n-guides-extraction-held.
