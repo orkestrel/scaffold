@@ -19,8 +19,12 @@ final ordered gates. The owner then directed extraction of shared parity mechani
 into Guide, explicit Markdown reuse, and replacement of the retired-host list with
 normal ownership cleanup. Product remains uncommitted during that revision. The owner
 declared scripts scaffold-owned. That bounded source fix has returned; the permanent
-directory-root proof passed independently on the host. Guide parity extraction is
-running with the accepted Contract, HTML, Markdown, and Test tarballs installed.
+directory-root proof passed independently on the host. Guide parity extraction has
+returned and its final ordered root gates passed with the accepted Contract, HTML,
+Markdown, and Test tarballs installed. A provisional extracted Guide tarball is
+installed in scaffold; its supported guide mirror refresh completed. Scaffold's
+thin-entry adoption is running. Product acceptance remains pending integrated review.
+Read d7n-guide-parity-core-landing.md for source and artifact evidence.
 Read d7n-guides-extraction-plan.md and d7n-scripts-ownership-landing.md for this work.
 The owner
 approved inclusion of the existing toolchain manifest and staged lock changes after
@@ -30,6 +34,11 @@ evidence/d7n-guides-test-file-gates-closed and d7n-guides-test-file-adoption-pla
 resuming, then read Ruling 35 and the extraction design packet. Preserve and include
 the owner's manifest and staged lock edits in the accepted product commit. No package is
 closed by this checkpoint and no publication is authorized.
+
+The owner prefers the canonical checkouts on main before publication. Ruling 36
+keeps active edits on the verified campaign branch, then switches each settled
+checkout to main without discarding work or rewriting history. Read
+d7n-campaign-branches-reading.md for the actual on-disk branch audit.
 
 | Repository | Branch | Tip | Notes |
 | --- | --- | --- | --- |

@@ -48,12 +48,17 @@ Include the owner's toolchain changes in the accepted scaffold product commit.
 | Script directory ownership | implementer, native Sol | scaffold | existing directory mechanism replaces retirement; raw/staged ownership and deletion controls hold |
 | Guide parity composition | implementer, native Sol | guide | types, generic checks, categorized comparison, rewrite composition, Markdown reuse, and direct tests agree |
 | Scaffold adoption | implementer, native Sol | scaffold after ownership writer returns | shared Guide tarball replaces local mechanics; real-command controls and authored examples survive |
-| Actual-diff review | reused analyst and independent Opus reviewer; mechanical checker where needed | read-only | falsifiable claims hold against final diffs and root receipts |
+| Actual-diff review | reused analyst and independent Opus reviewer; mechanical checker where needed | read-only, joint Guide/scaffold subject | falsifiable claims hold against final diffs, actual consumer adoption, and root receipts |
 | Commit and artifact preparation | root | canonical checkouts | ordered gates read, owner edits included, exact-path commits pushed, built tarballs identified |
 
 The root owns gates under Ruling 33's owner waiver. Do not dispatch a fresh verifier
 for predecessor evidence. Each changed source receives scoped proof and final ordered
 gates before acceptance. Publication stays held.
+
+Use Guide's frozen, gate-green provisional archive for the explicitly authorized
+scaffold adoption before the joint review. This is integration evidence, not source
+acceptance. The independent review sees the shared engine and its actual consumer;
+product commits and scaffold packing remain after acceptance.
 
 ## Annotate the proposals
 

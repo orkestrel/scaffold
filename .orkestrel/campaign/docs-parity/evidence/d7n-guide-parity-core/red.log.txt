@@ -1,0 +1,26 @@
+command: npm run test:src:core -- tests/src/core/Parity.test.ts
+exit: 1
+
+npm notice run @orkestrel/guide@0.0.18 test:src:core
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core tests/src/core/Parity.test.ts
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/guide
+
+x
+
+ Failed Tests 1
+
+ FAIL  |src:core| tests/src/core/Parity.test.ts > publishes the parity composition factory
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ tests/src/core/Parity.test.ts:5:46
+
+ Test Files  1 failed (1)
+      Tests  1 failed (1)
+   Duration  490ms

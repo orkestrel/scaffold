@@ -23,7 +23,7 @@ the diff; Guide excludes nothing. Check manifest/index preservation and git diff
 --check. Capture final HEAD/status/diff. Do not mutate or fix source.
 
 The pack script takes an unused evidence label. It never edits package metadata or
-runs build. Root first builds/accepts Guide, records exact original metadata, then
+runs build. Root first builds and gates frozen Guide source, records exact original metadata, then
 temporarily overlays its runtime ranges with apply_patch. Validate canonical Guide
 metadata before npm pack: name @orkestrel/guide, version 0.0.18, dependencies Contract
 ^0.0.17 and Markdown ^0.0.14. Use npm pack --ignore-scripts with an output directory
@@ -57,3 +57,35 @@ the install/build/pack/gates. No git mutations, dependency installs, source writ
 publishing, secrets, or whole-tree commands by this role. Stop and report any
 deviation; do not redesign the carrier. Return the owned paths and validation
 results. Root retains and audits the carriers with execution receipts.
+
+## Root carrier corrections
+
+Bound install and pack with timeout --kill-after=15s 600. Capture the actual exit
+file even when the command fails. For pack, cd to canonical Guide and invoke npm
+pack there. Accept only a single output-label segment with an alphanumeric leading
+character and alphanumeric, dot, underscore, or hyphen thereafter. Canonicalize the
+archive with realpath -e before checking SCR/packed containment. Keep this correction
+limited to the named carriers; rerun syntax checks and return.
+
+## Supported Guide mirror carrier
+
+Also own tmp/pass/mirror-parity-guide.mjs and its report entry. Author only; do not
+execute it. Root read the public Mirror contract and Materializer.mirror method:
+src/core/types.ts defines the found record with name, path, lookup, content, and
+optional observed exact-byte hex; src/server/Materializer.ts checks observed bytes
+before its existing transactional write. No fetch-policy change is required.
+
+Use static relative imports from ../../dist/src/server/index.js for Materializer
+and readFileHex, and ../../dist/src/core/index.js for contentToHex. Accept the exact
+canonical upstream guide file path and scaffold target path as arguments. Use native
+node:path resolution and node:fs/promises reads; never hand-build host paths. Validate
+the inputs and keep the destination fixed as guides/guide.md with package name
+@orkestrel/guide. Read the existing target through readFileHex. Construct a found
+Mirror record with content and its observed value, omitting observed when absent.
+Call Materializer.mirror with that record and the target. Destroy the instance in
+finally. Compare readFileHex afterward with contentToHex of the upstream content,
+then print only the MaterializeResult and selected paths. The supported API performs
+the write; no manual guide rewrite, package copy, or alternate mirror mechanism.
+
+Run node --check only. Root will execute after the Guide source is frozen and gate-green and
+scaffold has no active writer. Keep all other source and configuration untouched.

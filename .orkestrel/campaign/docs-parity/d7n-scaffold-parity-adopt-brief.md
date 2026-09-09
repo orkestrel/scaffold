@@ -18,7 +18,7 @@ tests/guides.test.ts, with generic computations supplied by @orkestrel/guide.
 
 ## Owned scope
 
-Own tests/guides.test.ts, tests/templates.test.ts only for the existing shared
+Own tests/guides.test.ts, tests/src/core/templates.test.ts only for the existing shared
 classifier duplication, tests/setupServer.ts for corresponding shared fixture
 infrastructure, tests/src/core/compilers.test.ts and the appropriate focused command
 test file if moving its real-command fixture, and PROPOSAL.md only for the retired
@@ -94,3 +94,29 @@ mutation, build, git mutation, publication, or credential reads.
 Return tmp/units/d7n-scaffold-parity-adopt-report.md with actual owned paths, removed
 duplicate responsibilities, exact commands/results, report/diff/status paths, and
 any genuine scope conflict. Do not accept your own work.
+
+## Installed artifact dispatch
+
+Root's ordered Guide gates exited 0 at tmp/pass/d7n-guide-parity-core-gates.
+Scaffold now has the actual provisional Guide tarball installed with the accepted
+Contract, HTML, Markdown, and Test archives. The install receipt is
+tmp/pass/d7n-scaffold-parity-install. Manifest, lock, and their staged entries stayed
+unchanged. Root checked the installed ParityInterface/Options/Report/Rewrite declarations.
+The guide mirror was refreshed through the built Materializer.mirror API and checked
+against canonical Guide bytes. Do not edit that mirror.
+
+Artifact: tmp/pass/packed/d7n-guide-parity-core/orkestrel-guide-0.0.18.tgz
+SHA-256: c4328dad92ffb44c71562254f62957e22b677a2399a996c4a87c224644b64757
+Installed dist/src/core/index.js SHA-256:
+3c860150cdf670bcff5f0467d0c5abe27542a967e83fd02258dc6b856bddec57
+
+This is a local-only integration prerequisite, not accepted release output. Guide
+has a test-only successor in parallel; its implementation remains frozen. Root will
+review the integrated Guide/scaffold diffs with the reused objective analyst and
+independent Opus reviewer before product commits. No source copy or link substitutes
+for this installed archive. The correct duplicate-fixture path is
+tests/src/core/templates.test.ts, as corrected in Owned scope above.
+
+Scaffold remains on claude/orkestrel-npm-audit-deps-14ibta at campaign checkpoint
+0e697e1727faeda5b4a1e02807b190cb066bc40c with the approved pending product changes.
+The owner wants main after the source settles; root owns that later switch.

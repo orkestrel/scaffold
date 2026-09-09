@@ -275,3 +275,17 @@ the accepted scaffold product commit before packing and dependency-layer propaga
 This supersedes Ruling 34's requirement to keep shared command mechanics local and
 its retired-path implementation. Preserve its read-only default, explicit authority,
 fresh-byte assertions, package ownership, and publication hold.
+
+## Ruling 36 — work on main after the campaign changes settle
+
+Follow the owner's branch direction of 2026-09-09. Keep the active edits on the
+existing claude/orkestrel-npm-audit-deps-14ibta checkouts until accepted, committed,
+and pushed. Verify the actual checked-out branch; pushing HEAD to remote main does
+not switch the local checkout. Do not switch a dirty package during its active unit.
+
+Before publication, move each settled canonical checkout to main. Fetch and inspect
+its branch relation, preserve local history, and fast-forward main where possible.
+Merge a divergent owner change rather than forcing or resetting a branch. Keep the
+campaign and designated scaffold refs at the accepted tip as the standing push rule
+requires. Use nondiscarding branch switching; no worktree, copied package, history
+rewrite, or publication is authorized by this branch preference.
