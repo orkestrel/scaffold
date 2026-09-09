@@ -50,11 +50,12 @@ independent verifier's result merely because they are green.
 Fresh objective acceptance review, mechanical checking and independent gate
 verification are not run. The owner has not answered the optional request to reuse
 the existing design analyst with its prior context disclosed. Do not assume that
-silence waives the clean-context rule. The native source writer remains available
-for its original outstanding retirement recipe only. Its return cannot review or
-accept its own source.
+silence waives the clean-context rule. The native source writer completed its
+original retirement recipe, which root executed successfully. Its return cannot
+review or accept its own source.
 
-Finish the real tracked-Git retirement proof, installed-tarball proof and independent
-acceptance before landing or propagating this candidate. Retain the Probe transport
+The real tracked-Git retirement proof is complete against the built public API.
+Finish installed-tarball proof and independent acceptance before landing or
+propagating this candidate. Retain the Probe transport
 failure as missing instrument evidence, not as a successful receipt. No publication
 is authorized.

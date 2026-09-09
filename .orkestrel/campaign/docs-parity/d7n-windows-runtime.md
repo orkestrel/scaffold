@@ -99,7 +99,7 @@ are not active units.
 | d7n-guides-entry-fix | native implementer, Sol | guides_entry_fix; original and successor brief/report pairs | source returned and frozen; root fixture integration and ordered gates passed; acceptance pending |
 | d7n-guides-entry-cli-fixture | root, Sol | matching brief/report; evidence/d7n-guides-entry-root-gates | exact scoped red exit 1 and green exit 0; full ordered chain exit 0; primary owner files unchanged |
 | d7n-guides-entry-gates-author | native builder, Terra | tmp/units/d7n-guides-entry-gates-author-brief.md | not run; fresh allocation refused by the harness thread limit; root used existing package scripts |
-| d7n-guides-entry-retirement-recipe | native implementer, Sol | guides_entry_fix follow-up; tmp/units/d7n-guides-entry-retirement-recipe-brief.md | completing the original unit's outstanding root-run recipe; no product edits or executor run permitted |
+| d7n-guides-entry-retirement-recipe | native implementer, Sol; root execution | matching brief/report; evidence/d7n-guides-entry-retirement | author returned unexecuted recipe; root run exited 0 against built public API; source frozen and independent acceptance pending |
 
 Native Monitor and task-registry tools are not exposed in this harness. Root tracks
 the capped command by its exec session and reads terminal results without raw thinking

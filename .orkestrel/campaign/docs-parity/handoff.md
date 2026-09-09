@@ -281,9 +281,10 @@ The source candidate is frozen at prepared version 0.0.64. Root's ordered packag
 gates passed after the retained fixture successors. Ordinary npm test left the
 candidate diff, status and launcher bytes unchanged. Read the original, root-gate
 successor and CLI-fixture brief/report pairs with d7n-guides-entry-final.diff.txt.
-The real tracked-Git retirement recipe is in progress. Independent acceptance and
-packed-consumer proof remain pending; no entry-consolidation product change is
-accepted or landed yet.
+The real tracked-Git retirement recipe returned and root executed it successfully
+against the built public API. Read d7n-guides-entry-retirement-recipe-report.md and
+its evidence directory. Independent acceptance and packed-consumer proof remain
+pending; no entry-consolidation product change is accepted or landed yet.
 
 HTML's isolated prerequisite artifact is accepted in d7n-html-artifact-stage-verdict.md.
 Its version is 0.0.9 with staged Contract ^0.0.17, at
@@ -329,7 +330,10 @@ package scripts for the ordered gates and retained their actual outputs. Fresh
 objective review, mechanical checking and independent verification are not run.
 The owner has not yet answered whether the existing design analyst may be reused
 with its earlier context recorded. Do not silently waive clean-context review or
-route native Sol through its own CLI.
+route native Sol through its own CLI. Resume acceptance in a fresh agent context
+when capacity is available. The saved d7n-guides-entry-audit-brief.md is ready for
+the independent objective and subjective lanes. Read the effective launch copy
+before dispatch. The subjective launch script is retained but has not run.
 
 ## Pending owner decisions carried from the container
 

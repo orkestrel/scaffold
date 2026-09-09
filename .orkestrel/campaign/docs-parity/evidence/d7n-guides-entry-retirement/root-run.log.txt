@@ -1,0 +1,17 @@
+case=instrument target=C:\Users\mikes\AppData\Local\Temp\scaffold-guides-retirement-CmeYys path=workspace status=retained
+case=plan target=C:\Users\mikes\AppData\Local\Temp\scaffold-guides-retirement-CmeYys path=scripts/guides.ts status=selected-orchestration
+case=clean-tracked target=C:\Users\mikes\AppData\Local\Temp\scaffold-guides-retirement-CmeYys\clean-tracked path=scripts/docs.ts status=removed
+case=clean-tracked target=C:\Users\mikes\AppData\Local\Temp\scaffold-guides-retirement-CmeYys\clean-tracked path=scripts/custom-guides.mjs status=preserved-tracked
+case=clean-tracked target=C:\Users\mikes\AppData\Local\Temp\scaffold-guides-retirement-CmeYys\clean-tracked path=.git/HEAD status=fixture-retained-6844558c24e86e5f97139d0b232835eae6170ca2
+case=untracked-ignored target=C:\Users\mikes\AppData\Local\Temp\scaffold-guides-retirement-CmeYys\untracked-ignored path=scripts/docs.ts status=preserved-untracked
+case=untracked-ignored target=C:\Users\mikes\AppData\Local\Temp\scaffold-guides-retirement-CmeYys\untracked-ignored path=scripts/custom-guides.mjs status=preserved-tracked
+case=untracked-ignored target=C:\Users\mikes\AppData\Local\Temp\scaffold-guides-retirement-CmeYys\untracked-ignored path=.git/HEAD status=fixture-retained-f2d20a3412292f2646c8af1782c8cdb8ef456e11
+case=dirty-tree target=C:\Users\mikes\AppData\Local\Temp\scaffold-guides-retirement-CmeYys\dirty-tree path=scripts/docs.ts status=preserved-refused-TARGET
+case=dirty-tree target=C:\Users\mikes\AppData\Local\Temp\scaffold-guides-retirement-CmeYys\dirty-tree path=scripts/custom-guides.mjs status=preserved-dirty
+case=dirty-tree target=C:\Users\mikes\AppData\Local\Temp\scaffold-guides-retirement-CmeYys\dirty-tree path=.git/HEAD status=fixture-retained-01c4d4c840fa870a5b7b30821ed98d45d4e32e05
+case=moved-after-audit target=C:\Users\mikes\AppData\Local\Temp\scaffold-guides-retirement-CmeYys\moved-after-audit path=scripts/docs.ts status=preserved-refused-TARGET
+case=moved-after-audit target=C:\Users\mikes\AppData\Local\Temp\scaffold-guides-retirement-CmeYys\moved-after-audit path=scripts/custom-guides.mjs status=preserved-tracked
+case=moved-after-audit target=C:\Users\mikes\AppData\Local\Temp\scaffold-guides-retirement-CmeYys\moved-after-audit path=.git/HEAD status=fixture-retained-e739e417b0ee95558f4e3e4909e9f166b6842efb
+case=instrument target=C:\Users\mikes\AppData\Local\Temp\scaffold-guides-retirement-CmeYys path=scripts/docs.ts status=pass
+evidence=C:\Users\mikes\AppData\Local\Temp\scaffold-guides-retirement-CmeYys\evidence.log
+
