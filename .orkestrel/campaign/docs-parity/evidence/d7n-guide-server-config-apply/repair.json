@@ -1,0 +1,31 @@
+{
+	"target": "C:\\Users\\mikes\\WebstormProjects\\guide",
+	"written": [
+		"tsconfig.json",
+		"vite.config.ts",
+		"configs/src/vite.server.config.ts",
+		"configs/src/tsconfig.server.json"
+	],
+	"skipped": [
+		"configs/src/vite.core.config.ts",
+		"configs/src/tsconfig.core.json",
+		"configs/helpers.ts",
+		"configs/policy.ts",
+		".editorconfig",
+		".gitattributes",
+		".gitignore",
+		".oxfmtrc.json",
+		".oxlintrc.json",
+		".oxlintignore",
+		".prettierignore",
+		"tests/setup.ts",
+		"tests/setupServer.ts",
+		"tests/src/core/index.test.ts",
+		"tests/src/server/index.test.ts",
+		"tests/distribution.test.ts",
+		"tests/setupPolicy.ts",
+		"tests/policy.test.ts",
+		"tests/config.test.ts"
+	],
+	"removed": []
+}

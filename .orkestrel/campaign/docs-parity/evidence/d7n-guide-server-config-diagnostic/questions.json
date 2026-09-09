@@ -1,0 +1,17 @@
+[
+	{
+		"field": "extras",
+		"message": "@orkestrel/probe is pinned by the shared toolchain, which every workspace carries at one version.",
+		"blocking": true
+	},
+	{
+		"field": "extras",
+		"message": "@orkestrel/scaffold is pinned by the shared toolchain, which every workspace carries at one version.",
+		"blocking": true
+	},
+	{
+		"field": "extras",
+		"message": "@orkestrel/test is pinned by the shared toolchain, which every workspace carries at one version.",
+		"blocking": true
+	}
+]

@@ -1,0 +1,9 @@
+file:///C:/Users/mikes/WebstormProjects/scaffold/tmp/pass/guide-server-config.mjs:15
+	throw new Error(message)
+	      ^
+
+Error: Compiler returned no plan.
+    at fail (file:///C:/Users/mikes/WebstormProjects/scaffold/tmp/pass/guide-server-config.mjs:15:8)
+    at file:///C:/Users/mikes/WebstormProjects/scaffold/tmp/pass/guide-server-config.mjs:122:35
+
+Node.js v24.20.0

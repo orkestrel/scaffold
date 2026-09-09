@@ -1,0 +1,16 @@
+ M guides/guide.md
+AM src/core/Parity.ts
+ M src/core/constants.ts
+ M src/core/factories.ts
+ M src/core/helpers.ts
+ M src/core/index.ts
+ M src/core/shapers.ts
+ M src/core/types.ts
+ M src/core/validators.ts
+ M tests/guides.test.ts
+ M tests/setup.ts
+AM tests/src/core/Parity.test.ts
+ M tests/src/core/factories.test.ts
+ M tests/src/core/helpers.test.ts
+ M tests/src/core/shapers.test.ts
+ M tests/src/core/validators.test.ts

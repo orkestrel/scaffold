@@ -1,0 +1,14 @@
+{
+	"setup": true,
+	"guides": true,
+	"core": true,
+	"server": true,
+	"browser": false,
+	"app": false,
+	"bin": false,
+	"global": false,
+	"service": false,
+	"integration": false,
+	"conformance": false,
+	"showcase": false
+}

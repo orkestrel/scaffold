@@ -54,8 +54,11 @@ bounded command-boundary follow-up. Read d7n-guides-command-boundary-brief.md.
 The separate Astra design-fit recommendation and reused objective analysis have
 returned. Read d7n-guides-command-design-verdict.md: Guide/server will own the
 shared command while direct dependency ports avoid new Test/Vitest runtime edges.
-The Guide writer is starting contracts and pauses for supported server configuration;
-the root configuration carrier is being authored separately. This completes an
+Guide's contracts checkpoint is retained. Root applied the supported server
+configuration through canonical Scaffold and the real generated server TypeScript
+project passed. The same Guide writer has resumed implementation; direct dependency
+port proof and the replacement server artifact remain pending. Read
+d7n-guide-command-contract-root-report.md. This completes an
 unmet part of Ruling35, not a new owner requirement. Settled parity populations and
 script ownership remain unchanged. The scaffold entry still carries its old local
 shell until the new Guide artifact is installed; do not describe adoption as done.

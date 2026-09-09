@@ -1,0 +1,2 @@
+A	src/core/Parity.ts
+A	tests/src/core/Parity.test.ts
