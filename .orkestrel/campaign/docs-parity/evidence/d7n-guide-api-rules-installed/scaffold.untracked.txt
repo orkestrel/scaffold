@@ -1,0 +1,2 @@
+.orkestrel/campaign/docs-parity/d7n-guide-api-rules-fix-report.md
+.orkestrel/campaign/docs-parity/d7n-guides-api-close-brief.md
