@@ -19,6 +19,8 @@ The subjective lane's G1/G2 confirmations addressed ordinary inputs and do not o
 
 ## Subjective findings and referrals
 
+Root queried the reused objective analyst about category reconstruction without a Guide API expansion. The analyst initially proposed deriving the example suffix from successful replaceFence changes. Root rejected replacement success as category evidence because the public replacer permits an unplaceable result. The accepted composition uses collectTitles and computeDrift over first-title occurrences and validates the derived values against findDrift's documented example suffix. Root's installed-Guide control passed in chunk 96532c for equal, summary-only, example-only and concurrent disagreements, repeated titles, absent language, CRLF and a blockquoted fence. The follow-up is retained separately as d7n-guides-test-file-category-objective-report.md; the original blind report remains unchanged. No other lane report was shared in that exchange.
+
 | Finding | Disposition |
 | --- | --- |
 | F1 and R1: authored target entry | Accept the documentation obligation in the successor. Existing fleet Vitest-only files require authored adoption before the new command is propagated; no target readiness is claimed. Carry that required work in d7n-guides-test-file-adoption-plan.md. Do not create a host-owned test or another launcher. |

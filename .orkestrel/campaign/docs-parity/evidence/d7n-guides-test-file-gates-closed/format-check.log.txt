@@ -1,0 +1,6 @@
+npm notice run @orkestrel/scaffold@0.0.64 format:check
+npm notice run oxfmt --config .oxfmtrc.json --check .
+Checking formatting...
+
+All matched files use the correct format.
+Finished in 4118ms on 223 files using 16 threads.

@@ -13,10 +13,12 @@ explicit authority-driven rewriting in tests/guides.test.ts. The corrected entry
 is implemented in canonical scaffold and the reviewed ordered root gates passed.
 The returned audit found an inherited-environment dispatch defect and a collision
 between example titles and summary keys. Root reproduced them through the actual
-command. A bounded successor writer now owns the named source files in canonical
-scaffold. Source remains uncommitted and unaccepted. Read
-d7n-guides-test-file-audit-verdict.md, d7n-guides-test-file-audit-fix-brief.md,
-d7n-guides-test-file-root-gates-report.md and d7n-guides-test-file-adoption-plan.md before
+command. The bounded successor is accepted at source level after objective and
+mechanical PASS, independent Opus review, bounded wording integration and passing
+final ordered gates. Product remains uncommitted pending approval to include the
+owner's existing toolchain manifest and staged lock changes. Read
+d7n-guides-test-file-close-verdict.md, d7n-guides-test-file-close-annotation.md,
+evidence/d7n-guides-test-file-gates-closed and d7n-guides-test-file-adoption-plan.md before
 resuming. Preserve the owner's manifest and staged lock edits. No package is newly
 closed by this checkpoint and no publication is authorized.
 
