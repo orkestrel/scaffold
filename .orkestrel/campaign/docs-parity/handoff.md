@@ -93,7 +93,12 @@ d7n-guide-setup-export-root-report.md. The source correction and direct Scaffold
 consumer are accepted for product commit and Scaffold packing. Runtime design
 stays fixed.
 Read d7n-guides-api-adopt-landing.md and d7n-guides-api-example-root-report.md.
-Scaffold product commit and packing are the next actions. The command extraction addresses an unmet
+Scaffold product commit 5197231837183c2a2b7283f50da83ac7b704a027 is pushed to
+the campaign, main and designated refs, including owner toolchain metadata.
+Its canonical 0.0.64 archive is packed. Guide's accepted API source is committed
+and campaign-pushed at 61182c3b727ae9ee410781c48a7008f22da41ff5. Read
+d7n-guides-api-product-landing.md for archive identity and the next supported
+Guide adoption. The command extraction addresses an unmet
 part of Ruling35, not a new owner requirement. Settled parity populations and
 script ownership remain unchanged. Guide's own direct entry and obsolete-script
 removal follow the accepted Scaffold artifact before final Guide repacking.
@@ -119,7 +124,7 @@ d7n-campaign-branches-reading.md for the actual on-disk branch audit.
 | Repository | Branch | Tip | Notes |
 | --- | --- | --- | --- |
 | `orkestrel/scaffold` | `claude/orkestrel-npm-audit-deps-14ibta` (the working branch), `main`, and `claude/docs-parity-windows-01a0810d` (the designated branch) | the commit carrying this file | push each named ref at the same tip; the campaign folder is the record |
-| `orkestrel/guide` | `claude/orkestrel-npm-audit-deps-14ibta` | `ef6ada9` | reader correction accepted and pushed; main stays at d3ee1bb; corrected bootstrap pack has dist hash prefix 6455f6f9 |
+| `orkestrel/guide` | `claude/orkestrel-npm-audit-deps-14ibta` | `61182c3` | API extraction accepted and pushed; main stays at d3ee1bb pending native-entry adoption; read d7n-guides-api-product-landing.md for the accepted provisional archive |
 | `orkestrel/<package>` for every package in the table that follows | `claude/orkestrel-npm-audit-deps-14ibta` | per the table | pushed to `main` as each closes |
 
 Branch URLs follow one pattern: `https://github.com/orkestrel/<repo>/tree/claude/orkestrel-npm-audit-deps-14ibta`.
@@ -221,7 +226,7 @@ Tips are the branch tips as pushed. "on main" means the branch tip is `main`.
 | terminal | `0b01536` | retained audit lanes reconciled in `d7n-terminal-audit-verdict.md`; checker recorded as not run | dispatch `d7n-terminal-converge-fix-windows-brief.md`; then checker and verifier; verdict; push `main` |
 | mcp | `a01d5e8` | owner main merged; scoped merge checks passed; branch pushed; audit reconciled in `d7n-mcp-audit-verdict.md`; checker recorded as not run | dispatch `d7n-mcp-converge-fix-windows-brief.md`; closure; push `main`; guide-reader referral remains separate |
 | supervisor | `edf80e6` (`main`) | outside the pass; the owner's API-adoption decision is pending (`d7-fleet-plan.md` § For the owner) | nothing in this campaign |
-| guide | `ef6ada9` | reader and path corrections accepted; branch pushed; runtime-aligned 0.0.18 artifact accepted with unchanged non-map dist in d7n-guide-artifact-stage-verdict.md | adopt the absorbed test:guides entry; final runtime pins and main closure remain pending |
+| guide | `61182c3` | reader, path, parity and command API corrections accepted and campaign-pushed; accepted provisional archive identified in d7n-guides-api-product-landing.md; product tree clean | use Scaffold 0.0.64's accepted local artifact for supported tooling and direct test:guides adoption; final pins and main closure remain pending |
 
 ## The tail, after every package closes
 

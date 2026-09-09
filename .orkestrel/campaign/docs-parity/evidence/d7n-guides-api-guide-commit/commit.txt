@@ -1,0 +1,50 @@
+commit 61182c3b727ae9ee410781c48a7008f22da41ff5
+Author:     Claude <noreply@anthropic.com>
+AuthorDate: Wed Sep 9 16:09:58 2026 -0400
+Commit:     Claude <noreply@anthropic.com>
+CommitDate: Wed Sep 9 16:09:58 2026 -0400
+
+    Centralize guide parity and native command handling
+    
+    Expose owned parity results and explicit documentation authority operations.
+    Keep host activity in the server command with validated foreign runner ports.
+    Use Markdown mechanisms and preserve package-owned assertions and examples.
+    Prove native lifecycle errors, documented examples and direct helper behavior.
+    
+    Co-Authored-By: Claude <noreply@anthropic.com>
+    Claude-Session: codex:01a0810d-21bf-7f60-8534-488348e05743
+
+ README.md                             |  25 +-
+ configs/src/tsconfig.server.json      |  18 ++
+ configs/src/vite.server.config.ts     |  16 +
+ guides/README.md                      |  13 +-
+ guides/guide.md                       | 435 +++++++++++++++++--------
+ package.json                          |  19 +-
+ src/core/Parity.ts                    | 575 ++++++++++++++++++++++++++++++++++
+ src/core/constants.ts                 |   9 +-
+ src/core/factories.ts                 |   2 +-
+ src/core/helpers.ts                   | 106 ++++++-
+ src/core/index.ts                     |   1 +
+ src/core/shapers.ts                   |   5 +-
+ src/core/types.ts                     | 158 +++++++++-
+ src/core/validators.ts                |   9 +-
+ src/server/GuideCommand.ts            | 229 ++++++++++++++
+ src/server/constants.ts               |  11 +
+ src/server/helpers.ts                 |  84 +++++
+ src/server/index.ts                   |   5 +
+ src/server/parsers.ts                 |  38 +++
+ src/server/types.ts                   | 109 +++++++
+ tests/guides.test.ts                  | 209 +++---------
+ tests/setup.ts                        | 145 ++++++++-
+ tests/setupServer.ts                  |  51 +++
+ tests/src/core/Parity.test.ts         | 372 ++++++++++++++++++++++
+ tests/src/core/factories.test.ts      |   2 +-
+ tests/src/core/helpers.test.ts        |  98 +++++-
+ tests/src/core/shapers.test.ts        |  17 +-
+ tests/src/core/validators.test.ts     |  15 +-
+ tests/src/server/GuideCommand.test.ts | 134 ++++++++
+ tests/src/server/helpers.test.ts      | 118 +++++++
+ tests/src/server/parsers.test.ts      |  24 ++
+ tsconfig.json                         |   2 +
+ vite.config.ts                        |  51 ++-
+ 33 files changed, 2771 insertions(+), 334 deletions(-)

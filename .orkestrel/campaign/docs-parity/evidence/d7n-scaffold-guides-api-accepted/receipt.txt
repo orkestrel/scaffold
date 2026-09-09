@@ -1,0 +1,2 @@
+artifact: /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-scaffold-guides-api-accepted/orkestrel-scaffold-0.0.64.tgz
+label: local-artifact-only

@@ -1,0 +1,9 @@
+Centralize guide parity and native command handling
+
+Expose owned parity results and explicit documentation authority operations.
+Keep host activity in the server command with validated foreign runner ports.
+Use Markdown mechanisms and preserve package-owned assertions and examples.
+Prove native lifecycle errors, documented examples and direct helper behavior.
+
+Co-Authored-By: Claude <noreply@anthropic.com>
+Claude-Session: codex:01a0810d-21bf-7f60-8534-488348e05743

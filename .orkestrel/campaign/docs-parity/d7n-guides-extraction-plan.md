@@ -13,8 +13,8 @@ toolchain manifest and staged lockfile edits after this revision is accepted.
 | Command contract | tests/guides.test.ts remains the direct test:guides entry; default is read-only; explicit direction writes its target and tests fresh bytes | direct GuideCommand consumer accepted without named local command helpers |
 | Script ownership | HOST_PATHS declares scripts as a directory; ordinary overwrite removes unplanned tracked members; planned service scripts and transaction safeguards survive; no retired-path list | accepted with actual-diff review, scoped controls and root gates |
 | Scaffold alignment | Complete dirty product diff reviewed; obsolete docs-command code removed; authored guides tests remain package-owned | accepted for product commit and packing |
-| Manifest inclusion | Owner toolchain changes and prepared scaffold 0.0.64 metadata included in accepted product commit | approved; original staged lock preserved |
-| Artifact preparation | Guide built and packed with accepted lower-layer inputs, consumed in scaffold; scaffold committed before pack and supported dependency-layer propagation | provisional Guide proved; accepted Scaffold commit and pack follow |
+| Manifest inclusion | Owner toolchain changes and prepared scaffold 0.0.64 metadata included in accepted product commit | included in 5197231837183c2a2b7283f50da83ac7b704a027 |
+| Artifact preparation | Guide built and packed with accepted lower-layer inputs, consumed in scaffold; scaffold committed before pack and supported dependency-layer propagation | provisional Guide proved; Scaffold 0.0.64 packed from accepted canonical source; see d7n-guides-api-product-landing.md |
 | Guide command adoption | Guide's own package-owned test entry gains the accepted native command through scaffold adoption; obsolete owned scripts leave through overwrite; final Guide artifact is repacked | follows scaffold artifact; existing adoption-plan requirement |
 
 ## Bound the round

@@ -1,0 +1,43 @@
+commit 5197231837183c2a2b7283f50da83ac7b704a027
+Author:     Claude <noreply@anthropic.com>
+AuthorDate: Wed Sep 9 16:08:07 2026 -0400
+Commit:     Claude <noreply@anthropic.com>
+CommitDate: Wed Sep 9 16:08:07 2026 -0400
+
+    Run guide parity through the package test entry
+    
+    Use GuideCommand for native execution and worker inventory preparation.
+    Keep package assertions and executable examples in tests/guides.test.ts.
+    Make the scripts directory Scaffold-owned and remove the docs launcher.
+    Include the prepared package version and the owner's toolchain updates.
+    
+    Co-Authored-By: Claude <noreply@anthropic.com>
+    Claude-Session: codex:01a0810d-21bf-7f60-8534-488348e05743
+
+ .claude/rules/documentation.md                   |  12 +-
+ PROPOSAL.md                                      |  20 +-
+ guides/guide.md                                  | 532 ++++++++++++------
+ guides/scaffold.md                               |  81 +--
+ host.json                                        |  17 +-
+ package-lock.json                                | 632 +++++++++++----------
+ package.json                                     |  13 +-
+ scripts/docs.ts                                  | 454 ---------------
+ src/core/compilers.ts                            |  42 +-
+ src/core/constants.ts                            |  21 +-
+ src/server/Materializer.ts                       |  28 +-
+ src/server/types.ts                              |   7 +-
+ tests/distribution.test.ts                       |   1 -
+ tests/guides.test.ts                             | 658 +++++++++-------------
+ tests/setupServer.test.ts                        |   9 +-
+ tests/setupServer.ts                             |  84 ++-
+ tests/src/bin/CLI.test.ts                        |  11 +-
+ tests/src/core/Compiler.test.ts                  |  34 +-
+ tests/src/core/compilers.test.ts                 | 670 ++++++++++++++++-------
+ tests/src/core/fixtures/app-only-toolchain.txt   |  10 +-
+ tests/src/core/fixtures/setup-false-manifest.txt |   8 +-
+ tests/src/core/fixtures/source-manifest.txt      |   8 +-
+ tests/src/core/helpers.test.ts                   |  50 +-
+ tests/src/core/templates.test.ts                 |  39 +-
+ tests/src/server/Materializer.test.ts            |  81 +++
+ tests/src/server/helpers.test.ts                 |   5 +-
+ 26 files changed, 1780 insertions(+), 1747 deletions(-)
