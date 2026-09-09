@@ -1,0 +1,64 @@
+{
+	"baseline": [],
+	"categories": {
+		"input": [],
+		"sections": [],
+		"surface": [
+			{
+				"spec": "guides/codec.md",
+				"text": "guides/codec.md does not re-export const BASE64_ALPHABET."
+			},
+			{
+				"spec": "guides/codec.md",
+				"text": "guides/codec.md does not re-export const BASE64_LOOKUP."
+			},
+			{
+				"spec": "guides/codec.md",
+				"text": "guides/codec.md does not re-export const HEX_ALPHABET."
+			},
+			{
+				"spec": "guides/codec.md",
+				"text": "guides/codec.md does not re-export const HEX_LOOKUP."
+			},
+			{
+				"spec": "guides/codec.md",
+				"text": "guides/codec.md does not re-export const WINDOWS_1252_HIGH."
+			}
+		],
+		"methods": [
+			{
+				"spec": "guides/codec.md",
+				"text": "guides/codec.md documents no source AbsentInterface.absentMethod."
+			}
+		],
+		"declarations": [
+			{
+				"spec": "guides/codec.md",
+				"text": "guides/codec.md AbsentInterface documents [\"absentMethod\"] and declares []."
+			}
+		],
+		"links": [],
+		"tests": [],
+		"fences": [],
+		"imports": [],
+		"drift": [],
+		"pitch": []
+	},
+	"group": {
+		"interface": "AbsentInterface",
+		"methods": [
+			{
+				"name": "absentMethod"
+			}
+		]
+	},
+	"missing": [
+		"absentMethod"
+	],
+	"methods": [
+		{
+			"spec": "guides/codec.md",
+			"text": "guides/codec.md documents no source AbsentInterface.absentMethod."
+		}
+	]
+}

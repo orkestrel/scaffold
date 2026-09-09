@@ -1,0 +1,22 @@
+npm notice
+npm notice 📦  @orkestrel/msg@0.0.10
+npm notice Tarball Contents
+npm notice 1.1kB LICENSE
+npm notice 2.8kB README.md
+npm notice 95.6kB dist/src/core/index.cjs
+npm notice 164.6kB dist/src/core/index.cjs.map
+npm notice 55.9kB dist/src/core/index.d.cts
+npm notice 55.9kB dist/src/core/index.d.ts
+npm notice 92.6kB dist/src/core/index.js
+npm notice 164.6kB dist/src/core/index.js.map
+npm notice 3.7kB package.json
+npm notice Tarball Details
+npm notice name: @orkestrel/msg
+npm notice version: 0.0.10
+npm notice filename: orkestrel-msg-0.0.10.tgz
+npm notice package size: 152.4 kB
+npm notice unpacked size: 636.9 kB
+npm notice shasum: 58635e45f6a3730e48c6258e6be997ced96b9088
+npm notice integrity: sha512-C0fUoTmmHRDx0[...]i0KSJxol7AJgw==
+npm notice total files: 9
+npm notice

@@ -1,0 +1,22 @@
+npm notice
+npm notice 📦  @orkestrel/sse@0.0.7
+npm notice Tarball Contents
+npm notice 1.1kB LICENSE
+npm notice 2.4kB README.md
+npm notice 12.5kB dist/src/core/index.cjs
+npm notice 21.2kB dist/src/core/index.cjs.map
+npm notice 14.3kB dist/src/core/index.d.cts
+npm notice 14.3kB dist/src/core/index.d.ts
+npm notice 12.3kB dist/src/core/index.js
+npm notice 21.2kB dist/src/core/index.js.map
+npm notice 3.7kB package.json
+npm notice Tarball Details
+npm notice name: @orkestrel/sse
+npm notice version: 0.0.7
+npm notice filename: orkestrel-sse-0.0.7.tgz
+npm notice package size: 15.9 kB
+npm notice unpacked size: 102.9 kB
+npm notice shasum: 3585fe3929aa6150cdbda0faec132c73730811ef
+npm notice integrity: sha512-CdCxvUDLCb1H2[...]VCPG9ZpzmHjJg==
+npm notice total files: 9
+npm notice
