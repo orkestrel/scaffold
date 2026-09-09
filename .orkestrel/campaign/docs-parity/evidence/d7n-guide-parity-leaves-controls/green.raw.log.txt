@@ -1,0 +1,11 @@
+npm notice run @orkestrel/guide@0.0.18 test:src:core
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core tests/src/core/helpers.test.ts
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/guide
+
+································································································································································································································································································································································································································································································
+
+ Test Files  1 passed (1)
+      Tests  444 passed (444)
+   Start at  12:27:52
+   Duration  1.89s (transform 207ms, setup 62ms, import 523ms, tests 1.16s, environment 0ms)

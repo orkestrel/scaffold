@@ -1,0 +1,33 @@
+npm notice run @orkestrel/guide@0.0.18 test:src:core
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core tests/src/core/helpers.test.ts
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/guide
+
+x················································································································································································································································································································································································································
+
+⎯⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:core| tests/src/core/helpers.test.ts > parity leaves > exports the pure parity computations
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ tests/src/core/helpers.test.ts:90:40
+     88| describe('parity leaves', () => {
+     89|  it('exports the pure parity computations', () => {
+     90|   expect('compareMembership' in guide).toBe(true)
+       |                                        ^
+     91|   expect('identifyDrift' in guide).toBe(true)
+     92|   expect('formatSide' in guide).toBe(true)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 440 passed (441)
+   Start at  12:22:44
+   Duration  1.83s (transform 203ms, setup 62ms, import 516ms, tests 1.11s, environment 0ms)

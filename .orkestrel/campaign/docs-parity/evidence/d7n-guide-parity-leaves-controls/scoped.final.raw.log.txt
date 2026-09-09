@@ -1,0 +1,49 @@
++ npm run check:src:core
+npm notice run @orkestrel/guide@0.0.18 check:src:core
+npm notice run tsc --noEmit -p configs/src/tsconfig.core.json
++ npm run test:src:core -- tests/src/core/helpers.test.ts
+npm notice run @orkestrel/guide@0.0.18 test:src:core
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core tests/src/core/helpers.test.ts
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/guide
+
+····························································································································································································································································································································································································································································································
+
+ Test Files  1 passed (1)
+      Tests  444 passed (444)
+   Start at  12:31:07
+   Duration  1.94s (transform 228ms, setup 63ms, import 556ms, tests 1.17s, environment 0ms)
+
++ npm run test:src:core -- tests/src/core/Parity.test.ts
+npm notice run @orkestrel/guide@0.0.18 test:src:core
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core tests/src/core/Parity.test.ts
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/guide
+
+················
+
+ Test Files  1 passed (1)
+      Tests  16 passed (16)
+   Start at  12:31:10
+   Duration  504ms (transform 138ms, setup 61ms, import 233ms, tests 58ms, environment 0ms)
+
++ npm run test:guides
+npm notice run @orkestrel/guide@0.0.18 test:guides
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project guides
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/guide
+
+·····································
+
+ Test Files  1 passed (1)
+      Tests  37 passed (37)
+   Start at  12:31:11
+   Duration  697ms (transform 143ms, setup 61ms, import 452ms, tests 39ms, environment 0ms)
+
++ ./node_modules/.bin/oxlint --config .oxlintrc.json --deny-warnings src/core/helpers.ts src/core/Parity.ts tests/src/core/helpers.test.ts
++ ./node_modules/.bin/oxfmt --config .oxfmtrc.json --check src/core/helpers.ts src/core/Parity.ts tests/src/core/helpers.test.ts guides/guide.md
+Checking formatting...
+
+All matched files use the correct format.
+Finished in 527ms on 4 files using 16 threads.
++ git diff HEAD --check -- src/core/helpers.ts src/core/Parity.ts tests/src/core/helpers.test.ts guides/guide.md

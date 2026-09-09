@@ -43,8 +43,16 @@ Read d7n-guides-extraction-final-root-gates.md for the exact frozen-diff compari
 The separate Astra actual-diff review and reused objective review have returned.
 Read d7n-guides-extraction-final-verdict.md. Behavioral controls held; acceptance
 is held for centralized helper placement and stale explanatory text. The bounded
-Guide leaf/prose successor is running, and root corrected scaffold's stale ownership
-comment. The replacement archive, affected gates and correction review follow.
+Guide leaf/prose successor has returned. Its replacement archive is installed in
+scaffold, the ordered root gates passed, and the independent Astra and reused
+objective correction reviews passed. Read d7n-guides-extraction-leaves-verdict.md
+and d7n-guides-extraction-leaves-root-report.md. Before product commit, the owner
+reopened the thin-entry criterion: reusable command functions still remain local
+in scaffold/tests/guides.test.ts. Root confirmed that createParity is used but the
+command shell remains. Product commits and scaffold packing are held for the
+bounded command-boundary follow-up. Read d7n-guides-command-boundary-brief.md.
+The separate Astra design-fit recommendation and reused objective analysis are
+running. Settled parity populations and script ownership remain unchanged.
 Root's explicit npm.cmd
 source-authority command resolved the article drift, leaving the coverage-policy red.
 The held product diffs are retained under evidence/d7n-guides-extraction-held.

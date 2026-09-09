@@ -1,0 +1,6 @@
+tool call error: tool call failed for `probe/prove`
+
+Caused by:
+    Mcp error: -32000: Legacy protocol 2025-11-25 cannot represent a stream result
+
+No case/control result or receipt was returned.
