@@ -1,0 +1,31 @@
+npm notice
+npm notice 📦  @orkestrel/test@0.0.14
+npm notice Tarball Contents
+npm notice 1.1kB LICENSE
+npm notice 12.3kB README.md
+npm notice 88.1kB dist/src/browser/index.d.ts
+npm notice 98.5kB dist/src/browser/index.js
+npm notice 136.2kB dist/src/browser/index.js.map
+npm notice 33.6kB dist/src/core/index.cjs
+npm notice 48.2kB dist/src/core/index.cjs.map
+npm notice 36.5kB dist/src/core/index.d.cts
+npm notice 36.5kB dist/src/core/index.d.ts
+npm notice 32.8kB dist/src/core/index.js
+npm notice 48.2kB dist/src/core/index.js.map
+npm notice 41.6kB dist/src/server/index.cjs
+npm notice 58.5kB dist/src/server/index.cjs.map
+npm notice 35.3kB dist/src/server/index.d.cts
+npm notice 35.3kB dist/src/server/index.d.ts
+npm notice 39.7kB dist/src/server/index.js
+npm notice 56.9kB dist/src/server/index.js.map
+npm notice 4.8kB package.json
+npm notice Tarball Details
+npm notice name: @orkestrel/test
+npm notice version: 0.0.14
+npm notice filename: orkestrel-test-0.0.14.tgz
+npm notice package size: 235.7 kB
+npm notice unpacked size: 844.3 kB
+npm notice shasum: 8793391f4c659751ac87f41d23fcaccb97347a65
+npm notice integrity: sha512-9pXHgueTnG4FM[...]ZozLpjPBNq2eg==
+npm notice total files: 18
+npm notice

@@ -1,0 +1,1 @@
+{"result":{"target":"C:\\Users\\mikes\\WebstormProjects\\codec","written":["guides/guide.md"],"skipped":[],"removed":[]},"paths":{"upstream":"C:\\Users\\mikes\\WebstormProjects\\guide\\guides\\guide.md","target":"C:\\Users\\mikes\\WebstormProjects\\codec","destination":"C:\\Users\\mikes\\WebstormProjects\\codec\\guides\\guide.md"}}

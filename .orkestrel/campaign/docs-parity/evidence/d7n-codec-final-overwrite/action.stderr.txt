@@ -1,0 +1,2 @@
+setup: The target at . carries a test setup module that no proof covers: tests/setup.ts. Add tests/setup.test.ts to cover it. The proof's subject is behavior only this workspace can assert, so scaffold does not write it.
+The catalog step did not complete: USAGE: 'catalog' does not take --offline.

@@ -298,3 +298,20 @@ reviewer read-only and independent of implementation. Reuse the objective design
 analyst and root gate evidence as Ruling 33 permits. Preserve blind lane reports
 and record this substitution in the boundary and final review verdicts. This
 selection does not authorize publication or waive the final actual-diff review.
+
+## Ruling 38 — prepare the initial publication layer
+
+Follow the owner's latest direction of 2026-09-09. Narrow this continuation to
+preparing the initial runtime, peer and optional dependency layer for publication.
+Use the accepted Guide and Scaffold tarballs and supported overwrite before the
+release gate. Preserve registry-valid metadata, regenerate each package lock,
+retain the pending bump when fresh registry evidence still supports it, and run
+the actual package prepublishOnly before packing the upload archive.
+
+Compare final output against the retained foundation artifact. Close accepted
+packages on the campaign branch and main, and move their clean canonical checkout
+to main under Ruling 36. Retain Ruling 30's later development-pin comparison.
+Treat this as preparation, not permission to authenticate or publish. Present
+the prepared initial layer for the owner's upload decision; keep remaining fleet
+layers open. This supersedes Ruling 31's whole-fleet-before-handoff sequencing
+for this continuation, not its parity or artifact requirements.
