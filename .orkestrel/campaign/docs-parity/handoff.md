@@ -11,9 +11,11 @@ output identity. Their pending versions remain absent from the fresh registry
 readings. Contract's authored entry landed at 2a0ad8f and is campaign-pushed. Its
 full supported overwrite, catalog/mirror refresh, valid lock regeneration, full
 install and final prepublishOnly passed. Its replacement tarball's dist/src is
-byte-equal to the retained candidate. Final generated-diff acceptance and main
-closure remain pending. Codec and SSE authored entries returned; Msg and Test
-continue. Read d7n-contract-native-source-verdict.md and
+byte-equal to the retained candidate. Contract is accepted and pushed to main at
+e6d2de5bfbbeb6981945b33ede438de8c38f1dbf; its local checkout is on main. SSE's
+authored entry landed at 7790b01 and its final preparation is running. Msg's
+authored entry returned; Test continues. Codec is restoring omitted method
+guards. Read d7n-contract-publish-prepared-verdict.md and
 d7n-foundation-native-review-brief.md.
 No login or upload is authorized by this preparation request.
 
@@ -373,7 +375,7 @@ retained evidence/d7n-foundation-<package>/ metadata for their exact tarball pat
 
 | Foundation package | Version | Latest source | State |
 | --- | --- | --- | --- |
-| contract | 0.0.17 | 1e235c053e27b6f3f6075367312dfddc75bc3d6b | accepted artifact; clean on branch and main |
+| contract | 0.0.17 | e6d2de5bfbbeb6981945b33ede438de8c38f1dbf | publication prepared with native Guide entry and current tooling; campaign/main pushed; local main |
 | codec | 0.0.3 | a492e90fc68c64b29a82ec69181ed69e8c72beb1 | accepted artifact; clean on branch and main |
 | msg | 0.0.10 | 0daaa2a7f7301ae8754f31aa88b2a22887695065 | accepted artifact; clean on branch and main |
 | sse | 0.0.7 | 93d174e43b34daa2f0593cc89741bed587cadf46 | accepted artifact; clean on branch and main |
