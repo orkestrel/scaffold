@@ -4,25 +4,19 @@ Written 2026-09-08T03:35Z and revised 2026-09-08T04:05Z at the owner's request, 
 
 ## Where everything is pushed
 
-The owner narrowed the continuation to preparing the initial publish layer. Read
-d7n-foundation-native-start.md. Codec, Contract, Msg, SSE, and Test have the accepted
-Guide and Scaffold tarballs installed with metadata preservation and full tooling
-output identity. Their pending versions remain absent from the fresh registry
-readings. Contract's authored entry landed at 2a0ad8f and is campaign-pushed. Its
-full supported overwrite, catalog/mirror refresh, valid lock regeneration, full
-install and final prepublishOnly passed. Its replacement tarball's dist/src is
-byte-equal to the retained candidate. Contract is accepted and pushed to main at
-e6d2de5bfbbeb6981945b33ede438de8c38f1dbf; its local checkout is on main. SSE's
-final preparation closed at 2a0d3ecb5c13fe7b893c45396840ad20da45492e and is
-campaign/main pushed with local main. Msg's final preparation closed at
-2a66c5b6b1251649a3f92574facf323c20edb581 and is campaign/main pushed with local
-main. Codec's final preparation closed at f53355d92452a8fa2c59da084eb9b757c65b7b84
-and is campaign/main pushed with local main. Test's source landed at 03610cb;
-its final preparation and independent review passed, and final commit follows.
-The authored changes passed independent
-owner-selected and reused objective reviews. Read
-d7n-sse-publish-prepared-verdict.md and d7n-foundation-tail-objective-report.md.
-No login or upload is authorized by this preparation request.
+The initial publish layer is prepared under the owner's narrowed scope in
+Ruling 38. Read d7n-initial-layer-prepared.md for versions, exact archives and the
+upload hold. Contract, Codec, Msg, SSE and Test are accepted, campaign/main pushed,
+and clean on local main. Their current tooling, supported overwrite, regenerated
+registry-valid locks, final prepublishOnly and packing passed. Their final
+dist/src trees remain byte-equal to the retained foundation candidates. Root's
+post-push artifact, manifest and ref confirmation passed. Read the package
+d7n-<package>-publish-prepared-verdict.md and the state table for accepted tips.
+
+The operator upload carrier passed source review but remains held for the owner's
+terminal-route ruling. The publish skill still requires FIFO stdin on Windows;
+the carrier requires normal terminal stdin. No authentication or upload ran.
+The remaining fleet layers, Guide main and later runtime/dev re-pins remain open.
 
 Guide's native entry and supported tooling are accepted and campaign-pushed at
 327470a6e2e0c056c811e9f48a5ed429fe7ba70e. Its final ordered root gates passed,
@@ -384,7 +378,7 @@ retained evidence/d7n-foundation-<package>/ metadata for their exact tarball pat
 | codec | 0.0.3 | f53355d92452a8fa2c59da084eb9b757c65b7b84 | publication prepared with native Guide entry and current tooling; campaign/main pushed; local main |
 | msg | 0.0.10 | 2a66c5b6b1251649a3f92574facf323c20edb581 | publication prepared with native Guide entry and current tooling; campaign/main pushed; local main |
 | sse | 0.0.7 | 2a0d3ecb5c13fe7b893c45396840ad20da45492e | publication prepared with native Guide entry and current tooling; campaign/main pushed; local main |
-| test | 0.0.14 | 03610cbc229141b9e603b52943acf669ef281b0f | native source campaign-pushed; final tooling gates, archive and independent reviews passed; final commit pending |
+| test | 0.0.14 | 7d4980f97dbf6ee56fcf4a28f5a0e2d163490ed7 | publication prepared with native Guide entry and current tooling; campaign/main pushed; local main |
 
 The corrected Contract-to-Abort staging run exited 0 under
 tmp/probe/d7n-contract-abort-stage.LQv86I. Source checks and the foreign ESM/CommonJS
