@@ -4,13 +4,16 @@ Written 2026-09-08T03:35Z and revised 2026-09-08T04:05Z at the owner's request, 
 
 ## Where everything is pushed
 
-The active continuation is Guide's package-owned native test entry under
-d7n-guide-native-adopt-brief.md. The accepted API remains fixed. The authored
-tests/guides.test.ts entry must pass directly under Node before root applies the
-accepted Scaffold archive's generated command and owned-script cleanup. The
-baseline direct entry refused its static @src/core import at run 0fe6f0. The
-writer is active in canonical Guide; do not install or apply tooling there until
-it returns frozen. See d7n-guide-native-adopt-start.md for the bounded scope.
+Guide's authored native entry is accepted and campaign-pushed at
+a4f3cd93647ceb44d723cec2315a383e60d24f47. Its ordered root gates passed, and its
+rebuilt dist/src tree is byte-equal to the accepted Guide archive. Read
+d7n-guide-native-source-verdict.md and d7n-guide-native-source-landing.md.
+The active successor is supported Scaffold tooling application under
+d7n-guide-tooling-apply-carrier-brief.md: install the accepted Scaffold archive,
+preview the owned scripts root, remove the retired file from the clean tree
+through Materializer, and update the generated script region. Root owns the
+remaining maintainer docs manifest-key removal. Guide main and final package
+closure remain pending. The accepted API remains fixed.
 
 Current continuation: work directly in the package repositories under
 C:/Users/mikes/WebstormProjects. Rulings 33, 34, and 35 supersede the historical isolated
@@ -132,7 +135,7 @@ d7n-campaign-branches-reading.md for the actual on-disk branch audit.
 | Repository | Branch | Tip | Notes |
 | --- | --- | --- | --- |
 | `orkestrel/scaffold` | `claude/orkestrel-npm-audit-deps-14ibta` (the working branch), `main`, and `claude/docs-parity-windows-01a0810d` (the designated branch) | the commit carrying this file | push each named ref at the same tip; the campaign folder is the record |
-| `orkestrel/guide` | `claude/orkestrel-npm-audit-deps-14ibta` | `61182c3` | API extraction accepted and pushed; main stays at d3ee1bb pending native-entry adoption; read d7n-guides-api-product-landing.md for the accepted provisional archive |
+| `orkestrel/guide` | `claude/orkestrel-npm-audit-deps-14ibta` | `a4f3cd9` | authored native entry accepted and pushed; main stays at d3ee1bb pending supported tooling and package closure; read d7n-guide-native-source-landing.md |
 | `orkestrel/<package>` for every package in the table that follows | `claude/orkestrel-npm-audit-deps-14ibta` | per the table | pushed to `main` as each closes |
 
 Branch URLs follow one pattern: `https://github.com/orkestrel/<repo>/tree/claude/orkestrel-npm-audit-deps-14ibta`.
@@ -234,7 +237,7 @@ Tips are the branch tips as pushed. "on main" means the branch tip is `main`.
 | terminal | `0b01536` | retained audit lanes reconciled in `d7n-terminal-audit-verdict.md`; checker recorded as not run | dispatch `d7n-terminal-converge-fix-windows-brief.md`; then checker and verifier; verdict; push `main` |
 | mcp | `a01d5e8` | owner main merged; scoped merge checks passed; branch pushed; audit reconciled in `d7n-mcp-audit-verdict.md`; checker recorded as not run | dispatch `d7n-mcp-converge-fix-windows-brief.md`; closure; push `main`; guide-reader referral remains separate |
 | supervisor | `edf80e6` (`main`) | outside the pass; the owner's API-adoption decision is pending (`d7-fleet-plan.md` § For the owner) | nothing in this campaign |
-| guide | `61182c3` | reader, path, parity and command API corrections accepted and campaign-pushed; accepted provisional archive identified in d7n-guides-api-product-landing.md; product tree clean | use Scaffold 0.0.64's accepted local artifact for supported tooling and direct test:guides adoption; final pins and main closure remain pending |
+| guide | `a4f3cd9` | authored native entry accepted and campaign-pushed; root gates passed and rebuilt distributable equals the accepted archive; product tree clean | apply Scaffold 0.0.64's accepted archive through the supported scripts-root and manifest-region mechanism; final pins and main closure remain pending |
 
 ## The tail, after every package closes
 
