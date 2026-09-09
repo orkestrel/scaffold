@@ -36,11 +36,16 @@ assertions. The reconciled boundary is recorded in
 d7n-parity-population-design-verdict.md. Guide's population successor and scaffold
 adoption have returned. Guide's ordered root gates passed, its replacement archive
 is installed in scaffold, and the canonical guides command is green. Root's final
-scaffold chain exposed old scripts-ownership fixtures; the compiler fixture is
-corrected and the setup-fixture successor is running after an isolated root red.
+scaffold chain exposed old scripts-ownership fixtures; the compiler and setup
+fixture successors returned, and the final ordered root scaffold gates passed.
 Read d7n-parity-population-landing.md for current source and artifact evidence.
-The final ordered scaffold chain and separate Astra actual-diff review remain
-pending. Root's explicit npm.cmd
+Read d7n-guides-extraction-final-root-gates.md for the exact frozen-diff comparison.
+The separate Astra actual-diff review and reused objective review have returned.
+Read d7n-guides-extraction-final-verdict.md. Behavioral controls held; acceptance
+is held for centralized helper placement and stale explanatory text. The bounded
+Guide leaf/prose successor is running, and root corrected scaffold's stale ownership
+comment. The replacement archive, affected gates and correction review follow.
+Root's explicit npm.cmd
 source-authority command resolved the article drift, leaving the coverage-policy red.
 The held product diffs are retained under evidence/d7n-guides-extraction-held.
 Read d7n-guide-parity-core-landing.md for source and artifact evidence.

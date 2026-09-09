@@ -1,0 +1,42 @@
+ M .claude/rules/documentation.md
+ M .orkestrel/campaign/docs-parity/d7n-guides-extraction-plan.md
+ M .orkestrel/campaign/docs-parity/handoff.md
+ M .orkestrel/campaign/docs-parity/ledger.md
+ M PROPOSAL.md
+ M guides/guide.md
+ M guides/scaffold.md
+ M host.json
+MM package-lock.json
+ M package.json
+ D scripts/docs.ts
+ M src/core/compilers.ts
+ M src/core/constants.ts
+ M src/server/Materializer.ts
+ M src/server/types.ts
+ M tests/distribution.test.ts
+ M tests/guides.test.ts
+ M tests/setupServer.test.ts
+ M tests/setupServer.ts
+ M tests/src/bin/CLI.test.ts
+ M tests/src/core/Compiler.test.ts
+ M tests/src/core/compilers.test.ts
+ M tests/src/core/fixtures/app-only-toolchain.txt
+ M tests/src/core/fixtures/setup-false-manifest.txt
+ M tests/src/core/fixtures/source-manifest.txt
+ M tests/src/core/helpers.test.ts
+ M tests/src/core/templates.test.ts
+ M tests/src/server/Materializer.test.ts
+ M tests/src/server/helpers.test.ts
+?? .orkestrel/campaign/docs-parity/d7n-guides-extraction-close-brief.md
+?? .orkestrel/campaign/docs-parity/d7n-guides-extraction-final-root-gates.md
+?? .orkestrel/campaign/docs-parity/d7n-guides-extraction-mechanical-bridge-report.md
+?? .orkestrel/campaign/docs-parity/d7n-guides-extraction-mechanical-brief.md
+?? .orkestrel/campaign/docs-parity/d7n-guides-extraction-review-routing.md
+?? .orkestrel/campaign/docs-parity/d7n-scaffold-setup-host-fixture-report.md
+?? .orkestrel/campaign/docs-parity/d7n-scaffold-setup-host-fixture-successor-brief.md
+?? .orkestrel/campaign/docs-parity/d7n-scaffold-setup-host-fixture-successor-report.md
+?? .orkestrel/campaign/docs-parity/evidence/d7n-guides-extraction-population-final/
+?? .orkestrel/campaign/docs-parity/evidence/d7n-scaffold-parity-population-reviewed-gates/
+?? .orkestrel/campaign/docs-parity/evidence/d7n-scaffold-setup-host-fixture-successor/
+?? .orkestrel/campaign/docs-parity/evidence/d7n-scaffold-setup-host-fixture/
+?? .orkestrel/campaign/docs-parity/instruments/d7/guides-extraction/run-guides-extraction-mechanical.sh

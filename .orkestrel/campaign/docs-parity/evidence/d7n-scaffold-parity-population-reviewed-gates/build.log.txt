@@ -1,0 +1,65 @@
+npm notice run @orkestrel/scaffold@0.0.64 build
+npm notice run npm run clean && npm run build:src && npm run build:host && npm run build:inventory
+npm notice run @orkestrel/scaffold@0.0.64 clean
+npm notice run node -e "require('node:fs').rmSync('dist',{recursive:true,force:true})"
+npm notice run @orkestrel/scaffold@0.0.64 build:src
+npm notice run npm run build:src:core && npm run build:src:server && npm run build:src:bin
+npm notice run @orkestrel/scaffold@0.0.64 build:src:core
+npm notice run vite build --config configs/src/vite.core.config.ts && npm run copy dist/src/core/index.d.ts dist/src/core/index.d.cts
+vite v8.2.2 building client environment for production...
+transforming...
+✓ 14 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/core/index.js  261.15 kB │ gzip: 70.67 kB │ map: 352.28 kB
+
+transforming...
+✓ 14 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/core/index.cjs  269.31 kB │ gzip: 71.40 kB │ map: 354.71 kB
+
+✓ built in 255ms
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+npm notice run @orkestrel/scaffold@0.0.64 copy
+npm notice run node -e "const fs=require('node:fs'),p=require('node:path'),a=process.argv[1],b=process.argv[2];fs.mkdirSync(p.dirname(b),{recursive:true});fs.cpSync(a,b,{force:true});console.log('Copied: '+a+' to '+b)" dist/src/core/index.d.ts dist/src/core/index.d.cts
+Copied: dist/src/core/index.d.ts to dist/src/core/index.d.cts
+npm notice run @orkestrel/scaffold@0.0.64 build:src:server
+npm notice run vite build --config configs/src/vite.server.config.ts && npm run copy dist/src/server/index.d.ts dist/src/server/index.d.cts
+vite v8.2.2 building client environment for production...
+"build.lib.formats" will be ignored because "build.rolldownOptions.output" is already an array format.
+transforming...
+✓ 9 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/server/index.js  174.80 kB │ gzip: 45.14 kB │ map: 281.68 kB
+
+transforming...
+✓ 9 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/server/index.cjs  183.55 kB │ gzip: 45.61 kB │ map: 287.30 kB
+
+✓ built in 252ms
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+npm notice run @orkestrel/scaffold@0.0.64 copy
+npm notice run node -e "const fs=require('node:fs'),p=require('node:path'),a=process.argv[1],b=process.argv[2];fs.mkdirSync(p.dirname(b),{recursive:true});fs.cpSync(a,b,{force:true});console.log('Copied: '+a+' to '+b)" dist/src/server/index.d.ts dist/src/server/index.d.cts
+Copied: dist/src/server/index.d.ts to dist/src/server/index.d.cts
+npm notice run @orkestrel/scaffold@0.0.64 build:src:bin
+npm notice run vite build --config configs/src/vite.bin.config.ts
+vite v8.2.2 building client environment for production...
+transforming...
+✓ 6 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/bin/main.js  82.83 kB │ gzip: 21.39 kB │ map: 151.05 kB
+
+✓ built in 28ms
+npm notice run @orkestrel/scaffold@0.0.64 build:host
+npm notice run node -e "import('./dist/src/server/index.js').then((m)=>{const n=m.stageHost(process.cwd(),'dist/host').length;console.log('build-host: staged '+n+' file(s) into dist/host')})"
+build-host: staged 121 file(s) into dist/host
+npm notice run @orkestrel/scaffold@0.0.64 build:inventory
+npm notice run node -e "import('./dist/src/server/index.js').then((m)=>{const p=process.argv[1]??'host.json',n=m.stageInventory(process.cwd(),p).entries.length;console.log('build-inventory: staged '+n+' file(s) into '+p)})"
+build-inventory: staged 121 file(s) into host.json

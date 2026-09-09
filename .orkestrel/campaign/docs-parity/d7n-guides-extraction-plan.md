@@ -8,13 +8,13 @@ toolchain manifest and staged lockfile edits after this revision is accepted.
 
 | Capability | Required result | State |
 | --- | --- | --- |
-| Shared parity engine | Guide owns inventory comparison, reusable checks, report formatting, and rewrite composition; package tests supply choices and executable examples | source returned; final root Guide gates passed; integrated review pending |
+| Shared parity engine | Guide owns inventory comparison, reusable checks, report formatting, and rewrite composition; package tests supply choices and executable examples | integrated behavior held; private pure-leaf correction running before source acceptance |
 | Markdown reuse | Guide uses the accepted Markdown artifact's nodes, provenance spans, traversal, and rendering where semantics match; no duplicate Markdown parser | implementation returned; integrated review pending |
 | Command contract | tests/guides.test.ts remains the direct test:guides entry; default is read-only; explicit direction writes its target and tests fresh bytes | real-command regression and native guides green against the replacement Guide archive |
 | Script ownership | HOST_PATHS declares scripts as a directory; ordinary overwrite removes unplanned tracked members; planned service scripts and transaction safeguards survive; no retired-path list | source returned; scoped controls and root directory proof passed; final acceptance pending |
-| Scaffold alignment | Complete dirty product diff reviewed; obsolete docs-command code removed; authored guides tests remain package-owned | source map returned; final actual-diff review pending |
+| Scaffold alignment | Complete dirty product diff reviewed; obsolete docs-command code removed; authored guides tests remain package-owned | actual-diff review returned; root corrected the stale ownership comment |
 | Manifest inclusion | Owner toolchain changes and prepared scaffold 0.0.64 metadata included in accepted product commit | approved; original staged lock preserved |
-| Artifact preparation | Guide built and packed with accepted lower-layer inputs, consumed in scaffold; scaffold committed before pack and supported dependency-layer propagation | population-corrected provisional Guide installed; final scaffold gates and independent actual-diff review pending |
+| Artifact preparation | Guide built and packed with accepted lower-layer inputs, consumed in scaffold; scaffold committed before pack and supported dependency-layer propagation | population-corrected provisional Guide proved; leaf correction requires a replacement archive before acceptance |
 | Guide command adoption | Guide's own package-owned test entry gains the accepted native command through scaffold adoption; obsolete owned scripts leave through overwrite; final Guide artifact is repacked | follows scaffold artifact; existing adoption-plan requirement |
 
 ## Bound the round
