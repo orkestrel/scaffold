@@ -1,0 +1,15 @@
+diff --git a/package.json b/package.json
+index 658e4f8..2f0b74d 100644
+--- a/package.json
++++ b/package.json
+@@ -85,8 +85,8 @@
+ 		"test:setup": "vitest run --config vite.config.ts --no-cache --reporter=dot --project setup"
+ 	},
+ 	"dependencies": {
+-		"@orkestrel/contract": "^0.0.16",
+-		"@orkestrel/markdown": "^0.0.13"
++		"@orkestrel/contract": "^0.0.17",
++		"@orkestrel/markdown": "^0.0.14"
+ 	},
+ 	"devDependencies": {
+ 		"@microsoft/api-extractor": "^7.59.0",

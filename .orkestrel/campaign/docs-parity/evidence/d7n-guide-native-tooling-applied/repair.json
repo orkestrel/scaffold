@@ -1,0 +1,13 @@
+{
+	"target": "C:\\Users\\mikes\\WebstormProjects\\guide",
+	"written": [],
+	"skipped": [
+		".claude/settings.json",
+		"scripts/codex.sh",
+		"scripts/cursor.sh",
+		"scripts/deps.sh",
+		"scripts/ollama.sh",
+		".claude/agents/orkestrel.md"
+	],
+	"removed": []
+}

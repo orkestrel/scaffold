@@ -1,0 +1,8 @@
+npm notice run @orkestrel/guide@0.0.18 check
+npm notice run tsc --noEmit --project tsconfig.json && npm run check:src
+npm notice run @orkestrel/guide@0.0.18 check:src
+npm notice run npm run check:src:core && npm run check:src:server
+npm notice run @orkestrel/guide@0.0.18 check:src:core
+npm notice run tsc --noEmit -p configs/src/tsconfig.core.json
+npm notice run @orkestrel/guide@0.0.18 check:src:server
+npm notice run tsc --noEmit -p configs/src/tsconfig.server.json

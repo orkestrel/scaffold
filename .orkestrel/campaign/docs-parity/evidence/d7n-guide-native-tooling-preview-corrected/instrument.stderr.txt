@@ -1,0 +1,10 @@
+file:///C:/Users/mikes/WebstormProjects/scaffold/tmp/pass/apply-guide-native-tooling.mjs:16
+	throw new Error(message)
+	      ^
+
+Error: Foreign audit paths differ from scripts/docs.ts.
+    at fail (file:///C:/Users/mikes/WebstormProjects/scaffold/tmp/pass/apply-guide-native-tooling.mjs:16:8)
+    at assertForeign (file:///C:/Users/mikes/WebstormProjects/scaffold/tmp/pass/apply-guide-native-tooling.mjs:38:69)
+    at file:///C:/Users/mikes/WebstormProjects/scaffold/tmp/pass/apply-guide-native-tooling.mjs:133:2
+
+Node.js v24.20.0

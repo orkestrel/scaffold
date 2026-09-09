@@ -4,16 +4,17 @@ Written 2026-09-08T03:35Z and revised 2026-09-08T04:05Z at the owner's request, 
 
 ## Where everything is pushed
 
-Guide's authored native entry is accepted and campaign-pushed at
-a4f3cd93647ceb44d723cec2315a383e60d24f47. Its ordered root gates passed, and its
-rebuilt dist/src tree is byte-equal to the accepted Guide archive. Read
-d7n-guide-native-source-verdict.md and d7n-guide-native-source-landing.md.
-The active successor is supported Scaffold tooling application under
-d7n-guide-tooling-apply-carrier-brief.md: install the accepted Scaffold archive,
-preview the owned scripts root, remove the retired file from the clean tree
-through Materializer, and update the generated script region. Root owns the
-remaining maintainer docs manifest-key removal. Guide main and final package
-closure remain pending. The accepted API remains fixed.
+Guide's native entry and supported tooling are accepted and campaign-pushed at
+327470a6e2e0c056c811e9f48a5ed429fe7ba70e. Its final ordered root gates passed,
+and its rebuilt dist/src tree remains byte-equal to the accepted prior output.
+Read d7n-guide-native-tooling-landing.md and d7n-guide-native-tooling-root-report.md.
+The refreshed Guide0.0.18 archive is under tmp/pass/packed/d7n-guide-native-entry-final,
+with SHA256 cc605b5bcfe6db1c86ab6cdfda6415879253b56cf5b4d5d0d325c19eb1b7eac7.
+It is installed in Scaffold; full output identity and the native guides command
+passed. The retired script and docs manifest key are removed through the accepted
+ownership path and explicit maintainer edit. Resume package-native adoption and
+tarball propagation in dependency order. Guide main and fleet release pins remain
+pending. The accepted Guide API remains fixed.
 
 Current continuation: work directly in the package repositories under
 C:/Users/mikes/WebstormProjects. Rulings 33, 34, and 35 supersede the historical isolated
@@ -135,7 +136,7 @@ d7n-campaign-branches-reading.md for the actual on-disk branch audit.
 | Repository | Branch | Tip | Notes |
 | --- | --- | --- | --- |
 | `orkestrel/scaffold` | `claude/orkestrel-npm-audit-deps-14ibta` (the working branch), `main`, and `claude/docs-parity-windows-01a0810d` (the designated branch) | the commit carrying this file | push each named ref at the same tip; the campaign folder is the record |
-| `orkestrel/guide` | `claude/orkestrel-npm-audit-deps-14ibta` | `a4f3cd9` | authored native entry accepted and pushed; main stays at d3ee1bb pending supported tooling and package closure; read d7n-guide-native-source-landing.md |
+| `orkestrel/guide` | `claude/orkestrel-npm-audit-deps-14ibta` | `327470a` | native entry and tooling accepted and pushed; main stays at d3ee1bb for the fleet sequence; refreshed archive and output equality recorded in d7n-guide-native-tooling-landing.md |
 | `orkestrel/<package>` for every package in the table that follows | `claude/orkestrel-npm-audit-deps-14ibta` | per the table | pushed to `main` as each closes |
 
 Branch URLs follow one pattern: `https://github.com/orkestrel/<repo>/tree/claude/orkestrel-npm-audit-deps-14ibta`.
@@ -237,7 +238,7 @@ Tips are the branch tips as pushed. "on main" means the branch tip is `main`.
 | terminal | `0b01536` | retained audit lanes reconciled in `d7n-terminal-audit-verdict.md`; checker recorded as not run | dispatch `d7n-terminal-converge-fix-windows-brief.md`; then checker and verifier; verdict; push `main` |
 | mcp | `a01d5e8` | owner main merged; scoped merge checks passed; branch pushed; audit reconciled in `d7n-mcp-audit-verdict.md`; checker recorded as not run | dispatch `d7n-mcp-converge-fix-windows-brief.md`; closure; push `main`; guide-reader referral remains separate |
 | supervisor | `edf80e6` (`main`) | outside the pass; the owner's API-adoption decision is pending (`d7-fleet-plan.md` § For the owner) | nothing in this campaign |
-| guide | `a4f3cd9` | authored native entry accepted and campaign-pushed; root gates passed and rebuilt distributable equals the accepted archive; product tree clean | apply Scaffold 0.0.64's accepted archive through the supported scripts-root and manifest-region mechanism; final pins and main closure remain pending |
+| guide | `327470a` | native entry and supported tooling accepted and campaign-pushed; final root gates and output equality passed; refreshed local archive is installed in Scaffold; product tree clean | propagate the refreshed Guide artifact through dependency layers; final semantic pins and main closure remain pending |
 
 ## The tail, after every package closes
 

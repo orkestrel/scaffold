@@ -1,0 +1,59 @@
+{
+	"blueprint": {
+		"name": "guide",
+		"keywords": [],
+		"src": [
+			"core",
+			"server"
+		],
+		"app": [],
+		"dependencies": [
+			{
+				"name": "@orkestrel/contract",
+				"range": "^0.0.16"
+			},
+			{
+				"name": "@orkestrel/markdown",
+				"range": "^0.0.13"
+			}
+		],
+		"peers": [],
+		"extras": [],
+		"version": "0.0.18",
+		"engines": ">=22.12.0",
+		"overrides": [],
+		"bin": false,
+		"setup": true,
+		"guides": true,
+		"integration": false,
+		"conformance": false,
+		"service": false,
+		"vendors": [],
+		"global": false,
+		"showcase": false
+	},
+	"groups": [
+		"orchestration"
+	],
+	"artifacts": [
+		{
+			"path": ".claude/settings.json",
+			"group": "orchestration",
+			"ownership": "presence",
+			"origin": "host"
+		},
+		{
+			"path": "scripts",
+			"group": "orchestration",
+			"ownership": "presence",
+			"origin": "host"
+		},
+		{
+			"path": ".claude/agents/orkestrel.md",
+			"group": "orchestration",
+			"ownership": "presence",
+			"origin": "host"
+		}
+	],
+	"hash": "43b4fa43a55f623b"
+}

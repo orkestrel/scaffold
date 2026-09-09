@@ -1,0 +1,10 @@
+file:///C:/Users/mikes/WebstormProjects/scaffold/tmp/pass/apply-guide-native-tooling.mjs:16
+	throw new Error(message)
+	      ^
+
+Error: Compiled scripts artifact differs from the expected host content root.
+    at fail (file:///C:/Users/mikes/WebstormProjects/scaffold/tmp/pass/apply-guide-native-tooling.mjs:16:8)
+    at selectPlan (file:///C:/Users/mikes/WebstormProjects/scaffold/tmp/pass/apply-guide-native-tooling.mjs:32:105)
+    at file:///C:/Users/mikes/WebstormProjects/scaffold/tmp/pass/apply-guide-native-tooling.mjs:129:15
+
+Node.js v24.20.0
