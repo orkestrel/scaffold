@@ -9,9 +9,11 @@
 | guides_extraction_leaves_astra | independent correction reviewer, native Astra | native task /root/guides_extraction_leaves_astra | returned PASS on the correction brief |
 | guides_extraction_leaves_objective | reused correction analyst, native Sol | native task /root/guides_entry_design_objective | returned PASS on the correction brief |
 | guides_extraction_leaves_mechanical | mechanical evidence, Cursor Grok | root tracked exec 98954; session ac9aa573-852d-43cd-8682-60c57d9a237a | returned exit 0; root launch receipt corrects the report's journal claim |
-| guides_command_design_astra | independent design-fit recommendation, native Astra | native task /root/guides_command_design_astra | running on d7n-guides-command-boundary-brief.md after owner reopened the local command shell |
-| guides_command_design_objective | reused objective recommendation, native Sol | native task /root/guides_entry_design_objective | running on the same command-boundary brief |
-| guides_command_capabilities | capability evidence, Cursor Grok | root tracked exec 50378; session 3623acd8-f041-450d-984f-7ccd87e73d02 | running read-only; journal tmp/cursor/d7n-guides-command-capabilities.jsonl |
+| guides_command_design_astra | independent design-fit recommendation, native Astra | native task /root/guides_command_design_astra | returned; server command and direct dependency ports accepted in the design verdict |
+| guides_command_design_objective | reused objective recommendation, native Sol | native task /root/guides_entry_design_objective | returned after root bounded continued reading; server ownership and inline assertion callback accepted, new peers not selected |
+| guides_command_capabilities | capability evidence, Cursor Grok | root tracked exec 50378; session 3623acd8-f041-450d-984f-7ccd87e73d02 | returned exit 0; journal tmp/cursor/d7n-guides-command-capabilities.jsonl |
+| guide_command_fix | shared server command implementation, native Sol | native task /root/guide_command_fix | contracts-first unit running in canonical Guide |
+| guide_server_config_carrier | root generator carrier author, native Terra | native task /root/guide_server_config_carrier | writes only the named tmp carrier/report; no target write or execution |
 
 The mechanical journal is tmp/cursor/d7n-guides-extraction-mechanical.jsonl with
 stderr beside it. The bridge verified the versioned CLI but stopped because it
