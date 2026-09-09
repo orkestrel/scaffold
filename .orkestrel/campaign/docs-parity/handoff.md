@@ -75,10 +75,13 @@ The canonical entry now constructs the installed GuideCommand directly and
 retains no named local command or registration helper. Root's native guides
 command and ordered Scaffold gates passed. Final review uses
 d7n-guides-api-close-brief.md with d7n-guides-api-close-evidence.md. The reused
-objective review returned contract-wording and direct-helper test gaps. The
-separate owner-selected review continues while root probes the printed example
-and native failure settlement. Read d7n-guides-api-adopt-landing.md. Product stays
-frozen until reconciliation. The command extraction addresses an unmet
+objective review and separate owner-selected review returned. Root reproduced
+the printed example's missing test registration and native failure settlement.
+Read d7n-guides-api-close-verdict.md. The bounded correction writer is running
+under d7n-guides-api-close-fix-brief.md for examples, contract/boundary prose,
+direct helper tests and measured lifecycle edges. Runtime design stays fixed.
+Read d7n-guides-api-adopt-landing.md and d7n-guides-api-example-root-report.md.
+Product acceptance and replacement packing remain pending. The command extraction addresses an unmet
 part of Ruling35, not a new owner requirement. Settled parity populations and
 script ownership remain unchanged. Direct Scaffold adoption has returned, but
 product acceptance and packing remain pending the bounded review corrections.

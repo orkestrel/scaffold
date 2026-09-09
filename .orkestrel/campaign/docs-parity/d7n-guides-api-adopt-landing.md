@@ -49,8 +49,9 @@ receipt tokens name root tool calls, not missing files; raw gate and artifact
 outputs are retained. Root independently compared the final diff hashes. The
 archive artifact report carries server hashes, while the capture hash list
 carries core hashes and the archive. Guide's new paths are intent-to-add and
-appear in the actual diff; no guide.untracked.txt is produced by that capture.
-Do not infer missing source from that absent optional list.
+appear in the actual diff. Root subsequently checked guide.untracked.txt at
+cc68d1 and 54eb28: the file exists and is empty. The mechanical report mistook
+an empty inventory for an absent file. Do not infer missing source from it.
 
 No package is closed or published by this landing. Product commit, refreshed
 artifacts, Guide's native-entry adoption and fleet propagation remain pending.
