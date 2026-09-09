@@ -14,10 +14,11 @@ install and final prepublishOnly passed. Its replacement tarball's dist/src is
 byte-equal to the retained candidate. Contract is accepted and pushed to main at
 e6d2de5bfbbeb6981945b33ede438de8c38f1dbf; its local checkout is on main. SSE's
 final preparation closed at 2a0d3ecb5c13fe7b893c45396840ad20da45492e and is
-campaign/main pushed with local main. Msg's source landed at 8c679b0 and its final
-preparation passed; final commit follows. Codec's corrected source landed at
-cca1c46 and its final preparation is running. Test's source landed at 03610cb;
-its final preparation follows Codec. The authored changes passed independent
+campaign/main pushed with local main. Msg's final preparation closed at
+2a66c5b6b1251649a3f92574facf323c20edb581 and is campaign/main pushed with local
+main. Codec's corrected source landed at cca1c46 and its final preparation passed;
+final artifact review follows. Test's source landed at 03610cb and its final
+preparation is running. The authored changes passed independent
 owner-selected and reused objective reviews. Read
 d7n-sse-publish-prepared-verdict.md and d7n-foundation-tail-objective-report.md.
 No login or upload is authorized by this preparation request.
@@ -379,10 +380,10 @@ retained evidence/d7n-foundation-<package>/ metadata for their exact tarball pat
 | Foundation package | Version | Latest source | State |
 | --- | --- | --- | --- |
 | contract | 0.0.17 | e6d2de5bfbbeb6981945b33ede438de8c38f1dbf | publication prepared with native Guide entry and current tooling; campaign/main pushed; local main |
-| codec | 0.0.3 | cca1c46e6d3b6416ae856b8a2a22b23b442e0dbb | corrected native source campaign-pushed; final tooling preparation running |
-| msg | 0.0.10 | 8c679b035008df0e7f638df955650f189fe22866 | native source campaign-pushed; final tooling gates and archive passed; final commit pending |
+| codec | 0.0.3 | cca1c46e6d3b6416ae856b8a2a22b23b442e0dbb | corrected native source campaign-pushed; final tooling gates and archive passed; final review pending |
+| msg | 0.0.10 | 2a66c5b6b1251649a3f92574facf323c20edb581 | publication prepared with native Guide entry and current tooling; campaign/main pushed; local main |
 | sse | 0.0.7 | 2a0d3ecb5c13fe7b893c45396840ad20da45492e | publication prepared with native Guide entry and current tooling; campaign/main pushed; local main |
-| test | 0.0.14 | 03610cbc229141b9e603b52943acf669ef281b0f | native source campaign-pushed; final tooling preparation next |
+| test | 0.0.14 | 03610cbc229141b9e603b52943acf669ef281b0f | native source campaign-pushed; final tooling preparation running |
 
 The corrected Contract-to-Abort staging run exited 0 under
 tmp/probe/d7n-contract-abort-stage.LQv86I. Source checks and the foreign ESM/CommonJS
