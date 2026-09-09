@@ -1,0 +1,16 @@
+{
+  "before": {
+    "chunk_id": "7bdc21",
+    "wall_time_seconds": 0.1063018,
+    "exit_code": 0,
+    "original_token_count": 201,
+    "output": "\r\nAlgorithm       Hash                                                                   Path                                                                  \r\n---------       ----                                                                   ----                                                                  \r\nSHA256          AE88B0020DD54853BDD7B8C494DD4A9C441CD0D06959C97EEE89ACC8BAB9B2B8       C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\pass\\d7n-guides-entry-...\r\nSHA256          E073F2CA2DC4112C040632BF2D7A2767F868D02C302C4DC1AB136BBC85E82429       C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\pass\\d7n-guides-entry-...\r\nSHA256          D34994DCC4D4955A80A60167B8849785A4F896A6153DD2921917BFC680C9B444       C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\pass\\scaffold-guides-e...\r\n\r\n\r\n"
+  },
+  "after": {
+    "chunk_id": "774250",
+    "wall_time_seconds": 0.1005972,
+    "exit_code": 0,
+    "original_token_count": 201,
+    "output": "\r\nAlgorithm       Hash                                                                   Path                                                                  \r\n---------       ----                                                                   ----                                                                  \r\nSHA256          AE88B0020DD54853BDD7B8C494DD4A9C441CD0D06959C97EEE89ACC8BAB9B2B8       C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\pass\\d7n-guides-entry-...\r\nSHA256          E073F2CA2DC4112C040632BF2D7A2767F868D02C302C4DC1AB136BBC85E82429       C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\pass\\d7n-guides-entry-...\r\nSHA256          D34994DCC4D4955A80A60167B8849785A4F896A6153DD2921917BFC680C9B444       C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\pass\\scaffold-guides-e...\r\n\r\n\r\n"
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "name": "lint-check-successor",
+  "command": "C:/Users/mikes/scoop/apps/git/current/usr/bin/timeout.exe --kill-after=15s 600s node C:/Users/mikes/scoop/apps/nodejs-lts/current/node_modules/npm/bin/npm-cli.js run lint:check",
+  "run": {
+    "chunk_id": "606032",
+    "wall_time_seconds": 0.8122129,
+    "exit_code": 0,
+    "original_token_count": 24,
+    "output": "\n> @orkestrel/scaffold@0.0.64 lint:check\n> oxlint --config .oxlintrc.json --deny-warnings .\n\n"
+  },
+  "exit_code": 0
+}
+

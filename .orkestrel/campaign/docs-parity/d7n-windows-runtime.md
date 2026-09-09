@@ -96,7 +96,10 @@ are not active units.
 | d7n-guide-artifact-stage-resume | root execution | tmp/pass/resume-guide-consumer.sh; tmp/pass/compare-guide-baseline.sh | exit 0; corrected installed consumers pass; non-map dist unchanged |
 | d7n-guide-artifact-stage-verify | native verifier, Terra | foundation_receipts_verify, Guide follow-up | GREEN; local artifact accepted; revised-entry and registry-final work pending |
 | d7n-scaffold-guides-prepare | native builder, Terra; root execution | scaffold_guides_prepare; tmp/pass/d7n-scaffold-guides-prepare.ddZJDD; exec 79006 | exit 0; clean isolated baseline prepared; owner files preserved |
-| d7n-guides-entry-fix | native implementer, Sol | guides_entry_fix; tmp/units/d7n-guides-entry-fix-brief.md | running in isolated scaffold-guides-entry checkout |
+| d7n-guides-entry-fix | native implementer, Sol | guides_entry_fix; original and successor brief/report pairs | source returned and frozen; root fixture integration and ordered gates passed; acceptance pending |
+| d7n-guides-entry-cli-fixture | root, Sol | matching brief/report; evidence/d7n-guides-entry-root-gates | exact scoped red exit 1 and green exit 0; full ordered chain exit 0; primary owner files unchanged |
+| d7n-guides-entry-gates-author | native builder, Terra | tmp/units/d7n-guides-entry-gates-author-brief.md | not run; fresh allocation refused by the harness thread limit; root used existing package scripts |
+| d7n-guides-entry-retirement-recipe | native implementer, Sol | guides_entry_fix follow-up; tmp/units/d7n-guides-entry-retirement-recipe-brief.md | completing the original unit's outstanding root-run recipe; no product edits or executor run permitted |
 
 Native Monitor and task-registry tools are not exposed in this harness. Root tracks
 the capped command by its exec session and reads terminal results without raw thinking

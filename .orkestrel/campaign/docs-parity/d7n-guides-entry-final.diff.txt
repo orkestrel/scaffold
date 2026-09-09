@@ -1,0 +1,2150 @@
+diff --git a/.claude/rules/documentation.md b/.claude/rules/documentation.md
+index 0296291c..0e3692ff 100644
+--- a/.claude/rules/documentation.md
++++ b/.claude/rules/documentation.md
+@@ -37,8 +37,9 @@ Documentation is an enforced contract, not explanatory decoration. The Writing r
+   collapsed, a code span's boundary whitespace trimmed); a titled `@example` equals the guide fence
+   under the heading of that title; and the README pitch equals the guide's tagline.
+   `tests/guides.test.ts` asserts each through the `findDrift` function and the `tagline` method
+-  that `@orkestrel/guide` exports; converge the two sides with `npm run docs`, never by weakening
+-  the gate.
++  that `@orkestrel/guide` exports. Run `npm run test:guides` to report without writing. Use
++  `npm run test:guides -- --to guide` or `npm run test:guides -- --to source` only when choosing
++  an explicit rewrite direction. Never weaken the gate.
+ - The TSDoc voice rule governs a doc block, and a `Summary` cell carries that block's description
+   paragraph, so the same voice governs the cell. A guide tagline and a README pitch are noun
+   phrases, and each is the blockquote under its file's H1.
+diff --git a/guides/scaffold.md b/guides/scaffold.md
+index 355311a3..35d99df2 100644
+--- a/guides/scaffold.md
++++ b/guides/scaffold.md
+@@ -11,7 +11,7 @@ write the difference back.
+ 
+ That root stages the vendored set and the instruction canon, and a target meets them differently.
+ `HOST_PATHS` names the vendored set — the licence, the harness permission file, the
+-session-start hooks, the documentation-parity seed, the shared policy register, the shared policy
++session-start hooks, the guides entry, the shared policy register, the shared policy
+ proof, the shared policy plugin, the shared configuration leaf and its proof, the byte-identical
+ root dotfiles, and the guide mirrors a generated workspace starts from, never its own guide — and
+ each target carries its own copy of the paths it selects, which the verbs write and compare.
+@@ -120,7 +120,7 @@ Exported from `@orkestrel/scaffold`, and reachable from
+ | `DEFAULT_VERSION`                 | const | Names the version a workspace starts at.                                                               |
+ | `DEPENDENCY_NAME_PATTERN`         | const | Matches the runtime dependency name syntax: the `@orkestrel` scope and a bare name.                    |
+ | `DISTRIBUTION_TEST_PATH`          | const | Names the generated packed-package proof every publishing workspace is planned at.                     |
+-| `DOCS_SEED_PATH`                  | const | Names the vendored module `npm run docs` runs.                                                         |
++| `GUIDES_ENTRY_PATH`               | const | Names the vendored module `npm run test:guides` runs.                                                  |
+ | `ENGINES_PATTERN`                 | const | Matches the minimum-Node engine syntax a blueprint declares.                                           |
+ | `ENVIRONMENTS`                    | const | Lists the `Environment` values, frozen.                                                                |
+ | `EXECUTABLE_PATHS`                | const | Lists the vendored paths a target receives with its executable bit set, frozen.                        |
+@@ -156,6 +156,7 @@ Exported from `@orkestrel/scaffold`, and reachable from
+ | `ORKESTREL_RANGE_PATTERN`         | const | Matches the exact caret-pinned pre-1.0 range accepted for an `@orkestrel/*` runtime dependency.        |
+ | `PRINT_WIDTH`                     | const | Caps the columns one emitted line may occupy, matching `printWidth` in `.oxfmtrc.json`.                |
+ | `RELEASE_PROOF_COMMAND`           | const | Names the `prepublishOnly` row that runs the packed-package proof against a real registry.             |
++| `RETIRED_HOST_PATHS`              | const | Lists superseded vendored paths that a selected group may remove, frozen.                              |
+ | `SERVICE_SCRIPT_PATH`             | const | Names the provisioner skeleton a workspace with declared service vendors is given once.                |
+ | `SERVICE_SETUP_PATH`              | const | Names the live-service readiness module whose presence makes a workspace `service`.                    |
+ | `SERVICE_TEST_INCLUDE`            | const | Names the include the live-service project covers, which is a directory rather than one proof.         |
+@@ -602,8 +603,9 @@ The root Vite configuration defines and registers the fixed `guides` project onl
+ blueprint carries `guides`. Reading verbs set that fact only when `tests/guides.test.ts` is a
+ physical file with that exact path case. A directory or a case-folded spelling does not select it. A
+ fresh workspace therefore carries no guides project or script. When a developer adds the proof,
+-`audit` reports the exact `test:guides` and `docs` script lines until `repair` or `overwrite`
+-appends them through the writable script region. The rest of the manifest remains birth-owned.
++`audit` reports the exact `test:guides` script until `repair` or `overwrite` appends it through the
++writable script region. That region accepts the prior generated Vitest-only value and preserves a
++customized command. The rest of the manifest remains birth-owned.
+ 
+ The plan-reading verbs compare the Vitest project set named by the target manifest with the
+ project set the planned root configuration registers. Every planned proof project must also be
+@@ -1022,37 +1024,34 @@ carries its evidence.
+ 
+ `tests/guides.test.ts` also holds the equality gate: a guide's `Summary` cell against its export's
+ description paragraph, a titled guide fence against the `@example` block of that title, and the
+-README pitch against the guide tagline. That gate reports and writes nothing. The vendored
+-`scripts/docs.ts` seed is the writing half of the pair, and `npm run docs` runs it. It reads the
+-inventory the gate reads — the source, the tests, the guides, and the root Markdown — indexes
+-`guides/README.md`, and prints one line per disagreement: the guide, the compared key, and the text
+-each side carries or `absent`. One further line reports the pitch pair when those two differ: the
++README pitch against the guide tagline. `npm run test:guides` runs the vendored
++`scripts/guides.ts` entry. It reads the source, tests, guides, and root Markdown; indexes
++`guides/README.md`; and reports each disagreement with its guide, compared key, and side text or
++`absent`. It also reports the pitch pair when those values differ: the
+ `README.md` blockquote against the tagline of the guide the manifest's own bare name selects,
+ `guides/<name>.md`. A workspace whose manifest declares no name, whose index carries no row for that
+-guide, or which carries no `README.md` reports no pitch line. A closing line names how many index
+-rows the run read and how many disagreements it found. It exits `1` while a disagreement stands and
+-`0` when none does. It exits `2` for an argument outside `--to`, printing the usage line, and for an
+-input it cannot read — a workspace carrying no `guides/README.md`, or an index row naming a guide
+-the workspace does not carry — printing one line naming that file rather than throwing.
+-
+-The seed is vendored into every workspace like the session-start hooks; the `docs` script that runs
+-it and the `guides` project are emitted with `guides`, so a workspace that indexes no guides carries
+-the seed and no script. In the package that publishes the readers the seed imports,
+-`npm run build` precedes `npm run docs`: a package's own name resolves inside its own checkout
+-through the `exports` map its manifest publishes, so the import lands on `dist/` and a stale build
+-runs stale readers. `npm run check` there is independent of the build, because the generated root
+-`tsconfig.json` maps the workspace's own published specifiers to its source.
+-
+-`npm run docs -- --to guide` rewrites each `Summary` cell whose source side carries text, and
+-`npm run docs -- --to source` rewrites each description paragraph and each titled `@example` body
+-whose guide side carries text. The seed writes files and nothing else. It never writes a guide
+-fence from the source, because the suite executes that fence and the guide owns its content; it
+-never writes the README pitch, which you author by hand; and it never formats. A key a replacer
+-cannot reach is reported on its own line and leaves that file exactly as it found it. Run
+-`npm run format` after a write: a rewritten table renders one-space padded, and the formatter
+-re-aligns it. A write run's closing line adds `written:`, the rewrites the run carried across, and
+-`reported:`, the disagreements it left standing with a reason. A write run exits `0` when it
+-carried every disagreement across, and `1` while any disagreement or miss stands reported.
++guide, or which carries no `README.md` reports no pitch line. With no arguments the entry writes
++nothing, reports drift, and then runs the real `guides` Vitest project. It exits `1` when drift
++remains, the project fails, the project collects no module, Vitest reports an unhandled error, or a
++module state is not `passed`. It exits `2` before Vitest starts for an invalid option, a missing
++`guides/README.md`, or an indexed spec the workspace does not carry.
++
++The entry is vendored into every workspace like the session-start hooks. The `test:guides` script
++and `guides` project are emitted only with `guides`, so a workspace that indexes no guides carries
++the dormant entry and no command that runs it.
++
++`npm run test:guides -- --to guide` rewrites reachable `Summary` cells from source text.
++`npm run test:guides -- --to source` rewrites reachable description paragraphs and titled
++`@example` bodies from guide text. Guide fences and the README pitch remain authored by hand. A
++shared source file accumulates each selected edit before it is written. After writing changed paths,
++the entry rereads the inventory and reports remaining drift with the reason its requested rewrite
++could not resolve it. The guides project starts from those fresh bytes. The entry never formats;
++after a write it prints `next: npm run format`.
++
++`scripts/docs.ts` is retired. A plan selecting its orchestration group admits that exact path to
++the audit snapshot. It can be removed only through the existing foreign-file transaction, which
++still requires a clean tree, tracked membership, unchanged observed bytes, and an unprotected path.
++Scaffold does not own `scripts/` as a directory or admit unrelated scripts through this retirement.
+ 
+ `tests/distribution.test.ts` is the one proof scaffold generates, and the one test artifact it
+ claims by presence. Generation is the line, not writing: scaffold writes the vendored
+@@ -1240,11 +1239,11 @@ The vendored data root is the shared file set, staged into the published package
+ Staging walks `HOST_PATHS` and `CANON_PATHS`, and a release ships what both name.
+ 
+ `HOST_PATHS` is the vendored set, and a target receives a copy of each path it selects: the
+-licence, the harness permission file, the session-start hooks, the documentation-parity seed, the
++licence, the harness permission file, the session-start hooks, the guides entry, the
+ shared policy register, the shared policy proof, the shared policy plugin, the shared configuration
+ leaf and its proof, the byte-identical root dotfiles, and the guide mirrors a generated workspace
+ starts from. It is a candidate list rather than a plan, because a workspace never mirrors its own
+-guide. The seed, like the hooks, reaches every workspace. The session-start hooks split by job:
++guide. The entry, like the hooks, reaches every workspace. The session-start hooks split by job:
+ the bench probe reports whether a bench CLI resolves, and the dependency hook installs the
+ lockfile's closure in a remote session. What wires a bench stays in the canon, and a session reads
+ it at its primary root.
+diff --git a/host.json b/host.json
+index ab7e112b..fbdef33a 100644
+--- a/host.json
++++ b/host.json
+@@ -400,7 +400,7 @@
+ 			"storage": "claude/rules/documentation.md",
+ 			"destination": ".claude/rules/documentation.md",
+ 			"executable": false,
+-			"digest": "9baa38c6c0f3a262ddcabab232ea430dc4577e15b1d2eedf2ecb2dc78a8f5780"
++			"digest": "03f8b386098d52aaa54f28e1d19a296eb355517a4c54ab8422b342add385c7c7"
+ 		},
+ 		{
+ 			"storage": "claude/rules/names.md",
+@@ -682,7 +682,7 @@
+ 			"storage": "guides/scaffold.md",
+ 			"destination": "guides/scaffold.md",
+ 			"executable": false,
+-			"digest": "dfc51495aec583bfcb4fc482c33e79e9ff54e1bf558fec4e6a3b460ddb2bcb6f"
++			"digest": "2e0fbdf0fb7a97cad8d3bce3f8d76c91a67cd50669cdcec07ef1325303013853"
+ 		},
+ 		{
+ 			"storage": "scripts/codex.sh",
+@@ -703,10 +703,10 @@
+ 			"digest": "8f4ad360cd43ea3da202892bf2cdea546795c4081e435384754cbffbf73d773e"
+ 		},
+ 		{
+-			"storage": "scripts/docs.ts",
+-			"destination": "scripts/docs.ts",
++			"storage": "scripts/guides.ts",
++			"destination": "scripts/guides.ts",
+ 			"executable": false,
+-			"digest": "ab8ee57843446ad4e6578c16dcf26a11e4144053f464d0981111756f68c35b79"
++			"digest": "d34994dcc4d4955a80a60167b8849785a4f896a6153dd2921917bfc680c9b444"
+ 		},
+ 		{
+ 			"storage": "scripts/ollama.sh",
+@@ -778,5 +778,5 @@
+ 		".codex/agents",
+ 		".cursor/rules"
+ 	],
+-	"digest": "886689033d56da74faa4fe1d7093fca1372186ed79bef81b981d2379aeeb75d1"
++	"digest": "be864dd5ff9bb3fc4d033b9b21d343469514a26d9b2af46f1eadebc3ba82ef07"
+ }
+diff --git a/package-lock.json b/package-lock.json
+index 4a9cd33e..61e32893 100644
+--- a/package-lock.json
++++ b/package-lock.json
+@@ -1,12 +1,12 @@
+ {
+ 	"name": "@orkestrel/scaffold",
+-	"version": "0.0.63",
++	"version": "0.0.64",
+ 	"lockfileVersion": 3,
+ 	"requires": true,
+ 	"packages": {
+ 		"": {
+ 			"name": "@orkestrel/scaffold",
+-			"version": "0.0.63",
++			"version": "0.0.64",
+ 			"license": "MIT",
+ 			"dependencies": {
+ 				"@orkestrel/console": "^0.0.12",
+diff --git a/package.json b/package.json
+index a344ed02..709aa4ad 100644
+--- a/package.json
++++ b/package.json
+@@ -1,6 +1,6 @@
+ {
+ 	"name": "@orkestrel/scaffold",
+-	"version": "0.0.63",
++	"version": "0.0.64",
+ 	"description": "Scaffold workspaces with five commands: new, audit, repair, catalog, and overwrite.",
+ 	"keywords": [
+ 		"audit",
+@@ -77,8 +77,7 @@
+ 		"test:src:bin": "vitest run --config vite.config.ts --no-cache --reporter=dot --project src:bin",
+ 		"test:policy": "vitest run --config vite.config.ts --no-cache --reporter=dot --project policy",
+ 		"test:config": "vitest run --config vite.config.ts --no-cache --reporter=dot --project config",
+-		"test:guides": "vitest run --config vite.config.ts --no-cache --reporter=dot --project guides",
+-		"docs": "node --experimental-strip-types scripts/docs.ts",
++		"test:guides": "node --experimental-strip-types scripts/guides.ts",
+ 		"test:distribution": "vitest run --config vite.config.ts --no-cache --reporter=dot --project distribution",
+ 		"test:probe": "vitest run --config vite.config.ts --no-cache --reporter=verbose --project probe",
+ 		"test:bench": "vitest bench --config vite.config.ts --no-cache --project probe",
+diff --git a/scripts/docs.ts b/scripts/docs.ts
+deleted file mode 100644
+index 1adf7680..00000000
+--- a/scripts/docs.ts
++++ /dev/null
+@@ -1,454 +0,0 @@
+-// ============================================================================
+-// scripts/docs.ts - the documentation-parity seed, run as `npm run docs`.
+-// ----------------------------------------------------------------------------
+-// With no flag it reads the guide index, compares every guide against the source
+-// it documents, and prints one line per disagreement. With `--to guide` or
+-// `--to source` it rewrites the named side through the readers and replacers
+-// `@orkestrel/guide` ships. The seed writes files and nothing else: it starts no
+-// process, formats nothing, and reads no network, so run `npm run format` after
+-// a write.
+-//
+-// `tests/guides.test.ts` reports the same disagreements and never writes.
+-// Converge the two sides here, never by weakening that gate.
+-//
+-// This entry is self-contained and imports no sibling: a target receives the
+-// file alone, so a module-scope declaration here has no centralized file to sit
+-// in. `.claude/rules/architecture.md` § Declaration placement is what permits
+-// that, and every declaration below stays local for the same reason.
+-// ============================================================================
+-import type {
+-	Drift,
+-	GuideInterface,
+-	GuideModule,
+-	ManifestEntry,
+-	SourceExample,
+-} from '@orkestrel/guide'
+-import {
+-	collectExamples,
+-	collectKeys,
+-	collectTitles,
+-	computeSymbolKey,
+-	createGuide,
+-	createSource,
+-	extractSourceLines,
+-	findDrift,
+-	locateComment,
+-	normalizeComment,
+-	parseManifest,
+-	replaceCell,
+-	replaceExample,
+-	replaceSummary,
+-	selectModuleKeys,
+-	spliceSpan,
+-} from '@orkestrel/guide'
+-import { existsSync, globSync, readFileSync, writeFileSync } from 'node:fs'
+-import { resolve } from 'node:path'
+-import process from 'node:process'
+-
+-/** Names the option the seed accepts, with the values it takes. */
+-const USAGE = 'usage: npm run docs [-- --to guide|--to source]'
+-
+-/** Matches the files the guide readers reflect over, the same set the gate inventories. */
+-const INVENTORY: readonly string[] = ['src/**/*.ts', 'tests/**/*.ts', 'guides/*.md', '*.md']
+-
+-/** Names the package manifest whose bare name selects this workspace's own guide. */
+-const MANIFEST_FILE = 'package.json'
+-
+-/** Names the concept index every guide row is read from. */
+-const INDEX_FILE = 'guides/README.md'
+-
+-/** Names the file whose blockquote pitch equals this workspace's own guide tagline. */
+-const README_FILE = 'README.md'
+-
+-/** Names the compared pair the pitch reports under. */
+-const PITCH_KEY = 'pitch'
+-
+-/** Pairs one indexed guide with the source it documents and the disagreements between them. */
+-interface Row {
+-	readonly spec: string
+-	readonly guide: GuideInterface
+-	readonly drift: readonly Drift[]
+-	readonly titles: ReadonlyMap<string, SourceExample>
+-	readonly summaries: ReadonlySet<string>
+-	readonly index: ReadonlyMap<string, string>
+-}
+-
+-/** Holds what one direction did with one row: the lines to print and the values to tally. */
+-interface Outcome {
+-	readonly lines: readonly string[]
+-	readonly written: number
+-	readonly reported: number
+-}
+-
+-/**
+- * Reads the inventory the guide readers reflect over.
+- *
+- * @param root - The workspace root to read from.
+- * @returns Root-relative forward-slash keys mapped to file text.
+- */
+-function readInventory(root: string): Record<string, string> {
+-	const files: Record<string, string> = {}
+-	for (const key of globSync([...INVENTORY], { cwd: root })) {
+-		files[key.replaceAll('\\', '/')] = readFileSync(resolve(root, key), 'utf8')
+-	}
+-	return files
+-}
+-
+-/**
+- * Reads the workspace's own bare package name.
+- *
+- * @param root - The workspace root to read from.
+- * @returns The name after the scope, or `undefined` when the manifest declares none.
+- */
+-function readShortName(root: string): string | undefined {
+-	const path = resolve(root, MANIFEST_FILE)
+-	if (!existsSync(path)) return undefined
+-	let manifest: unknown
+-	try {
+-		manifest = JSON.parse(readFileSync(path, 'utf8'))
+-	} catch {
+-		return undefined
+-	}
+-	if (typeof manifest !== 'object' || manifest === null) return undefined
+-	const name: unknown = Object.getOwnPropertyDescriptor(manifest, 'name')?.value
+-	if (typeof name !== 'string' || name.length === 0) return undefined
+-	return name.slice(name.lastIndexOf('/') + 1)
+-}
+-
+-/**
+- * Renders one side of a compared pair.
+- *
+- * @param text - The text that side carries, or `undefined` when it carries none.
+- * @returns The text as a quoted single-line literal, or `absent`.
+- */
+-function formatSide(text: string | undefined): string {
+-	return text === undefined ? 'absent' : JSON.stringify(text)
+-}
+-
+-/**
+- * Renders one disagreement as a single line.
+- *
+- * @param spec - The guide the disagreement was found in.
+- * @param drift - The disagreement, with the text each side carries.
+- * @returns The spec, the key, and each side's text or `absent`.
+- */
+-function formatDrift(spec: string, drift: Drift): string {
+-	return `${spec} ${drift.key}: guide ${formatSide(drift.guide)} source ${formatSide(drift.source)}`
+-}
+-
+-/**
+- * Renders one disagreement a write left standing, with why it stands.
+- *
+- * @param spec - The guide the disagreement was found in.
+- * @param drift - The disagreement, with the text each side carries.
+- * @param reason - What stopped the write.
+- * @returns The disagreement's line with the reason after it.
+- */
+-function formatReported(spec: string, drift: Drift, reason: string): string {
+-	return `${formatDrift(spec, drift)}; ${reason}`
+-}
+-
+-/**
+- * Renders the pitch pair as a single line.
+- *
+- * @param spec - The guide whose tagline the pitch is compared with.
+- * @param pitch - The README's blockquote pitch, or `undefined` when it carries none.
+- * @param tagline - The guide's blockquote tagline, or `undefined` when it carries none.
+- * @returns The spec, the key, and each side's text or `absent`.
+- */
+-function formatPitch(spec: string, pitch: string | undefined, tagline: string | undefined): string {
+-	return `${spec} ${PITCH_KEY}: readme ${formatSide(pitch)} tagline ${formatSide(tagline)}`
+-}
+-
+-/**
+- * Collects the compared keys a guide's Surface and Methods tables carry.
+- *
+- * @param guide - The parsed guide.
+- * @returns One key per documented symbol and per documented member.
+- */
+-function collectCells(guide: GuideInterface): ReadonlySet<string> {
+-	const keys = new Set<string>()
+-	for (const symbol of guide.surface()) keys.add(computeSymbolKey(symbol))
+-	for (const group of guide.methods()) {
+-		for (const entry of group.methods) keys.add(`${group.interface}.${entry.name}`)
+-	}
+-	return keys
+-}
+-
+-/**
+- * Collects one line per input the run needs and the workspace does not carry.
+- *
+- * @param files - The workspace inventory the readers reflect over.
+- * @param entries - The indexed rows, or `undefined` when the workspace carries no index.
+- * @returns One line per missing input, each naming the file it is missing.
+- */
+-function collectMissing(
+-	files: Readonly<Record<string, string>>,
+-	entries: readonly ManifestEntry[] | undefined,
+-): readonly string[] {
+-	if (entries === undefined) {
+-		return [`${INDEX_FILE}: the workspace carries no concept index to read`]
+-	}
+-	return entries
+-		.filter((entry) => files[entry.spec] === undefined)
+-		.map((entry) => `${entry.spec}: the concept index names it and the workspace does not carry it`)
+-}
+-
+-/**
+- * Indexes every compared key a module's files carry to the file carrying it.
+- *
+- * @param files - The workspace inventory the readers reflect over.
+- * @param module - The source directories the guide documents.
+- * @returns Each key mapped to the first file declaring it.
+- */
+-function buildIndex(
+-	files: Readonly<Record<string, string>>,
+-	module: GuideModule,
+-): ReadonlyMap<string, string> {
+-	const index = new Map<string, string>()
+-	for (const file of selectModuleKeys(files, module)) {
+-		const text = files[file]
+-		if (text === undefined) continue
+-		for (const key of collectKeys(extractSourceLines(text)).values()) {
+-			if (!index.has(key)) index.set(key, file)
+-		}
+-	}
+-	return index
+-}
+-
+-/**
+- * Splits a compared example text into the block a replacer writes.
+- *
+- * @param name - The declaration or member whose doc block carries the block.
+- * @param title - The heading text the fence and the tag pair on.
+- * @param text - The compared text: the language on the first line, the body beneath.
+- * @returns The block, carrying no language when the first line is empty.
+- */
+-function splitExample(name: string, title: string, text: string): SourceExample {
+-	const at = text.indexOf('\n')
+-	const language = at === -1 ? text : text.slice(0, at)
+-	const code = at === -1 ? '' : text.slice(at + 1)
+-	return language.length === 0 ? { name, title, code } : { name, title, code, language }
+-}
+-
+-/**
+- * Finds the compared key of the doc block carrying one titled example.
+- *
+- * @param texts - The current text of every file, keyed root-relative.
+- * @param index - Each compared key mapped to the file declaring it.
+- * @param name - The declaration or member the block belongs to.
+- * @param title - The heading text the tag carries.
+- * @returns The key `locateComment` reaches the block by, or `undefined` when none does.
+- */
+-function findExample(
+-	texts: ReadonlyMap<string, string>,
+-	index: ReadonlyMap<string, string>,
+-	name: string,
+-	title: string,
+-): string | undefined {
+-	for (const [key, file] of index) {
+-		if (key !== name && !key.endsWith(` ${name}`) && !key.endsWith(`.${name}`)) continue
+-		const text = texts.get(file)
+-		if (text === undefined) continue
+-		const span = locateComment(text, key)
+-		if (span === undefined) continue
+-		const block = text.slice(span.start, span.end)
+-		if (collectExamples(normalizeComment(block), name).some((one) => one.title === title)) {
+-			return key
+-		}
+-	}
+-	return undefined
+-}
+-
+-/**
+- * Reports every disagreement one row carries, writing nothing.
+- *
+- * @param row - The indexed guide and its disagreements.
+- * @returns One line per disagreement, each left standing.
+- */
+-function reportRow(row: Row): Outcome {
+-	return {
+-		lines: row.drift.map((drift) => formatDrift(row.spec, drift)),
+-		written: 0,
+-		reported: row.drift.length,
+-	}
+-}
+-
+-/**
+- * Carries every summary disagreement of one row across to its guide.
+- *
+- * @param row - The indexed guide and its disagreements.
+- * @param texts - The current text of every file, keyed root-relative, rewritten in place.
+- * @returns The lines left standing and the values to tally.
+- */
+-function writeGuide(row: Row, texts: Map<string, string>): Outcome {
+-	const start = texts.get(row.spec)
+-	if (start === undefined) return reportRow(row)
+-	const lines: string[] = []
+-	let text = start
+-	let written = 0
+-	for (const drift of row.drift) {
+-		if (!row.summaries.has(drift.key)) {
+-			lines.push(formatReported(row.spec, drift, 'the guide fence owns an example'))
+-			continue
+-		}
+-		if (drift.source === undefined) {
+-			lines.push(formatReported(row.spec, drift, 'the source side carries no text'))
+-			continue
+-		}
+-		const replaced = replaceCell(text, drift.key, drift.source)
+-		if (replaced === undefined) {
+-			lines.push(formatReported(row.spec, drift, 'no Summary cell carries the key'))
+-			continue
+-		}
+-		if (replaced === text) continue
+-		text = replaced
+-		written += 1
+-	}
+-	if (text !== start) texts.set(row.spec, text)
+-	return { lines, written, reported: lines.length }
+-}
+-
+-/**
+- * Carries every disagreement of one row across to the source it documents.
+- *
+- * @param row - The indexed guide and its disagreements.
+- * @param texts - The current text of every file, keyed root-relative, rewritten in place.
+- * @returns The lines left standing and the values to tally.
+- */
+-function writeSource(row: Row, texts: Map<string, string>): Outcome {
+-	const lines: string[] = []
+-	let written = 0
+-	for (const drift of row.drift) {
+-		if (drift.guide === undefined) {
+-			lines.push(formatReported(row.spec, drift, 'the guide side carries no text'))
+-			continue
+-		}
+-		const summary = row.summaries.has(drift.key)
+-		const example = row.titles.get(drift.key)
+-		const key = summary
+-			? drift.key
+-			: example === undefined
+-				? undefined
+-				: findExample(texts, row.index, example.name, drift.key)
+-		const file = key === undefined ? undefined : row.index.get(key)
+-		const text = file === undefined ? undefined : texts.get(file)
+-		if (key === undefined || file === undefined || text === undefined) {
+-			lines.push(formatReported(row.spec, drift, 'no doc block carries the key'))
+-			continue
+-		}
+-		const span = locateComment(text, key)
+-		if (span === undefined) {
+-			lines.push(formatReported(row.spec, drift, 'no doc block carries the key'))
+-			continue
+-		}
+-		const block = text.slice(span.start, span.end)
+-		const rewritten =
+-			example === undefined || summary
+-				? replaceSummary(block, drift.guide)
+-				: replaceExample(block, splitExample(example.name, drift.key, drift.guide))
+-		if (rewritten === undefined) {
+-			lines.push(formatReported(row.spec, drift, 'the doc block refused the rewrite'))
+-			continue
+-		}
+-		const spliced = spliceSpan(text, span, rewritten)
+-		if (spliced === text) continue
+-		texts.set(file, spliced)
+-		written += 1
+-	}
+-	return { lines, written, reported: lines.length }
+-}
+-
+-const args = process.argv.slice(2)
+-const direction =
+-	args.length === 2 && args[0] === '--to' && (args[1] === 'guide' || args[1] === 'source')
+-		? args[1]
+-		: undefined
+-if (direction === undefined && args.length > 0) {
+-	process.stdout.write(`${USAGE}\n`)
+-	process.exitCode = 2
+-} else {
+-	const root = process.cwd()
+-	const files = readInventory(root)
+-	const manifest = files[INDEX_FILE]
+-	const entries = manifest === undefined ? undefined : parseManifest(manifest, 'guides')
+-	const missing = collectMissing(files, entries)
+-	if (entries === undefined || missing.length > 0) {
+-		for (const line of missing) process.stdout.write(`${line}\n`)
+-		process.exitCode = 2
+-	} else {
+-		// One current text per file, seeded once and rewritten in place, so a second
+-		// row over the same file rewrites what the first row left rather than the
+-		// bytes the run started from. The inventory stays frozen beside it, as what
+-		// each flush compares against to decide whether a file moved.
+-		const texts = new Map(Object.entries(files))
+-		const rows: Row[] = []
+-		for (const entry of entries) {
+-			const markdown = files[entry.spec]
+-			if (markdown === undefined) continue
+-			const guide = createGuide(markdown)
+-			const source = createSource({ files, module: entry.source })
+-			rows.push({
+-				spec: entry.spec,
+-				guide,
+-				drift: findDrift(guide, source),
+-				titles: collectTitles(guide, source),
+-				summaries: collectCells(guide),
+-				index: buildIndex(files, entry.source),
+-			})
+-		}
+-
+-		const lines: string[] = []
+-		let found = 0
+-		let written = 0
+-		let reported = 0
+-		for (const row of rows) {
+-			found += row.drift.length
+-			const outcome =
+-				direction === undefined
+-					? reportRow(row)
+-					: direction === 'guide'
+-						? writeGuide(row, texts)
+-						: writeSource(row, texts)
+-			lines.push(...outcome.lines)
+-			written += outcome.written
+-			reported += outcome.reported
+-		}
+-
+-		const name = readShortName(root)
+-		const readme = files[README_FILE]
+-		const own =
+-			name === undefined ? undefined : rows.find((row) => row.spec === `guides/${name}.md`)
+-		if (own !== undefined && readme !== undefined) {
+-			const pitch = createGuide(readme).tagline()
+-			const tagline = own.guide.tagline()
+-			if (pitch !== tagline) {
+-				found += 1
+-				reported += 1
+-				lines.push(
+-					direction === undefined
+-						? formatPitch(own.spec, pitch, tagline)
+-						: `${formatPitch(own.spec, pitch, tagline)}; the README pitch is authored by hand`,
+-				)
+-			}
+-		}
+-
+-		const changed: string[] = []
+-		for (const [file, text] of texts) {
+-			if (text === files[file]) continue
+-			writeFileSync(resolve(root, file), text)
+-			changed.push(file)
+-		}
+-		changed.sort()
+-
+-		for (const file of changed) process.stdout.write(`wrote ${file}\n`)
+-		for (const line of lines) process.stdout.write(`${line}\n`)
+-		process.stdout.write(
+-			direction === undefined
+-				? `rows read: ${rows.length}, disagreements found: ${found}\n`
+-				: `rows read: ${rows.length}, disagreements found: ${found}, written: ${written}, reported: ${reported}\n`,
+-		)
+-		if (changed.length > 0) process.stdout.write('next: npm run format\n')
+-		process.exitCode = reported > 0 ? 1 : 0
+-	}
+-}
+diff --git a/src/core/compilers.ts b/src/core/compilers.ts
+index bd680266..2b435818 100644
+--- a/src/core/compilers.ts
++++ b/src/core/compilers.ts
+@@ -36,7 +36,7 @@ import {
+ 	DECLARATION_DEV_DEPENDENCIES,
+ 	DEPENDENCY_NAME_PATTERN,
+ 	DISTRIBUTION_TEST_PATH,
+-	DOCS_SEED_PATH,
++	GUIDES_ENTRY_PATH,
+ 	ENVIRONMENTS,
+ 	EXTRA_RANGE_PATTERN,
+ 	FLOOR_RANGE_PATTERN,
+@@ -348,8 +348,7 @@ export function blueprintToScripts(blueprint: Blueprint): Readonly<Record<string
+ 	scripts['test:config'] = `${vitest} --project config`
+ 	if (blueprint.setup) scripts['test:setup'] = `${vitest} --project setup`
+ 	if (blueprint.guides) {
+-		scripts['test:guides'] = `${vitest} --project guides`
+-		scripts.docs = `node --experimental-strip-types ${DOCS_SEED_PATH}`
++		scripts['test:guides'] = `node --experimental-strip-types ${GUIDES_ENTRY_PATH}`
+ 	}
+ 	if (blueprint.conformance) scripts['test:conformance'] = `${vitest} --project conformance`
+ 	scripts['test:probe'] =
+@@ -420,14 +419,14 @@ export function blueprintToScripts(blueprint: Blueprint): Readonly<Record<string
+  *
+  * @remarks
+  * Every direct `test:<project>` script is writable, together with the probe and
+- * benchmark workbench scripts. A workspace carrying guides adds `docs`, the
+- * documentation-parity seed the same fact selects `test:guides` by, so a target
+- * that gains the proof gains the propagation beside it. Publishing adds the pack
+- * and publication lifecycle scripts. Aggregate test scripts and maintainer-owned
+- * gate chains stay outside the region.
++ * benchmark workbench scripts. A workspace carrying guides adds `test:guides`,
++ * whose entry reports parity before it runs the guides project. Publishing adds
++ * the pack and publication lifecycle scripts. Aggregate test scripts and
++ * maintainer-owned gate chains stay outside the region.
+  *
+  * `accepted` carries each generated predecessor the region can replace. The
+- * pack hook accepts the build chain emitted before it delegated to `build`. The
++ * guides entry accepts the generated command that ran Vitest without reporting.
++ * The pack hook accepts the build chain emitted before it delegated to `build`. The
+  * publication hook accepts the same gate chain without
+  * {@link RELEASE_PROOF_COMMAND}. The value being written is always writable, so
+  * it is not repeated there. Any other value is a script the workspace author
+@@ -448,8 +447,15 @@ export function blueprintToWritableScripts(blueprint: Blueprint): readonly Manif
+ 	const writable: ManifestScript[] = []
+ 	for (const [name, command] of Object.entries(scripts)) {
+ 		const direct = name.startsWith('test:') && name !== 'test:src' && name !== 'test:app'
+-		if (!direct && name !== 'docs') continue
+-		writable.push({ name, command, accepted: [] })
++		if (!direct) continue
++		writable.push({
++			name,
++			command,
++			accepted:
++				name === 'test:guides'
++					? ['vitest run --config vite.config.ts --no-cache --reporter=dot --project guides']
++					: [],
++		})
+ 	}
+ 	const prepack = scripts.prepack
+ 	if (prepack !== undefined) {
+@@ -1580,20 +1586,19 @@ export function blueprintToOrchestrationArtifacts(
+  * from the installed package, at the locations the `AGENTS.md` and `CLAUDE.md`
+  * pointers {@link blueprintToDocumentArtifacts} emits name.
+  *
+- * The documentation-parity seed is vendored like every other hook. The `docs`
+- * script {@link blueprintToScripts} emits and the `guides` project the root
+- * configuration registers select with `guides`, so a workspace that indexes
+- * no guides carries the seed and no script that runs it; `npm run check`
+- * there still resolves the seed's import, because every workspace declares
+- * `@orkestrel/guide`.
++ * The guides entry is vendored like every other hook. The `test:guides` script
++ * {@link blueprintToScripts} emits and the `guides` project the root configuration
++ * registers select with `guides`, so a workspace that indexes no guides carries
++ * the entry and no script that runs it; `npm run check` there still resolves the
++ * entry's import, because every workspace declares `@orkestrel/guide`.
+  *
+  * @example
+  * ```ts
+- * import { blueprintToHostArtifacts, createBlueprint, DOCS_SEED_PATH } from '@orkestrel/scaffold'
++ * import { blueprintToHostArtifacts, createBlueprint, GUIDES_ENTRY_PATH } from '@orkestrel/scaffold'
+  *
+  * const blueprint = createBlueprint('router')
+  *
+- * blueprintToHostArtifacts(blueprint).some((artifact) => artifact.path === DOCS_SEED_PATH) // true
++ * blueprintToHostArtifacts(blueprint).some((artifact) => artifact.path === GUIDES_ENTRY_PATH) // true
+  * blueprintToHostArtifacts(blueprint).some((artifact) => artifact.path === 'guides/router.md') // false
+  * ```
+  */
+diff --git a/src/core/constants.ts b/src/core/constants.ts
+index 1004f78c..67fc6ac1 100644
+--- a/src/core/constants.ts
++++ b/src/core/constants.ts
+@@ -108,8 +108,8 @@ export const BIN_CONFIGS: readonly string[] = Object.freeze([
+ /** Names the executable entry whose presence makes a workspace `bin`. */
+ export const BIN_ENTRY_PATH = 'src/bin/main.ts'
+ 
+-/** Names the vendored module `npm run docs` runs. */
+-export const DOCS_SEED_PATH = 'scripts/docs.ts'
++/** Names the vendored module `npm run test:guides` runs. */
++export const GUIDES_ENTRY_PATH = 'scripts/guides.ts'
+ 
+ /**
+  * Lists the paths a target receives from the vendored data root, frozen.
+@@ -117,7 +117,7 @@ export const DOCS_SEED_PATH = 'scripts/docs.ts'
+  * @remarks
+  * These are the files the fleet shares verbatim, and each target holds a copy
+  * of the paths it selects: the licence, the harness permission file, the
+- * session-start hooks, the documentation-parity seed, the shared policy
++ * session-start hooks, the guides entry, the shared policy
+  * register, the shared policy proof, the shared policy plugin, the shared
+  * configuration leaf and its proof, the byte-identical root dotfiles, and the
+  * guide mirrors a generated workspace starts from. A directory entry vendors
+@@ -140,7 +140,7 @@ export const HOST_PATHS: readonly string[] = Object.freeze([
+ 	'scripts/cursor.sh',
+ 	'scripts/codex.sh',
+ 	'scripts/ollama.sh',
+-	DOCS_SEED_PATH,
++	GUIDES_ENTRY_PATH,
+ 	'tests/setupPolicy.ts',
+ 	'tests/policy.test.ts',
+ 	'tests/config.test.ts',
+@@ -157,6 +157,9 @@ export const HOST_PATHS: readonly string[] = Object.freeze([
+ 	'guides/scaffold.md',
+ ])
+ 
++/** Lists superseded vendored paths that a selected group may remove, frozen. */
++export const RETIRED_HOST_PATHS: readonly string[] = Object.freeze(['scripts/docs.ts'])
++
+ /**
+  * Lists the instruction-canon paths staged for reading rather than for a target, frozen.
+  *
+diff --git a/src/server/Materializer.ts b/src/server/Materializer.ts
+index 202e126a..b0dc8aee 100644
+--- a/src/server/Materializer.ts
++++ b/src/server/Materializer.ts
+@@ -48,6 +48,7 @@ import {
+ 	planToFindings,
+ 	replaceManifestRanges,
+ 	replaceManifestScripts,
++	RETIRED_HOST_PATHS,
+ 	ScaffoldError,
+ } from '@src/core'
+ import { MANIFEST_NAME } from './constants.js'
+@@ -214,8 +215,7 @@ export class Materializer implements MaterializerInterface {
+ 	 *
+ 	 * @param plan - The compiled plan to compare.
+ 	 * @param target - The directory to inspect.
+-	 * @returns One finding per hydrated planned path, plus the foreign files
+-	 * beneath owned host roots and inside the instruction canon.
++	 * @returns Findings for hydrated planned paths and selected foreign candidates.
+ 	 * @throws {@link ScaffoldError} coded `INVALID` when an argument is not the
+ 	 * exact shape, `TARGET` when the host or target cannot be read within its
+ 	 * bounds, and `DESTROYED` after teardown.
+@@ -223,10 +223,10 @@ export class Materializer implements MaterializerInterface {
+ 	 * @remarks
+ 	 * Host directories expand before the target is read, so this method and
+ 	 * {@link repair} compare the same paths with the same ownership. Foreign
+-	 * candidates are files beneath those expanded roots and files the target holds
+-	 * at a `CANON_PATHS` member, each in a group the plan selects; a file outside
+-	 * both populations never becomes a deletion candidate merely because its group
+-	 * is selected.
++	 * candidates are files beneath those expanded roots, files the target holds at
++	 * a `CANON_PATHS` member, and retired host paths in a group the plan selects. A
++	 * file outside these populations never becomes a deletion candidate merely
++	 * because its group is selected.
+ 	 *
+ 	 * The canon is staged for reading rather than for a target, so a copy of one of
+ 	 * its paths sitting in a target is a superseded artifact and reports foreign. A
+@@ -450,13 +450,12 @@ export class Materializer implements MaterializerInterface {
+ 	 * recovery mechanism, so a path it cannot restore is not one this verb takes.
+ 	 * A tree carrying uncommitted work is refused whole for the same reason.
+ 	 *
+-	 * One candidate list carries both foreign populations {@link audit} reports, so
+-	 * a superseded instruction copy the target holds inside the canon is deleted in
+-	 * the same transaction as a stray beneath an owned root. Membership decides it,
+-	 * never byte identity: a copy a release behind no longer matches the bytes the
+-	 * canon now stages, and matching bytes is exactly how such a copy would be
+-	 * spared. An untracked leftover is left where it sits and stays a finding, which
+-	 * is the seam a maintainer keeps a git-ignored file in.
++	 * The candidate list carries every foreign population {@link audit} reports. A
++	 * superseded instruction copy inside the canon, a stray beneath an owned root,
++	 * and a retired host path therefore follow the same transaction rules.
++	 * Membership decides it, never byte identity. An untracked leftover stays in
++	 * place and remains a finding, which is the seam a maintainer uses to keep a
++	 * git-ignored file.
+ 	 *
+ 	 * The whole call refuses when the preview disagrees with the re-derivation on
+ 	 * any foreign finding, including one the deletion itself would skip, because a
+@@ -631,8 +630,8 @@ export class Materializer implements MaterializerInterface {
+ 	}
+ 
+ 	// Hydrate once, extend the target snapshot beneath the vendored directories
+-	// this plan expands and across the instruction canon the target holds, then run
+-	// the core comparison over that one population. Repair may supply the hydrated
++	// this plan expands, across the selected instruction canon, and through selected
++	// retired host paths, then run the core comparison. Repair may supply the hydrated
+ 	// plan it already needs for writes, while the public audit lets this method own
+ 	// the hydration itself.
+ 	#derive(plan: Plan, target: string, hydrated = this.#hydrate(plan)): Audit {
+@@ -648,6 +647,9 @@ export class Materializer implements MaterializerInterface {
+ 			for (const name of listFiles(directory)) paths.add(`${root}/${name}`)
+ 		}
+ 		for (const path of listCanonPaths(target, plan.groups)) paths.add(path)
++		for (const path of RETIRED_HOST_PATHS) {
++			if (plan.groups.includes(inferGroup(path))) paths.add(path)
++		}
+ 		return {
+ 			findings: planToFindings(hydrated, readSnapshot(target, [...paths])),
+ 			questions: [],
+diff --git a/src/server/types.ts b/src/server/types.ts
+index 95558933..85e23c71 100644
+--- a/src/server/types.ts
++++ b/src/server/types.ts
+@@ -190,7 +190,11 @@ export interface MaterializerInterface {
+ 	 *
+ 	 * @param plan - The compiled plan to compare.
+ 	 * @param target - The directory to inspect.
+-	 * @returns One finding per hydrated planned path, plus foreign files beneath owned host roots.
++	 * @returns Findings for hydrated planned paths and selected foreign candidates.
++	 *
++	 * @remarks
++	 * Foreign candidates are files beneath expanded host roots, files held at a
++	 * selected instruction-canon path, and retired host paths in a selected group.
+ 	 */
+ 	audit(plan: Plan, target: string): Audit
+ 	/**
+@@ -269,6 +273,8 @@ export interface MaterializerInterface {
+ 	 * unlinked, so a failure part way through restores what it already took.
+ 	 * The package's own source and application trees are never candidates,
+ 	 * whatever the audit reports.
++	 * Retired host paths use the same tracked-file, clean-tree and protected-path
++	 * guards as every other foreign candidate.
+ 	 *
+ 	 * The whole audit is guarded before any of it is read, so an audit produced by
+ 	 * an earlier version of this package is refused at runtime rather than only at
+diff --git a/tests/distribution.test.ts b/tests/distribution.test.ts
+index 229304db..1a20b286 100644
+--- a/tests/distribution.test.ts
++++ b/tests/distribution.test.ts
+@@ -279,7 +279,7 @@ describe('installed package consumer', () => {
+ 			'scripts/cursor.sh',
+ 			'scripts/deps.sh',
+ 			'scripts/ollama.sh',
+-			'scripts/docs.ts',
++			'scripts/guides.ts',
+ 			'tests/config.test.ts',
+ 			'tests/policy.test.ts',
+ 			'tests/setupPolicy.ts',
+diff --git a/tests/guides.test.ts b/tests/guides.test.ts
+index 078fc59e..aeae718c 100644
+--- a/tests/guides.test.ts
++++ b/tests/guides.test.ts
+@@ -164,11 +164,12 @@ describe('guides', () => {
+ 
+ 	// The equality gate: a `Summary` cell against its export's description paragraph, a
+ 	// titled fence against the `@example` of that title. `findDrift` owns the comparison
+-	// and names both sides; converge the two sides with `npm run docs`, never by weakening
+-	// this assertion. `findDrift` pairs an example only where a title is present on both
++	// and names each side. Use `npm run test:guides -- --to guide` or
++	// `npm run test:guides -- --to source` to converge them. Never weaken this assertion.
++	// `findDrift` pairs an example only where a title is present on both
+ 	// sides, so an untitled `@example` block is outside this case. Each collected line is
+ 	// the spec, the key, and each side's text or `absent` — the same worklist
+-	// `npm run docs` prints, so a failure here is read the way that command's output is.
++	// `npm run test:guides` prints, so a failure here is read the way that command's output is.
+ 	it('keeps every compared summary and example equal to its source', () => {
+ 		const disagreeing: string[] = []
+ 		for (const { entry, guide, source } of inspected) {
+diff --git a/tests/src/bin/CLI.test.ts b/tests/src/bin/CLI.test.ts
+index 1545dbbd..ef552888 100644
+--- a/tests/src/bin/CLI.test.ts
++++ b/tests/src/bin/CLI.test.ts
+@@ -1895,7 +1895,7 @@ describe('CLI audit', () => {
+ 			workspace.write('target/tests/guides.test.ts', "export const HTML_GUIDE_PROOF = 'html'\n")
+ 			const planned = blueprintToScripts(blueprint)
+ 			const plannedGuides = requireValue(planned['test:guides'])
+-			const declaredGuides = plannedGuides.replace(' --no-cache', '')
++			const declaredGuides = 'node scripts/custom-guides.mjs'
+ 			const scripts: Record<string, string> = {
+ 				...planned,
+ 				'test:guides': declaredGuides,
+diff --git a/tests/src/core/compilers.test.ts b/tests/src/core/compilers.test.ts
+index 91564d2c..6f543259 100644
+--- a/tests/src/core/compilers.test.ts
++++ b/tests/src/core/compilers.test.ts
+@@ -2,8 +2,8 @@ import type { ManifestScript } from '@src/core'
+ import type { ScratchInterface } from '@orkestrel/test/server'
+ import { createScratch, destroyScratch } from '@orkestrel/test/server'
+ import { spawnSync } from 'node:child_process'
+-import { mkdirSync, readFileSync, symlinkSync } from 'node:fs'
+-import { join, resolve } from 'node:path'
++import { existsSync, mkdirSync, readFileSync, symlinkSync } from 'node:fs'
++import { dirname, join, resolve } from 'node:path'
+ import {
+ 	blueprintToConfigArtifacts,
+ 	blueprintToDevDependencies,
+@@ -594,9 +594,7 @@ describe('blueprintToScripts config projects', () => {
+ 			'projects: [srcCore, policy, config, guides, distribution, probe]',
+ 		)
+ 		expect(configuration).not.toContain('isExactCaseFile')
+-		expect(scripts['test:guides']).toBe(
+-			'vitest run --config vite.config.ts --no-cache --reporter=dot --project guides',
+-		)
++		expect(scripts['test:guides']).toBe('node --experimental-strip-types scripts/guides.ts')
+ 		expect(scripts.test).toContain('npm run test:guides')
+ 	})
+ 
+@@ -611,19 +609,34 @@ describe('blueprintToScripts config projects', () => {
+ 		expect(scripts.test).not.toContain('test:guides')
+ 	})
+ 
+-	// The same fact selects the proof and the propagation: a workspace that
+-	// documents a public surface gets the gate that reports drift and the seed
+-	// that carries it across. The seed joins the writable region so a target that
+-	// adds the proof later receives the script from a repair, and it joins no gate
+-	// chain, because writing files is a maintainer's call rather than a check.
+-	it('emits the documentation seed beside the guides proof', () => {
++	// The guides entry joins the writable region so a target receives the reporting
++	// gate from a repair. Its accepted predecessor admits the old generated command
++	// without admitting a customized value.
++	it('emits the guides entry and accepts its generated predecessor', () => {
+ 		const documented = buildBlueprint({ guides: true })
+ 		const undocumented = buildBlueprint({ guides: false })
+ 		const scripts = blueprintToScripts(documented)
+-		const names = blueprintToWritableScripts(documented).map((script) => script.name)
++		const writable = blueprintToWritableScripts(documented)
++		const entry = writable.filter(({ name }) => name === 'test:guides')
+ 
+-		expect(scripts.docs).toBe('node --experimental-strip-types scripts/docs.ts')
+-		expect(names.indexOf('docs')).toBe(names.indexOf('test:guides') + 1)
++		expect(entry).toEqual([
++			{
++				name: 'test:guides',
++				command: 'node --experimental-strip-types scripts/guides.ts',
++				accepted: ['vitest run --config vite.config.ts --no-cache --reporter=dot --project guides'],
++			},
++		])
++		const previous =
++			'{\n\t"scripts": {\n\t\t"test:guides": "vitest run --config vite.config.ts --no-cache --reporter=dot --project guides"\n\t}\n}\n'
++		const customized = previous.replace(
++			'vitest run --config vite.config.ts --no-cache --reporter=dot --project guides',
++			'node scripts/custom-guides.js',
++		)
++		expect(replaceManifestScripts(previous, entry)).toContain(
++			'"test:guides": "node --experimental-strip-types scripts/guides.ts"',
++		)
++		expect(replaceManifestScripts(customized, entry)).toBe(customized)
++		expect(scripts).not.toHaveProperty('docs')
+ 		expect(blueprintToScripts(undocumented)).not.toHaveProperty('docs')
+ 		expect(blueprintToWritableScripts(undocumented).map((script) => script.name)).not.toContain(
+ 			'docs',
+@@ -1781,20 +1794,22 @@ describe('content artifact compilers', () => {
+ 		).toBe(true)
+ 	})
+ 
+-	// The seed reaches every workspace like the other vendored hooks; only the
+-	// script that runs it, and the `guides` project registering it, select with
++	// The entry reaches every workspace like the other vendored hooks. The script
++	// that runs it and the `guides` project registering it select with
+ 	// `guides`. A workspace indexing no guides still carries the module, but no
+ 	// script that would run it.
+-	it('vendors the documentation seed for every blueprint and emits its script with guides', () => {
++	it('vendors the guides entry for every blueprint and emits its script with guides', () => {
+ 		const indexed = buildBlueprint({ name: 'widget', guides: true })
+ 		const bare = buildBlueprint({ name: 'widget', guides: false })
+ 		const planned = blueprintToHostArtifacts(indexed).map(({ path }) => path)
+ 		const withheld = blueprintToHostArtifacts(bare).map(({ path }) => path)
+ 
+-		expect(planned).toContain('scripts/docs.ts')
+-		expect(withheld).toContain('scripts/docs.ts')
+-		expect(blueprintToScripts(indexed).docs).toBe('node --experimental-strip-types scripts/docs.ts')
+-		expect(blueprintToScripts(bare)).not.toHaveProperty('docs')
++		expect(planned).toContain('scripts/guides.ts')
++		expect(withheld).toContain('scripts/guides.ts')
++		expect(blueprintToScripts(indexed)['test:guides']).toBe(
++			'node --experimental-strip-types scripts/guides.ts',
++		)
++		expect(blueprintToScripts(bare)).not.toHaveProperty('test:guides')
+ 		expect(withheld).toStrictEqual(planned)
+ 	})
+ 
+@@ -1822,20 +1837,23 @@ describe('content artifact compilers', () => {
+ 	})
+ })
+ 
+-// The vendored seed the `docs` script names, driven as the process a target runs
++// The vendored entry the `test:guides` script names, driven as the process a target runs
+ // rather than imported: it reads `process.cwd()`, resolves `@orkestrel/guide`
+ // from the tree it sits in, and writes files. A scratch workspace carrying the
+ // seed's own bytes and a link to this checkout's installed copy of the readers is
+ // the smallest tree that exercises all of that. The link is fixture wiring, not a
+ // distribution proof: what a published tarball resolves is
+ // `tests/distribution.test.ts`'s subject.
+-const SEED_PATH = 'scripts/docs.ts'
++const SEED_PATH = 'scripts/guides.ts'
+ 
+ const SEED_MANIFEST = [
+ 	'{',
+ 	'\t"name": "@sample/widget",',
+ 	'\t"private": true,',
+-	'\t"type": "module"',
++	'\t"type": "module",',
++	'\t"scripts": {',
++	'\t\t"test:guides": "node --experimental-strip-types scripts/guides.ts"',
++	'\t}',
+ 	'}',
+ 	'',
+ ].join('\n')
+@@ -2006,6 +2024,75 @@ const SEED_FILES: Readonly<Record<string, string>> = Object.freeze({
+ 	'src/core/widget.ts': SEED_SOURCE,
+ })
+ 
++const SEED_VITE = [
++	"import { defineConfig } from 'vitest/config'",
++	'',
++	'export default defineConfig({',
++	'\ttest: {',
++	'\t\tprojects: [',
++	'\t\t\t{',
++	"\t\t\t\ttest: { name: { label: 'guides', color: 'green' }, include: ['tests/guides.test.ts'], environment: 'node' },",
++	'\t\t\t},',
++	'\t\t],',
++	'\t},',
++	'})',
++	'',
++].join('\n')
++
++const SEED_PASSING_TEST = [
++	"import { expect, it } from 'vitest'",
++	'',
++	"it('runs the generated guides project', () => {",
++	'\texpect(true).toBe(true)',
++	'})',
++	'',
++].join('\n')
++
++const SEED_FRESH_TEST = [
++	"import { readFileSync } from 'node:fs'",
++	"import { resolve } from 'node:path'",
++	"import { expect, it } from 'vitest'",
++	'',
++	"const source = readFileSync(resolve('src/core/widget.ts'), 'utf8')",
++	'',
++	"it('reads source bytes written before Vitest starts', () => {",
++	"\texpect(source).toContain(' * Shapes a widget from its parts.')",
++	'})',
++	'',
++].join('\n')
++
++const SEED_FAILING_TEST = [
++	"import { expect, it } from 'vitest'",
++	'',
++	"it('propagates a guides-project failure', () => {",
++	"\texpect('failed').toBe('passed')",
++	'})',
++	'',
++].join('\n')
++
++const SEED_START_TEST = [
++	"import { writeFileSync } from 'node:fs'",
++	"import { expect, it } from 'vitest'",
++	'',
++	"writeFileSync('vitest-started', 'started\\n', 'utf8')",
++	'',
++	"it('records project startup', () => {",
++	'\texpect(true).toBe(true)',
++	'})',
++	'',
++].join('\n')
++
++const SEED_UNHANDLED_TEST = [
++	"import { expect, it } from 'vitest'",
++	'',
++	"Promise.reject(new Error('unhandled guides error'))",
++	'',
++	"it('passes while the project reports an unhandled error', () => {",
++	'\texpect(true).toBe(true)',
++	'})',
++	'',
++].join('\n')
++
+ const SEED_REPORTED: Readonly<Record<string, string>> = Object.freeze({
+ 	...SEED_FILES,
+ 	'README.md': SEED_PITCH,
+@@ -2016,7 +2103,16 @@ const SEED_REPORTED: Readonly<Record<string, string>> = Object.freeze({
+ // A manifest declaring no `name`, so `readShortName` returns `undefined` and
+ // the pitch block never runs: the standing drift still prints, and no pitch
+ // line ever joins it.
+-const SEED_NAMELESS_MANIFEST = ['{', '\t"private": true,', '\t"type": "module"', '}', ''].join('\n')
++const SEED_NAMELESS_MANIFEST = [
++	'{',
++	'\t"private": true,',
++	'\t"type": "module",',
++	'\t"scripts": {',
++	'\t\t"test:guides": "node --experimental-strip-types scripts/guides.ts"',
++	'\t}',
++	'}',
++	'',
++].join('\n')
+ 
+ const SEED_NAMELESS: Readonly<Record<string, string>> = Object.freeze({
+ 	...SEED_REPORTED,
+@@ -2176,43 +2272,75 @@ const SEED_UNCARRIED: Readonly<Record<string, string>> = Object.freeze({
+ })
+ 
+ /**
+- * Builds a workspace carrying the seed, its readers, and the planted disagreements.
++ * Links an installed package into the fixture workspace without installing.
++ *
++ * @param scratch - The fixture workspace to receive the package.
++ * @param name - The installed package name to link.
++ * @returns Nothing.
++ */
++function linkSeedPackage(scratch: ScratchInterface, name: string): void {
++	const destination = join(scratch.path, 'node_modules', ...name.split('/'))
++	mkdirSync(dirname(destination), { recursive: true })
++	symlinkSync(resolve('node_modules', ...name.split('/')), destination, 'junction')
++}
++
++/**
++ * Builds a workspace carrying the entry, its readers, and the planted disagreements.
+  *
+  * @param files - The workspace files to write, keyed root-relative.
++ * @param test - The guides-project module to run.
+  * @returns The allocated scratch workspace.
+  */
+-function buildSeedWorkspace(files: Readonly<Record<string, string>>): ScratchInterface {
+-	const scratch = createScratch()
++function buildSeedWorkspace(
++	files: Readonly<Record<string, string>>,
++	test = SEED_PASSING_TEST,
++): ScratchInterface {
++	const scratch = createScratch({ prefix: 'scaffold guides ' })
+ 	for (const [path, text] of Object.entries(files)) scratch.write(path, text)
+ 	scratch.write(SEED_PATH, readFileSync(resolve(SEED_PATH), 'utf8'))
+-	mkdirSync(join(scratch.path, 'node_modules/@orkestrel'), { recursive: true })
+-	symlinkSync(
+-		resolve('node_modules/@orkestrel/guide'),
+-		join(scratch.path, 'node_modules/@orkestrel/guide'),
+-		'junction',
+-	)
++	scratch.write('vite.config.ts', SEED_VITE)
++	scratch.write('tests/guides.test.ts', test)
++	linkSeedPackage(scratch, '@orkestrel/guide')
++	linkSeedPackage(scratch, 'vite')
++	linkSeedPackage(scratch, 'vitest')
+ 	return scratch
+ }
+ 
+ /**
+- * Runs the seed in one workspace and reads what the process reported.
++ * Runs the entry through npm and reads what the process reported.
+  *
+  * @param scratch - The workspace to run in.
+- * @param args - The arguments after the seed's path.
++ * @param args - The arguments forwarded to `test:guides`.
+  * @returns The exit status, the lines the run printed without the trailing blank, and its error stream.
+  */
+ function runSeed(
+ 	scratch: ScratchInterface,
+ 	args: readonly string[],
+ ): { readonly status: number | null; readonly lines: readonly string[]; readonly stderr: string } {
+-	const run = spawnSync(process.execPath, ['--experimental-strip-types', SEED_PATH, ...args], {
+-		cwd: scratch.path,
+-		encoding: 'utf8',
+-		windowsHide: true,
+-	})
++	const adjacent = resolve(dirname(process.execPath), 'node_modules/npm/bin/npm-cli.js')
++	const npm = process.env.npm_execpath ?? (existsSync(adjacent) ? adjacent : undefined)
++	if (npm === undefined) throw new Error('The npm CLI module is unavailable.')
++	const forwarded = args.length === 0 ? [] : ['--', ...args]
++	const run = spawnSync(
++		process.execPath,
++		[npm, '--loglevel=error', 'run', 'test:guides', ...forwarded],
++		{
++			cwd: scratch.path,
++			encoding: 'utf8',
++			windowsHide: true,
++		},
++	)
+ 	return {
+ 		status: run.status,
+-		lines: run.stdout.split(/\r\n|\n/).filter((line) => line !== ''),
++		lines: run.stdout
++			.split(/\r\n|\n/)
++			.filter(
++				(line) =>
++					line.startsWith('guides/') ||
++					line.startsWith('wrote ') ||
++					line.startsWith('next: ') ||
++					line.startsWith('usage: '),
++			),
+ 		stderr: run.stderr,
+ 	}
+ }
+@@ -2270,7 +2398,7 @@ describe('blueprintToRootTsconfig own specifiers', () => {
+ 	})
+ })
+ 
+-describe('the documentation seed', () => {
++describe('the guides entry', () => {
+ 	it('names every planted disagreement and writes nothing without a direction', async () => {
+ 		const scratch = buildSeedWorkspace(SEED_FILES)
+ 		try {
+@@ -2280,7 +2408,6 @@ describe('the documentation seed', () => {
+ 				'guides/widget.md function shape: guide "Shapes a widget from its parts." source "Shapes a widget from the parts it is given."',
+ 				'guides/widget.md Widget.paint: guide "Paints the widget onto the surface." source "Paints the widget onto the frame."',
+ 				'guides/widget.md Shape a widget: guide "ts\\nshape(\'round\')" source "ts\\nshape(\'square\')"',
+-				'rows read: 1, disagreements found: 3',
+ 			])
+ 			expect(run.status).toBe(1)
+ 			// The gate reports and the seed reports; only a direction writes.
+@@ -2301,7 +2428,6 @@ describe('the documentation seed', () => {
+ 			expect(run.lines).toEqual([
+ 				'wrote guides/widget.md',
+ 				'guides/widget.md Shape a widget: guide "ts\\nshape(\'round\')" source "ts\\nshape(\'square\')"; the guide fence owns an example',
+-				'rows read: 1, disagreements found: 3, written: 2, reported: 1',
+ 				'next: npm run format',
+ 			])
+ 			expect(run.status).toBe(1)
+@@ -2328,17 +2454,13 @@ describe('the documentation seed', () => {
+ 	})
+ 
+ 	it('carries every summary and example to the source, and reads back clean', async () => {
+-		const scratch = buildSeedWorkspace(SEED_FILES)
++		const scratch = buildSeedWorkspace(SEED_FILES, SEED_FRESH_TEST)
+ 		try {
+ 			const written = runSeed(scratch, ['--to', 'source'])
+ 			const source = scratch.read('src/core/widget.ts') ?? ''
+ 			const again = runSeed(scratch, [])
+ 
+-			expect(written.lines).toEqual([
+-				'wrote src/core/widget.ts',
+-				'rows read: 1, disagreements found: 3, written: 3, reported: 0',
+-				'next: npm run format',
+-			])
++			expect(written.lines).toEqual(['wrote src/core/widget.ts', 'next: npm run format'])
+ 			expect(written.status).toBe(0)
+ 			expect(source).toContain(' * Shapes a widget from its parts.')
+ 			expect(source).toContain(" * shape('round')")
+@@ -2348,8 +2470,12 @@ describe('the documentation seed', () => {
+ 			expect(source).toContain(' * @param parts - The parts to shape.')
+ 			expect(source).toContain(' * @example Shape a widget')
+ 			expect(scratch.read('guides/widget.md')).toBe(SEED_GUIDE)
+-			expect(again.lines).toEqual(['rows read: 1, disagreements found: 0'])
++			expect(again.lines).toEqual([])
+ 			expect(again.status).toBe(0)
++			scratch.write('tests/guides.test.ts', SEED_FAILING_TEST)
++			const failed = runSeed(scratch, [])
++			expect(failed.lines).toEqual([])
++			expect(failed.status).toBe(1)
+ 		} finally {
+ 			await destroyScratch(scratch, { budget: 5000 })
+ 		}
+@@ -2363,7 +2489,6 @@ describe('the documentation seed', () => {
+ 			expect(run.lines).toEqual([
+ 				'guides/widget.md function measure: guide "Measures a widget against the frame it fills." source absent; no doc block carries the key',
+ 				'guides/widget.md pitch: readme "A widget kit the sample workspace publishes." tagline "A widget toolkit the sample workspace publishes."; the README pitch is authored by hand',
+-				'rows read: 1, disagreements found: 2, written: 0, reported: 2',
+ 			])
+ 			expect(run.status).toBe(1)
+ 			// Nothing was written, so no file moved and no formatter step is named.
+@@ -2382,7 +2507,6 @@ describe('the documentation seed', () => {
+ 
+ 			expect(run.lines).toEqual([
+ 				'guides/widget.md function measure: guide "Measures a widget against the frame it fills." source absent; no doc block carries the key',
+-				'rows read: 1, disagreements found: 1, written: 0, reported: 1',
+ 			])
+ 			expect(run.status).toBe(1)
+ 			expect(scratch.read('README.md')).toBe(SEED_PITCH)
+@@ -2398,7 +2522,6 @@ describe('the documentation seed', () => {
+ 
+ 			expect(run.lines).toEqual([
+ 				'guides/component.md function measure: guide "Measures a widget against the frame it fills." source absent; no doc block carries the key',
+-				'rows read: 1, disagreements found: 1, written: 0, reported: 1',
+ 			])
+ 			expect(run.status).toBe(1)
+ 			expect(scratch.read('README.md')).toBe(SEED_PITCH)
+@@ -2408,16 +2531,17 @@ describe('the documentation seed', () => {
+ 	})
+ 
+ 	it('prints one usage line and takes exit 2 for an argument outside its option', async () => {
+-		const scratch = buildSeedWorkspace(SEED_FILES)
++		const scratch = buildSeedWorkspace(SEED_FILES, SEED_START_TEST)
+ 		try {
+ 			const unknown = runSeed(scratch, ['--to', 'sideways'])
+ 			const stray = runSeed(scratch, ['--write'])
+ 
+-			expect(unknown.lines).toEqual(['usage: npm run docs [-- --to guide|--to source]'])
++			expect(unknown.lines).toEqual(['usage: npm run test:guides [-- --to guide|--to source]'])
+ 			expect(unknown.status).toBe(2)
+-			expect(stray.lines).toEqual(['usage: npm run docs [-- --to guide|--to source]'])
++			expect(stray.lines).toEqual(['usage: npm run test:guides [-- --to guide|--to source]'])
+ 			expect(stray.status).toBe(2)
+ 			expect(scratch.read('guides/widget.md')).toBe(SEED_GUIDE)
++			expect(scratch.has('vitest-started')).toBe(false)
+ 		} finally {
+ 			await destroyScratch(scratch, { budget: 5000 })
+ 		}
+@@ -2438,19 +2562,14 @@ describe('the documentation seed', () => {
+ 				'guides/widget.md function frame: guide "Frames a widget for the panel." source "Frames a widget for the panel it sits in."',
+ 				'guides/panel.md function paint: guide "Paints the panel onto the frame." source "Paints the panel onto the frame it was given."',
+ 				'guides/panel.md function frame: guide "Frames a widget for the panel." source "Frames a widget for the panel it sits in."',
+-				'rows read: 2, disagreements found: 3',
+-			])
+-			expect(written.lines).toEqual([
+-				'wrote src/core/panels/panel.ts',
+-				'rows read: 2, disagreements found: 3, written: 2, reported: 0',
+-				'next: npm run format',
+ 			])
++			expect(written.lines).toEqual(['wrote src/core/panels/panel.ts', 'next: npm run format'])
+ 			expect(written.status).toBe(0)
+ 			// Every rewrite in one file, and the file named once: a run that re-seeded
+ 			// its texts per row keeps the later rewrite alone and names the file again.
+ 			expect(source).toBe(SEED_OVERLAP_WRITTEN)
+ 			expect(written.lines.filter((line) => line.startsWith('wrote '))).toHaveLength(1)
+-			expect(runSeed(scratch, []).lines).toEqual(['rows read: 2, disagreements found: 0'])
++			expect(runSeed(scratch, []).lines).toEqual([])
+ 		} finally {
+ 			await destroyScratch(scratch, { budget: 5000 })
+ 		}
+@@ -2461,7 +2580,7 @@ describe('the documentation seed', () => {
+ 	// disagreements. An uncaught throw would exit 1 with a stack trace, which is
+ 	// the code a standing disagreement already means.
+ 	it('names the concept index it cannot read and takes exit 2', async () => {
+-		const scratch = buildSeedWorkspace(SEED_UNINDEXED)
++		const scratch = buildSeedWorkspace(SEED_UNINDEXED, SEED_START_TEST)
+ 		try {
+ 			const run = runSeed(scratch, ['--to', 'source'])
+ 
+@@ -2471,13 +2590,14 @@ describe('the documentation seed', () => {
+ 			expect(run.status).toBe(2)
+ 			expect(run.stderr).toBe('')
+ 			expect(scratch.read('src/core/widget.ts')).toBe(SEED_SOURCE)
++			expect(scratch.has('vitest-started')).toBe(false)
+ 		} finally {
+ 			await destroyScratch(scratch, { budget: 5000 })
+ 		}
+ 	})
+ 
+ 	it('names the indexed guide the workspace does not carry and takes exit 2', async () => {
+-		const scratch = buildSeedWorkspace(SEED_UNCARRIED)
++		const scratch = buildSeedWorkspace(SEED_UNCARRIED, SEED_START_TEST)
+ 		try {
+ 			const run = runSeed(scratch, ['--to', 'guide'])
+ 
+@@ -2487,8 +2607,22 @@ describe('the documentation seed', () => {
+ 			expect(run.status).toBe(2)
+ 			expect(run.stderr).toBe('')
+ 			expect(scratch.read('guides/widget.md')).toBe(SEED_GUIDE)
++			expect(scratch.has('vitest-started')).toBe(false)
+ 		} finally {
+ 			await destroyScratch(scratch, { budget: 5000 })
+ 		}
+ 	})
++
++	it('rejects an empty guides project and an unhandled project error', async () => {
++		const empty = buildSeedWorkspace(SEED_FILES)
++		const unhandled = buildSeedWorkspace(SEED_FILES, SEED_UNHANDLED_TEST)
++		try {
++			empty.remove('tests/guides.test.ts')
++			expect(runSeed(empty, []).status).toBe(1)
++			expect(runSeed(unhandled, []).status).toBe(1)
++		} finally {
++			await destroyScratch(empty, { budget: 5000 })
++			await destroyScratch(unhandled, { budget: 5000 })
++		}
++	})
+ })
+diff --git a/tests/src/core/fixtures/app-only-toolchain.txt b/tests/src/core/fixtures/app-only-toolchain.txt
+index f2afb495..fb16c4f0 100644
+--- a/tests/src/core/fixtures/app-only-toolchain.txt
++++ b/tests/src/core/fixtures/app-only-toolchain.txt
+@@ -3,7 +3,7 @@
+ 	"@orkestrel/guide": "^0.0.17",
+ 	"@orkestrel/html": "^0.0.8",
+ 	"@orkestrel/probe": "^0.0.12",
+-	"@orkestrel/scaffold": "^0.0.63",
++	"@orkestrel/scaffold": "^0.0.64",
+ 	"@orkestrel/test": "^0.0.13",
+ 	"@types/node": "^26.4.0",
+ 	"@vitejs/plugin-vue": "^6.0.8",
+diff --git a/tests/src/core/fixtures/setup-false-manifest.txt b/tests/src/core/fixtures/setup-false-manifest.txt
+index f0b5be8d..94efd3b0 100644
+--- a/tests/src/core/fixtures/setup-false-manifest.txt
++++ b/tests/src/core/fixtures/setup-false-manifest.txt
+@@ -64,7 +64,7 @@
+ 		"@microsoft/api-extractor": "^7.59.0",
+ 		"@orkestrel/guide": "^0.0.17",
+ 		"@orkestrel/probe": "^0.0.12",
+-		"@orkestrel/scaffold": "^0.0.63",
++		"@orkestrel/scaffold": "^0.0.64",
+ 		"@orkestrel/test": "^0.0.13",
+ 		"@types/node": "^26.4.0",
+ 		"oxfmt": "^0.65.0",
+diff --git a/tests/src/core/fixtures/source-manifest.txt b/tests/src/core/fixtures/source-manifest.txt
+index f0b5be8d..94efd3b0 100644
+--- a/tests/src/core/fixtures/source-manifest.txt
++++ b/tests/src/core/fixtures/source-manifest.txt
+@@ -64,7 +64,7 @@
+ 		"@microsoft/api-extractor": "^7.59.0",
+ 		"@orkestrel/guide": "^0.0.17",
+ 		"@orkestrel/probe": "^0.0.12",
+-		"@orkestrel/scaffold": "^0.0.63",
++		"@orkestrel/scaffold": "^0.0.64",
+ 		"@orkestrel/test": "^0.0.13",
+ 		"@types/node": "^26.4.0",
+ 		"oxfmt": "^0.65.0",
+diff --git a/tests/src/core/helpers.test.ts b/tests/src/core/helpers.test.ts
+index 144f124d..2b6a7acd 100644
+--- a/tests/src/core/helpers.test.ts
++++ b/tests/src/core/helpers.test.ts
+@@ -13,7 +13,7 @@ import {
+ 	computeBytes,
+ 	computeHash,
+ 	contentToHex,
+-	DOCS_SEED_PATH,
++	GUIDES_ENTRY_PATH,
+ 	extractRangeMajor,
+ 	EXECUTABLE_PATHS,
+ 	extractVersion,
+@@ -36,6 +36,7 @@ import {
+ 	matchesPrintWidth,
+ 	matchesRange,
+ 	MAX_MANIFEST_BYTES,
++	RETIRED_HOST_PATHS,
+ 	nameToGuide,
+ 	planToSummary,
+ 	PRINT_WIDTH,
+@@ -176,22 +177,23 @@ describe('isCanonPath', () => {
+ 		).toHaveLength(1)
+ 	})
+ 
+-	// The documentation seed is the one vendored script node runs rather than a
++	// The guides entry is the vendored script node runs rather than a
+ 	// shell invokes, so it takes the vendored set and leaves the executable set
+ 	// alone. A declaration in both would ship it at 0755 and claim an interpreter
+ 	// it has no shebang for. The shell hook beside it is the control each reading
+ 	// needs, drawn from the same directory.
+-	it('vendors the documentation seed without an executable bit or a canon claim', () => {
++	it('vendors the guides entry without an executable bit or a canon claim', () => {
+ 		// The path has one home, and the vendored set reads it: the literal here is
+ 		// what the constant must carry, so a moved seed reports rather than drifting
+-		// apart from the `docs` command and the artifact filter that read it too.
+-		expect(DOCS_SEED_PATH).toBe('scripts/docs.ts')
+-		expect(HOST_PATHS).toContain('scripts/docs.ts')
+-		expect(EXECUTABLE_PATHS).not.toContain('scripts/docs.ts')
+-		expect(isCanonPath('scripts/docs.ts')).toBe(false)
++		// apart from the `test:guides` command and the artifact filter that reads it.
++		expect(GUIDES_ENTRY_PATH).toBe('scripts/guides.ts')
++		expect(RETIRED_HOST_PATHS).toStrictEqual(['scripts/docs.ts'])
++		expect(HOST_PATHS).toContain('scripts/guides.ts')
++		expect(EXECUTABLE_PATHS).not.toContain('scripts/guides.ts')
++		expect(isCanonPath('scripts/guides.ts')).toBe(false)
+ 		expect(HOST_PATHS).toContain('scripts/deps.sh')
+ 		expect(EXECUTABLE_PATHS).toContain('scripts/deps.sh')
+-		expect(selectHostPaths(HOST_PATHS, 'scaffold')).toContain('scripts/docs.ts')
++		expect(selectHostPaths(HOST_PATHS, 'scaffold')).toContain('scripts/guides.ts')
+ 	})
+ })
+ 
+@@ -310,12 +312,12 @@ describe('selectHostPaths', () => {
+ 		expect(selectHostPaths(HOST_PATHS, 'router')).toStrictEqual(HOST_PATHS)
+ 	})
+ 
+-	// The name is the whole selection this helper makes. The documentation seed is
++	// The name is the whole selection this helper makes. The guides entry is
+ 	// selected like every other vendored hook, with no guides gate anywhere in the
+ 	// selection path, so the seed is a candidate here for a workspace of every shape.
+-	it('keeps the documentation seed a candidate whatever else selects it', () => {
+-		expect(selectHostPaths(HOST_PATHS, 'router')).toContain('scripts/docs.ts')
+-		expect(selectHostPaths(HOST_PATHS, 'scaffold')).toContain('scripts/docs.ts')
++	it('keeps the guides entry a candidate whatever else selects it', () => {
++		expect(selectHostPaths(HOST_PATHS, 'router')).toContain('scripts/guides.ts')
++		expect(selectHostPaths(HOST_PATHS, 'scaffold')).toContain('scripts/guides.ts')
+ 	})
+ 
+ 	// The selection reads `HOST_PATHS` alone, so no canon member reaches it: a
+diff --git a/tests/src/server/Materializer.test.ts b/tests/src/server/Materializer.test.ts
+index 06874270..2ed75216 100644
+--- a/tests/src/server/Materializer.test.ts
++++ b/tests/src/server/Materializer.test.ts
+@@ -797,6 +797,39 @@ describe('Materializer audit', () => {
+ 		}
+ 	})
+ 
++	it('reports the retired guides entry only when the orchestration group is selected', () => {
++		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
++		try {
++			const materializer = new Materializer({ host: workspace.ensure('raw') })
++			const target = workspace.ensure('project')
++			workspace.write('project/scripts/docs.ts', 'console.log("retired")\n')
++			workspace.write('project/scripts/custom.ts', 'console.log("custom")\n')
++			try {
++				const orchestration = buildVendoredPlan({
++					groups: ['orchestration'],
++					artifacts: [],
++				})
++				const tests = buildVendoredPlan({ groups: ['tests'], artifacts: [] })
++				expect(materializer.audit(orchestration, target).findings).toContainEqual({
++					path: 'scripts/docs.ts',
++					group: 'orchestration',
++					drift: 'foreign',
++					observed: contentToHex('console.log("retired")\n'),
++				})
++				expect(materializer.audit(tests, target).findings).toEqual([])
++				expect(
++					materializer
++						.audit(orchestration, target)
++						.findings.some(({ path }) => path === 'scripts/custom.ts'),
++				).toBe(false)
++			} finally {
++				materializer.destroy()
++			}
++		} finally {
++			workspace.destroy()
++		}
++	})
++
+ 	it('reports absent deferred paths as missing and a clean terminal audit after repair', () => {
+ 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+ 		try {
+diff --git a/tests/src/server/helpers.test.ts b/tests/src/server/helpers.test.ts
+index 307d2a57..56e17311 100644
+--- a/tests/src/server/helpers.test.ts
++++ b/tests/src/server/helpers.test.ts
+@@ -206,7 +206,7 @@ describe('vendored imports', () => {
+ 		]
+ 		expect(paths.length).toBeGreaterThan(0)
+ 		expect(paths).toContain('tests/config.test.ts')
+-		expect(paths).toContain('scripts/docs.ts')
++		expect(paths).toContain('scripts/guides.ts')
+ 		const modules = [
+ 			...paths.map((path) => ({
+ 				path,
+diff --git a/scripts/guides.ts b/scripts/guides.ts
+new file mode 100644
+index 00000000..ef6ccb09
+--- /dev/null
++++ b/scripts/guides.ts
+@@ -0,0 +1,527 @@
++// ============================================================================
++// scripts/guides.ts - the documentation-parity entry, run as `npm run test:guides`.
++// ----------------------------------------------------------------------------
++// With no flag it reports every disagreement without changing files. With
++// `--to guide` or `--to source` it rewrites the named side through the readers
++// and replacers `@orkestrel/guide` ships. It then runs the real guides project
++// against the bytes on disk. Run `npm run format` after a write.
++//
++// `tests/guides.test.ts` reports the same disagreements and never writes.
++// Converge guide and source here, never by weakening that gate.
++//
++// This entry is self-contained and imports no sibling: a target receives the
++// file alone, so a module-scope declaration here has no centralized file to sit
++// in. `.claude/rules/architecture.md` § Declaration placement is what permits
++// that, and every declaration below stays local for the same reason.
++// ============================================================================
++import type {
++	Drift,
++	GuideInterface,
++	GuideModule,
++	ManifestEntry,
++	SourceExample,
++} from '@orkestrel/guide'
++import type { TestRunResult } from 'vitest/node'
++import {
++	collectExamples,
++	collectKeys,
++	collectTitles,
++	computeSymbolKey,
++	createGuide,
++	createSource,
++	extractSourceLines,
++	findDrift,
++	locateComment,
++	normalizeComment,
++	parseManifest,
++	replaceCell,
++	replaceExample,
++	replaceSummary,
++	selectModuleKeys,
++	spliceSpan,
++} from '@orkestrel/guide'
++import { existsSync, globSync, readFileSync, writeFileSync } from 'node:fs'
++import { resolve } from 'node:path'
++import process from 'node:process'
++import { createVitest } from 'vitest/node'
++
++/** Names the option the entry accepts, with the values it takes. */
++const USAGE = 'usage: npm run test:guides [-- --to guide|--to source]'
++
++/** Matches the files the guide readers reflect over, the same set the gate inventories. */
++const INVENTORY: readonly string[] = ['src/**/*.ts', 'tests/**/*.ts', 'guides/*.md', '*.md']
++
++/** Names the package manifest whose bare name selects this workspace's own guide. */
++const MANIFEST_FILE = 'package.json'
++
++/** Names the concept index every guide row is read from. */
++const INDEX_FILE = 'guides/README.md'
++
++/** Names the file whose blockquote pitch equals this workspace's own guide tagline. */
++const README_FILE = 'README.md'
++
++/** Names the compared pair the pitch reports under. */
++const PITCH_KEY = 'pitch'
++
++/** Pairs one indexed guide with the source it documents and the disagreements between them. */
++interface Row {
++	readonly spec: string
++	readonly guide: GuideInterface
++	readonly drift: readonly Drift[]
++	readonly titles: ReadonlyMap<string, SourceExample>
++	readonly summaries: ReadonlySet<string>
++	readonly index: ReadonlyMap<string, string>
++}
++
++/**
++ * Reads the inventory the guide readers reflect over.
++ *
++ * @param root - The workspace root to read from.
++ * @returns Root-relative forward-slash keys mapped to file text.
++ */
++function readInventory(root: string): Record<string, string> {
++	const files: Record<string, string> = {}
++	for (const key of globSync([...INVENTORY], { cwd: root })) {
++		files[key.replaceAll('\\', '/')] = readFileSync(resolve(root, key), 'utf8')
++	}
++	return files
++}
++
++/**
++ * Reads the workspace's own bare package name.
++ *
++ * @param root - The workspace root to read from.
++ * @returns The name after the scope, or `undefined` when the manifest declares none.
++ */
++function readShortName(root: string): string | undefined {
++	const path = resolve(root, MANIFEST_FILE)
++	if (!existsSync(path)) return undefined
++	let manifest: unknown
++	try {
++		manifest = JSON.parse(readFileSync(path, 'utf8'))
++	} catch {
++		return undefined
++	}
++	if (typeof manifest !== 'object' || manifest === null) return undefined
++	const name: unknown = Object.getOwnPropertyDescriptor(manifest, 'name')?.value
++	if (typeof name !== 'string' || name.length === 0) return undefined
++	return name.slice(name.lastIndexOf('/') + 1)
++}
++
++/**
++ * Renders one side of a compared pair.
++ *
++ * @param text - The text that side carries, or `undefined` when it carries none.
++ * @returns The text as a quoted single-line literal, or `absent`.
++ */
++function formatSide(text: string | undefined): string {
++	return text === undefined ? 'absent' : JSON.stringify(text)
++}
++
++/**
++ * Renders one disagreement as a single line.
++ *
++ * @param spec - The guide the disagreement was found in.
++ * @param drift - The disagreement, with the text each side carries.
++ * @returns The spec, the key, and each side's text or `absent`.
++ */
++function formatDrift(spec: string, drift: Drift): string {
++	return `${spec} ${drift.key}: guide ${formatSide(drift.guide)} source ${formatSide(drift.source)}`
++}
++
++/**
++ * Renders one disagreement a write left standing, with why it stands.
++ *
++ * @param spec - The guide the disagreement was found in.
++ * @param drift - The disagreement, with the text each side carries.
++ * @param reason - What stopped the write.
++ * @returns The disagreement's line with the reason after it.
++ */
++function formatReported(spec: string, drift: Drift, reason: string): string {
++	return `${formatDrift(spec, drift)}; ${reason}`
++}
++
++/**
++ * Renders the pitch pair as a single line.
++ *
++ * @param spec - The guide whose tagline the pitch is compared with.
++ * @param pitch - The README's blockquote pitch, or `undefined` when it carries none.
++ * @param tagline - The guide's blockquote tagline, or `undefined` when it carries none.
++ * @returns The spec, the key, and each side's text or `absent`.
++ */
++function formatPitch(spec: string, pitch: string | undefined, tagline: string | undefined): string {
++	return `${spec} ${PITCH_KEY}: readme ${formatSide(pitch)} tagline ${formatSide(tagline)}`
++}
++
++/**
++ * Collects the compared keys a guide's Surface and Methods tables carry.
++ *
++ * @param guide - The parsed guide.
++ * @returns One key per documented symbol and per documented member.
++ */
++function collectCells(guide: GuideInterface): ReadonlySet<string> {
++	const keys = new Set<string>()
++	for (const symbol of guide.surface()) keys.add(computeSymbolKey(symbol))
++	for (const group of guide.methods()) {
++		for (const entry of group.methods) keys.add(`${group.interface}.${entry.name}`)
++	}
++	return keys
++}
++
++/**
++ * Collects one line per input the run needs and the workspace does not carry.
++ *
++ * @param files - The workspace inventory the readers reflect over.
++ * @param entries - The indexed rows, or `undefined` when the workspace carries no index.
++ * @returns One line per missing input, each naming the file it is missing.
++ */
++function collectMissing(
++	files: Readonly<Record<string, string>>,
++	entries: readonly ManifestEntry[] | undefined,
++): readonly string[] {
++	if (entries === undefined) {
++		return [`${INDEX_FILE}: the workspace carries no concept index to read`]
++	}
++	return entries
++		.filter((entry) => files[entry.spec] === undefined)
++		.map((entry) => `${entry.spec}: the concept index names it and the workspace does not carry it`)
++}
++
++/**
++ * Indexes every compared key a module's files carry to the file carrying it.
++ *
++ * @param files - The workspace inventory the readers reflect over.
++ * @param module - The source directories the guide documents.
++ * @returns Each key mapped to the first file declaring it.
++ */
++function buildIndex(
++	files: Readonly<Record<string, string>>,
++	module: GuideModule,
++): ReadonlyMap<string, string> {
++	const index = new Map<string, string>()
++	for (const file of selectModuleKeys(files, module)) {
++		const text = files[file]
++		if (text === undefined) continue
++		for (const key of collectKeys(extractSourceLines(text)).values()) {
++			if (!index.has(key)) index.set(key, file)
++		}
++	}
++	return index
++}
++
++/**
++ * Splits a compared example text into the block a replacer writes.
++ *
++ * @param name - The declaration or member whose doc block carries the block.
++ * @param title - The heading text the fence and the tag pair on.
++ * @param text - The compared text: the language on the first line, the body beneath.
++ * @returns The block, carrying no language when the first line is empty.
++ */
++function splitExample(name: string, title: string, text: string): SourceExample {
++	const at = text.indexOf('\n')
++	const language = at === -1 ? text : text.slice(0, at)
++	const code = at === -1 ? '' : text.slice(at + 1)
++	return language.length === 0 ? { name, title, code } : { name, title, code, language }
++}
++
++/**
++ * Finds the compared key of the doc block carrying one titled example.
++ *
++ * @param texts - The current text of every file, keyed root-relative.
++ * @param index - Each compared key mapped to the file declaring it.
++ * @param name - The declaration or member the block belongs to.
++ * @param title - The heading text the tag carries.
++ * @returns The key `locateComment` reaches the block by, or `undefined` when none does.
++ */
++function findExample(
++	texts: ReadonlyMap<string, string>,
++	index: ReadonlyMap<string, string>,
++	name: string,
++	title: string,
++): string | undefined {
++	for (const [key, file] of index) {
++		if (key !== name && !key.endsWith(` ${name}`) && !key.endsWith(`.${name}`)) continue
++		const text = texts.get(file)
++		if (text === undefined) continue
++		const span = locateComment(text, key)
++		if (span === undefined) continue
++		const block = text.slice(span.start, span.end)
++		if (collectExamples(normalizeComment(block), name).some((one) => one.title === title)) {
++			return key
++		}
++	}
++	return undefined
++}
++
++/** Builds the stable lookup key for one unresolved disagreement. */
++function buildReasonKey(spec: string, key: string): string {
++	return `${spec}\n${key}`
++}
++
++/** Records why a requested rewrite could not resolve one disagreement. */
++function recordReason(
++	reasons: Map<string, string>,
++	spec: string,
++	drift: Drift,
++	reason: string,
++): void {
++	reasons.set(buildReasonKey(spec, drift.key), reason)
++}
++
++/**
++ * Carries every summary disagreement of one row across to its guide.
++ *
++ * @param row - The indexed guide and its disagreements.
++ * @param texts - The current text of every file, keyed root-relative, rewritten in place.
++ * @param reasons - Reasons keyed to disagreements the write leaves unresolved.
++ */
++function writeGuide(row: Row, texts: Map<string, string>, reasons: Map<string, string>): void {
++	const start = texts.get(row.spec)
++	if (start === undefined) return
++	let text = start
++	for (const drift of row.drift) {
++		if (!row.summaries.has(drift.key)) {
++			recordReason(reasons, row.spec, drift, 'the guide fence owns an example')
++			continue
++		}
++		if (drift.source === undefined) {
++			recordReason(reasons, row.spec, drift, 'the source side carries no text')
++			continue
++		}
++		const replaced = replaceCell(text, drift.key, drift.source)
++		if (replaced === undefined) {
++			recordReason(reasons, row.spec, drift, 'no Summary cell carries the key')
++			continue
++		}
++		if (replaced === text) continue
++		text = replaced
++	}
++	if (text !== start) texts.set(row.spec, text)
++}
++
++/**
++ * Carries every disagreement of one row across to the source it documents.
++ *
++ * @param row - The indexed guide and its disagreements.
++ * @param texts - The current text of every file, keyed root-relative, rewritten in place.
++ * @param reasons - Reasons keyed to disagreements the write leaves unresolved.
++ */
++function writeSource(row: Row, texts: Map<string, string>, reasons: Map<string, string>): void {
++	for (const drift of row.drift) {
++		if (drift.guide === undefined) {
++			recordReason(reasons, row.spec, drift, 'the guide side carries no text')
++			continue
++		}
++		const summary = row.summaries.has(drift.key)
++		const example = row.titles.get(drift.key)
++		const key = summary
++			? drift.key
++			: example === undefined
++				? undefined
++				: findExample(texts, row.index, example.name, drift.key)
++		const file = key === undefined ? undefined : row.index.get(key)
++		const text = file === undefined ? undefined : texts.get(file)
++		if (key === undefined || file === undefined || text === undefined) {
++			recordReason(reasons, row.spec, drift, 'no doc block carries the key')
++			continue
++		}
++		const span = locateComment(text, key)
++		if (span === undefined) {
++			recordReason(reasons, row.spec, drift, 'no doc block carries the key')
++			continue
++		}
++		const block = text.slice(span.start, span.end)
++		const rewritten =
++			example === undefined || summary
++				? replaceSummary(block, drift.guide)
++				: replaceExample(block, splitExample(example.name, drift.key, drift.guide))
++		if (rewritten === undefined) {
++			recordReason(reasons, row.spec, drift, 'the doc block refused the rewrite')
++			continue
++		}
++		const spliced = spliceSpan(text, span, rewritten)
++		if (spliced === text) continue
++		texts.set(file, spliced)
++	}
++}
++
++/** Builds the indexed guide rows from one inventory reading. */
++function buildRows(
++	files: Readonly<Record<string, string>>,
++	entries: readonly ManifestEntry[],
++): readonly Row[] {
++	const rows: Row[] = []
++	for (const entry of entries) {
++		const markdown = files[entry.spec]
++		if (markdown === undefined) continue
++		const guide = createGuide(markdown)
++		const source = createSource({ files, module: entry.source })
++		rows.push({
++			spec: entry.spec,
++			guide,
++			drift: findDrift(guide, source),
++			titles: collectTitles(guide, source),
++			summaries: collectCells(guide),
++			index: buildIndex(files, entry.source),
++		})
++	}
++	return rows
++}
++
++/** Flushes changed file texts and returns their logical paths in stable order. */
++function flushTexts(
++	root: string,
++	files: Readonly<Record<string, string>>,
++	texts: ReadonlyMap<string, string>,
++): readonly string[] {
++	const changed: string[] = []
++	for (const [file, text] of texts) {
++		if (text === files[file]) continue
++		writeFileSync(resolve(root, file), text)
++		changed.push(file)
++	}
++	return changed.toSorted()
++}
++
++/** Reports the remaining guide/source drift from a fresh inventory reading. */
++function reportRows(
++	rows: readonly Row[],
++	direction: 'guide' | 'source' | undefined,
++	reasons: ReadonlyMap<string, string>,
++): boolean {
++	let reported = false
++	for (const row of rows) {
++		for (const drift of row.drift) {
++			reported = true
++			if (direction === undefined) {
++				process.stdout.write(`${formatDrift(row.spec, drift)}\n`)
++				continue
++			}
++			const reason =
++				reasons.get(buildReasonKey(row.spec, drift.key)) ??
++				'the requested rewrite left the disagreement unresolved'
++			process.stdout.write(`${formatReported(row.spec, drift, reason)}\n`)
++		}
++	}
++	return reported
++}
++
++/** Reports a remaining README pitch disagreement from fresh bytes. */
++function reportPitch(
++	root: string,
++	files: Readonly<Record<string, string>>,
++	rows: readonly Row[],
++	direction: 'guide' | 'source' | undefined,
++): boolean {
++	const name = readShortName(root)
++	const readme = files[README_FILE]
++	const own = name === undefined ? undefined : rows.find((row) => row.spec === `guides/${name}.md`)
++	if (own === undefined || readme === undefined) return false
++	const pitch = createGuide(readme).tagline()
++	const tagline = own.guide.tagline()
++	if (pitch === tagline) return false
++	const line = formatPitch(own.spec, pitch, tagline)
++	process.stdout.write(
++		direction === undefined ? `${line}\n` : `${line}; the README pitch is authored by hand\n`,
++	)
++	return true
++}
++
++/** Decides whether the public Vitest result proves a passing guides project. */
++function passedGuides(result: TestRunResult): boolean {
++	if (result.testModules.length === 0 || result.unhandledErrors.length > 0) return false
++	for (const module of result.testModules) {
++		if (module.state() !== 'passed') return false
++	}
++	return true
++}
++
++/** Starts and always closes the real guides project. */
++async function runGuides(): Promise<boolean> {
++	const vitest = await createVitest('test', {
++		config: 'vite.config.ts',
++		project: ['guides'],
++		cache: false,
++		watch: false,
++		reporters: ['dot'],
++	})
++	try {
++		return passedGuides(await vitest.start())
++	} finally {
++		await vitest.close()
++	}
++}
++
++/** Raises the process status without weakening an existing failure. */
++function raiseExit(code: number): void {
++	const current = process.exitCode
++	const numeric = typeof current === 'string' ? Number.parseInt(current, 10) : current
++	if (typeof numeric !== 'number' || !Number.isFinite(numeric) || numeric < code) {
++		process.exitCode = code
++	}
++}
++
++/** Renders an unknown thrown value without asserting its shape. */
++function formatError(error: unknown): string {
++	return error instanceof Error ? error.message : String(error)
++}
++
++/** Runs the entry after validating all arguments and required inputs. */
++async function main(): Promise<void> {
++	const args = process.argv.slice(2)
++	const direction =
++		args.length === 2 && args[0] === '--to' && (args[1] === 'guide' || args[1] === 'source')
++			? args[1]
++			: undefined
++	if (direction === undefined && args.length > 0) {
++		process.stdout.write(`${USAGE}\n`)
++		raiseExit(2)
++		return
++	}
++
++	const root = process.cwd()
++	const files = readInventory(root)
++	const manifest = files[INDEX_FILE]
++	const entries = manifest === undefined ? undefined : parseManifest(manifest, 'guides')
++	const missing = collectMissing(files, entries)
++	if (entries === undefined || missing.length > 0) {
++		for (const line of missing) process.stdout.write(`${line}\n`)
++		raiseExit(2)
++		return
++	}
++
++	const rows = buildRows(files, entries)
++	const texts = new Map(Object.entries(files))
++	const reasons = new Map<string, string>()
++	if (direction !== undefined) {
++		for (const row of rows) {
++			if (direction === 'guide') writeGuide(row, texts, reasons)
++			else writeSource(row, texts, reasons)
++		}
++	}
++	const changed = flushTexts(root, files, texts)
++	for (const file of changed) process.stdout.write(`wrote ${file}\n`)
++
++	const fresh = readInventory(root)
++	const freshManifest = fresh[INDEX_FILE]
++	const freshEntries =
++		freshManifest === undefined ? undefined : parseManifest(freshManifest, 'guides')
++	const freshMissing = collectMissing(fresh, freshEntries)
++	if (freshEntries === undefined || freshMissing.length > 0) {
++		for (const line of freshMissing) process.stdout.write(`${line}\n`)
++		raiseExit(2)
++		return
++	}
++	const freshRows = buildRows(fresh, freshEntries)
++	if (reportRows(freshRows, direction, reasons)) raiseExit(1)
++	if (reportPitch(root, fresh, freshRows, direction)) raiseExit(1)
++	if (changed.length > 0) process.stdout.write('next: npm run format\n')
++	if (!(await runGuides())) raiseExit(1)
++}
++
++try {
++	await main()
++} catch (error) {
++	process.stderr.write(`${formatError(error)}\n`)
++	raiseExit(1)
++}

@@ -1,0 +1,39 @@
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/scaffold/tmp/pass/scaffold-guides-entry
+
+--------------------------------------------------------------x------------------------------------------------------------------------
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:bin| tests/src/bin/CLI.test.ts > CLI audit > appends absent scripts while retaining and reporting a differing html script
+AssertionError: expected [] to strictly equal [ { field: 'scripts', …(2) } ]
+
+- Expected
++ Received
+
+- [
+-   {
+-     "blocking": false,
+-     "field": "scripts",
+-     "message": "The manifest at C:\\Users\\mikes\\AppData\\Local\\Temp\\orkestrel-scaffold-LaIF8M\\target declares a planned script with a differing value: test:guides. Keep the declared value unchanged or replace it with the planned value: \"test:guides\" declares \"node --experimental-strip-types scripts/guides.ts\"; planned \"node --experimental-strip-types scripts/guides.ts\".",
+-   },
+- ]
++ []
+
+ ❯ tests/src/bin/CLI.test.ts:1924:36
+    1922|    ).toBe(EXIT_CLEAN)
+    1923|    const outcome: RepairResult = JSON.parse(sink.output[0] ?? '')
+    1924|    expect(outcome.audit.questions).toStrictEqual([
+       |                                    ^
+    1925|     {
+    1926|      field: 'scripts',
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 134 skipped (135)
+   Start at  21:01:00
+   Duration  1.13s (transform 370ms, setup 713ms, import 155ms, tests 108ms, environment 0ms)
+
+

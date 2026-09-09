@@ -1,0 +1,14 @@
+{
+  "command": "C:/Users/mikes/scoop/apps/git/current/usr/bin/timeout.exe --kill-after=15s 600s node C:/Users/mikes/scoop/apps/nodejs-lts/current/node_modules/npm/bin/npm-cli.js run check",
+  "workdir": "C:/Users/mikes/WebstormProjects/scaffold/tmp/pass/scaffold-guides-entry",
+  "exit_code": 0,
+  "initial": {
+    "chunk_id": "e868c1",
+    "wall_time_seconds": 7.0869657,
+    "exit_code": 0,
+    "original_token_count": 150,
+    "output": "\n> @orkestrel/scaffold@0.0.64 check\n> tsc --noEmit --project tsconfig.json && npm run check:src\n\nnpm notice run @orkestrel/scaffold@0.0.64 check:src\nnpm notice run npm run check:src:core && npm run check:src:server && npm run check:src:bin\nnpm notice run @orkestrel/scaffold@0.0.64 check:src:core\nnpm notice run tsc --noEmit -p configs/src/tsconfig.core.json\nnpm notice run @orkestrel/scaffold@0.0.64 check:src:server\nnpm notice run tsc --noEmit -p configs/src/tsconfig.server.json\nnpm notice run @orkestrel/scaffold@0.0.64 check:src:bin\nnpm notice run tsc --noEmit -p configs/src/tsconfig.bin.json\n"
+  },
+  "subsequent": []
+}
+

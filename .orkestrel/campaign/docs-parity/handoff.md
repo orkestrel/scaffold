@@ -276,9 +276,14 @@ d7n-guides-entry-design-brief.md with d7n-guides-entry-design-host-brief.md. The
 permits native file retrieval only; no lane runs product commands or edits source.
 The native objective lane and journaled Opus subjective lane returned independently.
 Read d7n-guides-entry-design-verdict.md for the reconciled design. The native Sol
-implementation is running in tmp/pass/scaffold-guides-entry from baseline 9b3003d.
-Its bounded brief is d7n-guides-entry-fix-brief.md. No product change from this entry
-consolidation is accepted yet.
+implementation returned in tmp/pass/scaffold-guides-entry from baseline 9b3003d.
+The source candidate is frozen at prepared version 0.0.64. Root's ordered package
+gates passed after the retained fixture successors. Ordinary npm test left the
+candidate diff, status and launcher bytes unchanged. Read the original, root-gate
+successor and CLI-fixture brief/report pairs with d7n-guides-entry-final.diff.txt.
+The real tracked-Git retirement recipe is in progress. Independent acceptance and
+packed-consumer proof remain pending; no entry-consolidation product change is
+accepted or landed yet.
 
 HTML's isolated prerequisite artifact is accepted in d7n-html-artifact-stage-verdict.md.
 Its version is 0.0.9 with staged Contract ^0.0.17, at
@@ -316,6 +321,15 @@ preparation exited 0; installed tarball identities and nested resolution agree w
 the accepted Contract/HTML/Markdown/Guide/Test chain. Primary owner manifest and staged
 lock hashes are unchanged. The preparation evidence is retained under
 evidence/d7n-scaffold-guides-prepare. Do not reuse the dirty scaffold-path worktree.
+
+Read d7n-guides-entry-root-gates-report.md before resuming acceptance. Fresh native
+agent allocation is refused by the harness thread limit, including gate-carrier
+authorship. This is a capacity refusal, not a dark engine. Root used existing
+package scripts for the ordered gates and retained their actual outputs. Fresh
+objective review, mechanical checking and independent verification are not run.
+The owner has not yet answered whether the existing design analyst may be reused
+with its earlier context recorded. Do not silently waive clean-context review or
+route native Sol through its own CLI.
 
 ## Pending owner decisions carried from the container
 

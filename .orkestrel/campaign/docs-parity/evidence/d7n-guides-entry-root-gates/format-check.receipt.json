@@ -1,0 +1,14 @@
+{
+  "command": "node C:/Users/mikes/scoop/apps/nodejs-lts/current/node_modules/npm/bin/npm-cli.js run format:check",
+  "workdir": "C:/Users/mikes/WebstormProjects/scaffold/tmp/pass/scaffold-guides-entry",
+  "exit_code": 0,
+  "initial": {
+    "chunk_id": "6276c8",
+    "wall_time_seconds": 4.0130765,
+    "exit_code": 0,
+    "original_token_count": 51,
+    "output": "\n> @orkestrel/scaffold@0.0.64 format:check\n> oxfmt --config .oxfmtrc.json --check .\n\nChecking formatting...\n\nAll matched files use the correct format.\nFinished in 3631ms on 224 files using 16 threads.\n"
+  },
+  "subsequent": []
+}
+

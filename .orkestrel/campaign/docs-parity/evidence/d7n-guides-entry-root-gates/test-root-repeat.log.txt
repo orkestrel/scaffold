@@ -1,0 +1,158 @@
+
+> @orkestrel/scaffold@0.0.64 test
+> npm run test:src:core && npm run test:src:server && npm run test:src:bin && npm run test:policy && npm run test:config && npm run test:setup && npm run test:guides
+
+npm notice run @orkestrel/scaffold@0.0.64 test:src:core
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/scaffold/tmp/pass/scaffold-guides-entry
+
+·····························································································································································································································································································x····xx············································································stderr | tests/src/core/templates.test.ts > emitted workspaces under their own gates > refuses a non-object peer dependency declaration at config load
+[33m[MIXED_EXPORTS] [0mEntry module "tmp/scaffold-e2-peers-LSYUEO/malformed/vite.config.ts" is using named (including "config", "default", "distribution", "peers", "policy", "probe", "resolveWorkspacePath", "srcCore") and default exports together. Consumers of your bundle will have to use `chunk.default` to access the default export, which may not be what you want. Use `output.exports: "named"` to disable this warning.
+
+
+stderr | tests/src/core/templates.test.ts > emitted workspaces under their own gates > refuses a non-object peer dependency declaration at config load
+failed to load config from C:\Users\mikes\WebstormProjects\scaffold\tmp\pass\scaffold-guides-entry\tmp\scaffold-e2-peers-LSYUEO\malformed\vite.config.ts
+
+································xx·
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 5 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:core| tests/src/core/compilers.test.ts > blueprintToDevDependencies compile tooling > keeps the browser application toolchain in an app-only workspace
+Error: Snapshot `blueprintToDevDependencies compile tooling > keeps the browser application toolchain in an app-only workspace 1` mismatched
+
+- Expected
++ Received
+
+@@ -1,11 +1,11 @@
+  {
+  	"@orkestrel/contract": "^0.0.16",
+  	"@orkestrel/guide": "^0.0.17",
+  	"@orkestrel/html": "^0.0.8",
+  	"@orkestrel/probe": "^0.0.12",
+- 	"@orkestrel/scaffold": "^0.0.63",
++ 	"@orkestrel/scaffold": "^0.0.64",
+  	"@orkestrel/test": "^0.0.13",
+  	"@types/node": "^26.4.0",
+  	"@vitejs/plugin-vue": "^6.0.8",
+  	"@vitest/browser-playwright": "^4.1.11",
+  	"oxfmt": "^0.65.0",
+
+ ❯ tests/src/core/compilers.test.ts:444:3
+    442|    expect.arrayContaining(['@orkestrel/html', 'vue', '@orkestrel/test'…
+    443|   )
+    444|   await expect(JSON.stringify(planned, undefined, '\t')).toMatchFileSn…
+       |   ^
+    445|    'fixtures/app-only-toolchain.txt',
+    446|   )
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/5]⎯
+
+ FAIL  |src:core| tests/src/core/compilers.test.ts > blueprintToDevDependencies compile tooling > keeps a generated source workspace manifest byte-stable
+Error: Snapshot `blueprintToDevDependencies compile tooling > keeps a generated source workspace manifest byte-stable 1` mismatched
+
+- Expected
++ Received
+
+@@ -62,11 +62,11 @@
+  	"dependencies": {},
+  	"devDependencies": {
+  		"@microsoft/api-extractor": "^7.59.0",
+  		"@orkestrel/guide": "^0.0.17",
+  		"@orkestrel/probe": "^0.0.12",
+- 		"@orkestrel/scaffold": "^0.0.63",
++ 		"@orkestrel/scaffold": "^0.0.64",
+  		"@orkestrel/test": "^0.0.13",
+  		"@types/node": "^26.4.0",
+  		"oxfmt": "^0.65.0",
+  		"oxlint": "^1.80.0",
+  		"typescript": "^6.0.3",
+
+ ❯ tests/src/core/compilers.test.ts:492:3
+    490|   // moves it. Regenerate it with `npm run test:src:core -- -u` and re…
+    491|   // diff; it is the tripwire for every other byte.
+    492|   await expect(manifest).toMatchFileSnapshot('fixtures/source-manifest…
+       |   ^
+    493|  })
+    494| })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/5]⎯
+
+ FAIL  |src:core| tests/src/core/compilers.test.ts > blueprintToScripts config projects > registers and gates setup proofs only when the blueprint selects them
+Error: Snapshot `blueprintToScripts config projects > registers and gates setup proofs only when the blueprint selects them 1` mismatched
+
+- Expected
++ Received
+
+@@ -62,11 +62,11 @@
+  	"dependencies": {},
+  	"devDependencies": {
+  		"@microsoft/api-extractor": "^7.59.0",
+  		"@orkestrel/guide": "^0.0.17",
+  		"@orkestrel/probe": "^0.0.12",
+- 		"@orkestrel/scaffold": "^0.0.63",
++ 		"@orkestrel/scaffold": "^0.0.64",
+  		"@orkestrel/test": "^0.0.13",
+  		"@types/node": "^26.4.0",
+  		"oxfmt": "^0.65.0",
+  		"oxlint": "^1.80.0",
+  		"typescript": "^6.0.3",
+
+ ❯ tests/src/core/compilers.test.ts:505:3
+    503|   // A release moves the fixture through its floors and self-pin; rege…
+    504|   // with `npm run test:src:core -- -u` and review the diff.
+    505|   await expect(blueprintToManifest(absent)).toMatchFileSnapshot(
+       |   ^
+    506|    'fixtures/setup-false-manifest.txt',
+    507|   )
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/5]⎯
+
+ FAIL  |src:core| tests/src/core/compilers.test.ts > the guides entry > names the concept index it cannot read and takes exit 2
+AssertionError: expected 'npm notice run test:guides\nnpm notic…' to be '' // Object.is equality
+
+- Expected
++ Received
+
++ npm notice run test:guides
++ npm notice run node --experimental-strip-types scripts/guides.ts --to source
++
+
+ ❯ tests/src/core/compilers.test.ts:2587:23
+    2585|    ])
+    2586|    expect(run.status).toBe(2)
+    2587|    expect(run.stderr).toBe('')
+       |                       ^
+    2588|    expect(scratch.read('src/core/widget.ts')).toBe(SEED_SOURCE)
+    2589|    expect(scratch.has('vitest-started')).toBe(false)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/5]⎯
+
+ FAIL  |src:core| tests/src/core/compilers.test.ts > the guides entry > names the indexed guide the workspace does not carry and takes exit 2
+AssertionError: expected 'npm notice run test:guides\nnpm notic…' to be '' // Object.is equality
+
+- Expected
++ Received
+
++ npm notice run test:guides
++ npm notice run node --experimental-strip-types scripts/guides.ts --to guide
++
+
+ ❯ tests/src/core/compilers.test.ts:2604:23
+    2602|    ])
+    2603|    expect(run.status).toBe(2)
+    2604|    expect(run.stderr).toBe('')
+       |                       ^
+    2605|    expect(scratch.read('guides/widget.md')).toBe(SEED_GUIDE)
+    2606|    expect(scratch.has('vitest-started')).toBe(false)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/5]⎯
+
+
+  Snapshots  3 failed
+ Test Files  1 failed | 8 passed (9)
+      Tests  5 failed | 398 passed (403)
+   Start at  20:44:44
+   Duration  14.30s (transform 2.04s, setup 2.79s, import 1.36s, tests 23.56s, environment 1ms)
+
+

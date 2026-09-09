@@ -38,6 +38,8 @@ Own the following paths inside the isolated checkout only:
 - scripts/guides.ts and retirement of scripts/docs.ts;
 - src/core/constants.ts and src/core/compilers.ts;
 - src/server/Materializer.ts;
+- src/server/types.ts for audit/remove TSDoc describing the exact retired-path population,
+  without changing public signatures;
 - tests/src/core/compilers.test.ts and tests/src/core/helpers.test.ts;
 - tests/src/server/Materializer.test.ts and tests/src/server/helpers.test.ts;
 - tests/distribution.test.ts;

@@ -1,0 +1,13 @@
+{
+  "name": "cli-fixture-red",
+  "command": "node node_modules/vitest/vitest.mjs run --config vite.config.ts --no-cache --reporter=dot --project src:bin tests/src/bin/CLI.test.ts -t \"appends absent scripts while retaining and reporting a differing html script\"",
+  "run": {
+    "chunk_id": "f14826",
+    "wall_time_seconds": 1.6081804,
+    "exit_code": 1,
+    "original_token_count": 390,
+    "output": "\n RUN  v4.1.11 C:/Users/mikes/WebstormProjects/scaffold/tmp/pass/scaffold-guides-entry\n\n--------------------------------------------------------------x------------------------------------------------------------------------\n\n⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯\n\n FAIL  |src:bin| tests/src/bin/CLI.test.ts > CLI audit > appends absent scripts while retaining and reporting a differing html script\nAssertionError: expected [] to strictly equal [ { field: 'scripts', …(2) } ]\n\n- Expected\n+ Received\n\n- [\n-   {\n-     \"blocking\": false,\n-     \"field\": \"scripts\",\n-     \"message\": \"The manifest at C:\\\\Users\\\\mikes\\\\AppData\\\\Local\\\\Temp\\\\orkestrel-scaffold-LaIF8M\\\\target declares a planned script with a differing value: test:guides. Keep the declared value unchanged or replace it with the planned value: \\\"test:guides\\\" declares \\\"node --experimental-strip-types scripts/guides.ts\\\"; planned \\\"node --experimental-strip-types scripts/guides.ts\\\".\",\n-   },\n- ]\n+ []\n\n ❯ tests/src/bin/CLI.test.ts:1924:36\n    1922|    ).toBe(EXIT_CLEAN)\n    1923|    const outcome: RepairResult = JSON.parse(sink.output[0] ?? '')\n    1924|    expect(outcome.audit.questions).toStrictEqual([\n       |                                    ^\n    1925|     {\n    1926|      field: 'scripts',\n\n⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯\n\n\n Test Files  1 failed (1)\n      Tests  1 failed | 134 skipped (135)\n   Start at  21:01:00\n   Duration  1.13s (transform 370ms, setup 713ms, import 155ms, tests 108ms, environment 0ms)\n\n"
+  },
+  "exit_code": 1
+}
+

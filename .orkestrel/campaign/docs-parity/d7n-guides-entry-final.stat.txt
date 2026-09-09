@@ -1,0 +1,21 @@
+ .claude/rules/documentation.md                   |   5 +-
+ guides/scaffold.md                               |  69 ++--
+ host.json                                        |  12 +-
+ package-lock.json                                |   4 +-
+ package.json                                     |   5 +-
+ scripts/docs.ts                                  | 454 -----------------------
+ src/core/compilers.ts                            |  43 ++-
+ src/core/constants.ts                            |  11 +-
+ src/server/Materializer.ts                       |  32 +-
+ src/server/types.ts                              |   8 +-
+ tests/distribution.test.ts                       |   2 +-
+ tests/guides.test.ts                             |   7 +-
+ tests/src/bin/CLI.test.ts                        |   2 +-
+ tests/src/core/compilers.test.ts                 | 268 +++++++++----
+ tests/src/core/fixtures/app-only-toolchain.txt   |   2 +-
+ tests/src/core/fixtures/setup-false-manifest.txt |   2 +-
+ tests/src/core/fixtures/source-manifest.txt      |   2 +-
+ tests/src/core/helpers.test.ts                   |  28 +-
+ tests/src/server/Materializer.test.ts            |  33 ++
+ tests/src/server/helpers.test.ts                 |   2 +-
+ 20 files changed, 361 insertions(+), 630 deletions(-)

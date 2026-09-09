@@ -1,0 +1,13 @@
+{
+  "name": "format-check-cli-successor",
+  "command": "C:/Users/mikes/scoop/apps/git/current/usr/bin/timeout.exe --kill-after=15s 600s node C:/Users/mikes/scoop/apps/nodejs-lts/current/node_modules/npm/bin/npm-cli.js run format:check",
+  "run": {
+    "chunk_id": "c4888e",
+    "wall_time_seconds": 3.9315525,
+    "exit_code": 0,
+    "original_token_count": 51,
+    "output": "\n> @orkestrel/scaffold@0.0.64 format:check\n> oxfmt --config .oxfmtrc.json --check .\n\nChecking formatting...\n\nAll matched files use the correct format.\nFinished in 3569ms on 224 files using 16 threads.\n"
+  },
+  "exit_code": 0
+}
+
