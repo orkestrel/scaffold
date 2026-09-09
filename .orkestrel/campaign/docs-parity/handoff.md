@@ -29,8 +29,12 @@ has returned a bounded recommendation; the Opus design-question launch hit its w
 limit and returned no answer. Product acceptance remains pending the boundary ruling,
 replacement artifact, final gates, and independent review. Read
 d7n-scaffold-parity-adopt-landing.md before continuing.
-The capacity re-probe confirmed the Opus weekly-limit failure. No substitute review
-has run; the owner's reviewer-substitution choice is pending. Root's explicit npm.cmd
+The capacity re-probe confirmed the Opus weekly-limit failure. The owner selected
+a separate Astra reviewer; Ruling 37 records that substitution. The bounded
+review returned and root reproduced the lost method-table and class-membership
+assertions. The reconciled boundary is recorded in
+d7n-parity-population-design-verdict.md. Guide's population successor is running;
+scaffold adoption follows its replacement archive. Root's explicit npm.cmd
 source-authority command resolved the article drift, leaving the coverage-policy red.
 The held product diffs are retained under evidence/d7n-guides-extraction-held.
 Read d7n-guide-parity-core-landing.md for source and artifact evidence.

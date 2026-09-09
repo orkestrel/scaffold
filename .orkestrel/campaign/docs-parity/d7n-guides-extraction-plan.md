@@ -20,7 +20,8 @@ toolchain manifest and staged lockfile edits after this revision is accepted.
 ## Bound the round
 
 Reuse the prior native design analyst and root gate evidence where the subject is
-unchanged. Keep the subjective Opus review independent. Run affected focused proofs
+unchanged. Keep the owner's separate Astra review independent under Ruling 37,
+which replaces the unavailable Opus lane. Run affected focused proofs
 during implementation and the ordered root gates against the final source. Do not
 re-run predecessor gates to re-establish an unchanged claim.
 

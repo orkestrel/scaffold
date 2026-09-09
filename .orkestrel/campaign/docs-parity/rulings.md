@@ -289,3 +289,12 @@ Merge a divergent owner change rather than forcing or resetting a branch. Keep t
 campaign and designated scaffold refs at the accepted tip as the standing push rule
 requires. Use nondiscarding branch switching; no worktree, copied package, history
 rewrite, or publication is authorized by this branch preference.
+
+## Ruling 37 — use the owner's separate Astra reviewer
+
+Follow the owner's reviewer selection of 2026-09-09. Use a separate native Astra
+reviewer for the unavailable Opus lane in the Guide/scaffold extraction. Keep the
+reviewer read-only and independent of implementation. Reuse the objective design
+analyst and root gate evidence as Ruling 33 permits. Preserve blind lane reports
+and record this substitution in the boundary and final review verdicts. This
+selection does not authorize publication or waive the final actual-diff review.
