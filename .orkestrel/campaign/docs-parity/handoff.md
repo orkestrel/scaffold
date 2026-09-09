@@ -8,8 +8,13 @@ The owner narrowed the continuation to preparing the initial publish layer. Read
 d7n-foundation-native-start.md. Codec, Contract, Msg, SSE, and Test have the accepted
 Guide and Scaffold tarballs installed with metadata preservation and full tooling
 output identity. Their pending versions remain absent from the fresh registry
-readings. Native guides adoption, supported overwrite, valid lock regeneration,
-prepublishOnly, output comparison, and package landings remain in progress.
+readings. Contract's authored entry landed at 2a0ad8f and is campaign-pushed. Its
+full supported overwrite, catalog/mirror refresh, valid lock regeneration, full
+install and final prepublishOnly passed. Its replacement tarball's dist/src is
+byte-equal to the retained candidate. Final generated-diff acceptance and main
+closure remain pending. Codec and SSE authored entries returned; Msg and Test
+continue. Read d7n-contract-native-source-verdict.md and
+d7n-foundation-native-review-brief.md.
 No login or upload is authorized by this preparation request.
 
 Guide's native entry and supported tooling are accepted and campaign-pushed at

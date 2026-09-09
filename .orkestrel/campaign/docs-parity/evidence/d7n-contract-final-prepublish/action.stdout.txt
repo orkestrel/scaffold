@@ -1,0 +1,89 @@
+Checking formatting...
+
+All matched files use the correct format.
+Finished in 1009ms on 70 files using 16 threads.
+vite v8.2.2 building client environment for production...
+transforming...
+✓ 22 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/core/index.js  397.46 kB │ gzip: 91.09 kB │ map: 758.18 kB
+
+transforming...
+✓ 22 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/core/index.cjs  402.94 kB │ gzip: 91.83 kB │ map: 758.18 kB
+
+✓ built in 541ms
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+Copied: dist/src/core/index.d.ts to dist/src/core/index.d.cts
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/contract
+
+······································································································································································································································································································································································································································································································································································································································································································································································································································································································································································································································································································································································································································································································································································································
+
+ Test Files  19 passed (19)
+      Tests  1350 passed (1350)
+   Start at  18:40:03
+   Duration  4.77s (transform 9.09s, setup 9.21s, import 5.99s, tests 9.97s, environment 3ms)
+
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/contract
+
+·················································································-·········
+
+ Test Files  1 passed (1)
+      Tests  90 passed | 1 skipped (91)
+   Start at  18:40:08
+   Duration  1.31s (transform 350ms, setup 550ms, import 110ms, tests 507ms, environment 0ms)
+
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/contract
+
+·········································································································································································stdout | tests/config.test.ts > configuration helpers > rolls one face into a single declaration and rewrites its core specifier
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+
+··-stdout | tests/config.test.ts > configuration helpers > rolls one face into a single declaration and rewrites its core specifier
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+
+·
+
+ Test Files  1 passed (1)
+      Tests  172 passed | 1 skipped (173)
+   Start at  18:40:10
+   Duration  3.38s (transform 419ms, setup 527ms, import 390ms, tests 2.32s, environment 0ms)
+
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/contract
+
+······························································
+
+ Test Files  2 passed (2)
+      Tests  62 passed (62)
+   Start at  18:40:14
+   Duration  950ms (transform 594ms, setup 1.07s, import 82ms, tests 333ms, environment 0ms)
+
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/contract
+
+················································
+
+ Test Files  1 passed (1)
+      Tests  48 passed (48)
+   Start at  18:40:16
+   Duration  1.45s (transform 366ms, setup 624ms, import 662ms, tests 20ms, environment 0ms)
+
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/contract
+
+·········
+
+ Test Files  1 passed (1)
+      Tests  9 passed (9)
+   Start at  18:40:18
+   Duration  9.96s (transform 342ms, setup 581ms, import 1.86s, tests 7.37s, environment 0ms)
+

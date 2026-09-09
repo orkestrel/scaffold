@@ -1,0 +1,22 @@
+npm notice
+npm notice 📦  @orkestrel/contract@0.0.17
+npm notice Tarball Contents
+npm notice 1.1kB LICENSE
+npm notice 2.3kB README.md
+npm notice 402.9kB dist/src/core/index.cjs
+npm notice 758.2kB dist/src/core/index.cjs.map
+npm notice 286.3kB dist/src/core/index.d.cts
+npm notice 286.3kB dist/src/core/index.d.ts
+npm notice 397.5kB dist/src/core/index.js
+npm notice 758.2kB dist/src/core/index.js.map
+npm notice 3.7kB package.json
+npm notice Tarball Details
+npm notice name: @orkestrel/contract
+npm notice version: 0.0.17
+npm notice filename: orkestrel-contract-0.0.17.tgz
+npm notice package size: 674.6 kB
+npm notice unpacked size: 2.9 MB
+npm notice shasum: daa7e52be216de0e028ab68c57ed4b339979ef34
+npm notice integrity: sha512-WuSVyX2Y3fMa5[...]N3OHCbym2UKdg==
+npm notice total files: 9
+npm notice

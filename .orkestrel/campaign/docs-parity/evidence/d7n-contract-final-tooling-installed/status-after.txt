@@ -1,0 +1,3 @@
+ M guides/guide.md
+ M package.json
+ D scripts/docs.ts

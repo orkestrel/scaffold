@@ -1,0 +1,10 @@
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/contract
+
+················································
+
+ Test Files  1 passed (1)
+      Tests  48 passed (48)
+   Start at  18:28:32
+   Duration  1.43s (transform 340ms, setup 606ms, import 656ms, tests 19ms, environment 0ms)
+
