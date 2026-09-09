@@ -1,0 +1,45 @@
+# Guide extraction and scaffold preparation
+
+Prepare Guide and scaffold in their canonical sibling checkouts. Keep publication
+held. The owner approved scaffold ownership of scripts and inclusion of the existing
+toolchain manifest and staged lockfile edits after this revision is accepted.
+
+## Close the requested scope
+
+| Capability | Required result | State |
+| --- | --- | --- |
+| Shared parity engine | Guide owns inventory comparison, reusable checks, report formatting, and rewrite composition; package tests supply choices and executable examples | design accepted; implementation running |
+| Markdown reuse | Guide uses the accepted Markdown artifact's nodes, provenance spans, traversal, and rendering where semantics match; no duplicate Markdown parser | installed surface read; accepted extraction in progress |
+| Command contract | tests/guides.test.ts remains the direct test:guides entry; default is read-only; explicit direction writes its target and tests fresh bytes | predecessor proven; extraction must preserve |
+| Script ownership | HOST_PATHS declares scripts as a directory; ordinary overwrite removes unplanned tracked members; planned service scripts and transaction safeguards survive; no retired-path list | source returned; scoped controls and root directory proof passed; final acceptance pending |
+| Scaffold alignment | Complete dirty product diff reviewed; obsolete docs-command code removed; authored guides tests remain package-owned | source map returned; final actual-diff review pending |
+| Manifest inclusion | Owner toolchain changes and prepared scaffold 0.0.64 metadata included in accepted product commit | approved; original staged lock preserved |
+| Artifact preparation | Guide built and packed with accepted lower-layer inputs, consumed in scaffold; scaffold committed before pack and supported dependency-layer propagation | prerequisites installed; source revision pending |
+
+## Bound the round
+
+Reuse the prior native design analyst and root gate evidence where the subject is
+unchanged. Keep the subjective Opus review independent. Run affected focused proofs
+during implementation and the ordered root gates against the final source. Do not
+re-run predecessor gates to re-establish an unchanged claim.
+
+Preserve the accepted command controls for worker detection, category collisions,
+explicit-direction refusal, accumulated edits, fresh-byte assertions, and runner
+errors. Keep Guide's accepted heading admission and Markdown rewrite-span behavior.
+Do not broaden the extraction into unrelated reader, protocol, or application work.
+
+The scripts ownership choice is settled by the owner. A tracked custom script absent
+from the plan becomes foreign; this is not a regression against the superseded
+unrelated-script preservation rule. Untracked members still survive the existing
+tracked-file deletion boundary. Dirty targets and changed preview bytes still refuse.
+
+Scaffold's original staged lock differs from its working lock only at the prepared
+package version. The staged toolchain dependency changes remain intact. The final
+commit must include them, not replace them with a no-save tarball lock.
+
+## Continue the campaign
+
+After this scope closes, propagate identified tooling tarballs through the retained
+dependency-layer plan, compare accepted lower-layer distributables, finish remaining
+fleet source closures, and prepare the publication order. Read orkestrel-publish when
+the release packet is ready. No upload is authorized by this preparation.

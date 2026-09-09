@@ -5,7 +5,7 @@ Written 2026-09-08T03:35Z and revised 2026-09-08T04:05Z at the owner's request, 
 ## Where everything is pushed
 
 Current continuation: work directly in the package repositories under
-C:/Users/mikes/WebstormProjects. Rulings 33 and 34 supersede the historical isolated
+C:/Users/mikes/WebstormProjects. Rulings 33, 34, and 35 supersede the historical isolated
 checkout instructions and launcher design. The predecessor scaffold candidate is
 now visible in the direct checkout and its local gate chain passed, but the owner
 rejected scripts/guides.ts. The replacement must put command handling, parity and
@@ -15,11 +15,20 @@ The returned audit found an inherited-environment dispatch defect and a collisio
 between example titles and summary keys. Root reproduced them through the actual
 command. The bounded successor is accepted at source level after objective and
 mechanical PASS, independent Opus review, bounded wording integration and passing
-final ordered gates. Product remains uncommitted pending approval to include the
-owner's existing toolchain manifest and staged lock changes. Read
+final ordered gates. The owner then directed extraction of shared parity mechanics
+into Guide, explicit Markdown reuse, and replacement of the retired-host list with
+normal ownership cleanup. Product remains uncommitted during that revision. The owner
+declared scripts scaffold-owned. That bounded source fix has returned; the permanent
+directory-root proof passed independently on the host. Guide parity extraction is
+running with the accepted Contract, HTML, Markdown, and Test tarballs installed.
+Read d7n-guides-extraction-plan.md and d7n-scripts-ownership-landing.md for this work.
+The owner
+approved inclusion of the existing toolchain manifest and staged lock changes after
+the requested fixes and complete scaffold diff review. Read
 d7n-guides-test-file-close-verdict.md, d7n-guides-test-file-close-annotation.md,
 evidence/d7n-guides-test-file-gates-closed and d7n-guides-test-file-adoption-plan.md before
-resuming. Preserve the owner's manifest and staged lock edits. No package is newly
+resuming, then read Ruling 35 and the extraction design packet. Preserve and include
+the owner's manifest and staged lock edits in the accepted product commit. No package is
 closed by this checkpoint and no publication is authorized.
 
 | Repository | Branch | Tip | Notes |

@@ -250,3 +250,28 @@ exports, including replaceFence for a matched guide example. Do not duplicate a
 parser or move filesystem work into core. Remove launcher host ownership without
 turning package-owned guides tests into a vendored file. Keep the proven exact
 scripts/docs.ts retirement safeguards and the publication hold.
+
+## Ruling 35 — extract shared parity mechanics into Guide
+
+Follow the owner's extraction and cleanup direction of 2026-09-09. Keep
+tests/guides.test.ts as the package-owned test:guides entry, but move reusable guide
+comparison, reporting, and rewrite composition into @orkestrel/guide. Leave package
+inventory choices and special executable assertions downstream. Reuse the declared
+@orkestrel/markdown nodes, provenance, and renderers wherever their semantics match.
+Do not duplicate a parser or introduce another launcher.
+
+Replace the RETIRED_HOST_PATHS special case with scaffold's supported ownership and
+overwrite/delete mechanism. Make obsolete scaffold-owned content converge without
+an optional retirement list. Define the owned population before changing deletion;
+preserve the transaction's containment and changed-byte safeguards. The owner
+explicitly assigned the scripts directory to scaffold. Declare it as a host directory
+so normal discovery and overwrite remove unplanned tracked members. Preserve a script
+the plan owns, including a service script, under that artifact's ownership. Keep
+untracked-file and clean-tree safeguards; no historical filename list is needed.
+
+Review scaffold's complete product diff for the requested direction and obsolete docs
+command logic. Include the owner's existing toolchain manifest and lockfile edits in
+the accepted scaffold product commit before packing and dependency-layer propagation.
+This supersedes Ruling 34's requirement to keep shared command mechanics local and
+its retired-path implementation. Preserve its read-only default, explicit authority,
+fresh-byte assertions, package ownership, and publication hold.

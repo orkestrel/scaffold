@@ -1,0 +1,45 @@
+ M .claude/rules/documentation.md
+ M .orkestrel/campaign/docs-parity/handoff.md
+ M .orkestrel/campaign/docs-parity/ledger.md
+ M .orkestrel/campaign/docs-parity/rulings.md
+ M guides/scaffold.md
+ M host.json
+MM package-lock.json
+ M package.json
+ D scripts/docs.ts
+ M src/core/compilers.ts
+ M src/core/constants.ts
+ M src/server/Materializer.ts
+ M src/server/types.ts
+ M tests/distribution.test.ts
+ M tests/guides.test.ts
+ M tests/setupServer.ts
+ M tests/src/bin/CLI.test.ts
+ M tests/src/core/Compiler.test.ts
+ M tests/src/core/compilers.test.ts
+ M tests/src/core/fixtures/app-only-toolchain.txt
+ M tests/src/core/fixtures/setup-false-manifest.txt
+ M tests/src/core/fixtures/source-manifest.txt
+ M tests/src/core/helpers.test.ts
+ M tests/src/server/Materializer.test.ts
+ M tests/src/server/helpers.test.ts
+?? .orkestrel/campaign/docs-parity/d7n-guide-canonical-pack-objective-report.md
+?? .orkestrel/campaign/docs-parity/d7n-guide-canonical-pack-question-brief.md
+?? .orkestrel/campaign/docs-parity/d7n-guide-canonical-pack-ruling.md
+?? .orkestrel/campaign/docs-parity/d7n-guide-parity-core-fix-brief.md
+?? .orkestrel/campaign/docs-parity/d7n-guides-extraction-carriers-brief.md
+?? .orkestrel/campaign/docs-parity/d7n-guides-extraction-design-brief.md
+?? .orkestrel/campaign/docs-parity/d7n-guides-extraction-design-objective-report.md
+?? .orkestrel/campaign/docs-parity/d7n-guides-extraction-design-subjective-report.md
+?? .orkestrel/campaign/docs-parity/d7n-guides-extraction-design-verdict.md
+?? .orkestrel/campaign/docs-parity/d7n-guides-extraction-plan.md
+?? .orkestrel/campaign/docs-parity/d7n-guides-extraction-scout-annotation.md
+?? .orkestrel/campaign/docs-parity/d7n-guides-extraction-scout-brief.md
+?? .orkestrel/campaign/docs-parity/d7n-guides-extraction-scout-report.md
+?? .orkestrel/campaign/docs-parity/d7n-scaffold-parity-adopt-brief.md
+?? .orkestrel/campaign/docs-parity/d7n-scripts-ownership-fix-brief.md
+?? .orkestrel/campaign/docs-parity/d7n-scripts-ownership-fix-report.md
+?? .orkestrel/campaign/docs-parity/d7n-scripts-ownership-landing.md
+?? .orkestrel/campaign/docs-parity/evidence/d7n-guide-extraction-dependencies/
+?? .orkestrel/campaign/docs-parity/evidence/d7n-scripts-ownership/
+?? .orkestrel/campaign/docs-parity/instruments/d7/guides-extraction/
