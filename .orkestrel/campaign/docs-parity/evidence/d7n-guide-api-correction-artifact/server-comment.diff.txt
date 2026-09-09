@@ -1,0 +1,31 @@
+diff --git a/tmp/pass/packed/d7n-guide-api-rules/extract/package/dist/src/server/index.js b/tmp/pass/packed/d7n-guide-api-correction/extract/package/dist/src/server/index.js
+index 6a013dff..65c7a2f1 100644
+--- a/tmp/pass/packed/d7n-guide-api-rules/extract/package/dist/src/server/index.js
++++ b/tmp/pass/packed/d7n-guide-api-correction/extract/package/dist/src/server/index.js
+@@ -3667,8 +3667,14 @@ function parseManifest(markdown, directory) {
+ * 	language: 'ts',
+ * 	reader: readInventory,
+ * 	runner: createVitest,
+-* }).execute(async ({ report }) => {
+-* 	if (report.input.length > 0) throw new Error('Guide input is invalid')
++* }).execute(async ({ files, report, root, rows }) => {
++* 	const { expect, it } = await import('vitest')
++* 	it('checks the documented inventory', () => {
++* 		expect(root.length).toBeGreaterThan(0)
++* 		expect(Object.keys(files).length).toBeGreaterThan(0)
++* 		expect(rows.length).toBeGreaterThan(0)
++* 		expect(report.input).toEqual([])
++* 	})
+ * })
+ * ```
+ */
+@@ -3694,7 +3700,8 @@ var GuideCommand = class {
+ 	*
+ 	* @param register - The package-owned assertion registration callback
+ 	* @returns A promise that resolves after the selected command path finishes
+-	* @throws When reading, runner creation, runner start, runner cleanup, validation, or worker registration fails
++	* @throws When worker inventory reading or package assertion registration fails. Native failures
++	* are reported through stderr and process exit status before this promise resolves.
+ 	*/
+ 	async execute(register) {
+ 		if (process.env.VITEST === "true") {

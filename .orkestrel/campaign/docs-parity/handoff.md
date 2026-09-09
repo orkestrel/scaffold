@@ -77,11 +77,18 @@ command and ordered Scaffold gates passed. Final review uses
 d7n-guides-api-close-brief.md with d7n-guides-api-close-evidence.md. The reused
 objective review and separate owner-selected review returned. Root reproduced
 the printed example's missing test registration and native failure settlement.
-Read d7n-guides-api-close-verdict.md. The bounded correction writer is running
-under d7n-guides-api-close-fix-brief.md for examples, contract/boundary prose,
-direct helper tests and measured lifecycle edges. Runtime design stays fixed.
+Read d7n-guides-api-close-verdict.md. The bounded correction writer returned
+frozen under d7n-guides-api-close-fix-brief.md. Corrected examples, contract/boundary
+prose, direct helper tests and measured lifecycle edges passed the final ordered
+root Guide gates. The replacement archive is installed in Scaffold, its mirror
+is current, and Scaffold's final ordered root gates passed. The exact guide and
+class examples passed against that installed archive; the unregistered control
+still fails. Read d7n-guides-api-correction-landing.md and
+d7n-guides-api-correction-close-evidence.md. The separate owner-selected reviewer,
+reused objective analyst and mechanical continuation are running on the frozen
+correction. Runtime design stays fixed.
 Read d7n-guides-api-adopt-landing.md and d7n-guides-api-example-root-report.md.
-Product acceptance and replacement packing remain pending. The command extraction addresses an unmet
+Product acceptance and Scaffold packing remain pending. The command extraction addresses an unmet
 part of Ruling35, not a new owner requirement. Settled parity populations and
 script ownership remain unchanged. Direct Scaffold adoption has returned, but
 product acceptance and packing remain pending the bounded review corrections.
