@@ -1,0 +1,193 @@
+{
+	"files": [
+		{
+			"entry": "dist/src/core/index.js",
+			"packed": {
+				"path": "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\pass\\packed\\d7n-guide-api-correction\\extract\\package\\dist\\src\\core\\index.js",
+				"sha256": "8ea54af019e62e2e0c680adb5580dc589beb4c0abede66452f61afe2b804ca9f"
+			},
+			"canonical": {
+				"path": "C:\\Users\\mikes\\WebstormProjects\\guide\\dist\\src\\core\\index.js",
+				"sha256": "8ea54af019e62e2e0c680adb5580dc589beb4c0abede66452f61afe2b804ca9f"
+			},
+			"installed": {
+				"path": "C:\\Users\\mikes\\WebstormProjects\\scaffold\\node_modules\\@orkestrel\\guide\\dist\\src\\core\\index.js",
+				"sha256": "8ea54af019e62e2e0c680adb5580dc589beb4c0abede66452f61afe2b804ca9f"
+			}
+		},
+		{
+			"entry": "dist/src/core/index.d.ts",
+			"packed": {
+				"path": "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\pass\\packed\\d7n-guide-api-correction\\extract\\package\\dist\\src\\core\\index.d.ts",
+				"sha256": "91fdb2d7105801dbbdc0c6c32cc4e3c948e3d58a9bfa3150b4e67ae7ddefa2fb"
+			},
+			"canonical": {
+				"path": "C:\\Users\\mikes\\WebstormProjects\\guide\\dist\\src\\core\\index.d.ts",
+				"sha256": "91fdb2d7105801dbbdc0c6c32cc4e3c948e3d58a9bfa3150b4e67ae7ddefa2fb"
+			},
+			"installed": {
+				"path": "C:\\Users\\mikes\\WebstormProjects\\scaffold\\node_modules\\@orkestrel\\guide\\dist\\src\\core\\index.d.ts",
+				"sha256": "91fdb2d7105801dbbdc0c6c32cc4e3c948e3d58a9bfa3150b4e67ae7ddefa2fb"
+			}
+		},
+		{
+			"entry": "dist/src/server/index.js",
+			"packed": {
+				"path": "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\pass\\packed\\d7n-guide-api-correction\\extract\\package\\dist\\src\\server\\index.js",
+				"sha256": "445f0833c24d8269c1b688adfef46f8e37448e424175848bc657a92b73903eb1"
+			},
+			"canonical": {
+				"path": "C:\\Users\\mikes\\WebstormProjects\\guide\\dist\\src\\server\\index.js",
+				"sha256": "445f0833c24d8269c1b688adfef46f8e37448e424175848bc657a92b73903eb1"
+			},
+			"installed": {
+				"path": "C:\\Users\\mikes\\WebstormProjects\\scaffold\\node_modules\\@orkestrel\\guide\\dist\\src\\server\\index.js",
+				"sha256": "445f0833c24d8269c1b688adfef46f8e37448e424175848bc657a92b73903eb1"
+			}
+		},
+		{
+			"entry": "dist/src/server/index.d.ts",
+			"packed": {
+				"path": "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\pass\\packed\\d7n-guide-api-correction\\extract\\package\\dist\\src\\server\\index.d.ts",
+				"sha256": "c4922e676459919f824dbe3aeda3c88b111a3c434e42dab6853d24dfe424863d"
+			},
+			"canonical": {
+				"path": "C:\\Users\\mikes\\WebstormProjects\\guide\\dist\\src\\server\\index.d.ts",
+				"sha256": "c4922e676459919f824dbe3aeda3c88b111a3c434e42dab6853d24dfe424863d"
+			},
+			"installed": {
+				"path": "C:\\Users\\mikes\\WebstormProjects\\scaffold\\node_modules\\@orkestrel\\guide\\dist\\src\\server\\index.d.ts",
+				"sha256": "c4922e676459919f824dbe3aeda3c88b111a3c434e42dab6853d24dfe424863d"
+			}
+		}
+	],
+	"metadata": {
+		"packed": {
+			"dependencies": {
+				"@orkestrel/contract": "^0.0.17",
+				"@orkestrel/markdown": "^0.0.14"
+			},
+			"devDependencies": {
+				"@microsoft/api-extractor": "^7.59.0",
+				"@orkestrel/probe": "^0.0.12",
+				"@orkestrel/scaffold": "^0.0.63",
+				"@orkestrel/test": "^0.0.13",
+				"@types/node": "^26.4.1",
+				"oxfmt": "^0.66.0",
+				"oxlint": "^1.81.0",
+				"typescript": "^6.0.3",
+				"vite": "^8.2.2",
+				"vitest": "^4.1.11"
+			},
+			"exports": {
+				".": {
+					"import": {
+						"types": "./dist/src/core/index.d.ts",
+						"default": "./dist/src/core/index.js"
+					},
+					"require": {
+						"types": "./dist/src/core/index.d.cts",
+						"default": "./dist/src/core/index.cjs"
+					}
+				},
+				"./server": {
+					"import": {
+						"types": "./dist/src/server/index.d.ts",
+						"default": "./dist/src/server/index.js"
+					},
+					"require": {
+						"types": "./dist/src/server/index.d.cts",
+						"default": "./dist/src/server/index.cjs"
+					}
+				},
+				"./package.json": "./package.json"
+			}
+		},
+		"canonical": {
+			"dependencies": {
+				"@orkestrel/contract": "^0.0.16",
+				"@orkestrel/markdown": "^0.0.13"
+			},
+			"devDependencies": {
+				"@microsoft/api-extractor": "^7.59.0",
+				"@orkestrel/probe": "^0.0.12",
+				"@orkestrel/scaffold": "^0.0.63",
+				"@orkestrel/test": "^0.0.13",
+				"@types/node": "^26.4.1",
+				"oxfmt": "^0.66.0",
+				"oxlint": "^1.81.0",
+				"typescript": "^6.0.3",
+				"vite": "^8.2.2",
+				"vitest": "^4.1.11"
+			},
+			"exports": {
+				".": {
+					"import": {
+						"types": "./dist/src/core/index.d.ts",
+						"default": "./dist/src/core/index.js"
+					},
+					"require": {
+						"types": "./dist/src/core/index.d.cts",
+						"default": "./dist/src/core/index.cjs"
+					}
+				},
+				"./server": {
+					"import": {
+						"types": "./dist/src/server/index.d.ts",
+						"default": "./dist/src/server/index.js"
+					},
+					"require": {
+						"types": "./dist/src/server/index.d.cts",
+						"default": "./dist/src/server/index.cjs"
+					}
+				},
+				"./package.json": "./package.json"
+			}
+		},
+		"installed": {
+			"dependencies": {
+				"@orkestrel/contract": "^0.0.17",
+				"@orkestrel/markdown": "^0.0.14"
+			},
+			"devDependencies": {
+				"@microsoft/api-extractor": "^7.59.0",
+				"@orkestrel/probe": "^0.0.12",
+				"@orkestrel/scaffold": "^0.0.63",
+				"@orkestrel/test": "^0.0.13",
+				"@types/node": "^26.4.1",
+				"oxfmt": "^0.66.0",
+				"oxlint": "^1.81.0",
+				"typescript": "^6.0.3",
+				"vite": "^8.2.2",
+				"vitest": "^4.1.11"
+			},
+			"exports": {
+				".": {
+					"import": {
+						"types": "./dist/src/core/index.d.ts",
+						"default": "./dist/src/core/index.js"
+					},
+					"require": {
+						"types": "./dist/src/core/index.d.cts",
+						"default": "./dist/src/core/index.cjs"
+					}
+				},
+				"./server": {
+					"import": {
+						"types": "./dist/src/server/index.d.ts",
+						"default": "./dist/src/server/index.js"
+					},
+					"require": {
+						"types": "./dist/src/server/index.d.cts",
+						"default": "./dist/src/server/index.cjs"
+					}
+				},
+				"./package.json": "./package.json"
+			}
+		}
+	},
+	"module": {
+		"url": "file:///C:/Users/mikes/WebstormProjects/scaffold/node_modules/@orkestrel/guide/dist/src/server/index.js",
+		"GuideCommand": "function"
+	}
+}

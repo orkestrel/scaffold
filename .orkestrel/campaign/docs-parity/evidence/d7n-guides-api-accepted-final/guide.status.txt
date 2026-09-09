@@ -1,0 +1,33 @@
+ M README.md
+ A configs/src/tsconfig.server.json
+ A configs/src/vite.server.config.ts
+ M guides/README.md
+ M guides/guide.md
+ M package.json
+AM src/core/Parity.ts
+ M src/core/constants.ts
+ M src/core/factories.ts
+ M src/core/helpers.ts
+ M src/core/index.ts
+ M src/core/shapers.ts
+ M src/core/types.ts
+ M src/core/validators.ts
+ A src/server/GuideCommand.ts
+ A src/server/constants.ts
+ A src/server/helpers.ts
+ A src/server/index.ts
+ A src/server/parsers.ts
+ A src/server/types.ts
+ M tests/guides.test.ts
+ M tests/setup.ts
+ A tests/setupServer.ts
+AM tests/src/core/Parity.test.ts
+ M tests/src/core/factories.test.ts
+ M tests/src/core/helpers.test.ts
+ M tests/src/core/shapers.test.ts
+ M tests/src/core/validators.test.ts
+ A tests/src/server/GuideCommand.test.ts
+ A tests/src/server/helpers.test.ts
+ A tests/src/server/parsers.test.ts
+ M tsconfig.json
+ M vite.config.ts

@@ -1,0 +1,84 @@
+npm notice run @orkestrel/guide@0.0.18 test
+npm notice run npm run test:src && npm run test:policy && npm run test:config && npm run test:setup && npm run test:guides
+npm notice run @orkestrel/guide@0.0.18 test:src
+npm notice run npm run test:src:core && npm run test:src:server
+npm notice run @orkestrel/guide@0.0.18 test:src:core
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/guide
+
+·······································································································································································································································································································································································································································································································································································································································································
+
+ Test Files  9 passed (9)
+      Tests  647 passed (647)
+   Start at  16:04:15
+   Duration  2.00s (transform 1.83s, setup 450ms, import 3.60s, tests 1.44s, environment 1ms)
+
+npm notice run @orkestrel/guide@0.0.18 test:src:server
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project src:server
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/guide
+
+··············
+
+ Test Files  3 passed (3)
+      Tests  14 passed (14)
+   Start at  16:04:18
+   Duration  3.16s (transform 692ms, setup 242ms, import 1.12s, tests 2.45s, environment 0ms)
+
+npm notice run @orkestrel/guide@0.0.18 test:policy
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project policy
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/guide
+
+·················································································-·········
+
+ Test Files  1 passed (1)
+      Tests  90 passed | 1 skipped (91)
+   Start at  16:04:22
+   Duration  836ms (transform 87ms, setup 60ms, import 105ms, tests 525ms, environment 0ms)
+
+npm notice run @orkestrel/guide@0.0.18 test:config
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project config
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/guide
+
+··········································································································································································stdout | tests/config.test.ts > configuration helpers > rolls one face into a single declaration and rewrites its core specifier
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+
+·-stdout | tests/config.test.ts > configuration helpers > rolls one face into a single declaration and rewrites its core specifier
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+
+·
+
+ Test Files  1 passed (1)
+      Tests  172 passed | 1 skipped (173)
+   Start at  16:04:23
+   Duration  2.98s (transform 198ms, setup 63ms, import 442ms, tests 2.33s, environment 0ms)
+
+npm notice run @orkestrel/guide@0.0.18 test:setup
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project setup
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/guide
+
+···········
+
+ Test Files  1 passed (1)
+      Tests  11 passed (11)
+   Start at  16:04:27
+   Duration  529ms (transform 150ms, setup 83ms, import 280ms, tests 19ms, environment 0ms)
+
+npm notice run @orkestrel/guide@0.0.18 test:guides
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project guides
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/guide
+
+·····································
+
+ Test Files  1 passed (1)
+      Tests  37 passed (37)
+   Start at  16:04:28
+   Duration  738ms (transform 143ms, setup 61ms, import 477ms, tests 40ms, environment 0ms)
+

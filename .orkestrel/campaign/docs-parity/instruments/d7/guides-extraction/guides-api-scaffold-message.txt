@@ -1,0 +1,9 @@
+Run guide parity through the package test entry
+
+Use GuideCommand for native execution and worker inventory preparation.
+Keep package assertions and executable examples in tests/guides.test.ts.
+Make the scripts directory Scaffold-owned and remove the docs launcher.
+Include the prepared package version and the owner's toolchain updates.
+
+Co-Authored-By: Claude <noreply@anthropic.com>
+Claude-Session: codex:01a0810d-21bf-7f60-8534-488348e05743

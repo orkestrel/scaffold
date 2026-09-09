@@ -1,0 +1,23 @@
+import { GuideCommand } from '@orkestrel/guide/server'
+import { readInventory } from '@orkestrel/test/server'
+import { createVitest } from 'vitest/node'
+
+await new GuideCommand({
+	root: new URL('../', import.meta.url),
+	patterns: ['src/**\/*.ts', 'tests/**\/*.ts', 'guides/*.md', '*.md'],
+	modules: { '@scope/widget': 'src/core' },
+	languages: ['ts'],
+	language: 'ts',
+	reader: readInventory,
+	runner: createVitest,
+}).execute(async ({ files, report, root, rows }) => {
+	const { expect, it } = await import('vitest')
+	it('checks the documented inventory', () => {
+		expect(root.length).toBeGreaterThan(0)
+		expect(Object.keys(files).length).toBeGreaterThan(0)
+		expect(rows.length).toBeGreaterThan(0)
+		expect(report.input).toEqual([])
+		expect(files['src/core/index.ts']).toBe('export const packageValue = true\n')
+		expect(files['tests/guides.test.ts']).toContain('checks the documented inventory')
+	})
+})

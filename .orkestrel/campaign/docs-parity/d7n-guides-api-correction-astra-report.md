@@ -1,0 +1,21 @@
+EXAMPLE — CONFIRMED. Attacked whether passing output concealed missing registration or substituted example text. The retained guide fence and class example register assertions with `it` inside the worker callback. The extraction instrument reads the actual published examples. Their installed-consumer runs exit `0` with empty stderr; the unchanged unregistered control exits `1` with “No test suite found.” The fixture supplies valid inventory without an unrelated passing test. Evidence: [example observations](/C:/Users/mikes/WebstormProjects/scaffold/tmp/pass/d7n-guides-api-example-final/evidence.json) and retained entries.
+
+FAILURE — CONFIRMED. Attacked whether the correction still promises rejection for handled native failures or cleanup without a callable `close`. The port documentation, interface/class TSDoc and guide distinguish native stderr/exit handling followed by fulfillment from worker rejection. Cleanup is conditional on validated callable ownership. The measured creation-failure outcome agrees. The [archive comparison](/C:/Users/mikes/WebstormProjects/scaffold/tmp/pass/d7n-guide-api-correction-artifact/server-comment.diff.txt) changes emitted comments, not runtime behavior.
+
+BOUNDARY — CONFIRMED. Attacked whether the new explanation still describes server I/O as pure or introduces another command owner. The README and guide confine purity to core inventory, readers and rewrite values. They assign host reads and explicitly requested writes to `GuideCommand`, through the direct `test:guides` entry. The correction adds no launcher, alias, dependency or compatibility mechanism.
+
+LEAVES — BROKEN. The frozen [setupServer.ts](/C:/Users/mikes/WebstormProjects/guide/tests/setupServer.ts:8) introduces the hidden module declaration `const GUIDE_ROOT`. This shared fixture constant remains unexported. That violates Architecture’s declaration-placement requirement and Tests’ shared-infrastructure export requirement. Its presence in the centralized setup file does not exempt it. Owner: Guide test infrastructure. Export and document this constant; no runtime or public API redesign is needed. This finding does not invalidate the helper behavior evidence.
+
+HOST — CONFIRMED. Attacked whether the controls fail before reaching their claimed lifecycle stages or preserve a higher status without exercising failure handling. The [command tests](/C:/Users/mikes/WebstormProjects/guide/tests/src/server/GuideCommand.test.ts) use real `createVitest`, supported reporters and `onClose`. Assertions observe start followed by close, cleanup-error diagnostics after execution settles, and a real reporter failure retaining exit status `5`. Worker registration rejects with the exact supplied error. These amended controls passed in the final root-run server project after its build, as recorded in the [ordered test output](/C:/Users/mikes/WebstormProjects/scaffold/tmp/pass/d7n-guide-api-correction-gates/test.log.txt).
+
+ARTIFACT — CONFIRMED. Attacked stale builds, mismatched installations and metadata disturbance. The [artifact record](/C:/Users/mikes/WebstormProjects/scaffold/tmp/pass/d7n-guide-api-correction-artifact/artifact.json) matches canonical, packed and installed core/server JavaScript and declarations, and resolves the installed public server export. The frozen captures match the ordered-gate evidence. Guide and Scaffold gates exit `0`; before/after-test diffs remain equal. Manifest and staged-index preservation records agree. Scaffold’s direct consumer remains unchanged; guide mirroring and its generated inventory digest account for the correction. The campaign-only checkpoint does not alter this product evidence.
+
+Findings outside the claims: none.
+
+Attacked and held:
+
+- Direct helper tests distinguish absent, present and already-applied finding prefixes; native absolute/relative paths and spaced file URLs; and matching, missing and absent pitch names. They assert returned values, not export presence.
+- Native handling may fulfill while the process exits unsuccessfully. That is the corrected contract, not swallowed failure.
+- Exact-example proof belongs to the installed consumer under the approved location amendment. It does not establish Guide’s later native-entry adoption or authorize publication.
+
+VERDICT: FAIL LEAVES; outside the claims: none

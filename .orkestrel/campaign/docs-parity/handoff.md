@@ -85,13 +85,18 @@ is current, and Scaffold's final ordered root gates passed. The exact guide and
 class examples passed against that installed archive; the unregistered control
 still fails. Read d7n-guides-api-correction-landing.md and
 d7n-guides-api-correction-close-evidence.md. The separate owner-selected reviewer,
-reused objective analyst and mechanical continuation are running on the frozen
-correction. Runtime design stays fixed.
+reused objective analyst and mechanical continuation returned. Root corrected the
+shared fixture constant's export, obtained independent correction PASS, and ran
+the final Guide gates green. Packed, canonical and installed dist/src trees remain
+byte-equal. Read d7n-guides-api-correction-verdict.md and
+d7n-guide-setup-export-root-report.md. The source correction and direct Scaffold
+consumer are accepted for product commit and Scaffold packing. Runtime design
+stays fixed.
 Read d7n-guides-api-adopt-landing.md and d7n-guides-api-example-root-report.md.
-Product acceptance and Scaffold packing remain pending. The command extraction addresses an unmet
+Scaffold product commit and packing are the next actions. The command extraction addresses an unmet
 part of Ruling35, not a new owner requirement. Settled parity populations and
-script ownership remain unchanged. Direct Scaffold adoption has returned, but
-product acceptance and packing remain pending the bounded review corrections.
+script ownership remain unchanged. Guide's own direct entry and obsolete-script
+removal follow the accepted Scaffold artifact before final Guide repacking.
 Root's explicit npm.cmd
 source-authority command resolved the article drift, leaving the coverage-policy red.
 The held product diffs are retained under evidence/d7n-guides-extraction-held.
