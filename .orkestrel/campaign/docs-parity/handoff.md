@@ -4,6 +4,14 @@ Written 2026-09-08T03:35Z and revised 2026-09-08T04:05Z at the owner's request, 
 
 ## Where everything is pushed
 
+The active continuation is Guide's package-owned native test entry under
+d7n-guide-native-adopt-brief.md. The accepted API remains fixed. The authored
+tests/guides.test.ts entry must pass directly under Node before root applies the
+accepted Scaffold archive's generated command and owned-script cleanup. The
+baseline direct entry refused its static @src/core import at run 0fe6f0. The
+writer is active in canonical Guide; do not install or apply tooling there until
+it returns frozen. See d7n-guide-native-adopt-start.md for the bounded scope.
+
 Current continuation: work directly in the package repositories under
 C:/Users/mikes/WebstormProjects. Rulings 33, 34, and 35 supersede the historical isolated
 checkout instructions and launcher design. The predecessor scaffold candidate is
@@ -100,8 +108,8 @@ and campaign-pushed at 61182c3b727ae9ee410781c48a7008f22da41ff5. Read
 d7n-guides-api-product-landing.md for archive identity and the next supported
 Guide adoption. The command extraction addresses an unmet
 part of Ruling35, not a new owner requirement. Settled parity populations and
-script ownership remain unchanged. Guide's own direct entry and obsolete-script
-removal follow the accepted Scaffold artifact before final Guide repacking.
+script ownership remain unchanged. Guide's authored direct entry precedes
+supported application of the accepted Scaffold artifact and final Guide repacking.
 Root's explicit npm.cmd
 source-authority command resolved the article drift, leaving the coverage-policy red.
 The held product diffs are retained under evidence/d7n-guides-extraction-held.
