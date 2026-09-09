@@ -1,0 +1,9 @@
+configs/src/tsconfig.server.json
+configs/src/vite.server.config.ts
+src/server/GuideCommand.ts
+src/server/helpers.ts
+src/server/index.ts
+src/server/parsers.ts
+src/server/types.ts
+tests/setupServer.ts
+tests/src/server/GuideCommand.test.ts

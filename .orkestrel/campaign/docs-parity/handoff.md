@@ -57,9 +57,18 @@ shared command while direct dependency ports avoid new Test/Vitest runtime edges
 Guide's contracts checkpoint is retained. Root applied the supported server
 configuration through canonical Scaffold and the real generated server TypeScript
 project passed. The same Guide writer has resumed implementation; direct dependency
-port proof and the replacement server artifact remain pending. Read
-d7n-guide-command-contract-root-report.md. This completes an
-unmet part of Ruling35, not a new owner requirement. Settled parity populations and
+port proof passed the actual root TypeScript project. The replacement server
+artifact remains pending. The owner then challenged strict rule compliance of
+the public API. The writer is frozen with a draft implementation. Root retained
+its actual diff and source slice and dispatched a separate Astra reviewer and
+the reused objective analyst on d7n-guide-api-rules-brief.md. Read
+d7n-guide-api-hold-root-report.md. The reviews returned rule violations. Root
+reproduced the foreign-result reading defect and reconciled the correction in
+d7n-guide-api-rules-verdict.md. The effective Guide writer brief is
+d7n-guide-api-rules-fix-brief.md; it requires the governing guide before types and
+implementation. The downstream successor is d7n-scaffold-api-rules-adopt-brief.md,
+held for the replacement artifact. The command extraction addresses an unmet
+part of Ruling35, not a new owner requirement. Settled parity populations and
 script ownership remain unchanged. The scaffold entry still carries its old local
 shell until the new Guide artifact is installed; do not describe adoption as done.
 Root's explicit npm.cmd
