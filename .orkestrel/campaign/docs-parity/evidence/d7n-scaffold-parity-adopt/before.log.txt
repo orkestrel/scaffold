@@ -1,0 +1,201 @@
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/scaffold
+
+--------------------------------------------------------------------------------------------------xxxx·xx········
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 6 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:core| tests/src/core/compilers.test.ts > the guides entry > runs the native command when VITEST is false
+AssertionError: expected '# Widget\n\n> A widget toolkit the sa…' to be '# Widget\n\n> A widget toolkit the sa…' // Object.is equality
+
+- Expected
++ Received
+
+@@ -4,27 +4,27 @@
+
+  ## Surface
+
+  | Name | Kind | Summary |
+  | --- | --- | --- |
+- | `shape` | function | Shapes a widget from the parts it is given. |
++ | `shape` | function | Shapes a widget from its parts. |
+  | `Widget` | interface | One widget the workspace renders. |
+
+  ## Methods
+
+  #### `Widget`
+
+  | Method | Summary |
+  | --- | --- |
+- | `paint` | Paints the widget onto the frame. |
++ | `paint` | Paints the widget onto the surface. |
+
+  ## Examples
+
+  ### Shape a widget
+
+  ```ts
+- shape('square')
++ shape('round')
+  ```
+
+  ## Tests
+
+  - [`tests/src/core/widget.test.ts`](../tests/src/core/widget.test.ts)
+
+ ❯ tests/src/core/compilers.test.ts:2414:45
+    2412|   try {
+    2413|    const run = runEntry(scratch, ['--to', 'guide'], 'false')
+    2414|    expect(scratch.read('guides/widget.md')).toBe(ENTRY_GUIDE_WRITTEN)
+       |                                             ^
+    2415|    expect(run.status).toBe(0)
+    2416|   } finally {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/6]⎯
+
+ FAIL  |src:core| tests/src/core/compilers.test.ts > the guides entry > keeps summary and example namespaces distinct toward guide
+AssertionError: expected '# Widget\n\n> A widget toolkit the sa…' to be '# Widget\n\n> A widget toolkit the sa…' // Object.is equality
+
+- Expected
++ Received
+
+@@ -4,11 +4,11 @@
+
+  ## Surface
+
+  | Name | Kind | Summary |
+  | --- | --- | --- |
+- | `shape` | function | Shapes a widget from the parts it is given. |
++ | `shape` | function | Shapes a widget from its parts. |
+  | `Widget` | interface | One widget the workspace renders. |
+
+  ## Methods
+
+  #### `Widget`
+@@ -20,11 +20,11 @@
+  ## Examples
+
+  ### function shape
+
+  ```ts
+- shape('square')
++ shape('round')
+  ```
+
+  ## Tests
+
+  - [`tests/src/core/widget.test.ts`](../tests/src/core/widget.test.ts)
+
+ ❯ tests/src/core/compilers.test.ts:2444:46
+    2442|    try {
+    2443|     const run = runEntry(scratch, ['--to', direction])
+    2444|     expect(scratch.read('guides/widget.md')).toBe(direction === 'guide…
+       |                                              ^
+    2445|     expect(scratch.read('src/core/widget.ts')).toBe(
+    2446|      direction === 'source' ? expectedSource : source,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/6]⎯
+
+ FAIL  |src:core| tests/src/core/compilers.test.ts > the guides entry > keeps summary and example namespaces distinct toward source
+AssertionError: expected '/**\n * Shapes a widget from the part…' to be '/**\n * Shapes a widget from its part…' // Object.is equality
+
+- Expected
++ Received
+
+@@ -1,14 +1,14 @@
+  /**
+-  * Shapes a widget from its parts.
++  * Shapes a widget from the parts it is given.
+   *
+   * @param parts - The parts to shape.
+   * @returns The shaped widget.
+   *
+   * @example function shape
+   * ```ts
+-  * shape('round')
++  * shape('square')
+   * ```
+   */
+  export function shape(parts: string): string {
+  	return parts
+  }
+
+ ❯ tests/src/core/compilers.test.ts:2445:48
+    2443|     const run = runEntry(scratch, ['--to', direction])
+    2444|     expect(scratch.read('guides/widget.md')).toBe(direction === 'guide…
+    2445|     expect(scratch.read('src/core/widget.ts')).toBe(
+       |                                                ^
+    2446|      direction === 'source' ? expectedSource : source,
+    2447|     )
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/6]⎯
+
+ FAIL  |src:core| tests/src/core/compilers.test.ts > the guides entry > keeps the first matched title and absent-language comparison boundaries
+AssertionError: expected 1 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 1
+
+ ❯ tests/src/core/compilers.test.ts:2472:57
+    2470|   })
+    2471|   try {
+    2472|    expect(runEntry(repeated, ['--to', 'guide']).status).toBe(0)
+       |                                                         ^
+    2473|    expect(repeated.read('guides/widget.md')).toBe(repeatedGuide)
+    2474|    expect(runEntry(absent, ['--to', 'guide']).status).toBe(0)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/6]⎯
+
+ FAIL  |src:core| tests/src/core/compilers.test.ts > the guides entry > carries every summary and example to the guide and leaves every other byte
+AssertionError: expected [] to deeply equal [ 'wrote guides/widget.md', …(1) ]
+
+- Expected
++ Received
+
+- [
+-   "wrote guides/widget.md",
+-   "next: npm run format",
+- ]
++ []
+
+ ❯ tests/src/core/compilers.test.ts:2506:22
+    2504|    const guide = scratch.read('guides/widget.md') ?? ''
+    2505|
+    2506|    expect(run.lines).toEqual(['wrote guides/widget.md', 'next: npm run…
+       |                      ^
+    2507|    expect(run.status).toBe(0)
+    2508|    // The whole file, so a dropped row, a disturbed heading, and re-al…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/6]⎯
+
+ FAIL  |src:core| tests/src/core/compilers.test.ts > the guides entry > carries every summary and example to the source, and reads back clean
+AssertionError: expected [] to deeply equal [ 'wrote src/core/widget.ts', …(1) ]
+
+- Expected
++ Received
+
+- [
+-   "wrote src/core/widget.ts",
+-   "next: npm run format",
+- ]
++ []
+
+ ❯ tests/src/core/compilers.test.ts:2537:26
+    2535|    const again = runEntry(scratch, [])
+    2536|
+    2537|    expect(written.lines).toEqual(['wrote src/core/widget.ts', 'next: n…
+       |                          ^
+    2538|    expect(written.status).toBe(0)
+    2539|    expect(source).toContain(' * Shapes a widget from its parts.')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/6]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  6 failed | 9 passed | 98 skipped (113)
+   Start at  10:24:11
+   Duration  15.55s (transform 209ms, setup 343ms, import 99ms, tests 14.96s, environment 0ms)
+

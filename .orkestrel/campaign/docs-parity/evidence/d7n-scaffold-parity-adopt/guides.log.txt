@@ -1,0 +1,87 @@
+npm notice run @orkestrel/scaffold@0.0.64 test:guides
+npm notice run node --experimental-strip-types tests/guides.test.ts
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/scaffold
+
+······x·x············
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |guides| tests/guides.test.ts > guides > carries executable examples for its public behavior
+AssertionError: expected [ { …(2) }, { …(2) }, { …(2) }, …(4) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   {
++     "spec": "guides/scaffold.md",
++     "text": "guides/scaffold.md has no example for MaterializerInterface.repair.",
++   },
++   {
++     "spec": "guides/scaffold.md",
++     "text": "guides/scaffold.md has no example for MaterializerInterface.mirror.",
++   },
++   {
++     "spec": "guides/scaffold.md",
++     "text": "guides/scaffold.md has no example for MaterializerInterface.catalog.",
++   },
++   {
++     "spec": "guides/scaffold.md",
++     "text": "guides/scaffold.md has no example for MaterializerInterface.remove.",
++   },
++   {
++     "spec": "guides/scaffold.md",
++     "text": "guides/scaffold.md has no example for WriteTransaction.copy.",
++   },
++   {
++     "spec": "guides/scaffold.md",
++     "text": "guides/scaffold.md has no example for WriteTransaction.establish.",
++   },
++   {
++     "spec": "guides/scaffold.md",
++     "text": "guides/scaffold.md has no example for WriteTransaction.remove.",
++   },
++ ]
+
+ ❯ tests/guides.test.ts:247:28
+    245|
+    246|   it('carries executable examples for its public behavior', () => {
+    247|    expect(report.examples).toEqual([])
+       |                            ^
+    248|   })
+    249|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  |guides| tests/guides.test.ts > guides > keeps every compared summary and example equal to its source
+AssertionError: expected [ Array(1) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   {
++     "spec": "guides/scaffold.md",
++     "text": "summary const ORCHESTRATION_PATH_NAMES: guide \"Lists exact root paths that wire an agent bench or own an orchestration directory, frozen.\" source \"Lists the exact root paths that wire an agent bench or own an orchestration directory, frozen.\"",
++   },
++ ]
+
+ ❯ tests/guides.test.ts:255:25
+    253|
+    254|   it('keeps every compared summary and example equal to its source', (…
+    255|    expect(report.drift).toEqual([])
+       |                         ^
+    256|   })
+    257|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 19 passed (21)
+   Start at  10:45:50
+   Duration  2.58s (transform 316ms, setup 308ms, import 907ms, tests 1.22s, environment 0ms)
+

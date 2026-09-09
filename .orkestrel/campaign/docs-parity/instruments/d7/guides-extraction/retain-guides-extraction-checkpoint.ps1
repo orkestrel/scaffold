@@ -19,6 +19,15 @@ Copy-Item -LiteralPath "$scaffoldRoot/tmp/units/d7n-guides-extraction-carriers-r
 Copy-Item -LiteralPath "$scaffoldRoot/tmp/units/d7n-guides-extraction-evidence-brief.md" -Destination "$recordRoot/d7n-guides-extraction-evidence-brief.md"
 Copy-Item -LiteralPath "$scaffoldRoot/tmp/units/d7n-guides-extraction-evidence-report.md" -Destination "$recordRoot/d7n-guides-extraction-evidence-report.md"
 foreach ($name in @(
+  'd7n-parity-example-population-question-brief.md',
+  'd7n-parity-example-population-question-report.md',
+  'd7n-guides-extraction-review-bridge-report.md',
+  'd7n-opus-capacity-probe-brief.md',
+  'd7n-opus-capacity-probe-report.md'
+)) {
+  Copy-Item -LiteralPath "$scaffoldRoot/tmp/units/$name" -Destination "$recordRoot/$name"
+}
+foreach ($name in @(
   'd7n-guide-parity-core-fix-brief.md',
   'd7n-guide-parity-core-fix-report.md',
   'd7n-guide-parity-core-review-brief.md',
@@ -47,7 +56,7 @@ foreach ($name in @('install.log.txt', 'artifacts.sha256', 'manifests.sha256', '
 foreach ($name in @('prepare-guide-extraction-deps.sh', 'prepare-guides-extraction.sh', 'run-guides-extraction-design.sh', 'run-parity-gates.sh', 'pack-parity-guide.sh', 'install-parity-guide.sh', 'inspect-parity-guide.mjs', 'mirror-parity-guide.mjs', 'check-campaign-branches.sh')) {
   Copy-Item -LiteralPath "$scaffoldRoot/tmp/pass/$name" -Destination "$scriptInstruments/$name"
 }
-foreach ($name in @('invoke-guide-parity-pack.sh', 'capture-guides-extraction-review.sh', 'compare-parity-guide-build.sh', 'run-guides-extraction-review.sh')) {
+foreach ($name in @('invoke-guide-parity-pack.sh', 'capture-guides-extraction-review.sh', 'compare-parity-guide-build.sh', 'run-guides-extraction-review.sh', 'run-parity-population-question.sh', 'probe-parity-opus-capacity.sh')) {
   Copy-Item -LiteralPath "$scaffoldRoot/tmp/pass/$name" -Destination "$scriptInstruments/$name"
 }
 Copy-Item -LiteralPath "$scaffoldRoot/tmp/pass/retain-guides-extraction-checkpoint.ps1" -Destination "$scriptInstruments/retain-guides-extraction-checkpoint.ps1"
@@ -86,6 +95,25 @@ foreach ($name in @(
   'metadata-installed.json'
 )) {
   Copy-Item -LiteralPath "$scaffoldRoot/tmp/pass/d7n-scaffold-parity-install/$name" -Destination "$installEvidence/$name"
+}
+$adoptionEvidence = "$recordRoot/evidence/d7n-scaffold-parity-adopt"
+New-Item -ItemType Directory -Force -Path $adoptionEvidence | Out-Null
+foreach ($name in @(
+  'before.exit.txt', 'before.log.txt', 'after-source.exit.txt', 'after-source.log.txt',
+  'after-green.exit.txt', 'after-green.log.txt', 'guides.exit.txt', 'guides.log.txt',
+  'run.sh', 'validate.sh'
+)) {
+  Copy-Item -LiteralPath "$scaffoldRoot/tmp/pass/scaffold-parity-adopt/$name" -Destination "$adoptionEvidence/$name"
+}
+$adoptionRedEvidence = "$recordRoot/evidence/d7n-guides-extraction-adoption-red"
+New-Item -ItemType Directory -Force -Path $adoptionRedEvidence | Out-Null
+foreach ($name in @(
+  'artifacts.sha256', 'core-declaration.exit.txt', 'core-declaration.log.txt',
+  'core-js.exit.txt', 'core-js.log.txt', 'guide.diff-check.txt', 'guide.diff.txt',
+  'guide.head.txt', 'guide.status.txt', 'guide.untracked.txt', 'scaffold.diff-check.txt',
+  'scaffold.diff.txt', 'scaffold.head.txt', 'scaffold.status.txt', 'scaffold.untracked.txt'
+)) {
+  Copy-Item -LiteralPath "$scaffoldRoot/tmp/pass/d7n-guides-extraction-adoption-red/$name" -Destination "$adoptionRedEvidence/$name"
 }
 $branchEvidence = "$recordRoot/evidence/d7n-campaign-branches"
 New-Item -ItemType Directory -Force -Path $branchEvidence | Out-Null

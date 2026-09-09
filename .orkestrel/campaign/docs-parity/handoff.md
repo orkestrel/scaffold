@@ -23,7 +23,16 @@ directory-root proof passed independently on the host. Guide parity extraction h
 returned and its final ordered root gates passed with the accepted Contract, HTML,
 Markdown, and Test tarballs installed. A provisional extracted Guide tarball is
 installed in scaffold; its supported guide mirror refresh completed. Scaffold's
-thin-entry adoption is running. Product acceptance remains pending integrated review.
+thin-entry adoption has stopped at a shared-report coverage mismatch. Its real-command
+regression is green, but the native guides gate is red. The reused objective analyst
+has returned a bounded recommendation; the Opus design-question launch hit its weekly
+limit and returned no answer. Product acceptance remains pending the boundary ruling,
+replacement artifact, final gates, and independent review. Read
+d7n-scaffold-parity-adopt-landing.md before continuing.
+The capacity re-probe confirmed the Opus weekly-limit failure. No substitute review
+has run; the owner's reviewer-substitution choice is pending. Root's explicit npm.cmd
+source-authority command resolved the article drift, leaving the coverage-policy red.
+The held product diffs are retained under evidence/d7n-guides-extraction-held.
 Read d7n-guide-parity-core-landing.md for source and artifact evidence.
 Read d7n-guides-extraction-plan.md and d7n-scripts-ownership-landing.md for this work.
 The owner

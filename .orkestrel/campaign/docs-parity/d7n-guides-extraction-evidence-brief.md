@@ -12,6 +12,7 @@ Own only these instruments under C:/Users/mikes/WebstormProjects/scaffold/tmp/pa
 - capture-guides-extraction-review.sh (new)
 - compare-parity-guide-build.sh (new)
 - run-guides-extraction-review.sh (new transport carrier)
+- run-parity-population-question.sh (bounded design-question carrier)
 
 Write with apply_patch. Keep authored paths forward-slash. Bash scripts source the
 existing pass-env.sh. Use only native shell/filesystem tools, no dependency additions.
@@ -55,3 +56,29 @@ prompt forbidding commands, edits, delegation, and credential reads; --model opu
 --effort high, --permission-mode plan, --output-format stream-json, and --verbose.
 Redirect stdout to tmp/claude/d7n-guide-parity-core-review.jsonl and stderr to the
 matching .err path. Retain the launcher and syntax-check it only. Do not launch.
+
+## Population-question carrier amendment
+
+Create run-parity-population-question.sh from the same pass-environment and explicit
+Git Bash mechanics. Require tmp/claude/d7n-parity-example-population-question-brief.md
+and a nonexistent tmp/claude/d7n-parity-example-population-question.jsonl. Use
+--agent planner with --model opus, --effort high, --permission-mode plan,
+--output-format stream-json, and --verbose. Point to that brief, assign the independent
+subjective lane, and forbid commands, edits, delegation, and credential reads.
+Root sets timeout 1800. Capture the matching stderr file. Syntax-check only; root
+copies and reads the final brief, checks liveness, and launches.
+
+## Stopped-adoption retention amendment
+
+Extend only the retention instrument to retain these exact additional unit files:
+d7n-parity-example-population-question-brief.md,
+d7n-parity-example-population-question-report.md,
+d7n-guides-extraction-review-bridge-report.md,
+d7n-opus-capacity-probe-brief.md, and d7n-opus-capacity-probe-report.md.
+Retain probe-parity-opus-capacity.sh with the other instruments.
+Copy the safe files under tmp/pass/scaffold-parity-adopt into a matching evidence
+directory: before/after-source/after-green/guides log.txt and exit.txt files, run.sh,
+and validate.sh. Retain the safe text files under
+tmp/pass/d7n-guides-extraction-adoption-red as frozen pre-integration evidence.
+Do not copy raw Claude journals. Root owns the extracted capacity reading. Inspect
+exact file names, preserve bytes, syntax-check, and return without executing.

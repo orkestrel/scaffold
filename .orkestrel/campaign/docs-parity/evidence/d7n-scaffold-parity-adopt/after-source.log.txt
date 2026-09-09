@@ -1,0 +1,222 @@
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/scaffold
+
+--------------------------------------------------------------------------------------------------xxxx·xxxxx·x·x·
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 11 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:core| tests/src/core/compilers.test.ts > the guides entry > runs the native command when VITEST is false
+AssertionError: expected 1 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 1
+
+ ❯ tests/src/core/compilers.test.ts:2416:23
+    2414|    const run = runEntry(scratch, ['--to', 'guide'], 'false')
+    2415|    expect(scratch.read('guides/widget.md')).toBe(ENTRY_GUIDE_WRITTEN)
+    2416|    expect(run.status).toBe(0)
+       |                       ^
+    2417|   } finally {
+    2418|    await destroyScratch(scratch, { budget: 5000 })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/11]⎯
+
+ FAIL  |src:core| tests/src/core/compilers.test.ts > the guides entry > keeps summary and example namespaces distinct toward guide
+ FAIL  |src:core| tests/src/core/compilers.test.ts > the guides entry > keeps summary and example namespaces distinct toward source
+AssertionError: expected 1 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 1
+
+ ❯ tests/src/core/compilers.test.ts:2449:24
+    2447|      direction === 'source' ? expectedSource : source,
+    2448|     )
+    2449|     expect(run.status).toBe(0)
+       |                        ^
+    2450|    } finally {
+    2451|     await destroyScratch(scratch, { budget: 5000 })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/11]⎯
+
+ FAIL  |src:core| tests/src/core/compilers.test.ts > the guides entry > keeps the first matched title and absent-language comparison boundaries
+AssertionError: expected 1 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 1
+
+ ❯ tests/src/core/compilers.test.ts:2473:57
+    2471|   })
+    2472|   try {
+    2473|    expect(runEntry(repeated, ['--to', 'guide']).status).toBe(0)
+       |                                                         ^
+    2474|    expect(repeated.read('guides/widget.md')).toBe(repeatedGuide)
+    2475|    expect(runEntry(absent, ['--to', 'guide']).status).toBe(0)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/11]⎯
+
+ FAIL  |src:core| tests/src/core/compilers.test.ts > the guides entry > carries every summary and example to the guide and leaves every other byte
+AssertionError: expected [ 'wrote guides/widget.md', …(2) ] to deeply equal [ 'wrote guides/widget.md', …(1) ]
+
+- Expected
++ Received
+
+  [
+    "wrote guides/widget.md",
++   "guides/scaffold.md is absent from the inventory.",
+    "next: npm run format",
+  ]
+
+ ❯ tests/src/core/compilers.test.ts:2507:22
+    2505|    const guide = scratch.read('guides/widget.md') ?? ''
+    2506|
+    2507|    expect(run.lines).toEqual(['wrote guides/widget.md', 'next: npm run…
+       |                      ^
+    2508|    expect(run.status).toBe(0)
+    2509|    // The whole file, so a dropped row, a disturbed heading, and re-al…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/11]⎯
+
+ FAIL  |src:core| tests/src/core/compilers.test.ts > the guides entry > carries every summary and example to the source, and reads back clean
+AssertionError: expected [ 'wrote src/core/widget.ts', …(2) ] to deeply equal [ 'wrote src/core/widget.ts', …(1) ]
+
+- Expected
++ Received
+
+  [
+    "wrote src/core/widget.ts",
++   "guides/scaffold.md is absent from the inventory.",
+    "next: npm run format",
+  ]
+
+ ❯ tests/src/core/compilers.test.ts:2538:26
+    2536|    const again = runEntry(scratch, [])
+    2537|
+    2538|    expect(written.lines).toEqual(['wrote src/core/widget.ts', 'next: n…
+       |                          ^
+    2539|    expect(written.status).toBe(0)
+    2540|    expect(source).toContain(' * Shapes a widget from its parts.')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/11]⎯
+
+ FAIL  |src:core| tests/src/core/compilers.test.ts > the guides entry > reports a key no doc block carries and the pitch, and leaves both files
+AssertionError: expected [ …(2) ] to deeply equal [ …(2) ]
+
+- Expected
++ Received
+
+  [
+-   "guides/widget.md function measure: guide \"Measures a widget against the frame it fills.\" source absent; no doc block carries the key",
+-   "guides/widget.md pitch: readme \"A widget kit the sample workspace publishes.\" tagline \"A widget toolkit the sample workspace publishes.\"; the README pitch is authored by hand",
++   "guides/widget.md summary function measure: guide \"Measures a widget against the frame it fills.\" source absent; the source doc block or its provenance is unavailable",
++   "guides/scaffold.md is absent from the inventory.",
+  ]
+
+ ❯ tests/src/core/compilers.test.ts:2564:22
+    2562|    const run = runEntry(scratch, ['--to', 'source'])
+    2563|
+    2564|    expect(run.lines).toEqual([
+       |                      ^
+    2565|     'guides/widget.md function measure: guide "Measures a widget again…
+    2566|     'guides/widget.md pitch: readme "A widget kit the sample workspace…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/11]⎯
+
+ FAIL  |src:core| tests/src/core/compilers.test.ts > the guides entry > carries no pitch line for a manifest declaring no name
+AssertionError: expected [ …(2) ] to deeply equal [ Array(1) ]
+
+- Expected
++ Received
+
+  [
+-   "guides/widget.md function measure: guide \"Measures a widget against the frame it fills.\" source absent; no doc block carries the key",
++   "guides/widget.md summary function measure: guide \"Measures a widget against the frame it fills.\" source absent; the source doc block or its provenance is unavailable",
++   "guides/scaffold.md is absent from the inventory.",
+  ]
+
+ ❯ tests/src/core/compilers.test.ts:2583:22
+    2581|    const run = runEntry(scratch, ['--to', 'source'])
+    2582|
+    2583|    expect(run.lines).toEqual([
+       |                      ^
+    2584|     'guides/widget.md function measure: guide "Measures a widget again…
+    2585|    ])
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/11]⎯
+
+ FAIL  |src:core| tests/src/core/compilers.test.ts > the guides entry > carries no pitch line for a manifest naming a guide the index does not index under its own spec
+AssertionError: expected [ …(2) ] to deeply equal [ Array(1) ]
+
+- Expected
++ Received
+
+  [
+-   "guides/component.md function measure: guide \"Measures a widget against the frame it fills.\" source absent; no doc block carries the key",
++   "guides/component.md summary function measure: guide \"Measures a widget against the frame it fills.\" source absent; the source doc block or its provenance is unavailable",
++   "guides/scaffold.md is absent from the inventory.",
+  ]
+
+ ❯ tests/src/core/compilers.test.ts:2598:22
+    2596|    const run = runEntry(scratch, ['--to', 'source'])
+    2597|
+    2598|    expect(run.lines).toEqual([
+       |                      ^
+    2599|     'guides/component.md function measure: guide "Measures a widget ag…
+    2600|    ])
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/11]⎯
+
+ FAIL  |src:core| tests/src/core/compilers.test.ts > the guides entry > carries every overlapping row into one source file and writes that file once
+AssertionError: expected 1 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 1
+
+ ❯ tests/src/core/compilers.test.ts:2639:27
+    2637|    expect(reported.status).toBe(0)
+    2638|    expect(written.lines).toEqual(['wrote src/core/panels/panel.ts', 'n…
+    2639|    expect(written.status).toBe(0)
+       |                           ^
+    2640|    // Every rewrite in one file, and the file named once: a run that r…
+    2641|    // its texts per row keeps the later rewrite alone and names the fi…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/11]⎯
+
+ FAIL  |src:core| tests/src/core/compilers.test.ts > the guides entry > names the indexed guide the workspace does not carry and takes exit 2
+AssertionError: expected [ Array(1) ] to deeply equal [ Array(1) ]
+
+- Expected
++ Received
+
+  [
+-   "guides/panel.md: the concept index names it and the workspace does not carry it",
++   "guides/panel.md is absent from the inventory.",
+  ]
+
+ ❯ tests/src/core/compilers.test.ts:2676:22
+    2674|    const run = runEntry(scratch, ['--to', 'guide'])
+    2675|
+    2676|    expect(run.lines).toEqual([
+       |                      ^
+    2677|     'guides/panel.md: the concept index names it and the workspace doe…
+    2678|    ])
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/11]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  11 failed | 4 passed | 98 skipped (113)
+   Start at  10:35:38
+   Duration  15.19s (transform 213ms, setup 317ms, import 102ms, tests 14.62s, environment 0ms)
+
