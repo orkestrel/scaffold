@@ -1,0 +1,150 @@
+[
+  {
+    "_id": "@orkestrel/msg@0.0.9",
+    "_rev": "9-43d57f35152e4932e459f57997d20349",
+    "name": "@orkestrel/msg",
+    "dist-tags": {
+      "latest": "0.0.9"
+    },
+    "versions": [
+      "0.0.1",
+      "0.0.2",
+      "0.0.3",
+      "0.0.4",
+      "0.0.5",
+      "0.0.6",
+      "0.0.7",
+      "0.0.8",
+      "0.0.9"
+    ],
+    "time": {
+      "created": "2026-07-14T14:54:39.792Z",
+      "modified": "2026-09-04T19:52:02.017Z",
+      "0.0.1": "2026-07-14T14:54:40.167Z",
+      "0.0.2": "2026-07-18T00:08:40.672Z",
+      "0.0.3": "2026-07-18T10:21:24.998Z",
+      "0.0.4": "2026-07-19T13:46:07.302Z",
+      "0.0.5": "2026-07-28T18:02:17.076Z",
+      "0.0.6": "2026-08-12T11:07:43.539Z",
+      "0.0.7": "2026-08-17T19:41:16.005Z",
+      "0.0.8": "2026-08-22T17:27:50.583Z",
+      "0.0.9": "2026-09-04T19:52:01.751Z"
+    },
+    "bugs": {
+      "url": "https://github.com/orkestrel/msg/issues"
+    },
+    "license": "MIT",
+    "homepage": "https://github.com/orkestrel/msg#readme",
+    "keywords": [
+      "attachments",
+      "cfb",
+      "email",
+      "eml",
+      "mime",
+      "msg",
+      "ole2",
+      "outlook",
+      "parser",
+      "typescript"
+    ],
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/orkestrel/msg.git"
+    },
+    "description": "A zero-dependency Outlook .msg (CFB/OLE2) and .eml (RFC 2822/MIME) email parser — extracts headers, bodies, recipients, and attachments into typed structures, with .msg round-trip rebuild. Part of the @orkestrel line.",
+    "maintainers": [
+      "mikesaintsg <mikesaintg11@gmail.com>"
+    ],
+    "readmeFilename": "README.md",
+    "_contentLength": 39781,
+    "version": "0.0.9",
+    "type": "module",
+    "sideEffects": false,
+    "main": "./dist/src/core/index.cjs",
+    "module": "./dist/src/core/index.js",
+    "types": "./dist/src/core/index.d.ts",
+    "exports": {
+      ".": {
+        "import": {
+          "types": "./dist/src/core/index.d.ts",
+          "default": "./dist/src/core/index.js"
+        },
+        "require": {
+          "types": "./dist/src/core/index.d.cts",
+          "default": "./dist/src/core/index.cjs"
+        }
+      },
+      "./package.json": "./package.json"
+    },
+    "publishConfig": {
+      "access": "public"
+    },
+    "scripts": {
+      "clean": "node -e \"require('node:fs').rmSync('dist',{recursive:true,force:true})\"",
+      "copy": "node -e \"const fs=require('node:fs'),p=require('node:path'),a=process.argv[1],b=process.argv[2];fs.mkdirSync(p.dirname(b),{recursive:true});fs.cpSync(a,b,{force:true});console.log('Copied: '+a+' to '+b)\"",
+      "scaffold": "scaffold",
+      "lint": "oxlint --config .oxlintrc.json --fix .",
+      "check": "tsc --noEmit --project tsconfig.json && npm run check:src",
+      "check:src": "npm run check:src:core",
+      "check:src:core": "tsc --noEmit -p configs/src/tsconfig.core.json",
+      "format": "oxfmt --config .oxfmtrc.json --write .",
+      "format:check": "oxfmt --config .oxfmtrc.json --check .",
+      "lint:check": "oxlint --config .oxlintrc.json --deny-warnings .",
+      "test": "npm run test:src && npm run test:policy && npm run test:config && npm run test:setup && npm run test:guides",
+      "test:src": "vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core",
+      "test:src:core": "vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core",
+      "test:policy": "vitest run --config vite.config.ts --no-cache --reporter=dot --project policy",
+      "test:config": "vitest run --config vite.config.ts --no-cache --reporter=dot --project config",
+      "test:guides": "vitest run --config vite.config.ts --no-cache --reporter=dot --project guides",
+      "build": "npm run clean && npm run build:src",
+      "build:src": "npm run build:src:core",
+      "build:src:core": "vite build --config configs/src/vite.core.config.ts && npm run copy dist/src/core/index.d.ts dist/src/core/index.d.cts",
+      "prepublishOnly": "npm run format:check && npm run lint:check && npm run check && npm run build && npm test && npm run test:distribution -- --mode release",
+      "test:distribution": "vitest run --config vite.config.ts --no-cache --reporter=dot --project distribution",
+      "test:probe": "vitest run --config vite.config.ts --no-cache --reporter=verbose --project probe",
+      "test:bench": "vitest bench --config vite.config.ts --no-cache --project probe",
+      "prepack": "npm run build",
+      "test:setup": "vitest run --config vite.config.ts --no-cache --reporter=dot --project setup"
+    },
+    "devDependencies": {
+      "@microsoft/api-extractor": "^7.59.0",
+      "@orkestrel/guide": "^0.0.16",
+      "@orkestrel/probe": "^0.0.11",
+      "@orkestrel/scaffold": "^0.0.61",
+      "@orkestrel/test": "^0.0.12",
+      "@types/node": "^26.4.1",
+      "oxfmt": "^0.66.0",
+      "oxlint": "^1.81.0",
+      "typescript": "^6.0.3",
+      "vite": "^8.2.2",
+      "vite-plugin-dts": "^5.1.0",
+      "vitest": "^4.1.11"
+    },
+    "engines": {
+      "node": ">=22.12.0"
+    },
+    "gitHead": "f1ed94abe7e1894ef34dff397dae6ee0d5800d0a",
+    "_nodeVersion": "22.22.2",
+    "_npmVersion": "11.19.1",
+    "dist": {
+      "integrity": "sha512-2sUwBQiuQq1m7N8j9/qJSLb94/ZEYc9PMf6sqCv47XdlnzSBvf8qnOiEQFhFu48/xuhPFh2QilQO1EAJWVOJXA==",
+      "shasum": "5443a46c84d9339d02e1397a2316be99d74117cf",
+      "tarball": "https://registry.npmjs.org/@orkestrel/msg/-/msg-0.0.9.tgz",
+      "fileCount": 9,
+      "unpackedSize": 620371,
+      "signatures": [
+        {
+          "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U",
+          "sig": "MEYCIQCUNjSrmjw2vyFXaFAwKghg2o8JcO0fd2qO033CtCEqXAIhAJ8hyVi5R4XDb44WNa0BtSYtO6zqI8MOI9b7D7ycZr6D"
+        }
+      ]
+    },
+    "_npmUser": "mikesaintsg <mikesaintg11@gmail.com>",
+    "directories": {},
+    "_npmOperationalInternal": {
+      "host": "s3://npm-registry-packages-npm-production",
+      "tmp": "tmp/msg_0.0.9_1788551521617_0.8153162034453787"
+    },
+    "_hasShrinkwrap": false
+  }
+]

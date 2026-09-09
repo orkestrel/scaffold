@@ -4,6 +4,14 @@ Written 2026-09-08T03:35Z and revised 2026-09-08T04:05Z at the owner's request, 
 
 ## Where everything is pushed
 
+The owner narrowed the continuation to preparing the initial publish layer. Read
+d7n-foundation-native-start.md. Codec, Contract, Msg, SSE, and Test have the accepted
+Guide and Scaffold tarballs installed with metadata preservation and full tooling
+output identity. Their pending versions remain absent from the fresh registry
+readings. Native guides adoption, supported overwrite, valid lock regeneration,
+prepublishOnly, output comparison, and package landings remain in progress.
+No login or upload is authorized by this preparation request.
+
 Guide's native entry and supported tooling are accepted and campaign-pushed at
 327470a6e2e0c056c811e9f48a5ed429fe7ba70e. Its final ordered root gates passed,
 and its rebuilt dist/src tree remains byte-equal to the accepted prior output.
