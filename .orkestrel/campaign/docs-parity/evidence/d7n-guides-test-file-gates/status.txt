@@ -1,0 +1,37 @@
+ M .claude/rules/documentation.md
+ M .orkestrel/campaign/docs-parity/handoff.md
+ M .orkestrel/campaign/docs-parity/ledger.md
+ M guides/scaffold.md
+ M host.json
+MM package-lock.json
+ M package.json
+ D scripts/docs.ts
+ M src/core/compilers.ts
+ M src/core/constants.ts
+ M src/server/Materializer.ts
+ M src/server/types.ts
+ M tests/distribution.test.ts
+ M tests/guides.test.ts
+ M tests/src/bin/CLI.test.ts
+ M tests/src/core/Compiler.test.ts
+ M tests/src/core/compilers.test.ts
+ M tests/src/core/fixtures/app-only-toolchain.txt
+ M tests/src/core/fixtures/setup-false-manifest.txt
+ M tests/src/core/fixtures/source-manifest.txt
+ M tests/src/core/helpers.test.ts
+ M tests/src/server/Materializer.test.ts
+ M tests/src/server/helpers.test.ts
+?? .orkestrel/campaign/docs-parity/d7n-guides-test-file-design-objective-report.md
+?? .orkestrel/campaign/docs-parity/d7n-guides-test-file-design-subjective-report.md
+?? .orkestrel/campaign/docs-parity/d7n-guides-test-file-design-verdict.md
+?? .orkestrel/campaign/docs-parity/d7n-guides-test-file-fix-brief.md
+?? .orkestrel/campaign/docs-parity/d7n-guides-test-file-fix-report.md
+?? .orkestrel/campaign/docs-parity/evidence/d7n-guides-entry-direct/testFileEntryControlGreen.json
+?? .orkestrel/campaign/docs-parity/evidence/d7n-guides-entry-direct/testFileEntryControlRed.json
+?? .orkestrel/campaign/docs-parity/evidence/d7n-guides-entry-direct/testFileTypeErasure.json
+?? .orkestrel/campaign/docs-parity/evidence/d7n-guides-test-file-gates-initial/
+?? .orkestrel/campaign/docs-parity/evidence/d7n-guides-test-file-gates-successor/
+?? .orkestrel/campaign/docs-parity/evidence/d7n-guides-test-file-root-corrections/
+?? .orkestrel/campaign/docs-parity/instruments/d7/windows/guides-entry/run-guides-test-file-gates-final.sh
+?? .orkestrel/campaign/docs-parity/instruments/d7/windows/guides-entry/run-guides-test-file-gates-verified.sh
+?? .orkestrel/campaign/docs-parity/instruments/d7/windows/guides-entry/run-guides-test-file-gates.sh

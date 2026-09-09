@@ -1,0 +1,42 @@
+npm notice run @orkestrel/scaffold@0.0.64 test
+npm notice run npm run test:src:core && npm run test:src:server && npm run test:src:bin && npm run test:policy && npm run test:config && npm run test:setup && npm run test:guides
+npm notice run @orkestrel/scaffold@0.0.64 test:src:core
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/scaffold
+
+·······················································x·······················································································································································································································································································································stderr | tests/src/core/templates.test.ts > emitted workspaces under their own gates > refuses a non-object peer dependency declaration at config load
+[33m[MIXED_EXPORTS] [0mEntry module "tmp/scaffold-e2-peers-wddn88/malformed/vite.config.ts" is using named (including "config", "default", "distribution", "peers", "policy", "probe", "resolveWorkspacePath", "srcCore") and default exports together. Consumers of your bundle will have to use `chunk.default` to access the default export, which may not be what you want. Use `output.exports: "named"` to disable this warning.
+
+
+stderr | tests/src/core/templates.test.ts > emitted workspaces under their own gates > refuses a non-object peer dependency declaration at config load
+failed to load config from C:\Users\mikes\WebstormProjects\scaffold\tmp\scaffold-e2-peers-wddn88\malformed\vite.config.ts
+
+···································
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:core| tests/src/core/Compiler.test.ts > Compiler artifacts > emits every selected group through its correct origin
+AssertionError: expected [ …(39) ] to have a length of 40 but got 39
+
+- Expected
++ Received
+
+- 40
++ 39
+
+ ❯ tests/src/core/Compiler.test.ts:71:26
+     69|    content: expect.stringContaining('installed package consumer'),
+     70|   })
+     71|   expect(plan.artifacts).toHaveLength(40)
+       |                          ^
+     72|   expect(plan.artifacts.filter(({ origin }) => origin === 'computed'))…
+     73|   expect(plan.artifacts.filter(({ origin }) => origin === 'template'))…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 8 passed (9)
+      Tests  1 failed | 401 passed (402)
+   Start at  05:53:40
+   Duration  13.83s (transform 2.15s, setup 2.81s, import 1.34s, tests 22.90s, environment 1ms)

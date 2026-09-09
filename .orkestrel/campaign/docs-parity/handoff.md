@@ -9,9 +9,12 @@ C:/Users/mikes/WebstormProjects. Rulings 33 and 34 supersede the historical isol
 checkout instructions and launcher design. The predecessor scaffold candidate is
 now visible in the direct checkout and its local gate chain passed, but the owner
 rejected scripts/guides.ts. The replacement must put command handling, parity and
-explicit authority-driven rewriting in tests/guides.test.ts. Revised design lanes
-are running; source remains uncommitted and unaccepted. Read
-d7n-guides-entry-direct-reading.md and d7n-guides-test-file-design-brief.md before
+explicit authority-driven rewriting in tests/guides.test.ts. The corrected entry
+is implemented in canonical scaffold and the final ordered root gates passed.
+Source remains frozen, uncommitted and unaccepted while the reused objective
+analyst and independent Opus reviewer audit it. Read
+d7n-guides-test-file-root-gates-report.md, d7n-guides-test-file-design-verdict.md
+and d7n-guides-test-file-audit-brief.md before
 resuming. Preserve the owner's manifest and staged lock edits. No package is newly
 closed by this checkpoint and no publication is authorized.
 

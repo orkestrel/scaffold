@@ -1,0 +1,7 @@
+{
+  "chunk_id": "ac4061",
+  "wall_time_seconds": 1.3477134,
+  "exit_code": 0,
+  "original_token_count": 260,
+  "output": "\n RUN  v4.1.11 C:/Users/mikes/WebstormProjects/scaffold\n\n ✓ |src:core| tests/src/core/Compiler.test.ts > Compiler artifacts > emits every selected group through its correct origin 14ms\n ↓ |src:core| tests/src/core/Compiler.test.ts > Compiler artifacts > plans each root instruction pointer once, as content nothing vendors\n ↓ |src:core| tests/src/core/Compiler.test.ts > Compiler artifacts > emits every conditional config path exactly once\n ↓ |src:core| tests/src/core/Compiler.test.ts > Compiler artifacts > describes an existing workspace whose published axis lacks core\n ↓ |src:core| tests/src/core/Compiler.test.ts > Compiler artifacts > plans a manifest naming a core build for a published axis that declares no core\n ↓ |src:core| tests/src/core/Compiler.test.ts > Compiler artifacts > accepts an override outside a narrowed group selection\n\n Test Files  1 passed (1)\n      Tests  1 passed | 5 skipped (6)\n   Start at  05:55:56\n   Duration  483ms (transform 167ms, setup 305ms, import 24ms, tests 15ms, environment 0ms)\n\n"
+}
