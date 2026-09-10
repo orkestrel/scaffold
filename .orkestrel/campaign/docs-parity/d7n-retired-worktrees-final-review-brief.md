@@ -1,0 +1,9 @@
+# Unit d7n-retired-worktrees-final-review — Accept the corrected carrier
+
+Reuse the lane assigned in the launch and read d7n-retired-worktrees-review-brief.md. Its authority, claims, scope, direct read-only execution, and return shape remain binding. Spawn nothing. No dispatch skill applies.
+
+Review the corrected carrier at C:/Users/mikes/WebstormProjects/scaffold/.orkestrel/campaign/docs-parity/instruments/d7/foundation-native/d7n-retired-worktrees-final-carrier.ps1. The actual added-file diff is .orkestrel/campaign/docs-parity/evidence/d7n-retired-worktrees-final-carrier.diff. The actual status names only retained campaign records and instruments; no product files are modified. Root read the entire corrected source. The script is frozen.
+
+The effective writing brief is tmp/units/d7n-retired-worktrees-final-carrier-brief.md; the report is retained at .orkestrel/campaign/docs-parity/d7n-retired-worktrees-final-carrier-report.md. The predecessor remains retained, rejected, and unexecuted. The successor fixes normalized registration blocks, file/directory ancestry, nullable branch metadata, manifest states, deleted-snapshot handling, exact committed archive populations and raw Git blobs, and repeated verification. The writer's read-only Preflight ran on this host and passed after correcting native Git invocation recursion. Root will take its own runtime receipts; the writer's report is not acceptance.
+
+Decide whether root may run Archive and Verify, then remove the fixed retired targets only after their verified recovery archive is committed and pushed. Return the carried claims as CONFIRMED, BROKEN, or UNRESOLVED, with exact source evidence. Limit further findings to the same archive/removal safety and executable-host scope. This is source review, not executed proof; root Archive/Verify/control/removal results remain required. No fresh verifier or product gate is requested. End with VERDICT: PASS or VERDICT: HOLD.

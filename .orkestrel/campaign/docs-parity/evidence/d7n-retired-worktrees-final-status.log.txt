@@ -1,0 +1,16 @@
+ A .orkestrel/campaign/docs-parity/instruments/d7/foundation-native/d7n-retired-worktrees-archive.ps1
+ A .orkestrel/campaign/docs-parity/instruments/d7/foundation-native/d7n-retired-worktrees-final-carrier.ps1
+?? .orkestrel/campaign/docs-parity/d7n-retired-worktrees-archive-brief.md
+?? .orkestrel/campaign/docs-parity/d7n-retired-worktrees-archive-correction-brief.md
+?? .orkestrel/campaign/docs-parity/d7n-retired-worktrees-archive-correction-report.md
+?? .orkestrel/campaign/docs-parity/d7n-retired-worktrees-archive-report.md
+?? .orkestrel/campaign/docs-parity/d7n-retired-worktrees-final-carrier-brief.md
+?? .orkestrel/campaign/docs-parity/d7n-retired-worktrees-final-carrier-report.md
+?? .orkestrel/campaign/docs-parity/d7n-retired-worktrees-final-review-brief.md
+?? .orkestrel/campaign/docs-parity/d7n-retired-worktrees-objective-report.md
+?? .orkestrel/campaign/docs-parity/d7n-retired-worktrees-review-brief.md
+?? .orkestrel/campaign/docs-parity/d7n-retired-worktrees-review-report.md
+?? .orkestrel/campaign/docs-parity/d7n-retired-worktrees-review-verdict.md
+?? .orkestrel/campaign/docs-parity/evidence/d7n-retired-worktrees-carrier.diff
+?? .orkestrel/campaign/docs-parity/evidence/d7n-retired-worktrees-final-carrier.diff
+?? .orkestrel/campaign/docs-parity/instruments/d7/foundation-native/d7n-retired-worktrees-archive-predecessor.ps1

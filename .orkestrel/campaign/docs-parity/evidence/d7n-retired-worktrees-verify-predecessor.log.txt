@@ -1,0 +1,8 @@
+Exit: 1
+archive manifest population differs: scaffold-guides-entry
+At C:\Users\mikes\WebstormProjects\scaffold\.orkestrel\campaign\docs-parity\instruments\d7\foundation-native\d7n-retired-worktrees-final-carrier.ps1:63 
+char:5
++     throw $Message
++     ~~~~~~~~~~~~~~
+    + CategoryInfo          : OperationStopped: (archive manifes...ld-guides-entry:String) [], RuntimeException
+    + FullyQualifiedErrorId : archive manifest population differs: scaffold-guides-entry

@@ -17,9 +17,11 @@ The owner selected direct PowerShell directory uploads under Ruling 39. Read
 d7n-initial-direct-prepublish-report.md. Fresh prepublishOnly runs passed in each
 initial-layer canonical checkout on main, with unchanged release output. The
 operator command changes into those directories, not tmp or an archive. The
-owner reports completing login; root did not authenticate or upload. Retired
-dirty worktrees remain under tmp/pass and are not execution targets. Scaffold's
-canonical checkout moves to the pushed main after this record lands. The
+owner reports completing login; root did not authenticate or upload. The owner
+authorized archiving and removing the retired worktrees under tmp/pass. Their
+authored edits are archived and verified; removal awaits the recovery commit
+and push. Read d7n-retired-worktrees-cleanup-report.md. Scaffold's canonical
+checkout is on main. The
 remaining fleet layers, Guide main and later runtime/dev re-pins remain open.
 
 Guide's native entry and supported tooling are accepted and campaign-pushed at
@@ -153,7 +155,7 @@ d7n-campaign-branches-reading.md for the actual on-disk branch audit.
 
 | Repository | Branch | Tip | Notes |
 | --- | --- | --- | --- |
-| `orkestrel/scaffold` | `main` (the working branch after this record lands), `claude/orkestrel-npm-audit-deps-14ibta` (the campaign branch), and `claude/docs-parity-windows-01a0810d` (the designated branch) | the commit carrying this file | push HEAD to each named ref at the same tip; the campaign folder is the record |
+| `orkestrel/scaffold` | `main` (the working branch), `claude/orkestrel-npm-audit-deps-14ibta` (the campaign branch), and `claude/docs-parity-windows-01a0810d` (the designated branch) | the commit carrying this file | push HEAD to each named ref at the same tip; the campaign folder is the record |
 | `orkestrel/guide` | `claude/orkestrel-npm-audit-deps-14ibta` | `327470a` | native entry and tooling accepted and pushed; main stays at d3ee1bb for the fleet sequence; refreshed archive and output equality recorded in d7n-guide-native-tooling-landing.md |
 | `orkestrel/<package>` for every package in the table that follows | `claude/orkestrel-npm-audit-deps-14ibta` | per the table | pushed to `main` as each closes |
 

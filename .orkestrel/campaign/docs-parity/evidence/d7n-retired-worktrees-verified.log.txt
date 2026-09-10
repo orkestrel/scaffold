@@ -1,0 +1,3 @@
+Exit: 0
+verified scaffold-guides-entry
+verified scaffold-path

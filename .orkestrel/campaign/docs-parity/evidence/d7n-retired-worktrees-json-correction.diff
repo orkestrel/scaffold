@@ -1,0 +1,13 @@
+diff --git a/.orkestrel/campaign/docs-parity/instruments/d7/foundation-native/d7n-retired-worktrees-final-carrier.ps1 b/.orkestrel/campaign/docs-parity/instruments/d7/foundation-native/d7n-retired-worktrees-verified-carrier.ps1
+index a3c983a3..bf146598 100644
+--- a/.orkestrel/campaign/docs-parity/instruments/d7/foundation-native/d7n-retired-worktrees-final-carrier.ps1
++++ b/.orkestrel/campaign/docs-parity/instruments/d7/foundation-native/d7n-retired-worktrees-verified-carrier.ps1
+@@ -507,7 +507,7 @@ function ReadManifest($Target, [string]$Directory) {
+     if ([string]::IsNullOrWhiteSpace($text)) {
+         Fail "archive manifest is empty: $($Target.Name)"
+     }
+-    $records = @($text | ConvertFrom-Json)
++    $records = $text | ConvertFrom-Json
+     if ($records.Count -ne $Target.Paths.Count) {
+         Fail "archive manifest population differs: $($Target.Name)"
+     }

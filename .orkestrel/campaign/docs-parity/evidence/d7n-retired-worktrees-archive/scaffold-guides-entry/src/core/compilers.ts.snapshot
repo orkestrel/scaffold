@@ -1,0 +1,2614 @@
+import type {
+	Artifact,
+	BuildFormat,
+	Blueprint,
+	ContentArtifact,
+	Dependency,
+	DependencyPinSet,
+	Environment,
+	Finding,
+	ManifestScript,
+	Override,
+	Plan,
+	Question,
+	Snapshot,
+	ViteMachinery,
+} from './types.js'
+import {
+	attempt,
+	canonicalStringify,
+	compareValues,
+	isRecord,
+	isString,
+	parseJSON,
+	sortValues,
+} from '@orkestrel/contract'
+import { fillTemplate } from '@orkestrel/template'
+import {
+	APP_BROWSER_DEV_DEPENDENCIES,
+	APP_DEV_DEPENDENCIES,
+	APP_MATRIX,
+	APP_SERVER_DEV_DEPENDENCIES,
+	BASE_DEV_DEPENDENCIES,
+	BIN_CONFIGS,
+	BIN_ENTRY_PATH,
+	CATALOG_AGENT_PATH,
+	DECLARATION_DEV_DEPENDENCIES,
+	DEPENDENCY_NAME_PATTERN,
+	DISTRIBUTION_TEST_PATH,
+	GUIDES_ENTRY_PATH,
+	ENVIRONMENTS,
+	EXTRA_RANGE_PATTERN,
+	FLOOR_RANGE_PATTERN,
+	FOREIGN_NAME_PATTERN,
+	GLOBAL_SETUP_PATH,
+	HOST_PATHS,
+	INTEGRATION_TEST_PATH,
+	MAX_ARTIFACT_BYTES,
+	MAX_COLLECTION_ITEMS,
+	MAX_TOTAL_ARTIFACT_BYTES,
+	NAME_PATTERN,
+	ORKESTREL_RANGE_PATTERN,
+	RELEASE_PROOF_COMMAND,
+	SERVICE_SCRIPT_PATH,
+	SERVICE_SETUP_PATH,
+	SHOWCASE_CONFIG_PATH,
+	SHOWCASE_DEV_DEPENDENCIES,
+	SOURCE_BROWSER_DEV_DEPENDENCIES,
+	SRC_MATRIX,
+	VERSION_PATTERN,
+} from './constants.js'
+import {
+	artifactToFinding,
+	computeBytes,
+	computeHash,
+	inferGroup,
+	matchesEngines,
+	matchesPrintWidth,
+	serializeTypeScriptString,
+	selectHostPaths,
+	srcToRoot,
+} from './helpers.js'
+import { ARTIFACT_TEMPLATES, CONFIG_TEMPLATES } from './templates.js'
+
+/**
+ * Builds one `exports` condition block for a built environment.
+ *
+ * @param path - The extensionless `dist` path both conditions point at.
+ * @param formats - The module formats that environment builds.
+ * @returns The condition block: an `import` condition always, and a `require`
+ * condition only where a CommonJS build exists.
+ *
+ * @remarks
+ * The formats decide the shape, so no caller repeats the rule. An environment
+ * that builds ES only publishes an `import` condition alone rather than a
+ * `default` one, because a `default` condition answers `require` too and would
+ * hand a CommonJS consumer a module its loader cannot read.
+ *
+ * @example
+ * ```ts
+ * import { pathToCondition } from '@orkestrel/scaffold'
+ *
+ * pathToCondition('./dist/src/browser/index', ['es'])
+ * // { import: { types: './dist/src/browser/index.d.ts', default: './dist/src/browser/index.js' } }
+ * ```
+ */
+export function pathToCondition(
+	path: string,
+	formats: readonly BuildFormat[],
+): Readonly<Record<string, unknown>> {
+	const module = { types: `${path}.d.ts`, default: `${path}.js` }
+	if (!formats.includes('cjs')) return { import: module }
+	return { import: module, require: { types: `${path}.d.cts`, default: `${path}.cjs` } }
+}
+
+/**
+ * Projects a published selection into the manifest's entry fields.
+ *
+ * @param src - The declared published environments.
+ * @returns The `main` and `module` fields, plus `types` when one environment
+ * owns the package root.
+ *
+ * @remarks
+ * `main` follows the root environment's own formats, so an environment that
+ * builds ES only points both fields at the same file rather than promising a
+ * CommonJS build that never runs. A selection with several environments carries
+ * no top-level `types`, because each environment declares its own under its
+ * subpath and a single top-level field could only name one of them.
+ *
+ * @example
+ * ```ts
+ * import { srcToEntry } from '@orkestrel/scaffold'
+ *
+ * srcToEntry(['core']).main // './dist/src/core/index.cjs'
+ * srcToEntry(['browser']).main // './dist/src/browser/index.js'
+ * ```
+ */
+export function srcToEntry(src: readonly Environment[]): {
+	readonly main: string
+	readonly module: string
+	readonly types?: string
+} {
+	const root = srcToRoot(src)
+	const environment = root ?? 'core'
+	const base = `./dist/src/${environment}/index`
+	const main = SRC_MATRIX[environment].formats.includes('cjs') ? `${base}.cjs` : `${base}.js`
+	if (root === undefined) return { main, module: `${base}.js` }
+	return { main, module: `${base}.js`, types: `${base}.d.ts` }
+}
+
+/**
+ * Projects a published selection into the manifest's `exports` map.
+ *
+ * @param src - The declared published environments.
+ * @returns The map, keyed by subpath in `ENVIRONMENTS` order.
+ *
+ * @remarks
+ * One environment owns the package root and every other declared environment
+ * takes the subpath its `SRC_MATRIX` row names, so the map never invents a
+ * subpath. `./package.json` is published alongside, which is what lets a
+ * consumer's tooling read the manifest of a package whose exports are otherwise
+ * closed. A selection publishing nothing answers an empty map rather than a
+ * core-rooted one, because a workspace with no published environment declares
+ * no exports at all.
+ *
+ * @example
+ * ```ts
+ * import { srcToExports } from '@orkestrel/scaffold'
+ *
+ * Object.keys(srcToExports(['core', 'server'])) // ['.', './server', './package.json']
+ * srcToExports([]) // {}
+ * ```
+ */
+export function srcToExports(src: readonly Environment[]): Readonly<Record<string, unknown>> {
+	if (src.length === 0) return {}
+	const map: Record<string, unknown> = {}
+	const root = srcToRoot(src)
+	const environment = root ?? 'core'
+	map['.'] = pathToCondition(`./dist/src/${environment}/index`, SRC_MATRIX[environment].formats)
+	if (root === undefined) {
+		for (const declared of ENVIRONMENTS) {
+			if (declared === 'core' || !src.includes(declared)) continue
+			const row = SRC_MATRIX[declared]
+			map[row.path] = pathToCondition(`./dist/src/${declared}/index`, row.formats)
+		}
+	}
+	map['./package.json'] = './package.json'
+	return map
+}
+
+/**
+ * Projects a blueprint into the development dependencies its manifest declares.
+ *
+ * @param blueprint - The workspace specification.
+ * @returns The merged set, sorted by package name.
+ *
+ * @remarks
+ * The shared toolchain is the baseline every generated workspace carries, and
+ * each declared axis adds the set its host needs. A declared extra or peer is
+ * applied after those, so a workspace that pins a range for a package the
+ * conditional sets also name gets the range it declared. An extra that restates
+ * a shared toolchain pin never reaches here, because the gate refuses it. A peer
+ * that names a development tool already selected keeps that tool's pin, because
+ * the peer's floor states what consumers may supply rather than what this workspace
+ * develops against.
+ *
+ * A peer is declared here as well as under `peerDependencies`, because a peer is
+ * not installed by the workspace that declares it and developing against one
+ * requires it present. A runtime dependency is the opposite case and is removed:
+ * it is already installed, so a second declaration would state one fact twice
+ * and the ranges would be free to disagree.
+ *
+ * A workspace never declares itself, so its own package name is removed. That
+ * matters for a workspace named after a package the baseline already carries:
+ * the baseline is a list of what a workspace consumes, and a workspace does not
+ * consume itself.
+ *
+ * @example
+ * ```ts
+ * import { blueprintToDevDependencies, createBlueprint } from '@orkestrel/scaffold'
+ *
+ * const blueprint = createBlueprint('router', { src: ['core'] })
+ *
+ * blueprintToDevDependencies(blueprint).typescript // the shared TypeScript pin
+ * ```
+ */
+export function blueprintToDevDependencies(blueprint: Blueprint): Readonly<Record<string, string>> {
+	const merged: Record<string, string> = {
+		...BASE_DEV_DEPENDENCIES,
+		...(blueprint.src.length > 0 || blueprint.bin ? DECLARATION_DEV_DEPENDENCIES : {}),
+		...(blueprint.src.includes('browser') ? SOURCE_BROWSER_DEV_DEPENDENCIES : {}),
+		...(blueprint.app.length > 0 ? APP_DEV_DEPENDENCIES : {}),
+		...(blueprint.app.includes('browser') ? APP_BROWSER_DEV_DEPENDENCIES : {}),
+		...(blueprint.showcase && blueprint.app.includes('browser') ? SHOWCASE_DEV_DEPENDENCIES : {}),
+		...(blueprint.app.includes('server') ? APP_SERVER_DEV_DEPENDENCIES : {}),
+	}
+	for (const extra of blueprint.extras) merged[extra.name] = extra.range
+	for (const peer of blueprint.peers) {
+		if (!Object.hasOwn(merged, peer.name)) merged[peer.name] = peer.range
+	}
+	const own = blueprint.src.length > 0 ? `@orkestrel/${blueprint.name}` : blueprint.name
+	const runtime = new Set(blueprint.dependencies.map((dependency) => dependency.name))
+	return Object.fromEntries(
+		Object.entries(merged)
+			.filter(([name]) => name !== own && !runtime.has(name))
+			.sort(([left], [right]) => compareValues(left, right)),
+	)
+}
+
+/**
+ * Projects a blueprint into the scripts its manifest declares.
+ *
+ * @param blueprint - The workspace specification.
+ * @returns The scripts, in the order the manifest lists them.
+ *
+ * @remarks
+ * Each script is the workspace-level contract the repository rules fix, narrowed
+ * to the axes the blueprint declares: a check and a test script per declared
+ * environment, an aggregate over each axis, the policy and configuration
+ * proofs every workspace can pass before it has a public API, and one build per
+ * target that actually builds.
+ *
+ * A publishing workspace isolates its distribution and live-service proofs from
+ * `test` and runs them from `prepublishOnly` instead. Publishing is what selects
+ * the distribution proof: what that proof measures is the packed tarball, so a
+ * workspace that packs no published source has nothing for it to read. A private
+ * workspace therefore omits it and runs a live-service proof from `test`.
+ * Integration and conformance stay in `test` because they neither pack nor
+ * install the workspace and drive no external service. A conformance run may
+ * start a server, but it starts its own and reaches it over loopback, so the run
+ * stays hermetic.
+ *
+ * The configuration paths interpolated here are the same ones `SRC_MATRIX` and
+ * `APP_MATRIX` list as each environment's configuration files, so a rename in
+ * either matrix is a rename in both places.
+ *
+ * @example
+ * ```ts
+ * import { blueprintToScripts, createBlueprint } from '@orkestrel/scaffold'
+ *
+ * const blueprint = createBlueprint('router', { src: ['core'] })
+ *
+ * blueprintToScripts(blueprint)['format:check'] // 'oxfmt --config .oxfmtrc.json --check .'
+ * ```
+ */
+export function blueprintToScripts(blueprint: Blueprint): Readonly<Record<string, string>> {
+	const publishes = blueprint.src.length > 0
+	const integrates = blueprint.integration
+	const compiles = publishes || blueprint.bin
+	const runtime = blueprint.app.filter((environment) => environment !== 'core')
+	const vitest = 'vitest run --config vite.config.ts --no-cache --reporter=dot'
+	const scripts: Record<string, string> = {
+		clean: "node -e \"require('node:fs').rmSync('dist',{recursive:true,force:true})\"",
+		copy: "node -e \"const fs=require('node:fs'),p=require('node:path'),a=process.argv[1],b=process.argv[2];fs.mkdirSync(p.dirname(b),{recursive:true});fs.cpSync(a,b,{force:true});console.log('Copied: '+a+' to '+b)\"",
+		format: 'oxfmt --config .oxfmtrc.json --write .',
+		'format:check': 'oxfmt --config .oxfmtrc.json --check .',
+		lint: 'oxlint --config .oxlintrc.json --fix .',
+		'lint:check': 'oxlint --config .oxlintrc.json --deny-warnings .',
+		check: [
+			'tsc --noEmit --project tsconfig.json',
+			...(compiles ? ['npm run check:src'] : []),
+			...(blueprint.app.length > 0 ? ['npm run check:app'] : []),
+		].join(' && '),
+	}
+	if (compiles) {
+		scripts['check:src'] = [
+			...blueprint.src.map((environment) => `npm run check:src:${environment}`),
+			...(blueprint.bin ? ['npm run check:src:bin'] : []),
+		].join(' && ')
+		for (const environment of blueprint.src) {
+			scripts[`check:src:${environment}`] =
+				`tsc --noEmit -p configs/src/tsconfig.${environment}.json`
+		}
+		if (blueprint.bin) scripts['check:src:bin'] = 'tsc --noEmit -p configs/src/tsconfig.bin.json'
+	}
+	if (blueprint.app.length > 0) {
+		scripts['check:app'] = blueprint.app
+			.map((environment) => `npm run check:app:${environment}`)
+			.join(' && ')
+		for (const environment of blueprint.app) {
+			scripts[`check:app:${environment}`] =
+				environment === 'browser'
+					? 'vue-tsc --noEmit -p configs/app/tsconfig.browser.json'
+					: `tsc --noEmit -p configs/app/tsconfig.${environment}.json`
+		}
+	}
+	scripts.test = [
+		...(compiles ? ['npm run test:src'] : []),
+		...(blueprint.app.length > 0 ? ['npm run test:app'] : []),
+		'npm run test:policy',
+		'npm run test:config',
+		...(blueprint.setup ? ['npm run test:setup'] : []),
+		...(blueprint.guides ? ['npm run test:guides'] : []),
+		...(blueprint.conformance ? ['npm run test:conformance'] : []),
+		...(integrates ? ['npm run test:integration'] : []),
+		...(!publishes && blueprint.service ? ['npm run test:service'] : []),
+	].join(' && ')
+	if (compiles) {
+		scripts['test:src'] = [
+			vitest,
+			...blueprint.src.map((environment) => `--project ${SRC_MATRIX[environment].project}`),
+			...(blueprint.bin ? ['--project src:bin'] : []),
+		].join(' ')
+		for (const environment of blueprint.src) {
+			scripts[`test:src:${environment}`] = `${vitest} --project ${SRC_MATRIX[environment].project}`
+		}
+		if (blueprint.bin) scripts['test:src:bin'] = `${vitest} --project src:bin`
+	}
+	if (blueprint.app.length > 0) {
+		scripts['test:app'] = [
+			vitest,
+			...blueprint.app.map((environment) => `--project ${APP_MATRIX[environment].project}`),
+		].join(' ')
+		for (const environment of blueprint.app) {
+			scripts[`test:app:${environment}`] = `${vitest} --project ${APP_MATRIX[environment].project}`
+		}
+	}
+	scripts['test:policy'] = `${vitest} --project policy`
+	scripts['test:config'] = `${vitest} --project config`
+	if (blueprint.setup) scripts['test:setup'] = `${vitest} --project setup`
+	if (blueprint.guides) {
+		scripts['test:guides'] = `node --experimental-strip-types ${GUIDES_ENTRY_PATH}`
+	}
+	if (blueprint.conformance) scripts['test:conformance'] = `${vitest} --project conformance`
+	scripts['test:probe'] =
+		'vitest run --config vite.config.ts --no-cache --reporter=verbose --project probe'
+	scripts['test:bench'] = 'vitest bench --config vite.config.ts --no-cache --project probe'
+	if (publishes) scripts['test:distribution'] = `${vitest} --project distribution`
+	if (integrates) scripts['test:integration'] = `${vitest} --project integration`
+	if (blueprint.service) scripts['test:service'] = `${vitest} --project service`
+	scripts.build = [
+		'npm run clean',
+		...(compiles ? ['npm run build:src'] : []),
+		...(blueprint.app.length > 0 ? ['npm run build:app'] : []),
+	].join(' && ')
+	if (compiles) {
+		scripts['build:src'] = [
+			...blueprint.src.map((environment) => `npm run build:src:${environment}`),
+			...(blueprint.bin ? ['npm run build:src:bin'] : []),
+		].join(' && ')
+		for (const environment of blueprint.src) {
+			const build = `vite build --config configs/src/vite.${environment}.config.ts`
+			scripts[`build:src:${environment}`] = SRC_MATRIX[environment].formats.includes('cjs')
+				? `${build} && npm run copy dist/src/${environment}/index.d.ts dist/src/${environment}/index.d.cts`
+				: build
+		}
+		if (blueprint.bin) {
+			scripts['build:src:bin'] = 'vite build --config configs/src/vite.bin.config.ts'
+		}
+	}
+	if (blueprint.app.length > 0) {
+		scripts['build:app'] =
+			runtime.length > 0
+				? runtime.map((environment) => `npm run build:app:${environment}`).join(' && ')
+				: 'npm run check:app:core'
+		for (const environment of runtime) {
+			scripts[`build:app:${environment}`] =
+				`vite build --config configs/app/vite.${environment}.config.ts`
+		}
+	}
+	if (blueprint.app.includes('browser')) {
+		scripts.dev = 'vite --config configs/app/vite.browser.config.ts'
+		if (blueprint.showcase) {
+			scripts.showcase = `vite --config ${SHOWCASE_CONFIG_PATH}`
+			scripts['build:showcase'] = `vite build --config ${SHOWCASE_CONFIG_PATH}`
+			scripts.show =
+				'npm run format && npm run build:showcase && npm run copy dist/showcase/index.html demo/showcase.html'
+		}
+	}
+	if (blueprint.app.includes('server')) {
+		scripts.serve = 'node dist/app/server/main.cjs'
+		scripts['serve:build'] = 'npm run build:app:server && npm run serve'
+	}
+	if (publishes) {
+		scripts.prepack = 'npm run build'
+		scripts.prepublishOnly = [
+			'npm run format:check && npm run lint:check && npm run check && npm run build && npm test',
+			RELEASE_PROOF_COMMAND,
+			...(blueprint.service ? ['npm run test:service'] : []),
+		].join(' && ')
+	}
+	return scripts
+}
+
+/**
+ * Projects a blueprint into the manifest scripts a region write may replace.
+ *
+ * @param blueprint - The workspace specification.
+ * @returns One entry per writable script.
+ *
+ * @remarks
+ * Every direct `test:<project>` script is writable, together with the probe and
+ * benchmark workbench scripts. A workspace carrying guides adds `test:guides`,
+ * whose entry reports parity before it runs the guides project. Publishing adds
+ * the pack and publication lifecycle scripts. Aggregate test scripts and
+ * maintainer-owned gate chains stay outside the region.
+ *
+ * `accepted` carries each generated predecessor the region can replace. The
+ * guides entry accepts the generated command that ran Vitest without reporting.
+ * The pack hook accepts the build chain emitted before it delegated to `build`. The
+ * publication hook accepts the same gate chain without
+ * {@link RELEASE_PROOF_COMMAND}. The value being written is always writable, so
+ * it is not repeated there. Any other value is a script the workspace author
+ * customized, and {@link replaceManifestScripts} retains it while writing the
+ * other named scripts independently.
+ *
+ * @example
+ * ```ts
+ * import { blueprintToWritableScripts, createBlueprint } from '@orkestrel/scaffold'
+ *
+ * const blueprint = createBlueprint('router', { src: ['core'] })
+ *
+ * blueprintToWritableScripts(blueprint)[0]?.name // 'test:src:core'
+ * ```
+ */
+export function blueprintToWritableScripts(blueprint: Blueprint): readonly ManifestScript[] {
+	const scripts = blueprintToScripts(blueprint)
+	const writable: ManifestScript[] = []
+	for (const [name, command] of Object.entries(scripts)) {
+		const direct = name.startsWith('test:') && name !== 'test:src' && name !== 'test:app'
+		if (!direct) continue
+		writable.push({
+			name,
+			command,
+			accepted:
+				name === 'test:guides'
+					? ['vitest run --config vite.config.ts --no-cache --reporter=dot --project guides']
+					: [],
+		})
+	}
+	const prepack = scripts.prepack
+	if (prepack !== undefined) {
+		const predecessor = scripts.build
+		writable.push({
+			name: 'prepack',
+			command: prepack,
+			accepted: predecessor === undefined ? [] : [predecessor],
+		})
+	}
+	const prepublish = scripts.prepublishOnly
+	if (prepublish !== undefined) {
+		writable.push({
+			name: 'prepublishOnly',
+			command: prepublish,
+			accepted: [prepublish.replace(` && ${RELEASE_PROOF_COMMAND}`, '')],
+		})
+	}
+	return writable
+}
+
+/**
+ * Compiles a blueprint into its `package.json` content.
+ *
+ * @param blueprint - The workspace specification.
+ * @returns The manifest text, newline-terminated.
+ *
+ * @remarks
+ * A workspace declaring a published environment is scoped and public; one
+ * declaring none is a private application and carries neither a scope, a
+ * publication block, nor a repository. Declared dependencies and peers are
+ * emitted in name order so the same blueprint answers the same bytes, and
+ * `peerDependenciesMeta` carries only the peers marked optional.
+ *
+ * The text is `JSON.stringify` at tab indentation with a trailing newline,
+ * which is the formatter's own fixed point for a manifest: `oxfmt` keeps every
+ * `package.json` array expanded, so no width-aware collapse applies here. That
+ * is not true of the workspace's other JSON, which is why this is the one JSON
+ * artifact serialized directly.
+ *
+ * The artifact carrying this text is claimed by birth. A workspace owns its own
+ * manifest after it exists: its description, its keywords, and any script it
+ * added are the consumer's, so a repair that replaced the file would take them.
+ * The one part scaffold keeps current afterwards is the declared `@orkestrel/*`
+ * range set, and that is a region with its own writer rather than a claim over
+ * the file's bytes.
+ *
+ * @example
+ * ```ts
+ * import { blueprintToManifest, createBlueprint } from '@orkestrel/scaffold'
+ *
+ * const blueprint = createBlueprint('router', { src: ['core'] })
+ *
+ * blueprintToManifest(blueprint).endsWith('}\n') // true
+ * ```
+ */
+export function blueprintToManifest(blueprint: Blueprint): string {
+	const publishes = blueprint.src.length > 0
+	const name = publishes ? `@orkestrel/${blueprint.name}` : blueprint.name
+	const dependencies: Record<string, string> = {}
+	for (const dependency of [...blueprint.dependencies].sort((left, right) =>
+		compareValues(left.name, right.name),
+	)) {
+		dependencies[dependency.name] = dependency.range
+	}
+	const peerDependencies: Record<string, string> = {}
+	const peerDependenciesMeta: Record<string, { readonly optional: true }> = {}
+	for (const peer of [...blueprint.peers].sort((left, right) =>
+		compareValues(left.name, right.name),
+	)) {
+		peerDependencies[peer.name] = peer.range
+		if (peer.optional === true) peerDependenciesMeta[peer.name] = { optional: true }
+	}
+	const entry = srcToEntry(blueprint.src)
+	const manifest: Record<string, unknown> = {
+		name,
+		version: blueprint.version,
+		...(publishes ? {} : { private: true }),
+		description:
+			blueprint.description ??
+			(publishes ? `The ${name} package.` : `The ${blueprint.name} application.`),
+		keywords: sortValues(blueprint.keywords),
+		...(publishes
+			? {
+					homepage: `https://github.com/orkestrel/${blueprint.name}#readme`,
+					bugs: `https://github.com/orkestrel/${blueprint.name}/issues`,
+				}
+			: {}),
+		license: 'MIT',
+		...(publishes
+			? {
+					repository: {
+						type: 'git',
+						url: `git+https://github.com/orkestrel/${blueprint.name}.git`,
+					},
+				}
+			: {}),
+		...(blueprint.bin ? { bin: { [blueprint.name]: './dist/bin/main.js' } } : {}),
+		files: blueprint.bin
+			? ['dist/src', 'dist/bin', 'README.md']
+			: publishes
+				? ['dist/src', 'README.md']
+				: ['dist/app', 'README.md'],
+		type: 'module',
+		...(publishes
+			? {
+					sideEffects: blueprint.bin ? [`./${BIN_ENTRY_PATH}`, './dist/bin/main.js'] : false,
+					main: entry.main,
+					module: entry.module,
+					...(entry.types === undefined ? {} : { types: entry.types }),
+					exports: srcToExports(blueprint.src),
+					publishConfig: { access: 'public' },
+				}
+			: {}),
+		scripts: blueprintToScripts(blueprint),
+		dependencies,
+		devDependencies: blueprintToDevDependencies(blueprint),
+		...(Object.keys(peerDependencies).length > 0 ? { peerDependencies } : {}),
+		...(Object.keys(peerDependenciesMeta).length > 0 ? { peerDependenciesMeta } : {}),
+		engines: { node: blueprint.engines },
+	}
+	return `${JSON.stringify(manifest, undefined, '\t')}\n`
+}
+
+/**
+ * Derives the host-specific machinery a generated root Vite configuration carries.
+ *
+ * @param blueprint - The workspace specification.
+ * @returns The pipelines the generated configuration selects.
+ *
+ * @remarks
+ * The sole derivation of that set: every renderer reads it rather than
+ * recomputing an axis of its own. Nothing here selects a boundary guarantee,
+ * because the environment-boundary plugin, its module-graph audit, and
+ * stylesheet rejection ship in every shape.
+ *
+ * `output` is the one derived fact rather than a declared one. A workspace
+ * builds when it publishes a library, ships an executable, or runs an
+ * application host, and only a workspace that builds has an output directory to
+ * contain. `showcase` requires the browser application it projects, so the
+ * declared flag alone never selects it.
+ *
+ * @example
+ * ```ts
+ * import { blueprintToMachinery, createBlueprint } from '@orkestrel/scaffold'
+ *
+ * const blueprint = createBlueprint('router', { app: ['browser'] })
+ *
+ * blueprintToMachinery(blueprint).vue // true
+ * ```
+ */
+export function blueprintToMachinery(blueprint: Blueprint): ViteMachinery {
+	const hosted = blueprint.app.some((environment) => environment !== 'core')
+	return {
+		browser: blueprint.src.includes('browser') || blueprint.app.includes('browser'),
+		vue: blueprint.app.includes('browser'),
+		output: blueprint.src.length > 0 || blueprint.bin || hosted,
+		showcase: blueprint.showcase && blueprint.app.includes('browser'),
+	}
+}
+
+/**
+ * Compiles the root TypeScript configuration for a blueprint.
+ *
+ * @param blueprint - The workspace specification.
+ * @returns Formatter-stable `tsconfig.json` text.
+ *
+ * @remarks
+ * `paths` carries the workspace's own published specifiers beside the `@src` and
+ * `@app` aliases, mapped to source. The published set is what
+ * {@link srcToExports} publishes, read the same way here so the two never name
+ * different subpaths, and the `app` axis publishes nothing so it maps nothing.
+ * A package's own name resolves inside its own checkout through that `exports`
+ * map, to the built `dist/` entry, so a module importing it would make the root
+ * typecheck depend on a build; mapping the specifier to source is what keeps
+ * `npm run check` independent of `npm run build`. The root Vite configuration
+ * derives its `alias` record from every `paths` entry, so the same specifiers
+ * resolve to source under Vitest, and every subpath is emitted before the bare
+ * specifier: an alias record is matched in declaration order and a bare pattern
+ * also matches its own subpaths, so the reverse order would resolve
+ * `@orkestrel/<name>/server` through the core entry.
+ *
+ * @example
+ * ```ts
+ * import { blueprintToRootTsconfig, createBlueprint } from '@orkestrel/scaffold'
+ *
+ * const blueprint = createBlueprint('router', { src: ['core'] })
+ *
+ * blueprintToRootTsconfig(blueprint).startsWith('{') // true
+ * ```
+ */
+export function blueprintToRootTsconfig(blueprint: Blueprint): string {
+	const aliases: Array<[string, string]> = []
+	for (const environment of ENVIRONMENTS) {
+		if (blueprint.src.includes(environment)) {
+			aliases.push([`@src/${environment}`, `./src/${environment}/index.ts`])
+		}
+	}
+	for (const environment of ENVIRONMENTS) {
+		if (blueprint.app.includes(environment)) {
+			aliases.push([`@app/${environment}`, `./app/${environment}/index.ts`])
+		}
+	}
+	const root = srcToRoot(blueprint.src)
+	if (root === undefined) {
+		for (const environment of ENVIRONMENTS) {
+			if (environment === 'core' || !blueprint.src.includes(environment)) continue
+			const subpath = SRC_MATRIX[environment].path.slice(1)
+			aliases.push([`@orkestrel/${blueprint.name}${subpath}`, `./src/${environment}/index.ts`])
+		}
+	}
+	if (blueprint.src.length > 0) {
+		aliases.push([`@orkestrel/${blueprint.name}`, `./src/${root ?? 'core'}/index.ts`])
+	}
+	const paths = aliases
+		.map(([specifier, target], index) => {
+			const separator = index === aliases.length - 1 ? '' : ','
+			const line = `\t\t\t"${specifier}": ["${target}"]${separator}`
+			// A published specifier carries the package name, and npm accepts one long
+			// enough to push the entry past the formatter's width. oxfmt breaks such an
+			// entry over its own lines, so emitting the flat form would leave the generated
+			// file outside the fixed point the emit corpus holds it to.
+			if (matchesPrintWidth(line)) return line
+			return `\t\t\t"${specifier}": [\n\t\t\t\t"${target}"\n\t\t\t]${separator}`
+		})
+		.join('\n')
+	return fillTemplate(CONFIG_TEMPLATES.root.tsconfig, { paths })
+}
+
+/**
+ * Compiles the root Vite and Vitest configuration for a blueprint.
+ *
+ * @param blueprint - The workspace specification.
+ * @returns Formatter-stable `vite.config.ts` text.
+ *
+ * @remarks
+ * The static root skeleton and each project factory are template data. This
+ * function computes only selection, fixed conditional blocks, escaped
+ * blueprint strings, and the formatter-measured project-array layout.
+ *
+ * @example
+ * ```ts
+ * import { blueprintToRootVite, createBlueprint } from '@orkestrel/scaffold'
+ *
+ * const blueprint = createBlueprint('router', { src: ['core'] })
+ *
+ * blueprintToRootVite(blueprint).includes('defineConfig') // true
+ * ```
+ */
+export function blueprintToRootVite(blueprint: Blueprint): string {
+	const machinery = blueprintToMachinery(blueprint)
+	const publishes = blueprint.src.length > 0
+	const imports: string[] = []
+	if (machinery.browser) imports.push("import { playwright } from '@vitest/browser-playwright'")
+	if (machinery.vue) imports.push("import vue from '@vitejs/plugin-vue'")
+	if (machinery.showcase) imports.push("import { viteSingleFile } from 'vite-plugin-singlefile'")
+
+	const factories: string[] = []
+	const projects: string[] = []
+	if (blueprint.src.includes('core')) {
+		factories.push(CONFIG_TEMPLATES.factories.src.core)
+		projects.push('srcCore')
+	}
+	if (blueprint.src.includes('browser')) {
+		const core = blueprint.src.includes('core')
+		factories.push(
+			fillTemplate(CONFIG_TEMPLATES.factories.src.browser, {
+				external: core
+					? `external: (id: string) =>
+				id === '@src/core' ||
+				id.startsWith('@orkestrel/') ||
+				peers.some((peer) => id === peer || id.startsWith(peer + '/')),`
+					: `external: (id: string) =>
+				id.startsWith('@orkestrel/') ||
+				peers.some((peer) => id === peer || id.startsWith(peer + '/')),`,
+				output: core
+					? "\t\t\toutput: { paths: { '@src/core': '../core/index.js' } },"
+					: '\t\t\toutput: {},',
+				exclude: core ? "\t\texclude: ['tests/src/core/**/*.test.ts'],\n" : '',
+				// A browser test runs in the browser, so it cannot start a Node fixture
+				// for itself. That is the case a global setup exists for, and it is why
+				// this project takes the same span the integration project does.
+				global: blueprint.global ? "\t\tglobalSetup: ['./tests/setupGlobal.ts'],\n" : '',
+			}),
+		)
+		projects.push('srcBrowser')
+	}
+	if (blueprint.src.includes('server')) {
+		const core = blueprint.src.includes('core')
+		factories.push(
+			fillTemplate(CONFIG_TEMPLATES.factories.src.server, {
+				external: core
+					? `external: (id: string) =>
+				id === '@src/core' ||
+				id.startsWith('node:') ||
+				id.startsWith('@orkestrel/') ||
+				peers.some((peer) => id === peer || id.startsWith(peer + '/')),`
+					: `external: (id: string) =>
+				id.startsWith('node:') ||
+				id.startsWith('@orkestrel/') ||
+				peers.some((peer) => id === peer || id.startsWith(peer + '/')),`,
+				output: core
+					? `\t\t\toutput: [
+				{
+					format: 'es',
+					entryFileNames: 'index.js',
+					paths: { '@src/core': '../core/index.js' },
+				},
+				{
+					format: 'cjs',
+					entryFileNames: 'index.cjs',
+					paths: { '@src/core': '../core/index.cjs' },
+				},
+			],`
+					: '\t\t\toutput: {},',
+				exclude: core ? "\t\texclude: ['tests/src/core/**/*.test.ts'],\n" : '',
+			}),
+		)
+		projects.push('srcServer')
+	}
+	if (blueprint.bin) {
+		factories.push(CONFIG_TEMPLATES.factories.src.bin)
+		projects.push('srcBin')
+	}
+	if (blueprint.app.includes('core')) {
+		factories.push(CONFIG_TEMPLATES.factories.app.core)
+		projects.push('appCore')
+	}
+	if (blueprint.app.includes('browser')) {
+		// The formatter reprints an array from its syntax tree and joins one that
+		// fits the vendored width, so the base plugin array is emitted joined when
+		// the showcase plugins are absent.
+		const showcasePlugins = machinery.showcase
+			? `	const showcasePlugins: PluginOption[] = showcase
+		? [
+				viteSingleFile({
+					removeViteModuleLoader: true,
+					useRecommendedBuildConfig: true,
+				}),
+				{
+					name: 'orkestrel-showcase-html',
+					transformIndexHtml: {
+						order: 'post',
+						handler(html) {
+							const stamp = new Date().toISOString()
+							return html.replace(
+								'</head>',
+								'\t\t<meta name="build-id" content="' + stamp + '" />\\n\t</head>',
+							)
+						},
+					},
+				},
+			]
+		: []
+`
+			: ''
+		const plugins = machinery.showcase
+			? `\t\tplugins: [
+			outputBoundary(output),
+			environmentBoundary('app/browser'),
+			vue(),
+			...showcasePlugins,
+		],
+`
+			: "\t\tplugins: [outputBoundary(output), environmentBoundary('app/browser'), vue()],\n"
+		const showcaseBuild = machinery.showcase
+			? `\t\t\t...(showcase
+				? {
+						cssMinify: 'lightningcss',
+						minify: 'oxc',
+						modulePreload: false,
+						reportCompressedSize: false,
+						sourcemap: false,
+						target: 'esnext',
+					}
+				: { assetsInlineLimit: 0 }),
+`
+			: '\t\t\tassetsInlineLimit: 0,\n'
+		const showcaseFactory = machinery.showcase
+			? `
+export function appShowcase(): UserConfig {
+	return applicationBrowser(true)
+}
+`
+			: ''
+		factories.push(
+			fillTemplate(CONFIG_TEMPLATES.factories.app.browser, {
+				plugins,
+				showcasePlugins,
+				showcaseBuild,
+				showcaseFactory,
+			}),
+		)
+		// The row is the factory itself, never a call of it. Vitest reads
+		// `import.meta.env.MODE` as the command line's `--mode` only inside a project
+		// it calls, so an evaluated row silently turns the release-mode publish gate
+		// into a skip.
+		projects.push('appBrowser')
+	}
+	if (blueprint.app.includes('server')) {
+		factories.push(CONFIG_TEMPLATES.factories.app.server)
+		projects.push('appServer')
+	}
+	factories.push(CONFIG_TEMPLATES.factories.policy)
+	projects.push('policy')
+	factories.push(CONFIG_TEMPLATES.factories.config)
+	projects.push('config')
+	if (blueprint.setup) {
+		factories.push(CONFIG_TEMPLATES.factories.setup)
+		projects.push('setup')
+	}
+	if (blueprint.guides) {
+		factories.push(CONFIG_TEMPLATES.factories.guides)
+		projects.push('guides')
+	}
+	if (blueprint.conformance) {
+		factories.push(CONFIG_TEMPLATES.factories.conformance)
+		projects.push('conformance')
+	}
+	if (blueprint.service) {
+		factories.push(CONFIG_TEMPLATES.factories.service)
+		projects.push('service')
+	}
+	if (publishes) {
+		factories.push(CONFIG_TEMPLATES.factories.distribution)
+		projects.push('distribution')
+	}
+	if (blueprint.integration) {
+		factories.push(
+			fillTemplate(CONFIG_TEMPLATES.factories.integration, {
+				global: blueprint.global ? "\t\tglobalSetup: ['./tests/setupGlobal.ts'],\n" : '',
+			}),
+		)
+		projects.push('integration')
+	}
+	factories.push(CONFIG_TEMPLATES.factories.probe)
+	projects.push('probe')
+
+	const joinedProjects = `\t\tprojects: [${projects.join(', ')}],`
+	const projectRows = matchesPrintWidth(joinedProjects)
+		? joinedProjects
+		: `\t\tprojects: [
+${projects.map((project) => `\t\t\t${project},`).join('\n')}
+	\t],`
+	// The configuration helpers a selection reaches are read off the factories it
+	// emitted rather than restated as a second selection rule, so the generated
+	// config imports what it uses and passes its own lint gate.
+	const body = `${factories.join('\n')}\n`
+	const helpers = ['enforceBuildLog', 'environmentBoundary', 'outputBoundary'].filter((helper) =>
+		body.includes(helper),
+	)
+	return fillTemplate(CONFIG_TEMPLATES.root.vite, {
+		viteTypes: machinery.showcase ? 'PluginOption, UserConfig' : 'UserConfig',
+		imports: imports.length === 0 ? '' : `${imports.join('\n')}\n`,
+		helpers:
+			helpers.length === 0 ? '' : `import { ${helpers.join(', ')} } from './configs/helpers.js'\n`,
+		// The provider options are resolved once for the whole configuration, and
+		// only a selection that emits `configs/browsers.ts` can name them.
+		browsers: machinery.browser
+			? "import { resolveBrowser, resolvePinnedBrowser } from './configs/browsers.js'\n"
+			: '',
+		options: machinery.browser
+			? 'const browserOptions = resolveBrowser(resolvePinnedBrowser(), process.platform, process.env)\n\n'
+			: '',
+		factories: body,
+		projects: projectRows,
+	})
+}
+
+/**
+ * Compiles every artifact in the `configs` group.
+ *
+ * @param blueprint - The workspace specification.
+ * @returns Root and selected wrapper artifacts in matrix order.
+ *
+ * @example
+ * ```ts
+ * import { blueprintToConfigArtifacts, createBlueprint } from '@orkestrel/scaffold'
+ *
+ * const blueprint = createBlueprint('router', { src: ['core'] })
+ *
+ * blueprintToConfigArtifacts(blueprint)[0]?.path // 'tsconfig.json'
+ * ```
+ */
+export function blueprintToConfigArtifacts(blueprint: Blueprint): readonly Artifact[] {
+	const artifacts: Artifact[] = [
+		{
+			path: 'tsconfig.json',
+			group: 'configs',
+			ownership: 'content',
+			origin: 'template',
+			content: blueprintToRootTsconfig(blueprint),
+		},
+		{
+			path: 'vite.config.ts',
+			group: 'configs',
+			ownership: 'content',
+			origin: 'template',
+			content: blueprintToRootVite(blueprint),
+		},
+	]
+	// The browser resolver is its own leaf rather than a block inside the vendored
+	// `configs/helpers.ts`, because that file is byte-identical in every workspace
+	// and only a browser selection declares the `playwright` it imports.
+	if (blueprintToMachinery(blueprint).browser) {
+		artifacts.push({
+			path: 'configs/browsers.ts',
+			group: 'configs',
+			ownership: 'content',
+			origin: 'template',
+			content: CONFIG_TEMPLATES.browsers,
+		})
+	}
+	for (const environment of blueprint.src) {
+		for (const path of SRC_MATRIX[environment].configs) {
+			let content: string = CONFIG_TEMPLATES.vites.src.core
+			if (path === 'configs/src/tsconfig.core.json') content = CONFIG_TEMPLATES.tsconfigs.src.core
+			else if (path === 'configs/src/vite.browser.config.ts') {
+				content = CONFIG_TEMPLATES.vites.src.browser
+			} else if (path === 'configs/src/tsconfig.browser.json') {
+				content = CONFIG_TEMPLATES.tsconfigs.src.browser
+			} else if (path === 'configs/src/vite.server.config.ts') {
+				content = CONFIG_TEMPLATES.vites.src.server
+			} else if (path === 'configs/src/tsconfig.server.json') {
+				content = CONFIG_TEMPLATES.tsconfigs.src.server
+			}
+			artifacts.push({
+				path,
+				group: 'configs',
+				ownership: 'content',
+				origin: 'template',
+				environment,
+				content,
+			})
+		}
+	}
+	if (blueprint.bin) {
+		const paths = blueprint.src.map(
+			(environment) => `\t\t\t\t\t\t'@src/${environment}': '../src/${environment}/index.js',`,
+		)
+		const renderedPaths =
+			paths.length === 0
+				? '\t\t\t\t\tpaths: {},'
+				: `\t\t\t\t\tpaths: {
+${paths.join('\n')}
+					},`
+		for (const path of BIN_CONFIGS) {
+			artifacts.push({
+				path,
+				group: 'configs',
+				ownership: 'content',
+				origin: 'template',
+				content:
+					path === 'configs/src/tsconfig.bin.json'
+						? CONFIG_TEMPLATES.tsconfigs.bin
+						: fillTemplate(CONFIG_TEMPLATES.vites.bin, { paths: renderedPaths }),
+			})
+		}
+	}
+	for (const environment of blueprint.app) {
+		for (const path of APP_MATRIX[environment].configs) {
+			let content: string = CONFIG_TEMPLATES.tsconfigs.app.core
+			if (path === 'configs/app/vite.browser.config.ts') {
+				content = CONFIG_TEMPLATES.vites.app.browser
+			} else if (path === 'configs/app/tsconfig.browser.json') {
+				const include = [
+					'../../app/browser/**/*.cts',
+					'../../app/browser/**/*.mts',
+					'../../app/browser/**/*.ts',
+					'../../app/browser/**/*.tsx',
+					'../../app/browser/**/*.vue',
+				]
+				if (blueprint.app.includes('core')) {
+					include.push(
+						'../../app/core/**/*.cts',
+						'../../app/core/**/*.mts',
+						'../../app/core/**/*.ts',
+						'../../app/core/**/*.tsx',
+					)
+				}
+				include.push(
+					'../../tests/app/browser/**/*.cts',
+					'../../tests/app/browser/**/*.mts',
+					'../../tests/app/browser/**/*.ts',
+					'../../tests/app/browser/**/*.tsx',
+					'../../tests/app/browser/**/*.vue',
+					'../../tests/setup.ts',
+					'../../tests/setupBrowser.ts',
+				)
+				content = fillTemplate(CONFIG_TEMPLATES.tsconfigs.app.browser, {
+					include: include
+						.map(
+							(entry, index) =>
+								`\t\t${JSON.stringify(entry)}${index === include.length - 1 ? '' : ','}`,
+						)
+						.join('\n'),
+				})
+			} else if (path === 'configs/app/vite.server.config.ts') {
+				content = CONFIG_TEMPLATES.vites.app.server
+			} else if (path === 'configs/app/tsconfig.server.json') {
+				const include = [
+					'../../app/server/**/*.cts',
+					'../../app/server/**/*.mts',
+					'../../app/server/**/*.ts',
+					'../../app/server/**/*.tsx',
+				]
+				if (blueprint.app.includes('core')) {
+					include.push(
+						'../../app/core/**/*.cts',
+						'../../app/core/**/*.mts',
+						'../../app/core/**/*.ts',
+						'../../app/core/**/*.tsx',
+					)
+				}
+				include.push(
+					'../../tests/app/server/**/*.cts',
+					'../../tests/app/server/**/*.mts',
+					'../../tests/app/server/**/*.ts',
+					'../../tests/app/server/**/*.tsx',
+					'../../tests/setup.ts',
+					'../../tests/setupServer.ts',
+				)
+				content = fillTemplate(CONFIG_TEMPLATES.tsconfigs.app.server, {
+					include: include
+						.map(
+							(entry, index) =>
+								`\t\t${JSON.stringify(entry)}${index === include.length - 1 ? '' : ','}`,
+						)
+						.join('\n'),
+				})
+			}
+			artifacts.push({
+				path,
+				group: 'configs',
+				ownership: 'content',
+				origin: 'template',
+				environment,
+				content,
+			})
+		}
+	}
+	if (blueprint.showcase && blueprint.app.includes('browser')) {
+		artifacts.push({
+			path: SHOWCASE_CONFIG_PATH,
+			group: 'configs',
+			ownership: 'content',
+			origin: 'template',
+			environment: 'browser',
+			content: CONFIG_TEMPLATES.vites.app.showcase,
+		})
+	}
+	return artifacts
+}
+
+/**
+ * Compiles every artifact in the `source` group.
+ *
+ * @param blueprint - The workspace specification.
+ * @returns Empty published barrels, selected application entries, and the optional bin entry.
+ *
+ * @remarks
+ * The barrels and every runtime entry intentionally hold nothing. A generated
+ * sample entity would read as package implementation, so the
+ * scaffold establishes only the selected environment boundaries. An application
+ * entry is empty for the same reason the bin entry is, and because the vendored
+ * lint config refuses an unassigned import outside a stylesheet, so the entry
+ * cannot start by importing its barrel for effect either.
+ *
+ * @example
+ * ```ts
+ * import { blueprintToSourceArtifacts, createBlueprint } from '@orkestrel/scaffold'
+ *
+ * const blueprint = createBlueprint('router', { src: ['core'] })
+ *
+ * blueprintToSourceArtifacts(blueprint).every(({ group }) => group === 'source') // true
+ * ```
+ */
+export function blueprintToSourceArtifacts(blueprint: Blueprint): readonly ContentArtifact[] {
+	const artifacts: ContentArtifact[] = []
+	for (const environment of blueprint.src) {
+		artifacts.push({
+			path: `src/${environment}/index.ts`,
+			group: 'source',
+			ownership: 'birth',
+			origin: 'template',
+			environment,
+			content: ARTIFACT_TEMPLATES.source.empty,
+		})
+	}
+	for (const environment of blueprint.app) {
+		artifacts.push({
+			path: `app/${environment}/index.ts`,
+			group: 'source',
+			ownership: 'birth',
+			origin: 'template',
+			environment,
+			content: ARTIFACT_TEMPLATES.source.empty,
+		})
+		if (environment === 'browser') {
+			artifacts.push(
+				{
+					path: 'app/browser/main.ts',
+					group: 'source',
+					ownership: 'birth',
+					origin: 'template',
+					environment,
+					content: ARTIFACT_TEMPLATES.source.empty,
+				},
+				{
+					path: 'app/browser/index.html',
+					group: 'source',
+					ownership: 'birth',
+					origin: 'template',
+					environment,
+					content: ARTIFACT_TEMPLATES.source.browser,
+				},
+			)
+		} else if (environment === 'server') {
+			artifacts.push({
+				path: 'app/server/main.ts',
+				group: 'source',
+				ownership: 'birth',
+				origin: 'template',
+				environment,
+				content: ARTIFACT_TEMPLATES.source.empty,
+			})
+		}
+	}
+	if (blueprint.bin) {
+		artifacts.push({
+			path: BIN_ENTRY_PATH,
+			group: 'source',
+			ownership: 'birth',
+			origin: 'template',
+			content: ARTIFACT_TEMPLATES.source.empty,
+		})
+	}
+	return artifacts
+}
+
+/**
+ * Compiles every artifact in the `tests` group that is not vendored from the host.
+ *
+ * @param blueprint - The workspace specification.
+ * @returns Shared setup modules, axis tests, and the optional integration seed.
+ *
+ * @remarks
+ * `tests/setupPolicy.ts`, `tests/policy.test.ts`, and `tests/config.test.ts` are
+ * fleet-invariant host artifacts and therefore do not appear here. A guide
+ * proof is not emitted while the workspace intentionally has empty barrels and
+ * no package guide. The integration seed follows its structural flag and loads
+ * every selected environment through its public barrel.
+ *
+ * The conformance proof is not emitted either, for the reason the guide proof
+ * is not: it names an official artifact only the package knows, so a generated
+ * placeholder would read as a proof while measuring nothing. `service` emits its
+ * readiness setup alone, because the root configuration names that module by
+ * path.
+ *
+ * The distribution proof is emitted, and the same test separates it from those
+ * two: its subject is the packed tarball rather than anything only the package
+ * knows, so every assertion derives from the installed tree at run time and
+ * nothing has to be named. It follows the published source it packs, and it is
+ * the one artifact here claimed by presence: a target lacking it reports as
+ * drift, and a package that replaced it with a better proof keeps that proof.
+ *
+ * @example
+ * ```ts
+ * import { blueprintToTestArtifacts, createBlueprint } from '@orkestrel/scaffold'
+ *
+ * const blueprint = createBlueprint('router', { src: ['core'] })
+ *
+ * blueprintToTestArtifacts(blueprint)[0]?.path // 'tests/setup.ts'
+ * ```
+ */
+export function blueprintToTestArtifacts(blueprint: Blueprint): readonly ContentArtifact[] {
+	const artifacts: ContentArtifact[] = [
+		{
+			path: 'tests/setup.ts',
+			group: 'tests',
+			ownership: 'birth',
+			origin: 'template',
+			content: ARTIFACT_TEMPLATES.tests.setup,
+		},
+	]
+	if (blueprint.src.includes('browser') || blueprint.app.includes('browser')) {
+		artifacts.push({
+			path: 'tests/setupBrowser.ts',
+			group: 'tests',
+			ownership: 'birth',
+			origin: 'template',
+			environment: 'browser',
+			content: ARTIFACT_TEMPLATES.tests.setup,
+		})
+	}
+	if (blueprint.src.includes('server') || blueprint.app.includes('server') || blueprint.bin) {
+		artifacts.push({
+			path: 'tests/setupServer.ts',
+			group: 'tests',
+			ownership: 'birth',
+			origin: 'template',
+			environment: 'server',
+			content: ARTIFACT_TEMPLATES.tests.setup,
+		})
+	}
+	// The live-service project names this module in `setupFiles`, so a registered
+	// project whose setup module is absent fails to load at all. The suite beneath
+	// `tests/service` is not emitted beside it: what a live proof drives is the
+	// package's own service, which this package cannot write for it.
+	if (blueprint.service) {
+		artifacts.push({
+			path: SERVICE_SETUP_PATH,
+			group: 'tests',
+			ownership: 'birth',
+			origin: 'template',
+			content: ARTIFACT_TEMPLATES.tests.setup,
+		})
+	}
+	if (blueprint.global) {
+		artifacts.push({
+			path: GLOBAL_SETUP_PATH,
+			group: 'tests',
+			ownership: 'birth',
+			origin: 'template',
+			content: ARTIFACT_TEMPLATES.tests.global,
+		})
+	}
+	for (const environment of blueprint.src) {
+		artifacts.push({
+			path: `tests/src/${environment}/index.test.ts`,
+			group: 'tests',
+			ownership: 'birth',
+			origin: 'template',
+			environment,
+			content: fillTemplate(ARTIFACT_TEMPLATES.tests.entry, {
+				specifier: serializeTypeScriptString(`@src/${environment}`),
+				label: serializeTypeScriptString(`src ${environment} entry`),
+			}),
+		})
+	}
+	if (blueprint.bin) {
+		const specifier = serializeTypeScriptString('../../../src/bin/main.js')
+		const joined = `\t\tconst entry = await import(${specifier})`
+		const statement = matchesPrintWidth(joined)
+			? joined
+			: `\t\tconst entry =\n\t\t\tawait import(${specifier})`
+		artifacts.push({
+			path: 'tests/src/bin/main.test.ts',
+			group: 'tests',
+			ownership: 'birth',
+			origin: 'template',
+			content: fillTemplate(ARTIFACT_TEMPLATES.tests.bin, { import: statement }),
+		})
+	}
+	for (const environment of blueprint.app) {
+		artifacts.push({
+			path: `tests/app/${environment}/index.test.ts`,
+			group: 'tests',
+			ownership: 'birth',
+			origin: 'template',
+			environment,
+			content: fillTemplate(ARTIFACT_TEMPLATES.tests.entry, {
+				specifier: serializeTypeScriptString(`@app/${environment}`),
+				label: serializeTypeScriptString(`app ${environment} entry`),
+			}),
+		})
+	}
+	// The packed artifact is what this proof measures, and that subject is the same
+	// in every publishing workspace: an installed tree, its exports map, and the
+	// declarations beside it. So it is derived rather than named, and a workspace
+	// that packs no published source has nothing for it to read. Ownership is
+	// presence, which is what reports a target still lacking the proof as drift
+	// while leaving a package that wrote a better one exactly as it is.
+	//
+	// The browser branch follows a published `src` browser face, because the browser
+	// drive measures the packed artifact and only a published face is packed. A
+	// workspace selecting `browser` on its `app` axis alone declares
+	// `@vitest/browser-playwright` and `playwright` and gets `configs/browsers.ts`
+	// emitted, and its proof still carries no branch: those imports are declared by
+	// either axis, so they do not select the branch. `vite` selects nothing either,
+	// though the branch imports it: `vite` sits in `BASE_DEV_DEPENDENCIES` and every
+	// workspace declares it. Presence ownership never rewrites the file, so
+	// a workspace publishing a browser face later keeps a proof with no branch for it.
+	// The core-only variant therefore carries the guard that reddens on such an entry
+	// rather than skipping it.
+	if (blueprint.src.length > 0) {
+		const browser = blueprint.src.includes('browser')
+		const distribution = ARTIFACT_TEMPLATES.tests.distribution
+		artifacts.push({
+			path: DISTRIBUTION_TEST_PATH,
+			group: 'tests',
+			ownership: 'presence',
+			origin: 'template',
+			content: fillTemplate(distribution.proof, {
+				types: browser ? distribution.types : '',
+				transport: browser ? distribution.transport : '',
+				launcher: browser ? distribution.launcher : '',
+				helpers: browser ? distribution.helpers : '',
+				drive: browser ? distribution.drive : '',
+				guard: browser ? '' : distribution.guard,
+			}),
+		})
+	}
+	if (blueprint.integration) {
+		const imports: string[] = []
+		const entries: string[] = []
+		for (const environment of blueprint.src) {
+			const entry =
+				environment === 'core' ? 'srcCore' : environment === 'browser' ? 'srcBrowser' : 'srcServer'
+			imports.push(`import * as ${entry} from '@src/${environment}'`)
+			entries.push(entry)
+		}
+		for (const environment of blueprint.app) {
+			const entry =
+				environment === 'core' ? 'appCore' : environment === 'browser' ? 'appBrowser' : 'appServer'
+			imports.push(`import * as ${entry} from '@app/${environment}'`)
+			entries.push(entry)
+		}
+		const joined = `expect([${entries.map((entry) => `Object.keys(${entry})`).join(', ')}]).toStrictEqual(`
+		const actual = matchesPrintWidth(`\t\t${joined}[`)
+			? joined
+			: `expect([\n${entries.map((entry) => `\t\t\tObject.keys(${entry}),`).join('\n')}\n\t\t]).toStrictEqual(`
+		const expectedInline = `[${entries.map(() => '[]').join(', ')}]`
+		const expected =
+			actual !== joined || matchesPrintWidth(`\t\t${joined}${expectedInline})`)
+				? expectedInline
+				: `[\n${entries.map(() => '\t\t\t[],').join('\n')}\n\t\t]`
+		artifacts.push({
+			path: INTEGRATION_TEST_PATH,
+			group: 'tests',
+			ownership: 'birth',
+			origin: 'template',
+			content: fillTemplate(ARTIFACT_TEMPLATES.tests.integration, {
+				imports: `${imports.join('\n')}\n`,
+				actual,
+				expected,
+			}),
+		})
+	}
+	return artifacts
+}
+
+/**
+ * Compiles the generated workspace's guide index.
+ *
+ * @param blueprint - The workspace specification.
+ * @returns One birth-owned guide index carrying the concept and directory views.
+ *
+ * @example
+ * ```ts
+ * import { blueprintToGuideArtifacts, createBlueprint } from '@orkestrel/scaffold'
+ *
+ * const blueprint = createBlueprint('router', { src: ['core'] })
+ *
+ * blueprintToGuideArtifacts(blueprint)[0]?.path // 'guides/README.md'
+ * ```
+ */
+export function blueprintToGuideArtifacts(blueprint: Blueprint): readonly ContentArtifact[] {
+	const source: string[] = []
+	const tests: string[] = []
+	const directories: string[] = []
+	const guide = `guides/${blueprint.name}.md`
+	for (const environment of blueprint.src) {
+		source.push(`    - [\`src/${environment}\`](../src/${environment})`)
+		tests.push(`    - [\`tests/src/${environment}\`](../tests/src/${environment})`)
+		directories.push(
+			`- [\`src/${environment}\`](../src/${environment})\n  - Guide: Not created. Create this file when the workspace has a public surface:\n    \`${guide}\`\n  - Tests: [\`tests/src/${environment}\`](../tests/src/${environment})`,
+		)
+	}
+	if (blueprint.bin) {
+		source.push('    - [`src/bin`](../src/bin)')
+		tests.push('    - [`tests/src/bin`](../tests/src/bin)')
+		directories.push(
+			`- [\`src/bin\`](../src/bin)\n  - Guide: Not created. Create this file when the workspace has a public surface:\n    \`${guide}\`\n  - Tests: [\`tests/src/bin\`](../tests/src/bin)`,
+		)
+	}
+	for (const environment of blueprint.app) {
+		source.push(`    - [\`app/${environment}\`](../app/${environment})`)
+		tests.push(`    - [\`tests/app/${environment}\`](../tests/app/${environment})`)
+		directories.push(
+			`- [\`app/${environment}\`](../app/${environment})\n  - Guide: Not created. Create this file when the workspace has a public surface:\n    \`${guide}\`\n  - Tests: [\`tests/app/${environment}\`](../tests/app/${environment})`,
+		)
+	}
+	return [
+		{
+			path: 'guides/README.md',
+			group: 'guides',
+			ownership: 'birth',
+			origin: 'template',
+			content: fillTemplate(ARTIFACT_TEMPLATES.guides.readme, {
+				source: source.join('\n'),
+				tests: tests.join('\n'),
+				directories: directories.join('\n'),
+				guide: blueprint.name,
+			}),
+		},
+	]
+}
+
+/**
+ * Compiles the generated workspace's root documentation.
+ *
+ * @param blueprint - The workspace specification.
+ * @returns The birth-owned package front page and the content-owned `AGENTS.md`
+ * and `CLAUDE.md` pointers.
+ *
+ * @remarks
+ * The front page is the workspace's own prose, so it is written once and left
+ * alone from then on. The pointers are scaffold's, so they are content-owned and
+ * restored whenever they drift.
+ *
+ * A pointer is planned here rather than vendored because `stageHost` refuses two
+ * vendored paths at one storage name, and `AGENTS.md` and `CLAUDE.md` already
+ * store the canon a release ships. Planning them as this package's own content
+ * leaves each path with one claimant.
+ *
+ * Neither pointer carries a varying span, so neither is filled: a workspace's
+ * name never reaches the text, and the paths a reader follows are the same in
+ * every target.
+ *
+ * @example
+ * ```ts
+ * import { blueprintToDocumentArtifacts, createBlueprint } from '@orkestrel/scaffold'
+ *
+ * const blueprint = createBlueprint('router', { src: ['core'] })
+ *
+ * blueprintToDocumentArtifacts(blueprint).map((artifact) => artifact.path) // ['README.md', 'AGENTS.md', 'CLAUDE.md']
+ * ```
+ */
+export function blueprintToDocumentArtifacts(blueprint: Blueprint): readonly ContentArtifact[] {
+	const publishes = blueprint.src.length > 0
+	const name = publishes ? `@orkestrel/${blueprint.name}` : blueprint.name
+	const description =
+		blueprint.description ?? (publishes ? `The ${name} package.` : `The ${name} application.`)
+	return [
+		{
+			path: 'README.md',
+			group: 'docs',
+			ownership: 'birth',
+			origin: 'template',
+			content: fillTemplate(ARTIFACT_TEMPLATES.docs.readme, {
+				package: name,
+				description,
+			}),
+		},
+		{
+			path: 'AGENTS.md',
+			group: 'docs',
+			ownership: 'content',
+			origin: 'template',
+			content: ARTIFACT_TEMPLATES.docs.agents,
+		},
+		{
+			path: 'CLAUDE.md',
+			group: 'docs',
+			ownership: 'content',
+			origin: 'template',
+			content: ARTIFACT_TEMPLATES.docs.claude,
+		},
+	]
+}
+
+/**
+ * Compiles the blueprint-dependent orchestration artifacts.
+ *
+ * @param blueprint - The workspace specification.
+ * @returns A vendor inventory script when vendors are declared, otherwise none.
+ *
+ * @remarks
+ * A vendor name does not describe startup, readiness, or cleanup. The script
+ * therefore records only the declared inventory and does not invent a service
+ * runner or test project.
+ *
+ * @example
+ * ```ts
+ * import { blueprintToOrchestrationArtifacts, createBlueprint } from '@orkestrel/scaffold'
+ *
+ * const plain = createBlueprint('router', { src: ['core'] })
+ * const served = createBlueprint('router', { src: ['core'], vendors: ['ollama'] })
+ *
+ * blueprintToOrchestrationArtifacts(plain) // []
+ * blueprintToOrchestrationArtifacts(served)[0]?.path // 'scripts/service.sh'
+ * ```
+ */
+export function blueprintToOrchestrationArtifacts(
+	blueprint: Blueprint,
+): readonly ContentArtifact[] {
+	if (blueprint.vendors.length === 0) return []
+	const vendors = blueprint.vendors
+		.map((vendor, index) => `\t'${vendor}'${index === blueprint.vendors.length - 1 ? '' : ' \\'}`)
+		.join('\n')
+	return [
+		{
+			path: SERVICE_SCRIPT_PATH,
+			group: 'orchestration',
+			ownership: 'birth',
+			origin: 'template',
+			content: fillTemplate(ARTIFACT_TEMPLATES.orchestration.service, { vendors }),
+		},
+	]
+}
+
+/**
+ * Compiles the vendored host artifacts a workspace plans.
+ *
+ * @param blueprint - The workspace specification.
+ * @returns One artifact per selected vendored path in `HOST_PATHS` order, then
+ * the catalog file.
+ *
+ * @remarks
+ * Every artifact is claimed by presence, which is the strongest claim a pure
+ * compile can make: core cannot read the vendored data root, so it cannot carry
+ * the bytes a content claim would have to be checked against. Reading that root
+ * is what promotes the ones scaffold owns the bytes of.
+ *
+ * `source` is left absent because it falls back to `path`, and every vendored
+ * path is stored under the name it is written to. The group comes from
+ * {@link inferGroup}, so a vendored path and a foreign path found in a target
+ * are classified by one rule and a plan never disagrees with the audit beside
+ * it.
+ *
+ * {@link CATALOG_AGENT_PATH} is appended rather than listed, and it is the canon
+ * path this compiler claims. The catalog verb refuses a target that lacks the
+ * file, so the plan has to carry it; repair restores its absence from the
+ * staged bytes; and the `.claude/agents` directory in `CANON_PATHS` is what
+ * stages those bytes, so listing the file in `HOST_PATHS` as well would claim one
+ * storage name twice and refuse the stage. The rest of the canon a target reads
+ * from the installed package, at the locations the `AGENTS.md` and `CLAUDE.md`
+ * pointers {@link blueprintToDocumentArtifacts} emits name.
+ *
+ * The guides entry is vendored like every other hook. The `test:guides` script
+ * {@link blueprintToScripts} emits and the `guides` project the root configuration
+ * registers select with `guides`, so a workspace that indexes no guides carries
+ * the entry and no script that runs it; `npm run check` there still resolves the
+ * entry's import, because every workspace declares `@orkestrel/guide`.
+ *
+ * @example
+ * ```ts
+ * import { blueprintToHostArtifacts, createBlueprint, GUIDES_ENTRY_PATH } from '@orkestrel/scaffold'
+ *
+ * const blueprint = createBlueprint('router')
+ *
+ * blueprintToHostArtifacts(blueprint).some((artifact) => artifact.path === GUIDES_ENTRY_PATH) // true
+ * blueprintToHostArtifacts(blueprint).some((artifact) => artifact.path === 'guides/router.md') // false
+ * ```
+ */
+export function blueprintToHostArtifacts(blueprint: Blueprint): readonly Artifact[] {
+	const selected = selectHostPaths(HOST_PATHS, blueprint.name)
+	return [...selected, CATALOG_AGENT_PATH].map((path): Artifact => ({
+		path,
+		group: inferGroup(path),
+		ownership: 'presence',
+		origin: 'host',
+	}))
+}
+
+/**
+ * Replaces the content of every drafted artifact an override names.
+ *
+ * @param artifacts - The drafted artifacts.
+ * @param overrides - The blueprint's overrides.
+ * @returns The artifacts with each matching override applied, in input order.
+ *
+ * @remarks
+ * An override replaces an artifact's whole content and never merges into it.
+ * A host-origin artifact carries no content to replace, so it passes through
+ * untouched; which overrides are legal at all is
+ * {@link overridesToQuestions}'s answer, so an illegal one is reported rather
+ * than silently dropped here.
+ *
+ * @example
+ * ```ts
+ * import { applyOverrides, blueprintToConfigArtifacts, createBlueprint } from '@orkestrel/scaffold'
+ *
+ * const artifacts = blueprintToConfigArtifacts(createBlueprint('router', { src: ['core'] }))
+ *
+ * applyOverrides(artifacts, [{ path: 'README.md', content: '# Title\n' }])
+ * ```
+ */
+export function applyOverrides(
+	artifacts: readonly Artifact[],
+	overrides: readonly Override[],
+): readonly Artifact[] {
+	if (overrides.length === 0) return artifacts
+	const replacements = new Map(overrides.map((override) => [override.path, override.content]))
+	return artifacts.map((artifact) => {
+		if (artifact.origin === 'host') return artifact
+		const content = replacements.get(artifact.path)
+		return content === undefined ? artifact : { ...artifact, content }
+	})
+}
+
+/**
+ * Replaces the runtime and development dependency ranges in package manifest text, and never a
+ * peer range.
+ *
+ * @param manifest - The manifest text to compile.
+ * @param pins - The runtime and development names and replacement ranges.
+ * @returns The manifest with every matching writable value replaced, or
+ * `undefined` when a name has no quoted declaration in its named section.
+ *
+ * @remarks
+ * The compiler replaces values in place instead of serializing the manifest,
+ * so description, keywords, scripts, key order, indentation, and every byte
+ * outside the named ranges survive. Runtime pins apply only to `dependencies`,
+ * and development pins apply only to `devDependencies`. The compiler never
+ * reads or writes `peerDependencies` or `peerDependenciesMeta`. An override or
+ * resolution with the same name stays untouched.
+ *
+ * @example
+ * ```ts
+ * import { replaceManifestRanges } from '@orkestrel/scaffold'
+ *
+ * const manifest = '{"devDependencies":{"typescript":"^6"}}\n'
+ * replaceManifestRanges(manifest, {
+ *   runtime: [],
+ *   development: [{ name: 'typescript', range: '^7' }],
+ * })
+ * // the manifest with the declared range replaced
+ * ```
+ */
+export function replaceManifestRanges(
+	manifest: string,
+	pins: DependencyPinSet,
+): string | undefined {
+	if (pins.runtime.length === 0 && pins.development.length === 0) return manifest
+	const sectionNames = new Set(['dependencies', 'devDependencies'])
+	const sections: Array<{ name: string; start: number; end: number }> = []
+	let depth = 0
+	let cursor = 0
+	while (cursor < manifest.length) {
+		const character = manifest.charAt(cursor)
+		if (character === '{') {
+			depth += 1
+			cursor += 1
+			continue
+		}
+		if (character === '}') {
+			depth -= 1
+			cursor += 1
+			continue
+		}
+		if (character !== '"') {
+			cursor += 1
+			continue
+		}
+		const start = cursor
+		cursor += 1
+		while (cursor < manifest.length) {
+			if (manifest.charAt(cursor) === '\\') {
+				cursor += 2
+				continue
+			}
+			if (manifest.charAt(cursor) === '"') break
+			cursor += 1
+		}
+		if (cursor >= manifest.length) return undefined
+		const end = cursor + 1
+		if (depth === 1) {
+			const key: unknown = parseJSON(manifest.slice(start, end))
+			let value = end
+			while (value < manifest.length && /\s/u.test(manifest.charAt(value))) value += 1
+			if (manifest.charAt(value) === ':') {
+				value += 1
+				while (value < manifest.length && /\s/u.test(manifest.charAt(value))) value += 1
+				if (typeof key === 'string' && sectionNames.has(key) && manifest.charAt(value) === '{') {
+					let sectionDepth = 0
+					let sectionCursor = value
+					while (sectionCursor < manifest.length) {
+						const sectionCharacter = manifest.charAt(sectionCursor)
+						if (sectionCharacter === '"') {
+							sectionCursor += 1
+							while (sectionCursor < manifest.length) {
+								if (manifest.charAt(sectionCursor) === '\\') {
+									sectionCursor += 2
+									continue
+								}
+								if (manifest.charAt(sectionCursor) === '"') break
+								sectionCursor += 1
+							}
+							if (sectionCursor >= manifest.length) return undefined
+						} else if (sectionCharacter === '{') sectionDepth += 1
+						else if (sectionCharacter === '}') {
+							sectionDepth -= 1
+							if (sectionDepth === 0) {
+								sections.push({ name: key, start: value, end: sectionCursor + 1 })
+								break
+							}
+						}
+						sectionCursor += 1
+					}
+				}
+			}
+		}
+		cursor = end
+	}
+	const runtime = new Set<string>()
+	const development = new Set<string>()
+	let compiled = manifest
+	for (const bounds of sections.reverse()) {
+		const dependencies = bounds.name === 'dependencies' ? pins.runtime : pins.development
+		const replacements = new Map(dependencies.map(({ name, range }) => [name, range]))
+		const declared = bounds.name === 'dependencies' ? runtime : development
+		let section = compiled.slice(bounds.start, bounds.end)
+		let sectionDepth = 0
+		let sectionCursor = 0
+		while (sectionCursor < section.length) {
+			const character = section.charAt(sectionCursor)
+			if (character === '{') {
+				sectionDepth += 1
+				sectionCursor += 1
+				continue
+			}
+			if (character === '}') {
+				sectionDepth -= 1
+				sectionCursor += 1
+				continue
+			}
+			if (character !== '"') {
+				sectionCursor += 1
+				continue
+			}
+			const keyStart = sectionCursor
+			sectionCursor += 1
+			while (sectionCursor < section.length) {
+				if (section.charAt(sectionCursor) === '\\') {
+					sectionCursor += 2
+					continue
+				}
+				if (section.charAt(sectionCursor) === '"') break
+				sectionCursor += 1
+			}
+			if (sectionCursor >= section.length) return undefined
+			const keyEnd = sectionCursor + 1
+			const key: unknown = parseJSON(section.slice(keyStart, keyEnd))
+			let valueStart = keyEnd
+			while (valueStart < section.length && /\s/u.test(section.charAt(valueStart))) valueStart += 1
+			if (sectionDepth !== 1 || section.charAt(valueStart) !== ':') {
+				sectionCursor = keyEnd
+				continue
+			}
+			valueStart += 1
+			while (valueStart < section.length && /\s/u.test(section.charAt(valueStart))) valueStart += 1
+			if (typeof key !== 'string' || section.charAt(valueStart) !== '"') {
+				sectionCursor = keyEnd
+				continue
+			}
+			const replacement = replacements.get(key)
+			if (replacement === undefined) {
+				sectionCursor = keyEnd
+				continue
+			}
+			let valueEnd = valueStart + 1
+			while (valueEnd < section.length) {
+				if (section.charAt(valueEnd) === '\\') {
+					valueEnd += 2
+					continue
+				}
+				if (section.charAt(valueEnd) === '"') break
+				valueEnd += 1
+			}
+			if (valueEnd >= section.length) return undefined
+			const range = JSON.stringify(replacement)
+			section = section.slice(0, valueStart) + range + section.slice(valueEnd + 1)
+			declared.add(key)
+			sectionCursor = valueStart + range.length
+		}
+		compiled = compiled.slice(0, bounds.start) + section + compiled.slice(bounds.end)
+	}
+	const declaredRuntime = pins.runtime.every(({ name }) => runtime.has(name))
+	const declaredDevelopment = pins.development.every(({ name }) => development.has(name))
+	return declaredRuntime && declaredDevelopment ? compiled : undefined
+}
+
+/**
+ * Replaces named script values in package manifest text.
+ *
+ * @param manifest - The manifest text to compile.
+ * @param scripts - The scripts to write, each with the predecessors it accepts.
+ * @returns The manifest carrying every absent or accepted named script and
+ * retaining every differing string value, or `undefined` when a planned key
+ * holds a non-string value or the text carries no readable `scripts` object to
+ * write into.
+ *
+ * @remarks
+ * The compiler replaces values in place instead of serializing the manifest, so
+ * description, keywords, dependencies, key order, indentation, and every byte
+ * outside the replaced ranges survive. A named script the manifest already
+ * declares is overwritten only when its value is one of its
+ * {@link ManifestScript.accepted} predecessors. The planned value stands. Any
+ * other string is a chain the workspace author customized, so it stays
+ * byte-identical while the other named scripts are written independently. A
+ * named script the manifest does not declare is appended after the last
+ * declared script of its own key family, copying that section's indentation:
+ * `test:setup` follows the last declared `test:` key. A name carrying no colon
+ * has no family, and so does a family the section declares no member of, and
+ * each of those is appended after the last declared script instead. A region
+ * declaring nothing takes every named script as its first entries, indented
+ * from the line its own opening brace sits on.
+ *
+ * @example
+ * ```ts
+ * import { replaceManifestScripts } from '@orkestrel/scaffold'
+ *
+ * const manifest = '{\n\t"scripts": {\n\t\t"test": "vitest run"\n\t}\n}\n'
+ * replaceManifestScripts(manifest, [
+ *   { name: 'test', command: 'vitest run --no-cache', accepted: ['vitest run'] },
+ * ])
+ * // the manifest with the declared script replaced
+ * ```
+ */
+export function replaceManifestScripts(
+	manifest: string,
+	scripts: readonly ManifestScript[],
+): string | undefined {
+	if (scripts.length === 0) return manifest
+	const parsed: unknown = parseJSON(manifest)
+	if (!isRecord(parsed) || !isRecord(parsed.scripts)) return undefined
+	const declared = parsed.scripts
+	// A non-string planned key makes the region structurally unsafe to edit, so
+	// rule on that shape before locating any byte range.
+	for (const script of scripts) {
+		if (!Object.hasOwn(declared, script.name)) continue
+		const value: unknown = declared[script.name]
+		if (!isString(value)) return undefined
+	}
+	// Locate the top-level scripts object. Depth counts objects alone, exactly as
+	// the range writer counts them, so a key nested inside another object never
+	// reads as a top-level one.
+	let depth = 0
+	let cursor = 0
+	let start = -1
+	let end = -1
+	while (cursor < manifest.length && end < 0) {
+		const character = manifest.charAt(cursor)
+		if (character === '{') {
+			depth += 1
+			cursor += 1
+			continue
+		}
+		if (character === '}') {
+			depth -= 1
+			cursor += 1
+			continue
+		}
+		if (character !== '"') {
+			cursor += 1
+			continue
+		}
+		const keyStart = cursor
+		cursor += 1
+		while (cursor < manifest.length) {
+			if (manifest.charAt(cursor) === '\\') {
+				cursor += 2
+				continue
+			}
+			if (manifest.charAt(cursor) === '"') break
+			cursor += 1
+		}
+		if (cursor >= manifest.length) return undefined
+		const keyEnd = cursor + 1
+		cursor = keyEnd
+		if (depth !== 1) continue
+		const key: unknown = parseJSON(manifest.slice(keyStart, keyEnd))
+		if (key !== 'scripts') continue
+		let opening = keyEnd
+		while (opening < manifest.length && /\s/u.test(manifest.charAt(opening))) opening += 1
+		if (manifest.charAt(opening) !== ':') continue
+		opening += 1
+		while (opening < manifest.length && /\s/u.test(manifest.charAt(opening))) opening += 1
+		if (manifest.charAt(opening) !== '{') continue
+		start = opening
+		let nested = 0
+		let scan = opening
+		while (scan < manifest.length) {
+			const inner = manifest.charAt(scan)
+			if (inner === '"') {
+				scan += 1
+				while (scan < manifest.length) {
+					if (manifest.charAt(scan) === '\\') {
+						scan += 2
+						continue
+					}
+					if (manifest.charAt(scan) === '"') break
+					scan += 1
+				}
+				if (scan >= manifest.length) return undefined
+			} else if (inner === '{') nested += 1
+			else if (inner === '}') {
+				nested -= 1
+				if (nested === 0) {
+					end = scan + 1
+					break
+				}
+			}
+			scan += 1
+		}
+	}
+	if (start < 0 || end < 0) return undefined
+	// Read the section's own entries for their byte ranges, and remember where the
+	// first key sits: that column is the indentation an appended script copies.
+	// Each string-valued entry also records where it ends, because that offset is
+	// the anchor an appended sibling of the same key family inserts after.
+	const edits: Array<{ start: number; end: number; text: string }> = []
+	const written = new Set<string>()
+	const anchors: Array<{ name: string; end: number }> = []
+	let first = -1
+	let nested = 0
+	let scan = start
+	while (scan < end) {
+		const character = manifest.charAt(scan)
+		if (character === '{') {
+			nested += 1
+			scan += 1
+			continue
+		}
+		if (character === '}') {
+			nested -= 1
+			scan += 1
+			continue
+		}
+		if (character !== '"') {
+			scan += 1
+			continue
+		}
+		const keyStart = scan
+		scan += 1
+		while (scan < end) {
+			if (manifest.charAt(scan) === '\\') {
+				scan += 2
+				continue
+			}
+			if (manifest.charAt(scan) === '"') break
+			scan += 1
+		}
+		if (scan >= end) return undefined
+		const keyEnd = scan + 1
+		scan = keyEnd
+		if (nested !== 1) continue
+		let valueStart = keyEnd
+		while (valueStart < end && /\s/u.test(manifest.charAt(valueStart))) valueStart += 1
+		if (manifest.charAt(valueStart) !== ':') continue
+		valueStart += 1
+		while (valueStart < end && /\s/u.test(manifest.charAt(valueStart))) valueStart += 1
+		if (first < 0) first = keyStart
+		if (manifest.charAt(valueStart) !== '"') continue
+		let valueEnd = valueStart + 1
+		while (valueEnd < end) {
+			if (manifest.charAt(valueEnd) === '\\') {
+				valueEnd += 2
+				continue
+			}
+			if (manifest.charAt(valueEnd) === '"') break
+			valueEnd += 1
+		}
+		if (valueEnd >= end) return undefined
+		scan = valueEnd + 1
+		const key: unknown = parseJSON(manifest.slice(keyStart, keyEnd))
+		if (isString(key)) anchors.push({ name: key, end: valueEnd + 1 })
+		const script = scripts.find((entry) => entry.name === key)
+		if (script === undefined) continue
+		written.add(script.name)
+		const value: unknown = declared[script.name]
+		if (value === script.command || !isString(value) || !script.accepted.includes(value)) continue
+		edits.push({ start: valueStart, end: valueEnd + 1, text: JSON.stringify(script.command) })
+	}
+	const missing = scripts.filter((script) => !written.has(script.name))
+	if (missing.length > 0) {
+		if (first < 0) {
+			// An empty region declares every named script absent, and an absent script is
+			// always writable, so the region takes them as its first entries rather than
+			// refusing the write. No sibling entry exists to copy a column from, so the
+			// indentation comes from the region's own opening line: `scripts` is a
+			// top-level key, so that line's leading whitespace is one level and an entry
+			// inside the region sits at two. A manifest carrying no line break before the
+			// region is written on one line, which is what the append path does with a
+			// one-line region it finds already populated.
+			const opening = manifest.lastIndexOf('\n', start)
+			let column = opening + 1
+			while (column < start && /\s/u.test(manifest.charAt(column))) column += 1
+			const level = opening < 0 ? '' : manifest.slice(opening + 1, column)
+			const separator = opening < 0 ? '' : `\n${level}${level}`
+			const closing = opening < 0 ? '' : `\n${level}`
+			const entries = missing.map(
+				(script) => `${separator}${JSON.stringify(script.name)}: ${JSON.stringify(script.command)}`,
+			)
+			edits.push({ start: start + 1, end: end - 1, text: `${entries.join(',')}${closing}` })
+		} else {
+			// A qualified name joins the family its prefix names, landing after that
+			// family's last declared member so a reader finds it among its siblings
+			// rather than behind the lifecycle scripts that close the section. An
+			// unqualified name has no family, and a family the section never declares
+			// has no member to follow, so each takes the section's own end.
+			let tail = end - 1
+			while (tail > start && /\s/u.test(manifest.charAt(tail - 1))) tail -= 1
+			const newline = manifest.lastIndexOf('\n', first)
+			const indent = newline < 0 ? '' : manifest.slice(newline + 1, first)
+			const separator = newline < 0 || /\S/u.test(indent) ? '' : `\n${indent}`
+			const placed = new Map<number, string[]>()
+			for (const script of missing) {
+				const colon = script.name.indexOf(':')
+				const family = colon < 0 ? undefined : script.name.slice(0, colon + 1)
+				const sibling =
+					family === undefined
+						? undefined
+						: anchors.findLast((entry) => entry.name.startsWith(family))
+				const anchor = sibling?.end ?? tail
+				const text = `,${separator}${JSON.stringify(script.name)}: ${JSON.stringify(script.command)}`
+				const queued = placed.get(anchor)
+				if (queued === undefined) placed.set(anchor, [text])
+				else queued.push(text)
+			}
+			for (const [anchor, queued] of placed) {
+				edits.push({ start: anchor, end: anchor, text: queued.join('') })
+			}
+		}
+	}
+	let compiled = manifest
+	for (const edit of edits.sort((left, right) => right.start - left.start)) {
+		compiled = compiled.slice(0, edit.start) + edit.text + compiled.slice(edit.end)
+	}
+	return compiled
+}
+
+/**
+ * Replaces dependency ranges in a plan's manifest and recomputes its identity.
+ *
+ * @param plan - The plan carrying the manifest artifact to compile.
+ * @param pins - The runtime and development names and replacement ranges.
+ * @returns A plan with replaced manifest ranges and a matching hash, or
+ * `undefined` when the manifest or its identity cannot be compiled.
+ *
+ * @remarks
+ * The blueprint remains the workspace specification that produced the plan.
+ * Registry answers alter only the manifest artifact that materialization will
+ * write. Recomputing the hash in the same compiler keeps the plan's identity
+ * tied to those final bytes rather than to the unresolved floor.
+ *
+ * @example
+ * ```ts
+ * import { replacePlanRanges } from '@orkestrel/scaffold'
+ *
+ * replacePlanRanges(plan, pins) // the plan carrying the resolved writable ranges
+ * ```
+ */
+export function replacePlanRanges(plan: Plan, pins: DependencyPinSet): Plan | undefined {
+	let replaced = false
+	let refused = false
+	const artifacts = plan.artifacts.map((artifact): Artifact => {
+		if (artifact.path !== 'package.json' || artifact.origin === 'host') return artifact
+		const content = replaceManifestRanges(artifact.content, pins)
+		if (content === undefined) {
+			refused = true
+			return artifact
+		}
+		replaced = true
+		return { ...artifact, content }
+	})
+	if (!replaced || refused) return undefined
+	const compiled: Plan = { ...plan, artifacts }
+	const hash = planToHash(compiled)
+	return hash === undefined ? undefined : { ...compiled, hash }
+}
+
+/**
+ * Computes a plan's content identity.
+ *
+ * @param plan - The plan to identify.
+ * @returns Sixteen lowercase hexadecimal digits, or `undefined` when the plan
+ * carries a value JSON cannot encode.
+ *
+ * @remarks
+ * The identity covers the blueprint the plan was compiled from, the groups it
+ * covers, and its ordered artifacts. It deliberately excludes `hash` itself,
+ * which is what lets a pinned plan be re-identified and compared without
+ * stripping a field first.
+ *
+ * The projection is canonical, so two plans that differ only in key order
+ * answer the same digits. Nothing here reads a clock or randomness, and the
+ * refusal is total: a value that cannot be read answers `undefined` rather than
+ * escaping as a thrown error, and a caller decides what an unidentifiable plan
+ * means.
+ *
+ * @example
+ * ```ts
+ * import { Compiler, createBlueprint, planToHash } from '@orkestrel/scaffold'
+ *
+ * const { plan } = new Compiler().compile(createBlueprint('router', { src: ['core'] }))
+ *
+ * plan === undefined ? undefined : planToHash(plan)?.length // 16
+ * ```
+ */
+export function planToHash(plan: Plan): string | undefined {
+	const outcome = attempt(() =>
+		canonicalStringify({
+			blueprint: plan.blueprint,
+			groups: plan.groups,
+			artifacts: plan.artifacts,
+		}),
+	)
+	if (!outcome.success || outcome.value === undefined) return undefined
+	return computeHash(outcome.value)
+}
+
+/**
+ * Compares a plan against a target's current content.
+ *
+ * @param plan - The compiled plan.
+ * @param current - The target's exact bytes, keyed by artifact-relative path.
+ * @returns One finding per planned artifact in plan order, then one `foreign`
+ * finding per unplanned path in snapshot order.
+ *
+ * @remarks
+ * The sweep is bounded by the plan's own selection: a path the plan does not own
+ * is reported as foreign only when its group is one the plan covers, so a
+ * compile narrowed to a few groups never reports the rest of the workspace as
+ * unowned. Within a covered group the report is deliberately wide, because
+ * `foreign` is the set the destructive verb draws from and the narrowing that
+ * set needs — the paths no verb may remove, and what git tracks — belongs to
+ * that verb rather than to the comparison.
+ *
+ * @example
+ * ```ts
+ * import { Compiler, createBlueprint, planToFindings } from '@orkestrel/scaffold'
+ *
+ * const { plan } = new Compiler().compile(createBlueprint('router', { src: ['core'] }))
+ *
+ * plan === undefined ? [] : planToFindings(plan, { 'AGENTS.md': '68690a' })
+ * ```
+ */
+export function planToFindings(plan: Plan, current: Snapshot): readonly Finding[] {
+	const findings: Finding[] = []
+	const planned = new Set<string>()
+	for (const artifact of plan.artifacts) {
+		planned.add(artifact.path)
+		findings.push(artifactToFinding(artifact, current[artifact.path]))
+	}
+	for (const [path, observed] of Object.entries(current)) {
+		if (planned.has(path)) continue
+		const group = inferGroup(path)
+		if (!plan.groups.includes(group)) continue
+		findings.push({ path, group, drift: 'foreign', observed })
+	}
+	return findings
+}
+
+/**
+ * Measures one declared package list against the name and range syntax it accepts.
+ *
+ * @param dependencies - The declared list.
+ * @param field - The blueprint field the list came from, reported on each question.
+ * @param name - The package-name syntax the field accepts.
+ * @param range - The range syntax the field accepts.
+ * @returns One blocking question per rejected name, repeated name, and rejected
+ * range, in list order.
+ *
+ * @remarks
+ * The declared lists and peer partitions differ only in the syntaxes they
+ * accept, so the rules live here once and each caller supplies its own patterns.
+ * A runtime dependency name reaches a path through its guide mirror and is
+ * fixed to the `@orkestrel` scope. A foreign peer or development extra reaches
+ * no path and admits any valid npm name.
+ *
+ * Both patterns must be stateless. A global or sticky pattern carries a
+ * `lastIndex` between calls, so it would answer differently for the same input
+ * depending on what was tested before it.
+ *
+ * @example
+ * ```ts
+ * import { DEPENDENCY_NAME_PATTERN, ORKESTREL_RANGE_PATTERN } from '@orkestrel/scaffold'
+ * import { dependenciesToQuestions } from '@orkestrel/scaffold'
+ *
+ * dependenciesToQuestions(
+ * 	[{ name: '@orkestrel/router', range: '0.0.8' }],
+ * 	'dependencies',
+ * 	DEPENDENCY_NAME_PATTERN,
+ * 	ORKESTREL_RANGE_PATTERN,
+ * ).length // 1 — the range is not caret-pinned
+ * ```
+ */
+export function dependenciesToQuestions(
+	dependencies: readonly Dependency[],
+	field: string,
+	name: RegExp,
+	range: RegExp,
+): readonly Question[] {
+	const questions: Question[] = []
+	const seen = new Set<string>()
+	for (const dependency of dependencies) {
+		if (!name.test(dependency.name)) {
+			questions.push({
+				field,
+				message: `${dependency.name} is not a package name ${field} accepts.`,
+				blocking: true,
+			})
+		} else if (seen.has(dependency.name)) {
+			questions.push({
+				field,
+				message: `${dependency.name} is declared more than once on ${field}.`,
+				blocking: true,
+			})
+		}
+		seen.add(dependency.name)
+		if (!range.test(dependency.range)) {
+			questions.push({
+				field,
+				message: `${dependency.name} declares the range ${dependency.range}, which ${field} does not accept.`,
+				blocking: true,
+			})
+		}
+	}
+	return questions
+}
+
+/**
+ * Measures a blueprint against every law its own fields decide.
+ *
+ * @param blueprint - The workspace specification.
+ * @returns One question per rejected field, in blueprint field order, with the
+ * rules that span several fields last.
+ *
+ * @remarks
+ * Only the laws a blueprint answers alone are here. The structural record and
+ * its bounds are already settled by `isBlueprint`, which refuses a value that is
+ * not a blueprint at all; what remains is the syntax of a name, a version, a
+ * range, and an engines floor, the combinations the environment axes admit,
+ * and the overlaps between the declared package lists. The laws that need
+ * a drafted plan belong to {@link artifactsToQuestions} and
+ * {@link overridesToQuestions}.
+ *
+ * A question blocks when it describes a workspace this package cannot generate.
+ * These do not, because each describes a workspace it can describe honestly but
+ * will not create: a published axis of several environments without core,
+ * whose manifest names a core build the workspace never runs; a showcase flag
+ * whose required browser axis is absent, which emits nothing; and an
+ * integration flag over fewer than two environments, whose seed does emit and
+ * has nothing to compose across. Blocking any of them closed the gate for every
+ * verb. The verbs that read an existing workspace need the plan the gate
+ * refused. The caller that chooses the shape refuses the advisory; the callers
+ * that read one report it.
+ *
+ * The integration advisory counts both axes together, because the proof it
+ * seeds spans environments rather than published ones: an application of two
+ * environments composes, and a package publishing one does not. Reading either
+ * axis alone withdrew the proof from a workspace that does compose.
+ *
+ * An environment question carries `ENVIRONMENTS` as its candidates, so a caller
+ * reads the accepted values from the question instead of from the documentation.
+ *
+ * @example
+ * ```ts
+ * import { blueprintToQuestions, createBlueprint } from '@orkestrel/scaffold'
+ *
+ * const blueprint = createBlueprint('router', { src: ['core'] })
+ *
+ * blueprintToQuestions(blueprint).length === 0 // true
+ * ```
+ */
+export function blueprintToQuestions(blueprint: Blueprint): readonly Question[] {
+	const questions: Question[] = []
+	if (!NAME_PATTERN.test(blueprint.name)) {
+		questions.push({
+			field: 'name',
+			message: `${blueprint.name} is not a lowercase alphanumeric name starting with a letter.`,
+			blocking: true,
+		})
+	}
+	if (!VERSION_PATTERN.test(blueprint.version)) {
+		questions.push({
+			field: 'version',
+			message: `${blueprint.version} is not an exact three-component version.`,
+			blocking: true,
+		})
+	}
+	if (!matchesEngines(blueprint.engines)) {
+		questions.push({
+			field: 'engines',
+			message: `${blueprint.engines} is not a supported minimum-Node floor.`,
+			blocking: true,
+		})
+	}
+	if (blueprint.src.length === 0 && blueprint.app.length === 0) {
+		questions.push({
+			field: 'src',
+			message: 'A workspace declares at least one environment on src or app.',
+			blocking: true,
+			candidates: ENVIRONMENTS,
+		})
+	}
+	if (blueprint.src.length > 1 && !blueprint.src.includes('core')) {
+		questions.push({
+			field: 'src',
+			message:
+				'Several published environments put core at the package root, so this manifest names a core build the workspace never runs. Declare core on src, or publish one environment.',
+			blocking: false,
+			candidates: ENVIRONMENTS,
+		})
+	}
+	for (const environment of ENVIRONMENTS) {
+		if (blueprint.src.filter((declared) => declared === environment).length > 1) {
+			questions.push({
+				field: 'src',
+				message: `src declares ${environment} more than once.`,
+				blocking: true,
+				candidates: ENVIRONMENTS,
+			})
+		}
+		if (blueprint.app.filter((declared) => declared === environment).length > 1) {
+			questions.push({
+				field: 'app',
+				message: `app declares ${environment} more than once.`,
+				blocking: true,
+				candidates: ENVIRONMENTS,
+			})
+		}
+	}
+	if (blueprint.integration && blueprint.src.length + blueprint.app.length < 2) {
+		questions.push({
+			field: 'integration',
+			message:
+				'integration drives features across environments, and this workspace declares fewer than two, so its seed composes nothing.',
+			blocking: false,
+		})
+	}
+	const vendors = new Set<string>()
+	for (const vendor of blueprint.vendors) {
+		if (!NAME_PATTERN.test(vendor)) {
+			questions.push({
+				field: 'vendors',
+				message: `${vendor} is not a lowercase alphanumeric vendor name starting with a letter.`,
+				blocking: true,
+			})
+		} else if (vendors.has(vendor)) {
+			questions.push({
+				field: 'vendors',
+				message: `${vendor} is declared more than once on vendors.`,
+				blocking: true,
+			})
+		}
+		vendors.add(vendor)
+	}
+	if (blueprint.showcase && !blueprint.app.includes('browser')) {
+		questions.push({
+			field: 'showcase',
+			message:
+				'showcase projects a browser app, and this workspace declares none, so it emits nothing.',
+			blocking: false,
+		})
+	}
+	questions.push(
+		...dependenciesToQuestions(
+			blueprint.dependencies,
+			'dependencies',
+			DEPENDENCY_NAME_PATTERN,
+			ORKESTREL_RANGE_PATTERN,
+		),
+		...dependenciesToQuestions(
+			blueprint.peers.filter((peer) => peer.name.startsWith('@orkestrel/')),
+			'peers',
+			DEPENDENCY_NAME_PATTERN,
+			ORKESTREL_RANGE_PATTERN,
+		),
+		...dependenciesToQuestions(
+			blueprint.peers.filter((peer) => !peer.name.startsWith('@orkestrel/')),
+			'peers',
+			FOREIGN_NAME_PATTERN,
+			FLOOR_RANGE_PATTERN,
+		),
+		...dependenciesToQuestions(
+			blueprint.extras,
+			'extras',
+			FOREIGN_NAME_PATTERN,
+			EXTRA_RANGE_PATTERN,
+		),
+	)
+	const lists: ReadonlyArray<readonly [field: string, list: readonly Dependency[]]> = [
+		['dependencies', blueprint.dependencies],
+		['peers', blueprint.peers],
+		['extras', blueprint.extras],
+	]
+	const declared = new Map<string, string>()
+	const own = `@orkestrel/${blueprint.name}`
+	for (const [field, list] of lists) {
+		for (const dependency of list) {
+			if (dependency.name === own || dependency.name === blueprint.name) {
+				questions.push({
+					field,
+					message: `${dependency.name} is the workspace itself.`,
+					blocking: true,
+				})
+			}
+			const first = declared.get(dependency.name)
+			if (first === undefined) declared.set(dependency.name, field)
+			else if (first !== field) {
+				questions.push({
+					field,
+					message: `${dependency.name} is declared on both ${first} and ${field}.`,
+					blocking: true,
+				})
+			}
+		}
+	}
+	for (const extra of blueprint.extras) {
+		if (Object.hasOwn(BASE_DEV_DEPENDENCIES, extra.name)) {
+			questions.push({
+				field: 'extras',
+				message: `${extra.name} is pinned by the shared toolchain, which every workspace carries at one version.`,
+				blocking: true,
+			})
+		}
+	}
+	return questions
+}
+
+/**
+ * Measures a drafted artifact list against the laws a whole plan decides.
+ *
+ * @param artifacts - The drafted artifacts.
+ * @returns One blocking question per colliding path and per exceeded ceiling.
+ *
+ * @remarks
+ * Two artifacts claiming one path is a compilation defect rather than a caller's
+ * mistake: whichever is written last silently wins, so the plan is refused
+ * instead. The ceilings are the ones the plan has to survive being read back
+ * through — one artifact's bytes, the count of artifacts one collection admits,
+ * and the bytes retained across a whole plan — so a plan that would fail its own
+ * guard is refused while the failure can still name the artifact that caused it.
+ *
+ * A host artifact planned before its bytes are read contributes nothing to the
+ * budget, because it claims no bytes to retain.
+ *
+ * @example
+ * ```ts
+ * import { artifactsToQuestions, blueprintToConfigArtifacts, createBlueprint } from '@orkestrel/scaffold'
+ *
+ * const artifacts = blueprintToConfigArtifacts(createBlueprint('router', { src: ['core'] }))
+ *
+ * artifactsToQuestions(artifacts).length === 0 // true
+ * ```
+ */
+export function artifactsToQuestions(artifacts: readonly Artifact[]): readonly Question[] {
+	const questions: Question[] = []
+	const claimed = new Set<string>()
+	let total = 0
+	for (const artifact of artifacts) {
+		if (claimed.has(artifact.path)) {
+			questions.push({
+				field: 'artifacts',
+				message: `Two artifacts claim ${artifact.path}.`,
+				blocking: true,
+			})
+		}
+		claimed.add(artifact.path)
+		const bytes =
+			artifact.origin === 'host'
+				? artifact.hex === undefined
+					? 0
+					: artifact.hex.length / 2
+				: computeBytes(artifact.content)
+		if (bytes > MAX_ARTIFACT_BYTES) {
+			questions.push({
+				field: 'artifacts',
+				message: `${artifact.path} carries ${bytes} bytes, above the ${MAX_ARTIFACT_BYTES} one artifact admits.`,
+				blocking: true,
+			})
+		}
+		total += bytes
+	}
+	if (artifacts.length > MAX_COLLECTION_ITEMS) {
+		questions.push({
+			field: 'artifacts',
+			message: `A plan of ${artifacts.length} artifacts is above the ${MAX_COLLECTION_ITEMS} one collection admits.`,
+			blocking: true,
+		})
+	}
+	if (total > MAX_TOTAL_ARTIFACT_BYTES) {
+		questions.push({
+			field: 'artifacts',
+			message: `A plan of ${total} bytes is above the ${MAX_TOTAL_ARTIFACT_BYTES} one plan retains.`,
+			blocking: true,
+		})
+	}
+	return questions
+}
+
+/**
+ * Measures a blueprint's overrides against the artifacts drafted for it.
+ *
+ * @param overrides - The blueprint's overrides.
+ * @param artifacts - The drafted artifacts, before overrides are applied.
+ * @returns One blocking question per override the draft cannot accept.
+ *
+ * @remarks
+ * An override that matches no planned artifact is a caller expecting a file that
+ * does not exist, and applying nothing would leave that expectation
+ * unanswered. An override on a host-origin artifact asks this package to
+ * rewrite a file it byte-copies from the vendored data root, which it never
+ * does. An override on the manifest asks it to rewrite the one artifact the
+ * blueprint's own fields decide, so the fields would no longer describe the
+ * workspace they generated. Each is refused rather than dropped.
+ *
+ * @example
+ * ```ts
+ * import { blueprintToConfigArtifacts, createBlueprint, overridesToQuestions } from '@orkestrel/scaffold'
+ *
+ * const artifacts = blueprintToConfigArtifacts(createBlueprint('router', { src: ['core'] }))
+ *
+ * overridesToQuestions([{ path: 'package.json', content: '{}\n' }], artifacts).length // 1
+ * ```
+ */
+export function overridesToQuestions(
+	overrides: readonly Override[],
+	artifacts: readonly Artifact[],
+): readonly Question[] {
+	const questions: Question[] = []
+	const planned = new Map<string, Artifact>()
+	for (const artifact of artifacts) {
+		if (!planned.has(artifact.path)) planned.set(artifact.path, artifact)
+	}
+	const seen = new Set<string>()
+	for (const override of overrides) {
+		if (seen.has(override.path)) {
+			questions.push({
+				field: 'overrides',
+				message: `${override.path} is overridden more than once.`,
+				blocking: true,
+			})
+		}
+		seen.add(override.path)
+		const artifact = planned.get(override.path)
+		if (artifact === undefined) {
+			questions.push({
+				field: 'overrides',
+				message: `${override.path} is not a path this plan carries.`,
+				blocking: true,
+			})
+			continue
+		}
+		if (artifact.origin === 'host') {
+			questions.push({
+				field: 'overrides',
+				message: `${override.path} is byte-copied from the vendored data root.`,
+				blocking: true,
+			})
+			continue
+		}
+		if (artifact.group === 'manifest') {
+			questions.push({
+				field: 'overrides',
+				message: `${override.path} is the manifest, which the blueprint's own fields decide.`,
+				blocking: true,
+			})
+		}
+	}
+	return questions
+}

@@ -1,0 +1,5 @@
+Command: powershell -NoProfile -File C:/Users/mikes/WebstormProjects/scaffold/.orkestrel/campaign/docs-parity/instruments/d7/foundation-native/d7n-retired-worktrees-final-carrier.ps1 -Mode Preflight
+Exit: 0
+preflight scaffold-guides-entry
+preflight scaffold-path
+preflight completed

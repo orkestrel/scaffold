@@ -1,0 +1,106 @@
+[
+    {
+        "path":  ".claude/rules/documentation.md",
+        "state":  "present",
+        "hash":  "03f8b386098d52aaa54f28e1d19a296eb355517a4c54ab8422b342add385c7c7"
+    },
+    {
+        "path":  "guides/scaffold.md",
+        "state":  "present",
+        "hash":  "2e0fbdf0fb7a97cad8d3bce3f8d76c91a67cd50669cdcec07ef1325303013853"
+    },
+    {
+        "path":  "host.json",
+        "state":  "present",
+        "hash":  "95fd298809a336a6a298595252a791c83394c1539ab96312ac71f313f49a9005"
+    },
+    {
+        "path":  "package-lock.json",
+        "state":  "present",
+        "hash":  "f75ebb4038554d6cf879a300ab56605b166f676bb9813c9f8cd84569b8624d70"
+    },
+    {
+        "path":  "package.json",
+        "state":  "present",
+        "hash":  "eb6c2fa1c2465997f4fb190c897a739e5c3992f2c6a596ee2d6372dc1e4edb3a"
+    },
+    {
+        "path":  "scripts/docs.ts",
+        "state":  "deleted"
+    },
+    {
+        "path":  "scripts/guides.ts",
+        "state":  "present",
+        "hash":  "d34994dcc4d4955a80a60167b8849785a4f896a6153dd2921917bfc680c9b444"
+    },
+    {
+        "path":  "src/core/compilers.ts",
+        "state":  "present",
+        "hash":  "714d1f2c16d3da738fd0f7e757e3688a7dc52bcc8b1d5ac753dc3312533920c7"
+    },
+    {
+        "path":  "src/core/constants.ts",
+        "state":  "present",
+        "hash":  "d0bd46aac343a2101bac3e854c1cf145537b163fc9d01dde6cff224ed6516f23"
+    },
+    {
+        "path":  "src/server/Materializer.ts",
+        "state":  "present",
+        "hash":  "eaf9ba795c760722ca83d0867065ad21097f8d558f6bb4276ade40ce473c8d15"
+    },
+    {
+        "path":  "src/server/types.ts",
+        "state":  "present",
+        "hash":  "c432dfdd85014394137e680ce321d135b009c7d94bf82f70e7906b74871872b5"
+    },
+    {
+        "path":  "tests/distribution.test.ts",
+        "state":  "present",
+        "hash":  "3a3cf9feeb086457e708231607d5c7a8f2e9e86b9ed71169f52feed85584e625"
+    },
+    {
+        "path":  "tests/guides.test.ts",
+        "state":  "present",
+        "hash":  "df3617e2769c2f85afda431fd62f86f8c9c934a75f51e7be67630187e8b3357d"
+    },
+    {
+        "path":  "tests/src/bin/CLI.test.ts",
+        "state":  "present",
+        "hash":  "b3191896f4e752f5eb1748b92a474d9df893fcc52e3aa82fc4879ce8f2cb1c0e"
+    },
+    {
+        "path":  "tests/src/core/compilers.test.ts",
+        "state":  "present",
+        "hash":  "88166d66222d7ffacd25c6af65d63c6f3a4c8413d4fe43e0a451eedb0f768831"
+    },
+    {
+        "path":  "tests/src/core/fixtures/app-only-toolchain.txt",
+        "state":  "present",
+        "hash":  "317918f839d1fc0e26c971187fbc82c5d00e16452d12000eedf75ac89c2adcc7"
+    },
+    {
+        "path":  "tests/src/core/fixtures/setup-false-manifest.txt",
+        "state":  "present",
+        "hash":  "5fe527ef8aaada4bbe2c7954868e0762608a4f8e3ea97519baf161756abda6d2"
+    },
+    {
+        "path":  "tests/src/core/fixtures/source-manifest.txt",
+        "state":  "present",
+        "hash":  "5fe527ef8aaada4bbe2c7954868e0762608a4f8e3ea97519baf161756abda6d2"
+    },
+    {
+        "path":  "tests/src/core/helpers.test.ts",
+        "state":  "present",
+        "hash":  "7bb7be22a42b4cffb311a4a44ee977f8748fd85eaa035497cab5a9a7e1c9ee5e"
+    },
+    {
+        "path":  "tests/src/server/Materializer.test.ts",
+        "state":  "present",
+        "hash":  "f909227748345321f2cc7228d7435a30f5f8f9b7c97432307e23055c1c82bed5"
+    },
+    {
+        "path":  "tests/src/server/helpers.test.ts",
+        "state":  "present",
+        "hash":  "f0011e224182440905e1ed87e86a90cdde1d5f0e7cc55f927b7c94728a5880e5"
+    }
+]

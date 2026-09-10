@@ -1,0 +1,7 @@
+Exit: 1
+snapshot hash differs: .claude/rules/documentation.md
+At C:\Users\mikes\WebstormProjects\scaffold\tmp\pass\d7n-retired-worktrees-verified-carrier.ps1:63 char:5
++     throw $Message
++     ~~~~~~~~~~~~~~
+    + CategoryInfo          : OperationStopped: (snapshot hash d...ocumentation.md:String) [], RuntimeException
+    + FullyQualifiedErrorId : snapshot hash differs: .claude/rules/documentation.md

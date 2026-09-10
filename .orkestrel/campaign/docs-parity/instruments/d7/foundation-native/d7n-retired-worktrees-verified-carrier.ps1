@@ -1,0 +1,766 @@
+param(
+    [Parameter(Mandatory = $true)]
+    [ValidateSet('Preflight', 'Archive', 'Verify', 'Remove')]
+    [string]$Mode,
+    [string]$ArchiveCommit,
+    [string]$HashOverride
+)
+
+$ErrorActionPreference = 'Stop'
+$canonical = 'C:/Users/mikes/WebstormProjects/scaffold'
+$canonicalHead = '9eca9cbaa3821017efb7ef8aa9519150bc135fe3'
+$pass = "$canonical/tmp/pass"
+$archiveRoot = "$canonical/.orkestrel/campaign/docs-parity/evidence/d7n-retired-worktrees-archive"
+$archiveRepositoryRoot = '.orkestrel/campaign/docs-parity/evidence/d7n-retired-worktrees-archive'
+$validationRoot = "$pass/d7n-retired-worktrees-validation"
+$targets = @(
+    [pscustomobject]@{
+        Name = 'scaffold-guides-entry'
+        Path = "$pass/scaffold-guides-entry"
+        Head = '9b3003d14ca73c5218a7cb2a968f8b35600d3280'
+        Branch = 'claude/docs-parity-guides-entry-unit'
+        Paths = @(
+            '.claude/rules/documentation.md',
+            'guides/scaffold.md',
+            'host.json',
+            'package-lock.json',
+            'package.json',
+            'scripts/docs.ts',
+            'scripts/guides.ts',
+            'src/core/compilers.ts',
+            'src/core/constants.ts',
+            'src/server/Materializer.ts',
+            'src/server/types.ts',
+            'tests/distribution.test.ts',
+            'tests/guides.test.ts',
+            'tests/src/bin/CLI.test.ts',
+            'tests/src/core/compilers.test.ts',
+            'tests/src/core/fixtures/app-only-toolchain.txt',
+            'tests/src/core/fixtures/setup-false-manifest.txt',
+            'tests/src/core/fixtures/source-manifest.txt',
+            'tests/src/core/helpers.test.ts',
+            'tests/src/server/Materializer.test.ts',
+            'tests/src/server/helpers.test.ts'
+        )
+    },
+    [pscustomobject]@{
+        Name = 'scaffold-path'
+        Path = "$pass/scaffold-path"
+        Head = 'c87021bdc6367d27463139b293287a586de18240'
+        Branch = $null
+        Paths = @(
+            '.claude/rules/portability.md',
+            'host.json',
+            'tests/config.test.ts',
+            'tests/setup.ts',
+            'tests/setupPolicy.ts',
+            'tests/setupPolicy.test.ts'
+        )
+    }
+)
+
+function Fail([string]$Message) {
+    throw $Message
+}
+
+function Git([string]$Path, [string[]]$Arguments) {
+    & git.exe -C $Path @Arguments
+    if ($LASTEXITCODE -ne 0) {
+        Fail "git failed in $Path`: $($Arguments -join ' ')"
+    }
+}
+
+function NormalizeHostPath([string]$Path) {
+    return [IO.Path]::GetFullPath($Path)
+}
+
+function TestOrdinalEqual([string]$Left, [string]$Right) {
+    return [string]::Equals($Left, $Right, [StringComparison]::Ordinal)
+}
+
+function AssertContainedPath([string]$Path, [string]$Root, [bool]$AllowRoot) {
+    $normalizedPath = NormalizeHostPath $Path
+    $normalizedRoot = NormalizeHostPath $Root
+    if ($AllowRoot -and (TestOrdinalEqual $normalizedPath $normalizedRoot)) {
+        return $normalizedPath
+    }
+    $prefix = $normalizedRoot + [IO.Path]::DirectorySeparatorChar
+    if (-not $normalizedPath.StartsWith($prefix, [StringComparison]::Ordinal)) {
+        Fail "path escapes fixed root: $Path"
+    }
+    return $normalizedPath
+}
+
+function AssertNoReparse([string]$Path) {
+    $current = Get-Item -LiteralPath $Path -Force
+    while ($null -ne $current) {
+        if (($current.Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0) {
+            Fail "reparse-point path refused: $($current.FullName)"
+        }
+        if ($current -is [IO.FileInfo]) {
+            $current = $current.Directory
+        } else {
+            $current = $current.Parent
+        }
+    }
+}
+
+function AssertCreationAncestry([string]$Path) {
+    $cursor = NormalizeHostPath $Path
+    while (-not (Test-Path -LiteralPath $cursor)) {
+        $parent = [IO.Directory]::GetParent($cursor)
+        if ($null -eq $parent) {
+            Fail "no existing ancestor for path: $Path"
+        }
+        $cursor = $parent.FullName
+    }
+    AssertNoReparse $cursor
+}
+
+function AssertRegularFile([string]$Path) {
+    if (-not (Test-Path -LiteralPath $Path -PathType Leaf)) {
+        Fail "required file is absent: $Path"
+    }
+    AssertNoReparse $Path
+}
+
+function HashFile([string]$Path) {
+    AssertRegularFile $Path
+    return (Get-FileHash -LiteralPath $Path -Algorithm SHA256).Hash.ToLowerInvariant()
+}
+
+function WriteText([string]$Path, [string]$Text, [string]$Root) {
+    $safePath = AssertContainedPath $Path $Root $false
+    AssertCreationAncestry $safePath
+    $parent = Split-Path -Parent $safePath
+    if (-not (Test-Path -LiteralPath $parent)) {
+        New-Item -ItemType Directory -Path $parent | Out-Null
+    }
+    AssertNoReparse $parent
+    $encoding = New-Object Text.UTF8Encoding($false)
+    [IO.File]::WriteAllText($safePath, $Text, $encoding)
+}
+
+function WriteLines([string]$Path, [string[]]$Lines, [string]$Root) {
+    $text = if ($Lines.Count -eq 0) { '' } else { ($Lines -join "`n") + "`n" }
+    WriteText $Path $text $Root
+}
+
+function ReadText([string]$Path) {
+    AssertRegularFile $Path
+    return [IO.File]::ReadAllText((NormalizeHostPath $Path))
+}
+
+function ReadLines([string]$Path) {
+    AssertRegularFile $Path
+    return @([IO.File]::ReadAllLines((NormalizeHostPath $Path)))
+}
+
+function AssertSequence([string[]]$Expected, [string[]]$Actual, [string]$Label) {
+    if ($Expected.Count -ne $Actual.Count) {
+        Fail "$Label population differs."
+    }
+    for ($index = 0; $index -lt $Expected.Count; $index += 1) {
+        if (-not (TestOrdinalEqual $Expected[$index] $Actual[$index])) {
+            Fail "$Label differs at $index."
+        }
+    }
+}
+
+function AssertSet([string[]]$Expected, [string[]]$Actual, [string]$Label) {
+    if ($Expected.Count -ne $Actual.Count) {
+        Fail "$Label population differs."
+    }
+    foreach ($expectedEntry in $Expected) {
+        $matches = @($Actual | Where-Object { TestOrdinalEqual $_ $expectedEntry })
+        if ($matches.Count -ne 1) {
+            Fail "$Label differs: $expectedEntry"
+        }
+    }
+}
+
+function ExpectedStatus($Target) {
+    if ($Target.Name -eq 'scaffold-guides-entry') {
+        return @(
+            ' M .claude/rules/documentation.md',
+            ' M guides/scaffold.md',
+            ' M host.json',
+            ' M package-lock.json',
+            ' M package.json',
+            ' D scripts/docs.ts',
+            ' M src/core/compilers.ts',
+            ' M src/core/constants.ts',
+            ' M src/server/Materializer.ts',
+            ' M src/server/types.ts',
+            ' M tests/distribution.test.ts',
+            ' M tests/guides.test.ts',
+            ' M tests/src/bin/CLI.test.ts',
+            ' M tests/src/core/compilers.test.ts',
+            ' M tests/src/core/fixtures/app-only-toolchain.txt',
+            ' M tests/src/core/fixtures/setup-false-manifest.txt',
+            ' M tests/src/core/fixtures/source-manifest.txt',
+            ' M tests/src/core/helpers.test.ts',
+            ' M tests/src/server/Materializer.test.ts',
+            ' M tests/src/server/helpers.test.ts',
+            '?? scripts/guides.ts'
+        )
+    }
+    return @(
+        ' M .claude/rules/portability.md',
+        ' M host.json',
+        ' M tests/config.test.ts',
+        ' M tests/setup.ts',
+        ' M tests/setupPolicy.ts',
+        '?? tests/setupPolicy.test.ts'
+    )
+}
+
+function ParseWorktreeBlock([string[]]$Lines) {
+    if ($Lines.Count -lt 3) {
+        Fail 'git worktree registration block is incomplete.'
+    }
+    $path = $null
+    $head = $null
+    $branch = $null
+    $detached = $false
+    foreach ($line in $Lines) {
+        if ($line.StartsWith('worktree ', [StringComparison]::Ordinal)) {
+            if ($null -ne $path) { Fail 'duplicate worktree registration path.' }
+            $path = $line.Substring(9)
+        } elseif ($line.StartsWith('HEAD ', [StringComparison]::Ordinal)) {
+            if ($null -ne $head) { Fail 'duplicate worktree registration HEAD.' }
+            $head = $line.Substring(5)
+        } elseif ($line.StartsWith('branch ', [StringComparison]::Ordinal)) {
+            if ($null -ne $branch -or $detached) { Fail 'conflicting worktree registration state.' }
+            $branch = $line.Substring(7)
+        } elseif (TestOrdinalEqual $line 'detached') {
+            if ($null -ne $branch -or $detached) { Fail 'conflicting worktree registration state.' }
+            $detached = $true
+        } else {
+            Fail "unexpected worktree registration field: $line"
+        }
+    }
+    if ($null -eq $path -or $null -eq $head) {
+        Fail 'git worktree registration block omits path or HEAD.'
+    }
+    if (($null -eq $branch) -eq (-not $detached)) {
+        Fail 'git worktree registration must declare branch or detached state.'
+    }
+    return [pscustomobject]@{ Path = $path; Head = $head; Branch = $branch; Detached = $detached }
+}
+
+function ReadWorktreeRegistrations() {
+    $lines = @(Git $canonical @('worktree', 'list', '--porcelain'))
+    $registrations = @()
+    $block = @()
+    foreach ($line in $lines) {
+        if ($line.Length -eq 0) {
+            if ($block.Count -ne 0) {
+                $registrations += ParseWorktreeBlock $block
+                $block = @()
+            }
+        } else {
+            $block += $line
+        }
+    }
+    if ($block.Count -ne 0) {
+        $registrations += ParseWorktreeBlock $block
+    }
+    return $registrations
+}
+
+function FindRegistration([object[]]$Registrations, [string]$Path) {
+    $expectedPath = NormalizeHostPath $Path
+    $matches = @($Registrations | Where-Object {
+        TestOrdinalEqual (NormalizeHostPath $_.Path) $expectedPath
+    })
+    if ($matches.Count -ne 1) {
+        Fail "exact worktree registration is absent or duplicated: $Path"
+    }
+    return $matches[0]
+}
+
+function AssertRegistration($Registration, [string]$Head, $Branch, [string]$Label) {
+    if (-not (TestOrdinalEqual $Registration.Head $Head)) {
+        Fail "registered HEAD changed: $Label"
+    }
+    if ($null -eq $Branch) {
+        if (-not $Registration.Detached -or $null -ne $Registration.Branch) {
+            Fail "registered detached state changed: $Label"
+        }
+    } else {
+        $expectedBranch = "refs/heads/$Branch"
+        if ($Registration.Detached -or $null -eq $Registration.Branch -or -not (TestOrdinalEqual $Registration.Branch $expectedBranch)) {
+            Fail "registered branch changed: $Label"
+        }
+    }
+}
+
+function AssertCanonical() {
+    $canonicalPath = NormalizeHostPath $canonical
+    AssertNoReparse $canonicalPath
+    $branch = @(Git $canonical @('branch', '--show-current')) | Select-Object -Last 1
+    if (-not (TestOrdinalEqual $branch 'main')) {
+        Fail 'canonical checkout is not on main.'
+    }
+    $head = @(Git $canonical @('rev-parse', 'HEAD')) | Select-Object -Last 1
+    $registrations = @(ReadWorktreeRegistrations)
+    $registration = FindRegistration $registrations $canonicalPath
+    AssertRegistration $registration $head 'main' 'canonical'
+    $main = @(Git $canonical @('rev-parse', 'refs/heads/main')) | Select-Object -Last 1
+    if (-not (TestOrdinalEqual $main $head)) {
+        Fail 'canonical HEAD differs from the main reference.'
+    }
+    & git.exe -C $canonical merge-base --is-ancestor $canonicalHead $main
+    if ($LASTEXITCODE -ne 0) { Fail 'measured canonical HEAD is not reachable from main.' }
+}
+
+function AssertCanonicalHead([string]$Expected) {
+    AssertCanonical
+    $head = @(Git $canonical @('rev-parse', 'HEAD')) | Select-Object -Last 1
+    if (-not (TestOrdinalEqual $head $Expected)) {
+        Fail 'canonical main moved during removal.'
+    }
+}
+
+function AssertRecoveryRefs() {
+    AssertCanonical
+    foreach ($target in $targets) {
+        if ($null -ne $target.Branch) {
+            $reference = "refs/heads/$($target.Branch)"
+            $head = @(Git $canonical @('rev-parse', $reference)) | Select-Object -Last 1
+            if (-not (TestOrdinalEqual $head $target.Head)) {
+                Fail "recovery branch reference changed: $($target.Name)"
+            }
+        }
+    }
+}
+
+function AssertStatusState([string[]]$Status, [string]$Label) {
+    foreach ($line in $Status) {
+        if ($line.Length -lt 3) {
+            Fail "invalid porcelain status: $Label"
+        }
+        $indexState = $line.Substring(0, 1)
+        $worktreeState = $line.Substring(1, 1)
+        if (TestOrdinalEqual $indexState '?') {
+            if (-not (TestOrdinalEqual $worktreeState '?')) {
+                Fail "invalid untracked status: $Label"
+            }
+            continue
+        }
+        if (-not (TestOrdinalEqual $indexState ' ')) {
+            Fail "staged or unmerged state refused: $Label"
+        }
+        if ((TestOrdinalEqual $worktreeState 'U') -or (TestOrdinalEqual $worktreeState ' ')) {
+            Fail "unmerged or unchanged status refused: $Label"
+        }
+    }
+}
+
+function AssertTarget($Target) {
+    AssertCanonical
+    $path = AssertContainedPath $Target.Path $pass $false
+    AssertNoReparse $path
+    AssertRegularFile (Join-Path $path '.git')
+    $registrations = @(ReadWorktreeRegistrations)
+    $registration = FindRegistration $registrations $path
+    AssertRegistration $registration $Target.Head $Target.Branch $Target.Name
+    $head = @(Git $path @('rev-parse', 'HEAD')) | Select-Object -Last 1
+    if (-not (TestOrdinalEqual $head $Target.Head)) {
+        Fail "HEAD changed: $($Target.Name)"
+    }
+    $branchLines = @(Git $path @('branch', '--show-current'))
+    $branch = if ($branchLines.Count -eq 0) { $null } else { $branchLines[$branchLines.Count - 1] }
+    if ($null -eq $Target.Branch) {
+        if ($null -ne $branch) { Fail "branch changed: $($Target.Name)" }
+    } else {
+        if ($null -eq $branch -or -not (TestOrdinalEqual $branch $Target.Branch)) {
+            Fail "branch changed: $($Target.Name)"
+        }
+    }
+    $common = @(Git $path @('rev-parse', '--git-common-dir')) | Select-Object -Last 1
+    $commonPath = if ([IO.Path]::IsPathRooted($common)) {
+        NormalizeHostPath $common
+    } else {
+        NormalizeHostPath (Join-Path $path $common)
+    }
+    $expectedCommon = NormalizeHostPath (Join-Path $canonical '.git')
+    if (-not (TestOrdinalEqual $commonPath $expectedCommon)) {
+        Fail "git common directory changed: $($Target.Name)"
+    }
+    $status = @(Git $path @('status', '--porcelain=v1', '--untracked-files=all'))
+    AssertSequence (ExpectedStatus $Target) $status "status for $($Target.Name)"
+    AssertStatusState $status $Target.Name
+    foreach ($relative in $Target.Paths) {
+        $source = AssertContainedPath (Join-Path $path $relative) $path $false
+        $expectedDeleted = (TestOrdinalEqual $Target.Name 'scaffold-guides-entry') -and (TestOrdinalEqual $relative 'scripts/docs.ts')
+        if ($expectedDeleted) {
+            if (Test-Path -LiteralPath $source) { Fail "deleted source returned: $relative" }
+        } else {
+            AssertRegularFile $source
+        }
+    }
+    & git.exe -C $canonical merge-base --is-ancestor $Target.Head $canonicalHead
+    if ($LASTEXITCODE -ne 0) {
+        Fail "retired HEAD is not an ancestor of canonical main: $($Target.Name)"
+    }
+    return $path
+}
+
+function CapturePatch($Target, [string]$Path, [string]$Name, [string[]]$Arguments, [string]$Directory, [string]$WriteRoot) {
+    $output = AssertContainedPath (Join-Path $Directory "$Name.patch") $WriteRoot $false
+    AssertCreationAncestry $output
+    & git.exe -C $Path @Arguments "--output=$output" '--' @($Target.Paths)
+    if ($LASTEXITCODE -ne 0) {
+        Fail "patch capture failed: $($Target.Name) $Name"
+    }
+    AssertRegularFile $output
+    return $output
+}
+
+function GetPatchDefinitions() {
+    return @(
+        [pscustomobject]@{ Name = 'combined'; Arguments = @('diff', 'HEAD', '--binary', '--full-index') },
+        [pscustomobject]@{ Name = 'staged'; Arguments = @('diff', '--cached', '--binary', '--full-index') },
+        [pscustomobject]@{ Name = 'unstaged'; Arguments = @('diff', '--binary', '--full-index') }
+    )
+}
+
+function ArchiveTarget($Target) {
+    $path = AssertTarget $Target
+    $directory = AssertContainedPath (Join-Path $archiveRoot $Target.Name) $archiveRoot $false
+    if (Test-Path -LiteralPath $directory) {
+        Fail "archive destination exists: $directory"
+    }
+    AssertCreationAncestry $directory
+    New-Item -ItemType Directory -Path $directory | Out-Null
+    AssertNoReparse $directory
+    WriteText (Join-Path $directory '.gitattributes') "* -text`n" $archiveRoot
+    $metadata = [ordered]@{ head = $Target.Head; branch = $Target.Branch }
+    WriteText (Join-Path $directory 'metadata.json') ($metadata | ConvertTo-Json -Depth 3) $archiveRoot
+    $status = @(Git $path @('status', '--porcelain=v1', '--untracked-files=all'))
+    $index = @(Git $path @('ls-files', '--stage'))
+    WriteLines (Join-Path $directory 'status.txt') $status $archiveRoot
+    WriteLines (Join-Path $directory 'index.txt') $index $archiveRoot
+    foreach ($patch in GetPatchDefinitions) {
+        $patchPath = CapturePatch $Target $path $patch.Name $patch.Arguments $directory $archiveRoot
+        WriteText (Join-Path $directory "$($patch.Name).sha256") (HashFile $patchPath) $archiveRoot
+    }
+    $records = @()
+    foreach ($relative in $Target.Paths) {
+        $source = AssertContainedPath (Join-Path $path $relative) $path $false
+        if (Test-Path -LiteralPath $source -PathType Leaf) {
+            AssertNoReparse $source
+            $snapshot = AssertContainedPath (Join-Path $directory ($relative + '.snapshot')) $archiveRoot $false
+            AssertCreationAncestry $snapshot
+            $snapshotParent = Split-Path -Parent $snapshot
+            if (-not (Test-Path -LiteralPath $snapshotParent)) {
+                New-Item -ItemType Directory -Path $snapshotParent | Out-Null
+            }
+            AssertNoReparse $snapshotParent
+            [IO.File]::WriteAllBytes($snapshot, [IO.File]::ReadAllBytes($source))
+            $records += [ordered]@{ path = $relative; state = 'present'; hash = HashFile $snapshot }
+        } else {
+            $records += [ordered]@{ path = $relative; state = 'deleted' }
+        }
+    }
+    WriteText (Join-Path $directory 'manifest.json') ($records | ConvertTo-Json -Depth 4) $archiveRoot
+    WriteText (Join-Path $directory 'archive.log.txt') "archive completed`n" $archiveRoot
+    Write-Output "archived $($Target.Name)"
+}
+
+function GetArchiveFiles([string]$Directory) {
+    AssertNoReparse $Directory
+    $files = @()
+    $directories = @(Get-Item -LiteralPath $Directory -Force)
+    while ($directories.Count -ne 0) {
+        $next = @()
+        foreach ($current in $directories) {
+            foreach ($entry in @(Get-ChildItem -LiteralPath $current.FullName -Force)) {
+                if (($entry.Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0) {
+                    Fail "reparse-point archive entry refused: $($entry.FullName)"
+                }
+                if ($entry -is [IO.DirectoryInfo]) {
+                    $next += $entry
+                } elseif ($entry -is [IO.FileInfo]) {
+                    $relative = $entry.FullName.Substring($Directory.Length + 1).Replace('\', '/')
+                    $files += $relative
+                } else {
+                    Fail "unsupported archive entry refused: $($entry.FullName)"
+                }
+            }
+        }
+        $directories = $next
+    }
+    return $files
+}
+
+function AssertJsonProperties($Value, [string[]]$Expected, [string]$Label) {
+    $actual = @($Value.PSObject.Properties | ForEach-Object { $_.Name })
+    AssertSet $Expected $actual "$Label properties"
+}
+
+function ReadManifest($Target, [string]$Directory) {
+    $manifestPath = Join-Path $Directory 'manifest.json'
+    $text = ReadText $manifestPath
+    if ([string]::IsNullOrWhiteSpace($text)) {
+        Fail "archive manifest is empty: $($Target.Name)"
+    }
+    $records = $text | ConvertFrom-Json
+    if ($records.Count -ne $Target.Paths.Count) {
+        Fail "archive manifest population differs: $($Target.Name)"
+    }
+    $actualPaths = @()
+    for ($index = 0; $index -lt $records.Count; $index += 1) {
+        $record = $records[$index]
+        if ($null -eq $record.path -or $record.path -isnot [string]) {
+            Fail "archive manifest path is invalid: $($Target.Name)"
+        }
+        $actualPaths += $record.path
+        $expectedDeleted = (TestOrdinalEqual $Target.Name 'scaffold-guides-entry') -and (TestOrdinalEqual $record.path 'scripts/docs.ts')
+        if ($expectedDeleted) {
+            AssertJsonProperties $record @('path', 'state') "deleted manifest record $($record.path)"
+            if (-not (TestOrdinalEqual $record.state 'deleted')) {
+                Fail "archive manifest state differs: $($record.path)"
+            }
+        } else {
+            AssertJsonProperties $record @('path', 'state', 'hash') "present manifest record $($record.path)"
+            if (-not (TestOrdinalEqual $record.state 'present')) {
+                Fail "archive manifest state differs: $($record.path)"
+            }
+            if ($record.hash -isnot [string] -or $record.hash -cnotmatch '^[0-9a-f]{64}$') {
+                Fail "archive manifest hash is invalid: $($record.path)"
+            }
+        }
+    }
+    AssertSequence $Target.Paths $actualPaths "archive manifest paths for $($Target.Name)"
+    return $records
+}
+
+function GetExpectedArchiveFiles($Records) {
+    $files = @(
+        '.gitattributes',
+        'archive.log.txt',
+        'combined.patch',
+        'combined.sha256',
+        'index.txt',
+        'manifest.json',
+        'metadata.json',
+        'staged.patch',
+        'staged.sha256',
+        'status.txt',
+        'unstaged.patch',
+        'unstaged.sha256'
+    )
+    foreach ($record in $Records) {
+        if (TestOrdinalEqual $record.state 'present') {
+            $files += "$($record.path).snapshot"
+        }
+    }
+    return $files
+}
+
+function NewValidationDirectory($Target) {
+    $root = AssertContainedPath $validationRoot $validationRoot $true
+    if (Test-Path -LiteralPath $root) {
+        if (-not (Test-Path -LiteralPath $root -PathType Container)) {
+            Fail "validation root is not a directory: $root"
+        }
+        AssertNoReparse $root
+    } else {
+        AssertCreationAncestry $root
+        New-Item -ItemType Directory -Path $root | Out-Null
+        AssertNoReparse $root
+    }
+    $directory = AssertContainedPath (Join-Path $root ("$($Target.Name)-" + [Guid]::NewGuid().ToString('N'))) $validationRoot $false
+    if (Test-Path -LiteralPath $directory) {
+        Fail "validation destination exists: $directory"
+    }
+    AssertCreationAncestry $directory
+    New-Item -ItemType Directory -Path $directory | Out-Null
+    AssertNoReparse $directory
+    return $directory
+}
+
+function VerifyTarget($Target, $Override) {
+    $path = AssertTarget $Target
+    $directory = AssertContainedPath (Join-Path $archiveRoot $Target.Name) $archiveRoot $false
+    if (-not (Test-Path -LiteralPath $directory -PathType Container)) {
+        Fail "archive is absent: $directory"
+    }
+    AssertNoReparse $directory
+    $records = @(ReadManifest $Target $directory)
+    $expectedFiles = @(GetExpectedArchiveFiles $records)
+    $actualFiles = @(GetArchiveFiles $directory)
+    AssertSet $expectedFiles $actualFiles "archive files for $($Target.Name)"
+    $attributes = ReadText (Join-Path $directory '.gitattributes')
+    if (-not (TestOrdinalEqual $attributes "* -text`n")) {
+        Fail "archive attributes differ: $($Target.Name)"
+    }
+    $metadataText = ReadText (Join-Path $directory 'metadata.json')
+    if ([string]::IsNullOrWhiteSpace($metadataText)) {
+        Fail "archive metadata is empty: $($Target.Name)"
+    }
+    $metadata = $metadataText | ConvertFrom-Json
+    AssertJsonProperties $metadata @('head', 'branch') "metadata for $($Target.Name)"
+    if ($metadata.head -isnot [string] -or -not (TestOrdinalEqual $metadata.head $Target.Head)) {
+        Fail "archived HEAD differs: $($Target.Name)"
+    }
+    if ($null -eq $Target.Branch) {
+        if ($null -ne $metadata.branch) { Fail "archived branch differs: $($Target.Name)" }
+    } else {
+        if ($metadata.branch -isnot [string] -or -not (TestOrdinalEqual $metadata.branch $Target.Branch)) {
+            Fail "archived branch differs: $($Target.Name)"
+        }
+    }
+    AssertSequence (ExpectedStatus $Target) (ReadLines (Join-Path $directory 'status.txt')) "archived status for $($Target.Name)"
+    $liveIndex = @(Git $path @('ls-files', '--stage'))
+    AssertSequence (ReadLines (Join-Path $directory 'index.txt')) $liveIndex "archived index for $($Target.Name)"
+    foreach ($record in $records) {
+        $source = AssertContainedPath (Join-Path $path $record.path) $path $false
+        $snapshot = AssertContainedPath (Join-Path $directory ($record.path + '.snapshot')) $directory $false
+        if (TestOrdinalEqual $record.state 'deleted') {
+            if (Test-Path -LiteralPath $source) { Fail "deleted source returned: $($record.path)" }
+            if (Test-Path -LiteralPath $snapshot) { Fail "deleted record has a snapshot: $($record.path)" }
+        } elseif (TestOrdinalEqual $record.state 'present') {
+            AssertRegularFile $source
+            AssertRegularFile $snapshot
+            $expectedHash = if ($null -ne $Override -and $Override.Length -ne 0) { $Override } else { $record.hash }
+            if (-not (TestOrdinalEqual (HashFile $source) $expectedHash) -or -not (TestOrdinalEqual (HashFile $snapshot) $expectedHash)) {
+                Fail "snapshot hash differs: $($record.path)"
+            }
+        } else {
+            Fail "archive manifest state differs: $($record.path)"
+        }
+    }
+    foreach ($patch in GetPatchDefinitions) {
+        $archivePatch = Join-Path $directory "$($patch.Name).patch"
+        $hashPath = Join-Path $directory "$($patch.Name).sha256"
+        $savedHash = ReadText $hashPath
+        if ($savedHash -cnotmatch '^[0-9a-f]{64}$' -or -not (TestOrdinalEqual (HashFile $archivePatch) $savedHash)) {
+            Fail "archived patch hash differs: $($patch.Name)"
+        }
+    }
+    $validation = NewValidationDirectory $Target
+    foreach ($patch in GetPatchDefinitions) {
+        $livePatch = CapturePatch $Target $path $patch.Name $patch.Arguments $validation $validationRoot
+        $archivePatch = Join-Path $directory "$($patch.Name).patch"
+        if (-not (TestOrdinalEqual (HashFile $livePatch) (HashFile $archivePatch))) {
+            Fail "live patch differs: $($Target.Name) $($patch.Name)"
+        }
+    }
+    & git.exe -C $canonical merge-base --is-ancestor $Target.Head $canonicalHead
+    if ($LASTEXITCODE -ne 0) { Fail "retired HEAD is not reachable: $($Target.Name)" }
+    Write-Output "verified $($Target.Name)"
+}
+
+function VerifyCommittedArchive($Target, [string]$Commit) {
+    $directory = AssertContainedPath (Join-Path $archiveRoot $Target.Name) $archiveRoot $false
+    AssertNoReparse $directory
+    $records = @(ReadManifest $Target $directory)
+    $expectedLocal = @(GetExpectedArchiveFiles $records)
+    AssertSet $expectedLocal @(GetArchiveFiles $directory) "archive files for $($Target.Name)"
+    $prefix = "$archiveRepositoryRoot/$($Target.Name)"
+    $expectedRepository = @($expectedLocal | ForEach-Object { "$prefix/$_" })
+    $committed = @(Git $canonical @('ls-tree', '-r', '--name-only', $Commit, '--', $prefix))
+    AssertSet $expectedRepository $committed "committed archive files for $($Target.Name)"
+    foreach ($relative in $expectedLocal) {
+        $local = AssertContainedPath (Join-Path $directory $relative) $directory $false
+        AssertRegularFile $local
+        $repositoryPath = "$prefix/$relative"
+        $blobType = @(Git $canonical @('cat-file', '-t', "$Commit`:$repositoryPath")) | Select-Object -Last 1
+        if (-not (TestOrdinalEqual $blobType 'blob')) {
+            Fail "archive commit entry is not a blob: $repositoryPath"
+        }
+        $blob = @(Git $canonical @('rev-parse', "$Commit`:$repositoryPath")) | Select-Object -Last 1
+        $raw = @(Git $canonical @('hash-object', '--no-filters', '--', $local)) | Select-Object -Last 1
+        if (-not (TestOrdinalEqual $blob $raw)) {
+            Fail "archive commit blob differs: $repositoryPath"
+        }
+    }
+    Write-Output "verified committed archive $($Target.Name)"
+}
+
+function VerifyCommittedArchivePopulation([string]$Commit) {
+    $expectedLocal = @()
+    foreach ($target in $targets) {
+        $directory = AssertContainedPath (Join-Path $archiveRoot $target.Name) $archiveRoot $false
+        $records = @(ReadManifest $target $directory)
+        foreach ($relative in @(GetExpectedArchiveFiles $records)) {
+            $expectedLocal += "$($target.Name)/$relative"
+        }
+    }
+    AssertSet $expectedLocal @(GetArchiveFiles $archiveRoot) 'complete local archive files'
+    $expectedRepository = @($expectedLocal | ForEach-Object { "$archiveRepositoryRoot/$_" })
+    $committed = @(Git $canonical @('ls-tree', '-r', '--name-only', $Commit, '--', $archiveRepositoryRoot))
+    AssertSet $expectedRepository $committed 'complete committed archive files'
+}
+
+function AssertRegistrationAbsent($Target) {
+    $expected = NormalizeHostPath $Target.Path
+    $matches = @(ReadWorktreeRegistrations | Where-Object {
+        TestOrdinalEqual (NormalizeHostPath $_.Path) $expected
+    })
+    if ($matches.Count -ne 0) {
+        Fail "removed worktree remains registered: $($Target.Name)"
+    }
+}
+
+if ($null -ne $HashOverride -and $HashOverride.Length -ne 0 -and $Mode -ne 'Verify') {
+    Fail 'HashOverride is permitted only in Verify mode.'
+}
+
+if ($Mode -eq 'Preflight') {
+    AssertRecoveryRefs
+    foreach ($target in $targets) {
+        $null = AssertTarget $target
+        Write-Output "preflight $($target.Name)"
+    }
+    Write-Output 'preflight completed'
+}
+
+if ($Mode -eq 'Archive') {
+    AssertRecoveryRefs
+    foreach ($target in $targets) { $null = AssertTarget $target }
+    if (Test-Path -LiteralPath $archiveRoot) {
+        Fail "archive root exists: $archiveRoot"
+    }
+    AssertCreationAncestry $archiveRoot
+    New-Item -ItemType Directory -Path $archiveRoot | Out-Null
+    AssertNoReparse $archiveRoot
+    foreach ($target in $targets) { ArchiveTarget $target }
+}
+
+if ($Mode -eq 'Verify') {
+    AssertRecoveryRefs
+    foreach ($target in $targets) { VerifyTarget $target $HashOverride }
+}
+
+if ($Mode -eq 'Remove') {
+    if ([string]::IsNullOrWhiteSpace($ArchiveCommit)) {
+        Fail 'Remove requires an explicit archive commit.'
+    }
+    & git.exe -C $canonical cat-file -e "$ArchiveCommit^{commit}"
+    if ($LASTEXITCODE -ne 0) { Fail 'archive commit is not a commit.' }
+    & git.exe -C $canonical merge-base --is-ancestor $ArchiveCommit origin/main
+    if ($LASTEXITCODE -ne 0) { Fail 'archive commit is not reachable from origin/main.' }
+    AssertRecoveryRefs
+    $preservedCanonicalHead = @(Git $canonical @('rev-parse', 'HEAD')) | Select-Object -Last 1
+    foreach ($target in $targets) { VerifyTarget $target $null }
+    VerifyCommittedArchivePopulation $ArchiveCommit
+    foreach ($target in $targets) { VerifyCommittedArchive $target $ArchiveCommit }
+    foreach ($target in $targets) {
+        VerifyTarget $target $null
+        $path = AssertContainedPath $target.Path $pass $false
+        & git.exe -C $canonical worktree remove --force $path
+        if ($LASTEXITCODE -ne 0) { Fail "worktree removal failed: $($target.Name)" }
+        if (Test-Path -LiteralPath $path) { Fail "removed worktree remains: $($target.Name)" }
+        AssertRegistrationAbsent $target
+        AssertCanonicalHead $preservedCanonicalHead
+        AssertRecoveryRefs
+        Write-Output "removed $($target.Name)"
+    }
+    AssertCanonicalHead $preservedCanonicalHead
+    AssertRecoveryRefs
+}

@@ -1,0 +1,32 @@
+[
+    {
+        "path":  ".claude/rules/portability.md",
+        "state":  "present",
+        "hash":  "ee7a2ae15ca0affa4e7176a3a123f01189e80de47c731a66fb7091c0c207b70e"
+    },
+    {
+        "path":  "host.json",
+        "state":  "present",
+        "hash":  "60f6f1612933be6c5eb022e803e0b0fdf0d50452de8307d2688a3b832df0cf78"
+    },
+    {
+        "path":  "tests/config.test.ts",
+        "state":  "present",
+        "hash":  "b880877803d909f83bc2ba4110d795cfecf620402696272e967bb55b90b66578"
+    },
+    {
+        "path":  "tests/setup.ts",
+        "state":  "present",
+        "hash":  "309a0dd9eb2b273ffe3bd5904dc2f79042bd35d981b25823eeef97dbf7b0537f"
+    },
+    {
+        "path":  "tests/setupPolicy.ts",
+        "state":  "present",
+        "hash":  "ebe2777780193eed9d8d0641d6326535a6b5084d88aee0b6361d0b2409281ded"
+    },
+    {
+        "path":  "tests/setupPolicy.test.ts",
+        "state":  "present",
+        "hash":  "df17dde050c1ed25c11483fd73c4e8e64a20776be7df1ed43b4dab16c11a628e"
+    }
+]
