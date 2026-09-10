@@ -13,10 +13,14 @@ dist/src trees remain byte-equal to the retained foundation candidates. Root's
 post-push artifact, manifest and ref confirmation passed. Read the package
 d7n-<package>-publish-prepared-verdict.md and the state table for accepted tips.
 
-The operator upload carrier passed source review but remains held for the owner's
-terminal-route ruling. The publish skill still requires FIFO stdin on Windows;
-the carrier requires normal terminal stdin. No authentication or upload ran.
-The remaining fleet layers, Guide main and later runtime/dev re-pins remain open.
+The owner selected direct PowerShell directory uploads under Ruling 39. Read
+d7n-initial-direct-prepublish-report.md. Fresh prepublishOnly runs passed in each
+initial-layer canonical checkout on main, with unchanged release output. The
+operator command changes into those directories, not tmp or an archive. The
+owner reports completing login; root did not authenticate or upload. Retired
+dirty worktrees remain under tmp/pass and are not execution targets. Scaffold's
+canonical checkout moves to the pushed main after this record lands. The
+remaining fleet layers, Guide main and later runtime/dev re-pins remain open.
 
 Guide's native entry and supported tooling are accepted and campaign-pushed at
 327470a6e2e0c056c811e9f48a5ed429fe7ba70e. Its final ordered root gates passed,
@@ -149,7 +153,7 @@ d7n-campaign-branches-reading.md for the actual on-disk branch audit.
 
 | Repository | Branch | Tip | Notes |
 | --- | --- | --- | --- |
-| `orkestrel/scaffold` | `claude/orkestrel-npm-audit-deps-14ibta` (the working branch), `main`, and `claude/docs-parity-windows-01a0810d` (the designated branch) | the commit carrying this file | push each named ref at the same tip; the campaign folder is the record |
+| `orkestrel/scaffold` | `main` (the working branch after this record lands), `claude/orkestrel-npm-audit-deps-14ibta` (the campaign branch), and `claude/docs-parity-windows-01a0810d` (the designated branch) | the commit carrying this file | push HEAD to each named ref at the same tip; the campaign folder is the record |
 | `orkestrel/guide` | `claude/orkestrel-npm-audit-deps-14ibta` | `327470a` | native entry and tooling accepted and pushed; main stays at d3ee1bb for the fleet sequence; refreshed archive and output equality recorded in d7n-guide-native-tooling-landing.md |
 | `orkestrel/<package>` for every package in the table that follows | `claude/orkestrel-npm-audit-deps-14ibta` | per the table | pushed to `main` as each closes |
 

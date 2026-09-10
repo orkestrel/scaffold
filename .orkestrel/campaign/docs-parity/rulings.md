@@ -315,3 +315,21 @@ Treat this as preparation, not permission to authenticate or publish. Present
 the prepared initial layer for the owner's upload decision; keep remaining fleet
 layers open. This supersedes Ruling 31's whole-fleet-before-handoff sequencing
 for this continuation, not its parity or artifact requirements.
+
+## Ruling 39 — publish from the canonical PowerShell directories
+
+Follow the owner's upload correction of 2026-09-10. Prepare and publish from
+C:/Users/mikes/WebstormProjects/<package>, with that canonical checkout clean on
+the pushed main and its dist rebuilt by prepublishOnly. Keep temporary scripts,
+gate logs and retained archive evidence distinct from the working and publishing
+directories. Do not use a temporary worktree or copied package as an execution
+target. Preserve uncommitted work in retired worktrees until their cleanup is
+explicitly authorized.
+
+Give the owner a PowerShell line that changes into each initial-layer package
+directory and invokes npm publish --ignore-scripts serially. Use --browser=false
+for the requested browser approval and stop on command failure. The owner reports
+having completed npm login; check that login before the uploads rather than
+starting another login. This explicit operator PowerShell choice supersedes the
+FIFO-stdin hold for this campaign's upload route. Do not authenticate or upload
+from the agent merely because the command has been prepared.

@@ -7,8 +7,9 @@ after the package pushes. Read evidence/d7n-initial-layer-final-state.
 
 ## Upload membership
 
-Use this serial upload sequence after the owner authorizes the terminal route
-and publication. These packages share the initial runtime/peer/optional layer;
+Use the directory-based PowerShell handoff in
+d7n-initial-direct-prepublish-report.md under the owner's Ruling 39. These
+packages share the initial runtime/peer/optional layer;
 the order within that layer does not introduce a dependency edge.
 
 | Package | Registry reading | Prepared version | Accepted main |
@@ -60,16 +61,14 @@ Registry-only development installs reported dependency advisories. The raw
 receipts remain available; no automatic audit fix ran. This preparation does not
 claim a security audit or replace the later development-pin comparison.
 
-## Upload hold
+## Operator handoff
 
-No authentication or publication ran. The prepared operator carrier is
-tmp/pass/upload-initial-layer.sh, retained under
-instruments/d7/foundation-native/upload-initial-layer.sh. Its source review passed
-against the brief, but its use remains held: orkestrel-publish/window.md requires
-FIFO-held stdin even in its Windows operator paragraph, while this carrier
-requires ordinary terminal stdin. Read d7n-initial-upload-review-report.md.
-The root must obtain the owner's terminal-route ruling before recommending or
-executing that carrier. Do not treat this file's presence as upload permission.
+The owner selected normal PowerShell directory uploads and reports completing
+npm login. Ruling 39 resolves the prior terminal-route hold. Use
+instruments/d7/foundation-native/publish-initial-direct.ps1, not the superseded
+archive upload carrier. Root reran prepublishOnly in each canonical package;
+the release output remains unchanged. The archive table is comparison evidence,
+not the publishing location. Root did not authenticate or publish.
 
 The intended upload flags are --access public --ignore-scripts --browser=false.
 Keep login and upload approvals distinct. The owner enters any browser OTP in
