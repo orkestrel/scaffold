@@ -18,10 +18,10 @@ d7n-initial-direct-prepublish-report.md. Fresh prepublishOnly runs passed in eac
 initial-layer canonical checkout on main, with unchanged release output. The
 operator command changes into those directories, not tmp or an archive. The
 owner reports completing login; root did not authenticate or upload. The owner
-authorized archiving and removing the retired worktrees under tmp/pass. Their
-authored edits are archived and verified; removal awaits the recovery commit
-and push. Read d7n-retired-worktrees-cleanup-report.md. Scaffold's canonical
-checkout is on main. The
+authorized archiving and removing the retired worktrees under tmp/pass. Root
+pushed the verified recovery archive at b9e2b6a6 and removed scaffold-guides-entry
+and scaffold-path. Their paths and Git registrations are absent. Read
+d7n-retired-worktrees-cleanup-report.md. Scaffold's canonical checkout is on main. The
 remaining fleet layers, Guide main and later runtime/dev re-pins remain open.
 
 Guide's native entry and supported tooling are accepted and campaign-pushed at

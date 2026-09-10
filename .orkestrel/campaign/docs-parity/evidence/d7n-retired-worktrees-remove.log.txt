@@ -1,0 +1,10 @@
+Command: powershell -NoProfile -File C:/Users/mikes/WebstormProjects/scaffold/.orkestrel/campaign/docs-parity/instruments/d7/foundation-native/d7n-retired-worktrees-verified-carrier.ps1 -Mode Remove -ArchiveCommit b9e2b6a6868666d3af6b4aa05e5736028dfdf16c
+Exit: 0
+verified scaffold-guides-entry
+verified scaffold-path
+verified committed archive scaffold-guides-entry
+verified committed archive scaffold-path
+verified scaffold-guides-entry
+removed scaffold-guides-entry
+verified scaffold-path
+removed scaffold-path

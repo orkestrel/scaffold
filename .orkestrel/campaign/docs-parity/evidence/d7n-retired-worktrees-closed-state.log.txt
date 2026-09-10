@@ -1,0 +1,67 @@
+Date: 2026-09-10
+Command: git -C C:/Users/mikes/WebstormProjects/scaffold worktree list --porcelain
+Exit: 0
+worktree C:/Users/mikes/WebstormProjects/scaffold
+HEAD b9e2b6a6868666d3af6b4aa05e5736028dfdf16c
+branch refs/heads/main
+
+Command: Test-Path -LiteralPath C:/Users/mikes/WebstormProjects/scaffold/tmp/pass/scaffold-guides-entry
+Exit: 0
+False
+
+Command: Test-Path -LiteralPath C:/Users/mikes/WebstormProjects/scaffold/tmp/pass/scaffold-path
+Exit: 0
+False
+
+Command: git -C C:/Users/mikes/WebstormProjects/scaffold status --short --branch
+Exit: 0
+## main...origin/main
+
+Command: git -C C:/Users/mikes/WebstormProjects/scaffold show-ref --verify refs/heads/claude/docs-parity-guides-entry-unit
+Exit: 0
+9b3003d14ca73c5218a7cb2a968f8b35600d3280 refs/heads/claude/docs-parity-guides-entry-unit
+
+Command: git -C C:/Users/mikes/WebstormProjects/scaffold diff --exit-code 9eca9cbaa3821017efb7ef8aa9519150bc135fe3 HEAD -- . ':(exclude).orkestrel/**'
+Exit: 0
+
+
+Command: git -C C:/Users/mikes/WebstormProjects/contract status --short --branch
+Exit: 0
+## main...origin/main
+
+Command: git -C C:/Users/mikes/WebstormProjects/msg status --short --branch
+Exit: 0
+## main...origin/main
+
+Command: git -C C:/Users/mikes/WebstormProjects/test status --short --branch
+Exit: 0
+## main...origin/main
+
+Command: git -C C:/Users/mikes/WebstormProjects/codec status --short --branch
+Exit: 0
+## main...origin/main
+
+Command: git -C C:/Users/mikes/WebstormProjects/sse status --short --branch
+Exit: 0
+## main...origin/main
+
+Command: & C:/Users/mikes/scoop/apps/git/current/usr/bin/diff.exe -r C:/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-codec-publish-final/extract/package/dist C:/Users/mikes/WebstormProjects/codec/dist
+Exit: 0
+
+
+Command: & C:/Users/mikes/scoop/apps/git/current/usr/bin/diff.exe -r C:/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-sse-publish-final/extract/package/dist C:/Users/mikes/WebstormProjects/sse/dist
+Exit: 0
+
+
+Command: & C:/Users/mikes/scoop/apps/git/current/usr/bin/diff.exe -r C:/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-msg-publish-final/extract/package/dist C:/Users/mikes/WebstormProjects/msg/dist
+Exit: 0
+
+
+Command: & C:/Users/mikes/scoop/apps/git/current/usr/bin/diff.exe -r C:/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-test-publish-final/extract/package/dist C:/Users/mikes/WebstormProjects/test/dist
+Exit: 0
+
+
+Command: & C:/Users/mikes/scoop/apps/git/current/usr/bin/diff.exe -r C:/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-contract-publish-final/extract/package/dist C:/Users/mikes/WebstormProjects/contract/dist
+Exit: 0
+
+
