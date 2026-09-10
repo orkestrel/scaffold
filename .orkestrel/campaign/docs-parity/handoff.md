@@ -4,6 +4,13 @@ Written 2026-09-08T03:35Z and revised 2026-09-08T04:05Z at the owner's request, 
 
 ## Where everything is pushed
 
+The owner completed the initial directory uploads. Fresh registry downloads are
+byte-identical to the accepted Contract0.0.17, Codec0.0.3, Msg0.0.10, SSE0.0.7 and
+Test0.0.14 archives. Their canonical checkouts remain clean on main. Read
+d7n-initial-registry-closure.md and its retained digest evidence. Continue with
+the next dependency layer, then write its operator command to root prompt.txt
+only after preparation closes. Preserve publish.txt as the prior command.
+
 The initial publish layer is prepared under the owner's narrowed scope in
 Ruling 38. Read d7n-initial-layer-prepared.md for versions, exact archives and the
 upload hold. Contract, Codec, Msg, SSE and Test are accepted, campaign/main pushed,
@@ -380,11 +387,11 @@ retained evidence/d7n-foundation-<package>/ metadata for their exact tarball pat
 
 | Foundation package | Version | Latest source | State |
 | --- | --- | --- | --- |
-| contract | 0.0.17 | e6d2de5bfbbeb6981945b33ede438de8c38f1dbf | publication prepared with native Guide entry and current tooling; campaign/main pushed; local main |
-| codec | 0.0.3 | f53355d92452a8fa2c59da084eb9b757c65b7b84 | publication prepared with native Guide entry and current tooling; campaign/main pushed; local main |
-| msg | 0.0.10 | 2a66c5b6b1251649a3f92574facf323c20edb581 | publication prepared with native Guide entry and current tooling; campaign/main pushed; local main |
-| sse | 0.0.7 | 2a0d3ecb5c13fe7b893c45396840ad20da45492e | publication prepared with native Guide entry and current tooling; campaign/main pushed; local main |
-| test | 0.0.14 | 7d4980f97dbf6ee56fcf4a28f5a0e2d163490ed7 | publication prepared with native Guide entry and current tooling; campaign/main pushed; local main |
+| contract | 0.0.17 | e6d2de5bfbbeb6981945b33ede438de8c38f1dbf | registry-confirmed archive equality; campaign/main pushed; clean local main |
+| codec | 0.0.3 | f53355d92452a8fa2c59da084eb9b757c65b7b84 | registry-confirmed archive equality; campaign/main pushed; clean local main |
+| msg | 0.0.10 | 2a66c5b6b1251649a3f92574facf323c20edb581 | registry-confirmed archive equality; campaign/main pushed; clean local main |
+| sse | 0.0.7 | 2a0d3ecb5c13fe7b893c45396840ad20da45492e | registry-confirmed archive equality; campaign/main pushed; clean local main |
+| test | 0.0.14 | 7d4980f97dbf6ee56fcf4a28f5a0e2d163490ed7 | registry-confirmed archive equality; campaign/main pushed; clean local main |
 
 The corrected Contract-to-Abort staging run exited 0 under
 tmp/probe/d7n-contract-abort-stage.LQv86I. Source checks and the foreign ESM/CommonJS

@@ -1,0 +1,77 @@
+[
+    {
+        "name":  "@orkestrel/contract",
+        "version":  "0.0.17",
+        "url":  "https://registry.npmjs.org/@orkestrel/contract/-/contract-0.0.17.tgz",
+        "registrySha1":  "daa7e52be216de0e028ab68c57ed4b339979ef34",
+        "downloadedSha1":  "daa7e52be216de0e028ab68c57ed4b339979ef34",
+        "downloadedSha256":  "5e2d3ad7b2bb093df0e09d8a8a38ec2cf20bd7a77e0ef3358866d6f6bf38c515",
+        "acceptedArchiveSha256":  "5e2d3ad7b2bb093df0e09d8a8a38ec2cf20bd7a77e0ef3358866d6f6bf38c515",
+        "equal":  true,
+        "branch":  "main",
+        "head":  "e6d2de5bfbbeb6981945b33ede438de8c38f1dbf",
+        "status":  [
+
+                   ]
+    },
+    {
+        "name":  "@orkestrel/codec",
+        "version":  "0.0.3",
+        "url":  "https://registry.npmjs.org/@orkestrel/codec/-/codec-0.0.3.tgz",
+        "registrySha1":  "14d872ef8c147866c23e11f7cbe54f2a28e1602d",
+        "downloadedSha1":  "14d872ef8c147866c23e11f7cbe54f2a28e1602d",
+        "downloadedSha256":  "d3c3ecd30327da12925fb9baa11a4394f537cc403ae0ab136ce315d5303fc895",
+        "acceptedArchiveSha256":  "d3c3ecd30327da12925fb9baa11a4394f537cc403ae0ab136ce315d5303fc895",
+        "equal":  true,
+        "branch":  "main",
+        "head":  "f53355d92452a8fa2c59da084eb9b757c65b7b84",
+        "status":  [
+
+                   ]
+    },
+    {
+        "name":  "@orkestrel/msg",
+        "version":  "0.0.10",
+        "url":  "https://registry.npmjs.org/@orkestrel/msg/-/msg-0.0.10.tgz",
+        "registrySha1":  "58635e45f6a3730e48c6258e6be997ced96b9088",
+        "downloadedSha1":  "58635e45f6a3730e48c6258e6be997ced96b9088",
+        "downloadedSha256":  "adeb728dd1bf1331a83aeee7e94568c1d024be4867e7a8807f33a319946ff349",
+        "acceptedArchiveSha256":  "adeb728dd1bf1331a83aeee7e94568c1d024be4867e7a8807f33a319946ff349",
+        "equal":  true,
+        "branch":  "main",
+        "head":  "2a66c5b6b1251649a3f92574facf323c20edb581",
+        "status":  [
+
+                   ]
+    },
+    {
+        "name":  "@orkestrel/sse",
+        "version":  "0.0.7",
+        "url":  "https://registry.npmjs.org/@orkestrel/sse/-/sse-0.0.7.tgz",
+        "registrySha1":  "3585fe3929aa6150cdbda0faec132c73730811ef",
+        "downloadedSha1":  "3585fe3929aa6150cdbda0faec132c73730811ef",
+        "downloadedSha256":  "22e9c0069cd89eb7f06729b7573e0b1735c0741003da632542ef2edca59bb17b",
+        "acceptedArchiveSha256":  "22e9c0069cd89eb7f06729b7573e0b1735c0741003da632542ef2edca59bb17b",
+        "equal":  true,
+        "branch":  "main",
+        "head":  "2a0d3ecb5c13fe7b893c45396840ad20da45492e",
+        "status":  [
+
+                   ]
+    },
+    {
+        "name":  "@orkestrel/test",
+        "version":  "0.0.14",
+        "url":  "https://registry.npmjs.org/@orkestrel/test/-/test-0.0.14.tgz",
+        "registrySha1":  "8793391f4c659751ac87f41d23fcaccb97347a65",
+        "downloadedSha1":  "8793391f4c659751ac87f41d23fcaccb97347a65",
+        "downloadedSha256":  "874c138731367d17c68abd8bef64bfb6fd3a6a8a5f7d1d0fb45746d506623a0f",
+        "acceptedArchiveSha256":  "874c138731367d17c68abd8bef64bfb6fd3a6a8a5f7d1d0fb45746d506623a0f",
+        "equal":  true,
+        "branch":  "main",
+        "head":  "7d4980f97dbf6ee56fcf4a28f5a0e2d163490ed7",
+        "status":  [
+
+                   ]
+    }
+]
