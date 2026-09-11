@@ -1,0 +1,13 @@
+{
+    "name":  "@orkestrel/workspace",
+    "version":  "0.0.8",
+    "url":  "https://registry.npmjs.org/@orkestrel/workspace/-/workspace-0.0.8.tgz",
+    "registrySha1":  "b559cc345998ab14eb29b2cd08bc5ee444d15c45",
+    "downloadedSha1":  "b559cc345998ab14eb29b2cd08bc5ee444d15c45",
+    "downloadedSha256":  "07213a52d3a66a92a98ceda2873fa5179504ccc5c681f737f25dda624bb0e6a0",
+    "acceptedArchiveSha256":  "07213a52d3a66a92a98ceda2873fa5179504ccc5c681f737f25dda624bb0e6a0",
+    "gitHead":  "defd09e0ef8ad0bbfd44979c0d9b86257b883773",
+    "branch":  "main",
+    "head":  "defd09e0ef8ad0bbfd44979c0d9b86257b883773",
+    "originMain":  "defd09e0ef8ad0bbfd44979c0d9b86257b883773"
+}

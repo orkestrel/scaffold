@@ -1,0 +1,13 @@
+{
+    "name":  "@orkestrel/terminal",
+    "version":  "0.0.15",
+    "url":  "https://registry.npmjs.org/@orkestrel/terminal/-/terminal-0.0.15.tgz",
+    "registrySha1":  "b82638eb3b27a0f6fbfacb5f1053cbef21ed2e70",
+    "downloadedSha1":  "b82638eb3b27a0f6fbfacb5f1053cbef21ed2e70",
+    "downloadedSha256":  "69045041b111f6b97dd75f5542b4c23eb2efffa9fc66d7c92bb4140f85ec082e",
+    "acceptedArchiveSha256":  "69045041b111f6b97dd75f5542b4c23eb2efffa9fc66d7c92bb4140f85ec082e",
+    "gitHead":  "d9eba22ddf3c3a68ea2e1f006e617a1efdb8ffe2",
+    "branch":  "main",
+    "head":  "d9eba22ddf3c3a68ea2e1f006e617a1efdb8ffe2",
+    "originMain":  "d9eba22ddf3c3a68ea2e1f006e617a1efdb8ffe2"
+}

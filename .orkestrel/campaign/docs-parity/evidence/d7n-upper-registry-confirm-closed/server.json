@@ -1,0 +1,13 @@
+{
+    "name":  "@orkestrel/server",
+    "version":  "0.0.19",
+    "url":  "https://registry.npmjs.org/@orkestrel/server/-/server-0.0.19.tgz",
+    "registrySha1":  "3ca37505a2a10ff1da91e3e143cb862afc2aec31",
+    "downloadedSha1":  "3ca37505a2a10ff1da91e3e143cb862afc2aec31",
+    "downloadedSha256":  "5a9416835c44943290c340434964cb704c088efa44e31a27b5ef4db60a469d5a",
+    "acceptedArchiveSha256":  "5a9416835c44943290c340434964cb704c088efa44e31a27b5ef4db60a469d5a",
+    "gitHead":  "772b84e1a5ce0f3ec8cb1da96395b3c6bc6029e7",
+    "branch":  "main",
+    "head":  "772b84e1a5ce0f3ec8cb1da96395b3c6bc6029e7",
+    "originMain":  "772b84e1a5ce0f3ec8cb1da96395b3c6bc6029e7"
+}

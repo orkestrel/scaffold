@@ -1,0 +1,13 @@
+{
+    "name":  "@orkestrel/browser",
+    "version":  "0.0.16",
+    "url":  "https://registry.npmjs.org/@orkestrel/browser/-/browser-0.0.16.tgz",
+    "registrySha1":  "bd6ae72d2cd3d95e1909c74d5de034c7f5c2004d",
+    "downloadedSha1":  "bd6ae72d2cd3d95e1909c74d5de034c7f5c2004d",
+    "downloadedSha256":  "28a804f938d4c81f4829997cd04c255fd320bfeda70dea79ce0b4c8c6a9fff23",
+    "acceptedArchiveSha256":  "28a804f938d4c81f4829997cd04c255fd320bfeda70dea79ce0b4c8c6a9fff23",
+    "gitHead":  "02611821d50b0508b237684455944cccda31f696",
+    "branch":  "main",
+    "head":  "02611821d50b0508b237684455944cccda31f696",
+    "originMain":  "02611821d50b0508b237684455944cccda31f696"
+}

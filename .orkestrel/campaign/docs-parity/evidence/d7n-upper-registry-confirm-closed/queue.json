@@ -1,0 +1,13 @@
+{
+    "name":  "@orkestrel/queue",
+    "version":  "0.0.13",
+    "url":  "https://registry.npmjs.org/@orkestrel/queue/-/queue-0.0.13.tgz",
+    "registrySha1":  "0495cd31af4c43819a261446fbec0c1c2c2e1925",
+    "downloadedSha1":  "0495cd31af4c43819a261446fbec0c1c2c2e1925",
+    "downloadedSha256":  "30fdbec1c29c15cb7b9dfe32e39748fa09bee3626e45147409a1f96a65c9db30",
+    "acceptedArchiveSha256":  "30fdbec1c29c15cb7b9dfe32e39748fa09bee3626e45147409a1f96a65c9db30",
+    "gitHead":  "02df755da2b8dc8f324dfb58849504187ceab580",
+    "branch":  "main",
+    "head":  "02df755da2b8dc8f324dfb58849504187ceab580",
+    "originMain":  "02df755da2b8dc8f324dfb58849504187ceab580"
+}

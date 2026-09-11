@@ -1,0 +1,13 @@
+{
+    "name":  "@orkestrel/qualifier",
+    "version":  "0.0.14",
+    "url":  "https://registry.npmjs.org/@orkestrel/qualifier/-/qualifier-0.0.14.tgz",
+    "registrySha1":  "2f094afa23790540be8a6bd35aa825d50148383f",
+    "downloadedSha1":  "2f094afa23790540be8a6bd35aa825d50148383f",
+    "downloadedSha256":  "00d13ca3b44ab1bd3dc9818800a1b949c9c73698b67f94a16f76c81b6637926b",
+    "acceptedArchiveSha256":  "00d13ca3b44ab1bd3dc9818800a1b949c9c73698b67f94a16f76c81b6637926b",
+    "gitHead":  "c10f4c8661b753f8b6eaf8caf96fe0fbb47ef158",
+    "branch":  "main",
+    "head":  "c10f4c8661b753f8b6eaf8caf96fe0fbb47ef158",
+    "originMain":  "c10f4c8661b753f8b6eaf8caf96fe0fbb47ef158"
+}

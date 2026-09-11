@@ -1,0 +1,13 @@
+{
+    "name":  "@orkestrel/sea",
+    "version":  "0.0.15",
+    "url":  "https://registry.npmjs.org/@orkestrel/sea/-/sea-0.0.15.tgz",
+    "registrySha1":  "1f4ac3f60d3379214f575956525785998032cce2",
+    "downloadedSha1":  "1f4ac3f60d3379214f575956525785998032cce2",
+    "downloadedSha256":  "05dc0366438e87cb74f2cc2b8023689a40417bc6050bbdebabe2ae7094fd625a",
+    "acceptedArchiveSha256":  "05dc0366438e87cb74f2cc2b8023689a40417bc6050bbdebabe2ae7094fd625a",
+    "gitHead":  "bfbccc215f50d7867ac5b79785da80c607f4fc7a",
+    "branch":  "main",
+    "head":  "bfbccc215f50d7867ac5b79785da80c607f4fc7a",
+    "originMain":  "bfbccc215f50d7867ac5b79785da80c607f4fc7a"
+}

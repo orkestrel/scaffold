@@ -1,0 +1,13 @@
+{
+    "name":  "@orkestrel/lsp",
+    "version":  "0.0.7",
+    "url":  "https://registry.npmjs.org/@orkestrel/lsp/-/lsp-0.0.7.tgz",
+    "registrySha1":  "3432fee1dfb26d77bb8818f2e3dad76e5cb9786c",
+    "downloadedSha1":  "3432fee1dfb26d77bb8818f2e3dad76e5cb9786c",
+    "downloadedSha256":  "09335ae7bd72220582b421340330c3567ab637381b7c0aef5de9cad36422741e",
+    "acceptedArchiveSha256":  "09335ae7bd72220582b421340330c3567ab637381b7c0aef5de9cad36422741e",
+    "gitHead":  "d6543822b6c88201a96af0293123b2c3c60dc6b8",
+    "branch":  "main",
+    "head":  "d6543822b6c88201a96af0293123b2c3c60dc6b8",
+    "originMain":  "d6543822b6c88201a96af0293123b2c3c60dc6b8"
+}

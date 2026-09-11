@@ -1,0 +1,13 @@
+{
+    "name":  "@orkestrel/interpret",
+    "version":  "0.0.13",
+    "url":  "https://registry.npmjs.org/@orkestrel/interpret/-/interpret-0.0.13.tgz",
+    "registrySha1":  "2c24831b24e246f583a844858ccb0bd0fd4ab8cc",
+    "downloadedSha1":  "2c24831b24e246f583a844858ccb0bd0fd4ab8cc",
+    "downloadedSha256":  "c4bbca7ccf749f977b7d8548e07fe1aae056ee921b6209027bc57895ceefa3c4",
+    "acceptedArchiveSha256":  "c4bbca7ccf749f977b7d8548e07fe1aae056ee921b6209027bc57895ceefa3c4",
+    "gitHead":  "a3928145fac315c3b8ef43e53ebffc4442a49286",
+    "branch":  "main",
+    "head":  "a3928145fac315c3b8ef43e53ebffc4442a49286",
+    "originMain":  "a3928145fac315c3b8ef43e53ebffc4442a49286"
+}
