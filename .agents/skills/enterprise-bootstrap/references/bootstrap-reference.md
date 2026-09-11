@@ -10,7 +10,7 @@
 - [Quick start](#quick-start)
 - [Breakpoints & layout](#breakpoints--layout)
 - [Color modes (light / dark / custom)](#color-modes-light--dark--custom)
-- [Theming & design tokens](#theming--design-tokens)
+- [Theming & design tokens](#theming--design-tokens) — [Define the working scales](#define-the-working-scales) · [Elevation and depth](#elevation-and-depth) · [Layout and type extensions](#layout-and-type-extensions)
 - [Forms in production](#forms-in-production)
 - [JavaScript lifecycle](#javascript-lifecycle)
 - [Accessibility](#accessibility)
@@ -23,7 +23,7 @@
 
 ## Quick Start
 
-CDN (5.3.8 is the current — and final — 5.3.x patch before 5.4):
+Pinned CDN example (5.3.8). Prefer the installed compatible version; this is not an upgrade instruction:
 
 ```html
 <!doctype html>
@@ -48,6 +48,20 @@ CDN (5.3.8 is the current — and final — 5.3.x patch before 5.4):
 - In a project with a bundler, prefer the installed `bootstrap` package (and its Sass source) over the CDN — see [Performance](#performance).
 
 ## Breakpoints & Layout
+
+Start with the feature's content and narrow layout, then choose its container and breakpoints.
+Take the region contract, content parity, and test matrix from [responsive-layout.md](responsive-layout.md).
+Use fluid columns for content that needs to scale together; keep rails, forms, and reading measures
+bounded where it does not. A full-width shell does not require full-width text or fields.
+Take the missing role-based utilities from [Layout and type extensions](#layout-and-type-extensions).
+
+Give a form, dialog, or login card a content-led maximum and let it shrink only when the viewport
+is narrower: `w-100 mx-auto measure-form`, not `col-md-8 offset-md-2 col-lg-6 offset-lg-3`, whose
+width changes at every breakpoint and is narrower on `lg` than at some `md` widths. Give a
+sidebar a fixed rail (`shell-rail-lg-fixed flex-shrink-0`) beside a flexible `min-inline-0` main
+region, not `col-3`, which grows on wide screens and collapses below its minimum on narrow ones.
+Put supporting explanation beside a narrow form in a second column rather than widening its
+fields. Percentage widths belong only where columns should scale together.
 
 | Breakpoint  | Class Infix | Dimensions |
 | ----------- | ----------- | ---------- |
@@ -85,77 +99,160 @@ The 5.3 color-mode system replaces the old per-component `*-dark` classes.
 
 ### Mechanics
 
-- `data-bs-theme="light|dark"` on `<html>` sets the mode globally; on any element it scopes the mode to that subtree (nested scopes win over ancestors). Default is light.
-- Mode switching works by re-pointing root CSS variables — components never change their own rules. Core variables swapped per mode: `--bs-body-bg`, `--bs-body-color`, `--bs-emphasis-color`, `--bs-secondary-color`, `--bs-secondary-bg`, `--bs-tertiary-color`, `--bs-tertiary-bg`, `--bs-border-color`, `--bs-heading-color`, `--bs-link-color`.
-- Each theme color also gets a mode-adaptive triplet — `--bs-{color}-text-emphasis`, `--bs-{color}-bg-subtle`, `--bs-{color}-border-subtle` — surfaced as `.text-{color}-emphasis`, `.bg-{color}-subtle`, `.border-{color}-subtle`. These are the workhorses for status UI that must read in both modes.
-- **The triplet is a recipe, not a guarantee.** `text-{color}-emphasis` on `bg-{color}-subtle` is _designed_ to pass, and it usually does in stock Bootstrap — but the values are tokens, and a compatible skin redefines them. Resolve the actual computed values from the compiled cascade the page loads (the shipped CSS, dependency stylesheets included) and measure each pairing once per theme before you rely on it. A class with no rule of its own may still inherit one; never accept a value from documentation.
-- Deprecated by this system: `.navbar-dark`, `.dropdown-menu-dark`, `.btn-close-white`, `.carousel-dark` → put `data-bs-theme="dark"` on the component or an ancestor instead.
+Read [color-modes.md](color-modes.md) before choosing color classes or repairing a theme failure.
+It owns inheritance, adaptive-versus-fixed families, surface boundaries, and component exceptions.
+Use the installed build's attribute or media-query strategy; do not assume every `--bs-*` variable
+changes with the mode.
 
 ### Author rules
 
-- Paint custom CSS from `var(--bs-…)` — never hard-coded hex — so both modes track automatically.
-- Prefer `bg-body`, `bg-body-secondary`, `bg-body-tertiary` and `text-body`, `text-body-secondary` over `bg-white`/`bg-light`/`text-dark`, which freeze a mode.
-- A dark region inside a light page (or vice versa) is one attribute: `<footer data-bs-theme="dark">`.
+Preserve ordinary text inheritance and native component states. Prefer adaptive body/subtle
+surfaces. Establish an explicit foreground only at an owned solid or mode boundary, or for a
+measured role that requires it. Do not turn every subtle panel into a custom color pair.
 
 ### Theme toggle
 
-Bootstrap ships **no** mode picker — you build the toggle. The essentials: read the stored preference, fall back to `prefers-color-scheme`, set `data-bs-theme` on `document.documentElement`, and do it in a script early in `<head>` so the first paint does not flash the wrong mode.
-
-```js
-const stored = localStorage.getItem('theme')
-const preferred =
-	stored ?? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
-document.documentElement.setAttribute('data-bs-theme', preferred)
-// On toggle: setAttribute + localStorage.setItem("theme", value)
-```
+Reuse the host controller. When implementing one, follow [Scope the mode](color-modes.md#scope-the-mode)
+for validated preference, automatic-mode resolution, storage failure, first paint, and overlay
+mounts. Bootstrap ships no picker; an attribute example is not a complete controller.
 
 ### Custom modes
 
-A custom mode is a named scope overriding the same variables:
+Add a custom mode only when the brief requires it. Map its used body, surface, link, border,
+validation, and component-state variables, including RGB companions. Resolve embedded component
+images and `color-scheme` where relevant. Do not claim a complete mode from a partial token block.
 
-```css
-[data-bs-theme='midnight'] {
-	--bs-body-bg: #0b1020;
-	--bs-body-color: #dfe4f2;
-	--bs-tertiary-bg: #131a30;
-	--bs-border-color: #26304f;
-}
-[data-bs-theme='midnight'] .dropdown-menu {
-	--bs-dropdown-bg: var(--bs-tertiary-bg);
-}
-```
-
-In Sass: `$enable-dark-mode` (default true), `$color-mode-type: data` (attribute selectors) or `media-query` (`prefers-color-scheme` — loses per-component scoping), and the `@include color-mode(dark) { … }` mixin. Dark defaults live in `_variables-dark.scss`.
+In Sass, use `$enable-dark-mode`, `$color-mode-type: data` for local attribute scopes, or
+`media-query` for system-driven mode without per-component scoping. Use `color-mode()` rather than
+competing selectors; keep overrides in the host theme source.
 
 ## Theming & Design Tokens
 
 ### The tiered token model
 
-Enterprise theming survives rebrands and dark mode only when tokens are tiered:
+Keep literal values in declared primitives, map primitives to semantic roles, and let component
+variables consume those roles. Reuse Bootstrap's `--bs-*` semantic and component layers rather
+than adding a parallel palette. Name semantics by purpose, not a particular shade.
 
-1. **Primitives** — raw values (`--brand-blue-600`, a spacing scale). Never referenced by component CSS directly.
-2. **Semantic tokens** — intent (`--bs-primary`, `--bs-body-bg`, `--bs-border-color`, `--bs-danger`). Reference primitives.
-3. **Component tokens** — one component's knobs (`--bs-btn-bg`, `--bs-card-spacer-y`). Reference semantics.
+Distinguish token structure from runtime behavior. Bootstrap also generates fixed values through
+Sass; a component variable is not necessarily mode-adaptive. Map the actual consumer, including its
+states, and resolve aliases at the scope where they must change. Take the constraints from
+[Extend the theme](color-modes.md#extend-the-theme).
 
-**In Bootstrap, the `--bs-*` variables ARE your semantic and component layers.** Define your primitives, map them onto `--bs-*`, and let components read only `var(--bs-…)`. Dark mode then becomes a re-point of semantic tokens under `[data-bs-theme="dark"]` — if dark mode ever requires editing a component rule, the tier boundary leaked. Name semantics by role, never appearance (`--surface-sunken`, not `--gray-100`): a value change must never force a rename. Raw hex scattered in component CSS is a primitive referenced directly — the root cause of un-themable UI.
+### Define the working scales
 
-### The CSS-variables-only path (no Sass build)
+Reuse the installed theme and its scales first. Declare new values only for a role the feature
+needs; refine one shared definition instead of accumulating per-component exceptions. Every
+system below has a Bootstrap source, a utility, and a known gap; extend the source, never the
+markup.
 
-Every component exposes local `--bs-{component}-*` variables (`--bs-btn-color`, `--bs-card-bg`, `--bs-nav-link-padding-x`, `--bs-table-bg`, …). The documented no-build theming route — right for consuming the CDN build:
+| System         | Sass source                                                 | Utility                                       | Stock steps (default root)                       | Gap                                                                              |
+| -------------- | ----------------------------------------------------------- | --------------------------------------------- | ------------------------------------------------ | -------------------------------------------------------------------------------- |
+| Font size      | `$font-sizes`, `$h1…h6-font-size`, `$display-font-sizes`    | `fs-1…6`, `.h1…h6`, `display-1…6`             | 16 · 20 · 24 · 28 · 32 · 40 px; display 40–80 px | No `rem` step below 16 px; `.small` is `.875em`                                  |
+| Font weight    | `$font-weight-*`, `$headings-font-weight`                   | `fw-light…bold`                               | 300 · 400 · 500 · 600 · 700; headings 500        | Headings barely heavier than body                                                |
+| Line height    | `$line-height-*`, `$headings-line-height`                   | `lh-1`, `lh-sm`, `lh-base`, `lh-lg`           | 1 · 1.25 · 1.5 · 2; headings 1.2                 | —                                                                                |
+| Color          | `$gray-100…900`, `$blue-100…900` …, `$theme-colors`, triads | `text-*`, `bg-*`, `border-*` families         | 9 shades per hue; subtle/emphasis per role       | Ramps are mechanical mixes ([color-modes.md](color-modes.md) → Extend the theme) |
+| Spacing        | `$spacers`                                                  | `m-*`, `p-*`, `gap-*`, `g-*`                  | 0 · 4 · 8 · 16 · 24 · 48 px                      | No 12 or 32 px; nothing above 48 px                                              |
+| Width          | `$container-max-widths`, the grid                           | `w-*`, `mw-100`, `col-*`                      | 25 / 50 / 75 / 100 %                             | No content-led maximums                                                          |
+| Shadow         | `$box-shadow`, `-sm`, `-lg`, `-inset`                       | `shadow-sm`, `shadow`, `shadow-lg`            | 3 steps                                          | Single-layer; modal shares the dropdown step                                     |
+| Radius         | `$border-radius*`, `$enable-rounded`                        | `rounded-0…5`, `-pill`, `-circle`             | 0 · 4 · 6 · 8 · 16 · 32 px                       | —                                                                                |
+| Border width   | `$border-widths`                                            | `border-1…5`                                  | 1–5 px                                           | Sets every side at once                                                          |
+| Opacity        | —                                                           | `opacity-*`, `text-opacity-*`, `bg-opacity-*` | 0 · 10 · 25 · 50 · 75 · 100                      | Not a text tier                                                                  |
+| Letter-spacing | —                                                           | none                                          | —                                                | Generate ([Layout and type extensions](#layout-and-type-extensions))             |
+
+- **Color:** neutral, brand, and required status/categorical ramps. Pick base, light surface, and
+  dark text shades in real components, then fill the gaps. Use HSL when it helps tune related
+  shades; keep the project's existing format. Review fixed shade pairs in each theme rather than
+  generating a new `lighten`, `darken`, or `color-mix` result at each use site. Stock ramps and
+  triads are tint/shade mixes with a fixed hue; override the nine shade variables and six triad
+  variables per brand hue, and the nine greys as one temperature-matched set
+  ([color-modes.md](color-modes.md) → Extend the theme).
+- **Type:** display/body/utility roles, finite `rem` sizes, working weights, and line-height per
+  role. Roles may share a font. RFS scales sizes above 1.25 rem down below a 1200 px viewport
+  (`h1`–`h4`, `display-*`, `fs-1`–`fs-4`); body, `fs-5`, `fs-6`, `.lead`, and controls hold — do not
+  fight it with `em` heading sizes. Take 14 px and 12 px roles from generated `fs-sm`/`fs-xs`, not
+  nested `.small`. Never globally scale body text down to make a display treatment fit.
+- **Space and size:** internal, group, panel, and section gaps; control sizes; reading/form widths;
+  rail width. Start with Bootstrap's shipped scale. Add a missing step through the utilities API
+  only where the adjacent steps cannot express the intended relationship. Button sizes already
+  scale padding faster than font (4/8 px at 14 px, 6/12 at 16, 8/16 at 20); use the three shipped
+  sizes rather than deriving one with `em` padding.
+- **Radius and elevation:** a small consistent family, assigned to real component/layer roles.
+  Set `$border-radius` once and let components inherit it; do not hand-mix `rounded-*` per
+  element. Reuse component variables and shadow utilities ([Elevation and depth](#elevation-and-depth)).
+  No shadow is a valid surface role.
+
+Record these roles in the existing token source or a compact design contract, not a second design
+system. Keep literal colors and raw scale values in named primitive definitions; component rules
+consume semantic or component tokens. [inspection.md](inspection.md) → Token discipline checks
+that boundary; [frontend-design.md](frontend-design.md) owns the visual choices.
+
+### Elevation and depth
+
+Three shipped steps — `--bs-box-shadow-sm` (`0 .125rem .25rem` at .075), `--bs-box-shadow`
+(`0 .5rem 1rem` at .15), `--bs-box-shadow-lg` (`0 1rem 3rem` at .175) — plus
+`--bs-box-shadow-inset`. Assign by z-position: `sm` for raised cards and controls, base for
+floating menus and a dragged item, `lg` for dialogs. Stock dropdowns, popovers, toasts, and
+modals all sit on `--bs-box-shadow` (modal: `-sm` below 576 px), which puts a blocking dialog at
+dropdown elevation. Lift it at rung 3, in the project stylesheet after Bootstrap's so the rule
+wins the `sm`-up media rule:
 
 ```css
-:root {
-	--bs-primary: #6f42c1; /* note: utility classes derived at build     */
-	--bs-primary-rgb: 111, 66, 193; /* time need the -rgb partner updated too     */
-}
-.btn-brand {
-	--bs-btn-bg: var(--bs-primary);
-	--bs-btn-color: #fff;
-	--bs-btn-hover-bg: color-mix(in srgb, var(--bs-primary), black 10%);
+.modal {
+	--bs-modal-box-shadow: var(--bs-box-shadow-lg);
 }
 ```
 
-Overriding component variables in a scope beats high-specificity override rules every time: it composes with color modes, keeps specificity flat, and documents intent.
+Two-part shadows — a broad cast plus a tight contact shadow that fades with elevation — are a
+token change: redefine `$box-shadow-sm`, `$box-shadow`, and `$box-shadow-lg` as two-layer values
+and every consumer follows.
+
+`$enable-shadows: true` (off by default) paints light-from-above on controls: buttons take
+`inset 0 1px 0 rgba(#fff, .15), 0 1px 1px rgba(#000, .075)` (lit top edge, tight cast shadow),
+inputs `inset 0 1px 2px rgba(#000, .075)` (recessed), and an active button `inset 0 3px 5px`
+(pressed). Enable it when the direction wants tactile controls, and verify both modes; the alphas
+are fixed white and black. Without the flag the `box-shadow` mixin emits nothing, so
+`--bs-btn-box-shadow` and `--bs-box-shadow-inset` have no consumer and a rung-3 override does
+nothing; the recipe is then a proposed rule.
+
+Flat depth: a `bg-body` panel on `bg-body-tertiary` reads raised and `bg-body-secondary` inside
+`bg-body` reads inset, both mode-adaptive with no shadow. A hard offset shadow is a `$box-shadow`
+override.
+
+Overlap: `position-relative translate-middle-y`, or `mt-n*` after `$enable-negative-margins`.
+Ring overlapping images in the surface color through the border variable so the ring follows the
+mode, where `border-white` does not:
+
+```css
+.ring-body {
+	--bs-border-color: var(--bs-body-bg);
+}
+```
+
+Then `rounded-circle border border-3 ring-body`.
+
+### The CSS-variables-only path (no Sass build)
+
+Use native components and adaptive utilities before adding overrides. For a recurring component
+surface role, use its local variable rather than repainting the whole component. This optional
+project-defined class changes the card background without assigning a foreground:
+
+```css
+.card-quiet {
+	--bs-card-bg: var(--bs-tertiary-bg);
+}
+```
+
+Use `class="card card-quiet"` only after declaring that extension in the host theme stylesheet.
+Do not add it when `card bg-body-tertiary` already expresses the requirement. Measure the card's
+inherited foreground and its header/footer layers in the loaded skin.
+
+When a custom button variant is required, define rest, hover, focus, active/checked, and disabled
+component variables as one contract. Include borders and the focus-ring RGB value; test busy
+content without changing geometry. Do not generate a custom tinted button merely to distinguish a
+secondary action, and do not assume reversing a subtle/emphasis pair produces valid states.
+Changing root `--bs-primary` alone does not rebuild Sass-generated button states or utility RGB
+consumers; follow [Extend the theme](color-modes.md#extend-the-theme).
 
 ### The Sass path (compiled builds)
 
@@ -175,7 +272,7 @@ Import order matters — override maps **before** the files that consume them:
 @import 'bootstrap/scss/utilities/api'; // generates utilities — keep LAST
 ```
 
-Feature flags worth knowing: `$enable-dark-mode`, `$enable-rounded`, `$enable-shadows`, `$enable-gradients`, `$enable-rfs` (fluid type), `$enable-validation-icons`, `$enable-negative-margins`, `$enable-important-utilities`, `$enable-reduced-motion`. Custom theme colors added to `$theme-colors` also need entries in the subtle/emphasis maps (`$theme-colors-text`, `$theme-colors-bg-subtle`, `$theme-colors-border-subtle` — and their `-dark` twins) to get full color-mode support.
+Feature flags worth knowing: `$enable-dark-mode`, `$enable-rounded`, `$enable-shadows` (light-from-above button/input/active shadows, [Elevation and depth](#elevation-and-depth)), `$enable-gradients` (a white fade on every `bg-*`; not a two-hue gradient), `$enable-rfs` (sizes above 1.25 rem shrink below 1200 px), `$enable-validation-icons`, `$enable-negative-margins` (`mt-n*` for overlap), `$enable-important-utilities`, `$enable-reduced-motion`. For added theme colors, extend the light/dark emphasis and subtle maps and inspect the generated utility-value maps; see [Extend the theme](color-modes.md#extend-the-theme). Do not infer a generated class from a token alone.
 
 ### Utilities API
 
@@ -191,7 +288,7 @@ $utilities: map-merge(
 			class: cursor,
 			values: auto pointer grab,
 		),
-		// modify an existing one, e.g. make width responsive:
+		// Modify an existing utility: make width responsive.
 		'width': map-merge(
 				map-get($utilities, 'width'),
 				(
@@ -205,23 +302,123 @@ $utilities: map-merge(
 
 Remove with `map-remove($utilities, "width")` or set the key to `null`. This is the sanctioned answer when the shipped scale is missing a step (for example, a `vh-50` the design truly needs).
 
+### Layout and type extensions
+
+These are **project-generated classes**, not stock Bootstrap utilities. Use the existing project
+roles when present. Otherwise add only the needed entries; the values below are illustrative role
+definitions, not universal sizes.
+
+Scale steps go in the map-override slot (after `variables-dark`, before `maps`). Keys `0`–`5`
+keep their shipped meaning; an intermediate 12 px or 32 px step is a new key, never a decimal.
+`$font-sizes` feeds only the `fs-*` utility in 5.3.8, and RFS leaves values at or below 1.25 rem
+alone, so extending it is safe:
+
+```scss
+$spacers: map-merge(
+	$spacers,
+	(
+		6: $spacer * 4,
+		7: $spacer * 6,
+	)
+); // 64px section gap, 96px page rhythm
+$font-sizes: map-merge(
+	$font-sizes,
+	(
+		sm: 0.875rem,
+		xs: 0.75rem,
+	)
+); // fs-sm 14px captions, fs-xs 12px eyebrows only
+```
+
+Role utilities go after importing `utilities` and before `utilities/api`:
+
+```scss
+$utilities: map-merge(
+	$utilities,
+	(
+		'content-measure': (
+			property: max-inline-size,
+			class: measure,
+			values: (
+				prose: 65ch,
+				form: 36rem,
+			),
+		),
+		'shell-rail': (
+			property: inline-size,
+			class: shell-rail,
+			responsive: true,
+			values: (
+				fixed: 16rem,
+			),
+		),
+		'inline-minimum': (
+			property: min-inline-size,
+			class: min-inline,
+			values: (
+				0: 0,
+			),
+		),
+		'table-viewport': (
+			property: max-block-size,
+			class: max-block,
+			responsive: true,
+			values: (
+				table: 70vh,
+			),
+		),
+		'tabular-figures': (
+			property: font-variant-numeric,
+			class: figures,
+			values: (
+				tabular: tabular-nums,
+			),
+		),
+		'letter-spacing': (
+			property: letter-spacing,
+			class: ls,
+			values: (
+				tight: -0.02em,
+				wide: 0.05em,
+			),
+		),
+	)
+);
+// Generate once, after all utility-map additions:
+@import 'bootstrap/scss/utilities/api';
+```
+
+Use `w-100 measure-form` for a bounded form, `measure-prose` for a reading column,
+`shell-rail-lg-fixed flex-shrink-0` for an inline desktop rail, `min-inline-0` for its flexible
+sibling, `max-block-lg-table` only for a warranted wide-screen bounded table scroller, `figures-tabular` for comparable
+quantities, `ls-tight` on `display-*` and `fs-1`, and `ls-wide` with `text-uppercase` labels (`em`
+is correct for tracking: it follows the element's own size). Verify those selectors in the
+compiled output before using the examples below. The font must support tabular figures. A `ch`
+measure is a starting width, not a character-count proof.
+
+Without a Sass build, take an existing equivalent; otherwise propose the smallest stylesheet rule
+under [SKILL.md](../SKILL.md) → When custom CSS is justified. Never ship an unresolved utility name.
+
 ## Forms in Production
 
 ### Layout & labels
 
-- **Top-aligned labels by default** — the evidence (eye-tracking form research) shows fastest completion and the cleanest single-column scan, and they survive narrow screens without reflow. Reserve left-aligned labels for dense read-back forms where vertical compression matters more than speed.
+- **Top-aligned labels by default** — keep a consistent single-column scan. Reserve side labels for a deliberate dense layout that still reads correctly at narrow widths.
 - Visible label or `.form-floating` — never placeholder-only (disappears on input, fails accessibility).
-- **Do not say the same thing twice.** When the host already names the request — a card heading, a dialog title, a section header stating the question — the form associates with that name through `aria-labelledby` instead of repeating the prompt in its own label. Repetition reads as separate questions to a screen-reader user and as clutter to everyone else.
-- One column beats multi-column for completion; use the form grid (`row g-3` + `col-md-*`) only for genuinely paired fields (city/state/zip).
+- **Name the form without duplicating its heading.** Associate the form with an existing visible title through `aria-labelledby` where useful. Keep each control's own visible label; a form name does not label its fields.
+- Use one field column by default; add columns only for genuinely related fields. At wide widths,
+  put supporting explanation beside the form rather than stretching its fields.
+- Keep each label, control, help text, and error in one group. Use a smaller internal gap than the
+  gap to the next field group, and recheck the relationship when errors or long labels wrap.
 
 ```html
 <form class="row g-3">
-	<div class="col-md-6">
+	<div class="col-12">
 		<label for="inputEmail4" class="form-label">Email</label>
 		<input type="email" class="form-control" id="inputEmail4" aria-describedby="emailHelp" />
 		<div id="emailHelp" class="form-text">Work address preferred.</div>
 	</div>
-	<div class="col-md-6">
+	<div class="col-12">
 		<label for="inputPassword4" class="form-label">Password</label>
 		<input type="password" class="form-control" id="inputPassword4" />
 	</div>
@@ -234,7 +431,7 @@ Remove with `map-remove($utilities, "width")` or set the key to `null`. This is 
 ### Validation timing (the rules that matter)
 
 - Validate a field **on blur** — after the user leaves it — never on every keystroke, and never before the user has reached the field. Exception: live feedback that _helps_ while typing (password strength, username availability, character counts).
-- Once a field is in an error state, re-validate as the user types so they see the fix land.
+- After a field enters an error state, re-validate as the user types so they see the fix land.
 - Always re-check everything on submit. Keep the submit button **enabled** — a disabled submit hides _what is_ wrong; a validating submit shows it.
 - On failed submit of a long form, render an **error summary** at the top (focus it; link each item to its field) _and_ inline messages at each field — never summary-only, never inline-only.
 - Error style = color + icon + text, stating what is wrong and how to fix it. Wire message to field with `aria-describedby`, mark the field `aria-invalid="true"`. Never report errors through a hover tooltip.
@@ -345,7 +542,7 @@ Hold the baseline in [SKILL.md](../SKILL.md) → Accessibility baseline. Its Boo
 **Measuring the bars:**
 
 - Hold the bars from [SKILL.md](../SKILL.md) → Surfaces, color, contrast: **≥ 4.5:1** for everything information-bearing, **≥ 3:1** for textless marks and state chrome. WCAG 2.2 permits 3:1 for large text; this package does not — size grants no lower tier.
-- Measure in **both themes**, from the compiled cascade, never from the token names. A pairing that passes in light routinely fails in dark, and a skin's values are its own.
+- Measure each declared theme from the compiled cascade, never from token names. A light-theme result does not establish a dark-theme result, and a skin's values are its own.
 - Focus rings and hover fills are UI graphics: they are in scope for the 3:1 bar.
 - Disabled controls are exempt from the bars by the spec. That exemption covers legibility, not meaning — see [Destructive actions](#destructive-actions) for the one disabled state that still has to change color.
 
@@ -353,9 +550,12 @@ Hold the baseline in [SKILL.md](../SKILL.md) → Accessibility baseline. Its Boo
 
 - collects every painted layer from the element upward to the first opaque one, then composites them top over bottom (Porter-Duff `over`) onto that opaque base;
 - composites a translucent foreground over that result before taking the ratio, rather than reading the declared color;
-- measures both themes in one run, since the theme swap re-points the tokens under every layer;
+- measures each declared theme in the same run, since a theme swap re-points the tokens under every layer;
 - carries a negative control drawn from outside the population it covers — a pairing known to fail — and voids the run if that negative control passes.
 
+Include ancestor opacity in the painted stack. For images, gradients, masks, or blend modes the
+reader does not support, use a suitable rendered-background measurement or leave the pairing open;
+never flatten a variable background to its average color. Name reached states beside every result.
 Wire the reader into the suite once it has settled a question.
 
 ### WCAG 2.2 deltas that bite dense app UI
@@ -383,7 +583,7 @@ Wire the reader into the suite once it has settled a question.
 Browsers handle focus on full page loads; in an SPA **you** do:
 
 - On route change, move focus to the new view's `h1` (or the `<main>` with `tabindex="-1"`) so SR users hear where they landed.
-- On failed submit, focus the error summary. On destructive confirm, focus the dialog's safe action.
+- On failed submit, focus the error summary. On a compact destructive confirm, focus the safe action; in a scrolling or structured dialog, focus a static heading at the start when an action would scroll its context away.
 - After deleting a row, move focus to a sensible neighbor (next row / the table region), never let it fall to `<body>`.
 - Anything focused programmatically under sticky chrome needs the `scroll-margin-top` offset (2.4.11 above).
 
@@ -395,7 +595,10 @@ Bootstrap wraps its transitions and animations (`.fade`, `.collapsing`, carousel
 
 ### App shell
 
-**Structure:** persistent left sidebar for dense apps with many top-level destinations (it scales, nests, and stays stable while content changes); top-bar-only nav for shallow apps (≤ ~5 destinations). A collapsible sidebar reclaims width for data.
+**Structure:** reuse the product's shell. For a new product, let implemented features and their
+navigation needs decide between a sidebar and a shallow top bar; do not design the shell first.
+Give an inline rail a content-led width and the task the remaining space. A collapsible rail can
+reclaim width for comparison data.
 
 The Bootstrap implementation — a responsive offcanvas that renders inline above `lg` and becomes a drawer below it, with no custom JS:
 
@@ -421,7 +624,7 @@ The Bootstrap implementation — a responsive offcanvas that renders inline abov
 
 	<div class="d-flex">
 		<div
-			class="offcanvas-lg offcanvas-start border-end"
+			class="offcanvas-lg offcanvas-start border-end shell-rail-lg-fixed flex-shrink-0"
 			tabindex="-1"
 			id="appSidebar"
 			aria-labelledby="appSidebarLabel"
@@ -436,7 +639,7 @@ The Bootstrap implementation — a responsive offcanvas that renders inline abov
 					aria-label="Close"
 				></button>
 			</div>
-			<div class="offcanvas-body d-lg-block p-lg-3" style="width: 260px;">
+			<div class="offcanvas-body d-lg-block p-lg-3">
 				<nav aria-label="Primary">
 					<ul class="nav nav-pills flex-column gap-1">
 						<li class="nav-item">
@@ -448,8 +651,8 @@ The Bootstrap implementation — a responsive offcanvas that renders inline abov
 				</nav>
 			</div>
 		</div>
-		<main id="main" class="flex-grow-1 p-3 p-lg-4" style="min-width: 0;">
-			<!-- min-width: 0 lets tables shrink instead of blowing out the flex row -->
+		<main id="main" class="flex-grow-1 p-3 p-lg-4 min-inline-0">
+			<!-- Generated min-inline-0 lets the task shrink inside the flex row. -->
 		</main>
 	</div>
 </body>
@@ -468,12 +671,22 @@ The Bootstrap implementation — a responsive offcanvas that renders inline abov
 
 **Craft rules:**
 
-- **Align by type:** numbers, currency, dates right-aligned (`text-end`, header too); text left. Use tabular figures so digits stack into comparable columns: `font-variant-numeric: tabular-nums` on numeric cells (one small custom rule that earns its place).
+- **Align by comparison:** quantities and currency right-aligned (`text-end`, header too), with
+  consistent units and precision. Use the generated `figures-tabular` utility or the project's
+  equivalent. Keep text start-aligned; choose date alignment by its format and comparison task.
+- **Group related content:** combine identity and supporting detail only when they do not need
+  independent column comparison or sorting. Keep key comparison columns explicit. Quiet repeated
+  labels and row actions before increasing density.
 - **Density:** `table-sm` for compact; offer density as a user toggle (comfortable/compact) driven by one token or wrapper class, not per-cell tweaks. Do not shrink font below readability to fake density.
-- **Sticky header** once the table meaningfully scrolls (roughly a viewport / ~15+ rows). Not built into Bootstrap — the pattern:
+- **Sticky header** when the table meaningfully scrolls (roughly a viewport / ~15+ rows). Not built into Bootstrap — the pattern:
 
 ```html
-<div class="table-responsive" style="max-height: 70vh;">
+<div
+	class="table-responsive max-block-lg-table"
+	role="region"
+	aria-label="Comparison table"
+	tabindex="0"
+>
 	<table class="table table-sm align-middle">
 		<thead class="sticky-top">
 			<tr>
@@ -485,13 +698,13 @@ The Bootstrap implementation — a responsive offcanvas that renders inline abov
 </div>
 ```
 
-Give header cells an **opaque background** (`bg-body-secondary` or a `.table-*` tone class) — table backgrounds are transparent by default, so rows show through a sticky header otherwise. Sticky chrome is the prime Focus-Not-Obscured offender: add `scroll-margin-top` on row focusables equal to the header height. Sticky first column only when row identity is lost on horizontal scroll — it costs paint and complexity.
+Keep sticky header cells on an **opaque, mode-aware surface** such as `bg-body-secondary`. Stock `.table` cells use the body background; verify that a skin or override has not made them translucent. Do not substitute a `.table-*` color variant and assume it adapts. Inspect cell overlays through [Tables and overlays](color-modes.md#tables-and-overlays). Sticky chrome is the prime Focus-Not-Obscured offender: add `scroll-margin-top` on row focusables equal to the header height. Sticky first column only when row identity is lost on horizontal scroll — it costs paint and complexity.
 
 - **Sorting:** the whole header is a button (not a bare caret), with a visible direction indicator, and `aria-sort="ascending|descending"` on the active `<th>` only:
 
 ```html
 <th scope="col" aria-sort="ascending">
-	<button type="button" class="btn btn-link p-0 fw-semibold text-body text-decoration-none">
+	<button type="button" class="btn btn-link p-0 fw-semibold">
 		Amount <span aria-hidden="true">↑</span>
 	</button>
 </th>
@@ -500,7 +713,7 @@ Give header cells an **opaque background** (`bg-body-secondary` or a `.table-*` 
 - **Row actions:** 1–3 high-frequency actions inline; the rest behind a per-row kebab (dropdown). Hover-only reveal fails touch and keyboard — keep at least the overflow trigger always visible and ≥24px.
 - **Selection & bulk actions:** header checkbox with indeterminate state for partial selection; per-row checkboxes with `aria-label` naming the row ("Select INV-1042"). When selection > 0, swap the toolbar's content in place for a contextual bar — "3 selected", the batch actions, and a clear-selection escape — never push the layout down (layout-shifting chrome is an anti-pattern). Announce the count through a polite live region.
 - **Pagination vs scrolling:** paginate when users need position, totals, deep links, and "go to page N" — most enterprise CRUD. Virtualize (windowed rendering) for long uniform lists where scrolling is natural. True infinite scroll is for exploratory feeds only — never where users need a footer or a findable end.
-- **Responsive, ranked:** (1) _priority columns_ — hide low-value columns per breakpoint (`d-none d-lg-table-cell`), always keeping the identifying + decision columns; (2) _horizontal scroll_ (`table-responsive`) when every column matters — remember it clips dropdowns; (3) _card-ify_ into label:value stacks below `md` for low row counts. Never card-ify a wide comparison table — comparison is the point.
+- **Responsive, by task:** use a compact record list for record work, a locally scrollable semantic table for essential comparison, or priority columns with an operable detail path. Preserve identity, decision fields, and actions. Choose expansion from available container width, not `md` by habit. Keep one state model across variants; take the contract from [Keep the task intact](responsive-layout.md#keep-the-task-intact).
 - **Table states:** loading → **skeleton rows** matching the real column count/widths (a centered spinner collapses the layout); empty → distinguish _no data yet_ (invite the first action) from _no results for these filters_ (offer "Clear filters"); error → inline retry inside the table region, header and toolbar preserved.
 
 ### Filter & search bars
@@ -508,7 +721,7 @@ Give header cells an **opaque background** (`bg-body-secondary` or a `.table-*` 
 - One toolbar above the table: search input first (`role="search"` on the form), then the 2–4 highest-value filters as `form-select`/segmented controls, overflow filters behind a "Filters" button (offcanvas on mobile, dropdown/collapse on desktop).
 - **Active filters must be visible and dismissible** — chips/badges with an ✕ and a "Clear all" — users must see _why_ the list is short. A filtered-empty state repeats the escape hatch.
 - Debounce live search; show result counts ("128 results") so feedback is immediate; filter state belongs in the URL when views are shareable.
-- Toolbars that overflow: `flex-nowrap overflow-auto` beats wrapping the toolbar onto a second row mid-task — do not crush icon targets below 24px.
+- At the base, give search a full row; stack or wrap actions and filters without shrinking labels or targets. Expand with `col-12 col-md`, `col-md-auto`, or `d-grid d-sm-flex` when they fit. Reserve a horizontal scroller for a documented spatial interaction, not an ordinary toolbar. Keep active filters and the clear path outside any disclosed extras.
 
 ### Wizards & multi-step forms
 
@@ -525,9 +738,15 @@ Give header cells an **opaque background** (`bg-body-secondary` or a `.table-*` 
 Design **every one** for every data surface: ideal (populated), empty, loading, partial, error. A component is not done until all of them exist.
 
 - **Skeleton vs spinner:** skeleton (`placeholder` + `placeholder-glow`) when you know the content's shape and it fills a region — tables, cards, detail panes — because it holds layout and shortens perceived wait. Spinner for short, indeterminate, or in-control waits (inside a button, a small inline fetch).
-- **Thresholds (guidance):** under ~1s show nothing — a flashed loader is worse than none; ~1–10s show a spinner or skeleton; beyond ~10s show determinate progress (percent or step) so it does not feel hung.
+- **Wait feedback:** acknowledge the action promptly, avoid flashing a loader for trivial waits, and keep the known layout stable. For longer work, show actual steps or measured progress when available; otherwise state that work continues and offer cancellation where supported. Never invent a percentage.
 - **Optimistic vs pessimistic:** apply UI immediately and reconcile (rolling back loudly on failure) for reversible high-frequency actions — toggles, stars, reorders. Await confirmation for money, audited records, and anything a rollback would confuse.
-- **Empty states** invite the next action (button + one line of why). Never-had-data and filtered-empty are different states with different escapes — never ship one generic "nothing here".
+- **First-use empty:** name what belongs here and the useful create/import action. Drop tabs or
+  filters only when they genuinely have no data to operate on. An illustration may support that
+  action; it must not replace it.
+- **Filtered-empty:** retain the active filters and result context, explain that nothing matched,
+  and offer a clear-filter path. Never hide the controls needed to undo the empty result.
+- **Partial:** keep available data readable, identify the missing or stale part, and scope recovery
+  to it. Missing is not zero. Do not collapse the whole surface into an error when some data exists.
 - **Every error state states what failed and how to fix it**, carries a keyboard-reachable retry in place, and preserves surrounding context — a body fetch failure must not blow away the toolbar and filters.
 
 ### Feedback discipline
@@ -546,8 +765,12 @@ Blocking errors are never toasts. Keep the acting verb consistent across the flo
 Match friction to reversibility × blast radius:
 
 1. **Undo** (soft-delete + toast with Undo) for reversible, low-stakes, frequent actions — least friction, best experience. Prefer making actions undoable over interrupting them.
-2. **Confirm dialog** for irreversible-but-scoped operations. Restate the specific consequence ("This permanently deletes 3 invoices"), verb-labeled buttons ("Delete invoices" / "Cancel" — never Yes/No), destructive action visually separated from safe; `alertdialog` semantics; focus lands on the safe action.
+2. **Confirm dialog** for irreversible-but-scoped operations. Restate the specific consequence ("This permanently deletes 3 invoices"), verb-labeled buttons ("Delete invoices" / "Cancel" — never Yes/No), destructive action visually separated from safe; `alertdialog` semantics; focus lands on the safe action for a compact confirmation, or a static top heading when focusing an action would scroll the consequences out of view.
 3. **Type-to-confirm** (type the entity name) only for high-blast-radius irreversible operations — delete an org, drop a dataset.
+
+Keep action rank separate from consequence. A row-level destructive action can use a measured
+quiet treatment; emphasize the final destructive commit where the ladder makes it the decision.
+Do not make every row's delete button compete with the page's primary action.
 
 Do not type-gate a single-row delete; do not one-tap a tenant wipe. Confirm only where this ladder calls for it — a confirmation on every action gets clicked through.
 
@@ -567,11 +790,11 @@ Do not type-gate a single-row delete; do not one-tap a tenant wipe. Confirm only
 
 ## Performance
 
-- **Ship one CSS system and no more.** Bootstrap plus a second framework (or a parallel bespoke layer) doubles payload and guarantees specificity fights.
+- **Keep one CSS system.** Extend the installed Bootstrap theme; do not add a competing framework or a parallel palette to restyle the surface.
 - **Compressed, the full build is cheap; incomplete builds are not.** Trimming through a Sass-subset build (import only the parts used — see [Theming](#theming--design-tokens)) is the sanctioned diet. Aggressive purge tools are the risky one: Bootstrap adds classes **at runtime** (`show`, `showing`, `fade`, `collapsing`, `modal-open`, `modal-backdrop`, `offcanvas-backdrop`, tooltip/popover generated markup) — purging without safelisting them ships UIs whose modals silently stop rendering. If you purge, safelist every JS-toggled class and test every overlay.
 - **Icons:** Bootstrap Icons is a separate package — prefer inline SVG or an SVG sprite (crisp, styleable through `currentColor`, no font flash) over the icon font; load only the icons used.
 - **JS:** the bundle is small, but only load it where behavior exists; per-component ESM imports (`bootstrap/js/dist/modal`) trim further in bundlers.
-- **Fonts:** each display face is a payload decision; subset and `font-display: swap` characterful faces, and let the data face fall back to the system stack when the brief allows.
+- **Fonts:** reuse the existing families and load only needed weights/scripts. Add a display face only for a distinct role; use `font-display: swap` and test fallback wrapping. Keep the data face legible before and after fonts load.
 
 ## When Not to Hand-Roll
 
@@ -587,8 +810,8 @@ Bootstrap has **no** combobox/autocomplete, date picker, multi-select tags input
 ### Centered content
 
 ```html
-<div class="d-flex justify-content-center align-items-center vh-100">
-	<div>Centered content</div>
+<div class="d-flex flex-column min-vh-100 p-3">
+	<div class="my-auto">Centered content</div>
 </div>
 ```
 

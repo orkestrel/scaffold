@@ -22,7 +22,8 @@
 
 ### Content Components
 
-- Typography: `.h1`–`.h6`, `.display-1`–`.display-6`, `.lead`, `.small`
+- Typography: `.h1`–`.h6`, `.display-1`–`.display-6`, `.lead`, `.small` (sizes, weights, and the `.small` `em` trap: [utilities.md](utilities.md) → Text)
+- Lists and quotes: `.list-unstyled`, `.list-inline`, `.blockquote`, `.blockquote-footer` — icon bullets and promoted quotes per [utilities.md](utilities.md) → Composition habits
 - Images: `.img-fluid`, `.img-thumbnail`, `.figure`
 - Tables: `.table` plus its `.table-*` tone classes — see [Tables](#tables)
 - Figures: `.figure`, `.figure-img`, `.figure-caption`
@@ -40,6 +41,10 @@
 Full form patterns and validation JS: [bootstrap-reference.md](bootstrap-reference.md) → Forms in production.
 
 ## Component Markup
+
+Preserve the component's native foreground and state rules. For quiet custom surfaces, inherit text
+and use adaptive fills; take exceptions from [color-modes.md](color-modes.md). Do not copy a solid
+variant merely because it appears in this catalog.
 
 ### Accordion
 
@@ -91,17 +96,17 @@ Modifier classes: `.accordion-flush` (edge-to-edge, no outer borders); omit `dat
 ### Alerts
 
 ```html
-<div class="alert alert-primary" role="alert">Primary alert</div>
-<div class="alert alert-success" role="alert">Success alert</div>
+<div class="alert alert-primary" role="status">Sync complete</div>
+<div class="alert alert-success" role="status">Changes saved</div>
 <div class="alert alert-danger" role="alert">Danger alert</div>
 <div class="alert alert-warning" role="alert">Warning alert</div>
 
-<div class="alert alert-primary d-flex align-items-center" role="alert">
+<div class="alert alert-primary d-flex align-items-center" role="status">
 	<svg class="bi flex-shrink-0 me-2" role="img" aria-label="Info:">...</svg>
 	<div>Alert with icon</div>
 </div>
 
-<div class="alert alert-success alert-dismissible fade show" role="alert">
+<div class="alert alert-success alert-dismissible fade show" role="status">
 	<h4 class="alert-heading">Well done!</h4>
 	<p>Content here.</p>
 	<hr />
@@ -110,11 +115,23 @@ Modifier classes: `.accordion-flush` (edge-to-edge, no outer borders); omit `dat
 </div>
 ```
 
-`role="alert"` announces immediately when the element is injected into the DOM — right for errors and warnings. For calm status messages injected dynamically, prefer a polite live region (`role="status"`). Anything that _looks_ like an alert carries the alert role: styling and semantics disagree the moment a notice wears `.alert` chrome with no role, and an accessibility snapshot is what catches it. When to use alert vs toast vs banner: [bootstrap-reference.md](bootstrap-reference.md) → Feedback discipline.
+Choose the announcement by urgency: `role="status"` for routine asynchronous results, `role="alert"` for urgent failures. Do not make every warning assertive or infer urgency from `.alert` styling. A static advisory does not require a live region merely because it has alert chrome. Take channel selection from [bootstrap-reference.md](bootstrap-reference.md) → Feedback discipline.
 
-An alert is a subtle fill — apply the subtle-fill degradation rule to everything inside it ([SKILL.md](../SKILL.md) → Surfaces, color, contrast).
+Keep the native `.alert-*` foreground, subtle background, and `.alert-link` states. Do not add blanket `text-reset` or text-color utilities to alerts. Measure their children on the actual fill; see [color-modes.md](color-modes.md) → Alerts, buttons, and selection.
+
+A side accent is an accessory, one per region: `alert alert-warning border-0 border-start border-4 border-warning`. Zero the alert's own border first — `border-4` alone widens all four sides — and check the fixed `border-warning` against the dark `bg-warning-subtle` ([utilities.md](utilities.md) → Borders).
 
 ### Badge
+
+Start quiet status with inherited text on a subtle fill. Use a plain span to avoid the badge's
+built-in white foreground; when retaining `.badge`, use `text-reset` to restore inheritance:
+
+```html
+<span class="d-inline-flex rounded-pill bg-success-subtle px-2 py-1 small fw-semibold">Paid</span>
+<span class="badge bg-success-subtle text-reset">Paid</span>
+```
+
+Reserve the solid variants for intentional prominence or a counter with its own paired surface:
 
 ```html
 <span class="badge text-bg-primary">Primary</span>
@@ -139,13 +156,13 @@ An alert is a subtle fill — apply the subtle-fill degradation rule to everythi
 </button>
 ```
 
-Use `text-bg-*` (auto-contrasting text) rather than `bg-*` alone. A badge is never the only carrier of meaning — pair color with text or a visually-hidden label.
+For an intentional solid badge, use a measured `text-bg-*` pair rather than a solid background alone. Its foreground is selected at Sass build time, not recalculated on a runtime theme change. Never make color the only carrier of meaning; keep visible text or an accessible label.
 
 **A badge is never a textless mark.** Stock Bootstrap ships `.badge:empty { display: none }`, so an empty `<span class="badge">` used as a status dot renders nothing at all — the surface silently loses the state it claimed to show, and source review never sees it. A textless status mark is an **icon glyph** (see [Icons](#icons) → Status glyph marks), not a stripped badge.
 
-**A badge's fill is never assumed.** Stock `.badge` carries no background of its own, but compatible skins may give it one, so an "unfilled" badge can arrive painted and land at a contrast the design never intended. State the fill explicitly — `bg-*-subtle` for a muted badge, `bg-transparent` when the surface behind it must show through — and measure the result in both themes against the cascade the page actually loads.
+State a badge's intended fill and inspect the skin. For a quiet badge use `bg-*-subtle text-reset`; for an unfilled badge use `bg-transparent text-reset`. Verify the inherited foreground on that actual surface in light and dark. A fill-only utility does not remove `.badge`'s white text; see [color-modes.md](color-modes.md) → Badges and removable tags.
 
-A badge reporting an in-flight request is a live region: `role="status"` on the badge (or on the small wrapper that holds it) announces the settled state politely without stealing focus. Reserve `role="alert"` for alert-styled notices ([Alerts](#alerts)).
+A badge reporting an in-flight request is a live region: `role="status"` on the badge (or on the small wrapper that holds it) announces the settled state politely without stealing focus. Reserve `role="alert"` for urgent results ([Alerts](#alerts)).
 
 ### Breadcrumb
 
@@ -188,9 +205,15 @@ The current page is `aria-current="page"` and not a link. Use breadcrumbs only f
 
 Icon-only buttons need `aria-label` and a ≥24×24 px target (WCAG 2.2) — `btn-sm` icon clusters in toolbars are the common violation; pad rather than shrink.
 
-Choose the `btn-*` class by contrast rather than by taste ([SKILL.md](../SKILL.md) → Hierarchy & actions).
+The three sizes scale padding faster than font — `btn-sm` 4/8 px at 14 px, `btn` 6/12 at 16 px, `btn-lg` 8/16 at 20 px — so a large button reads as larger, not zoomed. Use them as shipped; do not derive a fourth size with `em` padding. Weight is `$font-weight-normal`; `fw-semibold` on a button is a deliberate emphasis choice, not a default.
+
+Choose action rank, then a variant whose rest, hover, focus, active/checked, and disabled treatment works on its actual surface ([SKILL.md](../SKILL.md) → Hierarchy & actions). Do not override native button states with background or text utilities.
 
 ### Button Group
+
+Keep joined groups on one line only while their labels and targets fit. For narrow filters or
+review controls, use a select or independently spaced wrapping buttons; `flex-wrap` alone does
+not make joined corners and shared borders into a coherent multiline group.
 
 ```html
 <div class="btn-group" role="group" aria-label="Basic example">
@@ -219,7 +242,7 @@ Choose the `btn-*` class by contrast rather than by taste ([SKILL.md](../SKILL.m
 	<img src="..." class="card-img-top" alt="..." />
 	<div class="card-body">
 		<h5 class="card-title">Title</h5>
-		<h6 class="card-subtitle mb-2 text-body-secondary">Subtitle</h6>
+		<h6 class="card-subtitle mb-2">Subtitle</h6>
 		<p class="card-text">Text content.</p>
 		<a href="#" class="card-link">Link</a>
 		<a href="#" class="btn btn-primary">Button</a>
@@ -227,14 +250,22 @@ Choose the `btn-*` class by contrast rather than by taste ([SKILL.md](../SKILL.m
 	<ul class="list-group list-group-flush">
 		<li class="list-group-item">Item</li>
 	</ul>
-	<div class="card-footer text-body-secondary">Footer</div>
+	<div class="card-footer">Footer</div>
 </div>
 
-<div class="card text-bg-primary">Colored card</div>
-<div class="card border-primary">Bordered card</div>
+<div class="card bg-primary-subtle">Quiet tinted card</div>
+<div class="card border-primary-subtle">Quiet bordered card</div>
+<div class="card border-0 shadow-sm">
+	Borderless raised card — page surface must differ from the card's
+</div>
+<div class="card border-0 border-top border-4 border-primary">
+	Top accent — border-0 first, or border-4 widens every side
+</div>
 <div class="card-group">Card group</div>
 <div class="row row-cols-1 row-cols-md-3 g-4">Card grid (with h-100 on cards)</div>
 ```
+
+Use `card` only where a group earns containment; try spacing and a surface change first. Card headers and footers are a 3 % tint of the body color, so `border-0` on `card-header` often reads cleaner than the shipped rule. One accent per region ([utilities.md](utilities.md) → Borders).
 
 ### Carousel
 
@@ -356,6 +387,8 @@ Multiple targets: give each panel `.multi-collapse` and point separate triggers 
 
 `.dropdown-menu-dark` is deprecated — use `data-bs-theme="dark"` on the menu or an ancestor. Dropdowns have full keyboard support (arrows, Esc) built in. A dropdown is a **command menu** — for choosing a form value use `.form-select`, never a styled dropdown pretending to be an input.
 
+A menu is a floating surface, not only a list of links: give it `dropdown-header` sections, a `dropdown-divider`, an icon, and a `small text-body-secondary` line under a `fw-semibold` label inside each `dropdown-item`, or a `row` of columns in a `p-3` menu, while keeping `dropdown-item` semantics on every choice.
+
 ### List Group
 
 ```html
@@ -403,6 +436,10 @@ Multiple targets: give each panel `.multi-collapse` and point separate triggers 
 (The `list-group-checkable` / `list-group-item-check` classes seen in Bootstrap's _examples gallery_ are custom CSS, not core — do not ship them without their styles.)
 
 ### Modal
+
+Keep width bounded and all actions vertically reachable on short viewports and enlarged text.
+Use `modal-fullscreen-*-down` only with Bootstrap modal markup; a native `<dialog>` needs its own
+measured sizing contract. Keep row-action dialogs outside table overflow ancestors.
 
 **Build a blocking dialog on the native `<dialog>`.** `showModal()` brings focus containment, Esc, an inert background, and top-layer stacking from the platform — nothing to construct, nothing to dispose when the view unmounts, and no JS instance for a virtual-DOM framework to fight with over the same nodes. Leave the element itself unpainted and put Bootstrap chrome inside it:
 
@@ -504,7 +541,9 @@ Bootstrap's modal enforces focus, adds `role="dialog"`/`aria-modal="true"`, clos
 <nav class="navbar bg-body-tertiary sticky-top">Sticky top</nav>
 
 <!-- Dark navbar: .navbar-dark is DEPRECATED — scope the theme instead -->
-<nav class="navbar bg-primary" data-bs-theme="dark">Dark-themed navbar</nav>
+<nav class="navbar bg-body-tertiary" data-bs-theme="dark">
+	<a class="navbar-brand" href="#">Dark-themed navbar</a>
+</nav>
 ```
 
 ### Navs & Tabs
@@ -592,6 +631,10 @@ Real switchable tab panels (JS-driven — buttons, not scroll anchors):
 
 ### Offcanvas
 
+Take narrow/inline thresholds, trigger parity, and open-resize-close tests from
+[responsive-layout.md](responsive-layout.md#handle-navigation-and-overlays). Match trigger and panel
+breakpoints; do not leave a hidden focus trap or scroll lock after expansion.
+
 ```html
 <button
 	class="btn btn-primary"
@@ -628,6 +671,10 @@ Real switchable tab panels (JS-driven — buttons, not scroll anchors):
 **Responsive offcanvas** — the canonical sidebar-that-becomes-a-drawer: replace `.offcanvas` with `.offcanvas-{sm|md|lg|xl|xxl}`. Content renders **inline above** that breakpoint and as an **offcanvas below** it. Close buttons inside a responsive offcanvas need an explicit `data-bs-target`. Always set `aria-labelledby` (it is conceptually a dialog; `role="dialog"` is added by JS). Width/height through `--bs-offcanvas-width` (400px) / `--bs-offcanvas-height` (30vh). Full app-shell pattern: [bootstrap-reference.md](bootstrap-reference.md) → App shell.
 
 ### Pagination
+
+On narrow screens, retain the current page and previous/next controls; reduce numbered links
+before shrinking targets. Keep pagination outside the table scroller and preserve page state
+when the presentation changes.
 
 ```html
 <nav aria-label="Search results pages">
@@ -807,11 +854,11 @@ Gotcha: the spied element must be a scroll container (height/overflow, or focusa
 ### Spinners
 
 ```html
-<div class="spinner-border text-primary" role="status">
+<div class="spinner-border" role="status">
 	<span class="visually-hidden">Loading...</span>
 </div>
 
-<div class="spinner-grow text-primary" role="status">
+<div class="spinner-grow" role="status">
 	<span class="visually-hidden">Loading...</span>
 </div>
 
@@ -841,14 +888,14 @@ Gotcha: the spied element must be a scroll container (height/overflow, or focusa
 	<tbody>
 		<tr>
 			<th scope="row">INV-1042</th>
-			<td><span class="badge text-bg-success">Paid</span></td>
+			<td><span class="badge bg-success-subtle text-reset">Paid</span></td>
 			<td class="text-end">$1,280.00</td>
 		</tr>
 	</tbody>
 </table>
 ```
 
-Modifiers (combine freely):
+Combine structural modifiers as needed; choose color variants separately:
 
 ```css
 .table-sm                 /* half padding — dense screens */
@@ -863,8 +910,8 @@ Modifiers (combine freely):
 ```
 
 - **Responsive:** wrap in `.table-responsive{-sm|-md|-lg|-xl|-xxl}` for horizontal scroll. Caveat: the wrapper clips overflowing content — dropdown menus inside a responsive table get cut off.
-- **Dark tables:** `data-bs-theme="dark"` on the `<table>` (the `.table-dark` class approach is superseded).
-- **Theming:** the `.table-*` tone classes set CSS variables, not fixed colors — `--bs-table-bg`, `--bs-table-color`, `--bs-table-striped-bg`, `--bs-table-hover-bg`, `--bs-table-active-bg`, `--bs-table-border-color`. `--bs-table-bg` is transparent by default so striping/hover layer through.
+- **Color modes:** let the uncolored `.table` follow the page. Use `data-bs-theme="dark"` only for an intentional local mode, not as a permanent setting on a table that must follow the toggle.
+- **Theming:** treat `.table-*` color variants as non-adaptive in stock 5.3; their CSS variables contain Sass-generated colors. The base table background uses the body background; the transparent default belongs to `--bs-table-accent-bg`. Inspect painted cells and their state overlays; see [color-modes.md](color-modes.md) → Tables and overlays.
 - **Sticky headers are NOT built in.** Bootstrap ships no sticky-header feature; the pattern needs a few lines of custom CSS. That, plus selection columns, `aria-sort` sorting, bulk-action bars, and responsive strategies: [bootstrap-reference.md](bootstrap-reference.md) → Dense data tables.
 
 ### Toasts
@@ -879,13 +926,12 @@ Modifiers (combine freely):
 	<div class="toast-body">Changes published.</div>
 </div>
 
-<div class="toast align-items-center text-bg-primary border-0" role="status" aria-live="polite">
+<div class="toast align-items-center bg-primary-subtle border-0" role="status" aria-live="polite">
 	<div class="d-flex">
 		<div class="toast-body">Color tone</div>
 		<button
 			type="button"
 			class="btn-close me-2 m-auto"
-			data-bs-theme="dark"
 			data-bs-dismiss="toast"
 			aria-label="Close"
 		></button>
@@ -960,15 +1006,11 @@ Bootstrap's core CSS ships **no icons**. The `.bi` SVGs in examples come from th
 The textless mark that survives both themes — dots, ticks, rings, pulses — is a glyph, not a badge ([Badge](#badge)). Inline SVG or icon font, the composition rules are the same:
 
 ```html
-<span
-	class="bi bi-circle-fill fs-6 lh-1 text-success-emphasis"
-	role="img"
-	aria-label="Healthy"
-></span>
-<span class="bi bi-circle fs-6 lh-1 text-body-secondary" role="img" aria-label="Not started"></span>
+<span class="bi bi-circle-fill fs-6 lh-1" role="img" aria-label="Healthy"></span>
+<span class="bi bi-circle fs-6 lh-1" role="img" aria-label="Not started"></span>
 ```
 
-- **Color from the emphasis tokens.** `text-*-emphasis` is the mode-adaptive tier built for marks on subtle surfaces; the plain `text-*` colors are tuned for light and thin out in dark. On a filled surface — `.active`, `.bg-primary`, `text-bg-*` — drop the tone class instead and let the fill's contrast color take the glyph ([Selection fills](#selection-fills)). Measure every mark at **≥ 3:1** against the surface it sits on, **in both themes**, against the compiled cascade — a skin's token values are its own.
+- **Inherit the owning foreground.** Keep ordinary glyphs on body or component text, including selected fills. Add `text-*-emphasis` only for a deliberate semantic tint on a known, measured surface; never apply it to every mark on a subtle fill. Measure meaningful marks at **≥ 3:1** in light and dark. Take cascade exceptions from [color-modes.md](color-modes.md).
 - **Filled and hollow say different things** — done vs pending, live vs idle — so pair glyphs that share one advance width (a filled/hollow pair from the same icon family). Mixed widths make a column of marks jitter row to row.
 - **Size with `fs-*` _and_ `lh-1`.** A glyph inherits the row's line-height, so an `fs-*` bump without `lh-1` grows the line box and pushes the row taller than its neighbors.
 - Give the mark an accessible name (`role="img"` + `aria-label`, or a `.visually-hidden` word next to an `aria-hidden` glyph) — a mark whose only meaning is its color and shape is color-only status.
@@ -1002,12 +1044,17 @@ The textless mark that survives both themes — dots, ticks, rings, pulses — i
 
 ### Selection fills
 
-A selected row, pill, or filter chip repaints everything inside it — marks included. These traps stay invisible until the selected state is captured in both themes:
+Keep the component's selected foreground on ordinary labels and glyphs. Remove a competing
+semantic tint before changing its active fill; handle an independently filled badge through
+[color-modes.md](color-modes.md) → Alerts, buttons, and selection.
 
-- **A mark on an active fill of the same family disappears.** `.active` on a `list-group-item`, `nav-pill`, or `page-item` sets the item's own color, and a `text-bg-primary`-family mark inside it inherits or loses to that fill — present in the markup, gone on screen. Carry no tone class inside the fill ([SKILL.md](../SKILL.md) → Surfaces, color, contrast). Verify by capturing the selected row, not by reading the class list.
-- **`btn-check` filter labels invert in dark.** A `btn-outline-secondary` label reads as "chosen" in light and as "muted" in dark, because the checked fill and the surface swap relative weight. Give chosen filters an accent tone class (a real theme color) rather than the neutral outline, so "chosen" reads the same way in both modes.
+Verify that chosen and unchosen filters remain distinguishable in light and dark. Do not assume
+that a neutral outline always inverts meaning or that an accent hue repairs it. Preserve the
+checked/pressed state and add a visible non-color cue when the fill alone is ambiguous.
 
-Exactly one item in a selection carries `aria-current` — the visual fill and the announced state must be the same item.
+Use `aria-current` for current navigation, `aria-selected` for tabs, and native checked state for
+checkboxes/radios. Match the visual state to the applicable pattern; do not apply `aria-current`
+to every selection widget.
 
 ### Navigation & overlays
 
@@ -1017,5 +1064,5 @@ Exactly one item in a selection carries `aria-current` — the visual fill and t
 
 ### Theming
 
-- Components consume CSS variables — favor `text-bg-*`, `*-subtle`, and `data-bs-theme` over one-off colors; the deprecated `*-dark` component classes (`navbar-dark`, `dropdown-menu-dark`, `btn-close-white`, `carousel-dark`) all map to `data-bs-theme="dark"`.
+- Preserve native component colors and prefer adaptive quiet surfaces. Take ownership, solid exceptions, nested modes, and deprecated-class replacements from [color-modes.md](color-modes.md). Do not assume every component variable adapts.
 - To restyle a component, override its `--bs-{component}-*` variables in your own scope instead of writing high-specificity rules — see [bootstrap-reference.md](bootstrap-reference.md) → Theming & design tokens.

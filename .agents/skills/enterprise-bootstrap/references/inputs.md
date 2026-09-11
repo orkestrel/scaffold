@@ -34,8 +34,8 @@ value is a set.
   `spinner-border spinner-border-sm` in the control's own chrome. Leave the control operable unless
   its value depends on the work.
 - **required** — state the requirement in the visible label and set the `required` attribute on the
-  control. A `text-danger` asterisk is decoration and carries `aria-hidden="true"`; the word in the
-  label is what a screen reader user gets.
+  control. An optional decorative asterisk inherits the label color and carries `aria-hidden="true"`;
+  keep the requirement in words rather than relying on the mark or a danger tint.
 - **with help** — a `.form-text` under the control, wired with `aria-describedby` beside the error
   message rather than in place of it.
 - **empty** — the set holds nothing. Say what an entry would be, not "nothing here".
@@ -44,6 +44,13 @@ value is a set.
 
 ## Rules that cross every category
 
+- **Start with one reading column.** Expand related fields only when their labels, errors, and
+  controls fit the actual container. Keep help/errors in natural flow and submit/cancel reachable
+  at 320 CSS px and enlarged text; take the layout contract from [responsive-layout.md](responsive-layout.md).
+- **Preserve input behavior on touch.** Use the correct `type`, `inputmode`, and `autocomplete`;
+  never disable zoom to keep a form still. Enlarge the effective label hit area for checkboxes and
+  switches without shrinking the text. Emulated viewport tests do not prove soft-keyboard behavior.
+
 - **Keep a read-only field on the same affordance the edit state uses.** Take `readonly`, or
   `disabled` plus a carrier, and neutralize the chrome with one transparent combination declared
   once by name — the combination is a class contract, so declare it and reuse it rather than
@@ -51,8 +58,12 @@ value is a set.
   so the read view and the edit view reflow against each other.
 - **Give a locked select `disabled` and a hidden input beside it.** A native select cannot be
   read-only, so `disabled` stops its value submitting and the hidden input carries that value.
-- **Give a chosen filter an accent tone class, not the neutral outline.** A `btn-outline-secondary`
-  label reads as chosen in light and as muted in dark, so one markup says opposite things.
+- **Verify a chosen filter in light and dark.** Keep its native checked/pressed state and a
+  distinguishable visual treatment; take selection rules from [components.md](components.md) →
+  Selection fills. Do not prescribe an accent color as a substitute for that check.
+- **Keep native control foregrounds and states.** For quiet chip or group backgrounds, inherit
+  ordinary text and follow [color-modes.md](color-modes.md). Do not neutralize validation feedback
+  or recolor every label to match its background.
 - **Give each field one visible label**, per [bootstrap-reference.md](bootstrap-reference.md) →
   Forms in production. Take labels, validation timing, and the error summary from that section, and
   the affordance that carries them from [The catalog](#the-catalog).
@@ -258,8 +269,8 @@ flight, and reverts visibly when it fails.
 **Alternates.** Take a segmented `.btn-group` of `.btn-check` radios, at rung 2, when the choice
 sits in a toolbar or a filter bar and every option fits on one row without wrapping; give the group
 `role="radiogroup"` and one accessible name. A radio group and a segmented group draw the same
-question, and the list size decides between them. Give a chosen filter an accent tone class rather
-than `btn-outline-secondary`.
+question, and the list size decides between them. Verify the chosen-state contract rather than
+requiring either a neutral or an accent hue.
 
 **States.** The fixed set, applied to the group rather than to one option. Mark the group invalid,
 name it in the message, and keep the error under the last row.
@@ -403,7 +414,8 @@ toast.
 ### An ordered set of tags
 
 **Default.** Bootstrap ships no tags input. Compose one at rung 2 from a text field that commits on
-Enter plus a row of chips, each chip a `.badge` carrying a `btn-close` with its own accessible name.
+Enter plus a row of quiet chips, each carrying a `btn-close` with its own accessible name.
+Use a utility-composed span so text inherits and the close control retains its normal font size.
 
 ```html
 <label for="tag-entry" class="form-label">Tags</label>
@@ -411,18 +423,17 @@ Enter plus a row of chips, each chip a `.badge` carrying a `btn-close` with its 
 <div id="tag-entry-help" class="form-text">Press Enter to add a tag.</div>
 <ul class="list-unstyled d-flex flex-wrap gap-2 mt-2">
 	<li>
-		<span class="badge text-bg-secondary d-inline-flex align-items-center gap-1">
+		<span class="d-inline-flex align-items-center gap-2 bg-secondary-subtle rounded-pill px-2 py-1">
 			Priority
-			<button
-				type="button"
-				class="btn-close"
-				data-bs-theme="dark"
-				aria-label="Remove Priority"
-			></button>
+			<button type="button" class="btn-close" aria-label="Remove Priority"></button>
 		</span>
 	</li>
 </ul>
 ```
+
+Keep tag text inherited and let the close icon follow the active mode. Measure the close button
+against the chip and its hit area against the package target floor. Take a retained `.badge`
+through [color-modes.md](color-modes.md) → Badges and removable tags.
 
 **Alternates.** Where the tags come from a fixed vocabulary, this is the any-of-many category and the
 list is the better control. Where order carries meaning, give the reorder a non-drag path — a move
