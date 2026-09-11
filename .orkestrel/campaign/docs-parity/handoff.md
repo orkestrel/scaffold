@@ -33,7 +33,7 @@ for these packages. Keep prompt.txt unchanged until this layer is prepared.
 | router | 0.0.14 | prepared at fbc69d7; final prepublish/pack accepted; campaign/main pushed; clean canonical main; unpublished |
 | table | 0.0.5 | prepared at f4805ea; final prepublish/pack accepted; campaign/main pushed; clean canonical main; unpublished |
 | template | 0.0.7 | prepared at c053c4d; final prepublish/pack accepted; campaign/main pushed; clean canonical main; unpublished |
-| websocket | 0.0.12 | source accepted and committed at b60a37c; full source prepublish green; final preparation pending |
+| websocket | 0.0.12 | prepared at cc62597; final prepublish/pack accepted; campaign/main pushed; clean canonical main; unpublished |
 
 The next-layer plan is d7n-next-layer-plan.md. Fresh origin/main readings require
 no merges for its selected packages. Accepted tooling is installed throughout
