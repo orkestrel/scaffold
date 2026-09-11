@@ -1,0 +1,1 @@
+{"name":"@vitest/browser-playwright","range":"^4","lookup":"found","latest":"4.1.11","major":5}

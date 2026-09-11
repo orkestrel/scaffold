@@ -1,0 +1,31 @@
+npm notice
+npm notice 📦  @orkestrel/workflow@0.0.18
+npm notice Tarball Contents
+npm notice 1.1kB LICENSE
+npm notice 2.3kB README.md
+npm notice 12.5kB dist/src/browser/index.d.ts
+npm notice 13.3kB dist/src/browser/index.js
+npm notice 18.5kB dist/src/browser/index.js.map
+npm notice 208.1kB dist/src/core/index.cjs
+npm notice 382.5kB dist/src/core/index.cjs.map
+npm notice 250.6kB dist/src/core/index.d.cts
+npm notice 250.6kB dist/src/core/index.d.ts
+npm notice 202.6kB dist/src/core/index.js
+npm notice 380.3kB dist/src/core/index.js.map
+npm notice 4.3kB dist/src/server/index.cjs
+npm notice 5.2kB dist/src/server/index.cjs.map
+npm notice 4.2kB dist/src/server/index.d.cts
+npm notice 4.2kB dist/src/server/index.d.ts
+npm notice 4.2kB dist/src/server/index.js
+npm notice 5.2kB dist/src/server/index.js.map
+npm notice 5.1kB package.json
+npm notice Tarball Details
+npm notice name: @orkestrel/workflow
+npm notice version: 0.0.18
+npm notice filename: orkestrel-workflow-0.0.18.tgz
+npm notice package size: 434.5 kB
+npm notice unpacked size: 1.8 MB
+npm notice shasum: 7e9bb5ed17795ef03a701f58a8dfc3e94c3f2803
+npm notice integrity: sha512-1r7158aaemVla[...]TESzZD48DTRkw==
+npm notice total files: 18
+npm notice

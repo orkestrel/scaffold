@@ -9,9 +9,9 @@ The owner uploads only after final package closures and the operator handoff.
 | Brief | 0.0.8 | release 5cc84a937c929a2d84961353871346107d1ef066 | Closed; clean canonical main, campaign/main pushed; owner upload pending |
 | MCP | 0.0.29 | release 45ba0a4b5741a79f32500479de9549c0e6a17839 | Closed; clean canonical main, campaign/main pushed; owner upload pending |
 | Middleware | 0.0.20 | release af01ea39388c05da52fb954476cac0ba423a5f23 | Closed; clean canonical main, campaign/main pushed; owner upload pending |
-| Program | 0.0.13 | 32f21e93dec3ccb49153f04b6c1131c69d8e8cdc | Fresh visit, final prepublish and actual pack passed; release review active |
+| Program | 0.0.13 | release f474b0aa1e8ab0565c8fe0f818ec816e7c5052cb | Closed; clean canonical main, campaign/main pushed; owner upload pending |
 | Worker | 0.0.12 | f65b179e04757b7af8565447c2ff29201e938e07 | Fresh visit, final prepublish and actual pack passed; release review active |
-| Workflow | 0.0.18 | source 1a67d2bc01609ca7a6f8fbf058525a9b85ef77c0 | Fresh visit running |
+| Workflow | 0.0.18 | 4cbf69287ebd60f1db72f86a4d66a1879e4e9860 | Fresh visit, final prepublish and actual pack passed; release review active |
 
 Brief's accepted resume preserved the completed install and old stopped receipts.
 Final metadata and full dist match its actual archive; runtime changes and the
