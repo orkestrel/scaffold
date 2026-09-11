@@ -1,0 +1,748 @@
+diff -r -w -B '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-program-final-registry-visit-pack/baseline/package/dist/src/core/index.cjs /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-program-final-registry-visit-pack/extract/package/dist/src/core/index.cjs
+8c8,11
+< /** Names the default definition validation policy for `createProgram` / `ProgramManager.add`. */
+---
+> /**
+> * Names the default definition validation policy, `true`, for `createProgram` /
+> * `ProgramManager.add`.
+> */
+10c13,16
+< /** Lists every {@link Status} literal — the source the union and its guard derive from. */
+---
+> /**
+> * Lists every {@link Status} literal in tally order — the source the union and its
+> * guard derive from.
+> */
+24c30,33
+< /** Names the reserved working-subject key a batch's aggregate projection is written under. */
+---
+> /**
+> * Names the reserved working-subject key a batch's aggregate projection is written
+> * under, `'aggregate'`.
+> */
+26c35,38
+< /** Names the reserved working-subject key the authority's outcome projection is written under. */
+---
+> /**
+> * Names the reserved working-subject key the authority's outcome projection is
+> * written under, `'outcome'`.
+> */
+31c43,44
+< * Reports a coded programmer error thrown by the program layer.
+---
+> * Reports a coded programmer error thrown by the program layer, carrying a
+> * machine-readable code and an optional context and cause.
+35,36c48,49
+< * authored rating-line or notice id. `MISSING` — an
+< * authored notice or qualification ruling scope names no rating line.
+---
+> * authored rating-line or notice id. `MISSING` — an authored notice or
+> * qualification ruling scope names no rating line.
+456c469
+< * removes the line BEFORE the rater is invoked — the excluded line is never
+---
+> * removes the line before the rater is invoked — the excluded line is never
+484c497
+< * removed but others rated) is `conditional`. When the definition OMITS
+---
+> * removed but others rated) is `conditional`. When the definition omits
+486c499
+< * or `eligible` and is NEVER `unrated`. Otherwise a subject with no successful
+---
+> * or `eligible` and is never `unrated`. Otherwise a subject with no successful
+637,638c650,651
+< * line's worksheet trail, and the authority's. A `decision` is present ONLY when
+< * an authority ran (`options.authority`), the execution SUCCEEDED (`success`),
+---
+> * line's worksheet trail, and the authority's. A `decision` is present only when
+> * an authority ran (`options.authority`), the execution succeeded (`success`),
+868c881
+< * field is literally `''` land in the SAME partition, and a numeric `1`
+---
+> * field is literally `''` land in the same partition, and a numeric `1`
+889c902
+< * Returns a FRESH record — `sums` is never mutated. Only finite numbers
+---
+> * Returns a fresh record — `sums` is never mutated. Only finite numbers
+979c992
+< * OWN partition, located by the same {@link formatGroupKey} key
+---
+> * own partition, located by the same {@link formatGroupKey} key
+1143c1156
+< * requires every subject execution to succeed AND the gate evaluation to have
+---
+> * requires every subject execution to succeed and the gate evaluation to have
+1221a1235,1237
+> * @remarks
+> * An absent `scope` is omitted entirely rather than stored as `undefined`.
+> *
+1243a1260,1263
+> * @remarks
+> * `fields` is copied into a fresh array; an absent `partition` or `gates` is
+> * omitted entirely rather than stored as `undefined`.
+> *
+1265,1266c1285,1286
+< * Composes one qualifier and one rater over a shared reason engine and executes
+< * single subjects or aggregate-aware batches.
+---
+> * Composes one qualifier and one rater over a shared reason engine, compiling one
+> * authored definition and executing single subjects or aggregate-aware batches.
+1272,1273c1292,1293
+< * ORIGINAL subject; the qualifier's aggregate projection stays private. When no
+< * qualifier, rater, or engine is injected the program creates ONE shared
+---
+> * original subject; the qualifier's aggregate projection stays private. When no
+> * qualifier, rater, or engine is injected the program creates one shared
+1283,1284c1303,1304
+< * as its cause. `destroy()` is idempotent and REENTRANCY-SAFE — the destroyed
+< * flag is set BEFORE any teardown or the `destroy` event fires, so a listener
+---
+> * as its cause. `destroy()` is idempotent and reentrancy-safe — the destroyed
+> * flag is set before any teardown or the `destroy` event fires, so a listener
+1412c1432
+< 	* The destroyed flag is set BEFORE any teardown or the `destroy` event, so a
+---
+> 	* The destroyed flag is set before any teardown or the `destroy` event, so a
+1521c1541
+< * OWNS its ordered `#programs` collection and its own {@link Emitter} over
+---
+> * owns its ordered `#programs` collection and its own {@link Emitter} over
+1525c1545
+< * destroys only the owned shared dependencies, and tears the emitter down LAST.
+---
+> * destroys only the owned shared dependencies, and tears the emitter down last.
+1528c1548
+< * `destroy()` is REENTRANCY-SAFE — the destroyed flag is set BEFORE any teardown
+---
+> * `destroy()` is reentrancy-safe — the destroyed flag is set before any teardown
+1738c1758
+< 	* The destroyed flag is set BEFORE any teardown or the `remove` and `destroy`
+---
+> 	* The destroyed flag is set before any teardown or the `remove` and `destroy`
+1785c1805
+< * Creates one compiled program over a qualifier and rater.
+---
+> * Creates one compiled {@link ProgramInterface} over a qualifier and rater.
+1790,1792c1810,1812
+< * {@link DEFAULT_PROGRAM_VALIDATE}. A standalone program creates and
+< * OWNS one shared quantitative-plus-logical reason engine and injects it into the
+< * qualifier and rater it creates; injected dependencies remain caller-owned.
+---
+> * {@link DEFAULT_PROGRAM_VALIDATE}. A standalone program creates and owns one
+> * shared quantitative-plus-logical reason engine and injects it into the qualifier
+> * and rater it creates; injected dependencies remain caller-owned.
+1798c1818
+< * @example
+---
+> * @example Compile a program and a manager
+1800c1820
+< * import { buildProgramDefinition, createProgram } from '@orkestrel/program'
+---
+> * import { buildProgramDefinition, createProgram, createProgramManager } from '@orkestrel/program'
+1802a1823
+> *
+1803a1825,1826
+> * const manager = createProgramManager({ programs: [definition] })
+> *
+1804a1828
+> *
+1805a1830
+> * manager.destroy()
+1812c1837
+< * Creates one ordered manager over compiled programs.
+---
+> * Creates one ordered {@link ProgramManagerInterface} over compiled programs.
+diff -r -w -B '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-program-final-registry-visit-pack/baseline/package/dist/src/core/index.d.cts /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-program-final-registry-visit-pack/extract/package/dist/src/core/index.d.cts
+1,20c1,20
+< import { Eligibility } from '@orkestrel/qualifier';
+< import { EmitterErrorHandler } from '@orkestrel/emitter';
+< import { EmitterHooks } from '@orkestrel/emitter';
+< import { EmitterInterface } from '@orkestrel/emitter';
+< import { EvaluatorInterface } from '@orkestrel/reason';
+< import { FieldPath } from '@orkestrel/contract';
+< import { Guard } from '@orkestrel/contract';
+< import { JSONValue } from '@orkestrel/contract';
+< import { LineDefinition } from '@orkestrel/rater';
+< import { LogicalDefinition } from '@orkestrel/reason';
+< import { LogicalResult } from '@orkestrel/reason';
+< import { Premise } from '@orkestrel/qualifier';
+< import { QualificationDefinition } from '@orkestrel/qualifier';
+< import { QualificationResult } from '@orkestrel/qualifier';
+< import { QualifierInterface } from '@orkestrel/qualifier';
+< import { RaterInterface } from '@orkestrel/rater';
+< import { RatingDefinition } from '@orkestrel/rater';
+< import { RatingResult } from '@orkestrel/rater';
+< import { ReasonInterface } from '@orkestrel/reason';
+< import { Subject } from '@orkestrel/reason';
+---
+> import type { Eligibility } from '@orkestrel/qualifier';
+> import type { EmitterErrorHandler } from '@orkestrel/emitter';
+> import type { EmitterHooks } from '@orkestrel/emitter';
+> import type { EmitterInterface } from '@orkestrel/emitter';
+> import type { EvaluatorInterface } from '@orkestrel/reason';
+> import type { FieldPath } from '@orkestrel/contract';
+> import type { Guard } from '@orkestrel/contract';
+> import type { JSONValue } from '@orkestrel/contract';
+> import type { LineDefinition } from '@orkestrel/rater';
+> import type { LogicalDefinition } from '@orkestrel/reason';
+> import type { LogicalResult } from '@orkestrel/reason';
+> import type { Premise } from '@orkestrel/qualifier';
+> import type { QualificationDefinition } from '@orkestrel/qualifier';
+> import type { QualificationResult } from '@orkestrel/qualifier';
+> import type { QualifierInterface } from '@orkestrel/qualifier';
+> import type { RaterInterface } from '@orkestrel/rater';
+> import type { RatingDefinition } from '@orkestrel/rater';
+> import type { RatingResult } from '@orkestrel/rater';
+> import type { ReasonInterface } from '@orkestrel/reason';
+> import type { Subject } from '@orkestrel/reason';
+22c22,25
+< /** Names the reserved working-subject key a batch's aggregate projection is written under. */
+---
+> /**
+>  * Names the reserved working-subject key a batch's aggregate projection is written
+>  * under, `'aggregate'`.
+>  */
+160a164,167
+>            * @remarks
+>            * `fields` is copied into a fresh array; an absent `partition` or `gates` is
+>            * omitted entirely rather than stored as `undefined`.
+>            *
+179c186
+<            * OWN partition, located by the same {@link formatGroupKey} key
+---
+>            * own partition, located by the same {@link formatGroupKey} key
+227c234
+<            * requires every subject execution to succeed AND the gate evaluation to have
+---
+>            * requires every subject execution to succeed and the gate evaluation to have
+312a320,322
+>            * @remarks
+>            * An absent `scope` is omitted entirely rather than stored as `undefined`.
+>            *
+404,405c414,415
+<            * line's worksheet trail, and the authority's. A `decision` is present ONLY when
+<            * an authority ran (`options.authority`), the execution SUCCEEDED (`success`),
+---
+>            * line's worksheet trail, and the authority's. A `decision` is present only when
+>            * an authority ran (`options.authority`), the execution succeeded (`success`),
+466c476
+<            * Creates one compiled program over a qualifier and rater.
+---
+>            * Creates one compiled {@link ProgramInterface} over a qualifier and rater.
+471,473c481,483
+<            * {@link DEFAULT_PROGRAM_VALIDATE}. A standalone program creates and
+<            * OWNS one shared quantitative-plus-logical reason engine and injects it into the
+<            * qualifier and rater it creates; injected dependencies remain caller-owned.
+---
+>            * {@link DEFAULT_PROGRAM_VALIDATE}. A standalone program creates and owns one
+>            * shared quantitative-plus-logical reason engine and injects it into the qualifier
+>            * and rater it creates; injected dependencies remain caller-owned.
+479c489
+<            * @example
+---
+>            * @example Compile a program and a manager
+481c491
+<            * import { buildProgramDefinition, createProgram } from '@orkestrel/program'
+---
+>            * import { buildProgramDefinition, createProgram, createProgramManager } from '@orkestrel/program'
+483a494
+>            *
+484a496,497
+>            * const manager = createProgramManager({ programs: [definition] })
+>            *
+485a499
+>            *
+486a501
+>            * manager.destroy()
+492c507
+<            * Creates one ordered manager over compiled programs.
+---
+>            * Creates one ordered {@link ProgramManagerInterface} over compiled programs.
+532c547,550
+<           /** Names the default definition validation policy for `createProgram` / `ProgramManager.add`. */
+---
+>           /**
+>            * Names the default definition validation policy, `true`, for `createProgram` /
+>            * `ProgramManager.add`.
+>            */
+543c561
+<            * removed but others rated) is `conditional`. When the definition OMITS
+---
+>            * removed but others rated) is `conditional`. When the definition omits
+545c563
+<            * or `eligible` and is NEVER `unrated`. Otherwise a subject with no successful
+---
+>            * or `eligible` and is never `unrated`. Otherwise a subject with no successful
+603c621
+<            * field is literally `''` land in the SAME partition, and a numeric `1`
+---
+>            * field is literally `''` land in the same partition, and a numeric `1`
+927c945,948
+<           /** Names the reserved working-subject key the authority's outcome projection is written under. */
+---
+>           /**
+>            * Names the reserved working-subject key the authority's outcome projection is
+>            * written under, `'outcome'`.
+>            */
+931,932c952,953
+<            * Composes one qualifier and one rater over a shared reason engine and executes
+<            * single subjects or aggregate-aware batches.
+---
+>            * Composes one qualifier and one rater over a shared reason engine, compiling one
+>            * authored definition and executing single subjects or aggregate-aware batches.
+938,939c959,960
+<            * ORIGINAL subject; the qualifier's aggregate projection stays private. When no
+<            * qualifier, rater, or engine is injected the program creates ONE shared
+---
+>            * original subject; the qualifier's aggregate projection stays private. When no
+>            * qualifier, rater, or engine is injected the program creates one shared
+949,950c970,971
+<            * as its cause. `destroy()` is idempotent and REENTRANCY-SAFE — the destroyed
+<            * flag is set BEFORE any teardown or the `destroy` event fires, so a listener
+---
+>            * as its cause. `destroy()` is idempotent and reentrancy-safe — the destroyed
+>            * flag is set before any teardown or the `destroy` event fires, so a listener
+1029c1050
+<                                  * ORIGINAL subject. Notices, status, optional authority, and the optional
+---
+>                                  * original subject. Notices, status, optional authority, and the optional
+1081c1102
+<                                            * The destroyed flag is set BEFORE any teardown or the `destroy` event, so a
+---
+>                                            * The destroyed flag is set before any teardown or the `destroy` event, so a
+1106c1127
+<                                           * final decision. An omitted `rating` authors an ELIGIBILITY-ONLY program — the
+---
+>                                           * final decision. An omitted `rating` authors an eligibility-only program — the
+1133c1154,1155
+<                                           * Reports a coded programmer error thrown by the program layer.
+---
+>                                           * Reports a coded programmer error thrown by the program layer, carrying a
+>                                           * machine-readable code and an optional context and cause.
+1137,1138c1159,1160
+<                                           * authored rating-line or notice id. `MISSING` — an
+<                                           * authored notice or qualification ruling scope names no rating line.
+---
+>                                           * authored rating-line or notice id. `MISSING` — an authored notice or
+>                                           * qualification ruling scope names no rating line.
+1258c1280
+<                                                        * ORIGINAL subject. Notices, status, optional authority, and the optional
+---
+>                                                        * original subject. Notices, status, optional authority, and the optional
+1310c1332
+<                                                                  * The destroyed flag is set BEFORE any teardown or the `destroy` event, so a
+---
+>                                                                  * The destroyed flag is set before any teardown or the `destroy` event, so a
+1332c1354
+<                                                                 * OWNS its ordered `#programs` collection and its own {@link Emitter} over
+---
+>                                                                 * owns its ordered `#programs` collection and its own {@link Emitter} over
+1336c1358
+<                                                                 * destroys only the owned shared dependencies, and tears the emitter down LAST.
+---
+>                                                                 * destroys only the owned shared dependencies, and tears the emitter down last.
+1339c1361
+<                                                                 * `destroy()` is REENTRANCY-SAFE — the destroyed flag is set BEFORE any teardown
+---
+>                                                                 * `destroy()` is reentrancy-safe — the destroyed flag is set before any teardown
+1538c1560
+<                                                                                          * The destroyed flag is set BEFORE any teardown or the `remove` and `destroy`
+---
+>                                                                                          * The destroyed flag is set before any teardown or the `remove` and `destroy`
+1728c1750
+<                                                                                                                 * The destroyed flag is set BEFORE any teardown or the `remove` and `destroy`
+---
+>                                                                                                                 * The destroyed flag is set before any teardown or the `remove` and `destroy`
+1805c1827
+<                                                                                                                    * Present ONLY when the program HAS an `authority`, the execution SUCCEEDED
+---
+>                                                                                                                    * Present only when the program has an `authority`, the execution succeeded
+1832c1854
+<                                                                                                                * removes the line BEFORE the rater is invoked — the excluded line is never
+---
+>                                                                                                                * removes the line before the rater is invoked — the excluded line is never
+1851c1873,1876
+<                                                                                                               /** Lists every {@link Status} literal — the source the union and its guard derive from. */
+---
+>                                                                                                               /**
+>                                                                                                                * Lists every {@link Status} literal in tally order — the source the union and its
+>                                                                                                                * guard derive from.
+>                                                                                                                */
+1858c1883
+<                                                                                                                * Returns a FRESH record — `sums` is never mutated. Only finite numbers
+---
+>                                                                                                                * Returns a fresh record — `sums` is never mutated. Only finite numbers
+diff -r -w -B '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-program-final-registry-visit-pack/baseline/package/dist/src/core/index.d.ts /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-program-final-registry-visit-pack/extract/package/dist/src/core/index.d.ts
+1,20c1,20
+< import { Eligibility } from '@orkestrel/qualifier';
+< import { EmitterErrorHandler } from '@orkestrel/emitter';
+< import { EmitterHooks } from '@orkestrel/emitter';
+< import { EmitterInterface } from '@orkestrel/emitter';
+< import { EvaluatorInterface } from '@orkestrel/reason';
+< import { FieldPath } from '@orkestrel/contract';
+< import { Guard } from '@orkestrel/contract';
+< import { JSONValue } from '@orkestrel/contract';
+< import { LineDefinition } from '@orkestrel/rater';
+< import { LogicalDefinition } from '@orkestrel/reason';
+< import { LogicalResult } from '@orkestrel/reason';
+< import { Premise } from '@orkestrel/qualifier';
+< import { QualificationDefinition } from '@orkestrel/qualifier';
+< import { QualificationResult } from '@orkestrel/qualifier';
+< import { QualifierInterface } from '@orkestrel/qualifier';
+< import { RaterInterface } from '@orkestrel/rater';
+< import { RatingDefinition } from '@orkestrel/rater';
+< import { RatingResult } from '@orkestrel/rater';
+< import { ReasonInterface } from '@orkestrel/reason';
+< import { Subject } from '@orkestrel/reason';
+---
+> import type { Eligibility } from '@orkestrel/qualifier';
+> import type { EmitterErrorHandler } from '@orkestrel/emitter';
+> import type { EmitterHooks } from '@orkestrel/emitter';
+> import type { EmitterInterface } from '@orkestrel/emitter';
+> import type { EvaluatorInterface } from '@orkestrel/reason';
+> import type { FieldPath } from '@orkestrel/contract';
+> import type { Guard } from '@orkestrel/contract';
+> import type { JSONValue } from '@orkestrel/contract';
+> import type { LineDefinition } from '@orkestrel/rater';
+> import type { LogicalDefinition } from '@orkestrel/reason';
+> import type { LogicalResult } from '@orkestrel/reason';
+> import type { Premise } from '@orkestrel/qualifier';
+> import type { QualificationDefinition } from '@orkestrel/qualifier';
+> import type { QualificationResult } from '@orkestrel/qualifier';
+> import type { QualifierInterface } from '@orkestrel/qualifier';
+> import type { RaterInterface } from '@orkestrel/rater';
+> import type { RatingDefinition } from '@orkestrel/rater';
+> import type { RatingResult } from '@orkestrel/rater';
+> import type { ReasonInterface } from '@orkestrel/reason';
+> import type { Subject } from '@orkestrel/reason';
+22c22,25
+< /** Names the reserved working-subject key a batch's aggregate projection is written under. */
+---
+> /**
+>  * Names the reserved working-subject key a batch's aggregate projection is written
+>  * under, `'aggregate'`.
+>  */
+160a164,167
+>            * @remarks
+>            * `fields` is copied into a fresh array; an absent `partition` or `gates` is
+>            * omitted entirely rather than stored as `undefined`.
+>            *
+179c186
+<            * OWN partition, located by the same {@link formatGroupKey} key
+---
+>            * own partition, located by the same {@link formatGroupKey} key
+227c234
+<            * requires every subject execution to succeed AND the gate evaluation to have
+---
+>            * requires every subject execution to succeed and the gate evaluation to have
+312a320,322
+>            * @remarks
+>            * An absent `scope` is omitted entirely rather than stored as `undefined`.
+>            *
+404,405c414,415
+<            * line's worksheet trail, and the authority's. A `decision` is present ONLY when
+<            * an authority ran (`options.authority`), the execution SUCCEEDED (`success`),
+---
+>            * line's worksheet trail, and the authority's. A `decision` is present only when
+>            * an authority ran (`options.authority`), the execution succeeded (`success`),
+466c476
+<            * Creates one compiled program over a qualifier and rater.
+---
+>            * Creates one compiled {@link ProgramInterface} over a qualifier and rater.
+471,473c481,483
+<            * {@link DEFAULT_PROGRAM_VALIDATE}. A standalone program creates and
+<            * OWNS one shared quantitative-plus-logical reason engine and injects it into the
+<            * qualifier and rater it creates; injected dependencies remain caller-owned.
+---
+>            * {@link DEFAULT_PROGRAM_VALIDATE}. A standalone program creates and owns one
+>            * shared quantitative-plus-logical reason engine and injects it into the qualifier
+>            * and rater it creates; injected dependencies remain caller-owned.
+479c489
+<            * @example
+---
+>            * @example Compile a program and a manager
+481c491
+<            * import { buildProgramDefinition, createProgram } from '@orkestrel/program'
+---
+>            * import { buildProgramDefinition, createProgram, createProgramManager } from '@orkestrel/program'
+483a494
+>            *
+484a496,497
+>            * const manager = createProgramManager({ programs: [definition] })
+>            *
+485a499
+>            *
+486a501
+>            * manager.destroy()
+492c507
+<            * Creates one ordered manager over compiled programs.
+---
+>            * Creates one ordered {@link ProgramManagerInterface} over compiled programs.
+532c547,550
+<           /** Names the default definition validation policy for `createProgram` / `ProgramManager.add`. */
+---
+>           /**
+>            * Names the default definition validation policy, `true`, for `createProgram` /
+>            * `ProgramManager.add`.
+>            */
+543c561
+<            * removed but others rated) is `conditional`. When the definition OMITS
+---
+>            * removed but others rated) is `conditional`. When the definition omits
+545c563
+<            * or `eligible` and is NEVER `unrated`. Otherwise a subject with no successful
+---
+>            * or `eligible` and is never `unrated`. Otherwise a subject with no successful
+603c621
+<            * field is literally `''` land in the SAME partition, and a numeric `1`
+---
+>            * field is literally `''` land in the same partition, and a numeric `1`
+927c945,948
+<           /** Names the reserved working-subject key the authority's outcome projection is written under. */
+---
+>           /**
+>            * Names the reserved working-subject key the authority's outcome projection is
+>            * written under, `'outcome'`.
+>            */
+931,932c952,953
+<            * Composes one qualifier and one rater over a shared reason engine and executes
+<            * single subjects or aggregate-aware batches.
+---
+>            * Composes one qualifier and one rater over a shared reason engine, compiling one
+>            * authored definition and executing single subjects or aggregate-aware batches.
+938,939c959,960
+<            * ORIGINAL subject; the qualifier's aggregate projection stays private. When no
+<            * qualifier, rater, or engine is injected the program creates ONE shared
+---
+>            * original subject; the qualifier's aggregate projection stays private. When no
+>            * qualifier, rater, or engine is injected the program creates one shared
+949,950c970,971
+<            * as its cause. `destroy()` is idempotent and REENTRANCY-SAFE — the destroyed
+<            * flag is set BEFORE any teardown or the `destroy` event fires, so a listener
+---
+>            * as its cause. `destroy()` is idempotent and reentrancy-safe — the destroyed
+>            * flag is set before any teardown or the `destroy` event fires, so a listener
+1029c1050
+<                                  * ORIGINAL subject. Notices, status, optional authority, and the optional
+---
+>                                  * original subject. Notices, status, optional authority, and the optional
+1081c1102
+<                                            * The destroyed flag is set BEFORE any teardown or the `destroy` event, so a
+---
+>                                            * The destroyed flag is set before any teardown or the `destroy` event, so a
+1106c1127
+<                                           * final decision. An omitted `rating` authors an ELIGIBILITY-ONLY program — the
+---
+>                                           * final decision. An omitted `rating` authors an eligibility-only program — the
+1133c1154,1155
+<                                           * Reports a coded programmer error thrown by the program layer.
+---
+>                                           * Reports a coded programmer error thrown by the program layer, carrying a
+>                                           * machine-readable code and an optional context and cause.
+1137,1138c1159,1160
+<                                           * authored rating-line or notice id. `MISSING` — an
+<                                           * authored notice or qualification ruling scope names no rating line.
+---
+>                                           * authored rating-line or notice id. `MISSING` — an authored notice or
+>                                           * qualification ruling scope names no rating line.
+1258c1280
+<                                                        * ORIGINAL subject. Notices, status, optional authority, and the optional
+---
+>                                                        * original subject. Notices, status, optional authority, and the optional
+1310c1332
+<                                                                  * The destroyed flag is set BEFORE any teardown or the `destroy` event, so a
+---
+>                                                                  * The destroyed flag is set before any teardown or the `destroy` event, so a
+1332c1354
+<                                                                 * OWNS its ordered `#programs` collection and its own {@link Emitter} over
+---
+>                                                                 * owns its ordered `#programs` collection and its own {@link Emitter} over
+1336c1358
+<                                                                 * destroys only the owned shared dependencies, and tears the emitter down LAST.
+---
+>                                                                 * destroys only the owned shared dependencies, and tears the emitter down last.
+1339c1361
+<                                                                 * `destroy()` is REENTRANCY-SAFE — the destroyed flag is set BEFORE any teardown
+---
+>                                                                 * `destroy()` is reentrancy-safe — the destroyed flag is set before any teardown
+1538c1560
+<                                                                                          * The destroyed flag is set BEFORE any teardown or the `remove` and `destroy`
+---
+>                                                                                          * The destroyed flag is set before any teardown or the `remove` and `destroy`
+1728c1750
+<                                                                                                                 * The destroyed flag is set BEFORE any teardown or the `remove` and `destroy`
+---
+>                                                                                                                 * The destroyed flag is set before any teardown or the `remove` and `destroy`
+1805c1827
+<                                                                                                                    * Present ONLY when the program HAS an `authority`, the execution SUCCEEDED
+---
+>                                                                                                                    * Present only when the program has an `authority`, the execution succeeded
+1832c1854
+<                                                                                                                * removes the line BEFORE the rater is invoked — the excluded line is never
+---
+>                                                                                                                * removes the line before the rater is invoked — the excluded line is never
+1851c1873,1876
+<                                                                                                               /** Lists every {@link Status} literal — the source the union and its guard derive from. */
+---
+>                                                                                                               /**
+>                                                                                                                * Lists every {@link Status} literal in tally order — the source the union and its
+>                                                                                                                * guard derive from.
+>                                                                                                                */
+1858c1883
+<                                                                                                                * Returns a FRESH record — `sums` is never mutated. Only finite numbers
+---
+>                                                                                                                * Returns a fresh record — `sums` is never mutated. Only finite numbers
+diff -r -w -B '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-program-final-registry-visit-pack/baseline/package/dist/src/core/index.js /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-program-final-registry-visit-pack/extract/package/dist/src/core/index.js
+7c7,10
+< /** Names the default definition validation policy for `createProgram` / `ProgramManager.add`. */
+---
+> /**
+> * Names the default definition validation policy, `true`, for `createProgram` /
+> * `ProgramManager.add`.
+> */
+9c12,15
+< /** Lists every {@link Status} literal — the source the union and its guard derive from. */
+---
+> /**
+> * Lists every {@link Status} literal in tally order — the source the union and its
+> * guard derive from.
+> */
+23c29,32
+< /** Names the reserved working-subject key a batch's aggregate projection is written under. */
+---
+> /**
+> * Names the reserved working-subject key a batch's aggregate projection is written
+> * under, `'aggregate'`.
+> */
+25c34,37
+< /** Names the reserved working-subject key the authority's outcome projection is written under. */
+---
+> /**
+> * Names the reserved working-subject key the authority's outcome projection is
+> * written under, `'outcome'`.
+> */
+30c42,43
+< * Reports a coded programmer error thrown by the program layer.
+---
+> * Reports a coded programmer error thrown by the program layer, carrying a
+> * machine-readable code and an optional context and cause.
+34,35c47,48
+< * authored rating-line or notice id. `MISSING` — an
+< * authored notice or qualification ruling scope names no rating line.
+---
+> * authored rating-line or notice id. `MISSING` — an authored notice or
+> * qualification ruling scope names no rating line.
+455c468
+< * removes the line BEFORE the rater is invoked — the excluded line is never
+---
+> * removes the line before the rater is invoked — the excluded line is never
+483c496
+< * removed but others rated) is `conditional`. When the definition OMITS
+---
+> * removed but others rated) is `conditional`. When the definition omits
+485c498
+< * or `eligible` and is NEVER `unrated`. Otherwise a subject with no successful
+---
+> * or `eligible` and is never `unrated`. Otherwise a subject with no successful
+636,637c649,650
+< * line's worksheet trail, and the authority's. A `decision` is present ONLY when
+< * an authority ran (`options.authority`), the execution SUCCEEDED (`success`),
+---
+> * line's worksheet trail, and the authority's. A `decision` is present only when
+> * an authority ran (`options.authority`), the execution succeeded (`success`),
+867c880
+< * field is literally `''` land in the SAME partition, and a numeric `1`
+---
+> * field is literally `''` land in the same partition, and a numeric `1`
+888c901
+< * Returns a FRESH record — `sums` is never mutated. Only finite numbers
+---
+> * Returns a fresh record — `sums` is never mutated. Only finite numbers
+978c991
+< * OWN partition, located by the same {@link formatGroupKey} key
+---
+> * own partition, located by the same {@link formatGroupKey} key
+1142c1155
+< * requires every subject execution to succeed AND the gate evaluation to have
+---
+> * requires every subject execution to succeed and the gate evaluation to have
+1220a1234,1236
+> * @remarks
+> * An absent `scope` is omitted entirely rather than stored as `undefined`.
+> *
+1242a1259,1262
+> * @remarks
+> * `fields` is copied into a fresh array; an absent `partition` or `gates` is
+> * omitted entirely rather than stored as `undefined`.
+> *
+1264,1265c1284,1285
+< * Composes one qualifier and one rater over a shared reason engine and executes
+< * single subjects or aggregate-aware batches.
+---
+> * Composes one qualifier and one rater over a shared reason engine, compiling one
+> * authored definition and executing single subjects or aggregate-aware batches.
+1271,1272c1291,1292
+< * ORIGINAL subject; the qualifier's aggregate projection stays private. When no
+< * qualifier, rater, or engine is injected the program creates ONE shared
+---
+> * original subject; the qualifier's aggregate projection stays private. When no
+> * qualifier, rater, or engine is injected the program creates one shared
+1282,1283c1302,1303
+< * as its cause. `destroy()` is idempotent and REENTRANCY-SAFE — the destroyed
+< * flag is set BEFORE any teardown or the `destroy` event fires, so a listener
+---
+> * as its cause. `destroy()` is idempotent and reentrancy-safe — the destroyed
+> * flag is set before any teardown or the `destroy` event fires, so a listener
+1411c1431
+< 	* The destroyed flag is set BEFORE any teardown or the `destroy` event, so a
+---
+> 	* The destroyed flag is set before any teardown or the `destroy` event, so a
+1520c1540
+< * OWNS its ordered `#programs` collection and its own {@link Emitter} over
+---
+> * owns its ordered `#programs` collection and its own {@link Emitter} over
+1524c1544
+< * destroys only the owned shared dependencies, and tears the emitter down LAST.
+---
+> * destroys only the owned shared dependencies, and tears the emitter down last.
+1527c1547
+< * `destroy()` is REENTRANCY-SAFE — the destroyed flag is set BEFORE any teardown
+---
+> * `destroy()` is reentrancy-safe — the destroyed flag is set before any teardown
+1737c1757
+< 	* The destroyed flag is set BEFORE any teardown or the `remove` and `destroy`
+---
+> 	* The destroyed flag is set before any teardown or the `remove` and `destroy`
+1784c1804
+< * Creates one compiled program over a qualifier and rater.
+---
+> * Creates one compiled {@link ProgramInterface} over a qualifier and rater.
+1789,1791c1809,1811
+< * {@link DEFAULT_PROGRAM_VALIDATE}. A standalone program creates and
+< * OWNS one shared quantitative-plus-logical reason engine and injects it into the
+< * qualifier and rater it creates; injected dependencies remain caller-owned.
+---
+> * {@link DEFAULT_PROGRAM_VALIDATE}. A standalone program creates and owns one
+> * shared quantitative-plus-logical reason engine and injects it into the qualifier
+> * and rater it creates; injected dependencies remain caller-owned.
+1797c1817
+< * @example
+---
+> * @example Compile a program and a manager
+1799c1819
+< * import { buildProgramDefinition, createProgram } from '@orkestrel/program'
+---
+> * import { buildProgramDefinition, createProgram, createProgramManager } from '@orkestrel/program'
+1801a1822
+> *
+1802a1824,1825
+> * const manager = createProgramManager({ programs: [definition] })
+> *
+1803a1827
+> *
+1804a1829
+> * manager.destroy()
+1811c1836
+< * Creates one ordered manager over compiled programs.
+---
+> * Creates one ordered {@link ProgramManagerInterface} over compiled programs.

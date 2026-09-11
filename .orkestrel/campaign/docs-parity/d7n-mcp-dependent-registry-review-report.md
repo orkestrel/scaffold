@@ -1,0 +1,23 @@
+# MCP registry preparation review
+
+1. REGISTRY — CONFIRMED. The final manifest preserves Codec `^0.0.3`, Contract `^0.0.17`, Emitter `^0.0.10`, Process `^0.0.11`, SSE `^0.0.7`, Tool `^0.0.14`, and WebSocket `^0.0.12` in runtime dependencies. Guide `^0.0.18`, Scaffold `^0.0.64`, and Test `^0.0.14` remain development pins; Probe `^0.0.12` is the explicitly deferred development pin. Router `^0.0.14` and Server `^0.0.19` remain in their peer and development fields. Registry and installed-root readings match these versions. Conformance remains exactly `0.2.0-alpha.11` in the before/final receipts and manifest. Peer metadata remains absent. No section widening appears.
+
+   Supported lookup observations bind the final external floors: api-extractor `^7.59.1`, Node types `^26.5.1`, browser-playwright `^4.1.11`, Oxfmt `^0.67.0`, Oxlint `^1.82.0`, Playwright `^1.63.0`, TypeScript `^6.0.3`, Vite `^8.3.0`, and Vitest `^4.1.11`. Their selected versions remain within the captured prior majors. The TypeScript, Vitest, and browser-playwright major advisories do not alter the selected floors. The manifest/lock local-resolution search has no match; its exit 1 is an absence result. Attacks against a changed conformance range, automatic major adoption, or local dependency resolution do not reproduce.
+
+2. OVERWRITE — CONFIRMED. Supported overwrite and audit receipts exit 0 and record aligned planned paths with non-blocking major advisories. The tree has no `scripts/docs.ts` or `scripts/guides.ts`; the manifest has no `scripts.docs` field. Its `test:guides` command directly invokes `tests/guides.test.ts`.
+
+   Authored guide/native-test hashes agree before and after the visit. The preparation commit changes only manifest and lock; the subsequent actual diff contains no source, test, own-guide, or README change. Final changed paths are the catalog, manifest, lock, declared dependency mirrors, and retired docs script. Guide and Scaffold mirrors match their canonical hashes. No vendored hand edit or reopening of accepted source scope appears.
+
+3. ARTIFACT — CONFIRMED. The final `d7n-mcp-final-registry-visit-prepublish/action.exit.txt` records 0. Actual stdout/stderr show the prescribed format, lint, root/environment typechecks, core/browser/server builds, tests, native guides, conformance, integration, and release-mode distribution completing. Skipped cases and tool notices remain visible in the receipt; this verdict does not describe skipped cases as executed or claim a Linux rerun.
+
+   Actual packing exits 0. The extracted manifest equals the canonical manifest by hash; the complete packed-dist comparison exits 0 with no differences. Installed complete Guide and Scaffold comparisons exit 0 with empty output. Gate and pack metadata captures agree, and their diff/index match the frozen checkout. Their HEAD captures equal the actual preparation HEAD `2d980cd7877d0d0016b685b78b702a97b0dc9bb5`.
+
+   Package SHA-256 is `744B9A2ABCC13EB1830DF2F29B66EA6E904FD789A2906FE59B8AD3822AD954D8`; lock SHA-256 is `EFBEDA37B93A73F9426D02452E396FFC5E75D8444DBF5A1A98A60F89EEC2D8B0`. The actual `orkestrel-mcp-0.0.29.tgz` hash matches its receipt: `0A9A407C083AA9F4907D93E03FAC095D9254A4F57D930FDFD5A3DF364D09A97E`.
+
+   The served `0.0.28` baseline downloaded successfully. Its map-excluding, whitespace-insensitive comparison reports changed declarations and emitted documentation. Its runtime and peer ranges also differ from the final manifest. Those published-surface changes justify the pending `0.0.29` bump. The historic Summary-red transcript remains unavailable; final release evidence does not reconstruct it. No MCP-to-Probe verification is claimed.
+
+4. CLOSE — CONFIRMED as readiness for the accepted closure carrier, subject to root recording the prepared verdict. MCP's frozen visit and pack satisfy the carrier's HEAD, metadata, diff, index, archive, and artifact prerequisites. All final changed paths fit its allowlist, including Router and Server mirrors through the declared field arrays. The carrier preserves conformance and supported-tool observations, requires a prepared verdict, fetches and checks main ancestry, commits by allowed path with the specified identity/trailers, pushes campaign/main, selects canonical local main, and checks clean state, refs, and artifact equality. An ahead or divergent main fails ancestry; harmless ancestor movement is not an exact-ref failure. This is closure readiness, not completed closure or owner upload.
+
+No substantiated finding falls outside the claims. Prior source reports and their recorded limitations remain unchanged.
+
+VERDICT: PASS

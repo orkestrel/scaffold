@@ -1,0 +1,1 @@
+{"name":"@microsoft/api-extractor","range":"^7","lookup":"found","latest":"7.59.1","major":7}

@@ -1,0 +1,22 @@
+npm notice
+npm notice 📦  @orkestrel/program@0.0.12
+npm notice Tarball Contents
+npm notice 1.1kB LICENSE
+npm notice 3.4kB README.md
+npm notice 68.6kB dist/src/core/index.cjs
+npm notice 103.9kB dist/src/core/index.cjs.map
+npm notice 152.5kB dist/src/core/index.d.cts
+npm notice 152.5kB dist/src/core/index.d.ts
+npm notice 65.2kB dist/src/core/index.js
+npm notice 102.7kB dist/src/core/index.js.map
+npm notice 4.1kB package.json
+npm notice Tarball Details
+npm notice name: @orkestrel/program
+npm notice version: 0.0.12
+npm notice filename: orkestrel-program-0.0.12.tgz
+npm notice package size: 110.0 kB
+npm notice unpacked size: 653.9 kB
+npm notice shasum: bd584ac39343a01fee27861459a454b6b53622cf
+npm notice integrity: sha512-9WQI/IEhR/aWr[...]XJHzPLZjnw/rQ==
+npm notice total files: 9
+npm notice

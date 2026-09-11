@@ -1,0 +1,1 @@
+{"name":"oxlint","range":"^1","lookup":"found","latest":"1.82.0","major":1}

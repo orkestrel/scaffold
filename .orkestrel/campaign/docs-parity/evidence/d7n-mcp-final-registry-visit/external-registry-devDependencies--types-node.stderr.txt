@@ -1,0 +1,1 @@
+{"name":"@types/node","range":"^26","lookup":"found","latest":"26.5.1","major":22}

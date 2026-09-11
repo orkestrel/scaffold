@@ -1,0 +1,17 @@
+ M .claude/agents/orkestrel.md
+ M guides/codec.md
+ M guides/contract.md
+ M guides/emitter.md
+ M guides/guide.md
+ M guides/probe.md
+ M guides/process.md
+ M guides/router.md
+ M guides/scaffold.md
+ M guides/server.md
+ M guides/sse.md
+ M guides/test.md
+ M guides/tool.md
+ M guides/websocket.md
+ M package-lock.json
+ M package.json
+ D scripts/docs.ts

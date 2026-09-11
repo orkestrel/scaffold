@@ -1,0 +1,31 @@
+npm notice
+npm notice 📦  @orkestrel/mcp@0.0.29
+npm notice Tarball Contents
+npm notice 1.1kB LICENSE
+npm notice 4.9kB README.md
+npm notice 27.6kB dist/src/browser/index.d.ts
+npm notice 25.4kB dist/src/browser/index.js
+npm notice 38.2kB dist/src/browser/index.js.map
+npm notice 313.5kB dist/src/core/index.cjs
+npm notice 529.7kB dist/src/core/index.cjs.map
+npm notice 311.3kB dist/src/core/index.d.cts
+npm notice 311.3kB dist/src/core/index.d.ts
+npm notice 293.4kB dist/src/core/index.js
+npm notice 520.4kB dist/src/core/index.js.map
+npm notice 101.0kB dist/src/server/index.cjs
+npm notice 165.9kB dist/src/server/index.cjs.map
+npm notice 101.8kB dist/src/server/index.d.cts
+npm notice 101.8kB dist/src/server/index.d.ts
+npm notice 98.9kB dist/src/server/index.js
+npm notice 164.8kB dist/src/server/index.js.map
+npm notice 5.5kB package.json
+npm notice Tarball Details
+npm notice name: @orkestrel/mcp
+npm notice version: 0.0.29
+npm notice filename: orkestrel-mcp-0.0.29.tgz
+npm notice package size: 788.0 kB
+npm notice unpacked size: 3.1 MB
+npm notice shasum: 47ce2618b7b557df0202d4583d59ecb73ca58020
+npm notice integrity: sha512-iYsAXkO2aPvj5[...]7WBqtv3PqVe7w==
+npm notice total files: 18
+npm notice

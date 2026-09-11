@@ -1,0 +1,1 @@
+{"name":"oxfmt","range":"^0","lookup":"found","latest":"0.67.0","major":0}
