@@ -1,0 +1,13 @@
+{
+    "name":  "@orkestrel/pool",
+    "version":  "0.0.11",
+    "url":  "https://registry.npmjs.org/@orkestrel/pool/-/pool-0.0.11.tgz",
+    "registrySha1":  "44813eafa24474c269b673832bf6137c2d96d68a",
+    "downloadedSha1":  "44813eafa24474c269b673832bf6137c2d96d68a",
+    "downloadedSha256":  "7c8bb72cac44a7fbabedcc2bf931b69454c22b8b6a388e446fa022e751712251",
+    "acceptedArchiveSha256":  "7c8bb72cac44a7fbabedcc2bf931b69454c22b8b6a388e446fa022e751712251",
+    "gitHead":  "25ea973b1c6def0a16d3101ade2e334f75e1d636",
+    "branch":  "main",
+    "head":  "25ea973b1c6def0a16d3101ade2e334f75e1d636",
+    "originMain":  "25ea973b1c6def0a16d3101ade2e334f75e1d636"
+}

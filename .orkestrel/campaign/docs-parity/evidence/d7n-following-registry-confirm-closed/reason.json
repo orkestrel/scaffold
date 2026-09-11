@@ -1,0 +1,13 @@
+{
+    "name":  "@orkestrel/reason",
+    "version":  "0.0.10",
+    "url":  "https://registry.npmjs.org/@orkestrel/reason/-/reason-0.0.10.tgz",
+    "registrySha1":  "642ac7b5b4104fb1279f79318c68f69b1490a024",
+    "downloadedSha1":  "642ac7b5b4104fb1279f79318c68f69b1490a024",
+    "downloadedSha256":  "be0ce5507c77bb5595d28ee1933e7ff00b3f2d98c8740690297f724db279d122",
+    "acceptedArchiveSha256":  "be0ce5507c77bb5595d28ee1933e7ff00b3f2d98c8740690297f724db279d122",
+    "gitHead":  "e7e318ef62fc60e692123929660d874999e797d6",
+    "branch":  "main",
+    "head":  "e7e318ef62fc60e692123929660d874999e797d6",
+    "originMain":  "e7e318ef62fc60e692123929660d874999e797d6"
+}

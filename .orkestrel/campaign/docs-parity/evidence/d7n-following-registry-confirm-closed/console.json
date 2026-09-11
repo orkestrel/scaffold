@@ -1,0 +1,13 @@
+{
+    "name":  "@orkestrel/console",
+    "version":  "0.0.13",
+    "url":  "https://registry.npmjs.org/@orkestrel/console/-/console-0.0.13.tgz",
+    "registrySha1":  "32743ae113ba37d345f67d139fd2d0235f5c1abb",
+    "downloadedSha1":  "32743ae113ba37d345f67d139fd2d0235f5c1abb",
+    "downloadedSha256":  "baba0c5e17f61a824315c372d07b24e9972646c20a0f9b17fa7f91e36da6c8ce",
+    "acceptedArchiveSha256":  "baba0c5e17f61a824315c372d07b24e9972646c20a0f9b17fa7f91e36da6c8ce",
+    "gitHead":  "ed57bc7eb00649288ea261cc041d1b12f7b77fb0",
+    "branch":  "main",
+    "head":  "ed57bc7eb00649288ea261cc041d1b12f7b77fb0",
+    "originMain":  "ed57bc7eb00649288ea261cc041d1b12f7b77fb0"
+}

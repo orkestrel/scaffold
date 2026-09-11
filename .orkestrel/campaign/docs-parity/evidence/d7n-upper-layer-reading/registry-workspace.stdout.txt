@@ -1,0 +1,147 @@
+[
+  {
+    "_id": "@orkestrel/workspace@0.0.7",
+    "_rev": "7-09bcddcfbc8df2ca3b8d2340eed79c14",
+    "name": "@orkestrel/workspace",
+    "dist-tags": {
+      "latest": "0.0.7"
+    },
+    "versions": [
+      "0.0.1",
+      "0.0.2",
+      "0.0.3",
+      "0.0.4",
+      "0.0.5",
+      "0.0.6",
+      "0.0.7"
+    ],
+    "time": {
+      "created": "2026-07-31T02:46:15.175Z",
+      "modified": "2026-09-04T20:51:53.761Z",
+      "0.0.1": "2026-07-31T02:46:15.820Z",
+      "0.0.2": "2026-07-31T13:20:34.374Z",
+      "0.0.3": "2026-08-09T03:32:58.041Z",
+      "0.0.4": "2026-08-12T12:01:25.196Z",
+      "0.0.5": "2026-08-17T21:04:47.050Z",
+      "0.0.6": "2026-08-23T01:30:03.360Z",
+      "0.0.7": "2026-09-04T20:51:53.593Z"
+    },
+    "bugs": {
+      "url": "https://github.com/orkestrel/workspace/issues"
+    },
+    "license": "MIT",
+    "homepage": "https://github.com/orkestrel/workspace#readme",
+    "keywords": [
+      "edit",
+      "file",
+      "search",
+      "snapshot",
+      "typescript",
+      "workspace"
+    ],
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/orkestrel/workspace.git"
+    },
+    "description": "A virtual file workspace for the @orkestrel line — path-keyed immutable files, an edit and search surface, registries with an active pointer, and pluggable snapshot stores. Part of the @orkestrel line.",
+    "maintainers": [
+      "mikesaintsg <mikesaintg11@gmail.com>"
+    ],
+    "readmeFilename": "README.md",
+    "_contentLength": 31064,
+    "version": "0.0.7",
+    "type": "module",
+    "sideEffects": false,
+    "main": "./dist/src/core/index.cjs",
+    "module": "./dist/src/core/index.js",
+    "exports": {
+      ".": {
+        "import": {
+          "types": "./dist/src/core/index.d.ts",
+          "default": "./dist/src/core/index.js"
+        },
+        "require": {
+          "types": "./dist/src/core/index.d.cts",
+          "default": "./dist/src/core/index.cjs"
+        }
+      },
+      "./package.json": "./package.json"
+    },
+    "publishConfig": {
+      "access": "public"
+    },
+    "scripts": {
+      "clean": "node -e \"require('node:fs').rmSync('dist',{recursive:true,force:true})\"",
+      "copy": "node -e \"const fs=require('node:fs'),p=require('node:path'),a=process.argv[1],b=process.argv[2];fs.mkdirSync(p.dirname(b),{recursive:true});fs.cpSync(a,b,{force:true});console.log('Copied: '+a+' to '+b)\"",
+      "scaffold": "scaffold",
+      "lint": "oxlint --config .oxlintrc.json --fix --deny-warnings .",
+      "check": "tsc --noEmit --project tsconfig.json && npm run check:src",
+      "check:src": "npm run check:src:core",
+      "check:src:core": "tsc --noEmit -p configs/src/tsconfig.core.json",
+      "format": "oxfmt --config .oxfmtrc.json --write .",
+      "format:check": "oxfmt --config .oxfmtrc.json --check .",
+      "lint:check": "oxlint --config .oxlintrc.json --deny-warnings .",
+      "test": "npm run test:src && npm run test:policy && npm run test:config && npm run test:setup && npm run test:guides",
+      "test:src": "vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core",
+      "test:src:core": "vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core",
+      "test:policy": "vitest run --config vite.config.ts --no-cache --reporter=dot --project policy",
+      "test:config": "vitest run --config vite.config.ts --no-cache --reporter=dot --project config",
+      "test:guides": "vitest run --config vite.config.ts --no-cache --reporter=dot --project guides",
+      "build": "npm run clean && npm run build:src",
+      "build:src": "npm run build:src:core",
+      "build:src:core": "vite build --config configs/src/vite.core.config.ts && npm run copy dist/src/core/index.d.ts dist/src/core/index.d.cts",
+      "prepublishOnly": "npm run format:check && npm run lint:check && npm run check && npm run build && npm test && npm run test:distribution -- --mode release",
+      "test:distribution": "vitest run --config vite.config.ts --no-cache --reporter=dot --project distribution",
+      "test:probe": "vitest run --config vite.config.ts --no-cache --reporter=verbose --project probe",
+      "test:bench": "vitest bench --config vite.config.ts --no-cache --project probe",
+      "prepack": "npm run build",
+      "test:setup": "vitest run --config vite.config.ts --no-cache --reporter=dot --project setup"
+    },
+    "dependencies": {
+      "@orkestrel/contract": "^0.0.16",
+      "@orkestrel/database": "^0.0.13",
+      "@orkestrel/emitter": "^0.0.9"
+    },
+    "devDependencies": {
+      "@microsoft/api-extractor": "^7.59.0",
+      "@orkestrel/guide": "^0.0.17",
+      "@orkestrel/probe": "^0.0.11",
+      "@orkestrel/scaffold": "^0.0.62",
+      "@orkestrel/test": "^0.0.13",
+      "@types/node": "^26.4.1",
+      "oxfmt": "^0.66.0",
+      "oxlint": "^1.81.0",
+      "typescript": "^6.0.3",
+      "vite": "^8.2.2",
+      "vite-plugin-dts": "^5.1.0",
+      "vitest": "^4.1.11"
+    },
+    "engines": {
+      "node": ">=22.12.0"
+    },
+    "gitHead": "5b6e5eceea9ff9cf06a834c8fd58c0d577c8199f",
+    "types": "./dist/src/core/index.d.ts",
+    "_nodeVersion": "22.22.2",
+    "_npmVersion": "11.19.1",
+    "dist": {
+      "integrity": "sha512-rqxkso6v0Hrz7xVEAMKUtM7CAyes6kfjq9HMHZKeo8nL6saGY6XU8T/Wle0SAXYBEr+v9hnNqSoDgLTJz23Zkg==",
+      "shasum": "b41995e2c3deb46983e3990a5c55911a70ef8753",
+      "tarball": "https://registry.npmjs.org/@orkestrel/workspace/-/workspace-0.0.7.tgz",
+      "fileCount": 9,
+      "unpackedSize": 212993,
+      "signatures": [
+        {
+          "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U",
+          "sig": "MEUCIBBMhbObqPA6eDazpxKpnJgS9jk2YLMVVzkSSPDLt0SkAiEA6c9ow+ffg2bUPiTz4BPY6jD58fQHwop23d7nphiwXsg="
+        }
+      ]
+    },
+    "_npmUser": "mikesaintsg <mikesaintg11@gmail.com>",
+    "directories": {},
+    "_npmOperationalInternal": {
+      "host": "s3://npm-registry-packages-npm-production",
+      "tmp": "tmp/workspace_0.0.7_1788555113473_0.5403105107047292"
+    },
+    "_hasShrinkwrap": false
+  }
+]

@@ -1,0 +1,13 @@
+{
+    "name":  "@orkestrel/database",
+    "version":  "0.0.14",
+    "url":  "https://registry.npmjs.org/@orkestrel/database/-/database-0.0.14.tgz",
+    "registrySha1":  "0e8fffa248f2ddb2cc9e481702ed431b9b9a0aca",
+    "downloadedSha1":  "0e8fffa248f2ddb2cc9e481702ed431b9b9a0aca",
+    "downloadedSha256":  "6ae5d922703fd82b0cf892d18866061231386a4015ccceb093ba5ba6cc5d6acf",
+    "acceptedArchiveSha256":  "6ae5d922703fd82b0cf892d18866061231386a4015ccceb093ba5ba6cc5d6acf",
+    "gitHead":  "4453c2606b585f47664314d20bba22bdf81cba40",
+    "branch":  "main",
+    "head":  "4453c2606b585f47664314d20bba22bdf81cba40",
+    "originMain":  "4453c2606b585f47664314d20bba22bdf81cba40"
+}

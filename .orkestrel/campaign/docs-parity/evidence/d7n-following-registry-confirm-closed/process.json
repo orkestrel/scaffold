@@ -1,0 +1,13 @@
+{
+    "name":  "@orkestrel/process",
+    "version":  "0.0.11",
+    "url":  "https://registry.npmjs.org/@orkestrel/process/-/process-0.0.11.tgz",
+    "registrySha1":  "2475e4eb671d3a8a40b4cd64ef295566dfc259fe",
+    "downloadedSha1":  "2475e4eb671d3a8a40b4cd64ef295566dfc259fe",
+    "downloadedSha256":  "a67016fff3149884371dc87d179eaf0a73710a3636b05e4e9481f69d95c3ab37",
+    "acceptedArchiveSha256":  "a67016fff3149884371dc87d179eaf0a73710a3636b05e4e9481f69d95c3ab37",
+    "gitHead":  "ea3b717f2f8cff21cf3fa3d7a44e8c03296b34ee",
+    "branch":  "main",
+    "head":  "ea3b717f2f8cff21cf3fa3d7a44e8c03296b34ee",
+    "originMain":  "ea3b717f2f8cff21cf3fa3d7a44e8c03296b34ee"
+}

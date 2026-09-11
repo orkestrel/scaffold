@@ -4,6 +4,19 @@ Written 2026-09-08T03:35Z and revised 2026-09-08T04:05Z at the owner's request, 
 
 ## Where everything is pushed
 
+The owner completed the following-layer uploads. Root confirmed the served
+archives, registry gitHead and clean canonical main tips. Read
+d7n-following-registry-closure.md. The following preparation table now records
+published releases. Root prompt.txt is consumed history and must not be rerun.
+The upper layer is selected from the freshly regenerated catalog; its plan is
+d7n-upper-layer-plan.md. Guide and Scaffold preparation precedes propagation
+to the selected runtime packages. No new operator command is ready yet.
+
+Fresh origin/main ancestry checks passed for the remaining roster. Ollama has
+local source, guide and test changes; preserve them. The read-only scout is
+d7n-upper-layer-scout-report.md. Its limits and current root evidence are in
+d7n-upper-layer-evidence.md.
+
 The owner completed the initial directory uploads. Fresh registry downloads are
 byte-identical to the accepted Contract0.0.17, Codec0.0.3, Msg0.0.10, SSE0.0.7 and
 Test0.0.14 archives. Their canonical checkouts remain clean on main. Read
@@ -23,19 +36,19 @@ d7n-following-operator-landing.md. Scaffold is clean on canonical local main.
 The current preparation table supersedes the historical closing-sweep table
 for these packages. The owner uploads; root has not authenticated or published.
 
-| Package | Pending version | Current preparation |
+| Package | Released version | Registry closure |
 | --- | --- | --- |
-| console | 0.0.13 | prepared at ed57bc7; final prepublish/pack accepted; campaign/main pushed; clean canonical main; unpublished |
-| database | 0.0.14 | prepared at 4453c26; final prepublish/pack accepted; campaign/main pushed; clean canonical main; unpublished |
-| form | 0.0.6 | prepared at 0f4f28d; final prepublish/pack accepted; campaign/main pushed; clean canonical main; unpublished |
-| markdown | 0.0.14 | prepared at 99978d8; final prepublish/pack accepted; Guide bootstrap dist unchanged; campaign/main pushed; clean canonical main; unpublished |
-| pool | 0.0.11 | prepared at 25ea973; final prepublish/pack accepted; campaign/main pushed; clean canonical main; unpublished |
-| process | 0.0.11 | prepared at ea3b717; final prepublish/pack accepted; campaign/main pushed; clean canonical main; unpublished |
-| reason | 0.0.10 | prepared at e7e318e; final prepublish/pack accepted; campaign/main pushed; clean canonical main; unpublished |
-| router | 0.0.14 | prepared at fbc69d7; final prepublish/pack accepted; campaign/main pushed; clean canonical main; unpublished |
-| table | 0.0.5 | prepared at f4805ea; final prepublish/pack accepted; campaign/main pushed; clean canonical main; unpublished |
-| template | 0.0.7 | prepared at c053c4d; final prepublish/pack accepted; campaign/main pushed; clean canonical main; unpublished |
-| websocket | 0.0.12 | prepared at cc62597; final prepublish/pack accepted; campaign/main pushed; clean canonical main; unpublished |
+| console | 0.0.13 | prepared at ed57bc7; final prepublish/pack accepted; campaign/main pushed; clean canonical main; registry archive and gitHead confirmed |
+| database | 0.0.14 | prepared at 4453c26; final prepublish/pack accepted; campaign/main pushed; clean canonical main; registry archive and gitHead confirmed |
+| form | 0.0.6 | prepared at 0f4f28d; final prepublish/pack accepted; campaign/main pushed; clean canonical main; registry archive and gitHead confirmed |
+| markdown | 0.0.14 | prepared at 99978d8; final prepublish/pack accepted; Guide bootstrap dist unchanged; campaign/main pushed; clean canonical main; registry archive and gitHead confirmed |
+| pool | 0.0.11 | prepared at 25ea973; final prepublish/pack accepted; campaign/main pushed; clean canonical main; registry archive and gitHead confirmed |
+| process | 0.0.11 | prepared at ea3b717; final prepublish/pack accepted; campaign/main pushed; clean canonical main; registry archive and gitHead confirmed |
+| reason | 0.0.10 | prepared at e7e318e; final prepublish/pack accepted; campaign/main pushed; clean canonical main; registry archive and gitHead confirmed |
+| router | 0.0.14 | prepared at fbc69d7; final prepublish/pack accepted; campaign/main pushed; clean canonical main; registry archive and gitHead confirmed |
+| table | 0.0.5 | prepared at f4805ea; final prepublish/pack accepted; campaign/main pushed; clean canonical main; registry archive and gitHead confirmed |
+| template | 0.0.7 | prepared at c053c4d; final prepublish/pack accepted; campaign/main pushed; clean canonical main; registry archive and gitHead confirmed |
+| websocket | 0.0.12 | prepared at cc62597; final prepublish/pack accepted; campaign/main pushed; clean canonical main; registry archive and gitHead confirmed |
 
 The next-layer plan is d7n-next-layer-plan.md. Fresh origin/main readings require
 no merges for its selected packages. Accepted tooling is installed throughout

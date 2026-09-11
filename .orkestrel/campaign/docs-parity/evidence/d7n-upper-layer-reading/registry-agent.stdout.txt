@@ -1,0 +1,180 @@
+[
+  {
+    "_id": "@orkestrel/agent@0.0.20",
+    "_rev": "20-6c8fc8ffc66b0d9d7930600db6837d3d",
+    "name": "@orkestrel/agent",
+    "dist-tags": {
+      "latest": "0.0.20"
+    },
+    "versions": [
+      "0.0.1",
+      "0.0.2",
+      "0.0.3",
+      "0.0.4",
+      "0.0.5",
+      "0.0.6",
+      "0.0.7",
+      "0.0.8",
+      "0.0.9",
+      "0.0.10",
+      "0.0.11",
+      "0.0.12",
+      "0.0.13",
+      "0.0.14",
+      "0.0.15",
+      "0.0.16",
+      "0.0.17",
+      "0.0.18",
+      "0.0.19",
+      "0.0.20"
+    ],
+    "time": {
+      "created": "2026-07-13T21:05:57.610Z",
+      "modified": "2026-09-04T21:53:40.259Z",
+      "0.0.1": "2026-07-13T21:05:58.011Z",
+      "0.0.2": "2026-07-13T22:11:28.571Z",
+      "0.0.3": "2026-07-17T13:06:16.166Z",
+      "0.0.4": "2026-07-17T16:07:43.637Z",
+      "0.0.5": "2026-07-18T00:54:26.995Z",
+      "0.0.6": "2026-07-18T04:34:46.923Z",
+      "0.0.7": "2026-07-18T17:50:22.786Z",
+      "0.0.8": "2026-07-19T15:33:33.212Z",
+      "0.0.9": "2026-07-28T20:04:27.223Z",
+      "0.0.10": "2026-07-29T13:35:08.571Z",
+      "0.0.11": "2026-07-29T14:21:56.968Z",
+      "0.0.12": "2026-07-31T13:22:31.805Z",
+      "0.0.13": "2026-07-31T18:22:29.163Z",
+      "0.0.14": "2026-08-09T03:29:03.193Z",
+      "0.0.15": "2026-08-12T12:24:42.625Z",
+      "0.0.16": "2026-08-18T00:19:54.171Z",
+      "0.0.17": "2026-08-21T19:28:14.028Z",
+      "0.0.18": "2026-08-24T20:50:50.677Z",
+      "0.0.19": "2026-08-27T16:42:07.754Z",
+      "0.0.20": "2026-09-04T21:53:40.097Z"
+    },
+    "bugs": {
+      "url": "https://github.com/orkestrel/agent/issues"
+    },
+    "license": "MIT",
+    "homepage": "https://github.com/orkestrel/agent#readme",
+    "keywords": [
+      "agent",
+      "conversation",
+      "llm",
+      "provider",
+      "tool",
+      "typescript"
+    ],
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/orkestrel/agent.git"
+    },
+    "description": "A typed conversation runtime for the @orkestrel line — providers, conversations, prompt assembly, authority, and the bounded agent loop. Part of the @orkestrel line.",
+    "maintainers": [
+      "mikesaintsg <mikesaintg11@gmail.com>"
+    ],
+    "readmeFilename": "README.md",
+    "_contentLength": 86391,
+    "version": "0.0.20",
+    "type": "module",
+    "sideEffects": false,
+    "main": "./dist/src/core/index.cjs",
+    "module": "./dist/src/core/index.js",
+    "types": "./dist/src/core/index.d.ts",
+    "exports": {
+      ".": {
+        "import": {
+          "types": "./dist/src/core/index.d.ts",
+          "default": "./dist/src/core/index.js"
+        },
+        "require": {
+          "types": "./dist/src/core/index.d.cts",
+          "default": "./dist/src/core/index.cjs"
+        }
+      },
+      "./package.json": "./package.json"
+    },
+    "publishConfig": {
+      "access": "public"
+    },
+    "scripts": {
+      "clean": "node -e \"require('node:fs').rmSync('dist',{recursive:true,force:true})\"",
+      "copy": "node -e \"const fs=require('node:fs'),p=require('node:path'),a=process.argv[1],b=process.argv[2];fs.mkdirSync(p.dirname(b),{recursive:true});fs.cpSync(a,b,{force:true});console.log('Copied: '+a+' to '+b)\"",
+      "scaffold": "scaffold",
+      "lint": "oxlint --config .oxlintrc.json --fix --deny-warnings .",
+      "check": "tsc --noEmit --project tsconfig.json && npm run check:src",
+      "check:src": "npm run check:src:core",
+      "check:src:core": "tsc --noEmit -p configs/src/tsconfig.core.json",
+      "format": "oxfmt --config .oxfmtrc.json --write .",
+      "format:check": "oxfmt --config .oxfmtrc.json --check .",
+      "lint:check": "oxlint --config .oxlintrc.json --deny-warnings .",
+      "test": "npm run test:src && npm run test:policy && npm run test:config && npm run test:setup && npm run test:guides",
+      "test:src": "vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core",
+      "test:src:core": "vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core",
+      "test:policy": "vitest run --config vite.config.ts --no-cache --reporter=dot --project policy",
+      "test:config": "vitest run --config vite.config.ts --no-cache --reporter=dot --project config",
+      "test:guides": "vitest run --config vite.config.ts --no-cache --reporter=dot --project guides",
+      "build": "npm run clean && npm run build:src",
+      "build:src": "npm run build:src:core",
+      "build:src:core": "vite build --config configs/src/vite.core.config.ts && npm run copy dist/src/core/index.d.ts dist/src/core/index.d.cts",
+      "prepack": "npm run build",
+      "prepublishOnly": "npm run format:check && npm run lint:check && npm run check && npm run build && npm test && npm run test:distribution -- --mode release",
+      "test:distribution": "vitest run --config vite.config.ts --no-cache --reporter=dot --project distribution",
+      "test:probe": "vitest run --config vite.config.ts --no-cache --reporter=verbose --project probe",
+      "test:bench": "vitest bench --config vite.config.ts --no-cache --project probe",
+      "test:setup": "vitest run --config vite.config.ts --no-cache --reporter=dot --project setup"
+    },
+    "dependencies": {
+      "@orkestrel/abort": "^0.0.9",
+      "@orkestrel/budget": "^0.0.9",
+      "@orkestrel/contract": "^0.0.16",
+      "@orkestrel/database": "^0.0.13",
+      "@orkestrel/emitter": "^0.0.9",
+      "@orkestrel/queue": "^0.0.12",
+      "@orkestrel/timeout": "^0.0.9",
+      "@orkestrel/tool": "^0.0.13",
+      "@orkestrel/workflow": "^0.0.17",
+      "@orkestrel/workspace": "^0.0.7"
+    },
+    "devDependencies": {
+      "@microsoft/api-extractor": "^7.59.0",
+      "@orkestrel/guide": "^0.0.17",
+      "@orkestrel/probe": "^0.0.12",
+      "@orkestrel/scaffold": "^0.0.62",
+      "@orkestrel/test": "^0.0.13",
+      "@types/node": "^26.4.1",
+      "oxfmt": "^0.66.0",
+      "oxlint": "^1.81.0",
+      "typescript": "^6.0.3",
+      "vite": "^8.2.2",
+      "vite-plugin-dts": "^5.1.0",
+      "vitest": "^4.1.11"
+    },
+    "engines": {
+      "node": ">=22.12.0"
+    },
+    "gitHead": "841e452faec01e640c45596cada9712b1c764193",
+    "_nodeVersion": "22.22.2",
+    "_npmVersion": "11.19.1",
+    "dist": {
+      "integrity": "sha512-H80XjrBrsd1jkqFrv9N5mLjYQldnauqugg/YUu8dzH6OjnwRfFpQYBabb9kLoQYJQ/WZREBP+ZwtQrsjdd1cJw==",
+      "shasum": "03b550109ce61edf527b0e9653c603e28a8ee54e",
+      "tarball": "https://registry.npmjs.org/@orkestrel/agent/-/agent-0.0.20.tgz",
+      "fileCount": 9,
+      "unpackedSize": 1221820,
+      "signatures": [
+        {
+          "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U",
+          "sig": "MEQCICOlhJoJCFl4ujHoOrORuSESoS7JTkert/fYGWBSi3NzAiAEyvft4vbb31k/D2uDaMImUed4T2qZmu7wlVsnpGrPOw=="
+        }
+      ]
+    },
+    "_npmUser": "mikesaintsg <mikesaintg11@gmail.com>",
+    "directories": {},
+    "_npmOperationalInternal": {
+      "host": "s3://npm-registry-packages-npm-production",
+      "tmp": "tmp/agent_0.0.20_1788558819930_0.2330439677613727"
+    },
+    "_hasShrinkwrap": false
+  }
+]

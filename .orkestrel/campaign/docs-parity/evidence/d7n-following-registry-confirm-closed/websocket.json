@@ -1,0 +1,13 @@
+{
+    "name":  "@orkestrel/websocket",
+    "version":  "0.0.12",
+    "url":  "https://registry.npmjs.org/@orkestrel/websocket/-/websocket-0.0.12.tgz",
+    "registrySha1":  "860f20a066f4bab50c61209f0396eb8aaadd66c1",
+    "downloadedSha1":  "860f20a066f4bab50c61209f0396eb8aaadd66c1",
+    "downloadedSha256":  "0e14c051df9175f6d488c93dc1ce8fee31203fda98f9e1b40817d9c88382f794",
+    "acceptedArchiveSha256":  "0e14c051df9175f6d488c93dc1ce8fee31203fda98f9e1b40817d9c88382f794",
+    "gitHead":  "cc62597214e1deb3a892119fbdc484772079bc5c",
+    "branch":  "main",
+    "head":  "cc62597214e1deb3a892119fbdc484772079bc5c",
+    "originMain":  "cc62597214e1deb3a892119fbdc484772079bc5c"
+}

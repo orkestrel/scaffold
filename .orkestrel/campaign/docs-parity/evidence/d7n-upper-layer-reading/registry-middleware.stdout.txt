@@ -1,0 +1,202 @@
+[
+  {
+    "_id": "@orkestrel/middleware@0.0.19",
+    "_rev": "19-a84a1f0f2b335e0d216e75db973e50d4",
+    "name": "@orkestrel/middleware",
+    "dist-tags": {
+      "latest": "0.0.19"
+    },
+    "versions": [
+      "0.0.1",
+      "0.0.2",
+      "0.0.3",
+      "0.0.4",
+      "0.0.5",
+      "0.0.6",
+      "0.0.7",
+      "0.0.8",
+      "0.0.9",
+      "0.0.10",
+      "0.0.11",
+      "0.0.12",
+      "0.0.13",
+      "0.0.14",
+      "0.0.15",
+      "0.0.16",
+      "0.0.17",
+      "0.0.18",
+      "0.0.19"
+    ],
+    "time": {
+      "created": "2026-07-14T04:38:07.979Z",
+      "modified": "2026-09-04T20:58:15.074Z",
+      "0.0.1": "2026-07-14T04:38:08.278Z",
+      "0.0.2": "2026-07-16T16:08:07.111Z",
+      "0.0.3": "2026-07-16T18:14:31.996Z",
+      "0.0.4": "2026-07-18T00:44:09.388Z",
+      "0.0.5": "2026-07-18T17:39:13.595Z",
+      "0.0.6": "2026-07-28T20:12:49.224Z",
+      "0.0.7": "2026-08-03T05:54:50.839Z",
+      "0.0.8": "2026-08-03T16:34:35.021Z",
+      "0.0.9": "2026-08-03T19:40:18.994Z",
+      "0.0.10": "2026-08-12T11:37:55.268Z",
+      "0.0.11": "2026-08-13T07:43:36.923Z",
+      "0.0.12": "2026-08-16T00:23:49.986Z",
+      "0.0.13": "2026-08-17T20:25:52.146Z",
+      "0.0.14": "2026-08-18T10:22:26.892Z",
+      "0.0.15": "2026-08-19T04:20:32.336Z",
+      "0.0.16": "2026-08-19T04:33:50.518Z",
+      "0.0.17": "2026-08-21T18:49:11.508Z",
+      "0.0.18": "2026-08-27T16:42:13.343Z",
+      "0.0.19": "2026-09-04T20:58:14.926Z"
+    },
+    "bugs": {
+      "url": "https://github.com/orkestrel/middleware/issues"
+    },
+    "license": "MIT",
+    "homepage": "https://github.com/orkestrel/middleware#readme",
+    "keywords": [
+      "compression",
+      "cors",
+      "csrf",
+      "http",
+      "middleware",
+      "multipart",
+      "rate-limit",
+      "security",
+      "session",
+      "static",
+      "typescript"
+    ],
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/orkestrel/middleware.git"
+    },
+    "description": "Batteries for the @orkestrel/server middleware seam — boundary, telemetry, compression, security, CORS, rate limiting, sessions, CSRF, static files, and multipart uploads as typed factories. Part of the @orkestrel line.",
+    "maintainers": [
+      "mikesaintsg <mikesaintg11@gmail.com>"
+    ],
+    "readmeFilename": "README.md",
+    "_contentLength": 98161,
+    "version": "0.0.19",
+    "type": "module",
+    "sideEffects": false,
+    "main": "./dist/src/core/index.cjs",
+    "module": "./dist/src/core/index.js",
+    "exports": {
+      ".": {
+        "import": {
+          "types": "./dist/src/core/index.d.ts",
+          "default": "./dist/src/core/index.js"
+        },
+        "require": {
+          "types": "./dist/src/core/index.d.cts",
+          "default": "./dist/src/core/index.cjs"
+        }
+      },
+      "./server": {
+        "import": {
+          "types": "./dist/src/server/index.d.ts",
+          "default": "./dist/src/server/index.js"
+        },
+        "require": {
+          "types": "./dist/src/server/index.d.cts",
+          "default": "./dist/src/server/index.cjs"
+        }
+      },
+      "./package.json": "./package.json"
+    },
+    "publishConfig": {
+      "access": "public"
+    },
+    "scripts": {
+      "clean": "node -e \"require('node:fs').rmSync('dist',{recursive:true,force:true})\"",
+      "copy": "node -e \"const fs=require('node:fs'),p=require('node:path'),a=process.argv[1],b=process.argv[2];fs.mkdirSync(p.dirname(b),{recursive:true});fs.cpSync(a,b,{force:true});console.log('Copied: '+a+' to '+b)\"",
+      "scaffold": "scaffold",
+      "lint": "oxlint --config .oxlintrc.json --fix --deny-warnings .",
+      "check": "tsc --noEmit --project tsconfig.json && npm run check:src",
+      "check:src": "npm run check:src:core && npm run check:src:server",
+      "check:src:core": "tsc --noEmit -p configs/src/tsconfig.core.json",
+      "check:src:server": "tsc --noEmit -p configs/src/tsconfig.server.json",
+      "format": "oxfmt --config .oxfmtrc.json --write .",
+      "format:check": "oxfmt --config .oxfmtrc.json --check .",
+      "lint:check": "oxlint --config .oxlintrc.json --deny-warnings .",
+      "test": "npm run test:src && npm run test:policy && npm run test:config && npm run test:setup && npm run test:guides",
+      "test:src": "vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core --project src:server",
+      "test:src:core": "vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core",
+      "test:src:server": "vitest run --config vite.config.ts --no-cache --reporter=dot --project src:server",
+      "test:policy": "vitest run --config vite.config.ts --no-cache --reporter=dot --project policy",
+      "test:config": "vitest run --config vite.config.ts --no-cache --reporter=dot --project config",
+      "test:guides": "vitest run --config vite.config.ts --no-cache --reporter=dot --project guides",
+      "build": "npm run clean && npm run build:src",
+      "build:src": "npm run build:src:core && npm run build:src:server",
+      "build:src:core": "vite build --config configs/src/vite.core.config.ts && npm run copy dist/src/core/index.d.ts dist/src/core/index.d.cts",
+      "build:src:server": "vite build --config configs/src/vite.server.config.ts && npm run copy dist/src/server/index.d.ts dist/src/server/index.d.cts",
+      "prepack": "npm run build",
+      "prepublishOnly": "npm run format:check && npm run lint:check && npm run check && npm run build && npm test && npm run test:distribution -- --mode release",
+      "test:distribution": "vitest run --config vite.config.ts --no-cache --reporter=dot --project distribution",
+      "test:probe": "vitest run --config vite.config.ts --no-cache --reporter=verbose --project probe",
+      "test:bench": "vitest bench --config vite.config.ts --no-cache --project probe",
+      "test:setup": "vitest run --config vite.config.ts --no-cache --reporter=dot --project setup"
+    },
+    "dependencies": {
+      "@orkestrel/abort": "^0.0.9",
+      "@orkestrel/budget": "^0.0.9",
+      "@orkestrel/contract": "^0.0.16",
+      "@orkestrel/timeout": "^0.0.9"
+    },
+    "devDependencies": {
+      "@microsoft/api-extractor": "^7.59.0",
+      "@orkestrel/database": "^0.0.13",
+      "@orkestrel/guide": "^0.0.17",
+      "@orkestrel/probe": "^0.0.11",
+      "@orkestrel/router": "^0.0.13",
+      "@orkestrel/scaffold": "^0.0.62",
+      "@orkestrel/server": "^0.0.18",
+      "@orkestrel/test": "^0.0.13",
+      "@types/node": "^26.4.1",
+      "oxfmt": "^0.66.0",
+      "oxlint": "^1.81.0",
+      "typescript": "^6.0.3",
+      "vite": "^8.2.2",
+      "vite-plugin-dts": "^5.1.0",
+      "vitest": "^4.1.11"
+    },
+    "peerDependencies": {
+      "@orkestrel/database": "^0.0.13",
+      "@orkestrel/server": "^0.0.18"
+    },
+    "peerDependenciesMeta": {
+      "@orkestrel/database": {
+        "optional": true
+      }
+    },
+    "engines": {
+      "node": ">=22.12.0"
+    },
+    "gitHead": "615e8d48ba3beca990607d55bb8f3d17565f2262",
+    "types": "./dist/src/core/index.d.ts",
+    "_nodeVersion": "22.22.2",
+    "_npmVersion": "11.19.1",
+    "dist": {
+      "integrity": "sha512-Z4qHdbT1aIyrUUdqpe5PGU2Sg9HqZaTxiB/Xo2MLyGoP/KZ6VCkcLxb2wQuXBTZC8TLa2CzXj0O4TndB4ukcSQ==",
+      "shasum": "7ef5b3e5f520a1ba5cae6361d058c96a4c7578b9",
+      "tarball": "https://registry.npmjs.org/@orkestrel/middleware/-/middleware-0.0.19.tgz",
+      "fileCount": 15,
+      "unpackedSize": 879193,
+      "signatures": [
+        {
+          "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U",
+          "sig": "MEQCIAPK0usCRainaGMAeK0SDfA1Bt0Btyh5oo7i8QA2W+76AiBLotZli9IYUZfqgQaVR+rcJwxmgT6DafyN7mKkGHhxkA=="
+        }
+      ]
+    },
+    "_npmUser": "mikesaintsg <mikesaintg11@gmail.com>",
+    "directories": {},
+    "_npmOperationalInternal": {
+      "host": "s3://npm-registry-packages-npm-production",
+      "tmp": "tmp/middleware_0.0.19_1788555494765_0.6391943757771787"
+    },
+    "_hasShrinkwrap": false
+  }
+]
