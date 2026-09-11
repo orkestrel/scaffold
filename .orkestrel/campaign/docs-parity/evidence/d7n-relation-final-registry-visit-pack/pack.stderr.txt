@@ -1,0 +1,22 @@
+npm notice
+npm notice 📦  @orkestrel/relation@0.0.12
+npm notice Tarball Contents
+npm notice 1.1kB LICENSE
+npm notice 2.7kB README.md
+npm notice 30.6kB dist/src/core/index.cjs
+npm notice 53.6kB dist/src/core/index.cjs.map
+npm notice 34.2kB dist/src/core/index.d.cts
+npm notice 34.2kB dist/src/core/index.d.ts
+npm notice 29.5kB dist/src/core/index.js
+npm notice 53.2kB dist/src/core/index.js.map
+npm notice 3.8kB package.json
+npm notice Tarball Details
+npm notice name: @orkestrel/relation
+npm notice version: 0.0.12
+npm notice filename: orkestrel-relation-0.0.12.tgz
+npm notice package size: 54.6 kB
+npm notice unpacked size: 242.9 kB
+npm notice shasum: 07ef01c4f18522fd0ebb84c4bee6e75c11833269
+npm notice integrity: sha512-M9uyn3Uxa3RjF[...]qVoI8XiOjesPA==
+npm notice total files: 9
+npm notice

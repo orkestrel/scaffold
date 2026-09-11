@@ -1,0 +1,1400 @@
+diff -r '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-sea-final-registry-visit-pack/baseline/package/dist/src/server/index.cjs /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-sea-final-registry-visit-pack/extract/package/dist/src/server/index.cjs
+11c11,14
+< /** Holds the SEA sentinel fuse value embedded in the Node.js binary */
+---
+> /**
+> * Holds the SEA sentinel fuse value embedded in the Node.js binary,
+> * `NODE_SEA_FUSE_fce680ab2cc467b6e072b8b5df1996b2`.
+> */
+13c16
+< /** Names the SEA blob resource in the executable */
+---
+> /** Names the SEA blob resource in the executable, `NODE_SEA_BLOB`. */
+15c18
+< /** Holds the default Brotli compression quality level (maximum) */
+---
+> /** Holds the default Brotli compression quality level, 11, the maximum Brotli accepts. */
+17c20,23
+< /** Holds the Windows PE subsystem value for a GUI application (no terminal window) */
+---
+> /**
+> * Holds the Windows PE subsystem value for a GUI application, 2, which launches
+> * without a terminal window.
+> */
+19c25
+< /** Holds the Windows PE subsystem value for a console application */
+---
+> /** Holds the Windows PE subsystem value for a console application, 3. */
+21c27
+< /** Names the file extension indicating Brotli compression */
+---
+> /** Names the file extension indicating Brotli compression, `.br`. */
+23c29,32
+< /** Lists the file extensions Brotli compression skips */
+---
+> /**
+> * Lists the file extensions Brotli compression skips, the already-compressed
+> * archive, image, font, and media formats.
+> */
+47c56
+< /** Names the default SEA entry point module format when none is specified */
+---
+> /** Names the default SEA entry point module format when none is specified, `cjs`. */
+49c58
+< /** Holds the DOS MZ header magic (first 2 bytes of a PE file) */
+---
+> /** Holds the DOS MZ header magic, 0x5a4d, the first two bytes of a PE file. */
+51c60
+< /** Holds the PE signature, "PE\0\0" as a 32-bit value */
+---
+> /** Holds the PE signature, 0x00004550, the bytes `PE\0\0` read as a 32-bit value. */
+53c62
+< /** Holds the PE32 optional header magic */
+---
+> /** Holds the PE32 optional header magic, 0x10b. */
+55c64
+< /** Holds the PE32+ (64-bit) optional header magic */
+---
+> /** Holds the PE32+ optional header magic, 0x20b, the 64-bit form. */
+57c66,69
+< /** Holds the ELF magic, 0x7F 'E' 'L' 'F' as a 32-bit big-endian value */
+---
+> /**
+> * Holds the ELF magic, 0x7f454c46, the bytes 0x7F `E` `L` `F` read as a 32-bit
+> * big-endian value.
+> */
+59c71
+< /** Holds the ELF 64-bit class identifier */
+---
+> /** Holds the ELF 64-bit class identifier, 2. */
+61c73
+< /** Holds the ELF little-endian data encoding */
+---
+> /** Holds the ELF little-endian data encoding, 1. */
+63c75
+< /** Holds the ELF program header type for a note segment */
+---
+> /** Holds the ELF program header type for a note segment, 4. */
+65c77
+< /** Holds the ELF program header type for a loadable segment */
+---
+> /** Holds the ELF program header type for a loadable segment, 1. */
+67c79
+< /** Holds the ELF program header type for the program header table itself */
+---
+> /** Holds the ELF program header type for the program header table itself, 6. */
+69c81
+< /** Holds the ELF segment permission flag marking a segment readable */
+---
+> /** Holds the ELF segment permission flag marking a segment readable, 4. */
+71c83
+< /** Holds the page size an injected ELF segment is aligned to */
+---
+> /** Holds the page size an injected ELF segment is aligned to, 0x1000. */
+73c85
+< /** Holds the Mach-O 64-bit magic (little-endian) */
+---
+> /** Holds the Mach-O 64-bit magic, 0xfeedfacf, in little-endian byte order. */
+75c87
+< /** Holds the Mach-O LC_SEGMENT_64 load command */
+---
+> /** Holds the Mach-O `LC_SEGMENT_64` load command, 0x19. */
+77c89
+< /** Holds the PE resource type RT_RCDATA (raw data) */
+---
+> /** Holds the PE resource type `RT_RCDATA` for raw data, 10. */
+79c91
+< /** Holds the size of IMAGE_RESOURCE_DIRECTORY in bytes */
+---
+> /** Holds the size of `IMAGE_RESOURCE_DIRECTORY` in bytes, 16. */
+81c93
+< /** Holds the size of IMAGE_RESOURCE_DIRECTORY_ENTRY in bytes */
+---
+> /** Holds the size of `IMAGE_RESOURCE_DIRECTORY_ENTRY` in bytes, 8. */
+83c95
+< /** Holds the size of IMAGE_RESOURCE_DATA_ENTRY in bytes */
+---
+> /** Holds the size of `IMAGE_RESOURCE_DATA_ENTRY` in bytes, 16. */
+85c97
+< /** Holds the PE section header size in bytes */
+---
+> /** Holds the PE section header size in bytes, 40. */
+87c99,102
+< /** Holds the high bit mask for a resource directory entry offset (indicates subdirectory) */
+---
+> /**
+> * Holds the high bit mask marking a resource directory entry offset as a
+> * subdirectory, 0x80000000.
+> */
+89c104,107
+< /** Holds the high bit mask for a resource name entry (indicates named vs integer ID) */
+---
+> /**
+> * Holds the high bit mask marking a resource entry as named rather than
+> * integer-identified, 0x80000000.
+> */
+91c109
+< /** Marks a section as containing initialized data */
+---
+> /** Marks a section as containing initialized data, 0x00000040. */
+93c111
+< /** Marks a section as readable */
+---
+> /** Marks a section as readable, 0x40000000. */
+95c113,116
+< /** Holds the platform-specific SEA build configurations */
+---
+> /**
+> * Holds the platform-specific SEA build configurations, keyed by
+> * `process.platform` for `win32`, `darwin`, and `linux`.
+> */
+121c142,145
+< /** Maps a {@link SEACompressionMode} to its numeric Brotli mode value */
+---
+> /**
+> * Maps a {@link SEACompressionMode} to its numeric Brotli mode value: `generic`
+> * to 0, `text` to 1, and `font` to 2.
+> */
+221c245
+< * Checks if a value is a valid {@link ExecutableFormat}.
+---
+> * Checks whether a value is a valid {@link ExecutableFormat}.
+247c271
+< * Checks if the current or specified platform is supported for SEA builds.
+---
+> * Checks whether the current or named platform is supported for SEA builds.
+278c302,303
+< * Walks a directory recursively and returns all file paths.
+---
+> * Walks a directory recursively and returns every file path it finds, relative to
+> * the base and skipping symlinks.
+298c323,324
+< * Redacts password arguments from a shell command.
+---
+> * Redacts password arguments from a shell command, so the command is safe to
+> * include in an error message.
+566c592
+< * Truncates a string at its first NUL character.
+---
+> * Truncates a NUL-padded binary name field at its first NUL character.
+642c668
+< * Checks if a file is a Windows PE executable.
+---
+> * Checks whether a file is a Windows PE executable.
+682c708
+< * file is truncated to the certificate's start FIRST so the overlay bytes are
+---
+> * file is truncated to the certificate's start first so the overlay bytes are
+685,686c711,712
+< * truncated security directory cannot throw unexpectedly — it is simply
+< * skipped and only the directory entry is zeroed.
+---
+> * truncated security directory cannot throw unexpectedly — it is skipped
+> * and only the directory entry is zeroed.
+714c740
+< * Requires EXACTLY ONE certificate source — `sign.file` (a `.pfx`/`.p12`
+---
+> * Requires exactly one certificate source — `sign.file` (a `.pfx`/`.p12`
+720c746
+< * injected into a command line. `sign.password` is NEVER included in a
+---
+> * injected into a command line. `sign.password` is never included in a
+782c808
+< * @returns Formatted string (e.g. `"1.23 MB"`, `"456 KB"`)
+---
+> * @returns Formatted string (for example `"1.23 MB"`, `"456 KB"`)
+794c820
+< * Windows drive-relative specifier (e.g. `'C:foo'`), or any `/`-separated
+---
+> * Windows drive-relative specifier (for example `'C:foo'`), or any `/`-separated
+822c848
+< * Dereferencing BOTH sides means a symlinked base itself (e.g. macOS `/tmp`
+---
+> * Dereferencing both sides means a symlinked base itself (for example macOS `/tmp`
+825c851
+< * failure (e.g. `ENOENT`) is wrapped as a coded `SEAError` rather than
+---
+> * failure (for example `ENOENT`) is wrapped as a coded `SEAError` rather than
+865,866c891,892
+< * separator, an absolute path, or a Windows drive-relative specifier (e.g.
+< * `'C:foo'`) — all of which could redirect the output executable outside
+---
+> * separator, an absolute path, or a Windows drive-relative specifier (for
+> * example `'C:foo'`) — all of which could redirect the output executable outside
+888c914
+< * A `rename`/`create` is only durable once its CONTAINING directory entry is
+---
+> * A `rename`/`create` is only durable once its containing directory entry is
+895c921
+< * here" and swallowed; anything else (e.g. `ENOENT`, meaning the directory
+---
+> * here" and swallowed; anything else (for example `ENOENT`, meaning the directory
+969c995
+< * entry (the default) `mainFormat` is OMITTED entirely so the config still
+---
+> * entry (the default) `mainFormat` is omitted entirely so the config still
+1024c1050
+< * @param resource - Note name (SEA resource identifier, e.g. `NODE_SEA_BLOB`)
+---
+> * @param resource - Note name (SEA resource identifier, for example `NODE_SEA_BLOB`)
+1098,1101c1124,1128
+< * Searches the file in 64 MB chunks with overlap to handle any file size.
+< * The fuse signals to the Node.js runtime that a SEA blob is present.
+< * This is normally handled by the Injector but is also available standalone
+< * when using native PE resource injection.
+---
+> * @remarks
+> * Searches the file in 64 MB chunks with overlap to handle any file size. The fuse
+> * signals to the Node.js runtime that a SEA blob is present. The `Injector` class
+> * normally applies this patch, and it stays available standalone for a build that
+> * injects the PE resource natively instead.
+1162c1189
+< * CLI flag, e.g. `'-e ...'`) fails to parse as an http(s) URL and is rejected
+---
+> * CLI flag, for example `'-e ...'`) fails to parse as an http(s) URL and is rejected
+2604c2631,2632
+< * Creates a new SEA build orchestrator.
+---
+> * Creates a SEA build orchestrator over the given options and returns it as a
+> * `SEAInterface`, the published contract a caller holds instead of the `SEA` class.
+2609c2637
+< * @example
+---
+> * @example Build a single executable
+2610a2639,2640
+> * import { createSEA, formatSize } from '@orkestrel/sea'
+> *
+2612,2616c2642,2648
+< *     name: 'orkestrel',
+< *     entry: { path: 'dist/bin/serve.cjs' },
+< *     output: 'dist/sea',
+< *     assets: { 'index.html.br': 'dist/client/index.html.br' },
+< *     compression: { paths: ['dist/client'] },
+---
+> * 	name: 'myapp',
+> * 	entry: { path: 'dist/server/serve.cjs' },
+> * 	output: 'dist/sea',
+> * 	assets: { 'model.gguf': 'models/model.gguf' },
+> * 	compression: { paths: ['dist/app/browser'], mode: 'text' },
+> * 	windows: { terminal: false },
+> * 	timeout: 30_000,
+2617a2650
+> *
+2618a2652,2654
+> * process.stdout.write(
+> * 	`${result.executable} ${formatSize(result.size)} ${String(result.duration)}ms\n`,
+> * )
+2625c2661,2662
+< * Creates a cross-platform binary resource injector.
+---
+> * Creates a resource injector bound to one target executable and returns it as an
+> * `InjectorInterface`, with the executable's format already detected from its header.
+2627,2629c2664,2667
+< * Detects the executable format (PE, ELF, Mach-O) from the file header
+< * and injects the blob using pure TypeScript file I/O — no WASM, no
+< * external tools.
+---
+> * @remarks
+> * The format detected at construction — PE, ELF, or Mach-O — selects the strategy
+> * `inject` takes. Every write runs through pure TypeScript file I/O, so the injector
+> * needs no WASM and no external tool.
+2649c2687,2689
+< * Creates a single named asset.
+---
+> * Creates one named asset from a key and a content buffer and returns it as an
+> * `AssetInterface`, with `compressed` inferred from the key where the input leaves
+> * it unset.
+2663c2703,2704
+< * Creates an asset manager for SEA-embedded or disk-loaded assets.
+---
+> * Creates an asset collection and returns it as an `AssetManagerInterface`, already
+> * carrying whatever assets the running SEA blob embeds.
+diff -r '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-sea-final-registry-visit-pack/baseline/package/dist/src/server/index.d.cts /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-sea-final-registry-visit-pack/extract/package/dist/src/server/index.d.cts
+1,3c1,3
+< import { EmitterErrorHandler } from '@orkestrel/emitter';
+< import { EmitterHooks } from '@orkestrel/emitter';
+< import { EmitterInterface } from '@orkestrel/emitter';
+---
+> import type { EmitterErrorHandler } from '@orkestrel/emitter';
+> import type { EmitterHooks } from '@orkestrel/emitter';
+> import type { EmitterInterface } from '@orkestrel/emitter';
+83c83
+<  * `key`        — the asset's lookup key (e.g. `"client.html.br"`).
+---
+>  * `key`        — the asset's lookup key (for example `"client.html.br"`).
+155a156
+>     /** Holds the emitter reporting the register, load, clear, and error events. */
+156a158
+>     /** Holds the number of assets registered so far. */
+157a160
+>     /** Looks up one registered asset by key. */
+158a162
+>     /** Lists every registered asset, in registration order. */
+159a164
+>     /** Lists every registered asset key, in registration order. */
+160a166
+>     /** Registers one asset, or every asset of a list. */
+161a168
+>     /** Loads the configured assets from disk, and registers nothing inside SEA mode. */
+162a170
+>     /** Removes every registered asset without destroying the manager. */
+163a172
+>     /** Clears every registered asset and tears down the emitter. */
+183c192
+< /** Names the file extension indicating Brotli compression */
+---
+> /** Names the file extension indicating Brotli compression, `.br`. */
+192c201
+<  * entry (the default) `mainFormat` is OMITTED entirely so the config still
+---
+>  * entry (the default) `mainFormat` is omitted entirely so the config still
+226c235
+<  * @param resource - Note name (SEA resource identifier, e.g. `NODE_SEA_BLOB`)
+---
+>  * @param resource - Note name (SEA resource identifier, for example `NODE_SEA_BLOB`)
+241c250
+<  * Requires EXACTLY ONE certificate source — `sign.file` (a `.pfx`/`.p12`
+---
+>  * Requires exactly one certificate source — `sign.file` (a `.pfx`/`.p12`
+247c256
+<  * injected into a command line. `sign.password` is NEVER included in a
+---
+>  * injected into a command line. `sign.password` is never included in a
+328c337,339
+<  * Creates a single named asset.
+---
+>  * Creates one named asset from a key and a content buffer and returns it as an
+>  * `AssetInterface`, with `compressed` inferred from the key where the input leaves
+>  * it unset.
+341c352,353
+<  * Creates an asset manager for SEA-embedded or disk-loaded assets.
+---
+>  * Creates an asset collection and returns it as an `AssetManagerInterface`, already
+>  * carrying whatever assets the running SEA blob embeds.
+355c367,368
+<  * Creates a cross-platform binary resource injector.
+---
+>  * Creates a resource injector bound to one target executable and returns it as an
+>  * `InjectorInterface`, with the executable's format already detected from its header.
+357,359c370,373
+<  * Detects the executable format (PE, ELF, Mach-O) from the file header
+<  * and injects the blob using pure TypeScript file I/O — no WASM, no
+<  * external tools.
+---
+>  * @remarks
+>  * The format detected at construction — PE, ELF, or Mach-O — selects the strategy
+>  * `inject` takes. Every write runs through pure TypeScript file I/O, so the injector
+>  * needs no WASM and no external tool.
+378c392,393
+<  * Creates a new SEA build orchestrator.
+---
+>  * Creates a SEA build orchestrator over the given options and returns it as a
+>  * `SEAInterface`, the published contract a caller holds instead of the `SEA` class.
+383c398
+<  * @example
+---
+>  * @example Build a single executable
+384a400,401
+>  * import { createSEA, formatSize } from '@orkestrel/sea'
+>  *
+386,390c403,409
+<  *     name: 'orkestrel',
+<  *     entry: { path: 'dist/bin/serve.cjs' },
+<  *     output: 'dist/sea',
+<  *     assets: { 'index.html.br': 'dist/client/index.html.br' },
+<  *     compression: { paths: ['dist/client'] },
+---
+>  * 	name: 'myapp',
+>  * 	entry: { path: 'dist/server/serve.cjs' },
+>  * 	output: 'dist/sea',
+>  * 	assets: { 'model.gguf': 'models/model.gguf' },
+>  * 	compression: { paths: ['dist/app/browser'], mode: 'text' },
+>  * 	windows: { terminal: false },
+>  * 	timeout: 30_000,
+391a411
+>  *
+392a413,415
+>  * process.stdout.write(
+>  * 	`${result.executable} ${formatSize(result.size)} ${String(result.duration)}ms\n`,
+>  * )
+397c420
+< /** Names the default SEA entry point module format when none is specified */
+---
+> /** Names the default SEA entry point module format when none is specified, `cjs`. */
+400c423
+< /** Holds the default Brotli compression quality level (maximum) */
+---
+> /** Holds the default Brotli compression quality level, 11, the maximum Brotli accepts. */
+403c426
+< /** Holds the ELF 64-bit class identifier */
+---
+> /** Holds the ELF 64-bit class identifier, 2. */
+406c429
+< /** Holds the ELF little-endian data encoding */
+---
+> /** Holds the ELF little-endian data encoding, 1. */
+409c432,435
+< /** Holds the ELF magic, 0x7F 'E' 'L' 'F' as a 32-bit big-endian value */
+---
+> /**
+>  * Holds the ELF magic, 0x7f454c46, the bytes 0x7F `E` `L` `F` read as a 32-bit
+>  * big-endian value.
+>  */
+412c438
+< /** Holds the page size an injected ELF segment is aligned to */
+---
+> /** Holds the page size an injected ELF segment is aligned to, 0x1000. */
+415c441
+< /** Holds the ELF segment permission flag marking a segment readable */
+---
+> /** Holds the ELF segment permission flag marking a segment readable, 4. */
+418c444
+< /** Holds the ELF program header type for a loadable segment */
+---
+> /** Holds the ELF program header type for a loadable segment, 1. */
+421c447
+< /** Holds the ELF program header type for a note segment */
+---
+> /** Holds the ELF program header type for a note segment, 4. */
+424c450
+< /** Holds the ELF program header type for the program header table itself */
+---
+> /** Holds the ELF program header type for the program header table itself, 6. */
+471c497
+<  * Dereferencing BOTH sides means a symlinked base itself (e.g. macOS `/tmp`
+---
+>  * Dereferencing both sides means a symlinked base itself (for example macOS `/tmp`
+474c500
+<  * failure (e.g. `ENOENT`) is wrapped as a coded `SEAError` rather than
+---
+>  * failure (for example `ENOENT`) is wrapped as a coded `SEAError` rather than
+506c532
+<  * Windows drive-relative specifier (e.g. `'C:foo'`), or any `/`-separated
+---
+>  * Windows drive-relative specifier (for example `'C:foo'`), or any `/`-separated
+527,528c553,554
+<  * separator, an absolute path, or a Windows drive-relative specifier (e.g.
+<  * `'C:foo'`) — all of which could redirect the output executable outside
+---
+>  * separator, an absolute path, or a Windows drive-relative specifier (for
+>  * example `'C:foo'`) — all of which could redirect the output executable outside
+586c612
+<  * @returns Formatted string (e.g. `"1.23 MB"`, `"456 KB"`)
+---
+>  * @returns Formatted string (for example `"1.23 MB"`, `"456 KB"`)
+652c678
+<  * `resource`   — resource identifier (e.g. `"NODE_SEA_BLOB"`).
+---
+>  * `resource`   — resource identifier (for example `"NODE_SEA_BLOB"`).
+677c703
+<  * Checks if a value is a valid {@link ExecutableFormat}.
+---
+>  * Checks whether a value is a valid {@link ExecutableFormat}.
+691c717
+<  * Checks if a file is a Windows PE executable.
+---
+>  * Checks whether a file is a Windows PE executable.
+699c725
+<  * Checks if the current or specified platform is supported for SEA builds.
+---
+>  * Checks whether the current or named platform is supported for SEA builds.
+744c770
+< /** Holds the Mach-O LC_SEGMENT_64 load command */
+---
+> /** Holds the Mach-O `LC_SEGMENT_64` load command, 0x19. */
+747c773
+< /** Holds the Mach-O 64-bit magic (little-endian) */
+---
+> /** Holds the Mach-O 64-bit magic, 0xfeedfacf, in little-endian byte order. */
+763c789
+<  * CLI flag, e.g. `'-e ...'`) fails to parse as an http(s) URL and is rejected
+---
+>  * CLI flag, for example `'-e ...'`) fails to parse as an http(s) URL and is rejected
+788,791c814,818
+<  * Searches the file in 64 MB chunks with overlap to handle any file size.
+<  * The fuse signals to the Node.js runtime that a SEA blob is present.
+<  * This is normally handled by the Injector but is also available standalone
+<  * when using native PE resource injection.
+---
+>  * @remarks
+>  * Searches the file in 64 MB chunks with overlap to handle any file size. The fuse
+>  * signals to the Node.js runtime that a SEA blob is present. The `Injector` class
+>  * normally applies this patch, and it stays available standalone for a build that
+>  * injects the PE resource natively instead.
+801c828
+< /** Holds the PE32 optional header magic */
+---
+> /** Holds the PE32 optional header magic, 0x10b. */
+804c831
+< /** Holds the PE32+ (64-bit) optional header magic */
+---
+> /** Holds the PE32+ optional header magic, 0x20b, the 64-bit form. */
+807c834
+< /** Holds the DOS MZ header magic (first 2 bytes of a PE file) */
+---
+> /** Holds the DOS MZ header magic, 0x5a4d, the first two bytes of a PE file. */
+810c837
+< /** Holds the size of IMAGE_RESOURCE_DATA_ENTRY in bytes */
+---
+> /** Holds the size of `IMAGE_RESOURCE_DATA_ENTRY` in bytes, 16. */
+813c840
+< /** Holds the size of IMAGE_RESOURCE_DIRECTORY in bytes */
+---
+> /** Holds the size of `IMAGE_RESOURCE_DIRECTORY` in bytes, 16. */
+816c843
+< /** Holds the size of IMAGE_RESOURCE_DIRECTORY_ENTRY in bytes */
+---
+> /** Holds the size of `IMAGE_RESOURCE_DIRECTORY_ENTRY` in bytes, 8. */
+819c846,849
+< /** Holds the high bit mask for a resource name entry (indicates named vs integer ID) */
+---
+> /**
+>  * Holds the high bit mask marking a resource entry as named rather than
+>  * integer-identified, 0x80000000.
+>  */
+822c852,855
+< /** Holds the high bit mask for a resource directory entry offset (indicates subdirectory) */
+---
+> /**
+>  * Holds the high bit mask marking a resource directory entry offset as a
+>  * subdirectory, 0x80000000.
+>  */
+825c858
+< /** Holds the PE resource type RT_RCDATA (raw data) */
+---
+> /** Holds the PE resource type `RT_RCDATA` for raw data, 10. */
+828c861
+< /** Marks a section as containing initialized data */
+---
+> /** Marks a section as containing initialized data, 0x00000040. */
+831c864
+< /** Marks a section as readable */
+---
+> /** Marks a section as readable, 0x40000000. */
+834c867
+< /** Holds the PE section header size in bytes */
+---
+> /** Holds the PE section header size in bytes, 40. */
+837c870
+< /** Holds the PE signature, "PE\0\0" as a 32-bit value */
+---
+> /** Holds the PE signature, 0x00004550, the bytes `PE\0\0` read as a 32-bit value. */
+951c984,985
+<  * Redacts password arguments from a shell command.
+---
+>  * Redacts password arguments from a shell command, so the command is safe to
+>  * include in an error message.
+999c1033
+< /** Names the SEA blob resource in the executable */
+---
+> /** Names the SEA blob resource in the executable, `NODE_SEA_BLOB`. */
+1002c1036,1039
+< /** Maps a {@link SEACompressionMode} to its numeric Brotli mode value */
+---
+> /**
+>  * Maps a {@link SEACompressionMode} to its numeric Brotli mode value: `generic`
+>  * to 0, `text` to 1, and `font` to 2.
+>  */
+1005c1042,1045
+< /** Holds the platform-specific SEA build configurations */
+---
+> /**
+>  * Holds the platform-specific SEA build configurations, keyed by
+>  * `process.platform` for `win32`, `darwin`, and `linux`.
+>  */
+1008c1048,1051
+< /** Holds the SEA sentinel fuse value embedded in the Node.js binary */
+---
+> /**
+>  * Holds the SEA sentinel fuse value embedded in the Node.js binary,
+>  * `NODE_SEA_FUSE_fce680ab2cc467b6e072b8b5df1996b2`.
+>  */
+1155c1198
+<  * `ABORT`    — operation aborted via `AbortSignal`.
+---
+>  * `ABORT`    — operation aborted through `AbortSignal`.
+1177c1220
+<  * injects the blob via the built-in Injector, and handles platform-specific signing.
+---
+>  * injects the blob through the built-in Injector, and handles platform-specific signing.
+1179a1223
+>     /** Holds the emitter reporting each build stage as it completes. */
+1180a1225
+>     /** Holds the phase the build has reached. */
+1181a1227,1231
+>     /**
+>      * Runs the compress, blob, and assemble stages and returns the build result.
+>      *
+>      * @throws SEAError with the `SEAErrorCode` of the stage that failed, after `status` becomes `'error'`
+>      */
+1182a1233
+>     /** Tears down the emitter. */
+1235c1286
+<  * `path`    — absolute path to the file just compressed.
+---
+>  * `path`    — absolute path to the file compressed most recently.
+1250c1301
+<  * `platform`    — platform identifier (e.g. `"win32"`, `"darwin"`).
+---
+>  * `platform`    — platform identifier (for example `"win32"`, `"darwin"`).
+1300c1351
+<  * executable is signed with `signtool` (and verified) as the LAST content
+---
+>  * executable is signed with `signtool` (and verified) as the last content
+1304c1355
+<  * These options apply only when the build HOST is Windows — there is no
+---
+>  * These options apply only when the build host is Windows — there is no
+1317c1368
+<  * `password`   — certificate password (`signtool /p`). SENSITIVE — never
+---
+>  * `password`   — certificate password (`signtool /p`). Sensitive: never
+1325c1376
+<  * Exactly ONE of `file` or `thumbprint` must be supplied — they identify two
+---
+>  * Exactly one of `file` or `thumbprint` must be supplied — they identify two
+1363c1414,1417
+< /** Lists the file extensions Brotli compression skips */
+---
+> /**
+>  * Lists the file extensions Brotli compression skips, the already-compressed
+>  * archive, image, font, and media formats.
+>  */
+1373c1427
+<  * file is truncated to the certificate's start FIRST so the overlay bytes are
+---
+>  * file is truncated to the certificate's start first so the overlay bytes are
+1376,1377c1430,1431
+<  * truncated security directory cannot throw unexpectedly — it is simply
+<  * skipped and only the directory entry is zeroed.
+---
+>  * truncated security directory cannot throw unexpectedly — it is skipped
+>  * and only the directory entry is zeroed.
+1384c1438
+<  * Truncates a string at its first NUL character.
+---
+>  * Truncates a NUL-padded binary name field at its first NUL character.
+1405c1459
+<  * A `rename`/`create` is only durable once its CONTAINING directory entry is
+---
+>  * A `rename`/`create` is only durable once its containing directory entry is
+1412c1466
+<  * here" and swallowed; anything else (e.g. `ENOENT`, meaning the directory
+---
+>  * here" and swallowed; anything else (for example `ENOENT`, meaning the directory
+1427c1481,1482
+<  * Walks a directory recursively and returns all file paths.
+---
+>  * Walks a directory recursively and returns every file path it finds, relative to
+>  * the base and skipping symlinks.
+1435c1490
+< /** Holds the Windows PE subsystem value for a console application */
+---
+> /** Holds the Windows PE subsystem value for a console application, 3. */
+1438c1493,1496
+< /** Holds the Windows PE subsystem value for a GUI application (no terminal window) */
+---
+> /**
+>  * Holds the Windows PE subsystem value for a GUI application, 2, which launches
+>  * without a terminal window.
+>  */
+diff -r '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-sea-final-registry-visit-pack/baseline/package/dist/src/server/index.d.ts /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-sea-final-registry-visit-pack/extract/package/dist/src/server/index.d.ts
+1,3c1,3
+< import { EmitterErrorHandler } from '@orkestrel/emitter';
+< import { EmitterHooks } from '@orkestrel/emitter';
+< import { EmitterInterface } from '@orkestrel/emitter';
+---
+> import type { EmitterErrorHandler } from '@orkestrel/emitter';
+> import type { EmitterHooks } from '@orkestrel/emitter';
+> import type { EmitterInterface } from '@orkestrel/emitter';
+83c83
+<  * `key`        — the asset's lookup key (e.g. `"client.html.br"`).
+---
+>  * `key`        — the asset's lookup key (for example `"client.html.br"`).
+155a156
+>     /** Holds the emitter reporting the register, load, clear, and error events. */
+156a158
+>     /** Holds the number of assets registered so far. */
+157a160
+>     /** Looks up one registered asset by key. */
+158a162
+>     /** Lists every registered asset, in registration order. */
+159a164
+>     /** Lists every registered asset key, in registration order. */
+160a166
+>     /** Registers one asset, or every asset of a list. */
+161a168
+>     /** Loads the configured assets from disk, and registers nothing inside SEA mode. */
+162a170
+>     /** Removes every registered asset without destroying the manager. */
+163a172
+>     /** Clears every registered asset and tears down the emitter. */
+183c192
+< /** Names the file extension indicating Brotli compression */
+---
+> /** Names the file extension indicating Brotli compression, `.br`. */
+192c201
+<  * entry (the default) `mainFormat` is OMITTED entirely so the config still
+---
+>  * entry (the default) `mainFormat` is omitted entirely so the config still
+226c235
+<  * @param resource - Note name (SEA resource identifier, e.g. `NODE_SEA_BLOB`)
+---
+>  * @param resource - Note name (SEA resource identifier, for example `NODE_SEA_BLOB`)
+241c250
+<  * Requires EXACTLY ONE certificate source — `sign.file` (a `.pfx`/`.p12`
+---
+>  * Requires exactly one certificate source — `sign.file` (a `.pfx`/`.p12`
+247c256
+<  * injected into a command line. `sign.password` is NEVER included in a
+---
+>  * injected into a command line. `sign.password` is never included in a
+328c337,339
+<  * Creates a single named asset.
+---
+>  * Creates one named asset from a key and a content buffer and returns it as an
+>  * `AssetInterface`, with `compressed` inferred from the key where the input leaves
+>  * it unset.
+341c352,353
+<  * Creates an asset manager for SEA-embedded or disk-loaded assets.
+---
+>  * Creates an asset collection and returns it as an `AssetManagerInterface`, already
+>  * carrying whatever assets the running SEA blob embeds.
+355c367,368
+<  * Creates a cross-platform binary resource injector.
+---
+>  * Creates a resource injector bound to one target executable and returns it as an
+>  * `InjectorInterface`, with the executable's format already detected from its header.
+357,359c370,373
+<  * Detects the executable format (PE, ELF, Mach-O) from the file header
+<  * and injects the blob using pure TypeScript file I/O — no WASM, no
+<  * external tools.
+---
+>  * @remarks
+>  * The format detected at construction — PE, ELF, or Mach-O — selects the strategy
+>  * `inject` takes. Every write runs through pure TypeScript file I/O, so the injector
+>  * needs no WASM and no external tool.
+378c392,393
+<  * Creates a new SEA build orchestrator.
+---
+>  * Creates a SEA build orchestrator over the given options and returns it as a
+>  * `SEAInterface`, the published contract a caller holds instead of the `SEA` class.
+383c398
+<  * @example
+---
+>  * @example Build a single executable
+384a400,401
+>  * import { createSEA, formatSize } from '@orkestrel/sea'
+>  *
+386,390c403,409
+<  *     name: 'orkestrel',
+<  *     entry: { path: 'dist/bin/serve.cjs' },
+<  *     output: 'dist/sea',
+<  *     assets: { 'index.html.br': 'dist/client/index.html.br' },
+<  *     compression: { paths: ['dist/client'] },
+---
+>  * 	name: 'myapp',
+>  * 	entry: { path: 'dist/server/serve.cjs' },
+>  * 	output: 'dist/sea',
+>  * 	assets: { 'model.gguf': 'models/model.gguf' },
+>  * 	compression: { paths: ['dist/app/browser'], mode: 'text' },
+>  * 	windows: { terminal: false },
+>  * 	timeout: 30_000,
+391a411
+>  *
+392a413,415
+>  * process.stdout.write(
+>  * 	`${result.executable} ${formatSize(result.size)} ${String(result.duration)}ms\n`,
+>  * )
+397c420
+< /** Names the default SEA entry point module format when none is specified */
+---
+> /** Names the default SEA entry point module format when none is specified, `cjs`. */
+400c423
+< /** Holds the default Brotli compression quality level (maximum) */
+---
+> /** Holds the default Brotli compression quality level, 11, the maximum Brotli accepts. */
+403c426
+< /** Holds the ELF 64-bit class identifier */
+---
+> /** Holds the ELF 64-bit class identifier, 2. */
+406c429
+< /** Holds the ELF little-endian data encoding */
+---
+> /** Holds the ELF little-endian data encoding, 1. */
+409c432,435
+< /** Holds the ELF magic, 0x7F 'E' 'L' 'F' as a 32-bit big-endian value */
+---
+> /**
+>  * Holds the ELF magic, 0x7f454c46, the bytes 0x7F `E` `L` `F` read as a 32-bit
+>  * big-endian value.
+>  */
+412c438
+< /** Holds the page size an injected ELF segment is aligned to */
+---
+> /** Holds the page size an injected ELF segment is aligned to, 0x1000. */
+415c441
+< /** Holds the ELF segment permission flag marking a segment readable */
+---
+> /** Holds the ELF segment permission flag marking a segment readable, 4. */
+418c444
+< /** Holds the ELF program header type for a loadable segment */
+---
+> /** Holds the ELF program header type for a loadable segment, 1. */
+421c447
+< /** Holds the ELF program header type for a note segment */
+---
+> /** Holds the ELF program header type for a note segment, 4. */
+424c450
+< /** Holds the ELF program header type for the program header table itself */
+---
+> /** Holds the ELF program header type for the program header table itself, 6. */
+471c497
+<  * Dereferencing BOTH sides means a symlinked base itself (e.g. macOS `/tmp`
+---
+>  * Dereferencing both sides means a symlinked base itself (for example macOS `/tmp`
+474c500
+<  * failure (e.g. `ENOENT`) is wrapped as a coded `SEAError` rather than
+---
+>  * failure (for example `ENOENT`) is wrapped as a coded `SEAError` rather than
+506c532
+<  * Windows drive-relative specifier (e.g. `'C:foo'`), or any `/`-separated
+---
+>  * Windows drive-relative specifier (for example `'C:foo'`), or any `/`-separated
+527,528c553,554
+<  * separator, an absolute path, or a Windows drive-relative specifier (e.g.
+<  * `'C:foo'`) — all of which could redirect the output executable outside
+---
+>  * separator, an absolute path, or a Windows drive-relative specifier (for
+>  * example `'C:foo'`) — all of which could redirect the output executable outside
+586c612
+<  * @returns Formatted string (e.g. `"1.23 MB"`, `"456 KB"`)
+---
+>  * @returns Formatted string (for example `"1.23 MB"`, `"456 KB"`)
+652c678
+<  * `resource`   — resource identifier (e.g. `"NODE_SEA_BLOB"`).
+---
+>  * `resource`   — resource identifier (for example `"NODE_SEA_BLOB"`).
+677c703
+<  * Checks if a value is a valid {@link ExecutableFormat}.
+---
+>  * Checks whether a value is a valid {@link ExecutableFormat}.
+691c717
+<  * Checks if a file is a Windows PE executable.
+---
+>  * Checks whether a file is a Windows PE executable.
+699c725
+<  * Checks if the current or specified platform is supported for SEA builds.
+---
+>  * Checks whether the current or named platform is supported for SEA builds.
+744c770
+< /** Holds the Mach-O LC_SEGMENT_64 load command */
+---
+> /** Holds the Mach-O `LC_SEGMENT_64` load command, 0x19. */
+747c773
+< /** Holds the Mach-O 64-bit magic (little-endian) */
+---
+> /** Holds the Mach-O 64-bit magic, 0xfeedfacf, in little-endian byte order. */
+763c789
+<  * CLI flag, e.g. `'-e ...'`) fails to parse as an http(s) URL and is rejected
+---
+>  * CLI flag, for example `'-e ...'`) fails to parse as an http(s) URL and is rejected
+788,791c814,818
+<  * Searches the file in 64 MB chunks with overlap to handle any file size.
+<  * The fuse signals to the Node.js runtime that a SEA blob is present.
+<  * This is normally handled by the Injector but is also available standalone
+<  * when using native PE resource injection.
+---
+>  * @remarks
+>  * Searches the file in 64 MB chunks with overlap to handle any file size. The fuse
+>  * signals to the Node.js runtime that a SEA blob is present. The `Injector` class
+>  * normally applies this patch, and it stays available standalone for a build that
+>  * injects the PE resource natively instead.
+801c828
+< /** Holds the PE32 optional header magic */
+---
+> /** Holds the PE32 optional header magic, 0x10b. */
+804c831
+< /** Holds the PE32+ (64-bit) optional header magic */
+---
+> /** Holds the PE32+ optional header magic, 0x20b, the 64-bit form. */
+807c834
+< /** Holds the DOS MZ header magic (first 2 bytes of a PE file) */
+---
+> /** Holds the DOS MZ header magic, 0x5a4d, the first two bytes of a PE file. */
+810c837
+< /** Holds the size of IMAGE_RESOURCE_DATA_ENTRY in bytes */
+---
+> /** Holds the size of `IMAGE_RESOURCE_DATA_ENTRY` in bytes, 16. */
+813c840
+< /** Holds the size of IMAGE_RESOURCE_DIRECTORY in bytes */
+---
+> /** Holds the size of `IMAGE_RESOURCE_DIRECTORY` in bytes, 16. */
+816c843
+< /** Holds the size of IMAGE_RESOURCE_DIRECTORY_ENTRY in bytes */
+---
+> /** Holds the size of `IMAGE_RESOURCE_DIRECTORY_ENTRY` in bytes, 8. */
+819c846,849
+< /** Holds the high bit mask for a resource name entry (indicates named vs integer ID) */
+---
+> /**
+>  * Holds the high bit mask marking a resource entry as named rather than
+>  * integer-identified, 0x80000000.
+>  */
+822c852,855
+< /** Holds the high bit mask for a resource directory entry offset (indicates subdirectory) */
+---
+> /**
+>  * Holds the high bit mask marking a resource directory entry offset as a
+>  * subdirectory, 0x80000000.
+>  */
+825c858
+< /** Holds the PE resource type RT_RCDATA (raw data) */
+---
+> /** Holds the PE resource type `RT_RCDATA` for raw data, 10. */
+828c861
+< /** Marks a section as containing initialized data */
+---
+> /** Marks a section as containing initialized data, 0x00000040. */
+831c864
+< /** Marks a section as readable */
+---
+> /** Marks a section as readable, 0x40000000. */
+834c867
+< /** Holds the PE section header size in bytes */
+---
+> /** Holds the PE section header size in bytes, 40. */
+837c870
+< /** Holds the PE signature, "PE\0\0" as a 32-bit value */
+---
+> /** Holds the PE signature, 0x00004550, the bytes `PE\0\0` read as a 32-bit value. */
+951c984,985
+<  * Redacts password arguments from a shell command.
+---
+>  * Redacts password arguments from a shell command, so the command is safe to
+>  * include in an error message.
+999c1033
+< /** Names the SEA blob resource in the executable */
+---
+> /** Names the SEA blob resource in the executable, `NODE_SEA_BLOB`. */
+1002c1036,1039
+< /** Maps a {@link SEACompressionMode} to its numeric Brotli mode value */
+---
+> /**
+>  * Maps a {@link SEACompressionMode} to its numeric Brotli mode value: `generic`
+>  * to 0, `text` to 1, and `font` to 2.
+>  */
+1005c1042,1045
+< /** Holds the platform-specific SEA build configurations */
+---
+> /**
+>  * Holds the platform-specific SEA build configurations, keyed by
+>  * `process.platform` for `win32`, `darwin`, and `linux`.
+>  */
+1008c1048,1051
+< /** Holds the SEA sentinel fuse value embedded in the Node.js binary */
+---
+> /**
+>  * Holds the SEA sentinel fuse value embedded in the Node.js binary,
+>  * `NODE_SEA_FUSE_fce680ab2cc467b6e072b8b5df1996b2`.
+>  */
+1155c1198
+<  * `ABORT`    — operation aborted via `AbortSignal`.
+---
+>  * `ABORT`    — operation aborted through `AbortSignal`.
+1177c1220
+<  * injects the blob via the built-in Injector, and handles platform-specific signing.
+---
+>  * injects the blob through the built-in Injector, and handles platform-specific signing.
+1179a1223
+>     /** Holds the emitter reporting each build stage as it completes. */
+1180a1225
+>     /** Holds the phase the build has reached. */
+1181a1227,1231
+>     /**
+>      * Runs the compress, blob, and assemble stages and returns the build result.
+>      *
+>      * @throws SEAError with the `SEAErrorCode` of the stage that failed, after `status` becomes `'error'`
+>      */
+1182a1233
+>     /** Tears down the emitter. */
+1235c1286
+<  * `path`    — absolute path to the file just compressed.
+---
+>  * `path`    — absolute path to the file compressed most recently.
+1250c1301
+<  * `platform`    — platform identifier (e.g. `"win32"`, `"darwin"`).
+---
+>  * `platform`    — platform identifier (for example `"win32"`, `"darwin"`).
+1300c1351
+<  * executable is signed with `signtool` (and verified) as the LAST content
+---
+>  * executable is signed with `signtool` (and verified) as the last content
+1304c1355
+<  * These options apply only when the build HOST is Windows — there is no
+---
+>  * These options apply only when the build host is Windows — there is no
+1317c1368
+<  * `password`   — certificate password (`signtool /p`). SENSITIVE — never
+---
+>  * `password`   — certificate password (`signtool /p`). Sensitive: never
+1325c1376
+<  * Exactly ONE of `file` or `thumbprint` must be supplied — they identify two
+---
+>  * Exactly one of `file` or `thumbprint` must be supplied — they identify two
+1363c1414,1417
+< /** Lists the file extensions Brotli compression skips */
+---
+> /**
+>  * Lists the file extensions Brotli compression skips, the already-compressed
+>  * archive, image, font, and media formats.
+>  */
+1373c1427
+<  * file is truncated to the certificate's start FIRST so the overlay bytes are
+---
+>  * file is truncated to the certificate's start first so the overlay bytes are
+1376,1377c1430,1431
+<  * truncated security directory cannot throw unexpectedly — it is simply
+<  * skipped and only the directory entry is zeroed.
+---
+>  * truncated security directory cannot throw unexpectedly — it is skipped
+>  * and only the directory entry is zeroed.
+1384c1438
+<  * Truncates a string at its first NUL character.
+---
+>  * Truncates a NUL-padded binary name field at its first NUL character.
+1405c1459
+<  * A `rename`/`create` is only durable once its CONTAINING directory entry is
+---
+>  * A `rename`/`create` is only durable once its containing directory entry is
+1412c1466
+<  * here" and swallowed; anything else (e.g. `ENOENT`, meaning the directory
+---
+>  * here" and swallowed; anything else (for example `ENOENT`, meaning the directory
+1427c1481,1482
+<  * Walks a directory recursively and returns all file paths.
+---
+>  * Walks a directory recursively and returns every file path it finds, relative to
+>  * the base and skipping symlinks.
+1435c1490
+< /** Holds the Windows PE subsystem value for a console application */
+---
+> /** Holds the Windows PE subsystem value for a console application, 3. */
+1438c1493,1496
+< /** Holds the Windows PE subsystem value for a GUI application (no terminal window) */
+---
+> /**
+>  * Holds the Windows PE subsystem value for a GUI application, 2, which launches
+>  * without a terminal window.
+>  */
+diff -r '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-sea-final-registry-visit-pack/baseline/package/dist/src/server/index.js /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-sea-final-registry-visit-pack/extract/package/dist/src/server/index.js
+10c10,13
+< /** Holds the SEA sentinel fuse value embedded in the Node.js binary */
+---
+> /**
+> * Holds the SEA sentinel fuse value embedded in the Node.js binary,
+> * `NODE_SEA_FUSE_fce680ab2cc467b6e072b8b5df1996b2`.
+> */
+12c15
+< /** Names the SEA blob resource in the executable */
+---
+> /** Names the SEA blob resource in the executable, `NODE_SEA_BLOB`. */
+14c17
+< /** Holds the default Brotli compression quality level (maximum) */
+---
+> /** Holds the default Brotli compression quality level, 11, the maximum Brotli accepts. */
+16c19,22
+< /** Holds the Windows PE subsystem value for a GUI application (no terminal window) */
+---
+> /**
+> * Holds the Windows PE subsystem value for a GUI application, 2, which launches
+> * without a terminal window.
+> */
+18c24
+< /** Holds the Windows PE subsystem value for a console application */
+---
+> /** Holds the Windows PE subsystem value for a console application, 3. */
+20c26
+< /** Names the file extension indicating Brotli compression */
+---
+> /** Names the file extension indicating Brotli compression, `.br`. */
+22c28,31
+< /** Lists the file extensions Brotli compression skips */
+---
+> /**
+> * Lists the file extensions Brotli compression skips, the already-compressed
+> * archive, image, font, and media formats.
+> */
+46c55
+< /** Names the default SEA entry point module format when none is specified */
+---
+> /** Names the default SEA entry point module format when none is specified, `cjs`. */
+48c57
+< /** Holds the DOS MZ header magic (first 2 bytes of a PE file) */
+---
+> /** Holds the DOS MZ header magic, 0x5a4d, the first two bytes of a PE file. */
+50c59
+< /** Holds the PE signature, "PE\0\0" as a 32-bit value */
+---
+> /** Holds the PE signature, 0x00004550, the bytes `PE\0\0` read as a 32-bit value. */
+52c61
+< /** Holds the PE32 optional header magic */
+---
+> /** Holds the PE32 optional header magic, 0x10b. */
+54c63
+< /** Holds the PE32+ (64-bit) optional header magic */
+---
+> /** Holds the PE32+ optional header magic, 0x20b, the 64-bit form. */
+56c65,68
+< /** Holds the ELF magic, 0x7F 'E' 'L' 'F' as a 32-bit big-endian value */
+---
+> /**
+> * Holds the ELF magic, 0x7f454c46, the bytes 0x7F `E` `L` `F` read as a 32-bit
+> * big-endian value.
+> */
+58c70
+< /** Holds the ELF 64-bit class identifier */
+---
+> /** Holds the ELF 64-bit class identifier, 2. */
+60c72
+< /** Holds the ELF little-endian data encoding */
+---
+> /** Holds the ELF little-endian data encoding, 1. */
+62c74
+< /** Holds the ELF program header type for a note segment */
+---
+> /** Holds the ELF program header type for a note segment, 4. */
+64c76
+< /** Holds the ELF program header type for a loadable segment */
+---
+> /** Holds the ELF program header type for a loadable segment, 1. */
+66c78
+< /** Holds the ELF program header type for the program header table itself */
+---
+> /** Holds the ELF program header type for the program header table itself, 6. */
+68c80
+< /** Holds the ELF segment permission flag marking a segment readable */
+---
+> /** Holds the ELF segment permission flag marking a segment readable, 4. */
+70c82
+< /** Holds the page size an injected ELF segment is aligned to */
+---
+> /** Holds the page size an injected ELF segment is aligned to, 0x1000. */
+72c84
+< /** Holds the Mach-O 64-bit magic (little-endian) */
+---
+> /** Holds the Mach-O 64-bit magic, 0xfeedfacf, in little-endian byte order. */
+74c86
+< /** Holds the Mach-O LC_SEGMENT_64 load command */
+---
+> /** Holds the Mach-O `LC_SEGMENT_64` load command, 0x19. */
+76c88
+< /** Holds the PE resource type RT_RCDATA (raw data) */
+---
+> /** Holds the PE resource type `RT_RCDATA` for raw data, 10. */
+78c90
+< /** Holds the size of IMAGE_RESOURCE_DIRECTORY in bytes */
+---
+> /** Holds the size of `IMAGE_RESOURCE_DIRECTORY` in bytes, 16. */
+80c92
+< /** Holds the size of IMAGE_RESOURCE_DIRECTORY_ENTRY in bytes */
+---
+> /** Holds the size of `IMAGE_RESOURCE_DIRECTORY_ENTRY` in bytes, 8. */
+82c94
+< /** Holds the size of IMAGE_RESOURCE_DATA_ENTRY in bytes */
+---
+> /** Holds the size of `IMAGE_RESOURCE_DATA_ENTRY` in bytes, 16. */
+84c96
+< /** Holds the PE section header size in bytes */
+---
+> /** Holds the PE section header size in bytes, 40. */
+86c98,101
+< /** Holds the high bit mask for a resource directory entry offset (indicates subdirectory) */
+---
+> /**
+> * Holds the high bit mask marking a resource directory entry offset as a
+> * subdirectory, 0x80000000.
+> */
+88c103,106
+< /** Holds the high bit mask for a resource name entry (indicates named vs integer ID) */
+---
+> /**
+> * Holds the high bit mask marking a resource entry as named rather than
+> * integer-identified, 0x80000000.
+> */
+90c108
+< /** Marks a section as containing initialized data */
+---
+> /** Marks a section as containing initialized data, 0x00000040. */
+92c110
+< /** Marks a section as readable */
+---
+> /** Marks a section as readable, 0x40000000. */
+94c112,115
+< /** Holds the platform-specific SEA build configurations */
+---
+> /**
+> * Holds the platform-specific SEA build configurations, keyed by
+> * `process.platform` for `win32`, `darwin`, and `linux`.
+> */
+120c141,144
+< /** Maps a {@link SEACompressionMode} to its numeric Brotli mode value */
+---
+> /**
+> * Maps a {@link SEACompressionMode} to its numeric Brotli mode value: `generic`
+> * to 0, `text` to 1, and `font` to 2.
+> */
+220c244
+< * Checks if a value is a valid {@link ExecutableFormat}.
+---
+> * Checks whether a value is a valid {@link ExecutableFormat}.
+246c270
+< * Checks if the current or specified platform is supported for SEA builds.
+---
+> * Checks whether the current or named platform is supported for SEA builds.
+277c301,302
+< * Walks a directory recursively and returns all file paths.
+---
+> * Walks a directory recursively and returns every file path it finds, relative to
+> * the base and skipping symlinks.
+297c322,323
+< * Redacts password arguments from a shell command.
+---
+> * Redacts password arguments from a shell command, so the command is safe to
+> * include in an error message.
+565c591
+< * Truncates a string at its first NUL character.
+---
+> * Truncates a NUL-padded binary name field at its first NUL character.
+641c667
+< * Checks if a file is a Windows PE executable.
+---
+> * Checks whether a file is a Windows PE executable.
+681c707
+< * file is truncated to the certificate's start FIRST so the overlay bytes are
+---
+> * file is truncated to the certificate's start first so the overlay bytes are
+684,685c710,711
+< * truncated security directory cannot throw unexpectedly — it is simply
+< * skipped and only the directory entry is zeroed.
+---
+> * truncated security directory cannot throw unexpectedly — it is skipped
+> * and only the directory entry is zeroed.
+713c739
+< * Requires EXACTLY ONE certificate source — `sign.file` (a `.pfx`/`.p12`
+---
+> * Requires exactly one certificate source — `sign.file` (a `.pfx`/`.p12`
+719c745
+< * injected into a command line. `sign.password` is NEVER included in a
+---
+> * injected into a command line. `sign.password` is never included in a
+781c807
+< * @returns Formatted string (e.g. `"1.23 MB"`, `"456 KB"`)
+---
+> * @returns Formatted string (for example `"1.23 MB"`, `"456 KB"`)
+793c819
+< * Windows drive-relative specifier (e.g. `'C:foo'`), or any `/`-separated
+---
+> * Windows drive-relative specifier (for example `'C:foo'`), or any `/`-separated
+821c847
+< * Dereferencing BOTH sides means a symlinked base itself (e.g. macOS `/tmp`
+---
+> * Dereferencing both sides means a symlinked base itself (for example macOS `/tmp`
+824c850
+< * failure (e.g. `ENOENT`) is wrapped as a coded `SEAError` rather than
+---
+> * failure (for example `ENOENT`) is wrapped as a coded `SEAError` rather than
+864,865c890,891
+< * separator, an absolute path, or a Windows drive-relative specifier (e.g.
+< * `'C:foo'`) — all of which could redirect the output executable outside
+---
+> * separator, an absolute path, or a Windows drive-relative specifier (for
+> * example `'C:foo'`) — all of which could redirect the output executable outside
+887c913
+< * A `rename`/`create` is only durable once its CONTAINING directory entry is
+---
+> * A `rename`/`create` is only durable once its containing directory entry is
+894c920
+< * here" and swallowed; anything else (e.g. `ENOENT`, meaning the directory
+---
+> * here" and swallowed; anything else (for example `ENOENT`, meaning the directory
+968c994
+< * entry (the default) `mainFormat` is OMITTED entirely so the config still
+---
+> * entry (the default) `mainFormat` is omitted entirely so the config still
+1023c1049
+< * @param resource - Note name (SEA resource identifier, e.g. `NODE_SEA_BLOB`)
+---
+> * @param resource - Note name (SEA resource identifier, for example `NODE_SEA_BLOB`)
+1097,1100c1123,1127
+< * Searches the file in 64 MB chunks with overlap to handle any file size.
+< * The fuse signals to the Node.js runtime that a SEA blob is present.
+< * This is normally handled by the Injector but is also available standalone
+< * when using native PE resource injection.
+---
+> * @remarks
+> * Searches the file in 64 MB chunks with overlap to handle any file size. The fuse
+> * signals to the Node.js runtime that a SEA blob is present. The `Injector` class
+> * normally applies this patch, and it stays available standalone for a build that
+> * injects the PE resource natively instead.
+1161c1188
+< * CLI flag, e.g. `'-e ...'`) fails to parse as an http(s) URL and is rejected
+---
+> * CLI flag, for example `'-e ...'`) fails to parse as an http(s) URL and is rejected
+2603c2630,2631
+< * Creates a new SEA build orchestrator.
+---
+> * Creates a SEA build orchestrator over the given options and returns it as a
+> * `SEAInterface`, the published contract a caller holds instead of the `SEA` class.
+2608c2636
+< * @example
+---
+> * @example Build a single executable
+2609a2638,2639
+> * import { createSEA, formatSize } from '@orkestrel/sea'
+> *
+2611,2615c2641,2647
+< *     name: 'orkestrel',
+< *     entry: { path: 'dist/bin/serve.cjs' },
+< *     output: 'dist/sea',
+< *     assets: { 'index.html.br': 'dist/client/index.html.br' },
+< *     compression: { paths: ['dist/client'] },
+---
+> * 	name: 'myapp',
+> * 	entry: { path: 'dist/server/serve.cjs' },
+> * 	output: 'dist/sea',
+> * 	assets: { 'model.gguf': 'models/model.gguf' },
+> * 	compression: { paths: ['dist/app/browser'], mode: 'text' },
+> * 	windows: { terminal: false },
+> * 	timeout: 30_000,
+2616a2649
+> *
+2617a2651,2653
+> * process.stdout.write(
+> * 	`${result.executable} ${formatSize(result.size)} ${String(result.duration)}ms\n`,
+> * )
+2624c2660,2661
+< * Creates a cross-platform binary resource injector.
+---
+> * Creates a resource injector bound to one target executable and returns it as an
+> * `InjectorInterface`, with the executable's format already detected from its header.
+2626,2628c2663,2666
+< * Detects the executable format (PE, ELF, Mach-O) from the file header
+< * and injects the blob using pure TypeScript file I/O — no WASM, no
+< * external tools.
+---
+> * @remarks
+> * The format detected at construction — PE, ELF, or Mach-O — selects the strategy
+> * `inject` takes. Every write runs through pure TypeScript file I/O, so the injector
+> * needs no WASM and no external tool.
+2648c2686,2688
+< * Creates a single named asset.
+---
+> * Creates one named asset from a key and a content buffer and returns it as an
+> * `AssetInterface`, with `compressed` inferred from the key where the input leaves
+> * it unset.
+2662c2702,2703
+< * Creates an asset manager for SEA-embedded or disk-loaded assets.
+---
+> * Creates an asset collection and returns it as an `AssetManagerInterface`, already
+> * carrying whatever assets the running SEA blob embeds.

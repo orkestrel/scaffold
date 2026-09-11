@@ -1,0 +1,10 @@
+ M guides/terminal.md
+ M package.json
+ M src/core/TerminalManager.ts
+ M src/core/helpers.ts
+ M src/core/types.ts
+ M src/server/Terminal.ts
+ M src/server/helpers.ts
+ M tests/config.test.ts
+ M tests/guides.test.ts
+ M tests/setupPolicy.ts

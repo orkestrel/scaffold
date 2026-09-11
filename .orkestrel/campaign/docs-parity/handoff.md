@@ -16,13 +16,13 @@ The Guide-only root prompt.txt is consumed. Replace it only when this layer is r
 | interpret | 0.0.13 | Closed; clean canonical main at a3928145fac315c3b8ef43e53ebffc4442a49286; campaign/main pushed; owner upload pending |
 | lsp | 0.0.7 | Closed; clean canonical main at d6543822b6c88201a96af0293123b2c3c60dc6b8; campaign/main pushed; owner upload pending |
 | qualifier | 0.0.14 | Closed; clean canonical main at c10f4c8661b753f8b6eaf8caf96fe0fbb47ef158; campaign/main pushed; owner upload pending |
-| queue | 0.0.13 | Registry gates/pack passed; release review and main closure pending |
-| rater | 0.0.14 | Registry gates/pack passed; release review and main closure pending |
-| relation | 0.0.12 | Native source reviews returned PASS; preparation gates passed; source landing and registry visit pending |
-| sea | 0.0.15 | Native source reviews returned PASS; preparation gates passed; source landing and registry visit pending |
-| server | 0.0.19 | Native source reviews returned PASS; preparation gates passed; source landing and registry visit pending |
-| terminal | 0.0.15 | Source correction returned; direct native gate passed; correction review and final preparation pending |
-| workspace | 0.0.8 | Native source reviews returned PASS; preparation gates passed; source landing and registry visit pending |
+| queue | 0.0.13 | Closed; clean canonical main at 02df755da2b8dc8f324dfb58849504187ceab580; campaign/main pushed; owner upload pending |
+| rater | 0.0.14 | Registry gates/pack and release review accepted; main closure pending |
+| relation | 0.0.12 | Source landed at 60a0b70; registry preparation landed at d9b40b3; final gates/pack passed; release review/main closure pending |
+| sea | 0.0.15 | Source landed at 8801aa0; registry preparation landed at b6a6f9e; final gates/pack passed; release review/main closure pending |
+| server | 0.0.19 | Source landed at e53d01a; preparation gates passed; registry visit pending |
+| terminal | 0.0.15 | Corrected source accepted; preparation gates running; source landing and registry visit pending |
+| workspace | 0.0.8 | Source landed at a1322f0; preparation gates passed; registry visit pending |
 
 Scaffold's root-generated catalog and Guide development manifest edits remain
 uncommitted. Measure their rebuilt output before ruling on that tooling follow-up.

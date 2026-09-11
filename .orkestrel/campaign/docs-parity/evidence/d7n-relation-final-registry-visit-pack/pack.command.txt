@@ -1,0 +1,1 @@
+npm pack --ignore-scripts --pack-destination /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-relation-final-registry-visit-pack 

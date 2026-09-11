@@ -1,0 +1,756 @@
+diff -r -w -B '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-relation-final-registry-visit-pack/baseline/package/dist/src/core/index.cjs /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-relation-final-registry-visit-pack/extract/package/dist/src/core/index.cjs
+7c7,8
+< * Represents an error thrown by the relations layer.
+---
+> * Represents an error thrown by the relations layer, carrying a machine-readable
+> * {@link RelationErrorCode}.
+81,85c82,86
+< * A `string` is a `belongs` (FK column on this table); a `readonly string[]` is a
+< * `many` (FK column on the related table); a {@link RelationDescriptor} uses its
+< * explicit `relationship`, or infers it from the fields present. The target model
+< * defaults to the relation name. Every column the resolved arm declares is validated
+< * here, which is what lets each arm declare its columns required.
+---
+> * A `string` is a `belongs` (foreign-key column on this table); a `readonly string[]`
+> * is a `many` (foreign-key column on the related table); a {@link RelationDescriptor}
+> * uses its explicit `relationship`, or infers it from the fields present. The target
+> * model defaults to the relation name. Every column the resolved arm declares is
+> * validated here, which is what lets each arm declare its columns required.
+188c189
+< * Reads one column off any record.
+---
+> * Reads one column off any record, whatever its declared type.
+283c284,285
+< * Builds a `belongs` relation — a foreign key on THIS table points at the related row.
+---
+> * Builds a `belongs` relation — a foreign key on the owning table points at the related row
+> * (single).
+285c287
+< * @param column - The FK column on this table
+---
+> * @param column - The foreign-key column on this table
+302c304,305
+< * Builds a `many` relation — a foreign key on the RELATED table points back here.
+---
+> * Builds a `many` relation — a foreign key on the related table points back at the owning row
+> * (array).
+304c307
+< * @param key - The FK column on the related table
+---
+> * @param key - The foreign-key column on the related table
+318c321
+< * @param key - The FK column on the related table
+---
+> * @param key - The foreign-key column on the related table
+333,334c336,337
+< * @param source - The junction FK column pointing at THIS model
+< * @param target - The junction FK column pointing at the related model
+---
+> * @param source - The junction foreign-key column pointing at the owning model
+> * @param target - The junction foreign-key column pointing at the related model
+353c356,357
+< * Builds a `morph` relation — a polymorphic FK plus a discriminator on the RELATED table.
+---
+> * Builds a `morph` relation — a polymorphic foreign key plus a discriminator column on the
+> * related table (array).
+355c359
+< * @param key - The FK column on the related table
+---
+> * @param key - The foreign-key column on the related table
+357c361
+< * @param label - The discriminator value identifying THIS model
+---
+> * @param label - The discriminator value identifying the owning model
+378c382
+< * Pairs a typed table with relation-aware loading.
+---
+> * Pairs a typed table with relation-aware `load` / `find` and junction management.
+394,397c398,401
+< *   AFTER the load resolves / the junction op completes; the emitter isolates a listener
+< *   throw and routes it to its `error` handler (the `error` option), so a buggy observer can
+< *   never corrupt the batched eager-load (no N+1 in the events either — one `load` per
+< *   relation, not per record).
+---
+> *   after the load resolves and after the junction operation completes; the emitter
+> *   isolates a listener throw and routes it to its `error` handler (the `error` option),
+> *   so a buggy observer can never corrupt the batched eager-load (no N+1 in the events
+> *   either — one `load` per relation, not per record).
+782c786
+< * Creates a relation manager over a database and its relation definitions.
+---
+> * Creates a {@link RelationManagerInterface} over a database and its relation map.
+793c797
+< * @example
+---
+> * @example Defining relations
+795c799,806
+< * import { createRelationManager, belongsTo, hasMany } from '@src/core'
+---
+> * import {
+> * 	createRelationManager,
+> * 	belongsTo,
+> * 	hasMany,
+> * 	hasOne,
+> * 	hasThrough,
+> * 	hasMorph,
+> * } from '@orkestrel/relation'
+800c811,817
+< * 		accounts: { classification: belongsTo('classificationId', 'classifications'), contacts: hasMany('accountId') },
+---
+> * 		accounts: {
+> * 			classification: belongsTo('classificationId', 'classifications'), // foreign key on accounts
+> * 			contacts: hasMany('accountId'), // foreign key on contacts → accounts
+> * 			profile: hasOne('accountId', 'profiles'), // single, foreign key on profiles
+> * 			representatives: hasThrough('accountReps', 'accountId', 'repId', 'representatives'), // through a junction
+> * 			notes: hasMorph('entityId', 'entityType', 'account', 'notes'), // polymorphic
+> * 		},
+803a821
+> *
+diff -r -w -B '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-relation-final-registry-visit-pack/baseline/package/dist/src/core/index.d.cts /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-relation-final-registry-visit-pack/extract/package/dist/src/core/index.d.cts
+1,11c1,11
+< import { DatabaseInterface } from '@orkestrel/database';
+< import { EmitterErrorHandler } from '@orkestrel/emitter';
+< import { EmitterHooks } from '@orkestrel/emitter';
+< import { EmitterInterface } from '@orkestrel/emitter';
+< import { Key } from '@orkestrel/database';
+< import { OperationOptions } from '@orkestrel/database';
+< import { OrderDirection } from '@orkestrel/database';
+< import { Row } from '@orkestrel/database';
+< import { RowOf } from '@orkestrel/database';
+< import { TableInterface } from '@orkestrel/database';
+< import { TableMap } from '@orkestrel/database';
+---
+> import type { DatabaseInterface } from '@orkestrel/database';
+> import type { EmitterErrorHandler } from '@orkestrel/emitter';
+> import type { EmitterHooks } from '@orkestrel/emitter';
+> import type { EmitterInterface } from '@orkestrel/emitter';
+> import type { Key } from '@orkestrel/database';
+> import type { OperationOptions } from '@orkestrel/database';
+> import type { OrderDirection } from '@orkestrel/database';
+> import type { Row } from '@orkestrel/database';
+> import type { RowOf } from '@orkestrel/database';
+> import type { TableInterface } from '@orkestrel/database';
+> import type { TableMap } from '@orkestrel/database';
+14c14,15
+<  * Builds a `belongs` relation — a foreign key on THIS table points at the related row.
+---
+>  * Builds a `belongs` relation — a foreign key on the owning table points at the related row
+>  * (single).
+16c17
+<  * @param column - The FK column on this table
+---
+>  * @param column - The foreign-key column on this table
+46c47
+<  * Creates a relation manager over a database and its relation definitions.
+---
+>  * Creates a {@link RelationManagerInterface} over a database and its relation map.
+57c58
+<  * @example
+---
+>  * @example Defining relations
+59c60,67
+<  * import { createRelationManager, belongsTo, hasMany } from '@src/core'
+---
+>  * import {
+>  * 	createRelationManager,
+>  * 	belongsTo,
+>  * 	hasMany,
+>  * 	hasOne,
+>  * 	hasThrough,
+>  * 	hasMorph,
+>  * } from '@orkestrel/relation'
+64c72,78
+<  * 		accounts: { classification: belongsTo('classificationId', 'classifications'), contacts: hasMany('accountId') },
+---
+>  * 		accounts: {
+>  * 			classification: belongsTo('classificationId', 'classifications'), // foreign key on accounts
+>  * 			contacts: hasMany('accountId'), // foreign key on contacts → accounts
+>  * 			profile: hasOne('accountId', 'profiles'), // single, foreign key on profiles
+>  * 			representatives: hasThrough('accountReps', 'accountId', 'repId', 'representatives'), // through a junction
+>  * 			notes: hasMorph('entityId', 'entityType', 'account', 'notes'), // polymorphic
+>  * 		},
+67a82
+>  *
+104c119,120
+<  * Builds a `many` relation — a foreign key on the RELATED table points back here.
+---
+>  * Builds a `many` relation — a foreign key on the related table points back at the owning row
+>  * (array).
+106c122
+<  * @param key - The FK column on the related table
+---
+>  * @param key - The foreign-key column on the related table
+113c129,130
+<  * Builds a `morph` relation — a polymorphic FK plus a discriminator on the RELATED table.
+---
+>  * Builds a `morph` relation — a polymorphic foreign key plus a discriminator column on the
+>  * related table (array).
+115c132
+<  * @param key - The FK column on the related table
+---
+>  * @param key - The foreign-key column on the related table
+117c134
+<  * @param label - The discriminator value identifying THIS model
+---
+>  * @param label - The discriminator value identifying the owning model
+131c148
+<  * @param key - The FK column on the related table
+---
+>  * @param key - The foreign-key column on the related table
+141,142c158,159
+<  * @param source - The junction FK column pointing at THIS model
+<  * @param target - The junction FK column pointing at the related model
+---
+>  * @param source - The junction foreign-key column pointing at the owning model
+>  * @param target - The junction foreign-key column pointing at the related model
+247c264
+<  * Pairs a typed table with relation-aware loading.
+---
+>  * Pairs a typed table with relation-aware `load` / `find` and junction management.
+263,266c280,283
+<  *   AFTER the load resolves / the junction op completes; the emitter isolates a listener
+<  *   throw and routes it to its `error` handler (the `error` option), so a buggy observer can
+<  *   never corrupt the batched eager-load (no N+1 in the events either — one `load` per
+<  *   relation, not per record).
+---
+>  *   after the load resolves and after the junction operation completes; the emitter
+>  *   isolates a listener throw and routes it to its `error` handler (the `error` option),
+>  *   so a buggy observer can never corrupt the batched eager-load (no N+1 in the events
+>  *   either — one `load` per relation, not per record).
+320,321c337,338
+<  * `load` fires once per relation that an eager-load resolves, carrying the relation NAME +
+<  * the COUNT of related rows attached for the whole record set (it is the batched load
+---
+>  * `load` fires once per relation that an eager-load resolves, carrying the relation name +
+>  * the count of related rows attached for the whole record set (it is the batched load
+326,327c343,345
+<  * option), never onto this map, and sits AFTER the load resolves / the junction op completes
+<  * — so a throwing observer can never corrupt the eager-load batching or a junction write.
+---
+>  * option), never onto this map, and sits strictly after the load resolves / the junction op
+>  * completes — so a throwing observer can never corrupt the eager-load batching or a
+>  * junction write.
+373a392,405
+>     /**
+>      * Loads one record by key with the chosen relations populated, or a positional array of
+>      * records for an array of keys.
+>      *
+>      * @remarks
+>      * A key the table does not hold reads as `undefined`, and an array of keys keeps one slot
+>      * per key in the order given. Either form batches the relation queries over the whole
+>      * record set.
+>      *
+>      * @param key - The primary key to read
+>      * @param include - The relations to populate, and recursively their own
+>      * @param options - The database package's abort option
+>      * @returns The loaded record, or `undefined` when the key holds none
+>      */
+375a408,415
+>     /**
+>      * Finds many records, paged and sorted through {@link FindOptions}, with the chosen
+>      * relations populated.
+>      *
+>      * @param include - The relations to populate, and recursively their own
+>      * @param options - Pagination, ordering, and the abort signal
+>      * @returns The page's records, each carrying its populated relations
+>      */
+376a417,430
+>     /**
+>      * Inserts a missing junction row for a `through` relation.
+>      *
+>      * @remarks
+>      * Idempotent for sequential calls: a pair the junction already holds writes nothing and
+>      * emits nothing. Concurrent calls for one pair may each insert.
+>      *
+>      * @param key - The owning record's primary key
+>      * @param relation - The `through` relation's name
+>      * @param target - The related record's primary key
+>      * @param options - The database package's abort option
+>      * @throws A `NOT_THROUGH` {@link RelationError} for any other relationship, and an
+>      *   `UNKNOWN_RELATION` one for a relation the model never declared
+>      */
+377a432,441
+>     /**
+>      * Removes every matching junction row for a `through` relation inside one transaction.
+>      *
+>      * @param key - The owning record's primary key
+>      * @param relation - The `through` relation's name
+>      * @param target - The related record's primary key
+>      * @param options - The database package's abort option
+>      * @throws A `NOT_THROUGH` {@link RelationError} for any other relationship, and an
+>      *   `UNKNOWN_RELATION` one for a relation the model never declared
+>      */
+378a443,452
+>     /**
+>      * Lists the related keys reachable through a `through` relation.
+>      *
+>      * @param key - The owning record's primary key
+>      * @param relation - The `through` relation's name
+>      * @param options - The database package's abort option
+>      * @returns The related keys the junction holds for that record
+>      * @throws A `NOT_THROUGH` {@link RelationError} for any other relationship, and an
+>      *   `UNKNOWN_RELATION` one for a relation the model never declared
+>      */
+383c457
+<  * Reads one column off any record.
+---
+>  * Reads one column off any record, whatever its declared type.
+404,406c478,480
+<  * A `string` is a `belongs` (the FK column on this table); a `readonly string[]`
+<  * is a `many` (the first element is the FK column on the related table); a
+<  * {@link RelationDescriptor} is the object form for everything else.
+---
+>  * A `string` is a `belongs` (the foreign-key column on this table); a `readonly
+>  * string[]` is a `many` (the first element is the foreign-key column on the related
+>  * table); a {@link RelationDescriptor} is the object form for everything else.
+449c523,524
+<  * Represents an error thrown by the relations layer.
+---
+>  * Represents an error thrown by the relations layer, carrying a machine-readable
+>  * {@link RelationErrorCode}.
+520a596,606
+>     /**
+>      * Returns the typed model for a declared table.
+>      *
+>      * @remarks
+>      * `name` is checked against the database's declared tables, so a typo is a compile error.
+>      * A declared table with no relation entry yields a relation-less model, still fully usable
+>      * for typed reads and writes through `table`.
+>      *
+>      * @param name - A declared table's name
+>      * @returns A model typed by that table's row
+>      */
+521a608,612
+>     /**
+>      * Lists the names of every model carrying resolved relations.
+>      *
+>      * @returns The table names the registry resolved a relation map for
+>      */
+522a614,619
+>     /**
+>      * Reports whether a model carries resolved relations.
+>      *
+>      * @param name - The table name to test
+>      * @returns True when the registry resolved a relation map for that table; false otherwise
+>      */
+560,561c657,658
+<  * `belongs` — a foreign key on THIS table points at the related row (single).
+<  * `many` — a foreign key on the RELATED table points back here (array).
+---
+>  * `belongs` — a foreign key on the owning table points at the related row (single).
+>  * `many` — a foreign key on the related table points back here (array).
+564c661
+<  * `morph` — a foreign key plus a discriminator column on the RELATED table (array, polymorphic).
+---
+>  * `morph` — a foreign key plus a discriminator column on the related table (array, polymorphic).
+580c677,678
+<  * Represents a `belongs` relation resolved at define-time — the foreign key sits on THIS table.
+---
+>  * Represents a `belongs` relation resolved at define-time — the foreign key sits on the owning
+>  * table.
+594c692
+<  * Represents a `many` relation resolved at define-time — the foreign key sits on the RELATED
+---
+>  * Represents a `many` relation resolved at define-time — the foreign key sits on the related
+614c712
+<  * it, and `label` the discriminator value identifying THIS model.
+---
+>  * it, and `label` the discriminator value identifying the owning model.
+657,659c755,757
+<  * `through` is the junction table, `source` its foreign-key column pointing at THIS
+<  * model, and `target` its foreign-key column pointing at the related model. These are
+<  * the columns `link` / `unlink` / `links` write and read.
+---
+>  * `through` is the junction table, `source` its foreign-key column pointing at the
+>  * owning model, and `target` its foreign-key column pointing at the related model.
+>  * These are the columns `link` / `unlink` / `links` write and read.
+674,678c772,776
+<  * A `string` is a `belongs` (FK column on this table); a `readonly string[]` is a
+<  * `many` (FK column on the related table); a {@link RelationDescriptor} uses its
+<  * explicit `relationship`, or infers it from the fields present. The target model
+<  * defaults to the relation name. Every column the resolved arm declares is validated
+<  * here, which is what lets each arm declare its columns required.
+---
+>  * A `string` is a `belongs` (foreign-key column on this table); a `readonly string[]`
+>  * is a `many` (foreign-key column on the related table); a {@link RelationDescriptor}
+>  * uses its explicit `relationship`, or infers it from the fields present. The target
+>  * model defaults to the relation name. Every column the resolved arm declares is
+>  * validated here, which is what lets each arm declare its columns required.
+diff -r -w -B '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-relation-final-registry-visit-pack/baseline/package/dist/src/core/index.d.ts /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-relation-final-registry-visit-pack/extract/package/dist/src/core/index.d.ts
+1,11c1,11
+< import { DatabaseInterface } from '@orkestrel/database';
+< import { EmitterErrorHandler } from '@orkestrel/emitter';
+< import { EmitterHooks } from '@orkestrel/emitter';
+< import { EmitterInterface } from '@orkestrel/emitter';
+< import { Key } from '@orkestrel/database';
+< import { OperationOptions } from '@orkestrel/database';
+< import { OrderDirection } from '@orkestrel/database';
+< import { Row } from '@orkestrel/database';
+< import { RowOf } from '@orkestrel/database';
+< import { TableInterface } from '@orkestrel/database';
+< import { TableMap } from '@orkestrel/database';
+---
+> import type { DatabaseInterface } from '@orkestrel/database';
+> import type { EmitterErrorHandler } from '@orkestrel/emitter';
+> import type { EmitterHooks } from '@orkestrel/emitter';
+> import type { EmitterInterface } from '@orkestrel/emitter';
+> import type { Key } from '@orkestrel/database';
+> import type { OperationOptions } from '@orkestrel/database';
+> import type { OrderDirection } from '@orkestrel/database';
+> import type { Row } from '@orkestrel/database';
+> import type { RowOf } from '@orkestrel/database';
+> import type { TableInterface } from '@orkestrel/database';
+> import type { TableMap } from '@orkestrel/database';
+14c14,15
+<  * Builds a `belongs` relation — a foreign key on THIS table points at the related row.
+---
+>  * Builds a `belongs` relation — a foreign key on the owning table points at the related row
+>  * (single).
+16c17
+<  * @param column - The FK column on this table
+---
+>  * @param column - The foreign-key column on this table
+46c47
+<  * Creates a relation manager over a database and its relation definitions.
+---
+>  * Creates a {@link RelationManagerInterface} over a database and its relation map.
+57c58
+<  * @example
+---
+>  * @example Defining relations
+59c60,67
+<  * import { createRelationManager, belongsTo, hasMany } from '@src/core'
+---
+>  * import {
+>  * 	createRelationManager,
+>  * 	belongsTo,
+>  * 	hasMany,
+>  * 	hasOne,
+>  * 	hasThrough,
+>  * 	hasMorph,
+>  * } from '@orkestrel/relation'
+64c72,78
+<  * 		accounts: { classification: belongsTo('classificationId', 'classifications'), contacts: hasMany('accountId') },
+---
+>  * 		accounts: {
+>  * 			classification: belongsTo('classificationId', 'classifications'), // foreign key on accounts
+>  * 			contacts: hasMany('accountId'), // foreign key on contacts → accounts
+>  * 			profile: hasOne('accountId', 'profiles'), // single, foreign key on profiles
+>  * 			representatives: hasThrough('accountReps', 'accountId', 'repId', 'representatives'), // through a junction
+>  * 			notes: hasMorph('entityId', 'entityType', 'account', 'notes'), // polymorphic
+>  * 		},
+67a82
+>  *
+104c119,120
+<  * Builds a `many` relation — a foreign key on the RELATED table points back here.
+---
+>  * Builds a `many` relation — a foreign key on the related table points back at the owning row
+>  * (array).
+106c122
+<  * @param key - The FK column on the related table
+---
+>  * @param key - The foreign-key column on the related table
+113c129,130
+<  * Builds a `morph` relation — a polymorphic FK plus a discriminator on the RELATED table.
+---
+>  * Builds a `morph` relation — a polymorphic foreign key plus a discriminator column on the
+>  * related table (array).
+115c132
+<  * @param key - The FK column on the related table
+---
+>  * @param key - The foreign-key column on the related table
+117c134
+<  * @param label - The discriminator value identifying THIS model
+---
+>  * @param label - The discriminator value identifying the owning model
+131c148
+<  * @param key - The FK column on the related table
+---
+>  * @param key - The foreign-key column on the related table
+141,142c158,159
+<  * @param source - The junction FK column pointing at THIS model
+<  * @param target - The junction FK column pointing at the related model
+---
+>  * @param source - The junction foreign-key column pointing at the owning model
+>  * @param target - The junction foreign-key column pointing at the related model
+247c264
+<  * Pairs a typed table with relation-aware loading.
+---
+>  * Pairs a typed table with relation-aware `load` / `find` and junction management.
+263,266c280,283
+<  *   AFTER the load resolves / the junction op completes; the emitter isolates a listener
+<  *   throw and routes it to its `error` handler (the `error` option), so a buggy observer can
+<  *   never corrupt the batched eager-load (no N+1 in the events either — one `load` per
+<  *   relation, not per record).
+---
+>  *   after the load resolves and after the junction operation completes; the emitter
+>  *   isolates a listener throw and routes it to its `error` handler (the `error` option),
+>  *   so a buggy observer can never corrupt the batched eager-load (no N+1 in the events
+>  *   either — one `load` per relation, not per record).
+320,321c337,338
+<  * `load` fires once per relation that an eager-load resolves, carrying the relation NAME +
+<  * the COUNT of related rows attached for the whole record set (it is the batched load
+---
+>  * `load` fires once per relation that an eager-load resolves, carrying the relation name +
+>  * the count of related rows attached for the whole record set (it is the batched load
+326,327c343,345
+<  * option), never onto this map, and sits AFTER the load resolves / the junction op completes
+<  * — so a throwing observer can never corrupt the eager-load batching or a junction write.
+---
+>  * option), never onto this map, and sits strictly after the load resolves / the junction op
+>  * completes — so a throwing observer can never corrupt the eager-load batching or a
+>  * junction write.
+373a392,405
+>     /**
+>      * Loads one record by key with the chosen relations populated, or a positional array of
+>      * records for an array of keys.
+>      *
+>      * @remarks
+>      * A key the table does not hold reads as `undefined`, and an array of keys keeps one slot
+>      * per key in the order given. Either form batches the relation queries over the whole
+>      * record set.
+>      *
+>      * @param key - The primary key to read
+>      * @param include - The relations to populate, and recursively their own
+>      * @param options - The database package's abort option
+>      * @returns The loaded record, or `undefined` when the key holds none
+>      */
+375a408,415
+>     /**
+>      * Finds many records, paged and sorted through {@link FindOptions}, with the chosen
+>      * relations populated.
+>      *
+>      * @param include - The relations to populate, and recursively their own
+>      * @param options - Pagination, ordering, and the abort signal
+>      * @returns The page's records, each carrying its populated relations
+>      */
+376a417,430
+>     /**
+>      * Inserts a missing junction row for a `through` relation.
+>      *
+>      * @remarks
+>      * Idempotent for sequential calls: a pair the junction already holds writes nothing and
+>      * emits nothing. Concurrent calls for one pair may each insert.
+>      *
+>      * @param key - The owning record's primary key
+>      * @param relation - The `through` relation's name
+>      * @param target - The related record's primary key
+>      * @param options - The database package's abort option
+>      * @throws A `NOT_THROUGH` {@link RelationError} for any other relationship, and an
+>      *   `UNKNOWN_RELATION` one for a relation the model never declared
+>      */
+377a432,441
+>     /**
+>      * Removes every matching junction row for a `through` relation inside one transaction.
+>      *
+>      * @param key - The owning record's primary key
+>      * @param relation - The `through` relation's name
+>      * @param target - The related record's primary key
+>      * @param options - The database package's abort option
+>      * @throws A `NOT_THROUGH` {@link RelationError} for any other relationship, and an
+>      *   `UNKNOWN_RELATION` one for a relation the model never declared
+>      */
+378a443,452
+>     /**
+>      * Lists the related keys reachable through a `through` relation.
+>      *
+>      * @param key - The owning record's primary key
+>      * @param relation - The `through` relation's name
+>      * @param options - The database package's abort option
+>      * @returns The related keys the junction holds for that record
+>      * @throws A `NOT_THROUGH` {@link RelationError} for any other relationship, and an
+>      *   `UNKNOWN_RELATION` one for a relation the model never declared
+>      */
+383c457
+<  * Reads one column off any record.
+---
+>  * Reads one column off any record, whatever its declared type.
+404,406c478,480
+<  * A `string` is a `belongs` (the FK column on this table); a `readonly string[]`
+<  * is a `many` (the first element is the FK column on the related table); a
+<  * {@link RelationDescriptor} is the object form for everything else.
+---
+>  * A `string` is a `belongs` (the foreign-key column on this table); a `readonly
+>  * string[]` is a `many` (the first element is the foreign-key column on the related
+>  * table); a {@link RelationDescriptor} is the object form for everything else.
+449c523,524
+<  * Represents an error thrown by the relations layer.
+---
+>  * Represents an error thrown by the relations layer, carrying a machine-readable
+>  * {@link RelationErrorCode}.
+520a596,606
+>     /**
+>      * Returns the typed model for a declared table.
+>      *
+>      * @remarks
+>      * `name` is checked against the database's declared tables, so a typo is a compile error.
+>      * A declared table with no relation entry yields a relation-less model, still fully usable
+>      * for typed reads and writes through `table`.
+>      *
+>      * @param name - A declared table's name
+>      * @returns A model typed by that table's row
+>      */
+521a608,612
+>     /**
+>      * Lists the names of every model carrying resolved relations.
+>      *
+>      * @returns The table names the registry resolved a relation map for
+>      */
+522a614,619
+>     /**
+>      * Reports whether a model carries resolved relations.
+>      *
+>      * @param name - The table name to test
+>      * @returns True when the registry resolved a relation map for that table; false otherwise
+>      */
+560,561c657,658
+<  * `belongs` — a foreign key on THIS table points at the related row (single).
+<  * `many` — a foreign key on the RELATED table points back here (array).
+---
+>  * `belongs` — a foreign key on the owning table points at the related row (single).
+>  * `many` — a foreign key on the related table points back here (array).
+564c661
+<  * `morph` — a foreign key plus a discriminator column on the RELATED table (array, polymorphic).
+---
+>  * `morph` — a foreign key plus a discriminator column on the related table (array, polymorphic).
+580c677,678
+<  * Represents a `belongs` relation resolved at define-time — the foreign key sits on THIS table.
+---
+>  * Represents a `belongs` relation resolved at define-time — the foreign key sits on the owning
+>  * table.
+594c692
+<  * Represents a `many` relation resolved at define-time — the foreign key sits on the RELATED
+---
+>  * Represents a `many` relation resolved at define-time — the foreign key sits on the related
+614c712
+<  * it, and `label` the discriminator value identifying THIS model.
+---
+>  * it, and `label` the discriminator value identifying the owning model.
+657,659c755,757
+<  * `through` is the junction table, `source` its foreign-key column pointing at THIS
+<  * model, and `target` its foreign-key column pointing at the related model. These are
+<  * the columns `link` / `unlink` / `links` write and read.
+---
+>  * `through` is the junction table, `source` its foreign-key column pointing at the
+>  * owning model, and `target` its foreign-key column pointing at the related model.
+>  * These are the columns `link` / `unlink` / `links` write and read.
+674,678c772,776
+<  * A `string` is a `belongs` (FK column on this table); a `readonly string[]` is a
+<  * `many` (FK column on the related table); a {@link RelationDescriptor} uses its
+<  * explicit `relationship`, or infers it from the fields present. The target model
+<  * defaults to the relation name. Every column the resolved arm declares is validated
+<  * here, which is what lets each arm declare its columns required.
+---
+>  * A `string` is a `belongs` (foreign-key column on this table); a `readonly string[]`
+>  * is a `many` (foreign-key column on the related table); a {@link RelationDescriptor}
+>  * uses its explicit `relationship`, or infers it from the fields present. The target
+>  * model defaults to the relation name. Every column the resolved arm declares is
+>  * validated here, which is what lets each arm declare its columns required.
+diff -r -w -B '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-relation-final-registry-visit-pack/baseline/package/dist/src/core/index.js /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-relation-final-registry-visit-pack/extract/package/dist/src/core/index.js
+6c6,7
+< * Represents an error thrown by the relations layer.
+---
+> * Represents an error thrown by the relations layer, carrying a machine-readable
+> * {@link RelationErrorCode}.
+80,84c81,85
+< * A `string` is a `belongs` (FK column on this table); a `readonly string[]` is a
+< * `many` (FK column on the related table); a {@link RelationDescriptor} uses its
+< * explicit `relationship`, or infers it from the fields present. The target model
+< * defaults to the relation name. Every column the resolved arm declares is validated
+< * here, which is what lets each arm declare its columns required.
+---
+> * A `string` is a `belongs` (foreign-key column on this table); a `readonly string[]`
+> * is a `many` (foreign-key column on the related table); a {@link RelationDescriptor}
+> * uses its explicit `relationship`, or infers it from the fields present. The target
+> * model defaults to the relation name. Every column the resolved arm declares is
+> * validated here, which is what lets each arm declare its columns required.
+187c188
+< * Reads one column off any record.
+---
+> * Reads one column off any record, whatever its declared type.
+282c283,284
+< * Builds a `belongs` relation — a foreign key on THIS table points at the related row.
+---
+> * Builds a `belongs` relation — a foreign key on the owning table points at the related row
+> * (single).
+284c286
+< * @param column - The FK column on this table
+---
+> * @param column - The foreign-key column on this table
+301c303,304
+< * Builds a `many` relation — a foreign key on the RELATED table points back here.
+---
+> * Builds a `many` relation — a foreign key on the related table points back at the owning row
+> * (array).
+303c306
+< * @param key - The FK column on the related table
+---
+> * @param key - The foreign-key column on the related table
+317c320
+< * @param key - The FK column on the related table
+---
+> * @param key - The foreign-key column on the related table
+332,333c335,336
+< * @param source - The junction FK column pointing at THIS model
+< * @param target - The junction FK column pointing at the related model
+---
+> * @param source - The junction foreign-key column pointing at the owning model
+> * @param target - The junction foreign-key column pointing at the related model
+352c355,356
+< * Builds a `morph` relation — a polymorphic FK plus a discriminator on the RELATED table.
+---
+> * Builds a `morph` relation — a polymorphic foreign key plus a discriminator column on the
+> * related table (array).
+354c358
+< * @param key - The FK column on the related table
+---
+> * @param key - The foreign-key column on the related table
+356c360
+< * @param label - The discriminator value identifying THIS model
+---
+> * @param label - The discriminator value identifying the owning model
+377c381
+< * Pairs a typed table with relation-aware loading.
+---
+> * Pairs a typed table with relation-aware `load` / `find` and junction management.
+393,396c397,400
+< *   AFTER the load resolves / the junction op completes; the emitter isolates a listener
+< *   throw and routes it to its `error` handler (the `error` option), so a buggy observer can
+< *   never corrupt the batched eager-load (no N+1 in the events either — one `load` per
+< *   relation, not per record).
+---
+> *   after the load resolves and after the junction operation completes; the emitter
+> *   isolates a listener throw and routes it to its `error` handler (the `error` option),
+> *   so a buggy observer can never corrupt the batched eager-load (no N+1 in the events
+> *   either — one `load` per relation, not per record).
+781c785
+< * Creates a relation manager over a database and its relation definitions.
+---
+> * Creates a {@link RelationManagerInterface} over a database and its relation map.
+792c796
+< * @example
+---
+> * @example Defining relations
+794c798,805
+< * import { createRelationManager, belongsTo, hasMany } from '@src/core'
+---
+> * import {
+> * 	createRelationManager,
+> * 	belongsTo,
+> * 	hasMany,
+> * 	hasOne,
+> * 	hasThrough,
+> * 	hasMorph,
+> * } from '@orkestrel/relation'
+799c810,816
+< * 		accounts: { classification: belongsTo('classificationId', 'classifications'), contacts: hasMany('accountId') },
+---
+> * 		accounts: {
+> * 			classification: belongsTo('classificationId', 'classifications'), // foreign key on accounts
+> * 			contacts: hasMany('accountId'), // foreign key on contacts → accounts
+> * 			profile: hasOne('accountId', 'profiles'), // single, foreign key on profiles
+> * 			representatives: hasThrough('accountReps', 'accountId', 'repId', 'representatives'), // through a junction
+> * 			notes: hasMorph('entityId', 'entityType', 'account', 'notes'), // polymorphic
+> * 		},
+802a820
+> *

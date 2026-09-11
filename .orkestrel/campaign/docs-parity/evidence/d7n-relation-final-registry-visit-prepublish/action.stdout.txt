@@ -1,0 +1,89 @@
+Checking formatting...
+
+All matched files use the correct format.
+Finished in 1227ms on 44 files using 16 threads.
+vite v8.3.0 building client environment for production...
+transforming...
+✓ 9 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/core/index.js  29.49 kB │ gzip: 7.52 kB │ map: 53.21 kB
+
+transforming...
+✓ 9 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/core/index.cjs  30.60 kB │ gzip: 7.67 kB │ map: 53.64 kB
+
+✓ built in 128ms
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+Copied: dist/src/core/index.d.ts to dist/src/core/index.d.cts
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/relation
+
+·································································
+
+ Test Files  5 passed (5)
+      Tests  65 passed (65)
+   Start at  16:01:45
+   Duration  748ms (transform 373ms, setup 714ms, import 212ms, tests 425ms, environment 1ms)
+
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/relation
+
+·················································································-·········
+
+ Test Files  1 passed (1)
+      Tests  90 passed | 1 skipped (91)
+   Start at  16:01:46
+   Duration  909ms (transform 123ms, setup 137ms, import 96ms, tests 528ms, environment 0ms)
+
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/relation
+
+··········································································································································································stdout | tests/config.test.ts > configuration helpers > rolls one face into a single declaration and rewrites its core specifier
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+
+·-stdout | tests/config.test.ts > configuration helpers > rolls one face into a single declaration and rewrites its core specifier
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+
+·
+
+ Test Files  1 passed (1)
+      Tests  172 passed | 1 skipped (173)
+   Start at  16:01:48
+   Duration  3.03s (transform 220ms, setup 137ms, import 405ms, tests 2.34s, environment 0ms)
+
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/relation
+
+········
+
+ Test Files  1 passed (1)
+      Tests  8 passed (8)
+   Start at  16:01:52
+   Duration  327ms (transform 75ms, setup 136ms, import 25ms, tests 19ms, environment 0ms)
+
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/relation
+
+································
+
+ Test Files  1 passed (1)
+      Tests  32 passed (32)
+   Start at  16:01:53
+   Duration  645ms (transform 78ms, setup 136ms, import 325ms, tests 32ms, environment 0ms)
+
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/relation
+
+·········
+
+ Test Files  1 passed (1)
+      Tests  9 passed (9)
+   Start at  16:01:54
+   Duration  10.23s (transform 107ms, setup 146ms, import 1.93s, tests 8.00s, environment 0ms)
+

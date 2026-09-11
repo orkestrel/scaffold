@@ -1,0 +1,22 @@
+npm notice
+npm notice 📦  @orkestrel/sea@0.0.14
+npm notice Tarball Contents
+npm notice 1.1kB LICENSE
+npm notice 7.9kB README.md
+npm notice 98.5kB dist/src/server/index.cjs
+npm notice 183.3kB dist/src/server/index.cjs.map
+npm notice 54.7kB dist/src/server/index.d.cts
+npm notice 54.7kB dist/src/server/index.d.ts
+npm notice 94.5kB dist/src/server/index.js
+npm notice 180.7kB dist/src/server/index.js.map
+npm notice 4.1kB package.json
+npm notice Tarball Details
+npm notice name: @orkestrel/sea
+npm notice version: 0.0.14
+npm notice filename: orkestrel-sea-0.0.14.tgz
+npm notice package size: 177.0 kB
+npm notice unpacked size: 679.4 kB
+npm notice shasum: 77f3c2f19dd5ff5e21031477925d99fd363b033e
+npm notice integrity: sha512-vE0kjLfV3AsYT[...]MFAQ0iMYjowUQ==
+npm notice total files: 9
+npm notice

@@ -1,0 +1,3 @@
+0 of 36 planned paths drifted from the plan. Audit compared bytes at 23, existence at 5, and nothing at 8.
+9 written, 36 unchanged, 1 removed in ..
+50 published, 7 guides fetched, 0 no longer listed.

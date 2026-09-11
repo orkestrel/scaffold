@@ -1,0 +1,3 @@
+integration: integration drives features across environments, and this workspace declares fewer than two, so its seed composes nothing.
+dependencies: typescript declares major 6, while the registry serves major 7.
+dependencies: vitest declares major 4, while the registry serves major 5.
