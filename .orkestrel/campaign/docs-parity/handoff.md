@@ -32,6 +32,13 @@ upload yet. Base source/registry carriers passed objective review; the toolchain
 recovery and final closure successors still need review. Harness capacity limits dispatch concurrency; no
 required lane is being treated as passed because a dispatch refused.
 
+When rebuilding the dependent preparation instruments, copy
+instruments/d7/foundation-native/d7n-dependent-supported-input/read-supported-toolchain.mjs
+to tmp/pass/read-supported-toolchain.mjs after restoring the predecessor files.
+That corrected helper accepts external tools. Use the supported preparation,
+resume and closure successors, not the superseded toolchain carriers whose
+unqualified-latest selection conflicts with Scaffold's declared-major policy.
+
 The Opus writer returned a fresh weekly-quota failure. The root journal records
 session dd5e5af9-8abf-4404-a1a4-26582f1982a2. Use the prescribed Sol writer fallback,
 the reused objective analyst and the owner's independent Astra review. No new
