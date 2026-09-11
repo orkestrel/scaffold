@@ -1,0 +1,1496 @@
+diff -r '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-table-following-final-pack/baseline/package/dist/src/core/index.cjs /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-table-following-final-pack/extract/package/dist/src/core/index.cjs
+12c12
+< /** Names the maximum number of columns one schema may declare. */
+---
+> /** Names the maximum number of columns one schema may declare: 256. */
+14c14
+< /** Names the maximum number of choices one `choice` column may offer. */
+---
+> /** Names the maximum number of choices one `choice` column may offer: 1024. */
+16c16
+< /** Names the maximum length, in UTF-16 code units, of a schema name or column key. */
+---
+> /** Names the maximum length of a schema name or column key: 128 UTF-16 code units. */
+18c18
+< /** Names the maximum length, in UTF-16 code units, of any single retained string. */
+---
+> /** Names the maximum length of any single retained string: 65536 UTF-16 code units. */
+20c20,22
+< /** Names the maximum total length, in UTF-16 code units, of every string one schema retains. */
+---
+> /**
+> * Names the maximum total length of every string one schema retains: 1048576 UTF-16 code units.
+> */
+22c24
+< /** Names the maximum total number of records, arrays, and leaves one schema retains. */
+---
+> /** Names the maximum total number of records, arrays, and leaves one schema retains: 16384. */
+26c28,31
+< /** Represents an error raised by the table domain. */
+---
+> /**
+> * Represents an error raised by the table domain — a machine-readable `code` and optional
+> * structured `context`.
+> */
+47c52,53
+< * Determines whether an unknown value is a table error.
+---
+> * Determines whether a caught value is a table error, so a `catch` branches on `code` without an
+> * assertion.
+58c64
+< * Finds one column by key.
+---
+> * Finds one column by key; `undefined` when the schema declares no such column.
+68c74,75
+< * Reads one row's declared identity.
+---
+> * Reads one row's declared identity; `undefined` when its key cell is missing, empty, or not a
+> * string.
+80c87,88
+< * Computes one atomic 0/1/N membership change over known keys.
+---
+> * Computes one atomic 0/1/N membership change over the keys a caller may address — the engine
+> * selection and expansion share.
+99c107,108
+< * Merges lens terms into a column-keyed list, replacing the entry that names the same column.
+---
+> * Merges lens terms into a column-keyed list, replacing the entry that names the same column —
+> * the `set` write.
+117c126,127
+< * Removes every lens term naming one of the given columns.
+---
+> * Removes every lens term naming one of the given columns — the drop `sort.remove` and
+> * `filter.remove` share.
+128c138,139
+< * Checks whether two lens lists hold the same terms in the same order.
+---
+> * Checks whether two lens lists hold the same terms in the same order, with the supplied test
+> * deciding the operands.
+143c154,155
+< * Checks whether a value has the shape required by one column cell.
+---
+> * Checks whether one column can hold a value — the shape gate every write and every seed passes
+> * through.
+159c171
+< * Compares two cells in ascending order according to one column.
+---
+> * Compares two of one column's cells the way its `cell` fixes, describing ascending order.
+185c197,198
+< * Checks whether one column admits a filter and all its operands.
+---
+> * Checks whether one column admits a filter and every operand it carries — the gate `filter.set`
+> * and {@link matchesFilter} share.
+200c213
+< * Tests one cell against a filter according to its column.
+---
+> * Tests one of a column's cells against one filter the way its `cell` fixes.
+216c229,230
+< * Keeps the rows accepted by every filter.
+---
+> * Keeps the rows every filter accepts, in the order given; a supplied {@link CellMatcher}
+> * replaces the default per column.
+234c248,249
+< * Orders rows stably by a sequence of terms.
+---
+> * Orders rows by the terms given, stably; a supplied {@link CellComparator} replaces the default
+> * per column.
+262c277,278
+< * Audits a structurally valid schema for domain and budget faults.
+---
+> * Audits a structurally valid schema for domain faults and budget breaches, returning human
+> * diagnostics.
+361c377,378
+< * Projects a schema into declaration-ordered JSON.
+---
+> * Projects a schema into JSON in declaration order, dropping every absent member; raises `SCHEMA`
+> * for a `meta` it cannot own.
+400c417,418
+< * Projects rows into schema-column-ordered JSON.
+---
+> * Projects rows into JSON with each row's cells in the schema's column order, dropping every
+> * absent cell.
+428c446,447
+< * Determines whether an unknown value has a table cell shape.
+---
+> * Determines whether an unknown value has a table cell shape — a string, a finite number, or a
+> * boolean.
+437c456,457
+< * Determines whether an unknown value is a record of table cells.
+---
+> * Determines whether an unknown value is a record whose every own key is a string and every value
+> * a {@link TableCell}.
+459c479,480
+< * Determines whether an unknown value is one exact column choice record.
+---
+> * Determines whether an unknown value is one exact {@link ColumnChoice} record; an unknown member
+> * refuses it.
+476c497,498
+< * Determines whether an unknown value is one exact discriminated table column.
+---
+> * Determines whether an unknown value is one exact discriminated {@link TableColumn}, checked
+> * against its cell's own options.
+518c540,541
+< * Determines whether an unknown value has one exact structural table-schema shape.
+---
+> * Determines whether an unknown value has the exact shape of a {@link TableSchema} — the shape
+> * alone, with no domain check.
+541c564,565
+< * Determines whether an unknown value is one semantically sound table schema.
+---
+> * Determines whether an unknown value is a {@link TableSchema} a table can be opened against —
+> * the exact shape, and an audit that finds nothing.
+563c587,588
+< * Clones a table schema into an owned frozen snapshot.
+---
+> * Clones a whole schema into an owned frozen snapshot, freezing every nested column, choice list,
+> * choice, and `meta`; raises `SCHEMA` for a `meta` it cannot own.
+594c619
+< * Parses unknown wire data into an owned, semantically sound table schema.
+---
+> * Parses unknown wire data into an owned, structurally valid, semantically sound table schema.
+608c633,634
+< * Parses unknown wire rows against one table schema.
+---
+> * Parses unknown wire data into owned rows against one table schema, coercing a numeric string
+> * and `'true'` / `'false'`.
+1159c1185,1188
+< /** Holds a schema, its rows, and the lens through which they are read. */
+---
+> /**
+> * Holds a schema, its rows, and the lens through which they are read, implementing
+> * {@link TableInterface} exactly.
+> */
+1327c1356
+< * Opens a table against a schema.
+---
+> * Opens a table against a schema. The schema is copied, and the copy is what the table declares.
+1334c1363
+< * @example
+---
+> * @example Open a table
+1336,1337c1365,1392
+< * const table = createTable({ key: 'id', columns: [{ cell: 'text', key: 'id' }] })
+< * table.rows.add({ id: '1' })
+---
+> * import { createTable } from '@orkestrel/table'
+> *
+> * const table = createTable(
+> * 	{
+> * 		label: 'People',
+> * 		key: 'id',
+> * 		columns: [
+> * 			{ cell: 'text', key: 'id', label: 'Reference' },
+> * 			{ cell: 'text', key: 'name', label: 'Name' },
+> * 			{ cell: 'number', key: 'age', label: 'Age' },
+> * 		],
+> * 	},
+> * 	{
+> * 		rows: [
+> * 			{ id: '1', name: 'Ada', age: 36 },
+> * 			{ id: '2', name: 'Grace', age: 45 },
+> * 			{ id: '3', name: 'Alan', age: 41 },
+> * 		],
+> * 		limit: 2,
+> * 	},
+> * )
+> *
+> * table.filter.set({ column: 'name', operator: 'contains', text: 'a' })
+> * table.sort.set({ column: 'age', direction: 'descending' })
+> *
+> * table.count // 3 — every name holds a lowercase 'a'
+> * table.pagination.count // 2 — two pages of two
+> * table.view.map((row) => row.name) // ['Grace', 'Alan'] — page one, oldest first
+diff -r '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-table-following-final-pack/baseline/package/dist/src/core/index.d.cts /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-table-following-final-pack/extract/package/dist/src/core/index.d.cts
+1,4c1,4
+< import { EmitterErrorHandler } from '@orkestrel/emitter';
+< import { EmitterHooks } from '@orkestrel/emitter';
+< import { EmitterInterface } from '@orkestrel/emitter';
+< import { JSONRecord } from '@orkestrel/contract';
+---
+> import type { EmitterErrorHandler } from '@orkestrel/emitter';
+> import type { EmitterHooks } from '@orkestrel/emitter';
+> import type { EmitterInterface } from '@orkestrel/emitter';
+> import type { JSONRecord } from '@orkestrel/contract';
+7c7,8
+<  * Checks whether one column admits a filter and all its operands.
+---
+>  * Checks whether one column admits a filter and every operand it carries — the gate `filter.set`
+>  * and {@link matchesFilter} share.
+16c17,18
+<  * Audits a structurally valid schema for domain and budget faults.
+---
+>  * Audits a structurally valid schema for domain faults and budget breaches, returning human
+>  * diagnostics.
+24c26,27
+<  * Keeps the rows whose cell falls between these bounds, both included.
+---
+>  * Keeps the rows whose cell falls between `minimum` and `maximum`, both included, compared the
+>  * way the column compares.
+27,28c30,31
+<  * The bounds compare the way the column compares, so a `text` column holding ISO strings takes a
+<  * pair of ISO strings and reads as a date range.
+---
+>  * A `text` column holding ISO strings therefore takes a pair of ISO strings and reads as a date
+>  * range.
+38c41,42
+<  * Compares two cells of one column.
+---
+>  * Compares two cells of one column, replacing what its `cell` fixes. Always describes ascending
+>  * order; direction is applied afterwards.
+41,44c45,47
+<  * It replaces the comparison the column's {@link ColumnCell} fixes, for that column alone, and it
+<  * receives `undefined` for a row carrying no cell there. Sorting reads the result the way
+<  * `Array.prototype.sort` does and applies {@link TableDirection} afterwards, so a comparator
+<  * always describes ascending order.
+---
+>  * The replacement covers that column alone, and it receives `undefined` for a row carrying no
+>  * cell there. Sorting reads the result the way `Array.prototype.sort` does and applies
+>  * {@link TableDirection} to it.
+58c61,62
+<  * Tests one column's cell against a filter.
+---
+>  * Tests one column's cell against a filter, replacing what its `cell` fixes. Receives every
+>  * filter the table holds against that column.
+61,62c65,66
+<  * It replaces the test the column's {@link ColumnCell} fixes, for that column alone, and it
+<  * receives every filter the table holds against that column.
+---
+>  * The replacement covers that column alone, and it receives `undefined` for a row carrying no
+>  * cell there.
+75c79
+< /** Names the maximum number of choices one `choice` column may offer. */
+---
+> /** Names the maximum number of choices one `choice` column may offer: 1024. */
+79c83,84
+<  * Represents a column drawn from a declared list, compared by the order that list declares.
+---
+>  * Represents a column drawn from a declared list, compared by the order that list declares. It
+>  * requires `choices`.
+98c103,104
+<  * Clones a table schema into an owned frozen snapshot.
+---
+>  * Clones a whole schema into an owned frozen snapshot, freezing every nested column, choice list,
+>  * choice, and `meta`; raises `SCHEMA` for a `meta` it cannot own.
+108c114
+< /** Names the maximum number of columns one schema may declare. */
+---
+> /** Names the maximum number of columns one schema may declare: 256. */
+112c118,119
+<  * Describes what every column carries, whatever its cells hold.
+---
+>  * Describes what every column carries, whatever its cells hold — the name a row's cell uses, the
+>  * text a reader sees, whether a host draws the column, and the metadata a host attaches to it.
+137c144,145
+<  * Names what a column's cells hold.
+---
+>  * Names what a column's cells hold — the discriminant that fixes the column's options, its
+>  * comparison, and the filters that apply to it.
+140,141c148,149
+<  * The cell is the discriminant of every {@link TableColumn} variant, so choosing it fixes what the
+<  * cells hold, how the column compares, and which filter operators apply to it.
+---
+>  * Every {@link TableColumn} variant is discriminated by it, so narrowing on the member reaches
+>  * that variant's own options.
+155c163,164
+<  * Represents one value a `choice` column offers.
+---
+>  * Represents one value a `choice` column offers — `value` is stored, `label` is read, and `help`
+>  * explains.
+158d166
+<  * `value` is what the cell holds and `label` is what a reader sees. `help` explains the choice.
+169c177
+<  * Compares two cells in ascending order according to one column.
+---
+>  * Compares two of one column's cells the way its `cell` fixes, describing ascending order.
+179c187,188
+<  * Computes one atomic 0/1/N membership change over known keys.
+---
+>  * Computes one atomic 0/1/N membership change over the keys a caller may address — the engine
+>  * selection and expansion share.
+190c199
+< /** Keeps the rows whose cell holds this text somewhere inside it. */
+---
+> /** Keeps the rows whose cell holds this `text` somewhere inside it. */
+198c207
+<  * Opens a table against a schema.
+---
+>  * Opens a table against a schema. The schema is copied, and the copy is what the table declares.
+205c214
+<  * @example
+---
+>  * @example Open a table
+207,208c216,243
+<  * const table = createTable({ key: 'id', columns: [{ cell: 'text', key: 'id' }] })
+<  * table.rows.add({ id: '1' })
+---
+>  * import { createTable } from '@orkestrel/table'
+>  *
+>  * const table = createTable(
+>  * 	{
+>  * 		label: 'People',
+>  * 		key: 'id',
+>  * 		columns: [
+>  * 			{ cell: 'text', key: 'id', label: 'Reference' },
+>  * 			{ cell: 'text', key: 'name', label: 'Name' },
+>  * 			{ cell: 'number', key: 'age', label: 'Age' },
+>  * 		],
+>  * 	},
+>  * 	{
+>  * 		rows: [
+>  * 			{ id: '1', name: 'Ada', age: 36 },
+>  * 			{ id: '2', name: 'Grace', age: 45 },
+>  * 			{ id: '3', name: 'Alan', age: 41 },
+>  * 		],
+>  * 		limit: 2,
+>  * 	},
+>  * )
+>  *
+>  * table.filter.set({ column: 'name', operator: 'contains', text: 'a' })
+>  * table.sort.set({ column: 'age', direction: 'descending' })
+>  *
+>  * table.count // 3 — every name holds a lowercase 'a'
+>  * table.pagination.count // 2 — two pages of two
+>  * table.view.map((row) => row.name) // ['Grace', 'Alan'] — page one, oldest first
+213c248
+< /** Keeps the rows whose cell holds exactly this value. */
+---
+> /** Keeps the rows whose cell holds exactly this `value`. */
+236c271
+<     /** Opens every row the table holds. */
+---
+>     /** Opens every row the table holds, one row, or several. */
+253c288,290
+<     /** Closes every row. */
+---
+>     /**
+>      * Closes every row, one row, or several. A known key that was not open still answers `true`.
+>      */
+272c309,310
+<      * Opens one row, or closes it when it is already open.
+---
+>      * Opens one row, or closes it when it is already open; over a list, turns each row around on
+>      * its own.
+289c327
+<  * Finds one column by key.
+---
+>  * Finds one column by key; `undefined` when the schema declares no such column.
+298c336,337
+<  * Reads one row's declared identity.
+---
+>  * Reads one row's declared identity; `undefined` when its key cell is missing, empty, or not a
+>  * string.
+320c359
+<      * Finds one column's filter.
+---
+>      * Finds one column's filter; `undefined` when nothing filters that column.
+327c366
+<      * Reads every filter the table keeps rows by.
+---
+>      * Reads every filter the table keeps rows by, in the order they were set.
+329c368
+<      * @returns The filters, in the order they were set.
+---
+>      * @returns The filters the table keeps rows by.
+333c372,374
+<      * Filters several columns.
+---
+>      * Filters one column or several. A filter for a column already filtered replaces it; every
+>      * other one joins the end. An undeclared column raises `COLUMN`, and a filter the column does
+>      * not admit raises `CELL`.
+350c391,394
+<     /** Stops filtering by anything. */
+---
+>     /**
+>      * Stops filtering everything, one column, or several. An undeclared column returns `false` and
+>      * stops nothing.
+>      */
+370c414
+<  * Names how a filter tests a cell.
+---
+>  * Names how a filter tests a cell — the operator each filter carries.
+383c427,428
+<  * Keeps the rows accepted by every filter.
+---
+>  * Keeps the rows every filter accepts, in the order given; a supplied {@link CellMatcher}
+>  * replaces the default per column.
+407c452,453
+<  * Determines whether an unknown value is one exact column choice record.
+---
+>  * Determines whether an unknown value is one exact {@link ColumnChoice} record; an unknown member
+>  * refuses it.
+415c461,462
+<  * Determines whether an unknown value has one exact structural table-schema shape.
+---
+>  * Determines whether an unknown value has the exact shape of a {@link TableSchema} — the shape
+>  * alone, with no domain check.
+423c470,471
+<  * Determines whether an unknown value has a table cell shape.
+---
+>  * Determines whether an unknown value has a table cell shape — a string, a finite number, or a
+>  * boolean.
+431c479,480
+<  * Determines whether an unknown value is one exact discriminated table column.
+---
+>  * Determines whether an unknown value is one exact discriminated {@link TableColumn}, checked
+>  * against its cell's own options.
+439c488,489
+<  * Determines whether an unknown value is a table error.
+---
+>  * Determines whether a caught value is a table error, so a `catch` branches on `code` without an
+>  * assertion.
+447c497,498
+<  * Determines whether an unknown value is a record of table cells.
+---
+>  * Determines whether an unknown value is a record whose every own key is a string and every value
+>  * a {@link TableCell}.
+455c506,507
+<  * Determines whether an unknown value is one semantically sound table schema.
+---
+>  * Determines whether an unknown value is a {@link TableSchema} a table can be opened against —
+>  * the exact shape, and an audit that finds nothing.
+464c516,517
+<  * Checks whether a value has the shape required by one column cell.
+---
+>  * Checks whether one column can hold a value — the shape gate every write and every seed passes
+>  * through.
+473c526
+<  * Tests one cell against a filter according to its column.
+---
+>  * Tests one of a column's cells against one filter the way its `cell` fixes.
+483c536,537
+<  * Checks whether two lens lists hold the same terms in the same order.
+---
+>  * Checks whether two lens lists hold the same terms in the same order, with the supplied test
+>  * deciding the operands.
+494c548,549
+<  * Merges lens terms into a column-keyed list, replacing the entry that names the same column.
+---
+>  * Merges lens terms into a column-keyed list, replacing the entry that names the same column —
+>  * the `set` write.
+503c558
+< /** Names the maximum length, in UTF-16 code units, of a schema name or column key. */
+---
+> /** Names the maximum length of a schema name or column key: 128 UTF-16 code units. */
+506c561
+< /** Names the maximum total number of records, arrays, and leaves one schema retains. */
+---
+> /** Names the maximum total number of records, arrays, and leaves one schema retains: 16384. */
+541c596
+<      * Shows another page.
+---
+>      * Shows another page, counted from one and clamped to the pages that exist.
+548c603,604
+<      * Sets how many rows a page holds.
+---
+>      * Sets how many rows a page holds, keeping the first row the view was showing. Leave the
+>      * argument out to stop paging.
+551,552c607
+<      * The view keeps showing the first of the rows it was showing, so the page moves to wherever
+<      * that row now falls.
+---
+>      * The page moves to wherever that first row now falls.
+561c616,617
+<  * Parses unknown wire rows against one table schema.
+---
+>  * Parses unknown wire data into owned rows against one table schema, coercing a numeric string
+>  * and `'true'` / `'false'`.
+570c626
+<  * Parses unknown wire data into an owned, semantically sound table schema.
+---
+>  * Parses unknown wire data into an owned, structurally valid, semantically sound table schema.
+578c634,635
+<  * Removes every lens term naming one of the given columns.
+---
+>  * Removes every lens term naming one of the given columns — the drop `sort.remove` and
+>  * `filter.remove` share.
+601c658
+<      * Finds one row by key.
+---
+>      * Finds one row by key; `undefined` when the table holds no such key.
+608c665
+<      * Reads every row the table holds, in its own order.
+---
+>      * Reads every row the table holds, in its own order — unfiltered, unsorted, and unpaged.
+610c667
+<      * @returns The rows, unfiltered, unsorted, and unpaged.
+---
+>      * @returns The rows, in the order the table holds them.
+614c671,672
+<      * Takes in several rows, appending them in the order given.
+---
+>      * Takes in one row or several, appending them in the order given. Every row is checked before
+>      * any is admitted.
+631c689,690
+<      * Writes over several rows, each found by the key it carries.
+---
+>      * Writes over one row or several, each found by the key it carries. The cells given replace;
+>      * the cells left out stay.
+652c711,712
+<      * Moves one row to another place in the table's own order.
+---
+>      * Moves one row to another place in the table's own order, counted from zero and clamped to the
+>      * rows that exist.
+661,664c721,722
+<      * Takes out every row.
+<      *
+<      * @remarks
+<      * Selection and expansion drop the keys they held, because those rows are gone.
+---
+>      * Takes out every row, one row, or several. Selection and expansion drop the keys of the rows
+>      * that went.
+701c759
+<      * Picks every row the table holds.
+---
+>      * Picks every row the table holds, one row, or several. Every row, not every visible one.
+704,705c762
+<      * Every row, not every visible one. A host picking one page hands that page's keys over
+<      * instead.
+---
+>      * A host picking one page hands that page's keys over instead.
+723c780,782
+<     /** Drops every pick. */
+---
+>     /**
+>      * Drops every pick, one pick, or several. A known key that was not picked still answers `true`.
+>      */
+742c801,802
+<      * Picks one row, or drops it when it is already picked.
+---
+>      * Picks one row, or drops it when it is already picked; over a list, turns each row around on
+>      * its own.
+759c819,820
+<  * Projects rows into schema-column-ordered JSON.
+---
+>  * Projects rows into JSON with each row's cells in the schema's column order, dropping every
+>  * absent cell.
+768c829,830
+<  * Projects a schema into declaration-ordered JSON.
+---
+>  * Projects a schema into JSON in declaration order, dropping every absent member; raises `SCHEMA`
+>  * for a `meta` it cannot own.
+792c854
+<      * Finds one column's term.
+---
+>      * Finds one column's term; `undefined` when nothing sorts that column.
+799c861
+<      * Reads every term the table sorts by.
+---
+>      * Reads every term the table sorts by, first to last, in the order they decide.
+801c863
+<      * @returns The terms, first to last, in the order they decide.
+---
+>      * @returns The terms the table sorts by.
+805c867,868
+<      * Sorts by several columns.
+---
+>      * Sorts by one column or several. A term for a column already sorted replaces its direction in
+>      * place; every other term joins the end. An undeclared column raises `COLUMN`.
+821c884,887
+<     /** Stops sorting by anything. */
+---
+>     /**
+>      * Stops sorting by everything, by one column, or by several. An undeclared column returns
+>      * `false` and stops nothing.
+>      */
+841c907,908
+<  * Orders rows stably by a sequence of terms.
+---
+>  * Orders rows by the terms given, stably; a supplied {@link CellComparator} replaces the default
+>  * per column.
+851c918
+< /** Names the maximum length, in UTF-16 code units, of any single retained string. */
+---
+> /** Names the maximum length of any single retained string: 65536 UTF-16 code units. */
+854c921,924
+< /** Holds a schema, its rows, and the lens through which they are read. */
+---
+> /**
+>  * Holds a schema, its rows, and the lens through which they are read, implementing
+>  * {@link TableInterface} exactly.
+>  */
+895c965
+<  * Represents every value a cell can hold.
+---
+>  * Represents every value a cell can hold — a `string`, a `number`, or a `boolean`.
+905c975
+<  * Represents any column a schema can declare.
+---
+>  * Represents any column a schema can declare — the union discriminated on `cell`.
+908,909c978
+<  * The union discriminates on `cell`, so narrowing on that member reaches each variant's own
+<  * members.
+---
+>  * Narrowing on `cell` reaches each variant's own members.
+921c990
+<  * Names which way a column sorts.
+---
+>  * Names which way a column sorts. A column nobody has sorted carries no term at all.
+924,925c993
+<  * A column nobody has sorted has no {@link TableOrder} at all, so there is no third member
+<  * standing for unsorted.
+---
+>  * No member of this union stands for unsorted; that state is the missing {@link TableOrder}.
+929c997,1000
+< /** Represents an error raised by the table domain. */
+---
+> /**
+>  * Represents an error raised by the table domain — a machine-readable `code` and optional
+>  * structured `context`.
+>  */
+946c1017
+<  * Names the machine-readable code a table error carries.
+---
+>  * Names the reason a {@link TableError} carries — the machine-readable code a `catch` branches on.
+957c1028
+<  * Lists everything a table announces.
+---
+>  * Lists everything a table announces, mapping each event to the payload its listeners receive.
+987c1058
+<  * Represents any filter a table can hold.
+---
+>  * Represents any filter a table can hold — the union discriminated on `operator`.
+990,991c1061,1062
+<  * The union discriminates on `operator`, so each operator carries only the operands it uses and a
+<  * `between` missing a bound cannot be written down.
+---
+>  * Each operator carries only the operands it uses, so a `between` missing a bound cannot be
+>  * written down.
+1052c1123,1124
+<      * Puts the table back the way it opened, holding nothing.
+---
+>      * Puts the table back the way it opened, holding nothing. Rows, sort, filter, selection,
+>      * expansion, and the page all reset.
+1055,1056c1127,1128
+<      * Every row goes, and sort, filter, selection, expansion, and the page all reset. The table
+<      * emits `clear` and nothing else, so a reset of ten thousand rows is one announcement.
+---
+>      * The table emits `clear` and nothing else, so a reset of ten thousand rows is one
+>      * announcement.
+1060c1132,1133
+<      * Tears the table down.
+---
+>      * Tears the table down. Idempotent; afterwards every write raises `DESTROYED` and every getter
+>      * still answers.
+1063,1065c1136,1137
+<      * Calling it twice does what calling it once did. Afterwards every write throws a
+<      * {@link TableError} coded `DESTROYED`, while every getter still answers what the table last
+<      * held, so a host can read its way out of teardown without catching anything.
+---
+>      * The write throws a {@link TableError} carrying that code, and what a getter answers is what
+>      * the table last held, so a host can read its way out of teardown without catching anything.
+1071c1143
+<  * Represents a row's identity.
+---
+>  * Represents a row's identity — a `string`, carried in the cell the schema's `key` names.
+1074,1076c1146,1148
+<  * Every row carries its own identity in the cell named by {@link TableSchema.key}, as a non-empty
+<  * string. A column's own identifier is a plain `string`; this names a row. Selection and expansion
+<  * hold these keys and nothing else, so a row keeps its selection through a re-sort.
+---
+>  * The identity must be non-empty. A column's own identifier is a plain `string`; this names a row.
+>  * Selection and expansion hold these keys and nothing else, so a row keeps its selection through a
+>  * re-sort.
+1086c1158,1160
+<  * Describes how to open a table.
+---
+>  * Describes how to open a table — the listeners wired at construction and where a throw from one
+>  * goes, the rows seeded into it, the per-column comparison and test replacements, and the page
+>  * size.
+1120c1194,1195
+<  * Represents one column's place in the sort.
+---
+>  * Represents one column's place in the sort — the `column` and its `direction`. The list is read
+>  * left to right.
+1123,1124c1198,1199
+<  * The order list is read left to right: the first term decides, and each later term breaks the
+<  * tie the terms before it left. Rows no term separates keep the order the table holds them in.
+---
+>  * The first term decides, and each later term breaks the tie the terms before it left. Rows no
+>  * term separates keep the order the table holds them in.
+1137c1212
+<  * Represents one row, keyed by column.
+---
+>  * Represents one row, keyed by column. A column nobody has filled has no key here.
+1140,1142c1215,1216
+<  * A row declares a cell for the columns it carries and omits the rest. It carries no key the
+<  * schema does not declare, and the table clones and freezes it at admission, so nothing a caller
+<  * holds afterwards can move a stored row.
+---
+>  * A row carries no key the schema does not declare, and the table clones and freezes it at
+>  * admission, so nothing a caller holds afterwards can move a stored row.
+1152c1226,1227
+<  * Holds everything a table declares about itself.
+---
+>  * Holds everything a table declares about itself — how the table is described, which column
+>  * carries row identity, and the columns it declares, in the order it declares them.
+1188c1263,1264
+<  * Represents one entry of a lens list, held against one declared column.
+---
+>  * Represents one entry of a lens list — the `column` it names. A sort term and a filter each hold
+>  * one, which is why the two share a list engine.
+1193,1194c1269
+<  * {@link matchesTerms} work over this shape alone, which is how sorting and filtering share one
+<  * list engine while keeping their own operands.
+---
+>  * {@link matchesTerms} work over this shape alone, so each list keeps its own operands.
+1200c1275,1277
+< /** Names the maximum total length, in UTF-16 code units, of every string one schema retains. */
+---
+> /**
+>  * Names the maximum total length of every string one schema retains: 1048576 UTF-16 code units.
+>  */
+1203c1280,1283
+< /** Represents a column of text, compared lexically. */
+---
+> /**
+>  * Represents a column of text, compared lexically. Carries a date, a time, and a timestamp as ISO
+>  * strings.
+>  */
+diff -r '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-table-following-final-pack/baseline/package/dist/src/core/index.d.ts /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-table-following-final-pack/extract/package/dist/src/core/index.d.ts
+1,4c1,4
+< import { EmitterErrorHandler } from '@orkestrel/emitter';
+< import { EmitterHooks } from '@orkestrel/emitter';
+< import { EmitterInterface } from '@orkestrel/emitter';
+< import { JSONRecord } from '@orkestrel/contract';
+---
+> import type { EmitterErrorHandler } from '@orkestrel/emitter';
+> import type { EmitterHooks } from '@orkestrel/emitter';
+> import type { EmitterInterface } from '@orkestrel/emitter';
+> import type { JSONRecord } from '@orkestrel/contract';
+7c7,8
+<  * Checks whether one column admits a filter and all its operands.
+---
+>  * Checks whether one column admits a filter and every operand it carries — the gate `filter.set`
+>  * and {@link matchesFilter} share.
+16c17,18
+<  * Audits a structurally valid schema for domain and budget faults.
+---
+>  * Audits a structurally valid schema for domain faults and budget breaches, returning human
+>  * diagnostics.
+24c26,27
+<  * Keeps the rows whose cell falls between these bounds, both included.
+---
+>  * Keeps the rows whose cell falls between `minimum` and `maximum`, both included, compared the
+>  * way the column compares.
+27,28c30,31
+<  * The bounds compare the way the column compares, so a `text` column holding ISO strings takes a
+<  * pair of ISO strings and reads as a date range.
+---
+>  * A `text` column holding ISO strings therefore takes a pair of ISO strings and reads as a date
+>  * range.
+38c41,42
+<  * Compares two cells of one column.
+---
+>  * Compares two cells of one column, replacing what its `cell` fixes. Always describes ascending
+>  * order; direction is applied afterwards.
+41,44c45,47
+<  * It replaces the comparison the column's {@link ColumnCell} fixes, for that column alone, and it
+<  * receives `undefined` for a row carrying no cell there. Sorting reads the result the way
+<  * `Array.prototype.sort` does and applies {@link TableDirection} afterwards, so a comparator
+<  * always describes ascending order.
+---
+>  * The replacement covers that column alone, and it receives `undefined` for a row carrying no
+>  * cell there. Sorting reads the result the way `Array.prototype.sort` does and applies
+>  * {@link TableDirection} to it.
+58c61,62
+<  * Tests one column's cell against a filter.
+---
+>  * Tests one column's cell against a filter, replacing what its `cell` fixes. Receives every
+>  * filter the table holds against that column.
+61,62c65,66
+<  * It replaces the test the column's {@link ColumnCell} fixes, for that column alone, and it
+<  * receives every filter the table holds against that column.
+---
+>  * The replacement covers that column alone, and it receives `undefined` for a row carrying no
+>  * cell there.
+75c79
+< /** Names the maximum number of choices one `choice` column may offer. */
+---
+> /** Names the maximum number of choices one `choice` column may offer: 1024. */
+79c83,84
+<  * Represents a column drawn from a declared list, compared by the order that list declares.
+---
+>  * Represents a column drawn from a declared list, compared by the order that list declares. It
+>  * requires `choices`.
+98c103,104
+<  * Clones a table schema into an owned frozen snapshot.
+---
+>  * Clones a whole schema into an owned frozen snapshot, freezing every nested column, choice list,
+>  * choice, and `meta`; raises `SCHEMA` for a `meta` it cannot own.
+108c114
+< /** Names the maximum number of columns one schema may declare. */
+---
+> /** Names the maximum number of columns one schema may declare: 256. */
+112c118,119
+<  * Describes what every column carries, whatever its cells hold.
+---
+>  * Describes what every column carries, whatever its cells hold — the name a row's cell uses, the
+>  * text a reader sees, whether a host draws the column, and the metadata a host attaches to it.
+137c144,145
+<  * Names what a column's cells hold.
+---
+>  * Names what a column's cells hold — the discriminant that fixes the column's options, its
+>  * comparison, and the filters that apply to it.
+140,141c148,149
+<  * The cell is the discriminant of every {@link TableColumn} variant, so choosing it fixes what the
+<  * cells hold, how the column compares, and which filter operators apply to it.
+---
+>  * Every {@link TableColumn} variant is discriminated by it, so narrowing on the member reaches
+>  * that variant's own options.
+155c163,164
+<  * Represents one value a `choice` column offers.
+---
+>  * Represents one value a `choice` column offers — `value` is stored, `label` is read, and `help`
+>  * explains.
+158d166
+<  * `value` is what the cell holds and `label` is what a reader sees. `help` explains the choice.
+169c177
+<  * Compares two cells in ascending order according to one column.
+---
+>  * Compares two of one column's cells the way its `cell` fixes, describing ascending order.
+179c187,188
+<  * Computes one atomic 0/1/N membership change over known keys.
+---
+>  * Computes one atomic 0/1/N membership change over the keys a caller may address — the engine
+>  * selection and expansion share.
+190c199
+< /** Keeps the rows whose cell holds this text somewhere inside it. */
+---
+> /** Keeps the rows whose cell holds this `text` somewhere inside it. */
+198c207
+<  * Opens a table against a schema.
+---
+>  * Opens a table against a schema. The schema is copied, and the copy is what the table declares.
+205c214
+<  * @example
+---
+>  * @example Open a table
+207,208c216,243
+<  * const table = createTable({ key: 'id', columns: [{ cell: 'text', key: 'id' }] })
+<  * table.rows.add({ id: '1' })
+---
+>  * import { createTable } from '@orkestrel/table'
+>  *
+>  * const table = createTable(
+>  * 	{
+>  * 		label: 'People',
+>  * 		key: 'id',
+>  * 		columns: [
+>  * 			{ cell: 'text', key: 'id', label: 'Reference' },
+>  * 			{ cell: 'text', key: 'name', label: 'Name' },
+>  * 			{ cell: 'number', key: 'age', label: 'Age' },
+>  * 		],
+>  * 	},
+>  * 	{
+>  * 		rows: [
+>  * 			{ id: '1', name: 'Ada', age: 36 },
+>  * 			{ id: '2', name: 'Grace', age: 45 },
+>  * 			{ id: '3', name: 'Alan', age: 41 },
+>  * 		],
+>  * 		limit: 2,
+>  * 	},
+>  * )
+>  *
+>  * table.filter.set({ column: 'name', operator: 'contains', text: 'a' })
+>  * table.sort.set({ column: 'age', direction: 'descending' })
+>  *
+>  * table.count // 3 — every name holds a lowercase 'a'
+>  * table.pagination.count // 2 — two pages of two
+>  * table.view.map((row) => row.name) // ['Grace', 'Alan'] — page one, oldest first
+213c248
+< /** Keeps the rows whose cell holds exactly this value. */
+---
+> /** Keeps the rows whose cell holds exactly this `value`. */
+236c271
+<     /** Opens every row the table holds. */
+---
+>     /** Opens every row the table holds, one row, or several. */
+253c288,290
+<     /** Closes every row. */
+---
+>     /**
+>      * Closes every row, one row, or several. A known key that was not open still answers `true`.
+>      */
+272c309,310
+<      * Opens one row, or closes it when it is already open.
+---
+>      * Opens one row, or closes it when it is already open; over a list, turns each row around on
+>      * its own.
+289c327
+<  * Finds one column by key.
+---
+>  * Finds one column by key; `undefined` when the schema declares no such column.
+298c336,337
+<  * Reads one row's declared identity.
+---
+>  * Reads one row's declared identity; `undefined` when its key cell is missing, empty, or not a
+>  * string.
+320c359
+<      * Finds one column's filter.
+---
+>      * Finds one column's filter; `undefined` when nothing filters that column.
+327c366
+<      * Reads every filter the table keeps rows by.
+---
+>      * Reads every filter the table keeps rows by, in the order they were set.
+329c368
+<      * @returns The filters, in the order they were set.
+---
+>      * @returns The filters the table keeps rows by.
+333c372,374
+<      * Filters several columns.
+---
+>      * Filters one column or several. A filter for a column already filtered replaces it; every
+>      * other one joins the end. An undeclared column raises `COLUMN`, and a filter the column does
+>      * not admit raises `CELL`.
+350c391,394
+<     /** Stops filtering by anything. */
+---
+>     /**
+>      * Stops filtering everything, one column, or several. An undeclared column returns `false` and
+>      * stops nothing.
+>      */
+370c414
+<  * Names how a filter tests a cell.
+---
+>  * Names how a filter tests a cell — the operator each filter carries.
+383c427,428
+<  * Keeps the rows accepted by every filter.
+---
+>  * Keeps the rows every filter accepts, in the order given; a supplied {@link CellMatcher}
+>  * replaces the default per column.
+407c452,453
+<  * Determines whether an unknown value is one exact column choice record.
+---
+>  * Determines whether an unknown value is one exact {@link ColumnChoice} record; an unknown member
+>  * refuses it.
+415c461,462
+<  * Determines whether an unknown value has one exact structural table-schema shape.
+---
+>  * Determines whether an unknown value has the exact shape of a {@link TableSchema} — the shape
+>  * alone, with no domain check.
+423c470,471
+<  * Determines whether an unknown value has a table cell shape.
+---
+>  * Determines whether an unknown value has a table cell shape — a string, a finite number, or a
+>  * boolean.
+431c479,480
+<  * Determines whether an unknown value is one exact discriminated table column.
+---
+>  * Determines whether an unknown value is one exact discriminated {@link TableColumn}, checked
+>  * against its cell's own options.
+439c488,489
+<  * Determines whether an unknown value is a table error.
+---
+>  * Determines whether a caught value is a table error, so a `catch` branches on `code` without an
+>  * assertion.
+447c497,498
+<  * Determines whether an unknown value is a record of table cells.
+---
+>  * Determines whether an unknown value is a record whose every own key is a string and every value
+>  * a {@link TableCell}.
+455c506,507
+<  * Determines whether an unknown value is one semantically sound table schema.
+---
+>  * Determines whether an unknown value is a {@link TableSchema} a table can be opened against —
+>  * the exact shape, and an audit that finds nothing.
+464c516,517
+<  * Checks whether a value has the shape required by one column cell.
+---
+>  * Checks whether one column can hold a value — the shape gate every write and every seed passes
+>  * through.
+473c526
+<  * Tests one cell against a filter according to its column.
+---
+>  * Tests one of a column's cells against one filter the way its `cell` fixes.
+483c536,537
+<  * Checks whether two lens lists hold the same terms in the same order.
+---
+>  * Checks whether two lens lists hold the same terms in the same order, with the supplied test
+>  * deciding the operands.
+494c548,549
+<  * Merges lens terms into a column-keyed list, replacing the entry that names the same column.
+---
+>  * Merges lens terms into a column-keyed list, replacing the entry that names the same column —
+>  * the `set` write.
+503c558
+< /** Names the maximum length, in UTF-16 code units, of a schema name or column key. */
+---
+> /** Names the maximum length of a schema name or column key: 128 UTF-16 code units. */
+506c561
+< /** Names the maximum total number of records, arrays, and leaves one schema retains. */
+---
+> /** Names the maximum total number of records, arrays, and leaves one schema retains: 16384. */
+541c596
+<      * Shows another page.
+---
+>      * Shows another page, counted from one and clamped to the pages that exist.
+548c603,604
+<      * Sets how many rows a page holds.
+---
+>      * Sets how many rows a page holds, keeping the first row the view was showing. Leave the
+>      * argument out to stop paging.
+551,552c607
+<      * The view keeps showing the first of the rows it was showing, so the page moves to wherever
+<      * that row now falls.
+---
+>      * The page moves to wherever that first row now falls.
+561c616,617
+<  * Parses unknown wire rows against one table schema.
+---
+>  * Parses unknown wire data into owned rows against one table schema, coercing a numeric string
+>  * and `'true'` / `'false'`.
+570c626
+<  * Parses unknown wire data into an owned, semantically sound table schema.
+---
+>  * Parses unknown wire data into an owned, structurally valid, semantically sound table schema.
+578c634,635
+<  * Removes every lens term naming one of the given columns.
+---
+>  * Removes every lens term naming one of the given columns — the drop `sort.remove` and
+>  * `filter.remove` share.
+601c658
+<      * Finds one row by key.
+---
+>      * Finds one row by key; `undefined` when the table holds no such key.
+608c665
+<      * Reads every row the table holds, in its own order.
+---
+>      * Reads every row the table holds, in its own order — unfiltered, unsorted, and unpaged.
+610c667
+<      * @returns The rows, unfiltered, unsorted, and unpaged.
+---
+>      * @returns The rows, in the order the table holds them.
+614c671,672
+<      * Takes in several rows, appending them in the order given.
+---
+>      * Takes in one row or several, appending them in the order given. Every row is checked before
+>      * any is admitted.
+631c689,690
+<      * Writes over several rows, each found by the key it carries.
+---
+>      * Writes over one row or several, each found by the key it carries. The cells given replace;
+>      * the cells left out stay.
+652c711,712
+<      * Moves one row to another place in the table's own order.
+---
+>      * Moves one row to another place in the table's own order, counted from zero and clamped to the
+>      * rows that exist.
+661,664c721,722
+<      * Takes out every row.
+<      *
+<      * @remarks
+<      * Selection and expansion drop the keys they held, because those rows are gone.
+---
+>      * Takes out every row, one row, or several. Selection and expansion drop the keys of the rows
+>      * that went.
+701c759
+<      * Picks every row the table holds.
+---
+>      * Picks every row the table holds, one row, or several. Every row, not every visible one.
+704,705c762
+<      * Every row, not every visible one. A host picking one page hands that page's keys over
+<      * instead.
+---
+>      * A host picking one page hands that page's keys over instead.
+723c780,782
+<     /** Drops every pick. */
+---
+>     /**
+>      * Drops every pick, one pick, or several. A known key that was not picked still answers `true`.
+>      */
+742c801,802
+<      * Picks one row, or drops it when it is already picked.
+---
+>      * Picks one row, or drops it when it is already picked; over a list, turns each row around on
+>      * its own.
+759c819,820
+<  * Projects rows into schema-column-ordered JSON.
+---
+>  * Projects rows into JSON with each row's cells in the schema's column order, dropping every
+>  * absent cell.
+768c829,830
+<  * Projects a schema into declaration-ordered JSON.
+---
+>  * Projects a schema into JSON in declaration order, dropping every absent member; raises `SCHEMA`
+>  * for a `meta` it cannot own.
+792c854
+<      * Finds one column's term.
+---
+>      * Finds one column's term; `undefined` when nothing sorts that column.
+799c861
+<      * Reads every term the table sorts by.
+---
+>      * Reads every term the table sorts by, first to last, in the order they decide.
+801c863
+<      * @returns The terms, first to last, in the order they decide.
+---
+>      * @returns The terms the table sorts by.
+805c867,868
+<      * Sorts by several columns.
+---
+>      * Sorts by one column or several. A term for a column already sorted replaces its direction in
+>      * place; every other term joins the end. An undeclared column raises `COLUMN`.
+821c884,887
+<     /** Stops sorting by anything. */
+---
+>     /**
+>      * Stops sorting by everything, by one column, or by several. An undeclared column returns
+>      * `false` and stops nothing.
+>      */
+841c907,908
+<  * Orders rows stably by a sequence of terms.
+---
+>  * Orders rows by the terms given, stably; a supplied {@link CellComparator} replaces the default
+>  * per column.
+851c918
+< /** Names the maximum length, in UTF-16 code units, of any single retained string. */
+---
+> /** Names the maximum length of any single retained string: 65536 UTF-16 code units. */
+854c921,924
+< /** Holds a schema, its rows, and the lens through which they are read. */
+---
+> /**
+>  * Holds a schema, its rows, and the lens through which they are read, implementing
+>  * {@link TableInterface} exactly.
+>  */
+895c965
+<  * Represents every value a cell can hold.
+---
+>  * Represents every value a cell can hold — a `string`, a `number`, or a `boolean`.
+905c975
+<  * Represents any column a schema can declare.
+---
+>  * Represents any column a schema can declare — the union discriminated on `cell`.
+908,909c978
+<  * The union discriminates on `cell`, so narrowing on that member reaches each variant's own
+<  * members.
+---
+>  * Narrowing on `cell` reaches each variant's own members.
+921c990
+<  * Names which way a column sorts.
+---
+>  * Names which way a column sorts. A column nobody has sorted carries no term at all.
+924,925c993
+<  * A column nobody has sorted has no {@link TableOrder} at all, so there is no third member
+<  * standing for unsorted.
+---
+>  * No member of this union stands for unsorted; that state is the missing {@link TableOrder}.
+929c997,1000
+< /** Represents an error raised by the table domain. */
+---
+> /**
+>  * Represents an error raised by the table domain — a machine-readable `code` and optional
+>  * structured `context`.
+>  */
+946c1017
+<  * Names the machine-readable code a table error carries.
+---
+>  * Names the reason a {@link TableError} carries — the machine-readable code a `catch` branches on.
+957c1028
+<  * Lists everything a table announces.
+---
+>  * Lists everything a table announces, mapping each event to the payload its listeners receive.
+987c1058
+<  * Represents any filter a table can hold.
+---
+>  * Represents any filter a table can hold — the union discriminated on `operator`.
+990,991c1061,1062
+<  * The union discriminates on `operator`, so each operator carries only the operands it uses and a
+<  * `between` missing a bound cannot be written down.
+---
+>  * Each operator carries only the operands it uses, so a `between` missing a bound cannot be
+>  * written down.
+1052c1123,1124
+<      * Puts the table back the way it opened, holding nothing.
+---
+>      * Puts the table back the way it opened, holding nothing. Rows, sort, filter, selection,
+>      * expansion, and the page all reset.
+1055,1056c1127,1128
+<      * Every row goes, and sort, filter, selection, expansion, and the page all reset. The table
+<      * emits `clear` and nothing else, so a reset of ten thousand rows is one announcement.
+---
+>      * The table emits `clear` and nothing else, so a reset of ten thousand rows is one
+>      * announcement.
+1060c1132,1133
+<      * Tears the table down.
+---
+>      * Tears the table down. Idempotent; afterwards every write raises `DESTROYED` and every getter
+>      * still answers.
+1063,1065c1136,1137
+<      * Calling it twice does what calling it once did. Afterwards every write throws a
+<      * {@link TableError} coded `DESTROYED`, while every getter still answers what the table last
+<      * held, so a host can read its way out of teardown without catching anything.
+---
+>      * The write throws a {@link TableError} carrying that code, and what a getter answers is what
+>      * the table last held, so a host can read its way out of teardown without catching anything.
+1071c1143
+<  * Represents a row's identity.
+---
+>  * Represents a row's identity — a `string`, carried in the cell the schema's `key` names.
+1074,1076c1146,1148
+<  * Every row carries its own identity in the cell named by {@link TableSchema.key}, as a non-empty
+<  * string. A column's own identifier is a plain `string`; this names a row. Selection and expansion
+<  * hold these keys and nothing else, so a row keeps its selection through a re-sort.
+---
+>  * The identity must be non-empty. A column's own identifier is a plain `string`; this names a row.
+>  * Selection and expansion hold these keys and nothing else, so a row keeps its selection through a
+>  * re-sort.
+1086c1158,1160
+<  * Describes how to open a table.
+---
+>  * Describes how to open a table — the listeners wired at construction and where a throw from one
+>  * goes, the rows seeded into it, the per-column comparison and test replacements, and the page
+>  * size.
+1120c1194,1195
+<  * Represents one column's place in the sort.
+---
+>  * Represents one column's place in the sort — the `column` and its `direction`. The list is read
+>  * left to right.
+1123,1124c1198,1199
+<  * The order list is read left to right: the first term decides, and each later term breaks the
+<  * tie the terms before it left. Rows no term separates keep the order the table holds them in.
+---
+>  * The first term decides, and each later term breaks the tie the terms before it left. Rows no
+>  * term separates keep the order the table holds them in.
+1137c1212
+<  * Represents one row, keyed by column.
+---
+>  * Represents one row, keyed by column. A column nobody has filled has no key here.
+1140,1142c1215,1216
+<  * A row declares a cell for the columns it carries and omits the rest. It carries no key the
+<  * schema does not declare, and the table clones and freezes it at admission, so nothing a caller
+<  * holds afterwards can move a stored row.
+---
+>  * A row carries no key the schema does not declare, and the table clones and freezes it at
+>  * admission, so nothing a caller holds afterwards can move a stored row.
+1152c1226,1227
+<  * Holds everything a table declares about itself.
+---
+>  * Holds everything a table declares about itself — how the table is described, which column
+>  * carries row identity, and the columns it declares, in the order it declares them.
+1188c1263,1264
+<  * Represents one entry of a lens list, held against one declared column.
+---
+>  * Represents one entry of a lens list — the `column` it names. A sort term and a filter each hold
+>  * one, which is why the two share a list engine.
+1193,1194c1269
+<  * {@link matchesTerms} work over this shape alone, which is how sorting and filtering share one
+<  * list engine while keeping their own operands.
+---
+>  * {@link matchesTerms} work over this shape alone, so each list keeps its own operands.
+1200c1275,1277
+< /** Names the maximum total length, in UTF-16 code units, of every string one schema retains. */
+---
+> /**
+>  * Names the maximum total length of every string one schema retains: 1048576 UTF-16 code units.
+>  */
+1203c1280,1283
+< /** Represents a column of text, compared lexically. */
+---
+> /**
+>  * Represents a column of text, compared lexically. Carries a date, a time, and a timestamp as ISO
+>  * strings.
+>  */
+diff -r '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-table-following-final-pack/baseline/package/dist/src/core/index.js /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-table-following-final-pack/extract/package/dist/src/core/index.js
+11c11
+< /** Names the maximum number of columns one schema may declare. */
+---
+> /** Names the maximum number of columns one schema may declare: 256. */
+13c13
+< /** Names the maximum number of choices one `choice` column may offer. */
+---
+> /** Names the maximum number of choices one `choice` column may offer: 1024. */
+15c15
+< /** Names the maximum length, in UTF-16 code units, of a schema name or column key. */
+---
+> /** Names the maximum length of a schema name or column key: 128 UTF-16 code units. */
+17c17
+< /** Names the maximum length, in UTF-16 code units, of any single retained string. */
+---
+> /** Names the maximum length of any single retained string: 65536 UTF-16 code units. */
+19c19,21
+< /** Names the maximum total length, in UTF-16 code units, of every string one schema retains. */
+---
+> /**
+> * Names the maximum total length of every string one schema retains: 1048576 UTF-16 code units.
+> */
+21c23
+< /** Names the maximum total number of records, arrays, and leaves one schema retains. */
+---
+> /** Names the maximum total number of records, arrays, and leaves one schema retains: 16384. */
+25c27,30
+< /** Represents an error raised by the table domain. */
+---
+> /**
+> * Represents an error raised by the table domain — a machine-readable `code` and optional
+> * structured `context`.
+> */
+46c51,52
+< * Determines whether an unknown value is a table error.
+---
+> * Determines whether a caught value is a table error, so a `catch` branches on `code` without an
+> * assertion.
+57c63
+< * Finds one column by key.
+---
+> * Finds one column by key; `undefined` when the schema declares no such column.
+67c73,74
+< * Reads one row's declared identity.
+---
+> * Reads one row's declared identity; `undefined` when its key cell is missing, empty, or not a
+> * string.
+79c86,87
+< * Computes one atomic 0/1/N membership change over known keys.
+---
+> * Computes one atomic 0/1/N membership change over the keys a caller may address — the engine
+> * selection and expansion share.
+98c106,107
+< * Merges lens terms into a column-keyed list, replacing the entry that names the same column.
+---
+> * Merges lens terms into a column-keyed list, replacing the entry that names the same column —
+> * the `set` write.
+116c125,126
+< * Removes every lens term naming one of the given columns.
+---
+> * Removes every lens term naming one of the given columns — the drop `sort.remove` and
+> * `filter.remove` share.
+127c137,138
+< * Checks whether two lens lists hold the same terms in the same order.
+---
+> * Checks whether two lens lists hold the same terms in the same order, with the supplied test
+> * deciding the operands.
+142c153,154
+< * Checks whether a value has the shape required by one column cell.
+---
+> * Checks whether one column can hold a value — the shape gate every write and every seed passes
+> * through.
+158c170
+< * Compares two cells in ascending order according to one column.
+---
+> * Compares two of one column's cells the way its `cell` fixes, describing ascending order.
+184c196,197
+< * Checks whether one column admits a filter and all its operands.
+---
+> * Checks whether one column admits a filter and every operand it carries — the gate `filter.set`
+> * and {@link matchesFilter} share.
+199c212
+< * Tests one cell against a filter according to its column.
+---
+> * Tests one of a column's cells against one filter the way its `cell` fixes.
+215c228,229
+< * Keeps the rows accepted by every filter.
+---
+> * Keeps the rows every filter accepts, in the order given; a supplied {@link CellMatcher}
+> * replaces the default per column.
+233c247,248
+< * Orders rows stably by a sequence of terms.
+---
+> * Orders rows by the terms given, stably; a supplied {@link CellComparator} replaces the default
+> * per column.
+261c276,277
+< * Audits a structurally valid schema for domain and budget faults.
+---
+> * Audits a structurally valid schema for domain faults and budget breaches, returning human
+> * diagnostics.
+360c376,377
+< * Projects a schema into declaration-ordered JSON.
+---
+> * Projects a schema into JSON in declaration order, dropping every absent member; raises `SCHEMA`
+> * for a `meta` it cannot own.
+399c416,417
+< * Projects rows into schema-column-ordered JSON.
+---
+> * Projects rows into JSON with each row's cells in the schema's column order, dropping every
+> * absent cell.
+427c445,446
+< * Determines whether an unknown value has a table cell shape.
+---
+> * Determines whether an unknown value has a table cell shape — a string, a finite number, or a
+> * boolean.
+436c455,456
+< * Determines whether an unknown value is a record of table cells.
+---
+> * Determines whether an unknown value is a record whose every own key is a string and every value
+> * a {@link TableCell}.
+458c478,479
+< * Determines whether an unknown value is one exact column choice record.
+---
+> * Determines whether an unknown value is one exact {@link ColumnChoice} record; an unknown member
+> * refuses it.
+475c496,497
+< * Determines whether an unknown value is one exact discriminated table column.
+---
+> * Determines whether an unknown value is one exact discriminated {@link TableColumn}, checked
+> * against its cell's own options.
+517c539,540
+< * Determines whether an unknown value has one exact structural table-schema shape.
+---
+> * Determines whether an unknown value has the exact shape of a {@link TableSchema} — the shape
+> * alone, with no domain check.
+540c563,564
+< * Determines whether an unknown value is one semantically sound table schema.
+---
+> * Determines whether an unknown value is a {@link TableSchema} a table can be opened against —
+> * the exact shape, and an audit that finds nothing.
+562c586,587
+< * Clones a table schema into an owned frozen snapshot.
+---
+> * Clones a whole schema into an owned frozen snapshot, freezing every nested column, choice list,
+> * choice, and `meta`; raises `SCHEMA` for a `meta` it cannot own.
+593c618
+< * Parses unknown wire data into an owned, semantically sound table schema.
+---
+> * Parses unknown wire data into an owned, structurally valid, semantically sound table schema.
+607c632,633
+< * Parses unknown wire rows against one table schema.
+---
+> * Parses unknown wire data into owned rows against one table schema, coercing a numeric string
+> * and `'true'` / `'false'`.
+1158c1184,1187
+< /** Holds a schema, its rows, and the lens through which they are read. */
+---
+> /**
+> * Holds a schema, its rows, and the lens through which they are read, implementing
+> * {@link TableInterface} exactly.
+> */
+1326c1355
+< * Opens a table against a schema.
+---
+> * Opens a table against a schema. The schema is copied, and the copy is what the table declares.
+1333c1362
+< * @example
+---
+> * @example Open a table
+1335,1336c1364,1391
+< * const table = createTable({ key: 'id', columns: [{ cell: 'text', key: 'id' }] })
+< * table.rows.add({ id: '1' })
+---
+> * import { createTable } from '@orkestrel/table'
+> *
+> * const table = createTable(
+> * 	{
+> * 		label: 'People',
+> * 		key: 'id',
+> * 		columns: [
+> * 			{ cell: 'text', key: 'id', label: 'Reference' },
+> * 			{ cell: 'text', key: 'name', label: 'Name' },
+> * 			{ cell: 'number', key: 'age', label: 'Age' },
+> * 		],
+> * 	},
+> * 	{
+> * 		rows: [
+> * 			{ id: '1', name: 'Ada', age: 36 },
+> * 			{ id: '2', name: 'Grace', age: 45 },
+> * 			{ id: '3', name: 'Alan', age: 41 },
+> * 		],
+> * 		limit: 2,
+> * 	},
+> * )
+> *
+> * table.filter.set({ column: 'name', operator: 'contains', text: 'a' })
+> * table.sort.set({ column: 'age', direction: 'descending' })
+> *
+> * table.count // 3 — every name holds a lowercase 'a'
+> * table.pagination.count // 2 — two pages of two
+> * table.view.map((row) => row.name) // ['Grace', 'Alan'] — page one, oldest first

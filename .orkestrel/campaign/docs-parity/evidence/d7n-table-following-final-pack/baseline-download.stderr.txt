@@ -1,0 +1,22 @@
+npm notice
+npm notice 📦  @orkestrel/table@0.0.4
+npm notice Tarball Contents
+npm notice 1.1kB LICENSE
+npm notice 2.9kB README.md
+npm notice 51.8kB dist/src/core/index.cjs
+npm notice 96.8kB dist/src/core/index.cjs.map
+npm notice 45.4kB dist/src/core/index.d.cts
+npm notice 45.4kB dist/src/core/index.d.ts
+npm notice 49.3kB dist/src/core/index.js
+npm notice 95.8kB dist/src/core/index.js.map
+npm notice 3.5kB package.json
+npm notice Tarball Details
+npm notice name: @orkestrel/table
+npm notice version: 0.0.4
+npm notice filename: orkestrel-table-0.0.4.tgz
+npm notice package size: 85.2 kB
+npm notice unpacked size: 392.1 kB
+npm notice shasum: 3e360e124f3dd9848b8220bf9ca6ff6ffe173635
+npm notice integrity: sha512-VpcveY4JNL/mu[...]+DxIZayG3aJiA==
+npm notice total files: 9
+npm notice
