@@ -4,13 +4,16 @@ Written 2026-09-08T03:35Z and revised 2026-09-08T04:05Z at the owner's request, 
 
 ## Where everything is pushed
 
-The owner completed the following-layer uploads. Root confirmed the served
-archives, registry gitHead and clean canonical main tips. Read
-d7n-following-registry-closure.md. The following preparation table now records
-published releases. Root prompt.txt is consumed history and must not be rerun.
-The upper layer is selected from the freshly regenerated catalog; its plan is
-d7n-upper-layer-plan.md. Guide and Scaffold preparation precedes propagation
-to the selected runtime packages. No new operator command is ready yet.
+The owner requested an immediate upload handoff. Root prompt.txt targets Scaffold
+0.0.64 alone from its canonical WebstormProjects directory. Read
+d7n-scaffold-upload-handoff-verdict.md and d7n-scaffold-upper-release-landing.md.
+The owner uploads; root has not authenticated or published. The remaining upper
+layer stays open under d7n-upper-layer-plan.md. Confirm Scaffold from the registry
+after the owner uploads, then continue Guide and runtime-package preparation.
+
+The following-layer uploads are registry-confirmed. Read
+d7n-following-registry-closure.md. Its preparation table records published
+releases. The predecessor prompt is consumed history and must not be rerun.
 
 Upper preparation is in progress. Guide's refreshed runtime pins, prepublishOnly
 and actual archive passed; its complete distribution remains byte-identical to
@@ -19,8 +22,9 @@ manifest capture limit as the campaign grew. The stream repair and the review's
 leading-U+FEFF correction are implemented. Source review, independent/reused
 objective release review, final root prepublish and actual packing passed. The
 Scaffold0.0.64 archive is d7n-scaffold-upper-git-final-pack with SHA256
-a4e7078da602619e54384dbc7bdddaf25a2fdc6af0842a55004b8328365b8be7. Commit/main closure
-is next. Read d7n-scaffold-upper-prepared-verdict.md.
+a4e7078da602619e54384dbc7bdddaf25a2fdc6af0842a55004b8328365b8be7. Release source landed
+at d2175dfe on main and the named origin refs. Read
+d7n-scaffold-upper-prepared-verdict.md and d7n-scaffold-upper-release-landing.md.
 
 LSP's native entry and supported policy refresh passed root prepublishOnly and
 landed at 3b9f3a5dcae91cb206e9fc6ed7bb546be20036a3 on its pushed campaign branch.
