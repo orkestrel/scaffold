@@ -26,14 +26,14 @@ for these packages. Keep prompt.txt unchanged until this layer is prepared.
 | console | 0.0.13 | prepared at ed57bc7; final prepublish/pack accepted; campaign/main pushed; clean canonical main; unpublished |
 | database | 0.0.14 | source accepted and committed at a5aeb2a; compiler-backed consumer and portable assertions green; final preparation pending |
 | form | 0.0.6 | corrected source accepted and committed at d445e4f; final preparation pending |
-| markdown | 0.0.14 | native helper extraction and type-import correction green; full source prepublish green; review pending |
-| pool | 0.0.11 | source accepted and committed at 65d57a0; final dependency preparation and main closure pending |
+| markdown | 0.0.14 | source accepted and committed at aefdd8f with required helper tracked; final preparation pending |
+| pool | 0.0.11 | prepared at 25ea973; final prepublish/pack accepted; campaign/main pushed; clean canonical main; unpublished |
 | process | 0.0.11 | source accepted and committed at a2498ee; final preparation pending |
 | reason | 0.0.10 | source accepted and committed at 4226c32; final preparation pending |
-| router | 0.0.14 | declaration-policy correction and full source prepublish green; successor review pending |
+| router | 0.0.14 | corrected source accepted and committed at 0b9b847; final preparation pending |
 | table | 0.0.5 | native entry and full source prepublish green; review pending |
-| template | 0.0.7 | native entry green; full source prepublish and review underway |
-| websocket | 0.0.12 | native entry green; full source prepublish and review pending |
+| template | 0.0.7 | source accepted and committed at e7744d0; full source prepublish green; final preparation pending |
+| websocket | 0.0.12 | source accepted and committed at b60a37c; full source prepublish green; final preparation pending |
 
 The next-layer plan is d7n-next-layer-plan.md. Fresh origin/main readings require
 no merges for its selected packages. Accepted tooling is installed throughout
