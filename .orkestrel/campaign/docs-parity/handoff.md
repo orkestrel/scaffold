@@ -13,7 +13,9 @@ install, prepublishOnly and actual packing passed. Independent and reused
 objective review passed. Complete Guide output remains byte-identical to the
 accepted predecessor. Read d7n-guide-registry-prepared-verdict.md and
 d7n-guide-registry-release-landing.md. Root prompt.txt now targets Guide alone;
-its operator handoff review passed. Read d7n-guide-upload-handoff-verdict.md.
+its operator handoff review passed and landed at Scaffold5e652fcc. Named origin
+refs match, and post-push canonical main and artifact checks passed. Read
+d7n-guide-upload-handoff-verdict.md and d7n-guide-upload-handoff-landing.md.
 The remaining runtime layer stays open
 under d7n-upper-layer-plan.md. Do not rerun consumed predecessor commands.
 
