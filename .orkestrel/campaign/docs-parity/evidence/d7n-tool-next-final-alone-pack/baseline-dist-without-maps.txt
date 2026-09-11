@@ -1,0 +1,306 @@
+diff -r '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-tool-next-final-alone-pack/baseline/package/dist/src/core/index.cjs /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-tool-next-final-alone-pack/extract/package/dist/src/core/index.cjs
+5c5,7
+< * Projects a tool onto the plain definition advertised to a caller.
+---
+> * Projects a tool onto the plain definition advertised to a caller, advertising an
+> * authored `summary` in place of the full description and carrying the parameter schema
+> * by reference.
+10,13c12,13
+< * authored a schema. An authored `summary` is advertised in place of the full
+< * `description`, which stays on the tool for direct lookup. The parameter schema is
+< * copied by reference and never cloned, so the definition is never a live handle on
+< * the tool's handler.
+---
+> * authored a schema. The full `description` stays on the tool for direct lookup, and
+> * the definition is never a live handle on the tool's handler.
+36c36,37
+< * Determines whether an unknown value is structurally a {@link ToolCall}.
+---
+> * Determines whether an unknown value is structurally a {@link ToolCall}, staying total
+> * for malformed and adversarial input.
+39c40
+< * This total guard accepts a plain record with string `id` and `name` fields and a
+---
+> * The accepted shape is a plain record with string `id` and `name` fields and a
+41c42
+< * read or verified. Adversarial values return `false`.
+---
+> * read or verified.
+193c194,196
+< * Creates an executable tool.
+---
+> * Creates an executable tool bound to the supplied handler, returned as a
+> * `ToolInterface` so a call site holds the published contract rather than the `Tool`
+> * class.
+198c201
+< * @example
+---
+> * @example Anatomy of a tool
+204,205c207,217
+< * 	description: 'Add two numbers',
+< * 	execute: (args) => Number(args.a) + Number(args.b),
+---
+> * 	description: 'Add two numeric values and return their sum. Both operands are required.',
+> * 	summary: 'Add two numbers.',
+> * 	parameters: {
+> * 		type: 'object',
+> * 		properties: {
+> * 			left: { type: 'number' },
+> * 			right: { type: 'number' },
+> * 		},
+> * 		required: ['left', 'right'],
+> * 	},
+> * 	execute: (args) => Number(args.left) + Number(args.right),
+213c225,227
+< * Creates an empty tool registry.
+---
+> * Creates an empty registry that advertises definitions and executes calls with
+> * per-call error isolation, returned as a `ToolManagerInterface` so a caller holds the
+> * published contract rather than the `ToolManager` class.
+215,216c229
+< * @returns A registry that advertises definitions and executes calls with per-call
+< * error isolation
+---
+> * @returns A registry bound to no tools
+diff -r '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-tool-next-final-alone-pack/baseline/package/dist/src/core/index.d.cts /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-tool-next-final-alone-pack/extract/package/dist/src/core/index.d.cts
+1,2c1,2
+< import { Failure } from '@orkestrel/contract';
+< import { Success } from '@orkestrel/contract';
+---
+> import type { Failure } from '@orkestrel/contract';
+> import type { Success } from '@orkestrel/contract';
+5c5,7
+<  * Creates an executable tool.
+---
+>  * Creates an executable tool bound to the supplied handler, returned as a
+>  * `ToolInterface` so a call site holds the published contract rather than the `Tool`
+>  * class.
+10c12
+<  * @example
+---
+>  * @example Anatomy of a tool
+16,17c18,28
+<  * 	description: 'Add two numbers',
+<  * 	execute: (args) => Number(args.a) + Number(args.b),
+---
+>  * 	description: 'Add two numeric values and return their sum. Both operands are required.',
+>  * 	summary: 'Add two numbers.',
+>  * 	parameters: {
+>  * 		type: 'object',
+>  * 		properties: {
+>  * 			left: { type: 'number' },
+>  * 			right: { type: 'number' },
+>  * 		},
+>  * 		required: ['left', 'right'],
+>  * 	},
+>  * 	execute: (args) => Number(args.left) + Number(args.right),
+24c35,37
+<  * Creates an empty tool registry.
+---
+>  * Creates an empty registry that advertises definitions and executes calls with
+>  * per-call error isolation, returned as a `ToolManagerInterface` so a caller holds the
+>  * published contract rather than the `ToolManager` class.
+26,27c39
+<  * @returns A registry that advertises definitions and executes calls with per-call
+<  * error isolation
+---
+>  * @returns A registry bound to no tools
+45c57,58
+<  * Determines whether an unknown value is structurally a {@link ToolCall}.
+---
+>  * Determines whether an unknown value is structurally a {@link ToolCall}, staying total
+>  * for malformed and adversarial input.
+48c61
+<  * This total guard accepts a plain record with string `id` and `name` fields and a
+---
+>  * The accepted shape is a plain record with string `id` and `name` fields and a
+50c63
+<  * read or verified. Adversarial values return `false`.
+---
+>  * read or verified.
+99c112
+<  * Describes a call issued by a caller.
+---
+>  * Describes one request to run a named tool.
+160c173,174
+<      * Runs the tool's handler.
+---
+>      * Runs the tool's handler with the caller-supplied arguments and any consumer-asserted
+>      * caller context.
+222c236
+<  * reject instead. Batch execution preserves input order and isolates each such call.
+---
+>  * reject instead. Batch execution preserves input order.
+245c259
+<      * @returns The tool when found, otherwise `undefined`
+---
+>      * @returns The exact registered instance when found, otherwise `undefined`
+256a271
+>      * @remarks
+347c362,364
+<  * Projects a tool onto the plain definition advertised to a caller.
+---
+>  * Projects a tool onto the plain definition advertised to a caller, advertising an
+>  * authored `summary` in place of the full description and carrying the parameter schema
+>  * by reference.
+352,355c369,370
+<  * authored a schema. An authored `summary` is advertised in place of the full
+<  * `description`, which stays on the tool for direct lookup. The parameter schema is
+<  * copied by reference and never cloned, so the definition is never a live handle on
+<  * the tool's handler.
+---
+>  * authored a schema. The full `description` stays on the tool for direct lookup, and
+>  * the definition is never a live handle on the tool's handler.
+diff -r '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-tool-next-final-alone-pack/baseline/package/dist/src/core/index.d.ts /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-tool-next-final-alone-pack/extract/package/dist/src/core/index.d.ts
+1,2c1,2
+< import { Failure } from '@orkestrel/contract';
+< import { Success } from '@orkestrel/contract';
+---
+> import type { Failure } from '@orkestrel/contract';
+> import type { Success } from '@orkestrel/contract';
+5c5,7
+<  * Creates an executable tool.
+---
+>  * Creates an executable tool bound to the supplied handler, returned as a
+>  * `ToolInterface` so a call site holds the published contract rather than the `Tool`
+>  * class.
+10c12
+<  * @example
+---
+>  * @example Anatomy of a tool
+16,17c18,28
+<  * 	description: 'Add two numbers',
+<  * 	execute: (args) => Number(args.a) + Number(args.b),
+---
+>  * 	description: 'Add two numeric values and return their sum. Both operands are required.',
+>  * 	summary: 'Add two numbers.',
+>  * 	parameters: {
+>  * 		type: 'object',
+>  * 		properties: {
+>  * 			left: { type: 'number' },
+>  * 			right: { type: 'number' },
+>  * 		},
+>  * 		required: ['left', 'right'],
+>  * 	},
+>  * 	execute: (args) => Number(args.left) + Number(args.right),
+24c35,37
+<  * Creates an empty tool registry.
+---
+>  * Creates an empty registry that advertises definitions and executes calls with
+>  * per-call error isolation, returned as a `ToolManagerInterface` so a caller holds the
+>  * published contract rather than the `ToolManager` class.
+26,27c39
+<  * @returns A registry that advertises definitions and executes calls with per-call
+<  * error isolation
+---
+>  * @returns A registry bound to no tools
+45c57,58
+<  * Determines whether an unknown value is structurally a {@link ToolCall}.
+---
+>  * Determines whether an unknown value is structurally a {@link ToolCall}, staying total
+>  * for malformed and adversarial input.
+48c61
+<  * This total guard accepts a plain record with string `id` and `name` fields and a
+---
+>  * The accepted shape is a plain record with string `id` and `name` fields and a
+50c63
+<  * read or verified. Adversarial values return `false`.
+---
+>  * read or verified.
+99c112
+<  * Describes a call issued by a caller.
+---
+>  * Describes one request to run a named tool.
+160c173,174
+<      * Runs the tool's handler.
+---
+>      * Runs the tool's handler with the caller-supplied arguments and any consumer-asserted
+>      * caller context.
+222c236
+<  * reject instead. Batch execution preserves input order and isolates each such call.
+---
+>  * reject instead. Batch execution preserves input order.
+245c259
+<      * @returns The tool when found, otherwise `undefined`
+---
+>      * @returns The exact registered instance when found, otherwise `undefined`
+256a271
+>      * @remarks
+347c362,364
+<  * Projects a tool onto the plain definition advertised to a caller.
+---
+>  * Projects a tool onto the plain definition advertised to a caller, advertising an
+>  * authored `summary` in place of the full description and carrying the parameter schema
+>  * by reference.
+352,355c369,370
+<  * authored a schema. An authored `summary` is advertised in place of the full
+<  * `description`, which stays on the tool for direct lookup. The parameter schema is
+<  * copied by reference and never cloned, so the definition is never a live handle on
+<  * the tool's handler.
+---
+>  * authored a schema. The full `description` stays on the tool for direct lookup, and
+>  * the definition is never a live handle on the tool's handler.
+diff -r '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-tool-next-final-alone-pack/baseline/package/dist/src/core/index.js /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-tool-next-final-alone-pack/extract/package/dist/src/core/index.js
+4c4,6
+< * Projects a tool onto the plain definition advertised to a caller.
+---
+> * Projects a tool onto the plain definition advertised to a caller, advertising an
+> * authored `summary` in place of the full description and carrying the parameter schema
+> * by reference.
+9,12c11,12
+< * authored a schema. An authored `summary` is advertised in place of the full
+< * `description`, which stays on the tool for direct lookup. The parameter schema is
+< * copied by reference and never cloned, so the definition is never a live handle on
+< * the tool's handler.
+---
+> * authored a schema. The full `description` stays on the tool for direct lookup, and
+> * the definition is never a live handle on the tool's handler.
+35c35,36
+< * Determines whether an unknown value is structurally a {@link ToolCall}.
+---
+> * Determines whether an unknown value is structurally a {@link ToolCall}, staying total
+> * for malformed and adversarial input.
+38c39
+< * This total guard accepts a plain record with string `id` and `name` fields and a
+---
+> * The accepted shape is a plain record with string `id` and `name` fields and a
+40c41
+< * read or verified. Adversarial values return `false`.
+---
+> * read or verified.
+192c193,195
+< * Creates an executable tool.
+---
+> * Creates an executable tool bound to the supplied handler, returned as a
+> * `ToolInterface` so a call site holds the published contract rather than the `Tool`
+> * class.
+197c200
+< * @example
+---
+> * @example Anatomy of a tool
+203,204c206,216
+< * 	description: 'Add two numbers',
+< * 	execute: (args) => Number(args.a) + Number(args.b),
+---
+> * 	description: 'Add two numeric values and return their sum. Both operands are required.',
+> * 	summary: 'Add two numbers.',
+> * 	parameters: {
+> * 		type: 'object',
+> * 		properties: {
+> * 			left: { type: 'number' },
+> * 			right: { type: 'number' },
+> * 		},
+> * 		required: ['left', 'right'],
+> * 	},
+> * 	execute: (args) => Number(args.left) + Number(args.right),
+212c224,226
+< * Creates an empty tool registry.
+---
+> * Creates an empty registry that advertises definitions and executes calls with
+> * per-call error isolation, returned as a `ToolManagerInterface` so a caller holds the
+> * published contract rather than the `ToolManager` class.
+214,215c228
+< * @returns A registry that advertises definitions and executes calls with per-call
+< * error isolation
+---
+> * @returns A registry bound to no tools

@@ -1,0 +1,22 @@
+npm notice
+npm notice 📦  @orkestrel/tool@0.0.14
+npm notice Tarball Contents
+npm notice 1.1kB LICENSE
+npm notice 1.9kB README.md
+npm notice 7.9kB dist/src/core/index.cjs
+npm notice 12.2kB dist/src/core/index.cjs.map
+npm notice 14.1kB dist/src/core/index.d.cts
+npm notice 14.1kB dist/src/core/index.d.ts
+npm notice 7.5kB dist/src/core/index.js
+npm notice 12.0kB dist/src/core/index.js.map
+npm notice 3.7kB package.json
+npm notice Tarball Details
+npm notice name: @orkestrel/tool
+npm notice version: 0.0.14
+npm notice filename: orkestrel-tool-0.0.14.tgz
+npm notice package size: 12.4 kB
+npm notice unpacked size: 74.4 kB
+npm notice shasum: fc209c308efdc6867701b95a15fbdb6f5b4819e8
+npm notice integrity: sha512-jr8qWHbV3WOFk[...]vvosBWNgUl+yg==
+npm notice total files: 9
+npm notice

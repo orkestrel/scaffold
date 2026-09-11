@@ -1,0 +1,22 @@
+npm notice
+npm notice 📦  @orkestrel/ndjson@0.0.10
+npm notice Tarball Contents
+npm notice 1.1kB LICENSE
+npm notice 1.8kB README.md
+npm notice 2.7kB dist/src/core/index.cjs
+npm notice 3.5kB dist/src/core/index.cjs.map
+npm notice 3.4kB dist/src/core/index.d.cts
+npm notice 3.4kB dist/src/core/index.d.ts
+npm notice 2.5kB dist/src/core/index.js
+npm notice 3.5kB dist/src/core/index.js.map
+npm notice 3.8kB package.json
+npm notice Tarball Details
+npm notice name: @orkestrel/ndjson
+npm notice version: 0.0.10
+npm notice filename: orkestrel-ndjson-0.0.10.tgz
+npm notice package size: 5.4 kB
+npm notice unpacked size: 25.7 kB
+npm notice shasum: 1c57ed4a58566e1a5d01bd829e7bfff099e0cd25
+npm notice integrity: sha512-FgjJU8suUIWZP[...]s6lCZeWEUtXjQ==
+npm notice total files: 9
+npm notice

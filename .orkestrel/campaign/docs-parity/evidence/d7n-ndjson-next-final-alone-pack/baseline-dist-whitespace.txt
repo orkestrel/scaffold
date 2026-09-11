@@ -1,0 +1,200 @@
+diff -r -w -B '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-ndjson-next-final-alone-pack/baseline/package/dist/src/core/index.cjs /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-ndjson-next-final-alone-pack/extract/package/dist/src/core/index.cjs
+5,6c5,8
+< * Decodes an NDJSON (newline-delimited JSON) stream statefully — feed the handle
+< * string chunks, get back the complete records decoded so far.
+---
+> * Decodes an NDJSON (newline-delimited JSON) stream statefully, implementing
+> * {@link NDJSONParserInterface} over a private buffer the instance owns — each `parse`
+> * call returns the records completed so far and reassembles a record split across
+> * chunk boundaries.
+9,12c11,13
+< * - **Partial-line buffering.** `parse(chunk)` appends `chunk` to an internal
+< *   buffer, splits on `\n`, and emits every line BEFORE the last one (each one is
+< *   `\n`-terminated, so it is complete); the final segment is the trailing partial
+< *   line and is retained for the next call.
+---
+> * - **Partial-line buffering.** `parse(chunk)` appends `chunk` to the buffer, splits
+> *   on `\n`, and emits every line before the last one, each of them `\n`-terminated
+> *   and so complete; the final segment is the trailing partial line.
+14,15c15,16
+< *   `parseJSONAs(line, isRecord)`: a malformed line is silently skipped (never
+< *   throws), and a non-record value is dropped — only plain records pass
+---
+> *   `parseJSONAs(line, isRecord)`: a malformed line is silently skipped rather than
+> *   thrown, and a non-record value is dropped — only plain records pass
+51,52c52,54
+< * Creates an NDJSON (newline-delimited JSON) stream parser - a stateful handle
+< * that turns string chunks into the complete records decoded so far.
+---
+> * Creates an NDJSON (newline-delimited JSON) stream parser and returns it as an
+> * {@link NDJSONParserInterface} — a fresh {@link NDJSONParser} holding the buffer,
+> * so a caller holds the published contract rather than the class.
+56c58
+< * @example
+---
+> * @example Create a parser
+62c64
+< * parser.parse('{"c":3}') // [] - buffered until its trailing newline arrives
+---
+> * parser.parse('{"c":3}') // [] — buffered until its trailing newline arrives
+diff -r -w -B '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-ndjson-next-final-alone-pack/baseline/package/dist/src/core/index.d.cts /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-ndjson-next-final-alone-pack/extract/package/dist/src/core/index.d.cts
+2,3c2,4
+<  * Creates an NDJSON (newline-delimited JSON) stream parser - a stateful handle
+<  * that turns string chunks into the complete records decoded so far.
+---
+>  * Creates an NDJSON (newline-delimited JSON) stream parser and returns it as an
+>  * {@link NDJSONParserInterface} — a fresh {@link NDJSONParser} holding the buffer,
+>  * so a caller holds the published contract rather than the class.
+7c8
+<  * @example
+---
+>  * @example Create a parser
+13c14
+<  * parser.parse('{"c":3}') // [] - buffered until its trailing newline arrives
+---
+>  * parser.parse('{"c":3}') // [] — buffered until its trailing newline arrives
+20,21c21,24
+<  * Decodes an NDJSON (newline-delimited JSON) stream statefully — feed the handle
+<  * string chunks, get back the complete records decoded so far.
+---
+>  * Decodes an NDJSON (newline-delimited JSON) stream statefully, implementing
+>  * {@link NDJSONParserInterface} over a private buffer the instance owns — each `parse`
+>  * call returns the records completed so far and reassembles a record split across
+>  * chunk boundaries.
+24,27c27,29
+<  * - **Partial-line buffering.** `parse(chunk)` appends `chunk` to an internal
+<  *   buffer, splits on `\n`, and emits every line BEFORE the last one (each one is
+<  *   `\n`-terminated, so it is complete); the final segment is the trailing partial
+<  *   line and is retained for the next call.
+---
+>  * - **Partial-line buffering.** `parse(chunk)` appends `chunk` to the buffer, splits
+>  *   on `\n`, and emits every line before the last one, each of them `\n`-terminated
+>  *   and so complete; the final segment is the trailing partial line.
+29,30c31,32
+<  *   `parseJSONAs(line, isRecord)`: a malformed line is silently skipped (never
+<  *   throws), and a non-record value is dropped — only plain records pass
+---
+>  *   `parseJSONAs(line, isRecord)`: a malformed line is silently skipped rather than
+>  *   thrown, and a non-record value is dropped — only plain records pass
+50,52c52,54
+<  * Represents a stateful NDJSON (newline-delimited JSON) stream parser: feed it string
+<  * chunks, get back the complete records decoded so far. A trailing partial
+<  * line is buffered until the rest arrives.
+---
+>  * Represents the stateful NDJSON (newline-delimited JSON) stream-parser contract a
+>  * consumer holds — a `parse` that turns each string chunk into the complete records
+>  * decoded so far, and a `clear` that drops the buffered partial line.
+56,58c58,66
+<      * Appends `chunk`, then returns every COMPLETE `\n`-terminated line parsed to a
+<      * record (malformed / non-record lines are skipped); a trailing partial line
+<      * is retained for the next call.
+---
+>      * Appends `chunk` to the buffer and returns every complete `\n`-terminated line
+>      * parsed to a record, skipping a malformed or non-record line; the trailing partial
+>      * line is retained for the next call, so a line split across a chunk boundary is
+>      * reassembled when its closing `\n` arrives.
+>      *
+>      * @remarks
+>      * A line the stream never terminates stays in the buffer until its newline arrives,
+>      * and the buffer has no size limit, so a caller fronting an untrusted or unbounded
+>      * upstream must enforce its own byte cap before feeding chunks in.
+diff -r -w -B '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-ndjson-next-final-alone-pack/baseline/package/dist/src/core/index.d.ts /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-ndjson-next-final-alone-pack/extract/package/dist/src/core/index.d.ts
+2,3c2,4
+<  * Creates an NDJSON (newline-delimited JSON) stream parser - a stateful handle
+<  * that turns string chunks into the complete records decoded so far.
+---
+>  * Creates an NDJSON (newline-delimited JSON) stream parser and returns it as an
+>  * {@link NDJSONParserInterface} — a fresh {@link NDJSONParser} holding the buffer,
+>  * so a caller holds the published contract rather than the class.
+7c8
+<  * @example
+---
+>  * @example Create a parser
+13c14
+<  * parser.parse('{"c":3}') // [] - buffered until its trailing newline arrives
+---
+>  * parser.parse('{"c":3}') // [] — buffered until its trailing newline arrives
+20,21c21,24
+<  * Decodes an NDJSON (newline-delimited JSON) stream statefully — feed the handle
+<  * string chunks, get back the complete records decoded so far.
+---
+>  * Decodes an NDJSON (newline-delimited JSON) stream statefully, implementing
+>  * {@link NDJSONParserInterface} over a private buffer the instance owns — each `parse`
+>  * call returns the records completed so far and reassembles a record split across
+>  * chunk boundaries.
+24,27c27,29
+<  * - **Partial-line buffering.** `parse(chunk)` appends `chunk` to an internal
+<  *   buffer, splits on `\n`, and emits every line BEFORE the last one (each one is
+<  *   `\n`-terminated, so it is complete); the final segment is the trailing partial
+<  *   line and is retained for the next call.
+---
+>  * - **Partial-line buffering.** `parse(chunk)` appends `chunk` to the buffer, splits
+>  *   on `\n`, and emits every line before the last one, each of them `\n`-terminated
+>  *   and so complete; the final segment is the trailing partial line.
+29,30c31,32
+<  *   `parseJSONAs(line, isRecord)`: a malformed line is silently skipped (never
+<  *   throws), and a non-record value is dropped — only plain records pass
+---
+>  *   `parseJSONAs(line, isRecord)`: a malformed line is silently skipped rather than
+>  *   thrown, and a non-record value is dropped — only plain records pass
+50,52c52,54
+<  * Represents a stateful NDJSON (newline-delimited JSON) stream parser: feed it string
+<  * chunks, get back the complete records decoded so far. A trailing partial
+<  * line is buffered until the rest arrives.
+---
+>  * Represents the stateful NDJSON (newline-delimited JSON) stream-parser contract a
+>  * consumer holds — a `parse` that turns each string chunk into the complete records
+>  * decoded so far, and a `clear` that drops the buffered partial line.
+56,58c58,66
+<      * Appends `chunk`, then returns every COMPLETE `\n`-terminated line parsed to a
+<      * record (malformed / non-record lines are skipped); a trailing partial line
+<      * is retained for the next call.
+---
+>      * Appends `chunk` to the buffer and returns every complete `\n`-terminated line
+>      * parsed to a record, skipping a malformed or non-record line; the trailing partial
+>      * line is retained for the next call, so a line split across a chunk boundary is
+>      * reassembled when its closing `\n` arrives.
+>      *
+>      * @remarks
+>      * A line the stream never terminates stays in the buffer until its newline arrives,
+>      * and the buffer has no size limit, so a caller fronting an untrusted or unbounded
+>      * upstream must enforce its own byte cap before feeding chunks in.
+diff -r -w -B '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-ndjson-next-final-alone-pack/baseline/package/dist/src/core/index.js /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-ndjson-next-final-alone-pack/extract/package/dist/src/core/index.js
+4,5c4,7
+< * Decodes an NDJSON (newline-delimited JSON) stream statefully — feed the handle
+< * string chunks, get back the complete records decoded so far.
+---
+> * Decodes an NDJSON (newline-delimited JSON) stream statefully, implementing
+> * {@link NDJSONParserInterface} over a private buffer the instance owns — each `parse`
+> * call returns the records completed so far and reassembles a record split across
+> * chunk boundaries.
+8,11c10,12
+< * - **Partial-line buffering.** `parse(chunk)` appends `chunk` to an internal
+< *   buffer, splits on `\n`, and emits every line BEFORE the last one (each one is
+< *   `\n`-terminated, so it is complete); the final segment is the trailing partial
+< *   line and is retained for the next call.
+---
+> * - **Partial-line buffering.** `parse(chunk)` appends `chunk` to the buffer, splits
+> *   on `\n`, and emits every line before the last one, each of them `\n`-terminated
+> *   and so complete; the final segment is the trailing partial line.
+13,14c14,15
+< *   `parseJSONAs(line, isRecord)`: a malformed line is silently skipped (never
+< *   throws), and a non-record value is dropped — only plain records pass
+---
+> *   `parseJSONAs(line, isRecord)`: a malformed line is silently skipped rather than
+> *   thrown, and a non-record value is dropped — only plain records pass
+50,51c51,53
+< * Creates an NDJSON (newline-delimited JSON) stream parser - a stateful handle
+< * that turns string chunks into the complete records decoded so far.
+---
+> * Creates an NDJSON (newline-delimited JSON) stream parser and returns it as an
+> * {@link NDJSONParserInterface} — a fresh {@link NDJSONParser} holding the buffer,
+> * so a caller holds the published contract rather than the class.
+55c57
+< * @example
+---
+> * @example Create a parser
+61c63
+< * parser.parse('{"c":3}') // [] - buffered until its trailing newline arrives
+---
+> * parser.parse('{"c":3}') // [] — buffered until its trailing newline arrives
