@@ -31,7 +31,7 @@ in this file are not release-preparation status.
 | csv | 0.0.7 | b9e9893 | prepared; campaign/main pushed; clean local main |
 | emitter | 0.0.10 | fe7e689 | prepared; campaign/main pushed; clean local main |
 | html | 0.0.9 | dc36caa | packed; final review and main closure pending |
-| indexeddb | 0.0.11 | 145bd18 | packed; main closure pending |
+| indexeddb | 0.0.11 | cb179f6 | prepared; campaign/main pushed; clean local main |
 | ndjson | 0.0.10 | 1c12979 | standalone gates passed; recovery pack pending |
 | sqlite | 0.0.11 | 0ed78f6 | packed; final review and main closure pending |
 | timeout | 0.0.10 | b035b0e | packed; final review and main closure pending |
