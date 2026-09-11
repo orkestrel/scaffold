@@ -1,0 +1,4 @@
+To https://github.com/orkestrel/scaffold.git
+   5a29ca16..d77f5f9a  HEAD -> claude/docs-parity-windows-01a0810d
+   5a29ca16..d77f5f9a  HEAD -> claude/orkestrel-npm-audit-deps-14ibta
+   5a29ca16..d77f5f9a  HEAD -> main

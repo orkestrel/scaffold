@@ -1,0 +1,496 @@
+diff -r '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-form-following-final-pack/baseline/package/dist/src/core/index.cjs /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-form-following-final-pack/extract/package/dist/src/core/index.cjs
+110c110
+< /** Caps the accepted source length for an authored regular expression. */
+---
+> /** Caps the accepted source length for an authored regular expression, at 256. */
+112c112
+< /** Caps the number of fields one schema may declare. */
+---
+> /** Caps the number of fields one schema may declare, at 512. */
+114c114
+< /** Caps the number of groups one schema may declare. */
+---
+> /** Caps the number of groups one schema may declare, at 64. */
+116c116
+< /** Caps the number of choices one `select` or `checkbox` field may offer. */
+---
+> /** Caps the number of choices one `select` or `checkbox` field may offer, at 1024. */
+118c118
+< /** Caps the number of entries one list-valued answer may hold. */
+---
+> /** Caps the number of entries one list-valued answer may hold, at 1024. */
+120c120
+< /** Caps the length, in UTF-16 code units, of a schema, group, or field name. */
+---
+> /** Caps the length, in UTF-16 code units, of a schema, group, or field name, at 128. */
+122c122
+< /** Caps the length, in UTF-16 code units, of any single retained string. */
+---
+> /** Caps the length, in UTF-16 code units, of any single retained string, at 65536. */
+124c124
+< /** Caps the total length, in UTF-16 code units, of every string one schema retains. */
+---
+> /** Caps the total length, in UTF-16 code units, of every string one schema retains, at 1048576. */
+126c126
+< /** Caps the total number of records, arrays, and leaves one schema retains. */
+---
+> /** Caps the total number of records, arrays, and leaves one schema retains, at 16384. */
+193a194,197
+> * @remarks
+> * A string, a finite number, a boolean, and a list of strings each qualify. A number that is not
+> * finite does not, so `NaN` and `Infinity` are refused.
+> *
+352a357,360
+> * @remarks
+> * Structure alone is read. Domain soundness — a duplicate name, a bound no answer satisfies, a
+> * breached budget — is {@link auditSchema}'s question.
+> *
+517c525
+< * configurable, so the record a parser hands back cannot be edited through the key it just filled.
+---
+> * configurable, so the record a parser hands back cannot be edited through the key it filled.
+536a545,548
+> * @remarks
+> * Every write and every seeded value passes through this gate, and it reads `STRING_LIMIT` and
+> * `LIST_LIMIT` before it consults the control, so no regular expression sees an over-long value.
+> *
+716a729,732
+> * @remarks
+> * `password` and `file` declare no default, so a field of either control never appears in the
+> * result.
+> *
+789a806,809
+> * @remarks
+> * A replacement in `messages` is read first and {@link RULE_MESSAGES} supplies the copy otherwise,
+> * and `{limit}` in whichever text wins is replaced with the rule's operand.
+> *
+1168a1189,1192
+> * @remarks
+> * A numeric string coerces to a number for a `number` field, and `'true'` and `'false'` coerce to
+> * a boolean for a `confirm` field. Every other value must already have its control's shape.
+> *
+1214c1238,1239
+< * Represents a form: a schema, the answers given against it, and the errors they carry.
+---
+> * Implements `FormInterface` exactly, over an owned schema, the answers given against it, and the
+> * errors they carry.
+1626c1651
+< * @example
+---
+> * @example Open a form, answer it, and settle it
+1627a1653,1654
+> * import { createForm } from '@orkestrel/form'
+> *
+1637c1664,1665
+< * form.submit() // { success: true, value: { email: 'ada@example.com', terms: true } }
+---
+> * const result = form.submit() // { success: true, value: { email: 'ada@example.com', terms: true } }
+> * const answers = await form.answer // { email: 'ada@example.com', terms: true }
+diff -r '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-form-following-final-pack/baseline/package/dist/src/core/index.d.cts /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-form-following-final-pack/extract/package/dist/src/core/index.d.cts
+1,5c1,5
+< import { EmitterErrorHandler } from '@orkestrel/emitter';
+< import { EmitterHooks } from '@orkestrel/emitter';
+< import { EmitterInterface } from '@orkestrel/emitter';
+< import { JSONRecord } from '@orkestrel/contract';
+< import { Result } from '@orkestrel/contract';
+---
+> import type { EmitterErrorHandler } from '@orkestrel/emitter';
+> import type { EmitterHooks } from '@orkestrel/emitter';
+> import type { EmitterInterface } from '@orkestrel/emitter';
+> import type { JSONRecord } from '@orkestrel/contract';
+> import type { Result } from '@orkestrel/contract';
+44c44
+< /** Caps the number of choices one `select` or `checkbox` field may offer. */
+---
+> /** Caps the number of choices one `select` or `checkbox` field may offer, at 1024. */
+85c85
+< /** Represents a color, held as the control's own string. */
+---
+> /** Represents a color, held as the control's own six-digit `#rrggbb` string. */
+93a94,97
+>  * @remarks
+>  * `password` and `file` declare no default, so a field of either control never appears in the
+>  * result.
+>  *
+139c143
+<  * @example
+---
+>  * @example Open a form, answer it, and settle it
+140a145,146
+>  * import { createForm } from '@orkestrel/form'
+>  *
+150c156,157
+<  * form.submit() // { success: true, value: { email: 'ada@example.com', terms: true } }
+---
+>  * const result = form.submit() // { success: true, value: { email: 'ada@example.com', terms: true } }
+>  * const answers = await form.answer // { email: 'ada@example.com', terms: true }
+158c165
+< /** Represents a calendar date, held as the control's own string. */
+---
+> /** Represents a calendar date, held as the control's own `YYYY-MM-DD` string. */
+287c294
+< /** Caps the number of fields one schema may declare. */
+---
+> /** Caps the number of fields one schema may declare, at 512. */
+442c449
+<  * Represents one or more files.
+---
+>  * Represents one or more files, by name.
+445,446c452,453
+<  * `accept` lists the media types and extensions the control offers, in the form the host
+<  * expects.
+---
+>  * A value is the names alone: bytes never enter the document. `accept` lists the media types
+>  * and extensions the control offers, in the form the host expects.
+455c462,463
+<  * Represents a form: a schema, the answers given against it, and the errors they carry.
+---
+>  * Implements `FormInterface` exactly, over an owned schema, the answers given against it, and the
+>  * errors they carry.
+628a637,640
+>  * @remarks
+>  * A replacement in `messages` is read first and {@link RULE_MESSAGES} supplies the copy otherwise,
+>  * and `{limit}` in whichever text wins is replaced with the rule's operand.
+>  *
+724c736
+<  * Represents a form: a schema, the answers given against it, and the errors they carry.
+---
+>  * Declares the contract a form exposes: the state it holds and the calls that move it.
+790c802
+<      * Answers several fields at once.
+---
+>      * Answers one field, or several at once.
+810a823,826
+>      * @remarks
+>      * One field holds one external failure, so a second call replaces the first, and the failure
+>      * lasts until that field is filled again or the form is cleared.
+>      *
+816c832
+<      * Takes every field out of the form.
+---
+>      * Takes one field, several fields, or every field out of the form.
+842c858
+<      * Puts every field back into the form.
+---
+>      * Puts one field, several fields, or every field back into the form.
+872c888
+<      * Returns every answer to {@link FormInterface.baseline}, the answers the form opened with.
+---
+>      * Returns every answer to the ones the form opened with.
+875,876c891,892
+<      * The runtime disabled overlay resets with them, so {@link FormInterface.disabled} reads the
+<      * schema's declarations again.
+---
+>      * Those answers are {@link FormInterface.baseline}. The runtime disabled overlay resets with
+>      * them, so {@link FormInterface.disabled} reads the schema's declarations again.
+883,884c899,901
+<      * A request from inside a listener defers teardown until the outermost mutation batch closes,
+<      * so an in-flight settlement can win and leave the form `settled` rather than `abandoned`.
+---
+>      * Tearing down twice does nothing the second time. A request from inside a listener defers
+>      * teardown until the outermost mutation batch closes, so an in-flight settlement can win and
+>      * leave the form `settled` rather than `abandoned`.
+987c1004
+<  * configurable, so the record a parser hands back cannot be edited through the key it just filled.
+---
+>  * configurable, so the record a parser hands back cannot be edited through the key it filled.
+998c1015
+< /** Caps the number of groups one schema may declare. */
+---
+> /** Caps the number of groups one schema may declare, at 64. */
+1038a1056,1059
+>  * @remarks
+>  * A string, a finite number, a boolean, and a list of strings each qualify. A number that is not
+>  * finite does not, so `NaN` and `Infinity` are refused.
+>  *
+1075a1097,1100
+>  * @remarks
+>  * Structure alone is read. Domain soundness — a duplicate name, a bound no answer satisfies, a
+>  * breached budget — is {@link auditSchema}'s question.
+>  *
+1097c1122
+< /** Caps the number of entries one list-valued answer may hold. */
+---
+> /** Caps the number of entries one list-valued answer may hold, at 1024. */
+1116a1142,1145
+>  * @remarks
+>  * Every write and every seeded value passes through this gate, and it reads `STRING_LIMIT` and
+>  * `LIST_LIMIT` before it consults the control, so no regular expression sees an over-long value.
+>  *
+1141c1170
+< /** Caps the length, in UTF-16 code units, of a schema, group, or field name. */
+---
+> /** Caps the length, in UTF-16 code units, of a schema, group, or field name, at 128. */
+1144c1173
+< /** Caps the total number of records, arrays, and leaves one schema retains. */
+---
+> /** Caps the total number of records, arrays, and leaves one schema retains, at 16384. */
+1164a1194,1197
+>  * @remarks
+>  * A numeric string coerces to a number for a `number` field, and `'true'` and `'false'` coerce to
+>  * a boolean for a `confirm` field. Every other value must already have its control's shape.
+>  *
+1192c1225
+< /** Caps the accepted source length for an authored regular expression. */
+---
+> /** Caps the accepted source length for an authored regular expression, at 256. */
+1222c1255
+< /** Caps the length, in UTF-16 code units, of any single retained string. */
+---
+> /** Caps the length, in UTF-16 code units, of any single retained string, at 65536. */
+1225c1258
+< /** Caps the total length, in UTF-16 code units, of every string one schema retains. */
+---
+> /** Caps the total length, in UTF-16 code units, of every string one schema retains, at 1048576. */
+1238c1271
+< /** Represents a time of day, held as the control's own string. */
+---
+> /** Represents a time of day, held as the control's own `HH:MM` string, with seconds optional. */
+diff -r '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-form-following-final-pack/baseline/package/dist/src/core/index.d.ts /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-form-following-final-pack/extract/package/dist/src/core/index.d.ts
+1,5c1,5
+< import { EmitterErrorHandler } from '@orkestrel/emitter';
+< import { EmitterHooks } from '@orkestrel/emitter';
+< import { EmitterInterface } from '@orkestrel/emitter';
+< import { JSONRecord } from '@orkestrel/contract';
+< import { Result } from '@orkestrel/contract';
+---
+> import type { EmitterErrorHandler } from '@orkestrel/emitter';
+> import type { EmitterHooks } from '@orkestrel/emitter';
+> import type { EmitterInterface } from '@orkestrel/emitter';
+> import type { JSONRecord } from '@orkestrel/contract';
+> import type { Result } from '@orkestrel/contract';
+44c44
+< /** Caps the number of choices one `select` or `checkbox` field may offer. */
+---
+> /** Caps the number of choices one `select` or `checkbox` field may offer, at 1024. */
+85c85
+< /** Represents a color, held as the control's own string. */
+---
+> /** Represents a color, held as the control's own six-digit `#rrggbb` string. */
+93a94,97
+>  * @remarks
+>  * `password` and `file` declare no default, so a field of either control never appears in the
+>  * result.
+>  *
+139c143
+<  * @example
+---
+>  * @example Open a form, answer it, and settle it
+140a145,146
+>  * import { createForm } from '@orkestrel/form'
+>  *
+150c156,157
+<  * form.submit() // { success: true, value: { email: 'ada@example.com', terms: true } }
+---
+>  * const result = form.submit() // { success: true, value: { email: 'ada@example.com', terms: true } }
+>  * const answers = await form.answer // { email: 'ada@example.com', terms: true }
+158c165
+< /** Represents a calendar date, held as the control's own string. */
+---
+> /** Represents a calendar date, held as the control's own `YYYY-MM-DD` string. */
+287c294
+< /** Caps the number of fields one schema may declare. */
+---
+> /** Caps the number of fields one schema may declare, at 512. */
+442c449
+<  * Represents one or more files.
+---
+>  * Represents one or more files, by name.
+445,446c452,453
+<  * `accept` lists the media types and extensions the control offers, in the form the host
+<  * expects.
+---
+>  * A value is the names alone: bytes never enter the document. `accept` lists the media types
+>  * and extensions the control offers, in the form the host expects.
+455c462,463
+<  * Represents a form: a schema, the answers given against it, and the errors they carry.
+---
+>  * Implements `FormInterface` exactly, over an owned schema, the answers given against it, and the
+>  * errors they carry.
+628a637,640
+>  * @remarks
+>  * A replacement in `messages` is read first and {@link RULE_MESSAGES} supplies the copy otherwise,
+>  * and `{limit}` in whichever text wins is replaced with the rule's operand.
+>  *
+724c736
+<  * Represents a form: a schema, the answers given against it, and the errors they carry.
+---
+>  * Declares the contract a form exposes: the state it holds and the calls that move it.
+790c802
+<      * Answers several fields at once.
+---
+>      * Answers one field, or several at once.
+810a823,826
+>      * @remarks
+>      * One field holds one external failure, so a second call replaces the first, and the failure
+>      * lasts until that field is filled again or the form is cleared.
+>      *
+816c832
+<      * Takes every field out of the form.
+---
+>      * Takes one field, several fields, or every field out of the form.
+842c858
+<      * Puts every field back into the form.
+---
+>      * Puts one field, several fields, or every field back into the form.
+872c888
+<      * Returns every answer to {@link FormInterface.baseline}, the answers the form opened with.
+---
+>      * Returns every answer to the ones the form opened with.
+875,876c891,892
+<      * The runtime disabled overlay resets with them, so {@link FormInterface.disabled} reads the
+<      * schema's declarations again.
+---
+>      * Those answers are {@link FormInterface.baseline}. The runtime disabled overlay resets with
+>      * them, so {@link FormInterface.disabled} reads the schema's declarations again.
+883,884c899,901
+<      * A request from inside a listener defers teardown until the outermost mutation batch closes,
+<      * so an in-flight settlement can win and leave the form `settled` rather than `abandoned`.
+---
+>      * Tearing down twice does nothing the second time. A request from inside a listener defers
+>      * teardown until the outermost mutation batch closes, so an in-flight settlement can win and
+>      * leave the form `settled` rather than `abandoned`.
+987c1004
+<  * configurable, so the record a parser hands back cannot be edited through the key it just filled.
+---
+>  * configurable, so the record a parser hands back cannot be edited through the key it filled.
+998c1015
+< /** Caps the number of groups one schema may declare. */
+---
+> /** Caps the number of groups one schema may declare, at 64. */
+1038a1056,1059
+>  * @remarks
+>  * A string, a finite number, a boolean, and a list of strings each qualify. A number that is not
+>  * finite does not, so `NaN` and `Infinity` are refused.
+>  *
+1075a1097,1100
+>  * @remarks
+>  * Structure alone is read. Domain soundness — a duplicate name, a bound no answer satisfies, a
+>  * breached budget — is {@link auditSchema}'s question.
+>  *
+1097c1122
+< /** Caps the number of entries one list-valued answer may hold. */
+---
+> /** Caps the number of entries one list-valued answer may hold, at 1024. */
+1116a1142,1145
+>  * @remarks
+>  * Every write and every seeded value passes through this gate, and it reads `STRING_LIMIT` and
+>  * `LIST_LIMIT` before it consults the control, so no regular expression sees an over-long value.
+>  *
+1141c1170
+< /** Caps the length, in UTF-16 code units, of a schema, group, or field name. */
+---
+> /** Caps the length, in UTF-16 code units, of a schema, group, or field name, at 128. */
+1144c1173
+< /** Caps the total number of records, arrays, and leaves one schema retains. */
+---
+> /** Caps the total number of records, arrays, and leaves one schema retains, at 16384. */
+1164a1194,1197
+>  * @remarks
+>  * A numeric string coerces to a number for a `number` field, and `'true'` and `'false'` coerce to
+>  * a boolean for a `confirm` field. Every other value must already have its control's shape.
+>  *
+1192c1225
+< /** Caps the accepted source length for an authored regular expression. */
+---
+> /** Caps the accepted source length for an authored regular expression, at 256. */
+1222c1255
+< /** Caps the length, in UTF-16 code units, of any single retained string. */
+---
+> /** Caps the length, in UTF-16 code units, of any single retained string, at 65536. */
+1225c1258
+< /** Caps the total length, in UTF-16 code units, of every string one schema retains. */
+---
+> /** Caps the total length, in UTF-16 code units, of every string one schema retains, at 1048576. */
+1238c1271
+< /** Represents a time of day, held as the control's own string. */
+---
+> /** Represents a time of day, held as the control's own `HH:MM` string, with seconds optional. */
+diff -r '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-form-following-final-pack/baseline/package/dist/src/core/index.js /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-form-following-final-pack/extract/package/dist/src/core/index.js
+109c109
+< /** Caps the accepted source length for an authored regular expression. */
+---
+> /** Caps the accepted source length for an authored regular expression, at 256. */
+111c111
+< /** Caps the number of fields one schema may declare. */
+---
+> /** Caps the number of fields one schema may declare, at 512. */
+113c113
+< /** Caps the number of groups one schema may declare. */
+---
+> /** Caps the number of groups one schema may declare, at 64. */
+115c115
+< /** Caps the number of choices one `select` or `checkbox` field may offer. */
+---
+> /** Caps the number of choices one `select` or `checkbox` field may offer, at 1024. */
+117c117
+< /** Caps the number of entries one list-valued answer may hold. */
+---
+> /** Caps the number of entries one list-valued answer may hold, at 1024. */
+119c119
+< /** Caps the length, in UTF-16 code units, of a schema, group, or field name. */
+---
+> /** Caps the length, in UTF-16 code units, of a schema, group, or field name, at 128. */
+121c121
+< /** Caps the length, in UTF-16 code units, of any single retained string. */
+---
+> /** Caps the length, in UTF-16 code units, of any single retained string, at 65536. */
+123c123
+< /** Caps the total length, in UTF-16 code units, of every string one schema retains. */
+---
+> /** Caps the total length, in UTF-16 code units, of every string one schema retains, at 1048576. */
+125c125
+< /** Caps the total number of records, arrays, and leaves one schema retains. */
+---
+> /** Caps the total number of records, arrays, and leaves one schema retains, at 16384. */
+192a193,196
+> * @remarks
+> * A string, a finite number, a boolean, and a list of strings each qualify. A number that is not
+> * finite does not, so `NaN` and `Infinity` are refused.
+> *
+351a356,359
+> * @remarks
+> * Structure alone is read. Domain soundness — a duplicate name, a bound no answer satisfies, a
+> * breached budget — is {@link auditSchema}'s question.
+> *
+516c524
+< * configurable, so the record a parser hands back cannot be edited through the key it just filled.
+---
+> * configurable, so the record a parser hands back cannot be edited through the key it filled.
+535a544,547
+> * @remarks
+> * Every write and every seeded value passes through this gate, and it reads `STRING_LIMIT` and
+> * `LIST_LIMIT` before it consults the control, so no regular expression sees an over-long value.
+> *
+715a728,731
+> * @remarks
+> * `password` and `file` declare no default, so a field of either control never appears in the
+> * result.
+> *
+788a805,808
+> * @remarks
+> * A replacement in `messages` is read first and {@link RULE_MESSAGES} supplies the copy otherwise,
+> * and `{limit}` in whichever text wins is replaced with the rule's operand.
+> *
+1167a1188,1191
+> * @remarks
+> * A numeric string coerces to a number for a `number` field, and `'true'` and `'false'` coerce to
+> * a boolean for a `confirm` field. Every other value must already have its control's shape.
+> *
+1213c1237,1238
+< * Represents a form: a schema, the answers given against it, and the errors they carry.
+---
+> * Implements `FormInterface` exactly, over an owned schema, the answers given against it, and the
+> * errors they carry.
+1625c1650
+< * @example
+---
+> * @example Open a form, answer it, and settle it
+1626a1652,1653
+> * import { createForm } from '@orkestrel/form'
+> *
+1636c1663,1664
+< * form.submit() // { success: true, value: { email: 'ada@example.com', terms: true } }
+---
+> * const result = form.submit() // { success: true, value: { email: 'ada@example.com', terms: true } }
+> * const answers = await form.answer // { email: 'ada@example.com', terms: true }

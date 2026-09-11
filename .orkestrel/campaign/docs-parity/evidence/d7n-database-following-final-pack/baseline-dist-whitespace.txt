@@ -1,0 +1,2534 @@
+diff -r -w -B '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-database-following-final-pack/baseline/package/dist/src/browser/index.d.ts /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-database-following-final-pack/extract/package/dist/src/browser/index.d.ts
+1,2c1,2
+< import { ColumnStorage } from '@orkestrel/database';
+< import { Condition } from '@orkestrel/database';
+---
+> import type { ColumnStorage } from '@orkestrel/database';
+> import type { Condition } from '@orkestrel/database';
+4,16c4,13
+< import { DriverInterface } from '@orkestrel/database';
+< import { DriverInterface as DriverInterface_2 } from '@orkestrel/database';
+< import { DriverMetadata } from '@orkestrel/database';
+< import { IndexedDBError } from '@orkestrel/indexeddb';
+< import { Key } from '@orkestrel/database';
+< import { MigrationInput } from '@orkestrel/database';
+< import { OperationOptions } from '@orkestrel/database';
+< import { QueryInput } from '@orkestrel/database';
+< import { QueryInput as QueryInput_2 } from '@orkestrel/database';
+< import { Row } from '@orkestrel/database';
+< import { StoreDefinition } from '@orkestrel/indexeddb';
+< import { TableSchema } from '@orkestrel/database';
+< import { TableSchema as TableSchema_2 } from '@orkestrel/database';
+---
+> import type { DriverInterface } from '@orkestrel/database';
+> import type { DriverMetadata } from '@orkestrel/database';
+> import type { IndexedDBError } from '@orkestrel/indexeddb';
+> import type { Key } from '@orkestrel/database';
+> import type { MigrationInput } from '@orkestrel/database';
+> import type { OperationOptions } from '@orkestrel/database';
+> import type { QueryInput } from '@orkestrel/database';
+> import type { Row } from '@orkestrel/database';
+> import type { StoreDefinition } from '@orkestrel/indexeddb';
+> import type { TableSchema } from '@orkestrel/database';
+27c24
+<  * decide WHICH of `below`/`to` may drive a SECONDARY-index read versus the
+---
+>  * decide which of `below`/`to` may drive a secondary-index read versus the
+34c31
+<  * REVERSED pair (`first > second`): native `IDBKeyRange.bound` throws a raw
+---
+>  * reversed pair (`first > second`): native `IDBKeyRange.bound` throws a raw
+50c47
+<  * Creates a persistent IndexedDB {@link DriverInterface} for the core database layer.
+---
+>  * Creates a persistent IndexedDB {@link DriverInterface} for a browser database name.
+77c74
+< export declare function createIndexedDBDriver(name: string): DriverInterface_2;
+---
+> export declare function createIndexedDBDriver(name: string): DriverInterface;
+86c83
+<  * 'a_b'`) collides with a single-column index over a column LITERALLY named
+---
+>  * 'a_b'`) collides with a single-column index over a column literally named
+90c87
+<  * lookup match the wrong index. A single-column index keeps the BARE column
+---
+>  * lookup match the wrong index. A single-column index keeps the bare column
+93c90
+<  * verbatim. A compound index instead encodes each column as a LENGTH-PREFIXED
+---
+>  * verbatim. A compound index instead encodes each column as a length-prefixed
+158c155
+<  * and opens a FRESH one at `version + 1` with an `upgrade` hook that walks the
+---
+>  * and opens a fresh one at `version + 1` with an `upgrade` hook that walks the
+163c160
+<  * step referencing an unknown table is validated BEFORE the reconnect, so a
+---
+>  * step referencing an unknown table is validated before the reconnect, so a
+167c164
+<  * This unit deliberately OMITS `aggregate` / `transaction`. There is no native
+---
+>  * This unit deliberately omits `aggregate` / `transaction`. There is no native
+173c170
+<  * (`snapshot`'s rollback) instead runs entirely inside ONE `db.write(...)`
+---
+>  * (`snapshot`'s rollback) instead runs entirely inside one `db.write(...)`
+179c176
+<     open(schema: readonly TableSchema_2[]): Promise<void>;
+---
+>     open(schema: readonly TableSchema[]): Promise<void>;
+188,189c185,186
+<     records(table: string, input: QueryInput_2): Promise<readonly Row[]>;
+<     stream(table: string, input: QueryInput_2): AsyncIterable<Row>;
+---
+>     records(table: string, input: QueryInput): Promise<readonly Row[]>;
+>     stream(table: string, input: QueryInput): AsyncIterable<Row>;
+216,218c213,215
+<      * the current connection and opens a FRESH one at `version + 1`, declaring
+<      * every currently-known store (plus {@link METADATA_STORE}) so nothing is lost,
+<      * and applying `table.remove` / `index.add` / `index.remove` /
+---
+>      * the current connection and opens a fresh one at `version + 1`, declaring
+>      * every store known at that point (plus {@link METADATA_STORE}) so nothing is
+>      * lost, and applying `table.remove` / `index.add` / `index.remove` /
+220c217
+<      * the driver's own `#schema` BEFORE the reconnect — an unknown-table step
+---
+>      * the driver's own `#schema` before the reconnect — an unknown-table step
+263c260
+<  * for use INSIDE `migrate()` — the one context where `UPGRADE` means the
+---
+>  * for use inside `migrate()` — the one context where `UPGRADE` means the
+280,281c277,278
+<  * Names the reserved out-of-line store the {@link IndexedDBDriver} stamps its
+<  * {@link DriverMetadata} into.
+---
+>  * Names the reserved out-of-line store `__metadata__` the {@link IndexedDBDriver}
+>  * stamps its {@link DriverMetadata} into.
+284,286c281,283
+<  * Backs the driver's `metadata` / `stamp` hooks. A user table declared with this
+<  * exact name collides with the driver's own bookkeeping, so a caller must avoid
+<  * it; the collision is caught at `open`.
+---
+>  * Backs the driver's `metadata` / `stamp` hooks. A user table named `__metadata__`
+>  * collides with the driver's own bookkeeping, so a caller must avoid it; the
+>  * collision is caught at `open`.
+295c292,293
+<  * primary-store full scan.
+---
+>  * primary-store full scan. The `@orkestrel/database/browser` entry point exports
+>  * this type.
+304a303,307
+>  * @remarks
+>  * The definition is what an ordered versionchange migration creates the store
+>  * from, carrying each declared index under the name {@link deriveIndexedDBIndexName}
+>  * derives for its column group.
+>  *
+315c318
+<  * Pushdown is sound ONLY when every condition is `and`-joined: the engine folds
+---
+>  * Pushdown is sound only when every condition is `and`-joined: the engine folds
+329c332
+<  * **`below`/`to` may drive a SECONDARY-index range only when the column has NO
+---
+>  * **`below`/`to` may drive a secondary-index range only when the column has no
+331,335c334,338
+<  * alone, so it restricts them to the PRIMARY store, where that is always true.**
+<  * The engine's total order (`compareValues`, see `@src/core`) ranks
+<  * `undefined` (absent) and `null` BELOW every number/string, so
+<  * `matchesCondition('below' | 'to', …)` is TRUE for a row whose field is absent
+<  * or `null` — but a secondary IndexedDB index has NO ENTRY for a row whose
+---
+>  * alone, so it restricts them to the primary store, where that is always true.**
+>  * The engine's total order (`compareValues`, see `@orkestrel/database`) ranks
+>  * `undefined` (absent) and `null` below every number/string, so
+>  * `matchesCondition('below' | 'to', …)` is true for a row whose field is absent
+>  * or `null` — but a secondary IndexedDB index has no entry for a row whose
+337c340
+<  * index would SILENTLY DROP those rows (they can never be over-fetched, only
+---
+>  * index would silently drop those rows (they can never be over-fetched, only
+339c342
+<  * table's PRIMARY key is exempt: a row's primary-key value is always present
+---
+>  * table's primary key is exempt: a row's primary-key value is always present
+343c346
+<  * `between` stay index-eligible on ANY orderable column, primary or secondary:
+---
+>  * `between` stay index-eligible on any orderable column, primary or secondary:
+357c360
+<  * does everything. The plan is always a SUPERSET of the
+---
+>  * does everything. The plan is always a superset of the
+diff -r -w -B '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-database-following-final-pack/baseline/package/dist/src/browser/index.js /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-database-following-final-pack/extract/package/dist/src/browser/index.js
+22,23c22,23
+< * Names the reserved out-of-line store the {@link IndexedDBDriver} stamps its
+< * {@link DriverMetadata} into.
+---
+> * Names the reserved out-of-line store `__metadata__` the {@link IndexedDBDriver}
+> * stamps its {@link DriverMetadata} into.
+26,28c26,28
+< * Backs the driver's `metadata` / `stamp` hooks. A user table declared with this
+< * exact name collides with the driver's own bookkeeping, so a caller must avoid
+< * it; the collision is caught at `open`.
+---
+> * Backs the driver's `metadata` / `stamp` hooks. A user table named `__metadata__`
+> * collides with the driver's own bookkeeping, so a caller must avoid it; the
+> * collision is caught at `open`.
+42c42
+< * decide WHICH of `below`/`to` may drive a SECONDARY-index read versus the
+---
+> * decide which of `below`/`to` may drive a secondary-index read versus the
+49c49
+< * REVERSED pair (`first > second`): native `IDBKeyRange.bound` throws a raw
+---
+> * reversed pair (`first > second`): native `IDBKeyRange.bound` throws a raw
+88c88
+< * Pushdown is sound ONLY when every condition is `and`-joined: the engine folds
+---
+> * Pushdown is sound only when every condition is `and`-joined: the engine folds
+102c102
+< * **`below`/`to` may drive a SECONDARY-index range only when the column has NO
+---
+> * **`below`/`to` may drive a secondary-index range only when the column has no
+104c104
+< * alone, so it restricts them to the PRIMARY store, where that is always true.**
+---
+> * alone, so it restricts them to the primary store, where that is always true.**
+106,108c106,108
+< * `undefined` (absent) and `null` BELOW every number/string, so
+< * `matchesCondition('below' | 'to', …)` is TRUE for a row whose field is absent
+< * or `null` — but a secondary IndexedDB index has NO ENTRY for a row whose
+---
+> * `undefined` (absent) and `null` below every number/string, so
+> * `matchesCondition('below' | 'to', …)` is true for a row whose field is absent
+> * or `null` — but a secondary IndexedDB index has no entry for a row whose
+110c110
+< * index would SILENTLY DROP those rows (they can never be over-fetched, only
+---
+> * index would silently drop those rows (they can never be over-fetched, only
+112c112
+< * table's PRIMARY key is exempt: a row's primary-key value is always present
+---
+> * table's primary key is exempt: a row's primary-key value is always present
+116c116
+< * `between` stay index-eligible on ANY orderable column, primary or secondary:
+---
+> * `between` stay index-eligible on any orderable column, primary or secondary:
+130c130
+< * does everything. The plan is always a SUPERSET of the
+---
+> * does everything. The plan is always a superset of the
+212c212
+< * for use INSIDE `migrate()` — the one context where `UPGRADE` means the
+---
+> * for use inside `migrate()` — the one context where `UPGRADE` means the
+237c237
+< * 'a_b'`) collides with a single-column index over a column LITERALLY named
+---
+> * 'a_b'`) collides with a single-column index over a column literally named
+241c241
+< * lookup match the wrong index. A single-column index keeps the BARE column
+---
+> * lookup match the wrong index. A single-column index keeps the bare column
+244c244
+< * verbatim. A compound index instead encodes each column as a LENGTH-PREFIXED
+---
+> * verbatim. A compound index instead encodes each column as a length-prefixed
+265a266,270
+> * @remarks
+> * The definition is what an ordered versionchange migration creates the store
+> * from, carrying each declared index under the name {@link deriveIndexedDBIndexName}
+> * derives for its column group.
+> *
+315c320
+< * and opens a FRESH one at `version + 1` with an `upgrade` hook that walks the
+---
+> * and opens a fresh one at `version + 1` with an `upgrade` hook that walks the
+320c325
+< * step referencing an unknown table is validated BEFORE the reconnect, so a
+---
+> * step referencing an unknown table is validated before the reconnect, so a
+324c329
+< * This unit deliberately OMITS `aggregate` / `transaction`. There is no native
+---
+> * This unit deliberately omits `aggregate` / `transaction`. There is no native
+330c335
+< * (`snapshot`'s rollback) instead runs entirely inside ONE `db.write(...)`
+---
+> * (`snapshot`'s rollback) instead runs entirely inside one `db.write(...)`
+571,573c576,578
+< 	* the current connection and opens a FRESH one at `version + 1`, declaring
+< 	* every currently-known store (plus {@link METADATA_STORE}) so nothing is lost,
+< 	* and applying `table.remove` / `index.add` / `index.remove` /
+---
+> 	* the current connection and opens a fresh one at `version + 1`, declaring
+> 	* every store known at that point (plus {@link METADATA_STORE}) so nothing is
+> 	* lost, and applying `table.remove` / `index.add` / `index.remove` /
+575c580
+< 	* the driver's own `#schema` BEFORE the reconnect — an unknown-table step
+---
+> 	* the driver's own `#schema` before the reconnect — an unknown-table step
+827c832
+< * Creates a persistent IndexedDB {@link DriverInterface} for the core database layer.
+---
+> * Creates a persistent IndexedDB {@link DriverInterface} for a browser database name.
+diff -r -w -B '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-database-following-final-pack/baseline/package/dist/src/core/index.cjs /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-database-following-final-pack/extract/package/dist/src/core/index.cjs
+6c6
+< * Supplies the primary-key column assumed when {@link PrimaryMap} does not name one.
+---
+> * Supplies the primary-key column, `'id'`, assumed when {@link PrimaryMap} does not name one.
+14c14,15
+< * Sets the longest `LIKE` / `GLOB` pattern the wildcard matcher accepts before rejecting it.
+---
+> * Sets the longest `LIKE` / `GLOB` pattern the wildcard matcher accepts, 1024 characters, before
+> * rejecting it.
+19c20
+< * trust. The matcher is the LINEAR greedy two-pointer wildcard match — never a
+---
+> * trust. The matcher is the linear greedy two-pointer wildcard match — never a
+93c94
+< * Holds the fixed two-table schema every driver-conformance phase opens.
+---
+> * Holds the fixed `users` and `posts` schema every driver-conformance phase opens.
+97c98,100
+< * names a violated invariant rather than a setup difference between phases.
+---
+> * names a violated invariant rather than a setup difference between phases. The
+> * array and each schema in it are frozen, so a consumer holding it cannot change
+> * what a later phase opens.
+159a163,166
+> * @remarks
+> * Total over any input: a hostile getter, a revoked proxy, or a cyclic value is
+> * contained as a non-match rather than a throw.
+> *
+174a182,185
+> * @remarks
+> * Total over any input: a hostile getter, a revoked proxy, or a cyclic value is
+> * contained as a non-match rather than a throw.
+> *
+193a205,208
+> * @remarks
+> * Total over any input: a hostile getter, a revoked proxy, or a cyclic value is
+> * contained as a non-match rather than a throw.
+> *
+209a225,228
+> * @remarks
+> * Total over any input: a hostile getter, a revoked proxy, or a cyclic value is
+> * contained as a non-match rather than a throw.
+> *
+233a253,256
+> * @remarks
+> * Total over any input: a hostile getter, a revoked proxy, or a cyclic value is
+> * contained as a non-match rather than a throw.
+> *
+248a272,277
+> * @remarks
+> * The boundary check a versioning driver's `metadata()` narrows a stored or
+> * deserialized record through, so no call site needs an assertion. Total over any
+> * input: a hostile getter, a revoked proxy, or a cyclic value is contained as a
+> * non-match rather than a throw.
+> *
+263a293,296
+> * @remarks
+> * Total over any input: a hostile getter, a revoked proxy, or a cyclic value is
+> * contained as a non-match rather than a throw.
+> *
+280a314,318
+> * @remarks
+> * The clone is validated as {@link DriverMetadata} before it is returned, so a
+> * malformed or hostile value throws a `VALIDATION` {@link DatabaseError} at
+> * `context.path === 'metadata'` rather than surfacing a raw Contract or caller error.
+> *
+299a338,342
+> * @remarks
+> * The clone is validated as a table-schema collection before it is returned, so a
+> * malformed or hostile value throws a `VALIDATION` {@link DatabaseError} at
+> * `context.path === 'schema'` rather than surfacing a raw Contract or caller error.
+> *
+318a362,366
+> * @remarks
+> * The clone is validated as a {@link MigrationInput} before it is returned, so a
+> * malformed or hostile value throws a `VALIDATION` {@link DatabaseError} at
+> * `context.path === 'migration'` rather than surfacing a raw Contract or caller error.
+> *
+394,396c442,444
+< * records (through `isRecord`) compare by their OWN enumerable keys: same key
+< * COUNT and, for every key in `left`, `right` has that key (`Object.hasOwn`)
+< * with a `equalsValue` value — so a key present with value `undefined` is NOT
+---
+> * records (through `isRecord`) compare by their own enumerable keys: same key
+> * count and, for every key in `left`, `right` has that key (`Object.hasOwn`)
+> * with a `equalsValue` value — so a key present with value `undefined` is not
+462c510
+< * Matches a value against a wildcard pattern in LINEAR time — the shared, ReDoS-SAFE
+---
+> * Matches a value against a wildcard pattern in linear time — the shared, ReDoS-safe
+466c514
+< * A backtracking RegExp (`a%b%c` → `^a.*b.*c$`) is CATASTROPHIC on a hostile pattern:
+---
+> * A backtracking RegExp (`a%b%c` → `^a.*b.*c$`) is catastrophic on a hostile pattern:
+470,471c518,519
+< * trust. So this builds NO regex. It runs the classic GREEDY TWO-POINTER wildcard match:
+< * the `any` wildcard records its position and, on a later mismatch, backtracks ONLY to
+---
+> * trust. So this builds no regex. It runs the classic greedy two-pointer wildcard match:
+> * the `any` wildcard records its position and, on a later mismatch, backtracks only to
+479c527
+< * char; every other pattern char matches itself LITERALLY (a pattern `.` / `(` / `\` is
+---
+> * char; every other pattern char matches itself literally (a pattern `.` / `(` / `\` is
+481,482c529,530
+< * BEFORE a literal match, so a value that literally contains the wildcard char never
+< * shadows the wildcard. Case folding is applied to BOTH sides when `fold` is set.
+---
+> * before a literal match, so a value that literally contains the wildcard char never
+> * shadows the wildcard. Case folding is applied to both sides when `fold` is set.
+488c536
+< * @param fold - Whether to match case-INSENSITIVELY (`LIKE` folds; `GLOB` does not)
+---
+> * @param fold - Whether to match case-insensitively (`LIKE` folds; `GLOB` does not)
+550c598
+< * character class such as `[a-z]` is NOT interpreted. Runs on
+---
+> * character class such as `[a-z]` is not interpreted. Runs on
+576c624
+< * / `any` / `none`) uses {@link equalsValue} — STRUCTURAL equality, not the total
+---
+> * / `any` / `none`) uses {@link equalsValue} — structural equality, not the total
+734c782,784
+< 	return operation === "minimum" ? Math.min(...numbers) : Math.max(...numbers);
+---
+> 	let result = operation === "minimum" ? Number.POSITIVE_INFINITY : Number.NEGATIVE_INFINITY;
+> 	for (const value of numbers) result = operation === "minimum" ? Math.min(result, value) : Math.max(result, value);
+> 	return result;
+912c962
+< * A column present in BOTH schemas under the same name but with a different
+---
+> * A column present in both schemas under the same name but with a different
+915c965
+< * difference — a name-only diff would otherwise silently produce NO step for
+---
+> * difference — a name-only diff would otherwise silently produce no step for
+921c971
+< * @param deployed - The table schemas currently applied
+---
+> * @param deployed - The already-applied table schemas
+1027a1078,1079
+> *
+> * @remarks
+1191,1192c1243,1244
+< * with DEEP copy-in/copy-out isolation (mutating the caller's row —
+< * including a NESTED field — after `write`, or a row `read` returns, never
+---
+> * with deep copy-in/copy-out isolation (mutating the caller's row —
+> * including a nested field — after `write`, or a row `read` returns, never
+1198c1250
+< * restores pre-snapshot state, including a NESTED field mutated in place on
+---
+> * restores pre-snapshot state, including a nested field mutated in place on
+1212,1213c1264,1265
+< * Each phase runs within a `try`/`catch`: an EXPECTED mismatch yields a
+< * finding built from the assertion, while an UNEXPECTED throw (a driver
+---
+> * Each phase runs within a `try`/`catch`: an expected mismatch yields a
+> * finding built from the assertion, while an unexpected throw (a driver
+1217c1269
+< * phase, the FIRST violated assertion yields and the phase stops (matching
+---
+> * phase, the first violated assertion yields and the phase stops (matching
+2028c2080
+< * generator is lazy, every LATER phase never runs — true fail-fast, not
+---
+> * generator is lazy, every later phase never runs — true fail-fast, not
+2032c2084,2086
+< * `message` and whose `context` is `{ check, ...finding.context }`.
+---
+> * `message` and whose `context` is `{ check, ...finding.context }`. The battery
+> * takes a driver factory and reports through a throw, so it binds no test
+> * framework and runs from any runner.
+2052c2106
+< * Runs the FULL driver-conformance battery and collects every violation — the
+---
+> * Runs the full driver-conformance battery and collects every violation — the
+2722,2723c2776,2777
+< *   fire-and-forget observers (cache invalidation, sync, an audit log), ALONGSIDE the
+< *   database-level lifecycle. Events carry the affected KEY only (no value payload, to
+---
+> *   fire-and-forget observers (cache invalidation, sync, an audit log), alongside the
+> *   database-level lifecycle. Events carry the affected key only (no value payload, to
+2725c2779
+< *   directly, strictly AFTER the driver write / delete / clear completes; the emitter
+---
+> *   directly, strictly after the driver write / delete / clear completes; the emitter
+2838c2892
+< 	* Unlike {@link count}, `aggregate` operates on STORED rows WITHOUT the
+---
+> 	* Unlike {@link count}, `aggregate` operates on stored rows without the
+3165a3220,3223
+> *
+> * The view owns the driver and its declared `tables`, connects that driver lazily on
+> * first use, `import`s further tables and `export`s their portable definitions, and
+> * runs `transaction` scopes over the shared context.
+3288c3346
+< * the database API without a persistent backend. Rows are DEEP-copied (through
+---
+> * the database API without a persistent backend. Rows are deep-copied (through
+3363c3421
+< 	* walked for a small page. `input.order` is IGNORED (the same contract as
+---
+> 	* walked for a small page. `input.order` is ignored (the same contract as
+3592c3650
+< * @example
+---
+> * @example Create a database
+3598c3656
+< * 	driver: createMemoryDriver(),
+---
+> * 	driver: createMemoryDriver(), // any DriverInterface — a persistent backend swaps in, same API
+3600c3658
+< * 		users: { id: stringShape(), age: integerShape() },
+---
+> * 		users: { id: stringShape(), name: stringShape(), age: integerShape() },
+3603c3661
+< * 	primary: { posts: 'slug' },
+---
+> * 	primary: { posts: 'slug' }, // non-`id` primary-key columns, per table
+3605c3663,3672
+< * await db.table('users').set({ id: 'u1', age: 36 }) // typed; coerced + validated
+---
+> *
+> * const users = db.table('users') // hold the handle; TableInterface<{ id; name; age }>
+> *
+> * await users.set({ id: 'u1', name: 'Ada', age: 36 }) // coerced + validated through the contract
+> * await users.get('u1') // typed { id; name; age } | undefined — narrowed, never `as`
+> * await users
+> * 	.query()
+> * 	.condition({ column: 'age', operator: 'from', values: [18], connector: 'and' })
+> * 	.order({ column: 'age', direction: 'descending' })
+> * 	.collect() // typed rows
+diff -r -w -B '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-database-following-final-pack/baseline/package/dist/src/core/index.d.cts /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-database-following-final-pack/extract/package/dist/src/core/index.d.cts
+1,8c1,8
+< import { ContractInterface } from '@orkestrel/contract';
+< import { ContractShape } from '@orkestrel/contract';
+< import { EmitterErrorHandler } from '@orkestrel/emitter';
+< import { EmitterHooks } from '@orkestrel/emitter';
+< import { EmitterInterface } from '@orkestrel/emitter';
+< import { FieldPath } from '@orkestrel/contract';
+< import { Infer } from '@orkestrel/contract';
+< import { JSONSchema } from '@orkestrel/contract';
+---
+> import type { ContractInterface } from '@orkestrel/contract';
+> import type { ContractShape } from '@orkestrel/contract';
+> import type { EmitterErrorHandler } from '@orkestrel/emitter';
+> import type { EmitterHooks } from '@orkestrel/emitter';
+> import type { EmitterInterface } from '@orkestrel/emitter';
+> import type { FieldPath } from '@orkestrel/contract';
+> import type { Infer } from '@orkestrel/contract';
+> import type { JSONSchema } from '@orkestrel/contract';
+33a34,37
+>     /**
+>      * Enters one operation into the boundary's ledger so whoever stops the boundary
+>      * contains everything already accepted.
+>      */
+56c60
+<  * Runs the FULL driver-conformance battery and collects every violation — the
+---
+>  * Runs the full driver-conformance battery and collects every violation — the
+117a122,126
+>  * @remarks
+>  * The clone is validated as {@link DriverMetadata} before it is returned, so a
+>  * malformed or hostile value throws a `VALIDATION` {@link DatabaseError} at
+>  * `context.path === 'metadata'` rather than surfacing a raw Contract or caller error.
+>  *
+125a135,139
+>  * @remarks
+>  * The clone is validated as a table-schema collection before it is returned, so a
+>  * malformed or hostile value throws a `VALIDATION` {@link DatabaseError} at
+>  * `context.path === 'schema'` rather than surfacing a raw Contract or caller error.
+>  *
+133a148,152
+>  * @remarks
+>  * The clone is validated as a {@link MigrationInput} before it is returned, so a
+>  * malformed or hostile value throws a `VALIDATION` {@link DatabaseError} at
+>  * `context.path === 'migration'` rather than surfacing a raw Contract or caller error.
+>  *
+211c230
+<  * `column` is a {@link FieldPath}: a single string is ONE column (never split on
+---
+>  * `column` is a {@link FieldPath}: a single string is one column (never split on
+245c264
+<  * Holds the fixed two-table schema every driver-conformance phase opens.
+---
+>  * Holds the fixed `users` and `posts` schema every driver-conformance phase opens.
+249c268,270
+<  * names a violated invariant rather than a setup difference between phases.
+---
+>  * names a violated invariant rather than a setup difference between phases. The
+>  * array and each schema in it are frozen, so a consumer holding it cannot change
+>  * what a later phase opens.
+271c292,293
+<  * `context` carries the offending table / key / value that failed it.
+---
+>  * `context` carries the offending table / key / value that failed it. Yielded one at a
+>  * time by {@link scanDriver} and collected whole by {@link auditDriver}.
+286c308
+<  * generator is lazy, every LATER phase never runs — true fail-fast, not
+---
+>  * generator is lazy, every later phase never runs — true fail-fast, not
+290c312,314
+<  * `message` and whose `context` is `{ check, ...finding.context }`.
+---
+>  * `message` and whose `context` is `{ check, ...finding.context }`. The battery
+>  * takes a driver factory and reports through a throw, so it binds no test
+>  * framework and runs from any runner.
+320c344
+<  * @example
+---
+>  * @example Create a database
+326c350
+<  * 	driver: createMemoryDriver(),
+---
+>  * 	driver: createMemoryDriver(), // any DriverInterface — a persistent backend swaps in, same API
+328c352
+<  * 		users: { id: stringShape(), age: integerShape() },
+---
+>  * 		users: { id: stringShape(), name: stringShape(), age: integerShape() },
+331c355
+<  * 	primary: { posts: 'slug' },
+---
+>  * 	primary: { posts: 'slug' }, // non-`id` primary-key columns, per table
+333c357,366
+<  * await db.table('users').set({ id: 'u1', age: 36 }) // typed; coerced + validated
+---
+>  *
+>  * const users = db.table('users') // hold the handle; TableInterface<{ id; name; age }>
+>  *
+>  * await users.set({ id: 'u1', name: 'Ada', age: 36 }) // coerced + validated through the contract
+>  * await users.get('u1') // typed { id; name; age } | undefined — narrowed, never `as`
+>  * await users
+>  * 	.query()
+>  * 	.condition({ column: 'age', operator: 'from', values: [18], connector: 'and' })
+>  * 	.order({ column: 'age', direction: 'descending' })
+>  * 	.collect() // typed rows
+364a398,400
+>     /**
+>      * Advances to the next present row.
+>      */
+365a402,404
+>     /**
+>      * Merges changes into the row at the current position.
+>      */
+366a406,408
+>     /**
+>      * Deletes the row at the current position.
+>      */
+367a410,412
+>     /**
+>      * Closes the cursor terminally, so every later operation is a no-op.
+>      */
+378a424,427
+>  *
+>  * The view owns the driver and its declared `tables`, connects that driver lazily on
+>  * first use, `import`s further tables and `export`s their portable definitions, and
+>  * runs `transaction` scopes over the shared context.
+429c478
+<  * listener throw is routed to the emitter's OWN `error` handler (the `error` option), never
+---
+>  * listener throw is routed to the emitter's own `error` handler (the `error` option), never
+431c480
+<  * observer can never reorder, throw into, or corrupt a transaction. Every emit sits AFTER the
+---
+>  * observer can never reorder, throw into, or corrupt a transaction. Every emit sits after the
+433c482
+<  * rollback operation completes (it OBSERVES the propagated scope error; that exact reason
+---
+>  * rollback operation completes (it observes the propagated scope error; that exact reason
+475a525,527
+>     /**
+>      * Returns the typed handle for a declared table.
+>      */
+476a529,531
+>     /**
+>      * Defines a further shape map of tables as a typed view over the same driver and storage.
+>      */
+477a533,535
+>     /**
+>      * Returns one portable {@link TableDefinition} per declared table.
+>      */
+478a537,539
+>     /**
+>      * Connects the driver eagerly, ahead of the lazy connect on first use.
+>      */
+479a541,543
+>     /**
+>      * Closes the database and releases its driver.
+>      */
+480a545,553
+>     /**
+>      * Runs a scope over a {@link DatabaseStorageInterface}, committing when the callback
+>      * fulfills and rolling back when it rejects.
+>      *
+>      * @remarks
+>      * A native driver transaction carries the scope where the driver offers one;
+>      * otherwise the universal whole-store snapshot floor does. `options.signal` is
+>      * checked once, at entry.
+>      */
+488c561
+<      * @param deployed - The schema currently deployed, as {@link TableSchema}s
+---
+>      * @param deployed - The deployed schema, as {@link TableSchema}s
+557c630
+<      * Only meaningful when the driver implements BOTH {@link DriverInterface.metadata}
+---
+>      * Only meaningful when the driver implements both {@link DriverInterface.metadata}
+598a672,677
+>     /**
+>      * Returns a table bound to the active transaction scope.
+>      *
+>      * @remarks
+>      * The returned table throws `CONFLICT` for work started after the scope settles.
+>      */
+603c682
+<  * Supplies the primary-key column assumed when {@link PrimaryMap} does not name one.
+---
+>  * Supplies the primary-key column, `'id'`, assumed when {@link PrimaryMap} does not name one.
+615c694
+<  * The REQUIRED surface is deliberately minimal: keyed read / write / atomic
+---
+>  * The required surface is deliberately minimal: keyed read / write / atomic
+634a714,720
+>     /**
+>      * Readies the tables from a derived {@link TableSchema} list.
+>      *
+>      * @remarks
+>      * A native backend builds real tables and indexes from the derived columns,
+>      * types, primary, and index groups; a scan-only backend reads `name` alone.
+>      */
+635a722,724
+>     /**
+>      * Releases the backend.
+>      */
+726,728c815,817
+<  * records (through `isRecord`) compare by their OWN enumerable keys: same key
+<  * COUNT and, for every key in `left`, `right` has that key (`Object.hasOwn`)
+<  * with a `equalsValue` value — so a key present with value `undefined` is NOT
+---
+>  * records (through `isRecord`) compare by their own enumerable keys: same key
+>  * count and, for every key in `left`, `right` has that key (`Object.hasOwn`)
+>  * with a `equalsValue` value — so a key present with value `undefined` is not
+814a904,907
+>  * @remarks
+>  * Total over any input: a hostile getter, a revoked proxy, or a cyclic value is
+>  * contained as a non-match rather than a throw.
+>  *
+839a933,938
+>  * @remarks
+>  * The boundary check a versioning driver's `metadata()` narrows a stored or
+>  * deserialized record through, so no call site needs an assertion. Total over any
+>  * input: a hostile getter, a revoked proxy, or a cyclic value is contained as a
+>  * non-match rather than a throw.
+>  *
+847a947,950
+>  * @remarks
+>  * Total over any input: a hostile getter, a revoked proxy, or a cyclic value is
+>  * contained as a non-match rather than a throw.
+>  *
+863a967,970
+>  * @remarks
+>  * Total over any input: a hostile getter, a revoked proxy, or a cyclic value is
+>  * contained as a non-match rather than a throw.
+>  *
+871a979,982
+>  * @remarks
+>  * Total over any input: a hostile getter, a revoked proxy, or a cyclic value is
+>  * contained as a non-match rather than a throw.
+>  *
+879a991,994
+>  * @remarks
+>  * Total over any input: a hostile getter, a revoked proxy, or a cyclic value is
+>  * contained as a non-match rather than a throw.
+>  *
+887a1003,1006
+>  * @remarks
+>  * Total over any input: a hostile getter, a revoked proxy, or a cyclic value is
+>  * contained as a non-match rather than a throw.
+>  *
+922c1041
+<  * / `any` / `none`) uses {@link equalsValue} — STRUCTURAL equality, not the total
+---
+>  * / `any` / `none`) uses {@link equalsValue} — structural equality, not the total
+943c1062
+<  * character class such as `[a-z]` is NOT interpreted. Runs on
+---
+>  * character class such as `[a-z]` is not interpreted. Runs on
+998c1117
+<  * Matches a value against a wildcard pattern in LINEAR time — the shared, ReDoS-SAFE
+---
+>  * Matches a value against a wildcard pattern in linear time — the shared, ReDoS-safe
+1002c1121
+<  * A backtracking RegExp (`a%b%c` → `^a.*b.*c$`) is CATASTROPHIC on a hostile pattern:
+---
+>  * A backtracking RegExp (`a%b%c` → `^a.*b.*c$`) is catastrophic on a hostile pattern:
+1006,1007c1125,1126
+<  * trust. So this builds NO regex. It runs the classic GREEDY TWO-POINTER wildcard match:
+<  * the `any` wildcard records its position and, on a later mismatch, backtracks ONLY to
+---
+>  * trust. So this builds no regex. It runs the classic greedy two-pointer wildcard match:
+>  * the `any` wildcard records its position and, on a later mismatch, backtracks only to
+1015c1134
+<  * char; every other pattern char matches itself LITERALLY (a pattern `.` / `(` / `\` is
+---
+>  * char; every other pattern char matches itself literally (a pattern `.` / `(` / `\` is
+1017,1018c1136,1137
+<  * BEFORE a literal match, so a value that literally contains the wildcard char never
+<  * shadows the wildcard. Case folding is applied to BOTH sides when `fold` is set.
+---
+>  * before a literal match, so a value that literally contains the wildcard char never
+>  * shadows the wildcard. Case folding is applied to both sides when `fold` is set.
+1024c1143
+<  * @param fold - Whether to match case-INSENSITIVELY (`LIKE` folds; `GLOB` does not)
+---
+>  * @param fold - Whether to match case-insensitively (`LIKE` folds; `GLOB` does not)
+1031c1150,1151
+<  * Sets the longest `LIKE` / `GLOB` pattern the wildcard matcher accepts before rejecting it.
+---
+>  * Sets the longest `LIKE` / `GLOB` pattern the wildcard matcher accepts, 1024 characters, before
+>  * rejecting it.
+1036c1156
+<  * trust. The matcher is the LINEAR greedy two-pointer wildcard match — never a
+---
+>  * trust. The matcher is the linear greedy two-pointer wildcard match — never a
+1051c1171
+<  * the database API without a persistent backend. Rows are DEEP-copied (through
+---
+>  * the database API without a persistent backend. Rows are deep-copied (through
+1086c1206
+<      * walked for a small page. `input.order` is IGNORED (the same contract as
+---
+>      * walked for a small page. `input.order` is ignored (the same contract as
+1255c1375,1376
+<  * driver to the backend commit point.
+---
+>  * driver to the backend commit point. A streamed read — {@link TableInterface.scan}
+>  * or {@link QueryInterface.stream} — checks the signal before each yield.
+1286c1407
+<  * A column present in BOTH schemas under the same name but with a different
+---
+>  * A column present in both schemas under the same name but with a different
+1289c1410
+<  * difference — a name-only diff would otherwise silently produce NO step for
+---
+>  * difference — a name-only diff would otherwise silently produce no step for
+1295c1416
+<  * @param deployed - The table schemas currently applied
+---
+>  * @param deployed - The already-applied table schemas
+1326a1448,1449
+>  *
+>  * @remarks
+1364a1488,1490
+>     /**
+>      * Adds one portable condition, including its explicit connector.
+>      */
+1365a1492,1494
+>     /**
+>      * Adds one portable ordering term — a column and a direction.
+>      */
+1366a1496,1498
+>     /**
+>      * Adds a post-fetch JavaScript predicate.
+>      */
+1367a1500,1502
+>     /**
+>      * Caps the result count.
+>      */
+1368a1504,1506
+>     /**
+>      * Skips the leading rows.
+>      */
+1369a1508,1510
+>     /**
+>      * Executes the accumulated read and collects every matching row.
+>      */
+1370a1512,1514
+>     /**
+>      * Executes the accumulated read and returns the first match, or `undefined`.
+>      */
+1371a1516,1518
+>     /**
+>      * Executes the accumulated read and returns the match count.
+>      */
+1378c1525
+<      * `order` and its comparators are IGNORED (streaming yields unsorted, as
+---
+>      * `order` and its comparators are ignored (streaming yields unsorted, as
+1383a1531,1533
+>     /**
+>      * Executes a named aggregate over one column.
+>      */
+1464,1465c1614,1615
+<  * with DEEP copy-in/copy-out isolation (mutating the caller's row —
+<  * including a NESTED field — after `write`, or a row `read` returns, never
+---
+>  * with deep copy-in/copy-out isolation (mutating the caller's row —
+>  * including a nested field — after `write`, or a row `read` returns, never
+1471c1621
+<  * restores pre-snapshot state, including a NESTED field mutated in place on
+---
+>  * restores pre-snapshot state, including a nested field mutated in place on
+1485,1486c1635,1636
+<  * Each phase runs within a `try`/`catch`: an EXPECTED mismatch yields a
+<  * finding built from the assertion, while an UNEXPECTED throw (a driver
+---
+>  * Each phase runs within a `try`/`catch`: an expected mismatch yields a
+>  * finding built from the assertion, while an unexpected throw (a driver
+1490c1640
+<  * phase, the FIRST violated assertion yields and the phase stops (matching
+---
+>  * phase, the first violated assertion yields and the phase stops (matching
+1568a1719,1721
+>     /**
+>      * Reads one row by key.
+>      */
+1569a1723,1725
+>     /**
+>      * Writes one row at a key.
+>      */
+1570a1727,1729
+>     /**
+>      * Inserts one row atomically, rejecting `CONFLICT` when its key already exists.
+>      */
+1571a1731,1733
+>     /**
+>      * Deletes one row by key.
+>      */
+1572a1735,1737
+>     /**
+>      * Lists a table's keys.
+>      */
+1573a1739,1741
+>     /**
+>      * Iterates a table's rows in ascending key order.
+>      */
+1574a1743,1745
+>     /**
+>      * Empties a table.
+>      */
+1575a1747,1749
+>     /**
+>      * Reads the rows matching a {@link QueryInput} natively — an optional hook.
+>      */
+1576a1751,1753
+>     /**
+>      * Computes an aggregate over a column natively — an optional hook.
+>      */
+1577a1755,1757
+>     /**
+>      * Iterates the natively filtered rows lazily — an optional hook.
+>      */
+1578a1759,1761
+>     /**
+>      * Applies one atomic {@link MigrationInput} — an optional hook.
+>      */
+1579a1763,1765
+>     /**
+>      * Reads the persisted {@link DriverMetadata} as a deeply frozen copy — an optional hook.
+>      */
+1580a1767,1769
+>     /**
+>      * Writes the persisted {@link DriverMetadata}, snapshot at entry — an optional hook.
+>      */
+1602c1791
+<  * subscribes to, ALONGSIDE the database-level {@link DatabaseEventMap}.
+---
+>  * subscribes to, alongside the database-level {@link DatabaseEventMap}.
+1605c1794
+<  * Events carry the affected KEY only — never the row value — to keep fan-out lean and
+---
+>  * Events carry the affected key only — never the row value — to keep fan-out lean and
+1609c1798
+<  * `remove`; emptying the table emits `clear`. Reads / queries / counts are NOT emitted
+---
+>  * `remove`; emptying the table emits `clear`. Reads / queries / counts are not emitted
+1612c1801
+<  * handler (the `error` option), never onto this map, and sits AFTER the driver write / delete
+---
+>  * handler (the `error` option), never onto this map, and sits after the driver write / delete
+1646a1836,1838
+>     /**
+>      * Reads one row by key, or one row per key for a list — `undefined` for each miss.
+>      */
+1648a1841,1843
+>     /**
+>      * Reads one row by key, or one row per key for a list, throwing `NOT_FOUND` on a miss.
+>      */
+1650a1846,1848
+>     /**
+>      * Reports whether one key exists, or one result per key for a list.
+>      */
+1652a1851,1853
+>     /**
+>      * Lists every primary key in order.
+>      */
+1653a1855,1857
+>     /**
+>      * Reads the contract-valid rows matching an optional {@link QueryInput}.
+>      */
+1669c1873
+<      * Unlike {@link TableInterface.count}, `aggregate` operates on STORED rows
+---
+>      * Unlike {@link TableInterface.count}, `aggregate` operates on stored rows
+1681c1885
+<      * stream; `order` is intentionally IGNORED — streaming yields driver
+---
+>      * stream; `order` is intentionally ignored — streaming yields driver
+1772a1977,1979
+>     /**
+>      * Empties the table.
+>      */
+1773a1981,1983
+>     /**
+>      * Opens a fluent query builder over the table.
+>      */
+1774a1985,1987
+>     /**
+>      * Opens a forward row cursor for bulk mutation.
+>      */
+diff -r -w -B '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-database-following-final-pack/baseline/package/dist/src/core/index.d.ts /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-database-following-final-pack/extract/package/dist/src/core/index.d.ts
+1,8c1,8
+< import { ContractInterface } from '@orkestrel/contract';
+< import { ContractShape } from '@orkestrel/contract';
+< import { EmitterErrorHandler } from '@orkestrel/emitter';
+< import { EmitterHooks } from '@orkestrel/emitter';
+< import { EmitterInterface } from '@orkestrel/emitter';
+< import { FieldPath } from '@orkestrel/contract';
+< import { Infer } from '@orkestrel/contract';
+< import { JSONSchema } from '@orkestrel/contract';
+---
+> import type { ContractInterface } from '@orkestrel/contract';
+> import type { ContractShape } from '@orkestrel/contract';
+> import type { EmitterErrorHandler } from '@orkestrel/emitter';
+> import type { EmitterHooks } from '@orkestrel/emitter';
+> import type { EmitterInterface } from '@orkestrel/emitter';
+> import type { FieldPath } from '@orkestrel/contract';
+> import type { Infer } from '@orkestrel/contract';
+> import type { JSONSchema } from '@orkestrel/contract';
+33a34,37
+>     /**
+>      * Enters one operation into the boundary's ledger so whoever stops the boundary
+>      * contains everything already accepted.
+>      */
+56c60
+<  * Runs the FULL driver-conformance battery and collects every violation — the
+---
+>  * Runs the full driver-conformance battery and collects every violation — the
+117a122,126
+>  * @remarks
+>  * The clone is validated as {@link DriverMetadata} before it is returned, so a
+>  * malformed or hostile value throws a `VALIDATION` {@link DatabaseError} at
+>  * `context.path === 'metadata'` rather than surfacing a raw Contract or caller error.
+>  *
+125a135,139
+>  * @remarks
+>  * The clone is validated as a table-schema collection before it is returned, so a
+>  * malformed or hostile value throws a `VALIDATION` {@link DatabaseError} at
+>  * `context.path === 'schema'` rather than surfacing a raw Contract or caller error.
+>  *
+133a148,152
+>  * @remarks
+>  * The clone is validated as a {@link MigrationInput} before it is returned, so a
+>  * malformed or hostile value throws a `VALIDATION` {@link DatabaseError} at
+>  * `context.path === 'migration'` rather than surfacing a raw Contract or caller error.
+>  *
+211c230
+<  * `column` is a {@link FieldPath}: a single string is ONE column (never split on
+---
+>  * `column` is a {@link FieldPath}: a single string is one column (never split on
+245c264
+<  * Holds the fixed two-table schema every driver-conformance phase opens.
+---
+>  * Holds the fixed `users` and `posts` schema every driver-conformance phase opens.
+249c268,270
+<  * names a violated invariant rather than a setup difference between phases.
+---
+>  * names a violated invariant rather than a setup difference between phases. The
+>  * array and each schema in it are frozen, so a consumer holding it cannot change
+>  * what a later phase opens.
+271c292,293
+<  * `context` carries the offending table / key / value that failed it.
+---
+>  * `context` carries the offending table / key / value that failed it. Yielded one at a
+>  * time by {@link scanDriver} and collected whole by {@link auditDriver}.
+286c308
+<  * generator is lazy, every LATER phase never runs — true fail-fast, not
+---
+>  * generator is lazy, every later phase never runs — true fail-fast, not
+290c312,314
+<  * `message` and whose `context` is `{ check, ...finding.context }`.
+---
+>  * `message` and whose `context` is `{ check, ...finding.context }`. The battery
+>  * takes a driver factory and reports through a throw, so it binds no test
+>  * framework and runs from any runner.
+320c344
+<  * @example
+---
+>  * @example Create a database
+326c350
+<  * 	driver: createMemoryDriver(),
+---
+>  * 	driver: createMemoryDriver(), // any DriverInterface — a persistent backend swaps in, same API
+328c352
+<  * 		users: { id: stringShape(), age: integerShape() },
+---
+>  * 		users: { id: stringShape(), name: stringShape(), age: integerShape() },
+331c355
+<  * 	primary: { posts: 'slug' },
+---
+>  * 	primary: { posts: 'slug' }, // non-`id` primary-key columns, per table
+333c357,366
+<  * await db.table('users').set({ id: 'u1', age: 36 }) // typed; coerced + validated
+---
+>  *
+>  * const users = db.table('users') // hold the handle; TableInterface<{ id; name; age }>
+>  *
+>  * await users.set({ id: 'u1', name: 'Ada', age: 36 }) // coerced + validated through the contract
+>  * await users.get('u1') // typed { id; name; age } | undefined — narrowed, never `as`
+>  * await users
+>  * 	.query()
+>  * 	.condition({ column: 'age', operator: 'from', values: [18], connector: 'and' })
+>  * 	.order({ column: 'age', direction: 'descending' })
+>  * 	.collect() // typed rows
+364a398,400
+>     /**
+>      * Advances to the next present row.
+>      */
+365a402,404
+>     /**
+>      * Merges changes into the row at the current position.
+>      */
+366a406,408
+>     /**
+>      * Deletes the row at the current position.
+>      */
+367a410,412
+>     /**
+>      * Closes the cursor terminally, so every later operation is a no-op.
+>      */
+378a424,427
+>  *
+>  * The view owns the driver and its declared `tables`, connects that driver lazily on
+>  * first use, `import`s further tables and `export`s their portable definitions, and
+>  * runs `transaction` scopes over the shared context.
+429c478
+<  * listener throw is routed to the emitter's OWN `error` handler (the `error` option), never
+---
+>  * listener throw is routed to the emitter's own `error` handler (the `error` option), never
+431c480
+<  * observer can never reorder, throw into, or corrupt a transaction. Every emit sits AFTER the
+---
+>  * observer can never reorder, throw into, or corrupt a transaction. Every emit sits after the
+433c482
+<  * rollback operation completes (it OBSERVES the propagated scope error; that exact reason
+---
+>  * rollback operation completes (it observes the propagated scope error; that exact reason
+475a525,527
+>     /**
+>      * Returns the typed handle for a declared table.
+>      */
+476a529,531
+>     /**
+>      * Defines a further shape map of tables as a typed view over the same driver and storage.
+>      */
+477a533,535
+>     /**
+>      * Returns one portable {@link TableDefinition} per declared table.
+>      */
+478a537,539
+>     /**
+>      * Connects the driver eagerly, ahead of the lazy connect on first use.
+>      */
+479a541,543
+>     /**
+>      * Closes the database and releases its driver.
+>      */
+480a545,553
+>     /**
+>      * Runs a scope over a {@link DatabaseStorageInterface}, committing when the callback
+>      * fulfills and rolling back when it rejects.
+>      *
+>      * @remarks
+>      * A native driver transaction carries the scope where the driver offers one;
+>      * otherwise the universal whole-store snapshot floor does. `options.signal` is
+>      * checked once, at entry.
+>      */
+488c561
+<      * @param deployed - The schema currently deployed, as {@link TableSchema}s
+---
+>      * @param deployed - The deployed schema, as {@link TableSchema}s
+557c630
+<      * Only meaningful when the driver implements BOTH {@link DriverInterface.metadata}
+---
+>      * Only meaningful when the driver implements both {@link DriverInterface.metadata}
+598a672,677
+>     /**
+>      * Returns a table bound to the active transaction scope.
+>      *
+>      * @remarks
+>      * The returned table throws `CONFLICT` for work started after the scope settles.
+>      */
+603c682
+<  * Supplies the primary-key column assumed when {@link PrimaryMap} does not name one.
+---
+>  * Supplies the primary-key column, `'id'`, assumed when {@link PrimaryMap} does not name one.
+615c694
+<  * The REQUIRED surface is deliberately minimal: keyed read / write / atomic
+---
+>  * The required surface is deliberately minimal: keyed read / write / atomic
+634a714,720
+>     /**
+>      * Readies the tables from a derived {@link TableSchema} list.
+>      *
+>      * @remarks
+>      * A native backend builds real tables and indexes from the derived columns,
+>      * types, primary, and index groups; a scan-only backend reads `name` alone.
+>      */
+635a722,724
+>     /**
+>      * Releases the backend.
+>      */
+726,728c815,817
+<  * records (through `isRecord`) compare by their OWN enumerable keys: same key
+<  * COUNT and, for every key in `left`, `right` has that key (`Object.hasOwn`)
+<  * with a `equalsValue` value — so a key present with value `undefined` is NOT
+---
+>  * records (through `isRecord`) compare by their own enumerable keys: same key
+>  * count and, for every key in `left`, `right` has that key (`Object.hasOwn`)
+>  * with a `equalsValue` value — so a key present with value `undefined` is not
+814a904,907
+>  * @remarks
+>  * Total over any input: a hostile getter, a revoked proxy, or a cyclic value is
+>  * contained as a non-match rather than a throw.
+>  *
+839a933,938
+>  * @remarks
+>  * The boundary check a versioning driver's `metadata()` narrows a stored or
+>  * deserialized record through, so no call site needs an assertion. Total over any
+>  * input: a hostile getter, a revoked proxy, or a cyclic value is contained as a
+>  * non-match rather than a throw.
+>  *
+847a947,950
+>  * @remarks
+>  * Total over any input: a hostile getter, a revoked proxy, or a cyclic value is
+>  * contained as a non-match rather than a throw.
+>  *
+863a967,970
+>  * @remarks
+>  * Total over any input: a hostile getter, a revoked proxy, or a cyclic value is
+>  * contained as a non-match rather than a throw.
+>  *
+871a979,982
+>  * @remarks
+>  * Total over any input: a hostile getter, a revoked proxy, or a cyclic value is
+>  * contained as a non-match rather than a throw.
+>  *
+879a991,994
+>  * @remarks
+>  * Total over any input: a hostile getter, a revoked proxy, or a cyclic value is
+>  * contained as a non-match rather than a throw.
+>  *
+887a1003,1006
+>  * @remarks
+>  * Total over any input: a hostile getter, a revoked proxy, or a cyclic value is
+>  * contained as a non-match rather than a throw.
+>  *
+922c1041
+<  * / `any` / `none`) uses {@link equalsValue} — STRUCTURAL equality, not the total
+---
+>  * / `any` / `none`) uses {@link equalsValue} — structural equality, not the total
+943c1062
+<  * character class such as `[a-z]` is NOT interpreted. Runs on
+---
+>  * character class such as `[a-z]` is not interpreted. Runs on
+998c1117
+<  * Matches a value against a wildcard pattern in LINEAR time — the shared, ReDoS-SAFE
+---
+>  * Matches a value against a wildcard pattern in linear time — the shared, ReDoS-safe
+1002c1121
+<  * A backtracking RegExp (`a%b%c` → `^a.*b.*c$`) is CATASTROPHIC on a hostile pattern:
+---
+>  * A backtracking RegExp (`a%b%c` → `^a.*b.*c$`) is catastrophic on a hostile pattern:
+1006,1007c1125,1126
+<  * trust. So this builds NO regex. It runs the classic GREEDY TWO-POINTER wildcard match:
+<  * the `any` wildcard records its position and, on a later mismatch, backtracks ONLY to
+---
+>  * trust. So this builds no regex. It runs the classic greedy two-pointer wildcard match:
+>  * the `any` wildcard records its position and, on a later mismatch, backtracks only to
+1015c1134
+<  * char; every other pattern char matches itself LITERALLY (a pattern `.` / `(` / `\` is
+---
+>  * char; every other pattern char matches itself literally (a pattern `.` / `(` / `\` is
+1017,1018c1136,1137
+<  * BEFORE a literal match, so a value that literally contains the wildcard char never
+<  * shadows the wildcard. Case folding is applied to BOTH sides when `fold` is set.
+---
+>  * before a literal match, so a value that literally contains the wildcard char never
+>  * shadows the wildcard. Case folding is applied to both sides when `fold` is set.
+1024c1143
+<  * @param fold - Whether to match case-INSENSITIVELY (`LIKE` folds; `GLOB` does not)
+---
+>  * @param fold - Whether to match case-insensitively (`LIKE` folds; `GLOB` does not)
+1031c1150,1151
+<  * Sets the longest `LIKE` / `GLOB` pattern the wildcard matcher accepts before rejecting it.
+---
+>  * Sets the longest `LIKE` / `GLOB` pattern the wildcard matcher accepts, 1024 characters, before
+>  * rejecting it.
+1036c1156
+<  * trust. The matcher is the LINEAR greedy two-pointer wildcard match — never a
+---
+>  * trust. The matcher is the linear greedy two-pointer wildcard match — never a
+1051c1171
+<  * the database API without a persistent backend. Rows are DEEP-copied (through
+---
+>  * the database API without a persistent backend. Rows are deep-copied (through
+1086c1206
+<      * walked for a small page. `input.order` is IGNORED (the same contract as
+---
+>      * walked for a small page. `input.order` is ignored (the same contract as
+1255c1375,1376
+<  * driver to the backend commit point.
+---
+>  * driver to the backend commit point. A streamed read — {@link TableInterface.scan}
+>  * or {@link QueryInterface.stream} — checks the signal before each yield.
+1286c1407
+<  * A column present in BOTH schemas under the same name but with a different
+---
+>  * A column present in both schemas under the same name but with a different
+1289c1410
+<  * difference — a name-only diff would otherwise silently produce NO step for
+---
+>  * difference — a name-only diff would otherwise silently produce no step for
+1295c1416
+<  * @param deployed - The table schemas currently applied
+---
+>  * @param deployed - The already-applied table schemas
+1326a1448,1449
+>  *
+>  * @remarks
+1364a1488,1490
+>     /**
+>      * Adds one portable condition, including its explicit connector.
+>      */
+1365a1492,1494
+>     /**
+>      * Adds one portable ordering term — a column and a direction.
+>      */
+1366a1496,1498
+>     /**
+>      * Adds a post-fetch JavaScript predicate.
+>      */
+1367a1500,1502
+>     /**
+>      * Caps the result count.
+>      */
+1368a1504,1506
+>     /**
+>      * Skips the leading rows.
+>      */
+1369a1508,1510
+>     /**
+>      * Executes the accumulated read and collects every matching row.
+>      */
+1370a1512,1514
+>     /**
+>      * Executes the accumulated read and returns the first match, or `undefined`.
+>      */
+1371a1516,1518
+>     /**
+>      * Executes the accumulated read and returns the match count.
+>      */
+1378c1525
+<      * `order` and its comparators are IGNORED (streaming yields unsorted, as
+---
+>      * `order` and its comparators are ignored (streaming yields unsorted, as
+1383a1531,1533
+>     /**
+>      * Executes a named aggregate over one column.
+>      */
+1464,1465c1614,1615
+<  * with DEEP copy-in/copy-out isolation (mutating the caller's row —
+<  * including a NESTED field — after `write`, or a row `read` returns, never
+---
+>  * with deep copy-in/copy-out isolation (mutating the caller's row —
+>  * including a nested field — after `write`, or a row `read` returns, never
+1471c1621
+<  * restores pre-snapshot state, including a NESTED field mutated in place on
+---
+>  * restores pre-snapshot state, including a nested field mutated in place on
+1485,1486c1635,1636
+<  * Each phase runs within a `try`/`catch`: an EXPECTED mismatch yields a
+<  * finding built from the assertion, while an UNEXPECTED throw (a driver
+---
+>  * Each phase runs within a `try`/`catch`: an expected mismatch yields a
+>  * finding built from the assertion, while an unexpected throw (a driver
+1490c1640
+<  * phase, the FIRST violated assertion yields and the phase stops (matching
+---
+>  * phase, the first violated assertion yields and the phase stops (matching
+1568a1719,1721
+>     /**
+>      * Reads one row by key.
+>      */
+1569a1723,1725
+>     /**
+>      * Writes one row at a key.
+>      */
+1570a1727,1729
+>     /**
+>      * Inserts one row atomically, rejecting `CONFLICT` when its key already exists.
+>      */
+1571a1731,1733
+>     /**
+>      * Deletes one row by key.
+>      */
+1572a1735,1737
+>     /**
+>      * Lists a table's keys.
+>      */
+1573a1739,1741
+>     /**
+>      * Iterates a table's rows in ascending key order.
+>      */
+1574a1743,1745
+>     /**
+>      * Empties a table.
+>      */
+1575a1747,1749
+>     /**
+>      * Reads the rows matching a {@link QueryInput} natively — an optional hook.
+>      */
+1576a1751,1753
+>     /**
+>      * Computes an aggregate over a column natively — an optional hook.
+>      */
+1577a1755,1757
+>     /**
+>      * Iterates the natively filtered rows lazily — an optional hook.
+>      */
+1578a1759,1761
+>     /**
+>      * Applies one atomic {@link MigrationInput} — an optional hook.
+>      */
+1579a1763,1765
+>     /**
+>      * Reads the persisted {@link DriverMetadata} as a deeply frozen copy — an optional hook.
+>      */
+1580a1767,1769
+>     /**
+>      * Writes the persisted {@link DriverMetadata}, snapshot at entry — an optional hook.
+>      */
+1602c1791
+<  * subscribes to, ALONGSIDE the database-level {@link DatabaseEventMap}.
+---
+>  * subscribes to, alongside the database-level {@link DatabaseEventMap}.
+1605c1794
+<  * Events carry the affected KEY only — never the row value — to keep fan-out lean and
+---
+>  * Events carry the affected key only — never the row value — to keep fan-out lean and
+1609c1798
+<  * `remove`; emptying the table emits `clear`. Reads / queries / counts are NOT emitted
+---
+>  * `remove`; emptying the table emits `clear`. Reads / queries / counts are not emitted
+1612c1801
+<  * handler (the `error` option), never onto this map, and sits AFTER the driver write / delete
+---
+>  * handler (the `error` option), never onto this map, and sits after the driver write / delete
+1646a1836,1838
+>     /**
+>      * Reads one row by key, or one row per key for a list — `undefined` for each miss.
+>      */
+1648a1841,1843
+>     /**
+>      * Reads one row by key, or one row per key for a list, throwing `NOT_FOUND` on a miss.
+>      */
+1650a1846,1848
+>     /**
+>      * Reports whether one key exists, or one result per key for a list.
+>      */
+1652a1851,1853
+>     /**
+>      * Lists every primary key in order.
+>      */
+1653a1855,1857
+>     /**
+>      * Reads the contract-valid rows matching an optional {@link QueryInput}.
+>      */
+1669c1873
+<      * Unlike {@link TableInterface.count}, `aggregate` operates on STORED rows
+---
+>      * Unlike {@link TableInterface.count}, `aggregate` operates on stored rows
+1681c1885
+<      * stream; `order` is intentionally IGNORED — streaming yields driver
+---
+>      * stream; `order` is intentionally ignored — streaming yields driver
+1772a1977,1979
+>     /**
+>      * Empties the table.
+>      */
+1773a1981,1983
+>     /**
+>      * Opens a fluent query builder over the table.
+>      */
+1774a1985,1987
+>     /**
+>      * Opens a forward row cursor for bulk mutation.
+>      */
+diff -r -w -B '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-database-following-final-pack/baseline/package/dist/src/core/index.js /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-database-following-final-pack/extract/package/dist/src/core/index.js
+5c5
+< * Supplies the primary-key column assumed when {@link PrimaryMap} does not name one.
+---
+> * Supplies the primary-key column, `'id'`, assumed when {@link PrimaryMap} does not name one.
+13c13,14
+< * Sets the longest `LIKE` / `GLOB` pattern the wildcard matcher accepts before rejecting it.
+---
+> * Sets the longest `LIKE` / `GLOB` pattern the wildcard matcher accepts, 1024 characters, before
+> * rejecting it.
+18c19
+< * trust. The matcher is the LINEAR greedy two-pointer wildcard match — never a
+---
+> * trust. The matcher is the linear greedy two-pointer wildcard match — never a
+92c93
+< * Holds the fixed two-table schema every driver-conformance phase opens.
+---
+> * Holds the fixed `users` and `posts` schema every driver-conformance phase opens.
+96c97,99
+< * names a violated invariant rather than a setup difference between phases.
+---
+> * names a violated invariant rather than a setup difference between phases. The
+> * array and each schema in it are frozen, so a consumer holding it cannot change
+> * what a later phase opens.
+158a162,165
+> * @remarks
+> * Total over any input: a hostile getter, a revoked proxy, or a cyclic value is
+> * contained as a non-match rather than a throw.
+> *
+173a181,184
+> * @remarks
+> * Total over any input: a hostile getter, a revoked proxy, or a cyclic value is
+> * contained as a non-match rather than a throw.
+> *
+192a204,207
+> * @remarks
+> * Total over any input: a hostile getter, a revoked proxy, or a cyclic value is
+> * contained as a non-match rather than a throw.
+> *
+208a224,227
+> * @remarks
+> * Total over any input: a hostile getter, a revoked proxy, or a cyclic value is
+> * contained as a non-match rather than a throw.
+> *
+232a252,255
+> * @remarks
+> * Total over any input: a hostile getter, a revoked proxy, or a cyclic value is
+> * contained as a non-match rather than a throw.
+> *
+247a271,276
+> * @remarks
+> * The boundary check a versioning driver's `metadata()` narrows a stored or
+> * deserialized record through, so no call site needs an assertion. Total over any
+> * input: a hostile getter, a revoked proxy, or a cyclic value is contained as a
+> * non-match rather than a throw.
+> *
+262a292,295
+> * @remarks
+> * Total over any input: a hostile getter, a revoked proxy, or a cyclic value is
+> * contained as a non-match rather than a throw.
+> *
+279a313,317
+> * @remarks
+> * The clone is validated as {@link DriverMetadata} before it is returned, so a
+> * malformed or hostile value throws a `VALIDATION` {@link DatabaseError} at
+> * `context.path === 'metadata'` rather than surfacing a raw Contract or caller error.
+> *
+298a337,341
+> * @remarks
+> * The clone is validated as a table-schema collection before it is returned, so a
+> * malformed or hostile value throws a `VALIDATION` {@link DatabaseError} at
+> * `context.path === 'schema'` rather than surfacing a raw Contract or caller error.
+> *
+317a361,365
+> * @remarks
+> * The clone is validated as a {@link MigrationInput} before it is returned, so a
+> * malformed or hostile value throws a `VALIDATION` {@link DatabaseError} at
+> * `context.path === 'migration'` rather than surfacing a raw Contract or caller error.
+> *
+393,395c441,443
+< * records (through `isRecord`) compare by their OWN enumerable keys: same key
+< * COUNT and, for every key in `left`, `right` has that key (`Object.hasOwn`)
+< * with a `equalsValue` value — so a key present with value `undefined` is NOT
+---
+> * records (through `isRecord`) compare by their own enumerable keys: same key
+> * count and, for every key in `left`, `right` has that key (`Object.hasOwn`)
+> * with a `equalsValue` value — so a key present with value `undefined` is not
+461c509
+< * Matches a value against a wildcard pattern in LINEAR time — the shared, ReDoS-SAFE
+---
+> * Matches a value against a wildcard pattern in linear time — the shared, ReDoS-safe
+465c513
+< * A backtracking RegExp (`a%b%c` → `^a.*b.*c$`) is CATASTROPHIC on a hostile pattern:
+---
+> * A backtracking RegExp (`a%b%c` → `^a.*b.*c$`) is catastrophic on a hostile pattern:
+469,470c517,518
+< * trust. So this builds NO regex. It runs the classic GREEDY TWO-POINTER wildcard match:
+< * the `any` wildcard records its position and, on a later mismatch, backtracks ONLY to
+---
+> * trust. So this builds no regex. It runs the classic greedy two-pointer wildcard match:
+> * the `any` wildcard records its position and, on a later mismatch, backtracks only to
+478c526
+< * char; every other pattern char matches itself LITERALLY (a pattern `.` / `(` / `\` is
+---
+> * char; every other pattern char matches itself literally (a pattern `.` / `(` / `\` is
+480,481c528,529
+< * BEFORE a literal match, so a value that literally contains the wildcard char never
+< * shadows the wildcard. Case folding is applied to BOTH sides when `fold` is set.
+---
+> * before a literal match, so a value that literally contains the wildcard char never
+> * shadows the wildcard. Case folding is applied to both sides when `fold` is set.
+487c535
+< * @param fold - Whether to match case-INSENSITIVELY (`LIKE` folds; `GLOB` does not)
+---
+> * @param fold - Whether to match case-insensitively (`LIKE` folds; `GLOB` does not)
+549c597
+< * character class such as `[a-z]` is NOT interpreted. Runs on
+---
+> * character class such as `[a-z]` is not interpreted. Runs on
+575c623
+< * / `any` / `none`) uses {@link equalsValue} — STRUCTURAL equality, not the total
+---
+> * / `any` / `none`) uses {@link equalsValue} — structural equality, not the total
+733c781,783
+< 	return operation === "minimum" ? Math.min(...numbers) : Math.max(...numbers);
+---
+> 	let result = operation === "minimum" ? Number.POSITIVE_INFINITY : Number.NEGATIVE_INFINITY;
+> 	for (const value of numbers) result = operation === "minimum" ? Math.min(result, value) : Math.max(result, value);
+> 	return result;
+911c961
+< * A column present in BOTH schemas under the same name but with a different
+---
+> * A column present in both schemas under the same name but with a different
+914c964
+< * difference — a name-only diff would otherwise silently produce NO step for
+---
+> * difference — a name-only diff would otherwise silently produce no step for
+920c970
+< * @param deployed - The table schemas currently applied
+---
+> * @param deployed - The already-applied table schemas
+1026a1077,1078
+> *
+> * @remarks
+1190,1191c1242,1243
+< * with DEEP copy-in/copy-out isolation (mutating the caller's row —
+< * including a NESTED field — after `write`, or a row `read` returns, never
+---
+> * with deep copy-in/copy-out isolation (mutating the caller's row —
+> * including a nested field — after `write`, or a row `read` returns, never
+1197c1249
+< * restores pre-snapshot state, including a NESTED field mutated in place on
+---
+> * restores pre-snapshot state, including a nested field mutated in place on
+1211,1212c1263,1264
+< * Each phase runs within a `try`/`catch`: an EXPECTED mismatch yields a
+< * finding built from the assertion, while an UNEXPECTED throw (a driver
+---
+> * Each phase runs within a `try`/`catch`: an expected mismatch yields a
+> * finding built from the assertion, while an unexpected throw (a driver
+1216c1268
+< * phase, the FIRST violated assertion yields and the phase stops (matching
+---
+> * phase, the first violated assertion yields and the phase stops (matching
+2027c2079
+< * generator is lazy, every LATER phase never runs — true fail-fast, not
+---
+> * generator is lazy, every later phase never runs — true fail-fast, not
+2031c2083,2085
+< * `message` and whose `context` is `{ check, ...finding.context }`.
+---
+> * `message` and whose `context` is `{ check, ...finding.context }`. The battery
+> * takes a driver factory and reports through a throw, so it binds no test
+> * framework and runs from any runner.
+2051c2105
+< * Runs the FULL driver-conformance battery and collects every violation — the
+---
+> * Runs the full driver-conformance battery and collects every violation — the
+2721,2722c2775,2776
+< *   fire-and-forget observers (cache invalidation, sync, an audit log), ALONGSIDE the
+< *   database-level lifecycle. Events carry the affected KEY only (no value payload, to
+---
+> *   fire-and-forget observers (cache invalidation, sync, an audit log), alongside the
+> *   database-level lifecycle. Events carry the affected key only (no value payload, to
+2724c2778
+< *   directly, strictly AFTER the driver write / delete / clear completes; the emitter
+---
+> *   directly, strictly after the driver write / delete / clear completes; the emitter
+2837c2891
+< 	* Unlike {@link count}, `aggregate` operates on STORED rows WITHOUT the
+---
+> 	* Unlike {@link count}, `aggregate` operates on stored rows without the
+3164a3219,3222
+> *
+> * The view owns the driver and its declared `tables`, connects that driver lazily on
+> * first use, `import`s further tables and `export`s their portable definitions, and
+> * runs `transaction` scopes over the shared context.
+3287c3345
+< * the database API without a persistent backend. Rows are DEEP-copied (through
+---
+> * the database API without a persistent backend. Rows are deep-copied (through
+3362c3420
+< 	* walked for a small page. `input.order` is IGNORED (the same contract as
+---
+> 	* walked for a small page. `input.order` is ignored (the same contract as
+3591c3649
+< * @example
+---
+> * @example Create a database
+3597c3655
+< * 	driver: createMemoryDriver(),
+---
+> * 	driver: createMemoryDriver(), // any DriverInterface — a persistent backend swaps in, same API
+3599c3657
+< * 		users: { id: stringShape(), age: integerShape() },
+---
+> * 		users: { id: stringShape(), name: stringShape(), age: integerShape() },
+3602c3660
+< * 	primary: { posts: 'slug' },
+---
+> * 	primary: { posts: 'slug' }, // non-`id` primary-key columns, per table
+3604c3662,3671
+< * await db.table('users').set({ id: 'u1', age: 36 }) // typed; coerced + validated
+---
+> *
+> * const users = db.table('users') // hold the handle; TableInterface<{ id; name; age }>
+> *
+> * await users.set({ id: 'u1', name: 'Ada', age: 36 }) // coerced + validated through the contract
+> * await users.get('u1') // typed { id; name; age } | undefined — narrowed, never `as`
+> * await users
+> * 	.query()
+> * 	.condition({ column: 'age', operator: 'from', values: [18], connector: 'and' })
+> * 	.order({ column: 'age', direction: 'descending' })
+> * 	.collect() // typed rows
+diff -r -w -B '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-database-following-final-pack/baseline/package/dist/src/server/index.cjs /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-database-following-final-pack/extract/package/dist/src/server/index.cjs
+9c9
+< * Lists the declared {@link ColumnStorage}s whose SQL EQUALITY comparisons (`equals` /
+---
+> * Lists the declared {@link ColumnStorage}s whose SQL equality comparisons (`equals` /
+15c15
+< * This set governs equality and prefix/suffix matching only. RANGE
+---
+> * This set governs equality and prefix/suffix matching only. Range
+17c17
+< * are exact for `integer` / `real` / `boolean` but NOT for `text`: compiled
+---
+> * are exact for `integer` / `real` / `boolean` but not for `text`: compiled
+19c19
+< * TEXT byte-for-byte as UTF-8 — equivalent to Unicode CODE-POINT order —
+---
+> * TEXT byte-for-byte as UTF-8 — equivalent to Unicode code-point order —
+21c21
+< * compares UTF-16 CODE-UNIT order. The two orders diverge for supplementary-
+---
+> * compares UTF-16 code-unit order. The two orders diverge for supplementary-
+23,24c23,24
+< * (`\uD800`–`\uDBFF`) sorts BELOW ``–`￿` in code-unit order, while
+< * its code point sorts ABOVE them. So `matchesConditionExactly`'s range family and
+---
+> * (`\uD800`–`\uDBFF`) sorts below ``–`￿` in code-unit order, while
+> * its code point sorts above them. So `matchesConditionExactly`'s range family and
+34c34
+< * Lists the declared {@link ColumnStorage}s whose SQL RANGE comparisons
+---
+> * Lists the declared {@link ColumnStorage}s whose SQL range comparisons
+94c94
+< * `text` ↔ string, `integer` / `real` ↔ FINITE number (`NaN` / `±Infinity`
+---
+> * `text` ↔ string, `integer` / `real` ↔ finite number (`NaN` / `±Infinity`
+113c113
+< * Reports whether one {@link Condition} compiles to SQL that is PROVABLY
+---
+> * Reports whether one {@link Condition} compiles to SQL that is provably
+127,129c127,129
+< * `real` / `boolean`) — a `text` column's range conditions REFINE, because
+< * SQLite's default BINARY collation orders TEXT by Unicode CODE POINT while
+< * the core engine's `compareValues` orders JS strings by UTF-16 CODE UNIT,
+---
+> * `real` / `boolean`) — a `text` column's range conditions refine, because
+> * SQLite's default BINARY collation orders TEXT by Unicode code point while
+> * the core engine's `compareValues` orders JS strings by UTF-16 code unit,
+132c132
+< * `any` / `none` require a NON-EMPTY list where every element matches (an empty
+---
+> * `any` / `none` require a non-empty list where every element matches (an empty
+138c138
+< * likewise collation-independent. `like` / `glob` are NEVER exact — SQLite
+---
+> * likewise collation-independent. `like` / `glob` are never exact — SQLite
+178c178
+< * `boolean`). `text` is NOT exact here: SQLite's default BINARY collation
+---
+> * `boolean`). `text` is not exact here: SQLite's default BINARY collation
+182c182,185
+< * a `text` order term REFINES through the core engine instead.
+---
+> * a `text` order term refines through the core engine instead. The column must
+> * also be required and non-null: an optional or nullable column refines, because
+> * SQL orders its `NULL`s ahead of every value while the core total order ranks
+> * `undefined` before `null` before every other value.
+198a202,205
+> * @remarks
+> * The gate {@link import('./drivers/SQLiteDriver.js').SQLiteDriver} checks before
+> * trusting a native SQL read over a full-scan refine through the core engine.
+> *
+430c437
+< * A naive `idx_<table>_<cols joined by _>` is AMBIGUOUS: table `'a_b'` with
+---
+> * A naive `idx_<table>_<cols joined by _>` is ambiguous: table `'a_b'` with
+454c461
+< * RUNTIME value — NOT `json`.
+---
+> * runtime value, never as `json`.
+500a508,511
+> * @remarks
+> * A flat path compiles to the quoted column; a nested path compiles to a
+> * `json_extract` over the head column with the rest of the path as its accessor.
+> *
+528c539
+< * Compiles a NESTED {@link FieldPath} to the `json_type(<col>, <path>)` SQL
+---
+> * Compiles a nested {@link FieldPath} to the `json_type(<col>, <path>)` SQL
+530c541
+< * PRESENT JSON `null` apart from an ABSENT path (both read back as SQL `NULL`
+---
+> * present JSON `null` apart from an absent path (both read back as SQL `NULL`
+554c565
+< * the column side compiles to. A flat column encodes operands with its DECLARED
+---
+> * the column side compiles to. A flat column encodes operands with its declared
+556c567
+< * encodes each operand as the NATIVE scalar `json_extract` returns, derived from
+---
+> * encodes each operand as the native scalar `json_extract` returns, derived from
+561,562c572,573
+< * The core engine's total order ranks `undefined` (rank 0) BELOW `null`
+< * (rank 1) (see `compareValues`), so a MISSING/`NULL` column MATCHES
+---
+> * The core engine's total order ranks `undefined` (rank 0) below `null`
+> * (rank 1) (see `compareValues`), so a missing/`NULL` column matches
+566,567c577,578
+< * FLAT column's stored `NULL` decodes to `undefined` per `decodeRow`, so a
+< * flat `value` is NEVER a present `null` — only a NESTED path can be
+---
+> * flat column's stored `NULL` decodes to `undefined` per `decodeRow`, so a
+> * flat `value` is never a present `null` — only a nested path can be
+593,594c604,605
+< * A NESTED path can be present-but-`null` (a stored JSON `null`), which
+< * `json_extract` reads back as SQL `NULL` — indistinguishable from an ABSENT
+---
+> * A nested path can be present-but-`null` (a stored JSON `null`), which
+> * `json_extract` reads back as SQL `NULL` — indistinguishable from an absent
+601c612
+< * path, `json_extract` already collapses BOTH absent and present-null to SQL
+---
+> * path, `json_extract` already collapses both absent and present-null to SQL
+745c756
+< * engine's total order EXACTLY under SQL's three-valued NULL logic, so this
+---
+> * engine's total order exactly under SQL's three-valued NULL logic, so this
+863c874
+< * `starts` / `ends` compiling to a CODE-POINT `substr` slice guarded by
+---
+> * `starts` / `ends` compiling to a code-point `substr` slice guarded by
+905a917,920
+> * @remarks
+> * Each statement is a `CREATE INDEX IF NOT EXISTS` named by
+> * {@link deriveSQLiteIndexName}, so a reopen re-issues the set safely.
+> *
+914a930,933
+> * @remarks
+> * These are the statements the SQLite driver's `migrate` executes for the step,
+> * inside whichever native transaction is active.
+> *
+2301c2320
+< * Creates a persistent JSON-file {@link DriverInterface} for the core database layer.
+---
+> * Creates a persistent JSON-file {@link DriverInterface} for a given path.
+2334c2353,2354
+< * Creates a trusted-mode SQLite {@link DriverInterface} for the core database layer.
+---
+> * Creates a trusted-mode, server-native SQLite {@link DriverInterface} for a database path,
+> * or for `:memory:` when the options bag omits one.
+diff -r -w -B '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-database-following-final-pack/baseline/package/dist/src/server/index.d.cts /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-database-following-final-pack/extract/package/dist/src/server/index.d.cts
+1,23c1,18
+< import { AggregateOperation } from '@orkestrel/database';
+< import { AggregateOperation as AggregateOperation_2 } from '@orkestrel/database';
+< import { ColumnSchema } from '@orkestrel/database';
+< import { ColumnStorage } from '@orkestrel/database';
+< import { Condition } from '@orkestrel/database';
+< import { DriverInterface } from '@orkestrel/database';
+< import { DriverInterface as DriverInterface_2 } from '@orkestrel/database';
+< import { DriverMetadata } from '@orkestrel/database';
+< import { FieldPath } from '@orkestrel/contract';
+< import { Key } from '@orkestrel/database';
+< import { MigrationInput } from '@orkestrel/database';
+< import { MigrationStep } from '@orkestrel/database';
+< import { OperationOptions } from '@orkestrel/database';
+< import { Order } from '@orkestrel/database';
+< import { QueryInput } from '@orkestrel/database';
+< import { QueryInput as QueryInput_2 } from '@orkestrel/database';
+< import { Row } from '@orkestrel/database';
+< import { Row as Row_2 } from '@orkestrel/database';
+< import { SQLiteRow } from '@orkestrel/sqlite';
+< import { SQLiteValue } from '@orkestrel/sqlite';
+< import { StorageInterface } from '@orkestrel/database';
+< import { TableSchema } from '@orkestrel/database';
+< import { TableSchema as TableSchema_2 } from '@orkestrel/database';
+---
+> import type { AggregateOperation } from '@orkestrel/database';
+> import type { ColumnSchema } from '@orkestrel/database';
+> import type { ColumnStorage } from '@orkestrel/database';
+> import type { Condition } from '@orkestrel/database';
+> import type { DriverInterface } from '@orkestrel/database';
+> import type { DriverMetadata } from '@orkestrel/database';
+> import type { FieldPath } from '@orkestrel/contract';
+> import type { Key } from '@orkestrel/database';
+> import type { MigrationInput } from '@orkestrel/database';
+> import type { MigrationStep } from '@orkestrel/database';
+> import type { OperationOptions } from '@orkestrel/database';
+> import type { Order } from '@orkestrel/database';
+> import type { QueryInput } from '@orkestrel/database';
+> import type { Row } from '@orkestrel/database';
+> import type { SQLiteRow } from '@orkestrel/sqlite';
+> import type { SQLiteValue } from '@orkestrel/sqlite';
+> import type { StorageInterface } from '@orkestrel/database';
+> import type { TableSchema } from '@orkestrel/database';
+48c43
+<  * the column side compiles to. A flat column encodes operands with its DECLARED
+---
+>  * the column side compiles to. A flat column encodes operands with its declared
+50c45
+<  * encodes each operand as the NATIVE scalar `json_extract` returns, derived from
+---
+>  * encodes each operand as the native scalar `json_extract` returns, derived from
+55,56c50,51
+<  * The core engine's total order ranks `undefined` (rank 0) BELOW `null`
+<  * (rank 1) (see `compareValues`), so a MISSING/`NULL` column MATCHES
+---
+>  * The core engine's total order ranks `undefined` (rank 0) below `null`
+>  * (rank 1) (see `compareValues`), so a missing/`NULL` column matches
+60,61c55,56
+<  * FLAT column's stored `NULL` decodes to `undefined` per `decodeRow`, so a
+<  * flat `value` is NEVER a present `null` — only a NESTED path can be
+---
+>  * flat column's stored `NULL` decodes to `undefined` per `decodeRow`, so a
+>  * flat `value` is never a present `null` — only a nested path can be
+87,88c82,83
+<  * A NESTED path can be present-but-`null` (a stored JSON `null`), which
+<  * `json_extract` reads back as SQL `NULL` — indistinguishable from an ABSENT
+---
+>  * A nested path can be present-but-`null` (a stored JSON `null`), which
+>  * `json_extract` reads back as SQL `NULL` — indistinguishable from an absent
+95c90
+<  * path, `json_extract` already collapses BOTH absent and present-null to SQL
+---
+>  * path, `json_extract` already collapses both absent and present-null to SQL
+114c109,110
+<  * Represents a parameterized SQL fragment or statement plus its bind values.
+---
+>  * Represents a parameterized SQL fragment or statement plus its bind values. The
+>  * `@orkestrel/database/server` entry point exports this type.
+130a127,130
+>  * @remarks
+>  * A flat path compiles to the quoted column; a nested path compiles to a
+>  * `json_extract` over the head column with the rest of the path as its accessor.
+>  *
+137c137
+<  * Compiles a NESTED {@link FieldPath} to the `json_type(<col>, <path>)` SQL
+---
+>  * Compiles a nested {@link FieldPath} to the `json_type(<col>, <path>)` SQL
+139c139
+<  * PRESENT JSON `null` apart from an ABSENT path (both read back as SQL `NULL`
+---
+>  * present JSON `null` apart from an absent path (both read back as SQL `NULL`
+214c214
+<  * `starts` / `ends` compiling to a CODE-POINT `substr` slice guarded by
+---
+>  * `starts` / `ends` compiling to a code-point `substr` slice guarded by
+239c239
+<  * engine's total order EXACTLY under SQL's three-valued NULL logic, so this
+---
+>  * engine's total order exactly under SQL's three-valued NULL logic, so this
+256c256
+<  * Creates a persistent JSON-file {@link DriverInterface} for the core database layer.
+---
+>  * Creates a persistent JSON-file {@link DriverInterface} for a given path.
+288c288,289
+<  * Creates a trusted-mode SQLite {@link DriverInterface} for the core database layer.
+---
+>  * Creates a trusted-mode, server-native SQLite {@link DriverInterface} for a database path,
+>  * or for `:memory:` when the options bag omits one.
+374c375
+<  * A naive `idx_<table>_<cols joined by _>` is AMBIGUOUS: table `'a_b'` with
+---
+>  * A naive `idx_<table>_<cols joined by _>` is ambiguous: table `'a_b'` with
+434c435
+<  * Lists the declared {@link ColumnStorage}s whose SQL EQUALITY comparisons (`equals` /
+---
+>  * Lists the declared {@link ColumnStorage}s whose SQL equality comparisons (`equals` /
+440c441
+<  * This set governs equality and prefix/suffix matching only. RANGE
+---
+>  * This set governs equality and prefix/suffix matching only. Range
+442c443
+<  * are exact for `integer` / `real` / `boolean` but NOT for `text`: compiled
+---
+>  * are exact for `integer` / `real` / `boolean` but not for `text`: compiled
+444c445
+<  * TEXT byte-for-byte as UTF-8 — equivalent to Unicode CODE-POINT order —
+---
+>  * TEXT byte-for-byte as UTF-8 — equivalent to Unicode code-point order —
+446c447
+<  * compares UTF-16 CODE-UNIT order. The two orders diverge for supplementary-
+---
+>  * compares UTF-16 code-unit order. The two orders diverge for supplementary-
+448,449c449,450
+<  * (`\uD800`–`\uDBFF`) sorts BELOW ``–`￿` in code-unit order, while
+<  * its code point sorts ABOVE them. So `matchesConditionExactly`'s range family and
+---
+>  * (`\uD800`–`\uDBFF`) sorts below ``–`￿` in code-unit order, while
+>  * its code point sorts above them. So `matchesConditionExactly`'s range family and
+455c456
+<  * Lists the declared {@link ColumnStorage}s whose SQL RANGE comparisons
+---
+>  * Lists the declared {@link ColumnStorage}s whose SQL range comparisons
+487c488
+<  * RUNTIME value — NOT `json`.
+---
+>  * runtime value, never as `json`.
+544c545
+< export declare class JSONDriver implements DriverInterface_2 {
+---
+> export declare class JSONDriver implements DriverInterface {
+547c548
+<     open(schema: readonly TableSchema_2[]): Promise<void>;
+---
+>     open(schema: readonly TableSchema[]): Promise<void>;
+549,551c550,552
+<     read(table: string, key: Key): Promise<Row_2 | undefined>;
+<     write(table: string, key: Key, row: Row_2, options?: OperationOptions): Promise<void>;
+<     insert(table: string, key: Key, row: Row_2, options?: OperationOptions): Promise<void>;
+---
+>     read(table: string, key: Key): Promise<Row | undefined>;
+>     write(table: string, key: Key, row: Row, options?: OperationOptions): Promise<void>;
+>     insert(table: string, key: Key, row: Row, options?: OperationOptions): Promise<void>;
+554c555
+<     scan(table: string): AsyncIterable<Row_2>;
+---
+>     scan(table: string): AsyncIterable<Row>;
+566c567
+<     stream(table: string, input: QueryInput_2): AsyncIterable<Row_2>;
+---
+>     stream(table: string, input: QueryInput): AsyncIterable<Row>;
+663c664
+<  * Reports whether one {@link Condition} compiles to SQL that is PROVABLY
+---
+>  * Reports whether one {@link Condition} compiles to SQL that is provably
+677,679c678,680
+<  * `real` / `boolean`) — a `text` column's range conditions REFINE, because
+<  * SQLite's default BINARY collation orders TEXT by Unicode CODE POINT while
+<  * the core engine's `compareValues` orders JS strings by UTF-16 CODE UNIT,
+---
+>  * `real` / `boolean`) — a `text` column's range conditions refine, because
+>  * SQLite's default BINARY collation orders TEXT by Unicode code point while
+>  * the core engine's `compareValues` orders JS strings by UTF-16 code unit,
+682c683
+<  * `any` / `none` require a NON-EMPTY list where every element matches (an empty
+---
+>  * `any` / `none` require a non-empty list where every element matches (an empty
+688c689
+<  * likewise collation-independent. `like` / `glob` are NEVER exact — SQLite
+---
+>  * likewise collation-independent. `like` / `glob` are never exact — SQLite
+703c704
+<  * `text` ↔ string, `integer` / `real` ↔ FINITE number (`NaN` / `±Infinity`
+---
+>  * `text` ↔ string, `integer` / `real` ↔ finite number (`NaN` / `±Infinity`
+720c721
+<  * that matches the engine's {@link import('@src/core').sortRows} exactly.
+---
+>  * that matches the engine's {@link import('@orkestrel/database').sortRows} exactly.
+725c726
+<  * `boolean`). `text` is NOT exact here: SQLite's default BINARY collation
+---
+>  * `boolean`). `text` is not exact here: SQLite's default BINARY collation
+729c730,733
+<  * a `text` order term REFINES through the core engine instead.
+---
+>  * a `text` order term refines through the core engine instead. The column must
+>  * also be required and non-null: an optional or nullable column refines, because
+>  * SQL orders its `NULL`s ahead of every value while the core total order ranks
+>  * `undefined` before `null` before every other value.
+741a746,749
+>  * @remarks
+>  * The gate {@link import('./drivers/SQLiteDriver.js').SQLiteDriver} checks before
+>  * trusting a native SQL read over a full-scan refine through the core engine.
+>  *
+788a797,800
+>  * @remarks
+>  * Each statement is a `CREATE INDEX IF NOT EXISTS` named by
+>  * {@link deriveSQLiteIndexName}, so a reopen re-issues the set safely.
+>  *
+850c862
+< export declare class SQLiteDriver implements DriverInterface_2 {
+---
+> export declare class SQLiteDriver implements DriverInterface {
+853c865
+<     open(schema: readonly TableSchema_2[]): Promise<void>;
+---
+>     open(schema: readonly TableSchema[]): Promise<void>;
+855,857c867,869
+<     read(table: string, key: Key): Promise<Row_2 | undefined>;
+<     write(table: string, key: Key, row: Row_2, options?: OperationOptions): Promise<void>;
+<     insert(table: string, key: Key, row: Row_2, options?: OperationOptions): Promise<void>;
+---
+>     read(table: string, key: Key): Promise<Row | undefined>;
+>     write(table: string, key: Key, row: Row, options?: OperationOptions): Promise<void>;
+>     insert(table: string, key: Key, row: Row, options?: OperationOptions): Promise<void>;
+860c872
+<     scan(table: string): AsyncIterable<Row_2>;
+---
+>     scan(table: string): AsyncIterable<Row>;
+862,864c874,876
+<     records(table: string, input: QueryInput_2): Promise<readonly Row_2[]>;
+<     aggregate(table: string, operation: AggregateOperation_2, column: FieldPath, input: QueryInput_2): Promise<number | undefined>;
+<     stream(table: string, input: QueryInput_2): AsyncIterable<Row_2>;
+---
+>     records(table: string, input: QueryInput): Promise<readonly Row[]>;
+>     aggregate(table: string, operation: AggregateOperation, column: FieldPath, input: QueryInput): Promise<number | undefined>;
+>     stream(table: string, input: QueryInput): AsyncIterable<Row>;
+921c933,934
+<  * Options for {@link import('./factories.js').createSQLiteDriver}.
+---
+>  * Configures {@link import('./factories.js').createSQLiteDriver}. The
+>  * `@orkestrel/database/server` entry point exports this type.
+946a960,963
+>  *
+>  * @remarks
+>  * These are the statements the SQLite driver's `migrate` executes for the step,
+>  * inside whichever native transaction is active.
+diff -r -w -B '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-database-following-final-pack/baseline/package/dist/src/server/index.d.ts /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-database-following-final-pack/extract/package/dist/src/server/index.d.ts
+1,23c1,18
+< import { AggregateOperation } from '@orkestrel/database';
+< import { AggregateOperation as AggregateOperation_2 } from '@orkestrel/database';
+< import { ColumnSchema } from '@orkestrel/database';
+< import { ColumnStorage } from '@orkestrel/database';
+< import { Condition } from '@orkestrel/database';
+< import { DriverInterface } from '@orkestrel/database';
+< import { DriverInterface as DriverInterface_2 } from '@orkestrel/database';
+< import { DriverMetadata } from '@orkestrel/database';
+< import { FieldPath } from '@orkestrel/contract';
+< import { Key } from '@orkestrel/database';
+< import { MigrationInput } from '@orkestrel/database';
+< import { MigrationStep } from '@orkestrel/database';
+< import { OperationOptions } from '@orkestrel/database';
+< import { Order } from '@orkestrel/database';
+< import { QueryInput } from '@orkestrel/database';
+< import { QueryInput as QueryInput_2 } from '@orkestrel/database';
+< import { Row } from '@orkestrel/database';
+< import { Row as Row_2 } from '@orkestrel/database';
+< import { SQLiteRow } from '@orkestrel/sqlite';
+< import { SQLiteValue } from '@orkestrel/sqlite';
+< import { StorageInterface } from '@orkestrel/database';
+< import { TableSchema } from '@orkestrel/database';
+< import { TableSchema as TableSchema_2 } from '@orkestrel/database';
+---
+> import type { AggregateOperation } from '@orkestrel/database';
+> import type { ColumnSchema } from '@orkestrel/database';
+> import type { ColumnStorage } from '@orkestrel/database';
+> import type { Condition } from '@orkestrel/database';
+> import type { DriverInterface } from '@orkestrel/database';
+> import type { DriverMetadata } from '@orkestrel/database';
+> import type { FieldPath } from '@orkestrel/contract';
+> import type { Key } from '@orkestrel/database';
+> import type { MigrationInput } from '@orkestrel/database';
+> import type { MigrationStep } from '@orkestrel/database';
+> import type { OperationOptions } from '@orkestrel/database';
+> import type { Order } from '@orkestrel/database';
+> import type { QueryInput } from '@orkestrel/database';
+> import type { Row } from '@orkestrel/database';
+> import type { SQLiteRow } from '@orkestrel/sqlite';
+> import type { SQLiteValue } from '@orkestrel/sqlite';
+> import type { StorageInterface } from '@orkestrel/database';
+> import type { TableSchema } from '@orkestrel/database';
+48c43
+<  * the column side compiles to. A flat column encodes operands with its DECLARED
+---
+>  * the column side compiles to. A flat column encodes operands with its declared
+50c45
+<  * encodes each operand as the NATIVE scalar `json_extract` returns, derived from
+---
+>  * encodes each operand as the native scalar `json_extract` returns, derived from
+55,56c50,51
+<  * The core engine's total order ranks `undefined` (rank 0) BELOW `null`
+<  * (rank 1) (see `compareValues`), so a MISSING/`NULL` column MATCHES
+---
+>  * The core engine's total order ranks `undefined` (rank 0) below `null`
+>  * (rank 1) (see `compareValues`), so a missing/`NULL` column matches
+60,61c55,56
+<  * FLAT column's stored `NULL` decodes to `undefined` per `decodeRow`, so a
+<  * flat `value` is NEVER a present `null` — only a NESTED path can be
+---
+>  * flat column's stored `NULL` decodes to `undefined` per `decodeRow`, so a
+>  * flat `value` is never a present `null` — only a nested path can be
+87,88c82,83
+<  * A NESTED path can be present-but-`null` (a stored JSON `null`), which
+<  * `json_extract` reads back as SQL `NULL` — indistinguishable from an ABSENT
+---
+>  * A nested path can be present-but-`null` (a stored JSON `null`), which
+>  * `json_extract` reads back as SQL `NULL` — indistinguishable from an absent
+95c90
+<  * path, `json_extract` already collapses BOTH absent and present-null to SQL
+---
+>  * path, `json_extract` already collapses both absent and present-null to SQL
+114c109,110
+<  * Represents a parameterized SQL fragment or statement plus its bind values.
+---
+>  * Represents a parameterized SQL fragment or statement plus its bind values. The
+>  * `@orkestrel/database/server` entry point exports this type.
+130a127,130
+>  * @remarks
+>  * A flat path compiles to the quoted column; a nested path compiles to a
+>  * `json_extract` over the head column with the rest of the path as its accessor.
+>  *
+137c137
+<  * Compiles a NESTED {@link FieldPath} to the `json_type(<col>, <path>)` SQL
+---
+>  * Compiles a nested {@link FieldPath} to the `json_type(<col>, <path>)` SQL
+139c139
+<  * PRESENT JSON `null` apart from an ABSENT path (both read back as SQL `NULL`
+---
+>  * present JSON `null` apart from an absent path (both read back as SQL `NULL`
+214c214
+<  * `starts` / `ends` compiling to a CODE-POINT `substr` slice guarded by
+---
+>  * `starts` / `ends` compiling to a code-point `substr` slice guarded by
+239c239
+<  * engine's total order EXACTLY under SQL's three-valued NULL logic, so this
+---
+>  * engine's total order exactly under SQL's three-valued NULL logic, so this
+256c256
+<  * Creates a persistent JSON-file {@link DriverInterface} for the core database layer.
+---
+>  * Creates a persistent JSON-file {@link DriverInterface} for a given path.
+288c288,289
+<  * Creates a trusted-mode SQLite {@link DriverInterface} for the core database layer.
+---
+>  * Creates a trusted-mode, server-native SQLite {@link DriverInterface} for a database path,
+>  * or for `:memory:` when the options bag omits one.
+374c375
+<  * A naive `idx_<table>_<cols joined by _>` is AMBIGUOUS: table `'a_b'` with
+---
+>  * A naive `idx_<table>_<cols joined by _>` is ambiguous: table `'a_b'` with
+434c435
+<  * Lists the declared {@link ColumnStorage}s whose SQL EQUALITY comparisons (`equals` /
+---
+>  * Lists the declared {@link ColumnStorage}s whose SQL equality comparisons (`equals` /
+440c441
+<  * This set governs equality and prefix/suffix matching only. RANGE
+---
+>  * This set governs equality and prefix/suffix matching only. Range
+442c443
+<  * are exact for `integer` / `real` / `boolean` but NOT for `text`: compiled
+---
+>  * are exact for `integer` / `real` / `boolean` but not for `text`: compiled
+444c445
+<  * TEXT byte-for-byte as UTF-8 — equivalent to Unicode CODE-POINT order —
+---
+>  * TEXT byte-for-byte as UTF-8 — equivalent to Unicode code-point order —
+446c447
+<  * compares UTF-16 CODE-UNIT order. The two orders diverge for supplementary-
+---
+>  * compares UTF-16 code-unit order. The two orders diverge for supplementary-
+448,449c449,450
+<  * (`\uD800`–`\uDBFF`) sorts BELOW ``–`￿` in code-unit order, while
+<  * its code point sorts ABOVE them. So `matchesConditionExactly`'s range family and
+---
+>  * (`\uD800`–`\uDBFF`) sorts below ``–`￿` in code-unit order, while
+>  * its code point sorts above them. So `matchesConditionExactly`'s range family and
+455c456
+<  * Lists the declared {@link ColumnStorage}s whose SQL RANGE comparisons
+---
+>  * Lists the declared {@link ColumnStorage}s whose SQL range comparisons
+487c488
+<  * RUNTIME value — NOT `json`.
+---
+>  * runtime value, never as `json`.
+544c545
+< export declare class JSONDriver implements DriverInterface_2 {
+---
+> export declare class JSONDriver implements DriverInterface {
+547c548
+<     open(schema: readonly TableSchema_2[]): Promise<void>;
+---
+>     open(schema: readonly TableSchema[]): Promise<void>;
+549,551c550,552
+<     read(table: string, key: Key): Promise<Row_2 | undefined>;
+<     write(table: string, key: Key, row: Row_2, options?: OperationOptions): Promise<void>;
+<     insert(table: string, key: Key, row: Row_2, options?: OperationOptions): Promise<void>;
+---
+>     read(table: string, key: Key): Promise<Row | undefined>;
+>     write(table: string, key: Key, row: Row, options?: OperationOptions): Promise<void>;
+>     insert(table: string, key: Key, row: Row, options?: OperationOptions): Promise<void>;
+554c555
+<     scan(table: string): AsyncIterable<Row_2>;
+---
+>     scan(table: string): AsyncIterable<Row>;
+566c567
+<     stream(table: string, input: QueryInput_2): AsyncIterable<Row_2>;
+---
+>     stream(table: string, input: QueryInput): AsyncIterable<Row>;
+663c664
+<  * Reports whether one {@link Condition} compiles to SQL that is PROVABLY
+---
+>  * Reports whether one {@link Condition} compiles to SQL that is provably
+677,679c678,680
+<  * `real` / `boolean`) — a `text` column's range conditions REFINE, because
+<  * SQLite's default BINARY collation orders TEXT by Unicode CODE POINT while
+<  * the core engine's `compareValues` orders JS strings by UTF-16 CODE UNIT,
+---
+>  * `real` / `boolean`) — a `text` column's range conditions refine, because
+>  * SQLite's default BINARY collation orders TEXT by Unicode code point while
+>  * the core engine's `compareValues` orders JS strings by UTF-16 code unit,
+682c683
+<  * `any` / `none` require a NON-EMPTY list where every element matches (an empty
+---
+>  * `any` / `none` require a non-empty list where every element matches (an empty
+688c689
+<  * likewise collation-independent. `like` / `glob` are NEVER exact — SQLite
+---
+>  * likewise collation-independent. `like` / `glob` are never exact — SQLite
+703c704
+<  * `text` ↔ string, `integer` / `real` ↔ FINITE number (`NaN` / `±Infinity`
+---
+>  * `text` ↔ string, `integer` / `real` ↔ finite number (`NaN` / `±Infinity`
+720c721
+<  * that matches the engine's {@link import('@src/core').sortRows} exactly.
+---
+>  * that matches the engine's {@link import('@orkestrel/database').sortRows} exactly.
+725c726
+<  * `boolean`). `text` is NOT exact here: SQLite's default BINARY collation
+---
+>  * `boolean`). `text` is not exact here: SQLite's default BINARY collation
+729c730,733
+<  * a `text` order term REFINES through the core engine instead.
+---
+>  * a `text` order term refines through the core engine instead. The column must
+>  * also be required and non-null: an optional or nullable column refines, because
+>  * SQL orders its `NULL`s ahead of every value while the core total order ranks
+>  * `undefined` before `null` before every other value.
+741a746,749
+>  * @remarks
+>  * The gate {@link import('./drivers/SQLiteDriver.js').SQLiteDriver} checks before
+>  * trusting a native SQL read over a full-scan refine through the core engine.
+>  *
+788a797,800
+>  * @remarks
+>  * Each statement is a `CREATE INDEX IF NOT EXISTS` named by
+>  * {@link deriveSQLiteIndexName}, so a reopen re-issues the set safely.
+>  *
+850c862
+< export declare class SQLiteDriver implements DriverInterface_2 {
+---
+> export declare class SQLiteDriver implements DriverInterface {
+853c865
+<     open(schema: readonly TableSchema_2[]): Promise<void>;
+---
+>     open(schema: readonly TableSchema[]): Promise<void>;
+855,857c867,869
+<     read(table: string, key: Key): Promise<Row_2 | undefined>;
+<     write(table: string, key: Key, row: Row_2, options?: OperationOptions): Promise<void>;
+<     insert(table: string, key: Key, row: Row_2, options?: OperationOptions): Promise<void>;
+---
+>     read(table: string, key: Key): Promise<Row | undefined>;
+>     write(table: string, key: Key, row: Row, options?: OperationOptions): Promise<void>;
+>     insert(table: string, key: Key, row: Row, options?: OperationOptions): Promise<void>;
+860c872
+<     scan(table: string): AsyncIterable<Row_2>;
+---
+>     scan(table: string): AsyncIterable<Row>;
+862,864c874,876
+<     records(table: string, input: QueryInput_2): Promise<readonly Row_2[]>;
+<     aggregate(table: string, operation: AggregateOperation_2, column: FieldPath, input: QueryInput_2): Promise<number | undefined>;
+<     stream(table: string, input: QueryInput_2): AsyncIterable<Row_2>;
+---
+>     records(table: string, input: QueryInput): Promise<readonly Row[]>;
+>     aggregate(table: string, operation: AggregateOperation, column: FieldPath, input: QueryInput): Promise<number | undefined>;
+>     stream(table: string, input: QueryInput): AsyncIterable<Row>;
+921c933,934
+<  * Options for {@link import('./factories.js').createSQLiteDriver}.
+---
+>  * Configures {@link import('./factories.js').createSQLiteDriver}. The
+>  * `@orkestrel/database/server` entry point exports this type.
+946a960,963
+>  *
+>  * @remarks
+>  * These are the statements the SQLite driver's `migrate` executes for the step,
+>  * inside whichever native transaction is active.
+diff -r -w -B '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-database-following-final-pack/baseline/package/dist/src/server/index.js /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-database-following-final-pack/extract/package/dist/src/server/index.js
+8c8
+< * Lists the declared {@link ColumnStorage}s whose SQL EQUALITY comparisons (`equals` /
+---
+> * Lists the declared {@link ColumnStorage}s whose SQL equality comparisons (`equals` /
+14c14
+< * This set governs equality and prefix/suffix matching only. RANGE
+---
+> * This set governs equality and prefix/suffix matching only. Range
+16c16
+< * are exact for `integer` / `real` / `boolean` but NOT for `text`: compiled
+---
+> * are exact for `integer` / `real` / `boolean` but not for `text`: compiled
+18c18
+< * TEXT byte-for-byte as UTF-8 — equivalent to Unicode CODE-POINT order —
+---
+> * TEXT byte-for-byte as UTF-8 — equivalent to Unicode code-point order —
+20c20
+< * compares UTF-16 CODE-UNIT order. The two orders diverge for supplementary-
+---
+> * compares UTF-16 code-unit order. The two orders diverge for supplementary-
+22,23c22,23
+< * (`\uD800`–`\uDBFF`) sorts BELOW ``–`￿` in code-unit order, while
+< * its code point sorts ABOVE them. So `matchesConditionExactly`'s range family and
+---
+> * (`\uD800`–`\uDBFF`) sorts below ``–`￿` in code-unit order, while
+> * its code point sorts above them. So `matchesConditionExactly`'s range family and
+33c33
+< * Lists the declared {@link ColumnStorage}s whose SQL RANGE comparisons
+---
+> * Lists the declared {@link ColumnStorage}s whose SQL range comparisons
+93c93
+< * `text` ↔ string, `integer` / `real` ↔ FINITE number (`NaN` / `±Infinity`
+---
+> * `text` ↔ string, `integer` / `real` ↔ finite number (`NaN` / `±Infinity`
+112c112
+< * Reports whether one {@link Condition} compiles to SQL that is PROVABLY
+---
+> * Reports whether one {@link Condition} compiles to SQL that is provably
+126,128c126,128
+< * `real` / `boolean`) — a `text` column's range conditions REFINE, because
+< * SQLite's default BINARY collation orders TEXT by Unicode CODE POINT while
+< * the core engine's `compareValues` orders JS strings by UTF-16 CODE UNIT,
+---
+> * `real` / `boolean`) — a `text` column's range conditions refine, because
+> * SQLite's default BINARY collation orders TEXT by Unicode code point while
+> * the core engine's `compareValues` orders JS strings by UTF-16 code unit,
+131c131
+< * `any` / `none` require a NON-EMPTY list where every element matches (an empty
+---
+> * `any` / `none` require a non-empty list where every element matches (an empty
+137c137
+< * likewise collation-independent. `like` / `glob` are NEVER exact — SQLite
+---
+> * likewise collation-independent. `like` / `glob` are never exact — SQLite
+177c177
+< * `boolean`). `text` is NOT exact here: SQLite's default BINARY collation
+---
+> * `boolean`). `text` is not exact here: SQLite's default BINARY collation
+181c181,184
+< * a `text` order term REFINES through the core engine instead.
+---
+> * a `text` order term refines through the core engine instead. The column must
+> * also be required and non-null: an optional or nullable column refines, because
+> * SQL orders its `NULL`s ahead of every value while the core total order ranks
+> * `undefined` before `null` before every other value.
+197a201,204
+> * @remarks
+> * The gate {@link import('./drivers/SQLiteDriver.js').SQLiteDriver} checks before
+> * trusting a native SQL read over a full-scan refine through the core engine.
+> *
+429c436
+< * A naive `idx_<table>_<cols joined by _>` is AMBIGUOUS: table `'a_b'` with
+---
+> * A naive `idx_<table>_<cols joined by _>` is ambiguous: table `'a_b'` with
+453c460
+< * RUNTIME value — NOT `json`.
+---
+> * runtime value, never as `json`.
+499a507,510
+> * @remarks
+> * A flat path compiles to the quoted column; a nested path compiles to a
+> * `json_extract` over the head column with the rest of the path as its accessor.
+> *
+527c538
+< * Compiles a NESTED {@link FieldPath} to the `json_type(<col>, <path>)` SQL
+---
+> * Compiles a nested {@link FieldPath} to the `json_type(<col>, <path>)` SQL
+529c540
+< * PRESENT JSON `null` apart from an ABSENT path (both read back as SQL `NULL`
+---
+> * present JSON `null` apart from an absent path (both read back as SQL `NULL`
+553c564
+< * the column side compiles to. A flat column encodes operands with its DECLARED
+---
+> * the column side compiles to. A flat column encodes operands with its declared
+555c566
+< * encodes each operand as the NATIVE scalar `json_extract` returns, derived from
+---
+> * encodes each operand as the native scalar `json_extract` returns, derived from
+560,561c571,572
+< * The core engine's total order ranks `undefined` (rank 0) BELOW `null`
+< * (rank 1) (see `compareValues`), so a MISSING/`NULL` column MATCHES
+---
+> * The core engine's total order ranks `undefined` (rank 0) below `null`
+> * (rank 1) (see `compareValues`), so a missing/`NULL` column matches
+565,566c576,577
+< * FLAT column's stored `NULL` decodes to `undefined` per `decodeRow`, so a
+< * flat `value` is NEVER a present `null` — only a NESTED path can be
+---
+> * flat column's stored `NULL` decodes to `undefined` per `decodeRow`, so a
+> * flat `value` is never a present `null` — only a nested path can be
+592,593c603,604
+< * A NESTED path can be present-but-`null` (a stored JSON `null`), which
+< * `json_extract` reads back as SQL `NULL` — indistinguishable from an ABSENT
+---
+> * A nested path can be present-but-`null` (a stored JSON `null`), which
+> * `json_extract` reads back as SQL `NULL` — indistinguishable from an absent
+600c611
+< * path, `json_extract` already collapses BOTH absent and present-null to SQL
+---
+> * path, `json_extract` already collapses both absent and present-null to SQL
+744c755
+< * engine's total order EXACTLY under SQL's three-valued NULL logic, so this
+---
+> * engine's total order exactly under SQL's three-valued NULL logic, so this
+862c873
+< * `starts` / `ends` compiling to a CODE-POINT `substr` slice guarded by
+---
+> * `starts` / `ends` compiling to a code-point `substr` slice guarded by
+904a916,919
+> * @remarks
+> * Each statement is a `CREATE INDEX IF NOT EXISTS` named by
+> * {@link deriveSQLiteIndexName}, so a reopen re-issues the set safely.
+> *
+913a929,932
+> * @remarks
+> * These are the statements the SQLite driver's `migrate` executes for the step,
+> * inside whichever native transaction is active.
+> *
+2300c2319
+< * Creates a persistent JSON-file {@link DriverInterface} for the core database layer.
+---
+> * Creates a persistent JSON-file {@link DriverInterface} for a given path.
+2333c2352,2353
+< * Creates a trusted-mode SQLite {@link DriverInterface} for the core database layer.
+---
+> * Creates a trusted-mode, server-native SQLite {@link DriverInterface} for a database path,
+> * or for `:memory:` when the options bag omits one.

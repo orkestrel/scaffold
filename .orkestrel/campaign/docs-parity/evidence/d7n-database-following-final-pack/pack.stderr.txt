@@ -1,0 +1,31 @@
+npm notice
+npm notice 📦  @orkestrel/database@0.0.14
+npm notice Tarball Contents
+npm notice 1.1kB LICENSE
+npm notice 1.9kB README.md
+npm notice 20.9kB dist/src/browser/index.d.ts
+npm notice 35.1kB dist/src/browser/index.js
+npm notice 61.0kB dist/src/browser/index.js.map
+npm notice 131.7kB dist/src/core/index.cjs
+npm notice 230.8kB dist/src/core/index.cjs.map
+npm notice 90.2kB dist/src/core/index.d.cts
+npm notice 90.2kB dist/src/core/index.d.ts
+npm notice 129.2kB dist/src/core/index.js
+npm notice 230.0kB dist/src/core/index.js.map
+npm notice 99.5kB dist/src/server/index.cjs
+npm notice 169.8kB dist/src/server/index.cjs.map
+npm notice 47.7kB dist/src/server/index.d.cts
+npm notice 47.7kB dist/src/server/index.d.ts
+npm notice 96.5kB dist/src/server/index.js
+npm notice 167.8kB dist/src/server/index.js.map
+npm notice 4.9kB package.json
+npm notice Tarball Details
+npm notice name: @orkestrel/database
+npm notice version: 0.0.14
+npm notice filename: orkestrel-database-0.0.14.tgz
+npm notice package size: 405.6 kB
+npm notice unpacked size: 1.7 MB
+npm notice shasum: 0e8fffa248f2ddb2cc9e481702ed431b9b9a0aca
+npm notice integrity: sha512-LM+abYQh7yh/N[...]aLpcE4A19X3RQ==
+npm notice total files: 18
+npm notice

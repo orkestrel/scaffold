@@ -1,0 +1,22 @@
+npm notice
+npm notice 📦  @orkestrel/form@0.0.5
+npm notice Tarball Contents
+npm notice 1.1kB LICENSE
+npm notice 2.6kB README.md
+npm notice 69.5kB dist/src/core/index.cjs
+npm notice 115.7kB dist/src/core/index.cjs.map
+npm notice 47.9kB dist/src/core/index.d.cts
+npm notice 47.9kB dist/src/core/index.d.ts
+npm notice 64.1kB dist/src/core/index.js
+npm notice 113.2kB dist/src/core/index.js.map
+npm notice 3.5kB package.json
+npm notice Tarball Details
+npm notice name: @orkestrel/form
+npm notice version: 0.0.5
+npm notice filename: orkestrel-form-0.0.5.tgz
+npm notice package size: 100.3 kB
+npm notice unpacked size: 465.5 kB
+npm notice shasum: cd5838acba7b77762dff3a74eb8e8e22ef8dc4fc
+npm notice integrity: sha512-LUa61cuUGGT+o[...]sXtYNC6y0S+fQ==
+npm notice total files: 9
+npm notice
