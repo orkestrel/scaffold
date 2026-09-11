@@ -29,7 +29,7 @@ for these packages. Keep prompt.txt unchanged until this layer is prepared.
 | markdown | 0.0.14 | prepared at 99978d8; final prepublish/pack accepted; Guide bootstrap dist unchanged; campaign/main pushed; clean canonical main; unpublished |
 | pool | 0.0.11 | prepared at 25ea973; final prepublish/pack accepted; campaign/main pushed; clean canonical main; unpublished |
 | process | 0.0.11 | prepared at ea3b717; final prepublish/pack accepted; campaign/main pushed; clean canonical main; unpublished |
-| reason | 0.0.10 | source accepted and committed at 4226c32; final preparation pending |
+| reason | 0.0.10 | prepared at e7e318e; final prepublish/pack accepted; campaign/main pushed; clean canonical main; unpublished |
 | router | 0.0.14 | corrected source accepted and committed at 0b9b847; final preparation pending |
 | table | 0.0.5 | source accepted and committed at e26d34b; stale command comment corrected; full source prepublish green; final preparation pending |
 | template | 0.0.7 | source accepted and committed at e7744d0; full source prepublish green; final preparation pending |

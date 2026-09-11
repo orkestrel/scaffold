@@ -1,0 +1,2 @@
+integration: integration drives features across environments, and this workspace declares fewer than two, so its seed composes nothing.
+The catalog step did not complete: USAGE: 'catalog' does not take --offline.
