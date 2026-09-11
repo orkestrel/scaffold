@@ -1,0 +1,154 @@
+[
+  {
+    "_id": "@orkestrel/websocket@0.0.11",
+    "_rev": "11-487b6a809f6866fbf4200f5abc88cbb5",
+    "name": "@orkestrel/websocket",
+    "dist-tags": {
+      "latest": "0.0.11"
+    },
+    "versions": [
+      "0.0.1",
+      "0.0.2",
+      "0.0.3",
+      "0.0.4",
+      "0.0.5",
+      "0.0.6",
+      "0.0.7",
+      "0.0.8",
+      "0.0.9",
+      "0.0.10",
+      "0.0.11"
+    ],
+    "time": {
+      "created": "2026-07-14T00:43:36.271Z",
+      "modified": "2026-09-04T20:27:20.618Z",
+      "0.0.1": "2026-07-14T00:43:36.606Z",
+      "0.0.2": "2026-07-18T00:31:53.396Z",
+      "0.0.3": "2026-07-18T11:06:36.584Z",
+      "0.0.4": "2026-07-24T16:22:28.217Z",
+      "0.0.5": "2026-07-24T21:16:31.345Z",
+      "0.0.6": "2026-07-28T17:44:27.760Z",
+      "0.0.7": "2026-07-30T19:24:50.756Z",
+      "0.0.8": "2026-08-12T11:38:30.586Z",
+      "0.0.9": "2026-08-17T20:28:09.377Z",
+      "0.0.10": "2026-08-23T01:10:30.427Z",
+      "0.0.11": "2026-09-04T20:27:20.398Z"
+    },
+    "bugs": {
+      "url": "https://github.com/orkestrel/websocket/issues"
+    },
+    "license": "MIT",
+    "homepage": "https://github.com/orkestrel/websocket#readme",
+    "keywords": [
+      "node",
+      "rfc6455",
+      "server",
+      "typescript",
+      "websocket"
+    ],
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/orkestrel/websocket.git"
+    },
+    "description": "A dependency-light RFC 6455 WebSocket for Node — native handshake and framing over duplex streams, with a typed emitter surface. Part of the @orkestrel line.",
+    "maintainers": [
+      "mikesaintsg <mikesaintg11@gmail.com>"
+    ],
+    "readmeFilename": "README.md",
+    "_contentLength": 48326,
+    "version": "0.0.11",
+    "type": "module",
+    "sideEffects": false,
+    "main": "./dist/src/server/index.cjs",
+    "module": "./dist/src/server/index.js",
+    "types": "./dist/src/server/index.d.ts",
+    "exports": {
+      ".": {
+        "import": {
+          "types": "./dist/src/server/index.d.ts",
+          "default": "./dist/src/server/index.js"
+        },
+        "require": {
+          "types": "./dist/src/server/index.d.cts",
+          "default": "./dist/src/server/index.cjs"
+        }
+      },
+      "./package.json": "./package.json"
+    },
+    "publishConfig": {
+      "access": "public"
+    },
+    "scripts": {
+      "clean": "node -e \"require('node:fs').rmSync('dist',{recursive:true,force:true})\"",
+      "copy": "node -e \"const fs=require('node:fs'),p=require('node:path'),a=process.argv[1],b=process.argv[2];fs.mkdirSync(p.dirname(b),{recursive:true});fs.cpSync(a,b,{force:true});console.log('Copied: '+a+' to '+b)\"",
+      "scaffold": "scaffold",
+      "lint": "oxlint --config .oxlintrc.json --fix --deny-warnings .",
+      "check": "tsc --noEmit --project tsconfig.json && npm run check:src",
+      "check:src": "npm run check:src:server",
+      "check:src:server": "tsc --noEmit -p configs/src/tsconfig.server.json",
+      "format": "oxfmt --config .oxfmtrc.json --write .",
+      "format:check": "oxfmt --config .oxfmtrc.json --check .",
+      "lint:check": "oxlint --config .oxlintrc.json --deny-warnings .",
+      "test": "npm run test:src && npm run test:policy && npm run test:config && npm run test:setup && npm run test:guides && npm run test:integration",
+      "test:src": "vitest run --config vite.config.ts --no-cache --reporter=dot --project src:server",
+      "test:src:server": "vitest run --config vite.config.ts --no-cache --reporter=dot --project src:server",
+      "test:integration": "vitest run --config vite.config.ts --no-cache --reporter=dot --project integration",
+      "test:policy": "vitest run --config vite.config.ts --no-cache --reporter=dot --project policy",
+      "test:config": "vitest run --config vite.config.ts --no-cache --reporter=dot --project config",
+      "test:guides": "vitest run --config vite.config.ts --no-cache --reporter=dot --project guides",
+      "build": "npm run clean && npm run build:src",
+      "build:src": "npm run build:src:server",
+      "build:src:server": "vite build --config configs/src/vite.server.config.ts && npm run copy dist/src/server/index.d.ts dist/src/server/index.d.cts",
+      "prepublishOnly": "npm run format:check && npm run lint:check && npm run check && npm run build && npm test && npm run test:distribution -- --mode release",
+      "test:distribution": "vitest run --config vite.config.ts --no-cache --reporter=dot --project distribution",
+      "test:probe": "vitest run --config vite.config.ts --no-cache --reporter=verbose --project probe",
+      "test:bench": "vitest bench --config vite.config.ts --no-cache --project probe",
+      "prepack": "npm run build",
+      "test:setup": "vitest run --config vite.config.ts --no-cache --reporter=dot --project setup"
+    },
+    "dependencies": {
+      "@orkestrel/emitter": "^0.0.9"
+    },
+    "devDependencies": {
+      "@microsoft/api-extractor": "^7.59.0",
+      "@orkestrel/contract": "^0.0.16",
+      "@orkestrel/guide": "^0.0.16",
+      "@orkestrel/probe": "^0.0.11",
+      "@orkestrel/scaffold": "^0.0.61",
+      "@orkestrel/test": "^0.0.13",
+      "@types/node": "^26.4.1",
+      "oxfmt": "^0.66.0",
+      "oxlint": "^1.81.0",
+      "typescript": "^6.0.3",
+      "vite": "^8.2.2",
+      "vite-plugin-dts": "^5.1.0",
+      "vitest": "^4.1.11"
+    },
+    "engines": {
+      "node": ">=22.12.0"
+    },
+    "gitHead": "a1baf72d35e86c733c7843a6bf2f7c4fee4dffe6",
+    "_nodeVersion": "22.22.2",
+    "_npmVersion": "11.19.1",
+    "dist": {
+      "integrity": "sha512-VRYox3sWjHfCQM+DeAi5hWBROvT8+8raR6RMEdTncpDfxaDL0uvNz5WUQT5okFZEZED5pSSjBIw45l/2kXTgWw==",
+      "shasum": "69de89fefbac66356e47af7cf13602911453d0b8",
+      "tarball": "https://registry.npmjs.org/@orkestrel/websocket/-/websocket-0.0.11.tgz",
+      "fileCount": 9,
+      "unpackedSize": 237233,
+      "signatures": [
+        {
+          "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U",
+          "sig": "MEYCIQCl9fnTs4+mZuz6xsWd4SRoZ327qFQkWeTh3atxYVDkeQIhAOJct2vTNTxon9mHBM5SPRsk05ESxIohqmyvm7CsLREf"
+        }
+      ]
+    },
+    "_npmUser": "mikesaintsg <mikesaintg11@gmail.com>",
+    "directories": {},
+    "_npmOperationalInternal": {
+      "host": "s3://npm-registry-packages-npm-production",
+      "tmp": "tmp/websocket_0.0.11_1788553640271_0.9388743298999371"
+    },
+    "_hasShrinkwrap": false
+  }
+]

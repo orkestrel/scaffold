@@ -1,0 +1,13 @@
+{
+    "name":  "@orkestrel/budget",
+    "version":  "0.0.10",
+    "url":  "https://registry.npmjs.org/@orkestrel/budget/-/budget-0.0.10.tgz",
+    "registrySha1":  "fd2a148f34e1055437a0928a268d62d74e062bd8",
+    "downloadedSha1":  "fd2a148f34e1055437a0928a268d62d74e062bd8",
+    "downloadedSha256":  "8a8cb35a625dad235f3290b9e7723f608507bccb70cfa6b73580e76b74ed0762",
+    "acceptedArchiveSha256":  "8a8cb35a625dad235f3290b9e7723f608507bccb70cfa6b73580e76b74ed0762",
+    "gitHead":  "625e743207db65b3fb8aa5dc0cbdf5507b1abd34",
+    "branch":  "main",
+    "head":  "625e743207db65b3fb8aa5dc0cbdf5507b1abd34",
+    "originMain":  "625e743207db65b3fb8aa5dc0cbdf5507b1abd34"
+}

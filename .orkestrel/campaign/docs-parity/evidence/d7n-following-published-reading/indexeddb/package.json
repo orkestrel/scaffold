@@ -1,0 +1,90 @@
+{
+	"name": "@orkestrel/indexeddb",
+	"version": "0.0.11",
+	"description": "A typed, Promise-based wrapper over browser IndexedDB — object stores, secondary indexes, native key ranges, cursors, and versioned schema upgrades. Part of the @orkestrel line.",
+	"keywords": [
+		"browser",
+		"cursor",
+		"idb",
+		"indexeddb",
+		"key-range",
+		"object-store",
+		"storage",
+		"typescript"
+	],
+	"homepage": "https://github.com/orkestrel/indexeddb#readme",
+	"bugs": "https://github.com/orkestrel/indexeddb/issues",
+	"license": "MIT",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/orkestrel/indexeddb.git"
+	},
+	"files": [
+		"dist/src",
+		"README.md"
+	],
+	"type": "module",
+	"sideEffects": false,
+	"main": "./dist/src/browser/index.js",
+	"module": "./dist/src/browser/index.js",
+	"types": "./dist/src/browser/index.d.ts",
+	"exports": {
+		".": {
+			"types": "./dist/src/browser/index.d.ts",
+			"import": "./dist/src/browser/index.js",
+			"default": "./dist/src/browser/index.js"
+		},
+		"./package.json": "./package.json"
+	},
+	"publishConfig": {
+		"access": "public"
+	},
+	"scripts": {
+		"clean": "node -e \"require('node:fs').rmSync('dist',{recursive:true,force:true})\"",
+		"copy": "node -e \"const fs=require('node:fs'),p=require('node:path'),a=process.argv[1],b=process.argv[2];fs.mkdirSync(p.dirname(b),{recursive:true});fs.cpSync(a,b,{force:true});console.log('Copied: '+a+' to '+b)\"",
+		"scaffold": "scaffold",
+		"lint": "oxlint --config .oxlintrc.json --fix .",
+		"check": "tsc --noEmit --project tsconfig.json && npm run check:src",
+		"check:src": "npm run check:src:browser",
+		"check:src:browser": "tsc --noEmit -p configs/src/tsconfig.browser.json",
+		"format": "oxfmt --config .oxfmtrc.json --write .",
+		"format:check": "oxfmt --config .oxfmtrc.json --check .",
+		"lint:check": "oxlint --config .oxlintrc.json --deny-warnings .",
+		"test": "npm run test:src && npm run test:policy && npm run test:config && npm run test:setup && npm run test:guides",
+		"test:src": "vitest run --config vite.config.ts --no-cache --reporter=dot --project src:browser",
+		"test:src:browser": "vitest run --config vite.config.ts --no-cache --reporter=dot --project src:browser",
+		"test:policy": "vitest run --config vite.config.ts --no-cache --reporter=dot --project policy",
+		"test:config": "vitest run --config vite.config.ts --no-cache --reporter=dot --project config",
+		"test:guides": "node --experimental-strip-types tests/guides.test.ts",
+		"build": "npm run clean && npm run build:src",
+		"build:src": "npm run build:src:browser",
+		"build:src:browser": "vite build --config configs/src/vite.browser.config.ts",
+		"prepublishOnly": "npm run format:check && npm run lint:check && npm run check && npm run build && npm test && npm run test:distribution -- --mode release",
+		"test:distribution": "vitest run --config vite.config.ts --no-cache --reporter=dot --project distribution",
+		"test:probe": "vitest run --config vite.config.ts --no-cache --reporter=verbose --project probe",
+		"test:bench": "vitest bench --config vite.config.ts --no-cache --project probe",
+		"prepack": "npm run build",
+		"test:setup": "vitest run --config vite.config.ts --no-cache --reporter=dot --project setup"
+	},
+	"dependencies": {
+		"@orkestrel/contract": "^0.0.17"
+	},
+	"devDependencies": {
+		"@microsoft/api-extractor": "^7.59.0",
+		"@orkestrel/guide": "^0.0.17",
+		"@orkestrel/probe": "^0.0.12",
+		"@orkestrel/scaffold": "^0.0.63",
+		"@orkestrel/test": "^0.0.14",
+		"@types/node": "^26.4.1",
+		"@vitest/browser-playwright": "^4.1.11",
+		"oxfmt": "^0.66.0",
+		"oxlint": "^1.81.0",
+		"playwright": "^1.62.1",
+		"typescript": "^6.0.3",
+		"vite": "^8.2.2",
+		"vitest": "^4.1.11"
+	},
+	"engines": {
+		"node": ">=22.12.0"
+	}
+}

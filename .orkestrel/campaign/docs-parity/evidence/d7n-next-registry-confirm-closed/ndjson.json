@@ -1,0 +1,13 @@
+{
+    "name":  "@orkestrel/ndjson",
+    "version":  "0.0.10",
+    "url":  "https://registry.npmjs.org/@orkestrel/ndjson/-/ndjson-0.0.10.tgz",
+    "registrySha1":  "1c57ed4a58566e1a5d01bd829e7bfff099e0cd25",
+    "downloadedSha1":  "1c57ed4a58566e1a5d01bd829e7bfff099e0cd25",
+    "downloadedSha256":  "1476e71fb2620ac1c4d149b918767580af401b766233ba7cb1c62005fe7268f5",
+    "acceptedArchiveSha256":  "1476e71fb2620ac1c4d149b918767580af401b766233ba7cb1c62005fe7268f5",
+    "gitHead":  "a35c40cb7045cfe11e29c1f48e70860fb3169e4c",
+    "branch":  "main",
+    "head":  "a35c40cb7045cfe11e29c1f48e70860fb3169e4c",
+    "originMain":  "a35c40cb7045cfe11e29c1f48e70860fb3169e4c"
+}

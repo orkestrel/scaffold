@@ -1,0 +1,166 @@
+[
+  {
+    "_id": "@orkestrel/contract@0.0.17",
+    "_rev": "17-76093e86c8cdf06ddc06719174ca33e4",
+    "name": "@orkestrel/contract",
+    "dist-tags": {
+      "latest": "0.0.17"
+    },
+    "versions": [
+      "0.0.1",
+      "0.0.2",
+      "0.0.3",
+      "0.0.4",
+      "0.0.5",
+      "0.0.6",
+      "0.0.7",
+      "0.0.8",
+      "0.0.9",
+      "0.0.10",
+      "0.0.11",
+      "0.0.12",
+      "0.0.13",
+      "0.0.14",
+      "0.0.15",
+      "0.0.16",
+      "0.0.17"
+    ],
+    "time": {
+      "created": "2026-07-11T20:14:54.079Z",
+      "modified": "2026-09-10T22:37:46.402Z",
+      "0.0.1": "2026-07-11T20:14:54.342Z",
+      "0.0.2": "2026-07-17T22:03:50.452Z",
+      "0.0.3": "2026-07-18T05:45:42.409Z",
+      "0.0.4": "2026-07-18T08:39:18.220Z",
+      "0.0.5": "2026-07-18T09:36:26.130Z",
+      "0.0.6": "2026-07-21T00:26:25.537Z",
+      "0.0.7": "2026-07-21T02:20:22.916Z",
+      "0.0.8": "2026-07-27T23:26:07.831Z",
+      "0.0.9": "2026-07-29T21:13:34.257Z",
+      "0.0.10": "2026-08-09T02:56:16.870Z",
+      "0.0.11": "2026-08-12T11:06:19.239Z",
+      "0.0.12": "2026-08-17T16:37:20.732Z",
+      "0.0.13": "2026-08-21T13:24:24.574Z",
+      "0.0.14": "2026-09-01T10:56:37.759Z",
+      "0.0.15": "2026-09-01T15:29:59.902Z",
+      "0.0.16": "2026-09-04T19:51:54.691Z",
+      "0.0.17": "2026-09-10T22:37:46.209Z"
+    },
+    "bugs": {
+      "url": "https://github.com/orkestrel/contract/issues"
+    },
+    "license": "MIT",
+    "homepage": "https://github.com/orkestrel/contract#readme",
+    "keywords": [
+      "contract",
+      "json-schema",
+      "parsers",
+      "type-guards",
+      "typescript",
+      "validation",
+      "zero-dependency"
+    ],
+    "repository": {
+      "url": "git+https://github.com/orkestrel/contract.git",
+      "type": "git"
+    },
+    "description": "Zero-dependency contract toolkit — type guards, combinators, parsers, and a shape DSL that compiles one contract shape into schema, is, parse, audit, explain, and generate. The foundation package of the @orkestrel line.",
+    "maintainers": [
+      "mikesaintsg <mikesaintg11@gmail.com>"
+    ],
+    "readmeFilename": "README.md",
+    "_contentLength": 72086,
+    "dist": {
+      "shasum": "daa7e52be216de0e028ab68c57ed4b339979ef34",
+      "tarball": "https://registry.npmjs.org/@orkestrel/contract/-/contract-0.0.17.tgz",
+      "fileCount": 9,
+      "integrity": "sha512-WuSVyX2Y3fMa5ZH6njjLpStmWxA91M1hfKWJgacD1GWNFnhd3oDcHlqOUwew3rzOSdny4eIYiN3OHCbym2UKdg==",
+      "signatures": [
+        {
+          "sig": "MEQCIHG668d9r/TbShTJPMZh5r6lMdjv03fCewexFeQYCUo/AiBPT73qD/A4FiWh5NUEX3439Yi2rSWDAdwpgLiRJBvRNQ==",
+          "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U"
+        },
+        {
+          "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U",
+          "sig": "MEYCIQCUN6HekHdifeIQ61dlvfQl0QORzQ3s2QZI+fr98MeQZwIhAPzMPTVuPQIdTE3hNgflnfeoQnLvG5p8rpghnPWoopqB"
+        }
+      ],
+      "unpackedSize": 2896531
+    },
+    "main": "./dist/src/core/index.cjs",
+    "type": "module",
+    "types": "./dist/src/core/index.d.ts",
+    "module": "./dist/src/core/index.js",
+    "engines": {
+      "node": ">=22.12.0"
+    },
+    "exports": {
+      ".": {
+        "import": {
+          "types": "./dist/src/core/index.d.ts",
+          "default": "./dist/src/core/index.js"
+        },
+        "require": {
+          "types": "./dist/src/core/index.d.cts",
+          "default": "./dist/src/core/index.cjs"
+        }
+      },
+      "./package.json": "./package.json"
+    },
+    "gitHead": "e6d2de5bfbbeb6981945b33ede438de8c38f1dbf",
+    "scripts": {
+      "copy": "node -e \"const fs=require('node:fs'),p=require('node:path'),a=process.argv[1],b=process.argv[2];fs.mkdirSync(p.dirname(b),{recursive:true});fs.cpSync(a,b,{force:true});console.log('Copied: '+a+' to '+b)\"",
+      "lint": "oxlint --config .oxlintrc.json --fix .",
+      "test": "npm run test:src && npm run test:policy && npm run test:config && npm run test:setup && npm run test:guides",
+      "build": "npm run clean && npm run build:src",
+      "check": "tsc --noEmit --project tsconfig.json && npm run check:src",
+      "clean": "node -e \"require('node:fs').rmSync('dist',{recursive:true,force:true})\"",
+      "format": "oxfmt --config .oxfmtrc.json --write .",
+      "prepack": "npm run build",
+      "scaffold": "scaffold",
+      "test:src": "vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core",
+      "build:src": "npm run build:src:core",
+      "check:src": "npm run check:src:core",
+      "lint:check": "oxlint --config .oxlintrc.json --deny-warnings .",
+      "test:bench": "vitest bench --config vite.config.ts --no-cache --project probe",
+      "test:probe": "vitest run --config vite.config.ts --no-cache --reporter=verbose --project probe",
+      "test:setup": "vitest run --config vite.config.ts --no-cache --reporter=dot --project setup",
+      "test:config": "vitest run --config vite.config.ts --no-cache --reporter=dot --project config",
+      "test:guides": "node --experimental-strip-types tests/guides.test.ts",
+      "test:policy": "vitest run --config vite.config.ts --no-cache --reporter=dot --project policy",
+      "format:check": "oxfmt --config .oxfmtrc.json --check .",
+      "test:src:core": "vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core",
+      "build:src:core": "vite build --config configs/src/vite.core.config.ts && npm run copy dist/src/core/index.d.ts dist/src/core/index.d.cts",
+      "check:src:core": "tsc --noEmit -p configs/src/tsconfig.core.json",
+      "prepublishOnly": "npm run format:check && npm run lint:check && npm run check && npm run build && npm test && npm run test:distribution -- --mode release",
+      "test:distribution": "vitest run --config vite.config.ts --no-cache --reporter=dot --project distribution"
+    },
+    "version": "0.0.17",
+    "_npmUser": "mikesaintsg <mikesaintg11@gmail.com>",
+    "_npmVersion": "12.0.2",
+    "directories": {},
+    "sideEffects": false,
+    "_nodeVersion": "24.20.0",
+    "publishConfig": {
+      "access": "public"
+    },
+    "_hasShrinkwrap": false,
+    "devDependencies": {
+      "vite": "^8.2.2",
+      "oxfmt": "^0.66.0",
+      "oxlint": "^1.81.0",
+      "vitest": "^4.1.11",
+      "typescript": "^6.0.3",
+      "@types/node": "^26.4.1",
+      "@orkestrel/test": "^0.0.13",
+      "@orkestrel/guide": "^0.0.17",
+      "@orkestrel/probe": "^0.0.12",
+      "@orkestrel/scaffold": "^0.0.63",
+      "@microsoft/api-extractor": "^7.59.0"
+    },
+    "_npmOperationalInternal": {
+      "host": "s3://npm-registry-packages-npm-production",
+      "tmp": "tmp/contract_0.0.17_1789079866054_0.7650552525739309"
+    }
+  }
+]

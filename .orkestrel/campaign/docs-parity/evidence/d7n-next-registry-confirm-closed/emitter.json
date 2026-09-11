@@ -1,0 +1,13 @@
+{
+    "name":  "@orkestrel/emitter",
+    "version":  "0.0.10",
+    "url":  "https://registry.npmjs.org/@orkestrel/emitter/-/emitter-0.0.10.tgz",
+    "registrySha1":  "4572f2977aec0fd7522d3b07f968c38bd312e9e0",
+    "downloadedSha1":  "4572f2977aec0fd7522d3b07f968c38bd312e9e0",
+    "downloadedSha256":  "8c76ceef3eb53b1d9ed61107cace0dfc85a10fad95638907c8a05a37c62ab9bd",
+    "acceptedArchiveSha256":  "8c76ceef3eb53b1d9ed61107cace0dfc85a10fad95638907c8a05a37c62ab9bd",
+    "gitHead":  "fe7e689475719aa6f64fa2298de295e0e99c52ce",
+    "branch":  "main",
+    "head":  "fe7e689475719aa6f64fa2298de295e0e99c52ce",
+    "originMain":  "fe7e689475719aa6f64fa2298de295e0e99c52ce"
+}

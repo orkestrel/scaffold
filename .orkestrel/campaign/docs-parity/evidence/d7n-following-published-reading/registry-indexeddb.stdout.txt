@@ -1,0 +1,154 @@
+[
+  {
+    "_id": "@orkestrel/indexeddb@0.0.11",
+    "_rev": "11-fe7d24495d1a6379a501fe43e30354d3",
+    "name": "@orkestrel/indexeddb",
+    "dist-tags": {
+      "latest": "0.0.11"
+    },
+    "versions": [
+      "0.0.1",
+      "0.0.2",
+      "0.0.3",
+      "0.0.4",
+      "0.0.5",
+      "0.0.6",
+      "0.0.7",
+      "0.0.8",
+      "0.0.9",
+      "0.0.10",
+      "0.0.11"
+    ],
+    "time": {
+      "created": "2026-07-12T21:03:51.320Z",
+      "modified": "2026-09-11T02:56:52.044Z",
+      "0.0.1": "2026-07-12T21:03:51.665Z",
+      "0.0.2": "2026-07-13T13:46:07.003Z",
+      "0.0.3": "2026-07-18T00:08:02.712Z",
+      "0.0.4": "2026-07-18T10:20:50.644Z",
+      "0.0.5": "2026-07-28T20:15:08.871Z",
+      "0.0.6": "2026-07-30T16:58:20.400Z",
+      "0.0.7": "2026-08-12T11:23:55.144Z",
+      "0.0.8": "2026-08-17T19:53:37.310Z",
+      "0.0.9": "2026-08-23T00:16:52.068Z",
+      "0.0.10": "2026-09-04T20:09:57.858Z",
+      "0.0.11": "2026-09-11T02:56:51.869Z"
+    },
+    "bugs": {
+      "url": "https://github.com/orkestrel/indexeddb/issues"
+    },
+    "license": "MIT",
+    "homepage": "https://github.com/orkestrel/indexeddb#readme",
+    "keywords": [
+      "browser",
+      "cursor",
+      "idb",
+      "indexeddb",
+      "key-range",
+      "object-store",
+      "storage",
+      "typescript"
+    ],
+    "repository": {
+      "url": "git+https://github.com/orkestrel/indexeddb.git",
+      "type": "git"
+    },
+    "description": "A typed, Promise-based wrapper over browser IndexedDB — object stores, secondary indexes, native key ranges, cursors, and versioned schema upgrades. Part of the @orkestrel line.",
+    "maintainers": [
+      "mikesaintsg <mikesaintg11@gmail.com>"
+    ],
+    "readmeFilename": "README.md",
+    "dist": {
+      "shasum": "2669bd73aa51daf35c1b06305e1557b681d0f99e",
+      "tarball": "https://registry.npmjs.org/@orkestrel/indexeddb/-/indexeddb-0.0.11.tgz",
+      "fileCount": 6,
+      "integrity": "sha512-aN7KS67lfBc5EKNYF1QAdk497Bw9Kx1VWDBrziU72RHpTw+mvr8luucLcqLF1OSGncsSJU5ERikCcCjSwwphUg==",
+      "signatures": [
+        {
+          "sig": "MEUCIQDu1NI521Qo+0Lodhg+QtCst1AXY+FTOWp2ayGO3spiVwIgBAC0QHtPhnefH7vO4Yb7r1I3nt4GvPofJKffoMUAn1U=",
+          "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U"
+        },
+        {
+          "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U",
+          "sig": "MEQCIHvUD+pfQgqMHwWCWjU+o/CEQgmiOxBkco9bhXbfoFupAiBH5pa9cZcRlAqeicyl9Fil7p8Uq+wIuI9ptaax7/SwcA=="
+        }
+      ],
+      "unpackedSize": 163198
+    },
+    "main": "./dist/src/browser/index.js",
+    "type": "module",
+    "types": "./dist/src/browser/index.d.ts",
+    "module": "./dist/src/browser/index.js",
+    "engines": {
+      "node": ">=22.12.0"
+    },
+    "exports": {
+      ".": {
+        "types": "./dist/src/browser/index.d.ts",
+        "import": "./dist/src/browser/index.js",
+        "default": "./dist/src/browser/index.js"
+      },
+      "./package.json": "./package.json"
+    },
+    "gitHead": "cb179f6c085e44c8a56f25db8398bd54b7c00a29",
+    "scripts": {
+      "copy": "node -e \"const fs=require('node:fs'),p=require('node:path'),a=process.argv[1],b=process.argv[2];fs.mkdirSync(p.dirname(b),{recursive:true});fs.cpSync(a,b,{force:true});console.log('Copied: '+a+' to '+b)\"",
+      "lint": "oxlint --config .oxlintrc.json --fix .",
+      "test": "npm run test:src && npm run test:policy && npm run test:config && npm run test:setup && npm run test:guides",
+      "build": "npm run clean && npm run build:src",
+      "check": "tsc --noEmit --project tsconfig.json && npm run check:src",
+      "clean": "node -e \"require('node:fs').rmSync('dist',{recursive:true,force:true})\"",
+      "format": "oxfmt --config .oxfmtrc.json --write .",
+      "prepack": "npm run build",
+      "scaffold": "scaffold",
+      "test:src": "vitest run --config vite.config.ts --no-cache --reporter=dot --project src:browser",
+      "build:src": "npm run build:src:browser",
+      "check:src": "npm run check:src:browser",
+      "lint:check": "oxlint --config .oxlintrc.json --deny-warnings .",
+      "test:bench": "vitest bench --config vite.config.ts --no-cache --project probe",
+      "test:probe": "vitest run --config vite.config.ts --no-cache --reporter=verbose --project probe",
+      "test:setup": "vitest run --config vite.config.ts --no-cache --reporter=dot --project setup",
+      "test:config": "vitest run --config vite.config.ts --no-cache --reporter=dot --project config",
+      "test:guides": "node --experimental-strip-types tests/guides.test.ts",
+      "test:policy": "vitest run --config vite.config.ts --no-cache --reporter=dot --project policy",
+      "format:check": "oxfmt --config .oxfmtrc.json --check .",
+      "prepublishOnly": "npm run format:check && npm run lint:check && npm run check && npm run build && npm test && npm run test:distribution -- --mode release",
+      "test:src:browser": "vitest run --config vite.config.ts --no-cache --reporter=dot --project src:browser",
+      "build:src:browser": "vite build --config configs/src/vite.browser.config.ts",
+      "check:src:browser": "tsc --noEmit -p configs/src/tsconfig.browser.json",
+      "test:distribution": "vitest run --config vite.config.ts --no-cache --reporter=dot --project distribution"
+    },
+    "version": "0.0.11",
+    "_npmUser": "mikesaintsg <mikesaintg11@gmail.com>",
+    "_npmVersion": "12.0.2",
+    "directories": {},
+    "sideEffects": false,
+    "_nodeVersion": "24.20.0",
+    "dependencies": {
+      "@orkestrel/contract": "^0.0.17"
+    },
+    "publishConfig": {
+      "access": "public"
+    },
+    "_hasShrinkwrap": false,
+    "devDependencies": {
+      "vite": "^8.2.2",
+      "oxfmt": "^0.66.0",
+      "oxlint": "^1.81.0",
+      "vitest": "^4.1.11",
+      "playwright": "^1.62.1",
+      "typescript": "^6.0.3",
+      "@types/node": "^26.4.1",
+      "@orkestrel/test": "^0.0.14",
+      "@orkestrel/guide": "^0.0.17",
+      "@orkestrel/probe": "^0.0.12",
+      "@orkestrel/scaffold": "^0.0.63",
+      "@microsoft/api-extractor": "^7.59.0",
+      "@vitest/browser-playwright": "^4.1.11"
+    },
+    "_npmOperationalInternal": {
+      "host": "s3://npm-registry-packages-npm-production",
+      "tmp": "tmp/indexeddb_0.0.11_1789095411774_0.5578368697060545"
+    }
+  }
+]

@@ -1,0 +1,13 @@
+{
+    "name":  "@orkestrel/tool",
+    "version":  "0.0.14",
+    "url":  "https://registry.npmjs.org/@orkestrel/tool/-/tool-0.0.14.tgz",
+    "registrySha1":  "fc209c308efdc6867701b95a15fbdb6f5b4819e8",
+    "downloadedSha1":  "fc209c308efdc6867701b95a15fbdb6f5b4819e8",
+    "downloadedSha256":  "772dbda52330fd4a5cb50e86e97bffbd3b362b1d75dc0ddb61fe7a177d5da1ec",
+    "acceptedArchiveSha256":  "772dbda52330fd4a5cb50e86e97bffbd3b362b1d75dc0ddb61fe7a177d5da1ec",
+    "gitHead":  "4761097860243d86c4154e95edd0d4dcce11da8c",
+    "branch":  "main",
+    "head":  "4761097860243d86c4154e95edd0d4dcce11da8c",
+    "originMain":  "4761097860243d86c4154e95edd0d4dcce11da8c"
+}

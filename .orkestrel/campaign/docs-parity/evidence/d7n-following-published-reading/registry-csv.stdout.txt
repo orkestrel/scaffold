@@ -1,0 +1,143 @@
+[
+  {
+    "_id": "@orkestrel/csv@0.0.7",
+    "_rev": "7-c00c4720d3bc43ca6d9c8e35ae9540d8",
+    "name": "@orkestrel/csv",
+    "dist-tags": {
+      "latest": "0.0.7"
+    },
+    "versions": [
+      "0.0.1",
+      "0.0.2",
+      "0.0.3",
+      "0.0.4",
+      "0.0.5",
+      "0.0.6",
+      "0.0.7"
+    ],
+    "time": {
+      "created": "2026-07-19T13:29:17.509Z",
+      "modified": "2026-09-11T02:55:49.462Z",
+      "0.0.1": "2026-07-19T13:29:17.825Z",
+      "0.0.2": "2026-07-28T17:01:37.497Z",
+      "0.0.3": "2026-08-12T11:18:59.523Z",
+      "0.0.4": "2026-08-17T19:52:09.482Z",
+      "0.0.5": "2026-08-22T18:06:08.274Z",
+      "0.0.6": "2026-09-04T20:09:36.146Z",
+      "0.0.7": "2026-09-11T02:55:49.267Z"
+    },
+    "bugs": {
+      "url": "https://github.com/orkestrel/csv/issues"
+    },
+    "license": "MIT",
+    "homepage": "https://github.com/orkestrel/csv#readme",
+    "keywords": [
+      "csv",
+      "parser",
+      "renderer",
+      "rfc4180",
+      "tsv",
+      "typescript"
+    ],
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/orkestrel/csv.git"
+    },
+    "description": "A typed CSV toolkit — RFC 4180 parsing and rendering with typed rows, dialect control, and structural database interop. Part of the @orkestrel line.",
+    "maintainers": [
+      "mikesaintsg <mikesaintg11@gmail.com>"
+    ],
+    "readmeFilename": "README.md",
+    "version": "0.0.7",
+    "type": "module",
+    "sideEffects": false,
+    "main": "./dist/src/core/index.cjs",
+    "module": "./dist/src/core/index.js",
+    "types": "./dist/src/core/index.d.ts",
+    "exports": {
+      ".": {
+        "import": {
+          "types": "./dist/src/core/index.d.ts",
+          "default": "./dist/src/core/index.js"
+        },
+        "require": {
+          "types": "./dist/src/core/index.d.cts",
+          "default": "./dist/src/core/index.cjs"
+        }
+      },
+      "./package.json": "./package.json"
+    },
+    "publishConfig": {
+      "access": "public"
+    },
+    "scripts": {
+      "clean": "node -e \"require('node:fs').rmSync('dist',{recursive:true,force:true})\"",
+      "copy": "node -e \"const fs=require('node:fs'),p=require('node:path'),a=process.argv[1],b=process.argv[2];fs.mkdirSync(p.dirname(b),{recursive:true});fs.cpSync(a,b,{force:true});console.log('Copied: '+a+' to '+b)\"",
+      "scaffold": "scaffold",
+      "lint": "oxlint --config .oxlintrc.json --fix .",
+      "check": "tsc --noEmit --project tsconfig.json && npm run check:src",
+      "check:src": "npm run check:src:core",
+      "check:src:core": "tsc --noEmit -p configs/src/tsconfig.core.json",
+      "format": "oxfmt --config .oxfmtrc.json --write .",
+      "format:check": "oxfmt --config .oxfmtrc.json --check .",
+      "lint:check": "oxlint --config .oxlintrc.json --deny-warnings .",
+      "test": "npm run test:src && npm run test:policy && npm run test:config && npm run test:setup && npm run test:guides",
+      "test:src": "vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core",
+      "test:src:core": "vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core",
+      "test:policy": "vitest run --config vite.config.ts --no-cache --reporter=dot --project policy",
+      "test:config": "vitest run --config vite.config.ts --no-cache --reporter=dot --project config",
+      "test:guides": "node --experimental-strip-types tests/guides.test.ts",
+      "build": "npm run clean && npm run build:src",
+      "build:src": "npm run build:src:core",
+      "build:src:core": "vite build --config configs/src/vite.core.config.ts && npm run copy dist/src/core/index.d.ts dist/src/core/index.d.cts",
+      "prepublishOnly": "npm run format:check && npm run lint:check && npm run check && npm run build && npm test && npm run test:distribution -- --mode release",
+      "test:distribution": "vitest run --config vite.config.ts --no-cache --reporter=dot --project distribution",
+      "test:probe": "vitest run --config vite.config.ts --no-cache --reporter=verbose --project probe",
+      "test:bench": "vitest bench --config vite.config.ts --no-cache --project probe",
+      "prepack": "npm run build",
+      "test:setup": "vitest run --config vite.config.ts --no-cache --reporter=dot --project setup"
+    },
+    "dependencies": {
+      "@orkestrel/contract": "^0.0.17"
+    },
+    "devDependencies": {
+      "@microsoft/api-extractor": "^7.59.0",
+      "@orkestrel/guide": "^0.0.17",
+      "@orkestrel/probe": "^0.0.12",
+      "@orkestrel/scaffold": "^0.0.63",
+      "@orkestrel/test": "^0.0.14",
+      "@types/node": "^26.4.1",
+      "oxfmt": "^0.66.0",
+      "oxlint": "^1.81.0",
+      "typescript": "^6.0.3",
+      "vite": "^8.2.2",
+      "vitest": "^4.1.11"
+    },
+    "engines": {
+      "node": ">=22.12.0"
+    },
+    "gitHead": "b9e989391762a564004b3aaa45c4e5477b0d5b40",
+    "_nodeVersion": "24.20.0",
+    "_npmVersion": "12.0.2",
+    "dist": {
+      "integrity": "sha512-5Rd31xUATdd/NQ2m7wbj17qNYK5JbGnszvK7RKfwHXEzGsoKJ5/7jOMb3pInEPefHi5Kzu1p6DQhVMGfig61mQ==",
+      "shasum": "390d045901304ccacf39fa790eeed65d86633843",
+      "tarball": "https://registry.npmjs.org/@orkestrel/csv/-/csv-0.0.7.tgz",
+      "fileCount": 9,
+      "unpackedSize": 405391,
+      "signatures": [
+        {
+          "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U",
+          "sig": "MEQCIAHSEPT1jy4u1quSSpWA275o7VJeCZNlxjGIRnoMwJAkAiBCwFTdKdUw3DFbofx491Cu/L25wGIFmuKRsLS2ggP7vQ=="
+        }
+      ]
+    },
+    "_npmUser": "mikesaintsg <mikesaintg11@gmail.com>",
+    "directories": {},
+    "_npmOperationalInternal": {
+      "host": "s3://npm-registry-packages-npm-production",
+      "tmp": "tmp/csv_0.0.7_1789095349118_0.1466289170818742"
+    },
+    "_hasShrinkwrap": false
+  }
+]

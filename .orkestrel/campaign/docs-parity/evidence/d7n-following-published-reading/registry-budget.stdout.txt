@@ -1,0 +1,154 @@
+[
+  {
+    "_id": "@orkestrel/budget@0.0.10",
+    "_rev": "10-cc9f33b5a310b706b52171ff3c23238f",
+    "name": "@orkestrel/budget",
+    "dist-tags": {
+      "latest": "0.0.10"
+    },
+    "versions": [
+      "0.0.1",
+      "0.0.2",
+      "0.0.3",
+      "0.0.4",
+      "0.0.5",
+      "0.0.6",
+      "0.0.7",
+      "0.0.8",
+      "0.0.9",
+      "0.0.10"
+    ],
+    "time": {
+      "created": "2026-07-12T08:24:15.365Z",
+      "modified": "2026-09-11T02:56:41.685Z",
+      "0.0.1": "2026-07-12T08:24:15.641Z",
+      "0.0.2": "2026-07-18T00:08:25.969Z",
+      "0.0.3": "2026-07-18T10:20:32.993Z",
+      "0.0.4": "2026-07-28T17:01:15.545Z",
+      "0.0.5": "2026-08-03T19:33:38.462Z",
+      "0.0.6": "2026-08-12T11:18:57.564Z",
+      "0.0.7": "2026-08-17T19:56:48.751Z",
+      "0.0.8": "2026-08-22T17:36:50.038Z",
+      "0.0.9": "2026-09-04T20:09:29.246Z",
+      "0.0.10": "2026-09-11T02:56:41.524Z"
+    },
+    "bugs": {
+      "url": "https://github.com/orkestrel/budget/issues"
+    },
+    "license": "MIT",
+    "homepage": "https://github.com/orkestrel/budget#readme",
+    "keywords": [
+      "abort-signal",
+      "budget",
+      "cancellation",
+      "limit",
+      "quota",
+      "tokens",
+      "typescript"
+    ],
+    "repository": {
+      "url": "git+https://github.com/orkestrel/budget.git",
+      "type": "git"
+    },
+    "description": "A typed spending budget — a cumulative tally with an AbortSignal ceiling, start/consume/clear lifecycle, and a token-budget factory. Part of the @orkestrel line.",
+    "maintainers": [
+      "mikesaintsg <mikesaintg11@gmail.com>"
+    ],
+    "readmeFilename": "README.md",
+    "dist": {
+      "shasum": "fd2a148f34e1055437a0928a268d62d74e062bd8",
+      "tarball": "https://registry.npmjs.org/@orkestrel/budget/-/budget-0.0.10.tgz",
+      "fileCount": 9,
+      "integrity": "sha512-IMe/H45vMG2sgA2BT+Z8hQ1aauuE5tn39c5FNjF2PSAUu33UY7xyhFYeP6xQH1PK6feuLoVqkpueHthVVdKj/g==",
+      "signatures": [
+        {
+          "sig": "MEYCIQC96VxE3LAAXPPp3WtMjf5ghflKgfvrANJ6YrxAPImJWwIhAOwKMZIU6kRRERzhLotU9zGkK3sXklu+gQUulT+CGZYp",
+          "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U"
+        },
+        {
+          "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U",
+          "sig": "MEQCICJqMuyassR+rUKI4ZAeOdxMyV1yDndEN1ZDeqF7G8OJAiBIGTUYo6+S9p9ePJN+7UwH9bQPhzpnyf2vg5VgP9vMHA=="
+        }
+      ],
+      "unpackedSize": 110489
+    },
+    "main": "./dist/src/core/index.cjs",
+    "type": "module",
+    "types": "./dist/src/core/index.d.ts",
+    "module": "./dist/src/core/index.js",
+    "engines": {
+      "node": ">=22.12.0"
+    },
+    "exports": {
+      ".": {
+        "import": {
+          "types": "./dist/src/core/index.d.ts",
+          "default": "./dist/src/core/index.js"
+        },
+        "require": {
+          "types": "./dist/src/core/index.d.cts",
+          "default": "./dist/src/core/index.cjs"
+        }
+      },
+      "./package.json": "./package.json"
+    },
+    "gitHead": "625e743207db65b3fb8aa5dc0cbdf5507b1abd34",
+    "scripts": {
+      "copy": "node -e \"const fs=require('node:fs'),p=require('node:path'),a=process.argv[1],b=process.argv[2];fs.mkdirSync(p.dirname(b),{recursive:true});fs.cpSync(a,b,{force:true});console.log('Copied: '+a+' to '+b)\"",
+      "lint": "oxlint --config .oxlintrc.json --fix .",
+      "test": "npm run test:src && npm run test:policy && npm run test:config && npm run test:setup && npm run test:guides",
+      "build": "npm run clean && npm run build:src",
+      "check": "tsc --noEmit --project tsconfig.json && npm run check:src",
+      "clean": "node -e \"require('node:fs').rmSync('dist',{recursive:true,force:true})\"",
+      "format": "oxfmt --config .oxfmtrc.json --write .",
+      "prepack": "npm run build",
+      "scaffold": "scaffold",
+      "test:src": "vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core",
+      "build:src": "npm run build:src:core",
+      "check:src": "npm run check:src:core",
+      "lint:check": "oxlint --config .oxlintrc.json --deny-warnings .",
+      "test:bench": "vitest bench --config vite.config.ts --no-cache --project probe",
+      "test:probe": "vitest run --config vite.config.ts --no-cache --reporter=verbose --project probe",
+      "test:setup": "vitest run --config vite.config.ts --no-cache --reporter=dot --project setup",
+      "test:config": "vitest run --config vite.config.ts --no-cache --reporter=dot --project config",
+      "test:guides": "node --experimental-strip-types tests/guides.test.ts",
+      "test:policy": "vitest run --config vite.config.ts --no-cache --reporter=dot --project policy",
+      "format:check": "oxfmt --config .oxfmtrc.json --check .",
+      "test:src:core": "vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core",
+      "build:src:core": "vite build --config configs/src/vite.core.config.ts && npm run copy dist/src/core/index.d.ts dist/src/core/index.d.cts",
+      "check:src:core": "tsc --noEmit -p configs/src/tsconfig.core.json",
+      "prepublishOnly": "npm run format:check && npm run lint:check && npm run check && npm run build && npm test && npm run test:distribution -- --mode release",
+      "test:distribution": "vitest run --config vite.config.ts --no-cache --reporter=dot --project distribution"
+    },
+    "version": "0.0.10",
+    "_npmUser": "mikesaintsg <mikesaintg11@gmail.com>",
+    "_npmVersion": "12.0.2",
+    "directories": {},
+    "sideEffects": false,
+    "_nodeVersion": "24.20.0",
+    "dependencies": {
+      "@orkestrel/contract": "^0.0.17"
+    },
+    "publishConfig": {
+      "access": "public"
+    },
+    "_hasShrinkwrap": false,
+    "devDependencies": {
+      "vite": "^8.2.2",
+      "oxfmt": "^0.66.0",
+      "oxlint": "^1.81.0",
+      "vitest": "^4.1.11",
+      "typescript": "^6.0.3",
+      "@types/node": "^26.4.1",
+      "@orkestrel/test": "^0.0.14",
+      "@orkestrel/guide": "^0.0.17",
+      "@orkestrel/probe": "^0.0.12",
+      "@orkestrel/scaffold": "^0.0.63",
+      "@microsoft/api-extractor": "^7.59.0"
+    },
+    "_npmOperationalInternal": {
+      "host": "s3://npm-registry-packages-npm-production",
+      "tmp": "tmp/budget_0.0.10_1789095401434_0.32707077735080725"
+    }
+  }
+]

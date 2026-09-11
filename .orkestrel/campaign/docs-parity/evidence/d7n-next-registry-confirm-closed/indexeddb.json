@@ -1,0 +1,13 @@
+{
+    "name":  "@orkestrel/indexeddb",
+    "version":  "0.0.11",
+    "url":  "https://registry.npmjs.org/@orkestrel/indexeddb/-/indexeddb-0.0.11.tgz",
+    "registrySha1":  "2669bd73aa51daf35c1b06305e1557b681d0f99e",
+    "downloadedSha1":  "2669bd73aa51daf35c1b06305e1557b681d0f99e",
+    "downloadedSha256":  "35368fe77e5403dea0c547b6e9f981ed5ba5811f792cb406ccc0238699b96603",
+    "acceptedArchiveSha256":  "35368fe77e5403dea0c547b6e9f981ed5ba5811f792cb406ccc0238699b96603",
+    "gitHead":  "cb179f6c085e44c8a56f25db8398bd54b7c00a29",
+    "branch":  "main",
+    "head":  "cb179f6c085e44c8a56f25db8398bd54b7c00a29",
+    "originMain":  "cb179f6c085e44c8a56f25db8398bd54b7c00a29"
+}

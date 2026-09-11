@@ -1,0 +1,13 @@
+{
+    "name":  "@orkestrel/csv",
+    "version":  "0.0.7",
+    "url":  "https://registry.npmjs.org/@orkestrel/csv/-/csv-0.0.7.tgz",
+    "registrySha1":  "390d045901304ccacf39fa790eeed65d86633843",
+    "downloadedSha1":  "390d045901304ccacf39fa790eeed65d86633843",
+    "downloadedSha256":  "f095d20b6062f1e8baf9430d04d0a2c43337d81eacf02ddd424ac36f019a18e0",
+    "acceptedArchiveSha256":  "f095d20b6062f1e8baf9430d04d0a2c43337d81eacf02ddd424ac36f019a18e0",
+    "gitHead":  "b9e989391762a564004b3aaa45c4e5477b0d5b40",
+    "branch":  "main",
+    "head":  "b9e989391762a564004b3aaa45c4e5477b0d5b40",
+    "originMain":  "b9e989391762a564004b3aaa45c4e5477b0d5b40"
+}

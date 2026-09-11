@@ -1,0 +1,134 @@
+[
+  {
+    "_id": "@orkestrel/form@0.0.5",
+    "_rev": "5-2fdd27cc517335c9d624925871620531",
+    "name": "@orkestrel/form",
+    "dist-tags": {
+      "latest": "0.0.5"
+    },
+    "versions": [
+      "0.0.1",
+      "0.0.2",
+      "0.0.3",
+      "0.0.4",
+      "0.0.5"
+    ],
+    "time": {
+      "created": "2026-08-16T12:36:30.974Z",
+      "modified": "2026-09-04T20:25:18.583Z",
+      "0.0.1": "2026-08-16T12:36:31.303Z",
+      "0.0.2": "2026-08-17T20:24:53.232Z",
+      "0.0.3": "2026-08-23T01:10:00.538Z",
+      "0.0.4": "2026-09-03T07:18:25.931Z",
+      "0.0.5": "2026-09-04T20:25:18.382Z"
+    },
+    "bugs": {
+      "url": "https://github.com/orkestrel/form/issues"
+    },
+    "license": "MIT",
+    "homepage": "https://github.com/orkestrel/form#readme",
+    "keywords": [],
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/orkestrel/form.git"
+    },
+    "description": "The @orkestrel/form package.",
+    "maintainers": [
+      "mikesaintsg <mikesaintg11@gmail.com>"
+    ],
+    "readmeFilename": "README.md",
+    "_contentLength": 22963,
+    "version": "0.0.5",
+    "type": "module",
+    "sideEffects": false,
+    "main": "./dist/src/core/index.cjs",
+    "module": "./dist/src/core/index.js",
+    "types": "./dist/src/core/index.d.ts",
+    "exports": {
+      ".": {
+        "import": {
+          "types": "./dist/src/core/index.d.ts",
+          "default": "./dist/src/core/index.js"
+        },
+        "require": {
+          "types": "./dist/src/core/index.d.cts",
+          "default": "./dist/src/core/index.cjs"
+        }
+      },
+      "./package.json": "./package.json"
+    },
+    "publishConfig": {
+      "access": "public"
+    },
+    "scripts": {
+      "clean": "node -e \"require('node:fs').rmSync('dist',{recursive:true,force:true})\"",
+      "copy": "node -e \"const fs=require('node:fs'),p=require('node:path'),a=process.argv[1],b=process.argv[2];fs.mkdirSync(p.dirname(b),{recursive:true});fs.cpSync(a,b,{force:true});console.log('Copied: '+a+' to '+b)\"",
+      "format": "oxfmt --config .oxfmtrc.json --write .",
+      "format:check": "oxfmt --config .oxfmtrc.json --check .",
+      "lint": "oxlint --config .oxlintrc.json --fix .",
+      "lint:check": "oxlint --config .oxlintrc.json --deny-warnings .",
+      "check": "tsc --noEmit --project tsconfig.json && npm run check:src",
+      "check:src": "npm run check:src:core",
+      "check:src:core": "tsc --noEmit -p configs/src/tsconfig.core.json",
+      "test": "npm run test:src && npm run test:policy && npm run test:config && npm run test:setup && npm run test:guides",
+      "test:src": "vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core",
+      "test:src:core": "vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core",
+      "test:policy": "vitest run --config vite.config.ts --no-cache --reporter=dot --project policy",
+      "test:config": "vitest run --config vite.config.ts --no-cache --reporter=dot --project config",
+      "test:guides": "vitest run --config vite.config.ts --no-cache --reporter=dot --project guides",
+      "test:probe": "vitest run --config vite.config.ts --no-cache --reporter=verbose --project probe",
+      "build": "npm run clean && npm run build:src",
+      "build:src": "npm run build:src:core",
+      "build:src:core": "vite build --config configs/src/vite.core.config.ts && npm run copy dist/src/core/index.d.ts dist/src/core/index.d.cts",
+      "prepublishOnly": "npm run format:check && npm run lint:check && npm run check && npm run build && npm test && npm run test:distribution -- --mode release",
+      "test:distribution": "vitest run --config vite.config.ts --no-cache --reporter=dot --project distribution",
+      "test:bench": "vitest bench --config vite.config.ts --no-cache --project probe",
+      "prepack": "npm run build",
+      "test:setup": "vitest run --config vite.config.ts --no-cache --reporter=dot --project setup"
+    },
+    "dependencies": {
+      "@orkestrel/contract": "^0.0.16",
+      "@orkestrel/emitter": "^0.0.9"
+    },
+    "devDependencies": {
+      "@microsoft/api-extractor": "^7.59.0",
+      "@orkestrel/guide": "^0.0.16",
+      "@orkestrel/probe": "^0.0.11",
+      "@orkestrel/scaffold": "^0.0.61",
+      "@orkestrel/test": "^0.0.13",
+      "@types/node": "^26.4.1",
+      "oxfmt": "^0.66.0",
+      "oxlint": "^1.81.0",
+      "typescript": "^6.0.3",
+      "vite": "^8.2.2",
+      "vite-plugin-dts": "^5.1.0",
+      "vitest": "^4.1.11"
+    },
+    "engines": {
+      "node": ">=22.12.0"
+    },
+    "gitHead": "ea64d698fb6946af94a22af2c6f29fead05c2369",
+    "_nodeVersion": "22.22.2",
+    "_npmVersion": "11.19.1",
+    "dist": {
+      "integrity": "sha512-LUa61cuUGGT+o8Ee9CWzWBAVuD5AJGN97mvBEIdvWtlYmFeloR4ISo2opdy+G021ELxw+DuiXsXtYNC6y0S+fQ==",
+      "shasum": "cd5838acba7b77762dff3a74eb8e8e22ef8dc4fc",
+      "tarball": "https://registry.npmjs.org/@orkestrel/form/-/form-0.0.5.tgz",
+      "fileCount": 9,
+      "unpackedSize": 465505,
+      "signatures": [
+        {
+          "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U",
+          "sig": "MEUCIB/H3d3trtxzFxFO3AoCvttI7m2fms0cHvonqyBkPW1fAiEA/0g98hfJvYt+08EE/42N2iihs/7AZbAN0Dm885V4cDQ="
+        }
+      ]
+    },
+    "_npmUser": "mikesaintsg <mikesaintg11@gmail.com>",
+    "directories": {},
+    "_npmOperationalInternal": {
+      "host": "s3://npm-registry-packages-npm-production",
+      "tmp": "tmp/form_0.0.5_1788553518147_0.6377874471214628"
+    },
+    "_hasShrinkwrap": false
+  }
+]

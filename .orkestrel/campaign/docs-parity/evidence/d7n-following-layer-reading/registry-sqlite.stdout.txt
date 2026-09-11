@@ -1,0 +1,152 @@
+[
+  {
+    "_id": "@orkestrel/sqlite@0.0.11",
+    "_rev": "11-5a9530c22b567c4de3fa4474220f25a8",
+    "name": "@orkestrel/sqlite",
+    "dist-tags": {
+      "latest": "0.0.11"
+    },
+    "versions": [
+      "0.0.1",
+      "0.0.2",
+      "0.0.3",
+      "0.0.4",
+      "0.0.5",
+      "0.0.6",
+      "0.0.7",
+      "0.0.8",
+      "0.0.9",
+      "0.0.10",
+      "0.0.11"
+    ],
+    "time": {
+      "created": "2026-07-12T21:03:48.872Z",
+      "modified": "2026-09-11T02:56:02.692Z",
+      "0.0.1": "2026-07-12T21:03:49.175Z",
+      "0.0.2": "2026-07-13T13:45:34.287Z",
+      "0.0.3": "2026-07-18T00:06:05.454Z",
+      "0.0.4": "2026-07-18T10:21:06.717Z",
+      "0.0.5": "2026-07-28T14:20:00.863Z",
+      "0.0.6": "2026-07-31T01:38:26.551Z",
+      "0.0.7": "2026-08-12T11:25:03.474Z",
+      "0.0.8": "2026-08-17T19:54:38.243Z",
+      "0.0.9": "2026-08-23T00:17:29.756Z",
+      "0.0.10": "2026-09-04T20:10:11.429Z",
+      "0.0.11": "2026-09-11T02:56:02.170Z"
+    },
+    "bugs": {
+      "url": "https://github.com/orkestrel/sqlite/issues"
+    },
+    "license": "MIT",
+    "homepage": "https://github.com/orkestrel/sqlite#readme",
+    "keywords": [
+      "database",
+      "node",
+      "node:sqlite",
+      "server",
+      "sqlite",
+      "typescript"
+    ],
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/orkestrel/sqlite.git"
+    },
+    "description": "A typed, synchronous SQLite wrapper for the @orkestrel line — prepared statements over node:sqlite. Part of the @orkestrel line.",
+    "maintainers": [
+      "mikesaintsg <mikesaintg11@gmail.com>"
+    ],
+    "readmeFilename": "README.md",
+    "_contentLength": 46103,
+    "version": "0.0.11",
+    "type": "module",
+    "sideEffects": false,
+    "main": "./dist/src/server/index.cjs",
+    "module": "./dist/src/server/index.js",
+    "types": "./dist/src/server/index.d.ts",
+    "exports": {
+      ".": {
+        "import": {
+          "types": "./dist/src/server/index.d.ts",
+          "default": "./dist/src/server/index.js"
+        },
+        "require": {
+          "types": "./dist/src/server/index.d.cts",
+          "default": "./dist/src/server/index.cjs"
+        }
+      },
+      "./package.json": "./package.json"
+    },
+    "publishConfig": {
+      "access": "public"
+    },
+    "scripts": {
+      "clean": "node -e \"require('node:fs').rmSync('dist',{recursive:true,force:true})\"",
+      "copy": "node -e \"const fs=require('node:fs'),p=require('node:path'),a=process.argv[1],b=process.argv[2];fs.mkdirSync(p.dirname(b),{recursive:true});fs.cpSync(a,b,{force:true});console.log('Copied: '+a+' to '+b)\"",
+      "scaffold": "scaffold",
+      "lint": "oxlint --config .oxlintrc.json --fix .",
+      "check": "tsc --noEmit --project tsconfig.json && npm run check:src",
+      "check:src": "npm run check:src:server",
+      "check:src:server": "tsc --noEmit -p configs/src/tsconfig.server.json",
+      "format": "oxfmt --config .oxfmtrc.json --write .",
+      "format:check": "oxfmt --config .oxfmtrc.json --check .",
+      "lint:check": "oxlint --config .oxlintrc.json --deny-warnings .",
+      "test": "npm run test:src && npm run test:policy && npm run test:config && npm run test:setup && npm run test:guides",
+      "test:src": "vitest run --config vite.config.ts --no-cache --reporter=dot --project src:server",
+      "test:src:server": "vitest run --config vite.config.ts --no-cache --reporter=dot --project src:server",
+      "test:policy": "vitest run --config vite.config.ts --no-cache --reporter=dot --project policy",
+      "test:config": "vitest run --config vite.config.ts --no-cache --reporter=dot --project config",
+      "test:guides": "node --experimental-strip-types tests/guides.test.ts",
+      "build": "npm run clean && npm run build:src",
+      "build:src": "npm run build:src:server",
+      "build:src:server": "vite build --config configs/src/vite.server.config.ts && npm run copy dist/src/server/index.d.ts dist/src/server/index.d.cts",
+      "prepublishOnly": "npm run format:check && npm run lint:check && npm run check && npm run build && npm test && npm run test:distribution -- --mode release",
+      "test:distribution": "vitest run --config vite.config.ts --no-cache --reporter=dot --project distribution",
+      "test:probe": "vitest run --config vite.config.ts --no-cache --reporter=verbose --project probe",
+      "test:bench": "vitest bench --config vite.config.ts --no-cache --project probe",
+      "prepack": "npm run build",
+      "test:setup": "vitest run --config vite.config.ts --no-cache --reporter=dot --project setup"
+    },
+    "dependencies": {
+      "@orkestrel/contract": "^0.0.17"
+    },
+    "devDependencies": {
+      "@microsoft/api-extractor": "^7.59.0",
+      "@orkestrel/guide": "^0.0.17",
+      "@orkestrel/probe": "^0.0.12",
+      "@orkestrel/scaffold": "^0.0.63",
+      "@orkestrel/test": "^0.0.14",
+      "@types/node": "^26.4.1",
+      "oxfmt": "^0.66.0",
+      "oxlint": "^1.81.0",
+      "typescript": "^6.0.3",
+      "vite": "^8.2.2",
+      "vitest": "^4.1.11"
+    },
+    "engines": {
+      "node": "^22.18.0 || >=24.4.0"
+    },
+    "gitHead": "f2ffc0acfeeb5123ffc32552552f6b60b911f108",
+    "_nodeVersion": "24.20.0",
+    "_npmVersion": "12.0.2",
+    "dist": {
+      "integrity": "sha512-xCTjXOqneNZ4aBVLKFy5rs7I2Sn3ClKlOlVSyX20YUcHyEgwVU9l+lXsJ1dbN4FyyBcRZNRwBVlxbnYkblwNTA==",
+      "shasum": "6564a72a0f586f86b4cfba953129f42433b01afb",
+      "tarball": "https://registry.npmjs.org/@orkestrel/sqlite/-/sqlite-0.0.11.tgz",
+      "fileCount": 9,
+      "unpackedSize": 109139,
+      "signatures": [
+        {
+          "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U",
+          "sig": "MEUCICVk1r42aLptqKUUT+pzy3nJBIkf2aj6pbZ7irsz8f2YAiEAuPZ4ohLobVL0sXsUFbi0ysyP4IQUE0Q5Z3iRqnSHNsM="
+        }
+      ]
+    },
+    "_npmUser": "mikesaintsg <mikesaintg11@gmail.com>",
+    "directories": {},
+    "_npmOperationalInternal": {
+      "host": "s3://npm-registry-packages-npm-production",
+      "tmp": "tmp/sqlite_0.0.11_1789095362032_0.4294572196069486"
+    },
+    "_hasShrinkwrap": false
+  }
+]

@@ -1,0 +1,13 @@
+{
+    "name":  "@orkestrel/sqlite",
+    "version":  "0.0.11",
+    "url":  "https://registry.npmjs.org/@orkestrel/sqlite/-/sqlite-0.0.11.tgz",
+    "registrySha1":  "6564a72a0f586f86b4cfba953129f42433b01afb",
+    "downloadedSha1":  "6564a72a0f586f86b4cfba953129f42433b01afb",
+    "downloadedSha256":  "e65036940568b21509d88d17fdb6bb3224f4b87b108ba6840bb84afd60c12063",
+    "acceptedArchiveSha256":  "e65036940568b21509d88d17fdb6bb3224f4b87b108ba6840bb84afd60c12063",
+    "gitHead":  "f2ffc0acfeeb5123ffc32552552f6b60b911f108",
+    "branch":  "main",
+    "head":  "f2ffc0acfeeb5123ffc32552552f6b60b911f108",
+    "originMain":  "f2ffc0acfeeb5123ffc32552552f6b60b911f108"
+}

@@ -1,0 +1,13 @@
+{
+    "name":  "@orkestrel/timeout",
+    "version":  "0.0.10",
+    "url":  "https://registry.npmjs.org/@orkestrel/timeout/-/timeout-0.0.10.tgz",
+    "registrySha1":  "14edce1fd8b4a278bfc2451ee66fa93b9390cf54",
+    "downloadedSha1":  "14edce1fd8b4a278bfc2451ee66fa93b9390cf54",
+    "downloadedSha256":  "ac3fbe2c886d0831db3dcc2329ebed6362f78f2e89ec581ce7ff950884366a53",
+    "acceptedArchiveSha256":  "ac3fbe2c886d0831db3dcc2329ebed6362f78f2e89ec581ce7ff950884366a53",
+    "gitHead":  "a058b1f274df3ba5e63d11f99fb7fb2a0d936710",
+    "branch":  "main",
+    "head":  "a058b1f274df3ba5e63d11f99fb7fb2a0d936710",
+    "originMain":  "a058b1f274df3ba5e63d11f99fb7fb2a0d936710"
+}
