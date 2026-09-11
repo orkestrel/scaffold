@@ -10,14 +10,16 @@ Prepare Brief, MCP, Middleware, Program, Worker and Workflow under
 d7n-dependent-layer-plan.md. Their fresh root ancestry checks passed on clean
 campaign branches. Registry-confirmed Guide0.0.18 and Scaffold0.0.64 tarballs are
 installed without saved metadata changes, and direct native guide-entry failures
-are recorded. Native migrations and retained MCP/Program/Workflow docs fixes are
-in progress. Brief, Middleware and Worker returned native entries and passed root
-preparation prepublishOnly after supported policy repair. Their source review is
-pending. Read d7n-dependent-native-preparation-state.md. No package in this layer
-is ready for upload yet. Program has since returned its docs/native correction and
-passed root preparation prepublishOnly. MCP and Workflow remain active. Review and
-builder dispatches are waiting on a harness thread-capacity refusal; no required
-lane is being treated as passed.
+are recorded. Native migrations and retained MCP/Program/Workflow docs fixes have
+returned. Root preparation prepublishOnly passed in each selected package after
+supported policy repair. Brief, Middleware and Worker have accepted source verdicts;
+the objective comment-only failure is retained and annotated under the owner's
+prose ruling, not described as a passing lane. Their source landing remains pending.
+Program, Workflow and MCP source reviews are in progress. Read
+d7n-dependent-native-preparation-state.md. No package in this layer is ready for
+upload yet. Corrected source/registry carriers are under objective review; release
+closure carriers are briefed. Harness capacity limits dispatch concurrency; no
+required lane is being treated as passed because a dispatch refused.
 
 The Opus writer returned a fresh weekly-quota failure. The root journal records
 session dd5e5af9-8abf-4404-a1a4-26582f1982a2. Use the prescribed Sol writer fallback,

@@ -4,7 +4,11 @@ Brief, Middleware and Worker returned their native-entry migrations. Root ran th
 direct entry in each canonical checkout and read exit 0. The author-only freezes
 hold only tests/guides.test.ts changes and preserve the baseline metadata/index.
 Their shared report maps predecessor assertions and executable package cases.
-Independent and reused objective source review remain pending.
+Independent and reused objective source review returned. Root accepts the native
+source under d7n-brief-dependent-source-verdict.md,
+d7n-middleware-dependent-source-verdict.md and d7n-worker-dependent-source-verdict.md.
+The objective COMMENT failure is retained and annotated under the owner's
+prose-only ruling. No source commit has landed yet.
 
 Root reproduced the stale generated no-mocking fixture failure in each isolated
 config project. Supported Scaffold repair updated package.json, tests/config.test.ts
@@ -41,11 +45,13 @@ The registry carrier author returned its successor; root identified missing
 peer-registry, external-pin, optional-metadata and local-lock checks and queued the
 completion brief before any carrier execution. The completion stopped on a
 predecessor roster mismatch. Root read the actual stopped file and wrote an
-explicit resume brief. No registry or source-commit carrier has run.
+explicit resume brief. The return then omitted its campaign push and distinct
+field receipt labels; the correction has returned. The reused objective analyst
+is auditing the actual final scripts. No registry or source-commit carrier has run.
 
 Review and builder dispatches initially refused with agent thread limit reached.
-The reused objective analyst and independent owner-selected reviewer have now
-started the corrected native-group review. The builder resume remains queued by
-capacity. No lane result or engine substitution is inferred from a dispatch
-refusal. Retain every return before any source landing.
+The independent reviewer is examining the returned documentation units. The
+reused objective analyst is auditing the preparation carriers before its next
+documentation review. No lane result or engine substitution is inferred from a
+dispatch refusal. Retain every return before any source landing.
 No release readiness is claimed.
