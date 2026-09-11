@@ -32,7 +32,7 @@ in this file are not release-preparation status.
 | emitter | 0.0.10 | fe7e689 | prepared; campaign/main pushed; clean local main |
 | html | 0.0.9 | aa08eb1 | prepared; campaign/main pushed; clean local main |
 | indexeddb | 0.0.11 | cb179f6 | prepared; campaign/main pushed; clean local main |
-| ndjson | 0.0.10 | 1c12979 | standalone gates passed; recovery pack pending |
+| ndjson | 0.0.10 | a35c40c | prepared; campaign/main pushed; clean local main |
 | sqlite | 0.0.11 | 0ed78f6 | packed; final review and main closure pending |
 | timeout | 0.0.10 | b035b0e | packed; final review and main closure pending |
 | tool | 0.0.14 | bf89501 | standalone gates passed; recovery pack pending |
