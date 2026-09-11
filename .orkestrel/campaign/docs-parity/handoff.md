@@ -27,7 +27,7 @@ in this file are not release-preparation status.
 | Package | Version | Accepted source or release tip | Release preparation |
 | --- | --- | --- | --- |
 | abort | 0.0.10 | 3dddab9 | prepared; campaign/main pushed; clean local main |
-| budget | 0.0.10 | adcdd32 | packed; main closure pending |
+| budget | 0.0.10 | 625e743 | prepared; campaign/main pushed; clean local main |
 | csv | 0.0.7 | a27b91c | packed; main closure pending |
 | emitter | 0.0.10 | 361f5cb | packed; main closure pending |
 | html | 0.0.9 | dc36caa | packed; final review and main closure pending |
