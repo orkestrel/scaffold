@@ -21,13 +21,12 @@ Brief's registry visit stopped after supported overwrite/audit and final install
 because its carrier rejected Scaffold-owned toolchain updates. Its preparation
 commit is pushed; read d7n-dependent-toolchain-ruling.md. The bounded recovery
 carrier returned, and its review exposed an unqualified-latest check that conflicts
-with Scaffold's supported-major policy. The supported-major successor is being
-implemented; no Brief mutation has replayed. Middleware, Worker, Program and
-Workflow await registry visits. Workflow's source correction passed its final
-gate and independent delta review and is committed and pushed to the campaign
-branch. MCP's guide/README closing correction passed root gates. Independent
-review found incomplete example introductions; root corrected those paragraphs
-and is running the final gate with independent delta review. Read
+with Scaffold's supported-major policy. The supported-major successor and root
+external-name guard correction passed actual range-aware lookups and are under
+independent/reused objective review. No Brief mutation has replayed. Middleware,
+Worker, Program, Workflow and MCP await registry visits. Their source corrections
+are accepted, committed and campaign-pushed. Read the source landing table and
+package verdicts for exact gate bindings and preserved evidence limitations. Read
 d7n-dependent-native-preparation-state.md. No package in this layer is ready for
 upload yet. Base source/registry carriers passed objective review; the toolchain
 recovery and final closure successors still need review. Harness capacity limits dispatch concurrency; no

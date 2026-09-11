@@ -1,0 +1,2 @@
+[claude/orkestrel-npm-audit-deps-14ibta e865b59] Adopt the native guides entry and current generated policy
+ 11 files changed, 1075 insertions(+), 958 deletions(-)

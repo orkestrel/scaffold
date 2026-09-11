@@ -71,5 +71,11 @@ because the carrier rejected Scaffold-owned toolchain updates. The preparation
 commit is campaign-pushed. Preserve that stopped state and use the recovery
 successor under d7n-dependent-toolchain-ruling.md. The recovery review exposed an
 unqualified-latest check that conflicts with Scaffold's supported-major contract.
-The supported-major successor is being implemented; no Brief mutation has replayed.
-No release readiness is claimed.
+The supported-major successor returned. Root's real lookup exposed its fleet-name
+guard rejecting external tools; the root isDependency correction passed the same
+actual questions. Final carrier review is running; no Brief mutation has replayed.
+
+MCP's guide-introduction delta passed independent review and final leadin-prepublish.
+Its source verdict is accepted, committed and campaign-pushed. Source acceptance
+is complete for the selected layer. Registry preparation and clean-main release
+closure remain open; no release readiness is claimed.

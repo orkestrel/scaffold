@@ -1,0 +1,11 @@
+# MCP example-introduction delta review
+
+1. INTRODUCTIONS — CONFIRMED. In `mcp/guides/mcp.md`, the introduction under “Build response envelopes and validate wire messages directly” now identifies the response builders and wire guards composed by `dispatch` and `handle`, and retains their use in tests or custom transports. The introduction under “Frame newline-delimited JSON-RPC over stdio directly” now states that the example extracts and dispatches messages using the stdio transports' helpers. Each introduction consists of complete sentences and preserves the prior factual meaning.
+
+2. SCOPE — CONFIRMED. Comparing the actual current binary diff with `tmp/pass/d7n-mcp-dependent-closing-prepublish/diff-after.txt` shows only the named introduction replacements and the resulting guide blob identifier change. Fence bodies, other prose, source, tests, metadata and index remain unchanged. The prior source confirmations carry forward. This correction resolves the remaining M9 prose counterexamples recorded in `tmp/units/d7n-mcp-dependent-closing-review-report.md`; it does not reopen the accepted source review.
+
+3. BINDING — CONFIRMED. Root's `tmp/pass/d7n-mcp-dependent-leadin-native/action.exit.txt` and `tmp/pass/d7n-mcp-dependent-leadin-prepublish/action.exit.txt` each record exit 0. I read the native output and final prepublish stdout/stderr. The final output includes successful conformance, integration and distribution verification. The retained prepublish before/after diff, index and manifest readings agree. Its diff matches the actual current `git diff HEAD --binary`; native and prepublish index and manifest readings agree. The retained diff SHA-256 is `50CCE5C7D376A4A9F182E533BC0E6A56BC675B4EA132AE009544FE11698899F2`. Current HEAD is `a01d5e872ace90034c991d61b236df6915128178`; package and lock hashes are respectively `4BD48A836DA6ECDEDD5DE3FB035BF523A0596B28BF4AD3A4C3DB167A07F1B8A7` and `BD78580A759E33816D27FC4C67DAFD613BE1F90C16DFEDEC7C1E869FD4F5724A`.
+
+The historic Summary-red transcript remains unavailable. This verdict does not reconstruct that evidence or claim MCP-to-Probe verification or registry release readiness. Prior reports remain unchanged. No target changes or new gates were performed for this review.
+
+VERDICT: PASS
