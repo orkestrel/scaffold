@@ -29,7 +29,7 @@ in this file are not release-preparation status.
 | abort | 0.0.10 | 3dddab9 | prepared; campaign/main pushed; clean local main |
 | budget | 0.0.10 | 625e743 | prepared; campaign/main pushed; clean local main |
 | csv | 0.0.7 | b9e9893 | prepared; campaign/main pushed; clean local main |
-| emitter | 0.0.10 | 361f5cb | packed; main closure pending |
+| emitter | 0.0.10 | fe7e689 | prepared; campaign/main pushed; clean local main |
 | html | 0.0.9 | dc36caa | packed; final review and main closure pending |
 | indexeddb | 0.0.11 | 145bd18 | packed; main closure pending |
 | ndjson | 0.0.10 | 1c12979 | standalone gates passed; recovery pack pending |

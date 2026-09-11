@@ -1,0 +1,1 @@
+{"dependencies":{"contract":"^0.0.17"},"development":{"guide":"^0.0.17","probe":"^0.0.12","scaffold":"^0.0.63","test":"^0.0.14"},"name":"@orkestrel/emitter","version":"0.0.10"}
