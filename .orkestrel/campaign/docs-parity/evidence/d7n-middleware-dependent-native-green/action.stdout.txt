@@ -1,0 +1,10 @@
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/middleware
+
+···········································
+
+ Test Files  1 passed (1)
+      Tests  43 passed (43)
+   Start at  17:04:57
+   Duration  829ms (transform 110ms, setup 235ms, import 406ms, tests 45ms, environment 0ms)
+

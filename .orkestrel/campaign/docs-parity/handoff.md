@@ -11,7 +11,10 @@ d7n-dependent-layer-plan.md. Their fresh root ancestry checks passed on clean
 campaign branches. Registry-confirmed Guide0.0.18 and Scaffold0.0.64 tarballs are
 installed without saved metadata changes, and direct native guide-entry failures
 are recorded. Native migrations and retained MCP/Program/Workflow docs fixes are
-in progress. No package in this layer is ready for upload yet.
+in progress. Brief, Middleware and Worker returned native entries and passed root
+preparation prepublishOnly after supported policy repair. Their source review is
+pending. Read d7n-dependent-native-preparation-state.md. No package in this layer
+is ready for upload yet.
 
 The Opus writer returned a fresh weekly-quota failure. The root journal records
 session dd5e5af9-8abf-4404-a1a4-26582f1982a2. Use the prescribed Sol writer fallback,
