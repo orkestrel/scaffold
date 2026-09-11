@@ -32,7 +32,7 @@ for these packages. Keep prompt.txt unchanged until this layer is prepared.
 | reason | 0.0.10 | prepared at e7e318e; final prepublish/pack accepted; campaign/main pushed; clean canonical main; unpublished |
 | router | 0.0.14 | prepared at fbc69d7; final prepublish/pack accepted; campaign/main pushed; clean canonical main; unpublished |
 | table | 0.0.5 | prepared at f4805ea; final prepublish/pack accepted; campaign/main pushed; clean canonical main; unpublished |
-| template | 0.0.7 | source accepted and committed at e7744d0; full source prepublish green; final preparation pending |
+| template | 0.0.7 | prepared at c053c4d; final prepublish/pack accepted; campaign/main pushed; clean canonical main; unpublished |
 | websocket | 0.0.12 | source accepted and committed at b60a37c; full source prepublish green; final preparation pending |
 
 The next-layer plan is d7n-next-layer-plan.md. Fresh origin/main readings require
