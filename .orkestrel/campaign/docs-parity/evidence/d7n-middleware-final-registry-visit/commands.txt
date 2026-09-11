@@ -1,0 +1,122 @@
+git -C /c/Users/mikes/WebstormProjects/middleware branch --show-current 
+git -C /c/Users/mikes/WebstormProjects/middleware rev-parse HEAD 
+git -C /c/Users/mikes/WebstormProjects/middleware diff --cached --quiet 
+git -C /c/Users/mikes/WebstormProjects/middleware status --porcelain=v1 --untracked-files=all 
+npm pkg get dependencies.@orkestrel/abort 
+npm pkg get dependencies.@orkestrel/budget 
+npm pkg get dependencies.@orkestrel/contract 
+npm pkg get dependencies.@orkestrel/timeout 
+npm pkg get devDependencies.@orkestrel/guide 
+npm pkg get devDependencies.@orkestrel/scaffold 
+npm pkg get devDependencies.@orkestrel/test 
+npm pkg get devDependencies.@orkestrel/probe 
+npm pkg get peerDependencies.@orkestrel/database 
+npm pkg get peerDependencies.@orkestrel/server 
+npm pkg get devDependencies.@orkestrel/database 
+npm pkg get devDependencies.@orkestrel/router 
+npm pkg get devDependencies.@orkestrel/server 
+npm view @orkestrel/middleware version 
+npm view @orkestrel/guide version 
+npm view @orkestrel/scaffold version 
+npm view @orkestrel/test version 
+npm view @orkestrel/probe version 
+npm view @orkestrel/abort version 
+npm view @orkestrel/budget version 
+npm view @orkestrel/contract version 
+npm view @orkestrel/timeout version 
+npm view @orkestrel/database version 
+npm view @orkestrel/server version 
+npm view @orkestrel/database version 
+npm view @orkestrel/router version 
+npm view @orkestrel/server version 
+npm pkg get peerDependenciesMeta 
+npm pkg get devDependencies.@microsoft/api-extractor 
+node /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/read-supported-toolchain.mjs @microsoft/api-extractor \^7.59.0 
+npm pkg get devDependencies.@types/node 
+node /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/read-supported-toolchain.mjs @types/node \^26.4.1 
+npm pkg get devDependencies.oxfmt 
+node /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/read-supported-toolchain.mjs oxfmt \^0.66.0 
+npm pkg get devDependencies.oxlint 
+node /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/read-supported-toolchain.mjs oxlint \^1.81.0 
+npm pkg get devDependencies.typescript 
+node /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/read-supported-toolchain.mjs typescript \^6.0.3 
+npm pkg get devDependencies.vite 
+node /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/read-supported-toolchain.mjs vite \^8.2.2 
+npm pkg get devDependencies.vitest 
+node /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/read-supported-toolchain.mjs vitest \^4.1.11 
+npm pkg get peerDependenciesMeta.@orkestrel/database.optional 
+git -C /c/Users/mikes/WebstormProjects/middleware fetch origin 
+git -C /c/Users/mikes/WebstormProjects/middleware merge-base --is-ancestor origin/main HEAD 
+npm pkg set dependencies.@orkestrel/abort=\^0.0.10 
+npm pkg set dependencies.@orkestrel/budget=\^0.0.10 
+npm pkg set dependencies.@orkestrel/contract=\^0.0.17 
+npm pkg set dependencies.@orkestrel/timeout=\^0.0.10 
+npm pkg set devDependencies.@orkestrel/guide=\^0.0.18 
+npm pkg set devDependencies.@orkestrel/scaffold=\^0.0.64 
+npm pkg set devDependencies.@orkestrel/test=\^0.0.14 
+npm pkg set peerDependencies.@orkestrel/database=\^0.0.14 
+npm pkg set peerDependencies.@orkestrel/server=\^0.0.19 
+npm pkg set devDependencies.@orkestrel/database=\^0.0.14 
+npm pkg set devDependencies.@orkestrel/router=\^0.0.14 
+npm pkg set devDependencies.@orkestrel/server=\^0.0.19 
+npm install --ignore-scripts 
+git -C /c/Users/mikes/WebstormProjects/middleware diff --name-only 
+node /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/read-package-field.mjs /c/Users/mikes/WebstormProjects/middleware/node_modules/@orkestrel/guide/package.json version 
+node /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/read-package-field.mjs /c/Users/mikes/WebstormProjects/middleware/node_modules/@orkestrel/scaffold/package.json version 
+diff -r /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-guide-registry-native-pack/extract/package/dist /c/Users/mikes/WebstormProjects/middleware/node_modules/@orkestrel/guide/dist 
+diff -r /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-scaffold-upper-git-final-pack/extract/package/dist /c/Users/mikes/WebstormProjects/middleware/node_modules/@orkestrel/scaffold/dist 
+git -C /c/Users/mikes/WebstormProjects/middleware add -- package.json package-lock.json 
+git -C /c/Users/mikes/WebstormProjects/middleware -c user.name=Claude -c user.email=noreply@anthropic.com commit -m Prepare\ middleware\ against\ published\ tooling -m Co-Authored-By:\ Claude\ \<noreply@anthropic.com\> -m Claude-Session:\ codex:01a0810d-21bf-7f60-8534-488348e05743 
+git -C /c/Users/mikes/WebstormProjects/middleware rev-parse HEAD 
+git -C /c/Users/mikes/WebstormProjects/middleware push origin HEAD:claude/orkestrel-npm-audit-deps-14ibta 
+node node_modules/@orkestrel/scaffold/dist/bin/main.js overwrite 
+node node_modules/@orkestrel/scaffold/dist/bin/main.js audit 
+npm pkg delete scripts.docs 
+node /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/verify-upper-native-manifest.mjs /c/Users/mikes/WebstormProjects/middleware/package.json 
+cmp /c/Users/mikes/WebstormProjects/middleware/guides/guide.md /c/Users/mikes/WebstormProjects/guide/guides/guide.md 
+cmp /c/Users/mikes/WebstormProjects/middleware/guides/scaffold.md /c/Users/mikes/WebstormProjects/scaffold/guides/scaffold.md 
+bash /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/upper-layer-action.sh middleware lock d7n-middleware-final-registry-visit-lock 600s 
+bash /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/upper-layer-action.sh middleware install d7n-middleware-final-registry-visit-install 600s 
+node /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/read-package-field.mjs /c/Users/mikes/WebstormProjects/middleware/node_modules/@orkestrel/guide/package.json version 
+node /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/read-package-field.mjs /c/Users/mikes/WebstormProjects/middleware/node_modules/@orkestrel/scaffold/package.json version 
+diff -r /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-guide-registry-native-pack/extract/package/dist /c/Users/mikes/WebstormProjects/middleware/node_modules/@orkestrel/guide/dist 
+diff -r /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-scaffold-upper-git-final-pack/extract/package/dist /c/Users/mikes/WebstormProjects/middleware/node_modules/@orkestrel/scaffold/dist 
+npm pkg get peerDependenciesMeta 
+npm pkg get devDependencies.@microsoft/api-extractor 
+npm pkg get devDependencies.@types/node 
+npm pkg get devDependencies.oxfmt 
+npm pkg get devDependencies.oxlint 
+npm pkg get devDependencies.typescript 
+npm pkg get devDependencies.vite 
+npm pkg get devDependencies.vitest 
+rg -n -e file:\|link:\|workspace:\|\"link\"\[\[:space:\]\]\*:\[\[:space:\]\]\*true package.json package-lock.json 
+npm ls --depth=0 
+npm pkg get dependencies.@orkestrel/abort 
+npm pkg get dependencies.@orkestrel/budget 
+npm pkg get dependencies.@orkestrel/contract 
+npm pkg get dependencies.@orkestrel/timeout 
+npm pkg get devDependencies.@orkestrel/guide 
+npm pkg get devDependencies.@orkestrel/scaffold 
+npm pkg get devDependencies.@orkestrel/test 
+npm pkg get devDependencies.@orkestrel/probe 
+npm pkg get peerDependencies.@orkestrel/database 
+npm pkg get peerDependencies.@orkestrel/server 
+npm pkg get devDependencies.@orkestrel/database 
+npm pkg get devDependencies.@orkestrel/router 
+npm pkg get devDependencies.@orkestrel/server 
+rg -n -P \(\?\<\!\[0-9\]\)0\\.0\\.19\(\?\!\[0-9\]\) src tests 
+rg -n -P \(\?\<\!\[0-9\]\)\\\^0\\.0\\.9\(\?\!\[0-9\]\) src tests 
+rg -n -P \(\?\<\!\[0-9\]\)\\\^0\\.0\\.9\(\?\!\[0-9\]\) src tests 
+rg -n -P \(\?\<\!\[0-9\]\)\\\^0\\.0\\.16\(\?\!\[0-9\]\) src tests 
+rg -n -P \(\?\<\!\[0-9\]\)\\\^0\\.0\\.9\(\?\!\[0-9\]\) src tests 
+rg -n -P \(\?\<\!\[0-9\]\)\\\^0\\.0\\.17\(\?\!\[0-9\]\) src tests 
+rg -n -P \(\?\<\!\[0-9\]\)\\\^0\\.0\\.63\(\?\!\[0-9\]\) src tests 
+rg -n -P \(\?\<\!\[0-9\]\)\\\^0\\.0\\.13\(\?\!\[0-9\]\) src tests 
+rg -n -P \(\?\<\!\[0-9\]\)\\\^0\\.0\\.13\(\?\!\[0-9\]\) src tests 
+rg -n -P \(\?\<\!\[0-9\]\)\\\^0\\.0\\.18\(\?\!\[0-9\]\) src tests 
+rg -n -P \(\?\<\!\[0-9\]\)\\\^0\\.0\\.13\(\?\!\[0-9\]\) src tests 
+rg -n -P \(\?\<\!\[0-9\]\)\\\^0\\.0\\.13\(\?\!\[0-9\]\) src tests 
+rg -n -P \(\?\<\!\[0-9\]\)\\\^0\\.0\\.18\(\?\!\[0-9\]\) src tests 
+bash /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/upper-layer-action.sh middleware format d7n-middleware-final-registry-visit-format 120s 
+bash /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/upper-layer-action.sh middleware prepublish d7n-middleware-final-registry-visit-prepublish 900s 
+bash /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/pack-dependent-final-verified.sh middleware d7n-middleware-final-registry-visit-pack 0.0.20 d7n-middleware-final-registry-visit-prepublish 0.0.19 

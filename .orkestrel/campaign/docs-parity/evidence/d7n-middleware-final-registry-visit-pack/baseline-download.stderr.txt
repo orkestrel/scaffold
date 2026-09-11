@@ -1,0 +1,28 @@
+npm notice
+npm notice 📦  @orkestrel/middleware@0.0.19
+npm notice Tarball Contents
+npm notice 1.1kB LICENSE
+npm notice 2.1kB README.md
+npm notice 76.9kB dist/src/core/index.cjs
+npm notice 114.0kB dist/src/core/index.cjs.map
+npm notice 69.4kB dist/src/core/index.d.cts
+npm notice 69.4kB dist/src/core/index.d.ts
+npm notice 72.1kB dist/src/core/index.js
+npm notice 112.1kB dist/src/core/index.js.map
+npm notice 55.5kB dist/src/server/index.cjs
+npm notice 84.7kB dist/src/server/index.cjs.map
+npm notice 39.9kB dist/src/server/index.d.cts
+npm notice 39.9kB dist/src/server/index.d.ts
+npm notice 53.2kB dist/src/server/index.js
+npm notice 83.8kB dist/src/server/index.js.map
+npm notice 4.9kB package.json
+npm notice Tarball Details
+npm notice name: @orkestrel/middleware
+npm notice version: 0.0.19
+npm notice filename: orkestrel-middleware-0.0.19.tgz
+npm notice package size: 230.3 kB
+npm notice unpacked size: 879.2 kB
+npm notice shasum: 7ef5b3e5f520a1ba5cae6361d058c96a4c7578b9
+npm notice integrity: sha512-Z4qHdbT1aIyrU[...]0O4TndB4ukcSQ==
+npm notice total files: 15
+npm notice
