@@ -22,14 +22,16 @@ because its carrier rejected Scaffold-owned toolchain updates. Its preparation
 commit is pushed; read d7n-dependent-toolchain-ruling.md. The bounded recovery
 carrier returned, and its review exposed an unqualified-latest check that conflicts
 with Scaffold's supported-major policy. The supported-major successor and root
-external-name guard correction passed actual range-aware lookups and are under
-independent/reused objective review. No Brief mutation has replayed. Middleware,
-Worker, Program, Workflow and MCP await registry visits. Their source corrections
+external-name guard correction passed actual range-aware lookups and independent/
+reused objective review. Brief's resume completed with final prepublish and actual
+pack green; release review is active. No completed Brief mutation replayed.
+Middleware's fresh registry visit is running. Worker, Program, Workflow and MCP
+await registry visits. Read d7n-dependent-registry-preparation-state.md. Their source corrections
 are accepted, committed and campaign-pushed. Read the source landing table and
 package verdicts for exact gate bindings and preserved evidence limitations. Read
 d7n-dependent-native-preparation-state.md. No package in this layer is ready for
-upload yet. Base source/registry carriers passed objective review; the toolchain
-recovery and final closure successors still need review. Harness capacity limits dispatch concurrency; no
+upload yet. The supported recovery and final closure carriers are accepted under
+d7n-dependent-supported-carrier-verdict.md. Harness capacity limits dispatch concurrency; no
 required lane is being treated as passed because a dispatch refused.
 
 When rebuilding the dependent preparation instruments, copy

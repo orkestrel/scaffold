@@ -1,0 +1,854 @@
+diff -r -w -B '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-brief-final-registry-visit-pack/baseline/package/dist/src/core/index.cjs /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-brief-final-registry-visit-pack/extract/package/dist/src/core/index.cjs
+7c7,13
+< /** Lists the `TaskOperation` values, frozen. */
+---
+> /**
+> * Lists the `TaskOperation` values, frozen.
+> *
+> * @remarks
+> * Compose the tuple rather than restating its members: `literalOf(TASK_OPERATIONS)` builds the
+> * guard and `parseEnum(value, TASK_OPERATIONS)` coerces a bare value against it.
+> */
+90c96
+< * Every ECMAScript line terminator, not just `\n`: a renderer that splits on any of them
+---
+> * Every ECMAScript line terminator, not only `\n`: a renderer that splits on any of them
+98c104
+< * Holds the positive form of {@link LINE_BREAK_PATTERN}, for the shape DSL.
+---
+> * Holds the positive form of {@link LINE_BREAK_PATTERN}, for a `stringShape` `pattern`.
+123a130,132
+> * Extends `Error` with a readonly `code` on the `BriefErrorCode` vocabulary and an optional
+> * readonly `context` record carrying whatever the raising site can supply.
+> *
+172c181
+< /** Describes a single-line string of any length, including empty. */
+---
+> /** Describes a single-line string of any length, including empty — the shape mirror of `isText`. */
+179c188,195
+< /** Describes the `Task` shape — closed operation and domain vocabularies plus a non-empty statement. */
+---
+> /**
+> * Describes the `Task` shape — closed operation and domain vocabularies plus a non-empty
+> * statement.
+> *
+> * @remarks
+> * `literalShape(TASK_OPERATIONS)` and `literalShape(TASK_DOMAINS)` compile the same tuples the
+> * guards read, and `statement` carries `min: 1`.
+> */
+190c206,212
+< /** Describes the `Manifest` shape — disjoint reference partitions. */
+---
+> /**
+> * Describes the `Manifest` shape — disjoint reference partitions.
+> *
+> * @remarks
+> * Each partition is an `arrayShape(referenceShape)`; disjointness is `validateBrief`'s pass
+> * rather than the shape's.
+> */
+197c219,224
+< /** Describes the `Outcome` shape — a one-based rank, the result text, and whether it gates done. */
+---
+> /**
+> * Describes the `Outcome` shape — a one-based rank, the result text, and whether it gates done.
+> *
+> * @remarks
+> * `rank` is an `integerShape({ min: 1 })`, so a zero or fractional rank is off-contract.
+> */
+288a316,319
+> * @remarks
+> * The shape of nearly every brief field: a path, a note, a statement, a rule, and a command
+> * all narrow through it.
+> *
+626a658,661
+> * @remarks
+> * The one builder for an authority entry and a manifest entry alike: the container the record
+> * lands in is what says whether the path is ranked or permitted.
+> *
+1012a1048,1051
+> * @remarks
+> * A non-empty result means the gate must fail closed: a blocking gap has no safe default, so
+> * the compile yields a visible incomplete `Briefing` carrying the questions instead of a brief.
+> *
+1041c1080
+< * entirely: the brief simply never says the executor may open what it must obey.
+---
+> * entirely: the brief never says the executor may open what it must obey.
+1505,1506c1544,1546
+< * Paths are REFERENCED, never inlined — the executor retrieves them. An empty section is
+< * omitted entirely, so the rendering carries no filler an executor must read past.
+---
+> * Sections render in authority order, so the executor meets what wins a conflict before what
+> * it may touch. Paths are referenced, never inlined — the executor retrieves them. An empty
+> * section is omitted entirely, so the rendering carries no filler an executor must read past.
+1635,1636c1675,1677
+< * `edit` is exactly `manifest.edit`, so two dispatches whose `edit` sets do not intersect
+< * can run concurrently under the same brief without conflict.
+---
+> * `edit` is exactly `manifest.edit` — the owned set — so two dispatches whose `edit` sets do
+> * not intersect can run concurrently under the same brief without conflict. `locked` and
+> * `forbidden` cross unchanged as the do-not-touch sets.
+1638c1679
+< * `authority` is exactly `brief.authority` in rank order, and it is a SEPARATE axis from the
+---
+> * `authority` is exactly `brief.authority` in rank order, and it is a separate axis from the
+2283a2325,2363
+> *
+> * @example Compile and project a brief
+> * ```ts
+> * import {
+> * 	briefToGoal,
+> * 	briefToMarkdown,
+> * 	buildOutcome,
+> * 	buildProof,
+> * 	buildTask,
+> * 	createBriefCompiler,
+> * } from '@orkestrel/brief'
+> *
+> * const compiler = createBriefCompiler()
+> *
+> * const briefing = compiler.compile({
+> * 	task: buildTask('refactor', 'code', 'Refactor useForm to native browser form APIs.'),
+> * 	authority: [{ path: 'AGENTS.md', note: 'project law; wins every conflict' }],
+> * 	manifest: {
+> * 		read: [
+> * 			{ path: 'AGENTS.md', note: 'project law; wins every conflict' },
+> * 			{ path: 'guides/browser.md', note: 'the composable contract' },
+> * 		],
+> * 		edit: [{ path: 'src/browser/composables/useForm.ts', note: 'the composable being refactored' }],
+> * 		locked: [{ path: 'src/browser/types.ts', note: 'the published contract' }],
+> * 		forbidden: [{ path: 'app/**', note: 'out of scope' }],
+> * 	},
+> * 	outcomes: [buildOutcome(1, 'useForm uses native FormData with no behavior change')],
+> * 	proofs: [buildProof('type-check and lint pass', 'npm run check')],
+> * })
+> *
+> * briefing.brief !== undefined // true — the brief is present exactly when the gate passed
+> * if (briefing.brief !== undefined) {
+> * 	briefToMarkdown(briefing.brief) // the copy-ready agent prompt
+> * 	briefToGoal(briefing.brief) // the /goal completion condition
+> * }
+> *
+> * compiler.emitter.on('block', (questions) => questions.length)
+> * compiler.destroy()
+> * ```
+diff -r -w -B '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-brief-final-registry-visit-pack/baseline/package/dist/src/core/index.d.cts /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-brief-final-registry-visit-pack/extract/package/dist/src/core/index.d.cts
+1c1
+< import { Ambiguity } from '@orkestrel/interpret';
+---
+> import type { Ambiguity } from '@orkestrel/interpret';
+4,12c4,12
+< import { ContractInterface } from '@orkestrel/contract';
+< import { EmitterErrorHandler } from '@orkestrel/emitter';
+< import { EmitterHooks } from '@orkestrel/emitter';
+< import { EmitterInterface } from '@orkestrel/emitter';
+< import { Entity } from '@orkestrel/interpret';
+< import { Guard } from '@orkestrel/contract';
+< import { Intent } from '@orkestrel/interpret';
+< import { Interpretation } from '@orkestrel/interpret';
+< import { InterpretInterface } from '@orkestrel/interpret';
+---
+> import type { ContractInterface } from '@orkestrel/contract';
+> import type { EmitterErrorHandler } from '@orkestrel/emitter';
+> import type { EmitterHooks } from '@orkestrel/emitter';
+> import type { EmitterInterface } from '@orkestrel/emitter';
+> import type { Entity } from '@orkestrel/interpret';
+> import type { Guard } from '@orkestrel/contract';
+> import type { Intent } from '@orkestrel/interpret';
+> import type { Interpretation } from '@orkestrel/interpret';
+> import type { InterpretInterface } from '@orkestrel/interpret';
+14,15c14,15
+< import { LogicalDefinition } from '@orkestrel/reason';
+< import { LogicalResult } from '@orkestrel/reason';
+---
+> import type { LogicalDefinition } from '@orkestrel/reason';
+> import type { LogicalResult } from '@orkestrel/reason';
+19,23c19,23
+< import { ReasonInterface } from '@orkestrel/reason';
+< import { ReasonValidationResult } from '@orkestrel/reason';
+< import { RecordOptions } from '@orkestrel/interpret';
+< import { StringShape } from '@orkestrel/contract';
+< import { Subject } from '@orkestrel/reason';
+---
+> import type { ReasonInterface } from '@orkestrel/reason';
+> import type { ReasonValidationResult } from '@orkestrel/reason';
+> import type { RecordOptions } from '@orkestrel/interpret';
+> import type { StringShape } from '@orkestrel/contract';
+> import type { Subject } from '@orkestrel/reason';
+136c136,142
+<  /** Declares the `BriefCompiler`'s push observation surface. */
+---
+>  /**
+>   * Declares the `BriefCompiler`'s push observation surface.
+>   *
+>   * @remarks
+>   * `compile` carries the `Briefing` the call produced, `block` carries the blocking `Gap` list
+>   * that stopped emission, `error` carries the thrown value, and `destroy` carries nothing.
+>   */
+145a152
+>      /** Holds the typed emitter carrying `compile`, `block`, `error`, and `destroy`. */
+146a154
+>      /** Holds the interpret pipeline the `interpret` stage delegates to, owned or borrowed. */
+147a156
+>      /** Holds the reasoner the gate evaluates its `LogicalDefinition` on, owned or borrowed. */
+148a158,168
+>      /**
+>       * Runs the `interpret` → `draft` → `gate` → `pin` pipeline over a `BriefInput`, returning a
+>       * complete or visible-incomplete result.
+>       *
+>       * @remarks
+>       * Synchronous, and it never throws for a brief it cannot emit: a blocking gap, a refused
+>       * gate, and a thrown stage each record their cause on `failures` and leave `brief` absent.
+>       *
+>       * @param input - The caller's text, interpretation, and authored sections.
+>       * @returns The `Briefing` for this call, complete exactly when `brief` is present.
+>       */
+149a170,176
+>      /**
+>       * Evaluates one brief's readiness through the reasons gate — `briefToSubject` against
+>       * `buildGateDefinition()`.
+>       *
+>       * @param brief - The brief to measure.
+>       * @returns The reasoner's traceable verdict, whose `conclusion` is the `ready` fact.
+>       */
+150a178,184
+>      /**
+>       * Tears the orchestrator down idempotently — owned engines first, the emitter last.
+>       *
+>       * @remarks
+>       * Emits `destroy` between the two, and releases only the engines it created. Every method
+>       * except this one throws `BriefError('DESTROYED', …)` afterwards.
+>       */
+205a240,242
+>   * Extends `Error` with a readonly `code` on the `BriefErrorCode` vocabulary and an optional
+>   * readonly `context` record carrying whatever the raising site can supply.
+>   *
+261c298
+<   * two identical compiles share it and a refused compile has one just as a complete one does.
+---
+>   * two identical compiles share it and a refused compile has one the same way a complete one does.
+343c380,386
+<  /** Declares the `BriefManager`'s push observation surface. */
+---
+>  /**
+>   * Declares the `BriefManager`'s push observation surface.
+>   *
+>   * @remarks
+>   * `add` and `remove` each carry the record id the store minted from the brief's content hash,
+>   * and `destroy` carries nothing.
+>   */
+359a403
+>      /** Holds the typed emitter carrying `add`, `remove`, and `destroy`. */
+360a405
+>      /** Holds how many records are registered. */
+361a407,412
+>      /**
+>       * Reports whether a brief with the given id is registered.
+>       *
+>       * @param id - The record id to look for.
+>       * @returns True if a record carries that id; false otherwise.
+>       */
+362a414,419
+>      /**
+>       * Looks up one registered brief record by id.
+>       *
+>       * @param id - The record id to read.
+>       * @returns The record, or `undefined` when no record carries that id.
+>       */
+363a421,425
+>      /**
+>       * Lists every registered brief record.
+>       *
+>       * @returns The records, in registration order.
+>       */
+364a427,437
+>      /**
+>       * Registers one brief from its data, minting the id from its content hash when none is given.
+>       *
+>       * @remarks
+>       * Emits `add`. `version` bumps only when the content hash moves, so re-adding unchanged
+>       * content is a no-op that keeps the record it already had.
+>       *
+>       * @param brief - The brief to register.
+>       * @param options - An explicit `id` to key the record by.
+>       * @returns The registered record.
+>       */
+365a439,448
+>      /**
+>       * Removes the listed briefs by id, one brief by id, or every brief.
+>       *
+>       * @remarks
+>       * Emits `remove` once per removed id. The array overload is declared first so an id list
+>       * resolves to the batch form, which reports `true` only when every listed id was present.
+>       *
+>       * @param ids - The record ids to remove.
+>       * @returns True when every listed id was registered; false otherwise.
+>       */
+368a452,458
+>      /**
+>       * Tears the registry down idempotently — the collection first, the emitter last.
+>       *
+>       * @remarks
+>       * Emits `destroy` between the two. Every method except this one throws
+>       * `BriefError('DESTROYED', …)` afterwards.
+>       */
+514,515c604,606
+<   * `edit` is exactly `manifest.edit`, so two dispatches whose `edit` sets do not intersect
+<   * can run concurrently under the same brief without conflict.
+---
+>   * `edit` is exactly `manifest.edit` — the owned set — so two dispatches whose `edit` sets do
+>   * not intersect can run concurrently under the same brief without conflict. `locked` and
+>   * `forbidden` cross unchanged as the do-not-touch sets.
+517c608
+<   * `authority` is exactly `brief.authority` in rank order, and it is a SEPARATE axis from the
+---
+>   * `authority` is exactly `brief.authority` in rank order, and it is a separate axis from the
+591,592c682,684
+<   * Paths are REFERENCED, never inlined — the executor retrieves them. An empty section is
+<   * omitted entirely, so the rendering carries no filler an executor must read past.
+---
+>   * Sections render in authority order, so the executor meets what wins a conflict before what
+>   * it may touch. Paths are referenced, never inlined — the executor retrieves them. An empty
+>   * section is omitted entirely, so the rendering carries no filler an executor must read past.
+839a932,935
+>   * @remarks
+>   * The one builder for an authority entry and a manifest entry alike: the container the record
+>   * lands in is what says whether the path is ranked or permitted.
+>   *
+1000a1097,1135
+>   * @example Compile and project a brief
+>   * ```ts
+>   * import {
+>   * 	briefToGoal,
+>   * 	briefToMarkdown,
+>   * 	buildOutcome,
+>   * 	buildProof,
+>   * 	buildTask,
+>   * 	createBriefCompiler,
+>   * } from '@orkestrel/brief'
+>   *
+>   * const compiler = createBriefCompiler()
+>   *
+>   * const briefing = compiler.compile({
+>   * 	task: buildTask('refactor', 'code', 'Refactor useForm to native browser form APIs.'),
+>   * 	authority: [{ path: 'AGENTS.md', note: 'project law; wins every conflict' }],
+>   * 	manifest: {
+>   * 		read: [
+>   * 			{ path: 'AGENTS.md', note: 'project law; wins every conflict' },
+>   * 			{ path: 'guides/browser.md', note: 'the composable contract' },
+>   * 		],
+>   * 		edit: [{ path: 'src/browser/composables/useForm.ts', note: 'the composable being refactored' }],
+>   * 		locked: [{ path: 'src/browser/types.ts', note: 'the published contract' }],
+>   * 		forbidden: [{ path: 'app/**', note: 'out of scope' }],
+>   * 	},
+>   * 	outcomes: [buildOutcome(1, 'useForm uses native FormData with no behavior change')],
+>   * 	proofs: [buildProof('type-check and lint pass', 'npm run check')],
+>   * })
+>   *
+>   * briefing.brief !== undefined // true — the brief is present exactly when the gate passed
+>   * if (briefing.brief !== undefined) {
+>   * 	briefToMarkdown(briefing.brief) // the copy-ready agent prompt
+>   * 	briefToGoal(briefing.brief) // the /goal completion condition
+>   * }
+>   *
+>   * compiler.emitter.on('block', (questions) => questions.length)
+>   * compiler.destroy()
+>   * ```
+>   *
+1221c1356
+<  /** Represents one input to output exemplar — the highest-leverage ambiguity remover. */
+---
+>  /** Represents one input to output exemplar — the ambiguity remover that leaves the least to interpret. */
+1257a1393,1396
+>   * @remarks
+>   * A non-empty result means the gate must fail closed: a blocking gap has no safe default, so
+>   * the compile yields a visible incomplete `Briefing` carrying the questions instead of a brief.
+>   *
+1320c1459
+<   * entirely: the brief simply never says the executor may open what it must obey.
+---
+>   * entirely: the brief never says the executor may open what it must obey.
+1595a1735,1738
+>   * @remarks
+>   * The shape of nearly every brief field: a path, a note, a statement, a rule, and a command
+>   * all narrow through it.
+>   *
+1710c1853
+<   * Every ECMAScript line terminator, not just `\n`: a renderer that splits on any of them
+---
+>   * Every ECMAScript line terminator, not only `\n`: a renderer that splits on any of them
+1735c1878,1884
+<  /** Describes the `Manifest` shape — disjoint reference partitions. */
+---
+>  /**
+>   * Describes the `Manifest` shape — disjoint reference partitions.
+>   *
+>   * @remarks
+>   * Each partition is an `arrayShape(referenceShape)`; disjointness is `validateBrief`'s pass
+>   * rather than the shape's.
+>   */
+1767c1916,1921
+<  /** Describes the `Outcome` shape — a one-based rank, the result text, and whether it gates done. */
+---
+>  /**
+>   * Describes the `Outcome` shape — a one-based rank, the result text, and whether it gates done.
+>   *
+>   * @remarks
+>   * `rank` is an `integerShape({ min: 1 })`, so a zero or fractional rank is off-contract.
+>   */
+1929c2083
+<    * Holds the positive form of {@link LINE_BREAK_PATTERN}, for the shape DSL.
+---
+>    * Holds the positive form of {@link LINE_BREAK_PATTERN}, for a `stringShape` `pattern`.
+1988c2142,2148
+<    /** Lists the `TaskOperation` values, frozen. */
+---
+>    /**
+>     * Lists the `TaskOperation` values, frozen.
+>     *
+>     * @remarks
+>     * Compose the tuple rather than restating its members: `literalOf(TASK_OPERATIONS)` builds the
+>     * guard and `parseEnum(value, TASK_OPERATIONS)` coerces a bare value against it.
+>     */
+2003c2163,2170
+<    /** Describes the `Task` shape — closed operation and domain vocabularies plus a non-empty statement. */
+---
+>    /**
+>     * Describes the `Task` shape — closed operation and domain vocabularies plus a non-empty
+>     * statement.
+>     *
+>     * @remarks
+>     * `literalShape(TASK_OPERATIONS)` and `literalShape(TASK_DOMAINS)` compile the same tuples the
+>     * guards read, and `statement` carries `min: 1`.
+>     */
+2010c2177
+<    /** Describes a single-line string of any length, including empty. */
+---
+>    /** Describes a single-line string of any length, including empty — the shape mirror of `isText`. */
+diff -r -w -B '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-brief-final-registry-visit-pack/baseline/package/dist/src/core/index.d.ts /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-brief-final-registry-visit-pack/extract/package/dist/src/core/index.d.ts
+1c1
+< import { Ambiguity } from '@orkestrel/interpret';
+---
+> import type { Ambiguity } from '@orkestrel/interpret';
+4,12c4,12
+< import { ContractInterface } from '@orkestrel/contract';
+< import { EmitterErrorHandler } from '@orkestrel/emitter';
+< import { EmitterHooks } from '@orkestrel/emitter';
+< import { EmitterInterface } from '@orkestrel/emitter';
+< import { Entity } from '@orkestrel/interpret';
+< import { Guard } from '@orkestrel/contract';
+< import { Intent } from '@orkestrel/interpret';
+< import { Interpretation } from '@orkestrel/interpret';
+< import { InterpretInterface } from '@orkestrel/interpret';
+---
+> import type { ContractInterface } from '@orkestrel/contract';
+> import type { EmitterErrorHandler } from '@orkestrel/emitter';
+> import type { EmitterHooks } from '@orkestrel/emitter';
+> import type { EmitterInterface } from '@orkestrel/emitter';
+> import type { Entity } from '@orkestrel/interpret';
+> import type { Guard } from '@orkestrel/contract';
+> import type { Intent } from '@orkestrel/interpret';
+> import type { Interpretation } from '@orkestrel/interpret';
+> import type { InterpretInterface } from '@orkestrel/interpret';
+14,15c14,15
+< import { LogicalDefinition } from '@orkestrel/reason';
+< import { LogicalResult } from '@orkestrel/reason';
+---
+> import type { LogicalDefinition } from '@orkestrel/reason';
+> import type { LogicalResult } from '@orkestrel/reason';
+19,23c19,23
+< import { ReasonInterface } from '@orkestrel/reason';
+< import { ReasonValidationResult } from '@orkestrel/reason';
+< import { RecordOptions } from '@orkestrel/interpret';
+< import { StringShape } from '@orkestrel/contract';
+< import { Subject } from '@orkestrel/reason';
+---
+> import type { ReasonInterface } from '@orkestrel/reason';
+> import type { ReasonValidationResult } from '@orkestrel/reason';
+> import type { RecordOptions } from '@orkestrel/interpret';
+> import type { StringShape } from '@orkestrel/contract';
+> import type { Subject } from '@orkestrel/reason';
+136c136,142
+<  /** Declares the `BriefCompiler`'s push observation surface. */
+---
+>  /**
+>   * Declares the `BriefCompiler`'s push observation surface.
+>   *
+>   * @remarks
+>   * `compile` carries the `Briefing` the call produced, `block` carries the blocking `Gap` list
+>   * that stopped emission, `error` carries the thrown value, and `destroy` carries nothing.
+>   */
+145a152
+>      /** Holds the typed emitter carrying `compile`, `block`, `error`, and `destroy`. */
+146a154
+>      /** Holds the interpret pipeline the `interpret` stage delegates to, owned or borrowed. */
+147a156
+>      /** Holds the reasoner the gate evaluates its `LogicalDefinition` on, owned or borrowed. */
+148a158,168
+>      /**
+>       * Runs the `interpret` → `draft` → `gate` → `pin` pipeline over a `BriefInput`, returning a
+>       * complete or visible-incomplete result.
+>       *
+>       * @remarks
+>       * Synchronous, and it never throws for a brief it cannot emit: a blocking gap, a refused
+>       * gate, and a thrown stage each record their cause on `failures` and leave `brief` absent.
+>       *
+>       * @param input - The caller's text, interpretation, and authored sections.
+>       * @returns The `Briefing` for this call, complete exactly when `brief` is present.
+>       */
+149a170,176
+>      /**
+>       * Evaluates one brief's readiness through the reasons gate — `briefToSubject` against
+>       * `buildGateDefinition()`.
+>       *
+>       * @param brief - The brief to measure.
+>       * @returns The reasoner's traceable verdict, whose `conclusion` is the `ready` fact.
+>       */
+150a178,184
+>      /**
+>       * Tears the orchestrator down idempotently — owned engines first, the emitter last.
+>       *
+>       * @remarks
+>       * Emits `destroy` between the two, and releases only the engines it created. Every method
+>       * except this one throws `BriefError('DESTROYED', …)` afterwards.
+>       */
+205a240,242
+>   * Extends `Error` with a readonly `code` on the `BriefErrorCode` vocabulary and an optional
+>   * readonly `context` record carrying whatever the raising site can supply.
+>   *
+261c298
+<   * two identical compiles share it and a refused compile has one just as a complete one does.
+---
+>   * two identical compiles share it and a refused compile has one the same way a complete one does.
+343c380,386
+<  /** Declares the `BriefManager`'s push observation surface. */
+---
+>  /**
+>   * Declares the `BriefManager`'s push observation surface.
+>   *
+>   * @remarks
+>   * `add` and `remove` each carry the record id the store minted from the brief's content hash,
+>   * and `destroy` carries nothing.
+>   */
+359a403
+>      /** Holds the typed emitter carrying `add`, `remove`, and `destroy`. */
+360a405
+>      /** Holds how many records are registered. */
+361a407,412
+>      /**
+>       * Reports whether a brief with the given id is registered.
+>       *
+>       * @param id - The record id to look for.
+>       * @returns True if a record carries that id; false otherwise.
+>       */
+362a414,419
+>      /**
+>       * Looks up one registered brief record by id.
+>       *
+>       * @param id - The record id to read.
+>       * @returns The record, or `undefined` when no record carries that id.
+>       */
+363a421,425
+>      /**
+>       * Lists every registered brief record.
+>       *
+>       * @returns The records, in registration order.
+>       */
+364a427,437
+>      /**
+>       * Registers one brief from its data, minting the id from its content hash when none is given.
+>       *
+>       * @remarks
+>       * Emits `add`. `version` bumps only when the content hash moves, so re-adding unchanged
+>       * content is a no-op that keeps the record it already had.
+>       *
+>       * @param brief - The brief to register.
+>       * @param options - An explicit `id` to key the record by.
+>       * @returns The registered record.
+>       */
+365a439,448
+>      /**
+>       * Removes the listed briefs by id, one brief by id, or every brief.
+>       *
+>       * @remarks
+>       * Emits `remove` once per removed id. The array overload is declared first so an id list
+>       * resolves to the batch form, which reports `true` only when every listed id was present.
+>       *
+>       * @param ids - The record ids to remove.
+>       * @returns True when every listed id was registered; false otherwise.
+>       */
+368a452,458
+>      /**
+>       * Tears the registry down idempotently — the collection first, the emitter last.
+>       *
+>       * @remarks
+>       * Emits `destroy` between the two. Every method except this one throws
+>       * `BriefError('DESTROYED', …)` afterwards.
+>       */
+514,515c604,606
+<   * `edit` is exactly `manifest.edit`, so two dispatches whose `edit` sets do not intersect
+<   * can run concurrently under the same brief without conflict.
+---
+>   * `edit` is exactly `manifest.edit` — the owned set — so two dispatches whose `edit` sets do
+>   * not intersect can run concurrently under the same brief without conflict. `locked` and
+>   * `forbidden` cross unchanged as the do-not-touch sets.
+517c608
+<   * `authority` is exactly `brief.authority` in rank order, and it is a SEPARATE axis from the
+---
+>   * `authority` is exactly `brief.authority` in rank order, and it is a separate axis from the
+591,592c682,684
+<   * Paths are REFERENCED, never inlined — the executor retrieves them. An empty section is
+<   * omitted entirely, so the rendering carries no filler an executor must read past.
+---
+>   * Sections render in authority order, so the executor meets what wins a conflict before what
+>   * it may touch. Paths are referenced, never inlined — the executor retrieves them. An empty
+>   * section is omitted entirely, so the rendering carries no filler an executor must read past.
+839a932,935
+>   * @remarks
+>   * The one builder for an authority entry and a manifest entry alike: the container the record
+>   * lands in is what says whether the path is ranked or permitted.
+>   *
+1000a1097,1135
+>   * @example Compile and project a brief
+>   * ```ts
+>   * import {
+>   * 	briefToGoal,
+>   * 	briefToMarkdown,
+>   * 	buildOutcome,
+>   * 	buildProof,
+>   * 	buildTask,
+>   * 	createBriefCompiler,
+>   * } from '@orkestrel/brief'
+>   *
+>   * const compiler = createBriefCompiler()
+>   *
+>   * const briefing = compiler.compile({
+>   * 	task: buildTask('refactor', 'code', 'Refactor useForm to native browser form APIs.'),
+>   * 	authority: [{ path: 'AGENTS.md', note: 'project law; wins every conflict' }],
+>   * 	manifest: {
+>   * 		read: [
+>   * 			{ path: 'AGENTS.md', note: 'project law; wins every conflict' },
+>   * 			{ path: 'guides/browser.md', note: 'the composable contract' },
+>   * 		],
+>   * 		edit: [{ path: 'src/browser/composables/useForm.ts', note: 'the composable being refactored' }],
+>   * 		locked: [{ path: 'src/browser/types.ts', note: 'the published contract' }],
+>   * 		forbidden: [{ path: 'app/**', note: 'out of scope' }],
+>   * 	},
+>   * 	outcomes: [buildOutcome(1, 'useForm uses native FormData with no behavior change')],
+>   * 	proofs: [buildProof('type-check and lint pass', 'npm run check')],
+>   * })
+>   *
+>   * briefing.brief !== undefined // true — the brief is present exactly when the gate passed
+>   * if (briefing.brief !== undefined) {
+>   * 	briefToMarkdown(briefing.brief) // the copy-ready agent prompt
+>   * 	briefToGoal(briefing.brief) // the /goal completion condition
+>   * }
+>   *
+>   * compiler.emitter.on('block', (questions) => questions.length)
+>   * compiler.destroy()
+>   * ```
+>   *
+1221c1356
+<  /** Represents one input to output exemplar — the highest-leverage ambiguity remover. */
+---
+>  /** Represents one input to output exemplar — the ambiguity remover that leaves the least to interpret. */
+1257a1393,1396
+>   * @remarks
+>   * A non-empty result means the gate must fail closed: a blocking gap has no safe default, so
+>   * the compile yields a visible incomplete `Briefing` carrying the questions instead of a brief.
+>   *
+1320c1459
+<   * entirely: the brief simply never says the executor may open what it must obey.
+---
+>   * entirely: the brief never says the executor may open what it must obey.
+1595a1735,1738
+>   * @remarks
+>   * The shape of nearly every brief field: a path, a note, a statement, a rule, and a command
+>   * all narrow through it.
+>   *
+1710c1853
+<   * Every ECMAScript line terminator, not just `\n`: a renderer that splits on any of them
+---
+>   * Every ECMAScript line terminator, not only `\n`: a renderer that splits on any of them
+1735c1878,1884
+<  /** Describes the `Manifest` shape — disjoint reference partitions. */
+---
+>  /**
+>   * Describes the `Manifest` shape — disjoint reference partitions.
+>   *
+>   * @remarks
+>   * Each partition is an `arrayShape(referenceShape)`; disjointness is `validateBrief`'s pass
+>   * rather than the shape's.
+>   */
+1767c1916,1921
+<  /** Describes the `Outcome` shape — a one-based rank, the result text, and whether it gates done. */
+---
+>  /**
+>   * Describes the `Outcome` shape — a one-based rank, the result text, and whether it gates done.
+>   *
+>   * @remarks
+>   * `rank` is an `integerShape({ min: 1 })`, so a zero or fractional rank is off-contract.
+>   */
+1929c2083
+<    * Holds the positive form of {@link LINE_BREAK_PATTERN}, for the shape DSL.
+---
+>    * Holds the positive form of {@link LINE_BREAK_PATTERN}, for a `stringShape` `pattern`.
+1988c2142,2148
+<    /** Lists the `TaskOperation` values, frozen. */
+---
+>    /**
+>     * Lists the `TaskOperation` values, frozen.
+>     *
+>     * @remarks
+>     * Compose the tuple rather than restating its members: `literalOf(TASK_OPERATIONS)` builds the
+>     * guard and `parseEnum(value, TASK_OPERATIONS)` coerces a bare value against it.
+>     */
+2003c2163,2170
+<    /** Describes the `Task` shape — closed operation and domain vocabularies plus a non-empty statement. */
+---
+>    /**
+>     * Describes the `Task` shape — closed operation and domain vocabularies plus a non-empty
+>     * statement.
+>     *
+>     * @remarks
+>     * `literalShape(TASK_OPERATIONS)` and `literalShape(TASK_DOMAINS)` compile the same tuples the
+>     * guards read, and `statement` carries `min: 1`.
+>     */
+2010c2177
+<    /** Describes a single-line string of any length, including empty. */
+---
+>    /** Describes a single-line string of any length, including empty — the shape mirror of `isText`. */
+diff -r -w -B '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-brief-final-registry-visit-pack/baseline/package/dist/src/core/index.js /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-brief-final-registry-visit-pack/extract/package/dist/src/core/index.js
+6c6,12
+< /** Lists the `TaskOperation` values, frozen. */
+---
+> /**
+> * Lists the `TaskOperation` values, frozen.
+> *
+> * @remarks
+> * Compose the tuple rather than restating its members: `literalOf(TASK_OPERATIONS)` builds the
+> * guard and `parseEnum(value, TASK_OPERATIONS)` coerces a bare value against it.
+> */
+89c95
+< * Every ECMAScript line terminator, not just `\n`: a renderer that splits on any of them
+---
+> * Every ECMAScript line terminator, not only `\n`: a renderer that splits on any of them
+97c103
+< * Holds the positive form of {@link LINE_BREAK_PATTERN}, for the shape DSL.
+---
+> * Holds the positive form of {@link LINE_BREAK_PATTERN}, for a `stringShape` `pattern`.
+122a129,131
+> * Extends `Error` with a readonly `code` on the `BriefErrorCode` vocabulary and an optional
+> * readonly `context` record carrying whatever the raising site can supply.
+> *
+171c180
+< /** Describes a single-line string of any length, including empty. */
+---
+> /** Describes a single-line string of any length, including empty — the shape mirror of `isText`. */
+178c187,194
+< /** Describes the `Task` shape — closed operation and domain vocabularies plus a non-empty statement. */
+---
+> /**
+> * Describes the `Task` shape — closed operation and domain vocabularies plus a non-empty
+> * statement.
+> *
+> * @remarks
+> * `literalShape(TASK_OPERATIONS)` and `literalShape(TASK_DOMAINS)` compile the same tuples the
+> * guards read, and `statement` carries `min: 1`.
+> */
+189c205,211
+< /** Describes the `Manifest` shape — disjoint reference partitions. */
+---
+> /**
+> * Describes the `Manifest` shape — disjoint reference partitions.
+> *
+> * @remarks
+> * Each partition is an `arrayShape(referenceShape)`; disjointness is `validateBrief`'s pass
+> * rather than the shape's.
+> */
+196c218,223
+< /** Describes the `Outcome` shape — a one-based rank, the result text, and whether it gates done. */
+---
+> /**
+> * Describes the `Outcome` shape — a one-based rank, the result text, and whether it gates done.
+> *
+> * @remarks
+> * `rank` is an `integerShape({ min: 1 })`, so a zero or fractional rank is off-contract.
+> */
+287a315,318
+> * @remarks
+> * The shape of nearly every brief field: a path, a note, a statement, a rule, and a command
+> * all narrow through it.
+> *
+625a657,660
+> * @remarks
+> * The one builder for an authority entry and a manifest entry alike: the container the record
+> * lands in is what says whether the path is ranked or permitted.
+> *
+1011a1047,1050
+> * @remarks
+> * A non-empty result means the gate must fail closed: a blocking gap has no safe default, so
+> * the compile yields a visible incomplete `Briefing` carrying the questions instead of a brief.
+> *
+1040c1079
+< * entirely: the brief simply never says the executor may open what it must obey.
+---
+> * entirely: the brief never says the executor may open what it must obey.
+1504,1505c1543,1545
+< * Paths are REFERENCED, never inlined — the executor retrieves them. An empty section is
+< * omitted entirely, so the rendering carries no filler an executor must read past.
+---
+> * Sections render in authority order, so the executor meets what wins a conflict before what
+> * it may touch. Paths are referenced, never inlined — the executor retrieves them. An empty
+> * section is omitted entirely, so the rendering carries no filler an executor must read past.
+1634,1635c1674,1676
+< * `edit` is exactly `manifest.edit`, so two dispatches whose `edit` sets do not intersect
+< * can run concurrently under the same brief without conflict.
+---
+> * `edit` is exactly `manifest.edit` — the owned set — so two dispatches whose `edit` sets do
+> * not intersect can run concurrently under the same brief without conflict. `locked` and
+> * `forbidden` cross unchanged as the do-not-touch sets.
+1637c1678
+< * `authority` is exactly `brief.authority` in rank order, and it is a SEPARATE axis from the
+---
+> * `authority` is exactly `brief.authority` in rank order, and it is a separate axis from the
+2282a2324,2362
+> *
+> * @example Compile and project a brief
+> * ```ts
+> * import {
+> * 	briefToGoal,
+> * 	briefToMarkdown,
+> * 	buildOutcome,
+> * 	buildProof,
+> * 	buildTask,
+> * 	createBriefCompiler,
+> * } from '@orkestrel/brief'
+> *
+> * const compiler = createBriefCompiler()
+> *
+> * const briefing = compiler.compile({
+> * 	task: buildTask('refactor', 'code', 'Refactor useForm to native browser form APIs.'),
+> * 	authority: [{ path: 'AGENTS.md', note: 'project law; wins every conflict' }],
+> * 	manifest: {
+> * 		read: [
+> * 			{ path: 'AGENTS.md', note: 'project law; wins every conflict' },
+> * 			{ path: 'guides/browser.md', note: 'the composable contract' },
+> * 		],
+> * 		edit: [{ path: 'src/browser/composables/useForm.ts', note: 'the composable being refactored' }],
+> * 		locked: [{ path: 'src/browser/types.ts', note: 'the published contract' }],
+> * 		forbidden: [{ path: 'app/**', note: 'out of scope' }],
+> * 	},
+> * 	outcomes: [buildOutcome(1, 'useForm uses native FormData with no behavior change')],
+> * 	proofs: [buildProof('type-check and lint pass', 'npm run check')],
+> * })
+> *
+> * briefing.brief !== undefined // true — the brief is present exactly when the gate passed
+> * if (briefing.brief !== undefined) {
+> * 	briefToMarkdown(briefing.brief) // the copy-ready agent prompt
+> * 	briefToGoal(briefing.brief) // the /goal completion condition
+> * }
+> *
+> * compiler.emitter.on('block', (questions) => questions.length)
+> * compiler.destroy()
+> * ```

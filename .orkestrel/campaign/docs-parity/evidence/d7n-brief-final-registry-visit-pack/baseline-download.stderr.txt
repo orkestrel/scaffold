@@ -1,0 +1,22 @@
+npm notice
+npm notice 📦  @orkestrel/brief@0.0.7
+npm notice Tarball Contents
+npm notice 1.1kB LICENSE
+npm notice 1.4kB README.md
+npm notice 89.6kB dist/src/core/index.cjs
+npm notice 141.3kB dist/src/core/index.cjs.map
+npm notice 83.6kB dist/src/core/index.d.cts
+npm notice 83.6kB dist/src/core/index.d.ts
+npm notice 84.3kB dist/src/core/index.js
+npm notice 139.0kB dist/src/core/index.js.map
+npm notice 3.9kB package.json
+npm notice Tarball Details
+npm notice name: @orkestrel/brief
+npm notice version: 0.0.7
+npm notice filename: orkestrel-brief-0.0.7.tgz
+npm notice package size: 163.4 kB
+npm notice unpacked size: 627.8 kB
+npm notice shasum: bfc10e569c0206934a8a4276e20a958671fe49e2
+npm notice integrity: sha512-OmDRjPglt+tI6[...]8nqCjDxi3T/gg==
+npm notice total files: 9
+npm notice

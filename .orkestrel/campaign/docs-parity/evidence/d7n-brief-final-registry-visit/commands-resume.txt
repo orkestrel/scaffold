@@ -1,0 +1,40 @@
+node /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/read-package-field.mjs /c/Users/mikes/WebstormProjects/brief/node_modules/@orkestrel/guide/package.json version 
+node /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/read-package-field.mjs /c/Users/mikes/WebstormProjects/brief/node_modules/@orkestrel/scaffold/package.json version 
+diff -r /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-guide-registry-native-pack/extract/package/dist /c/Users/mikes/WebstormProjects/brief/node_modules/@orkestrel/guide/dist 
+diff -r /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-scaffold-upper-git-final-pack/extract/package/dist /c/Users/mikes/WebstormProjects/brief/node_modules/@orkestrel/scaffold/dist 
+npm pkg get peerDependenciesMeta 
+node /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/read-supported-toolchain.mjs @microsoft/api-extractor \^7.59.0 
+npm pkg get devDependencies.@microsoft/api-extractor 
+node /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/read-supported-toolchain.mjs @types/node \^26.4.1 
+npm pkg get devDependencies.@types/node 
+node /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/read-supported-toolchain.mjs oxfmt \^0.66.0 
+npm pkg get devDependencies.oxfmt 
+node /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/read-supported-toolchain.mjs oxlint \^1.81.0 
+npm pkg get devDependencies.oxlint 
+node /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/read-supported-toolchain.mjs typescript \^6.0.3 
+npm pkg get devDependencies.typescript 
+node /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/read-supported-toolchain.mjs vite \^8.2.2 
+npm pkg get devDependencies.vite 
+node /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/read-supported-toolchain.mjs vitest \^4.1.11 
+npm pkg get devDependencies.vitest 
+rg -n -e file:\|link:\|workspace:\|\"link\"\[\[:space:\]\]\*:\[\[:space:\]\]\*true package.json package-lock.json 
+npm ls --depth=0 
+npm pkg get dependencies.@orkestrel/contract 
+npm pkg get dependencies.@orkestrel/emitter 
+npm pkg get dependencies.@orkestrel/interpret 
+npm pkg get dependencies.@orkestrel/reason 
+npm pkg get devDependencies.@orkestrel/guide 
+npm pkg get devDependencies.@orkestrel/scaffold 
+npm pkg get devDependencies.@orkestrel/test 
+npm pkg get devDependencies.@orkestrel/probe 
+rg -n -P \(\?\<\!\[0-9\]\)0\\.0\\.7\(\?\!\[0-9\]\) src tests 
+rg -n -P \(\?\<\!\[0-9\]\)\\\^0\\.0\\.16\(\?\!\[0-9\]\) src tests 
+rg -n -P \(\?\<\!\[0-9\]\)\\\^0\\.0\\.9\(\?\!\[0-9\]\) src tests 
+rg -n -P \(\?\<\!\[0-9\]\)\\\^0\\.0\\.12\(\?\!\[0-9\]\) src tests 
+rg -n -P \(\?\<\!\[0-9\]\)\\\^0\\.0\\.9\(\?\!\[0-9\]\) src tests 
+rg -n -P \(\?\<\!\[0-9\]\)\\\^0\\.0\\.17\(\?\!\[0-9\]\) src tests 
+rg -n -P \(\?\<\!\[0-9\]\)\\\^0\\.0\\.63\(\?\!\[0-9\]\) src tests 
+rg -n -P \(\?\<\!\[0-9\]\)\\\^0\\.0\\.13\(\?\!\[0-9\]\) src tests 
+bash /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/upper-layer-action.sh brief format d7n-brief-final-registry-visit-format 120s 
+bash /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/upper-layer-action.sh brief prepublish d7n-brief-final-registry-visit-prepublish 900s 
+bash /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/pack-dependent-final-verified.sh brief d7n-brief-final-registry-visit-pack 0.0.8 d7n-brief-final-registry-visit-prepublish 0.0.7 
