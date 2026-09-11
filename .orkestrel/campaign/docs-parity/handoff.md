@@ -35,7 +35,7 @@ in this file are not release-preparation status.
 | ndjson | 0.0.10 | a35c40c | prepared; campaign/main pushed; clean local main |
 | sqlite | 0.0.11 | f2ffc0a | prepared; campaign/main pushed; clean local main |
 | timeout | 0.0.10 | a058b1f | prepared; campaign/main pushed; clean local main |
-| tool | 0.0.14 | bf89501 | standalone gates passed; recovery pack pending |
+| tool | 0.0.14 | 4761097 | prepared; campaign/main pushed; clean local main |
 
 The initial publish layer is prepared under the owner's narrowed scope in
 Ruling 38. Read d7n-initial-layer-prepared.md for versions, exact archives and the
