@@ -1,0 +1,23 @@
+Subject: Pool before final overwrite.
+Command: node tmp/pass/validate-following-release.mjs C:/Users/mikes/WebstormProjects/pool/package.json pool 0.0.11 C:/Users/mikes/WebstormProjects/scaffold/tmp/pass/d7n-following-layer-reading C:/Users/mikes/WebstormProjects/scaffold/tmp/pass/d7n-following-layer-reading
+Exit: 1
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
++ actual - expected
+
++ 'node --experimental-strip-types scripts/docs.ts'
+- undefined
+
+    at file:///C:/Users/mikes/WebstormProjects/scaffold/tmp/pass/validate-following-release.mjs:60:8 {
+  generatedMessage: true,
+  code: 'ERR_ASSERTION',
+  actual: 'node --experimental-strip-types scripts/docs.ts',
+  expected: undefined,
+  operator: 'strictEqual',
+  diff: 'simple'
+}
+
+Node.js v24.20.0

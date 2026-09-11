@@ -1,0 +1,2637 @@
+diff -r -w -B '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-console-following-final-pack/baseline/package/dist/src/browser/index.d.ts /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-console-following-final-pack/extract/package/dist/src/browser/index.d.ts
+1,3c1,3
+< import { Attribute } from '@orkestrel/console';
+< import { Color } from '@orkestrel/console';
+< import { SinkInterface } from '@orkestrel/console';
+---
+> import type { Attribute } from '@orkestrel/console';
+> import type { Color } from '@orkestrel/console';
+> import type { SinkInterface } from '@orkestrel/console';
+7,8c7,8
+<  * `%c`-segmented format string and the parallel array of CSS declarations, so a DevTools console
+<  * renders the same styling a terminal would (the browser sink calls `console[method](format, ...styles)`).
+---
+>  * `%c`-segmented format string and the parallel array of CSS declarations, an optional partial
+>  * {@link BrowserPalette} overriding the CSS per named lookup.
+10a11,13
+>  * A DevTools console then renders the same styling a terminal would; the browser sink calls
+>  * `console[method](format, ...styles)`.
+>  *
+43,48c46,49
+<  * Maps each text-{@link Attribute}'s SGR "on" number to its equivalent CSS declaration — the browser
+<  * counterpart to the terminal's SGR text effects (`bold` 1 → `font-weight:bold`, `dim` 2 →
+<  * `opacity:0.6`, `italic` 3 → `font-style:italic`, `underline` 4 → `text-decoration:underline`,
+<  * `inverse` 7 → best-effort, `strikethrough` 9 → `text-decoration:line-through`). Keyed by the SGR
+<  * number (derived from core's {@link ATTRIBUTE_CODES}) so the sink looks a parameter up directly
+<  * while scanning a run.
+---
+>  * Maps each text-{@link Attribute}'s SGR "on" number to its equivalent CSS declaration — the
+>  * browser counterpart to the terminal's SGR text effects (`bold` 1 → `font-weight:bold`, `dim` 2
+>  * → `opacity:0.6`, `italic` 3 → `font-style:italic`, `underline` 4 → `text-decoration:underline`,
+>  * `inverse` 7 → best-effort, `strikethrough` 9 → `text-decoration:line-through`).
+50a52,54
+>  * Keyed by the SGR number (derived from core's {@link ATTRIBUTE_CODES}) so the sink looks a
+>  * parameter up directly while scanning a run.
+>  *
+58,59c62,63
+<  * Holds partial browser CSS overrides for the core color and attribute axes. Omitted entries retain the
+<  * built-in browser mappings, so one override changes only its named value.
+---
+>  * Holds partial browser CSS overrides for the core color and attribute axes — a named `color` or
+>  * `attribute` entry replaces only that entry, and every omission keeps its default.
+72,75c76,77
+<  * Configures {@link import('./factories.js').createBrowserSink}.
+<  *
+<  * @remarks
+<  * `palette` partially overrides the browser's default color and attribute CSS mappings.
+---
+>  * Configures {@link import('./factories.js').createBrowserSink} — the optional `palette` partially
+>  * overriding the browser's named color and attribute CSS mappings.
+94,97c96,99
+<  * Represents the `console.log`-ready output {@link import('./helpers.js').ansiToConsole} produces from
+<  * an ANSI-styled string — a format string of `%c`-prefixed segments and the parallel array
+<  * of CSS declarations, ready to spread into a browser `console` call as
+<  * `console.log(format, ...styles)`.
+---
+>  * Represents the `console.log`-ready output {@link import('./helpers.js').ansiToConsole} produces
+>  * from an ANSI-styled string — a format string of `%c`-prefixed segments and the parallel array of
+>  * CSS declarations, ready to spread into a browser `console` call as `console.log(format,
+>  * ...styles)`.
+117,119c119,120
+<  * through {@link ansiToConsole}, so a DevTools console renders the same styling a terminal does. Drop it in
+<  * as a logger / reporter / spinner sink (`new Logger({ sink: createBrowserSink() })`) to retarget the
+<  * core output to the browser console with no change to the core.
+---
+>  * through {@link ansiToConsole}, an optional partial {@link BrowserPalette} overriding the named
+>  * color and attribute CSS.
+124a126,128
+>  * Drop it in as a logger / reporter / spinner sink (`new Logger({ sink: createBrowserSink() })`)
+>  * to retarget the core output to the browser console with no change to the core.
+>  *
+132c136
+<  *   {@link import('@src/core').selectWriter} leaf, which is what keeps them identical.
+---
+>  *   {@link import('@orkestrel/console').selectWriter} leaf, which is what keeps them identical.
+154,156c158,160
+<  * Names the browser console directive that switches the active style — one `%c` prefixes every styled run
+<  * in the {@link import('./types.js').ConsoleOutput} format string, consuming the next entry of the
+<  * parallel CSS array. The single source of truth for the directive token.
+---
+>  * Names the browser console directive that switches the active style — one `%c` prefixes every
+>  * styled run in the {@link import('./types.js').ConsoleOutput} format string, consuming the next
+>  * entry of the parallel CSS array. The single source of truth for the directive token.
+178,181c182,183
+<  * and returns its numeric codes — `'1;31'` → `[1, 31]`. It is total: every input yields a code
+<  * list. An empty list (a bare `ESC[m`) yields `[0]`, because the SGR spec treats a parameterless
+<  * sequence as a reset; an empty field within a list (`'1;;4'`) likewise counts as a `0` reset,
+<  * matching the spec, and a non-numeric field yields `NaN`, which the caller then ignores.
+---
+>  * and returns its numeric codes — `'1;31'` → `[1, 31]`, a bare or empty field becoming a `0`
+>  * reset. It is total: every input yields a code list.
+185a188,192
+>  * @remarks
+>  * An empty list (a bare `ESC[m`) yields `[0]`, because the SGR spec treats a parameterless
+>  * sequence as a reset; an empty field within a list (`'1;;4'`) likewise counts as a `0` reset,
+>  * matching the spec, and a non-numeric field yields `NaN`, which the caller then ignores.
+>  *
+196c203
+<  * the subset of ANSI {@link import('@src/core').strip} cares about that carries style (color /
+---
+>  * the subset of ANSI {@link import('@orkestrel/console').strip} cares about that carries style (color /
+210,214c217,219
+<  * Represents the immutable accumulator {@link import('./helpers.js').ansiToConsole} carries across a run while
+<  * translating SGR codes to CSS — a single `foreground` and `background` declaration (each channel
+<  * replaceable by a later color of the same channel) plus an ordered, de-duplicated list of attribute
+<  * declarations. An SGR reset drops both channels and empties the list;
+<  * {@link import('./helpers.js').ansiToConsole} folds it into the `;`-joined CSS string a run emits.
+---
+>  * Represents the immutable scan state {@link import('./helpers.js').ansiToConsole} replaces while
+>  * translating SGR codes to CSS — an optional `foreground` and `background` declaration plus a
+>  * readonly list of attribute declarations.
+216a222,225
+>  * A later color of the same channel replaces that channel; an SGR reset drops both channels and
+>  * empties the list; {@link import('./helpers.js').ansiToConsole} folds the state into the
+>  * `;`-joined CSS string a run emits.
+>  *
+diff -r -w -B '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-console-following-final-pack/baseline/package/dist/src/browser/index.js /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-console-following-final-pack/extract/package/dist/src/browser/index.js
+32,37c32,35
+< * Maps each text-{@link Attribute}'s SGR "on" number to its equivalent CSS declaration — the browser
+< * counterpart to the terminal's SGR text effects (`bold` 1 → `font-weight:bold`, `dim` 2 →
+< * `opacity:0.6`, `italic` 3 → `font-style:italic`, `underline` 4 → `text-decoration:underline`,
+< * `inverse` 7 → best-effort, `strikethrough` 9 → `text-decoration:line-through`). Keyed by the SGR
+< * number (derived from core's {@link ATTRIBUTE_CODES}) so the sink looks a parameter up directly
+< * while scanning a run.
+---
+> * Maps each text-{@link Attribute}'s SGR "on" number to its equivalent CSS declaration — the
+> * browser counterpart to the terminal's SGR text effects (`bold` 1 → `font-weight:bold`, `dim` 2
+> * → `opacity:0.6`, `italic` 3 → `font-style:italic`, `underline` 4 → `text-decoration:underline`,
+> * `inverse` 7 → best-effort, `strikethrough` 9 → `text-decoration:line-through`).
+39a38,40
+> * Keyed by the SGR number (derived from core's {@link ATTRIBUTE_CODES}) so the sink looks a
+> * parameter up directly while scanning a run.
+> *
+53,55c54,56
+< * Names the browser console directive that switches the active style — one `%c` prefixes every styled run
+< * in the {@link import('./types.js').ConsoleOutput} format string, consuming the next entry of the
+< * parallel CSS array. The single source of truth for the directive token.
+---
+> * Names the browser console directive that switches the active style — one `%c` prefixes every
+> * styled run in the {@link import('./types.js').ConsoleOutput} format string, consuming the next
+> * entry of the parallel CSS array. The single source of truth for the directive token.
+76,77c77,78
+< * `%c`-segmented format string and the parallel array of CSS declarations, so a DevTools console
+< * renders the same styling a terminal would (the browser sink calls `console[method](format, ...styles)`).
+---
+> * `%c`-segmented format string and the parallel array of CSS declarations, an optional partial
+> * {@link BrowserPalette} overriding the CSS per named lookup.
+79a81,83
+> * A DevTools console then renders the same styling a terminal would; the browser sink calls
+> * `console[method](format, ...styles)`.
+> *
+190,193c194,195
+< * and returns its numeric codes — `'1;31'` → `[1, 31]`. It is total: every input yields a code
+< * list. An empty list (a bare `ESC[m`) yields `[0]`, because the SGR spec treats a parameterless
+< * sequence as a reset; an empty field within a list (`'1;;4'`) likewise counts as a `0` reset,
+< * matching the spec, and a non-numeric field yields `NaN`, which the caller then ignores.
+---
+> * and returns its numeric codes — `'1;31'` → `[1, 31]`, a bare or empty field becoming a `0`
+> * reset. It is total: every input yields a code list.
+197a200,204
+> * @remarks
+> * An empty list (a bare `ESC[m`) yields `[0]`, because the SGR spec treats a parameterless
+> * sequence as a reset; an empty field within a list (`'1;;4'`) likewise counts as a `0` reset,
+> * matching the spec, and a non-numeric field yields `NaN`, which the caller then ignores.
+> *
+213,215c220,221
+< * through {@link ansiToConsole}, so a DevTools console renders the same styling a terminal does. Drop it in
+< * as a logger / reporter / spinner sink (`new Logger({ sink: createBrowserSink() })`) to retarget the
+< * core output to the browser console with no change to the core.
+---
+> * through {@link ansiToConsole}, an optional partial {@link BrowserPalette} overriding the named
+> * color and attribute CSS.
+220a227,229
+> * Drop it in as a logger / reporter / spinner sink (`new Logger({ sink: createBrowserSink() })`)
+> * to retarget the core output to the browser console with no change to the core.
+> *
+diff -r -w -B '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-console-following-final-pack/baseline/package/dist/src/core/index.cjs /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-console-following-final-pack/extract/package/dist/src/core/index.cjs
+106c106
+< * Holds the ESC control character (`U+001B`) that begins every ANSI escape sequence. Built
+---
+> * Holds the escape control character (`U+001B`) that begins every ANSI escape sequence. Built
+110c110
+< /** Holds the BEL control character (`U+0007`) that can terminate an OSC sequence. */
+---
+> /** Holds the bell control character (`U+0007`) that can terminate an OSC sequence. */
+175,177c175,180
+< * Sets the default bounded-retention cap for a {@link import('./types.js').LoggerInterface} — at
+< * most this many recent records are kept (oldest dropped first). Retention is always bounded — the
+< * oldest record is dropped after the cap is reached; a consumer overrides it through `options.limit`.
+---
+> * Sets the default bounded-retention cap for a {@link import('./types.js').LoggerInterface} —
+> * `1000`, so at most that many recent records are kept and retention is always bounded.
+> *
+> * @remarks
+> * The oldest record is dropped after the cap is reached; a consumer overrides the cap through
+> * `options.limit`.
+195,197c198,203
+< * Unicode box-drawing glyphs at the four line weights. The renderers ({@link
+< * import('./helpers.js').renderBox} / {@link import('./helpers.js').renderTable}) look the
+< * style up here, so no glyph literal lives in a renderer. Deeply frozen.
+---
+> * Unicode box-drawing glyphs at each line weight, deeply frozen.
+> *
+> * @remarks
+> * The renderers ({@link import('./helpers.js').renderBox} /
+> * {@link import('./helpers.js').renderTable}) look the style up here, so no glyph literal lives in
+> * a renderer.
+294c300
+< * {@link import('./types.js').ReporterOptions}`.width`.
+---
+> * {@link import('./types.js').ReporterOptions.width}.
+311,313c317,319
+< * Sets the number of milliseconds at or above which {@link import('./helpers.js').formatDuration}
+< * (and so `Reporter.timing`) switches from a `…ms` rendering to a `…s` (seconds, 2 d.p.)
+< * rendering — exactly one second.
+---
+> * Sets the millisecond threshold at or above which {@link import('./helpers.js').formatDuration}
+> * (and so `Reporter.timing`) switches from a `…ms` rendering to a `…s` (seconds, 2 d.p.) rendering
+> * — `1000`, exactly one second.
+330,334c336,342
+< * Sets the default bounded-buffer cap for a {@link import('./types.js').CaptureInterface} — at most this
+< * many recent {@link CapturedMessage}s are retained per buffer (the total buffer and each by-level
+< * bucket; oldest dropped first). Capture retention is always bounded so a long-running capture can
+< * never grow without bound (the same retention precedent as {@link DEFAULT_LOG_LIMIT}); a consumer
+< * overrides it through `options.limit`.
+---
+> * Sets the default bounded-buffer cap for a {@link import('./types.js').CaptureInterface} — `1000`,
+> * so at most that many recent {@link CapturedMessage}s are retained per buffer (the total buffer
+> * and each by-level bucket; oldest dropped first) and retention is always bounded.
+> *
+> * @remarks
+> * A long-running capture can never grow without bound (the same retention precedent as
+> * {@link DEFAULT_LOG_LIMIT}); a consumer overrides the cap through `options.limit`.
+340c348,349
+< * import('./types.js').SinkInterface} (`sink.write(text, CAPTURE_LEVEL_MAP[level])`). `warn` /
+---
+> * import('./types.js').SinkInterface}. `sink.write(text, CAPTURE_LEVEL_MAP[level])` is the call
+> * this map backs. `warn` /
+353,355c362,364
+< * Holds the default spinner frame cycle a {@link import('./types.js').SpinnerInterface} advances through —
+< * the ten braille-pattern glyphs (U+2800 block) that read as a smoothly rotating dot, the universal
+< * terminal-spinner convention. Frozen; a consumer swaps the whole cycle through `options.frames`.
+---
+> * Holds the default spinner frame cycle a {@link import('./types.js').SpinnerInterface} advances
+> * through — the braille-pattern glyphs (`⠋⠙⠹…`, the U+2800 block) that read as a smoothly rotating
+> * dot.
+357a367,369
+> * The cycle is the universal terminal-spinner convention. Frozen; a consumer swaps the whole
+> * cycle through `options.frames`.
+> *
+374,377c386,391
+< * Sets the default timer period in milliseconds between a {@link import('./types.js').SpinnerInterface}'s
+< * frames — the `setInterval` interval `start()` arms. Eighty milliseconds (≈12.5 frames/second) is
+< * the conventional spinner cadence: fast enough to read as motion, slow enough not to thrash a
+< * terminal. A consumer overrides it through `options.interval`.
+---
+> * Sets the default timer period between a {@link import('./types.js').SpinnerInterface}'s frames —
+> * the `setInterval` interval `start()` arms, `80` ms (≈12.5 frames/second).
+> *
+> * @remarks
+> * That is the conventional spinner cadence: fast enough to read as motion, slow enough not to
+> * thrash a terminal. A consumer overrides it through `options.interval`.
+381,383c395,397
+< * Holds the default filled-cell glyph {@link import('./helpers.js').renderBar} draws the completed run of a
+< * progress bar with — the full block `█` (U+2588). A single visible cell; a consumer overrides it
+< * through {@link import('./types.js').BarOptions}`.fill`.
+---
+> * Holds the default filled-cell glyph {@link import('./helpers.js').renderBar} draws the completed
+> * run of a progress bar with — the full block `█` (U+2588). A single visible cell; a consumer
+> * overrides it through {@link import('./types.js').BarOptions.fill}.
+387,389c401,403
+< * Holds the default empty-cell glyph {@link import('./helpers.js').renderBar} draws the remaining run of a
+< * progress bar with — the light-shade block `░` (U+2591). A single visible cell; a consumer overrides
+< * it through {@link import('./types.js').BarOptions}`.empty`.
+---
+> * Holds the default empty-cell glyph {@link import('./helpers.js').renderBar} draws the remaining
+> * run of a progress bar with — the light-shade block `░` (U+2591). A single visible cell; a
+> * consumer overrides it through {@link import('./types.js').BarOptions.empty}.
+393,397c407,414
+< * Sets the default visible cell count of a progress-bar track — the glyph run {@link
+< * import('./helpers.js').renderBar} fills (and a {@link import('./types.js').ProgressInterface} sizes
+< * its bar to). Thirty cells is a compact, terminal-friendly default; a consumer overrides it through
+< * `options.width`. Distinct from {@link DEFAULT_WIDTH} (the renderers' 80-column line width) — a bar
+< * track is one inline element, not a full-width rule.
+---
+> * Sets the default visible cell count of a progress-bar track — the glyph run
+> * {@link import('./helpers.js').renderBar} fills, and the width a
+> * {@link import('./types.js').ProgressInterface} sizes its bar to. `30` cells.
+> *
+> * @remarks
+> * Thirty cells is a compact, terminal-friendly default; a consumer overrides it through
+> * `options.width`. It is distinct from {@link DEFAULT_WIDTH} (the renderers' 80-column line
+> * width) — a bar track is one inline element, not a full-width rule.
+401,402c418,422
+< * Holds the default {@link Theme} — every role bound to its default {@link Style}, deeply frozen.
+< * The base {@link import('./factories.js').createTheme} merges over, and the theme every
+---
+> * Holds the default {@link Theme} — every role bound to its default {@link Style}, assembled from
+> * {@link LEVEL_COLORS}, {@link STATUS_ICONS}, and {@link STATUS_COLORS} and deeply frozen.
+> *
+> * @remarks
+> * It is the base {@link import('./factories.js').createTheme} merges over, and the theme every
+471c491,492
+< * Represents an error thrown by the console layer.
+---
+> * Carries a {@link ConsoleErrorCode} and an optional `context` bag — the error the console layer
+> * throws for an internal invariant violated at a defensive guard.
+474,476c495,496
+< * Carries a {@link ConsoleErrorCode} and an optional `context` bag. Thrown for: an
+< * internal invariant violated at a defensive, structurally-unreachable guard
+< * (`INVARIANT`).
+---
+> * `INVARIANT` is the code for a guard that is structurally unreachable, so a `catch` branches on
+> * `error.code` rather than parsing the message.
+489c509
+< * Narrows an unknown caught value to a {@link ConsoleError}.
+---
+> * Narrows an unknown caught value to a {@link ConsoleError} — the guard a `catch` branches on.
+530c550,551
+< * (meaningful whitespace), plus DEL — returning the sanitized string.
+---
+> * (meaningful whitespace), plus DEL — a separate pass from {@link strip}, so `width` stays
+> * untouched.
+573c594,595
+< * Snapshots and deeply freezes one {@link Style} value.
+---
+> * Snapshots and deeply freezes one {@link Style} value, including an independent frozen copy of
+> * its `attributes`.
+744,746c766,768
+< * Colors `text` through `styler`, or returns it verbatim when `styler` is `undefined` — the
+< * single optional-styling primitive every renderer applies to its border / title / connector
+< * glyphs (the one styler seam, shared, never re-hand-rolled per renderer).
+---
+> * Colors `text` through `styler` and an optional by-value {@link Style}, or returns it verbatim
+> * when `styler` is `undefined` — the single optional-styling primitive every renderer applies to
+> * its border / title / connector glyphs.
+931,932c953,954
+< * Renders a nested {@link TreeNode} tree with box-drawing connectors. Pure: same
+< * {@link TreeOptions} → same string.
+---
+> * Renders a nested {@link TreeNode} tree whose connectors derive from the chosen `border` set.
+> * Pure: same {@link TreeOptions} → same string.
+961,964c983,990
+< * Renders the connector-prefixed lines for a {@link TreeNode} list — the recursive core
+< * behind {@link renderTree}. Each child is drawn as `prefix` + its connector (`├─ ` for
+< * any but the last, `└─ ` for the last) + its label, with its own descendants recursed
+< * beneath under the carried guide (`│  ` under a non-last node, `   ` under the last).
+---
+> * Renders the connector-prefixed lines for a {@link TreeNode} list — the recursive core behind
+> * {@link renderTree}, whose third options argument requires `border` and groups the optional
+> * `styler` and `style`.
+> *
+> * @remarks
+> * Each child is drawn as `prefix` + its connector (`├─ ` for any but the last, `└─ ` for the
+> * last) + its label, with its own descendants recursed beneath under the carried guide (`│  `
+> * under a non-last node, `   ` under the last).
+1066,1069c1092,1093
+< * and the `(current/total)` count (`█████░░░░░ 50% (5/10)`). Pure: same {@link BarOptions} →
+< * same string. The animation-layer sibling of the `render*` renderers (box / table / tree /
+< * separator), shared so a {@link import('./types.js').ProgressInterface} and any direct caller draw
+< * the one bar — never a second, hand-rolled one.
+---
+> * and the `(current/total)` count (`█████░░░░░ 50% (5/10)`). Pure and width-aware: same
+> * {@link BarOptions} → same string.
+1071a1096,1100
+> * It is the animation-layer sibling of the `render*` renderers (box / table / tree / separator),
+> * shared so a {@link import('./types.js').ProgressInterface} and any direct caller draw the one
+> * bar — never a second,
+> * hand-rolled one.
+> *
+1106,1109c1135
+< * SGR escape codes, exactly as `Scheduler` is the `setTimeout` default for its seam. It
+< * is the single styling output the whole console / terminal system uses in a terminal;
+< * the browser `%c` / CSS renderer implements the same contract over
+< * the same {@link Style}, so retargeting changes the renderer, never the style model.
+---
+> * SGR escape codes, stateless and event-free.
+1111a1138,1141
+> * It is the single styling output the whole console / terminal system uses in a terminal; the
+> * browser `%c` / CSS renderer implements the same contract over the same {@link Style}, so
+> * retargeting changes the renderer, never the style model.
+> *
+1147c1177,1178
+< * Implements the bounded, level-keyed retention engine both captures buffer through — one capped total buffer
+---
+> * Implements the bounded, level-keyed retention engine the console and process captures buffer
+> * through — one capped total buffer
+1454,1457c1485,1491
+< * Creates the fluent, composable {@link StylerInterface} — the consumer-facing styling
+< * API. It builds a {@link import('./types.js').Style} under the hood and renders it
+< * through a {@link import('./types.js').RendererInterface} (the ANSI default), so
+< * `styler.red.bold('hi')` yields styled text. Chains are immutable, so a base styler is freely reusable.
+---
+> * Creates the fluent, composable {@link StylerInterface} — ANSI by default, retargeted by a
+> * `renderer` and stripped of color by `enabled: false`.
+> *
+> * @remarks
+> * It builds a {@link import('./types.js').Style} under the hood and renders it through a
+> * {@link import('./types.js').RendererInterface}, so `styler.red.bold('hi')` yields styled text.
+> * Chains are immutable, so a base styler is freely reusable.
+1904,1907c1938
+< * `frame`. The leading `\r` is what an overwrite-capable sink (the TTY sink) redraws on; a plain
+< * sink degrades to a fresh, non-overwriting line — the line-overwrite is the sink's job, never
+< * the spinner's. Universal — `setInterval` + the one {@link StylerInterface} + the one
+< * {@link SinkInterface}, no `node:*`, no `process.stdout`.
+---
+> * `frame`. The timer is always cleared on an outcome, so the spinner is leak-free.
+1909a1941,1945
+> * The leading `\r` is what an overwrite-capable sink (the TTY sink) redraws on; a plain sink
+> * degrades to a fresh, non-overwriting line — the line-overwrite is the sink's job, never the
+> * spinner's. Universal — `setInterval` + the one {@link StylerInterface} + the one
+> * {@link SinkInterface}, no `node:*`, no `process.stdout`.
+> *
+2020,2024c2056,2058
+< * {@link renderBar}, writes `\r` + bar to its {@link SinkInterface}, and emits the `{ current, total }`
+< * on `update`. The leading `\r` is what an overwrite-capable sink (the TTY sink) redraws on; a
+< * plain sink degrades to a fresh, non-overwriting line — the line-overwrite is the sink's job.
+< * Universal — the one {@link StylerInterface} + the one {@link SinkInterface}, no `node:*`, no
+< * `process.stdout`. No self-timer (unlike {@link import('./Spinner.js').Spinner}) — the caller drives it.
+---
+> * {@link renderBar}, writes `\r` + bar to its {@link SinkInterface}, and emits the `{ current,
+> * total }` on `update`. No self-timer, unlike {@link import('./Spinner.js').Spinner} — the caller
+> * drives it.
+2026a2061,2065
+> * The leading `\r` is what an overwrite-capable sink (the TTY sink) redraws on; a plain sink
+> * degrades to a fresh, non-overwriting line — the line-overwrite is the sink's job. Universal —
+> * the one {@link StylerInterface} + the one {@link SinkInterface}, no `node:*`, no
+> * `process.stdout`.
+> *
+diff -r -w -B '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-console-following-final-pack/baseline/package/dist/src/core/index.d.cts /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-console-following-final-pack/extract/package/dist/src/core/index.d.cts
+1,3c1,3
+< import { EmitterErrorHandler } from '@orkestrel/emitter';
+< import { EmitterHooks } from '@orkestrel/emitter';
+< import { EmitterInterface } from '@orkestrel/emitter';
+---
+> import type { EmitterErrorHandler } from '@orkestrel/emitter';
+> import type { EmitterHooks } from '@orkestrel/emitter';
+> import type { EmitterInterface } from '@orkestrel/emitter';
+32,34c32,36
+<  * Names the horizontal text alignment within a fixed-width cell — the conventional three-value set a
+<  * {@link ColumnSpec} (and the box / separator title) aligns by. A value pair / set, not a
+<  * binary toggle, so it stays a union.
+---
+>  * Names the horizontal text alignment within a fixed-width cell — `left` / `center` / `right`,
+>  * the conventional set a {@link ColumnSpec} (and the box / separator title) aligns by.
+>  *
+>  * @remarks
+>  * A value set rather than a binary toggle, so it stays a union.
+59,62c61
+<  * SGR escape codes, exactly as `Scheduler` is the `setTimeout` default for its seam. It
+<  * is the single styling output the whole console / terminal system uses in a terminal;
+<  * the browser `%c` / CSS renderer implements the same contract over
+<  * the same {@link Style}, so retargeting changes the renderer, never the style model.
+---
+>  * SGR escape codes, stateless and event-free.
+64a64,67
+>  * It is the single styling output the whole console / terminal system uses in a terminal; the
+>  * browser `%c` / CSS renderer implements the same contract over the same {@link Style}, so
+>  * retargeting changes the renderer, never the style model.
+>  *
+88c91,92
+<  * Names a text-style attribute — the standard SGR text effects.
+---
+>  * Names a text-style attribute — `bold` / `dim` / `italic` / `underline` / `inverse` /
+>  * `strikethrough`, the standard SGR text effects.
+118,120c122,124
+<  * Holds the default empty-cell glyph {@link import('./helpers.js').renderBar} draws the remaining run of a
+<  * progress bar with — the light-shade block `░` (U+2591). A single visible cell; a consumer overrides
+<  * it through {@link import('./types.js').BarOptions}`.empty`.
+---
+>  * Holds the default empty-cell glyph {@link import('./helpers.js').renderBar} draws the remaining
+>  * run of a progress bar with — the light-shade block `░` (U+2591). A single visible cell; a
+>  * consumer overrides it through {@link import('./types.js').BarOptions.empty}.
+125,127c129,131
+<  * Holds the default filled-cell glyph {@link import('./helpers.js').renderBar} draws the completed run of a
+<  * progress bar with — the full block `█` (U+2588). A single visible cell; a consumer overrides it
+<  * through {@link import('./types.js').BarOptions}`.fill`.
+---
+>  * Holds the default filled-cell glyph {@link import('./helpers.js').renderBar} draws the completed
+>  * run of a progress bar with — the full block `█` (U+2588). A single visible cell; a consumer
+>  * overrides it through {@link import('./types.js').BarOptions.fill}.
+158c162
+< /** Holds the BEL control character (`U+0007`) that can terminate an OSC sequence. */
+---
+> /** Holds the bell control character (`U+0007`) that can terminate an OSC sequence. */
+163,165c167,172
+<  * Unicode box-drawing glyphs at the four line weights. The renderers ({@link
+<  * import('./helpers.js').renderBox} / {@link import('./helpers.js').renderTable}) look the
+<  * style up here, so no glyph literal lives in a renderer. Deeply frozen.
+---
+>  * Unicode box-drawing glyphs at each line weight, deeply frozen.
+>  *
+>  * @remarks
+>  * The renderers ({@link import('./helpers.js').renderBox} /
+>  * {@link import('./helpers.js').renderTable}) look the style up here, so no glyph literal lives in
+>  * a renderer.
+173,176c180,186
+<  * Represents one complete box-drawing junction set for a {@link BorderStyle} — every glyph the box /
+<  * table renderers need to frame content and rule a table. Plain data (the value lives in
+<  * {@link BORDER_CHARS}); the renderers read these so no glyph literal is hard-coded in a
+<  * renderer.
+---
+>  * Represents one complete box-drawing junction set for a {@link BorderStyle} — the edges, the
+>  * corners, and the `T` / cross junctions the box and table renderers need to frame content and
+>  * rule a table.
+>  *
+>  * @remarks
+>  * Plain data (the value lives in {@link BORDER_CHARS}); the renderers read these so no glyph
+>  * literal is hard-coded in a renderer.
+201,204c211,213
+<  * Names a box-drawing border style — the four standard Unicode line weights the renderers frame
+<  * with. Each selects a full junction set in {@link BORDER_CHARS} (corners, edges, and the
+<  * `T` / cross junctions a table needs). A named, fixed set (an external-spec value family),
+<  * never a toggle — so it stays a union.
+---
+>  * Names a box-drawing border style — `single` / `double` / `round` / `heavy`, the standard
+>  * Unicode line weights the renderers frame with, each selecting a full junction set in
+>  * {@link BORDER_CHARS}.
+206a216,217
+>  * A named, fixed set (an external-spec value family) rather than a toggle, so it stays a union.
+>  *
+214,215c225,226
+<  * Configures {@link import('./helpers.js').renderBox} — content framed in box-drawing
+<  * characters.
+---
+>  * Configures {@link import('./helpers.js').renderBox} — content framed in box-drawing characters. A
+>  * `Reporter` supplies its own chrome style only when the caller gives neither `styler` nor `style`.
+289c300,301
+<  * import('./types.js').SinkInterface} (`sink.write(text, CAPTURE_LEVEL_MAP[level])`). `warn` /
+---
+>  * import('./types.js').SinkInterface}. `sink.write(text, CAPTURE_LEVEL_MAP[level])` is the call
+>  * this map backs. `warn` /
+326c338,339
+<  * Declares the observable events a {@link CaptureInterface} emits.
+---
+>  * Declares the observable events a {@link CaptureInterface} emits — `capture(message)` per
+>  * intercepted call, plus the `start` and `stop` lifecycle signals.
+329,332c342,344
+<  * - `capture` — the core event: fires for every intercepted `console.*` call (one per call,
+<  *   while active), carrying the frozen {@link CapturedMessage}. The hook a live console viewer /
+<  *   tee rides.
+<  * - `start` / `stop` — the lifecycle signals: `start` fires when interception is installed (the
+---
+>  * - `capture` — fires for every intercepted `console.*` call (one per call, while active),
+>  *   carrying the frozen {@link CapturedMessage}. The hook a live console viewer / tee rides.
+>  * - `start` / `stop` — `start` fires when interception is installed (the
+383c395,398
+<     /** Returns a copy of the whole captured buffer, oldest first (capped at `limit`). */
+---
+>     /**
+>      * Returns a copy of the whole captured buffer, oldest first (capped at `limit`), or — given
+>      * a {@link CaptureLevel} — a copy of only that level's bucket.
+>      */
+394,397c409,410
+<  * Identifies one intercepted `console` method — the names a {@link CaptureInterface} patches and reports
+<  * under. A fixed set keyed off the universal `console.*` methods (`console.log` / `info` / `warn`
+<  * / `error` / `debug`); a named value family (it indexes {@link CAPTURE_LEVEL_MAP} to a
+<  * {@link LogLevel} for the optional sink forward), never a binary toggle — so it stays a union.
+---
+>  * Identifies one intercepted `console` method — `log` / `info` / `warn` / `error` / `debug`, the
+>  * names a {@link CaptureInterface} patches and reports under.
+399a413,415
+>  * A named value family (it indexes {@link CAPTURE_LEVEL_MAP} to a {@link LogLevel} for the
+>  * optional sink forward) rather than a binary toggle, so it stays a union.
+>  *
+409c425,427
+<  * Configures the {@link import('./Capture.js').Capture} constructor.
+---
+>  * Configures the {@link import('./Capture.js').Capture} constructor — the `on` / `error` emitter
+>  * keys, the `levels` intercepted, the `mirror` pass-through, the `sink` forward, and the buffer
+>  * `limit`.
+441,442c459,460
+<  * Represents the structured outcome of {@link import('./factories.js').createCaptureResult} — the wrapped function's
+<  * own return `value` plus the {@link CapturedMessage}s intercepted while it ran.
+---
+>  * Represents the structured outcome of {@link import('./factories.js').createCaptureResult} — the
+>  * wrapped function's own return `value` plus the `messages` it logged while it ran.
+500c518,519
+<  * Represents an error thrown by the console layer.
+---
+>  * Carries a {@link ConsoleErrorCode} and an optional `context` bag — the error the console layer
+>  * throws for an internal invariant violated at a defensive guard.
+503,505c522,523
+<  * Carries a {@link ConsoleErrorCode} and an optional `context` bag. Thrown for: an
+<  * internal invariant violated at a defensive, structurally-unreachable guard
+<  * (`INVARIANT`).
+---
+>  * `INVARIANT` is the code for a guard that is structurally unreachable, so a `catch` branches on
+>  * `error.code` rather than parsing the message.
+514c532,533
+<  * Names a machine-readable error code for a {@link import('./errors.js').ConsoleError}.
+---
+>  * Names the machine-readable error code a {@link import('./errors.js').ConsoleError} carries —
+>  * `INVARIANT`, the only code the package throws.
+517,518c536,537
+<  * `INVARIANT` — an internal invariant or unreachable guard was violated (a defensive check that is
+<  * structurally impossible to trip). It is the only code the package throws.
+---
+>  * `INVARIANT` reports that an internal invariant or unreachable guard was violated — a defensive
+>  * check that is structurally impossible to trip.
+638,641c657,663
+<  * Creates the fluent, composable {@link StylerInterface} — the consumer-facing styling
+<  * API. It builds a {@link import('./types.js').Style} under the hood and renders it
+<  * through a {@link import('./types.js').RendererInterface} (the ANSI default), so
+<  * `styler.red.bold('hi')` yields styled text. Chains are immutable, so a base styler is freely reusable.
+---
+>  * Creates the fluent, composable {@link StylerInterface} — ANSI by default, retargeted by a
+>  * `renderer` and stripped of color by `enabled: false`.
+>  *
+>  * @remarks
+>  * It builds a {@link import('./types.js').Style} under the hood and renders it through a
+>  * {@link import('./types.js').RendererInterface}, so `styler.red.bold('hi')` yields styled text.
+>  * Chains are immutable, so a base styler is freely reusable.
+705,709c727,734
+<  * Sets the default visible cell count of a progress-bar track — the glyph run {@link
+<  * import('./helpers.js').renderBar} fills (and a {@link import('./types.js').ProgressInterface} sizes
+<  * its bar to). Thirty cells is a compact, terminal-friendly default; a consumer overrides it through
+<  * `options.width`. Distinct from {@link DEFAULT_WIDTH} (the renderers' 80-column line width) — a bar
+<  * track is one inline element, not a full-width rule.
+---
+>  * Sets the default visible cell count of a progress-bar track — the glyph run
+>  * {@link import('./helpers.js').renderBar} fills, and the width a
+>  * {@link import('./types.js').ProgressInterface} sizes its bar to. `30` cells.
+>  *
+>  * @remarks
+>  * Thirty cells is a compact, terminal-friendly default; a consumer overrides it through
+>  * `options.width`. It is distinct from {@link DEFAULT_WIDTH} (the renderers' 80-column line
+>  * width) — a bar track is one inline element, not a full-width rule.
+717,721c742,748
+<  * Sets the default bounded-buffer cap for a {@link import('./types.js').CaptureInterface} — at most this
+<  * many recent {@link CapturedMessage}s are retained per buffer (the total buffer and each by-level
+<  * bucket; oldest dropped first). Capture retention is always bounded so a long-running capture can
+<  * never grow without bound (the same retention precedent as {@link DEFAULT_LOG_LIMIT}); a consumer
+<  * overrides it through `options.limit`.
+---
+>  * Sets the default bounded-buffer cap for a {@link import('./types.js').CaptureInterface} — `1000`,
+>  * so at most that many recent {@link CapturedMessage}s are retained per buffer (the total buffer
+>  * and each by-level bucket; oldest dropped first) and retention is always bounded.
+>  *
+>  * @remarks
+>  * A long-running capture can never grow without bound (the same retention precedent as
+>  * {@link DEFAULT_LOG_LIMIT}); a consumer overrides the cap through `options.limit`.
+729,731c756,761
+<  * Sets the default bounded-retention cap for a {@link import('./types.js').LoggerInterface} — at
+<  * most this many recent records are kept (oldest dropped first). Retention is always bounded — the
+<  * oldest record is dropped after the cap is reached; a consumer overrides it through `options.limit`.
+---
+>  * Sets the default bounded-retention cap for a {@link import('./types.js').LoggerInterface} —
+>  * `1000`, so at most that many recent records are kept and retention is always bounded.
+>  *
+>  * @remarks
+>  * The oldest record is dropped after the cap is reached; a consumer overrides the cap through
+>  * `options.limit`.
+739,742c769,774
+<  * Sets the default timer period in milliseconds between a {@link import('./types.js').SpinnerInterface}'s
+<  * frames — the `setInterval` interval `start()` arms. Eighty milliseconds (≈12.5 frames/second) is
+<  * the conventional spinner cadence: fast enough to read as motion, slow enough not to thrash a
+<  * terminal. A consumer overrides it through `options.interval`.
+---
+>  * Sets the default timer period between a {@link import('./types.js').SpinnerInterface}'s frames —
+>  * the `setInterval` interval `start()` arms, `80` ms (≈12.5 frames/second).
+>  *
+>  * @remarks
+>  * That is the conventional spinner cadence: fast enough to read as motion, slow enough not to
+>  * thrash a terminal. A consumer overrides it through `options.interval`.
+747,748c779,783
+<  * Holds the default {@link Theme} — every role bound to its default {@link Style}, deeply frozen.
+<  * The base {@link import('./factories.js').createTheme} merges over, and the theme every
+---
+>  * Holds the default {@link Theme} — every role bound to its default {@link Style}, assembled from
+>  * {@link LEVEL_COLORS}, {@link STATUS_ICONS}, and {@link STATUS_COLORS} and deeply frozen.
+>  *
+>  * @remarks
+>  * It is the base {@link import('./factories.js').createTheme} merges over, and the theme every
+765c800
+<  * {@link import('./types.js').ReporterOptions}`.width`.
+---
+>  * {@link import('./types.js').ReporterOptions.width}.
+777c812
+<  * Holds the ESC control character (`U+001B`) that begins every ANSI escape sequence. Built
+---
+>  * Holds the escape control character (`U+001B`) that begins every ANSI escape sequence. Built
+867c902,903
+<  * Snapshots and deeply freezes one {@link Style} value.
+---
+>  * Snapshots and deeply freezes one {@link Style} value, including an independent frozen copy of
+>  * its `attributes`.
+884c920
+<  * Narrows an unknown caught value to a {@link ConsoleError}.
+---
+>  * Narrows an unknown caught value to a {@link ConsoleError} — the guard a `catch` branches on.
+927,928c963,965
+<  * Represents the line layout a logger writes — one {@link LogRecord} plus the styling substrate in,
+<  * one finished line out. {@link import('./helpers.js').formatRecord} is the default.
+---
+>  * Represents the line layout a logger writes — `(record, styler, theme) => string`, one
+>  * {@link LogRecord} plus the styling substrate in and one finished line out.
+>  * {@link import('./helpers.js').formatRecord} is the default.
+995c1032,1033
+<  * Declares the observable events a {@link LoggerInterface} emits — the transport seam.
+---
+>  * Declares the observable events a {@link LoggerInterface} emits — `entry(record)` for every
+>  * accepted record, the transport seam.
+998,999c1036,1037
+<  * `entry` fires for every accepted record (one that passed the level gate), carrying the
+<  * frozen {@link LogRecord} — even when the logger is `silent` (silence suppresses only the
+---
+>  * `entry` carries the frozen {@link LogRecord} and fires even when the logger is
+>  * `silent` (silence suppresses only the
+1119a1158,1161
+>     /**
+>      * Mints and stores a logger named `name`, the manager's defaults flowing in — a
+>      * re-register of the same name overwrites.
+>      */
+1120a1163
+>     /** Looks one registered logger up by name. */
+1121a1165
+>     /** Lists the registered loggers in insertion order. */
+1130a1175,1178
+>     /**
+>      * Removes every registered logger with `remove()`, one with `remove(name)`, or a batch
+>      * with `remove(names)`.
+>      */
+1137c1185,1187
+<  * Configures the {@link import('./loggers/LoggerManager.js').LoggerManager} constructor.
+---
+>  * Configures the {@link import('./loggers/LoggerManager.js').LoggerManager} constructor — the
+>  * `level` / `sink` / `styler` / `theme` / `format` / `limit` / `silent` defaults flowed into every
+>  * logger it mints.
+1141,1145c1191,1192
+<  * registered {@link LoggerInterface} owns its observable `emitter`). These options supply
+<  * the defaults flowed into every logger the manager mints, unless a per-`register` override
+<  * wins: `level` (default threshold), `sink` (shared output target), `styler` (shared
+<  * coloring), `theme` (semantic styles), `format` (line layout), `limit` (retention cap),
+<  * and `silent`.
+---
+>  * registered {@link LoggerInterface} owns its observable `emitter`). A per-`register`
+>  * override wins over any default supplied here.
+1158c1205,1207
+<  * Configures the {@link import('./loggers/Logger.js').Logger} constructor.
+---
+>  * Configures the {@link import('./loggers/Logger.js').Logger} constructor — the `on` / `error`
+>  * emitter keys, the `level` threshold, the logger's `name`, the `sink` / `styler` / `theme` /
+>  * `format` line substrate, the retention `limit`, and the `silent` write switch.
+1194c1243,1244
+<  * Names the severity level of a {@link LogRecord} — one coherent, ascending-severity scale.
+---
+>  * Names the severity level of a {@link LogRecord} — one coherent, ascending scale, `debug` <
+>  * `info` < `warn` < `error`, that a {@link LoggerInterface} gates by threshold.
+1197,1199c1247,1248
+<  * Ordered least-to-most severe: `debug` < `info` < `warn` < `error`. A {@link LoggerInterface}
+<  * gates by threshold — a record at or above the logger's `level` is kept (and written),
+<  * one below it is dropped (see {@link LEVEL_SEVERITY} for the numeric order). A level is a
+---
+>  * A record at or above the logger's `level` is kept (and written), one below it is
+>  * dropped (see {@link LEVEL_SEVERITY} for the numeric order). A level is a
+1206,1208c1255,1257
+<  * Represents one immutable, serializable log entry — the universal record the whole logging system
+<  * carries. A {@link LoggerInterface} builds one per call, freezes it, retains a bounded
+<  * tail of them, and emits it on `entry`; every sink / transport consumes this exact shape.
+---
+>  * Represents one immutable, serializable log entry. A {@link LoggerInterface} builds one per call,
+>  * freezes it, retains a bounded tail of them, and emits it on `entry`; every sink / transport
+>  * consumes this exact shape.
+1253,1255c1302,1304
+<  * Colors `text` through `styler`, or returns it verbatim when `styler` is `undefined` — the
+<  * single optional-styling primitive every renderer applies to its border / title / connector
+<  * glyphs (the one styler seam, shared, never re-hand-rolled per renderer).
+---
+>  * Colors `text` through `styler` and an optional by-value {@link Style}, or returns it verbatim
+>  * when `styler` is `undefined` — the single optional-styling primitive every renderer applies to
+>  * its border / title / connector glyphs.
+1273,1277c1322,1324
+<  * {@link renderBar}, writes `\r` + bar to its {@link SinkInterface}, and emits the `{ current, total }`
+<  * on `update`. The leading `\r` is what an overwrite-capable sink (the TTY sink) redraws on; a
+<  * plain sink degrades to a fresh, non-overwriting line — the line-overwrite is the sink's job.
+<  * Universal — the one {@link StylerInterface} + the one {@link SinkInterface}, no `node:*`, no
+<  * `process.stdout`. No self-timer (unlike {@link import('./Spinner.js').Spinner}) — the caller drives it.
+---
+>  * {@link renderBar}, writes `\r` + bar to its {@link SinkInterface}, and emits the `{ current,
+>  * total }` on `update`. No self-timer, unlike {@link import('./Spinner.js').Spinner} — the caller
+>  * drives it.
+1279a1327,1331
+>  * The leading `\r` is what an overwrite-capable sink (the TTY sink) redraws on; a plain sink
+>  * degrades to a fresh, non-overwriting line — the line-overwrite is the sink's job. Universal —
+>  * the one {@link StylerInterface} + the one {@link SinkInterface}, no `node:*`, no
+>  * `process.stdout`.
+>  *
+1314c1366,1367
+<  * Declares the observable events a {@link ProgressInterface} emits.
+---
+>  * Declares the observable events a {@link ProgressInterface} emits — `update(progress)` per
+>  * report, plus a `succeed` signal on a successful finish.
+1317c1370
+<  * - `update` — the core event: fires on every `update(current)` (and on `succeed` / `fail`),
+---
+>  * - `update` — fires on every `update(current)` (and on `succeed` / `fail`),
+1338,1340c1391,1394
+<  * {@link import('./helpers.js').renderBar}, writes `\r` + bar to its {@link SinkInterface}, and emits
+<  * the `{ current, total }` on `update`. The line-overwrite is the sink's job (a TTY sink overwrites
+<  * on the `\r`; a plain sink degrades to a fresh line). No self-timer — the caller drives it.
+---
+>  * {@link import('./helpers.js').renderBar}, writes `\r` + bar to its {@link SinkInterface}, and
+>  * emits the `{ current, total }` on `update`. The line-overwrite is the sink's job (a TTY sink
+>  * overwrites on the `\r`; a plain sink degrades to a fresh line). No self-timer — the caller drives
+>  * it.
+1365c1419,1422
+<     /** Reports progress: clamps `current`, re-renders the bar, emits `update`, writes `\r` + bar. Ignored once terminal. */
+---
+>     /**
+>      * Reports progress: clamps `current`, re-renders the bar, emits `update`, writes `\r` + bar.
+>      * Ignored after a terminal `succeed` or `fail`.
+>      */
+1376c1433,1435
+<  * Configures the {@link import('./Progress.js').Progress} constructor.
+---
+>  * Configures the {@link import('./Progress.js').Progress} constructor — the `on` / `error` emitter
+>  * keys, the required `total`, the `message` shown, the bar's `width` / `fill` / `empty` glyphs, and
+>  * the `sink` / `styler` / `theme` line substrate.
+1410,1411c1469,1470
+<  * Reports one advance of a {@link ProgressInterface} — the clamped `{ current, total }` payload
+<  * carried by the `update` event of {@link ProgressEventMap}.
+---
+>  * Reports one advance of a {@link ProgressInterface} — the clamped payload carried by the `update`
+>  * event of {@link ProgressEventMap}.
+1426,1429c1485,1486
+<  * and the `(current/total)` count (`█████░░░░░ 50% (5/10)`). Pure: same {@link BarOptions} →
+<  * same string. The animation-layer sibling of the `render*` renderers (box / table / tree /
+<  * separator), shared so a {@link import('./types.js').ProgressInterface} and any direct caller draw
+<  * the one bar — never a second, hand-rolled one.
+---
+>  * and the `(current/total)` count (`█████░░░░░ 50% (5/10)`). Pure and width-aware: same
+>  * {@link BarOptions} → same string.
+1431a1489,1493
+>  * It is the animation-layer sibling of the `render*` renderers (box / table / tree / separator),
+>  * shared so a {@link import('./types.js').ProgressInterface} and any direct caller draw the one
+>  * bar — never a second,
+>  * hand-rolled one.
+>  *
+1545,1546c1607,1608
+<  * Renders a nested {@link TreeNode} tree with box-drawing connectors. Pure: same
+<  * {@link TreeOptions} → same string.
+---
+>  * Renders a nested {@link TreeNode} tree whose connectors derive from the chosen `border` set.
+>  * Pure: same {@link TreeOptions} → same string.
+1570,1573c1632,1639
+<  * Renders the connector-prefixed lines for a {@link TreeNode} list — the recursive core
+<  * behind {@link renderTree}. Each child is drawn as `prefix` + its connector (`├─ ` for
+<  * any but the last, `└─ ` for the last) + its label, with its own descendants recursed
+<  * beneath under the carried guide (`│  ` under a non-last node, `   ` under the last).
+---
+>  * Renders the connector-prefixed lines for a {@link TreeNode} list — the recursive core behind
+>  * {@link renderTree}, whose third options argument requires `border` and groups the optional
+>  * `styler` and `style`.
+>  *
+>  * @remarks
+>  * Each child is drawn as `prefix` + its connector (`├─ ` for any but the last, `└─ ` for the
+>  * last) + its label, with its own descendants recursed beneath under the carried guide (`│  `
+>  * under a non-last node, `   ` under the last).
+1698c1764,1766
+<  * Configures the {@link import('./Reporter.js').Reporter} constructor.
+---
+>  * Configures the {@link import('./Reporter.js').Reporter} constructor — the `sink` every line is
+>  * written to, the `styler` and `theme` it formats through, and the `width` its layouts measure
+>  * against.
+1730c1798,1799
+<  * Implements the bounded, level-keyed retention engine both captures buffer through — one capped total buffer
+---
+>  * Implements the bounded, level-keyed retention engine the console and process captures buffer
+>  * through — one capped total buffer
+1784c1853,1856
+<     /** Retains one record — appends it to the total buffer and to its level's bucket, evicting the oldest of each past the cap. */
+---
+>     /**
+>      * Retains one record — appends it to the total buffer and to its level's bucket, evicting the
+>      * oldest of each past `limit`.
+>      */
+1786c1858,1861
+<     /** Returns a copy of the whole retained buffer, oldest first. */
+---
+>     /**
+>      * Returns a copy of the whole retained buffer, oldest first, or — given a level — a copy of
+>      * that level's bucket, empty for a level with no bucket.
+>      */
+1795,1797c1870,1872
+<  * Sets the number of milliseconds at or above which {@link import('./helpers.js').formatDuration}
+<  * (and so `Reporter.timing`) switches from a `…ms` rendering to a `…s` (seconds, 2 d.p.)
+<  * rendering — exactly one second.
+---
+>  * Sets the millisecond threshold at or above which {@link import('./helpers.js').formatDuration}
+>  * (and so `Reporter.timing`) switches from a `…ms` rendering to a `…s` (seconds, 2 d.p.) rendering
+>  * — `1000`, exactly one second.
+1838c1913
+<  * carrying a centered title.
+---
+>  * carrying a centered title. Every key is optional.
+1876,1882c1951,1959
+<      * Writes one already-formatted chunk of output. `text` receives one line without its
+<      * terminator — the sink's target supplies it (for example `console.log`; the server TTY sink
+<      * appends one) — unless `text` begins with `\r`: that is an in-place redraw frame (the
+<      * Spinner / Progress animation protocol), written verbatim. A tick frame carries no
+<      * terminator; a final frame carries its own.
+<      * `level` is the originating record's {@link LogLevel} — supplied so a stream-aware sink
+<      * can route (for example `error` to `stderr`); a plain sink ignores it.
+---
+>      * Writes one already-formatted chunk of output — one line without its terminator, or a
+>      * `\r`-leading redraw frame written verbatim, routed by the optional `level`.
+>      *
+>      * @remarks
+>      * The sink's target supplies the terminator (for example `console.log`; the server TTY sink
+>      * appends one), unless `text` begins with `\r`: that is an in-place redraw frame (the
+>      * Spinner / Progress animation protocol). A tick frame carries no terminator; a final frame
+>      * carries its own. `level` is the originating record's {@link LogLevel} — supplied so a
+>      * stream-aware sink can route (for example `error` to `stderr`); a plain sink ignores it.
+1890,1893c1967
+<  * `frame`. The leading `\r` is what an overwrite-capable sink (the TTY sink) redraws on; a plain
+<  * sink degrades to a fresh, non-overwriting line — the line-overwrite is the sink's job, never
+<  * the spinner's. Universal — `setInterval` + the one {@link StylerInterface} + the one
+<  * {@link SinkInterface}, no `node:*`, no `process.stdout`.
+---
+>  * `frame`. The timer is always cleared on an outcome, so the spinner is leak-free.
+1895a1970,1974
+>  * The leading `\r` is what an overwrite-capable sink (the TTY sink) redraws on; a plain sink
+>  * degrades to a fresh, non-overwriting line — the line-overwrite is the sink's job, never the
+>  * spinner's. Universal — `setInterval` + the one {@link StylerInterface} + the one
+>  * {@link SinkInterface}, no `node:*`, no `process.stdout`.
+>  *
+1938,1940c2017,2019
+<  * Holds the default spinner frame cycle a {@link import('./types.js').SpinnerInterface} advances through —
+<  * the ten braille-pattern glyphs (U+2800 block) that read as a smoothly rotating dot, the universal
+<  * terminal-spinner convention. Frozen; a consumer swaps the whole cycle through `options.frames`.
+---
+>  * Holds the default spinner frame cycle a {@link import('./types.js').SpinnerInterface} advances
+>  * through — the braille-pattern glyphs (`⠋⠙⠹…`, the U+2800 block) that read as a smoothly rotating
+>  * dot.
+1942a2022,2024
+>  * The cycle is the universal terminal-spinner convention. Frozen; a consumer swaps the whole
+>  * cycle through `options.frames`.
+>  *
+1949c2031,2032
+<  * Declares the observable events a {@link SpinnerInterface} emits.
+---
+>  * Declares the observable events a {@link SpinnerInterface} emits — `frame(line)` per advance and
+>  * per outcome, plus the `start` and `stop` timer-lifecycle signals.
+1952c2035
+<  * - `frame` — the core event: fires once per advance (every `tick()`, whether driven by the internal
+---
+>  * - `frame` — fires once per advance (every `tick()`, whether driven by the internal
+2021c2104,2106
+<  * Configures the {@link import('./Spinner.js').Spinner} constructor.
+---
+>  * Configures the {@link import('./Spinner.js').Spinner} constructor — the `on` / `error` emitter
+>  * keys, the `message` shown, the glyph `frames` and their `interval`, and the `sink` / `styler` /
+>  * `theme` line substrate.
+2075,2076c2160,2162
+<  * Names a narrative outcome level — the four states {@link ReporterInterface.status} reports, each
+<  * with its own icon + color ({@link STATUS_ICONS} / {@link STATUS_COLORS}).
+---
+>  * Names a narrative outcome level — `success` / `error` / `warn` / `info`, the states
+>  * {@link ReporterInterface.status} reports, each with its own icon + color
+>  * ({@link STATUS_ICONS} / {@link STATUS_COLORS}).
+2088,2089c2174,2175
+<  * Represents where one step sits in a sequence — the `{ index, total }` a
+<  * {@link ReporterInterface.step} renders as a `[2/5]` prefix.
+---
+>  * Represents where one step sits in a sequence — what {@link ReporterInterface.step} renders as a
+>  * `[2/5]` prefix.
+2154c2240,2241
+<  * (meaningful whitespace), plus DEL — returning the sanitized string.
+---
+>  * (meaningful whitespace), plus DEL — a separate pass from {@link strip}, so `width` stays
+>  * untouched.
+2265c2352,2353
+<  * Configures {@link createStyler}.
+---
+>  * Configures {@link createStyler} — `renderer` selects the output target, defaulting to the ANSI
+>  * renderer, and `enabled` is the no-color switch, defaulting to `true`.
+2268,2272c2356,2360
+<  * - `renderer` — the {@link RendererInterface} every style renders through; defaults to
+<  *   the ANSI renderer (the cross-environment default), so the styler works unchanged in
+<  *   any terminal. Inject a browser `%c` renderer to retarget with no other change.
+<  * - `enabled` — the no-color switch. When `false`, the styler returns text verbatim
+<  *   (for a non-TTY, a `NO_COLOR` environment, or piped output); defaults to `true`.
+---
+>  * - `renderer` — the {@link RendererInterface} every style renders through, so the styler
+>  *   works unchanged in any terminal. Inject a browser `%c` renderer to retarget with no
+>  *   other change.
+>  * - `enabled` — when `false`, the styler returns text verbatim, for a non-TTY, a
+>  *   `NO_COLOR` environment, or piped output.
+2280,2281c2368,2370
+<  * Configures {@link import('./helpers.js').renderTable} — a bordered grid of columns + rows
+<  * with per-column alignment and width-aware sizing.
+---
+>  * Configures {@link import('./helpers.js').renderTable} — a bordered grid of columns + rows with
+>  * per-column alignment and width-aware sizing. A `Reporter` supplies its own chrome style only when
+>  * the caller gives neither `styler` nor `style`.
+2303,2305c2392,2393
+<  * Represents the app-wide semantic style vocabulary — every role the console system styles, bound to a
+<  * {@link Style} value. Pass one theme to a logger / reporter / spinner / progress and every
+<  * surface speaks it.
+---
+>  * Represents the app-wide semantic style vocabulary — each role bound to a {@link Style} value.
+>  * Pass one theme to a logger / reporter / spinner / progress and every surface speaks it.
+2328c2416,2417
+<  * Holds the options for {@link createTheme} — the roles to override on {@link DEFAULT_THEME}.
+---
+>  * Holds the options for {@link createTheme} — the roles to override on {@link DEFAULT_THEME}, a
+>  * status supplying its whole copied `{ icon, style }` record.
+2333,2335c2422,2423
+<  * the `warn` label and leaves `debug`, `info`, and `error` alone. A status override supplies its whole
+<  * `{ icon, style }` record; {@link createTheme} snapshots and freezes that record and every
+<  * style leaf it receives.
+---
+>  * the `warn` label and leaves `debug`, `info`, and `error` alone. {@link createTheme}
+>  * snapshots and freezes each status record and every style leaf it receives.
+2372,2373c2460,2462
+<  * Configures {@link import('./helpers.js').renderTree} — a nested {@link TreeNode} tree drawn
+<  * with box-drawing connectors.
+---
+>  * Configures {@link import('./helpers.js').renderTree} — a nested {@link TreeNode} tree drawn with
+>  * box-drawing connectors. A `Reporter` supplies its own chrome style only when the caller gives
+>  * neither `styler` nor `style`.
+2413,2414c2502,2503
+<  * Groups the three write targets a level-routing sink chooses between — the normal target, the
+<  * warning target, and the error target.
+---
+>  * Groups the write targets a level-routing sink chooses between — each of the backend's own member
+>  * type.
+diff -r -w -B '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-console-following-final-pack/baseline/package/dist/src/core/index.d.ts /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-console-following-final-pack/extract/package/dist/src/core/index.d.ts
+1,3c1,3
+< import { EmitterErrorHandler } from '@orkestrel/emitter';
+< import { EmitterHooks } from '@orkestrel/emitter';
+< import { EmitterInterface } from '@orkestrel/emitter';
+---
+> import type { EmitterErrorHandler } from '@orkestrel/emitter';
+> import type { EmitterHooks } from '@orkestrel/emitter';
+> import type { EmitterInterface } from '@orkestrel/emitter';
+32,34c32,36
+<  * Names the horizontal text alignment within a fixed-width cell — the conventional three-value set a
+<  * {@link ColumnSpec} (and the box / separator title) aligns by. A value pair / set, not a
+<  * binary toggle, so it stays a union.
+---
+>  * Names the horizontal text alignment within a fixed-width cell — `left` / `center` / `right`,
+>  * the conventional set a {@link ColumnSpec} (and the box / separator title) aligns by.
+>  *
+>  * @remarks
+>  * A value set rather than a binary toggle, so it stays a union.
+59,62c61
+<  * SGR escape codes, exactly as `Scheduler` is the `setTimeout` default for its seam. It
+<  * is the single styling output the whole console / terminal system uses in a terminal;
+<  * the browser `%c` / CSS renderer implements the same contract over
+<  * the same {@link Style}, so retargeting changes the renderer, never the style model.
+---
+>  * SGR escape codes, stateless and event-free.
+64a64,67
+>  * It is the single styling output the whole console / terminal system uses in a terminal; the
+>  * browser `%c` / CSS renderer implements the same contract over the same {@link Style}, so
+>  * retargeting changes the renderer, never the style model.
+>  *
+88c91,92
+<  * Names a text-style attribute — the standard SGR text effects.
+---
+>  * Names a text-style attribute — `bold` / `dim` / `italic` / `underline` / `inverse` /
+>  * `strikethrough`, the standard SGR text effects.
+118,120c122,124
+<  * Holds the default empty-cell glyph {@link import('./helpers.js').renderBar} draws the remaining run of a
+<  * progress bar with — the light-shade block `░` (U+2591). A single visible cell; a consumer overrides
+<  * it through {@link import('./types.js').BarOptions}`.empty`.
+---
+>  * Holds the default empty-cell glyph {@link import('./helpers.js').renderBar} draws the remaining
+>  * run of a progress bar with — the light-shade block `░` (U+2591). A single visible cell; a
+>  * consumer overrides it through {@link import('./types.js').BarOptions.empty}.
+125,127c129,131
+<  * Holds the default filled-cell glyph {@link import('./helpers.js').renderBar} draws the completed run of a
+<  * progress bar with — the full block `█` (U+2588). A single visible cell; a consumer overrides it
+<  * through {@link import('./types.js').BarOptions}`.fill`.
+---
+>  * Holds the default filled-cell glyph {@link import('./helpers.js').renderBar} draws the completed
+>  * run of a progress bar with — the full block `█` (U+2588). A single visible cell; a consumer
+>  * overrides it through {@link import('./types.js').BarOptions.fill}.
+158c162
+< /** Holds the BEL control character (`U+0007`) that can terminate an OSC sequence. */
+---
+> /** Holds the bell control character (`U+0007`) that can terminate an OSC sequence. */
+163,165c167,172
+<  * Unicode box-drawing glyphs at the four line weights. The renderers ({@link
+<  * import('./helpers.js').renderBox} / {@link import('./helpers.js').renderTable}) look the
+<  * style up here, so no glyph literal lives in a renderer. Deeply frozen.
+---
+>  * Unicode box-drawing glyphs at each line weight, deeply frozen.
+>  *
+>  * @remarks
+>  * The renderers ({@link import('./helpers.js').renderBox} /
+>  * {@link import('./helpers.js').renderTable}) look the style up here, so no glyph literal lives in
+>  * a renderer.
+173,176c180,186
+<  * Represents one complete box-drawing junction set for a {@link BorderStyle} — every glyph the box /
+<  * table renderers need to frame content and rule a table. Plain data (the value lives in
+<  * {@link BORDER_CHARS}); the renderers read these so no glyph literal is hard-coded in a
+<  * renderer.
+---
+>  * Represents one complete box-drawing junction set for a {@link BorderStyle} — the edges, the
+>  * corners, and the `T` / cross junctions the box and table renderers need to frame content and
+>  * rule a table.
+>  *
+>  * @remarks
+>  * Plain data (the value lives in {@link BORDER_CHARS}); the renderers read these so no glyph
+>  * literal is hard-coded in a renderer.
+201,204c211,213
+<  * Names a box-drawing border style — the four standard Unicode line weights the renderers frame
+<  * with. Each selects a full junction set in {@link BORDER_CHARS} (corners, edges, and the
+<  * `T` / cross junctions a table needs). A named, fixed set (an external-spec value family),
+<  * never a toggle — so it stays a union.
+---
+>  * Names a box-drawing border style — `single` / `double` / `round` / `heavy`, the standard
+>  * Unicode line weights the renderers frame with, each selecting a full junction set in
+>  * {@link BORDER_CHARS}.
+206a216,217
+>  * A named, fixed set (an external-spec value family) rather than a toggle, so it stays a union.
+>  *
+214,215c225,226
+<  * Configures {@link import('./helpers.js').renderBox} — content framed in box-drawing
+<  * characters.
+---
+>  * Configures {@link import('./helpers.js').renderBox} — content framed in box-drawing characters. A
+>  * `Reporter` supplies its own chrome style only when the caller gives neither `styler` nor `style`.
+289c300,301
+<  * import('./types.js').SinkInterface} (`sink.write(text, CAPTURE_LEVEL_MAP[level])`). `warn` /
+---
+>  * import('./types.js').SinkInterface}. `sink.write(text, CAPTURE_LEVEL_MAP[level])` is the call
+>  * this map backs. `warn` /
+326c338,339
+<  * Declares the observable events a {@link CaptureInterface} emits.
+---
+>  * Declares the observable events a {@link CaptureInterface} emits — `capture(message)` per
+>  * intercepted call, plus the `start` and `stop` lifecycle signals.
+329,332c342,344
+<  * - `capture` — the core event: fires for every intercepted `console.*` call (one per call,
+<  *   while active), carrying the frozen {@link CapturedMessage}. The hook a live console viewer /
+<  *   tee rides.
+<  * - `start` / `stop` — the lifecycle signals: `start` fires when interception is installed (the
+---
+>  * - `capture` — fires for every intercepted `console.*` call (one per call, while active),
+>  *   carrying the frozen {@link CapturedMessage}. The hook a live console viewer / tee rides.
+>  * - `start` / `stop` — `start` fires when interception is installed (the
+383c395,398
+<     /** Returns a copy of the whole captured buffer, oldest first (capped at `limit`). */
+---
+>     /**
+>      * Returns a copy of the whole captured buffer, oldest first (capped at `limit`), or — given
+>      * a {@link CaptureLevel} — a copy of only that level's bucket.
+>      */
+394,397c409,410
+<  * Identifies one intercepted `console` method — the names a {@link CaptureInterface} patches and reports
+<  * under. A fixed set keyed off the universal `console.*` methods (`console.log` / `info` / `warn`
+<  * / `error` / `debug`); a named value family (it indexes {@link CAPTURE_LEVEL_MAP} to a
+<  * {@link LogLevel} for the optional sink forward), never a binary toggle — so it stays a union.
+---
+>  * Identifies one intercepted `console` method — `log` / `info` / `warn` / `error` / `debug`, the
+>  * names a {@link CaptureInterface} patches and reports under.
+399a413,415
+>  * A named value family (it indexes {@link CAPTURE_LEVEL_MAP} to a {@link LogLevel} for the
+>  * optional sink forward) rather than a binary toggle, so it stays a union.
+>  *
+409c425,427
+<  * Configures the {@link import('./Capture.js').Capture} constructor.
+---
+>  * Configures the {@link import('./Capture.js').Capture} constructor — the `on` / `error` emitter
+>  * keys, the `levels` intercepted, the `mirror` pass-through, the `sink` forward, and the buffer
+>  * `limit`.
+441,442c459,460
+<  * Represents the structured outcome of {@link import('./factories.js').createCaptureResult} — the wrapped function's
+<  * own return `value` plus the {@link CapturedMessage}s intercepted while it ran.
+---
+>  * Represents the structured outcome of {@link import('./factories.js').createCaptureResult} — the
+>  * wrapped function's own return `value` plus the `messages` it logged while it ran.
+500c518,519
+<  * Represents an error thrown by the console layer.
+---
+>  * Carries a {@link ConsoleErrorCode} and an optional `context` bag — the error the console layer
+>  * throws for an internal invariant violated at a defensive guard.
+503,505c522,523
+<  * Carries a {@link ConsoleErrorCode} and an optional `context` bag. Thrown for: an
+<  * internal invariant violated at a defensive, structurally-unreachable guard
+<  * (`INVARIANT`).
+---
+>  * `INVARIANT` is the code for a guard that is structurally unreachable, so a `catch` branches on
+>  * `error.code` rather than parsing the message.
+514c532,533
+<  * Names a machine-readable error code for a {@link import('./errors.js').ConsoleError}.
+---
+>  * Names the machine-readable error code a {@link import('./errors.js').ConsoleError} carries —
+>  * `INVARIANT`, the only code the package throws.
+517,518c536,537
+<  * `INVARIANT` — an internal invariant or unreachable guard was violated (a defensive check that is
+<  * structurally impossible to trip). It is the only code the package throws.
+---
+>  * `INVARIANT` reports that an internal invariant or unreachable guard was violated — a defensive
+>  * check that is structurally impossible to trip.
+638,641c657,663
+<  * Creates the fluent, composable {@link StylerInterface} — the consumer-facing styling
+<  * API. It builds a {@link import('./types.js').Style} under the hood and renders it
+<  * through a {@link import('./types.js').RendererInterface} (the ANSI default), so
+<  * `styler.red.bold('hi')` yields styled text. Chains are immutable, so a base styler is freely reusable.
+---
+>  * Creates the fluent, composable {@link StylerInterface} — ANSI by default, retargeted by a
+>  * `renderer` and stripped of color by `enabled: false`.
+>  *
+>  * @remarks
+>  * It builds a {@link import('./types.js').Style} under the hood and renders it through a
+>  * {@link import('./types.js').RendererInterface}, so `styler.red.bold('hi')` yields styled text.
+>  * Chains are immutable, so a base styler is freely reusable.
+705,709c727,734
+<  * Sets the default visible cell count of a progress-bar track — the glyph run {@link
+<  * import('./helpers.js').renderBar} fills (and a {@link import('./types.js').ProgressInterface} sizes
+<  * its bar to). Thirty cells is a compact, terminal-friendly default; a consumer overrides it through
+<  * `options.width`. Distinct from {@link DEFAULT_WIDTH} (the renderers' 80-column line width) — a bar
+<  * track is one inline element, not a full-width rule.
+---
+>  * Sets the default visible cell count of a progress-bar track — the glyph run
+>  * {@link import('./helpers.js').renderBar} fills, and the width a
+>  * {@link import('./types.js').ProgressInterface} sizes its bar to. `30` cells.
+>  *
+>  * @remarks
+>  * Thirty cells is a compact, terminal-friendly default; a consumer overrides it through
+>  * `options.width`. It is distinct from {@link DEFAULT_WIDTH} (the renderers' 80-column line
+>  * width) — a bar track is one inline element, not a full-width rule.
+717,721c742,748
+<  * Sets the default bounded-buffer cap for a {@link import('./types.js').CaptureInterface} — at most this
+<  * many recent {@link CapturedMessage}s are retained per buffer (the total buffer and each by-level
+<  * bucket; oldest dropped first). Capture retention is always bounded so a long-running capture can
+<  * never grow without bound (the same retention precedent as {@link DEFAULT_LOG_LIMIT}); a consumer
+<  * overrides it through `options.limit`.
+---
+>  * Sets the default bounded-buffer cap for a {@link import('./types.js').CaptureInterface} — `1000`,
+>  * so at most that many recent {@link CapturedMessage}s are retained per buffer (the total buffer
+>  * and each by-level bucket; oldest dropped first) and retention is always bounded.
+>  *
+>  * @remarks
+>  * A long-running capture can never grow without bound (the same retention precedent as
+>  * {@link DEFAULT_LOG_LIMIT}); a consumer overrides the cap through `options.limit`.
+729,731c756,761
+<  * Sets the default bounded-retention cap for a {@link import('./types.js').LoggerInterface} — at
+<  * most this many recent records are kept (oldest dropped first). Retention is always bounded — the
+<  * oldest record is dropped after the cap is reached; a consumer overrides it through `options.limit`.
+---
+>  * Sets the default bounded-retention cap for a {@link import('./types.js').LoggerInterface} —
+>  * `1000`, so at most that many recent records are kept and retention is always bounded.
+>  *
+>  * @remarks
+>  * The oldest record is dropped after the cap is reached; a consumer overrides the cap through
+>  * `options.limit`.
+739,742c769,774
+<  * Sets the default timer period in milliseconds between a {@link import('./types.js').SpinnerInterface}'s
+<  * frames — the `setInterval` interval `start()` arms. Eighty milliseconds (≈12.5 frames/second) is
+<  * the conventional spinner cadence: fast enough to read as motion, slow enough not to thrash a
+<  * terminal. A consumer overrides it through `options.interval`.
+---
+>  * Sets the default timer period between a {@link import('./types.js').SpinnerInterface}'s frames —
+>  * the `setInterval` interval `start()` arms, `80` ms (≈12.5 frames/second).
+>  *
+>  * @remarks
+>  * That is the conventional spinner cadence: fast enough to read as motion, slow enough not to
+>  * thrash a terminal. A consumer overrides it through `options.interval`.
+747,748c779,783
+<  * Holds the default {@link Theme} — every role bound to its default {@link Style}, deeply frozen.
+<  * The base {@link import('./factories.js').createTheme} merges over, and the theme every
+---
+>  * Holds the default {@link Theme} — every role bound to its default {@link Style}, assembled from
+>  * {@link LEVEL_COLORS}, {@link STATUS_ICONS}, and {@link STATUS_COLORS} and deeply frozen.
+>  *
+>  * @remarks
+>  * It is the base {@link import('./factories.js').createTheme} merges over, and the theme every
+765c800
+<  * {@link import('./types.js').ReporterOptions}`.width`.
+---
+>  * {@link import('./types.js').ReporterOptions.width}.
+777c812
+<  * Holds the ESC control character (`U+001B`) that begins every ANSI escape sequence. Built
+---
+>  * Holds the escape control character (`U+001B`) that begins every ANSI escape sequence. Built
+867c902,903
+<  * Snapshots and deeply freezes one {@link Style} value.
+---
+>  * Snapshots and deeply freezes one {@link Style} value, including an independent frozen copy of
+>  * its `attributes`.
+884c920
+<  * Narrows an unknown caught value to a {@link ConsoleError}.
+---
+>  * Narrows an unknown caught value to a {@link ConsoleError} — the guard a `catch` branches on.
+927,928c963,965
+<  * Represents the line layout a logger writes — one {@link LogRecord} plus the styling substrate in,
+<  * one finished line out. {@link import('./helpers.js').formatRecord} is the default.
+---
+>  * Represents the line layout a logger writes — `(record, styler, theme) => string`, one
+>  * {@link LogRecord} plus the styling substrate in and one finished line out.
+>  * {@link import('./helpers.js').formatRecord} is the default.
+995c1032,1033
+<  * Declares the observable events a {@link LoggerInterface} emits — the transport seam.
+---
+>  * Declares the observable events a {@link LoggerInterface} emits — `entry(record)` for every
+>  * accepted record, the transport seam.
+998,999c1036,1037
+<  * `entry` fires for every accepted record (one that passed the level gate), carrying the
+<  * frozen {@link LogRecord} — even when the logger is `silent` (silence suppresses only the
+---
+>  * `entry` carries the frozen {@link LogRecord} and fires even when the logger is
+>  * `silent` (silence suppresses only the
+1119a1158,1161
+>     /**
+>      * Mints and stores a logger named `name`, the manager's defaults flowing in — a
+>      * re-register of the same name overwrites.
+>      */
+1120a1163
+>     /** Looks one registered logger up by name. */
+1121a1165
+>     /** Lists the registered loggers in insertion order. */
+1130a1175,1178
+>     /**
+>      * Removes every registered logger with `remove()`, one with `remove(name)`, or a batch
+>      * with `remove(names)`.
+>      */
+1137c1185,1187
+<  * Configures the {@link import('./loggers/LoggerManager.js').LoggerManager} constructor.
+---
+>  * Configures the {@link import('./loggers/LoggerManager.js').LoggerManager} constructor — the
+>  * `level` / `sink` / `styler` / `theme` / `format` / `limit` / `silent` defaults flowed into every
+>  * logger it mints.
+1141,1145c1191,1192
+<  * registered {@link LoggerInterface} owns its observable `emitter`). These options supply
+<  * the defaults flowed into every logger the manager mints, unless a per-`register` override
+<  * wins: `level` (default threshold), `sink` (shared output target), `styler` (shared
+<  * coloring), `theme` (semantic styles), `format` (line layout), `limit` (retention cap),
+<  * and `silent`.
+---
+>  * registered {@link LoggerInterface} owns its observable `emitter`). A per-`register`
+>  * override wins over any default supplied here.
+1158c1205,1207
+<  * Configures the {@link import('./loggers/Logger.js').Logger} constructor.
+---
+>  * Configures the {@link import('./loggers/Logger.js').Logger} constructor — the `on` / `error`
+>  * emitter keys, the `level` threshold, the logger's `name`, the `sink` / `styler` / `theme` /
+>  * `format` line substrate, the retention `limit`, and the `silent` write switch.
+1194c1243,1244
+<  * Names the severity level of a {@link LogRecord} — one coherent, ascending-severity scale.
+---
+>  * Names the severity level of a {@link LogRecord} — one coherent, ascending scale, `debug` <
+>  * `info` < `warn` < `error`, that a {@link LoggerInterface} gates by threshold.
+1197,1199c1247,1248
+<  * Ordered least-to-most severe: `debug` < `info` < `warn` < `error`. A {@link LoggerInterface}
+<  * gates by threshold — a record at or above the logger's `level` is kept (and written),
+<  * one below it is dropped (see {@link LEVEL_SEVERITY} for the numeric order). A level is a
+---
+>  * A record at or above the logger's `level` is kept (and written), one below it is
+>  * dropped (see {@link LEVEL_SEVERITY} for the numeric order). A level is a
+1206,1208c1255,1257
+<  * Represents one immutable, serializable log entry — the universal record the whole logging system
+<  * carries. A {@link LoggerInterface} builds one per call, freezes it, retains a bounded
+<  * tail of them, and emits it on `entry`; every sink / transport consumes this exact shape.
+---
+>  * Represents one immutable, serializable log entry. A {@link LoggerInterface} builds one per call,
+>  * freezes it, retains a bounded tail of them, and emits it on `entry`; every sink / transport
+>  * consumes this exact shape.
+1253,1255c1302,1304
+<  * Colors `text` through `styler`, or returns it verbatim when `styler` is `undefined` — the
+<  * single optional-styling primitive every renderer applies to its border / title / connector
+<  * glyphs (the one styler seam, shared, never re-hand-rolled per renderer).
+---
+>  * Colors `text` through `styler` and an optional by-value {@link Style}, or returns it verbatim
+>  * when `styler` is `undefined` — the single optional-styling primitive every renderer applies to
+>  * its border / title / connector glyphs.
+1273,1277c1322,1324
+<  * {@link renderBar}, writes `\r` + bar to its {@link SinkInterface}, and emits the `{ current, total }`
+<  * on `update`. The leading `\r` is what an overwrite-capable sink (the TTY sink) redraws on; a
+<  * plain sink degrades to a fresh, non-overwriting line — the line-overwrite is the sink's job.
+<  * Universal — the one {@link StylerInterface} + the one {@link SinkInterface}, no `node:*`, no
+<  * `process.stdout`. No self-timer (unlike {@link import('./Spinner.js').Spinner}) — the caller drives it.
+---
+>  * {@link renderBar}, writes `\r` + bar to its {@link SinkInterface}, and emits the `{ current,
+>  * total }` on `update`. No self-timer, unlike {@link import('./Spinner.js').Spinner} — the caller
+>  * drives it.
+1279a1327,1331
+>  * The leading `\r` is what an overwrite-capable sink (the TTY sink) redraws on; a plain sink
+>  * degrades to a fresh, non-overwriting line — the line-overwrite is the sink's job. Universal —
+>  * the one {@link StylerInterface} + the one {@link SinkInterface}, no `node:*`, no
+>  * `process.stdout`.
+>  *
+1314c1366,1367
+<  * Declares the observable events a {@link ProgressInterface} emits.
+---
+>  * Declares the observable events a {@link ProgressInterface} emits — `update(progress)` per
+>  * report, plus a `succeed` signal on a successful finish.
+1317c1370
+<  * - `update` — the core event: fires on every `update(current)` (and on `succeed` / `fail`),
+---
+>  * - `update` — fires on every `update(current)` (and on `succeed` / `fail`),
+1338,1340c1391,1394
+<  * {@link import('./helpers.js').renderBar}, writes `\r` + bar to its {@link SinkInterface}, and emits
+<  * the `{ current, total }` on `update`. The line-overwrite is the sink's job (a TTY sink overwrites
+<  * on the `\r`; a plain sink degrades to a fresh line). No self-timer — the caller drives it.
+---
+>  * {@link import('./helpers.js').renderBar}, writes `\r` + bar to its {@link SinkInterface}, and
+>  * emits the `{ current, total }` on `update`. The line-overwrite is the sink's job (a TTY sink
+>  * overwrites on the `\r`; a plain sink degrades to a fresh line). No self-timer — the caller drives
+>  * it.
+1365c1419,1422
+<     /** Reports progress: clamps `current`, re-renders the bar, emits `update`, writes `\r` + bar. Ignored once terminal. */
+---
+>     /**
+>      * Reports progress: clamps `current`, re-renders the bar, emits `update`, writes `\r` + bar.
+>      * Ignored after a terminal `succeed` or `fail`.
+>      */
+1376c1433,1435
+<  * Configures the {@link import('./Progress.js').Progress} constructor.
+---
+>  * Configures the {@link import('./Progress.js').Progress} constructor — the `on` / `error` emitter
+>  * keys, the required `total`, the `message` shown, the bar's `width` / `fill` / `empty` glyphs, and
+>  * the `sink` / `styler` / `theme` line substrate.
+1410,1411c1469,1470
+<  * Reports one advance of a {@link ProgressInterface} — the clamped `{ current, total }` payload
+<  * carried by the `update` event of {@link ProgressEventMap}.
+---
+>  * Reports one advance of a {@link ProgressInterface} — the clamped payload carried by the `update`
+>  * event of {@link ProgressEventMap}.
+1426,1429c1485,1486
+<  * and the `(current/total)` count (`█████░░░░░ 50% (5/10)`). Pure: same {@link BarOptions} →
+<  * same string. The animation-layer sibling of the `render*` renderers (box / table / tree /
+<  * separator), shared so a {@link import('./types.js').ProgressInterface} and any direct caller draw
+<  * the one bar — never a second, hand-rolled one.
+---
+>  * and the `(current/total)` count (`█████░░░░░ 50% (5/10)`). Pure and width-aware: same
+>  * {@link BarOptions} → same string.
+1431a1489,1493
+>  * It is the animation-layer sibling of the `render*` renderers (box / table / tree / separator),
+>  * shared so a {@link import('./types.js').ProgressInterface} and any direct caller draw the one
+>  * bar — never a second,
+>  * hand-rolled one.
+>  *
+1545,1546c1607,1608
+<  * Renders a nested {@link TreeNode} tree with box-drawing connectors. Pure: same
+<  * {@link TreeOptions} → same string.
+---
+>  * Renders a nested {@link TreeNode} tree whose connectors derive from the chosen `border` set.
+>  * Pure: same {@link TreeOptions} → same string.
+1570,1573c1632,1639
+<  * Renders the connector-prefixed lines for a {@link TreeNode} list — the recursive core
+<  * behind {@link renderTree}. Each child is drawn as `prefix` + its connector (`├─ ` for
+<  * any but the last, `└─ ` for the last) + its label, with its own descendants recursed
+<  * beneath under the carried guide (`│  ` under a non-last node, `   ` under the last).
+---
+>  * Renders the connector-prefixed lines for a {@link TreeNode} list — the recursive core behind
+>  * {@link renderTree}, whose third options argument requires `border` and groups the optional
+>  * `styler` and `style`.
+>  *
+>  * @remarks
+>  * Each child is drawn as `prefix` + its connector (`├─ ` for any but the last, `└─ ` for the
+>  * last) + its label, with its own descendants recursed beneath under the carried guide (`│  `
+>  * under a non-last node, `   ` under the last).
+1698c1764,1766
+<  * Configures the {@link import('./Reporter.js').Reporter} constructor.
+---
+>  * Configures the {@link import('./Reporter.js').Reporter} constructor — the `sink` every line is
+>  * written to, the `styler` and `theme` it formats through, and the `width` its layouts measure
+>  * against.
+1730c1798,1799
+<  * Implements the bounded, level-keyed retention engine both captures buffer through — one capped total buffer
+---
+>  * Implements the bounded, level-keyed retention engine the console and process captures buffer
+>  * through — one capped total buffer
+1784c1853,1856
+<     /** Retains one record — appends it to the total buffer and to its level's bucket, evicting the oldest of each past the cap. */
+---
+>     /**
+>      * Retains one record — appends it to the total buffer and to its level's bucket, evicting the
+>      * oldest of each past `limit`.
+>      */
+1786c1858,1861
+<     /** Returns a copy of the whole retained buffer, oldest first. */
+---
+>     /**
+>      * Returns a copy of the whole retained buffer, oldest first, or — given a level — a copy of
+>      * that level's bucket, empty for a level with no bucket.
+>      */
+1795,1797c1870,1872
+<  * Sets the number of milliseconds at or above which {@link import('./helpers.js').formatDuration}
+<  * (and so `Reporter.timing`) switches from a `…ms` rendering to a `…s` (seconds, 2 d.p.)
+<  * rendering — exactly one second.
+---
+>  * Sets the millisecond threshold at or above which {@link import('./helpers.js').formatDuration}
+>  * (and so `Reporter.timing`) switches from a `…ms` rendering to a `…s` (seconds, 2 d.p.) rendering
+>  * — `1000`, exactly one second.
+1838c1913
+<  * carrying a centered title.
+---
+>  * carrying a centered title. Every key is optional.
+1876,1882c1951,1959
+<      * Writes one already-formatted chunk of output. `text` receives one line without its
+<      * terminator — the sink's target supplies it (for example `console.log`; the server TTY sink
+<      * appends one) — unless `text` begins with `\r`: that is an in-place redraw frame (the
+<      * Spinner / Progress animation protocol), written verbatim. A tick frame carries no
+<      * terminator; a final frame carries its own.
+<      * `level` is the originating record's {@link LogLevel} — supplied so a stream-aware sink
+<      * can route (for example `error` to `stderr`); a plain sink ignores it.
+---
+>      * Writes one already-formatted chunk of output — one line without its terminator, or a
+>      * `\r`-leading redraw frame written verbatim, routed by the optional `level`.
+>      *
+>      * @remarks
+>      * The sink's target supplies the terminator (for example `console.log`; the server TTY sink
+>      * appends one), unless `text` begins with `\r`: that is an in-place redraw frame (the
+>      * Spinner / Progress animation protocol). A tick frame carries no terminator; a final frame
+>      * carries its own. `level` is the originating record's {@link LogLevel} — supplied so a
+>      * stream-aware sink can route (for example `error` to `stderr`); a plain sink ignores it.
+1890,1893c1967
+<  * `frame`. The leading `\r` is what an overwrite-capable sink (the TTY sink) redraws on; a plain
+<  * sink degrades to a fresh, non-overwriting line — the line-overwrite is the sink's job, never
+<  * the spinner's. Universal — `setInterval` + the one {@link StylerInterface} + the one
+<  * {@link SinkInterface}, no `node:*`, no `process.stdout`.
+---
+>  * `frame`. The timer is always cleared on an outcome, so the spinner is leak-free.
+1895a1970,1974
+>  * The leading `\r` is what an overwrite-capable sink (the TTY sink) redraws on; a plain sink
+>  * degrades to a fresh, non-overwriting line — the line-overwrite is the sink's job, never the
+>  * spinner's. Universal — `setInterval` + the one {@link StylerInterface} + the one
+>  * {@link SinkInterface}, no `node:*`, no `process.stdout`.
+>  *
+1938,1940c2017,2019
+<  * Holds the default spinner frame cycle a {@link import('./types.js').SpinnerInterface} advances through —
+<  * the ten braille-pattern glyphs (U+2800 block) that read as a smoothly rotating dot, the universal
+<  * terminal-spinner convention. Frozen; a consumer swaps the whole cycle through `options.frames`.
+---
+>  * Holds the default spinner frame cycle a {@link import('./types.js').SpinnerInterface} advances
+>  * through — the braille-pattern glyphs (`⠋⠙⠹…`, the U+2800 block) that read as a smoothly rotating
+>  * dot.
+1942a2022,2024
+>  * The cycle is the universal terminal-spinner convention. Frozen; a consumer swaps the whole
+>  * cycle through `options.frames`.
+>  *
+1949c2031,2032
+<  * Declares the observable events a {@link SpinnerInterface} emits.
+---
+>  * Declares the observable events a {@link SpinnerInterface} emits — `frame(line)` per advance and
+>  * per outcome, plus the `start` and `stop` timer-lifecycle signals.
+1952c2035
+<  * - `frame` — the core event: fires once per advance (every `tick()`, whether driven by the internal
+---
+>  * - `frame` — fires once per advance (every `tick()`, whether driven by the internal
+2021c2104,2106
+<  * Configures the {@link import('./Spinner.js').Spinner} constructor.
+---
+>  * Configures the {@link import('./Spinner.js').Spinner} constructor — the `on` / `error` emitter
+>  * keys, the `message` shown, the glyph `frames` and their `interval`, and the `sink` / `styler` /
+>  * `theme` line substrate.
+2075,2076c2160,2162
+<  * Names a narrative outcome level — the four states {@link ReporterInterface.status} reports, each
+<  * with its own icon + color ({@link STATUS_ICONS} / {@link STATUS_COLORS}).
+---
+>  * Names a narrative outcome level — `success` / `error` / `warn` / `info`, the states
+>  * {@link ReporterInterface.status} reports, each with its own icon + color
+>  * ({@link STATUS_ICONS} / {@link STATUS_COLORS}).
+2088,2089c2174,2175
+<  * Represents where one step sits in a sequence — the `{ index, total }` a
+<  * {@link ReporterInterface.step} renders as a `[2/5]` prefix.
+---
+>  * Represents where one step sits in a sequence — what {@link ReporterInterface.step} renders as a
+>  * `[2/5]` prefix.
+2154c2240,2241
+<  * (meaningful whitespace), plus DEL — returning the sanitized string.
+---
+>  * (meaningful whitespace), plus DEL — a separate pass from {@link strip}, so `width` stays
+>  * untouched.
+2265c2352,2353
+<  * Configures {@link createStyler}.
+---
+>  * Configures {@link createStyler} — `renderer` selects the output target, defaulting to the ANSI
+>  * renderer, and `enabled` is the no-color switch, defaulting to `true`.
+2268,2272c2356,2360
+<  * - `renderer` — the {@link RendererInterface} every style renders through; defaults to
+<  *   the ANSI renderer (the cross-environment default), so the styler works unchanged in
+<  *   any terminal. Inject a browser `%c` renderer to retarget with no other change.
+<  * - `enabled` — the no-color switch. When `false`, the styler returns text verbatim
+<  *   (for a non-TTY, a `NO_COLOR` environment, or piped output); defaults to `true`.
+---
+>  * - `renderer` — the {@link RendererInterface} every style renders through, so the styler
+>  *   works unchanged in any terminal. Inject a browser `%c` renderer to retarget with no
+>  *   other change.
+>  * - `enabled` — when `false`, the styler returns text verbatim, for a non-TTY, a
+>  *   `NO_COLOR` environment, or piped output.
+2280,2281c2368,2370
+<  * Configures {@link import('./helpers.js').renderTable} — a bordered grid of columns + rows
+<  * with per-column alignment and width-aware sizing.
+---
+>  * Configures {@link import('./helpers.js').renderTable} — a bordered grid of columns + rows with
+>  * per-column alignment and width-aware sizing. A `Reporter` supplies its own chrome style only when
+>  * the caller gives neither `styler` nor `style`.
+2303,2305c2392,2393
+<  * Represents the app-wide semantic style vocabulary — every role the console system styles, bound to a
+<  * {@link Style} value. Pass one theme to a logger / reporter / spinner / progress and every
+<  * surface speaks it.
+---
+>  * Represents the app-wide semantic style vocabulary — each role bound to a {@link Style} value.
+>  * Pass one theme to a logger / reporter / spinner / progress and every surface speaks it.
+2328c2416,2417
+<  * Holds the options for {@link createTheme} — the roles to override on {@link DEFAULT_THEME}.
+---
+>  * Holds the options for {@link createTheme} — the roles to override on {@link DEFAULT_THEME}, a
+>  * status supplying its whole copied `{ icon, style }` record.
+2333,2335c2422,2423
+<  * the `warn` label and leaves `debug`, `info`, and `error` alone. A status override supplies its whole
+<  * `{ icon, style }` record; {@link createTheme} snapshots and freezes that record and every
+<  * style leaf it receives.
+---
+>  * the `warn` label and leaves `debug`, `info`, and `error` alone. {@link createTheme}
+>  * snapshots and freezes each status record and every style leaf it receives.
+2372,2373c2460,2462
+<  * Configures {@link import('./helpers.js').renderTree} — a nested {@link TreeNode} tree drawn
+<  * with box-drawing connectors.
+---
+>  * Configures {@link import('./helpers.js').renderTree} — a nested {@link TreeNode} tree drawn with
+>  * box-drawing connectors. A `Reporter` supplies its own chrome style only when the caller gives
+>  * neither `styler` nor `style`.
+2413,2414c2502,2503
+<  * Groups the three write targets a level-routing sink chooses between — the normal target, the
+<  * warning target, and the error target.
+---
+>  * Groups the write targets a level-routing sink chooses between — each of the backend's own member
+>  * type.
+diff -r -w -B '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-console-following-final-pack/baseline/package/dist/src/core/index.js /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-console-following-final-pack/extract/package/dist/src/core/index.js
+105c105
+< * Holds the ESC control character (`U+001B`) that begins every ANSI escape sequence. Built
+---
+> * Holds the escape control character (`U+001B`) that begins every ANSI escape sequence. Built
+109c109
+< /** Holds the BEL control character (`U+0007`) that can terminate an OSC sequence. */
+---
+> /** Holds the bell control character (`U+0007`) that can terminate an OSC sequence. */
+174,176c174,179
+< * Sets the default bounded-retention cap for a {@link import('./types.js').LoggerInterface} — at
+< * most this many recent records are kept (oldest dropped first). Retention is always bounded — the
+< * oldest record is dropped after the cap is reached; a consumer overrides it through `options.limit`.
+---
+> * Sets the default bounded-retention cap for a {@link import('./types.js').LoggerInterface} —
+> * `1000`, so at most that many recent records are kept and retention is always bounded.
+> *
+> * @remarks
+> * The oldest record is dropped after the cap is reached; a consumer overrides the cap through
+> * `options.limit`.
+194,196c197,202
+< * Unicode box-drawing glyphs at the four line weights. The renderers ({@link
+< * import('./helpers.js').renderBox} / {@link import('./helpers.js').renderTable}) look the
+< * style up here, so no glyph literal lives in a renderer. Deeply frozen.
+---
+> * Unicode box-drawing glyphs at each line weight, deeply frozen.
+> *
+> * @remarks
+> * The renderers ({@link import('./helpers.js').renderBox} /
+> * {@link import('./helpers.js').renderTable}) look the style up here, so no glyph literal lives in
+> * a renderer.
+293c299
+< * {@link import('./types.js').ReporterOptions}`.width`.
+---
+> * {@link import('./types.js').ReporterOptions.width}.
+310,312c316,318
+< * Sets the number of milliseconds at or above which {@link import('./helpers.js').formatDuration}
+< * (and so `Reporter.timing`) switches from a `…ms` rendering to a `…s` (seconds, 2 d.p.)
+< * rendering — exactly one second.
+---
+> * Sets the millisecond threshold at or above which {@link import('./helpers.js').formatDuration}
+> * (and so `Reporter.timing`) switches from a `…ms` rendering to a `…s` (seconds, 2 d.p.) rendering
+> * — `1000`, exactly one second.
+329,333c335,341
+< * Sets the default bounded-buffer cap for a {@link import('./types.js').CaptureInterface} — at most this
+< * many recent {@link CapturedMessage}s are retained per buffer (the total buffer and each by-level
+< * bucket; oldest dropped first). Capture retention is always bounded so a long-running capture can
+< * never grow without bound (the same retention precedent as {@link DEFAULT_LOG_LIMIT}); a consumer
+< * overrides it through `options.limit`.
+---
+> * Sets the default bounded-buffer cap for a {@link import('./types.js').CaptureInterface} — `1000`,
+> * so at most that many recent {@link CapturedMessage}s are retained per buffer (the total buffer
+> * and each by-level bucket; oldest dropped first) and retention is always bounded.
+> *
+> * @remarks
+> * A long-running capture can never grow without bound (the same retention precedent as
+> * {@link DEFAULT_LOG_LIMIT}); a consumer overrides the cap through `options.limit`.
+339c347,348
+< * import('./types.js').SinkInterface} (`sink.write(text, CAPTURE_LEVEL_MAP[level])`). `warn` /
+---
+> * import('./types.js').SinkInterface}. `sink.write(text, CAPTURE_LEVEL_MAP[level])` is the call
+> * this map backs. `warn` /
+352,354c361,363
+< * Holds the default spinner frame cycle a {@link import('./types.js').SpinnerInterface} advances through —
+< * the ten braille-pattern glyphs (U+2800 block) that read as a smoothly rotating dot, the universal
+< * terminal-spinner convention. Frozen; a consumer swaps the whole cycle through `options.frames`.
+---
+> * Holds the default spinner frame cycle a {@link import('./types.js').SpinnerInterface} advances
+> * through — the braille-pattern glyphs (`⠋⠙⠹…`, the U+2800 block) that read as a smoothly rotating
+> * dot.
+356a366,368
+> * The cycle is the universal terminal-spinner convention. Frozen; a consumer swaps the whole
+> * cycle through `options.frames`.
+> *
+373,376c385,390
+< * Sets the default timer period in milliseconds between a {@link import('./types.js').SpinnerInterface}'s
+< * frames — the `setInterval` interval `start()` arms. Eighty milliseconds (≈12.5 frames/second) is
+< * the conventional spinner cadence: fast enough to read as motion, slow enough not to thrash a
+< * terminal. A consumer overrides it through `options.interval`.
+---
+> * Sets the default timer period between a {@link import('./types.js').SpinnerInterface}'s frames —
+> * the `setInterval` interval `start()` arms, `80` ms (≈12.5 frames/second).
+> *
+> * @remarks
+> * That is the conventional spinner cadence: fast enough to read as motion, slow enough not to
+> * thrash a terminal. A consumer overrides it through `options.interval`.
+380,382c394,396
+< * Holds the default filled-cell glyph {@link import('./helpers.js').renderBar} draws the completed run of a
+< * progress bar with — the full block `█` (U+2588). A single visible cell; a consumer overrides it
+< * through {@link import('./types.js').BarOptions}`.fill`.
+---
+> * Holds the default filled-cell glyph {@link import('./helpers.js').renderBar} draws the completed
+> * run of a progress bar with — the full block `█` (U+2588). A single visible cell; a consumer
+> * overrides it through {@link import('./types.js').BarOptions.fill}.
+386,388c400,402
+< * Holds the default empty-cell glyph {@link import('./helpers.js').renderBar} draws the remaining run of a
+< * progress bar with — the light-shade block `░` (U+2591). A single visible cell; a consumer overrides
+< * it through {@link import('./types.js').BarOptions}`.empty`.
+---
+> * Holds the default empty-cell glyph {@link import('./helpers.js').renderBar} draws the remaining
+> * run of a progress bar with — the light-shade block `░` (U+2591). A single visible cell; a
+> * consumer overrides it through {@link import('./types.js').BarOptions.empty}.
+392,396c406,413
+< * Sets the default visible cell count of a progress-bar track — the glyph run {@link
+< * import('./helpers.js').renderBar} fills (and a {@link import('./types.js').ProgressInterface} sizes
+< * its bar to). Thirty cells is a compact, terminal-friendly default; a consumer overrides it through
+< * `options.width`. Distinct from {@link DEFAULT_WIDTH} (the renderers' 80-column line width) — a bar
+< * track is one inline element, not a full-width rule.
+---
+> * Sets the default visible cell count of a progress-bar track — the glyph run
+> * {@link import('./helpers.js').renderBar} fills, and the width a
+> * {@link import('./types.js').ProgressInterface} sizes its bar to. `30` cells.
+> *
+> * @remarks
+> * Thirty cells is a compact, terminal-friendly default; a consumer overrides it through
+> * `options.width`. It is distinct from {@link DEFAULT_WIDTH} (the renderers' 80-column line
+> * width) — a bar track is one inline element, not a full-width rule.
+400,401c417,421
+< * Holds the default {@link Theme} — every role bound to its default {@link Style}, deeply frozen.
+< * The base {@link import('./factories.js').createTheme} merges over, and the theme every
+---
+> * Holds the default {@link Theme} — every role bound to its default {@link Style}, assembled from
+> * {@link LEVEL_COLORS}, {@link STATUS_ICONS}, and {@link STATUS_COLORS} and deeply frozen.
+> *
+> * @remarks
+> * It is the base {@link import('./factories.js').createTheme} merges over, and the theme every
+470c490,491
+< * Represents an error thrown by the console layer.
+---
+> * Carries a {@link ConsoleErrorCode} and an optional `context` bag — the error the console layer
+> * throws for an internal invariant violated at a defensive guard.
+473,475c494,495
+< * Carries a {@link ConsoleErrorCode} and an optional `context` bag. Thrown for: an
+< * internal invariant violated at a defensive, structurally-unreachable guard
+< * (`INVARIANT`).
+---
+> * `INVARIANT` is the code for a guard that is structurally unreachable, so a `catch` branches on
+> * `error.code` rather than parsing the message.
+488c508
+< * Narrows an unknown caught value to a {@link ConsoleError}.
+---
+> * Narrows an unknown caught value to a {@link ConsoleError} — the guard a `catch` branches on.
+529c549,550
+< * (meaningful whitespace), plus DEL — returning the sanitized string.
+---
+> * (meaningful whitespace), plus DEL — a separate pass from {@link strip}, so `width` stays
+> * untouched.
+572c593,594
+< * Snapshots and deeply freezes one {@link Style} value.
+---
+> * Snapshots and deeply freezes one {@link Style} value, including an independent frozen copy of
+> * its `attributes`.
+743,745c765,767
+< * Colors `text` through `styler`, or returns it verbatim when `styler` is `undefined` — the
+< * single optional-styling primitive every renderer applies to its border / title / connector
+< * glyphs (the one styler seam, shared, never re-hand-rolled per renderer).
+---
+> * Colors `text` through `styler` and an optional by-value {@link Style}, or returns it verbatim
+> * when `styler` is `undefined` — the single optional-styling primitive every renderer applies to
+> * its border / title / connector glyphs.
+930,931c952,953
+< * Renders a nested {@link TreeNode} tree with box-drawing connectors. Pure: same
+< * {@link TreeOptions} → same string.
+---
+> * Renders a nested {@link TreeNode} tree whose connectors derive from the chosen `border` set.
+> * Pure: same {@link TreeOptions} → same string.
+960,963c982,989
+< * Renders the connector-prefixed lines for a {@link TreeNode} list — the recursive core
+< * behind {@link renderTree}. Each child is drawn as `prefix` + its connector (`├─ ` for
+< * any but the last, `└─ ` for the last) + its label, with its own descendants recursed
+< * beneath under the carried guide (`│  ` under a non-last node, `   ` under the last).
+---
+> * Renders the connector-prefixed lines for a {@link TreeNode} list — the recursive core behind
+> * {@link renderTree}, whose third options argument requires `border` and groups the optional
+> * `styler` and `style`.
+> *
+> * @remarks
+> * Each child is drawn as `prefix` + its connector (`├─ ` for any but the last, `└─ ` for the
+> * last) + its label, with its own descendants recursed beneath under the carried guide (`│  `
+> * under a non-last node, `   ` under the last).
+1065,1068c1091,1092
+< * and the `(current/total)` count (`█████░░░░░ 50% (5/10)`). Pure: same {@link BarOptions} →
+< * same string. The animation-layer sibling of the `render*` renderers (box / table / tree /
+< * separator), shared so a {@link import('./types.js').ProgressInterface} and any direct caller draw
+< * the one bar — never a second, hand-rolled one.
+---
+> * and the `(current/total)` count (`█████░░░░░ 50% (5/10)`). Pure and width-aware: same
+> * {@link BarOptions} → same string.
+1070a1095,1099
+> * It is the animation-layer sibling of the `render*` renderers (box / table / tree / separator),
+> * shared so a {@link import('./types.js').ProgressInterface} and any direct caller draw the one
+> * bar — never a second,
+> * hand-rolled one.
+> *
+1105,1108c1134
+< * SGR escape codes, exactly as `Scheduler` is the `setTimeout` default for its seam. It
+< * is the single styling output the whole console / terminal system uses in a terminal;
+< * the browser `%c` / CSS renderer implements the same contract over
+< * the same {@link Style}, so retargeting changes the renderer, never the style model.
+---
+> * SGR escape codes, stateless and event-free.
+1110a1137,1140
+> * It is the single styling output the whole console / terminal system uses in a terminal; the
+> * browser `%c` / CSS renderer implements the same contract over the same {@link Style}, so
+> * retargeting changes the renderer, never the style model.
+> *
+1146c1176,1177
+< * Implements the bounded, level-keyed retention engine both captures buffer through — one capped total buffer
+---
+> * Implements the bounded, level-keyed retention engine the console and process captures buffer
+> * through — one capped total buffer
+1453,1456c1484,1490
+< * Creates the fluent, composable {@link StylerInterface} — the consumer-facing styling
+< * API. It builds a {@link import('./types.js').Style} under the hood and renders it
+< * through a {@link import('./types.js').RendererInterface} (the ANSI default), so
+< * `styler.red.bold('hi')` yields styled text. Chains are immutable, so a base styler is freely reusable.
+---
+> * Creates the fluent, composable {@link StylerInterface} — ANSI by default, retargeted by a
+> * `renderer` and stripped of color by `enabled: false`.
+> *
+> * @remarks
+> * It builds a {@link import('./types.js').Style} under the hood and renders it through a
+> * {@link import('./types.js').RendererInterface}, so `styler.red.bold('hi')` yields styled text.
+> * Chains are immutable, so a base styler is freely reusable.
+1903,1906c1937
+< * `frame`. The leading `\r` is what an overwrite-capable sink (the TTY sink) redraws on; a plain
+< * sink degrades to a fresh, non-overwriting line — the line-overwrite is the sink's job, never
+< * the spinner's. Universal — `setInterval` + the one {@link StylerInterface} + the one
+< * {@link SinkInterface}, no `node:*`, no `process.stdout`.
+---
+> * `frame`. The timer is always cleared on an outcome, so the spinner is leak-free.
+1908a1940,1944
+> * The leading `\r` is what an overwrite-capable sink (the TTY sink) redraws on; a plain sink
+> * degrades to a fresh, non-overwriting line — the line-overwrite is the sink's job, never the
+> * spinner's. Universal — `setInterval` + the one {@link StylerInterface} + the one
+> * {@link SinkInterface}, no `node:*`, no `process.stdout`.
+> *
+2019,2023c2055,2057
+< * {@link renderBar}, writes `\r` + bar to its {@link SinkInterface}, and emits the `{ current, total }`
+< * on `update`. The leading `\r` is what an overwrite-capable sink (the TTY sink) redraws on; a
+< * plain sink degrades to a fresh, non-overwriting line — the line-overwrite is the sink's job.
+< * Universal — the one {@link StylerInterface} + the one {@link SinkInterface}, no `node:*`, no
+< * `process.stdout`. No self-timer (unlike {@link import('./Spinner.js').Spinner}) — the caller drives it.
+---
+> * {@link renderBar}, writes `\r` + bar to its {@link SinkInterface}, and emits the `{ current,
+> * total }` on `update`. No self-timer, unlike {@link import('./Spinner.js').Spinner} — the caller
+> * drives it.
+2025a2060,2064
+> * The leading `\r` is what an overwrite-capable sink (the TTY sink) redraws on; a plain sink
+> * degrades to a fresh, non-overwriting line — the line-overwrite is the sink's job. Universal —
+> * the one {@link StylerInterface} + the one {@link SinkInterface}, no `node:*`, no
+> * `process.stdout`.
+> *
+diff -r -w -B '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-console-following-final-pack/baseline/package/dist/src/server/index.cjs /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-console-following-final-pack/extract/package/dist/src/server/index.cjs
+7,8c7,9
+< * Lists the two process streams a {@link import('./types.js').ProcessCaptureInterface} can intercept, in
+< * `stdout`-then-`stderr` order — the {@link StreamLevel} universe and the default configured set.
+---
+> * Lists the process streams a {@link import('./types.js').ProcessCaptureInterface} can intercept,
+> * in `stdout`-then-`stderr` order — the {@link StreamLevel} universe and the default configured
+> * set.
+12,15c13,20
+< * Sets the default bounded-buffer cap for a {@link import('./types.js').ProcessCaptureInterface} — at
+< * most this many recent {@link import('./types.js').CapturedChunk}s are retained per buffer (the
+< * total buffer and each per-stream bucket; oldest dropped first). Mirrors the core `Capture`'s
+< * `DEFAULT_CAPTURE_LIMIT`; a consumer overrides it through `options.limit`.
+---
+> * Sets the default bounded-buffer cap for a {@link import('./types.js').ProcessCaptureInterface} —
+> * `1000`, so at most that many recent {@link import('./types.js').CapturedChunk}s are retained per
+> * buffer (the total buffer and each per-stream bucket; oldest dropped first) and retention is
+> * always bounded.
+> *
+> * @remarks
+> * It mirrors the core `Capture`'s `DEFAULT_CAPTURE_LIMIT`; a consumer overrides the cap through
+> * `options.limit`.
+20,21c25,26
+< * {@link import('./types.js').ServerSinkInterface.columns} when the `stdout` stream is not a TTY (so
+< * `.columns` is `undefined`) and no explicit `options.columns` was supplied — the conventional
+---
+> * {@link import('./types.js').ServerSinkInterface.columns} when the `stdout` stream is not a TTY
+> * (so `.columns` is `undefined`) and no explicit `options.columns` was supplied — the conventional
+26,31c31,36
+< * Maps each {@link StreamLevel} to its {@link LogLevel} for the optional sink forward — the projection a
+< * process capture routes through when writing an intercepted chunk to a
+< * {@link import('@src/core').SinkInterface}
+< * (`sink.write(text, STREAM_LEVEL_MAP[level])`). `stderr` is conventionally the error/diagnostic
+< * stream → `error`; `stdout` is the normal output stream → `info`. The source of truth for the
+< * stream-to-log projection (the server analogue of the core `CAPTURE_LEVEL_MAP`).
+---
+> * Maps each {@link StreamLevel} to its {@link LogLevel} for the optional sink forward — the
+> * projection a process capture routes through when writing an intercepted chunk to a
+> * {@link import('@src/core').SinkInterface}. `sink.write(text, STREAM_LEVEL_MAP[level])` is the
+> * call this map backs. `stderr` is conventionally the error/diagnostic stream → `error`; `stdout`
+> * is the normal output stream → `info`. The source of truth for the stream-to-log projection (the
+> * server analogue of the core `CAPTURE_LEVEL_MAP`).
+64,66c69,71
+< * Checks whether `encoding` is a {@link BufferEncoding} accepted by `Buffer.prototype.toString` — a total
+< * guard used by {@link import('./helpers.js').decodeChunk} to honor a process-write `encoding`
+< * argument only when it is a real Node encoding (otherwise utf-8 is assumed).
+---
+> * Checks whether `encoding` is a {@link BufferEncoding} accepted by `Buffer.prototype.toString` — a
+> * total guard used by {@link import('./helpers.js').decodeChunk} to honor a process-write
+> * `encoding` argument only when it is a real Node encoding (otherwise utf-8 is assumed).
+77,79c82,85
+< * Infers the width in character cells of a stream target — its live `columns` when it is a TTY, else
+< * the non-interactive {@link DEFAULT_COLUMNS} fallback. The basis a {@link import('./types.js').ServerSinkInterface}
+< * reports through `columns` so a `Reporter` / `Progress` can size its layout to the terminal.
+---
+> * Infers the width in character cells of a stream target — its live `columns` when it is a TTY,
+> * else the non-interactive {@link DEFAULT_COLUMNS} fallback. The basis a
+> * {@link import('./types.js').ServerSinkInterface} reports through `columns` so a `Reporter` /
+> * `Progress` can size its layout to the terminal.
+95,97c101,102
+< * Infers whether one stream target receives styled output. The result is a construction-time
+< * target fact for {@link import('./factories.js').createServerSink}; this helper is pure and never
+< * reads process globals itself.
+---
+> * Infers whether one stream target receives styled output — a present `FORCE_COLOR` first, then a
+> * non-empty `NO_COLOR`, then `target.isTTY === true`.
+100,102c105,108
+< * A present `FORCE_COLOR` key has first precedence: only the exact value `'0'` disables styling.
+< * Next, a non-empty `NO_COLOR` disables styling. Otherwise styling follows
+< * `target.isTTY === true`.
+---
+> * The result is a construction-time target fact for
+> * {@link import('./factories.js').createServerSink}; this helper is pure and
+> * never reads process globals itself. Under `FORCE_COLOR` only the exact value `'0'` disables
+> * styling.
+318,322c324,327
+< * Creates the server TTY {@link ServerSinkInterface} — the server output backend, the
+< * env-symmetric sibling of `createBrowserSink` / core's `createConsoleSink`. `write(text, level?)`
+< * routes by level to the process streams and uses construction-time styled facts: it sends ANSI
+< * straight to a styled target (with a leading `\r` overwriting a terminal line natively) but
+< * {@link import('@src/core').strip}s ANSI to clean text for a plain target.
+---
+> * Creates the server TTY {@link ServerSinkInterface} — the server output backend, whose
+> * `write(text, level?)` routes by level to the process streams and uses construction-time styled
+> * facts: it sends ANSI straight to a styled target (with a leading `\r` overwriting a terminal
+> * line natively) but {@link import('@src/core').strip}s ANSI to clean text for a plain target.
+348c353
+< * @example
+---
+> * @example The server — a TTY sink and a process capture
+351c356,366
+< * import { createServerSink } from '@orkestrel/console/server'
+---
+> * import { createServerSink, ProcessCapture } from '@orkestrel/console/server'
+> *
+> * const sink = createServerSink() // FORCE_COLOR, then NO_COLOR, then isTTY — per target, at construction
+> * const styler = createStyler({ enabled: sink.styled }) // keep generated ANSI paired with the sink's stdout stripping
+> * const logger = new Logger({ name: 'server', sink, styler })
+> * logger.error('boom') // → process.stderr (the error stream)
+> * const reporter = new Reporter({ sink, width: sink.columns }) // size the layout to the live terminal
+> *
+> * // `styled` overrides the inference outright — for a CI log that renders ANSI off a TTY, say.
+> * const forced = createServerSink({ styled: true })
+> * forced.styled // true, whatever the environment and the streams say
+353,357c368,375
+< * const sink = createServerSink()
+< * const styler = createStyler({ enabled: sink.styled })
+< * const logger = new Logger({ name: 'app', sink, styler })
+< * logger.error('boom') // → process.stderr, ANSI rendered on a TTY / stripped to a pipe
+< * const reporter = new Reporter({ sink, width: sink.columns })
+---
+> * // Own every output path — a direct process.stdout.write, library output, child-process pipes:
+> * const capture = new ProcessCapture({ levels: ['stderr'], mirror: true })
+> * capture.start()
+> * process.stderr.write('a library diagnostic\n') // captured and still shown (mirror: true)
+> * capture.messages('stderr') // [{ level: 'stderr', text: 'a library diagnostic\n', time: … }]
+> * capture.clear() // drop buffered chunks; interception is unaffected
+> * capture.stop()
+> * capture.destroy() // stop() then tear down the emitter
+diff -r -w -B '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-console-following-final-pack/baseline/package/dist/src/server/index.d.cts /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-console-following-final-pack/extract/package/dist/src/server/index.d.cts
+1,5c1,5
+< import { EmitterErrorHandler } from '@orkestrel/emitter';
+< import { EmitterHooks } from '@orkestrel/emitter';
+< import { EmitterInterface } from '@orkestrel/emitter';
+< import { LogLevel } from '@orkestrel/console';
+< import { SinkInterface } from '@orkestrel/console';
+---
+> import type { EmitterErrorHandler } from '@orkestrel/emitter';
+> import type { EmitterHooks } from '@orkestrel/emitter';
+> import type { EmitterInterface } from '@orkestrel/emitter';
+> import type { LogLevel } from '@orkestrel/console';
+> import type { SinkInterface } from '@orkestrel/console';
+28,32c28,31
+<  * Creates the server TTY {@link ServerSinkInterface} — the server output backend, the
+<  * env-symmetric sibling of `createBrowserSink` / core's `createConsoleSink`. `write(text, level?)`
+<  * routes by level to the process streams and uses construction-time styled facts: it sends ANSI
+<  * straight to a styled target (with a leading `\r` overwriting a terminal line natively) but
+<  * {@link import('@src/core').strip}s ANSI to clean text for a plain target.
+---
+>  * Creates the server TTY {@link ServerSinkInterface} — the server output backend, whose
+>  * `write(text, level?)` routes by level to the process streams and uses construction-time styled
+>  * facts: it sends ANSI straight to a styled target (with a leading `\r` overwriting a terminal
+>  * line natively) but {@link import('@orkestrel/console').strip}s ANSI to clean text for a plain target.
+35c34
+<  * @returns A {@link ServerSinkInterface} — a {@link import('@src/core').SinkInterface} that also
+---
+>  * @returns A {@link ServerSinkInterface} — a {@link import('@orkestrel/console').SinkInterface} that also
+42c41
+<  *   {@link import('@src/core').selectWriter} leaf, which is what keeps them identical.
+---
+>  *   {@link import('@orkestrel/console').selectWriter} leaf, which is what keeps them identical.
+58c57
+<  * @example
+---
+>  * @example The server — a TTY sink and a process capture
+61c60,70
+<  * import { createServerSink } from '@orkestrel/console/server'
+---
+>  * import { createServerSink, ProcessCapture } from '@orkestrel/console/server'
+>  *
+>  * const sink = createServerSink() // FORCE_COLOR, then NO_COLOR, then isTTY — per target, at construction
+>  * const styler = createStyler({ enabled: sink.styled }) // keep generated ANSI paired with the sink's stdout stripping
+>  * const logger = new Logger({ name: 'server', sink, styler })
+>  * logger.error('boom') // → process.stderr (the error stream)
+>  * const reporter = new Reporter({ sink, width: sink.columns }) // size the layout to the live terminal
+>  *
+>  * // `styled` overrides the inference outright — for a CI log that renders ANSI off a TTY, say.
+>  * const forced = createServerSink({ styled: true })
+>  * forced.styled // true, whatever the environment and the streams say
+63,67c72,79
+<  * const sink = createServerSink()
+<  * const styler = createStyler({ enabled: sink.styled })
+<  * const logger = new Logger({ name: 'app', sink, styler })
+<  * logger.error('boom') // → process.stderr, ANSI rendered on a TTY / stripped to a pipe
+<  * const reporter = new Reporter({ sink, width: sink.columns })
+---
+>  * // Own every output path — a direct process.stdout.write, library output, child-process pipes:
+>  * const capture = new ProcessCapture({ levels: ['stderr'], mirror: true })
+>  * capture.start()
+>  * process.stderr.write('a library diagnostic\n') // captured and still shown (mirror: true)
+>  * capture.messages('stderr') // [{ level: 'stderr', text: 'a library diagnostic\n', time: … }]
+>  * capture.clear() // drop buffered chunks; interception is unaffected
+>  * capture.stop()
+>  * capture.destroy() // stop() then tear down the emitter
+106,107c118,119
+<  * {@link import('./types.js').ServerSinkInterface.columns} when the `stdout` stream is not a TTY (so
+<  * `.columns` is `undefined`) and no explicit `options.columns` was supplied — the conventional
+---
+>  * {@link import('./types.js').ServerSinkInterface.columns} when the `stdout` stream is not a TTY
+>  * (so `.columns` is `undefined`) and no explicit `options.columns` was supplied — the conventional
+113,116c125,132
+<  * Sets the default bounded-buffer cap for a {@link import('./types.js').ProcessCaptureInterface} — at
+<  * most this many recent {@link import('./types.js').CapturedChunk}s are retained per buffer (the
+<  * total buffer and each per-stream bucket; oldest dropped first). Mirrors the core `Capture`'s
+<  * `DEFAULT_CAPTURE_LIMIT`; a consumer overrides it through `options.limit`.
+---
+>  * Sets the default bounded-buffer cap for a {@link import('./types.js').ProcessCaptureInterface} —
+>  * `1000`, so at most that many recent {@link import('./types.js').CapturedChunk}s are retained per
+>  * buffer (the total buffer and each per-stream bucket; oldest dropped first) and retention is
+>  * always bounded.
+>  *
+>  * @remarks
+>  * It mirrors the core `Capture`'s `DEFAULT_CAPTURE_LIMIT`; a consumer overrides the cap through
+>  * `options.limit`.
+121,123c137,140
+<  * Infers the width in character cells of a stream target — its live `columns` when it is a TTY, else
+<  * the non-interactive {@link DEFAULT_COLUMNS} fallback. The basis a {@link import('./types.js').ServerSinkInterface}
+<  * reports through `columns` so a `Reporter` / `Progress` can size its layout to the terminal.
+---
+>  * Infers the width in character cells of a stream target — its live `columns` when it is a TTY,
+>  * else the non-interactive {@link DEFAULT_COLUMNS} fallback. The basis a
+>  * {@link import('./types.js').ServerSinkInterface} reports through `columns` so a `Reporter` /
+>  * `Progress` can size its layout to the terminal.
+136,138c153,154
+<  * Infers whether one stream target receives styled output. The result is a construction-time
+<  * target fact for {@link import('./factories.js').createServerSink}; this helper is pure and never
+<  * reads process globals itself.
+---
+>  * Infers whether one stream target receives styled output — a present `FORCE_COLOR` first, then a
+>  * non-empty `NO_COLOR`, then `target.isTTY === true`.
+141,143c157,160
+<  * A present `FORCE_COLOR` key has first precedence: only the exact value `'0'` disables styling.
+<  * Next, a non-empty `NO_COLOR` disables styling. Otherwise styling follows
+<  * `target.isTTY === true`.
+---
+>  * The result is a construction-time target fact for
+>  * {@link import('./factories.js').createServerSink}; this helper is pure and
+>  * never reads process globals itself. Under `FORCE_COLOR` only the exact value `'0'` disables
+>  * styling.
+158,160c175,177
+<  * Checks whether `encoding` is a {@link BufferEncoding} accepted by `Buffer.prototype.toString` — a total
+<  * guard used by {@link import('./helpers.js').decodeChunk} to honor a process-write `encoding`
+<  * argument only when it is a real Node encoding (otherwise utf-8 is assumed).
+---
+>  * Checks whether `encoding` is a {@link BufferEncoding} accepted by `Buffer.prototype.toString` — a
+>  * total guard used by {@link import('./helpers.js').decodeChunk} to honor a process-write
+>  * `encoding` argument only when it is a real Node encoding (otherwise utf-8 is assumed).
+253,254c270,271
+<  * Declares the observable events a {@link ProcessCaptureInterface} emits — mirrors the core
+<  * `Capture`'s `CaptureEventMap`, but the captured record is a {@link CapturedChunk} (stream-keyed).
+---
+>  * Declares the observable events a {@link ProcessCaptureInterface} emits — `capture(chunk)` per
+>  * intercepted write, plus the `start` and `stop` signals.
+256a274,276
+>  * The map mirrors the core `Capture`'s `CaptureEventMap`, and the captured record is a
+>  * {@link CapturedChunk} (stream-keyed).
+>  *
+278,282c298,300
+<  * Declares an observable interceptor of the raw process output streams — the server's
+<  * "own all output" capture. Where the core `Capture` patches `console.*` (the high-level read
+<  * side), this patches `process.stdout.write` / `process.stderr.write` (the low-level stream), so it
+<  * catches direct `process.stdout.write`, third-party library output, and child-process pipes —
+<  * everything that reaches the streams, not only `console.*`.
+---
+>  * Declares an observable interceptor of the raw process output streams — the server's "own all
+>  * output" capture, patching `process.stdout.write` / `process.stderr.write` on the low-level
+>  * stream where the core `Capture` patches `console.*`.
+284a303,305
+>  * Patching the stream catches a direct `process.stdout.write`, third-party library output, and
+>  * child-process pipes — everything that reaches the streams, not only `console.*`.
+>  *
+310c331,334
+<     /** Returns a copy of the full captured buffer, oldest first (capped at `limit`). */
+---
+>     /**
+>      * Returns a copy of the full captured buffer, oldest first (capped at `limit`), or — given a
+>      * {@link StreamLevel} — a copy of only that stream's bucket.
+>      */
+321,323c345,348
+<  * Holds the options for the {@link import('./ProcessCapture.js').ProcessCapture} constructor — every
+<  * field optional, so a bare `new ProcessCapture()` buffers both streams without mirroring or
+<  * forwarding.
+---
+>  * Holds the options for the {@link import('./ProcessCapture.js').ProcessCapture} constructor — the
+>  * `on` / `error` emitter keys, the `levels` intercepted, the `mirror` pass-through, the `sink`
+>  * forward, and the buffer `limit`. Every field is optional, so a bare `new ProcessCapture()`
+>  * buffers both streams without mirroring or forwarding.
+335c360
+<  *   (`sink.write(text, level)` with the {@link StreamLevel} mapped to a {@link import('@src/core').LogLevel} through
+---
+>  *   (`sink.write(text, level)` with the {@link StreamLevel} mapped to a {@link import('@orkestrel/console').LogLevel} through
+351,355c376,378
+<  * Declares a {@link SinkInterface} that also exposes the target terminal's {@link columns} width — the shape
+<  * {@link import('./factories.js').createServerSink} returns. It is a drop-in {@link SinkInterface}
+<  * (so a `Logger` / `Reporter` / `Spinner` / `Progress` takes it as `sink`) whose extra `columns`
+<  * getter lets a consumer size a `Reporter`'s layout to the live terminal. Its `styled` fact lets
+<  * the same consumer enable or disable its styler for the `stdout` target.
+---
+>  * Declares a {@link SinkInterface} that also exposes the `stdout` target's construction-time
+>  * `styled` fact and the terminal's live or fixed {@link columns} width — the shape
+>  * {@link import('./factories.js').createServerSink} returns.
+357a381,385
+>  * It is a drop-in {@link SinkInterface} (so a `Logger` / `Reporter` / `Spinner` / `Progress`
+>  * takes it as `sink`) whose extra `columns` getter lets a consumer size a `Reporter`'s layout to
+>  * the live terminal, and whose `styled` fact lets the same consumer enable or disable its styler
+>  * for the `stdout` target.
+>  *
+369,370c397,400
+<  * Holds the options for {@link import('./factories.js').createServerSink} — all optional, so a bare
+<  * `createServerSink()` writes to the real process streams.
+---
+>  * Holds the options for {@link import('./factories.js').createServerSink} — the `stdout` and
+>  * `stderr` targets, the `styled` override, the `environment` inference reads, and an explicit
+>  * `columns` width. All are optional, so a bare `createServerSink()` writes to the real process
+>  * streams.
+394,399c424,429
+<  * Maps each {@link StreamLevel} to its {@link LogLevel} for the optional sink forward — the projection a
+<  * process capture routes through when writing an intercepted chunk to a
+<  * {@link import('@src/core').SinkInterface}
+<  * (`sink.write(text, STREAM_LEVEL_MAP[level])`). `stderr` is conventionally the error/diagnostic
+<  * stream → `error`; `stdout` is the normal output stream → `info`. The source of truth for the
+<  * stream-to-log projection (the server analogue of the core `CAPTURE_LEVEL_MAP`).
+---
+>  * Maps each {@link StreamLevel} to its {@link LogLevel} for the optional sink forward — the
+>  * projection a process capture routes through when writing an intercepted chunk to a
+>  * {@link import('@orkestrel/console').SinkInterface}. `sink.write(text, STREAM_LEVEL_MAP[level])` is the
+>  * call this map backs. `stderr` is conventionally the error/diagnostic stream → `error`; `stdout`
+>  * is the normal output stream → `info`. The source of truth for the stream-to-log projection (the
+>  * server analogue of the core `CAPTURE_LEVEL_MAP`).
+404,405c434,436
+<  * Lists the two process streams a {@link import('./types.js').ProcessCaptureInterface} can intercept, in
+<  * `stdout`-then-`stderr` order — the {@link StreamLevel} universe and the default configured set.
+---
+>  * Lists the process streams a {@link import('./types.js').ProcessCaptureInterface} can intercept,
+>  * in `stdout`-then-`stderr` order — the {@link StreamLevel} universe and the default configured
+>  * set.
+410,411c441,443
+<  * Names which process stream a {@link CapturedChunk} came from — the "level" axis of the process-stream
+<  * {@link ProcessCaptureInterface}, the server analogue of the core `Capture`'s `CaptureLevel`.
+---
+>  * Names which process stream a {@link CapturedChunk} came from — `stdout` or `stderr`, the
+>  * "level" axis of the process-stream {@link ProcessCaptureInterface} and the server analogue of
+>  * the core `Capture`'s `CaptureLevel`.
+414c446
+<  * distinct from {@link import('@src/core').LogLevel}: a `StreamLevel` names the originating process stream
+---
+>  * distinct from {@link import('@orkestrel/console').LogLevel}: a `StreamLevel` names the originating process stream
+416c448
+<  * {@link import('./constants.js').STREAM_LEVEL_MAP} to a {@link import('@src/core').LogLevel} for the optional sink
+---
+>  * {@link import('./constants.js').STREAM_LEVEL_MAP} to a {@link import('@orkestrel/console').LogLevel} for the optional sink
+422,427c454,455
+<  * Declares the minimal writable-stream shape the server sink and process capture address — exactly the
+<  * slice of a Node `tty.WriteStream` / `process.stdout` they touch, and no more. A
+<  * {@link ServerSinkOptions} target and a {@link ProcessCaptureInterface}'s patched streams are
+<  * narrowed to this through {@link import('./validators.js').isStreamTarget} (narrow the
+<  * boundary, never `as`), so a test can drive either with a hand-built fake stream that never
+<  * touches the real `process` streams.
+---
+>  * Declares the minimal writable-stream shape the server sink and process capture address — exactly
+>  * the slice of a Node `tty.WriteStream` / `process.stdout` they touch and no more.
+429a458,462
+>  * A {@link ServerSinkOptions} target and a {@link ProcessCaptureInterface}'s patched streams are
+>  * narrowed to this through {@link import('./validators.js').isStreamTarget} (narrow the boundary,
+>  * never `as`), so a test can
+>  * drive either with a hand-built fake stream that never touches the real `process` streams.
+>  *
+435c468
+<  *   construction to decide whether to keep ANSI or {@link import('@src/core').strip} it to clean
+---
+>  *   construction to decide whether to keep ANSI or {@link import('@orkestrel/console').strip} it to clean
+448,449c481,483
+<  * Names the completion callback `process.*.write` accepts as its last argument — the Node `write`
+<  * callback shape, and the {@link StreamWriteFunction} companion.
+---
+>  * Names the completion callback `process.*.write` accepts as its last argument —
+>  * `(error?) => void`, the Node `write` callback shape and the {@link StreamWriteFunction}
+>  * companion.
+458,459c492,494
+<  * Names the process-stream `write` method a {@link ProcessCaptureInterface} snapshots and swaps at
+<  * the patch boundary — the write-side analogue of {@link import('@src/core').ConsoleMethod}.
+---
+>  * Names the process-stream `write` method a {@link ProcessCaptureInterface} snapshots and swaps
+>  * at the patch boundary — `NodeJS.WriteStream['write']` verbatim, the write-side analogue of
+>  * {@link import('@orkestrel/console').ConsoleMethod}.
+462c497
+<  * It is taken verbatim as `NodeJS.WriteStream['write']`, the overloaded
+---
+>  * The type is the overloaded
+diff -r -w -B '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-console-following-final-pack/baseline/package/dist/src/server/index.d.ts /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-console-following-final-pack/extract/package/dist/src/server/index.d.ts
+1,5c1,5
+< import { EmitterErrorHandler } from '@orkestrel/emitter';
+< import { EmitterHooks } from '@orkestrel/emitter';
+< import { EmitterInterface } from '@orkestrel/emitter';
+< import { LogLevel } from '@orkestrel/console';
+< import { SinkInterface } from '@orkestrel/console';
+---
+> import type { EmitterErrorHandler } from '@orkestrel/emitter';
+> import type { EmitterHooks } from '@orkestrel/emitter';
+> import type { EmitterInterface } from '@orkestrel/emitter';
+> import type { LogLevel } from '@orkestrel/console';
+> import type { SinkInterface } from '@orkestrel/console';
+28,32c28,31
+<  * Creates the server TTY {@link ServerSinkInterface} — the server output backend, the
+<  * env-symmetric sibling of `createBrowserSink` / core's `createConsoleSink`. `write(text, level?)`
+<  * routes by level to the process streams and uses construction-time styled facts: it sends ANSI
+<  * straight to a styled target (with a leading `\r` overwriting a terminal line natively) but
+<  * {@link import('@src/core').strip}s ANSI to clean text for a plain target.
+---
+>  * Creates the server TTY {@link ServerSinkInterface} — the server output backend, whose
+>  * `write(text, level?)` routes by level to the process streams and uses construction-time styled
+>  * facts: it sends ANSI straight to a styled target (with a leading `\r` overwriting a terminal
+>  * line natively) but {@link import('@orkestrel/console').strip}s ANSI to clean text for a plain target.
+35c34
+<  * @returns A {@link ServerSinkInterface} — a {@link import('@src/core').SinkInterface} that also
+---
+>  * @returns A {@link ServerSinkInterface} — a {@link import('@orkestrel/console').SinkInterface} that also
+42c41
+<  *   {@link import('@src/core').selectWriter} leaf, which is what keeps them identical.
+---
+>  *   {@link import('@orkestrel/console').selectWriter} leaf, which is what keeps them identical.
+58c57
+<  * @example
+---
+>  * @example The server — a TTY sink and a process capture
+61c60,70
+<  * import { createServerSink } from '@orkestrel/console/server'
+---
+>  * import { createServerSink, ProcessCapture } from '@orkestrel/console/server'
+>  *
+>  * const sink = createServerSink() // FORCE_COLOR, then NO_COLOR, then isTTY — per target, at construction
+>  * const styler = createStyler({ enabled: sink.styled }) // keep generated ANSI paired with the sink's stdout stripping
+>  * const logger = new Logger({ name: 'server', sink, styler })
+>  * logger.error('boom') // → process.stderr (the error stream)
+>  * const reporter = new Reporter({ sink, width: sink.columns }) // size the layout to the live terminal
+>  *
+>  * // `styled` overrides the inference outright — for a CI log that renders ANSI off a TTY, say.
+>  * const forced = createServerSink({ styled: true })
+>  * forced.styled // true, whatever the environment and the streams say
+63,67c72,79
+<  * const sink = createServerSink()
+<  * const styler = createStyler({ enabled: sink.styled })
+<  * const logger = new Logger({ name: 'app', sink, styler })
+<  * logger.error('boom') // → process.stderr, ANSI rendered on a TTY / stripped to a pipe
+<  * const reporter = new Reporter({ sink, width: sink.columns })
+---
+>  * // Own every output path — a direct process.stdout.write, library output, child-process pipes:
+>  * const capture = new ProcessCapture({ levels: ['stderr'], mirror: true })
+>  * capture.start()
+>  * process.stderr.write('a library diagnostic\n') // captured and still shown (mirror: true)
+>  * capture.messages('stderr') // [{ level: 'stderr', text: 'a library diagnostic\n', time: … }]
+>  * capture.clear() // drop buffered chunks; interception is unaffected
+>  * capture.stop()
+>  * capture.destroy() // stop() then tear down the emitter
+106,107c118,119
+<  * {@link import('./types.js').ServerSinkInterface.columns} when the `stdout` stream is not a TTY (so
+<  * `.columns` is `undefined`) and no explicit `options.columns` was supplied — the conventional
+---
+>  * {@link import('./types.js').ServerSinkInterface.columns} when the `stdout` stream is not a TTY
+>  * (so `.columns` is `undefined`) and no explicit `options.columns` was supplied — the conventional
+113,116c125,132
+<  * Sets the default bounded-buffer cap for a {@link import('./types.js').ProcessCaptureInterface} — at
+<  * most this many recent {@link import('./types.js').CapturedChunk}s are retained per buffer (the
+<  * total buffer and each per-stream bucket; oldest dropped first). Mirrors the core `Capture`'s
+<  * `DEFAULT_CAPTURE_LIMIT`; a consumer overrides it through `options.limit`.
+---
+>  * Sets the default bounded-buffer cap for a {@link import('./types.js').ProcessCaptureInterface} —
+>  * `1000`, so at most that many recent {@link import('./types.js').CapturedChunk}s are retained per
+>  * buffer (the total buffer and each per-stream bucket; oldest dropped first) and retention is
+>  * always bounded.
+>  *
+>  * @remarks
+>  * It mirrors the core `Capture`'s `DEFAULT_CAPTURE_LIMIT`; a consumer overrides the cap through
+>  * `options.limit`.
+121,123c137,140
+<  * Infers the width in character cells of a stream target — its live `columns` when it is a TTY, else
+<  * the non-interactive {@link DEFAULT_COLUMNS} fallback. The basis a {@link import('./types.js').ServerSinkInterface}
+<  * reports through `columns` so a `Reporter` / `Progress` can size its layout to the terminal.
+---
+>  * Infers the width in character cells of a stream target — its live `columns` when it is a TTY,
+>  * else the non-interactive {@link DEFAULT_COLUMNS} fallback. The basis a
+>  * {@link import('./types.js').ServerSinkInterface} reports through `columns` so a `Reporter` /
+>  * `Progress` can size its layout to the terminal.
+136,138c153,154
+<  * Infers whether one stream target receives styled output. The result is a construction-time
+<  * target fact for {@link import('./factories.js').createServerSink}; this helper is pure and never
+<  * reads process globals itself.
+---
+>  * Infers whether one stream target receives styled output — a present `FORCE_COLOR` first, then a
+>  * non-empty `NO_COLOR`, then `target.isTTY === true`.
+141,143c157,160
+<  * A present `FORCE_COLOR` key has first precedence: only the exact value `'0'` disables styling.
+<  * Next, a non-empty `NO_COLOR` disables styling. Otherwise styling follows
+<  * `target.isTTY === true`.
+---
+>  * The result is a construction-time target fact for
+>  * {@link import('./factories.js').createServerSink}; this helper is pure and
+>  * never reads process globals itself. Under `FORCE_COLOR` only the exact value `'0'` disables
+>  * styling.
+158,160c175,177
+<  * Checks whether `encoding` is a {@link BufferEncoding} accepted by `Buffer.prototype.toString` — a total
+<  * guard used by {@link import('./helpers.js').decodeChunk} to honor a process-write `encoding`
+<  * argument only when it is a real Node encoding (otherwise utf-8 is assumed).
+---
+>  * Checks whether `encoding` is a {@link BufferEncoding} accepted by `Buffer.prototype.toString` — a
+>  * total guard used by {@link import('./helpers.js').decodeChunk} to honor a process-write
+>  * `encoding` argument only when it is a real Node encoding (otherwise utf-8 is assumed).
+253,254c270,271
+<  * Declares the observable events a {@link ProcessCaptureInterface} emits — mirrors the core
+<  * `Capture`'s `CaptureEventMap`, but the captured record is a {@link CapturedChunk} (stream-keyed).
+---
+>  * Declares the observable events a {@link ProcessCaptureInterface} emits — `capture(chunk)` per
+>  * intercepted write, plus the `start` and `stop` signals.
+256a274,276
+>  * The map mirrors the core `Capture`'s `CaptureEventMap`, and the captured record is a
+>  * {@link CapturedChunk} (stream-keyed).
+>  *
+278,282c298,300
+<  * Declares an observable interceptor of the raw process output streams — the server's
+<  * "own all output" capture. Where the core `Capture` patches `console.*` (the high-level read
+<  * side), this patches `process.stdout.write` / `process.stderr.write` (the low-level stream), so it
+<  * catches direct `process.stdout.write`, third-party library output, and child-process pipes —
+<  * everything that reaches the streams, not only `console.*`.
+---
+>  * Declares an observable interceptor of the raw process output streams — the server's "own all
+>  * output" capture, patching `process.stdout.write` / `process.stderr.write` on the low-level
+>  * stream where the core `Capture` patches `console.*`.
+284a303,305
+>  * Patching the stream catches a direct `process.stdout.write`, third-party library output, and
+>  * child-process pipes — everything that reaches the streams, not only `console.*`.
+>  *
+310c331,334
+<     /** Returns a copy of the full captured buffer, oldest first (capped at `limit`). */
+---
+>     /**
+>      * Returns a copy of the full captured buffer, oldest first (capped at `limit`), or — given a
+>      * {@link StreamLevel} — a copy of only that stream's bucket.
+>      */
+321,323c345,348
+<  * Holds the options for the {@link import('./ProcessCapture.js').ProcessCapture} constructor — every
+<  * field optional, so a bare `new ProcessCapture()` buffers both streams without mirroring or
+<  * forwarding.
+---
+>  * Holds the options for the {@link import('./ProcessCapture.js').ProcessCapture} constructor — the
+>  * `on` / `error` emitter keys, the `levels` intercepted, the `mirror` pass-through, the `sink`
+>  * forward, and the buffer `limit`. Every field is optional, so a bare `new ProcessCapture()`
+>  * buffers both streams without mirroring or forwarding.
+335c360
+<  *   (`sink.write(text, level)` with the {@link StreamLevel} mapped to a {@link import('@src/core').LogLevel} through
+---
+>  *   (`sink.write(text, level)` with the {@link StreamLevel} mapped to a {@link import('@orkestrel/console').LogLevel} through
+351,355c376,378
+<  * Declares a {@link SinkInterface} that also exposes the target terminal's {@link columns} width — the shape
+<  * {@link import('./factories.js').createServerSink} returns. It is a drop-in {@link SinkInterface}
+<  * (so a `Logger` / `Reporter` / `Spinner` / `Progress` takes it as `sink`) whose extra `columns`
+<  * getter lets a consumer size a `Reporter`'s layout to the live terminal. Its `styled` fact lets
+<  * the same consumer enable or disable its styler for the `stdout` target.
+---
+>  * Declares a {@link SinkInterface} that also exposes the `stdout` target's construction-time
+>  * `styled` fact and the terminal's live or fixed {@link columns} width — the shape
+>  * {@link import('./factories.js').createServerSink} returns.
+357a381,385
+>  * It is a drop-in {@link SinkInterface} (so a `Logger` / `Reporter` / `Spinner` / `Progress`
+>  * takes it as `sink`) whose extra `columns` getter lets a consumer size a `Reporter`'s layout to
+>  * the live terminal, and whose `styled` fact lets the same consumer enable or disable its styler
+>  * for the `stdout` target.
+>  *
+369,370c397,400
+<  * Holds the options for {@link import('./factories.js').createServerSink} — all optional, so a bare
+<  * `createServerSink()` writes to the real process streams.
+---
+>  * Holds the options for {@link import('./factories.js').createServerSink} — the `stdout` and
+>  * `stderr` targets, the `styled` override, the `environment` inference reads, and an explicit
+>  * `columns` width. All are optional, so a bare `createServerSink()` writes to the real process
+>  * streams.
+394,399c424,429
+<  * Maps each {@link StreamLevel} to its {@link LogLevel} for the optional sink forward — the projection a
+<  * process capture routes through when writing an intercepted chunk to a
+<  * {@link import('@src/core').SinkInterface}
+<  * (`sink.write(text, STREAM_LEVEL_MAP[level])`). `stderr` is conventionally the error/diagnostic
+<  * stream → `error`; `stdout` is the normal output stream → `info`. The source of truth for the
+<  * stream-to-log projection (the server analogue of the core `CAPTURE_LEVEL_MAP`).
+---
+>  * Maps each {@link StreamLevel} to its {@link LogLevel} for the optional sink forward — the
+>  * projection a process capture routes through when writing an intercepted chunk to a
+>  * {@link import('@orkestrel/console').SinkInterface}. `sink.write(text, STREAM_LEVEL_MAP[level])` is the
+>  * call this map backs. `stderr` is conventionally the error/diagnostic stream → `error`; `stdout`
+>  * is the normal output stream → `info`. The source of truth for the stream-to-log projection (the
+>  * server analogue of the core `CAPTURE_LEVEL_MAP`).
+404,405c434,436
+<  * Lists the two process streams a {@link import('./types.js').ProcessCaptureInterface} can intercept, in
+<  * `stdout`-then-`stderr` order — the {@link StreamLevel} universe and the default configured set.
+---
+>  * Lists the process streams a {@link import('./types.js').ProcessCaptureInterface} can intercept,
+>  * in `stdout`-then-`stderr` order — the {@link StreamLevel} universe and the default configured
+>  * set.
+410,411c441,443
+<  * Names which process stream a {@link CapturedChunk} came from — the "level" axis of the process-stream
+<  * {@link ProcessCaptureInterface}, the server analogue of the core `Capture`'s `CaptureLevel`.
+---
+>  * Names which process stream a {@link CapturedChunk} came from — `stdout` or `stderr`, the
+>  * "level" axis of the process-stream {@link ProcessCaptureInterface} and the server analogue of
+>  * the core `Capture`'s `CaptureLevel`.
+414c446
+<  * distinct from {@link import('@src/core').LogLevel}: a `StreamLevel` names the originating process stream
+---
+>  * distinct from {@link import('@orkestrel/console').LogLevel}: a `StreamLevel` names the originating process stream
+416c448
+<  * {@link import('./constants.js').STREAM_LEVEL_MAP} to a {@link import('@src/core').LogLevel} for the optional sink
+---
+>  * {@link import('./constants.js').STREAM_LEVEL_MAP} to a {@link import('@orkestrel/console').LogLevel} for the optional sink
+422,427c454,455
+<  * Declares the minimal writable-stream shape the server sink and process capture address — exactly the
+<  * slice of a Node `tty.WriteStream` / `process.stdout` they touch, and no more. A
+<  * {@link ServerSinkOptions} target and a {@link ProcessCaptureInterface}'s patched streams are
+<  * narrowed to this through {@link import('./validators.js').isStreamTarget} (narrow the
+<  * boundary, never `as`), so a test can drive either with a hand-built fake stream that never
+<  * touches the real `process` streams.
+---
+>  * Declares the minimal writable-stream shape the server sink and process capture address — exactly
+>  * the slice of a Node `tty.WriteStream` / `process.stdout` they touch and no more.
+429a458,462
+>  * A {@link ServerSinkOptions} target and a {@link ProcessCaptureInterface}'s patched streams are
+>  * narrowed to this through {@link import('./validators.js').isStreamTarget} (narrow the boundary,
+>  * never `as`), so a test can
+>  * drive either with a hand-built fake stream that never touches the real `process` streams.
+>  *
+435c468
+<  *   construction to decide whether to keep ANSI or {@link import('@src/core').strip} it to clean
+---
+>  *   construction to decide whether to keep ANSI or {@link import('@orkestrel/console').strip} it to clean
+448,449c481,483
+<  * Names the completion callback `process.*.write` accepts as its last argument — the Node `write`
+<  * callback shape, and the {@link StreamWriteFunction} companion.
+---
+>  * Names the completion callback `process.*.write` accepts as its last argument —
+>  * `(error?) => void`, the Node `write` callback shape and the {@link StreamWriteFunction}
+>  * companion.
+458,459c492,494
+<  * Names the process-stream `write` method a {@link ProcessCaptureInterface} snapshots and swaps at
+<  * the patch boundary — the write-side analogue of {@link import('@src/core').ConsoleMethod}.
+---
+>  * Names the process-stream `write` method a {@link ProcessCaptureInterface} snapshots and swaps
+>  * at the patch boundary — `NodeJS.WriteStream['write']` verbatim, the write-side analogue of
+>  * {@link import('@orkestrel/console').ConsoleMethod}.
+462c497
+<  * It is taken verbatim as `NodeJS.WriteStream['write']`, the overloaded
+---
+>  * The type is the overloaded
+diff -r -w -B '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-console-following-final-pack/baseline/package/dist/src/server/index.js /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-console-following-final-pack/extract/package/dist/src/server/index.js
+6,7c6,8
+< * Lists the two process streams a {@link import('./types.js').ProcessCaptureInterface} can intercept, in
+< * `stdout`-then-`stderr` order — the {@link StreamLevel} universe and the default configured set.
+---
+> * Lists the process streams a {@link import('./types.js').ProcessCaptureInterface} can intercept,
+> * in `stdout`-then-`stderr` order — the {@link StreamLevel} universe and the default configured
+> * set.
+11,14c12,19
+< * Sets the default bounded-buffer cap for a {@link import('./types.js').ProcessCaptureInterface} — at
+< * most this many recent {@link import('./types.js').CapturedChunk}s are retained per buffer (the
+< * total buffer and each per-stream bucket; oldest dropped first). Mirrors the core `Capture`'s
+< * `DEFAULT_CAPTURE_LIMIT`; a consumer overrides it through `options.limit`.
+---
+> * Sets the default bounded-buffer cap for a {@link import('./types.js').ProcessCaptureInterface} —
+> * `1000`, so at most that many recent {@link import('./types.js').CapturedChunk}s are retained per
+> * buffer (the total buffer and each per-stream bucket; oldest dropped first) and retention is
+> * always bounded.
+> *
+> * @remarks
+> * It mirrors the core `Capture`'s `DEFAULT_CAPTURE_LIMIT`; a consumer overrides the cap through
+> * `options.limit`.
+19,20c24,25
+< * {@link import('./types.js').ServerSinkInterface.columns} when the `stdout` stream is not a TTY (so
+< * `.columns` is `undefined`) and no explicit `options.columns` was supplied — the conventional
+---
+> * {@link import('./types.js').ServerSinkInterface.columns} when the `stdout` stream is not a TTY
+> * (so `.columns` is `undefined`) and no explicit `options.columns` was supplied — the conventional
+25,30c30,35
+< * Maps each {@link StreamLevel} to its {@link LogLevel} for the optional sink forward — the projection a
+< * process capture routes through when writing an intercepted chunk to a
+< * {@link import('@src/core').SinkInterface}
+< * (`sink.write(text, STREAM_LEVEL_MAP[level])`). `stderr` is conventionally the error/diagnostic
+< * stream → `error`; `stdout` is the normal output stream → `info`. The source of truth for the
+< * stream-to-log projection (the server analogue of the core `CAPTURE_LEVEL_MAP`).
+---
+> * Maps each {@link StreamLevel} to its {@link LogLevel} for the optional sink forward — the
+> * projection a process capture routes through when writing an intercepted chunk to a
+> * {@link import('@src/core').SinkInterface}. `sink.write(text, STREAM_LEVEL_MAP[level])` is the
+> * call this map backs. `stderr` is conventionally the error/diagnostic stream → `error`; `stdout`
+> * is the normal output stream → `info`. The source of truth for the stream-to-log projection (the
+> * server analogue of the core `CAPTURE_LEVEL_MAP`).
+63,65c68,70
+< * Checks whether `encoding` is a {@link BufferEncoding} accepted by `Buffer.prototype.toString` — a total
+< * guard used by {@link import('./helpers.js').decodeChunk} to honor a process-write `encoding`
+< * argument only when it is a real Node encoding (otherwise utf-8 is assumed).
+---
+> * Checks whether `encoding` is a {@link BufferEncoding} accepted by `Buffer.prototype.toString` — a
+> * total guard used by {@link import('./helpers.js').decodeChunk} to honor a process-write
+> * `encoding` argument only when it is a real Node encoding (otherwise utf-8 is assumed).
+76,78c81,84
+< * Infers the width in character cells of a stream target — its live `columns` when it is a TTY, else
+< * the non-interactive {@link DEFAULT_COLUMNS} fallback. The basis a {@link import('./types.js').ServerSinkInterface}
+< * reports through `columns` so a `Reporter` / `Progress` can size its layout to the terminal.
+---
+> * Infers the width in character cells of a stream target — its live `columns` when it is a TTY,
+> * else the non-interactive {@link DEFAULT_COLUMNS} fallback. The basis a
+> * {@link import('./types.js').ServerSinkInterface} reports through `columns` so a `Reporter` /
+> * `Progress` can size its layout to the terminal.
+94,96c100,101
+< * Infers whether one stream target receives styled output. The result is a construction-time
+< * target fact for {@link import('./factories.js').createServerSink}; this helper is pure and never
+< * reads process globals itself.
+---
+> * Infers whether one stream target receives styled output — a present `FORCE_COLOR` first, then a
+> * non-empty `NO_COLOR`, then `target.isTTY === true`.
+99,101c104,107
+< * A present `FORCE_COLOR` key has first precedence: only the exact value `'0'` disables styling.
+< * Next, a non-empty `NO_COLOR` disables styling. Otherwise styling follows
+< * `target.isTTY === true`.
+---
+> * The result is a construction-time target fact for
+> * {@link import('./factories.js').createServerSink}; this helper is pure and
+> * never reads process globals itself. Under `FORCE_COLOR` only the exact value `'0'` disables
+> * styling.
+317,321c323,326
+< * Creates the server TTY {@link ServerSinkInterface} — the server output backend, the
+< * env-symmetric sibling of `createBrowserSink` / core's `createConsoleSink`. `write(text, level?)`
+< * routes by level to the process streams and uses construction-time styled facts: it sends ANSI
+< * straight to a styled target (with a leading `\r` overwriting a terminal line natively) but
+< * {@link import('@src/core').strip}s ANSI to clean text for a plain target.
+---
+> * Creates the server TTY {@link ServerSinkInterface} — the server output backend, whose
+> * `write(text, level?)` routes by level to the process streams and uses construction-time styled
+> * facts: it sends ANSI straight to a styled target (with a leading `\r` overwriting a terminal
+> * line natively) but {@link import('@src/core').strip}s ANSI to clean text for a plain target.
+347c352
+< * @example
+---
+> * @example The server — a TTY sink and a process capture
+350c355,365
+< * import { createServerSink } from '@orkestrel/console/server'
+---
+> * import { createServerSink, ProcessCapture } from '@orkestrel/console/server'
+> *
+> * const sink = createServerSink() // FORCE_COLOR, then NO_COLOR, then isTTY — per target, at construction
+> * const styler = createStyler({ enabled: sink.styled }) // keep generated ANSI paired with the sink's stdout stripping
+> * const logger = new Logger({ name: 'server', sink, styler })
+> * logger.error('boom') // → process.stderr (the error stream)
+> * const reporter = new Reporter({ sink, width: sink.columns }) // size the layout to the live terminal
+> *
+> * // `styled` overrides the inference outright — for a CI log that renders ANSI off a TTY, say.
+> * const forced = createServerSink({ styled: true })
+> * forced.styled // true, whatever the environment and the streams say
+352,356c367,374
+< * const sink = createServerSink()
+< * const styler = createStyler({ enabled: sink.styled })
+< * const logger = new Logger({ name: 'app', sink, styler })
+< * logger.error('boom') // → process.stderr, ANSI rendered on a TTY / stripped to a pipe
+< * const reporter = new Reporter({ sink, width: sink.columns })
+---
+> * // Own every output path — a direct process.stdout.write, library output, child-process pipes:
+> * const capture = new ProcessCapture({ levels: ['stderr'], mirror: true })
+> * capture.start()
+> * process.stderr.write('a library diagnostic\n') // captured and still shown (mirror: true)
+> * capture.messages('stderr') // [{ level: 'stderr', text: 'a library diagnostic\n', time: … }]
+> * capture.clear() // drop buffered chunks; interception is unaffected
+> * capture.stop()
+> * capture.destroy() // stop() then tear down the emitter

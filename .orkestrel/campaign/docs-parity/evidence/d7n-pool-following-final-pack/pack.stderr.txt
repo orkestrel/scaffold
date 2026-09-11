@@ -1,0 +1,22 @@
+npm notice
+npm notice 📦  @orkestrel/pool@0.0.11
+npm notice Tarball Contents
+npm notice 1.1kB LICENSE
+npm notice 1.4kB README.md
+npm notice 20.0kB dist/src/core/index.cjs
+npm notice 35.4kB dist/src/core/index.cjs.map
+npm notice 16.5kB dist/src/core/index.d.cts
+npm notice 16.5kB dist/src/core/index.d.ts
+npm notice 19.8kB dist/src/core/index.js
+npm notice 35.4kB dist/src/core/index.js.map
+npm notice 3.7kB package.json
+npm notice Tarball Details
+npm notice name: @orkestrel/pool
+npm notice version: 0.0.11
+npm notice filename: orkestrel-pool-0.0.11.tgz
+npm notice package size: 29.7 kB
+npm notice unpacked size: 149.9 kB
+npm notice shasum: 44813eafa24474c269b673832bf6137c2d96d68a
+npm notice integrity: sha512-ZmgrTweyjL2Sq[...]9FzSEIszpd3BA==
+npm notice total files: 9
+npm notice

@@ -1,0 +1,31 @@
+npm notice
+npm notice 📦  @orkestrel/console@0.0.13
+npm notice Tarball Contents
+npm notice 1.1kB LICENSE
+npm notice 3.3kB README.md
+npm notice 13.0kB dist/src/browser/index.d.ts
+npm notice 12.6kB dist/src/browser/index.js
+npm notice 19.7kB dist/src/browser/index.js.map
+npm notice 88.5kB dist/src/core/index.cjs
+npm notice 145.1kB dist/src/core/index.cjs.map
+npm notice 129.1kB dist/src/core/index.d.cts
+npm notice 129.1kB dist/src/core/index.d.ts
+npm notice 86.7kB dist/src/core/index.js
+npm notice 145.1kB dist/src/core/index.js.map
+npm notice 19.6kB dist/src/server/index.cjs
+npm notice 35.3kB dist/src/server/index.cjs.map
+npm notice 28.8kB dist/src/server/index.d.cts
+npm notice 28.8kB dist/src/server/index.d.ts
+npm notice 19.1kB dist/src/server/index.js
+npm notice 35.2kB dist/src/server/index.js.map
+npm notice 4.9kB package.json
+npm notice Tarball Details
+npm notice name: @orkestrel/console
+npm notice version: 0.0.13
+npm notice filename: orkestrel-console-0.0.13.tgz
+npm notice package size: 271.2 kB
+npm notice unpacked size: 944.8 kB
+npm notice shasum: 32743ae113ba37d345f67d139fd2d0235f5c1abb
+npm notice integrity: sha512-rHLUbmBvcQ1WF[...]d57BfuxfzNLRw==
+npm notice total files: 18
+npm notice

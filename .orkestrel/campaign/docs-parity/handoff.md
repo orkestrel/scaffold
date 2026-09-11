@@ -23,17 +23,17 @@ for these packages. Keep prompt.txt unchanged until this layer is prepared.
 
 | Package | Pending version | Current preparation |
 | --- | --- | --- |
-| console | 0.0.13 | source accepted and committed at 5bb1acf; final dependency preparation and main closure pending |
-| database | 0.0.14 | native entry green with accepted Probe overlay; portable setup assertions corrected; compiler-backed consumer preservation underway |
-| form | 0.0.6 | full source prepublish green; remove predecessor-absent declaration policy before acceptance |
+| console | 0.0.13 | prepared at ed57bc7; final prepublish/pack accepted; campaign/main pushed; clean canonical main; unpublished |
+| database | 0.0.14 | source accepted and committed at a5aeb2a; compiler-backed consumer and portable assertions green; final preparation pending |
+| form | 0.0.6 | corrected source accepted and committed at d445e4f; final preparation pending |
 | markdown | 0.0.14 | native helper extraction and type-import correction green; full source prepublish green; review pending |
 | pool | 0.0.11 | source accepted and committed at 65d57a0; final dependency preparation and main closure pending |
-| process | 0.0.11 | native source and full source prepublish green; review pending |
-| reason | 0.0.10 | native source and full source prepublish green; review pending |
-| router | 0.0.14 | native source and full source prepublish green; review pending |
-| table | 0.0.5 | accepted tooling and supported repair applied; native adoption pending |
-| template | 0.0.7 | accepted tooling and supported repair applied; native adoption pending |
-| websocket | 0.0.12 | accepted tooling and supported repair applied; native adoption pending |
+| process | 0.0.11 | source accepted and committed at a2498ee; final preparation pending |
+| reason | 0.0.10 | source accepted and committed at 4226c32; final preparation pending |
+| router | 0.0.14 | declaration-policy correction and full source prepublish green; successor review pending |
+| table | 0.0.5 | native entry and full source prepublish green; review pending |
+| template | 0.0.7 | native entry green; full source prepublish and review underway |
+| websocket | 0.0.12 | native entry green; full source prepublish and review pending |
 
 The next-layer plan is d7n-next-layer-plan.md. Fresh origin/main readings require
 no merges for its selected packages. Accepted tooling is installed throughout
