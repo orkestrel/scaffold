@@ -8,7 +8,9 @@ Written 2026-09-08T03:35Z and revised 2026-09-08T04:05Z at the owner's request, 
 
 Use this table for the active release layer. Later preparation narratives and the
 original campaign table are historical; their open states do not override this table.
-The Guide-only root prompt.txt is consumed. Replace it only when this layer is ready.
+The layer is prepared. Root prompt.txt now names its serial PowerShell uploads;
+the consumed Guide command is replaced. Read d7n-upper-layer-prepared.md.
+Operator-line review passed. The reviewed Scaffold operator commit remains pending.
 
 | Package | Pending version | Current preparation state |
 | --- | --- | --- |
