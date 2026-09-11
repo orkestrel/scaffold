@@ -13,13 +13,13 @@ currently names that consumed command; publish.txt is staged for deletion.
 
 The owner completed the next-layer uploads. Fresh registry downloads, their
 digests and gitHead match the accepted archives and canonical main tips. Read
-d7n-next-registry-closure.md. Root preserves the staged deletion of publish.txt;
-prompt.txt names already-published versions until the following layer closes.
-Following-layer registry and canonical readings are under
-tmp/pass/d7n-following-layer-reading. Accepted tooling is installed throughout
-the selected layer. Native source acceptance and release visits are underway.
+d7n-next-registry-closure.md. The following layer is now prepared and pushed,
+with clean canonical main checkouts and successful post-closure output/ref
+confirmation. Read d7n-following-layer-prepared.md. Root prompt.txt now names
+that unpublished layer and its parser-only check passed. Final operator review
+and commit are pending; the existing staged publish.txt deletion will be included.
 The current preparation table supersedes the historical closing-sweep table
-for these packages. Keep prompt.txt unchanged until this layer is prepared.
+for these packages. The owner uploads; root has not authenticated or published.
 
 | Package | Pending version | Current preparation |
 | --- | --- | --- |
