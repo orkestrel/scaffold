@@ -8,7 +8,12 @@ Written 2026-09-08T03:35Z and revised 2026-09-08T04:05Z at the owner's request, 
 
 Use this table for the active release layer. Later preparation narratives and the
 original campaign table are historical; their open states do not override this table.
-The Guide-only root prompt.txt is consumed. Replace it only when this layer is ready.
+The layer is prepared. Root prompt.txt now names its serial PowerShell uploads;
+the consumed Guide command is replaced. Read d7n-upper-layer-prepared.md.
+Operator-line review passed. The reviewed Scaffold operator handoff landed at
+41703d71a345b9e7a1acdf8280b339916e470a19 and is pushed to main, campaign and designated
+origin refs. Post-commit artifact/ref confirmation passed. Read
+d7n-upper-upload-handoff-landing.md. Owner publication remains pending.
 
 | Package | Pending version | Current preparation state |
 | --- | --- | --- |
