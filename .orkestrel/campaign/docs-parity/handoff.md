@@ -34,7 +34,7 @@ in this file are not release-preparation status.
 | indexeddb | 0.0.11 | cb179f6 | prepared; campaign/main pushed; clean local main |
 | ndjson | 0.0.10 | a35c40c | prepared; campaign/main pushed; clean local main |
 | sqlite | 0.0.11 | f2ffc0a | prepared; campaign/main pushed; clean local main |
-| timeout | 0.0.10 | b035b0e | packed; final review and main closure pending |
+| timeout | 0.0.10 | a058b1f | prepared; campaign/main pushed; clean local main |
 | tool | 0.0.14 | bf89501 | standalone gates passed; recovery pack pending |
 
 The initial publish layer is prepared under the owner's narrowed scope in
