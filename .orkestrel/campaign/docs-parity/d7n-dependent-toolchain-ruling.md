@@ -13,6 +13,15 @@ where the target declares them. Verify their final ranges against fresh public
 registry evidence and record before and after values. Preserve each section and
 key; do not add a dependency or widen ownership to package-specific extras.
 
+Keep the supported major fixed. Scaffold's guide requires this boundary under
+Dependency floors: overwrite raises the floor inside the declared major and
+reports a newer major as a non-blocking owner question. The stopped audit records
+that question for TypeScript and Vitest. Do not turn it into an automatic major
+upgrade or require equality with npm's unqualified latest tag. Observe the newest
+stable release inside the existing major through Scaffold's published Upstream
+lookup and compare the generated floor to that range-aware result. Preserve the
+major observation as evidence, not as permission to cross it.
+
 Preserve MCP's conformance range exactly. Preserve optional peer metadata and
 every reviewed runtime/peer/development Orkestrel pin. The final registry install,
 prepublish and actual-pack comparison must use the updated toolchain. A moved

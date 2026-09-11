@@ -60,11 +60,16 @@ dispatch refusal. Retain every return before any source landing.
 Program's final source correction is accepted, committed and campaign-pushed.
 Workflow's root comment delta passed its final prepublish and independent review;
 its accepted source is committed and campaign-pushed. Read the native source
-landing table and package source verdicts. MCP's guide/README correction returned
-and is awaiting root final gates and independent review. Its historical Summary-red
+landing table and package source verdicts. MCP's guide/README correction passed
+root closing-prepublish. Independent review found incomplete example introductions;
+root corrected those paragraphs and started final leadin-prepublish with independent
+delta review. Its historical Summary-red
 transcript remains unavailable; no receipt is reconstructed or inferred.
 
 Brief's registry visit stopped after supported overwrite/audit and final install
 because the carrier rejected Scaffold-owned toolchain updates. The preparation
 commit is campaign-pushed. Preserve that stopped state and use the recovery
-successor under d7n-dependent-toolchain-ruling.md. No release readiness is claimed.
+successor under d7n-dependent-toolchain-ruling.md. The recovery review exposed an
+unqualified-latest check that conflicts with Scaffold's supported-major contract.
+The supported-major successor is being implemented; no Brief mutation has replayed.
+No release readiness is claimed.
