@@ -31,9 +31,10 @@ Middleware0.0.20 is closed on clean canonical main at
 af01ea39388c05da52fb954476cac0ba423a5f23 with campaign/main pushed. MCP0.0.29 is
 closed on clean canonical main at 45ba0a4b5741a79f32500479de9549c0e6a17839 with
 campaign/main pushed. Program0.0.13 is closed on clean canonical main at
-f474b0aa1e8ab0565c8fe0f818ec816e7c5052cb with campaign/main pushed. Worker's final
-visit/gates/pack and release review passed; closure is next. Workflow's final
-visit/gates/pack passed and release review is active. Read
+f474b0aa1e8ab0565c8fe0f818ec816e7c5052cb with campaign/main pushed. Worker0.0.12 is
+closed on clean canonical main at 4df117583143117a21b23246b27b6addd42ef0b9 with
+campaign/main pushed. Workflow's final visit/gates/pack and release reviews passed;
+accepted closure is next. Read
 d7n-dependent-registry-preparation-state.md. Their source corrections
 are accepted, committed and campaign-pushed. Read the source landing table and
 package verdicts for exact gate bindings and preserved evidence limitations. Read
