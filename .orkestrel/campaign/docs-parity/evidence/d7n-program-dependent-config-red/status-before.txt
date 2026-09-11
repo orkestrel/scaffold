@@ -1,0 +1,7 @@
+ M README.md
+ M guides/program.md
+ M src/core/helpers.ts
+ M src/core/programs/Program.ts
+ M src/core/programs/ProgramManager.ts
+ M src/core/types.ts
+ M tests/guides.test.ts

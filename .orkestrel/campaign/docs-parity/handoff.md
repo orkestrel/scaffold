@@ -14,7 +14,10 @@ are recorded. Native migrations and retained MCP/Program/Workflow docs fixes are
 in progress. Brief, Middleware and Worker returned native entries and passed root
 preparation prepublishOnly after supported policy repair. Their source review is
 pending. Read d7n-dependent-native-preparation-state.md. No package in this layer
-is ready for upload yet.
+is ready for upload yet. Program has since returned its docs/native correction and
+passed root preparation prepublishOnly. MCP and Workflow remain active. Review and
+builder dispatches are waiting on a harness thread-capacity refusal; no required
+lane is being treated as passed.
 
 The Opus writer returned a fresh weekly-quota failure. The root journal records
 session dd5e5af9-8abf-4404-a1a4-26582f1982a2. Use the prescribed Sol writer fallback,
