@@ -1,0 +1,136 @@
+Checking formatting...
+
+All matched files use the correct format.
+Finished in 1897ms on 127 files using 16 threads.
+vite v8.2.2 building client environment for production...
+transforming...
+✓ 21 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/core/index.js  293.43 kB │ gzip: 73.38 kB │ map: 520.35 kB
+
+transforming...
+✓ 21 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/core/index.cjs  313.47 kB │ gzip: 74.69 kB │ map: 529.70 kB
+
+✓ built in 436ms
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+Copied: dist/src/core/index.d.ts to dist/src/core/index.d.cts
+vite v8.2.2 building client environment for production...
+transforming...
+✓ 7 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/browser/index.js  25.38 kB │ gzip: 7.78 kB │ map: 38.22 kB
+
+✓ built in 59ms
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+vite v8.2.2 building client environment for production...
+transforming...
+✓ 15 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/server/index.js  98.87 kB │ gzip: 29.65 kB │ map: 164.77 kB
+
+transforming...
+✓ 15 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/server/index.cjs  101.03 kB │ gzip: 29.85 kB │ map: 165.93 kB
+
+✓ built in 212ms
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+Copied: dist/src/server/index.d.ts to dist/src/server/index.d.cts
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/mcp
+
+··········································································································································································································································································································································································································································································································································································································································································································································································································································································································································································································································································································································································································································································································································································································
+
+ Test Files  32 passed (32)
+      Tests  1354 passed (1354)
+   Start at  18:12:20
+   Duration  36.82s (transform 13.47s, setup 16.36s, import 9.94s, tests 60.41s, environment 4ms)
+
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/mcp
+
+·················································································-·········
+
+ Test Files  1 passed (1)
+      Tests  90 passed | 1 skipped (91)
+   Start at  18:12:58
+   Duration  1.27s (transform 271ms, setup 452ms, import 93ms, tests 570ms, environment 0ms)
+
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/mcp
+
+··········································································································································································stdout | tests/config.test.ts > configuration helpers > rolls one face into a single declaration and rewrites its core specifier
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+
+·-stdout | tests/config.test.ts > configuration helpers > rolls one face into a single declaration and rewrites its core specifier
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+
+·
+
+ Test Files  1 passed (1)
+      Tests  172 passed | 1 skipped (173)
+   Start at  18:13:00
+   Duration  3.71s (transform 379ms, setup 437ms, import 793ms, tests 2.34s, environment 0ms)
+
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/mcp
+
+······················································································
+
+ Test Files  5 passed (5)
+      Tests  86 passed (86)
+   Start at  18:13:04
+   Duration  3.85s (transform 1.55s, setup 2.15s, import 1.75s, tests 3.59s, environment 1ms)
+
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/mcp
+
+···································································································································································
+
+ Test Files  1 passed (1)
+      Tests  163 passed (163)
+   Start at  18:13:09
+   Duration  2.93s (transform 335ms, setup 454ms, import 1.23s, tests 1.09s, environment 0ms)
+
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/mcp
+
+···············································
+
+ Test Files  1 passed (1)
+      Tests  47 passed (47)
+   Start at  18:13:13
+   Duration  10.00s (transform 327ms, setup 438ms, import 352ms, tests 9.06s, environment 0ms)
+
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/mcp
+
+····
+
+ Test Files  1 passed (1)
+      Tests  4 passed (4)
+   Start at  18:13:24
+   Duration  1.56s (transform 293ms, setup 396ms, import 380ms, tests 265ms, environment 0ms)
+
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/mcp
+
+········---···-
+
+ Test Files  1 passed (1)
+      Tests  11 passed | 4 skipped (15)
+   Start at  18:13:26
+   Duration  16.59s (transform 253ms, setup 438ms, import 3.66s, tests 12.34s, environment 0ms)
+
