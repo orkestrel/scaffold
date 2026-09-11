@@ -1,0 +1,1 @@
+warning: in the working copy of '.orkestrel/campaign/docs-parity/evidence/d7n-scaffold-upload-prompt-parse/parse.exit.txt', CRLF will be replaced by LF the next time Git touches it

@@ -7,6 +7,9 @@ Written 2026-09-08T03:35Z and revised 2026-09-08T04:05Z at the owner's request, 
 The owner requested an immediate upload handoff. Root prompt.txt targets Scaffold
 0.0.64 alone from its canonical WebstormProjects directory. Read
 d7n-scaffold-upload-handoff-verdict.md and d7n-scaffold-upper-release-landing.md.
+The reviewed command landed at 881a9df6 with equal main, campaign and designated
+origin refs, clean canonical main and unchanged packed output. Read
+evidence/d7n-scaffold-upload-handoff-final-close.
 The owner uploads; root has not authenticated or published. The remaining upper
 layer stays open under d7n-upper-layer-plan.md. Confirm Scaffold from the registry
 after the owner uploads, then continue Guide and runtime-package preparation.
