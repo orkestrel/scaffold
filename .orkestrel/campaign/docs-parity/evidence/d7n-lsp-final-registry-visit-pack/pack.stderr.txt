@@ -1,0 +1,28 @@
+npm notice
+npm notice 📦  @orkestrel/lsp@0.0.7
+npm notice Tarball Contents
+npm notice 1.1kB LICENSE
+npm notice 2.3kB README.md
+npm notice 55.9kB dist/src/core/index.cjs
+npm notice 89.5kB dist/src/core/index.cjs.map
+npm notice 45.2kB dist/src/core/index.d.cts
+npm notice 45.2kB dist/src/core/index.d.ts
+npm notice 52.3kB dist/src/core/index.js
+npm notice 88.1kB dist/src/core/index.js.map
+npm notice 9.5kB dist/src/server/index.cjs
+npm notice 17.8kB dist/src/server/index.cjs.map
+npm notice 8.9kB dist/src/server/index.d.cts
+npm notice 8.9kB dist/src/server/index.d.ts
+npm notice 9.3kB dist/src/server/index.js
+npm notice 17.7kB dist/src/server/index.js.map
+npm notice 4.7kB package.json
+npm notice Tarball Details
+npm notice name: @orkestrel/lsp
+npm notice version: 0.0.7
+npm notice filename: orkestrel-lsp-0.0.7.tgz
+npm notice package size: 102.2 kB
+npm notice unpacked size: 456.5 kB
+npm notice shasum: 3432fee1dfb26d77bb8818f2e3dad76e5cb9786c
+npm notice integrity: sha512-Q1mjTIh+M5OOB[...]zc5pSq416sS+g==
+npm notice total files: 15
+npm notice
