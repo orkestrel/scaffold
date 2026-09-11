@@ -57,4 +57,14 @@ documentation units. Program's execution-only review correction has returned wit
 a real mutable-label counterexample and passed root reviewed-prepublish. No lane
 result or engine substitution is inferred from a
 dispatch refusal. Retain every return before any source landing.
-No release readiness is claimed.
+Program's final source correction is accepted, committed and campaign-pushed.
+Workflow's root comment delta passed its final prepublish and independent review;
+its accepted source is committed and campaign-pushed. Read the native source
+landing table and package source verdicts. MCP's guide/README correction returned
+and is awaiting root final gates and independent review. Its historical Summary-red
+transcript remains unavailable; no receipt is reconstructed or inferred.
+
+Brief's registry visit stopped after supported overwrite/audit and final install
+because the carrier rejected Scaffold-owned toolchain updates. The preparation
+commit is campaign-pushed. Preserve that stopped state and use the recovery
+successor under d7n-dependent-toolchain-ruling.md. No release readiness is claimed.

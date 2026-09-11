@@ -20,9 +20,10 @@ accepted execution correction is also committed and pushed to that branch.
 Brief's registry visit stopped after supported overwrite/audit and final install
 because its carrier rejected Scaffold-owned toolchain updates. Its preparation
 commit is pushed; read d7n-dependent-toolchain-ruling.md. The bounded recovery
-carrier is being implemented. Middleware, Worker and Program await registry visits.
-Workflow's root comment correction is under its final gate and independent delta
-review. MCP's guide/README closing correction is active. Read
+carrier is being implemented. Middleware, Worker, Program and Workflow await registry
+visits. Workflow's source correction passed its final gate and independent delta
+review and is committed and pushed to the campaign branch. MCP's guide/README
+closing correction has returned for root gates and independent review. Read
 d7n-dependent-native-preparation-state.md. No package in this layer is ready for
 upload yet. Base source/registry carriers passed objective review; the toolchain
 recovery and final closure successors still need review. Harness capacity limits dispatch concurrency; no

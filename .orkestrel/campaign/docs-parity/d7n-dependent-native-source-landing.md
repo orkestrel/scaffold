@@ -10,11 +10,12 @@ the commit completed, the campaign push exited 0 and its remote ref equals HEAD.
 | Middleware | 76181988a96c44f7da99aee7d8feac35c189fe04 | d7n-middleware-dependent-comment-prepublish |
 | Worker | de67748ac1fd733687b05f52989f6e2788d65fdb | d7n-worker-dependent-comment-prepublish |
 | Program | a032314e610493073e1c91fd9fdc8b50f31de94b | d7n-program-dependent-reviewed-prepublish |
+| Workflow | 1a67d2bc01609ca7a6f8fbf058525a9b85ef77c0 | d7n-workflow-dependent-emphasis-prepublish |
 
 Read each dependent-source-verdict and dependent-source-commit evidence directory.
 Canonical checkouts remain on the campaign branch for final registry preparation.
 This is not a main closure or publication. Brief's final registry visit stopped
 after its successful overwrite/audit and install because the carrier rejected a
 supported toolchain update; read d7n-dependent-toolchain-ruling.md. Middleware,
-Worker and Program await their registry visits. Workflow and MCP source acceptance
+Worker, Program and Workflow await their registry visits. MCP source acceptance
 remains separate.

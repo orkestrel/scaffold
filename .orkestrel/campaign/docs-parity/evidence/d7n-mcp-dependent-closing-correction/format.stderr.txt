@@ -1,0 +1,2 @@
+npm notice run @orkestrel/mcp@0.0.29 npx
+npm notice run oxfmt --config .oxfmtrc.json --check README.md guides/mcp.md
