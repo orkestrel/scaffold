@@ -1,0 +1,15 @@
+Release preparation is blocked by a dangling maintainer instruction. The recorded build and artifact checks passed.
+
+- **METADATA — CONFIRMED.** LSP `0.0.7` exceeds the recorded registry `0.0.6`. The manifest, lockfile and installed-root receipt agree on runtime Contract `^0.0.17`, Emitter `^0.0.10`, Process `^0.0.11`, and development Guide `^0.0.18`, Scaffold `^0.0.64`, Test `^0.0.14`. Probe `^0.0.12` remains the declared development deferral. Dependency roles and peer/optional metadata did not disappear during this visit. Protocol remains locked and installed at `3.18.2`. The published baseline’s older runtime ranges justify the bump independently. The material comparison also returned `1`, including declaration-token changes beyond whitespace and sourcemaps.
+
+- **TOOLING — BROKEN.** [guides/lsp.md:308](C:/Users/mikes/WebstormProjects/lsp/guides/lsp.md:308) still instructs maintainers to run `scripts/metamodel.sh`. That path is deleted in the actual diff and absent on disk. This contradicts the explicit no-dangling-reference claim. The supported deletion itself is accepted; do not restore a target-owned exception. The smallest correction is to replace that instruction with the supported refresh procedure while preserving the mirror version/digest requirement, then bind the corrected state to the required receipts.
+
+  The remaining tooling claims are confirmed: online overwrite and audit returned `0`; final installed Guide and Scaffold distributions matched their registry-confirmed accepted archives; `test:guides` directly invokes the native entry; retired docs/guides launchers and `scripts.docs` are absent. Own-guide and native-test hashes remained unchanged throughout the recorded visit. Guide and Scaffold mirrors match canonical bytes.
+
+- **ARTIFACT — CONFIRMED for the recorded state.** Full `prepublishOnly` and actual pack returned `0`. Packed manifest bytes match canonical; complete distribution comparison returned `0`. The downloaded `0.0.6` baseline exists. The archive’s independently read SHA256 is `09335ae7bd72220582b421340330c3567ab637381b7c0aef5de9cad36422741e`. Manifest hashes agree across the gate, pack and current checkout. Existing generated-host skips were not introduced by this visit. Compiler and distribution warnings do not change the recorded exits.
+
+- **ROOT-CARRIER — CONFIRMED.** [prepare-lsp-registry.sh](C:/Users/mikes/WebstormProjects/scaffold/tmp/pass/prepare-lsp-registry.sh) checks unversioned registry readings, target identity, branch, starting HEAD, clean state, fresh labels and ancestry. It commits and pushes preparation before overwrite, then regenerates the lock and uses `npm ci`. Final installed-artifact, range and authored-byte checks are recorded. Final HEAD matches preparation commit `d2c5e0299e87aad1b08252b09fe9e243c4f1dbdb`. No upload appears in the execution chain.
+
+The publish and alignment workflows limited this review to release evidence and dependency/tooling closure. Accepted native/source scope remains closed. No mutation or gate ran during this review.
+
+VERDICT: FAIL

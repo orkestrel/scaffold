@@ -1,0 +1,436 @@
+diff -r '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-lsp-registry-docs-pack/baseline/package/dist/src/core/index.cjs /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-lsp-registry-docs-pack/extract/package/dist/src/core/index.cjs
+76c76
+< /** Names the default request-settlement timeout in milliseconds. */
+---
+> /** Names the default request-settlement timeout, `30_000` milliseconds. */
+78c78
+< /** Identifies a malformed JSON payload. */
+---
+> /** Identifies a malformed JSON payload, `-32700`. */
+80c80
+< /** Identifies a structurally invalid JSON-RPC request. */
+---
+> /** Identifies a structurally invalid JSON-RPC request, `-32600`. */
+82c82
+< /** Identifies a JSON-RPC method that the receiver does not provide. */
+---
+> /** Identifies a JSON-RPC method that the receiver does not provide, `-32601`. */
+84c84
+< /** Identifies invalid parameters supplied to a JSON-RPC method. */
+---
+> /** Identifies invalid parameters supplied to a JSON-RPC method, `-32602`. */
+86c86
+< /** Identifies an internal JSON-RPC receiver failure. */
+---
+> /** Identifies an internal JSON-RPC receiver failure, `-32603`. */
+88c88
+< /** Identifies a Language Server Protocol request cancelled by the client. */
+---
+> /** Identifies a Language Server Protocol request cancelled by the client, `-32800`. */
+90c90
+< /** Identifies a request invalidated by modified document content. */
+---
+> /** Identifies a request invalidated by modified document content, `-32801`. */
+92c92
+< /** Identifies a Language Server Protocol request cancelled by the server. */
+---
+> /** Identifies a Language Server Protocol request cancelled by the server, `-32802`. */
+94c94
+< /** Identifies a valid Language Server Protocol request that could not complete. */
+---
+> /** Identifies a valid Language Server Protocol request that could not complete, `-32803`. */
+787c787
+< * Waits for a deadline to elapse.
+---
+> * Waits for a deadline to elapse without holding the host event loop open.
+793,795c793,794
+< * The deadline is armed with `AbortSignal.timeout`, whose timer does not hold the host event loop
+< * open. A caller that wins its race against this promise therefore has nothing to clear, and the
+< * losing deadline delays no exit.
+---
+> * The deadline is armed with `AbortSignal.timeout`. A caller that wins its race against this
+> * promise has nothing to clear, and the losing deadline delays no exit.
+1454c1453
+< * @example
+---
+> * @example Create a client and inspect a document
+1456a1456,1457
+> * import { createLSPClient } from '@orkestrel/lsp'
+> * import { join } from 'node:path'
+1463a1465,1480
+> *
+> * const signal = AbortSignal.timeout(30_000)
+> * const uri = pathToFileURL(join(directory, 'main.ts')).href
+> *
+> * const diagnostics = await client.open(
+> * 	{
+> * 		uri,
+> * 		languageId: 'typescript',
+> * 		version: 1,
+> * 		text: 'const value = 1',
+> * 	},
+> * 	{ signal },
+> * )
+> * for (const diagnostic of diagnostics) console.log(diagnostic.message)
+> * await client.close(uri)
+> * await client.destroy()
+diff -r '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-lsp-registry-docs-pack/baseline/package/dist/src/core/index.d.cts /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-lsp-registry-docs-pack/extract/package/dist/src/core/index.d.cts
+1,4c1,4
+< import { EmitterErrorHandler } from '@orkestrel/emitter';
+< import { EmitterHooks } from '@orkestrel/emitter';
+< import { EmitterInterface } from '@orkestrel/emitter';
+< import { Guard } from '@orkestrel/contract';
+---
+> import type { EmitterErrorHandler } from '@orkestrel/emitter';
+> import type { EmitterHooks } from '@orkestrel/emitter';
+> import type { EmitterInterface } from '@orkestrel/emitter';
+> import type { Guard } from '@orkestrel/contract';
+13c13
+<  * @example
+---
+>  * @example Create a client and inspect a document
+15a16,17
+>  * import { createLSPClient } from '@orkestrel/lsp'
+>  * import { join } from 'node:path'
+22a25,40
+>  *
+>  * const signal = AbortSignal.timeout(30_000)
+>  * const uri = pathToFileURL(join(directory, 'main.ts')).href
+>  *
+>  * const diagnostics = await client.open(
+>  * 	{
+>  * 		uri,
+>  * 		languageId: 'typescript',
+>  * 		version: 1,
+>  * 		text: 'const value = 1',
+>  * 	},
+>  * 	{ signal },
+>  * )
+>  * for (const diagnostic of diagnostics) console.log(diagnostic.message)
+>  * await client.close(uri)
+>  * await client.destroy()
+364c382
+<  /** Identifies an internal JSON-RPC receiver failure. */
+---
+>  /** Identifies an internal JSON-RPC receiver failure, `-32603`. */
+367c385
+<  /** Identifies invalid parameters supplied to a JSON-RPC method. */
+---
+>  /** Identifies invalid parameters supplied to a JSON-RPC method, `-32602`. */
+370c388
+<  /** Identifies a structurally invalid JSON-RPC request. */
+---
+>  /** Identifies a structurally invalid JSON-RPC request, `-32600`. */
+373c391
+<  /** Identifies a JSON-RPC method that the receiver does not provide. */
+---
+>  /** Identifies a JSON-RPC method that the receiver does not provide, `-32601`. */
+376c394
+<  /** Identifies a malformed JSON payload. */
+---
+>  /** Identifies a malformed JSON payload, `-32700`. */
+455c473
+<  /** Identifies a request invalidated by modified document content. */
+---
+>  /** Identifies a request invalidated by modified document content, `-32801`. */
+503c521
+<  /** Identifies a Language Server Protocol request cancelled by the client. */
+---
+>  /** Identifies a Language Server Protocol request cancelled by the client, `-32800`. */
+506c524
+<  /** Identifies a valid Language Server Protocol request that could not complete. */
+---
+>  /** Identifies a valid Language Server Protocol request that could not complete, `-32803`. */
+509c527
+<  /** Identifies a Language Server Protocol request cancelled by the server. */
+---
+>  /** Identifies a Language Server Protocol request cancelled by the server, `-32802`. */
+515c533
+<  /** Names the default request-settlement timeout in milliseconds. */
+---
+>  /** Names the default request-settlement timeout, `30_000` milliseconds. */
+635,637c653,656
+<       * @remarks A close failure that settles before the deadline is emitted before the emitter is
+<       * destroyed. At the deadline, the client emits a coded `timeout` error and absorbs the later
+<       * close outcome.
+---
+>       * @remarks Pending operations reject with an `LSPError` coded `closed` before the `shutdown`
+>       * request is written. A close failure that settles before the deadline is emitted before the
+>       * emitter is destroyed. At the deadline, the client emits a coded `timeout` error and absorbs the
+>       * later close outcome.
+868c887
+<  /** Configures a document inspection. */
+---
+>  /** Configures a document inspection with the signal that bounds its diagnostics wait. */
+995a1015,1022
+>      /**
+>       * Starts or restarts the byte transport.
+>       *
+>       * @returns A promise that resolves after a generation is open and its peer can be written to.
+>       * @remarks A call made while the previous generation is unsettled is the implementation's to
+>       * refuse, and an implementation that cannot reconnect rejects a call made after that generation
+>       * retires.
+>       */
+996a1024,1030
+>      /**
+>       * Sends bytes and reports whether the transport accepted them.
+>       *
+>       * @param bytes - The bytes written to the peer of the current generation.
+>       * @returns A promise that resolves true when the peer accepted the bytes, and false otherwise.
+>       * @remarks The call rejects rather than throwing, and resolves false after `close` resolves.
+>       */
+997a1032,1038
+>      /**
+>       * Closes the active transport generation.
+>       *
+>       * @returns A promise that resolves after the generation settles.
+>       * @remarks The call rejects rather than throwing. After it resolves, `send` resolves false and a
+>       * further `start` call may open a fresh generation.
+>       */
+1106c1147
+<       * Waits for a deadline to elapse.
+---
+>       * Waits for a deadline to elapse without holding the host event loop open.
+1112,1114c1153,1154
+<       * The deadline is armed with `AbortSignal.timeout`, whose timer does not hold the host event loop
+<       * open. A caller that wins its race against this promise therefore has nothing to clear, and the
+<       * losing deadline delays no exit.
+---
+>       * The deadline is armed with `AbortSignal.timeout`. A caller that wins its race against this
+>       * promise has nothing to clear, and the losing deadline delays no exit.
+diff -r '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-lsp-registry-docs-pack/baseline/package/dist/src/core/index.d.ts /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-lsp-registry-docs-pack/extract/package/dist/src/core/index.d.ts
+1,4c1,4
+< import { EmitterErrorHandler } from '@orkestrel/emitter';
+< import { EmitterHooks } from '@orkestrel/emitter';
+< import { EmitterInterface } from '@orkestrel/emitter';
+< import { Guard } from '@orkestrel/contract';
+---
+> import type { EmitterErrorHandler } from '@orkestrel/emitter';
+> import type { EmitterHooks } from '@orkestrel/emitter';
+> import type { EmitterInterface } from '@orkestrel/emitter';
+> import type { Guard } from '@orkestrel/contract';
+13c13
+<  * @example
+---
+>  * @example Create a client and inspect a document
+15a16,17
+>  * import { createLSPClient } from '@orkestrel/lsp'
+>  * import { join } from 'node:path'
+22a25,40
+>  *
+>  * const signal = AbortSignal.timeout(30_000)
+>  * const uri = pathToFileURL(join(directory, 'main.ts')).href
+>  *
+>  * const diagnostics = await client.open(
+>  * 	{
+>  * 		uri,
+>  * 		languageId: 'typescript',
+>  * 		version: 1,
+>  * 		text: 'const value = 1',
+>  * 	},
+>  * 	{ signal },
+>  * )
+>  * for (const diagnostic of diagnostics) console.log(diagnostic.message)
+>  * await client.close(uri)
+>  * await client.destroy()
+364c382
+<  /** Identifies an internal JSON-RPC receiver failure. */
+---
+>  /** Identifies an internal JSON-RPC receiver failure, `-32603`. */
+367c385
+<  /** Identifies invalid parameters supplied to a JSON-RPC method. */
+---
+>  /** Identifies invalid parameters supplied to a JSON-RPC method, `-32602`. */
+370c388
+<  /** Identifies a structurally invalid JSON-RPC request. */
+---
+>  /** Identifies a structurally invalid JSON-RPC request, `-32600`. */
+373c391
+<  /** Identifies a JSON-RPC method that the receiver does not provide. */
+---
+>  /** Identifies a JSON-RPC method that the receiver does not provide, `-32601`. */
+376c394
+<  /** Identifies a malformed JSON payload. */
+---
+>  /** Identifies a malformed JSON payload, `-32700`. */
+455c473
+<  /** Identifies a request invalidated by modified document content. */
+---
+>  /** Identifies a request invalidated by modified document content, `-32801`. */
+503c521
+<  /** Identifies a Language Server Protocol request cancelled by the client. */
+---
+>  /** Identifies a Language Server Protocol request cancelled by the client, `-32800`. */
+506c524
+<  /** Identifies a valid Language Server Protocol request that could not complete. */
+---
+>  /** Identifies a valid Language Server Protocol request that could not complete, `-32803`. */
+509c527
+<  /** Identifies a Language Server Protocol request cancelled by the server. */
+---
+>  /** Identifies a Language Server Protocol request cancelled by the server, `-32802`. */
+515c533
+<  /** Names the default request-settlement timeout in milliseconds. */
+---
+>  /** Names the default request-settlement timeout, `30_000` milliseconds. */
+635,637c653,656
+<       * @remarks A close failure that settles before the deadline is emitted before the emitter is
+<       * destroyed. At the deadline, the client emits a coded `timeout` error and absorbs the later
+<       * close outcome.
+---
+>       * @remarks Pending operations reject with an `LSPError` coded `closed` before the `shutdown`
+>       * request is written. A close failure that settles before the deadline is emitted before the
+>       * emitter is destroyed. At the deadline, the client emits a coded `timeout` error and absorbs the
+>       * later close outcome.
+868c887
+<  /** Configures a document inspection. */
+---
+>  /** Configures a document inspection with the signal that bounds its diagnostics wait. */
+995a1015,1022
+>      /**
+>       * Starts or restarts the byte transport.
+>       *
+>       * @returns A promise that resolves after a generation is open and its peer can be written to.
+>       * @remarks A call made while the previous generation is unsettled is the implementation's to
+>       * refuse, and an implementation that cannot reconnect rejects a call made after that generation
+>       * retires.
+>       */
+996a1024,1030
+>      /**
+>       * Sends bytes and reports whether the transport accepted them.
+>       *
+>       * @param bytes - The bytes written to the peer of the current generation.
+>       * @returns A promise that resolves true when the peer accepted the bytes, and false otherwise.
+>       * @remarks The call rejects rather than throwing, and resolves false after `close` resolves.
+>       */
+997a1032,1038
+>      /**
+>       * Closes the active transport generation.
+>       *
+>       * @returns A promise that resolves after the generation settles.
+>       * @remarks The call rejects rather than throwing. After it resolves, `send` resolves false and a
+>       * further `start` call may open a fresh generation.
+>       */
+1106c1147
+<       * Waits for a deadline to elapse.
+---
+>       * Waits for a deadline to elapse without holding the host event loop open.
+1112,1114c1153,1154
+<       * The deadline is armed with `AbortSignal.timeout`, whose timer does not hold the host event loop
+<       * open. A caller that wins its race against this promise therefore has nothing to clear, and the
+<       * losing deadline delays no exit.
+---
+>       * The deadline is armed with `AbortSignal.timeout`. A caller that wins its race against this
+>       * promise has nothing to clear, and the losing deadline delays no exit.
+diff -r '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-lsp-registry-docs-pack/baseline/package/dist/src/core/index.js /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-lsp-registry-docs-pack/extract/package/dist/src/core/index.js
+75c75
+< /** Names the default request-settlement timeout in milliseconds. */
+---
+> /** Names the default request-settlement timeout, `30_000` milliseconds. */
+77c77
+< /** Identifies a malformed JSON payload. */
+---
+> /** Identifies a malformed JSON payload, `-32700`. */
+79c79
+< /** Identifies a structurally invalid JSON-RPC request. */
+---
+> /** Identifies a structurally invalid JSON-RPC request, `-32600`. */
+81c81
+< /** Identifies a JSON-RPC method that the receiver does not provide. */
+---
+> /** Identifies a JSON-RPC method that the receiver does not provide, `-32601`. */
+83c83
+< /** Identifies invalid parameters supplied to a JSON-RPC method. */
+---
+> /** Identifies invalid parameters supplied to a JSON-RPC method, `-32602`. */
+85c85
+< /** Identifies an internal JSON-RPC receiver failure. */
+---
+> /** Identifies an internal JSON-RPC receiver failure, `-32603`. */
+87c87
+< /** Identifies a Language Server Protocol request cancelled by the client. */
+---
+> /** Identifies a Language Server Protocol request cancelled by the client, `-32800`. */
+89c89
+< /** Identifies a request invalidated by modified document content. */
+---
+> /** Identifies a request invalidated by modified document content, `-32801`. */
+91c91
+< /** Identifies a Language Server Protocol request cancelled by the server. */
+---
+> /** Identifies a Language Server Protocol request cancelled by the server, `-32802`. */
+93c93
+< /** Identifies a valid Language Server Protocol request that could not complete. */
+---
+> /** Identifies a valid Language Server Protocol request that could not complete, `-32803`. */
+786c786
+< * Waits for a deadline to elapse.
+---
+> * Waits for a deadline to elapse without holding the host event loop open.
+792,794c792,793
+< * The deadline is armed with `AbortSignal.timeout`, whose timer does not hold the host event loop
+< * open. A caller that wins its race against this promise therefore has nothing to clear, and the
+< * losing deadline delays no exit.
+---
+> * The deadline is armed with `AbortSignal.timeout`. A caller that wins its race against this
+> * promise has nothing to clear, and the losing deadline delays no exit.
+1453c1452
+< * @example
+---
+> * @example Create a client and inspect a document
+1455a1455,1456
+> * import { createLSPClient } from '@orkestrel/lsp'
+> * import { join } from 'node:path'
+1462a1464,1479
+> *
+> * const signal = AbortSignal.timeout(30_000)
+> * const uri = pathToFileURL(join(directory, 'main.ts')).href
+> *
+> * const diagnostics = await client.open(
+> * 	{
+> * 		uri,
+> * 		languageId: 'typescript',
+> * 		version: 1,
+> * 		text: 'const value = 1',
+> * 	},
+> * 	{ signal },
+> * )
+> * for (const diagnostic of diagnostics) console.log(diagnostic.message)
+> * await client.close(uri)
+> * await client.destroy()
+diff -r '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-lsp-registry-docs-pack/baseline/package/dist/src/server/index.d.cts /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-lsp-registry-docs-pack/extract/package/dist/src/server/index.d.cts
+1,6c1,5
+< import { EmitterErrorHandler } from '@orkestrel/emitter';
+< import { EmitterHooks } from '@orkestrel/emitter';
+< import { EmitterInterface } from '@orkestrel/emitter';
+< import { LSPTransportEventMap } from '@orkestrel/lsp';
+< import { LSPTransportEventMap as LSPTransportEventMap_2 } from '@orkestrel/lsp';
+< import { LSPTransportInterface } from '@orkestrel/lsp';
+---
+> import type { EmitterErrorHandler } from '@orkestrel/emitter';
+> import type { EmitterHooks } from '@orkestrel/emitter';
+> import type { EmitterInterface } from '@orkestrel/emitter';
+> import type { LSPTransportEventMap } from '@orkestrel/lsp';
+> import type { LSPTransportInterface } from '@orkestrel/lsp';
+73c72
+<     get emitter(): EmitterInterface<LSPTransportEventMap_2>;
+---
+>     get emitter(): EmitterInterface<LSPTransportEventMap>;
+diff -r '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-lsp-registry-docs-pack/baseline/package/dist/src/server/index.d.ts /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-lsp-registry-docs-pack/extract/package/dist/src/server/index.d.ts
+1,6c1,5
+< import { EmitterErrorHandler } from '@orkestrel/emitter';
+< import { EmitterHooks } from '@orkestrel/emitter';
+< import { EmitterInterface } from '@orkestrel/emitter';
+< import { LSPTransportEventMap } from '@orkestrel/lsp';
+< import { LSPTransportEventMap as LSPTransportEventMap_2 } from '@orkestrel/lsp';
+< import { LSPTransportInterface } from '@orkestrel/lsp';
+---
+> import type { EmitterErrorHandler } from '@orkestrel/emitter';
+> import type { EmitterHooks } from '@orkestrel/emitter';
+> import type { EmitterInterface } from '@orkestrel/emitter';
+> import type { LSPTransportEventMap } from '@orkestrel/lsp';
+> import type { LSPTransportInterface } from '@orkestrel/lsp';
+73c72
+<     get emitter(): EmitterInterface<LSPTransportEventMap_2>;
+---
+>     get emitter(): EmitterInterface<LSPTransportEventMap>;

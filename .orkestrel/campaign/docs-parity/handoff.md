@@ -29,15 +29,17 @@ a4e7078da602619e54384dbc7bdddaf25a2fdc6af0842a55004b8328365b8be7. Release source
 at d2175dfe on main and the named origin refs. Read
 d7n-scaffold-upper-prepared-verdict.md and d7n-scaffold-upper-release-landing.md.
 
-LSP's native entry and supported policy refresh passed root prepublishOnly and
-landed at 3b9f3a5dcae91cb206e9fc6ed7bb546be20036a3 on its pushed campaign branch.
-Its final refreshed tooling visit and main closure remain open. Browser's native
-entry passed its scoped command and received supported policy repair; final
-preparation remains open. Terminal's bounded native docs fix and Interpret's
-native entry are implemented with scoped green receipts; independent review and
-final preparation remain open. Terminal used the native writer after the external
-writer hit its weekly limit without changing source. Qualifier's latest tooling
-and native baseline are recorded; its adoption remains open.
+LSP's registry-backed preparation landed at d2c5e0299e87aad1b08252b09fe9e243c4f1dbdb
+on its pushed campaign branch. Online overwrite/audit, prepublishOnly and actual
+packing passed. Read d7n-lsp-registry-preparation-landing.md. Final review and main
+closure remain open. Browser and Interpret's native-entry reviews disagreed on
+added population requirements; the bounded preservation correction is active in
+d7n-browser-interpret-native-preservation-fix-brief.md. Interpret's root native
+receipt is green. Its supported policy repair resolved the isolated config red;
+the complete prepublish rerun waits for the authored correction. Qualifier's
+native-entry unit is active. Terminal's returned bounded docs/native fix awaits
+review and final preparation. Its external writer hit the weekly limit without
+changing source, so the recorded native substitution applies.
 
 Guide preparation landed at f277b88bc1e8063521ce1acaa783913b0af1856a and is campaign-
 pushed. Its refreshed Scaffold visit passed overwrite/audit/catalog but stopped

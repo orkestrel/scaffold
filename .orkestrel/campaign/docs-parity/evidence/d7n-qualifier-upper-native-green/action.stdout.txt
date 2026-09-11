@@ -1,0 +1,10 @@
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/qualifier
+
+·························
+
+ Test Files  1 passed (1)
+      Tests  25 passed (25)
+   Start at  14:57:12
+   Duration  1.05s (transform 105ms, setup 187ms, import 395ms, tests 32ms, environment 0ms)
+

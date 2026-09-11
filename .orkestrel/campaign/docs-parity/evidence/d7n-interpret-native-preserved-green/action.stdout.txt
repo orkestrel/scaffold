@@ -1,0 +1,10 @@
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/interpret
+
+························································································
+
+ Test Files  1 passed (1)
+      Tests  88 passed (88)
+   Start at  14:58:30
+   Duration  958ms (transform 158ms, setup 328ms, import 428ms, tests 53ms, environment 0ms)
+
