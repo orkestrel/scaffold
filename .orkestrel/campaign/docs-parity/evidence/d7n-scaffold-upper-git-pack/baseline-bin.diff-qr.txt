@@ -1,0 +1,2 @@
+Files /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-scaffold-upper-git-pack/baseline/package/dist/bin/main.js and /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-scaffold-upper-git-pack/extract/package/dist/bin/main.js differ
+Files /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-scaffold-upper-git-pack/baseline/package/dist/bin/main.js.map and /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-scaffold-upper-git-pack/extract/package/dist/bin/main.js.map differ

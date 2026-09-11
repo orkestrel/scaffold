@@ -1,0 +1,144 @@
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/scaffold
+
+ ↓ |src:bin| tests/src/bin/CLI.test.ts > CLI usage > refuses --bin by name on every reading verb
+ ↓ |src:bin| tests/src/bin/CLI.test.ts > CLI usage > answers a request for usage instead of running, and writes nothing to the diagnostic
+ ↓ |src:bin| tests/src/bin/CLI.test.ts > CLI usage > answers a request for usage on a verb, because usage replaces the run
+ ↓ |src:bin| tests/src/bin/CLI.test.ts > CLI usage > refuses no arguments at all on the diagnostic, with the usage code
+ ↓ |src:bin| tests/src/bin/CLI.test.ts > CLI usage > refuses a retired verb on the diagnostic, with the usage code
+ ↓ |src:bin| tests/src/bin/CLI.test.ts > CLI usage > refuses an option no verb takes on the diagnostic, with the usage code
+ ↓ |src:bin| tests/src/bin/CLI.test.ts > CLI usage > refuses an option another verb takes on the diagnostic, with the usage code
+ ↓ |src:bin| tests/src/bin/CLI.test.ts > CLI usage > refuses a destructive option offered to a creating verb on the diagnostic, with the usage code
+ ↓ |src:bin| tests/src/bin/CLI.test.ts > CLI usage > refuses new without its name on the diagnostic, with the usage code
+ ↓ |src:bin| tests/src/bin/CLI.test.ts > CLI usage > refuses an argument to a verb that takes none on the diagnostic, with the usage code
+ ↓ |src:bin| tests/src/bin/CLI.test.ts > CLI usage > refuses two arguments to the one verb that takes one on the diagnostic, with the usage code
+ ↓ |src:bin| tests/src/bin/CLI.test.ts > CLI usage > refuses a repeated single-source option on the diagnostic, with the usage code
+ ↓ |src:bin| tests/src/bin/CLI.test.ts > CLI usage > refuses an option missing its value on the diagnostic, with the usage code
+ ↓ |src:bin| tests/src/bin/CLI.test.ts > CLI usage > refuses a flag given a value on the diagnostic, with the usage code
+ ↓ |src:bin| tests/src/bin/CLI.test.ts > CLI usage > refuses an option from another verb beside one this verb takes on the diagnostic, with the usage code
+ ↓ |src:bin| tests/src/bin/CLI.test.ts > CLI usage > refuses a group no plan has, naming what it does take
+ ↓ |src:bin| tests/src/bin/CLI.test.ts > CLI usage > accepts every group some plan has
+ ↓ |src:bin| tests/src/bin/CLI.test.ts > CLI usage > refuses an environment no workspace has, on each axis it is offered to
+ ↓ |src:bin| tests/src/bin/CLI.test.ts > CLI usage > refuses a dependency that is not a published fleet package
+ ↓ |src:bin| tests/src/bin/CLI.test.ts > CLI usage > reports a usage refusal as the one machine-readable value when --json was given
+ ↓ |src:bin| tests/src/bin/CLI.test.ts > CLI sanitization > carries every hostile byte before it is written, which is what makes the check below able to fail
+ ↓ |src:bin| tests/src/bin/CLI.test.ts > CLI sanitization > passes on no hostile byte from a command line it refuses
+ ↓ |src:bin| tests/src/bin/CLI.test.ts > CLI sanitization > forges no second line out of a line break in an argument
+ ↓ |src:bin| tests/src/bin/CLI.test.ts > CLI sanitization > keeps the visible word the refusal is about
+ ↓ |src:bin| tests/src/bin/CLI.test.ts > CLI sanitization > repaints no printed line from a lone carriage return in an argument
+ ↓ |src:bin| tests/src/bin/CLI.test.ts > CLI sanitization > passes on no hostile byte through the machine-readable path either
+ ↓ |src:bin| tests/src/bin/CLI.test.ts > CLI new > creates a bin workspace that round-trips through audit
+ ↓ |src:bin| tests/src/bin/CLI.test.ts > CLI new > writes every planned path into a vacant target and reports what it wrote
+ ↓ |src:bin| tests/src/bin/CLI.test.ts > CLI new > emits one machine-readable value naming every path it wrote
+ ↓ |src:bin| tests/src/bin/CLI.test.ts > CLI new > refuses a workspace that declares no environment at all
+ ↓ |src:bin| tests/src/bin/CLI.test.ts > CLI new > refuses a name the gate will not generate
+ ↓ |src:bin| tests/src/bin/CLI.test.ts > CLI new > refuses a target that already holds a workspace
+ ↓ |src:bin| tests/src/bin/CLI.test.ts > CLI new > refuses to create a published axis of several environments without core
+ ↓ |src:bin| tests/src/bin/CLI.test.ts > CLI new > refuses a blocking and a non-blocking question under the one refusal code
+ ↓ |src:bin| tests/src/bin/CLI.test.ts > CLI new > compares a target whose published axis lacks core
+ ↓ |src:bin| tests/src/bin/CLI.test.ts > CLI upstream baselines > reports catalog offline as a usage error
+ ↓ |src:bin| tests/src/bin/CLI.test.ts > CLI upstream baselines > takes the host live when every declared digest matches and takes the floor when the repository is dark
+ ↓ |src:bin| tests/src/bin/CLI.test.ts > CLI upstream baselines > asks the repository for no canon path while fetching a drifted vendored one
+ ↓ |src:bin| tests/src/bin/CLI.test.ts > CLI upstream baselines > writes the same distributed new baseline when transport forces it and when offline selects it
+ ↓ |src:bin| tests/src/bin/CLI.test.ts > CLI upstream baselines > makes offline audit answer drift alone and offline repair match a forced floor write
+ ↓ |src:bin| tests/src/bin/CLI.test.ts > CLI upstream baselines > runs the overwrite floor half offline and refuses its catalog half
+ ↓ |src:bin| tests/src/bin/CLI.test.ts > CLI upstream baselines > refuses a dark catalog membership endpoint without writing the target
+ ↓ |src:bin| tests/src/bin/CLI.test.ts > CLI audit > reports a stale planned foreign floor as a non-blocking dependency question
+ ↓ |src:bin| tests/src/bin/CLI.test.ts > CLI audit > reports no dependency question for library tools omitted by an app-only workspace
+ ✓ |src:bin| tests/src/bin/CLI.test.ts > CLI audit > reports only the missing shared test tool for an app-only workspace 133ms
+ ↓ |src:bin| tests/src/bin/CLI.test.ts > CLI audit > reports one missing planned dependency and its exact manifest line
+ ↓ |src:bin| tests/src/bin/CLI.test.ts > CLI audit > reports every missing planned dependency in stable order
+ ↓ |src:bin| tests/src/bin/CLI.test.ts > CLI audit > accepts a planned foreign dependency range on the served major
+ ↓ |src:bin| tests/src/bin/CLI.test.ts > CLI audit > reports a stale foreign floor and a crossed major without rewriting
+ ↓ |src:bin| tests/src/bin/CLI.test.ts > CLI audit > reports a major-zero floor below the newest stable release in that major
+ ↓ |src:bin| tests/src/bin/CLI.test.ts > CLI audit > ignores dependencies the workspace owns beyond the planned set
+ ↓ |src:bin| tests/src/bin/CLI.test.ts > CLI audit > accepts a planned tool declared in dependencies instead of devDependencies
+ ↓ |src:bin| tests/src/bin/CLI.test.ts > CLI audit > reports a non-object devDependencies section instead of crashing
+ ↓ |src:bin| tests/src/bin/CLI.test.ts > CLI audit > scopes a planned-dependency refusal to repair selections
+ ↓ |src:bin| tests/src/bin/CLI.test.ts > CLI audit > filters target questions from audit selections
+ ↓ |src:bin| tests/src/bin/CLI.test.ts > CLI audit > rejects wrong-case structural paths while deriving every exact fact
+ ↓ |src:bin| tests/src/bin/CLI.test.ts > CLI audit > registers the distribution project for a target that publishes no proof yet
+ ↓ |src:bin| tests/src/bin/CLI.test.ts > CLI audit > withholds the distribution project from a target that publishes nothing
+ ↓ |src:bin| tests/src/bin/CLI.test.ts > CLI audit > reports every unregistered manifest project as one non-blocking question
+ ↓ |src:bin| tests/src/bin/CLI.test.ts > CLI audit > refuses a manifest setup project when no root setup proof selects it
+ ↓ |src:bin| tests/src/bin/CLI.test.ts > CLI audit > reports a writable project script missing from the manifest
+ ↓ |src:bin| tests/src/bin/CLI.test.ts > CLI audit > audits and repairs the writable scripts without moving target-owned manifest bytes
+ ↓ |src:bin| tests/src/bin/CLI.test.ts > CLI audit > appends absent scripts while retaining and reporting a differing html script
+ ↓ |src:bin| tests/src/bin/CLI.test.ts > CLI audit > keeps the scripts question when the real projection omits a writable script
+ ↓ |src:bin| tests/src/bin/CLI.test.ts > CLI audit > accepts every planned project when each is reachable from a gate
+ ↓ |src:bin| tests/src/bin/CLI.test.ts > CLI audit > uses only gates the target manifest can run for project reachability
+ ↓ |src:bin| tests/src/bin/CLI.test.ts > CLI audit > reports a private project reached only from a dead publish lifecycle
+ ↓ |src:bin| tests/src/bin/CLI.test.ts > CLI audit > separates a missing writable script from its ungated project
+ ↓ |src:bin| tests/src/bin/CLI.test.ts > CLI audit > states an undeclared script as missing when the write is blocked
+ ↓ |src:bin| tests/src/bin/CLI.test.ts > CLI audit > accepts an integration project reached by the default test chain
+ ↓ |src:bin| tests/src/bin/CLI.test.ts > CLI audit > accepts the conformance and live-service scripts after their structural file is there
+ ↓ |src:bin| tests/src/bin/CLI.test.ts > CLI audit > reports a setup module a maintainer filled and stays silent on the ones scaffold wrote
+ ↓ |src:bin| tests/src/bin/CLI.test.ts > CLI audit > names every filled setup module no proof covers
+ ↓ |src:bin| tests/src/bin/CLI.test.ts > CLI audit > asks a hook-only setup module for coverage rather than for a proof of its exports
+ ↓ |src:bin| tests/src/bin/CLI.test.ts > CLI audit > reports each superseded canon copy as a foreign finding in its own group
+ ↓ |src:bin| tests/src/bin/CLI.test.ts > CLI audit > reads no canon path outside the groups the run selects
+ ↓ |src:bin| tests/src/bin/CLI.test.ts > CLI audit > deletes no superseded canon copy on a repair and reports it afterwards
+ ↓ |src:bin| tests/src/bin/CLI.test.ts > CLI audit > stays silent on a global setup module carrying the bytes scaffold seeds
+ ↓ |src:bin| tests/src/bin/CLI.test.ts > CLI audit > keeps naming the setup modules the written proof does not cover
+ ↓ |src:bin| tests/src/bin/CLI.test.ts > CLI audit > stops reporting a filled setup module once a proof covers it
+ ↓ |src:bin| tests/src/bin/CLI.test.ts > CLI audit > prints findings and an unregistered-project question in the human report
+ ↓ |src:bin| tests/src/bin/CLI.test.ts > CLI audit > does not let a non-blocking project question make an aligned audit drift
+ ↓ |src:bin| tests/src/bin/CLI.test.ts > CLI audit > reports drift against a target that carries none of its planned paths
+ ↓ |src:bin| tests/src/bin/CLI.test.ts > CLI audit > reports one aligned manifest path with one noun inflection
+ ↓ |src:bin| tests/src/bin/CLI.test.ts > CLI audit > emits one audit as the machine-readable value, every finding on a hydrated path
+ ↓ |src:bin| tests/src/bin/CLI.test.ts > CLI audit > reports the grounds that decided every verdict in a vacant target
+ ↓ |src:bin| tests/src/bin/CLI.test.ts > CLI audit > counts a foreign path apart from the planned paths it reports on
+ ↓ |src:bin| tests/src/bin/CLI.test.ts > CLI audit > agrees with itself about one differing path, count and verb alike
+ ↓ |src:bin| tests/src/bin/CLI.test.ts > CLI audit > moves deleted content paths from bytes to existence
+ ↓ |src:bin| tests/src/bin/CLI.test.ts > CLI audit > reports a clean run against the workspace new just wrote, and writes nothing itself
+ ↓ |src:bin| tests/src/bin/CLI.test.ts > CLI audit > reports a canon file a consumer edited as stale, and the same file as aligned before the edit
+ ↓ |src:bin| tests/src/bin/CLI.test.ts > CLI audit > reads the audit host --from names, so one target answers differently against two hosts
+ ↓ |src:bin| tests/src/bin/CLI.test.ts > CLI audit > reports a file the plan does not own beneath an owned vendored root, and no file at the target root
+ ↓ |src:bin| tests/src/bin/CLI.test.ts > CLI audit > refuses a target that carries no manifest to read itself out of
+ ↓ |src:bin| tests/src/bin/CLI.test.ts > CLI audit > refuses to read a target through a vendored host whose manifest does not verify
+ ↓ |src:bin| tests/src/bin/CLI.test.ts > CLI audit > reports the questions that closed the gate and nothing about the target
+ ↓ |src:bin| tests/src/bin/CLI.test.ts > CLI audit > reports a clean run over the one group the workspace owns its own bytes of
+ ↓ |src:bin| tests/src/bin/CLI.test.ts > CLI repair > raises a major-zero floor to the newest stable release in its declared major
+ ↓ |src:bin| tests/src/bin/CLI.test.ts > CLI repair > reconciles the declared ranges whatever group selection the run names
+ ↓ |src:bin| tests/src/bin/CLI.test.ts > CLI repair > writes the publishing rows a target scaffolded before them is missing
+ ↓ |src:bin| tests/src/bin/CLI.test.ts > CLI repair > repairs other paths while a customized script region stays reported
+ ↓ |src:bin| tests/src/bin/CLI.test.ts > CLI repair > refuses repair when a manifest script names an unregistered project
+ ↓ |src:bin| tests/src/bin/CLI.test.ts > CLI repair > refuses an unresolved quoted project expression before writing
+ ↓ |src:bin| tests/src/bin/CLI.test.ts > CLI repair > gives a writing refusal only remedies that survive the verb
+ ↓ |src:bin| tests/src/bin/CLI.test.ts > CLI repair > writes each planned path the target is missing, over a group of vendored files
+ ↓ |src:bin| tests/src/bin/CLI.test.ts > CLI repair > emits the write and the audit taken after it as one value
+ ↓ |src:bin| tests/src/bin/CLI.test.ts > CLI repair > leaves a repaired group clean on the second run, writing nothing the second time
+ ↓ |src:bin| tests/src/bin/CLI.test.ts > CLI repair > restores a vendored file the target lost, and reports it as written
+ ↓ |src:bin| tests/src/bin/CLI.test.ts > CLI repair > reports a stale content-owned file as replaced with its line delta
+ ↓ |src:bin| tests/src/bin/CLI.test.ts > CLI repair > reports a missing content-owned file as created rather than replaced
+ ↓ |src:bin| tests/src/bin/CLI.test.ts > CLI repair > repairs at its default selection and earns a clean exit, the canon claim included
+ ↓ |src:bin| tests/src/bin/CLI.test.ts > CLI repair > writes nothing when the blueprint the target describes is refused
+ ↓ |src:bin| tests/src/bin/CLI.test.ts > CLI repair > repairs a canon file a consumer edited back to the bytes the host ships
+ ↓ |src:bin| tests/src/bin/CLI.test.ts > CLI overwrite > reports replacements, creations, and file deletions as distinct outcomes
+ ↓ |src:bin| tests/src/bin/CLI.test.ts > CLI overwrite > scopes a custom-project refusal to overwrite selections
+ ↓ |src:bin| tests/src/bin/CLI.test.ts > CLI overwrite > deletes tracked unplanned scripts without deleting untracked files
+ ↓ |src:bin| tests/src/bin/CLI.test.ts > CLI overwrite > refuses a target git cannot recover, because deletion has no other undo
+ ↓ |src:bin| tests/src/bin/CLI.test.ts > CLI overwrite > refuses a tree carrying uncommitted work, and names the waiver that clears it
+ ↓ |src:bin| tests/src/bin/CLI.test.ts > CLI overwrite > reports the refusal as one machine-readable value under --json
+ ↓ |src:bin| tests/src/bin/CLI.test.ts > CLI overwrite > does not report a refusal it can name under the uncoded code
+ ↓ |src:bin| tests/src/bin/CLI.test.ts > CLI overwrite > repairs the pointer and sweeps every tracked canon leftover in one run
+ ↓ |src:bin| tests/src/bin/CLI.test.ts > CLI overwrite > leaves a git-ignored registration outside the dirty refusal and outside the deletion
+ ↓ |src:bin| tests/src/bin/CLI.test.ts > CLI overwrite > refuses an untracked canon leftover as uncommitted work and leaves it standing under the waiver
+ ↓ |src:bin| tests/src/bin/CLI.test.ts > CLI overwrite > rewrites each declared range to the release the registry it was given names
+ ↓ |src:bin| tests/src/bin/CLI.test.ts > CLI overwrite > persists the offline half and reports the online step it could not complete
+ ↓ |src:bin| tests/src/bin/CLI.test.ts > CLI overwrite > keeps the floor ranges when one release read does not complete
+ ↓ |src:bin| tests/src/bin/CLI.test.ts > CLI catalog > catalogs a freshly scaffolded workspace through the markers the host vendors
+ ↓ |src:bin| tests/src/bin/CLI.test.ts > CLI catalog > regenerates the package table and the guide mirrors from the endpoints it was given
+ ↓ |src:bin| tests/src/bin/CLI.test.ts > CLI catalog > widens the fetch to the organization list under --all, and never to the target itself
+ ↓ |src:bin| tests/src/bin/CLI.test.ts > CLI catalog > reports a guide the host could not answer for as drift, naming the package
+ ↓ |src:bin| tests/src/bin/CLI.test.ts > CLI catalog > skips a guide the host does not publish and completes the catalog
+ ↓ |src:bin| tests/src/bin/CLI.test.ts > CLI catalog > addresses only the endpoint it was given, so an unscripted fixture fails the run
+ ↓ |src:bin| tests/src/bin/CLI.test.ts > CLI catalog > warns that a second local root reaches nothing, and reads the first
+ ↓ |src:bin| tests/src/bin/CLI.test.ts > CLI new dependencies > pins each named package to the latest release the registry it was given states
+ ↓ |src:bin| tests/src/bin/CLI.test.ts > CLI new dependencies > refuses a package the registry it was given names no release for
+
+ Test Files  1 passed (1)
+      Tests  1 passed | 134 skipped (135)
+   Start at  08:54:04
+   Duration  1.16s (transform 370ms, setup 694ms, import 181ms, tests 136ms, environment 0ms)
+

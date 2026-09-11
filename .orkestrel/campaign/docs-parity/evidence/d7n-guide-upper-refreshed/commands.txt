@@ -1,0 +1,5 @@
+overwrite 180s
+npm pkg delete scripts.docs 
+audit 120s
+node node_modules/@orkestrel/scaffold/dist/bin/main.js catalog 
+node /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/mirror-parity-guide.mjs /c/Users/mikes/WebstormProjects/guide/guides/guide.md /c/Users/mikes/WebstormProjects/guide 

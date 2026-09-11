@@ -457,7 +457,7 @@ export class CLI implements CLIInterface {
 		const groups = selectionToGroups(command.groups)
 		const blueprint = this.#derive(target)
 		this.#assertTarget(target, blueprint, groups)
-		const worktree = this.#worktree(target)
+		const worktree = await this.#worktree(target)
 		if (worktree.dirty.length > 0 && command.dirty !== true) {
 			throw new ScaffoldError(
 				'TARGET',
@@ -1289,14 +1289,11 @@ export class CLI implements CLIInterface {
 	// What git reports about the target's working tree. Deletion draws only on
 	// what git tracks and refuses a tree carrying uncommitted work, so a target
 	// that is not a repository has no recovery mechanism and is refused here.
-	#worktree(target: string): Worktree {
-		const tracked = readGitRecords(target, ['ls-files', '-z'])
-		const dirty = readGitRecords(target, [
-			'status',
-			'--porcelain=v1',
-			'--untracked-files=all',
-			'-z',
-		]).map((record) => (record.length > 3 && record[2] === ' ' ? record.slice(3) : record))
+	async #worktree(target: string): Promise<Worktree> {
+		const tracked = await readGitRecords(target, ['ls-files', '-z'])
+		const dirty = (
+			await readGitRecords(target, ['status', '--porcelain=v1', '--untracked-files=all', '-z'])
+		).map((record) => (record.length > 3 && record[2] === ' ' ? record.slice(3) : record))
 		const state = { tracked, dirty }
 		if (!isWorktree(state)) {
 			throw new ScaffoldError('TARGET', `The git state at ${target} is not a readable inventory.`, {

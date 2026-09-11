@@ -1,0 +1,171 @@
+Checking formatting...
+
+All matched files use the correct format.
+Finished in 3590ms on 223 files using 16 threads.
+vite v8.3.0 building client environment for production...
+transforming...
+✓ 14 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/core/index.js  261.15 kB │ gzip: 70.66 kB │ map: 352.28 kB
+
+transforming...
+✓ 14 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/core/index.cjs  269.31 kB │ gzip: 71.40 kB │ map: 354.71 kB
+
+✓ built in 244ms
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+Copied: dist/src/core/index.d.ts to dist/src/core/index.d.cts
+vite v8.3.0 building client environment for production...
+transforming...
+✓ 9 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/server/index.js  174.80 kB │ gzip: 45.14 kB │ map: 281.68 kB
+
+transforming...
+✓ 9 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/server/index.cjs  183.55 kB │ gzip: 45.61 kB │ map: 287.30 kB
+
+✓ built in 211ms
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+Copied: dist/src/server/index.d.ts to dist/src/server/index.d.cts
+vite v8.3.0 building client environment for production...
+transforming...
+✓ 6 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/bin/main.js  85.92 kB │ gzip: 22.29 kB │ map: 156.40 kB
+
+✓ built in 29ms
+build-host: staged 121 file(s) into dist/host
+build-inventory: staged 121 file(s) into host.json
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/scaffold
+
+·························································································································································································································································································································································································································
+
+ Test Files  9 passed (9)
+      Tests  409 passed (409)
+   Start at  09:43:24
+   Duration  21.21s (transform 2.37s, setup 3.02s, import 1.68s, tests 30.49s, environment 1ms)
+
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/scaffold
+
+··················································································································---····················································································································-····················································································-················································-··································································
+
+ Test Files  5 passed (5)
+      Tests  428 passed | 6 skipped (434)
+   Start at  09:43:46
+   Duration  5.22s (transform 2.38s, setup 4.47s, import 487ms, tests 8.87s, environment 1ms)
+
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/scaffold
+
+·········································································································scaffold <verb> [options]
+
+  scaffold new <name> [--src <list>] [--app <list>] [--bin] [--deps <list>] [--offline] [--from <path>] [--target <path>] [--json]
+      scaffold a workspace
+  scaffold audit [--groups <list>] [--offline] [--from <path>] [--target <path>] [--json]
+      report how the target compares to its plan, writing nothing
+  scaffold repair [--groups <list>] [--offline] [--from <path>] [--target <path>] [--json]
+      write each planned path the target is missing or has let drift
+  scaffold catalog [--all] [--from <path>] [--target <path>] [--json]
+      regenerate the package table and refresh the guide mirrors
+  scaffold overwrite [--groups <list>] [--dirty] [--offline] [--from <path>] [--target <path>] [--json]
+      do everything repair and catalog do, then delete what the plan does not own and re-declare the dependency ranges
+
+options
+  --src <list>                   the published library environments to build: core, browser, server
+  --app <list>                   the private application environments to build: core, browser, server
+  --bin                          scaffold a command-line executable at src/bin/main.ts
+  --deps <list>                  the @orkestrel/* packages the workspace depends on
+  --groups <list>                the artifact groups to cover; every group when absent
+  --all                          fetch a guide for every package the organization publishes, not the declared ones alone
+  --dirty                        delete from a tree carrying uncommitted changes
+  --offline                      use the distributed dependency and vendored-host floors without reading upstream
+  --from <path>                  read the data root from a local path instead of the bundled one; catalog alone accepts it more than once
+  --target <path>                the directory the verb operates on; the working directory when absent
+  --json                         emit one machine-readable value instead of a report
+  ORKESTREL_SCAFFOLD_REGISTRY    the registry base mapped to upstream.registry.base
+  ORKESTREL_SCAFFOLD_REPOSITORY  the repository base mapped to upstream.repository.base
+
+exit codes
+  0  clean
+  1  drift or failure
+  2  usage error
+····················································································································································
+
+ Test Files  3 passed (3)
+      Tests  253 passed (253)
+   Start at  09:43:52
+   Duration  33.38s (transform 1.06s, setup 2.14s, import 344ms, tests 34.18s, environment 0ms)
+
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/scaffold
+
+···························································································
+
+ Test Files  1 passed (1)
+      Tests  91 passed (91)
+   Start at  09:44:26
+   Duration  1.30s (transform 218ms, setup 325ms, import 89ms, tests 731ms, environment 0ms)
+
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/scaffold
+
+·······stdout | tests/config.test.ts > root configuration > keeps the committed host inventory aligned with the vendored checkout bytes
+host-inventory: entries=121
+
+···································································································································································stdout | tests/config.test.ts > configuration helpers > rolls one face into a single declaration and rewrites its core specifier
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+
+·-stdout | tests/config.test.ts > configuration helpers > rolls one face into a single declaration and rewrites its core specifier
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+
+·
+
+ Test Files  1 passed (1)
+      Tests  172 passed | 1 skipped (173)
+   Start at  09:44:27
+   Duration  22.14s (transform 306ms, setup 314ms, import 384ms, tests 21.27s, environment 0ms)
+
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/scaffold
+
+··············································································
+
+ Test Files  3 passed (3)
+      Tests  78 passed (78)
+   Start at  09:44:50
+   Duration  2.15s (transform 737ms, setup 915ms, import 619ms, tests 1.25s, environment 0ms)
+
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/scaffold
+
+······················
+
+ Test Files  1 passed (1)
+      Tests  22 passed (22)
+   Start at  09:44:53
+   Duration  2.10s (transform 328ms, setup 307ms, import 907ms, tests 740ms, environment 0ms)
+
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/scaffold
+
+·····
+
+ Test Files  1 passed (1)
+      Tests  5 passed (5)
+   Start at  09:44:56
+   Duration  61.93s (transform 273ms, setup 305ms, import 1.71s, tests 59.76s, environment 0ms)
+

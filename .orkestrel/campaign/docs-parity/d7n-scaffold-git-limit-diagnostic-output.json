@@ -1,0 +1,7 @@
+{
+  "chunk_id": "5c54e7",
+  "wall_time_seconds": 0.2303111,
+  "exit_code": 0,
+  "original_token_count": 82,
+  "output": "{\"limit\":1048576,\"failed\":true,\"truncated\":true,\"code\":null,\"signal\":\"SIGKILL\",\"stdout\":1048576,\"stderr\":\"\"}\n{\"limit\":16777216,\"failed\":false,\"truncated\":false,\"code\":0,\"signal\":null,\"stdout\":1614828,\"stderr\":\"\"}\n{\"limit\":9007199254740991,\"failed\":false,\"truncated\":false,\"code\":0,\"signal\":null,\"stdout\":1614828,\"stderr\":\"\"}\n"
+}

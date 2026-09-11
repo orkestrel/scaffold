@@ -18,10 +18,11 @@ import type {
 	VersionResolution,
 } from './types.js'
 import type { MaterializeResult, UpstreamOptions } from '@src/server'
+import type { SessionInterface } from '@orkestrel/process'
 import { align, strip, stripControls, width } from '@orkestrel/console'
 import { attempt, isError, isRecord, isString, parseJSON } from '@orkestrel/contract'
 import { createMarkdown, flattenText, isTableNode } from '@orkestrel/markdown'
-import { executeSync } from '@orkestrel/process/server'
+import { createSession } from '@orkestrel/process/server'
 import {
 	blueprintToDevDependencies,
 	CATALOG_AGENT_PATH,
@@ -33,10 +34,15 @@ import {
 	GROUPS,
 	isScaffoldError,
 	manifestToDependencies,
-	MAX_MANIFEST_BYTES,
+	MAX_PATH_LENGTH,
 	ScaffoldError,
 } from '@src/core'
-import { isPhysicalDirectory, readFileText, resolveContainedPath } from '@src/server'
+import {
+	isPhysicalDirectory,
+	MAX_INVENTORY_PATHS,
+	readFileText,
+	resolveContainedPath,
+} from '@src/server'
 import { parseArgs } from 'node:util'
 import {
 	COMMAND_OPTIONS,
@@ -933,40 +939,159 @@ export function catalogToNames(target: string): readonly string[] {
 }
 
 /**
+ * Collects the complete NUL-delimited records from one raw git output chunk.
+ *
+ * @param records - The complete records retained in arrival order.
+ * @param pending - The mutable cell carrying the unfinished record between chunks.
+ * @param decoder - The streaming UTF-8 decoder shared by the query.
+ * @param controller - The query controller aborted on a bound refusal.
+ * @param target - The repository the query addresses.
+ * @param chunk - The next owned output bytes.
+ * @returns Nothing.
+ */
+export function collectGitRecords(
+	records: string[],
+	pending: string[],
+	decoder: TextDecoder,
+	controller: AbortController,
+	target: string,
+	chunk: Uint8Array,
+): void {
+	if (controller.signal.aborted) return
+	const parts = `${pending[0] ?? ''}${decoder.decode(chunk, { stream: true })}`.split('\0')
+	pending[0] = parts.pop() ?? ''
+	for (const record of parts) {
+		if (record.length === 0) continue
+		if (records.length >= MAX_INVENTORY_PATHS) {
+			refuseGitRecords(
+				controller,
+				target,
+				`The git query for target at ${target} exceeded the working-tree inventory limit.`,
+			)
+			return
+		}
+		records.push(record)
+	}
+	if ((pending[0] ?? '').length > MAX_PATH_LENGTH + 3) {
+		refuseGitRecords(
+			controller,
+			target,
+			`The git query for target at ${target} returned an unfinished record beyond the supported path limit.`,
+		)
+	}
+}
+
+/**
+ * Aborts a git query with its first target refusal.
+ *
+ * @param controller - The query controller whose reason retains the refusal.
+ * @param target - The repository the query addresses.
+ * @param message - The refusal message.
+ * @returns Nothing.
+ */
+export function refuseGitRecords(
+	controller: AbortController,
+	target: string,
+	message: string,
+): void {
+	if (!controller.signal.aborted) {
+		controller.abort(new ScaffoldError('TARGET', message, { target }))
+	}
+}
+
+/**
  * Reads one git query as its NUL-separated records.
  *
  * @param target - The repository the query runs in.
  * @param args - The git arguments, without the program name.
  * @returns The non-empty records git wrote, in git's own order.
- * @throws `ScaffoldError('TARGET', …)` when the query fails, which is what a
- * directory that is not a git repository answers with.
+ * @throws `ScaffoldError('TARGET', …)` when the query fails or its output is
+ * incomplete or outside the working-tree inventory bounds.
  *
  * @remarks
  * Git is asked rather than reimplemented, because the tracked set and the dirty
- * set are git's own answers and nothing else can give them. `executeSync`
- * resolves the bare `git` name against `PATH` and `PATHEXT` on Windows, never
- * through a shell, so the query runs without an extension of its own. A failed
- * run resolves instead of throwing there, so git's own refusal is buffered into
- * the result rather than written onto a stream nobody chose.
+ * set are git's own answers and nothing else can give them. The raw session
+ * streams complete NUL-delimited records without retaining the whole query as a
+ * manifest-sized text buffer. Its initial hooks are installed before the eager
+ * spawn, so no output or child fault can precede its observer.
  *
  * @example
  * ```ts
  * import { readGitRecords } from './helpers.js'
  *
- * readGitRecords('./packages/router', ['ls-files', '-z']) // ['package.json', 'src/core/index.ts']
+ * await readGitRecords('./packages/router', ['ls-files', '-z']) // ['package.json', 'src/core/index.ts']
  * ```
  */
-export function readGitRecords(target: string, args: readonly string[]): readonly string[] {
-	const result = executeSync(
-		{ file: 'git', arguments: [...args] },
-		{ workspace: target, limit: MAX_MANIFEST_BYTES, strict: false },
-	)
-	if (result.failed) {
-		throw new ScaffoldError('TARGET', `The target at ${target} is not a git repository.`, {
+export async function readGitRecords(
+	target: string,
+	args: readonly string[],
+): Promise<readonly string[]> {
+	const records: string[] = []
+	const pending = ['']
+	const decoder = new TextDecoder('utf-8', { ignoreBOM: true })
+	const controller = new AbortController()
+	let session: SessionInterface | undefined
+	try {
+		session = createSession({
+			command: { file: 'git', arguments: ['-C', target, ...args] },
+			workspace: '.',
+			signal: controller.signal,
+			on: {
+				stdout: collectGitRecords.bind(undefined, records, pending, decoder, controller, target),
+				error: refuseGitRecords.bind(
+					undefined,
+					controller,
+					target,
+					`The git query for target at ${target} failed before it completed.`,
+				),
+			},
+			error: refuseGitRecords.bind(
+				undefined,
+				controller,
+				target,
+				`The git query for target at ${target} failed while reading its output.`,
+			),
+		})
+		const exit = await session.exit
+		pending[0] = `${pending[0] ?? ''}${decoder.decode()}`
+		if (controller.signal.aborted) throw controller.signal.reason
+		if (exit.signal !== null) {
+			throw new ScaffoldError(
+				'TARGET',
+				`The git query for target at ${target} ended from signal ${exit.signal}.`,
+				{ target, signal: exit.signal },
+			)
+		}
+		if (exit.code !== 0) {
+			throw new ScaffoldError(
+				'TARGET',
+				`The git query for target at ${target} failed with exit code ${String(exit.code)}.`,
+				{ target, code: exit.code },
+			)
+		}
+		if (!exit.drained) {
+			throw new ScaffoldError(
+				'TARGET',
+				`The git query for target at ${target} ended before its output drained.`,
+				{ target },
+			)
+		}
+		if ((pending[0] ?? '').length > 0) {
+			throw new ScaffoldError(
+				'TARGET',
+				`The git query for target at ${target} returned an incomplete record.`,
+				{ target },
+			)
+		}
+		return records
+	} catch (error) {
+		if (isScaffoldError(error)) throw error
+		throw new ScaffoldError('TARGET', `The git query for target at ${target} could not start.`, {
 			target,
 		})
+	} finally {
+		if (session !== undefined) await session.destroy()
 	}
-	return result.stdout.split('\0').filter((record) => record.length > 0)
 }
 
 /**

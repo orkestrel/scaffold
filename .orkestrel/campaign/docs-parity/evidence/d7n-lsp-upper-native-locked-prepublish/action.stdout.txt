@@ -1,0 +1,126 @@
+Checking formatting...
+
+All matched files use the correct format.
+Finished in 1251ms on 65 files using 16 threads.
+vite v8.2.2 building client environment for production...
+transforming...
+✓ 10 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/core/index.js  52.31 kB │ gzip: 11.88 kB │ map: 88.12 kB
+
+transforming...
+✓ 10 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/core/index.cjs  55.85 kB │ gzip: 12.12 kB │ map: 89.45 kB
+
+✓ built in 157ms
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+Copied: dist/src/core/index.d.ts to dist/src/core/index.d.cts
+vite v8.2.2 building client environment for production...
+transforming...
+✓ 5 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/server/index.js  9.28 kB │ gzip: 3.08 kB │ map: 17.70 kB
+
+transforming...
+✓ 5 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/server/index.cjs  9.53 kB │ gzip: 3.16 kB │ map: 17.77 kB
+
+✓ built in 71ms
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+Copied: dist/src/server/index.d.ts to dist/src/server/index.d.cts
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/lsp
+
+·······························································································································································
+
+ Test Files  8 passed (8)
+      Tests  159 passed (159)
+   Start at  09:25:40
+   Duration  3.28s (transform 1.19s, setup 923ms, import 1.39s, tests 3.56s, environment 1ms)
+
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/lsp
+
+·················································································-·········
+
+ Test Files  1 passed (1)
+      Tests  90 passed | 1 skipped (91)
+   Start at  09:25:44
+   Duration  804ms (transform 91ms, setup 28ms, import 113ms, tests 513ms, environment 0ms)
+
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/lsp
+
+····························
+
+ Test Files  3 passed (3)
+      Tests  28 passed (28)
+   Start at  09:25:45
+   Duration  551ms (transform 201ms, setup 64ms, import 561ms, tests 30ms, environment 0ms)
+
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/lsp
+
+··········································································································································································stdout | tests/config.test.ts > configuration helpers > rolls one face into a single declaration and rewrites its core specifier
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+
+·-stdout | tests/config.test.ts > configuration helpers > rolls one face into a single declaration and rewrites its core specifier
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+
+·
+
+ Test Files  1 passed (1)
+      Tests  172 passed | 1 skipped (173)
+   Start at  09:25:46
+   Duration  2.95s (transform 198ms, setup 25ms, import 440ms, tests 2.33s, environment 0ms)
+
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/lsp
+
+·······················
+
+ Test Files  1 passed (1)
+      Tests  23 passed (23)
+   Start at  09:25:50
+   Duration  678ms (transform 95ms, setup 25ms, import 492ms, tests 7ms, environment 0ms)
+
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/lsp
+
+···················································································································································································································································
+
+ Test Files  1 passed (1)
+      Tests  243 passed (243)
+   Start at  09:25:51
+   Duration  595ms (transform 110ms, setup 25ms, import 380ms, tests 25ms, environment 0ms)
+
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/lsp
+
+·
+
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+   Start at  09:25:52
+   Duration  486ms (transform 105ms, setup 25ms, import 215ms, tests 98ms, environment 0ms)
+
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/lsp
+
+···········
+
+ Test Files  1 passed (1)
+      Tests  11 passed (11)
+   Start at  09:25:53
+   Duration  13.05s (transform 66ms, setup 26ms, import 2.25s, tests 10.63s, environment 0ms)
+

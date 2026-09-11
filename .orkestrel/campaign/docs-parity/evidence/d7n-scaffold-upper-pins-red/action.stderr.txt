@@ -1,0 +1,96 @@
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:core| tests/src/core/compilers.test.ts > blueprintToDevDependencies compile tooling > keeps the browser application toolchain in an app-only workspace
+Error: Snapshot `blueprintToDevDependencies compile tooling > keeps the browser application toolchain in an app-only workspace 1` mismatched
+
+- Expected
++ Received
+
+@@ -1,12 +1,12 @@
+  {
+- 	"@orkestrel/contract": "^0.0.16",
++ 	"@orkestrel/contract": "^0.0.17",
+  	"@orkestrel/guide": "^0.0.17",
+- 	"@orkestrel/html": "^0.0.8",
++ 	"@orkestrel/html": "^0.0.9",
+  	"@orkestrel/probe": "^0.0.12",
+  	"@orkestrel/scaffold": "^0.0.64",
+- 	"@orkestrel/test": "^0.0.13",
++ 	"@orkestrel/test": "^0.0.14",
+  	"@types/node": "^26.5.0",
+  	"@vitejs/plugin-vue": "^6.0.8",
+  	"@vitest/browser-playwright": "^4.1.11",
+  	"oxfmt": "^0.67.0",
+  	"oxlint": "^1.82.0",
+
+ ❯ tests/src/core/compilers.test.ts:445:3
+    443|    expect.arrayContaining(['@orkestrel/html', 'vue', '@orkestrel/test'…
+    444|   )
+    445|   await expect(JSON.stringify(planned, undefined, '\t')).toMatchFileSn…
+       |   ^
+    446|    'fixtures/app-only-toolchain.txt',
+    447|   )
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  |src:core| tests/src/core/compilers.test.ts > blueprintToDevDependencies compile tooling > keeps a generated source workspace manifest byte-stable
+Error: Snapshot `blueprintToDevDependencies compile tooling > keeps a generated source workspace manifest byte-stable 1` mismatched
+
+- Expected
++ Received
+
+@@ -63,11 +63,11 @@
+  	"devDependencies": {
+  		"@microsoft/api-extractor": "^7.59.0",
+  		"@orkestrel/guide": "^0.0.17",
+  		"@orkestrel/probe": "^0.0.12",
+  		"@orkestrel/scaffold": "^0.0.64",
+- 		"@orkestrel/test": "^0.0.13",
++ 		"@orkestrel/test": "^0.0.14",
+  		"@types/node": "^26.5.0",
+  		"oxfmt": "^0.67.0",
+  		"oxlint": "^1.82.0",
+  		"typescript": "^6.0.3",
+  		"vite": "^8.2.2",
+
+ ❯ tests/src/core/compilers.test.ts:493:3
+    491|   // moves it. Regenerate it with `npm run test:src:core -- -u` and re…
+    492|   // diff; it is the tripwire for every other byte.
+    493|   await expect(manifest).toMatchFileSnapshot('fixtures/source-manifest…
+       |   ^
+    494|  })
+    495| })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  |src:core| tests/src/core/compilers.test.ts > blueprintToScripts config projects > registers and gates setup proofs only when the blueprint selects them
+Error: Snapshot `blueprintToScripts config projects > registers and gates setup proofs only when the blueprint selects them 1` mismatched
+
+- Expected
++ Received
+
+@@ -63,11 +63,11 @@
+  	"devDependencies": {
+  		"@microsoft/api-extractor": "^7.59.0",
+  		"@orkestrel/guide": "^0.0.17",
+  		"@orkestrel/probe": "^0.0.12",
+  		"@orkestrel/scaffold": "^0.0.64",
+- 		"@orkestrel/test": "^0.0.13",
++ 		"@orkestrel/test": "^0.0.14",
+  		"@types/node": "^26.5.0",
+  		"oxfmt": "^0.67.0",
+  		"oxlint": "^1.82.0",
+  		"typescript": "^6.0.3",
+  		"vite": "^8.2.2",
+
+ ❯ tests/src/core/compilers.test.ts:506:3
+    504|   // A release moves the fixture through its floors and self-pin; rege…
+    505|   // with `npm run test:src:core -- -u` and review the diff.
+    506|   await expect(blueprintToManifest(absent)).toMatchFileSnapshot(
+       |   ^
+    507|    'fixtures/setup-false-manifest.txt',
+    508|   )
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+

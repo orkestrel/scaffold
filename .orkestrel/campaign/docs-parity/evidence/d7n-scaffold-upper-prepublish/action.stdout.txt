@@ -1,0 +1,110 @@
+Checking formatting...
+
+All matched files use the correct format.
+Finished in 3369ms on 223 files using 16 threads.
+vite v8.3.0 building client environment for production...
+transforming...
+✓ 14 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/core/index.js  261.15 kB │ gzip: 70.66 kB │ map: 352.28 kB
+
+transforming...
+✓ 14 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/core/index.cjs  269.31 kB │ gzip: 71.40 kB │ map: 354.71 kB
+
+✓ built in 248ms
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+Copied: dist/src/core/index.d.ts to dist/src/core/index.d.cts
+vite v8.3.0 building client environment for production...
+transforming...
+✓ 9 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/server/index.js  174.80 kB │ gzip: 45.14 kB │ map: 281.68 kB
+
+transforming...
+✓ 9 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/server/index.cjs  183.55 kB │ gzip: 45.61 kB │ map: 287.30 kB
+
+✓ built in 212ms
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+Copied: dist/src/server/index.d.ts to dist/src/server/index.d.cts
+vite v8.3.0 building client environment for production...
+transforming...
+✓ 6 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/bin/main.js  82.83 kB │ gzip: 21.39 kB │ map: 151.05 kB
+
+✓ built in 29ms
+build-host: staged 121 file(s) into dist/host
+build-inventory: staged 121 file(s) into host.json
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/scaffold
+
+·························································································································································································································································································································································································································
+
+ Test Files  9 passed (9)
+      Tests  409 passed (409)
+   Start at  08:54:56
+   Duration  20.74s (transform 2.30s, setup 2.84s, import 1.74s, tests 29.77s, environment 1ms)
+
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/scaffold
+
+····························································································································---···········································································································-········································································-···························································-··································································
+
+ Test Files  5 passed (5)
+      Tests  428 passed | 6 skipped (434)
+   Start at  08:55:18
+   Duration  5.26s (transform 2.45s, setup 4.43s, import 467ms, tests 9.09s, environment 0ms)
+
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/scaffold
+
+·········································································································x·scaffold <verb> [options]
+
+  scaffold new <name> [--src <list>] [--app <list>] [--bin] [--deps <list>] [--offline] [--from <path>] [--target <path>] [--json]
+      scaffold a workspace
+  scaffold audit [--groups <list>] [--offline] [--from <path>] [--target <path>] [--json]
+      report how the target compares to its plan, writing nothing
+  scaffold repair [--groups <list>] [--offline] [--from <path>] [--target <path>] [--json]
+      write each planned path the target is missing or has let drift
+  scaffold catalog [--all] [--from <path>] [--target <path>] [--json]
+      regenerate the package table and refresh the guide mirrors
+  scaffold overwrite [--groups <list>] [--dirty] [--offline] [--from <path>] [--target <path>] [--json]
+      do everything repair and catalog do, then delete what the plan does not own and re-declare the dependency ranges
+
+options
+  --src <list>                   the published library environments to build: core, browser, server
+  --app <list>                   the private application environments to build: core, browser, server
+  --bin                          scaffold a command-line executable at src/bin/main.ts
+  --deps <list>                  the @orkestrel/* packages the workspace depends on
+  --groups <list>                the artifact groups to cover; every group when absent
+  --all                          fetch a guide for every package the organization publishes, not the declared ones alone
+  --dirty                        delete from a tree carrying uncommitted changes
+  --offline                      use the distributed dependency and vendored-host floors without reading upstream
+  --from <path>                  read the data root from a local path instead of the bundled one; catalog alone accepts it more than once
+  --target <path>                the directory the verb operates on; the working directory when absent
+  --json                         emit one machine-readable value instead of a report
+  ORKESTREL_SCAFFOLD_REGISTRY    the registry base mapped to upstream.registry.base
+  ORKESTREL_SCAFFOLD_REPOSITORY  the repository base mapped to upstream.repository.base
+
+exit codes
+  0  clean
+  1  drift or failure
+  2  usage error
+··········································································································································
+
+ Test Files  1 failed | 2 passed (3)
+      Tests  1 failed | 244 passed (245)
+   Start at  08:55:24
+   Duration  33.34s (transform 1.07s, setup 2.17s, import 331ms, tests 33.39s, environment 0ms)
+

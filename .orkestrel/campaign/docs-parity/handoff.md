@@ -12,6 +12,40 @@ The upper layer is selected from the freshly regenerated catalog; its plan is
 d7n-upper-layer-plan.md. Guide and Scaffold preparation precedes propagation
 to the selected runtime packages. No new operator command is ready yet.
 
+Upper preparation is in progress. Guide's refreshed runtime pins, prepublishOnly
+and actual archive passed; its complete distribution remains byte-identical to
+the accepted native-entry build. Scaffold's Git reader exceeded the unrelated
+manifest capture limit as the campaign grew. The stream repair and the review's
+leading-U+FEFF correction are implemented. Source review, independent/reused
+objective release review, final root prepublish and actual packing passed. The
+Scaffold0.0.64 archive is d7n-scaffold-upper-git-final-pack with SHA256
+a4e7078da602619e54384dbc7bdddaf25a2fdc6af0842a55004b8328365b8be7. Commit/main closure
+is next. Read d7n-scaffold-upper-prepared-verdict.md.
+
+LSP's native entry and supported policy refresh passed root prepublishOnly and
+landed at 3b9f3a5dcae91cb206e9fc6ed7bb546be20036a3 on its pushed campaign branch.
+Its final refreshed tooling visit and main closure remain open. Browser's native
+entry passed its scoped command and received supported policy repair; final
+preparation remains open. Terminal's bounded native docs fix and Interpret's
+native entry are implemented with scoped green receipts; independent review and
+final preparation remain open. Terminal used the native writer after the external
+writer hit its weekly limit without changing source. Qualifier's latest tooling
+and native baseline are recorded; its adoption remains open.
+
+Guide preparation landed at f277b88bc1e8063521ce1acaa783913b0af1856a and is campaign-
+pushed. Its refreshed Scaffold visit passed overwrite/audit/catalog but stopped
+before lock and gates at the Scaffold guide mirror comparison. Offline overwrite
+fetched no guide. Resume through the tooling-guide mirror successor, which uses
+Materializer.mirror for the canonical Guide and Scaffold guide files. The target
+remained clean at the preparation commit; do not repeat a preparation commit.
+
+Use the locked upper tooling successor, not the predecessor's
+--package-lock=false overlay. The LSP conformance case proved that the old flag
+could select a newer external dependency than its tracked lock. The no-save
+install without that flag preserved metadata and full tooling output and made
+the unchanged conformance case pass. Read d7n-lsp-upper-native-verdict.md and
+d7n-upper-overlay-lock-brief.md. The remaining selected package work is unchanged.
+
 Fresh origin/main ancestry checks passed for the remaining roster. Ollama has
 local source, guide and test changes; preserve them. The read-only scout is
 d7n-upper-layer-scout-report.md. Its limits and current root evidence are in

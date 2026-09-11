@@ -1,0 +1,23 @@
+{
+  "version": "0.0.64",
+  "name": "@orkestrel/scaffold",
+  "problems": [
+    "invalid: @orkestrel/guide@0.0.18 C:\\Users\\mikes\\WebstormProjects\\scaffold\\node_modules\\@orkestrel\\guide"
+  ],
+  "dependencies": {
+    "@orkestrel/guide": {
+      "version": "0.0.18",
+      "resolved": "file:C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\pass\\packed\\d7n-guide-upper-final-pack\\orkestrel-guide-0.0.18.tgz",
+      "overridden": false,
+      "invalid": "\"^0.0.17\" from the root project",
+      "problems": [
+        "invalid: @orkestrel/guide@0.0.18 C:\\Users\\mikes\\WebstormProjects\\scaffold\\node_modules\\@orkestrel\\guide"
+      ]
+    }
+  },
+  "error": {
+    "code": "ELSPROBLEMS",
+    "summary": "invalid: @orkestrel/guide@0.0.18 C:\\Users\\mikes\\WebstormProjects\\scaffold\\node_modules\\@orkestrel\\guide",
+    "detail": ""
+  }
+}

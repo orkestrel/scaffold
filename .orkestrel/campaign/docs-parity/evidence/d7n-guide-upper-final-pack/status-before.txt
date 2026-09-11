@@ -1,0 +1,8 @@
+ M .claude/agents/orkestrel.md
+ M guides/contract.md
+ M guides/markdown.md
+ M guides/probe.md
+ M guides/scaffold.md
+ M guides/test.md
+ M package-lock.json
+ M package.json

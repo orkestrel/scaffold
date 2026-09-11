@@ -1,0 +1,128 @@
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/scaffold
+
+ ✓ |src:core| tests/src/core/compilers.test.ts > FLOOR_RANGE_PATTERN > accepts a canonical major.minor.patch floor 1ms
+ ✓ |src:core| tests/src/core/compilers.test.ts > FLOOR_RANGE_PATTERN > refuses every other range form 0ms
+ ✓ |src:core| tests/src/core/compilers.test.ts > ORKESTREL_RANGE_PATTERN > accepts a caret-pinned range at any pre-1.0 minor 0ms
+ ✓ |src:core| tests/src/core/compilers.test.ts > ORKESTREL_RANGE_PATTERN > refuses a range that is not caret-pinned below 1.0 0ms
+ ✓ |src:core| tests/src/core/compilers.test.ts > replaceManifestRanges > raises writable declarations while preserving peer declarations and metadata 1ms
+ ✓ |src:core| tests/src/core/compilers.test.ts > blueprintToWritableScripts > names direct project scripts and lifecycle scripts without taking gate chains 2ms
+ ✓ |src:core| tests/src/core/compilers.test.ts > blueprintToWritableScripts > names direct project and workbench scripts for a private application 0ms
+ ✓ |src:core| tests/src/core/compilers.test.ts > replaceManifestScripts > replaces a recognized predecessor and appends an absent script, moving no other byte 1ms
+ ✓ |src:core| tests/src/core/compilers.test.ts > replaceManifestScripts > accepts the chain the generated manifest carried before the proof existed 1ms
+ ✓ |src:core| tests/src/core/compilers.test.ts > replaceManifestScripts > leaves a manifest that already carries every command exactly as it found it 0ms
+ ✓ |src:core| tests/src/core/compilers.test.ts > replaceManifestScripts > retains a differing value while appending an absent script 0ms
+ ✓ |src:core| tests/src/core/compilers.test.ts > replaceManifestScripts > refuses a script declared as something other than a string 0ms
+ ✓ |src:core| tests/src/core/compilers.test.ts > replaceManifestScripts > refuses text carrying no readable scripts object 0ms
+ ✓ |src:core| tests/src/core/compilers.test.ts > replaceManifestScripts > writes every named script into an empty region, moving no byte outside it 0ms
+ ✓ |src:core| tests/src/core/compilers.test.ts > replaceManifestScripts > derives an empty region indentation from the line its own brace opens on 0ms
+ ✓ |src:core| tests/src/core/compilers.test.ts > replaceManifestScripts > writes an empty region inline when no line break precedes it 0ms
+ ✓ |src:core| tests/src/core/compilers.test.ts > replaceManifestScripts > reads only the top-level scripts object 0ms
+ ✓ |src:core| tests/src/core/compilers.test.ts > replaceManifestScripts > appends a qualified script after the last declared member of its own family 1ms
+ ✓ |src:core| tests/src/core/compilers.test.ts > replaceManifestScripts > appends at the section end when no declared key shares the family 0ms
+ ✓ |src:core| tests/src/core/compilers.test.ts > replaceManifestScripts > returns the text untouched when the region names nothing 0ms
+ ✓ |src:core| tests/src/core/compilers.test.ts > blueprintToDevDependencies compile tooling > keeps library publishing tools in a source workspace 0ms
+ ✓ |src:core| tests/src/core/compilers.test.ts > blueprintToDevDependencies compile tooling > omits library publishing tools from an app-only workspace 0ms
+ ✓ |src:core| tests/src/core/compilers.test.ts > blueprintToDevDependencies compile tooling > keeps library publishing tools in an executable workspace 0ms
+ × |src:core| tests/src/core/compilers.test.ts > blueprintToDevDependencies compile tooling > keeps the browser application toolchain in an app-only workspace 10ms
+   → Snapshot `blueprintToDevDependencies compile tooling > keeps the browser application toolchain in an app-only workspace 1` mismatched
+ ✓ |src:core| tests/src/core/compilers.test.ts > blueprintToDevDependencies compile tooling > keeps a shared toolchain pin when a foreign peer declares its floor 0ms
+ ✓ |src:core| tests/src/core/compilers.test.ts > blueprintToDevDependencies compile tooling > emits a conditional toolchain pin beside a foreign peer floor 0ms
+ ✓ |src:core| tests/src/core/compilers.test.ts > blueprintToDevDependencies compile tooling > adds a fleet peer that the shared toolchain does not pin 0ms
+ ✓ |src:core| tests/src/core/compilers.test.ts > blueprintToDevDependencies compile tooling > emits a foreign peer floor while keeping its shared development pin 0ms
+ × |src:core| tests/src/core/compilers.test.ts > blueprintToDevDependencies compile tooling > keeps a generated source workspace manifest byte-stable 3ms
+   → Snapshot `blueprintToDevDependencies compile tooling > keeps a generated source workspace manifest byte-stable 1` mismatched
+ × |src:core| tests/src/core/compilers.test.ts > blueprintToScripts config projects > registers and gates setup proofs only when the blueprint selects them 1ms
+   → Snapshot `blueprintToScripts config projects > registers and gates setup proofs only when the blueprint selects them 1` mismatched
+ ✓ |src:core| tests/src/core/compilers.test.ts > blueprintToScripts config projects > emits the probe workbench outside every gate 0ms
+ ✓ |src:core| tests/src/core/compilers.test.ts > blueprintToScripts config projects > rebuilds publishing workspaces before packing 0ms
+ ✓ |src:core| tests/src/core/compilers.test.ts > blueprintToScripts config projects > does not invent test projects from vendor names alone 0ms
+ ✓ |src:core| tests/src/core/compilers.test.ts > blueprintToScripts config projects > gates the live-service proof on its readiness module rather than on a vendor list 0ms
+ ✓ |src:core| tests/src/core/compilers.test.ts > blueprintToScripts config projects > runs the conformance proof from the default gate and never from the publish gate alone 0ms
+ ✓ |src:core| tests/src/core/compilers.test.ts > blueprintToScripts config projects > registers and gates the planned guides proof 0ms
+ ✓ |src:core| tests/src/core/compilers.test.ts > blueprintToScripts config projects > omits the unplanned guides proof 0ms
+ ✓ |src:core| tests/src/core/compilers.test.ts > blueprintToScripts config projects > emits the guides command and accepts its generated predecessor 1ms
+ ✓ |src:core| tests/src/core/compilers.test.ts > blueprintToScripts config projects > registers the distribution proof only in the release-mode publish gate 0ms
+ ✓ |src:core| tests/src/core/compilers.test.ts > blueprintToScripts config projects > withholds publish-only machinery from a private workspace 0ms
+ ✓ |src:core| tests/src/core/compilers.test.ts > blueprintToScripts config projects > keeps publish proofs in the publish gate for a source workspace 0ms
+ ✓ |src:core| tests/src/core/compilers.test.ts > blueprintToScripts config projects > omits the distribution proof from a workspace that packs no published source 0ms
+ ✓ |src:core| tests/src/core/compilers.test.ts > blueprintToScripts config projects > plans the packed-package proof for a publishing workspace and for no other 1ms
+ ✓ |src:core| tests/src/core/compilers.test.ts > blueprintToScripts config projects > writes a proof that selects a browser entry by its target rather than its name 1ms
+ ✓ |src:core| tests/src/core/compilers.test.ts > blueprintToScripts config projects > writes a proof that partitions every published subpath rather than dropping one 0ms
+ ✓ |src:core| tests/src/core/compilers.test.ts > blueprintToScripts config projects > writes a core-only proof that reddens on a browser face it cannot drive 1ms
+ ✓ |src:core| tests/src/core/compilers.test.ts > blueprintToScripts config projects > registers an application-only integration proof in the default test gate 1ms
+ ✓ |src:core| tests/src/core/compilers.test.ts > blueprintToScripts config projects > runs a published integration project in the default test gate 0ms
+ ✓ |src:core| tests/src/core/compilers.test.ts > blueprintToScripts config projects > emits a cross-environment composition seed without a packaging process 0ms
+ ✓ |src:core| tests/src/core/compilers.test.ts > blueprintToScripts config projects > registers an app-core-only integration seed in the default test gate 0ms
+ ✓ |src:core| tests/src/core/compilers.test.ts > blueprintToScripts config projects > registers every project as the factory itself rather than a call of it 1ms
+ ✓ |src:core| tests/src/core/compilers.test.ts > blueprint gate laws > admits a foreign peer at a floor range 0ms
+ ✓ |src:core| tests/src/core/compilers.test.ts > blueprint gate laws > admits a scoped foreign peer at a floor range 0ms
+ ✓ |src:core| tests/src/core/compilers.test.ts > blueprint gate laws > refuses a floor range for a fleet peer 0ms
+ ✓ |src:core| tests/src/core/compilers.test.ts > blueprint gate laws > refuses a caret pin for a foreign peer 0ms
+ ✓ |src:core| tests/src/core/compilers.test.ts > blueprint gate laws > keeps a malformed fleet name on the fleet branch 0ms
+ ✓ |src:core| tests/src/core/compilers.test.ts > blueprint gate laws > keeps a second malformed fleet name on the fleet branch 0ms
+ ✓ |src:core| tests/src/core/compilers.test.ts > blueprint gate laws > refuses a parent segment as a foreign peer name 0ms
+ ✓ |src:core| tests/src/core/compilers.test.ts > blueprint gate laws > refuses a scoped parent segment as a foreign peer name 0ms
+ ✓ |src:core| tests/src/core/compilers.test.ts > blueprint gate laws > refuses a nested parent segment as a foreign peer name 0ms
+ ✓ |src:core| tests/src/core/compilers.test.ts > blueprint gate laws > advises a multi-environment published axis without core rather than refusing it 0ms
+ ✓ |src:core| tests/src/core/compilers.test.ts > blueprint gate laws > projects integration on either workspace axis and advises only an absent showcase axis 1ms
+ ✓ |src:core| tests/src/core/compilers.test.ts > blueprint gate laws > raises no showcase question after the browser axis is present 0ms
+ ✓ |src:core| tests/src/core/compilers.test.ts > blueprint gate laws > seals every application browser factory against a caller argument 0ms
+ ✓ |src:core| tests/src/core/compilers.test.ts > blueprint gate laws > advises an integration flag that has fewer than two environments to compose across 0ms
+ ✓ |src:core| tests/src/core/compilers.test.ts > blueprint gate laws > raises no integration question after two environments are there to compose across 0ms
+ ✓ |src:core| tests/src/core/compilers.test.ts > blueprintToRootVite fixed proofs > gives every bin project its contended-suite timeout and reason 0ms
+ ✓ |src:core| tests/src/core/compilers.test.ts > blueprintToRootVite fixed proofs > keeps only packing and live-service proofs on expensive-project budgets 0ms
+ ✓ |src:core| tests/src/core/compilers.test.ts > blueprintToRootVite fixed proofs > keeps this repository byte-identical to every configuration it generates 1ms
+ ✓ |src:core| tests/src/core/compilers.test.ts > blueprintToRootVite fixed proofs > emits the peer clause in every published build face 1ms
+ ✓ |src:core| tests/src/core/compilers.test.ts > blueprintToRootVite fixed proofs > registers the conformance and live-service projects only when their fact is set 1ms
+ ✓ |src:core| tests/src/core/compilers.test.ts > blueprintToRootVite fixed proofs > imports the configuration helpers a selection actually reaches 0ms
+ ✓ |src:core| tests/src/core/compilers.test.ts > blueprintToRootVite fixed proofs > wires the build-log guard into every bundle-emitting factory 0ms
+ ✓ |src:core| tests/src/core/compilers.test.ts > blueprintToRootVite fixed proofs > emits the browser resolver for exactly the selections that launch one 1ms
+ ✓ |src:core| tests/src/core/compilers.test.ts > blueprintToRootVite fixed proofs > wires the emitted root configuration to the resolver beside it 0ms
+ ✓ |src:core| tests/src/core/compilers.test.ts > blueprintToRootVite fixed proofs > writes each selection-dependent span the way the formatter leaves it 0ms
+ ✓ |src:core| tests/src/core/compilers.test.ts > blueprintToRootVite fixed proofs > reaches core through the rewrite in every emitted published face 0ms
+ ✓ |src:core| tests/src/core/compilers.test.ts > blueprintToRootVite fixed proofs > explains the executable build in every emitted bin workspace 0ms
+ ✓ |src:core| tests/src/core/compilers.test.ts > blueprintToConfigArtifacts app matrix > emits exactly the core app config 0ms
+ ✓ |src:core| tests/src/core/compilers.test.ts > blueprintToConfigArtifacts app matrix > emits exactly the browser app configs 0ms
+ ✓ |src:core| tests/src/core/compilers.test.ts > blueprintToConfigArtifacts app matrix > emits exactly the server app configs 0ms
+ ✓ |src:core| tests/src/core/compilers.test.ts > blueprintToConfigArtifacts app matrix > emits exactly the full app config matrix 0ms
+ ✓ |src:core| tests/src/core/compilers.test.ts > blueprintToConfigArtifacts app matrix > emits the same exact app matrix without a src axis 0ms
+ ✓ |src:core| tests/src/core/compilers.test.ts > blueprintToConfigArtifacts app matrix > emits no app config for the empty app axis 0ms
+ ✓ |src:core| tests/src/core/compilers.test.ts > blueprintToConfigArtifacts app check scopes > includes core tests and the host-independent setup explicitly 0ms
+ ✓ |src:core| tests/src/core/compilers.test.ts > blueprintToConfigArtifacts app check scopes > includes browser tests and only the browser setup explicitly 0ms
+ ✓ |src:core| tests/src/core/compilers.test.ts > blueprintToConfigArtifacts app check scopes > includes server tests and only the server setup explicitly 0ms
+ ✓ |src:core| tests/src/core/compilers.test.ts > content artifact compilers > emits every selected source entry without a starter entity 0ms
+ ✓ |src:core| tests/src/core/compilers.test.ts > content artifact compilers > emits one empty-barrel assertion per selected Vitest axis project 1ms
+ ✓ |src:core| tests/src/core/compilers.test.ts > content artifact compilers > emits the package front page and every required guide index 0ms
+ ✓ |src:core| tests/src/core/compilers.test.ts > content artifact compilers > emits the front page beside the two root instruction pointers 0ms
+ ✓ |src:core| tests/src/core/compilers.test.ts > content artifact compilers > plans the catalog file inside the canon and none of the moved wiring 1ms
+ ✓ |src:core| tests/src/core/compilers.test.ts > content artifact compilers > runs the package-owned guides proof only when selected 0ms
+ ✓ |src:core| tests/src/core/compilers.test.ts > content artifact compilers > names the unwritten package guide without linking to it 0ms
+ ✓ |src:core| tests/src/core/compilers.test.ts > content artifact compilers > emits only the honest vendor inventory skeleton when vendors are declared 0ms
+ ✓ |src:core| tests/src/core/compilers.test.ts > blueprintToRootTsconfig own specifiers > maps every published subpath before the bare specifier and maps no app entry 0ms
+ ✓ |src:core| tests/src/core/compilers.test.ts > blueprintToRootTsconfig own specifiers > maps a single published environment at the bare specifier alone 0ms
+ ✓ |src:core| tests/src/core/compilers.test.ts > blueprintToRootTsconfig own specifiers > maps no own specifier for a workspace that publishes nothing 0ms
+ ✓ |src:core| tests/src/core/compilers.test.ts > the guides entry > keeps the package-owned entry free of named local command functions 2ms
+ ✓ |src:core| tests/src/core/compilers.test.ts > the guides entry > runs the native command when VITEST is false 2050ms
+ ✓ |src:core| tests/src/core/compilers.test.ts > the guides entry > registers assertions from an authored entry in the guides worker 2042ms
+ ✓ |src:core| tests/src/core/compilers.test.ts > the guides entry > keeps summary and example namespaces distinct toward guide 884ms
+ ✓ |src:core| tests/src/core/compilers.test.ts > the guides entry > keeps summary and example namespaces distinct toward source 862ms
+ ✓ |src:core| tests/src/core/compilers.test.ts > the guides entry > keeps the first matched title and absent-language comparison boundaries 1786ms
+ ✓ |src:core| tests/src/core/compilers.test.ts > the guides entry > runs assertion-owned parity without a parent report or write 829ms
+ ✓ |src:core| tests/src/core/compilers.test.ts > the guides entry > carries every summary and example to the guide and leaves every other byte 866ms
+ ✓ |src:core| tests/src/core/compilers.test.ts > the guides entry > carries every summary and example to the source, and reads back clean 2449ms
+ ✓ |src:core| tests/src/core/compilers.test.ts > the guides entry > reports a key no doc block carries and the pitch, and leaves both files 844ms
+ ✓ |src:core| tests/src/core/compilers.test.ts > the guides entry > carries no pitch line for a manifest declaring no name 841ms
+ ✓ |src:core| tests/src/core/compilers.test.ts > the guides entry > carries no pitch line for a manifest naming a guide the index does not index under its own spec 853ms
+ ✓ |src:core| tests/src/core/compilers.test.ts > the guides entry > prints one usage line and takes exit 2 for an argument outside its option 1028ms
+ ✓ |src:core| tests/src/core/compilers.test.ts > the guides entry > carries every overlapping row into one source file and writes that file once 2569ms
+ ✓ |src:core| tests/src/core/compilers.test.ts > the guides entry > names the concept index it cannot read and takes exit 2 523ms
+ ✓ |src:core| tests/src/core/compilers.test.ts > the guides entry > names the indexed guide the workspace does not carry and takes exit 2 544ms
+ ✓ |src:core| tests/src/core/compilers.test.ts > the guides entry > rejects an empty guides project and an unhandled project error 1459ms
+
+  Snapshots  3 failed
+ Test Files  1 failed (1)
+      Tests  3 failed | 112 passed (115)
+   Start at  08:42:53
+   Duration  21.45s (transform 331ms, setup 328ms, import 482ms, tests 20.48s, environment 0ms)
+

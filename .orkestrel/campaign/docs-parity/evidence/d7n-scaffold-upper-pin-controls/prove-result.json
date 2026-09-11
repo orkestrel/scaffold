@@ -1,0 +1,9 @@
+{
+  "content": [
+    {
+      "type": "text",
+      "text": "tool call error: tool call failed for `probe/prove`\n\nCaused by:\n    Mcp error: -32000: Legacy protocol 2025-11-25 cannot represent a stream result"
+    }
+  ],
+  "isError": true
+}

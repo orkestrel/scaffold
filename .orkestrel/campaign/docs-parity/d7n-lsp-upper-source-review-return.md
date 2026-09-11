@@ -1,0 +1,15 @@
+1. **Entry — CONFIRMED.** [The native entry](C:/Users/mikes/WebstormProjects/lsp/tests/guides.test.ts:34) directly constructs `GuideCommand` with `readInventory`, `createVitest`, the prescribed inventory, and LSP’s module map. Runtime imports occur inside the asynchronous callback. The manifest-name assertion binds pitch selection to `@orkestrel/lsp`. Root’s recorded native command reaches the guides worker and exits `0`; the baseline exits `1` on the static `@src/core` import.
+
+2. **Preservation — CONFIRMED.** Comparing `diff-before.txt` with the installed Guide implementation found an asserting path for every predecessor obligation. Direct declaration, barrel, internal, hidden, and surface checks remain explicit. The installed `Parity.#inspectMethods` retains documented-group membership, empty-group refusal, interface bijection, and implementing-class extras. The test never asserts `report.declarations`. Example, equality, import, and link findings retain their specification keys, so filtering by the joined row preserves their findings. The executed `utf-16` advertisement and framing assertions retain their inputs, boundary offsets, body length `40`, and `initialized` result. See [the preserved assertions](C:/Users/mikes/WebstormProjects/lsp/tests/guides.test.ts:86).
+
+3. **Historical closure — CONFIRMED for the source corrections.** The retained diffs agree with the LSP tree: lead-ins end with periods; subsection names use the agreed vocabulary; the protocol fixture describes header plus body; the named fences have lead-ins; the titled example reads diagnostics in the guide and source; `destroy` documents rejection before shutdown; setup comments retain their wrapping; function and class `Shape` cells are populated; the dedicated guard table carries its guard convention alone. The drain ordering also agrees with `LSPClient.#teardown`.
+
+   Annotate the historical prose without reopening source work: remove the prose tallies at `d7n-lsp-converge-fix-report.md:176` and `:352`, and `d7n-lsp-close-2-report.md:5`. At `d7n-lsp-converge-fix-report.md:156`, replace the claim that source inspection “falsified” the behavior with wording that identifies it as source inspection. Preserve the historical command output.
+
+4. **Scope and evidence — CONFIRMED.** Root’s supplied status and diff identify `tests/guides.test.ts` as the changed package path at `c4842c8d1473cc73a0b1e5c6c5fd64e405ad2792`. The installed-tooling receipt records archive identity and a clean Guide distribution comparison. The red and green receipts run the same direct native command against the source entry. These receipts establish the reviewed native adoption; they do not establish published-package behavior.
+
+The entry, preservation, and historical-source claims held against the supplied diff, installed implementation, retained corrections, and root receipts. No source correction is required.
+
+Prepublish, pack, and main-branch closure still need the final root visit. This verdict is limited to source review.
+
+VERDICT: PASS

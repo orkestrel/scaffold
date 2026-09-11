@@ -1,0 +1,10 @@
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/lsp
+
+·······················
+
+ Test Files  1 passed (1)
+      Tests  23 passed (23)
+   Start at  09:12:27
+   Duration  685ms (transform 91ms, setup 24ms, import 506ms, tests 7ms, environment 0ms)
+

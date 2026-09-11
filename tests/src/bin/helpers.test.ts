@@ -1,8 +1,16 @@
 import type { Audit } from '@src/core'
 import { describe, expect, it } from 'vitest'
 import { width } from '@orkestrel/console'
+import { executeSync } from '@orkestrel/process/server'
 import { resolve } from 'node:path'
-import { CATALOG_AGENT_PATH, createBlueprint, ScaffoldError } from '@src/core'
+import {
+	CATALOG_AGENT_PATH,
+	createBlueprint,
+	MAX_MANIFEST_BYTES,
+	MAX_PATH_LENGTH,
+	ScaffoldError,
+} from '@src/core'
+import { MAX_INVENTORY_PATHS } from '@src/server'
 import { createScratch } from '@orkestrel/test/server'
 import {
 	COMMAND_OPTIONS,
@@ -26,6 +34,7 @@ import {
 	auditToExit,
 	auditToSummary,
 	catalogToNames,
+	collectGitRecords,
 	dependenciesToFloors,
 	dependenciesToFleet,
 	entriesToReleases,
@@ -36,6 +45,7 @@ import {
 	mergeResults,
 	optionToName,
 	readGitRecords,
+	refuseGitRecords,
 	releasesToExit,
 	releasesToPins,
 	releasesToQuestions,
@@ -862,18 +872,210 @@ describe('catalogToNames', () => {
 })
 
 describe('readGitRecords', () => {
-	it('answers the records git wrote for this repository', () => {
-		const records = readGitRecords(WORKSPACE_ROOT, ['ls-files', '-z'])
+	it('answers the records git wrote for this repository', async () => {
+		const records = await readGitRecords(WORKSPACE_ROOT, ['ls-files', '-z'])
 		expect(records).toContain('package.json')
 		expect(records.every((record) => record.length > 0)).toBe(true)
 	})
 
-	it('refuses a directory that is not a git repository', () => {
+	it('reads complete tracked and dirty inventories beyond the manifest byte limit', async () => {
 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
-			expect(() => readGitRecords(workspace.path, ['ls-files', '-z'])).toThrow(ScaffoldError)
+			const repository = workspace.ensure('repository')
+			const paths = Array.from(
+				{ length: Math.floor(MAX_INVENTORY_PATHS / 5) },
+				(_, index) => `tracked/${String(index).padStart(5, '0')}-${'inventory'.repeat(6)}.txt`,
+			)
+			const encoder = new TextEncoder()
+			let bytes = 0
+			let boundary: string | undefined
+			for (const path of paths) {
+				bytes += encoder.encode(`${path}\0`).byteLength
+				if (boundary === undefined && bytes > MAX_MANIFEST_BYTES) boundary = path
+			}
+			expect(bytes).toBeGreaterThan(MAX_MANIFEST_BYTES)
+			expect(boundary).toBeDefined()
+
+			const initialized = executeSync(
+				{ file: 'git', arguments: ['-C', repository, 'init', '--quiet'] },
+				{ strict: false },
+			)
+			expect(initialized.failed).toBe(false)
+			const hashed = executeSync(
+				{ file: 'git', arguments: ['-C', repository, 'hash-object', '-w', '--stdin'] },
+				{ input: 'inventory fixture\n', strict: false },
+			)
+			expect(hashed.failed).toBe(false)
+			const digest = hashed.stdout.trim()
+			const indexed = executeSync(
+				{ file: 'git', arguments: ['-C', repository, 'update-index', '-z', '--index-info'] },
+				{
+					input: paths.map((path) => `100644 ${digest}\t${path}\0`).join(''),
+					strict: false,
+				},
+			)
+			expect(indexed.failed).toBe(false)
+
+			const tracked = await readGitRecords(repository, ['ls-files', '-z'])
+			expect(tracked).toStrictEqual(paths)
+			expect(tracked).toContain(boundary)
+			const dirty = await readGitRecords(repository, [
+				'status',
+				'--porcelain=v1',
+				'--untracked-files=all',
+				'-z',
+			])
+			expect(dirty).toStrictEqual(paths.map((path) => `AD ${path}`))
+			expect(dirty).toContain(`AD ${boundary}`)
 		} finally {
 			workspace.destroy()
 		}
+	})
+
+	it('preserves a leading BOM in the first tracked filename', async () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const repository = workspace.ensure('repository')
+			const path = '\uFEFFleading.txt'
+			const initialized = executeSync(
+				{ file: 'git', arguments: ['-C', repository, 'init', '--quiet'] },
+				{ strict: false },
+			)
+			expect(initialized.failed).toBe(false)
+			const hashed = executeSync(
+				{ file: 'git', arguments: ['-C', repository, 'hash-object', '-w', '--stdin'] },
+				{ input: 'bom fixture\n', strict: false },
+			)
+			expect(hashed.failed).toBe(false)
+			const indexed = executeSync(
+				{ file: 'git', arguments: ['-C', repository, 'update-index', '-z', '--index-info'] },
+				{ input: `100644 ${hashed.stdout.trim()}\t${path}\0`, strict: false },
+			)
+			expect(indexed.failed).toBe(false)
+
+			await expect(readGitRecords(repository, ['ls-files', '-z'])).resolves.toStrictEqual([path])
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('refuses a directory that is not a git repository', async () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			await expect(readGitRecords(workspace.path, ['ls-files', '-z'])).rejects.toThrow(
+				ScaffoldError,
+			)
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('reports a failed git query without diagnosing the repository', async () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const initialized = executeSync(
+				{ file: 'git', arguments: ['-C', workspace.path, 'init', '--quiet'] },
+				{ strict: false },
+			)
+			expect(initialized.failed).toBe(false)
+			await expect(
+				readGitRecords(workspace.path, ['unknown-scaffold-query']),
+			).rejects.toMatchObject({
+				code: 'TARGET',
+				message: expect.stringContaining('git query'),
+			})
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('refuses a successful git query whose final record has no NUL terminator', async () => {
+		await expect(
+			readGitRecords(WORKSPACE_ROOT, ['rev-parse', '--show-toplevel']),
+		).rejects.toMatchObject({
+			code: 'TARGET',
+			message: expect.stringContaining('incomplete record'),
+		})
+	})
+})
+
+describe('collectGitRecords', () => {
+	it('collects ordered records across UTF-8 and NUL boundaries and ignores empty records', () => {
+		const records: string[] = []
+		const pending = ['']
+		const decoder = new TextDecoder()
+		const controller = new AbortController()
+		const encoder = new TextEncoder()
+		collectGitRecords(records, pending, decoder, controller, 'target', encoder.encode('alpha\0br'))
+		const remainder = encoder.encode('ûlée\0\0omega')
+		collectGitRecords(records, pending, decoder, controller, 'target', remainder.subarray(0, 1))
+		collectGitRecords(records, pending, decoder, controller, 'target', remainder.subarray(1))
+		collectGitRecords(records, pending, decoder, controller, 'target', encoder.encode('\0'))
+
+		expect(records).toStrictEqual(['alpha', 'brûlée', 'omega'])
+		expect(pending).toStrictEqual([''])
+		expect(controller.signal.aborted).toBe(false)
+	})
+
+	it('refuses the record beyond the inventory boundary and ignores later input', () => {
+		const records = Array.from({ length: MAX_INVENTORY_PATHS - 1 }, () => 'kept')
+		const pending = ['']
+		const decoder = new TextDecoder()
+		const controller = new AbortController()
+		const encoder = new TextEncoder()
+		collectGitRecords(
+			records,
+			pending,
+			decoder,
+			controller,
+			'target',
+			encoder.encode('last\0overflow\0'),
+		)
+		const reason = controller.signal.reason
+		collectGitRecords(records, pending, decoder, controller, 'target', encoder.encode('ignored'))
+
+		expect(records).toHaveLength(MAX_INVENTORY_PATHS)
+		expect(records.at(-1)).toBe('last')
+		expect(pending).toStrictEqual([''])
+		expect(reason).toMatchObject({ code: 'TARGET' })
+		expect(controller.signal.reason).toBe(reason)
+	})
+
+	it('accepts the unfinished-path boundary and refuses the next character', () => {
+		const records: string[] = []
+		const pending = ['']
+		const decoder = new TextDecoder()
+		const controller = new AbortController()
+		const encoder = new TextEncoder()
+		collectGitRecords(
+			records,
+			pending,
+			decoder,
+			controller,
+			'target',
+			encoder.encode('p'.repeat(MAX_PATH_LENGTH + 3)),
+		)
+		expect(controller.signal.aborted).toBe(false)
+		collectGitRecords(records, pending, decoder, controller, 'target', encoder.encode('p'))
+
+		expect(records).toStrictEqual([])
+		expect(pending[0]).toHaveLength(MAX_PATH_LENGTH + 4)
+		expect(controller.signal.reason).toMatchObject({ code: 'TARGET' })
+	})
+})
+
+describe('refuseGitRecords', () => {
+	it('retains its initial target refusal', () => {
+		const controller = new AbortController()
+		refuseGitRecords(controller, 'target', 'initial refusal')
+		const reason = controller.signal.reason
+		refuseGitRecords(controller, 'target', 'later refusal')
+
+		expect(reason).toMatchObject({
+			code: 'TARGET',
+			message: 'initial refusal',
+			context: { target: 'target' },
+		})
+		expect(controller.signal.reason).toBe(reason)
 	})
 })
