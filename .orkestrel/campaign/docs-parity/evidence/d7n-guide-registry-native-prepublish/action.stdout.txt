@@ -1,0 +1,116 @@
+Checking formatting...
+
+All matched files use the correct format.
+Finished in 1163ms on 94 files using 16 threads.
+vite v8.3.0 building client environment for production...
+transforming...
+✓ 13 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/core/index.js  157.58 kB │ gzip: 39.72 kB │ map: 242.83 kB
+
+transforming...
+✓ 13 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/core/index.cjs  163.04 kB │ gzip: 40.24 kB │ map: 244.60 kB
+
+✓ built in 240ms
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+Copied: dist/src/core/index.d.ts to dist/src/core/index.d.cts
+vite v8.3.0 building client environment for production...
+transforming...
+✓ 15 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/server/index.js  146.44 kB │ gzip: 38.29 kB │ map: 245.84 kB
+
+transforming...
+✓ 15 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/server/index.cjs  149.90 kB │ gzip: 38.88 kB │ map: 247.25 kB
+
+✓ built in 246ms
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+Copied: dist/src/server/index.d.ts to dist/src/server/index.d.cts
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/guide
+
+·······································································································································································································································································································································································································································································································································································································································································
+
+ Test Files  9 passed (9)
+      Tests  647 passed (647)
+   Start at  13:30:00
+   Duration  1.99s (transform 1.71s, setup 494ms, import 3.57s, tests 1.42s, environment 1ms)
+
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/guide
+
+··············
+
+ Test Files  3 passed (3)
+      Tests  14 passed (14)
+   Start at  13:30:03
+   Duration  3.41s (transform 718ms, setup 244ms, import 1.21s, tests 2.67s, environment 0ms)
+
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/guide
+
+·················································································-·········
+
+ Test Files  1 passed (1)
+      Tests  90 passed | 1 skipped (91)
+   Start at  13:30:07
+   Duration  959ms (transform 87ms, setup 60ms, import 104ms, tests 646ms, environment 0ms)
+
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/guide
+
+··········································································································································································stdout | tests/config.test.ts > configuration helpers > rolls one face into a single declaration and rewrites its core specifier
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+
+·-stdout | tests/config.test.ts > configuration helpers > rolls one face into a single declaration and rewrites its core specifier
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+
+·
+
+ Test Files  1 passed (1)
+      Tests  172 passed | 1 skipped (173)
+   Start at  13:30:08
+   Duration  2.92s (transform 194ms, setup 61ms, import 426ms, tests 2.28s, environment 0ms)
+
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/guide
+
+···········
+
+ Test Files  1 passed (1)
+      Tests  11 passed (11)
+   Start at  13:30:12
+   Duration  473ms (transform 138ms, setup 61ms, import 247ms, tests 18ms, environment 0ms)
+
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/guide
+
+·····································
+
+ Test Files  1 passed (1)
+      Tests  37 passed (37)
+   Start at  13:30:13
+   Duration  925ms (transform 162ms, setup 84ms, import 666ms, tests 29ms, environment 0ms)
+
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/guide
+
+···········
+
+ Test Files  1 passed (1)
+      Tests  11 passed (11)
+   Start at  13:30:14
+   Duration  13.69s (transform 68ms, setup 61ms, import 2.74s, tests 10.74s, environment 0ms)
+

@@ -1,0 +1,40 @@
+git -C /c/Users/mikes/WebstormProjects/guide branch --show-current 
+git -C /c/Users/mikes/WebstormProjects/guide rev-parse HEAD 
+git -C /c/Users/mikes/WebstormProjects/guide diff --cached --quiet 
+git -C /c/Users/mikes/WebstormProjects/guide status --porcelain=v1 --untracked-files=all 
+npm pkg get dependencies.@orkestrel/contract 
+npm pkg get dependencies.@orkestrel/markdown 
+npm pkg get devDependencies.@orkestrel/test 
+git -C /c/Users/mikes/WebstormProjects/guide diff HEAD --binary 
+git -C /c/Users/mikes/WebstormProjects/guide ls-files --stage 
+npm view @orkestrel/guide version 
+npm view @orkestrel/scaffold version 
+git -C /c/Users/mikes/WebstormProjects/guide fetch origin 
+git -C /c/Users/mikes/WebstormProjects/guide merge-base --is-ancestor origin/main HEAD 
+npm install --save-dev --ignore-scripts @orkestrel/scaffold@\^0.0.64 
+git -C /c/Users/mikes/WebstormProjects/guide diff --name-only 
+node /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/read-package-field.mjs /c/Users/mikes/WebstormProjects/guide/node_modules/@orkestrel/scaffold/package.json version 
+diff -r /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-scaffold-upper-git-final-pack/extract/package/dist /c/Users/mikes/WebstormProjects/guide/node_modules/@orkestrel/scaffold/dist 
+git -C /c/Users/mikes/WebstormProjects/guide add -- package.json package-lock.json 
+git -C /c/Users/mikes/WebstormProjects/guide -c user.name=Claude -c user.email=noreply@anthropic.com commit -m Prepare\ Guide\ against\ published\ Scaffold -m Co-Authored-By:\ Claude\ \<noreply@anthropic.com\> -m Claude-Session:\ codex:01a0810d-21bf-7f60-8534-488348e05743 
+git -C /c/Users/mikes/WebstormProjects/guide push origin HEAD:claude/orkestrel-npm-audit-deps-14ibta 
+git -C /c/Users/mikes/WebstormProjects/guide rev-parse HEAD 
+node node_modules/@orkestrel/scaffold/dist/bin/main.js overwrite 
+node node_modules/@orkestrel/scaffold/dist/bin/main.js audit 
+npm pkg delete scripts.docs 
+node /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/verify-upper-native-manifest.mjs /c/Users/mikes/WebstormProjects/guide/package.json 
+cmp /c/Users/mikes/WebstormProjects/guide/guides/scaffold.md /c/Users/mikes/WebstormProjects/scaffold/guides/scaffold.md 
+bash /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/upper-layer-action.sh guide lock d7n-guide-registry-native-lock 600s 
+bash /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/upper-layer-action.sh guide install d7n-guide-registry-native-install 600s 
+node /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/read-package-field.mjs /c/Users/mikes/WebstormProjects/guide/node_modules/@orkestrel/scaffold/package.json version 
+diff -r /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-scaffold-upper-git-final-pack/extract/package/dist /c/Users/mikes/WebstormProjects/guide/node_modules/@orkestrel/scaffold/dist 
+npm ls @orkestrel/scaffold --depth=0 
+bash /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/upper-layer-action.sh guide format d7n-guide-registry-native-format 120s 
+bash /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/upper-layer-action.sh guide prepublish d7n-guide-registry-native-prepublish 900s 
+bash /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/pack-upper-layer-final-verified.sh guide d7n-guide-registry-native-pack 0.0.18 d7n-guide-registry-native-prepublish 0.0.17 
+diff -r /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-guide-upper-final-pack/extract/package/dist /c/Users/mikes/WebstormProjects/guide/dist 
+git -C /c/Users/mikes/WebstormProjects/guide branch --show-current 
+git -C /c/Users/mikes/WebstormProjects/guide rev-parse HEAD 
+git -C /c/Users/mikes/WebstormProjects/guide status --porcelain=v1 --untracked-files=all 
+git -C /c/Users/mikes/WebstormProjects/guide diff HEAD --binary 
+git -C /c/Users/mikes/WebstormProjects/guide ls-files --stage 

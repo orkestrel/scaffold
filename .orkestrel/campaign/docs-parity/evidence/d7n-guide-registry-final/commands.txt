@@ -1,0 +1,5 @@
+git -C /c/Users/mikes/WebstormProjects/guide branch --show-current 
+git -C /c/Users/mikes/WebstormProjects/guide rev-parse HEAD 
+git -C /c/Users/mikes/WebstormProjects/guide diff --cached --quiet 
+git -C /c/Users/mikes/WebstormProjects/guide status --porcelain=v1 --untracked-files=all 
+npm pkg get dependencies.@orkestrel/contract 

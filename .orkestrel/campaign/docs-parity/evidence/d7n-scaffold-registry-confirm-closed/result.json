@@ -1,0 +1,13 @@
+{
+    "name":  "@orkestrel/scaffold",
+    "version":  "0.0.64",
+    "url":  "https://registry.npmjs.org/@orkestrel/scaffold/-/scaffold-0.0.64.tgz",
+    "registrySha1":  "0dab74dc0eea0800ba90b7b68ad702fe6867db8f",
+    "downloadedSha1":  "0dab74dc0eea0800ba90b7b68ad702fe6867db8f",
+    "downloadedSha256":  "a4e7078da602619e54384dbc7bdddaf25a2fdc6af0842a55004b8328365b8be7",
+    "acceptedArchiveSha256":  "a4e7078da602619e54384dbc7bdddaf25a2fdc6af0842a55004b8328365b8be7",
+    "gitHead":  "fa3c51771b8c20754210eee764b1a38d5833cc6b",
+    "branch":  "main",
+    "head":  "fa3c51771b8c20754210eee764b1a38d5833cc6b",
+    "originMain":  "fa3c51771b8c20754210eee764b1a38d5833cc6b"
+}

@@ -4,15 +4,15 @@ Written 2026-09-08T03:35Z and revised 2026-09-08T04:05Z at the owner's request, 
 
 ## Where everything is pushed
 
-The owner requested an immediate upload handoff. Root prompt.txt targets Scaffold
-0.0.64 alone from its canonical WebstormProjects directory. Read
-d7n-scaffold-upload-handoff-verdict.md and d7n-scaffold-upper-release-landing.md.
-The reviewed command landed at 881a9df6 with equal main, campaign and designated
-origin refs, clean canonical main and unchanged packed output. Read
-evidence/d7n-scaffold-upload-handoff-final-close.
-The owner uploads; root has not authenticated or published. The remaining upper
-layer stays open under d7n-upper-layer-plan.md. Confirm Scaffold from the registry
-after the owner uploads, then continue Guide and runtime-package preparation.
+Scaffold0.0.64 is registry-confirmed at fa3c5177. Its downloaded archive equals
+the accepted tarball. Read d7n-scaffold-registry-closure.md. The Scaffold operator
+command is consumed and must not be rerun. Root has not authenticated or published.
+Guide's registry Scaffold re-pin landed at dd8e8717 on its pushed campaign branch.
+Online overwrite/audit, final prepublishOnly and packing passed. Complete Guide
+output remains byte-identical to the accepted predecessor. Independent review and
+main closure precede the next operator command. Read
+d7n-guide-registry-preparation-landing.md. The remaining runtime layer stays open
+under d7n-upper-layer-plan.md.
 
 The following-layer uploads are registry-confirmed. Read
 d7n-following-registry-closure.md. Its preparation table records published

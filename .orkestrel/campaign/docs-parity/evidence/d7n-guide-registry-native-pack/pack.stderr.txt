@@ -1,0 +1,28 @@
+npm notice
+npm notice 📦  @orkestrel/guide@0.0.18
+npm notice Tarball Contents
+npm notice 1.1kB LICENSE
+npm notice 10.3kB README.md
+npm notice 163.0kB dist/src/core/index.cjs
+npm notice 244.6kB dist/src/core/index.cjs.map
+npm notice 127.3kB dist/src/core/index.d.cts
+npm notice 127.3kB dist/src/core/index.d.ts
+npm notice 157.6kB dist/src/core/index.js
+npm notice 242.8kB dist/src/core/index.js.map
+npm notice 149.9kB dist/src/server/index.cjs
+npm notice 247.3kB dist/src/server/index.cjs.map
+npm notice 30.4kB dist/src/server/index.d.cts
+npm notice 30.4kB dist/src/server/index.d.ts
+npm notice 146.4kB dist/src/server/index.js
+npm notice 245.8kB dist/src/server/index.js.map
+npm notice 4.4kB package.json
+npm notice Tarball Details
+npm notice name: @orkestrel/guide
+npm notice version: 0.0.18
+npm notice filename: orkestrel-guide-0.0.18.tgz
+npm notice package size: 464.9 kB
+npm notice unpacked size: 1.9 MB
+npm notice shasum: 32b2eadaa968bf1f7dc07a1c6a5d1a27757d7683
+npm notice integrity: sha512-GNTxfz4lF1D0C[...]Xt3XIL3RelddQ==
+npm notice total files: 15
+npm notice

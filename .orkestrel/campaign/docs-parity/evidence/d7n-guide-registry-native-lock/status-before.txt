@@ -1,0 +1,3 @@
+ M .claude/agents/orkestrel.md
+ M guides/scaffold.md
+ M package.json
