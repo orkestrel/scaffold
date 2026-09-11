@@ -8,7 +8,8 @@ Independent and reused objective source review returned. Root accepts the native
 source under d7n-brief-dependent-source-verdict.md,
 d7n-middleware-dependent-source-verdict.md and d7n-worker-dependent-source-verdict.md.
 The objective COMMENT failure is retained and annotated under the owner's
-prose-only ruling. No source commit has landed yet.
+prose-only ruling. Their source commits are pushed to the campaign branch; read
+d7n-dependent-native-source-landing.md. Final main closures remain open.
 
 Root reproduced the stale generated no-mocking fixture failure in each isolated
 config project. Supported Scaffold repair updated package.json, tests/config.test.ts
@@ -47,11 +48,13 @@ completion brief before any carrier execution. The completion stopped on a
 predecessor roster mismatch. Root read the actual stopped file and wrote an
 explicit resume brief. The return then omitted its campaign push and distinct
 field receipt labels; the correction has returned. The reused objective analyst
-is auditing the actual final scripts. No registry or source-commit carrier has run.
+accepted the final bindings. Root ran the accepted source carrier for Brief,
+Middleware and Worker and started Brief's final registry visit. No upload ran.
 
 Review and builder dispatches initially refused with agent thread limit reached.
-The independent reviewer is examining the returned documentation units. The
-reused objective analyst is auditing the preparation carriers before its next
-documentation review. No lane result or engine substitution is inferred from a
+The independent reviewer and reused objective analyst are examining the returned
+documentation units. Program's execution-only review correction has returned with
+a real mutable-label counterexample and passed root reviewed-prepublish. No lane
+result or engine substitution is inferred from a
 dispatch refusal. Retain every return before any source landing.
 No release readiness is claimed.

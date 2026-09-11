@@ -14,7 +14,9 @@ are recorded. Native migrations and retained MCP/Program/Workflow docs fixes hav
 returned. Root preparation prepublishOnly passed in each selected package after
 supported policy repair. Brief, Middleware and Worker have accepted source verdicts;
 the objective comment-only failure is retained and annotated under the owner's
-prose ruling, not described as a passing lane. Their source landing remains pending.
+prose ruling, not described as a passing lane. Their source commits are pushed to
+the campaign branch; read d7n-dependent-native-source-landing.md. Brief's final
+registry visit is running. Middleware and Worker await their registry visits.
 Program, Workflow and MCP source reviews are in progress. Read
 d7n-dependent-native-preparation-state.md. No package in this layer is ready for
 upload yet. Corrected source/registry carriers are under objective review; release
