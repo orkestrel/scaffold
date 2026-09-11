@@ -1,0 +1,776 @@
+diff -r '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-template-following-final-pack/baseline/package/dist/src/core/index.cjs /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-template-following-final-pack/extract/package/dist/src/core/index.cjs
+10c10
+< * Global-flagged, two-alternative pattern: a match of the FIRST alternative
+---
+> * Global-flagged, two-alternative pattern: a match of the first alternative
+15c15
+< * RAW (untrimmed) token text between the braces; every call site trims it
+---
+> * untrimmed token text between the braces; every call site trims it
+17c17
+< * resolves `'name'`. The pattern intentionally does NOT wrap the token in
+---
+> * resolves `'name'`. The pattern deliberately does not wrap the token in
+26c26,29
+< /** Holds the default `missing` policy for `Template#fill` / `TemplateManager#fill` when unspecified. */
+---
+> /**
+> * Holds `'error'`, the default `missing` policy for `Template#fill` /
+> * `TemplateManager#fill` when unspecified.
+> */
+28c31,34
+< /** Holds the default `locale` for `Template#fill` / `TemplateManager#fill` when unspecified. */
+---
+> /**
+> * Holds `'en-US'`, the default `locale` for `Template#fill` /
+> * `TemplateManager#fill` when unspecified.
+> */
+31,33c37,39
+< * Lists the prototype-pollution-unsafe field-path segments — a fill lookup
+< * refuses to resolve ANY path containing one, treating the placeholder as
+< * unresolved.
+---
+> * Lists the prototype-pollution-unsafe field-path segments `'__proto__'`,
+> * `'constructor'`, and `'prototype'` — a fill lookup refuses to resolve a path
+> * containing one of them, treating the placeholder as unresolved.
+43c49,51
+< * Represents an error thrown by the template layer.
+---
+> * Represents an error thrown by the template layer — a machine-readable
+> * {@link TemplateErrorCode} and an optional `context` record naming the
+> * offending id or placeholder name.
+50,51c58
+< * `options.replace` (`CONFLICT`). `context`, when present, carries the
+< * offending id / name.
+---
+> * `options.replace` (`CONFLICT`).
+121c128
+< * string `path` becomes a single-segment array); if ANY segment appears in
+---
+> * string `path` becomes a single-segment array); if any segment appears in
+123c130
+< * lookup is refused and `undefined` is returned WITHOUT ever calling
+---
+> * lookup is refused and `undefined` is returned without ever calling
+191c198
+< * back to the token split on `.`); ANY path segment in `UNSAFE_FIELD_SEGMENTS`
+---
+> * back to the token split on `.`); any path segment in `UNSAFE_FIELD_SEGMENTS`
+197c204
+< * token but collects EVERY unresolved required token (an undeclared token, or
+---
+> * token but collects every unresolved required token (an undeclared token, or
+281c288
+< * filled against a values record.
+---
+> * filled against a values record — implementing `TemplateInterface` exactly.
+386c393
+< 	* only when the value is unresolved AND no `fallback` is declared AND the
+---
+> 	* only when the value is unresolved, no `fallback` is declared, and the
+448,451c455,458
+< * Represents the template registry — a self-owning, id-keyed record-holder for the
+< * {@link TemplateInterface} instances a consumer registers, looks up, fills,
+< * and validates by id, with singular/plural accessors, batch `remove`
+< * overloads, and emitter ownership.
+---
+> * Represents the template registry — a self-owning, id-keyed record-holder for
+> * the {@link TemplateInterface} instances a consumer registers, looks up,
+> * fills, and validates by id — implementing `TemplateManagerInterface`
+> * exactly.
+454c461,462
+< * `register` accepts either a constructed {@link TemplateInterface} (kept
+---
+> * Singular and plural accessors, the batch `remove` overloads, and ownership
+> * of the emitter all sit here. `register` accepts either a constructed {@link TemplateInterface} (kept
+460,462c468,470
+< * overwritten. `options.templates` SEEDS the registry at construction
+< * WITHOUT emitting `register` — only calls to `register` after construction
+< * emit. The batch `remove(ids)` form removes every present id and returns
+---
+> * overwritten. `options.templates` seeds the registry at construction without
+> * emitting `register` — only calls to `register` after construction emit.
+> * The batch `remove(ids)` form removes every present id and returns
+540,541c548,549
+< 	* Filters registered templates by name / category / tag — every supplied
+< 	* field must match (logical AND).
+---
+> 	* Filters registered templates by `name`, `category`, and `tag` — every
+> 	* supplied field must match.
+668c676,677
+< * Creates a template.
+---
+> * Creates a working {@link TemplateInterface} from a {@link TemplateOptions}
+> * bag, backed by the `Template` class.
+676c685
+< * @example
+---
+> * @example Create a template and a registry
+678c687
+< * import { createTemplate } from '@src/core'
+---
+> * import { createTemplate, createTemplateManager } from '@orkestrel/template'
+681a691,702
+> *
+> * const templates = createTemplateManager({
+> * 	templates: [
+> * 		{ id: 'greeting', name: 'greeting', content: 'Hi {{name}}', category: 'mail' },
+> * 		{ id: 'farewell', name: 'farewell', content: 'Bye {{name}}', category: 'mail' },
+> * 		{ id: 'alert', name: 'alert', content: 'Alert: {{reason}}', category: 'ops' },
+> * 	],
+> * })
+> * templates.fill('greeting', { name: 'Ada' }) // 'Hi Ada'
+> * templates.find({ category: 'mail' }).map((one) => one.id) // ['greeting', 'farewell']
+> * templates.has('alert') // true
+> * templates.has('missing') // false
+688c709,710
+< * Creates a template registry.
+---
+> * Creates a working {@link TemplateManagerInterface}, optionally seeded with
+> * the templates the options carry, backed by the `TemplateManager` class.
+diff -r '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-template-following-final-pack/baseline/package/dist/src/core/index.d.cts /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-template-following-final-pack/extract/package/dist/src/core/index.d.cts
+1,5c1,5
+< import { ContractShape } from '@orkestrel/contract';
+< import { EmitterErrorHandler } from '@orkestrel/emitter';
+< import { EmitterHooks } from '@orkestrel/emitter';
+< import { EmitterInterface } from '@orkestrel/emitter';
+< import { FieldPath } from '@orkestrel/contract';
+---
+> import type { ContractShape } from '@orkestrel/contract';
+> import type { EmitterErrorHandler } from '@orkestrel/emitter';
+> import type { EmitterHooks } from '@orkestrel/emitter';
+> import type { EmitterInterface } from '@orkestrel/emitter';
+> import type { FieldPath } from '@orkestrel/contract';
+8c8,9
+<  * Creates a template.
+---
+>  * Creates a working {@link TemplateInterface} from a {@link TemplateOptions}
+>  * bag, backed by the `Template` class.
+16c17
+<      * @example
+---
+>      * @example Create a template and a registry
+18c19
+<      * import { createTemplate } from '@src/core'
+---
+>      * import { createTemplate, createTemplateManager } from '@orkestrel/template'
+21a23,34
+>      *
+>      * const templates = createTemplateManager({
+>      * 	templates: [
+>      * 		{ id: 'greeting', name: 'greeting', content: 'Hi {{name}}', category: 'mail' },
+>      * 		{ id: 'farewell', name: 'farewell', content: 'Bye {{name}}', category: 'mail' },
+>      * 		{ id: 'alert', name: 'alert', content: 'Alert: {{reason}}', category: 'ops' },
+>      * 	],
+>      * })
+>      * templates.fill('greeting', { name: 'Ada' }) // 'Hi Ada'
+>      * templates.find({ category: 'mail' }).map((one) => one.id) // ['greeting', 'farewell']
+>      * templates.has('alert') // true
+>      * templates.has('missing') // false
+27c40,41
+<   * Creates a template registry.
+---
+>   * Creates a working {@link TemplateManagerInterface}, optionally seeded with
+>   * the templates the options carry, backed by the `TemplateManager` class.
+47c61,64
+<   /** Holds the default `locale` for `Template#fill` / `TemplateManager#fill` when unspecified. */
+---
+>   /**
+>    * Holds `'en-US'`, the default `locale` for `Template#fill` /
+>    * `TemplateManager#fill` when unspecified.
+>    */
+50c67,70
+<   /** Holds the default `missing` policy for `Template#fill` / `TemplateManager#fill` when unspecified. */
+---
+>   /**
+>    * Holds `'error'`, the default `missing` policy for `Template#fill` /
+>    * `TemplateManager#fill` when unspecified.
+>    */
+58c78
+<    * Global-flagged, two-alternative pattern: a match of the FIRST alternative
+---
+>    * Global-flagged, two-alternative pattern: a match of the first alternative
+63c83
+<    * RAW (untrimmed) token text between the braces; every call site trims it
+---
+>    * untrimmed token text between the braces; every call site trims it
+65c85
+<    * resolves `'name'`. The pattern intentionally does NOT wrap the token in
+---
+>    * resolves `'name'`. The pattern deliberately does not wrap the token in
+84c104
+<    * back to the token split on `.`); ANY path segment in `UNSAFE_FIELD_SEGMENTS`
+---
+>    * back to the token split on `.`); any path segment in `UNSAFE_FIELD_SEGMENTS`
+90c110
+<    * token but collects EVERY unresolved required token (an undeclared token, or
+---
+>    * token but collects every unresolved required token (an undeclared token, or
+202c222
+<    * string `path` becomes a single-segment array); if ANY segment appears in
+---
+>    * string `path` becomes a single-segment array); if any segment appears in
+204c224
+<    * lookup is refused and `undefined` is returned WITHOUT ever calling
+---
+>    * lookup is refused and `undefined` is returned without ever calling
+257c277
+<    * filled against a values record.
+---
+>    * filled against a values record — implementing `TemplateInterface` exactly.
+324c344
+<          * only when the value is unresolved AND no `fallback` is declared AND the
+---
+>          * only when the value is unresolved, no `fallback` is declared, and the
+384c404,406
+<         * Represents an error thrown by the template layer.
+---
+>         * Represents an error thrown by the template layer — a machine-readable
+>         * {@link TemplateErrorCode} and an optional `context` record naming the
+>         * offending id or placeholder name.
+391,392c413
+<         * `options.replace` (`CONFLICT`). `context`, when present, carries the
+<         * offending id / name.
+---
+>         * `options.replace` (`CONFLICT`).
+437c458,460
+<         * Declares the template contract — exact bijection with `Template`.
+---
+>         * Declares the template contract a consumer holds — the readonly template
+>         * record and the `definition`, `fill`, `validate`, and `parameters` calls
+>         * over it.
+440,447c463,464
+<         * `definition` returns the plain {@link TemplateDefinition} data. `fill`
+<         * substitutes every `{{name}}` token in `content` against `values`,
+<         * honoring `options.missing` for unresolved required placeholders. `validate`
+<         * reports which required placeholders are unresolved (`missing`) and which
+<         * supplied `values` keys are unused (`extra`) without producing output.
+<         * `parameters` projects this template's placeholders to the open
+<         * tool-parameters record shape (`schemaToParameters`'s return type from
+<         * `@orkestrel/contract`).
+---
+>         * `Template` implements this contract exactly, so the class exposes these
+>         * members and no other public behavior.
+457a475
+>            /** Returns the plain, JSON-serializable template data. */
+458a477,483
+>            /**
+>             * Substitutes every `{{name}}` token in `content` against `values`.
+>             *
+>             * @remarks
+>             * `options.missing` governs an unresolved required placeholder, defaulting
+>             * to the instance's own {@link MissingPolicy}.
+>             */
+459a485,492
+>            /**
+>             * Reports which required placeholders would stay unresolved, and which
+>             * `values` keys go unused.
+>             *
+>             * @remarks
+>             * The unresolved names arrive as `missing` and the unused keys as `extra`,
+>             * and neither reading produces output.
+>             */
+460a494,501
+>            /**
+>             * Projects the declared placeholders to the open tool-parameters record
+>             * shape.
+>             *
+>             * @remarks
+>             * The shape is `schemaToParameters`'s return type from
+>             * `@orkestrel/contract`.
+>             */
+465,468c506,509
+<         * Represents the template registry — a self-owning, id-keyed record-holder for the
+<         * {@link TemplateInterface} instances a consumer registers, looks up, fills,
+<         * and validates by id, with singular/plural accessors, batch `remove`
+<         * overloads, and emitter ownership.
+---
+>         * Represents the template registry — a self-owning, id-keyed record-holder for
+>         * the {@link TemplateInterface} instances a consumer registers, looks up,
+>         * fills, and validates by id — implementing `TemplateManagerInterface`
+>         * exactly.
+471c512,513
+<         * `register` accepts either a constructed {@link TemplateInterface} (kept
+---
+>         * Singular and plural accessors, the batch `remove` overloads, and ownership
+>         * of the emitter all sit here. `register` accepts either a constructed {@link TemplateInterface} (kept
+477,479c519,521
+<         * overwritten. `options.templates` SEEDS the registry at construction
+<         * WITHOUT emitting `register` — only calls to `register` after construction
+<         * emit. The batch `remove(ids)` form removes every present id and returns
+---
+>         * overwritten. `options.templates` seeds the registry at construction without
+>         * emitting `register` — only calls to `register` after construction emit.
+>         * The batch `remove(ids)` form removes every present id and returns
+527,528c569,570
+<              * Filters registered templates by name / category / tag — every supplied
+<              * field must match (logical AND).
+---
+>              * Filters registered templates by `name`, `category`, and `tag` — every
+>              * supplied field must match.
+622,623c664,666
+<                    * Declares the template registry — a self-owning, id-keyed record-holder with
+<                    * singular/plural accessors and batch overloads.
+---
+>                    * Declares the registry contract a consumer holds — a self-owning, id-keyed
+>                    * record-holder with singular and plural accessors over the templates it
+>                    * registers.
+626,635c669,673
+<                    * `register` accepts either a constructed {@link TemplateInterface} or a
+<                    * plain {@link TemplateOptions} bag (constructed internally), and throws a
+<                    * {@link TemplateError} coded `CONFLICT` when the id already exists unless
+<                    * `options.replace` is `true`. `template` returns `undefined` for an unknown
+<                    * id; `fill`, `validate`, and `parameters` throw `NOTFOUND` for one, because
+<                    * each needs a template to proceed. `remove()` removes every registered
+<                    * template. `remove`'s batch form removes every present id and reports
+<                    * `true` only when all listed ids were present. `destroy` tears the registry
+<                    * down — it drops every registered template, destroys the owned emitter, emits
+<                    * nothing, and is idempotent.
+---
+>                    * `TemplateManager` implements this contract exactly, so the class exposes
+>                    * these members and no other public behavior. The by-id calls split on what
+>                    * an unknown id means to each: `template` reports its absence as `undefined`,
+>                    * while `fill`, `validate`, and `parameters` throw a {@link TemplateError}
+>                    * coded `NOTFOUND`, because each needs a template to proceed.
+639a678,687
+>                       /**
+>                        * Registers one template, or overwrites the entry sharing its id when
+>                        * `options.replace` is `true`, and emits `register`.
+>                        *
+>                        * @remarks
+>                        * The template arrives as a constructed {@link TemplateInterface} or as a
+>                        * plain {@link TemplateOptions} bag, which is constructed internally. A
+>                        * duplicate id without `options.replace` throws a {@link TemplateError}
+>                        * coded `CONFLICT`.
+>                        */
+640a689
+>                       /** Returns one registered template by id, or `undefined` when the id is unregistered. */
+641a691
+>                       /** Lists every registered template. */
+642a693
+>                       /** Filters registered templates by `name`, `category`, and `tag` — every supplied field must match. */
+643a695
+>                       /** Reports whether a template with the given id is registered. */
+644a697,706
+>                       /**
+>                        * Removes the listed templates by id, one template by id, or every
+>                        * registered template, emitting `remove` once per removed template.
+>                        *
+>                        * @remarks
+>                        * The batch form removes every present id and reports `true` only when
+>                        * every listed id was present, so one absent id turns the answer `false`
+>                        * while the present ids still remove. The no-argument form removes every
+>                        * registered template and reports nothing.
+>                        */
+647a710
+>                       /** Removes every registered template, emitting `clear`. */
+648a712,718
+>                       /**
+>                        * Tears the registry down: drops every registered template and destroys the
+>                        * owned emitter. Idempotent.
+>                        *
+>                        * @remarks
+>                        * Teardown emits nothing, because the emitter is being released.
+>                        */
+649a720
+>                       /** Fills a registered template by id. */
+650a722
+>                       /** Validates values against a registered template by id. */
+651a724
+>                       /** Projects a registered template's parameters by id. */
+762,764c835,837
+<                    * Lists the prototype-pollution-unsafe field-path segments — a fill lookup
+<                    * refuses to resolve ANY path containing one, treating the placeholder as
+<                    * unresolved.
+---
+>                    * Lists the prototype-pollution-unsafe field-path segments `'__proto__'`,
+>                    * `'constructor'`, and `'prototype'` — a fill lookup refuses to resolve a path
+>                    * containing one of them, treating the placeholder as unresolved.
+diff -r '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-template-following-final-pack/baseline/package/dist/src/core/index.d.ts /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-template-following-final-pack/extract/package/dist/src/core/index.d.ts
+1,5c1,5
+< import { ContractShape } from '@orkestrel/contract';
+< import { EmitterErrorHandler } from '@orkestrel/emitter';
+< import { EmitterHooks } from '@orkestrel/emitter';
+< import { EmitterInterface } from '@orkestrel/emitter';
+< import { FieldPath } from '@orkestrel/contract';
+---
+> import type { ContractShape } from '@orkestrel/contract';
+> import type { EmitterErrorHandler } from '@orkestrel/emitter';
+> import type { EmitterHooks } from '@orkestrel/emitter';
+> import type { EmitterInterface } from '@orkestrel/emitter';
+> import type { FieldPath } from '@orkestrel/contract';
+8c8,9
+<  * Creates a template.
+---
+>  * Creates a working {@link TemplateInterface} from a {@link TemplateOptions}
+>  * bag, backed by the `Template` class.
+16c17
+<      * @example
+---
+>      * @example Create a template and a registry
+18c19
+<      * import { createTemplate } from '@src/core'
+---
+>      * import { createTemplate, createTemplateManager } from '@orkestrel/template'
+21a23,34
+>      *
+>      * const templates = createTemplateManager({
+>      * 	templates: [
+>      * 		{ id: 'greeting', name: 'greeting', content: 'Hi {{name}}', category: 'mail' },
+>      * 		{ id: 'farewell', name: 'farewell', content: 'Bye {{name}}', category: 'mail' },
+>      * 		{ id: 'alert', name: 'alert', content: 'Alert: {{reason}}', category: 'ops' },
+>      * 	],
+>      * })
+>      * templates.fill('greeting', { name: 'Ada' }) // 'Hi Ada'
+>      * templates.find({ category: 'mail' }).map((one) => one.id) // ['greeting', 'farewell']
+>      * templates.has('alert') // true
+>      * templates.has('missing') // false
+27c40,41
+<   * Creates a template registry.
+---
+>   * Creates a working {@link TemplateManagerInterface}, optionally seeded with
+>   * the templates the options carry, backed by the `TemplateManager` class.
+47c61,64
+<   /** Holds the default `locale` for `Template#fill` / `TemplateManager#fill` when unspecified. */
+---
+>   /**
+>    * Holds `'en-US'`, the default `locale` for `Template#fill` /
+>    * `TemplateManager#fill` when unspecified.
+>    */
+50c67,70
+<   /** Holds the default `missing` policy for `Template#fill` / `TemplateManager#fill` when unspecified. */
+---
+>   /**
+>    * Holds `'error'`, the default `missing` policy for `Template#fill` /
+>    * `TemplateManager#fill` when unspecified.
+>    */
+58c78
+<    * Global-flagged, two-alternative pattern: a match of the FIRST alternative
+---
+>    * Global-flagged, two-alternative pattern: a match of the first alternative
+63c83
+<    * RAW (untrimmed) token text between the braces; every call site trims it
+---
+>    * untrimmed token text between the braces; every call site trims it
+65c85
+<    * resolves `'name'`. The pattern intentionally does NOT wrap the token in
+---
+>    * resolves `'name'`. The pattern deliberately does not wrap the token in
+84c104
+<    * back to the token split on `.`); ANY path segment in `UNSAFE_FIELD_SEGMENTS`
+---
+>    * back to the token split on `.`); any path segment in `UNSAFE_FIELD_SEGMENTS`
+90c110
+<    * token but collects EVERY unresolved required token (an undeclared token, or
+---
+>    * token but collects every unresolved required token (an undeclared token, or
+202c222
+<    * string `path` becomes a single-segment array); if ANY segment appears in
+---
+>    * string `path` becomes a single-segment array); if any segment appears in
+204c224
+<    * lookup is refused and `undefined` is returned WITHOUT ever calling
+---
+>    * lookup is refused and `undefined` is returned without ever calling
+257c277
+<    * filled against a values record.
+---
+>    * filled against a values record — implementing `TemplateInterface` exactly.
+324c344
+<          * only when the value is unresolved AND no `fallback` is declared AND the
+---
+>          * only when the value is unresolved, no `fallback` is declared, and the
+384c404,406
+<         * Represents an error thrown by the template layer.
+---
+>         * Represents an error thrown by the template layer — a machine-readable
+>         * {@link TemplateErrorCode} and an optional `context` record naming the
+>         * offending id or placeholder name.
+391,392c413
+<         * `options.replace` (`CONFLICT`). `context`, when present, carries the
+<         * offending id / name.
+---
+>         * `options.replace` (`CONFLICT`).
+437c458,460
+<         * Declares the template contract — exact bijection with `Template`.
+---
+>         * Declares the template contract a consumer holds — the readonly template
+>         * record and the `definition`, `fill`, `validate`, and `parameters` calls
+>         * over it.
+440,447c463,464
+<         * `definition` returns the plain {@link TemplateDefinition} data. `fill`
+<         * substitutes every `{{name}}` token in `content` against `values`,
+<         * honoring `options.missing` for unresolved required placeholders. `validate`
+<         * reports which required placeholders are unresolved (`missing`) and which
+<         * supplied `values` keys are unused (`extra`) without producing output.
+<         * `parameters` projects this template's placeholders to the open
+<         * tool-parameters record shape (`schemaToParameters`'s return type from
+<         * `@orkestrel/contract`).
+---
+>         * `Template` implements this contract exactly, so the class exposes these
+>         * members and no other public behavior.
+457a475
+>            /** Returns the plain, JSON-serializable template data. */
+458a477,483
+>            /**
+>             * Substitutes every `{{name}}` token in `content` against `values`.
+>             *
+>             * @remarks
+>             * `options.missing` governs an unresolved required placeholder, defaulting
+>             * to the instance's own {@link MissingPolicy}.
+>             */
+459a485,492
+>            /**
+>             * Reports which required placeholders would stay unresolved, and which
+>             * `values` keys go unused.
+>             *
+>             * @remarks
+>             * The unresolved names arrive as `missing` and the unused keys as `extra`,
+>             * and neither reading produces output.
+>             */
+460a494,501
+>            /**
+>             * Projects the declared placeholders to the open tool-parameters record
+>             * shape.
+>             *
+>             * @remarks
+>             * The shape is `schemaToParameters`'s return type from
+>             * `@orkestrel/contract`.
+>             */
+465,468c506,509
+<         * Represents the template registry — a self-owning, id-keyed record-holder for the
+<         * {@link TemplateInterface} instances a consumer registers, looks up, fills,
+<         * and validates by id, with singular/plural accessors, batch `remove`
+<         * overloads, and emitter ownership.
+---
+>         * Represents the template registry — a self-owning, id-keyed record-holder for
+>         * the {@link TemplateInterface} instances a consumer registers, looks up,
+>         * fills, and validates by id — implementing `TemplateManagerInterface`
+>         * exactly.
+471c512,513
+<         * `register` accepts either a constructed {@link TemplateInterface} (kept
+---
+>         * Singular and plural accessors, the batch `remove` overloads, and ownership
+>         * of the emitter all sit here. `register` accepts either a constructed {@link TemplateInterface} (kept
+477,479c519,521
+<         * overwritten. `options.templates` SEEDS the registry at construction
+<         * WITHOUT emitting `register` — only calls to `register` after construction
+<         * emit. The batch `remove(ids)` form removes every present id and returns
+---
+>         * overwritten. `options.templates` seeds the registry at construction without
+>         * emitting `register` — only calls to `register` after construction emit.
+>         * The batch `remove(ids)` form removes every present id and returns
+527,528c569,570
+<              * Filters registered templates by name / category / tag — every supplied
+<              * field must match (logical AND).
+---
+>              * Filters registered templates by `name`, `category`, and `tag` — every
+>              * supplied field must match.
+622,623c664,666
+<                    * Declares the template registry — a self-owning, id-keyed record-holder with
+<                    * singular/plural accessors and batch overloads.
+---
+>                    * Declares the registry contract a consumer holds — a self-owning, id-keyed
+>                    * record-holder with singular and plural accessors over the templates it
+>                    * registers.
+626,635c669,673
+<                    * `register` accepts either a constructed {@link TemplateInterface} or a
+<                    * plain {@link TemplateOptions} bag (constructed internally), and throws a
+<                    * {@link TemplateError} coded `CONFLICT` when the id already exists unless
+<                    * `options.replace` is `true`. `template` returns `undefined` for an unknown
+<                    * id; `fill`, `validate`, and `parameters` throw `NOTFOUND` for one, because
+<                    * each needs a template to proceed. `remove()` removes every registered
+<                    * template. `remove`'s batch form removes every present id and reports
+<                    * `true` only when all listed ids were present. `destroy` tears the registry
+<                    * down — it drops every registered template, destroys the owned emitter, emits
+<                    * nothing, and is idempotent.
+---
+>                    * `TemplateManager` implements this contract exactly, so the class exposes
+>                    * these members and no other public behavior. The by-id calls split on what
+>                    * an unknown id means to each: `template` reports its absence as `undefined`,
+>                    * while `fill`, `validate`, and `parameters` throw a {@link TemplateError}
+>                    * coded `NOTFOUND`, because each needs a template to proceed.
+639a678,687
+>                       /**
+>                        * Registers one template, or overwrites the entry sharing its id when
+>                        * `options.replace` is `true`, and emits `register`.
+>                        *
+>                        * @remarks
+>                        * The template arrives as a constructed {@link TemplateInterface} or as a
+>                        * plain {@link TemplateOptions} bag, which is constructed internally. A
+>                        * duplicate id without `options.replace` throws a {@link TemplateError}
+>                        * coded `CONFLICT`.
+>                        */
+640a689
+>                       /** Returns one registered template by id, or `undefined` when the id is unregistered. */
+641a691
+>                       /** Lists every registered template. */
+642a693
+>                       /** Filters registered templates by `name`, `category`, and `tag` — every supplied field must match. */
+643a695
+>                       /** Reports whether a template with the given id is registered. */
+644a697,706
+>                       /**
+>                        * Removes the listed templates by id, one template by id, or every
+>                        * registered template, emitting `remove` once per removed template.
+>                        *
+>                        * @remarks
+>                        * The batch form removes every present id and reports `true` only when
+>                        * every listed id was present, so one absent id turns the answer `false`
+>                        * while the present ids still remove. The no-argument form removes every
+>                        * registered template and reports nothing.
+>                        */
+647a710
+>                       /** Removes every registered template, emitting `clear`. */
+648a712,718
+>                       /**
+>                        * Tears the registry down: drops every registered template and destroys the
+>                        * owned emitter. Idempotent.
+>                        *
+>                        * @remarks
+>                        * Teardown emits nothing, because the emitter is being released.
+>                        */
+649a720
+>                       /** Fills a registered template by id. */
+650a722
+>                       /** Validates values against a registered template by id. */
+651a724
+>                       /** Projects a registered template's parameters by id. */
+762,764c835,837
+<                    * Lists the prototype-pollution-unsafe field-path segments — a fill lookup
+<                    * refuses to resolve ANY path containing one, treating the placeholder as
+<                    * unresolved.
+---
+>                    * Lists the prototype-pollution-unsafe field-path segments `'__proto__'`,
+>                    * `'constructor'`, and `'prototype'` — a fill lookup refuses to resolve a path
+>                    * containing one of them, treating the placeholder as unresolved.
+diff -r '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-template-following-final-pack/baseline/package/dist/src/core/index.js /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-template-following-final-pack/extract/package/dist/src/core/index.js
+9c9
+< * Global-flagged, two-alternative pattern: a match of the FIRST alternative
+---
+> * Global-flagged, two-alternative pattern: a match of the first alternative
+14c14
+< * RAW (untrimmed) token text between the braces; every call site trims it
+---
+> * untrimmed token text between the braces; every call site trims it
+16c16
+< * resolves `'name'`. The pattern intentionally does NOT wrap the token in
+---
+> * resolves `'name'`. The pattern deliberately does not wrap the token in
+25c25,28
+< /** Holds the default `missing` policy for `Template#fill` / `TemplateManager#fill` when unspecified. */
+---
+> /**
+> * Holds `'error'`, the default `missing` policy for `Template#fill` /
+> * `TemplateManager#fill` when unspecified.
+> */
+27c30,33
+< /** Holds the default `locale` for `Template#fill` / `TemplateManager#fill` when unspecified. */
+---
+> /**
+> * Holds `'en-US'`, the default `locale` for `Template#fill` /
+> * `TemplateManager#fill` when unspecified.
+> */
+30,32c36,38
+< * Lists the prototype-pollution-unsafe field-path segments — a fill lookup
+< * refuses to resolve ANY path containing one, treating the placeholder as
+< * unresolved.
+---
+> * Lists the prototype-pollution-unsafe field-path segments `'__proto__'`,
+> * `'constructor'`, and `'prototype'` — a fill lookup refuses to resolve a path
+> * containing one of them, treating the placeholder as unresolved.
+42c48,50
+< * Represents an error thrown by the template layer.
+---
+> * Represents an error thrown by the template layer — a machine-readable
+> * {@link TemplateErrorCode} and an optional `context` record naming the
+> * offending id or placeholder name.
+49,50c57
+< * `options.replace` (`CONFLICT`). `context`, when present, carries the
+< * offending id / name.
+---
+> * `options.replace` (`CONFLICT`).
+120c127
+< * string `path` becomes a single-segment array); if ANY segment appears in
+---
+> * string `path` becomes a single-segment array); if any segment appears in
+122c129
+< * lookup is refused and `undefined` is returned WITHOUT ever calling
+---
+> * lookup is refused and `undefined` is returned without ever calling
+190c197
+< * back to the token split on `.`); ANY path segment in `UNSAFE_FIELD_SEGMENTS`
+---
+> * back to the token split on `.`); any path segment in `UNSAFE_FIELD_SEGMENTS`
+196c203
+< * token but collects EVERY unresolved required token (an undeclared token, or
+---
+> * token but collects every unresolved required token (an undeclared token, or
+280c287
+< * filled against a values record.
+---
+> * filled against a values record — implementing `TemplateInterface` exactly.
+385c392
+< 	* only when the value is unresolved AND no `fallback` is declared AND the
+---
+> 	* only when the value is unresolved, no `fallback` is declared, and the
+447,450c454,457
+< * Represents the template registry — a self-owning, id-keyed record-holder for the
+< * {@link TemplateInterface} instances a consumer registers, looks up, fills,
+< * and validates by id, with singular/plural accessors, batch `remove`
+< * overloads, and emitter ownership.
+---
+> * Represents the template registry — a self-owning, id-keyed record-holder for
+> * the {@link TemplateInterface} instances a consumer registers, looks up,
+> * fills, and validates by id — implementing `TemplateManagerInterface`
+> * exactly.
+453c460,461
+< * `register` accepts either a constructed {@link TemplateInterface} (kept
+---
+> * Singular and plural accessors, the batch `remove` overloads, and ownership
+> * of the emitter all sit here. `register` accepts either a constructed {@link TemplateInterface} (kept
+459,461c467,469
+< * overwritten. `options.templates` SEEDS the registry at construction
+< * WITHOUT emitting `register` — only calls to `register` after construction
+< * emit. The batch `remove(ids)` form removes every present id and returns
+---
+> * overwritten. `options.templates` seeds the registry at construction without
+> * emitting `register` — only calls to `register` after construction emit.
+> * The batch `remove(ids)` form removes every present id and returns
+539,540c547,548
+< 	* Filters registered templates by name / category / tag — every supplied
+< 	* field must match (logical AND).
+---
+> 	* Filters registered templates by `name`, `category`, and `tag` — every
+> 	* supplied field must match.
+667c675,676
+< * Creates a template.
+---
+> * Creates a working {@link TemplateInterface} from a {@link TemplateOptions}
+> * bag, backed by the `Template` class.
+675c684
+< * @example
+---
+> * @example Create a template and a registry
+677c686
+< * import { createTemplate } from '@src/core'
+---
+> * import { createTemplate, createTemplateManager } from '@orkestrel/template'
+680a690,701
+> *
+> * const templates = createTemplateManager({
+> * 	templates: [
+> * 		{ id: 'greeting', name: 'greeting', content: 'Hi {{name}}', category: 'mail' },
+> * 		{ id: 'farewell', name: 'farewell', content: 'Bye {{name}}', category: 'mail' },
+> * 		{ id: 'alert', name: 'alert', content: 'Alert: {{reason}}', category: 'ops' },
+> * 	],
+> * })
+> * templates.fill('greeting', { name: 'Ada' }) // 'Hi Ada'
+> * templates.find({ category: 'mail' }).map((one) => one.id) // ['greeting', 'farewell']
+> * templates.has('alert') // true
+> * templates.has('missing') // false
+687c708,709
+< * Creates a template registry.
+---
+> * Creates a working {@link TemplateManagerInterface}, optionally seeded with
+> * the templates the options carry, backed by the `TemplateManager` class.

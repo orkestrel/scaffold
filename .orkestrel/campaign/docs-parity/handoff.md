@@ -28,7 +28,7 @@ for these packages. Keep prompt.txt unchanged until this layer is prepared.
 | form | 0.0.6 | prepared at 0f4f28d; final prepublish/pack accepted; campaign/main pushed; clean canonical main; unpublished |
 | markdown | 0.0.14 | prepared at 99978d8; final prepublish/pack accepted; Guide bootstrap dist unchanged; campaign/main pushed; clean canonical main; unpublished |
 | pool | 0.0.11 | prepared at 25ea973; final prepublish/pack accepted; campaign/main pushed; clean canonical main; unpublished |
-| process | 0.0.11 | source accepted and committed at a2498ee; final preparation pending |
+| process | 0.0.11 | prepared at ea3b717; final prepublish/pack accepted; campaign/main pushed; clean canonical main; unpublished |
 | reason | 0.0.10 | source accepted and committed at 4226c32; final preparation pending |
 | router | 0.0.14 | corrected source accepted and committed at 0b9b847; final preparation pending |
 | table | 0.0.5 | source accepted and committed at e26d34b; stale command comment corrected; full source prepublish green; final preparation pending |

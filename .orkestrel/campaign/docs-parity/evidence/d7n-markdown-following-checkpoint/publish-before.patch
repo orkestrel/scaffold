@@ -1,0 +1,7 @@
+diff --git a/publish.txt b/publish.txt
+deleted file mode 100644
+index 74fe33e3..00000000
+--- a/publish.txt
++++ /dev/null
+@@ -1 +0,0 @@
+-& { $ErrorActionPreference = 'Stop'; cd 'C:/Users/mikes/WebstormProjects/contract'; npm whoami; if ($LASTEXITCODE -ne 0) { throw 'Login check failed' }; npm publish --ignore-scripts --browser=false; if ($LASTEXITCODE -ne 0) { throw 'Contract publish failed' }; cd 'C:/Users/mikes/WebstormProjects/codec'; npm publish --ignore-scripts --browser=false; if ($LASTEXITCODE -ne 0) { throw 'Codec publish failed' }; cd 'C:/Users/mikes/WebstormProjects/msg'; npm publish --ignore-scripts --browser=false; if ($LASTEXITCODE -ne 0) { throw 'Msg publish failed' }; cd 'C:/Users/mikes/WebstormProjects/sse'; npm publish --ignore-scripts --browser=false; if ($LASTEXITCODE -ne 0) { throw 'SSE publish failed' }; cd 'C:/Users/mikes/WebstormProjects/test'; npm publish --ignore-scripts --browser=false; if ($LASTEXITCODE -ne 0) { throw 'Test publish failed' } }
