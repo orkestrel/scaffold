@@ -21,7 +21,7 @@ The Guide-only root prompt.txt is consumed. Replace it only when this layer is r
 | relation | 0.0.12 | Closed; clean canonical main at 1b212ca725e6b7f6b0d1fd5b664b05cc6769d27f; campaign/main pushed; owner upload pending |
 | sea | 0.0.15 | Closed; clean canonical main at bfbccc215f50d7867ac5b79785da80c607f4fc7a; campaign/main pushed; owner upload pending |
 | server | 0.0.19 | Closed; clean canonical main at 772b84e1a5ce0f3ec8cb1da96395b3c6bc6029e7; campaign/main pushed; owner upload pending |
-| terminal | 0.0.15 | Corrected source landed at 5577e42; preparation gates passed; registry visit pending |
+| terminal | 0.0.15 | Closed; clean canonical main at d9eba22ddf3c3a68ea2e1f006e617a1efdb8ffe2; campaign/main pushed; owner upload pending |
 | workspace | 0.0.8 | Source landed at a1322f0; preparation gates passed; registry visit pending |
 
 Scaffold's root-generated catalog and Guide development re-pin moved its emitted
