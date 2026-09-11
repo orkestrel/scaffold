@@ -1,0 +1,159 @@
+[
+  {
+    "_id": "@orkestrel/websocket@0.0.12",
+    "_rev": "12-f4de9e6239aeb3411f2b30f071c2ade9",
+    "name": "@orkestrel/websocket",
+    "dist-tags": {
+      "latest": "0.0.12"
+    },
+    "versions": [
+      "0.0.1",
+      "0.0.2",
+      "0.0.3",
+      "0.0.4",
+      "0.0.5",
+      "0.0.6",
+      "0.0.7",
+      "0.0.8",
+      "0.0.9",
+      "0.0.10",
+      "0.0.11",
+      "0.0.12"
+    ],
+    "time": {
+      "created": "2026-07-14T00:43:36.271Z",
+      "modified": "2026-09-11T12:08:37.823Z",
+      "0.0.1": "2026-07-14T00:43:36.606Z",
+      "0.0.2": "2026-07-18T00:31:53.396Z",
+      "0.0.3": "2026-07-18T11:06:36.584Z",
+      "0.0.4": "2026-07-24T16:22:28.217Z",
+      "0.0.5": "2026-07-24T21:16:31.345Z",
+      "0.0.6": "2026-07-28T17:44:27.760Z",
+      "0.0.7": "2026-07-30T19:24:50.756Z",
+      "0.0.8": "2026-08-12T11:38:30.586Z",
+      "0.0.9": "2026-08-17T20:28:09.377Z",
+      "0.0.10": "2026-08-23T01:10:30.427Z",
+      "0.0.11": "2026-09-04T20:27:20.398Z",
+      "0.0.12": "2026-09-11T12:08:37.558Z"
+    },
+    "bugs": {
+      "url": "https://github.com/orkestrel/websocket/issues"
+    },
+    "license": "MIT",
+    "homepage": "https://github.com/orkestrel/websocket#readme",
+    "keywords": [
+      "node",
+      "rfc6455",
+      "server",
+      "typescript",
+      "websocket"
+    ],
+    "repository": {
+      "url": "git+https://github.com/orkestrel/websocket.git",
+      "type": "git"
+    },
+    "description": "A dependency-light RFC 6455 WebSocket for Node — native handshake and framing over duplex streams, with a typed emitter surface. Part of the @orkestrel line.",
+    "maintainers": [
+      "mikesaintsg <mikesaintg11@gmail.com>"
+    ],
+    "readmeFilename": "README.md",
+    "_contentLength": 53355,
+    "dist": {
+      "shasum": "860f20a066f4bab50c61209f0396eb8aaadd66c1",
+      "tarball": "https://registry.npmjs.org/@orkestrel/websocket/-/websocket-0.0.12.tgz",
+      "fileCount": 9,
+      "integrity": "sha512-Zv3ZVYiGnGclLVlFIwmy9996bNULRjBH/9abQ5zPJi/epGplNpSmqYlNTjU2HAifQ/1RHG92go+4ibNxKXj5zg==",
+      "signatures": [
+        {
+          "sig": "MEYCIQDgI8RbpghHAi2qXklLNsnRU8mqPFTFdhAsKINF4R5DmQIhAPV2H6kY6GN/scxiKqGiV40R+XzAnxTUtETSPQJOA6Et",
+          "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U"
+        },
+        {
+          "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U",
+          "sig": "MEYCIQCtjoEqmABPCY5hZ5wU65r3NeuvGWflUkchgFe+PDi3RwIhAMIDrqIVt56tEFbc9w4JmWT4JTdtQF/FaiuBSF7eH7E6"
+        }
+      ],
+      "unpackedSize": 249834
+    },
+    "main": "./dist/src/server/index.cjs",
+    "type": "module",
+    "types": "./dist/src/server/index.d.ts",
+    "module": "./dist/src/server/index.js",
+    "engines": {
+      "node": ">=22.12.0"
+    },
+    "exports": {
+      ".": {
+        "import": {
+          "types": "./dist/src/server/index.d.ts",
+          "default": "./dist/src/server/index.js"
+        },
+        "require": {
+          "types": "./dist/src/server/index.d.cts",
+          "default": "./dist/src/server/index.cjs"
+        }
+      },
+      "./package.json": "./package.json"
+    },
+    "gitHead": "cc62597214e1deb3a892119fbdc484772079bc5c",
+    "scripts": {
+      "copy": "node -e \"const fs=require('node:fs'),p=require('node:path'),a=process.argv[1],b=process.argv[2];fs.mkdirSync(p.dirname(b),{recursive:true});fs.cpSync(a,b,{force:true});console.log('Copied: '+a+' to '+b)\"",
+      "lint": "oxlint --config .oxlintrc.json --fix .",
+      "test": "npm run test:src && npm run test:policy && npm run test:config && npm run test:setup && npm run test:guides && npm run test:integration",
+      "build": "npm run clean && npm run build:src",
+      "check": "tsc --noEmit --project tsconfig.json && npm run check:src",
+      "clean": "node -e \"require('node:fs').rmSync('dist',{recursive:true,force:true})\"",
+      "format": "oxfmt --config .oxfmtrc.json --write .",
+      "prepack": "npm run build",
+      "scaffold": "scaffold",
+      "test:src": "vitest run --config vite.config.ts --no-cache --reporter=dot --project src:server",
+      "build:src": "npm run build:src:server",
+      "check:src": "npm run check:src:server",
+      "lint:check": "oxlint --config .oxlintrc.json --deny-warnings .",
+      "test:bench": "vitest bench --config vite.config.ts --no-cache --project probe",
+      "test:probe": "vitest run --config vite.config.ts --no-cache --reporter=verbose --project probe",
+      "test:setup": "vitest run --config vite.config.ts --no-cache --reporter=dot --project setup",
+      "test:config": "vitest run --config vite.config.ts --no-cache --reporter=dot --project config",
+      "test:guides": "node --experimental-strip-types tests/guides.test.ts",
+      "test:policy": "vitest run --config vite.config.ts --no-cache --reporter=dot --project policy",
+      "format:check": "oxfmt --config .oxfmtrc.json --check .",
+      "prepublishOnly": "npm run format:check && npm run lint:check && npm run check && npm run build && npm test && npm run test:distribution -- --mode release",
+      "test:src:server": "vitest run --config vite.config.ts --no-cache --reporter=dot --project src:server",
+      "build:src:server": "vite build --config configs/src/vite.server.config.ts && npm run copy dist/src/server/index.d.ts dist/src/server/index.d.cts",
+      "check:src:server": "tsc --noEmit -p configs/src/tsconfig.server.json",
+      "test:integration": "vitest run --config vite.config.ts --no-cache --reporter=dot --project integration",
+      "test:distribution": "vitest run --config vite.config.ts --no-cache --reporter=dot --project distribution"
+    },
+    "version": "0.0.12",
+    "_npmUser": "mikesaintsg <mikesaintg11@gmail.com>",
+    "_npmVersion": "12.0.2",
+    "directories": {},
+    "sideEffects": false,
+    "_nodeVersion": "24.20.0",
+    "dependencies": {
+      "@orkestrel/emitter": "^0.0.10"
+    },
+    "publishConfig": {
+      "access": "public"
+    },
+    "_hasShrinkwrap": false,
+    "devDependencies": {
+      "vite": "^8.2.2",
+      "oxfmt": "^0.66.0",
+      "oxlint": "^1.81.0",
+      "vitest": "^4.1.11",
+      "typescript": "^6.0.3",
+      "@types/node": "^26.4.1",
+      "@orkestrel/test": "^0.0.14",
+      "@orkestrel/guide": "^0.0.17",
+      "@orkestrel/probe": "^0.0.12",
+      "@orkestrel/contract": "^0.0.17",
+      "@orkestrel/scaffold": "^0.0.63",
+      "@microsoft/api-extractor": "^7.59.0"
+    },
+    "_npmOperationalInternal": {
+      "host": "s3://npm-registry-packages-npm-production",
+      "tmp": "tmp/websocket_0.0.12_1789128517456_0.09782061901528682"
+    }
+  }
+]

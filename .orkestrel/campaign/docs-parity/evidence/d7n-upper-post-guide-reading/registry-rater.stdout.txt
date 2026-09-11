@@ -1,0 +1,163 @@
+[
+  {
+    "_id": "@orkestrel/rater@0.0.13",
+    "_rev": "13-2fa33bd1dd2acca8d7a303e0b353c3c9",
+    "name": "@orkestrel/rater",
+    "dist-tags": {
+      "latest": "0.0.13"
+    },
+    "versions": [
+      "0.0.1",
+      "0.0.2",
+      "0.0.3",
+      "0.0.4",
+      "0.0.5",
+      "0.0.6",
+      "0.0.7",
+      "0.0.8",
+      "0.0.9",
+      "0.0.10",
+      "0.0.11",
+      "0.0.12",
+      "0.0.13"
+    ],
+    "time": {
+      "created": "2026-07-13T20:50:25.204Z",
+      "modified": "2026-09-04T20:53:34.187Z",
+      "0.0.1": "2026-07-13T20:50:25.506Z",
+      "0.0.2": "2026-07-16T02:09:33.634Z",
+      "0.0.3": "2026-07-16T05:48:27.586Z",
+      "0.0.4": "2026-07-18T00:40:08.666Z",
+      "0.0.5": "2026-07-18T15:53:57.600Z",
+      "0.0.6": "2026-07-28T14:20:43.280Z",
+      "0.0.7": "2026-07-28T14:25:41.967Z",
+      "0.0.8": "2026-07-28T18:01:03.201Z",
+      "0.0.9": "2026-08-12T11:59:08.246Z",
+      "0.0.10": "2026-08-17T18:14:26.708Z",
+      "0.0.11": "2026-08-17T21:04:56.064Z",
+      "0.0.12": "2026-08-23T01:29:44.001Z",
+      "0.0.13": "2026-09-04T20:53:34.017Z"
+    },
+    "bugs": {
+      "url": "https://github.com/orkestrel/rater/issues"
+    },
+    "license": "MIT",
+    "homepage": "https://github.com/orkestrel/rater#readme",
+    "keywords": [
+      "quantitative",
+      "rater",
+      "rating",
+      "rules-engine",
+      "typescript",
+      "worksheet"
+    ],
+    "repository": {
+      "url": "git+https://github.com/orkestrel/rater.git",
+      "type": "git"
+    },
+    "description": "A typed quantitative rating layer: authored lines are rated against a subject to produce per-line amounts, worksheets, and a derived total. Part of the @orkestrel line.",
+    "maintainers": [
+      "mikesaintsg <mikesaintg11@gmail.com>"
+    ],
+    "readmeFilename": "README.md",
+    "_contentLength": 54942,
+    "dist": {
+      "shasum": "48de7e9a5f7c095192d8a837521421351cd88692",
+      "tarball": "https://registry.npmjs.org/@orkestrel/rater/-/rater-0.0.13.tgz",
+      "fileCount": 9,
+      "integrity": "sha512-XCxOqnl3o1E5K0HsheqK2BraBo7cTDcgMxAnq+oRCIgVVsBuPGNQf21MXYMxvWpu1fXkhQ78UR1wHI1cHmlo1w==",
+      "signatures": [
+        {
+          "sig": "MEUCICSFUckkUviWh+ZUfnXfPEKFV4O7RWlLCFarwdxRk3YaAiEAhrex9KgE5QmtJvqma4yIST74I6bA2zUJ+wMGmIY3YjI=",
+          "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U"
+        },
+        {
+          "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U",
+          "sig": "MEUCIAYOJR4BLT0AE8jEFLT6HeDfC+1KkqrBCgJKL/74KOFVAiEA2zmANxgVOgAVGrqyl5XB0XVqUkq3dNpyn/mGYUiCrXk="
+        }
+      ],
+      "unpackedSize": 184596
+    },
+    "main": "./dist/src/core/index.cjs",
+    "type": "module",
+    "types": "./dist/src/core/index.d.ts",
+    "module": "./dist/src/core/index.js",
+    "engines": {
+      "node": ">=22.12.0"
+    },
+    "exports": {
+      ".": {
+        "import": {
+          "types": "./dist/src/core/index.d.ts",
+          "default": "./dist/src/core/index.js"
+        },
+        "require": {
+          "types": "./dist/src/core/index.d.cts",
+          "default": "./dist/src/core/index.cjs"
+        }
+      },
+      "./package.json": "./package.json"
+    },
+    "gitHead": "fb9605fb44683e41c2f3d60be8dd7771ff5f4c63",
+    "scripts": {
+      "copy": "node -e \"const fs=require('node:fs'),p=require('node:path'),a=process.argv[1],b=process.argv[2];fs.mkdirSync(p.dirname(b),{recursive:true});fs.cpSync(a,b,{force:true});console.log('Copied: '+a+' to '+b)\"",
+      "lint": "oxlint --config .oxlintrc.json --fix --deny-warnings .",
+      "test": "npm run test:src && npm run test:policy && npm run test:config && npm run test:setup && npm run test:guides",
+      "build": "npm run clean && npm run build:src",
+      "check": "tsc --noEmit --project tsconfig.json && npm run check:src",
+      "clean": "node -e \"require('node:fs').rmSync('dist',{recursive:true,force:true})\"",
+      "format": "oxfmt --config .oxfmtrc.json --write .",
+      "prepack": "npm run build",
+      "scaffold": "scaffold",
+      "test:src": "vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core",
+      "build:src": "npm run build:src:core",
+      "check:src": "npm run check:src:core",
+      "lint:check": "oxlint --config .oxlintrc.json --deny-warnings .",
+      "test:bench": "vitest bench --config vite.config.ts --no-cache --project probe",
+      "test:probe": "vitest run --config vite.config.ts --no-cache --reporter=verbose --project probe",
+      "test:setup": "vitest run --config vite.config.ts --no-cache --reporter=dot --project setup",
+      "test:config": "vitest run --config vite.config.ts --no-cache --reporter=dot --project config",
+      "test:guides": "vitest run --config vite.config.ts --no-cache --reporter=dot --project guides",
+      "test:policy": "vitest run --config vite.config.ts --no-cache --reporter=dot --project policy",
+      "format:check": "oxfmt --config .oxfmtrc.json --check .",
+      "test:src:core": "vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core",
+      "build:src:core": "vite build --config configs/src/vite.core.config.ts && npm run copy dist/src/core/index.d.ts dist/src/core/index.d.cts",
+      "check:src:core": "tsc --noEmit -p configs/src/tsconfig.core.json",
+      "prepublishOnly": "npm run format:check && npm run lint:check && npm run check && npm run build && npm test && npm run test:distribution -- --mode release",
+      "test:distribution": "vitest run --config vite.config.ts --no-cache --reporter=dot --project distribution"
+    },
+    "version": "0.0.13",
+    "_npmUser": "mikesaintsg <mikesaintg11@gmail.com>",
+    "_npmVersion": "11.19.1",
+    "directories": {},
+    "sideEffects": false,
+    "_nodeVersion": "22.22.2",
+    "dependencies": {
+      "@orkestrel/reason": "^0.0.9",
+      "@orkestrel/emitter": "^0.0.9",
+      "@orkestrel/contract": "^0.0.16"
+    },
+    "publishConfig": {
+      "access": "public"
+    },
+    "_hasShrinkwrap": false,
+    "devDependencies": {
+      "vite": "^8.2.2",
+      "oxfmt": "^0.66.0",
+      "oxlint": "^1.81.0",
+      "vitest": "^4.1.11",
+      "typescript": "^6.0.3",
+      "@types/node": "^26.4.1",
+      "@orkestrel/test": "^0.0.13",
+      "vite-plugin-dts": "^5.1.0",
+      "@orkestrel/guide": "^0.0.17",
+      "@orkestrel/probe": "^0.0.11",
+      "@orkestrel/scaffold": "^0.0.62",
+      "@microsoft/api-extractor": "^7.59.0"
+    },
+    "_npmOperationalInternal": {
+      "host": "s3://npm-registry-packages-npm-production",
+      "tmp": "tmp/rater_0.0.13_1788555213936_0.6210355888896137"
+    }
+  }
+]

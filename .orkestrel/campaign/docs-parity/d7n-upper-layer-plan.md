@@ -63,4 +63,8 @@ as recorded.
 The order is the catalog, not this preparation table. Read
 d7n-upper-layer-evidence.md for its fresh generation and observation limits.
 
-RELEASE: OPEN guide, scaffold, browser, interpret, lsp, qualifier, queue, rater, relation, sea, server, terminal, workspace
+Guide0.0.18 and Scaffold0.0.64 are registry-confirmed. Use their registry copies for
+the remaining consumer visits. The earlier no-save bootstrap direction is
+superseded for these tooling releases. Read d7n-upper-post-guide-state.md.
+
+RELEASE: OPEN browser, interpret, lsp, qualifier, queue, rater, relation, sea, server, terminal, workspace

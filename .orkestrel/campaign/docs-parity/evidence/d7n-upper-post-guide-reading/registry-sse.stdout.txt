@@ -1,0 +1,143 @@
+[
+  {
+    "_id": "@orkestrel/sse@0.0.7",
+    "_rev": "7-25f60606313b737314d565c2afe38a2a",
+    "name": "@orkestrel/sse",
+    "dist-tags": {
+      "latest": "0.0.7"
+    },
+    "versions": [
+      "0.0.1",
+      "0.0.2",
+      "0.0.3",
+      "0.0.4",
+      "0.0.5",
+      "0.0.6",
+      "0.0.7"
+    ],
+    "time": {
+      "created": "2026-07-14T00:06:08.778Z",
+      "modified": "2026-09-10T22:35:46.328Z",
+      "0.0.1": "2026-07-14T00:06:09.120Z",
+      "0.0.2": "2026-07-18T00:08:36.042Z",
+      "0.0.3": "2026-07-18T10:21:17.531Z",
+      "0.0.4": "2026-07-28T14:20:18.651Z",
+      "0.0.5": "2026-08-12T11:07:57.845Z",
+      "0.0.6": "2026-09-04T19:52:08.828Z",
+      "0.0.7": "2026-09-10T22:35:46.129Z"
+    },
+    "bugs": {
+      "url": "https://github.com/orkestrel/sse/issues"
+    },
+    "license": "MIT",
+    "homepage": "https://github.com/orkestrel/sse#readme",
+    "keywords": [
+      "event-stream",
+      "eventsource",
+      "parser",
+      "server-sent-events",
+      "sse",
+      "streaming",
+      "typescript"
+    ],
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/orkestrel/sse.git"
+    },
+    "description": "A typed Server-Sent Events parser — incremental, spec-compliant parsing of event-stream chunks into typed events with data, event, id, and retry fields. Part of the @orkestrel line.",
+    "maintainers": [
+      "mikesaintsg <mikesaintg11@gmail.com>"
+    ],
+    "readmeFilename": "README.md",
+    "_contentLength": 31332,
+    "version": "0.0.7",
+    "type": "module",
+    "sideEffects": false,
+    "main": "./dist/src/core/index.cjs",
+    "module": "./dist/src/core/index.js",
+    "types": "./dist/src/core/index.d.ts",
+    "exports": {
+      ".": {
+        "import": {
+          "types": "./dist/src/core/index.d.ts",
+          "default": "./dist/src/core/index.js"
+        },
+        "require": {
+          "types": "./dist/src/core/index.d.cts",
+          "default": "./dist/src/core/index.cjs"
+        }
+      },
+      "./package.json": "./package.json"
+    },
+    "publishConfig": {
+      "access": "public"
+    },
+    "scripts": {
+      "clean": "node -e \"require('node:fs').rmSync('dist',{recursive:true,force:true})\"",
+      "copy": "node -e \"const fs=require('node:fs'),p=require('node:path'),a=process.argv[1],b=process.argv[2];fs.mkdirSync(p.dirname(b),{recursive:true});fs.cpSync(a,b,{force:true});console.log('Copied: '+a+' to '+b)\"",
+      "scaffold": "scaffold",
+      "lint": "oxlint --config .oxlintrc.json --fix .",
+      "check": "tsc --noEmit --project tsconfig.json && npm run check:src",
+      "check:src": "npm run check:src:core",
+      "check:src:core": "tsc --noEmit -p configs/src/tsconfig.core.json",
+      "format": "oxfmt --config .oxfmtrc.json --write .",
+      "format:check": "oxfmt --config .oxfmtrc.json --check .",
+      "lint:check": "oxlint --config .oxlintrc.json --deny-warnings .",
+      "test": "npm run test:src && npm run test:policy && npm run test:config && npm run test:setup && npm run test:guides",
+      "test:src": "vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core",
+      "test:src:core": "vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core",
+      "test:policy": "vitest run --config vite.config.ts --no-cache --reporter=dot --project policy",
+      "test:config": "vitest run --config vite.config.ts --no-cache --reporter=dot --project config",
+      "test:guides": "node --experimental-strip-types tests/guides.test.ts",
+      "build": "npm run clean && npm run build:src",
+      "build:src": "npm run build:src:core",
+      "build:src:core": "vite build --config configs/src/vite.core.config.ts && npm run copy dist/src/core/index.d.ts dist/src/core/index.d.cts",
+      "prepublishOnly": "npm run format:check && npm run lint:check && npm run check && npm run build && npm test && npm run test:distribution -- --mode release",
+      "test:distribution": "vitest run --config vite.config.ts --no-cache --reporter=dot --project distribution",
+      "test:probe": "vitest run --config vite.config.ts --no-cache --reporter=verbose --project probe",
+      "test:bench": "vitest bench --config vite.config.ts --no-cache --project probe",
+      "prepack": "npm run build",
+      "test:setup": "vitest run --config vite.config.ts --no-cache --reporter=dot --project setup"
+    },
+    "devDependencies": {
+      "@microsoft/api-extractor": "^7.59.0",
+      "@orkestrel/contract": "^0.0.16",
+      "@orkestrel/guide": "^0.0.17",
+      "@orkestrel/probe": "^0.0.12",
+      "@orkestrel/scaffold": "^0.0.63",
+      "@orkestrel/test": "^0.0.13",
+      "@types/node": "^26.4.1",
+      "oxfmt": "^0.66.0",
+      "oxlint": "^1.81.0",
+      "typescript": "^6.0.3",
+      "vite": "^8.2.2",
+      "vitest": "^4.1.11"
+    },
+    "engines": {
+      "node": ">=22.12.0"
+    },
+    "gitHead": "2a0d3ecb5c13fe7b893c45396840ad20da45492e",
+    "_nodeVersion": "24.20.0",
+    "_npmVersion": "12.0.2",
+    "dist": {
+      "integrity": "sha512-CdCxvUDLCb1H2bTlKPvuoK9M7aJjK4RdMUSx+HK45Pjl69bqhHMqPpagKiwooKDG5XTY0kXW/VCPG9ZpzmHjJg==",
+      "shasum": "3585fe3929aa6150cdbda0faec132c73730811ef",
+      "tarball": "https://registry.npmjs.org/@orkestrel/sse/-/sse-0.0.7.tgz",
+      "fileCount": 9,
+      "unpackedSize": 102895,
+      "signatures": [
+        {
+          "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U",
+          "sig": "MEYCIQDqRGnZB6MXtIlyySaKa6gBXaCIuX8QDbz6WidI7ZNeaAIhAO1BvvEzbltx9SDSGsfwsmOuv3BaXlcCTRPUbw3JkSBZ"
+        }
+      ]
+    },
+    "_npmUser": "mikesaintsg <mikesaintg11@gmail.com>",
+    "directories": {},
+    "_npmOperationalInternal": {
+      "host": "s3://npm-registry-packages-npm-production",
+      "tmp": "tmp/sse_0.0.7_1789079746006_0.9167494561447913"
+    },
+    "_hasShrinkwrap": false
+  }
+]

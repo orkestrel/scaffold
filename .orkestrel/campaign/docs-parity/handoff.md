@@ -7,17 +7,12 @@ Written 2026-09-08T03:35Z and revised 2026-09-08T04:05Z at the owner's request, 
 Scaffold0.0.64 is registry-confirmed at fa3c5177. Its downloaded archive equals
 the accepted tarball. Read d7n-scaffold-registry-closure.md. The Scaffold operator
 command is consumed and must not be rerun. Root has not authenticated or published.
-Guide0.0.18 is prepared at ccd2a790 on clean canonical main. Its campaign branch
-and origin/main match. Registry Scaffold0.0.64 overwrite/audit, final registry
-install, prepublishOnly and actual packing passed. Independent and reused
-objective review passed. Complete Guide output remains byte-identical to the
-accepted predecessor. Read d7n-guide-registry-prepared-verdict.md and
-d7n-guide-registry-release-landing.md. Root prompt.txt now targets Guide alone;
-its operator handoff review passed and landed at Scaffold5e652fcc. Named origin
-refs match, and post-push canonical main and artifact checks passed. Read
-d7n-guide-upload-handoff-verdict.md and d7n-guide-upload-handoff-landing.md.
-The remaining runtime layer stays open
-under d7n-upper-layer-plan.md. Do not rerun consumed predecessor commands.
+Guide0.0.18 is registry-confirmed at ccd2a790 on clean canonical main. Its served
+archive matches the prepared archive and npm's gitHead matches origin/main.
+Read d7n-guide-registry-closure.md. The Guide-only prompt is consumed and must
+not be rerun. Consumer visits use registry Guide0.0.18 and Scaffold0.0.64.
+The remaining runtime layer stays open under d7n-upper-layer-plan.md.
+Read d7n-upper-post-guide-state.md for the refreshed evidence and active units.
 
 The following-layer uploads are registry-confirmed. Read
 d7n-following-registry-closure.md. Its preparation table records published
@@ -378,7 +373,7 @@ Tips are the branch tips as pushed. "on main" means the branch tip is `main`.
 | terminal | `0b01536` | retained audit lanes reconciled in `d7n-terminal-audit-verdict.md`; checker recorded as not run | dispatch `d7n-terminal-converge-fix-windows-brief.md`; then checker and verifier; verdict; push `main` |
 | mcp | `a01d5e8` | owner main merged; scoped merge checks passed; branch pushed; audit reconciled in `d7n-mcp-audit-verdict.md`; checker recorded as not run | dispatch `d7n-mcp-converge-fix-windows-brief.md`; closure; push `main`; guide-reader referral remains separate |
 | supervisor | `edf80e6` (`main`) | outside the pass; the owner's API-adoption decision is pending (`d7-fleet-plan.md` § For the owner) | nothing in this campaign |
-| guide | `ccd2a790` | Guide0.0.18 final registry-backed preparation accepted; prepublishOnly and packing passed; campaign/main pushed; clean canonical main; full output equals accepted predecessor | owner upload pending; confirm registry before remaining consumer visits |
+| guide | `ccd2a790` | Guide0.0.18 registry archive and gitHead confirmed; campaign/main pushed; clean canonical main | registry-backed consumer visits proceed; no Guide upload remains |
 
 ## The tail, after every package closes
 

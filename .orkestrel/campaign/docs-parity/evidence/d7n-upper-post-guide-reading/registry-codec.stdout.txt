@@ -1,0 +1,138 @@
+[
+  {
+    "_id": "@orkestrel/codec@0.0.3",
+    "_rev": "3-84cc5d5a463f1c27111bcb362d4d8147",
+    "name": "@orkestrel/codec",
+    "dist-tags": {
+      "latest": "0.0.3"
+    },
+    "versions": [
+      "0.0.1",
+      "0.0.2",
+      "0.0.3"
+    ],
+    "time": {
+      "created": "2026-08-28T05:29:10.765Z",
+      "modified": "2026-09-10T22:35:41.300Z",
+      "0.0.1": "2026-08-28T05:29:11.109Z",
+      "0.0.2": "2026-09-04T19:51:47.058Z",
+      "0.0.3": "2026-09-10T22:35:41.116Z"
+    },
+    "bugs": {
+      "url": "https://github.com/orkestrel/codec/issues"
+    },
+    "license": "MIT",
+    "homepage": "https://github.com/orkestrel/codec#readme",
+    "keywords": [
+      "base64",
+      "base64url",
+      "bytes",
+      "charset",
+      "codec",
+      "decode",
+      "encode",
+      "hex",
+      "latin1",
+      "rfc4648",
+      "utf16",
+      "utf8",
+      "windows1252"
+    ],
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/orkestrel/codec.git"
+    },
+    "description": "Spec-named byte-to-text codings and their measures as sound encode/decode/guard triples — RFC 4648 Base64, base64url, and hex, UTF-8, Latin-1, Windows-1252, and UTF-16LE — pure ES and canonical in both directions.",
+    "maintainers": [
+      "mikesaintsg <mikesaintg11@gmail.com>"
+    ],
+    "readmeFilename": "README.md",
+    "_contentLength": 17615,
+    "version": "0.0.3",
+    "type": "module",
+    "sideEffects": false,
+    "main": "./dist/src/core/index.cjs",
+    "module": "./dist/src/core/index.js",
+    "types": "./dist/src/core/index.d.ts",
+    "exports": {
+      ".": {
+        "import": {
+          "types": "./dist/src/core/index.d.ts",
+          "default": "./dist/src/core/index.js"
+        },
+        "require": {
+          "types": "./dist/src/core/index.d.cts",
+          "default": "./dist/src/core/index.cjs"
+        }
+      },
+      "./package.json": "./package.json"
+    },
+    "publishConfig": {
+      "access": "public"
+    },
+    "scripts": {
+      "clean": "node -e \"require('node:fs').rmSync('dist',{recursive:true,force:true})\"",
+      "copy": "node -e \"const fs=require('node:fs'),p=require('node:path'),a=process.argv[1],b=process.argv[2];fs.mkdirSync(p.dirname(b),{recursive:true});fs.cpSync(a,b,{force:true});console.log('Copied: '+a+' to '+b)\"",
+      "format": "oxfmt --config .oxfmtrc.json --write .",
+      "format:check": "oxfmt --config .oxfmtrc.json --check .",
+      "lint": "oxlint --config .oxlintrc.json --fix .",
+      "lint:check": "oxlint --config .oxlintrc.json --deny-warnings .",
+      "check": "tsc --noEmit --project tsconfig.json && npm run check:src",
+      "check:src": "npm run check:src:core",
+      "check:src:core": "tsc --noEmit -p configs/src/tsconfig.core.json",
+      "test": "npm run test:src && npm run test:policy && npm run test:config && npm run test:guides",
+      "test:src": "vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core",
+      "test:src:core": "vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core",
+      "test:policy": "vitest run --config vite.config.ts --no-cache --reporter=dot --project policy",
+      "test:config": "vitest run --config vite.config.ts --no-cache --reporter=dot --project config",
+      "test:guides": "node --experimental-strip-types tests/guides.test.ts",
+      "test:probe": "vitest run --config vite.config.ts --no-cache --reporter=verbose --project probe",
+      "test:bench": "vitest bench --config vite.config.ts --no-cache --project probe",
+      "test:distribution": "vitest run --config vite.config.ts --no-cache --reporter=dot --project distribution",
+      "build": "npm run clean && npm run build:src",
+      "build:src": "npm run build:src:core",
+      "build:src:core": "vite build --config configs/src/vite.core.config.ts && npm run copy dist/src/core/index.d.ts dist/src/core/index.d.cts",
+      "prepack": "npm run build",
+      "prepublishOnly": "npm run format:check && npm run lint:check && npm run check && npm run build && npm test && npm run test:distribution -- --mode release"
+    },
+    "devDependencies": {
+      "@microsoft/api-extractor": "^7.59.0",
+      "@orkestrel/guide": "^0.0.17",
+      "@orkestrel/probe": "^0.0.12",
+      "@orkestrel/scaffold": "^0.0.63",
+      "@orkestrel/test": "^0.0.13",
+      "@types/node": "^26.4.1",
+      "oxfmt": "^0.66.0",
+      "oxlint": "^1.81.0",
+      "typescript": "^6.0.3",
+      "vite": "^8.2.2",
+      "vitest": "^4.1.11"
+    },
+    "engines": {
+      "node": ">=22.12.0"
+    },
+    "gitHead": "f53355d92452a8fa2c59da084eb9b757c65b7b84",
+    "_nodeVersion": "24.20.0",
+    "_npmVersion": "12.0.2",
+    "dist": {
+      "integrity": "sha512-bfaBNC8bIxecnD6LkW4gFxUV96WCyhdnPlNMwVamQA2aGEXWwjs2PxvfOkqQLhlHz5Rp/j1d0QYPiXDvS5L1sQ==",
+      "shasum": "14d872ef8c147866c23e11f7cbe54f2a28e1602d",
+      "tarball": "https://registry.npmjs.org/@orkestrel/codec/-/codec-0.0.3.tgz",
+      "fileCount": 9,
+      "unpackedSize": 213788,
+      "signatures": [
+        {
+          "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U",
+          "sig": "MEYCIQCKx/w3As3DektR808Ihj2AG4wLdrtRbMAsPZRYeyYWGwIhAOi2PczIZ9TJapiG0kk2kuErqDsbuoJ9AIdohqlypoIW"
+        }
+      ]
+    },
+    "_npmUser": "mikesaintsg <mikesaintg11@gmail.com>",
+    "directories": {},
+    "_npmOperationalInternal": {
+      "host": "s3://npm-registry-packages-npm-production",
+      "tmp": "tmp/codec_0.0.3_1789079740966_0.10977328714643497"
+    },
+    "_hasShrinkwrap": false
+  }
+]

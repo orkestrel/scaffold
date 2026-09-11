@@ -1,0 +1,25 @@
+ M .claude/agents/orkestrel.md
+ M package.json
+?? .orkestrel/campaign/docs-parity/d7n-browser-interpret-native-review-brief.md
+?? .orkestrel/campaign/docs-parity/d7n-guide-registry-closure-review-brief.md
+?? .orkestrel/campaign/docs-parity/d7n-guide-registry-confirm-carrier-brief.md
+?? .orkestrel/campaign/docs-parity/d7n-guide-registry-confirm-carrier-report.md
+?? .orkestrel/campaign/docs-parity/evidence/d7n-guide-registry-confirm-closed/guide-branch.exit.txt
+?? .orkestrel/campaign/docs-parity/evidence/d7n-guide-registry-confirm-closed/guide-branch.stderr.txt
+?? .orkestrel/campaign/docs-parity/evidence/d7n-guide-registry-confirm-closed/guide-branch.stdout.txt
+?? .orkestrel/campaign/docs-parity/evidence/d7n-guide-registry-confirm-closed/guide-fetch.exit.txt
+?? .orkestrel/campaign/docs-parity/evidence/d7n-guide-registry-confirm-closed/guide-fetch.stderr.txt
+?? .orkestrel/campaign/docs-parity/evidence/d7n-guide-registry-confirm-closed/guide-fetch.stdout.txt
+?? .orkestrel/campaign/docs-parity/evidence/d7n-guide-registry-confirm-closed/guide-head.exit.txt
+?? .orkestrel/campaign/docs-parity/evidence/d7n-guide-registry-confirm-closed/guide-head.stderr.txt
+?? .orkestrel/campaign/docs-parity/evidence/d7n-guide-registry-confirm-closed/guide-head.stdout.txt
+?? .orkestrel/campaign/docs-parity/evidence/d7n-guide-registry-confirm-closed/guide-origin-main.exit.txt
+?? .orkestrel/campaign/docs-parity/evidence/d7n-guide-registry-confirm-closed/guide-origin-main.stderr.txt
+?? .orkestrel/campaign/docs-parity/evidence/d7n-guide-registry-confirm-closed/guide-origin-main.stdout.txt
+?? .orkestrel/campaign/docs-parity/evidence/d7n-guide-registry-confirm-closed/guide-status.exit.txt
+?? .orkestrel/campaign/docs-parity/evidence/d7n-guide-registry-confirm-closed/guide-status.stderr.txt
+?? .orkestrel/campaign/docs-parity/evidence/d7n-guide-registry-confirm-closed/guide-status.stdout.txt
+?? .orkestrel/campaign/docs-parity/evidence/d7n-guide-registry-confirm-closed/guide.json
+?? .orkestrel/campaign/docs-parity/evidence/d7n-guide-registry-confirm-closed/guide.metadata.json
+?? .orkestrel/campaign/docs-parity/evidence/d7n-guide-registry-confirm-closed/result.json
+?? .orkestrel/campaign/docs-parity/instruments/d7/foundation-native/confirm-guide-registry.ps1

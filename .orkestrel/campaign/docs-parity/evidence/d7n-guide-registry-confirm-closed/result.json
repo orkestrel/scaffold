@@ -1,0 +1,13 @@
+{
+    "name":  "@orkestrel/guide",
+    "version":  "0.0.18",
+    "url":  "https://registry.npmjs.org/@orkestrel/guide/-/guide-0.0.18.tgz",
+    "registrySha1":  "32b2eadaa968bf1f7dc07a1c6a5d1a27757d7683",
+    "downloadedSha1":  "32b2eadaa968bf1f7dc07a1c6a5d1a27757d7683",
+    "downloadedSha256":  "01e460ee05cb84b4d24ffc2418aad29ca196d4152cf49b03bf0b68637858c638",
+    "acceptedArchiveSha256":  "01e460ee05cb84b4d24ffc2418aad29ca196d4152cf49b03bf0b68637858c638",
+    "gitHead":  "ccd2a79058b0d814e9a031ce86089b8e981d964b",
+    "branch":  "main",
+    "head":  "ccd2a79058b0d814e9a031ce86089b8e981d964b",
+    "originMain":  "ccd2a79058b0d814e9a031ce86089b8e981d964b"
+}
