@@ -30,7 +30,7 @@ for these packages. Keep prompt.txt unchanged until this layer is prepared.
 | pool | 0.0.11 | prepared at 25ea973; final prepublish/pack accepted; campaign/main pushed; clean canonical main; unpublished |
 | process | 0.0.11 | prepared at ea3b717; final prepublish/pack accepted; campaign/main pushed; clean canonical main; unpublished |
 | reason | 0.0.10 | prepared at e7e318e; final prepublish/pack accepted; campaign/main pushed; clean canonical main; unpublished |
-| router | 0.0.14 | corrected source accepted and committed at 0b9b847; final preparation pending |
+| router | 0.0.14 | prepared at fbc69d7; final prepublish/pack accepted; campaign/main pushed; clean canonical main; unpublished |
 | table | 0.0.5 | source accepted and committed at e26d34b; stale command comment corrected; full source prepublish green; final preparation pending |
 | template | 0.0.7 | source accepted and committed at e7744d0; full source prepublish green; final preparation pending |
 | websocket | 0.0.12 | source accepted and committed at b60a37c; full source prepublish green; final preparation pending |
