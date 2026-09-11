@@ -1,0 +1,22 @@
+npm notice
+npm notice 📦  @orkestrel/qualifier@0.0.13
+npm notice Tarball Contents
+npm notice 1.1kB LICENSE
+npm notice 2.3kB README.md
+npm notice 46.4kB dist/src/core/index.cjs
+npm notice 64.9kB dist/src/core/index.cjs.map
+npm notice 47.7kB dist/src/core/index.d.cts
+npm notice 47.7kB dist/src/core/index.d.ts
+npm notice 43.8kB dist/src/core/index.js
+npm notice 64.0kB dist/src/core/index.js.map
+npm notice 3.9kB package.json
+npm notice Tarball Details
+npm notice name: @orkestrel/qualifier
+npm notice version: 0.0.13
+npm notice filename: orkestrel-qualifier-0.0.13.tgz
+npm notice package size: 71.0 kB
+npm notice unpacked size: 321.8 kB
+npm notice shasum: 225e8185e569f4999051f2e151df5389ccf1ed1c
+npm notice integrity: sha512-KYAYasAmVUMWg[...]XNTOk7JNtpwgA==
+npm notice total files: 9
+npm notice

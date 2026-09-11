@@ -1,0 +1,2 @@
+dependencies: typescript declares major 6, while the registry serves major 7.
+dependencies: vitest declares major 4, while the registry serves major 5.

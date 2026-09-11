@@ -1,0 +1,3 @@
+# Correct the Queue closure range map
+
+Act as native builder on Terra. Follow d7n-consumer-registry-close-carrier-brief.md with its authority and owned script/report paths. Root read Queue's actual manifest after your deviation. Correct its runtime table to Abort^0.0.10, Contract^0.0.17, Database^0.0.14, Emitter^0.0.10, and Timeout^0.0.10. Its dependency roles stay unchanged. Allow the corresponding declared dependency mirror paths in Queue only. Every other requirement stands. Keep the original brief and deviation report unchanged. Return your result at tmp/units/d7n-consumer-registry-close-carrier-report.md. No carrier execution, installation, gates, Git mutation, publication, or delegation is authorized.

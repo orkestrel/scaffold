@@ -1,0 +1,850 @@
+diff -r -w -B '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-qualifier-final-registry-visit-pack/baseline/package/dist/src/core/index.cjs /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-qualifier-final-registry-visit-pack/extract/package/dist/src/core/index.cjs
+6c6,9
+< /** Holds the default definition validation policy for `createQualifier` / `Qualifier.qualify`. */
+---
+> /**
+> * Holds the default definition validation policy for `createQualifier` and
+> * `Qualifier.qualify`, `true`.
+> */
+8c11,14
+< /** Names the reserved internal projection namespace a pass's working projection is written under. */
+---
+> /**
+> * Names `'qualification'`, the reserved internal projection namespace a pass's working
+> * projection is written under.
+> */
+10c16
+< /** Lists the eligibility severities in order — most to least severe. */
+---
+> /** Lists the eligibility severities most to least severe: `ineligible`, `referral`, `eligible`. */
+16c22,25
+< /** Maps each {@link QualificationEffect} to its eligibility impact; `condition` remains eligible. */
+---
+> /**
+> * Maps each {@link QualificationEffect} to its eligibility impact — `restriction` to
+> * `ineligible`, `referral` to `referral`, and `condition` to `eligible`.
+> */
+25c34,35
+< * Represents a coded programmer error thrown by the qualifier layer.
+---
+> * Represents a coded programmer error thrown by the qualifier layer, carrying a
+> * `QualifierErrorCode` and an optional context record.
+62a73,76
+> * @remarks
+> * The guard is total and leaves nothing unchecked: a scalar union has no open or exact
+> * axis.
+> *
+69a84,87
+> * @remarks
+> * The guard is total and leaves nothing unchecked: a scalar union has no open or exact
+> * axis.
+> *
+78,79c96,98
+< * Every own string-named property is checked, including non-enumerable properties. Inherited and
+< * symbol-named members are left unchecked because they are outside the record this guard certifies.
+---
+> * Every own string-named value is checked through {@link isEligibility}, including
+> * non-enumerable values. Inherited and symbol-named members are left unchecked because they
+> * are outside the own string-keyed record this guard certifies.
+92,94c111,115
+< * `expected` is unchecked and may be absent or contain any value because its published type is
+< * `unknown`. `actual` is unchecked and may be absent or contain any value for the same reason.
+< * Unknown members are admitted.
+---
+> * The optional `field`, `label`, `description`, `comparison`, and `met` members are checked
+> * when they are defined. `expected` is unchecked and may be absent or contain any value
+> * because its published type is `unknown`. `actual` is unchecked and may be absent or contain
+> * any value for the same reason. Unknown members are admitted, because an open result admits
+> * what the published contract does not name.
+118,119c139,142
+< * Unknown members are admitted. Optional `scope` and `message` members may be absent or
+< * `undefined`; a present defined value must be a string.
+---
+> * Every published member is checked, including each nested {@link Premise}. Optional `scope`
+> * and `message` members may be absent or `undefined`; a present defined value must be a
+> * string. Unknown members are admitted, because a foreign result implementation may add them
+> * without changing the published contract.
+140,141c163,166
+< * Unknown members are admitted. `value` follows the published `number` type, including `NaN` and
+< * infinities.
+---
+> * Every published member is checked: `value` follows the published `number` type, including
+> * `NaN` and the infinities, and `trace` and `errors` hold strings. Unknown members are
+> * admitted, because a foreign result implementation may add them without changing the
+> * published contract.
+160c185,188
+< * admits unknown members and class instances while checking the complete published result closure.
+---
+> * checks the complete published result closure — eligibility, scope values, findings,
+> * derivations, success, and the audit trail — and admits unknown members and class instances,
+> * because a borrowed `QualifierInterface` implementation may add them beyond the
+> * published contract.
+180a209,213
+> * @remarks
+> * The guard is exact and requires either complete reason shape, the quantitative definition or
+> * the logical one. Nothing is left unchecked, because the reason package owns both authored
+> * input shapes.
+> *
+189a223,226
+> * @remarks
+> * Every authored ruling member and the complete key set are checked. Nothing is left
+> * unchecked, because this package owns the authored input record.
+> *
+205a243,247
+> * @remarks
+> * Every authored definition member, the nested pass and ruling shapes, and the complete key
+> * set are checked. Nothing is left unchecked, because this package owns the authored input
+> * record.
+> *
+230c272
+< * `resolveField` (a plain string field is ONE key, never dot-split — the split
+---
+> * `resolveField` (a plain string field is one key, never dot-split — the split
+233c275
+< * An UNRESOLVED path renders as the empty string.
+---
+> * An unresolved path renders as the empty string.
+290c332
+< * a finite number is NOT grouped here (grouping is {@link interpolateMessage}'s
+---
+> * a finite number is not grouped here (grouping is {@link interpolateMessage}'s
+319c361
+< * The checked form renders only when `field` and `comparison` are BOTH
+---
+> * The checked form renders only when `field` and `comparison` are both
+384c426
+< * the injected `evaluator`. A membership check (`any` / `none`) over an EMPTY
+---
+> * the injected `evaluator`. A membership check (`any` / `none`) over an empty
+553c595
+< * against the SAME subject snapshot the pass evaluated, so a conclusion the pass
+---
+> * against the same subject snapshot the pass evaluated, so a conclusion the pass
+866,867c908,910
+< * The engine is OWNED when self-created (destroyed on `destroy()`) and borrowed
+< * when injected (never destroyed). `qualify` builds its working subject through
+---
+> * The engine is owned when self-created (destroyed on `destroy()`) and borrowed
+> * when injected (never destroyed). Semantic validation runs before the first pass
+> * whenever the `validate` option is on. `qualify` builds its working subject through
+1095c1138
+< * Creates one qualifier over a reason engine.
+---
+> * Creates one {@link QualifierInterface} over a reason engine.
+1098c1141
+< * A standalone qualifier creates and OWNS one shared quantitative-plus-logical
+---
+> * A standalone qualifier creates and owns one shared quantitative-plus-logical
+1108c1151
+< * @example
+---
+> * @example Create a qualifier
+1110c1153,1178
+< * import { createQualifier } from '@orkestrel/qualifier'
+---
+> * import { createQualificationDefinition, createQualifier, createRuling } from '@orkestrel/qualifier'
+> * import { createAtom, createLogicalDefinition, createRule } from '@orkestrel/reason'
+> *
+> * const gates = createLogicalDefinition('gates', 'Eligibility gates', [
+> * 	createRule(
+> * 		'licensed',
+> * 		[createAtom('licensed', 'equals', false)],
+> * 		createAtom('blocked', 'equals', true),
+> * 	),
+> * ])
+> *
+> * const bare = createRuling('license', 'gates', 'licensed', 'restriction')
+> * const messaged = createRuling('license', 'gates', 'licensed', 'restriction', {
+> * 	message: 'A license is required',
+> * })
+> *
+> * 'message' in bare // false — an absent optional key is omitted, never written as undefined
+> * messaged.message // 'A license is required'
+> *
+> * const passes = [gates]
+> * const definition = createQualificationDefinition('standard', 'Standard eligibility', passes, {
+> * 	rulings: [messaged],
+> * })
+> *
+> * 'description' in definition // false
+> * definition.passes === passes // false — the factory copies what it is handed
+1113c1181
+< * qualifier.qualify({ id: 'risk-1' }, definition)
+---
+> * qualifier.qualify({ id: 'risk-1', licensed: false }, definition)
+1121c1189
+< * Creates a {@link QualificationDefinition}.
+---
+> * Creates a fresh {@link QualificationDefinition}, omitting every absent optional key.
+1124d1191
+< * Returns a fresh top-level definition, omitting absent optional keys;
+1152c1219
+< * Creates a {@link Ruling} — one authored consequence for one rule in one pass.
+---
+> * Creates a fresh {@link Ruling} from the rule it reacts to and the effect it applies.
+diff -r -w -B '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-qualifier-final-registry-visit-pack/baseline/package/dist/src/core/index.d.cts /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-qualifier-final-registry-visit-pack/extract/package/dist/src/core/index.d.cts
+1,8c1,8
+< import { Check } from '@orkestrel/reason';
+< import { CheckResult } from '@orkestrel/reason';
+< import { Comparison } from '@orkestrel/reason';
+< import { EmitterErrorHandler } from '@orkestrel/emitter';
+< import { EmitterHooks } from '@orkestrel/emitter';
+< import { EmitterInterface } from '@orkestrel/emitter';
+< import { EvaluatorInterface } from '@orkestrel/reason';
+< import { FieldPath } from '@orkestrel/contract';
+---
+> import type { Check } from '@orkestrel/reason';
+> import type { CheckResult } from '@orkestrel/reason';
+> import type { Comparison } from '@orkestrel/reason';
+> import type { EmitterErrorHandler } from '@orkestrel/emitter';
+> import type { EmitterHooks } from '@orkestrel/emitter';
+> import type { EmitterInterface } from '@orkestrel/emitter';
+> import type { EvaluatorInterface } from '@orkestrel/reason';
+> import type { FieldPath } from '@orkestrel/contract';
+10,19c10,19
+< import { JSONValue } from '@orkestrel/contract';
+< import { LogicalDefinition } from '@orkestrel/reason';
+< import { LogicalResult } from '@orkestrel/reason';
+< import { QuantitativeDefinition } from '@orkestrel/reason';
+< import { QuantitativeResult } from '@orkestrel/reason';
+< import { ReasonInterface } from '@orkestrel/reason';
+< import { ReasonResult } from '@orkestrel/reason';
+< import { ReasonValidationResult } from '@orkestrel/reason';
+< import { Rule } from '@orkestrel/reason';
+< import { Subject } from '@orkestrel/reason';
+---
+> import type { JSONValue } from '@orkestrel/contract';
+> import type { LogicalDefinition } from '@orkestrel/reason';
+> import type { LogicalResult } from '@orkestrel/reason';
+> import type { QuantitativeDefinition } from '@orkestrel/reason';
+> import type { QuantitativeResult } from '@orkestrel/reason';
+> import type { ReasonInterface } from '@orkestrel/reason';
+> import type { ReasonResult } from '@orkestrel/reason';
+> import type { ReasonValidationResult } from '@orkestrel/reason';
+> import type { Rule } from '@orkestrel/reason';
+> import type { Subject } from '@orkestrel/reason';
+74c74
+<   * Creates a {@link QualificationDefinition}.
+---
+>   * Creates a fresh {@link QualificationDefinition}, omitting every absent optional key.
+77d76
+<   * Returns a fresh top-level definition, omitting absent optional keys;
+97c96
+<   * Creates one qualifier over a reason engine.
+---
+>   * Creates one {@link QualifierInterface} over a reason engine.
+100c99
+<   * A standalone qualifier creates and OWNS one shared quantitative-plus-logical
+---
+>   * A standalone qualifier creates and owns one shared quantitative-plus-logical
+110c109
+<   * @example
+---
+>   * @example Create a qualifier
+112c111,136
+<   * import { createQualifier } from '@orkestrel/qualifier'
+---
+>   * import { createQualificationDefinition, createQualifier, createRuling } from '@orkestrel/qualifier'
+>   * import { createAtom, createLogicalDefinition, createRule } from '@orkestrel/reason'
+>   *
+>   * const gates = createLogicalDefinition('gates', 'Eligibility gates', [
+>   * 	createRule(
+>   * 		'licensed',
+>   * 		[createAtom('licensed', 'equals', false)],
+>   * 		createAtom('blocked', 'equals', true),
+>   * 	),
+>   * ])
+>   *
+>   * const bare = createRuling('license', 'gates', 'licensed', 'restriction')
+>   * const messaged = createRuling('license', 'gates', 'licensed', 'restriction', {
+>   * 	message: 'A license is required',
+>   * })
+>   *
+>   * 'message' in bare // false — an absent optional key is omitted, never written as undefined
+>   * messaged.message // 'A license is required'
+>   *
+>   * const passes = [gates]
+>   * const definition = createQualificationDefinition('standard', 'Standard eligibility', passes, {
+>   * 	rulings: [messaged],
+>   * })
+>   *
+>   * 'description' in definition // false
+>   * definition.passes === passes // false — the factory copies what it is handed
+115c139
+<   * qualifier.qualify({ id: 'risk-1' }, definition)
+---
+>   * qualifier.qualify({ id: 'risk-1', licensed: false }, definition)
+122c146
+<   * Creates a {@link Ruling} — one authored consequence for one rule in one pass.
+---
+>   * Creates a fresh {@link Ruling} from the rule it reacts to and the effect it applies.
+140c164,167
+<  /** Holds the default definition validation policy for `createQualifier` / `Qualifier.qualify`. */
+---
+>  /**
+>   * Holds the default definition validation policy for `createQualifier` and
+>   * `Qualifier.qualify`, `true`.
+>   */
+275c302,305
+<  /** Maps each {@link QualificationEffect} to its eligibility impact; `condition` remains eligible. */
+---
+>  /**
+>   * Maps each {@link QualificationEffect} to its eligibility impact — `restriction` to
+>   * `ineligible`, `referral` to `referral`, and `condition` to `eligible`.
+>   */
+281c311
+<  /** Lists the eligibility severities in order — most to least severe. */
+---
+>  /** Lists the eligibility severities most to least severe: `ineligible`, `referral`, `eligible`. */
+337c367
+<   * `resolveField` (a plain string field is ONE key, never dot-split — the split
+---
+>   * `resolveField` (a plain string field is one key, never dot-split — the split
+340c370
+<   * An UNRESOLVED path renders as the empty string.
+---
+>   * An unresolved path renders as the empty string.
+360,361c390,393
+<   * Unknown members are admitted. `value` follows the published `number` type, including `NaN` and
+<   * infinities.
+---
+>   * Every published member is checked: `value` follows the published `number` type, including
+>   * `NaN` and the infinities, and `trace` and `errors` hold strings. Unknown members are
+>   * admitted, because a foreign result implementation may add them without changing the
+>   * published contract.
+370a403,406
+>   * @remarks
+>   * The guard is total and leaves nothing unchecked: a scalar union has no open or exact
+>   * axis.
+>   *
+380,381c416,418
+<   * Every own string-named property is checked, including non-enumerable properties. Inherited and
+<   * symbol-named members are left unchecked because they are outside the record this guard certifies.
+---
+>   * Every own string-named value is checked through {@link isEligibility}, including
+>   * non-enumerable values. Inherited and symbol-named members are left unchecked because they
+>   * are outside the own string-keyed record this guard certifies.
+393,394c430,433
+<   * Unknown members are admitted. Optional `scope` and `message` members may be absent or
+<   * `undefined`; a present defined value must be a string.
+---
+>   * Every published member is checked, including each nested {@link Premise}. Optional `scope`
+>   * and `message` members may be absent or `undefined`; a present defined value must be a
+>   * string. Unknown members are admitted, because a foreign result implementation may add them
+>   * without changing the published contract.
+405,407c444,448
+<   * `expected` is unchecked and may be absent or contain any value because its published type is
+<   * `unknown`. `actual` is unchecked and may be absent or contain any value for the same reason.
+<   * Unknown members are admitted.
+---
+>   * The optional `field`, `label`, `description`, `comparison`, and `met` members are checked
+>   * when they are defined. `expected` is unchecked and may be absent or contain any value
+>   * because its published type is `unknown`. `actual` is unchecked and may be absent or contain
+>   * any value for the same reason. Unknown members are admitted, because an open result admits
+>   * what the published contract does not name.
+416a458,462
+>   * @remarks
+>   * Every authored definition member, the nested pass and ruling shapes, and the complete key
+>   * set are checked. Nothing is left unchecked, because this package owns the authored input
+>   * record.
+>   *
+424a471,474
+>   * @remarks
+>   * The guard is total and leaves nothing unchecked: a scalar union has no open or exact
+>   * axis.
+>   *
+432a483,487
+>   * @remarks
+>   * The guard is exact and requires either complete reason shape, the quantitative definition or
+>   * the logical one. Nothing is left unchecked, because the reason package owns both authored
+>   * input shapes.
+>   *
+443c498,501
+<   * admits unknown members and class instances while checking the complete published result closure.
+---
+>   * checks the complete published result closure — eligibility, scope values, findings,
+>   * derivations, success, and the audit trail — and admits unknown members and class instances,
+>   * because a borrowed `QualifierInterface` implementation may add them beyond the
+>   * published contract.
+460a519,522
+>   * @remarks
+>   * Every authored ruling member and the complete key set are checked. Nothing is left
+>   * unchecked, because this package owns the authored input record.
+>   *
+509,510c571,575
+<   * Represents display-neutral evidence for one condition, in one of two authoring modes.
+<   * A CHECKED premise carries `field` and `comparison`; a DESCRIBED premise
+---
+>   * Represents display-neutral evidence for one condition, authored as a checked or a
+>   * described premise.
+>   *
+>   * @remarks
+>   * A checked premise carries `field` and `comparison`; a described premise
+512c577
+<   * renders only when `field` and `comparison` are BOTH present, and
+---
+>   * renders only when `field` and `comparison` are both present, and
+527c592,595
+<  /** Names the reserved internal projection namespace a pass's working projection is written under. */
+---
+>  /**
+>   * Names `'qualification'`, the reserved internal projection namespace a pass's working
+>   * projection is written under.
+>   */
+591,592c659,661
+<   * The engine is OWNED when self-created (destroyed on `destroy()`) and borrowed
+<   * when injected (never destroyed). `qualify` builds its working subject through
+---
+>   * The engine is owned when self-created (destroyed on `destroy()`) and borrowed
+>   * when injected (never destroyed). Semantic validation runs before the first pass
+>   * whenever the `validate` option is on. `qualify` builds its working subject through
+698c767,768
+<        * Represents a coded programmer error thrown by the qualifier layer.
+---
+>        * Represents a coded programmer error thrown by the qualifier layer, carrying a
+>        * `QualifierErrorCode` and an optional context record.
+830c900
+<             * Carries the options for `createQualifier` / the `Qualifier` constructor.
+---
+>             * Carries the options for `createQualifier` and the `Qualifier` constructor.
+920c990
+<             * The checked form renders only when `field` and `comparison` are BOTH
+---
+>             * The checked form renders only when `field` and `comparison` are both
+949c1019
+<             * a finite number is NOT grouped here (grouping is {@link interpolateMessage}'s
+---
+>             * a finite number is not grouped here (grouping is {@link interpolateMessage}'s
+974c1044
+<             * the injected `evaluator`. A membership check (`any` / `none`) over an EMPTY
+---
+>             * the injected `evaluator`. A membership check (`any` / `none`) over an empty
+1021c1091
+<             * against the SAME subject snapshot the pass evaluated, so a conclusion the pass
+---
+>             * against the same subject snapshot the pass evaluated, so a conclusion the pass
+diff -r -w -B '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-qualifier-final-registry-visit-pack/baseline/package/dist/src/core/index.d.ts /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-qualifier-final-registry-visit-pack/extract/package/dist/src/core/index.d.ts
+1,8c1,8
+< import { Check } from '@orkestrel/reason';
+< import { CheckResult } from '@orkestrel/reason';
+< import { Comparison } from '@orkestrel/reason';
+< import { EmitterErrorHandler } from '@orkestrel/emitter';
+< import { EmitterHooks } from '@orkestrel/emitter';
+< import { EmitterInterface } from '@orkestrel/emitter';
+< import { EvaluatorInterface } from '@orkestrel/reason';
+< import { FieldPath } from '@orkestrel/contract';
+---
+> import type { Check } from '@orkestrel/reason';
+> import type { CheckResult } from '@orkestrel/reason';
+> import type { Comparison } from '@orkestrel/reason';
+> import type { EmitterErrorHandler } from '@orkestrel/emitter';
+> import type { EmitterHooks } from '@orkestrel/emitter';
+> import type { EmitterInterface } from '@orkestrel/emitter';
+> import type { EvaluatorInterface } from '@orkestrel/reason';
+> import type { FieldPath } from '@orkestrel/contract';
+10,19c10,19
+< import { JSONValue } from '@orkestrel/contract';
+< import { LogicalDefinition } from '@orkestrel/reason';
+< import { LogicalResult } from '@orkestrel/reason';
+< import { QuantitativeDefinition } from '@orkestrel/reason';
+< import { QuantitativeResult } from '@orkestrel/reason';
+< import { ReasonInterface } from '@orkestrel/reason';
+< import { ReasonResult } from '@orkestrel/reason';
+< import { ReasonValidationResult } from '@orkestrel/reason';
+< import { Rule } from '@orkestrel/reason';
+< import { Subject } from '@orkestrel/reason';
+---
+> import type { JSONValue } from '@orkestrel/contract';
+> import type { LogicalDefinition } from '@orkestrel/reason';
+> import type { LogicalResult } from '@orkestrel/reason';
+> import type { QuantitativeDefinition } from '@orkestrel/reason';
+> import type { QuantitativeResult } from '@orkestrel/reason';
+> import type { ReasonInterface } from '@orkestrel/reason';
+> import type { ReasonResult } from '@orkestrel/reason';
+> import type { ReasonValidationResult } from '@orkestrel/reason';
+> import type { Rule } from '@orkestrel/reason';
+> import type { Subject } from '@orkestrel/reason';
+74c74
+<   * Creates a {@link QualificationDefinition}.
+---
+>   * Creates a fresh {@link QualificationDefinition}, omitting every absent optional key.
+77d76
+<   * Returns a fresh top-level definition, omitting absent optional keys;
+97c96
+<   * Creates one qualifier over a reason engine.
+---
+>   * Creates one {@link QualifierInterface} over a reason engine.
+100c99
+<   * A standalone qualifier creates and OWNS one shared quantitative-plus-logical
+---
+>   * A standalone qualifier creates and owns one shared quantitative-plus-logical
+110c109
+<   * @example
+---
+>   * @example Create a qualifier
+112c111,136
+<   * import { createQualifier } from '@orkestrel/qualifier'
+---
+>   * import { createQualificationDefinition, createQualifier, createRuling } from '@orkestrel/qualifier'
+>   * import { createAtom, createLogicalDefinition, createRule } from '@orkestrel/reason'
+>   *
+>   * const gates = createLogicalDefinition('gates', 'Eligibility gates', [
+>   * 	createRule(
+>   * 		'licensed',
+>   * 		[createAtom('licensed', 'equals', false)],
+>   * 		createAtom('blocked', 'equals', true),
+>   * 	),
+>   * ])
+>   *
+>   * const bare = createRuling('license', 'gates', 'licensed', 'restriction')
+>   * const messaged = createRuling('license', 'gates', 'licensed', 'restriction', {
+>   * 	message: 'A license is required',
+>   * })
+>   *
+>   * 'message' in bare // false — an absent optional key is omitted, never written as undefined
+>   * messaged.message // 'A license is required'
+>   *
+>   * const passes = [gates]
+>   * const definition = createQualificationDefinition('standard', 'Standard eligibility', passes, {
+>   * 	rulings: [messaged],
+>   * })
+>   *
+>   * 'description' in definition // false
+>   * definition.passes === passes // false — the factory copies what it is handed
+115c139
+<   * qualifier.qualify({ id: 'risk-1' }, definition)
+---
+>   * qualifier.qualify({ id: 'risk-1', licensed: false }, definition)
+122c146
+<   * Creates a {@link Ruling} — one authored consequence for one rule in one pass.
+---
+>   * Creates a fresh {@link Ruling} from the rule it reacts to and the effect it applies.
+140c164,167
+<  /** Holds the default definition validation policy for `createQualifier` / `Qualifier.qualify`. */
+---
+>  /**
+>   * Holds the default definition validation policy for `createQualifier` and
+>   * `Qualifier.qualify`, `true`.
+>   */
+275c302,305
+<  /** Maps each {@link QualificationEffect} to its eligibility impact; `condition` remains eligible. */
+---
+>  /**
+>   * Maps each {@link QualificationEffect} to its eligibility impact — `restriction` to
+>   * `ineligible`, `referral` to `referral`, and `condition` to `eligible`.
+>   */
+281c311
+<  /** Lists the eligibility severities in order — most to least severe. */
+---
+>  /** Lists the eligibility severities most to least severe: `ineligible`, `referral`, `eligible`. */
+337c367
+<   * `resolveField` (a plain string field is ONE key, never dot-split — the split
+---
+>   * `resolveField` (a plain string field is one key, never dot-split — the split
+340c370
+<   * An UNRESOLVED path renders as the empty string.
+---
+>   * An unresolved path renders as the empty string.
+360,361c390,393
+<   * Unknown members are admitted. `value` follows the published `number` type, including `NaN` and
+<   * infinities.
+---
+>   * Every published member is checked: `value` follows the published `number` type, including
+>   * `NaN` and the infinities, and `trace` and `errors` hold strings. Unknown members are
+>   * admitted, because a foreign result implementation may add them without changing the
+>   * published contract.
+370a403,406
+>   * @remarks
+>   * The guard is total and leaves nothing unchecked: a scalar union has no open or exact
+>   * axis.
+>   *
+380,381c416,418
+<   * Every own string-named property is checked, including non-enumerable properties. Inherited and
+<   * symbol-named members are left unchecked because they are outside the record this guard certifies.
+---
+>   * Every own string-named value is checked through {@link isEligibility}, including
+>   * non-enumerable values. Inherited and symbol-named members are left unchecked because they
+>   * are outside the own string-keyed record this guard certifies.
+393,394c430,433
+<   * Unknown members are admitted. Optional `scope` and `message` members may be absent or
+<   * `undefined`; a present defined value must be a string.
+---
+>   * Every published member is checked, including each nested {@link Premise}. Optional `scope`
+>   * and `message` members may be absent or `undefined`; a present defined value must be a
+>   * string. Unknown members are admitted, because a foreign result implementation may add them
+>   * without changing the published contract.
+405,407c444,448
+<   * `expected` is unchecked and may be absent or contain any value because its published type is
+<   * `unknown`. `actual` is unchecked and may be absent or contain any value for the same reason.
+<   * Unknown members are admitted.
+---
+>   * The optional `field`, `label`, `description`, `comparison`, and `met` members are checked
+>   * when they are defined. `expected` is unchecked and may be absent or contain any value
+>   * because its published type is `unknown`. `actual` is unchecked and may be absent or contain
+>   * any value for the same reason. Unknown members are admitted, because an open result admits
+>   * what the published contract does not name.
+416a458,462
+>   * @remarks
+>   * Every authored definition member, the nested pass and ruling shapes, and the complete key
+>   * set are checked. Nothing is left unchecked, because this package owns the authored input
+>   * record.
+>   *
+424a471,474
+>   * @remarks
+>   * The guard is total and leaves nothing unchecked: a scalar union has no open or exact
+>   * axis.
+>   *
+432a483,487
+>   * @remarks
+>   * The guard is exact and requires either complete reason shape, the quantitative definition or
+>   * the logical one. Nothing is left unchecked, because the reason package owns both authored
+>   * input shapes.
+>   *
+443c498,501
+<   * admits unknown members and class instances while checking the complete published result closure.
+---
+>   * checks the complete published result closure — eligibility, scope values, findings,
+>   * derivations, success, and the audit trail — and admits unknown members and class instances,
+>   * because a borrowed `QualifierInterface` implementation may add them beyond the
+>   * published contract.
+460a519,522
+>   * @remarks
+>   * Every authored ruling member and the complete key set are checked. Nothing is left
+>   * unchecked, because this package owns the authored input record.
+>   *
+509,510c571,575
+<   * Represents display-neutral evidence for one condition, in one of two authoring modes.
+<   * A CHECKED premise carries `field` and `comparison`; a DESCRIBED premise
+---
+>   * Represents display-neutral evidence for one condition, authored as a checked or a
+>   * described premise.
+>   *
+>   * @remarks
+>   * A checked premise carries `field` and `comparison`; a described premise
+512c577
+<   * renders only when `field` and `comparison` are BOTH present, and
+---
+>   * renders only when `field` and `comparison` are both present, and
+527c592,595
+<  /** Names the reserved internal projection namespace a pass's working projection is written under. */
+---
+>  /**
+>   * Names `'qualification'`, the reserved internal projection namespace a pass's working
+>   * projection is written under.
+>   */
+591,592c659,661
+<   * The engine is OWNED when self-created (destroyed on `destroy()`) and borrowed
+<   * when injected (never destroyed). `qualify` builds its working subject through
+---
+>   * The engine is owned when self-created (destroyed on `destroy()`) and borrowed
+>   * when injected (never destroyed). Semantic validation runs before the first pass
+>   * whenever the `validate` option is on. `qualify` builds its working subject through
+698c767,768
+<        * Represents a coded programmer error thrown by the qualifier layer.
+---
+>        * Represents a coded programmer error thrown by the qualifier layer, carrying a
+>        * `QualifierErrorCode` and an optional context record.
+830c900
+<             * Carries the options for `createQualifier` / the `Qualifier` constructor.
+---
+>             * Carries the options for `createQualifier` and the `Qualifier` constructor.
+920c990
+<             * The checked form renders only when `field` and `comparison` are BOTH
+---
+>             * The checked form renders only when `field` and `comparison` are both
+949c1019
+<             * a finite number is NOT grouped here (grouping is {@link interpolateMessage}'s
+---
+>             * a finite number is not grouped here (grouping is {@link interpolateMessage}'s
+974c1044
+<             * the injected `evaluator`. A membership check (`any` / `none`) over an EMPTY
+---
+>             * the injected `evaluator`. A membership check (`any` / `none`) over an empty
+1021c1091
+<             * against the SAME subject snapshot the pass evaluated, so a conclusion the pass
+---
+>             * against the same subject snapshot the pass evaluated, so a conclusion the pass
+diff -r -w -B '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-qualifier-final-registry-visit-pack/baseline/package/dist/src/core/index.js /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-qualifier-final-registry-visit-pack/extract/package/dist/src/core/index.js
+5c5,8
+< /** Holds the default definition validation policy for `createQualifier` / `Qualifier.qualify`. */
+---
+> /**
+> * Holds the default definition validation policy for `createQualifier` and
+> * `Qualifier.qualify`, `true`.
+> */
+7c10,13
+< /** Names the reserved internal projection namespace a pass's working projection is written under. */
+---
+> /**
+> * Names `'qualification'`, the reserved internal projection namespace a pass's working
+> * projection is written under.
+> */
+9c15
+< /** Lists the eligibility severities in order — most to least severe. */
+---
+> /** Lists the eligibility severities most to least severe: `ineligible`, `referral`, `eligible`. */
+15c21,24
+< /** Maps each {@link QualificationEffect} to its eligibility impact; `condition` remains eligible. */
+---
+> /**
+> * Maps each {@link QualificationEffect} to its eligibility impact — `restriction` to
+> * `ineligible`, `referral` to `referral`, and `condition` to `eligible`.
+> */
+24c33,34
+< * Represents a coded programmer error thrown by the qualifier layer.
+---
+> * Represents a coded programmer error thrown by the qualifier layer, carrying a
+> * `QualifierErrorCode` and an optional context record.
+61a72,75
+> * @remarks
+> * The guard is total and leaves nothing unchecked: a scalar union has no open or exact
+> * axis.
+> *
+68a83,86
+> * @remarks
+> * The guard is total and leaves nothing unchecked: a scalar union has no open or exact
+> * axis.
+> *
+77,78c95,97
+< * Every own string-named property is checked, including non-enumerable properties. Inherited and
+< * symbol-named members are left unchecked because they are outside the record this guard certifies.
+---
+> * Every own string-named value is checked through {@link isEligibility}, including
+> * non-enumerable values. Inherited and symbol-named members are left unchecked because they
+> * are outside the own string-keyed record this guard certifies.
+91,93c110,114
+< * `expected` is unchecked and may be absent or contain any value because its published type is
+< * `unknown`. `actual` is unchecked and may be absent or contain any value for the same reason.
+< * Unknown members are admitted.
+---
+> * The optional `field`, `label`, `description`, `comparison`, and `met` members are checked
+> * when they are defined. `expected` is unchecked and may be absent or contain any value
+> * because its published type is `unknown`. `actual` is unchecked and may be absent or contain
+> * any value for the same reason. Unknown members are admitted, because an open result admits
+> * what the published contract does not name.
+117,118c138,141
+< * Unknown members are admitted. Optional `scope` and `message` members may be absent or
+< * `undefined`; a present defined value must be a string.
+---
+> * Every published member is checked, including each nested {@link Premise}. Optional `scope`
+> * and `message` members may be absent or `undefined`; a present defined value must be a
+> * string. Unknown members are admitted, because a foreign result implementation may add them
+> * without changing the published contract.
+139,140c162,165
+< * Unknown members are admitted. `value` follows the published `number` type, including `NaN` and
+< * infinities.
+---
+> * Every published member is checked: `value` follows the published `number` type, including
+> * `NaN` and the infinities, and `trace` and `errors` hold strings. Unknown members are
+> * admitted, because a foreign result implementation may add them without changing the
+> * published contract.
+159c184,187
+< * admits unknown members and class instances while checking the complete published result closure.
+---
+> * checks the complete published result closure — eligibility, scope values, findings,
+> * derivations, success, and the audit trail — and admits unknown members and class instances,
+> * because a borrowed `QualifierInterface` implementation may add them beyond the
+> * published contract.
+179a208,212
+> * @remarks
+> * The guard is exact and requires either complete reason shape, the quantitative definition or
+> * the logical one. Nothing is left unchecked, because the reason package owns both authored
+> * input shapes.
+> *
+188a222,225
+> * @remarks
+> * Every authored ruling member and the complete key set are checked. Nothing is left
+> * unchecked, because this package owns the authored input record.
+> *
+204a242,246
+> * @remarks
+> * Every authored definition member, the nested pass and ruling shapes, and the complete key
+> * set are checked. Nothing is left unchecked, because this package owns the authored input
+> * record.
+> *
+229c271
+< * `resolveField` (a plain string field is ONE key, never dot-split — the split
+---
+> * `resolveField` (a plain string field is one key, never dot-split — the split
+232c274
+< * An UNRESOLVED path renders as the empty string.
+---
+> * An unresolved path renders as the empty string.
+289c331
+< * a finite number is NOT grouped here (grouping is {@link interpolateMessage}'s
+---
+> * a finite number is not grouped here (grouping is {@link interpolateMessage}'s
+318c360
+< * The checked form renders only when `field` and `comparison` are BOTH
+---
+> * The checked form renders only when `field` and `comparison` are both
+383c425
+< * the injected `evaluator`. A membership check (`any` / `none`) over an EMPTY
+---
+> * the injected `evaluator`. A membership check (`any` / `none`) over an empty
+552c594
+< * against the SAME subject snapshot the pass evaluated, so a conclusion the pass
+---
+> * against the same subject snapshot the pass evaluated, so a conclusion the pass
+865,866c907,909
+< * The engine is OWNED when self-created (destroyed on `destroy()`) and borrowed
+< * when injected (never destroyed). `qualify` builds its working subject through
+---
+> * The engine is owned when self-created (destroyed on `destroy()`) and borrowed
+> * when injected (never destroyed). Semantic validation runs before the first pass
+> * whenever the `validate` option is on. `qualify` builds its working subject through
+1094c1137
+< * Creates one qualifier over a reason engine.
+---
+> * Creates one {@link QualifierInterface} over a reason engine.
+1097c1140
+< * A standalone qualifier creates and OWNS one shared quantitative-plus-logical
+---
+> * A standalone qualifier creates and owns one shared quantitative-plus-logical
+1107c1150
+< * @example
+---
+> * @example Create a qualifier
+1109c1152,1177
+< * import { createQualifier } from '@orkestrel/qualifier'
+---
+> * import { createQualificationDefinition, createQualifier, createRuling } from '@orkestrel/qualifier'
+> * import { createAtom, createLogicalDefinition, createRule } from '@orkestrel/reason'
+> *
+> * const gates = createLogicalDefinition('gates', 'Eligibility gates', [
+> * 	createRule(
+> * 		'licensed',
+> * 		[createAtom('licensed', 'equals', false)],
+> * 		createAtom('blocked', 'equals', true),
+> * 	),
+> * ])
+> *
+> * const bare = createRuling('license', 'gates', 'licensed', 'restriction')
+> * const messaged = createRuling('license', 'gates', 'licensed', 'restriction', {
+> * 	message: 'A license is required',
+> * })
+> *
+> * 'message' in bare // false — an absent optional key is omitted, never written as undefined
+> * messaged.message // 'A license is required'
+> *
+> * const passes = [gates]
+> * const definition = createQualificationDefinition('standard', 'Standard eligibility', passes, {
+> * 	rulings: [messaged],
+> * })
+> *
+> * 'description' in definition // false
+> * definition.passes === passes // false — the factory copies what it is handed
+1112c1180
+< * qualifier.qualify({ id: 'risk-1' }, definition)
+---
+> * qualifier.qualify({ id: 'risk-1', licensed: false }, definition)
+1120c1188
+< * Creates a {@link QualificationDefinition}.
+---
+> * Creates a fresh {@link QualificationDefinition}, omitting every absent optional key.
+1123d1190
+< * Returns a fresh top-level definition, omitting absent optional keys;
+1151c1218
+< * Creates a {@link Ruling} — one authored consequence for one rule in one pass.
+---
+> * Creates a fresh {@link Ruling} from the rule it reacts to and the effect it applies.

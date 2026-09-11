@@ -1,0 +1,22 @@
+npm notice
+npm notice 📦  @orkestrel/interpret@0.0.13
+npm notice Tarball Contents
+npm notice 1.1kB LICENSE
+npm notice 2.8kB README.md
+npm notice 101.4kB dist/src/core/index.cjs
+npm notice 157.5kB dist/src/core/index.cjs.map
+npm notice 112.7kB dist/src/core/index.d.cts
+npm notice 112.7kB dist/src/core/index.d.ts
+npm notice 97.7kB dist/src/core/index.js
+npm notice 156.5kB dist/src/core/index.js.map
+npm notice 3.8kB package.json
+npm notice Tarball Details
+npm notice name: @orkestrel/interpret
+npm notice version: 0.0.13
+npm notice filename: orkestrel-interpret-0.0.13.tgz
+npm notice package size: 178.4 kB
+npm notice unpacked size: 746.2 kB
+npm notice shasum: 2c24831b24e246f583a844858ccb0bd0fd4ab8cc
+npm notice integrity: sha512-r+bDB0die2WeD[...]Y+845CUfI9cug==
+npm notice total files: 9
+npm notice

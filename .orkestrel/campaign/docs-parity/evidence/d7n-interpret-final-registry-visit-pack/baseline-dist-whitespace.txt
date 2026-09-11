@@ -1,0 +1,3164 @@
+diff -r -w -B '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-interpret-final-registry-visit-pack/baseline/package/dist/src/core/index.cjs /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-interpret-final-registry-visit-pack/extract/package/dist/src/core/index.cjs
+8,9c8,9
+< * Names the default `similarity` for `createInterpret` / `matchAlias` — the
+< * fuzzy alias-match score threshold (0..1).
+---
+> * Names the default `similarity` for `createInterpret` and `matchAlias`, 0.8 — the
+> * fuzzy alias-match score threshold, between 0 and 1.
+18,19c18,19
+< * Names the default `floor` for `createInterpret` / `matchTemplate` — the
+< * minimum intent confidence a template match (or the classified intent itself) must
+---
+> * Names the default `floor` for `createInterpret` and `matchTemplate`, 0.3 — the
+> * minimum intent confidence a template match, or the classified intent itself, must
+23c23
+< /** Names the default `history` cap for an `InterpretContext`'s `previous()` ring buffer. */
+---
+> /** Names the default `history` cap for an `InterpretContext`'s `previous()` ring buffer, 16. */
+25c25
+< /** Names the confidence assigned to an exact keyword-proximity entity match. */
+---
+> /** Names the confidence assigned to an exact keyword-proximity entity match, 1. */
+27c27
+< /** Names the confidence assigned to an exact alias-phrase entity match. */
+---
+> /** Names the confidence assigned to an exact alias-phrase entity match, 0.9. */
+29c29,32
+< /** Names the confidence assigned when a single entity mapping collects every extracted number. */
+---
+> /**
+> * Names the confidence assigned when a single entity mapping collects every extracted
+> * number, 0.9.
+> */
+31c34
+< /** Names the confidence assigned to a positional (order-based) entity match fallback. */
+---
+> /** Names the confidence assigned to a positional (order-based) entity match fallback, 0.7. */
+33c36
+< /** Names the confidence assigned to a same-domain carried-over field. */
+---
+> /** Names the confidence assigned to a same-domain carried-over field, 0.7. */
+35c38
+< /** Names the confidence assigned to a template default fill. */
+---
+> /** Names the confidence assigned to a template default fill, 1. */
+37c40
+< /** Names the confidence assigned to a successfully resolved computed field. */
+---
+> /** Names the confidence assigned to a successfully resolved computed field, 0.9. */
+51,52c54,56
+< * Lists the prototype-pollution-unsafe field-path segments — `setField` refuses
+< * to write ANY path containing one, returning its input unchanged.
+---
+> * Lists the prototype-pollution-unsafe field-path segments, `__proto__`, `prototype`,
+> * and `constructor` — `setField` refuses to write any path containing one, and returns
+> * its input unchanged.
+150c154,155
+< * Represents an error thrown by the interprets layer.
+---
+> * Represents an error thrown by the interprets layer, carrying an
+> * {@link InterpretErrorCode} and an optional `context` record.
+178c183
+< * import { isInterpretError } from '@src/core'
+---
+> * import { isInterpretError } from '@orkestrel/interpret'
+193,194c198,200
+< * Determines whether a value is an {@link EntityMapping} — a literal
+< * alias-phrase extraction rule pointing at a subject field.
+---
+> * Determines whether a value is an exact {@link EntityMapping} input
+> * record — a literal alias-phrase extraction rule pointing at a subject
+> * field.
+201c207
+< * import { isEntityMapping } from '@src/core'
+---
+> * import { isEntityMapping } from '@orkestrel/interpret'
+216,217c222,223
+< * Determines whether a value is a {@link FieldDefault} — a fallback value a
+< * {@link Template} fills onto an unresolved field.
+---
+> * Determines whether a value is an exact {@link FieldDefault} input record —
+> * a fallback value a {@link Template} fills onto an unresolved field.
+229c235
+< * import { isFieldDefault } from '@src/core'
+---
+> * import { isFieldDefault } from '@orkestrel/interpret'
+242,243c248,250
+< * Determines whether a value is a {@link ComputedField} — a declaratively
+< * computed field carrying a reasons {@link SymbolicExpression} tree.
+---
+> * Determines whether a value is an exact {@link ComputedField} input record —
+> * a declaratively computed field carrying a reasons
+> * {@link SymbolicExpression} tree.
+251c258
+< * import { isComputedField } from '@src/core'
+---
+> * import { isComputedField } from '@orkestrel/interpret'
+267,268c274,275
+< * Determines whether a value is a {@link Template} — a named, versionable
+< * interpretation template.
+---
+> * Determines whether a value is an exact {@link Template} input record — a
+> * named, versionable interpretation template.
+273c280,283
+< * parallel interprets-owned definition guard exists.
+---
+> * parallel interprets-owned definition guard exists. Each computation's
+> * `expression` is validated with reasons' `isSymbolicExpression`, already
+> * recursive through `lazyOf`, so this module mints no expression guard of its
+> * own.
+281c291
+< * import { isTemplate } from '@src/core'
+---
+> * import { isTemplate } from '@orkestrel/interpret'
+312a323,327
+> * @remarks
+> * `category` is checked against `PROVENANCE_CATEGORIES` and the optional
+> * `detail` against `isString`; an unknown member passes, because a foreign
+> * engine's return is not this package's to narrow.
+> *
+318c333
+< * import { isProvenance } from '@src/core'
+---
+> * import { isProvenance } from '@orkestrel/interpret'
+342c357
+< * import { isIntent } from '@src/core'
+---
+> * import { isIntent } from '@orkestrel/interpret'
+368c383
+< * import { isEntity } from '@src/core'
+---
+> * import { isEntity } from '@orkestrel/interpret'
+393c408
+< * import { isFieldMapping } from '@src/core'
+---
+> * import { isFieldMapping } from '@orkestrel/interpret'
+409a425,428
+> * @remarks
+> * `field`, `question`, the string `candidates` list, and `required` are each
+> * checked; an unknown member passes.
+> *
+415c434
+< * import { isAmbiguity } from '@src/core'
+---
+> * import { isAmbiguity } from '@orkestrel/interpret'
+442c461
+< * import { isStageRecord } from '@src/core'
+---
+> * import { isStageRecord } from '@orkestrel/interpret'
+457a477,481
+> * @remarks
+> * `stage` is checked against `INTERPRET_STAGES`, `code` against
+> * `INTERPRET_ERROR_CODES`, and `message` against `isString`; an unknown member
+> * passes.
+> *
+463c487
+< * import { isStageFailure } from '@src/core'
+---
+> * import { isStageFailure } from '@orkestrel/interpret'
+492c516
+< * import { createInterpret, isInterpretation } from '@src/core'
+---
+> * import { createInterpret, isInterpretation } from '@orkestrel/interpret'
+526c550
+< * import { escapeRegExp } from '@src/core'
+---
+> * import { escapeRegExp } from '@orkestrel/interpret'
+542c566
+< * `prototype`, or `constructor` at ANY segment (checked against
+---
+> * `prototype`, or `constructor` at any segment (checked against
+555c579
+< * import { setField } from '@src/core'
+---
+> * import { setField } from '@orkestrel/interpret'
+596c620
+< * import { applyReplacements } from '@src/core'
+---
+> * import { applyReplacements } from '@orkestrel/interpret'
+618c642
+< * import { collapseWhitespace } from '@src/core'
+---
+> * import { collapseWhitespace } from '@orkestrel/interpret'
+640c664
+< * import { tokenize } from '@src/core'
+---
+> * import { tokenize } from '@orkestrel/interpret'
+662c686
+< * import { extractNumbers } from '@src/core'
+---
+> * import { extractNumbers } from '@orkestrel/interpret'
+685c709
+< * Strategy, in order: (1) a SINGLE mapping collects every number (an array
+---
+> * Strategy, in order: (1) a single mapping collects every number (an array
+695c719
+< * Runs ONLY after a template has matched (an orchestrator-owned step, never
+---
+> * Runs only after a template has matched (an orchestrator-owned step, never
+706c730
+< * import { assignEntities } from '@src/core'
+---
+> * import { assignEntities } from '@orkestrel/interpret'
+848,854c872,878
+< * unclassified intent is visibly absent. Combined confidence (PINNED): both
+< * fire → their average; exactly one fires → its value times `0.5`; neither →
+< * `0`. There is no built-in worldview and no auto-classification from an
+< * added template's own `domain` name — a caller MUST list a template's
+< * domain among `domains` for it to classify. No `floor` parameter: the
+< * confidence floor gate lives at the orchestrator's `matchTemplate` step,
+< * never inside classification itself.
+---
+> * unclassified intent is visibly absent. Combined confidence (pinned): the
+> * action and the domain both fire → their average; exactly one fires → its
+> * value times `0.5`; neither → `0`. There is no built-in worldview and no
+> * auto-classification from an added template's own `domain` name — a caller
+> * must list a template's domain among `domains` for it to classify. No
+> * `floor` parameter: the confidence floor gate lives at the orchestrator's
+> * `matchTemplate` step, never inside classification itself.
+863c887
+< * import { classifyIntent } from '@src/core'
+---
+> * import { classifyIntent } from '@orkestrel/interpret'
+912c936
+< * import { scoreSimilarity } from '@src/core'
+---
+> * import { scoreSimilarity } from '@orkestrel/interpret'
+950c974
+< * import { matchAlias } from '@src/core'
+---
+> * import { matchAlias } from '@orkestrel/interpret'
+973c997
+< * `ancestors` tracks the objects along the CURRENT recursion path rather than
+---
+> * `ancestors` tracks the objects along the current recursion path rather than
+987c1011
+< * import { canonicalizeNode } from '@src/core'
+---
+> * import { canonicalizeNode } from '@orkestrel/interpret'
+1024c1048
+< * import { canonicalize } from '@src/core'
+---
+> * import { canonicalize } from '@orkestrel/interpret'
+1033,1034c1057,1058
+< * Computes a canonical structural digest of a pure-JSON value — a key-order-
+< * stable FNV-1a hash rendered as an 8-hex-digit string.
+---
+> * Computes a canonical structural digest of a pure-JSON value — a
+> * key-order-stable FNV-1a hash rendered as an 8-hex-digit string.
+1046c1070
+< * import { digestValue } from '@src/core'
+---
+> * import { digestValue } from '@orkestrel/interpret'
+1074c1098
+< * import { scoreTemplate } from '@src/core'
+---
+> * import { scoreTemplate } from '@orkestrel/interpret'
+1102c1126
+< * import { matchTemplate } from '@src/core'
+---
+> * import { matchTemplate } from '@orkestrel/interpret'
+1129c1153
+< * import { variablesOf } from '@src/core'
+---
+> * import { variablesOf } from '@orkestrel/interpret'
+1159c1183
+< * THE critical leaf (design-pinned, engine-parity semantics): an absent
+---
+> * The critical leaf (design-pinned, engine-parity semantics): an absent
+1162c1186
+< * EXPLICIT numeric operand, so the same tree evaluates identically here and
+---
+> * explicit numeric operand, so the same tree evaluates identically here and
+1177c1201
+< * import { resolveExpression } from '@src/core'
+---
+> * import { resolveExpression } from '@orkestrel/interpret'
+1200c1224
+< * describes RATERS artifacts); this describes REASONS artifacts. Every field
+---
+> * describes raters artifacts); this describes reasons artifacts. Every field
+1213c1237
+< * import { createNarrator, renderSubject } from '@src/core'
+---
+> * import { createNarrator, renderSubject } from '@orkestrel/interpret'
+1245c1269
+< * import { parseTemplate } from '@src/core'
+---
+> * import { parseTemplate } from '@orkestrel/interpret'
+1266,1267c1290,1291
+< * its record's value field. `add` derives `hash` from the value's CONTENT
+< * (id-independent) and bumps `version` ONLY when that hash changes at a reused
+---
+> * its record's value field. `add` derives `hash` from the value's content
+> * (id-independent) and bumps `version` only when that hash changes at a reused
+1269c1293
+< * is ALL-OR-NOTHING — any id absent from the registry leaves the collection
+---
+> * is all-or-nothing — any id absent from the registry leaves the collection
+1276c1300
+< * import { RecordManager } from '@src/core'
+---
+> * import { RecordManager } from '@orkestrel/interpret'
+1388c1412
+< * import { DefinitionManager } from '@src/core'
+---
+> * import { DefinitionManager } from '@orkestrel/interpret'
+1442c1466
+< * record-holder that mints its OWN record identity for every {@link Subject}
+---
+> * record-holder that mints its own record identity for every {@link Subject}
+1451c1475
+< * bumps ONLY when the hash changes at a reused id and the batch `remove(ids)`
+---
+> * bumps only when the hash changes at a reused id and the batch `remove(ids)`
+1457c1481
+< * import { SubjectManager } from '@src/core'
+---
+> * import { SubjectManager } from '@orkestrel/interpret'
+1526,1528c1550,1553
+< * one result and trims to the cap; `clear` resets the history and both
+< * registries WITHOUT tearing the context down; `destroy()` is idempotent and
+< * every method afterwards throws `InterpretError('DESTROYED', …)`.
+---
+> * one result and trims to the cap; `clear` resets the history, the subject
+> * registry, and the definition registry without tearing the context down;
+> * `destroy()` is idempotent and every method afterwards throws
+> * `InterpretError('DESTROYED', …)`.
+1532c1557
+< * import { InterpretContext } from '@src/core'
+---
+> * import { InterpretContext } from '@orkestrel/interpret'
+1618c1643
+< * the batch `remove(ids)` form stays ALL-OR-NOTHING. This class adds what is
+---
+> * the batch `remove(ids)` form stays all-or-nothing. This class adds what is
+1626c1651
+< * import { TemplateManager } from '@src/core'
+---
+> * import { TemplateManager } from '@orkestrel/interpret'
+1690c1715
+< * Implements a stateless, TOTAL, lexicon-driven rendering engine for the reverse
+---
+> * Implements a stateless, total, lexicon-driven rendering engine for the reverse
+1695,1696c1720,1721
+< * Every wording decision is DATA — a caller-supplied `Lexicon` merged, per
+< * sub-record (`phrases` / `labels` / `templates`), OVER `DEFAULT_LEXICON`.
+---
+> * Every wording decision is data — a caller-supplied `Lexicon` merged, per
+> * sub-record (`phrases`, `labels`, and `templates`), over `DEFAULT_LEXICON`.
+1706c1731
+< * import { Narrator } from '@src/core'
+---
+> * import { Narrator } from '@orkestrel/interpret'
+1826c1851
+< * fills a mapping only from the SAME domain's most recent prior turn (a
+---
+> * fills a mapping only from the same domain's most recent prior turn (a
+1834c1859
+< * aggregate over a collection of KNOWN length is declarable while a collection
+---
+> * aggregate over a collection of known length is declarable while a collection
+1845c1870
+< * import { Clarifier } from '@src/core'
+---
+> * import { Clarifier } from '@orkestrel/interpret'
+2011c2036
+< * `extract` never sees a `Template`: numbers → entity ASSIGNMENT is a
+---
+> * `extract` never sees a `Template`: numbers → entity assignment is a
+2018c2043
+< * import { Extractor } from '@src/core'
+---
+> * import { Extractor } from '@orkestrel/interpret'
+2065c2090
+< * import { Formatter } from '@src/core'
+---
+> * import { Formatter } from '@orkestrel/interpret'
+2121c2146
+< * by its OWN `name` — the shape `Clarifier` uses for its synthesized
+---
+> * by its own `name` — the shape `Clarifier` uses for its synthesized
+2129c2154
+< * an empty entity set). A `FieldMapping` is emitted for EVERY field that
+---
+> * an empty entity set). A `FieldMapping` is emitted for every field that
+2135c2160
+< * import { Generator } from '@src/core'
+---
+> * import { Generator } from '@orkestrel/interpret'
+2205c2230
+< * The caller's `contractions` map is merged OVER `DEFAULT_CONTRACTIONS`;
+---
+> * The caller's `contractions` map is merged over `DEFAULT_CONTRACTIONS`;
+2209c2234
+< * (one entry per matching map KEY, not per occurrence) is recorded on the
+---
+> * (one entry per matching map key, not per occurrence) is recorded on the
+2217c2242
+< * import { Normalizer } from '@src/core'
+---
+> * import { Normalizer } from '@orkestrel/interpret'
+2273c2298,2300
+< * `interprets` module, mirroring the reasons `Reason` orchestrator shape.
+---
+> * `interprets` module, mirroring the reasons `Reason` orchestrator shape: it runs the
+> * `[normalize, extract, clarify, format, generate]` pipeline, owns the template
+> * registry and the context, and exposes the reverse direction.
+2276,2280c2303,2305
+< * `interpret()` is genuinely SYNCHRONOUS — it returns its
+< * {@link Interpretation} directly, never a `Promise` — and runs the fixed
+< * pipeline
+< * `[normalize, extract, clarify, format, generate]` — each producing one
+< * {@link StageRecord}. Between `extract` and `clarify` the orchestrator matches
+---
+> * `interpret()` is genuinely synchronous — it returns its
+> * {@link Interpretation} directly, never a `Promise` — each phase producing
+> * one {@link StageRecord}. Between `extract` and `clarify` the orchestrator matches
+2285c2310
+< * yields an explicit, auditable INCOMPLETE result (a `field: 'intent'`
+---
+> * yields an explicit, auditable incomplete result (a `field: 'intent'`
+2287c2312
+< * template. A stage THROW is caught, marked on its record AND on
+---
+> * template. A stage throw is caught, marked on its record and on
+2296c2321
+< * then destroys the emitter LAST; every method afterwards except the
+---
+> * then destroys the emitter last; every method afterwards except the
+2302c2327
+< * import { Interpret, Extractor } from '@src/core'
+---
+> * import { Interpret, Extractor } from '@orkestrel/interpret'
+2580c2605,2606
+< * Creates an interpretation orchestrator.
+---
+> * Creates an interpretation orchestrator, returning an {@link InterpretInterface}
+> * seeded from {@link InterpretOptions}.
+2596c2622
+< * @example
+---
+> * @example Interpret text against an added template
+2598,2599c2624,2629
+< * import { createFactorGroup, createFieldFactor, createQuantitativeDefinition } from '@orkestrel/reason'
+< * import { createExtractor, createInterpret } from '@src/core'
+---
+> * import { createExtractor, createInterpret } from '@orkestrel/interpret'
+> * import {
+> * 	createFactorGroup,
+> * 	createFieldFactor,
+> * 	createQuantitativeDefinition,
+> * } from '@orkestrel/reason'
+2602c2632,2635
+< * 	extractor: createExtractor({ actions: { calculate: 'calculate' }, domains: { arithmetic: ['arithmetic'] } }),
+---
+> * 	extractor: createExtractor({
+> * 		actions: { calculate: 'calculate' },
+> * 		domains: { arithmetic: ['arithmetic'] },
+> * 	}),
+2618c2651,2659
+< * interpret.interpret('calculate arithmetic 42').subject // { value: 42 }
+---
+> *
+> * const result = interpret.interpret('calculate arithmetic 42')
+> * result.subject // { value: 42 }
+> * result.ambiguities // []
+> * result.failures // []
+> *
+> * interpret.emitter.on('interpret', (interpretation) => interpretation.digest)
+> * interpret.describe(result.definition ?? createQuantitativeDefinition('t1', 'Arithmetic', []))
+> * interpret.destroy()
+2625c2666
+< * Creates a text normalizer.
+---
+> * Creates a text normalizer, returning a stateless {@link NormalizerInterface}.
+2633c2674
+< * import { createNormalizer } from '@src/core'
+---
+> * import { createNormalizer } from '@orkestrel/interpret'
+2642c2683,2684
+< * Creates a template-agnostic intent classifier and number extractor.
+---
+> * Creates a template-agnostic intent classifier and number extractor, returning a
+> * stateless {@link ExtractorInterface}.
+2649c2691
+< * import { createExtractor } from '@src/core'
+---
+> * import { createExtractor } from '@orkestrel/interpret'
+2663c2705
+< * against an assigned entity set.
+---
+> * against an assigned entity set — returning a stateless {@link ClarifierInterface}.
+2670c2712
+< * import { createClarifier } from '@src/core'
+---
+> * import { createClarifier } from '@orkestrel/interpret'
+2679c2721
+< * Creates a prompt formatter.
+---
+> * Creates a prompt formatter, returning a stateless {@link FormatterInterface}.
+2686c2728
+< * import { createFormatter } from '@src/core'
+---
+> * import { createFormatter } from '@orkestrel/interpret'
+2695c2737,2738
+< * Creates a subject/definition generator.
+---
+> * Creates a subject and definition generator, returning a stateless
+> * {@link GeneratorInterface}.
+2701c2744
+< * import { createGenerator } from '@src/core'
+---
+> * import { createGenerator } from '@orkestrel/interpret'
+2710c2753
+< * Creates a template registry.
+---
+> * Creates a template registry, returning a working {@link TemplateManagerInterface}.
+2718c2761
+< * import { createTemplateManager } from '@src/core'
+---
+> * import { createTemplateManager } from '@orkestrel/interpret'
+2734c2777
+< * Creates a subject registry.
+---
+> * Creates a subject registry, returning a working {@link SubjectManagerInterface}.
+2745c2788
+< * import { createSubjectManager } from '@src/core'
+---
+> * import { createSubjectManager } from '@orkestrel/interpret'
+2755c2798,2799
+< * Creates a definition registry.
+---
+> * Creates a definition registry, returning a working
+> * {@link DefinitionManagerInterface}.
+2763c2807
+< * import { createDefinitionManager } from '@src/core'
+---
+> * import { createDefinitionManager } from '@orkestrel/interpret'
+2775c2819,2820
+< * Creates a cross-turn interpretation context.
+---
+> * Creates a cross-turn interpretation context, returning a working
+> * {@link InterpretContextInterface}.
+2782c2827
+< * import { createInterpretContext } from '@src/core'
+---
+> * import { createInterpretContext } from '@orkestrel/interpret'
+2792c2837,2838
+< * Creates a lexicon-driven reverse-direction rendering engine.
+---
+> * Creates a lexicon-driven reverse-direction rendering engine, returning a stateless
+> * {@link NarratorInterface}.
+2804c2850
+< * import { createNarrator } from '@src/core'
+---
+> * import { createNarrator } from '@orkestrel/interpret'
+diff -r -w -B '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-interpret-final-registry-visit-pack/baseline/package/dist/src/core/index.d.cts /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-interpret-final-registry-visit-pack/extract/package/dist/src/core/index.d.cts
+1,8c1,8
+< import { Definition } from '@orkestrel/reason';
+< import { EmitterErrorHandler } from '@orkestrel/emitter';
+< import { EmitterHooks } from '@orkestrel/emitter';
+< import { EmitterInterface } from '@orkestrel/emitter';
+< import { FieldPath } from '@orkestrel/contract';
+< import { ReasonResult } from '@orkestrel/reason';
+< import { Subject } from '@orkestrel/reason';
+< import { SymbolicExpression } from '@orkestrel/reason';
+---
+> import type { Definition } from '@orkestrel/reason';
+> import type { EmitterErrorHandler } from '@orkestrel/emitter';
+> import type { EmitterHooks } from '@orkestrel/emitter';
+> import type { EmitterInterface } from '@orkestrel/emitter';
+> import type { FieldPath } from '@orkestrel/contract';
+> import type { ReasonResult } from '@orkestrel/reason';
+> import type { Subject } from '@orkestrel/reason';
+> import type { SymbolicExpression } from '@orkestrel/reason';
+35c35
+<  * import { applyReplacements } from '@src/core'
+---
+>  * import { applyReplacements } from '@orkestrel/interpret'
+47c47
+<  * Strategy, in order: (1) a SINGLE mapping collects every number (an array
+---
+>  * Strategy, in order: (1) a single mapping collects every number (an array
+57c57
+<  * Runs ONLY after a template has matched (an orchestrator-owned step, never
+---
+>  * Runs only after a template has matched (an orchestrator-owned step, never
+68c68
+<  * import { assignEntities } from '@src/core'
+---
+>  * import { assignEntities } from '@orkestrel/interpret'
+96c96
+<  * import { canonicalize } from '@src/core'
+---
+>  * import { canonicalize } from '@orkestrel/interpret'
+112c112
+<  * `ancestors` tracks the objects along the CURRENT recursion path rather than
+---
+>  * `ancestors` tracks the objects along the current recursion path rather than
+126c126
+<  * import { canonicalizeNode } from '@src/core'
+---
+>  * import { canonicalizeNode } from '@orkestrel/interpret'
+143c143
+<  * fills a mapping only from the SAME domain's most recent prior turn (a
+---
+>  * fills a mapping only from the same domain's most recent prior turn (a
+151c151
+<  * aggregate over a collection of KNOWN length is declarable while a collection
+---
+>  * aggregate over a collection of known length is declarable while a collection
+162c162
+<  * import { Clarifier } from '@src/core'
+---
+>  * import { Clarifier } from '@orkestrel/interpret'
+193a194,208
+>     /**
+>      * Resolves carry-over, template defaults, and computed fields, and surfaces an
+>      * {@link Ambiguity} for every unresolved required field, worded through the narrator's
+>      * `ambiguity.entity` line.
+>      *
+>      * @remarks
+>      * A computation addresses one numeric element of an array-valued field as
+>      * `{field}.{index}`, so only a collection of known length has a declarable aggregate.
+>      *
+>      * @param entities - The entities extraction already assigned
+>      * @param template - The matched template supplying the mappings, defaults, and computations
+>      * @param context - The cross-turn context carry-over reads from, or `undefined` for none
+>      * @param intent - The classified intent, whose domain gates carry-over
+>      * @returns The resolved entities plus every remaining ambiguity
+>      */
+198c213
+<  * Represents the options for `createClarifier` / the `Clarifier` constructor.
+---
+>  * Represents the options for `createClarifier` and the `Clarifier` constructor.
+229,235c244,250
+<  * unclassified intent is visibly absent. Combined confidence (PINNED): both
+<  * fire → their average; exactly one fires → its value times `0.5`; neither →
+<  * `0`. There is no built-in worldview and no auto-classification from an
+<  * added template's own `domain` name — a caller MUST list a template's
+<  * domain among `domains` for it to classify. No `floor` parameter: the
+<  * confidence floor gate lives at the orchestrator's `matchTemplate` step,
+<  * never inside classification itself.
+---
+>  * unclassified intent is visibly absent. Combined confidence (pinned): the
+>  * action and the domain both fire → their average; exactly one fires → its
+>  * value times `0.5`; neither → `0`. There is no built-in worldview and no
+>  * auto-classification from an added template's own `domain` name — a caller
+>  * must list a template's domain among `domains` for it to classify. No
+>  * `floor` parameter: the confidence floor gate lives at the orchestrator's
+>  * `matchTemplate` step, never inside classification itself.
+244c259
+<  * import { classifyIntent } from '@src/core'
+---
+>  * import { classifyIntent } from '@orkestrel/interpret'
+261c276
+<  * import { collapseWhitespace } from '@src/core'
+---
+>  * import { collapseWhitespace } from '@orkestrel/interpret'
+282c297
+<  * collection of KNOWN length; a collection whose length varies per turn has no
+---
+>  * collection of known length; a collection whose length varies per turn has no
+294c309
+< /** Names the confidence assigned to an exact alias-phrase entity match. */
+---
+> /** Names the confidence assigned to an exact alias-phrase entity match, 0.9. */
+297c312
+< /** Names the confidence assigned to a same-domain carried-over field. */
+---
+> /** Names the confidence assigned to a same-domain carried-over field, 0.7. */
+300c315,318
+< /** Names the confidence assigned when a single entity mapping collects every extracted number. */
+---
+> /**
+>  * Names the confidence assigned when a single entity mapping collects every extracted
+>  * number, 0.9.
+>  */
+303c321
+< /** Names the confidence assigned to a successfully resolved computed field. */
+---
+> /** Names the confidence assigned to a successfully resolved computed field, 0.9. */
+306c324
+< /** Names the confidence assigned to a template default fill. */
+---
+> /** Names the confidence assigned to a template default fill, 1. */
+309c327
+< /** Names the confidence assigned to an exact keyword-proximity entity match. */
+---
+> /** Names the confidence assigned to an exact keyword-proximity entity match, 1. */
+312c330
+< /** Names the confidence assigned to a positional (order-based) entity match fallback. */
+---
+> /** Names the confidence assigned to a positional (order-based) entity match fallback, 0.7. */
+317c335
+<  * against an assigned entity set.
+---
+>  * against an assigned entity set — returning a stateless {@link ClarifierInterface}.
+324c342
+<  * import { createClarifier } from '@src/core'
+---
+>  * import { createClarifier } from '@orkestrel/interpret'
+332c350,351
+<  * Creates a definition registry.
+---
+>  * Creates a definition registry, returning a working
+>  * {@link DefinitionManagerInterface}.
+340c359
+<  * import { createDefinitionManager } from '@src/core'
+---
+>  * import { createDefinitionManager } from '@orkestrel/interpret'
+351c370,371
+<  * Creates a template-agnostic intent classifier and number extractor.
+---
+>  * Creates a template-agnostic intent classifier and number extractor, returning a
+>  * stateless {@link ExtractorInterface}.
+358c378
+<  * import { createExtractor } from '@src/core'
+---
+>  * import { createExtractor } from '@orkestrel/interpret'
+370c390
+<  * Creates a prompt formatter.
+---
+>  * Creates a prompt formatter, returning a stateless {@link FormatterInterface}.
+377c397
+<  * import { createFormatter } from '@src/core'
+---
+>  * import { createFormatter } from '@orkestrel/interpret'
+385c405,406
+<  * Creates a subject/definition generator.
+---
+>  * Creates a subject and definition generator, returning a stateless
+>  * {@link GeneratorInterface}.
+391c412
+<  * import { createGenerator } from '@src/core'
+---
+>  * import { createGenerator } from '@orkestrel/interpret'
+399c420,421
+<  * Creates an interpretation orchestrator.
+---
+>  * Creates an interpretation orchestrator, returning an {@link InterpretInterface}
+>  * seeded from {@link InterpretOptions}.
+415c437
+<  * @example
+---
+>  * @example Interpret text against an added template
+417,418c439,444
+<  * import { createFactorGroup, createFieldFactor, createQuantitativeDefinition } from '@orkestrel/reason'
+<  * import { createExtractor, createInterpret } from '@src/core'
+---
+>  * import { createExtractor, createInterpret } from '@orkestrel/interpret'
+>  * import {
+>  * 	createFactorGroup,
+>  * 	createFieldFactor,
+>  * 	createQuantitativeDefinition,
+>  * } from '@orkestrel/reason'
+421c447,450
+<  * 	extractor: createExtractor({ actions: { calculate: 'calculate' }, domains: { arithmetic: ['arithmetic'] } }),
+---
+>  * 	extractor: createExtractor({
+>  * 		actions: { calculate: 'calculate' },
+>  * 		domains: { arithmetic: ['arithmetic'] },
+>  * 	}),
+437c466,474
+<  * interpret.interpret('calculate arithmetic 42').subject // { value: 42 }
+---
+>  *
+>  * const result = interpret.interpret('calculate arithmetic 42')
+>  * result.subject // { value: 42 }
+>  * result.ambiguities // []
+>  * result.failures // []
+>  *
+>  * interpret.emitter.on('interpret', (interpretation) => interpretation.digest)
+>  * interpret.describe(result.definition ?? createQuantitativeDefinition('t1', 'Arithmetic', []))
+>  * interpret.destroy()
+443c480,481
+<  * Creates a cross-turn interpretation context.
+---
+>  * Creates a cross-turn interpretation context, returning a working
+>  * {@link InterpretContextInterface}.
+450c488
+<  * import { createInterpretContext } from '@src/core'
+---
+>  * import { createInterpretContext } from '@orkestrel/interpret'
+459c497,498
+<  * Creates a lexicon-driven reverse-direction rendering engine.
+---
+>  * Creates a lexicon-driven reverse-direction rendering engine, returning a stateless
+>  * {@link NarratorInterface}.
+471c510
+<  * import { createNarrator } from '@src/core'
+---
+>  * import { createNarrator } from '@orkestrel/interpret'
+480c519
+<  * Creates a text normalizer.
+---
+>  * Creates a text normalizer, returning a stateless {@link NormalizerInterface}.
+488c527
+<  * import { createNormalizer } from '@src/core'
+---
+>  * import { createNormalizer } from '@orkestrel/interpret'
+496c535
+<  * Creates a subject registry.
+---
+>  * Creates a subject registry, returning a working {@link SubjectManagerInterface}.
+507c546
+<  * import { createSubjectManager } from '@src/core'
+---
+>  * import { createSubjectManager } from '@orkestrel/interpret'
+516c555
+<  * Creates a template registry.
+---
+>  * Creates a template registry, returning a working {@link TemplateManagerInterface}.
+524c563
+<  * import { createTemplateManager } from '@src/core'
+---
+>  * import { createTemplateManager } from '@orkestrel/interpret'
+545,546c584,585
+<  * Names the default `floor` for `createInterpret` / `matchTemplate` — the
+<  * minimum intent confidence a template match (or the classified intent itself) must
+---
+>  * Names the default `floor` for `createInterpret` and `matchTemplate`, 0.3 — the
+>  * minimum intent confidence a template match, or the classified intent itself, must
+551c590
+< /** Names the default `history` cap for an `InterpretContext`'s `previous()` ring buffer. */
+---
+> /** Names the default `history` cap for an `InterpretContext`'s `previous()` ring buffer, 16. */
+555,556c594,595
+<  * Names the default `similarity` for `createInterpret` / `matchAlias` — the
+<  * fuzzy alias-match score threshold (0..1).
+---
+>  * Names the default `similarity` for `createInterpret` and `matchAlias`, 0.8 — the
+>  * fuzzy alias-match score threshold, between 0 and 1.
+600c639
+<  * import { DefinitionManager } from '@src/core'
+---
+>  * import { DefinitionManager } from '@orkestrel/interpret'
+629a669,674
+>     /**
+>      * Reports whether a definition with the given id has been added.
+>      *
+>      * @param id - The record id to look for
+>      * @returns True if a definition with that id has been added; false otherwise
+>      */
+630a676,681
+>     /**
+>      * Looks up one added definition record by id — the singular accessor.
+>      *
+>      * @param id - The record id to look up
+>      * @returns The added definition record, or `undefined` when none carries that id
+>      */
+631a683,687
+>     /**
+>      * Lists every added definition record — the plural accessor.
+>      *
+>      * @returns Every added definition record, in insertion order
+>      */
+632a689,695
+>     /**
+>      * Adds, or re-adds, one definition, and emits `add`.
+>      *
+>      * @param definition - The definition to hold
+>      * @param options - The record id overriding `definition.id`. Default: `definition.id`
+>      * @returns The versioned, content-hashed record the registry holds
+>      */
+633a697,703
+>     /**
+>      * Removes the listed definitions by id, one definition by id, or every definition, and
+>      * emits `remove` per removed id.
+>      *
+>      * @param ids - The record ids to remove, all-or-nothing; omit the argument to remove every definition
+>      * @returns True if every listed id was added; false otherwise
+>      */
+636a707,710
+>     /**
+>      * Tears the definition registry down idempotently — clears the collection, emits
+>      * `destroy`, then destroys the emitter last.
+>      */
+640c714
+< /** Represents the options for `createDefinitionManager` / the `DefinitionManager` constructor — the initial seed collection. */
+---
+> /** Represents the options for `createDefinitionManager` and the `DefinitionManager` constructor — the initial seed collection. */
+656,657c730,731
+<  * Computes a canonical structural digest of a pure-JSON value — a key-order-
+<  * stable FNV-1a hash rendered as an 8-hex-digit string.
+---
+>  * Computes a canonical structural digest of a pure-JSON value — a
+>  * key-order-stable FNV-1a hash rendered as an 8-hex-digit string.
+669c743
+<  * import { digestValue } from '@src/core'
+---
+>  * import { digestValue } from '@orkestrel/interpret'
+709c783
+<  * import { escapeRegExp } from '@src/core'
+---
+>  * import { escapeRegExp } from '@orkestrel/interpret'
+731c805
+<  * import { extractNumbers } from '@src/core'
+---
+>  * import { extractNumbers } from '@orkestrel/interpret'
+745c819
+<  * `extract` never sees a `Template`: numbers → entity ASSIGNMENT is a
+---
+>  * `extract` never sees a `Template`: numbers → entity assignment is a
+752c826
+<  * import { Extractor } from '@src/core'
+---
+>  * import { Extractor } from '@orkestrel/interpret'
+769a844,849
+>     /**
+>      * Classifies the intent and mines every numeric literal from the text.
+>      *
+>      * @param text - The text to read
+>      * @returns The classified intent plus the raw numbers mined from `text`
+>      */
+774c854
+<  * Represents the options for `createExtractor` / the `Extractor` constructor.
+---
+>  * Represents the options for `createExtractor` and the `Extractor` constructor.
+792c872
+<  * text. `numbers`, not template-named entities; entity ASSIGNMENT is a
+---
+>  * text. `numbers`, not template-named entities; entity assignment is a
+812c892
+<  * Emitted for EVERY field that lands in the generated subject, including
+---
+>  * Emitted for every field that lands in the generated subject, including
+848c928
+<  * import { Formatter } from '@src/core'
+---
+>  * import { Formatter } from '@orkestrel/interpret'
+875a956,965
+>     /**
+>      * Renders the refined natural-language prompt for a matched template, clause by clause
+>      * through the narrator's `prompt.*` lines.
+>      *
+>      * @param intent - The classified intent supplying the display verb
+>      * @param template - The matched template supplying the prompt's name
+>      * @param entities - The resolved entities rendered as the prompt's fields
+>      * @param ambiguities - The unresolved fields rendered as the prompt's questions
+>      * @returns The refined natural-language prompt
+>      */
+880c970
+<  * Represents the options for `createFormatter` / the `Formatter` constructor.
+---
+>  * Represents the options for `createFormatter` and the `Formatter` constructor.
+909c999
+<  * by its OWN `name` — the shape `Clarifier` uses for its synthesized
+---
+>  * by its own `name` — the shape `Clarifier` uses for its synthesized
+917c1007
+<  * an empty entity set). A `FieldMapping` is emitted for EVERY field that
+---
+>  * an empty entity set). A `FieldMapping` is emitted for every field that
+923c1013
+<  * import { Generator } from '@src/core'
+---
+>  * import { Generator } from '@orkestrel/interpret'
+963a1054,1061
+>     /**
+>      * Builds the final subject and definition pair plus its complete field audit, deriving no
+>      * field the template did not declare.
+>      *
+>      * @param entities - The fully resolved entities the subject is built from
+>      * @param template - The matched template supplying the mappings and the definition
+>      * @returns The built subject and definition, every field mapping, and the mean confidence
+>      */
+986c1084,1086
+<  * `interprets` module, mirroring the reasons `Reason` orchestrator shape.
+---
+>  * `interprets` module, mirroring the reasons `Reason` orchestrator shape: it runs the
+>  * `[normalize, extract, clarify, format, generate]` pipeline, owns the template
+>  * registry and the context, and exposes the reverse direction.
+989,993c1089,1091
+<  * `interpret()` is genuinely SYNCHRONOUS — it returns its
+<  * {@link Interpretation} directly, never a `Promise` — and runs the fixed
+<  * pipeline
+<  * `[normalize, extract, clarify, format, generate]` — each producing one
+<  * {@link StageRecord}. Between `extract` and `clarify` the orchestrator matches
+---
+>  * `interpret()` is genuinely synchronous — it returns its
+>  * {@link Interpretation} directly, never a `Promise` — each phase producing
+>  * one {@link StageRecord}. Between `extract` and `clarify` the orchestrator matches
+998c1096
+<  * yields an explicit, auditable INCOMPLETE result (a `field: 'intent'`
+---
+>  * yields an explicit, auditable incomplete result (a `field: 'intent'`
+1000c1098
+<  * template. A stage THROW is caught, marked on its record AND on
+---
+>  * template. A stage throw is caught, marked on its record and on
+1009c1107
+<  * then destroys the emitter LAST; every method afterwards except the
+---
+>  * then destroys the emitter last; every method afterwards except the
+1015c1113
+<  * import { Interpret, Extractor } from '@src/core'
+---
+>  * import { Interpret, Extractor } from '@orkestrel/interpret'
+1106,1108c1204,1207
+<  * one result and trims to the cap; `clear` resets the history and both
+<  * registries WITHOUT tearing the context down; `destroy()` is idempotent and
+<  * every method afterwards throws `InterpretError('DESTROYED', …)`.
+---
+>  * one result and trims to the cap; `clear` resets the history, the subject
+>  * registry, and the definition registry without tearing the context down;
+>  * `destroy()` is idempotent and every method afterwards throws
+>  * `InterpretError('DESTROYED', …)`.
+1112c1211
+<  * import { InterpretContext } from '@src/core'
+---
+>  * import { InterpretContext } from '@orkestrel/interpret'
+1164a1264,1268
+>     /**
+>      * Lists the buffered history, newest last, capped at `history`.
+>      *
+>      * @returns Every buffered interpretation, newest last
+>      */
+1165a1270,1274
+>     /**
+>      * Flattens every entity recorded across the buffered history, most recent last.
+>      *
+>      * @returns Every entity across the buffered history, most recent last
+>      */
+1166a1276,1280
+>     /**
+>      * Pushes one completed {@link Interpretation}, dropping the oldest entry past the cap.
+>      *
+>      * @param result - The completed interpretation to buffer
+>      */
+1167a1282,1285
+>     /**
+>      * Resets the history, the subject registry, and the definition registry without
+>      * destroying the context.
+>      */
+1168a1287,1290
+>     /**
+>      * Tears the context down idempotently — the subject registry, then the definition
+>      * registry, then the emitter last.
+>      */
+1172c1294
+< /** Represents the options for `createInterpretContext` / the `InterpretContext` constructor. */
+---
+> /** Represents the options for `createInterpretContext` and the `InterpretContext` constructor. */
+1181c1303,1304
+<  * Represents an error thrown by the interprets layer.
+---
+>  * Represents an error thrown by the interprets layer, carrying an
+>  * {@link InterpretErrorCode} and an optional `context` record.
+1199c1322
+<  * Names the coded misuse / failure conditions thrown as an {@link InterpretError} or
+---
+>  * Names the coded misuse or failure conditions thrown as an {@link InterpretError} or
+1239c1362
+<  * `interpret` is genuinely SYNCHRONOUS — it returns its
+---
+>  * `interpret` is genuinely synchronous — it returns its
+1253c1376
+<  * emitter down LAST.
+---
+>  * emitter down last.
+1256a1380,1386
+>     /**
+>      * Runs the `[normalize, extract, clarify, format, generate]` pipeline over raw text,
+>      * returning a complete or a visibly incomplete result.
+>      *
+>      * @param text - The raw text to interpret
+>      * @returns The full, replayable outcome of the run
+>      */
+1257a1388,1392
+>     /**
+>      * Adds one template, and emits `add`.
+>      *
+>      * @param template - The template data to add
+>      */
+1258a1394,1399
+>     /**
+>      * Removes the listed templates by id, one template by id, or every template.
+>      *
+>      * @param ids - The template ids to remove, all-or-nothing; omit the argument to remove every template
+>      * @returns True if every listed id was added; false otherwise
+>      */
+1261a1403,1408
+>     /**
+>      * Looks up one added template's plain data by id.
+>      *
+>      * @param id - The template id to look up
+>      * @returns The template's plain data, or `undefined` when none carries that id
+>      */
+1262a1410,1414
+>     /**
+>      * Lists every added template's plain data.
+>      *
+>      * @returns Every added template's plain data, in insertion order
+>      */
+1263a1416,1421
+>     /**
+>      * Renders a reasons `Definition` to a one-line, display-neutral description.
+>      *
+>      * @param definition - The definition to describe
+>      * @returns The one-line description
+>      */
+1264a1423,1428
+>     /**
+>      * Renders a reasons `ReasonResult` to a one-line, display-neutral description.
+>      *
+>      * @param result - The result to narrate
+>      * @returns The one-line description
+>      */
+1265a1430,1433
+>     /**
+>      * Tears the orchestrator down idempotently — the template registry, the context it
+>      * constructed itself, then the emitter last.
+>      */
+1270c1438
+<  * Represents the options for `createInterpret` / the `Interpret` constructor.
+---
+>  * Represents the options for `createInterpret` and the `Interpret` constructor.
+1277c1445
+<  * stage slot is BRING-YOUR-OWN — a supplied implementation is
+---
+>  * stage slot is bring-your-own — a supplied implementation is
+1312c1480
+<  * Deliberately NOT named `Stage` — raters already owns that identifier for
+---
+>  * Deliberately not named `Stage` — raters already owns that identifier for
+1320a1489,1492
+>  * @remarks
+>  * `field`, `question`, the string `candidates` list, and `required` are each
+>  * checked; an unknown member passes.
+>  *
+1326c1498
+<  * import { isAmbiguity } from '@src/core'
+---
+>  * import { isAmbiguity } from '@orkestrel/interpret'
+1335,1336c1507,1509
+<  * Determines whether a value is a {@link ComputedField} — a declaratively
+<  * computed field carrying a reasons {@link SymbolicExpression} tree.
+---
+>  * Determines whether a value is an exact {@link ComputedField} input record —
+>  * a declaratively computed field carrying a reasons
+>  * {@link SymbolicExpression} tree.
+1344c1517
+<  * import { isComputedField } from '@src/core'
+---
+>  * import { isComputedField } from '@orkestrel/interpret'
+1367c1540
+<  * import { isEntity } from '@src/core'
+---
+>  * import { isEntity } from '@orkestrel/interpret'
+1376,1377c1549,1551
+<  * Determines whether a value is an {@link EntityMapping} — a literal
+<  * alias-phrase extraction rule pointing at a subject field.
+---
+>  * Determines whether a value is an exact {@link EntityMapping} input
+>  * record — a literal alias-phrase extraction rule pointing at a subject
+>  * field.
+1384c1558
+<  * import { isEntityMapping } from '@src/core'
+---
+>  * import { isEntityMapping } from '@orkestrel/interpret'
+1393,1394c1567,1568
+<  * Determines whether a value is a {@link FieldDefault} — a fallback value a
+<  * {@link Template} fills onto an unresolved field.
+---
+>  * Determines whether a value is an exact {@link FieldDefault} input record —
+>  * a fallback value a {@link Template} fills onto an unresolved field.
+1406c1580
+<  * import { isFieldDefault } from '@src/core'
+---
+>  * import { isFieldDefault } from '@orkestrel/interpret'
+1426c1600
+<  * import { isFieldMapping } from '@src/core'
+---
+>  * import { isFieldMapping } from '@orkestrel/interpret'
+1446c1620
+<  * import { isIntent } from '@src/core'
+---
+>  * import { isIntent } from '@orkestrel/interpret'
+1471c1645
+<  * import { createInterpret, isInterpretation } from '@src/core'
+---
+>  * import { createInterpret, isInterpretation } from '@orkestrel/interpret'
+1487c1661
+<  * import { isInterpretError } from '@src/core'
+---
+>  * import { isInterpretError } from '@orkestrel/interpret'
+1500a1675,1679
+>  * @remarks
+>  * `category` is checked against `PROVENANCE_CATEGORIES` and the optional
+>  * `detail` against `isString`; an unknown member passes, because a foreign
+>  * engine's return is not this package's to narrow.
+>  *
+1506c1685
+<  * import { isProvenance } from '@src/core'
+---
+>  * import { isProvenance } from '@orkestrel/interpret'
+1516a1696,1700
+>  * @remarks
+>  * `stage` is checked against `INTERPRET_STAGES`, `code` against
+>  * `INTERPRET_ERROR_CODES`, and `message` against `isString`; an unknown member
+>  * passes.
+>  *
+1522c1706
+<  * import { isStageFailure } from '@src/core'
+---
+>  * import { isStageFailure } from '@orkestrel/interpret'
+1543c1727
+<  * import { isStageRecord } from '@src/core'
+---
+>  * import { isStageRecord } from '@orkestrel/interpret'
+1552,1553c1736,1737
+<  * Determines whether a value is a {@link Template} — a named, versionable
+<  * interpretation template.
+---
+>  * Determines whether a value is an exact {@link Template} input record — a
+>  * named, versionable interpretation template.
+1558c1742,1745
+<  * parallel interprets-owned definition guard exists.
+---
+>  * parallel interprets-owned definition guard exists. Each computation's
+>  * `expression` is validated with reasons' `isSymbolicExpression`, already
+>  * recursive through `lazyOf`, so this module mints no expression guard of its
+>  * own.
+1566c1753
+<  * import { isTemplate } from '@src/core'
+---
+>  * import { isTemplate } from '@orkestrel/interpret'
+1588c1775
+<  * DATA supplied here, never a core literal.
+---
+>  * data supplied here, never a core literal.
+1619c1806
+<  * import { matchAlias } from '@src/core'
+---
+>  * import { matchAlias } from '@orkestrel/interpret'
+1642c1829
+<  * import { matchTemplate } from '@src/core'
+---
+>  * import { matchTemplate } from '@orkestrel/interpret'
+1650c1837
+<  * Implements a stateless, TOTAL, lexicon-driven rendering engine for the reverse
+---
+>  * Implements a stateless, total, lexicon-driven rendering engine for the reverse
+1655,1656c1842,1843
+<  * Every wording decision is DATA — a caller-supplied `Lexicon` merged, per
+<  * sub-record (`phrases` / `labels` / `templates`), OVER `DEFAULT_LEXICON`.
+---
+>  * Every wording decision is data — a caller-supplied `Lexicon` merged, per
+>  * sub-record (`phrases`, `labels`, and `templates`), over `DEFAULT_LEXICON`.
+1666c1853
+<  * import { Narrator } from '@src/core'
+---
+>  * import { Narrator } from '@orkestrel/interpret'
+1699c1886
+<  * Represents the `Narrator` contract — a stateless, TOTAL, lexicon-driven rendering
+---
+>  * Represents the `Narrator` contract — a stateless, total, lexicon-driven rendering
+1716a1904,1912
+>     /**
+>      * Looks up a two-level `table` and `key` pair in the lexicon's `phrases`, falling back to
+>      * `fallback` or to `key`.
+>      *
+>      * @param table - The phrase table to read
+>      * @param key - The phrase key within that table
+>      * @param fallback - The phrase to render when the lookup misses. Default: `key`
+>      * @returns The looked-up phrase, or the fallback
+>      */
+1717a1914,1919
+>     /**
+>      * Renders a field's display label from `labels`, falling back to `formatField`.
+>      *
+>      * @param field - The field path to label
+>      * @returns The field's display label
+>      */
+1718a1921,1928
+>     /**
+>      * Interpolates a named `templates` entry against `values`, falling back to an empty string
+>      * when the id is absent.
+>      *
+>      * @param id - The template id to render
+>      * @param values - The values the template's placeholders resolve against
+>      * @returns The rendered line, or an empty string when no template carries `id`
+>      */
+1719a1930,1937
+>     /**
+>      * Runs a named formatter over a raw value, catching a throw and falling back to
+>      * `String(raw)`.
+>      *
+>      * @param unit - The formatter name to run
+>      * @param raw - The value to format
+>      * @returns The formatted value, or `String(raw)` when no formatter returns
+>      */
+1720a1939,1944
+>     /**
+>      * Renders a reasons `Definition` to a one-line, display-neutral description.
+>      *
+>      * @param definition - The definition to describe
+>      * @returns The one-line description
+>      */
+1721a1946,1951
+>     /**
+>      * Renders a reasons `ReasonResult` to a one-line, display-neutral description.
+>      *
+>      * @param result - The result to narrate
+>      * @returns The one-line description
+>      */
+1725c1955
+< /** Represents the options for `createNarrator` / the `Narrator` constructor. */
+---
+> /** Represents the options for `createNarrator` and the `Narrator` constructor. */
+1736c1966
+<  * The caller's `contractions` map is merged OVER `DEFAULT_CONTRACTIONS`;
+---
+>  * The caller's `contractions` map is merged over `DEFAULT_CONTRACTIONS`;
+1740c1970
+<  * (one entry per matching map KEY, not per occurrence) is recorded on the
+---
+>  * (one entry per matching map key, not per occurrence) is recorded on the
+1748c1978
+<  * import { Normalizer } from '@src/core'
+---
+>  * import { Normalizer } from '@orkestrel/interpret'
+1768a1999,2005
+>     /**
+>      * Applies the contraction, abbreviation, and correction substitutions in order, then
+>      * collapses whitespace.
+>      *
+>      * @param text - The raw text to clean
+>      * @returns The cleaned text plus every substitution applied
+>      */
+1773c2010
+<  * Represents the options for `createNormalizer` / the `Normalizer` constructor.
+---
+>  * Represents the options for `createNormalizer` and the `Normalizer` constructor.
+1777c2014
+<  * before whitespace collapse. `contractions` merges OVER
+---
+>  * before whitespace collapse. `contractions` merges over
+1816c2053
+<  * import { parseTemplate } from '@src/core'
+---
+>  * import { parseTemplate } from '@orkestrel/interpret'
+1837c2074
+<  * Names how one {@link FieldMapping} / {@link Entity} value was obtained.
+---
+>  * Names how one {@link FieldMapping} or {@link Entity} value was obtained.
+1851c2088
+<  * collection, so `add` / `remove` are the events (never ordered-list
+---
+>  * collection, so `add` and `remove` are the events (never ordered-list
+1886,1887c2123,2124
+<  * its record's value field. `add` derives `hash` from the value's CONTENT
+<  * (id-independent) and bumps `version` ONLY when that hash changes at a reused
+---
+>  * its record's value field. `add` derives `hash` from the value's content
+>  * (id-independent) and bumps `version` only when that hash changes at a reused
+1889c2126
+<  * is ALL-OR-NOTHING — any id absent from the registry leaves the collection
+---
+>  * is all-or-nothing — any id absent from the registry leaves the collection
+1896c2133
+<  * import { RecordManager } from '@src/core'
+---
+>  * import { RecordManager } from '@orkestrel/interpret'
+1943c2180
+<  * LAST; every method afterwards throws `InterpretError('DESTROYED', …)`.
+---
+>  * last; every method afterwards throws `InterpretError('DESTROYED', …)`.
+1947a2185,2190
+>     /**
+>      * Reports whether a record with the given id is held.
+>      *
+>      * @param id - The record id to look for
+>      * @returns True if a record with that id is held; false otherwise
+>      */
+1948a2192,2197
+>     /**
+>      * Looks up one held record by id — the singular accessor.
+>      *
+>      * @param id - The record id to look up
+>      * @returns The held record, or `undefined` when none carries that id
+>      */
+1949a2199,2203
+>     /**
+>      * Lists every held record — the plural accessor.
+>      *
+>      * @returns Every held record, in insertion order
+>      */
+1950a2205,2213
+>     /**
+>      * Stamps a value with its id, version, and content hash, builds the record, holds it, and
+>      * emits `add`.
+>      *
+>      * @param id - The record id to hold the value under
+>      * @param value - The value the record holds
+>      * @param build - The function building the concrete record from its stamp and its value
+>      * @returns The stamped record the registry holds
+>      */
+1951a2215,2221
+>     /**
+>      * Removes the listed records by id, one record by id, or every record, and emits `remove`
+>      * per removed id.
+>      *
+>      * @param ids - The record ids to remove, all-or-nothing; omit the argument to remove every record
+>      * @returns True if every listed id was held; false otherwise
+>      */
+1954a2225,2228
+>     /**
+>      * Tears the record registry down idempotently — clears the collection, emits
+>      * `destroy`, then destroys the emitter last.
+>      */
+1990c2264
+<  * `hash` is derived from the held value's CONTENT alone (id-independent), and
+---
+>  * `hash` is derived from the held value's content alone (id-independent), and
+2008c2282
+<  * describes RATERS artifacts); this describes REASONS artifacts. Every field
+---
+>  * describes raters artifacts); this describes reasons artifacts. Every field
+2021c2295
+<  * import { createNarrator, renderSubject } from '@src/core'
+---
+>  * import { createNarrator, renderSubject } from '@orkestrel/interpret'
+2032c2306
+<  * THE critical leaf (design-pinned, engine-parity semantics): an absent
+---
+>  * The critical leaf (design-pinned, engine-parity semantics): an absent
+2035c2309
+<  * EXPLICIT numeric operand, so the same tree evaluates identically here and
+---
+>  * explicit numeric operand, so the same tree evaluates identically here and
+2050c2324
+<  * import { resolveExpression } from '@src/core'
+---
+>  * import { resolveExpression } from '@orkestrel/interpret'
+2069c2343
+<  * import { scoreSimilarity } from '@src/core'
+---
+>  * import { scoreSimilarity } from '@orkestrel/interpret'
+2091c2365
+<  * import { scoreTemplate } from '@src/core'
+---
+>  * import { scoreTemplate } from '@orkestrel/interpret'
+2108c2382
+<  * `prototype`, or `constructor` at ANY segment (checked against
+---
+>  * `prototype`, or `constructor` at any segment (checked against
+2121c2395
+<  * import { setField } from '@src/core'
+---
+>  * import { setField } from '@orkestrel/interpret'
+2155c2429
+<  * record-holder that mints its OWN record identity for every {@link Subject}
+---
+>  * record-holder that mints its own record identity for every {@link Subject}
+2164c2438
+<  * bumps ONLY when the hash changes at a reused id and the batch `remove(ids)`
+---
+>  * bumps only when the hash changes at a reused id and the batch `remove(ids)`
+2170c2444
+<  * import { SubjectManager } from '@src/core'
+---
+>  * import { SubjectManager } from '@orkestrel/interpret'
+2202a2477,2482
+>     /**
+>      * Reports whether a subject with the given id has been added.
+>      *
+>      * @param id - The record id to look for
+>      * @returns True if a subject with that id has been added; false otherwise
+>      */
+2203a2484,2489
+>     /**
+>      * Looks up one added subject record by id — the singular accessor.
+>      *
+>      * @param id - The record id to look up
+>      * @returns The added subject record, or `undefined` when none carries that id
+>      */
+2204a2491,2495
+>     /**
+>      * Lists every added subject record — the plural accessor.
+>      *
+>      * @returns Every added subject record, in insertion order
+>      */
+2205a2497,2504
+>     /**
+>      * Adds one subject, minting a fresh record id when the caller supplies none, and emits
+>      * `add`.
+>      *
+>      * @param subject - The subject to hold
+>      * @param options - The record id overriding the minted one. Default: a freshly minted id
+>      * @returns The versioned, content-hashed record the registry holds
+>      */
+2206a2506,2512
+>     /**
+>      * Removes the listed subjects by id, one subject by id, or every subject, and emits
+>      * `remove` per removed id.
+>      *
+>      * @param ids - The record ids to remove, all-or-nothing; omit the argument to remove every subject
+>      * @returns True if every listed id was added; false otherwise
+>      */
+2209a2516,2519
+>     /**
+>      * Tears the subject registry down idempotently — clears the collection, emits
+>      * `destroy`, then destroys the emitter last.
+>      */
+2213c2523
+< /** Represents the options for `createSubjectManager` / the `SubjectManager` constructor — the initial seed collection. */
+---
+> /** Represents the options for `createSubjectManager` and the `SubjectManager` constructor — the initial seed collection. */
+2225c2535
+<  * `id` is the manager's OWN minted identity — never `definition.id` — so
+---
+>  * `id` is the manager's own minted identity — never `definition.id` — so
+2268c2578
+<  * the batch `remove(ids)` form stays ALL-OR-NOTHING. This class adds what is
+---
+>  * the batch `remove(ids)` form stays all-or-nothing. This class adds what is
+2276c2586
+<  * import { TemplateManager } from '@src/core'
+---
+>  * import { TemplateManager } from '@orkestrel/interpret'
+2324a2635,2640
+>     /**
+>      * Reports whether a template with the given id has been added.
+>      *
+>      * @param id - The record id to look for
+>      * @returns True if a template with that id has been added; false otherwise
+>      */
+2325a2642,2647
+>     /**
+>      * Looks up one added template record by id — the singular accessor.
+>      *
+>      * @param id - The record id to look up
+>      * @returns The added template record, or `undefined` when none carries that id
+>      */
+2326a2649,2653
+>     /**
+>      * Lists every added template record — the plural accessor.
+>      *
+>      * @returns Every added template record, in insertion order
+>      */
+2327a2655,2661
+>     /**
+>      * Adds, or re-adds, one template from its data, and emits `add`.
+>      *
+>      * @param template - The template data to hold
+>      * @param options - The record id overriding `template.id`. Default: `template.id`
+>      * @returns The versioned, content-hashed record the registry holds
+>      */
+2328a2663,2669
+>     /**
+>      * Removes the listed templates by id, one template by id, or every template, and emits
+>      * `remove` per removed id.
+>      *
+>      * @param ids - The record ids to remove, all-or-nothing; omit the argument to remove every template
+>      * @returns True if every listed id was added; false otherwise
+>      */
+2331a2673,2676
+>     /**
+>      * Tears the template registry down idempotently — clears the collection, emits
+>      * `destroy`, then destroys the emitter last.
+>      */
+2335c2680
+< /** Represents the options for `createTemplateManager` / the `TemplateManager` constructor — the initial seed collection. */
+---
+> /** Represents the options for `createTemplateManager` and the `TemplateManager` constructor — the initial seed collection. */
+2377c2722
+<  * import { tokenize } from '@src/core'
+---
+>  * import { tokenize } from '@orkestrel/interpret'
+2385,2386c2730,2732
+<  * Lists the prototype-pollution-unsafe field-path segments — `setField` refuses
+<  * to write ANY path containing one, returning its input unchanged.
+---
+>  * Lists the prototype-pollution-unsafe field-path segments, `__proto__`, `prototype`,
+>  * and `constructor` — `setField` refuses to write any path containing one, and returns
+>  * its input unchanged.
+2400c2746
+<  * import { variablesOf } from '@src/core'
+---
+>  * import { variablesOf } from '@orkestrel/interpret'
+diff -r -w -B '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-interpret-final-registry-visit-pack/baseline/package/dist/src/core/index.d.ts /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-interpret-final-registry-visit-pack/extract/package/dist/src/core/index.d.ts
+1,8c1,8
+< import { Definition } from '@orkestrel/reason';
+< import { EmitterErrorHandler } from '@orkestrel/emitter';
+< import { EmitterHooks } from '@orkestrel/emitter';
+< import { EmitterInterface } from '@orkestrel/emitter';
+< import { FieldPath } from '@orkestrel/contract';
+< import { ReasonResult } from '@orkestrel/reason';
+< import { Subject } from '@orkestrel/reason';
+< import { SymbolicExpression } from '@orkestrel/reason';
+---
+> import type { Definition } from '@orkestrel/reason';
+> import type { EmitterErrorHandler } from '@orkestrel/emitter';
+> import type { EmitterHooks } from '@orkestrel/emitter';
+> import type { EmitterInterface } from '@orkestrel/emitter';
+> import type { FieldPath } from '@orkestrel/contract';
+> import type { ReasonResult } from '@orkestrel/reason';
+> import type { Subject } from '@orkestrel/reason';
+> import type { SymbolicExpression } from '@orkestrel/reason';
+35c35
+<  * import { applyReplacements } from '@src/core'
+---
+>  * import { applyReplacements } from '@orkestrel/interpret'
+47c47
+<  * Strategy, in order: (1) a SINGLE mapping collects every number (an array
+---
+>  * Strategy, in order: (1) a single mapping collects every number (an array
+57c57
+<  * Runs ONLY after a template has matched (an orchestrator-owned step, never
+---
+>  * Runs only after a template has matched (an orchestrator-owned step, never
+68c68
+<  * import { assignEntities } from '@src/core'
+---
+>  * import { assignEntities } from '@orkestrel/interpret'
+96c96
+<  * import { canonicalize } from '@src/core'
+---
+>  * import { canonicalize } from '@orkestrel/interpret'
+112c112
+<  * `ancestors` tracks the objects along the CURRENT recursion path rather than
+---
+>  * `ancestors` tracks the objects along the current recursion path rather than
+126c126
+<  * import { canonicalizeNode } from '@src/core'
+---
+>  * import { canonicalizeNode } from '@orkestrel/interpret'
+143c143
+<  * fills a mapping only from the SAME domain's most recent prior turn (a
+---
+>  * fills a mapping only from the same domain's most recent prior turn (a
+151c151
+<  * aggregate over a collection of KNOWN length is declarable while a collection
+---
+>  * aggregate over a collection of known length is declarable while a collection
+162c162
+<  * import { Clarifier } from '@src/core'
+---
+>  * import { Clarifier } from '@orkestrel/interpret'
+193a194,208
+>     /**
+>      * Resolves carry-over, template defaults, and computed fields, and surfaces an
+>      * {@link Ambiguity} for every unresolved required field, worded through the narrator's
+>      * `ambiguity.entity` line.
+>      *
+>      * @remarks
+>      * A computation addresses one numeric element of an array-valued field as
+>      * `{field}.{index}`, so only a collection of known length has a declarable aggregate.
+>      *
+>      * @param entities - The entities extraction already assigned
+>      * @param template - The matched template supplying the mappings, defaults, and computations
+>      * @param context - The cross-turn context carry-over reads from, or `undefined` for none
+>      * @param intent - The classified intent, whose domain gates carry-over
+>      * @returns The resolved entities plus every remaining ambiguity
+>      */
+198c213
+<  * Represents the options for `createClarifier` / the `Clarifier` constructor.
+---
+>  * Represents the options for `createClarifier` and the `Clarifier` constructor.
+229,235c244,250
+<  * unclassified intent is visibly absent. Combined confidence (PINNED): both
+<  * fire → their average; exactly one fires → its value times `0.5`; neither →
+<  * `0`. There is no built-in worldview and no auto-classification from an
+<  * added template's own `domain` name — a caller MUST list a template's
+<  * domain among `domains` for it to classify. No `floor` parameter: the
+<  * confidence floor gate lives at the orchestrator's `matchTemplate` step,
+<  * never inside classification itself.
+---
+>  * unclassified intent is visibly absent. Combined confidence (pinned): the
+>  * action and the domain both fire → their average; exactly one fires → its
+>  * value times `0.5`; neither → `0`. There is no built-in worldview and no
+>  * auto-classification from an added template's own `domain` name — a caller
+>  * must list a template's domain among `domains` for it to classify. No
+>  * `floor` parameter: the confidence floor gate lives at the orchestrator's
+>  * `matchTemplate` step, never inside classification itself.
+244c259
+<  * import { classifyIntent } from '@src/core'
+---
+>  * import { classifyIntent } from '@orkestrel/interpret'
+261c276
+<  * import { collapseWhitespace } from '@src/core'
+---
+>  * import { collapseWhitespace } from '@orkestrel/interpret'
+282c297
+<  * collection of KNOWN length; a collection whose length varies per turn has no
+---
+>  * collection of known length; a collection whose length varies per turn has no
+294c309
+< /** Names the confidence assigned to an exact alias-phrase entity match. */
+---
+> /** Names the confidence assigned to an exact alias-phrase entity match, 0.9. */
+297c312
+< /** Names the confidence assigned to a same-domain carried-over field. */
+---
+> /** Names the confidence assigned to a same-domain carried-over field, 0.7. */
+300c315,318
+< /** Names the confidence assigned when a single entity mapping collects every extracted number. */
+---
+> /**
+>  * Names the confidence assigned when a single entity mapping collects every extracted
+>  * number, 0.9.
+>  */
+303c321
+< /** Names the confidence assigned to a successfully resolved computed field. */
+---
+> /** Names the confidence assigned to a successfully resolved computed field, 0.9. */
+306c324
+< /** Names the confidence assigned to a template default fill. */
+---
+> /** Names the confidence assigned to a template default fill, 1. */
+309c327
+< /** Names the confidence assigned to an exact keyword-proximity entity match. */
+---
+> /** Names the confidence assigned to an exact keyword-proximity entity match, 1. */
+312c330
+< /** Names the confidence assigned to a positional (order-based) entity match fallback. */
+---
+> /** Names the confidence assigned to a positional (order-based) entity match fallback, 0.7. */
+317c335
+<  * against an assigned entity set.
+---
+>  * against an assigned entity set — returning a stateless {@link ClarifierInterface}.
+324c342
+<  * import { createClarifier } from '@src/core'
+---
+>  * import { createClarifier } from '@orkestrel/interpret'
+332c350,351
+<  * Creates a definition registry.
+---
+>  * Creates a definition registry, returning a working
+>  * {@link DefinitionManagerInterface}.
+340c359
+<  * import { createDefinitionManager } from '@src/core'
+---
+>  * import { createDefinitionManager } from '@orkestrel/interpret'
+351c370,371
+<  * Creates a template-agnostic intent classifier and number extractor.
+---
+>  * Creates a template-agnostic intent classifier and number extractor, returning a
+>  * stateless {@link ExtractorInterface}.
+358c378
+<  * import { createExtractor } from '@src/core'
+---
+>  * import { createExtractor } from '@orkestrel/interpret'
+370c390
+<  * Creates a prompt formatter.
+---
+>  * Creates a prompt formatter, returning a stateless {@link FormatterInterface}.
+377c397
+<  * import { createFormatter } from '@src/core'
+---
+>  * import { createFormatter } from '@orkestrel/interpret'
+385c405,406
+<  * Creates a subject/definition generator.
+---
+>  * Creates a subject and definition generator, returning a stateless
+>  * {@link GeneratorInterface}.
+391c412
+<  * import { createGenerator } from '@src/core'
+---
+>  * import { createGenerator } from '@orkestrel/interpret'
+399c420,421
+<  * Creates an interpretation orchestrator.
+---
+>  * Creates an interpretation orchestrator, returning an {@link InterpretInterface}
+>  * seeded from {@link InterpretOptions}.
+415c437
+<  * @example
+---
+>  * @example Interpret text against an added template
+417,418c439,444
+<  * import { createFactorGroup, createFieldFactor, createQuantitativeDefinition } from '@orkestrel/reason'
+<  * import { createExtractor, createInterpret } from '@src/core'
+---
+>  * import { createExtractor, createInterpret } from '@orkestrel/interpret'
+>  * import {
+>  * 	createFactorGroup,
+>  * 	createFieldFactor,
+>  * 	createQuantitativeDefinition,
+>  * } from '@orkestrel/reason'
+421c447,450
+<  * 	extractor: createExtractor({ actions: { calculate: 'calculate' }, domains: { arithmetic: ['arithmetic'] } }),
+---
+>  * 	extractor: createExtractor({
+>  * 		actions: { calculate: 'calculate' },
+>  * 		domains: { arithmetic: ['arithmetic'] },
+>  * 	}),
+437c466,474
+<  * interpret.interpret('calculate arithmetic 42').subject // { value: 42 }
+---
+>  *
+>  * const result = interpret.interpret('calculate arithmetic 42')
+>  * result.subject // { value: 42 }
+>  * result.ambiguities // []
+>  * result.failures // []
+>  *
+>  * interpret.emitter.on('interpret', (interpretation) => interpretation.digest)
+>  * interpret.describe(result.definition ?? createQuantitativeDefinition('t1', 'Arithmetic', []))
+>  * interpret.destroy()
+443c480,481
+<  * Creates a cross-turn interpretation context.
+---
+>  * Creates a cross-turn interpretation context, returning a working
+>  * {@link InterpretContextInterface}.
+450c488
+<  * import { createInterpretContext } from '@src/core'
+---
+>  * import { createInterpretContext } from '@orkestrel/interpret'
+459c497,498
+<  * Creates a lexicon-driven reverse-direction rendering engine.
+---
+>  * Creates a lexicon-driven reverse-direction rendering engine, returning a stateless
+>  * {@link NarratorInterface}.
+471c510
+<  * import { createNarrator } from '@src/core'
+---
+>  * import { createNarrator } from '@orkestrel/interpret'
+480c519
+<  * Creates a text normalizer.
+---
+>  * Creates a text normalizer, returning a stateless {@link NormalizerInterface}.
+488c527
+<  * import { createNormalizer } from '@src/core'
+---
+>  * import { createNormalizer } from '@orkestrel/interpret'
+496c535
+<  * Creates a subject registry.
+---
+>  * Creates a subject registry, returning a working {@link SubjectManagerInterface}.
+507c546
+<  * import { createSubjectManager } from '@src/core'
+---
+>  * import { createSubjectManager } from '@orkestrel/interpret'
+516c555
+<  * Creates a template registry.
+---
+>  * Creates a template registry, returning a working {@link TemplateManagerInterface}.
+524c563
+<  * import { createTemplateManager } from '@src/core'
+---
+>  * import { createTemplateManager } from '@orkestrel/interpret'
+545,546c584,585
+<  * Names the default `floor` for `createInterpret` / `matchTemplate` — the
+<  * minimum intent confidence a template match (or the classified intent itself) must
+---
+>  * Names the default `floor` for `createInterpret` and `matchTemplate`, 0.3 — the
+>  * minimum intent confidence a template match, or the classified intent itself, must
+551c590
+< /** Names the default `history` cap for an `InterpretContext`'s `previous()` ring buffer. */
+---
+> /** Names the default `history` cap for an `InterpretContext`'s `previous()` ring buffer, 16. */
+555,556c594,595
+<  * Names the default `similarity` for `createInterpret` / `matchAlias` — the
+<  * fuzzy alias-match score threshold (0..1).
+---
+>  * Names the default `similarity` for `createInterpret` and `matchAlias`, 0.8 — the
+>  * fuzzy alias-match score threshold, between 0 and 1.
+600c639
+<  * import { DefinitionManager } from '@src/core'
+---
+>  * import { DefinitionManager } from '@orkestrel/interpret'
+629a669,674
+>     /**
+>      * Reports whether a definition with the given id has been added.
+>      *
+>      * @param id - The record id to look for
+>      * @returns True if a definition with that id has been added; false otherwise
+>      */
+630a676,681
+>     /**
+>      * Looks up one added definition record by id — the singular accessor.
+>      *
+>      * @param id - The record id to look up
+>      * @returns The added definition record, or `undefined` when none carries that id
+>      */
+631a683,687
+>     /**
+>      * Lists every added definition record — the plural accessor.
+>      *
+>      * @returns Every added definition record, in insertion order
+>      */
+632a689,695
+>     /**
+>      * Adds, or re-adds, one definition, and emits `add`.
+>      *
+>      * @param definition - The definition to hold
+>      * @param options - The record id overriding `definition.id`. Default: `definition.id`
+>      * @returns The versioned, content-hashed record the registry holds
+>      */
+633a697,703
+>     /**
+>      * Removes the listed definitions by id, one definition by id, or every definition, and
+>      * emits `remove` per removed id.
+>      *
+>      * @param ids - The record ids to remove, all-or-nothing; omit the argument to remove every definition
+>      * @returns True if every listed id was added; false otherwise
+>      */
+636a707,710
+>     /**
+>      * Tears the definition registry down idempotently — clears the collection, emits
+>      * `destroy`, then destroys the emitter last.
+>      */
+640c714
+< /** Represents the options for `createDefinitionManager` / the `DefinitionManager` constructor — the initial seed collection. */
+---
+> /** Represents the options for `createDefinitionManager` and the `DefinitionManager` constructor — the initial seed collection. */
+656,657c730,731
+<  * Computes a canonical structural digest of a pure-JSON value — a key-order-
+<  * stable FNV-1a hash rendered as an 8-hex-digit string.
+---
+>  * Computes a canonical structural digest of a pure-JSON value — a
+>  * key-order-stable FNV-1a hash rendered as an 8-hex-digit string.
+669c743
+<  * import { digestValue } from '@src/core'
+---
+>  * import { digestValue } from '@orkestrel/interpret'
+709c783
+<  * import { escapeRegExp } from '@src/core'
+---
+>  * import { escapeRegExp } from '@orkestrel/interpret'
+731c805
+<  * import { extractNumbers } from '@src/core'
+---
+>  * import { extractNumbers } from '@orkestrel/interpret'
+745c819
+<  * `extract` never sees a `Template`: numbers → entity ASSIGNMENT is a
+---
+>  * `extract` never sees a `Template`: numbers → entity assignment is a
+752c826
+<  * import { Extractor } from '@src/core'
+---
+>  * import { Extractor } from '@orkestrel/interpret'
+769a844,849
+>     /**
+>      * Classifies the intent and mines every numeric literal from the text.
+>      *
+>      * @param text - The text to read
+>      * @returns The classified intent plus the raw numbers mined from `text`
+>      */
+774c854
+<  * Represents the options for `createExtractor` / the `Extractor` constructor.
+---
+>  * Represents the options for `createExtractor` and the `Extractor` constructor.
+792c872
+<  * text. `numbers`, not template-named entities; entity ASSIGNMENT is a
+---
+>  * text. `numbers`, not template-named entities; entity assignment is a
+812c892
+<  * Emitted for EVERY field that lands in the generated subject, including
+---
+>  * Emitted for every field that lands in the generated subject, including
+848c928
+<  * import { Formatter } from '@src/core'
+---
+>  * import { Formatter } from '@orkestrel/interpret'
+875a956,965
+>     /**
+>      * Renders the refined natural-language prompt for a matched template, clause by clause
+>      * through the narrator's `prompt.*` lines.
+>      *
+>      * @param intent - The classified intent supplying the display verb
+>      * @param template - The matched template supplying the prompt's name
+>      * @param entities - The resolved entities rendered as the prompt's fields
+>      * @param ambiguities - The unresolved fields rendered as the prompt's questions
+>      * @returns The refined natural-language prompt
+>      */
+880c970
+<  * Represents the options for `createFormatter` / the `Formatter` constructor.
+---
+>  * Represents the options for `createFormatter` and the `Formatter` constructor.
+909c999
+<  * by its OWN `name` — the shape `Clarifier` uses for its synthesized
+---
+>  * by its own `name` — the shape `Clarifier` uses for its synthesized
+917c1007
+<  * an empty entity set). A `FieldMapping` is emitted for EVERY field that
+---
+>  * an empty entity set). A `FieldMapping` is emitted for every field that
+923c1013
+<  * import { Generator } from '@src/core'
+---
+>  * import { Generator } from '@orkestrel/interpret'
+963a1054,1061
+>     /**
+>      * Builds the final subject and definition pair plus its complete field audit, deriving no
+>      * field the template did not declare.
+>      *
+>      * @param entities - The fully resolved entities the subject is built from
+>      * @param template - The matched template supplying the mappings and the definition
+>      * @returns The built subject and definition, every field mapping, and the mean confidence
+>      */
+986c1084,1086
+<  * `interprets` module, mirroring the reasons `Reason` orchestrator shape.
+---
+>  * `interprets` module, mirroring the reasons `Reason` orchestrator shape: it runs the
+>  * `[normalize, extract, clarify, format, generate]` pipeline, owns the template
+>  * registry and the context, and exposes the reverse direction.
+989,993c1089,1091
+<  * `interpret()` is genuinely SYNCHRONOUS — it returns its
+<  * {@link Interpretation} directly, never a `Promise` — and runs the fixed
+<  * pipeline
+<  * `[normalize, extract, clarify, format, generate]` — each producing one
+<  * {@link StageRecord}. Between `extract` and `clarify` the orchestrator matches
+---
+>  * `interpret()` is genuinely synchronous — it returns its
+>  * {@link Interpretation} directly, never a `Promise` — each phase producing
+>  * one {@link StageRecord}. Between `extract` and `clarify` the orchestrator matches
+998c1096
+<  * yields an explicit, auditable INCOMPLETE result (a `field: 'intent'`
+---
+>  * yields an explicit, auditable incomplete result (a `field: 'intent'`
+1000c1098
+<  * template. A stage THROW is caught, marked on its record AND on
+---
+>  * template. A stage throw is caught, marked on its record and on
+1009c1107
+<  * then destroys the emitter LAST; every method afterwards except the
+---
+>  * then destroys the emitter last; every method afterwards except the
+1015c1113
+<  * import { Interpret, Extractor } from '@src/core'
+---
+>  * import { Interpret, Extractor } from '@orkestrel/interpret'
+1106,1108c1204,1207
+<  * one result and trims to the cap; `clear` resets the history and both
+<  * registries WITHOUT tearing the context down; `destroy()` is idempotent and
+<  * every method afterwards throws `InterpretError('DESTROYED', …)`.
+---
+>  * one result and trims to the cap; `clear` resets the history, the subject
+>  * registry, and the definition registry without tearing the context down;
+>  * `destroy()` is idempotent and every method afterwards throws
+>  * `InterpretError('DESTROYED', …)`.
+1112c1211
+<  * import { InterpretContext } from '@src/core'
+---
+>  * import { InterpretContext } from '@orkestrel/interpret'
+1164a1264,1268
+>     /**
+>      * Lists the buffered history, newest last, capped at `history`.
+>      *
+>      * @returns Every buffered interpretation, newest last
+>      */
+1165a1270,1274
+>     /**
+>      * Flattens every entity recorded across the buffered history, most recent last.
+>      *
+>      * @returns Every entity across the buffered history, most recent last
+>      */
+1166a1276,1280
+>     /**
+>      * Pushes one completed {@link Interpretation}, dropping the oldest entry past the cap.
+>      *
+>      * @param result - The completed interpretation to buffer
+>      */
+1167a1282,1285
+>     /**
+>      * Resets the history, the subject registry, and the definition registry without
+>      * destroying the context.
+>      */
+1168a1287,1290
+>     /**
+>      * Tears the context down idempotently — the subject registry, then the definition
+>      * registry, then the emitter last.
+>      */
+1172c1294
+< /** Represents the options for `createInterpretContext` / the `InterpretContext` constructor. */
+---
+> /** Represents the options for `createInterpretContext` and the `InterpretContext` constructor. */
+1181c1303,1304
+<  * Represents an error thrown by the interprets layer.
+---
+>  * Represents an error thrown by the interprets layer, carrying an
+>  * {@link InterpretErrorCode} and an optional `context` record.
+1199c1322
+<  * Names the coded misuse / failure conditions thrown as an {@link InterpretError} or
+---
+>  * Names the coded misuse or failure conditions thrown as an {@link InterpretError} or
+1239c1362
+<  * `interpret` is genuinely SYNCHRONOUS — it returns its
+---
+>  * `interpret` is genuinely synchronous — it returns its
+1253c1376
+<  * emitter down LAST.
+---
+>  * emitter down last.
+1256a1380,1386
+>     /**
+>      * Runs the `[normalize, extract, clarify, format, generate]` pipeline over raw text,
+>      * returning a complete or a visibly incomplete result.
+>      *
+>      * @param text - The raw text to interpret
+>      * @returns The full, replayable outcome of the run
+>      */
+1257a1388,1392
+>     /**
+>      * Adds one template, and emits `add`.
+>      *
+>      * @param template - The template data to add
+>      */
+1258a1394,1399
+>     /**
+>      * Removes the listed templates by id, one template by id, or every template.
+>      *
+>      * @param ids - The template ids to remove, all-or-nothing; omit the argument to remove every template
+>      * @returns True if every listed id was added; false otherwise
+>      */
+1261a1403,1408
+>     /**
+>      * Looks up one added template's plain data by id.
+>      *
+>      * @param id - The template id to look up
+>      * @returns The template's plain data, or `undefined` when none carries that id
+>      */
+1262a1410,1414
+>     /**
+>      * Lists every added template's plain data.
+>      *
+>      * @returns Every added template's plain data, in insertion order
+>      */
+1263a1416,1421
+>     /**
+>      * Renders a reasons `Definition` to a one-line, display-neutral description.
+>      *
+>      * @param definition - The definition to describe
+>      * @returns The one-line description
+>      */
+1264a1423,1428
+>     /**
+>      * Renders a reasons `ReasonResult` to a one-line, display-neutral description.
+>      *
+>      * @param result - The result to narrate
+>      * @returns The one-line description
+>      */
+1265a1430,1433
+>     /**
+>      * Tears the orchestrator down idempotently — the template registry, the context it
+>      * constructed itself, then the emitter last.
+>      */
+1270c1438
+<  * Represents the options for `createInterpret` / the `Interpret` constructor.
+---
+>  * Represents the options for `createInterpret` and the `Interpret` constructor.
+1277c1445
+<  * stage slot is BRING-YOUR-OWN — a supplied implementation is
+---
+>  * stage slot is bring-your-own — a supplied implementation is
+1312c1480
+<  * Deliberately NOT named `Stage` — raters already owns that identifier for
+---
+>  * Deliberately not named `Stage` — raters already owns that identifier for
+1320a1489,1492
+>  * @remarks
+>  * `field`, `question`, the string `candidates` list, and `required` are each
+>  * checked; an unknown member passes.
+>  *
+1326c1498
+<  * import { isAmbiguity } from '@src/core'
+---
+>  * import { isAmbiguity } from '@orkestrel/interpret'
+1335,1336c1507,1509
+<  * Determines whether a value is a {@link ComputedField} — a declaratively
+<  * computed field carrying a reasons {@link SymbolicExpression} tree.
+---
+>  * Determines whether a value is an exact {@link ComputedField} input record —
+>  * a declaratively computed field carrying a reasons
+>  * {@link SymbolicExpression} tree.
+1344c1517
+<  * import { isComputedField } from '@src/core'
+---
+>  * import { isComputedField } from '@orkestrel/interpret'
+1367c1540
+<  * import { isEntity } from '@src/core'
+---
+>  * import { isEntity } from '@orkestrel/interpret'
+1376,1377c1549,1551
+<  * Determines whether a value is an {@link EntityMapping} — a literal
+<  * alias-phrase extraction rule pointing at a subject field.
+---
+>  * Determines whether a value is an exact {@link EntityMapping} input
+>  * record — a literal alias-phrase extraction rule pointing at a subject
+>  * field.
+1384c1558
+<  * import { isEntityMapping } from '@src/core'
+---
+>  * import { isEntityMapping } from '@orkestrel/interpret'
+1393,1394c1567,1568
+<  * Determines whether a value is a {@link FieldDefault} — a fallback value a
+<  * {@link Template} fills onto an unresolved field.
+---
+>  * Determines whether a value is an exact {@link FieldDefault} input record —
+>  * a fallback value a {@link Template} fills onto an unresolved field.
+1406c1580
+<  * import { isFieldDefault } from '@src/core'
+---
+>  * import { isFieldDefault } from '@orkestrel/interpret'
+1426c1600
+<  * import { isFieldMapping } from '@src/core'
+---
+>  * import { isFieldMapping } from '@orkestrel/interpret'
+1446c1620
+<  * import { isIntent } from '@src/core'
+---
+>  * import { isIntent } from '@orkestrel/interpret'
+1471c1645
+<  * import { createInterpret, isInterpretation } from '@src/core'
+---
+>  * import { createInterpret, isInterpretation } from '@orkestrel/interpret'
+1487c1661
+<  * import { isInterpretError } from '@src/core'
+---
+>  * import { isInterpretError } from '@orkestrel/interpret'
+1500a1675,1679
+>  * @remarks
+>  * `category` is checked against `PROVENANCE_CATEGORIES` and the optional
+>  * `detail` against `isString`; an unknown member passes, because a foreign
+>  * engine's return is not this package's to narrow.
+>  *
+1506c1685
+<  * import { isProvenance } from '@src/core'
+---
+>  * import { isProvenance } from '@orkestrel/interpret'
+1516a1696,1700
+>  * @remarks
+>  * `stage` is checked against `INTERPRET_STAGES`, `code` against
+>  * `INTERPRET_ERROR_CODES`, and `message` against `isString`; an unknown member
+>  * passes.
+>  *
+1522c1706
+<  * import { isStageFailure } from '@src/core'
+---
+>  * import { isStageFailure } from '@orkestrel/interpret'
+1543c1727
+<  * import { isStageRecord } from '@src/core'
+---
+>  * import { isStageRecord } from '@orkestrel/interpret'
+1552,1553c1736,1737
+<  * Determines whether a value is a {@link Template} — a named, versionable
+<  * interpretation template.
+---
+>  * Determines whether a value is an exact {@link Template} input record — a
+>  * named, versionable interpretation template.
+1558c1742,1745
+<  * parallel interprets-owned definition guard exists.
+---
+>  * parallel interprets-owned definition guard exists. Each computation's
+>  * `expression` is validated with reasons' `isSymbolicExpression`, already
+>  * recursive through `lazyOf`, so this module mints no expression guard of its
+>  * own.
+1566c1753
+<  * import { isTemplate } from '@src/core'
+---
+>  * import { isTemplate } from '@orkestrel/interpret'
+1588c1775
+<  * DATA supplied here, never a core literal.
+---
+>  * data supplied here, never a core literal.
+1619c1806
+<  * import { matchAlias } from '@src/core'
+---
+>  * import { matchAlias } from '@orkestrel/interpret'
+1642c1829
+<  * import { matchTemplate } from '@src/core'
+---
+>  * import { matchTemplate } from '@orkestrel/interpret'
+1650c1837
+<  * Implements a stateless, TOTAL, lexicon-driven rendering engine for the reverse
+---
+>  * Implements a stateless, total, lexicon-driven rendering engine for the reverse
+1655,1656c1842,1843
+<  * Every wording decision is DATA — a caller-supplied `Lexicon` merged, per
+<  * sub-record (`phrases` / `labels` / `templates`), OVER `DEFAULT_LEXICON`.
+---
+>  * Every wording decision is data — a caller-supplied `Lexicon` merged, per
+>  * sub-record (`phrases`, `labels`, and `templates`), over `DEFAULT_LEXICON`.
+1666c1853
+<  * import { Narrator } from '@src/core'
+---
+>  * import { Narrator } from '@orkestrel/interpret'
+1699c1886
+<  * Represents the `Narrator` contract — a stateless, TOTAL, lexicon-driven rendering
+---
+>  * Represents the `Narrator` contract — a stateless, total, lexicon-driven rendering
+1716a1904,1912
+>     /**
+>      * Looks up a two-level `table` and `key` pair in the lexicon's `phrases`, falling back to
+>      * `fallback` or to `key`.
+>      *
+>      * @param table - The phrase table to read
+>      * @param key - The phrase key within that table
+>      * @param fallback - The phrase to render when the lookup misses. Default: `key`
+>      * @returns The looked-up phrase, or the fallback
+>      */
+1717a1914,1919
+>     /**
+>      * Renders a field's display label from `labels`, falling back to `formatField`.
+>      *
+>      * @param field - The field path to label
+>      * @returns The field's display label
+>      */
+1718a1921,1928
+>     /**
+>      * Interpolates a named `templates` entry against `values`, falling back to an empty string
+>      * when the id is absent.
+>      *
+>      * @param id - The template id to render
+>      * @param values - The values the template's placeholders resolve against
+>      * @returns The rendered line, or an empty string when no template carries `id`
+>      */
+1719a1930,1937
+>     /**
+>      * Runs a named formatter over a raw value, catching a throw and falling back to
+>      * `String(raw)`.
+>      *
+>      * @param unit - The formatter name to run
+>      * @param raw - The value to format
+>      * @returns The formatted value, or `String(raw)` when no formatter returns
+>      */
+1720a1939,1944
+>     /**
+>      * Renders a reasons `Definition` to a one-line, display-neutral description.
+>      *
+>      * @param definition - The definition to describe
+>      * @returns The one-line description
+>      */
+1721a1946,1951
+>     /**
+>      * Renders a reasons `ReasonResult` to a one-line, display-neutral description.
+>      *
+>      * @param result - The result to narrate
+>      * @returns The one-line description
+>      */
+1725c1955
+< /** Represents the options for `createNarrator` / the `Narrator` constructor. */
+---
+> /** Represents the options for `createNarrator` and the `Narrator` constructor. */
+1736c1966
+<  * The caller's `contractions` map is merged OVER `DEFAULT_CONTRACTIONS`;
+---
+>  * The caller's `contractions` map is merged over `DEFAULT_CONTRACTIONS`;
+1740c1970
+<  * (one entry per matching map KEY, not per occurrence) is recorded on the
+---
+>  * (one entry per matching map key, not per occurrence) is recorded on the
+1748c1978
+<  * import { Normalizer } from '@src/core'
+---
+>  * import { Normalizer } from '@orkestrel/interpret'
+1768a1999,2005
+>     /**
+>      * Applies the contraction, abbreviation, and correction substitutions in order, then
+>      * collapses whitespace.
+>      *
+>      * @param text - The raw text to clean
+>      * @returns The cleaned text plus every substitution applied
+>      */
+1773c2010
+<  * Represents the options for `createNormalizer` / the `Normalizer` constructor.
+---
+>  * Represents the options for `createNormalizer` and the `Normalizer` constructor.
+1777c2014
+<  * before whitespace collapse. `contractions` merges OVER
+---
+>  * before whitespace collapse. `contractions` merges over
+1816c2053
+<  * import { parseTemplate } from '@src/core'
+---
+>  * import { parseTemplate } from '@orkestrel/interpret'
+1837c2074
+<  * Names how one {@link FieldMapping} / {@link Entity} value was obtained.
+---
+>  * Names how one {@link FieldMapping} or {@link Entity} value was obtained.
+1851c2088
+<  * collection, so `add` / `remove` are the events (never ordered-list
+---
+>  * collection, so `add` and `remove` are the events (never ordered-list
+1886,1887c2123,2124
+<  * its record's value field. `add` derives `hash` from the value's CONTENT
+<  * (id-independent) and bumps `version` ONLY when that hash changes at a reused
+---
+>  * its record's value field. `add` derives `hash` from the value's content
+>  * (id-independent) and bumps `version` only when that hash changes at a reused
+1889c2126
+<  * is ALL-OR-NOTHING — any id absent from the registry leaves the collection
+---
+>  * is all-or-nothing — any id absent from the registry leaves the collection
+1896c2133
+<  * import { RecordManager } from '@src/core'
+---
+>  * import { RecordManager } from '@orkestrel/interpret'
+1943c2180
+<  * LAST; every method afterwards throws `InterpretError('DESTROYED', …)`.
+---
+>  * last; every method afterwards throws `InterpretError('DESTROYED', …)`.
+1947a2185,2190
+>     /**
+>      * Reports whether a record with the given id is held.
+>      *
+>      * @param id - The record id to look for
+>      * @returns True if a record with that id is held; false otherwise
+>      */
+1948a2192,2197
+>     /**
+>      * Looks up one held record by id — the singular accessor.
+>      *
+>      * @param id - The record id to look up
+>      * @returns The held record, or `undefined` when none carries that id
+>      */
+1949a2199,2203
+>     /**
+>      * Lists every held record — the plural accessor.
+>      *
+>      * @returns Every held record, in insertion order
+>      */
+1950a2205,2213
+>     /**
+>      * Stamps a value with its id, version, and content hash, builds the record, holds it, and
+>      * emits `add`.
+>      *
+>      * @param id - The record id to hold the value under
+>      * @param value - The value the record holds
+>      * @param build - The function building the concrete record from its stamp and its value
+>      * @returns The stamped record the registry holds
+>      */
+1951a2215,2221
+>     /**
+>      * Removes the listed records by id, one record by id, or every record, and emits `remove`
+>      * per removed id.
+>      *
+>      * @param ids - The record ids to remove, all-or-nothing; omit the argument to remove every record
+>      * @returns True if every listed id was held; false otherwise
+>      */
+1954a2225,2228
+>     /**
+>      * Tears the record registry down idempotently — clears the collection, emits
+>      * `destroy`, then destroys the emitter last.
+>      */
+1990c2264
+<  * `hash` is derived from the held value's CONTENT alone (id-independent), and
+---
+>  * `hash` is derived from the held value's content alone (id-independent), and
+2008c2282
+<  * describes RATERS artifacts); this describes REASONS artifacts. Every field
+---
+>  * describes raters artifacts); this describes reasons artifacts. Every field
+2021c2295
+<  * import { createNarrator, renderSubject } from '@src/core'
+---
+>  * import { createNarrator, renderSubject } from '@orkestrel/interpret'
+2032c2306
+<  * THE critical leaf (design-pinned, engine-parity semantics): an absent
+---
+>  * The critical leaf (design-pinned, engine-parity semantics): an absent
+2035c2309
+<  * EXPLICIT numeric operand, so the same tree evaluates identically here and
+---
+>  * explicit numeric operand, so the same tree evaluates identically here and
+2050c2324
+<  * import { resolveExpression } from '@src/core'
+---
+>  * import { resolveExpression } from '@orkestrel/interpret'
+2069c2343
+<  * import { scoreSimilarity } from '@src/core'
+---
+>  * import { scoreSimilarity } from '@orkestrel/interpret'
+2091c2365
+<  * import { scoreTemplate } from '@src/core'
+---
+>  * import { scoreTemplate } from '@orkestrel/interpret'
+2108c2382
+<  * `prototype`, or `constructor` at ANY segment (checked against
+---
+>  * `prototype`, or `constructor` at any segment (checked against
+2121c2395
+<  * import { setField } from '@src/core'
+---
+>  * import { setField } from '@orkestrel/interpret'
+2155c2429
+<  * record-holder that mints its OWN record identity for every {@link Subject}
+---
+>  * record-holder that mints its own record identity for every {@link Subject}
+2164c2438
+<  * bumps ONLY when the hash changes at a reused id and the batch `remove(ids)`
+---
+>  * bumps only when the hash changes at a reused id and the batch `remove(ids)`
+2170c2444
+<  * import { SubjectManager } from '@src/core'
+---
+>  * import { SubjectManager } from '@orkestrel/interpret'
+2202a2477,2482
+>     /**
+>      * Reports whether a subject with the given id has been added.
+>      *
+>      * @param id - The record id to look for
+>      * @returns True if a subject with that id has been added; false otherwise
+>      */
+2203a2484,2489
+>     /**
+>      * Looks up one added subject record by id — the singular accessor.
+>      *
+>      * @param id - The record id to look up
+>      * @returns The added subject record, or `undefined` when none carries that id
+>      */
+2204a2491,2495
+>     /**
+>      * Lists every added subject record — the plural accessor.
+>      *
+>      * @returns Every added subject record, in insertion order
+>      */
+2205a2497,2504
+>     /**
+>      * Adds one subject, minting a fresh record id when the caller supplies none, and emits
+>      * `add`.
+>      *
+>      * @param subject - The subject to hold
+>      * @param options - The record id overriding the minted one. Default: a freshly minted id
+>      * @returns The versioned, content-hashed record the registry holds
+>      */
+2206a2506,2512
+>     /**
+>      * Removes the listed subjects by id, one subject by id, or every subject, and emits
+>      * `remove` per removed id.
+>      *
+>      * @param ids - The record ids to remove, all-or-nothing; omit the argument to remove every subject
+>      * @returns True if every listed id was added; false otherwise
+>      */
+2209a2516,2519
+>     /**
+>      * Tears the subject registry down idempotently — clears the collection, emits
+>      * `destroy`, then destroys the emitter last.
+>      */
+2213c2523
+< /** Represents the options for `createSubjectManager` / the `SubjectManager` constructor — the initial seed collection. */
+---
+> /** Represents the options for `createSubjectManager` and the `SubjectManager` constructor — the initial seed collection. */
+2225c2535
+<  * `id` is the manager's OWN minted identity — never `definition.id` — so
+---
+>  * `id` is the manager's own minted identity — never `definition.id` — so
+2268c2578
+<  * the batch `remove(ids)` form stays ALL-OR-NOTHING. This class adds what is
+---
+>  * the batch `remove(ids)` form stays all-or-nothing. This class adds what is
+2276c2586
+<  * import { TemplateManager } from '@src/core'
+---
+>  * import { TemplateManager } from '@orkestrel/interpret'
+2324a2635,2640
+>     /**
+>      * Reports whether a template with the given id has been added.
+>      *
+>      * @param id - The record id to look for
+>      * @returns True if a template with that id has been added; false otherwise
+>      */
+2325a2642,2647
+>     /**
+>      * Looks up one added template record by id — the singular accessor.
+>      *
+>      * @param id - The record id to look up
+>      * @returns The added template record, or `undefined` when none carries that id
+>      */
+2326a2649,2653
+>     /**
+>      * Lists every added template record — the plural accessor.
+>      *
+>      * @returns Every added template record, in insertion order
+>      */
+2327a2655,2661
+>     /**
+>      * Adds, or re-adds, one template from its data, and emits `add`.
+>      *
+>      * @param template - The template data to hold
+>      * @param options - The record id overriding `template.id`. Default: `template.id`
+>      * @returns The versioned, content-hashed record the registry holds
+>      */
+2328a2663,2669
+>     /**
+>      * Removes the listed templates by id, one template by id, or every template, and emits
+>      * `remove` per removed id.
+>      *
+>      * @param ids - The record ids to remove, all-or-nothing; omit the argument to remove every template
+>      * @returns True if every listed id was added; false otherwise
+>      */
+2331a2673,2676
+>     /**
+>      * Tears the template registry down idempotently — clears the collection, emits
+>      * `destroy`, then destroys the emitter last.
+>      */
+2335c2680
+< /** Represents the options for `createTemplateManager` / the `TemplateManager` constructor — the initial seed collection. */
+---
+> /** Represents the options for `createTemplateManager` and the `TemplateManager` constructor — the initial seed collection. */
+2377c2722
+<  * import { tokenize } from '@src/core'
+---
+>  * import { tokenize } from '@orkestrel/interpret'
+2385,2386c2730,2732
+<  * Lists the prototype-pollution-unsafe field-path segments — `setField` refuses
+<  * to write ANY path containing one, returning its input unchanged.
+---
+>  * Lists the prototype-pollution-unsafe field-path segments, `__proto__`, `prototype`,
+>  * and `constructor` — `setField` refuses to write any path containing one, and returns
+>  * its input unchanged.
+2400c2746
+<  * import { variablesOf } from '@src/core'
+---
+>  * import { variablesOf } from '@orkestrel/interpret'
+diff -r -w -B '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-interpret-final-registry-visit-pack/baseline/package/dist/src/core/index.js /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-interpret-final-registry-visit-pack/extract/package/dist/src/core/index.js
+7,8c7,8
+< * Names the default `similarity` for `createInterpret` / `matchAlias` — the
+< * fuzzy alias-match score threshold (0..1).
+---
+> * Names the default `similarity` for `createInterpret` and `matchAlias`, 0.8 — the
+> * fuzzy alias-match score threshold, between 0 and 1.
+17,18c17,18
+< * Names the default `floor` for `createInterpret` / `matchTemplate` — the
+< * minimum intent confidence a template match (or the classified intent itself) must
+---
+> * Names the default `floor` for `createInterpret` and `matchTemplate`, 0.3 — the
+> * minimum intent confidence a template match, or the classified intent itself, must
+22c22
+< /** Names the default `history` cap for an `InterpretContext`'s `previous()` ring buffer. */
+---
+> /** Names the default `history` cap for an `InterpretContext`'s `previous()` ring buffer, 16. */
+24c24
+< /** Names the confidence assigned to an exact keyword-proximity entity match. */
+---
+> /** Names the confidence assigned to an exact keyword-proximity entity match, 1. */
+26c26
+< /** Names the confidence assigned to an exact alias-phrase entity match. */
+---
+> /** Names the confidence assigned to an exact alias-phrase entity match, 0.9. */
+28c28,31
+< /** Names the confidence assigned when a single entity mapping collects every extracted number. */
+---
+> /**
+> * Names the confidence assigned when a single entity mapping collects every extracted
+> * number, 0.9.
+> */
+30c33
+< /** Names the confidence assigned to a positional (order-based) entity match fallback. */
+---
+> /** Names the confidence assigned to a positional (order-based) entity match fallback, 0.7. */
+32c35
+< /** Names the confidence assigned to a same-domain carried-over field. */
+---
+> /** Names the confidence assigned to a same-domain carried-over field, 0.7. */
+34c37
+< /** Names the confidence assigned to a template default fill. */
+---
+> /** Names the confidence assigned to a template default fill, 1. */
+36c39
+< /** Names the confidence assigned to a successfully resolved computed field. */
+---
+> /** Names the confidence assigned to a successfully resolved computed field, 0.9. */
+50,51c53,55
+< * Lists the prototype-pollution-unsafe field-path segments — `setField` refuses
+< * to write ANY path containing one, returning its input unchanged.
+---
+> * Lists the prototype-pollution-unsafe field-path segments, `__proto__`, `prototype`,
+> * and `constructor` — `setField` refuses to write any path containing one, and returns
+> * its input unchanged.
+149c153,154
+< * Represents an error thrown by the interprets layer.
+---
+> * Represents an error thrown by the interprets layer, carrying an
+> * {@link InterpretErrorCode} and an optional `context` record.
+177c182
+< * import { isInterpretError } from '@src/core'
+---
+> * import { isInterpretError } from '@orkestrel/interpret'
+192,193c197,199
+< * Determines whether a value is an {@link EntityMapping} — a literal
+< * alias-phrase extraction rule pointing at a subject field.
+---
+> * Determines whether a value is an exact {@link EntityMapping} input
+> * record — a literal alias-phrase extraction rule pointing at a subject
+> * field.
+200c206
+< * import { isEntityMapping } from '@src/core'
+---
+> * import { isEntityMapping } from '@orkestrel/interpret'
+215,216c221,222
+< * Determines whether a value is a {@link FieldDefault} — a fallback value a
+< * {@link Template} fills onto an unresolved field.
+---
+> * Determines whether a value is an exact {@link FieldDefault} input record —
+> * a fallback value a {@link Template} fills onto an unresolved field.
+228c234
+< * import { isFieldDefault } from '@src/core'
+---
+> * import { isFieldDefault } from '@orkestrel/interpret'
+241,242c247,249
+< * Determines whether a value is a {@link ComputedField} — a declaratively
+< * computed field carrying a reasons {@link SymbolicExpression} tree.
+---
+> * Determines whether a value is an exact {@link ComputedField} input record —
+> * a declaratively computed field carrying a reasons
+> * {@link SymbolicExpression} tree.
+250c257
+< * import { isComputedField } from '@src/core'
+---
+> * import { isComputedField } from '@orkestrel/interpret'
+266,267c273,274
+< * Determines whether a value is a {@link Template} — a named, versionable
+< * interpretation template.
+---
+> * Determines whether a value is an exact {@link Template} input record — a
+> * named, versionable interpretation template.
+272c279,282
+< * parallel interprets-owned definition guard exists.
+---
+> * parallel interprets-owned definition guard exists. Each computation's
+> * `expression` is validated with reasons' `isSymbolicExpression`, already
+> * recursive through `lazyOf`, so this module mints no expression guard of its
+> * own.
+280c290
+< * import { isTemplate } from '@src/core'
+---
+> * import { isTemplate } from '@orkestrel/interpret'
+311a322,326
+> * @remarks
+> * `category` is checked against `PROVENANCE_CATEGORIES` and the optional
+> * `detail` against `isString`; an unknown member passes, because a foreign
+> * engine's return is not this package's to narrow.
+> *
+317c332
+< * import { isProvenance } from '@src/core'
+---
+> * import { isProvenance } from '@orkestrel/interpret'
+341c356
+< * import { isIntent } from '@src/core'
+---
+> * import { isIntent } from '@orkestrel/interpret'
+367c382
+< * import { isEntity } from '@src/core'
+---
+> * import { isEntity } from '@orkestrel/interpret'
+392c407
+< * import { isFieldMapping } from '@src/core'
+---
+> * import { isFieldMapping } from '@orkestrel/interpret'
+408a424,427
+> * @remarks
+> * `field`, `question`, the string `candidates` list, and `required` are each
+> * checked; an unknown member passes.
+> *
+414c433
+< * import { isAmbiguity } from '@src/core'
+---
+> * import { isAmbiguity } from '@orkestrel/interpret'
+441c460
+< * import { isStageRecord } from '@src/core'
+---
+> * import { isStageRecord } from '@orkestrel/interpret'
+456a476,480
+> * @remarks
+> * `stage` is checked against `INTERPRET_STAGES`, `code` against
+> * `INTERPRET_ERROR_CODES`, and `message` against `isString`; an unknown member
+> * passes.
+> *
+462c486
+< * import { isStageFailure } from '@src/core'
+---
+> * import { isStageFailure } from '@orkestrel/interpret'
+491c515
+< * import { createInterpret, isInterpretation } from '@src/core'
+---
+> * import { createInterpret, isInterpretation } from '@orkestrel/interpret'
+525c549
+< * import { escapeRegExp } from '@src/core'
+---
+> * import { escapeRegExp } from '@orkestrel/interpret'
+541c565
+< * `prototype`, or `constructor` at ANY segment (checked against
+---
+> * `prototype`, or `constructor` at any segment (checked against
+554c578
+< * import { setField } from '@src/core'
+---
+> * import { setField } from '@orkestrel/interpret'
+595c619
+< * import { applyReplacements } from '@src/core'
+---
+> * import { applyReplacements } from '@orkestrel/interpret'
+617c641
+< * import { collapseWhitespace } from '@src/core'
+---
+> * import { collapseWhitespace } from '@orkestrel/interpret'
+639c663
+< * import { tokenize } from '@src/core'
+---
+> * import { tokenize } from '@orkestrel/interpret'
+661c685
+< * import { extractNumbers } from '@src/core'
+---
+> * import { extractNumbers } from '@orkestrel/interpret'
+684c708
+< * Strategy, in order: (1) a SINGLE mapping collects every number (an array
+---
+> * Strategy, in order: (1) a single mapping collects every number (an array
+694c718
+< * Runs ONLY after a template has matched (an orchestrator-owned step, never
+---
+> * Runs only after a template has matched (an orchestrator-owned step, never
+705c729
+< * import { assignEntities } from '@src/core'
+---
+> * import { assignEntities } from '@orkestrel/interpret'
+847,853c871,877
+< * unclassified intent is visibly absent. Combined confidence (PINNED): both
+< * fire → their average; exactly one fires → its value times `0.5`; neither →
+< * `0`. There is no built-in worldview and no auto-classification from an
+< * added template's own `domain` name — a caller MUST list a template's
+< * domain among `domains` for it to classify. No `floor` parameter: the
+< * confidence floor gate lives at the orchestrator's `matchTemplate` step,
+< * never inside classification itself.
+---
+> * unclassified intent is visibly absent. Combined confidence (pinned): the
+> * action and the domain both fire → their average; exactly one fires → its
+> * value times `0.5`; neither → `0`. There is no built-in worldview and no
+> * auto-classification from an added template's own `domain` name — a caller
+> * must list a template's domain among `domains` for it to classify. No
+> * `floor` parameter: the confidence floor gate lives at the orchestrator's
+> * `matchTemplate` step, never inside classification itself.
+862c886
+< * import { classifyIntent } from '@src/core'
+---
+> * import { classifyIntent } from '@orkestrel/interpret'
+911c935
+< * import { scoreSimilarity } from '@src/core'
+---
+> * import { scoreSimilarity } from '@orkestrel/interpret'
+949c973
+< * import { matchAlias } from '@src/core'
+---
+> * import { matchAlias } from '@orkestrel/interpret'
+972c996
+< * `ancestors` tracks the objects along the CURRENT recursion path rather than
+---
+> * `ancestors` tracks the objects along the current recursion path rather than
+986c1010
+< * import { canonicalizeNode } from '@src/core'
+---
+> * import { canonicalizeNode } from '@orkestrel/interpret'
+1023c1047
+< * import { canonicalize } from '@src/core'
+---
+> * import { canonicalize } from '@orkestrel/interpret'
+1032,1033c1056,1057
+< * Computes a canonical structural digest of a pure-JSON value — a key-order-
+< * stable FNV-1a hash rendered as an 8-hex-digit string.
+---
+> * Computes a canonical structural digest of a pure-JSON value — a
+> * key-order-stable FNV-1a hash rendered as an 8-hex-digit string.
+1045c1069
+< * import { digestValue } from '@src/core'
+---
+> * import { digestValue } from '@orkestrel/interpret'
+1073c1097
+< * import { scoreTemplate } from '@src/core'
+---
+> * import { scoreTemplate } from '@orkestrel/interpret'
+1101c1125
+< * import { matchTemplate } from '@src/core'
+---
+> * import { matchTemplate } from '@orkestrel/interpret'
+1128c1152
+< * import { variablesOf } from '@src/core'
+---
+> * import { variablesOf } from '@orkestrel/interpret'
+1158c1182
+< * THE critical leaf (design-pinned, engine-parity semantics): an absent
+---
+> * The critical leaf (design-pinned, engine-parity semantics): an absent
+1161c1185
+< * EXPLICIT numeric operand, so the same tree evaluates identically here and
+---
+> * explicit numeric operand, so the same tree evaluates identically here and
+1176c1200
+< * import { resolveExpression } from '@src/core'
+---
+> * import { resolveExpression } from '@orkestrel/interpret'
+1199c1223
+< * describes RATERS artifacts); this describes REASONS artifacts. Every field
+---
+> * describes raters artifacts); this describes reasons artifacts. Every field
+1212c1236
+< * import { createNarrator, renderSubject } from '@src/core'
+---
+> * import { createNarrator, renderSubject } from '@orkestrel/interpret'
+1244c1268
+< * import { parseTemplate } from '@src/core'
+---
+> * import { parseTemplate } from '@orkestrel/interpret'
+1265,1266c1289,1290
+< * its record's value field. `add` derives `hash` from the value's CONTENT
+< * (id-independent) and bumps `version` ONLY when that hash changes at a reused
+---
+> * its record's value field. `add` derives `hash` from the value's content
+> * (id-independent) and bumps `version` only when that hash changes at a reused
+1268c1292
+< * is ALL-OR-NOTHING — any id absent from the registry leaves the collection
+---
+> * is all-or-nothing — any id absent from the registry leaves the collection
+1275c1299
+< * import { RecordManager } from '@src/core'
+---
+> * import { RecordManager } from '@orkestrel/interpret'
+1387c1411
+< * import { DefinitionManager } from '@src/core'
+---
+> * import { DefinitionManager } from '@orkestrel/interpret'
+1441c1465
+< * record-holder that mints its OWN record identity for every {@link Subject}
+---
+> * record-holder that mints its own record identity for every {@link Subject}
+1450c1474
+< * bumps ONLY when the hash changes at a reused id and the batch `remove(ids)`
+---
+> * bumps only when the hash changes at a reused id and the batch `remove(ids)`
+1456c1480
+< * import { SubjectManager } from '@src/core'
+---
+> * import { SubjectManager } from '@orkestrel/interpret'
+1525,1527c1549,1552
+< * one result and trims to the cap; `clear` resets the history and both
+< * registries WITHOUT tearing the context down; `destroy()` is idempotent and
+< * every method afterwards throws `InterpretError('DESTROYED', …)`.
+---
+> * one result and trims to the cap; `clear` resets the history, the subject
+> * registry, and the definition registry without tearing the context down;
+> * `destroy()` is idempotent and every method afterwards throws
+> * `InterpretError('DESTROYED', …)`.
+1531c1556
+< * import { InterpretContext } from '@src/core'
+---
+> * import { InterpretContext } from '@orkestrel/interpret'
+1617c1642
+< * the batch `remove(ids)` form stays ALL-OR-NOTHING. This class adds what is
+---
+> * the batch `remove(ids)` form stays all-or-nothing. This class adds what is
+1625c1650
+< * import { TemplateManager } from '@src/core'
+---
+> * import { TemplateManager } from '@orkestrel/interpret'
+1689c1714
+< * Implements a stateless, TOTAL, lexicon-driven rendering engine for the reverse
+---
+> * Implements a stateless, total, lexicon-driven rendering engine for the reverse
+1694,1695c1719,1720
+< * Every wording decision is DATA — a caller-supplied `Lexicon` merged, per
+< * sub-record (`phrases` / `labels` / `templates`), OVER `DEFAULT_LEXICON`.
+---
+> * Every wording decision is data — a caller-supplied `Lexicon` merged, per
+> * sub-record (`phrases`, `labels`, and `templates`), over `DEFAULT_LEXICON`.
+1705c1730
+< * import { Narrator } from '@src/core'
+---
+> * import { Narrator } from '@orkestrel/interpret'
+1825c1850
+< * fills a mapping only from the SAME domain's most recent prior turn (a
+---
+> * fills a mapping only from the same domain's most recent prior turn (a
+1833c1858
+< * aggregate over a collection of KNOWN length is declarable while a collection
+---
+> * aggregate over a collection of known length is declarable while a collection
+1844c1869
+< * import { Clarifier } from '@src/core'
+---
+> * import { Clarifier } from '@orkestrel/interpret'
+2010c2035
+< * `extract` never sees a `Template`: numbers → entity ASSIGNMENT is a
+---
+> * `extract` never sees a `Template`: numbers → entity assignment is a
+2017c2042
+< * import { Extractor } from '@src/core'
+---
+> * import { Extractor } from '@orkestrel/interpret'
+2064c2089
+< * import { Formatter } from '@src/core'
+---
+> * import { Formatter } from '@orkestrel/interpret'
+2120c2145
+< * by its OWN `name` — the shape `Clarifier` uses for its synthesized
+---
+> * by its own `name` — the shape `Clarifier` uses for its synthesized
+2128c2153
+< * an empty entity set). A `FieldMapping` is emitted for EVERY field that
+---
+> * an empty entity set). A `FieldMapping` is emitted for every field that
+2134c2159
+< * import { Generator } from '@src/core'
+---
+> * import { Generator } from '@orkestrel/interpret'
+2204c2229
+< * The caller's `contractions` map is merged OVER `DEFAULT_CONTRACTIONS`;
+---
+> * The caller's `contractions` map is merged over `DEFAULT_CONTRACTIONS`;
+2208c2233
+< * (one entry per matching map KEY, not per occurrence) is recorded on the
+---
+> * (one entry per matching map key, not per occurrence) is recorded on the
+2216c2241
+< * import { Normalizer } from '@src/core'
+---
+> * import { Normalizer } from '@orkestrel/interpret'
+2272c2297,2299
+< * `interprets` module, mirroring the reasons `Reason` orchestrator shape.
+---
+> * `interprets` module, mirroring the reasons `Reason` orchestrator shape: it runs the
+> * `[normalize, extract, clarify, format, generate]` pipeline, owns the template
+> * registry and the context, and exposes the reverse direction.
+2275,2279c2302,2304
+< * `interpret()` is genuinely SYNCHRONOUS — it returns its
+< * {@link Interpretation} directly, never a `Promise` — and runs the fixed
+< * pipeline
+< * `[normalize, extract, clarify, format, generate]` — each producing one
+< * {@link StageRecord}. Between `extract` and `clarify` the orchestrator matches
+---
+> * `interpret()` is genuinely synchronous — it returns its
+> * {@link Interpretation} directly, never a `Promise` — each phase producing
+> * one {@link StageRecord}. Between `extract` and `clarify` the orchestrator matches
+2284c2309
+< * yields an explicit, auditable INCOMPLETE result (a `field: 'intent'`
+---
+> * yields an explicit, auditable incomplete result (a `field: 'intent'`
+2286c2311
+< * template. A stage THROW is caught, marked on its record AND on
+---
+> * template. A stage throw is caught, marked on its record and on
+2295c2320
+< * then destroys the emitter LAST; every method afterwards except the
+---
+> * then destroys the emitter last; every method afterwards except the
+2301c2326
+< * import { Interpret, Extractor } from '@src/core'
+---
+> * import { Interpret, Extractor } from '@orkestrel/interpret'
+2579c2604,2605
+< * Creates an interpretation orchestrator.
+---
+> * Creates an interpretation orchestrator, returning an {@link InterpretInterface}
+> * seeded from {@link InterpretOptions}.
+2595c2621
+< * @example
+---
+> * @example Interpret text against an added template
+2597,2598c2623,2628
+< * import { createFactorGroup, createFieldFactor, createQuantitativeDefinition } from '@orkestrel/reason'
+< * import { createExtractor, createInterpret } from '@src/core'
+---
+> * import { createExtractor, createInterpret } from '@orkestrel/interpret'
+> * import {
+> * 	createFactorGroup,
+> * 	createFieldFactor,
+> * 	createQuantitativeDefinition,
+> * } from '@orkestrel/reason'
+2601c2631,2634
+< * 	extractor: createExtractor({ actions: { calculate: 'calculate' }, domains: { arithmetic: ['arithmetic'] } }),
+---
+> * 	extractor: createExtractor({
+> * 		actions: { calculate: 'calculate' },
+> * 		domains: { arithmetic: ['arithmetic'] },
+> * 	}),
+2617c2650,2658
+< * interpret.interpret('calculate arithmetic 42').subject // { value: 42 }
+---
+> *
+> * const result = interpret.interpret('calculate arithmetic 42')
+> * result.subject // { value: 42 }
+> * result.ambiguities // []
+> * result.failures // []
+> *
+> * interpret.emitter.on('interpret', (interpretation) => interpretation.digest)
+> * interpret.describe(result.definition ?? createQuantitativeDefinition('t1', 'Arithmetic', []))
+> * interpret.destroy()
+2624c2665
+< * Creates a text normalizer.
+---
+> * Creates a text normalizer, returning a stateless {@link NormalizerInterface}.
+2632c2673
+< * import { createNormalizer } from '@src/core'
+---
+> * import { createNormalizer } from '@orkestrel/interpret'
+2641c2682,2683
+< * Creates a template-agnostic intent classifier and number extractor.
+---
+> * Creates a template-agnostic intent classifier and number extractor, returning a
+> * stateless {@link ExtractorInterface}.
+2648c2690
+< * import { createExtractor } from '@src/core'
+---
+> * import { createExtractor } from '@orkestrel/interpret'
+2662c2704
+< * against an assigned entity set.
+---
+> * against an assigned entity set — returning a stateless {@link ClarifierInterface}.
+2669c2711
+< * import { createClarifier } from '@src/core'
+---
+> * import { createClarifier } from '@orkestrel/interpret'
+2678c2720
+< * Creates a prompt formatter.
+---
+> * Creates a prompt formatter, returning a stateless {@link FormatterInterface}.
+2685c2727
+< * import { createFormatter } from '@src/core'
+---
+> * import { createFormatter } from '@orkestrel/interpret'
+2694c2736,2737
+< * Creates a subject/definition generator.
+---
+> * Creates a subject and definition generator, returning a stateless
+> * {@link GeneratorInterface}.
+2700c2743
+< * import { createGenerator } from '@src/core'
+---
+> * import { createGenerator } from '@orkestrel/interpret'
+2709c2752
+< * Creates a template registry.
+---
+> * Creates a template registry, returning a working {@link TemplateManagerInterface}.
+2717c2760
+< * import { createTemplateManager } from '@src/core'
+---
+> * import { createTemplateManager } from '@orkestrel/interpret'
+2733c2776
+< * Creates a subject registry.
+---
+> * Creates a subject registry, returning a working {@link SubjectManagerInterface}.
+2744c2787
+< * import { createSubjectManager } from '@src/core'
+---
+> * import { createSubjectManager } from '@orkestrel/interpret'
+2754c2797,2798
+< * Creates a definition registry.
+---
+> * Creates a definition registry, returning a working
+> * {@link DefinitionManagerInterface}.
+2762c2806
+< * import { createDefinitionManager } from '@src/core'
+---
+> * import { createDefinitionManager } from '@orkestrel/interpret'
+2774c2818,2819
+< * Creates a cross-turn interpretation context.
+---
+> * Creates a cross-turn interpretation context, returning a working
+> * {@link InterpretContextInterface}.
+2781c2826
+< * import { createInterpretContext } from '@src/core'
+---
+> * import { createInterpretContext } from '@orkestrel/interpret'
+2791c2836,2837
+< * Creates a lexicon-driven reverse-direction rendering engine.
+---
+> * Creates a lexicon-driven reverse-direction rendering engine, returning a stateless
+> * {@link NarratorInterface}.
+2803c2849
+< * import { createNarrator } from '@src/core'
+---
+> * import { createNarrator } from '@orkestrel/interpret'

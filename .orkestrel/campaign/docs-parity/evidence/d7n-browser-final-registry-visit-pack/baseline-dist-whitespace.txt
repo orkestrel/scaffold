@@ -1,0 +1,3448 @@
+diff -r -w -B '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-browser-final-registry-visit-pack/baseline/package/dist/src/core/index.cjs /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-browser-final-registry-visit-pack/extract/package/dist/src/core/index.cjs
+75c75,78
+< /** Sets the default timeout in milliseconds for browser connection, requests, and navigation. */
+---
+> /**
+> * Sets the default timeout for browser connection, requests, and navigation, `30_000`
+> * milliseconds.
+> */
+78,79c81,82
+< * Caps the serialized-character length for an `evaluate()`/`content()` result,
+< * enforced IN-PAGE before the result is returned to CDP.
+---
+> * Caps the serialized-character length for an `evaluate()`/`content()` result at `2_500_000`,
+> * enforced in-page before the result is returned to CDP.
+82c85
+< * This counts UTF-16 STRING LENGTH (`String#length`), not transport BYTES —
+---
+> * This counts UTF-16 string length (`String#length`), not transport bytes —
+98,99c101,102
+< * Names the distinctive prefix for the in-page result-limit sentinel error, immediately
+< * followed by the serialized length.
+---
+> * Names the distinctive prefix for the in-page result-limit sentinel error,
+> * `'[[ORKESTREL_BROWSER_RESULT_LIMIT]]'`, immediately followed by the serialized length.
+109,113c112,118
+< * Matches the in-page result-limit sentinel error message, anchored
+< * immediately after the `Error: ` (optionally `Uncaught Error: `) prefix that
+< * Chromium prepends to a thrown error's description — so the guard's own
+< * throw is recognized only at the message START, not wherever the substring
+< * happens to occur.
+---
+> * Matches the in-page result-limit sentinel error message, anchored immediately after the
+> * `Error:` (optionally `Uncaught Error:`) prefix Chromium prepends to a thrown error's
+> * description, `/^(?:Uncaught )?Error: \[\[ORKESTREL_BROWSER_RESULT_LIMIT\]\](\d+)/`.
+> *
+> * @remarks
+> * The anchor matches the guard's own throw only at the start of the message, rather than
+> * wherever the substring happens to occur.
+116c121,128
+< /** Sets the poll interval in milliseconds while waiting for a selector to appear. */
+---
+> /**
+> * Sets the poll interval while waiting for a selector to appear, `100` milliseconds.
+> *
+> * @remarks
+> * A wait adds the same interval as slack to its own CDP call timeout, so the in-page poll
+> * expires before the call carrying it. Host-side CDP readiness probes wait it out between
+> * attempts.
+> */
+118c130,132
+< /** Sets the default maximum node count accepted from a decoded CDP DOM snapshot. */
+---
+> /**
+> * Sets the default maximum node count accepted from a decoded CDP DOM snapshot, `100_000`.
+> */
+120c134
+< /** Names the isolated world used for iframe evaluation. */
+---
+> /** Names the isolated world used for iframe evaluation, `'__orkestrelBrowserFrame'`. */
+161c175
+< 	version: "0.0.15"
+---
+> 	version: "0.0.16"
+166,167c180,181
+< * Bounds (in milliseconds) the best-effort `Page.stopLoading` call issued
+< * after a failed `navigate()`.
+---
+> * Bounds the best-effort `Page.stopLoading` call issued after a failed `navigate()` at `1_000`
+> * milliseconds.
+176c190
+< /** Sets the default viewport width in pixels. */
+---
+> /** Sets the default viewport width, `1280` pixels. */
+178c192
+< /** Sets the default viewport height in pixels. */
+---
+> /** Sets the default viewport height, `720` pixels. */
+180c194,197
+< /** Names the CDP runtime binding the codegen recorder script calls into. */
+---
+> /**
+> * Names the CDP runtime binding the codegen recorder script calls into,
+> * `'__orkestrelBrowserCodegen'`.
+> */
+187,192c204,209
+< * Attaches capturing-phase listeners for `click`, `input` (fill), and
+< * `change` (select) on `document`, builds a stable CSS selector for the
+< * target element, and forwards each action to the CDP binding
+< * ({@link BROWSER_CODEGEN_BINDING_NAME}) as a JSON string payload. Guarded to
+< * install exactly once per document (`window[name]` sentinel) so repeated
+< * injection on every new document is idempotent.
+---
+> * Attaches capturing-phase listeners for `click`, `input` (fill), and `change` (select) on
+> * `document`, builds a stable CSS selector for the target element, and forwards each action
+> * to the CDP binding ({@link BROWSER_CODEGEN_BINDING_NAME}) as a JSON string payload. A
+> * `contenteditable` fill is captured through `input` events, the same way an input or a
+> * textarea is. Guarded to install exactly once per document (`window[name]` sentinel) so
+> * repeated injection on every new document is idempotent.
+285c302,303
+< * Represents the base error for all browser automation operations.
+---
+> * Represents the base error for all browser automation operations, carrying the code
+> * `BROWSER_ERROR` and a `context` record.
+288,289c306
+< * Carries a machine-readable `code` and optional `context` so
+< * callers can branch in a `catch` without parsing message strings.
+---
+> * A caller branches in a `catch` on the `code` rather than parsing message strings.
+302c319,320
+< * Reports that a selector-based lookup or wait timed out without the element appearing.
+---
+> * Reports that a selector-based lookup or wait timed out without the element appearing, under
+> * the code `BROWSER_SELECTOR_ERROR`.
+311c329,331
+< * Reports that a CDP request received an error response from the remote endpoint.
+---
+> * Reports that a CDP request received an error response from the remote endpoint, under the
+> * code `BROWSER_CDP_ERROR`, with the `method`, the CDP `code`, the `message`, and any `data`
+> * in its context.
+314,316c334
+< * Carries the originating `method` plus the CDP error's own `code`,
+< * `message`, and `data` (when present) in `context`, so callers can branch
+< * on the protocol-level error instead of parsing the message string.
+---
+> * Branch on the protocol-level error in `context` instead of parsing the message string.
+325,327c343,345
+< * Reports that a CDP request could not be sent or completed because the client was not in
+< * a connectable state (not connected, closed while connecting, or the
+< * connection dropped mid-request).
+---
+> * Reports that a CDP request could not be sent or completed because the client was not in a
+> * connectable state — not connected, closed while connecting, or the connection dropped
+> * mid-request — under the code `BROWSER_CDP_CONNECTION_ERROR`.
+336c354,355
+< * Reports that a pending CDP request was not answered within its timeout window.
+---
+> * Reports that a pending CDP request was not answered within its timeout window, under the
+> * code `BROWSER_CDP_TIMEOUT_ERROR`.
+345,346c364,366
+< * Reports that an `evaluate()`/`content()` result exceeded {@link BROWSER_RESULT_LIMIT}
+< * and was rejected in-page before it could overflow the CDP transport frame.
+---
+> * Reports that an `evaluate()`/`content()` result exceeded {@link BROWSER_RESULT_LIMIT} and
+> * was rejected in-page before it could overflow the CDP transport frame, under the code
+> * `BROWSER_RESULT_LIMIT_ERROR`.
+355c375
+< * Narrows an unknown value to BrowserError.
+---
+> * Narrows an unknown value to a `BrowserError`.
+364c384
+< * Narrows an unknown value to BrowserSelectorError.
+---
+> * Narrows an unknown value to a `BrowserSelectorError`.
+373c393
+< * Narrows an unknown value to CDPError.
+---
+> * Narrows an unknown value to a `CDPError`.
+382c402
+< * Narrows an unknown value to CDPConnectionError.
+---
+> * Narrows an unknown value to a `CDPConnectionError`.
+391c411
+< * Narrows an unknown value to CDPTimeoutError.
+---
+> * Narrows an unknown value to a `CDPTimeoutError`.
+400c420
+< * Narrows an unknown value to BrowserResultLimitError.
+---
+> * Narrows an unknown value to a `BrowserResultLimitError`.
+732,733c752,753
+< * Coerces a `Page.frameNavigated` CDP event to a `navigate` codegen action, or
+< * `undefined` off-shape.
+---
+> * Coerces a `Page.frameNavigated` CDP event to a `navigate` codegen action, or `undefined`
+> * off-shape and for every frame but the top-level one.
+776,777c796
+< * Coerces a CDP snapshot rectangle to a `BrowserRect`, or `undefined`
+< * off-shape.
+---
+> * Coerces a four-number CSS-pixel rectangle to a `BrowserRect`, or `undefined` off-shape.
+874c893,894
+< * Decodes a Chromium Headers object into string values.
+---
+> * Decodes a Chromium Headers object into string values, skipping every entry that is neither a
+> * string nor a finite number.
+1059c1079,1080
+< * Decodes the `Page.addScriptToEvaluateOnNewDocument` result.
+---
+> * Decodes the `Page.addScriptToEvaluateOnNewDocument` result, throwing a `BrowserError`
+> * off-shape.
+1077c1098
+< * Validates the bounded keys of one trusted-input operation.
+---
+> * Validates the bounded delay, count, steps, and position of one trusted-input operation.
+1243c1264,1265
+< * Decodes Accessibility-domain nodes into a flat serializable tree.
+---
+> * Decodes Accessibility-domain nodes into a flat serializable tree, throwing a `BrowserError`
+> * off-shape.
+1279c1301
+< * Decodes an Accessibility-domain AXValue.
+---
+> * Decodes an Accessibility-domain AXValue, or `undefined` when the record carries none.
+1304c1326
+< * Decodes one `IO.read` response.
+---
+> * Decodes one `IO.read` response, throwing a `BrowserError` off-shape.
+1317c1339
+< * Decodes JavaScript precise coverage.
+---
+> * Decodes JavaScript precise coverage, throwing a `BrowserError` off-shape.
+1345c1367
+< * Decodes CSS rule usage.
+---
+> * Decodes CSS rule usage, throwing a `BrowserError` off-shape.
+1369c1391
+< * Decodes coverage ranges.
+---
+> * Decodes and normalizes coverage ranges, throwing a `BrowserError` off-shape.
+1390c1412
+< * Decodes Performance-domain metrics.
+---
+> * Decodes Performance-domain metrics, throwing a `BrowserError` off-shape.
+1406c1428
+< * Decodes one CPU profile.
+---
+> * Decodes one CPU profile, throwing a `BrowserError` off-shape.
+1439c1461
+< * Decodes a CPU profile call frame.
+---
+> * Decodes a CPU profile call frame, throwing a `BrowserError` off-shape.
+1491c1513
+< * Decodes cookies returned by `Storage.getCookies`.
+---
+> * Decodes the cookies `Storage.getCookies` returns, throwing a `BrowserError` off-shape.
+1501c1523
+< * Decodes one Chromium cookie.
+---
+> * Decodes one Chromium cookie, throwing a `BrowserError` off-shape.
+1545c1567
+< * Decodes one in-page web-storage snapshot.
+---
+> * Decodes one in-page web-storage snapshot, throwing a `BrowserError` off-shape.
+1560c1582
+< * Decodes a list of web-storage entries.
+---
+> * Decodes a list of web-storage entries, throwing a `BrowserError` off-shape.
+1611c1633
+< * Decodes a Chromium runtime stack trace.
+---
+> * Decodes a Chromium runtime stack trace, skipping every off-shape call frame.
+1632c1654,1655
+< * Decodes a Runtime remote object's printable value.
+---
+> * Decodes a Runtime remote object's printable value, falling back to its unserializable form
+> * and then its description, or `undefined` when it carries none.
+1644c1667,1668
+< * Decodes one CDP `Runtime.evaluate` result.
+---
+> * Decodes one CDP `Runtime.evaluate` result, throwing a `BrowserError` on a failed evaluation
+> * and a `BrowserResultLimitError` past the guarded result size.
+1680c1704,1705
+< * Normalizes a raw list of recorded codegen actions.
+---
+> * Normalizes recorded codegen actions, collapsing consecutive `fill` actions on the same
+> * selector into the latest value.
+1683,1686c1708,1709
+< * Collapses consecutive `fill` actions on the same selector into the latest
+< * value (a text input fires one `input` event per keystroke) so the
+< * compiled script reflects the final typed value rather than every
+< * intermediate keystroke.
+---
+> * A text input fires one `input` event per keystroke, so the compiled script reflects
+> * the final typed value rather than every intermediate keystroke.
+1704c1727,1728
+< * Decodes a flattened CDP `Page.getFrameTree` result.
+---
+> * Decodes a flattened CDP `Page.getFrameTree` result into depth-first frame metadata, skipping
+> * every off-shape frame.
+1733c1757,1758
+< * Decodes the first `DOM.getContentQuads` quad and its center.
+---
+> * Decodes the first `DOM.getContentQuads` quad and its center, throwing a `BrowserError`
+> * off-shape.
+1769c1794,1795
+< * Extracts a keyboard chord such as `Control+Shift+P` into its parts.
+---
+> * Extracts a keyboard chord such as `Control+Shift+P` into its parts, throwing a
+> * `BrowserError` on an empty chord or an unsupported modifier.
+1807c1833
+< * @param buttons - Currently pressed public mouse buttons
+---
+> * @param buttons - Pressed public mouse buttons
+1947c1973,1974
+< * Decodes CDP snapshot sparse string data.
+---
+> * Decodes CDP snapshot sparse string data into a node-index map, skipping every off-shape
+> * entry.
+1967c1994,1995
+< * Decodes CDP snapshot sparse boolean data.
+---
+> * Decodes CDP snapshot sparse boolean data into a set of node indexes, skipping every
+> * off-shape entry.
+1977c2005,2006
+< * Decodes CDP snapshot sparse integer data.
+---
+> * Decodes CDP snapshot sparse integer data into a node-index map, skipping every off-shape
+> * entry.
+1996c2025
+< * Decodes flattened CDP node attributes.
+---
+> * Decodes flattened CDP node attributes into a frozen record, skipping every off-shape pair.
+2014c2043,2045
+< * Decodes a CDP `DOMSnapshot.captureSnapshot` result.
+---
+> * Decodes a CDP `DOMSnapshot.captureSnapshot` result into a serializable
+> * `BrowserSnapshotInput`, throwing a `BrowserError` off-shape and a `BrowserResultLimitError`
+> * past the configured node limit.
+2143c2174
+< * Tests whether a browser-node matcher is a declarative query.
+---
+> * Tests whether a browser-node matcher is a declarative query rather than a predicate.
+2415,2417c2446,2448
+< * Compiles a `Runtime.evaluate` expression so the IN-PAGE code stringifies
+< * its own result and throws a recognizable error before an oversized result
+< * would overflow the CDP transport frame.
+---
+> * Compiles a `Runtime.evaluate` expression so the in-page code stringifies its own result and
+> * throws a recognizable sentinel error before an oversized result would overflow the CDP
+> * transport frame.
+2442c2473
+< * Compiles recorded codegen actions into a replayable script.
+---
+> * Compiles recorded codegen actions into a replayable JavaScript or TypeScript script.
+4074c4105
+< * Groups the diagnostic subentities beneath one page.
+---
+> * Groups the tracing, coverage, performance, and profiler classes beneath one page.
+7375c7406
+< * Creates a CDP client bound to the given transport.
+---
+> * Creates a `CDPClientInterface` bound to the given `CDPTransportInterface`.
+7392c7423
+< * Creates a navigable browser snapshot from decoded serializable data.
+---
+> * Creates a navigable `BrowserSnapshotInterface` over decoded `BrowserSnapshotInput` data.
+diff -r -w -B '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-browser-final-registry-visit-pack/baseline/package/dist/src/core/index.d.cts /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-browser-final-registry-visit-pack/extract/package/dist/src/core/index.d.cts
+1,3c1,3
+< import { EmitterErrorHandler } from '@orkestrel/emitter';
+< import { EmitterHooks } from '@orkestrel/emitter';
+< import { EmitterInterface } from '@orkestrel/emitter';
+---
+> import type { EmitterErrorHandler } from '@orkestrel/emitter';
+> import type { EmitterHooks } from '@orkestrel/emitter';
+> import type { EmitterInterface } from '@orkestrel/emitter';
+11c11,14
+< /** Names the CDP runtime binding the codegen recorder script calls into. */
+---
+> /**
+>  * Names the CDP runtime binding the codegen recorder script calls into,
+>  * `'__orkestrelBrowserCodegen'`.
+>  */
+19,24c22,27
+<  * Attaches capturing-phase listeners for `click`, `input` (fill), and
+<  * `change` (select) on `document`, builds a stable CSS selector for the
+<  * target element, and forwards each action to the CDP binding
+<  * ({@link BROWSER_CODEGEN_BINDING_NAME}) as a JSON string payload. Guarded to
+<  * install exactly once per document (`window[name]` sentinel) so repeated
+<  * injection on every new document is idempotent.
+---
+>  * Attaches capturing-phase listeners for `click`, `input` (fill), and `change` (select) on
+>  * `document`, builds a stable CSS selector for the target element, and forwards each action
+>  * to the CDP binding ({@link BROWSER_CODEGEN_BINDING_NAME}) as a JSON string payload. A
+>  * `contenteditable` fill is captured through `input` events, the same way an input or a
+>  * textarea is. Guarded to install exactly once per document (`window[name]` sentinel) so
+>  * repeated injection on every new document is idempotent.
+28c31,34
+< /** Sets the default timeout in milliseconds for browser connection, requests, and navigation. */
+---
+> /**
+>  * Sets the default timeout for browser connection, requests, and navigation, `30_000`
+>  * milliseconds.
+>  */
+31c37
+< /** Sets the default viewport height in pixels. */
+---
+> /** Sets the default viewport height, `720` pixels. */
+34c40
+< /** Sets the default viewport width in pixels. */
+---
+> /** Sets the default viewport width, `1280` pixels. */
+37c43
+< /** Names the isolated world used for iframe evaluation. */
+---
+> /** Names the isolated world used for iframe evaluation, `'__orkestrelBrowserFrame'`. */
+50c56
+<     version: "0.0.15";
+---
+>     version: "0.0.16";
+60,61c66,67
+<  * Caps the serialized-character length for an `evaluate()`/`content()` result,
+<  * enforced IN-PAGE before the result is returned to CDP.
+---
+>  * Caps the serialized-character length for an `evaluate()`/`content()` result at `2_500_000`,
+>  * enforced in-page before the result is returned to CDP.
+64c70
+<  * This counts UTF-16 STRING LENGTH (`String#length`), not transport BYTES —
+---
+>  * This counts UTF-16 string length (`String#length`), not transport bytes —
+81,85c87,93
+<  * Matches the in-page result-limit sentinel error message, anchored
+<  * immediately after the `Error: ` (optionally `Uncaught Error: `) prefix that
+<  * Chromium prepends to a thrown error's description — so the guard's own
+<  * throw is recognized only at the message START, not wherever the substring
+<  * happens to occur.
+---
+>  * Matches the in-page result-limit sentinel error message, anchored immediately after the
+>  * `Error:` (optionally `Uncaught Error:`) prefix Chromium prepends to a thrown error's
+>  * description, `/^(?:Uncaught )?Error: \[\[ORKESTREL_BROWSER_RESULT_LIMIT\]\](\d+)/`.
+>  *
+>  * @remarks
+>  * The anchor matches the guard's own throw only at the start of the message, rather than
+>  * wherever the substring happens to occur.
+90,91c98,99
+<  * Names the distinctive prefix for the in-page result-limit sentinel error, immediately
+<  * followed by the serialized length.
+---
+>  * Names the distinctive prefix for the in-page result-limit sentinel error,
+>  * `'[[ORKESTREL_BROWSER_RESULT_LIMIT]]'`, immediately followed by the serialized length.
+104c112,114
+< /** Sets the default maximum node count accepted from a decoded CDP DOM snapshot. */
+---
+> /**
+>  * Sets the default maximum node count accepted from a decoded CDP DOM snapshot, `100_000`.
+>  */
+111,112c121,122
+<  * Bounds (in milliseconds) the best-effort `Page.stopLoading` call issued
+<  * after a failed `navigate()`.
+---
+>  * Bounds the best-effort `Page.stopLoading` call issued after a failed `navigate()` at `1_000`
+>  * milliseconds.
+136c146,153
+< /** Sets the poll interval in milliseconds while waiting for a selector to appear. */
+---
+> /**
+>  * Sets the poll interval while waiting for a selector to appear, `100` milliseconds.
+>  *
+>  * @remarks
+>  * A wait adds the same interval as slack to its own CDP call timeout, so the in-page poll
+>  * expires before the call carrying it. Host-side CDP readiness probes wait it out between
+>  * attempts.
+>  */
+157a175
+>     /** Reads the full accessibility tree, optionally pruned to the interesting nodes. */
+188c206
+<  * - `strict` — require the selector to resolve to exactly one element
+---
+>  * - `strict` — require the selector to resolve to exactly one element (default `true`)
+269a288
+>     /** Takes over the page clock, optionally seeding it with an epoch time. */
+270a290
+>     /** Suspends virtual time so no page timer advances. */
+271a292
+>     /** Continues virtual time after a pause. */
+272a294,296
+>     /**
+>      * Moves virtual time forward by the given milliseconds, firing the timers that fall due.
+>      */
+273a298
+>     /** Returns the page to the real clock, and does nothing when no clock was installed. */
+352a378,381
+>     /**
+>      * Begins recording on the page's session. A call after teardown is a silent no-op, because
+>      * a torn-down recorder cannot be restarted and a fresh one is obtained through the page.
+>      */
+353a383
+>     /** Stops recording and returns the captured actions. */
+354a385
+>     /** Returns the current normalized action list. */
+355a387
+>     /** Compiles the captured actions into a script. */
+356a389
+>     /** Resets the captured action list. */
+357a391
+>     /** Tears down the recorder and detaches its CDP listeners. */
+365c399
+<  * Describes the options for creating a BrowserCodegen recorder.
+---
+>  * Describes the options for creating a `BrowserCodegen` recorder.
+466a501
+>     /** Returns one page by index, or the first page. */
+467a503
+>     /** Returns every page in creation order. */
+468a505
+>     /** Opens a page in this context. */
+469a507,512
+>     /**
+>      * Synchronizes pages from the given CDP targets, which the server discovers and core never
+>      * fetches. Performs a destructive diff rather than an additive merge: a page whose target
+>      * id is missing from `targets` is closed and dropped, and a target that is not yet tracked
+>      * is attached and added.
+>      */
+470a514,517
+>     /**
+>      * Releases local pages and detaches their sessions without disposing the remote browser
+>      * context.
+>      */
+471a519,521
+>     /**
+>      * Closes remote pages, disposes the remote browser context, and releases local resources.
+>      */
+551a602
+>     /** Reads the context cookies, optionally narrowed to the given URLs. */
+552a604
+>     /** Writes the given cookies into the context. */
+553a606
+>     /** Deletes the context cookies matching the filter, or every cookie when given none. */
+586a640,643
+>     /**
+>      * Arms the requested domains. Throws a `BrowserError` when collection is already active or
+>      * when neither domain is requested.
+>      */
+587a645
+>     /** Reads the collected usage and disarms every domain it armed. */
+588a647,650
+>     /**
+>      * Stops an active collector, discarding any failure, and does nothing when no collection
+>      * is running.
+>      */
+619c681
+<  * Groups the diagnostic subentities beneath one page.
+---
+>  * Groups the tracing, coverage, performance, and profiler classes beneath one page.
+645a708
+>     /** Tears down every diagnostics capability this page's group owns. */
+656a720,722
+>     /**
+>      * Accepts the dialog, optionally supplying prompt text. Throws once the dialog is handled.
+>      */
+657a724
+>     /** Dismisses the dialog. Throws once the dialog is handled. */
+696a764,767
+>     /**
+>      * Sends CDP `Browser.cancelDownload` for this download, and is ignored unless the status
+>      * is still pending.
+>      */
+760a832,834
+>     /**
+>      * Clears the superseded overrides and applies the given ones to every page of the context.
+>      */
+761a836
+>     /** Removes every override this manager applied. */
+762a838
+>     /** Applies the retained overrides to a newly created page. */
+780c856,857
+<  * Represents the base error for all browser automation operations.
+---
+>  * Represents the base error for all browser automation operations, carrying the code
+>  * `BROWSER_ERROR` and a `context` record.
+783,784c860
+<  * Carries a machine-readable `code` and optional `context` so
+<  * callers can branch in a `catch` without parsing message strings.
+---
+>  * A caller branches in a `catch` on the `code` rather than parsing message strings.
+794a871,874
+>     /**
+>      * Sets the chosen files. Throws when a single-file chooser is given several, and once the
+>      * chooser is already handled.
+>      */
+795a876
+>     /** Clears the selection. Throws once the chooser is already handled. */
+883a965
+>     /** Resolves the frame document title. */
+884a967
+>     /** Extracts the URL, title, HTML, and visible text under the result-size guards. */
+885a969,972
+>     /**
+>      * Distills the frame HTML to reader-facing plain text, with boilerplate and hidden regions
+>      * pruned.
+>      */
+886a974,976
+>     /**
+>      * Clicks a CSS-selector match, strict by default and requiring it visible and enabled.
+>      */
+887a978,981
+>     /**
+>      * Fills an editable input or contenteditable element, strict by default, dispatching input
+>      * and change events.
+>      */
+888a983
+>     /** Selects options on an enabled `select` element, strict by default. */
+889a985
+>     /** Evaluates an expression in the frame execution world under the result-size guard. */
+890a987,989
+>     /**
+>      * Evaluates an expression by reference and returns a disposable remote object handle.
+>      */
+891a991
+>     /** Waits for a selector to reach the attached, detached, visible, or hidden state. */
+892a993,996
+>     /**
+>      * Issues a raw CDP method in the frame's current target session, with a trailing
+>      * `BrowserSendOptions` carrying a per-call `timeout` overriding the client-wide default.
+>      */
+893a998
+>     /** Subscribes to a CDP event in the frame's current target session. */
+894a1000
+>     /** Removes a frame-session CDP event subscription. */
+895a1002,1004
+>     /**
+>      * Persists bytes through a page writer; a child frame rejects because it owns no writer.
+>      */
+896a1006,1010
+>     /**
+>      * Throws a coded `BrowserError` when the frame can no longer accept protocol work: a frame
+>      * throws once the CDP client disconnects, and a page also throws once it closes. Every
+>      * other member here calls it first.
+>      */
+897a1012,1015
+>     /**
+>      * Records an externally observed URL as the frame's current `url`, which a page calls from
+>      * its own `Page.frameNavigated` handler.
+>      */
+919a1038
+>     /** Reads the object back by value. */
+920a1040
+>     /** Runs a function declaration with the handle as `this`, by value. */
+921a1042,1045
+>     /**
+>      * Retains one own property as its own handle, or returns `undefined` when the property is
+>      * absent.
+>      */
+922a1047
+>     /** Reads every own property by value. */
+923a1049
+>     /** Releases the retained remote object. Idempotent. */
+1011a1138
+>     /** Begins recording exchanges, optionally capturing response content. */
+1012a1140
+>     /** Ends recording and returns the archive, writing it when a path was given. */
+1013a1142
+>     /** Serves matching requests from an archive instead of from the network. */
+1014a1144
+>     /** Drops the recorded entries and any active replay without ending the recording. */
+1134a1265,1267
+>     /**
+>      * Presses one key and holds it, retaining it in the modifier mask when it is a modifier.
+>      */
+1135a1269,1271
+>     /**
+>      * Releases one key, dropping it from the modifier mask even when the release frame fails.
+>      */
+1136a1273,1276
+>     /**
+>      * Presses a chord: holds its modifiers, presses and releases its terminal key, then
+>      * releases the modifiers.
+>      */
+1137a1278
+>     /** Types a string as one press and release per character. */
+1138a1280
+>     /** Inserts composed text in one frame, firing no per-key events. */
+1221a1364
+>     /** Narrows to a descendant matching the CSS selector. */
+1222a1366
+>     /** Narrows to the matches satisfying the filter. */
+1223a1368
+>     /** Narrows to the first match. */
+1224a1370
+>     /** Narrows to the last match. */
+1225a1372
+>     /** Narrows to the match at the given index. */
+1226a1374
+>     /** Counts the current matches. */
+1227a1376
+>     /** Resolves one indexed locator per current match. */
+1228a1378
+>     /** Clicks the match with trusted input after its actionability checks pass. */
+1229a1380
+>     /** Replaces the match's value with the given text. */
+1230a1382
+>     /** Selects the given option values on the match. */
+1231a1384
+>     /** Clicks the match unless it already reports checked. */
+1232a1386
+>     /** Clicks the match unless it already reports unchecked. */
+1233a1388
+>     /** Moves trusted pointer input over the match. */
+1234a1390
+>     /** Gives the match keyboard focus. */
+1235a1392
+>     /** Focuses the match and presses one key or chord. */
+1236a1394
+>     /** Focuses the match and types the value one key at a time. */
+1237a1396
+>     /** Empties the match's value. */
+1238a1398
+>     /** Waits until the match reaches the requested state. Rejects on timeout. */
+1239a1400
+>     /** Reads the first match's rendered text. */
+1240a1402
+>     /** Reads the rendered text of every match. */
+1241a1404
+>     /** Reads the first match's inner HTML. */
+1242a1406
+>     /** Reads the first match's form value. */
+1243a1408,1411
+>     /**
+>      * Reads one attribute of the first match, or returns `undefined` when the match carries
+>      * none.
+>      */
+1244a1413
+>     /** Reports whether the first match renders a non-empty box. */
+1245a1415
+>     /** Reports whether the first match accepts input. */
+1246a1417
+>     /** Reports whether the first match accepts typed text. */
+1247a1419,1422
+>     /**
+>      * Captures the first match's box, persisting it through the page writer when a path is
+>      * given.
+>      */
+1248a1424
+>     /** Sets the file selection on the matched file input. */
+1249a1426
+>     /** Drags the match onto the target locator with trusted pointer input. */
+1316a1494
+>     /** Moves the pointer to a point, carrying the pressed buttons. */
+1317a1496
+>     /** Presses a button at the current point, adding it to the pressed mask. */
+1318a1498,1501
+>     /**
+>      * Releases a button at the current point, dropping it from the mask even when the frame
+>      * fails.
+>      */
+1319a1503
+>     /** Moves to the given point, presses, optionally delays, and releases. */
+1320a1505
+>     /** Presses at the start, moves in the requested steps to the end, and releases. */
+1321a1507
+>     /** Sends a wheel delta at the current point. */
+1345a1532,1535
+>     /**
+>      * Resolves with the URL of the next navigation matching the `*` and `**` glob pattern.
+>      * Rejects on timeout.
+>      */
+1346a1537,1540
+>     /**
+>      * Polls an expression in the page until it returns a truthy value, and resolves with that
+>      * value.
+>      */
+1430a1625
+>     /** Enables the Network domain and subscribes to its events. Idempotent. */
+1431a1627
+>     /** Reads one observed response body as bytes. */
+1432a1629
+>     /** Reads one observed response body as text. */
+1433a1631
+>     /** Reads one observed response body as parsed JSON. */
+1434a1633
+>     /** Intercepts requests matching the query and hands each one to the handler. */
+1435a1635
+>     /** Removes one handler's routes, or every route when given none. */
+1436a1637
+>     /** Applies extra HTTP headers to every request the page makes. */
+1437a1639
+>     /** Emulates an offline connection, or restores connectivity. */
+1438a1641
+>     /** Applies HTTP basic-auth credentials, or clears them when given none. */
+1439a1643
+>     /** Removes every route, unsubscribes, and disables the domains this manager enabled. */
+1573c1777,1778
+<  * Abstracts a single top-level browser page.
+---
+>  * Abstracts a single top-level browser page, extending `BrowserFrameInterface` with
+>  * navigation, screenshots, frame discovery, DOM snapshots, codegen, and target teardown.
+1599a1805,1808
+>     /**
+>      * Goes to a URL, waits for the requested load condition, and returns the final URL with
+>      * its response correlation.
+>      */
+1600a1810
+>     /** Reloads the page and returns the final URL with its response correlation. */
+1601a1812,1814
+>     /**
+>      * Navigates to the previous history entry, or returns the unchanged URL when none exists.
+>      */
+1602a1816,1818
+>     /**
+>      * Navigates to the next history entry, or returns the unchanged URL when none exists.
+>      */
+1603a1820,1823
+>     /**
+>      * Captures PNG or JPEG bytes, optionally full-page and persisted through an injected
+>      * writer.
+>      */
+1604a1825
+>     /** Prints the page to PDF bytes, optionally persisted through the injected writer. */
+1605a1827
+>     /** Looks up a first-class frame by name or URL. */
+1606a1829
+>     /** Decodes the flattened frame tree, main frame first. */
+1607a1831,1834
+>     /**
+>      * Captures and decodes every attached document, shadow root, template content, layout box,
+>      * and requested computed style.
+>      */
+1608a1836
+>     /** Starts the action recorder, or returns the running one. */
+1609a1838
+>     /** Releases local resources and detaches without closing the remote target. */
+1610a1840
+>     /** Closes the remote target and releases its resources. */
+1615c1845
+<  * Describes the options for creating a browser page.
+---
+>  * Describes the options for creating a `BrowserPage` instance.
+1690a1921
+>     /** Enables the domain, reads every metric, and disables the domain again. */
+1715a1947
+>     /** Grants each named permission, optionally for one origin, as its own CDP frame. */
+1716a1949
+>     /** Denies each named permission, optionally for one origin, as its own CDP frame. */
+1717a1951
+>     /** Resets every permission override on the context. */
+1786a2021,2023
+>     /**
+>      * Begins sampling, optionally at an explicit positive integer interval in microseconds.
+>      */
+1787a2025
+>     /** Ends sampling and decodes the profile's nodes, samples, and time deltas. */
+1788a2027,2030
+>     /**
+>      * Stops an active profiler, discarding any failure, and does nothing when no profile is
+>      * running.
+>      */
+1862,1863c2104,2106
+<  * Reports that an `evaluate()`/`content()` result exceeded {@link BROWSER_RESULT_LIMIT}
+<  * and was rejected in-page before it could overflow the CDP transport frame.
+---
+>  * Reports that an `evaluate()`/`content()` result exceeded {@link BROWSER_RESULT_LIMIT} and
+>  * was rejected in-page before it could overflow the CDP transport frame, under the code
+>  * `BROWSER_RESULT_LIMIT_ERROR`.
+1904a2148
+>     /** Fails the request with a Chromium error reason, `'Failed'` by default. */
+1905a2150,2152
+>     /**
+>      * Lets the request proceed, optionally overriding its URL, method, headers, or post body.
+>      */
+1906a2154,2156
+>     /**
+>      * Answers the request locally. Throws when the status is not an integer from 100 to 999.
+>      */
+2002a2253
+>     /** Installs a script evaluated on every new document, and returns its identifier. */
+2003a2255
+>     /** Removes one installed script by identifier. */
+2004a2257
+>     /** Binds a host function to a page-global name, callable from page JavaScript. */
+2005a2259
+>     /** Removes one exposed binding and its installed bridge script. */
+2006a2261
+>     /** Removes every installed script and binding this manager owns. */
+2027c2282,2283
+<  * Reports that a selector-based lookup or wait timed out without the element appearing.
+---
+>  * Reports that a selector-based lookup or wait timed out without the element appearing, under
+>  * the code `BROWSER_SELECTOR_ERROR`.
+2059a2316
+>     /** Locates by CSS selector. */
+2060a2318
+>     /** Locates by ARIA role, optionally by accessible name and exactness. */
+2061a2320
+>     /** Locates by rendered text, optionally exact. */
+2062a2322
+>     /** Locates a labelled control by its label text, optionally exact. */
+2063a2324
+>     /** Locates an input by its placeholder text, optionally exact. */
+2064a2326
+>     /** Locates by the test-id attribute. */
+2118c2380,2383
+< /** Describes the serializable input for a navigable browser snapshot. */
+---
+> /**
+>  * Describes the serializable input for a navigable browser snapshot — the form a
+>  * `BrowserSnapshot` is built from and serializes back to.
+>  */
+2124c2389,2393
+< /** Represents a navigable, serializable snapshot of every document attached to a page. */
+---
+> /**
+>  * Represents a navigable, serializable snapshot of every document attached to a page,
+>  * extending `BrowserSnapshotInput` with walking, structural relationships, search, and path
+>  * derivation over plain `BrowserNode` values.
+>  */
+2125a2395,2398
+>     /**
+>      * Traverses the whole capture, or one subtree when `root` is given and yielded first, in
+>      * `'depth'` order by default or in `'breadth'` order. Visits each node exactly once.
+>      */
+2126a2400
+>     /** Traverses one node's subtree in depth-first order, excluding the node itself. */
+2127a2402
+>     /** Resolves the captured document a node belongs to. */
+2128a2404,2406
+>     /**
+>      * Returns the direct children of a node, entering a linked iframe's content document.
+>      */
+2129a2408,2411
+>     /**
+>      * Returns the structural parent of a node, crossing a document boundary to the owning
+>      * iframe.
+>      */
+2130a2413,2416
+>     /**
+>      * Returns the structural siblings of a node; `'preceding'` or `'following'` narrows to one
+>      * side, and omitting the relation returns every sibling but the node itself.
+>      */
+2131a2418,2420
+>     /**
+>      * Returns the ancestors of a node, nearest first, across document and iframe boundaries.
+>      */
+2132a2422,2425
+>     /**
+>      * Returns the nearest common ancestor of two nodes, counting each node as its own
+>      * candidate.
+>      */
+2133a2427,2430
+>     /**
+>      * Returns the structural edge count between two nodes, or `undefined` when they share no
+>      * ancestor.
+>      */
+2134a2432
+>     /** Returns the first node matching a `BrowserNodeQuery` or a `BrowserNodePredicate`. */
+2135a2434,2437
+>     /**
+>      * Returns every matching node, bounded by an optional `limit`; a negative or fractional
+>      * limit throws a coded `BrowserError`.
+>      */
+2136a2439,2441
+>     /**
+>      * Returns the nearest match from a node through its ancestors, testing the node first.
+>      */
+2137a2443
+>     /** Returns a deterministic frame-qualified structural path for one node. */
+2193a2500
+>     /** Reads the context cookies and the per-origin local and session storage. */
+2194a2502
+>     /** Writes a previously read state back into the context. */
+2195a2504
+>     /** Drops the storage of one origin, or of every origin when given none. */
+2272a2582,2584
+>     /**
+>      * Dispatches a touch start at the point and a touch end, cancelling the touch on failure.
+>      */
+2299a2612,2615
+>     /**
+>      * Begins tracing with the given categories. Throws a `BrowserError` when a trace is
+>      * already active.
+>      */
+2300a2617,2620
+>     /**
+>      * Ends tracing, drains the IO stream, and writes it through the page writer when a path
+>      * was set.
+>      */
+2301a2622,2625
+>     /**
+>      * Stops an active trace, discarding any failure, and does nothing when no trace is
+>      * running.
+>      */
+2359a2684,2687
+>     /**
+>      * Starts the work when nothing is in flight, and otherwise joins the running transition
+>      * and returns its result.
+>      */
+2487a2816
+>     /** Evaluates a guarded expression in the worker and returns its value. */
+2488a2818
+>     /** Issues one CDP method call on the worker's session. */
+2489a2820
+>     /** Stops driving the worker locally without closing its target. */
+2490a2822
+>     /** Closes the worker target, tolerating a worker that already terminated. Idempotent. */
+2502a2835
+>     /** Persists the captured bytes to the given path, creating its parent directories. */
+2600a2934
+>     /** Starts the transport and begins dispatching. Idempotent. */
+2601a2936
+>     /** Closes the transport and re-establishes it. */
+2602a2938,2942
+>     /**
+>      * Issues a CDP method call with optional params and a trailing `CDPSendOptions` carrying
+>      * the `session` to scope it to and a per-call `timeout` overriding the client-wide
+>      * default; rejects on timeout.
+>      */
+2603a2944
+>     /** Registers a handler for a CDP event, optionally session-scoped. */
+2604a2946
+>     /** Removes a handler for a CDP event, optionally session-scoped. */
+2605a2948
+>     /** Tears down the transport and rejects every pending request. */
+2610c2953
+<  * Describes the options for creating a CDPClient.
+---
+>  * Describes the options for creating a `CDPClient` instance.
+2631,2633c2974,2976
+<  * Reports that a CDP request could not be sent or completed because the client was not in
+<  * a connectable state (not connected, closed while connecting, or the
+<  * connection dropped mid-request).
+---
+>  * Reports that a CDP request could not be sent or completed because the client was not in a
+>  * connectable state — not connected, closed while connecting, or the connection dropped
+>  * mid-request — under the code `BROWSER_CDP_CONNECTION_ERROR`.
+2640c2983,2985
+<  * Reports that a CDP request received an error response from the remote endpoint.
+---
+>  * Reports that a CDP request received an error response from the remote endpoint, under the
+>  * code `BROWSER_CDP_ERROR`, with the `method`, the CDP `code`, the `message`, and any `data`
+>  * in its context.
+2643,2645c2988
+<  * Carries the originating `method` plus the CDP error's own `code`,
+<  * `message`, and `data` (when present) in `context`, so callers can branch
+<  * on the protocol-level error instead of parsing the message string.
+---
+>  * Branch on the protocol-level error in `context` instead of parsing the message string.
+2681c3024,3025
+<  * Reports that a pending CDP request was not answered within its timeout window.
+---
+>  * Reports that a pending CDP request was not answered within its timeout window, under the
+>  * code `BROWSER_CDP_TIMEOUT_ERROR`.
+2703c3047
+<  * Represents a dumb text transport CDPClient sends and receives JSON-RPC frames over.
+---
+>  * Represents the text pipe a `CDPClient` sends and receives JSON-RPC frames over.
+2713a3058
+>     /** Opens the underlying connection. */
+2714a3060,3063
+>     /**
+>      * Writes one raw text frame to the connection. Throws a coded `BrowserConnectionError`
+>      * carrying the transport `url` when called before the connection opens or after it closes.
+>      */
+2715a3065
+>     /** Closes the underlying connection and releases its resources. */
+2779c3129
+<  * Compiles recorded codegen actions into a replayable script.
+---
+>  * Compiles recorded codegen actions into a replayable JavaScript or TypeScript script.
+2829,2831c3179,3181
+<  * Compiles a `Runtime.evaluate` expression so the IN-PAGE code stringifies
+<  * its own result and throws a recognizable error before an oversized result
+<  * would overflow the CDP transport frame.
+---
+>  * Compiles a `Runtime.evaluate` expression so the in-page code stringifies its own result and
+>  * throws a recognizable sentinel error before an oversized result would overflow the CDP
+>  * transport frame.
+2949c3299
+<  * @param buttons - Currently pressed public mouse buttons
+---
+>  * @param buttons - Pressed public mouse buttons
+2990c3340
+<  * Creates a navigable browser snapshot from decoded serializable data.
+---
+>  * Creates a navigable `BrowserSnapshotInterface` over decoded `BrowserSnapshotInput` data.
+3006c3356
+<  * Creates a CDP client bound to the given transport.
+---
+>  * Creates a `CDPClientInterface` bound to the given `CDPTransportInterface`.
+3048c3398,3399
+<  * Extracts a keyboard chord such as `Control+Shift+P` into its parts.
+---
+>  * Extracts a keyboard chord such as `Control+Shift+P` into its parts, throwing a
+>  * `BrowserError` on an empty chord or an unsupported modifier.
+3057c3408
+<  * Narrows an unknown value to BrowserError.
+---
+>  * Narrows an unknown value to a `BrowserError`.
+3065c3416
+<  * Tests whether a browser-node matcher is a declarative query.
+---
+>  * Tests whether a browser-node matcher is a declarative query rather than a predicate.
+3089c3440
+<  * Narrows an unknown value to BrowserResultLimitError.
+---
+>  * Narrows an unknown value to a `BrowserResultLimitError`.
+3097c3448
+<  * Narrows an unknown value to BrowserSelectorError.
+---
+>  * Narrows an unknown value to a `BrowserSelectorError`.
+3105c3456
+<  * Narrows an unknown value to CDPConnectionError.
+---
+>  * Narrows an unknown value to a `CDPConnectionError`.
+3113c3464
+<  * Narrows an unknown value to CDPError.
+---
+>  * Narrows an unknown value to a `CDPError`.
+3121c3472
+<  * Narrows an unknown value to CDPTimeoutError.
+---
+>  * Narrows an unknown value to a `CDPTimeoutError`.
+3181c3532,3533
+<  * Normalizes a raw list of recorded codegen actions.
+---
+>  * Normalizes recorded codegen actions, collapsing consecutive `fill` actions on the same
+>  * selector into the latest value.
+3184,3187c3536,3537
+<  * Collapses consecutive `fill` actions on the same selector into the latest
+<  * value (a text input fires one `input` event per keystroke) so the
+<  * compiled script reflects the final typed value rather than every
+<  * intermediate keystroke.
+---
+>  * A text input fires one `input` event per keystroke, so the compiled script reflects
+>  * the final typed value rather than every intermediate keystroke.
+3258,3259c3608
+<  * Coerces a CDP snapshot rectangle to a `BrowserRect`, or `undefined`
+<  * off-shape.
+---
+>  * Coerces a four-number CSS-pixel rectangle to a `BrowserRect`, or `undefined` off-shape.
+3359,3360c3708,3709
+<  * Coerces a `Page.frameNavigated` CDP event to a `navigate` codegen action, or
+<  * `undefined` off-shape.
+---
+>  * Coerces a `Page.frameNavigated` CDP event to a `navigate` codegen action, or `undefined`
+>  * off-shape and for every frame but the top-level one.
+3391c3740,3741
+<  * Decodes Accessibility-domain nodes into a flat serializable tree.
+---
+>  * Decodes Accessibility-domain nodes into a flat serializable tree, throwing a `BrowserError`
+>  * off-shape.
+3399c3749
+<  * Decodes flattened CDP node attributes.
+---
+>  * Decodes flattened CDP node attributes into a frozen record, skipping every off-shape pair.
+3408c3758
+<  * Decodes an Accessibility-domain AXValue.
+---
+>  * Decodes an Accessibility-domain AXValue, or `undefined` when the record carries none.
+3416c3766
+<  * Decodes one Chromium cookie.
+---
+>  * Decodes one Chromium cookie, throwing a `BrowserError` off-shape.
+3425c3775
+<  * Decodes cookies returned by `Storage.getCookies`.
+---
+>  * Decodes the cookies `Storage.getCookies` returns, throwing a `BrowserError` off-shape.
+3433c3783
+<  * Decodes coverage ranges.
+---
+>  * Decodes and normalizes coverage ranges, throwing a `BrowserError` off-shape.
+3442c3792,3793
+<  * Decodes a flattened CDP `Page.getFrameTree` result.
+---
+>  * Decodes a flattened CDP `Page.getFrameTree` result into depth-first frame metadata, skipping
+>  * every off-shape frame.
+3450c3801,3802
+<  * Decodes a Chromium Headers object into string values.
+---
+>  * Decodes a Chromium Headers object into string values, skipping every entry that is neither a
+>  * string nor a finite number.
+3458c3810
+<  * Decodes Performance-domain metrics.
+---
+>  * Decodes Performance-domain metrics, throwing a `BrowserError` off-shape.
+3466c3818
+<  * Decodes one CPU profile.
+---
+>  * Decodes one CPU profile, throwing a `BrowserError` off-shape.
+3474c3826
+<  * Decodes a CPU profile call frame.
+---
+>  * Decodes a CPU profile call frame, throwing a `BrowserError` off-shape.
+3483c3835,3836
+<  * Decodes the first `DOM.getContentQuads` quad and its center.
+---
+>  * Decodes the first `DOM.getContentQuads` quad and its center, throwing a `BrowserError`
+>  * off-shape.
+3491c3844,3845
+<  * Decodes a Runtime remote object's printable value.
+---
+>  * Decodes a Runtime remote object's printable value, falling back to its unserializable form
+>  * and then its description, or `undefined` when it carries none.
+3499c3853
+<  * Decodes JavaScript precise coverage.
+---
+>  * Decodes JavaScript precise coverage, throwing a `BrowserError` off-shape.
+3507c3861,3862
+<  * Decodes the `Page.addScriptToEvaluateOnNewDocument` result.
+---
+>  * Decodes the `Page.addScriptToEvaluateOnNewDocument` result, throwing a `BrowserError`
+>  * off-shape.
+3515c3870,3872
+<  * Decodes a CDP `DOMSnapshot.captureSnapshot` result.
+---
+>  * Decodes a CDP `DOMSnapshot.captureSnapshot` result into a serializable
+>  * `BrowserSnapshotInput`, throwing a `BrowserError` off-shape and a `BrowserResultLimitError`
+>  * past the configured node limit.
+3525c3882
+<  * Decodes a Chromium runtime stack trace.
+---
+>  * Decodes a Chromium runtime stack trace, skipping every off-shape call frame.
+3533c3890
+<  * Decodes a list of web-storage entries.
+---
+>  * Decodes a list of web-storage entries, throwing a `BrowserError` off-shape.
+3543c3900
+<  * Decodes one in-page web-storage snapshot.
+---
+>  * Decodes one in-page web-storage snapshot, throwing a `BrowserError` off-shape.
+3552c3909
+<  * Decodes one `IO.read` response.
+---
+>  * Decodes one `IO.read` response, throwing a `BrowserError` off-shape.
+3560c3917
+<  * Decodes CSS rule usage.
+---
+>  * Decodes CSS rule usage, throwing a `BrowserError` off-shape.
+3568c3925,3926
+<  * Decodes one CDP `Runtime.evaluate` result.
+---
+>  * Decodes one CDP `Runtime.evaluate` result, throwing a `BrowserError` on a failed evaluation
+>  * and a `BrowserResultLimitError` past the guarded result size.
+3576c3934,3935
+<  * Decodes CDP snapshot sparse boolean data.
+---
+>  * Decodes CDP snapshot sparse boolean data into a set of node indexes, skipping every
+>  * off-shape entry.
+3584c3943,3944
+<  * Decodes CDP snapshot sparse integer data.
+---
+>  * Decodes CDP snapshot sparse integer data into a node-index map, skipping every off-shape
+>  * entry.
+3592c3952,3953
+<  * Decodes CDP snapshot sparse string data.
+---
+>  * Decodes CDP snapshot sparse string data into a node-index map, skipping every off-shape
+>  * entry.
+3669c4030
+<  * Validates the bounded keys of one trusted-input operation.
+---
+>  * Validates the bounded delay, count, steps, and position of one trusted-input operation.
+diff -r -w -B '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-browser-final-registry-visit-pack/baseline/package/dist/src/core/index.d.ts /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-browser-final-registry-visit-pack/extract/package/dist/src/core/index.d.ts
+1,3c1,3
+< import { EmitterErrorHandler } from '@orkestrel/emitter';
+< import { EmitterHooks } from '@orkestrel/emitter';
+< import { EmitterInterface } from '@orkestrel/emitter';
+---
+> import type { EmitterErrorHandler } from '@orkestrel/emitter';
+> import type { EmitterHooks } from '@orkestrel/emitter';
+> import type { EmitterInterface } from '@orkestrel/emitter';
+11c11,14
+< /** Names the CDP runtime binding the codegen recorder script calls into. */
+---
+> /**
+>  * Names the CDP runtime binding the codegen recorder script calls into,
+>  * `'__orkestrelBrowserCodegen'`.
+>  */
+19,24c22,27
+<  * Attaches capturing-phase listeners for `click`, `input` (fill), and
+<  * `change` (select) on `document`, builds a stable CSS selector for the
+<  * target element, and forwards each action to the CDP binding
+<  * ({@link BROWSER_CODEGEN_BINDING_NAME}) as a JSON string payload. Guarded to
+<  * install exactly once per document (`window[name]` sentinel) so repeated
+<  * injection on every new document is idempotent.
+---
+>  * Attaches capturing-phase listeners for `click`, `input` (fill), and `change` (select) on
+>  * `document`, builds a stable CSS selector for the target element, and forwards each action
+>  * to the CDP binding ({@link BROWSER_CODEGEN_BINDING_NAME}) as a JSON string payload. A
+>  * `contenteditable` fill is captured through `input` events, the same way an input or a
+>  * textarea is. Guarded to install exactly once per document (`window[name]` sentinel) so
+>  * repeated injection on every new document is idempotent.
+28c31,34
+< /** Sets the default timeout in milliseconds for browser connection, requests, and navigation. */
+---
+> /**
+>  * Sets the default timeout for browser connection, requests, and navigation, `30_000`
+>  * milliseconds.
+>  */
+31c37
+< /** Sets the default viewport height in pixels. */
+---
+> /** Sets the default viewport height, `720` pixels. */
+34c40
+< /** Sets the default viewport width in pixels. */
+---
+> /** Sets the default viewport width, `1280` pixels. */
+37c43
+< /** Names the isolated world used for iframe evaluation. */
+---
+> /** Names the isolated world used for iframe evaluation, `'__orkestrelBrowserFrame'`. */
+50c56
+<     version: "0.0.15";
+---
+>     version: "0.0.16";
+60,61c66,67
+<  * Caps the serialized-character length for an `evaluate()`/`content()` result,
+<  * enforced IN-PAGE before the result is returned to CDP.
+---
+>  * Caps the serialized-character length for an `evaluate()`/`content()` result at `2_500_000`,
+>  * enforced in-page before the result is returned to CDP.
+64c70
+<  * This counts UTF-16 STRING LENGTH (`String#length`), not transport BYTES —
+---
+>  * This counts UTF-16 string length (`String#length`), not transport bytes —
+81,85c87,93
+<  * Matches the in-page result-limit sentinel error message, anchored
+<  * immediately after the `Error: ` (optionally `Uncaught Error: `) prefix that
+<  * Chromium prepends to a thrown error's description — so the guard's own
+<  * throw is recognized only at the message START, not wherever the substring
+<  * happens to occur.
+---
+>  * Matches the in-page result-limit sentinel error message, anchored immediately after the
+>  * `Error:` (optionally `Uncaught Error:`) prefix Chromium prepends to a thrown error's
+>  * description, `/^(?:Uncaught )?Error: \[\[ORKESTREL_BROWSER_RESULT_LIMIT\]\](\d+)/`.
+>  *
+>  * @remarks
+>  * The anchor matches the guard's own throw only at the start of the message, rather than
+>  * wherever the substring happens to occur.
+90,91c98,99
+<  * Names the distinctive prefix for the in-page result-limit sentinel error, immediately
+<  * followed by the serialized length.
+---
+>  * Names the distinctive prefix for the in-page result-limit sentinel error,
+>  * `'[[ORKESTREL_BROWSER_RESULT_LIMIT]]'`, immediately followed by the serialized length.
+104c112,114
+< /** Sets the default maximum node count accepted from a decoded CDP DOM snapshot. */
+---
+> /**
+>  * Sets the default maximum node count accepted from a decoded CDP DOM snapshot, `100_000`.
+>  */
+111,112c121,122
+<  * Bounds (in milliseconds) the best-effort `Page.stopLoading` call issued
+<  * after a failed `navigate()`.
+---
+>  * Bounds the best-effort `Page.stopLoading` call issued after a failed `navigate()` at `1_000`
+>  * milliseconds.
+136c146,153
+< /** Sets the poll interval in milliseconds while waiting for a selector to appear. */
+---
+> /**
+>  * Sets the poll interval while waiting for a selector to appear, `100` milliseconds.
+>  *
+>  * @remarks
+>  * A wait adds the same interval as slack to its own CDP call timeout, so the in-page poll
+>  * expires before the call carrying it. Host-side CDP readiness probes wait it out between
+>  * attempts.
+>  */
+157a175
+>     /** Reads the full accessibility tree, optionally pruned to the interesting nodes. */
+188c206
+<  * - `strict` — require the selector to resolve to exactly one element
+---
+>  * - `strict` — require the selector to resolve to exactly one element (default `true`)
+269a288
+>     /** Takes over the page clock, optionally seeding it with an epoch time. */
+270a290
+>     /** Suspends virtual time so no page timer advances. */
+271a292
+>     /** Continues virtual time after a pause. */
+272a294,296
+>     /**
+>      * Moves virtual time forward by the given milliseconds, firing the timers that fall due.
+>      */
+273a298
+>     /** Returns the page to the real clock, and does nothing when no clock was installed. */
+352a378,381
+>     /**
+>      * Begins recording on the page's session. A call after teardown is a silent no-op, because
+>      * a torn-down recorder cannot be restarted and a fresh one is obtained through the page.
+>      */
+353a383
+>     /** Stops recording and returns the captured actions. */
+354a385
+>     /** Returns the current normalized action list. */
+355a387
+>     /** Compiles the captured actions into a script. */
+356a389
+>     /** Resets the captured action list. */
+357a391
+>     /** Tears down the recorder and detaches its CDP listeners. */
+365c399
+<  * Describes the options for creating a BrowserCodegen recorder.
+---
+>  * Describes the options for creating a `BrowserCodegen` recorder.
+466a501
+>     /** Returns one page by index, or the first page. */
+467a503
+>     /** Returns every page in creation order. */
+468a505
+>     /** Opens a page in this context. */
+469a507,512
+>     /**
+>      * Synchronizes pages from the given CDP targets, which the server discovers and core never
+>      * fetches. Performs a destructive diff rather than an additive merge: a page whose target
+>      * id is missing from `targets` is closed and dropped, and a target that is not yet tracked
+>      * is attached and added.
+>      */
+470a514,517
+>     /**
+>      * Releases local pages and detaches their sessions without disposing the remote browser
+>      * context.
+>      */
+471a519,521
+>     /**
+>      * Closes remote pages, disposes the remote browser context, and releases local resources.
+>      */
+551a602
+>     /** Reads the context cookies, optionally narrowed to the given URLs. */
+552a604
+>     /** Writes the given cookies into the context. */
+553a606
+>     /** Deletes the context cookies matching the filter, or every cookie when given none. */
+586a640,643
+>     /**
+>      * Arms the requested domains. Throws a `BrowserError` when collection is already active or
+>      * when neither domain is requested.
+>      */
+587a645
+>     /** Reads the collected usage and disarms every domain it armed. */
+588a647,650
+>     /**
+>      * Stops an active collector, discarding any failure, and does nothing when no collection
+>      * is running.
+>      */
+619c681
+<  * Groups the diagnostic subentities beneath one page.
+---
+>  * Groups the tracing, coverage, performance, and profiler classes beneath one page.
+645a708
+>     /** Tears down every diagnostics capability this page's group owns. */
+656a720,722
+>     /**
+>      * Accepts the dialog, optionally supplying prompt text. Throws once the dialog is handled.
+>      */
+657a724
+>     /** Dismisses the dialog. Throws once the dialog is handled. */
+696a764,767
+>     /**
+>      * Sends CDP `Browser.cancelDownload` for this download, and is ignored unless the status
+>      * is still pending.
+>      */
+760a832,834
+>     /**
+>      * Clears the superseded overrides and applies the given ones to every page of the context.
+>      */
+761a836
+>     /** Removes every override this manager applied. */
+762a838
+>     /** Applies the retained overrides to a newly created page. */
+780c856,857
+<  * Represents the base error for all browser automation operations.
+---
+>  * Represents the base error for all browser automation operations, carrying the code
+>  * `BROWSER_ERROR` and a `context` record.
+783,784c860
+<  * Carries a machine-readable `code` and optional `context` so
+<  * callers can branch in a `catch` without parsing message strings.
+---
+>  * A caller branches in a `catch` on the `code` rather than parsing message strings.
+794a871,874
+>     /**
+>      * Sets the chosen files. Throws when a single-file chooser is given several, and once the
+>      * chooser is already handled.
+>      */
+795a876
+>     /** Clears the selection. Throws once the chooser is already handled. */
+883a965
+>     /** Resolves the frame document title. */
+884a967
+>     /** Extracts the URL, title, HTML, and visible text under the result-size guards. */
+885a969,972
+>     /**
+>      * Distills the frame HTML to reader-facing plain text, with boilerplate and hidden regions
+>      * pruned.
+>      */
+886a974,976
+>     /**
+>      * Clicks a CSS-selector match, strict by default and requiring it visible and enabled.
+>      */
+887a978,981
+>     /**
+>      * Fills an editable input or contenteditable element, strict by default, dispatching input
+>      * and change events.
+>      */
+888a983
+>     /** Selects options on an enabled `select` element, strict by default. */
+889a985
+>     /** Evaluates an expression in the frame execution world under the result-size guard. */
+890a987,989
+>     /**
+>      * Evaluates an expression by reference and returns a disposable remote object handle.
+>      */
+891a991
+>     /** Waits for a selector to reach the attached, detached, visible, or hidden state. */
+892a993,996
+>     /**
+>      * Issues a raw CDP method in the frame's current target session, with a trailing
+>      * `BrowserSendOptions` carrying a per-call `timeout` overriding the client-wide default.
+>      */
+893a998
+>     /** Subscribes to a CDP event in the frame's current target session. */
+894a1000
+>     /** Removes a frame-session CDP event subscription. */
+895a1002,1004
+>     /**
+>      * Persists bytes through a page writer; a child frame rejects because it owns no writer.
+>      */
+896a1006,1010
+>     /**
+>      * Throws a coded `BrowserError` when the frame can no longer accept protocol work: a frame
+>      * throws once the CDP client disconnects, and a page also throws once it closes. Every
+>      * other member here calls it first.
+>      */
+897a1012,1015
+>     /**
+>      * Records an externally observed URL as the frame's current `url`, which a page calls from
+>      * its own `Page.frameNavigated` handler.
+>      */
+919a1038
+>     /** Reads the object back by value. */
+920a1040
+>     /** Runs a function declaration with the handle as `this`, by value. */
+921a1042,1045
+>     /**
+>      * Retains one own property as its own handle, or returns `undefined` when the property is
+>      * absent.
+>      */
+922a1047
+>     /** Reads every own property by value. */
+923a1049
+>     /** Releases the retained remote object. Idempotent. */
+1011a1138
+>     /** Begins recording exchanges, optionally capturing response content. */
+1012a1140
+>     /** Ends recording and returns the archive, writing it when a path was given. */
+1013a1142
+>     /** Serves matching requests from an archive instead of from the network. */
+1014a1144
+>     /** Drops the recorded entries and any active replay without ending the recording. */
+1134a1265,1267
+>     /**
+>      * Presses one key and holds it, retaining it in the modifier mask when it is a modifier.
+>      */
+1135a1269,1271
+>     /**
+>      * Releases one key, dropping it from the modifier mask even when the release frame fails.
+>      */
+1136a1273,1276
+>     /**
+>      * Presses a chord: holds its modifiers, presses and releases its terminal key, then
+>      * releases the modifiers.
+>      */
+1137a1278
+>     /** Types a string as one press and release per character. */
+1138a1280
+>     /** Inserts composed text in one frame, firing no per-key events. */
+1221a1364
+>     /** Narrows to a descendant matching the CSS selector. */
+1222a1366
+>     /** Narrows to the matches satisfying the filter. */
+1223a1368
+>     /** Narrows to the first match. */
+1224a1370
+>     /** Narrows to the last match. */
+1225a1372
+>     /** Narrows to the match at the given index. */
+1226a1374
+>     /** Counts the current matches. */
+1227a1376
+>     /** Resolves one indexed locator per current match. */
+1228a1378
+>     /** Clicks the match with trusted input after its actionability checks pass. */
+1229a1380
+>     /** Replaces the match's value with the given text. */
+1230a1382
+>     /** Selects the given option values on the match. */
+1231a1384
+>     /** Clicks the match unless it already reports checked. */
+1232a1386
+>     /** Clicks the match unless it already reports unchecked. */
+1233a1388
+>     /** Moves trusted pointer input over the match. */
+1234a1390
+>     /** Gives the match keyboard focus. */
+1235a1392
+>     /** Focuses the match and presses one key or chord. */
+1236a1394
+>     /** Focuses the match and types the value one key at a time. */
+1237a1396
+>     /** Empties the match's value. */
+1238a1398
+>     /** Waits until the match reaches the requested state. Rejects on timeout. */
+1239a1400
+>     /** Reads the first match's rendered text. */
+1240a1402
+>     /** Reads the rendered text of every match. */
+1241a1404
+>     /** Reads the first match's inner HTML. */
+1242a1406
+>     /** Reads the first match's form value. */
+1243a1408,1411
+>     /**
+>      * Reads one attribute of the first match, or returns `undefined` when the match carries
+>      * none.
+>      */
+1244a1413
+>     /** Reports whether the first match renders a non-empty box. */
+1245a1415
+>     /** Reports whether the first match accepts input. */
+1246a1417
+>     /** Reports whether the first match accepts typed text. */
+1247a1419,1422
+>     /**
+>      * Captures the first match's box, persisting it through the page writer when a path is
+>      * given.
+>      */
+1248a1424
+>     /** Sets the file selection on the matched file input. */
+1249a1426
+>     /** Drags the match onto the target locator with trusted pointer input. */
+1316a1494
+>     /** Moves the pointer to a point, carrying the pressed buttons. */
+1317a1496
+>     /** Presses a button at the current point, adding it to the pressed mask. */
+1318a1498,1501
+>     /**
+>      * Releases a button at the current point, dropping it from the mask even when the frame
+>      * fails.
+>      */
+1319a1503
+>     /** Moves to the given point, presses, optionally delays, and releases. */
+1320a1505
+>     /** Presses at the start, moves in the requested steps to the end, and releases. */
+1321a1507
+>     /** Sends a wheel delta at the current point. */
+1345a1532,1535
+>     /**
+>      * Resolves with the URL of the next navigation matching the `*` and `**` glob pattern.
+>      * Rejects on timeout.
+>      */
+1346a1537,1540
+>     /**
+>      * Polls an expression in the page until it returns a truthy value, and resolves with that
+>      * value.
+>      */
+1430a1625
+>     /** Enables the Network domain and subscribes to its events. Idempotent. */
+1431a1627
+>     /** Reads one observed response body as bytes. */
+1432a1629
+>     /** Reads one observed response body as text. */
+1433a1631
+>     /** Reads one observed response body as parsed JSON. */
+1434a1633
+>     /** Intercepts requests matching the query and hands each one to the handler. */
+1435a1635
+>     /** Removes one handler's routes, or every route when given none. */
+1436a1637
+>     /** Applies extra HTTP headers to every request the page makes. */
+1437a1639
+>     /** Emulates an offline connection, or restores connectivity. */
+1438a1641
+>     /** Applies HTTP basic-auth credentials, or clears them when given none. */
+1439a1643
+>     /** Removes every route, unsubscribes, and disables the domains this manager enabled. */
+1573c1777,1778
+<  * Abstracts a single top-level browser page.
+---
+>  * Abstracts a single top-level browser page, extending `BrowserFrameInterface` with
+>  * navigation, screenshots, frame discovery, DOM snapshots, codegen, and target teardown.
+1599a1805,1808
+>     /**
+>      * Goes to a URL, waits for the requested load condition, and returns the final URL with
+>      * its response correlation.
+>      */
+1600a1810
+>     /** Reloads the page and returns the final URL with its response correlation. */
+1601a1812,1814
+>     /**
+>      * Navigates to the previous history entry, or returns the unchanged URL when none exists.
+>      */
+1602a1816,1818
+>     /**
+>      * Navigates to the next history entry, or returns the unchanged URL when none exists.
+>      */
+1603a1820,1823
+>     /**
+>      * Captures PNG or JPEG bytes, optionally full-page and persisted through an injected
+>      * writer.
+>      */
+1604a1825
+>     /** Prints the page to PDF bytes, optionally persisted through the injected writer. */
+1605a1827
+>     /** Looks up a first-class frame by name or URL. */
+1606a1829
+>     /** Decodes the flattened frame tree, main frame first. */
+1607a1831,1834
+>     /**
+>      * Captures and decodes every attached document, shadow root, template content, layout box,
+>      * and requested computed style.
+>      */
+1608a1836
+>     /** Starts the action recorder, or returns the running one. */
+1609a1838
+>     /** Releases local resources and detaches without closing the remote target. */
+1610a1840
+>     /** Closes the remote target and releases its resources. */
+1615c1845
+<  * Describes the options for creating a browser page.
+---
+>  * Describes the options for creating a `BrowserPage` instance.
+1690a1921
+>     /** Enables the domain, reads every metric, and disables the domain again. */
+1715a1947
+>     /** Grants each named permission, optionally for one origin, as its own CDP frame. */
+1716a1949
+>     /** Denies each named permission, optionally for one origin, as its own CDP frame. */
+1717a1951
+>     /** Resets every permission override on the context. */
+1786a2021,2023
+>     /**
+>      * Begins sampling, optionally at an explicit positive integer interval in microseconds.
+>      */
+1787a2025
+>     /** Ends sampling and decodes the profile's nodes, samples, and time deltas. */
+1788a2027,2030
+>     /**
+>      * Stops an active profiler, discarding any failure, and does nothing when no profile is
+>      * running.
+>      */
+1862,1863c2104,2106
+<  * Reports that an `evaluate()`/`content()` result exceeded {@link BROWSER_RESULT_LIMIT}
+<  * and was rejected in-page before it could overflow the CDP transport frame.
+---
+>  * Reports that an `evaluate()`/`content()` result exceeded {@link BROWSER_RESULT_LIMIT} and
+>  * was rejected in-page before it could overflow the CDP transport frame, under the code
+>  * `BROWSER_RESULT_LIMIT_ERROR`.
+1904a2148
+>     /** Fails the request with a Chromium error reason, `'Failed'` by default. */
+1905a2150,2152
+>     /**
+>      * Lets the request proceed, optionally overriding its URL, method, headers, or post body.
+>      */
+1906a2154,2156
+>     /**
+>      * Answers the request locally. Throws when the status is not an integer from 100 to 999.
+>      */
+2002a2253
+>     /** Installs a script evaluated on every new document, and returns its identifier. */
+2003a2255
+>     /** Removes one installed script by identifier. */
+2004a2257
+>     /** Binds a host function to a page-global name, callable from page JavaScript. */
+2005a2259
+>     /** Removes one exposed binding and its installed bridge script. */
+2006a2261
+>     /** Removes every installed script and binding this manager owns. */
+2027c2282,2283
+<  * Reports that a selector-based lookup or wait timed out without the element appearing.
+---
+>  * Reports that a selector-based lookup or wait timed out without the element appearing, under
+>  * the code `BROWSER_SELECTOR_ERROR`.
+2059a2316
+>     /** Locates by CSS selector. */
+2060a2318
+>     /** Locates by ARIA role, optionally by accessible name and exactness. */
+2061a2320
+>     /** Locates by rendered text, optionally exact. */
+2062a2322
+>     /** Locates a labelled control by its label text, optionally exact. */
+2063a2324
+>     /** Locates an input by its placeholder text, optionally exact. */
+2064a2326
+>     /** Locates by the test-id attribute. */
+2118c2380,2383
+< /** Describes the serializable input for a navigable browser snapshot. */
+---
+> /**
+>  * Describes the serializable input for a navigable browser snapshot — the form a
+>  * `BrowserSnapshot` is built from and serializes back to.
+>  */
+2124c2389,2393
+< /** Represents a navigable, serializable snapshot of every document attached to a page. */
+---
+> /**
+>  * Represents a navigable, serializable snapshot of every document attached to a page,
+>  * extending `BrowserSnapshotInput` with walking, structural relationships, search, and path
+>  * derivation over plain `BrowserNode` values.
+>  */
+2125a2395,2398
+>     /**
+>      * Traverses the whole capture, or one subtree when `root` is given and yielded first, in
+>      * `'depth'` order by default or in `'breadth'` order. Visits each node exactly once.
+>      */
+2126a2400
+>     /** Traverses one node's subtree in depth-first order, excluding the node itself. */
+2127a2402
+>     /** Resolves the captured document a node belongs to. */
+2128a2404,2406
+>     /**
+>      * Returns the direct children of a node, entering a linked iframe's content document.
+>      */
+2129a2408,2411
+>     /**
+>      * Returns the structural parent of a node, crossing a document boundary to the owning
+>      * iframe.
+>      */
+2130a2413,2416
+>     /**
+>      * Returns the structural siblings of a node; `'preceding'` or `'following'` narrows to one
+>      * side, and omitting the relation returns every sibling but the node itself.
+>      */
+2131a2418,2420
+>     /**
+>      * Returns the ancestors of a node, nearest first, across document and iframe boundaries.
+>      */
+2132a2422,2425
+>     /**
+>      * Returns the nearest common ancestor of two nodes, counting each node as its own
+>      * candidate.
+>      */
+2133a2427,2430
+>     /**
+>      * Returns the structural edge count between two nodes, or `undefined` when they share no
+>      * ancestor.
+>      */
+2134a2432
+>     /** Returns the first node matching a `BrowserNodeQuery` or a `BrowserNodePredicate`. */
+2135a2434,2437
+>     /**
+>      * Returns every matching node, bounded by an optional `limit`; a negative or fractional
+>      * limit throws a coded `BrowserError`.
+>      */
+2136a2439,2441
+>     /**
+>      * Returns the nearest match from a node through its ancestors, testing the node first.
+>      */
+2137a2443
+>     /** Returns a deterministic frame-qualified structural path for one node. */
+2193a2500
+>     /** Reads the context cookies and the per-origin local and session storage. */
+2194a2502
+>     /** Writes a previously read state back into the context. */
+2195a2504
+>     /** Drops the storage of one origin, or of every origin when given none. */
+2272a2582,2584
+>     /**
+>      * Dispatches a touch start at the point and a touch end, cancelling the touch on failure.
+>      */
+2299a2612,2615
+>     /**
+>      * Begins tracing with the given categories. Throws a `BrowserError` when a trace is
+>      * already active.
+>      */
+2300a2617,2620
+>     /**
+>      * Ends tracing, drains the IO stream, and writes it through the page writer when a path
+>      * was set.
+>      */
+2301a2622,2625
+>     /**
+>      * Stops an active trace, discarding any failure, and does nothing when no trace is
+>      * running.
+>      */
+2359a2684,2687
+>     /**
+>      * Starts the work when nothing is in flight, and otherwise joins the running transition
+>      * and returns its result.
+>      */
+2487a2816
+>     /** Evaluates a guarded expression in the worker and returns its value. */
+2488a2818
+>     /** Issues one CDP method call on the worker's session. */
+2489a2820
+>     /** Stops driving the worker locally without closing its target. */
+2490a2822
+>     /** Closes the worker target, tolerating a worker that already terminated. Idempotent. */
+2502a2835
+>     /** Persists the captured bytes to the given path, creating its parent directories. */
+2600a2934
+>     /** Starts the transport and begins dispatching. Idempotent. */
+2601a2936
+>     /** Closes the transport and re-establishes it. */
+2602a2938,2942
+>     /**
+>      * Issues a CDP method call with optional params and a trailing `CDPSendOptions` carrying
+>      * the `session` to scope it to and a per-call `timeout` overriding the client-wide
+>      * default; rejects on timeout.
+>      */
+2603a2944
+>     /** Registers a handler for a CDP event, optionally session-scoped. */
+2604a2946
+>     /** Removes a handler for a CDP event, optionally session-scoped. */
+2605a2948
+>     /** Tears down the transport and rejects every pending request. */
+2610c2953
+<  * Describes the options for creating a CDPClient.
+---
+>  * Describes the options for creating a `CDPClient` instance.
+2631,2633c2974,2976
+<  * Reports that a CDP request could not be sent or completed because the client was not in
+<  * a connectable state (not connected, closed while connecting, or the
+<  * connection dropped mid-request).
+---
+>  * Reports that a CDP request could not be sent or completed because the client was not in a
+>  * connectable state — not connected, closed while connecting, or the connection dropped
+>  * mid-request — under the code `BROWSER_CDP_CONNECTION_ERROR`.
+2640c2983,2985
+<  * Reports that a CDP request received an error response from the remote endpoint.
+---
+>  * Reports that a CDP request received an error response from the remote endpoint, under the
+>  * code `BROWSER_CDP_ERROR`, with the `method`, the CDP `code`, the `message`, and any `data`
+>  * in its context.
+2643,2645c2988
+<  * Carries the originating `method` plus the CDP error's own `code`,
+<  * `message`, and `data` (when present) in `context`, so callers can branch
+<  * on the protocol-level error instead of parsing the message string.
+---
+>  * Branch on the protocol-level error in `context` instead of parsing the message string.
+2681c3024,3025
+<  * Reports that a pending CDP request was not answered within its timeout window.
+---
+>  * Reports that a pending CDP request was not answered within its timeout window, under the
+>  * code `BROWSER_CDP_TIMEOUT_ERROR`.
+2703c3047
+<  * Represents a dumb text transport CDPClient sends and receives JSON-RPC frames over.
+---
+>  * Represents the text pipe a `CDPClient` sends and receives JSON-RPC frames over.
+2713a3058
+>     /** Opens the underlying connection. */
+2714a3060,3063
+>     /**
+>      * Writes one raw text frame to the connection. Throws a coded `BrowserConnectionError`
+>      * carrying the transport `url` when called before the connection opens or after it closes.
+>      */
+2715a3065
+>     /** Closes the underlying connection and releases its resources. */
+2779c3129
+<  * Compiles recorded codegen actions into a replayable script.
+---
+>  * Compiles recorded codegen actions into a replayable JavaScript or TypeScript script.
+2829,2831c3179,3181
+<  * Compiles a `Runtime.evaluate` expression so the IN-PAGE code stringifies
+<  * its own result and throws a recognizable error before an oversized result
+<  * would overflow the CDP transport frame.
+---
+>  * Compiles a `Runtime.evaluate` expression so the in-page code stringifies its own result and
+>  * throws a recognizable sentinel error before an oversized result would overflow the CDP
+>  * transport frame.
+2949c3299
+<  * @param buttons - Currently pressed public mouse buttons
+---
+>  * @param buttons - Pressed public mouse buttons
+2990c3340
+<  * Creates a navigable browser snapshot from decoded serializable data.
+---
+>  * Creates a navigable `BrowserSnapshotInterface` over decoded `BrowserSnapshotInput` data.
+3006c3356
+<  * Creates a CDP client bound to the given transport.
+---
+>  * Creates a `CDPClientInterface` bound to the given `CDPTransportInterface`.
+3048c3398,3399
+<  * Extracts a keyboard chord such as `Control+Shift+P` into its parts.
+---
+>  * Extracts a keyboard chord such as `Control+Shift+P` into its parts, throwing a
+>  * `BrowserError` on an empty chord or an unsupported modifier.
+3057c3408
+<  * Narrows an unknown value to BrowserError.
+---
+>  * Narrows an unknown value to a `BrowserError`.
+3065c3416
+<  * Tests whether a browser-node matcher is a declarative query.
+---
+>  * Tests whether a browser-node matcher is a declarative query rather than a predicate.
+3089c3440
+<  * Narrows an unknown value to BrowserResultLimitError.
+---
+>  * Narrows an unknown value to a `BrowserResultLimitError`.
+3097c3448
+<  * Narrows an unknown value to BrowserSelectorError.
+---
+>  * Narrows an unknown value to a `BrowserSelectorError`.
+3105c3456
+<  * Narrows an unknown value to CDPConnectionError.
+---
+>  * Narrows an unknown value to a `CDPConnectionError`.
+3113c3464
+<  * Narrows an unknown value to CDPError.
+---
+>  * Narrows an unknown value to a `CDPError`.
+3121c3472
+<  * Narrows an unknown value to CDPTimeoutError.
+---
+>  * Narrows an unknown value to a `CDPTimeoutError`.
+3181c3532,3533
+<  * Normalizes a raw list of recorded codegen actions.
+---
+>  * Normalizes recorded codegen actions, collapsing consecutive `fill` actions on the same
+>  * selector into the latest value.
+3184,3187c3536,3537
+<  * Collapses consecutive `fill` actions on the same selector into the latest
+<  * value (a text input fires one `input` event per keystroke) so the
+<  * compiled script reflects the final typed value rather than every
+<  * intermediate keystroke.
+---
+>  * A text input fires one `input` event per keystroke, so the compiled script reflects
+>  * the final typed value rather than every intermediate keystroke.
+3258,3259c3608
+<  * Coerces a CDP snapshot rectangle to a `BrowserRect`, or `undefined`
+<  * off-shape.
+---
+>  * Coerces a four-number CSS-pixel rectangle to a `BrowserRect`, or `undefined` off-shape.
+3359,3360c3708,3709
+<  * Coerces a `Page.frameNavigated` CDP event to a `navigate` codegen action, or
+<  * `undefined` off-shape.
+---
+>  * Coerces a `Page.frameNavigated` CDP event to a `navigate` codegen action, or `undefined`
+>  * off-shape and for every frame but the top-level one.
+3391c3740,3741
+<  * Decodes Accessibility-domain nodes into a flat serializable tree.
+---
+>  * Decodes Accessibility-domain nodes into a flat serializable tree, throwing a `BrowserError`
+>  * off-shape.
+3399c3749
+<  * Decodes flattened CDP node attributes.
+---
+>  * Decodes flattened CDP node attributes into a frozen record, skipping every off-shape pair.
+3408c3758
+<  * Decodes an Accessibility-domain AXValue.
+---
+>  * Decodes an Accessibility-domain AXValue, or `undefined` when the record carries none.
+3416c3766
+<  * Decodes one Chromium cookie.
+---
+>  * Decodes one Chromium cookie, throwing a `BrowserError` off-shape.
+3425c3775
+<  * Decodes cookies returned by `Storage.getCookies`.
+---
+>  * Decodes the cookies `Storage.getCookies` returns, throwing a `BrowserError` off-shape.
+3433c3783
+<  * Decodes coverage ranges.
+---
+>  * Decodes and normalizes coverage ranges, throwing a `BrowserError` off-shape.
+3442c3792,3793
+<  * Decodes a flattened CDP `Page.getFrameTree` result.
+---
+>  * Decodes a flattened CDP `Page.getFrameTree` result into depth-first frame metadata, skipping
+>  * every off-shape frame.
+3450c3801,3802
+<  * Decodes a Chromium Headers object into string values.
+---
+>  * Decodes a Chromium Headers object into string values, skipping every entry that is neither a
+>  * string nor a finite number.
+3458c3810
+<  * Decodes Performance-domain metrics.
+---
+>  * Decodes Performance-domain metrics, throwing a `BrowserError` off-shape.
+3466c3818
+<  * Decodes one CPU profile.
+---
+>  * Decodes one CPU profile, throwing a `BrowserError` off-shape.
+3474c3826
+<  * Decodes a CPU profile call frame.
+---
+>  * Decodes a CPU profile call frame, throwing a `BrowserError` off-shape.
+3483c3835,3836
+<  * Decodes the first `DOM.getContentQuads` quad and its center.
+---
+>  * Decodes the first `DOM.getContentQuads` quad and its center, throwing a `BrowserError`
+>  * off-shape.
+3491c3844,3845
+<  * Decodes a Runtime remote object's printable value.
+---
+>  * Decodes a Runtime remote object's printable value, falling back to its unserializable form
+>  * and then its description, or `undefined` when it carries none.
+3499c3853
+<  * Decodes JavaScript precise coverage.
+---
+>  * Decodes JavaScript precise coverage, throwing a `BrowserError` off-shape.
+3507c3861,3862
+<  * Decodes the `Page.addScriptToEvaluateOnNewDocument` result.
+---
+>  * Decodes the `Page.addScriptToEvaluateOnNewDocument` result, throwing a `BrowserError`
+>  * off-shape.
+3515c3870,3872
+<  * Decodes a CDP `DOMSnapshot.captureSnapshot` result.
+---
+>  * Decodes a CDP `DOMSnapshot.captureSnapshot` result into a serializable
+>  * `BrowserSnapshotInput`, throwing a `BrowserError` off-shape and a `BrowserResultLimitError`
+>  * past the configured node limit.
+3525c3882
+<  * Decodes a Chromium runtime stack trace.
+---
+>  * Decodes a Chromium runtime stack trace, skipping every off-shape call frame.
+3533c3890
+<  * Decodes a list of web-storage entries.
+---
+>  * Decodes a list of web-storage entries, throwing a `BrowserError` off-shape.
+3543c3900
+<  * Decodes one in-page web-storage snapshot.
+---
+>  * Decodes one in-page web-storage snapshot, throwing a `BrowserError` off-shape.
+3552c3909
+<  * Decodes one `IO.read` response.
+---
+>  * Decodes one `IO.read` response, throwing a `BrowserError` off-shape.
+3560c3917
+<  * Decodes CSS rule usage.
+---
+>  * Decodes CSS rule usage, throwing a `BrowserError` off-shape.
+3568c3925,3926
+<  * Decodes one CDP `Runtime.evaluate` result.
+---
+>  * Decodes one CDP `Runtime.evaluate` result, throwing a `BrowserError` on a failed evaluation
+>  * and a `BrowserResultLimitError` past the guarded result size.
+3576c3934,3935
+<  * Decodes CDP snapshot sparse boolean data.
+---
+>  * Decodes CDP snapshot sparse boolean data into a set of node indexes, skipping every
+>  * off-shape entry.
+3584c3943,3944
+<  * Decodes CDP snapshot sparse integer data.
+---
+>  * Decodes CDP snapshot sparse integer data into a node-index map, skipping every off-shape
+>  * entry.
+3592c3952,3953
+<  * Decodes CDP snapshot sparse string data.
+---
+>  * Decodes CDP snapshot sparse string data into a node-index map, skipping every off-shape
+>  * entry.
+3669c4030
+<  * Validates the bounded keys of one trusted-input operation.
+---
+>  * Validates the bounded delay, count, steps, and position of one trusted-input operation.
+diff -r -w -B '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-browser-final-registry-visit-pack/baseline/package/dist/src/core/index.js /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-browser-final-registry-visit-pack/extract/package/dist/src/core/index.js
+74c74,77
+< /** Sets the default timeout in milliseconds for browser connection, requests, and navigation. */
+---
+> /**
+> * Sets the default timeout for browser connection, requests, and navigation, `30_000`
+> * milliseconds.
+> */
+77,78c80,81
+< * Caps the serialized-character length for an `evaluate()`/`content()` result,
+< * enforced IN-PAGE before the result is returned to CDP.
+---
+> * Caps the serialized-character length for an `evaluate()`/`content()` result at `2_500_000`,
+> * enforced in-page before the result is returned to CDP.
+81c84
+< * This counts UTF-16 STRING LENGTH (`String#length`), not transport BYTES —
+---
+> * This counts UTF-16 string length (`String#length`), not transport bytes —
+97,98c100,101
+< * Names the distinctive prefix for the in-page result-limit sentinel error, immediately
+< * followed by the serialized length.
+---
+> * Names the distinctive prefix for the in-page result-limit sentinel error,
+> * `'[[ORKESTREL_BROWSER_RESULT_LIMIT]]'`, immediately followed by the serialized length.
+108,112c111,117
+< * Matches the in-page result-limit sentinel error message, anchored
+< * immediately after the `Error: ` (optionally `Uncaught Error: `) prefix that
+< * Chromium prepends to a thrown error's description — so the guard's own
+< * throw is recognized only at the message START, not wherever the substring
+< * happens to occur.
+---
+> * Matches the in-page result-limit sentinel error message, anchored immediately after the
+> * `Error:` (optionally `Uncaught Error:`) prefix Chromium prepends to a thrown error's
+> * description, `/^(?:Uncaught )?Error: \[\[ORKESTREL_BROWSER_RESULT_LIMIT\]\](\d+)/`.
+> *
+> * @remarks
+> * The anchor matches the guard's own throw only at the start of the message, rather than
+> * wherever the substring happens to occur.
+115c120,127
+< /** Sets the poll interval in milliseconds while waiting for a selector to appear. */
+---
+> /**
+> * Sets the poll interval while waiting for a selector to appear, `100` milliseconds.
+> *
+> * @remarks
+> * A wait adds the same interval as slack to its own CDP call timeout, so the in-page poll
+> * expires before the call carrying it. Host-side CDP readiness probes wait it out between
+> * attempts.
+> */
+117c129,131
+< /** Sets the default maximum node count accepted from a decoded CDP DOM snapshot. */
+---
+> /**
+> * Sets the default maximum node count accepted from a decoded CDP DOM snapshot, `100_000`.
+> */
+119c133
+< /** Names the isolated world used for iframe evaluation. */
+---
+> /** Names the isolated world used for iframe evaluation, `'__orkestrelBrowserFrame'`. */
+160c174
+< 	version: "0.0.15"
+---
+> 	version: "0.0.16"
+165,166c179,180
+< * Bounds (in milliseconds) the best-effort `Page.stopLoading` call issued
+< * after a failed `navigate()`.
+---
+> * Bounds the best-effort `Page.stopLoading` call issued after a failed `navigate()` at `1_000`
+> * milliseconds.
+175c189
+< /** Sets the default viewport width in pixels. */
+---
+> /** Sets the default viewport width, `1280` pixels. */
+177c191
+< /** Sets the default viewport height in pixels. */
+---
+> /** Sets the default viewport height, `720` pixels. */
+179c193,196
+< /** Names the CDP runtime binding the codegen recorder script calls into. */
+---
+> /**
+> * Names the CDP runtime binding the codegen recorder script calls into,
+> * `'__orkestrelBrowserCodegen'`.
+> */
+186,191c203,208
+< * Attaches capturing-phase listeners for `click`, `input` (fill), and
+< * `change` (select) on `document`, builds a stable CSS selector for the
+< * target element, and forwards each action to the CDP binding
+< * ({@link BROWSER_CODEGEN_BINDING_NAME}) as a JSON string payload. Guarded to
+< * install exactly once per document (`window[name]` sentinel) so repeated
+< * injection on every new document is idempotent.
+---
+> * Attaches capturing-phase listeners for `click`, `input` (fill), and `change` (select) on
+> * `document`, builds a stable CSS selector for the target element, and forwards each action
+> * to the CDP binding ({@link BROWSER_CODEGEN_BINDING_NAME}) as a JSON string payload. A
+> * `contenteditable` fill is captured through `input` events, the same way an input or a
+> * textarea is. Guarded to install exactly once per document (`window[name]` sentinel) so
+> * repeated injection on every new document is idempotent.
+284c301,302
+< * Represents the base error for all browser automation operations.
+---
+> * Represents the base error for all browser automation operations, carrying the code
+> * `BROWSER_ERROR` and a `context` record.
+287,288c305
+< * Carries a machine-readable `code` and optional `context` so
+< * callers can branch in a `catch` without parsing message strings.
+---
+> * A caller branches in a `catch` on the `code` rather than parsing message strings.
+301c318,319
+< * Reports that a selector-based lookup or wait timed out without the element appearing.
+---
+> * Reports that a selector-based lookup or wait timed out without the element appearing, under
+> * the code `BROWSER_SELECTOR_ERROR`.
+310c328,330
+< * Reports that a CDP request received an error response from the remote endpoint.
+---
+> * Reports that a CDP request received an error response from the remote endpoint, under the
+> * code `BROWSER_CDP_ERROR`, with the `method`, the CDP `code`, the `message`, and any `data`
+> * in its context.
+313,315c333
+< * Carries the originating `method` plus the CDP error's own `code`,
+< * `message`, and `data` (when present) in `context`, so callers can branch
+< * on the protocol-level error instead of parsing the message string.
+---
+> * Branch on the protocol-level error in `context` instead of parsing the message string.
+324,326c342,344
+< * Reports that a CDP request could not be sent or completed because the client was not in
+< * a connectable state (not connected, closed while connecting, or the
+< * connection dropped mid-request).
+---
+> * Reports that a CDP request could not be sent or completed because the client was not in a
+> * connectable state — not connected, closed while connecting, or the connection dropped
+> * mid-request — under the code `BROWSER_CDP_CONNECTION_ERROR`.
+335c353,354
+< * Reports that a pending CDP request was not answered within its timeout window.
+---
+> * Reports that a pending CDP request was not answered within its timeout window, under the
+> * code `BROWSER_CDP_TIMEOUT_ERROR`.
+344,345c363,365
+< * Reports that an `evaluate()`/`content()` result exceeded {@link BROWSER_RESULT_LIMIT}
+< * and was rejected in-page before it could overflow the CDP transport frame.
+---
+> * Reports that an `evaluate()`/`content()` result exceeded {@link BROWSER_RESULT_LIMIT} and
+> * was rejected in-page before it could overflow the CDP transport frame, under the code
+> * `BROWSER_RESULT_LIMIT_ERROR`.
+354c374
+< * Narrows an unknown value to BrowserError.
+---
+> * Narrows an unknown value to a `BrowserError`.
+363c383
+< * Narrows an unknown value to BrowserSelectorError.
+---
+> * Narrows an unknown value to a `BrowserSelectorError`.
+372c392
+< * Narrows an unknown value to CDPError.
+---
+> * Narrows an unknown value to a `CDPError`.
+381c401
+< * Narrows an unknown value to CDPConnectionError.
+---
+> * Narrows an unknown value to a `CDPConnectionError`.
+390c410
+< * Narrows an unknown value to CDPTimeoutError.
+---
+> * Narrows an unknown value to a `CDPTimeoutError`.
+399c419
+< * Narrows an unknown value to BrowserResultLimitError.
+---
+> * Narrows an unknown value to a `BrowserResultLimitError`.
+731,732c751,752
+< * Coerces a `Page.frameNavigated` CDP event to a `navigate` codegen action, or
+< * `undefined` off-shape.
+---
+> * Coerces a `Page.frameNavigated` CDP event to a `navigate` codegen action, or `undefined`
+> * off-shape and for every frame but the top-level one.
+775,776c795
+< * Coerces a CDP snapshot rectangle to a `BrowserRect`, or `undefined`
+< * off-shape.
+---
+> * Coerces a four-number CSS-pixel rectangle to a `BrowserRect`, or `undefined` off-shape.
+873c892,893
+< * Decodes a Chromium Headers object into string values.
+---
+> * Decodes a Chromium Headers object into string values, skipping every entry that is neither a
+> * string nor a finite number.
+1058c1078,1079
+< * Decodes the `Page.addScriptToEvaluateOnNewDocument` result.
+---
+> * Decodes the `Page.addScriptToEvaluateOnNewDocument` result, throwing a `BrowserError`
+> * off-shape.
+1076c1097
+< * Validates the bounded keys of one trusted-input operation.
+---
+> * Validates the bounded delay, count, steps, and position of one trusted-input operation.
+1242c1263,1264
+< * Decodes Accessibility-domain nodes into a flat serializable tree.
+---
+> * Decodes Accessibility-domain nodes into a flat serializable tree, throwing a `BrowserError`
+> * off-shape.
+1278c1300
+< * Decodes an Accessibility-domain AXValue.
+---
+> * Decodes an Accessibility-domain AXValue, or `undefined` when the record carries none.
+1303c1325
+< * Decodes one `IO.read` response.
+---
+> * Decodes one `IO.read` response, throwing a `BrowserError` off-shape.
+1316c1338
+< * Decodes JavaScript precise coverage.
+---
+> * Decodes JavaScript precise coverage, throwing a `BrowserError` off-shape.
+1344c1366
+< * Decodes CSS rule usage.
+---
+> * Decodes CSS rule usage, throwing a `BrowserError` off-shape.
+1368c1390
+< * Decodes coverage ranges.
+---
+> * Decodes and normalizes coverage ranges, throwing a `BrowserError` off-shape.
+1389c1411
+< * Decodes Performance-domain metrics.
+---
+> * Decodes Performance-domain metrics, throwing a `BrowserError` off-shape.
+1405c1427
+< * Decodes one CPU profile.
+---
+> * Decodes one CPU profile, throwing a `BrowserError` off-shape.
+1438c1460
+< * Decodes a CPU profile call frame.
+---
+> * Decodes a CPU profile call frame, throwing a `BrowserError` off-shape.
+1490c1512
+< * Decodes cookies returned by `Storage.getCookies`.
+---
+> * Decodes the cookies `Storage.getCookies` returns, throwing a `BrowserError` off-shape.
+1500c1522
+< * Decodes one Chromium cookie.
+---
+> * Decodes one Chromium cookie, throwing a `BrowserError` off-shape.
+1544c1566
+< * Decodes one in-page web-storage snapshot.
+---
+> * Decodes one in-page web-storage snapshot, throwing a `BrowserError` off-shape.
+1559c1581
+< * Decodes a list of web-storage entries.
+---
+> * Decodes a list of web-storage entries, throwing a `BrowserError` off-shape.
+1610c1632
+< * Decodes a Chromium runtime stack trace.
+---
+> * Decodes a Chromium runtime stack trace, skipping every off-shape call frame.
+1631c1653,1654
+< * Decodes a Runtime remote object's printable value.
+---
+> * Decodes a Runtime remote object's printable value, falling back to its unserializable form
+> * and then its description, or `undefined` when it carries none.
+1643c1666,1667
+< * Decodes one CDP `Runtime.evaluate` result.
+---
+> * Decodes one CDP `Runtime.evaluate` result, throwing a `BrowserError` on a failed evaluation
+> * and a `BrowserResultLimitError` past the guarded result size.
+1679c1703,1704
+< * Normalizes a raw list of recorded codegen actions.
+---
+> * Normalizes recorded codegen actions, collapsing consecutive `fill` actions on the same
+> * selector into the latest value.
+1682,1685c1707,1708
+< * Collapses consecutive `fill` actions on the same selector into the latest
+< * value (a text input fires one `input` event per keystroke) so the
+< * compiled script reflects the final typed value rather than every
+< * intermediate keystroke.
+---
+> * A text input fires one `input` event per keystroke, so the compiled script reflects
+> * the final typed value rather than every intermediate keystroke.
+1703c1726,1727
+< * Decodes a flattened CDP `Page.getFrameTree` result.
+---
+> * Decodes a flattened CDP `Page.getFrameTree` result into depth-first frame metadata, skipping
+> * every off-shape frame.
+1732c1756,1757
+< * Decodes the first `DOM.getContentQuads` quad and its center.
+---
+> * Decodes the first `DOM.getContentQuads` quad and its center, throwing a `BrowserError`
+> * off-shape.
+1768c1793,1794
+< * Extracts a keyboard chord such as `Control+Shift+P` into its parts.
+---
+> * Extracts a keyboard chord such as `Control+Shift+P` into its parts, throwing a
+> * `BrowserError` on an empty chord or an unsupported modifier.
+1806c1832
+< * @param buttons - Currently pressed public mouse buttons
+---
+> * @param buttons - Pressed public mouse buttons
+1946c1972,1973
+< * Decodes CDP snapshot sparse string data.
+---
+> * Decodes CDP snapshot sparse string data into a node-index map, skipping every off-shape
+> * entry.
+1966c1993,1994
+< * Decodes CDP snapshot sparse boolean data.
+---
+> * Decodes CDP snapshot sparse boolean data into a set of node indexes, skipping every
+> * off-shape entry.
+1976c2004,2005
+< * Decodes CDP snapshot sparse integer data.
+---
+> * Decodes CDP snapshot sparse integer data into a node-index map, skipping every off-shape
+> * entry.
+1995c2024
+< * Decodes flattened CDP node attributes.
+---
+> * Decodes flattened CDP node attributes into a frozen record, skipping every off-shape pair.
+2013c2042,2044
+< * Decodes a CDP `DOMSnapshot.captureSnapshot` result.
+---
+> * Decodes a CDP `DOMSnapshot.captureSnapshot` result into a serializable
+> * `BrowserSnapshotInput`, throwing a `BrowserError` off-shape and a `BrowserResultLimitError`
+> * past the configured node limit.
+2142c2173
+< * Tests whether a browser-node matcher is a declarative query.
+---
+> * Tests whether a browser-node matcher is a declarative query rather than a predicate.
+2414,2416c2445,2447
+< * Compiles a `Runtime.evaluate` expression so the IN-PAGE code stringifies
+< * its own result and throws a recognizable error before an oversized result
+< * would overflow the CDP transport frame.
+---
+> * Compiles a `Runtime.evaluate` expression so the in-page code stringifies its own result and
+> * throws a recognizable sentinel error before an oversized result would overflow the CDP
+> * transport frame.
+2441c2472
+< * Compiles recorded codegen actions into a replayable script.
+---
+> * Compiles recorded codegen actions into a replayable JavaScript or TypeScript script.
+4073c4104
+< * Groups the diagnostic subentities beneath one page.
+---
+> * Groups the tracing, coverage, performance, and profiler classes beneath one page.
+7374c7405
+< * Creates a CDP client bound to the given transport.
+---
+> * Creates a `CDPClientInterface` bound to the given `CDPTransportInterface`.
+7391c7422
+< * Creates a navigable browser snapshot from decoded serializable data.
+---
+> * Creates a navigable `BrowserSnapshotInterface` over decoded `BrowserSnapshotInput` data.
+diff -r -w -B '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-browser-final-registry-visit-pack/baseline/package/dist/src/server/index.cjs /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-browser-final-registry-visit-pack/extract/package/dist/src/server/index.cjs
+17c17,19
+< /** Sets the default CDP port probed for an existing browser and used for launches. */
+---
+> /**
+> * Sets the default CDP port probed for an existing browser and used for launches, `9222`.
+> */
+19c21,24
+< /** Sets the default host probed for an existing browser and used for launches (avoids `localhost` resolving to `::1` when Chromium binds `127.0.0.1`). */
+---
+> /**
+> * Sets the default host probed for an existing browser and used for launches, `'127.0.0.1'`,
+> * which avoids `localhost` resolving to `::1` when Chromium binds `127.0.0.1`.
+> */
+21c26
+< /** Names the protocol prefix for CDP discovery requests. */
+---
+> /** Names the protocol prefix for CDP discovery requests, `'http'`. */
+23c28,31
+< /** Names the path appended to the CDP host to fetch version metadata (endpoint discovery). */
+---
+> /**
+> * Names the path appended to the CDP host to fetch version metadata, `'/json/version'`, which
+> * is where endpoint discovery reads.
+> */
+25c33,36
+< /** Names the path appended to the CDP host to list open targets (pages, workers, etc). */
+---
+> /**
+> * Names the path appended to the CDP host to list open targets — pages, workers, and every
+> * other target category Chromium reports — `'/json/list'`.
+> */
+29c40,42
+< /** Names the flag that enables headless mode on a launched browser process. */
+---
+> /**
+> * Names the flag that enables headless mode on a launched browser process, `'--headless=new'`.
+> */
+31c44,47
+< /** Names the prefix for isolated browser profiles created beneath the operating-system temp directory. */
+---
+> /**
+> * Names the prefix for isolated browser profiles created beneath the operating-system temp
+> * directory, `'orkestrel-browser-'`.
+> */
+33c49,52
+< /** Bounds each launched-process exit window during TERM-to-KILL teardown. */
+---
+> /**
+> * Bounds each launched-process exit window during TERM-to-KILL teardown at `3_000`
+> * milliseconds.
+> */
+35c54,58
+< /** Bounds the `discover: false` port-occupancy probe before launching — short, because it only needs to detect an already-listening CDP endpoint, not perform full discovery. */
+---
+> /**
+> * Bounds the `discover: false` port-occupancy probe before launching at `200` milliseconds,
+> * which is short because the probe only needs to detect an already-listening CDP endpoint
+> * rather than perform full discovery.
+> */
+37c60,64
+< /** Defers once, briefly, when a transport loss is observed on an owned process, giving a near-simultaneous process-exit event (which libuv may reap slightly later than the socket close) first say over the diagnosis. */
+---
+> /**
+> * Defers once for `50` milliseconds when a transport loss is observed on an owned process,
+> * giving a near-simultaneous process-exit event, which libuv may reap slightly later than the
+> * socket close, first say over the diagnosis.
+> */
+39c66,69
+< /** Names the machine-readable error-context cause for an owned browser process exiting. */
+---
+> /**
+> * Names the machine-readable error-context cause for an owned browser process exiting,
+> * `'process-exit'`.
+> */
+41c71,74
+< /** Names the machine-readable error-context cause for a CDP transport disconnecting while its browser remains alive. */
+---
+> /**
+> * Names the machine-readable error-context cause for a CDP transport disconnecting while its
+> * browser remains alive, `'transport-loss'`.
+> */
+43c76,79
+< /** Lists the environment variables checked (in order) for an explicit browser executable path override. */
+---
+> /**
+> * Lists the environment variables checked, in order, for an explicit browser executable path
+> * override: `PLAYWRIGHT_EXECUTABLE_PATH`, then `CHROME_PATH`.
+> */
+45c81,85
+< /** Lists the well-known Chrome/Chromium/Edge executable paths with no platform-specific root, keyed by `process.platform`. */
+---
+> /**
+> * Lists the well-known Chrome/Chromium/Edge executable paths with no platform-specific root,
+> * keyed by `process.platform`, leaving `win32` empty because its roots come from
+> * `BROWSER_WINDOWS_SUFFIXES`.
+> */
+71c111,114
+< /** Lists the fallback Windows install roots used when the corresponding environment variable is absent. */
+---
+> /**
+> * Lists the fallback Windows install roots used when `PROGRAMFILES`, `PROGRAMFILES(X86)`, or
+> * `LOCALAPPDATA` is absent.
+> */
+86c129,132
+< /** Names the environment variable that carries an additional Playwright browser store base directory. */
+---
+> /**
+> * Names the environment variable that carries an additional Playwright browser store base
+> * directory, `'PLAYWRIGHT_BROWSERS_PATH'`.
+> */
+88c134,137
+< /** Lists the well-known Playwright browser store base directories checked in addition to `PLAYWRIGHT_BROWSERS_PATH`. */
+---
+> /**
+> * Lists the well-known Playwright browser store base directories checked in addition to
+> * `PLAYWRIGHT_BROWSERS_PATH`, starting with `/opt/pw-browsers`.
+> */
+95c144,147
+< /** Names the top-level Chromium symlink/binary Playwright maintains inside a browser store base. */
+---
+> /**
+> * Names the top-level Chromium symlink or binary Playwright maintains inside a browser store
+> * base, `'chromium'`.
+> */
+131c183,184
+< * Reports that a CDP connection, discovery, or launch attempt failed.
+---
+> * Reports that a CDP connection, discovery, or launch attempt failed, under the code
+> * `BROWSER_CONNECTION_ERROR`.
+140c193,194
+< * Reports that an operation requiring an active connection was attempted while disconnected.
+---
+> * Reports that an operation requiring an active connection was attempted while disconnected,
+> * under the code `BROWSER_NOT_CONNECTED_ERROR`.
+149c203,204
+< * Reports that an operation was attempted after the Browser was destroyed.
+---
+> * Reports that an operation was attempted after the browser wrapper was destroyed, under the
+> * code `BROWSER_DESTROYED_ERROR`.
+158c213
+< * Narrows an unknown value to BrowserConnectionError.
+---
+> * Narrows an unknown value to a `BrowserConnectionError`.
+167c222
+< * Narrows an unknown value to BrowserNotConnectedError.
+---
+> * Narrows an unknown value to a `BrowserNotConnectedError`.
+176c231
+< * Narrows an unknown value to BrowserDestroyedError.
+---
+> * Narrows an unknown value to a `BrowserDestroyedError`.
+469c524,525
+< * Fetches the current CDP target list from a browser's `/json/list` endpoint.
+---
+> * Fetches the current CDP target list from a browser's `/json/list` endpoint, as a `Result`
+> * carrying either the targets or a coded `BrowserConnectionError`.
+764c820,821
+< * Creates a raw-CDP Browser façade.
+---
+> * Creates a raw-CDP `BrowserInterface` façade with discovery, connection, and lifecycle
+> * management.
+769c826
+< * @example
+---
+> * @example Connect to a browser and drive a page
+773,774c830,835
+< * const browser = createBrowser()
+< * await browser.connect()
+---
+> * const browser = createBrowser({ headless: true })
+> * await browser.connect() // CDP endpoint discovery → connect, else launch
+> * const page = await browser.create({ url: 'https://example.com' })
+> * await page.click('#accept')
+> * const shot = await page.screenshot({ path: './out.png' })
+> * await browser.destroy()
+781c842
+< * Creates a Node `WebSocket`-backed CDP transport.
+---
+> * Creates a Node `WebSocket`-backed `CDPTransportInterface` for the given CDP debugger URL.
+790c851,852
+< * Creates a filesystem-backed browser writer.
+---
+> * Creates a filesystem-backed `BrowserWriterInterface` that persists bytes through
+> * `node:fs/promises`.
+diff -r -w -B '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-browser-final-registry-visit-pack/baseline/package/dist/src/server/index.d.cts /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-browser-final-registry-visit-pack/extract/package/dist/src/server/index.d.cts
+1,2c1,2
+< import { BrowserContextInterface } from '@orkestrel/browser';
+< import { BrowserContextOptions } from '@orkestrel/browser';
+---
+> import type { BrowserContextInterface } from '@orkestrel/browser';
+> import type { BrowserContextOptions } from '@orkestrel/browser';
+4,18c4,15
+< import { BrowserPageInterface } from '@orkestrel/browser';
+< import { BrowserPageOptions } from '@orkestrel/browser';
+< import { BrowserViewport } from '@orkestrel/browser';
+< import { BrowserWriterInterface } from '@orkestrel/browser';
+< import { BrowserWriterInterface as BrowserWriterInterface_2 } from '@orkestrel/browser';
+< import { CDPTarget } from '@orkestrel/browser';
+< import { CDPTransportEventMap } from '@orkestrel/browser';
+< import { CDPTransportEventMap as CDPTransportEventMap_2 } from '@orkestrel/browser';
+< import { CDPTransportInterface } from '@orkestrel/browser';
+< import { CDPTransportInterface as CDPTransportInterface_2 } from '@orkestrel/browser';
+< import { ChildProcess } from 'node:child_process';
+< import { EmitterErrorHandler } from '@orkestrel/emitter';
+< import { EmitterHooks } from '@orkestrel/emitter';
+< import { EmitterInterface } from '@orkestrel/emitter';
+< import { Result } from '@orkestrel/contract';
+---
+> import type { BrowserPageInterface } from '@orkestrel/browser';
+> import type { BrowserPageOptions } from '@orkestrel/browser';
+> import type { BrowserViewport } from '@orkestrel/browser';
+> import type { BrowserWriterInterface } from '@orkestrel/browser';
+> import type { CDPTarget } from '@orkestrel/browser';
+> import type { CDPTransportEventMap } from '@orkestrel/browser';
+> import type { CDPTransportInterface } from '@orkestrel/browser';
+> import type { ChildProcess } from 'node:child_process';
+> import type { EmitterErrorHandler } from '@orkestrel/emitter';
+> import type { EmitterHooks } from '@orkestrel/emitter';
+> import type { EmitterInterface } from '@orkestrel/emitter';
+> import type { Result } from '@orkestrel/contract';
+54c51,54
+< /** Names the path appended to the CDP host to list open targets (pages, workers, etc). */
+---
+> /**
+>  * Names the path appended to the CDP host to list open targets — pages, workers, and every
+>  * other target category Chromium reports — `'/json/list'`.
+>  */
+57c57
+< /** Names the protocol prefix for CDP discovery requests. */
+---
+> /** Names the protocol prefix for CDP discovery requests, `'http'`. */
+60c60,63
+< /** Names the path appended to the CDP host to fetch version metadata (endpoint discovery). */
+---
+> /**
+>  * Names the path appended to the CDP host to fetch version metadata, `'/json/version'`, which
+>  * is where endpoint discovery reads.
+>  */
+63c66,68
+< /** Sets the default CDP port probed for an existing browser and used for launches. */
+---
+> /**
+>  * Sets the default CDP port probed for an existing browser and used for launches, `9222`.
+>  */
+66c71,74
+< /** Sets the default host probed for an existing browser and used for launches (avoids `localhost` resolving to `::1` when Chromium binds `127.0.0.1`). */
+---
+> /**
+>  * Sets the default host probed for an existing browser and used for launches, `'127.0.0.1'`,
+>  * which avoids `localhost` resolving to `::1` when Chromium binds `127.0.0.1`.
+>  */
+75c83,86
+< /** Lists the environment variables checked (in order) for an explicit browser executable path override. */
+---
+> /**
+>  * Lists the environment variables checked, in order, for an explicit browser executable path
+>  * override: `PLAYWRIGHT_EXECUTABLE_PATH`, then `CHROME_PATH`.
+>  */
+81c92,96
+< /** Lists the well-known Chrome/Chromium/Edge executable paths with no platform-specific root, keyed by `process.platform`. */
+---
+> /**
+>  * Lists the well-known Chrome/Chromium/Edge executable paths with no platform-specific root,
+>  * keyed by `process.platform`, leaving `win32` empty because its roots come from
+>  * `BROWSER_WINDOWS_SUFFIXES`.
+>  */
+84c99,101
+< /** Names the flag that enables headless mode on a launched browser process. */
+---
+> /**
+>  * Names the flag that enables headless mode on a launched browser process, `'--headless=new'`.
+>  */
+87c104,107
+< /** Bounds each launched-process exit window during TERM-to-KILL teardown. */
+---
+> /**
+>  * Bounds each launched-process exit window during TERM-to-KILL teardown at `3_000`
+>  * milliseconds.
+>  */
+93c113,117
+< /** Bounds the `discover: false` port-occupancy probe before launching — short, because it only needs to detect an already-listening CDP endpoint, not perform full discovery. */
+---
+> /**
+>  * Bounds the `discover: false` port-occupancy probe before launching at `200` milliseconds,
+>  * which is short because the probe only needs to detect an already-listening CDP endpoint
+>  * rather than perform full discovery.
+>  */
+96c120,123
+< /** Names the machine-readable error-context cause for an owned browser process exiting. */
+---
+> /**
+>  * Names the machine-readable error-context cause for an owned browser process exiting,
+>  * `'process-exit'`.
+>  */
+99c126,129
+< /** Names the prefix for isolated browser profiles created beneath the operating-system temp directory. */
+---
+> /**
+>  * Names the prefix for isolated browser profiles created beneath the operating-system temp
+>  * directory, `'orkestrel-browser-'`.
+>  */
+105c135,138
+< /** Lists the well-known Playwright browser store base directories checked in addition to `PLAYWRIGHT_BROWSERS_PATH`. */
+---
+> /**
+>  * Lists the well-known Playwright browser store base directories checked in addition to
+>  * `PLAYWRIGHT_BROWSERS_PATH`, starting with `/opt/pw-browsers`.
+>  */
+108c141,144
+< /** Names the environment variable that carries an additional Playwright browser store base directory. */
+---
+> /**
+>  * Names the environment variable that carries an additional Playwright browser store base
+>  * directory, `'PLAYWRIGHT_BROWSERS_PATH'`.
+>  */
+114c150,153
+< /** Names the top-level Chromium symlink/binary Playwright maintains inside a browser store base. */
+---
+> /**
+>  * Names the top-level Chromium symlink or binary Playwright maintains inside a browser store
+>  * base, `'chromium'`.
+>  */
+117c156,159
+< /** Names the machine-readable error-context cause for a CDP transport disconnecting while its browser remains alive. */
+---
+> /**
+>  * Names the machine-readable error-context cause for a CDP transport disconnecting while its
+>  * browser remains alive, `'transport-loss'`.
+>  */
+120c162,166
+< /** Defers once, briefly, when a transport loss is observed on an owned process, giving a near-simultaneous process-exit event (which libuv may reap slightly later than the socket close) first say over the diagnosis. */
+---
+> /**
+>  * Defers once for `50` milliseconds when a transport loss is observed on an owned process,
+>  * giving a near-simultaneous process-exit event, which libuv may reap slightly later than the
+>  * socket close, first say over the diagnosis.
+>  */
+123c169,172
+< /** Lists the fallback Windows install roots used when the corresponding environment variable is absent. */
+---
+> /**
+>  * Lists the fallback Windows install roots used when `PROGRAMFILES`, `PROGRAMFILES(X86)`, or
+>  * `LOCALAPPDATA` is absent.
+>  */
+155c204,205
+<  * Reports that a CDP connection, discovery, or launch attempt failed.
+---
+>  * Reports that a CDP connection, discovery, or launch attempt failed, under the code
+>  * `BROWSER_CONNECTION_ERROR`.
+162c212,213
+<  * Reports that an operation was attempted after the Browser was destroyed.
+---
+>  * Reports that an operation was attempted after the browser wrapper was destroyed, under the
+>  * code `BROWSER_DESTROYED_ERROR`.
+246c297
+<  *   attached browser this is a LOCAL DETACH ONLY because other clients may
+---
+>  *   attached browser this is a local detach only, because other clients may
+248c299
+<  * - `close` — graceful REMOTE shutdown: best-effort sends CDP `Browser.close`
+---
+>  * - `close` — graceful remote shutdown: best-effort sends CDP `Browser.close`
+288a340,343
+>     /**
+>      * Probes CDP passively, changing no connection state and neither launching nor attaching,
+>      * and emits a `discover` event with the result.
+>      */
+289a345,348
+>     /**
+>      * Establishes a connection through the endpoint, then discovery, then a launch.
+>      * Idempotent.
+>      */
+291c350
+<     /** Assumes responsibility for terminating the currently connected browser. */
+---
+>     /** Assumes responsibility for terminating the connected browser. */
+292a352,358
+>     /**
+>      * Detaches the client-side transport while the remote browser keeps running. A merely
+>      * attached CDP session forgets the endpoint and its ownership becomes `undefined`. A
+>      * launched or explicitly adopted session retains ownership and its endpoint, so the same
+>      * instance can reconnect and stays responsible for eventual termination. Transport loss
+>      * while an owned browser remains alive is resumable the same way.
+>      */
+293a360
+>     /** Returns one context by index, or the first. */
+294a362
+>     /** Returns every context. */
+295a364,367
+>     /**
+>      * Creates and registers an isolated CDP context with validated proxy, download, origin,
+>      * and emulation options.
+>      */
+296a369
+>     /** Opens a page in the default context. */
+297a371,379
+>     /**
+>      * Releases local resources. A launched browser has the process serving its CDP endpoint
+>      * terminated and its exit awaited — on POSIX that terminate reaches the launch's whole
+>      * process group and awaits its drain, and on Windows it terminates one process by
+>      * identifier, the spawned process or the one a launcher handed the endpoint to — which
+>      * leaves the profile unlocked before cleanup. An adopted attachment is sent CDP
+>      * `Browser.close`. A merely attached browser is detached locally and nothing more, because
+>      * other clients may share its targets. Idempotent.
+>      */
+298a381,388
+>     /**
+>      * Shuts the remote browser down: sends CDP `Browser.close` best-effort whether attached or
+>      * owned, and for an owned browser also awaits the exit of the process serving the CDP
+>      * endpoint plus its POSIX process-group drain, escalating to a kill only where needed.
+>      * Then closes every tracked context and page, sending remote `Target.closeTarget` and
+>      * `disposeBrowserContext` whatever the ownership, before releasing the CDP client. This is
+>      * the way to shut down a browser the instance does not own and still wants terminated.
+>      */
+303c393,394
+<  * Reports that an operation requiring an active connection was attempted while disconnected.
+---
+>  * Reports that an operation requiring an active connection was attempted while disconnected,
+>  * under the code `BROWSER_NOT_CONNECTED_ERROR`.
+310c401
+<  * Describes the options for creating a Browser.
+---
+>  * Describes the options for creating a `Browser` instance.
+375c466,467
+<  * Creates a raw-CDP Browser façade.
+---
+>  * Creates a raw-CDP `BrowserInterface` façade with discovery, connection, and lifecycle
+>  * management.
+380c472
+<  * @example
+---
+>  * @example Connect to a browser and drive a page
+384,385c476,481
+<  * const browser = createBrowser()
+<  * await browser.connect()
+---
+>  * const browser = createBrowser({ headless: true })
+>  * await browser.connect() // CDP endpoint discovery → connect, else launch
+>  * const page = await browser.create({ url: 'https://example.com' })
+>  * await page.click('#accept')
+>  * const shot = await page.screenshot({ path: './out.png' })
+>  * await browser.destroy()
+399c495,496
+<  * Creates a filesystem-backed browser writer.
+---
+>  * Creates a filesystem-backed `BrowserWriterInterface` that persists bytes through
+>  * `node:fs/promises`.
+403c500
+< export declare function createBrowserWriter(): BrowserWriterInterface_2;
+---
+> export declare function createBrowserWriter(): BrowserWriterInterface;
+406c503
+<  * Creates a Node `WebSocket`-backed CDP transport.
+---
+>  * Creates a Node `WebSocket`-backed `CDPTransportInterface` for the given CDP debugger URL.
+411c508
+< export declare function createCDPTransport(options: WebSocketCDPTransportOptions): CDPTransportInterface_2;
+---
+> export declare function createCDPTransport(options: WebSocketCDPTransportOptions): CDPTransportInterface;
+414c511,512
+<  * Fetches the current CDP target list from a browser's `/json/list` endpoint.
+---
+>  * Fetches the current CDP target list from a browser's `/json/list` endpoint, as a `Result`
+>  * carrying either the targets or a coded `BrowserConnectionError`.
+507c605
+<  * Narrows an unknown value to BrowserConnectionError.
+---
+>  * Narrows an unknown value to a `BrowserConnectionError`.
+515c613
+<  * Narrows an unknown value to BrowserDestroyedError.
+---
+>  * Narrows an unknown value to a `BrowserDestroyedError`.
+523c621
+<  * Narrows an unknown value to BrowserNotConnectedError.
+---
+>  * Narrows an unknown value to a `BrowserNotConnectedError`.
+672c770
+<     get emitter(): EmitterInterface<CDPTransportEventMap_2>;
+---
+>     get emitter(): EmitterInterface<CDPTransportEventMap>;
+679c777
+<  * Describes the options for creating a WebSocketCDPTransport.
+---
+>  * Describes the options for creating a `WebSocketCDPTransport` instance.
+diff -r -w -B '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-browser-final-registry-visit-pack/baseline/package/dist/src/server/index.d.ts /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-browser-final-registry-visit-pack/extract/package/dist/src/server/index.d.ts
+1,2c1,2
+< import { BrowserContextInterface } from '@orkestrel/browser';
+< import { BrowserContextOptions } from '@orkestrel/browser';
+---
+> import type { BrowserContextInterface } from '@orkestrel/browser';
+> import type { BrowserContextOptions } from '@orkestrel/browser';
+4,18c4,15
+< import { BrowserPageInterface } from '@orkestrel/browser';
+< import { BrowserPageOptions } from '@orkestrel/browser';
+< import { BrowserViewport } from '@orkestrel/browser';
+< import { BrowserWriterInterface } from '@orkestrel/browser';
+< import { BrowserWriterInterface as BrowserWriterInterface_2 } from '@orkestrel/browser';
+< import { CDPTarget } from '@orkestrel/browser';
+< import { CDPTransportEventMap } from '@orkestrel/browser';
+< import { CDPTransportEventMap as CDPTransportEventMap_2 } from '@orkestrel/browser';
+< import { CDPTransportInterface } from '@orkestrel/browser';
+< import { CDPTransportInterface as CDPTransportInterface_2 } from '@orkestrel/browser';
+< import { ChildProcess } from 'node:child_process';
+< import { EmitterErrorHandler } from '@orkestrel/emitter';
+< import { EmitterHooks } from '@orkestrel/emitter';
+< import { EmitterInterface } from '@orkestrel/emitter';
+< import { Result } from '@orkestrel/contract';
+---
+> import type { BrowserPageInterface } from '@orkestrel/browser';
+> import type { BrowserPageOptions } from '@orkestrel/browser';
+> import type { BrowserViewport } from '@orkestrel/browser';
+> import type { BrowserWriterInterface } from '@orkestrel/browser';
+> import type { CDPTarget } from '@orkestrel/browser';
+> import type { CDPTransportEventMap } from '@orkestrel/browser';
+> import type { CDPTransportInterface } from '@orkestrel/browser';
+> import type { ChildProcess } from 'node:child_process';
+> import type { EmitterErrorHandler } from '@orkestrel/emitter';
+> import type { EmitterHooks } from '@orkestrel/emitter';
+> import type { EmitterInterface } from '@orkestrel/emitter';
+> import type { Result } from '@orkestrel/contract';
+54c51,54
+< /** Names the path appended to the CDP host to list open targets (pages, workers, etc). */
+---
+> /**
+>  * Names the path appended to the CDP host to list open targets — pages, workers, and every
+>  * other target category Chromium reports — `'/json/list'`.
+>  */
+57c57
+< /** Names the protocol prefix for CDP discovery requests. */
+---
+> /** Names the protocol prefix for CDP discovery requests, `'http'`. */
+60c60,63
+< /** Names the path appended to the CDP host to fetch version metadata (endpoint discovery). */
+---
+> /**
+>  * Names the path appended to the CDP host to fetch version metadata, `'/json/version'`, which
+>  * is where endpoint discovery reads.
+>  */
+63c66,68
+< /** Sets the default CDP port probed for an existing browser and used for launches. */
+---
+> /**
+>  * Sets the default CDP port probed for an existing browser and used for launches, `9222`.
+>  */
+66c71,74
+< /** Sets the default host probed for an existing browser and used for launches (avoids `localhost` resolving to `::1` when Chromium binds `127.0.0.1`). */
+---
+> /**
+>  * Sets the default host probed for an existing browser and used for launches, `'127.0.0.1'`,
+>  * which avoids `localhost` resolving to `::1` when Chromium binds `127.0.0.1`.
+>  */
+75c83,86
+< /** Lists the environment variables checked (in order) for an explicit browser executable path override. */
+---
+> /**
+>  * Lists the environment variables checked, in order, for an explicit browser executable path
+>  * override: `PLAYWRIGHT_EXECUTABLE_PATH`, then `CHROME_PATH`.
+>  */
+81c92,96
+< /** Lists the well-known Chrome/Chromium/Edge executable paths with no platform-specific root, keyed by `process.platform`. */
+---
+> /**
+>  * Lists the well-known Chrome/Chromium/Edge executable paths with no platform-specific root,
+>  * keyed by `process.platform`, leaving `win32` empty because its roots come from
+>  * `BROWSER_WINDOWS_SUFFIXES`.
+>  */
+84c99,101
+< /** Names the flag that enables headless mode on a launched browser process. */
+---
+> /**
+>  * Names the flag that enables headless mode on a launched browser process, `'--headless=new'`.
+>  */
+87c104,107
+< /** Bounds each launched-process exit window during TERM-to-KILL teardown. */
+---
+> /**
+>  * Bounds each launched-process exit window during TERM-to-KILL teardown at `3_000`
+>  * milliseconds.
+>  */
+93c113,117
+< /** Bounds the `discover: false` port-occupancy probe before launching — short, because it only needs to detect an already-listening CDP endpoint, not perform full discovery. */
+---
+> /**
+>  * Bounds the `discover: false` port-occupancy probe before launching at `200` milliseconds,
+>  * which is short because the probe only needs to detect an already-listening CDP endpoint
+>  * rather than perform full discovery.
+>  */
+96c120,123
+< /** Names the machine-readable error-context cause for an owned browser process exiting. */
+---
+> /**
+>  * Names the machine-readable error-context cause for an owned browser process exiting,
+>  * `'process-exit'`.
+>  */
+99c126,129
+< /** Names the prefix for isolated browser profiles created beneath the operating-system temp directory. */
+---
+> /**
+>  * Names the prefix for isolated browser profiles created beneath the operating-system temp
+>  * directory, `'orkestrel-browser-'`.
+>  */
+105c135,138
+< /** Lists the well-known Playwright browser store base directories checked in addition to `PLAYWRIGHT_BROWSERS_PATH`. */
+---
+> /**
+>  * Lists the well-known Playwright browser store base directories checked in addition to
+>  * `PLAYWRIGHT_BROWSERS_PATH`, starting with `/opt/pw-browsers`.
+>  */
+108c141,144
+< /** Names the environment variable that carries an additional Playwright browser store base directory. */
+---
+> /**
+>  * Names the environment variable that carries an additional Playwright browser store base
+>  * directory, `'PLAYWRIGHT_BROWSERS_PATH'`.
+>  */
+114c150,153
+< /** Names the top-level Chromium symlink/binary Playwright maintains inside a browser store base. */
+---
+> /**
+>  * Names the top-level Chromium symlink or binary Playwright maintains inside a browser store
+>  * base, `'chromium'`.
+>  */
+117c156,159
+< /** Names the machine-readable error-context cause for a CDP transport disconnecting while its browser remains alive. */
+---
+> /**
+>  * Names the machine-readable error-context cause for a CDP transport disconnecting while its
+>  * browser remains alive, `'transport-loss'`.
+>  */
+120c162,166
+< /** Defers once, briefly, when a transport loss is observed on an owned process, giving a near-simultaneous process-exit event (which libuv may reap slightly later than the socket close) first say over the diagnosis. */
+---
+> /**
+>  * Defers once for `50` milliseconds when a transport loss is observed on an owned process,
+>  * giving a near-simultaneous process-exit event, which libuv may reap slightly later than the
+>  * socket close, first say over the diagnosis.
+>  */
+123c169,172
+< /** Lists the fallback Windows install roots used when the corresponding environment variable is absent. */
+---
+> /**
+>  * Lists the fallback Windows install roots used when `PROGRAMFILES`, `PROGRAMFILES(X86)`, or
+>  * `LOCALAPPDATA` is absent.
+>  */
+155c204,205
+<  * Reports that a CDP connection, discovery, or launch attempt failed.
+---
+>  * Reports that a CDP connection, discovery, or launch attempt failed, under the code
+>  * `BROWSER_CONNECTION_ERROR`.
+162c212,213
+<  * Reports that an operation was attempted after the Browser was destroyed.
+---
+>  * Reports that an operation was attempted after the browser wrapper was destroyed, under the
+>  * code `BROWSER_DESTROYED_ERROR`.
+246c297
+<  *   attached browser this is a LOCAL DETACH ONLY because other clients may
+---
+>  *   attached browser this is a local detach only, because other clients may
+248c299
+<  * - `close` — graceful REMOTE shutdown: best-effort sends CDP `Browser.close`
+---
+>  * - `close` — graceful remote shutdown: best-effort sends CDP `Browser.close`
+288a340,343
+>     /**
+>      * Probes CDP passively, changing no connection state and neither launching nor attaching,
+>      * and emits a `discover` event with the result.
+>      */
+289a345,348
+>     /**
+>      * Establishes a connection through the endpoint, then discovery, then a launch.
+>      * Idempotent.
+>      */
+291c350
+<     /** Assumes responsibility for terminating the currently connected browser. */
+---
+>     /** Assumes responsibility for terminating the connected browser. */
+292a352,358
+>     /**
+>      * Detaches the client-side transport while the remote browser keeps running. A merely
+>      * attached CDP session forgets the endpoint and its ownership becomes `undefined`. A
+>      * launched or explicitly adopted session retains ownership and its endpoint, so the same
+>      * instance can reconnect and stays responsible for eventual termination. Transport loss
+>      * while an owned browser remains alive is resumable the same way.
+>      */
+293a360
+>     /** Returns one context by index, or the first. */
+294a362
+>     /** Returns every context. */
+295a364,367
+>     /**
+>      * Creates and registers an isolated CDP context with validated proxy, download, origin,
+>      * and emulation options.
+>      */
+296a369
+>     /** Opens a page in the default context. */
+297a371,379
+>     /**
+>      * Releases local resources. A launched browser has the process serving its CDP endpoint
+>      * terminated and its exit awaited — on POSIX that terminate reaches the launch's whole
+>      * process group and awaits its drain, and on Windows it terminates one process by
+>      * identifier, the spawned process or the one a launcher handed the endpoint to — which
+>      * leaves the profile unlocked before cleanup. An adopted attachment is sent CDP
+>      * `Browser.close`. A merely attached browser is detached locally and nothing more, because
+>      * other clients may share its targets. Idempotent.
+>      */
+298a381,388
+>     /**
+>      * Shuts the remote browser down: sends CDP `Browser.close` best-effort whether attached or
+>      * owned, and for an owned browser also awaits the exit of the process serving the CDP
+>      * endpoint plus its POSIX process-group drain, escalating to a kill only where needed.
+>      * Then closes every tracked context and page, sending remote `Target.closeTarget` and
+>      * `disposeBrowserContext` whatever the ownership, before releasing the CDP client. This is
+>      * the way to shut down a browser the instance does not own and still wants terminated.
+>      */
+303c393,394
+<  * Reports that an operation requiring an active connection was attempted while disconnected.
+---
+>  * Reports that an operation requiring an active connection was attempted while disconnected,
+>  * under the code `BROWSER_NOT_CONNECTED_ERROR`.
+310c401
+<  * Describes the options for creating a Browser.
+---
+>  * Describes the options for creating a `Browser` instance.
+375c466,467
+<  * Creates a raw-CDP Browser façade.
+---
+>  * Creates a raw-CDP `BrowserInterface` façade with discovery, connection, and lifecycle
+>  * management.
+380c472
+<  * @example
+---
+>  * @example Connect to a browser and drive a page
+384,385c476,481
+<  * const browser = createBrowser()
+<  * await browser.connect()
+---
+>  * const browser = createBrowser({ headless: true })
+>  * await browser.connect() // CDP endpoint discovery → connect, else launch
+>  * const page = await browser.create({ url: 'https://example.com' })
+>  * await page.click('#accept')
+>  * const shot = await page.screenshot({ path: './out.png' })
+>  * await browser.destroy()
+399c495,496
+<  * Creates a filesystem-backed browser writer.
+---
+>  * Creates a filesystem-backed `BrowserWriterInterface` that persists bytes through
+>  * `node:fs/promises`.
+403c500
+< export declare function createBrowserWriter(): BrowserWriterInterface_2;
+---
+> export declare function createBrowserWriter(): BrowserWriterInterface;
+406c503
+<  * Creates a Node `WebSocket`-backed CDP transport.
+---
+>  * Creates a Node `WebSocket`-backed `CDPTransportInterface` for the given CDP debugger URL.
+411c508
+< export declare function createCDPTransport(options: WebSocketCDPTransportOptions): CDPTransportInterface_2;
+---
+> export declare function createCDPTransport(options: WebSocketCDPTransportOptions): CDPTransportInterface;
+414c511,512
+<  * Fetches the current CDP target list from a browser's `/json/list` endpoint.
+---
+>  * Fetches the current CDP target list from a browser's `/json/list` endpoint, as a `Result`
+>  * carrying either the targets or a coded `BrowserConnectionError`.
+507c605
+<  * Narrows an unknown value to BrowserConnectionError.
+---
+>  * Narrows an unknown value to a `BrowserConnectionError`.
+515c613
+<  * Narrows an unknown value to BrowserDestroyedError.
+---
+>  * Narrows an unknown value to a `BrowserDestroyedError`.
+523c621
+<  * Narrows an unknown value to BrowserNotConnectedError.
+---
+>  * Narrows an unknown value to a `BrowserNotConnectedError`.
+672c770
+<     get emitter(): EmitterInterface<CDPTransportEventMap_2>;
+---
+>     get emitter(): EmitterInterface<CDPTransportEventMap>;
+679c777
+<  * Describes the options for creating a WebSocketCDPTransport.
+---
+>  * Describes the options for creating a `WebSocketCDPTransport` instance.
+diff -r -w -B '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-browser-final-registry-visit-pack/baseline/package/dist/src/server/index.js /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-browser-final-registry-visit-pack/extract/package/dist/src/server/index.js
+16c16,18
+< /** Sets the default CDP port probed for an existing browser and used for launches. */
+---
+> /**
+> * Sets the default CDP port probed for an existing browser and used for launches, `9222`.
+> */
+18c20,23
+< /** Sets the default host probed for an existing browser and used for launches (avoids `localhost` resolving to `::1` when Chromium binds `127.0.0.1`). */
+---
+> /**
+> * Sets the default host probed for an existing browser and used for launches, `'127.0.0.1'`,
+> * which avoids `localhost` resolving to `::1` when Chromium binds `127.0.0.1`.
+> */
+20c25
+< /** Names the protocol prefix for CDP discovery requests. */
+---
+> /** Names the protocol prefix for CDP discovery requests, `'http'`. */
+22c27,30
+< /** Names the path appended to the CDP host to fetch version metadata (endpoint discovery). */
+---
+> /**
+> * Names the path appended to the CDP host to fetch version metadata, `'/json/version'`, which
+> * is where endpoint discovery reads.
+> */
+24c32,35
+< /** Names the path appended to the CDP host to list open targets (pages, workers, etc). */
+---
+> /**
+> * Names the path appended to the CDP host to list open targets — pages, workers, and every
+> * other target category Chromium reports — `'/json/list'`.
+> */
+28c39,41
+< /** Names the flag that enables headless mode on a launched browser process. */
+---
+> /**
+> * Names the flag that enables headless mode on a launched browser process, `'--headless=new'`.
+> */
+30c43,46
+< /** Names the prefix for isolated browser profiles created beneath the operating-system temp directory. */
+---
+> /**
+> * Names the prefix for isolated browser profiles created beneath the operating-system temp
+> * directory, `'orkestrel-browser-'`.
+> */
+32c48,51
+< /** Bounds each launched-process exit window during TERM-to-KILL teardown. */
+---
+> /**
+> * Bounds each launched-process exit window during TERM-to-KILL teardown at `3_000`
+> * milliseconds.
+> */
+34c53,57
+< /** Bounds the `discover: false` port-occupancy probe before launching — short, because it only needs to detect an already-listening CDP endpoint, not perform full discovery. */
+---
+> /**
+> * Bounds the `discover: false` port-occupancy probe before launching at `200` milliseconds,
+> * which is short because the probe only needs to detect an already-listening CDP endpoint
+> * rather than perform full discovery.
+> */
+36c59,63
+< /** Defers once, briefly, when a transport loss is observed on an owned process, giving a near-simultaneous process-exit event (which libuv may reap slightly later than the socket close) first say over the diagnosis. */
+---
+> /**
+> * Defers once for `50` milliseconds when a transport loss is observed on an owned process,
+> * giving a near-simultaneous process-exit event, which libuv may reap slightly later than the
+> * socket close, first say over the diagnosis.
+> */
+38c65,68
+< /** Names the machine-readable error-context cause for an owned browser process exiting. */
+---
+> /**
+> * Names the machine-readable error-context cause for an owned browser process exiting,
+> * `'process-exit'`.
+> */
+40c70,73
+< /** Names the machine-readable error-context cause for a CDP transport disconnecting while its browser remains alive. */
+---
+> /**
+> * Names the machine-readable error-context cause for a CDP transport disconnecting while its
+> * browser remains alive, `'transport-loss'`.
+> */
+42c75,78
+< /** Lists the environment variables checked (in order) for an explicit browser executable path override. */
+---
+> /**
+> * Lists the environment variables checked, in order, for an explicit browser executable path
+> * override: `PLAYWRIGHT_EXECUTABLE_PATH`, then `CHROME_PATH`.
+> */
+44c80,84
+< /** Lists the well-known Chrome/Chromium/Edge executable paths with no platform-specific root, keyed by `process.platform`. */
+---
+> /**
+> * Lists the well-known Chrome/Chromium/Edge executable paths with no platform-specific root,
+> * keyed by `process.platform`, leaving `win32` empty because its roots come from
+> * `BROWSER_WINDOWS_SUFFIXES`.
+> */
+70c110,113
+< /** Lists the fallback Windows install roots used when the corresponding environment variable is absent. */
+---
+> /**
+> * Lists the fallback Windows install roots used when `PROGRAMFILES`, `PROGRAMFILES(X86)`, or
+> * `LOCALAPPDATA` is absent.
+> */
+85c128,131
+< /** Names the environment variable that carries an additional Playwright browser store base directory. */
+---
+> /**
+> * Names the environment variable that carries an additional Playwright browser store base
+> * directory, `'PLAYWRIGHT_BROWSERS_PATH'`.
+> */
+87c133,136
+< /** Lists the well-known Playwright browser store base directories checked in addition to `PLAYWRIGHT_BROWSERS_PATH`. */
+---
+> /**
+> * Lists the well-known Playwright browser store base directories checked in addition to
+> * `PLAYWRIGHT_BROWSERS_PATH`, starting with `/opt/pw-browsers`.
+> */
+94c143,146
+< /** Names the top-level Chromium symlink/binary Playwright maintains inside a browser store base. */
+---
+> /**
+> * Names the top-level Chromium symlink or binary Playwright maintains inside a browser store
+> * base, `'chromium'`.
+> */
+130c182,183
+< * Reports that a CDP connection, discovery, or launch attempt failed.
+---
+> * Reports that a CDP connection, discovery, or launch attempt failed, under the code
+> * `BROWSER_CONNECTION_ERROR`.
+139c192,193
+< * Reports that an operation requiring an active connection was attempted while disconnected.
+---
+> * Reports that an operation requiring an active connection was attempted while disconnected,
+> * under the code `BROWSER_NOT_CONNECTED_ERROR`.
+148c202,203
+< * Reports that an operation was attempted after the Browser was destroyed.
+---
+> * Reports that an operation was attempted after the browser wrapper was destroyed, under the
+> * code `BROWSER_DESTROYED_ERROR`.
+157c212
+< * Narrows an unknown value to BrowserConnectionError.
+---
+> * Narrows an unknown value to a `BrowserConnectionError`.
+166c221
+< * Narrows an unknown value to BrowserNotConnectedError.
+---
+> * Narrows an unknown value to a `BrowserNotConnectedError`.
+175c230
+< * Narrows an unknown value to BrowserDestroyedError.
+---
+> * Narrows an unknown value to a `BrowserDestroyedError`.
+468c523,524
+< * Fetches the current CDP target list from a browser's `/json/list` endpoint.
+---
+> * Fetches the current CDP target list from a browser's `/json/list` endpoint, as a `Result`
+> * carrying either the targets or a coded `BrowserConnectionError`.
+763c819,820
+< * Creates a raw-CDP Browser façade.
+---
+> * Creates a raw-CDP `BrowserInterface` façade with discovery, connection, and lifecycle
+> * management.
+768c825
+< * @example
+---
+> * @example Connect to a browser and drive a page
+772,773c829,834
+< * const browser = createBrowser()
+< * await browser.connect()
+---
+> * const browser = createBrowser({ headless: true })
+> * await browser.connect() // CDP endpoint discovery → connect, else launch
+> * const page = await browser.create({ url: 'https://example.com' })
+> * await page.click('#accept')
+> * const shot = await page.screenshot({ path: './out.png' })
+> * await browser.destroy()
+780c841
+< * Creates a Node `WebSocket`-backed CDP transport.
+---
+> * Creates a Node `WebSocket`-backed `CDPTransportInterface` for the given CDP debugger URL.
+789c850,851
+< * Creates a filesystem-backed browser writer.
+---
+> * Creates a filesystem-backed `BrowserWriterInterface` that persists bytes through
+> * `node:fs/promises`.

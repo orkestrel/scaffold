@@ -1,0 +1,28 @@
+npm notice
+npm notice 📦  @orkestrel/browser@0.0.16
+npm notice Tarball Contents
+npm notice 1.1kB LICENSE
+npm notice 2.6kB README.md
+npm notice 274.7kB dist/src/core/index.cjs
+npm notice 476.3kB dist/src/core/index.cjs.map
+npm notice 157.1kB dist/src/core/index.d.cts
+npm notice 157.1kB dist/src/core/index.d.ts
+npm notice 258.5kB dist/src/core/index.js
+npm notice 469.5kB dist/src/core/index.js.map
+npm notice 62.4kB dist/src/server/index.cjs
+npm notice 107.0kB dist/src/server/index.cjs.map
+npm notice 35.5kB dist/src/server/index.d.cts
+npm notice 35.5kB dist/src/server/index.d.ts
+npm notice 59.3kB dist/src/server/index.js
+npm notice 105.9kB dist/src/server/index.js.map
+npm notice 4.5kB package.json
+npm notice Tarball Details
+npm notice name: @orkestrel/browser
+npm notice version: 0.0.16
+npm notice filename: orkestrel-browser-0.0.16.tgz
+npm notice package size: 471.1 kB
+npm notice unpacked size: 2.2 MB
+npm notice shasum: bd6ae72d2cd3d95e1909c74d5de034c7f5c2004d
+npm notice integrity: sha512-Hk84wis49Tj+3[...]3OVy6fGt9W/cA==
+npm notice total files: 15
+npm notice
