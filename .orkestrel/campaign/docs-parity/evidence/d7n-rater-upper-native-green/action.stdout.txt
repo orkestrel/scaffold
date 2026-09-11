@@ -1,0 +1,10 @@
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/rater
+
+·····························
+
+ Test Files  1 passed (1)
+      Tests  29 passed (29)
+   Start at  15:08:19
+   Duration  684ms (transform 84ms, setup 143ms, import 354ms, tests 25ms, environment 0ms)
+

@@ -29,17 +29,17 @@ a4e7078da602619e54384dbc7bdddaf25a2fdc6af0842a55004b8328365b8be7. Release source
 at d2175dfe on main and the named origin refs. Read
 d7n-scaffold-upper-prepared-verdict.md and d7n-scaffold-upper-release-landing.md.
 
-LSP's registry-backed preparation landed at d2c5e0299e87aad1b08252b09fe9e243c4f1dbdb
-on its pushed campaign branch. Online overwrite/audit, prepublishOnly and actual
-packing passed. Read d7n-lsp-registry-preparation-landing.md. Final review and main
-closure remain open. Browser and Interpret's native-entry reviews disagreed on
-added population requirements; the bounded preservation correction is active in
-d7n-browser-interpret-native-preservation-fix-brief.md. Interpret's root native
-receipt is green. Its supported policy repair resolved the isolated config red;
-the complete prepublish rerun waits for the authored correction. Qualifier's
-native-entry unit is active. Terminal's returned bounded docs/native fix awaits
-review and final preparation. Its external writer hit the weekly limit without
-changing source, so the recorded native substitution applies.
+LSP0.0.7 release preparation is closed at d6543822b6c88201a96af0293123b2c3c60dc6b8.
+The canonical checkout is clean on main; campaign and origin/main match. Its final
+registry-backed prepublish/pack passed. Read d7n-lsp-registry-release-landing.md.
+Owner publication remains pending. Browser, Interpret and Qualifier's returned
+native entries passed independent source review and root preparation prepublish;
+the reused objective source review is active. Their final registry visits remain
+open. Queue and Rater's native entries returned green; Queue's root preparation
+prepublish passed and Rater's is running. Read d7n-native-preserved-preparation-state.md.
+Terminal's returned bounded docs/native fix awaits review and final preparation.
+Its external writer hit the weekly limit without changing source, so the recorded
+native substitution applies.
 
 Guide preparation landed at f277b88bc1e8063521ce1acaa783913b0af1856a and is campaign-
 pushed. Its refreshed Scaffold visit passed overwrite/audit/catalog but stopped
@@ -365,7 +365,7 @@ Tips are the branch tips as pushed. "on main" means the branch tip is `main`.
 | middleware | `5747e3f` | closed, on `main` (`d7n-middleware-closure-verdict.md`) | nothing |
 | brief | `2660b0a` | closed on `main` at `3849b1d`; `close-3` landed after it; its re-closure lanes were terminated by the usage limit | dispatch the closure again: checker on `d7n-brief-close-3-check-brief.md`, verifier on `d7n-brief-verify-brief.md`; then push `main` |
 | toolbox | `f8175e9` | fix round and `close-2` landed; closure checker PASS (`d7n-toolbox-closure-checker-toolbox.md`); verifier terminated | run the verifier on `d7n-toolbox-verify-brief.md` (head-start first); write the closure verdict; push `main` |
-| lsp | `c4842c8` | fix round and `close-2` landed; both closure lanes terminated | dispatch the closure: checker on `d7n-lsp-check-brief.md` (the fix round's check brief, which carries the closing items; `d7n-lsp-close-2-brief.md` is the successor it covers), verifier on `d7n-lsp-verify-brief.md`; verdict; push `main` |
+| lsp | `d654382` | docs-parity and registry-backed release preparation closed; clean canonical main and pushed campaign/main | owner uploads0.0.7 with the prepared consumer layer; confirm registry afterward; read `d7n-lsp-registry-release-landing.md` |
 | database | `cdbf66a` | `close-2` landed; owner main merged; prior verifier green; the canon finding remains open; Ruling 20 stays unchanged | dispatch `d7n-database-canon-brief.md` to move the compiler-derived surface into its consuming package case; then checker and verifier; verdict; push `main` |
 | probe | `93fc01d` | resumed test-draft correction landed and branch pushed; scoped gates green; type-load fixture retained by d7n-probe-heavy-ruling-verdict.md after a separate host run; clean; main still b816749 | write the audit-item check brief and generate verification against the final guide artifact; full closure and main push remain pending |
 | agent | `305af91` | fix landed and campaign branch pushed; root host readings passed, including comment-only scope, stable docs directions, core tests, and opening-header comparison; main unchanged | install the accepted final guide artifact; audit-item checker and whole-chain verifier; closure verdict; refresh main ancestry; push main |
