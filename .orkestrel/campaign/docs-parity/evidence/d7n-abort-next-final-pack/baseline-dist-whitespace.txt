@@ -1,0 +1,256 @@
+diff -r -w -B '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-abort-next-final-pack/baseline/package/dist/src/core/index.cjs /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-abort-next-final-pack/extract/package/dist/src/core/index.cjs
+5c5,6
+< * Determines whether a value is a native `AbortSignal`.
+---
+> * Determines whether a value is a native `AbortSignal`, staying total for structural spoofs
+> * and for hostile or revoked proxies.
+9,10c10
+< * check. Calling it through `Reflect.apply` rejects structural spoofs while
+< * the contained boundary keeps the guard total for hostile or revoked proxies.
+---
+> * check, and `Reflect.apply` calls it inside a contained boundary.
+37c37,38
+< * Validates and normalizes abort construction options.
+---
+> * Validates once-read abort construction options and returns a fresh normalized copy
+> * omitting absent optional keys.
+41,42c42
+< * read exactly once before validation. The returned object is a fresh copy and
+< * omits absent optional properties. No controller or signal composition begins
+---
+> * read exactly once before validation. No controller or signal composition begins
+107c107,108
+< * Links an own `AbortSignal` to an optional parent signal.
+---
+> * Links an own `AbortSignal` to an optional parent signal, returning
+> * `AbortSignal.any([own, parent])` when a parent is given.
+110,112c111,112
+< * When `parent` is `undefined`, the own signal is returned unchanged. When a
+< * parent is given, the result is `AbortSignal.any([own, parent])`, which fires
+< * on EITHER the own signal aborting or the parent aborting — without
+---
+> * When `parent` is `undefined`, the own signal is returned unchanged. The combined
+> * signal fires on EITHER the own signal aborting or the parent aborting — without
+153,154c153,155
+< * Represents a cancellation handle — a thin, traceable wrapper over a native
+< * `AbortController` whose exposed `signal` can be linked to a parent signal.
+---
+> * Implements {@link AbortInterface} over a private `AbortController` the instance owns,
+> * resolving the trace `id` at construction and exposing either that controller's own
+> * `signal` or one linked to a parent.
+206,207c207,209
+< * Creates a cancellation handle — a thin, traceable wrapper over a native
+< * `AbortController` whose `signal` can be linked to a parent signal.
+---
+> * Creates a cancellation handle from validated options and returns it as an
+> * {@link AbortInterface} — a resolved trace `id` and a `signal` already linked to any
+> * parent given, so a caller holds the published contract rather than the `Abort` class.
+221c223
+< * @example
+---
+> * @example Create and abort
+226,227c228,230
+< * const work = fetch(url, { signal: abort.signal })
+< * abort.abort() // cancels the fetch through the linked native signal
+---
+> * const stream = openStream({ signal: abort.signal })
+> * // later, to cancel:
+> * abort.abort('user navigated away') // signal.reason carries the value
+diff -r -w -B '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-abort-next-final-pack/baseline/package/dist/src/core/index.d.cts /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-abort-next-final-pack/extract/package/dist/src/core/index.d.cts
+2,3c2,4
+<  * Represents a cancellation handle — a thin, traceable wrapper over a native
+<  * `AbortController` whose exposed `signal` can be linked to a parent signal.
+---
+>  * Implements {@link AbortInterface} over a private `AbortController` the instance owns,
+>  * resolving the trace `id` at construction and exposing either that controller's own
+>  * `signal` or one linked to a parent.
+45,46c46,48
+<      * Represents a cancellation handle — a thin, traceable wrapper over a native
+<      * `AbortController` whose `signal` can be linked to a parent signal.
+---
+>      * Represents the cancellation contract a consumer holds — a traceable `id`, the exposed
+>      * `AbortSignal`, an `aborted` reading of it, and an idempotent `abort` that cancels the
+>      * work bound to that signal.
+59c61,62
+<          * Aborts the handle, firing `signal`. Aborting is idempotent — the first reason sticks.
+---
+>          * Aborts the underlying controller, flipping `aborted` and firing `signal`. Aborting is
+>          * idempotent — the first reason sticks and every later call is a no-op.
+83,84c86,88
+<      * Creates a cancellation handle — a thin, traceable wrapper over a native
+<      * `AbortController` whose `signal` can be linked to a parent signal.
+---
+>      * Creates a cancellation handle from validated options and returns it as an
+>      * {@link AbortInterface} — a resolved trace `id` and a `signal` already linked to any
+>      * parent given, so a caller holds the published contract rather than the `Abort` class.
+98c102
+<          * @example
+---
+>          * @example Create and abort
+103,104c107,109
+<          * const work = fetch(url, { signal: abort.signal })
+<          * abort.abort() // cancels the fetch through the linked native signal
+---
+>          * const stream = openStream({ signal: abort.signal })
+>          * // later, to cancel:
+>          * abort.abort('user navigated away') // signal.reason carries the value
+118c123,124
+<       * Determines whether a value is a native `AbortSignal`.
+---
+>       * Determines whether a value is a native `AbortSignal`, staying total for structural spoofs
+>       * and for hostile or revoked proxies.
+122,123c128
+<       * check. Calling it through `Reflect.apply` rejects structural spoofs while
+<       * the contained boundary keeps the guard total for hostile or revoked proxies.
+---
+>       * check, and `Reflect.apply` calls it inside a contained boundary.
+140c145,146
+<       * Links an own `AbortSignal` to an optional parent signal.
+---
+>       * Links an own `AbortSignal` to an optional parent signal, returning
+>       * `AbortSignal.any([own, parent])` when a parent is given.
+143,145c149,150
+<       * When `parent` is `undefined`, the own signal is returned unchanged. When a
+<       * parent is given, the result is `AbortSignal.any([own, parent])`, which fires
+<       * on EITHER the own signal aborting or the parent aborting — without
+---
+>       * When `parent` is `undefined`, the own signal is returned unchanged. The combined
+>       * signal fires on EITHER the own signal aborting or the parent aborting — without
+167c172,173
+<        * Validates and normalizes abort construction options.
+---
+>        * Validates once-read abort construction options and returns a fresh normalized copy
+>        * omitting absent optional keys.
+171,172c177
+<        * read exactly once before validation. The returned object is a fresh copy and
+<        * omits absent optional properties. No controller or signal composition begins
+---
+>        * read exactly once before validation. No controller or signal composition begins
+diff -r -w -B '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-abort-next-final-pack/baseline/package/dist/src/core/index.d.ts /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-abort-next-final-pack/extract/package/dist/src/core/index.d.ts
+2,3c2,4
+<  * Represents a cancellation handle — a thin, traceable wrapper over a native
+<  * `AbortController` whose exposed `signal` can be linked to a parent signal.
+---
+>  * Implements {@link AbortInterface} over a private `AbortController` the instance owns,
+>  * resolving the trace `id` at construction and exposing either that controller's own
+>  * `signal` or one linked to a parent.
+45,46c46,48
+<      * Represents a cancellation handle — a thin, traceable wrapper over a native
+<      * `AbortController` whose `signal` can be linked to a parent signal.
+---
+>      * Represents the cancellation contract a consumer holds — a traceable `id`, the exposed
+>      * `AbortSignal`, an `aborted` reading of it, and an idempotent `abort` that cancels the
+>      * work bound to that signal.
+59c61,62
+<          * Aborts the handle, firing `signal`. Aborting is idempotent — the first reason sticks.
+---
+>          * Aborts the underlying controller, flipping `aborted` and firing `signal`. Aborting is
+>          * idempotent — the first reason sticks and every later call is a no-op.
+83,84c86,88
+<      * Creates a cancellation handle — a thin, traceable wrapper over a native
+<      * `AbortController` whose `signal` can be linked to a parent signal.
+---
+>      * Creates a cancellation handle from validated options and returns it as an
+>      * {@link AbortInterface} — a resolved trace `id` and a `signal` already linked to any
+>      * parent given, so a caller holds the published contract rather than the `Abort` class.
+98c102
+<          * @example
+---
+>          * @example Create and abort
+103,104c107,109
+<          * const work = fetch(url, { signal: abort.signal })
+<          * abort.abort() // cancels the fetch through the linked native signal
+---
+>          * const stream = openStream({ signal: abort.signal })
+>          * // later, to cancel:
+>          * abort.abort('user navigated away') // signal.reason carries the value
+118c123,124
+<       * Determines whether a value is a native `AbortSignal`.
+---
+>       * Determines whether a value is a native `AbortSignal`, staying total for structural spoofs
+>       * and for hostile or revoked proxies.
+122,123c128
+<       * check. Calling it through `Reflect.apply` rejects structural spoofs while
+<       * the contained boundary keeps the guard total for hostile or revoked proxies.
+---
+>       * check, and `Reflect.apply` calls it inside a contained boundary.
+140c145,146
+<       * Links an own `AbortSignal` to an optional parent signal.
+---
+>       * Links an own `AbortSignal` to an optional parent signal, returning
+>       * `AbortSignal.any([own, parent])` when a parent is given.
+143,145c149,150
+<       * When `parent` is `undefined`, the own signal is returned unchanged. When a
+<       * parent is given, the result is `AbortSignal.any([own, parent])`, which fires
+<       * on EITHER the own signal aborting or the parent aborting — without
+---
+>       * When `parent` is `undefined`, the own signal is returned unchanged. The combined
+>       * signal fires on EITHER the own signal aborting or the parent aborting — without
+167c172,173
+<        * Validates and normalizes abort construction options.
+---
+>        * Validates once-read abort construction options and returns a fresh normalized copy
+>        * omitting absent optional keys.
+171,172c177
+<        * read exactly once before validation. The returned object is a fresh copy and
+<        * omits absent optional properties. No controller or signal composition begins
+---
+>        * read exactly once before validation. No controller or signal composition begins
+diff -r -w -B '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-abort-next-final-pack/baseline/package/dist/src/core/index.js /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-abort-next-final-pack/extract/package/dist/src/core/index.js
+4c4,5
+< * Determines whether a value is a native `AbortSignal`.
+---
+> * Determines whether a value is a native `AbortSignal`, staying total for structural spoofs
+> * and for hostile or revoked proxies.
+8,9c9
+< * check. Calling it through `Reflect.apply` rejects structural spoofs while
+< * the contained boundary keeps the guard total for hostile or revoked proxies.
+---
+> * check, and `Reflect.apply` calls it inside a contained boundary.
+36c36,37
+< * Validates and normalizes abort construction options.
+---
+> * Validates once-read abort construction options and returns a fresh normalized copy
+> * omitting absent optional keys.
+40,41c41
+< * read exactly once before validation. The returned object is a fresh copy and
+< * omits absent optional properties. No controller or signal composition begins
+---
+> * read exactly once before validation. No controller or signal composition begins
+106c106,107
+< * Links an own `AbortSignal` to an optional parent signal.
+---
+> * Links an own `AbortSignal` to an optional parent signal, returning
+> * `AbortSignal.any([own, parent])` when a parent is given.
+109,111c110,111
+< * When `parent` is `undefined`, the own signal is returned unchanged. When a
+< * parent is given, the result is `AbortSignal.any([own, parent])`, which fires
+< * on EITHER the own signal aborting or the parent aborting — without
+---
+> * When `parent` is `undefined`, the own signal is returned unchanged. The combined
+> * signal fires on EITHER the own signal aborting or the parent aborting — without
+152,153c152,154
+< * Represents a cancellation handle — a thin, traceable wrapper over a native
+< * `AbortController` whose exposed `signal` can be linked to a parent signal.
+---
+> * Implements {@link AbortInterface} over a private `AbortController` the instance owns,
+> * resolving the trace `id` at construction and exposing either that controller's own
+> * `signal` or one linked to a parent.
+205,206c206,208
+< * Creates a cancellation handle — a thin, traceable wrapper over a native
+< * `AbortController` whose `signal` can be linked to a parent signal.
+---
+> * Creates a cancellation handle from validated options and returns it as an
+> * {@link AbortInterface} — a resolved trace `id` and a `signal` already linked to any
+> * parent given, so a caller holds the published contract rather than the `Abort` class.
+220c222
+< * @example
+---
+> * @example Create and abort
+225,226c227,229
+< * const work = fetch(url, { signal: abort.signal })
+< * abort.abort() // cancels the fetch through the linked native signal
+---
+> * const stream = openStream({ signal: abort.signal })
+> * // later, to cancel:
+> * abort.abort('user navigated away') // signal.reason carries the value

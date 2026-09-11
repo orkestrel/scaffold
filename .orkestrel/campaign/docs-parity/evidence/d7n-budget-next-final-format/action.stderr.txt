@@ -1,0 +1,2 @@
+npm notice run @orkestrel/budget@0.0.10 format
+npm notice run oxfmt --config .oxfmtrc.json --write .

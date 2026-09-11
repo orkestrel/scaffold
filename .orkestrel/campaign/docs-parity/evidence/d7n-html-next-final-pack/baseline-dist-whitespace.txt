@@ -1,0 +1,2428 @@
+diff -r -w -B '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-html-next-final-pack/baseline/package/dist/src/core/index.cjs /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-html-next-final-pack/extract/package/dist/src/core/index.cjs
+4c4,10
+< /** Lists the code points HTML treats as syntax whitespace. */
+---
+> /**
+> * Lists the code points HTML treats as syntax whitespace, `' \t\n\f\r'`.
+> *
+> * @remarks
+> * The scanners separate tags on this set alone, so none of them mistakes JavaScript's
+> * broader Unicode whitespace set for tag separation.
+> */
+7,10c13,19
+< * Lists the elements that cannot have children - a start tag is the whole element and a close
+< * tag for one is discarded. Voidness is looked up here rather than stored on
+< * `ElementNode`, so a node can never disagree with its own tag name, and the renderer
+< * writes `<br>` (never `<br/>` and never a close tag) for every member.
+---
+> * Lists the elements that cannot have children - a start tag is the whole element, and a
+> * close tag for one is discarded.
+> *
+> * @remarks
+> * Voidness is looked up here rather than stored on `ElementNode`, so a node can never
+> * disagree with its own tag name, and the renderer writes `<br>` (never `<br/>` and never a
+> * close tag) for every member.
+28,32c37,44
+< * Lists the elements whose content is raw text: everything up to the matching close tag - which
+< * is recognized case-insensitively - becomes one verbatim `TextNode` with no tag scanning
+< * and no character-reference decoding inside. This is the parser's most important safety
+< * boundary, so the renderer refuses to write a raw body that itself contains that close
+< * tag sequence rather than emit markup that would reopen the element.
+---
+> * Lists the elements whose content is raw text - everything up to the case-insensitive
+> * matching close tag becomes one verbatim text node, with no tag scanning and no
+> * character-reference decoding inside.
+> *
+> * @remarks
+> * This is the parser's most important safety boundary, so the renderer refuses to write a
+> * raw body that itself contains that close tag sequence rather than emit markup that would
+> * reopen the element.
+36,38c48,53
+< * Lists the elements whose content is literal text - one `TextNode` up to the matching close
+< * tag, with character references decoded but no markup parsed. They differ from
+< * `RAW_ELEMENTS` only by that decoding: `<title>a &amp; b</title>` holds `a & b`.
+---
+> * Lists the elements whose content is literal text - one text node up to the matching close
+> * tag, with character references decoded but no markup parsed.
+> *
+> * @remarks
+> * They differ from `RAW_ELEMENTS` only by that decoding: `<title>a &amp; b</title>` holds
+> * `a & b`.
+42,44c57,62
+< * Lists the elements that carry document structure rather than inline content. They are the
+< * elements that implicitly close an open `p` (see `IMPLIED_CLOSERS`) and the boundaries
+< * across which the distiller collapses whitespace instead of preserving it.
+---
+> * Lists the elements that carry document structure rather than inline content.
+> *
+> * @remarks
+> * They are the elements that implicitly close an open `p` (see `IMPLIED_CLOSERS`), the
+> * boundaries `renderText` writes a line break at, and the boundaries across which the
+> * distiller collapses whitespace instead of preserving it.
+94,97c112,118
+< * Holds the implied end-tag table: for each element that can be left open, the start tags whose
+< * arrival closes it. An incoming start tag collects one candidate per row that lists it, the
+< * innermost open instance of that row's element, so a candidate sitting beneath elements the
+< * table never names is still collected. The parser rules each candidate against its own
+---
+> * Holds the implied end-tag table - for each element that can be left open, the start tags
+> * whose arrival closes it.
+> *
+> * @remarks
+> * An incoming start tag collects one candidate per row that lists it, the innermost open
+> * instance of that row's element, so a candidate sitting beneath elements the table never
+> * names is still collected. The parser rules each candidate against its own
+99,105c120,126
+< * shallowest candidate that survives - carrying every element still open inside that one with
+< * it. That is how `<p>one<p>two`, `<li>a<li>b`, `<dt>t<dd>d`, and a bare `<tr><td>x<td>y`
+< * recover into the structure their author meant, how `<p><b>x<div>y` closes the open `b`
+< * element along with the paragraph, and how `<table><tr><td><p><button>x<td>y` still closes
+< * the cell after the button barrier rules the paragraph out. An open `p` maps to the whole
+< * `BLOCK_ELEMENTS` collection rather than to a second copy of it, so the two can never drift
+< * apart.
+---
+> * shallowest candidate that survives - carrying every element still open inside that one
+> * with it. That is how `<p>one<p>two`, `<li>a<li>b`, `<dt>t<dd>d`, and a bare
+> * `<tr><td>x<td>y` recover into the structure their author meant, how `<p><b>x<div>y` closes
+> * the open `b` element along with the paragraph, and how `<table><tr><td><p><button>x<td>y`
+> * still closes the cell after the button barrier rules the paragraph out. An open `p` maps
+> * to the whole `BLOCK_ELEMENTS` collection rather than to a second copy of it, so the row
+> * and the collection can never drift apart.
+409,412c430,435
+< * unchanged. A safe element outside this set is unwrapped to its children rather than
+< * dropped, so `HTMLSanitizeOptions.elements` narrows what is KEPT without ever destroying
+< * content; `UNSAFE_ELEMENTS` is the separate, unlowerable list of subtrees that are
+< * removed whole.
+---
+> * unchanged.
+> *
+> * @remarks
+> * A safe element outside this set is unwrapped to its children rather than dropped, so
+> * `HTMLSanitizeOptions.elements` narrows what is kept without ever destroying content;
+> * `UNSAFE_ELEMENTS` is the separate, unlowerable list of subtrees that are removed whole.
+491,496c514,522
+< * Lists the default attribute allowlist for `sanitize` - the attributes that describe content
+< * rather than fetch, script, or style it. Deliberately narrow: no `id`, no `style`, no
+< * event handler, and no resource `src`, so a sanitized `img` keeps its `alt` text and
+< * loses its download. `class` is kept because it is inert after `style`, `link`, `svg`, and
+< * `script` are gone and it is where a code block declares its language
+< * (`class="language-ts"`).
+---
+> * Lists the default attribute allowlist for `sanitize` - the attributes that describe
+> * content rather than fetch, script, or style it.
+> *
+> * @remarks
+> * Deliberately narrow: no `id`, no `style`, no event handler, and no resource `src`, so a
+> * sanitized `img` keeps its `alt` text and loses its download. `class` is kept because it is
+> * inert after `style`, `link`, `svg`, and `script` are gone and it is where a code block
+> * declares its language (`class="language-ts"`). `align` stays subject to the cell-and-value
+> * floor `sanitizeAttributes` applies.
+515,518c541,546
+< * Lists the closed values a sanitized table-cell `align` attribute may carry. This finite
+< * vocabulary keeps alignment validation to exact string normalization and membership:
+< * the sanitizer deliberately gains no CSS or value-grammar parser and no general styling
+< * policy axis.
+---
+> * Lists the closed values a sanitized table-cell `align` attribute may carry.
+> *
+> * @remarks
+> * This finite vocabulary keeps alignment validation to exact string normalization and
+> * membership: the sanitizer deliberately gains no CSS or value-grammar parser and no
+> * general styling policy axis.
+526,530c554,561
+< * Lists the elements on which a sanitized `align` attribute is honored. Although `align` is
+< * obsolete presentational HTML, its cell-only scope is a smaller security surface than a
+< * style declaration allowlist. `sanitizeAttributes` already receives the owning element,
+< * so it can narrow this allowlisted attribute just as it narrows URL attributes without a
+< * per-element policy mechanism.
+---
+> * Lists the elements on which a sanitized `align` attribute is honored, whatever a caller's
+> * attribute allowlist names.
+> *
+> * @remarks
+> * Although `align` is obsolete presentational HTML, its cell-only scope is a smaller
+> * security surface than a style declaration allowlist. `sanitizeAttributes` already receives
+> * the owning element, so it can narrow this allowlisted attribute the way it narrows URL
+> * attributes without a per-element policy mechanism.
+534,537c565,571
+< * Lists the URL schemes a sanitized document may name. A relative URL - anything without a
+< * `scheme:` prefix, excluding the protocol-relative forms - is always allowed; every
+< * other scheme is refused. `HTMLSanitizeOptions.schemes` replaces this set but can never
+< * admit `javascript:`, `data:`, `vbscript:`, or `file:`, which are refused outright.
+---
+> * Lists the URL schemes a sanitized document may name.
+> *
+> * @remarks
+> * A relative URL - anything without a `scheme:` prefix, excluding the protocol-relative
+> * forms - is always allowed; every other scheme is refused.
+> * `HTMLSanitizeOptions.schemes` replaces this set but can never admit `javascript:`,
+> * `data:`, `vbscript:`, or `file:`, which are refused outright.
+546,550c580,586
+< * Lists the attributes whose value is a URL, and therefore the values `sanitize` decodes,
+< * strips of ASCII whitespace and control characters, and scheme-checks before keeping,
+< * and that `distill` resolves against `HTMLDistillOptions.base`. `action` and `formaction`
+< * are listed even though their elements are removed whole, because a hand-built AST can
+< * carry them anywhere.
+---
+> * Lists the attributes whose value is a URL - the values `sanitize` decodes, strips of ASCII
+> * whitespace and control characters, and scheme-checks before keeping, and the values
+> * `distill` resolves against `HTMLDistillOptions.base`.
+> *
+> * @remarks
+> * `action` and `formaction` are listed even though their elements are removed whole, because
+> * a hand-built AST can carry them anywhere.
+561,566c597,605
+< * Names the hard floor of `sanitize`: elements whose entire subtree is removed, never unwrapped,
+< * no matter what `HTMLSanitizeOptions` allows. Unwrapping is what makes these dangerous -
+< * the body of a `script`, `style`, `template`, or `noscript` is text that becomes live
+< * markup the moment its wrapper disappears - so the content goes with the element.
+< * Foreign content (`svg`, `math`) is here because this AST has no namespaces to police,
+< * and the form and metadata elements are here because they act rather than describe.
+---
+> * Names the hard floor of `sanitize` - elements whose entire subtree is removed, never
+> * unwrapped, no matter what `HTMLSanitizeOptions` allows.
+> *
+> * @remarks
+> * Unwrapping is what makes these dangerous - the body of a `script`, `style`, `template`, or
+> * `noscript` is text that becomes live markup the moment its wrapper disappears - so the
+> * content goes with the element. Foreign content (`svg`, `math`) is here because this AST
+> * has no namespaces to police, and the form and metadata elements are here because they act
+> * rather than describe.
+593,596c632,638
+< * Lists the default element set `distill` keeps as content: prose, headings, lists, tables,
+< * code, and the inline marks that carry meaning. Everything else safe is unwrapped to its
+< * children, which is how wrapper soup melts while its text survives. Definition lists are
+< * included because a documentation page's terms and definitions are content, not chrome.
+---
+> * Lists the default element set `distill` keeps as content - prose, headings, lists, tables,
+> * code, and the inline marks that carry meaning.
+> *
+> * @remarks
+> * Everything else safe is unwrapped to its children, which is how wrapper soup melts while
+> * its text survives. Definition lists are included because a documentation page's terms and
+> * definitions are content, not chrome.
+634,636c676,680
+< * furniture that surrounds an article rather than belonging to it. Unlike the content
+< * set, these are dropped with their children: a navigation menu's link text is noise in
+< * every reading of the page.
+---
+> * furniture that surrounds an article rather than belonging to it.
+> *
+> * @remarks
+> * Unlike the content set, these are dropped with their children: a navigation menu's link
+> * text is noise in every reading of the page.
+652,654c696
+< * by name without the leading `&` or trailing `;`. The parser decodes them in text,
+< * attribute values, and literal-text elements through a frozen own-property record.
+< * Unknown and prototype-like names stay literal.
+---
+> * by name without the leading `&` or trailing `;`.
+656a699,702
+> * The parser decodes them in text, attribute values, and literal-text elements through a
+> * frozen own-property record read with `Object.hasOwn`, so a hostile name such as
+> * `&constructor;` is not an entry and every unknown name stays literal.
+> *
+2791,2795c2837,2844
+< * Names the recursion depth the parser, the traversals, and the renderers honor before they
+< * stop descending - the bound that keeps pathological input (thousands of nested `div`s,
+< * a fuzzer's tag soup) from exhausting the call stack. Past this depth the parser appends
+< * content to the deepest allowed element instead of nesting further, so parsing stays
+< * total and no text is lost.
+---
+> * Names the recursion depth the parser, the guards, the traversals, the renderers, and the
+> * sanitize and distill engines honor before they stop descending, `64`.
+> *
+> * @remarks
+> * The bound is what keeps pathological input - thousands of nested `div` elements, a
+> * fuzzer's tag soup - from exhausting the call stack. Past this depth the parser appends
+> * content to the deepest allowed element instead of nesting further, so parsing stays total
+> * and no text is lost.
+2801c2850,2851
+< * Normalizes an HTML input and maps each normalized boundary to its original UTF-16 offset.
+---
+> * Normalizes an HTML input - CRLF and a lone carriage return to one newline, `U+0000` to
+> * `U+FFFD` - and maps each normalized boundary to its original UTF-16 offset.
+2841c2891,2892
+< * Finds the deepest open occurrence of an element name across the parser's two stacks.
+---
+> * Finds the deepest open occurrence of an element name across the parser's represented and
+> * depth-overflow stacks.
+2880c2931,2932
+< * Projects one stack position onto the single depth scale both stacks compare on.
+---
+> * Projects one stack position onto the single depth scale the represented and depth-overflow
+> * stacks compare on, so an overflow position ranks below every represented one.
+2901a2954,2957
+> * @remarks
+> * The strict and the recovering scanners share this one fold, so a later syntax error can
+> * never change how a name was normalized.
+> *
+2909c2965,2966
+< * Determines whether an element name is void.
+---
+> * Determines whether an element name is void, matching `VOID_ELEMENTS` without case
+> * sensitivity.
+2918c2975,2976
+< * Determines whether an element name contains verbatim raw text.
+---
+> * Determines whether an element name contains verbatim raw text - `script` or `style`, the
+> * parser's no-scanning boundary and the renderer's refusal boundary.
+2927c2985,2986
+< * Determines whether an element name contains decoded literal text.
+---
+> * Determines whether an element name contains decoded literal text - `title` or `textarea`,
+> * whose body is one text node with character references resolved.
+2936c2995
+< * Determines whether an element name is a block boundary.
+---
+> * Determines whether an element name is a block boundary, matching `BLOCK_ELEMENTS`.
+2945c3004,3005
+< * Checks whether an element has no child nodes.
+---
+> * Checks whether an element has no child nodes - the predicate the distill pass consults
+> * before dropping an empty non-void element.
+2955a3016,3019
+> * @remarks
+> * A numeric reference naming an invalid scalar decodes to `U+FFFD`. An unknown named
+> * reference stays literal, exactly as the source wrote it.
+> *
+3008c3072,3076
+< * Scans an attribute source segment into ordered, first-wins attributes.
+---
+> * Scans an attribute source segment into ordered, ASCII-lowercased, first-wins attributes
+> * with decoded values.
+> *
+> * @remarks
+> * An unterminated quoted value minimizes to an absent value rather than to invented text.
+3059a3128,3132
+> * @remarks
+> * Duplicate or malformed attributes, ambiguous delimiters, an invalid offset, a close tag,
+> * and incomplete input each produce no value: this is the fail-closed source boundary, and
+> * it never recovers the way the document walk does.
+> *
+3153a3227,3230
+> * @remarks
+> * A trailing solidus is dropped rather than recorded, and an unterminated quoted value
+> * recovers at the next `>` instead of trusting the markup that follows it.
+> *
+3220a3298,3302
+> * @remarks
+> * The bogus forms - `<?…>`, a non-doctype `<!…>`, and a CDATA section - recover to the same
+> * comment node, and an unterminated comment runs to the end of input. Every value produced
+> * here is representable: it never begins with an abrupt close and never contains one.
+> *
+3414c3496,3497
+< * Encodes the characters that have markup meaning in HTML text.
+---
+> * Encodes the characters that have markup meaning in HTML text - `&`, `<`, and `>`, and
+> * nothing else.
+3423c3506,3507
+< * Encodes the characters that have markup meaning in a double-quoted HTML attribute.
+---
+> * Encodes the characters that have markup meaning in a double-quoted HTML attribute - `&`
+> * and `"`, and nothing else.
+3437c3521,3523
+< * bound fails closed.
+---
+> * bound fails closed. This is the transform half of the URL floor {@link isSafeURL} shares,
+> * and either shape of allowlist works: the frozen constant array, or the `ReadonlySet` a
+> * caller passes through `HTMLSanitizeOptions`.
+3476a3563,3568
+> * @remarks
+> * The predicate half of the URL floor, true exactly when {@link sanitizeURL} keeps a
+> * non-empty value. A relative URL is allowed; a protocol-relative one (`//`, `\\`, `/\`,
+> * `\/`) is not; and `javascript:`, `data:`, `vbscript:`, and `file:` are refused whatever
+> * the allowlist says.
+> *
+3522c3614
+< * {@link sanitizeURL}; either attribute is REMOVED - not emptied - when its extra rule
+---
+> * {@link sanitizeURL}; either attribute is removed - not emptied - when its extra rule
+3612,3613c3704,3706
+< * Invalid element names unwrap to their children. Raw-text bodies containing their own
+< * matching close-tag sequence are dropped. Descent stops after {@link MAX_DEPTH}.
+---
+> * Never throws: it refuses a construct rather than emit an unsafe one. Invalid element
+> * names unwrap to their children. Raw-text bodies containing their own matching close-tag
+> * sequence are dropped. Descent stops after {@link MAX_DEPTH}.
+3750c3843,3845
+< * textarea text remains.
+---
+> * textarea text remains. Heading level, link destination, list marker, nesting depth, image
+> * attributes, code fence, and code language are all lossy: this is the projection that
+> * keeps the reading order and drops the rest.
+3881c3976,3981
+< * Walks an HTML node depth-first in pre-order, including the supplied root.
+---
+> * Walks an HTML node depth-first in pre-order, lazily and depth-bounded, including the
+> * supplied root.
+> *
+> * @remarks
+> * The deep traversal: `walk`, `find`, `filter`, and `reduce` all iterate this one generator,
+> * so one ordering law covers the whole query surface.
+3914c4014,4015
+< * Folds an HTML node bottom-up through a total handler table.
+---
+> * Folds an HTML node bottom-up through a total handler table - each node's children fold
+> * first, then its own handler runs with those already-folded results.
+4137c4238
+< * Every run of whitespace becomes one space and edge whitespace is KEPT, because the space
+---
+> * Every run of whitespace becomes one space and edge whitespace is kept, because the space
+4170c4271
+< * The names are tried in order and the first one occurring EXACTLY once in the document
+---
+> * The names are tried in order and the first one occurring exactly once in the document
+4206c4307,4308
+< * Rebuilds a document bottom-up, letting each node become any number of nodes.
+---
+> * Rebuilds a document bottom-up, letting each node become any number of nodes - the
+> * one-to-many spine the sanitize and distill engines share.
+4210c4312
+< * maps one node to a LIST - `[]` to drop it, `node.children` to unwrap it, `[node]` to keep
+---
+> * maps one node to a list - `[]` to drop it, `node.children` to unwrap it, `[node]` to keep
+4213c4315
+< * children ALREADY pruned and flattened, so keeping a node needs no reconstruction and a
+---
+> * children already pruned and flattened, so keeping a node needs no reconstruction and a
+4216c4318
+< * root's children. Descent stops at {@link MAX_DEPTH}: a node at the cap is handed NO
+---
+> * root's children. Descent stops at {@link MAX_DEPTH}: a node at the cap is handed no
+4332a4435,4439
+> * @remarks
+> * HTML whitespace is allowed; every other C0 control, the C1 controls, the surrogates, and
+> * the noncharacters are refused, so a token built from accepted code points has no
+> * parse-error scalar in it.
+> *
+4343c4450,4451
+< * Determines whether an arbitrary value is a structurally valid HTML attribute.
+---
+> * Determines whether an arbitrary value is a structurally valid HTML attribute - exactly a
+> * string name, optionally a string value, and nothing else.
+4354c4462,4463
+< * Determines whether an arbitrary value is a structurally valid text node.
+---
+> * Determines whether an arbitrary value is a structurally valid text node - a closed
+> * `{ category: 'text', value: string }` record.
+4364c4473,4474
+< * Determines whether an arbitrary value is a structurally valid comment node.
+---
+> * Determines whether an arbitrary value is a structurally valid comment node - a closed
+> * `{ category: 'comment', value: string }` record.
+4374c4484,4485
+< * Determines whether an arbitrary value is a structurally valid doctype node.
+---
+> * Determines whether an arbitrary value is a structurally valid doctype node - a declared
+> * name plus optional public and system identifiers, closed.
+4386c4497,4499
+< * Determines whether an arbitrary value is a valid HTML node.
+---
+> * Determines whether an arbitrary value is a valid HTML node - the value and every
+> * descendant, walked iteratively, cycle-checked, capped at {@link MAX_DEPTH}, and held to
+> * the void-element empty-children invariant.
+4443c4556,4557
+< * Determines whether an arbitrary value is a valid HTML document.
+---
+> * Determines whether an arbitrary value is a valid HTML document - the whole-node check
+> * narrowed to the root category, and the gate to run before adopting an untrusted document.
+4452c4566,4567
+< * Determines whether an arbitrary value is a valid element node.
+---
+> * Determines whether an arbitrary value is a valid element node - the whole-node check
+> * narrowed to an element, and the natural predicate to pass to `find` or `filter`.
+4463c4578,4585
+< * Parses an HTML string into a total, depth-bounded document AST.
+---
+> * Parses an HTML string into a total, depth-bounded document AST - a page and a bare
+> * fragment are the same shape.
+> *
+> * @remarks
+> * Parsing is total: malformed markup recovers per the package's documented recovery table
+> * instead of throwing, so there is no error path to handle. The result never carries two
+> * adjacent text siblings, which is what keeps a document equal to its own reparsed
+> * serialization.
+4473a4596,4600
+> * @remarks
+> * This is the single document walk that turns source into an AST; `parseDocument` projects
+> * the bare document out of the same walk for callers needing no provenance. The returned map
+> * is operation-owned, and a node with no single source has no entry.
+> *
+4836c4963
+< * Represents a parsed HTML document - the typed {@link HTMLDocument} AST plus the query
+---
+> * Represents a parsed document - the typed {@link HTMLDocument} AST plus the query
+4843c4970
+< *   that document is adopted AS-IS and is NOT re-validated - gate an untrusted value with
+---
+> *   that document is adopted as-is and is not re-validated - gate an untrusted value with
+4846c4973
+< *   each return a NEW `HTML`, and the root invariant (`category: 'document'`) always holds.
+---
+> *   each return a new `HTML`, and the root invariant (`category: 'document'`) always holds.
+4849,4852c4976,4980
+< * - **The two engines.** `sanitize` enforces a security floor no option can lower;
+< *   `distill` extracts content, sanitizing first because content extraction is not a second
+< *   security surface. Both compose the pure leaves in `helpers.ts` over one shared
+< *   bottom-up spine, {@link pruneDocument}.
+---
+> * - **The engines.** `sanitize` enforces a security floor no option can lower; `distill`
+> *   extracts content, pruning boilerplate regions and hidden chrome first, then sanitizing
+> *   with the defaults, then re-rooting and reducing to the content vocabulary, because
+> *   content extraction is not a second security surface. Each composes the pure leaves in
+> *   `helpers.ts` over one shared bottom-up spine, {@link pruneDocument}.
+4895c5023
+< 	* Provides THE deep traversal - a lazy, depth-first, pre-order, root-inclusive generator over
+---
+> 	* Provides the deep traversal - a lazy, depth-first, pre-order, root-inclusive generator over
+4922c5050
+< 	* Rewrites the AST bottom-up (copy-on-write) and returns a NEW {@link HTML}. A rewrite
+---
+> 	* Rewrites the AST bottom-up (copy-on-write) and returns a new {@link HTML}. A rewrite
+4990c5118
+< 	* Removes every unsafe element, attribute, and URL and returns a NEW {@link HTML}.
+---
+> 	* Removes every unsafe element, attribute, and URL and returns a new {@link HTML}.
+4993c5121
+< 	* Each allowlist option REPLACES its default rather than extending it, and the floor
+---
+> 	* Each allowlist option replaces its default rather than extending it, and the floor
+5027c5155
+< 	* and returns a NEW {@link HTML}.
+---
+> 	* and returns a new {@link HTML}.
+5032c5160
+< 	* DEFAULTS, because distilling narrows content and never widens the security floor; the
+---
+> 	* defaults, because distilling narrows content and never widens the security floor; the
+5040c5168
+< 	* The `hidden` pass runs BEFORE the sanitize pass by necessity - `hidden` and
+---
+> 	* The `hidden` pass runs before the sanitize pass by necessity - `hidden` and
+5177,5178c5305,5306
+< * parsing is TOTAL - malformed markup recovers instead of throwing, so there is no error
+< * path to handle. Given an {@link HTMLDocument}, that document is adopted AS-IS and is not
+---
+> * parsing is total - malformed markup recovers instead of throwing, so there is no error
+> * path to handle. Given an {@link HTMLDocument}, that document is adopted as-is and is not
+5184c5312
+< * @example
+---
+> * @example Parse, then query
+5186c5314,5316
+< * import { createHTML, renderText } from '@orkestrel/html'
+---
+> * import { createHTML, isElementNode } from '@orkestrel/html'
+> *
+> * const page = createHTML('<h1>Title</h1><p>A <b>bold</b> word.</p>')
+5188,5189c5318,5325
+< * const page = createHTML('<h1>Title</h1><p>Read the <a href="/guide">guide</a>.</p>')
+< * renderText(page.document) // 'Title\nRead the guide.'
+---
+> * page.document.children[0] // { category: 'element', name: 'h1', attributes: [], children: [...] }
+> * page.span(page.document) // { start: 0, end: 40 } - half-open offsets in the original input
+> * page.find(isElementNode)?.name // 'h1' - narrowed to ElementNode by the guard overload
+> * page.filter(isElementNode).map((element) => element.name) // ['h1', 'p', 'b']
+> *
+> * const categories: string[] = []
+> * for (const node of page.walk()) categories.push(node.category)
+> * // ['document', 'element', 'text', 'element', 'text', 'element', 'text', 'text']
+diff -r -w -B '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-html-next-final-pack/baseline/package/dist/src/core/index.d.cts /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-html-next-final-pack/extract/package/dist/src/core/index.d.cts
+1c1
+< import { Guard } from '@orkestrel/contract';
+---
+> import type { Guard } from '@orkestrel/contract';
+41,43c41,46
+<  * Lists the elements that carry document structure rather than inline content. They are the
+<  * elements that implicitly close an open `p` (see `IMPLIED_CLOSERS`) and the boundaries
+<  * across which the distiller collapses whitespace instead of preserving it.
+---
+>  * Lists the elements that carry document structure rather than inline content.
+>  *
+>  * @remarks
+>  * They are the elements that implicitly close an open `p` (see `IMPLIED_CLOSERS`), the
+>  * boundaries `renderText` writes a line break at, and the boundaries across which the
+>  * distiller collapses whitespace instead of preserving it.
+49,51c52,56
+<  * furniture that surrounds an article rather than belonging to it. Unlike the content
+<  * set, these are dropped with their children: a navigation menu's link text is noise in
+<  * every reading of the page.
+---
+>  * furniture that surrounds an article rather than belonging to it.
+>  *
+>  * @remarks
+>  * Unlike the content set, these are dropped with their children: a navigation menu's link
+>  * text is noise in every reading of the page.
+67c72
+<  * Every run of whitespace becomes one space and edge whitespace is KEPT, because the space
+---
+>  * Every run of whitespace becomes one space and edge whitespace is kept, because the space
+78,82c83,90
+<  * Represents a comment - `<!-- … -->`. `value` is the comment's verbatim inner text, never decoded
+<  * and never parsed as markup. The parser constructs only representable values: they never
+<  * begin with an abrupt `>` / `->` close and never contain `-->` / `--!>`, so rendering and
+<  * reparsing a parser-produced comment preserves it exactly. A hand-built value can violate
+<  * that invariant, in which case the renderer drops it rather than emit a breakout.
+---
+>  * Represents a comment - `<!-- … -->` - whose `value` is verbatim inner text, never decoded
+>  * and never parsed as markup.
+>  *
+>  * @remarks
+>  * The parser constructs only representable values: they never begin with an abrupt `>` /
+>  * `->` close and never contain `-->` / `--!>`, so rendering and reparsing a parser-produced
+>  * comment preserves it exactly. A hand-built value can violate that invariant, in which case
+>  * the renderer drops it rather than emit a breakout.
+112,115c120,126
+<  * Lists the default element set `distill` keeps as content: prose, headings, lists, tables,
+<  * code, and the inline marks that carry meaning. Everything else safe is unwrapped to its
+<  * children, which is how wrapper soup melts while its text survives. Definition lists are
+<  * included because a documentation page's terms and definitions are content, not chrome.
+---
+>  * Lists the default element set `distill` keeps as content - prose, headings, lists, tables,
+>  * code, and the inline marks that carry meaning.
+>  *
+>  * @remarks
+>  * Everything else safe is unwrapped to its children, which is how wrapper soup melts while
+>  * its text survives. Definition lists are included because a documentation page's terms and
+>  * definitions are content, not chrome.
+127,128c138,139
+<  * parsing is TOTAL - malformed markup recovers instead of throwing, so there is no error
+<  * path to handle. Given an {@link HTMLDocument}, that document is adopted AS-IS and is not
+---
+>  * parsing is total - malformed markup recovers instead of throwing, so there is no error
+>  * path to handle. Given an {@link HTMLDocument}, that document is adopted as-is and is not
+134c145
+<  * @example
+---
+>  * @example Parse, then query
+136c147,149
+<  * import { createHTML, renderText } from '@orkestrel/html'
+---
+>  * import { createHTML, isElementNode } from '@orkestrel/html'
+>  *
+>  * const page = createHTML('<h1>Title</h1><p>A <b>bold</b> word.</p>')
+138,139c151,158
+<  * const page = createHTML('<h1>Title</h1><p>Read the <a href="/guide">guide</a>.</p>')
+<  * renderText(page.document) // 'Title\nRead the guide.'
+---
+>  * page.document.children[0] // { category: 'element', name: 'h1', attributes: [], children: [...] }
+>  * page.span(page.document) // { start: 0, end: 40 } - half-open offsets in the original input
+>  * page.find(isElementNode)?.name // 'h1' - narrowed to ElementNode by the guard overload
+>  * page.filter(isElementNode).map((element) => element.name) // ['h1', 'p', 'b']
+>  *
+>  * const categories: string[] = []
+>  * for (const node of page.walk()) categories.push(node.category)
+>  * // ['document', 'element', 'text', 'element', 'text', 'element', 'text', 'text']
+146a166,169
+>  * @remarks
+>  * A numeric reference naming an invalid scalar decodes to `U+FFFD`. An unknown named
+>  * reference stays literal, exactly as the source wrote it.
+>  *
+199c222
+<  * DERIVED from the tag name against `VOID_ELEMENTS`, never stored as a flag, so no
+---
+>  * derived from the tag name against `VOID_ELEMENTS`, never stored as a flag, so no
+218c241,242
+<  * Encodes the characters that have markup meaning in a double-quoted HTML attribute.
+---
+>  * Encodes the characters that have markup meaning in a double-quoted HTML attribute - `&`
+>  * and `"`, and nothing else.
+226c250,251
+<  * Encodes the characters that have markup meaning in HTML text.
+---
+>  * Encodes the characters that have markup meaning in HTML text - `&`, `<`, and `>`, and
+>  * nothing else.
+237c262
+<  * The names are tried in order and the first one occurring EXACTLY once in the document
+---
+>  * The names are tried in order and the first one occurring exactly once in the document
+249c274,275
+<  * Finds the deepest open occurrence of an element name across the parser's two stacks.
+---
+>  * Finds the deepest open occurrence of an element name across the parser's represented and
+>  * depth-overflow stacks.
+276c302,303
+<  * Folds an HTML node bottom-up through a total handler table.
+---
+>  * Folds an HTML node bottom-up through a total handler table - each node's children fold
+>  * first, then its own handler runs with those already-folded results.
+288c315
+<  * Represents a parsed HTML document - the typed {@link HTMLDocument} AST plus the query
+---
+>  * Represents a parsed document - the typed {@link HTMLDocument} AST plus the query
+295c322
+<  *   that document is adopted AS-IS and is NOT re-validated - gate an untrusted value with
+---
+>  *   that document is adopted as-is and is not re-validated - gate an untrusted value with
+298c325
+<  *   each return a NEW `HTML`, and the root invariant (`category: 'document'`) always holds.
+---
+>  *   each return a new `HTML`, and the root invariant (`category: 'document'`) always holds.
+301,304c328,332
+<  * - **The two engines.** `sanitize` enforces a security floor no option can lower;
+<  *   `distill` extracts content, sanitizing first because content extraction is not a second
+<  *   security surface. Both compose the pure leaves in `helpers.ts` over one shared
+<  *   bottom-up spine, {@link pruneDocument}.
+---
+>  * - **The engines.** `sanitize` enforces a security floor no option can lower; `distill`
+>  *   extracts content, pruning boilerplate regions and hidden chrome first, then sanitizing
+>  *   with the defaults, then re-rooting and reducing to the content vocabulary, because
+>  *   content extraction is not a second security surface. Each composes the pure leaves in
+>  *   `helpers.ts` over one shared bottom-up spine, {@link pruneDocument}.
+329c357
+<      * Provides THE deep traversal - a lazy, depth-first, pre-order, root-inclusive generator over
+---
+>      * Provides the deep traversal - a lazy, depth-first, pre-order, root-inclusive generator over
+350c378
+<      * Rewrites the AST bottom-up (copy-on-write) and returns a NEW {@link HTML}. A rewrite
+---
+>      * Rewrites the AST bottom-up (copy-on-write) and returns a new {@link HTML}. A rewrite
+397c425
+<      * Removes every unsafe element, attribute, and URL and returns a NEW {@link HTML}.
+---
+>      * Removes every unsafe element, attribute, and URL and returns a new {@link HTML}.
+400c428
+<      * Each allowlist option REPLACES its default rather than extending it, and the floor
+---
+>      * Each allowlist option replaces its default rather than extending it, and the floor
+421c449
+<      * and returns a NEW {@link HTML}.
+---
+>      * and returns a new {@link HTML}.
+426c454
+<      * DEFAULTS, because distilling narrows content and never widens the security floor; the
+---
+>      * defaults, because distilling narrows content and never widens the security floor; the
+434c462
+<      * The `hidden` pass runs BEFORE the sanitize pass by necessity - `hidden` and
+---
+>      * The `hidden` pass runs before the sanitize pass by necessity - `hidden` and
+452c480,486
+< /** Lists the code points HTML treats as syntax whitespace. */
+---
+> /**
+>  * Lists the code points HTML treats as syntax whitespace, `' \t\n\f\r'`.
+>  *
+>  * @remarks
+>  * The scanners separate tags on this set alone, so none of them mistakes JavaScript's
+>  * broader Unicode whitespace set for tag separation.
+>  */
+496,504c530,540
+<  * Distilling always sanitizes with the defaults first - it is content extraction, not a
+<  * second security surface - and then, in order: removes each `boilerplate` region whole;
+<  * drops any element marked `hidden` or `aria-hidden="true"`; re-roots at the single
+<  * `main` or single `article` when exactly one exists; keeps the `elements` set and
+<  * unwraps everything else to its children; unwraps a wrapper whose only child is another
+<  * element; collapses inter-word whitespace outside `pre` and `code`; drops an empty
+<  * non-void element; and resolves relative `href` / `src` against `base`, leaving a value
+<  * it cannot resolve as written. The result is a pruned {@link HTMLInterface}, never a
+<  * string: rendering stays a separate, downstream choice.
+---
+>  * Distilling runs, in order: removes each `boilerplate` region whole and drops any element
+>  * marked `hidden` or `aria-hidden="true"`; sanitizes with the defaults, because content
+>  * extraction is not a second security surface; re-roots at the single `main` or single
+>  * `article` when exactly one exists; keeps the `elements` set and unwraps everything else to
+>  * its children; unwraps a wrapper whose only child is another element; collapses inter-word
+>  * whitespace outside `pre` and `code`; drops an empty non-void element; and resolves
+>  * relative `href` / `src` against `base`, leaving a value it cannot resolve as written. The
+>  * region and chrome prune runs before the sanitize pass by necessity - `hidden` and
+>  * `aria-hidden` are outside `SAFE_ATTRIBUTES`, so sanitizing first would consume the
+>  * evidence that pass reads. The result is a pruned {@link HTMLInterface}, never a string:
+>  * rendering stays a separate, downstream choice.
+529c565
+<  * Represents a fold handler for one node category - receives the node and its children ALREADY
+---
+>  * Represents a fold handler for one node category - receives the node and its children already
+558,559c594,596
+<  * Represents a parsed HTML document: the typed {@link HTMLDocument} AST plus the query, rewrite,
+<  * fold, and reduction operations over it.
+---
+>  * Represents a parsed HTML document: the typed {@link HTMLDocument} AST plus the query
+>  * (`walk` / `find` / `filter` / `reduce`), rewrite (`map`), fold, streaming, and
+>  * document-shaping (`sanitize` / `distill`) operations over it.
+563c600
+<  *   each return a NEW {@link HTMLInterface}, and the root invariant
+---
+>  *   each return a new {@link HTMLInterface}, and the root invariant
+574c611
+<  *   reparse as well as directly. What roundtrips is the AST, NOT the input bytes:
+---
+>  *   reparse as well as directly. What roundtrips is the AST, not the input bytes:
+579c616
+<  *   for SAFETY rather than fidelity.
+---
+>  *   for safety rather than fidelity.
+583c620
+<  *   `sanitize` / `distill` (the two document-shaping engines).
+---
+>  *   `sanitize` / `distill` (the document-shaping engines).
+596,598c633,637
+<      * Provides THE deep traversal - a lazy, depth-first, pre-order, root-inclusive
+<      * {@link Generator} over every {@link HTMLNode} in the document. The sync
+<      * `for (const node of html.walk())` surface is also consumable by
+---
+>      * Provides the deep traversal - a lazy, depth-first, pre-order, root-inclusive
+>      * {@link Generator} over every {@link HTMLNode} in the document.
+>      *
+>      * @remarks
+>      * The sync `for (const node of html.walk())` surface is also consumable by
+620c659,663
+<     /** Runs a total catamorphism over the document using an {@link HTMLHandlerMap} table. */
+---
+>     /**
+>      * Runs a total catamorphism over the document using an {@link HTMLHandlerMap} table -
+>      * one handler per category and no node skipped, so a structure-aware projection needs
+>      * no traversal of its own.
+>      */
+639,640c682,684
+<      * Extracts the page's content - sanitizing first, then pruning boilerplate,
+<      * chrome, and wrappers per {@link HTMLDistillOptions} - and returns a new
+---
+>      * Extracts the page's content - pruning boilerplate regions and hidden chrome, then
+>      * sanitizing with the defaults, then re-rooting and reducing to the content
+>      * vocabulary per {@link HTMLDistillOptions} - and returns a new
+662,663c706,708
+<  * `position` indexes the stack `overflow` names, so the two fields are read together;
+<  * `projectDepth` is what puts them on the single scale both stacks compare on.
+---
+>  * `position` indexes the stack `overflow` names, so the fields are read together;
+>  * `projectDepth` is what puts them on the single scale the represented and depth-overflow
+>  * stacks compare on.
+715c760
+<  * Describes the options for {@link HTMLInterface.sanitize}. Each allowlist key REPLACES its
+---
+>  * Describes the options for {@link HTMLInterface.sanitize}. Each allowlist key replaces its
+725c770
+<  * A wider allowlist must never become a hole, so these options sit ON TOP of a floor
+---
+>  * A wider allowlist must never become a hole, so these options sit on top of a floor
+727c772
+<  * - every `UNSAFE_ELEMENTS` subtree is removed WHOLE, never unwrapped, so its text can
+---
+>  * - every `UNSAFE_ELEMENTS` subtree is removed whole, never unwrapped, so its text can
+732c777
+<  *   control characters BEFORE its scheme is checked, and `javascript:`, `data:`,
+---
+>  *   control characters before its scheme is checked, and `javascript:`, `data:`,
+736c781
+<  * - a safe element that is merely outside the allowlist is UNWRAPPED to its children, so
+---
+>  * - a safe element that is merely outside the allowlist is unwrapped to its children, so
+758c803,804
+<  * there without recomputing the boundary.
+---
+>  * there without recomputing the boundary. `TNode` is constrained to {@link HTMLNode}, so a
+>  * scan result can only carry a node this AST defines.
+814c860,866
+< /** Represents one start or close tag returned by the total, recovering `scanTag` scanner. */
+---
+> /**
+>  * Represents one start or close tag returned by the total, recovering `scanTag` scanner.
+>  *
+>  * @remarks
+>  * A recovered start tag keeps the `next` boundary recovery chose rather than an exact one,
+>  * and a close tag carries no attributes.
+>  */
+847,850c899,905
+<  * Holds the implied end-tag table: for each element that can be left open, the start tags whose
+<  * arrival closes it. An incoming start tag collects one candidate per row that lists it, the
+<  * innermost open instance of that row's element, so a candidate sitting beneath elements the
+<  * table never names is still collected. The parser rules each candidate against its own
+---
+>  * Holds the implied end-tag table - for each element that can be left open, the start tags
+>  * whose arrival closes it.
+>  *
+>  * @remarks
+>  * An incoming start tag collects one candidate per row that lists it, the innermost open
+>  * instance of that row's element, so a candidate sitting beneath elements the table never
+>  * names is still collected. The parser rules each candidate against its own
+852,858c907,913
+<  * shallowest candidate that survives - carrying every element still open inside that one with
+<  * it. That is how `<p>one<p>two`, `<li>a<li>b`, `<dt>t<dd>d`, and a bare `<tr><td>x<td>y`
+<  * recover into the structure their author meant, how `<p><b>x<div>y` closes the open `b`
+<  * element along with the paragraph, and how `<table><tr><td><p><button>x<td>y` still closes
+<  * the cell after the button barrier rules the paragraph out. An open `p` maps to the whole
+<  * `BLOCK_ELEMENTS` collection rather than to a second copy of it, so the two can never drift
+<  * apart.
+---
+>  * shallowest candidate that survives - carrying every element still open inside that one
+>  * with it. That is how `<p>one<p>two`, `<li>a<li>b`, `<dt>t<dd>d`, and a bare
+>  * `<tr><td>x<td>y` recover into the structure their author meant, how `<p><b>x<div>y` closes
+>  * the open `b` element along with the paragraph, and how `<table><tr><td><p><button>x<td>y`
+>  * still closes the cell after the button barrier rules the paragraph out. An open `p` maps
+>  * to the whole `BLOCK_ELEMENTS` collection rather than to a second copy of it, so the row
+>  * and the collection can never drift apart.
+863c918
+<  * Determines whether an element name is a block boundary.
+---
+>  * Determines whether an element name is a block boundary, matching `BLOCK_ELEMENTS`.
+871c926,927
+<  * Determines whether an arbitrary value is a structurally valid comment node.
+---
+>  * Determines whether an arbitrary value is a structurally valid comment node - a closed
+>  * `{ category: 'comment', value: string }` record.
+879c935,936
+<  * Determines whether an arbitrary value is a structurally valid doctype node.
+---
+>  * Determines whether an arbitrary value is a structurally valid doctype node - a declared
+>  * name plus optional public and system identifiers, closed.
+887c944,945
+<  * Determines whether an arbitrary value is a valid element node.
+---
+>  * Determines whether an arbitrary value is a valid element node - the whole-node check
+>  * narrowed to an element, and the natural predicate to pass to `find` or `filter`.
+895c953,954
+<  * Checks whether an element has no child nodes.
+---
+>  * Checks whether an element has no child nodes - the predicate the distill pass consults
+>  * before dropping an empty non-void element.
+903c962,963
+<  * Determines whether an arbitrary value is a structurally valid HTML attribute.
+---
+>  * Determines whether an arbitrary value is a structurally valid HTML attribute - exactly a
+>  * string name, optionally a string value, and nothing else.
+913a974,978
+>  * @remarks
+>  * HTML whitespace is allowed; every other C0 control, the C1 controls, the surrogates, and
+>  * the noncharacters are refused, so a token built from accepted code points has no
+>  * parse-error scalar in it.
+>  *
+921c986,987
+<  * Determines whether an arbitrary value is a valid HTML document.
+---
+>  * Determines whether an arbitrary value is a valid HTML document - the whole-node check
+>  * narrowed to the root category, and the gate to run before adopting an untrusted document.
+929c995,997
+<  * Determines whether an arbitrary value is a valid HTML node.
+---
+>  * Determines whether an arbitrary value is a valid HTML node - the value and every
+>  * descendant, walked iteratively, cycle-checked, capped at {@link MAX_DEPTH}, and held to
+>  * the void-element empty-children invariant.
+938c1006,1007
+<  * Determines whether an element name contains decoded literal text.
+---
+>  * Determines whether an element name contains decoded literal text - `title` or `textarea`,
+>  * whose body is one text node with character references resolved.
+946c1015,1016
+<  * Determines whether an element name contains verbatim raw text.
+---
+>  * Determines whether an element name contains verbatim raw text - `script` or `style`, the
+>  * parser's no-scanning boundary and the renderer's refusal boundary.
+955a1026,1031
+>  * @remarks
+>  * The predicate half of the URL floor, true exactly when {@link sanitizeURL} keeps a
+>  * non-empty value. A relative URL is allowed; a protocol-relative one (`//`, `\\`, `/\`,
+>  * `\/`) is not; and `javascript:`, `data:`, `vbscript:`, and `file:` are refused whatever
+>  * the allowlist says.
+>  *
+963c1039,1040
+<  * Determines whether an arbitrary value is a structurally valid text node.
+---
+>  * Determines whether an arbitrary value is a structurally valid text node - a closed
+>  * `{ category: 'text', value: string }` record.
+971c1048,1049
+<  * Determines whether an element name is void.
+---
+>  * Determines whether an element name is void, matching `VOID_ELEMENTS` without case
+>  * sensitivity.
+979,981c1057,1062
+<  * Lists the elements whose content is literal text - one `TextNode` up to the matching close
+<  * tag, with character references decoded but no markup parsed. They differ from
+<  * `RAW_ELEMENTS` only by that decoding: `<title>a &amp; b</title>` holds `a & b`.
+---
+>  * Lists the elements whose content is literal text - one text node up to the matching close
+>  * tag, with character references decoded but no markup parsed.
+>  *
+>  * @remarks
+>  * They differ from `RAW_ELEMENTS` only by that decoding: `<title>a &amp; b</title>` holds
+>  * `a & b`.
+987a1069,1072
+>  * @remarks
+>  * The strict and the recovering scanners share this one fold, so a later syntax error can
+>  * never change how a name was normalized.
+>  *
+994,998c1079,1086
+<  * Names the recursion depth the parser, the traversals, and the renderers honor before they
+<  * stop descending - the bound that keeps pathological input (thousands of nested `div`s,
+<  * a fuzzer's tag soup) from exhausting the call stack. Past this depth the parser appends
+<  * content to the deepest allowed element instead of nesting further, so parsing stays
+<  * total and no text is lost.
+---
+>  * Names the recursion depth the parser, the guards, the traversals, the renderers, and the
+>  * sanitize and distill engines honor before they stop descending, `64`.
+>  *
+>  * @remarks
+>  * The bound is what keeps pathological input - thousands of nested `div` elements, a
+>  * fuzzer's tag soup - from exhausting the call stack. Past this depth the parser appends
+>  * content to the deepest allowed element instead of nesting further, so parsing stays total
+>  * and no text is lost.
+1018,1020c1106
+<  * by name without the leading `&` or trailing `;`. The parser decodes them in text,
+<  * attribute values, and literal-text elements through a frozen own-property record.
+<  * Unknown and prototype-like names stay literal.
+---
+>  * by name without the leading `&` or trailing `;`.
+1022a1109,1112
+>  * The parser decodes them in text, attribute values, and literal-text elements through a
+>  * frozen own-property record read with `Object.hasOwn`, so a hostile name such as
+>  * `&constructor;` is not an entry and every unknown name stays literal.
+>  *
+1032c1122,1123
+<  * Normalizes an HTML input and maps each normalized boundary to its original UTF-16 offset.
+---
+>  * Normalizes an HTML input - CRLF and a lone carriage return to one newline, `U+0000` to
+>  * `U+FFFD` - and maps each normalized boundary to its original UTF-16 offset.
+1040c1131,1138
+<  * Parses an HTML string into a total, depth-bounded document AST.
+---
+>  * Parses an HTML string into a total, depth-bounded document AST - a page and a bare
+>  * fragment are the same shape.
+>  *
+>  * @remarks
+>  * Parsing is total: malformed markup recovers per the package's documented recovery table
+>  * instead of throwing, so there is no error path to handle. The result never carries two
+>  * adjacent text siblings, which is what keeps a document equal to its own reparsed
+>  * serialization.
+1049a1148,1152
+>  * @remarks
+>  * This is the single document walk that turns source into an AST; `parseDocument` projects
+>  * the bare document out of the same walk for callers needing no provenance. The returned map
+>  * is operation-owned, and a node with no single source has no entry.
+>  *
+1057a1161,1165
+>  * @remarks
+>  * Duplicate or malformed attributes, ambiguous delimiters, an invalid offset, a close tag,
+>  * and incomplete input each produce no value: this is the fail-closed source boundary, and
+>  * it never recovers the way the document walk does.
+>  *
+1065c1173,1174
+<  * Projects one stack position onto the single depth scale both stacks compare on.
+---
+>  * Projects one stack position onto the single depth scale the represented and depth-overflow
+>  * stacks compare on, so an overflow position ranks below every represented one.
+1094c1203,1204
+<  * Rebuilds a document bottom-up, letting each node become any number of nodes.
+---
+>  * Rebuilds a document bottom-up, letting each node become any number of nodes - the
+>  * one-to-many spine the sanitize and distill engines share.
+1098c1208
+<  * maps one node to a LIST - `[]` to drop it, `node.children` to unwrap it, `[node]` to keep
+---
+>  * maps one node to a list - `[]` to drop it, `node.children` to unwrap it, `[node]` to keep
+1101c1211
+<  * children ALREADY pruned and flattened, so keeping a node needs no reconstruction and a
+---
+>  * children already pruned and flattened, so keeping a node needs no reconstruction and a
+1104c1214
+<  * root's children. Descent stops at {@link MAX_DEPTH}: a node at the cap is handed NO
+---
+>  * root's children. Descent stops at {@link MAX_DEPTH}: a node at the cap is handed no
+1116,1120c1226,1233
+<  * Lists the elements whose content is raw text: everything up to the matching close tag - which
+<  * is recognized case-insensitively - becomes one verbatim `TextNode` with no tag scanning
+<  * and no character-reference decoding inside. This is the parser's most important safety
+<  * boundary, so the renderer refuses to write a raw body that itself contains that close
+<  * tag sequence rather than emit markup that would reopen the element.
+---
+>  * Lists the elements whose content is raw text - everything up to the case-insensitive
+>  * matching close tag becomes one verbatim text node, with no tag scanning and no
+>  * character-reference decoding inside.
+>  *
+>  * @remarks
+>  * This is the parser's most important safety boundary, so the renderer refuses to write a
+>  * raw body that itself contains that close tag sequence rather than emit markup that would
+>  * reopen the element.
+1134,1135c1247,1249
+<  * Invalid element names unwrap to their children. Raw-text bodies containing their own
+<  * matching close-tag sequence are dropped. Descent stops after {@link MAX_DEPTH}.
+---
+>  * Never throws: it refuses a construct rather than emit an unsafe one. Invalid element
+>  * names unwrap to their children. Raw-text bodies containing their own matching close-tag
+>  * sequence are dropped. Descent stops after {@link MAX_DEPTH}.
+1149c1263,1265
+<  * textarea text remains.
+---
+>  * textarea text remains. Heading level, link destination, list marker, nesting depth, image
+>  * attributes, code fence, and code language are all lossy: this is the projection that
+>  * keeps the reading order and drops the rest.
+1195,1200c1311,1319
+<  * Lists the default attribute allowlist for `sanitize` - the attributes that describe content
+<  * rather than fetch, script, or style it. Deliberately narrow: no `id`, no `style`, no
+<  * event handler, and no resource `src`, so a sanitized `img` keeps its `alt` text and
+<  * loses its download. `class` is kept because it is inert after `style`, `link`, `svg`, and
+<  * `script` are gone and it is where a code block declares its language
+<  * (`class="language-ts"`).
+---
+>  * Lists the default attribute allowlist for `sanitize` - the attributes that describe
+>  * content rather than fetch, script, or style it.
+>  *
+>  * @remarks
+>  * Deliberately narrow: no `id`, no `style`, no event handler, and no resource `src`, so a
+>  * sanitized `img` keeps its `alt` text and loses its download. `class` is kept because it is
+>  * inert after `style`, `link`, `svg`, and `script` are gone and it is where a code block
+>  * declares its language (`class="language-ts"`). `align` stays subject to the cell-and-value
+>  * floor `sanitizeAttributes` applies.
+1206,1209c1325,1330
+<  * unchanged. A safe element outside this set is unwrapped to its children rather than
+<  * dropped, so `HTMLSanitizeOptions.elements` narrows what is KEPT without ever destroying
+<  * content; `UNSAFE_ELEMENTS` is the separate, unlowerable list of subtrees that are
+<  * removed whole.
+---
+>  * unchanged.
+>  *
+>  * @remarks
+>  * A safe element outside this set is unwrapped to its children rather than dropped, so
+>  * `HTMLSanitizeOptions.elements` narrows what is kept without ever destroying content;
+>  * `UNSAFE_ELEMENTS` is the separate, unlowerable list of subtrees that are removed whole.
+1214,1217c1335,1341
+<  * Lists the URL schemes a sanitized document may name. A relative URL - anything without a
+<  * `scheme:` prefix, excluding the protocol-relative forms - is always allowed; every
+<  * other scheme is refused. `HTMLSanitizeOptions.schemes` replaces this set but can never
+<  * admit `javascript:`, `data:`, `vbscript:`, or `file:`, which are refused outright.
+---
+>  * Lists the URL schemes a sanitized document may name.
+>  *
+>  * @remarks
+>  * A relative URL - anything without a `scheme:` prefix, excluding the protocol-relative
+>  * forms - is always allowed; every other scheme is refused.
+>  * `HTMLSanitizeOptions.schemes` replaces this set but can never admit `javascript:`,
+>  * `data:`, `vbscript:`, or `file:`, which are refused outright.
+1230c1354
+<  * {@link sanitizeURL}; either attribute is REMOVED - not emptied - when its extra rule
+---
+>  * {@link sanitizeURL}; either attribute is removed - not emptied - when its extra rule
+1247c1371,1373
+<  * bound fails closed.
+---
+>  * bound fails closed. This is the transform half of the URL floor {@link isSafeURL} shares,
+>  * and either shape of allowlist works: the frozen constant array, or the `ReadonlySet` a
+>  * caller passes through `HTMLSanitizeOptions`.
+1256c1382,1386
+<  * Scans an attribute source segment into ordered, first-wins attributes.
+---
+>  * Scans an attribute source segment into ordered, ASCII-lowercased, first-wins attributes
+>  * with decoded values.
+>  *
+>  * @remarks
+>  * An unterminated quoted value minimizes to an absent value rather than to invented text.
+1265a1396,1400
+>  * @remarks
+>  * The bogus forms - `<?…>`, a non-doctype `<!…>`, and a CDATA section - recover to the same
+>  * comment node, and an unterminated comment runs to the end of input. Every value produced
+>  * here is representable: it never begins with an abrupt close and never contains one.
+>  *
+1295a1431,1434
+>  * @remarks
+>  * A trailing solidus is dropped rather than recorded, and an unterminated quoted value
+>  * recovers at the next `>` instead of trusting the markup that follows it.
+>  *
+1303,1306c1442,1447
+<  * Lists the closed values a sanitized table-cell `align` attribute may carry. This finite
+<  * vocabulary keeps alignment validation to exact string normalization and membership:
+<  * the sanitizer deliberately gains no CSS or value-grammar parser and no general styling
+<  * policy axis.
+---
+>  * Lists the closed values a sanitized table-cell `align` attribute may carry.
+>  *
+>  * @remarks
+>  * This finite vocabulary keeps alignment validation to exact string normalization and
+>  * membership: the sanitizer deliberately gains no CSS or value-grammar parser and no
+>  * general styling policy axis.
+1311,1315c1452,1459
+<  * Lists the elements on which a sanitized `align` attribute is honored. Although `align` is
+<  * obsolete presentational HTML, its cell-only scope is a smaller security surface than a
+<  * style declaration allowlist. `sanitizeAttributes` already receives the owning element,
+<  * so it can narrow this allowlisted attribute just as it narrows URL attributes without a
+<  * per-element policy mechanism.
+---
+>  * Lists the elements on which a sanitized `align` attribute is honored, whatever a caller's
+>  * attribute allowlist names.
+>  *
+>  * @remarks
+>  * Although `align` is obsolete presentational HTML, its cell-only scope is a smaller
+>  * security surface than a style declaration allowlist. `sanitizeAttributes` already receives
+>  * the owning element, so it can narrow this allowlisted attribute the way it narrows URL
+>  * attributes without a per-element policy mechanism.
+1320,1322c1464,1469
+<  * Represents a run of character data - the leaf node. `value` is the decoded text: numeric and
+<  * semicolon-terminated WHATWG named character references are already resolved (an unknown
+<  * named reference stays literal), and the renderer re-encodes `&`, `<`, and `>` on the way out.
+---
+>  * Represents a run of character data - the leaf node, whose `value` is already-decoded text.
+>  *
+>  * @remarks
+>  * Numeric and semicolon-terminated WHATWG named character references are resolved on the
+>  * way in, and an unknown named reference stays literal. The renderer re-encodes `&`, `<`,
+>  * and `>` on the way out, so what roundtrips is the text rather than its source spelling.
+1326c1473
+<     /** Holds the decoded text content (character references resolved, NOT yet re-encoded). */
+---
+>     /** Holds the decoded text content (character references resolved, not yet re-encoded). */
+1348,1353c1495,1503
+<  * Names the hard floor of `sanitize`: elements whose entire subtree is removed, never unwrapped,
+<  * no matter what `HTMLSanitizeOptions` allows. Unwrapping is what makes these dangerous -
+<  * the body of a `script`, `style`, `template`, or `noscript` is text that becomes live
+<  * markup the moment its wrapper disappears - so the content goes with the element.
+<  * Foreign content (`svg`, `math`) is here because this AST has no namespaces to police,
+<  * and the form and metadata elements are here because they act rather than describe.
+---
+>  * Names the hard floor of `sanitize` - elements whose entire subtree is removed, never
+>  * unwrapped, no matter what `HTMLSanitizeOptions` allows.
+>  *
+>  * @remarks
+>  * Unwrapping is what makes these dangerous - the body of a `script`, `style`, `template`, or
+>  * `noscript` is text that becomes live markup the moment its wrapper disappears - so the
+>  * content goes with the element. Foreign content (`svg`, `math`) is here because this AST
+>  * has no namespaces to police, and the form and metadata elements are here because they act
+>  * rather than describe.
+1358,1362c1508,1514
+<  * Lists the attributes whose value is a URL, and therefore the values `sanitize` decodes,
+<  * strips of ASCII whitespace and control characters, and scheme-checks before keeping,
+<  * and that `distill` resolves against `HTMLDistillOptions.base`. `action` and `formaction`
+<  * are listed even though their elements are removed whole, because a hand-built AST can
+<  * carry them anywhere.
+---
+>  * Lists the attributes whose value is a URL - the values `sanitize` decodes, strips of ASCII
+>  * whitespace and control characters, and scheme-checks before keeping, and the values
+>  * `distill` resolves against `HTMLDistillOptions.base`.
+>  *
+>  * @remarks
+>  * `action` and `formaction` are listed even though their elements are removed whole, because
+>  * a hand-built AST can carry them anywhere.
+1367,1370c1519,1525
+<  * Lists the elements that cannot have children - a start tag is the whole element and a close
+<  * tag for one is discarded. Voidness is looked up here rather than stored on
+<  * `ElementNode`, so a node can never disagree with its own tag name, and the renderer
+<  * writes `<br>` (never `<br/>` and never a close tag) for every member.
+---
+>  * Lists the elements that cannot have children - a start tag is the whole element, and a
+>  * close tag for one is discarded.
+>  *
+>  * @remarks
+>  * Voidness is looked up here rather than stored on `ElementNode`, so a node can never
+>  * disagree with its own tag name, and the renderer writes `<br>` (never `<br/>` and never a
+>  * close tag) for every member.
+1375c1530,1535
+<  * Walks an HTML node depth-first in pre-order, including the supplied root.
+---
+>  * Walks an HTML node depth-first in pre-order, lazily and depth-bounded, including the
+>  * supplied root.
+>  *
+>  * @remarks
+>  * The deep traversal: `walk`, `find`, `filter`, and `reduce` all iterate this one generator,
+>  * so one ordering law covers the whole query surface.
+diff -r -w -B '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-html-next-final-pack/baseline/package/dist/src/core/index.d.ts /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-html-next-final-pack/extract/package/dist/src/core/index.d.ts
+1c1
+< import { Guard } from '@orkestrel/contract';
+---
+> import type { Guard } from '@orkestrel/contract';
+41,43c41,46
+<  * Lists the elements that carry document structure rather than inline content. They are the
+<  * elements that implicitly close an open `p` (see `IMPLIED_CLOSERS`) and the boundaries
+<  * across which the distiller collapses whitespace instead of preserving it.
+---
+>  * Lists the elements that carry document structure rather than inline content.
+>  *
+>  * @remarks
+>  * They are the elements that implicitly close an open `p` (see `IMPLIED_CLOSERS`), the
+>  * boundaries `renderText` writes a line break at, and the boundaries across which the
+>  * distiller collapses whitespace instead of preserving it.
+49,51c52,56
+<  * furniture that surrounds an article rather than belonging to it. Unlike the content
+<  * set, these are dropped with their children: a navigation menu's link text is noise in
+<  * every reading of the page.
+---
+>  * furniture that surrounds an article rather than belonging to it.
+>  *
+>  * @remarks
+>  * Unlike the content set, these are dropped with their children: a navigation menu's link
+>  * text is noise in every reading of the page.
+67c72
+<  * Every run of whitespace becomes one space and edge whitespace is KEPT, because the space
+---
+>  * Every run of whitespace becomes one space and edge whitespace is kept, because the space
+78,82c83,90
+<  * Represents a comment - `<!-- … -->`. `value` is the comment's verbatim inner text, never decoded
+<  * and never parsed as markup. The parser constructs only representable values: they never
+<  * begin with an abrupt `>` / `->` close and never contain `-->` / `--!>`, so rendering and
+<  * reparsing a parser-produced comment preserves it exactly. A hand-built value can violate
+<  * that invariant, in which case the renderer drops it rather than emit a breakout.
+---
+>  * Represents a comment - `<!-- … -->` - whose `value` is verbatim inner text, never decoded
+>  * and never parsed as markup.
+>  *
+>  * @remarks
+>  * The parser constructs only representable values: they never begin with an abrupt `>` /
+>  * `->` close and never contain `-->` / `--!>`, so rendering and reparsing a parser-produced
+>  * comment preserves it exactly. A hand-built value can violate that invariant, in which case
+>  * the renderer drops it rather than emit a breakout.
+112,115c120,126
+<  * Lists the default element set `distill` keeps as content: prose, headings, lists, tables,
+<  * code, and the inline marks that carry meaning. Everything else safe is unwrapped to its
+<  * children, which is how wrapper soup melts while its text survives. Definition lists are
+<  * included because a documentation page's terms and definitions are content, not chrome.
+---
+>  * Lists the default element set `distill` keeps as content - prose, headings, lists, tables,
+>  * code, and the inline marks that carry meaning.
+>  *
+>  * @remarks
+>  * Everything else safe is unwrapped to its children, which is how wrapper soup melts while
+>  * its text survives. Definition lists are included because a documentation page's terms and
+>  * definitions are content, not chrome.
+127,128c138,139
+<  * parsing is TOTAL - malformed markup recovers instead of throwing, so there is no error
+<  * path to handle. Given an {@link HTMLDocument}, that document is adopted AS-IS and is not
+---
+>  * parsing is total - malformed markup recovers instead of throwing, so there is no error
+>  * path to handle. Given an {@link HTMLDocument}, that document is adopted as-is and is not
+134c145
+<  * @example
+---
+>  * @example Parse, then query
+136c147,149
+<  * import { createHTML, renderText } from '@orkestrel/html'
+---
+>  * import { createHTML, isElementNode } from '@orkestrel/html'
+>  *
+>  * const page = createHTML('<h1>Title</h1><p>A <b>bold</b> word.</p>')
+138,139c151,158
+<  * const page = createHTML('<h1>Title</h1><p>Read the <a href="/guide">guide</a>.</p>')
+<  * renderText(page.document) // 'Title\nRead the guide.'
+---
+>  * page.document.children[0] // { category: 'element', name: 'h1', attributes: [], children: [...] }
+>  * page.span(page.document) // { start: 0, end: 40 } - half-open offsets in the original input
+>  * page.find(isElementNode)?.name // 'h1' - narrowed to ElementNode by the guard overload
+>  * page.filter(isElementNode).map((element) => element.name) // ['h1', 'p', 'b']
+>  *
+>  * const categories: string[] = []
+>  * for (const node of page.walk()) categories.push(node.category)
+>  * // ['document', 'element', 'text', 'element', 'text', 'element', 'text', 'text']
+146a166,169
+>  * @remarks
+>  * A numeric reference naming an invalid scalar decodes to `U+FFFD`. An unknown named
+>  * reference stays literal, exactly as the source wrote it.
+>  *
+199c222
+<  * DERIVED from the tag name against `VOID_ELEMENTS`, never stored as a flag, so no
+---
+>  * derived from the tag name against `VOID_ELEMENTS`, never stored as a flag, so no
+218c241,242
+<  * Encodes the characters that have markup meaning in a double-quoted HTML attribute.
+---
+>  * Encodes the characters that have markup meaning in a double-quoted HTML attribute - `&`
+>  * and `"`, and nothing else.
+226c250,251
+<  * Encodes the characters that have markup meaning in HTML text.
+---
+>  * Encodes the characters that have markup meaning in HTML text - `&`, `<`, and `>`, and
+>  * nothing else.
+237c262
+<  * The names are tried in order and the first one occurring EXACTLY once in the document
+---
+>  * The names are tried in order and the first one occurring exactly once in the document
+249c274,275
+<  * Finds the deepest open occurrence of an element name across the parser's two stacks.
+---
+>  * Finds the deepest open occurrence of an element name across the parser's represented and
+>  * depth-overflow stacks.
+276c302,303
+<  * Folds an HTML node bottom-up through a total handler table.
+---
+>  * Folds an HTML node bottom-up through a total handler table - each node's children fold
+>  * first, then its own handler runs with those already-folded results.
+288c315
+<  * Represents a parsed HTML document - the typed {@link HTMLDocument} AST plus the query
+---
+>  * Represents a parsed document - the typed {@link HTMLDocument} AST plus the query
+295c322
+<  *   that document is adopted AS-IS and is NOT re-validated - gate an untrusted value with
+---
+>  *   that document is adopted as-is and is not re-validated - gate an untrusted value with
+298c325
+<  *   each return a NEW `HTML`, and the root invariant (`category: 'document'`) always holds.
+---
+>  *   each return a new `HTML`, and the root invariant (`category: 'document'`) always holds.
+301,304c328,332
+<  * - **The two engines.** `sanitize` enforces a security floor no option can lower;
+<  *   `distill` extracts content, sanitizing first because content extraction is not a second
+<  *   security surface. Both compose the pure leaves in `helpers.ts` over one shared
+<  *   bottom-up spine, {@link pruneDocument}.
+---
+>  * - **The engines.** `sanitize` enforces a security floor no option can lower; `distill`
+>  *   extracts content, pruning boilerplate regions and hidden chrome first, then sanitizing
+>  *   with the defaults, then re-rooting and reducing to the content vocabulary, because
+>  *   content extraction is not a second security surface. Each composes the pure leaves in
+>  *   `helpers.ts` over one shared bottom-up spine, {@link pruneDocument}.
+329c357
+<      * Provides THE deep traversal - a lazy, depth-first, pre-order, root-inclusive generator over
+---
+>      * Provides the deep traversal - a lazy, depth-first, pre-order, root-inclusive generator over
+350c378
+<      * Rewrites the AST bottom-up (copy-on-write) and returns a NEW {@link HTML}. A rewrite
+---
+>      * Rewrites the AST bottom-up (copy-on-write) and returns a new {@link HTML}. A rewrite
+397c425
+<      * Removes every unsafe element, attribute, and URL and returns a NEW {@link HTML}.
+---
+>      * Removes every unsafe element, attribute, and URL and returns a new {@link HTML}.
+400c428
+<      * Each allowlist option REPLACES its default rather than extending it, and the floor
+---
+>      * Each allowlist option replaces its default rather than extending it, and the floor
+421c449
+<      * and returns a NEW {@link HTML}.
+---
+>      * and returns a new {@link HTML}.
+426c454
+<      * DEFAULTS, because distilling narrows content and never widens the security floor; the
+---
+>      * defaults, because distilling narrows content and never widens the security floor; the
+434c462
+<      * The `hidden` pass runs BEFORE the sanitize pass by necessity - `hidden` and
+---
+>      * The `hidden` pass runs before the sanitize pass by necessity - `hidden` and
+452c480,486
+< /** Lists the code points HTML treats as syntax whitespace. */
+---
+> /**
+>  * Lists the code points HTML treats as syntax whitespace, `' \t\n\f\r'`.
+>  *
+>  * @remarks
+>  * The scanners separate tags on this set alone, so none of them mistakes JavaScript's
+>  * broader Unicode whitespace set for tag separation.
+>  */
+496,504c530,540
+<  * Distilling always sanitizes with the defaults first - it is content extraction, not a
+<  * second security surface - and then, in order: removes each `boilerplate` region whole;
+<  * drops any element marked `hidden` or `aria-hidden="true"`; re-roots at the single
+<  * `main` or single `article` when exactly one exists; keeps the `elements` set and
+<  * unwraps everything else to its children; unwraps a wrapper whose only child is another
+<  * element; collapses inter-word whitespace outside `pre` and `code`; drops an empty
+<  * non-void element; and resolves relative `href` / `src` against `base`, leaving a value
+<  * it cannot resolve as written. The result is a pruned {@link HTMLInterface}, never a
+<  * string: rendering stays a separate, downstream choice.
+---
+>  * Distilling runs, in order: removes each `boilerplate` region whole and drops any element
+>  * marked `hidden` or `aria-hidden="true"`; sanitizes with the defaults, because content
+>  * extraction is not a second security surface; re-roots at the single `main` or single
+>  * `article` when exactly one exists; keeps the `elements` set and unwraps everything else to
+>  * its children; unwraps a wrapper whose only child is another element; collapses inter-word
+>  * whitespace outside `pre` and `code`; drops an empty non-void element; and resolves
+>  * relative `href` / `src` against `base`, leaving a value it cannot resolve as written. The
+>  * region and chrome prune runs before the sanitize pass by necessity - `hidden` and
+>  * `aria-hidden` are outside `SAFE_ATTRIBUTES`, so sanitizing first would consume the
+>  * evidence that pass reads. The result is a pruned {@link HTMLInterface}, never a string:
+>  * rendering stays a separate, downstream choice.
+529c565
+<  * Represents a fold handler for one node category - receives the node and its children ALREADY
+---
+>  * Represents a fold handler for one node category - receives the node and its children already
+558,559c594,596
+<  * Represents a parsed HTML document: the typed {@link HTMLDocument} AST plus the query, rewrite,
+<  * fold, and reduction operations over it.
+---
+>  * Represents a parsed HTML document: the typed {@link HTMLDocument} AST plus the query
+>  * (`walk` / `find` / `filter` / `reduce`), rewrite (`map`), fold, streaming, and
+>  * document-shaping (`sanitize` / `distill`) operations over it.
+563c600
+<  *   each return a NEW {@link HTMLInterface}, and the root invariant
+---
+>  *   each return a new {@link HTMLInterface}, and the root invariant
+574c611
+<  *   reparse as well as directly. What roundtrips is the AST, NOT the input bytes:
+---
+>  *   reparse as well as directly. What roundtrips is the AST, not the input bytes:
+579c616
+<  *   for SAFETY rather than fidelity.
+---
+>  *   for safety rather than fidelity.
+583c620
+<  *   `sanitize` / `distill` (the two document-shaping engines).
+---
+>  *   `sanitize` / `distill` (the document-shaping engines).
+596,598c633,637
+<      * Provides THE deep traversal - a lazy, depth-first, pre-order, root-inclusive
+<      * {@link Generator} over every {@link HTMLNode} in the document. The sync
+<      * `for (const node of html.walk())` surface is also consumable by
+---
+>      * Provides the deep traversal - a lazy, depth-first, pre-order, root-inclusive
+>      * {@link Generator} over every {@link HTMLNode} in the document.
+>      *
+>      * @remarks
+>      * The sync `for (const node of html.walk())` surface is also consumable by
+620c659,663
+<     /** Runs a total catamorphism over the document using an {@link HTMLHandlerMap} table. */
+---
+>     /**
+>      * Runs a total catamorphism over the document using an {@link HTMLHandlerMap} table -
+>      * one handler per category and no node skipped, so a structure-aware projection needs
+>      * no traversal of its own.
+>      */
+639,640c682,684
+<      * Extracts the page's content - sanitizing first, then pruning boilerplate,
+<      * chrome, and wrappers per {@link HTMLDistillOptions} - and returns a new
+---
+>      * Extracts the page's content - pruning boilerplate regions and hidden chrome, then
+>      * sanitizing with the defaults, then re-rooting and reducing to the content
+>      * vocabulary per {@link HTMLDistillOptions} - and returns a new
+662,663c706,708
+<  * `position` indexes the stack `overflow` names, so the two fields are read together;
+<  * `projectDepth` is what puts them on the single scale both stacks compare on.
+---
+>  * `position` indexes the stack `overflow` names, so the fields are read together;
+>  * `projectDepth` is what puts them on the single scale the represented and depth-overflow
+>  * stacks compare on.
+715c760
+<  * Describes the options for {@link HTMLInterface.sanitize}. Each allowlist key REPLACES its
+---
+>  * Describes the options for {@link HTMLInterface.sanitize}. Each allowlist key replaces its
+725c770
+<  * A wider allowlist must never become a hole, so these options sit ON TOP of a floor
+---
+>  * A wider allowlist must never become a hole, so these options sit on top of a floor
+727c772
+<  * - every `UNSAFE_ELEMENTS` subtree is removed WHOLE, never unwrapped, so its text can
+---
+>  * - every `UNSAFE_ELEMENTS` subtree is removed whole, never unwrapped, so its text can
+732c777
+<  *   control characters BEFORE its scheme is checked, and `javascript:`, `data:`,
+---
+>  *   control characters before its scheme is checked, and `javascript:`, `data:`,
+736c781
+<  * - a safe element that is merely outside the allowlist is UNWRAPPED to its children, so
+---
+>  * - a safe element that is merely outside the allowlist is unwrapped to its children, so
+758c803,804
+<  * there without recomputing the boundary.
+---
+>  * there without recomputing the boundary. `TNode` is constrained to {@link HTMLNode}, so a
+>  * scan result can only carry a node this AST defines.
+814c860,866
+< /** Represents one start or close tag returned by the total, recovering `scanTag` scanner. */
+---
+> /**
+>  * Represents one start or close tag returned by the total, recovering `scanTag` scanner.
+>  *
+>  * @remarks
+>  * A recovered start tag keeps the `next` boundary recovery chose rather than an exact one,
+>  * and a close tag carries no attributes.
+>  */
+847,850c899,905
+<  * Holds the implied end-tag table: for each element that can be left open, the start tags whose
+<  * arrival closes it. An incoming start tag collects one candidate per row that lists it, the
+<  * innermost open instance of that row's element, so a candidate sitting beneath elements the
+<  * table never names is still collected. The parser rules each candidate against its own
+---
+>  * Holds the implied end-tag table - for each element that can be left open, the start tags
+>  * whose arrival closes it.
+>  *
+>  * @remarks
+>  * An incoming start tag collects one candidate per row that lists it, the innermost open
+>  * instance of that row's element, so a candidate sitting beneath elements the table never
+>  * names is still collected. The parser rules each candidate against its own
+852,858c907,913
+<  * shallowest candidate that survives - carrying every element still open inside that one with
+<  * it. That is how `<p>one<p>two`, `<li>a<li>b`, `<dt>t<dd>d`, and a bare `<tr><td>x<td>y`
+<  * recover into the structure their author meant, how `<p><b>x<div>y` closes the open `b`
+<  * element along with the paragraph, and how `<table><tr><td><p><button>x<td>y` still closes
+<  * the cell after the button barrier rules the paragraph out. An open `p` maps to the whole
+<  * `BLOCK_ELEMENTS` collection rather than to a second copy of it, so the two can never drift
+<  * apart.
+---
+>  * shallowest candidate that survives - carrying every element still open inside that one
+>  * with it. That is how `<p>one<p>two`, `<li>a<li>b`, `<dt>t<dd>d`, and a bare
+>  * `<tr><td>x<td>y` recover into the structure their author meant, how `<p><b>x<div>y` closes
+>  * the open `b` element along with the paragraph, and how `<table><tr><td><p><button>x<td>y`
+>  * still closes the cell after the button barrier rules the paragraph out. An open `p` maps
+>  * to the whole `BLOCK_ELEMENTS` collection rather than to a second copy of it, so the row
+>  * and the collection can never drift apart.
+863c918
+<  * Determines whether an element name is a block boundary.
+---
+>  * Determines whether an element name is a block boundary, matching `BLOCK_ELEMENTS`.
+871c926,927
+<  * Determines whether an arbitrary value is a structurally valid comment node.
+---
+>  * Determines whether an arbitrary value is a structurally valid comment node - a closed
+>  * `{ category: 'comment', value: string }` record.
+879c935,936
+<  * Determines whether an arbitrary value is a structurally valid doctype node.
+---
+>  * Determines whether an arbitrary value is a structurally valid doctype node - a declared
+>  * name plus optional public and system identifiers, closed.
+887c944,945
+<  * Determines whether an arbitrary value is a valid element node.
+---
+>  * Determines whether an arbitrary value is a valid element node - the whole-node check
+>  * narrowed to an element, and the natural predicate to pass to `find` or `filter`.
+895c953,954
+<  * Checks whether an element has no child nodes.
+---
+>  * Checks whether an element has no child nodes - the predicate the distill pass consults
+>  * before dropping an empty non-void element.
+903c962,963
+<  * Determines whether an arbitrary value is a structurally valid HTML attribute.
+---
+>  * Determines whether an arbitrary value is a structurally valid HTML attribute - exactly a
+>  * string name, optionally a string value, and nothing else.
+913a974,978
+>  * @remarks
+>  * HTML whitespace is allowed; every other C0 control, the C1 controls, the surrogates, and
+>  * the noncharacters are refused, so a token built from accepted code points has no
+>  * parse-error scalar in it.
+>  *
+921c986,987
+<  * Determines whether an arbitrary value is a valid HTML document.
+---
+>  * Determines whether an arbitrary value is a valid HTML document - the whole-node check
+>  * narrowed to the root category, and the gate to run before adopting an untrusted document.
+929c995,997
+<  * Determines whether an arbitrary value is a valid HTML node.
+---
+>  * Determines whether an arbitrary value is a valid HTML node - the value and every
+>  * descendant, walked iteratively, cycle-checked, capped at {@link MAX_DEPTH}, and held to
+>  * the void-element empty-children invariant.
+938c1006,1007
+<  * Determines whether an element name contains decoded literal text.
+---
+>  * Determines whether an element name contains decoded literal text - `title` or `textarea`,
+>  * whose body is one text node with character references resolved.
+946c1015,1016
+<  * Determines whether an element name contains verbatim raw text.
+---
+>  * Determines whether an element name contains verbatim raw text - `script` or `style`, the
+>  * parser's no-scanning boundary and the renderer's refusal boundary.
+955a1026,1031
+>  * @remarks
+>  * The predicate half of the URL floor, true exactly when {@link sanitizeURL} keeps a
+>  * non-empty value. A relative URL is allowed; a protocol-relative one (`//`, `\\`, `/\`,
+>  * `\/`) is not; and `javascript:`, `data:`, `vbscript:`, and `file:` are refused whatever
+>  * the allowlist says.
+>  *
+963c1039,1040
+<  * Determines whether an arbitrary value is a structurally valid text node.
+---
+>  * Determines whether an arbitrary value is a structurally valid text node - a closed
+>  * `{ category: 'text', value: string }` record.
+971c1048,1049
+<  * Determines whether an element name is void.
+---
+>  * Determines whether an element name is void, matching `VOID_ELEMENTS` without case
+>  * sensitivity.
+979,981c1057,1062
+<  * Lists the elements whose content is literal text - one `TextNode` up to the matching close
+<  * tag, with character references decoded but no markup parsed. They differ from
+<  * `RAW_ELEMENTS` only by that decoding: `<title>a &amp; b</title>` holds `a & b`.
+---
+>  * Lists the elements whose content is literal text - one text node up to the matching close
+>  * tag, with character references decoded but no markup parsed.
+>  *
+>  * @remarks
+>  * They differ from `RAW_ELEMENTS` only by that decoding: `<title>a &amp; b</title>` holds
+>  * `a & b`.
+987a1069,1072
+>  * @remarks
+>  * The strict and the recovering scanners share this one fold, so a later syntax error can
+>  * never change how a name was normalized.
+>  *
+994,998c1079,1086
+<  * Names the recursion depth the parser, the traversals, and the renderers honor before they
+<  * stop descending - the bound that keeps pathological input (thousands of nested `div`s,
+<  * a fuzzer's tag soup) from exhausting the call stack. Past this depth the parser appends
+<  * content to the deepest allowed element instead of nesting further, so parsing stays
+<  * total and no text is lost.
+---
+>  * Names the recursion depth the parser, the guards, the traversals, the renderers, and the
+>  * sanitize and distill engines honor before they stop descending, `64`.
+>  *
+>  * @remarks
+>  * The bound is what keeps pathological input - thousands of nested `div` elements, a
+>  * fuzzer's tag soup - from exhausting the call stack. Past this depth the parser appends
+>  * content to the deepest allowed element instead of nesting further, so parsing stays total
+>  * and no text is lost.
+1018,1020c1106
+<  * by name without the leading `&` or trailing `;`. The parser decodes them in text,
+<  * attribute values, and literal-text elements through a frozen own-property record.
+<  * Unknown and prototype-like names stay literal.
+---
+>  * by name without the leading `&` or trailing `;`.
+1022a1109,1112
+>  * The parser decodes them in text, attribute values, and literal-text elements through a
+>  * frozen own-property record read with `Object.hasOwn`, so a hostile name such as
+>  * `&constructor;` is not an entry and every unknown name stays literal.
+>  *
+1032c1122,1123
+<  * Normalizes an HTML input and maps each normalized boundary to its original UTF-16 offset.
+---
+>  * Normalizes an HTML input - CRLF and a lone carriage return to one newline, `U+0000` to
+>  * `U+FFFD` - and maps each normalized boundary to its original UTF-16 offset.
+1040c1131,1138
+<  * Parses an HTML string into a total, depth-bounded document AST.
+---
+>  * Parses an HTML string into a total, depth-bounded document AST - a page and a bare
+>  * fragment are the same shape.
+>  *
+>  * @remarks
+>  * Parsing is total: malformed markup recovers per the package's documented recovery table
+>  * instead of throwing, so there is no error path to handle. The result never carries two
+>  * adjacent text siblings, which is what keeps a document equal to its own reparsed
+>  * serialization.
+1049a1148,1152
+>  * @remarks
+>  * This is the single document walk that turns source into an AST; `parseDocument` projects
+>  * the bare document out of the same walk for callers needing no provenance. The returned map
+>  * is operation-owned, and a node with no single source has no entry.
+>  *
+1057a1161,1165
+>  * @remarks
+>  * Duplicate or malformed attributes, ambiguous delimiters, an invalid offset, a close tag,
+>  * and incomplete input each produce no value: this is the fail-closed source boundary, and
+>  * it never recovers the way the document walk does.
+>  *
+1065c1173,1174
+<  * Projects one stack position onto the single depth scale both stacks compare on.
+---
+>  * Projects one stack position onto the single depth scale the represented and depth-overflow
+>  * stacks compare on, so an overflow position ranks below every represented one.
+1094c1203,1204
+<  * Rebuilds a document bottom-up, letting each node become any number of nodes.
+---
+>  * Rebuilds a document bottom-up, letting each node become any number of nodes - the
+>  * one-to-many spine the sanitize and distill engines share.
+1098c1208
+<  * maps one node to a LIST - `[]` to drop it, `node.children` to unwrap it, `[node]` to keep
+---
+>  * maps one node to a list - `[]` to drop it, `node.children` to unwrap it, `[node]` to keep
+1101c1211
+<  * children ALREADY pruned and flattened, so keeping a node needs no reconstruction and a
+---
+>  * children already pruned and flattened, so keeping a node needs no reconstruction and a
+1104c1214
+<  * root's children. Descent stops at {@link MAX_DEPTH}: a node at the cap is handed NO
+---
+>  * root's children. Descent stops at {@link MAX_DEPTH}: a node at the cap is handed no
+1116,1120c1226,1233
+<  * Lists the elements whose content is raw text: everything up to the matching close tag - which
+<  * is recognized case-insensitively - becomes one verbatim `TextNode` with no tag scanning
+<  * and no character-reference decoding inside. This is the parser's most important safety
+<  * boundary, so the renderer refuses to write a raw body that itself contains that close
+<  * tag sequence rather than emit markup that would reopen the element.
+---
+>  * Lists the elements whose content is raw text - everything up to the case-insensitive
+>  * matching close tag becomes one verbatim text node, with no tag scanning and no
+>  * character-reference decoding inside.
+>  *
+>  * @remarks
+>  * This is the parser's most important safety boundary, so the renderer refuses to write a
+>  * raw body that itself contains that close tag sequence rather than emit markup that would
+>  * reopen the element.
+1134,1135c1247,1249
+<  * Invalid element names unwrap to their children. Raw-text bodies containing their own
+<  * matching close-tag sequence are dropped. Descent stops after {@link MAX_DEPTH}.
+---
+>  * Never throws: it refuses a construct rather than emit an unsafe one. Invalid element
+>  * names unwrap to their children. Raw-text bodies containing their own matching close-tag
+>  * sequence are dropped. Descent stops after {@link MAX_DEPTH}.
+1149c1263,1265
+<  * textarea text remains.
+---
+>  * textarea text remains. Heading level, link destination, list marker, nesting depth, image
+>  * attributes, code fence, and code language are all lossy: this is the projection that
+>  * keeps the reading order and drops the rest.
+1195,1200c1311,1319
+<  * Lists the default attribute allowlist for `sanitize` - the attributes that describe content
+<  * rather than fetch, script, or style it. Deliberately narrow: no `id`, no `style`, no
+<  * event handler, and no resource `src`, so a sanitized `img` keeps its `alt` text and
+<  * loses its download. `class` is kept because it is inert after `style`, `link`, `svg`, and
+<  * `script` are gone and it is where a code block declares its language
+<  * (`class="language-ts"`).
+---
+>  * Lists the default attribute allowlist for `sanitize` - the attributes that describe
+>  * content rather than fetch, script, or style it.
+>  *
+>  * @remarks
+>  * Deliberately narrow: no `id`, no `style`, no event handler, and no resource `src`, so a
+>  * sanitized `img` keeps its `alt` text and loses its download. `class` is kept because it is
+>  * inert after `style`, `link`, `svg`, and `script` are gone and it is where a code block
+>  * declares its language (`class="language-ts"`). `align` stays subject to the cell-and-value
+>  * floor `sanitizeAttributes` applies.
+1206,1209c1325,1330
+<  * unchanged. A safe element outside this set is unwrapped to its children rather than
+<  * dropped, so `HTMLSanitizeOptions.elements` narrows what is KEPT without ever destroying
+<  * content; `UNSAFE_ELEMENTS` is the separate, unlowerable list of subtrees that are
+<  * removed whole.
+---
+>  * unchanged.
+>  *
+>  * @remarks
+>  * A safe element outside this set is unwrapped to its children rather than dropped, so
+>  * `HTMLSanitizeOptions.elements` narrows what is kept without ever destroying content;
+>  * `UNSAFE_ELEMENTS` is the separate, unlowerable list of subtrees that are removed whole.
+1214,1217c1335,1341
+<  * Lists the URL schemes a sanitized document may name. A relative URL - anything without a
+<  * `scheme:` prefix, excluding the protocol-relative forms - is always allowed; every
+<  * other scheme is refused. `HTMLSanitizeOptions.schemes` replaces this set but can never
+<  * admit `javascript:`, `data:`, `vbscript:`, or `file:`, which are refused outright.
+---
+>  * Lists the URL schemes a sanitized document may name.
+>  *
+>  * @remarks
+>  * A relative URL - anything without a `scheme:` prefix, excluding the protocol-relative
+>  * forms - is always allowed; every other scheme is refused.
+>  * `HTMLSanitizeOptions.schemes` replaces this set but can never admit `javascript:`,
+>  * `data:`, `vbscript:`, or `file:`, which are refused outright.
+1230c1354
+<  * {@link sanitizeURL}; either attribute is REMOVED - not emptied - when its extra rule
+---
+>  * {@link sanitizeURL}; either attribute is removed - not emptied - when its extra rule
+1247c1371,1373
+<  * bound fails closed.
+---
+>  * bound fails closed. This is the transform half of the URL floor {@link isSafeURL} shares,
+>  * and either shape of allowlist works: the frozen constant array, or the `ReadonlySet` a
+>  * caller passes through `HTMLSanitizeOptions`.
+1256c1382,1386
+<  * Scans an attribute source segment into ordered, first-wins attributes.
+---
+>  * Scans an attribute source segment into ordered, ASCII-lowercased, first-wins attributes
+>  * with decoded values.
+>  *
+>  * @remarks
+>  * An unterminated quoted value minimizes to an absent value rather than to invented text.
+1265a1396,1400
+>  * @remarks
+>  * The bogus forms - `<?…>`, a non-doctype `<!…>`, and a CDATA section - recover to the same
+>  * comment node, and an unterminated comment runs to the end of input. Every value produced
+>  * here is representable: it never begins with an abrupt close and never contains one.
+>  *
+1295a1431,1434
+>  * @remarks
+>  * A trailing solidus is dropped rather than recorded, and an unterminated quoted value
+>  * recovers at the next `>` instead of trusting the markup that follows it.
+>  *
+1303,1306c1442,1447
+<  * Lists the closed values a sanitized table-cell `align` attribute may carry. This finite
+<  * vocabulary keeps alignment validation to exact string normalization and membership:
+<  * the sanitizer deliberately gains no CSS or value-grammar parser and no general styling
+<  * policy axis.
+---
+>  * Lists the closed values a sanitized table-cell `align` attribute may carry.
+>  *
+>  * @remarks
+>  * This finite vocabulary keeps alignment validation to exact string normalization and
+>  * membership: the sanitizer deliberately gains no CSS or value-grammar parser and no
+>  * general styling policy axis.
+1311,1315c1452,1459
+<  * Lists the elements on which a sanitized `align` attribute is honored. Although `align` is
+<  * obsolete presentational HTML, its cell-only scope is a smaller security surface than a
+<  * style declaration allowlist. `sanitizeAttributes` already receives the owning element,
+<  * so it can narrow this allowlisted attribute just as it narrows URL attributes without a
+<  * per-element policy mechanism.
+---
+>  * Lists the elements on which a sanitized `align` attribute is honored, whatever a caller's
+>  * attribute allowlist names.
+>  *
+>  * @remarks
+>  * Although `align` is obsolete presentational HTML, its cell-only scope is a smaller
+>  * security surface than a style declaration allowlist. `sanitizeAttributes` already receives
+>  * the owning element, so it can narrow this allowlisted attribute the way it narrows URL
+>  * attributes without a per-element policy mechanism.
+1320,1322c1464,1469
+<  * Represents a run of character data - the leaf node. `value` is the decoded text: numeric and
+<  * semicolon-terminated WHATWG named character references are already resolved (an unknown
+<  * named reference stays literal), and the renderer re-encodes `&`, `<`, and `>` on the way out.
+---
+>  * Represents a run of character data - the leaf node, whose `value` is already-decoded text.
+>  *
+>  * @remarks
+>  * Numeric and semicolon-terminated WHATWG named character references are resolved on the
+>  * way in, and an unknown named reference stays literal. The renderer re-encodes `&`, `<`,
+>  * and `>` on the way out, so what roundtrips is the text rather than its source spelling.
+1326c1473
+<     /** Holds the decoded text content (character references resolved, NOT yet re-encoded). */
+---
+>     /** Holds the decoded text content (character references resolved, not yet re-encoded). */
+1348,1353c1495,1503
+<  * Names the hard floor of `sanitize`: elements whose entire subtree is removed, never unwrapped,
+<  * no matter what `HTMLSanitizeOptions` allows. Unwrapping is what makes these dangerous -
+<  * the body of a `script`, `style`, `template`, or `noscript` is text that becomes live
+<  * markup the moment its wrapper disappears - so the content goes with the element.
+<  * Foreign content (`svg`, `math`) is here because this AST has no namespaces to police,
+<  * and the form and metadata elements are here because they act rather than describe.
+---
+>  * Names the hard floor of `sanitize` - elements whose entire subtree is removed, never
+>  * unwrapped, no matter what `HTMLSanitizeOptions` allows.
+>  *
+>  * @remarks
+>  * Unwrapping is what makes these dangerous - the body of a `script`, `style`, `template`, or
+>  * `noscript` is text that becomes live markup the moment its wrapper disappears - so the
+>  * content goes with the element. Foreign content (`svg`, `math`) is here because this AST
+>  * has no namespaces to police, and the form and metadata elements are here because they act
+>  * rather than describe.
+1358,1362c1508,1514
+<  * Lists the attributes whose value is a URL, and therefore the values `sanitize` decodes,
+<  * strips of ASCII whitespace and control characters, and scheme-checks before keeping,
+<  * and that `distill` resolves against `HTMLDistillOptions.base`. `action` and `formaction`
+<  * are listed even though their elements are removed whole, because a hand-built AST can
+<  * carry them anywhere.
+---
+>  * Lists the attributes whose value is a URL - the values `sanitize` decodes, strips of ASCII
+>  * whitespace and control characters, and scheme-checks before keeping, and the values
+>  * `distill` resolves against `HTMLDistillOptions.base`.
+>  *
+>  * @remarks
+>  * `action` and `formaction` are listed even though their elements are removed whole, because
+>  * a hand-built AST can carry them anywhere.
+1367,1370c1519,1525
+<  * Lists the elements that cannot have children - a start tag is the whole element and a close
+<  * tag for one is discarded. Voidness is looked up here rather than stored on
+<  * `ElementNode`, so a node can never disagree with its own tag name, and the renderer
+<  * writes `<br>` (never `<br/>` and never a close tag) for every member.
+---
+>  * Lists the elements that cannot have children - a start tag is the whole element, and a
+>  * close tag for one is discarded.
+>  *
+>  * @remarks
+>  * Voidness is looked up here rather than stored on `ElementNode`, so a node can never
+>  * disagree with its own tag name, and the renderer writes `<br>` (never `<br/>` and never a
+>  * close tag) for every member.
+1375c1530,1535
+<  * Walks an HTML node depth-first in pre-order, including the supplied root.
+---
+>  * Walks an HTML node depth-first in pre-order, lazily and depth-bounded, including the
+>  * supplied root.
+>  *
+>  * @remarks
+>  * The deep traversal: `walk`, `find`, `filter`, and `reduce` all iterate this one generator,
+>  * so one ordering law covers the whole query surface.
+diff -r -w -B '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-html-next-final-pack/baseline/package/dist/src/core/index.js /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-html-next-final-pack/extract/package/dist/src/core/index.js
+3c3,9
+< /** Lists the code points HTML treats as syntax whitespace. */
+---
+> /**
+> * Lists the code points HTML treats as syntax whitespace, `' \t\n\f\r'`.
+> *
+> * @remarks
+> * The scanners separate tags on this set alone, so none of them mistakes JavaScript's
+> * broader Unicode whitespace set for tag separation.
+> */
+6,9c12,18
+< * Lists the elements that cannot have children - a start tag is the whole element and a close
+< * tag for one is discarded. Voidness is looked up here rather than stored on
+< * `ElementNode`, so a node can never disagree with its own tag name, and the renderer
+< * writes `<br>` (never `<br/>` and never a close tag) for every member.
+---
+> * Lists the elements that cannot have children - a start tag is the whole element, and a
+> * close tag for one is discarded.
+> *
+> * @remarks
+> * Voidness is looked up here rather than stored on `ElementNode`, so a node can never
+> * disagree with its own tag name, and the renderer writes `<br>` (never `<br/>` and never a
+> * close tag) for every member.
+27,31c36,43
+< * Lists the elements whose content is raw text: everything up to the matching close tag - which
+< * is recognized case-insensitively - becomes one verbatim `TextNode` with no tag scanning
+< * and no character-reference decoding inside. This is the parser's most important safety
+< * boundary, so the renderer refuses to write a raw body that itself contains that close
+< * tag sequence rather than emit markup that would reopen the element.
+---
+> * Lists the elements whose content is raw text - everything up to the case-insensitive
+> * matching close tag becomes one verbatim text node, with no tag scanning and no
+> * character-reference decoding inside.
+> *
+> * @remarks
+> * This is the parser's most important safety boundary, so the renderer refuses to write a
+> * raw body that itself contains that close tag sequence rather than emit markup that would
+> * reopen the element.
+35,37c47,52
+< * Lists the elements whose content is literal text - one `TextNode` up to the matching close
+< * tag, with character references decoded but no markup parsed. They differ from
+< * `RAW_ELEMENTS` only by that decoding: `<title>a &amp; b</title>` holds `a & b`.
+---
+> * Lists the elements whose content is literal text - one text node up to the matching close
+> * tag, with character references decoded but no markup parsed.
+> *
+> * @remarks
+> * They differ from `RAW_ELEMENTS` only by that decoding: `<title>a &amp; b</title>` holds
+> * `a & b`.
+41,43c56,61
+< * Lists the elements that carry document structure rather than inline content. They are the
+< * elements that implicitly close an open `p` (see `IMPLIED_CLOSERS`) and the boundaries
+< * across which the distiller collapses whitespace instead of preserving it.
+---
+> * Lists the elements that carry document structure rather than inline content.
+> *
+> * @remarks
+> * They are the elements that implicitly close an open `p` (see `IMPLIED_CLOSERS`), the
+> * boundaries `renderText` writes a line break at, and the boundaries across which the
+> * distiller collapses whitespace instead of preserving it.
+93,96c111,117
+< * Holds the implied end-tag table: for each element that can be left open, the start tags whose
+< * arrival closes it. An incoming start tag collects one candidate per row that lists it, the
+< * innermost open instance of that row's element, so a candidate sitting beneath elements the
+< * table never names is still collected. The parser rules each candidate against its own
+---
+> * Holds the implied end-tag table - for each element that can be left open, the start tags
+> * whose arrival closes it.
+> *
+> * @remarks
+> * An incoming start tag collects one candidate per row that lists it, the innermost open
+> * instance of that row's element, so a candidate sitting beneath elements the table never
+> * names is still collected. The parser rules each candidate against its own
+98,104c119,125
+< * shallowest candidate that survives - carrying every element still open inside that one with
+< * it. That is how `<p>one<p>two`, `<li>a<li>b`, `<dt>t<dd>d`, and a bare `<tr><td>x<td>y`
+< * recover into the structure their author meant, how `<p><b>x<div>y` closes the open `b`
+< * element along with the paragraph, and how `<table><tr><td><p><button>x<td>y` still closes
+< * the cell after the button barrier rules the paragraph out. An open `p` maps to the whole
+< * `BLOCK_ELEMENTS` collection rather than to a second copy of it, so the two can never drift
+< * apart.
+---
+> * shallowest candidate that survives - carrying every element still open inside that one
+> * with it. That is how `<p>one<p>two`, `<li>a<li>b`, `<dt>t<dd>d`, and a bare
+> * `<tr><td>x<td>y` recover into the structure their author meant, how `<p><b>x<div>y` closes
+> * the open `b` element along with the paragraph, and how `<table><tr><td><p><button>x<td>y`
+> * still closes the cell after the button barrier rules the paragraph out. An open `p` maps
+> * to the whole `BLOCK_ELEMENTS` collection rather than to a second copy of it, so the row
+> * and the collection can never drift apart.
+408,411c429,434
+< * unchanged. A safe element outside this set is unwrapped to its children rather than
+< * dropped, so `HTMLSanitizeOptions.elements` narrows what is KEPT without ever destroying
+< * content; `UNSAFE_ELEMENTS` is the separate, unlowerable list of subtrees that are
+< * removed whole.
+---
+> * unchanged.
+> *
+> * @remarks
+> * A safe element outside this set is unwrapped to its children rather than dropped, so
+> * `HTMLSanitizeOptions.elements` narrows what is kept without ever destroying content;
+> * `UNSAFE_ELEMENTS` is the separate, unlowerable list of subtrees that are removed whole.
+490,495c513,521
+< * Lists the default attribute allowlist for `sanitize` - the attributes that describe content
+< * rather than fetch, script, or style it. Deliberately narrow: no `id`, no `style`, no
+< * event handler, and no resource `src`, so a sanitized `img` keeps its `alt` text and
+< * loses its download. `class` is kept because it is inert after `style`, `link`, `svg`, and
+< * `script` are gone and it is where a code block declares its language
+< * (`class="language-ts"`).
+---
+> * Lists the default attribute allowlist for `sanitize` - the attributes that describe
+> * content rather than fetch, script, or style it.
+> *
+> * @remarks
+> * Deliberately narrow: no `id`, no `style`, no event handler, and no resource `src`, so a
+> * sanitized `img` keeps its `alt` text and loses its download. `class` is kept because it is
+> * inert after `style`, `link`, `svg`, and `script` are gone and it is where a code block
+> * declares its language (`class="language-ts"`). `align` stays subject to the cell-and-value
+> * floor `sanitizeAttributes` applies.
+514,517c540,545
+< * Lists the closed values a sanitized table-cell `align` attribute may carry. This finite
+< * vocabulary keeps alignment validation to exact string normalization and membership:
+< * the sanitizer deliberately gains no CSS or value-grammar parser and no general styling
+< * policy axis.
+---
+> * Lists the closed values a sanitized table-cell `align` attribute may carry.
+> *
+> * @remarks
+> * This finite vocabulary keeps alignment validation to exact string normalization and
+> * membership: the sanitizer deliberately gains no CSS or value-grammar parser and no
+> * general styling policy axis.
+525,529c553,560
+< * Lists the elements on which a sanitized `align` attribute is honored. Although `align` is
+< * obsolete presentational HTML, its cell-only scope is a smaller security surface than a
+< * style declaration allowlist. `sanitizeAttributes` already receives the owning element,
+< * so it can narrow this allowlisted attribute just as it narrows URL attributes without a
+< * per-element policy mechanism.
+---
+> * Lists the elements on which a sanitized `align` attribute is honored, whatever a caller's
+> * attribute allowlist names.
+> *
+> * @remarks
+> * Although `align` is obsolete presentational HTML, its cell-only scope is a smaller
+> * security surface than a style declaration allowlist. `sanitizeAttributes` already receives
+> * the owning element, so it can narrow this allowlisted attribute the way it narrows URL
+> * attributes without a per-element policy mechanism.
+533,536c564,570
+< * Lists the URL schemes a sanitized document may name. A relative URL - anything without a
+< * `scheme:` prefix, excluding the protocol-relative forms - is always allowed; every
+< * other scheme is refused. `HTMLSanitizeOptions.schemes` replaces this set but can never
+< * admit `javascript:`, `data:`, `vbscript:`, or `file:`, which are refused outright.
+---
+> * Lists the URL schemes a sanitized document may name.
+> *
+> * @remarks
+> * A relative URL - anything without a `scheme:` prefix, excluding the protocol-relative
+> * forms - is always allowed; every other scheme is refused.
+> * `HTMLSanitizeOptions.schemes` replaces this set but can never admit `javascript:`,
+> * `data:`, `vbscript:`, or `file:`, which are refused outright.
+545,549c579,585
+< * Lists the attributes whose value is a URL, and therefore the values `sanitize` decodes,
+< * strips of ASCII whitespace and control characters, and scheme-checks before keeping,
+< * and that `distill` resolves against `HTMLDistillOptions.base`. `action` and `formaction`
+< * are listed even though their elements are removed whole, because a hand-built AST can
+< * carry them anywhere.
+---
+> * Lists the attributes whose value is a URL - the values `sanitize` decodes, strips of ASCII
+> * whitespace and control characters, and scheme-checks before keeping, and the values
+> * `distill` resolves against `HTMLDistillOptions.base`.
+> *
+> * @remarks
+> * `action` and `formaction` are listed even though their elements are removed whole, because
+> * a hand-built AST can carry them anywhere.
+560,565c596,604
+< * Names the hard floor of `sanitize`: elements whose entire subtree is removed, never unwrapped,
+< * no matter what `HTMLSanitizeOptions` allows. Unwrapping is what makes these dangerous -
+< * the body of a `script`, `style`, `template`, or `noscript` is text that becomes live
+< * markup the moment its wrapper disappears - so the content goes with the element.
+< * Foreign content (`svg`, `math`) is here because this AST has no namespaces to police,
+< * and the form and metadata elements are here because they act rather than describe.
+---
+> * Names the hard floor of `sanitize` - elements whose entire subtree is removed, never
+> * unwrapped, no matter what `HTMLSanitizeOptions` allows.
+> *
+> * @remarks
+> * Unwrapping is what makes these dangerous - the body of a `script`, `style`, `template`, or
+> * `noscript` is text that becomes live markup the moment its wrapper disappears - so the
+> * content goes with the element. Foreign content (`svg`, `math`) is here because this AST
+> * has no namespaces to police, and the form and metadata elements are here because they act
+> * rather than describe.
+592,595c631,637
+< * Lists the default element set `distill` keeps as content: prose, headings, lists, tables,
+< * code, and the inline marks that carry meaning. Everything else safe is unwrapped to its
+< * children, which is how wrapper soup melts while its text survives. Definition lists are
+< * included because a documentation page's terms and definitions are content, not chrome.
+---
+> * Lists the default element set `distill` keeps as content - prose, headings, lists, tables,
+> * code, and the inline marks that carry meaning.
+> *
+> * @remarks
+> * Everything else safe is unwrapped to its children, which is how wrapper soup melts while
+> * its text survives. Definition lists are included because a documentation page's terms and
+> * definitions are content, not chrome.
+633,635c675,679
+< * furniture that surrounds an article rather than belonging to it. Unlike the content
+< * set, these are dropped with their children: a navigation menu's link text is noise in
+< * every reading of the page.
+---
+> * furniture that surrounds an article rather than belonging to it.
+> *
+> * @remarks
+> * Unlike the content set, these are dropped with their children: a navigation menu's link
+> * text is noise in every reading of the page.
+651,653c695
+< * by name without the leading `&` or trailing `;`. The parser decodes them in text,
+< * attribute values, and literal-text elements through a frozen own-property record.
+< * Unknown and prototype-like names stay literal.
+---
+> * by name without the leading `&` or trailing `;`.
+655a698,701
+> * The parser decodes them in text, attribute values, and literal-text elements through a
+> * frozen own-property record read with `Object.hasOwn`, so a hostile name such as
+> * `&constructor;` is not an entry and every unknown name stays literal.
+> *
+2790,2794c2836,2843
+< * Names the recursion depth the parser, the traversals, and the renderers honor before they
+< * stop descending - the bound that keeps pathological input (thousands of nested `div`s,
+< * a fuzzer's tag soup) from exhausting the call stack. Past this depth the parser appends
+< * content to the deepest allowed element instead of nesting further, so parsing stays
+< * total and no text is lost.
+---
+> * Names the recursion depth the parser, the guards, the traversals, the renderers, and the
+> * sanitize and distill engines honor before they stop descending, `64`.
+> *
+> * @remarks
+> * The bound is what keeps pathological input - thousands of nested `div` elements, a
+> * fuzzer's tag soup - from exhausting the call stack. Past this depth the parser appends
+> * content to the deepest allowed element instead of nesting further, so parsing stays total
+> * and no text is lost.
+2800c2849,2850
+< * Normalizes an HTML input and maps each normalized boundary to its original UTF-16 offset.
+---
+> * Normalizes an HTML input - CRLF and a lone carriage return to one newline, `U+0000` to
+> * `U+FFFD` - and maps each normalized boundary to its original UTF-16 offset.
+2840c2890,2891
+< * Finds the deepest open occurrence of an element name across the parser's two stacks.
+---
+> * Finds the deepest open occurrence of an element name across the parser's represented and
+> * depth-overflow stacks.
+2879c2930,2931
+< * Projects one stack position onto the single depth scale both stacks compare on.
+---
+> * Projects one stack position onto the single depth scale the represented and depth-overflow
+> * stacks compare on, so an overflow position ranks below every represented one.
+2900a2953,2956
+> * @remarks
+> * The strict and the recovering scanners share this one fold, so a later syntax error can
+> * never change how a name was normalized.
+> *
+2908c2964,2965
+< * Determines whether an element name is void.
+---
+> * Determines whether an element name is void, matching `VOID_ELEMENTS` without case
+> * sensitivity.
+2917c2974,2975
+< * Determines whether an element name contains verbatim raw text.
+---
+> * Determines whether an element name contains verbatim raw text - `script` or `style`, the
+> * parser's no-scanning boundary and the renderer's refusal boundary.
+2926c2984,2985
+< * Determines whether an element name contains decoded literal text.
+---
+> * Determines whether an element name contains decoded literal text - `title` or `textarea`,
+> * whose body is one text node with character references resolved.
+2935c2994
+< * Determines whether an element name is a block boundary.
+---
+> * Determines whether an element name is a block boundary, matching `BLOCK_ELEMENTS`.
+2944c3003,3004
+< * Checks whether an element has no child nodes.
+---
+> * Checks whether an element has no child nodes - the predicate the distill pass consults
+> * before dropping an empty non-void element.
+2954a3015,3018
+> * @remarks
+> * A numeric reference naming an invalid scalar decodes to `U+FFFD`. An unknown named
+> * reference stays literal, exactly as the source wrote it.
+> *
+3007c3071,3075
+< * Scans an attribute source segment into ordered, first-wins attributes.
+---
+> * Scans an attribute source segment into ordered, ASCII-lowercased, first-wins attributes
+> * with decoded values.
+> *
+> * @remarks
+> * An unterminated quoted value minimizes to an absent value rather than to invented text.
+3058a3127,3131
+> * @remarks
+> * Duplicate or malformed attributes, ambiguous delimiters, an invalid offset, a close tag,
+> * and incomplete input each produce no value: this is the fail-closed source boundary, and
+> * it never recovers the way the document walk does.
+> *
+3152a3226,3229
+> * @remarks
+> * A trailing solidus is dropped rather than recorded, and an unterminated quoted value
+> * recovers at the next `>` instead of trusting the markup that follows it.
+> *
+3219a3297,3301
+> * @remarks
+> * The bogus forms - `<?…>`, a non-doctype `<!…>`, and a CDATA section - recover to the same
+> * comment node, and an unterminated comment runs to the end of input. Every value produced
+> * here is representable: it never begins with an abrupt close and never contains one.
+> *
+3413c3495,3496
+< * Encodes the characters that have markup meaning in HTML text.
+---
+> * Encodes the characters that have markup meaning in HTML text - `&`, `<`, and `>`, and
+> * nothing else.
+3422c3505,3506
+< * Encodes the characters that have markup meaning in a double-quoted HTML attribute.
+---
+> * Encodes the characters that have markup meaning in a double-quoted HTML attribute - `&`
+> * and `"`, and nothing else.
+3436c3520,3522
+< * bound fails closed.
+---
+> * bound fails closed. This is the transform half of the URL floor {@link isSafeURL} shares,
+> * and either shape of allowlist works: the frozen constant array, or the `ReadonlySet` a
+> * caller passes through `HTMLSanitizeOptions`.
+3475a3562,3567
+> * @remarks
+> * The predicate half of the URL floor, true exactly when {@link sanitizeURL} keeps a
+> * non-empty value. A relative URL is allowed; a protocol-relative one (`//`, `\\`, `/\`,
+> * `\/`) is not; and `javascript:`, `data:`, `vbscript:`, and `file:` are refused whatever
+> * the allowlist says.
+> *
+3521c3613
+< * {@link sanitizeURL}; either attribute is REMOVED - not emptied - when its extra rule
+---
+> * {@link sanitizeURL}; either attribute is removed - not emptied - when its extra rule
+3611,3612c3703,3705
+< * Invalid element names unwrap to their children. Raw-text bodies containing their own
+< * matching close-tag sequence are dropped. Descent stops after {@link MAX_DEPTH}.
+---
+> * Never throws: it refuses a construct rather than emit an unsafe one. Invalid element
+> * names unwrap to their children. Raw-text bodies containing their own matching close-tag
+> * sequence are dropped. Descent stops after {@link MAX_DEPTH}.
+3749c3842,3844
+< * textarea text remains.
+---
+> * textarea text remains. Heading level, link destination, list marker, nesting depth, image
+> * attributes, code fence, and code language are all lossy: this is the projection that
+> * keeps the reading order and drops the rest.
+3880c3975,3980
+< * Walks an HTML node depth-first in pre-order, including the supplied root.
+---
+> * Walks an HTML node depth-first in pre-order, lazily and depth-bounded, including the
+> * supplied root.
+> *
+> * @remarks
+> * The deep traversal: `walk`, `find`, `filter`, and `reduce` all iterate this one generator,
+> * so one ordering law covers the whole query surface.
+3913c4013,4014
+< * Folds an HTML node bottom-up through a total handler table.
+---
+> * Folds an HTML node bottom-up through a total handler table - each node's children fold
+> * first, then its own handler runs with those already-folded results.
+4136c4237
+< * Every run of whitespace becomes one space and edge whitespace is KEPT, because the space
+---
+> * Every run of whitespace becomes one space and edge whitespace is kept, because the space
+4169c4270
+< * The names are tried in order and the first one occurring EXACTLY once in the document
+---
+> * The names are tried in order and the first one occurring exactly once in the document
+4205c4306,4307
+< * Rebuilds a document bottom-up, letting each node become any number of nodes.
+---
+> * Rebuilds a document bottom-up, letting each node become any number of nodes - the
+> * one-to-many spine the sanitize and distill engines share.
+4209c4311
+< * maps one node to a LIST - `[]` to drop it, `node.children` to unwrap it, `[node]` to keep
+---
+> * maps one node to a list - `[]` to drop it, `node.children` to unwrap it, `[node]` to keep
+4212c4314
+< * children ALREADY pruned and flattened, so keeping a node needs no reconstruction and a
+---
+> * children already pruned and flattened, so keeping a node needs no reconstruction and a
+4215c4317
+< * root's children. Descent stops at {@link MAX_DEPTH}: a node at the cap is handed NO
+---
+> * root's children. Descent stops at {@link MAX_DEPTH}: a node at the cap is handed no
+4331a4434,4438
+> * @remarks
+> * HTML whitespace is allowed; every other C0 control, the C1 controls, the surrogates, and
+> * the noncharacters are refused, so a token built from accepted code points has no
+> * parse-error scalar in it.
+> *
+4342c4449,4450
+< * Determines whether an arbitrary value is a structurally valid HTML attribute.
+---
+> * Determines whether an arbitrary value is a structurally valid HTML attribute - exactly a
+> * string name, optionally a string value, and nothing else.
+4353c4461,4462
+< * Determines whether an arbitrary value is a structurally valid text node.
+---
+> * Determines whether an arbitrary value is a structurally valid text node - a closed
+> * `{ category: 'text', value: string }` record.
+4363c4472,4473
+< * Determines whether an arbitrary value is a structurally valid comment node.
+---
+> * Determines whether an arbitrary value is a structurally valid comment node - a closed
+> * `{ category: 'comment', value: string }` record.
+4373c4483,4484
+< * Determines whether an arbitrary value is a structurally valid doctype node.
+---
+> * Determines whether an arbitrary value is a structurally valid doctype node - a declared
+> * name plus optional public and system identifiers, closed.
+4385c4496,4498
+< * Determines whether an arbitrary value is a valid HTML node.
+---
+> * Determines whether an arbitrary value is a valid HTML node - the value and every
+> * descendant, walked iteratively, cycle-checked, capped at {@link MAX_DEPTH}, and held to
+> * the void-element empty-children invariant.
+4442c4555,4556
+< * Determines whether an arbitrary value is a valid HTML document.
+---
+> * Determines whether an arbitrary value is a valid HTML document - the whole-node check
+> * narrowed to the root category, and the gate to run before adopting an untrusted document.
+4451c4565,4566
+< * Determines whether an arbitrary value is a valid element node.
+---
+> * Determines whether an arbitrary value is a valid element node - the whole-node check
+> * narrowed to an element, and the natural predicate to pass to `find` or `filter`.
+4462c4577,4584
+< * Parses an HTML string into a total, depth-bounded document AST.
+---
+> * Parses an HTML string into a total, depth-bounded document AST - a page and a bare
+> * fragment are the same shape.
+> *
+> * @remarks
+> * Parsing is total: malformed markup recovers per the package's documented recovery table
+> * instead of throwing, so there is no error path to handle. The result never carries two
+> * adjacent text siblings, which is what keeps a document equal to its own reparsed
+> * serialization.
+4472a4595,4599
+> * @remarks
+> * This is the single document walk that turns source into an AST; `parseDocument` projects
+> * the bare document out of the same walk for callers needing no provenance. The returned map
+> * is operation-owned, and a node with no single source has no entry.
+> *
+4835c4962
+< * Represents a parsed HTML document - the typed {@link HTMLDocument} AST plus the query
+---
+> * Represents a parsed document - the typed {@link HTMLDocument} AST plus the query
+4842c4969
+< *   that document is adopted AS-IS and is NOT re-validated - gate an untrusted value with
+---
+> *   that document is adopted as-is and is not re-validated - gate an untrusted value with
+4845c4972
+< *   each return a NEW `HTML`, and the root invariant (`category: 'document'`) always holds.
+---
+> *   each return a new `HTML`, and the root invariant (`category: 'document'`) always holds.
+4848,4851c4975,4979
+< * - **The two engines.** `sanitize` enforces a security floor no option can lower;
+< *   `distill` extracts content, sanitizing first because content extraction is not a second
+< *   security surface. Both compose the pure leaves in `helpers.ts` over one shared
+< *   bottom-up spine, {@link pruneDocument}.
+---
+> * - **The engines.** `sanitize` enforces a security floor no option can lower; `distill`
+> *   extracts content, pruning boilerplate regions and hidden chrome first, then sanitizing
+> *   with the defaults, then re-rooting and reducing to the content vocabulary, because
+> *   content extraction is not a second security surface. Each composes the pure leaves in
+> *   `helpers.ts` over one shared bottom-up spine, {@link pruneDocument}.
+4894c5022
+< 	* Provides THE deep traversal - a lazy, depth-first, pre-order, root-inclusive generator over
+---
+> 	* Provides the deep traversal - a lazy, depth-first, pre-order, root-inclusive generator over
+4921c5049
+< 	* Rewrites the AST bottom-up (copy-on-write) and returns a NEW {@link HTML}. A rewrite
+---
+> 	* Rewrites the AST bottom-up (copy-on-write) and returns a new {@link HTML}. A rewrite
+4989c5117
+< 	* Removes every unsafe element, attribute, and URL and returns a NEW {@link HTML}.
+---
+> 	* Removes every unsafe element, attribute, and URL and returns a new {@link HTML}.
+4992c5120
+< 	* Each allowlist option REPLACES its default rather than extending it, and the floor
+---
+> 	* Each allowlist option replaces its default rather than extending it, and the floor
+5026c5154
+< 	* and returns a NEW {@link HTML}.
+---
+> 	* and returns a new {@link HTML}.
+5031c5159
+< 	* DEFAULTS, because distilling narrows content and never widens the security floor; the
+---
+> 	* defaults, because distilling narrows content and never widens the security floor; the
+5039c5167
+< 	* The `hidden` pass runs BEFORE the sanitize pass by necessity - `hidden` and
+---
+> 	* The `hidden` pass runs before the sanitize pass by necessity - `hidden` and
+5176,5177c5304,5305
+< * parsing is TOTAL - malformed markup recovers instead of throwing, so there is no error
+< * path to handle. Given an {@link HTMLDocument}, that document is adopted AS-IS and is not
+---
+> * parsing is total - malformed markup recovers instead of throwing, so there is no error
+> * path to handle. Given an {@link HTMLDocument}, that document is adopted as-is and is not
+5183c5311
+< * @example
+---
+> * @example Parse, then query
+5185c5313,5315
+< * import { createHTML, renderText } from '@orkestrel/html'
+---
+> * import { createHTML, isElementNode } from '@orkestrel/html'
+> *
+> * const page = createHTML('<h1>Title</h1><p>A <b>bold</b> word.</p>')
+5187,5188c5317,5324
+< * const page = createHTML('<h1>Title</h1><p>Read the <a href="/guide">guide</a>.</p>')
+< * renderText(page.document) // 'Title\nRead the guide.'
+---
+> * page.document.children[0] // { category: 'element', name: 'h1', attributes: [], children: [...] }
+> * page.span(page.document) // { start: 0, end: 40 } - half-open offsets in the original input
+> * page.find(isElementNode)?.name // 'h1' - narrowed to ElementNode by the guard overload
+> * page.filter(isElementNode).map((element) => element.name) // ['h1', 'p', 'b']
+> *
+> * const categories: string[] = []
+> * for (const node of page.walk()) categories.push(node.category)
+> * // ['document', 'element', 'text', 'element', 'text', 'element', 'text', 'text']

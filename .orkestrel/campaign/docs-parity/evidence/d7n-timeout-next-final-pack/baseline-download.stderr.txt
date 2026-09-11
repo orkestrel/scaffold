@@ -1,0 +1,22 @@
+npm notice
+npm notice 📦  @orkestrel/timeout@0.0.9
+npm notice Tarball Contents
+npm notice 1.1kB LICENSE
+npm notice 2.8kB README.md
+npm notice 8.1kB dist/src/core/index.cjs
+npm notice 11.9kB dist/src/core/index.cjs.map
+npm notice 7.3kB dist/src/core/index.d.cts
+npm notice 7.3kB dist/src/core/index.d.ts
+npm notice 7.6kB dist/src/core/index.js
+npm notice 11.8kB dist/src/core/index.js.map
+npm notice 3.8kB package.json
+npm notice Tarball Details
+npm notice name: @orkestrel/timeout
+npm notice version: 0.0.9
+npm notice filename: orkestrel-timeout-0.0.9.tgz
+npm notice package size: 10.1 kB
+npm notice unpacked size: 61.7 kB
+npm notice shasum: 889ec12931dbd7c23fdc50a0c17bcb70cf964d7a
+npm notice integrity: sha512-w7Iu20y4GrvI0[...]pHDdUzKHaHyXw==
+npm notice total files: 9
+npm notice

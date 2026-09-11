@@ -1,0 +1,10 @@
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/budget
+
+··························
+
+ Test Files  1 passed (1)
+      Tests  26 passed (26)
+   Start at  20:13:14
+   Duration  553ms (transform 69ms, setup 43ms, import 350ms, tests 9ms, environment 0ms)
+

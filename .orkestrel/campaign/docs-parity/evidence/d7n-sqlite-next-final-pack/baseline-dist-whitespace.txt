@@ -1,0 +1,642 @@
+diff -r -w -B '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-sqlite-next-final-pack/baseline/package/dist/src/server/index.cjs /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-sqlite-next-final-pack/extract/package/dist/src/server/index.cjs
+6c6
+< * Names the SQLite result code for a constraint violation.
+---
+> * Names the SQLite result code whose low byte, `19`, flags a constraint violation.
+15c15
+< * Names the SQLite result code for a locked-database fault.
+---
+> * Names the SQLite result code whose low byte, `5`, flags a locked-database fault.
+26c26,27
+< * Represents an error thrown by the SQLite wrapper.
+---
+> * Represents an error thrown by the SQLite wrapper, carrying a machine-readable `code` —
+> * `CLOSED`, `CONSTRAINT`, `BUSY`, `INVALID`, or `UNKNOWN`.
+29c30
+< * Carries a {@link SQLiteErrorCode} and an optional `context` record (for example
+---
+> * The `code` is a {@link SQLiteErrorCode}, beside an optional `context` record (for example
+68c69,70
+< * Converts a thrown native `node:sqlite` error into a typed {@link SQLiteError}.
+---
+> * Converts a thrown native `node:sqlite` error into a typed {@link SQLiteError} at the
+> * wrapper's one boundary.
+71c73
+< * The single boundary mapping for the wrapper. The thrown value arrives as
+---
+> * The thrown value arrives as
+91,92c93,94
+< * Normalizes {@link SQLiteParameters} to the binding shape a native `StatementSync`
+< * call expects.
+---
+> * Normalizes {@link SQLiteParameters} to the binding shape a native `StatementSync` call
+> * expects — a positional spread, or a single named record.
+111,112c113,115
+< * Represents a prepared statement over `node:sqlite`'s `StatementSync` — the only way the
+< * wrapper runs SQL.
+---
+> * Implements {@link SQLiteStatementInterface} over one compiled `StatementSync`, gating each
+> * call on its owning connection still being open and mapping every native fault, a mid-stream
+> * one included, to a {@link SQLiteError}.
+118,122c121,123
+< * without the SQL prefix character. Each method first gates on that liveness
+< * check, throwing a `CLOSED` `SQLiteError` after the owning connection has been
+< * closed — a statement prepared on a connection that is later closed and then
+< * reconnected stays `CLOSED`; a fresh statement must be prepared on the new
+< * connection. Each method then binds the optional parameters (an array spread
+---
+> * without the SQL prefix character. A statement prepared on a connection that is later
+> * closed and then reconnected stays `CLOSED`; a fresh statement must be prepared on the new
+> * connection. Each method binds the optional parameters (an array spread
+124,126c125,126
+< * synchronously, mapping any native fault to a `SQLiteError` — including a
+< * mid-stream fault from `iterate`'s lazy native iterator, stepped inside its own
+< * try/catch so a fault on a later row is mapped exactly like an eager one. Row
+---
+> * synchronously — `iterate`'s lazy native iterator is stepped inside its own
+> * try/catch, so a fault on a later row is mapped exactly like an eager one. Row
+206c206,208
+< * Represents a synchronous SQLite database over `node:sqlite`'s `DatabaseSync`.
+---
+> * Implements {@link SQLiteDatabaseInterface} over a lazily opened `DatabaseSync` the instance
+> * owns, gating every operation on that connection and mapping each native fault to a
+> * {@link SQLiteError}.
+209,212c211,213
+< * Created by `createSQLiteDatabase`. It connects lazily (`connect` opens the
+< * underlying `DatabaseSync`, idempotent) and every operation routes through a
+< * private gate that throws a `CLOSED` `SQLiteError` before `connect` or after
+< * `close`. `execute` runs result-less SQL; `prepare` compiles a `SQLiteStatement`;
+---
+> * Created by `createSQLiteDatabase`. The gate throws a `CLOSED` fault before `connect` or
+> * after `close`, and `connect` itself is idempotent.
+> * `execute` runs result-less SQL; `prepare` compiles a `SQLiteStatement`;
+219,220c220
+< * (node:sqlite's `isTransaction`), `false` when not connected. A native fault
+< * surfaces as a `SQLiteError` mapped at the boundary.
+---
+> * (node:sqlite's `isTransaction`), `false` when not connected.
+318c318
+< * Creates a synchronous SQLite database over `node:sqlite`.
+---
+> * Creates a synchronous SQLite database over `node:sqlite`, defaulting its path to `:memory:`.
+328c328
+< * @example
+---
+> * @example Connect, execute, and round-trip a row
+332c332
+< * const db = createSQLiteDatabase({ path: ':memory:' })
+---
+> * const db = createSQLiteDatabase() // path defaults to ':memory:'
+334,336c334,337
+< * db.execute('CREATE TABLE users (id TEXT PRIMARY KEY, name TEXT)')
+< * db.prepare('INSERT INTO users VALUES (?, ?)').execute(['u1', 'Ada'])
+< * db.prepare('SELECT name FROM users WHERE id = ?').get(['u1']) // { name: 'Ada' }
+---
+> * db.execute('CREATE TABLE users (id TEXT PRIMARY KEY, name TEXT, age INTEGER)')
+> * const result = db.prepare('INSERT INTO users VALUES (?, ?, ?)').execute(['u1', 'Ada', 36])
+> * result.changes // 1
+> * db.prepare('SELECT * FROM users WHERE id = ?').get(['u1']) // { id: 'u1', name: 'Ada', age: 36 }
+diff -r -w -B '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-sqlite-next-final-pack/baseline/package/dist/src/server/index.d.cts /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-sqlite-next-final-pack/extract/package/dist/src/server/index.d.cts
+1c1
+< import { StatementSync } from 'node:sqlite';
+---
+> import type { StatementSync } from 'node:sqlite';
+4,5c4,5
+<  * Normalizes {@link SQLiteParameters} to the binding shape a native `StatementSync`
+<  * call expects.
+---
+>  * Normalizes {@link SQLiteParameters} to the binding shape a native `StatementSync` call
+>  * expects — a positional spread, or a single named record.
+19c19
+<  * Creates a synchronous SQLite database over `node:sqlite`.
+---
+>  * Creates a synchronous SQLite database over `node:sqlite`, defaulting its path to `:memory:`.
+29c29
+<  * @example
+---
+>  * @example Connect, execute, and round-trip a row
+33c33
+<  * const db = createSQLiteDatabase({ path: ':memory:' })
+---
+>  * const db = createSQLiteDatabase() // path defaults to ':memory:'
+35,37c35,38
+<  * db.execute('CREATE TABLE users (id TEXT PRIMARY KEY, name TEXT)')
+<  * db.prepare('INSERT INTO users VALUES (?, ?)').execute(['u1', 'Ada'])
+<  * db.prepare('SELECT name FROM users WHERE id = ?').get(['u1']) // { name: 'Ada' }
+---
+>  * db.execute('CREATE TABLE users (id TEXT PRIMARY KEY, name TEXT, age INTEGER)')
+>  * const result = db.prepare('INSERT INTO users VALUES (?, ?, ?)').execute(['u1', 'Ada', 36])
+>  * result.changes // 1
+>  * db.prepare('SELECT * FROM users WHERE id = ?').get(['u1']) // { id: 'u1', name: 'Ada', age: 36 }
+51c52
+<  * Names the SQLite result code for a locked-database fault.
+---
+>  * Names the SQLite result code whose low byte, `5`, flags a locked-database fault.
+61c62
+<  * Names the SQLite result code for a constraint violation.
+---
+>  * Names the SQLite result code whose low byte, `19`, flags a constraint violation.
+88c89,91
+<  * Represents a synchronous SQLite database over `node:sqlite`'s `DatabaseSync`.
+---
+>  * Implements {@link SQLiteDatabaseInterface} over a lazily opened `DatabaseSync` the instance
+>  * owns, gating every operation on that connection and mapping each native fault to a
+>  * {@link SQLiteError}.
+91,94c94,96
+<  * Created by `createSQLiteDatabase`. It connects lazily (`connect` opens the
+<  * underlying `DatabaseSync`, idempotent) and every operation routes through a
+<  * private gate that throws a `CLOSED` `SQLiteError` before `connect` or after
+<  * `close`. `execute` runs result-less SQL; `prepare` compiles a `SQLiteStatement`;
+---
+>  * Created by `createSQLiteDatabase`. The gate throws a `CLOSED` fault before `connect` or
+>  * after `close`, and `connect` itself is idempotent.
+>  * `execute` runs result-less SQL; `prepare` compiles a `SQLiteStatement`;
+101,102c103
+<  * (node:sqlite's `isTransaction`), `false` when not connected. A native fault
+<  * surfaces as a `SQLiteError` mapped at the boundary.
+---
+>  * (node:sqlite's `isTransaction`), `false` when not connected.
+124,147c125,143
+<  * Represents a synchronous SQLite database over `node:sqlite`'s `DatabaseSync` — a lean,
+<  * typed layer whose one runtime dependency is `@orkestrel/contract`, exposing prepared
+<  * statements, transactions, and pragmas. Synchronous because `node:sqlite` is;
+<  * `@orkestrel/database`'s SQLite driver adapts it to that package's asynchronous driver
+<  * contract.
+<  *
+<  * @remarks
+<  * Connects lazily — `connect` opens the underlying `DatabaseSync` (idempotent),
+<  * and every operation requires an open connection, throwing a `CLOSED`
+<  * {@link SQLiteError} before `connect` or after `close`. `execute` runs SQL with
+<  * no results (DDL, pragmas); `prepare` compiles a {@link SQLiteStatementInterface};
+<  * `transact` runs a scope between `BEGIN` and `COMMIT`, rolling back on a
+<  * throw; `pragma` reads (or sets then reads) a single PRAGMA value — `name` is
+<  * trusted internal use only, never untrusted input, because pragma names cannot
+<  * be bound as parameters. `transacting` reports whether a transaction is open on
+<  * this connection — node:sqlite's `isTransaction` (wraps
+<  * `sqlite3_get_autocommit()`); `false` when not connected. `begin` / `commit` /
+<  * `rollback` are the same `BEGIN` / `COMMIT` / `ROLLBACK` primitives
+<  * `transact` composes internally, exposed directly for a long-lived or
+<  * externally-driven transaction that a single synchronous scope cannot
+<  * express — `transact(scope)` remains the right tool whenever the whole
+<  * transaction fits in one synchronous scope. `[Symbol.dispose]` closes the
+<  * connection (same as `close`), enabling `using` to release it
+<  * deterministically at the end of a block.
+---
+>  * Represents the contract a synchronous SQLite database fulfills over `node:sqlite`'s
+>  * `DatabaseSync` — prepared statements, transactions, and pragmas, every call returning a
+>  * plain value rather than a `Promise`.
+>  *
+>  * @remarks
+>  * A lean, typed layer whose one runtime dependency is `@orkestrel/contract`. Synchronous
+>  * because `node:sqlite` is; `@orkestrel/database`'s SQLite driver adapts it to that
+>  * package's asynchronous driver contract. Connects lazily — `connect` opens the underlying
+>  * `DatabaseSync` (idempotent), and every operation requires an open connection, throwing a
+>  * `CLOSED` {@link SQLiteError} before `connect` or after `close`. `pragma`'s `name` is
+>  * trusted internal use only, never untrusted input, because pragma names cannot be bound as
+>  * parameters. `transacting` reports whether a transaction is open on this connection —
+>  * node:sqlite's `isTransaction` (wraps `sqlite3_get_autocommit()`); `false` when not
+>  * connected. `begin` / `commit` / `rollback` are the same `BEGIN` / `COMMIT` / `ROLLBACK`
+>  * primitives `transact` composes internally, exposed directly for a long-lived or
+>  * externally-driven transaction that a single synchronous scope cannot express —
+>  * `transact(scope)` remains the right tool whenever the whole transaction fits in one
+>  * synchronous scope. `[Symbol.dispose]` closes the connection (same as `close`), enabling
+>  * `using` to release it deterministically at the end of a block.
+152a149
+>     /** Opens the underlying connection — lazy and idempotent, so a second call is a no-op. */
+153a151
+>     /** Releases the connection; afterward every operation gates `CLOSED` until reconnect. */
+154a153
+>     /** Runs one or more result-less SQL statements (DDL, pragmas) in a single call. */
+155a155
+>     /** Compiles SQL into a reusable prepared statement — the only path that runs queries. */
+156a157
+>     /** Runs `scope` between `BEGIN` and `COMMIT`, rolling the whole scope back and rethrowing on a throw. */
+159,163c160,165
+<      * Opens a transaction (`BEGIN`). Throws the native fault — including a
+<      * nested `BEGIN` while one is already open — as a {@link SQLiteError}.
+<      * Branch on {@link SQLiteDatabaseInterface.transacting} first rather than
+<      * catching this when composing a transaction alongside others (see the
+<      * Practices section in `guides/sqlite.md`).
+---
+>      * Opens a transaction (`BEGIN`); throws the native fault, a nested `BEGIN` included, as a {@link SQLiteError}.
+>      *
+>      * @remarks
+>      * Branch on {@link SQLiteDatabaseInterface.transacting} first rather than catching this
+>      * when composing a transaction alongside others (see the Practices section in
+>      * `guides/sqlite.md`).
+169a172
+>     /** Reads a single PRAGMA, or sets then reads it when a `value` is passed. */
+175c178,179
+<  * Represents the options for `createSQLiteDatabase`.
+---
+>  * Represents the options for opening a SQLite connection, accepted by the
+>  * `createSQLiteDatabase` function and the `SQLiteDatabase` constructor.
+190,191c194,195
+<  * `bigints` is enabled; enabling it returns EVERY integer column as `bigint`,
+<  * not just out-of-range ones, closing that read/write asymmetry at the cost of
+---
+>  * `bigints` is enabled; enabling it returns every integer column as `bigint`,
+>  * not out-of-range ones alone, closing that read/write asymmetry at the cost of
+203c207,208
+<  * Represents an error thrown by the SQLite wrapper.
+---
+>  * Represents an error thrown by the SQLite wrapper, carrying a machine-readable `code` —
+>  * `CLOSED`, `CONSTRAINT`, `BUSY`, `INVALID`, or `UNKNOWN`.
+206c211
+<  * Carries a {@link SQLiteErrorCode} and an optional `context` record (for example
+---
+>  * The `code` is a {@link SQLiteErrorCode}, beside an optional `context` record (for example
+242c247,254
+< /** Represents the outcome of a non-query statement (`INSERT` / `UPDATE` / `DELETE` / DDL). */
+---
+> /**
+>  * Represents the outcome of a non-query statement (`INSERT` / `UPDATE` / `DELETE` / DDL).
+>  *
+>  * @remarks
+>  * Each member is a `number`, so a count or a rowid past 2^53 truncates — acceptable for the
+>  * keys and change counts this layer hands back, and a caller needing exact large keys reads
+>  * them back through a `bigints` connection instead.
+>  */
+258,259c270,272
+<  * Represents a prepared statement over `node:sqlite`'s `StatementSync` — the only way the
+<  * wrapper runs SQL.
+---
+>  * Implements {@link SQLiteStatementInterface} over one compiled `StatementSync`, gating each
+>  * call on its owning connection still being open and mapping every native fault, a mid-stream
+>  * one included, to a {@link SQLiteError}.
+265,269c278,280
+<  * without the SQL prefix character. Each method first gates on that liveness
+<  * check, throwing a `CLOSED` `SQLiteError` after the owning connection has been
+<  * closed — a statement prepared on a connection that is later closed and then
+<  * reconnected stays `CLOSED`; a fresh statement must be prepared on the new
+<  * connection. Each method then binds the optional parameters (an array spread
+---
+>  * without the SQL prefix character. A statement prepared on a connection that is later
+>  * closed and then reconnected stays `CLOSED`; a fresh statement must be prepared on the new
+>  * connection. Each method binds the optional parameters (an array spread
+271,273c282,283
+<  * synchronously, mapping any native fault to a `SQLiteError` — including a
+<  * mid-stream fault from `iterate`'s lazy native iterator, stepped inside its own
+<  * try/catch so a fault on a later row is mapped exactly like an eager one. Row
+---
+>  * synchronously — `iterate`'s lazy native iterator is stepped inside its own
+>  * try/catch, so a fault on a later row is mapped exactly like an eager one. Row
+288,289c298
+<  * Represents a prepared statement — the only way the wrapper runs SQL (no query DSL; the
+<  * core database layer owns querying, exactly as the IndexedDB wrapper does).
+---
+>  * Represents a prepared statement — the only way the wrapper runs SQL.
+292c301,302
+<  * Reached through `database.prepare(sql)`. Each method binds the optional
+---
+>  * There is no query DSL here: the core database layer owns querying, exactly as the
+>  * IndexedDB wrapper does. Reached through `database.prepare(sql)`. Each method binds the optional
+300a311
+>     /** Runs a non-query (`INSERT` / `UPDATE` / `DELETE` / DDL) and returns its `changes` and `rowid`. */
+301a313
+>     /** Runs the statement and returns its first row, or `undefined` when none matched. */
+302a315
+>     /** Runs the statement and returns every matching row eagerly, as an array. */
+303a317
+>     /** Streams the matching rows lazily, one row materialized at a time, for a large result set. */
+308c322,323
+<  * Represents a value SQLite stores and returns natively — the SQL ↔ JS bridge.
+---
+>  * Represents a value SQLite stores and returns natively — the bridge between SQLite's storage
+>  * classes and their JS types.
+311,312c326,327
+<  * `node:sqlite` maps `NULL` / `INTEGER` / `REAL` / `TEXT` / `BLOB` to exactly
+<  * these JS types (integers arrive as `number`, or `bigint` only past 2^53).
+---
+>  * `node:sqlite` maps `NULL` / `INTEGER` / `REAL` / `TEXT` / `BLOB` to exactly the
+>  * JS types this union names (integers arrive as `number`, or `bigint` only past 2^53).
+317c332,333
+<  * Converts a thrown native `node:sqlite` error into a typed {@link SQLiteError}.
+---
+>  * Converts a thrown native `node:sqlite` error into a typed {@link SQLiteError} at the
+>  * wrapper's one boundary.
+320c336
+<  * The single boundary mapping for the wrapper. The thrown value arrives as
+---
+>  * The thrown value arrives as
+diff -r -w -B '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-sqlite-next-final-pack/baseline/package/dist/src/server/index.d.ts /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-sqlite-next-final-pack/extract/package/dist/src/server/index.d.ts
+1c1
+< import { StatementSync } from 'node:sqlite';
+---
+> import type { StatementSync } from 'node:sqlite';
+4,5c4,5
+<  * Normalizes {@link SQLiteParameters} to the binding shape a native `StatementSync`
+<  * call expects.
+---
+>  * Normalizes {@link SQLiteParameters} to the binding shape a native `StatementSync` call
+>  * expects — a positional spread, or a single named record.
+19c19
+<  * Creates a synchronous SQLite database over `node:sqlite`.
+---
+>  * Creates a synchronous SQLite database over `node:sqlite`, defaulting its path to `:memory:`.
+29c29
+<  * @example
+---
+>  * @example Connect, execute, and round-trip a row
+33c33
+<  * const db = createSQLiteDatabase({ path: ':memory:' })
+---
+>  * const db = createSQLiteDatabase() // path defaults to ':memory:'
+35,37c35,38
+<  * db.execute('CREATE TABLE users (id TEXT PRIMARY KEY, name TEXT)')
+<  * db.prepare('INSERT INTO users VALUES (?, ?)').execute(['u1', 'Ada'])
+<  * db.prepare('SELECT name FROM users WHERE id = ?').get(['u1']) // { name: 'Ada' }
+---
+>  * db.execute('CREATE TABLE users (id TEXT PRIMARY KEY, name TEXT, age INTEGER)')
+>  * const result = db.prepare('INSERT INTO users VALUES (?, ?, ?)').execute(['u1', 'Ada', 36])
+>  * result.changes // 1
+>  * db.prepare('SELECT * FROM users WHERE id = ?').get(['u1']) // { id: 'u1', name: 'Ada', age: 36 }
+51c52
+<  * Names the SQLite result code for a locked-database fault.
+---
+>  * Names the SQLite result code whose low byte, `5`, flags a locked-database fault.
+61c62
+<  * Names the SQLite result code for a constraint violation.
+---
+>  * Names the SQLite result code whose low byte, `19`, flags a constraint violation.
+88c89,91
+<  * Represents a synchronous SQLite database over `node:sqlite`'s `DatabaseSync`.
+---
+>  * Implements {@link SQLiteDatabaseInterface} over a lazily opened `DatabaseSync` the instance
+>  * owns, gating every operation on that connection and mapping each native fault to a
+>  * {@link SQLiteError}.
+91,94c94,96
+<  * Created by `createSQLiteDatabase`. It connects lazily (`connect` opens the
+<  * underlying `DatabaseSync`, idempotent) and every operation routes through a
+<  * private gate that throws a `CLOSED` `SQLiteError` before `connect` or after
+<  * `close`. `execute` runs result-less SQL; `prepare` compiles a `SQLiteStatement`;
+---
+>  * Created by `createSQLiteDatabase`. The gate throws a `CLOSED` fault before `connect` or
+>  * after `close`, and `connect` itself is idempotent.
+>  * `execute` runs result-less SQL; `prepare` compiles a `SQLiteStatement`;
+101,102c103
+<  * (node:sqlite's `isTransaction`), `false` when not connected. A native fault
+<  * surfaces as a `SQLiteError` mapped at the boundary.
+---
+>  * (node:sqlite's `isTransaction`), `false` when not connected.
+124,147c125,143
+<  * Represents a synchronous SQLite database over `node:sqlite`'s `DatabaseSync` — a lean,
+<  * typed layer whose one runtime dependency is `@orkestrel/contract`, exposing prepared
+<  * statements, transactions, and pragmas. Synchronous because `node:sqlite` is;
+<  * `@orkestrel/database`'s SQLite driver adapts it to that package's asynchronous driver
+<  * contract.
+<  *
+<  * @remarks
+<  * Connects lazily — `connect` opens the underlying `DatabaseSync` (idempotent),
+<  * and every operation requires an open connection, throwing a `CLOSED`
+<  * {@link SQLiteError} before `connect` or after `close`. `execute` runs SQL with
+<  * no results (DDL, pragmas); `prepare` compiles a {@link SQLiteStatementInterface};
+<  * `transact` runs a scope between `BEGIN` and `COMMIT`, rolling back on a
+<  * throw; `pragma` reads (or sets then reads) a single PRAGMA value — `name` is
+<  * trusted internal use only, never untrusted input, because pragma names cannot
+<  * be bound as parameters. `transacting` reports whether a transaction is open on
+<  * this connection — node:sqlite's `isTransaction` (wraps
+<  * `sqlite3_get_autocommit()`); `false` when not connected. `begin` / `commit` /
+<  * `rollback` are the same `BEGIN` / `COMMIT` / `ROLLBACK` primitives
+<  * `transact` composes internally, exposed directly for a long-lived or
+<  * externally-driven transaction that a single synchronous scope cannot
+<  * express — `transact(scope)` remains the right tool whenever the whole
+<  * transaction fits in one synchronous scope. `[Symbol.dispose]` closes the
+<  * connection (same as `close`), enabling `using` to release it
+<  * deterministically at the end of a block.
+---
+>  * Represents the contract a synchronous SQLite database fulfills over `node:sqlite`'s
+>  * `DatabaseSync` — prepared statements, transactions, and pragmas, every call returning a
+>  * plain value rather than a `Promise`.
+>  *
+>  * @remarks
+>  * A lean, typed layer whose one runtime dependency is `@orkestrel/contract`. Synchronous
+>  * because `node:sqlite` is; `@orkestrel/database`'s SQLite driver adapts it to that
+>  * package's asynchronous driver contract. Connects lazily — `connect` opens the underlying
+>  * `DatabaseSync` (idempotent), and every operation requires an open connection, throwing a
+>  * `CLOSED` {@link SQLiteError} before `connect` or after `close`. `pragma`'s `name` is
+>  * trusted internal use only, never untrusted input, because pragma names cannot be bound as
+>  * parameters. `transacting` reports whether a transaction is open on this connection —
+>  * node:sqlite's `isTransaction` (wraps `sqlite3_get_autocommit()`); `false` when not
+>  * connected. `begin` / `commit` / `rollback` are the same `BEGIN` / `COMMIT` / `ROLLBACK`
+>  * primitives `transact` composes internally, exposed directly for a long-lived or
+>  * externally-driven transaction that a single synchronous scope cannot express —
+>  * `transact(scope)` remains the right tool whenever the whole transaction fits in one
+>  * synchronous scope. `[Symbol.dispose]` closes the connection (same as `close`), enabling
+>  * `using` to release it deterministically at the end of a block.
+152a149
+>     /** Opens the underlying connection — lazy and idempotent, so a second call is a no-op. */
+153a151
+>     /** Releases the connection; afterward every operation gates `CLOSED` until reconnect. */
+154a153
+>     /** Runs one or more result-less SQL statements (DDL, pragmas) in a single call. */
+155a155
+>     /** Compiles SQL into a reusable prepared statement — the only path that runs queries. */
+156a157
+>     /** Runs `scope` between `BEGIN` and `COMMIT`, rolling the whole scope back and rethrowing on a throw. */
+159,163c160,165
+<      * Opens a transaction (`BEGIN`). Throws the native fault — including a
+<      * nested `BEGIN` while one is already open — as a {@link SQLiteError}.
+<      * Branch on {@link SQLiteDatabaseInterface.transacting} first rather than
+<      * catching this when composing a transaction alongside others (see the
+<      * Practices section in `guides/sqlite.md`).
+---
+>      * Opens a transaction (`BEGIN`); throws the native fault, a nested `BEGIN` included, as a {@link SQLiteError}.
+>      *
+>      * @remarks
+>      * Branch on {@link SQLiteDatabaseInterface.transacting} first rather than catching this
+>      * when composing a transaction alongside others (see the Practices section in
+>      * `guides/sqlite.md`).
+169a172
+>     /** Reads a single PRAGMA, or sets then reads it when a `value` is passed. */
+175c178,179
+<  * Represents the options for `createSQLiteDatabase`.
+---
+>  * Represents the options for opening a SQLite connection, accepted by the
+>  * `createSQLiteDatabase` function and the `SQLiteDatabase` constructor.
+190,191c194,195
+<  * `bigints` is enabled; enabling it returns EVERY integer column as `bigint`,
+<  * not just out-of-range ones, closing that read/write asymmetry at the cost of
+---
+>  * `bigints` is enabled; enabling it returns every integer column as `bigint`,
+>  * not out-of-range ones alone, closing that read/write asymmetry at the cost of
+203c207,208
+<  * Represents an error thrown by the SQLite wrapper.
+---
+>  * Represents an error thrown by the SQLite wrapper, carrying a machine-readable `code` —
+>  * `CLOSED`, `CONSTRAINT`, `BUSY`, `INVALID`, or `UNKNOWN`.
+206c211
+<  * Carries a {@link SQLiteErrorCode} and an optional `context` record (for example
+---
+>  * The `code` is a {@link SQLiteErrorCode}, beside an optional `context` record (for example
+242c247,254
+< /** Represents the outcome of a non-query statement (`INSERT` / `UPDATE` / `DELETE` / DDL). */
+---
+> /**
+>  * Represents the outcome of a non-query statement (`INSERT` / `UPDATE` / `DELETE` / DDL).
+>  *
+>  * @remarks
+>  * Each member is a `number`, so a count or a rowid past 2^53 truncates — acceptable for the
+>  * keys and change counts this layer hands back, and a caller needing exact large keys reads
+>  * them back through a `bigints` connection instead.
+>  */
+258,259c270,272
+<  * Represents a prepared statement over `node:sqlite`'s `StatementSync` — the only way the
+<  * wrapper runs SQL.
+---
+>  * Implements {@link SQLiteStatementInterface} over one compiled `StatementSync`, gating each
+>  * call on its owning connection still being open and mapping every native fault, a mid-stream
+>  * one included, to a {@link SQLiteError}.
+265,269c278,280
+<  * without the SQL prefix character. Each method first gates on that liveness
+<  * check, throwing a `CLOSED` `SQLiteError` after the owning connection has been
+<  * closed — a statement prepared on a connection that is later closed and then
+<  * reconnected stays `CLOSED`; a fresh statement must be prepared on the new
+<  * connection. Each method then binds the optional parameters (an array spread
+---
+>  * without the SQL prefix character. A statement prepared on a connection that is later
+>  * closed and then reconnected stays `CLOSED`; a fresh statement must be prepared on the new
+>  * connection. Each method binds the optional parameters (an array spread
+271,273c282,283
+<  * synchronously, mapping any native fault to a `SQLiteError` — including a
+<  * mid-stream fault from `iterate`'s lazy native iterator, stepped inside its own
+<  * try/catch so a fault on a later row is mapped exactly like an eager one. Row
+---
+>  * synchronously — `iterate`'s lazy native iterator is stepped inside its own
+>  * try/catch, so a fault on a later row is mapped exactly like an eager one. Row
+288,289c298
+<  * Represents a prepared statement — the only way the wrapper runs SQL (no query DSL; the
+<  * core database layer owns querying, exactly as the IndexedDB wrapper does).
+---
+>  * Represents a prepared statement — the only way the wrapper runs SQL.
+292c301,302
+<  * Reached through `database.prepare(sql)`. Each method binds the optional
+---
+>  * There is no query DSL here: the core database layer owns querying, exactly as the
+>  * IndexedDB wrapper does. Reached through `database.prepare(sql)`. Each method binds the optional
+300a311
+>     /** Runs a non-query (`INSERT` / `UPDATE` / `DELETE` / DDL) and returns its `changes` and `rowid`. */
+301a313
+>     /** Runs the statement and returns its first row, or `undefined` when none matched. */
+302a315
+>     /** Runs the statement and returns every matching row eagerly, as an array. */
+303a317
+>     /** Streams the matching rows lazily, one row materialized at a time, for a large result set. */
+308c322,323
+<  * Represents a value SQLite stores and returns natively — the SQL ↔ JS bridge.
+---
+>  * Represents a value SQLite stores and returns natively — the bridge between SQLite's storage
+>  * classes and their JS types.
+311,312c326,327
+<  * `node:sqlite` maps `NULL` / `INTEGER` / `REAL` / `TEXT` / `BLOB` to exactly
+<  * these JS types (integers arrive as `number`, or `bigint` only past 2^53).
+---
+>  * `node:sqlite` maps `NULL` / `INTEGER` / `REAL` / `TEXT` / `BLOB` to exactly the
+>  * JS types this union names (integers arrive as `number`, or `bigint` only past 2^53).
+317c332,333
+<  * Converts a thrown native `node:sqlite` error into a typed {@link SQLiteError}.
+---
+>  * Converts a thrown native `node:sqlite` error into a typed {@link SQLiteError} at the
+>  * wrapper's one boundary.
+320c336
+<  * The single boundary mapping for the wrapper. The thrown value arrives as
+---
+>  * The thrown value arrives as
+diff -r -w -B '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-sqlite-next-final-pack/baseline/package/dist/src/server/index.js /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-sqlite-next-final-pack/extract/package/dist/src/server/index.js
+5c5
+< * Names the SQLite result code for a constraint violation.
+---
+> * Names the SQLite result code whose low byte, `19`, flags a constraint violation.
+14c14
+< * Names the SQLite result code for a locked-database fault.
+---
+> * Names the SQLite result code whose low byte, `5`, flags a locked-database fault.
+25c25,26
+< * Represents an error thrown by the SQLite wrapper.
+---
+> * Represents an error thrown by the SQLite wrapper, carrying a machine-readable `code` —
+> * `CLOSED`, `CONSTRAINT`, `BUSY`, `INVALID`, or `UNKNOWN`.
+28c29
+< * Carries a {@link SQLiteErrorCode} and an optional `context` record (for example
+---
+> * The `code` is a {@link SQLiteErrorCode}, beside an optional `context` record (for example
+67c68,69
+< * Converts a thrown native `node:sqlite` error into a typed {@link SQLiteError}.
+---
+> * Converts a thrown native `node:sqlite` error into a typed {@link SQLiteError} at the
+> * wrapper's one boundary.
+70c72
+< * The single boundary mapping for the wrapper. The thrown value arrives as
+---
+> * The thrown value arrives as
+90,91c92,93
+< * Normalizes {@link SQLiteParameters} to the binding shape a native `StatementSync`
+< * call expects.
+---
+> * Normalizes {@link SQLiteParameters} to the binding shape a native `StatementSync` call
+> * expects — a positional spread, or a single named record.
+110,111c112,114
+< * Represents a prepared statement over `node:sqlite`'s `StatementSync` — the only way the
+< * wrapper runs SQL.
+---
+> * Implements {@link SQLiteStatementInterface} over one compiled `StatementSync`, gating each
+> * call on its owning connection still being open and mapping every native fault, a mid-stream
+> * one included, to a {@link SQLiteError}.
+117,121c120,122
+< * without the SQL prefix character. Each method first gates on that liveness
+< * check, throwing a `CLOSED` `SQLiteError` after the owning connection has been
+< * closed — a statement prepared on a connection that is later closed and then
+< * reconnected stays `CLOSED`; a fresh statement must be prepared on the new
+< * connection. Each method then binds the optional parameters (an array spread
+---
+> * without the SQL prefix character. A statement prepared on a connection that is later
+> * closed and then reconnected stays `CLOSED`; a fresh statement must be prepared on the new
+> * connection. Each method binds the optional parameters (an array spread
+123,125c124,125
+< * synchronously, mapping any native fault to a `SQLiteError` — including a
+< * mid-stream fault from `iterate`'s lazy native iterator, stepped inside its own
+< * try/catch so a fault on a later row is mapped exactly like an eager one. Row
+---
+> * synchronously — `iterate`'s lazy native iterator is stepped inside its own
+> * try/catch, so a fault on a later row is mapped exactly like an eager one. Row
+205c205,207
+< * Represents a synchronous SQLite database over `node:sqlite`'s `DatabaseSync`.
+---
+> * Implements {@link SQLiteDatabaseInterface} over a lazily opened `DatabaseSync` the instance
+> * owns, gating every operation on that connection and mapping each native fault to a
+> * {@link SQLiteError}.
+208,211c210,212
+< * Created by `createSQLiteDatabase`. It connects lazily (`connect` opens the
+< * underlying `DatabaseSync`, idempotent) and every operation routes through a
+< * private gate that throws a `CLOSED` `SQLiteError` before `connect` or after
+< * `close`. `execute` runs result-less SQL; `prepare` compiles a `SQLiteStatement`;
+---
+> * Created by `createSQLiteDatabase`. The gate throws a `CLOSED` fault before `connect` or
+> * after `close`, and `connect` itself is idempotent.
+> * `execute` runs result-less SQL; `prepare` compiles a `SQLiteStatement`;
+218,219c219
+< * (node:sqlite's `isTransaction`), `false` when not connected. A native fault
+< * surfaces as a `SQLiteError` mapped at the boundary.
+---
+> * (node:sqlite's `isTransaction`), `false` when not connected.
+317c317
+< * Creates a synchronous SQLite database over `node:sqlite`.
+---
+> * Creates a synchronous SQLite database over `node:sqlite`, defaulting its path to `:memory:`.
+327c327
+< * @example
+---
+> * @example Connect, execute, and round-trip a row
+331c331
+< * const db = createSQLiteDatabase({ path: ':memory:' })
+---
+> * const db = createSQLiteDatabase() // path defaults to ':memory:'
+333,335c333,336
+< * db.execute('CREATE TABLE users (id TEXT PRIMARY KEY, name TEXT)')
+< * db.prepare('INSERT INTO users VALUES (?, ?)').execute(['u1', 'Ada'])
+< * db.prepare('SELECT name FROM users WHERE id = ?').get(['u1']) // { name: 'Ada' }
+---
+> * db.execute('CREATE TABLE users (id TEXT PRIMARY KEY, name TEXT, age INTEGER)')
+> * const result = db.prepare('INSERT INTO users VALUES (?, ?, ?)').execute(['u1', 'Ada', 36])
+> * result.changes // 1
+> * db.prepare('SELECT * FROM users WHERE id = ?').get(['u1']) // { id: 'u1', name: 'Ada', age: 36 }

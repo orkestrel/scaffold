@@ -11,6 +11,32 @@ d7n-initial-registry-closure.md and its retained digest evidence. Continue with
 the next dependency layer, then write its operator command to root prompt.txt
 only after preparation closes. Preserve publish.txt as the prior command.
 
+The next-layer plan is d7n-next-layer-plan.md. Fresh origin/main readings require
+no merges for its selected packages. Accepted tooling is installed throughout
+that round; native-entry adoption precedes supported overwrite and release gates.
+Every selected native entry and corrected source prepublish passed and its
+source review is accepted. Final visits and packing passed except NDJSON and
+Tool, whose overlapping generated scratch-directory checks failed. Their full
+standalone prepublish reruns passed without source changes; recovery packing
+follows. Read d7n-next-root-final-gates-report.md. Closure pushes and local-main
+transitions remain, and prompt.txt has not been written.
+
+The selected release state is recorded here; historical parity closures later
+in this file are not release-preparation status.
+
+| Package | Version | Accepted source or release tip | Release preparation |
+| --- | --- | --- | --- |
+| abort | 0.0.10 | 7ba1287 | packed; main closure pending |
+| budget | 0.0.10 | adcdd32 | packed; main closure pending |
+| csv | 0.0.7 | a27b91c | packed; main closure pending |
+| emitter | 0.0.10 | 361f5cb | packed; main closure pending |
+| html | 0.0.9 | dc36caa | packed; final review and main closure pending |
+| indexeddb | 0.0.11 | 145bd18 | packed; main closure pending |
+| ndjson | 0.0.10 | 1c12979 | standalone gates passed; recovery pack pending |
+| sqlite | 0.0.11 | 0ed78f6 | packed; final review and main closure pending |
+| timeout | 0.0.10 | b035b0e | packed; final review and main closure pending |
+| tool | 0.0.14 | bf89501 | standalone gates passed; recovery pack pending |
+
 The initial publish layer is prepared under the owner's narrowed scope in
 Ruling 38. Read d7n-initial-layer-prepared.md for versions, exact archives and the
 upload hold. Contract, Codec, Msg, SSE and Test are accepted, campaign/main pushed,

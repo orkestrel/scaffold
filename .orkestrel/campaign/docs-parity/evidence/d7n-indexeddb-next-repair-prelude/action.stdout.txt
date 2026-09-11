@@ -1,0 +1,9 @@
+┌─────────────────┬───────────────┬─────────┐
+│ path            │ group         │ drift   │
+├─────────────────┼───────────────┼─────────┤
+│ scripts/docs.ts │ orchestration │ foreign │
+└─────────────────┴───────────────┴─────────┘
+0 of 36 planned paths drifted from the plan. Audit compared bytes at 24, existence at 5, and nothing at 7. The plan does not own 1 further path beneath its groups.
+tests/setupPolicy.ts replaced (15 lines added).
+tests/config.test.ts replaced (14 lines added).
+3 written, 34 unchanged, 0 removed in ..

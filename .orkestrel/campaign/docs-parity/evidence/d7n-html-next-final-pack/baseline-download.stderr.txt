@@ -1,0 +1,22 @@
+npm notice
+npm notice 📦  @orkestrel/html@0.0.8
+npm notice Tarball Contents
+npm notice 1.1kB LICENSE
+npm notice 3.8kB README.md
+npm notice 136.1kB dist/src/core/index.cjs
+npm notice 235.7kB dist/src/core/index.cjs.map
+npm notice 64.2kB dist/src/core/index.d.cts
+npm notice 64.2kB dist/src/core/index.d.ts
+npm notice 133.3kB dist/src/core/index.js
+npm notice 235.0kB dist/src/core/index.js.map
+npm notice 3.8kB package.json
+npm notice Tarball Details
+npm notice name: @orkestrel/html
+npm notice version: 0.0.8
+npm notice filename: orkestrel-html-0.0.8.tgz
+npm notice package size: 208.3 kB
+npm notice unpacked size: 877.1 kB
+npm notice shasum: cf9a1dedb72f372f51064323072c538d1b63b657
+npm notice integrity: sha512-GpQ+nkGVuDULH[...]4js/sCXAtE+mg==
+npm notice total files: 9
+npm notice

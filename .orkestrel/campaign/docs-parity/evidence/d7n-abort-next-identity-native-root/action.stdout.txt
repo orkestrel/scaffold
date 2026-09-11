@@ -1,0 +1,10 @@
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/abort
+
+···························
+
+ Test Files  1 passed (1)
+      Tests  27 passed (27)
+   Start at  20:18:49
+   Duration  506ms (transform 61ms, setup 17ms, import 336ms, tests 9ms, environment 0ms)
+

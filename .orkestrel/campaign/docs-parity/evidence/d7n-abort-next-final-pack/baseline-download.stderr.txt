@@ -1,0 +1,22 @@
+npm notice
+npm notice 📦  @orkestrel/abort@0.0.9
+npm notice Tarball Contents
+npm notice 1.1kB LICENSE
+npm notice 2.2kB README.md
+npm notice 8.6kB dist/src/core/index.cjs
+npm notice 11.6kB dist/src/core/index.cjs.map
+npm notice 8.4kB dist/src/core/index.d.cts
+npm notice 8.4kB dist/src/core/index.d.ts
+npm notice 8.1kB dist/src/core/index.js
+npm notice 11.4kB dist/src/core/index.js.map
+npm notice 3.8kB package.json
+npm notice Tarball Details
+npm notice name: @orkestrel/abort
+npm notice version: 0.0.9
+npm notice filename: orkestrel-abort-0.0.9.tgz
+npm notice package size: 9.6 kB
+npm notice unpacked size: 63.6 kB
+npm notice shasum: e3a52500688028d9f7f3bd3d19fdca230cef28e6
+npm notice integrity: sha512-L7VLKsscW2xhk[...]T15mbk3YYIo0w==
+npm notice total files: 9
+npm notice

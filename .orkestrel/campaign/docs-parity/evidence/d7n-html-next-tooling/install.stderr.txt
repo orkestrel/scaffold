@@ -1,0 +1,4 @@
+npm error code ETARGET
+npm error notarget No matching version found for @orkestrel/html@^0.0.9.
+npm error notarget In most cases you or one of your dependencies are requesting a package version that doesn't exist.
+npm error A complete log of this run can be found in: C:\Users\mikes\scoop\persist\nodejs-lts\cache\_logs\2026-09-10T23_52_11_678Z-debug-0.log

@@ -1,0 +1,286 @@
+diff -r -w -B '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-timeout-next-final-pack/baseline/package/dist/src/core/index.cjs /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-timeout-next-final-pack/extract/package/dist/src/core/index.cjs
+5c5
+< * Names the largest timeout duration accepted by the package, in milliseconds.
+---
+> * Names the largest timeout duration the package accepts, `2_147_483_647` milliseconds.
+16c16,17
+< * Determines whether a value is an accepted timeout duration.
+---
+> * Determines whether a value is an integer in the inclusive range from `0` through
+> * `MAX_TIMEOUT_MS`, staying total for every input.
+31c32,33
+< * Determines whether a value is a genuine native `AbortSignal`.
+---
+> * Determines whether a value is a genuine native `AbortSignal`, staying total for a
+> * structural spoof and for a hostile or revoked proxy.
+34,36c36,37
+< * The intrinsic `aborted` getter performs the native brand check. The boundary
+< * contains revoked proxies and hostile receivers, returning `false` instead of
+< * allowing their errors to escape.
+---
+> * The intrinsic `aborted` getter performs the native brand check, and the boundary
+> * returns `false` rather than letting a receiver's error escape.
+59c60,61
+< * Validates and normalizes timeout construction options.
+---
+> * Validates once-read timeout construction options and returns a fresh normalized copy
+> * omitting absent optional keys.
+62,63c64
+< * Each property is read exactly once before validation. The returned object is
+< * a fresh copy and omits absent optional properties. No timer, controller, or
+---
+> * Each property is read before any validation runs, and no timer, controller, or
+145c146,147
+< * Represents a controllable deadline whose native `AbortSignal` aborts when it expires.
+---
+> * Implements `TimeoutInterface` exactly, as a controllable `setTimeout` wrapper over one
+> * owned `AbortController` whose signal aborts when the deadline expires.
+226c228,229
+< * Creates a controllable deadline whose native signal aborts on expiry.
+---
+> * Creates a deadline handle from validated `TimeoutOptions` and returns it as a
+> * `TimeoutInterface`.
+243c246
+< * @example
+---
+> * @example Race work against a deadline
+247c250,251
+< * const timeout = createTimeout({ ms: 5_000 })
+---
+> * async function fetchWithDeadline(url: string, ms: number): Promise<Response> {
+> * 	const timeout = createTimeout({ ms })
+248a253
+> *
+250c255
+< * 	await fetch('/work', { signal: timeout.signal })
+---
+> * 		return await fetch(url, { signal: timeout.signal })
+252c257,258
+< * 	timeout.clear()
+---
+> * 		timeout.clear() // cancels the still-armed deadline when the fetch won the race
+> * 	}
+diff -r -w -B '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-timeout-next-final-pack/baseline/package/dist/src/core/index.d.cts /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-timeout-next-final-pack/extract/package/dist/src/core/index.d.cts
+2c2,3
+<  * Creates a controllable deadline whose native signal aborts on expiry.
+---
+>  * Creates a deadline handle from validated `TimeoutOptions` and returns it as a
+>  * `TimeoutInterface`.
+19c20
+<      * @example
+---
+>      * @example Race work against a deadline
+23c24,25
+<      * const timeout = createTimeout({ ms: 5_000 })
+---
+>      * async function fetchWithDeadline(url: string, ms: number): Promise<Response> {
+>      * 	const timeout = createTimeout({ ms })
+24a27
+>      *
+26c29
+<      * 	await fetch('/work', { signal: timeout.signal })
+---
+>      * 		return await fetch(url, { signal: timeout.signal })
+28c31,32
+<      * 	timeout.clear()
+---
+>      * 		timeout.clear() // cancels the still-armed deadline when the fetch won the race
+>      * 	}
+35c39,40
+<   * Determines whether a value is an accepted timeout duration.
+---
+>   * Determines whether a value is an integer in the inclusive range from `0` through
+>   * `MAX_TIMEOUT_MS`, staying total for every input.
+49c54,55
+<   * Determines whether a value is a genuine native `AbortSignal`.
+---
+>   * Determines whether a value is a genuine native `AbortSignal`, staying total for a
+>   * structural spoof and for a hostile or revoked proxy.
+52,54c58,59
+<   * The intrinsic `aborted` getter performs the native brand check. The boundary
+<   * contains revoked proxies and hostile receivers, returning `false` instead of
+<   * allowing their errors to escape.
+---
+>   * The intrinsic `aborted` getter performs the native brand check, and the boundary
+>   * returns `false` rather than letting a receiver's error escape.
+68c73
+<   * Names the largest timeout duration accepted by the package, in milliseconds.
+---
+>   * Names the largest timeout duration the package accepts, `2_147_483_647` milliseconds.
+78c83,84
+<   * Represents a controllable deadline whose native `AbortSignal` aborts when it expires.
+---
+>   * Implements `TimeoutInterface` exactly, as a controllable `setTimeout` wrapper over one
+>   * owned `AbortController` whose signal aborts when the deadline expires.
+137c143,144
+<       * Arms or re-arms the deadline.
+---
+>       * Arms or re-arms the deadline for `ms`, installing a fresh `signal` when the
+>       * current one has already aborted.
+148c155,156
+<       * Cancels an armed deadline without aborting its signal and resets expiry state.
+---
+>       * Cancels an armed deadline without aborting its `signal`, and resets expiry by
+>       * installing a fresh signal when the current one has already aborted.
+151,152c159
+<       * Installs a fresh non-aborted signal when the current signal has already
+<       * aborted; a signal that never fired keeps its identity.
+---
+>       * A signal that never fired keeps its identity.
+160c167
+<   * Represents the options for constructing a timeout deadline.
+---
+>   * Represents the options `createTimeout` and the `Timeout` constructor accept.
+183c190,191
+<   * Validates and normalizes timeout construction options.
+---
+>   * Validates once-read timeout construction options and returns a fresh normalized copy
+>   * omitting absent optional keys.
+186,187c194
+<   * Each property is read exactly once before validation. The returned object is
+<   * a fresh copy and omits absent optional properties. No timer, controller, or
+---
+>   * Each property is read before any validation runs, and no timer, controller, or
+diff -r -w -B '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-timeout-next-final-pack/baseline/package/dist/src/core/index.d.ts /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-timeout-next-final-pack/extract/package/dist/src/core/index.d.ts
+2c2,3
+<  * Creates a controllable deadline whose native signal aborts on expiry.
+---
+>  * Creates a deadline handle from validated `TimeoutOptions` and returns it as a
+>  * `TimeoutInterface`.
+19c20
+<      * @example
+---
+>      * @example Race work against a deadline
+23c24,25
+<      * const timeout = createTimeout({ ms: 5_000 })
+---
+>      * async function fetchWithDeadline(url: string, ms: number): Promise<Response> {
+>      * 	const timeout = createTimeout({ ms })
+24a27
+>      *
+26c29
+<      * 	await fetch('/work', { signal: timeout.signal })
+---
+>      * 		return await fetch(url, { signal: timeout.signal })
+28c31,32
+<      * 	timeout.clear()
+---
+>      * 		timeout.clear() // cancels the still-armed deadline when the fetch won the race
+>      * 	}
+35c39,40
+<   * Determines whether a value is an accepted timeout duration.
+---
+>   * Determines whether a value is an integer in the inclusive range from `0` through
+>   * `MAX_TIMEOUT_MS`, staying total for every input.
+49c54,55
+<   * Determines whether a value is a genuine native `AbortSignal`.
+---
+>   * Determines whether a value is a genuine native `AbortSignal`, staying total for a
+>   * structural spoof and for a hostile or revoked proxy.
+52,54c58,59
+<   * The intrinsic `aborted` getter performs the native brand check. The boundary
+<   * contains revoked proxies and hostile receivers, returning `false` instead of
+<   * allowing their errors to escape.
+---
+>   * The intrinsic `aborted` getter performs the native brand check, and the boundary
+>   * returns `false` rather than letting a receiver's error escape.
+68c73
+<   * Names the largest timeout duration accepted by the package, in milliseconds.
+---
+>   * Names the largest timeout duration the package accepts, `2_147_483_647` milliseconds.
+78c83,84
+<   * Represents a controllable deadline whose native `AbortSignal` aborts when it expires.
+---
+>   * Implements `TimeoutInterface` exactly, as a controllable `setTimeout` wrapper over one
+>   * owned `AbortController` whose signal aborts when the deadline expires.
+137c143,144
+<       * Arms or re-arms the deadline.
+---
+>       * Arms or re-arms the deadline for `ms`, installing a fresh `signal` when the
+>       * current one has already aborted.
+148c155,156
+<       * Cancels an armed deadline without aborting its signal and resets expiry state.
+---
+>       * Cancels an armed deadline without aborting its `signal`, and resets expiry by
+>       * installing a fresh signal when the current one has already aborted.
+151,152c159
+<       * Installs a fresh non-aborted signal when the current signal has already
+<       * aborted; a signal that never fired keeps its identity.
+---
+>       * A signal that never fired keeps its identity.
+160c167
+<   * Represents the options for constructing a timeout deadline.
+---
+>   * Represents the options `createTimeout` and the `Timeout` constructor accept.
+183c190,191
+<   * Validates and normalizes timeout construction options.
+---
+>   * Validates once-read timeout construction options and returns a fresh normalized copy
+>   * omitting absent optional keys.
+186,187c194
+<   * Each property is read exactly once before validation. The returned object is
+<   * a fresh copy and omits absent optional properties. No timer, controller, or
+---
+>   * Each property is read before any validation runs, and no timer, controller, or
+diff -r -w -B '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-timeout-next-final-pack/baseline/package/dist/src/core/index.js /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-timeout-next-final-pack/extract/package/dist/src/core/index.js
+4c4
+< * Names the largest timeout duration accepted by the package, in milliseconds.
+---
+> * Names the largest timeout duration the package accepts, `2_147_483_647` milliseconds.
+15c15,16
+< * Determines whether a value is an accepted timeout duration.
+---
+> * Determines whether a value is an integer in the inclusive range from `0` through
+> * `MAX_TIMEOUT_MS`, staying total for every input.
+30c31,32
+< * Determines whether a value is a genuine native `AbortSignal`.
+---
+> * Determines whether a value is a genuine native `AbortSignal`, staying total for a
+> * structural spoof and for a hostile or revoked proxy.
+33,35c35,36
+< * The intrinsic `aborted` getter performs the native brand check. The boundary
+< * contains revoked proxies and hostile receivers, returning `false` instead of
+< * allowing their errors to escape.
+---
+> * The intrinsic `aborted` getter performs the native brand check, and the boundary
+> * returns `false` rather than letting a receiver's error escape.
+58c59,60
+< * Validates and normalizes timeout construction options.
+---
+> * Validates once-read timeout construction options and returns a fresh normalized copy
+> * omitting absent optional keys.
+61,62c63
+< * Each property is read exactly once before validation. The returned object is
+< * a fresh copy and omits absent optional properties. No timer, controller, or
+---
+> * Each property is read before any validation runs, and no timer, controller, or
+144c145,146
+< * Represents a controllable deadline whose native `AbortSignal` aborts when it expires.
+---
+> * Implements `TimeoutInterface` exactly, as a controllable `setTimeout` wrapper over one
+> * owned `AbortController` whose signal aborts when the deadline expires.
+225c227,228
+< * Creates a controllable deadline whose native signal aborts on expiry.
+---
+> * Creates a deadline handle from validated `TimeoutOptions` and returns it as a
+> * `TimeoutInterface`.
+242c245
+< * @example
+---
+> * @example Race work against a deadline
+246c249,250
+< * const timeout = createTimeout({ ms: 5_000 })
+---
+> * async function fetchWithDeadline(url: string, ms: number): Promise<Response> {
+> * 	const timeout = createTimeout({ ms })
+247a252
+> *
+249c254
+< * 	await fetch('/work', { signal: timeout.signal })
+---
+> * 		return await fetch(url, { signal: timeout.signal })
+251c256,257
+< * 	timeout.clear()
+---
+> * 		timeout.clear() // cancels the still-armed deadline when the fetch won the race
+> * 	}

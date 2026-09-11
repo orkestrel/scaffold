@@ -1,0 +1,22 @@
+npm notice
+npm notice 📦  @orkestrel/budget@0.0.9
+npm notice Tarball Contents
+npm notice 1.1kB LICENSE
+npm notice 2.7kB README.md
+npm notice 14.9kB dist/src/core/index.cjs
+npm notice 23.2kB dist/src/core/index.cjs.map
+npm notice 10.9kB dist/src/core/index.d.cts
+npm notice 10.9kB dist/src/core/index.d.ts
+npm notice 13.6kB dist/src/core/index.js
+npm notice 22.7kB dist/src/core/index.js.map
+npm notice 3.8kB package.json
+npm notice Tarball Details
+npm notice name: @orkestrel/budget
+npm notice version: 0.0.9
+npm notice filename: orkestrel-budget-0.0.9.tgz
+npm notice package size: 13.6 kB
+npm notice unpacked size: 103.7 kB
+npm notice shasum: 75eb56e11a3d7426752d20467dc91fe33e3387cb
+npm notice integrity: sha512-1r0Vxmgbj3rCV[...]t2kDr44CHLqsw==
+npm notice total files: 9
+npm notice

@@ -1,0 +1,5 @@
+# Abort pitch-selection control
+
+Root owns a temporary diagnostic edit to canonical Abort package.json and README.md. No package writer is active there. Record a native GuideCommand run after changing only the manifest name to @orkestrel/pitch-control and the README pitch's opening phrase to an intentional mismatch. The objective source review predicts false success because no indexed guide matches that manifest name. Restore the exact original authored text immediately by apply_patch after the run, including on failure. Do not commit the control or claim a source fix. The action carrier captures the complete input diff and native exit. Compare restored manifest hashes with the prior successful source gate. This is a real canonical test control, not a package copy or a runtime fake.
+
+If the predicted false green occurs, brief the package-owned identity pin and prove the same control fails with that fix. Retain the control and repaired result. Keep the accepted Guide API and its optional pitch-selection contract unchanged.

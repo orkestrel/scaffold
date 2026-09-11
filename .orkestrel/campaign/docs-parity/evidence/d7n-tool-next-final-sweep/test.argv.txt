@@ -1,0 +1,1 @@
+rg -n -F \^0.0.13 /c/Users/mikes/WebstormProjects/tool/src /c/Users/mikes/WebstormProjects/tool/tests

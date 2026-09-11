@@ -1,0 +1,10 @@
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/timeout
+
+·····························
+
+ Test Files  1 passed (1)
+      Tests  29 passed (29)
+   Start at  20:35:40
+   Duration  859ms (transform 100ms, setup 20ms, import 385ms, tests 300ms, environment 0ms)
+

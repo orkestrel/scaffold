@@ -1,0 +1,22 @@
+npm notice
+npm notice 📦  @orkestrel/emitter@0.0.10
+npm notice Tarball Contents
+npm notice 1.1kB LICENSE
+npm notice 2.5kB README.md
+npm notice 6.4kB dist/src/core/index.cjs
+npm notice 13.0kB dist/src/core/index.cjs.map
+npm notice 8.7kB dist/src/core/index.d.cts
+npm notice 8.7kB dist/src/core/index.d.ts
+npm notice 6.2kB dist/src/core/index.js
+npm notice 13.0kB dist/src/core/index.js.map
+npm notice 3.7kB package.json
+npm notice Tarball Details
+npm notice name: @orkestrel/emitter
+npm notice version: 0.0.10
+npm notice filename: orkestrel-emitter-0.0.10.tgz
+npm notice package size: 11.6 kB
+npm notice unpacked size: 63.5 kB
+npm notice shasum: 4572f2977aec0fd7522d3b07f968c38bd312e9e0
+npm notice integrity: sha512-kZuQE/M5DTD6Y[...]xy/szcsct+7zg==
+npm notice total files: 9
+npm notice

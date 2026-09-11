@@ -1,0 +1,1 @@
+rg -n -F \^0.0.16 /c/Users/mikes/WebstormProjects/indexeddb/src /c/Users/mikes/WebstormProjects/indexeddb/tests

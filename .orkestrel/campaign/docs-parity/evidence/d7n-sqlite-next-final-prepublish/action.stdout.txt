@@ -1,0 +1,89 @@
+Checking formatting...
+
+All matched files use the correct format.
+Finished in 2751ms on 43 files using 16 threads.
+vite v8.3.0 building client environment for production...
+transforming...
+✓ 9 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/server/index.js  11.97 kB │ gzip: 4.19 kB │ map: 22.08 kB
+
+transforming...
+✓ 9 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/server/index.cjs  12.33 kB │ gzip: 4.28 kB │ map: 22.14 kB
+
+✓ built in 129ms
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+Copied: dist/src/server/index.d.ts to dist/src/server/index.d.cts
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/sqlite
+
+·····················································
+
+ Test Files  4 passed (4)
+      Tests  53 passed (53)
+   Start at  20:53:41
+   Duration  690ms (transform 658ms, setup 884ms, import 318ms, tests 294ms, environment 1ms)
+
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/sqlite
+
+·················································································-·········
+
+ Test Files  1 passed (1)
+      Tests  90 passed | 1 skipped (91)
+   Start at  20:53:43
+   Duration  1.20s (transform 143ms, setup 31ms, import 183ms, tests 722ms, environment 0ms)
+
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/sqlite
+
+··········································································································································································stdout | tests/config.test.ts > configuration helpers > rolls one face into a single declaration and rewrites its core specifier
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+
+·-stdout | tests/config.test.ts > configuration helpers > rolls one face into a single declaration and rewrites its core specifier
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+
+·
+
+ Test Files  1 passed (1)
+      Tests  172 passed | 1 skipped (173)
+   Start at  20:53:44
+   Duration  3.30s (transform 251ms, setup 19ms, import 542ms, tests 2.57s, environment 0ms)
+
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/sqlite
+
+·········
+
+ Test Files  2 passed (2)
+      Tests  9 passed (9)
+   Start at  20:53:48
+   Duration  678ms (transform 101ms, setup 35ms, import 189ms, tests 348ms, environment 0ms)
+
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/sqlite
+
+·······························
+
+ Test Files  1 passed (1)
+      Tests  31 passed (31)
+   Start at  20:53:50
+   Duration  625ms (transform 80ms, setup 17ms, import 436ms, tests 20ms, environment 0ms)
+
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/sqlite
+
+·········
+
+ Test Files  1 passed (1)
+      Tests  9 passed (9)
+   Start at  20:53:51
+   Duration  9.72s (transform 63ms, setup 17ms, import 1.87s, tests 7.69s, environment 0ms)
+

@@ -1,0 +1,428 @@
+diff -r '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-budget-next-final-pack/baseline/package/dist/src/core/index.cjs /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-budget-next-final-pack/extract/package/dist/src/core/index.cjs
+5c5
+< * Determines whether a value is a valid budget amount.
+---
+> * Determines whether a value is a finite nonnegative budget amount.
+20c20,21
+< * Determines whether a value is a genuine native `AbortSignal`.
+---
+> * Determines whether a value is a genuine native `AbortSignal`, returning `false`
+> * rather than throwing on hostile input.
+41c42
+< * Determines whether a value selects a supported token usage field.
+---
+> * Determines whether a value is a supported `TokenScope` field selector.
+56c57,58
+< * Determines whether a value is readable token usage with valid numeric fields.
+---
+> * Determines whether a value is readable token usage carrying three finite
+> * nonnegative counts, returning `false` rather than throwing.
+59c61
+< * Hostile getters and revoked proxies are contained and return `false`.
+---
+> * The read contains a hostile getter and a revoked proxy.
+81c83,84
+< * Validates and normalizes budget construction options.
+---
+> * Validates and normalizes budget construction options into a fresh copy that
+> * omits absent optional keys.
+84,85c87
+< * Each property is read exactly once before validation. The returned object is
+< * a fresh copy and omits absent optional properties.
+---
+> * Each property is read exactly once before validation.
+180c182,183
+< * Validates and normalizes token-budget construction options.
+---
+> * Validates and normalizes token-budget construction options into a fresh copy
+> * that omits absent optional keys.
+183,184c186
+< * Each property is read exactly once before validation. The returned object is
+< * a fresh copy and omits absent optional properties.
+---
+> * Each property is read exactly once before validation.
+295c297,298
+< * Represents a cumulative cost handle whose native `AbortSignal` aborts at its ceiling.
+---
+> * Implements `BudgetInterface` over a private `AbortController` the instance owns,
+> * aborting the composed signal the moment `consumed` reaches the `max` ceiling.
+392c395,400
+< * Creates a cumulative budget whose native signal aborts at its ceiling.
+---
+> * Creates a cumulative budget as a `BudgetInterface<T>` over a `max` ceiling and a
+> * `consumer`, whose native signal aborts the moment the tally reaches that ceiling.
+> *
+> * @remarks
+> * An optional trace `id` labels the handle, and an optional parent `signal` composes
+> * with the budget's own exhaustion signal.
+398a407,421
+> * @example Race work against the ceiling
+> * ```ts
+> * import { createBudget } from '@orkestrel/budget'
+> *
+> * const budget = createBudget<number>({ max: 1_000_000, consumer: (bytes) => bytes })
+> * budget.start()
+> * budget.signal.addEventListener('abort', () => abortStream(), { once: true })
+> *
+> * for await (const chunk of stream) {
+> * 	if (budget.signal.aborted) break // the ceiling was crossed mid-stream
+> * 	budget.consume(chunk.byteLength)
+> * 	process(chunk)
+> * }
+> * ```
+> *
+411c434
+< * Creates a validated token consumer for one selected usage field.
+---
+> * Creates a validated unary consumer that charges one selected `TokenUsage` field.
+468c491,492
+< * Creates a token budget charging one validated usage field per provider call.
+---
+> * Creates a token budget as a `BudgetInterface<TokenUsage>` charging one validated
+> * `scope` field per provider call.
+471,472c495,497
+< * `scope` — Default: `completion`. Construction validates its own untyped
+< * boundary before composing the generic budget.
+---
+> * `scope` selects `completion`, `total`, or `prompt`. Default: `completion`.
+> * Construction validates its own untyped boundary before composing the generic
+> * budget.
+diff -r '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-budget-next-final-pack/baseline/package/dist/src/core/index.d.cts /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-budget-next-final-pack/extract/package/dist/src/core/index.d.cts
+2c2,3
+<  * Represents a cumulative cost handle whose native `AbortSignal` aborts at its ceiling.
+---
+>  * Implements `BudgetInterface` over a private `AbortController` the instance owns,
+>  * aborting the composed signal the moment `consumed` reaches the `max` ceiling.
+40c41,42
+<  * Represents a cumulative cost handle whose native signal aborts at its ceiling.
+---
+>  * Represents the cumulative cost handle contract: a lifetime tally, its validated
+>  * ceiling, and the native signal that aborts when the tally reaches that ceiling.
+65c67,68
+<      * Re-arms a fresh signal without resetting the cumulative tally.
+---
+>      * Re-arms a fresh per-request `signal` without resetting the cumulative tally,
+>      * arming it already aborted when `consumed` has reached `max`.
+71c74,76
+<      * Validates and atomically adds the charge extracted from a domain value.
+---
+>      * Runs the configured consumer first, then validates and atomically adds its
+>      * charge, tripping `signal` the moment the tally reaches `max`; a valid charge
+>      * that overshoots the ceiling is accepted.
+78c83,84
+<      * Resets the tally and re-arms a fresh signal.
+---
+>      * Resets the tally to `0` and re-arms a fresh unaborted `signal`, opening the
+>      * next window from zero.
+86c92,93
+<  * Represents the options for constructing a cumulative budget.
+---
+>  * Represents the options for constructing a cumulative budget, accepted by the
+>  * `createBudget` function and the `Budget` constructor.
+110c117,122
+<  * Creates a cumulative budget whose native signal aborts at its ceiling.
+---
+>  * Creates a cumulative budget as a `BudgetInterface<T>` over a `max` ceiling and a
+>  * `consumer`, whose native signal aborts the moment the tally reaches that ceiling.
+>  *
+>  * @remarks
+>  * An optional trace `id` labels the handle, and an optional parent `signal` composes
+>  * with the budget's own exhaustion signal.
+116a129,143
+>      * @example Race work against the ceiling
+>      * ```ts
+>      * import { createBudget } from '@orkestrel/budget'
+>      *
+>      * const budget = createBudget<number>({ max: 1_000_000, consumer: (bytes) => bytes })
+>      * budget.start()
+>      * budget.signal.addEventListener('abort', () => abortStream(), { once: true })
+>      *
+>      * for await (const chunk of stream) {
+>      * 	if (budget.signal.aborted) break // the ceiling was crossed mid-stream
+>      * 	budget.consume(chunk.byteLength)
+>      * 	process(chunk)
+>      * }
+>      * ```
+>      *
+128c155,156
+<   * Creates a token budget charging one validated usage field per provider call.
+---
+>   * Creates a token budget as a `BudgetInterface<TokenUsage>` charging one validated
+>   * `scope` field per provider call.
+131,132c159,161
+<   * `scope` — Default: `completion`. Construction validates its own untyped
+<   * boundary before composing the generic budget.
+---
+>   * `scope` selects `completion`, `total`, or `prompt`. Default: `completion`.
+>   * Construction validates its own untyped boundary before composing the generic
+>   * budget.
+150c179
+<    * Creates a validated token consumer for one selected usage field.
+---
+>    * Creates a validated unary consumer that charges one selected `TokenUsage` field.
+166c195
+<     * Determines whether a value is a valid budget amount.
+---
+>     * Determines whether a value is a finite nonnegative budget amount.
+180c209,210
+<     * Determines whether a value is a genuine native `AbortSignal`.
+---
+>     * Determines whether a value is a genuine native `AbortSignal`, returning `false`
+>     * rather than throwing on hostile input.
+194c224
+<     * Determines whether a value selects a supported token usage field.
+---
+>     * Determines whether a value is a supported `TokenScope` field selector.
+208c238,239
+<     * Determines whether a value is readable token usage with valid numeric fields.
+---
+>     * Determines whether a value is readable token usage carrying three finite
+>     * nonnegative counts, returning `false` rather than throwing.
+211c242
+<     * Hostile getters and revoked proxies are contained and return `false`.
+---
+>     * The read contains a hostile getter and a revoked proxy.
+225c256,257
+<     * Represents the options for constructing a token budget.
+---
+>     * Represents the options for constructing a token budget, accepted by the
+>     * `createTokenBudget` function.
+258c290,291
+<     * Represents the canonical finite nonnegative token counts reported for one provider call.
+---
+>     * Represents the canonical LLM cost unit: the finite nonnegative token counts
+>     * reported for one provider call, and the typical `T` for an agent budget.
+272c305,306
+<     * Validates and normalizes budget construction options.
+---
+>     * Validates and normalizes budget construction options into a fresh copy that
+>     * omits absent optional keys.
+275,276c309
+<     * Each property is read exactly once before validation. The returned object is
+<     * a fresh copy and omits absent optional properties.
+---
+>     * Each property is read exactly once before validation.
+291c324,325
+<      * Validates and normalizes token-budget construction options.
+---
+>      * Validates and normalizes token-budget construction options into a fresh copy
+>      * that omits absent optional keys.
+294,295c328
+<      * Each property is read exactly once before validation. The returned object is
+<      * a fresh copy and omits absent optional properties.
+---
+>      * Each property is read exactly once before validation.
+diff -r '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-budget-next-final-pack/baseline/package/dist/src/core/index.d.ts /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-budget-next-final-pack/extract/package/dist/src/core/index.d.ts
+2c2,3
+<  * Represents a cumulative cost handle whose native `AbortSignal` aborts at its ceiling.
+---
+>  * Implements `BudgetInterface` over a private `AbortController` the instance owns,
+>  * aborting the composed signal the moment `consumed` reaches the `max` ceiling.
+40c41,42
+<  * Represents a cumulative cost handle whose native signal aborts at its ceiling.
+---
+>  * Represents the cumulative cost handle contract: a lifetime tally, its validated
+>  * ceiling, and the native signal that aborts when the tally reaches that ceiling.
+65c67,68
+<      * Re-arms a fresh signal without resetting the cumulative tally.
+---
+>      * Re-arms a fresh per-request `signal` without resetting the cumulative tally,
+>      * arming it already aborted when `consumed` has reached `max`.
+71c74,76
+<      * Validates and atomically adds the charge extracted from a domain value.
+---
+>      * Runs the configured consumer first, then validates and atomically adds its
+>      * charge, tripping `signal` the moment the tally reaches `max`; a valid charge
+>      * that overshoots the ceiling is accepted.
+78c83,84
+<      * Resets the tally and re-arms a fresh signal.
+---
+>      * Resets the tally to `0` and re-arms a fresh unaborted `signal`, opening the
+>      * next window from zero.
+86c92,93
+<  * Represents the options for constructing a cumulative budget.
+---
+>  * Represents the options for constructing a cumulative budget, accepted by the
+>  * `createBudget` function and the `Budget` constructor.
+110c117,122
+<  * Creates a cumulative budget whose native signal aborts at its ceiling.
+---
+>  * Creates a cumulative budget as a `BudgetInterface<T>` over a `max` ceiling and a
+>  * `consumer`, whose native signal aborts the moment the tally reaches that ceiling.
+>  *
+>  * @remarks
+>  * An optional trace `id` labels the handle, and an optional parent `signal` composes
+>  * with the budget's own exhaustion signal.
+116a129,143
+>      * @example Race work against the ceiling
+>      * ```ts
+>      * import { createBudget } from '@orkestrel/budget'
+>      *
+>      * const budget = createBudget<number>({ max: 1_000_000, consumer: (bytes) => bytes })
+>      * budget.start()
+>      * budget.signal.addEventListener('abort', () => abortStream(), { once: true })
+>      *
+>      * for await (const chunk of stream) {
+>      * 	if (budget.signal.aborted) break // the ceiling was crossed mid-stream
+>      * 	budget.consume(chunk.byteLength)
+>      * 	process(chunk)
+>      * }
+>      * ```
+>      *
+128c155,156
+<   * Creates a token budget charging one validated usage field per provider call.
+---
+>   * Creates a token budget as a `BudgetInterface<TokenUsage>` charging one validated
+>   * `scope` field per provider call.
+131,132c159,161
+<   * `scope` — Default: `completion`. Construction validates its own untyped
+<   * boundary before composing the generic budget.
+---
+>   * `scope` selects `completion`, `total`, or `prompt`. Default: `completion`.
+>   * Construction validates its own untyped boundary before composing the generic
+>   * budget.
+150c179
+<    * Creates a validated token consumer for one selected usage field.
+---
+>    * Creates a validated unary consumer that charges one selected `TokenUsage` field.
+166c195
+<     * Determines whether a value is a valid budget amount.
+---
+>     * Determines whether a value is a finite nonnegative budget amount.
+180c209,210
+<     * Determines whether a value is a genuine native `AbortSignal`.
+---
+>     * Determines whether a value is a genuine native `AbortSignal`, returning `false`
+>     * rather than throwing on hostile input.
+194c224
+<     * Determines whether a value selects a supported token usage field.
+---
+>     * Determines whether a value is a supported `TokenScope` field selector.
+208c238,239
+<     * Determines whether a value is readable token usage with valid numeric fields.
+---
+>     * Determines whether a value is readable token usage carrying three finite
+>     * nonnegative counts, returning `false` rather than throwing.
+211c242
+<     * Hostile getters and revoked proxies are contained and return `false`.
+---
+>     * The read contains a hostile getter and a revoked proxy.
+225c256,257
+<     * Represents the options for constructing a token budget.
+---
+>     * Represents the options for constructing a token budget, accepted by the
+>     * `createTokenBudget` function.
+258c290,291
+<     * Represents the canonical finite nonnegative token counts reported for one provider call.
+---
+>     * Represents the canonical LLM cost unit: the finite nonnegative token counts
+>     * reported for one provider call, and the typical `T` for an agent budget.
+272c305,306
+<     * Validates and normalizes budget construction options.
+---
+>     * Validates and normalizes budget construction options into a fresh copy that
+>     * omits absent optional keys.
+275,276c309
+<     * Each property is read exactly once before validation. The returned object is
+<     * a fresh copy and omits absent optional properties.
+---
+>     * Each property is read exactly once before validation.
+291c324,325
+<      * Validates and normalizes token-budget construction options.
+---
+>      * Validates and normalizes token-budget construction options into a fresh copy
+>      * that omits absent optional keys.
+294,295c328
+<      * Each property is read exactly once before validation. The returned object is
+<      * a fresh copy and omits absent optional properties.
+---
+>      * Each property is read exactly once before validation.
+diff -r '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-budget-next-final-pack/baseline/package/dist/src/core/index.js /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-budget-next-final-pack/extract/package/dist/src/core/index.js
+4c4
+< * Determines whether a value is a valid budget amount.
+---
+> * Determines whether a value is a finite nonnegative budget amount.
+19c19,20
+< * Determines whether a value is a genuine native `AbortSignal`.
+---
+> * Determines whether a value is a genuine native `AbortSignal`, returning `false`
+> * rather than throwing on hostile input.
+40c41
+< * Determines whether a value selects a supported token usage field.
+---
+> * Determines whether a value is a supported `TokenScope` field selector.
+55c56,57
+< * Determines whether a value is readable token usage with valid numeric fields.
+---
+> * Determines whether a value is readable token usage carrying three finite
+> * nonnegative counts, returning `false` rather than throwing.
+58c60
+< * Hostile getters and revoked proxies are contained and return `false`.
+---
+> * The read contains a hostile getter and a revoked proxy.
+80c82,83
+< * Validates and normalizes budget construction options.
+---
+> * Validates and normalizes budget construction options into a fresh copy that
+> * omits absent optional keys.
+83,84c86
+< * Each property is read exactly once before validation. The returned object is
+< * a fresh copy and omits absent optional properties.
+---
+> * Each property is read exactly once before validation.
+179c181,182
+< * Validates and normalizes token-budget construction options.
+---
+> * Validates and normalizes token-budget construction options into a fresh copy
+> * that omits absent optional keys.
+182,183c185
+< * Each property is read exactly once before validation. The returned object is
+< * a fresh copy and omits absent optional properties.
+---
+> * Each property is read exactly once before validation.
+294c296,297
+< * Represents a cumulative cost handle whose native `AbortSignal` aborts at its ceiling.
+---
+> * Implements `BudgetInterface` over a private `AbortController` the instance owns,
+> * aborting the composed signal the moment `consumed` reaches the `max` ceiling.
+391c394,399
+< * Creates a cumulative budget whose native signal aborts at its ceiling.
+---
+> * Creates a cumulative budget as a `BudgetInterface<T>` over a `max` ceiling and a
+> * `consumer`, whose native signal aborts the moment the tally reaches that ceiling.
+> *
+> * @remarks
+> * An optional trace `id` labels the handle, and an optional parent `signal` composes
+> * with the budget's own exhaustion signal.
+397a406,420
+> * @example Race work against the ceiling
+> * ```ts
+> * import { createBudget } from '@orkestrel/budget'
+> *
+> * const budget = createBudget<number>({ max: 1_000_000, consumer: (bytes) => bytes })
+> * budget.start()
+> * budget.signal.addEventListener('abort', () => abortStream(), { once: true })
+> *
+> * for await (const chunk of stream) {
+> * 	if (budget.signal.aborted) break // the ceiling was crossed mid-stream
+> * 	budget.consume(chunk.byteLength)
+> * 	process(chunk)
+> * }
+> * ```
+> *
+410c433
+< * Creates a validated token consumer for one selected usage field.
+---
+> * Creates a validated unary consumer that charges one selected `TokenUsage` field.
+467c490,491
+< * Creates a token budget charging one validated usage field per provider call.
+---
+> * Creates a token budget as a `BudgetInterface<TokenUsage>` charging one validated
+> * `scope` field per provider call.
+470,471c494,496
+< * `scope` — Default: `completion`. Construction validates its own untyped
+< * boundary before composing the generic budget.
+---
+> * `scope` selects `completion`, `total`, or `prompt`. Default: `completion`.
+> * Construction validates its own untyped boundary before composing the generic
+> * budget.

@@ -1,0 +1,19 @@
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |guides| tests/guides.test.ts > opens the README with the guide tagline
+AssertionError: expected '@orkestrel/pitch-control' to be '@orkestrel/abort' // Object.is equality
+
+Expected: "@orkestrel/abort"
+Received: "@orkestrel/pitch-control"
+
+ ❯ tests/guides.test.ts:65:25
+     63|
+     64|  it('opens the README with the guide tagline', () => {
+     65|   expect(manifest.name).toBe(PACKAGE_NAME)
+       |                         ^
+     66|   expect(report.pitch).toEqual([])
+     67|  })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+

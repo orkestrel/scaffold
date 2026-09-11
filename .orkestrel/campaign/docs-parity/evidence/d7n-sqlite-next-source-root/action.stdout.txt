@@ -1,0 +1,10 @@
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/sqlite
+
+·······························
+
+ Test Files  1 passed (1)
+      Tests  31 passed (31)
+   Start at  20:29:50
+   Duration  580ms (transform 75ms, setup 17ms, import 394ms, tests 24ms, environment 0ms)
+

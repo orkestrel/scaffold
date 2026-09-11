@@ -1,0 +1,1684 @@
+diff -r '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-csv-next-final-pack/baseline/package/dist/src/core/index.cjs /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-csv-next-final-pack/extract/package/dist/src/core/index.cjs
+4c4
+< /** Names the UTF-8 byte-order-mark character, prepended when `RenderOptions.bom` is `true`. */
+---
+> /** Names the UTF-8 byte-order-mark character, `'\uFEFF'`, prepended when `RenderOptions.bom` is `true`. */
+8,9c8,11
+< * which has no default) - what `parseCSV` uses for any option left
+< * unspecified.
+---
+> * which has no default) — what `parseCSV` uses for any option left
+> * unspecified: `{ delimiter: ',', quote: '"', escape: 'double', header: true,
+> * blanks: true, trim: false, ragged: 'collect', infer: false, limit: 0,
+> * strict: false }`.
+29,30c31,34
+< * which has no default) - what `renderCSV` uses for any option left
+< * unspecified.
+---
+> * which has no default) — what `renderCSV` uses for any option left
+> * unspecified: `{ delimiter: ',', quote: '"', escape: 'double', newline:
+> * '\r\n', header: true, quotes: 'minimal', blank: '', sanitize: true, bom:
+> * false }`.
+45c49
+< * formula-triggering - a field starting with any of these is prefixed with a
+---
+> * formula-triggering — a field starting with any of these is prefixed with a
+59c63,64
+< * `ParseOptions.header` is `false`, or a header field is empty - 1-based.
+---
+> * `ParseOptions.header` is `false`, or a header field is empty — 1-based,
+> * `'column'`.
+65c70
+< * guidance).
+---
+> * guidance), `"'"`.
+70c75
+< * counter (`name` -> `name_2`, `name_3`, …) - see {@link uniqueName}.
+---
+> * counter (`name` → `name_2`, `name_3`, …) — see {@link uniqueName}, `'_'`.
+74c79
+< * Matches a canonical integer only - an optional leading `-`, no leading
+---
+> * Matches a canonical integer only — an optional leading `-`, no leading
+80c85
+< * Matches a canonical decimal only - an optional leading `-`, an integer
+---
+> * Matches a canonical decimal only — an optional leading `-`, an integer
+88c93
+< * {@link QuoteStyle} and the sanitize `+` / `-` exemption - like
+---
+> * {@link QuoteStyle} and the sanitize `+` / `-` exemption — like
+92c97
+< /** Names the canonical serialized form of the boolean `true`. */
+---
+> /** Names the canonical serialized form of the boolean `true` — the string `'true'`. */
+94c99
+< /** Names the canonical serialized form of the boolean `false`. */
+---
+> /** Names the canonical serialized form of the boolean `false` — the string `'false'`. */
+97,99c102,104
+< * Sets the maximum number of {@link CSVError}s collected into a parse result -
+< * once reached, error collection stops (earlier records already parsed are
+< * kept, later malformations are silently no longer recorded).
+---
+> * Sets the maximum number of {@link CSVError}s collected into a parse result,
+> * `100` — once reached, error collection stops (earlier records already
+> * parsed are kept, later malformations are silently no longer recorded).
+105c110
+< * Represents an error surfaced by the CSV layer - either thrown for a
+---
+> * Represents an error surfaced by the CSV layer — either thrown for a
+149c154
+< * and {@link resolveRenderOptions} - each must be exactly one character, they
+---
+> * and {@link resolveRenderOptions} — each must be exactly one character, they
+178c183
+< * @returns The resolved options (`comment` stays optional - it has no default)
+---
+> * @returns The resolved options (`comment` stays optional — it has no default)
+203c208
+< * @returns The resolved options (`columns` stays optional - it has no default)
+---
+> * @returns The resolved options (`columns` stays optional — it has no default)
+223c228
+< * Disambiguates a single column name against the names already taken - the
+---
+> * Disambiguates a single column name against the names already taken — the
+248c253
+< * Disambiguates a header's column names deterministically - an empty (or
+---
+> * Disambiguates a header's column names deterministically — an empty (or
+273c278
+< * CSV-injection guidance) - a field starting with a formula-triggering
+---
+> * CSV-injection guidance) — a field starting with a formula-triggering
+295c300
+< * Serializes one cell value to its rendered text - the renderer's stringify
+---
+> * Serializes one cell value to its rendered text — the renderer's stringify
+322c327
+< * Derives a column order from a plain row list - the first-seen union of
+---
+> * Derives a column order from a plain row list — the first-seen union of
+340c345
+< * policy respects - a field containing the delimiter, the quote character,
+---
+> * policy respects — a field containing the delimiter, the quote character,
+357c362
+< * Wraps `field` in quotes, escaping per `options.escape` - the shared
+---
+> * Wraps `field` in quotes, escaping per `options.escape` — the shared
+364c369
+< * @returns `field` wrapped in `options.quote`, escaped per `options.escape` -
+---
+> * @returns `field` wrapped in `options.quote`, escaped per `options.escape` —
+378c383
+< * Implements the `'minimal'` {@link QuoteStyle} - quotes a field only when
+---
+> * Implements the `'minimal'` {@link QuoteStyle} — quotes a field only when
+395c400
+< * Implements the `'nonnumeric'` {@link QuoteStyle} - quotes every field whose
+---
+> * Implements the `'nonnumeric'` {@link QuoteStyle} — quotes every field whose
+413c418
+< * Renders one row to one delimited line - serializes every column's cell,
+---
+> * Renders one row to one delimited line — serializes every column's cell,
+458c463
+< * TypeScript limitation with readonly arrays) - an explicit type predicate
+---
+> * TypeScript limitation with readonly arrays) — an explicit type predicate
+473,474c478,479
+< * default to `options.columns`, or the source table's own `columns`, or -
+< * for a plain row list - {@link deriveColumns}'s first-seen key union. No
+---
+> * default to `options.columns`, or the source table's own `columns`, or —
+> * for a plain row list — {@link deriveColumns}'s first-seen key union. No
+532c537
+< * Consumes exactly one line break (CRLF, bare LF, or bare CR) at `position` -
+---
+> * Consumes exactly one line break (CRLF, bare LF, or bare CR) at `position` —
+563c568
+< * starting there - through the end of that line INCLUDING its break (or
+---
+> * starting there — through the end of that line INCLUDING its break (or
+590c595
+< * Scans one unquoted field starting at `position` - content runs until the
+---
+> * Scans one unquoted field starting at `position` — content runs until the
+630c635
+< * Scans one quoted field starting at `position` - `position` must be AT the
+---
+> * Scans one quoted field starting at `position` — `position` must be AT the
+744c749
+< * Scans one field at `position` - dispatches to {@link scanQuoted} when the
+---
+> * Scans one field at `position` — dispatches to {@link scanQuoted} when the
+756,757c761,762
+< * Scans one full record at `position` - fields separated by
+< * `options.delimiter`, ending at a break (consumed via {@link scanBreak}) or
+---
+> * Scans one full record at `position` — fields separated by
+> * `options.delimiter`, ending at a break (consumed through {@link scanBreak}) or
+802c807
+< * Splits `input` into raw, un-mapped {@link RawRecord}s - the tokenizer phase
+---
+> * Splits `input` into raw, un-mapped {@link RawRecord}s — the tokenizer phase
+811c816
+< * further malformations are silently no longer recorded - each leaf still
+---
+> * further malformations are silently no longer recorded — each leaf still
+817c822
+< * `ragged`, `infer`, and `strict` are ignored here - they apply only in
+---
+> * `ragged`, `infer`, and `strict` are ignored here — they apply only in
+865c870
+< * Resolves a table's header from its raw records - disambiguates the first
+---
+> * Resolves a table's header from its raw records — disambiguates the first
+870c875
+< * `header: true` disambiguates via {@link uniqueColumns}, collecting
+---
+> * `header: true` disambiguates through {@link uniqueColumns}, collecting
+933c938
+< * @returns The built row and/or the ragged-row error
+---
+> * @returns The built row, and the ragged-row error when one occurs
+979c984
+< * Parses `input` into a typed {@link CSVParseResult} - header mapping,
+---
+> * Parses `input` into a typed {@link CSVParseResult} — header mapping,
+988c993
+< * `options.limit` caps the number of DATA records - the header record (when
+---
+> * `options.limit` caps the number of DATA records — the header record (when
+990c995
+< * the FIRST error is discovered - a tokenizer error immediately after
+---
+> * the FIRST error is discovered — a tokenizer error immediately after
+993c998
+< * found while iterating the body in record order - instead of scanning to
+---
+> * found while iterating the body in record order — instead of scanning to
+997c1002
+< * discovery order - never sorted.
+---
+> * discovery order — never sorted.
+1054c1059
+< * Parses a raw cell string into a canonical integer - `undefined` for anything
+---
+> * Parses a raw cell string into a canonical integer — `undefined` for anything
+1080c1085
+< * Parses a raw cell string into a canonical decimal (or integer) - `undefined`
+---
+> * Parses a raw cell string into a canonical decimal (or integer) — `undefined`
+1104c1109
+< * Parses a raw cell string into a strict boolean - `undefined` for anything
+---
+> * Parses a raw cell string into a strict boolean — `undefined` for anything
+1130c1135
+< * string values - never `'json'` or `'blob'` (those require an explicit
+---
+> * string values — never `'json'` or `'blob'` (those require an explicit
+1169c1174
+< * Coerces one string cell to `type`'s typed representation - the exhaustive
+---
+> * Coerces one string cell to `type`'s typed representation — the exhaustive
+1174c1179
+< * `'blob'` - those are never inferred, and pass through unchanged like
+---
+> * `'blob'` — those are never inferred, and pass through unchanged like
+1176c1181
+< * @returns The typed value, via {@link parseInteger} / {@link parseReal} /
+---
+> * @returns The typed value, through {@link parseInteger} / {@link parseReal} /
+1191c1196
+< * Applies whole-column type inference to a built row set - per column, infers
+---
+> * Applies whole-column type inference to a built row set — per column, infers
+1193c1198
+< * that type via {@link coerceInferred}.
+---
+> * that type through {@link coerceInferred}.
+1197c1202
+< * (there is nothing to coerce). Copy-on-write - `rows` is never mutated;
+---
+> * (there is nothing to coerce). Copy-on-write — `rows` is never mutated;
+1237c1242
+< * `'text'` and `'blob'` both shape as plain strings - a CSV field is always
+---
+> * `'text'` and `'blob'` both shape as plain strings — a CSV field is always
+1241c1246
+< * `'json'` accepts any JSON value via {@link jsonShape}.
+---
+> * `'json'` accepts any JSON value through {@link jsonShape}.
+1268c1273
+< * JSON-serializable projection - an ordered `columns` list of strings plus
+---
+> * JSON-serializable projection — an ordered `columns` list of strings plus
+1295c1300
+< * values across all rows (excluding `undefined`/empty-string cells) - the
+---
+> * values across all rows (excluding `undefined`/empty-string cells) — the
+1301c1306
+< * column has no non-empty cells; the string-inferred type (via
+---
+> * column has no non-empty cells; the string-inferred type (through
+1327c1332
+< * Determines whether an arbitrary value is a valid {@link CSVTable} - an
+---
+> * Determines whether an arbitrary value is a valid {@link CSVTable} — an
+1331c1336
+< * Total: never throws, even on cyclic or pathologically deep input - every
+---
+> * Total: never throws, even on cyclic or pathologically deep input — every
+1335,1336c1340,1341
+< * and a null-prototype object (`Object.create(null)`) - the shape the CSV
+< * parser deliberately produces for parsed rows - while rejecting arrays,
+---
+> * and a null-prototype object (`Object.create(null)`) — the shape the CSV
+> * parser deliberately produces for parsed rows — while rejecting arrays,
+1379,1381c1384,1386
+< *   adopted AS-IS and is NOT re-validated - a caller adopting an untrusted
+< *   value should gate it with a guard first; `errors` is empty in that case.
+< * - **Immutable.** {@link map} never mutates the stored table - it returns a
+---
+> *   adopted AS-IS and is NOT re-validated — a caller adopting an untrusted
+> *   value must gate it with a guard first; `errors` is empty in that case.
+> * - **Immutable.** {@link map} never mutates the stored table — it returns a
+1449c1454
+< 	* instance - they describe the source parse, which `map` does not repeat
+---
+> 	* instance — they describe the source parse, which `map` does not repeat
+1482c1487
+< 	* (source order) - a fresh, pull-based source per call.
+---
+> 	* (source order) — a fresh, pull-based source per call.
+1510c1515
+< 	* Returns the stored {@link CSVTable} - the JSON-serializable projection.
+---
+> 	* Returns the stored {@link CSVTable} — the JSON-serializable projection.
+1513c1518
+< 	* @remarks `JSON.stringify(csv)` therefore emits `{ columns, rows }` - the
+---
+> 	* @remarks `JSON.stringify(csv)` therefore emits `{ columns, rows }` — the
+1562c1567
+< * Given a `string`, runs the parser to build the {@link CSVTable} - a
+---
+> * Given a `string`, runs the parser to build the {@link CSVTable} — a
+1566c1571
+< * a {@link CSVTable}, the table is adopted AS-IS and is NOT re-validated -
+---
+> * a {@link CSVTable}, the table is adopted AS-IS and is NOT re-validated —
+1573c1578
+< * @example
+---
+> * @example Parse and query
+1575c1580,1583
+< * import { createCSV } from '@src/core'
+---
+> * import { createCSV } from '@orkestrel/csv'
+> *
+> * const csv = createCSV('name,age\nAda,36\nGrace,85', { infer: true })
+> * csv.table // { columns: ['name', 'age'], rows: [{ name: 'Ada', age: 36 }, { name: 'Grace', age: 85 }] }
+1577,1578c1585,1586
+< * const csv = createCSV('a,b\n1,2', { infer: true })
+< * csv.rows // [{ a: 1, b: 2 }]
+---
+> * const ada = csv.find((row) => row.name === 'Ada') // Row | undefined
+> * const adults = csv.filter((row) => Number(row.age) >= 40) // readonly Row[]
+1586c1594
+< * {@link Row} - a guard, coercing parser, JSON Schema, and seeded generator
+---
+> * {@link Row} — a guard, coercing parser, JSON Schema, and seeded generator
+1591c1599
+< * (never imported here) - the returned contract's `schema` is structurally
+---
+> * (never imported here) — the returned contract's `schema` is structurally
+diff -r '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-csv-next-final-pack/baseline/package/dist/src/core/index.d.cts /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-csv-next-final-pack/extract/package/dist/src/core/index.d.cts
+2,5c2,5
+< import { ContractInterface } from '@orkestrel/contract';
+< import { ContractShape } from '@orkestrel/contract';
+< import { Guard } from '@orkestrel/contract';
+< import { JSONSchema } from '@orkestrel/contract';
+---
+> import type { ContractInterface } from '@orkestrel/contract';
+> import type { ContractShape } from '@orkestrel/contract';
+> import type { Guard } from '@orkestrel/contract';
+> import type { JSONSchema } from '@orkestrel/contract';
+26c26
+<  * and {@link resolveRenderOptions} - each must be exactly one character, they
+---
+>  * and {@link resolveRenderOptions} — each must be exactly one character, they
+40c40
+< /** Names the UTF-8 byte-order-mark character, prepended when `RenderOptions.bom` is `true`. */
+---
+> /** Names the UTF-8 byte-order-mark character, `'\uFEFF'`, prepended when `RenderOptions.bom` is `true`. */
+43c43
+< /** Names the canonical serialized form of the boolean `false`. */
+---
+> /** Names the canonical serialized form of the boolean `false` — the string `'false'`. */
+46c46
+< /** Names the canonical serialized form of the boolean `true`. */
+---
+> /** Names the canonical serialized form of the boolean `true` — the string `'true'`. */
+62c62
+<  * @returns The built row and/or the ragged-row error
+---
+>  * @returns The built row, and the ragged-row error when one occurs
+73c73
+<  * Coerces one string cell to `type`'s typed representation - the exhaustive
+---
+>  * Coerces one string cell to `type`'s typed representation — the exhaustive
+78c78
+<  * `'blob'` - those are never inferred, and pass through unchanged like
+---
+>  * `'blob'` — those are never inferred, and pass through unchanged like
+80c80
+<  * @returns The typed value, via {@link parseInteger} / {@link parseReal} /
+---
+>  * @returns The typed value, through {@link parseInteger} / {@link parseReal} /
+87c87
+<  * Represents a CSV's declared columns - a map of column name to its value
+---
+>  * Represents a CSV's declared columns — a map of column name to its value
+92c92
+<  * imported) - the same shape map can describe a CSV's columns and a
+---
+>  * imported) — the same shape map can describe a CSV's columns and a
+98c98
+<  * Names a portable storage type for a column - the same literal set
+---
+>  * Names a portable storage type for a column — the same literal set
+109c109
+<  * `'text'` and `'blob'` both shape as plain strings - a CSV field is always
+---
+>  * `'text'` and `'blob'` both shape as plain strings — a CSV field is always
+113c113
+<  * `'json'` accepts any JSON value via {@link jsonShape}.
+---
+>  * `'json'` accepts any JSON value through {@link jsonShape}.
+135c135
+<  * Given a `string`, runs the parser to build the {@link CSVTable} - a
+---
+>  * Given a `string`, runs the parser to build the {@link CSVTable} — a
+139c139
+<  * a {@link CSVTable}, the table is adopted AS-IS and is NOT re-validated -
+---
+>  * a {@link CSVTable}, the table is adopted AS-IS and is NOT re-validated —
+146c146
+<  * @example
+---
+>  * @example Parse and query
+148c148,151
+<  * import { createCSV } from '@src/core'
+---
+>  * import { createCSV } from '@orkestrel/csv'
+>  *
+>  * const csv = createCSV('name,age\nAda,36\nGrace,85', { infer: true })
+>  * csv.table // { columns: ['name', 'age'], rows: [{ name: 'Ada', age: 36 }, { name: 'Grace', age: 85 }] }
+150,151c153,154
+<  * const csv = createCSV('a,b\n1,2', { infer: true })
+<  * csv.rows // [{ a: 1, b: 2 }]
+---
+>  * const ada = csv.find((row) => row.name === 'Ada') // Row | undefined
+>  * const adults = csv.filter((row) => Number(row.age) >= 40) // readonly Row[]
+158c161
+<  * {@link Row} - a guard, coercing parser, JSON Schema, and seeded generator
+---
+>  * {@link Row} — a guard, coercing parser, JSON Schema, and seeded generator
+163c166
+<  * (never imported here) - the returned contract's `schema` is structurally
+---
+>  * (never imported here) — the returned contract's `schema` is structurally
+189,191c192,194
+<  *   adopted AS-IS and is NOT re-validated - a caller adopting an untrusted
+<  *   value should gate it with a guard first; `errors` is empty in that case.
+<  * - **Immutable.** {@link map} never mutates the stored table - it returns a
+---
+>  *   adopted AS-IS and is NOT re-validated — a caller adopting an untrusted
+>  *   value must gate it with a guard first; `errors` is empty in that case.
+>  * - **Immutable.** {@link map} never mutates the stored table — it returns a
+244c247
+<      * instance - they describe the source parse, which `map` does not repeat
+---
+>      * instance — they describe the source parse, which `map` does not repeat
+267c270
+<      * (source order) - a fresh, pull-based source per call.
+---
+>      * (source order) — a fresh, pull-based source per call.
+281c284
+<      * Returns the stored {@link CSVTable} - the JSON-serializable projection.
+---
+>      * Returns the stored {@link CSVTable} — the JSON-serializable projection.
+284c287
+<      * @remarks `JSON.stringify(csv)` therefore emits `{ columns, rows }` - the
+---
+>      * @remarks `JSON.stringify(csv)` therefore emits `{ columns, rows }` — the
+311c314
+<  * Represents an error surfaced by the CSV layer - either thrown for a
+---
+>  * Represents an error surfaced by the CSV layer — either thrown for a
+338c341
+<  * Represents a parsed, queryable CSV document - the typed {@link CSVTable}
+---
+>  * Represents a parsed, queryable CSV document — the typed {@link CSVTable}
+340,346d342
+<  *
+<  * @remarks
+<  * **Immutable.** {@link CSVInterface.map} never mutates the stored table - it
+<  * returns a NEW {@link CSVInterface} instance. **Traversal order.** `find` /
+<  * `filter` / `reduce` iterate `rows` in table order. **`stream`.** Returns a
+<  * web-standard `ReadableStream` over the rows - a fresh, pull-based source
+<  * per call.
+355c351,354
+<     /** Finds the first row matching `predicate`. */
+---
+>     /**
+>      * Finds the first row matching `predicate`, called with each row and its
+>      * index in table order.
+>      */
+357c356,359
+<     /** Collects every row matching `predicate`. */
+---
+>     /**
+>      * Collects every row matching `predicate`, called with each row and its
+>      * index in table order.
+>      */
+359c361,364
+<     /** Rewrites every row (copy-on-write) and returns a new {@link CSVInterface}. */
+---
+>     /**
+>      * Rewrites every row (copy-on-write) and returns a new
+>      * {@link CSVInterface}, never mutating this one.
+>      */
+361c366
+<     /** Folds the rows, in table order, into an accumulator. */
+---
+>     /** Folds the rows, in table order, into an accumulator through `callback`. */
+365,366c370,372
+<      * order) - a lazy, pull-based, backpressure-respecting source. A fresh,
+<      * independently-replayable stream every call; never mutates the table.
+---
+>      * order) — a lazy, pull-based, backpressure-respecting source that enqueues
+>      * one row per `pull`. A fresh, independently-replayable stream every call;
+>      * never mutates the table.
+369c375
+<     /** Returns the stored {@link CSVTable} - the JSON-serializable projection. */
+---
+>     /** Returns the stored {@link CSVTable} — the JSON-serializable projection. */
+376c382
+<  * Represents the result of a full parse - the assembled {@link CSVTable} plus
+---
+>  * Represents the result of a full parse — the assembled {@link CSVTable} plus
+387c393
+<  * Represents a parsed CSV table - the typed rows plus the column order they
+---
+>  * Represents a parsed CSV table — the typed rows plus the column order they
+399c405
+<  * JSON-serializable projection - an ordered `columns` list of strings plus
+---
+>  * JSON-serializable projection — an ordered `columns` list of strings plus
+420,422c426,428
+< export declare const csvTableShape: ObjectShape<{
+<     columns: ArrayShape<StringShape>;
+<     rows: ArrayShape<ObjectShape<Record<never, never>, JSONShape>>;
+---
+> export declare const csvTableShape: ObjectShape<    {
+> columns: ArrayShape<StringShape>;
+> rows: ArrayShape<ObjectShape<Record<never, never>, JSONShape>>;
+427,428c433,436
+<  * which has no default) - what `parseCSV` uses for any option left
+<  * unspecified.
+---
+>  * which has no default) — what `parseCSV` uses for any option left
+>  * unspecified: `{ delimiter: ',', quote: '"', escape: 'double', header: true,
+>  * blanks: true, trim: false, ragged: 'collect', infer: false, limit: 0,
+>  * strict: false }`.
+438,439c446,449
+<  * which has no default) - what `renderCSV` uses for any option left
+<  * unspecified.
+---
+>  * which has no default) — what `renderCSV` uses for any option left
+>  * unspecified: `{ delimiter: ',', quote: '"', escape: 'double', newline:
+>  * '\r\n', header: true, quotes: 'minimal', blank: '', sanitize: true, bom:
+>  * false }`.
+444c454
+<  * Derives a column order from a plain row list - the first-seen union of
+---
+>  * Derives a column order from a plain row list — the first-seen union of
+458c468
+<  * Resolves a table's header from its raw records - disambiguates the first
+---
+>  * Resolves a table's header from its raw records — disambiguates the first
+463c473
+<  * `header: true` disambiguates via {@link uniqueColumns}, collecting
+---
+>  * `header: true` disambiguates through {@link uniqueColumns}, collecting
+484c494
+<  * values across all rows (excluding `undefined`/empty-string cells) - the
+---
+>  * values across all rows (excluding `undefined`/empty-string cells) — the
+490c500
+<  * column has no non-empty cells; the string-inferred type (via
+---
+>  * column has no non-empty cells; the string-inferred type (through
+510c520
+<  * `key` names the primary-key column the export is keyed by - one of the
+---
+>  * `key` names the primary-key column the export is keyed by — one of the
+521c531
+<  * Represents one scanned field - a single {@link RawField} the tokenizer
+---
+>  * Represents one scanned field — a single {@link RawField} the tokenizer
+535c545
+<  * Represents the result of resolving a header record - the disambiguated
+---
+>  * Represents the result of resolving a header record — the disambiguated
+552c562
+<  * string values - never `'json'` or `'blob'` (those require an explicit
+---
+>  * string values — never `'json'` or `'blob'` (those require an explicit
+575c585
+<  * Applies whole-column type inference to a built row set - per column, infers
+---
+>  * Applies whole-column type inference to a built row set — per column, infers
+577c587
+<  * that type via {@link coerceInferred}.
+---
+>  * that type through {@link coerceInferred}.
+581c591
+<  * (there is nothing to coerce). Copy-on-write - `rows` is never mutated;
+---
+>  * (there is nothing to coerce). Copy-on-write — `rows` is never mutated;
+596c606
+<  * Matches a canonical integer only - an optional leading `-`, no leading
+---
+>  * Matches a canonical integer only — an optional leading `-`, no leading
+644c654
+<  * Determines whether an arbitrary value is a valid {@link CSVTable} - an
+---
+>  * Determines whether an arbitrary value is a valid {@link CSVTable} — an
+648c658
+<  * Total: never throws, even on cyclic or pathologically deep input - every
+---
+>  * Total: never throws, even on cyclic or pathologically deep input — every
+652,653c662,663
+<  * and a null-prototype object (`Object.create(null)`) - the shape the CSV
+<  * parser deliberately produces for parsed rows - while rejecting arrays,
+---
+>  * and a null-prototype object (`Object.create(null)`) — the shape the CSV
+>  * parser deliberately produces for parsed rows — while rejecting arrays,
+674c684
+<  * TypeScript limitation with readonly arrays) - an explicit type predicate
+---
+>  * TypeScript limitation with readonly arrays) — an explicit type predicate
+683,685c693,695
+<  * Sets the maximum number of {@link CSVError}s collected into a parse result -
+<  * once reached, error collection stops (earlier records already parsed are
+<  * kept, later malformations are silently no longer recorded).
+---
+>  * Sets the maximum number of {@link CSVError}s collected into a parse result,
+>  * `100` — once reached, error collection stops (earlier records already
+>  * parsed are kept, later malformations are silently no longer recorded).
+691c701
+<  * policy respects - a field containing the delimiter, the quote character,
+---
+>  * policy respects — a field containing the delimiter, the quote character,
+708c718
+<  * {@link QuoteStyle} and the sanitize `+` / `-` exemption - like
+---
+>  * {@link QuoteStyle} and the sanitize `+` / `-` exemption — like
+714c724
+<  * Parses a raw cell string into a strict boolean - `undefined` for anything
+---
+>  * Parses a raw cell string into a strict boolean — `undefined` for anything
+735c745
+<  * Parses `input` into a typed {@link CSVParseResult} - header mapping,
+---
+>  * Parses `input` into a typed {@link CSVParseResult} — header mapping,
+744c754
+<  * `options.limit` caps the number of DATA records - the header record (when
+---
+>  * `options.limit` caps the number of DATA records — the header record (when
+746c756
+<  * the FIRST error is discovered - a tokenizer error immediately after
+---
+>  * the FIRST error is discovered — a tokenizer error immediately after
+749c759
+<  * found while iterating the body in record order - instead of scanning to
+---
+>  * found while iterating the body in record order — instead of scanning to
+753c763
+<  * discovery order - never sorted.
+---
+>  * discovery order — never sorted.
+769c779
+<  * Parses a raw cell string into a canonical integer - `undefined` for anything
+---
+>  * Parses a raw cell string into a canonical integer — `undefined` for anything
+796c806
+<  * (`"`); `escape` how an embedded quote is written inside a quoted field -
+---
+>  * (`"`); `escape` how an embedded quote is written inside a quoted field —
+801c811
+<  * `blanks` whether a blank line becomes an empty row (`true`) - a line of
+---
+>  * `blanks` whether a blank line becomes an empty row (`true`) — a line of
+805c815
+<  * differs from the header is handled - padded/truncated to fit with the
+---
+>  * differs from the header is handled — padded/truncated to fit with the
+808c818
+<  * are coerced to their inferred type - integer, real, boolean - instead of
+---
+>  * are coerced to their inferred type — integer, real, boolean — instead of
+828c838
+<  * Parses a raw cell string into a canonical decimal (or integer) - `undefined`
+---
+>  * Parses a raw cell string into a canonical decimal (or integer) — `undefined`
+850c860
+<  * Represents a cursor position in a parsed source text - relative to the
+---
+>  * Represents a cursor position in a parsed source text — relative to the
+868c878,879
+<  * `ParseOptions.header` is `false`, or a header field is empty - 1-based.
+---
+>  * `ParseOptions.header` is `false`, or a header field is empty — 1-based,
+>  * `'column'`.
+873c884
+<  * Implements the `'minimal'` {@link QuoteStyle} - quotes a field only when
+---
+>  * Implements the `'minimal'` {@link QuoteStyle} — quotes a field only when
+889c900
+<  * Implements the `'nonnumeric'` {@link QuoteStyle} - quotes every field whose
+---
+>  * Implements the `'nonnumeric'` {@link QuoteStyle} — quotes every field whose
+905c916
+< /** Names the renderer's quoting policy - which fields get wrapped in quotes. */
+---
+> /** Names the renderer's quoting policy — which fields get wrapped in quotes. */
+926c937
+<   * Represents one raw parsed field - the value exactly as it appeared in a
+---
+>   * Represents one raw parsed field — the value exactly as it appeared in a
+932c943
+<   * from one that was empty because nothing was written at all - a distinction
+---
+>   * from one that was empty because nothing was written at all — a distinction
+943c954
+<   * Represents one raw parsed record - its ordered {@link RawField}s plus where
+---
+>   * Represents one raw parsed record — its ordered {@link RawField}s plus where
+958c969
+<   * Splits `input` into raw, un-mapped {@link RawRecord}s - the tokenizer phase
+---
+>   * Splits `input` into raw, un-mapped {@link RawRecord}s — the tokenizer phase
+967c978
+<   * further malformations are silently no longer recorded - each leaf still
+---
+>   * further malformations are silently no longer recorded — each leaf still
+973c984
+<   * `ragged`, `infer`, and `strict` are ignored here - they apply only in
+---
+>   * `ragged`, `infer`, and `strict` are ignored here — they apply only in
+986c997
+<   * Matches a canonical decimal only - an optional leading `-`, an integer
+---
+>   * Matches a canonical decimal only — an optional leading `-`, an integer
+994c1005
+<   * Represents one scanned record - a single {@link RawRecord} the tokenizer
+---
+>   * Represents one scanned record — a single {@link RawRecord} the tokenizer
+1008c1019
+<   * Represents the result of the record-splitting phase - every
+---
+>   * Represents the result of the record-splitting phase — every
+1025,1026c1036,1037
+<   * default to `options.columns`, or the source table's own `columns`, or -
+<   * for a plain row list - {@link deriveColumns}'s first-seen key union. No
+---
+>   * default to `options.columns`, or the source table's own `columns`, or —
+>   * for a plain row list — {@link deriveColumns}'s first-seen key union. No
+1052c1063
+<   * keys across all rows; `quotes` the quoting policy - `'minimal'` quotes
+---
+>   * keys across all rows; `quotes` the quoting policy — `'minimal'` quotes
+1075c1086
+<   * Renders one row to one delimited line - serializes every column's cell,
+---
+>   * Renders one row to one delimited line — serializes every column's cell,
+1094c1105
+<   * table-building helper takes - {@link ParseOptions} with every member
+---
+>   * table-building helper takes — {@link ParseOptions} with every member
+1105c1116
+<   * rendering helper takes - {@link RenderOptions} with every member defaulted
+---
+>   * rendering helper takes — {@link RenderOptions} with every member defaulted
+1115c1126
+<   * @returns The resolved options (`comment` stays optional - it has no default)
+---
+>   * @returns The resolved options (`comment` stays optional — it has no default)
+1132c1143
+<   * @returns The resolved options (`columns` stays optional - it has no default)
+---
+>   * @returns The resolved options (`columns` stays optional — it has no default)
+1144c1155
+<  /** Represents a CSV row - a plain record of column values keyed by column name. */
+---
+>  /** Represents a CSV row — a plain record of column values keyed by column name. */
+1149,1150c1160,1161
+<   * {@link Row} - either the row, or the error that excluded it (see
+<   * `ParseOptions.ragged`).
+---
+>   * {@link Row} — the row, the error that excluded it, or both when
+>   * `ParseOptions.ragged` is `'collect'`.
+1162c1173
+<   * guidance).
+---
+>   * guidance), `"'"`.
+1168c1179
+<   * formula-triggering - a field starting with any of these is prefixed with a
+---
+>   * formula-triggering — a field starting with any of these is prefixed with a
+1175c1186
+<   * CSV-injection guidance) - a field starting with a formula-triggering
+---
+>   * CSV-injection guidance) — a field starting with a formula-triggering
+1193c1204
+<   * Consumes exactly one line break (CRLF, bare LF, or bare CR) at `position` -
+---
+>   * Consumes exactly one line break (CRLF, bare LF, or bare CR) at `position` —
+1210c1221
+<   * starting there - through the end of that line INCLUDING its break (or
+---
+>   * starting there — through the end of that line INCLUDING its break (or
+1228c1239
+<   * Scans one field at `position` - dispatches to {@link scanQuoted} when the
+---
+>   * Scans one field at `position` — dispatches to {@link scanQuoted} when the
+1239c1250
+<   * Scans one quoted field starting at `position` - `position` must be AT the
+---
+>   * Scans one quoted field starting at `position` — `position` must be AT the
+1266,1267c1277,1278
+<   * Scans one full record at `position` - fields separated by
+<   * `options.delimiter`, ending at a break (consumed via {@link scanBreak}) or
+---
+>   * Scans one full record at `position` — fields separated by
+>   * `options.delimiter`, ending at a break (consumed through {@link scanBreak}) or
+1284c1295
+<   * Scans one unquoted field starting at `position` - content runs until the
+---
+>   * Scans one unquoted field starting at `position` — content runs until the
+1306c1317
+<   * Serializes one cell value to its rendered text - the renderer's stringify
+---
+>   * Serializes one cell value to its rendered text — the renderer's stringify
+1326c1337
+<   * counter (`name` -> `name_2`, `name_3`, …) - see {@link uniqueName}.
+---
+>   * counter (`name` → `name_2`, `name_3`, …) — see {@link uniqueName}, `'_'`.
+1332c1343
+<   * {@link CSVInterface.export} - the unit of schema exchange across
+---
+>   * {@link CSVInterface.export} — the unit of schema exchange across
+1349c1360
+<   * Disambiguates a header's column names deterministically - an empty (or
+---
+>   * Disambiguates a header's column names deterministically — an empty (or
+1365c1376
+<   * Disambiguates a single column name against the names already taken - the
+---
+>   * Disambiguates a single column name against the names already taken — the
+1382c1393
+<   * Wraps `field` in quotes, escaping per `options.escape` - the shared
+---
+>   * Wraps `field` in quotes, escaping per `options.escape` — the shared
+1389c1400
+<   * @returns `field` wrapped in `options.quote`, escaped per `options.escape` -
+---
+>   * @returns `field` wrapped in `options.quote`, escaped per `options.escape` —
+diff -r '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-csv-next-final-pack/baseline/package/dist/src/core/index.d.ts /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-csv-next-final-pack/extract/package/dist/src/core/index.d.ts
+2,5c2,5
+< import { ContractInterface } from '@orkestrel/contract';
+< import { ContractShape } from '@orkestrel/contract';
+< import { Guard } from '@orkestrel/contract';
+< import { JSONSchema } from '@orkestrel/contract';
+---
+> import type { ContractInterface } from '@orkestrel/contract';
+> import type { ContractShape } from '@orkestrel/contract';
+> import type { Guard } from '@orkestrel/contract';
+> import type { JSONSchema } from '@orkestrel/contract';
+26c26
+<  * and {@link resolveRenderOptions} - each must be exactly one character, they
+---
+>  * and {@link resolveRenderOptions} — each must be exactly one character, they
+40c40
+< /** Names the UTF-8 byte-order-mark character, prepended when `RenderOptions.bom` is `true`. */
+---
+> /** Names the UTF-8 byte-order-mark character, `'\uFEFF'`, prepended when `RenderOptions.bom` is `true`. */
+43c43
+< /** Names the canonical serialized form of the boolean `false`. */
+---
+> /** Names the canonical serialized form of the boolean `false` — the string `'false'`. */
+46c46
+< /** Names the canonical serialized form of the boolean `true`. */
+---
+> /** Names the canonical serialized form of the boolean `true` — the string `'true'`. */
+62c62
+<  * @returns The built row and/or the ragged-row error
+---
+>  * @returns The built row, and the ragged-row error when one occurs
+73c73
+<  * Coerces one string cell to `type`'s typed representation - the exhaustive
+---
+>  * Coerces one string cell to `type`'s typed representation — the exhaustive
+78c78
+<  * `'blob'` - those are never inferred, and pass through unchanged like
+---
+>  * `'blob'` — those are never inferred, and pass through unchanged like
+80c80
+<  * @returns The typed value, via {@link parseInteger} / {@link parseReal} /
+---
+>  * @returns The typed value, through {@link parseInteger} / {@link parseReal} /
+87c87
+<  * Represents a CSV's declared columns - a map of column name to its value
+---
+>  * Represents a CSV's declared columns — a map of column name to its value
+92c92
+<  * imported) - the same shape map can describe a CSV's columns and a
+---
+>  * imported) — the same shape map can describe a CSV's columns and a
+98c98
+<  * Names a portable storage type for a column - the same literal set
+---
+>  * Names a portable storage type for a column — the same literal set
+109c109
+<  * `'text'` and `'blob'` both shape as plain strings - a CSV field is always
+---
+>  * `'text'` and `'blob'` both shape as plain strings — a CSV field is always
+113c113
+<  * `'json'` accepts any JSON value via {@link jsonShape}.
+---
+>  * `'json'` accepts any JSON value through {@link jsonShape}.
+135c135
+<  * Given a `string`, runs the parser to build the {@link CSVTable} - a
+---
+>  * Given a `string`, runs the parser to build the {@link CSVTable} — a
+139c139
+<  * a {@link CSVTable}, the table is adopted AS-IS and is NOT re-validated -
+---
+>  * a {@link CSVTable}, the table is adopted AS-IS and is NOT re-validated —
+146c146
+<  * @example
+---
+>  * @example Parse and query
+148c148,151
+<  * import { createCSV } from '@src/core'
+---
+>  * import { createCSV } from '@orkestrel/csv'
+>  *
+>  * const csv = createCSV('name,age\nAda,36\nGrace,85', { infer: true })
+>  * csv.table // { columns: ['name', 'age'], rows: [{ name: 'Ada', age: 36 }, { name: 'Grace', age: 85 }] }
+150,151c153,154
+<  * const csv = createCSV('a,b\n1,2', { infer: true })
+<  * csv.rows // [{ a: 1, b: 2 }]
+---
+>  * const ada = csv.find((row) => row.name === 'Ada') // Row | undefined
+>  * const adults = csv.filter((row) => Number(row.age) >= 40) // readonly Row[]
+158c161
+<  * {@link Row} - a guard, coercing parser, JSON Schema, and seeded generator
+---
+>  * {@link Row} — a guard, coercing parser, JSON Schema, and seeded generator
+163c166
+<  * (never imported here) - the returned contract's `schema` is structurally
+---
+>  * (never imported here) — the returned contract's `schema` is structurally
+189,191c192,194
+<  *   adopted AS-IS and is NOT re-validated - a caller adopting an untrusted
+<  *   value should gate it with a guard first; `errors` is empty in that case.
+<  * - **Immutable.** {@link map} never mutates the stored table - it returns a
+---
+>  *   adopted AS-IS and is NOT re-validated — a caller adopting an untrusted
+>  *   value must gate it with a guard first; `errors` is empty in that case.
+>  * - **Immutable.** {@link map} never mutates the stored table — it returns a
+244c247
+<      * instance - they describe the source parse, which `map` does not repeat
+---
+>      * instance — they describe the source parse, which `map` does not repeat
+267c270
+<      * (source order) - a fresh, pull-based source per call.
+---
+>      * (source order) — a fresh, pull-based source per call.
+281c284
+<      * Returns the stored {@link CSVTable} - the JSON-serializable projection.
+---
+>      * Returns the stored {@link CSVTable} — the JSON-serializable projection.
+284c287
+<      * @remarks `JSON.stringify(csv)` therefore emits `{ columns, rows }` - the
+---
+>      * @remarks `JSON.stringify(csv)` therefore emits `{ columns, rows }` — the
+311c314
+<  * Represents an error surfaced by the CSV layer - either thrown for a
+---
+>  * Represents an error surfaced by the CSV layer — either thrown for a
+338c341
+<  * Represents a parsed, queryable CSV document - the typed {@link CSVTable}
+---
+>  * Represents a parsed, queryable CSV document — the typed {@link CSVTable}
+340,346d342
+<  *
+<  * @remarks
+<  * **Immutable.** {@link CSVInterface.map} never mutates the stored table - it
+<  * returns a NEW {@link CSVInterface} instance. **Traversal order.** `find` /
+<  * `filter` / `reduce` iterate `rows` in table order. **`stream`.** Returns a
+<  * web-standard `ReadableStream` over the rows - a fresh, pull-based source
+<  * per call.
+355c351,354
+<     /** Finds the first row matching `predicate`. */
+---
+>     /**
+>      * Finds the first row matching `predicate`, called with each row and its
+>      * index in table order.
+>      */
+357c356,359
+<     /** Collects every row matching `predicate`. */
+---
+>     /**
+>      * Collects every row matching `predicate`, called with each row and its
+>      * index in table order.
+>      */
+359c361,364
+<     /** Rewrites every row (copy-on-write) and returns a new {@link CSVInterface}. */
+---
+>     /**
+>      * Rewrites every row (copy-on-write) and returns a new
+>      * {@link CSVInterface}, never mutating this one.
+>      */
+361c366
+<     /** Folds the rows, in table order, into an accumulator. */
+---
+>     /** Folds the rows, in table order, into an accumulator through `callback`. */
+365,366c370,372
+<      * order) - a lazy, pull-based, backpressure-respecting source. A fresh,
+<      * independently-replayable stream every call; never mutates the table.
+---
+>      * order) — a lazy, pull-based, backpressure-respecting source that enqueues
+>      * one row per `pull`. A fresh, independently-replayable stream every call;
+>      * never mutates the table.
+369c375
+<     /** Returns the stored {@link CSVTable} - the JSON-serializable projection. */
+---
+>     /** Returns the stored {@link CSVTable} — the JSON-serializable projection. */
+376c382
+<  * Represents the result of a full parse - the assembled {@link CSVTable} plus
+---
+>  * Represents the result of a full parse — the assembled {@link CSVTable} plus
+387c393
+<  * Represents a parsed CSV table - the typed rows plus the column order they
+---
+>  * Represents a parsed CSV table — the typed rows plus the column order they
+399c405
+<  * JSON-serializable projection - an ordered `columns` list of strings plus
+---
+>  * JSON-serializable projection — an ordered `columns` list of strings plus
+420,422c426,428
+< export declare const csvTableShape: ObjectShape<{
+<     columns: ArrayShape<StringShape>;
+<     rows: ArrayShape<ObjectShape<Record<never, never>, JSONShape>>;
+---
+> export declare const csvTableShape: ObjectShape<    {
+> columns: ArrayShape<StringShape>;
+> rows: ArrayShape<ObjectShape<Record<never, never>, JSONShape>>;
+427,428c433,436
+<  * which has no default) - what `parseCSV` uses for any option left
+<  * unspecified.
+---
+>  * which has no default) — what `parseCSV` uses for any option left
+>  * unspecified: `{ delimiter: ',', quote: '"', escape: 'double', header: true,
+>  * blanks: true, trim: false, ragged: 'collect', infer: false, limit: 0,
+>  * strict: false }`.
+438,439c446,449
+<  * which has no default) - what `renderCSV` uses for any option left
+<  * unspecified.
+---
+>  * which has no default) — what `renderCSV` uses for any option left
+>  * unspecified: `{ delimiter: ',', quote: '"', escape: 'double', newline:
+>  * '\r\n', header: true, quotes: 'minimal', blank: '', sanitize: true, bom:
+>  * false }`.
+444c454
+<  * Derives a column order from a plain row list - the first-seen union of
+---
+>  * Derives a column order from a plain row list — the first-seen union of
+458c468
+<  * Resolves a table's header from its raw records - disambiguates the first
+---
+>  * Resolves a table's header from its raw records — disambiguates the first
+463c473
+<  * `header: true` disambiguates via {@link uniqueColumns}, collecting
+---
+>  * `header: true` disambiguates through {@link uniqueColumns}, collecting
+484c494
+<  * values across all rows (excluding `undefined`/empty-string cells) - the
+---
+>  * values across all rows (excluding `undefined`/empty-string cells) — the
+490c500
+<  * column has no non-empty cells; the string-inferred type (via
+---
+>  * column has no non-empty cells; the string-inferred type (through
+510c520
+<  * `key` names the primary-key column the export is keyed by - one of the
+---
+>  * `key` names the primary-key column the export is keyed by — one of the
+521c531
+<  * Represents one scanned field - a single {@link RawField} the tokenizer
+---
+>  * Represents one scanned field — a single {@link RawField} the tokenizer
+535c545
+<  * Represents the result of resolving a header record - the disambiguated
+---
+>  * Represents the result of resolving a header record — the disambiguated
+552c562
+<  * string values - never `'json'` or `'blob'` (those require an explicit
+---
+>  * string values — never `'json'` or `'blob'` (those require an explicit
+575c585
+<  * Applies whole-column type inference to a built row set - per column, infers
+---
+>  * Applies whole-column type inference to a built row set — per column, infers
+577c587
+<  * that type via {@link coerceInferred}.
+---
+>  * that type through {@link coerceInferred}.
+581c591
+<  * (there is nothing to coerce). Copy-on-write - `rows` is never mutated;
+---
+>  * (there is nothing to coerce). Copy-on-write — `rows` is never mutated;
+596c606
+<  * Matches a canonical integer only - an optional leading `-`, no leading
+---
+>  * Matches a canonical integer only — an optional leading `-`, no leading
+644c654
+<  * Determines whether an arbitrary value is a valid {@link CSVTable} - an
+---
+>  * Determines whether an arbitrary value is a valid {@link CSVTable} — an
+648c658
+<  * Total: never throws, even on cyclic or pathologically deep input - every
+---
+>  * Total: never throws, even on cyclic or pathologically deep input — every
+652,653c662,663
+<  * and a null-prototype object (`Object.create(null)`) - the shape the CSV
+<  * parser deliberately produces for parsed rows - while rejecting arrays,
+---
+>  * and a null-prototype object (`Object.create(null)`) — the shape the CSV
+>  * parser deliberately produces for parsed rows — while rejecting arrays,
+674c684
+<  * TypeScript limitation with readonly arrays) - an explicit type predicate
+---
+>  * TypeScript limitation with readonly arrays) — an explicit type predicate
+683,685c693,695
+<  * Sets the maximum number of {@link CSVError}s collected into a parse result -
+<  * once reached, error collection stops (earlier records already parsed are
+<  * kept, later malformations are silently no longer recorded).
+---
+>  * Sets the maximum number of {@link CSVError}s collected into a parse result,
+>  * `100` — once reached, error collection stops (earlier records already
+>  * parsed are kept, later malformations are silently no longer recorded).
+691c701
+<  * policy respects - a field containing the delimiter, the quote character,
+---
+>  * policy respects — a field containing the delimiter, the quote character,
+708c718
+<  * {@link QuoteStyle} and the sanitize `+` / `-` exemption - like
+---
+>  * {@link QuoteStyle} and the sanitize `+` / `-` exemption — like
+714c724
+<  * Parses a raw cell string into a strict boolean - `undefined` for anything
+---
+>  * Parses a raw cell string into a strict boolean — `undefined` for anything
+735c745
+<  * Parses `input` into a typed {@link CSVParseResult} - header mapping,
+---
+>  * Parses `input` into a typed {@link CSVParseResult} — header mapping,
+744c754
+<  * `options.limit` caps the number of DATA records - the header record (when
+---
+>  * `options.limit` caps the number of DATA records — the header record (when
+746c756
+<  * the FIRST error is discovered - a tokenizer error immediately after
+---
+>  * the FIRST error is discovered — a tokenizer error immediately after
+749c759
+<  * found while iterating the body in record order - instead of scanning to
+---
+>  * found while iterating the body in record order — instead of scanning to
+753c763
+<  * discovery order - never sorted.
+---
+>  * discovery order — never sorted.
+769c779
+<  * Parses a raw cell string into a canonical integer - `undefined` for anything
+---
+>  * Parses a raw cell string into a canonical integer — `undefined` for anything
+796c806
+<  * (`"`); `escape` how an embedded quote is written inside a quoted field -
+---
+>  * (`"`); `escape` how an embedded quote is written inside a quoted field —
+801c811
+<  * `blanks` whether a blank line becomes an empty row (`true`) - a line of
+---
+>  * `blanks` whether a blank line becomes an empty row (`true`) — a line of
+805c815
+<  * differs from the header is handled - padded/truncated to fit with the
+---
+>  * differs from the header is handled — padded/truncated to fit with the
+808c818
+<  * are coerced to their inferred type - integer, real, boolean - instead of
+---
+>  * are coerced to their inferred type — integer, real, boolean — instead of
+828c838
+<  * Parses a raw cell string into a canonical decimal (or integer) - `undefined`
+---
+>  * Parses a raw cell string into a canonical decimal (or integer) — `undefined`
+850c860
+<  * Represents a cursor position in a parsed source text - relative to the
+---
+>  * Represents a cursor position in a parsed source text — relative to the
+868c878,879
+<  * `ParseOptions.header` is `false`, or a header field is empty - 1-based.
+---
+>  * `ParseOptions.header` is `false`, or a header field is empty — 1-based,
+>  * `'column'`.
+873c884
+<  * Implements the `'minimal'` {@link QuoteStyle} - quotes a field only when
+---
+>  * Implements the `'minimal'` {@link QuoteStyle} — quotes a field only when
+889c900
+<  * Implements the `'nonnumeric'` {@link QuoteStyle} - quotes every field whose
+---
+>  * Implements the `'nonnumeric'` {@link QuoteStyle} — quotes every field whose
+905c916
+< /** Names the renderer's quoting policy - which fields get wrapped in quotes. */
+---
+> /** Names the renderer's quoting policy — which fields get wrapped in quotes. */
+926c937
+<   * Represents one raw parsed field - the value exactly as it appeared in a
+---
+>   * Represents one raw parsed field — the value exactly as it appeared in a
+932c943
+<   * from one that was empty because nothing was written at all - a distinction
+---
+>   * from one that was empty because nothing was written at all — a distinction
+943c954
+<   * Represents one raw parsed record - its ordered {@link RawField}s plus where
+---
+>   * Represents one raw parsed record — its ordered {@link RawField}s plus where
+958c969
+<   * Splits `input` into raw, un-mapped {@link RawRecord}s - the tokenizer phase
+---
+>   * Splits `input` into raw, un-mapped {@link RawRecord}s — the tokenizer phase
+967c978
+<   * further malformations are silently no longer recorded - each leaf still
+---
+>   * further malformations are silently no longer recorded — each leaf still
+973c984
+<   * `ragged`, `infer`, and `strict` are ignored here - they apply only in
+---
+>   * `ragged`, `infer`, and `strict` are ignored here — they apply only in
+986c997
+<   * Matches a canonical decimal only - an optional leading `-`, an integer
+---
+>   * Matches a canonical decimal only — an optional leading `-`, an integer
+994c1005
+<   * Represents one scanned record - a single {@link RawRecord} the tokenizer
+---
+>   * Represents one scanned record — a single {@link RawRecord} the tokenizer
+1008c1019
+<   * Represents the result of the record-splitting phase - every
+---
+>   * Represents the result of the record-splitting phase — every
+1025,1026c1036,1037
+<   * default to `options.columns`, or the source table's own `columns`, or -
+<   * for a plain row list - {@link deriveColumns}'s first-seen key union. No
+---
+>   * default to `options.columns`, or the source table's own `columns`, or —
+>   * for a plain row list — {@link deriveColumns}'s first-seen key union. No
+1052c1063
+<   * keys across all rows; `quotes` the quoting policy - `'minimal'` quotes
+---
+>   * keys across all rows; `quotes` the quoting policy — `'minimal'` quotes
+1075c1086
+<   * Renders one row to one delimited line - serializes every column's cell,
+---
+>   * Renders one row to one delimited line — serializes every column's cell,
+1094c1105
+<   * table-building helper takes - {@link ParseOptions} with every member
+---
+>   * table-building helper takes — {@link ParseOptions} with every member
+1105c1116
+<   * rendering helper takes - {@link RenderOptions} with every member defaulted
+---
+>   * rendering helper takes — {@link RenderOptions} with every member defaulted
+1115c1126
+<   * @returns The resolved options (`comment` stays optional - it has no default)
+---
+>   * @returns The resolved options (`comment` stays optional — it has no default)
+1132c1143
+<   * @returns The resolved options (`columns` stays optional - it has no default)
+---
+>   * @returns The resolved options (`columns` stays optional — it has no default)
+1144c1155
+<  /** Represents a CSV row - a plain record of column values keyed by column name. */
+---
+>  /** Represents a CSV row — a plain record of column values keyed by column name. */
+1149,1150c1160,1161
+<   * {@link Row} - either the row, or the error that excluded it (see
+<   * `ParseOptions.ragged`).
+---
+>   * {@link Row} — the row, the error that excluded it, or both when
+>   * `ParseOptions.ragged` is `'collect'`.
+1162c1173
+<   * guidance).
+---
+>   * guidance), `"'"`.
+1168c1179
+<   * formula-triggering - a field starting with any of these is prefixed with a
+---
+>   * formula-triggering — a field starting with any of these is prefixed with a
+1175c1186
+<   * CSV-injection guidance) - a field starting with a formula-triggering
+---
+>   * CSV-injection guidance) — a field starting with a formula-triggering
+1193c1204
+<   * Consumes exactly one line break (CRLF, bare LF, or bare CR) at `position` -
+---
+>   * Consumes exactly one line break (CRLF, bare LF, or bare CR) at `position` —
+1210c1221
+<   * starting there - through the end of that line INCLUDING its break (or
+---
+>   * starting there — through the end of that line INCLUDING its break (or
+1228c1239
+<   * Scans one field at `position` - dispatches to {@link scanQuoted} when the
+---
+>   * Scans one field at `position` — dispatches to {@link scanQuoted} when the
+1239c1250
+<   * Scans one quoted field starting at `position` - `position` must be AT the
+---
+>   * Scans one quoted field starting at `position` — `position` must be AT the
+1266,1267c1277,1278
+<   * Scans one full record at `position` - fields separated by
+<   * `options.delimiter`, ending at a break (consumed via {@link scanBreak}) or
+---
+>   * Scans one full record at `position` — fields separated by
+>   * `options.delimiter`, ending at a break (consumed through {@link scanBreak}) or
+1284c1295
+<   * Scans one unquoted field starting at `position` - content runs until the
+---
+>   * Scans one unquoted field starting at `position` — content runs until the
+1306c1317
+<   * Serializes one cell value to its rendered text - the renderer's stringify
+---
+>   * Serializes one cell value to its rendered text — the renderer's stringify
+1326c1337
+<   * counter (`name` -> `name_2`, `name_3`, …) - see {@link uniqueName}.
+---
+>   * counter (`name` → `name_2`, `name_3`, …) — see {@link uniqueName}, `'_'`.
+1332c1343
+<   * {@link CSVInterface.export} - the unit of schema exchange across
+---
+>   * {@link CSVInterface.export} — the unit of schema exchange across
+1349c1360
+<   * Disambiguates a header's column names deterministically - an empty (or
+---
+>   * Disambiguates a header's column names deterministically — an empty (or
+1365c1376
+<   * Disambiguates a single column name against the names already taken - the
+---
+>   * Disambiguates a single column name against the names already taken — the
+1382c1393
+<   * Wraps `field` in quotes, escaping per `options.escape` - the shared
+---
+>   * Wraps `field` in quotes, escaping per `options.escape` — the shared
+1389c1400
+<   * @returns `field` wrapped in `options.quote`, escaped per `options.escape` -
+---
+>   * @returns `field` wrapped in `options.quote`, escaped per `options.escape` —
+diff -r '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-csv-next-final-pack/baseline/package/dist/src/core/index.js /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-csv-next-final-pack/extract/package/dist/src/core/index.js
+3c3
+< /** Names the UTF-8 byte-order-mark character, prepended when `RenderOptions.bom` is `true`. */
+---
+> /** Names the UTF-8 byte-order-mark character, `'\uFEFF'`, prepended when `RenderOptions.bom` is `true`. */
+7,8c7,10
+< * which has no default) - what `parseCSV` uses for any option left
+< * unspecified.
+---
+> * which has no default) — what `parseCSV` uses for any option left
+> * unspecified: `{ delimiter: ',', quote: '"', escape: 'double', header: true,
+> * blanks: true, trim: false, ragged: 'collect', infer: false, limit: 0,
+> * strict: false }`.
+28,29c30,33
+< * which has no default) - what `renderCSV` uses for any option left
+< * unspecified.
+---
+> * which has no default) — what `renderCSV` uses for any option left
+> * unspecified: `{ delimiter: ',', quote: '"', escape: 'double', newline:
+> * '\r\n', header: true, quotes: 'minimal', blank: '', sanitize: true, bom:
+> * false }`.
+44c48
+< * formula-triggering - a field starting with any of these is prefixed with a
+---
+> * formula-triggering — a field starting with any of these is prefixed with a
+58c62,63
+< * `ParseOptions.header` is `false`, or a header field is empty - 1-based.
+---
+> * `ParseOptions.header` is `false`, or a header field is empty — 1-based,
+> * `'column'`.
+64c69
+< * guidance).
+---
+> * guidance), `"'"`.
+69c74
+< * counter (`name` -> `name_2`, `name_3`, …) - see {@link uniqueName}.
+---
+> * counter (`name` → `name_2`, `name_3`, …) — see {@link uniqueName}, `'_'`.
+73c78
+< * Matches a canonical integer only - an optional leading `-`, no leading
+---
+> * Matches a canonical integer only — an optional leading `-`, no leading
+79c84
+< * Matches a canonical decimal only - an optional leading `-`, an integer
+---
+> * Matches a canonical decimal only — an optional leading `-`, an integer
+87c92
+< * {@link QuoteStyle} and the sanitize `+` / `-` exemption - like
+---
+> * {@link QuoteStyle} and the sanitize `+` / `-` exemption — like
+91c96
+< /** Names the canonical serialized form of the boolean `true`. */
+---
+> /** Names the canonical serialized form of the boolean `true` — the string `'true'`. */
+93c98
+< /** Names the canonical serialized form of the boolean `false`. */
+---
+> /** Names the canonical serialized form of the boolean `false` — the string `'false'`. */
+96,98c101,103
+< * Sets the maximum number of {@link CSVError}s collected into a parse result -
+< * once reached, error collection stops (earlier records already parsed are
+< * kept, later malformations are silently no longer recorded).
+---
+> * Sets the maximum number of {@link CSVError}s collected into a parse result,
+> * `100` — once reached, error collection stops (earlier records already
+> * parsed are kept, later malformations are silently no longer recorded).
+104c109
+< * Represents an error surfaced by the CSV layer - either thrown for a
+---
+> * Represents an error surfaced by the CSV layer — either thrown for a
+148c153
+< * and {@link resolveRenderOptions} - each must be exactly one character, they
+---
+> * and {@link resolveRenderOptions} — each must be exactly one character, they
+177c182
+< * @returns The resolved options (`comment` stays optional - it has no default)
+---
+> * @returns The resolved options (`comment` stays optional — it has no default)
+202c207
+< * @returns The resolved options (`columns` stays optional - it has no default)
+---
+> * @returns The resolved options (`columns` stays optional — it has no default)
+222c227
+< * Disambiguates a single column name against the names already taken - the
+---
+> * Disambiguates a single column name against the names already taken — the
+247c252
+< * Disambiguates a header's column names deterministically - an empty (or
+---
+> * Disambiguates a header's column names deterministically — an empty (or
+272c277
+< * CSV-injection guidance) - a field starting with a formula-triggering
+---
+> * CSV-injection guidance) — a field starting with a formula-triggering
+294c299
+< * Serializes one cell value to its rendered text - the renderer's stringify
+---
+> * Serializes one cell value to its rendered text — the renderer's stringify
+321c326
+< * Derives a column order from a plain row list - the first-seen union of
+---
+> * Derives a column order from a plain row list — the first-seen union of
+339c344
+< * policy respects - a field containing the delimiter, the quote character,
+---
+> * policy respects — a field containing the delimiter, the quote character,
+356c361
+< * Wraps `field` in quotes, escaping per `options.escape` - the shared
+---
+> * Wraps `field` in quotes, escaping per `options.escape` — the shared
+363c368
+< * @returns `field` wrapped in `options.quote`, escaped per `options.escape` -
+---
+> * @returns `field` wrapped in `options.quote`, escaped per `options.escape` —
+377c382
+< * Implements the `'minimal'` {@link QuoteStyle} - quotes a field only when
+---
+> * Implements the `'minimal'` {@link QuoteStyle} — quotes a field only when
+394c399
+< * Implements the `'nonnumeric'` {@link QuoteStyle} - quotes every field whose
+---
+> * Implements the `'nonnumeric'` {@link QuoteStyle} — quotes every field whose
+412c417
+< * Renders one row to one delimited line - serializes every column's cell,
+---
+> * Renders one row to one delimited line — serializes every column's cell,
+457c462
+< * TypeScript limitation with readonly arrays) - an explicit type predicate
+---
+> * TypeScript limitation with readonly arrays) — an explicit type predicate
+472,473c477,478
+< * default to `options.columns`, or the source table's own `columns`, or -
+< * for a plain row list - {@link deriveColumns}'s first-seen key union. No
+---
+> * default to `options.columns`, or the source table's own `columns`, or —
+> * for a plain row list — {@link deriveColumns}'s first-seen key union. No
+531c536
+< * Consumes exactly one line break (CRLF, bare LF, or bare CR) at `position` -
+---
+> * Consumes exactly one line break (CRLF, bare LF, or bare CR) at `position` —
+562c567
+< * starting there - through the end of that line INCLUDING its break (or
+---
+> * starting there — through the end of that line INCLUDING its break (or
+589c594
+< * Scans one unquoted field starting at `position` - content runs until the
+---
+> * Scans one unquoted field starting at `position` — content runs until the
+629c634
+< * Scans one quoted field starting at `position` - `position` must be AT the
+---
+> * Scans one quoted field starting at `position` — `position` must be AT the
+743c748
+< * Scans one field at `position` - dispatches to {@link scanQuoted} when the
+---
+> * Scans one field at `position` — dispatches to {@link scanQuoted} when the
+755,756c760,761
+< * Scans one full record at `position` - fields separated by
+< * `options.delimiter`, ending at a break (consumed via {@link scanBreak}) or
+---
+> * Scans one full record at `position` — fields separated by
+> * `options.delimiter`, ending at a break (consumed through {@link scanBreak}) or
+801c806
+< * Splits `input` into raw, un-mapped {@link RawRecord}s - the tokenizer phase
+---
+> * Splits `input` into raw, un-mapped {@link RawRecord}s — the tokenizer phase
+810c815
+< * further malformations are silently no longer recorded - each leaf still
+---
+> * further malformations are silently no longer recorded — each leaf still
+816c821
+< * `ragged`, `infer`, and `strict` are ignored here - they apply only in
+---
+> * `ragged`, `infer`, and `strict` are ignored here — they apply only in
+864c869
+< * Resolves a table's header from its raw records - disambiguates the first
+---
+> * Resolves a table's header from its raw records — disambiguates the first
+869c874
+< * `header: true` disambiguates via {@link uniqueColumns}, collecting
+---
+> * `header: true` disambiguates through {@link uniqueColumns}, collecting
+932c937
+< * @returns The built row and/or the ragged-row error
+---
+> * @returns The built row, and the ragged-row error when one occurs
+978c983
+< * Parses `input` into a typed {@link CSVParseResult} - header mapping,
+---
+> * Parses `input` into a typed {@link CSVParseResult} — header mapping,
+987c992
+< * `options.limit` caps the number of DATA records - the header record (when
+---
+> * `options.limit` caps the number of DATA records — the header record (when
+989c994
+< * the FIRST error is discovered - a tokenizer error immediately after
+---
+> * the FIRST error is discovered — a tokenizer error immediately after
+992c997
+< * found while iterating the body in record order - instead of scanning to
+---
+> * found while iterating the body in record order — instead of scanning to
+996c1001
+< * discovery order - never sorted.
+---
+> * discovery order — never sorted.
+1053c1058
+< * Parses a raw cell string into a canonical integer - `undefined` for anything
+---
+> * Parses a raw cell string into a canonical integer — `undefined` for anything
+1079c1084
+< * Parses a raw cell string into a canonical decimal (or integer) - `undefined`
+---
+> * Parses a raw cell string into a canonical decimal (or integer) — `undefined`
+1103c1108
+< * Parses a raw cell string into a strict boolean - `undefined` for anything
+---
+> * Parses a raw cell string into a strict boolean — `undefined` for anything
+1129c1134
+< * string values - never `'json'` or `'blob'` (those require an explicit
+---
+> * string values — never `'json'` or `'blob'` (those require an explicit
+1168c1173
+< * Coerces one string cell to `type`'s typed representation - the exhaustive
+---
+> * Coerces one string cell to `type`'s typed representation — the exhaustive
+1173c1178
+< * `'blob'` - those are never inferred, and pass through unchanged like
+---
+> * `'blob'` — those are never inferred, and pass through unchanged like
+1175c1180
+< * @returns The typed value, via {@link parseInteger} / {@link parseReal} /
+---
+> * @returns The typed value, through {@link parseInteger} / {@link parseReal} /
+1190c1195
+< * Applies whole-column type inference to a built row set - per column, infers
+---
+> * Applies whole-column type inference to a built row set — per column, infers
+1192c1197
+< * that type via {@link coerceInferred}.
+---
+> * that type through {@link coerceInferred}.
+1196c1201
+< * (there is nothing to coerce). Copy-on-write - `rows` is never mutated;
+---
+> * (there is nothing to coerce). Copy-on-write — `rows` is never mutated;
+1236c1241
+< * `'text'` and `'blob'` both shape as plain strings - a CSV field is always
+---
+> * `'text'` and `'blob'` both shape as plain strings — a CSV field is always
+1240c1245
+< * `'json'` accepts any JSON value via {@link jsonShape}.
+---
+> * `'json'` accepts any JSON value through {@link jsonShape}.
+1267c1272
+< * JSON-serializable projection - an ordered `columns` list of strings plus
+---
+> * JSON-serializable projection — an ordered `columns` list of strings plus
+1294c1299
+< * values across all rows (excluding `undefined`/empty-string cells) - the
+---
+> * values across all rows (excluding `undefined`/empty-string cells) — the
+1300c1305
+< * column has no non-empty cells; the string-inferred type (via
+---
+> * column has no non-empty cells; the string-inferred type (through
+1326c1331
+< * Determines whether an arbitrary value is a valid {@link CSVTable} - an
+---
+> * Determines whether an arbitrary value is a valid {@link CSVTable} — an
+1330c1335
+< * Total: never throws, even on cyclic or pathologically deep input - every
+---
+> * Total: never throws, even on cyclic or pathologically deep input — every
+1334,1335c1339,1340
+< * and a null-prototype object (`Object.create(null)`) - the shape the CSV
+< * parser deliberately produces for parsed rows - while rejecting arrays,
+---
+> * and a null-prototype object (`Object.create(null)`) — the shape the CSV
+> * parser deliberately produces for parsed rows — while rejecting arrays,
+1378,1380c1383,1385
+< *   adopted AS-IS and is NOT re-validated - a caller adopting an untrusted
+< *   value should gate it with a guard first; `errors` is empty in that case.
+< * - **Immutable.** {@link map} never mutates the stored table - it returns a
+---
+> *   adopted AS-IS and is NOT re-validated — a caller adopting an untrusted
+> *   value must gate it with a guard first; `errors` is empty in that case.
+> * - **Immutable.** {@link map} never mutates the stored table — it returns a
+1448c1453
+< 	* instance - they describe the source parse, which `map` does not repeat
+---
+> 	* instance — they describe the source parse, which `map` does not repeat
+1481c1486
+< 	* (source order) - a fresh, pull-based source per call.
+---
+> 	* (source order) — a fresh, pull-based source per call.
+1509c1514
+< 	* Returns the stored {@link CSVTable} - the JSON-serializable projection.
+---
+> 	* Returns the stored {@link CSVTable} — the JSON-serializable projection.
+1512c1517
+< 	* @remarks `JSON.stringify(csv)` therefore emits `{ columns, rows }` - the
+---
+> 	* @remarks `JSON.stringify(csv)` therefore emits `{ columns, rows }` — the
+1561c1566
+< * Given a `string`, runs the parser to build the {@link CSVTable} - a
+---
+> * Given a `string`, runs the parser to build the {@link CSVTable} — a
+1565c1570
+< * a {@link CSVTable}, the table is adopted AS-IS and is NOT re-validated -
+---
+> * a {@link CSVTable}, the table is adopted AS-IS and is NOT re-validated —
+1572c1577
+< * @example
+---
+> * @example Parse and query
+1574c1579,1582
+< * import { createCSV } from '@src/core'
+---
+> * import { createCSV } from '@orkestrel/csv'
+> *
+> * const csv = createCSV('name,age\nAda,36\nGrace,85', { infer: true })
+> * csv.table // { columns: ['name', 'age'], rows: [{ name: 'Ada', age: 36 }, { name: 'Grace', age: 85 }] }
+1576,1577c1584,1585
+< * const csv = createCSV('a,b\n1,2', { infer: true })
+< * csv.rows // [{ a: 1, b: 2 }]
+---
+> * const ada = csv.find((row) => row.name === 'Ada') // Row | undefined
+> * const adults = csv.filter((row) => Number(row.age) >= 40) // readonly Row[]
+1585c1593
+< * {@link Row} - a guard, coercing parser, JSON Schema, and seeded generator
+---
+> * {@link Row} — a guard, coercing parser, JSON Schema, and seeded generator
+1590c1598
+< * (never imported here) - the returned contract's `schema` is structurally
+---
+> * (never imported here) — the returned contract's `schema` is structurally

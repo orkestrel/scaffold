@@ -1,0 +1,284 @@
+diff -r -w -B '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-emitter-next-final-pack/baseline/package/dist/src/core/index.cjs /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-emitter-next-final-pack/extract/package/dist/src/core/index.cjs
+35,37c35,37
+< * Implements a typed synchronous event emitter — the foundational observable primitive of the
+< * codebase. Stateful entities OWN one as a `#emitter` field and expose it through
+< * `readonly emitter`; they never inherit from it.
+---
+> * Implements `EmitterInterface` over one listener `Set` per event, so every public method is
+> * precisely typed with no assertion. A stateful entity owns one as a `#emitter` field and
+> * exposes it through `readonly emitter`; it never inherits from it.
+48c48
+< *   surfaces (not just the first), and with no `error` handler a throw is swallowed
+---
+> *   surfaces (not only the first), and with no `error` handler a throw is swallowed
+51,52d50
+< * - **Per-event storage.** Listeners live in a per-event `Set`, so every public
+< *   method is precisely typed with no assertions.
+169c167,168
+< * Creates a typed event emitter — the foundational observable primitive.
+---
+> * Creates a typed synchronous event emitter and returns it as an `EmitterInterface<TMap>`,
+> * wiring the initial `on` hooks and the `error` handler its options carry.
+172,173c171
+< * Prefer this over `new Emitter(...)` at call sites that only need the interface.
+< * Entities that OWN an emitter construct `new Emitter(...)` for their `#emitter`
+---
+> * Entities that own an emitter construct `new Emitter(...)` for their `#emitter`
+181c179
+< * @example
+---
+> * @example Standalone emitter
+183c181
+< * import { createEmitter } from '@src/core'
+---
+> * import { createEmitter } from '@orkestrel/emitter'
+185,186c183,185
+< * type ClockEventMap = {
+< * 	tick: readonly [at: number]
+---
+> * type DownloadEventMap = {
+> * 	chunk: readonly [bytes: number]
+> * 	done: readonly []
+189,190c188,192
+< * const clock = createEmitter<ClockEventMap>({ on: { tick: (at) => log(at) } })
+< * clock.emit('tick', Date.now())
+---
+> * const emitter = createEmitter<DownloadEventMap>()
+> * emitter.on('chunk', (bytes) => accumulate(bytes))
+> * emitter.once('done', () => finish())
+> * emitter.emit('chunk', 1024)
+> * emitter.emit('done')
+diff -r -w -B '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-emitter-next-final-pack/baseline/package/dist/src/core/index.d.cts /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-emitter-next-final-pack/extract/package/dist/src/core/index.d.cts
+2c2,3
+<  * Creates a typed event emitter — the foundational observable primitive.
+---
+>  * Creates a typed synchronous event emitter and returns it as an `EmitterInterface<TMap>`,
+>  * wiring the initial `on` hooks and the `error` handler its options carry.
+5,6c6
+<  * Prefer this over `new Emitter(...)` at call sites that only need the interface.
+<  * Entities that OWN an emitter construct `new Emitter(...)` for their `#emitter`
+---
+>  * Entities that own an emitter construct `new Emitter(...)` for their `#emitter`
+14c14
+<  * @example
+---
+>  * @example Standalone emitter
+16c16
+<  * import { createEmitter } from '@src/core'
+---
+>  * import { createEmitter } from '@orkestrel/emitter'
+18,19c18,20
+<  * type ClockEventMap = {
+<  * 	tick: readonly [at: number]
+---
+>  * type DownloadEventMap = {
+>  * 	chunk: readonly [bytes: number]
+>  * 	done: readonly []
+22,23c23,27
+<  * const clock = createEmitter<ClockEventMap>({ on: { tick: (at) => log(at) } })
+<  * clock.emit('tick', Date.now())
+---
+>  * const emitter = createEmitter<DownloadEventMap>()
+>  * emitter.on('chunk', (bytes) => accumulate(bytes))
+>  * emitter.once('done', () => finish())
+>  * emitter.emit('chunk', 1024)
+>  * emitter.emit('done')
+29,31c33,35
+<  * Implements a typed synchronous event emitter — the foundational observable primitive of the
+<  * codebase. Stateful entities OWN one as a `#emitter` field and expose it through
+<  * `readonly emitter`; they never inherit from it.
+---
+>  * Implements `EmitterInterface` over one listener `Set` per event, so every public method is
+>  * precisely typed with no assertion. A stateful entity owns one as a `#emitter` field and
+>  * exposes it through `readonly emitter`; it never inherits from it.
+42c46
+<  *   surfaces (not just the first), and with no `error` handler a throw is swallowed
+---
+>  *   surfaces (not only the first), and with no `error` handler a throw is swallowed
+45,46d48
+<  * - **Per-event storage.** Listeners live in a per-event `Set`, so every public
+<  *   method is precisely typed with no assertions.
+79,80c81,82
+<  * Represents the emitter's OWN listener-error handler — invoked when a listener throws during
+<  * `emit`, with the caught error and the (stringified) event name.
+---
+>  * Represents the emitter's own listener-error handler — the `error` option, invoked when a
+>  * listener throws during `emit`, with the caught error and the stringified event name.
+103,105c105,107
+<  * Represents a typed synchronous event emitter — the foundational observable primitive.
+<  * Entities OWN one as `#emitter` and expose `readonly emitter`; they never
+<  * inherit from it.
+---
+>  * Represents the contract a consumer of an emitter holds: the `destroyed` reading, the
+>  * `on` / `once` / `off` registration trio, the synchronous `emit`, and the
+>  * `count` / `clear` / `destroy` set that reports on and releases listeners.
+126c128,129
+<      * Removes a listener registered for an event, including one registered through `once`.
+---
+>      * Removes a listener registered for an event by its original handler, including one
+>      * registered through `once`.
+133,134c136,137
+<      * Invokes an event's listeners synchronously, in registration order. Does nothing after
+<      * `destroy()`.
+---
+>      * Invokes an event's listeners synchronously, in registration order, isolating a throw.
+>      * Does nothing after `destroy()`.
+137,139c140,142
+<      * Every listener runs: a throw is isolated and routed to {@link EmitterOptions.error},
+<      * never rethrown. The listeners are snapshotted before the loop, so one registered
+<      * during this call does not run in it.
+---
+>      * Every listener runs, and an isolated throw routes to {@link EmitterOptions.error}
+>      * rather than being rethrown. The listeners are snapshotted before the loop, so one
+>      * registered during this call does not run in it.
+146c149
+<      * Returns the live listener count.
+---
+>      * Returns the live listener count, for one event or across every event.
+153c156,157
+<      * Drops registered listeners, leaving the emitter usable and `destroyed` unchanged.
+---
+>      * Drops registered listeners, for one event or every event, leaving the emitter usable and
+>      * `destroyed` unchanged.
+diff -r -w -B '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-emitter-next-final-pack/baseline/package/dist/src/core/index.d.ts /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-emitter-next-final-pack/extract/package/dist/src/core/index.d.ts
+2c2,3
+<  * Creates a typed event emitter — the foundational observable primitive.
+---
+>  * Creates a typed synchronous event emitter and returns it as an `EmitterInterface<TMap>`,
+>  * wiring the initial `on` hooks and the `error` handler its options carry.
+5,6c6
+<  * Prefer this over `new Emitter(...)` at call sites that only need the interface.
+<  * Entities that OWN an emitter construct `new Emitter(...)` for their `#emitter`
+---
+>  * Entities that own an emitter construct `new Emitter(...)` for their `#emitter`
+14c14
+<  * @example
+---
+>  * @example Standalone emitter
+16c16
+<  * import { createEmitter } from '@src/core'
+---
+>  * import { createEmitter } from '@orkestrel/emitter'
+18,19c18,20
+<  * type ClockEventMap = {
+<  * 	tick: readonly [at: number]
+---
+>  * type DownloadEventMap = {
+>  * 	chunk: readonly [bytes: number]
+>  * 	done: readonly []
+22,23c23,27
+<  * const clock = createEmitter<ClockEventMap>({ on: { tick: (at) => log(at) } })
+<  * clock.emit('tick', Date.now())
+---
+>  * const emitter = createEmitter<DownloadEventMap>()
+>  * emitter.on('chunk', (bytes) => accumulate(bytes))
+>  * emitter.once('done', () => finish())
+>  * emitter.emit('chunk', 1024)
+>  * emitter.emit('done')
+29,31c33,35
+<  * Implements a typed synchronous event emitter — the foundational observable primitive of the
+<  * codebase. Stateful entities OWN one as a `#emitter` field and expose it through
+<  * `readonly emitter`; they never inherit from it.
+---
+>  * Implements `EmitterInterface` over one listener `Set` per event, so every public method is
+>  * precisely typed with no assertion. A stateful entity owns one as a `#emitter` field and
+>  * exposes it through `readonly emitter`; it never inherits from it.
+42c46
+<  *   surfaces (not just the first), and with no `error` handler a throw is swallowed
+---
+>  *   surfaces (not only the first), and with no `error` handler a throw is swallowed
+45,46d48
+<  * - **Per-event storage.** Listeners live in a per-event `Set`, so every public
+<  *   method is precisely typed with no assertions.
+79,80c81,82
+<  * Represents the emitter's OWN listener-error handler — invoked when a listener throws during
+<  * `emit`, with the caught error and the (stringified) event name.
+---
+>  * Represents the emitter's own listener-error handler — the `error` option, invoked when a
+>  * listener throws during `emit`, with the caught error and the stringified event name.
+103,105c105,107
+<  * Represents a typed synchronous event emitter — the foundational observable primitive.
+<  * Entities OWN one as `#emitter` and expose `readonly emitter`; they never
+<  * inherit from it.
+---
+>  * Represents the contract a consumer of an emitter holds: the `destroyed` reading, the
+>  * `on` / `once` / `off` registration trio, the synchronous `emit`, and the
+>  * `count` / `clear` / `destroy` set that reports on and releases listeners.
+126c128,129
+<      * Removes a listener registered for an event, including one registered through `once`.
+---
+>      * Removes a listener registered for an event by its original handler, including one
+>      * registered through `once`.
+133,134c136,137
+<      * Invokes an event's listeners synchronously, in registration order. Does nothing after
+<      * `destroy()`.
+---
+>      * Invokes an event's listeners synchronously, in registration order, isolating a throw.
+>      * Does nothing after `destroy()`.
+137,139c140,142
+<      * Every listener runs: a throw is isolated and routed to {@link EmitterOptions.error},
+<      * never rethrown. The listeners are snapshotted before the loop, so one registered
+<      * during this call does not run in it.
+---
+>      * Every listener runs, and an isolated throw routes to {@link EmitterOptions.error}
+>      * rather than being rethrown. The listeners are snapshotted before the loop, so one
+>      * registered during this call does not run in it.
+146c149
+<      * Returns the live listener count.
+---
+>      * Returns the live listener count, for one event or across every event.
+153c156,157
+<      * Drops registered listeners, leaving the emitter usable and `destroyed` unchanged.
+---
+>      * Drops registered listeners, for one event or every event, leaving the emitter usable and
+>      * `destroyed` unchanged.
+diff -r -w -B '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-emitter-next-final-pack/baseline/package/dist/src/core/index.js /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-emitter-next-final-pack/extract/package/dist/src/core/index.js
+34,36c34,36
+< * Implements a typed synchronous event emitter — the foundational observable primitive of the
+< * codebase. Stateful entities OWN one as a `#emitter` field and expose it through
+< * `readonly emitter`; they never inherit from it.
+---
+> * Implements `EmitterInterface` over one listener `Set` per event, so every public method is
+> * precisely typed with no assertion. A stateful entity owns one as a `#emitter` field and
+> * exposes it through `readonly emitter`; it never inherits from it.
+47c47
+< *   surfaces (not just the first), and with no `error` handler a throw is swallowed
+---
+> *   surfaces (not only the first), and with no `error` handler a throw is swallowed
+50,51d49
+< * - **Per-event storage.** Listeners live in a per-event `Set`, so every public
+< *   method is precisely typed with no assertions.
+168c166,167
+< * Creates a typed event emitter — the foundational observable primitive.
+---
+> * Creates a typed synchronous event emitter and returns it as an `EmitterInterface<TMap>`,
+> * wiring the initial `on` hooks and the `error` handler its options carry.
+171,172c170
+< * Prefer this over `new Emitter(...)` at call sites that only need the interface.
+< * Entities that OWN an emitter construct `new Emitter(...)` for their `#emitter`
+---
+> * Entities that own an emitter construct `new Emitter(...)` for their `#emitter`
+180c178
+< * @example
+---
+> * @example Standalone emitter
+182c180
+< * import { createEmitter } from '@src/core'
+---
+> * import { createEmitter } from '@orkestrel/emitter'
+184,185c182,184
+< * type ClockEventMap = {
+< * 	tick: readonly [at: number]
+---
+> * type DownloadEventMap = {
+> * 	chunk: readonly [bytes: number]
+> * 	done: readonly []
+188,189c187,191
+< * const clock = createEmitter<ClockEventMap>({ on: { tick: (at) => log(at) } })
+< * clock.emit('tick', Date.now())
+---
+> * const emitter = createEmitter<DownloadEventMap>()
+> * emitter.on('chunk', (bytes) => accumulate(bytes))
+> * emitter.once('done', () => finish())
+> * emitter.emit('chunk', 1024)
+> * emitter.emit('done')

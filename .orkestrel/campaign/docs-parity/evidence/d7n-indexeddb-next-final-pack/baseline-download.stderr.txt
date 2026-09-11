@@ -1,0 +1,19 @@
+npm notice
+npm notice 📦  @orkestrel/indexeddb@0.0.10
+npm notice Tarball Contents
+npm notice 1.1kB LICENSE
+npm notice 992B README.md
+npm notice 42.8kB dist/src/browser/index.d.ts
+npm notice 36.7kB dist/src/browser/index.js
+npm notice 74.2kB dist/src/browser/index.js.map
+npm notice 3.8kB package.json
+npm notice Tarball Details
+npm notice name: @orkestrel/indexeddb
+npm notice version: 0.0.10
+npm notice filename: orkestrel-indexeddb-0.0.10.tgz
+npm notice package size: 38.6 kB
+npm notice unpacked size: 159.5 kB
+npm notice shasum: b2f2bf872fde00b4a3f1a356890ea832570c27a3
+npm notice integrity: sha512-fzEdLDlhreK+4[...]/8ymQLP9FJYXg==
+npm notice total files: 6
+npm notice

@@ -1,0 +1,10 @@
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/csv
+
+··································
+
+ Test Files  1 passed (1)
+      Tests  34 passed (34)
+   Start at  20:10:42
+   Duration  698ms (transform 103ms, setup 31ms, import 508ms, tests 16ms, environment 0ms)
+

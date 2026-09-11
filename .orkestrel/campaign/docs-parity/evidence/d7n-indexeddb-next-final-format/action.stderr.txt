@@ -1,0 +1,2 @@
+npm notice run @orkestrel/indexeddb@0.0.11 format
+npm notice run oxfmt --config .oxfmtrc.json --write .

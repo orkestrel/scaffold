@@ -1,0 +1,10 @@
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/emitter
+
+·······················
+
+ Test Files  1 passed (1)
+      Tests  23 passed (23)
+   Start at  20:17:03
+   Duration  514ms (transform 55ms, setup 16ms, import 338ms, tests 7ms, environment 0ms)
+

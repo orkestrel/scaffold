@@ -1,0 +1,22 @@
+npm notice
+npm notice 📦  @orkestrel/csv@0.0.6
+npm notice Tarball Contents
+npm notice 1.1kB LICENSE
+npm notice 3.5kB README.md
+npm notice 56.8kB dist/src/core/index.cjs
+npm notice 84.2kB dist/src/core/index.cjs.map
+npm notice 55.9kB dist/src/core/index.d.cts
+npm notice 55.9kB dist/src/core/index.d.ts
+npm notice 55.0kB dist/src/core/index.js
+npm notice 83.9kB dist/src/core/index.js.map
+npm notice 3.7kB package.json
+npm notice Tarball Details
+npm notice name: @orkestrel/csv
+npm notice version: 0.0.6
+npm notice filename: orkestrel-csv-0.0.6.tgz
+npm notice package size: 101.9 kB
+npm notice unpacked size: 400.1 kB
+npm notice shasum: be1e3b3230e46c4e037edab3988cb350b5303982
+npm notice integrity: sha512-8pp/C0bELbEQC[...]gT6OvJuJa/4Bg==
+npm notice total files: 9
+npm notice

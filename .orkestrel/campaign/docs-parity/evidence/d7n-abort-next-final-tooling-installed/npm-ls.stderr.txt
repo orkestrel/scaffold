@@ -1,0 +1,4 @@
+npm error code ELSPROBLEMS
+npm error invalid: @orkestrel/guide@0.0.18 C:\Users\mikes\WebstormProjects\abort\node_modules\@orkestrel\guide
+npm error invalid: @orkestrel/scaffold@0.0.64 C:\Users\mikes\WebstormProjects\abort\node_modules\@orkestrel\scaffold
+npm error A complete log of this run can be found in: C:\Users\mikes\scoop\persist\nodejs-lts\cache\_logs\2026-09-11T00_34_49_808Z-debug-0.log

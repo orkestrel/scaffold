@@ -1,0 +1,274 @@
+diff -r -w -B '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-indexeddb-next-final-pack/baseline/package/dist/src/browser/index.d.ts /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-indexeddb-next-final-pack/extract/package/dist/src/browser/index.d.ts
+17c17
+<  * Creates a browser-native IndexedDB database over a store schema.
+---
+>  * Creates a typed, lazily-connecting IndexedDB database over a store schema.
+29c29
+<  * @example
+---
+>  * @example Feature-detecting before opening a database
+31c31
+<  * import { createIndexedDBDatabase, rangeFromKey } from '@orkestrel/indexeddb'
+---
+>  * import { createIndexedDBDatabase, rangeFromKey, supportsIndexedDB } from '@orkestrel/indexeddb'
+32a33
+>  * if (supportsIndexedDB()) {
+41a43
+>  * }
+72c74
+<  * Represents a secondary index on a store.
+---
+>  * Represents the declaration of a secondary index — its name, key path, and uniqueness.
+129c131,132
+<  * Represents a promisified value cursor for streaming and in-place mutation.
+---
+>  * Represents the contract of a promisified value cursor for streaming and in-place
+>  * mutation.
+151a155
+>     /** Advances to the next record, or to the next record at or after a given key. */
+167a172
+>     /** Skips forward a given number of records. */
+168a174
+>     /** Overwrites the record at the current position. */
+169a176
+>     /** Deletes the record at the current position. */
+233c240
+<  * Represents a browser-native IndexedDB database.
+---
+>  * Represents the contract of a typed, lazily-connecting IndexedDB database.
+236c243
+<  * A typed, Promise-based handle over `IDBDatabase`. It connects lazily on first
+---
+>  * A Promise-based handle over `IDBDatabase`. It connects lazily on first
+252a260
+>     /** Opens the connection, lazily and idempotently, waiting through a native block. */
+253a262
+>     /** Returns a typed handle for one declared store. */
+254a264
+>     /** Runs a readonly scope over one or more stores. */
+255a266
+>     /** Runs a readwrite scope, committing when it resolves and rolling back when it throws. */
+256a268
+>     /** Retires the handle permanently, releasing the connection and any later open result. */
+257a270
+>     /** Closes and deletes the database, waiting through a native block. */
+297c310,311
+<  * Represents an error thrown by the IndexedDB wrapper.
+---
+>  * Represents an error thrown by the IndexedDB wrapper, carrying a machine-readable
+>  * `code` and an optional `context` beside the native cause.
+300,304c314,318
+<  * Carries an {@link IndexedDBErrorCode} and the originating native error as the
+<  * standard `cause`. Construct it directly for wrapper-lifecycle faults; the
+<  * internal `wrapError` maps a native `DOMException` to the right code at the
+<  * request boundary. Narrow a caught value with {@link isIndexedDBError}, this
+<  * package's own guard.
+---
+>  * The `code` is an {@link IndexedDBErrorCode}, and the originating native error
+>  * rides as the standard `cause`. Construct it directly for wrapper-lifecycle
+>  * faults; the internal `wrapError` maps a native `DOMException` to the right code
+>  * at the request boundary. Narrow a caught value with {@link isIndexedDBError},
+>  * this package's own guard.
+341c355
+<  * (native `ReadOnlyError` — a write attempted on a `readonly` transaction, e.g.
+---
+>  * (native `ReadOnlyError` — a write attempted on a `readonly` transaction, for example
+396c410
+<  * Represents a secondary index — read access by an indexed key path.
+---
+>  * Represents the contract of a secondary index — read access by an indexed key path.
+410a425
+>     /** Reads the first record for an index key, or `undefined` on a miss. */
+412a428
+>     /** Reads the first record for an index key, throwing `NOT_FOUND` on a miss. */
+414a431
+>     /** Reads the matching records over an optional index-key range. */
+415a433
+>     /** Lists the primary keys of the matching records over an optional index-key range. */
+416a435
+>     /** Reads the primary key an index key maps to, or `undefined` on a miss. */
+417a437
+>     /** Checks whether an index key is present. */
+419a440
+>     /** Counts the matching records within an optional index-key range. */
+420a442
+>     /** Opens a read-only cursor over the matches, or resolves `null` where none match. */
+425,426c447,448
+<  * Represents the keyed record surface of an object store, in or out of an explicit
+<  * transaction.
+---
+>  * Represents the contract the object-store surfaces share — the keyed record verbs, in
+>  * or out of an explicit transaction.
+441a464
+>     /** Reads the record at a primary key, or `undefined` on a miss. */
+443a467
+>     /** Reads the record at a primary key, throwing `NOT_FOUND` on a miss. */
+445a470
+>     /** Reads the stored records over an optional key range. */
+446a472
+>     /** Lists the stored primary keys over an optional key range. */
+447a474
+>     /** Checks whether a primary key is present. */
+449a477
+>     /** Counts the stored records within an optional key range. */
+450a479
+>     /** Writes a record, overwriting whatever the key already holds. */
+452a482
+>     /** Writes a record, throwing `CONSTRAINT` where the key is already taken. */
+454a485
+>     /** Deletes the record at a primary key. */
+456a488
+>     /** Deletes every record the store holds. */
+457a490
+>     /** Opens a cursor over the records, or resolves `null` where none match. */
+520,521c553,554
+<  * Represents an object store — the keyed record surface plus the store's own schema
+<  * metadata and `index` accessor.
+---
+>  * Represents the contract of an object store — the keyed record surface plus the
+>  * store's own schema metadata and `index` accessor.
+534a568
+>     /** Returns a read-only view over one of the store's declared secondary indexes. */
+539c573,574
+<  * Represents an explicit transaction over one or more stores.
+---
+>  * Represents an explicit transaction over one or more stores, with typed scope-bound
+>  * store access.
+542,546c577,581
+<  * Wraps `IDBTransaction` with state tracking and typed, scope-bound store access.
+<  * Constructed by the database's `read` / `write`, which await its completion (or
+<  * roll it back on a throw). `store` reaches a store within the transaction's scope;
+<  * `abort` rolls back; `commit` flushes early (the scope's completion commits
+<  * otherwise). `active` is true until commit or abort; `finished` is its complement.
+---
+>  * Wraps `IDBTransaction` with state tracking. Constructed by the database's
+>  * `read` / `write`, which await its completion (or roll it back on a throw).
+>  * `store` reaches a store within the transaction's scope; `abort` rolls back;
+>  * `commit` flushes early (the scope's completion commits otherwise). `active` is
+>  * true until commit or abort; `finished` is its complement.
+576c611
+<  * Represents an explicit transaction over one or more stores.
+---
+>  * Represents the contract of an explicit transaction over one or more stores.
+592a628
+>     /** Returns a scope-bound store, which must be one of the transaction's own stores. */
+593a630
+>     /** Rolls every write in the transaction back, throwing `INACTIVE` where it has already finished. */
+594a632
+>     /** Flushes the transaction early, throwing `INACTIVE` where it has already finished. */
+599c637,638
+<  * Represents an object store bound to an explicit transaction.
+---
+>  * Represents an object store bound to an explicit transaction, with no implicit
+>  * per-call commit.
+645c684
+<  * Represents an object store bound to an explicit transaction.
+---
+>  * Represents the contract of an object store bound to an explicit transaction.
+664c703
+<  * so `stores.names` already reflects any store just created from the declared
+---
+>  * so `stores.names` already reflects any store created from the declared
+699a739
+>     /** Creates a secondary index on an existing store, within the upgrade transaction. */
+700a741
+>     /** Removes a named secondary index from a store, within the upgrade transaction. */
+709,710c750,751
+<  * the stores the database holds at that moment, so it already reflects any store
+<  * the built-in create-missing pass just created. `create` / `drop` add or remove
+---
+>  * the stores the database holds at that moment, so it reflects any store
+>  * the built-in create-missing pass already created. `create` / `drop` add or remove
+725a767
+>     /** Creates a store from its definition, within the upgrade transaction. */
+726a769
+>     /** Deletes a store and everything it holds, within the upgrade transaction. */
+727a771
+>     /** Returns a transaction-bound store for migrating data during the upgrade. */
+789c833
+<  * Builds a key range starting at one key.
+---
+>  * Builds a key range starting at and including one key.
+805c849
+<  * Builds a key range ending at one key.
+---
+>  * Builds a key range ending at and including one key.
+829c873,874
+<  * Reads many records from a store or index over an optional key range.
+---
+>  * Reads many records from a store or index over an optional key range, narrowing each
+>  * to a `Row`.
+855c900,901
+<  * Represents a store's schema.
+---
+>  * Represents the declaration of one object store — its key path, key generation, and
+>  * secondary indexes.
+diff -r -w -B '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-indexeddb-next-final-pack/baseline/package/dist/src/browser/index.js /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-indexeddb-next-final-pack/extract/package/dist/src/browser/index.js
+27c27,28
+< * Represents an error thrown by the IndexedDB wrapper.
+---
+> * Represents an error thrown by the IndexedDB wrapper, carrying a machine-readable
+> * `code` and an optional `context` beside the native cause.
+30,34c31,35
+< * Carries an {@link IndexedDBErrorCode} and the originating native error as the
+< * standard `cause`. Construct it directly for wrapper-lifecycle faults; the
+< * internal `wrapError` maps a native `DOMException` to the right code at the
+< * request boundary. Narrow a caught value with {@link isIndexedDBError}, this
+< * package's own guard.
+---
+> * The `code` is an {@link IndexedDBErrorCode}, and the originating native error
+> * rides as the standard `cause`. Construct it directly for wrapper-lifecycle
+> * faults; the internal `wrapError` maps a native `DOMException` to the right code
+> * at the request boundary. Narrow a caught value with {@link isIndexedDBError},
+> * this package's own guard.
+168c169,170
+< * Reads many records from a store or index over an optional key range.
+---
+> * Reads many records from a store or index over an optional key range, narrowing each
+> * to a `Row`.
+229c231
+< * Builds a key range starting at one key.
+---
+> * Builds a key range starting at and including one key.
+247c249
+< * Builds a key range ending at one key.
+---
+> * Builds a key range ending at and including one key.
+470c472,473
+< * Represents an object store bound to an explicit transaction.
+---
+> * Represents an object store bound to an explicit transaction, with no implicit
+> * per-call commit.
+672c675,676
+< * Represents an explicit transaction over one or more stores.
+---
+> * Represents an explicit transaction over one or more stores, with typed scope-bound
+> * store access.
+675,679c679,683
+< * Wraps `IDBTransaction` with state tracking and typed, scope-bound store access.
+< * Constructed by the database's `read` / `write`, which await its completion (or
+< * roll it back on a throw). `store` reaches a store within the transaction's scope;
+< * `abort` rolls back; `commit` flushes early (the scope's completion commits
+< * otherwise). `active` is true until commit or abort; `finished` is its complement.
+---
+> * Wraps `IDBTransaction` with state tracking. Constructed by the database's
+> * `read` / `write`, which await its completion (or roll it back on a throw).
+> * `store` reaches a store within the transaction's scope; `abort` rolls back;
+> * `commit` flushes early (the scope's completion commits otherwise). `active` is
+> * true until commit or abort; `finished` is its complement.
+983c987
+< * Creates a browser-native IndexedDB database over a store schema.
+---
+> * Creates a typed, lazily-connecting IndexedDB database over a store schema.
+995c999
+< * @example
+---
+> * @example Feature-detecting before opening a database
+997c1001
+< * import { createIndexedDBDatabase, rangeFromKey } from '@orkestrel/indexeddb'
+---
+> * import { createIndexedDBDatabase, rangeFromKey, supportsIndexedDB } from '@orkestrel/indexeddb'
+998a1003
+> * if (supportsIndexedDB()) {
+1007a1013
+> * }

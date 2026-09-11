@@ -1,0 +1,82 @@
+Checking formatting...
+
+All matched files use the correct format.
+Finished in 1052ms on 53 files using 16 threads.
+vite v8.3.0 building client environment for production...
+transforming...
+✓ 13 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/browser/index.js  36.97 kB │ gzip: 9.53 kB │ map: 73.78 kB
+
+✓ built in 106ms
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/indexeddb
+
+·································································································································
+
+ Test Files  9 passed (9)
+      Tests  129 passed (129)
+   Start at  20:40:26
+   Duration  2.22s (transform 0ms, setup 239ms, import 96ms, tests 226ms, environment 0ms)
+
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/indexeddb
+
+·················································································-·········
+
+ Test Files  1 passed (1)
+      Tests  90 passed | 1 skipped (91)
+   Start at  20:40:29
+   Duration  802ms (transform 81ms, setup 27ms, import 103ms, tests 518ms, environment 0ms)
+
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/indexeddb
+
+·········································································································································································stdout | tests/config.test.ts > configuration helpers > rolls one face into a single declaration and rewrites its core specifier
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+
+··-stdout | tests/config.test.ts > configuration helpers > rolls one face into a single declaration and rewrites its core specifier
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+
+·
+
+ Test Files  1 passed (1)
+      Tests  172 passed | 1 skipped (173)
+   Start at  20:40:31
+   Duration  3.22s (transform 198ms, setup 28ms, import 757ms, tests 2.28s, environment 0ms)
+
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/indexeddb
+
+············
+
+ Test Files  2 passed (2)
+      Tests  12 passed (12)
+   Start at  20:40:35
+   Duration  389ms (transform 120ms, setup 52ms, import 225ms, tests 9ms, environment 0ms)
+
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/indexeddb
+
+·······························
+
+ Test Files  1 passed (1)
+      Tests  31 passed (31)
+   Start at  20:40:36
+   Duration  513ms (transform 36ms, setup 28ms, import 333ms, tests 9ms, environment 0ms)
+
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/indexeddb
+
+······--·
+
+ Test Files  1 passed (1)
+      Tests  7 passed | 2 skipped (9)
+   Start at  20:40:38
+   Duration  5.79s (transform 68ms, setup 28ms, import 2.22s, tests 3.39s, environment 0ms)
+
