@@ -4,6 +4,31 @@ Written 2026-09-08T03:35Z and revised 2026-09-08T04:05Z at the owner's request, 
 
 ## Where everything is pushed
 
+### Current runtime release preparation
+
+Use this table for the active release layer. Later preparation narratives and the
+original campaign table are historical; their open states do not override this table.
+The Guide-only root prompt.txt is consumed. Replace it only when this layer is ready.
+
+| Package | Pending version | Current preparation state |
+| --- | --- | --- |
+| browser | 0.0.16 | Closed; clean canonical main at 02611821d50b0508b237684455944cccda31f696; campaign/main pushed; owner upload pending |
+| interpret | 0.0.13 | Closed; clean canonical main at a3928145fac315c3b8ef43e53ebffc4442a49286; campaign/main pushed; owner upload pending |
+| lsp | 0.0.7 | Closed; clean canonical main at d6543822b6c88201a96af0293123b2c3c60dc6b8; campaign/main pushed; owner upload pending |
+| qualifier | 0.0.14 | Registry gates/pack and release review accepted; final main closure pending |
+| queue | 0.0.13 | Registry gates/pack passed; release review and main closure pending |
+| rater | 0.0.14 | Registry gates/pack passed; release review and main closure pending |
+| relation | 0.0.12 | Native source reviews returned PASS; preparation gates passed; source landing and registry visit pending |
+| sea | 0.0.15 | Native source reviews returned PASS; preparation gates passed; source landing and registry visit pending |
+| server | 0.0.19 | Native source reviews returned PASS; preparation gates passed; source landing and registry visit pending |
+| terminal | 0.0.15 | Source correction returned; direct native gate passed; correction review and final preparation pending |
+| workspace | 0.0.8 | Native source reviews returned PASS; preparation gates running; source landing and registry visit pending |
+
+Scaffold's root-generated catalog and Guide development manifest edits remain
+uncommitted. Measure their rebuilt output before ruling on that tooling follow-up.
+
+### Published and historical campaign context
+
 Scaffold0.0.64 is registry-confirmed at fa3c5177. Its downloaded archive equals
 the accepted tarball. Read d7n-scaffold-registry-closure.md. The Scaffold operator
 command is consumed and must not be rerun. Root has not authenticated or published.
