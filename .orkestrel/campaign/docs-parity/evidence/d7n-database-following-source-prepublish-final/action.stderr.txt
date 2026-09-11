@@ -1,0 +1,49 @@
+npm notice run @orkestrel/database@0.0.14 prepublishOnly
+npm notice run npm run format:check && npm run lint:check && npm run check && npm run build && npm test && npm run test:distribution -- --mode release
+npm notice run @orkestrel/database@0.0.14 format:check
+npm notice run oxfmt --config .oxfmtrc.json --check .
+npm notice run @orkestrel/database@0.0.14 lint:check
+npm notice run oxlint --config .oxlintrc.json --deny-warnings .
+npm notice run @orkestrel/database@0.0.14 check
+npm notice run tsc --noEmit --project tsconfig.json && npm run check:src
+npm notice run @orkestrel/database@0.0.14 check:src
+npm notice run npm run check:src:core && npm run check:src:browser && npm run check:src:server
+npm notice run @orkestrel/database@0.0.14 check:src:core
+npm notice run tsc --noEmit -p configs/src/tsconfig.core.json
+npm notice run @orkestrel/database@0.0.14 check:src:browser
+npm notice run tsc --noEmit -p configs/src/tsconfig.browser.json
+npm notice run @orkestrel/database@0.0.14 check:src:server
+npm notice run tsc --noEmit -p configs/src/tsconfig.server.json
+npm notice run @orkestrel/database@0.0.14 build
+npm notice run npm run clean && npm run build:src
+npm notice run @orkestrel/database@0.0.14 clean
+npm notice run node -e "require('node:fs').rmSync('dist',{recursive:true,force:true})"
+npm notice run @orkestrel/database@0.0.14 build:src
+npm notice run npm run build:src:core && npm run build:src:browser && npm run build:src:server
+npm notice run @orkestrel/database@0.0.14 build:src:core
+npm notice run vite build --config configs/src/vite.core.config.ts && npm run copy dist/src/core/index.d.ts dist/src/core/index.d.cts
+npm notice run @orkestrel/database@0.0.14 copy
+npm notice run node -e "const fs=require('node:fs'),p=require('node:path'),a=process.argv[1],b=process.argv[2];fs.mkdirSync(p.dirname(b),{recursive:true});fs.cpSync(a,b,{force:true});console.log('Copied: '+a+' to '+b)" dist/src/core/index.d.ts dist/src/core/index.d.cts
+npm notice run @orkestrel/database@0.0.14 build:src:browser
+npm notice run vite build --config configs/src/vite.browser.config.ts
+npm notice run @orkestrel/database@0.0.14 build:src:server
+npm notice run vite build --config configs/src/vite.server.config.ts && npm run copy dist/src/server/index.d.ts dist/src/server/index.d.cts
+"build.lib.formats" will be ignored because "build.rolldownOptions.output" is already an array format.
+npm notice run @orkestrel/database@0.0.14 copy
+npm notice run node -e "const fs=require('node:fs'),p=require('node:path'),a=process.argv[1],b=process.argv[2];fs.mkdirSync(p.dirname(b),{recursive:true});fs.cpSync(a,b,{force:true});console.log('Copied: '+a+' to '+b)" dist/src/server/index.d.ts dist/src/server/index.d.cts
+npm notice run @orkestrel/database@0.0.14 test
+npm notice run npm run test:src && npm run test:policy && npm run test:config && npm run test:setup && npm run test:guides
+npm notice run @orkestrel/database@0.0.14 test:src
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core --project src:browser --project src:server
+npm notice run @orkestrel/database@0.0.14 test:policy
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project policy
+npm notice run @orkestrel/database@0.0.14 test:config
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project config
+npm notice run @orkestrel/database@0.0.14 test:setup
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project setup
+npm notice run @orkestrel/database@0.0.14 test:guides
+npm notice run node --experimental-strip-types tests/guides.test.ts
+npm notice run @orkestrel/database@0.0.14 test:distribution
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project distribution --mode release
+(node:6568) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead to security vulnerabilities, as the arguments are not escaped, only concatenated.
+(Use `node --trace-deprecation ...` to show where the warning was created)

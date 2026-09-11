@@ -1,0 +1,81 @@
+npm notice run @orkestrel/database@0.0.14 prepublishOnly
+npm notice run npm run format:check && npm run lint:check && npm run check && npm run build && npm test && npm run test:distribution -- --mode release
+npm notice run @orkestrel/database@0.0.14 format:check
+npm notice run oxfmt --config .oxfmtrc.json --check .
+npm notice run @orkestrel/database@0.0.14 lint:check
+npm notice run oxlint --config .oxlintrc.json --deny-warnings .
+npm notice run @orkestrel/database@0.0.14 check
+npm notice run tsc --noEmit --project tsconfig.json && npm run check:src
+npm notice run @orkestrel/database@0.0.14 check:src
+npm notice run npm run check:src:core && npm run check:src:browser && npm run check:src:server
+npm notice run @orkestrel/database@0.0.14 check:src:core
+npm notice run tsc --noEmit -p configs/src/tsconfig.core.json
+npm notice run @orkestrel/database@0.0.14 check:src:browser
+npm notice run tsc --noEmit -p configs/src/tsconfig.browser.json
+npm notice run @orkestrel/database@0.0.14 check:src:server
+npm notice run tsc --noEmit -p configs/src/tsconfig.server.json
+npm notice run @orkestrel/database@0.0.14 build
+npm notice run npm run clean && npm run build:src
+npm notice run @orkestrel/database@0.0.14 clean
+npm notice run node -e "require('node:fs').rmSync('dist',{recursive:true,force:true})"
+npm notice run @orkestrel/database@0.0.14 build:src
+npm notice run npm run build:src:core && npm run build:src:browser && npm run build:src:server
+npm notice run @orkestrel/database@0.0.14 build:src:core
+npm notice run vite build --config configs/src/vite.core.config.ts && npm run copy dist/src/core/index.d.ts dist/src/core/index.d.cts
+npm notice run @orkestrel/database@0.0.14 copy
+npm notice run node -e "const fs=require('node:fs'),p=require('node:path'),a=process.argv[1],b=process.argv[2];fs.mkdirSync(p.dirname(b),{recursive:true});fs.cpSync(a,b,{force:true});console.log('Copied: '+a+' to '+b)" dist/src/core/index.d.ts dist/src/core/index.d.cts
+npm notice run @orkestrel/database@0.0.14 build:src:browser
+npm notice run vite build --config configs/src/vite.browser.config.ts
+npm notice run @orkestrel/database@0.0.14 build:src:server
+npm notice run vite build --config configs/src/vite.server.config.ts && npm run copy dist/src/server/index.d.ts dist/src/server/index.d.cts
+"build.lib.formats" will be ignored because "build.rolldownOptions.output" is already an array format.
+npm notice run @orkestrel/database@0.0.14 copy
+npm notice run node -e "const fs=require('node:fs'),p=require('node:path'),a=process.argv[1],b=process.argv[2];fs.mkdirSync(p.dirname(b),{recursive:true});fs.cpSync(a,b,{force:true});console.log('Copied: '+a+' to '+b)" dist/src/server/index.d.ts dist/src/server/index.d.cts
+npm notice run @orkestrel/database@0.0.14 test
+npm notice run npm run test:src && npm run test:policy && npm run test:config && npm run test:setup && npm run test:guides
+npm notice run @orkestrel/database@0.0.14 test:src
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core --project src:browser --project src:server
+npm notice run @orkestrel/database@0.0.14 test:policy
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project policy
+npm notice run @orkestrel/database@0.0.14 test:config
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project config
+npm notice run @orkestrel/database@0.0.14 test:setup
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project setup
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |setup| tests/setupServer.test.ts > readModuleStatements > reads a written module off disk and refuses one the parser cannot read
+AssertionError: expected [Function] to throw error matching /The parser refused .*src\/b…/broken\.ts but got 'The parser refused C:\Users\mikes\App…'
+
+- Expected:
+/The parser refused .*src\/broken\.ts/
+
++ Received:
+"The parser refused C:\\Users\\mikes\\AppData\\Local\\Temp\\database-typescript-U3r8H7\\src\\broken.ts: Unexpected token"
+
+ ❯ tests/setupServer.test.ts:180:84
+    178|    expect(parsed.form).toBe('module')
+    179|    expect(parsed.statements.map((statement) => statement.type)).toEqua…
+    180|    expect(() => readModuleStatements(join(project.scratch.path, 'src/b…
+       |                                                                                    ^
+    181|     /The parser refused .*src\/broken\.ts/,
+    182|    )
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  |setup| tests/setupServer.test.ts > readProjectDiagnostics > reports nothing for a clean project and locates the fault in a broken one
+AssertionError: expected 'src/broken.ts' to be 'src\broken.ts' // Object.is equality
+
+Expected: "src\broken.ts"
+Received: "src/broken.ts"
+
+ ❯ tests/setupServer.test.ts:459:28
+    457|    const diagnostic = requireValue(reported[0])
+    458|    expect(reported.length).toBe(1)
+    459|    expect(diagnostic.path).toBe(join('src', 'broken.ts'))
+       |                            ^
+    460|    expect(diagnostic.range?.start).toEqual({ line: 0, character: 13 })
+    461|    expect(diagnostic.message).toContain("Type 'string' is not assignab…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+

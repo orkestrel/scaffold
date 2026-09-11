@@ -16,8 +16,24 @@ digests and gitHead match the accepted archives and canonical main tips. Read
 d7n-next-registry-closure.md. Root preserves the staged deletion of publish.txt;
 prompt.txt names already-published versions until the following layer closes.
 Following-layer registry and canonical readings are under
-tmp/pass/d7n-following-layer-reading. Native-entry adoption has started in
-Console and Database; accepted tooling is being installed throughout the layer.
+tmp/pass/d7n-following-layer-reading. Accepted tooling is installed throughout
+the selected layer. Native source acceptance and release visits are underway.
+The current preparation table supersedes the historical closing-sweep table
+for these packages. Keep prompt.txt unchanged until this layer is prepared.
+
+| Package | Pending version | Current preparation |
+| --- | --- | --- |
+| console | 0.0.13 | source accepted and committed at 5bb1acf; final dependency preparation and main closure pending |
+| database | 0.0.14 | native entry green with accepted Probe overlay; portable setup assertions corrected; compiler-backed consumer preservation underway |
+| form | 0.0.6 | full source prepublish green; remove predecessor-absent declaration policy before acceptance |
+| markdown | 0.0.14 | native helper extraction and type-import correction green; full source prepublish green; review pending |
+| pool | 0.0.11 | source accepted and committed at 65d57a0; final dependency preparation and main closure pending |
+| process | 0.0.11 | native source and full source prepublish green; review pending |
+| reason | 0.0.10 | native source and full source prepublish green; review pending |
+| router | 0.0.14 | native source and full source prepublish green; review pending |
+| table | 0.0.5 | accepted tooling and supported repair applied; native adoption pending |
+| template | 0.0.7 | accepted tooling and supported repair applied; native adoption pending |
+| websocket | 0.0.12 | accepted tooling and supported repair applied; native adoption pending |
 
 The next-layer plan is d7n-next-layer-plan.md. Fresh origin/main readings require
 no merges for its selected packages. Accepted tooling is installed throughout

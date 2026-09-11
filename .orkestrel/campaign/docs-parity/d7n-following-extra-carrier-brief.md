@@ -1,0 +1,9 @@
+# Bind the package-specific source paths
+
+Act as Terra builder. Read Scaffold AGENTS.md, orchestration, portability/writing/quality rules and publish skill with wave/window references. No installs, commits, pushes, package edits, full gates or delegation. Own only new tmp/pass/commit-following-native-owned.sh and tmp/units/d7n-following-extra-carrier-report.md. Do not edit the existing source carrier or any retained copy.
+
+Create an exact successor of tmp/pass/commit-following-native.sh with only the changes below. Preserve every other line verbatim; do not compress or refactor. Return a no-index diff against the predecessor and Bash syntax result. The root will read actual source before running it.
+
+Replace the blanket no-untracked test with validation that allows tests/setupGuides.ts only for Markdown and refuses every other untracked input. Preserve the empty-index requirement. For Markdown require its git hash-object value to equal the contents of tmp/pass/d7n-markdown-following-extra-before.txt and tmp/pass/d7n-markdown-following-extra-after.txt, and require these receipt files. Root writes those around the full gate. Append that explicit owned path to the staged path array when it is untracked. No other package gets an untracked exemption.
+
+Extend the tracked path allowlist only for Database tests/setupServer.test.ts and Markdown tests/setupGuides.ts. Reject those paths for any other package. Preserve the generated-byte comparisons, prepublish0/manifest/diff/index bindings, branch/tip checks and explicit-path commit identity/trailers. Capture the Markdown added-file binary diff into the commit receipt separately from the tracked diff; git diff --no-index /dev/null tests/setupGuides.ts is expected to exit1 only when it produced the owned diff, other errors fail. Use absolute/forward-slash paths and saved scripts. No package is staged or committed by this unit.

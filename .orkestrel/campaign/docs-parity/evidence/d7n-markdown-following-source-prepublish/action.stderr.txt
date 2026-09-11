@@ -1,0 +1,8 @@
+npm notice run @orkestrel/markdown@0.0.14 prepublishOnly
+npm notice run npm run format:check && npm run lint:check && npm run check && npm run build && npm test && npm run test:distribution -- --mode release
+npm notice run @orkestrel/markdown@0.0.14 format:check
+npm notice run oxfmt --config .oxfmtrc.json --check .
+npm notice run @orkestrel/markdown@0.0.14 lint:check
+npm notice run oxlint --config .oxlintrc.json --deny-warnings .
+npm notice run @orkestrel/markdown@0.0.14 check
+npm notice run tsc --noEmit --project tsconfig.json && npm run check:src

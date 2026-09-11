@@ -1,0 +1,5 @@
+Checking formatting...
+
+All matched files use the correct format.
+Finished in 1177ms on 49 files using 16 threads.
+tests/guides.test.ts(289,35): error TS2304: Cannot find name 'MarkdownProjection'.

@@ -1,0 +1,20 @@
+# Following native source continuation
+
+Hold the root-assigned independent reviewer or reused objective lane. Read d7n-following-source-review-brief.md for authority, scope and falsifiable source claims. Apply those same claims to the frozen subjects below, blind to the other lane. No installs, edits, full suites, Git mutation, delegation, authentication or publication. Read each package's matching native adoption brief/report, guide/types, exact installed report semantics and actual root diff/status receipts. Use whitespace-insensitive comparison to distinguish callback indentation from semantic changes, while retaining the full diff as the authority.
+
+| Subject | Root receipt under tmp/pass | Extra subject |
+| --- | --- | --- |
+| form | d7n-form-following-policy-correction | Root removed only the independently prescribed report.declarations assertion; native0. Predecessor full-chain0 remains recorded; root reruns it before commit. |
+| markdown | d7n-markdown-following-source-prepublish-final | Full-chain0; tests/setupGuides.ts is new and must be read separately because tracked diff excludes it. Read d7n-markdown-type-import-report.md and compare the original named helpers with their extracted definitions. |
+| database | d7n-database-following-source-prepublish-final | Source frozen; root chain may still be running when review starts. Read native report plus compiler-preservation and path-expectations briefs/reports. Root requires final0 before commit and does not infer it here. |
+| process | d7n-process-following-source-prepublish | Full-chain0; preserve separate environment populations, per-face controls, README filesystem links outside inventory, unfenced examples and executable transcriptions. |
+| reason | d7n-reason-following-source-prepublish | Full-chain0; preserve executable cases and prior package policy. |
+| router | d7n-router-following-source-prepublish | Full-chain0; preserve multi-environment inventory and executable cases. |
+
+Database's real compiler entry measurement belongs in its internal-implementation membership case, not a replacement Guide source scan. The restored consumer requires each requested entry surface, retains interface method assertions and leaves compiler controls/fence compilation intact. The independent path unit changes only native parser-prefix and normalized diagnostic-path expectations in tests/setupServer.test.ts; installed Probe scanDiagnostics normalizes its reported path. Do not broaden this into a final transport claim or add new Guide API. Assert the actual compiled package measurement and existing special-case obligations survive, not just the fixture helper tests.
+
+Markdown's root correction adds the missing type-only MarkdownProjection import, bound by actual TS2304 red then check0/full-chain0. Extracted helpers are package-owned executable mechanisms, not a second launcher. Their untracked Git hash before/after the successful chain is 7523af1bcdd5b3a61c250a3ba317c1eff8291047, recorded in tmp/pass/d7n-markdown-following-extra-before.txt and extra-after.txt. Review placement/export/naming against the contract without reopening unchanged unrelated code.
+
+C-COMMIT also covers tmp/pass/commit-following-native-owned.sh, the bounded successor allowing only Database's path-test file and Markdown's setup file. Read its actual predecessor diff and d7n-following-extra-carrier brief/report. Root corrected the new Git calls to include git -C. Every prior receipt/generated-byte/path/index check remains. Untracked Markdown content must bind the supplemental hashes and be explicitly staged/captured, never silently omitted. Root will run only after source acceptance and current full gate0.
+
+Return per-package CONFIRMED/BROKEN/UNRESOLVED and terminal VERDICT. Label source deductions and actual root receipts separately. The Form correction only removes the identified added policy; do not repeat the predecessor review. No final release archive or operator line is accepted by this review. Root retains your answer unchanged.

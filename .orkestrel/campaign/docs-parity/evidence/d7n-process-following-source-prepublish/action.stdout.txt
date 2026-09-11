@@ -1,0 +1,106 @@
+Checking formatting...
+
+All matched files use the correct format.
+Finished in 1300ms on 57 files using 16 threads.
+vite v8.3.0 building client environment for production...
+transforming...
+✓ 5 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/core/index.js  7.45 kB │ gzip: 2.98 kB │ map: 9.89 kB
+
+transforming...
+✓ 5 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/core/index.cjs  7.97 kB │ gzip: 3.07 kB │ map: 9.92 kB
+
+✓ built in 71ms
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+Copied: dist/src/core/index.d.ts to dist/src/core/index.d.cts
+vite v8.3.0 building client environment for production...
+transforming...
+✓ 10 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/server/index.js  81.38 kB │ gzip: 20.25 kB │ map: 130.88 kB
+
+transforming...
+✓ 10 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/server/index.cjs  83.24 kB │ gzip: 20.43 kB │ map: 131.56 kB
+
+✓ built in 179ms
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+Copied: dist/src/server/index.d.ts to dist/src/server/index.d.cts
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/process
+
+······························-·······································································--··························-·····················-····································-··············
+
+ Test Files  8 passed (8)
+      Tests  198 passed | 6 skipped (204)
+   Start at  23:43:41
+   Duration  10.06s (transform 1.59s, setup 319ms, import 2.61s, tests 28.07s, environment 1ms)
+
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/process
+
+·················································································-·········
+
+ Test Files  1 passed (1)
+      Tests  90 passed | 1 skipped (91)
+   Start at  23:43:51
+   Duration  795ms (transform 86ms, setup 19ms, import 118ms, tests 509ms, environment 0ms)
+
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/process
+
+··········································································································································································stdout | tests/config.test.ts > configuration helpers > rolls one face into a single declaration and rewrites its core specifier
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+
+·-stdout | tests/config.test.ts > configuration helpers > rolls one face into a single declaration and rewrites its core specifier
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+
+·
+
+ Test Files  1 passed (1)
+      Tests  172 passed | 1 skipped (173)
+   Start at  23:43:53
+   Duration  3.02s (transform 208ms, setup 19ms, import 459ms, tests 2.39s, environment 0ms)
+
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/process
+
+··········
+
+ Test Files  2 passed (2)
+      Tests  10 passed (10)
+   Start at  23:43:56
+   Duration  440ms (transform 64ms, setup 54ms, import 73ms, tests 226ms, environment 0ms)
+
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/process
+
+····································································-························-····
+
+ Test Files  1 passed (1)
+      Tests  96 passed | 2 skipped (98)
+   Start at  23:43:57
+   Duration  3.24s (transform 129ms, setup 21ms, import 616ms, tests 2.44s, environment 0ms)
+
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/process
+
+···········
+
+ Test Files  1 passed (1)
+      Tests  11 passed (11)
+   Start at  23:44:01
+   Duration  12.50s (transform 66ms, setup 19ms, import 1.89s, tests 10.44s, environment 0ms)
+

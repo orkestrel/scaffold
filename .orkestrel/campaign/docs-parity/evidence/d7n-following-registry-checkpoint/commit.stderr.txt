@@ -1,0 +1,15 @@
+warning: in the working copy of '.orkestrel/campaign/docs-parity/d7n-following-summary.json', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of '.orkestrel/campaign/docs-parity/d7n-next-registry-confirmation.json', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of '.orkestrel/campaign/docs-parity/evidence/d7n-next-registry-confirm-closed/abort.json', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of '.orkestrel/campaign/docs-parity/evidence/d7n-next-registry-confirm-closed/budget.json', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of '.orkestrel/campaign/docs-parity/evidence/d7n-next-registry-confirm-closed/csv.json', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of '.orkestrel/campaign/docs-parity/evidence/d7n-next-registry-confirm-closed/emitter.json', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of '.orkestrel/campaign/docs-parity/evidence/d7n-next-registry-confirm-closed/html.json', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of '.orkestrel/campaign/docs-parity/evidence/d7n-next-registry-confirm-closed/indexeddb.json', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of '.orkestrel/campaign/docs-parity/evidence/d7n-next-registry-confirm-closed/ndjson.json', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of '.orkestrel/campaign/docs-parity/evidence/d7n-next-registry-confirm-closed/result.json', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of '.orkestrel/campaign/docs-parity/evidence/d7n-next-registry-confirm-closed/sqlite.json', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of '.orkestrel/campaign/docs-parity/evidence/d7n-next-registry-confirm-closed/timeout.json', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of '.orkestrel/campaign/docs-parity/evidence/d7n-next-registry-confirm-closed/tool.json', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of '.orkestrel/campaign/docs-parity/evidence/d7n-next-registry-confirm-final/failure.json', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of '.orkestrel/campaign/docs-parity/evidence/d7n-next-registry-confirm/failure.json', CRLF will be replaced by LF the next time Git touches it

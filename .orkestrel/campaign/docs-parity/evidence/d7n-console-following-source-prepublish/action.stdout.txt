@@ -1,0 +1,128 @@
+Checking formatting...
+
+All matched files use the correct format.
+Finished in 1408ms on 84 files using 16 threads.
+vite v8.3.0 building client environment for production...
+transforming...
+✓ 16 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/core/index.js  86.65 kB │ gzip: 27.21 kB │ map: 145.07 kB
+
+transforming...
+✓ 16 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/core/index.cjs  88.48 kB │ gzip: 27.51 kB │ map: 145.12 kB
+
+✓ built in 249ms
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+Copied: dist/src/core/index.d.ts to dist/src/core/index.d.cts
+vite v8.3.0 building client environment for production...
+transforming...
+✓ 6 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/browser/index.js  12.59 kB │ gzip: 4.88 kB │ map: 19.67 kB
+
+✓ built in 53ms
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+vite v8.3.0 building client environment for production...
+transforming...
+✓ 8 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/server/index.js  19.14 kB │ gzip: 6.77 kB │ map: 35.21 kB
+
+transforming...
+✓ 8 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/server/index.cjs  19.57 kB │ gzip: 6.86 kB │ map: 35.29 kB
+
+✓ built in 118ms
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+Copied: dist/src/server/index.d.ts to dist/src/server/index.d.cts
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/console
+
+······························stdout | tests/src/core/Capture.test.ts > Capture > buffering — total + by level, captured silently by default > does NOT intercept after stop() — later console calls pass through untouched
+after
+
+···························································································stdout | tests/src/core/factories.test.ts > createCaptureResult > createCaptureResult — sync > returns the function value plus the messages it logged, and restores console
+after
+
+stdout | tests/src/core/factories.test.ts > createCaptureResult > createCaptureResult — sync > honors options — only the configured levels are captured
+ignored
+
+·····································································································································································································································································································································································································································································································································
+
+ Test Files  17 passed (17)
+      Tests  638 passed (638)
+   Start at  23:24:01
+   Duration  3.56s (transform 4.87s, setup 6.60s, import 2.46s, tests 1.69s, environment 4ms)
+
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/console
+
+·················································································-·········
+
+ Test Files  1 passed (1)
+      Tests  90 passed | 1 skipped (91)
+   Start at  23:24:06
+   Duration  1.14s (transform 164ms, setup 248ms, import 99ms, tests 646ms, environment 0ms)
+
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/console
+
+··········································································································································································stdout | tests/config.test.ts > configuration helpers > rolls one face into a single declaration and rewrites its core specifier
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+
+·-stdout | tests/config.test.ts > configuration helpers > rolls one face into a single declaration and rewrites its core specifier
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+
+·
+
+ Test Files  1 passed (1)
+      Tests  172 passed | 1 skipped (173)
+   Start at  23:24:08
+   Duration  3.70s (transform 278ms, setup 250ms, import 788ms, tests 2.51s, environment 0ms)
+
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/console
+
+···········stdout | tests/setupBrowser.test.ts > captureConsole > stops recording after restore
+after restore
+
+··················
+
+ Test Files  3 passed (3)
+      Tests  29 passed (29)
+   Start at  23:24:12
+   Duration  468ms (transform 369ms, setup 754ms, import 107ms, tests 19ms, environment 0ms)
+
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/console
+
+··········································
+
+ Test Files  1 passed (1)
+      Tests  42 passed (42)
+   Start at  23:24:14
+   Duration  965ms (transform 163ms, setup 247ms, import 542ms, tests 17ms, environment 0ms)
+
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/console
+
+········---···-
+
+ Test Files  1 passed (1)
+      Tests  11 passed | 4 skipped (15)
+   Start at  23:24:16
+   Duration  15.37s (transform 156ms, setup 244ms, import 2.96s, tests 11.99s, environment 0ms)
+
