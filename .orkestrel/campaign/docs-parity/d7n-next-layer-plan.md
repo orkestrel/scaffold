@@ -86,14 +86,23 @@ root native run. Corrected source prepublish passed throughout the selected
 round. Accepted source commits are Abort 7ba1287, CSV a27b91c, Budget adcdd32,
 Emitter 361f5cb and IndexedDB 145bd18. Budget's extra population-guard finding
 was reconciled as inherited coverage, not a removed predecessor obligation.
-HTML, NDJSON, SQLite, Timeout and Tool source reviews are in progress.
+HTML, NDJSON, SQLite, Timeout and Tool source reviews passed. Their source
+commits are recorded in the ledger and their final closure tips in the handoff.
 
 Use finish-next-layer-native-final.sh and pack-next-layer-final-verified.sh,
 not their rejected predecessors. Root corrected the final visit's action label
 to derive from the supplied evidence label; bash syntax passed. Final source
 review includes that root-owned integration line and passed in the independent
 lane. Final supported visits and packing passed for Abort, CSV, Budget, Emitter
-and IndexedDB. Their runtime Contract range is ^0.0.17 and their Test development
-range is ^0.0.14. Closure commits, pushes and local-main transitions remain.
+and IndexedDB, followed by HTML, SQLite and Timeout. NDJSON and Tool's parallel
+generated scratch-directory checks failed; their serial standalone full chains
+passed without source changes. resume-next-pack-verified.sh completed their
+bound packing after review. Every selected package passed final independent
+preparation review and is campaign/main pushed on clean canonical local main.
+Contract is ^0.0.17 and Test is ^0.0.14 throughout the selected release layer.
+Read d7n-next-layer-prepared.md for release tips and archive identities. Root
+prompt.txt was written only after the closures and parsed without uploading.
+The owner runs that command, then root confirms the registry before preparing
+the following dependency layer. The remaining fleet campaign is not closed.
 
 RELEASE: OPEN abort, budget, csv, emitter, html, indexeddb, ndjson, sqlite, timeout, tool

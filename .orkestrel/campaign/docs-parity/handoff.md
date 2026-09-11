@@ -8,34 +8,19 @@ The owner completed the initial directory uploads. Fresh registry downloads are
 byte-identical to the accepted Contract0.0.17, Codec0.0.3, Msg0.0.10, SSE0.0.7 and
 Test0.0.14 archives. Their canonical checkouts remain clean on main. Read
 d7n-initial-registry-closure.md and its retained digest evidence. Continue with
-the next dependency layer, then write its operator command to root prompt.txt
-only after preparation closes. Preserve publish.txt as the prior command.
+the operator handoff in d7n-next-layer-prepared.md. Root prompt.txt carries the
+prepared next-layer command; publish.txt preserves the prior command.
 
 The next-layer plan is d7n-next-layer-plan.md. Fresh origin/main readings require
 no merges for its selected packages. Accepted tooling is installed throughout
 that round; native-entry adoption precedes supported overwrite and release gates.
-Every selected native entry and corrected source prepublish passed and its
-source review is accepted. Final visits and packing passed except NDJSON and
-Tool, whose overlapping generated scratch-directory checks failed. Their full
-standalone prepublish reruns passed without source changes; recovery packing
-follows. Read d7n-next-root-final-gates-report.md. Closure pushes and local-main
-transitions remain, and prompt.txt has not been written.
-
-The selected release state is recorded here; historical parity closures later
-in this file are not release-preparation status.
-
-| Package | Version | Accepted source or release tip | Release preparation |
-| --- | --- | --- | --- |
-| abort | 0.0.10 | 3dddab9 | prepared; campaign/main pushed; clean local main |
-| budget | 0.0.10 | 625e743 | prepared; campaign/main pushed; clean local main |
-| csv | 0.0.7 | b9e9893 | prepared; campaign/main pushed; clean local main |
-| emitter | 0.0.10 | fe7e689 | prepared; campaign/main pushed; clean local main |
-| html | 0.0.9 | aa08eb1 | prepared; campaign/main pushed; clean local main |
-| indexeddb | 0.0.11 | cb179f6 | prepared; campaign/main pushed; clean local main |
-| ndjson | 0.0.10 | a35c40c | prepared; campaign/main pushed; clean local main |
-| sqlite | 0.0.11 | f2ffc0a | prepared; campaign/main pushed; clean local main |
-| timeout | 0.0.10 | a058b1f | prepared; campaign/main pushed; clean local main |
-| tool | 0.0.14 | 4761097 | prepared; campaign/main pushed; clean local main |
+Every selected native entry, final preparation and source review is accepted.
+Final prepublishOnly and packing passed. NDJSON and Tool needed serial
+standalone reruns after overlapping generated scratch-directory checks failed;
+the reruns and recovery packs passed without source changes. Every selected
+package is pushed to campaign/main and clean on canonical local main. Root
+prompt.txt was written after those closures and parsed without execution.
+Publication awaits the owner; no authentication or upload ran.
 
 The initial publish layer is prepared under the owner's narrowed scope in
 Ruling 38. Read d7n-initial-layer-prepared.md for versions, exact archives and the
@@ -190,7 +175,24 @@ d7n-campaign-branches-reading.md for the actual on-disk branch audit.
 | --- | --- | --- | --- |
 | `orkestrel/scaffold` | `main` (the working branch), `claude/orkestrel-npm-audit-deps-14ibta` (the campaign branch), and `claude/docs-parity-windows-01a0810d` (the designated branch) | the commit carrying this file | push HEAD to each named ref at the same tip; the campaign folder is the record |
 | `orkestrel/guide` | `claude/orkestrel-npm-audit-deps-14ibta` | `327470a` | native entry and tooling accepted and pushed; main stays at d3ee1bb for the fleet sequence; refreshed archive and output equality recorded in d7n-guide-native-tooling-landing.md |
-| `orkestrel/<package>` for every package in the table that follows | `claude/orkestrel-npm-audit-deps-14ibta` | per the table | pushed to `main` as each closes |
+| `orkestrel/<package>` for every package in the table that follows | `main` after closure; campaign branch retained | per the table | campaign/main pushed; canonical checkout uses main after closure |
+
+The selected release state is recorded here; historical parity closures later
+in this file are not release-preparation status.
+
+| Package | Version | Accepted source or release tip | Release preparation |
+| --- | --- | --- | --- |
+| abort | 0.0.10 | 3dddab9 | prepared; campaign/main pushed; clean local main |
+| budget | 0.0.10 | 625e743 | prepared; campaign/main pushed; clean local main |
+| csv | 0.0.7 | b9e9893 | prepared; campaign/main pushed; clean local main |
+| emitter | 0.0.10 | fe7e689 | prepared; campaign/main pushed; clean local main |
+| html | 0.0.9 | aa08eb1 | prepared; campaign/main pushed; clean local main |
+| indexeddb | 0.0.11 | cb179f6 | prepared; campaign/main pushed; clean local main |
+| ndjson | 0.0.10 | a35c40c | prepared; campaign/main pushed; clean local main |
+| sqlite | 0.0.11 | f2ffc0a | prepared; campaign/main pushed; clean local main |
+| timeout | 0.0.10 | a058b1f | prepared; campaign/main pushed; clean local main |
+| tool | 0.0.14 | 4761097 | prepared; campaign/main pushed; clean local main |
+
 
 Branch URLs follow one pattern: `https://github.com/orkestrel/<repo>/tree/claude/orkestrel-npm-audit-deps-14ibta`.
 
