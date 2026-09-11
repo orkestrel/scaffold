@@ -4,45 +4,36 @@ Written 2026-09-08T03:35Z and revised 2026-09-08T04:05Z at the owner's request, 
 
 ## Where everything is pushed
 
-### Active dependent preparation
+### Active dependent upload preparation
 
-Prepare Brief, MCP, Middleware, Program, Worker and Workflow under
-d7n-dependent-layer-plan.md. Their fresh root ancestry checks passed on clean
-campaign branches. Registry-confirmed Guide0.0.18 and Scaffold0.0.64 tarballs are
-installed without saved metadata changes, and direct native guide-entry failures
-are recorded. Native migrations and retained MCP/Program/Workflow docs fixes have
-returned. Root preparation prepublishOnly passed in each selected package after
-supported policy repair. Brief, Middleware and Worker have accepted source verdicts;
-the objective comment-only failure is retained and annotated under the owner's
-prose ruling, not described as a passing lane. Their source commits are pushed to
-the campaign branch; read d7n-dependent-native-source-landing.md. Program's
-accepted execution correction is also committed and pushed to that branch.
-Brief's registry visit stopped after supported overwrite/audit and final install
-because its carrier rejected Scaffold-owned toolchain updates. Its preparation
-commit is pushed; read d7n-dependent-toolchain-ruling.md. The bounded recovery
-carrier returned, and its review exposed an unqualified-latest check that conflicts
-with Scaffold's supported-major policy. The supported-major successor and root
-external-name guard correction passed actual range-aware lookups and independent/
-reused objective review. Brief's resume completed with final prepublish and actual
-pack green. Release review passed and Brief0.0.8 is closed on clean canonical main
-at 5cc84a937c929a2d84961353871346107d1ef066; campaign/main pushes passed and owner
-upload is pending. No completed Brief mutation replayed.
-Middleware0.0.20 is closed on clean canonical main at
-af01ea39388c05da52fb954476cac0ba423a5f23 with campaign/main pushed. MCP0.0.29 is
-closed on clean canonical main at 45ba0a4b5741a79f32500479de9549c0e6a17839 with
-campaign/main pushed. Program0.0.13 is closed on clean canonical main at
-f474b0aa1e8ab0565c8fe0f818ec816e7c5052cb with campaign/main pushed. Worker0.0.12 is
-closed on clean canonical main at 4df117583143117a21b23246b27b6addd42ef0b9 with
-campaign/main pushed. Workflow0.0.18 is closed on clean canonical main at
-0789593a6ab1b2905b16fd2f95a5b30e700888c5 with campaign/main pushed. Read
-d7n-dependent-registry-preparation-state.md. Their source corrections
-are accepted, committed and campaign-pushed. Read the source landing table and
-package verdicts for exact gate bindings and preserved evidence limitations. Read
-d7n-dependent-native-preparation-state.md. The layer's operator handoff is not ready
-yet. Package closures are complete and root's fresh layer confirmation passed.
-The supported recovery and final closure carriers are accepted under
-d7n-dependent-supported-carrier-verdict.md. Harness capacity limits dispatch concurrency; no
-required lane is being treated as passed because a dispatch refused.
+Brief0.0.8, MCP0.0.29, Middleware0.0.20, Program0.0.13, Worker0.0.12 and
+Workflow0.0.18 are closed for owner upload on clean canonical local main.
+Campaign/main refs match each release HEAD in d7n-dependent-layer-prepared.md and
+d7n-dependent-registry-preparation-state.md. Final supported overwrite/audit,
+registry install, prepublishOnly and actual packing passed. Root's fresh
+d7n-dependent-confirmation-preprompt reconfirms refs and manifest/full dist equality
+after closure. No selected upload has run.
+
+Root prompt.txt now contains the dependent layer's serial PowerShell upload line.
+Its parser-only check and independent/reused objective operator reviews passed.
+Read d7n-dependent-upload-handoff-verdict.md for the accepted digest and parser
+receipt qualification. Do not hand the line to the owner until the accepted
+operator commit/push completes.
+The prior runtime upload line is consumed and must not be rerun.
+
+Read d7n-dependent-native-source-landing.md and each source/prepared verdict for
+the accepted native-entry and documentation corrections. Preserve their historical
+Summary-red, scanner and report-only qualifications; release acceptance does not
+invent missing proof. Brief's completed mutations were not replayed during the
+supported-major recovery. Read d7n-dependent-toolchain-ruling.md and
+d7n-dependent-supported-carrier-verdict.md for its accepted correction.
+
+After the owner confirms upload, read registry versions, gitHead and served
+archives before preparing the next layer. MCP-to-Probe integration and later
+Agent/Ollama/Toolbox work remain open. Preserve Ollama's owner edits and the
+Supervisor owner decision. Probe development re-pins and final fleet development
+alignment remain open; the generated Scaffold follow-up requires its own later
+release under d7n-scaffold-generated-followup-ruling.md.
 
 When rebuilding the dependent preparation instruments, copy
 instruments/d7/foundation-native/d7n-dependent-supported-input/read-supported-toolchain.mjs
@@ -54,15 +45,15 @@ unqualified-latest selection conflicts with Scaffold's declared-major policy.
 The Opus writer returned a fresh weekly-quota failure. The root journal records
 session dd5e5af9-8abf-4404-a1a4-26582f1982a2. Use the prescribed Sol writer fallback,
 the reused objective analyst and the owner's independent Astra review. No new
-verifier is required. The current prompt.txt remains consumed.
+verifier is required. Do not treat a refused dispatch as a passing lane.
 
 ### Confirmed runtime release
 
 Use this table for the confirmed release layer. Later preparation narratives and
 the original campaign table are historical; their open states do not override it.
 The owner uploaded the layer. Registry archives and gitHead match the accepted
-releases. Read d7n-upper-registry-closure.md. The root prompt.txt upload line is
-consumed and must not be rerun. The next operator line is not prepared.
+releases. Read d7n-upper-registry-closure.md. That prior upload line is consumed
+and must not be rerun. Read the active section for the replacement operator line.
 
 | Package | Published version | Confirmed state |
 | --- | --- | --- |
