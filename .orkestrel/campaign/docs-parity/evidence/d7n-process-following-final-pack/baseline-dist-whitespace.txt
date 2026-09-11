@@ -1,0 +1,678 @@
+diff -r -w -B '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-process-following-final-pack/baseline/package/dist/src/core/index.cjs /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-process-following-final-pack/extract/package/dist/src/core/index.cjs
+4c4
+< /** Names the default cooperative POSIX window in milliseconds between `SIGTERM` and `SIGKILL` during termination. */
+---
+> /** Names the default cooperative POSIX window, 5000 ms, between `SIGTERM` and `SIGKILL` during termination. */
+6c6
+< /** Names the window in milliseconds a termination waits for the child's native exit after the final kill. */
+---
+> /** Names the window, 5000 ms, a termination waits for the child's native exit after the final kill. */
+9,10c9,10
+< * Names the default window in milliseconds the package waits for the child's read ends to close after
+< * the child's native exit or after a termination this package initiated, before cutting them off.
+---
+> * Names the default window, 1000 ms, the package waits for the child's read ends to close after the
+> * child's native exit or after a termination this package initiated, before cutting them off.
+24c24
+< /** Names the default maximum retained stderr tail in bytes for a supervised {@link ProcessInterface}. */
+---
+> /** Names the default maximum retained stderr tail, 2048 bytes, for a supervised {@link ProcessInterface}. */
+26c26
+< /** Names the default soft high-water mark in bytes for a supervised {@link ProcessInterface} line backlog. */
+---
+> /** Names the default soft high-water mark, 10485760 bytes, for a supervised {@link ProcessInterface} line backlog. */
+28c28
+< /** Names the default maximum captured bytes for a one-shot run's stdout and stderr, each. */
+---
+> /** Names the default maximum captured bytes, 10485760 each, for a one-shot run's stdout and stderr. */
+30c30
+< /** Names the largest timer delay in milliseconds the host schedules without truncating it to one. */
+---
+> /** Names the largest timer delay, 2147483647 ms, the host schedules without truncating it to one. */
+32c32
+< /** Lists the executable extensions a Windows lookup applies when the environment declares no `PATHEXT`. */
+---
+> /** Lists the executable extensions a Windows lookup applies when the environment declares no `PATHEXT`, `.COM;.EXE;.BAT;.CMD`. */
+34c34,37
+< /** Lists the machine-readable failure categories a {@link ProcessError} carries, in declaration order. */
+---
+> /**
+> * Lists the machine-readable failure categories a {@link ProcessError} carries, in declaration order:
+> * `spawn`, `timeout`, `input`, `duplicate`, `protocol`, and `invalid`.
+> */
+108c111
+< * Creates the failure raised when a manager launch reuses a live id.
+---
+> * Creates the `duplicate`-coded failure raised when a manager launch reuses a live id.
+120c123,124
+< * Creates the failure raised when a launch is attempted on a registry that is being destroyed.
+---
+> * Creates the `protocol`-coded failure raised when a launch is attempted on a registry that is
+> * being destroyed.
+132c136,137
+< * Creates the failure raised when a public input is refused before anything is spawned.
+---
+> * Creates the `invalid`-coded failure raised when a public input is refused before anything is
+> * spawned.
+diff -r -w -B '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-process-following-final-pack/baseline/package/dist/src/core/index.d.cts /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-process-following-final-pack/extract/package/dist/src/core/index.d.cts
+1,3c1,3
+< import { EmitterErrorHandler } from '@orkestrel/emitter';
+< import { EmitterHooks } from '@orkestrel/emitter';
+< import { EmitterInterface } from '@orkestrel/emitter';
+---
+> import type { EmitterErrorHandler } from '@orkestrel/emitter';
+> import type { EmitterHooks } from '@orkestrel/emitter';
+> import type { EmitterInterface } from '@orkestrel/emitter';
+6c6
+<  * Creates the failure raised when a manager launch reuses a live id.
+---
+>  * Creates the `duplicate`-coded failure raised when a manager launch reuses a live id.
+28c28,29
+<  * Creates the failure raised when a public input is refused before anything is spawned.
+---
+>  * Creates the `invalid`-coded failure raised when a public input is refused before anything is
+>  * spawned.
+42c43,44
+<  * Creates the failure raised when a launch is attempted on a registry that is being destroyed.
+---
+>  * Creates the `protocol`-coded failure raised when a launch is attempted on a registry that is
+>  * being destroyed.
+222c224
+< /** Names the default soft high-water mark in bytes for a supervised {@link ProcessInterface} line backlog. */
+---
+> /** Names the default soft high-water mark, 10485760 bytes, for a supervised {@link ProcessInterface} line backlog. */
+225c227
+< /** Names the window in milliseconds a termination waits for the child's native exit after the final kill. */
+---
+> /** Names the window, 5000 ms, a termination waits for the child's native exit after the final kill. */
+229,230c231,232
+<  * Names the default window in milliseconds the package waits for the child's read ends to close after
+<  * the child's native exit or after a termination this package initiated, before cutting them off.
+---
+>  * Names the default window, 1000 ms, the package waits for the child's read ends to close after the
+>  * child's native exit or after a termination this package initiated, before cutting them off.
+245c247,250
+< /** Lists the machine-readable failure categories a {@link ProcessError} carries, in declaration order. */
+---
+> /**
+>  * Lists the machine-readable failure categories a {@link ProcessError} carries, in declaration order:
+>  * `spawn`, `timeout`, `input`, `duplicate`, `protocol`, and `invalid`.
+>  */
+248c253
+< /** Names the default maximum retained stderr tail in bytes for a supervised {@link ProcessInterface}. */
+---
+> /** Names the default maximum retained stderr tail, 2048 bytes, for a supervised {@link ProcessInterface}. */
+251c256
+< /** Names the default cooperative POSIX window in milliseconds between `SIGTERM` and `SIGKILL` during termination. */
+---
+> /** Names the default cooperative POSIX window, 5000 ms, between `SIGTERM` and `SIGKILL` during termination. */
+254c259
+< /** Names the default maximum captured bytes for a one-shot run's stdout and stderr, each. */
+---
+> /** Names the default maximum captured bytes, 10485760 each, for a one-shot run's stdout and stderr. */
+257c262
+< /** Lists the executable extensions a Windows lookup applies when the environment declares no `PATHEXT`. */
+---
+> /** Lists the executable extensions a Windows lookup applies when the environment declares no `PATHEXT`, `.COM;.EXE;.BAT;.CMD`. */
+260c265
+< /** Names the largest timer delay in milliseconds the host schedules without truncating it to one. */
+---
+> /** Names the largest timer delay, 2147483647 ms, the host schedules without truncating it to one. */
+335c340,343
+< /** Names the machine-readable {@link ProcessError} categories, derived from {@link PROCESS_ERROR_CODES}. */
+---
+> /**
+>  * Names the machine-readable {@link ProcessError} categories, derived from {@link PROCESS_ERROR_CODES}:
+>  * `spawn`, `timeout`, `input`, `duplicate`, `protocol`, and `invalid`.
+>  */
+628c636,637
+<      * Terminates the named children and awaits their exit.
+---
+>      * Terminates the named children, or every live child when a call names none, and awaits their
+>      * exit.
+diff -r -w -B '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-process-following-final-pack/baseline/package/dist/src/core/index.d.ts /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-process-following-final-pack/extract/package/dist/src/core/index.d.ts
+1,3c1,3
+< import { EmitterErrorHandler } from '@orkestrel/emitter';
+< import { EmitterHooks } from '@orkestrel/emitter';
+< import { EmitterInterface } from '@orkestrel/emitter';
+---
+> import type { EmitterErrorHandler } from '@orkestrel/emitter';
+> import type { EmitterHooks } from '@orkestrel/emitter';
+> import type { EmitterInterface } from '@orkestrel/emitter';
+6c6
+<  * Creates the failure raised when a manager launch reuses a live id.
+---
+>  * Creates the `duplicate`-coded failure raised when a manager launch reuses a live id.
+28c28,29
+<  * Creates the failure raised when a public input is refused before anything is spawned.
+---
+>  * Creates the `invalid`-coded failure raised when a public input is refused before anything is
+>  * spawned.
+42c43,44
+<  * Creates the failure raised when a launch is attempted on a registry that is being destroyed.
+---
+>  * Creates the `protocol`-coded failure raised when a launch is attempted on a registry that is
+>  * being destroyed.
+222c224
+< /** Names the default soft high-water mark in bytes for a supervised {@link ProcessInterface} line backlog. */
+---
+> /** Names the default soft high-water mark, 10485760 bytes, for a supervised {@link ProcessInterface} line backlog. */
+225c227
+< /** Names the window in milliseconds a termination waits for the child's native exit after the final kill. */
+---
+> /** Names the window, 5000 ms, a termination waits for the child's native exit after the final kill. */
+229,230c231,232
+<  * Names the default window in milliseconds the package waits for the child's read ends to close after
+<  * the child's native exit or after a termination this package initiated, before cutting them off.
+---
+>  * Names the default window, 1000 ms, the package waits for the child's read ends to close after the
+>  * child's native exit or after a termination this package initiated, before cutting them off.
+245c247,250
+< /** Lists the machine-readable failure categories a {@link ProcessError} carries, in declaration order. */
+---
+> /**
+>  * Lists the machine-readable failure categories a {@link ProcessError} carries, in declaration order:
+>  * `spawn`, `timeout`, `input`, `duplicate`, `protocol`, and `invalid`.
+>  */
+248c253
+< /** Names the default maximum retained stderr tail in bytes for a supervised {@link ProcessInterface}. */
+---
+> /** Names the default maximum retained stderr tail, 2048 bytes, for a supervised {@link ProcessInterface}. */
+251c256
+< /** Names the default cooperative POSIX window in milliseconds between `SIGTERM` and `SIGKILL` during termination. */
+---
+> /** Names the default cooperative POSIX window, 5000 ms, between `SIGTERM` and `SIGKILL` during termination. */
+254c259
+< /** Names the default maximum captured bytes for a one-shot run's stdout and stderr, each. */
+---
+> /** Names the default maximum captured bytes, 10485760 each, for a one-shot run's stdout and stderr. */
+257c262
+< /** Lists the executable extensions a Windows lookup applies when the environment declares no `PATHEXT`. */
+---
+> /** Lists the executable extensions a Windows lookup applies when the environment declares no `PATHEXT`, `.COM;.EXE;.BAT;.CMD`. */
+260c265
+< /** Names the largest timer delay in milliseconds the host schedules without truncating it to one. */
+---
+> /** Names the largest timer delay, 2147483647 ms, the host schedules without truncating it to one. */
+335c340,343
+< /** Names the machine-readable {@link ProcessError} categories, derived from {@link PROCESS_ERROR_CODES}. */
+---
+> /**
+>  * Names the machine-readable {@link ProcessError} categories, derived from {@link PROCESS_ERROR_CODES}:
+>  * `spawn`, `timeout`, `input`, `duplicate`, `protocol`, and `invalid`.
+>  */
+628c636,637
+<      * Terminates the named children and awaits their exit.
+---
+>      * Terminates the named children, or every live child when a call names none, and awaits their
+>      * exit.
+diff -r -w -B '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-process-following-final-pack/baseline/package/dist/src/core/index.js /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-process-following-final-pack/extract/package/dist/src/core/index.js
+3c3
+< /** Names the default cooperative POSIX window in milliseconds between `SIGTERM` and `SIGKILL` during termination. */
+---
+> /** Names the default cooperative POSIX window, 5000 ms, between `SIGTERM` and `SIGKILL` during termination. */
+5c5
+< /** Names the window in milliseconds a termination waits for the child's native exit after the final kill. */
+---
+> /** Names the window, 5000 ms, a termination waits for the child's native exit after the final kill. */
+8,9c8,9
+< * Names the default window in milliseconds the package waits for the child's read ends to close after
+< * the child's native exit or after a termination this package initiated, before cutting them off.
+---
+> * Names the default window, 1000 ms, the package waits for the child's read ends to close after the
+> * child's native exit or after a termination this package initiated, before cutting them off.
+23c23
+< /** Names the default maximum retained stderr tail in bytes for a supervised {@link ProcessInterface}. */
+---
+> /** Names the default maximum retained stderr tail, 2048 bytes, for a supervised {@link ProcessInterface}. */
+25c25
+< /** Names the default soft high-water mark in bytes for a supervised {@link ProcessInterface} line backlog. */
+---
+> /** Names the default soft high-water mark, 10485760 bytes, for a supervised {@link ProcessInterface} line backlog. */
+27c27
+< /** Names the default maximum captured bytes for a one-shot run's stdout and stderr, each. */
+---
+> /** Names the default maximum captured bytes, 10485760 each, for a one-shot run's stdout and stderr. */
+29c29
+< /** Names the largest timer delay in milliseconds the host schedules without truncating it to one. */
+---
+> /** Names the largest timer delay, 2147483647 ms, the host schedules without truncating it to one. */
+31c31
+< /** Lists the executable extensions a Windows lookup applies when the environment declares no `PATHEXT`. */
+---
+> /** Lists the executable extensions a Windows lookup applies when the environment declares no `PATHEXT`, `.COM;.EXE;.BAT;.CMD`. */
+33c33,36
+< /** Lists the machine-readable failure categories a {@link ProcessError} carries, in declaration order. */
+---
+> /**
+> * Lists the machine-readable failure categories a {@link ProcessError} carries, in declaration order:
+> * `spawn`, `timeout`, `input`, `duplicate`, `protocol`, and `invalid`.
+> */
+107c110
+< * Creates the failure raised when a manager launch reuses a live id.
+---
+> * Creates the `duplicate`-coded failure raised when a manager launch reuses a live id.
+119c122,123
+< * Creates the failure raised when a launch is attempted on a registry that is being destroyed.
+---
+> * Creates the `protocol`-coded failure raised when a launch is attempted on a registry that is
+> * being destroyed.
+131c135,136
+< * Creates the failure raised when a public input is refused before anything is spawned.
+---
+> * Creates the `invalid`-coded failure raised when a public input is refused before anything is
+> * spawned.
+diff -r -w -B '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-process-following-final-pack/baseline/package/dist/src/server/index.cjs /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-process-following-final-pack/extract/package/dist/src/server/index.cjs
+310c310,311
+< * Resolves a command file to the executable path the host would launch.
+---
+> * Resolves a command file to the executable path the host would launch, or to `undefined` on a POSIX
+> * host, which performs its own lookup.
+1449c1450,1451
+< * Supervises one child while keeping every observation channel aligned at termination.
+---
+> * Supervises one child, frames its standard output into lines under a bounded backlog, and keeps
+> * every observation channel aligned at termination.
+1738c1740,1741
+< * Represents a keyed registry of live supervised child processes.
+---
+> * Launches supervised children under caller-chosen ids, evicts each one as it settles, and destroys
+> * every live child on teardown.
+2084c2087,2088
+< * Creates one supervised child process.
+---
+> * Creates one supervised child process and returns it as a {@link ProcessInterface}, so a caller
+> * holds the published contract rather than the `Process` class.
+2089c2093
+< * @example
+---
+> * @example Supervise a child and read its lines
+2094c2098
+< * 	command: { file: 'node', arguments: ['--version'] },
+---
+> * 	command: { file: 'node', arguments: ['-e', 'console.log("ready"); console.log("done")'] },
+2096c2100
+< * 	grace: 5000,
+---
+> * 	grace: 5_000, // POSIX only: the window between SIGTERM and SIGKILL
+2097a2102,2109
+> *
+> * const lines: string[] = []
+> * for await (const line of child.lines) lines.push(line)
+> * lines // ['ready', 'done']
+> *
+> * const exit = await child.exit
+> * exit.code // 0
+> * await child.destroy()
+2104c2116,2117
+< * Creates one raw byte session over a supervised child process.
+---
+> * Creates one raw byte session over a supervised child process and returns it as a
+> * {@link SessionInterface}, so a caller holds the published contract rather than the `Session` class.
+2124c2137,2139
+< * Creates one keyed registry of supervised child processes.
+---
+> * Creates one empty keyed registry of supervised child processes and returns it as a
+> * {@link ProcessManagerInterface}, so a caller holds the published contract rather than the
+> * `ProcessManager` class.
+diff -r -w -B '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-process-following-final-pack/baseline/package/dist/src/server/index.d.cts /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-process-following-final-pack/extract/package/dist/src/server/index.d.cts
+2,28c2,21
+< import { DetachOptions } from '@orkestrel/process';
+< import { EmitterInterface } from '@orkestrel/emitter';
+< import { ExecutableOptions } from '@orkestrel/process';
+< import { ExecuteInput } from '@orkestrel/process';
+< import { ExecuteOptions } from '@orkestrel/process';
+< import { ExecuteResult } from '@orkestrel/process';
+< import { ExecuteSyncOptions } from '@orkestrel/process';
+< import { ProcessCommand } from '@orkestrel/process';
+< import { ProcessEventMap } from '@orkestrel/process';
+< import { ProcessExit } from '@orkestrel/process';
+< import { ProcessExit as ProcessExit_2 } from '@orkestrel/process';
+< import { ProcessInterface } from '@orkestrel/process';
+< import { ProcessInterface as ProcessInterface_2 } from '@orkestrel/process';
+< import { ProcessManagerEventMap } from '@orkestrel/process';
+< import { ProcessManagerInterface } from '@orkestrel/process';
+< import { ProcessManagerInterface as ProcessManagerInterface_2 } from '@orkestrel/process';
+< import { ProcessManagerOptions } from '@orkestrel/process';
+< import { ProcessManagerOptions as ProcessManagerOptions_2 } from '@orkestrel/process';
+< import { ProcessOptions } from '@orkestrel/process';
+< import { ProcessOptions as ProcessOptions_2 } from '@orkestrel/process';
+< import { Readable } from 'node:stream';
+< import { SessionEventMap } from '@orkestrel/process';
+< import { SessionInterface } from '@orkestrel/process';
+< import { SessionInterface as SessionInterface_2 } from '@orkestrel/process';
+< import { SessionOptions } from '@orkestrel/process';
+< import { SessionOptions as SessionOptions_2 } from '@orkestrel/process';
+< import { SpawnInput } from '@orkestrel/process';
+---
+> import type { DetachOptions } from '@orkestrel/process';
+> import type { EmitterInterface } from '@orkestrel/emitter';
+> import type { ExecutableOptions } from '@orkestrel/process';
+> import type { ExecuteInput } from '@orkestrel/process';
+> import type { ExecuteOptions } from '@orkestrel/process';
+> import type { ExecuteResult } from '@orkestrel/process';
+> import type { ExecuteSyncOptions } from '@orkestrel/process';
+> import type { ProcessCommand } from '@orkestrel/process';
+> import type { ProcessEventMap } from '@orkestrel/process';
+> import type { ProcessExit } from '@orkestrel/process';
+> import type { ProcessInterface } from '@orkestrel/process';
+> import type { ProcessManagerEventMap } from '@orkestrel/process';
+> import type { ProcessManagerInterface } from '@orkestrel/process';
+> import type { ProcessManagerOptions } from '@orkestrel/process';
+> import type { ProcessOptions } from '@orkestrel/process';
+> import type { Readable } from 'node:stream';
+> import type { SessionEventMap } from '@orkestrel/process';
+> import type { SessionInterface } from '@orkestrel/process';
+> import type { SessionOptions } from '@orkestrel/process';
+> import type { SpawnInput } from '@orkestrel/process';
+154c147,148
+<  * Creates one supervised child process.
+---
+>  * Creates one supervised child process and returns it as a {@link ProcessInterface}, so a caller
+>  * holds the published contract rather than the `Process` class.
+159c153
+<  * @example
+---
+>  * @example Supervise a child and read its lines
+164c158
+<  * 	command: { file: 'node', arguments: ['--version'] },
+---
+>  * 	command: { file: 'node', arguments: ['-e', 'console.log("ready"); console.log("done")'] },
+166c160
+<  * 	grace: 5000,
+---
+>  * 	grace: 5_000, // POSIX only: the window between SIGTERM and SIGKILL
+167a162,169
+>  *
+>  * const lines: string[] = []
+>  * for await (const line of child.lines) lines.push(line)
+>  * lines // ['ready', 'done']
+>  *
+>  * const exit = await child.exit
+>  * exit.code // 0
+>  * await child.destroy()
+173c175,177
+<  * Creates one keyed registry of supervised child processes.
+---
+>  * Creates one empty keyed registry of supervised child processes and returns it as a
+>  * {@link ProcessManagerInterface}, so a caller holds the published contract rather than the
+>  * `ProcessManager` class.
+188c192,193
+<  * Creates one raw byte session over a supervised child process.
+---
+>  * Creates one raw byte session over a supervised child process and returns it as a
+>  * {@link SessionInterface}, so a caller holds the published contract rather than the `Session` class.
+419c424,425
+<  * Supervises one child while keeping every observation channel aligned at termination.
+---
+>  * Supervises one child, frames its standard output into lines under a bounded backlog, and keeps
+>  * every observation channel aligned at termination.
+449c455
+< export declare class Process implements ProcessInterface_2 {
+---
+> export declare class Process implements ProcessInterface {
+457c463
+<     constructor(options: ProcessOptions_2);
+---
+>     constructor(options: ProcessOptions);
+477c483
+<     get exit(): Promise<ProcessExit_2>;
+---
+>     get exit(): Promise<ProcessExit>;
+590c596,597
+<  * Represents a keyed registry of live supervised child processes.
+---
+>  * Launches supervised children under caller-chosen ids, evicts each one as it settles, and destroys
+>  * every live child on teardown.
+618c625
+< export declare class ProcessManager implements ProcessManagerInterface_2 {
+---
+> export declare class ProcessManager implements ProcessManagerInterface {
+625c632
+<     constructor(options?: ProcessManagerOptions_2);
+---
+>     constructor(options?: ProcessManagerOptions);
+636c643
+<     process(id: string): ProcessInterface_2 | undefined;
+---
+>     process(id: string): ProcessInterface | undefined;
+642c649
+<     processes(): readonly ProcessInterface_2[];
+---
+>     processes(): readonly ProcessInterface[];
+660c667
+<     launch(id: string, options: ProcessOptions_2): ProcessInterface_2;
+---
+>     launch(id: string, options: ProcessOptions): ProcessInterface;
+748c755,756
+<  * Resolves a command file to the executable path the host would launch.
+---
+>  * Resolves a command file to the executable path the host would launch, or to `undefined` on a POSIX
+>  * host, which performs its own lookup.
+792c800
+< export declare class Session implements SessionInterface_2 {
+---
+> export declare class Session implements SessionInterface {
+800c808
+<     constructor(options: SessionOptions_2);
+---
+>     constructor(options: SessionOptions);
+818c826
+<     get exit(): Promise<ProcessExit_2>;
+---
+>     get exit(): Promise<ProcessExit>;
+975c983
+<     constructor(options: ProcessOptions_2, face: SupervisorFace);
+---
+>     constructor(options: ProcessOptions, face: SupervisorFace);
+1000c1008
+<     get exit(): Promise<ProcessExit_2>;
+---
+>     get exit(): Promise<ProcessExit>;
+diff -r -w -B '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-process-following-final-pack/baseline/package/dist/src/server/index.d.ts /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-process-following-final-pack/extract/package/dist/src/server/index.d.ts
+2,28c2,21
+< import { DetachOptions } from '@orkestrel/process';
+< import { EmitterInterface } from '@orkestrel/emitter';
+< import { ExecutableOptions } from '@orkestrel/process';
+< import { ExecuteInput } from '@orkestrel/process';
+< import { ExecuteOptions } from '@orkestrel/process';
+< import { ExecuteResult } from '@orkestrel/process';
+< import { ExecuteSyncOptions } from '@orkestrel/process';
+< import { ProcessCommand } from '@orkestrel/process';
+< import { ProcessEventMap } from '@orkestrel/process';
+< import { ProcessExit } from '@orkestrel/process';
+< import { ProcessExit as ProcessExit_2 } from '@orkestrel/process';
+< import { ProcessInterface } from '@orkestrel/process';
+< import { ProcessInterface as ProcessInterface_2 } from '@orkestrel/process';
+< import { ProcessManagerEventMap } from '@orkestrel/process';
+< import { ProcessManagerInterface } from '@orkestrel/process';
+< import { ProcessManagerInterface as ProcessManagerInterface_2 } from '@orkestrel/process';
+< import { ProcessManagerOptions } from '@orkestrel/process';
+< import { ProcessManagerOptions as ProcessManagerOptions_2 } from '@orkestrel/process';
+< import { ProcessOptions } from '@orkestrel/process';
+< import { ProcessOptions as ProcessOptions_2 } from '@orkestrel/process';
+< import { Readable } from 'node:stream';
+< import { SessionEventMap } from '@orkestrel/process';
+< import { SessionInterface } from '@orkestrel/process';
+< import { SessionInterface as SessionInterface_2 } from '@orkestrel/process';
+< import { SessionOptions } from '@orkestrel/process';
+< import { SessionOptions as SessionOptions_2 } from '@orkestrel/process';
+< import { SpawnInput } from '@orkestrel/process';
+---
+> import type { DetachOptions } from '@orkestrel/process';
+> import type { EmitterInterface } from '@orkestrel/emitter';
+> import type { ExecutableOptions } from '@orkestrel/process';
+> import type { ExecuteInput } from '@orkestrel/process';
+> import type { ExecuteOptions } from '@orkestrel/process';
+> import type { ExecuteResult } from '@orkestrel/process';
+> import type { ExecuteSyncOptions } from '@orkestrel/process';
+> import type { ProcessCommand } from '@orkestrel/process';
+> import type { ProcessEventMap } from '@orkestrel/process';
+> import type { ProcessExit } from '@orkestrel/process';
+> import type { ProcessInterface } from '@orkestrel/process';
+> import type { ProcessManagerEventMap } from '@orkestrel/process';
+> import type { ProcessManagerInterface } from '@orkestrel/process';
+> import type { ProcessManagerOptions } from '@orkestrel/process';
+> import type { ProcessOptions } from '@orkestrel/process';
+> import type { Readable } from 'node:stream';
+> import type { SessionEventMap } from '@orkestrel/process';
+> import type { SessionInterface } from '@orkestrel/process';
+> import type { SessionOptions } from '@orkestrel/process';
+> import type { SpawnInput } from '@orkestrel/process';
+154c147,148
+<  * Creates one supervised child process.
+---
+>  * Creates one supervised child process and returns it as a {@link ProcessInterface}, so a caller
+>  * holds the published contract rather than the `Process` class.
+159c153
+<  * @example
+---
+>  * @example Supervise a child and read its lines
+164c158
+<  * 	command: { file: 'node', arguments: ['--version'] },
+---
+>  * 	command: { file: 'node', arguments: ['-e', 'console.log("ready"); console.log("done")'] },
+166c160
+<  * 	grace: 5000,
+---
+>  * 	grace: 5_000, // POSIX only: the window between SIGTERM and SIGKILL
+167a162,169
+>  *
+>  * const lines: string[] = []
+>  * for await (const line of child.lines) lines.push(line)
+>  * lines // ['ready', 'done']
+>  *
+>  * const exit = await child.exit
+>  * exit.code // 0
+>  * await child.destroy()
+173c175,177
+<  * Creates one keyed registry of supervised child processes.
+---
+>  * Creates one empty keyed registry of supervised child processes and returns it as a
+>  * {@link ProcessManagerInterface}, so a caller holds the published contract rather than the
+>  * `ProcessManager` class.
+188c192,193
+<  * Creates one raw byte session over a supervised child process.
+---
+>  * Creates one raw byte session over a supervised child process and returns it as a
+>  * {@link SessionInterface}, so a caller holds the published contract rather than the `Session` class.
+419c424,425
+<  * Supervises one child while keeping every observation channel aligned at termination.
+---
+>  * Supervises one child, frames its standard output into lines under a bounded backlog, and keeps
+>  * every observation channel aligned at termination.
+449c455
+< export declare class Process implements ProcessInterface_2 {
+---
+> export declare class Process implements ProcessInterface {
+457c463
+<     constructor(options: ProcessOptions_2);
+---
+>     constructor(options: ProcessOptions);
+477c483
+<     get exit(): Promise<ProcessExit_2>;
+---
+>     get exit(): Promise<ProcessExit>;
+590c596,597
+<  * Represents a keyed registry of live supervised child processes.
+---
+>  * Launches supervised children under caller-chosen ids, evicts each one as it settles, and destroys
+>  * every live child on teardown.
+618c625
+< export declare class ProcessManager implements ProcessManagerInterface_2 {
+---
+> export declare class ProcessManager implements ProcessManagerInterface {
+625c632
+<     constructor(options?: ProcessManagerOptions_2);
+---
+>     constructor(options?: ProcessManagerOptions);
+636c643
+<     process(id: string): ProcessInterface_2 | undefined;
+---
+>     process(id: string): ProcessInterface | undefined;
+642c649
+<     processes(): readonly ProcessInterface_2[];
+---
+>     processes(): readonly ProcessInterface[];
+660c667
+<     launch(id: string, options: ProcessOptions_2): ProcessInterface_2;
+---
+>     launch(id: string, options: ProcessOptions): ProcessInterface;
+748c755,756
+<  * Resolves a command file to the executable path the host would launch.
+---
+>  * Resolves a command file to the executable path the host would launch, or to `undefined` on a POSIX
+>  * host, which performs its own lookup.
+792c800
+< export declare class Session implements SessionInterface_2 {
+---
+> export declare class Session implements SessionInterface {
+800c808
+<     constructor(options: SessionOptions_2);
+---
+>     constructor(options: SessionOptions);
+818c826
+<     get exit(): Promise<ProcessExit_2>;
+---
+>     get exit(): Promise<ProcessExit>;
+975c983
+<     constructor(options: ProcessOptions_2, face: SupervisorFace);
+---
+>     constructor(options: ProcessOptions, face: SupervisorFace);
+1000c1008
+<     get exit(): Promise<ProcessExit_2>;
+---
+>     get exit(): Promise<ProcessExit>;
+diff -r -w -B '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-process-following-final-pack/baseline/package/dist/src/server/index.js /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-process-following-final-pack/extract/package/dist/src/server/index.js
+309c309,310
+< * Resolves a command file to the executable path the host would launch.
+---
+> * Resolves a command file to the executable path the host would launch, or to `undefined` on a POSIX
+> * host, which performs its own lookup.
+1448c1449,1450
+< * Supervises one child while keeping every observation channel aligned at termination.
+---
+> * Supervises one child, frames its standard output into lines under a bounded backlog, and keeps
+> * every observation channel aligned at termination.
+1737c1739,1740
+< * Represents a keyed registry of live supervised child processes.
+---
+> * Launches supervised children under caller-chosen ids, evicts each one as it settles, and destroys
+> * every live child on teardown.
+2083c2086,2087
+< * Creates one supervised child process.
+---
+> * Creates one supervised child process and returns it as a {@link ProcessInterface}, so a caller
+> * holds the published contract rather than the `Process` class.
+2088c2092
+< * @example
+---
+> * @example Supervise a child and read its lines
+2093c2097
+< * 	command: { file: 'node', arguments: ['--version'] },
+---
+> * 	command: { file: 'node', arguments: ['-e', 'console.log("ready"); console.log("done")'] },
+2095c2099
+< * 	grace: 5000,
+---
+> * 	grace: 5_000, // POSIX only: the window between SIGTERM and SIGKILL
+2096a2101,2108
+> *
+> * const lines: string[] = []
+> * for await (const line of child.lines) lines.push(line)
+> * lines // ['ready', 'done']
+> *
+> * const exit = await child.exit
+> * exit.code // 0
+> * await child.destroy()
+2103c2115,2116
+< * Creates one raw byte session over a supervised child process.
+---
+> * Creates one raw byte session over a supervised child process and returns it as a
+> * {@link SessionInterface}, so a caller holds the published contract rather than the `Session` class.
+2123c2136,2138
+< * Creates one keyed registry of supervised child processes.
+---
+> * Creates one empty keyed registry of supervised child processes and returns it as a
+> * {@link ProcessManagerInterface}, so a caller holds the published contract rather than the
+> * `ProcessManager` class.

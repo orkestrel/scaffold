@@ -24,7 +24,7 @@ for these packages. Keep prompt.txt unchanged until this layer is prepared.
 | Package | Pending version | Current preparation |
 | --- | --- | --- |
 | console | 0.0.13 | prepared at ed57bc7; final prepublish/pack accepted; campaign/main pushed; clean canonical main; unpublished |
-| database | 0.0.14 | source accepted and committed at a5aeb2a; compiler-backed consumer and portable assertions green; final preparation pending |
+| database | 0.0.14 | prepared at 4453c26; final prepublish/pack accepted; campaign/main pushed; clean canonical main; unpublished |
 | form | 0.0.6 | prepared at 0f4f28d; final prepublish/pack accepted; campaign/main pushed; clean canonical main; unpublished |
 | markdown | 0.0.14 | source accepted and committed at aefdd8f with required helper tracked; final preparation pending |
 | pool | 0.0.11 | prepared at 25ea973; final prepublish/pack accepted; campaign/main pushed; clean canonical main; unpublished |

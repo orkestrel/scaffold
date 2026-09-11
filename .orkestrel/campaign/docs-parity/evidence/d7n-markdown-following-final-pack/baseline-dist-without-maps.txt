@@ -1,0 +1,2446 @@
+diff -r '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-markdown-following-final-pack/baseline/package/dist/src/core/index.cjs /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-markdown-following-final-pack/extract/package/dist/src/core/index.cjs
+9c9
+< * and the `compilers.ts` renderer (`renderHTML`) honor before degrading. It bounds blockquote nesting, inline
+---
+> * and the `compilers.ts` renderer (`renderHTML`) honor before degrading, at 64. It bounds blockquote nesting, inline
+164c164
+< * Narrows to {@link CodeSpanNode} - the node whose `element` discriminant is
+---
+> * Narrows to {@link CodeSpanNode} — the node whose `element` discriminant is
+221c221
+< * Determines whether an arbitrary value is a valid {@link InlineNode} - a text
+---
+> * Determines whether an arbitrary value is a valid {@link InlineNode} — a text
+225c225
+< * Total: never throws, even on cyclic or pathologically deep input - every
+---
+> * Total: never throws, even on cyclic or pathologically deep input — every
+260c260
+< * Determines whether an arbitrary value is a valid {@link BlockNode} - a
+---
+> * Determines whether an arbitrary value is a valid {@link BlockNode} — a
+265c265
+< * Total: never throws, even on cyclic or pathologically deep input - every
+---
+> * Total: never throws, even on cyclic or pathologically deep input — every
+269c269
+< * than named separately - it is used at exactly these two sites.
+---
+> * than named separately — it is used at exactly these two sites.
+311c311
+< * Determines whether an arbitrary value is a valid {@link MarkdownNode} - the
+---
+> * Determines whether an arbitrary value is a valid {@link MarkdownNode} — the
+316c316
+< * Total: never throws, even on cyclic or pathologically deep input - every
+---
+> * Total: never throws, even on cyclic or pathologically deep input — every
+320c320
+< * named separately - it is used at exactly these two sites.
+---
+> * named separately — it is used at exactly these two sites.
+338c338
+< * Determines whether an arbitrary value is a valid {@link MarkdownDocument} -
+---
+> * Determines whether an arbitrary value is a valid {@link MarkdownDocument} —
+343c343
+< * Total: never throws, even on cyclic or pathologically deep input - every
+---
+> * Total: never throws, even on cyclic or pathologically deep input — every
+515c515,516
+< * block phase.
+---
+> * block phase — the document half of what {@link parseProvenance} returns. Malformed
+> * markdown degrades to literal text, so the parse never throws.
+530c531,532
+< * Parses a markdown string into a document and its original-source spans.
+---
+> * Parses a markdown string into a document and its original-source spans. Malformed
+> * markdown degrades to literal text, so the parse never throws.
+555c557,558
+< * breaks) into inline AST nodes, coalescing adjacent text runs.
+---
+> * breaks) into inline AST nodes, coalescing adjacent text runs and reading no block
+> * structure. Malformed markdown degrades to literal text, so the parse never throws.
+785c788
+< * Counts the leading space / tab characters on `line` (a tab counts as one) - the
+---
+> * Counts the leading space / tab characters on `line` (a tab counts as one) — the
+803c806
+< * Checks whether `character` is whitespace under the emphasis flanking rule - a space, a
+---
+> * Checks whether `character` is whitespace under the emphasis flanking rule — a space, a
+819c822
+< * Checks whether `character` is escapable by a leading backslash - the ASCII punctuation
+---
+> * Checks whether `character` is escapable by a leading backslash — the ASCII punctuation
+835c838
+< * Checks whether `line` is blank - empty, or containing only whitespace - the markdown
+---
+> * Checks whether `line` is blank — empty, or containing only whitespace — the markdown
+851c854
+< * Checks whether `line` is a blockquote line (`>` optionally indented up to three spaces) -
+---
+> * Checks whether `line` is a blockquote line (`>` optionally indented up to three spaces) —
+866c869
+< * Checks whether `line` closes a fence opened by `marker` - the same fence character, a run
+---
+> * Checks whether `line` closes a fence opened by `marker` — the same fence character, a run
+892c895
+< * Checks whether `character` is a regex-`\s`-equivalent whitespace character - the
+---
+> * Checks whether `character` is a regex-`\s`-equivalent whitespace character — the
+908c911
+< * Checks whether `line` is a thematic break (horizontal rule) - three or more of the SAME
+---
+> * Checks whether `line` is a thematic break (horizontal rule) — three or more of the same
+928c931
+< * Checks whether the pair (`header`, `delimiter`) opens a GFM table - `delimiter` is a row of
+---
+> * Checks whether the pair (`header`, `delimiter`) opens a GFM table — `delimiter` is a row of
+930c933
+< * header row IMMEDIATELY followed by a delimiter row.
+---
+> * header row immediately followed by a delimiter row.
+1060,1063c1063,1067
+< * Splits one GFM table row into its cell strings - outer pipes are optional, an escaped
+< * pipe (`\|`) inside a cell is NOT a separator (it becomes a literal `|`), and the
+< * empty leading / trailing cell produced by an outer `|` is dropped. Derives the string
+< * form from {@link splitTableSources}, which owns the escaped-pipe splitting rule.
+---
+> * Splits one GFM table row into its cell strings — outer pipes are optional, a pipe
+> * escaped by a leading backslash inside a cell is not a separator (it becomes a literal
+> * pipe character), and the empty leading / trailing cell an outer pipe produces is
+> * dropped. Derives the string form from {@link splitTableSources}, which owns the
+> * escaped-pipe splitting rule.
+1126c1130
+< * Derives the per-column {@link TableAlign} list from a GFM delimiter row - `:---`
+---
+> * Derives the per-column {@link TableAlign} list from a GFM delimiter row — `:---`
+1150,1151c1154,1155
+< * Checks whether the line at `index` starts a NEW block kind (heading / fence / thematic
+< * break / blockquote / list / table) - the paragraph collector stops at such a line
+---
+> * Checks whether the line at `index` starts a new block kind (heading / fence / thematic
+> * break / blockquote / list / table) — the paragraph collector stops at such a line
+1170c1174
+< * Resolves backslash escapes in a raw string to their literal characters - used for a
+---
+> * Resolves backslash escapes in a raw string to their literal characters — used for a
+1193c1197
+< * Merges adjacent text nodes into one - the inline scanner emits a text node per
+---
+> * Merges adjacent text nodes into one — the inline scanner emits a text node per
+1232c1236
+< * SAME length, the CommonMark rule that lets a span contain backticks). Returns the
+---
+> * same length, the CommonMark rule that lets a span contain backticks). Returns the
+1266c1270
+< * Locates a link `[text](href)` at `start` - the text runs to a BALANCED `]`, then `(`
+---
+> * Locates a link `[text](href)` at `start` — the text runs to a balanced `]`, then `(`
+1324c1328
+< * Scans a link `[text](href)` at `start` - the text runs to a BALANCED `]`, then `(`
+---
+> * Scans a link `[text](href)` at `start` — the text runs to a balanced `]`, then `(`
+1357c1361
+< * Locates an emphasis run at `start` (`*` / `_`, doubled for strong) - finds the nearest
+---
+> * Locates an emphasis run at `start` (`*` / `_`, doubled for strong) — finds the nearest
+1416c1420
+< * Scans an emphasis run at `start` (`*` / `_`, doubled for strong) - finds the nearest
+---
+> * Scans an emphasis run at `start` (`*` / `_`, doubled for strong) — finds the nearest
+1450c1454
+< * Scans the window `[from, to)` of `source` into inline nodes - the single recursive
+---
+> * Scans the window `[from, to)` of `source` into inline nodes — the single recursive
+1462,1463c1466,1467
+< *   children. At {@link MAX_DEPTH} the window is never scanned for markup - it emits as
+< *   a single literal text node - so pathological nesting (`[[[[…`, `****…`) cannot
+---
+> *   children. At {@link MAX_DEPTH} the window is never scanned for markup — it emits as
+> *   a single literal text node — so pathological nesting (`[[[[…`, `****…`) cannot
+1465c1469
+< * @returns The parsed inline nodes (NOT yet coalesced)
+---
+> * @returns The parsed inline nodes (not yet coalesced)
+2163,2164c2167,2168
+< * Renders a {@link MarkdownNode} to its CANONICAL markdown source - the inverse
+< * projection of `renderHTML`, and the serializer a `parse(renderMarkdown(doc))`
+---
+> * Renders a {@link MarkdownNode} to its canonical markdown source — the inverse
+> * projection of `renderHTML`. It is the serializer a `parse(renderMarkdown(doc))`
+2169,2171c2173,2175
+< * `> `-prefixed blockquote lines, GFM tables (1-space-padded cells, `\|`-escaped
+< * pipes, an alignment delimiter row), `[text](href)` links, `![alt](src)` images,
+< * and two-space hard breaks. A `text` node's literal content is backslash-escaped
+---
+> * `> `-prefixed blockquote lines, GFM tables (1-space-padded cells, a backslash
+> * before each literal pipe, an alignment delimiter row), `[text](href)` links,
+> * `![alt](src)` images, and two-space hard breaks. A `text` node's literal content is backslash-escaped
+2488,2489c2492,2493
+< * Trims the whitespace at the two ends of an inline run - the leading whitespace of a
+< * leading text node and the trailing whitespace of a trailing one - dropping either
+---
+> * Trims the whitespace at the two ends of an inline run — the leading whitespace of a
+> * leading text node and the trailing whitespace of a trailing one — dropping either
+2534c2538
+< * A hard break is `  \n` in markdown source, so it survives a re-parse only BETWEEN
+---
+> * A hard break is `  \n` in markdown source, so it survives a re-parse only between
+2538c2542
+< * a break cannot be written at all - a heading and a table cell are one line each - it
+---
+> * a break cannot be written at all — a heading and a table cell are one line each — it
+2594c2598
+< * Combines the projections of one node's children into the projection of that node -
+---
+> * Combines the projections of one node's children into the projection of that node —
+2601c2605
+< * paragraph BEFORE it. That is what keeps `<div>lead<p>a</p></div>` two paragraphs in
+---
+> * paragraph before it. That is what keeps `<div>lead<p>a</p></div>` two paragraphs in
+2681c2685
+< * Reads a projection as BLOCK content - the view a document, a blockquote, and a list
+---
+> * Reads a projection as block content — the view a document, a blockquote, and a list
+2727c2731
+< * Reads a projection as INLINE content - the view a link, an emphasis, and a table cell
+---
+> * Reads a projection as inline content — the view a link, an emphasis, and a table cell
+2754c2758
+< * Projects one HTML leaf - a text node, a comment, or a doctype - to its
+---
+> * Projects one HTML leaf — a text node, a comment, or a doctype — to its
+2784,2785c2788,2789
+< * Projects one HTML container - the document root or an element - from its children's
+< * already-computed projections. THE element mapping, and the only place that decides
+---
+> * Projects one HTML container — the document root or an element — from its children's
+> * already-computed projections. The element mapping, and the only place that decides
+2797c2801
+< * `UNSAFE_ELEMENTS` subtree contributes nothing at all, text included. Every OTHER
+---
+> * `UNSAFE_ELEMENTS` subtree contributes nothing at all, text included. Every other
+2799c2803
+< * shape - `<div><p>a</p><p>b</p></div>` stays two paragraphs.
+---
+> * shape — `<div><p>a</p><p>b</p></div>` stays two paragraphs.
+2803c2807
+< * body from its `code` child's raw text, and a list takes one item per `li` child - so
+---
+> * body from its `code` child's raw text, and a list takes one item per `li` child — so
+3091c3095
+< * Projects an `@orkestrel/html` {@link HTMLNode} into a {@link MarkdownDocument} - the
+---
+> * Projects an `@orkestrel/html` {@link HTMLNode} into a {@link MarkdownDocument} — the
+3095,3096c3099,3100
+< * **Engine.** One total handler table - {@link projectHTMLNode} for the containers,
+< * {@link projectHTMLLeaf} for the leaves - folded by `@orkestrel/html`'s own `foldNode`, so
+---
+> * **Engine.** One total handler table — {@link projectHTMLNode} for the containers,
+> * {@link projectHTMLLeaf} for the leaves — folded by `@orkestrel/html`'s own `foldNode`, so
+3102c3106
+< * first: a document nested past it projects to a chain bounded by THAT cap, with the
+---
+> * first: a document nested past it projects to a chain bounded by that cap, with the
+3105c3109
+< * then truncate again - so the anchor law below is a law within the depth budget, and
+---
+> * then truncate again — so the anchor law that follows is a law within the depth budget, and
+3111c3115
+< * link or image is KEPT - `[text]()` - since a bad URL is no reason to lose the words
+---
+> * link or image is kept — `[text]()` — because a bad URL is no reason to lose the words
+3116c3120
+< * PROJECTED AST, not the input bytes:
+---
+> * projected AST, not the input bytes:
+3119,3120c3123,3124
+< * translations - whitespace collapsed, edges trimmed, a blank paragraph dropped, a hard
+< * break only where a line can end - because a shape markdown cannot write back is a
+---
+> * translations — whitespace collapsed, edges trimmed, a blank paragraph dropped, a hard
+> * break only where a line can end — because a shape markdown cannot write back is a
+3147c3151
+< * Walks a {@link MarkdownNode} depth-first, pre-order, root-inclusive - yields
+---
+> * Walks a {@link MarkdownNode} depth-first, pre-order, root-inclusive — yields
+3210c3214
+< * Folds a {@link MarkdownNode} into a `T` through a total catamorphism - children are
+---
+> * Folds a {@link MarkdownNode} into a `T` through a total catamorphism — children are
+3215c3219
+< * **Table contract.** A {@link TableNode} has no single `children` array - its cells
+---
+> * **Table contract.** A {@link TableNode} has no single `children` array — its cells
+3217,3219c3221,3223
+< * rows). The `table` handler receives ONE folded `T` per inline node, flattened in
+< * walk order across ALL cells - every header cell's inline nodes (column order), then
+< * every body row's cells' inline nodes (row order, then column order) - and reads
+---
+> * rows). The `table` handler receives one folded `T` per inline node, flattened in
+> * walk order across all cells — every header cell's inline nodes (column order), then
+> * every body row's cells' inline nodes (row order, then column order) — and reads
+3362c3366
+< * Rewrites a {@link MarkdownDocument} bottom-up (copy-on-write) - each node's children
+---
+> * Rewrites a {@link MarkdownDocument} bottom-up (copy-on-write) — each node's children
+3364,3365c3368,3369
+< * document ROOT is never passed to `rewrite` (the `element: 'document'` invariant
+< * always holds). A table's inline cells and a list's items ARE rewritten.
+---
+> * document root is never passed to `rewrite` (the `element: 'document'` invariant
+> * always holds). A table's inline cells and a list's items are rewritten too.
+3374c3378
+< * input child is reused - `rewriteDocument` stays total and never produces a
+---
+> * input child is reused — `rewriteDocument` stays total and never produces a
+3379c3383
+< * UNCHANGED (by reference, not rebuilt, and `rewrite` is not invoked on it) instead of
+---
+> * unchanged (by reference, not rebuilt, and `rewrite` is not invoked on it) instead of
+3646c3650
+< * code-block node under `node`, including image alternative content, in walk order -
+---
+> * code-block node under `node`, including image alternative content, in walk order —
+3722a3727,3729
+> * Sanitization is unconditional: the function takes one argument and declares no
+> * options, so no call shape opts out of it.
+> *
+3744c3751
+< * Describes the shape of a {@link TextNode} - a plain-text leaf inline run.
+---
+> * Describes the shape of a {@link TextNode} — a plain-text leaf inline run.
+3760c3767
+< * Describes the shape of a {@link CodeSpanNode} - an inline code span (`` `code` ``).
+---
+> * Describes the shape of a {@link CodeSpanNode} — an inline code span (`` `code` ``).
+3776c3783
+< * Describes the shape of a {@link LineBreakNode} - a GFM hard line-break leaf.
+---
+> * Describes the shape of a {@link LineBreakNode} — a GFM hard line-break leaf.
+3789c3796
+< * Describes the shape of a {@link CodeBlockNode} - a fenced code block. `lang` is
+---
+> * Describes the shape of a {@link CodeBlockNode} — a fenced code block. `lang` is
+3808c3815
+< * Describes the shape of a {@link ThematicBreakNode} - a horizontal rule. Carries no
+---
+> * Describes the shape of a {@link ThematicBreakNode} — a horizontal rule. Carries no
+3822,3823c3829,3831
+< * Describes the shape of a {@link TableAlign} - the per-column GFM table alignment
+< * literal.
+---
+> * Describes the shape of a {@link TableAlign} — the per-column GFM table alignment
+> * literal. Absence is no member of it, so the shape refuses the `null` a bare `---`
+> * delimiter takes in a `TableNode`'s `align` list.
+3842c3850
+< * Describes the shape of {@link ListItemMatch} - the parsed parts of a single list-item
+---
+> * Describes the shape of {@link ListItemMatch} — the parsed parts of a single list-item
+3871,3874c3879,3882
+< *   block phase then the inline phase) once, keeping the AST and a COPY of the span map
+< *   that parse recorded. Given a {@link MarkdownDocument}, the document is adopted AS-IS
+< *   and is NOT re-validated - gate an untrusted value with `isMarkdownDocument` first.
+< * - **Provenance.** {@link span} reads the region of the ORIGINAL constructor string a
+---
+> *   block phase then the inline phase) once, keeping the AST and a copy of the span map
+> *   that parse recorded. Given a {@link MarkdownDocument}, the document is adopted as-is
+> *   and is not re-validated — gate an untrusted value with `isMarkdownDocument` first.
+> * - **Provenance.** {@link span} reads the region of the original constructor string a
+3878c3886
+< *   returns a fresh value. A node reports the region THIS handle holds for its identity,
+---
+> *   returns a fresh value. A node reports the region this handle holds for its identity,
+3886c3894
+< * - **Immutable.** {@link map} never mutates the stored AST - it returns a NEW `Markdown`
+---
+> * - **Immutable.** {@link map} never mutates the stored AST — it returns a new `Markdown`
+3891c3899
+< *   `stream` is shallow - only the document's direct block children.
+---
+> *   `stream` is shallow — only the document's direct block children.
+3893c3901
+< * @example
+---
+> * @example Construct from a string and narrow with a guard
+3895c3903
+< * import { Markdown, isHeadingNode, renderMarkdown } from '@src/core'
+---
+> * import { Markdown, isHeadingNode } from '@orkestrel/markdown'
+3898,3902c3906,3909
+< * const heading = markdown.find(isHeadingNode) // the HeadingNode, or undefined
+< * const shouted = markdown.map((node) =>
+< *   node.element === 'text' ? { element: 'text', value: node.value.toUpperCase() } : node,
+< * )
+< * renderMarkdown(shouted.document) // '# TITLE\n\nA **BOLD** [LINK](https://x.dev).'
+---
+> * markdown.document.children[0] // { element: 'heading', level: 1, children: [...] }
+> *
+> * const heading = markdown.find(isHeadingNode) // HeadingNode | undefined, narrowed
+> * if (heading !== undefined) heading.level // number — narrowed to HeadingNode
+3947c3954
+< 	* Returns THE deep traversal - a lazy, depth-first, pre-order, root-inclusive generator
+---
+> 	* Returns the deep traversal — a lazy, depth-first, pre-order, root-inclusive generator
+3999c4006
+< 	* (shallow, source order) - a fresh, pull-based source per call: one block is
+---
+> 	* (shallow, source order) — a fresh, pull-based source per call: one block is
+4054c4061
+< * {@link MarkdownDocument} - a typed AST plus the query, rewrite, and fold operations
+---
+> * {@link MarkdownDocument} — a typed AST plus the query, rewrite, and fold operations
+4062c4069
+< * {@link MarkdownDocument}, adopts it AS-IS without re-validation - gate an untrusted
+---
+> * {@link MarkdownDocument}, adopts it as-is without re-validation — gate an untrusted
+4064c4071
+< * degrades to text, never throws) and zero-dependency - a hand-written scanner, no
+---
+> * degrades to text, never throws) and zero-dependency — a hand-written scanner, no
+4083c4090
+< * {@link TextNode} - a guard, coercing parser, JSON Schema, and seeded
+---
+> * {@link TextNode} — a guard, coercing parser, JSON Schema, and seeded
+4101c4108
+< * {@link CodeSpanNode} - a guard, coercing parser, JSON Schema, and seeded
+---
+> * {@link CodeSpanNode} — a guard, coercing parser, JSON Schema, and seeded
+4135c4142
+< * {@link CodeBlockNode} - a guard, coercing parser, JSON Schema, and seeded
+---
+> * {@link CodeBlockNode} — a guard, coercing parser, JSON Schema, and seeded
+4153c4160
+< * {@link ThematicBreakNode} - a guard, coercing parser, JSON Schema, and
+---
+> * {@link ThematicBreakNode} — a guard, coercing parser, JSON Schema, and
+diff -r '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-markdown-following-final-pack/baseline/package/dist/src/core/index.d.cts /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-markdown-following-final-pack/extract/package/dist/src/core/index.d.cts
+2,8c2,8
+< import { CommentNode } from '@orkestrel/html';
+< import { ContractInterface } from '@orkestrel/contract';
+< import { DoctypeNode } from '@orkestrel/html';
+< import { ElementNode } from '@orkestrel/html';
+< import { Guard } from '@orkestrel/contract';
+< import { HTMLDocument } from '@orkestrel/html';
+< import { HTMLNode } from '@orkestrel/html';
+---
+> import type { CommentNode } from '@orkestrel/html';
+> import type { ContractInterface } from '@orkestrel/contract';
+> import type { DoctypeNode } from '@orkestrel/html';
+> import type { ElementNode } from '@orkestrel/html';
+> import type { Guard } from '@orkestrel/contract';
+> import type { HTMLDocument } from '@orkestrel/html';
+> import type { HTMLNode } from '@orkestrel/html';
+14c14
+< import { TextNode as TextNode_2 } from '@orkestrel/html';
+---
+> import type { TextNode as TextNode_2 } from '@orkestrel/html';
+19c19
+< /** Represents a blockquote - `>`-prefixed lines; `children` the block content parsed from the de-quoted lines (so quotes nest). */
+---
+> /** Represents a blockquote — `>`-prefixed lines; `children` the block content parsed from the de-quoted lines (so quotes nest). */
+27c27
+<  * Merges adjacent text nodes into one - the inline scanner emits a text node per
+---
+>  * Merges adjacent text nodes into one — the inline scanner emits a text node per
+43c43
+<  * Represents a fenced code block - ```` ```lang ````. `code` is the verbatim block content (no
+---
+>  * Represents a fenced code block — ```` ```lang ````. `code` is the verbatim block content (no
+57c57
+<  * Describes the shape of a {@link CodeBlockNode} - a fenced code block. `lang` is
+---
+>  * Describes the shape of a {@link CodeBlockNode} — a fenced code block. `lang` is
+70,73c70,73
+< export declare const codeBlockShape: ObjectShape<{
+<     element: LiteralShape<readonly ["codeBlock"]>;
+<     lang: OptionalShape<StringShape>;
+<     code: StringShape;
+---
+> export declare const codeBlockShape: ObjectShape<    {
+> element: LiteralShape<readonly ["codeBlock"]>;
+> lang: OptionalShape<StringShape>;
+> code: StringShape;
+77c77
+<  * Represents the located extent of one inline code span - the value the inline phase's code
+---
+>  * Represents the located extent of one inline code span — the value the inline phase's code
+88c88
+<  * Represents an inline code span - `` `code` ``. `value` is the verbatim span text; no inner
+---
+>  * Represents an inline code span — `` `code` ``. `value` is the verbatim span text; no inner
+99c99
+<  * Describes the shape of a {@link CodeSpanNode} - an inline code span (`` `code` ``).
+---
+>  * Describes the shape of a {@link CodeSpanNode} — an inline code span (`` `code` ``).
+110,112c110,112
+< export declare const codeSpanShape: ObjectShape<{
+<     element: LiteralShape<readonly ["codeSpan"]>;
+<     value: StringShape;
+---
+> export declare const codeSpanShape: ObjectShape<    {
+> element: LiteralShape<readonly ["codeSpan"]>;
+> value: StringShape;
+150c150
+<  * Counts the leading space / tab characters on `line` (a tab counts as one) - the
+---
+>  * Counts the leading space / tab characters on `line` (a tab counts as one) — the
+165c165
+<  * {@link CodeBlockNode} - a guard, coercing parser, JSON Schema, and seeded
+---
+>  * {@link CodeBlockNode} — a guard, coercing parser, JSON Schema, and seeded
+182c182
+<  * {@link CodeSpanNode} - a guard, coercing parser, JSON Schema, and seeded
+---
+>  * {@link CodeSpanNode} — a guard, coercing parser, JSON Schema, and seeded
+214c214
+<  * {@link MarkdownDocument} - a typed AST plus the query, rewrite, and fold operations
+---
+>  * {@link MarkdownDocument} — a typed AST plus the query, rewrite, and fold operations
+222c222
+<  * {@link MarkdownDocument}, adopts it AS-IS without re-validation - gate an untrusted
+---
+>  * {@link MarkdownDocument}, adopts it as-is without re-validation — gate an untrusted
+224c224
+<  * degrades to text, never throws) and zero-dependency - a hand-written scanner, no
+---
+>  * degrades to text, never throws) and zero-dependency — a hand-written scanner, no
+264c264
+<  * {@link TextNode} - a guard, coercing parser, JSON Schema, and seeded
+---
+>  * {@link TextNode} — a guard, coercing parser, JSON Schema, and seeded
+281c281
+<  * {@link ThematicBreakNode} - a guard, coercing parser, JSON Schema, and
+---
+>  * {@link ThematicBreakNode} — a guard, coercing parser, JSON Schema, and
+297c297
+<  * Derives the per-column {@link TableAlign} list from a GFM delimiter row - `:---`
+---
+>  * Derives the per-column {@link TableAlign} list from a GFM delimiter row — `:---`
+312c312
+<  * Represents the located content and syntax bounds of one emphasis run - the value the inline
+---
+>  * Represents the located content and syntax bounds of one emphasis run — the value the inline
+327c327
+<  * Represents emphasized inline content - `*italic*` / `_italic_` (`strong: false`) or
+---
+>  * Represents emphasized inline content — `*italic*` / `_italic_` (`strong: false`) or
+341c341
+<  * Represents the scanned result of one emphasis run - the node the inline phase's emphasis
+---
+>  * Represents the scanned result of one emphasis run — the node the inline phase's emphasis
+412c412
+<  * Represents the parsed parts of a fenced-code opening line - the value the block phase's fence
+---
+>  * Represents the parsed parts of a fenced-code opening line — the value the block phase's fence
+424c424
+<  * code-block node under `node`, including image alternative content, in walk order -
+---
+>  * code-block node under `node`, including image alternative content, in walk order —
+447c447
+<  * Folds a {@link MarkdownNode} into a `T` through a total catamorphism - children are
+---
+>  * Folds a {@link MarkdownNode} into a `T` through a total catamorphism — children are
+452c452
+<  * **Table contract.** A {@link TableNode} has no single `children` array - its cells
+---
+>  * **Table contract.** A {@link TableNode} has no single `children` array — its cells
+454,456c454,456
+<  * rows). The `table` handler receives ONE folded `T` per inline node, flattened in
+<  * walk order across ALL cells - every header cell's inline nodes (column order), then
+<  * every body row's cells' inline nodes (row order, then column order) - and reads
+---
+>  * rows). The `table` handler receives one folded `T` per inline node, flattened in
+>  * walk order across all cells — every header cell's inline nodes (column order), then
+>  * every body row's cells' inline nodes (row order, then column order) — and reads
+480c480
+<  * Represents the parsed parts of a single ATX heading line - the value the block phase's heading
+---
+>  * Represents the parsed parts of a single ATX heading line — the value the block phase's heading
+493c493
+<  * Represents an ATX heading - `#` … `######`. `level` is 1–6 (the number of leading `#`),
+---
+>  * Represents an ATX heading — `#` … `######`. `level` is 1–6 (the number of leading `#`),
+505c505
+<  * Projects an `@orkestrel/html` {@link HTMLNode} into a {@link MarkdownDocument} - the
+---
+>  * Projects an `@orkestrel/html` {@link HTMLNode} into a {@link MarkdownDocument} — the
+509,510c509,510
+<  * **Engine.** One total handler table - {@link projectHTMLNode} for the containers,
+<  * {@link projectHTMLLeaf} for the leaves - folded by `@orkestrel/html`'s own `foldNode`, so
+---
+>  * **Engine.** One total handler table — {@link projectHTMLNode} for the containers,
+>  * {@link projectHTMLLeaf} for the leaves — folded by `@orkestrel/html`'s own `foldNode`, so
+516c516
+<  * first: a document nested past it projects to a chain bounded by THAT cap, with the
+---
+>  * first: a document nested past it projects to a chain bounded by that cap, with the
+519c519
+<  * then truncate again - so the anchor law below is a law within the depth budget, and
+---
+>  * then truncate again — so the anchor law that follows is a law within the depth budget, and
+525c525
+<  * link or image is KEPT - `[text]()` - since a bad URL is no reason to lose the words
+---
+>  * link or image is kept — `[text]()` — because a bad URL is no reason to lose the words
+530c530
+<  * PROJECTED AST, not the input bytes:
+---
+>  * projected AST, not the input bytes:
+533,534c533,534
+<  * translations - whitespace collapsed, edges trimmed, a blank paragraph dropped, a hard
+<  * break only where a line can end - because a shape markdown cannot write back is a
+---
+>  * translations — whitespace collapsed, edges trimmed, a blank paragraph dropped, a hard
+>  * break only where a line can end — because a shape markdown cannot write back is a
+551c551
+<  * Represents an inline image - `![alt](src)`. `children` are the inline nodes of the
+---
+>  * Represents an inline image — `![alt](src)`. `children` are the inline nodes of the
+566c566
+<  * Checks whether `line` is blank - empty, or containing only whitespace - the markdown
+---
+>  * Checks whether `line` is blank — empty, or containing only whitespace — the markdown
+581c581
+<  * Determines whether an arbitrary value is a valid {@link BlockNode} - a
+---
+>  * Determines whether an arbitrary value is a valid {@link BlockNode} — a
+586c586
+<  * Total: never throws, even on cyclic or pathologically deep input - every
+---
+>  * Total: never throws, even on cyclic or pathologically deep input — every
+590c590
+<  * than named separately - it is used at exactly these two sites.
+---
+>  * than named separately — it is used at exactly these two sites.
+635c635
+<  * Narrows to {@link CodeSpanNode} - the node whose `element` discriminant is
+---
+>  * Narrows to {@link CodeSpanNode} — the node whose `element` discriminant is
+662c662
+<  * Checks whether `character` is escapable by a leading backslash - the ASCII punctuation
+---
+>  * Checks whether `character` is escapable by a leading backslash — the ASCII punctuation
+677c677
+<  * Checks whether `line` closes a fence opened by `marker` - the same fence character, a run
+---
+>  * Checks whether `line` closes a fence opened by `marker` — the same fence character, a run
+692c692
+<  * Checks whether `character` is a regex-`\s`-equivalent whitespace character - the
+---
+>  * Checks whether `character` is a regex-`\s`-equivalent whitespace character — the
+707c707
+<  * Checks whether `character` is whitespace under the emphasis flanking rule - a space, a
+---
+>  * Checks whether `character` is whitespace under the emphasis flanking rule — a space, a
+748c748
+<  * Determines whether an arbitrary value is a valid {@link InlineNode} - a text
+---
+>  * Determines whether an arbitrary value is a valid {@link InlineNode} — a text
+752c752
+<  * Total: never throws, even on cyclic or pathologically deep input - every
+---
+>  * Total: never throws, even on cyclic or pathologically deep input — every
+809c809
+<  * Determines whether an arbitrary value is a valid {@link MarkdownDocument} -
+---
+>  * Determines whether an arbitrary value is a valid {@link MarkdownDocument} —
+814c814
+<  * Total: never throws, even on cyclic or pathologically deep input - every
+---
+>  * Total: never throws, even on cyclic or pathologically deep input — every
+832c832
+<  * Determines whether an arbitrary value is a valid {@link MarkdownNode} - the
+---
+>  * Determines whether an arbitrary value is a valid {@link MarkdownNode} — the
+837c837
+<  * Total: never throws, even on cyclic or pathologically deep input - every
+---
+>  * Total: never throws, even on cyclic or pathologically deep input — every
+841c841
+<  * named separately - it is used at exactly these two sites.
+---
+>  * named separately — it is used at exactly these two sites.
+870c870
+<  * Checks whether `line` is a blockquote line (`>` optionally indented up to three spaces) -
+---
+>  * Checks whether `line` is a blockquote line (`>` optionally indented up to three spaces) —
+897c897
+<  * Checks whether the pair (`header`, `delimiter`) opens a GFM table - `delimiter` is a row of
+---
+>  * Checks whether the pair (`header`, `delimiter`) opens a GFM table — `delimiter` is a row of
+899c899
+<  * header row IMMEDIATELY followed by a delimiter row.
+---
+>  * header row immediately followed by a delimiter row.
+926c926
+<  * Checks whether `line` is a thematic break (horizontal rule) - three or more of the SAME
+---
+>  * Checks whether `line` is a thematic break (horizontal rule) — three or more of the same
+969c969,972
+< /** Represents a GFM hard line break - two or more trailing spaces before a newline. */
+---
+> /**
+>  * Represents a GFM hard line break — two or more trailing spaces before a newline in
+>  * markdown source, a `br` element in HTML.
+>  */
+975c978
+<  * Describes the shape of a {@link LineBreakNode} - a GFM hard line-break leaf.
+---
+>  * Describes the shape of a {@link LineBreakNode} — a GFM hard line-break leaf.
+986,987c989,990
+< export declare const lineBreakShape: ObjectShape<{
+<     element: LiteralShape<readonly ["break"]>;
+---
+> export declare const lineBreakShape: ObjectShape<    {
+> element: LiteralShape<readonly ["break"]>;
+991c994
+<  * Represents the located syntax bounds of one `[text](href)` link - the value the inline phase's
+---
+>  * Represents the located syntax bounds of one `[text](href)` link — the value the inline phase's
+1002c1005
+<  * Represents an inline link - `[text](href)`. `children` are the inline nodes of the link text.
+---
+>  * Represents an inline link — `[text](href)`. `children` are the inline nodes of the link text.
+1015c1018
+<  * Represents the scanned result of one `[text](href)` link - the node the inline phase's link
+---
+>  * Represents the scanned result of one `[text](href)` link — the node the inline phase's link
+1026c1029
+<  * Represents the result of collecting one list - the node the construct scanner built and where
+---
+>  * Represents the result of collecting one list — the node the construct scanner built and where
+1037c1040
+<  * Represents the parsed parts of a single list-item line - the value the block phase's
+---
+>  * Represents the parsed parts of a single list-item line — the value the block phase's
+1049c1052
+<     /** Holds the full marker width (indent + bullet/ordinal + the following space) - the continuation indent. */
+---
+>     /** Holds the full marker width (indent + bullet/ordinal + the following space) — the continuation indent. */
+1054c1057
+<  * Describes the shape of {@link ListItemMatch} - the parsed parts of a single list-item
+---
+>  * Describes the shape of {@link ListItemMatch} — the parsed parts of a single list-item
+1067,1072c1070,1075
+< export declare const listItemMatchShape: ObjectShape<{
+<     ordered: BooleanShape;
+<     start: NumberShape;
+<     content: StringShape;
+<     indent: NumberShape;
+<     marker: NumberShape;
+---
+> export declare const listItemMatchShape: ObjectShape<    {
+> ordered: BooleanShape;
+> start: NumberShape;
+> content: StringShape;
+> indent: NumberShape;
+> marker: NumberShape;
+1075c1078
+< /** Represents one item of a {@link ListNode} - `children` the block content of the item (typically one paragraph, plus any nested list). */
+---
+> /** Represents one item of a {@link ListNode} — `children` the block content of the item (typically one paragraph, plus any nested list). */
+1083c1086
+<  * Represents a list - bulleted (`-` / `*` / `+`, `ordered: false`) or numbered (`1.` / `1)`,
+---
+>  * Represents a list — bulleted (`-` / `*` / `+`, `ordered: false`) or numbered (`1.` / `1)`,
+1099c1102
+<  * Locates an emphasis run at `start` (`*` / `_`, doubled for strong) - finds the nearest
+---
+>  * Locates an emphasis run at `start` (`*` / `_`, doubled for strong) — finds the nearest
+1119c1122
+<  * Locates a link `[text](href)` at `start` - the text runs to a BALANCED `]`, then `(`
+---
+>  * Locates a link `[text](href)` at `start` — the text runs to a balanced `]`, then `(`
+1143,1146c1146,1149
+<  *   block phase then the inline phase) once, keeping the AST and a COPY of the span map
+<  *   that parse recorded. Given a {@link MarkdownDocument}, the document is adopted AS-IS
+<  *   and is NOT re-validated - gate an untrusted value with `isMarkdownDocument` first.
+<  * - **Provenance.** {@link span} reads the region of the ORIGINAL constructor string a
+---
+>  *   block phase then the inline phase) once, keeping the AST and a copy of the span map
+>  *   that parse recorded. Given a {@link MarkdownDocument}, the document is adopted as-is
+>  *   and is not re-validated — gate an untrusted value with `isMarkdownDocument` first.
+>  * - **Provenance.** {@link span} reads the region of the original constructor string a
+1150c1153
+<  *   returns a fresh value. A node reports the region THIS handle holds for its identity,
+---
+>  *   returns a fresh value. A node reports the region this handle holds for its identity,
+1158c1161
+<  * - **Immutable.** {@link map} never mutates the stored AST - it returns a NEW `Markdown`
+---
+>  * - **Immutable.** {@link map} never mutates the stored AST — it returns a new `Markdown`
+1163c1166
+<  *   `stream` is shallow - only the document's direct block children.
+---
+>  *   `stream` is shallow — only the document's direct block children.
+1165c1168
+<  * @example
+---
+>  * @example Construct from a string and narrow with a guard
+1167c1170
+<  * import { Markdown, isHeadingNode, renderMarkdown } from '@src/core'
+---
+>  * import { Markdown, isHeadingNode } from '@orkestrel/markdown'
+1170,1174c1173,1176
+<  * const heading = markdown.find(isHeadingNode) // the HeadingNode, or undefined
+<  * const shouted = markdown.map((node) =>
+<  *   node.element === 'text' ? { element: 'text', value: node.value.toUpperCase() } : node,
+<  * )
+<  * renderMarkdown(shouted.document) // '# TITLE\n\nA **BOLD** [LINK](https://x.dev).'
+---
+>  * markdown.document.children[0] // { element: 'heading', level: 1, children: [...] }
+>  *
+>  * const heading = markdown.find(isHeadingNode) // HeadingNode | undefined, narrowed
+>  * if (heading !== undefined) heading.level // number — narrowed to HeadingNode
+1201c1203
+<      * Returns THE deep traversal - a lazy, depth-first, pre-order, root-inclusive generator
+---
+>      * Returns the deep traversal — a lazy, depth-first, pre-order, root-inclusive generator
+1238c1240
+<      * (shallow, source order) - a fresh, pull-based source per call: one block is
+---
+>      * (shallow, source order) — a fresh, pull-based source per call: one block is
+1261c1263,1270
+< /** Represents one projected table cell - the inline content and alignment of a `th` / `td`. */
+---
+> /**
+>  * Represents one projected table cell — the inline content and alignment of a `th` / `td`.
+>  *
+>  * @remarks
+>  * {@link htmlToMarkdown} derives a projected table's header row from the source HTML
+>  * structure rather than from any flag a cell carries: the header is the first
+>  * `th`-bearing row, and every row after it becomes a body row.
+>  */
+1265c1274
+<     /** Holds the cell's inline content - a table cell is inline-only, so block content flattens to text. */
+---
+>     /** Holds the cell's inline content — a table cell is inline-only, so block content flattens to text. */
+1270c1279
+<  * Pairs a rewritten value with the input node each rewritten node was produced from -
+---
+>  * Pairs a rewritten value with the input node each rewritten node was produced from —
+1275c1284
+<  * `derivations` is keyed by the nodes of the OUTPUT, and each entry names the DIRECT
+---
+>  * `derivations` is keyed by the nodes of the output, and each entry names the direct
+1280,1282c1289,1291
+<  * - the output identity's OWN span in the source handle wins, whatever the map says,
+<  *   so an identity the rewrite reused - one node returned for several inputs, or a
+<  *   node the handler moved elsewhere in the tree - keeps the region it already had;
+---
+>  * - the output identity's own span in the source handle wins, whatever the map says,
+>  *   so an identity the rewrite reused — one node returned for several inputs, or a
+>  *   node the handler moved elsewhere in the tree — keeps the region it already had;
+1299c1308
+<  * Represents the root of a parsed markdown AST - the ordered block children of the whole
+---
+>  * Represents the root of a parsed markdown AST — the ordered block children of the whole
+1309,1310c1318,1319
+<  * Represents a fold handler for one AST element - receives the node and its children
+<  * ALREADY folded to `T`, and produces the node's own `T`. The building block of a
+---
+>  * Represents a fold handler for one AST element — receives the node and its children
+>  * already folded to `T`, and produces the node's own `T`. The building block of a
+1316c1325
+<  * Represents the total catamorphism table for {@link MarkdownInterface.fold} - one
+---
+>  * Represents the total catamorphism table for {@link MarkdownInterface.fold} — one
+1327c1336
+<     /** Folds a {@link ThematicBreakNode} (leaf - always called with an empty children list). */
+---
+>     /** Folds a {@link ThematicBreakNode} (leaf — always called with an empty children list). */
+1331c1340
+<     /** Folds a {@link CodeBlockNode} (leaf - always called with an empty children list). */
+---
+>     /** Folds a {@link CodeBlockNode} (leaf — always called with an empty children list). */
+1339,1340c1348,1349
+<      * to ONE folded `T` per inline node - header cells first (column order), then body
+<      * rows' cells (row order, then column order). It is NOT a leaf: recover cell
+---
+>      * to one folded `T` per inline node — header cells first (column order), then body
+>      * rows' cells (row order, then column order). It is not a leaf: recover cell
+1345c1354
+<     /** Folds a {@link TextNode} (leaf - always called with an empty children list). */
+---
+>     /** Folds a {@link TextNode} (leaf — always called with an empty children list). */
+1349c1358
+<     /** Folds a {@link CodeSpanNode} (leaf - always called with an empty children list). */
+---
+>     /** Folds a {@link CodeSpanNode} (leaf — always called with an empty children list). */
+1351c1360
+<     /** Folds a {@link LineBreakNode} (leaf - always called with an empty children list). */
+---
+>     /** Folds a {@link LineBreakNode} (leaf — always called with an empty children list). */
+1364,1365c1373,1374
+<  * - **Immutable.** {@link MarkdownInterface.map} never mutates the stored AST - it
+<  *   returns a NEW {@link MarkdownInterface} instance; the document root invariant
+---
+>  * - **Immutable.** {@link MarkdownInterface.map} never mutates the stored AST — it
+>  *   returns a new {@link MarkdownInterface} instance; the document root invariant
+1368c1377
+<  *   depth-first, pre-order, root-inclusive; `stream` is shallow - only the
+---
+>  *   depth-first, pre-order, root-inclusive; `stream` is shallow — only the
+1371c1380
+<  *   blocks - a fresh, pull-based source per call: exactly one block is enqueued per
+---
+>  *   blocks — a fresh, pull-based source per call: exactly one block is enqueued per
+1385c1394
+<      * Returns THE deep traversal - a lazy, depth-first, pre-order, root-inclusive
+---
+>      * Returns the deep traversal — a lazy, depth-first, pre-order, root-inclusive
+1394c1403,1406
+<     /** Finds the first node (depth-first, pre-order) narrowed by a type guard. */
+---
+>     /**
+>      * Finds the first node (depth-first, pre-order) narrowed by a type guard, and returns
+>      * `undefined` when no node matches; a second overload takes a plain predicate.
+>      */
+1398c1410,1413
+<     /** Collects every node (depth-first, pre-order) narrowed by a type guard. */
+---
+>     /**
+>      * Collects every node (depth-first, pre-order) narrowed by a type guard; a second
+>      * overload takes a plain predicate.
+>      */
+1411c1426
+<      * where THIS handle holds coordinates for it. A handle constructed from an adopted
+---
+>      * where this handle holds coordinates for it. A handle constructed from an adopted
+1413c1428
+<      * so no coordinates exist to report. A text run the PARSE joined from adjacent
+---
+>      * so no coordinates exist to report. A text run the parse joined from adjacent
+1415c1430
+<      * only a REWRITE output that holds no region of its own and was assembled from
+---
+>      * only a rewrite output that holds no region of its own and was assembled from
+1424c1439
+<     /** Folds the AST depth-first, pre-order into an accumulator. */
+---
+>     /** Folds the AST depth-first, pre-order into an accumulator through a reducer callback. */
+1430c1445
+<      * (shallow, source order) - a lazy, pull-based, backpressure-respecting source. A
+---
+>      * (shallow, source order) — a lazy, pull-based, backpressure-respecting source. A
+1437c1452
+<  * Represents any node in a markdown AST - the {@link MarkdownDocument} root, a {@link BlockNode},
+---
+>  * Represents any node in a markdown AST — the {@link MarkdownDocument} root, a {@link BlockNode},
+1444c1459
+<  * Pairs a parsed document with the {@link MarkdownSpan} of each of its nodes - what
+---
+>  * Pairs a parsed document with the {@link MarkdownSpan} of each of its nodes — what
+1448,1450c1463,1465
+<  * `spans` is keyed by node identity, so it addresses the nodes of THAT document and
+<  * no other. A node the parse merged from adjacent scanner output - the text run
+<  * `coalesceText` joins - is present and carries the region ENCLOSING its parts, from
+---
+>  * `spans` is keyed by node identity, so it addresses the nodes of that document and
+>  * no other. A node the parse merged from adjacent scanner output — the text run
+>  * `coalesceText` joins — is present and carries the region enclosing its parts, from
+1462c1477
+<  * Represents what one HTML node projects to on the way to markdown - the fold value
+---
+>  * Represents what one HTML node projects to on the way to markdown — the fold value
+1472c1487
+<  * - `blocks` / `inlines` - the block and inline views. They are exclusive by
+---
+>  * - `blocks` / `inlines` — the block and inline views. They are exclusive by
+1476c1491
+<  * - `text` - the raw, uncollapsed, unescaped subtree text a code span and a
+---
+>  * - `text` — the raw, uncollapsed, unescaped subtree text a code span and a
+1479c1494
+<  * - `cells` / `rows` - table structure in flight. A cell travels up to its `tr` and a
+---
+>  * - `cells` / `rows` — table structure in flight. A cell travels up to its `tr` and a
+1492c1507
+<     /** Holds the rows this node contributes to an enclosing table - each its cells, in column order. */
+---
+>     /** Holds the rows this node contributes to an enclosing table — each its cells, in column order. */
+1497c1512
+<  * Represents a copy-on-write node rewrite applied bottom-up by {@link MarkdownInterface.map} -
+---
+>  * Represents a copy-on-write node rewrite applied bottom-up by {@link MarkdownInterface.map} —
+1504c1519
+<  * Maps one run of a {@link MarkdownSource} back to the region of the ORIGINAL
+---
+>  * Maps one run of a {@link MarkdownSource} back to the region of the original
+1510c1525
+<  * being stored beside them, so no length member exists to drift. The run's DERIVED
+---
+>  * being stored beside them, so no length member exists to drift. The run's derived
+1521c1536
+<  *   whole original region instead of the prefix an affine step would reach - which is
+---
+>  *   whole original region instead of the prefix an affine step would reach — which is
+1524c1539
+<  *   LAST segment whose `offset` equals `p`, skipping every earlier segment at that
+---
+>  *   last segment whose `offset` equals `p`, skipping every earlier segment at that
+1541c1556
+<  * original string - what `splitLines` returns per line, so every phase downstream of
+---
+>  * original string — what `splitLines` returns per line, so every phase downstream of
+1566c1581
+<  * Addresses a half-open region of the ORIGINAL markdown string, in UTF-16 code units -
+---
+>  * Addresses a half-open region of the original markdown string, in UTF-16 code units —
+1573c1588
+<  * ORIGINAL source region the node was produced from. That region is not the node's
+---
+>  * original source region the node was produced from. That region is not the node's
+1613c1628
+<  * and the `compilers.ts` renderer (`renderHTML`) honor before degrading. It bounds blockquote nesting, inline
+---
+>  * and the `compilers.ts` renderer (`renderHTML`) honor before degrading, at 64. It bounds blockquote nesting, inline
+1621c1636
+<  * Combines the projections of one node's children into the projection of that node -
+---
+>  * Combines the projections of one node's children into the projection of that node —
+1628c1643
+<  * paragraph BEFORE it. That is what keeps `<div>lead<p>a</p></div>` two paragraphs in
+---
+>  * paragraph before it. That is what keeps `<div>lead<p>a</p></div>` two paragraphs in
+1654c1669
+<  * A hard break is `  \n` in markdown source, so it survives a re-parse only BETWEEN
+---
+>  * A hard break is `  \n` in markdown source, so it survives a re-parse only between
+1658c1673
+<  * a break cannot be written at all - a heading and a table cell are one line each - it
+---
+>  * a break cannot be written at all — a heading and a table cell are one line each — it
+1690c1705
+< /** Represents a paragraph - a run of non-blank lines that is not another block; `children` its inline content. */
+---
+> /** Represents a paragraph — a run of non-blank lines that is not another block; `children` its inline content. */
+1716c1731,1732
+<  * block phase.
+---
+>  * block phase — the document half of what {@link parseProvenance} returns. Malformed
+>  * markdown degrades to literal text, so the parse never throws.
+1730c1746,1747
+<  * breaks) into inline AST nodes, coalescing adjacent text runs.
+---
+>  * breaks) into inline AST nodes, coalescing adjacent text runs and reading no block
+>  * structure. Malformed markdown degrades to literal text, so the parse never throws.
+1743c1760,1761
+<  * Parses a markdown string into a document and its original-source spans.
+---
+>  * Parses a markdown string into a document and its original-source spans. Malformed
+>  * markdown degrades to literal text, so the parse never throws.
+1757c1775
+<  * Projects one HTML leaf - a text node, a comment, or a doctype - to its
+---
+>  * Projects one HTML leaf — a text node, a comment, or a doctype — to its
+1778,1779c1796,1797
+<  * Projects one HTML container - the document root or an element - from its children's
+<  * already-computed projections. THE element mapping, and the only place that decides
+---
+>  * Projects one HTML container — the document root or an element — from its children's
+>  * already-computed projections. The element mapping, and the only place that decides
+1791c1809
+<  * `UNSAFE_ELEMENTS` subtree contributes nothing at all, text included. Every OTHER
+---
+>  * `UNSAFE_ELEMENTS` subtree contributes nothing at all, text included. Every other
+1793c1811
+<  * shape - `<div><p>a</p><p>b</p></div>` stays two paragraphs.
+---
+>  * shape — `<div><p>a</p><p>b</p></div>` stays two paragraphs.
+1797c1815
+<  * body from its `code` child's raw text, and a list takes one item per `li` child - so
+---
+>  * body from its `code` child's raw text, and a list takes one item per `li` child — so
+1815c1833
+<  * Reads a projection as BLOCK content - the view a document, a blockquote, and a list
+---
+>  * Reads a projection as block content — the view a document, a blockquote, and a list
+1836c1854
+<  * Reads a projection as INLINE content - the view a link, an emphasis, and a table cell
+---
+>  * Reads a projection as inline content — the view a link, an emphasis, and a table cell
+1876a1895,1897
+>  * Sanitization is unconditional: the function takes one argument and declares no
+>  * options, so no call shape opts out of it.
+>  *
+1895,1896c1916,1917
+<  * Renders a {@link MarkdownNode} to its CANONICAL markdown source - the inverse
+<  * projection of `renderHTML`, and the serializer a `parse(renderMarkdown(doc))`
+---
+>  * Renders a {@link MarkdownNode} to its canonical markdown source — the inverse
+>  * projection of `renderHTML`. It is the serializer a `parse(renderMarkdown(doc))`
+1901,1903c1922,1924
+<  * `> `-prefixed blockquote lines, GFM tables (1-space-padded cells, `\|`-escaped
+<  * pipes, an alignment delimiter row), `[text](href)` links, `![alt](src)` images,
+<  * and two-space hard breaks. A `text` node's literal content is backslash-escaped
+---
+>  * `> `-prefixed blockquote lines, GFM tables (1-space-padded cells, a backslash
+>  * before each literal pipe, an alignment delimiter row), `[text](href)` links,
+>  * `![alt](src)` images, and two-space hard breaks. A `text` node's literal content is backslash-escaped
+1926c1947
+<  * Rewrites a {@link MarkdownDocument} bottom-up (copy-on-write) - each node's children
+---
+>  * Rewrites a {@link MarkdownDocument} bottom-up (copy-on-write) — each node's children
+1928,1929c1949,1950
+<  * document ROOT is never passed to `rewrite` (the `element: 'document'` invariant
+<  * always holds). A table's inline cells and a list's items ARE rewritten.
+---
+>  * document root is never passed to `rewrite` (the `element: 'document'` invariant
+>  * always holds). A table's inline cells and a list's items are rewritten too.
+1938c1959
+<  * input child is reused - `rewriteDocument` stays total and never produces a
+---
+>  * input child is reused — `rewriteDocument` stays total and never produces a
+1943c1964
+<  * UNCHANGED (by reference, not rebuilt, and `rewrite` is not invoked on it) instead of
+---
+>  * unchanged (by reference, not rebuilt, and `rewrite` is not invoked on it) instead of
+1962c1983
+<  * SAME length, the CommonMark rule that lets a span contain backticks). Returns the
+---
+>  * same length, the CommonMark rule that lets a span contain backticks). Returns the
+1979c2000
+<  * Scans an emphasis run at `start` (`*` / `_`, doubled for strong) - finds the nearest
+---
+>  * Scans an emphasis run at `start` (`*` / `_`, doubled for strong) — finds the nearest
+2003c2024
+<  * Scans the window `[from, to)` of `source` into inline nodes - the single recursive
+---
+>  * Scans the window `[from, to)` of `source` into inline nodes — the single recursive
+2015,2016c2036,2037
+<  *   children. At {@link MAX_DEPTH} the window is never scanned for markup - it emits as
+<  *   a single literal text node - so pathological nesting (`[[[[…`, `****…`) cannot
+---
+>  *   children. At {@link MAX_DEPTH} the window is never scanned for markup — it emits as
+>  *   a single literal text node — so pathological nesting (`[[[[…`, `****…`) cannot
+2018c2039
+<  * @returns The parsed inline nodes (NOT yet coalesced)
+---
+>  * @returns The parsed inline nodes (not yet coalesced)
+2054c2075
+<  * Scans a link `[text](href)` at `start` - the text runs to a BALANCED `]`, then `(`
+---
+>  * Scans a link `[text](href)` at `start` — the text runs to a balanced `]`, then `(`
+2109,2112c2130,2134
+<  * Splits one GFM table row into its cell strings - outer pipes are optional, an escaped
+<  * pipe (`\|`) inside a cell is NOT a separator (it becomes a literal `|`), and the
+<  * empty leading / trailing cell produced by an outer `|` is dropped. Derives the string
+<  * form from {@link splitTableSources}, which owns the escaped-pipe splitting rule.
+---
+>  * Splits one GFM table row into its cell strings — outer pipes are optional, a pipe
+>  * escaped by a leading backslash inside a cell is not a separator (it becomes a literal
+>  * pipe character), and the empty leading / trailing cell an outer pipe produces is
+>  * dropped. Derives the string form from {@link splitTableSources}, which owns the
+>  * escaped-pipe splitting rule.
+2139,2140c2161,2162
+<  * Checks whether the line at `index` starts a NEW block kind (heading / fence / thematic
+<  * break / blockquote / list / table) - the paragraph collector stops at such a line
+---
+>  * Checks whether the line at `index` starts a new block kind (heading / fence / thematic
+>  * break / blockquote / list / table) — the paragraph collector stops at such a line
+2177a2200,2205
+>  *
+>  * @remarks
+>  * The other place absence appears is {@link MarkdownCell.align}, which holds
+>  * `undefined` when the projected cell declared no alignment. That member is a plain
+>  * optional property on one cell rather than an entry in a positional array, so it
+>  * takes the ordinary `undefined` instead of the in-band `null` marker.
+2182,2183c2210,2212
+<  * Describes the shape of a {@link TableAlign} - the per-column GFM table alignment
+<  * literal.
+---
+>  * Describes the shape of a {@link TableAlign} — the per-column GFM table alignment
+>  * literal. Absence is no member of it, so the shape refuses the `null` a bare `---`
+>  * delimiter takes in a `TableNode`'s `align` list.
+2199c2228
+<  * Represents the result of collecting one GFM table - the node the construct scanner built and
+---
+>  * Represents the result of collecting one GFM table — the node the construct scanner built and
+2210c2239
+<  * Represents a GFM table - `header` the inline content of each header cell, `rows` the body
+---
+>  * Represents a GFM table — `header` the inline content of each header cell, `rows` the body
+2217c2246
+<     /** Holds the header row - one cell of inline content per column. */
+---
+>     /** Holds the header row — one cell of inline content per column. */
+2219c2248
+<     /** Holds the body rows - each a list of cells, each cell inline content. */
+---
+>     /** Holds the body rows — each a list of cells, each cell inline content. */
+2231c2260
+<  * Represents a run of plain text - the leaf inline node. `value` is the decoded text with
+---
+>  * Represents a run of plain text — the leaf inline node. `value` is the decoded text with
+2238c2267
+<     /** Holds the literal text content (escapes resolved, NOT yet HTML-escaped). */
+---
+>     /** Holds the literal text content (escapes resolved, not yet HTML-escaped). */
+2243c2272
+<  * Describes the shape of a {@link TextNode} - a plain-text leaf inline run.
+---
+>  * Describes the shape of a {@link TextNode} — a plain-text leaf inline run.
+2254,2256c2283,2285
+< export declare const textShape: ObjectShape<{
+<     element: LiteralShape<readonly ["text"]>;
+<     value: StringShape;
+---
+> export declare const textShape: ObjectShape<    {
+> element: LiteralShape<readonly ["text"]>;
+> value: StringShape;
+2259c2288
+< /** Represents a thematic break - a horizontal rule (`---` / `***` / `___` on its own line). */
+---
+> /** Represents a thematic break — a horizontal rule (`---` / `***` / `___` on its own line). */
+2265c2294
+<  * Describes the shape of a {@link ThematicBreakNode} - a horizontal rule. Carries no
+---
+>  * Describes the shape of a {@link ThematicBreakNode} — a horizontal rule. Carries no
+2277,2278c2306,2307
+< export declare const thematicBreakShape: ObjectShape<{
+<     element: LiteralShape<readonly ["thematicBreak"]>;
+---
+> export declare const thematicBreakShape: ObjectShape<    {
+> element: LiteralShape<readonly ["thematicBreak"]>;
+2282,2283c2311,2312
+<  * Trims the whitespace at the two ends of an inline run - the leading whitespace of a
+<  * leading text node and the trailing whitespace of a trailing one - dropping either
+---
+>  * Trims the whitespace at the two ends of an inline run — the leading whitespace of a
+>  * leading text node and the trailing whitespace of a trailing one — dropping either
+2316c2345
+<  * Resolves backslash escapes in a raw string to their literal characters - used for a
+---
+>  * Resolves backslash escapes in a raw string to their literal characters — used for a
+2330c2359
+<  * Walks a {@link MarkdownNode} depth-first, pre-order, root-inclusive - yields
+---
+>  * Walks a {@link MarkdownNode} depth-first, pre-order, root-inclusive — yields
+diff -r '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-markdown-following-final-pack/baseline/package/dist/src/core/index.d.ts /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-markdown-following-final-pack/extract/package/dist/src/core/index.d.ts
+2,8c2,8
+< import { CommentNode } from '@orkestrel/html';
+< import { ContractInterface } from '@orkestrel/contract';
+< import { DoctypeNode } from '@orkestrel/html';
+< import { ElementNode } from '@orkestrel/html';
+< import { Guard } from '@orkestrel/contract';
+< import { HTMLDocument } from '@orkestrel/html';
+< import { HTMLNode } from '@orkestrel/html';
+---
+> import type { CommentNode } from '@orkestrel/html';
+> import type { ContractInterface } from '@orkestrel/contract';
+> import type { DoctypeNode } from '@orkestrel/html';
+> import type { ElementNode } from '@orkestrel/html';
+> import type { Guard } from '@orkestrel/contract';
+> import type { HTMLDocument } from '@orkestrel/html';
+> import type { HTMLNode } from '@orkestrel/html';
+14c14
+< import { TextNode as TextNode_2 } from '@orkestrel/html';
+---
+> import type { TextNode as TextNode_2 } from '@orkestrel/html';
+19c19
+< /** Represents a blockquote - `>`-prefixed lines; `children` the block content parsed from the de-quoted lines (so quotes nest). */
+---
+> /** Represents a blockquote — `>`-prefixed lines; `children` the block content parsed from the de-quoted lines (so quotes nest). */
+27c27
+<  * Merges adjacent text nodes into one - the inline scanner emits a text node per
+---
+>  * Merges adjacent text nodes into one — the inline scanner emits a text node per
+43c43
+<  * Represents a fenced code block - ```` ```lang ````. `code` is the verbatim block content (no
+---
+>  * Represents a fenced code block — ```` ```lang ````. `code` is the verbatim block content (no
+57c57
+<  * Describes the shape of a {@link CodeBlockNode} - a fenced code block. `lang` is
+---
+>  * Describes the shape of a {@link CodeBlockNode} — a fenced code block. `lang` is
+70,73c70,73
+< export declare const codeBlockShape: ObjectShape<{
+<     element: LiteralShape<readonly ["codeBlock"]>;
+<     lang: OptionalShape<StringShape>;
+<     code: StringShape;
+---
+> export declare const codeBlockShape: ObjectShape<    {
+> element: LiteralShape<readonly ["codeBlock"]>;
+> lang: OptionalShape<StringShape>;
+> code: StringShape;
+77c77
+<  * Represents the located extent of one inline code span - the value the inline phase's code
+---
+>  * Represents the located extent of one inline code span — the value the inline phase's code
+88c88
+<  * Represents an inline code span - `` `code` ``. `value` is the verbatim span text; no inner
+---
+>  * Represents an inline code span — `` `code` ``. `value` is the verbatim span text; no inner
+99c99
+<  * Describes the shape of a {@link CodeSpanNode} - an inline code span (`` `code` ``).
+---
+>  * Describes the shape of a {@link CodeSpanNode} — an inline code span (`` `code` ``).
+110,112c110,112
+< export declare const codeSpanShape: ObjectShape<{
+<     element: LiteralShape<readonly ["codeSpan"]>;
+<     value: StringShape;
+---
+> export declare const codeSpanShape: ObjectShape<    {
+> element: LiteralShape<readonly ["codeSpan"]>;
+> value: StringShape;
+150c150
+<  * Counts the leading space / tab characters on `line` (a tab counts as one) - the
+---
+>  * Counts the leading space / tab characters on `line` (a tab counts as one) — the
+165c165
+<  * {@link CodeBlockNode} - a guard, coercing parser, JSON Schema, and seeded
+---
+>  * {@link CodeBlockNode} — a guard, coercing parser, JSON Schema, and seeded
+182c182
+<  * {@link CodeSpanNode} - a guard, coercing parser, JSON Schema, and seeded
+---
+>  * {@link CodeSpanNode} — a guard, coercing parser, JSON Schema, and seeded
+214c214
+<  * {@link MarkdownDocument} - a typed AST plus the query, rewrite, and fold operations
+---
+>  * {@link MarkdownDocument} — a typed AST plus the query, rewrite, and fold operations
+222c222
+<  * {@link MarkdownDocument}, adopts it AS-IS without re-validation - gate an untrusted
+---
+>  * {@link MarkdownDocument}, adopts it as-is without re-validation — gate an untrusted
+224c224
+<  * degrades to text, never throws) and zero-dependency - a hand-written scanner, no
+---
+>  * degrades to text, never throws) and zero-dependency — a hand-written scanner, no
+264c264
+<  * {@link TextNode} - a guard, coercing parser, JSON Schema, and seeded
+---
+>  * {@link TextNode} — a guard, coercing parser, JSON Schema, and seeded
+281c281
+<  * {@link ThematicBreakNode} - a guard, coercing parser, JSON Schema, and
+---
+>  * {@link ThematicBreakNode} — a guard, coercing parser, JSON Schema, and
+297c297
+<  * Derives the per-column {@link TableAlign} list from a GFM delimiter row - `:---`
+---
+>  * Derives the per-column {@link TableAlign} list from a GFM delimiter row — `:---`
+312c312
+<  * Represents the located content and syntax bounds of one emphasis run - the value the inline
+---
+>  * Represents the located content and syntax bounds of one emphasis run — the value the inline
+327c327
+<  * Represents emphasized inline content - `*italic*` / `_italic_` (`strong: false`) or
+---
+>  * Represents emphasized inline content — `*italic*` / `_italic_` (`strong: false`) or
+341c341
+<  * Represents the scanned result of one emphasis run - the node the inline phase's emphasis
+---
+>  * Represents the scanned result of one emphasis run — the node the inline phase's emphasis
+412c412
+<  * Represents the parsed parts of a fenced-code opening line - the value the block phase's fence
+---
+>  * Represents the parsed parts of a fenced-code opening line — the value the block phase's fence
+424c424
+<  * code-block node under `node`, including image alternative content, in walk order -
+---
+>  * code-block node under `node`, including image alternative content, in walk order —
+447c447
+<  * Folds a {@link MarkdownNode} into a `T` through a total catamorphism - children are
+---
+>  * Folds a {@link MarkdownNode} into a `T` through a total catamorphism — children are
+452c452
+<  * **Table contract.** A {@link TableNode} has no single `children` array - its cells
+---
+>  * **Table contract.** A {@link TableNode} has no single `children` array — its cells
+454,456c454,456
+<  * rows). The `table` handler receives ONE folded `T` per inline node, flattened in
+<  * walk order across ALL cells - every header cell's inline nodes (column order), then
+<  * every body row's cells' inline nodes (row order, then column order) - and reads
+---
+>  * rows). The `table` handler receives one folded `T` per inline node, flattened in
+>  * walk order across all cells — every header cell's inline nodes (column order), then
+>  * every body row's cells' inline nodes (row order, then column order) — and reads
+480c480
+<  * Represents the parsed parts of a single ATX heading line - the value the block phase's heading
+---
+>  * Represents the parsed parts of a single ATX heading line — the value the block phase's heading
+493c493
+<  * Represents an ATX heading - `#` … `######`. `level` is 1–6 (the number of leading `#`),
+---
+>  * Represents an ATX heading — `#` … `######`. `level` is 1–6 (the number of leading `#`),
+505c505
+<  * Projects an `@orkestrel/html` {@link HTMLNode} into a {@link MarkdownDocument} - the
+---
+>  * Projects an `@orkestrel/html` {@link HTMLNode} into a {@link MarkdownDocument} — the
+509,510c509,510
+<  * **Engine.** One total handler table - {@link projectHTMLNode} for the containers,
+<  * {@link projectHTMLLeaf} for the leaves - folded by `@orkestrel/html`'s own `foldNode`, so
+---
+>  * **Engine.** One total handler table — {@link projectHTMLNode} for the containers,
+>  * {@link projectHTMLLeaf} for the leaves — folded by `@orkestrel/html`'s own `foldNode`, so
+516c516
+<  * first: a document nested past it projects to a chain bounded by THAT cap, with the
+---
+>  * first: a document nested past it projects to a chain bounded by that cap, with the
+519c519
+<  * then truncate again - so the anchor law below is a law within the depth budget, and
+---
+>  * then truncate again — so the anchor law that follows is a law within the depth budget, and
+525c525
+<  * link or image is KEPT - `[text]()` - since a bad URL is no reason to lose the words
+---
+>  * link or image is kept — `[text]()` — because a bad URL is no reason to lose the words
+530c530
+<  * PROJECTED AST, not the input bytes:
+---
+>  * projected AST, not the input bytes:
+533,534c533,534
+<  * translations - whitespace collapsed, edges trimmed, a blank paragraph dropped, a hard
+<  * break only where a line can end - because a shape markdown cannot write back is a
+---
+>  * translations — whitespace collapsed, edges trimmed, a blank paragraph dropped, a hard
+>  * break only where a line can end — because a shape markdown cannot write back is a
+551c551
+<  * Represents an inline image - `![alt](src)`. `children` are the inline nodes of the
+---
+>  * Represents an inline image — `![alt](src)`. `children` are the inline nodes of the
+566c566
+<  * Checks whether `line` is blank - empty, or containing only whitespace - the markdown
+---
+>  * Checks whether `line` is blank — empty, or containing only whitespace — the markdown
+581c581
+<  * Determines whether an arbitrary value is a valid {@link BlockNode} - a
+---
+>  * Determines whether an arbitrary value is a valid {@link BlockNode} — a
+586c586
+<  * Total: never throws, even on cyclic or pathologically deep input - every
+---
+>  * Total: never throws, even on cyclic or pathologically deep input — every
+590c590
+<  * than named separately - it is used at exactly these two sites.
+---
+>  * than named separately — it is used at exactly these two sites.
+635c635
+<  * Narrows to {@link CodeSpanNode} - the node whose `element` discriminant is
+---
+>  * Narrows to {@link CodeSpanNode} — the node whose `element` discriminant is
+662c662
+<  * Checks whether `character` is escapable by a leading backslash - the ASCII punctuation
+---
+>  * Checks whether `character` is escapable by a leading backslash — the ASCII punctuation
+677c677
+<  * Checks whether `line` closes a fence opened by `marker` - the same fence character, a run
+---
+>  * Checks whether `line` closes a fence opened by `marker` — the same fence character, a run
+692c692
+<  * Checks whether `character` is a regex-`\s`-equivalent whitespace character - the
+---
+>  * Checks whether `character` is a regex-`\s`-equivalent whitespace character — the
+707c707
+<  * Checks whether `character` is whitespace under the emphasis flanking rule - a space, a
+---
+>  * Checks whether `character` is whitespace under the emphasis flanking rule — a space, a
+748c748
+<  * Determines whether an arbitrary value is a valid {@link InlineNode} - a text
+---
+>  * Determines whether an arbitrary value is a valid {@link InlineNode} — a text
+752c752
+<  * Total: never throws, even on cyclic or pathologically deep input - every
+---
+>  * Total: never throws, even on cyclic or pathologically deep input — every
+809c809
+<  * Determines whether an arbitrary value is a valid {@link MarkdownDocument} -
+---
+>  * Determines whether an arbitrary value is a valid {@link MarkdownDocument} —
+814c814
+<  * Total: never throws, even on cyclic or pathologically deep input - every
+---
+>  * Total: never throws, even on cyclic or pathologically deep input — every
+832c832
+<  * Determines whether an arbitrary value is a valid {@link MarkdownNode} - the
+---
+>  * Determines whether an arbitrary value is a valid {@link MarkdownNode} — the
+837c837
+<  * Total: never throws, even on cyclic or pathologically deep input - every
+---
+>  * Total: never throws, even on cyclic or pathologically deep input — every
+841c841
+<  * named separately - it is used at exactly these two sites.
+---
+>  * named separately — it is used at exactly these two sites.
+870c870
+<  * Checks whether `line` is a blockquote line (`>` optionally indented up to three spaces) -
+---
+>  * Checks whether `line` is a blockquote line (`>` optionally indented up to three spaces) —
+897c897
+<  * Checks whether the pair (`header`, `delimiter`) opens a GFM table - `delimiter` is a row of
+---
+>  * Checks whether the pair (`header`, `delimiter`) opens a GFM table — `delimiter` is a row of
+899c899
+<  * header row IMMEDIATELY followed by a delimiter row.
+---
+>  * header row immediately followed by a delimiter row.
+926c926
+<  * Checks whether `line` is a thematic break (horizontal rule) - three or more of the SAME
+---
+>  * Checks whether `line` is a thematic break (horizontal rule) — three or more of the same
+969c969,972
+< /** Represents a GFM hard line break - two or more trailing spaces before a newline. */
+---
+> /**
+>  * Represents a GFM hard line break — two or more trailing spaces before a newline in
+>  * markdown source, a `br` element in HTML.
+>  */
+975c978
+<  * Describes the shape of a {@link LineBreakNode} - a GFM hard line-break leaf.
+---
+>  * Describes the shape of a {@link LineBreakNode} — a GFM hard line-break leaf.
+986,987c989,990
+< export declare const lineBreakShape: ObjectShape<{
+<     element: LiteralShape<readonly ["break"]>;
+---
+> export declare const lineBreakShape: ObjectShape<    {
+> element: LiteralShape<readonly ["break"]>;
+991c994
+<  * Represents the located syntax bounds of one `[text](href)` link - the value the inline phase's
+---
+>  * Represents the located syntax bounds of one `[text](href)` link — the value the inline phase's
+1002c1005
+<  * Represents an inline link - `[text](href)`. `children` are the inline nodes of the link text.
+---
+>  * Represents an inline link — `[text](href)`. `children` are the inline nodes of the link text.
+1015c1018
+<  * Represents the scanned result of one `[text](href)` link - the node the inline phase's link
+---
+>  * Represents the scanned result of one `[text](href)` link — the node the inline phase's link
+1026c1029
+<  * Represents the result of collecting one list - the node the construct scanner built and where
+---
+>  * Represents the result of collecting one list — the node the construct scanner built and where
+1037c1040
+<  * Represents the parsed parts of a single list-item line - the value the block phase's
+---
+>  * Represents the parsed parts of a single list-item line — the value the block phase's
+1049c1052
+<     /** Holds the full marker width (indent + bullet/ordinal + the following space) - the continuation indent. */
+---
+>     /** Holds the full marker width (indent + bullet/ordinal + the following space) — the continuation indent. */
+1054c1057
+<  * Describes the shape of {@link ListItemMatch} - the parsed parts of a single list-item
+---
+>  * Describes the shape of {@link ListItemMatch} — the parsed parts of a single list-item
+1067,1072c1070,1075
+< export declare const listItemMatchShape: ObjectShape<{
+<     ordered: BooleanShape;
+<     start: NumberShape;
+<     content: StringShape;
+<     indent: NumberShape;
+<     marker: NumberShape;
+---
+> export declare const listItemMatchShape: ObjectShape<    {
+> ordered: BooleanShape;
+> start: NumberShape;
+> content: StringShape;
+> indent: NumberShape;
+> marker: NumberShape;
+1075c1078
+< /** Represents one item of a {@link ListNode} - `children` the block content of the item (typically one paragraph, plus any nested list). */
+---
+> /** Represents one item of a {@link ListNode} — `children` the block content of the item (typically one paragraph, plus any nested list). */
+1083c1086
+<  * Represents a list - bulleted (`-` / `*` / `+`, `ordered: false`) or numbered (`1.` / `1)`,
+---
+>  * Represents a list — bulleted (`-` / `*` / `+`, `ordered: false`) or numbered (`1.` / `1)`,
+1099c1102
+<  * Locates an emphasis run at `start` (`*` / `_`, doubled for strong) - finds the nearest
+---
+>  * Locates an emphasis run at `start` (`*` / `_`, doubled for strong) — finds the nearest
+1119c1122
+<  * Locates a link `[text](href)` at `start` - the text runs to a BALANCED `]`, then `(`
+---
+>  * Locates a link `[text](href)` at `start` — the text runs to a balanced `]`, then `(`
+1143,1146c1146,1149
+<  *   block phase then the inline phase) once, keeping the AST and a COPY of the span map
+<  *   that parse recorded. Given a {@link MarkdownDocument}, the document is adopted AS-IS
+<  *   and is NOT re-validated - gate an untrusted value with `isMarkdownDocument` first.
+<  * - **Provenance.** {@link span} reads the region of the ORIGINAL constructor string a
+---
+>  *   block phase then the inline phase) once, keeping the AST and a copy of the span map
+>  *   that parse recorded. Given a {@link MarkdownDocument}, the document is adopted as-is
+>  *   and is not re-validated — gate an untrusted value with `isMarkdownDocument` first.
+>  * - **Provenance.** {@link span} reads the region of the original constructor string a
+1150c1153
+<  *   returns a fresh value. A node reports the region THIS handle holds for its identity,
+---
+>  *   returns a fresh value. A node reports the region this handle holds for its identity,
+1158c1161
+<  * - **Immutable.** {@link map} never mutates the stored AST - it returns a NEW `Markdown`
+---
+>  * - **Immutable.** {@link map} never mutates the stored AST — it returns a new `Markdown`
+1163c1166
+<  *   `stream` is shallow - only the document's direct block children.
+---
+>  *   `stream` is shallow — only the document's direct block children.
+1165c1168
+<  * @example
+---
+>  * @example Construct from a string and narrow with a guard
+1167c1170
+<  * import { Markdown, isHeadingNode, renderMarkdown } from '@src/core'
+---
+>  * import { Markdown, isHeadingNode } from '@orkestrel/markdown'
+1170,1174c1173,1176
+<  * const heading = markdown.find(isHeadingNode) // the HeadingNode, or undefined
+<  * const shouted = markdown.map((node) =>
+<  *   node.element === 'text' ? { element: 'text', value: node.value.toUpperCase() } : node,
+<  * )
+<  * renderMarkdown(shouted.document) // '# TITLE\n\nA **BOLD** [LINK](https://x.dev).'
+---
+>  * markdown.document.children[0] // { element: 'heading', level: 1, children: [...] }
+>  *
+>  * const heading = markdown.find(isHeadingNode) // HeadingNode | undefined, narrowed
+>  * if (heading !== undefined) heading.level // number — narrowed to HeadingNode
+1201c1203
+<      * Returns THE deep traversal - a lazy, depth-first, pre-order, root-inclusive generator
+---
+>      * Returns the deep traversal — a lazy, depth-first, pre-order, root-inclusive generator
+1238c1240
+<      * (shallow, source order) - a fresh, pull-based source per call: one block is
+---
+>      * (shallow, source order) — a fresh, pull-based source per call: one block is
+1261c1263,1270
+< /** Represents one projected table cell - the inline content and alignment of a `th` / `td`. */
+---
+> /**
+>  * Represents one projected table cell — the inline content and alignment of a `th` / `td`.
+>  *
+>  * @remarks
+>  * {@link htmlToMarkdown} derives a projected table's header row from the source HTML
+>  * structure rather than from any flag a cell carries: the header is the first
+>  * `th`-bearing row, and every row after it becomes a body row.
+>  */
+1265c1274
+<     /** Holds the cell's inline content - a table cell is inline-only, so block content flattens to text. */
+---
+>     /** Holds the cell's inline content — a table cell is inline-only, so block content flattens to text. */
+1270c1279
+<  * Pairs a rewritten value with the input node each rewritten node was produced from -
+---
+>  * Pairs a rewritten value with the input node each rewritten node was produced from —
+1275c1284
+<  * `derivations` is keyed by the nodes of the OUTPUT, and each entry names the DIRECT
+---
+>  * `derivations` is keyed by the nodes of the output, and each entry names the direct
+1280,1282c1289,1291
+<  * - the output identity's OWN span in the source handle wins, whatever the map says,
+<  *   so an identity the rewrite reused - one node returned for several inputs, or a
+<  *   node the handler moved elsewhere in the tree - keeps the region it already had;
+---
+>  * - the output identity's own span in the source handle wins, whatever the map says,
+>  *   so an identity the rewrite reused — one node returned for several inputs, or a
+>  *   node the handler moved elsewhere in the tree — keeps the region it already had;
+1299c1308
+<  * Represents the root of a parsed markdown AST - the ordered block children of the whole
+---
+>  * Represents the root of a parsed markdown AST — the ordered block children of the whole
+1309,1310c1318,1319
+<  * Represents a fold handler for one AST element - receives the node and its children
+<  * ALREADY folded to `T`, and produces the node's own `T`. The building block of a
+---
+>  * Represents a fold handler for one AST element — receives the node and its children
+>  * already folded to `T`, and produces the node's own `T`. The building block of a
+1316c1325
+<  * Represents the total catamorphism table for {@link MarkdownInterface.fold} - one
+---
+>  * Represents the total catamorphism table for {@link MarkdownInterface.fold} — one
+1327c1336
+<     /** Folds a {@link ThematicBreakNode} (leaf - always called with an empty children list). */
+---
+>     /** Folds a {@link ThematicBreakNode} (leaf — always called with an empty children list). */
+1331c1340
+<     /** Folds a {@link CodeBlockNode} (leaf - always called with an empty children list). */
+---
+>     /** Folds a {@link CodeBlockNode} (leaf — always called with an empty children list). */
+1339,1340c1348,1349
+<      * to ONE folded `T` per inline node - header cells first (column order), then body
+<      * rows' cells (row order, then column order). It is NOT a leaf: recover cell
+---
+>      * to one folded `T` per inline node — header cells first (column order), then body
+>      * rows' cells (row order, then column order). It is not a leaf: recover cell
+1345c1354
+<     /** Folds a {@link TextNode} (leaf - always called with an empty children list). */
+---
+>     /** Folds a {@link TextNode} (leaf — always called with an empty children list). */
+1349c1358
+<     /** Folds a {@link CodeSpanNode} (leaf - always called with an empty children list). */
+---
+>     /** Folds a {@link CodeSpanNode} (leaf — always called with an empty children list). */
+1351c1360
+<     /** Folds a {@link LineBreakNode} (leaf - always called with an empty children list). */
+---
+>     /** Folds a {@link LineBreakNode} (leaf — always called with an empty children list). */
+1364,1365c1373,1374
+<  * - **Immutable.** {@link MarkdownInterface.map} never mutates the stored AST - it
+<  *   returns a NEW {@link MarkdownInterface} instance; the document root invariant
+---
+>  * - **Immutable.** {@link MarkdownInterface.map} never mutates the stored AST — it
+>  *   returns a new {@link MarkdownInterface} instance; the document root invariant
+1368c1377
+<  *   depth-first, pre-order, root-inclusive; `stream` is shallow - only the
+---
+>  *   depth-first, pre-order, root-inclusive; `stream` is shallow — only the
+1371c1380
+<  *   blocks - a fresh, pull-based source per call: exactly one block is enqueued per
+---
+>  *   blocks — a fresh, pull-based source per call: exactly one block is enqueued per
+1385c1394
+<      * Returns THE deep traversal - a lazy, depth-first, pre-order, root-inclusive
+---
+>      * Returns the deep traversal — a lazy, depth-first, pre-order, root-inclusive
+1394c1403,1406
+<     /** Finds the first node (depth-first, pre-order) narrowed by a type guard. */
+---
+>     /**
+>      * Finds the first node (depth-first, pre-order) narrowed by a type guard, and returns
+>      * `undefined` when no node matches; a second overload takes a plain predicate.
+>      */
+1398c1410,1413
+<     /** Collects every node (depth-first, pre-order) narrowed by a type guard. */
+---
+>     /**
+>      * Collects every node (depth-first, pre-order) narrowed by a type guard; a second
+>      * overload takes a plain predicate.
+>      */
+1411c1426
+<      * where THIS handle holds coordinates for it. A handle constructed from an adopted
+---
+>      * where this handle holds coordinates for it. A handle constructed from an adopted
+1413c1428
+<      * so no coordinates exist to report. A text run the PARSE joined from adjacent
+---
+>      * so no coordinates exist to report. A text run the parse joined from adjacent
+1415c1430
+<      * only a REWRITE output that holds no region of its own and was assembled from
+---
+>      * only a rewrite output that holds no region of its own and was assembled from
+1424c1439
+<     /** Folds the AST depth-first, pre-order into an accumulator. */
+---
+>     /** Folds the AST depth-first, pre-order into an accumulator through a reducer callback. */
+1430c1445
+<      * (shallow, source order) - a lazy, pull-based, backpressure-respecting source. A
+---
+>      * (shallow, source order) — a lazy, pull-based, backpressure-respecting source. A
+1437c1452
+<  * Represents any node in a markdown AST - the {@link MarkdownDocument} root, a {@link BlockNode},
+---
+>  * Represents any node in a markdown AST — the {@link MarkdownDocument} root, a {@link BlockNode},
+1444c1459
+<  * Pairs a parsed document with the {@link MarkdownSpan} of each of its nodes - what
+---
+>  * Pairs a parsed document with the {@link MarkdownSpan} of each of its nodes — what
+1448,1450c1463,1465
+<  * `spans` is keyed by node identity, so it addresses the nodes of THAT document and
+<  * no other. A node the parse merged from adjacent scanner output - the text run
+<  * `coalesceText` joins - is present and carries the region ENCLOSING its parts, from
+---
+>  * `spans` is keyed by node identity, so it addresses the nodes of that document and
+>  * no other. A node the parse merged from adjacent scanner output — the text run
+>  * `coalesceText` joins — is present and carries the region enclosing its parts, from
+1462c1477
+<  * Represents what one HTML node projects to on the way to markdown - the fold value
+---
+>  * Represents what one HTML node projects to on the way to markdown — the fold value
+1472c1487
+<  * - `blocks` / `inlines` - the block and inline views. They are exclusive by
+---
+>  * - `blocks` / `inlines` — the block and inline views. They are exclusive by
+1476c1491
+<  * - `text` - the raw, uncollapsed, unescaped subtree text a code span and a
+---
+>  * - `text` — the raw, uncollapsed, unescaped subtree text a code span and a
+1479c1494
+<  * - `cells` / `rows` - table structure in flight. A cell travels up to its `tr` and a
+---
+>  * - `cells` / `rows` — table structure in flight. A cell travels up to its `tr` and a
+1492c1507
+<     /** Holds the rows this node contributes to an enclosing table - each its cells, in column order. */
+---
+>     /** Holds the rows this node contributes to an enclosing table — each its cells, in column order. */
+1497c1512
+<  * Represents a copy-on-write node rewrite applied bottom-up by {@link MarkdownInterface.map} -
+---
+>  * Represents a copy-on-write node rewrite applied bottom-up by {@link MarkdownInterface.map} —
+1504c1519
+<  * Maps one run of a {@link MarkdownSource} back to the region of the ORIGINAL
+---
+>  * Maps one run of a {@link MarkdownSource} back to the region of the original
+1510c1525
+<  * being stored beside them, so no length member exists to drift. The run's DERIVED
+---
+>  * being stored beside them, so no length member exists to drift. The run's derived
+1521c1536
+<  *   whole original region instead of the prefix an affine step would reach - which is
+---
+>  *   whole original region instead of the prefix an affine step would reach — which is
+1524c1539
+<  *   LAST segment whose `offset` equals `p`, skipping every earlier segment at that
+---
+>  *   last segment whose `offset` equals `p`, skipping every earlier segment at that
+1541c1556
+<  * original string - what `splitLines` returns per line, so every phase downstream of
+---
+>  * original string — what `splitLines` returns per line, so every phase downstream of
+1566c1581
+<  * Addresses a half-open region of the ORIGINAL markdown string, in UTF-16 code units -
+---
+>  * Addresses a half-open region of the original markdown string, in UTF-16 code units —
+1573c1588
+<  * ORIGINAL source region the node was produced from. That region is not the node's
+---
+>  * original source region the node was produced from. That region is not the node's
+1613c1628
+<  * and the `compilers.ts` renderer (`renderHTML`) honor before degrading. It bounds blockquote nesting, inline
+---
+>  * and the `compilers.ts` renderer (`renderHTML`) honor before degrading, at 64. It bounds blockquote nesting, inline
+1621c1636
+<  * Combines the projections of one node's children into the projection of that node -
+---
+>  * Combines the projections of one node's children into the projection of that node —
+1628c1643
+<  * paragraph BEFORE it. That is what keeps `<div>lead<p>a</p></div>` two paragraphs in
+---
+>  * paragraph before it. That is what keeps `<div>lead<p>a</p></div>` two paragraphs in
+1654c1669
+<  * A hard break is `  \n` in markdown source, so it survives a re-parse only BETWEEN
+---
+>  * A hard break is `  \n` in markdown source, so it survives a re-parse only between
+1658c1673
+<  * a break cannot be written at all - a heading and a table cell are one line each - it
+---
+>  * a break cannot be written at all — a heading and a table cell are one line each — it
+1690c1705
+< /** Represents a paragraph - a run of non-blank lines that is not another block; `children` its inline content. */
+---
+> /** Represents a paragraph — a run of non-blank lines that is not another block; `children` its inline content. */
+1716c1731,1732
+<  * block phase.
+---
+>  * block phase — the document half of what {@link parseProvenance} returns. Malformed
+>  * markdown degrades to literal text, so the parse never throws.
+1730c1746,1747
+<  * breaks) into inline AST nodes, coalescing adjacent text runs.
+---
+>  * breaks) into inline AST nodes, coalescing adjacent text runs and reading no block
+>  * structure. Malformed markdown degrades to literal text, so the parse never throws.
+1743c1760,1761
+<  * Parses a markdown string into a document and its original-source spans.
+---
+>  * Parses a markdown string into a document and its original-source spans. Malformed
+>  * markdown degrades to literal text, so the parse never throws.
+1757c1775
+<  * Projects one HTML leaf - a text node, a comment, or a doctype - to its
+---
+>  * Projects one HTML leaf — a text node, a comment, or a doctype — to its
+1778,1779c1796,1797
+<  * Projects one HTML container - the document root or an element - from its children's
+<  * already-computed projections. THE element mapping, and the only place that decides
+---
+>  * Projects one HTML container — the document root or an element — from its children's
+>  * already-computed projections. The element mapping, and the only place that decides
+1791c1809
+<  * `UNSAFE_ELEMENTS` subtree contributes nothing at all, text included. Every OTHER
+---
+>  * `UNSAFE_ELEMENTS` subtree contributes nothing at all, text included. Every other
+1793c1811
+<  * shape - `<div><p>a</p><p>b</p></div>` stays two paragraphs.
+---
+>  * shape — `<div><p>a</p><p>b</p></div>` stays two paragraphs.
+1797c1815
+<  * body from its `code` child's raw text, and a list takes one item per `li` child - so
+---
+>  * body from its `code` child's raw text, and a list takes one item per `li` child — so
+1815c1833
+<  * Reads a projection as BLOCK content - the view a document, a blockquote, and a list
+---
+>  * Reads a projection as block content — the view a document, a blockquote, and a list
+1836c1854
+<  * Reads a projection as INLINE content - the view a link, an emphasis, and a table cell
+---
+>  * Reads a projection as inline content — the view a link, an emphasis, and a table cell
+1876a1895,1897
+>  * Sanitization is unconditional: the function takes one argument and declares no
+>  * options, so no call shape opts out of it.
+>  *
+1895,1896c1916,1917
+<  * Renders a {@link MarkdownNode} to its CANONICAL markdown source - the inverse
+<  * projection of `renderHTML`, and the serializer a `parse(renderMarkdown(doc))`
+---
+>  * Renders a {@link MarkdownNode} to its canonical markdown source — the inverse
+>  * projection of `renderHTML`. It is the serializer a `parse(renderMarkdown(doc))`
+1901,1903c1922,1924
+<  * `> `-prefixed blockquote lines, GFM tables (1-space-padded cells, `\|`-escaped
+<  * pipes, an alignment delimiter row), `[text](href)` links, `![alt](src)` images,
+<  * and two-space hard breaks. A `text` node's literal content is backslash-escaped
+---
+>  * `> `-prefixed blockquote lines, GFM tables (1-space-padded cells, a backslash
+>  * before each literal pipe, an alignment delimiter row), `[text](href)` links,
+>  * `![alt](src)` images, and two-space hard breaks. A `text` node's literal content is backslash-escaped
+1926c1947
+<  * Rewrites a {@link MarkdownDocument} bottom-up (copy-on-write) - each node's children
+---
+>  * Rewrites a {@link MarkdownDocument} bottom-up (copy-on-write) — each node's children
+1928,1929c1949,1950
+<  * document ROOT is never passed to `rewrite` (the `element: 'document'` invariant
+<  * always holds). A table's inline cells and a list's items ARE rewritten.
+---
+>  * document root is never passed to `rewrite` (the `element: 'document'` invariant
+>  * always holds). A table's inline cells and a list's items are rewritten too.
+1938c1959
+<  * input child is reused - `rewriteDocument` stays total and never produces a
+---
+>  * input child is reused — `rewriteDocument` stays total and never produces a
+1943c1964
+<  * UNCHANGED (by reference, not rebuilt, and `rewrite` is not invoked on it) instead of
+---
+>  * unchanged (by reference, not rebuilt, and `rewrite` is not invoked on it) instead of
+1962c1983
+<  * SAME length, the CommonMark rule that lets a span contain backticks). Returns the
+---
+>  * same length, the CommonMark rule that lets a span contain backticks). Returns the
+1979c2000
+<  * Scans an emphasis run at `start` (`*` / `_`, doubled for strong) - finds the nearest
+---
+>  * Scans an emphasis run at `start` (`*` / `_`, doubled for strong) — finds the nearest
+2003c2024
+<  * Scans the window `[from, to)` of `source` into inline nodes - the single recursive
+---
+>  * Scans the window `[from, to)` of `source` into inline nodes — the single recursive
+2015,2016c2036,2037
+<  *   children. At {@link MAX_DEPTH} the window is never scanned for markup - it emits as
+<  *   a single literal text node - so pathological nesting (`[[[[…`, `****…`) cannot
+---
+>  *   children. At {@link MAX_DEPTH} the window is never scanned for markup — it emits as
+>  *   a single literal text node — so pathological nesting (`[[[[…`, `****…`) cannot
+2018c2039
+<  * @returns The parsed inline nodes (NOT yet coalesced)
+---
+>  * @returns The parsed inline nodes (not yet coalesced)
+2054c2075
+<  * Scans a link `[text](href)` at `start` - the text runs to a BALANCED `]`, then `(`
+---
+>  * Scans a link `[text](href)` at `start` — the text runs to a balanced `]`, then `(`
+2109,2112c2130,2134
+<  * Splits one GFM table row into its cell strings - outer pipes are optional, an escaped
+<  * pipe (`\|`) inside a cell is NOT a separator (it becomes a literal `|`), and the
+<  * empty leading / trailing cell produced by an outer `|` is dropped. Derives the string
+<  * form from {@link splitTableSources}, which owns the escaped-pipe splitting rule.
+---
+>  * Splits one GFM table row into its cell strings — outer pipes are optional, a pipe
+>  * escaped by a leading backslash inside a cell is not a separator (it becomes a literal
+>  * pipe character), and the empty leading / trailing cell an outer pipe produces is
+>  * dropped. Derives the string form from {@link splitTableSources}, which owns the
+>  * escaped-pipe splitting rule.
+2139,2140c2161,2162
+<  * Checks whether the line at `index` starts a NEW block kind (heading / fence / thematic
+<  * break / blockquote / list / table) - the paragraph collector stops at such a line
+---
+>  * Checks whether the line at `index` starts a new block kind (heading / fence / thematic
+>  * break / blockquote / list / table) — the paragraph collector stops at such a line
+2177a2200,2205
+>  *
+>  * @remarks
+>  * The other place absence appears is {@link MarkdownCell.align}, which holds
+>  * `undefined` when the projected cell declared no alignment. That member is a plain
+>  * optional property on one cell rather than an entry in a positional array, so it
+>  * takes the ordinary `undefined` instead of the in-band `null` marker.
+2182,2183c2210,2212
+<  * Describes the shape of a {@link TableAlign} - the per-column GFM table alignment
+<  * literal.
+---
+>  * Describes the shape of a {@link TableAlign} — the per-column GFM table alignment
+>  * literal. Absence is no member of it, so the shape refuses the `null` a bare `---`
+>  * delimiter takes in a `TableNode`'s `align` list.
+2199c2228
+<  * Represents the result of collecting one GFM table - the node the construct scanner built and
+---
+>  * Represents the result of collecting one GFM table — the node the construct scanner built and
+2210c2239
+<  * Represents a GFM table - `header` the inline content of each header cell, `rows` the body
+---
+>  * Represents a GFM table — `header` the inline content of each header cell, `rows` the body
+2217c2246
+<     /** Holds the header row - one cell of inline content per column. */
+---
+>     /** Holds the header row — one cell of inline content per column. */
+2219c2248
+<     /** Holds the body rows - each a list of cells, each cell inline content. */
+---
+>     /** Holds the body rows — each a list of cells, each cell inline content. */
+2231c2260
+<  * Represents a run of plain text - the leaf inline node. `value` is the decoded text with
+---
+>  * Represents a run of plain text — the leaf inline node. `value` is the decoded text with
+2238c2267
+<     /** Holds the literal text content (escapes resolved, NOT yet HTML-escaped). */
+---
+>     /** Holds the literal text content (escapes resolved, not yet HTML-escaped). */
+2243c2272
+<  * Describes the shape of a {@link TextNode} - a plain-text leaf inline run.
+---
+>  * Describes the shape of a {@link TextNode} — a plain-text leaf inline run.
+2254,2256c2283,2285
+< export declare const textShape: ObjectShape<{
+<     element: LiteralShape<readonly ["text"]>;
+<     value: StringShape;
+---
+> export declare const textShape: ObjectShape<    {
+> element: LiteralShape<readonly ["text"]>;
+> value: StringShape;
+2259c2288
+< /** Represents a thematic break - a horizontal rule (`---` / `***` / `___` on its own line). */
+---
+> /** Represents a thematic break — a horizontal rule (`---` / `***` / `___` on its own line). */
+2265c2294
+<  * Describes the shape of a {@link ThematicBreakNode} - a horizontal rule. Carries no
+---
+>  * Describes the shape of a {@link ThematicBreakNode} — a horizontal rule. Carries no
+2277,2278c2306,2307
+< export declare const thematicBreakShape: ObjectShape<{
+<     element: LiteralShape<readonly ["thematicBreak"]>;
+---
+> export declare const thematicBreakShape: ObjectShape<    {
+> element: LiteralShape<readonly ["thematicBreak"]>;
+2282,2283c2311,2312
+<  * Trims the whitespace at the two ends of an inline run - the leading whitespace of a
+<  * leading text node and the trailing whitespace of a trailing one - dropping either
+---
+>  * Trims the whitespace at the two ends of an inline run — the leading whitespace of a
+>  * leading text node and the trailing whitespace of a trailing one — dropping either
+2316c2345
+<  * Resolves backslash escapes in a raw string to their literal characters - used for a
+---
+>  * Resolves backslash escapes in a raw string to their literal characters — used for a
+2330c2359
+<  * Walks a {@link MarkdownNode} depth-first, pre-order, root-inclusive - yields
+---
+>  * Walks a {@link MarkdownNode} depth-first, pre-order, root-inclusive — yields
+diff -r '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-markdown-following-final-pack/baseline/package/dist/src/core/index.js /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-markdown-following-final-pack/extract/package/dist/src/core/index.js
+8c8
+< * and the `compilers.ts` renderer (`renderHTML`) honor before degrading. It bounds blockquote nesting, inline
+---
+> * and the `compilers.ts` renderer (`renderHTML`) honor before degrading, at 64. It bounds blockquote nesting, inline
+163c163
+< * Narrows to {@link CodeSpanNode} - the node whose `element` discriminant is
+---
+> * Narrows to {@link CodeSpanNode} — the node whose `element` discriminant is
+220c220
+< * Determines whether an arbitrary value is a valid {@link InlineNode} - a text
+---
+> * Determines whether an arbitrary value is a valid {@link InlineNode} — a text
+224c224
+< * Total: never throws, even on cyclic or pathologically deep input - every
+---
+> * Total: never throws, even on cyclic or pathologically deep input — every
+259c259
+< * Determines whether an arbitrary value is a valid {@link BlockNode} - a
+---
+> * Determines whether an arbitrary value is a valid {@link BlockNode} — a
+264c264
+< * Total: never throws, even on cyclic or pathologically deep input - every
+---
+> * Total: never throws, even on cyclic or pathologically deep input — every
+268c268
+< * than named separately - it is used at exactly these two sites.
+---
+> * than named separately — it is used at exactly these two sites.
+310c310
+< * Determines whether an arbitrary value is a valid {@link MarkdownNode} - the
+---
+> * Determines whether an arbitrary value is a valid {@link MarkdownNode} — the
+315c315
+< * Total: never throws, even on cyclic or pathologically deep input - every
+---
+> * Total: never throws, even on cyclic or pathologically deep input — every
+319c319
+< * named separately - it is used at exactly these two sites.
+---
+> * named separately — it is used at exactly these two sites.
+337c337
+< * Determines whether an arbitrary value is a valid {@link MarkdownDocument} -
+---
+> * Determines whether an arbitrary value is a valid {@link MarkdownDocument} —
+342c342
+< * Total: never throws, even on cyclic or pathologically deep input - every
+---
+> * Total: never throws, even on cyclic or pathologically deep input — every
+514c514,515
+< * block phase.
+---
+> * block phase — the document half of what {@link parseProvenance} returns. Malformed
+> * markdown degrades to literal text, so the parse never throws.
+529c530,531
+< * Parses a markdown string into a document and its original-source spans.
+---
+> * Parses a markdown string into a document and its original-source spans. Malformed
+> * markdown degrades to literal text, so the parse never throws.
+554c556,557
+< * breaks) into inline AST nodes, coalescing adjacent text runs.
+---
+> * breaks) into inline AST nodes, coalescing adjacent text runs and reading no block
+> * structure. Malformed markdown degrades to literal text, so the parse never throws.
+784c787
+< * Counts the leading space / tab characters on `line` (a tab counts as one) - the
+---
+> * Counts the leading space / tab characters on `line` (a tab counts as one) — the
+802c805
+< * Checks whether `character` is whitespace under the emphasis flanking rule - a space, a
+---
+> * Checks whether `character` is whitespace under the emphasis flanking rule — a space, a
+818c821
+< * Checks whether `character` is escapable by a leading backslash - the ASCII punctuation
+---
+> * Checks whether `character` is escapable by a leading backslash — the ASCII punctuation
+834c837
+< * Checks whether `line` is blank - empty, or containing only whitespace - the markdown
+---
+> * Checks whether `line` is blank — empty, or containing only whitespace — the markdown
+850c853
+< * Checks whether `line` is a blockquote line (`>` optionally indented up to three spaces) -
+---
+> * Checks whether `line` is a blockquote line (`>` optionally indented up to three spaces) —
+865c868
+< * Checks whether `line` closes a fence opened by `marker` - the same fence character, a run
+---
+> * Checks whether `line` closes a fence opened by `marker` — the same fence character, a run
+891c894
+< * Checks whether `character` is a regex-`\s`-equivalent whitespace character - the
+---
+> * Checks whether `character` is a regex-`\s`-equivalent whitespace character — the
+907c910
+< * Checks whether `line` is a thematic break (horizontal rule) - three or more of the SAME
+---
+> * Checks whether `line` is a thematic break (horizontal rule) — three or more of the same
+927c930
+< * Checks whether the pair (`header`, `delimiter`) opens a GFM table - `delimiter` is a row of
+---
+> * Checks whether the pair (`header`, `delimiter`) opens a GFM table — `delimiter` is a row of
+929c932
+< * header row IMMEDIATELY followed by a delimiter row.
+---
+> * header row immediately followed by a delimiter row.
+1059,1062c1062,1066
+< * Splits one GFM table row into its cell strings - outer pipes are optional, an escaped
+< * pipe (`\|`) inside a cell is NOT a separator (it becomes a literal `|`), and the
+< * empty leading / trailing cell produced by an outer `|` is dropped. Derives the string
+< * form from {@link splitTableSources}, which owns the escaped-pipe splitting rule.
+---
+> * Splits one GFM table row into its cell strings — outer pipes are optional, a pipe
+> * escaped by a leading backslash inside a cell is not a separator (it becomes a literal
+> * pipe character), and the empty leading / trailing cell an outer pipe produces is
+> * dropped. Derives the string form from {@link splitTableSources}, which owns the
+> * escaped-pipe splitting rule.
+1125c1129
+< * Derives the per-column {@link TableAlign} list from a GFM delimiter row - `:---`
+---
+> * Derives the per-column {@link TableAlign} list from a GFM delimiter row — `:---`
+1149,1150c1153,1154
+< * Checks whether the line at `index` starts a NEW block kind (heading / fence / thematic
+< * break / blockquote / list / table) - the paragraph collector stops at such a line
+---
+> * Checks whether the line at `index` starts a new block kind (heading / fence / thematic
+> * break / blockquote / list / table) — the paragraph collector stops at such a line
+1169c1173
+< * Resolves backslash escapes in a raw string to their literal characters - used for a
+---
+> * Resolves backslash escapes in a raw string to their literal characters — used for a
+1192c1196
+< * Merges adjacent text nodes into one - the inline scanner emits a text node per
+---
+> * Merges adjacent text nodes into one — the inline scanner emits a text node per
+1231c1235
+< * SAME length, the CommonMark rule that lets a span contain backticks). Returns the
+---
+> * same length, the CommonMark rule that lets a span contain backticks). Returns the
+1265c1269
+< * Locates a link `[text](href)` at `start` - the text runs to a BALANCED `]`, then `(`
+---
+> * Locates a link `[text](href)` at `start` — the text runs to a balanced `]`, then `(`
+1323c1327
+< * Scans a link `[text](href)` at `start` - the text runs to a BALANCED `]`, then `(`
+---
+> * Scans a link `[text](href)` at `start` — the text runs to a balanced `]`, then `(`
+1356c1360
+< * Locates an emphasis run at `start` (`*` / `_`, doubled for strong) - finds the nearest
+---
+> * Locates an emphasis run at `start` (`*` / `_`, doubled for strong) — finds the nearest
+1415c1419
+< * Scans an emphasis run at `start` (`*` / `_`, doubled for strong) - finds the nearest
+---
+> * Scans an emphasis run at `start` (`*` / `_`, doubled for strong) — finds the nearest
+1449c1453
+< * Scans the window `[from, to)` of `source` into inline nodes - the single recursive
+---
+> * Scans the window `[from, to)` of `source` into inline nodes — the single recursive
+1461,1462c1465,1466
+< *   children. At {@link MAX_DEPTH} the window is never scanned for markup - it emits as
+< *   a single literal text node - so pathological nesting (`[[[[…`, `****…`) cannot
+---
+> *   children. At {@link MAX_DEPTH} the window is never scanned for markup — it emits as
+> *   a single literal text node — so pathological nesting (`[[[[…`, `****…`) cannot
+1464c1468
+< * @returns The parsed inline nodes (NOT yet coalesced)
+---
+> * @returns The parsed inline nodes (not yet coalesced)
+2162,2163c2166,2167
+< * Renders a {@link MarkdownNode} to its CANONICAL markdown source - the inverse
+< * projection of `renderHTML`, and the serializer a `parse(renderMarkdown(doc))`
+---
+> * Renders a {@link MarkdownNode} to its canonical markdown source — the inverse
+> * projection of `renderHTML`. It is the serializer a `parse(renderMarkdown(doc))`
+2168,2170c2172,2174
+< * `> `-prefixed blockquote lines, GFM tables (1-space-padded cells, `\|`-escaped
+< * pipes, an alignment delimiter row), `[text](href)` links, `![alt](src)` images,
+< * and two-space hard breaks. A `text` node's literal content is backslash-escaped
+---
+> * `> `-prefixed blockquote lines, GFM tables (1-space-padded cells, a backslash
+> * before each literal pipe, an alignment delimiter row), `[text](href)` links,
+> * `![alt](src)` images, and two-space hard breaks. A `text` node's literal content is backslash-escaped
+2487,2488c2491,2492
+< * Trims the whitespace at the two ends of an inline run - the leading whitespace of a
+< * leading text node and the trailing whitespace of a trailing one - dropping either
+---
+> * Trims the whitespace at the two ends of an inline run — the leading whitespace of a
+> * leading text node and the trailing whitespace of a trailing one — dropping either
+2533c2537
+< * A hard break is `  \n` in markdown source, so it survives a re-parse only BETWEEN
+---
+> * A hard break is `  \n` in markdown source, so it survives a re-parse only between
+2537c2541
+< * a break cannot be written at all - a heading and a table cell are one line each - it
+---
+> * a break cannot be written at all — a heading and a table cell are one line each — it
+2593c2597
+< * Combines the projections of one node's children into the projection of that node -
+---
+> * Combines the projections of one node's children into the projection of that node —
+2600c2604
+< * paragraph BEFORE it. That is what keeps `<div>lead<p>a</p></div>` two paragraphs in
+---
+> * paragraph before it. That is what keeps `<div>lead<p>a</p></div>` two paragraphs in
+2680c2684
+< * Reads a projection as BLOCK content - the view a document, a blockquote, and a list
+---
+> * Reads a projection as block content — the view a document, a blockquote, and a list
+2726c2730
+< * Reads a projection as INLINE content - the view a link, an emphasis, and a table cell
+---
+> * Reads a projection as inline content — the view a link, an emphasis, and a table cell
+2753c2757
+< * Projects one HTML leaf - a text node, a comment, or a doctype - to its
+---
+> * Projects one HTML leaf — a text node, a comment, or a doctype — to its
+2783,2784c2787,2788
+< * Projects one HTML container - the document root or an element - from its children's
+< * already-computed projections. THE element mapping, and the only place that decides
+---
+> * Projects one HTML container — the document root or an element — from its children's
+> * already-computed projections. The element mapping, and the only place that decides
+2796c2800
+< * `UNSAFE_ELEMENTS` subtree contributes nothing at all, text included. Every OTHER
+---
+> * `UNSAFE_ELEMENTS` subtree contributes nothing at all, text included. Every other
+2798c2802
+< * shape - `<div><p>a</p><p>b</p></div>` stays two paragraphs.
+---
+> * shape — `<div><p>a</p><p>b</p></div>` stays two paragraphs.
+2802c2806
+< * body from its `code` child's raw text, and a list takes one item per `li` child - so
+---
+> * body from its `code` child's raw text, and a list takes one item per `li` child — so
+3090c3094
+< * Projects an `@orkestrel/html` {@link HTMLNode} into a {@link MarkdownDocument} - the
+---
+> * Projects an `@orkestrel/html` {@link HTMLNode} into a {@link MarkdownDocument} — the
+3094,3095c3098,3099
+< * **Engine.** One total handler table - {@link projectHTMLNode} for the containers,
+< * {@link projectHTMLLeaf} for the leaves - folded by `@orkestrel/html`'s own `foldNode`, so
+---
+> * **Engine.** One total handler table — {@link projectHTMLNode} for the containers,
+> * {@link projectHTMLLeaf} for the leaves — folded by `@orkestrel/html`'s own `foldNode`, so
+3101c3105
+< * first: a document nested past it projects to a chain bounded by THAT cap, with the
+---
+> * first: a document nested past it projects to a chain bounded by that cap, with the
+3104c3108
+< * then truncate again - so the anchor law below is a law within the depth budget, and
+---
+> * then truncate again — so the anchor law that follows is a law within the depth budget, and
+3110c3114
+< * link or image is KEPT - `[text]()` - since a bad URL is no reason to lose the words
+---
+> * link or image is kept — `[text]()` — because a bad URL is no reason to lose the words
+3115c3119
+< * PROJECTED AST, not the input bytes:
+---
+> * projected AST, not the input bytes:
+3118,3119c3122,3123
+< * translations - whitespace collapsed, edges trimmed, a blank paragraph dropped, a hard
+< * break only where a line can end - because a shape markdown cannot write back is a
+---
+> * translations — whitespace collapsed, edges trimmed, a blank paragraph dropped, a hard
+> * break only where a line can end — because a shape markdown cannot write back is a
+3146c3150
+< * Walks a {@link MarkdownNode} depth-first, pre-order, root-inclusive - yields
+---
+> * Walks a {@link MarkdownNode} depth-first, pre-order, root-inclusive — yields
+3209c3213
+< * Folds a {@link MarkdownNode} into a `T` through a total catamorphism - children are
+---
+> * Folds a {@link MarkdownNode} into a `T` through a total catamorphism — children are
+3214c3218
+< * **Table contract.** A {@link TableNode} has no single `children` array - its cells
+---
+> * **Table contract.** A {@link TableNode} has no single `children` array — its cells
+3216,3218c3220,3222
+< * rows). The `table` handler receives ONE folded `T` per inline node, flattened in
+< * walk order across ALL cells - every header cell's inline nodes (column order), then
+< * every body row's cells' inline nodes (row order, then column order) - and reads
+---
+> * rows). The `table` handler receives one folded `T` per inline node, flattened in
+> * walk order across all cells — every header cell's inline nodes (column order), then
+> * every body row's cells' inline nodes (row order, then column order) — and reads
+3361c3365
+< * Rewrites a {@link MarkdownDocument} bottom-up (copy-on-write) - each node's children
+---
+> * Rewrites a {@link MarkdownDocument} bottom-up (copy-on-write) — each node's children
+3363,3364c3367,3368
+< * document ROOT is never passed to `rewrite` (the `element: 'document'` invariant
+< * always holds). A table's inline cells and a list's items ARE rewritten.
+---
+> * document root is never passed to `rewrite` (the `element: 'document'` invariant
+> * always holds). A table's inline cells and a list's items are rewritten too.
+3373c3377
+< * input child is reused - `rewriteDocument` stays total and never produces a
+---
+> * input child is reused — `rewriteDocument` stays total and never produces a
+3378c3382
+< * UNCHANGED (by reference, not rebuilt, and `rewrite` is not invoked on it) instead of
+---
+> * unchanged (by reference, not rebuilt, and `rewrite` is not invoked on it) instead of
+3645c3649
+< * code-block node under `node`, including image alternative content, in walk order -
+---
+> * code-block node under `node`, including image alternative content, in walk order —
+3721a3726,3728
+> * Sanitization is unconditional: the function takes one argument and declares no
+> * options, so no call shape opts out of it.
+> *
+3743c3750
+< * Describes the shape of a {@link TextNode} - a plain-text leaf inline run.
+---
+> * Describes the shape of a {@link TextNode} — a plain-text leaf inline run.
+3759c3766
+< * Describes the shape of a {@link CodeSpanNode} - an inline code span (`` `code` ``).
+---
+> * Describes the shape of a {@link CodeSpanNode} — an inline code span (`` `code` ``).
+3775c3782
+< * Describes the shape of a {@link LineBreakNode} - a GFM hard line-break leaf.
+---
+> * Describes the shape of a {@link LineBreakNode} — a GFM hard line-break leaf.
+3788c3795
+< * Describes the shape of a {@link CodeBlockNode} - a fenced code block. `lang` is
+---
+> * Describes the shape of a {@link CodeBlockNode} — a fenced code block. `lang` is
+3807c3814
+< * Describes the shape of a {@link ThematicBreakNode} - a horizontal rule. Carries no
+---
+> * Describes the shape of a {@link ThematicBreakNode} — a horizontal rule. Carries no
+3821,3822c3828,3830
+< * Describes the shape of a {@link TableAlign} - the per-column GFM table alignment
+< * literal.
+---
+> * Describes the shape of a {@link TableAlign} — the per-column GFM table alignment
+> * literal. Absence is no member of it, so the shape refuses the `null` a bare `---`
+> * delimiter takes in a `TableNode`'s `align` list.
+3841c3849
+< * Describes the shape of {@link ListItemMatch} - the parsed parts of a single list-item
+---
+> * Describes the shape of {@link ListItemMatch} — the parsed parts of a single list-item
+3870,3873c3878,3881
+< *   block phase then the inline phase) once, keeping the AST and a COPY of the span map
+< *   that parse recorded. Given a {@link MarkdownDocument}, the document is adopted AS-IS
+< *   and is NOT re-validated - gate an untrusted value with `isMarkdownDocument` first.
+< * - **Provenance.** {@link span} reads the region of the ORIGINAL constructor string a
+---
+> *   block phase then the inline phase) once, keeping the AST and a copy of the span map
+> *   that parse recorded. Given a {@link MarkdownDocument}, the document is adopted as-is
+> *   and is not re-validated — gate an untrusted value with `isMarkdownDocument` first.
+> * - **Provenance.** {@link span} reads the region of the original constructor string a
+3877c3885
+< *   returns a fresh value. A node reports the region THIS handle holds for its identity,
+---
+> *   returns a fresh value. A node reports the region this handle holds for its identity,
+3885c3893
+< * - **Immutable.** {@link map} never mutates the stored AST - it returns a NEW `Markdown`
+---
+> * - **Immutable.** {@link map} never mutates the stored AST — it returns a new `Markdown`
+3890c3898
+< *   `stream` is shallow - only the document's direct block children.
+---
+> *   `stream` is shallow — only the document's direct block children.
+3892c3900
+< * @example
+---
+> * @example Construct from a string and narrow with a guard
+3894c3902
+< * import { Markdown, isHeadingNode, renderMarkdown } from '@src/core'
+---
+> * import { Markdown, isHeadingNode } from '@orkestrel/markdown'
+3897,3901c3905,3908
+< * const heading = markdown.find(isHeadingNode) // the HeadingNode, or undefined
+< * const shouted = markdown.map((node) =>
+< *   node.element === 'text' ? { element: 'text', value: node.value.toUpperCase() } : node,
+< * )
+< * renderMarkdown(shouted.document) // '# TITLE\n\nA **BOLD** [LINK](https://x.dev).'
+---
+> * markdown.document.children[0] // { element: 'heading', level: 1, children: [...] }
+> *
+> * const heading = markdown.find(isHeadingNode) // HeadingNode | undefined, narrowed
+> * if (heading !== undefined) heading.level // number — narrowed to HeadingNode
+3946c3953
+< 	* Returns THE deep traversal - a lazy, depth-first, pre-order, root-inclusive generator
+---
+> 	* Returns the deep traversal — a lazy, depth-first, pre-order, root-inclusive generator
+3998c4005
+< 	* (shallow, source order) - a fresh, pull-based source per call: one block is
+---
+> 	* (shallow, source order) — a fresh, pull-based source per call: one block is
+4053c4060
+< * {@link MarkdownDocument} - a typed AST plus the query, rewrite, and fold operations
+---
+> * {@link MarkdownDocument} — a typed AST plus the query, rewrite, and fold operations
+4061c4068
+< * {@link MarkdownDocument}, adopts it AS-IS without re-validation - gate an untrusted
+---
+> * {@link MarkdownDocument}, adopts it as-is without re-validation — gate an untrusted
+4063c4070
+< * degrades to text, never throws) and zero-dependency - a hand-written scanner, no
+---
+> * degrades to text, never throws) and zero-dependency — a hand-written scanner, no
+4082c4089
+< * {@link TextNode} - a guard, coercing parser, JSON Schema, and seeded
+---
+> * {@link TextNode} — a guard, coercing parser, JSON Schema, and seeded
+4100c4107
+< * {@link CodeSpanNode} - a guard, coercing parser, JSON Schema, and seeded
+---
+> * {@link CodeSpanNode} — a guard, coercing parser, JSON Schema, and seeded
+4134c4141
+< * {@link CodeBlockNode} - a guard, coercing parser, JSON Schema, and seeded
+---
+> * {@link CodeBlockNode} — a guard, coercing parser, JSON Schema, and seeded
+4152c4159
+< * {@link ThematicBreakNode} - a guard, coercing parser, JSON Schema, and
+---
+> * {@link ThematicBreakNode} — a guard, coercing parser, JSON Schema, and

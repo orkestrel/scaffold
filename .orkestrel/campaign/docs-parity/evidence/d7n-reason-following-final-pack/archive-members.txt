@@ -1,0 +1,9 @@
+package/LICENSE
+package/dist/src/core/index.cjs
+package/dist/src/core/index.d.cts
+package/dist/src/core/index.js
+package/package.json
+package/dist/src/core/index.cjs.map
+package/dist/src/core/index.js.map
+package/README.md
+package/dist/src/core/index.d.ts

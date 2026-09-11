@@ -1,0 +1,1 @@
+setup: The target at . carries a test setup module that no proof covers: tests/setupGuides.ts. Add tests/setupGuides.test.ts to cover it. The proof's subject is behavior only this workspace can assert, so scaffold does not write it.

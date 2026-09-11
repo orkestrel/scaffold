@@ -1,0 +1,28 @@
+npm notice
+npm notice 📦  @orkestrel/process@0.0.11
+npm notice Tarball Contents
+npm notice 1.1kB LICENSE
+npm notice 2.5kB README.md
+npm notice 8.0kB dist/src/core/index.cjs
+npm notice 9.9kB dist/src/core/index.cjs.map
+npm notice 55.6kB dist/src/core/index.d.cts
+npm notice 55.6kB dist/src/core/index.d.ts
+npm notice 7.5kB dist/src/core/index.js
+npm notice 9.9kB dist/src/core/index.js.map
+npm notice 83.2kB dist/src/server/index.cjs
+npm notice 131.6kB dist/src/server/index.cjs.map
+npm notice 61.9kB dist/src/server/index.d.cts
+npm notice 61.9kB dist/src/server/index.d.ts
+npm notice 81.4kB dist/src/server/index.js
+npm notice 130.9kB dist/src/server/index.js.map
+npm notice 4.3kB package.json
+npm notice Tarball Details
+npm notice name: @orkestrel/process
+npm notice version: 0.0.11
+npm notice filename: orkestrel-process-0.0.11.tgz
+npm notice package size: 166.0 kB
+npm notice unpacked size: 705.4 kB
+npm notice shasum: 2475e4eb671d3a8a40b4cd64ef295566dfc259fe
+npm notice integrity: sha512-E+rJKObJRYIRG[...]38Mtxp1alAN2g==
+npm notice total files: 15
+npm notice

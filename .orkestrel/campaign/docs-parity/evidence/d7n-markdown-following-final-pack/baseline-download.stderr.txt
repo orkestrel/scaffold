@@ -1,0 +1,22 @@
+npm notice
+npm notice 📦  @orkestrel/markdown@0.0.13
+npm notice Tarball Contents
+npm notice 1.1kB LICENSE
+npm notice 4.1kB README.md
+npm notice 140.0kB dist/src/core/index.cjs
+npm notice 225.5kB dist/src/core/index.cjs.map
+npm notice 100.2kB dist/src/core/index.d.cts
+npm notice 100.2kB dist/src/core/index.d.ts
+npm notice 134.4kB dist/src/core/index.js
+npm notice 223.1kB dist/src/core/index.js.map
+npm notice 3.8kB package.json
+npm notice Tarball Details
+npm notice name: @orkestrel/markdown
+npm notice version: 0.0.13
+npm notice filename: orkestrel-markdown-0.0.13.tgz
+npm notice package size: 210.8 kB
+npm notice unpacked size: 932.5 kB
+npm notice shasum: 950d1519d6de93725e9253c471545358ef80abf4
+npm notice integrity: sha512-NGfKBPT5pXNR2[...]GKm9FQDR1v4dA==
+npm notice total files: 9
+npm notice

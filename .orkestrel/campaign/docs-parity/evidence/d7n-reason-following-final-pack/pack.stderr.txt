@@ -1,0 +1,22 @@
+npm notice
+npm notice 📦  @orkestrel/reason@0.0.10
+npm notice Tarball Contents
+npm notice 1.1kB LICENSE
+npm notice 2.3kB README.md
+npm notice 252.2kB dist/src/core/index.cjs
+npm notice 386.2kB dist/src/core/index.cjs.map
+npm notice 304.0kB dist/src/core/index.d.cts
+npm notice 304.0kB dist/src/core/index.d.ts
+npm notice 241.0kB dist/src/core/index.js
+npm notice 382.8kB dist/src/core/index.js.map
+npm notice 3.7kB package.json
+npm notice Tarball Details
+npm notice name: @orkestrel/reason
+npm notice version: 0.0.10
+npm notice filename: orkestrel-reason-0.0.10.tgz
+npm notice package size: 368.4 kB
+npm notice unpacked size: 1.9 MB
+npm notice shasum: 642ac7b5b4104fb1279f79318c68f69b1490a024
+npm notice integrity: sha512-kqlQFXvfsjYpf[...]U3kqBNdqE2r5A==
+npm notice total files: 9
+npm notice
