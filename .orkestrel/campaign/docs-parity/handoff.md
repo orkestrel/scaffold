@@ -14,6 +14,11 @@ not be rerun. Consumer visits use registry Guide0.0.18 and Scaffold0.0.64.
 The remaining runtime layer stays open under d7n-upper-layer-plan.md.
 Read d7n-upper-post-guide-state.md for the refreshed evidence and active units.
 
+Browser0.0.16 preparation is closed on clean canonical main at
+02611821d50b0508b237684455944cccda31f696. Campaign and origin/main match;
+the accepted archive still equals its manifest and complete distribution.
+Read d7n-browser-registry-release-landing.md. Owner publication remains pending.
+
 Read d7n-native-preserved-source-landing.md and d7n-queue-rater-native-source-landing.md
 for accepted Browser, Interpret, Qualifier, Queue, and Rater source preparation.
 Their campaign branches are pushed. Final registry visits and main closures remain

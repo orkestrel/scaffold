@@ -1,0 +1,10 @@
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/sea
+
+·····································
+
+ Test Files  1 passed (1)
+      Tests  37 passed (37)
+   Start at  15:39:38
+   Duration  824ms (transform 122ms, setup 21ms, import 615ms, tests 37ms, environment 0ms)
+

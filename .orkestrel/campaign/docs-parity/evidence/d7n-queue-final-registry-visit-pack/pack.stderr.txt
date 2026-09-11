@@ -1,0 +1,22 @@
+npm notice
+npm notice 📦  @orkestrel/queue@0.0.13
+npm notice Tarball Contents
+npm notice 1.1kB LICENSE
+npm notice 1.6kB README.md
+npm notice 36.9kB dist/src/core/index.cjs
+npm notice 66.5kB dist/src/core/index.cjs.map
+npm notice 30.5kB dist/src/core/index.d.cts
+npm notice 30.5kB dist/src/core/index.d.ts
+npm notice 36.1kB dist/src/core/index.js
+npm notice 66.3kB dist/src/core/index.js.map
+npm notice 3.9kB package.json
+npm notice Tarball Details
+npm notice name: @orkestrel/queue
+npm notice version: 0.0.13
+npm notice filename: orkestrel-queue-0.0.13.tgz
+npm notice package size: 61.4 kB
+npm notice unpacked size: 273.4 kB
+npm notice shasum: 0495cd31af4c43819a261446fbec0c1c2c2e1925
+npm notice integrity: sha512-OPrs3DP0PTUKf[...]HiLpIx5hM9lHw==
+npm notice total files: 9
+npm notice

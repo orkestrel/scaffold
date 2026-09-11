@@ -1,0 +1,10 @@
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/relation
+
+································
+
+ Test Files  1 passed (1)
+      Tests  32 passed (32)
+   Start at  15:39:37
+   Duration  669ms (transform 80ms, setup 147ms, import 339ms, tests 29ms, environment 0ms)
+

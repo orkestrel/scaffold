@@ -1,0 +1,22 @@
+npm notice
+npm notice 📦  @orkestrel/rater@0.0.13
+npm notice Tarball Contents
+npm notice 1.1kB LICENSE
+npm notice 2.0kB README.md
+npm notice 26.3kB dist/src/core/index.cjs
+npm notice 37.6kB dist/src/core/index.cjs.map
+npm notice 26.2kB dist/src/core/index.d.cts
+npm notice 26.2kB dist/src/core/index.d.ts
+npm notice 24.4kB dist/src/core/index.js
+npm notice 37.0kB dist/src/core/index.js.map
+npm notice 3.8kB package.json
+npm notice Tarball Details
+npm notice name: @orkestrel/rater
+npm notice version: 0.0.13
+npm notice filename: orkestrel-rater-0.0.13.tgz
+npm notice package size: 32.8 kB
+npm notice unpacked size: 184.6 kB
+npm notice shasum: 48de7e9a5f7c095192d8a837521421351cd88692
+npm notice integrity: sha512-XCxOqnl3o1E5K[...]R1wHI1cHmlo1w==
+npm notice total files: 9
+npm notice

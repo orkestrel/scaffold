@@ -1,0 +1,628 @@
+diff -r -w -B '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-queue-final-registry-visit-pack/baseline/package/dist/src/core/index.cjs /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-queue-final-registry-visit-pack/extract/package/dist/src/core/index.cjs
+9c9,10
+< * Represents a failure carrying a machine-readable queue category and optional context.
+---
+> * Represents a queue failure carrying a lowercase machine-readable `code`, optional
+> * structured context, and an optional cause.
+34c35,36
+< * Determines whether an unknown value is a {@link QueueError}.
+---
+> * Determines whether an unknown value is a {@link QueueError}, staying total for a hostile
+> * value.
+59c61
+< * Determines whether a value is a valid queue concurrency.
+---
+> * Determines whether a value is a valid queue concurrency — a positive safe integer.
+74c76
+< * Determines whether a value is a valid queue retry count.
+---
+> * Determines whether a value is a valid queue retry count — a nonnegative safe integer.
+89c91,92
+< * Determines whether a value is a valid queue timeout.
+---
+> * Determines whether a value is a valid queue timeout — an integer count of milliseconds
+> * inside the native timer range.
+105c108,109
+< * Determines whether a value is a native abort signal usable by the queue.
+---
+> * Determines whether a value is a native abort signal usable by the queue, testing the
+> * native brand rather than the shape.
+127c131,132
+< * Checks whether a value is a valid stored queue entry.
+---
+> * Determines whether a value is a valid stored queue entry — a record holding a string
+> * `id`, an `input`, and a nonnegative safe-integer `attempts`.
+155c160,161
+< * Reads one named option from a caller-supplied entry options object.
+---
+> * Reads one named option from a caller-supplied entry options object exactly once,
+> * containing a throwing getter as a coded failure.
+158,159c164
+< * The property is read exactly once, inside a boundary that contains a throwing
+< * getter. An absent options object reads nothing and yields `undefined`.
+---
+> * An absent options object reads nothing and yields `undefined`.
+185c190,191
+< * Validates one already-read queue option against its guard.
+---
+> * Validates one already-read queue option against its guard, and throws the coded invalid
+> * failure carrying the option and the refused value when the guard refuses it.
+213c219,220
+< * Represents a concurrent, cooperative FIFO job queue with optional outstanding-work persistence.
+---
+> * Represents a concurrent, cooperative FIFO job queue — a wake-park worker loop with
+> * retries, a per-attempt timeout, abort, and optional outstanding-work persistence.
+887,889c894,896
+< * Represents a {@link QueueStoreInterface} backed by one table of the `@orkestrel/database` layer — a
+< * queue's durable state IS a table, so persistence reduces to keyed CRUD over a
+< * `TableInterface`.
+---
+> * Represents the opt-in durable store for a queue's outstanding entries, backed by one table
+> * of the `@orkestrel/database` layer — a queue's durable state is a table, so persistence
+> * reduces to keyed CRUD over a `TableInterface`.
+899c906
+< * that row. The store holds only OUTSTANDING work (completed entries are `remove`d), so
+---
+> * that row. The store holds only outstanding work (completed entries are `remove`d), so
+946c953,954
+< * Represents an in-memory store owning validated, immutable JSON snapshots of outstanding entries.
+---
+> * Represents an in-memory store of a queue's outstanding entries — a process-lifetime `Map`
+> * owning validated, immutable JSON snapshots.
+1046c1054
+< * Worker loops PARK on a wake list when no entry is ready and are woken one-at-a-time
+---
+> * Worker loops park on a wake list when no entry is ready and are woken one-at-a-time
+1061c1069
+< * @example
+---
+> * @example Create a queue
+1065c1073,1079
+< * const queue = createQueue<string, number>({
+---
+> * // Ordered (concurrency defaults to 1): each entry runs to completion before the next.
+> * const queue = createQueue<Job, Output>({ handler: (job) => run(job) })
+> *
+> * const output = await queue.enqueue(job)
+> *
+> * // Bounded, retried, and time-boxed: four in flight, two extra attempts, 5s per attempt.
+> * const fetches = createQueue<string, number>({
+1072c1086
+< * const status = await queue.enqueue('https://example.com')
+---
+> * const status = await fetches.enqueue('https://example.com')
+1093,1094c1107,1109
+< * Creates an in-memory {@link MemoryQueueStore} — the zero-plumbing DEFAULT queue store
+< * over a plain `Map` (the twin of {@link DatabaseQueueStore}).
+---
+> * Creates an in-memory {@link MemoryQueueStore} over a plain `Map` — the zero-plumbing
+> * {@link QueueStoreInterface} a queue takes when its outstanding entries need not outlive
+> * the process, and the twin of {@link DatabaseQueueStore}.
+diff -r -w -B '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-queue-final-registry-visit-pack/baseline/package/dist/src/core/index.d.cts /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-queue-final-registry-visit-pack/extract/package/dist/src/core/index.d.cts
+1,8c1,8
+< import { ContractShape } from '@orkestrel/contract';
+< import { DriverInterface } from '@orkestrel/database';
+< import { EmitterErrorHandler } from '@orkestrel/emitter';
+< import { EmitterHooks } from '@orkestrel/emitter';
+< import { EmitterInterface } from '@orkestrel/emitter';
+< import { Guard } from '@orkestrel/contract';
+< import { Infer } from '@orkestrel/contract';
+< import { TableInterface } from '@orkestrel/database';
+---
+> import type { ContractShape } from '@orkestrel/contract';
+> import type { DriverInterface } from '@orkestrel/database';
+> import type { EmitterErrorHandler } from '@orkestrel/emitter';
+> import type { EmitterHooks } from '@orkestrel/emitter';
+> import type { EmitterInterface } from '@orkestrel/emitter';
+> import type { Guard } from '@orkestrel/contract';
+> import type { Infer } from '@orkestrel/contract';
+> import type { TableInterface } from '@orkestrel/database';
+12c12,13
+<  * driver-pluggable backing for a queue's outstanding entries.
+---
+>  * driver-pluggable backing for a queue's outstanding entries, across a memory, JSON, or
+>  * SQLite driver.
+46,47c47,49
+<  * Creates an in-memory {@link MemoryQueueStore} — the zero-plumbing DEFAULT queue store
+<  * over a plain `Map` (the twin of {@link DatabaseQueueStore}).
+---
+>  * Creates an in-memory {@link MemoryQueueStore} over a plain `Map` — the zero-plumbing
+>  * {@link QueueStoreInterface} a queue takes when its outstanding entries need not outlive
+>  * the process, and the twin of {@link DatabaseQueueStore}.
+78c80
+<  * Worker loops PARK on a wake list when no entry is ready and are woken one-at-a-time
+---
+>  * Worker loops park on a wake list when no entry is ready and are woken one-at-a-time
+93c95
+<  * @example
+---
+>  * @example Create a queue
+97c99,105
+<  * const queue = createQueue<string, number>({
+---
+>  * // Ordered (concurrency defaults to 1): each entry runs to completion before the next.
+>  * const queue = createQueue<Job, Output>({ handler: (job) => run(job) })
+>  *
+>  * const output = await queue.enqueue(job)
+>  *
+>  * // Bounded, retried, and time-boxed: four in flight, two extra attempts, 5s per attempt.
+>  * const fetches = createQueue<string, number>({
+104c112
+<  * const status = await queue.enqueue('https://example.com')
+---
+>  * const status = await fetches.enqueue('https://example.com')
+110,112c118,120
+<  * Represents a {@link QueueStoreInterface} backed by one table of the `@orkestrel/database` layer — a
+<  * queue's durable state IS a table, so persistence reduces to keyed CRUD over a
+<  * `TableInterface`.
+---
+>  * Represents the opt-in durable store for a queue's outstanding entries, backed by one table
+>  * of the `@orkestrel/database` layer — a queue's durable state is a table, so persistence
+>  * reduces to keyed CRUD over a `TableInterface`.
+122c130
+<  * that row. The store holds only OUTSTANDING work (completed entries are `remove`d), so
+---
+>  * that row. The store holds only outstanding work (completed entries are `remove`d), so
+158c166
+<  * Determines whether a value is a valid queue concurrency.
+---
+>  * Determines whether a value is a valid queue concurrency — a positive safe integer.
+172c180,181
+<  * Determines whether an unknown value is a {@link QueueError}.
+---
+>  * Determines whether an unknown value is a {@link QueueError}, staying total for a hostile
+>  * value.
+190c199
+<  * Determines whether a value is a valid queue retry count.
+---
+>  * Determines whether a value is a valid queue retry count — a nonnegative safe integer.
+204c213,214
+<  * Determines whether a value is a native abort signal usable by the queue.
+---
+>  * Determines whether a value is a native abort signal usable by the queue, testing the
+>  * native brand rather than the shape.
+218c228,229
+<  * Determines whether a value is a valid queue timeout.
+---
+>  * Determines whether a value is a valid queue timeout — an integer count of milliseconds
+>  * inside the native timer range.
+233c244,245
+<  * Checks whether a value is a valid stored queue entry.
+---
+>  * Determines whether a value is a valid stored queue entry — a record holding a string
+>  * `id`, an `input`, and a nonnegative safe-integer `attempts`.
+253c265,266
+<  * Represents an in-memory store owning validated, immutable JSON snapshots of outstanding entries.
+---
+>  * Represents an in-memory store of a queue's outstanding entries — a process-lifetime `Map`
+>  * owning validated, immutable JSON snapshots.
+285c298,299
+<  * Represents a concurrent, cooperative FIFO job queue with optional outstanding-work persistence.
+---
+>  * Represents a concurrent, cooperative FIFO job queue — a wake-park worker loop with
+>  * retries, a per-attempt timeout, abort, and optional outstanding-work persistence.
+415c429,430
+<  * Represents a failure carrying a machine-readable queue category and optional context.
+---
+>  * Represents a queue failure carrying a lowercase machine-readable `code`, optional
+>  * structured context, and an optional cause.
+437a453,456
+>  * @remarks
+>  * `option` names the {@link QueueOption} the failure concerns, and `operation` names the store
+>  * call that failed.
+>  *
+466,467c485,486
+<  * moments a fire-and-forget observer (logging, metrics, tracing) subscribes to, ALONGSIDE
+<  * the per-entry `enqueue` promise.
+---
+>  * moments a fire-and-forget observer (logging, metrics, tracing) subscribes to, beside the
+>  * per-entry `enqueue` promise.
+474c493
+<  * listener throw is routed to the emitter's OWN `error` handler (the `error` option), never
+---
+>  * listener throw is routed to the emitter's own `error` handler (the `error` option), never
+476c495
+<  * buggy observer can never reorder, throw into, or corrupt the queue. Every emit sits AFTER
+---
+>  * buggy observer can never reorder, throw into, or corrupt the queue. Every emit sits after
+509c528
+<  * Runs one queued entry's work; may reject to trigger a retry.
+---
+>  * Runs one queued entry's work; a rejection triggers a retry while attempts remain.
+522c541,542
+<  * Represents a concurrent, cooperative job queue.
+---
+>  * Represents the contract a queue consumer holds — the readings of its live work, the
+>  * typed observation surface, and the calls that submit, restore, and wind it down.
+526,527c546,547
+<  * ({@link QueueEventMap}) for fire-and-forget observers, ALONGSIDE each `enqueue` promise.
+<  * Emitting is observation-only — every event fires AFTER the relevant wake / park / settle
+---
+>  * ({@link QueueEventMap}) for fire-and-forget observers, beside each `enqueue` promise.
+>  * Emitting is observation-only — every event fires after the relevant wake / park / settle
+548c568
+<     /** Reserves and submits one FIFO entry. */
+---
+>     /** Reserves one FIFO entry, submits it, and wakes a worker; the returned promise settles when the entry finally settles. */
+550c570
+<     /** Re-enqueues outstanding entries loaded from the store; no-op without a store. */
+---
+>     /** Re-enqueues the store's outstanding entries at their persisted attempt count so they run again; without a store it does nothing. */
+552c572
+<     /** Begins or restarts worker execution. */
+---
+>     /** Begins or restarts worker execution after a `stop`, spawning loops for accepted demand up to the queue's concurrency; after an abort it does nothing. */
+554c574
+<     /** Rejects non-active work and awaits current-loop/durable quiescence. */
+---
+>     /** Rejects non-active work and awaits durable removals plus current-loop quiescence, while in-flight entries settle normally. */
+556c576
+<     /** Suspends new execution resumably. */
+---
+>     /** Suspends dequeuing until `resume`, parking the workers while in-flight entries keep running. */
+558c578
+<     /** Continues execution after a pause. */
+---
+>     /** Continues a paused queue, waking the parked workers. */
+560c580
+<     /** Cancels active work, rejects pending work, and awaits cleanup. */
+---
+>     /** Cancels active work through its signal, rejects pending work immediately, and awaits the owned persistence cleanup. */
+562c582
+<     /** Rejects non-active work and awaits its durable cleanup. */
+---
+>     /** Rejects non-active work immediately and awaits its durable removal, leaving active entries untouched. */
+564c584
+<     /** Tears down idempotently and destroys observation last. */
+---
+>     /** Blocks admissions, aborts, awaits the cleanup, then destroys the emitter last; idempotent. */
+612c632,633
+<  * Represents the durable backing for a Queue's outstanding entries.
+---
+>  * Represents the durable backing for a queue's outstanding entries — the small keyed
+>  * surface a restart resumes from.
+615c636
+<  * The store holds ONLY work that has not yet completed: `save` upserts an entry
+---
+>  * The store holds only work that has not yet completed: `save` upserts an entry
+629a651
+>     /** Upserts one entry by its `id`, overwriting an entry already stored under that id. */
+630a653
+>     /** Drops one finished entry by `id`, doing nothing when the store holds no such id. */
+631a655
+>     /** Returns every outstanding entry — the work a restart resumes. */
+632a657
+>     /** Empties the store, dropping every outstanding entry. */
+637c662,663
+<  * Reads one named option from a caller-supplied entry options object.
+---
+>  * Reads one named option from a caller-supplied entry options object exactly once,
+>  * containing a throwing getter as a coded failure.
+640,641c666
+<  * The property is read exactly once, inside a boundary that contains a throwing
+<  * getter. An absent options object reads nothing and yields `undefined`.
+---
+>  * An absent options object reads nothing and yields `undefined`.
+661c686
+<  * The store holds only entries that have NOT yet completed, so what `load`
+---
+>  * The store holds only entries that have not yet completed, so what `load`
+679c704,705
+<  * Validates one already-read queue option against its guard.
+---
+>  * Validates one already-read queue option against its guard, and throws the coded invalid
+>  * failure carrying the option and the refused value when the guard refuses it.
+diff -r -w -B '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-queue-final-registry-visit-pack/baseline/package/dist/src/core/index.d.ts /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-queue-final-registry-visit-pack/extract/package/dist/src/core/index.d.ts
+1,8c1,8
+< import { ContractShape } from '@orkestrel/contract';
+< import { DriverInterface } from '@orkestrel/database';
+< import { EmitterErrorHandler } from '@orkestrel/emitter';
+< import { EmitterHooks } from '@orkestrel/emitter';
+< import { EmitterInterface } from '@orkestrel/emitter';
+< import { Guard } from '@orkestrel/contract';
+< import { Infer } from '@orkestrel/contract';
+< import { TableInterface } from '@orkestrel/database';
+---
+> import type { ContractShape } from '@orkestrel/contract';
+> import type { DriverInterface } from '@orkestrel/database';
+> import type { EmitterErrorHandler } from '@orkestrel/emitter';
+> import type { EmitterHooks } from '@orkestrel/emitter';
+> import type { EmitterInterface } from '@orkestrel/emitter';
+> import type { Guard } from '@orkestrel/contract';
+> import type { Infer } from '@orkestrel/contract';
+> import type { TableInterface } from '@orkestrel/database';
+12c12,13
+<  * driver-pluggable backing for a queue's outstanding entries.
+---
+>  * driver-pluggable backing for a queue's outstanding entries, across a memory, JSON, or
+>  * SQLite driver.
+46,47c47,49
+<  * Creates an in-memory {@link MemoryQueueStore} — the zero-plumbing DEFAULT queue store
+<  * over a plain `Map` (the twin of {@link DatabaseQueueStore}).
+---
+>  * Creates an in-memory {@link MemoryQueueStore} over a plain `Map` — the zero-plumbing
+>  * {@link QueueStoreInterface} a queue takes when its outstanding entries need not outlive
+>  * the process, and the twin of {@link DatabaseQueueStore}.
+78c80
+<  * Worker loops PARK on a wake list when no entry is ready and are woken one-at-a-time
+---
+>  * Worker loops park on a wake list when no entry is ready and are woken one-at-a-time
+93c95
+<  * @example
+---
+>  * @example Create a queue
+97c99,105
+<  * const queue = createQueue<string, number>({
+---
+>  * // Ordered (concurrency defaults to 1): each entry runs to completion before the next.
+>  * const queue = createQueue<Job, Output>({ handler: (job) => run(job) })
+>  *
+>  * const output = await queue.enqueue(job)
+>  *
+>  * // Bounded, retried, and time-boxed: four in flight, two extra attempts, 5s per attempt.
+>  * const fetches = createQueue<string, number>({
+104c112
+<  * const status = await queue.enqueue('https://example.com')
+---
+>  * const status = await fetches.enqueue('https://example.com')
+110,112c118,120
+<  * Represents a {@link QueueStoreInterface} backed by one table of the `@orkestrel/database` layer — a
+<  * queue's durable state IS a table, so persistence reduces to keyed CRUD over a
+<  * `TableInterface`.
+---
+>  * Represents the opt-in durable store for a queue's outstanding entries, backed by one table
+>  * of the `@orkestrel/database` layer — a queue's durable state is a table, so persistence
+>  * reduces to keyed CRUD over a `TableInterface`.
+122c130
+<  * that row. The store holds only OUTSTANDING work (completed entries are `remove`d), so
+---
+>  * that row. The store holds only outstanding work (completed entries are `remove`d), so
+158c166
+<  * Determines whether a value is a valid queue concurrency.
+---
+>  * Determines whether a value is a valid queue concurrency — a positive safe integer.
+172c180,181
+<  * Determines whether an unknown value is a {@link QueueError}.
+---
+>  * Determines whether an unknown value is a {@link QueueError}, staying total for a hostile
+>  * value.
+190c199
+<  * Determines whether a value is a valid queue retry count.
+---
+>  * Determines whether a value is a valid queue retry count — a nonnegative safe integer.
+204c213,214
+<  * Determines whether a value is a native abort signal usable by the queue.
+---
+>  * Determines whether a value is a native abort signal usable by the queue, testing the
+>  * native brand rather than the shape.
+218c228,229
+<  * Determines whether a value is a valid queue timeout.
+---
+>  * Determines whether a value is a valid queue timeout — an integer count of milliseconds
+>  * inside the native timer range.
+233c244,245
+<  * Checks whether a value is a valid stored queue entry.
+---
+>  * Determines whether a value is a valid stored queue entry — a record holding a string
+>  * `id`, an `input`, and a nonnegative safe-integer `attempts`.
+253c265,266
+<  * Represents an in-memory store owning validated, immutable JSON snapshots of outstanding entries.
+---
+>  * Represents an in-memory store of a queue's outstanding entries — a process-lifetime `Map`
+>  * owning validated, immutable JSON snapshots.
+285c298,299
+<  * Represents a concurrent, cooperative FIFO job queue with optional outstanding-work persistence.
+---
+>  * Represents a concurrent, cooperative FIFO job queue — a wake-park worker loop with
+>  * retries, a per-attempt timeout, abort, and optional outstanding-work persistence.
+415c429,430
+<  * Represents a failure carrying a machine-readable queue category and optional context.
+---
+>  * Represents a queue failure carrying a lowercase machine-readable `code`, optional
+>  * structured context, and an optional cause.
+437a453,456
+>  * @remarks
+>  * `option` names the {@link QueueOption} the failure concerns, and `operation` names the store
+>  * call that failed.
+>  *
+466,467c485,486
+<  * moments a fire-and-forget observer (logging, metrics, tracing) subscribes to, ALONGSIDE
+<  * the per-entry `enqueue` promise.
+---
+>  * moments a fire-and-forget observer (logging, metrics, tracing) subscribes to, beside the
+>  * per-entry `enqueue` promise.
+474c493
+<  * listener throw is routed to the emitter's OWN `error` handler (the `error` option), never
+---
+>  * listener throw is routed to the emitter's own `error` handler (the `error` option), never
+476c495
+<  * buggy observer can never reorder, throw into, or corrupt the queue. Every emit sits AFTER
+---
+>  * buggy observer can never reorder, throw into, or corrupt the queue. Every emit sits after
+509c528
+<  * Runs one queued entry's work; may reject to trigger a retry.
+---
+>  * Runs one queued entry's work; a rejection triggers a retry while attempts remain.
+522c541,542
+<  * Represents a concurrent, cooperative job queue.
+---
+>  * Represents the contract a queue consumer holds — the readings of its live work, the
+>  * typed observation surface, and the calls that submit, restore, and wind it down.
+526,527c546,547
+<  * ({@link QueueEventMap}) for fire-and-forget observers, ALONGSIDE each `enqueue` promise.
+<  * Emitting is observation-only — every event fires AFTER the relevant wake / park / settle
+---
+>  * ({@link QueueEventMap}) for fire-and-forget observers, beside each `enqueue` promise.
+>  * Emitting is observation-only — every event fires after the relevant wake / park / settle
+548c568
+<     /** Reserves and submits one FIFO entry. */
+---
+>     /** Reserves one FIFO entry, submits it, and wakes a worker; the returned promise settles when the entry finally settles. */
+550c570
+<     /** Re-enqueues outstanding entries loaded from the store; no-op without a store. */
+---
+>     /** Re-enqueues the store's outstanding entries at their persisted attempt count so they run again; without a store it does nothing. */
+552c572
+<     /** Begins or restarts worker execution. */
+---
+>     /** Begins or restarts worker execution after a `stop`, spawning loops for accepted demand up to the queue's concurrency; after an abort it does nothing. */
+554c574
+<     /** Rejects non-active work and awaits current-loop/durable quiescence. */
+---
+>     /** Rejects non-active work and awaits durable removals plus current-loop quiescence, while in-flight entries settle normally. */
+556c576
+<     /** Suspends new execution resumably. */
+---
+>     /** Suspends dequeuing until `resume`, parking the workers while in-flight entries keep running. */
+558c578
+<     /** Continues execution after a pause. */
+---
+>     /** Continues a paused queue, waking the parked workers. */
+560c580
+<     /** Cancels active work, rejects pending work, and awaits cleanup. */
+---
+>     /** Cancels active work through its signal, rejects pending work immediately, and awaits the owned persistence cleanup. */
+562c582
+<     /** Rejects non-active work and awaits its durable cleanup. */
+---
+>     /** Rejects non-active work immediately and awaits its durable removal, leaving active entries untouched. */
+564c584
+<     /** Tears down idempotently and destroys observation last. */
+---
+>     /** Blocks admissions, aborts, awaits the cleanup, then destroys the emitter last; idempotent. */
+612c632,633
+<  * Represents the durable backing for a Queue's outstanding entries.
+---
+>  * Represents the durable backing for a queue's outstanding entries — the small keyed
+>  * surface a restart resumes from.
+615c636
+<  * The store holds ONLY work that has not yet completed: `save` upserts an entry
+---
+>  * The store holds only work that has not yet completed: `save` upserts an entry
+629a651
+>     /** Upserts one entry by its `id`, overwriting an entry already stored under that id. */
+630a653
+>     /** Drops one finished entry by `id`, doing nothing when the store holds no such id. */
+631a655
+>     /** Returns every outstanding entry — the work a restart resumes. */
+632a657
+>     /** Empties the store, dropping every outstanding entry. */
+637c662,663
+<  * Reads one named option from a caller-supplied entry options object.
+---
+>  * Reads one named option from a caller-supplied entry options object exactly once,
+>  * containing a throwing getter as a coded failure.
+640,641c666
+<  * The property is read exactly once, inside a boundary that contains a throwing
+<  * getter. An absent options object reads nothing and yields `undefined`.
+---
+>  * An absent options object reads nothing and yields `undefined`.
+661c686
+<  * The store holds only entries that have NOT yet completed, so what `load`
+---
+>  * The store holds only entries that have not yet completed, so what `load`
+679c704,705
+<  * Validates one already-read queue option against its guard.
+---
+>  * Validates one already-read queue option against its guard, and throws the coded invalid
+>  * failure carrying the option and the refused value when the guard refuses it.
+diff -r -w -B '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-queue-final-registry-visit-pack/baseline/package/dist/src/core/index.js /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-queue-final-registry-visit-pack/extract/package/dist/src/core/index.js
+8c8,9
+< * Represents a failure carrying a machine-readable queue category and optional context.
+---
+> * Represents a queue failure carrying a lowercase machine-readable `code`, optional
+> * structured context, and an optional cause.
+33c34,35
+< * Determines whether an unknown value is a {@link QueueError}.
+---
+> * Determines whether an unknown value is a {@link QueueError}, staying total for a hostile
+> * value.
+58c60
+< * Determines whether a value is a valid queue concurrency.
+---
+> * Determines whether a value is a valid queue concurrency — a positive safe integer.
+73c75
+< * Determines whether a value is a valid queue retry count.
+---
+> * Determines whether a value is a valid queue retry count — a nonnegative safe integer.
+88c90,91
+< * Determines whether a value is a valid queue timeout.
+---
+> * Determines whether a value is a valid queue timeout — an integer count of milliseconds
+> * inside the native timer range.
+104c107,108
+< * Determines whether a value is a native abort signal usable by the queue.
+---
+> * Determines whether a value is a native abort signal usable by the queue, testing the
+> * native brand rather than the shape.
+126c130,131
+< * Checks whether a value is a valid stored queue entry.
+---
+> * Determines whether a value is a valid stored queue entry — a record holding a string
+> * `id`, an `input`, and a nonnegative safe-integer `attempts`.
+154c159,160
+< * Reads one named option from a caller-supplied entry options object.
+---
+> * Reads one named option from a caller-supplied entry options object exactly once,
+> * containing a throwing getter as a coded failure.
+157,158c163
+< * The property is read exactly once, inside a boundary that contains a throwing
+< * getter. An absent options object reads nothing and yields `undefined`.
+---
+> * An absent options object reads nothing and yields `undefined`.
+184c189,190
+< * Validates one already-read queue option against its guard.
+---
+> * Validates one already-read queue option against its guard, and throws the coded invalid
+> * failure carrying the option and the refused value when the guard refuses it.
+212c218,219
+< * Represents a concurrent, cooperative FIFO job queue with optional outstanding-work persistence.
+---
+> * Represents a concurrent, cooperative FIFO job queue — a wake-park worker loop with
+> * retries, a per-attempt timeout, abort, and optional outstanding-work persistence.
+886,888c893,895
+< * Represents a {@link QueueStoreInterface} backed by one table of the `@orkestrel/database` layer — a
+< * queue's durable state IS a table, so persistence reduces to keyed CRUD over a
+< * `TableInterface`.
+---
+> * Represents the opt-in durable store for a queue's outstanding entries, backed by one table
+> * of the `@orkestrel/database` layer — a queue's durable state is a table, so persistence
+> * reduces to keyed CRUD over a `TableInterface`.
+898c905
+< * that row. The store holds only OUTSTANDING work (completed entries are `remove`d), so
+---
+> * that row. The store holds only outstanding work (completed entries are `remove`d), so
+945c952,953
+< * Represents an in-memory store owning validated, immutable JSON snapshots of outstanding entries.
+---
+> * Represents an in-memory store of a queue's outstanding entries — a process-lifetime `Map`
+> * owning validated, immutable JSON snapshots.
+1045c1053
+< * Worker loops PARK on a wake list when no entry is ready and are woken one-at-a-time
+---
+> * Worker loops park on a wake list when no entry is ready and are woken one-at-a-time
+1060c1068
+< * @example
+---
+> * @example Create a queue
+1064c1072,1078
+< * const queue = createQueue<string, number>({
+---
+> * // Ordered (concurrency defaults to 1): each entry runs to completion before the next.
+> * const queue = createQueue<Job, Output>({ handler: (job) => run(job) })
+> *
+> * const output = await queue.enqueue(job)
+> *
+> * // Bounded, retried, and time-boxed: four in flight, two extra attempts, 5s per attempt.
+> * const fetches = createQueue<string, number>({
+1071c1085
+< * const status = await queue.enqueue('https://example.com')
+---
+> * const status = await fetches.enqueue('https://example.com')
+1092,1093c1106,1108
+< * Creates an in-memory {@link MemoryQueueStore} — the zero-plumbing DEFAULT queue store
+< * over a plain `Map` (the twin of {@link DatabaseQueueStore}).
+---
+> * Creates an in-memory {@link MemoryQueueStore} over a plain `Map` — the zero-plumbing
+> * {@link QueueStoreInterface} a queue takes when its outstanding entries need not outlive
+> * the process, and the twin of {@link DatabaseQueueStore}.

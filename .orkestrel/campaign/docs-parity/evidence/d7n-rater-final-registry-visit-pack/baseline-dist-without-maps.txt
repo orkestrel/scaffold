@@ -1,0 +1,672 @@
+diff -r '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-rater-final-registry-visit-pack/baseline/package/dist/src/core/index.cjs /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-rater-final-registry-visit-pack/extract/package/dist/src/core/index.cjs
+12c12,13
+< * `DESTROYED` — use of a destroyed entity.
+---
+> * `DESTROYED` — use of a destroyed entity. `context` carries optional
+> * structured detail beside the message.
+55a57,60
+> * @remarks
+> * A scalar union has no open or exact axis, so this guard accepts one of the
+> * `Stage` literals and leaves nothing unchecked.
+> *
+72,73c77,81
+< * Total guard: adversarial input (cycles, hostile prototypes) returns `false`,
+< * never throws. The record shape is EXACT — an extra key fails.
+---
+> * Every `LineDefinition` member is checked, including its quantitative
+> * definition. Total guard: adversarial input (cycles, hostile prototypes)
+> * returns `false`, never throws. The record shape is exact — this package owns
+> * the authored input record, so an extra key fails and nothing is left
+> * unchecked.
+99,100c107,111
+< * Total guard: adversarial input (cycles, hostile prototypes) returns `false`,
+< * never throws. The record shape is EXACT — an extra key fails.
+---
+> * Every `RatingDefinition` member is checked, including each nested line
+> * definition. Total guard: adversarial input (cycles, hostile prototypes)
+> * returns `false`, never throws. The record shape is exact — this package owns
+> * the authored input record, so an extra key fails and nothing is left
+> * unchecked.
+124a136,137
+> * Optional `field` is checked as a `FieldPath`, `label` as a string,
+> * `comparison` as a `Comparison`, and `met` as a boolean, each when defined.
+127,128c140,142
+< * check them; either member may also be absent because `objectOf` reads declared
+< * members rather than requiring or enumerating own keys.
+---
+> * check them and a borrowed result is never narrowed on them; either member may
+> * also be absent because `objectOf` reads declared members rather than
+> * requiring or enumerating own keys.
+157,158c171,175
+< * Unknown members, prototypes, and class instances are admitted. Arrays are
+< * refused. Optional members may be absent or read as `undefined`.
+---
+> * `id`, the optional authored text, `applied`, an optional plain-number
+> * `value`, and each `Evidence` entry are checked. Unknown members, prototypes,
+> * and class instances are admitted and left unchecked, because a borrowed
+> * result implementation may add them. Arrays are refused. Optional members may
+> * be absent or read as `undefined`.
+188,189c205,209
+< * Unknown members, prototypes, and class instances are admitted. Arrays are
+< * refused. Optional members may be absent or read as `undefined`.
+---
+> * `id`, the optional authored text, `applied`, a plain-number `value`, and each
+> * `WorksheetFactor` entry are checked. Unknown members, prototypes, and class
+> * instances are admitted and left unchecked, because a borrowed result
+> * implementation may add them. Arrays are refused. Optional members may be
+> * absent or read as `undefined`.
+215,216c235,239
+< * Unknown members, prototypes, and class instances are admitted. Arrays are
+< * refused. Optional members may be absent or read as `undefined`.
+---
+> * `stage` is checked through `isStage`, `id`, `name`, and `expression` when
+> * defined, and `value` as a plain number. Unknown members, prototypes, and
+> * class instances are admitted and left unchecked, because a borrowed result
+> * implementation may add them. Arrays are refused. Optional members may be
+> * absent or read as `undefined`.
+245,246c268,273
+< * Unknown members, prototypes, and class instances are admitted. Arrays are
+< * refused. Optional members may be absent or read as `undefined`.
+---
+> * Identity, `aggregation` through reason's `isAggregation`, an optional
+> * plain-number `precision`, a plain-number `value`, the nested groups and steps,
+> * `trace`, `errors`, and `success` are checked. Unknown members, prototypes, and
+> * class instances are admitted and left unchecked, because a borrowed result
+> * implementation may add them. Arrays are refused. Optional members may be
+> * absent or read as `undefined`.
+276,279c303,310
+< * Unknown members, prototypes, and class instances are admitted. Arrays are
+< * refused. `amount` may be absent or read as `undefined`; when present it stays
+< * a plain JavaScript `number` without a finite or range refinement. The line's
+< * outcome lives on `worksheet`, so `worksheet.success` carries it.
+---
+> * Identity, an optional plain-number `amount`, and the nested `Worksheet` that
+> * carries the line's outcome are checked. Unknown members, prototypes, and
+> * class instances are admitted and left unchecked, because a borrowed result
+> * implementation may add them, and so is the relationship between `amount` and
+> * `worksheet.success`, which the published interface types independently.
+> * Arrays are refused. `amount` may be absent or read as `undefined`; when
+> * present it stays a plain JavaScript `number` without a finite or range
+> * refinement.
+303,306c334,340
+< * Use this guard for a result returned by a borrowed `RaterInterface`. Unknown
+< * members, prototypes, and class instances are admitted. Arrays are refused.
+< * `total` may be absent or read as `undefined`; when present it stays a plain
+< * JavaScript `number` without a finite or range refinement.
+---
+> * Use this guard for a result returned by a borrowed `RaterInterface`. Every
+> * nested `LineResult`, an optional plain-number `total`, and a boolean `success`
+> * are checked. Unknown members, prototypes, and class instances are admitted and
+> * left unchecked, and so are the relationships among totals, lines, and success,
+> * because the borrowed interface publishes only their member types. Arrays are
+> * refused. `total` may be absent or read as `undefined`; when present it stays a
+> * plain JavaScript `number` without a finite or range refinement.
+328c362,364
+< * Builds a {@link LineDefinition}.
+---
+> * Builds a fresh {@link LineDefinition} from a line id, a display name, and the
+> * line's quantitative rating definition, with `overrides` merged over those
+> * defaults.
+353c389,390
+< * Builds a {@link RatingDefinition}.
+---
+> * Builds a fresh {@link RatingDefinition} from a rating id, a display name, and
+> * the rating's ordered lines, with `overrides` merged over those defaults.
+639,640c676,677
+< * When no `engine` is injected, `Rater` builds and OWNS its own
+< * quantitative-only engine (`bail: false`) — Rater performs NO evaluation
+---
+> * When no `engine` is injected, `Rater` builds and owns its own
+> * quantitative-only engine (`bail: false`) — Rater performs no evaluation
+642,644c679,681
+< * array-of-lines `rate` overload is declared FIRST so a plain line list
+< * resolves to that form. `destroy()` destroys an OWNED engine, then the
+< * emitter LAST; an INJECTED engine is never destroyed. Afterwards every
+---
+> * array-of-lines `rate` overload is declared first so a plain line list
+> * resolves to that form. `destroy()` destroys an owned engine, then the
+> * emitter last; an injected engine is never destroyed. Afterwards every
+739c776,777
+< * Creates a rating orchestrator.
+---
+> * Creates a rating orchestrator over the shared quantitative engine, seeded
+> * from {@link RaterOptions} and returning a {@link RaterInterface}.
+744c782
+< * @example
+---
+> * @example Create a rater
+diff -r '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-rater-final-registry-visit-pack/baseline/package/dist/src/core/index.d.cts /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-rater-final-registry-visit-pack/extract/package/dist/src/core/index.d.cts
+1,17c1,17
+< import { Aggregation } from '@orkestrel/reason';
+< import { Check } from '@orkestrel/reason';
+< import { CheckResult } from '@orkestrel/reason';
+< import { Comparison } from '@orkestrel/reason';
+< import { EmitterErrorHandler } from '@orkestrel/emitter';
+< import { EmitterHooks } from '@orkestrel/emitter';
+< import { EmitterInterface } from '@orkestrel/emitter';
+< import { Factor } from '@orkestrel/reason';
+< import { FactorResult } from '@orkestrel/reason';
+< import { FieldPath } from '@orkestrel/contract';
+< import { GroupResult } from '@orkestrel/reason';
+< import { Guard } from '@orkestrel/contract';
+< import { JSONValue } from '@orkestrel/contract';
+< import { QuantitativeDefinition } from '@orkestrel/reason';
+< import { QuantitativeResult } from '@orkestrel/reason';
+< import { ReasonInterface } from '@orkestrel/reason';
+< import { Subject } from '@orkestrel/reason';
+---
+> import type { Aggregation } from '@orkestrel/reason';
+> import type { Check } from '@orkestrel/reason';
+> import type { CheckResult } from '@orkestrel/reason';
+> import type { Comparison } from '@orkestrel/reason';
+> import type { EmitterErrorHandler } from '@orkestrel/emitter';
+> import type { EmitterHooks } from '@orkestrel/emitter';
+> import type { EmitterInterface } from '@orkestrel/emitter';
+> import type { Factor } from '@orkestrel/reason';
+> import type { FactorResult } from '@orkestrel/reason';
+> import type { FieldPath } from '@orkestrel/contract';
+> import type { GroupResult } from '@orkestrel/reason';
+> import type { Guard } from '@orkestrel/contract';
+> import type { JSONValue } from '@orkestrel/contract';
+> import type { QuantitativeDefinition } from '@orkestrel/reason';
+> import type { QuantitativeResult } from '@orkestrel/reason';
+> import type { ReasonInterface } from '@orkestrel/reason';
+> import type { Subject } from '@orkestrel/reason';
+61c61,63
+<  * Builds a {@link LineDefinition}.
+---
+>  * Builds a fresh {@link LineDefinition} from a line id, a display name, and the
+>  * line's quantitative rating definition, with `overrides` merged over those
+>  * defaults.
+101c103,104
+<  * Builds a {@link RatingDefinition}.
+---
+>  * Builds a fresh {@link RatingDefinition} from a rating id, a display name, and
+>  * the rating's ordered lines, with `overrides` merged over those defaults.
+223c226,227
+<  * Creates a rating orchestrator.
+---
+>  * Creates a rating orchestrator over the shared quantitative engine, seeded
+>  * from {@link RaterOptions} and returning a {@link RaterInterface}.
+228c232
+<  * @example
+---
+>  * @example Create a rater
+251a256,257
+>  * Optional `field` is checked as a `FieldPath`, `label` as a string,
+>  * `comparison` as a `Comparison`, and `met` as a boolean, each when defined.
+254,255c260,262
+<  * check them; either member may also be absent because `objectOf` reads declared
+<  * members rather than requiring or enumerating own keys.
+---
+>  * check them and a borrowed result is never narrowed on them; either member may
+>  * also be absent because `objectOf` reads declared members rather than
+>  * requiring or enumerating own keys.
+273,274c280,284
+<  * Total guard: adversarial input (cycles, hostile prototypes) returns `false`,
+<  * never throws. The record shape is EXACT — an extra key fails.
+---
+>  * Every `LineDefinition` member is checked, including its quantitative
+>  * definition. Total guard: adversarial input (cycles, hostile prototypes)
+>  * returns `false`, never throws. The record shape is exact — this package owns
+>  * the authored input record, so an extra key fails and nothing is left
+>  * unchecked.
+293,296c303,310
+<  * Unknown members, prototypes, and class instances are admitted. Arrays are
+<  * refused. `amount` may be absent or read as `undefined`; when present it stays
+<  * a plain JavaScript `number` without a finite or range refinement. The line's
+<  * outcome lives on `worksheet`, so `worksheet.success` carries it.
+---
+>  * Identity, an optional plain-number `amount`, and the nested `Worksheet` that
+>  * carries the line's outcome are checked. Unknown members, prototypes, and
+>  * class instances are admitted and left unchecked, because a borrowed result
+>  * implementation may add them, and so is the relationship between `amount` and
+>  * `worksheet.success`, which the published interface types independently.
+>  * Arrays are refused. `amount` may be absent or read as `undefined`; when
+>  * present it stays a plain JavaScript `number` without a finite or range
+>  * refinement.
+333,334c347,351
+<  * Total guard: adversarial input (cycles, hostile prototypes) returns `false`,
+<  * never throws. The record shape is EXACT — an extra key fails.
+---
+>  * Every `RatingDefinition` member is checked, including each nested line
+>  * definition. Total guard: adversarial input (cycles, hostile prototypes)
+>  * returns `false`, never throws. The record shape is exact — this package owns
+>  * the authored input record, so an extra key fails and nothing is left
+>  * unchecked.
+352,355c369,375
+<  * Use this guard for a result returned by a borrowed `RaterInterface`. Unknown
+<  * members, prototypes, and class instances are admitted. Arrays are refused.
+<  * `total` may be absent or read as `undefined`; when present it stays a plain
+<  * JavaScript `number` without a finite or range refinement.
+---
+>  * Use this guard for a result returned by a borrowed `RaterInterface`. Every
+>  * nested `LineResult`, an optional plain-number `total`, and a boolean `success`
+>  * are checked. Unknown members, prototypes, and class instances are admitted and
+>  * left unchecked, and so are the relationships among totals, lines, and success,
+>  * because the borrowed interface publishes only their member types. Arrays are
+>  * refused. `total` may be absent or read as `undefined`; when present it stays a
+>  * plain JavaScript `number` without a finite or range refinement.
+371a392,395
+>  * @remarks
+>  * A scalar union has no open or exact axis, so this guard accepts one of the
+>  * `Stage` literals and leaves nothing unchecked.
+>  *
+389,390c413,417
+<  * Unknown members, prototypes, and class instances are admitted. Arrays are
+<  * refused. Optional members may be absent or read as `undefined`.
+---
+>  * `stage` is checked through `isStage`, `id`, `name`, and `expression` when
+>  * defined, and `value` as a plain number. Unknown members, prototypes, and
+>  * class instances are admitted and left unchecked, because a borrowed result
+>  * implementation may add them. Arrays are refused. Optional members may be
+>  * absent or read as `undefined`.
+408,409c435,440
+<  * Unknown members, prototypes, and class instances are admitted. Arrays are
+<  * refused. Optional members may be absent or read as `undefined`.
+---
+>  * Identity, `aggregation` through reason's `isAggregation`, an optional
+>  * plain-number `precision`, a plain-number `value`, the nested groups and steps,
+>  * `trace`, `errors`, and `success` are checked. Unknown members, prototypes, and
+>  * class instances are admitted and left unchecked, because a borrowed result
+>  * implementation may add them. Arrays are refused. Optional members may be
+>  * absent or read as `undefined`.
+427,428c458,462
+<  * Unknown members, prototypes, and class instances are admitted. Arrays are
+<  * refused. Optional members may be absent or read as `undefined`.
+---
+>  * `id`, the optional authored text, `applied`, an optional plain-number
+>  * `value`, and each `Evidence` entry are checked. Unknown members, prototypes,
+>  * and class instances are admitted and left unchecked, because a borrowed
+>  * result implementation may add them. Arrays are refused. Optional members may
+>  * be absent or read as `undefined`.
+446,447c480,484
+<  * Unknown members, prototypes, and class instances are admitted. Arrays are
+<  * refused. Optional members may be absent or read as `undefined`.
+---
+>  * `id`, the optional authored text, `applied`, a plain-number `value`, and each
+>  * `WorksheetFactor` entry are checked. Unknown members, prototypes, and class
+>  * instances are admitted and left unchecked, because a borrowed result
+>  * implementation may add them. Arrays are refused. Optional members may be
+>  * absent or read as `undefined`.
+482c519
+<  * The worksheet also carries the line's outcome: `amount` is present ONLY
+---
+>  * The worksheet also carries the line's outcome: `amount` is present only
+497,498c534,535
+<  * When no `engine` is injected, `Rater` builds and OWNS its own
+<  * quantitative-only engine (`bail: false`) — Rater performs NO evaluation
+---
+>  * When no `engine` is injected, `Rater` builds and owns its own
+>  * quantitative-only engine (`bail: false`) — Rater performs no evaluation
+500,502c537,539
+<  * array-of-lines `rate` overload is declared FIRST so a plain line list
+<  * resolves to that form. `destroy()` destroys an OWNED engine, then the
+<  * emitter LAST; an INJECTED engine is never destroyed. Afterwards every
+---
+>  * array-of-lines `rate` overload is declared first so a plain line list
+>  * resolves to that form. `destroy()` destroys an owned engine, then the
+>  * emitter last; an injected engine is never destroyed. Afterwards every
+529c566,567
+<  * `DESTROYED` — use of a destroyed entity.
+---
+>  * `DESTROYED` — use of a destroyed entity. `context` carries optional
+>  * structured detail beside the message.
+562,563c600,601
+<  * The array-of-lines `rate` overload is declared FIRST so a plain line list
+<  * resolves to that form. Both overloads rate a SINGLE subject — there is no
+---
+>  * The array-of-lines `rate` overload is declared first so a plain line list
+>  * resolves to that form. Each overload rates a single subject — there is no
+566a605
+>     /** Holds the typed emitter every `rate` call fires its event through. */
+567a607,610
+>     /**
+>      * Rates an array of lines, or a {@link RatingDefinition}, against one subject over
+>      * the shared quantitative engine.
+>      */
+569a613,616
+>     /**
+>      * Destroys an owned engine and then the emitter, and does nothing on a later
+>      * call.
+>      */
+578c625
+<  * and OWNS its own quantitative-only engine (`bail: false`), destroying it on
+---
+>  * and owns its own quantitative-only engine (`bail: false`), destroying it on
+diff -r '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-rater-final-registry-visit-pack/baseline/package/dist/src/core/index.d.ts /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-rater-final-registry-visit-pack/extract/package/dist/src/core/index.d.ts
+1,17c1,17
+< import { Aggregation } from '@orkestrel/reason';
+< import { Check } from '@orkestrel/reason';
+< import { CheckResult } from '@orkestrel/reason';
+< import { Comparison } from '@orkestrel/reason';
+< import { EmitterErrorHandler } from '@orkestrel/emitter';
+< import { EmitterHooks } from '@orkestrel/emitter';
+< import { EmitterInterface } from '@orkestrel/emitter';
+< import { Factor } from '@orkestrel/reason';
+< import { FactorResult } from '@orkestrel/reason';
+< import { FieldPath } from '@orkestrel/contract';
+< import { GroupResult } from '@orkestrel/reason';
+< import { Guard } from '@orkestrel/contract';
+< import { JSONValue } from '@orkestrel/contract';
+< import { QuantitativeDefinition } from '@orkestrel/reason';
+< import { QuantitativeResult } from '@orkestrel/reason';
+< import { ReasonInterface } from '@orkestrel/reason';
+< import { Subject } from '@orkestrel/reason';
+---
+> import type { Aggregation } from '@orkestrel/reason';
+> import type { Check } from '@orkestrel/reason';
+> import type { CheckResult } from '@orkestrel/reason';
+> import type { Comparison } from '@orkestrel/reason';
+> import type { EmitterErrorHandler } from '@orkestrel/emitter';
+> import type { EmitterHooks } from '@orkestrel/emitter';
+> import type { EmitterInterface } from '@orkestrel/emitter';
+> import type { Factor } from '@orkestrel/reason';
+> import type { FactorResult } from '@orkestrel/reason';
+> import type { FieldPath } from '@orkestrel/contract';
+> import type { GroupResult } from '@orkestrel/reason';
+> import type { Guard } from '@orkestrel/contract';
+> import type { JSONValue } from '@orkestrel/contract';
+> import type { QuantitativeDefinition } from '@orkestrel/reason';
+> import type { QuantitativeResult } from '@orkestrel/reason';
+> import type { ReasonInterface } from '@orkestrel/reason';
+> import type { Subject } from '@orkestrel/reason';
+61c61,63
+<  * Builds a {@link LineDefinition}.
+---
+>  * Builds a fresh {@link LineDefinition} from a line id, a display name, and the
+>  * line's quantitative rating definition, with `overrides` merged over those
+>  * defaults.
+101c103,104
+<  * Builds a {@link RatingDefinition}.
+---
+>  * Builds a fresh {@link RatingDefinition} from a rating id, a display name, and
+>  * the rating's ordered lines, with `overrides` merged over those defaults.
+223c226,227
+<  * Creates a rating orchestrator.
+---
+>  * Creates a rating orchestrator over the shared quantitative engine, seeded
+>  * from {@link RaterOptions} and returning a {@link RaterInterface}.
+228c232
+<  * @example
+---
+>  * @example Create a rater
+251a256,257
+>  * Optional `field` is checked as a `FieldPath`, `label` as a string,
+>  * `comparison` as a `Comparison`, and `met` as a boolean, each when defined.
+254,255c260,262
+<  * check them; either member may also be absent because `objectOf` reads declared
+<  * members rather than requiring or enumerating own keys.
+---
+>  * check them and a borrowed result is never narrowed on them; either member may
+>  * also be absent because `objectOf` reads declared members rather than
+>  * requiring or enumerating own keys.
+273,274c280,284
+<  * Total guard: adversarial input (cycles, hostile prototypes) returns `false`,
+<  * never throws. The record shape is EXACT — an extra key fails.
+---
+>  * Every `LineDefinition` member is checked, including its quantitative
+>  * definition. Total guard: adversarial input (cycles, hostile prototypes)
+>  * returns `false`, never throws. The record shape is exact — this package owns
+>  * the authored input record, so an extra key fails and nothing is left
+>  * unchecked.
+293,296c303,310
+<  * Unknown members, prototypes, and class instances are admitted. Arrays are
+<  * refused. `amount` may be absent or read as `undefined`; when present it stays
+<  * a plain JavaScript `number` without a finite or range refinement. The line's
+<  * outcome lives on `worksheet`, so `worksheet.success` carries it.
+---
+>  * Identity, an optional plain-number `amount`, and the nested `Worksheet` that
+>  * carries the line's outcome are checked. Unknown members, prototypes, and
+>  * class instances are admitted and left unchecked, because a borrowed result
+>  * implementation may add them, and so is the relationship between `amount` and
+>  * `worksheet.success`, which the published interface types independently.
+>  * Arrays are refused. `amount` may be absent or read as `undefined`; when
+>  * present it stays a plain JavaScript `number` without a finite or range
+>  * refinement.
+333,334c347,351
+<  * Total guard: adversarial input (cycles, hostile prototypes) returns `false`,
+<  * never throws. The record shape is EXACT — an extra key fails.
+---
+>  * Every `RatingDefinition` member is checked, including each nested line
+>  * definition. Total guard: adversarial input (cycles, hostile prototypes)
+>  * returns `false`, never throws. The record shape is exact — this package owns
+>  * the authored input record, so an extra key fails and nothing is left
+>  * unchecked.
+352,355c369,375
+<  * Use this guard for a result returned by a borrowed `RaterInterface`. Unknown
+<  * members, prototypes, and class instances are admitted. Arrays are refused.
+<  * `total` may be absent or read as `undefined`; when present it stays a plain
+<  * JavaScript `number` without a finite or range refinement.
+---
+>  * Use this guard for a result returned by a borrowed `RaterInterface`. Every
+>  * nested `LineResult`, an optional plain-number `total`, and a boolean `success`
+>  * are checked. Unknown members, prototypes, and class instances are admitted and
+>  * left unchecked, and so are the relationships among totals, lines, and success,
+>  * because the borrowed interface publishes only their member types. Arrays are
+>  * refused. `total` may be absent or read as `undefined`; when present it stays a
+>  * plain JavaScript `number` without a finite or range refinement.
+371a392,395
+>  * @remarks
+>  * A scalar union has no open or exact axis, so this guard accepts one of the
+>  * `Stage` literals and leaves nothing unchecked.
+>  *
+389,390c413,417
+<  * Unknown members, prototypes, and class instances are admitted. Arrays are
+<  * refused. Optional members may be absent or read as `undefined`.
+---
+>  * `stage` is checked through `isStage`, `id`, `name`, and `expression` when
+>  * defined, and `value` as a plain number. Unknown members, prototypes, and
+>  * class instances are admitted and left unchecked, because a borrowed result
+>  * implementation may add them. Arrays are refused. Optional members may be
+>  * absent or read as `undefined`.
+408,409c435,440
+<  * Unknown members, prototypes, and class instances are admitted. Arrays are
+<  * refused. Optional members may be absent or read as `undefined`.
+---
+>  * Identity, `aggregation` through reason's `isAggregation`, an optional
+>  * plain-number `precision`, a plain-number `value`, the nested groups and steps,
+>  * `trace`, `errors`, and `success` are checked. Unknown members, prototypes, and
+>  * class instances are admitted and left unchecked, because a borrowed result
+>  * implementation may add them. Arrays are refused. Optional members may be
+>  * absent or read as `undefined`.
+427,428c458,462
+<  * Unknown members, prototypes, and class instances are admitted. Arrays are
+<  * refused. Optional members may be absent or read as `undefined`.
+---
+>  * `id`, the optional authored text, `applied`, an optional plain-number
+>  * `value`, and each `Evidence` entry are checked. Unknown members, prototypes,
+>  * and class instances are admitted and left unchecked, because a borrowed
+>  * result implementation may add them. Arrays are refused. Optional members may
+>  * be absent or read as `undefined`.
+446,447c480,484
+<  * Unknown members, prototypes, and class instances are admitted. Arrays are
+<  * refused. Optional members may be absent or read as `undefined`.
+---
+>  * `id`, the optional authored text, `applied`, a plain-number `value`, and each
+>  * `WorksheetFactor` entry are checked. Unknown members, prototypes, and class
+>  * instances are admitted and left unchecked, because a borrowed result
+>  * implementation may add them. Arrays are refused. Optional members may be
+>  * absent or read as `undefined`.
+482c519
+<  * The worksheet also carries the line's outcome: `amount` is present ONLY
+---
+>  * The worksheet also carries the line's outcome: `amount` is present only
+497,498c534,535
+<  * When no `engine` is injected, `Rater` builds and OWNS its own
+<  * quantitative-only engine (`bail: false`) — Rater performs NO evaluation
+---
+>  * When no `engine` is injected, `Rater` builds and owns its own
+>  * quantitative-only engine (`bail: false`) — Rater performs no evaluation
+500,502c537,539
+<  * array-of-lines `rate` overload is declared FIRST so a plain line list
+<  * resolves to that form. `destroy()` destroys an OWNED engine, then the
+<  * emitter LAST; an INJECTED engine is never destroyed. Afterwards every
+---
+>  * array-of-lines `rate` overload is declared first so a plain line list
+>  * resolves to that form. `destroy()` destroys an owned engine, then the
+>  * emitter last; an injected engine is never destroyed. Afterwards every
+529c566,567
+<  * `DESTROYED` — use of a destroyed entity.
+---
+>  * `DESTROYED` — use of a destroyed entity. `context` carries optional
+>  * structured detail beside the message.
+562,563c600,601
+<  * The array-of-lines `rate` overload is declared FIRST so a plain line list
+<  * resolves to that form. Both overloads rate a SINGLE subject — there is no
+---
+>  * The array-of-lines `rate` overload is declared first so a plain line list
+>  * resolves to that form. Each overload rates a single subject — there is no
+566a605
+>     /** Holds the typed emitter every `rate` call fires its event through. */
+567a607,610
+>     /**
+>      * Rates an array of lines, or a {@link RatingDefinition}, against one subject over
+>      * the shared quantitative engine.
+>      */
+569a613,616
+>     /**
+>      * Destroys an owned engine and then the emitter, and does nothing on a later
+>      * call.
+>      */
+578c625
+<  * and OWNS its own quantitative-only engine (`bail: false`), destroying it on
+---
+>  * and owns its own quantitative-only engine (`bail: false`), destroying it on
+diff -r '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-rater-final-registry-visit-pack/baseline/package/dist/src/core/index.js /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-rater-final-registry-visit-pack/extract/package/dist/src/core/index.js
+11c11,12
+< * `DESTROYED` — use of a destroyed entity.
+---
+> * `DESTROYED` — use of a destroyed entity. `context` carries optional
+> * structured detail beside the message.
+54a56,59
+> * @remarks
+> * A scalar union has no open or exact axis, so this guard accepts one of the
+> * `Stage` literals and leaves nothing unchecked.
+> *
+71,72c76,80
+< * Total guard: adversarial input (cycles, hostile prototypes) returns `false`,
+< * never throws. The record shape is EXACT — an extra key fails.
+---
+> * Every `LineDefinition` member is checked, including its quantitative
+> * definition. Total guard: adversarial input (cycles, hostile prototypes)
+> * returns `false`, never throws. The record shape is exact — this package owns
+> * the authored input record, so an extra key fails and nothing is left
+> * unchecked.
+98,99c106,110
+< * Total guard: adversarial input (cycles, hostile prototypes) returns `false`,
+< * never throws. The record shape is EXACT — an extra key fails.
+---
+> * Every `RatingDefinition` member is checked, including each nested line
+> * definition. Total guard: adversarial input (cycles, hostile prototypes)
+> * returns `false`, never throws. The record shape is exact — this package owns
+> * the authored input record, so an extra key fails and nothing is left
+> * unchecked.
+123a135,136
+> * Optional `field` is checked as a `FieldPath`, `label` as a string,
+> * `comparison` as a `Comparison`, and `met` as a boolean, each when defined.
+126,127c139,141
+< * check them; either member may also be absent because `objectOf` reads declared
+< * members rather than requiring or enumerating own keys.
+---
+> * check them and a borrowed result is never narrowed on them; either member may
+> * also be absent because `objectOf` reads declared members rather than
+> * requiring or enumerating own keys.
+156,157c170,174
+< * Unknown members, prototypes, and class instances are admitted. Arrays are
+< * refused. Optional members may be absent or read as `undefined`.
+---
+> * `id`, the optional authored text, `applied`, an optional plain-number
+> * `value`, and each `Evidence` entry are checked. Unknown members, prototypes,
+> * and class instances are admitted and left unchecked, because a borrowed
+> * result implementation may add them. Arrays are refused. Optional members may
+> * be absent or read as `undefined`.
+187,188c204,208
+< * Unknown members, prototypes, and class instances are admitted. Arrays are
+< * refused. Optional members may be absent or read as `undefined`.
+---
+> * `id`, the optional authored text, `applied`, a plain-number `value`, and each
+> * `WorksheetFactor` entry are checked. Unknown members, prototypes, and class
+> * instances are admitted and left unchecked, because a borrowed result
+> * implementation may add them. Arrays are refused. Optional members may be
+> * absent or read as `undefined`.
+214,215c234,238
+< * Unknown members, prototypes, and class instances are admitted. Arrays are
+< * refused. Optional members may be absent or read as `undefined`.
+---
+> * `stage` is checked through `isStage`, `id`, `name`, and `expression` when
+> * defined, and `value` as a plain number. Unknown members, prototypes, and
+> * class instances are admitted and left unchecked, because a borrowed result
+> * implementation may add them. Arrays are refused. Optional members may be
+> * absent or read as `undefined`.
+244,245c267,272
+< * Unknown members, prototypes, and class instances are admitted. Arrays are
+< * refused. Optional members may be absent or read as `undefined`.
+---
+> * Identity, `aggregation` through reason's `isAggregation`, an optional
+> * plain-number `precision`, a plain-number `value`, the nested groups and steps,
+> * `trace`, `errors`, and `success` are checked. Unknown members, prototypes, and
+> * class instances are admitted and left unchecked, because a borrowed result
+> * implementation may add them. Arrays are refused. Optional members may be
+> * absent or read as `undefined`.
+275,278c302,309
+< * Unknown members, prototypes, and class instances are admitted. Arrays are
+< * refused. `amount` may be absent or read as `undefined`; when present it stays
+< * a plain JavaScript `number` without a finite or range refinement. The line's
+< * outcome lives on `worksheet`, so `worksheet.success` carries it.
+---
+> * Identity, an optional plain-number `amount`, and the nested `Worksheet` that
+> * carries the line's outcome are checked. Unknown members, prototypes, and
+> * class instances are admitted and left unchecked, because a borrowed result
+> * implementation may add them, and so is the relationship between `amount` and
+> * `worksheet.success`, which the published interface types independently.
+> * Arrays are refused. `amount` may be absent or read as `undefined`; when
+> * present it stays a plain JavaScript `number` without a finite or range
+> * refinement.
+302,305c333,339
+< * Use this guard for a result returned by a borrowed `RaterInterface`. Unknown
+< * members, prototypes, and class instances are admitted. Arrays are refused.
+< * `total` may be absent or read as `undefined`; when present it stays a plain
+< * JavaScript `number` without a finite or range refinement.
+---
+> * Use this guard for a result returned by a borrowed `RaterInterface`. Every
+> * nested `LineResult`, an optional plain-number `total`, and a boolean `success`
+> * are checked. Unknown members, prototypes, and class instances are admitted and
+> * left unchecked, and so are the relationships among totals, lines, and success,
+> * because the borrowed interface publishes only their member types. Arrays are
+> * refused. `total` may be absent or read as `undefined`; when present it stays a
+> * plain JavaScript `number` without a finite or range refinement.
+327c361,363
+< * Builds a {@link LineDefinition}.
+---
+> * Builds a fresh {@link LineDefinition} from a line id, a display name, and the
+> * line's quantitative rating definition, with `overrides` merged over those
+> * defaults.
+352c388,389
+< * Builds a {@link RatingDefinition}.
+---
+> * Builds a fresh {@link RatingDefinition} from a rating id, a display name, and
+> * the rating's ordered lines, with `overrides` merged over those defaults.
+638,639c675,676
+< * When no `engine` is injected, `Rater` builds and OWNS its own
+< * quantitative-only engine (`bail: false`) — Rater performs NO evaluation
+---
+> * When no `engine` is injected, `Rater` builds and owns its own
+> * quantitative-only engine (`bail: false`) — Rater performs no evaluation
+641,643c678,680
+< * array-of-lines `rate` overload is declared FIRST so a plain line list
+< * resolves to that form. `destroy()` destroys an OWNED engine, then the
+< * emitter LAST; an INJECTED engine is never destroyed. Afterwards every
+---
+> * array-of-lines `rate` overload is declared first so a plain line list
+> * resolves to that form. `destroy()` destroys an owned engine, then the
+> * emitter last; an injected engine is never destroyed. Afterwards every
+738c775,776
+< * Creates a rating orchestrator.
+---
+> * Creates a rating orchestrator over the shared quantitative engine, seeded
+> * from {@link RaterOptions} and returning a {@link RaterInterface}.
+743c781
+< * @example
+---
+> * @example Create a rater

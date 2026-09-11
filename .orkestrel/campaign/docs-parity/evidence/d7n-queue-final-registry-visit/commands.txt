@@ -1,0 +1,70 @@
+git -C /c/Users/mikes/WebstormProjects/queue branch --show-current 
+git -C /c/Users/mikes/WebstormProjects/queue rev-parse HEAD 
+git -C /c/Users/mikes/WebstormProjects/queue diff --cached --quiet 
+git -C /c/Users/mikes/WebstormProjects/queue status --porcelain=v1 --untracked-files=all 
+npm pkg get dependencies.@orkestrel/abort 
+npm pkg get dependencies.@orkestrel/contract 
+npm pkg get dependencies.@orkestrel/database 
+npm pkg get dependencies.@orkestrel/emitter 
+npm pkg get dependencies.@orkestrel/timeout 
+npm pkg get devDependencies.@orkestrel/guide 
+npm pkg get devDependencies.@orkestrel/scaffold 
+npm pkg get devDependencies.@orkestrel/test 
+npm pkg get devDependencies.@orkestrel/probe 
+npm view @orkestrel/queue version 
+npm view @orkestrel/guide version 
+npm view @orkestrel/scaffold version 
+npm view @orkestrel/test version 
+npm view @orkestrel/probe version 
+npm view @orkestrel/abort version 
+npm view @orkestrel/contract version 
+npm view @orkestrel/database version 
+npm view @orkestrel/emitter version 
+npm view @orkestrel/timeout version 
+git -C /c/Users/mikes/WebstormProjects/queue fetch origin 
+git -C /c/Users/mikes/WebstormProjects/queue merge-base --is-ancestor origin/main HEAD 
+npm install --save-dev --ignore-scripts @orkestrel/guide@\^0.0.18 @orkestrel/scaffold@\^0.0.64 @orkestrel/test@\^0.0.14 
+npm install --save-prod --ignore-scripts @orkestrel/abort@\^0.0.10 @orkestrel/contract@\^0.0.17 @orkestrel/database@\^0.0.14 @orkestrel/emitter@\^0.0.10 @orkestrel/timeout@\^0.0.10 
+git -C /c/Users/mikes/WebstormProjects/queue diff --name-only 
+node /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/read-package-field.mjs /c/Users/mikes/WebstormProjects/queue/node_modules/@orkestrel/guide/package.json version 
+node /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/read-package-field.mjs /c/Users/mikes/WebstormProjects/queue/node_modules/@orkestrel/scaffold/package.json version 
+diff -r /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-guide-registry-native-pack/extract/package/dist /c/Users/mikes/WebstormProjects/queue/node_modules/@orkestrel/guide/dist 
+diff -r /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-scaffold-upper-git-final-pack/extract/package/dist /c/Users/mikes/WebstormProjects/queue/node_modules/@orkestrel/scaffold/dist 
+git -C /c/Users/mikes/WebstormProjects/queue add -- package.json package-lock.json 
+git -C /c/Users/mikes/WebstormProjects/queue -c user.name=Claude -c user.email=noreply@anthropic.com commit -m Prepare\ queue\ against\ published\ tooling -m Co-Authored-By:\ Claude\ \<noreply@anthropic.com\> -m Claude-Session:\ codex:01a0810d-21bf-7f60-8534-488348e05743 
+git -C /c/Users/mikes/WebstormProjects/queue rev-parse HEAD 
+git -C /c/Users/mikes/WebstormProjects/queue push origin HEAD:claude/orkestrel-npm-audit-deps-14ibta 
+node node_modules/@orkestrel/scaffold/dist/bin/main.js overwrite 
+node node_modules/@orkestrel/scaffold/dist/bin/main.js audit 
+npm pkg delete scripts.docs 
+node /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/verify-upper-native-manifest.mjs /c/Users/mikes/WebstormProjects/queue/package.json 
+cmp /c/Users/mikes/WebstormProjects/queue/guides/guide.md /c/Users/mikes/WebstormProjects/guide/guides/guide.md 
+cmp /c/Users/mikes/WebstormProjects/queue/guides/scaffold.md /c/Users/mikes/WebstormProjects/scaffold/guides/scaffold.md 
+bash /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/upper-layer-action.sh queue lock d7n-queue-final-registry-visit-lock 600s 
+bash /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/upper-layer-action.sh queue install d7n-queue-final-registry-visit-install 600s 
+node /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/read-package-field.mjs /c/Users/mikes/WebstormProjects/queue/node_modules/@orkestrel/guide/package.json version 
+node /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/read-package-field.mjs /c/Users/mikes/WebstormProjects/queue/node_modules/@orkestrel/scaffold/package.json version 
+diff -r /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-guide-registry-native-pack/extract/package/dist /c/Users/mikes/WebstormProjects/queue/node_modules/@orkestrel/guide/dist 
+diff -r /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-scaffold-upper-git-final-pack/extract/package/dist /c/Users/mikes/WebstormProjects/queue/node_modules/@orkestrel/scaffold/dist 
+npm ls --depth=0 
+npm pkg get dependencies.@orkestrel/abort 
+npm pkg get dependencies.@orkestrel/contract 
+npm pkg get dependencies.@orkestrel/database 
+npm pkg get dependencies.@orkestrel/emitter 
+npm pkg get dependencies.@orkestrel/timeout 
+npm pkg get devDependencies.@orkestrel/guide 
+npm pkg get devDependencies.@orkestrel/scaffold 
+npm pkg get devDependencies.@orkestrel/test 
+npm pkg get devDependencies.@orkestrel/probe 
+rg -n -P \(\?\<\!\[0-9\]\)0\\.0\\.12\(\?\!\[0-9\]\) src tests 
+rg -n -P \(\?\<\!\[0-9\]\)\\\^0\\.0\\.9\(\?\!\[0-9\]\) src tests 
+rg -n -P \(\?\<\!\[0-9\]\)\\\^0\\.0\\.16\(\?\!\[0-9\]\) src tests 
+rg -n -P \(\?\<\!\[0-9\]\)\\\^0\\.0\\.13\(\?\!\[0-9\]\) src tests 
+rg -n -P \(\?\<\!\[0-9\]\)\\\^0\\.0\\.9\(\?\!\[0-9\]\) src tests 
+rg -n -P \(\?\<\!\[0-9\]\)\\\^0\\.0\\.9\(\?\!\[0-9\]\) src tests 
+rg -n -P \(\?\<\!\[0-9\]\)\\\^0\\.0\\.17\(\?\!\[0-9\]\) src tests 
+rg -n -P \(\?\<\!\[0-9\]\)\\\^0\\.0\\.63\(\?\!\[0-9\]\) src tests 
+rg -n -P \(\?\<\!\[0-9\]\)\\\^0\\.0\\.13\(\?\!\[0-9\]\) src tests 
+bash /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/upper-layer-action.sh queue format d7n-queue-final-registry-visit-format 120s 
+bash /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/upper-layer-action.sh queue prepublish d7n-queue-final-registry-visit-prepublish 900s 
+bash /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/pack-upper-layer-final-verified.sh queue d7n-queue-final-registry-visit-pack 0.0.13 d7n-queue-final-registry-visit-prepublish 0.0.12 
