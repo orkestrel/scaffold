@@ -1,0 +1,7 @@
+# Operator handoff review
+
+Hold the separate independent reviewer. Read the authority and publish references already named by d7n-next-operator-commit-brief.md and inspect its returned script/report. Work read-only and never run an upload, authentication or Git mutation. Review commit-next-operator.sh against that bounded specification. Return its source decision without waiting for prompt.txt, which must not exist until the whole layer closes.
+
+After root reports prompt.txt ready, read the actual root command and compare it to preserved publish.txt. The next command must visit only canonical abort, budget, csv, emitter, html, indexeddb, ndjson, sqlite, timeout and tool directories under C:/Users/mikes/WebstormProjects. These are independent members of the selected runtime layer after registry-confirmed Contract. Every selected package must have accepted prepublish/pack evidence and clean pushed local main before this command is written. Check a fail-closed PowerShell block, login identity check, serial npm publish --ignore-scripts --browser=false directory uploads and explicit stop after each failed native command. No login, OTP/token, tarball path, tmp checkout or gate belongs in the operator line. Preserve publish.txt as historical command. Root parses prompt.txt without executing it.
+
+Root authored the operator command. Audit the actual line independently and return PASS or a concrete defect. Do not reopen accepted package source, preparation or common closure mechanisms.
