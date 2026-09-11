@@ -1,0 +1,28 @@
+npm notice
+npm notice 📦  @orkestrel/worker@0.0.12
+npm notice Tarball Contents
+npm notice 1.1kB LICENSE
+npm notice 2.7kB README.md
+npm notice 8.6kB dist/src/core/index.cjs
+npm notice 13.7kB dist/src/core/index.cjs.map
+npm notice 13.4kB dist/src/core/index.d.cts
+npm notice 13.4kB dist/src/core/index.d.ts
+npm notice 8.4kB dist/src/core/index.js
+npm notice 13.7kB dist/src/core/index.js.map
+npm notice 22.3kB dist/src/server/index.cjs
+npm notice 36.2kB dist/src/server/index.cjs.map
+npm notice 18.8kB dist/src/server/index.d.cts
+npm notice 18.8kB dist/src/server/index.d.ts
+npm notice 21.9kB dist/src/server/index.js
+npm notice 36.0kB dist/src/server/index.js.map
+npm notice 4.5kB package.json
+npm notice Tarball Details
+npm notice name: @orkestrel/worker
+npm notice version: 0.0.12
+npm notice filename: orkestrel-worker-0.0.12.tgz
+npm notice package size: 59.0 kB
+npm notice unpacked size: 233.5 kB
+npm notice shasum: 6ec0dff9151d6b28315dcfd503c5c025ee1dbb77
+npm notice integrity: sha512-6V30KzElRSKrk[...]2girCXLCAKMNQ==
+npm notice total files: 15
+npm notice

@@ -1,0 +1,1 @@
+{"name":"typescript","range":"^6","lookup":"found","latest":"6.0.3","major":7}

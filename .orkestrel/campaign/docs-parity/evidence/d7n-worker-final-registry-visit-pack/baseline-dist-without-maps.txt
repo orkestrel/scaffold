@@ -1,0 +1,708 @@
+diff -r '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-worker-final-registry-visit-pack/baseline/package/dist/src/core/index.cjs /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-worker-final-registry-visit-pack/extract/package/dist/src/core/index.cjs
+12,13c12,13
+< *   `options.pool`) and a `Queue` whose handler ACQUIRES a pooled resource, runs the
+< *   user handler against it, and RELEASES it in a `finally`. All concurrency, retries,
+---
+> *   `options.pool`) and a `Queue` whose handler `acquire`s a pooled resource, runs the
+> *   user handler against it, and `release`s it in a `finally`. All concurrency, retries,
+26,30c26,30
+< * - **Lifecycle (§10).** `enqueue` / `restore` / `start` / `stop` / `pause` / `resume` /
+< *   `abort` / `clear` delegate to the queue; `count` / `active` / `paused` / `stopped`
+< *   read it. `stop` / `abort` / `clear` return the queue's own cleanup barriers.
+< *   `destroy` returns one stable barrier while it tears down the queue, then the pool,
+< *   and destroys the worker emitter last. A sole cleanup failure is preserved by
+---
+> * - **Lifecycle (see the guide's `## Methods` section).** `enqueue` / `restore` / `start` /
+> *   `stop` / `pause` / `resume` / `abort` / `clear` delegate to the queue; `count` / `active` /
+> *   `paused` / `stopped` read it. `stop` / `abort` / `clear` return the queue's own cleanup
+> *   barriers. `destroy` returns one stable barrier while it tears down the queue, then the
+> *   pool, and destroys the worker emitter last. A sole cleanup failure is preserved by
+34,43c34,43
+< * - **Observable (§13).** The owned {@link emitter} ({@link WorkerEventMap}) RE-EXPOSES the
+< *   underlying queue's job lifecycle (`enqueue` / `start` / `retry` / `success` / `failure` /
+< *   `abort` / `drain`) as the worker's OWN events — bridged from the inner queue's emitter at
+< *   construction — so a consumer observes the worker without reaching through to internals.
+< *   The bridge re-emits directly on the worker's own emitter; the worker emitter isolates a
+< *   listener throw and routes it to its `error` handler (the `error` option), so a buggy
+< *   worker observer can never corrupt the inner queue or pool — the bridge listener never
+< *   throws, so the inner queue's own emit stays balanced. The pool's create / acquire /
+< *   release events stay the pool's internal concern (a Worker manages its own resources);
+< *   observe a `Pool` directly for those.
+---
+> * - **Observable (see the guide's `## Observing` section).** The owned {@link emitter}
+> *   ({@link WorkerEventMap}) re-exposes the underlying queue's job lifecycle (`enqueue` /
+> *   `start` / `retry` / `success` / `failure` / `abort` / `drain`) as the worker's own events —
+> *   bridged from the inner queue's emitter at construction — so a consumer observes the worker
+> *   without reaching through to internals. The bridge re-emits directly on the worker's own
+> *   emitter; the worker emitter isolates a listener throw and routes it to its `error` handler
+> *   (the `error` option), so a buggy worker observer can never corrupt the inner queue or pool
+> *   — the bridge listener never throws, so the inner queue's own emit stays balanced. The
+> *   pool's create / acquire / release events stay the pool's internal concern (a Worker manages
+> *   its own resources); observe a `Pool` directly for those.
+162,165c162,164
+< * Creates a resource-backed job worker — a `Queue` (`@orkestrel/queue`) marrying a `Pool`
+< * (`@orkestrel/pool`). Each enqueued input runs through the handler against an
+< * automatically acquired pooled resource (released when the job settles), with the
+< * queue's bounded concurrency, retries, and per-attempt timeout / abort.
+---
+> * Creates a resource-backed job worker — a `Queue` (`@orkestrel/queue`) composed with a
+> * `Pool` (`@orkestrel/pool`), where each enqueued input runs through the handler against
+> * an automatically acquired pooled resource released when the job settles.
+167a167
+> * Bounded concurrency, retries, and the per-attempt timeout and abort are the queue's.
+172,173c172,174
+< * delegates to the queue; `destroy` also tears the pool down. Observable (§13): a typed
+< * `emitter` surfaces the queue lifecycle (`enqueue` / `start` / `success` / `failure` / …).
+---
+> * delegates to the queue; `destroy` also tears the pool down. It is observable (see the
+> * guide's `## Observing` section): a typed `emitter` surfaces the queue lifecycle
+> * (`enqueue` / `start` / `success` / `failure` / …).
+182c183
+< * @example
+---
+> * @example A resource-backed worker
+185a187,188
+> * // A Queue whose handler runs each job against a pooled resource (acquired before the
+> * // handler, released after it — even on throw). The pool's `max` defaults to `concurrency`.
+193a197
+> * await worker.destroy() // awaits queue cleanup, pool cleanup, then emitter teardown
+diff -r '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-worker-final-registry-visit-pack/baseline/package/dist/src/core/index.d.cts /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-worker-final-registry-visit-pack/extract/package/dist/src/core/index.d.cts
+1,7c1,7
+< import { EmitterErrorHandler } from '@orkestrel/emitter';
+< import { EmitterHooks } from '@orkestrel/emitter';
+< import { EmitterInterface } from '@orkestrel/emitter';
+< import { PoolOptions } from '@orkestrel/pool';
+< import { QueueContext } from '@orkestrel/queue';
+< import { QueueEntryOptions } from '@orkestrel/queue';
+< import { QueueStoreInterface } from '@orkestrel/queue';
+---
+> import type { EmitterErrorHandler } from '@orkestrel/emitter';
+> import type { EmitterHooks } from '@orkestrel/emitter';
+> import type { EmitterInterface } from '@orkestrel/emitter';
+> import type { PoolOptions } from '@orkestrel/pool';
+> import type { QueueContext } from '@orkestrel/queue';
+> import type { QueueEntryOptions } from '@orkestrel/queue';
+> import type { QueueStoreInterface } from '@orkestrel/queue';
+10,13c10,12
+<  * Creates a resource-backed job worker — a `Queue` (`@orkestrel/queue`) marrying a `Pool`
+<  * (`@orkestrel/pool`). Each enqueued input runs through the handler against an
+<  * automatically acquired pooled resource (released when the job settles), with the
+<  * queue's bounded concurrency, retries, and per-attempt timeout / abort.
+---
+>  * Creates a resource-backed job worker — a `Queue` (`@orkestrel/queue`) composed with a
+>  * `Pool` (`@orkestrel/pool`), where each enqueued input runs through the handler against
+>  * an automatically acquired pooled resource released when the job settles.
+15a15
+>  * Bounded concurrency, retries, and the per-attempt timeout and abort are the queue's.
+20,21c20,22
+<  * delegates to the queue; `destroy` also tears the pool down. Observable (§13): a typed
+<  * `emitter` surfaces the queue lifecycle (`enqueue` / `start` / `success` / `failure` / …).
+---
+>  * delegates to the queue; `destroy` also tears the pool down. It is observable (see the
+>  * guide's `## Observing` section): a typed `emitter` surfaces the queue lifecycle
+>  * (`enqueue` / `start` / `success` / `failure` / …).
+30c31
+<  * @example
+---
+>  * @example A resource-backed worker
+33a35,36
+>  * // A Queue whose handler runs each job against a pooled resource (acquired before the
+>  * // handler, released after it — even on throw). The pool's `max` defaults to `concurrency`.
+41a45
+>  * await worker.destroy() // awaits queue cleanup, pool cleanup, then emitter teardown
+52,53c56,57
+<  *   `options.pool`) and a `Queue` whose handler ACQUIRES a pooled resource, runs the
+<  *   user handler against it, and RELEASES it in a `finally`. All concurrency, retries,
+---
+>  *   `options.pool`) and a `Queue` whose handler `acquire`s a pooled resource, runs the
+>  *   user handler against it, and `release`s it in a `finally`. All concurrency, retries,
+66,70c70,74
+<  * - **Lifecycle (§10).** `enqueue` / `restore` / `start` / `stop` / `pause` / `resume` /
+<  *   `abort` / `clear` delegate to the queue; `count` / `active` / `paused` / `stopped`
+<  *   read it. `stop` / `abort` / `clear` return the queue's own cleanup barriers.
+<  *   `destroy` returns one stable barrier while it tears down the queue, then the pool,
+<  *   and destroys the worker emitter last. A sole cleanup failure is preserved by
+---
+>  * - **Lifecycle (see the guide's `## Methods` section).** `enqueue` / `restore` / `start` /
+>  *   `stop` / `pause` / `resume` / `abort` / `clear` delegate to the queue; `count` / `active` /
+>  *   `paused` / `stopped` read it. `stop` / `abort` / `clear` return the queue's own cleanup
+>  *   barriers. `destroy` returns one stable barrier while it tears down the queue, then the
+>  *   pool, and destroys the worker emitter last. A sole cleanup failure is preserved by
+74,83c78,87
+<  * - **Observable (§13).** The owned {@link emitter} ({@link WorkerEventMap}) RE-EXPOSES the
+<  *   underlying queue's job lifecycle (`enqueue` / `start` / `retry` / `success` / `failure` /
+<  *   `abort` / `drain`) as the worker's OWN events — bridged from the inner queue's emitter at
+<  *   construction — so a consumer observes the worker without reaching through to internals.
+<  *   The bridge re-emits directly on the worker's own emitter; the worker emitter isolates a
+<  *   listener throw and routes it to its `error` handler (the `error` option), so a buggy
+<  *   worker observer can never corrupt the inner queue or pool — the bridge listener never
+<  *   throws, so the inner queue's own emit stays balanced. The pool's create / acquire /
+<  *   release events stay the pool's internal concern (a Worker manages its own resources);
+<  *   observe a `Pool` directly for those.
+---
+>  * - **Observable (see the guide's `## Observing` section).** The owned {@link emitter}
+>  *   ({@link WorkerEventMap}) re-exposes the underlying queue's job lifecycle (`enqueue` /
+>  *   `start` / `retry` / `success` / `failure` / `abort` / `drain`) as the worker's own events —
+>  *   bridged from the inner queue's emitter at construction — so a consumer observes the worker
+>  *   without reaching through to internals. The bridge re-emits directly on the worker's own
+>  *   emitter; the worker emitter isolates a listener throw and routes it to its `error` handler
+>  *   (the `error` option), so a buggy worker observer can never corrupt the inner queue or pool
+>  *   — the bridge listener never throws, so the inner queue's own emit stays balanced. The
+>  *   pool's create / acquire / release events stay the pool's internal concern (a Worker manages
+>  *   its own resources); observe a `Pool` directly for those.
+107,108c111
+<  * lifecycle a fire-and-forget observer subscribes to, surfacing the underlying queue's
+<  * moments so a Worker consumer never reaches through to the internal `Queue`.
+---
+>  * lifecycle a fire-and-forget observer subscribes to.
+115,118c118,122
+<  * map RE-EXPOSES the queue lifecycle the worker surfaces (`enqueue` / `start` / `retry` /
+<  * `success` / `failure` / `abort` / `drain`) as the worker's OWN events — wired from the
+<  * underlying queue's emitter at construction, so a buggy observer is isolated exactly as
+<  * on the queue (a throw routes to the worker emitter's `error` handler). The
+---
+>  * map re-exposes the queue lifecycle the worker surfaces (`enqueue` / `start` / `retry` /
+>  * `success` / `failure` / `abort` / `drain`) as the worker's own events — wired from the
+>  * underlying queue's emitter at construction, so a consumer never reaches through to the
+>  * internal `Queue` and a buggy observer is isolated exactly as on the queue (a throw
+>  * routes to the worker emitter's `error` handler). The
+121c125,129
+<  * Declared as a `type` alias (§4.5).
+---
+>  *
+>  * Declared as a `type` alias (not `interface extends EventMap` — `EventMap` is a
+>  * `type` kind): a type-literal satisfies the `EventMap` constraint
+>  * (`Record<string, readonly unknown[]>`) structurally, whereas an interface lacks the
+>  * required index signature.
+145c153,154
+<  * Represents a resource-backed job worker — a Queue whose handler runs against a pooled resource.
+---
+>  * Represents the job-worker contract a consumer holds — a `Queue` whose handler runs each
+>  * job against a pooled resource.
+159a169,176
+>     /**
+>      * Submits one job in FIFO order; the handler runs against an acquired resource, released
+>      * when the job settles.
+>      *
+>      * @param input - The work payload the handler receives
+>      * @param options - Optional id, retry and timeout overrides, and an entry abort signal
+>      * @returns The job's settle-once execution promise
+>      */
+161c178
+<     /** Re-enqueues outstanding entries loaded from the store; no-op without a store. */
+---
+>     /** Re-enqueues the store's outstanding entries through the underlying queue; no-op without a store. */
+162a180
+>     /** Starts or restarts the underlying queue's worker loops. */
+164c182
+<     /** Stops the queue and awaits current-loop and durable cleanup quiescence. */
+---
+>     /** Stops the queue, rejects pending work, and awaits current-loop and durable cleanup quiescence. */
+165a184
+>     /** Suspends dequeuing through the underlying queue, leaving in-flight jobs untouched. */
+166a186
+>     /** Continues a paused worker through the underlying queue. */
+169c189,190
+<      * Cancels in-flight work, rejects pending work, and awaits queue-owned cleanup.
+---
+>      * Cancels in-flight work, rejects pending work, and awaits queue-owned cleanup; an
+>      * aborted attempt is never retried.
+175c196
+<     /** Drops pending work and awaits its durable cleanup. */
+---
+>     /** Drops pending jobs and awaits their durable cleanup, leaving in-flight jobs untouched. */
+178c199,200
+<      * Tears down the queue, then the pool, and finally the worker emitter.
+---
+>      * Tears down the queue, then the pool, and finally the worker emitter, behind one stable
+>      * barrier.
+201c223
+<  * - `on` — the reserved {@link EmitterHooks} key (§8): initial listeners for the worker's
+---
+>  * - `on` — the reserved {@link EmitterHooks} key: initial listeners for the worker's
+diff -r '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-worker-final-registry-visit-pack/baseline/package/dist/src/core/index.d.ts /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-worker-final-registry-visit-pack/extract/package/dist/src/core/index.d.ts
+1,7c1,7
+< import { EmitterErrorHandler } from '@orkestrel/emitter';
+< import { EmitterHooks } from '@orkestrel/emitter';
+< import { EmitterInterface } from '@orkestrel/emitter';
+< import { PoolOptions } from '@orkestrel/pool';
+< import { QueueContext } from '@orkestrel/queue';
+< import { QueueEntryOptions } from '@orkestrel/queue';
+< import { QueueStoreInterface } from '@orkestrel/queue';
+---
+> import type { EmitterErrorHandler } from '@orkestrel/emitter';
+> import type { EmitterHooks } from '@orkestrel/emitter';
+> import type { EmitterInterface } from '@orkestrel/emitter';
+> import type { PoolOptions } from '@orkestrel/pool';
+> import type { QueueContext } from '@orkestrel/queue';
+> import type { QueueEntryOptions } from '@orkestrel/queue';
+> import type { QueueStoreInterface } from '@orkestrel/queue';
+10,13c10,12
+<  * Creates a resource-backed job worker — a `Queue` (`@orkestrel/queue`) marrying a `Pool`
+<  * (`@orkestrel/pool`). Each enqueued input runs through the handler against an
+<  * automatically acquired pooled resource (released when the job settles), with the
+<  * queue's bounded concurrency, retries, and per-attempt timeout / abort.
+---
+>  * Creates a resource-backed job worker — a `Queue` (`@orkestrel/queue`) composed with a
+>  * `Pool` (`@orkestrel/pool`), where each enqueued input runs through the handler against
+>  * an automatically acquired pooled resource released when the job settles.
+15a15
+>  * Bounded concurrency, retries, and the per-attempt timeout and abort are the queue's.
+20,21c20,22
+<  * delegates to the queue; `destroy` also tears the pool down. Observable (§13): a typed
+<  * `emitter` surfaces the queue lifecycle (`enqueue` / `start` / `success` / `failure` / …).
+---
+>  * delegates to the queue; `destroy` also tears the pool down. It is observable (see the
+>  * guide's `## Observing` section): a typed `emitter` surfaces the queue lifecycle
+>  * (`enqueue` / `start` / `success` / `failure` / …).
+30c31
+<  * @example
+---
+>  * @example A resource-backed worker
+33a35,36
+>  * // A Queue whose handler runs each job against a pooled resource (acquired before the
+>  * // handler, released after it — even on throw). The pool's `max` defaults to `concurrency`.
+41a45
+>  * await worker.destroy() // awaits queue cleanup, pool cleanup, then emitter teardown
+52,53c56,57
+<  *   `options.pool`) and a `Queue` whose handler ACQUIRES a pooled resource, runs the
+<  *   user handler against it, and RELEASES it in a `finally`. All concurrency, retries,
+---
+>  *   `options.pool`) and a `Queue` whose handler `acquire`s a pooled resource, runs the
+>  *   user handler against it, and `release`s it in a `finally`. All concurrency, retries,
+66,70c70,74
+<  * - **Lifecycle (§10).** `enqueue` / `restore` / `start` / `stop` / `pause` / `resume` /
+<  *   `abort` / `clear` delegate to the queue; `count` / `active` / `paused` / `stopped`
+<  *   read it. `stop` / `abort` / `clear` return the queue's own cleanup barriers.
+<  *   `destroy` returns one stable barrier while it tears down the queue, then the pool,
+<  *   and destroys the worker emitter last. A sole cleanup failure is preserved by
+---
+>  * - **Lifecycle (see the guide's `## Methods` section).** `enqueue` / `restore` / `start` /
+>  *   `stop` / `pause` / `resume` / `abort` / `clear` delegate to the queue; `count` / `active` /
+>  *   `paused` / `stopped` read it. `stop` / `abort` / `clear` return the queue's own cleanup
+>  *   barriers. `destroy` returns one stable barrier while it tears down the queue, then the
+>  *   pool, and destroys the worker emitter last. A sole cleanup failure is preserved by
+74,83c78,87
+<  * - **Observable (§13).** The owned {@link emitter} ({@link WorkerEventMap}) RE-EXPOSES the
+<  *   underlying queue's job lifecycle (`enqueue` / `start` / `retry` / `success` / `failure` /
+<  *   `abort` / `drain`) as the worker's OWN events — bridged from the inner queue's emitter at
+<  *   construction — so a consumer observes the worker without reaching through to internals.
+<  *   The bridge re-emits directly on the worker's own emitter; the worker emitter isolates a
+<  *   listener throw and routes it to its `error` handler (the `error` option), so a buggy
+<  *   worker observer can never corrupt the inner queue or pool — the bridge listener never
+<  *   throws, so the inner queue's own emit stays balanced. The pool's create / acquire /
+<  *   release events stay the pool's internal concern (a Worker manages its own resources);
+<  *   observe a `Pool` directly for those.
+---
+>  * - **Observable (see the guide's `## Observing` section).** The owned {@link emitter}
+>  *   ({@link WorkerEventMap}) re-exposes the underlying queue's job lifecycle (`enqueue` /
+>  *   `start` / `retry` / `success` / `failure` / `abort` / `drain`) as the worker's own events —
+>  *   bridged from the inner queue's emitter at construction — so a consumer observes the worker
+>  *   without reaching through to internals. The bridge re-emits directly on the worker's own
+>  *   emitter; the worker emitter isolates a listener throw and routes it to its `error` handler
+>  *   (the `error` option), so a buggy worker observer can never corrupt the inner queue or pool
+>  *   — the bridge listener never throws, so the inner queue's own emit stays balanced. The
+>  *   pool's create / acquire / release events stay the pool's internal concern (a Worker manages
+>  *   its own resources); observe a `Pool` directly for those.
+107,108c111
+<  * lifecycle a fire-and-forget observer subscribes to, surfacing the underlying queue's
+<  * moments so a Worker consumer never reaches through to the internal `Queue`.
+---
+>  * lifecycle a fire-and-forget observer subscribes to.
+115,118c118,122
+<  * map RE-EXPOSES the queue lifecycle the worker surfaces (`enqueue` / `start` / `retry` /
+<  * `success` / `failure` / `abort` / `drain`) as the worker's OWN events — wired from the
+<  * underlying queue's emitter at construction, so a buggy observer is isolated exactly as
+<  * on the queue (a throw routes to the worker emitter's `error` handler). The
+---
+>  * map re-exposes the queue lifecycle the worker surfaces (`enqueue` / `start` / `retry` /
+>  * `success` / `failure` / `abort` / `drain`) as the worker's own events — wired from the
+>  * underlying queue's emitter at construction, so a consumer never reaches through to the
+>  * internal `Queue` and a buggy observer is isolated exactly as on the queue (a throw
+>  * routes to the worker emitter's `error` handler). The
+121c125,129
+<  * Declared as a `type` alias (§4.5).
+---
+>  *
+>  * Declared as a `type` alias (not `interface extends EventMap` — `EventMap` is a
+>  * `type` kind): a type-literal satisfies the `EventMap` constraint
+>  * (`Record<string, readonly unknown[]>`) structurally, whereas an interface lacks the
+>  * required index signature.
+145c153,154
+<  * Represents a resource-backed job worker — a Queue whose handler runs against a pooled resource.
+---
+>  * Represents the job-worker contract a consumer holds — a `Queue` whose handler runs each
+>  * job against a pooled resource.
+159a169,176
+>     /**
+>      * Submits one job in FIFO order; the handler runs against an acquired resource, released
+>      * when the job settles.
+>      *
+>      * @param input - The work payload the handler receives
+>      * @param options - Optional id, retry and timeout overrides, and an entry abort signal
+>      * @returns The job's settle-once execution promise
+>      */
+161c178
+<     /** Re-enqueues outstanding entries loaded from the store; no-op without a store. */
+---
+>     /** Re-enqueues the store's outstanding entries through the underlying queue; no-op without a store. */
+162a180
+>     /** Starts or restarts the underlying queue's worker loops. */
+164c182
+<     /** Stops the queue and awaits current-loop and durable cleanup quiescence. */
+---
+>     /** Stops the queue, rejects pending work, and awaits current-loop and durable cleanup quiescence. */
+165a184
+>     /** Suspends dequeuing through the underlying queue, leaving in-flight jobs untouched. */
+166a186
+>     /** Continues a paused worker through the underlying queue. */
+169c189,190
+<      * Cancels in-flight work, rejects pending work, and awaits queue-owned cleanup.
+---
+>      * Cancels in-flight work, rejects pending work, and awaits queue-owned cleanup; an
+>      * aborted attempt is never retried.
+175c196
+<     /** Drops pending work and awaits its durable cleanup. */
+---
+>     /** Drops pending jobs and awaits their durable cleanup, leaving in-flight jobs untouched. */
+178c199,200
+<      * Tears down the queue, then the pool, and finally the worker emitter.
+---
+>      * Tears down the queue, then the pool, and finally the worker emitter, behind one stable
+>      * barrier.
+201c223
+<  * - `on` — the reserved {@link EmitterHooks} key (§8): initial listeners for the worker's
+---
+>  * - `on` — the reserved {@link EmitterHooks} key: initial listeners for the worker's
+diff -r '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-worker-final-registry-visit-pack/baseline/package/dist/src/core/index.js /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-worker-final-registry-visit-pack/extract/package/dist/src/core/index.js
+11,12c11,12
+< *   `options.pool`) and a `Queue` whose handler ACQUIRES a pooled resource, runs the
+< *   user handler against it, and RELEASES it in a `finally`. All concurrency, retries,
+---
+> *   `options.pool`) and a `Queue` whose handler `acquire`s a pooled resource, runs the
+> *   user handler against it, and `release`s it in a `finally`. All concurrency, retries,
+25,29c25,29
+< * - **Lifecycle (§10).** `enqueue` / `restore` / `start` / `stop` / `pause` / `resume` /
+< *   `abort` / `clear` delegate to the queue; `count` / `active` / `paused` / `stopped`
+< *   read it. `stop` / `abort` / `clear` return the queue's own cleanup barriers.
+< *   `destroy` returns one stable barrier while it tears down the queue, then the pool,
+< *   and destroys the worker emitter last. A sole cleanup failure is preserved by
+---
+> * - **Lifecycle (see the guide's `## Methods` section).** `enqueue` / `restore` / `start` /
+> *   `stop` / `pause` / `resume` / `abort` / `clear` delegate to the queue; `count` / `active` /
+> *   `paused` / `stopped` read it. `stop` / `abort` / `clear` return the queue's own cleanup
+> *   barriers. `destroy` returns one stable barrier while it tears down the queue, then the
+> *   pool, and destroys the worker emitter last. A sole cleanup failure is preserved by
+33,42c33,42
+< * - **Observable (§13).** The owned {@link emitter} ({@link WorkerEventMap}) RE-EXPOSES the
+< *   underlying queue's job lifecycle (`enqueue` / `start` / `retry` / `success` / `failure` /
+< *   `abort` / `drain`) as the worker's OWN events — bridged from the inner queue's emitter at
+< *   construction — so a consumer observes the worker without reaching through to internals.
+< *   The bridge re-emits directly on the worker's own emitter; the worker emitter isolates a
+< *   listener throw and routes it to its `error` handler (the `error` option), so a buggy
+< *   worker observer can never corrupt the inner queue or pool — the bridge listener never
+< *   throws, so the inner queue's own emit stays balanced. The pool's create / acquire /
+< *   release events stay the pool's internal concern (a Worker manages its own resources);
+< *   observe a `Pool` directly for those.
+---
+> * - **Observable (see the guide's `## Observing` section).** The owned {@link emitter}
+> *   ({@link WorkerEventMap}) re-exposes the underlying queue's job lifecycle (`enqueue` /
+> *   `start` / `retry` / `success` / `failure` / `abort` / `drain`) as the worker's own events —
+> *   bridged from the inner queue's emitter at construction — so a consumer observes the worker
+> *   without reaching through to internals. The bridge re-emits directly on the worker's own
+> *   emitter; the worker emitter isolates a listener throw and routes it to its `error` handler
+> *   (the `error` option), so a buggy worker observer can never corrupt the inner queue or pool
+> *   — the bridge listener never throws, so the inner queue's own emit stays balanced. The
+> *   pool's create / acquire / release events stay the pool's internal concern (a Worker manages
+> *   its own resources); observe a `Pool` directly for those.
+161,164c161,163
+< * Creates a resource-backed job worker — a `Queue` (`@orkestrel/queue`) marrying a `Pool`
+< * (`@orkestrel/pool`). Each enqueued input runs through the handler against an
+< * automatically acquired pooled resource (released when the job settles), with the
+< * queue's bounded concurrency, retries, and per-attempt timeout / abort.
+---
+> * Creates a resource-backed job worker — a `Queue` (`@orkestrel/queue`) composed with a
+> * `Pool` (`@orkestrel/pool`), where each enqueued input runs through the handler against
+> * an automatically acquired pooled resource released when the job settles.
+166a166
+> * Bounded concurrency, retries, and the per-attempt timeout and abort are the queue's.
+171,172c171,173
+< * delegates to the queue; `destroy` also tears the pool down. Observable (§13): a typed
+< * `emitter` surfaces the queue lifecycle (`enqueue` / `start` / `success` / `failure` / …).
+---
+> * delegates to the queue; `destroy` also tears the pool down. It is observable (see the
+> * guide's `## Observing` section): a typed `emitter` surfaces the queue lifecycle
+> * (`enqueue` / `start` / `success` / `failure` / …).
+181c182
+< * @example
+---
+> * @example A resource-backed worker
+184a186,187
+> * // A Queue whose handler runs each job against a pooled resource (acquired before the
+> * // handler, released after it — even on throw). The pool's `max` defaults to `concurrency`.
+192a196
+> * await worker.destroy() // awaits queue cleanup, pool cleanup, then emitter teardown
+diff -r '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-worker-final-registry-visit-pack/baseline/package/dist/src/server/index.cjs /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-worker-final-registry-visit-pack/extract/package/dist/src/server/index.cjs
+9c9
+< * Narrows an inbound `message` to a {@link Reply} for a given job `id` — no assertion.
+---
+> * Narrows an inbound `message` to a {@link Reply} for a given correlation `id` — no assertion.
+18,19c18,19
+< * @param id - The job id a matching reply must carry
+< * @returns True if the value is this job's well-formed reply; false otherwise
+---
+> * @param id - The per-dispatch correlation id a matching reply must carry
+> * @returns True if the value is this dispatch's well-formed reply; false otherwise
+48c48
+< * side ALSO terminates the thread, so a handler that ignores its signal is still stopped).
+---
+> * side also terminates the thread, so a handler that ignores its signal is still stopped).
+229c229
+< * type bridge); a failure rejects with the thread's error string. A thread that ALREADY died
+---
+> * type bridge); a failure rejects with the thread's error string. A thread that had already died
+483c483
+< * resolves on the thread's `online` event (rejecting on an early `error` OR an `exit`
+---
+> * resolves on the thread's `online` event (rejecting on an early `error` or on an `exit`
+486c486
+< * `exit` listeners that flip `alive` to `false` AND latch the first terminal event on
+---
+> * `exit` listeners that flip `alive` to `false` and latch the first terminal event on
+489c489
+< * dispatch that attaches AFTER the death (through the latch). A `messageerror` is terminal
+---
+> * dispatch that attaches only after the death (through the latch). A `messageerror` is terminal
+521c521
+< * (the JSON driver round-trips it as JSON). Build a second store over the SAME `path` to
+---
+> * (the JSON driver round-trips it as JSON). Build a second store over the same `path` to
+546c546
+< * core `createWorker` whose pooled resource is a worker THREAD.
+---
+> * core `createWorker` whose pooled resource is a worker thread.
+557,560c557,560
+< * `options.result`. Both generics INFER from the `input` / `result` guards, so call sites
+< * need no explicit type arguments. The boundary is crossed with ZERO `as`: the guards
+< * reconstruct `TInput` / `TResult` by validation. An `abort` / `timeout`
+< * TERMINATES the in-flight thread (CPU-bound work can't honour a signal) and evicts it; a
+---
+> * `options.result`. `TInput` and `TResult` infer from the `input` and `result` guards, so
+> * call sites need no explicit type arguments. The boundary is crossed with no `as`: the
+> * guards reconstruct `TInput` / `TResult` by validation. An `abort` / `timeout`
+> * terminates the in-flight thread (CPU-bound work can't honour a signal) and evicts it; a
+diff -r '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-worker-final-registry-visit-pack/baseline/package/dist/src/server/index.d.cts /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-worker-final-registry-visit-pack/extract/package/dist/src/server/index.d.cts
+1,10c1,10
+< import { ContractShape } from '@orkestrel/contract';
+< import { EmitterErrorHandler } from '@orkestrel/emitter';
+< import { EmitterHooks } from '@orkestrel/emitter';
+< import { Guard } from '@orkestrel/contract';
+< import { Infer } from '@orkestrel/contract';
+< import { QueueContext } from '@orkestrel/queue';
+< import { QueueStoreInterface } from '@orkestrel/queue';
+< import { Worker } from 'node:worker_threads';
+< import { WorkerEventMap } from '@orkestrel/worker';
+< import { WorkerInterface } from '@orkestrel/worker';
+---
+> import type { ContractShape } from '@orkestrel/contract';
+> import type { EmitterErrorHandler } from '@orkestrel/emitter';
+> import type { EmitterHooks } from '@orkestrel/emitter';
+> import type { Guard } from '@orkestrel/contract';
+> import type { Infer } from '@orkestrel/contract';
+> import type { QueueContext } from '@orkestrel/queue';
+> import type { QueueStoreInterface } from '@orkestrel/queue';
+> import type { Worker } from 'node:worker_threads';
+> import type { WorkerEventMap } from '@orkestrel/worker';
+> import type { WorkerInterface } from '@orkestrel/worker';
+22c22
+<  * (the JSON driver round-trips it as JSON). Build a second store over the SAME `path` to
+---
+>  * (the JSON driver round-trips it as JSON). Build a second store over the same `path` to
+46c46
+<  * core `createWorker` whose pooled resource is a worker THREAD.
+---
+>  * core `createWorker` whose pooled resource is a worker thread.
+57,60c57,60
+<  * `options.result`. Both generics INFER from the `input` / `result` guards, so call sites
+<  * need no explicit type arguments. The boundary is crossed with ZERO `as`: the guards
+<  * reconstruct `TInput` / `TResult` by validation. An `abort` / `timeout`
+<  * TERMINATES the in-flight thread (CPU-bound work can't honour a signal) and evicts it; a
+---
+>  * `options.result`. `TInput` and `TResult` infer from the `input` and `result` guards, so
+>  * call sites need no explicit type arguments. The boundary is crossed with no `as`: the
+>  * guards reconstruct `TInput` / `TResult` by validation. An `abort` / `timeout`
+>  * terminates the in-flight thread (CPU-bound work can't honour a signal) and evicts it; a
+94c94
+<  * resolves on the thread's `online` event (rejecting on an early `error` OR an `exit`
+---
+>  * resolves on the thread's `online` event (rejecting on an early `error` or on an `exit`
+97c97
+<  * `exit` listeners that flip `alive` to `false` AND latch the first terminal event on
+---
+>  * `exit` listeners that flip `alive` to `false` and latch the first terminal event on
+100c100
+<  * dispatch that attaches AFTER the death (through the latch). A `messageerror` is terminal
+---
+>  * dispatch that attaches only after the death (through the latch). A `messageerror` is terminal
+132c132
+<  * type bridge); a failure rejects with the thread's error string. A thread that ALREADY died
+---
+>  * type bridge); a failure rejects with the thread's error string. A thread that had already died
+173c173
+<  * Narrows an inbound `message` to a {@link Reply} for a given job `id` — no assertion.
+---
+>  * Narrows an inbound `message` to a {@link Reply} for a given correlation `id` — no assertion.
+182,183c182,183
+<  * @param id - The job id a matching reply must carry
+<  * @returns True if the value is this job's well-formed reply; false otherwise
+---
+>  * @param id - The per-dispatch correlation id a matching reply must carry
+>  * @returns True if the value is this dispatch's well-formed reply; false otherwise
+195c195
+<  * dead thread is destroyed and replaced rather than reused. `death` LATCHES the first
+---
+>  * dead thread is destroyed and replaced rather than reused. `death` latches the first
+197c197
+<  * record a {@link Dispatch} checks at construction, so a job dispatched AFTER the thread died (its
+---
+>  * record a {@link Dispatch} checks at construction, so a job dispatched after the thread died (its
+224c224
+<  * - `input` — narrows the work payload BEFORE it crosses the structured-clone boundary
+---
+>  * - `input` — narrows the work payload before it crosses the structured-clone boundary
+300c300
+<  * side ALSO terminates the thread, so a handler that ignores its signal is still stopped).
+---
+>  * side also terminates the thread, so a handler that ignores its signal is still stopped).
+diff -r '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-worker-final-registry-visit-pack/baseline/package/dist/src/server/index.d.ts /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-worker-final-registry-visit-pack/extract/package/dist/src/server/index.d.ts
+1,10c1,10
+< import { ContractShape } from '@orkestrel/contract';
+< import { EmitterErrorHandler } from '@orkestrel/emitter';
+< import { EmitterHooks } from '@orkestrel/emitter';
+< import { Guard } from '@orkestrel/contract';
+< import { Infer } from '@orkestrel/contract';
+< import { QueueContext } from '@orkestrel/queue';
+< import { QueueStoreInterface } from '@orkestrel/queue';
+< import { Worker } from 'node:worker_threads';
+< import { WorkerEventMap } from '@orkestrel/worker';
+< import { WorkerInterface } from '@orkestrel/worker';
+---
+> import type { ContractShape } from '@orkestrel/contract';
+> import type { EmitterErrorHandler } from '@orkestrel/emitter';
+> import type { EmitterHooks } from '@orkestrel/emitter';
+> import type { Guard } from '@orkestrel/contract';
+> import type { Infer } from '@orkestrel/contract';
+> import type { QueueContext } from '@orkestrel/queue';
+> import type { QueueStoreInterface } from '@orkestrel/queue';
+> import type { Worker } from 'node:worker_threads';
+> import type { WorkerEventMap } from '@orkestrel/worker';
+> import type { WorkerInterface } from '@orkestrel/worker';
+22c22
+<  * (the JSON driver round-trips it as JSON). Build a second store over the SAME `path` to
+---
+>  * (the JSON driver round-trips it as JSON). Build a second store over the same `path` to
+46c46
+<  * core `createWorker` whose pooled resource is a worker THREAD.
+---
+>  * core `createWorker` whose pooled resource is a worker thread.
+57,60c57,60
+<  * `options.result`. Both generics INFER from the `input` / `result` guards, so call sites
+<  * need no explicit type arguments. The boundary is crossed with ZERO `as`: the guards
+<  * reconstruct `TInput` / `TResult` by validation. An `abort` / `timeout`
+<  * TERMINATES the in-flight thread (CPU-bound work can't honour a signal) and evicts it; a
+---
+>  * `options.result`. `TInput` and `TResult` infer from the `input` and `result` guards, so
+>  * call sites need no explicit type arguments. The boundary is crossed with no `as`: the
+>  * guards reconstruct `TInput` / `TResult` by validation. An `abort` / `timeout`
+>  * terminates the in-flight thread (CPU-bound work can't honour a signal) and evicts it; a
+94c94
+<  * resolves on the thread's `online` event (rejecting on an early `error` OR an `exit`
+---
+>  * resolves on the thread's `online` event (rejecting on an early `error` or on an `exit`
+97c97
+<  * `exit` listeners that flip `alive` to `false` AND latch the first terminal event on
+---
+>  * `exit` listeners that flip `alive` to `false` and latch the first terminal event on
+100c100
+<  * dispatch that attaches AFTER the death (through the latch). A `messageerror` is terminal
+---
+>  * dispatch that attaches only after the death (through the latch). A `messageerror` is terminal
+132c132
+<  * type bridge); a failure rejects with the thread's error string. A thread that ALREADY died
+---
+>  * type bridge); a failure rejects with the thread's error string. A thread that had already died
+173c173
+<  * Narrows an inbound `message` to a {@link Reply} for a given job `id` — no assertion.
+---
+>  * Narrows an inbound `message` to a {@link Reply} for a given correlation `id` — no assertion.
+182,183c182,183
+<  * @param id - The job id a matching reply must carry
+<  * @returns True if the value is this job's well-formed reply; false otherwise
+---
+>  * @param id - The per-dispatch correlation id a matching reply must carry
+>  * @returns True if the value is this dispatch's well-formed reply; false otherwise
+195c195
+<  * dead thread is destroyed and replaced rather than reused. `death` LATCHES the first
+---
+>  * dead thread is destroyed and replaced rather than reused. `death` latches the first
+197c197
+<  * record a {@link Dispatch} checks at construction, so a job dispatched AFTER the thread died (its
+---
+>  * record a {@link Dispatch} checks at construction, so a job dispatched after the thread died (its
+224c224
+<  * - `input` — narrows the work payload BEFORE it crosses the structured-clone boundary
+---
+>  * - `input` — narrows the work payload before it crosses the structured-clone boundary
+300c300
+<  * side ALSO terminates the thread, so a handler that ignores its signal is still stopped).
+---
+>  * side also terminates the thread, so a handler that ignores its signal is still stopped).
+diff -r '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-worker-final-registry-visit-pack/baseline/package/dist/src/server/index.js /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-worker-final-registry-visit-pack/extract/package/dist/src/server/index.js
+8c8
+< * Narrows an inbound `message` to a {@link Reply} for a given job `id` — no assertion.
+---
+> * Narrows an inbound `message` to a {@link Reply} for a given correlation `id` — no assertion.
+17,18c17,18
+< * @param id - The job id a matching reply must carry
+< * @returns True if the value is this job's well-formed reply; false otherwise
+---
+> * @param id - The per-dispatch correlation id a matching reply must carry
+> * @returns True if the value is this dispatch's well-formed reply; false otherwise
+47c47
+< * side ALSO terminates the thread, so a handler that ignores its signal is still stopped).
+---
+> * side also terminates the thread, so a handler that ignores its signal is still stopped).
+228c228
+< * type bridge); a failure rejects with the thread's error string. A thread that ALREADY died
+---
+> * type bridge); a failure rejects with the thread's error string. A thread that had already died
+482c482
+< * resolves on the thread's `online` event (rejecting on an early `error` OR an `exit`
+---
+> * resolves on the thread's `online` event (rejecting on an early `error` or on an `exit`
+485c485
+< * `exit` listeners that flip `alive` to `false` AND latch the first terminal event on
+---
+> * `exit` listeners that flip `alive` to `false` and latch the first terminal event on
+488c488
+< * dispatch that attaches AFTER the death (through the latch). A `messageerror` is terminal
+---
+> * dispatch that attaches only after the death (through the latch). A `messageerror` is terminal
+520c520
+< * (the JSON driver round-trips it as JSON). Build a second store over the SAME `path` to
+---
+> * (the JSON driver round-trips it as JSON). Build a second store over the same `path` to
+545c545
+< * core `createWorker` whose pooled resource is a worker THREAD.
+---
+> * core `createWorker` whose pooled resource is a worker thread.
+556,559c556,559
+< * `options.result`. Both generics INFER from the `input` / `result` guards, so call sites
+< * need no explicit type arguments. The boundary is crossed with ZERO `as`: the guards
+< * reconstruct `TInput` / `TResult` by validation. An `abort` / `timeout`
+< * TERMINATES the in-flight thread (CPU-bound work can't honour a signal) and evicts it; a
+---
+> * `options.result`. `TInput` and `TResult` infer from the `input` and `result` guards, so
+> * call sites need no explicit type arguments. The boundary is crossed with no `as`: the
+> * guards reconstruct `TInput` / `TResult` by validation. An `abort` / `timeout`
+> * terminates the in-flight thread (CPU-bound work can't honour a signal) and evicts it; a

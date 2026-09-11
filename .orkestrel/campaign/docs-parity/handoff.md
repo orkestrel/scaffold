@@ -28,10 +28,11 @@ pack green. Release review passed and Brief0.0.8 is closed on clean canonical ma
 at 5cc84a937c929a2d84961353871346107d1ef066; campaign/main pushes passed and owner
 upload is pending. No completed Brief mutation replayed.
 Middleware0.0.20 is closed on clean canonical main at
-af01ea39388c05da52fb954476cac0ba423a5f23 with campaign/main pushed. MCP's final
-registry gates/pack and release review passed; closure is next. Program's final
-visit/gates/pack passed and release review is active. Worker's fresh visit is
-running; Workflow's remains pending. Read d7n-dependent-registry-preparation-state.md. Their source corrections
+af01ea39388c05da52fb954476cac0ba423a5f23 with campaign/main pushed. MCP0.0.29 is
+closed on clean canonical main at 45ba0a4b5741a79f32500479de9549c0e6a17839 with
+campaign/main pushed. Program's final visit/gates/pack and release review passed;
+closure is next. Worker's final visit/gates/pack passed and review is active.
+Workflow's fresh visit is running. Read d7n-dependent-registry-preparation-state.md. Their source corrections
 are accepted, committed and campaign-pushed. Read the source landing table and
 package verdicts for exact gate bindings and preserved evidence limitations. Read
 d7n-dependent-native-preparation-state.md. The layer's operator handoff is not ready
