@@ -1,0 +1,150 @@
+[
+  {
+    "_id": "@orkestrel/emitter@0.0.10",
+    "_rev": "10-eec958d17d4a4738c096362d85748aa9",
+    "name": "@orkestrel/emitter",
+    "dist-tags": {
+      "latest": "0.0.10"
+    },
+    "versions": [
+      "0.0.1",
+      "0.0.2",
+      "0.0.3",
+      "0.0.4",
+      "0.0.5",
+      "0.0.6",
+      "0.0.7",
+      "0.0.8",
+      "0.0.9",
+      "0.0.10"
+    ],
+    "time": {
+      "created": "2026-07-12T07:04:42.373Z",
+      "modified": "2026-09-11T02:55:52.219Z",
+      "0.0.1": "2026-07-12T07:04:42.669Z",
+      "0.0.2": "2026-07-18T00:08:19.580Z",
+      "0.0.3": "2026-07-18T10:20:43.448Z",
+      "0.0.4": "2026-07-28T16:59:40.989Z",
+      "0.0.5": "2026-07-30T18:52:30.379Z",
+      "0.0.6": "2026-08-12T11:19:01.127Z",
+      "0.0.7": "2026-08-17T19:52:38.515Z",
+      "0.0.8": "2026-08-22T18:06:42.539Z",
+      "0.0.9": "2026-09-04T20:09:43.396Z",
+      "0.0.10": "2026-09-11T02:55:52.013Z"
+    },
+    "bugs": {
+      "url": "https://github.com/orkestrel/emitter/issues"
+    },
+    "license": "MIT",
+    "homepage": "https://github.com/orkestrel/emitter#readme",
+    "keywords": [
+      "emitter",
+      "event-emitter",
+      "events",
+      "hooks",
+      "typed-events",
+      "typescript"
+    ],
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/orkestrel/emitter.git"
+    },
+    "description": "A typed, synchronous event emitter — listener isolation with an error hook, once/off/clear/destroy, and no scheduler or listener cap. Part of the @orkestrel line.",
+    "maintainers": [
+      "mikesaintsg <mikesaintg11@gmail.com>"
+    ],
+    "readmeFilename": "README.md",
+    "_contentLength": 43006,
+    "version": "0.0.10",
+    "type": "module",
+    "sideEffects": false,
+    "main": "./dist/src/core/index.cjs",
+    "module": "./dist/src/core/index.js",
+    "types": "./dist/src/core/index.d.ts",
+    "exports": {
+      ".": {
+        "import": {
+          "types": "./dist/src/core/index.d.ts",
+          "default": "./dist/src/core/index.js"
+        },
+        "require": {
+          "types": "./dist/src/core/index.d.cts",
+          "default": "./dist/src/core/index.cjs"
+        }
+      },
+      "./package.json": "./package.json"
+    },
+    "publishConfig": {
+      "access": "public"
+    },
+    "scripts": {
+      "clean": "node -e \"require('node:fs').rmSync('dist',{recursive:true,force:true})\"",
+      "copy": "node -e \"const fs=require('node:fs'),p=require('node:path'),a=process.argv[1],b=process.argv[2];fs.mkdirSync(p.dirname(b),{recursive:true});fs.cpSync(a,b,{force:true});console.log('Copied: '+a+' to '+b)\"",
+      "scaffold": "scaffold",
+      "lint": "oxlint --config .oxlintrc.json --fix .",
+      "check": "tsc --noEmit --project tsconfig.json && npm run check:src",
+      "check:src": "npm run check:src:core",
+      "check:src:core": "tsc --noEmit -p configs/src/tsconfig.core.json",
+      "format": "oxfmt --config .oxfmtrc.json --write .",
+      "format:check": "oxfmt --config .oxfmtrc.json --check .",
+      "lint:check": "oxlint --config .oxlintrc.json --deny-warnings .",
+      "test": "npm run test:src && npm run test:policy && npm run test:config && npm run test:setup && npm run test:guides",
+      "test:src": "vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core",
+      "test:src:core": "vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core",
+      "test:policy": "vitest run --config vite.config.ts --no-cache --reporter=dot --project policy",
+      "test:config": "vitest run --config vite.config.ts --no-cache --reporter=dot --project config",
+      "test:guides": "node --experimental-strip-types tests/guides.test.ts",
+      "build": "npm run clean && npm run build:src",
+      "build:src": "npm run build:src:core",
+      "build:src:core": "vite build --config configs/src/vite.core.config.ts && npm run copy dist/src/core/index.d.ts dist/src/core/index.d.cts",
+      "prepublishOnly": "npm run format:check && npm run lint:check && npm run check && npm run build && npm test && npm run test:distribution -- --mode release",
+      "test:distribution": "vitest run --config vite.config.ts --no-cache --reporter=dot --project distribution",
+      "test:probe": "vitest run --config vite.config.ts --no-cache --reporter=verbose --project probe",
+      "test:bench": "vitest bench --config vite.config.ts --no-cache --project probe",
+      "prepack": "npm run build",
+      "test:setup": "vitest run --config vite.config.ts --no-cache --reporter=dot --project setup"
+    },
+    "dependencies": {
+      "@orkestrel/contract": "^0.0.17"
+    },
+    "devDependencies": {
+      "@microsoft/api-extractor": "^7.59.0",
+      "@orkestrel/guide": "^0.0.17",
+      "@orkestrel/probe": "^0.0.12",
+      "@orkestrel/scaffold": "^0.0.63",
+      "@orkestrel/test": "^0.0.14",
+      "@types/node": "^26.4.1",
+      "oxfmt": "^0.66.0",
+      "oxlint": "^1.81.0",
+      "typescript": "^6.0.3",
+      "vite": "^8.2.2",
+      "vitest": "^4.1.11"
+    },
+    "engines": {
+      "node": ">=22.12.0"
+    },
+    "gitHead": "fe7e689475719aa6f64fa2298de295e0e99c52ce",
+    "_nodeVersion": "24.20.0",
+    "_npmVersion": "12.0.2",
+    "dist": {
+      "integrity": "sha512-kZuQE/M5DTD6YAnoCCELFURBOAtpq4TxMqc/7vCGVNHjkYvbD6mbXvjO1ZEoM3anb0w5IQb7Oxy/szcsct+7zg==",
+      "shasum": "4572f2977aec0fd7522d3b07f968c38bd312e9e0",
+      "tarball": "https://registry.npmjs.org/@orkestrel/emitter/-/emitter-0.0.10.tgz",
+      "fileCount": 9,
+      "unpackedSize": 63493,
+      "signatures": [
+        {
+          "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U",
+          "sig": "MEUCIF95d3QjlrYvgw4PTXW/6O+Y10smkn1pb0663yjj+Jl0AiEA5uSFpNDAxZfFx0JlHXM3gWvyz5rcDJbQw0vZujt3Ddg="
+        }
+      ]
+    },
+    "_npmUser": "mikesaintsg <mikesaintg11@gmail.com>",
+    "directories": {},
+    "_npmOperationalInternal": {
+      "host": "s3://npm-registry-packages-npm-production",
+      "tmp": "tmp/emitter_0.0.10_1789095351871_0.3891848101705049"
+    },
+    "_hasShrinkwrap": false
+  }
+]

@@ -4,6 +4,20 @@ Written 2026-09-08T03:35Z and revised 2026-09-08T04:05Z at the owner's request, 
 
 ## Where everything is pushed
 
+### Active dependent preparation
+
+Prepare Brief, MCP, Middleware, Program, Worker and Workflow under
+d7n-dependent-layer-plan.md. Their fresh root ancestry checks passed on clean
+campaign branches. Registry-confirmed Guide0.0.18 and Scaffold0.0.64 tarballs are
+installed without saved metadata changes, and direct native guide-entry failures
+are recorded. Native migrations and retained MCP/Program/Workflow docs fixes are
+in progress. No package in this layer is ready for upload yet.
+
+The Opus writer returned a fresh weekly-quota failure. The root journal records
+session dd5e5af9-8abf-4404-a1a4-26582f1982a2. Use the prescribed Sol writer fallback,
+the reused objective analyst and the owner's independent Astra review. No new
+verifier is required. The current prompt.txt remains consumed.
+
 ### Confirmed runtime release
 
 Use this table for the confirmed release layer. Later preparation narratives and

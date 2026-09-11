@@ -1,0 +1,151 @@
+[
+  {
+    "_id": "@orkestrel/pool@0.0.11",
+    "_rev": "11-3ef1294a11e113aa59ba346e4162c239",
+    "name": "@orkestrel/pool",
+    "dist-tags": {
+      "latest": "0.0.11"
+    },
+    "versions": [
+      "0.0.1",
+      "0.0.2",
+      "0.0.3",
+      "0.0.4",
+      "0.0.5",
+      "0.0.6",
+      "0.0.7",
+      "0.0.8",
+      "0.0.9",
+      "0.0.10",
+      "0.0.11"
+    ],
+    "time": {
+      "created": "2026-07-13T16:47:45.794Z",
+      "modified": "2026-09-11T12:06:15.791Z",
+      "0.0.1": "2026-07-13T16:47:46.131Z",
+      "0.0.2": "2026-07-18T00:31:26.880Z",
+      "0.0.3": "2026-07-18T11:06:28.311Z",
+      "0.0.4": "2026-07-28T17:12:37.904Z",
+      "0.0.5": "2026-08-02T01:38:59.417Z",
+      "0.0.6": "2026-08-02T05:24:37.284Z",
+      "0.0.7": "2026-08-12T11:37:59.446Z",
+      "0.0.8": "2026-08-17T20:26:18.628Z",
+      "0.0.9": "2026-08-27T16:16:12.274Z",
+      "0.0.10": "2026-09-04T20:25:32.025Z",
+      "0.0.11": "2026-09-11T12:06:15.595Z"
+    },
+    "bugs": {
+      "url": "https://github.com/orkestrel/pool/issues"
+    },
+    "license": "MIT",
+    "homepage": "https://github.com/orkestrel/pool#readme",
+    "keywords": [
+      "connection-pool",
+      "fifo",
+      "pool",
+      "resource-pool",
+      "typescript"
+    ],
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/orkestrel/pool.git"
+    },
+    "description": "A typed resource pool with optional bounded capacity, FIFO abort-cancellable waiting, validated idle reuse, and an observable lifecycle. Part of the @orkestrel line.",
+    "maintainers": [
+      "mikesaintsg <mikesaintg11@gmail.com>"
+    ],
+    "readmeFilename": "README.md",
+    "_contentLength": 46038,
+    "version": "0.0.11",
+    "type": "module",
+    "sideEffects": false,
+    "main": "./dist/src/core/index.cjs",
+    "module": "./dist/src/core/index.js",
+    "types": "./dist/src/core/index.d.ts",
+    "exports": {
+      ".": {
+        "import": {
+          "types": "./dist/src/core/index.d.ts",
+          "default": "./dist/src/core/index.js"
+        },
+        "require": {
+          "types": "./dist/src/core/index.d.cts",
+          "default": "./dist/src/core/index.cjs"
+        }
+      },
+      "./package.json": "./package.json"
+    },
+    "publishConfig": {
+      "access": "public"
+    },
+    "scripts": {
+      "clean": "node -e \"require('node:fs').rmSync('dist',{recursive:true,force:true})\"",
+      "copy": "node -e \"const fs=require('node:fs'),p=require('node:path'),a=process.argv[1],b=process.argv[2];fs.mkdirSync(p.dirname(b),{recursive:true});fs.cpSync(a,b,{force:true});console.log('Copied: '+a+' to '+b)\"",
+      "scaffold": "scaffold",
+      "lint": "oxlint --config .oxlintrc.json --fix .",
+      "check": "tsc --noEmit --project tsconfig.json && npm run check:src",
+      "check:src": "npm run check:src:core",
+      "check:src:core": "tsc --noEmit -p configs/src/tsconfig.core.json",
+      "format": "oxfmt --config .oxfmtrc.json --write .",
+      "format:check": "oxfmt --config .oxfmtrc.json --check .",
+      "lint:check": "oxlint --config .oxlintrc.json --deny-warnings .",
+      "test": "npm run test:src && npm run test:policy && npm run test:config && npm run test:setup && npm run test:guides",
+      "test:src": "vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core",
+      "test:src:core": "vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core",
+      "test:policy": "vitest run --config vite.config.ts --no-cache --reporter=dot --project policy",
+      "test:config": "vitest run --config vite.config.ts --no-cache --reporter=dot --project config",
+      "test:guides": "node --experimental-strip-types tests/guides.test.ts",
+      "build": "npm run clean && npm run build:src",
+      "build:src": "npm run build:src:core",
+      "build:src:core": "vite build --config configs/src/vite.core.config.ts && npm run copy dist/src/core/index.d.ts dist/src/core/index.d.cts",
+      "prepublishOnly": "npm run format:check && npm run lint:check && npm run check && npm run build && npm test && npm run test:distribution -- --mode release",
+      "test:distribution": "vitest run --config vite.config.ts --no-cache --reporter=dot --project distribution",
+      "test:probe": "vitest run --config vite.config.ts --no-cache --reporter=verbose --project probe",
+      "test:bench": "vitest bench --config vite.config.ts --no-cache --project probe",
+      "prepack": "npm run build",
+      "test:setup": "vitest run --config vite.config.ts --no-cache --reporter=dot --project setup"
+    },
+    "dependencies": {
+      "@orkestrel/emitter": "^0.0.10"
+    },
+    "devDependencies": {
+      "@microsoft/api-extractor": "^7.59.0",
+      "@orkestrel/guide": "^0.0.17",
+      "@orkestrel/probe": "^0.0.12",
+      "@orkestrel/scaffold": "^0.0.63",
+      "@orkestrel/test": "^0.0.14",
+      "@types/node": "^26.4.1",
+      "oxfmt": "^0.66.0",
+      "oxlint": "^1.81.0",
+      "typescript": "^6.0.3",
+      "vite": "^8.2.2",
+      "vitest": "^4.1.11"
+    },
+    "engines": {
+      "node": ">=22.12.0"
+    },
+    "gitHead": "25ea973b1c6def0a16d3101ade2e334f75e1d636",
+    "_nodeVersion": "24.20.0",
+    "_npmVersion": "12.0.2",
+    "dist": {
+      "integrity": "sha512-ZmgrTweyjL2SqGENtgIAxnjo5N7+TR2b7Wi+FAjJlRxubalRHZrzGcjLKNH2FuU52dyqIE7kF9FzSEIszpd3BA==",
+      "shasum": "44813eafa24474c269b673832bf6137c2d96d68a",
+      "tarball": "https://registry.npmjs.org/@orkestrel/pool/-/pool-0.0.11.tgz",
+      "fileCount": 9,
+      "unpackedSize": 149937,
+      "signatures": [
+        {
+          "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U",
+          "sig": "MEQCIBTp0uUthy02SxseZO8E13M/MbkaEPD/t9UGuyTQUi8BAiAiZBwSQeBSMpNQp4FL8HOgVmhkojbh5lxAiBVRGpIgHw=="
+        }
+      ]
+    },
+    "_npmUser": "mikesaintsg <mikesaintg11@gmail.com>",
+    "directories": {},
+    "_npmOperationalInternal": {
+      "host": "s3://npm-registry-packages-npm-production",
+      "tmp": "tmp/pool_0.0.11_1789128375450_0.6034407587395314"
+    },
+    "_hasShrinkwrap": false
+  }
+]

@@ -1,0 +1,176 @@
+[
+  {
+    "_id": "@orkestrel/server@0.0.19",
+    "_rev": "19-531c2f58d46c6019e28e2913439a4111",
+    "name": "@orkestrel/server",
+    "dist-tags": {
+      "latest": "0.0.19"
+    },
+    "versions": [
+      "0.0.1",
+      "0.0.2",
+      "0.0.3",
+      "0.0.4",
+      "0.0.5",
+      "0.0.6",
+      "0.0.7",
+      "0.0.8",
+      "0.0.9",
+      "0.0.10",
+      "0.0.11",
+      "0.0.12",
+      "0.0.13",
+      "0.0.14",
+      "0.0.15",
+      "0.0.16",
+      "0.0.17",
+      "0.0.18",
+      "0.0.19"
+    ],
+    "time": {
+      "created": "2026-07-12T18:44:57.718Z",
+      "modified": "2026-09-11T20:39:43.977Z",
+      "0.0.1": "2026-07-12T18:44:58.041Z",
+      "0.0.2": "2026-07-14T02:57:12.042Z",
+      "0.0.3": "2026-07-16T16:03:24.648Z",
+      "0.0.4": "2026-07-16T18:10:39.325Z",
+      "0.0.5": "2026-07-18T00:39:02.618Z",
+      "0.0.6": "2026-07-18T15:53:52.170Z",
+      "0.0.7": "2026-07-28T17:44:15.437Z",
+      "0.0.8": "2026-08-03T05:49:39.996Z",
+      "0.0.9": "2026-08-03T15:13:18.045Z",
+      "0.0.10": "2026-08-03T19:37:45.884Z",
+      "0.0.11": "2026-08-12T11:59:26.771Z",
+      "0.0.12": "2026-08-13T07:31:01.288Z",
+      "0.0.13": "2026-08-17T21:04:38.910Z",
+      "0.0.14": "2026-08-19T04:15:16.254Z",
+      "0.0.15": "2026-08-23T01:29:56.410Z",
+      "0.0.16": "2026-08-27T16:24:14.314Z",
+      "0.0.17": "2026-08-28T05:40:25.523Z",
+      "0.0.18": "2026-09-04T20:50:50.831Z",
+      "0.0.19": "2026-09-11T20:39:43.755Z"
+    },
+    "bugs": {
+      "url": "https://github.com/orkestrel/server/issues"
+    },
+    "license": "MIT",
+    "homepage": "https://github.com/orkestrel/server#readme",
+    "keywords": [
+      "fetch",
+      "http",
+      "middleware",
+      "router",
+      "server",
+      "typescript"
+    ],
+    "repository": {
+      "url": "git+https://github.com/orkestrel/server.git",
+      "type": "git"
+    },
+    "description": "A typed HTTP server for the @orkestrel line — composes the @orkestrel/router dispatcher behind a managed lifecycle. Part of the @orkestrel line.",
+    "maintainers": [
+      "mikesaintsg <mikesaintg11@gmail.com>"
+    ],
+    "readmeFilename": "README.md",
+    "dist": {
+      "shasum": "3ca37505a2a10ff1da91e3e143cb862afc2aec31",
+      "tarball": "https://registry.npmjs.org/@orkestrel/server/-/server-0.0.19.tgz",
+      "fileCount": 9,
+      "integrity": "sha512-ppyahb78ZCrjpGAXWNGUPNe8dLhWLUpYOoRt80HhW2aQGWRm05BTJvdoutmNagAXvQPzWHOKf/DJWGVhyyNPgw==",
+      "signatures": [
+        {
+          "sig": "MEUCIDkE3oLIxYtyGr/V4KSZfhcnH6FdUxjxA2QilGK5hgxzAiEAmtlgMxfgm2xwcKQuNsMlosL8UWnVl4PyUA7utKESEI8=",
+          "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U"
+        },
+        {
+          "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U",
+          "sig": "MEUCIQDt5bch333u0GywTVBxQ4A2HJxb9aVzvgHL1Zbtr4mw6gIgc7WJAhpFne2Y8HTj32wIi9v0QJHiQ28XbhTVO8Tlaa0="
+        }
+      ],
+      "unpackedSize": 678906
+    },
+    "main": "./dist/src/server/index.cjs",
+    "type": "module",
+    "types": "./dist/src/server/index.d.ts",
+    "module": "./dist/src/server/index.js",
+    "engines": {
+      "node": ">=22.12.0"
+    },
+    "exports": {
+      ".": {
+        "import": {
+          "types": "./dist/src/server/index.d.ts",
+          "default": "./dist/src/server/index.js"
+        },
+        "require": {
+          "types": "./dist/src/server/index.d.cts",
+          "default": "./dist/src/server/index.cjs"
+        }
+      },
+      "./package.json": "./package.json"
+    },
+    "gitHead": "772b84e1a5ce0f3ec8cb1da96395b3c6bc6029e7",
+    "scripts": {
+      "copy": "node -e \"const fs=require('node:fs'),p=require('node:path'),a=process.argv[1],b=process.argv[2];fs.mkdirSync(p.dirname(b),{recursive:true});fs.cpSync(a,b,{force:true});console.log('Copied: '+a+' to '+b)\"",
+      "lint": "oxlint --config .oxlintrc.json --fix .",
+      "test": "npm run test:src && npm run test:policy && npm run test:config && npm run test:setup && npm run test:guides",
+      "build": "npm run clean && npm run build:src",
+      "check": "tsc --noEmit --project tsconfig.json && npm run check:src",
+      "clean": "node -e \"require('node:fs').rmSync('dist',{recursive:true,force:true})\"",
+      "format": "oxfmt --config .oxfmtrc.json --write .",
+      "prepack": "npm run build",
+      "scaffold": "scaffold",
+      "test:src": "vitest run --config vite.config.ts --no-cache --reporter=dot --project src:server",
+      "build:src": "npm run build:src:server",
+      "check:src": "npm run check:src:server",
+      "lint:check": "oxlint --config .oxlintrc.json --deny-warnings .",
+      "test:bench": "vitest bench --config vite.config.ts --no-cache --project probe",
+      "test:probe": "vitest run --config vite.config.ts --no-cache --reporter=verbose --project probe",
+      "test:setup": "vitest run --config vite.config.ts --no-cache --reporter=dot --project setup",
+      "test:config": "vitest run --config vite.config.ts --no-cache --reporter=dot --project config",
+      "test:guides": "node --experimental-strip-types tests/guides.test.ts",
+      "test:policy": "vitest run --config vite.config.ts --no-cache --reporter=dot --project policy",
+      "format:check": "oxfmt --config .oxfmtrc.json --check .",
+      "prepublishOnly": "npm run format:check && npm run lint:check && npm run check && npm run build && npm test && npm run test:distribution -- --mode release",
+      "test:src:server": "vitest run --config vite.config.ts --no-cache --reporter=dot --project src:server",
+      "build:src:server": "vite build --config configs/src/vite.server.config.ts && npm run copy dist/src/server/index.d.ts dist/src/server/index.d.cts",
+      "check:src:server": "tsc --noEmit -p configs/src/tsconfig.server.json",
+      "test:distribution": "vitest run --config vite.config.ts --no-cache --reporter=dot --project distribution"
+    },
+    "version": "0.0.19",
+    "_npmUser": "mikesaintsg <mikesaintg11@gmail.com>",
+    "_npmVersion": "12.0.2",
+    "directories": {},
+    "sideEffects": false,
+    "_nodeVersion": "24.20.0",
+    "dependencies": {
+      "@orkestrel/abort": "^0.0.10",
+      "@orkestrel/codec": "^0.0.3",
+      "@orkestrel/router": "^0.0.14",
+      "@orkestrel/emitter": "^0.0.10",
+      "@orkestrel/timeout": "^0.0.10",
+      "@orkestrel/contract": "^0.0.17"
+    },
+    "publishConfig": {
+      "access": "public"
+    },
+    "_hasShrinkwrap": false,
+    "devDependencies": {
+      "vite": "^8.3.0",
+      "oxfmt": "^0.67.0",
+      "oxlint": "^1.82.0",
+      "vitest": "^4.1.11",
+      "typescript": "^6.0.3",
+      "@types/node": "^26.5.1",
+      "@orkestrel/test": "^0.0.14",
+      "@orkestrel/guide": "^0.0.18",
+      "@orkestrel/probe": "^0.0.12",
+      "@orkestrel/scaffold": "^0.0.64",
+      "@microsoft/api-extractor": "^7.59.1"
+    },
+    "_npmOperationalInternal": {
+      "host": "s3://npm-registry-packages-npm-production",
+      "tmp": "tmp/server_0.0.19_1789159183657_0.12260658709456207"
+    }
+  }
+]

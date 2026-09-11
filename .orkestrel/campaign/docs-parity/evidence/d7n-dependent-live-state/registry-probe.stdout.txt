@@ -1,0 +1,196 @@
+[
+  {
+    "_id": "@orkestrel/probe@0.0.12",
+    "_rev": "11-f8cb4915a6b6c53e0a75c6cd9a6ea43c",
+    "name": "@orkestrel/probe",
+    "dist-tags": {
+      "latest": "0.0.12"
+    },
+    "versions": [
+      "0.0.1",
+      "0.0.2",
+      "0.0.3",
+      "0.0.4",
+      "0.0.5",
+      "0.0.6",
+      "0.0.8",
+      "0.0.9",
+      "0.0.10",
+      "0.0.11",
+      "0.0.12"
+    ],
+    "time": {
+      "created": "2026-08-21T00:33:54.339Z",
+      "modified": "2026-09-04T21:47:41.809Z",
+      "0.0.1": "2026-08-21T00:33:54.623Z",
+      "0.0.2": "2026-08-21T14:33:29.013Z",
+      "0.0.3": "2026-08-22T16:41:03.376Z",
+      "0.0.4": "2026-08-24T21:04:54.158Z",
+      "0.0.5": "2026-08-25T11:03:01.643Z",
+      "0.0.6": "2026-08-25T16:57:03.691Z",
+      "0.0.8": "2026-08-26T19:48:36.150Z",
+      "0.0.9": "2026-08-27T00:51:30.019Z",
+      "0.0.10": "2026-08-27T17:33:09.144Z",
+      "0.0.11": "2026-08-28T05:50:43.657Z",
+      "0.0.12": "2026-09-04T21:47:41.626Z"
+    },
+    "bugs": {
+      "url": "https://github.com/orkestrel/probe/issues"
+    },
+    "license": "MIT",
+    "homepage": "https://github.com/orkestrel/probe#readme",
+    "keywords": [
+      "agent",
+      "lint",
+      "mcp",
+      "oxlint",
+      "probe",
+      "typescript",
+      "vitest"
+    ],
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/orkestrel/probe.git"
+    },
+    "description": "Prove a claim with type, lint, and runtime evidence from the workspace's own toolchain.",
+    "maintainers": [
+      "mikesaintsg <mikesaintg11@gmail.com>"
+    ],
+    "readmeFilename": "README.md",
+    "_contentLength": 64106,
+    "version": "0.0.12",
+    "bin": {
+      "probe": "dist/bin/main.js"
+    },
+    "type": "module",
+    "sideEffects": [
+      "./src/bin/main.ts",
+      "./dist/bin/main.js"
+    ],
+    "main": "./dist/src/core/index.cjs",
+    "module": "./dist/src/core/index.js",
+    "exports": {
+      ".": {
+        "import": {
+          "types": "./dist/src/core/index.d.ts",
+          "default": "./dist/src/core/index.js"
+        },
+        "require": {
+          "types": "./dist/src/core/index.d.cts",
+          "default": "./dist/src/core/index.cjs"
+        }
+      },
+      "./server": {
+        "import": {
+          "types": "./dist/src/server/index.d.ts",
+          "default": "./dist/src/server/index.js"
+        },
+        "require": {
+          "types": "./dist/src/server/index.d.cts",
+          "default": "./dist/src/server/index.cjs"
+        }
+      },
+      "./package.json": "./package.json"
+    },
+    "publishConfig": {
+      "access": "public"
+    },
+    "scripts": {
+      "clean": "node -e \"require('node:fs').rmSync('dist',{recursive:true,force:true})\"",
+      "copy": "node -e \"const fs=require('node:fs'),p=require('node:path'),a=process.argv[1],b=process.argv[2];fs.mkdirSync(p.dirname(b),{recursive:true});fs.cpSync(a,b,{force:true});console.log('Copied: '+a+' to '+b)\"",
+      "format": "oxfmt --config .oxfmtrc.json --write .",
+      "format:check": "oxfmt --config .oxfmtrc.json --check .",
+      "lint": "oxlint --config .oxlintrc.json --fix .",
+      "lint:check": "oxlint --config .oxlintrc.json --deny-warnings .",
+      "check": "tsc --noEmit --project tsconfig.json && npm run check:src",
+      "check:src": "npm run check:src:core && npm run check:src:server && npm run check:src:bin",
+      "check:src:core": "tsc --noEmit -p configs/src/tsconfig.core.json",
+      "check:src:server": "tsc --noEmit -p configs/src/tsconfig.server.json",
+      "check:src:bin": "tsc --noEmit -p configs/src/tsconfig.bin.json",
+      "test": "npm run test:src && npm run test:policy && npm run test:config && npm run test:setup && npm run test:guides",
+      "test:src": "vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core --project src:server --project src:bin",
+      "test:src:core": "vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core",
+      "test:src:server": "vitest run --config vite.config.ts --no-cache --reporter=dot --project src:server",
+      "test:src:bin": "vitest run --config vite.config.ts --no-cache --reporter=dot --project src:bin",
+      "test:policy": "vitest run --config vite.config.ts --no-cache --reporter=dot --project policy",
+      "test:config": "vitest run --config vite.config.ts --no-cache --reporter=dot --project config",
+      "test:setup": "vitest run --config vite.config.ts --no-cache --reporter=dot --project setup",
+      "test:guides": "vitest run --config vite.config.ts --no-cache --reporter=dot --project guides",
+      "test:distribution": "vitest run --config vite.config.ts --no-cache --reporter=dot --project distribution",
+      "test:probe": "vitest run --config vite.config.ts --no-cache --reporter=verbose --project probe",
+      "test:bench": "vitest bench --config vite.config.ts --no-cache --project probe",
+      "build": "npm run clean && npm run build:src",
+      "build:src": "npm run build:src:core && npm run build:src:server && npm run build:src:bin",
+      "build:src:core": "vite build --config configs/src/vite.core.config.ts && npm run copy dist/src/core/index.d.ts dist/src/core/index.d.cts",
+      "build:src:server": "vite build --config configs/src/vite.server.config.ts && npm run copy dist/src/server/index.d.ts dist/src/server/index.d.cts",
+      "build:src:bin": "vite build --config configs/src/vite.bin.config.ts",
+      "prepack": "npm run build",
+      "prepublishOnly": "npm run format:check && npm run lint:check && npm run check && npm run build && npm test && npm run test:distribution -- --mode release"
+    },
+    "dependencies": {
+      "@orkestrel/contract": "^0.0.16",
+      "@orkestrel/emitter": "^0.0.9",
+      "@orkestrel/lsp": "^0.0.6",
+      "@orkestrel/mcp": "^0.0.28",
+      "@orkestrel/queue": "^0.0.12",
+      "@orkestrel/timeout": "^0.0.9",
+      "@orkestrel/tool": "^0.0.13"
+    },
+    "devDependencies": {
+      "@microsoft/api-extractor": "^7.59.0",
+      "@orkestrel/guide": "^0.0.17",
+      "@orkestrel/scaffold": "^0.0.62",
+      "@orkestrel/test": "^0.0.13",
+      "@types/node": "^26.4.1",
+      "oxfmt": "^0.66.0",
+      "oxlint": "^1.81.0",
+      "typescript": "^6.0.3",
+      "vite": "^8.2.2",
+      "vite-plugin-dts": "^5.1.0",
+      "vitest": "^4.1.11"
+    },
+    "peerDependencies": {
+      "oxlint": "^1.80.0",
+      "typescript": "^6.0.3",
+      "vitest": "^4.1.11"
+    },
+    "peerDependenciesMeta": {
+      "oxlint": {
+        "optional": true
+      },
+      "typescript": {
+        "optional": true
+      },
+      "vitest": {
+        "optional": true
+      }
+    },
+    "engines": {
+      "node": "^22.12.0 || >=24.0.0"
+    },
+    "gitHead": "c8d1fa961ba41a95a4daea2668c01757aa47ff39",
+    "types": "./dist/src/core/index.d.ts",
+    "_nodeVersion": "22.22.2",
+    "_npmVersion": "11.19.1",
+    "dist": {
+      "integrity": "sha512-Pmb/iXxFvW5MnXFk5D7Nb7uZQYTqSALCmcxhO8d6DrqLY048SE5kfJTW97Z3gmlAjwLg5QUQNCyl23qXhcHmdg==",
+      "shasum": "9aa67191e38044aa576c56fbc49754739c0fbdd6",
+      "tarball": "https://registry.npmjs.org/@orkestrel/probe/-/probe-0.0.12.tgz",
+      "fileCount": 17,
+      "unpackedSize": 1003054,
+      "signatures": [
+        {
+          "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U",
+          "sig": "MEUCIQDWESep3YefIPJKtKibXsfCQa0aIE3D1Qp1sB807zv5VAIgHBMnSuDIhyVj2XwZ4Jx1ZmPQoUMXl02eqtKtk1DkGUA="
+        }
+      ]
+    },
+    "_npmUser": "mikesaintsg <mikesaintg11@gmail.com>",
+    "directories": {},
+    "_npmOperationalInternal": {
+      "host": "s3://npm-registry-packages-npm-production",
+      "tmp": "tmp/probe_0.0.12_1788558461465_0.04966133301373521"
+    },
+    "_hasShrinkwrap": false
+  }
+]
