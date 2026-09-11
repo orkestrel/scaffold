@@ -1,1 +1,1 @@
-& { $ErrorActionPreference = 'Stop'; cd 'C:/Users/mikes/WebstormProjects/scaffold'; npm whoami; if ($LASTEXITCODE -ne 0) { throw 'Login check failed' }; npm publish --ignore-scripts --browser=false; if ($LASTEXITCODE -ne 0) { throw 'scaffold publish failed' } }
+& { $ErrorActionPreference = 'Stop'; cd 'C:/Users/mikes/WebstormProjects/guide'; npm whoami; if ($LASTEXITCODE -ne 0) { throw 'Login check failed' }; npm publish --ignore-scripts --browser=false; if ($LASTEXITCODE -ne 0) { throw 'guide publish failed' } }
