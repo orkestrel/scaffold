@@ -1,8 +1,9 @@
 # Dependent layer prepared for owner upload
 
-Publish in the order shown only after the upload-handoff verdict passes and the
-root prompt.txt is committed and pushed. Use canonical WebstormProjects checkouts.
-No selected package has uploaded in this round.
+Publish in the order shown from canonical WebstormProjects checkouts. The
+upload-handoff verdict passed and root prompt.txt is committed and pushed; read
+d7n-dependent-upload-handoff-landing.md. No selected package has uploaded in this
+round.
 
 | Package | Pending version | Release HEAD |
 | --- | --- | --- |
@@ -31,7 +32,7 @@ newer-major advisories do not authorize a major upgrade. Probe's development pin
 remains deferred. Preserve Middleware's optional Database peer metadata and MCP's
 exact conformance version. Manifest/lock files contain no local tarball resolution.
 
-The root operator line will contain only serial uploads and fail-fast checks. Do
+The root operator line contains only serial uploads and fail-fast checks. Do
 not rerun installs or gates inside the approval window. After the owner reports
 completion, confirm registry versions, gitHead and served archives before preparing
 the next layer. MCP-to-Probe integration, later Agent/Ollama/Toolbox work and final

@@ -17,8 +17,10 @@ after closure. No selected upload has run.
 Root prompt.txt now contains the dependent layer's serial PowerShell upload line.
 Its parser-only check and independent/reused objective operator reviews passed.
 Read d7n-dependent-upload-handoff-verdict.md for the accepted digest and parser
-receipt qualification. Do not hand the line to the owner until the accepted
-operator commit/push completes.
+receipt qualification. The operator handoff landed at Scaffold2927df63 with
+main/campaign/designated pushes and successful before/after layer confirmation.
+Read d7n-dependent-upload-handoff-landing.md. The line is ready for owner upload;
+root has not authenticated or published.
 The prior runtime upload line is consumed and must not be rerun.
 
 Read d7n-dependent-native-source-landing.md and each source/prepared verdict for
