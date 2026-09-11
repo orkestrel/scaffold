@@ -14,6 +14,14 @@ not be rerun. Consumer visits use registry Guide0.0.18 and Scaffold0.0.64.
 The remaining runtime layer stays open under d7n-upper-layer-plan.md.
 Read d7n-upper-post-guide-state.md for the refreshed evidence and active units.
 
+Read d7n-native-preserved-source-landing.md and d7n-queue-rater-native-source-landing.md
+for accepted Browser, Interpret, Qualifier, Queue, and Rater source preparation.
+Their campaign branches are pushed. Final registry visits and main closures remain
+open. Relation, SEA, Server, and Workspace received the accepted published-tooling
+bootstrap; direct native execution reproduced their unresolved source-alias imports.
+Their native migrations remain pending. The root generated catalog and Guide
+development manifest edits remain uncommitted pending the tooling follow-up.
+
 The following-layer uploads are registry-confirmed. Read
 d7n-following-registry-closure.md. Its preparation table records published
 releases. The predecessor prompt is consumed history and must not be rerun.
