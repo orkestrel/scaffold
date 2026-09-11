@@ -1,0 +1,2 @@
+npm notice run @orkestrel/workflow@0.0.18 test:config
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project config

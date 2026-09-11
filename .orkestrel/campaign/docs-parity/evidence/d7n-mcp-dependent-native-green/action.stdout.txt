@@ -1,0 +1,10 @@
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/mcp
+
+···································································································································································
+
+ Test Files  1 passed (1)
+      Tests  163 passed (163)
+   Start at  17:32:42
+   Duration  2.97s (transform 335ms, setup 448ms, import 1.25s, tests 1.12s, environment 0ms)
+

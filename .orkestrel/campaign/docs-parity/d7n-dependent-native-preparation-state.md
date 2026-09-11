@@ -30,12 +30,22 @@ Scaffold, and ran preparation prepublishOnly to exit 0. Its source review brief 
 exact evidence are retained. The report's mojibake separators are report-only;
 root's UTF-8 search found none in the owned source/guide/test paths.
 
-MCP and Workflow retain active bounded documentation/native-entry units.
-Do not run repair, an install or a gate in those checkouts while their writers own
-them. The registry carrier author returned its successor; root identified missing
+MCP and Workflow returned their bounded documentation/native-entry units and
+released their checkouts. Root captured their author-only native-green states,
+reproduced the stale config fixture, applied supported repair and read config
+green. Workflow's and MCP's source-prepublish receipts exited 0. MCP's run
+includes its conformance and integration projects. Their source-review briefs are
+written. This does not claim the later MCP-to-Probe release integration.
+
+The registry carrier author returned its successor; root identified missing
 peer-registry, external-pin, optional-metadata and local-lock checks and queued the
-completion brief before any carrier execution. Review and builder dispatches were
-refused with agent thread limit reached after Program returned. No lane result or
-engine substitution is inferred from that capacity failure. Resume the existing
-reused objective, independent reviewer and builder when capacity permits.
+completion brief before any carrier execution. The completion stopped on a
+predecessor roster mismatch. Root read the actual stopped file and wrote an
+explicit resume brief. No registry or source-commit carrier has run.
+
+Review and builder dispatches initially refused with agent thread limit reached.
+The reused objective analyst and independent owner-selected reviewer have now
+started the corrected native-group review. The builder resume remains queued by
+capacity. No lane result or engine substitution is inferred from a dispatch
+refusal. Retain every return before any source landing.
 No release readiness is claimed.

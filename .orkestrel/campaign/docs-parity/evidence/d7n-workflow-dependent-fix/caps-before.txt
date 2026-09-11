@@ -1,0 +1,568 @@
+src\server\NodeScheduler.ts:11: AFTER :: *   canonical Node "give the host a turn" — it runs AFTER the current operation and
+src\server\NodeScheduler.ts:19: NOT :: *   does NOT use `node:timers/promises`, whose `{ signal }` option replaces the caller reason
+src\core\Collection.ts:17: THROWS :: * - **Gated mutation API.** `append` is the build-time wiring path and THROWS on a
+src\core\Collection.ts:19: ONLY :: *   {@link WorkflowError} failure instead. Gating reads ONLY the target's own existence, `pending`
+src\core\Collection.ts:126: AND :: // The gate every targeted mutation shares: the entry exists AND is still `pending`. Returns the
+src\core\constants.ts:78: CONCURRENTLY :: * The determinism principle fixes that a phase's tasks run CONCURRENTLY; `concurrency` is
+src\core\constants.ts:85: WHY :: * WHY `1024` and not a huge sentinel like `1_000_000`: the backing `@orkestrel/queue` Runner
+src\core\constants.ts:86: EAGERLY, CONSTRUCTION :: * EAGERLY spawns one parked worker loop per concurrency unit AT CONSTRUCTION, so this default
+src\core\constants.ts:89: DECLARE :: * phase may still DECLARE a larger explicit `concurrency` and pays that allocation knowingly.
+src\core\Controller.ts:14: ANY :: * - **Signal.** `signal` is the queue attempt's signal, which ANY-combines the
+src\core\Controller.ts:18: ANY :: *   truth); because the attempt signal ANY-includes that abort, `abort()` fires
+src\core\Controller.ts:34: ANY :: // The queue attempt's signal — ANY-combines the unit abort, the runner abort, and the timeout.
+src\core\factories.ts:42: ZERO :: // with ZERO TS2589 (the three-level nesting that tripped the databases module's
+src\core\factories.ts:43: NOT :: // `objectShape` generics does NOT strike here, because the shapes are kept
+src\core\factories.ts:45: AND :: // stays the source of truth AND the contract's `is` / `generate` / `parse` narrow
+src\core\factories.ts:95: DECLARATIVE :: * The definition is the DECLARATIVE blueprint; this seeds an initial all-`pending`
+src\core\factories.ts:102: ONLY :: * state machine ONLY — it does not execute tasks (W-c drives the transitions).
+src\core\factories.ts:105: ONCE :: * task's `behavior` name resolves against ONCE at construction into its runtime
+src\core\factories.ts:137: BOTH, AND :: * {@link definitionToSnapshot} so it reaches BOTH tiers: the workflow snapshot AND the inheritance
+src\core\factories.ts:142: UNCHANGED :: * `captured` is forwarded to the entity UNCHANGED — its own `bail` is deliberately not replaced
+src\core\factories.ts:144: EXPLICIT :: * and an injected one would make `Workflow` read it as an EXPLICIT uniform override and clobber
+src\core\factories.ts:178: DIRECTLY :: * same status at every node (each `#override` restored DIRECTLY from the snapshot's own
+src\core\factories.ts:181: SELF-CONTAINED :: * `skip` / `remove` survives). The snapshot is SELF-CONTAINED — it persists the `bail`
+src\core\factories.ts:182: IDENTICALLY :: * policy it ran under, so the restore re-derives status IDENTICALLY without a silent
+src\core\factories.ts:262: LEANER :: * (and the `createMemoryQueueStore` family), but LEANER — there is no idle-TTL, so no
+src\core\factories.ts:265: DEFAULT :: * the zero-plumbing DEFAULT (a plain `Map`); its driver-pluggable twin is
+src\core\factories.ts:267: DURABLE :: * table) — for a DURABLE store (run-state surviving a restart) pass it a JSON / SQLite / IndexedDB
+src\core\factories.ts:268: WITHOUT :: * driver, and it swaps in WITHOUT touching the runner or the entity tree. Restore stays a caller
+src\core\factories.ts:296: ONE, OPAQUE, COLUMN :: * held as ONE OPAQUE JSON COLUMN — the column map is `{ id; snapshot }` where `snapshot` is a
+src\core\factories.ts:298: COMPLETE :: * snapshot is already a COMPLETE, self-contained, pure-JSON payload, so storing it whole is lossless
+src\core\factories.ts:299: AND, FLAT :: * AND keeps the row type FLAT — a structured multi-column snapshot table would force the contract to
+src\core\factories.ts:303: DEFAULTS :: * {@link import('./validators.js').isOwnedWorkflowSnapshot}). The `driver` DEFAULTS to
+src\core\factories.ts:304: ALSO :: * {@link createMemoryDriver}, so the store ALSO works in memory out of the box; pass a server
+src\core\factories.ts:307: WITHOUT :: * {@link WorkflowStoreInterface} WITHOUT touching the runner or the entity tree.
+src\core\factories.ts:327: ONE, OPAQUE, FLAT :: // The snapshot is stored as ONE OPAQUE JSON column (`rawShape`), so the row infers FLAT —
+src\core\factories.ts:344: PURE, AND :: * The runner is a PURE engine — it re-implements no concurrency / retry / abort logic, AND it
+src\core\factories.ts:347: ONCE :: * {@link import('./types.js').TaskInterface.handler} ONCE at construction, from the
+src\core\factories.ts:354: BUILDS :: * `execute(definition, options?)` BUILDS the live tree from the definition itself (through
+src\core\factories.ts:421: RUNNABLE :: * {@link createRestoredWorkflow}), so a hydrated workflow is RUNNABLE rather than a dead snapshot
+src\core\factories.ts:422: EXACT :: * mirror. `options.store` is the EXACT analogue of the twins' `store` seam — omitted ⇒ the
+src\core\factories.ts:424: PURELY, ADDITIVE :: * is PURELY ADDITIVE: direct {@link WorkflowStoreInterface} use and
+src\core\factories.ts:439: RUNNABLE :: * const workflow = manager.add(definition) // minted, registered, RUNNABLE
+src\core\factories.ts:503: ONCE :: * a second concurrency engine. `execute(inputs)` runs the unit set ONCE (a second call
+src\core\factories.ts:513: NOT :: * outstanding-unit count, not a one-time snapshot), a handler need NOT await its spawns
+src\core\factories.ts:514: NOT :: * for them to run — and on a bounded runner do NOT `await` a spawn inline (a slot-holding
+src\core\helpers.ts:74: UNDER :: // statuses, a workflow status from its phases' statuses UNDER the `bail` policy.
+src\core\helpers.ts:85: ONE :: * The ONE terminal check across every tier (AGENTS.md § Design laws, "one concept, one term"):
+src\core\helpers.ts:107: NOT :: * its derived status is terminal but NOT `completed` — a `bail: true` failure, a caller's own
+src\core\helpers.ts:128: NOT, FORCED :: // definition. The phase half is NOT that set — only a FORCED skip / stop halts a phase, because a
+src\core\helpers.ts:142: NOT :: * cancellation forces it only while this holds. It is NOT the negation of
+src\core\helpers.ts:169: EXACTLY :: * EXACTLY `pending` so a real `completed`, a `bail: true` `failed`, a `stopped`, or a derived
+src\core\helpers.ts:194: NEITHER :: * fires NEITHER — it aborts only the deadline portion of the attempt signal — so it stays a
+src\core\helpers.ts:221: BOTH :: * every settlement path re-checks ownership before touching the leaf. Ownership needs BOTH
+src\core\helpers.ts:288: ONLY :: * {@link PhaseDerivation} rather than passed as one scalar. It is the ONLY axis that changes
+src\core\helpers.ts:292: DATA :: * - **A `failed` phase whose effective `bail` is `false` (graceful)** is DATA, not a workflow
+src\core\helpers.ts:293: NEVER :: *   failure — it folds into completion like a settled phase. A graceful failed phase NEVER
+src\core\helpers.ts:326: NATIVE :: // === Pending-suffix boundary (bottom-up NATIVE mutation gating)
+src\core\helpers.ts:337: SEQUENTIALLY :: * Because entries run SEQUENTIALLY (phases sequential, AGENTS determinism), every
+src\core\helpers.ts:338: LEADING :: * already-started entry forms a contiguous LEADING prefix and every still-`pending`
+src\core\helpers.ts:341: ALL :: * none is `pending` (nothing is safely editable). A `pending` container's entries are ALL
+src\core\helpers.ts:404: TYPES :: // `Success` / `Failure` TYPES but no `success`/`failure` constructors, so this module
+src\core\helpers.ts:464: ITS :: * {@link import('./Workflow.js').Workflow}'s own `#failure` — each gathers ITS tier's
+src\core\helpers.ts:546: AND :: * workflow tier AND, per phase, the
+src\core\helpers.ts:547: EFFECTIVE :: * EFFECTIVE policy (`phase.bail ?? workflowBail`) on each {@link PhaseSnapshot} — so the seeded
+src\core\helpers.ts:551: EFFECTIVE :: * The optional `bail` override is the EFFECTIVE workflow policy the tree will run under
+src\core\helpers.ts:553: BOTH, AND :: * pass it here), so an `options.bail` override reaches BOTH the workflow tier AND the
+src\core\helpers.ts:559: EFFECTIVE :: * @param bail - The EFFECTIVE workflow bail to seed both tiers with (defaults to the definition's)
+src\core\helpers.ts:588: EFFECTIVE :: * The snapshot persists the EFFECTIVE failure policy this phase runs under: the phase's own
+src\core\helpers.ts:713: AND :: * AND that value is either a string or genuine absence. Anything else — a number, an object, a
+src\core\helpers.ts:737: OUTSIDE :: * from the OUTSIDE in: a {@link TaskResult} is self-describing, so restoring one is only safe
+src\core\helpers.ts:1141: NOT :: * caller reason, and once-only settlement. It does NOT validate `ms`: the value passes straight to
+src\core\helpers.ts:1168: IMMEDIATELY :: * Resolves IMMEDIATELY when `signal` is already aborted; otherwise attaches a one-shot
+src\core\Runner.ts:23: SAME :: *   `spawn`ed siblings flow through the SAME `#launch`, which appends the unit's `id`
+src\core\Runner.ts:29: BEFORE :: *   an outstanding-unit `#count` BEFORE enqueuing and every settle decrements it,
+src\core\Runner.ts:41: ANY :: *   attempt's `signal` (which ANY-combines the unit abort + runner abort + timeout). A
+src\core\Runner.ts:48: NEXT :: *   delegate straight to the Queue's own pause/resume (holding/releasing the NEXT
+src\core\Runner.ts:50: GRACEFUL :: *   GRACEFUL permanent end, distinct from `abort`: still-pending (never-dispatched)
+src\core\Runner.ts:51: WITHOUT :: *   units are rejected by the Queue's own stop WITHOUT their handler ever running, and
+src\core\Runner.ts:54: RESOLVES :: *   completion and settles normally. `execute` RESOLVES (never rejects) after every unit
+src\core\Runner.ts:58: AFTER :: *   fire-and-forget observers. Every event is emitted directly, strictly AFTER the relevant
+src\core\Runner.ts:60: NEVER :: *   to its `error` handler (the `error` option), so a buggy observer can NEVER reorder, throw
+src\core\Runner.ts:68: OVERRIDE :: // `timeout` OVERRIDE the queue-level defaults (the Queue resolves default→override). Optional:
+src\core\Runner.ts:72: PUSH :: // The PUSH observation surface — owned, never inherited. The emitter isolates a
+src\core\Runner.ts:84: DISPATCHED :: // The ids whose handler was actually DISPATCHED (`#dispatch` invoked) — the settlement-path
+src\core\Runner.ts:86: PENDING :: // queue's own "queue is stopped" error for a still-PENDING entry) is a stop artifact, never a
+src\core\Runner.ts:96: GRACEFUL :: // Set the moment a GRACEFUL `stop()` is requested — read by `#settle` to classify a
+src\core\Runner.ts:144: FLIGHT, LIVE :: * Injects one more unit into an IN-FLIGHT `execute` run — a LIVE counterpart to a
+src\core\Runner.ts:145: OUTSIDE :: * `Controller.spawn`, called from OUTSIDE any unit's handler.
+src\core\Runner.ts:151: SAME :: * the SAME backing queue as a declared/`spawn`ed unit through `#launch` — the outstanding-
+src\core\Runner.ts:152: BEFORE :: * unit count gate increments BEFORE this call returns, so an in-flight `execute`
+src\core\Runner.ts:197: AFTER :: // The batch drained successfully — observe `finish` with the ordered results, AFTER the
+src\core\Runner.ts:217: FIRST :: // keeps the FIRST failure (a fail-fast handler error recorded in `#settle` before its
+src\core\Runner.ts:226: AFTER :: // Observe the abort — AFTER every unit's signal fired, the backing queue was aborted,
+src\core\Runner.ts:235: NEXT :: * `pause`, which holds the NEXT dispatch while any in-flight unit finishes.
+src\core\Runner.ts:261: GRACEFUL :: * Ends the runner permanently — a GRACEFUL stop, distinct from `abort`.
+src\core\Runner.ts:263: PENDING :: * still-PENDING (never-dispatched) unit is rejected by the queue with its own
+src\core\Runner.ts:264: WITHOUT :: * "queue is stopped" error, WITHOUT running its handler; every already-in-flight unit
+src\core\Runner.ts:301: BEFORE :: // `spawn`) through the shared queue. Increments `#count` BEFORE enqueuing — so a
+src\core\Runner.ts:307: AFTER :: // this launch as a `spawn` event — AFTER the unit's id is minted, tracked, and the
+src\core\Runner.ts:308: BEFORE :: // count incremented (so the gate already accounts for it), BEFORE enqueuing. A
+src\core\Runner.ts:348: THAT :: // — expose THAT as `controller.signal` (covering all three); `abort` / `aborted`
+src\core\Runner.ts:351: BEFORE :: // `#launch` always stores the unit's `Abort` BEFORE enqueuing, so this lookup is an
+src\core\Runner.ts:362: DID :: // (this branch never ran) from a genuine in-flight failure (this branch DID run).
+src\core\Runner.ts:372: AFTER, BEFORE :: // handler (mirrors the Queue's own `start`); AFTER the invariant abort lookup, BEFORE
+src\core\Runner.ts:378: DURING :: // `controller.spawn(input)` — only valid DURING a run; routes the sibling through
+src\core\Runner.ts:393: FIRST :: // The FIRST failure is fail-fast: store it and `abort()` so every sibling's signal
+src\core\Runner.ts:396: GRACEFUL :: // GRACEFUL `stop()`'s never-dispatched rejection (the handler never ran — `#dispatched`
+src\core\Runner.ts:399: DID :: // whatever DID settle rather than rejecting.
+src\core\Runner.ts:403: AFTER :: // Observe the successful unit — AFTER its value is recorded (the unit is settled);
+src\core\Runner.ts:404: OBSERVES :: // the emit only OBSERVES it and runs before the count decrement, so it cannot
+src\core\Runner.ts:412: FIRST, AFTER, BEFORE :: // Observe the FIRST (fail-fast) failure — AFTER the error is recorded, BEFORE the
+src\core\Runner.ts:454: BEFORE :: // `teardown` true destroys the emitter after the drain and BEFORE the barrier settles — the
+src\core\Scheduler.ts:10: ONLY :: * - **Cross-environment.** Uses ONLY `setTimeout` / `clearTimeout` — universally
+src\core\Scheduler.ts:16: NOT :: *   `setTimeout(0)`, NOT `queueMicrotask`. A microtask drains before the host
+src\core\Scheduler.ts:41: NOT :: * run, then resumes — a macrotask turn through `setTimeout(0)` (NOT a microtask,
+src\core\shapers.ts:11: VALUES :: // Workflow contract shapes — the shape VALUES the contract (factories.ts) compiles
+src\core\shapers.ts:13: MUST :: // shapes MUST agree with the hand-written definition interfaces (types.ts), which
+src\core\shapers.ts:23: INSIDE :: // Per-field `description`s ride INSIDE the advertised JSON Schema (compilers.ts
+src\core\shapers.ts:111: PARTIAL :: // {@link import('./types.js').PhaseUpdate} — a declarative PARTIAL edit to an
+src\core\shapers.ts:113: PROVIDED :: // therefore optional; a PROVIDED field still carries the same constraint as its
+src\core\types.ts:7: DEFINITION :: // levels, positional, no DAG). Two type families share this file: the DEFINITION
+src\core\types.ts:8: DATA :: // family (pure serializable JSON DATA a UI/LLM authors — behavior is referenced
+src\core\types.ts:9: NAME, CONTEXT :: // BY NAME through a registry, never as inline functions) and the runtime CONTEXT
+src\core\types.ts:10: SNAPSHOT, RESULT :: // / SNAPSHOT / RESULT surfaces the entity tree (W-b) and durable store (W-d) build
+src\core\types.ts:15: FIXED :: // Determinism is a FIXED design principle, not a configuration: tasks within a
+src\core\types.ts:20: DATA :: // === Definition family (pure serializable JSON DATA)
+src\core\types.ts:27: DATA :: * Pure JSON DATA: a UI or an LLM authors it, it round-trips through the contract
+src\core\types.ts:30: PLAIN, NAME, ONCE :: * PLAIN NAME — a key resolved ONCE at construction against a workflow-level
+src\core\types.ts:45: OVERRIDING :: * to this task's substrate unit, OVERRIDING the phase Runner's `retries` default. Omitted ⇒
+src\core\types.ts:46: PERSISTED :: * the default (no extra attempts). PERSISTED in a {@link TaskSnapshot} (like `bail` and
+src\core\types.ts:56: PERSISTED :: * `MAX_TIMER_MS`. Zero or omission means no deadline. PERSISTED in a {@link TaskSnapshot},
+src\core\types.ts:68: DATA, CONCURRENTLY :: * Pure JSON DATA. `tasks` are the phase's tasks, which run CONCURRENTLY (the fixed
+src\core\types.ts:71: NOT :: * unbounded. It is a throttle, NOT a sequencing control: phases are always
+src\core\types.ts:85: OVERRIDE, INHERITS :: * The per-phase failure-policy OVERRIDE. Omitted ⇒ the phase INHERITS the
+src\core\types.ts:87: HALTS :: * `bail: true` phase HALTS the run on its first task failure even under a graceful workflow
+src\core\types.ts:88: NOT :: * default; a `bail: false` phase does NOT halt even under a strict workflow default.
+src\core\types.ts:98: DATA :: * Pure JSON DATA — the root a UI/LLM authors and the contract validates. `phases`
+src\core\types.ts:99: SEQUENTIALLY :: * are the workflow's phases, which run SEQUENTIALLY. `bail` is the failure policy
+src\core\types.ts:100: GRACEFUL :: * (a boolean behavioral toggle): `false` (the default) is GRACEFUL —
+src\core\types.ts:102: HALT :: * is a database-transaction HALT — a single failed task propagates `failed` to the
+src\core\types.ts:148: FULL :: * — so a task carries its FULL lineage (workflow → phase → task) for a
+src\core\types.ts:313: GATED :: * - `MUTATION` — a GATED structural or patch edit was refused: a duplicate id on
+src\core\types.ts:316: NATIVE :: *   the NATIVE bottom-up gate — a terminal container, an edit targeting (or destined for)
+src\core\types.ts:317: BEFORE :: *   a position BEFORE the container's own pending-suffix boundary, or (a running phase)
+src\core\types.ts:320: NEVER :: *   it NEVER throws for this code except {@link TaskInterface.patch} /
+src\core\types.ts:327: REJECTED :: *   is a REJECTED promise, never a synchronous throw, so every scheduler backend settles
+src\core\types.ts:346: ONE :: * The ONE literal set the workflow, phase, and task tiers all draw from, so the vocabulary
+src\core\types.ts:366: OWN :: * must carry its OWN effective policy rather than the derivation taking one scalar `bail`. A
+src\core\types.ts:367: ITS :: * `failed` phase propagates `failed` to the workflow only when ITS `bail` is `true`; a `failed`
+src\core\types.ts:405: BOXES :: * result records. `result` BOXES the produced outcome in a {@link Result}: it is
+src\core\types.ts:406: PRESENT :: * PRESENT exactly when `status` is `completed` (a {@link import('@orkestrel/contract').Success})
+src\core\types.ts:407: ABSENT :: * or `failed` (a {@link import('@orkestrel/contract').Failure}), and ABSENT when `status` is
+src\core\types.ts:410: REPLACES :: * {@link import('./helpers.js').isTerminalStatus}). This boxed `result` REPLACES separate
+src\core\types.ts:432: DATA :: * Pure JSON DATA (no class instances, no functions). `result` is the task's
+src\core\types.ts:435: DECLARATIVE :: * `behavior` / `retries` / `timeout` are the DECLARATIVE config the task carries — persisted
+src\core\types.ts:468: DATA, EFFECTIVE :: * Pure JSON DATA. `status` is the EFFECTIVE status (override-or-derived) at snapshot time.
+src\core\types.ts:469: PRESENT :: * `override` is the forced status of a whole-phase `skip` / `stop` — PRESENT only
+src\core\types.ts:470: DIRECTLY :: * when one is in force, so a restore reinstates it DIRECTLY (no fragile derivation comparison)
+src\core\types.ts:484: EFFECTIVE :: * Records the EFFECTIVE failure policy this phase ran under (`phase.bail ?? workflow.bail`)
+src\core\types.ts:485: REQUIRED :: * — persisted (REQUIRED, like {@link WorkflowSnapshot.bail}) so a restore reinstates the same
+src\core\types.ts:504: DATA, COMPLETE, SELF-CONTAINED :: * Pure JSON DATA — the COMPLETE, SELF-CONTAINED payload the durable store (W-d) persists,
+src\core\types.ts:509: IDENTICALLY, EFFECTIVE :: * IDENTICALLY without a silent default. `status` is the EFFECTIVE status (override-or-derived)
+src\core\types.ts:512: PRESENT :: * tree containing no tasks. An override is PRESENT only when one is in force (so a restore
+src\core\types.ts:513: DIRECTLY :: * reinstates it DIRECTLY rather than guessing from a status divergence). `phases` are the
+src\core\types.ts:538: COMPLETE :: * The store persists the W-a {@link WorkflowSnapshot} — the COMPLETE, self-contained,
+src\core\types.ts:539: WITHOUT :: * pure-JSON run state — so a JSON / SQLite / IndexedDB backend swaps in WITHOUT touching the
+src\core\types.ts:543: THIS, NOT :: * one opaque JSON column) share THIS one interface. Restore is NOT a store concern — a caller reads
+src\core\types.ts:547: OWN :: * same shape as the memory one. The snapshot carries its OWN id, so `set` takes no separate id
+src\core\types.ts:550: UNLIKE :: * `id`). UNLIKE a session store there is NO idle-TTL / eviction — a persisted workflow run-state
+src\core\types.ts:553: ONE :: * (the smallest interface the capability requires), because the snapshot is the ONE payload a
+src\core\types.ts:590: FLAT :: * type stays FLAT and the deeply-nested snapshot shape (workflow → phases → tasks → results) never
+src\core\types.ts:622: OWN :: * reaches the domain surface — the emitter isolates it and routes it to its OWN
+src\core\types.ts:738: ITS :: * {@link PhaseInterface.add} mint threads a leaf's `on` from ITS options. `metadata` is
+src\core\types.ts:788: PERSISTS :: * {@link WorkflowSnapshot} PERSISTS the policy, so {@link import('./factories.js').createRestoredWorkflow}
+src\core\types.ts:799: ONCE :: * {@link TaskDefinition.behavior} / {@link TaskSnapshot.behavior} name resolves against ONCE at
+src\core\types.ts:800: SAME :: * construction into its runtime {@link TaskInterface.handler} — the SAME registry a
+src\core\types.ts:816: BOTTOM-UP, NATIVE :: // Mutation authority is BOTTOM-UP and NATIVE: `add` / `remove` / `move` / `update`
+src\core\types.ts:817: OWN :: // gate purely from the container's OWN derived status and the list's positions — no
+src\core\types.ts:819: BOUNDARY :: // list is its contiguous trailing run of `pending` entries; its BOUNDARY (the index
+src\core\types.ts:838: GUARDED :: *   and `stop` (ended early). Each is GUARDED: an illegal transition (for example,
+src\core\types.ts:846: AFTER :: *   `start` / `complete` / `fail` / `pause` / `resume` / `skip` / `stop` strictly AFTER
+src\core\types.ts:866: PERSISTED :: * Names the behavior reference — a plain registry key name, PERSISTED (mirrors
+src\core\types.ts:872: RESOLVED, RUNTIME-ONLY, NEVER :: * Holds the RESOLVED runtime handler — RUNTIME-ONLY, NEVER persisted in a {@link TaskSnapshot}.
+src\core\types.ts:873: ONCE :: * Resolved ONCE at construction (build, restore, or a live mint) by looking `behavior` up in the
+src\core\types.ts:881: PERSISTED :: * Holds the extra attempts after the first on failure — PERSISTED (mirrors {@link TaskDefinition.retries}
+src\core\types.ts:886: PERSISTED :: * Holds the workflow-owned per-attempt deadline in milliseconds (`0..MAX_TIMER_MS`) — PERSISTED
+src\core\types.ts:952: FIRST :: * FIRST (target exists + `pending`), so a direct call here is the second, redundant
+src\core\types.ts:953: THROWS :: * check — it THROWS a `MUTATION` {@link import('./errors.js').WorkflowError} unless
+src\core\types.ts:980: UNLESS :: *   UNLESS an override is in force. It recomputes whenever a child task transitions; a
+src\core\types.ts:981: CHANGE :: *   CHANGE emits.
+src\core\types.ts:986: FORCE :: * - **Override.** `skip` / `stop` FORCE the phase's status, overriding the
+src\core\types.ts:994: BOTH :: *   {@link WorkflowRunnerInterface.execute} gates a task's own pre-dispatch on BOTH the
+src\core\types.ts:995: RUNTIME-ONLY :: *   workflow's and its phase's gate. `paused` is RUNTIME-ONLY, never persisted; idempotent;
+src\core\types.ts:1009: RESOLVED :: /** Reports the RESOLVED effective failure policy this phase runs under (`phase.bail ?? workflow.bail`); mirrors {@link WorkflowInterface.bail}. */
+src\core\types.ts:1014: RUNTIME-ONLY :: * Reports whether the phase is paused (resumable); RUNTIME-ONLY — never a
+src\core\types.ts:1046: RUNTIME-ONLY :: * A no-op when already `paused` or when `status` is terminal. RUNTIME-ONLY —
+src\core\types.ts:1049: NOT :: * gate (after the workflow's own gate). **Pausing does NOT suspend a driving run's
+src\core\types.ts:1074: IMMEDIATELY :: * Resolves IMMEDIATELY when not {@link paused}. While paused, parks until `resume` or
+src\core\types.ts:1076: NEVER :: * waiter. NEVER rejects.
+src\core\types.ts:1087: THIS :: * THIS phase, its recompute cascade, and its emitter hooks), carrying its `behavior` /
+src\core\types.ts:1089: SAME :: * against the workflow-level {@link WorkflowOptions.functions} registry — the SAME
+src\core\types.ts:1091: UNIQUE :: * Requires `definition.id` to be UNIQUE among this phase's existing
+src\core\types.ts:1095: NATIVE :: * NATIVE gating, purely from this phase's own derived `status` (no
+src\core\types.ts:1096: UNCHANGED :: * runner-installed hook), UNCHANGED from the entity-taking predecessor. While
+src\core\types.ts:1098: ONLY :: * {@link TaskManagerInterface.add} then emits `add`). While `running`: accepted ONLY as
+src\core\types.ts:1105: ACCEPTED :: * **Abort edge.** An append ACCEPTED while `running` can still settle `skipped` rather
+src\core\types.ts:1109: WIRED :: * is WIRED into the live tree, not that it will execute.
+src\core\types.ts:1120: NATIVE :: * NATIVE gating: allowed only while this phase's own `status` is `pending`. While
+src\core\types.ts:1133: NATIVE :: * NATIVE gating: allowed only while this phase's own `status` is `pending`; `running` /
+src\core\types.ts:1145: NATIVE :: * NATIVE gating: allowed only while this phase's own `status` is `pending`; `running` /
+src\core\types.ts:1159: FIRST, THROWS :: * FIRST, so a direct call here THROWS a `MUTATION`
+src\core\types.ts:1186: UNLESS :: *   feeding the definition's `bail`, UNLESS an override is in force. It recomputes when a
+src\core\types.ts:1187: CHANGE :: *   phase's status changes (the top of the cascade); a CHANGE emits — `fail` carries the
+src\core\types.ts:1190: ALL :: *   `phase(id)` / `phases().phases()` read in positional order. `results` collects ALL
+src\core\types.ts:1192: FORCE :: * - **Override.** `skip` / `stop` FORCE the workflow's status; `complete`
+src\core\types.ts:1214: RUNTIME-ONLY :: * Reports whether the workflow is paused (resumable); RUNTIME-ONLY —
+src\core\types.ts:1219: RUNTIME-ONLY :: /** Reports whether {@link destroy} has torn this workflow down; RUNTIME-ONLY, never persisted. */
+src\core\types.ts:1222: RUNTIME-ONLY :: * Holds this workflow's own cancellation signal — fires on {@link destroy}. RUNTIME-ONLY
+src\core\types.ts:1253: ONLY :: * every phase contains zero tasks. Its ONLY legitimate use is settling an executed no-op
+src\core\types.ts:1262: RUNTIME-ONLY :: * RUNTIME-ONLY — never a {@link LifecycleStatus}, never persisted in a
+src\core\types.ts:1265: NOT :: * never suspended mid-flight. **Pausing does NOT suspend the run's timeout / budget /
+src\core\types.ts:1310: IMMEDIATELY :: * Resolves IMMEDIATELY when not {@link paused}. While paused, parks until `resume` /
+src\core\types.ts:1312: NEVER :: * ended workflow has nothing left to pause for). NEVER rejects.
+src\core\types.ts:1324: THIS :: * THIS workflow, its recompute cascade, and its emitter hooks) plus each of its live
+src\core\types.ts:1330: UNIQUE :: * (`definition.bail ?? this.bail`). Requires `definition.id` to be UNIQUE among this
+src\core\types.ts:1334: NATIVE :: * NATIVE gating, purely from this workflow's own derived `status` and the phase list's
+src\core\types.ts:1335: UNCHANGED :: * positions (no runner-installed hook), UNCHANGED from the entity-taking
+src\core\types.ts:1338: PENDING, SUFFIX :: * must fall within the PENDING SUFFIX — the contiguous trailing run of `pending` phases
+src\core\types.ts:1341: ALL :: * workflow's phases are ALL `pending`, so the boundary is `0` and every index is
+src\core\types.ts:1354: NATIVE :: * NATIVE gating: refused while this workflow's own `status` is terminal. Otherwise the
+src\core\types.ts:1367: NATIVE, BOTH :: * NATIVE gating: refused while this workflow's own `status` is terminal. Otherwise BOTH
+src\core\types.ts:1380: NATIVE :: * NATIVE gating: refused while this workflow's own `status` is terminal. Otherwise the
+src\core\types.ts:1421: ONE :: * The ONE engine behind {@link TaskManagerInterface} and {@link PhaseManagerInterface}: positional
+src\core\types.ts:1424: THROWS :: * `append` is the build-time wiring path and THROWS a `MUTATION`
+src\core\types.ts:1426: ONLY :: * `add` / `remove` / `move` / `update` are its graceful `Result` counterparts, gating ONLY on the
+src\core\types.ts:1440: THROWS :: * THROWS a `MUTATION` {@link import('./errors.js').WorkflowError} on a duplicate `id` instead
+src\core\types.ts:1508: GATED :: * `update` are the GATED mutation counterparts a
+src\core\types.ts:1509: AFTER :: * {@link PhaseInterface.add} / `remove` / `move` / `update` delegates to AFTER its own
+src\core\types.ts:1510: ONLY, OWN :: * container-status/hook gating — the manager gates ONLY on the target's OWN
+src\core\types.ts:1519: THROWS :: * THROWS a `MUTATION` {@link import('./errors.js').WorkflowError} on a duplicate
+src\core\types.ts:1584: GATED :: * `add` / `remove` / `move` / `update` are the GATED mutation
+src\core\types.ts:1586: AFTER, ONLY :: * delegates to AFTER its own container-status/hook gating — the manager gates ONLY
+src\core\types.ts:1587: OWN :: * on the target's OWN existence/status/id/bounds and stays event-free (the entity
+src\core\types.ts:1596: THROWS :: * THROWS a `MUTATION` {@link import('./errors.js').WorkflowError} on a duplicate
+src\core\types.ts:1654: EXECUTES :: // === Runner (W-c) — the thin orchestrator that EXECUTES the live W-b entity tree
+src\core\types.ts:1656: DRIVES, COMPOSING :: // The runner DRIVES the W-b state machine by COMPOSING the shipped substrate; it does
+src\core\types.ts:1657: SEQUENTIALLY :: // not re-implement status, concurrency, retries, or abort. Phases run SEQUENTIALLY (a
+src\core\types.ts:1658: CONCURRENTLY, ONE :: // plain await loop); a phase's tasks run CONCURRENTLY through ONE substrate
+src\core\types.ts:1689: ONCE :: * A live {@link TaskInterface} resolves its `behavior` name against this registry ONCE at
+src\core\types.ts:1703: NOT :: * A lean handle (NOT the runner `Controller` — it carries no `spawn`; a workflow task
+src\core\types.ts:1779: SETTLED :: * the attempt either SETTLED with the handler's JSON value or did not settle at all. A tuple, not
+src\core\types.ts:1799: ALONGSIDE :: * lineage) ALONGSIDE the two read-throughs the run produced: `status` is the workflow's
+src\core\types.ts:1864: BUILDS :: * `execute` is single-source: it BUILDS the live tree from the definition internally (through
+src\core\types.ts:1865: BOTH :: * {@link import('./factories.js').createWorkflow}), so these options carry BOTH halves of
+src\core\types.ts:1876: ANY :: * own): a fire of ANY of them cancels every in-flight task (its
+src\core\types.ts:1877: HALTS :: * {@link TaskControllerInterface.signal} fires) and HALTS the run — the remaining tasks
+src\core\types.ts:1885: DIFFERENT :: *   cancels the run at entry — a DIFFERENT primitive from the `timeout: 0` "no deadline" case.)
+src\core\types.ts:1887: DURABLE :: * `store` is not a bound. Supplying a {@link WorkflowStoreInterface} makes the run DURABLE: the
+src\core\types.ts:1893: FINAL :: * read-throughs to the result: {@link WorkflowResult.durable} reports whether the FINAL state
+src\core\types.ts:1895: OMITTED :: * failed. Both are OMITTED without a store, because a run that was never asked to persist has
+src\core\types.ts:1897: BOTH :: * whose state is no longer recoverable. This half applies to BOTH `execute` overloads.
+src\core\types.ts:1911: PURE :: * The runner is a PURE engine — it carries no `functions` / `tools` / `agents` registry
+src\core\types.ts:1918: ABSENT, THIN :: * The reserved `on` key is intentionally ABSENT: the runner is THIN and drives
+src\core\types.ts:1919: OWN :: * the W-b entities' OWN emitters (subscribe through `workflow.emitter` / `phase.emitter` /
+src\core\types.ts:1933: BUILDS :: * `execute(definition, options?)` BUILDS the live W-b entity tree from the definition itself
+src\core\types.ts:1935: SEQUENTIALLY, CONCURRENTLY :: * {@link WorkflowResult} — phases SEQUENTIALLY and, within each phase, the tasks CONCURRENTLY
+src\core\types.ts:1936: ONE :: * through ONE substrate {@link RunnerInterface} (concurrency =
+src\core\types.ts:1937: SINGLE :: * the phase's {@link PhaseDefinition.concurrency}). The definition is the SINGLE source of
+src\core\types.ts:1939: EXECUTION-ONLY :: * EXECUTION-ONLY field the snapshot deliberately dropped — each task's `behavior` (resolved into
+src\core\types.ts:1944: OWN :: * invokes each task's OWN {@link TaskInterface.handler}; an omitted `behavior` is the only
+src\core\types.ts:1945: DRIVES :: * auto-completing no-op. The runner DRIVES the live entity (`start` → `complete` / `fail`), never
+src\core\types.ts:1952: CALLER-BUILT :: * `execute(workflow, options?)` overload drives a CALLER-BUILT live tree instead — the
+src\core\types.ts:1963: BUILDS :: * One-shot. The runner BUILDS the live tree from `definition` internally (one source of
+src\core\types.ts:1971: AND :: * the first failure aborts the in-flight sibling tasks AND `skip`s the remaining tasks /
+src\core\types.ts:1976: SAME :: * (abort / timeout / budget) that fires on the SAME tick as a genuine task failure resolves
+src\core\types.ts:1980: PATHOLOGICAL :: * **Programmer-error exception.** A PATHOLOGICAL `definition` (for example, a
+src\core\types.ts:1981: THROWS, SYNCHRONOUSLY :: * duplicate phase or task `id`) THROWS SYNCHRONOUSLY at construction — before any phase
+src\core\types.ts:1989: PLUS :: *   `phases`) PLUS the per-run bounds (`signal` / `timeout` / `budget`) and the durable `store`
+src\core\types.ts:1994: ALREADY-BUILT, CALLER-OWNED :: * Drives an ALREADY-BUILT, CALLER-OWNED live {@link WorkflowInterface} — the
+src\core\types.ts:1995: ENTITY-NATIVE :: * ENTITY-NATIVE counterpart to the definition-building {@link execute} overload.
+src\core\types.ts:2000: SAME :: * controls the SAME entity mid-run through its own `pause` / `resume` / `add` / `stop` /
+src\core\types.ts:2006: SEQUENTIALLY, CONCURRENTLY :: * SEQUENTIALLY and, within each phase, tasks CONCURRENTLY — byte-identical observable
+src\core\types.ts:2007: READS :: * semantics to the `definition`-form `execute` — except the phase loop RE-READS the
+src\core\types.ts:2011: AND :: * phase boundary AND before each task's dispatch (an in-flight task body is never
+src\core\types.ts:2014: RUN, CONTROLS :: * immediately. `options` carries only the per-run RUN CONTROLS — the bounds (`signal` /
+src\core\types.ts:2020: WITH :: * {@link WorkflowRegistry} registry was supplied at that build: WITH a registry,
+src\core\types.ts:2022: DISPATCHES :: * handler and this overload actually DISPATCHES it, resuming real work. Without a registry,
+src\core\types.ts:2032: SAME :: * @returns The run's terminal {@link WorkflowResult} (its `workflow` is the SAME entity passed in)
+src\core\types.ts:2045: UNLIKE :: // persists). UNLIKE the twins there is no `active` / `switch` pointer — nothing in the
+src\core\types.ts:2058: EXACT :: * `store` is the EXACT analogue of `ConversationManagerOptions.store` /
+src\core\types.ts:2062: SAME :: * is the workflow-specific addition: the SAME {@link WorkflowRegistry} registry threaded into
+src\core\types.ts:2066: RUNNABLE :: * hydrated workflow carries real resolved `handler`s and is RUNNABLE. Omitted ⇒ named work
+src\core\types.ts:2073: HYDRATED :: * / JSON / SQLite / IndexedDB store a workflow is HYDRATED from (`open` a registry miss)
+src\core\types.ts:2074: PERSISTED :: * and PERSISTED to (`save`). Omitted ⇒ the manager is registry-only: `open` resolves only
+src\core\types.ts:2082: RUNNABLE :: * hydrated workflow is RUNNABLE, its tasks carrying real resolved `handler`s. Omitted ⇒
+src\core\types.ts:2100: OVERWRITES :: *   already-present id OVERWRITES (last write wins, because `createWorkflow` keys the tree by
+src\core\types.ts:2105: MISS :: *   directly (no store hit); same-id registry misses share one in-flight hydration. On a MISS
+src\core\types.ts:2106: HYDRATES :: *   it HYDRATES one from `store.get(id)` through
+src\core\types.ts:2108: RUNNABLE :: *   registry in so the rehydrated tree is RUNNABLE — registers it, and returns it. Registry
+src\core\types.ts:2113: PERSISTS :: *   registered workflow's {@link WorkflowInterface.snapshot} at invocation, then PERSISTS it.
+src\core\types.ts:2116: LENIENT :: *   LENIENT without a store — `open` resolves only registered ids, `save` is a no-op
+src\core\types.ts:2117: EXACT :: *   (`false`) — never a throw. The EXACT analogue of
+src\core\types.ts:2120: ADDITIVE :: *   open/save seam, ADDITIVE alongside direct {@link WorkflowStoreInterface} use and
+src\core\types.ts:2122: FIRST :: * - **Removal.** `remove` drops one by id, or a batch (array overload FIRST) — `true` only
+src\core\types.ts:2138: RUNNABLE :: * const workflow = manager.add(definition) // minted, registered, RUNNABLE (functions flow in)
+src\core\types.ts:2163: OVERWRITES :: * An already-registered `definition.id` OVERWRITES (last write wins) — `createWorkflow`
+src\core\types.ts:2177: ALREADY :: * - If `id` is ALREADY registered, it is returned directly — no store hit.
+src\core\types.ts:2179: HIT :: *   object. On a HIT the snapshot is
+src\core\types.ts:2182: RESUME :: *   registry in (so the rehydrated tree carries real resolved `handler`s and can RESUME
+src\core\types.ts:2189: MISS :: * - Else (no store, or a store MISS) ⇒ `undefined` (lenient — no throw).
+src\core\types.ts:2192: RUNNABLE :: * @returns The resolved, RUNNABLE {@link WorkflowInterface}, or `undefined` when neither registered nor stored
+src\core\types.ts:2200: AND :: * When a `store` is set AND `id` is registered, the snapshot is captured synchronously at
+src\core\types.ts:2213: FIRST :: * The array overload is declared FIRST, so a list resolves to the batch form. Every id is
+src\core\types.ts:2275: OWN :: * listener throw is routed to the emitter's OWN `error` handler (the `error` option), never
+src\core\types.ts:2277: AFTER :: * buggy observer can never reorder, throw into, or corrupt the run. Every emit sits AFTER the
+src\core\types.ts:2314: ANY :: *   expiring (it reflects the underlying queue attempt's signal, which ANY-combines
+src\core\types.ts:2347: NOT :: * outstanding-unit count, not a one-time snapshot), so a caller does NOT need to
+src\core\types.ts:2350: NOT :: * **Deadlock caveat.** On a bounded-`concurrency` runner, do NOT `await` a
+src\core\types.ts:2385: OVERRIDES :: * abort), so only the two reliability knobs are exposed here. Each field OVERRIDES the
+src\core\types.ts:2457: ALONGSIDE :: * ({@link RunnerEventMap}) for fire-and-forget observers, ALONGSIDE the eventual `execute`
+src\core\types.ts:2458: AFTER :: * result. Emitting is observation-only — every event fires AFTER the relevant unit-launch /
+src\core\types.ts:2497: SAME :: * the SAME backing queue as a declared/`spawn`ed unit (the runner's
+src\core\validators.ts:84: RUNTIME-ONLY :: * (RUNTIME-ONLY, never a field on the pure-JSON
+src\core\validators.ts:85: AND :: * {@link import('./types.js').WorkflowDefinition}) AND a callable `snapshot`. Requiring both is
+src\core\validators.ts:428: REQUIRED :: * The persisted counterpart of {@link isTaskActivityInput}: the same frame plus the REQUIRED
+src\core\Workflow.ts:51: ONLY :: *   reachable ONLY under `bail: true` (a single failed task halts the workflow); under
+src\core\Workflow.ts:53: CHANGE :: *   change; a CHANGE emits.
+src\core\Workflow.ts:54: FORCE :: * - **Override.** `skip` / `stop` FORCE the status; an executed task-free pending tree
+src\core\Workflow.ts:55: PERSISTED :: *   may also be force-completed vacuously. The override is PERSISTED in the snapshot's own
+src\core\Workflow.ts:56: DIRECTLY :: *   `override` field and restored DIRECTLY (no divergence guess). The snapshot also persists
+src\core\Workflow.ts:59: DOWN :: *   workflow tier; `phase(id)` + each `phase.task(id)` navigate DOWN, a task's `phase` / `workflow`
+src\core\Workflow.ts:68: BEFORE :: * - **Structural API.** `add` / `remove` / `move` / `update` gate BEFORE
+src\core\Workflow.ts:70: NATIVE :: *   bounds), then emit the matching {@link WorkflowEventMap} event on success only. NATIVE,
+src\core\Workflow.ts:72: PENDING, SUFFIX :: *   `status` is terminal; otherwise a target position must fall within the PENDING SUFFIX —
+src\core\Workflow.ts:78: WITHOUT :: *   phase/task boundaries WITHOUT touching {@link status} — `paused` is runtime-only, never
+src\core\Workflow.ts:102: EXPLICIT :: // The EXPLICIT workflow `bail` override (`options.bail`), when one was supplied — a deliberate
+src\core\Workflow.ts:103: THIS :: // "re-run the whole tree under THIS uniform policy" knob threaded down to each phase so it
+src\core\Workflow.ts:106: ALWAYS :: // resolved default), which is ALWAYS defined.
+src\core\Workflow.ts:108: ONCE :: // The `function`-task behavior registry each live task's `behavior` name resolves against ONCE at
+src\core\Workflow.ts:109: RESOLVE :: // construction — threaded to every Phase (and, transitively, every Task). Read at RESOLVE
+src\core\Workflow.ts:110: AFTER :: // time (construction / a later live `add`'s mint), so mutating the object passed in AFTER
+src\core\Workflow.ts:115: PUSH :: // The PUSH observation surface — owned, never inherited. The emitter isolates a
+src\core\Workflow.ts:121: CHANGE :: // The last computed status — the baseline a recompute diffs against to detect a CHANGE.
+src\core\Workflow.ts:127: RUNTIME-ONLY :: // RUNTIME-ONLY (never persisted): whether the workflow is paused.
+src\core\Workflow.ts:132: RUNTIME-ONLY :: // RUNTIME-ONLY (never persisted): whether `destroy` has torn this workflow down.
+src\core\Workflow.ts:162: THIS :: // Build the live phases positionally from the snapshot — each wired to recompute THIS
+src\core\Workflow.ts:165: ONCE :: // name into a runtime handler ONCE at construction.
+src\core\Workflow.ts:170: DIRECTLY :: // Restore the override DIRECTLY from the snapshot's own field (present when whole-workflow
+src\core\Workflow.ts:172: EFFECTIVE :: // seed the baseline from the EFFECTIVE status so a recompute diffs against the right value.
+src\core\Workflow.ts:217: EFFECTIVE :: // derivations — each phase's status paired with the EFFECTIVE `bail` it ran under, so the
+src\core\Workflow.ts:237: FORCES :: // `skip` FORCES the workflow to `skipped`, overriding the derived value — then
+src\core\Workflow.ts:238: IDEMPOTENT :: // recompute so the change is detected and the `skip` event is emitted. IDEMPOTENT /
+src\core\Workflow.ts:240: ALWAYS :: // parked `wait()` waiter is ALWAYS released regardless (a terminal workflow must never hold
+src\core\Workflow.ts:248: FORCES :: // `stop` FORCES the workflow to `stopped` — `stopped` IS a WorkflowEventMap
+src\core\Workflow.ts:261: EXECUTED :: // Used by the runner to settle an EXECUTED no-op tree (no work happened ⇒ vacuously done) —
+src\core\Workflow.ts:262: ONLY, AND :: // its ONLY legitimate use, so this is a NO-OP unless `status` is still `pending` AND the
+src\core\Workflow.ts:411: EFFECTIVE, ACTUAL :: // Pure JSON: identity + the EFFECTIVE status + the ACTUAL override (emitted only when one is
+src\core\Workflow.ts:431: CHANGE :: // wired into each Phase). Diff the new effective status against the baseline; on a CHANGE,
+src\core\Workflow.ts:477: NATIVE :: // behind the NATIVE `remove` / `move` / `update` boundary gate.
+src\core\Workflow.ts:482: NATIVE, CURRENT :: // The NATIVE pending-suffix boundary over the live phases' CURRENT statuses — reads
+src\core\Workflow.ts:488: REAL :: // The failing task's REAL recorded {@link TaskResult} — the first failed result across every
+src\core\Workflow.ts:489: ONLY :: // phase — so the `fail` event carries the true cause. A workflow derives `failed` ONLY under
+src\core\Workflow.ts:508: THIS :: // overrides the phase's persisted per-phase bail) + THIS workflow's `#functions` registry
+src\core\Workflow.ts:510: THIS :: // to recompute THIS workflow on a derived-status change.
+src\core\Workflow.ts:524: MINT :: // MINT a live phase (and its tasks) from a PhaseDefinition for a live `add` — converts it to
+src\core\Workflow.ts:527: OWN :: // then builds it through the Phase constructor's OWN `#functions` resolution, so a live mint and a
+src\core\Workflow.ts:528: IDENTICALLY :: // built/restored phase are wired IDENTICALLY — same recompute cascade, same emitter hooks,
+src\core\Workflow.ts:551: EFFECTIVE :: // EFFECTIVE `bail` (phase override or the workflow default) — the input to
+src\core\WorkflowManager.ts:28: OVERWRITES :: *   OVERWRITES (last write wins). `count` is the map size, `workflow(id)` looks one up,
+src\core\WorkflowManager.ts:35: FIRST :: * - **Removal.** `remove` drops one by id, or a batch (array overload FIRST) — `true` only when
+src\core\WorkflowManager.ts:45: RUNNABLE :: * const workflow = manager.add(definition) // minted, registered, RUNNABLE
+src\core\WorkflowManager.ts:59: RUNNABLE :: // each live task's `behavior` resolves to a real `handler` (RUNNABLE) rather than the
+src\core\WorkflowManager.ts:120: AND :: // Lenient: persist only when a store is set AND the id is registered; otherwise a no-op.
+src\core\WorkflowManager.ts:140: FIRST :: // The array overload FIRST, so a list resolves to the batch form.
+src\core\WorkflowManager.ts:145: EVERY :: // The batch reports true only when EVERY id was removed, so a caller can tell a full
+src\core\WorkflowRunner.ts:41: OUTCOME :: // handler's resolved value is irrelevant (the OUTCOME is recorded on the live task through
+src\core\WorkflowRunner.ts:42: NOT :: // `complete` / `fail` / `skip`, NOT in the Runner's ordered results), so the Runner's
+src\core\WorkflowRunner.ts:43: DRIVES :: // `TResult` is `void`: the runner DRIVES the entity, the substrate only sequences + bounds.
+src\core\WorkflowRunner.ts:46: NOT, NESTED :: // and threaded into `#runPhase`, NOT a shared `#active` field — so a NESTED `execute` through
+src\core\WorkflowRunner.ts:47: OWN :: // application composition gets its OWN holder and can never clobber the outer run's while it is
+src\core\WorkflowRunner.ts:63: ZERO :: *   {@link SchedulerInterface}. The runner writes ZERO concurrency / retry / abort logic of
+src\core\WorkflowRunner.ts:70: ONCE :: *   {@link import('./types.js').TaskInterface.handler} ONCE at construction (build, restore,
+src\core\WorkflowRunner.ts:75: BUILDS :: * - **Two `execute` forms, one engine.** `execute(definition, options)` BUILDS the live tree
+src\core\WorkflowRunner.ts:77: DRIVES, ALREADY-BUILT :: *   metadata); `execute(workflow, options)` DRIVES a caller-owned, ALREADY-BUILT
+src\core\WorkflowRunner.ts:80: SAME :: *   converge on the SAME `#execute` engine: neither reads a `WorkflowDefinition` after the tree
+src\core\WorkflowRunner.ts:81: OWN :: *   exists — `#runTask` reads each task's OWN {@link import('./types.js').TaskInterface.handler}
+src\core\WorkflowRunner.ts:82: OWN :: *   / `retries` / `timeout`, and `#runPhase` reads each phase's OWN
+src\core\WorkflowRunner.ts:84: EXACTLY :: *   runs under EXACTLY the same rules as one built from the original definition.
+src\core\WorkflowRunner.ts:85: LIVE :: * - **Phases sequential, tasks concurrent — LIVE continuity.** `#execute` drives the phases in
+src\core\WorkflowRunner.ts:86: READING :: *   order, RE-READING `workflow.phases.phases()` every iteration (a cursor over the live
+src\core\WorkflowRunner.ts:88: BEFORE :: *   picked up. Within a phase, `#runPhase` subscribes to that phase's `add` event BEFORE
+src\core\WorkflowRunner.ts:89: SAME :: *   capturing its task list, then `spawn`s any task added mid-phase onto the SAME substrate
+src\core\WorkflowRunner.ts:98: THEN :: *   THEN re-throws, so the substrate Runner fail-fasts — it aborts the in-flight siblings
+src\core\WorkflowRunner.ts:101: RESOLVES :: *   Under `bail: false` (graceful) a failure `fail`s the leaf and RESOLVES (never throws), so
+src\core\WorkflowRunner.ts:108: GRACEFUL :: *   already-running siblings continue and its per-attempt timeout keeps counting. A GRACEFUL
+src\core\WorkflowRunner.ts:111: HARD :: *   HARD `workflow.destroy()` aborts {@link WorkflowInterface.signal}, which `#fold` has folded
+src\core\WorkflowRunner.ts:113: EVERY :: *   in-flight task) exactly like an external abort / timeout / budget fire. EVERY park on a
+src\core\WorkflowRunner.ts:114: RACED :: *   `wait()` gate is RACED against that same run signal (`#raceWait`, S2) — so a cancel firing
+src\core\WorkflowRunner.ts:115: WHILE :: *   WHILE parked unparks the engine promptly instead of hanging until `resume`; the existing
+src\core\WorkflowRunner.ts:121: HALTS :: *   (cancelling every in-flight task) and HALTS the run — the remaining tasks / phases `skip`
+src\core\WorkflowRunner.ts:138: BUILDS :: * Executes a workflow definition to completion — BUILDS its live tree, runs the phases
+src\core\WorkflowRunner.ts:143: BUILDS :: * One-shot. The runner BUILDS the live tree from `definition` internally (one source of
+src\core\WorkflowRunner.ts:151: AND :: * sibling tasks AND `skip`s the remaining tasks / phases, settling the workflow `failed`. A
+src\core\WorkflowRunner.ts:160: PLUS :: *   `phases` / `functions`) PLUS the per-run bounds (`signal` / `timeout` / `budget`) and the
+src\core\WorkflowRunner.ts:171: ALREADY-BUILT, CALLER-OWNED :: * Drives an ALREADY-BUILT, CALLER-OWNED live {@link WorkflowInterface} — the entity-native
+src\core\WorkflowRunner.ts:176: SAME :: * the SAME entity mid-run through its own `pause` / `resume` / `add` / `stop` / `destroy`.
+src\core\WorkflowRunner.ts:182: READS :: * except the phase loop RE-READS the live tree every iteration, so a caller's live `add`
+src\core\WorkflowRunner.ts:189: SAME :: * @returns The run's terminal {@link WorkflowResult} (its `workflow` is the SAME entity passed in)
+src\core\WorkflowRunner.ts:220: SINGLE, SOURCE, TRUTH, SAME :: // SINGLE SOURCE OF TRUTH: build the live tree from the SAME definition we drive, so the
+src\core\WorkflowRunner.ts:250: SEQUENTIALLY :: // SEQUENTIALLY — re-reading the live phase list every iteration (live continuity, V7) — then
+src\core\WorkflowRunner.ts:262: INCLUDING :: // Arm the deadline + budget and fold every present bound — INCLUDING the live workflow's
+src\core\WorkflowRunner.ts:263: ONE :: // own `signal` (fires on `destroy`) — into ONE run signal the tasks race against, the same
+src\core\WorkflowRunner.ts:267: ACTIVE :: // On a run-level cancel, abort the ACTIVE phase's Runner (cancelling its in-flight tasks).
+src\core\WorkflowRunner.ts:304: GRACEFUL :: // bail-true failure, or a GRACEFUL `workflow.stop()` the caller invoked directly):
+src\core\WorkflowRunner.ts:305: HALT, THIS :: // HALT the loop — skip THIS and every remaining phase's tasks, then break.
+src\core\WorkflowRunner.ts:311: RACED :: // stopped / destroyed, RACED against a run-level cancel (an abort/timeout/budget/
+src\core\WorkflowRunner.ts:325: REJECTS :: // Run the phase to settlement. Under bail-true it REJECTS on the first failure
+src\core\WorkflowRunner.ts:333: BETWEEN, LIVE :: // Pace BETWEEN phases (never after the last, read from the LIVE count) — the
+src\core\WorkflowRunner.ts:342: STOPPED, BEFORE :: // A run-level cancel makes the run STOPPED — `#haltFrom` forces `stop` BEFORE sweeping
+src\core\WorkflowRunner.ts:343: CRITICAL :: // (F1-CRITICAL) so the override is set before any per-task skip can drive the derived
+src\core\WorkflowRunner.ts:344: RACES :: // status to `skipped` first. The substrate RACES an in-flight handler out on abort (its
+src\core\WorkflowRunner.ts:382: ONE, CONCURRENTLY :: // Run ONE phase's tasks CONCURRENTLY through a single substrate Runner. Returns whether the
+src\core\WorkflowRunner.ts:384: AND, NOT :: // settle-all AND for a run-level cancel (which is NOT a phase failure; `#execute`'s halt
+src\core\WorkflowRunner.ts:388: LIVE, BEFORE :: // LIVE continuity (V7): subscribes to the phase's `add` event BEFORE capturing its task
+src\core\WorkflowRunner.ts:390: SAME :: // the SAME substrate Runner the declared tasks run on, under the same `concurrency`. A
+src\core\WorkflowRunner.ts:393: STILL :: // task STILL `pending` after the phase settles, so the phase always reaches a coherent
+src\core\WorkflowRunner.ts:409: EFFECTIVE :: // The EFFECTIVE per-phase failure policy and resource throttle are read straight off the
+src\core\WorkflowRunner.ts:410: LIVE :: // LIVE phase (V7): `phase.bail` is already the resolved `phase.bail ?? workflow.bail`, and
+src\core\WorkflowRunner.ts:419: INVOKING :: // The substrate Queue retries a failed task by RE-INVOKING its handler (`#runTask`), so the
+src\core\WorkflowRunner.ts:421: DEFER, FINAL :: // task's attempts (by id) so `#runTask` can DEFER the leaf `fail` until the FINAL attempt
+src\core\WorkflowRunner.ts:422: WITHOUT :: // (`attempt > retries`) — an intermediate failure re-throws (driving the Queue's retry) WITHOUT
+src\core\WorkflowRunner.ts:437: OUTCOME :: // The Runner sequences + bounds the work; its ordered results are unused (the OUTCOME
+src\core\WorkflowRunner.ts:438: FIRST :: // lives on each live task). Under bail-true the FIRST failure rejects this — fail-fast.
+src\core\WorkflowRunner.ts:445: NOT :: // forwarded (`onCancel` → `runner.abort`) — NOT a phase failure: report `false` and let
+src\core\WorkflowRunner.ts:457: CRITICAL, GENUINE, BEFORE :: // F1-CRITICAL: on a GENUINE run-level cancel, force the workflow `stop` BEFORE this
+src\core\WorkflowRunner.ts:460: BEFORE :: // already terminal. Forcing here (this `finally` runs BEFORE `#execute` regains control)
+src\core\WorkflowRunner.ts:509: ONE, OWN :: // Run ONE task: drive the live entity through its transitions around its OWN resolved
+src\core\WorkflowRunner.ts:511: FINAL :: // `complete(value)` on a returned value or `fail(error)` on a FINAL-attempt failure. A
+src\core\WorkflowRunner.ts:512: CANCEL :: // genuine CANCEL (`isSkipping` — a run-level bound, or a sibling's fail-fast under bail-true)
+src\core\WorkflowRunner.ts:513: GRACEFUL :: // `skip`s the task instead; a GRACEFUL `workflow.stop()` reaching this pre-dispatch gate
+src\core\WorkflowRunner.ts:515: ONLY :: // ONLY here, before `task.start()` — never in the post-dispatch checks below, so a task
+src\core\WorkflowRunner.ts:518: THREE, MUST :: // THREE abort causes reach this task's signal and MUST be told apart:
+src\core\WorkflowRunner.ts:519: TIMEOUT, ONLY :: //  • a workflow-owned per-attempt TIMEOUT — fires ONLY the folded attempt signal, never
+src\core\WorkflowRunner.ts:521: SIBLING :: //  • a SIBLING fail-fast under bail (the Runner aborts in-flight siblings on a failure) — aborts
+src\core\WorkflowRunner.ts:523: CANCEL :: //  • a run-level CANCEL (abort / timeout / budget / `workflow.destroy()`, all folded into
+src\core\WorkflowRunner.ts:527: BARE, RETRYABLE, FAILURE, NOT :: // and a BARE timeout is `signal.aborted` without it — a RETRYABLE FAILURE of this attempt, NOT
+src\core\WorkflowRunner.ts:532: RETRIES :: // RETRIES: the substrate Queue re-invokes this handler per attempt (threaded `retries`), so the
+src\core\WorkflowRunner.ts:534: NOT, DRIVE :: // an attempt that is NOT the last (`attempt <= retries`) re-throws on a thrown failure to DRIVE the
+src\core\WorkflowRunner.ts:535: WITHOUT :: // Queue's retry WITHOUT failing the leaf (it stays `running`, so a later attempt can still
+src\core\WorkflowRunner.ts:536: TIMEOUT :: // `complete`); a non-final TIMEOUT likewise leaves the leaf `running` and rejects to request
+src\core\WorkflowRunner.ts:537: FINAL :: // the substrate retry. Only the FINAL attempt records the leaf `fail`. A no-retry
+src\core\WorkflowRunner.ts:539: FINAL :: // FINAL thrown failure: bail-true re-throws so the substrate Runner fail-fasts (aborts siblings +
+src\core\WorkflowRunner.ts:551: ATTEMPT :: // The task's folded cancellation handed to the handler: the substrate per-unit ATTEMPT signal
+src\core\WorkflowRunner.ts:553: ANY :: // the per-attempt deadline) ANY-combined with the run signal directly, so a handler observes
+src\core\WorkflowRunner.ts:554: NOTE :: // any cause. `createAbort` does the fold. NOTE this is broader than the genuine-cancel test:
+src\core\WorkflowRunner.ts:557: LAST :: // This attempt's 1-based number, and whether it is the LAST the Queue will make (the per-task
+src\core\WorkflowRunner.ts:649: CANCEL, BEFORE :: // A genuine CANCEL that landed BEFORE dispatch (a run-level bound, or a sibling fail-fast), OR
+src\core\WorkflowRunner.ts:650: GRACEFUL :: // a GRACEFUL `workflow.stop()` the caller invoked directly (V7 — no signal involved): skip
+src\core\WorkflowRunner.ts:680: OWN :: // Invoke the task's OWN resolved handler directly. `undefined` is reachable here only
+src\core\WorkflowRunner.ts:696: TIMEOUT :: // A bare per-attempt TIMEOUT surfaced as a throw (a signal-aware handler threw on the
+src\core\WorkflowRunner.ts:881: RACE :: // RACE a parked entity `wait()` against a run-level cancel (S2 — the gate/signal race fix): an
+src\core\WorkflowRunner.ts:882: WHILE :: // external abort / timeout / budget / `workflow.destroy()` firing WHILE the engine is parked on
+src\core\WorkflowRunner.ts:883: PROMPTLY :: // `workflow.wait()` / `phase.wait()` must unpark it PROMPTLY rather than leaving it hung until
+src\core\WorkflowRunner.ts:886: ALWAYS :: // the run signal. A one-shot abort listener is wrapped in a promise and ALWAYS removed after the
+src\core\WorkflowRunner.ts:889: NOT :: // NOT rewritten onto `helpers.parkSignal`: `parkSignal` has no mechanism to detach its own
+src\core\WorkflowRunner.ts:893: SAME :: // lifetime instead of one-at-a-time. The hand-rolled promise here keeps the SAME one-shot-abort
+src\core\WorkflowRunner.ts:894: REMOVABLE :: // shape as `parkSignal` but stays REMOVABLE, so it is cleaned up the instant the race settles
+src\core\WorkflowRunner.ts:932: ANY :: // The per-task folded signal: ANY-combine the substrate per-unit signal with the run signal through
+src\core\WorkflowRunner.ts:947: ONE, LIVE :: // Fold the run-level bounds into ONE signal — the LIVE workflow's own `signal` (fires on
+src\core\WorkflowRunner.ts:965: HALT, GENUINE, CANCEL, CRITICAL :: // HALT from `index`: when the halt is a GENUINE run-level CANCEL (F1-CRITICAL), force the
+src\core\WorkflowRunner.ts:966: BEFORE :: // workflow `stop` BEFORE sweeping — `stop()` is a NO-OP after `status` is already terminal
+src\core\WorkflowRunner.ts:967: FIRST :: // (F1), so forcing it FIRST (while the derived status is still non-terminal) is the only
+src\core\WorkflowRunner.ts:969: NOT :: // would silently turn the intended `stopped` into a derived `skipped`. When the halt is NOT a
+src\core\WorkflowRunner.ts:971: ALREADY :: // `skip()`), the workflow is ALREADY validly terminal — no forcing needed, only the sweep.
+src\core\WorkflowRunner.ts:993: CRITICAL, SINGLE :: // F1-CRITICAL: the same stop-before-skip ordering as `#haltFrom`, applied to a SINGLE task
+src\core\WorkflowRunner.ts:996: INSIDE :: // (this call happens INSIDE the substrate's per-unit handler) — so force the workflow `stop`
+src\core\WorkflowRunner.ts:997: FIRST :: // FIRST (while `isStoppable`) whenever the skip is due to `runSignal.aborted`, then skip.
+src\core\WorkflowRunner.ts:998: ONLY :: // A skip caused ONLY by a sibling fail-fast (`controller.aborted` under bail, no run-level
+src\core\WorkflowRunner.ts:999: NOT :: // signal fired) does NOT force anything — that path is a genuine phase failure, not a cancel.
+src\core\tasks\Task.ts:44: FIRST :: *   `stop` (→ `stopped`). Each consults {@link canTransitionTask} FIRST and throws a
+src\core\tasks\Task.ts:51: OWN, THEN :: *   OWN event, THEN calls the parent phase's `#recompute` (injected at construction) so the
+src\core\tasks\Task.ts:53: CAUSE, EFFECT :: *   order means an observer sees the CAUSE (this leaf changed) before the EFFECT (the parents
+src\core\tasks\Task.ts:56: AFTER, BEFORE :: *   matching event strictly AFTER the state change, BEFORE the cascade; the emitter isolates
+src\core\tasks\Task.ts:59: PERSIST :: * - **Declarative config.** `behavior` / `retries` / `timeout` PERSIST in a
+src\core\tasks\Task.ts:62: RUNTIME-ONLY, ONCE :: *   is the RUNTIME-ONLY counterpart — `behavior` resolved ONCE at construction against the
+src\core\tasks\Task.ts:64: NEVER :: *   NEVER persisted; `undefined` when `behavior` is omitted or unregistered. Only omission is a
+src\core\tasks\Task.ts:75: PUSH :: // The PUSH observation surface — owned, never inherited. The emitter isolates a
+src\core\tasks\Task.ts:83: SELF :: // `patch` can rename SELF without mutating the immutable lineage `#context` a `TaskResult`
+src\core\tasks\Task.ts:87: PERSISTED :: // PERSISTED declarative config, carried verbatim from the TaskDefinition / TaskSnapshot.
+src\core\tasks\Task.ts:92: RUNTIME-ONLY, ONCE :: // RUNTIME-ONLY (never persisted): `behavior` resolved ONCE at construction against the
+src\core\tasks\Task.ts:151: DERIVED :: // override field — the override round-trip lives on the DERIVED Phase / Workflow nodes.
+src\core\tasks\Task.ts:160: ONCE :: // Resolved ONCE by the caller (Phase) against the functions registry; stored as-is.
+src\core\tasks\Task.ts:265: FIRST, THEN :: // Own event FIRST, THEN the cascade — an observer sees the cause (this task started) before
+src\core\tasks\Task.ts:290: RECORD, BEFORE :: // RECORD it BEFORE escalating, so the parents' `results()` already see it when the cascade
+src\core\tasks\Task.ts:291: FIRST, LAST :: // re-derives. Then observe the leaf's own `complete` FIRST, and escalate the cascade LAST —
+src\core\tasks\Task.ts:325: FIRST, THEN :: // Own event FIRST, THEN the cascade (cause before effect).
+src\core\tasks\Task.ts:335: FIRST :: // same discipline as `skip`; a stop likewise produced no boxed outcome. Own event FIRST,
+src\core\tasks\Task.ts:336: THEN :: // THEN the cascade.
+src\core\tasks\Task.ts:398: SELF :: * Applies a validated declarative patch to SELF (`name` / `description`).
+src\core\tasks\Task.ts:402: FIRST :: * {@link import('../types.js').TaskManagerInterface.update} gates FIRST (target
+src\core\tasks\Task.ts:403: THROWS :: * exists + `pending`), so this is the second, redundant check — it THROWS a
+src\core\tasks\Task.ts:446: NOT, FIRST :: // cascade is NOT run here — every caller records its boxed result (when any) FIRST, notifies
+src\core\tasks\Task.ts:447: OWN, SECOND, LAST :: // its OWN event SECOND, then escalates LAST, so an observer sees cause (this leaf changed)
+src\core\tasks\TaskController.ts:17: NOT :: * - **A leaf handle, NOT the runner `Controller`.** A workflow task is a leaf of the
+src\core\tasks\TaskController.ts:20: THIS :: * - **Folded signal.** `signal` is the cancellation folded for THIS attempt: its per-attempt
+src\core\tasks\TaskController.ts:31: OWN :: *   phase's output. Read-only — a task records its OWN outcome by returning / throwing, not
+src\core\tasks\TaskManager.ts:21: STATUS :: *   the tally. A `skip` is a STATUS change on a stored task (never a removal), so order survives
+src\core\tasks\TaskManager.ts:24: ONLY, OWN :: *   `Result` counterparts to `append`, gating ONLY on the target's OWN existence/status/id/bounds
+src\core\stores\DatabaseWorkflowStore.ts:14: WITHOUT :: * JSON / SQLite / IndexedDB backend swaps in WITHOUT touching the runner or the entity tree
+src\core\stores\DatabaseWorkflowStore.ts:17: ALSO :: * passes `createMemoryDriver()`), so it ALSO works in memory out of the box; you opt into the
+src\core\stores\DatabaseWorkflowStore.ts:20: ONE, OPAQUE, COLUMN :: * The {@link WorkflowSnapshot} is stored as ONE OPAQUE JSON COLUMN — the table is a row of
+src\core\stores\DatabaseWorkflowStore.ts:23: COMPLETE, AND :: * already a COMPLETE, self-contained, pure-JSON payload, so storing it whole is lossless AND
+src\core\stores\DatabaseWorkflowStore.ts:28: OWN :: * - **`set(snapshot)` upserts under the snapshot's OWN `id`** (no separate id param) — it writes
+src\core\stores\DatabaseWorkflowStore.ts:38: UNLIKE :: * UNLIKE the server package's `SessionStoreInterface` there is NO
+src\core\stores\DatabaseWorkflowStore.ts:40: EXACTLY :: * explicit `delete`. The public surface is EXACTLY `get` / `set` / `delete` — no extra members (the
+src\core\stores\DatabaseWorkflowStore.ts:79: OWN :: /** Inserts or replaces under the snapshot's OWN `id` (no separate id param) — the row is `{ id, snapshot }`. */
+src\core\stores\MemoryWorkflowStore.ts:12: UNLIKE :: * self-contained JSON, so no encoding is needed for the memory tier). UNLIKE the server
+src\core\stores\MemoryWorkflowStore.ts:17: SAME :: * SQLite / IndexedDB) swaps in through the SAME interface without touching the runner or the
+src\core\stores\MemoryWorkflowStore.ts:24: OWN :: * - **`set` inserts / replaces under the snapshot's OWN `id`** (no separate id param).
+src\core\stores\MemoryWorkflowStore.ts:27: EXACTLY :: * The public surface is EXACTLY `get` / `set` / `delete` — no extra members (the guide's method
+src\core\stores\MemoryWorkflowStore.ts:52: OWN :: // Insert / replace under the snapshot's OWN id (no separate id param).
+src\core\phases\Phase.ts:37: DERIVED :: * Implements the live DERIVED state machine (W-b) for one phase — an observable whose
+src\core\phases\Phase.ts:44: CHANGE :: *   each child {@link Task}) re-derives on every child transition; a CHANGE emits the matching
+src\core\phases\Phase.ts:45: AND :: *   event AND escalates to the workflow (`#escalate`, the upward step of the cascade).
+src\core\phases\Phase.ts:46: FORCE :: * - **Override.** `skip` / `stop` FORCE the phase's status (for example, skipping a whole
+src\core\phases\Phase.ts:47: PERSISTED :: *   phase), overriding the derived value; the override is PERSISTED in the snapshot's own
+src\core\phases\Phase.ts:48: DIRECTLY :: *   `override` field and restored DIRECTLY (no divergence guess), so a forced phase round-trips.
+src\core\phases\Phase.ts:59: BEFORE :: * - **Structural API.** `add` / `remove` / `move` / `update` gate BEFORE
+src\core\phases\Phase.ts:61: NATIVE :: *   bounds), then emit the matching {@link PhaseEventMap} event on success only. NATIVE
+src\core\phases\Phase.ts:63: ONLY :: *   `pending`, any valid `index` is accepted; while `running`, `add` accepts ONLY a pure
+src\core\phases\Phase.ts:67: SELF :: * - **Patch.** `patch` applies a validated {@link PhaseUpdate} to SELF
+src\core\phases\Phase.ts:71: MINTS :: * - **Minting.** {@link add} MINTS a live {@link Task} from a {@link TaskDefinition}
+src\core\phases\Phase.ts:72: THIS :: *   (converts it to a {@link TaskSnapshot}, builds the task wired to THIS phase) — the same
+src\core\phases\Phase.ts:74: IDENTICALLY :: *   task are wired IDENTICALLY. At construction, the workflow-level
+src\core\phases\Phase.ts:77: ONCE :: *   name ONCE before any task is built; siblings sharing a name receive the exact same captured
+src\core\phases\Phase.ts:85: FIRST, WITHOUT :: *   pre-dispatch on the workflow's gate FIRST, then this phase's gate, WITHOUT touching
+src\core\phases\Phase.ts:105: EFFECTIVE :: // The EFFECTIVE failure policy this phase runs under (`phase.bail ?? workflow.bail`, resolved
+src\core\phases\Phase.ts:107: THIS :: // settle-all for THIS phase, and by the workflow's per-phase-bail-aware status derivation.
+src\core\phases\Phase.ts:113: PUSH :: // The PUSH observation surface — owned, never inherited. The emitter isolates a
+src\core\phases\Phase.ts:116: CHANGE :: // The last computed status — the baseline a recompute diffs against to detect a CHANGE.
+src\core\phases\Phase.ts:120: RUNTIME-ONLY :: // RUNTIME-ONLY (never persisted): whether the phase is paused.
+src\core\phases\Phase.ts:151: OVERRIDE :: // The effective per-phase policy: the explicit workflow `bail` OVERRIDE when supplied (a
+src\core\phases\Phase.ts:152: THIS :: // deliberate "re-run the whole tree under THIS uniform policy" knob — `createWorkflow` /
+src\core\phases\Phase.ts:154: IDENTICAL :: // (so an option-less restore is IDENTICAL — each phase's own persisted policy governs). The
+src\core\phases\Phase.ts:163: THIS :: // Build the live tasks positionally from the snapshot — each wired to recompute THIS phase
+src\core\phases\Phase.ts:170: DIRECTLY :: // Restore the override DIRECTLY from the snapshot's own field (present only when a whole-
+src\core\phases\Phase.ts:172: EFFECTIVE :: // from the EFFECTIVE status so a recompute diffs against the right value.
+src\core\phases\Phase.ts:196: CURRENT :: // Computed fresh so a renamed phase's context reflects its CURRENT identity — the phase's
+src\core\phases\Phase.ts:245: FORCES :: // `skip` FORCES the phase to `skipped`, overriding the derived value — then
+src\core\phases\Phase.ts:247: IDEMPOTENT :: // IDEMPOTENT / NO-OP after `status` is already terminal (a settled phase cannot be
+src\core\phases\Phase.ts:248: ALWAYS :: // re-forced) — but a parked `wait()` waiter is ALWAYS released regardless (a terminal
+src\core\phases\Phase.ts:256: FORCES :: // `stop` FORCES the phase to `stopped` — same override discipline as `skip`;
+src\core\phases\Phase.ts:361: FIRST :: // Defense-in-depth: the owning WorkflowInterface.update gates FIRST, so a
+src\core\phases\Phase.ts:362: THROWS :: // direct call here THROWS unless this phase is genuinely `pending`.
+src\core\phases\Phase.ts:376: EFFECTIVE, ACTUAL :: // Pure JSON: identity + the EFFECTIVE status (override-or-derived) + the ACTUAL override
+src\core\phases\Phase.ts:378: REQUIRED :: // a REQUIRED field, like Workflow's) + the concurrency throttle (when set) + the tasks'
+src\core\phases\Phase.ts:394: CHANGE :: // diff the new effective status against the baseline; on a CHANGE, advance the baseline, emit
+src\core\phases\Phase.ts:432: REAL :: // The failing task's REAL recorded {@link TaskResult} — the first task whose result is a
+src\core\phases\Phase.ts:433: ONLY :: // Failure — so the `fail` event carries the true cause. A phase derives `failed` ONLY when a
+src\core\phases\Phase.ts:482: THIS :: // Build one live task wired to THIS phase — the shared construction step behind both
+src\core\phases\Phase.ts:485: IDENTICALLY :: // task are wired IDENTICALLY (recompute cascade, emitter hooks, context stamping). The caller
+src\core\phases\Phase.ts:512: MINT :: // MINT a live task from a TaskDefinition for a live `add` — converts it to an initial
+src\core\phases\PhaseManager.ts:22: ONLY, OWN :: *   `Result` counterparts to `append`, gating ONLY on the target's OWN existence/status/id/bounds
+src\browser\BrowserScheduler.ts:23: NOT :: *   invoking caller-owned signal methods. The caller signal is NOT handed to `postTask`;
+guides/workflow.md:195: DUAL :: The durable persistence seam (W-d) — a DUAL-store convention (the `QueueStore` / `SessionStore` pattern). A `WorkflowStoreInterface` persists the pure-JSON `WorkflowSnapshot` keyed by workflow id through interchangeable backends: `MemoryWorkflowStore` (a plain `Map`, the zero-plumbing default, `createMemoryWorkflowStore`) and `DatabaseWorkflowStore` (the opt-in, driver-pluggable twin over a `databases` table, the snapshot stored as one opaque JSON column, `createDatabaseWorkflowStore`). Both live under `src/core/stores/`. The Database store's driver defaults to memory, so it also works in memory out of the box; you opt into the durable plumbing (JSON / SQLite / IndexedDB) by passing a driver — and it swaps in through the same interface, without touching the engine or the entity tree. Restore stays the shipped `createRestoredWorkflow`.
+guides/workflow.md:1060: CLI :: Provider-specific Claude/Cursor/Codex JSONL parsing, journals, raw-log retention/redaction, session ids, subprocess ownership, process-tree termination, escalation policy, and CLI continuation stay outside workflow core in application adapters/supervisors. Provider continuation is a new persisted attempt of the same logical task, not a new logical workflow task and not `Task.resume()` (which only opens a live cooperative gate). That composition must retain the external workflow id + epoch lease and make side effects idempotent. Core's `WeakSet` protects only one in-process object identity. Interrupt a whole run with the caller's `AbortController` or `workflow.destroy()`; there is intentionally no `workflow.abort()` API.
+guides/workflow.md:1091: DUAL :: The `WorkflowStoreInterface` seam (`get` / `set` / `delete`, async, keyed by a snapshot's own id) has a DUAL-store convention — pick the backend, the seam is identical. `createMemoryWorkflowStore` is the zero-plumbing default (a plain `Map`); `createDatabaseWorkflowStore` is the driver-pluggable twin over a `databases` table (the snapshot one opaque JSON column, driver defaulting to memory). Both persist the `WorkflowSnapshot` from the section above unchanged; reading one back and rebuilding the live tree is the shipped `createRestoredWorkflow`. A durable backend (JSON / SQLite / IndexedDB) swaps in by passing the driver to `createDatabaseWorkflowStore` — without touching the engine or the entity tree (the `SessionStore` / `QueueStore` driver-swap pattern).
+guides/workflow.md:1414: FIRST :: | `fail`   | `[id, error]`   | The FIRST unit failure (fail-fast) — its id + the error.                        |

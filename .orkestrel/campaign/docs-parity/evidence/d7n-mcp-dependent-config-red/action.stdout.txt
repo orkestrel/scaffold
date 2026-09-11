@@ -1,0 +1,18 @@
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/mcp
+
+·································································································································································x········stdout | tests/config.test.ts > configuration helpers > rolls one face into a single declaration and rewrites its core specifier
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+
+·-stdout | tests/config.test.ts > configuration helpers > rolls one face into a single declaration and rewrites its core specifier
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+
+·
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 171 passed | 1 skipped (173)
+   Start at  17:33:04
+   Duration  3.89s (transform 369ms, setup 433ms, import 766ms, tests 2.55s, environment 0ms)
+

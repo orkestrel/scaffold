@@ -1,0 +1,17 @@
+npm notice run @orkestrel/mcp@0.0.29 test:config
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project config
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |config| tests/config.test.ts > policy plugin > loads every configured policy rule through the real binary
+AssertionError: expected [ …(27) ] to include 'policy(no-mocking) src/violations/fix…'
+ ❯ tests/config.test.ts:1894:28
+    1892|     'typescript(explicit-member-accessibility) src/violations/fixture.…
+    1893|    ]) {
+    1894|     expect(violationCodes).toContain(reported)
+       |                            ^
+    1895|    }
+    1896|    expect(violationCodes).toContain('eslint(no-debugger) scripts/read.…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+

@@ -1,0 +1,10 @@
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/workflow
+
+·····································································································
+
+ Test Files  1 passed (1)
+      Tests  101 passed (101)
+   Start at  17:24:34
+   Duration  1.24s (transform 205ms, setup 434ms, import 556ms, tests 102ms, environment 0ms)
+

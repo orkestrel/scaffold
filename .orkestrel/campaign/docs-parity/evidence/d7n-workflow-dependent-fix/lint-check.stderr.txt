@@ -1,0 +1,2 @@
+npm notice run @orkestrel/workflow@0.0.18 npx
+npm notice run oxlint --config .oxlintrc.json --deny-warnings tests/guides.test.ts src

@@ -1,0 +1,2 @@
+npm notice run @orkestrel/workflow@0.0.18 npx
+npm notice run oxfmt --config .oxfmtrc.json --write README.md guides/workflow.md tests/guides.test.ts src

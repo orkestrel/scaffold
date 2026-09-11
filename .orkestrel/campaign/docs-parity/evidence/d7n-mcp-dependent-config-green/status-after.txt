@@ -1,0 +1,11 @@
+ M README.md
+ M guides/mcp.md
+ M package.json
+ M src/browser/types.ts
+ M src/core/factories.ts
+ M src/core/helpers.ts
+ M src/core/types.ts
+ M src/core/validators.ts
+ M tests/config.test.ts
+ M tests/guides.test.ts
+ M tests/setupPolicy.ts

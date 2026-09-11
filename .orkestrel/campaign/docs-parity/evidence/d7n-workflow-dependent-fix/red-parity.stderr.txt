@@ -1,0 +1,27 @@
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |guides| tests/guides.test.ts > Workflow > keeps every compared summary and example equal to its source
+AssertionError: expected [ Array(1) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   {
++     "spec": "guides/workflow.md",
++     "text": "summary interface WorkflowStoreInterface: guide \"Declares the durable persistence seam for a `WorkflowSnapshot` — three async primitives (`get` / `set` / `delete`) keyed by a workflow id, the snapshot analogue of the server package's `SessionStoreInterface` (and the `@orkestrel/queue` `QueueStoreInterface` driver-swap pattern).\" source \"Declares the durable persistence seam for a `WorkflowSnapshot` — the async `get` / `set` / `delete` primitives keyed by a workflow id, the snapshot analogue of the server package's `SessionStoreInterface` (and the `@orkestrel/queue` `QueueStoreInterface` driver-swap pattern).\"",
++   },
++ ]
+
+ ❯ tests/guides.test.ts:174:74
+    172|   // output is.
+    173|   it('keeps every compared summary and example equal to its source', (…
+    174|    expect(report.drift.filter((finding) => finding.spec === entry.spec…
+       |                                                                          ^
+    175|   })
+    176|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+

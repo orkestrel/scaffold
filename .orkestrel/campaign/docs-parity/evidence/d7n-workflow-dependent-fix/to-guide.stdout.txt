@@ -1,0 +1,12 @@
+wrote guides/workflow.md
+next: npm run format
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/workflow
+
+·····································································································
+
+ Test Files  1 passed (1)
+      Tests  101 passed (101)
+   Start at  17:17:04
+   Duration  1.29s (transform 240ms, setup 480ms, import 558ms, tests 104ms, environment 0ms)
+
