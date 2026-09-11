@@ -7,17 +7,19 @@ Written 2026-09-08T03:35Z and revised 2026-09-08T04:05Z at the owner's request, 
 The owner completed the initial directory uploads. Fresh registry downloads are
 byte-identical to the accepted Contract0.0.17, Codec0.0.3, Msg0.0.10, SSE0.0.7 and
 Test0.0.14 archives. Their canonical checkouts remain clean on main. Read
-d7n-initial-registry-closure.md and its retained digest evidence. Continue with
-the completed operator handoff in d7n-next-layer-prepared.md. Root prompt.txt
-currently names that consumed command; publish.txt is staged for deletion.
+d7n-initial-registry-closure.md and its retained digest evidence. The operator
+handoff in d7n-next-layer-prepared.md was consumed and confirmed. The current
+command and prepared layer are named below; obsolete publish.txt is removed.
 
 The owner completed the next-layer uploads. Fresh registry downloads, their
 digests and gitHead match the accepted archives and canonical main tips. Read
 d7n-next-registry-closure.md. The following layer is now prepared and pushed,
 with clean canonical main checkouts and successful post-closure output/ref
 confirmation. Read d7n-following-layer-prepared.md. Root prompt.txt now names
-that unpublished layer and its parser-only check passed. Final operator review
-and commit are pending; the existing staged publish.txt deletion will be included.
+that unpublished layer. Parser-only checking and actual-line independent/reused
+objective review passed. The operator commit and named origin-ref pushes passed
+at 0dc2fce0, including the existing obsolete publish.txt deletion. Read
+d7n-following-operator-landing.md. Scaffold is clean on canonical local main.
 The current preparation table supersedes the historical closing-sweep table
 for these packages. The owner uploads; root has not authenticated or published.
 

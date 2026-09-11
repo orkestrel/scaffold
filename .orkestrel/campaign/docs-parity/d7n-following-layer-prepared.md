@@ -61,9 +61,10 @@ Root wrote prompt.txt after the selected package closures. It changes into the
 canonical WebstormProjects directories, checks login identity, publishes serially
 with --ignore-scripts --browser=false and stops on failure. It contains no
 temporary checkout, tarball upload target, build, login, secret or OTP. Its
-syntax and actual command semantics require the recorded final operator review
-before handoff. The existing staged removal of obsolete publish.txt belongs in
-the operator commit.
+syntax and actual command semantics passed the recorded final operator review.
+The operator commit included the existing staged removal of obsolete publish.txt
+and pushed the named origin refs. Read d7n-following-operator-landing.md for its
+actual clean-main and post-operator output confirmation.
 
 After the owner runs prompt.txt, confirm registry versions, gitHead and downloaded
 archive identities before preparing the next runtime layer. Do not infer success
