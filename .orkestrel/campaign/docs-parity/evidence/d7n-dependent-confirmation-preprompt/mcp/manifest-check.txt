@@ -1,0 +1,2 @@
+/c/Users/mikes/WebstormProjects/mcp/package.json: OK
+/c/Users/mikes/WebstormProjects/mcp/package-lock.json: OK

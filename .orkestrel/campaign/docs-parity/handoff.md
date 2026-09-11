@@ -33,13 +33,14 @@ closed on clean canonical main at 45ba0a4b5741a79f32500479de9549c0e6a17839 with
 campaign/main pushed. Program0.0.13 is closed on clean canonical main at
 f474b0aa1e8ab0565c8fe0f818ec816e7c5052cb with campaign/main pushed. Worker0.0.12 is
 closed on clean canonical main at 4df117583143117a21b23246b27b6addd42ef0b9 with
-campaign/main pushed. Workflow's final visit/gates/pack and release reviews passed;
-accepted closure is next. Read
+campaign/main pushed. Workflow0.0.18 is closed on clean canonical main at
+0789593a6ab1b2905b16fd2f95a5b30e700888c5 with campaign/main pushed. Read
 d7n-dependent-registry-preparation-state.md. Their source corrections
 are accepted, committed and campaign-pushed. Read the source landing table and
 package verdicts for exact gate bindings and preserved evidence limitations. Read
 d7n-dependent-native-preparation-state.md. The layer's operator handoff is not ready
-yet. The supported recovery and final closure carriers are accepted under
+yet. Package closures are complete and root's fresh layer confirmation passed.
+The supported recovery and final closure carriers are accepted under
 d7n-dependent-supported-carrier-verdict.md. Harness capacity limits dispatch concurrency; no
 required lane is being treated as passed because a dispatch refused.
 

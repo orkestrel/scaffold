@@ -11,10 +11,11 @@ The owner uploads only after final package closures and the operator handoff.
 | Middleware | 0.0.20 | release af01ea39388c05da52fb954476cac0ba423a5f23 | Closed; clean canonical main, campaign/main pushed; owner upload pending |
 | Program | 0.0.13 | release f474b0aa1e8ab0565c8fe0f818ec816e7c5052cb | Closed; clean canonical main, campaign/main pushed; owner upload pending |
 | Worker | 0.0.12 | release 4df117583143117a21b23246b27b6addd42ef0b9 | Closed; clean canonical main, campaign/main pushed; owner upload pending |
-| Workflow | 0.0.18 | 4cbf69287ebd60f1db72f86a4d66a1879e4e9860 | Final gates, pack and release reviews passed; accepted closure is next |
+| Workflow | 0.0.18 | release 0789593a6ab1b2905b16fd2f95a5b30e700888c5 | Closed; clean canonical main, campaign/main pushed; owner upload pending |
 
 Brief's accepted resume preserved the completed install and old stopped receipts.
 Final metadata and full dist match its actual archive; runtime changes and the
 served-baseline comparison justify the pending bump. Brief's accepted closure is
-recorded in its release landing. Remaining package closures and every owner upload
-are pending. Read each final-registry-visit and registry-close evidence directory.
+recorded in its release landing. Selected package closures are complete. Every owner
+upload remains pending. Read each final-registry-visit and registry-close evidence
+directory, then d7n-dependent-layer-prepared.md for the operator handoff.
