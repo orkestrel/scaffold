@@ -1,0 +1,99 @@
+Checking formatting...
+
+All matched files use the correct format.
+Finished in 1199ms on 53 files using 16 threads.
+vite v8.2.2 building client environment for production...
+transforming...
+✓ 12 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/server/index.js  96.09 kB │ gzip: 26.46 kB │ map: 182.47 kB
+
+transforming...
+✓ 12 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/server/index.cjs  100.04 kB │ gzip: 26.82 kB │ map: 185.10 kB
+
+✓ built in 222ms
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+Copied: dist/src/server/index.d.ts to dist/src/server/index.d.cts
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/sea
+
+···········································································································································-··········································-·······
+
+ Test Files  7 passed (7)
+      Tests  188 passed | 2 skipped (190)
+   Start at  15:49:00
+   Duration  4.65s (transform 1.53s, setup 2.45s, import 472ms, tests 5.02s, environment 1ms)
+
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/sea
+
+·················································································-·········
+
+ Test Files  1 passed (1)
+      Tests  90 passed | 1 skipped (91)
+   Start at  15:49:05
+   Duration  824ms (transform 87ms, setup 21ms, import 116ms, tests 539ms, environment 0ms)
+
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/sea
+
+··········································································································································································stdout | tests/config.test.ts > configuration helpers > rolls one face into a single declaration and rewrites its core specifier
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+
+·-stdout | tests/config.test.ts > configuration helpers > rolls one face into a single declaration and rewrites its core specifier
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+
+·
+
+ Test Files  1 passed (1)
+      Tests  172 passed | 1 skipped (173)
+   Start at  15:49:06
+   Duration  2.99s (transform 195ms, setup 21ms, import 443ms, tests 2.38s, environment 0ms)
+
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/sea
+
+·······················
+
+ Test Files  2 passed (2)
+      Tests  23 passed (23)
+   Start at  15:49:10
+   Duration  466ms (transform 174ms, setup 42ms, import 310ms, tests 24ms, environment 0ms)
+
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/sea
+
+·····································
+
+ Test Files  1 passed (1)
+      Tests  37 passed (37)
+   Start at  15:49:11
+   Duration  821ms (transform 127ms, setup 23ms, import 610ms, tests 37ms, environment 0ms)
+
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/sea
+
+····
+
+ Test Files  1 passed (1)
+      Tests  4 passed (4)
+   Start at  15:49:12
+   Duration  12.23s (transform 136ms, setup 21ms, import 266ms, tests 11.79s, environment 0ms)
+
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/sea
+
+·········
+
+ Test Files  1 passed (1)
+      Tests  9 passed (9)
+   Start at  15:49:25
+   Duration  10.30s (transform 61ms, setup 21ms, import 2.43s, tests 7.71s, environment 0ms)
+

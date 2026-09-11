@@ -1,0 +1,10 @@
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/terminal
+
+···································
+
+ Test Files  1 passed (1)
+      Tests  35 passed (35)
+   Start at  15:50:25
+   Duration  1.10s (transform 184ms, setup 287ms, import 588ms, tests 68ms, environment 0ms)
+
