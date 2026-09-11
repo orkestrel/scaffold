@@ -15,12 +15,17 @@ returned. Root preparation prepublishOnly passed in each selected package after
 supported policy repair. Brief, Middleware and Worker have accepted source verdicts;
 the objective comment-only failure is retained and annotated under the owner's
 prose ruling, not described as a passing lane. Their source commits are pushed to
-the campaign branch; read d7n-dependent-native-source-landing.md. Brief's final
-registry visit is running. Middleware and Worker await their registry visits.
-Program, Workflow and MCP source reviews are in progress. Read
+the campaign branch; read d7n-dependent-native-source-landing.md. Program's
+accepted execution correction is also committed and pushed to that branch.
+Brief's registry visit stopped after supported overwrite/audit and final install
+because its carrier rejected Scaffold-owned toolchain updates. Its preparation
+commit is pushed; read d7n-dependent-toolchain-ruling.md. The bounded recovery
+carrier is being implemented. Middleware, Worker and Program await registry visits.
+Workflow's root comment correction is under its final gate and independent delta
+review. MCP's guide/README closing correction is active. Read
 d7n-dependent-native-preparation-state.md. No package in this layer is ready for
-upload yet. Corrected source/registry carriers are under objective review; release
-closure carriers are briefed. Harness capacity limits dispatch concurrency; no
+upload yet. Base source/registry carriers passed objective review; the toolchain
+recovery and final closure successors still need review. Harness capacity limits dispatch concurrency; no
 required lane is being treated as passed because a dispatch refused.
 
 The Opus writer returned a fresh weekly-quota failure. The root journal records
