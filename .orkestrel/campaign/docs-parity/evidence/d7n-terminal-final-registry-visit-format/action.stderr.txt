@@ -1,0 +1,2 @@
+npm notice run @orkestrel/terminal@0.0.15 format
+npm notice run oxfmt --config .oxfmtrc.json --write .

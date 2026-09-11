@@ -1,0 +1,2778 @@
+diff -r -w -B '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-terminal-final-registry-visit-pack/baseline/package/dist/src/core/index.cjs /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-terminal-final-registry-visit-pack/extract/package/dist/src/core/index.cjs
+39,42c39,43
+< * Holds the exact escape SEQUENCE → canonical key NAME table {@link import('./helpers.js').parseKey}
+< * consults for the navigation / editing keys. Covers BOTH the CSI form (`ESC[A`…) and the SS3
+< * form (`ESCOA`…) of the arrows, plus the `home` / `end` / `delete` CSI sequences (with
+< * their numeric-tilde variants). The source of truth for the multi-byte key decode; frozen.
+---
+> * Holds the exact escape sequence to canonical key name table
+> * {@link import('./helpers.js').parseKey} consults for the navigation and editing keys. Covers the
+> * CSI form (`ESC[A`…) and the SS3 form (`ESCOA`…) of the arrows, plus the `home` / `end` / `delete`
+> * CSI sequences with their numeric-tilde variants. The source of truth for the multi-byte key
+> * decode; frozen.
+68,71c69,72
+< * Holds the control BYTE (or CRLF pair) → key descriptor table {@link import('./helpers.js').parseKey}
+< * consults for the one-byte keys and the two-byte CRLF Enter chunk. Each entry carries the
+< * canonical `name` and whether it is a `ctrl` combination. The source of truth for that decode;
+< * frozen.
+---
+> * Holds the control byte (or CRLF pair) to key descriptor table
+> * {@link import('./helpers.js').parseKey} consults for the one-byte keys and the two-byte CRLF
+> * Enter chunk. Each entry carries the canonical `name` and whether it is a `ctrl` combination. The
+> * source of truth for that decode; frozen.
+138,139c139,141
+< * Holds the default glyphs {@link DEFAULT_PROMPT_THEME} assembles its `icons` from. Read only when
+< * the default theme is assembled; a view reads its resolved theme and never this constant. Frozen.
+---
+> * Holds the terminal-owned glyphs {@link DEFAULT_PROMPT_THEME} assembles its `icons` from, beside
+> * the console module's own success and error marks. Read only when the default theme is assembled;
+> * a view reads its resolved theme and never this constant. Frozen.
+228c230
+< /** Holds how long (ms) the {@link import('./types.js').PromptInterface} broker parks an unanswered prompt before it expires — 5 minutes. */
+---
+> /** Holds how long (ms) the {@link import('./types.js').PromptInterface} broker parks an unanswered form before it expires — 5 minutes. */
+233,234c235,237
+< * Holds the SSE `event:` names the broker emits and the {@link import('./types.js').PromptClientInterface}
+< * dispatches on. Frozen; the source of truth for the wire event vocabulary.
+---
+> * Holds the SSE `event:` names the broker emits and the
+> * {@link import('./types.js').PromptClientInterface} dispatches on — `pending`, `expire`, and
+> * `destroy`. Frozen; the source of truth for the wire event vocabulary.
+238c241
+< * - `expire` — an `{ id }` payload: the broker expired or released a parked prompt (the client drops it).
+---
+> * - `expire` — an `{ id }` payload: the broker expired or released a parked form (the client drops it).
+246c249,252
+< /** Names the auth-token request header the {@link import('./types.js').PromptClientInterface} sends. */
+---
+> /**
+> * Names the auth-token request header the {@link import('./types.js').PromptClientInterface} sends
+> * when a `token` is configured — `x-orkestrel-token`.
+> */
+248c254
+< /** Names the `Accept` header value that opens the broker's SSE stream. */
+---
+> /** Names the `Accept` header value that opens the broker's SSE stream — `text/event-stream`. */
+290c296
+< * Narrows an unknown caught value to a {@link TerminalError}.
+---
+> * Narrows an unknown caught value to a {@link TerminalError}, so a caller can branch on its `code`.
+319c325,326
+< * Narrows an unknown wire value to a {@link PendingForm} envelope.
+---
+> * Narrows an unknown wire value to a {@link PendingForm} envelope — the envelope alone, because the
+> * form package's `parseForm` owns the schema payload.
+339c346,347
+< * Narrows an unknown value to a transport-neutral {@link WireEvent}.
+---
+> * Narrows an unknown value to a transport-neutral {@link WireEvent} — the guard a consumer's own
+> * transport applies to an inbound frame.
+350,351c358,359
+< * Narrows an unknown value to a {@link TerminalSnapshot} — the read boundary a store applies to an
+< * untrusted persisted row.
+---
+> * Narrows an unknown value to a {@link TerminalSnapshot} — a non-empty `id` and an optional numeric
+> * `timeout`, the read boundary a store applies to an untrusted persisted row.
+364,366c372,374
+< * read as UTF-8; the resulting string is matched against the known control bytes and the CRLF
+< * pair ({@link CONTROL_NAMES}) and escape sequences ({@link SEQUENCE_NAMES}), falling back to a
+< * single printable character. An unrecognized sequence carries NO `name`, with the raw `sequence`
+---
+> * read as UTF-8; the resulting string is matched against the known control bytes and the CRLF pair
+> * ({@link CONTROL_NAMES}) and escape sequences ({@link SEQUENCE_NAMES}), falling back to a single
+> * printable character. An unrecognized sequence carries no `name`, with the raw `sequence`
+373c381
+< * - **Escape sequence.** A multi-byte ESC sequence (`up` / `down` / `left` / `right` in BOTH the
+---
+> * - **Escape sequence.** A multi-byte ESC sequence (`up` / `down` / `left` / `right` in both the
+428,429c436,437
+< * Checks whether a single character is a printable (non-control) character — used by
+< * {@link parseKey}'s char fallback.
+---
+> * Checks whether a single character is printable — the fallback test {@link parseKey} applies after
+> * the control bytes and the escape sequences, so the C0 controls and DEL are excluded.
+491c499,500
+< * Sanitizes every terminal-readable string in a parsed form schema.
+---
+> * Sanitizes every terminal-readable string in a parsed form schema, keeping every identity and
+> * answer string verbatim and dropping field metadata.
+642c651,652
+< * Renders the styled failure line (`✖ message`) a form driver appends for a refused field.
+---
+> * Renders the styled failure line (`✖ message`) a form driver writes for each refused field before
+> * it asks that field again.
+653c663,664
+< * Builds the initial text-field key state.
+---
+> * Builds the initial text-field reducer state — the sanitized label, the declared default, the
+> * styler, and the resolved theme.
+670c681,682
+< * Renders a text-field key state as a styled view.
+---
+> * Renders a text-field reducer state as a styled view — the header, the pointer, and the typed
+> * value, or the default shown as a hint while nothing is typed.
+725c737,738
+< * Builds the initial password-field key state.
+---
+> * Builds the initial password-field reducer state — the text-field state, plus the mask glyph each
+> * typed character renders as.
+742c755,756
+< * Renders a password-field key state as a styled view.
+---
+> * Renders a password-field reducer state as a styled view, with the value replaced by the mask
+> * repeated so the secret is never echoed.
+789c803,804
+< * Builds the initial confirm-field key state.
+---
+> * Builds the initial confirm-field reducer state — the sanitized label and the declared default
+> * answer.
+805c820,821
+< * Renders a confirm-field key state as a styled view. The selected role paints the default letter.
+---
+> * Renders a confirm-field reducer state as a styled view — the header and the yes/no group, with
+> * the default letter capitalized and painted by the `selected` role.
+848c864,865
+< * Builds the initial select-field key state.
+---
+> * Builds the initial select-field reducer state — the offered choices, with the focus pre-placed on
+> * the declared default.
+867c884,885
+< * Renders a select-field key state as a multi-line styled view.
+---
+> * Renders a select-field reducer state as a multi-line styled view — one row per choice, with the
+> * focused row marked and its help shown.
+881c899
+< * reducer. `up` / `down` (and `k` / `j`) move the focus, WRAPPING at the ends; return submits the
+---
+> * reducer. `up` / `down` (and `k` / `j`) move the focus, wrapping at the ends; return submits the
+940c958,959
+< * Builds the initial checkbox-field key state.
+---
+> * Builds the initial checkbox-field reducer state — the offered choices, with every value in the
+> * field's `default` list pre-checked.
+963c982,983
+< * Renders a checkbox-field key state as a multi-line styled view.
+---
+> * Renders a checkbox-field reducer state as a multi-line styled view — one box per choice, and the
+> * selected count beneath them.
+1051c1071
+< * list.
+---
+> * list; the primitive {@link reduceCheckbox} calls.
+1061c1081,1082
+< * Builds the initial editor-field key state.
+---
+> * Builds the initial editor-field reducer state — the committed lines empty, and the declared
+> * default held for a finish with nothing typed.
+1079c1100,1101
+< * Renders an editor-field key state as a multi-line styled view with its finish hint.
+---
+> * Renders an editor-field reducer state as a multi-line styled view — the finish hint, the
+> * committed lines, and the line in progress.
+1092,1093c1114,1115
+< * current line and starts a fresh one; ctrl-d FINISHES (joining all lines, falling back to the
+< * default when empty); ctrl-c cancels. The form validates the candidate after the driver fills it.
+---
+> * current line and starts a fresh one; ctrl-d finishes, joining every line and falling back to the
+> * default when empty; ctrl-c cancels. The form validates the candidate after the driver fills it.
+1145,1147c1167,1170
+< * Applies a single line-editing {@link KeyEvent} to a text buffer — the editing shared by input /
+< * password / editor. A printable key appends its character; `backspace` drops the last character;
+< * `space` appends a space; ctrl-u clears the line.
+---
+> * Applies a single line-editing {@link KeyEvent} to a text buffer — the editing shared by input,
+> * password, and editor. A printable key appends its character; `backspace` drops the last
+> * character; `space` appends a space; ctrl-u clears the line; a key that edits nothing returns
+> * `undefined`.
+1198,1199c1221,1224
+< * Checks whether `url` is an INSECURE remote endpoint — a plain `http://` URL whose host is NOT a
+< * loopback address. Pure string parsing (no `URL` global), so it stays total on malformed input.
+---
+> * Checks whether `url` is an insecure remote endpoint — a plain `http://` URL whose host is not a
+> * loopback address. Pure string parsing (no `URL` global), so it stays total on malformed input;
+> * the {@link import('./PromptClient.js').PromptClient} warns once when a `token` would cross such
+> * an endpoint in cleartext.
+1226c1251,1252
+< * Serializes a parked {@link PendingForm} into a {@link WireEvent}.
+---
+> * Serializes a parked {@link PendingForm} into a `pending` {@link WireEvent}, whose frame `id` is
+> * the form's own id.
+1239c1265,1266
+< * Serializes a parked prompt's expiry or release into a {@link WireEvent}.
+---
+> * Serializes a parked form's expiry or release into an `expire` {@link WireEvent}, whose `data` is
+> * the JSON `{ id }` payload.
+1251c1278,1279
+< * Serializes the {@link WireEvent} a broker or manager sends when it is going away.
+---
+> * Serializes the `destroy` {@link WireEvent} a broker or manager sends when it is going away, which
+> * carries no payload.
+1264,1265c1292,1294
+< * Implements the headless form broker. It parks live forms, exposes their serialized schemas, and applies
+< * remote answers to the authoritative form.
+---
+> * Implements the headless form broker. It parks live forms, exposes their serialized schemas,
+> * applies remote answers to the authoritative form, and abandons a parked form on timeout, release,
+> * or teardown.
+1455,1456c1484,1486
+< * Implements the SSE form bridge. It ingests serialized forms from a remote broker, renders them through a
+< * local terminal, and posts answers back without blocking the event stream.
+---
+> * Implements the SSE form bridge. It ingests serialized forms from a remote broker without waiting
+> * on a render, drives one form at a time through a local terminal, posts each answer back, and asks
+> * again when the authoritative form refuses one.
+1468,1469c1498,1500
+< *   just submitted, applies every {@link FieldError} through `invalidate`, and asks again. No retry
+< *   counter truncates the loop; acceptance, expiry, and the broker's own teardown are its bounds.
+---
+> *   the refused attempt submitted, applies every {@link FieldError} through `invalidate`, and asks
+> *   again. No retry counter truncates the loop; acceptance, expiry, and the broker's own teardown
+> *   are its bounds.
+1760,1762c1791,1793
+< * Registers named {@link PromptInterface} brokers (one per endpoint), so several parties can
+< * `ask` forms of each other by NAME with a `from` → `to` attribution edge on every parked form,
+< * and a transitive DEADLOCK check across all in-flight asks.
+---
+> * Registers named {@link PromptInterface} brokers, one per endpoint, so several parties can `ask`
+> * forms of each other by name with a `from` → `to` attribution edge on every parked form, and
+> * refuses `DEADLOCK` on a transitive cycle across every in-flight ask.
+1766c1797
+< *   EXISTING broker UNCHANGED — idempotent, never clobbers a live/parked endpoint). Every mounted
+---
+> *   existing broker unchanged — idempotent, never clobbers a live/parked endpoint). Every mounted
+1769c1800
+< * - **`ask`.** The target must already be mounted via {@link add} — `ask` never auto-adds it;
+---
+> * - **`ask`.** The target must already be mounted through {@link add} — `ask` never auto-adds it;
+1771c1802
+< *   `from → to` would close a cycle over the CURRENT in-flight edge set (walked transitively);
+---
+> *   `from → to` would close a cycle over the current in-flight edge set (walked transitively);
+1777c1808
+< * - **Removal.** `remove` drops one endpoint, a batch (the array overload declared FIRST), or every
+---
+> * - **Removal.** `remove` drops one endpoint, a batch (the array overload declared first), or every
+2004,2006c2035,2038
+< * {@link TerminalSnapshot}s keyed by endpoint id, the DEFAULT store
+< * {@link import('../factories.js').createMemoryTerminalStore} builds. The EXACT twin of
+< * {@link import('./DatabaseTerminalStore.js').DatabaseTerminalStore}.
+---
+> * {@link TerminalSnapshot} records keyed by endpoint id, the default store
+> * {@link import('../factories.js').createMemoryTerminalStore} builds and the exact twin of
+> * {@link import('./DatabaseTerminalStore.js').DatabaseTerminalStore}. It carries no idle expiry and
+> * no eviction.
+2069,2072c2101,2105
+< * Implements a {@link TerminalStoreInterface} backed by one table of the `databases` layer — an endpoint's
+< * durable CONFIG state IS a row, so persistence reduces to keyed point-access (`get` / `set` /
+< * `delete`) over a {@link TableInterface}, the driver-pluggable twin of the plain-`Map`
+< * {@link import('./MemoryTerminalStore.js').MemoryTerminalStore}.
+---
+> * Implements a {@link TerminalStoreInterface} backed by one table of the `databases` layer — an
+> * endpoint's durable config state is a row, so persistence reduces to keyed point-access (`get` /
+> * `set` / `delete`) over a {@link TableInterface}, the driver-pluggable twin of the plain-`Map`
+> * {@link import('./MemoryTerminalStore.js').MemoryTerminalStore}. A stored `snapshot` is narrowed
+> * with {@link import('../validators.js').isTerminalSnapshot} on read.
+2186,2188c2219,2222
+< * Creates the SSE prompt {@link PromptClientInterface} BRIDGE — it connects to a remote broker's SSE
+< * endpoint, dispatches each received form to a local {@link import('./types.js').TerminalInterface},
+< * and POSTs the answer back. Universal — `fetch` / SSE are web-standard.
+---
+> * Creates the SSE prompt {@link PromptClientInterface} bridge — it connects to a remote broker's
+> * SSE endpoint, dispatches each received form to a local
+> * {@link import('./types.js').TerminalInterface}, and POSTs the answer back. Universal — `fetch`
+> * and SSE are web standards.
+2212,2214c2246,2248
+< * Creates the multi-endpoint {@link TerminalManager} — a named registry of
+< * {@link PromptInterface} brokers so several parties can `ask` prompts of each other by name,
+< * with a transitive DEADLOCK check across every in-flight ask.
+---
+> * Creates the multi-endpoint {@link TerminalManager} — a named registry of {@link PromptInterface}
+> * brokers so several parties can `ask` forms of each other by name, with a transitive cycle check
+> * that refuses `DEADLOCK` across every in-flight ask.
+2249c2283,2284
+< * snapshot as one opaque JSON column.
+---
+> * snapshot as one opaque JSON column. The default driver is an in-memory `@orkestrel/database`
+> * driver.
+diff -r -w -B '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-terminal-final-registry-visit-pack/baseline/package/dist/src/core/index.d.cts /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-terminal-final-registry-visit-pack/extract/package/dist/src/core/index.d.cts
+1,21c1,21
+< import { CheckboxField } from '@orkestrel/form';
+< import { ConfirmField } from '@orkestrel/form';
+< import { DriverInterface } from '@orkestrel/database';
+< import { EditorField } from '@orkestrel/form';
+< import { EmitterErrorHandler } from '@orkestrel/emitter';
+< import { EmitterHooks } from '@orkestrel/emitter';
+< import { EmitterInterface } from '@orkestrel/emitter';
+< import { FieldChoice } from '@orkestrel/form';
+< import { FieldError } from '@orkestrel/form';
+< import { FormInterface } from '@orkestrel/form';
+< import { FormSchema } from '@orkestrel/form';
+< import { FormValues } from '@orkestrel/form';
+< import { Guard } from '@orkestrel/contract';
+< import { JSONRecord } from '@orkestrel/contract';
+< import { PasswordField } from '@orkestrel/form';
+< import { Result } from '@orkestrel/contract';
+< import { SelectField } from '@orkestrel/form';
+< import { Style } from '@orkestrel/console';
+< import { StylerInterface } from '@orkestrel/console';
+< import { TableInterface } from '@orkestrel/database';
+< import { TextField } from '@orkestrel/form';
+---
+> import type { CheckboxField } from '@orkestrel/form';
+> import type { ConfirmField } from '@orkestrel/form';
+> import type { DriverInterface } from '@orkestrel/database';
+> import type { EditorField } from '@orkestrel/form';
+> import type { EmitterErrorHandler } from '@orkestrel/emitter';
+> import type { EmitterHooks } from '@orkestrel/emitter';
+> import type { EmitterInterface } from '@orkestrel/emitter';
+> import type { FieldChoice } from '@orkestrel/form';
+> import type { FieldError } from '@orkestrel/form';
+> import type { FormInterface } from '@orkestrel/form';
+> import type { FormSchema } from '@orkestrel/form';
+> import type { FormValues } from '@orkestrel/form';
+> import type { Guard } from '@orkestrel/contract';
+> import type { JSONRecord } from '@orkestrel/contract';
+> import type { PasswordField } from '@orkestrel/form';
+> import type { Result } from '@orkestrel/contract';
+> import type { SelectField } from '@orkestrel/form';
+> import type { Style } from '@orkestrel/console';
+> import type { StylerInterface } from '@orkestrel/console';
+> import type { TableInterface } from '@orkestrel/database';
+> import type { TextField } from '@orkestrel/form';
+23c23
+< /** Names the `Accept` header value that opens the broker's SSE stream. */
+---
+> /** Names the `Accept` header value that opens the broker's SSE stream — `text/event-stream`. */
+27c27,29
+<  * Explains why {@link PromptInterface.answer} refused. Names its axis with `reason`.
+---
+>  * Explains why {@link PromptInterface.answer} refused — `unknown` for an id no form is parked
+>  * under, `rejected` for values the authoritative form itself refused, carrying the `FieldError`
+>  * list it reported. Names its axis with `reason`.
+84,87c86,89
+<  * Holds the control BYTE (or CRLF pair) → key descriptor table {@link import('./helpers.js').parseKey}
+<  * consults for the one-byte keys and the two-byte CRLF Enter chunk. Each entry carries the
+<  * canonical `name` and whether it is a `ctrl` combination. The source of truth for that decode;
+<  * frozen.
+---
+>  * Holds the control byte (or CRLF pair) to key descriptor table
+>  * {@link import('./helpers.js').parseKey} consults for the one-byte keys and the two-byte CRLF
+>  * Enter chunk. Each entry carries the canonical `name` and whether it is a `ctrl` combination. The
+>  * source of truth for that decode; frozen.
+102c104,105
+<  * Builds the initial checkbox-field key state.
+---
+>  * Builds the initial checkbox-field reducer state — the offered choices, with every value in the
+>  * field's `default` list pre-checked.
+112c115,116
+<  * Builds the initial confirm-field key state.
+---
+>  * Builds the initial confirm-field reducer state — the sanitized label and the declared default
+>  * answer.
+124c128,129
+<  * snapshot as one opaque JSON column.
+---
+>  * snapshot as one opaque JSON column. The default driver is an in-memory `@orkestrel/database`
+>  * driver.
+139c144,145
+<  * Builds the initial editor-field key state.
+---
+>  * Builds the initial editor-field reducer state — the committed lines empty, and the declared
+>  * default held for a finish with nothing typed.
+149c155,156
+<  * Builds the initial text-field key state.
+---
+>  * Builds the initial text-field reducer state — the sanitized label, the declared default, the
+>  * styler, and the resolved theme.
+174c181,182
+<  * Builds the initial password-field key state.
+---
+>  * Builds the initial password-field reducer state — the text-field state, plus the mask glyph each
+>  * typed character renders as.
+209,211c217,220
+<  * Creates the SSE prompt {@link PromptClientInterface} BRIDGE — it connects to a remote broker's SSE
+<  * endpoint, dispatches each received form to a local {@link import('./types.js').TerminalInterface},
+<  * and POSTs the answer back. Universal — `fetch` / SSE are web-standard.
+---
+>  * Creates the SSE prompt {@link PromptClientInterface} bridge — it connects to a remote broker's
+>  * SSE endpoint, dispatches each received form to a local
+>  * {@link import('./types.js').TerminalInterface}, and POSTs the answer back. Universal — `fetch`
+>  * and SSE are web standards.
+256c265,266
+<  * Builds the initial select-field key state.
+---
+>  * Builds the initial select-field reducer state — the offered choices, with the focus pre-placed on
+>  * the declared default.
+266,268c276,278
+<  * Creates the multi-endpoint {@link TerminalManager} — a named registry of
+<  * {@link PromptInterface} brokers so several parties can `ask` prompts of each other by name,
+<  * with a transitive DEADLOCK check across every in-flight ask.
+---
+>  * Creates the multi-endpoint {@link TerminalManager} — a named registry of {@link PromptInterface}
+>  * brokers so several parties can `ask` forms of each other by name, with a transitive cycle check
+>  * that refuses `DEADLOCK` across every in-flight ask.
+299,302c309,313
+<  * Implements a {@link TerminalStoreInterface} backed by one table of the `databases` layer — an endpoint's
+<  * durable CONFIG state IS a row, so persistence reduces to keyed point-access (`get` / `set` /
+<  * `delete`) over a {@link TableInterface}, the driver-pluggable twin of the plain-`Map`
+<  * {@link import('./MemoryTerminalStore.js').MemoryTerminalStore}.
+---
+>  * Implements a {@link TerminalStoreInterface} backed by one table of the `databases` layer — an
+>  * endpoint's durable config state is a row, so persistence reduces to keyed point-access (`get` /
+>  * `set` / `delete`) over a {@link TableInterface}, the driver-pluggable twin of the plain-`Map`
+>  * {@link import('./MemoryTerminalStore.js').MemoryTerminalStore}. A stored `snapshot` is narrowed
+>  * with {@link import('../validators.js').isTerminalSnapshot} on read.
+395c406
+< /** Holds how long (ms) the {@link import('./types.js').PromptInterface} broker parks an unanswered prompt before it expires — 5 minutes. */
+---
+> /** Holds how long (ms) the {@link import('./types.js').PromptInterface} broker parks an unanswered form before it expires — 5 minutes. */
+418,420c429,432
+<  * Applies a single line-editing {@link KeyEvent} to a text buffer — the editing shared by input /
+<  * password / editor. A printable key appends its character; `backspace` drops the last character;
+<  * `space` appends a space; ctrl-u clears the line.
+---
+>  * Applies a single line-editing {@link KeyEvent} to a text buffer — the editing shared by input,
+>  * password, and editor. A printable key appends its character; `backspace` drops the last
+>  * character; `space` appends a space; ctrl-u clears the line; a key that edits nothing returns
+>  * `undefined`.
+477c489,492
+< /** Names the auth-token request header the {@link import('./types.js').PromptClientInterface} sends. */
+---
+> /**
+>  * Names the auth-token request header the {@link import('./types.js').PromptClientInterface} sends
+>  * when a `token` is configured — `x-orkestrel-token`.
+>  */
+512,513c527,530
+<  * Checks whether `url` is an INSECURE remote endpoint — a plain `http://` URL whose host is NOT a
+<  * loopback address. Pure string parsing (no `URL` global), so it stays total on malformed input.
+---
+>  * Checks whether `url` is an insecure remote endpoint — a plain `http://` URL whose host is not a
+>  * loopback address. Pure string parsing (no `URL` global), so it stays total on malformed input;
+>  * the {@link import('./PromptClient.js').PromptClient} warns once when a `token` would cross such
+>  * an endpoint in cleartext.
+533c550,551
+<  * Narrows an unknown wire value to a {@link PendingForm} envelope.
+---
+>  * Narrows an unknown wire value to a {@link PendingForm} envelope — the envelope alone, because the
+>  * form package's `parseForm` owns the schema payload.
+553,554c571,572
+<  * Checks whether a single character is a printable (non-control) character — used by
+<  * {@link parseKey}'s char fallback.
+---
+>  * Checks whether a single character is printable — the fallback test {@link parseKey} applies after
+>  * the control bytes and the escape sequences, so the C0 controls and DEL are excluded.
+562c580
+<  * Narrows an unknown caught value to a {@link TerminalError}.
+---
+>  * Narrows an unknown caught value to a {@link TerminalError}, so a caller can branch on its `code`.
+581,582c599,600
+<  * Narrows an unknown value to a {@link TerminalSnapshot} — the read boundary a store applies to an
+<  * untrusted persisted row.
+---
+>  * Narrows an unknown value to a {@link TerminalSnapshot} — a non-empty `id` and an optional numeric
+>  * `timeout`, the read boundary a store applies to an untrusted persisted row.
+590c608,609
+<  * Narrows an unknown value to a transport-neutral {@link WireEvent}.
+---
+>  * Narrows an unknown value to a transport-neutral {@link WireEvent} — the guard a consumer's own
+>  * transport applies to an inbound frame.
+632,634c651,654
+<  * {@link TerminalSnapshot}s keyed by endpoint id, the DEFAULT store
+<  * {@link import('../factories.js').createMemoryTerminalStore} builds. The EXACT twin of
+<  * {@link import('./DatabaseTerminalStore.js').DatabaseTerminalStore}.
+---
+>  * {@link TerminalSnapshot} records keyed by endpoint id, the default store
+>  * {@link import('../factories.js').createMemoryTerminalStore} builds and the exact twin of
+>  * {@link import('./DatabaseTerminalStore.js').DatabaseTerminalStore}. It carries no idle expiry and
+>  * no eviction.
+695c715
+<  * `form` is the AUTHORITATIVE form the caller parked, not a copy: an answer fills and submits this
+---
+>  * `form` is the authoritative form the caller parked, not a copy: an answer fills and submits this
+701a722
+>     /** Lists every parked record (`pending()`), or looks one up by id (`pending(id)`). */
+711c732
+<  * `from` and `to` are the attribution edge, set ONLY by a {@link TerminalManagerInterface}: which
+---
+>  * `from` and `to` are the attribution edge, set only by a {@link TerminalManagerInterface}: which
+721,723c742,744
+<  * read as UTF-8; the resulting string is matched against the known control bytes and the CRLF
+<  * pair ({@link CONTROL_NAMES}) and escape sequences ({@link SEQUENCE_NAMES}), falling back to a
+<  * single printable character. An unrecognized sequence carries NO `name`, with the raw `sequence`
+---
+>  * read as UTF-8; the resulting string is matched against the known control bytes and the CRLF pair
+>  * ({@link CONTROL_NAMES}) and escape sequences ({@link SEQUENCE_NAMES}), falling back to a single
+>  * printable character. An unrecognized sequence carries no `name`, with the raw `sequence`
+730c751
+<  * - **Escape sequence.** A multi-byte ESC sequence (`up` / `down` / `left` / `right` in BOTH the
+---
+>  * - **Escape sequence.** A multi-byte ESC sequence (`up` / `down` / `left` / `right` in both the
+772,773c793,794
+<  * Represents one form PARKED by the broker — an id-keyed, wire-safe record of a live form awaiting a remote
+<  * answer. The value a `pending` listener receives and the broker serializes over SSE to a
+---
+>  * Represents one form parked by the broker — an id-keyed, wire-safe record of a live form awaiting
+>  * a remote answer. The value a `pending` listener receives and the broker serializes over SSE to a
+798,800c819,821
+<  * Names the lifecycle status of a parked {@link PendingForm} — where the TICKET stands, which is not
+<  * where the form stands. A ticket is `pending` until somebody answers it; the form it carries has
+<  * its own status, and the two are separate facts about separate entities.
+---
+>  * Names the lifecycle status of a parked {@link PendingForm} — where the ticket stands, which is
+>  * not where the form stands. A ticket is `pending` until somebody answers it; the form it carries
+>  * has its own status, and each is a separate fact about a separate entity.
+810,811c831,833
+<  * Implements the headless form broker. It parks live forms, exposes their serialized schemas, and applies
+<  * remote answers to the authoritative form.
+---
+>  * Implements the headless form broker. It parks live forms, exposes their serialized schemas,
+>  * applies remote answers to the authoritative form, and abandons a parked form on timeout, release,
+>  * or teardown.
+844,845c866,868
+<  * Holds the default glyphs {@link DEFAULT_PROMPT_THEME} assembles its `icons` from. Read only when
+<  * the default theme is assembled; a view reads its resolved theme and never this constant. Frozen.
+---
+>  * Holds the terminal-owned glyphs {@link DEFAULT_PROMPT_THEME} assembles its `icons` from, beside
+>  * the console module's own success and error marks. Read only when the default theme is assembled;
+>  * a view reads its resolved theme and never this constant. Frozen.
+870,871c893,895
+<  * Implements the SSE form bridge. It ingests serialized forms from a remote broker, renders them through a
+<  * local terminal, and posts answers back without blocking the event stream.
+---
+>  * Implements the SSE form bridge. It ingests serialized forms from a remote broker without waiting
+>  * on a render, drives one form at a time through a local terminal, posts each answer back, and asks
+>  * again when the authoritative form refuses one.
+883,884c907,909
+<  *   just submitted, applies every {@link FieldError} through `invalidate`, and asks again. No retry
+<  *   counter truncates the loop; acceptance, expiry, and the broker's own teardown are its bounds.
+---
+>  *   the refused attempt submitted, applies every {@link FieldError} through `invalidate`, and asks
+>  *   again. No retry counter truncates the loop; acceptance, expiry, and the broker's own teardown
+>  *   are its bounds.
+927,930c952,955
+<  * Declares the SSE form BRIDGE — the client-side counterpart to {@link PromptInterface}. It receives
+<  * serialized {@link PendingForm} records from a remote broker, rebuilds each schema locally, drives
+<  * it through a {@link TerminalInterface}, and POSTs the answer back, so a human at this machine
+<  * answers forms a broker parked elsewhere.
+---
+>  * Declares the SSE form bridge — the client-side counterpart to {@link PromptInterface}. It
+>  * receives serialized {@link PendingForm} records from a remote broker, rebuilds each schema
+>  * locally, drives it through a {@link TerminalInterface}, and POSTs the answer back, so a human at
+>  * this machine answers forms a broker parked elsewhere.
+943c968
+<  * - **`connected`** reflects whether the stream is currently open.
+---
+>  * - **`connected`** reflects whether the stream is open.
+945a971
+>     /** Holds the typed emitter every client event is published on. */
+946a973
+>     /** Holds the remote broker's SSE endpoint this client reads from and answers to. */
+947a975
+>     /** Reports whether the SSE stream is open. */
+948a977,980
+>     /**
+>      * Opens the stream and pumps it, queueing each received form for the local terminal; reconnects
+>      * on the `delay` backoff.
+>      */
+949a982,985
+>     /**
+>      * Stops the current connection and the reconnect loop. An active local render continues, and a
+>      * later `connect()` can restart the stream.
+>      */
+950a987,990
+>     /**
+>      * Tears the client down permanently — disconnects, drops the queue, abandons the active local
+>      * form, and destroys the emitter.
+>      */
+960,961c1000,1001
+<  * - `terminal` — the LOCAL {@link TerminalInterface} each remote form is driven through, so a human
+<  *   at THIS machine answers a form parked elsewhere.
+---
+>  * - `terminal` — the local {@link TerminalInterface} each remote form is driven through, so a human
+>  *   at this machine answers a form parked elsewhere.
+994a1035,1037
+>     /**
+>      * Reports an accepted answer, carrying the parked form id and settled values.
+>      */
+1013,1016c1056,1059
+<  * Declares the headless form BROKER — parks a live form until somebody elsewhere answers it. The headless
+<  * arm of the local-TTY / headless / remote trio: there is no terminal here, so a transport forwards
+<  * each `pending` record to whoever can answer, and {@link answer} drives the parked form to
+<  * settlement.
+---
+>  * Declares the headless form broker — parks a live form until somebody elsewhere answers it. The
+>  * headless arm of the local-TTY, headless, and remote trio: there is no terminal here, so a
+>  * transport forwards each `pending` record to whoever can answer, and {@link answer} drives the
+>  * parked form to settlement.
+1022c1065
+<  * - **The parked form is authoritative.** {@link answer} fills and submits THAT form, so every rule
+---
+>  * - **The parked form is authoritative.** {@link answer} fills and submits that form, so every rule
+1042a1086
+>     /** Holds the typed emitter every broker event is published on. */
+1043a1088
+>     /** Reports how many forms this broker holds parked. */
+1044a1090,1093
+>     /**
+>      * Parks a live form, mints its id, emits `pending`, and arms the expiry deadline. Returns the id;
+>      * the caller already holds the promise.
+>      */
+1045a1095
+>     /** Lists every parked record (`pending()`), or looks one up by id (`pending(id)`). */
+1047a1098,1101
+>     /**
+>      * Fills and submits the authoritative parked form. Accepted, it settles and the record is
+>      * dropped; refused, the form stays parked.
+>      */
+1048a1103,1106
+>     /**
+>      * Releases a batch (`stop(ids)`, the array overload declared first), one id, or every parked
+>      * form. The broker stays usable.
+>      */
+1051a1110,1113
+>     /**
+>      * Tears the broker down — abandons every parked form, cancels every deadline, then destroys the
+>      * emitter. Idempotent.
+>      */
+1080,1082c1142,1144
+<  * Names one styling slot a rendered field paints through — the semantic axis of a {@link PromptTheme}. A
+<  * role says what a fragment MEANS; the theme decides what that meaning looks like, so a consumer
+<  * re-maps styled output by naming roles rather than reimplementing a renderer.
+---
+>  * Names one styling slot a rendered field paints through — the semantic axis of a
+>  * {@link PromptTheme}. A role says what a fragment means; the theme decides what that meaning looks
+>  * like, so a consumer re-maps styled output by naming roles rather than reimplementing a renderer.
+1110,1112c1172,1175
+<  * Represents the result of one reducer step — the next `state`, the rendered `view`, the `status`, and, on
+<  * `submit`, the resolved `value`. The whole contract between a pure reducer and the impure driver:
+<  * the driver applies the next `state`, writes the `view`, and reads `value` on `submit`.
+---
+>  * Represents the result of one reducer step — the next `state`, the rendered `view`, the `status`,
+>  * and, on `submit` alone, the candidate `value`. The whole contract between a pure reducer and the
+>  * impure driver: the driver applies the next `state`, writes the `view`, and reads `value` on
+>  * `submit`.
+1123c1186
+<  * - `value` — present ONLY on a `submit` step.
+---
+>  * - `value` — present only on a `submit` step.
+1133,1135c1196,1198
+<  * Represents a resolved PRESENTATION — the glyph for every {@link PromptIcon} and the console {@link Style}
+<  * for every {@link PromptRole}. Plain JSON data with no functions, so it crosses the wire with the
+<  * form it decorates. Built by {@link import('./helpers.js').createPromptTheme}.
+---
+>  * Represents a resolved presentation — the glyph for every {@link PromptIcon} and the console
+>  * {@link Style} for every {@link PromptRole}. Plain JSON data with no functions, so it crosses the
+>  * wire with the form it decorates. Built by {@link import('./helpers.js').createPromptTheme}.
+1150,1151c1213,1214
+<  * Represents the PARTIAL {@link PromptTheme} an option bag carries — every icon and every role is optional,
+<  * and {@link import('./helpers.js').createPromptTheme} merges what is supplied over
+---
+>  * Represents the partial {@link PromptTheme} an option bag carries — every icon and every role is
+>  * optional, and {@link import('./helpers.js').createPromptTheme} merges what is supplied over
+1186,1187c1249,1250
+<  * current line and starts a fresh one; ctrl-d FINISHES (joining all lines, falling back to the
+<  * default when empty); ctrl-c cancels. The form validates the candidate after the driver fills it.
+---
+>  * current line and starts a fresh one; ctrl-d finishes, joining every line and falling back to the
+>  * default when empty; ctrl-c cancels. The form validates the candidate after the driver fills it.
+1219c1282
+<  * reducer. `up` / `down` (and `k` / `j`) move the focus, WRAPPING at the ends; return submits the
+---
+>  * reducer. `up` / `down` (and `k` / `j`) move the focus, wrapping at the ends; return submits the
+1230c1293,1294
+<  * Renders a checkbox-field key state as a multi-line styled view.
+---
+>  * Renders a checkbox-field reducer state as a multi-line styled view — one box per choice, and the
+>  * selected count beneath them.
+1238c1302,1303
+<  * Renders a confirm-field key state as a styled view. The selected role paints the default letter.
+---
+>  * Renders a confirm-field reducer state as a styled view — the header and the yes/no group, with
+>  * the default letter capitalized and painted by the `selected` role.
+1246c1311,1312
+<  * Renders an editor-field key state as a multi-line styled view with its finish hint.
+---
+>  * Renders an editor-field reducer state as a multi-line styled view — the finish hint, the
+>  * committed lines, and the line in progress.
+1254c1320,1321
+<  * Renders the styled failure line (`✖ message`) a form driver appends for a refused field.
+---
+>  * Renders the styled failure line (`✖ message`) a form driver writes for each refused field before
+>  * it asks that field again.
+1276c1343,1344
+<  * Renders a text-field key state as a styled view.
+---
+>  * Renders a text-field reducer state as a styled view — the header, the pointer, and the typed
+>  * value, or the default shown as a hint while nothing is typed.
+1284c1352,1353
+<  * Renders a password-field key state as a styled view.
+---
+>  * Renders a password-field reducer state as a styled view, with the value replaced by the mask
+>  * repeated so the secret is never echoed.
+1303c1372,1373
+<  * Renders a select-field key state as a multi-line styled view.
+---
+>  * Renders a select-field reducer state as a multi-line styled view — one row per choice, with the
+>  * focused row marked and its help shown.
+1339c1409,1410
+<  * Sanitizes every terminal-readable string in a parsed form schema.
+---
+>  * Sanitizes every terminal-readable string in a parsed form schema, keeping every identity and
+>  * answer string verbatim and dropping field metadata.
+1371c1442,1443
+<  * Represents the immutable state a select field's reducer carries.
+---
+>  * Represents the immutable state a select field's reducer carries — the choices the list offers and
+>  * the index the cursor sits on.
+1388,1391c1460,1464
+<  * Holds the exact escape SEQUENCE → canonical key NAME table {@link import('./helpers.js').parseKey}
+<  * consults for the navigation / editing keys. Covers BOTH the CSI form (`ESC[A`…) and the SS3
+<  * form (`ESCOA`…) of the arrows, plus the `home` / `end` / `delete` CSI sequences (with
+<  * their numeric-tilde variants). The source of truth for the multi-byte key decode; frozen.
+---
+>  * Holds the exact escape sequence to canonical key name table
+>  * {@link import('./helpers.js').parseKey} consults for the navigation and editing keys. Covers the
+>  * CSI form (`ESC[A`…) and the SS3 form (`ESCOA`…) of the arrows, plus the `home` / `end` / `delete`
+>  * CSI sequences with their numeric-tilde variants. The source of truth for the multi-byte key
+>  * decode; frozen.
+1402c1475,1476
+<  * Serializes the {@link WireEvent} a broker or manager sends when it is going away.
+---
+>  * Serializes the `destroy` {@link WireEvent} a broker or manager sends when it is going away, which
+>  * carries no payload.
+1409c1483,1484
+<  * Serializes a parked prompt's expiry or release into a {@link WireEvent}.
+---
+>  * Serializes a parked form's expiry or release into an `expire` {@link WireEvent}, whose `data` is
+>  * the JSON `{ id }` payload.
+1417c1492,1493
+<  * Serializes a parked {@link PendingForm} into a {@link WireEvent}.
+---
+>  * Serializes a parked {@link PendingForm} into a `pending` {@link WireEvent}, whose frame `id` is
+>  * the form's own id.
+1436,1437c1512,1514
+<  * Holds the SSE `event:` names the broker emits and the {@link import('./types.js').PromptClientInterface}
+<  * dispatches on. Frozen; the source of truth for the wire event vocabulary.
+---
+>  * Holds the SSE `event:` names the broker emits and the
+>  * {@link import('./types.js').PromptClientInterface} dispatches on — `pending`, `expire`, and
+>  * `destroy`. Frozen; the source of truth for the wire event vocabulary.
+1441c1518
+<  * - `expire` — an `{ id }` payload: the broker expired or released a parked prompt (the client drops it).
+---
+>  * - `expire` — an `{ id }` payload: the broker expired or released a parked form (the client drops it).
+1513,1515c1590,1592
+<  * Declares the contract for asking a form of a human at a keyboard — one method, because a form is one
+<  * question however many fields it holds. The server `Terminal` implements it against a real TTY;
+<  * a {@link PromptClientInterface} holds one to answer forms parked elsewhere.
+---
+>  * Declares the contract for asking a form of a human at a keyboard — `ask` and nothing beside it,
+>  * because a form is one question however many fields it holds. The server `Terminal` implements it
+>  * against a real TTY; a {@link PromptClientInterface} holds one to answer forms parked elsewhere.
+1521c1598
+<  * interactive driver is the one exception: it rejects THIS promise with a `TerminalError` coded
+---
+>  * interactive driver is the one exception: it rejects this promise with a `TerminalError` coded
+1528a1606,1609
+>     /**
+>      * Walks the given form to settlement and resolves its values. The Contract section names the
+>      * ctrl-c exception.
+>      */
+1533,1535c1614,1616
+<  * Registers named {@link PromptInterface} brokers (one per endpoint), so several parties can
+<  * `ask` forms of each other by NAME with a `from` → `to` attribution edge on every parked form,
+<  * and a transitive DEADLOCK check across all in-flight asks.
+---
+>  * Registers named {@link PromptInterface} brokers, one per endpoint, so several parties can `ask`
+>  * forms of each other by name with a `from` → `to` attribution edge on every parked form, and
+>  * refuses `DEADLOCK` on a transitive cycle across every in-flight ask.
+1539c1620
+<  *   EXISTING broker UNCHANGED — idempotent, never clobbers a live/parked endpoint). Every mounted
+---
+>  *   existing broker unchanged — idempotent, never clobbers a live/parked endpoint). Every mounted
+1542c1623
+<  * - **`ask`.** The target must already be mounted via {@link add} — `ask` never auto-adds it;
+---
+>  * - **`ask`.** The target must already be mounted through {@link add} — `ask` never auto-adds it;
+1544c1625
+<  *   `from → to` would close a cycle over the CURRENT in-flight edge set (walked transitively);
+---
+>  *   `from → to` would close a cycle over the current in-flight edge set (walked transitively);
+1550c1631
+<  * - **Removal.** `remove` drops one endpoint, a batch (the array overload declared FIRST), or every
+---
+>  * - **Removal.** `remove` drops one endpoint, a batch (the array overload declared first), or every
+1585,1586c1666,1667
+<  * Declares the manager's event map — the name-attributed re-emission of every mounted broker's events, so a
+<  * caller subscribes once for ALL endpoints instead of once per broker.
+---
+>  * Declares the manager's event map — the name-attributed re-emission of every mounted broker's
+>  * events, so a caller subscribes once for every endpoint instead of once per broker.
+1601,1602c1682,1683
+<  * parties (agents, tools, humans) can ask forms of each other BY NAME, attributed with a
+<  * `from` → `to` edge on every parked record.
+---
+>  * parties (agents, tools, humans) can ask forms of each other by name, attributed with a `from` →
+>  * `to` edge on every parked record.
+1619c1700
+<  * - **Batch `remove`.** The array overload is declared FIRST: `remove(names)` removes every listed
+---
+>  * - **Batch `remove`.** The array overload is declared first: `remove(names)` removes every listed
+1624a1706,1708
+>     /**
+>      * Holds the typed emitter every mounted broker's events are re-published on, attributed by name.
+>      */
+1625a1710
+>     /** Reports how many endpoints are mounted. */
+1626a1712
+>     /** Looks up one endpoint's broker by name. */
+1627a1714
+>     /** Lists every mounted broker, in insertion order. */
+1628a1716,1719
+>     /**
+>      * Mints, or returns unchanged, the broker for `name`. Idempotent; it never clobbers a live
+>      * endpoint.
+>      */
+1629a1721,1724
+>     /**
+>      * Parks `form` from `from` to `to` and resolves with the settled values. Rejects `TARGET` or
+>      * `DEADLOCK`.
+>      */
+1630a1726,1728
+>     /**
+>      * Lists every endpoint's parked records (`pending()`), or scopes to one endpoint (`pending(to)`).
+>      */
+1632a1731,1734
+>     /**
+>      * Routes an answer to the named endpoint's broker; `{ reason: 'target' }` when no endpoint
+>      * carries that name.
+>      */
+1633a1736,1739
+>     /**
+>      * Returns the live broker for `name`, or restores an empty one from the `store`. Parked forms are
+>      * never resurrected.
+>      */
+1634a1741
+>     /** Persists an endpoint's config snapshot; false with no store, or an unknown name. */
+1635a1743,1746
+>     /**
+>      * Removes a batch (`remove(names)`, the array overload declared first, true only when every name
+>      * was mounted), one endpoint, or every endpoint.
+>      */
+1638a1750
+>     /** Tears down every broker, then the manager's own emitter. */
+1662,1664c1774,1776
+<  * Represents one endpoint's persisted CONFIG snapshot — `id` is the endpoint name and `timeout` its configured
+<  * default. Parked forms are process-bound and are never resurrected, so `open` always restores an
+<  * EMPTY broker.
+---
+>  * Represents one endpoint's persisted config snapshot — `id` is the endpoint name and `timeout` its
+>  * configured default. Parked forms are process-bound and are never resurrected, so `open` always
+>  * restores an empty broker.
+1672,1674c1784,1786
+<  * Represents one opaque persisted row — the shape a `TableInterface<TerminalSnapshotRow>`-backed store reads
+<  * and writes. `snapshot` is narrowed with {@link import('./validators.js').isTerminalSnapshot} on
+<  * read.
+---
+>  * Represents one opaque persisted row — the shape a table-backed store reads and writes. The store
+>  * is a `TableInterface<TerminalSnapshotRow>`, and `snapshot` is narrowed with
+>  * {@link import('./validators.js').isTerminalSnapshot} on read.
+1685a1798
+>     /** Resolves the snapshot stored for `id`, or `undefined` when none is. */
+1686a1800
+>     /** Inserts or replaces under the snapshot's own `id`; there is no id argument. */
+1687a1802
+>     /** Drops a snapshot by id. An absent id is a no-op, never a throw. */
+1705c1820
+<  * list.
+---
+>  * list; the primitive {@link reduceCheckbox} calls.
+diff -r -w -B '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-terminal-final-registry-visit-pack/baseline/package/dist/src/core/index.d.ts /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-terminal-final-registry-visit-pack/extract/package/dist/src/core/index.d.ts
+1,21c1,21
+< import { CheckboxField } from '@orkestrel/form';
+< import { ConfirmField } from '@orkestrel/form';
+< import { DriverInterface } from '@orkestrel/database';
+< import { EditorField } from '@orkestrel/form';
+< import { EmitterErrorHandler } from '@orkestrel/emitter';
+< import { EmitterHooks } from '@orkestrel/emitter';
+< import { EmitterInterface } from '@orkestrel/emitter';
+< import { FieldChoice } from '@orkestrel/form';
+< import { FieldError } from '@orkestrel/form';
+< import { FormInterface } from '@orkestrel/form';
+< import { FormSchema } from '@orkestrel/form';
+< import { FormValues } from '@orkestrel/form';
+< import { Guard } from '@orkestrel/contract';
+< import { JSONRecord } from '@orkestrel/contract';
+< import { PasswordField } from '@orkestrel/form';
+< import { Result } from '@orkestrel/contract';
+< import { SelectField } from '@orkestrel/form';
+< import { Style } from '@orkestrel/console';
+< import { StylerInterface } from '@orkestrel/console';
+< import { TableInterface } from '@orkestrel/database';
+< import { TextField } from '@orkestrel/form';
+---
+> import type { CheckboxField } from '@orkestrel/form';
+> import type { ConfirmField } from '@orkestrel/form';
+> import type { DriverInterface } from '@orkestrel/database';
+> import type { EditorField } from '@orkestrel/form';
+> import type { EmitterErrorHandler } from '@orkestrel/emitter';
+> import type { EmitterHooks } from '@orkestrel/emitter';
+> import type { EmitterInterface } from '@orkestrel/emitter';
+> import type { FieldChoice } from '@orkestrel/form';
+> import type { FieldError } from '@orkestrel/form';
+> import type { FormInterface } from '@orkestrel/form';
+> import type { FormSchema } from '@orkestrel/form';
+> import type { FormValues } from '@orkestrel/form';
+> import type { Guard } from '@orkestrel/contract';
+> import type { JSONRecord } from '@orkestrel/contract';
+> import type { PasswordField } from '@orkestrel/form';
+> import type { Result } from '@orkestrel/contract';
+> import type { SelectField } from '@orkestrel/form';
+> import type { Style } from '@orkestrel/console';
+> import type { StylerInterface } from '@orkestrel/console';
+> import type { TableInterface } from '@orkestrel/database';
+> import type { TextField } from '@orkestrel/form';
+23c23
+< /** Names the `Accept` header value that opens the broker's SSE stream. */
+---
+> /** Names the `Accept` header value that opens the broker's SSE stream — `text/event-stream`. */
+27c27,29
+<  * Explains why {@link PromptInterface.answer} refused. Names its axis with `reason`.
+---
+>  * Explains why {@link PromptInterface.answer} refused — `unknown` for an id no form is parked
+>  * under, `rejected` for values the authoritative form itself refused, carrying the `FieldError`
+>  * list it reported. Names its axis with `reason`.
+84,87c86,89
+<  * Holds the control BYTE (or CRLF pair) → key descriptor table {@link import('./helpers.js').parseKey}
+<  * consults for the one-byte keys and the two-byte CRLF Enter chunk. Each entry carries the
+<  * canonical `name` and whether it is a `ctrl` combination. The source of truth for that decode;
+<  * frozen.
+---
+>  * Holds the control byte (or CRLF pair) to key descriptor table
+>  * {@link import('./helpers.js').parseKey} consults for the one-byte keys and the two-byte CRLF
+>  * Enter chunk. Each entry carries the canonical `name` and whether it is a `ctrl` combination. The
+>  * source of truth for that decode; frozen.
+102c104,105
+<  * Builds the initial checkbox-field key state.
+---
+>  * Builds the initial checkbox-field reducer state — the offered choices, with every value in the
+>  * field's `default` list pre-checked.
+112c115,116
+<  * Builds the initial confirm-field key state.
+---
+>  * Builds the initial confirm-field reducer state — the sanitized label and the declared default
+>  * answer.
+124c128,129
+<  * snapshot as one opaque JSON column.
+---
+>  * snapshot as one opaque JSON column. The default driver is an in-memory `@orkestrel/database`
+>  * driver.
+139c144,145
+<  * Builds the initial editor-field key state.
+---
+>  * Builds the initial editor-field reducer state — the committed lines empty, and the declared
+>  * default held for a finish with nothing typed.
+149c155,156
+<  * Builds the initial text-field key state.
+---
+>  * Builds the initial text-field reducer state — the sanitized label, the declared default, the
+>  * styler, and the resolved theme.
+174c181,182
+<  * Builds the initial password-field key state.
+---
+>  * Builds the initial password-field reducer state — the text-field state, plus the mask glyph each
+>  * typed character renders as.
+209,211c217,220
+<  * Creates the SSE prompt {@link PromptClientInterface} BRIDGE — it connects to a remote broker's SSE
+<  * endpoint, dispatches each received form to a local {@link import('./types.js').TerminalInterface},
+<  * and POSTs the answer back. Universal — `fetch` / SSE are web-standard.
+---
+>  * Creates the SSE prompt {@link PromptClientInterface} bridge — it connects to a remote broker's
+>  * SSE endpoint, dispatches each received form to a local
+>  * {@link import('./types.js').TerminalInterface}, and POSTs the answer back. Universal — `fetch`
+>  * and SSE are web standards.
+256c265,266
+<  * Builds the initial select-field key state.
+---
+>  * Builds the initial select-field reducer state — the offered choices, with the focus pre-placed on
+>  * the declared default.
+266,268c276,278
+<  * Creates the multi-endpoint {@link TerminalManager} — a named registry of
+<  * {@link PromptInterface} brokers so several parties can `ask` prompts of each other by name,
+<  * with a transitive DEADLOCK check across every in-flight ask.
+---
+>  * Creates the multi-endpoint {@link TerminalManager} — a named registry of {@link PromptInterface}
+>  * brokers so several parties can `ask` forms of each other by name, with a transitive cycle check
+>  * that refuses `DEADLOCK` across every in-flight ask.
+299,302c309,313
+<  * Implements a {@link TerminalStoreInterface} backed by one table of the `databases` layer — an endpoint's
+<  * durable CONFIG state IS a row, so persistence reduces to keyed point-access (`get` / `set` /
+<  * `delete`) over a {@link TableInterface}, the driver-pluggable twin of the plain-`Map`
+<  * {@link import('./MemoryTerminalStore.js').MemoryTerminalStore}.
+---
+>  * Implements a {@link TerminalStoreInterface} backed by one table of the `databases` layer — an
+>  * endpoint's durable config state is a row, so persistence reduces to keyed point-access (`get` /
+>  * `set` / `delete`) over a {@link TableInterface}, the driver-pluggable twin of the plain-`Map`
+>  * {@link import('./MemoryTerminalStore.js').MemoryTerminalStore}. A stored `snapshot` is narrowed
+>  * with {@link import('../validators.js').isTerminalSnapshot} on read.
+395c406
+< /** Holds how long (ms) the {@link import('./types.js').PromptInterface} broker parks an unanswered prompt before it expires — 5 minutes. */
+---
+> /** Holds how long (ms) the {@link import('./types.js').PromptInterface} broker parks an unanswered form before it expires — 5 minutes. */
+418,420c429,432
+<  * Applies a single line-editing {@link KeyEvent} to a text buffer — the editing shared by input /
+<  * password / editor. A printable key appends its character; `backspace` drops the last character;
+<  * `space` appends a space; ctrl-u clears the line.
+---
+>  * Applies a single line-editing {@link KeyEvent} to a text buffer — the editing shared by input,
+>  * password, and editor. A printable key appends its character; `backspace` drops the last
+>  * character; `space` appends a space; ctrl-u clears the line; a key that edits nothing returns
+>  * `undefined`.
+477c489,492
+< /** Names the auth-token request header the {@link import('./types.js').PromptClientInterface} sends. */
+---
+> /**
+>  * Names the auth-token request header the {@link import('./types.js').PromptClientInterface} sends
+>  * when a `token` is configured — `x-orkestrel-token`.
+>  */
+512,513c527,530
+<  * Checks whether `url` is an INSECURE remote endpoint — a plain `http://` URL whose host is NOT a
+<  * loopback address. Pure string parsing (no `URL` global), so it stays total on malformed input.
+---
+>  * Checks whether `url` is an insecure remote endpoint — a plain `http://` URL whose host is not a
+>  * loopback address. Pure string parsing (no `URL` global), so it stays total on malformed input;
+>  * the {@link import('./PromptClient.js').PromptClient} warns once when a `token` would cross such
+>  * an endpoint in cleartext.
+533c550,551
+<  * Narrows an unknown wire value to a {@link PendingForm} envelope.
+---
+>  * Narrows an unknown wire value to a {@link PendingForm} envelope — the envelope alone, because the
+>  * form package's `parseForm` owns the schema payload.
+553,554c571,572
+<  * Checks whether a single character is a printable (non-control) character — used by
+<  * {@link parseKey}'s char fallback.
+---
+>  * Checks whether a single character is printable — the fallback test {@link parseKey} applies after
+>  * the control bytes and the escape sequences, so the C0 controls and DEL are excluded.
+562c580
+<  * Narrows an unknown caught value to a {@link TerminalError}.
+---
+>  * Narrows an unknown caught value to a {@link TerminalError}, so a caller can branch on its `code`.
+581,582c599,600
+<  * Narrows an unknown value to a {@link TerminalSnapshot} — the read boundary a store applies to an
+<  * untrusted persisted row.
+---
+>  * Narrows an unknown value to a {@link TerminalSnapshot} — a non-empty `id` and an optional numeric
+>  * `timeout`, the read boundary a store applies to an untrusted persisted row.
+590c608,609
+<  * Narrows an unknown value to a transport-neutral {@link WireEvent}.
+---
+>  * Narrows an unknown value to a transport-neutral {@link WireEvent} — the guard a consumer's own
+>  * transport applies to an inbound frame.
+632,634c651,654
+<  * {@link TerminalSnapshot}s keyed by endpoint id, the DEFAULT store
+<  * {@link import('../factories.js').createMemoryTerminalStore} builds. The EXACT twin of
+<  * {@link import('./DatabaseTerminalStore.js').DatabaseTerminalStore}.
+---
+>  * {@link TerminalSnapshot} records keyed by endpoint id, the default store
+>  * {@link import('../factories.js').createMemoryTerminalStore} builds and the exact twin of
+>  * {@link import('./DatabaseTerminalStore.js').DatabaseTerminalStore}. It carries no idle expiry and
+>  * no eviction.
+695c715
+<  * `form` is the AUTHORITATIVE form the caller parked, not a copy: an answer fills and submits this
+---
+>  * `form` is the authoritative form the caller parked, not a copy: an answer fills and submits this
+701a722
+>     /** Lists every parked record (`pending()`), or looks one up by id (`pending(id)`). */
+711c732
+<  * `from` and `to` are the attribution edge, set ONLY by a {@link TerminalManagerInterface}: which
+---
+>  * `from` and `to` are the attribution edge, set only by a {@link TerminalManagerInterface}: which
+721,723c742,744
+<  * read as UTF-8; the resulting string is matched against the known control bytes and the CRLF
+<  * pair ({@link CONTROL_NAMES}) and escape sequences ({@link SEQUENCE_NAMES}), falling back to a
+<  * single printable character. An unrecognized sequence carries NO `name`, with the raw `sequence`
+---
+>  * read as UTF-8; the resulting string is matched against the known control bytes and the CRLF pair
+>  * ({@link CONTROL_NAMES}) and escape sequences ({@link SEQUENCE_NAMES}), falling back to a single
+>  * printable character. An unrecognized sequence carries no `name`, with the raw `sequence`
+730c751
+<  * - **Escape sequence.** A multi-byte ESC sequence (`up` / `down` / `left` / `right` in BOTH the
+---
+>  * - **Escape sequence.** A multi-byte ESC sequence (`up` / `down` / `left` / `right` in both the
+772,773c793,794
+<  * Represents one form PARKED by the broker — an id-keyed, wire-safe record of a live form awaiting a remote
+<  * answer. The value a `pending` listener receives and the broker serializes over SSE to a
+---
+>  * Represents one form parked by the broker — an id-keyed, wire-safe record of a live form awaiting
+>  * a remote answer. The value a `pending` listener receives and the broker serializes over SSE to a
+798,800c819,821
+<  * Names the lifecycle status of a parked {@link PendingForm} — where the TICKET stands, which is not
+<  * where the form stands. A ticket is `pending` until somebody answers it; the form it carries has
+<  * its own status, and the two are separate facts about separate entities.
+---
+>  * Names the lifecycle status of a parked {@link PendingForm} — where the ticket stands, which is
+>  * not where the form stands. A ticket is `pending` until somebody answers it; the form it carries
+>  * has its own status, and each is a separate fact about a separate entity.
+810,811c831,833
+<  * Implements the headless form broker. It parks live forms, exposes their serialized schemas, and applies
+<  * remote answers to the authoritative form.
+---
+>  * Implements the headless form broker. It parks live forms, exposes their serialized schemas,
+>  * applies remote answers to the authoritative form, and abandons a parked form on timeout, release,
+>  * or teardown.
+844,845c866,868
+<  * Holds the default glyphs {@link DEFAULT_PROMPT_THEME} assembles its `icons` from. Read only when
+<  * the default theme is assembled; a view reads its resolved theme and never this constant. Frozen.
+---
+>  * Holds the terminal-owned glyphs {@link DEFAULT_PROMPT_THEME} assembles its `icons` from, beside
+>  * the console module's own success and error marks. Read only when the default theme is assembled;
+>  * a view reads its resolved theme and never this constant. Frozen.
+870,871c893,895
+<  * Implements the SSE form bridge. It ingests serialized forms from a remote broker, renders them through a
+<  * local terminal, and posts answers back without blocking the event stream.
+---
+>  * Implements the SSE form bridge. It ingests serialized forms from a remote broker without waiting
+>  * on a render, drives one form at a time through a local terminal, posts each answer back, and asks
+>  * again when the authoritative form refuses one.
+883,884c907,909
+<  *   just submitted, applies every {@link FieldError} through `invalidate`, and asks again. No retry
+<  *   counter truncates the loop; acceptance, expiry, and the broker's own teardown are its bounds.
+---
+>  *   the refused attempt submitted, applies every {@link FieldError} through `invalidate`, and asks
+>  *   again. No retry counter truncates the loop; acceptance, expiry, and the broker's own teardown
+>  *   are its bounds.
+927,930c952,955
+<  * Declares the SSE form BRIDGE — the client-side counterpart to {@link PromptInterface}. It receives
+<  * serialized {@link PendingForm} records from a remote broker, rebuilds each schema locally, drives
+<  * it through a {@link TerminalInterface}, and POSTs the answer back, so a human at this machine
+<  * answers forms a broker parked elsewhere.
+---
+>  * Declares the SSE form bridge — the client-side counterpart to {@link PromptInterface}. It
+>  * receives serialized {@link PendingForm} records from a remote broker, rebuilds each schema
+>  * locally, drives it through a {@link TerminalInterface}, and POSTs the answer back, so a human at
+>  * this machine answers forms a broker parked elsewhere.
+943c968
+<  * - **`connected`** reflects whether the stream is currently open.
+---
+>  * - **`connected`** reflects whether the stream is open.
+945a971
+>     /** Holds the typed emitter every client event is published on. */
+946a973
+>     /** Holds the remote broker's SSE endpoint this client reads from and answers to. */
+947a975
+>     /** Reports whether the SSE stream is open. */
+948a977,980
+>     /**
+>      * Opens the stream and pumps it, queueing each received form for the local terminal; reconnects
+>      * on the `delay` backoff.
+>      */
+949a982,985
+>     /**
+>      * Stops the current connection and the reconnect loop. An active local render continues, and a
+>      * later `connect()` can restart the stream.
+>      */
+950a987,990
+>     /**
+>      * Tears the client down permanently — disconnects, drops the queue, abandons the active local
+>      * form, and destroys the emitter.
+>      */
+960,961c1000,1001
+<  * - `terminal` — the LOCAL {@link TerminalInterface} each remote form is driven through, so a human
+<  *   at THIS machine answers a form parked elsewhere.
+---
+>  * - `terminal` — the local {@link TerminalInterface} each remote form is driven through, so a human
+>  *   at this machine answers a form parked elsewhere.
+994a1035,1037
+>     /**
+>      * Reports an accepted answer, carrying the parked form id and settled values.
+>      */
+1013,1016c1056,1059
+<  * Declares the headless form BROKER — parks a live form until somebody elsewhere answers it. The headless
+<  * arm of the local-TTY / headless / remote trio: there is no terminal here, so a transport forwards
+<  * each `pending` record to whoever can answer, and {@link answer} drives the parked form to
+<  * settlement.
+---
+>  * Declares the headless form broker — parks a live form until somebody elsewhere answers it. The
+>  * headless arm of the local-TTY, headless, and remote trio: there is no terminal here, so a
+>  * transport forwards each `pending` record to whoever can answer, and {@link answer} drives the
+>  * parked form to settlement.
+1022c1065
+<  * - **The parked form is authoritative.** {@link answer} fills and submits THAT form, so every rule
+---
+>  * - **The parked form is authoritative.** {@link answer} fills and submits that form, so every rule
+1042a1086
+>     /** Holds the typed emitter every broker event is published on. */
+1043a1088
+>     /** Reports how many forms this broker holds parked. */
+1044a1090,1093
+>     /**
+>      * Parks a live form, mints its id, emits `pending`, and arms the expiry deadline. Returns the id;
+>      * the caller already holds the promise.
+>      */
+1045a1095
+>     /** Lists every parked record (`pending()`), or looks one up by id (`pending(id)`). */
+1047a1098,1101
+>     /**
+>      * Fills and submits the authoritative parked form. Accepted, it settles and the record is
+>      * dropped; refused, the form stays parked.
+>      */
+1048a1103,1106
+>     /**
+>      * Releases a batch (`stop(ids)`, the array overload declared first), one id, or every parked
+>      * form. The broker stays usable.
+>      */
+1051a1110,1113
+>     /**
+>      * Tears the broker down — abandons every parked form, cancels every deadline, then destroys the
+>      * emitter. Idempotent.
+>      */
+1080,1082c1142,1144
+<  * Names one styling slot a rendered field paints through — the semantic axis of a {@link PromptTheme}. A
+<  * role says what a fragment MEANS; the theme decides what that meaning looks like, so a consumer
+<  * re-maps styled output by naming roles rather than reimplementing a renderer.
+---
+>  * Names one styling slot a rendered field paints through — the semantic axis of a
+>  * {@link PromptTheme}. A role says what a fragment means; the theme decides what that meaning looks
+>  * like, so a consumer re-maps styled output by naming roles rather than reimplementing a renderer.
+1110,1112c1172,1175
+<  * Represents the result of one reducer step — the next `state`, the rendered `view`, the `status`, and, on
+<  * `submit`, the resolved `value`. The whole contract between a pure reducer and the impure driver:
+<  * the driver applies the next `state`, writes the `view`, and reads `value` on `submit`.
+---
+>  * Represents the result of one reducer step — the next `state`, the rendered `view`, the `status`,
+>  * and, on `submit` alone, the candidate `value`. The whole contract between a pure reducer and the
+>  * impure driver: the driver applies the next `state`, writes the `view`, and reads `value` on
+>  * `submit`.
+1123c1186
+<  * - `value` — present ONLY on a `submit` step.
+---
+>  * - `value` — present only on a `submit` step.
+1133,1135c1196,1198
+<  * Represents a resolved PRESENTATION — the glyph for every {@link PromptIcon} and the console {@link Style}
+<  * for every {@link PromptRole}. Plain JSON data with no functions, so it crosses the wire with the
+<  * form it decorates. Built by {@link import('./helpers.js').createPromptTheme}.
+---
+>  * Represents a resolved presentation — the glyph for every {@link PromptIcon} and the console
+>  * {@link Style} for every {@link PromptRole}. Plain JSON data with no functions, so it crosses the
+>  * wire with the form it decorates. Built by {@link import('./helpers.js').createPromptTheme}.
+1150,1151c1213,1214
+<  * Represents the PARTIAL {@link PromptTheme} an option bag carries — every icon and every role is optional,
+<  * and {@link import('./helpers.js').createPromptTheme} merges what is supplied over
+---
+>  * Represents the partial {@link PromptTheme} an option bag carries — every icon and every role is
+>  * optional, and {@link import('./helpers.js').createPromptTheme} merges what is supplied over
+1186,1187c1249,1250
+<  * current line and starts a fresh one; ctrl-d FINISHES (joining all lines, falling back to the
+<  * default when empty); ctrl-c cancels. The form validates the candidate after the driver fills it.
+---
+>  * current line and starts a fresh one; ctrl-d finishes, joining every line and falling back to the
+>  * default when empty; ctrl-c cancels. The form validates the candidate after the driver fills it.
+1219c1282
+<  * reducer. `up` / `down` (and `k` / `j`) move the focus, WRAPPING at the ends; return submits the
+---
+>  * reducer. `up` / `down` (and `k` / `j`) move the focus, wrapping at the ends; return submits the
+1230c1293,1294
+<  * Renders a checkbox-field key state as a multi-line styled view.
+---
+>  * Renders a checkbox-field reducer state as a multi-line styled view — one box per choice, and the
+>  * selected count beneath them.
+1238c1302,1303
+<  * Renders a confirm-field key state as a styled view. The selected role paints the default letter.
+---
+>  * Renders a confirm-field reducer state as a styled view — the header and the yes/no group, with
+>  * the default letter capitalized and painted by the `selected` role.
+1246c1311,1312
+<  * Renders an editor-field key state as a multi-line styled view with its finish hint.
+---
+>  * Renders an editor-field reducer state as a multi-line styled view — the finish hint, the
+>  * committed lines, and the line in progress.
+1254c1320,1321
+<  * Renders the styled failure line (`✖ message`) a form driver appends for a refused field.
+---
+>  * Renders the styled failure line (`✖ message`) a form driver writes for each refused field before
+>  * it asks that field again.
+1276c1343,1344
+<  * Renders a text-field key state as a styled view.
+---
+>  * Renders a text-field reducer state as a styled view — the header, the pointer, and the typed
+>  * value, or the default shown as a hint while nothing is typed.
+1284c1352,1353
+<  * Renders a password-field key state as a styled view.
+---
+>  * Renders a password-field reducer state as a styled view, with the value replaced by the mask
+>  * repeated so the secret is never echoed.
+1303c1372,1373
+<  * Renders a select-field key state as a multi-line styled view.
+---
+>  * Renders a select-field reducer state as a multi-line styled view — one row per choice, with the
+>  * focused row marked and its help shown.
+1339c1409,1410
+<  * Sanitizes every terminal-readable string in a parsed form schema.
+---
+>  * Sanitizes every terminal-readable string in a parsed form schema, keeping every identity and
+>  * answer string verbatim and dropping field metadata.
+1371c1442,1443
+<  * Represents the immutable state a select field's reducer carries.
+---
+>  * Represents the immutable state a select field's reducer carries — the choices the list offers and
+>  * the index the cursor sits on.
+1388,1391c1460,1464
+<  * Holds the exact escape SEQUENCE → canonical key NAME table {@link import('./helpers.js').parseKey}
+<  * consults for the navigation / editing keys. Covers BOTH the CSI form (`ESC[A`…) and the SS3
+<  * form (`ESCOA`…) of the arrows, plus the `home` / `end` / `delete` CSI sequences (with
+<  * their numeric-tilde variants). The source of truth for the multi-byte key decode; frozen.
+---
+>  * Holds the exact escape sequence to canonical key name table
+>  * {@link import('./helpers.js').parseKey} consults for the navigation and editing keys. Covers the
+>  * CSI form (`ESC[A`…) and the SS3 form (`ESCOA`…) of the arrows, plus the `home` / `end` / `delete`
+>  * CSI sequences with their numeric-tilde variants. The source of truth for the multi-byte key
+>  * decode; frozen.
+1402c1475,1476
+<  * Serializes the {@link WireEvent} a broker or manager sends when it is going away.
+---
+>  * Serializes the `destroy` {@link WireEvent} a broker or manager sends when it is going away, which
+>  * carries no payload.
+1409c1483,1484
+<  * Serializes a parked prompt's expiry or release into a {@link WireEvent}.
+---
+>  * Serializes a parked form's expiry or release into an `expire` {@link WireEvent}, whose `data` is
+>  * the JSON `{ id }` payload.
+1417c1492,1493
+<  * Serializes a parked {@link PendingForm} into a {@link WireEvent}.
+---
+>  * Serializes a parked {@link PendingForm} into a `pending` {@link WireEvent}, whose frame `id` is
+>  * the form's own id.
+1436,1437c1512,1514
+<  * Holds the SSE `event:` names the broker emits and the {@link import('./types.js').PromptClientInterface}
+<  * dispatches on. Frozen; the source of truth for the wire event vocabulary.
+---
+>  * Holds the SSE `event:` names the broker emits and the
+>  * {@link import('./types.js').PromptClientInterface} dispatches on — `pending`, `expire`, and
+>  * `destroy`. Frozen; the source of truth for the wire event vocabulary.
+1441c1518
+<  * - `expire` — an `{ id }` payload: the broker expired or released a parked prompt (the client drops it).
+---
+>  * - `expire` — an `{ id }` payload: the broker expired or released a parked form (the client drops it).
+1513,1515c1590,1592
+<  * Declares the contract for asking a form of a human at a keyboard — one method, because a form is one
+<  * question however many fields it holds. The server `Terminal` implements it against a real TTY;
+<  * a {@link PromptClientInterface} holds one to answer forms parked elsewhere.
+---
+>  * Declares the contract for asking a form of a human at a keyboard — `ask` and nothing beside it,
+>  * because a form is one question however many fields it holds. The server `Terminal` implements it
+>  * against a real TTY; a {@link PromptClientInterface} holds one to answer forms parked elsewhere.
+1521c1598
+<  * interactive driver is the one exception: it rejects THIS promise with a `TerminalError` coded
+---
+>  * interactive driver is the one exception: it rejects this promise with a `TerminalError` coded
+1528a1606,1609
+>     /**
+>      * Walks the given form to settlement and resolves its values. The Contract section names the
+>      * ctrl-c exception.
+>      */
+1533,1535c1614,1616
+<  * Registers named {@link PromptInterface} brokers (one per endpoint), so several parties can
+<  * `ask` forms of each other by NAME with a `from` → `to` attribution edge on every parked form,
+<  * and a transitive DEADLOCK check across all in-flight asks.
+---
+>  * Registers named {@link PromptInterface} brokers, one per endpoint, so several parties can `ask`
+>  * forms of each other by name with a `from` → `to` attribution edge on every parked form, and
+>  * refuses `DEADLOCK` on a transitive cycle across every in-flight ask.
+1539c1620
+<  *   EXISTING broker UNCHANGED — idempotent, never clobbers a live/parked endpoint). Every mounted
+---
+>  *   existing broker unchanged — idempotent, never clobbers a live/parked endpoint). Every mounted
+1542c1623
+<  * - **`ask`.** The target must already be mounted via {@link add} — `ask` never auto-adds it;
+---
+>  * - **`ask`.** The target must already be mounted through {@link add} — `ask` never auto-adds it;
+1544c1625
+<  *   `from → to` would close a cycle over the CURRENT in-flight edge set (walked transitively);
+---
+>  *   `from → to` would close a cycle over the current in-flight edge set (walked transitively);
+1550c1631
+<  * - **Removal.** `remove` drops one endpoint, a batch (the array overload declared FIRST), or every
+---
+>  * - **Removal.** `remove` drops one endpoint, a batch (the array overload declared first), or every
+1585,1586c1666,1667
+<  * Declares the manager's event map — the name-attributed re-emission of every mounted broker's events, so a
+<  * caller subscribes once for ALL endpoints instead of once per broker.
+---
+>  * Declares the manager's event map — the name-attributed re-emission of every mounted broker's
+>  * events, so a caller subscribes once for every endpoint instead of once per broker.
+1601,1602c1682,1683
+<  * parties (agents, tools, humans) can ask forms of each other BY NAME, attributed with a
+<  * `from` → `to` edge on every parked record.
+---
+>  * parties (agents, tools, humans) can ask forms of each other by name, attributed with a `from` →
+>  * `to` edge on every parked record.
+1619c1700
+<  * - **Batch `remove`.** The array overload is declared FIRST: `remove(names)` removes every listed
+---
+>  * - **Batch `remove`.** The array overload is declared first: `remove(names)` removes every listed
+1624a1706,1708
+>     /**
+>      * Holds the typed emitter every mounted broker's events are re-published on, attributed by name.
+>      */
+1625a1710
+>     /** Reports how many endpoints are mounted. */
+1626a1712
+>     /** Looks up one endpoint's broker by name. */
+1627a1714
+>     /** Lists every mounted broker, in insertion order. */
+1628a1716,1719
+>     /**
+>      * Mints, or returns unchanged, the broker for `name`. Idempotent; it never clobbers a live
+>      * endpoint.
+>      */
+1629a1721,1724
+>     /**
+>      * Parks `form` from `from` to `to` and resolves with the settled values. Rejects `TARGET` or
+>      * `DEADLOCK`.
+>      */
+1630a1726,1728
+>     /**
+>      * Lists every endpoint's parked records (`pending()`), or scopes to one endpoint (`pending(to)`).
+>      */
+1632a1731,1734
+>     /**
+>      * Routes an answer to the named endpoint's broker; `{ reason: 'target' }` when no endpoint
+>      * carries that name.
+>      */
+1633a1736,1739
+>     /**
+>      * Returns the live broker for `name`, or restores an empty one from the `store`. Parked forms are
+>      * never resurrected.
+>      */
+1634a1741
+>     /** Persists an endpoint's config snapshot; false with no store, or an unknown name. */
+1635a1743,1746
+>     /**
+>      * Removes a batch (`remove(names)`, the array overload declared first, true only when every name
+>      * was mounted), one endpoint, or every endpoint.
+>      */
+1638a1750
+>     /** Tears down every broker, then the manager's own emitter. */
+1662,1664c1774,1776
+<  * Represents one endpoint's persisted CONFIG snapshot — `id` is the endpoint name and `timeout` its configured
+<  * default. Parked forms are process-bound and are never resurrected, so `open` always restores an
+<  * EMPTY broker.
+---
+>  * Represents one endpoint's persisted config snapshot — `id` is the endpoint name and `timeout` its
+>  * configured default. Parked forms are process-bound and are never resurrected, so `open` always
+>  * restores an empty broker.
+1672,1674c1784,1786
+<  * Represents one opaque persisted row — the shape a `TableInterface<TerminalSnapshotRow>`-backed store reads
+<  * and writes. `snapshot` is narrowed with {@link import('./validators.js').isTerminalSnapshot} on
+<  * read.
+---
+>  * Represents one opaque persisted row — the shape a table-backed store reads and writes. The store
+>  * is a `TableInterface<TerminalSnapshotRow>`, and `snapshot` is narrowed with
+>  * {@link import('./validators.js').isTerminalSnapshot} on read.
+1685a1798
+>     /** Resolves the snapshot stored for `id`, or `undefined` when none is. */
+1686a1800
+>     /** Inserts or replaces under the snapshot's own `id`; there is no id argument. */
+1687a1802
+>     /** Drops a snapshot by id. An absent id is a no-op, never a throw. */
+1705c1820
+<  * list.
+---
+>  * list; the primitive {@link reduceCheckbox} calls.
+diff -r -w -B '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-terminal-final-registry-visit-pack/baseline/package/dist/src/core/index.js /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-terminal-final-registry-visit-pack/extract/package/dist/src/core/index.js
+38,41c38,42
+< * Holds the exact escape SEQUENCE → canonical key NAME table {@link import('./helpers.js').parseKey}
+< * consults for the navigation / editing keys. Covers BOTH the CSI form (`ESC[A`…) and the SS3
+< * form (`ESCOA`…) of the arrows, plus the `home` / `end` / `delete` CSI sequences (with
+< * their numeric-tilde variants). The source of truth for the multi-byte key decode; frozen.
+---
+> * Holds the exact escape sequence to canonical key name table
+> * {@link import('./helpers.js').parseKey} consults for the navigation and editing keys. Covers the
+> * CSI form (`ESC[A`…) and the SS3 form (`ESCOA`…) of the arrows, plus the `home` / `end` / `delete`
+> * CSI sequences with their numeric-tilde variants. The source of truth for the multi-byte key
+> * decode; frozen.
+67,70c68,71
+< * Holds the control BYTE (or CRLF pair) → key descriptor table {@link import('./helpers.js').parseKey}
+< * consults for the one-byte keys and the two-byte CRLF Enter chunk. Each entry carries the
+< * canonical `name` and whether it is a `ctrl` combination. The source of truth for that decode;
+< * frozen.
+---
+> * Holds the control byte (or CRLF pair) to key descriptor table
+> * {@link import('./helpers.js').parseKey} consults for the one-byte keys and the two-byte CRLF
+> * Enter chunk. Each entry carries the canonical `name` and whether it is a `ctrl` combination. The
+> * source of truth for that decode; frozen.
+137,138c138,140
+< * Holds the default glyphs {@link DEFAULT_PROMPT_THEME} assembles its `icons` from. Read only when
+< * the default theme is assembled; a view reads its resolved theme and never this constant. Frozen.
+---
+> * Holds the terminal-owned glyphs {@link DEFAULT_PROMPT_THEME} assembles its `icons` from, beside
+> * the console module's own success and error marks. Read only when the default theme is assembled;
+> * a view reads its resolved theme and never this constant. Frozen.
+227c229
+< /** Holds how long (ms) the {@link import('./types.js').PromptInterface} broker parks an unanswered prompt before it expires — 5 minutes. */
+---
+> /** Holds how long (ms) the {@link import('./types.js').PromptInterface} broker parks an unanswered form before it expires — 5 minutes. */
+232,233c234,236
+< * Holds the SSE `event:` names the broker emits and the {@link import('./types.js').PromptClientInterface}
+< * dispatches on. Frozen; the source of truth for the wire event vocabulary.
+---
+> * Holds the SSE `event:` names the broker emits and the
+> * {@link import('./types.js').PromptClientInterface} dispatches on — `pending`, `expire`, and
+> * `destroy`. Frozen; the source of truth for the wire event vocabulary.
+237c240
+< * - `expire` — an `{ id }` payload: the broker expired or released a parked prompt (the client drops it).
+---
+> * - `expire` — an `{ id }` payload: the broker expired or released a parked form (the client drops it).
+245c248,251
+< /** Names the auth-token request header the {@link import('./types.js').PromptClientInterface} sends. */
+---
+> /**
+> * Names the auth-token request header the {@link import('./types.js').PromptClientInterface} sends
+> * when a `token` is configured — `x-orkestrel-token`.
+> */
+247c253
+< /** Names the `Accept` header value that opens the broker's SSE stream. */
+---
+> /** Names the `Accept` header value that opens the broker's SSE stream — `text/event-stream`. */
+289c295
+< * Narrows an unknown caught value to a {@link TerminalError}.
+---
+> * Narrows an unknown caught value to a {@link TerminalError}, so a caller can branch on its `code`.
+318c324,325
+< * Narrows an unknown wire value to a {@link PendingForm} envelope.
+---
+> * Narrows an unknown wire value to a {@link PendingForm} envelope — the envelope alone, because the
+> * form package's `parseForm` owns the schema payload.
+338c345,346
+< * Narrows an unknown value to a transport-neutral {@link WireEvent}.
+---
+> * Narrows an unknown value to a transport-neutral {@link WireEvent} — the guard a consumer's own
+> * transport applies to an inbound frame.
+349,350c357,358
+< * Narrows an unknown value to a {@link TerminalSnapshot} — the read boundary a store applies to an
+< * untrusted persisted row.
+---
+> * Narrows an unknown value to a {@link TerminalSnapshot} — a non-empty `id` and an optional numeric
+> * `timeout`, the read boundary a store applies to an untrusted persisted row.
+363,365c371,373
+< * read as UTF-8; the resulting string is matched against the known control bytes and the CRLF
+< * pair ({@link CONTROL_NAMES}) and escape sequences ({@link SEQUENCE_NAMES}), falling back to a
+< * single printable character. An unrecognized sequence carries NO `name`, with the raw `sequence`
+---
+> * read as UTF-8; the resulting string is matched against the known control bytes and the CRLF pair
+> * ({@link CONTROL_NAMES}) and escape sequences ({@link SEQUENCE_NAMES}), falling back to a single
+> * printable character. An unrecognized sequence carries no `name`, with the raw `sequence`
+372c380
+< * - **Escape sequence.** A multi-byte ESC sequence (`up` / `down` / `left` / `right` in BOTH the
+---
+> * - **Escape sequence.** A multi-byte ESC sequence (`up` / `down` / `left` / `right` in both the
+427,428c435,436
+< * Checks whether a single character is a printable (non-control) character — used by
+< * {@link parseKey}'s char fallback.
+---
+> * Checks whether a single character is printable — the fallback test {@link parseKey} applies after
+> * the control bytes and the escape sequences, so the C0 controls and DEL are excluded.
+490c498,499
+< * Sanitizes every terminal-readable string in a parsed form schema.
+---
+> * Sanitizes every terminal-readable string in a parsed form schema, keeping every identity and
+> * answer string verbatim and dropping field metadata.
+641c650,651
+< * Renders the styled failure line (`✖ message`) a form driver appends for a refused field.
+---
+> * Renders the styled failure line (`✖ message`) a form driver writes for each refused field before
+> * it asks that field again.
+652c662,663
+< * Builds the initial text-field key state.
+---
+> * Builds the initial text-field reducer state — the sanitized label, the declared default, the
+> * styler, and the resolved theme.
+669c680,681
+< * Renders a text-field key state as a styled view.
+---
+> * Renders a text-field reducer state as a styled view — the header, the pointer, and the typed
+> * value, or the default shown as a hint while nothing is typed.
+724c736,737
+< * Builds the initial password-field key state.
+---
+> * Builds the initial password-field reducer state — the text-field state, plus the mask glyph each
+> * typed character renders as.
+741c754,755
+< * Renders a password-field key state as a styled view.
+---
+> * Renders a password-field reducer state as a styled view, with the value replaced by the mask
+> * repeated so the secret is never echoed.
+788c802,803
+< * Builds the initial confirm-field key state.
+---
+> * Builds the initial confirm-field reducer state — the sanitized label and the declared default
+> * answer.
+804c819,820
+< * Renders a confirm-field key state as a styled view. The selected role paints the default letter.
+---
+> * Renders a confirm-field reducer state as a styled view — the header and the yes/no group, with
+> * the default letter capitalized and painted by the `selected` role.
+847c863,864
+< * Builds the initial select-field key state.
+---
+> * Builds the initial select-field reducer state — the offered choices, with the focus pre-placed on
+> * the declared default.
+866c883,884
+< * Renders a select-field key state as a multi-line styled view.
+---
+> * Renders a select-field reducer state as a multi-line styled view — one row per choice, with the
+> * focused row marked and its help shown.
+880c898
+< * reducer. `up` / `down` (and `k` / `j`) move the focus, WRAPPING at the ends; return submits the
+---
+> * reducer. `up` / `down` (and `k` / `j`) move the focus, wrapping at the ends; return submits the
+939c957,958
+< * Builds the initial checkbox-field key state.
+---
+> * Builds the initial checkbox-field reducer state — the offered choices, with every value in the
+> * field's `default` list pre-checked.
+962c981,982
+< * Renders a checkbox-field key state as a multi-line styled view.
+---
+> * Renders a checkbox-field reducer state as a multi-line styled view — one box per choice, and the
+> * selected count beneath them.
+1050c1070
+< * list.
+---
+> * list; the primitive {@link reduceCheckbox} calls.
+1060c1080,1081
+< * Builds the initial editor-field key state.
+---
+> * Builds the initial editor-field reducer state — the committed lines empty, and the declared
+> * default held for a finish with nothing typed.
+1078c1099,1100
+< * Renders an editor-field key state as a multi-line styled view with its finish hint.
+---
+> * Renders an editor-field reducer state as a multi-line styled view — the finish hint, the
+> * committed lines, and the line in progress.
+1091,1092c1113,1114
+< * current line and starts a fresh one; ctrl-d FINISHES (joining all lines, falling back to the
+< * default when empty); ctrl-c cancels. The form validates the candidate after the driver fills it.
+---
+> * current line and starts a fresh one; ctrl-d finishes, joining every line and falling back to the
+> * default when empty; ctrl-c cancels. The form validates the candidate after the driver fills it.
+1144,1146c1166,1169
+< * Applies a single line-editing {@link KeyEvent} to a text buffer — the editing shared by input /
+< * password / editor. A printable key appends its character; `backspace` drops the last character;
+< * `space` appends a space; ctrl-u clears the line.
+---
+> * Applies a single line-editing {@link KeyEvent} to a text buffer — the editing shared by input,
+> * password, and editor. A printable key appends its character; `backspace` drops the last
+> * character; `space` appends a space; ctrl-u clears the line; a key that edits nothing returns
+> * `undefined`.
+1197,1198c1220,1223
+< * Checks whether `url` is an INSECURE remote endpoint — a plain `http://` URL whose host is NOT a
+< * loopback address. Pure string parsing (no `URL` global), so it stays total on malformed input.
+---
+> * Checks whether `url` is an insecure remote endpoint — a plain `http://` URL whose host is not a
+> * loopback address. Pure string parsing (no `URL` global), so it stays total on malformed input;
+> * the {@link import('./PromptClient.js').PromptClient} warns once when a `token` would cross such
+> * an endpoint in cleartext.
+1225c1250,1251
+< * Serializes a parked {@link PendingForm} into a {@link WireEvent}.
+---
+> * Serializes a parked {@link PendingForm} into a `pending` {@link WireEvent}, whose frame `id` is
+> * the form's own id.
+1238c1264,1265
+< * Serializes a parked prompt's expiry or release into a {@link WireEvent}.
+---
+> * Serializes a parked form's expiry or release into an `expire` {@link WireEvent}, whose `data` is
+> * the JSON `{ id }` payload.
+1250c1277,1278
+< * Serializes the {@link WireEvent} a broker or manager sends when it is going away.
+---
+> * Serializes the `destroy` {@link WireEvent} a broker or manager sends when it is going away, which
+> * carries no payload.
+1263,1264c1291,1293
+< * Implements the headless form broker. It parks live forms, exposes their serialized schemas, and applies
+< * remote answers to the authoritative form.
+---
+> * Implements the headless form broker. It parks live forms, exposes their serialized schemas,
+> * applies remote answers to the authoritative form, and abandons a parked form on timeout, release,
+> * or teardown.
+1454,1455c1483,1485
+< * Implements the SSE form bridge. It ingests serialized forms from a remote broker, renders them through a
+< * local terminal, and posts answers back without blocking the event stream.
+---
+> * Implements the SSE form bridge. It ingests serialized forms from a remote broker without waiting
+> * on a render, drives one form at a time through a local terminal, posts each answer back, and asks
+> * again when the authoritative form refuses one.
+1467,1468c1497,1499
+< *   just submitted, applies every {@link FieldError} through `invalidate`, and asks again. No retry
+< *   counter truncates the loop; acceptance, expiry, and the broker's own teardown are its bounds.
+---
+> *   the refused attempt submitted, applies every {@link FieldError} through `invalidate`, and asks
+> *   again. No retry counter truncates the loop; acceptance, expiry, and the broker's own teardown
+> *   are its bounds.
+1759,1761c1790,1792
+< * Registers named {@link PromptInterface} brokers (one per endpoint), so several parties can
+< * `ask` forms of each other by NAME with a `from` → `to` attribution edge on every parked form,
+< * and a transitive DEADLOCK check across all in-flight asks.
+---
+> * Registers named {@link PromptInterface} brokers, one per endpoint, so several parties can `ask`
+> * forms of each other by name with a `from` → `to` attribution edge on every parked form, and
+> * refuses `DEADLOCK` on a transitive cycle across every in-flight ask.
+1765c1796
+< *   EXISTING broker UNCHANGED — idempotent, never clobbers a live/parked endpoint). Every mounted
+---
+> *   existing broker unchanged — idempotent, never clobbers a live/parked endpoint). Every mounted
+1768c1799
+< * - **`ask`.** The target must already be mounted via {@link add} — `ask` never auto-adds it;
+---
+> * - **`ask`.** The target must already be mounted through {@link add} — `ask` never auto-adds it;
+1770c1801
+< *   `from → to` would close a cycle over the CURRENT in-flight edge set (walked transitively);
+---
+> *   `from → to` would close a cycle over the current in-flight edge set (walked transitively);
+1776c1807
+< * - **Removal.** `remove` drops one endpoint, a batch (the array overload declared FIRST), or every
+---
+> * - **Removal.** `remove` drops one endpoint, a batch (the array overload declared first), or every
+2003,2005c2034,2037
+< * {@link TerminalSnapshot}s keyed by endpoint id, the DEFAULT store
+< * {@link import('../factories.js').createMemoryTerminalStore} builds. The EXACT twin of
+< * {@link import('./DatabaseTerminalStore.js').DatabaseTerminalStore}.
+---
+> * {@link TerminalSnapshot} records keyed by endpoint id, the default store
+> * {@link import('../factories.js').createMemoryTerminalStore} builds and the exact twin of
+> * {@link import('./DatabaseTerminalStore.js').DatabaseTerminalStore}. It carries no idle expiry and
+> * no eviction.
+2068,2071c2100,2104
+< * Implements a {@link TerminalStoreInterface} backed by one table of the `databases` layer — an endpoint's
+< * durable CONFIG state IS a row, so persistence reduces to keyed point-access (`get` / `set` /
+< * `delete`) over a {@link TableInterface}, the driver-pluggable twin of the plain-`Map`
+< * {@link import('./MemoryTerminalStore.js').MemoryTerminalStore}.
+---
+> * Implements a {@link TerminalStoreInterface} backed by one table of the `databases` layer — an
+> * endpoint's durable config state is a row, so persistence reduces to keyed point-access (`get` /
+> * `set` / `delete`) over a {@link TableInterface}, the driver-pluggable twin of the plain-`Map`
+> * {@link import('./MemoryTerminalStore.js').MemoryTerminalStore}. A stored `snapshot` is narrowed
+> * with {@link import('../validators.js').isTerminalSnapshot} on read.
+2185,2187c2218,2221
+< * Creates the SSE prompt {@link PromptClientInterface} BRIDGE — it connects to a remote broker's SSE
+< * endpoint, dispatches each received form to a local {@link import('./types.js').TerminalInterface},
+< * and POSTs the answer back. Universal — `fetch` / SSE are web-standard.
+---
+> * Creates the SSE prompt {@link PromptClientInterface} bridge — it connects to a remote broker's
+> * SSE endpoint, dispatches each received form to a local
+> * {@link import('./types.js').TerminalInterface}, and POSTs the answer back. Universal — `fetch`
+> * and SSE are web standards.
+2211,2213c2245,2247
+< * Creates the multi-endpoint {@link TerminalManager} — a named registry of
+< * {@link PromptInterface} brokers so several parties can `ask` prompts of each other by name,
+< * with a transitive DEADLOCK check across every in-flight ask.
+---
+> * Creates the multi-endpoint {@link TerminalManager} — a named registry of {@link PromptInterface}
+> * brokers so several parties can `ask` forms of each other by name, with a transitive cycle check
+> * that refuses `DEADLOCK` across every in-flight ask.
+2248c2282,2283
+< * snapshot as one opaque JSON column.
+---
+> * snapshot as one opaque JSON column. The default driver is an in-memory `@orkestrel/database`
+> * driver.
+diff -r -w -B '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-terminal-final-registry-visit-pack/baseline/package/dist/src/server/index.cjs /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-terminal-final-registry-visit-pack/extract/package/dist/src/server/index.cjs
+10,12c10,12
+< * Holds the cursor-UP sequence TEMPLATE (`ESC[{count}A`) — {@link import('./helpers.js').renderCursorUp}
+< * interpolates the `{count}` placeholder with the number of lines to climb. Kept as a template so
+< * the count stays out of the constant.
+---
+> * Holds the cursor-up sequence template (`ESC[{count}A`) —
+> * {@link import('./helpers.js').renderCursorUp} interpolates the `{count}` placeholder with the
+> * number of lines to climb. Kept as a template so the count stays out of the constant.
+23,25c23,25
+< * Erases from the cursor down to the end of the screen (`ESC[J`) — wipes the WHOLE previous (possibly
+< * multi-line `select` / `checkbox`) view in one write before the new view is rendered, so a redraw
+< * never leaves orphaned rows below.
+---
+> * Erases from the cursor down to the end of the screen (`ESC[J`) — wipes the whole previous view,
+> * which a `select` or `checkbox` can spread over several lines, in one write before the new view is
+> * rendered, so a redraw never leaves orphaned rows behind.
+57c57,60
+< /** Holds the lead on the line listing an open `select`'s offered values, which a typed answer may ignore. */
+---
+> /**
+> * Holds the lead on the line listing an open `select`'s offered values, which a typed answer can
+> * ignore.
+> */
+59c62,65
+< /** Holds the lead on the line listing the choices a `select` or `checkbox` shows but refuses, so a reader sees why one is missing from the list below. */
+---
+> /**
+> * Holds the lead on the line listing the choices a `select` or `checkbox` shows but refuses, so a
+> * reader sees why one is missing from the list it heads.
+> */
+73,76c79,82
+< * Checks whether `value` is a usable {@link InputStreamInterface} — a record with callable `on` / `off`
+< * `'data'` subscription methods. A total type guard: it NEVER throws and returns `false`
+< * for anything off-shape, so it narrows the one unavoidable input boundary (the real `process.stdin`,
+< * or a fake TTY a test injects) to the exact slice the driver reads — no `as`.
+---
+> * Checks whether `value` is a usable {@link InputStreamInterface} — a record with callable `on` /
+> * `off` `'data'` subscription methods. A total type guard: it never throws and returns `false` for
+> * anything off-shape, so it narrows the one unavoidable input boundary (the real `process.stdin`,
+> * or a fake TTY a test injects) to the exact slice the driver reads, never an assertion.
+81c87
+< * — a piped, non-TTY stream is still a valid input, just one the driver reads through the readline
+---
+> * — a piped, non-TTY stream is still a valid input, one the driver reads through the readline
+92,96c98,102
+< * checking for the callable `read` / `pipe` / `on` that `node:readline`'s `createInterface` requires
+< * as its `input`. The non-TTY fallback narrows the resolved input stream through this before handing
+< * it to readline (never an `as`), so a real piped `process.stdin` (or a `PassThrough` a test injects)
+< * crosses into the readline boundary honestly. Never throws; returns `false` for a minimal fake that
+< * isn't a full readable.
+---
+> * checking for the callable `read` / `pipe` / `on` that `node:readline`'s `createInterface`
+> * requires as its `input`. The non-TTY fallback narrows the resolved input stream through this
+> * before handing it to readline, never through an assertion, so a real piped `process.stdin` (or a
+> * `PassThrough` a test injects) crosses into the readline boundary honestly. Never throws; returns
+> * `false` for a minimal fake that isn't a full readable.
+105,109c111,115
+< * Checks whether an input stream can be driven in RAW mode — it both reports `isTTY === true` AND
+< * exposes a callable `setRawMode`. The {@link import('./Terminal.js').Terminal} probes this to choose its path:
+< * `true` ⇒ the interactive raw-mode prompts (arrow-key navigation, live re-render); `false` ⇒ the
+< * `node:readline` line-input fallback (a piped / non-terminal stream cannot enter raw mode). Total —
+< * never throws.
+---
+> * Checks whether an input stream can be driven in raw mode — it reports `isTTY === true` and
+> * exposes a callable `setRawMode`. The {@link import('./Terminal.js').Terminal} probes this to
+> * choose its path: true selects the interactive raw-mode fields, with arrow-key navigation and a
+> * live re-render; false selects the `node:readline` line-input fallback, because a piped or
+> * non-terminal stream cannot enter raw mode. Total — never throws.
+118,121c124,127
+< * Counts the terminal LINES a rendered prompt `view` occupies — one more than its newline count
+< * (a view with no newline is a single line; N newlines span N+1 lines). The basis of the in-place
+< * re-render: the driver records the line count of the view it just wrote so the next redraw knows how
+< * far up to move the cursor before overwriting. Total; an empty string is one (empty) line.
+---
+> * Counts the terminal lines a rendered prompt `view` occupies — one more than its newline count, so
+> * a view with no newline is a single line and a view with N newlines spans N+1 lines. The basis of
+> * the in-place re-render: the driver records the line count of the view it wrote so the next redraw
+> * knows how far up to move the cursor before overwriting. Total; an empty string is one empty line.
+132,135c138,141
+< * Returns the cursor-UP control sequence that moves the cursor up `count` lines (`ESC[{count}A`) — or the
+< * empty string when `count` is zero or negative (no movement needed, and `ESC[0A` is a wasted write).
+< * The pure step the in-place re-render uses to climb back over the previous view before clearing it.
+< * Total.
+---
+> * Returns the cursor-up control sequence that moves the cursor up `count` lines (`ESC[{count}A`),
+> * or the empty string when `count` is zero or negative, because no movement is needed and `ESC[0A`
+> * is a wasted write. The pure step the in-place re-render uses to climb back over the previous view
+> * before clearing it. Total.
+145,149c151,155
+< * Returns the full reposition-and-clear prefix to write BEFORE re-rendering a prompt view in place — given
+< * the line count of the PREVIOUS view, it moves the cursor up over those lines, returns it to column
+< * 0, and erases everything from there to the end of the screen, so the next view is drawn on a clean
+< * region (no orphaned rows from a taller previous view). Pure; the driver writes this immediately
+< * followed by the new view.
+---
+> * Returns the full reposition-and-clear prefix to write before re-rendering a prompt view in place
+> * — given the line count of the previous view, it moves the cursor up over those lines, returns it
+> * to column 0, and erases everything from there to the end of the screen, so the next view is drawn
+> * on a clean region and a taller previous view leaves no orphaned rows. Pure; the driver writes
+> * this immediately followed by the new view.
+152,154c158,160
+< * For the FIRST render `previousLines` is `1` (the cursor sits on the line the prompt opened on) so
+< * the prefix is just a carriage return + clear-down — the prompt draws from the current line. For a
+< * subsequent render it climbs `previousLines - 1` lines (the cursor is on the LAST line of the prior
+---
+> * For the first render `previousLines` is `1` (the cursor sits on the line the prompt opened on) so
+> * the prefix is a carriage return + clear-down — the prompt draws from the current line. For a
+> * subsequent render it climbs `previousLines - 1` lines (the cursor is on the last line of the prior
+158c164
+< * @param previousLines - The line count of the view currently on screen (from {@link lineCount})
+---
+> * @param previousLines - The line count of the view on screen (from {@link lineCount})
+165,169c171,175
+< * Projects any field the walk reads as a LINE OF TEXT into the {@link TextField} the text reducer
+< * takes — `text` itself, and the controls a terminal has no widget for: `number`, `date`,
+< * `time`, `datetime`, `color`, and one `file` entry. The label carries that control's format cue
+< * from {@link CONTROL_HINTS}, and a declared `default` becomes the line a bare return submits. The
+< * projection carries no rule, because the AUTHORITATIVE form still evaluates the answer this line
+---
+> * Projects any field the walk reads as a line of text into the {@link TextField} the text reducer
+> * takes — `text` itself, and the controls a terminal has no widget for: `number`, `date`, `time`,
+> * `datetime`, `color`, and one `file` entry. The label carries that control's format cue from
+> * {@link CONTROL_HINTS}, and a declared `default` becomes the line a bare return submits. The
+> * projection carries no rule, because the authoritative form still evaluates the answer this line
+209c215
+< * Returns the choices a `select` or `checkbox` field actually OFFERS — the form refuses a disabled
+---
+> * Returns the choices a `select` or `checkbox` field actually offers — the form refuses a disabled
+220c226
+< * Returns the choices a `select` or `checkbox` field SHOWS but refuses — the complement of
+---
+> * Returns the choices a `select` or `checkbox` field shows but refuses — the complement of
+243,245c249,251
+< * Renders the read-only line a LOCKED field shows — its label, the {@link LOCKED_MARK}, and the
+< * answer the form already holds. The walk writes this instead of a prompt, because the field is still
+< * validated and still submitted but must not be edited here.
+---
+> * Renders the read-only line a locked field shows — its label, the {@link LOCKED_MARK}, and the
+> * answer the form already holds. The walk writes this instead of a prompt, because the field is
+> * still validated and still submitted but must not be edited here.
+258c264
+< * Renders the line listing an OPEN select's offered values above its text prompt — a suggestion
+---
+> * Renders the line listing an open select's offered values above its text prompt — a suggestion
+299,304c305,311
+< * Implements {@link TerminalInterface} for a human at this machine's keyboard — the interactive form
+< * DRIVER, and the only impure part of the terminal stack. {@link ask} walks one
+< * form's fields in schema order, feeds raw-mode stdin bytes through `parseKey` into the matching
+< * pure reducer, renders each returned view in place, and binds every answer through the form's own
+< * `fill`. It owns no form logic: the schema, the rules, the values, and the settlement all belong to
+< * the form it is given, and this class owns only raw mode, the cursor, and the re-render.
+---
+> * Implements {@link TerminalInterface} for a human at this machine's keyboard — the interactive
+> * form driver, and the only impure part of the terminal stack. {@link ask} walks one form's fields
+> * in schema order, feeds raw-mode stdin bytes through `parseKey` into the matching pure reducer,
+> * renders each returned view in place, binds every answer through the form's own `fill`, and
+> * re-asks what the form refused. It owns no form logic: the schema, the rules, the values, and the
+> * settlement all belong to the form it is given, and this class owns only raw mode, the cursor, and
+> * the re-render.
+316c323
+< *   control's own shape, so a bare return on a field with no default binds as ABSENCE and the
+---
+> *   control's own shape, so a bare return on a field with no default binds as absence and the
+319,321c326,327
+< * - **Visibility is honored.** A `hidden` field and a field currently in `form.disabled` are
+< *   skipped; a `locked` field renders read-only; entering a new group writes its label as a section
+< *   header.
+---
+> * - **Visibility is honored.** A `hidden` field and a field in `form.disabled` are skipped; a
+> *   `locked` field renders read-only; entering a new group writes its label as a section header.
+749,754c755,760
+< * Creates the interactive terminal form driver — the local-keyboard arm of the terminal trio, beside
+< * the core headless `createPrompt` broker and the SSE `createPromptClient` bridge. Where the broker
+< * PARKS a live form until somebody elsewhere answers it, a `Terminal` answers one HERE: it walks the
+< * form's fields in schema order, drives each control's pure reducer over raw-mode stdin, binds every
+< * answer through the form's own `fill`, and submits. It is the only impure part of the terminal
+< * stack.
+---
+> * Creates the interactive terminal form driver — the local-keyboard arm of the terminal trio,
+> * beside the core headless `createPrompt` broker and the SSE `createPromptClient` bridge. Where the
+> * broker parks a live form until somebody elsewhere answers it, a `Terminal` answers one here: it
+> * walks the form's fields in schema order, drives each control's pure reducer over raw-mode stdin,
+> * binds every answer through the form's own `fill`, and submits. It is the only impure part of the
+> * terminal stack.
+774c780
+< * @example
+---
+> * @example Ask one form at this keyboard
+776a783
+> * import { isTerminalError } from '@orkestrel/terminal'
+779,781c786,787
+< * const terminal = createTerminal()
+< * const values = await terminal.ask(
+< * 	createForm({
+---
+> * const terminal = createTerminal() // process.stdin / process.stdout by default
+> * const form = createForm({
+783a790
+> * 		{ control: 'text', name: 'name', label: 'Your name', rule: { required: true, minimum: 2 } },
+785c792,802
+< * 			{ control: 'confirm', name: 'terms', label: 'I accept the terms' },
+---
+> * 		{ control: 'password', name: 'token', label: 'Token' },
+> * 		{ control: 'confirm', name: 'terms', label: 'Accept the terms', rule: { required: true } },
+> * 		{
+> * 			control: 'select',
+> * 			name: 'role',
+> * 			label: 'Role',
+> * 			choices: [
+> * 				{ value: 'admin', label: 'Admin' },
+> * 				{ value: 'viewer', label: 'Viewer', help: 'read-only' },
+> * 			],
+> * 		},
+787,788c804,812
+< * 	}),
+< * )
+---
+> * })
+> *
+> * try {
+> * 	const values = await terminal.ask(form)
+> * 	deploy(values)
+> * } catch (error) {
+> * 	// Ctrl-c: the walk ended, and the form is still `editing` for whoever owns it.
+> * 	if (isTerminalError(error) && error.code === 'CANCEL') form.destroy()
+> * }
+diff -r -w -B '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-terminal-final-registry-visit-pack/baseline/package/dist/src/server/index.d.cts /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-terminal-final-registry-visit-pack/extract/package/dist/src/server/index.d.cts
+1,17c1,17
+< import { FieldChoice } from '@orkestrel/form';
+< import { FieldControl } from '@orkestrel/form';
+< import { FieldValue } from '@orkestrel/form';
+< import { FormField } from '@orkestrel/form';
+< import { FormInterface } from '@orkestrel/form';
+< import { FormValues } from '@orkestrel/form';
+< import { PromptTheme } from '@orkestrel/terminal';
+< import { PromptThemeOptions } from '@orkestrel/terminal';
+< import { StreamTargetInterface } from '@orkestrel/console/server';
+< import { StylerInterface } from '@orkestrel/console';
+< import { TerminalInterface } from '@orkestrel/terminal';
+< import { TextField } from '@orkestrel/form';
+< 
+< /**
+<  * Erases from the cursor down to the end of the screen (`ESC[J`) — wipes the WHOLE previous (possibly
+<  * multi-line `select` / `checkbox`) view in one write before the new view is rendered, so a redraw
+<  * never leaves orphaned rows below.
+---
+> import type { FieldChoice } from '@orkestrel/form';
+> import type { FieldControl } from '@orkestrel/form';
+> import type { FieldValue } from '@orkestrel/form';
+> import type { FormField } from '@orkestrel/form';
+> import type { FormInterface } from '@orkestrel/form';
+> import type { FormValues } from '@orkestrel/form';
+> import type { PromptTheme } from '@orkestrel/terminal';
+> import type { PromptThemeOptions } from '@orkestrel/terminal';
+> import type { StreamTargetInterface } from '@orkestrel/console/server';
+> import type { StylerInterface } from '@orkestrel/console';
+> import type { TerminalInterface } from '@orkestrel/terminal';
+> import type { TextField } from '@orkestrel/form';
+> 
+> /**
+>  * Erases from the cursor down to the end of the screen (`ESC[J`) — wipes the whole previous view,
+>  * which a `select` or `checkbox` can spread over several lines, in one write before the new view is
+>  * rendered, so a redraw never leaves orphaned rows behind.
+31,36c31,36
+<  * Creates the interactive terminal form driver — the local-keyboard arm of the terminal trio, beside
+<  * the core headless `createPrompt` broker and the SSE `createPromptClient` bridge. Where the broker
+<  * PARKS a live form until somebody elsewhere answers it, a `Terminal` answers one HERE: it walks the
+<  * form's fields in schema order, drives each control's pure reducer over raw-mode stdin, binds every
+<  * answer through the form's own `fill`, and submits. It is the only impure part of the terminal
+<  * stack.
+---
+>  * Creates the interactive terminal form driver — the local-keyboard arm of the terminal trio,
+>  * beside the core headless `createPrompt` broker and the SSE `createPromptClient` bridge. Where the
+>  * broker parks a live form until somebody elsewhere answers it, a `Terminal` answers one here: it
+>  * walks the form's fields in schema order, drives each control's pure reducer over raw-mode stdin,
+>  * binds every answer through the form's own `fill`, and submits. It is the only impure part of the
+>  * terminal stack.
+56c56
+<  * @example
+---
+>  * @example Ask one form at this keyboard
+58a59
+>  * import { isTerminalError } from '@orkestrel/terminal'
+61,63c62,63
+<  * const terminal = createTerminal()
+<  * const values = await terminal.ask(
+<  * 	createForm({
+---
+>  * const terminal = createTerminal() // process.stdin / process.stdout by default
+>  * const form = createForm({
+65a66
+>  * 		{ control: 'text', name: 'name', label: 'Your name', rule: { required: true, minimum: 2 } },
+67c68,78
+<  * 			{ control: 'confirm', name: 'terms', label: 'I accept the terms' },
+---
+>  * 		{ control: 'password', name: 'token', label: 'Token' },
+>  * 		{ control: 'confirm', name: 'terms', label: 'Accept the terms', rule: { required: true } },
+>  * 		{
+>  * 			control: 'select',
+>  * 			name: 'role',
+>  * 			label: 'Role',
+>  * 			choices: [
+>  * 				{ value: 'admin', label: 'Admin' },
+>  * 				{ value: 'viewer', label: 'Viewer', help: 'read-only' },
+>  * 			],
+>  * 		},
+69,70c80,88
+<  * 	}),
+<  * )
+---
+>  * })
+>  *
+>  * try {
+>  * 	const values = await terminal.ask(form)
+>  * 	deploy(values)
+>  * } catch (error) {
+>  * 	// Ctrl-c: the walk ended, and the form is still `editing` for whoever owns it.
+>  * 	if (isTerminalError(error) && error.code === 'CANCEL') form.destroy()
+>  * }
+76,78c94,96
+<  * Holds the cursor-UP sequence TEMPLATE (`ESC[{count}A`) — {@link import('./helpers.js').renderCursorUp}
+<  * interpolates the `{count}` placeholder with the number of lines to climb. Kept as a template so
+<  * the count stays out of the constant.
+---
+>  * Holds the cursor-up sequence template (`ESC[{count}A`) —
+>  * {@link import('./helpers.js').renderCursorUp} interpolates the `{count}` placeholder with the
+>  * number of lines to climb. Kept as a template so the count stays out of the constant.
+108,112c126,130
+<  * Projects any field the walk reads as a LINE OF TEXT into the {@link TextField} the text reducer
+<  * takes — `text` itself, and the controls a terminal has no widget for: `number`, `date`,
+<  * `time`, `datetime`, `color`, and one `file` entry. The label carries that control's format cue
+<  * from {@link CONTROL_HINTS}, and a declared `default` becomes the line a bare return submits. The
+<  * projection carries no rule, because the AUTHORITATIVE form still evaluates the answer this line
+---
+>  * Projects any field the walk reads as a line of text into the {@link TextField} the text reducer
+>  * takes — `text` itself, and the controls a terminal has no widget for: `number`, `date`, `time`,
+>  * `datetime`, `color`, and one `file` entry. The label carries that control's format cue from
+>  * {@link CONTROL_HINTS}, and a declared `default` becomes the line a bare return submits. The
+>  * projection carries no rule, because the authoritative form still evaluates the answer this line
+130c148
+<  * Returns the choices a `select` or `checkbox` field SHOWS but refuses — the complement of
+---
+>  * Returns the choices a `select` or `checkbox` field shows but refuses — the complement of
+140c158
+<  * Returns the choices a `select` or `checkbox` field actually OFFERS — the form refuses a disabled
+---
+>  * Returns the choices a `select` or `checkbox` field actually offers — the form refuses a disabled
+168a187
+>     /** Subscribes a `'data'` chunk listener — the irreducible event seam. */
+169a189
+>     /** Unsubscribes that listener. The driver always pairs it, so no listener leaks. */
+170a191
+>     /** Switches the TTY in and out of raw mode. Absent on a piped stream. */
+171a193
+>     /** Starts the flow of `'data'` events. */
+172a195
+>     /** Stops it again on cleanup. */
+173a197
+>     /** Reports whether the stream is a real terminal; absent or false when piped. */
+178,181c202,205
+<  * Checks whether `value` is a usable {@link InputStreamInterface} — a record with callable `on` / `off`
+<  * `'data'` subscription methods. A total type guard: it NEVER throws and returns `false`
+<  * for anything off-shape, so it narrows the one unavoidable input boundary (the real `process.stdin`,
+<  * or a fake TTY a test injects) to the exact slice the driver reads — no `as`.
+---
+>  * Checks whether `value` is a usable {@link InputStreamInterface} — a record with callable `on` /
+>  * `off` `'data'` subscription methods. A total type guard: it never throws and returns `false` for
+>  * anything off-shape, so it narrows the one unavoidable input boundary (the real `process.stdin`,
+>  * or a fake TTY a test injects) to the exact slice the driver reads, never an assertion.
+186c210
+<  * — a piped, non-TTY stream is still a valid input, just one the driver reads through the readline
+---
+>  * — a piped, non-TTY stream is still a valid input, one the driver reads through the readline
+196,200c220,224
+<  * checking for the callable `read` / `pipe` / `on` that `node:readline`'s `createInterface` requires
+<  * as its `input`. The non-TTY fallback narrows the resolved input stream through this before handing
+<  * it to readline (never an `as`), so a real piped `process.stdin` (or a `PassThrough` a test injects)
+<  * crosses into the readline boundary honestly. Never throws; returns `false` for a minimal fake that
+<  * isn't a full readable.
+---
+>  * checking for the callable `read` / `pipe` / `on` that `node:readline`'s `createInterface`
+>  * requires as its `input`. The non-TTY fallback narrows the resolved input stream through this
+>  * before handing it to readline, never through an assertion, so a real piped `process.stdin` (or a
+>  * `PassThrough` a test injects) crosses into the readline boundary honestly. Never throws; returns
+>  * `false` for a minimal fake that isn't a full readable.
+208,211c232,235
+<  * Counts the terminal LINES a rendered prompt `view` occupies — one more than its newline count
+<  * (a view with no newline is a single line; N newlines span N+1 lines). The basis of the in-place
+<  * re-render: the driver records the line count of the view it just wrote so the next redraw knows how
+<  * far up to move the cursor before overwriting. Total; an empty string is one (empty) line.
+---
+>  * Counts the terminal lines a rendered prompt `view` occupies — one more than its newline count, so
+>  * a view with no newline is a single line and a view with N newlines spans N+1 lines. The basis of
+>  * the in-place re-render: the driver records the line count of the view it wrote so the next redraw
+>  * knows how far up to move the cursor before overwriting. Total; an empty string is one empty line.
+222,226c246,250
+<  * Returns the full reposition-and-clear prefix to write BEFORE re-rendering a prompt view in place — given
+<  * the line count of the PREVIOUS view, it moves the cursor up over those lines, returns it to column
+<  * 0, and erases everything from there to the end of the screen, so the next view is drawn on a clean
+<  * region (no orphaned rows from a taller previous view). Pure; the driver writes this immediately
+<  * followed by the new view.
+---
+>  * Returns the full reposition-and-clear prefix to write before re-rendering a prompt view in place
+>  * — given the line count of the previous view, it moves the cursor up over those lines, returns it
+>  * to column 0, and erases everything from there to the end of the screen, so the next view is drawn
+>  * on a clean region and a taller previous view leaves no orphaned rows. Pure; the driver writes
+>  * this immediately followed by the new view.
+229,231c253,255
+<  * For the FIRST render `previousLines` is `1` (the cursor sits on the line the prompt opened on) so
+<  * the prefix is just a carriage return + clear-down — the prompt draws from the current line. For a
+<  * subsequent render it climbs `previousLines - 1` lines (the cursor is on the LAST line of the prior
+---
+>  * For the first render `previousLines` is `1` (the cursor sits on the line the prompt opened on) so
+>  * the prefix is a carriage return + clear-down — the prompt draws from the current line. For a
+>  * subsequent render it climbs `previousLines - 1` lines (the cursor is on the last line of the prior
+235c259
+<  * @param previousLines - The line count of the view currently on screen (from {@link lineCount})
+---
+>  * @param previousLines - The line count of the view on screen (from {@link lineCount})
+249,252c273,276
+<  * Returns the cursor-UP control sequence that moves the cursor up `count` lines (`ESC[{count}A`) — or the
+<  * empty string when `count` is zero or negative (no movement needed, and `ESC[0A` is a wasted write).
+<  * The pure step the in-place re-render uses to climb back over the previous view before clearing it.
+<  * Total.
+---
+>  * Returns the cursor-up control sequence that moves the cursor up `count` lines (`ESC[{count}A`),
+>  * or the empty string when `count` is zero or negative, because no movement is needed and `ESC[0A`
+>  * is a wasted write. The pure step the in-place re-render uses to climb back over the previous view
+>  * before clearing it. Total.
+271,273c295,297
+<  * Renders the read-only line a LOCKED field shows — its label, the {@link LOCKED_MARK}, and the
+<  * answer the form already holds. The walk writes this instead of a prompt, because the field is still
+<  * validated and still submitted but must not be edited here.
+---
+>  * Renders the read-only line a locked field shows — its label, the {@link LOCKED_MARK}, and the
+>  * answer the form already holds. The walk writes this instead of a prompt, because the field is
+>  * still validated and still submitted but must not be edited here.
+296c320
+<  * Renders the line listing an OPEN select's offered values above its text prompt — a suggestion
+---
+>  * Renders the line listing an open select's offered values above its text prompt — a suggestion
+317c341,344
+< /** Holds the lead on the line listing an open `select`'s offered values, which a typed answer may ignore. */
+---
+> /**
+>  * Holds the lead on the line listing an open `select`'s offered values, which a typed answer can
+>  * ignore.
+>  */
+321,325c348,352
+<  * Checks whether an input stream can be driven in RAW mode — it both reports `isTTY === true` AND
+<  * exposes a callable `setRawMode`. The {@link import('./Terminal.js').Terminal} probes this to choose its path:
+<  * `true` ⇒ the interactive raw-mode prompts (arrow-key navigation, live re-render); `false` ⇒ the
+<  * `node:readline` line-input fallback (a piped / non-terminal stream cannot enter raw mode). Total —
+<  * never throws.
+---
+>  * Checks whether an input stream can be driven in raw mode — it reports `isTTY === true` and
+>  * exposes a callable `setRawMode`. The {@link import('./Terminal.js').Terminal} probes this to
+>  * choose its path: true selects the interactive raw-mode fields, with arrow-key navigation and a
+>  * live re-render; false selects the `node:readline` line-input fallback, because a piped or
+>  * non-terminal stream cannot enter raw mode. Total — never throws.
+333,338c360,366
+<  * Implements {@link TerminalInterface} for a human at this machine's keyboard — the interactive form
+<  * DRIVER, and the only impure part of the terminal stack. {@link ask} walks one
+<  * form's fields in schema order, feeds raw-mode stdin bytes through `parseKey` into the matching
+<  * pure reducer, renders each returned view in place, and binds every answer through the form's own
+<  * `fill`. It owns no form logic: the schema, the rules, the values, and the settlement all belong to
+<  * the form it is given, and this class owns only raw mode, the cursor, and the re-render.
+---
+>  * Implements {@link TerminalInterface} for a human at this machine's keyboard — the interactive
+>  * form driver, and the only impure part of the terminal stack. {@link ask} walks one form's fields
+>  * in schema order, feeds raw-mode stdin bytes through `parseKey` into the matching pure reducer,
+>  * renders each returned view in place, binds every answer through the form's own `fill`, and
+>  * re-asks what the form refused. It owns no form logic: the schema, the rules, the values, and the
+>  * settlement all belong to the form it is given, and this class owns only raw mode, the cursor, and
+>  * the re-render.
+350c378
+<  *   control's own shape, so a bare return on a field with no default binds as ABSENCE and the
+---
+>  *   control's own shape, so a bare return on a field with no default binds as absence and the
+353,355c381,382
+<  * - **Visibility is honored.** A `hidden` field and a field currently in `form.disabled` are
+<  *   skipped; a `locked` field renders read-only; entering a new group writes its label as a section
+<  *   header.
+---
+>  * - **Visibility is honored.** A `hidden` field and a field in `form.disabled` are skipped; a
+>  *   `locked` field renders read-only; entering a new group writes its label as a section header.
+387,388c414,415
+<  *   {@link import('@src/core').DEFAULT_PROMPT_THEME} leaf by leaf by
+<  *   {@link import('@src/core').createPromptTheme}. Supplying one icon or one role leaves every
+---
+>  *   {@link import('@orkestrel/terminal').DEFAULT_PROMPT_THEME} leaf by leaf by
+>  *   {@link import('@orkestrel/terminal').createPromptTheme}. Supplying one icon or one role leaves every
+397c424,427
+< /** Holds the lead on the line listing the choices a `select` or `checkbox` shows but refuses, so a reader sees why one is missing from the list below. */
+---
+> /**
+>  * Holds the lead on the line listing the choices a `select` or `checkbox` shows but refuses, so a
+>  * reader sees why one is missing from the list it heads.
+>  */
+diff -r -w -B '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-terminal-final-registry-visit-pack/baseline/package/dist/src/server/index.d.ts /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-terminal-final-registry-visit-pack/extract/package/dist/src/server/index.d.ts
+1,17c1,17
+< import { FieldChoice } from '@orkestrel/form';
+< import { FieldControl } from '@orkestrel/form';
+< import { FieldValue } from '@orkestrel/form';
+< import { FormField } from '@orkestrel/form';
+< import { FormInterface } from '@orkestrel/form';
+< import { FormValues } from '@orkestrel/form';
+< import { PromptTheme } from '@orkestrel/terminal';
+< import { PromptThemeOptions } from '@orkestrel/terminal';
+< import { StreamTargetInterface } from '@orkestrel/console/server';
+< import { StylerInterface } from '@orkestrel/console';
+< import { TerminalInterface } from '@orkestrel/terminal';
+< import { TextField } from '@orkestrel/form';
+< 
+< /**
+<  * Erases from the cursor down to the end of the screen (`ESC[J`) — wipes the WHOLE previous (possibly
+<  * multi-line `select` / `checkbox`) view in one write before the new view is rendered, so a redraw
+<  * never leaves orphaned rows below.
+---
+> import type { FieldChoice } from '@orkestrel/form';
+> import type { FieldControl } from '@orkestrel/form';
+> import type { FieldValue } from '@orkestrel/form';
+> import type { FormField } from '@orkestrel/form';
+> import type { FormInterface } from '@orkestrel/form';
+> import type { FormValues } from '@orkestrel/form';
+> import type { PromptTheme } from '@orkestrel/terminal';
+> import type { PromptThemeOptions } from '@orkestrel/terminal';
+> import type { StreamTargetInterface } from '@orkestrel/console/server';
+> import type { StylerInterface } from '@orkestrel/console';
+> import type { TerminalInterface } from '@orkestrel/terminal';
+> import type { TextField } from '@orkestrel/form';
+> 
+> /**
+>  * Erases from the cursor down to the end of the screen (`ESC[J`) — wipes the whole previous view,
+>  * which a `select` or `checkbox` can spread over several lines, in one write before the new view is
+>  * rendered, so a redraw never leaves orphaned rows behind.
+31,36c31,36
+<  * Creates the interactive terminal form driver — the local-keyboard arm of the terminal trio, beside
+<  * the core headless `createPrompt` broker and the SSE `createPromptClient` bridge. Where the broker
+<  * PARKS a live form until somebody elsewhere answers it, a `Terminal` answers one HERE: it walks the
+<  * form's fields in schema order, drives each control's pure reducer over raw-mode stdin, binds every
+<  * answer through the form's own `fill`, and submits. It is the only impure part of the terminal
+<  * stack.
+---
+>  * Creates the interactive terminal form driver — the local-keyboard arm of the terminal trio,
+>  * beside the core headless `createPrompt` broker and the SSE `createPromptClient` bridge. Where the
+>  * broker parks a live form until somebody elsewhere answers it, a `Terminal` answers one here: it
+>  * walks the form's fields in schema order, drives each control's pure reducer over raw-mode stdin,
+>  * binds every answer through the form's own `fill`, and submits. It is the only impure part of the
+>  * terminal stack.
+56c56
+<  * @example
+---
+>  * @example Ask one form at this keyboard
+58a59
+>  * import { isTerminalError } from '@orkestrel/terminal'
+61,63c62,63
+<  * const terminal = createTerminal()
+<  * const values = await terminal.ask(
+<  * 	createForm({
+---
+>  * const terminal = createTerminal() // process.stdin / process.stdout by default
+>  * const form = createForm({
+65a66
+>  * 		{ control: 'text', name: 'name', label: 'Your name', rule: { required: true, minimum: 2 } },
+67c68,78
+<  * 			{ control: 'confirm', name: 'terms', label: 'I accept the terms' },
+---
+>  * 		{ control: 'password', name: 'token', label: 'Token' },
+>  * 		{ control: 'confirm', name: 'terms', label: 'Accept the terms', rule: { required: true } },
+>  * 		{
+>  * 			control: 'select',
+>  * 			name: 'role',
+>  * 			label: 'Role',
+>  * 			choices: [
+>  * 				{ value: 'admin', label: 'Admin' },
+>  * 				{ value: 'viewer', label: 'Viewer', help: 'read-only' },
+>  * 			],
+>  * 		},
+69,70c80,88
+<  * 	}),
+<  * )
+---
+>  * })
+>  *
+>  * try {
+>  * 	const values = await terminal.ask(form)
+>  * 	deploy(values)
+>  * } catch (error) {
+>  * 	// Ctrl-c: the walk ended, and the form is still `editing` for whoever owns it.
+>  * 	if (isTerminalError(error) && error.code === 'CANCEL') form.destroy()
+>  * }
+76,78c94,96
+<  * Holds the cursor-UP sequence TEMPLATE (`ESC[{count}A`) — {@link import('./helpers.js').renderCursorUp}
+<  * interpolates the `{count}` placeholder with the number of lines to climb. Kept as a template so
+<  * the count stays out of the constant.
+---
+>  * Holds the cursor-up sequence template (`ESC[{count}A`) —
+>  * {@link import('./helpers.js').renderCursorUp} interpolates the `{count}` placeholder with the
+>  * number of lines to climb. Kept as a template so the count stays out of the constant.
+108,112c126,130
+<  * Projects any field the walk reads as a LINE OF TEXT into the {@link TextField} the text reducer
+<  * takes — `text` itself, and the controls a terminal has no widget for: `number`, `date`,
+<  * `time`, `datetime`, `color`, and one `file` entry. The label carries that control's format cue
+<  * from {@link CONTROL_HINTS}, and a declared `default` becomes the line a bare return submits. The
+<  * projection carries no rule, because the AUTHORITATIVE form still evaluates the answer this line
+---
+>  * Projects any field the walk reads as a line of text into the {@link TextField} the text reducer
+>  * takes — `text` itself, and the controls a terminal has no widget for: `number`, `date`, `time`,
+>  * `datetime`, `color`, and one `file` entry. The label carries that control's format cue from
+>  * {@link CONTROL_HINTS}, and a declared `default` becomes the line a bare return submits. The
+>  * projection carries no rule, because the authoritative form still evaluates the answer this line
+130c148
+<  * Returns the choices a `select` or `checkbox` field SHOWS but refuses — the complement of
+---
+>  * Returns the choices a `select` or `checkbox` field shows but refuses — the complement of
+140c158
+<  * Returns the choices a `select` or `checkbox` field actually OFFERS — the form refuses a disabled
+---
+>  * Returns the choices a `select` or `checkbox` field actually offers — the form refuses a disabled
+168a187
+>     /** Subscribes a `'data'` chunk listener — the irreducible event seam. */
+169a189
+>     /** Unsubscribes that listener. The driver always pairs it, so no listener leaks. */
+170a191
+>     /** Switches the TTY in and out of raw mode. Absent on a piped stream. */
+171a193
+>     /** Starts the flow of `'data'` events. */
+172a195
+>     /** Stops it again on cleanup. */
+173a197
+>     /** Reports whether the stream is a real terminal; absent or false when piped. */
+178,181c202,205
+<  * Checks whether `value` is a usable {@link InputStreamInterface} — a record with callable `on` / `off`
+<  * `'data'` subscription methods. A total type guard: it NEVER throws and returns `false`
+<  * for anything off-shape, so it narrows the one unavoidable input boundary (the real `process.stdin`,
+<  * or a fake TTY a test injects) to the exact slice the driver reads — no `as`.
+---
+>  * Checks whether `value` is a usable {@link InputStreamInterface} — a record with callable `on` /
+>  * `off` `'data'` subscription methods. A total type guard: it never throws and returns `false` for
+>  * anything off-shape, so it narrows the one unavoidable input boundary (the real `process.stdin`,
+>  * or a fake TTY a test injects) to the exact slice the driver reads, never an assertion.
+186c210
+<  * — a piped, non-TTY stream is still a valid input, just one the driver reads through the readline
+---
+>  * — a piped, non-TTY stream is still a valid input, one the driver reads through the readline
+196,200c220,224
+<  * checking for the callable `read` / `pipe` / `on` that `node:readline`'s `createInterface` requires
+<  * as its `input`. The non-TTY fallback narrows the resolved input stream through this before handing
+<  * it to readline (never an `as`), so a real piped `process.stdin` (or a `PassThrough` a test injects)
+<  * crosses into the readline boundary honestly. Never throws; returns `false` for a minimal fake that
+<  * isn't a full readable.
+---
+>  * checking for the callable `read` / `pipe` / `on` that `node:readline`'s `createInterface`
+>  * requires as its `input`. The non-TTY fallback narrows the resolved input stream through this
+>  * before handing it to readline, never through an assertion, so a real piped `process.stdin` (or a
+>  * `PassThrough` a test injects) crosses into the readline boundary honestly. Never throws; returns
+>  * `false` for a minimal fake that isn't a full readable.
+208,211c232,235
+<  * Counts the terminal LINES a rendered prompt `view` occupies — one more than its newline count
+<  * (a view with no newline is a single line; N newlines span N+1 lines). The basis of the in-place
+<  * re-render: the driver records the line count of the view it just wrote so the next redraw knows how
+<  * far up to move the cursor before overwriting. Total; an empty string is one (empty) line.
+---
+>  * Counts the terminal lines a rendered prompt `view` occupies — one more than its newline count, so
+>  * a view with no newline is a single line and a view with N newlines spans N+1 lines. The basis of
+>  * the in-place re-render: the driver records the line count of the view it wrote so the next redraw
+>  * knows how far up to move the cursor before overwriting. Total; an empty string is one empty line.
+222,226c246,250
+<  * Returns the full reposition-and-clear prefix to write BEFORE re-rendering a prompt view in place — given
+<  * the line count of the PREVIOUS view, it moves the cursor up over those lines, returns it to column
+<  * 0, and erases everything from there to the end of the screen, so the next view is drawn on a clean
+<  * region (no orphaned rows from a taller previous view). Pure; the driver writes this immediately
+<  * followed by the new view.
+---
+>  * Returns the full reposition-and-clear prefix to write before re-rendering a prompt view in place
+>  * — given the line count of the previous view, it moves the cursor up over those lines, returns it
+>  * to column 0, and erases everything from there to the end of the screen, so the next view is drawn
+>  * on a clean region and a taller previous view leaves no orphaned rows. Pure; the driver writes
+>  * this immediately followed by the new view.
+229,231c253,255
+<  * For the FIRST render `previousLines` is `1` (the cursor sits on the line the prompt opened on) so
+<  * the prefix is just a carriage return + clear-down — the prompt draws from the current line. For a
+<  * subsequent render it climbs `previousLines - 1` lines (the cursor is on the LAST line of the prior
+---
+>  * For the first render `previousLines` is `1` (the cursor sits on the line the prompt opened on) so
+>  * the prefix is a carriage return + clear-down — the prompt draws from the current line. For a
+>  * subsequent render it climbs `previousLines - 1` lines (the cursor is on the last line of the prior
+235c259
+<  * @param previousLines - The line count of the view currently on screen (from {@link lineCount})
+---
+>  * @param previousLines - The line count of the view on screen (from {@link lineCount})
+249,252c273,276
+<  * Returns the cursor-UP control sequence that moves the cursor up `count` lines (`ESC[{count}A`) — or the
+<  * empty string when `count` is zero or negative (no movement needed, and `ESC[0A` is a wasted write).
+<  * The pure step the in-place re-render uses to climb back over the previous view before clearing it.
+<  * Total.
+---
+>  * Returns the cursor-up control sequence that moves the cursor up `count` lines (`ESC[{count}A`),
+>  * or the empty string when `count` is zero or negative, because no movement is needed and `ESC[0A`
+>  * is a wasted write. The pure step the in-place re-render uses to climb back over the previous view
+>  * before clearing it. Total.
+271,273c295,297
+<  * Renders the read-only line a LOCKED field shows — its label, the {@link LOCKED_MARK}, and the
+<  * answer the form already holds. The walk writes this instead of a prompt, because the field is still
+<  * validated and still submitted but must not be edited here.
+---
+>  * Renders the read-only line a locked field shows — its label, the {@link LOCKED_MARK}, and the
+>  * answer the form already holds. The walk writes this instead of a prompt, because the field is
+>  * still validated and still submitted but must not be edited here.
+296c320
+<  * Renders the line listing an OPEN select's offered values above its text prompt — a suggestion
+---
+>  * Renders the line listing an open select's offered values above its text prompt — a suggestion
+317c341,344
+< /** Holds the lead on the line listing an open `select`'s offered values, which a typed answer may ignore. */
+---
+> /**
+>  * Holds the lead on the line listing an open `select`'s offered values, which a typed answer can
+>  * ignore.
+>  */
+321,325c348,352
+<  * Checks whether an input stream can be driven in RAW mode — it both reports `isTTY === true` AND
+<  * exposes a callable `setRawMode`. The {@link import('./Terminal.js').Terminal} probes this to choose its path:
+<  * `true` ⇒ the interactive raw-mode prompts (arrow-key navigation, live re-render); `false` ⇒ the
+<  * `node:readline` line-input fallback (a piped / non-terminal stream cannot enter raw mode). Total —
+<  * never throws.
+---
+>  * Checks whether an input stream can be driven in raw mode — it reports `isTTY === true` and
+>  * exposes a callable `setRawMode`. The {@link import('./Terminal.js').Terminal} probes this to
+>  * choose its path: true selects the interactive raw-mode fields, with arrow-key navigation and a
+>  * live re-render; false selects the `node:readline` line-input fallback, because a piped or
+>  * non-terminal stream cannot enter raw mode. Total — never throws.
+333,338c360,366
+<  * Implements {@link TerminalInterface} for a human at this machine's keyboard — the interactive form
+<  * DRIVER, and the only impure part of the terminal stack. {@link ask} walks one
+<  * form's fields in schema order, feeds raw-mode stdin bytes through `parseKey` into the matching
+<  * pure reducer, renders each returned view in place, and binds every answer through the form's own
+<  * `fill`. It owns no form logic: the schema, the rules, the values, and the settlement all belong to
+<  * the form it is given, and this class owns only raw mode, the cursor, and the re-render.
+---
+>  * Implements {@link TerminalInterface} for a human at this machine's keyboard — the interactive
+>  * form driver, and the only impure part of the terminal stack. {@link ask} walks one form's fields
+>  * in schema order, feeds raw-mode stdin bytes through `parseKey` into the matching pure reducer,
+>  * renders each returned view in place, binds every answer through the form's own `fill`, and
+>  * re-asks what the form refused. It owns no form logic: the schema, the rules, the values, and the
+>  * settlement all belong to the form it is given, and this class owns only raw mode, the cursor, and
+>  * the re-render.
+350c378
+<  *   control's own shape, so a bare return on a field with no default binds as ABSENCE and the
+---
+>  *   control's own shape, so a bare return on a field with no default binds as absence and the
+353,355c381,382
+<  * - **Visibility is honored.** A `hidden` field and a field currently in `form.disabled` are
+<  *   skipped; a `locked` field renders read-only; entering a new group writes its label as a section
+<  *   header.
+---
+>  * - **Visibility is honored.** A `hidden` field and a field in `form.disabled` are skipped; a
+>  *   `locked` field renders read-only; entering a new group writes its label as a section header.
+387,388c414,415
+<  *   {@link import('@src/core').DEFAULT_PROMPT_THEME} leaf by leaf by
+<  *   {@link import('@src/core').createPromptTheme}. Supplying one icon or one role leaves every
+---
+>  *   {@link import('@orkestrel/terminal').DEFAULT_PROMPT_THEME} leaf by leaf by
+>  *   {@link import('@orkestrel/terminal').createPromptTheme}. Supplying one icon or one role leaves every
+397c424,427
+< /** Holds the lead on the line listing the choices a `select` or `checkbox` shows but refuses, so a reader sees why one is missing from the list below. */
+---
+> /**
+>  * Holds the lead on the line listing the choices a `select` or `checkbox` shows but refuses, so a
+>  * reader sees why one is missing from the list it heads.
+>  */
+diff -r -w -B '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-terminal-final-registry-visit-pack/baseline/package/dist/src/server/index.js /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-terminal-final-registry-visit-pack/extract/package/dist/src/server/index.js
+9,11c9,11
+< * Holds the cursor-UP sequence TEMPLATE (`ESC[{count}A`) — {@link import('./helpers.js').renderCursorUp}
+< * interpolates the `{count}` placeholder with the number of lines to climb. Kept as a template so
+< * the count stays out of the constant.
+---
+> * Holds the cursor-up sequence template (`ESC[{count}A`) —
+> * {@link import('./helpers.js').renderCursorUp} interpolates the `{count}` placeholder with the
+> * number of lines to climb. Kept as a template so the count stays out of the constant.
+22,24c22,24
+< * Erases from the cursor down to the end of the screen (`ESC[J`) — wipes the WHOLE previous (possibly
+< * multi-line `select` / `checkbox`) view in one write before the new view is rendered, so a redraw
+< * never leaves orphaned rows below.
+---
+> * Erases from the cursor down to the end of the screen (`ESC[J`) — wipes the whole previous view,
+> * which a `select` or `checkbox` can spread over several lines, in one write before the new view is
+> * rendered, so a redraw never leaves orphaned rows behind.
+56c56,59
+< /** Holds the lead on the line listing an open `select`'s offered values, which a typed answer may ignore. */
+---
+> /**
+> * Holds the lead on the line listing an open `select`'s offered values, which a typed answer can
+> * ignore.
+> */
+58c61,64
+< /** Holds the lead on the line listing the choices a `select` or `checkbox` shows but refuses, so a reader sees why one is missing from the list below. */
+---
+> /**
+> * Holds the lead on the line listing the choices a `select` or `checkbox` shows but refuses, so a
+> * reader sees why one is missing from the list it heads.
+> */
+72,75c78,81
+< * Checks whether `value` is a usable {@link InputStreamInterface} — a record with callable `on` / `off`
+< * `'data'` subscription methods. A total type guard: it NEVER throws and returns `false`
+< * for anything off-shape, so it narrows the one unavoidable input boundary (the real `process.stdin`,
+< * or a fake TTY a test injects) to the exact slice the driver reads — no `as`.
+---
+> * Checks whether `value` is a usable {@link InputStreamInterface} — a record with callable `on` /
+> * `off` `'data'` subscription methods. A total type guard: it never throws and returns `false` for
+> * anything off-shape, so it narrows the one unavoidable input boundary (the real `process.stdin`,
+> * or a fake TTY a test injects) to the exact slice the driver reads, never an assertion.
+80c86
+< * — a piped, non-TTY stream is still a valid input, just one the driver reads through the readline
+---
+> * — a piped, non-TTY stream is still a valid input, one the driver reads through the readline
+91,95c97,101
+< * checking for the callable `read` / `pipe` / `on` that `node:readline`'s `createInterface` requires
+< * as its `input`. The non-TTY fallback narrows the resolved input stream through this before handing
+< * it to readline (never an `as`), so a real piped `process.stdin` (or a `PassThrough` a test injects)
+< * crosses into the readline boundary honestly. Never throws; returns `false` for a minimal fake that
+< * isn't a full readable.
+---
+> * checking for the callable `read` / `pipe` / `on` that `node:readline`'s `createInterface`
+> * requires as its `input`. The non-TTY fallback narrows the resolved input stream through this
+> * before handing it to readline, never through an assertion, so a real piped `process.stdin` (or a
+> * `PassThrough` a test injects) crosses into the readline boundary honestly. Never throws; returns
+> * `false` for a minimal fake that isn't a full readable.
+104,108c110,114
+< * Checks whether an input stream can be driven in RAW mode — it both reports `isTTY === true` AND
+< * exposes a callable `setRawMode`. The {@link import('./Terminal.js').Terminal} probes this to choose its path:
+< * `true` ⇒ the interactive raw-mode prompts (arrow-key navigation, live re-render); `false` ⇒ the
+< * `node:readline` line-input fallback (a piped / non-terminal stream cannot enter raw mode). Total —
+< * never throws.
+---
+> * Checks whether an input stream can be driven in raw mode — it reports `isTTY === true` and
+> * exposes a callable `setRawMode`. The {@link import('./Terminal.js').Terminal} probes this to
+> * choose its path: true selects the interactive raw-mode fields, with arrow-key navigation and a
+> * live re-render; false selects the `node:readline` line-input fallback, because a piped or
+> * non-terminal stream cannot enter raw mode. Total — never throws.
+117,120c123,126
+< * Counts the terminal LINES a rendered prompt `view` occupies — one more than its newline count
+< * (a view with no newline is a single line; N newlines span N+1 lines). The basis of the in-place
+< * re-render: the driver records the line count of the view it just wrote so the next redraw knows how
+< * far up to move the cursor before overwriting. Total; an empty string is one (empty) line.
+---
+> * Counts the terminal lines a rendered prompt `view` occupies — one more than its newline count, so
+> * a view with no newline is a single line and a view with N newlines spans N+1 lines. The basis of
+> * the in-place re-render: the driver records the line count of the view it wrote so the next redraw
+> * knows how far up to move the cursor before overwriting. Total; an empty string is one empty line.
+131,134c137,140
+< * Returns the cursor-UP control sequence that moves the cursor up `count` lines (`ESC[{count}A`) — or the
+< * empty string when `count` is zero or negative (no movement needed, and `ESC[0A` is a wasted write).
+< * The pure step the in-place re-render uses to climb back over the previous view before clearing it.
+< * Total.
+---
+> * Returns the cursor-up control sequence that moves the cursor up `count` lines (`ESC[{count}A`),
+> * or the empty string when `count` is zero or negative, because no movement is needed and `ESC[0A`
+> * is a wasted write. The pure step the in-place re-render uses to climb back over the previous view
+> * before clearing it. Total.
+144,148c150,154
+< * Returns the full reposition-and-clear prefix to write BEFORE re-rendering a prompt view in place — given
+< * the line count of the PREVIOUS view, it moves the cursor up over those lines, returns it to column
+< * 0, and erases everything from there to the end of the screen, so the next view is drawn on a clean
+< * region (no orphaned rows from a taller previous view). Pure; the driver writes this immediately
+< * followed by the new view.
+---
+> * Returns the full reposition-and-clear prefix to write before re-rendering a prompt view in place
+> * — given the line count of the previous view, it moves the cursor up over those lines, returns it
+> * to column 0, and erases everything from there to the end of the screen, so the next view is drawn
+> * on a clean region and a taller previous view leaves no orphaned rows. Pure; the driver writes
+> * this immediately followed by the new view.
+151,153c157,159
+< * For the FIRST render `previousLines` is `1` (the cursor sits on the line the prompt opened on) so
+< * the prefix is just a carriage return + clear-down — the prompt draws from the current line. For a
+< * subsequent render it climbs `previousLines - 1` lines (the cursor is on the LAST line of the prior
+---
+> * For the first render `previousLines` is `1` (the cursor sits on the line the prompt opened on) so
+> * the prefix is a carriage return + clear-down — the prompt draws from the current line. For a
+> * subsequent render it climbs `previousLines - 1` lines (the cursor is on the last line of the prior
+157c163
+< * @param previousLines - The line count of the view currently on screen (from {@link lineCount})
+---
+> * @param previousLines - The line count of the view on screen (from {@link lineCount})
+164,168c170,174
+< * Projects any field the walk reads as a LINE OF TEXT into the {@link TextField} the text reducer
+< * takes — `text` itself, and the controls a terminal has no widget for: `number`, `date`,
+< * `time`, `datetime`, `color`, and one `file` entry. The label carries that control's format cue
+< * from {@link CONTROL_HINTS}, and a declared `default` becomes the line a bare return submits. The
+< * projection carries no rule, because the AUTHORITATIVE form still evaluates the answer this line
+---
+> * Projects any field the walk reads as a line of text into the {@link TextField} the text reducer
+> * takes — `text` itself, and the controls a terminal has no widget for: `number`, `date`, `time`,
+> * `datetime`, `color`, and one `file` entry. The label carries that control's format cue from
+> * {@link CONTROL_HINTS}, and a declared `default` becomes the line a bare return submits. The
+> * projection carries no rule, because the authoritative form still evaluates the answer this line
+208c214
+< * Returns the choices a `select` or `checkbox` field actually OFFERS — the form refuses a disabled
+---
+> * Returns the choices a `select` or `checkbox` field actually offers — the form refuses a disabled
+219c225
+< * Returns the choices a `select` or `checkbox` field SHOWS but refuses — the complement of
+---
+> * Returns the choices a `select` or `checkbox` field shows but refuses — the complement of
+242,244c248,250
+< * Renders the read-only line a LOCKED field shows — its label, the {@link LOCKED_MARK}, and the
+< * answer the form already holds. The walk writes this instead of a prompt, because the field is still
+< * validated and still submitted but must not be edited here.
+---
+> * Renders the read-only line a locked field shows — its label, the {@link LOCKED_MARK}, and the
+> * answer the form already holds. The walk writes this instead of a prompt, because the field is
+> * still validated and still submitted but must not be edited here.
+257c263
+< * Renders the line listing an OPEN select's offered values above its text prompt — a suggestion
+---
+> * Renders the line listing an open select's offered values above its text prompt — a suggestion
+298,303c304,310
+< * Implements {@link TerminalInterface} for a human at this machine's keyboard — the interactive form
+< * DRIVER, and the only impure part of the terminal stack. {@link ask} walks one
+< * form's fields in schema order, feeds raw-mode stdin bytes through `parseKey` into the matching
+< * pure reducer, renders each returned view in place, and binds every answer through the form's own
+< * `fill`. It owns no form logic: the schema, the rules, the values, and the settlement all belong to
+< * the form it is given, and this class owns only raw mode, the cursor, and the re-render.
+---
+> * Implements {@link TerminalInterface} for a human at this machine's keyboard — the interactive
+> * form driver, and the only impure part of the terminal stack. {@link ask} walks one form's fields
+> * in schema order, feeds raw-mode stdin bytes through `parseKey` into the matching pure reducer,
+> * renders each returned view in place, binds every answer through the form's own `fill`, and
+> * re-asks what the form refused. It owns no form logic: the schema, the rules, the values, and the
+> * settlement all belong to the form it is given, and this class owns only raw mode, the cursor, and
+> * the re-render.
+315c322
+< *   control's own shape, so a bare return on a field with no default binds as ABSENCE and the
+---
+> *   control's own shape, so a bare return on a field with no default binds as absence and the
+318,320c325,326
+< * - **Visibility is honored.** A `hidden` field and a field currently in `form.disabled` are
+< *   skipped; a `locked` field renders read-only; entering a new group writes its label as a section
+< *   header.
+---
+> * - **Visibility is honored.** A `hidden` field and a field in `form.disabled` are skipped; a
+> *   `locked` field renders read-only; entering a new group writes its label as a section header.
+748,753c754,759
+< * Creates the interactive terminal form driver — the local-keyboard arm of the terminal trio, beside
+< * the core headless `createPrompt` broker and the SSE `createPromptClient` bridge. Where the broker
+< * PARKS a live form until somebody elsewhere answers it, a `Terminal` answers one HERE: it walks the
+< * form's fields in schema order, drives each control's pure reducer over raw-mode stdin, binds every
+< * answer through the form's own `fill`, and submits. It is the only impure part of the terminal
+< * stack.
+---
+> * Creates the interactive terminal form driver — the local-keyboard arm of the terminal trio,
+> * beside the core headless `createPrompt` broker and the SSE `createPromptClient` bridge. Where the
+> * broker parks a live form until somebody elsewhere answers it, a `Terminal` answers one here: it
+> * walks the form's fields in schema order, drives each control's pure reducer over raw-mode stdin,
+> * binds every answer through the form's own `fill`, and submits. It is the only impure part of the
+> * terminal stack.
+773c779
+< * @example
+---
+> * @example Ask one form at this keyboard
+775a782
+> * import { isTerminalError } from '@orkestrel/terminal'
+778,780c785,786
+< * const terminal = createTerminal()
+< * const values = await terminal.ask(
+< * 	createForm({
+---
+> * const terminal = createTerminal() // process.stdin / process.stdout by default
+> * const form = createForm({
+782a789
+> * 		{ control: 'text', name: 'name', label: 'Your name', rule: { required: true, minimum: 2 } },
+784c791,801
+< * 			{ control: 'confirm', name: 'terms', label: 'I accept the terms' },
+---
+> * 		{ control: 'password', name: 'token', label: 'Token' },
+> * 		{ control: 'confirm', name: 'terms', label: 'Accept the terms', rule: { required: true } },
+> * 		{
+> * 			control: 'select',
+> * 			name: 'role',
+> * 			label: 'Role',
+> * 			choices: [
+> * 				{ value: 'admin', label: 'Admin' },
+> * 				{ value: 'viewer', label: 'Viewer', help: 'read-only' },
+> * 			],
+> * 		},
+786,787c803,811
+< * 	}),
+< * )
+---
+> * })
+> *
+> * try {
+> * 	const values = await terminal.ask(form)
+> * 	deploy(values)
+> * } catch (error) {
+> * 	// Ctrl-c: the walk ended, and the form is still `editing` for whoever owns it.
+> * 	if (isTerminalError(error) && error.code === 'CANCEL') form.destroy()
+> * }

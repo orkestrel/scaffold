@@ -18,14 +18,17 @@ The Guide-only root prompt.txt is consumed. Replace it only when this layer is r
 | qualifier | 0.0.14 | Closed; clean canonical main at c10f4c8661b753f8b6eaf8caf96fe0fbb47ef158; campaign/main pushed; owner upload pending |
 | queue | 0.0.13 | Closed; clean canonical main at 02df755da2b8dc8f324dfb58849504187ceab580; campaign/main pushed; owner upload pending |
 | rater | 0.0.14 | Closed; clean canonical main at 394b1d6c014255847d45627d4a1b5708c5b2a14e; campaign/main pushed; owner upload pending |
-| relation | 0.0.12 | Source landed at 60a0b70; registry preparation landed at d9b40b3; final gates/pack passed; release review/main closure pending |
+| relation | 0.0.12 | Closed; clean canonical main at 1b212ca725e6b7f6b0d1fd5b664b05cc6769d27f; campaign/main pushed; owner upload pending |
 | sea | 0.0.15 | Source landed at 8801aa0; registry preparation landed at b6a6f9e; final gates/pack passed; release review/main closure pending |
 | server | 0.0.19 | Source landed at e53d01a; preparation gates passed; registry visit pending |
 | terminal | 0.0.15 | Corrected source landed at 5577e42; preparation gates passed; registry visit pending |
 | workspace | 0.0.8 | Source landed at a1322f0; preparation gates passed; registry visit pending |
 
-Scaffold's root-generated catalog and Guide development manifest edits remain
-uncommitted. Measure their rebuilt output before ruling on that tooling follow-up.
+Scaffold's root-generated catalog and Guide development re-pin moved its emitted
+surface. Their retained follow-up is deferred to a later Scaffold release. Root
+undid only those unaccepted generated edits by editing and rebuilt; manifest and
+complete dist equal the accepted Scaffold0.0.64 archive again. Read
+d7n-scaffold-generated-followup-ruling.md. Final fleet development alignment remains open.
 
 ### Published and historical campaign context
 

@@ -1,0 +1,18 @@
+diff -r /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-scaffold-upper-git-final-pack/extract/package/dist/host/claude/agents/orkestrel.md /c/Users/mikes/WebstormProjects/scaffold/dist/host/claude/agents/orkestrel.md
+60c60
+< | `@orkestrel/guide`      | `0.0.17` | L3    | `@orkestrel/contract` `^0.0.16`, `@orkestrel/markdown` `^0.0.13`                                                                                                                                                                                                                                                           |                                                                |
+---
+> | `@orkestrel/guide`      | `0.0.18` | L3    | `@orkestrel/contract` `^0.0.17`, `@orkestrel/markdown` `^0.0.14`                                                                                                                                                                                                                                                           |                                                                |
+81c81
+< | `@orkestrel/scaffold`   | `0.0.63` | L3    | `@orkestrel/console` `^0.0.12`, `@orkestrel/contract` `^0.0.16`, `@orkestrel/emitter` `^0.0.9`, `@orkestrel/markdown` `^0.0.13`, `@orkestrel/process` `^0.0.10`, `@orkestrel/template` `^0.0.6`                                                                                                                            |                                                                |
+---
+> | `@orkestrel/scaffold`   | `0.0.64` | L3    | `@orkestrel/console` `^0.0.13`, `@orkestrel/contract` `^0.0.17`, `@orkestrel/emitter` `^0.0.10`, `@orkestrel/markdown` `^0.0.14`, `@orkestrel/process` `^0.0.11`, `@orkestrel/template` `^0.0.7`                                                                                                                           |                                                                |
+diff -r /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-scaffold-upper-git-final-pack/extract/package/dist/host/manifest.json /c/Users/mikes/WebstormProjects/scaffold/dist/host/manifest.json
+343c343
+< 			"digest": "b6c285b9923947460066ebc08f5778891ae2eac14800f40cdbcc53a63875554a"
+---
+> 			"digest": "aa6a8fa3ecf440734962e219e79b4ba27b266be736f3c0f1b312b0dba9fd206f"
+776c776
+< 	"digest": "0327bc72ce35efe56b959fea41d06a8334b9c9fd318b6ea005efd46b8ef0fd46"
+---
+> 	"digest": "7b581e4ee2c10a3aa51bcf57a3c2514be72466f04e9e7fcdf0a1d28af7260d45"

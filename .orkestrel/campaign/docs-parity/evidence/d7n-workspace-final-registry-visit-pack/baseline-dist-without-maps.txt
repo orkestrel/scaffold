@@ -1,0 +1,440 @@
+diff -r '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-workspace-final-registry-visit-pack/baseline/package/dist/src/core/index.cjs /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-workspace-final-registry-visit-pack/extract/package/dist/src/core/index.cjs
+9c9
+< * Unknown extensions intentionally fall back to `text` in
+---
+> * The table is frozen, and an extension it does not list falls back to `text` in
+56c56,59
+< /** Reports an invalid workspace edit or search operation. */
+---
+> /**
+> * Reports an invalid workspace edit or search operation, carrying a {@link WorkspaceErrorCode}
+> * and, when the operation had one, the context it ran under.
+> */
+76a80,83
+> * @remarks
+> * The check is one `instanceof` test, so it stays total: every input answers `true` or `false`
+> * and none throws.
+> *
+121c128
+< * Checks whether content is the binary arm.
+---
+> * Determines whether content is the binary arm.
+168c175
+< * Computes the decoded byte length of a base64 string.
+---
+> * Computes the decoded byte length of a base64 string, arithmetically rather than by decoding it.
+375c382,383
+< * Provides a mutable path-keyed editing surface over immutable files.
+---
+> * Implements `WorkspaceInterface` over one insertion-ordered path map the instance owns,
+> * projecting fresh arrays on every read.
+379c387
+< * registry has changed.
+---
+> * file map has changed.
+643c651,652
+< * Provides an insertion-ordered workspace registry with an active selection.
+---
+> * Implements `WorkspaceManagerInterface` over an insertion-ordered id map and one active id
+> * the instance owns, resolving `active` through that map on every read and holding no emitter.
+827c836
+< * @example
+---
+> * @example Files and content
+829c838,852
+< * import { createFile, createTextContent } from '@orkestrel/workspace'
+---
+> * import {
+> * 	computeSize,
+> * 	countLines,
+> * 	createBinaryContent,
+> * 	createFile,
+> * 	createTextContent,
+> * 	inferLanguage,
+> * 	isBinary,
+> * 	isText,
+> * } from '@orkestrel/workspace'
+> *
+> * const note = createFile({
+> * 	path: 'notes.md',
+> * 	content: createTextContent('# Title\nBody', inferLanguage('notes.md')), // 'markdown'
+> * })
+831c854,861
+< * createFile({ path: 'a.txt', content: createTextContent('hello', 'text') })
+---
+> * note.size // 12 — UTF-8 bytes, through computeSize
+> * note.lines // 2 — through countLines
+> * note.state // 'created'
+> * isText(note.content) // true
+> *
+> * const icon = createFile({ path: 'icon.png', content: createBinaryContent('AAAA', 'image/png') })
+> * isBinary(icon.content) // true
+> * icon.size // 3 — decoded base64 bytes, through computeDecodedSize
+844c874,875
+< * Creates the text arm of {@link FileContent}.
+---
+> * Creates the text arm of {@link FileContent}, returned as {@link TextContent} rather than as
+> * the whole union.
+864c895,896
+< * Creates the binary arm of {@link FileContent}.
+---
+> * Creates the binary arm of {@link FileContent}, returned as {@link BinaryContent} rather than
+> * as the whole union.
+884c916
+< * Creates a workspace.
+---
+> * Creates a workspace with the same identity, emitter, and seed options the constructor takes.
+916c948,949
+< * Creates a database-backed workspace snapshot store.
+---
+> * Creates a database-backed workspace snapshot store, over an in-memory driver when the caller
+> * supplies none.
+diff -r '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-workspace-final-registry-visit-pack/baseline/package/dist/src/core/index.d.cts /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-workspace-final-registry-visit-pack/extract/package/dist/src/core/index.d.cts
+1,5c1,5
+< import { DriverInterface } from '@orkestrel/database';
+< import { EmitterErrorHandler } from '@orkestrel/emitter';
+< import { EmitterHooks } from '@orkestrel/emitter';
+< import { EmitterInterface } from '@orkestrel/emitter';
+< import { TableInterface } from '@orkestrel/database';
+---
+> import type { DriverInterface } from '@orkestrel/database';
+> import type { EmitterErrorHandler } from '@orkestrel/emitter';
+> import type { EmitterHooks } from '@orkestrel/emitter';
+> import type { EmitterInterface } from '@orkestrel/emitter';
+> import type { TableInterface } from '@orkestrel/database';
+45c45
+<  * Computes the decoded byte length of a base64 string.
+---
+>  * Computes the decoded byte length of a base64 string, arithmetically rather than by decoding it.
+84c84,85
+<  * Creates the binary arm of {@link FileContent}.
+---
+>  * Creates the binary arm of {@link FileContent}, returned as {@link BinaryContent} rather than
+>  * as the whole union.
+100c101,102
+<  * Creates a database-backed workspace snapshot store.
+---
+>  * Creates a database-backed workspace snapshot store, over an in-memory driver when the caller
+>  * supplies none.
+120c122
+<  * @example
+---
+>  * @example Files and content
+122c124,138
+<  * import { createFile, createTextContent } from '@orkestrel/workspace'
+---
+>  * import {
+>  * 	computeSize,
+>  * 	countLines,
+>  * 	createBinaryContent,
+>  * 	createFile,
+>  * 	createTextContent,
+>  * 	inferLanguage,
+>  * 	isBinary,
+>  * 	isText,
+>  * } from '@orkestrel/workspace'
+>  *
+>  * const note = createFile({
+>  * 	path: 'notes.md',
+>  * 	content: createTextContent('# Title\nBody', inferLanguage('notes.md')), // 'markdown'
+>  * })
+124c140,147
+<  * createFile({ path: 'a.txt', content: createTextContent('hello', 'text') })
+---
+>  * note.size // 12 — UTF-8 bytes, through computeSize
+>  * note.lines // 2 — through countLines
+>  * note.state // 'created'
+>  * isText(note.content) // true
+>  *
+>  * const icon = createFile({ path: 'icon.png', content: createBinaryContent('AAAA', 'image/png') })
+>  * isBinary(icon.content) // true
+>  * icon.size // 3 — decoded base64 bytes, through computeDecodedSize
+144c167,168
+<  * Creates the text arm of {@link FileContent}.
+---
+>  * Creates the text arm of {@link FileContent}, returned as {@link TextContent} rather than as
+>  * the whole union.
+160c184
+<  * Creates a workspace.
+---
+>  * Creates a workspace with the same identity, emitter, and seed options the constructor takes.
+238c262
+<  * Unknown extensions intentionally fall back to `text` in
+---
+>  * The table is frozen, and an extension it does not list falls back to `text` in
+245c269
+<  * MIME.
+---
+>  * MIME. The union carries no discriminant field, so a caller narrows it with a guard.
+249c273,276
+< /** Carries the caller-supplied values used to create an immutable file. */
+---
+> /**
+>  * Carries the caller-supplied values used to create an immutable file. The byte size and the line
+>  * count are derived rather than supplied.
+>  */
+265c292,295
+< /** Names the edit state of an immutable file value. */
+---
+> /**
+>  * Names the edit state of an immutable file value: `created` for the first write to a path and
+>  * `modified` for every later edit of that path.
+>  */
+282c312
+<  * Checks whether content is the binary arm.
+---
+>  * Determines whether content is the binary arm.
+335a366,369
+>  * @remarks
+>  * The check is one `instanceof` test, so it stays total: every input answers `true` or `false`
+>  * and none throws.
+>  *
+424c458
+< /** Carries the tallies produced by a replacement operation. */
+---
+> /** Carries the tallies a replacement produced: the occurrences replaced and the files changed. */
+490c524,525
+<  * Provides a mutable path-keyed editing surface over immutable files.
+---
+>  * Implements `WorkspaceInterface` over one insertion-ordered path map the instance owns,
+>  * projecting fresh arrays on every read.
+494c529
+<  * registry has changed.
+---
+>  * file map has changed.
+542c577,580
+< /** Reports an invalid workspace edit or search operation. */
+---
+> /**
+>  * Reports an invalid workspace edit or search operation, carrying a {@link WorkspaceErrorCode}
+>  * and, when the operation had one, the context it ran under.
+>  */
+739c777,778
+<  * Provides an insertion-ordered workspace registry with an active selection.
+---
+>  * Implements `WorkspaceManagerInterface` over an insertion-ordered id map and one active id
+>  * the instance owns, resolving `active` through that map on every read and holding no emitter.
+888c927
+<      * Resolves a snapshot.
+---
+>      * Resolves a snapshot by workspace id.
+diff -r '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-workspace-final-registry-visit-pack/baseline/package/dist/src/core/index.d.ts /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-workspace-final-registry-visit-pack/extract/package/dist/src/core/index.d.ts
+1,5c1,5
+< import { DriverInterface } from '@orkestrel/database';
+< import { EmitterErrorHandler } from '@orkestrel/emitter';
+< import { EmitterHooks } from '@orkestrel/emitter';
+< import { EmitterInterface } from '@orkestrel/emitter';
+< import { TableInterface } from '@orkestrel/database';
+---
+> import type { DriverInterface } from '@orkestrel/database';
+> import type { EmitterErrorHandler } from '@orkestrel/emitter';
+> import type { EmitterHooks } from '@orkestrel/emitter';
+> import type { EmitterInterface } from '@orkestrel/emitter';
+> import type { TableInterface } from '@orkestrel/database';
+45c45
+<  * Computes the decoded byte length of a base64 string.
+---
+>  * Computes the decoded byte length of a base64 string, arithmetically rather than by decoding it.
+84c84,85
+<  * Creates the binary arm of {@link FileContent}.
+---
+>  * Creates the binary arm of {@link FileContent}, returned as {@link BinaryContent} rather than
+>  * as the whole union.
+100c101,102
+<  * Creates a database-backed workspace snapshot store.
+---
+>  * Creates a database-backed workspace snapshot store, over an in-memory driver when the caller
+>  * supplies none.
+120c122
+<  * @example
+---
+>  * @example Files and content
+122c124,138
+<  * import { createFile, createTextContent } from '@orkestrel/workspace'
+---
+>  * import {
+>  * 	computeSize,
+>  * 	countLines,
+>  * 	createBinaryContent,
+>  * 	createFile,
+>  * 	createTextContent,
+>  * 	inferLanguage,
+>  * 	isBinary,
+>  * 	isText,
+>  * } from '@orkestrel/workspace'
+>  *
+>  * const note = createFile({
+>  * 	path: 'notes.md',
+>  * 	content: createTextContent('# Title\nBody', inferLanguage('notes.md')), // 'markdown'
+>  * })
+124c140,147
+<  * createFile({ path: 'a.txt', content: createTextContent('hello', 'text') })
+---
+>  * note.size // 12 — UTF-8 bytes, through computeSize
+>  * note.lines // 2 — through countLines
+>  * note.state // 'created'
+>  * isText(note.content) // true
+>  *
+>  * const icon = createFile({ path: 'icon.png', content: createBinaryContent('AAAA', 'image/png') })
+>  * isBinary(icon.content) // true
+>  * icon.size // 3 — decoded base64 bytes, through computeDecodedSize
+144c167,168
+<  * Creates the text arm of {@link FileContent}.
+---
+>  * Creates the text arm of {@link FileContent}, returned as {@link TextContent} rather than as
+>  * the whole union.
+160c184
+<  * Creates a workspace.
+---
+>  * Creates a workspace with the same identity, emitter, and seed options the constructor takes.
+238c262
+<  * Unknown extensions intentionally fall back to `text` in
+---
+>  * The table is frozen, and an extension it does not list falls back to `text` in
+245c269
+<  * MIME.
+---
+>  * MIME. The union carries no discriminant field, so a caller narrows it with a guard.
+249c273,276
+< /** Carries the caller-supplied values used to create an immutable file. */
+---
+> /**
+>  * Carries the caller-supplied values used to create an immutable file. The byte size and the line
+>  * count are derived rather than supplied.
+>  */
+265c292,295
+< /** Names the edit state of an immutable file value. */
+---
+> /**
+>  * Names the edit state of an immutable file value: `created` for the first write to a path and
+>  * `modified` for every later edit of that path.
+>  */
+282c312
+<  * Checks whether content is the binary arm.
+---
+>  * Determines whether content is the binary arm.
+335a366,369
+>  * @remarks
+>  * The check is one `instanceof` test, so it stays total: every input answers `true` or `false`
+>  * and none throws.
+>  *
+424c458
+< /** Carries the tallies produced by a replacement operation. */
+---
+> /** Carries the tallies a replacement produced: the occurrences replaced and the files changed. */
+490c524,525
+<  * Provides a mutable path-keyed editing surface over immutable files.
+---
+>  * Implements `WorkspaceInterface` over one insertion-ordered path map the instance owns,
+>  * projecting fresh arrays on every read.
+494c529
+<  * registry has changed.
+---
+>  * file map has changed.
+542c577,580
+< /** Reports an invalid workspace edit or search operation. */
+---
+> /**
+>  * Reports an invalid workspace edit or search operation, carrying a {@link WorkspaceErrorCode}
+>  * and, when the operation had one, the context it ran under.
+>  */
+739c777,778
+<  * Provides an insertion-ordered workspace registry with an active selection.
+---
+>  * Implements `WorkspaceManagerInterface` over an insertion-ordered id map and one active id
+>  * the instance owns, resolving `active` through that map on every read and holding no emitter.
+888c927
+<      * Resolves a snapshot.
+---
+>      * Resolves a snapshot by workspace id.
+diff -r '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-workspace-final-registry-visit-pack/baseline/package/dist/src/core/index.js /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-workspace-final-registry-visit-pack/extract/package/dist/src/core/index.js
+8c8
+< * Unknown extensions intentionally fall back to `text` in
+---
+> * The table is frozen, and an extension it does not list falls back to `text` in
+55c55,58
+< /** Reports an invalid workspace edit or search operation. */
+---
+> /**
+> * Reports an invalid workspace edit or search operation, carrying a {@link WorkspaceErrorCode}
+> * and, when the operation had one, the context it ran under.
+> */
+75a79,82
+> * @remarks
+> * The check is one `instanceof` test, so it stays total: every input answers `true` or `false`
+> * and none throws.
+> *
+120c127
+< * Checks whether content is the binary arm.
+---
+> * Determines whether content is the binary arm.
+167c174
+< * Computes the decoded byte length of a base64 string.
+---
+> * Computes the decoded byte length of a base64 string, arithmetically rather than by decoding it.
+374c381,382
+< * Provides a mutable path-keyed editing surface over immutable files.
+---
+> * Implements `WorkspaceInterface` over one insertion-ordered path map the instance owns,
+> * projecting fresh arrays on every read.
+378c386
+< * registry has changed.
+---
+> * file map has changed.
+642c650,651
+< * Provides an insertion-ordered workspace registry with an active selection.
+---
+> * Implements `WorkspaceManagerInterface` over an insertion-ordered id map and one active id
+> * the instance owns, resolving `active` through that map on every read and holding no emitter.
+826c835
+< * @example
+---
+> * @example Files and content
+828c837,851
+< * import { createFile, createTextContent } from '@orkestrel/workspace'
+---
+> * import {
+> * 	computeSize,
+> * 	countLines,
+> * 	createBinaryContent,
+> * 	createFile,
+> * 	createTextContent,
+> * 	inferLanguage,
+> * 	isBinary,
+> * 	isText,
+> * } from '@orkestrel/workspace'
+> *
+> * const note = createFile({
+> * 	path: 'notes.md',
+> * 	content: createTextContent('# Title\nBody', inferLanguage('notes.md')), // 'markdown'
+> * })
+830c853,860
+< * createFile({ path: 'a.txt', content: createTextContent('hello', 'text') })
+---
+> * note.size // 12 — UTF-8 bytes, through computeSize
+> * note.lines // 2 — through countLines
+> * note.state // 'created'
+> * isText(note.content) // true
+> *
+> * const icon = createFile({ path: 'icon.png', content: createBinaryContent('AAAA', 'image/png') })
+> * isBinary(icon.content) // true
+> * icon.size // 3 — decoded base64 bytes, through computeDecodedSize
+843c873,874
+< * Creates the text arm of {@link FileContent}.
+---
+> * Creates the text arm of {@link FileContent}, returned as {@link TextContent} rather than as
+> * the whole union.
+863c894,895
+< * Creates the binary arm of {@link FileContent}.
+---
+> * Creates the binary arm of {@link FileContent}, returned as {@link BinaryContent} rather than
+> * as the whole union.
+883c915
+< * Creates a workspace.
+---
+> * Creates a workspace with the same identity, emitter, and seed options the constructor takes.
+915c947,948
+< * Creates a database-backed workspace snapshot store.
+---
+> * Creates a database-backed workspace snapshot store, over an in-memory driver when the caller
+> * supplies none.

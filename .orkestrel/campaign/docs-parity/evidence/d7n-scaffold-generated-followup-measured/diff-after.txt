@@ -1,0 +1,65 @@
+diff --git a/.claude/agents/orkestrel.md b/.claude/agents/orkestrel.md
+index 6caad39e..7efeed4a 100644
+--- a/.claude/agents/orkestrel.md
++++ b/.claude/agents/orkestrel.md
+@@ -57,7 +57,7 @@ so network-controlled descriptions never enter agent instruction context.
+ | `@orkestrel/database`   | `0.0.14` | L2    | `@orkestrel/contract` `^0.0.17`, `@orkestrel/emitter` `^0.0.10`, `@orkestrel/indexeddb` `^0.0.11`, `@orkestrel/sqlite` `^0.0.11`                                                                                                                                                                                           |                                                                |
+ | `@orkestrel/emitter`    | `0.0.10` | L1    | `@orkestrel/contract` `^0.0.17`                                                                                                                                                                                                                                                                                            |                                                                |
+ | `@orkestrel/form`       | `0.0.6`  | L2    | `@orkestrel/contract` `^0.0.17`, `@orkestrel/emitter` `^0.0.10`                                                                                                                                                                                                                                                            |                                                                |
+-| `@orkestrel/guide`      | `0.0.17` | L3    | `@orkestrel/contract` `^0.0.16`, `@orkestrel/markdown` `^0.0.13`                                                                                                                                                                                                                                                           |                                                                |
++| `@orkestrel/guide`      | `0.0.18` | L3    | `@orkestrel/contract` `^0.0.17`, `@orkestrel/markdown` `^0.0.14`                                                                                                                                                                                                                                                           |                                                                |
+ | `@orkestrel/html`       | `0.0.9`  | L1    | `@orkestrel/contract` `^0.0.17`                                                                                                                                                                                                                                                                                            |                                                                |
+ | `@orkestrel/indexeddb`  | `0.0.11` | L1    | `@orkestrel/contract` `^0.0.17`                                                                                                                                                                                                                                                                                            |                                                                |
+ | `@orkestrel/interpret`  | `0.0.12` | L3    | `@orkestrel/reason` `^0.0.9`, `@orkestrel/emitter` `^0.0.9`, `@orkestrel/contract` `^0.0.16`, `@orkestrel/template` `^0.0.6`                                                                                                                                                                                               |                                                                |
+@@ -78,7 +78,7 @@ so network-controlled descriptions never enter agent instruction context.
+ | `@orkestrel/reason`     | `0.0.10` | L2    | `@orkestrel/contract` `^0.0.17`, `@orkestrel/emitter` `^0.0.10`                                                                                                                                                                                                                                                            |                                                                |
+ | `@orkestrel/relation`   | `0.0.11` | L3    | `@orkestrel/contract` `^0.0.16`, `@orkestrel/database` `^0.0.13`, `@orkestrel/emitter` `^0.0.9`                                                                                                                                                                                                                            |                                                                |
+ | `@orkestrel/router`     | `0.0.14` | L2    | `@orkestrel/abort` `^0.0.10`, `@orkestrel/emitter` `^0.0.10`, `@orkestrel/contract` `^0.0.17`                                                                                                                                                                                                                              |                                                                |
+-| `@orkestrel/scaffold`   | `0.0.63` | L3    | `@orkestrel/console` `^0.0.12`, `@orkestrel/contract` `^0.0.16`, `@orkestrel/emitter` `^0.0.9`, `@orkestrel/markdown` `^0.0.13`, `@orkestrel/process` `^0.0.10`, `@orkestrel/template` `^0.0.6`                                                                                                                            |                                                                |
++| `@orkestrel/scaffold`   | `0.0.64` | L3    | `@orkestrel/console` `^0.0.13`, `@orkestrel/contract` `^0.0.17`, `@orkestrel/emitter` `^0.0.10`, `@orkestrel/markdown` `^0.0.14`, `@orkestrel/process` `^0.0.11`, `@orkestrel/template` `^0.0.7`                                                                                                                           |                                                                |
+ | `@orkestrel/sea`        | `0.0.14` | L3    | `@orkestrel/contract` `^0.0.16`, `@orkestrel/emitter` `^0.0.9`, `@orkestrel/process` `^0.0.10`                                                                                                                                                                                                                             |                                                                |
+ | `@orkestrel/server`     | `0.0.18` | L3    | `@orkestrel/abort` `^0.0.9`, `@orkestrel/codec` `^0.0.2`, `@orkestrel/contract` `^0.0.16`, `@orkestrel/emitter` `^0.0.9`, `@orkestrel/router` `^0.0.13`, `@orkestrel/timeout` `^0.0.9`                                                                                                                                     |                                                                |
+ | `@orkestrel/sqlite`     | `0.0.11` | L1    | `@orkestrel/contract` `^0.0.17`                                                                                                                                                                                                                                                                                            |                                                                |
+diff --git a/.orkestrel/campaign/docs-parity/ledger.md b/.orkestrel/campaign/docs-parity/ledger.md
+index 89fbff97..62f1f17e 100644
+--- a/.orkestrel/campaign/docs-parity/ledger.md
++++ b/.orkestrel/campaign/docs-parity/ledger.md
+@@ -501,3 +501,5 @@ Bench state at start (2026-09-06, 22:5x UTC): Codex bench unavailable (Sol dark;
+ | 2026-09-11 | SEA registry preparation landed at b6a6f9e and the campaign branch is pushed. Supported overwrite/audit, registry installation, final prepublishOnly and actual packing passed. Final review/main closure remain open. | `evidence/d7n-sea-final-registry-visit`, `evidence/d7n-sea-final-registry-visit-prepublish`, `evidence/d7n-sea-final-registry-visit-pack` |
+ | 2026-09-11 | Rater0.0.14 release preparation closed at 394b1d6 after accepted release review and root final registry gates/pack. Campaign/main pushes passed; canonical local main is clean and manifest/full dist match the accepted archive. Owner publication remains pending. | `d7n-rater-registry-prepared-verdict.md`, `d7n-rater-registry-release-landing.md`, `evidence/d7n-rater-registry-close` |
+ | 2026-09-11 | Terminal corrected source preparation landed at 5577e42 after independent source review and root prepublishOnly exit 0. The campaign branch is pushed; final registry preparation remains open. | `d7n-terminal-corrected-source-verdict.md`, `d7n-terminal-native-source-landing.md`, `evidence/d7n-terminal-native-preserved-commit` |
++| 2026-09-11 | Server registry preparation landed at f55f005 and the campaign branch is pushed. Supported overwrite/audit, registry installation, final prepublishOnly and actual packing passed. Final review/main closure remain open. | `evidence/d7n-server-final-registry-visit`, `evidence/d7n-server-final-registry-visit-prepublish`, `evidence/d7n-server-final-registry-visit-pack` |
++| 2026-09-11 | Workspace registry preparation landed at 51b066b and the campaign branch is pushed. Supported overwrite/audit, registry installation, final prepublishOnly and actual packing passed. Final review/main closure remain open. | `evidence/d7n-workspace-final-registry-visit`, `evidence/d7n-workspace-final-registry-visit-prepublish`, `evidence/d7n-workspace-final-registry-visit-pack` |
+diff --git a/host.json b/host.json
+index f47eb93e..7ac290fd 100644
+--- a/host.json
++++ b/host.json
+@@ -340,7 +340,7 @@
+ 			"storage": "claude/agents/orkestrel.md",
+ 			"destination": ".claude/agents/orkestrel.md",
+ 			"executable": false,
+-			"digest": "b6c285b9923947460066ebc08f5778891ae2eac14800f40cdbcc53a63875554a"
++			"digest": "aa6a8fa3ecf440734962e219e79b4ba27b266be736f3c0f1b312b0dba9fd206f"
+ 		},
+ 		{
+ 			"storage": "claude/agents/planner.md",
+@@ -773,5 +773,5 @@
+ 		".cursor/rules",
+ 		"scripts"
+ 	],
+-	"digest": "0327bc72ce35efe56b959fea41d06a8334b9c9fd318b6ea005efd46b8ef0fd46"
++	"digest": "7b581e4ee2c10a3aa51bcf57a3c2514be72466f04e9e7fcdf0a1d28af7260d45"
+ }
+diff --git a/package.json b/package.json
+index 9f6befb5..c6f93a7f 100644
+--- a/package.json
++++ b/package.json
+@@ -102,7 +102,7 @@
+ 	},
+ 	"devDependencies": {
+ 		"@microsoft/api-extractor": "^7.59.0",
+-		"@orkestrel/guide": "^0.0.17",
++		"@orkestrel/guide": "^0.0.18",
+ 		"@orkestrel/html": "^0.0.9",
+ 		"@orkestrel/probe": "^0.0.12",
+ 		"@orkestrel/test": "^0.0.14",

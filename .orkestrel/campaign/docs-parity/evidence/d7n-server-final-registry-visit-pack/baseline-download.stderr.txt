@@ -1,0 +1,22 @@
+npm notice
+npm notice 📦  @orkestrel/server@0.0.18
+npm notice Tarball Contents
+npm notice 1.1kB LICENSE
+npm notice 2.4kB README.md
+npm notice 90.1kB dist/src/server/index.cjs
+npm notice 140.7kB dist/src/server/index.cjs.map
+npm notice 100.8kB dist/src/server/index.d.cts
+npm notice 100.8kB dist/src/server/index.d.ts
+npm notice 87.7kB dist/src/server/index.js
+npm notice 140.0kB dist/src/server/index.js.map
+npm notice 4.0kB package.json
+npm notice Tarball Details
+npm notice name: @orkestrel/server
+npm notice version: 0.0.18
+npm notice filename: orkestrel-server-0.0.18.tgz
+npm notice package size: 196.9 kB
+npm notice unpacked size: 667.5 kB
+npm notice shasum: b697842aced26304582474c66fd8ae191339f800
+npm notice integrity: sha512-LbnTBRiMPCeVq[...]NXsa3xYfGBdJg==
+npm notice total files: 9
+npm notice

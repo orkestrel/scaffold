@@ -1,0 +1,1 @@
+diff -r -w --exclude=\*.map /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-scaffold-upper-git-final-pack/extract/package/dist/src /c/Users/mikes/WebstormProjects/scaffold/dist/src 

@@ -1,0 +1,2876 @@
+diff -r '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-server-final-registry-visit-pack/baseline/package/dist/src/server/index.cjs /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-server-final-registry-visit-pack/extract/package/dist/src/server/index.cjs
+13,14c13,14
+< * Names the default graceful-stop deadline (ms) the server gives in-flight
+< * requests on `stop()`.
+---
+> * Names the default graceful-stop deadline `stop()` gives in-flight requests and
+> * claimed upgraded sockets, `10_000` ms.
+18,22c18,20
+< * Names the `Symbol.for`-keyed brand `HTTPError` carries so `isHTTPError` recognizes
+< * an instance thrown by ANOTHER copy of this package (the dual-package
+< * hazard — a version-skewed or workspace-linked duplicate install), where
+< * `instanceof` alone fails because the two copies' `HTTPError` constructors
+< * are distinct objects.
+---
+> * Names the `Symbol.for`-interned brand `HTTPError` carries,
+> * `@orkestrel/server.HTTPError`, so `isHTTPError` recognizes an instance across
+> * package copies. A consumer never sets it by hand.
+25,26c23,27
+< * `Symbol.for` interns the symbol on the GLOBAL symbol registry, so every
+< * copy of this package that evaluates this key resolves the SAME symbol
+---
+> * The brand exists for the dual-package hazard — a version-skewed or
+> * workspace-linked duplicate install — where `instanceof` alone fails because
+> * each copy's `HTTPError` constructor is a distinct object.
+> * `Symbol.for` interns the symbol on the global symbol registry, so every
+> * copy of this package that evaluates this key resolves the same symbol
+31c32,35
+< /** Names the default maximum request body size (bytes) `readBody` accepts before a 413. */
+---
+> /**
+> * Names the default maximum request body size `readBody` accepts before a 413,
+> * `1_048_576` bytes.
+> */
+34,36c38,40
+< * Names the default maximum DECOMPRESSED request body size (bytes) — the zip-bomb cap
+< * the body pipeline's byte-counting `TransformStream` enforces when
+< * transparently decompressing a `Content-Encoding` request body.
+---
+> * Names the default maximum decompressed request body size, `16_777_216` bytes — the
+> * zip-bomb cap the body pipeline's byte-counting `TransformStream` enforces when
+> * it transparently decompresses a `Content-Encoding` request body.
+41,42c45,46
+< * Capping the decompressed byte count makes the pipe ABORT the moment the
+< * output would exceed this, BEFORE the full bomb is materialized, so the
+---
+> * Capping the decompressed byte count makes the pipe abort the moment the
+> * output would exceed this, before the full bomb is materialized, so the
+51c55,56
+< * Holds the SSE response headers a `Stream` always sets on its response.
+---
+> * Holds the SSE response headers a `Stream` sets on its response, merged under any
+> * caller `headers` so a caller repeating one of these keys replaces its value.
+58,60c63,64
+< * but never mutate the shared default; a `Stream` merges any
+< * {@link import('./types.js').StreamOptions.headers} OVER these, so a caller
+< * repeating one of these keys replaces its value.
+---
+> * but never mutate the shared default; the merged keys are
+> * {@link import('./types.js').StreamOptions.headers}.
+70,73c74,81
+< * to match — `^[A-Za-z0-9_-]{1,200}$` — so a CRLF / log-injection / oversized
+< * / control-char-bearing incoming id is REJECTED (a fresh id is minted
+< * instead) rather than ever riding into a response header or `context.state`.
+< * Frozen so a consumer can read but never mutate the shared default.
+---
+> * to match, `^[A-Za-z0-9_-]{1,200}$`.
+> *
+> * @remarks
+> * An incoming id carrying CRLF, a log-injection payload, a control character,
+> * or more characters than the pattern admits fails the match and is rejected —
+> * a fresh id is minted instead — so it never rides into a response header or
+> * `context.state`. Frozen so a consumer can read but never mutate the shared
+> * default.
+77,79c85,87
+< * Holds the set of bare `Content-Type`s `isCompressibleType` treats as
+< * COMPRESSIBLE, beyond the `text/*` prefix + structured-suffix (`+json` /
+< * `+xml`) rules that helper also applies.
+---
+> * Holds the bare `Content-Type` values `isCompressibleType` treats as compressible,
+> * beyond the `text/*` prefix and structured-suffix (`+json`, `+xml`) rules that
+> * helper also applies.
+83c91
+< * XML / SVG / WASM / a few document formats) — NOT already-compressed
+---
+> * XML / SVG / WASM / a few document formats) — never already-compressed
+105c113
+< * PREFERENCE order — `gzip` / `deflate`.
+---
+> * preference order — `gzip` then `deflate`.
+108c116
+< * `identity` (no compression) is always implicitly acceptable and is NOT
+---
+> * `identity` (no compression) is always implicitly acceptable and is not
+125c133
+< * — so an `HTTPError`'s message is ALWAYS client-facing (it is the handler's
+---
+> * — so an `HTTPError`'s message is always client-facing (it is the handler's
+182,183c190,192
+< * Narrows an unknown caught value to an {@link HTTPError} (including its
+< * subclasses, e.g. {@link ContentTooLargeError}).
+---
+> * Narrows an unknown caught value to an {@link HTTPError}, including a subclass such
+> * as {@link ContentTooLargeError}, and recognizes an instance from another copy of
+> * this package through a structural brand fallback.
+190c199
+< * an instance built by a DIFFERENT copy of this package (the dual-package
+---
+> * an instance built by a different copy of this package (the dual-package
+194c203
+< * same key) AND expose the exact fields the server's error boundary reads off
+---
+> * same key) and expose the exact fields the server's error boundary reads off
+196c205
+< * plain object that merely carries a `status` WITHOUT the brand is rejected.
+---
+> * plain object that merely carries a `status` without the brand is rejected.
+218c227
+< * entity refuses.
+---
+> * entity refuses, carrying `'STATUS'` or `'NEXT'` as its code.
+222c231
+< * record naming the offending facts. This is a PROGRAMMER error, so it carries
+---
+> * record naming the offending facts. This is a programmer error, so it carries
+251c260,261
+< * Narrows an unknown caught value to a {@link ServerError}.
+---
+> * Narrows an unknown caught value to a {@link ServerError} — the code-bearing refusal
+> * of a call the caller programmed.
+257,258c267,268
+< * Recognizes an instance built by THIS copy of the package. A `ServerError`
+< * is raised by a `Server` to the caller that just invoked it, so both sides
+---
+> * Recognizes an instance built by this copy of the package. A `ServerError`
+> * is raised by a `Server` to the caller that invoked it directly, so both sides
+309c319
+< * Composes an ordered chain of {@link MiddlewareHandler}s around a `terminal`
+---
+> * Composes an ordered chain of {@link MiddlewareHandler} layers around a `terminal`
+313,314c323,324
+< * `middleware[0]` runs OUTERMOST: it is invoked first, and its call to `next`
+< * runs `middleware[1]`, and so on until the LAST middleware's `next` invokes
+---
+> * `middleware[0]` runs outermost: it is invoked first, and its call to `next`
+> * runs `middleware[1]`, and so on until the last middleware's `next` invokes
+318c328
+< * downstream), or NOT called at all (a short-circuit — the middleware's own
+---
+> * downstream), or not called at all (a short-circuit — the middleware's own
+320c330
+< * SECOND call to the same `next` within one middleware invocation REJECTS —
+---
+> * second call to the same `next` within one middleware invocation rejects —
+344c354,355
+< * Wraps one middleware layer around its downstream handler.
+---
+> * Wraps one middleware layer around its downstream handler, enforcing the one-call
+> * `next` invariant.
+377c388
+< * Splits on `;`; the FIRST segment keeps any leading whitespace (a genuine
+---
+> * Splits on `;`; the first segment keeps any leading whitespace (a genuine
+380c391
+< * whitespace-PADDED name (`'  __Host-x=evil'`) is rejected by
+---
+> * whitespace-padded name (`'  __Host-x=evil'`) is rejected by
+383c394
+< * name, is skipped; a later duplicate name wins. TOTAL — an absent/empty/
+---
+> * name, is skipped; a later duplicate name wins. Total — an absent/empty/
+410,411c421,422
+< * Checks whether a string is a valid RFC 6265 cookie NAME — a non-empty run of
+< * cookie-token chars with NO surrounding (or interior) whitespace.
+---
+> * Checks whether a string is a valid RFC 6265 cookie name — a non-empty run of
+> * cookie-token characters with no surrounding or interior whitespace.
+452,454c463,465
+< * Checks whether a string is safe to interpolate as a `Set-Cookie` attribute VALUE
+< * (a `Domain` / `Path`) — the guard {@link serializeCookie} screens those two
+< * attributes with before emitting them.
+---
+> * Checks whether a string is safe to interpolate as a `Set-Cookie` attribute value —
+> * the guard {@link serializeCookie} applies to a `Domain` and a `Path` before it
+> * emits them.
+486,488c497,499
+< * (default OFF), `SameSite` (default `Lax`). `Domain` / `Path` are validated
+< * with {@link isCookieAttribute} and THROW an {@link HTTPError} on an
+< * injection attempt (a programmer misconfiguration — never a silent drop). A `sameSite: 'None'` cookie is ALWAYS `Secure` regardless of
+---
+> * (default off), `SameSite` (default `Lax`). `Domain` / `Path` are validated
+> * with {@link isCookieAttribute} and throw an {@link HTTPError} on an
+> * injection attempt (a programmer misconfiguration — never a silent drop). A `sameSite: 'None'` cookie is always `Secure` regardless of
+490c501
+< * `secure` here falls to OFF — request-aware callers resolve it first through
+---
+> * `secure` here falls to off — request-aware callers resolve it first through
+549c560
+< * Writes a SIGNED cookie — HMAC-signs `value` with {@link signToken} and
+---
+> * Writes a signed cookie — HMAC-signs `value` with {@link signToken} and
+575c586
+< * Reads + verifies a SIGNED cookie off a request — TOTAL, returning the
+---
+> * Reads and verifies a signed cookie off a request — total, returning the
+581c592
+< * accepts a cookie signed by any of its secrets). ANY failure — an absent
+---
+> * accepts a cookie signed by any of its secrets). Any failure — an absent
+604c615
+< * a cookie when those MATCH the one it set).
+---
+> * a cookie when those match the one it set).
+629c640
+< * the signature), signed by using `crypto.subtle.sign('HMAC', …)` under the FIRST
+---
+> * the signature), signed by using `crypto.subtle.sign('HMAC', …)` under the first
+631,632c642,643
+< * Blank/whitespace-only secrets are IGNORED ({@link normalizeSecret}); a
+< * misconfigured secret with no usable entry THROWS an {@link HTTPError}
+---
+> * Blank/whitespace-only secrets are ignored ({@link normalizeSecret}); a
+> * misconfigured secret with no usable entry throws an {@link HTTPError}
+663c674
+< * Verifies a stateless token and returns its embedded value — TOTAL, never throws.
+---
+> * Verifies a stateless token and returns its embedded value — total, never throws.
+666c677
+< * The inverse of {@link signToken}: splits the token on its LAST `.` (so a
+---
+> * The inverse of {@link signToken}: splits the token on its last `.` (so a
+670c681
+< * HMAC-SHA256 signature against EACH {@link TokenSecret} candidate through
+---
+> * HMAC-SHA256 signature against each {@link TokenSecret} candidate through
+675c686
+< * token. ANY failure — a malformed token, a bad signature,
+---
+> * token. Any failure — a malformed token, a bad signature,
+711c722
+< * Decodes + narrows a signed token's base64url JSON payload, honoring its
+---
+> * Decodes and narrows a signed token's base64url JSON payload, honoring its
+719c730
+< * `as`, and rejects an expired `exp`. TOTAL — any
+---
+> * `as`, and rejects an expired `exp`. Total — any
+741,742c752,753
+< * Normalizes a {@link TokenSecret} to a concrete list of USABLE secrets —
+< * backs both {@link signToken} and {@link verifyToken}.
+---
+> * Normalizes a {@link TokenSecret} to a concrete list of usable secrets — the list
+> * behind both {@link signToken} and {@link verifyToken}.
+746,747c757,758
+< * blank/whitespace-only entry is DROPPED (`.trim()` is used only for that
+< * emptiness test; each kept secret is stored VERBATIM). The first kept
+---
+> * blank/whitespace-only entry is dropped (`.trim()` is used only for that
+> * emptiness test; each kept secret is stored verbatim). The first kept
+769,770c780,781
+< * back to `1`). A `;q=0` entry is KEPT (an explicit rejection a caller must
+< * honor). The result is sorted by `q` DESCENDING, a STABLE sort preserving
+---
+> * back to `1`). A `;q=0` entry is kept (an explicit rejection a caller must
+> * honor). The result is sorted by `q` descending, a stable sort preserving
+772c783
+< * so parsing stays linear in the header length (ReDoS-safe). TOTAL — an
+---
+> * so parsing stays linear in the header length (ReDoS-safe). Total — an
+816c827
+< * Prefers an EXACT named match (including an explicit `;q=0` rejection);
+---
+> * Prefers an exact named match (including an explicit `;q=0` rejection);
+838c849,850
+< * parsed `Accept-Encoding` entries.
+---
+> * parsed `Accept-Encoding` entries — the shared selection leaf behind
+> * {@link negotiateEncoding} and a `Negotiator`'s `encoding` axis.
+846c858
+< * `available` the SERVER's preference order. An empty `available` list, and a
+---
+> * `available` the server's preference order. An empty `available` list, and a
+848c860
+< * compression). TOTAL on hostile input.
+---
+> * compression). Total on hostile input.
+881c893
+< * client accepts none of `available` (identity — no compression). TOTAL on
+---
+> * client accepts none of `available` (identity — no compression). Total on
+899c911
+< * Reports the rank + quality of one `candidate` media type against the parsed `Accept`
+---
+> * Reports the rank and quality of one `candidate` media type against the parsed `Accept`
+913c925
+< * @param candidate - The candidate media type to score (e.g. `'text/html'`)
+---
+> * @param candidate - The candidate media type to score (for example `'text/html'`)
+956c968
+< * @param candidate - The candidate language tag to score (e.g. `'en-US'`)
+---
+> * @param candidate - The candidate language tag to score (for example `'en-US'`)
+990,991c1002,1003
+< * binary (`image/png`, `application/zip`) is NOT compressible. An
+< * absent/empty type is not compressible. TOTAL.
+---
+> * binary (`image/png`, `application/zip`) is not compressible. An
+> * absent/empty type is not compressible. Total.
+1011c1023
+< * Computes a CONTENT `ETag` over a fully-buffered response body by using WebCrypto.
+---
+> * Computes a content `ETag` over a fully-buffered response body by using WebCrypto.
+1015,1017c1027,1029
+< * digest as a WEAK validator (`W/"<hash>"`) when `weak` is `true` — the
+< * default, encoding-AGNOSTIC, so the tag survives a downstream content
+< * re-encoding (gzip) and still matches on revalidation — or a STRONG one
+---
+> * digest as a weak validator (`W/"<hash>"`) when `weak` is `true` — the
+> * default, encoding-agnostic, so the tag survives a downstream content
+> * re-encoding (gzip) and still matches on revalidation — or a strong one
+1036,1037c1048,1049
+< * Strips the WEAK indicator (`W/`) from an entity-tag, returning its opaque
+< * comparison body — the reduction {@link matchesETag} applies to both sides
+---
+> * Strips the weak indicator (`W/`) from an entity-tag, returning its opaque
+> * comparison body — the reduction {@link matchesETag} applies to each side
+1054c1066
+< * `ETag` — the RFC 7232 §2.3.2 WEAK comparison.
+---
+> * `ETag` — the RFC 7232 §2.3.2 weak comparison.
+1057,1058c1069,1070
+< * `If-None-Match` is a COMMA-separated LIST of entity-tags (matches if ANY
+< * listed tag matches), or the `*` wildcard (matches ANY current
+---
+> * `If-None-Match` is a comma-separated list of entity-tags (matches if any
+> * listed tag matches), or the `*` wildcard (matches any current
+1060,1061c1072,1073
+< * WEAK: `W/"abc"` and `"abc"` are equal (both sides' weak prefix is stripped
+< * through {@link unwrapETag} before comparing the opaque body). TOTAL — a
+---
+> * weak: `W/"abc"` and `"abc"` are equal (each side's weak prefix is stripped
+> * through {@link unwrapETag} before comparing the opaque body). Total — a
+1087c1099
+< * TOTAL, returning a {@link RangeSpec} or `undefined`.
+---
+> * total, returning a {@link RangeSpec} or `undefined`.
+1092c1104
+< * `[0, size - 1]` (the HTTP INCLUSIVE-end convention). Returns
+---
+> * `[0, size - 1]` (the HTTP inclusive-end convention). Returns
+1095,1097c1107,1109
+< * `undefined` for the "serve the whole resource" case: an ABSENT header, a
+< * non-`bytes` unit, a MULTI-range header (`a-b, c-d` — refused outright, not
+< * supported), or any malformed/non-finite bound. NEVER throws on a hostile
+---
+> * `undefined` for the "serve the whole resource" case: an absent header, a
+> * non-`bytes` unit, a multi-range header (`a-b, c-d` — refused outright, not
+> * supported), or any malformed/non-finite bound. Never throws on a hostile
+1154c1166
+< * `undefined` (no header set). SECURITY: the literal `'null'` origin — sent
+---
+> * `undefined` (no header set). Security: the literal `'null'` origin — sent
+1156c1168
+< * NEVER reflected even if `'null'` were listed, closing the hostile-context
+---
+> * never reflected even if `'null'` were listed, closing the hostile-context
+1224,1225c1236,1237
+< * Checks whether a client-supplied `X-Request-ID` is SAFE to echo into a response
+< * header + `context.state`.
+---
+> * Checks whether a client-supplied `X-Request-ID` is safe to echo into a response
+> * header and `context.state`.
+1228c1240
+< * A request id is echoed RAW into a response header and log lines, so an
+---
+> * A request id is echoed raw into a response header and log lines, so an
+1232c1244
+< * TOTAL — never throws.
+---
+> * Total — never throws.
+1254c1266
+< * first FOUR (the `/64` prefix), normalizes each (lower-case, no leading
+---
+> * first four (the `/64` prefix), normalizes each (lower-case, no leading
+1297c1309
+< * Collapses a client IP into its rate-limit BUCKET key — an IPv6 address to
+---
+> * Collapses a client IP into its rate-limit bucket key — an IPv6 address to
+1301c1313
+< * A residential/mobile IPv6 user is routinely handed a WHOLE `/64`, so a
+---
+> * A residential/mobile IPv6 user is routinely handed a whole `/64`, so a
+1323c1335
+< * Emits an `event:`/`id:`/`retry:` line for each present field, then ONE
+---
+> * Emits an `event:`/`id:`/`retry:` line for each present field, then one
+1347,1349c1359,1361
+< * Checks whether a key is a PROTOTYPE-POLLUTION vector — `__proto__`, `constructor`,
+< * or `prototype` — the three keys that, assigned onto a normal object, can
+< * reach and mutate `Object.prototype`.
+---
+> * Checks whether a key is a prototype-pollution vector — `__proto__`,
+> * `constructor`, or `prototype`, each of which can reach and mutate
+> * `Object.prototype` when it is assigned onto a normal object.
+1364,1365c1376
+< * Strips the prototype-pollution keys from a parsed value IN PLACE,
+< * recursively.
+---
+> * Strips the prototype-pollution keys from a parsed value in place, recursively.
+1368,1369c1379,1380
+< * `JSON.parse('{"__proto__":{…}}')` is benign on its own — it produces an OWN,
+< * enumerable `__proto__` DATA property — but that own key becomes a
+---
+> * `JSON.parse('{"__proto__":{…}}')` is benign on its own — it produces an own,
+> * enumerable `__proto__` data property — but that own key becomes a
+1408c1419
+< * exceeds `limit` — BEFORE the rest of the stream is buffered — rather than
+---
+> * exceeds `limit` — before the rest of the stream is buffered — rather than
+1451c1462
+< * Lower-cases + trims and returns the matching {@link Encoding} ONLY for
+---
+> * Lower-cases + trims and returns the matching {@link Encoding} only for
+1455c1466
+< * TOTAL — never asserts the loose `string | null` header.
+---
+> * Total — never asserts the loose `string | null` header.
+1473c1484
+< * transparently through `DecompressionStream`, capping the DECOMPRESSED output —
+---
+> * transparently through `DecompressionStream`, capping the decompressed output —
+1478c1489
+< * `TransformStream` that ABORTS the pipe the INSTANT the running decompressed
+---
+> * `TransformStream` that aborts the pipe the instant the running decompressed
+1528c1539
+< * Collects + decodes a `Request` body — the shared body-collection pipeline
+---
+> * Collects and decodes a `Request` body — the shared body-collection pipeline
+1530c1541,1542
+< * `body()`.
+---
+> * `body()`. An empty body and a malformed `application/json` body each decode to
+> * `undefined`.
+1541,1542c1553
+< * scrubPrototype}); any other type decodes as UTF-8 text; an empty body
+< * decodes to `undefined`.
+---
+> * scrubPrototype}); any other type decodes as UTF-8 text.
+1544,1547c1555,1557
+< * A malformed JSON body is total: it decodes to `undefined` rather than
+< * throwing, so a handler that must reject one checks for `undefined` itself.
+< * That makes `undefined` the answer for two distinct inputs, and nothing in the
+< * returned value tells them apart.
+---
+> * A malformed JSON body is total: it decodes rather than throwing, so a handler
+> * that must reject one checks for `undefined` itself, and nothing in the returned
+> * value tells an empty body from a malformed one.
+1606,1607c1616,1618
+< * Finds a FREE TCP port — binds a throwaway `node:net` server, reads the
+< * OS-assigned port, closes it, and resolves that port.
+---
+> * Finds a free TCP port — binds a throwaway `node:net` server on a `preferred`
+> * port where one is given and on an ephemeral port otherwise, reads the bound
+> * port, closes the server, and resolves that port.
+1611,1612c1622,1623
+< * and returns it. With a `preferred` port it tries THAT port first and
+< * returns it when free; if already in use (`EADDRINUSE`) it FALLS BACK to an
+---
+> * and returns it. With a `preferred` port it tries that port first and
+> * returns it when free; if already in use (`EADDRINUSE`) it falls back to an
+1617c1628
+< * `preferred` port (e.g. a permission fault). A listener whose address is not
+---
+> * `preferred` port (for example, a permission fault). A listener whose address is not
+1648c1659
+< * reusable, cross-middleware ENTITY (not a middleware). Implements exactly
+---
+> * reusable, cross-middleware entity rather than a middleware. Implements exactly
+1654c1665
+< * sibling axes and REUSE the same {@link parseAcceptHeader} q-value parser the
+---
+> * sibling axes and reuse the same {@link parseAcceptHeader} q-value parser the
+1710c1721
+< 	* Errors thrown by the negotiated handler propagate UNMODIFIED — the
+---
+> 	* Errors thrown by the negotiated handler propagate unmodified — the
+1728c1739
+< * dispatcher.
+---
+> * dispatcher. Implements exactly {@link ServerInterface}.
+1735c1746
+< *   ServerOptions.port} (omitted/`0` port ⇒ EPHEMERAL, resolved from the
+---
+> *   ServerOptions.port} (omitted/`0` port ⇒ ephemeral, resolved from the
+1742c1753
+< *   so in-flight handlers observe cancellation, drains in-flight requests AND
+---
+> *   so in-flight handlers observe cancellation, drains in-flight requests and
+1748c1759
+< *   `signal` LINKED to this run's stop signal through `@orkestrel/abort`'s
+---
+> *   `signal` linked to this run's stop signal through `@orkestrel/abort`'s
+1750c1761
+< *   `buildRequest`'s own abort, armed by BOTH request-side and response-side
+---
+> *   `buildRequest`'s own abort, armed by request-side and response-side
+1752c1763
+< *   so a handler awaiting `request.signal` observes BOTH); `context.state` is built through
+---
+> *   so a handler awaiting `request.signal` observes either); `context.state` is built through
+1756c1767
+< * - **The built-in boundary** wraps the WHOLE per-request chain, including
+---
+> * - **The built-in boundary** wraps the whole per-request chain, including
+1758c1769
+< *   throw (e.g. a malformed `Host` header) to a silent `400` with no
+---
+> *   throw (for example, a malformed `Host` header) to a silent `400` with no
+1770c1781
+< *   A CLAIMED socket joins `#upgraded` until it closes: the claimant still
+---
+> *   A claimed socket joins `#upgraded` until it closes: the claimant still
+1775c1786
+< *   routes it to the `error` OPTION (not the domain `error` event).
+---
+> *   routes it to the `error` option rather than to the domain `error` event.
+2093c2104
+< * merged OVER them, at `options.status` (default `200`). A caller repeating one
+---
+> * merged over them, at `options.status` (default `200`). A caller repeating one
+2105c2116
+< * stream. Every method is a SAFE NO-OP once `closed` (ended by `end()`, or
+---
+> * stream. Every method is a safe no-op once `closed` (ended by `end()`, or
+2205a2217
+> * import type { MiddlewareContext } from '@src/server'
+2207a2220,2221
+> * declare const context: MiddlewareContext<Record<string, never>>
+> *
+2209,2210c2223,2228
+< * negotiator.negotiate('text/html, application/json;q=0.9', ['application/json', 'text/html'])
+< * // 'text/html'
+---
+> * negotiator.negotiate('text/html, application/json;q=0.9', ['application/json', 'text/html']) // 'text/html'
+> * negotiator.encoding('gzip;q=1.0, deflate;q=0.8', ['gzip', 'deflate']) // 'gzip'
+> * negotiator.language('en-US, en;q=0.8, fr;q=0.5', ['en', 'fr']) // 'en'
+> * await negotiator.format(new Request('http://x'), context, {
+> * 	'application/json': (_request, _context) => Response.json({ ok: true }),
+> * })
+2224c2242
+< * @example
+---
+> * @example Quickstart: dispatcher, middleware, lifecycle
+2226c2244,2245
+< * import { createServer } from '@src/server'
+---
+> * import type { MiddlewareHandler } from '@orkestrel/server'
+> * import { createServer } from '@orkestrel/server'
+2229c2248,2253
+< * const dispatcher = createDispatcher<{ readonly ip?: string }>()
+---
+> * interface State {
+> * 	readonly requestId: string
+> * 	readonly ip: string | undefined
+> * }
+> *
+> * const dispatcher = createDispatcher<State>()
+2232c2256,2262
+< * const server = createServer({
+---
+> * const logRequestId: MiddlewareHandler<State> = async (_request, context, next) => {
+> * 	const response = await next()
+> * 	response.headers.set('X-Request-ID', context.state.requestId)
+> * 	return response
+> * }
+> *
+> * const server = createServer<State>({
+2234c2264
+< * 	state: (connection) => ({ ip: connection.ip }),
+---
+> * 	state: (connection) => ({ requestId: crypto.randomUUID(), ip: connection.ip }),
+2235a2266
+> * server.use(logRequestId)
+2237a2269
+> * await server.destroy()
+diff -r '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-server-final-registry-visit-pack/baseline/package/dist/src/server/index.d.cts /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-server-final-registry-visit-pack/extract/package/dist/src/server/index.d.cts
+1,7c1,7
+< import { AddressInfo } from 'node:net';
+< import { DispatcherInterface } from '@orkestrel/router';
+< import { Duplex } from 'node:stream';
+< import { EmitterErrorHandler } from '@orkestrel/emitter';
+< import { EmitterHooks } from '@orkestrel/emitter';
+< import { EmitterInterface } from '@orkestrel/emitter';
+< import { IncomingMessage } from 'node:http';
+---
+> import type { AddressInfo } from 'node:net';
+> import type { DispatcherInterface } from '@orkestrel/router';
+> import type { Duplex } from 'node:stream';
+> import type { EmitterErrorHandler } from '@orkestrel/emitter';
+> import type { EmitterHooks } from '@orkestrel/emitter';
+> import type { EmitterInterface } from '@orkestrel/emitter';
+> import type { IncomingMessage } from 'node:http';
+17c17
+<  * default `1` when absent); a `;q=0` entry explicitly REJECTS that token — a
+---
+>  * default `1` when absent); a `;q=0` entry explicitly rejects that token — a
+33c33
+<  * @param decompression - The maximum DECOMPRESSED body size in bytes (the
+---
+>  * @param decompression - The maximum decompressed body size in bytes (the
+35c35
+<  *   highly-compressible payload small ON THE WIRE (under `limit`) can inflate
+---
+>  *   highly-compressible payload small on the wire (under `limit`) can inflate
+39,40c39,40
+<  *   INDEPENDENT of `limit`, not aligned with it; a non-positive value means
+<  *   UNCAPPED decompressed output — use only when `limit` already bounds the
+---
+>  *   independent of `limit`, not aligned with it; a non-positive value means
+>  *   uncapped decompressed output — use only when `limit` already bounds the
+54c54
+<  * a cookie when those MATCH the one it set).
+---
+>  * a cookie when those match the one it set).
+74c74
+<  * exceeds `limit` — BEFORE the rest of the stream is buffered — rather than
+---
+>  * exceeds `limit` — before the rest of the stream is buffered — rather than
+91c91
+<  * Composes an ordered chain of {@link MiddlewareHandler}s around a `terminal`
+---
+>  * Composes an ordered chain of {@link MiddlewareHandler} layers around a `terminal`
+95,96c95,96
+<  * `middleware[0]` runs OUTERMOST: it is invoked first, and its call to `next`
+<  * runs `middleware[1]`, and so on until the LAST middleware's `next` invokes
+---
+>  * `middleware[0]` runs outermost: it is invoked first, and its call to `next`
+>  * runs `middleware[1]`, and so on until the last middleware's `next` invokes
+100c100
+<  * downstream), or NOT called at all (a short-circuit — the middleware's own
+---
+>  * downstream), or not called at all (a short-circuit — the middleware's own
+102c102
+<  * SECOND call to the same `next` within one middleware invocation REJECTS —
+---
+>  * second call to the same `next` within one middleware invocation rejects —
+125,127c125,127
+<  * Holds the set of bare `Content-Type`s `isCompressibleType` treats as
+<  * COMPRESSIBLE, beyond the `text/*` prefix + structured-suffix (`+json` /
+<  * `+xml`) rules that helper also applies.
+---
+>  * Holds the bare `Content-Type` values `isCompressibleType` treats as compressible,
+>  * beyond the `text/*` prefix and structured-suffix (`+json`, `+xml`) rules that
+>  * helper also applies.
+131c131
+<  * XML / SVG / WASM / a few document formats) — NOT already-compressed
+---
+>  * XML / SVG / WASM / a few document formats) — never already-compressed
+140c140
+<  * Computes a CONTENT `ETag` over a fully-buffered response body by using WebCrypto.
+---
+>  * Computes a content `ETag` over a fully-buffered response body by using WebCrypto.
+144,146c144,146
+<  * digest as a WEAK validator (`W/"<hash>"`) when `weak` is `true` — the
+<  * default, encoding-AGNOSTIC, so the tag survives a downstream content
+<  * re-encoding (gzip) and still matches on revalidation — or a STRONG one
+---
+>  * digest as a weak validator (`W/"<hash>"`) when `weak` is `true` — the
+>  * default, encoding-agnostic, so the tag survives a downstream content
+>  * re-encoding (gzip) and still matches on revalidation — or a strong one
+162c162
+<  * Collapses a client IP into its rate-limit BUCKET key — an IPv6 address to
+---
+>  * Collapses a client IP into its rate-limit bucket key — an IPv6 address to
+166c166
+<  * A residential/mobile IPv6 user is routinely handed a WHOLE `/64`, so a
+---
+>  * A residential/mobile IPv6 user is routinely handed a whole `/64`, so a
+189c189
+<  * Prefers an EXACT named match (including an explicit `;q=0` rejection);
+---
+>  * Prefers an exact named match (including an explicit `;q=0` rejection);
+214c214
+<  * first FOUR (the `/64` prefix), normalizes each (lower-case, no leading
+---
+>  * first four (the `/64` prefix), normalizes each (lower-case, no leading
+240c240
+<  * @param candidate - The candidate language tag to score (e.g. `'en-US'`)
+---
+>  * @param candidate - The candidate language tag to score (for example `'en-US'`)
+253c253
+<  * Represents the per-request connection facts the server face injects — the ONLY data
+---
+>  * Represents the per-request connection facts the server face injects — the only data
+309c309
+<  * @param maxAge - The `Max-Age` directive in SECONDS (the wire unit, not a
+---
+>  * @param maxAge - The `Max-Age` directive in seconds (the wire unit, not a
+316c316
+<  *   Connection.encrypted}). A `sameSite: 'None'` cookie is ALWAYS
+---
+>  *   Connection.encrypted}). A `sameSite: 'None'` cookie is always
+336a337
+>  * import type { MiddlewareContext } from '@src/server'
+338a340,341
+>  * declare const context: MiddlewareContext<Record<string, never>>
+>  *
+340,341c343,348
+<  * negotiator.negotiate('text/html, application/json;q=0.9', ['application/json', 'text/html'])
+<  * // 'text/html'
+---
+>  * negotiator.negotiate('text/html, application/json;q=0.9', ['application/json', 'text/html']) // 'text/html'
+>  * negotiator.encoding('gzip;q=1.0, deflate;q=0.8', ['gzip', 'deflate']) // 'gzip'
+>  * negotiator.language('en-US, en;q=0.8, fr;q=0.5', ['en', 'fr']) // 'en'
+>  * await negotiator.format(new Request('http://x'), context, {
+>  * 	'application/json': (_request, _context) => Response.json({ ok: true }),
+>  * })
+354c361
+<  * @example
+---
+>  * @example Quickstart: dispatcher, middleware, lifecycle
+356c363,364
+<  * import { createServer } from '@src/server'
+---
+>  * import type { MiddlewareHandler } from '@orkestrel/server'
+>  * import { createServer } from '@orkestrel/server'
+359c367,372
+<  * const dispatcher = createDispatcher<{ readonly ip?: string }>()
+---
+>  * interface State {
+>  * 	readonly requestId: string
+>  * 	readonly ip: string | undefined
+>  * }
+>  *
+>  * const dispatcher = createDispatcher<State>()
+362c375,381
+<  * const server = createServer({
+---
+>  * const logRequestId: MiddlewareHandler<State> = async (_request, context, next) => {
+>  * 	const response = await next()
+>  * 	response.headers.set('X-Request-ID', context.state.requestId)
+>  * 	return response
+>  * }
+>  *
+>  * const server = createServer<State>({
+364c383
+<  * 	state: (connection) => ({ ip: connection.ip }),
+---
+>  * 	state: (connection) => ({ requestId: crypto.randomUUID(), ip: connection.ip }),
+365a385
+>  * server.use(logRequestId)
+367a388
+>  * await server.destroy()
+410c431
+<  * Decodes + narrows a signed token's base64url JSON payload, honoring its
+---
+>  * Decodes and narrows a signed token's base64url JSON payload, honoring its
+418c439
+<  * `as`, and rejects an expired `exp`. TOTAL — any
+---
+>  * `as`, and rejects an expired `exp`. Total — any
+429c450
+<  * transparently through `DecompressionStream`, capping the DECOMPRESSED output —
+---
+>  * transparently through `DecompressionStream`, capping the decompressed output —
+434c455
+<  * `TransformStream` that ABORTS the pipe the INSTANT the running decompressed
+---
+>  * `TransformStream` that aborts the pipe the instant the running decompressed
+450c471,474
+< /** Names the default maximum request body size (bytes) `readBody` accepts before a 413. */
+---
+> /**
+>  * Names the default maximum request body size `readBody` accepts before a 413,
+>  * `1_048_576` bytes.
+>  */
+454,456c478,480
+<  * Names the default maximum DECOMPRESSED request body size (bytes) — the zip-bomb cap
+<  * the body pipeline's byte-counting `TransformStream` enforces when
+<  * transparently decompressing a `Content-Encoding` request body.
+---
+>  * Names the default maximum decompressed request body size, `16_777_216` bytes — the
+>  * zip-bomb cap the body pipeline's byte-counting `TransformStream` enforces when
+>  * it transparently decompresses a `Content-Encoding` request body.
+461,462c485,486
+<  * Capping the decompressed byte count makes the pipe ABORT the moment the
+<  * output would exceed this, BEFORE the full bomb is materialized, so the
+---
+>  * Capping the decompressed byte count makes the pipe abort the moment the
+>  * output would exceed this, before the full bomb is materialized, so the
+472,473c496,497
+<  * Names the default graceful-stop deadline (ms) the server gives in-flight
+<  * requests on `stop()`.
+---
+>  * Names the default graceful-stop deadline `stop()` gives in-flight requests and
+>  * claimed upgraded sockets, `10_000` ms.
+479c503
+<  * PREFERENCE order — `gzip` / `deflate`.
+---
+>  * preference order — `gzip` then `deflate`.
+482c506
+<  * `identity` (no compression) is always implicitly acceptable and is NOT
+---
+>  * `identity` (no compression) is always implicitly acceptable and is not
+491,492c515,517
+<  * Finds a FREE TCP port — binds a throwaway `node:net` server, reads the
+<  * OS-assigned port, closes it, and resolves that port.
+---
+>  * Finds a free TCP port — binds a throwaway `node:net` server on a `preferred`
+>  * port where one is given and on an ephemeral port otherwise, reads the bound
+>  * port, closes the server, and resolves that port.
+496,497c521,522
+<  * and returns it. With a `preferred` port it tries THAT port first and
+<  * returns it when free; if already in use (`EADDRINUSE`) it FALLS BACK to an
+---
+>  * and returns it. With a `preferred` port it tries that port first and
+>  * returns it when free; if already in use (`EADDRINUSE`) it falls back to an
+502c527
+<  * `preferred` port (e.g. a permission fault). A listener whose address is not
+---
+>  * `preferred` port (for example, a permission fault). A listener whose address is not
+523,524c548,550
+<  * Represents a content-coding the substrate compresses / decompresses with — the
+<  * `Content-Encoding` / `Accept-Encoding` token vocabulary it understands.
+---
+>  * Represents a content-coding the substrate compresses or decompresses with. Its
+>  * members are the `Content-Encoding` and `Accept-Encoding` token vocabulary the
+>  * substrate understands.
+530c556
+<  * is deliberately OMITTED here — Brotli parity is the middleware package's
+---
+>  * is deliberately omitted here — Brotli parity is the middleware package's
+543c569
+<  * Each key is a media type the route can PRODUCE (`application/json`,
+---
+>  * Each key is a media type the route can produce (`application/json`,
+555,559c581,583
+<  * Names the `Symbol.for`-keyed brand `HTTPError` carries so `isHTTPError` recognizes
+<  * an instance thrown by ANOTHER copy of this package (the dual-package
+<  * hazard — a version-skewed or workspace-linked duplicate install), where
+<  * `instanceof` alone fails because the two copies' `HTTPError` constructors
+<  * are distinct objects.
+---
+>  * Names the `Symbol.for`-interned brand `HTTPError` carries,
+>  * `@orkestrel/server.HTTPError`, so `isHTTPError` recognizes an instance across
+>  * package copies. A consumer never sets it by hand.
+562,563c586,590
+<  * `Symbol.for` interns the symbol on the GLOBAL symbol registry, so every
+<  * copy of this package that evaluates this key resolves the SAME symbol
+---
+>  * The brand exists for the dual-package hazard — a version-skewed or
+>  * workspace-linked duplicate install — where `instanceof` alone fails because
+>  * each copy's `HTTPError` constructor is a distinct object.
+>  * `Symbol.for` interns the symbol on the global symbol registry, so every
+>  * copy of this package that evaluates this key resolves the same symbol
+577c604
+<  * — so an `HTTPError`'s message is ALWAYS client-facing (it is the handler's
+---
+>  * — so an `HTTPError`'s message is always client-facing (it is the handler's
+632,633c659,660
+<  * binary (`image/png`, `application/zip`) is NOT compressible. An
+<  * absent/empty type is not compressible. TOTAL.
+---
+>  * binary (`image/png`, `application/zip`) is not compressible. An
+>  * absent/empty type is not compressible. Total.
+647,649c674,676
+<  * Checks whether a string is safe to interpolate as a `Set-Cookie` attribute VALUE
+<  * (a `Domain` / `Path`) — the guard {@link serializeCookie} screens those two
+<  * attributes with before emitting them.
+---
+>  * Checks whether a string is safe to interpolate as a `Set-Cookie` attribute value —
+>  * the guard {@link serializeCookie} applies to a `Domain` and a `Path` before it
+>  * emits them.
+669,670c696,697
+<  * Checks whether a string is a valid RFC 6265 cookie NAME — a non-empty run of
+<  * cookie-token chars with NO surrounding (or interior) whitespace.
+---
+>  * Checks whether a string is a valid RFC 6265 cookie name — a non-empty run of
+>  * cookie-token characters with no surrounding or interior whitespace.
+690,692c717,719
+<  * Checks whether a key is a PROTOTYPE-POLLUTION vector — `__proto__`, `constructor`,
+<  * or `prototype` — the three keys that, assigned onto a normal object, can
+<  * reach and mutate `Object.prototype`.
+---
+>  * Checks whether a key is a prototype-pollution vector — `__proto__`,
+>  * `constructor`, or `prototype`, each of which can reach and mutate
+>  * `Object.prototype` when it is assigned onto a normal object.
+706,707c733,735
+<  * Narrows an unknown caught value to an {@link HTTPError} (including its
+<  * subclasses, e.g. {@link ContentTooLargeError}).
+---
+>  * Narrows an unknown caught value to an {@link HTTPError}, including a subclass such
+>  * as {@link ContentTooLargeError}, and recognizes an instance from another copy of
+>  * this package through a structural brand fallback.
+714c742
+<  * an instance built by a DIFFERENT copy of this package (the dual-package
+---
+>  * an instance built by a different copy of this package (the dual-package
+718c746
+<  * same key) AND expose the exact fields the server's error boundary reads off
+---
+>  * same key) and expose the exact fields the server's error boundary reads off
+720c748
+<  * plain object that merely carries a `status` WITHOUT the brand is rejected.
+---
+>  * plain object that merely carries a `status` without the brand is rejected.
+736c764,765
+<  * Narrows an unknown caught value to a {@link ServerError}.
+---
+>  * Narrows an unknown caught value to a {@link ServerError} — the code-bearing refusal
+>  * of a call the caller programmed.
+742,743c771,772
+<  * Recognizes an instance built by THIS copy of the package. A `ServerError`
+<  * is raised by a `Server` to the caller that just invoked it, so both sides
+---
+>  * Recognizes an instance built by this copy of the package. A `ServerError`
+>  * is raised by a `Server` to the caller that invoked it directly, so both sides
+765,766c794,795
+<  * Checks whether a client-supplied `X-Request-ID` is SAFE to echo into a response
+<  * header + `context.state`.
+---
+>  * Checks whether a client-supplied `X-Request-ID` is safe to echo into a response
+>  * header and `context.state`.
+769c798
+<  * A request id is echoed RAW into a response header and log lines, so an
+---
+>  * A request id is echoed raw into a response header and log lines, so an
+773c802
+<  * TOTAL — never throws.
+---
+>  * Total — never throws.
+788c817
+<  * `ETag` — the RFC 7232 §2.3.2 WEAK comparison.
+---
+>  * `ETag` — the RFC 7232 §2.3.2 weak comparison.
+791,792c820,821
+<  * `If-None-Match` is a COMMA-separated LIST of entity-tags (matches if ANY
+<  * listed tag matches), or the `*` wildcard (matches ANY current
+---
+>  * `If-None-Match` is a comma-separated list of entity-tags (matches if any
+>  * listed tag matches), or the `*` wildcard (matches any current
+794,795c823,824
+<  * WEAK: `W/"abc"` and `"abc"` are equal (both sides' weak prefix is stripped
+<  * through {@link unwrapETag} before comparing the opaque body). TOTAL — a
+---
+>  * weak: `W/"abc"` and `"abc"` are equal (each side's weak prefix is stripped
+>  * through {@link unwrapETag} before comparing the opaque body). Total — a
+811c840
+<  * Reports the rank + quality of one `candidate` media type against the parsed `Accept`
+---
+>  * Reports the rank and quality of one `candidate` media type against the parsed `Accept`
+825c854
+<  * @param candidate - The candidate media type to score (e.g. `'text/html'`)
+---
+>  * @param candidate - The candidate media type to score (for example `'text/html'`)
+878c907
+<  * middleware AND (as `state`) by the route handlers behind the dispatcher.
+---
+>  * middleware and, as `state`, by the route handlers behind the dispatcher.
+887c916
+<  * - `state` — THE shared bag threaded from the adapter's `state` factory,
+---
+>  * - `state` — the shared bag threaded from the adapter's `state` factory,
+940c969
+<  * client accepts none of `available` (identity — no compression). TOTAL on
+---
+>  * client accepts none of `available` (identity — no compression). Total on
+957c986
+<  * reusable, cross-middleware ENTITY (not a middleware). Implements exactly
+---
+>  * reusable, cross-middleware entity rather than a middleware. Implements exactly
+963c992
+<  * sibling axes and REUSE the same {@link parseAcceptHeader} q-value parser the
+---
+>  * sibling axes and reuse the same {@link parseAcceptHeader} q-value parser the
+984c1013
+<      * Errors thrown by the negotiated handler propagate UNMODIFIED — the
+---
+>      * Errors thrown by the negotiated handler propagate unmodified — the
+1016c1045
+<      * @param header - The raw weighted header value (e.g. `text/html, application/json;q=0.9`)
+---
+>      * @param header - The raw weighted header value (for example `text/html, application/json;q=0.9`)
+1026c1055
+<      * @param header - The raw `Accept-Encoding` header value (e.g. `gzip;q=1.0, deflate;q=0.8`)
+---
+>      * @param header - The raw `Accept-Encoding` header value (for example `gzip;q=1.0, deflate;q=0.8`)
+1044c1073
+<      * @param header - The raw `Accept-Language` header value (e.g. `en-US, en;q=0.8, fr;q=0.5`)
+---
+>      * @param header - The raw `Accept-Language` header value (for example `en-US, en;q=0.8, fr;q=0.5`)
+1065c1094
+<  * rest of the onion.
+---
+>  * rest of the onion — guarded so a second call within one invocation rejects.
+1070c1099
+<  * with a `Response` built by this middleware instead. A SECOND call rejects
+---
+>  * with a `Response` built by this middleware instead. A second call rejects
+1080,1081c1109,1110
+<  * Normalizes a {@link TokenSecret} to a concrete list of USABLE secrets —
+<  * backs both {@link signToken} and {@link verifyToken}.
+---
+>  * Normalizes a {@link TokenSecret} to a concrete list of usable secrets — the list
+>  * behind both {@link signToken} and {@link verifyToken}.
+1085,1086c1114,1115
+<  * blank/whitespace-only entry is DROPPED (`.trim()` is used only for that
+<  * emptiness test; each kept secret is stored VERBATIM). The first kept
+---
+>  * blank/whitespace-only entry is dropped (`.trim()` is used only for that
+>  * emptiness test; each kept secret is stored verbatim). The first kept
+1107,1108c1136,1137
+<  * back to `1`). A `;q=0` entry is KEPT (an explicit rejection a caller must
+<  * honor). The result is sorted by `q` DESCENDING, a STABLE sort preserving
+---
+>  * back to `1`). A `;q=0` entry is kept (an explicit rejection a caller must
+>  * honor). The result is sorted by `q` descending, a stable sort preserving
+1110c1139
+<  * so parsing stays linear in the header length (ReDoS-safe). TOTAL — an
+---
+>  * so parsing stays linear in the header length (ReDoS-safe). Total — an
+1128c1157
+<  * Splits on `;`; the FIRST segment keeps any leading whitespace (a genuine
+---
+>  * Splits on `;`; the first segment keeps any leading whitespace (a genuine
+1131c1160
+<  * whitespace-PADDED name (`'  __Host-x=evil'`) is rejected by
+---
+>  * whitespace-padded name (`'  __Host-x=evil'`) is rejected by
+1134c1163
+<  * name, is skipped; a later duplicate name wins. TOTAL — an absent/empty/
+---
+>  * name, is skipped; a later duplicate name wins. Total — an absent/empty/
+1153c1182
+<  * Lower-cases + trims and returns the matching {@link Encoding} ONLY for
+---
+>  * Lower-cases + trims and returns the matching {@link Encoding} only for
+1157c1186
+<  * TOTAL — never asserts the loose `string | null` header.
+---
+>  * Total — never asserts the loose `string | null` header.
+1172c1201
+<  * TOTAL, returning a {@link RangeSpec} or `undefined`.
+---
+>  * total, returning a {@link RangeSpec} or `undefined`.
+1177c1206
+<  * `[0, size - 1]` (the HTTP INCLUSIVE-end convention). Returns
+---
+>  * `[0, size - 1]` (the HTTP inclusive-end convention). Returns
+1180,1182c1209,1211
+<  * `undefined` for the "serve the whole resource" case: an ABSENT header, a
+<  * non-`bytes` unit, a MULTI-range header (`a-b, c-d` — refused outright, not
+<  * supported), or any malformed/non-finite bound. NEVER throws on a hostile
+---
+>  * `undefined` for the "serve the whole resource" case: an absent header, a
+>  * non-`bytes` unit, a multi-range header (`a-b, c-d` — refused outright, not
+>  * supported), or any malformed/non-finite bound. Never throws on a hostile
+1221c1250
+<  * A `Range: bytes=start-end` against a known resource `size` resolves to ONE
+---
+>  * A `Range: bytes=start-end` against a known resource `size` resolves to one
+1226c1255
+<  *   (INCLUSIVE, the HTTP wire convention), normalized from the header's
+---
+>  *   (inclusive, the HTTP wire convention), normalized from the header's
+1230c1259
+<  * `parseRange` returns `undefined` for an ABSENT / unparseable / multi-range
+---
+>  * `parseRange` returns `undefined` for an absent / unparseable / multi-range
+1233c1262
+<  * without a separate flag. It is TOTAL — a hostile header never throws.
+---
+>  * without a separate flag. It is total — a hostile header never throws.
+1244c1273
+<  * Collects + decodes a `Request` body — the shared body-collection pipeline
+---
+>  * Collects and decodes a `Request` body — the shared body-collection pipeline
+1246c1275,1276
+<  * `body()`.
+---
+>  * `body()`. An empty body and a malformed `application/json` body each decode to
+>  * `undefined`.
+1257,1258c1287
+<  * scrubPrototype}); any other type decodes as UTF-8 text; an empty body
+<  * decodes to `undefined`.
+---
+>  * scrubPrototype}); any other type decodes as UTF-8 text.
+1260,1263c1289,1291
+<  * A malformed JSON body is total: it decodes to `undefined` rather than
+<  * throwing, so a handler that must reject one checks for `undefined` itself.
+<  * That makes `undefined` the answer for two distinct inputs, and nothing in the
+<  * returned value tells them apart.
+---
+>  * A malformed JSON body is total: it decodes rather than throwing, so a handler
+>  * that must reject one checks for `undefined` itself, and nothing in the returned
+>  * value tells an empty body from a malformed one.
+1280c1308
+<  * Reads + verifies a SIGNED cookie off a request — TOTAL, returning the
+---
+>  * Reads and verifies a signed cookie off a request — total, returning the
+1286c1314
+<  * accepts a cookie signed by any of its secrets). ANY failure — an absent
+---
+>  * accepts a cookie signed by any of its secrets). Any failure — an absent
+1303,1306c1331,1338
+<  * to match — `^[A-Za-z0-9_-]{1,200}$` — so a CRLF / log-injection / oversized
+<  * / control-char-bearing incoming id is REJECTED (a fresh id is minted
+<  * instead) rather than ever riding into a response header or `context.state`.
+<  * Frozen so a consumer can read but never mutate the shared default.
+---
+>  * to match, `^[A-Za-z0-9_-]{1,200}$`.
+>  *
+>  * @remarks
+>  * An incoming id carrying CRLF, a log-injection payload, a control character,
+>  * or more characters than the pattern admits fails the match and is rejected —
+>  * a fresh id is minted instead — so it never rides into a response header or
+>  * `context.state`. Frozen so a consumer can read but never mutate the shared
+>  * default.
+1327c1359,1360
+<  * parsed `Accept-Encoding` entries.
+---
+>  * parsed `Accept-Encoding` entries — the shared selection leaf behind
+>  * {@link negotiateEncoding} and a `Negotiator`'s `encoding` axis.
+1335c1368
+<  * `available` the SERVER's preference order. An empty `available` list, and a
+---
+>  * `available` the server's preference order. An empty `available` list, and a
+1337c1370
+<  * compression). TOTAL on hostile input.
+---
+>  * compression). Total on hostile input.
+1358c1391
+<  * `undefined` (no header set). SECURITY: the literal `'null'` origin — sent
+---
+>  * `undefined` (no header set). Security: the literal `'null'` origin — sent
+1360c1393
+<  * NEVER reflected even if `'null'` were listed, closing the hostile-context
+---
+>  * never reflected even if `'null'` were listed, closing the hostile-context
+1440,1441c1473
+<  * Strips the prototype-pollution keys from a parsed value IN PLACE,
+<  * recursively.
+---
+>  * Strips the prototype-pollution keys from a parsed value in place, recursively.
+1444,1445c1476,1477
+<  * `JSON.parse('{"__proto__":{…}}')` is benign on its own — it produces an OWN,
+<  * enumerable `__proto__` DATA property — but that own key becomes a
+---
+>  * `JSON.parse('{"__proto__":{…}}')` is benign on its own — it produces an own,
+>  * enumerable `__proto__` data property — but that own key becomes a
+1470,1472c1502,1504
+<  * (default OFF), `SameSite` (default `Lax`). `Domain` / `Path` are validated
+<  * with {@link isCookieAttribute} and THROW an {@link HTTPError} on an
+<  * injection attempt (a programmer misconfiguration — never a silent drop). A `sameSite: 'None'` cookie is ALWAYS `Secure` regardless of
+---
+>  * (default off), `SameSite` (default `Lax`). `Domain` / `Path` are validated
+>  * with {@link isCookieAttribute} and throw an {@link HTTPError} on an
+>  * injection attempt (a programmer misconfiguration — never a silent drop). A `sameSite: 'None'` cookie is always `Secure` regardless of
+1474c1506
+<  * `secure` here falls to OFF — request-aware callers resolve it first through
+---
+>  * `secure` here falls to off — request-aware callers resolve it first through
+1494c1526
+<  * Emits an `event:`/`id:`/`retry:` line for each present field, then ONE
+---
+>  * Emits an `event:`/`id:`/`retry:` line for each present field, then one
+1514c1546
+<  * dispatcher.
+---
+>  * dispatcher. Implements exactly {@link ServerInterface}.
+1521c1553
+<  *   ServerOptions.port} (omitted/`0` port ⇒ EPHEMERAL, resolved from the
+---
+>  *   ServerOptions.port} (omitted/`0` port ⇒ ephemeral, resolved from the
+1528c1560
+<  *   so in-flight handlers observe cancellation, drains in-flight requests AND
+---
+>  *   so in-flight handlers observe cancellation, drains in-flight requests and
+1534c1566
+<  *   `signal` LINKED to this run's stop signal through `@orkestrel/abort`'s
+---
+>  *   `signal` linked to this run's stop signal through `@orkestrel/abort`'s
+1536c1568
+<  *   `buildRequest`'s own abort, armed by BOTH request-side and response-side
+---
+>  *   `buildRequest`'s own abort, armed by request-side and response-side
+1538c1570
+<  *   so a handler awaiting `request.signal` observes BOTH); `context.state` is built through
+---
+>  *   so a handler awaiting `request.signal` observes either); `context.state` is built through
+1542c1574
+<  * - **The built-in boundary** wraps the WHOLE per-request chain, including
+---
+>  * - **The built-in boundary** wraps the whole per-request chain, including
+1544c1576
+<  *   throw (e.g. a malformed `Host` header) to a silent `400` with no
+---
+>  *   throw (for example, a malformed `Host` header) to a silent `400` with no
+1556c1588
+<  *   A CLAIMED socket joins `#upgraded` until it closes: the claimant still
+---
+>  *   A claimed socket joins `#upgraded` until it closes: the claimant still
+1561c1593
+<  *   routes it to the `error` OPTION (not the domain `error` event).
+---
+>  *   routes it to the `error` option rather than to the domain `error` event.
+1582c1614
+<  * entity refuses.
+---
+>  * entity refuses, carrying `'STATUS'` or `'NEXT'` as its code.
+1586c1618
+<  * record naming the offending facts. This is a PROGRAMMER error, so it carries
+---
+>  * record naming the offending facts. This is a programmer error, so it carries
+1612c1644,1646
+<  * {@link import('./errors.js').ServerError} carries.
+---
+>  * {@link import('./errors.js').ServerError} carries — `'STATUS'` for a lifecycle
+>  * call the current status forbids, `'NEXT'` for a middleware that called its `next`
+>  * a second time.
+1643c1677
+<  * - `stop` — `stop()` began (status just moved to `'stopping'`). An upgrade
+---
+>  * - `stop` — `stop()` began (status moved to `'stopping'`). An upgrade
+1645c1679
+<  *   below settles instead of running out the deadline.
+---
+>  *   settles instead of running out the deadline.
+1647c1681
+<  *   carries the still-pending request count AND the still-attached upgraded
+---
+>  *   carries the still-pending request count and the still-attached upgraded
+1649c1683
+<  *   that follows was FORCED and cut that work.
+---
+>  *   that follows was forced and cut that work.
+1654,1655c1688,1689
+<  *   `buildRequest` INNER boundary (a plain `400`, e.g. a malformed `Host`
+<  *   header) emits no `response` — no parsed `Request` exists yet to derive
+---
+>  *   `buildRequest` inner boundary (a plain `400`, for example a malformed
+>  *   `Host` header) emits no `response` — no parsed `Request` exists yet to derive
+1678c1712
+<  * configured `host`/`port` (an omitted/`0` port ⇒ an EPHEMERAL port, resolved
+---
+>  * configured `host`/`port` (an omitted/`0` port ⇒ an ephemeral port, resolved
+1710c1744,1745
+<      * Appends one middleware, or an array of them in order, to the onion.
+---
+>      * Appends one middleware, or an array of them in order, to the onion, outer-to-inner
+>      * in call order.
+1721c1756,1757
+<      * Registers a protocol-upgrade claimant that runs in registration order.
+---
+>      * Registers an {@link UpgradeHandler} claimant that runs in registration order; a
+>      * claimed socket is tracked until it closes.
+1727c1763,1764
+<      * Binds the configured listener and resolves its actually-bound port.
+---
+>      * Binds the configured `host` and `port`, or an ephemeral port, under an optional
+>      * caller `AbortSignal`, and resolves the actually-bound port.
+1744c1781,1782
+<      * Stops gracefully: refuses new connections, fires the stop signal, drains, closes.
+---
+>      * Stops gracefully: refuses new connections, fires the stop signal, drains in-flight
+>      * requests and claimed upgraded sockets up to the `drain` deadline, then closes.
+1747c1785
+<      * Drainable work is every in-flight request PLUS every upgraded socket a
+---
+>      * Drainable work is every in-flight request plus every upgraded socket a
+1759c1797,1798
+<      * Tears down for good: force-closes the listener and every socket, then the emitter.
+---
+>      * Tears down for good: force-closes the listener and every socket, then the emitter —
+>      * terminal and idempotent from any state.
+1767c1806,1808
+<  * Options for `createServer`.
+---
+>  * Options for `createServer` — the dispatcher and per-request state factory the
+>  * server requires, plus its listener, drain, boundary, timeout, socket-cap, and
+>  * emitter knobs.
+1781c1822
+<  *   EPHEMERAL, OS-assigned free port (the default); `start()` always resolves
+---
+>  *   ephemeral, OS-assigned free port (the default); `start()` always resolves
+1786c1827
+<  *   server stops accepting new connections and gives in-flight requests AND
+---
+>  *   server stops accepting new connections and gives in-flight requests and
+1866c1907
+<  * the signature), signed by using `crypto.subtle.sign('HMAC', …)` under the FIRST
+---
+>  * the signature), signed by using `crypto.subtle.sign('HMAC', …)` under the first
+1868,1869c1909,1910
+<  * Blank/whitespace-only secrets are IGNORED ({@link normalizeSecret}); a
+<  * misconfigured secret with no usable entry THROWS an {@link HTTPError}
+---
+>  * Blank/whitespace-only secrets are ignored ({@link normalizeSecret}); a
+>  * misconfigured secret with no usable entry throws an {@link HTTPError}
+1887c1928,1929
+<  * Holds the SSE response headers a `Stream` always sets on its response.
+---
+>  * Holds the SSE response headers a `Stream` sets on its response, merged under any
+>  * caller `headers` so a caller repeating one of these keys replaces its value.
+1894,1896c1936,1937
+<  * but never mutate the shared default; a `Stream` merges any
+<  * {@link import('./types.js').StreamOptions.headers} OVER these, so a caller
+<  * repeating one of these keys replaces its value.
+---
+>  * but never mutate the shared default; the merged keys are
+>  * {@link import('./types.js').StreamOptions.headers}.
+1905c1946
+<  *   lines: the value is split on `\n` into a `data:` line PER segment, so it
+---
+>  *   lines: the value is split on `\n` into a `data:` line per segment, so it
+1907c1948
+<  * - `event` — the optional event TYPE, emitted as an `event:` line; omitted
+---
+>  * - `event` — the optional event type, emitted as an `event:` line; omitted
+1915c1956
+<     /** Requires a SINGLE-LINE value — an embedded newline would corrupt the SSE wire format. */
+---
+>     /** Requires a single-line value — an embedded newline would corrupt the SSE wire format. */
+1917c1958
+<     /** Requires a SINGLE-LINE value — an embedded newline would corrupt the SSE wire format. */
+---
+>     /** Requires a single-line value — an embedded newline would corrupt the SSE wire format. */
+1929c1970
+<  * merged OVER them, at `options.status` (default `200`). A caller repeating one
+---
+>  * merged over them, at `options.status` (default `200`). A caller repeating one
+1941c1982
+<  * stream. Every method is a SAFE NO-OP once `closed` (ended by `end()`, or
+---
+>  * stream. Every method is a safe no-op once `closed` (ended by `end()`, or
+1992c2033
+<  * stream. Every method is a SAFE NO-OP once `closed` is `true`, so a late
+---
+>  * stream. Every method is a safe no-op once `closed` is `true`, so a late
+2001c2042
+<  * The stream's default strategy measures queued CHUNKS, not their byte length,
+---
+>  * The stream's default strategy measures queued chunks, not their byte length,
+2012c2053,2055
+<      * Serializes + enqueues one {@link SSEMessage} to the wire.
+---
+>      * Serializes and enqueues one {@link SSEMessage} to the wire, reporting whether the
+>      * process-local queue still has capacity afterward — `false` also once the stream
+>      * is closed.
+2022c2065,2066
+<      * Writes a `: text` SSE comment line — a keep-alive a conforming parser ignores.
+---
+>      * Writes a `: text` SSE comment line — a keep-alive a conforming parser ignores,
+>      * and a no-op once the stream is closed.
+2028c2072,2074
+<      * Parks until the process-local stream queue has capacity again.
+---
+>      * Parks until the process-local stream queue has capacity again — resolving on the
+>      * consumer pull that restores it, or immediately when capacity is already available
+>      * or the stream is closed, and never polling.
+2036c2082,2085
+<     /** Ends the stream, completing the response (a no-op once already `closed`). */
+---
+>     /**
+>      * Ends the stream, completing the response — a no-op once already `closed`, and it
+>      * settles any parked producer.
+>      */
+2046c2095
+<  * @param headers - Extra response headers merged OVER the SSE headers the
+---
+>  * @param headers - Extra response headers merged over the SSE headers the
+2059c2108
+<  *   uses the FIRST secret (a single string, or the current head of a
+---
+>  *   uses the first secret (a single string, or the current head of a
+2062c2111
+<  *   timestamp is bound INTO the signed payload (HMAC-covered, tamper-proof);
+---
+>  *   timestamp is bound into the signed payload (HMAC-covered, tamper-proof);
+2072,2073c2121,2122
+<  * Represents a secret (or rotation list) for signing + verifying a stateless, HMAC-signed
+<  * token.
+---
+>  * Represents a secret, or a `[current, ...older]` rotation list, for signing and
+>  * verifying a stateless, HMAC-signed token.
+2078,2079c2127,2128
+<  * FIRST (current) secret, while `verifyToken` accepts a token signed by ANY
+<  * secret in the list — so a key rotates by prepending the new one and keeping
+---
+>  * first (current) secret, while `verifyToken` accepts a token signed by any
+>  * secret in the list — so a key rotates by prepending the fresh one and keeping
+2085,2086c2134,2135
+<  * Strips the WEAK indicator (`W/`) from an entity-tag, returning its opaque
+<  * comparison body — the reduction {@link matchesETag} applies to both sides
+---
+>  * Strips the weak indicator (`W/`) from an entity-tag, returning its opaque
+>  * comparison body — the reduction {@link matchesETag} applies to each side
+2105,2107c2154,2156
+<  * order, the FIRST to return `true` CLAIMS (owns) the socket and stops the
+<  * fan-out; a handler that THROWS is treated as declined (the throw surfaces
+<  * on the `error` event) and the fan-out continues; if NONE claim it, the
+---
+>  * order, the first to return `true` claims (owns) the socket and stops the
+>  * fan-out; a handler that throws is treated as declined (the throw surfaces
+>  * on the `error` event) and the fan-out continues; if none claim it, the
+2112c2161
+<  * A CLAIMED socket is TRACKED until it closes. The handler still owns it —
+---
+>  * A claimed socket is tracked until it closes. The handler still owns it —
+2125c2174
+<  * @returns True if the handler CLAIMS the socket (this handler now owns
+---
+>  * @returns True if the handler claims the socket (this handler now owns
+2131c2180
+<  * Verifies a stateless token and returns its embedded value — TOTAL, never throws.
+---
+>  * Verifies a stateless token and returns its embedded value — total, never throws.
+2134c2183
+<  * The inverse of {@link signToken}: splits the token on its LAST `.` (so a
+---
+>  * The inverse of {@link signToken}: splits the token on its last `.` (so a
+2138c2187
+<  * HMAC-SHA256 signature against EACH {@link TokenSecret} candidate through
+---
+>  * HMAC-SHA256 signature against each {@link TokenSecret} candidate through
+2143c2192
+<  * token. ANY failure — a malformed token, a bad signature,
+---
+>  * token. Any failure — a malformed token, a bad signature,
+2159c2208,2209
+<  * Wraps one middleware layer around its downstream handler.
+---
+>  * Wraps one middleware layer around its downstream handler, enforcing the one-call
+>  * `next` invariant.
+2181c2231
+<  * Writes a SIGNED cookie — HMAC-signs `value` with {@link signToken} and
+---
+>  * Writes a signed cookie — HMAC-signs `value` with {@link signToken} and
+diff -r '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-server-final-registry-visit-pack/baseline/package/dist/src/server/index.d.ts /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-server-final-registry-visit-pack/extract/package/dist/src/server/index.d.ts
+1,7c1,7
+< import { AddressInfo } from 'node:net';
+< import { DispatcherInterface } from '@orkestrel/router';
+< import { Duplex } from 'node:stream';
+< import { EmitterErrorHandler } from '@orkestrel/emitter';
+< import { EmitterHooks } from '@orkestrel/emitter';
+< import { EmitterInterface } from '@orkestrel/emitter';
+< import { IncomingMessage } from 'node:http';
+---
+> import type { AddressInfo } from 'node:net';
+> import type { DispatcherInterface } from '@orkestrel/router';
+> import type { Duplex } from 'node:stream';
+> import type { EmitterErrorHandler } from '@orkestrel/emitter';
+> import type { EmitterHooks } from '@orkestrel/emitter';
+> import type { EmitterInterface } from '@orkestrel/emitter';
+> import type { IncomingMessage } from 'node:http';
+17c17
+<  * default `1` when absent); a `;q=0` entry explicitly REJECTS that token — a
+---
+>  * default `1` when absent); a `;q=0` entry explicitly rejects that token — a
+33c33
+<  * @param decompression - The maximum DECOMPRESSED body size in bytes (the
+---
+>  * @param decompression - The maximum decompressed body size in bytes (the
+35c35
+<  *   highly-compressible payload small ON THE WIRE (under `limit`) can inflate
+---
+>  *   highly-compressible payload small on the wire (under `limit`) can inflate
+39,40c39,40
+<  *   INDEPENDENT of `limit`, not aligned with it; a non-positive value means
+<  *   UNCAPPED decompressed output — use only when `limit` already bounds the
+---
+>  *   independent of `limit`, not aligned with it; a non-positive value means
+>  *   uncapped decompressed output — use only when `limit` already bounds the
+54c54
+<  * a cookie when those MATCH the one it set).
+---
+>  * a cookie when those match the one it set).
+74c74
+<  * exceeds `limit` — BEFORE the rest of the stream is buffered — rather than
+---
+>  * exceeds `limit` — before the rest of the stream is buffered — rather than
+91c91
+<  * Composes an ordered chain of {@link MiddlewareHandler}s around a `terminal`
+---
+>  * Composes an ordered chain of {@link MiddlewareHandler} layers around a `terminal`
+95,96c95,96
+<  * `middleware[0]` runs OUTERMOST: it is invoked first, and its call to `next`
+<  * runs `middleware[1]`, and so on until the LAST middleware's `next` invokes
+---
+>  * `middleware[0]` runs outermost: it is invoked first, and its call to `next`
+>  * runs `middleware[1]`, and so on until the last middleware's `next` invokes
+100c100
+<  * downstream), or NOT called at all (a short-circuit — the middleware's own
+---
+>  * downstream), or not called at all (a short-circuit — the middleware's own
+102c102
+<  * SECOND call to the same `next` within one middleware invocation REJECTS —
+---
+>  * second call to the same `next` within one middleware invocation rejects —
+125,127c125,127
+<  * Holds the set of bare `Content-Type`s `isCompressibleType` treats as
+<  * COMPRESSIBLE, beyond the `text/*` prefix + structured-suffix (`+json` /
+<  * `+xml`) rules that helper also applies.
+---
+>  * Holds the bare `Content-Type` values `isCompressibleType` treats as compressible,
+>  * beyond the `text/*` prefix and structured-suffix (`+json`, `+xml`) rules that
+>  * helper also applies.
+131c131
+<  * XML / SVG / WASM / a few document formats) — NOT already-compressed
+---
+>  * XML / SVG / WASM / a few document formats) — never already-compressed
+140c140
+<  * Computes a CONTENT `ETag` over a fully-buffered response body by using WebCrypto.
+---
+>  * Computes a content `ETag` over a fully-buffered response body by using WebCrypto.
+144,146c144,146
+<  * digest as a WEAK validator (`W/"<hash>"`) when `weak` is `true` — the
+<  * default, encoding-AGNOSTIC, so the tag survives a downstream content
+<  * re-encoding (gzip) and still matches on revalidation — or a STRONG one
+---
+>  * digest as a weak validator (`W/"<hash>"`) when `weak` is `true` — the
+>  * default, encoding-agnostic, so the tag survives a downstream content
+>  * re-encoding (gzip) and still matches on revalidation — or a strong one
+162c162
+<  * Collapses a client IP into its rate-limit BUCKET key — an IPv6 address to
+---
+>  * Collapses a client IP into its rate-limit bucket key — an IPv6 address to
+166c166
+<  * A residential/mobile IPv6 user is routinely handed a WHOLE `/64`, so a
+---
+>  * A residential/mobile IPv6 user is routinely handed a whole `/64`, so a
+189c189
+<  * Prefers an EXACT named match (including an explicit `;q=0` rejection);
+---
+>  * Prefers an exact named match (including an explicit `;q=0` rejection);
+214c214
+<  * first FOUR (the `/64` prefix), normalizes each (lower-case, no leading
+---
+>  * first four (the `/64` prefix), normalizes each (lower-case, no leading
+240c240
+<  * @param candidate - The candidate language tag to score (e.g. `'en-US'`)
+---
+>  * @param candidate - The candidate language tag to score (for example `'en-US'`)
+253c253
+<  * Represents the per-request connection facts the server face injects — the ONLY data
+---
+>  * Represents the per-request connection facts the server face injects — the only data
+309c309
+<  * @param maxAge - The `Max-Age` directive in SECONDS (the wire unit, not a
+---
+>  * @param maxAge - The `Max-Age` directive in seconds (the wire unit, not a
+316c316
+<  *   Connection.encrypted}). A `sameSite: 'None'` cookie is ALWAYS
+---
+>  *   Connection.encrypted}). A `sameSite: 'None'` cookie is always
+336a337
+>  * import type { MiddlewareContext } from '@src/server'
+338a340,341
+>  * declare const context: MiddlewareContext<Record<string, never>>
+>  *
+340,341c343,348
+<  * negotiator.negotiate('text/html, application/json;q=0.9', ['application/json', 'text/html'])
+<  * // 'text/html'
+---
+>  * negotiator.negotiate('text/html, application/json;q=0.9', ['application/json', 'text/html']) // 'text/html'
+>  * negotiator.encoding('gzip;q=1.0, deflate;q=0.8', ['gzip', 'deflate']) // 'gzip'
+>  * negotiator.language('en-US, en;q=0.8, fr;q=0.5', ['en', 'fr']) // 'en'
+>  * await negotiator.format(new Request('http://x'), context, {
+>  * 	'application/json': (_request, _context) => Response.json({ ok: true }),
+>  * })
+354c361
+<  * @example
+---
+>  * @example Quickstart: dispatcher, middleware, lifecycle
+356c363,364
+<  * import { createServer } from '@src/server'
+---
+>  * import type { MiddlewareHandler } from '@orkestrel/server'
+>  * import { createServer } from '@orkestrel/server'
+359c367,372
+<  * const dispatcher = createDispatcher<{ readonly ip?: string }>()
+---
+>  * interface State {
+>  * 	readonly requestId: string
+>  * 	readonly ip: string | undefined
+>  * }
+>  *
+>  * const dispatcher = createDispatcher<State>()
+362c375,381
+<  * const server = createServer({
+---
+>  * const logRequestId: MiddlewareHandler<State> = async (_request, context, next) => {
+>  * 	const response = await next()
+>  * 	response.headers.set('X-Request-ID', context.state.requestId)
+>  * 	return response
+>  * }
+>  *
+>  * const server = createServer<State>({
+364c383
+<  * 	state: (connection) => ({ ip: connection.ip }),
+---
+>  * 	state: (connection) => ({ requestId: crypto.randomUUID(), ip: connection.ip }),
+365a385
+>  * server.use(logRequestId)
+367a388
+>  * await server.destroy()
+410c431
+<  * Decodes + narrows a signed token's base64url JSON payload, honoring its
+---
+>  * Decodes and narrows a signed token's base64url JSON payload, honoring its
+418c439
+<  * `as`, and rejects an expired `exp`. TOTAL — any
+---
+>  * `as`, and rejects an expired `exp`. Total — any
+429c450
+<  * transparently through `DecompressionStream`, capping the DECOMPRESSED output —
+---
+>  * transparently through `DecompressionStream`, capping the decompressed output —
+434c455
+<  * `TransformStream` that ABORTS the pipe the INSTANT the running decompressed
+---
+>  * `TransformStream` that aborts the pipe the instant the running decompressed
+450c471,474
+< /** Names the default maximum request body size (bytes) `readBody` accepts before a 413. */
+---
+> /**
+>  * Names the default maximum request body size `readBody` accepts before a 413,
+>  * `1_048_576` bytes.
+>  */
+454,456c478,480
+<  * Names the default maximum DECOMPRESSED request body size (bytes) — the zip-bomb cap
+<  * the body pipeline's byte-counting `TransformStream` enforces when
+<  * transparently decompressing a `Content-Encoding` request body.
+---
+>  * Names the default maximum decompressed request body size, `16_777_216` bytes — the
+>  * zip-bomb cap the body pipeline's byte-counting `TransformStream` enforces when
+>  * it transparently decompresses a `Content-Encoding` request body.
+461,462c485,486
+<  * Capping the decompressed byte count makes the pipe ABORT the moment the
+<  * output would exceed this, BEFORE the full bomb is materialized, so the
+---
+>  * Capping the decompressed byte count makes the pipe abort the moment the
+>  * output would exceed this, before the full bomb is materialized, so the
+472,473c496,497
+<  * Names the default graceful-stop deadline (ms) the server gives in-flight
+<  * requests on `stop()`.
+---
+>  * Names the default graceful-stop deadline `stop()` gives in-flight requests and
+>  * claimed upgraded sockets, `10_000` ms.
+479c503
+<  * PREFERENCE order — `gzip` / `deflate`.
+---
+>  * preference order — `gzip` then `deflate`.
+482c506
+<  * `identity` (no compression) is always implicitly acceptable and is NOT
+---
+>  * `identity` (no compression) is always implicitly acceptable and is not
+491,492c515,517
+<  * Finds a FREE TCP port — binds a throwaway `node:net` server, reads the
+<  * OS-assigned port, closes it, and resolves that port.
+---
+>  * Finds a free TCP port — binds a throwaway `node:net` server on a `preferred`
+>  * port where one is given and on an ephemeral port otherwise, reads the bound
+>  * port, closes the server, and resolves that port.
+496,497c521,522
+<  * and returns it. With a `preferred` port it tries THAT port first and
+<  * returns it when free; if already in use (`EADDRINUSE`) it FALLS BACK to an
+---
+>  * and returns it. With a `preferred` port it tries that port first and
+>  * returns it when free; if already in use (`EADDRINUSE`) it falls back to an
+502c527
+<  * `preferred` port (e.g. a permission fault). A listener whose address is not
+---
+>  * `preferred` port (for example, a permission fault). A listener whose address is not
+523,524c548,550
+<  * Represents a content-coding the substrate compresses / decompresses with — the
+<  * `Content-Encoding` / `Accept-Encoding` token vocabulary it understands.
+---
+>  * Represents a content-coding the substrate compresses or decompresses with. Its
+>  * members are the `Content-Encoding` and `Accept-Encoding` token vocabulary the
+>  * substrate understands.
+530c556
+<  * is deliberately OMITTED here — Brotli parity is the middleware package's
+---
+>  * is deliberately omitted here — Brotli parity is the middleware package's
+543c569
+<  * Each key is a media type the route can PRODUCE (`application/json`,
+---
+>  * Each key is a media type the route can produce (`application/json`,
+555,559c581,583
+<  * Names the `Symbol.for`-keyed brand `HTTPError` carries so `isHTTPError` recognizes
+<  * an instance thrown by ANOTHER copy of this package (the dual-package
+<  * hazard — a version-skewed or workspace-linked duplicate install), where
+<  * `instanceof` alone fails because the two copies' `HTTPError` constructors
+<  * are distinct objects.
+---
+>  * Names the `Symbol.for`-interned brand `HTTPError` carries,
+>  * `@orkestrel/server.HTTPError`, so `isHTTPError` recognizes an instance across
+>  * package copies. A consumer never sets it by hand.
+562,563c586,590
+<  * `Symbol.for` interns the symbol on the GLOBAL symbol registry, so every
+<  * copy of this package that evaluates this key resolves the SAME symbol
+---
+>  * The brand exists for the dual-package hazard — a version-skewed or
+>  * workspace-linked duplicate install — where `instanceof` alone fails because
+>  * each copy's `HTTPError` constructor is a distinct object.
+>  * `Symbol.for` interns the symbol on the global symbol registry, so every
+>  * copy of this package that evaluates this key resolves the same symbol
+577c604
+<  * — so an `HTTPError`'s message is ALWAYS client-facing (it is the handler's
+---
+>  * — so an `HTTPError`'s message is always client-facing (it is the handler's
+632,633c659,660
+<  * binary (`image/png`, `application/zip`) is NOT compressible. An
+<  * absent/empty type is not compressible. TOTAL.
+---
+>  * binary (`image/png`, `application/zip`) is not compressible. An
+>  * absent/empty type is not compressible. Total.
+647,649c674,676
+<  * Checks whether a string is safe to interpolate as a `Set-Cookie` attribute VALUE
+<  * (a `Domain` / `Path`) — the guard {@link serializeCookie} screens those two
+<  * attributes with before emitting them.
+---
+>  * Checks whether a string is safe to interpolate as a `Set-Cookie` attribute value —
+>  * the guard {@link serializeCookie} applies to a `Domain` and a `Path` before it
+>  * emits them.
+669,670c696,697
+<  * Checks whether a string is a valid RFC 6265 cookie NAME — a non-empty run of
+<  * cookie-token chars with NO surrounding (or interior) whitespace.
+---
+>  * Checks whether a string is a valid RFC 6265 cookie name — a non-empty run of
+>  * cookie-token characters with no surrounding or interior whitespace.
+690,692c717,719
+<  * Checks whether a key is a PROTOTYPE-POLLUTION vector — `__proto__`, `constructor`,
+<  * or `prototype` — the three keys that, assigned onto a normal object, can
+<  * reach and mutate `Object.prototype`.
+---
+>  * Checks whether a key is a prototype-pollution vector — `__proto__`,
+>  * `constructor`, or `prototype`, each of which can reach and mutate
+>  * `Object.prototype` when it is assigned onto a normal object.
+706,707c733,735
+<  * Narrows an unknown caught value to an {@link HTTPError} (including its
+<  * subclasses, e.g. {@link ContentTooLargeError}).
+---
+>  * Narrows an unknown caught value to an {@link HTTPError}, including a subclass such
+>  * as {@link ContentTooLargeError}, and recognizes an instance from another copy of
+>  * this package through a structural brand fallback.
+714c742
+<  * an instance built by a DIFFERENT copy of this package (the dual-package
+---
+>  * an instance built by a different copy of this package (the dual-package
+718c746
+<  * same key) AND expose the exact fields the server's error boundary reads off
+---
+>  * same key) and expose the exact fields the server's error boundary reads off
+720c748
+<  * plain object that merely carries a `status` WITHOUT the brand is rejected.
+---
+>  * plain object that merely carries a `status` without the brand is rejected.
+736c764,765
+<  * Narrows an unknown caught value to a {@link ServerError}.
+---
+>  * Narrows an unknown caught value to a {@link ServerError} — the code-bearing refusal
+>  * of a call the caller programmed.
+742,743c771,772
+<  * Recognizes an instance built by THIS copy of the package. A `ServerError`
+<  * is raised by a `Server` to the caller that just invoked it, so both sides
+---
+>  * Recognizes an instance built by this copy of the package. A `ServerError`
+>  * is raised by a `Server` to the caller that invoked it directly, so both sides
+765,766c794,795
+<  * Checks whether a client-supplied `X-Request-ID` is SAFE to echo into a response
+<  * header + `context.state`.
+---
+>  * Checks whether a client-supplied `X-Request-ID` is safe to echo into a response
+>  * header and `context.state`.
+769c798
+<  * A request id is echoed RAW into a response header and log lines, so an
+---
+>  * A request id is echoed raw into a response header and log lines, so an
+773c802
+<  * TOTAL — never throws.
+---
+>  * Total — never throws.
+788c817
+<  * `ETag` — the RFC 7232 §2.3.2 WEAK comparison.
+---
+>  * `ETag` — the RFC 7232 §2.3.2 weak comparison.
+791,792c820,821
+<  * `If-None-Match` is a COMMA-separated LIST of entity-tags (matches if ANY
+<  * listed tag matches), or the `*` wildcard (matches ANY current
+---
+>  * `If-None-Match` is a comma-separated list of entity-tags (matches if any
+>  * listed tag matches), or the `*` wildcard (matches any current
+794,795c823,824
+<  * WEAK: `W/"abc"` and `"abc"` are equal (both sides' weak prefix is stripped
+<  * through {@link unwrapETag} before comparing the opaque body). TOTAL — a
+---
+>  * weak: `W/"abc"` and `"abc"` are equal (each side's weak prefix is stripped
+>  * through {@link unwrapETag} before comparing the opaque body). Total — a
+811c840
+<  * Reports the rank + quality of one `candidate` media type against the parsed `Accept`
+---
+>  * Reports the rank and quality of one `candidate` media type against the parsed `Accept`
+825c854
+<  * @param candidate - The candidate media type to score (e.g. `'text/html'`)
+---
+>  * @param candidate - The candidate media type to score (for example `'text/html'`)
+878c907
+<  * middleware AND (as `state`) by the route handlers behind the dispatcher.
+---
+>  * middleware and, as `state`, by the route handlers behind the dispatcher.
+887c916
+<  * - `state` — THE shared bag threaded from the adapter's `state` factory,
+---
+>  * - `state` — the shared bag threaded from the adapter's `state` factory,
+940c969
+<  * client accepts none of `available` (identity — no compression). TOTAL on
+---
+>  * client accepts none of `available` (identity — no compression). Total on
+957c986
+<  * reusable, cross-middleware ENTITY (not a middleware). Implements exactly
+---
+>  * reusable, cross-middleware entity rather than a middleware. Implements exactly
+963c992
+<  * sibling axes and REUSE the same {@link parseAcceptHeader} q-value parser the
+---
+>  * sibling axes and reuse the same {@link parseAcceptHeader} q-value parser the
+984c1013
+<      * Errors thrown by the negotiated handler propagate UNMODIFIED — the
+---
+>      * Errors thrown by the negotiated handler propagate unmodified — the
+1016c1045
+<      * @param header - The raw weighted header value (e.g. `text/html, application/json;q=0.9`)
+---
+>      * @param header - The raw weighted header value (for example `text/html, application/json;q=0.9`)
+1026c1055
+<      * @param header - The raw `Accept-Encoding` header value (e.g. `gzip;q=1.0, deflate;q=0.8`)
+---
+>      * @param header - The raw `Accept-Encoding` header value (for example `gzip;q=1.0, deflate;q=0.8`)
+1044c1073
+<      * @param header - The raw `Accept-Language` header value (e.g. `en-US, en;q=0.8, fr;q=0.5`)
+---
+>      * @param header - The raw `Accept-Language` header value (for example `en-US, en;q=0.8, fr;q=0.5`)
+1065c1094
+<  * rest of the onion.
+---
+>  * rest of the onion — guarded so a second call within one invocation rejects.
+1070c1099
+<  * with a `Response` built by this middleware instead. A SECOND call rejects
+---
+>  * with a `Response` built by this middleware instead. A second call rejects
+1080,1081c1109,1110
+<  * Normalizes a {@link TokenSecret} to a concrete list of USABLE secrets —
+<  * backs both {@link signToken} and {@link verifyToken}.
+---
+>  * Normalizes a {@link TokenSecret} to a concrete list of usable secrets — the list
+>  * behind both {@link signToken} and {@link verifyToken}.
+1085,1086c1114,1115
+<  * blank/whitespace-only entry is DROPPED (`.trim()` is used only for that
+<  * emptiness test; each kept secret is stored VERBATIM). The first kept
+---
+>  * blank/whitespace-only entry is dropped (`.trim()` is used only for that
+>  * emptiness test; each kept secret is stored verbatim). The first kept
+1107,1108c1136,1137
+<  * back to `1`). A `;q=0` entry is KEPT (an explicit rejection a caller must
+<  * honor). The result is sorted by `q` DESCENDING, a STABLE sort preserving
+---
+>  * back to `1`). A `;q=0` entry is kept (an explicit rejection a caller must
+>  * honor). The result is sorted by `q` descending, a stable sort preserving
+1110c1139
+<  * so parsing stays linear in the header length (ReDoS-safe). TOTAL — an
+---
+>  * so parsing stays linear in the header length (ReDoS-safe). Total — an
+1128c1157
+<  * Splits on `;`; the FIRST segment keeps any leading whitespace (a genuine
+---
+>  * Splits on `;`; the first segment keeps any leading whitespace (a genuine
+1131c1160
+<  * whitespace-PADDED name (`'  __Host-x=evil'`) is rejected by
+---
+>  * whitespace-padded name (`'  __Host-x=evil'`) is rejected by
+1134c1163
+<  * name, is skipped; a later duplicate name wins. TOTAL — an absent/empty/
+---
+>  * name, is skipped; a later duplicate name wins. Total — an absent/empty/
+1153c1182
+<  * Lower-cases + trims and returns the matching {@link Encoding} ONLY for
+---
+>  * Lower-cases + trims and returns the matching {@link Encoding} only for
+1157c1186
+<  * TOTAL — never asserts the loose `string | null` header.
+---
+>  * Total — never asserts the loose `string | null` header.
+1172c1201
+<  * TOTAL, returning a {@link RangeSpec} or `undefined`.
+---
+>  * total, returning a {@link RangeSpec} or `undefined`.
+1177c1206
+<  * `[0, size - 1]` (the HTTP INCLUSIVE-end convention). Returns
+---
+>  * `[0, size - 1]` (the HTTP inclusive-end convention). Returns
+1180,1182c1209,1211
+<  * `undefined` for the "serve the whole resource" case: an ABSENT header, a
+<  * non-`bytes` unit, a MULTI-range header (`a-b, c-d` — refused outright, not
+<  * supported), or any malformed/non-finite bound. NEVER throws on a hostile
+---
+>  * `undefined` for the "serve the whole resource" case: an absent header, a
+>  * non-`bytes` unit, a multi-range header (`a-b, c-d` — refused outright, not
+>  * supported), or any malformed/non-finite bound. Never throws on a hostile
+1221c1250
+<  * A `Range: bytes=start-end` against a known resource `size` resolves to ONE
+---
+>  * A `Range: bytes=start-end` against a known resource `size` resolves to one
+1226c1255
+<  *   (INCLUSIVE, the HTTP wire convention), normalized from the header's
+---
+>  *   (inclusive, the HTTP wire convention), normalized from the header's
+1230c1259
+<  * `parseRange` returns `undefined` for an ABSENT / unparseable / multi-range
+---
+>  * `parseRange` returns `undefined` for an absent / unparseable / multi-range
+1233c1262
+<  * without a separate flag. It is TOTAL — a hostile header never throws.
+---
+>  * without a separate flag. It is total — a hostile header never throws.
+1244c1273
+<  * Collects + decodes a `Request` body — the shared body-collection pipeline
+---
+>  * Collects and decodes a `Request` body — the shared body-collection pipeline
+1246c1275,1276
+<  * `body()`.
+---
+>  * `body()`. An empty body and a malformed `application/json` body each decode to
+>  * `undefined`.
+1257,1258c1287
+<  * scrubPrototype}); any other type decodes as UTF-8 text; an empty body
+<  * decodes to `undefined`.
+---
+>  * scrubPrototype}); any other type decodes as UTF-8 text.
+1260,1263c1289,1291
+<  * A malformed JSON body is total: it decodes to `undefined` rather than
+<  * throwing, so a handler that must reject one checks for `undefined` itself.
+<  * That makes `undefined` the answer for two distinct inputs, and nothing in the
+<  * returned value tells them apart.
+---
+>  * A malformed JSON body is total: it decodes rather than throwing, so a handler
+>  * that must reject one checks for `undefined` itself, and nothing in the returned
+>  * value tells an empty body from a malformed one.
+1280c1308
+<  * Reads + verifies a SIGNED cookie off a request — TOTAL, returning the
+---
+>  * Reads and verifies a signed cookie off a request — total, returning the
+1286c1314
+<  * accepts a cookie signed by any of its secrets). ANY failure — an absent
+---
+>  * accepts a cookie signed by any of its secrets). Any failure — an absent
+1303,1306c1331,1338
+<  * to match — `^[A-Za-z0-9_-]{1,200}$` — so a CRLF / log-injection / oversized
+<  * / control-char-bearing incoming id is REJECTED (a fresh id is minted
+<  * instead) rather than ever riding into a response header or `context.state`.
+<  * Frozen so a consumer can read but never mutate the shared default.
+---
+>  * to match, `^[A-Za-z0-9_-]{1,200}$`.
+>  *
+>  * @remarks
+>  * An incoming id carrying CRLF, a log-injection payload, a control character,
+>  * or more characters than the pattern admits fails the match and is rejected —
+>  * a fresh id is minted instead — so it never rides into a response header or
+>  * `context.state`. Frozen so a consumer can read but never mutate the shared
+>  * default.
+1327c1359,1360
+<  * parsed `Accept-Encoding` entries.
+---
+>  * parsed `Accept-Encoding` entries — the shared selection leaf behind
+>  * {@link negotiateEncoding} and a `Negotiator`'s `encoding` axis.
+1335c1368
+<  * `available` the SERVER's preference order. An empty `available` list, and a
+---
+>  * `available` the server's preference order. An empty `available` list, and a
+1337c1370
+<  * compression). TOTAL on hostile input.
+---
+>  * compression). Total on hostile input.
+1358c1391
+<  * `undefined` (no header set). SECURITY: the literal `'null'` origin — sent
+---
+>  * `undefined` (no header set). Security: the literal `'null'` origin — sent
+1360c1393
+<  * NEVER reflected even if `'null'` were listed, closing the hostile-context
+---
+>  * never reflected even if `'null'` were listed, closing the hostile-context
+1440,1441c1473
+<  * Strips the prototype-pollution keys from a parsed value IN PLACE,
+<  * recursively.
+---
+>  * Strips the prototype-pollution keys from a parsed value in place, recursively.
+1444,1445c1476,1477
+<  * `JSON.parse('{"__proto__":{…}}')` is benign on its own — it produces an OWN,
+<  * enumerable `__proto__` DATA property — but that own key becomes a
+---
+>  * `JSON.parse('{"__proto__":{…}}')` is benign on its own — it produces an own,
+>  * enumerable `__proto__` data property — but that own key becomes a
+1470,1472c1502,1504
+<  * (default OFF), `SameSite` (default `Lax`). `Domain` / `Path` are validated
+<  * with {@link isCookieAttribute} and THROW an {@link HTTPError} on an
+<  * injection attempt (a programmer misconfiguration — never a silent drop). A `sameSite: 'None'` cookie is ALWAYS `Secure` regardless of
+---
+>  * (default off), `SameSite` (default `Lax`). `Domain` / `Path` are validated
+>  * with {@link isCookieAttribute} and throw an {@link HTTPError} on an
+>  * injection attempt (a programmer misconfiguration — never a silent drop). A `sameSite: 'None'` cookie is always `Secure` regardless of
+1474c1506
+<  * `secure` here falls to OFF — request-aware callers resolve it first through
+---
+>  * `secure` here falls to off — request-aware callers resolve it first through
+1494c1526
+<  * Emits an `event:`/`id:`/`retry:` line for each present field, then ONE
+---
+>  * Emits an `event:`/`id:`/`retry:` line for each present field, then one
+1514c1546
+<  * dispatcher.
+---
+>  * dispatcher. Implements exactly {@link ServerInterface}.
+1521c1553
+<  *   ServerOptions.port} (omitted/`0` port ⇒ EPHEMERAL, resolved from the
+---
+>  *   ServerOptions.port} (omitted/`0` port ⇒ ephemeral, resolved from the
+1528c1560
+<  *   so in-flight handlers observe cancellation, drains in-flight requests AND
+---
+>  *   so in-flight handlers observe cancellation, drains in-flight requests and
+1534c1566
+<  *   `signal` LINKED to this run's stop signal through `@orkestrel/abort`'s
+---
+>  *   `signal` linked to this run's stop signal through `@orkestrel/abort`'s
+1536c1568
+<  *   `buildRequest`'s own abort, armed by BOTH request-side and response-side
+---
+>  *   `buildRequest`'s own abort, armed by request-side and response-side
+1538c1570
+<  *   so a handler awaiting `request.signal` observes BOTH); `context.state` is built through
+---
+>  *   so a handler awaiting `request.signal` observes either); `context.state` is built through
+1542c1574
+<  * - **The built-in boundary** wraps the WHOLE per-request chain, including
+---
+>  * - **The built-in boundary** wraps the whole per-request chain, including
+1544c1576
+<  *   throw (e.g. a malformed `Host` header) to a silent `400` with no
+---
+>  *   throw (for example, a malformed `Host` header) to a silent `400` with no
+1556c1588
+<  *   A CLAIMED socket joins `#upgraded` until it closes: the claimant still
+---
+>  *   A claimed socket joins `#upgraded` until it closes: the claimant still
+1561c1593
+<  *   routes it to the `error` OPTION (not the domain `error` event).
+---
+>  *   routes it to the `error` option rather than to the domain `error` event.
+1582c1614
+<  * entity refuses.
+---
+>  * entity refuses, carrying `'STATUS'` or `'NEXT'` as its code.
+1586c1618
+<  * record naming the offending facts. This is a PROGRAMMER error, so it carries
+---
+>  * record naming the offending facts. This is a programmer error, so it carries
+1612c1644,1646
+<  * {@link import('./errors.js').ServerError} carries.
+---
+>  * {@link import('./errors.js').ServerError} carries — `'STATUS'` for a lifecycle
+>  * call the current status forbids, `'NEXT'` for a middleware that called its `next`
+>  * a second time.
+1643c1677
+<  * - `stop` — `stop()` began (status just moved to `'stopping'`). An upgrade
+---
+>  * - `stop` — `stop()` began (status moved to `'stopping'`). An upgrade
+1645c1679
+<  *   below settles instead of running out the deadline.
+---
+>  *   settles instead of running out the deadline.
+1647c1681
+<  *   carries the still-pending request count AND the still-attached upgraded
+---
+>  *   carries the still-pending request count and the still-attached upgraded
+1649c1683
+<  *   that follows was FORCED and cut that work.
+---
+>  *   that follows was forced and cut that work.
+1654,1655c1688,1689
+<  *   `buildRequest` INNER boundary (a plain `400`, e.g. a malformed `Host`
+<  *   header) emits no `response` — no parsed `Request` exists yet to derive
+---
+>  *   `buildRequest` inner boundary (a plain `400`, for example a malformed
+>  *   `Host` header) emits no `response` — no parsed `Request` exists yet to derive
+1678c1712
+<  * configured `host`/`port` (an omitted/`0` port ⇒ an EPHEMERAL port, resolved
+---
+>  * configured `host`/`port` (an omitted/`0` port ⇒ an ephemeral port, resolved
+1710c1744,1745
+<      * Appends one middleware, or an array of them in order, to the onion.
+---
+>      * Appends one middleware, or an array of them in order, to the onion, outer-to-inner
+>      * in call order.
+1721c1756,1757
+<      * Registers a protocol-upgrade claimant that runs in registration order.
+---
+>      * Registers an {@link UpgradeHandler} claimant that runs in registration order; a
+>      * claimed socket is tracked until it closes.
+1727c1763,1764
+<      * Binds the configured listener and resolves its actually-bound port.
+---
+>      * Binds the configured `host` and `port`, or an ephemeral port, under an optional
+>      * caller `AbortSignal`, and resolves the actually-bound port.
+1744c1781,1782
+<      * Stops gracefully: refuses new connections, fires the stop signal, drains, closes.
+---
+>      * Stops gracefully: refuses new connections, fires the stop signal, drains in-flight
+>      * requests and claimed upgraded sockets up to the `drain` deadline, then closes.
+1747c1785
+<      * Drainable work is every in-flight request PLUS every upgraded socket a
+---
+>      * Drainable work is every in-flight request plus every upgraded socket a
+1759c1797,1798
+<      * Tears down for good: force-closes the listener and every socket, then the emitter.
+---
+>      * Tears down for good: force-closes the listener and every socket, then the emitter —
+>      * terminal and idempotent from any state.
+1767c1806,1808
+<  * Options for `createServer`.
+---
+>  * Options for `createServer` — the dispatcher and per-request state factory the
+>  * server requires, plus its listener, drain, boundary, timeout, socket-cap, and
+>  * emitter knobs.
+1781c1822
+<  *   EPHEMERAL, OS-assigned free port (the default); `start()` always resolves
+---
+>  *   ephemeral, OS-assigned free port (the default); `start()` always resolves
+1786c1827
+<  *   server stops accepting new connections and gives in-flight requests AND
+---
+>  *   server stops accepting new connections and gives in-flight requests and
+1866c1907
+<  * the signature), signed by using `crypto.subtle.sign('HMAC', …)` under the FIRST
+---
+>  * the signature), signed by using `crypto.subtle.sign('HMAC', …)` under the first
+1868,1869c1909,1910
+<  * Blank/whitespace-only secrets are IGNORED ({@link normalizeSecret}); a
+<  * misconfigured secret with no usable entry THROWS an {@link HTTPError}
+---
+>  * Blank/whitespace-only secrets are ignored ({@link normalizeSecret}); a
+>  * misconfigured secret with no usable entry throws an {@link HTTPError}
+1887c1928,1929
+<  * Holds the SSE response headers a `Stream` always sets on its response.
+---
+>  * Holds the SSE response headers a `Stream` sets on its response, merged under any
+>  * caller `headers` so a caller repeating one of these keys replaces its value.
+1894,1896c1936,1937
+<  * but never mutate the shared default; a `Stream` merges any
+<  * {@link import('./types.js').StreamOptions.headers} OVER these, so a caller
+<  * repeating one of these keys replaces its value.
+---
+>  * but never mutate the shared default; the merged keys are
+>  * {@link import('./types.js').StreamOptions.headers}.
+1905c1946
+<  *   lines: the value is split on `\n` into a `data:` line PER segment, so it
+---
+>  *   lines: the value is split on `\n` into a `data:` line per segment, so it
+1907c1948
+<  * - `event` — the optional event TYPE, emitted as an `event:` line; omitted
+---
+>  * - `event` — the optional event type, emitted as an `event:` line; omitted
+1915c1956
+<     /** Requires a SINGLE-LINE value — an embedded newline would corrupt the SSE wire format. */
+---
+>     /** Requires a single-line value — an embedded newline would corrupt the SSE wire format. */
+1917c1958
+<     /** Requires a SINGLE-LINE value — an embedded newline would corrupt the SSE wire format. */
+---
+>     /** Requires a single-line value — an embedded newline would corrupt the SSE wire format. */
+1929c1970
+<  * merged OVER them, at `options.status` (default `200`). A caller repeating one
+---
+>  * merged over them, at `options.status` (default `200`). A caller repeating one
+1941c1982
+<  * stream. Every method is a SAFE NO-OP once `closed` (ended by `end()`, or
+---
+>  * stream. Every method is a safe no-op once `closed` (ended by `end()`, or
+1992c2033
+<  * stream. Every method is a SAFE NO-OP once `closed` is `true`, so a late
+---
+>  * stream. Every method is a safe no-op once `closed` is `true`, so a late
+2001c2042
+<  * The stream's default strategy measures queued CHUNKS, not their byte length,
+---
+>  * The stream's default strategy measures queued chunks, not their byte length,
+2012c2053,2055
+<      * Serializes + enqueues one {@link SSEMessage} to the wire.
+---
+>      * Serializes and enqueues one {@link SSEMessage} to the wire, reporting whether the
+>      * process-local queue still has capacity afterward — `false` also once the stream
+>      * is closed.
+2022c2065,2066
+<      * Writes a `: text` SSE comment line — a keep-alive a conforming parser ignores.
+---
+>      * Writes a `: text` SSE comment line — a keep-alive a conforming parser ignores,
+>      * and a no-op once the stream is closed.
+2028c2072,2074
+<      * Parks until the process-local stream queue has capacity again.
+---
+>      * Parks until the process-local stream queue has capacity again — resolving on the
+>      * consumer pull that restores it, or immediately when capacity is already available
+>      * or the stream is closed, and never polling.
+2036c2082,2085
+<     /** Ends the stream, completing the response (a no-op once already `closed`). */
+---
+>     /**
+>      * Ends the stream, completing the response — a no-op once already `closed`, and it
+>      * settles any parked producer.
+>      */
+2046c2095
+<  * @param headers - Extra response headers merged OVER the SSE headers the
+---
+>  * @param headers - Extra response headers merged over the SSE headers the
+2059c2108
+<  *   uses the FIRST secret (a single string, or the current head of a
+---
+>  *   uses the first secret (a single string, or the current head of a
+2062c2111
+<  *   timestamp is bound INTO the signed payload (HMAC-covered, tamper-proof);
+---
+>  *   timestamp is bound into the signed payload (HMAC-covered, tamper-proof);
+2072,2073c2121,2122
+<  * Represents a secret (or rotation list) for signing + verifying a stateless, HMAC-signed
+<  * token.
+---
+>  * Represents a secret, or a `[current, ...older]` rotation list, for signing and
+>  * verifying a stateless, HMAC-signed token.
+2078,2079c2127,2128
+<  * FIRST (current) secret, while `verifyToken` accepts a token signed by ANY
+<  * secret in the list — so a key rotates by prepending the new one and keeping
+---
+>  * first (current) secret, while `verifyToken` accepts a token signed by any
+>  * secret in the list — so a key rotates by prepending the fresh one and keeping
+2085,2086c2134,2135
+<  * Strips the WEAK indicator (`W/`) from an entity-tag, returning its opaque
+<  * comparison body — the reduction {@link matchesETag} applies to both sides
+---
+>  * Strips the weak indicator (`W/`) from an entity-tag, returning its opaque
+>  * comparison body — the reduction {@link matchesETag} applies to each side
+2105,2107c2154,2156
+<  * order, the FIRST to return `true` CLAIMS (owns) the socket and stops the
+<  * fan-out; a handler that THROWS is treated as declined (the throw surfaces
+<  * on the `error` event) and the fan-out continues; if NONE claim it, the
+---
+>  * order, the first to return `true` claims (owns) the socket and stops the
+>  * fan-out; a handler that throws is treated as declined (the throw surfaces
+>  * on the `error` event) and the fan-out continues; if none claim it, the
+2112c2161
+<  * A CLAIMED socket is TRACKED until it closes. The handler still owns it —
+---
+>  * A claimed socket is tracked until it closes. The handler still owns it —
+2125c2174
+<  * @returns True if the handler CLAIMS the socket (this handler now owns
+---
+>  * @returns True if the handler claims the socket (this handler now owns
+2131c2180
+<  * Verifies a stateless token and returns its embedded value — TOTAL, never throws.
+---
+>  * Verifies a stateless token and returns its embedded value — total, never throws.
+2134c2183
+<  * The inverse of {@link signToken}: splits the token on its LAST `.` (so a
+---
+>  * The inverse of {@link signToken}: splits the token on its last `.` (so a
+2138c2187
+<  * HMAC-SHA256 signature against EACH {@link TokenSecret} candidate through
+---
+>  * HMAC-SHA256 signature against each {@link TokenSecret} candidate through
+2143c2192
+<  * token. ANY failure — a malformed token, a bad signature,
+---
+>  * token. Any failure — a malformed token, a bad signature,
+2159c2208,2209
+<  * Wraps one middleware layer around its downstream handler.
+---
+>  * Wraps one middleware layer around its downstream handler, enforcing the one-call
+>  * `next` invariant.
+2181c2231
+<  * Writes a SIGNED cookie — HMAC-signs `value` with {@link signToken} and
+---
+>  * Writes a signed cookie — HMAC-signs `value` with {@link signToken} and
+diff -r '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-server-final-registry-visit-pack/baseline/package/dist/src/server/index.js /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-server-final-registry-visit-pack/extract/package/dist/src/server/index.js
+12,13c12,13
+< * Names the default graceful-stop deadline (ms) the server gives in-flight
+< * requests on `stop()`.
+---
+> * Names the default graceful-stop deadline `stop()` gives in-flight requests and
+> * claimed upgraded sockets, `10_000` ms.
+17,21c17,19
+< * Names the `Symbol.for`-keyed brand `HTTPError` carries so `isHTTPError` recognizes
+< * an instance thrown by ANOTHER copy of this package (the dual-package
+< * hazard — a version-skewed or workspace-linked duplicate install), where
+< * `instanceof` alone fails because the two copies' `HTTPError` constructors
+< * are distinct objects.
+---
+> * Names the `Symbol.for`-interned brand `HTTPError` carries,
+> * `@orkestrel/server.HTTPError`, so `isHTTPError` recognizes an instance across
+> * package copies. A consumer never sets it by hand.
+24,25c22,26
+< * `Symbol.for` interns the symbol on the GLOBAL symbol registry, so every
+< * copy of this package that evaluates this key resolves the SAME symbol
+---
+> * The brand exists for the dual-package hazard — a version-skewed or
+> * workspace-linked duplicate install — where `instanceof` alone fails because
+> * each copy's `HTTPError` constructor is a distinct object.
+> * `Symbol.for` interns the symbol on the global symbol registry, so every
+> * copy of this package that evaluates this key resolves the same symbol
+30c31,34
+< /** Names the default maximum request body size (bytes) `readBody` accepts before a 413. */
+---
+> /**
+> * Names the default maximum request body size `readBody` accepts before a 413,
+> * `1_048_576` bytes.
+> */
+33,35c37,39
+< * Names the default maximum DECOMPRESSED request body size (bytes) — the zip-bomb cap
+< * the body pipeline's byte-counting `TransformStream` enforces when
+< * transparently decompressing a `Content-Encoding` request body.
+---
+> * Names the default maximum decompressed request body size, `16_777_216` bytes — the
+> * zip-bomb cap the body pipeline's byte-counting `TransformStream` enforces when
+> * it transparently decompresses a `Content-Encoding` request body.
+40,41c44,45
+< * Capping the decompressed byte count makes the pipe ABORT the moment the
+< * output would exceed this, BEFORE the full bomb is materialized, so the
+---
+> * Capping the decompressed byte count makes the pipe abort the moment the
+> * output would exceed this, before the full bomb is materialized, so the
+50c54,55
+< * Holds the SSE response headers a `Stream` always sets on its response.
+---
+> * Holds the SSE response headers a `Stream` sets on its response, merged under any
+> * caller `headers` so a caller repeating one of these keys replaces its value.
+57,59c62,63
+< * but never mutate the shared default; a `Stream` merges any
+< * {@link import('./types.js').StreamOptions.headers} OVER these, so a caller
+< * repeating one of these keys replaces its value.
+---
+> * but never mutate the shared default; the merged keys are
+> * {@link import('./types.js').StreamOptions.headers}.
+69,72c73,80
+< * to match — `^[A-Za-z0-9_-]{1,200}$` — so a CRLF / log-injection / oversized
+< * / control-char-bearing incoming id is REJECTED (a fresh id is minted
+< * instead) rather than ever riding into a response header or `context.state`.
+< * Frozen so a consumer can read but never mutate the shared default.
+---
+> * to match, `^[A-Za-z0-9_-]{1,200}$`.
+> *
+> * @remarks
+> * An incoming id carrying CRLF, a log-injection payload, a control character,
+> * or more characters than the pattern admits fails the match and is rejected —
+> * a fresh id is minted instead — so it never rides into a response header or
+> * `context.state`. Frozen so a consumer can read but never mutate the shared
+> * default.
+76,78c84,86
+< * Holds the set of bare `Content-Type`s `isCompressibleType` treats as
+< * COMPRESSIBLE, beyond the `text/*` prefix + structured-suffix (`+json` /
+< * `+xml`) rules that helper also applies.
+---
+> * Holds the bare `Content-Type` values `isCompressibleType` treats as compressible,
+> * beyond the `text/*` prefix and structured-suffix (`+json`, `+xml`) rules that
+> * helper also applies.
+82c90
+< * XML / SVG / WASM / a few document formats) — NOT already-compressed
+---
+> * XML / SVG / WASM / a few document formats) — never already-compressed
+104c112
+< * PREFERENCE order — `gzip` / `deflate`.
+---
+> * preference order — `gzip` then `deflate`.
+107c115
+< * `identity` (no compression) is always implicitly acceptable and is NOT
+---
+> * `identity` (no compression) is always implicitly acceptable and is not
+124c132
+< * — so an `HTTPError`'s message is ALWAYS client-facing (it is the handler's
+---
+> * — so an `HTTPError`'s message is always client-facing (it is the handler's
+181,182c189,191
+< * Narrows an unknown caught value to an {@link HTTPError} (including its
+< * subclasses, e.g. {@link ContentTooLargeError}).
+---
+> * Narrows an unknown caught value to an {@link HTTPError}, including a subclass such
+> * as {@link ContentTooLargeError}, and recognizes an instance from another copy of
+> * this package through a structural brand fallback.
+189c198
+< * an instance built by a DIFFERENT copy of this package (the dual-package
+---
+> * an instance built by a different copy of this package (the dual-package
+193c202
+< * same key) AND expose the exact fields the server's error boundary reads off
+---
+> * same key) and expose the exact fields the server's error boundary reads off
+195c204
+< * plain object that merely carries a `status` WITHOUT the brand is rejected.
+---
+> * plain object that merely carries a `status` without the brand is rejected.
+217c226
+< * entity refuses.
+---
+> * entity refuses, carrying `'STATUS'` or `'NEXT'` as its code.
+221c230
+< * record naming the offending facts. This is a PROGRAMMER error, so it carries
+---
+> * record naming the offending facts. This is a programmer error, so it carries
+250c259,260
+< * Narrows an unknown caught value to a {@link ServerError}.
+---
+> * Narrows an unknown caught value to a {@link ServerError} — the code-bearing refusal
+> * of a call the caller programmed.
+256,257c266,267
+< * Recognizes an instance built by THIS copy of the package. A `ServerError`
+< * is raised by a `Server` to the caller that just invoked it, so both sides
+---
+> * Recognizes an instance built by this copy of the package. A `ServerError`
+> * is raised by a `Server` to the caller that invoked it directly, so both sides
+308c318
+< * Composes an ordered chain of {@link MiddlewareHandler}s around a `terminal`
+---
+> * Composes an ordered chain of {@link MiddlewareHandler} layers around a `terminal`
+312,313c322,323
+< * `middleware[0]` runs OUTERMOST: it is invoked first, and its call to `next`
+< * runs `middleware[1]`, and so on until the LAST middleware's `next` invokes
+---
+> * `middleware[0]` runs outermost: it is invoked first, and its call to `next`
+> * runs `middleware[1]`, and so on until the last middleware's `next` invokes
+317c327
+< * downstream), or NOT called at all (a short-circuit — the middleware's own
+---
+> * downstream), or not called at all (a short-circuit — the middleware's own
+319c329
+< * SECOND call to the same `next` within one middleware invocation REJECTS —
+---
+> * second call to the same `next` within one middleware invocation rejects —
+343c353,354
+< * Wraps one middleware layer around its downstream handler.
+---
+> * Wraps one middleware layer around its downstream handler, enforcing the one-call
+> * `next` invariant.
+376c387
+< * Splits on `;`; the FIRST segment keeps any leading whitespace (a genuine
+---
+> * Splits on `;`; the first segment keeps any leading whitespace (a genuine
+379c390
+< * whitespace-PADDED name (`'  __Host-x=evil'`) is rejected by
+---
+> * whitespace-padded name (`'  __Host-x=evil'`) is rejected by
+382c393
+< * name, is skipped; a later duplicate name wins. TOTAL — an absent/empty/
+---
+> * name, is skipped; a later duplicate name wins. Total — an absent/empty/
+409,410c420,421
+< * Checks whether a string is a valid RFC 6265 cookie NAME — a non-empty run of
+< * cookie-token chars with NO surrounding (or interior) whitespace.
+---
+> * Checks whether a string is a valid RFC 6265 cookie name — a non-empty run of
+> * cookie-token characters with no surrounding or interior whitespace.
+451,453c462,464
+< * Checks whether a string is safe to interpolate as a `Set-Cookie` attribute VALUE
+< * (a `Domain` / `Path`) — the guard {@link serializeCookie} screens those two
+< * attributes with before emitting them.
+---
+> * Checks whether a string is safe to interpolate as a `Set-Cookie` attribute value —
+> * the guard {@link serializeCookie} applies to a `Domain` and a `Path` before it
+> * emits them.
+485,487c496,498
+< * (default OFF), `SameSite` (default `Lax`). `Domain` / `Path` are validated
+< * with {@link isCookieAttribute} and THROW an {@link HTTPError} on an
+< * injection attempt (a programmer misconfiguration — never a silent drop). A `sameSite: 'None'` cookie is ALWAYS `Secure` regardless of
+---
+> * (default off), `SameSite` (default `Lax`). `Domain` / `Path` are validated
+> * with {@link isCookieAttribute} and throw an {@link HTTPError} on an
+> * injection attempt (a programmer misconfiguration — never a silent drop). A `sameSite: 'None'` cookie is always `Secure` regardless of
+489c500
+< * `secure` here falls to OFF — request-aware callers resolve it first through
+---
+> * `secure` here falls to off — request-aware callers resolve it first through
+548c559
+< * Writes a SIGNED cookie — HMAC-signs `value` with {@link signToken} and
+---
+> * Writes a signed cookie — HMAC-signs `value` with {@link signToken} and
+574c585
+< * Reads + verifies a SIGNED cookie off a request — TOTAL, returning the
+---
+> * Reads and verifies a signed cookie off a request — total, returning the
+580c591
+< * accepts a cookie signed by any of its secrets). ANY failure — an absent
+---
+> * accepts a cookie signed by any of its secrets). Any failure — an absent
+603c614
+< * a cookie when those MATCH the one it set).
+---
+> * a cookie when those match the one it set).
+628c639
+< * the signature), signed by using `crypto.subtle.sign('HMAC', …)` under the FIRST
+---
+> * the signature), signed by using `crypto.subtle.sign('HMAC', …)` under the first
+630,631c641,642
+< * Blank/whitespace-only secrets are IGNORED ({@link normalizeSecret}); a
+< * misconfigured secret with no usable entry THROWS an {@link HTTPError}
+---
+> * Blank/whitespace-only secrets are ignored ({@link normalizeSecret}); a
+> * misconfigured secret with no usable entry throws an {@link HTTPError}
+662c673
+< * Verifies a stateless token and returns its embedded value — TOTAL, never throws.
+---
+> * Verifies a stateless token and returns its embedded value — total, never throws.
+665c676
+< * The inverse of {@link signToken}: splits the token on its LAST `.` (so a
+---
+> * The inverse of {@link signToken}: splits the token on its last `.` (so a
+669c680
+< * HMAC-SHA256 signature against EACH {@link TokenSecret} candidate through
+---
+> * HMAC-SHA256 signature against each {@link TokenSecret} candidate through
+674c685
+< * token. ANY failure — a malformed token, a bad signature,
+---
+> * token. Any failure — a malformed token, a bad signature,
+710c721
+< * Decodes + narrows a signed token's base64url JSON payload, honoring its
+---
+> * Decodes and narrows a signed token's base64url JSON payload, honoring its
+718c729
+< * `as`, and rejects an expired `exp`. TOTAL — any
+---
+> * `as`, and rejects an expired `exp`. Total — any
+740,741c751,752
+< * Normalizes a {@link TokenSecret} to a concrete list of USABLE secrets —
+< * backs both {@link signToken} and {@link verifyToken}.
+---
+> * Normalizes a {@link TokenSecret} to a concrete list of usable secrets — the list
+> * behind both {@link signToken} and {@link verifyToken}.
+745,746c756,757
+< * blank/whitespace-only entry is DROPPED (`.trim()` is used only for that
+< * emptiness test; each kept secret is stored VERBATIM). The first kept
+---
+> * blank/whitespace-only entry is dropped (`.trim()` is used only for that
+> * emptiness test; each kept secret is stored verbatim). The first kept
+768,769c779,780
+< * back to `1`). A `;q=0` entry is KEPT (an explicit rejection a caller must
+< * honor). The result is sorted by `q` DESCENDING, a STABLE sort preserving
+---
+> * back to `1`). A `;q=0` entry is kept (an explicit rejection a caller must
+> * honor). The result is sorted by `q` descending, a stable sort preserving
+771c782
+< * so parsing stays linear in the header length (ReDoS-safe). TOTAL — an
+---
+> * so parsing stays linear in the header length (ReDoS-safe). Total — an
+815c826
+< * Prefers an EXACT named match (including an explicit `;q=0` rejection);
+---
+> * Prefers an exact named match (including an explicit `;q=0` rejection);
+837c848,849
+< * parsed `Accept-Encoding` entries.
+---
+> * parsed `Accept-Encoding` entries — the shared selection leaf behind
+> * {@link negotiateEncoding} and a `Negotiator`'s `encoding` axis.
+845c857
+< * `available` the SERVER's preference order. An empty `available` list, and a
+---
+> * `available` the server's preference order. An empty `available` list, and a
+847c859
+< * compression). TOTAL on hostile input.
+---
+> * compression). Total on hostile input.
+880c892
+< * client accepts none of `available` (identity — no compression). TOTAL on
+---
+> * client accepts none of `available` (identity — no compression). Total on
+898c910
+< * Reports the rank + quality of one `candidate` media type against the parsed `Accept`
+---
+> * Reports the rank and quality of one `candidate` media type against the parsed `Accept`
+912c924
+< * @param candidate - The candidate media type to score (e.g. `'text/html'`)
+---
+> * @param candidate - The candidate media type to score (for example `'text/html'`)
+955c967
+< * @param candidate - The candidate language tag to score (e.g. `'en-US'`)
+---
+> * @param candidate - The candidate language tag to score (for example `'en-US'`)
+989,990c1001,1002
+< * binary (`image/png`, `application/zip`) is NOT compressible. An
+< * absent/empty type is not compressible. TOTAL.
+---
+> * binary (`image/png`, `application/zip`) is not compressible. An
+> * absent/empty type is not compressible. Total.
+1010c1022
+< * Computes a CONTENT `ETag` over a fully-buffered response body by using WebCrypto.
+---
+> * Computes a content `ETag` over a fully-buffered response body by using WebCrypto.
+1014,1016c1026,1028
+< * digest as a WEAK validator (`W/"<hash>"`) when `weak` is `true` — the
+< * default, encoding-AGNOSTIC, so the tag survives a downstream content
+< * re-encoding (gzip) and still matches on revalidation — or a STRONG one
+---
+> * digest as a weak validator (`W/"<hash>"`) when `weak` is `true` — the
+> * default, encoding-agnostic, so the tag survives a downstream content
+> * re-encoding (gzip) and still matches on revalidation — or a strong one
+1035,1036c1047,1048
+< * Strips the WEAK indicator (`W/`) from an entity-tag, returning its opaque
+< * comparison body — the reduction {@link matchesETag} applies to both sides
+---
+> * Strips the weak indicator (`W/`) from an entity-tag, returning its opaque
+> * comparison body — the reduction {@link matchesETag} applies to each side
+1053c1065
+< * `ETag` — the RFC 7232 §2.3.2 WEAK comparison.
+---
+> * `ETag` — the RFC 7232 §2.3.2 weak comparison.
+1056,1057c1068,1069
+< * `If-None-Match` is a COMMA-separated LIST of entity-tags (matches if ANY
+< * listed tag matches), or the `*` wildcard (matches ANY current
+---
+> * `If-None-Match` is a comma-separated list of entity-tags (matches if any
+> * listed tag matches), or the `*` wildcard (matches any current
+1059,1060c1071,1072
+< * WEAK: `W/"abc"` and `"abc"` are equal (both sides' weak prefix is stripped
+< * through {@link unwrapETag} before comparing the opaque body). TOTAL — a
+---
+> * weak: `W/"abc"` and `"abc"` are equal (each side's weak prefix is stripped
+> * through {@link unwrapETag} before comparing the opaque body). Total — a
+1086c1098
+< * TOTAL, returning a {@link RangeSpec} or `undefined`.
+---
+> * total, returning a {@link RangeSpec} or `undefined`.
+1091c1103
+< * `[0, size - 1]` (the HTTP INCLUSIVE-end convention). Returns
+---
+> * `[0, size - 1]` (the HTTP inclusive-end convention). Returns
+1094,1096c1106,1108
+< * `undefined` for the "serve the whole resource" case: an ABSENT header, a
+< * non-`bytes` unit, a MULTI-range header (`a-b, c-d` — refused outright, not
+< * supported), or any malformed/non-finite bound. NEVER throws on a hostile
+---
+> * `undefined` for the "serve the whole resource" case: an absent header, a
+> * non-`bytes` unit, a multi-range header (`a-b, c-d` — refused outright, not
+> * supported), or any malformed/non-finite bound. Never throws on a hostile
+1153c1165
+< * `undefined` (no header set). SECURITY: the literal `'null'` origin — sent
+---
+> * `undefined` (no header set). Security: the literal `'null'` origin — sent
+1155c1167
+< * NEVER reflected even if `'null'` were listed, closing the hostile-context
+---
+> * never reflected even if `'null'` were listed, closing the hostile-context
+1223,1224c1235,1236
+< * Checks whether a client-supplied `X-Request-ID` is SAFE to echo into a response
+< * header + `context.state`.
+---
+> * Checks whether a client-supplied `X-Request-ID` is safe to echo into a response
+> * header and `context.state`.
+1227c1239
+< * A request id is echoed RAW into a response header and log lines, so an
+---
+> * A request id is echoed raw into a response header and log lines, so an
+1231c1243
+< * TOTAL — never throws.
+---
+> * Total — never throws.
+1253c1265
+< * first FOUR (the `/64` prefix), normalizes each (lower-case, no leading
+---
+> * first four (the `/64` prefix), normalizes each (lower-case, no leading
+1296c1308
+< * Collapses a client IP into its rate-limit BUCKET key — an IPv6 address to
+---
+> * Collapses a client IP into its rate-limit bucket key — an IPv6 address to
+1300c1312
+< * A residential/mobile IPv6 user is routinely handed a WHOLE `/64`, so a
+---
+> * A residential/mobile IPv6 user is routinely handed a whole `/64`, so a
+1322c1334
+< * Emits an `event:`/`id:`/`retry:` line for each present field, then ONE
+---
+> * Emits an `event:`/`id:`/`retry:` line for each present field, then one
+1346,1348c1358,1360
+< * Checks whether a key is a PROTOTYPE-POLLUTION vector — `__proto__`, `constructor`,
+< * or `prototype` — the three keys that, assigned onto a normal object, can
+< * reach and mutate `Object.prototype`.
+---
+> * Checks whether a key is a prototype-pollution vector — `__proto__`,
+> * `constructor`, or `prototype`, each of which can reach and mutate
+> * `Object.prototype` when it is assigned onto a normal object.
+1363,1364c1375
+< * Strips the prototype-pollution keys from a parsed value IN PLACE,
+< * recursively.
+---
+> * Strips the prototype-pollution keys from a parsed value in place, recursively.
+1367,1368c1378,1379
+< * `JSON.parse('{"__proto__":{…}}')` is benign on its own — it produces an OWN,
+< * enumerable `__proto__` DATA property — but that own key becomes a
+---
+> * `JSON.parse('{"__proto__":{…}}')` is benign on its own — it produces an own,
+> * enumerable `__proto__` data property — but that own key becomes a
+1407c1418
+< * exceeds `limit` — BEFORE the rest of the stream is buffered — rather than
+---
+> * exceeds `limit` — before the rest of the stream is buffered — rather than
+1450c1461
+< * Lower-cases + trims and returns the matching {@link Encoding} ONLY for
+---
+> * Lower-cases + trims and returns the matching {@link Encoding} only for
+1454c1465
+< * TOTAL — never asserts the loose `string | null` header.
+---
+> * Total — never asserts the loose `string | null` header.
+1472c1483
+< * transparently through `DecompressionStream`, capping the DECOMPRESSED output —
+---
+> * transparently through `DecompressionStream`, capping the decompressed output —
+1477c1488
+< * `TransformStream` that ABORTS the pipe the INSTANT the running decompressed
+---
+> * `TransformStream` that aborts the pipe the instant the running decompressed
+1527c1538
+< * Collects + decodes a `Request` body — the shared body-collection pipeline
+---
+> * Collects and decodes a `Request` body — the shared body-collection pipeline
+1529c1540,1541
+< * `body()`.
+---
+> * `body()`. An empty body and a malformed `application/json` body each decode to
+> * `undefined`.
+1540,1541c1552
+< * scrubPrototype}); any other type decodes as UTF-8 text; an empty body
+< * decodes to `undefined`.
+---
+> * scrubPrototype}); any other type decodes as UTF-8 text.
+1543,1546c1554,1556
+< * A malformed JSON body is total: it decodes to `undefined` rather than
+< * throwing, so a handler that must reject one checks for `undefined` itself.
+< * That makes `undefined` the answer for two distinct inputs, and nothing in the
+< * returned value tells them apart.
+---
+> * A malformed JSON body is total: it decodes rather than throwing, so a handler
+> * that must reject one checks for `undefined` itself, and nothing in the returned
+> * value tells an empty body from a malformed one.
+1605,1606c1615,1617
+< * Finds a FREE TCP port — binds a throwaway `node:net` server, reads the
+< * OS-assigned port, closes it, and resolves that port.
+---
+> * Finds a free TCP port — binds a throwaway `node:net` server on a `preferred`
+> * port where one is given and on an ephemeral port otherwise, reads the bound
+> * port, closes the server, and resolves that port.
+1610,1611c1621,1622
+< * and returns it. With a `preferred` port it tries THAT port first and
+< * returns it when free; if already in use (`EADDRINUSE`) it FALLS BACK to an
+---
+> * and returns it. With a `preferred` port it tries that port first and
+> * returns it when free; if already in use (`EADDRINUSE`) it falls back to an
+1616c1627
+< * `preferred` port (e.g. a permission fault). A listener whose address is not
+---
+> * `preferred` port (for example, a permission fault). A listener whose address is not
+1647c1658
+< * reusable, cross-middleware ENTITY (not a middleware). Implements exactly
+---
+> * reusable, cross-middleware entity rather than a middleware. Implements exactly
+1653c1664
+< * sibling axes and REUSE the same {@link parseAcceptHeader} q-value parser the
+---
+> * sibling axes and reuse the same {@link parseAcceptHeader} q-value parser the
+1709c1720
+< 	* Errors thrown by the negotiated handler propagate UNMODIFIED — the
+---
+> 	* Errors thrown by the negotiated handler propagate unmodified — the
+1727c1738
+< * dispatcher.
+---
+> * dispatcher. Implements exactly {@link ServerInterface}.
+1734c1745
+< *   ServerOptions.port} (omitted/`0` port ⇒ EPHEMERAL, resolved from the
+---
+> *   ServerOptions.port} (omitted/`0` port ⇒ ephemeral, resolved from the
+1741c1752
+< *   so in-flight handlers observe cancellation, drains in-flight requests AND
+---
+> *   so in-flight handlers observe cancellation, drains in-flight requests and
+1747c1758
+< *   `signal` LINKED to this run's stop signal through `@orkestrel/abort`'s
+---
+> *   `signal` linked to this run's stop signal through `@orkestrel/abort`'s
+1749c1760
+< *   `buildRequest`'s own abort, armed by BOTH request-side and response-side
+---
+> *   `buildRequest`'s own abort, armed by request-side and response-side
+1751c1762
+< *   so a handler awaiting `request.signal` observes BOTH); `context.state` is built through
+---
+> *   so a handler awaiting `request.signal` observes either); `context.state` is built through
+1755c1766
+< * - **The built-in boundary** wraps the WHOLE per-request chain, including
+---
+> * - **The built-in boundary** wraps the whole per-request chain, including
+1757c1768
+< *   throw (e.g. a malformed `Host` header) to a silent `400` with no
+---
+> *   throw (for example, a malformed `Host` header) to a silent `400` with no
+1769c1780
+< *   A CLAIMED socket joins `#upgraded` until it closes: the claimant still
+---
+> *   A claimed socket joins `#upgraded` until it closes: the claimant still
+1774c1785
+< *   routes it to the `error` OPTION (not the domain `error` event).
+---
+> *   routes it to the `error` option rather than to the domain `error` event.
+2092c2103
+< * merged OVER them, at `options.status` (default `200`). A caller repeating one
+---
+> * merged over them, at `options.status` (default `200`). A caller repeating one
+2104c2115
+< * stream. Every method is a SAFE NO-OP once `closed` (ended by `end()`, or
+---
+> * stream. Every method is a safe no-op once `closed` (ended by `end()`, or
+2204a2216
+> * import type { MiddlewareContext } from '@src/server'
+2206a2219,2220
+> * declare const context: MiddlewareContext<Record<string, never>>
+> *
+2208,2209c2222,2227
+< * negotiator.negotiate('text/html, application/json;q=0.9', ['application/json', 'text/html'])
+< * // 'text/html'
+---
+> * negotiator.negotiate('text/html, application/json;q=0.9', ['application/json', 'text/html']) // 'text/html'
+> * negotiator.encoding('gzip;q=1.0, deflate;q=0.8', ['gzip', 'deflate']) // 'gzip'
+> * negotiator.language('en-US, en;q=0.8, fr;q=0.5', ['en', 'fr']) // 'en'
+> * await negotiator.format(new Request('http://x'), context, {
+> * 	'application/json': (_request, _context) => Response.json({ ok: true }),
+> * })
+2223c2241
+< * @example
+---
+> * @example Quickstart: dispatcher, middleware, lifecycle
+2225c2243,2244
+< * import { createServer } from '@src/server'
+---
+> * import type { MiddlewareHandler } from '@orkestrel/server'
+> * import { createServer } from '@orkestrel/server'
+2228c2247,2252
+< * const dispatcher = createDispatcher<{ readonly ip?: string }>()
+---
+> * interface State {
+> * 	readonly requestId: string
+> * 	readonly ip: string | undefined
+> * }
+> *
+> * const dispatcher = createDispatcher<State>()
+2231c2255,2261
+< * const server = createServer({
+---
+> * const logRequestId: MiddlewareHandler<State> = async (_request, context, next) => {
+> * 	const response = await next()
+> * 	response.headers.set('X-Request-ID', context.state.requestId)
+> * 	return response
+> * }
+> *
+> * const server = createServer<State>({
+2233c2263
+< * 	state: (connection) => ({ ip: connection.ip }),
+---
+> * 	state: (connection) => ({ requestId: crypto.randomUUID(), ip: connection.ip }),
+2234a2265
+> * server.use(logRequestId)
+2236a2268
+> * await server.destroy()

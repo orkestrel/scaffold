@@ -1,0 +1,22 @@
+npm notice
+npm notice 📦  @orkestrel/workspace@0.0.8
+npm notice Tarball Contents
+npm notice 1.1kB LICENSE
+npm notice 2.0kB README.md
+npm notice 28.0kB dist/src/core/index.cjs
+npm notice 47.8kB dist/src/core/index.cjs.map
+npm notice 32.3kB dist/src/core/index.d.cts
+npm notice 32.3kB dist/src/core/index.d.ts
+npm notice 26.6kB dist/src/core/index.js
+npm notice 47.3kB dist/src/core/index.js.map
+npm notice 3.8kB package.json
+npm notice Tarball Details
+npm notice name: @orkestrel/workspace
+npm notice version: 0.0.8
+npm notice filename: orkestrel-workspace-0.0.8.tgz
+npm notice package size: 48.1 kB
+npm notice unpacked size: 221.1 kB
+npm notice shasum: b559cc345998ab14eb29b2cd08bc5ee444d15c45
+npm notice integrity: sha512-kC3D7tAKNIt+J[...]SoXUKEPiDmIrw==
+npm notice total files: 9
+npm notice

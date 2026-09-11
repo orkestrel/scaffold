@@ -1,0 +1,28 @@
+npm notice
+npm notice 📦  @orkestrel/terminal@0.0.15
+npm notice Tarball Contents
+npm notice 1.1kB LICENSE
+npm notice 2.9kB README.md
+npm notice 86.3kB dist/src/core/index.cjs
+npm notice 135.8kB dist/src/core/index.cjs.map
+npm notice 87.9kB dist/src/core/index.d.cts
+npm notice 87.9kB dist/src/core/index.d.ts
+npm notice 82.8kB dist/src/core/index.js
+npm notice 134.8kB dist/src/core/index.js.map
+npm notice 40.7kB dist/src/server/index.cjs
+npm notice 61.1kB dist/src/server/index.cjs.map
+npm notice 24.1kB dist/src/server/index.d.cts
+npm notice 24.1kB dist/src/server/index.d.ts
+npm notice 39.4kB dist/src/server/index.js
+npm notice 60.6kB dist/src/server/index.js.map
+npm notice 4.6kB package.json
+npm notice Tarball Details
+npm notice name: @orkestrel/terminal
+npm notice version: 0.0.15
+npm notice filename: orkestrel-terminal-0.0.15.tgz
+npm notice package size: 226.3 kB
+npm notice unpacked size: 874.1 kB
+npm notice shasum: b82638eb3b27a0f6fbfacb5f1053cbef21ed2e70
+npm notice integrity: sha512-CxK+MKVIL+wGE[...]LyNocQznRjHhg==
+npm notice total files: 15
+npm notice

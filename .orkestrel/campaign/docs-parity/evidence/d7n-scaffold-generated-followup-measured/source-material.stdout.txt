@@ -1,0 +1,10 @@
+diff -r -w '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-scaffold-upper-git-final-pack/extract/package/dist/src/core/index.cjs /c/Users/mikes/WebstormProjects/scaffold/dist/src/core/index.cjs
+102c102
+< 		"@orkestrel/guide": "^0.0.17",
+---
+> 		"@orkestrel/guide": "^0.0.18",
+diff -r -w '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-scaffold-upper-git-final-pack/extract/package/dist/src/core/index.js /c/Users/mikes/WebstormProjects/scaffold/dist/src/core/index.js
+101c101
+< 		"@orkestrel/guide": "^0.0.17",
+---
+> 		"@orkestrel/guide": "^0.0.18",
