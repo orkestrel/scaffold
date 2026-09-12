@@ -6,6 +6,12 @@ Written 2026-09-08T03:35Z and revised 2026-09-08T04:05Z at the owner's request, 
 
 ### Active Ollama and Toolbox preparation
 
+The root prompt.txt selects only accepted Toolbox0.0.13 for operator upload.
+Fresh canonical main/ref, archive, manifest/lock, and dist confirmations pass.
+Scaffold and Ollama remain held; the command request did not waive their open
+readings. Read d7n-toolbox-upload-prompt.md. The consumed Agent/Probe command is
+no longer in prompt.txt. No upload has run.
+
 The owner has superseded provisioner preservation with Ollama-hook consolidation.
 Keep scripts/ollama.sh and adopt the useful setup behavior from Ollama's
 scripts/service.sh. Root archived and removed the uncommitted provisioner API,
