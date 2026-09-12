@@ -13,6 +13,10 @@ guide and test candidate; no release was committed. Pending Scaffold65/Guide18/
 Probe13 metadata is still unaccepted. Read d7n-ollama-hook-rebaseline.md and
 d7n-ollama-hook-map-brief.md. The historical preparation readings below remain
 evidence, not the current implementation direction. No new prompt is ready.
+The script-level design proposals are retained; read
+d7n-ollama-hook-design-state.md. Root asked whether cloud setup should install a
+missing Ollama binary or retain the existing preinstallation requirement. No
+replacement implementation, installer, release commit or upload has run.
 
 The Agent/Probe upload is registry-confirmed and its prompt is consumed. The
 refreshed catalog selects Ollama0.0.15 and Toolbox0.0.13 preparation. Root confirmed
