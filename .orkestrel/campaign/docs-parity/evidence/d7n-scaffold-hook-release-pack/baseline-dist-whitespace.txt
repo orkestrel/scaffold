@@ -1,0 +1,80 @@
+diff -r -w -B '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-scaffold-hook-release-pack/baseline/package/dist/src/core/index.cjs /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-scaffold-hook-release-pack/extract/package/dist/src/core/index.cjs
+7c7
+< 	version: "0.0.64",
+---
+> 	version: "0.0.65",
+102c102
+< 		"@orkestrel/guide": "^0.0.17",
+---
+> 		"@orkestrel/guide": "^0.0.18",
+104c104
+< 		"@orkestrel/probe": "^0.0.12",
+---
+> 		"@orkestrel/probe": "^0.0.13",
+387c387
+< /** Names the provisioner skeleton a workspace with declared service vendors is given once. */
+---
+> /** Names the inventory skeleton a workspace with declared service vendors is given once. */
+939,941c939,941
+< 		service: `// The live external services this package drives. It starts nothing itself:
+< // \`scripts/service.sh\` provisions, \`tests/setupService.ts\` proves readiness, and
+< // the project stays out of \`npm test\` because a real service answers it.
+---
+> 		service: `// The caller prepares the live external services before this project.
+> // \`tests/setupService.ts\` verifies readiness, and the project stays out of \`npm test\`
+> // because a real service answers it.
+diff -r -w -B '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-scaffold-hook-release-pack/baseline/package/dist/src/core/index.d.cts /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-scaffold-hook-release-pack/extract/package/dist/src/core/index.d.cts
+266,267c266,267
+<  * external service the workspace drives and emits the provisioner skeleton that
+<  * starts them. Neither is derivable from the other: a workspace may declare
+---
+>  * external service the workspace drives and emits an inventory skeleton that
+>  * starts nothing. Neither is derivable from the other: a workspace may declare
+1287c1287
+<               service: "// The live external services this package drives. It starts nothing itself:\n// `scripts/service.sh` provisions, `tests/setupService.ts` proves readiness, and\n// the project stays out of `npm test` because a real service answers it.\nexport const service = (): UserConfig => ({\n\tresolve,\n\ttest: {\n\t\tname: { label: 'service', color: 'red' },\n\t\tinclude: ['tests/service/**/*.test.ts'],\n\t\tsetupFiles: ['./tests/setup.ts', './tests/setupService.ts'],\n\t\tenvironment: 'node',\n\t\tbrowser: { enabled: false },\n\t\ttestTimeout: 120_000,\n\t\thookTimeout: 120_000,\n\t\tfileParallelism: false,\n\t},\n})\n";
+---
+>               service: "// The caller prepares the live external services before this project.\n// `tests/setupService.ts` verifies readiness, and the project stays out of `npm test`\n// because a real service answers it.\nexport const service = (): UserConfig => ({\n\tresolve,\n\ttest: {\n\t\tname: { label: 'service', color: 'red' },\n\t\tinclude: ['tests/service/**/*.test.ts'],\n\t\tsetupFiles: ['./tests/setup.ts', './tests/setupService.ts'],\n\t\tenvironment: 'node',\n\t\tbrowser: { enabled: false },\n\t\ttestTimeout: 120_000,\n\t\thookTimeout: 120_000,\n\t\tfileParallelism: false,\n\t},\n})\n";
+3255c3255
+<        /** Names the provisioner skeleton a workspace with declared service vendors is given once. */
+---
+>        /** Names the inventory skeleton a workspace with declared service vendors is given once. */
+diff -r -w -B '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-scaffold-hook-release-pack/baseline/package/dist/src/core/index.d.ts /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-scaffold-hook-release-pack/extract/package/dist/src/core/index.d.ts
+266,267c266,267
+<  * external service the workspace drives and emits the provisioner skeleton that
+<  * starts them. Neither is derivable from the other: a workspace may declare
+---
+>  * external service the workspace drives and emits an inventory skeleton that
+>  * starts nothing. Neither is derivable from the other: a workspace may declare
+1287c1287
+<               service: "// The live external services this package drives. It starts nothing itself:\n// `scripts/service.sh` provisions, `tests/setupService.ts` proves readiness, and\n// the project stays out of `npm test` because a real service answers it.\nexport const service = (): UserConfig => ({\n\tresolve,\n\ttest: {\n\t\tname: { label: 'service', color: 'red' },\n\t\tinclude: ['tests/service/**/*.test.ts'],\n\t\tsetupFiles: ['./tests/setup.ts', './tests/setupService.ts'],\n\t\tenvironment: 'node',\n\t\tbrowser: { enabled: false },\n\t\ttestTimeout: 120_000,\n\t\thookTimeout: 120_000,\n\t\tfileParallelism: false,\n\t},\n})\n";
+---
+>               service: "// The caller prepares the live external services before this project.\n// `tests/setupService.ts` verifies readiness, and the project stays out of `npm test`\n// because a real service answers it.\nexport const service = (): UserConfig => ({\n\tresolve,\n\ttest: {\n\t\tname: { label: 'service', color: 'red' },\n\t\tinclude: ['tests/service/**/*.test.ts'],\n\t\tsetupFiles: ['./tests/setup.ts', './tests/setupService.ts'],\n\t\tenvironment: 'node',\n\t\tbrowser: { enabled: false },\n\t\ttestTimeout: 120_000,\n\t\thookTimeout: 120_000,\n\t\tfileParallelism: false,\n\t},\n})\n";
+3255c3255
+<        /** Names the provisioner skeleton a workspace with declared service vendors is given once. */
+---
+>        /** Names the inventory skeleton a workspace with declared service vendors is given once. */
+diff -r -w -B '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-scaffold-hook-release-pack/baseline/package/dist/src/core/index.js /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-scaffold-hook-release-pack/extract/package/dist/src/core/index.js
+6c6
+< 	version: "0.0.64",
+---
+> 	version: "0.0.65",
+101c101
+< 		"@orkestrel/guide": "^0.0.17",
+---
+> 		"@orkestrel/guide": "^0.0.18",
+103c103
+< 		"@orkestrel/probe": "^0.0.12",
+---
+> 		"@orkestrel/probe": "^0.0.13",
+386c386
+< /** Names the provisioner skeleton a workspace with declared service vendors is given once. */
+---
+> /** Names the inventory skeleton a workspace with declared service vendors is given once. */
+938,940c938,940
+< 		service: `// The live external services this package drives. It starts nothing itself:
+< // \`scripts/service.sh\` provisions, \`tests/setupService.ts\` proves readiness, and
+< // the project stays out of \`npm test\` because a real service answers it.
+---
+> 		service: `// The caller prepares the live external services before this project.
+> // \`tests/setupService.ts\` verifies readiness, and the project stays out of \`npm test\`
+> // because a real service answers it.

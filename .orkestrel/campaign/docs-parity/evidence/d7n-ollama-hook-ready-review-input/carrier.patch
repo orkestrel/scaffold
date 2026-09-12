@@ -1,0 +1,75 @@
+--- /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/commit-scaffold-upper-release-final.sh	2026-09-11 10:41:31.248176700 -0400
++++ /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/commit-scaffold-hook-release.sh	2026-09-12 01:19:20.117914400 -0400
+@@ -1,17 +1,19 @@
+ #!/usr/bin/env bash
++# commit-scaffold-hook-release.sh records hook-release evidence under the supplied label.
++# Predecessor: commit-scaffold-upper-release-final.sh. Purpose: prepare the hook release commit.
+ set -euo pipefail
+ 
+ source /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/pass-env.sh
+ 
+ label=${1-}
++digest=${2-}
+ target="$SCAFFOLD"
+-prepublish="$SCR/d7n-scaffold-upper-git-final-prepublish"
+-binding="$SCR/d7n-scaffold-upper-commit-binding"
+-pack="$SCR/packed/d7n-scaffold-upper-git-final-pack"
+-verdict="$SCAFFOLD/.orkestrel/campaign/docs-parity/d7n-scaffold-upper-prepared-verdict.md"
+-archive="$pack/orkestrel-scaffold-0.0.64.tgz"
++prepublish="$SCR/d7n-scaffold-hook-prepublish-ready"
++binding="$SCR/d7n-scaffold-hook-commit-binding"
++pack="$SCR/packed/d7n-scaffold-hook-release-pack"
++verdict="$SCAFFOLD/.orkestrel/campaign/docs-parity/d7n-scaffold-hook-prepared-verdict.md"
++archive="$pack/orkestrel-scaffold-0.0.65.tgz"
+ out="$SCR/$label"
+-digest=a4e7078da602619e54384dbc7bdddaf25a2fdc6af0842a55004b8328365b8be7
+ 
+ fail() {
+ 	printf '%s\n' "$1" >&2
+@@ -31,8 +33,9 @@
+ 	return "$status"
+ }
+ 
++test "$#" = 2 || fail 'evidence label and archive digest are required'
+ [[ "$label" =~ ^[[:alnum:]][[:alnum:]._-]*$ ]] || fail 'evidence label must be safe'
+-test "$#" = 1 || fail 'evidence label is required'
++[[ "$digest" =~ ^[0-9a-f]{64}$ ]] || fail 'archive digest must be lowercase SHA-256 hexadecimal'
+ test ! -e "$out" || fail 'evidence output exists'
+ mkdir "$out"
+ test -f "$verdict" || fail 'prepared verdict is absent'
+@@ -48,7 +51,7 @@
+ run_git branch-before branch --show-current
+ test "$(<"$out/branch-before.stdout.txt")" = main || fail 'Scaffold branch differs'
+ run_git head-before rev-parse HEAD
+-test "$(<"$out/head-before.stdout.txt")" = 502428f11b792feab233120d1de395b197117610 || fail 'Scaffold HEAD differs'
++test "$(<"$out/head-before.stdout.txt")" = 116010815ba1ecf62e070cc945221b881d161893 || fail 'Scaffold HEAD differs'
+ run_git index-before diff --cached --quiet
+ test "$(<"$out/index-before.exit.txt")" = 0 || fail 'Scaffold has staged input'
+ run_git untracked-before ls-files --others --exclude-standard
+@@ -60,7 +63,7 @@
+ 	esac
+ done
+ test "$(node "$SCR/read-package-field.mjs" "$target/package.json" name)" = @orkestrel/scaffold || fail 'Scaffold manifest name differs'
+-test "$(node "$SCR/read-package-field.mjs" "$target/package.json" version)" = 0.0.64 || fail 'Scaffold manifest version differs'
++test "$(node "$SCR/read-package-field.mjs" "$target/package.json" version)" = 0.0.65 || fail 'Scaffold manifest version differs'
+ 
+ run_git diff-current diff HEAD --binary
+ cmp "$binding/diff-after.txt" "$out/diff-current.stdout.txt"
+@@ -77,7 +80,7 @@
+ product=()
+ for path in "${paths[@]}"; do
+ 	case "$path" in
+-		.claude/agents/orkestrel.md|guides/console.md|guides/contract.md|guides/emitter.md|guides/html.md|guides/markdown.md|guides/probe.md|guides/process.md|guides/scaffold.md|guides/template.md|guides/test.md|host.json|package.json|package-lock.json|src/bin/CLI.ts|src/bin/helpers.ts|tests/src/bin/CLI.test.ts|tests/src/bin/helpers.test.ts|tests/src/core/fixtures/app-only-toolchain.txt|tests/src/core/fixtures/setup-false-manifest.txt|tests/src/core/fixtures/source-manifest.txt)
++		.agents/skills/enterprise-bootstrap/SKILL.md|.agents/skills/enterprise-bootstrap/references/bootstrap-reference.md|.agents/skills/enterprise-bootstrap/references/color-modes.md|.agents/skills/enterprise-bootstrap/references/frontend-design.md|.agents/skills/enterprise-bootstrap/references/inspection.md|.claude/rules/workspace.md|.claude/settings.json|.claude/skills/enterprise-bootstrap/SKILL.md|guides/scaffold.md|host.json|package-lock.json|package.json|scripts/ollama.sh|src/core/constants.ts|src/core/templates.ts|tests/setupServer.ts|tests/src/core/fixtures/app-only-toolchain.txt|tests/src/core/fixtures/setup-false-manifest.txt|tests/src/core/fixtures/source-manifest.txt|tests/src/server/helpers.test.ts)
+ 			product+=("$path")
+ 			;;
+ 		.orkestrel/campaign/docs-parity|.orkestrel/campaign/docs-parity/*) ;;
+@@ -94,7 +97,7 @@
+ run_git add-product add -- "${product[@]}"
+ run_git add-campaign add -- .orkestrel/campaign/docs-parity
+ run_git index-staged ls-files --stage
+-run_git commit -c user.name=Claude -c user.email=noreply@anthropic.com commit -m 'Prepare Scaffold release with bounded Git inventory' -m 'Co-Authored-By: Claude <noreply@anthropic.com>' -m 'Claude-Session: codex:01a0810d-21bf-7f60-8534-488348e05743'
++run_git commit -c user.name=Claude -c user.email=noreply@anthropic.com commit -m 'Prepare Scaffold release with shared Ollama cloud setup' -m 'Co-Authored-By: Claude <noreply@anthropic.com>' -m 'Claude-Session: codex:01a0810d-21bf-7f60-8534-488348e05743'
+ test "$(<"$out/commit.exit.txt")" = 0 || fail 'Scaffold release commit failed'
+ run_git head-release rev-parse HEAD
+ run_git status-committed status --porcelain=v1 --untracked-files=all

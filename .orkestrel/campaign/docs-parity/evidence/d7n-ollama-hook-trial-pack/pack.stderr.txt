@@ -1,0 +1,22 @@
+npm notice
+npm notice 📦  @orkestrel/ollama@0.0.15
+npm notice Tarball Contents
+npm notice 1.1kB LICENSE
+npm notice 2.6kB README.md
+npm notice 26.9kB dist/src/server/index.cjs
+npm notice 45.9kB dist/src/server/index.cjs.map
+npm notice 29.0kB dist/src/server/index.d.cts
+npm notice 29.0kB dist/src/server/index.d.ts
+npm notice 25.9kB dist/src/server/index.js
+npm notice 45.6kB dist/src/server/index.js.map
+npm notice 4.3kB package.json
+npm notice Tarball Details
+npm notice name: @orkestrel/ollama
+npm notice version: 0.0.15
+npm notice filename: orkestrel-ollama-0.0.15.tgz
+npm notice package size: 53.2 kB
+npm notice unpacked size: 210.2 kB
+npm notice shasum: e7eacb91ee7aa06630463154408a83da533a41f2
+npm notice integrity: sha512-mL4AC4MJPkgIT[...]ocx1NSGd2dhnw==
+npm notice total files: 9
+npm notice

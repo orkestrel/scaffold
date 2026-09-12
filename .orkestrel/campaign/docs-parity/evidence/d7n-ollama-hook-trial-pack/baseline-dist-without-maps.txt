@@ -1,0 +1,1154 @@
+diff -r '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-ollama-hook-trial-pack/baseline/package/dist/src/server/index.cjs /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-ollama-hook-trial-pack/extract/package/dist/src/server/index.cjs
+7c7,10
+< /** Names the local Ollama daemon base URL assumed when `OllamaOptions.url` is omitted. */
+---
+> /**
+> * Names the local Ollama daemon base URL, `'http://localhost:11434'`, assumed when
+> * `OllamaOptions.url` is omitted.
+> */
+10,11c13,15
+< * Names how long the model stays resident after a call when `OllamaOptions.keepAlive` is
+< * omitted — Ollama's own `keep_alive` default, expressed as a duration string.
+---
+> * Names how long the model stays resident after a call — `'5m'` when
+> * `OllamaOptions.keepAlive` is omitted, Ollama's own `keep_alive` default, expressed as a
+> * duration string.
+19,20c23,24
+< * Names the per-call deadline in milliseconds when `OllamaOptions.timeout` is omitted —
+< * generous enough that a cold model load does not trip it.
+---
+> * Names the per-call deadline in milliseconds, `120_000`, when `OllamaOptions.timeout` is
+> * omitted — generous enough that a cold model load does not trip it.
+24c28
+< * Names the cap, in characters, on how much of a non-OK response body is
+---
+> * Names the character cap, `2048`, on how much of a non-OK response body is
+30,32c34,35
+< * without limit. `2048` characters is generous enough to carry a
+< * useful diagnostic snippet while staying well short of any practical size
+< * concern.
+---
+> * without limit, while the cap stays generous enough to carry a useful
+> * diagnostic snippet.
+45c48,49
+< * for the HTTP number instead of parsing the message. Narrow a caught value with
+---
+> * for the HTTP number instead of parsing the message. The message carries a body excerpt
+> * bounded to {@link MAX_ERROR_BODY_LENGTH} — `2048` characters. Narrow a caught value with
+74a79,82
+> * @remarks
+> * The check is an `instanceof` test, so it narrows a caught `unknown` to the error class
+> * without parsing the thrown message.
+> *
+111c119
+< * Builds a provider result from a turn's content, reasoning, tool calls, and usage.
+---
+> * Builds a `ProviderResult` from a turn's content, reasoning, tool calls, and usage.
+174c182,183
+< * Joins a call's two reasoning carriers into the result's `thinking`.
+---
+> * Joins a call's reasoning carriers — the splitter's separated in-content spans and the
+> * accumulated wire-side `message.thinking` — into the result's `thinking`.
+178c187
+< * @returns The two carriers separated by a blank line, or whichever one is non-empty
+---
+> * @returns The carriers separated by a blank line, or whichever one is non-empty
+306c315
+< *   CONFIGURABLE through {@link OllamaOptions.think} (default `false`). Non-stream parses
+---
+> *   configurable through {@link OllamaOptions.think} (default `false`). Non-stream parses
+311,312c320,321
+< *   daemon separates reasoning NATIVELY — returning it on the distinct `message.thinking`
+< *   channel (read here through `extractThinking`) instead of inline in `message.content`. EITHER
+---
+> *   daemon separates reasoning natively — returning it on the distinct `message.thinking`
+> *   channel (read here through `extractThinking`) instead of inline in `message.content`. Either
+315c324
+< *   content delta routes through the splitter, only CLEAN content is yielded / assembled,
+---
+> *   content delta routes through the splitter, only clean content is yielded / assembled,
+324c333
+< *   signal AND the deadline both cancel the request. The timeout is always cleared —
+---
+> *   signal and the deadline both cancel the request. The timeout is always cleared —
+328c337
+< *   `TextDecoder({ stream: true })` with the {@link NDJSONParser} parser keeps multi-byte
+---
+> *   `TextDecoder({ stream: true })` with the `createNDJSONParser` parser keeps multi-byte
+381,384c390,393
+< 	* Exposes the provider's context-framing default — the PROVIDER-DEFAULT level of
+< 	* {@link import('@orkestrel/agent').AgentContextInterface.build}'s format cascade (it BEATS
+< 	* the managers' built-in framing, is BEATEN by a manager-options or per-item override).
+< 	* Satisfies the OPTIONAL {@link ProviderInterface.format} contract member: `undefined`
+---
+> 	* Exposes the provider's context-framing default — the provider-default level of
+> 	* {@link import('@orkestrel/agent').AgentContextInterface.build}'s format cascade (it beats
+> 	* the managers' built-in framing, is beaten by a manager-options or per-item override).
+> 	* Satisfies the optional {@link ProviderInterface.format} contract member: `undefined`
+390,392c399,401
+< 	* EXPOSE-ONLY — read by the Agent loop and consumed by core's cascade; it is NEVER sent
+< 	* on the `/api/chat` wire (it is absent from `#body` / the request). This is NOT Ollama's
+< 	* structured-output `format` wire parameter — that one IS sent in `#body`, but only when
+---
+> 	* Expose-only — read by the Agent loop and consumed by core's cascade; it is never sent
+> 	* on the `/api/chat` wire (it is absent from `#body` / the request). This is not Ollama's
+> 	* structured-output `format` wire parameter — that one is sent in `#body`, but only when
+399a409,426
+> 	/**
+> 	* Generates one complete turn and resolves the assembled result — the clean content,
+> 	* any separated reasoning, any tool calls, and any usage the wire reported.
+> 	*
+> 	* @remarks
+> 	* Sends `stream: false` and parses one JSON body. Content routes through a per-call
+> 	* think splitter, so the assembled content stays clean even where the daemon renders a
+> 	* thinking model's reasoning inline; the separated spans and any daemon-side
+> 	* `message.thinking` land on `thinking`. The caller's signal and the armed deadline
+> 	* both cancel the request, and the deadline is cleared once the body is read.
+> 	*
+> 	* @param messages - The conversation turns to send
+> 	* @param signal - The caller's bounding signal, folded with the armed deadline
+> 	* @param tools - The callable tools to advertise for this turn, when the caller passes any
+> 	* @param options - The per-call overrides, `think` and `schema` among them
+> 	* @returns The assembled result of the turn
+> 	* @throws {@link OllamaHTTPError} When the daemon answers a non-OK status.
+> 	*/
+412a440,458
+> 	/**
+> 	* Streams one turn, yielding a channel-tagged delta per non-empty content or reasoning
+> 	* span and returning the assembled result when the stream completes.
+> 	*
+> 	* @remarks
+> 	* Sends `stream: true` and consumes NDJSON — one JSON object per newline-terminated
+> 	* line — pairing a streaming `TextDecoder` with the `NDJSONParser` so a record split
+> 	* across byte reads is reassembled. The returned result's content is the splitter's
+> 	* clean accumulation, beside any tool calls collected across lines and the usage the
+> 	* `done` line carries. A cancel mid-flight throws a `ProviderAbortError` carrying the
+> 	* partial assembled so far.
+> 	*
+> 	* @param messages - The conversation turns to send
+> 	* @param signal - The caller's bounding signal, folded with the armed deadline
+> 	* @param tools - The callable tools to advertise for this turn, when the caller passes any
+> 	* @param options - The per-call overrides, `think` and `schema` among them
+> 	* @returns The assembled result of the turn, after the last delta
+> 	* @throws {@link OllamaHTTPError} When the daemon answers a non-OK status or a `null` body.
+> 	*/
+548c594
+< * parameters (`temperature`, `seed`, and `num_predict`). Both calls take an
+---
+> * parameters (`temperature`, `seed`, and `num_predict`). Each call takes an
+555c601
+< * reaches the LLM through your middleware WITHOUT this library ever handling the real API
+---
+> * reaches the LLM through your middleware without this library ever handling the real API
+558c604
+< * The optional `format` is the provider's context-framing default — the PROVIDER-DEFAULT
+---
+> * The optional `format` is the provider's context-framing default — the provider-default
+562,564c608,611
+< * headers). It is EXPOSED on the provider for the Agent's `build()` and is NOT Ollama's
+< * `/api/chat` `format` wire parameter (structured output) — the two are unrelated despite
+< * the shared word. Omitted ⇒ the provider is framing-agnostic (core's built-in defaults).
+---
+> * headers). It is exposed on the provider for the Agent's `build()` and is not Ollama's
+> * `/api/chat` `format` wire parameter (structured output) — the framing default and that
+> * wire parameter are unrelated despite the shared word. Omitted ⇒ the provider is
+> * framing-agnostic (core's built-in defaults).
+570c617
+< * @example
+---
+> * @example createOllama + generate
+575c622
+< * const provider = createOllama({ model: 'qwen3.5:2b-q4_K_M' })
+---
+> * const provider = createOllama({ model: 'qwen3.5:2b-q4_K_M', options: { temperature: 0 } })
+576a624,627
+> * const messages = [
+> * 	{ id: '1', role: 'user', content: 'Summarize the release notes for version 2.0.' },
+> * ] as const
+> *
+577a629,630
+> * console.log(result.content)
+> * if (result.usage) charge(result.usage) // fold into a token budget
+593c646
+< * provider-default level of `AgentContext`'s cascade; NOT the wire `format`):
+---
+> * provider-default level of `AgentContext`'s cascade; not the wire `format`):
+diff -r '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-ollama-hook-trial-pack/baseline/package/dist/src/server/index.d.cts /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-ollama-hook-trial-pack/extract/package/dist/src/server/index.d.cts
+1,11c1,11
+< import { ContextFormat } from '@orkestrel/agent';
+< import { Message } from '@orkestrel/agent';
+< import { ProviderDelta } from '@orkestrel/agent';
+< import { ProviderInterface } from '@orkestrel/agent';
+< import { ProviderResult } from '@orkestrel/agent';
+< import { ProviderStreamOptions } from '@orkestrel/agent';
+< import { ThinkSplitterInterface } from '@orkestrel/agent';
+< import { TimeoutInterface } from '@orkestrel/timeout';
+< import { TokenUsage } from '@orkestrel/budget';
+< import { ToolCall } from '@orkestrel/tool';
+< import { ToolDefinition } from '@orkestrel/tool';
+---
+> import type { ContextFormat } from '@orkestrel/agent';
+> import type { Message } from '@orkestrel/agent';
+> import type { ProviderDelta } from '@orkestrel/agent';
+> import type { ProviderInterface } from '@orkestrel/agent';
+> import type { ProviderResult } from '@orkestrel/agent';
+> import type { ProviderStreamOptions } from '@orkestrel/agent';
+> import type { ThinkSplitterInterface } from '@orkestrel/agent';
+> import type { TimeoutInterface } from '@orkestrel/timeout';
+> import type { TokenUsage } from '@orkestrel/budget';
+> import type { ToolCall } from '@orkestrel/tool';
+> import type { ToolDefinition } from '@orkestrel/tool';
+14c14
+<  * Builds a provider result from a turn's content, reasoning, tool calls, and usage.
+---
+>  * Builds a `ProviderResult` from a turn's content, reasoning, tool calls, and usage.
+41c41
+<  * parameters (`temperature`, `seed`, and `num_predict`). Both calls take an
+---
+>  * parameters (`temperature`, `seed`, and `num_predict`). Each call takes an
+48c48
+<  * reaches the LLM through your middleware WITHOUT this library ever handling the real API
+---
+>  * reaches the LLM through your middleware without this library ever handling the real API
+51c51
+<  * The optional `format` is the provider's context-framing default — the PROVIDER-DEFAULT
+---
+>  * The optional `format` is the provider's context-framing default — the provider-default
+55,57c55,58
+<  * headers). It is EXPOSED on the provider for the Agent's `build()` and is NOT Ollama's
+<  * `/api/chat` `format` wire parameter (structured output) — the two are unrelated despite
+<  * the shared word. Omitted ⇒ the provider is framing-agnostic (core's built-in defaults).
+---
+>  * headers). It is exposed on the provider for the Agent's `build()` and is not Ollama's
+>  * `/api/chat` `format` wire parameter (structured output) — the framing default and that
+>  * wire parameter are unrelated despite the shared word. Omitted ⇒ the provider is
+>  * framing-agnostic (core's built-in defaults).
+63c64
+<  * @example
+---
+>  * @example createOllama + generate
+68c69
+<  * const provider = createOllama({ model: 'qwen3.5:2b-q4_K_M' })
+---
+>  * const provider = createOllama({ model: 'qwen3.5:2b-q4_K_M', options: { temperature: 0 } })
+69a71,74
+>  * const messages = [
+>  * 	{ id: '1', role: 'user', content: 'Summarize the release notes for version 2.0.' },
+>  * ] as const
+>  *
+70a76,77
+>  * console.log(result.content)
+>  * if (result.usage) charge(result.usage) // fold into a token budget
+86c93
+<  * provider-default level of `AgentContext`'s cascade; NOT the wire `format`):
+---
+>  * provider-default level of `AgentContext`'s cascade; not the wire `format`):
+103,104c110,112
+<  * Names how long the model stays resident after a call when `OllamaOptions.keepAlive` is
+<  * omitted — Ollama's own `keep_alive` default, expressed as a duration string.
+---
+>  * Names how long the model stays resident after a call — `'5m'` when
+>  * `OllamaOptions.keepAlive` is omitted, Ollama's own `keep_alive` default, expressed as a
+>  * duration string.
+112c120,123
+< /** Names the local Ollama daemon base URL assumed when `OllamaOptions.url` is omitted. */
+---
+> /**
+>  * Names the local Ollama daemon base URL, `'http://localhost:11434'`, assumed when
+>  * `OllamaOptions.url` is omitted.
+>  */
+116,117c127,128
+<  * Names the per-call deadline in milliseconds when `OllamaOptions.timeout` is omitted —
+<  * generous enough that a cold model load does not trip it.
+---
+>  * Names the per-call deadline in milliseconds, `120_000`, when `OllamaOptions.timeout` is
+>  * omitted — generous enough that a cold model load does not trip it.
+207a219,222
+>  * @remarks
+>  * The check is an `instanceof` test, so it narrows a caught `unknown` to the error class
+>  * without parsing the thrown message.
+>  *
+214c229,230
+<  * Joins a call's two reasoning carriers into the result's `thinking`.
+---
+>  * Joins a call's reasoning carriers — the splitter's separated in-content spans and the
+>  * accumulated wire-side `message.thinking` — into the result's `thinking`.
+218c234
+<  * @returns The two carriers separated by a blank line, or whichever one is non-empty
+---
+>  * @returns The carriers separated by a blank line, or whichever one is non-empty
+246c262
+<  * Names the cap, in characters, on how much of a non-OK response body is
+---
+>  * Names the character cap, `2048`, on how much of a non-OK response body is
+252,254c268,269
+<  * without limit. `2048` characters is generous enough to carry a
+<  * useful diagnostic snippet while staying well short of any practical size
+<  * concern.
+---
+>  * without limit, while the cap stays generous enough to carry a useful
+>  * diagnostic snippet.
+266c281,282
+<  * for the HTTP number instead of parsing the message. Narrow a caught value with
+---
+>  * for the HTTP number instead of parsing the message. The message carries a body excerpt
+>  * bounded to {@link MAX_ERROR_BODY_LENGTH} — `2048` characters. Narrow a caught value with
+314,315c330,331
+<  * type, but a browser-side runtime can inject a custom transport AND a dynamic header
+<  * (for example an obfuscated bearer token) so requests route through the developer's OWN
+---
+>  * type, but a browser-side runtime can inject both a custom transport and a dynamic header
+>  * (for example an obfuscated bearer token) so requests route through the developer's own
+340c356
+<      * model (for example `qwen3`) separates its reasoning NATIVELY at the wire — the daemon returns it
+---
+>      * model (for example `qwen3`) separates its reasoning natively at the wire — the daemon returns it
+345c361
+<      * way. Set it `true` for a thinking model whose reasoning you intend to DISPLAY separately.
+---
+>      * way. Set it `true` for a thinking model whose reasoning you intend to display separately.
+360c376
+<      * runtime can authenticate WITHOUT your app ever handling a real API key. Async so a
+---
+>      * runtime can authenticate without your app ever handling a real API key. Async so a
+366c382
+<      * Sets the provider's OPTIONAL context-framing default — the PROVIDER-DEFAULT level of
+---
+>      * Sets the provider's optional context-framing default — the provider-default level of
+370,371c386,387
+<      * the provider is framing-agnostic and core's built-in defaults apply unchanged. NOTE:
+<      * this is the prompt-CONTEXT framing consumed by `AgentContext.build()` — it is NOT
+---
+>      * the provider is framing-agnostic and core's built-in defaults apply unchanged. This
+>      * is the prompt-context framing consumed by `AgentContext.build()` — it is not
+386c402
+<  *   CONFIGURABLE through {@link OllamaOptions.think} (default `false`). Non-stream parses
+---
+>  *   configurable through {@link OllamaOptions.think} (default `false`). Non-stream parses
+391,392c407,408
+<  *   daemon separates reasoning NATIVELY — returning it on the distinct `message.thinking`
+<  *   channel (read here through `extractThinking`) instead of inline in `message.content`. EITHER
+---
+>  *   daemon separates reasoning natively — returning it on the distinct `message.thinking`
+>  *   channel (read here through `extractThinking`) instead of inline in `message.content`. Either
+395c411
+<  *   content delta routes through the splitter, only CLEAN content is yielded / assembled,
+---
+>  *   content delta routes through the splitter, only clean content is yielded / assembled,
+404c420
+<  *   signal AND the deadline both cancel the request. The timeout is always cleared —
+---
+>  *   signal and the deadline both cancel the request. The timeout is always cleared —
+408c424
+<  *   `TextDecoder({ stream: true })` with the {@link NDJSONParser} parser keeps multi-byte
+---
+>  *   `TextDecoder({ stream: true })` with the `createNDJSONParser` parser keeps multi-byte
+439,442c455,458
+<      * Exposes the provider's context-framing default — the PROVIDER-DEFAULT level of
+<      * {@link import('@orkestrel/agent').AgentContextInterface.build}'s format cascade (it BEATS
+<      * the managers' built-in framing, is BEATEN by a manager-options or per-item override).
+<      * Satisfies the OPTIONAL {@link ProviderInterface.format} contract member: `undefined`
+---
+>      * Exposes the provider's context-framing default — the provider-default level of
+>      * {@link import('@orkestrel/agent').AgentContextInterface.build}'s format cascade (it beats
+>      * the managers' built-in framing, is beaten by a manager-options or per-item override).
+>      * Satisfies the optional {@link ProviderInterface.format} contract member: `undefined`
+448,450c464,466
+<      * EXPOSE-ONLY — read by the Agent loop and consumed by core's cascade; it is NEVER sent
+<      * on the `/api/chat` wire (it is absent from `#body` / the request). This is NOT Ollama's
+<      * structured-output `format` wire parameter — that one IS sent in `#body`, but only when
+---
+>      * Expose-only — read by the Agent loop and consumed by core's cascade; it is never sent
+>      * on the `/api/chat` wire (it is absent from `#body` / the request). This is not Ollama's
+>      * structured-output `format` wire parameter — that one is sent in `#body`, but only when
+456,532d471
+<     generate(messages: readonly Message[], signal: AbortSignal, tools?: readonly ToolDefinition[], options?: ProviderStreamOptions): Promise<ProviderResult>;
+<     stream(messages: readonly Message[], signal: AbortSignal, tools?: readonly ToolDefinition[], options?: ProviderStreamOptions): AsyncGenerator<ProviderDelta, ProviderResult>;
+< }
+< 
+< /**
+<  * Represents an open `POST /api/chat` response together with the deadline and the
+<  * combined signal that bound the request.
+<  *
+<  * @remarks
+<  * The `response` is the open `POST /api/chat` `Response`; `timeout` is the armed
+<  * {@link TimeoutInterface} the consuming call clears once it finishes reading the body
+<  * (or that the provider clears on a failed or aborted request); `combined` is the
+<  * `AbortSignal.any([timeout.signal, callerSignal])` the request was issued under, which
+<  * the streaming path checks to tell a mid-stream cancel apart from any other error.
+<  */
+< export declare interface OllamaResponse {
+<     readonly response: Response;
+<     readonly timeout: TimeoutInterface;
+<     readonly combined: AbortSignal;
+< }
+< 
+< /**
+<  * Parses a non-stream `/api/chat` response body into a wire record.
+<  *
+<  * @remarks
+<  * Total by construction: an empty body, a body that is not JSON, and a body whose JSON is
+<  * not an object all yield `undefined`, so a malformed daemon response never escapes as a
+<  * `SyntaxError`. The call site supplies the empty-record default that reads as empty
+<  * content and no usage.
+<  *
+<  * @param response - The 200-OK `/api/chat` response whose body is read as text
+<  * @returns The parsed record, or `undefined` when the body is empty or malformed
+<  *
+<  * @example
+<  * ```ts
+<  * await parseBody(new Response('{"message":{"content":"ok"}}'))
+<  * // { message: { content: 'ok' } }
+<  * ```
+<  */
+< export declare function parseBody(response: Response): Promise<Readonly<Record<string, unknown>> | undefined>;
+< 
+< /**
+<  * Represents the exact `POST /api/chat` request body `OllamaProvider` sends — the internal typed
+<  * wire contract.
+<  *
+<  * @remarks
+<  * This is the typed wire shape asserted against the official `ollama` client's
+<  * `ChatRequest` by the compile-time parity test; `src/` never imports `ollama` itself.
+<  * `messages` mirrors the minimal turn shape `mapMessages` builds (`role` / `content`, plus
+<  * `tool_calls` only on a turn that replays them and `images` only on a multimodal
+<  * turn); `options` and `tools` are only present when configured.
+<  */
+< export declare interface WireChatRequest {
+<     readonly model: string;
+<     readonly messages: ReadonlyArray<{
+<         readonly role: string;
+<         readonly content: string;
+<         readonly tool_calls?: ReadonlyArray<{
+<             readonly function: {
+<                 readonly name: string;
+<                 readonly arguments: Readonly<Record<string, unknown>>;
+<             };
+<         }>;
+<         readonly images?: readonly string[];
+<     }>;
+<     readonly stream: boolean;
+<     readonly keep_alive: string | number;
+<     readonly think: boolean;
+<     readonly options?: Readonly<Record<string, unknown>>;
+<     readonly tools?: ReadonlyArray<{
+<         readonly type: 'function';
+<         readonly function: {
+<             readonly name: string;
+<             readonly description?: string;
+<             readonly parameters?: Readonly<Record<string, unknown>>;
+<         };
+<     }>;
+534,540c473,595
+<      * Holds the `/api/chat` structured-output constraint — a JSON-Schema object forwarded
+<      * verbatim from the per-call `ProviderStreamOptions.schema`. This is NOT
+<      * `OllamaOptions.format` (the unrelated prompt-context framing); only present
+<      * when a call supplies a `schema`.
+<      */
+<     readonly format?: Readonly<Record<string, unknown>>;
+< }
+---
+>      * Generates one complete turn and resolves the assembled result — the clean content,
+>      * any separated reasoning, any tool calls, and any usage the wire reported.
+>      *
+>      * @remarks
+>      * Sends `stream: false` and parses one JSON body. Content routes through a per-call
+>      * think splitter, so the assembled content stays clean even where the daemon renders a
+>      * thinking model's reasoning inline; the separated spans and any daemon-side
+>      * `message.thinking` land on `thinking`. The caller's signal and the armed deadline
+>      * both cancel the request, and the deadline is cleared once the body is read.
+>      *
+>      * @param messages - The conversation turns to send
+>      * @param signal - The caller's bounding signal, folded with the armed deadline
+>      * @param tools - The callable tools to advertise for this turn, when the caller passes any
+>      * @param options - The per-call overrides, `think` and `schema` among them
+>      * @returns The assembled result of the turn
+>      * @throws {@link OllamaHTTPError} When the daemon answers a non-OK status.
+>          */
+>      generate(messages: readonly Message[], signal: AbortSignal, tools?: readonly ToolDefinition[], options?: ProviderStreamOptions): Promise<ProviderResult>;
+>      /**
+>       * Streams one turn, yielding a channel-tagged delta per non-empty content or reasoning
+>       * span and returning the assembled result when the stream completes.
+>       *
+>       * @remarks
+>       * Sends `stream: true` and consumes NDJSON — one JSON object per newline-terminated
+>       * line — pairing a streaming `TextDecoder` with the `NDJSONParser` so a record split
+>       * across byte reads is reassembled. The returned result's content is the splitter's
+>       * clean accumulation, beside any tool calls collected across lines and the usage the
+>       * `done` line carries. A cancel mid-flight throws a `ProviderAbortError` carrying the
+>       * partial assembled so far.
+>       *
+>       * @param messages - The conversation turns to send
+>       * @param signal - The caller's bounding signal, folded with the armed deadline
+>       * @param tools - The callable tools to advertise for this turn, when the caller passes any
+>       * @param options - The per-call overrides, `think` and `schema` among them
+>       * @returns The assembled result of the turn, after the last delta
+>       * @throws {@link OllamaHTTPError} When the daemon answers a non-OK status or a `null` body.
+>           */
+>       stream(messages: readonly Message[], signal: AbortSignal, tools?: readonly ToolDefinition[], options?: ProviderStreamOptions): AsyncGenerator<ProviderDelta, ProviderResult>;
+>      }
+> 
+>      /**
+>       * Represents an open `POST /api/chat` response together with the deadline and the
+>       * combined signal that bound the request.
+>       *
+>       * @remarks
+>       * The `response` is the open `POST /api/chat` `Response`; `timeout` is the armed
+>       * {@link TimeoutInterface} the consuming call clears once it finishes reading the body
+>       * (or that the provider clears on a failed or aborted request); `combined` is the
+>       * `AbortSignal.any([timeout.signal, callerSignal])` the request was issued under, which
+>       * the streaming path checks to tell a mid-stream cancel apart from any other error.
+>       */
+>      export declare interface OllamaResponse {
+>          readonly response: Response;
+>          readonly timeout: TimeoutInterface;
+>          readonly combined: AbortSignal;
+>      }
+> 
+>      /**
+>       * Parses a non-stream `/api/chat` response body into a wire record.
+>       *
+>       * @remarks
+>       * Total by construction: an empty body, a body that is not JSON, and a body whose JSON is
+>       * not an object all yield `undefined`, so a malformed daemon response never escapes as a
+>       * `SyntaxError`. The call site supplies the empty-record default that reads as empty
+>       * content and no usage.
+>       *
+>       * @param response - The 200-OK `/api/chat` response whose body is read as text
+>       * @returns The parsed record, or `undefined` when the body is empty or malformed
+>       *
+>       * @example
+>       * ```ts
+>       * await parseBody(new Response('{"message":{"content":"ok"}}'))
+>       * // { message: { content: 'ok' } }
+>       * ```
+>       */
+>      export declare function parseBody(response: Response): Promise<Readonly<Record<string, unknown>> | undefined>;
+> 
+>      /**
+>       * Represents the exact `POST /api/chat` request body `OllamaProvider` sends — the internal typed
+>       * wire contract.
+>       *
+>       * @remarks
+>       * This is the typed wire shape asserted against the official `ollama` client's
+>       * `ChatRequest` by the compile-time parity test; `src/` never imports `ollama` itself.
+>       * `messages` mirrors the minimal turn shape `mapMessages` builds (`role` / `content`, plus
+>       * `tool_calls` only on a turn that replays them and `images` only on a multimodal
+>       * turn); `options` and `tools` are only present when configured. `format` carries the
+>       * `/api/chat` structured-output constraint, forwarded verbatim from the per-call
+>       * `ProviderStreamOptions.schema` and absent when no schema is supplied.
+>       */
+>      export declare interface WireChatRequest {
+>          readonly model: string;
+>          readonly messages: ReadonlyArray<{
+>              readonly role: string;
+>              readonly content: string;
+>              readonly tool_calls?: ReadonlyArray<{
+>                  readonly function: {
+>                      readonly name: string;
+>                      readonly arguments: Readonly<Record<string, unknown>>;
+>                  };
+>              }>;
+>              readonly images?: readonly string[];
+>          }>;
+>          readonly stream: boolean;
+>          readonly keep_alive: string | number;
+>          readonly think: boolean;
+>          readonly options?: Readonly<Record<string, unknown>>;
+>          readonly tools?: ReadonlyArray<{
+>              readonly type: 'function';
+>              readonly function: {
+>                  readonly name: string;
+>                  readonly description?: string;
+>                  readonly parameters?: Readonly<Record<string, unknown>>;
+>              };
+>          }>;
+>          /**
+>           * Holds the `/api/chat` structured-output constraint — a JSON-Schema object forwarded
+>           * verbatim from the per-call `ProviderStreamOptions.schema`. This is not
+>           * `OllamaOptions.format` (the unrelated prompt-context framing); only present
+>           * when a call supplies a `schema`.
+>           */
+>          readonly format?: Readonly<Record<string, unknown>>;
+>      }
+542c597
+< export { }
+---
+>      export { }
+diff -r '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-ollama-hook-trial-pack/baseline/package/dist/src/server/index.d.ts /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-ollama-hook-trial-pack/extract/package/dist/src/server/index.d.ts
+1,11c1,11
+< import { ContextFormat } from '@orkestrel/agent';
+< import { Message } from '@orkestrel/agent';
+< import { ProviderDelta } from '@orkestrel/agent';
+< import { ProviderInterface } from '@orkestrel/agent';
+< import { ProviderResult } from '@orkestrel/agent';
+< import { ProviderStreamOptions } from '@orkestrel/agent';
+< import { ThinkSplitterInterface } from '@orkestrel/agent';
+< import { TimeoutInterface } from '@orkestrel/timeout';
+< import { TokenUsage } from '@orkestrel/budget';
+< import { ToolCall } from '@orkestrel/tool';
+< import { ToolDefinition } from '@orkestrel/tool';
+---
+> import type { ContextFormat } from '@orkestrel/agent';
+> import type { Message } from '@orkestrel/agent';
+> import type { ProviderDelta } from '@orkestrel/agent';
+> import type { ProviderInterface } from '@orkestrel/agent';
+> import type { ProviderResult } from '@orkestrel/agent';
+> import type { ProviderStreamOptions } from '@orkestrel/agent';
+> import type { ThinkSplitterInterface } from '@orkestrel/agent';
+> import type { TimeoutInterface } from '@orkestrel/timeout';
+> import type { TokenUsage } from '@orkestrel/budget';
+> import type { ToolCall } from '@orkestrel/tool';
+> import type { ToolDefinition } from '@orkestrel/tool';
+14c14
+<  * Builds a provider result from a turn's content, reasoning, tool calls, and usage.
+---
+>  * Builds a `ProviderResult` from a turn's content, reasoning, tool calls, and usage.
+41c41
+<  * parameters (`temperature`, `seed`, and `num_predict`). Both calls take an
+---
+>  * parameters (`temperature`, `seed`, and `num_predict`). Each call takes an
+48c48
+<  * reaches the LLM through your middleware WITHOUT this library ever handling the real API
+---
+>  * reaches the LLM through your middleware without this library ever handling the real API
+51c51
+<  * The optional `format` is the provider's context-framing default — the PROVIDER-DEFAULT
+---
+>  * The optional `format` is the provider's context-framing default — the provider-default
+55,57c55,58
+<  * headers). It is EXPOSED on the provider for the Agent's `build()` and is NOT Ollama's
+<  * `/api/chat` `format` wire parameter (structured output) — the two are unrelated despite
+<  * the shared word. Omitted ⇒ the provider is framing-agnostic (core's built-in defaults).
+---
+>  * headers). It is exposed on the provider for the Agent's `build()` and is not Ollama's
+>  * `/api/chat` `format` wire parameter (structured output) — the framing default and that
+>  * wire parameter are unrelated despite the shared word. Omitted ⇒ the provider is
+>  * framing-agnostic (core's built-in defaults).
+63c64
+<  * @example
+---
+>  * @example createOllama + generate
+68c69
+<  * const provider = createOllama({ model: 'qwen3.5:2b-q4_K_M' })
+---
+>  * const provider = createOllama({ model: 'qwen3.5:2b-q4_K_M', options: { temperature: 0 } })
+69a71,74
+>  * const messages = [
+>  * 	{ id: '1', role: 'user', content: 'Summarize the release notes for version 2.0.' },
+>  * ] as const
+>  *
+70a76,77
+>  * console.log(result.content)
+>  * if (result.usage) charge(result.usage) // fold into a token budget
+86c93
+<  * provider-default level of `AgentContext`'s cascade; NOT the wire `format`):
+---
+>  * provider-default level of `AgentContext`'s cascade; not the wire `format`):
+103,104c110,112
+<  * Names how long the model stays resident after a call when `OllamaOptions.keepAlive` is
+<  * omitted — Ollama's own `keep_alive` default, expressed as a duration string.
+---
+>  * Names how long the model stays resident after a call — `'5m'` when
+>  * `OllamaOptions.keepAlive` is omitted, Ollama's own `keep_alive` default, expressed as a
+>  * duration string.
+112c120,123
+< /** Names the local Ollama daemon base URL assumed when `OllamaOptions.url` is omitted. */
+---
+> /**
+>  * Names the local Ollama daemon base URL, `'http://localhost:11434'`, assumed when
+>  * `OllamaOptions.url` is omitted.
+>  */
+116,117c127,128
+<  * Names the per-call deadline in milliseconds when `OllamaOptions.timeout` is omitted —
+<  * generous enough that a cold model load does not trip it.
+---
+>  * Names the per-call deadline in milliseconds, `120_000`, when `OllamaOptions.timeout` is
+>  * omitted — generous enough that a cold model load does not trip it.
+207a219,222
+>  * @remarks
+>  * The check is an `instanceof` test, so it narrows a caught `unknown` to the error class
+>  * without parsing the thrown message.
+>  *
+214c229,230
+<  * Joins a call's two reasoning carriers into the result's `thinking`.
+---
+>  * Joins a call's reasoning carriers — the splitter's separated in-content spans and the
+>  * accumulated wire-side `message.thinking` — into the result's `thinking`.
+218c234
+<  * @returns The two carriers separated by a blank line, or whichever one is non-empty
+---
+>  * @returns The carriers separated by a blank line, or whichever one is non-empty
+246c262
+<  * Names the cap, in characters, on how much of a non-OK response body is
+---
+>  * Names the character cap, `2048`, on how much of a non-OK response body is
+252,254c268,269
+<  * without limit. `2048` characters is generous enough to carry a
+<  * useful diagnostic snippet while staying well short of any practical size
+<  * concern.
+---
+>  * without limit, while the cap stays generous enough to carry a useful
+>  * diagnostic snippet.
+266c281,282
+<  * for the HTTP number instead of parsing the message. Narrow a caught value with
+---
+>  * for the HTTP number instead of parsing the message. The message carries a body excerpt
+>  * bounded to {@link MAX_ERROR_BODY_LENGTH} — `2048` characters. Narrow a caught value with
+314,315c330,331
+<  * type, but a browser-side runtime can inject a custom transport AND a dynamic header
+<  * (for example an obfuscated bearer token) so requests route through the developer's OWN
+---
+>  * type, but a browser-side runtime can inject both a custom transport and a dynamic header
+>  * (for example an obfuscated bearer token) so requests route through the developer's own
+340c356
+<      * model (for example `qwen3`) separates its reasoning NATIVELY at the wire — the daemon returns it
+---
+>      * model (for example `qwen3`) separates its reasoning natively at the wire — the daemon returns it
+345c361
+<      * way. Set it `true` for a thinking model whose reasoning you intend to DISPLAY separately.
+---
+>      * way. Set it `true` for a thinking model whose reasoning you intend to display separately.
+360c376
+<      * runtime can authenticate WITHOUT your app ever handling a real API key. Async so a
+---
+>      * runtime can authenticate without your app ever handling a real API key. Async so a
+366c382
+<      * Sets the provider's OPTIONAL context-framing default — the PROVIDER-DEFAULT level of
+---
+>      * Sets the provider's optional context-framing default — the provider-default level of
+370,371c386,387
+<      * the provider is framing-agnostic and core's built-in defaults apply unchanged. NOTE:
+<      * this is the prompt-CONTEXT framing consumed by `AgentContext.build()` — it is NOT
+---
+>      * the provider is framing-agnostic and core's built-in defaults apply unchanged. This
+>      * is the prompt-context framing consumed by `AgentContext.build()` — it is not
+386c402
+<  *   CONFIGURABLE through {@link OllamaOptions.think} (default `false`). Non-stream parses
+---
+>  *   configurable through {@link OllamaOptions.think} (default `false`). Non-stream parses
+391,392c407,408
+<  *   daemon separates reasoning NATIVELY — returning it on the distinct `message.thinking`
+<  *   channel (read here through `extractThinking`) instead of inline in `message.content`. EITHER
+---
+>  *   daemon separates reasoning natively — returning it on the distinct `message.thinking`
+>  *   channel (read here through `extractThinking`) instead of inline in `message.content`. Either
+395c411
+<  *   content delta routes through the splitter, only CLEAN content is yielded / assembled,
+---
+>  *   content delta routes through the splitter, only clean content is yielded / assembled,
+404c420
+<  *   signal AND the deadline both cancel the request. The timeout is always cleared —
+---
+>  *   signal and the deadline both cancel the request. The timeout is always cleared —
+408c424
+<  *   `TextDecoder({ stream: true })` with the {@link NDJSONParser} parser keeps multi-byte
+---
+>  *   `TextDecoder({ stream: true })` with the `createNDJSONParser` parser keeps multi-byte
+439,442c455,458
+<      * Exposes the provider's context-framing default — the PROVIDER-DEFAULT level of
+<      * {@link import('@orkestrel/agent').AgentContextInterface.build}'s format cascade (it BEATS
+<      * the managers' built-in framing, is BEATEN by a manager-options or per-item override).
+<      * Satisfies the OPTIONAL {@link ProviderInterface.format} contract member: `undefined`
+---
+>      * Exposes the provider's context-framing default — the provider-default level of
+>      * {@link import('@orkestrel/agent').AgentContextInterface.build}'s format cascade (it beats
+>      * the managers' built-in framing, is beaten by a manager-options or per-item override).
+>      * Satisfies the optional {@link ProviderInterface.format} contract member: `undefined`
+448,450c464,466
+<      * EXPOSE-ONLY — read by the Agent loop and consumed by core's cascade; it is NEVER sent
+<      * on the `/api/chat` wire (it is absent from `#body` / the request). This is NOT Ollama's
+<      * structured-output `format` wire parameter — that one IS sent in `#body`, but only when
+---
+>      * Expose-only — read by the Agent loop and consumed by core's cascade; it is never sent
+>      * on the `/api/chat` wire (it is absent from `#body` / the request). This is not Ollama's
+>      * structured-output `format` wire parameter — that one is sent in `#body`, but only when
+456,532d471
+<     generate(messages: readonly Message[], signal: AbortSignal, tools?: readonly ToolDefinition[], options?: ProviderStreamOptions): Promise<ProviderResult>;
+<     stream(messages: readonly Message[], signal: AbortSignal, tools?: readonly ToolDefinition[], options?: ProviderStreamOptions): AsyncGenerator<ProviderDelta, ProviderResult>;
+< }
+< 
+< /**
+<  * Represents an open `POST /api/chat` response together with the deadline and the
+<  * combined signal that bound the request.
+<  *
+<  * @remarks
+<  * The `response` is the open `POST /api/chat` `Response`; `timeout` is the armed
+<  * {@link TimeoutInterface} the consuming call clears once it finishes reading the body
+<  * (or that the provider clears on a failed or aborted request); `combined` is the
+<  * `AbortSignal.any([timeout.signal, callerSignal])` the request was issued under, which
+<  * the streaming path checks to tell a mid-stream cancel apart from any other error.
+<  */
+< export declare interface OllamaResponse {
+<     readonly response: Response;
+<     readonly timeout: TimeoutInterface;
+<     readonly combined: AbortSignal;
+< }
+< 
+< /**
+<  * Parses a non-stream `/api/chat` response body into a wire record.
+<  *
+<  * @remarks
+<  * Total by construction: an empty body, a body that is not JSON, and a body whose JSON is
+<  * not an object all yield `undefined`, so a malformed daemon response never escapes as a
+<  * `SyntaxError`. The call site supplies the empty-record default that reads as empty
+<  * content and no usage.
+<  *
+<  * @param response - The 200-OK `/api/chat` response whose body is read as text
+<  * @returns The parsed record, or `undefined` when the body is empty or malformed
+<  *
+<  * @example
+<  * ```ts
+<  * await parseBody(new Response('{"message":{"content":"ok"}}'))
+<  * // { message: { content: 'ok' } }
+<  * ```
+<  */
+< export declare function parseBody(response: Response): Promise<Readonly<Record<string, unknown>> | undefined>;
+< 
+< /**
+<  * Represents the exact `POST /api/chat` request body `OllamaProvider` sends — the internal typed
+<  * wire contract.
+<  *
+<  * @remarks
+<  * This is the typed wire shape asserted against the official `ollama` client's
+<  * `ChatRequest` by the compile-time parity test; `src/` never imports `ollama` itself.
+<  * `messages` mirrors the minimal turn shape `mapMessages` builds (`role` / `content`, plus
+<  * `tool_calls` only on a turn that replays them and `images` only on a multimodal
+<  * turn); `options` and `tools` are only present when configured.
+<  */
+< export declare interface WireChatRequest {
+<     readonly model: string;
+<     readonly messages: ReadonlyArray<{
+<         readonly role: string;
+<         readonly content: string;
+<         readonly tool_calls?: ReadonlyArray<{
+<             readonly function: {
+<                 readonly name: string;
+<                 readonly arguments: Readonly<Record<string, unknown>>;
+<             };
+<         }>;
+<         readonly images?: readonly string[];
+<     }>;
+<     readonly stream: boolean;
+<     readonly keep_alive: string | number;
+<     readonly think: boolean;
+<     readonly options?: Readonly<Record<string, unknown>>;
+<     readonly tools?: ReadonlyArray<{
+<         readonly type: 'function';
+<         readonly function: {
+<             readonly name: string;
+<             readonly description?: string;
+<             readonly parameters?: Readonly<Record<string, unknown>>;
+<         };
+<     }>;
+534,540c473,595
+<      * Holds the `/api/chat` structured-output constraint — a JSON-Schema object forwarded
+<      * verbatim from the per-call `ProviderStreamOptions.schema`. This is NOT
+<      * `OllamaOptions.format` (the unrelated prompt-context framing); only present
+<      * when a call supplies a `schema`.
+<      */
+<     readonly format?: Readonly<Record<string, unknown>>;
+< }
+---
+>      * Generates one complete turn and resolves the assembled result — the clean content,
+>      * any separated reasoning, any tool calls, and any usage the wire reported.
+>      *
+>      * @remarks
+>      * Sends `stream: false` and parses one JSON body. Content routes through a per-call
+>      * think splitter, so the assembled content stays clean even where the daemon renders a
+>      * thinking model's reasoning inline; the separated spans and any daemon-side
+>      * `message.thinking` land on `thinking`. The caller's signal and the armed deadline
+>      * both cancel the request, and the deadline is cleared once the body is read.
+>      *
+>      * @param messages - The conversation turns to send
+>      * @param signal - The caller's bounding signal, folded with the armed deadline
+>      * @param tools - The callable tools to advertise for this turn, when the caller passes any
+>      * @param options - The per-call overrides, `think` and `schema` among them
+>      * @returns The assembled result of the turn
+>      * @throws {@link OllamaHTTPError} When the daemon answers a non-OK status.
+>          */
+>      generate(messages: readonly Message[], signal: AbortSignal, tools?: readonly ToolDefinition[], options?: ProviderStreamOptions): Promise<ProviderResult>;
+>      /**
+>       * Streams one turn, yielding a channel-tagged delta per non-empty content or reasoning
+>       * span and returning the assembled result when the stream completes.
+>       *
+>       * @remarks
+>       * Sends `stream: true` and consumes NDJSON — one JSON object per newline-terminated
+>       * line — pairing a streaming `TextDecoder` with the `NDJSONParser` so a record split
+>       * across byte reads is reassembled. The returned result's content is the splitter's
+>       * clean accumulation, beside any tool calls collected across lines and the usage the
+>       * `done` line carries. A cancel mid-flight throws a `ProviderAbortError` carrying the
+>       * partial assembled so far.
+>       *
+>       * @param messages - The conversation turns to send
+>       * @param signal - The caller's bounding signal, folded with the armed deadline
+>       * @param tools - The callable tools to advertise for this turn, when the caller passes any
+>       * @param options - The per-call overrides, `think` and `schema` among them
+>       * @returns The assembled result of the turn, after the last delta
+>       * @throws {@link OllamaHTTPError} When the daemon answers a non-OK status or a `null` body.
+>           */
+>       stream(messages: readonly Message[], signal: AbortSignal, tools?: readonly ToolDefinition[], options?: ProviderStreamOptions): AsyncGenerator<ProviderDelta, ProviderResult>;
+>      }
+> 
+>      /**
+>       * Represents an open `POST /api/chat` response together with the deadline and the
+>       * combined signal that bound the request.
+>       *
+>       * @remarks
+>       * The `response` is the open `POST /api/chat` `Response`; `timeout` is the armed
+>       * {@link TimeoutInterface} the consuming call clears once it finishes reading the body
+>       * (or that the provider clears on a failed or aborted request); `combined` is the
+>       * `AbortSignal.any([timeout.signal, callerSignal])` the request was issued under, which
+>       * the streaming path checks to tell a mid-stream cancel apart from any other error.
+>       */
+>      export declare interface OllamaResponse {
+>          readonly response: Response;
+>          readonly timeout: TimeoutInterface;
+>          readonly combined: AbortSignal;
+>      }
+> 
+>      /**
+>       * Parses a non-stream `/api/chat` response body into a wire record.
+>       *
+>       * @remarks
+>       * Total by construction: an empty body, a body that is not JSON, and a body whose JSON is
+>       * not an object all yield `undefined`, so a malformed daemon response never escapes as a
+>       * `SyntaxError`. The call site supplies the empty-record default that reads as empty
+>       * content and no usage.
+>       *
+>       * @param response - The 200-OK `/api/chat` response whose body is read as text
+>       * @returns The parsed record, or `undefined` when the body is empty or malformed
+>       *
+>       * @example
+>       * ```ts
+>       * await parseBody(new Response('{"message":{"content":"ok"}}'))
+>       * // { message: { content: 'ok' } }
+>       * ```
+>       */
+>      export declare function parseBody(response: Response): Promise<Readonly<Record<string, unknown>> | undefined>;
+> 
+>      /**
+>       * Represents the exact `POST /api/chat` request body `OllamaProvider` sends — the internal typed
+>       * wire contract.
+>       *
+>       * @remarks
+>       * This is the typed wire shape asserted against the official `ollama` client's
+>       * `ChatRequest` by the compile-time parity test; `src/` never imports `ollama` itself.
+>       * `messages` mirrors the minimal turn shape `mapMessages` builds (`role` / `content`, plus
+>       * `tool_calls` only on a turn that replays them and `images` only on a multimodal
+>       * turn); `options` and `tools` are only present when configured. `format` carries the
+>       * `/api/chat` structured-output constraint, forwarded verbatim from the per-call
+>       * `ProviderStreamOptions.schema` and absent when no schema is supplied.
+>       */
+>      export declare interface WireChatRequest {
+>          readonly model: string;
+>          readonly messages: ReadonlyArray<{
+>              readonly role: string;
+>              readonly content: string;
+>              readonly tool_calls?: ReadonlyArray<{
+>                  readonly function: {
+>                      readonly name: string;
+>                      readonly arguments: Readonly<Record<string, unknown>>;
+>                  };
+>              }>;
+>              readonly images?: readonly string[];
+>          }>;
+>          readonly stream: boolean;
+>          readonly keep_alive: string | number;
+>          readonly think: boolean;
+>          readonly options?: Readonly<Record<string, unknown>>;
+>          readonly tools?: ReadonlyArray<{
+>              readonly type: 'function';
+>              readonly function: {
+>                  readonly name: string;
+>                  readonly description?: string;
+>                  readonly parameters?: Readonly<Record<string, unknown>>;
+>              };
+>          }>;
+>          /**
+>           * Holds the `/api/chat` structured-output constraint — a JSON-Schema object forwarded
+>           * verbatim from the per-call `ProviderStreamOptions.schema`. This is not
+>           * `OllamaOptions.format` (the unrelated prompt-context framing); only present
+>           * when a call supplies a `schema`.
+>           */
+>          readonly format?: Readonly<Record<string, unknown>>;
+>      }
+542c597
+< export { }
+---
+>      export { }
+diff -r '--exclude=*.map' /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-ollama-hook-trial-pack/baseline/package/dist/src/server/index.js /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-ollama-hook-trial-pack/extract/package/dist/src/server/index.js
+6c6,9
+< /** Names the local Ollama daemon base URL assumed when `OllamaOptions.url` is omitted. */
+---
+> /**
+> * Names the local Ollama daemon base URL, `'http://localhost:11434'`, assumed when
+> * `OllamaOptions.url` is omitted.
+> */
+9,10c12,14
+< * Names how long the model stays resident after a call when `OllamaOptions.keepAlive` is
+< * omitted — Ollama's own `keep_alive` default, expressed as a duration string.
+---
+> * Names how long the model stays resident after a call — `'5m'` when
+> * `OllamaOptions.keepAlive` is omitted, Ollama's own `keep_alive` default, expressed as a
+> * duration string.
+18,19c22,23
+< * Names the per-call deadline in milliseconds when `OllamaOptions.timeout` is omitted —
+< * generous enough that a cold model load does not trip it.
+---
+> * Names the per-call deadline in milliseconds, `120_000`, when `OllamaOptions.timeout` is
+> * omitted — generous enough that a cold model load does not trip it.
+23c27
+< * Names the cap, in characters, on how much of a non-OK response body is
+---
+> * Names the character cap, `2048`, on how much of a non-OK response body is
+29,31c33,34
+< * without limit. `2048` characters is generous enough to carry a
+< * useful diagnostic snippet while staying well short of any practical size
+< * concern.
+---
+> * without limit, while the cap stays generous enough to carry a useful
+> * diagnostic snippet.
+44c47,48
+< * for the HTTP number instead of parsing the message. Narrow a caught value with
+---
+> * for the HTTP number instead of parsing the message. The message carries a body excerpt
+> * bounded to {@link MAX_ERROR_BODY_LENGTH} — `2048` characters. Narrow a caught value with
+73a78,81
+> * @remarks
+> * The check is an `instanceof` test, so it narrows a caught `unknown` to the error class
+> * without parsing the thrown message.
+> *
+110c118
+< * Builds a provider result from a turn's content, reasoning, tool calls, and usage.
+---
+> * Builds a `ProviderResult` from a turn's content, reasoning, tool calls, and usage.
+173c181,182
+< * Joins a call's two reasoning carriers into the result's `thinking`.
+---
+> * Joins a call's reasoning carriers — the splitter's separated in-content spans and the
+> * accumulated wire-side `message.thinking` — into the result's `thinking`.
+177c186
+< * @returns The two carriers separated by a blank line, or whichever one is non-empty
+---
+> * @returns The carriers separated by a blank line, or whichever one is non-empty
+305c314
+< *   CONFIGURABLE through {@link OllamaOptions.think} (default `false`). Non-stream parses
+---
+> *   configurable through {@link OllamaOptions.think} (default `false`). Non-stream parses
+310,311c319,320
+< *   daemon separates reasoning NATIVELY — returning it on the distinct `message.thinking`
+< *   channel (read here through `extractThinking`) instead of inline in `message.content`. EITHER
+---
+> *   daemon separates reasoning natively — returning it on the distinct `message.thinking`
+> *   channel (read here through `extractThinking`) instead of inline in `message.content`. Either
+314c323
+< *   content delta routes through the splitter, only CLEAN content is yielded / assembled,
+---
+> *   content delta routes through the splitter, only clean content is yielded / assembled,
+323c332
+< *   signal AND the deadline both cancel the request. The timeout is always cleared —
+---
+> *   signal and the deadline both cancel the request. The timeout is always cleared —
+327c336
+< *   `TextDecoder({ stream: true })` with the {@link NDJSONParser} parser keeps multi-byte
+---
+> *   `TextDecoder({ stream: true })` with the `createNDJSONParser` parser keeps multi-byte
+380,383c389,392
+< 	* Exposes the provider's context-framing default — the PROVIDER-DEFAULT level of
+< 	* {@link import('@orkestrel/agent').AgentContextInterface.build}'s format cascade (it BEATS
+< 	* the managers' built-in framing, is BEATEN by a manager-options or per-item override).
+< 	* Satisfies the OPTIONAL {@link ProviderInterface.format} contract member: `undefined`
+---
+> 	* Exposes the provider's context-framing default — the provider-default level of
+> 	* {@link import('@orkestrel/agent').AgentContextInterface.build}'s format cascade (it beats
+> 	* the managers' built-in framing, is beaten by a manager-options or per-item override).
+> 	* Satisfies the optional {@link ProviderInterface.format} contract member: `undefined`
+389,391c398,400
+< 	* EXPOSE-ONLY — read by the Agent loop and consumed by core's cascade; it is NEVER sent
+< 	* on the `/api/chat` wire (it is absent from `#body` / the request). This is NOT Ollama's
+< 	* structured-output `format` wire parameter — that one IS sent in `#body`, but only when
+---
+> 	* Expose-only — read by the Agent loop and consumed by core's cascade; it is never sent
+> 	* on the `/api/chat` wire (it is absent from `#body` / the request). This is not Ollama's
+> 	* structured-output `format` wire parameter — that one is sent in `#body`, but only when
+398a408,425
+> 	/**
+> 	* Generates one complete turn and resolves the assembled result — the clean content,
+> 	* any separated reasoning, any tool calls, and any usage the wire reported.
+> 	*
+> 	* @remarks
+> 	* Sends `stream: false` and parses one JSON body. Content routes through a per-call
+> 	* think splitter, so the assembled content stays clean even where the daemon renders a
+> 	* thinking model's reasoning inline; the separated spans and any daemon-side
+> 	* `message.thinking` land on `thinking`. The caller's signal and the armed deadline
+> 	* both cancel the request, and the deadline is cleared once the body is read.
+> 	*
+> 	* @param messages - The conversation turns to send
+> 	* @param signal - The caller's bounding signal, folded with the armed deadline
+> 	* @param tools - The callable tools to advertise for this turn, when the caller passes any
+> 	* @param options - The per-call overrides, `think` and `schema` among them
+> 	* @returns The assembled result of the turn
+> 	* @throws {@link OllamaHTTPError} When the daemon answers a non-OK status.
+> 	*/
+411a439,457
+> 	/**
+> 	* Streams one turn, yielding a channel-tagged delta per non-empty content or reasoning
+> 	* span and returning the assembled result when the stream completes.
+> 	*
+> 	* @remarks
+> 	* Sends `stream: true` and consumes NDJSON — one JSON object per newline-terminated
+> 	* line — pairing a streaming `TextDecoder` with the `NDJSONParser` so a record split
+> 	* across byte reads is reassembled. The returned result's content is the splitter's
+> 	* clean accumulation, beside any tool calls collected across lines and the usage the
+> 	* `done` line carries. A cancel mid-flight throws a `ProviderAbortError` carrying the
+> 	* partial assembled so far.
+> 	*
+> 	* @param messages - The conversation turns to send
+> 	* @param signal - The caller's bounding signal, folded with the armed deadline
+> 	* @param tools - The callable tools to advertise for this turn, when the caller passes any
+> 	* @param options - The per-call overrides, `think` and `schema` among them
+> 	* @returns The assembled result of the turn, after the last delta
+> 	* @throws {@link OllamaHTTPError} When the daemon answers a non-OK status or a `null` body.
+> 	*/
+547c593
+< * parameters (`temperature`, `seed`, and `num_predict`). Both calls take an
+---
+> * parameters (`temperature`, `seed`, and `num_predict`). Each call takes an
+554c600
+< * reaches the LLM through your middleware WITHOUT this library ever handling the real API
+---
+> * reaches the LLM through your middleware without this library ever handling the real API
+557c603
+< * The optional `format` is the provider's context-framing default — the PROVIDER-DEFAULT
+---
+> * The optional `format` is the provider's context-framing default — the provider-default
+561,563c607,610
+< * headers). It is EXPOSED on the provider for the Agent's `build()` and is NOT Ollama's
+< * `/api/chat` `format` wire parameter (structured output) — the two are unrelated despite
+< * the shared word. Omitted ⇒ the provider is framing-agnostic (core's built-in defaults).
+---
+> * headers). It is exposed on the provider for the Agent's `build()` and is not Ollama's
+> * `/api/chat` `format` wire parameter (structured output) — the framing default and that
+> * wire parameter are unrelated despite the shared word. Omitted ⇒ the provider is
+> * framing-agnostic (core's built-in defaults).
+569c616
+< * @example
+---
+> * @example createOllama + generate
+574c621
+< * const provider = createOllama({ model: 'qwen3.5:2b-q4_K_M' })
+---
+> * const provider = createOllama({ model: 'qwen3.5:2b-q4_K_M', options: { temperature: 0 } })
+575a623,626
+> * const messages = [
+> * 	{ id: '1', role: 'user', content: 'Summarize the release notes for version 2.0.' },
+> * ] as const
+> *
+576a628,629
+> * console.log(result.content)
+> * if (result.usage) charge(result.usage) // fold into a token budget
+592c645
+< * provider-default level of `AgentContext`'s cascade; NOT the wire `format`):
+---
+> * provider-default level of `AgentContext`'s cascade; not the wire `format`):

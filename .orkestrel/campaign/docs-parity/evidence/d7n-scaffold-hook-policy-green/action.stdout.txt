@@ -1,0 +1,10 @@
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/scaffold
+
+·················································x·································x·······
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 89 passed (91)
+   Start at  01:11:04
+   Duration  1.29s (transform 209ms, setup 306ms, import 88ms, tests 747ms, environment 0ms)
+

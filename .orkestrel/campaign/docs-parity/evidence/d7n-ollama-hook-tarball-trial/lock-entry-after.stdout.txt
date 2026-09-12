@@ -1,0 +1,21 @@
+{
+  "version": "0.0.64",
+  "resolved": "https://registry.npmjs.org/@orkestrel/scaffold/-/scaffold-0.0.64.tgz",
+  "integrity": "sha512-sxkwBvH8tS04BYIKfDdJVDqHk1mOmqfIXOqH7h/gP+P5DAs4RzLPhlKnQQfCOtuk8pcbGN2Mt5/rXghTOc1iIg==",
+  "dev": true,
+  "license": "MIT",
+  "dependencies": {
+    "@orkestrel/console": "^0.0.13",
+    "@orkestrel/contract": "^0.0.17",
+    "@orkestrel/emitter": "^0.0.10",
+    "@orkestrel/markdown": "^0.0.14",
+    "@orkestrel/process": "^0.0.11",
+    "@orkestrel/template": "^0.0.7"
+  },
+  "bin": {
+    "scaffold": "dist/bin/main.js"
+  },
+  "engines": {
+    "node": ">=22.12.0"
+  }
+}

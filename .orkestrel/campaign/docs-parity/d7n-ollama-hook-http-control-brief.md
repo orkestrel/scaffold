@@ -1,0 +1,7 @@
+# Bind the HTTP refusal tests
+
+The root owns a temporary mutation of `scripts/ollama.sh` after the HTTP writer has stopped. No other source writer or gate may run during this control. The adopted independent-review prescription requires a successful HTTP status in addition to a completion-shaped body.
+
+Record the corrected script hash. Temporarily admit the 3xx status class in the version, pull, and warm success checks, leaving model-show absence semantics unchanged. Run the permanent focused `Ollama setup` regression through `scaffold-hook-action.sh` under `d7n-ollama-hook-http-control-red`. Require the redirect-refusal assertions to fail while successful completion cases still pass. Restore only the planted regex changes by editing, then confirm the corrected script hash and run the same focused command under `d7n-ollama-hook-http-control-green`.
+
+The membership boundary is HTTP completion: completion-shaped JSON is not sufficient when the HTTP status is a redirect. This control deliberately preserves the accepted JSON body and changes the response-status acceptance boundary. It does not prove Linux installation, daemon startup, or cleanup. Retain the brief, mutation diff, exact commands, output, exit status, and restored hash. Apply `AGENTS.md`, the testing/portability/quality rules, and the `orkestrel-falsify` reconciliation reference. No install, commit, push, or secret read is involved.

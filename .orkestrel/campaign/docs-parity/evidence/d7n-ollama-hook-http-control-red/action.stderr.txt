@@ -1,0 +1,60 @@
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:server| tests/src/server/helpers.test.ts > Ollama setup > refuses redirected version readiness without starting a local daemon
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ tests/src/server/helpers.test.ts:219:26
+    217|    const host = server.url.replace('127.0.0.1', '[::ffff:127.0.0.1]')
+    218|    const result = await executeOllamaSetup(host, 'fixture-model')
+    219|    expect(result.failed).toBe(true)
+       |                          ^
+    220|    expect(result.stderr).toContain(
+    221|     'the configured endpoint is unreachable; local startup is limited …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  |src:server| tests/src/server/helpers.test.ts > Ollama setup > refuses a redirected pull with a completed protocol body
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ tests/src/server/helpers.test.ts:233:26
+    231|   try {
+    232|    const result = await executeOllamaSetup(server.url, 'fixture-model')
+    233|    expect(result.failed).toBe(true)
+       |                          ^
+    234|    expect(server.requests.map((request) => request.path)).toStrictEqua…
+    235|     '/api/version',
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  |src:server| tests/src/server/helpers.test.ts > Ollama setup > refuses a redirected warm response with a completed protocol body
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ tests/src/server/helpers.test.ts:248:26
+    246|   try {
+    247|    const result = await executeOllamaSetup(server.url, 'fixture-model')
+    248|    expect(result.failed).toBe(true)
+       |                          ^
+    249|    expect(server.requests.map((request) => request.path)).toStrictEqua…
+    250|     '/api/version',
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+

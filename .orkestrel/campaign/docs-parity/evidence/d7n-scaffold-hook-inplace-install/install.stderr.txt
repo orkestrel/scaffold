@@ -1,0 +1,20 @@
+npm warn cleanup Failed to remove some directories [
+npm warn cleanup   [
+npm warn cleanup     'C:\\Users\\mikes\\WebstormProjects\\scaffold\\node_modules\\@rolldown\\.binding-win32-x64-msvc-3RBr7DSD',
+npm warn cleanup     [Error: EPERM: operation not permitted, unlink 'C:\Users\mikes\WebstormProjects\scaffold\node_modules\@rolldown\.binding-win32-x64-msvc-3RBr7DSD\rolldown-binding.win32-x64-msvc.node'] {
+npm warn cleanup       errno: -4048,
+npm warn cleanup       code: 'EPERM',
+npm warn cleanup       syscall: 'unlink',
+npm warn cleanup       path: 'C:\\Users\\mikes\\WebstormProjects\\scaffold\\node_modules\\@rolldown\\.binding-win32-x64-msvc-3RBr7DSD\\rolldown-binding.win32-x64-msvc.node'
+npm warn cleanup     }
+npm warn cleanup   ],
+npm warn cleanup   [
+npm warn cleanup     'C:\\Users\\mikes\\WebstormProjects\\scaffold\\node_modules\\@oxlint\\.binding-win32-x64-msvc-m0ye0iHb',
+npm warn cleanup     [Error: EPERM: operation not permitted, unlink 'C:\Users\mikes\WebstormProjects\scaffold\node_modules\@oxlint\.binding-win32-x64-msvc-m0ye0iHb\oxlint.win32-x64-msvc.node'] {
+npm warn cleanup       errno: -4048,
+npm warn cleanup       code: 'EPERM',
+npm warn cleanup       syscall: 'unlink',
+npm warn cleanup       path: 'C:\\Users\\mikes\\WebstormProjects\\scaffold\\node_modules\\@oxlint\\.binding-win32-x64-msvc-m0ye0iHb\\oxlint.win32-x64-msvc.node'
+npm warn cleanup     }
+npm warn cleanup   ]
+npm warn cleanup ]

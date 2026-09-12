@@ -1,0 +1,64 @@
+npm notice run @orkestrel/scaffold@0.0.65 prepublishOnly
+npm notice run npm run format:check && npm run lint:check && npm run check && npm run build && npm test && npm run test:distribution -- --mode release
+npm notice run @orkestrel/scaffold@0.0.65 format:check
+npm notice run oxfmt --config .oxfmtrc.json --check .
+npm notice run @orkestrel/scaffold@0.0.65 lint:check
+npm notice run oxlint --config .oxlintrc.json --deny-warnings .
+npm notice run @orkestrel/scaffold@0.0.65 check
+npm notice run tsc --noEmit --project tsconfig.json && npm run check:src
+npm notice run @orkestrel/scaffold@0.0.65 check:src
+npm notice run npm run check:src:core && npm run check:src:server && npm run check:src:bin
+npm notice run @orkestrel/scaffold@0.0.65 check:src:core
+npm notice run tsc --noEmit -p configs/src/tsconfig.core.json
+npm notice run @orkestrel/scaffold@0.0.65 check:src:server
+npm notice run tsc --noEmit -p configs/src/tsconfig.server.json
+npm notice run @orkestrel/scaffold@0.0.65 check:src:bin
+npm notice run tsc --noEmit -p configs/src/tsconfig.bin.json
+npm notice run @orkestrel/scaffold@0.0.65 build
+npm notice run npm run clean && npm run build:src && npm run build:host && npm run build:inventory
+npm notice run @orkestrel/scaffold@0.0.65 clean
+npm notice run node -e "require('node:fs').rmSync('dist',{recursive:true,force:true})"
+npm notice run @orkestrel/scaffold@0.0.65 build:src
+npm notice run npm run build:src:core && npm run build:src:server && npm run build:src:bin
+npm notice run @orkestrel/scaffold@0.0.65 build:src:core
+npm notice run vite build --config configs/src/vite.core.config.ts && npm run copy dist/src/core/index.d.ts dist/src/core/index.d.cts
+npm notice run @orkestrel/scaffold@0.0.65 copy
+npm notice run node -e "const fs=require('node:fs'),p=require('node:path'),a=process.argv[1],b=process.argv[2];fs.mkdirSync(p.dirname(b),{recursive:true});fs.cpSync(a,b,{force:true});console.log('Copied: '+a+' to '+b)" dist/src/core/index.d.ts dist/src/core/index.d.cts
+npm notice run @orkestrel/scaffold@0.0.65 build:src:server
+npm notice run vite build --config configs/src/vite.server.config.ts && npm run copy dist/src/server/index.d.ts dist/src/server/index.d.cts
+"build.lib.formats" will be ignored because "build.rolldownOptions.output" is already an array format.
+npm notice run @orkestrel/scaffold@0.0.65 copy
+npm notice run node -e "const fs=require('node:fs'),p=require('node:path'),a=process.argv[1],b=process.argv[2];fs.mkdirSync(p.dirname(b),{recursive:true});fs.cpSync(a,b,{force:true});console.log('Copied: '+a+' to '+b)" dist/src/server/index.d.ts dist/src/server/index.d.cts
+npm notice run @orkestrel/scaffold@0.0.65 build:src:bin
+npm notice run vite build --config configs/src/vite.bin.config.ts
+npm notice run @orkestrel/scaffold@0.0.65 build:host
+npm notice run node -e "import('./dist/src/server/index.js').then((m)=>{const n=m.stageHost(process.cwd(),'dist/host').length;console.log('build-host: staged '+n+' file(s) into dist/host')})"
+npm notice run @orkestrel/scaffold@0.0.65 build:inventory
+npm notice run node -e "import('./dist/src/server/index.js').then((m)=>{const p=process.argv[1]??'host.json',n=m.stageInventory(process.cwd(),p).entries.length;console.log('build-inventory: staged '+n+' file(s) into '+p)})"
+npm notice run @orkestrel/scaffold@0.0.65 test
+npm notice run npm run test:src:core && npm run test:src:server && npm run test:src:bin && npm run test:policy && npm run test:config && npm run test:setup && npm run test:guides
+npm notice run @orkestrel/scaffold@0.0.65 test:src:core
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core
+stderr | tests/src/core/templates.test.ts > emitted workspaces under their own gates > refuses a non-object peer dependency declaration at config load
+[33m[MIXED_EXPORTS] [0mEntry module "tmp/scaffold-e2-peers-8KKnGt/malformed/vite.config.ts" is using named (including "config", "default", "distribution", "peers", "policy", "probe", "resolveWorkspacePath", "srcCore") and default exports together. Consumers of your bundle will have to use `chunk.default` to access the default export, which may not be what you want. Use `output.exports: "named"` to disable this warning.
+
+
+stderr | tests/src/core/templates.test.ts > emitted workspaces under their own gates > refuses a non-object peer dependency declaration at config load
+failed to load config from C:\Users\mikes\WebstormProjects\scaffold\tmp\scaffold-e2-peers-8KKnGt\malformed\vite.config.ts
+
+npm notice run @orkestrel/scaffold@0.0.65 test:src:server
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project src:server
+npm notice run @orkestrel/scaffold@0.0.65 test:src:bin
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project src:bin
+npm notice run @orkestrel/scaffold@0.0.65 test:policy
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project policy
+npm notice run @orkestrel/scaffold@0.0.65 test:config
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project config
+npm notice run @orkestrel/scaffold@0.0.65 test:setup
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project setup
+npm notice run @orkestrel/scaffold@0.0.65 test:guides
+npm notice run node --experimental-strip-types tests/guides.test.ts
+npm notice run @orkestrel/scaffold@0.0.65 test:distribution
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project distribution --mode release
+(node:8868) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead to security vulnerabilities, as the arguments are not escaped, only concatenated.
+(Use `node --trace-deprecation ...` to show where the warning was created)

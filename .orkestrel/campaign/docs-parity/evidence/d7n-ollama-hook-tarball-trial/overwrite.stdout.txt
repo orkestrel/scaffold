@@ -1,0 +1,6 @@
+0 of 36 planned paths drifted from the plan. Audit compared bytes at 23, existence at 5, and nothing at 8.
+vite.config.ts replaced (0-line delta).
+.claude/settings.json replaced (0-line delta).
+scripts/ollama.sh replaced (309 lines added).
+3 written, 34 unchanged, 2 removed in ..
+0 published, 0 guides fetched, 0 no longer listed.

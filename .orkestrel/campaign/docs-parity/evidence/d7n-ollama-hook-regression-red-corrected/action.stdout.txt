@@ -1,0 +1,205 @@
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/scaffold
+
+ × |src:server| tests/src/server/helpers.test.ts > Ollama setup > invokes the registered hook only in Claude Code cloud 183ms
+   → expected true to be false // Object.is equality
+ × |src:server| tests/src/server/helpers.test.ts > Ollama setup > reuses a reachable daemon and serializes the selected model as JSON data 40ms
+   → expected [] to strictly equal [ { method: 'GET', …(2) }, …(2) ]
+ × |src:server| tests/src/server/helpers.test.ts > Ollama setup > pulls an absent model before completing the warm request 32ms
+   → expected [] to strictly equal [ { method: 'GET', …(2) }, …(3) ]
+ × |src:server| tests/src/server/helpers.test.ts > Ollama setup > fails when the warm response does not report completion 30ms
+   → expected false to be true // Object.is equality
+ ↓ |src:server| tests/src/server/helpers.test.ts > matchesMissingPath > reads only an ENOENT error as absence
+ ↓ |src:server| tests/src/server/helpers.test.ts > matchesMissingPath > answers every hostile value with false and never throws
+ ↓ |src:server| tests/src/server/helpers.test.ts > path classification > matchesGitPath answers true for the metadata directory itself
+ ↓ |src:server| tests/src/server/helpers.test.ts > path classification > matchesGitPath answers true for a file inside it
+ ↓ |src:server| tests/src/server/helpers.test.ts > path classification > matchesGitPath answers true for a nested file inside it
+ ↓ |src:server| tests/src/server/helpers.test.ts > path classification > matchesGitPath answers true for it nested under another directory
+ ↓ |src:server| tests/src/server/helpers.test.ts > path classification > matchesGitPath answers true for it spelled with backslashes
+ ↓ |src:server| tests/src/server/helpers.test.ts > path classification > matchesGitPath answers true for it spelled in uppercase
+ ↓ |src:server| tests/src/server/helpers.test.ts > path classification > matchesGitPath answers false for the ignore file beside it
+ ↓ |src:server| tests/src/server/helpers.test.ts > path classification > matchesGitPath answers false for the attributes file beside it
+ ↓ |src:server| tests/src/server/helpers.test.ts > path classification > matchesGitPath answers false for a name merely opening with it
+ ↓ |src:server| tests/src/server/helpers.test.ts > path classification > matchesGitPath answers false for an unrelated dotted directory
+ ↓ |src:server| tests/src/server/helpers.test.ts > path classification > matchesProtectedPath answers true for a published source file
+ ↓ |src:server| tests/src/server/helpers.test.ts > path classification > matchesProtectedPath answers true for a private application file
+ ↓ |src:server| tests/src/server/helpers.test.ts > path classification > matchesProtectedPath answers true for the source root itself
+ ↓ |src:server| tests/src/server/helpers.test.ts > path classification > matchesProtectedPath answers true for the application root itself
+ ↓ |src:server| tests/src/server/helpers.test.ts > path classification > matchesProtectedPath answers true for repository metadata
+ ↓ |src:server| tests/src/server/helpers.test.ts > path classification > matchesProtectedPath answers true for a source path spelled with backslashes
+ ↓ |src:server| tests/src/server/helpers.test.ts > path classification > matchesProtectedPath answers false for a foreign agent file
+ ↓ |src:server| tests/src/server/helpers.test.ts > path classification > matchesProtectedPath answers false for a test mirroring source
+ ↓ |src:server| tests/src/server/helpers.test.ts > path classification > matchesProtectedPath answers false for a name merely opening with the source root
+ ↓ |src:server| tests/src/server/helpers.test.ts > path classification > matchesProtectedPath answers false for a name merely opening with the app root
+ ↓ |src:server| tests/src/server/helpers.test.ts > path classification > matchesProtectedPath answers false for a nested source directory of another package
+ ↓ |src:server| tests/src/server/helpers.test.ts > path classification > matchesSensitivePath answers true for a registry credential file
+ ↓ |src:server| tests/src/server/helpers.test.ts > path classification > matchesSensitivePath answers true for a nested registry credential file
+ ↓ |src:server| tests/src/server/helpers.test.ts > path classification > matchesSensitivePath answers true for a local harness override
+ ↓ |src:server| tests/src/server/helpers.test.ts > path classification > matchesSensitivePath answers true for an environment file
+ ↓ |src:server| tests/src/server/helpers.test.ts > path classification > matchesSensitivePath answers true for a suffixed environment file
+ ↓ |src:server| tests/src/server/helpers.test.ts > path classification > matchesSensitivePath answers true for a key directory
+ ↓ |src:server| tests/src/server/helpers.test.ts > path classification > matchesSensitivePath answers true for a cloud credential directory
+ ↓ |src:server| tests/src/server/helpers.test.ts > path classification > matchesSensitivePath answers true for a private key by extension
+ ↓ |src:server| tests/src/server/helpers.test.ts > path classification > matchesSensitivePath answers true for a service-account key
+ ↓ |src:server| tests/src/server/helpers.test.ts > path classification > matchesSensitivePath answers true for repository metadata
+ ↓ |src:server| tests/src/server/helpers.test.ts > path classification > matchesSensitivePath answers false for the harness settings this package vendors
+ ↓ |src:server| tests/src/server/helpers.test.ts > path classification > matchesSensitivePath answers false for the root instruction document
+ ↓ |src:server| tests/src/server/helpers.test.ts > path classification > matchesSensitivePath answers false for a rule file
+ ↓ |src:server| tests/src/server/helpers.test.ts > path classification > matchesSensitivePath answers false for a name merely containing environment
+ ↓ |src:server| tests/src/server/helpers.test.ts > path classification > matchesSensitivePath answers false for a shell script
+ ↓ |src:server| tests/src/server/helpers.test.ts > path classification > protects and refuses to vendor every path repository metadata owns
+ ↓ |src:server| tests/src/server/helpers.test.ts > path classification > never protects or refuses a path this package plans and vendors
+ ↓ |src:server| tests/src/server/helpers.test.ts > matchesExecutablePath > answers true for a declared path under either separator
+ ↓ |src:server| tests/src/server/helpers.test.ts > matchesExecutablePath > answers false for every path the declaration does not name
+ ↓ |src:server| tests/src/server/helpers.test.ts > matchesExecutablePath > declares exactly the vendored paths this repository records as executable
+ ↓ |src:server| tests/src/server/helpers.test.ts > vendored imports > imports only Orkestrel packages every workspace declares from each vendored module
+ ↓ |src:server| tests/src/server/helpers.test.ts > vendored inventory > records every instruction-canon root the published fallback serves
+ ↓ |src:server| tests/src/server/helpers.test.ts > pathToStorage > maps a root dotfile to its storage name
+ ↓ |src:server| tests/src/server/helpers.test.ts > pathToStorage > maps a root dotted configuration file to its storage name
+ ↓ |src:server| tests/src/server/helpers.test.ts > pathToStorage > maps an undotted root file to its storage name
+ ↓ |src:server| tests/src/server/helpers.test.ts > pathToStorage > maps a dotted directory to its storage name
+ ↓ |src:server| tests/src/server/helpers.test.ts > pathToStorage > maps a dotted directory holding a dotfile to its storage name
+ ↓ |src:server| tests/src/server/helpers.test.ts > pathToStorage > maps an undotted nested file to its storage name
+ ↓ |src:server| tests/src/server/helpers.test.ts > pathToStorage > maps a doubly dotted path to its storage name
+ ↓ |src:server| tests/src/server/helpers.test.ts > pathToStorage > produces a name npm packs, never a leading-dot entry
+ ↓ |src:server| tests/src/server/helpers.test.ts > pathToStorage > keeps a dotted root file apart from its undotted sibling
+ ↓ |src:server| tests/src/server/helpers.test.ts > pathToStorage > spells the installed fallback the pointer body sends a reader to
+ ↓ |src:server| tests/src/server/helpers.test.ts > computeDigest > answers the published digest of empty content
+ ↓ |src:server| tests/src/server/helpers.test.ts > computeDigest > answers the published digest of one short line
+ ↓ |src:server| tests/src/server/helpers.test.ts > computeDigest > answers the published digest of the classic quick-brown-fox sentence
+ ↓ |src:server| tests/src/server/helpers.test.ts > computeDigest > answers the published digest of multi-byte content
+ ↓ |src:server| tests/src/server/helpers.test.ts > computeDigest > answers the same digits on every call and different digits for different text
+ ↓ |src:server| tests/src/server/helpers.test.ts > hexToDigest > digests the exact bytes represented by hexadecimal text
+ ↓ |src:server| tests/src/server/helpers.test.ts > hexToDigest > refuses text that does not state exact lowercase hexadecimal bytes
+ ↓ |src:server| tests/src/server/helpers.test.ts > computeManifestDigest > changes when membership changes and holds when it does not
+ ↓ |src:server| tests/src/server/helpers.test.ts > computeManifestDigest > reads order as part of the membership it authenticates
+ ↓ |src:server| tests/src/server/helpers.test.ts > computeManifestDigest > reads exactly the declared fields and nothing a caller added
+ ↓ |src:server| tests/src/server/helpers.test.ts > computeManifestDigest > leaves the lists it was handed exactly as it found them
+ ↓ |src:server| tests/src/server/helpers.test.ts > physical shape > requires every file path segment to match its on-disk case exactly
+ ↓ |src:server| tests/src/server/helpers.test.ts > physical shape > accepts a plain file and a plain directory and refuses each other
+ ↓ |src:server| tests/src/server/helpers.test.ts > physical shape > refuses an absent path without throwing
+ ↓ |src:server| tests/src/server/helpers.test.ts > physical shape > refuses a file that shares its bytes with a second name
+ ↓ |src:server| tests/src/server/helpers.test.ts > physical shape > refuses a redirected directory rather than following it
+ ↓ |src:server| tests/src/server/helpers.test.ts > computeFileDigest > digests exact file bytes and agrees with the text digest
+ ↓ |src:server| tests/src/server/helpers.test.ts > computeFileDigest > answers undefined for an absent path, a directory, and a linked file
+ ↓ |src:server| tests/src/server/helpers.test.ts > computeFileDigest > digests content larger than one read buffer
+ ↓ |src:server| tests/src/server/helpers.test.ts > resolveRealPath > resolves an existing directory to a path that resolves to itself
+ ↓ |src:server| tests/src/server/helpers.test.ts > resolveRealPath > keeps the segments that do not exist yet
+ ↓ |src:server| tests/src/server/helpers.test.ts > resolveRealPath > follows a link in the existing prefix to where it really points
+ ↓ |src:server| tests/src/server/helpers.test.ts > resolveRealPath > resolves the target of a dangling link and keeps its absent suffix
+ ↓ |src:server| tests/src/server/helpers.test.ts > resolveRealPath > refuses text that is not a host path
+ ↓ |src:server| tests/src/server/helpers.test.ts > resolveContainedPath > answers the path the caller named, not a resolved form
+ ↓ |src:server| tests/src/server/helpers.test.ts > resolveContainedPath > refuses a lexical escape and every off-contract argument
+ ↓ |src:server| tests/src/server/helpers.test.ts > resolveContainedPath > refuses a real link that points out of the root
+ ↓ |src:server| tests/src/server/helpers.test.ts > resolveContainedPath > decides dangling links by their target containment
+ ↓ |src:server| tests/src/server/helpers.test.ts > resolveContainedPath > refuses a dangling link whose target crosses a link with parent traversal
+ ↓ |src:server| tests/src/server/helpers.test.ts > resolveContainedPath > refuses a dangling link that leaves the root and admits one that stays inside
+ ↓ |src:server| tests/src/server/helpers.test.ts > resolveContainedPath > admits a real link that stays inside the root
+ ↓ |src:server| tests/src/server/helpers.test.ts > isVacant > accepts an absent target and an empty one
+ ↓ |src:server| tests/src/server/helpers.test.ts > isVacant > accepts a target holding nothing but its own repository metadata
+ ↓ |src:server| tests/src/server/helpers.test.ts > isVacant > refuses a target holding one unrelated dotted entry
+ ↓ |src:server| tests/src/server/helpers.test.ts > isVacant > refuses a metadata name that is a file rather than a directory
+ ↓ |src:server| tests/src/server/helpers.test.ts > isVacant > refuses a file, a redirected directory, and text that is not a host path
+ ↓ |src:server| tests/src/server/helpers.test.ts > listFiles > answers every descendant file as a sorted root-relative path
+ ↓ |src:server| tests/src/server/helpers.test.ts > listFiles > answers an absent root with the empty list
+ ↓ |src:server| tests/src/server/helpers.test.ts > listFiles > answers an existing empty root with the empty list
+ ↓ |src:server| tests/src/server/helpers.test.ts > listFiles > throws INVALID for a root that is not a host path
+ ↓ |src:server| tests/src/server/helpers.test.ts > listFiles > throws TARGET for a root that is a file
+ ↓ |src:server| tests/src/server/helpers.test.ts > listFiles > throws rather than truncating past the depth one path may carry
+ ↓ |src:server| tests/src/server/helpers.test.ts > listFiles > lists a redirected directory as one entry rather than walking through it
+ ↓ |src:server| tests/src/server/helpers.test.ts > listDirectories > answers every descendant directory as a sorted root-relative path
+ ↓ |src:server| tests/src/server/helpers.test.ts > listDirectories > reports the directory holding no file that a file walk cannot see
+ ↓ |src:server| tests/src/server/helpers.test.ts > listDirectories > answers an absent root and an existing empty root with the empty list
+ ↓ |src:server| tests/src/server/helpers.test.ts > listDirectories > throws INVALID for a root that is not a host path
+ ↓ |src:server| tests/src/server/helpers.test.ts > listDirectories > throws TARGET for a root that is a file
+ ↓ |src:server| tests/src/server/helpers.test.ts > listDirectories > throws rather than truncating past the depth one path may carry
+ ↓ |src:server| tests/src/server/helpers.test.ts > listDirectories > neither lists nor walks a redirected directory
+ ↓ |src:server| tests/src/server/helpers.test.ts > listCanonPaths > lists a held canon file and expands a held canon directory by file
+ ↓ |src:server| tests/src/server/helpers.test.ts > listCanonPaths > lists only the held canon paths whose group the caller selects
+ ↓ |src:server| tests/src/server/helpers.test.ts > listCanonPaths > answers the empty list for a target holding no canon path and for an absent one
+ ↓ |src:server| tests/src/server/helpers.test.ts > listCanonPaths > lists a canon path a target really holds and not one it redirects to
+ ↓ |src:server| tests/src/server/helpers.test.ts > pruneEmptiedDirectories > takes an emptied chain deepest first
+ ↓ |src:server| tests/src/server/helpers.test.ts > pruneEmptiedDirectories > leaves a directory still holding an unrelated file standing
+ ↓ |src:server| tests/src/server/helpers.test.ts > pruneEmptiedDirectories > leaves a directory holding a surviving subdirectory standing
+ ↓ |src:server| tests/src/server/helpers.test.ts > pruneEmptiedDirectories > leaves a candidate that escapes the target standing
+ ↓ |src:server| tests/src/server/helpers.test.ts > pruneEmptiedDirectories > answers the empty list for an absent target
+ ↓ |src:server| tests/src/server/helpers.test.ts > readFileHex and readFileText > reads exact bytes and the text they decode to
+ ↓ |src:server| tests/src/server/helpers.test.ts > readFileHex and readFileText > reads multi-byte content as its exact UTF-8 bytes
+ ↓ |src:server| tests/src/server/helpers.test.ts > readFileHex and readFileText > reads an empty file as empty bytes rather than as absence
+ ↓ |src:server| tests/src/server/helpers.test.ts > readFileHex and readFileText > answers undefined for an absent path, a directory, and a linked file
+ ↓ |src:server| tests/src/server/helpers.test.ts > readFileHex and readFileText > reads at the limit it was given and answers undefined one byte past it
+ ↓ |src:server| tests/src/server/helpers.test.ts > readFileHex and readFileText > reads bytes that are not valid UTF-8 and refuses to decode them
+ ↓ |src:server| tests/src/server/helpers.test.ts > readFileHex and readFileText > throws INVALID for a path that leaves its root or a limit outside the ceiling
+ ↓ |src:server| tests/src/server/helpers.test.ts > readSnapshot > maps a file to its bytes, a directory to presence, and omits what is absent
+ ↓ |src:server| tests/src/server/helpers.test.ts > readSnapshot > answers the empty snapshot for no paths and for an absent target
+ ↓ |src:server| tests/src/server/helpers.test.ts > readSnapshot > tells an empty file apart from an absent one
+ ↓ |src:server| tests/src/server/helpers.test.ts > readSnapshot > throws TARGET rather than omitting a path it cannot read
+ ↓ |src:server| tests/src/server/helpers.test.ts > readSnapshot > throws INVALID for an off-contract target or path list
+ ↓ |src:server| tests/src/server/helpers.test.ts > readSnapshot > leaves the path list it was handed exactly as it found it
+ ↓ |src:server| tests/src/server/helpers.test.ts > readHostManifest > reads a staged host that agrees with itself
+ ↓ |src:server| tests/src/server/helpers.test.ts > readHostManifest > reads an empty membership as a valid manifest
+ ↓ |src:server| tests/src/server/helpers.test.ts > readHostManifest > answers undefined for a raw root carrying no manifest
+ ↓ |src:server| tests/src/server/helpers.test.ts > readHostManifest > throws rather than degrading to a raw root when membership was edited
+ ↓ |src:server| tests/src/server/helpers.test.ts > readHostManifest > throws when the digest was replaced with one matching nothing
+ ↓ |src:server| tests/src/server/helpers.test.ts > readHostManifest > throws for text that is not JSON and for JSON that is not the declared shape
+ ↓ |src:server| tests/src/server/helpers.test.ts > readHostManifest > throws TARGET rather than degrading when the manifest is not valid UTF-8
+ ↓ |src:server| tests/src/server/helpers.test.ts > readHostManifest > throws INVALID for a root that is not a host path
+ ↓ |src:server| tests/src/server/helpers.test.ts > readHostFloor > reads the default host floor and hydrates as the default materializer does
+ ↓ |src:server| tests/src/server/helpers.test.ts > readHostFloor > refuses an unreadable root, manifest, or declared file with TARGET
+ ↓ |src:server| tests/src/server/helpers.test.ts > readManifestEntry > maps a destination to its storage name and its declared executable bit
+ ↓ |src:server| tests/src/server/helpers.test.ts > readManifestEntry > reads the executable bit from the declaration rather than from the host mode
+ ↓ |src:server| tests/src/server/helpers.test.ts > readManifestEntry > answers the same entry for one path on every host
+ ↓ |src:server| tests/src/server/helpers.test.ts > readManifestEntry > answers undefined for an absent path, a directory, and a shared-byte file
+ ↓ |src:server| tests/src/server/helpers.test.ts > readManifestEntry > answers undefined one byte past the artifact ceiling and reads the ceiling itself
+ ↓ |src:server| tests/src/server/helpers.test.ts > filesToHost > overlays host-owned live files while keeping deferred and canon floor bytes
+ ↓ |src:server| tests/src/server/helpers.test.ts > filesToHost > assembles a whole host from an all-found fill
+ ↓ |src:server| tests/src/server/helpers.test.ts > filesToHost > keeps the release order and the storage and executable declarations it fixed
+ ↓ |src:server| tests/src/server/helpers.test.ts > filesToHost > answers undefined for a row that produced no answer
+ ↓ |src:server| tests/src/server/helpers.test.ts > filesToHost > answers undefined for a path the release never declared
+ ↓ |src:server| tests/src/server/helpers.test.ts > filesToHost > answers undefined when a host-owned path is absent from the fill
+ ↓ |src:server| tests/src/server/helpers.test.ts > filesToHost > assembles a host from a fill carrying no canon row
+ ↓ |src:server| tests/src/server/helpers.test.ts > filesToHost > answers undefined when a planned non-canon row is dropped from the fill
+ ↓ |src:server| tests/src/server/helpers.test.ts > stageBytes > fills a root under the storage names the manifest declares
+ ↓ |src:server| tests/src/server/helpers.test.ts > stageBytes > gives an entry the bit its manifest declares
+ ↓ |src:server| tests/src/server/helpers.test.ts > stageBytes > refuses a destination the host does not declare or does not carry
+ ↓ |src:server| tests/src/server/helpers.test.ts > stageBytes > refuses bytes that miss the digest their entry declares, and a root off contract
+ ↓ |src:server| tests/src/server/helpers.test.ts > stageHost > declares the digest of the bytes staged after the source changes
+ ↓ |src:server| tests/src/server/helpers.test.ts > stageHost > stages the canon beside the vendored set from this checkout
+ ↓ |src:server| tests/src/server/helpers.test.ts > stageHost > records the exact digest of every staged file
+ ↓ |src:server| tests/src/server/helpers.test.ts > stageHost > stages every vendored path and writes the membership it staged
+ ↓ |src:server| tests/src/server/helpers.test.ts > stageHost > stores exactly the files its manifest declares, and nothing else
+ ↓ |src:server| tests/src/server/helpers.test.ts > stageHost > declares the directory holding no file, which no entry can record
+ ↓ |src:server| tests/src/server/helpers.test.ts > stageHost > declares every directory nested beneath a vendored directory as a root
+ ↓ |src:server| tests/src/server/helpers.test.ts > stageHost > sorts entries by storage name and roots as paths
+ ↓ |src:server| tests/src/server/helpers.test.ts > stageHost > refuses a checkout missing a vendored path, names every one, and creates nothing
+ ↓ |src:server| tests/src/server/helpers.test.ts > stageHost > refuses a host root that is not vacant and leaves what it holds
+ ↓ |src:server| tests/src/server/helpers.test.ts > stageHost > refuses an argument that is not a host path and a checkout that is not a directory
+ ↓ |src:server| tests/src/server/helpers.test.ts > stageHost > skips a credential found beneath a vendored directory and stages its sibling
+ ↓ |src:server| tests/src/server/helpers.test.ts > stageHost > refuses two vendored files that claim one storage name
+ ↓ |src:server| tests/src/server/helpers.test.ts > stageHost > refuses a vendored path that is not a plain file and one that leaves the checkout
+ ↓ |src:server| tests/src/server/helpers.test.ts > stageHost > produces a host a materializer accepts and writes every vendored shape from
+ ↓ |src:server| tests/src/server/helpers.test.ts > stageHost > writes a manifest whose membership a reader refuses after it is edited
+ ↓ |src:server| tests/src/server/helpers.test.ts > stageInventory > writes the same validated inventory that host staging derives
+ ↓ |src:server| tests/src/server/helpers.test.ts > stageInventory > replaces an earlier inventory and refuses an invalid path
+ ↓ |src:server| tests/src/server/helpers.test.ts > write anchors > captures a directory identity and matches it while it is untouched
+ ↓ |src:server| tests/src/server/helpers.test.ts > write anchors > refuses to capture a file, an absent path, and a redirected directory
+ ↓ |src:server| tests/src/server/helpers.test.ts > write anchors > reports a directory swapped in by rename
+ ↓ |src:server| tests/src/server/helpers.test.ts > write anchors > reports a path replaced by a symlink to a directory
+ ↓ |src:server| tests/src/server/helpers.test.ts > write anchors > reports a directory that is gone
+ ↓ |src:server| tests/src/server/helpers.test.ts > write expectations > captures absence as a state rather than as a failure
+ ↓ |src:server| tests/src/server/helpers.test.ts > write expectations > captures a file with its identity, size, and bytes
+ ↓ |src:server| tests/src/server/helpers.test.ts > write expectations > captures a directory without claiming bytes it never read
+ ↓ |src:server| tests/src/server/helpers.test.ts > write expectations > reports a file whose bytes moved and one that vanished
+ ↓ |src:server| tests/src/server/helpers.test.ts > write expectations > reports an absence that has since been filled
+ ↓ |src:server| tests/src/server/helpers.test.ts > write expectations > refuses to capture a shape it will not write over
+ ↓ |src:server| tests/src/server/helpers.test.ts > write preconditions > binds an absent destination to its absence
+ ↓ |src:server| tests/src/server/helpers.test.ts > write preconditions > binds a file to its bytes, and to presence alone when no digest is stated
+ ↓ |src:server| tests/src/server/helpers.test.ts > write preconditions > accepts a file rewritten to identical bytes, which an expectation refuses
+ ↓ |src:server| tests/src/server/helpers.test.ts > write preconditions > refuses a destination whose shape is not the one stated
+ ↓ |src:server| tests/src/server/helpers.test.ts > this repository read as a real target > reads its own checkout through the same helpers a target goes through
+
+ Test Files  1 failed (1)
+      Tests  4 failed | 188 skipped (192)
+   Start at  00:38:21
+   Duration  1.38s (transform 485ms, setup 859ms, import 67ms, tests 286ms, environment 0ms)
+

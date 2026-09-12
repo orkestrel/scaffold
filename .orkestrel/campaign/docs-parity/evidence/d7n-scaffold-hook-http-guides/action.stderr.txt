@@ -1,0 +1,2 @@
+npm notice run @orkestrel/scaffold@0.0.65 test:guides
+npm notice run node --experimental-strip-types tests/guides.test.ts

@@ -1,0 +1,55 @@
+npm notice run @orkestrel/scaffold@0.0.65 test:policy
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project policy
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |policy| tests/policy.test.ts > skill bridge policy > matches every real provider bridge to its canonical skill
+AssertionError: expected [ { rule: 'bridge', …(2) } ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   {
++     "message": "bridge frontmatter description matches its canonical twin",
++     "path": ".claude/skills/enterprise-bootstrap/SKILL.md",
++     "rule": "bridge",
++   },
++ ]
+
+ ❯ tests/policy.test.ts:295:46
+    293| describe('skill bridge policy', () => {
+    294|  it('matches every real provider bridge to its canonical skill', () =>…
+    295|   expect(inspectSkillBridges(process.cwd())).toEqual([])
+       |                                              ^
+    296|  })
+    297|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  |policy| tests/policy.test.ts > repository policy > enforces the mirror, suppression, skill, bridge, and portability laws over the real workspace
+AssertionError: expected [ { rule: 'bridge', …(2) } ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   {
++     "message": "bridge frontmatter description matches its canonical twin",
++     "path": ".claude/skills/enterprise-bootstrap/SKILL.md",
++     "rule": "bridge",
++   },
++ ]
+
+ ❯ tests/policy.test.ts:472:49
+    470| describe('repository policy', () => {
+    471|  it('enforces the mirror, suppression, skill, bridge, and portability …
+    472|   expect(inspectPolicyWorkspace(process.cwd())).toEqual([])
+       |                                                 ^
+    473|  })
+    474|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+

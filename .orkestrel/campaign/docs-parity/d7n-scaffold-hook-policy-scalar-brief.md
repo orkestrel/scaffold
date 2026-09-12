@@ -1,0 +1,7 @@
+# Preserve the canonical scalar source
+
+Act as the native mechanical builder. Carry forward `d7n-scaffold-hook-policy-fix-brief.md`, with this correction: matching the parsed description is insufficient. The policy compares the exact scalar source, including folded style and raw line endings. Read `tests/setupPolicy.ts` at `parseSkillFrontmatter` and `inspectSkillBridges`; do not edit that file.
+
+The root's `tmp/pass/d7n-scaffold-hook-policy-green/action.stderr.txt` reports exit 1 for the remaining bridge mismatch. The label is a failed attempt, not a green assertion. Root ran formatting after that attempt; it left the bridge description on a plain scalar while the canonical copy uses a folded scalar. All preceding banned-term edits passed policy and remain closed.
+
+Own only `.claude/skills/enterprise-bootstrap/SKILL.md`. Copy the description's exact source shape from `.agents/skills/enterprise-bootstrap/SKILL.md` with `apply_patch`; retain the folded `>-` representation and its physical continuation lines. Preserve the body. Compare the raw scalar source read-only, including CRLF differences, and report a mismatch rather than declaring success if any remains. Do not edit canonical frontmatter or any other source. Return the actual diff and comparison reading. Root owns policy/inventory/gates. Perform directly and spawn nothing. The previous brief's authority, host, permission floor, existing-dirty-state warning, and deviation contract remain in force.

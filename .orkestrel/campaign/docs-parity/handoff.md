@@ -14,9 +14,34 @@ Probe13 metadata is still unaccepted. Read d7n-ollama-hook-rebaseline.md and
 d7n-ollama-hook-map-brief.md. The historical preparation readings below remain
 evidence, not the current implementation direction. No new prompt is ready.
 The script-level design proposals are retained; read
-d7n-ollama-hook-design-state.md. Root asked whether cloud setup should install a
-missing Ollama binary or retain the existing preinstallation requirement. No
-replacement implementation, installer, release commit or upload has run.
+d7n-ollama-hook-design-state.md. The owner approved cloud installation of a missing
+Ollama binary. The focused hook/setup regression is planted and root recorded the
+expected failures after correcting its missing import. Canonical Ollama's authored
+CI/guide caller names ollama.sh; target scripts remain untouched until supported
+propagation. Read d7n-ollama-hook-regression-red-reading.md and
+d7n-ollama-hook-root-reading.md. Root's focused regression and real Windows daemon
+reuse passed. Native IP classification corrected the measured numeric-prefix DNS
+refusal defect. Linux installation and owned daemon startup remain unexecuted.
+Scaffold's skill-policy repair passes the isolated policy gate. A subsequent full
+chain passed the regular projects and guide parity, then exposed a stale
+distribution membership expectation. The root reproduced that assertion alone.
+The independent source review also found redirected HTTP responses could report
+setup success and identified stale vendor-inventory TSDoc. Root reproduced the
+HTTP defect; d7n-ollama-hook-http-fix-brief.md carries the bounded corrections.
+The correction passes the permanent redirect regression and its root mutation
+control. Scaffold's complete prepublish-http chain passes, and Scaffold0.0.65 is
+packed for the canonical Ollama trial. Read
+d7n-ollama-hook-http-acceptance-reading.md and the earlier independent verdict.
+Linux execution remains a release prerequisite. The root regenerated the lockfile
+and recovered the installed registry graph after a loaded native binding blocked
+npm ci. Canonical Ollama registry preparation landed locally at653b186b. The
+Scaffold0.0.65 tarball trial passed supported overwrite/audit, removed the retired
+service/docs scripts, and preserved the declared registry Scaffold0.0.64 range.
+Direct Windows daemon reuse passed at the target entry. Read
+d7n-ollama-hook-tarball-trial-reading.md. Target prepublish, including real service,
+and independent application review passed. The clean canonical campaign candidate
+is pushed atd6e868d8; read d7n-ollama-hook-candidate-verdict.md. Ubuntu run34676625435
+is executing the pushed script. No corrected release commit or upload has run.
 
 The Agent/Probe upload is registry-confirmed and its prompt is consumed. The
 refreshed catalog selects Ollama0.0.15 and Toolbox0.0.13 preparation. Root confirmed

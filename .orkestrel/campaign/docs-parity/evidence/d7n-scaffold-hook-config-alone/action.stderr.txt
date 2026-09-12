@@ -1,0 +1,2 @@
+npm notice run @orkestrel/scaffold@0.0.65 test:config
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project config

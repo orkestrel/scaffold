@@ -1,0 +1,1 @@
+node node_modules/vitest/vitest.mjs run --config vite.config.ts --no-cache --reporter=verbose --project src:server tests/src/server/helpers.test.ts -t Ollama\ setup 

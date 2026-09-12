@@ -1,0 +1,55 @@
+ M .claude/rules/workspace.md
+ M .claude/settings.json
+ M .orkestrel/campaign/docs-parity/d7n-ollama-hook-design-state.md
+ M .orkestrel/campaign/docs-parity/handoff.md
+ M guides/scaffold.md
+ M host.json
+ M package-lock.json
+ M package.json
+ M scripts/ollama.sh
+ M src/core/constants.ts
+ M src/core/templates.ts
+ M tests/setupServer.ts
+ M tests/src/core/fixtures/app-only-toolchain.txt
+ M tests/src/core/fixtures/setup-false-manifest.txt
+ M tests/src/core/fixtures/source-manifest.txt
+ M tests/src/server/helpers.test.ts
+?? .orkestrel/campaign/docs-parity/d7n-ollama-hook-caller-brief.md
+?? .orkestrel/campaign/docs-parity/d7n-ollama-hook-caller-report.md
+?? .orkestrel/campaign/docs-parity/d7n-ollama-hook-fix-brief.md
+?? .orkestrel/campaign/docs-parity/d7n-ollama-hook-regression-red-reading.md
+?? .orkestrel/campaign/docs-parity/evidence/d7n-ollama-hook-regression-red-corrected/action.exit.txt
+?? .orkestrel/campaign/docs-parity/evidence/d7n-ollama-hook-regression-red-corrected/action.stderr.txt
+?? .orkestrel/campaign/docs-parity/evidence/d7n-ollama-hook-regression-red-corrected/action.stdout.txt
+?? .orkestrel/campaign/docs-parity/evidence/d7n-ollama-hook-regression-red-corrected/branch-after.txt
+?? .orkestrel/campaign/docs-parity/evidence/d7n-ollama-hook-regression-red-corrected/branch-before.txt
+?? .orkestrel/campaign/docs-parity/evidence/d7n-ollama-hook-regression-red-corrected/command.txt
+?? .orkestrel/campaign/docs-parity/evidence/d7n-ollama-hook-regression-red-corrected/diff-after.txt
+?? .orkestrel/campaign/docs-parity/evidence/d7n-ollama-hook-regression-red-corrected/diff-before.txt
+?? .orkestrel/campaign/docs-parity/evidence/d7n-ollama-hook-regression-red-corrected/head-after.txt
+?? .orkestrel/campaign/docs-parity/evidence/d7n-ollama-hook-regression-red-corrected/head-before.txt
+?? .orkestrel/campaign/docs-parity/evidence/d7n-ollama-hook-regression-red-corrected/index-after.txt
+?? .orkestrel/campaign/docs-parity/evidence/d7n-ollama-hook-regression-red-corrected/index-before.txt
+?? .orkestrel/campaign/docs-parity/evidence/d7n-ollama-hook-regression-red-corrected/manifests-after.sha256
+?? .orkestrel/campaign/docs-parity/evidence/d7n-ollama-hook-regression-red-corrected/manifests-before.sha256
+?? .orkestrel/campaign/docs-parity/evidence/d7n-ollama-hook-regression-red-corrected/status-after.txt
+?? .orkestrel/campaign/docs-parity/evidence/d7n-ollama-hook-regression-red-corrected/status-before.txt
+?? .orkestrel/campaign/docs-parity/evidence/d7n-ollama-hook-regression-red/action.exit.txt
+?? .orkestrel/campaign/docs-parity/evidence/d7n-ollama-hook-regression-red/action.stderr.txt
+?? .orkestrel/campaign/docs-parity/evidence/d7n-ollama-hook-regression-red/action.stdout.txt
+?? .orkestrel/campaign/docs-parity/evidence/d7n-ollama-hook-regression-red/branch-after.txt
+?? .orkestrel/campaign/docs-parity/evidence/d7n-ollama-hook-regression-red/branch-before.txt
+?? .orkestrel/campaign/docs-parity/evidence/d7n-ollama-hook-regression-red/command.txt
+?? .orkestrel/campaign/docs-parity/evidence/d7n-ollama-hook-regression-red/diff-after.txt
+?? .orkestrel/campaign/docs-parity/evidence/d7n-ollama-hook-regression-red/diff-before.txt
+?? .orkestrel/campaign/docs-parity/evidence/d7n-ollama-hook-regression-red/head-after.txt
+?? .orkestrel/campaign/docs-parity/evidence/d7n-ollama-hook-regression-red/head-before.txt
+?? .orkestrel/campaign/docs-parity/evidence/d7n-ollama-hook-regression-red/index-after.txt
+?? .orkestrel/campaign/docs-parity/evidence/d7n-ollama-hook-regression-red/index-before.txt
+?? .orkestrel/campaign/docs-parity/evidence/d7n-ollama-hook-regression-red/manifests-after.sha256
+?? .orkestrel/campaign/docs-parity/evidence/d7n-ollama-hook-regression-red/manifests-before.sha256
+?? .orkestrel/campaign/docs-parity/evidence/d7n-ollama-hook-regression-red/status-after.txt
+?? .orkestrel/campaign/docs-parity/evidence/d7n-ollama-hook-regression-red/status-before.txt
+?? .orkestrel/campaign/docs-parity/instruments/d7/foundation-native/read-ollama-hook-host.sh
+?? .orkestrel/campaign/docs-parity/instruments/d7/foundation-native/read-ollama-installer.sh
+?? .orkestrel/campaign/docs-parity/instruments/d7/foundation-native/scaffold-hook-action.sh

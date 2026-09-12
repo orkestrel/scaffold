@@ -1,0 +1,6 @@
+.claude/settings.json
+package.json
+scripts/docs.ts
+scripts/ollama.sh
+scripts/service.sh
+vite.config.ts

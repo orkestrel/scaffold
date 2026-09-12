@@ -1,0 +1,92 @@
+sha256sum /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-scaffold-hook-release-pack/orkestrel-scaffold-0.0.65.tgz 
+tar -tzf /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-scaffold-hook-release-pack/orkestrel-scaffold-0.0.65.tgz 
+tar -xzf /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-scaffold-hook-release-pack/orkestrel-scaffold-0.0.65.tgz -C /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/d7n-ollama-hook-tarball-trial/inspect 
+node /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/read-package-field.mjs /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/d7n-ollama-hook-tarball-trial/inspect/package/package.json name 
+node /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/read-package-field.mjs /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/d7n-ollama-hook-tarball-trial/inspect/package/package.json version 
+git -C C:/Users/mikes/WebstormProjects/ollama branch --show-current 
+git -C C:/Users/mikes/WebstormProjects/ollama rev-parse HEAD 
+git -C C:/Users/mikes/WebstormProjects/ollama diff --cached --quiet 
+git -C C:/Users/mikes/WebstormProjects/ollama status --porcelain=v1 --untracked-files=all 
+git -C C:/Users/mikes/WebstormProjects/ollama ls-files --others --exclude-standard 
+node /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/read-package-field.mjs C:/Users/mikes/WebstormProjects/ollama/package.json name 
+node /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/read-package-field.mjs C:/Users/mikes/WebstormProjects/ollama/package.json version 
+git -C C:/Users/mikes/WebstormProjects/ollama branch --show-current 
+git -C C:/Users/mikes/WebstormProjects/ollama rev-parse HEAD 
+git -C C:/Users/mikes/WebstormProjects/ollama status --porcelain=v1 --untracked-files=all 
+git -C C:/Users/mikes/WebstormProjects/ollama diff HEAD --binary 
+git -C C:/Users/mikes/WebstormProjects/ollama ls-files --stage 
+sha256sum C:/Users/mikes/WebstormProjects/ollama/package.json C:/Users/mikes/WebstormProjects/ollama/package-lock.json 
+git -C C:/Users/mikes/WebstormProjects/ollama fetch origin 
+git -C C:/Users/mikes/WebstormProjects/ollama merge-base --is-ancestor origin/main HEAD 
+npm pkg get dependencies.@orkestrel/agent 
+npm view @orkestrel/agent version 
+npm pkg get dependencies.@orkestrel/budget 
+npm view @orkestrel/budget version 
+npm pkg get dependencies.@orkestrel/contract 
+npm view @orkestrel/contract version 
+npm pkg get dependencies.@orkestrel/ndjson 
+npm view @orkestrel/ndjson version 
+npm pkg get dependencies.@orkestrel/timeout 
+npm view @orkestrel/timeout version 
+npm pkg get dependencies.@orkestrel/tool 
+npm view @orkestrel/tool version 
+npm pkg get devDependencies.@orkestrel/abort 
+npm view @orkestrel/abort version 
+npm pkg get devDependencies.@orkestrel/guide 
+npm view @orkestrel/guide version 
+npm pkg get devDependencies.@orkestrel/probe 
+npm view @orkestrel/probe version 
+npm pkg get devDependencies.@orkestrel/router 
+npm view @orkestrel/router version 
+npm pkg get devDependencies.@orkestrel/scaffold 
+npm view @orkestrel/scaffold version 
+npm pkg get devDependencies.@orkestrel/server 
+npm view @orkestrel/server version 
+npm pkg get devDependencies.@orkestrel/test 
+npm view @orkestrel/test version 
+npm pkg get devDependencies.@orkestrel/workspace 
+npm view @orkestrel/workspace version 
+npm pkg get peerDependenciesMeta 
+npm pkg get devDependencies.ollama 
+npm pkg set dependencies.@orkestrel/agent=\^0.0.21 
+npm pkg set dependencies.@orkestrel/budget=\^0.0.10 
+npm pkg set dependencies.@orkestrel/contract=\^0.0.17 
+npm pkg set dependencies.@orkestrel/ndjson=\^0.0.10 
+npm pkg set dependencies.@orkestrel/timeout=\^0.0.10 
+npm pkg set dependencies.@orkestrel/tool=\^0.0.14 
+npm pkg set devDependencies.@orkestrel/abort=\^0.0.10 
+npm pkg set devDependencies.@orkestrel/guide=\^0.0.18 
+npm pkg set devDependencies.@orkestrel/probe=\^0.0.13 
+npm pkg set devDependencies.@orkestrel/router=\^0.0.14 
+npm pkg set devDependencies.@orkestrel/scaffold=\^0.0.64 
+npm pkg set devDependencies.@orkestrel/server=\^0.0.19 
+npm pkg set devDependencies.@orkestrel/test=\^0.0.14 
+npm pkg set devDependencies.@orkestrel/workspace=\^0.0.8 
+npm install --ignore-scripts 
+git -C C:/Users/mikes/WebstormProjects/ollama diff --name-only 
+git -C C:/Users/mikes/WebstormProjects/ollama add -- .github/workflows/ci.yml guides/ollama.md package.json package-lock.json 
+git -C C:/Users/mikes/WebstormProjects/ollama -c user.name=Claude -c user.email=noreply@anthropic.com commit -m Prepare\ Ollama\ against\ published\ tooling -m Co-Authored-By:\ Claude\ \<noreply@anthropic.com\> -m Claude-Session:\ codex:01a0810d-21bf-7f60-8534-488348e05743 
+git -C C:/Users/mikes/WebstormProjects/ollama rev-parse HEAD 
+npm pkg get devDependencies.@orkestrel/scaffold 
+sha256sum C:/Users/mikes/WebstormProjects/ollama/package.json C:/Users/mikes/WebstormProjects/ollama/package-lock.json 
+npm install --ignore-scripts --no-save /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-scaffold-hook-release-pack/orkestrel-scaffold-0.0.65.tgz 
+sha256sum C:/Users/mikes/WebstormProjects/ollama/package.json C:/Users/mikes/WebstormProjects/ollama/package-lock.json 
+node /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/read-package-field.mjs C:/Users/mikes/WebstormProjects/ollama/node_modules/@orkestrel/scaffold/package.json version 
+diff -r /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/d7n-ollama-hook-tarball-trial/inspect/package/dist C:/Users/mikes/WebstormProjects/ollama/node_modules/@orkestrel/scaffold/dist 
+node node_modules/@orkestrel/scaffold/dist/bin/main.js overwrite --offline 
+node node_modules/@orkestrel/scaffold/dist/bin/main.js audit --offline 
+cmp C:/Users/mikes/WebstormProjects/ollama/scripts/ollama.sh /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/d7n-ollama-hook-tarball-trial/inspect/package/dist/host/scripts/ollama.sh 
+cmp C:/Users/mikes/WebstormProjects/ollama/.claude/settings.json /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/d7n-ollama-hook-tarball-trial/inspect/package/dist/host/claude/settings.json 
+npm pkg get scripts.docs 
+npm pkg delete scripts.docs 
+npm pkg get peerDependenciesMeta 
+npm pkg get devDependencies.ollama 
+git -C C:/Users/mikes/WebstormProjects/ollama branch --show-current 
+git -C C:/Users/mikes/WebstormProjects/ollama rev-parse HEAD 
+git -C C:/Users/mikes/WebstormProjects/ollama status --porcelain=v1 --untracked-files=all 
+git -C C:/Users/mikes/WebstormProjects/ollama diff HEAD --binary 
+git -C C:/Users/mikes/WebstormProjects/ollama ls-files --stage 
+sha256sum C:/Users/mikes/WebstormProjects/ollama/package.json C:/Users/mikes/WebstormProjects/ollama/package-lock.json 
+npm pkg get devDependencies.@orkestrel/scaffold 
+node --input-type=module -e import\ \{\ readFileSync\ \}\ from\ \'node:fs\'\;\ const\ lock=JSON.parse\(readFileSync\(\'package-lock.json\'\,\'utf8\'\)\)\;\ const\ entry=lock.packages\?.\[\'node_modules/@orkestrel/scaffold\'\]\;\ if\ \(entry\ ===\ undefined\)\ throw\ new\ Error\(\'Scaffold\ lock\ entry\ is\ absent\'\)\;\ console.log\(JSON.stringify\(entry\,null\,2\)\)\; 
+sha256sum C:/Users/mikes/WebstormProjects/ollama/package.json C:/Users/mikes/WebstormProjects/ollama/package-lock.json 

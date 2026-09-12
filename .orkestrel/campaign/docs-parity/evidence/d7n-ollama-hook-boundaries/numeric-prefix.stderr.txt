@@ -1,0 +1,1 @@
+ollama.sh: starting Ollama from Git Bash is unsupported because failure cleanup cannot terminate its Windows process tree safely

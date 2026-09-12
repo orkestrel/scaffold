@@ -1,0 +1,146 @@
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:server| tests/src/server/helpers.test.ts > Ollama setup > invokes the registered hook only in Claude Code cloud
+ReferenceError: readFileText is not defined
+ ❯ readOllamaHookCommand tests/setupServer.ts:2129:15
+    2127|  */
+    2128| export function readOllamaHookCommand(): string {
+    2129|  const text = readFileText(WORKSPACE_ROOT, '.claude/settings.json')
+       |               ^
+    2130|  const settings = parseJSON(text ?? '')
+    2131|  if (!isRecord(settings) || !isRecord(settings.hooks) || !isArray(sett…
+ ❯ executeOllamaHook tests/setupServer.ts:2157:44
+ ❯ tests/src/server/helpers.test.ts:102:25
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  |src:server| tests/src/server/helpers.test.ts > Ollama setup > reuses a reachable daemon and serializes the selected model as JSON data
+AssertionError: expected [] to strictly equal [ { method: 'GET', …(2) }, …(2) ]
+
+- Expected
++ Received
+
+- [
+-   {
+-     "body": undefined,
+-     "method": "GET",
+-     "path": "/api/version",
+-   },
+-   {
+-     "body": {
+-       "model": "model \"quoted\" \\ path",
+-     },
+-     "method": "POST",
+-     "path": "/api/show",
+-   },
+-   {
+-     "body": {
+-       "keep_alive": "30m",
+-       "messages": [
+-         {
+-           "content": "hi",
+-           "role": "user",
+-         },
+-       ],
+-       "model": "model \"quoted\" \\ path",
+-       "options": {
+-         "num_predict": 1,
+-       },
+-       "stream": false,
+-       "think": false,
+-     },
+-     "method": "POST",
+-     "path": "/api/chat",
+-   },
+- ]
++ []
+
+ ❯ tests/src/server/helpers.test.ts:120:28
+    118|    const result = await executeOllamaSetup(server.url.replace('http://…
+    119|    expect(result.failed).toBe(false)
+    120|    expect(server.requests).toStrictEqual([
+       |                            ^
+    121|     { method: 'GET', path: '/api/version', body: undefined },
+    122|     { method: 'POST', path: '/api/show', body: { model } },
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  |src:server| tests/src/server/helpers.test.ts > Ollama setup > pulls an absent model before completing the warm request
+AssertionError: expected [] to strictly equal [ { method: 'GET', …(2) }, …(3) ]
+
+- Expected
++ Received
+
+- [
+-   {
+-     "body": undefined,
+-     "method": "GET",
+-     "path": "/api/version",
+-   },
+-   {
+-     "body": {
+-       "model": "fixture-model",
+-     },
+-     "method": "POST",
+-     "path": "/api/show",
+-   },
+-   {
+-     "body": {
+-       "model": "fixture-model",
+-       "stream": false,
+-     },
+-     "method": "POST",
+-     "path": "/api/pull",
+-   },
+-   {
+-     "body": {
+-       "keep_alive": "30m",
+-       "messages": [
+-         {
+-           "content": "hi",
+-           "role": "user",
+-         },
+-       ],
+-       "model": "fixture-model",
+-       "options": {
+-         "num_predict": 1,
+-       },
+-       "stream": false,
+-       "think": false,
+-     },
+-     "method": "POST",
+-     "path": "/api/chat",
+-   },
+- ]
++ []
+
+ ❯ tests/src/server/helpers.test.ts:147:28
+    145|    const result = await executeOllamaSetup(server.url, model)
+    146|    expect(result.failed).toBe(false)
+    147|    expect(server.requests).toStrictEqual([
+       |                            ^
+    148|     { method: 'GET', path: '/api/version', body: undefined },
+    149|     { method: 'POST', path: '/api/show', body: { model } },
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+ FAIL  |src:server| tests/src/server/helpers.test.ts > Ollama setup > fails when the warm response does not report completion
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ tests/src/server/helpers.test.ts:173:26
+    171|   try {
+    172|    const result = await executeOllamaSetup(server.url, 'fixture-model')
+    173|    expect(result.failed).toBe(true)
+       |                          ^
+    174|    expect(server.requests.map((request) => request.path)).toStrictEqua…
+    175|     '/api/version',
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯
+
