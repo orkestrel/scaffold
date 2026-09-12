@@ -39,7 +39,8 @@ acceptance or registry readiness is claimed before the reviews and gates close.
 The landing declaration successor adds guides/probe.md only to Probe's source
 allowlist. Its docs/bin successor also admits Probe's RuntimeStage TSDoc and
 bounded bin fixture correction. Rebuild the active commit carrier from retained
-commit-agent-probe-native-entry-docs-bin.sh. Earlier retained carriers remain
+commit-agent-probe-native-entry-receipt.sh, which also admits the measured
+Probe class receipt TSDoc refresh. Earlier retained carriers remain
 unchanged. Final own-guide drift is still refused.
 
 Root reproduced the CRLF finding and its corrected permanent vector. Root's
@@ -49,3 +50,11 @@ traced to data outside constants.ts. RuntimeStage documentation and its executed
 example now pass native parity. The reused Probe writer owns the bounded bin
 path correction serially after the docs unit. The separate scratch carrier
 amendment returned with syntax validation; root read its exact delta.
+
+The receipt builder changed only the measured tool field and specified guide
+prose. Root propagated source authority through test:guides --to guide, read its
+green parity result, formatted and froze the source. The independent reviewer
+and reused objective analyst read the same final-source successor brief. Root's
+full prepublish runs without a competing writer. The review claims cover source
+corrections; green gate completion and reviewed/current state equality remain
+separate mandatory root acceptance conditions.

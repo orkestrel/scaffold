@@ -1,0 +1,14 @@
+npm --prefix /c/Users/mikes/WebstormProjects/probe pkg get devDependencies.@microsoft/api-extractor 
+node /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/read-supported-toolchain.mjs @microsoft/api-extractor \^7.59.0 
+npm --prefix /c/Users/mikes/WebstormProjects/probe pkg get devDependencies.@types/node 
+node /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/read-supported-toolchain.mjs @types/node \^26.4.1 
+npm --prefix /c/Users/mikes/WebstormProjects/probe pkg get devDependencies.oxfmt 
+node /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/read-supported-toolchain.mjs oxfmt \^0.66.0 
+npm --prefix /c/Users/mikes/WebstormProjects/probe pkg get devDependencies.oxlint 
+node /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/read-supported-toolchain.mjs oxlint \^1.81.0 
+npm --prefix /c/Users/mikes/WebstormProjects/probe pkg get devDependencies.typescript 
+node /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/read-supported-toolchain.mjs typescript \^6.0.3 
+npm --prefix /c/Users/mikes/WebstormProjects/probe pkg get devDependencies.vite 
+node /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/read-supported-toolchain.mjs vite \^8.2.2 
+npm --prefix /c/Users/mikes/WebstormProjects/probe pkg get devDependencies.vitest 
+node /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/read-supported-toolchain.mjs vitest \^4.1.11 

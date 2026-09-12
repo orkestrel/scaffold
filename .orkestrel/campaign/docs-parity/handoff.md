@@ -33,11 +33,13 @@ Native-entry changes have returned under d7n-agent-probe-layer-plan.md. Agent's
 release preparation is closed at 188ff515 on clean canonical main with matching
 campaign/main refs; its final registry gates, pack and release reviews passed.
 Owner upload remains pending. Probe's published runtime head start removes the
-legacy stream refusal. Root's isolated observer traced the remaining receipt
-failure to bin draft data outside constants.ts; the path-only alternate earns a
-receipt. The bounded bin fixture correction is in progress. Native parity passes
-after RuntimeStage method documentation and its real example were added. Probe
-has not closed on main. Read d7n-probe-bin-fixture-reading.md,
+legacy stream refusal. The bounded constants.ts fixture correction passes the
+isolated legacy case and the bin file. Native parity passes with RuntimeStage's
+documentation and real example. The supported release toolchain is staged;
+the measured receipt refresh passed source-to-guide rewriting and parity.
+Source reviews and d7n-probe-source-final-prepublish are active. Probe has not
+closed on main. Read d7n-probe-bin-fixture-reading.md,
+d7n-probe-supported-receipt-reading.md,
 d7n-agent-probe-preparation-state.md,
 d7n-agent-probe-catalog-result.md and the retained scout
 report, qualifying its refused shell readings with root's fresh evidence.
