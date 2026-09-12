@@ -1,0 +1,169 @@
+diff --git a/tests/src/bin/CLI.test.ts b/tests/src/bin/CLI.test.ts
+index f617dea4..a1baee66 100644
+--- a/tests/src/bin/CLI.test.ts
++++ b/tests/src/bin/CLI.test.ts
+@@ -25,13 +25,16 @@ import {
+ 	createBlueprint,
+ 	DECLARATION_DEV_DEPENDENCIES,
+ 	GROUPS,
++	isAudit,
+ 	isCanonPath,
+ 	RELEASE_PROOF_COMMAND,
+ 	replaceManifestScripts,
++	SERVICE_SCRIPT_PATH,
+ 	SHOWCASE_DEV_DEPENDENCIES,
+ 	SOURCE_BROWSER_DEV_DEPENDENCIES,
+ } from '@src/core'
+ import { readFileHex } from '@src/server'
++import { arrayOf, isRecord, isString, parseJSON } from '@orkestrel/contract'
+ import { requireValue } from '@orkestrel/test'
+ import {
+ 	EXIT_CLEAN,
+@@ -4258,6 +4261,147 @@ describe('CLI overwrite', () => {
+ 		}
+ 	})
+ 
++	it('preserves the existing provisioner through target-reading audit and overwrite', async () => {
++		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
++		const server = await createUpstreamServer({
++			...FLEET_RELEASE_REPLIES,
++			...FLEET_MIRROR_REPLIES,
++			[FLEET_UPSTREAM_PATHS.organization]: {
++				status: 200,
++				body: buildOrganization(FLEET_NAMES),
++			},
++			[FLEET_UPSTREAM_PATHS.packages.guide]: { status: 200, body: buildPackument('0.1.0') },
++			[FLEET_UPSTREAM_PATHS.mirrors.guide]: {
++				status: 200,
++				body: '# Guide\n',
++				type: 'text/plain',
++			},
++		})
++		try {
++			const host = createStagedHost(workspace)
++			const target = workspace.ensure('provisioner')
++			const created = createSink()
++			expect(
++				await new CLI(buildCLIOptions(created, server.base)).execute([
++					'new',
++					'widget',
++					'--src',
++					'core',
++					'--from',
++					host,
++					'--target',
++					target,
++				]),
++			).toBe(EXIT_CLEAN)
++			expect(readFileHex(target, SERVICE_SCRIPT_PATH)).toBeUndefined()
++
++			const provisioner = '#!/usr/bin/env sh\nset -eu\n# Maintainer-owned provisioner.\n'
++			workspace.write(`provisioner/${SERVICE_SCRIPT_PATH}`, provisioner)
++			workspace.write('provisioner/scripts/docs.ts', 'retired docs\n')
++			workspace.write('provisioner/scripts/custom.ts', 'retired custom script\n')
++			const expectedProvisioner = requireValue(readFileHex(target, SERVICE_SCRIPT_PATH))
++			createRepository(target)
++			trackFiles(target)
++			commitFiles(target)
++
++			const audited = createSink()
++			expect(
++				await new CLI({ ...REGISTRY_OPTIONS, ...audited.options }).execute([
++					'audit',
++					'--offline',
++					'--groups',
++					'orchestration',
++					'--from',
++					host,
++					'--target',
++					target,
++					'--json',
++				]),
++			).toBe(EXIT_DRIFT)
++			const auditValue = parseJSON(requireValue(audited.output[0]))
++			const audit = isRecord(auditValue)
++				? { findings: auditValue.findings, questions: auditValue.questions }
++				: undefined
++			if (!isAudit(audit)) throw new Error('Audit output did not match its contract.')
++			const foreign = audit.findings
++				.filter((finding) => finding.drift === 'foreign')
++				.map((finding) => finding.path)
++
++			const overwritten = createSink()
++			expect(
++				await new CLI(buildCLIOptions(overwritten, server.base)).execute([
++					'overwrite',
++					'--groups',
++					'orchestration',
++					'--from',
++					host,
++					'--target',
++					target,
++					'--json',
++				]),
++			).toBe(EXIT_CLEAN)
++			const overwriteValue = parseJSON(requireValue(overwritten.output[0]))
++			if (
++				!isRecord(overwriteValue) ||
++				!arrayOf(isString)(overwriteValue.removed) ||
++				!isAudit(overwriteValue.audit)
++			) {
++				throw new Error('Overwrite output did not match its contract.')
++			}
++			const removed = overwriteValue.removed
++			const terminal = overwriteValue.audit.findings
++				.filter((finding) => finding.drift === 'foreign')
++				.map((finding) => finding.path)
++			const finalProvisioner = readFileHex(target, SERVICE_SCRIPT_PATH)
++			const docs = workspace.read('provisioner/scripts/docs.ts')
++			const custom = workspace.read('provisioner/scripts/custom.ts')
++
++			const reread = createSink()
++			expect(
++				await new CLI({ ...REGISTRY_OPTIONS, ...reread.options }).execute([
++					'audit',
++					'--offline',
++					'--groups',
++					'orchestration',
++					'--from',
++					host,
++					'--target',
++					target,
++					'--json',
++				]),
++			).toBe(EXIT_CLEAN)
++			const rereadValue = parseJSON(requireValue(reread.output[0]))
++			const fresh = isRecord(rereadValue)
++				? { findings: rereadValue.findings, questions: rereadValue.questions }
++				: undefined
++			if (!isAudit(fresh)) throw new Error('Fresh audit output did not match its contract.')
++			const freshForeign = fresh.findings
++				.filter((finding) => finding.drift === 'foreign')
++				.map((finding) => finding.path)
++
++			expect({
++				foreign: foreign.toSorted(),
++				removed: removed.toSorted(),
++				docs,
++				custom,
++				provisioner: finalProvisioner,
++				terminal: terminal.toSorted(),
++				fresh: freshForeign.toSorted(),
++			}).toStrictEqual({
++				foreign: ['scripts/custom.ts', 'scripts/docs.ts'],
++				removed: ['scripts/custom.ts', 'scripts/docs.ts'],
++				docs: undefined,
++				custom: undefined,
++				provisioner: expectedProvisioner,
++				terminal: [],
++				fresh: [],
++			})
++		} finally {
++			await server.destroy()
++			workspace.destroy()
++		}
++	})
++
+ 	it('deletes tracked unplanned scripts without deleting untracked files', async () => {
+ 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+ 		const server = await createUpstreamServer({

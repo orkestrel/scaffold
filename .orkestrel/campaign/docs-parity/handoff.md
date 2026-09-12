@@ -19,7 +19,8 @@ Ollama and Toolbox, including Ollama's live service suite. Supported repair
 closed the generated config failure. Toolbox registry preparation landed at
 940ca311 and pushed to the campaign branch. Supported overwrite/audit, final
 registry install, prepublish and actual packing passed. Release review and
-main closure remain open. Read
+main closure passed at21068c3; canonical local main is clean and campaign/main
+refs match. Owner upload is pending. Read d7n-toolbox-registry-release-landing.md and
 d7n-ollama-toolbox-registry-preparation-state.md.
 Hold Ollama overwrite: it classifies the CI-used scripts/service.sh
 as foreign despite the guide's preservation promise. Nothing was deleted. Read
@@ -27,8 +28,13 @@ d7n-ollama-toolbox-layer-plan.md and d7n-ollama-toolbox-source-gate-reading.md.
 The complete public-CLI audit reproduces the service-script classification;
 the source reading locates the lost ownership in existing-target derivation.
 Read d7n-service-script-root-reading.md and the bounded
-d7n-service-script-design-brief.md. Keep Toolbox's accepted-tooling visit
-independent and keep Scaffold product bytes unchanged until that visit closes.
+d7n-service-script-design-verdict.md. The planted CLI regression reproduces
+provisioner deletion in a disposable target. Read
+d7n-service-script-regression-red-reading.md. The same unaccepted unit now
+continues with the accepted ownership correction on canonical Scaffold main.
+Its existing regression is an uncommitted source candidate; no production fix
+or corrected tooling archive is accepted yet. Toolbox's visit is closed and
+its accepted artifacts remain unchanged.
 No next upload command is ready.
 
 ### Confirmed Agent and Probe release
@@ -522,12 +528,12 @@ Tips are the branch tips as pushed. "on main" means the branch tip is `main`.
 | abort, browser, budget, codec, console, contract, csv, emitter, form, html, indexeddb, interpret, markdown, msg, ndjson, pool, process, qualifier, queue, rater, reason, relation, router, sea, server, sqlite, sse, table, template, test, timeout, tool, websocket, worker, workspace | see `ledger.md` | closed, on `main`, closure verdict written | nothing until the closing sweep's tail |
 | middleware | `5747e3f` | closed, on `main` (`d7n-middleware-closure-verdict.md`) | nothing |
 | brief | `2660b0a` | closed on `main` at `3849b1d`; `close-3` landed after it; its re-closure lanes were terminated by the usage limit | dispatch the closure again: checker on `d7n-brief-close-3-check-brief.md`, verifier on `d7n-brief-verify-brief.md`; then push `main` |
-| toolbox | `f8175e9` | fix round and `close-2` landed; closure checker PASS (`d7n-toolbox-closure-checker-toolbox.md`); verifier terminated | run the verifier on `d7n-toolbox-verify-brief.md` (head-start first); write the closure verdict; push `main` |
+| toolbox | `21068c3` (`main`) | native source, final registry prepublish, pack and release review closed; clean canonical main and matching campaign/main refs | owner upload of0.0.13 pending; later tooling alignment remains separate |
 | lsp | `d654382` | docs-parity and registry-backed release preparation closed; clean canonical main and pushed campaign/main | owner uploads0.0.7 with the prepared consumer layer; confirm registry afterward; read `d7n-lsp-registry-release-landing.md` |
 | database | `cdbf66a` | `close-2` landed; owner main merged; prior verifier green; the canon finding remains open; Ruling 20 stays unchanged | dispatch `d7n-database-canon-brief.md` to move the compiler-derived surface into its consuming package case; then checker and verifier; verdict; push `main` |
 | probe | `93fc01d` | resumed test-draft correction landed and branch pushed; scoped gates green; type-load fixture retained by d7n-probe-heavy-ruling-verdict.md after a separate host run; clean; main still b816749 | write the audit-item check brief and generate verification against the final guide artifact; full closure and main push remain pending |
 | agent | `305af91` | fix landed and campaign branch pushed; root host readings passed, including comment-only scope, stable docs directions, core tests, and opening-header comparison; main unchanged | install the accepted final guide artifact; audit-item checker and whole-chain verifier; closure verdict; refresh main ancestry; push main |
-| ollama | `98e9c34` | read/edit-only successor returned; uncommitted candidate and report retained; root scoped host chain passed; the retained container partial diff was not applied | scope review and remaining landing readings; landing; aligned final-artifact closure |
+| ollama | `53e5fd2f` (campaign) | retained documentation and native source accepted and pushed; source prepublish includes real service | hold registry overwrite until supported Scaffold service ownership correction closes; then final registry release preparation |
 | workflow | `1151786` | audit reconciled (`d7n-workflow-audit-verdict.md`, items WF1 to WF7); fix brief written | dispatch `d7n-workflow-converge-fix-brief.md` (implementer, Opus); head-start first (its installed guide is the older pack); then as agent |
 | program | `a60327f` | audit reconciled (`d7n-program-audit-verdict.md`, items PF1 to PF8); fix brief written | dispatch `d7n-program-converge-fix-brief.md` (implementer, Opus); head-start first; then as agent |
 | terminal | `0b01536` | retained audit lanes reconciled in `d7n-terminal-audit-verdict.md`; checker recorded as not run | dispatch `d7n-terminal-converge-fix-windows-brief.md`; then checker and verifier; verdict; push `main` |

@@ -1,0 +1,40 @@
+npm notice run @orkestrel/scaffold@0.0.64 test:src:bin
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project src:bin tests/src/bin/CLI.test.ts -t preserves the existing provisioner through target-reading audit and overwrite
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:bin| tests/src/bin/CLI.test.ts > CLI overwrite > preserves the existing provisioner through target-reading audit and overwrite
+AssertionError: expected { foreign: [ …(3) ], …(6) } to strictly equal { foreign: [ …(2) ], …(6) }
+
+- Expected
++ Received
+
+@@ -2,14 +2,16 @@
+    "custom": undefined,
+    "docs": undefined,
+    "foreign": [
+      "scripts/custom.ts",
+      "scripts/docs.ts",
++     "scripts/service.sh",
+    ],
+    "fresh": [],
+-   "provisioner": "23212f7573722f62696e2f656e762073680a736574202d65750a23204d61696e7461696e65722d6f776e65642070726f766973696f6e65722e0a",
++   "provisioner": undefined,
+    "removed": [
+      "scripts/custom.ts",
+      "scripts/docs.ts",
++     "scripts/service.sh",
+    ],
+    "terminal": [],
+  }
+
+ ❯ tests/src/bin/CLI.test.ts:4390:7
+    4388|     terminal: terminal.toSorted(),
+    4389|     fresh: freshForeign.toSorted(),
+    4390|    }).toStrictEqual({
+       |       ^
+    4391|     foreign: ['scripts/custom.ts', 'scripts/docs.ts'],
+    4392|     removed: ['scripts/custom.ts', 'scripts/docs.ts'],
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+

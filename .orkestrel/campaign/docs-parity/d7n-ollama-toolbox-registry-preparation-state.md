@@ -14,7 +14,9 @@ cf60177fb42d036c9747e3e192b0e7429d5105984c0e554cd8d176c207032e78.
 Its manifest and complete dist equal the canonical target. The baseline
 material comparison exits1 and the runtime surface changed, supporting the
 pending bump. Full visit, action and pack receipts are retained under evidence.
-Release review and clean-main closure remain open; this is not upload acceptance.
+Release reviews and root closure passed. Toolbox is clean on canonical local
+main at21068c362ec4c8cf79432da11402ae5350ba1fce; campaign/main pushes match it.
+Read d7n-toolbox-registry-release-landing.md. Owner upload remains pending.
 
 Ollama remains at its clean source checkpoint. Do not run its registry overwrite
 until the supported service-script ownership correction is accepted. Nothing
