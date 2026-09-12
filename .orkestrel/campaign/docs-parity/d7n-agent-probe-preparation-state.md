@@ -3,7 +3,7 @@
 | Package | Pending | Current state |
 | --- | --- | --- |
 | Agent | 0.0.21 | Release preparation closed at 188ff515 on clean canonical main. Campaign/main refs match. Supported overwrite/audit, registry install, final prepublish, pack and independent release reviews passed. Owner upload remains pending. |
-| Probe | 0.0.13 | Source baseline remains 93fc01d. The CRLF, RuntimeStage and bin-path corrections pass their scoped checks. Supported release tools are staged no-save; the measured receipt refresh passed source-to-guide rewriting and parity. Source is frozen while independent/reused objective reviews and d7n-probe-source-final-prepublish run. Source and release acceptance remain open. |
+| Probe | 0.0.13 | Accepted source landed at c492ef3e and is pushed to the campaign branch. Independent/reused objective source reviews, full prepublish and reviewed-state comparisons passed. Final registry pins, optional peers, supported overwrite, final prepublish/pack and clean-main release closure remain open. |
 
 Agent's accepted-source verdict states the root-owned reviewed-state and
 intervening-writer boundary. Do not read the raw source reports as proving an

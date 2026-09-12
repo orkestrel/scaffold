@@ -1,0 +1,16 @@
+?? .orkestrel/campaign/docs-parity/d7n-probe-source-final-independent-report.md
+?? .orkestrel/campaign/docs-parity/evidence/d7n-probe-source-final-prepublish/action.exit.txt
+?? .orkestrel/campaign/docs-parity/evidence/d7n-probe-source-final-prepublish/action.stderr.txt
+?? .orkestrel/campaign/docs-parity/evidence/d7n-probe-source-final-prepublish/action.stdout.txt
+?? .orkestrel/campaign/docs-parity/evidence/d7n-probe-source-final-prepublish/branch-after.txt
+?? .orkestrel/campaign/docs-parity/evidence/d7n-probe-source-final-prepublish/branch-before.txt
+?? .orkestrel/campaign/docs-parity/evidence/d7n-probe-source-final-prepublish/diff-after.txt
+?? .orkestrel/campaign/docs-parity/evidence/d7n-probe-source-final-prepublish/diff-before.txt
+?? .orkestrel/campaign/docs-parity/evidence/d7n-probe-source-final-prepublish/head-after.txt
+?? .orkestrel/campaign/docs-parity/evidence/d7n-probe-source-final-prepublish/head-before.txt
+?? .orkestrel/campaign/docs-parity/evidence/d7n-probe-source-final-prepublish/index-after.txt
+?? .orkestrel/campaign/docs-parity/evidence/d7n-probe-source-final-prepublish/index-before.txt
+?? .orkestrel/campaign/docs-parity/evidence/d7n-probe-source-final-prepublish/manifests-after.sha256
+?? .orkestrel/campaign/docs-parity/evidence/d7n-probe-source-final-prepublish/manifests-before.sha256
+?? .orkestrel/campaign/docs-parity/evidence/d7n-probe-source-final-prepublish/status-after.txt
+?? .orkestrel/campaign/docs-parity/evidence/d7n-probe-source-final-prepublish/status-before.txt

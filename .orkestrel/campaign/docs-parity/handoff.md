@@ -37,8 +37,10 @@ legacy stream refusal. The bounded constants.ts fixture correction passes the
 isolated legacy case and the bin file. Native parity passes with RuntimeStage's
 documentation and real example. The supported release toolchain is staged;
 the measured receipt refresh passed source-to-guide rewriting and parity.
-Source reviews and d7n-probe-source-final-prepublish are active. Probe has not
-closed on main. Read d7n-probe-bin-fixture-reading.md,
+Source reviews and d7n-probe-source-final-prepublish passed. Probe source landed
+at c492ef3e and is pushed to the campaign branch. Its final registry visit and
+main closure remain open. Read d7n-probe-agent-probe-source-verdict.md,
+d7n-probe-bin-fixture-reading.md,
 d7n-probe-supported-receipt-reading.md,
 d7n-agent-probe-preparation-state.md,
 d7n-agent-probe-catalog-result.md and the retained scout

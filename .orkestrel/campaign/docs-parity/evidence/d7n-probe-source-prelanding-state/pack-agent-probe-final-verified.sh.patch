@@ -1,0 +1,27 @@
+--- /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/pack-dependent-final-verified.sh	2026-09-11 16:59:20.883381400 -0400
++++ /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/pack-agent-probe-final-verified.sh	2026-09-11 20:33:34.976312500 -0400
+@@ -41,8 +41,8 @@
+ }
+ 
+ case "$package" in
+-	brief|mcp|middleware|program|worker|workflow) ;;
+-	*) fail 'package is outside the dependent layer' ;;
++	agent|probe) ;;
++	*) fail 'package is outside the Agent and Probe layer' ;;
+ esac
+ test -n "$label" || fail 'evidence label is required'
+ [[ "$label" =~ ^[[:alnum:]][[:alnum:]._-]*$ ]] || fail 'evidence label must be a safe filename segment'
+@@ -104,12 +104,7 @@
+ if [ "$(<"$out/baseline-dist-without-maps.exit.txt")" -ne 0 ]; then
+ 	compare baseline-dist-whitespace diff -r -w -B --exclude='*.map' "$out/baseline/package/dist/src" "$out/extract/package/dist/src"
+ fi
+-if [ "$package" = scaffold ]; then
+-	compare baseline-host.diff-qr diff -qr "$out/baseline/package/dist/host" "$out/extract/package/dist/host"
+-	compare baseline-host-without-maps diff -r --exclude='*.map' "$out/baseline/package/dist/host" "$out/extract/package/dist/host"
+-	if [ "$(<"$out/baseline-host-without-maps.exit.txt")" -ne 0 ]; then
+-		compare baseline-host-whitespace diff -r -w -B --exclude='*.map' "$out/baseline/package/dist/host" "$out/extract/package/dist/host"
+-	fi
++if [ "$package" = probe ]; then
+ 	compare baseline-bin.diff-qr diff -qr "$out/baseline/package/dist/bin" "$out/extract/package/dist/bin"
+ 	compare baseline-bin-without-maps diff -r --exclude='*.map' "$out/baseline/package/dist/bin" "$out/extract/package/dist/bin"
+ 	if [ "$(<"$out/baseline-bin-without-maps.exit.txt")" -ne 0 ]; then
