@@ -37,6 +37,15 @@ That correction returned; root's corrected prepublish is running. No source
 acceptance or registry readiness is claimed before the reviews and gates close.
 
 The landing declaration successor adds guides/probe.md only to Probe's source
-allowlist. Rebuild the active commit carrier from the retained
-commit-agent-probe-native-entry-declarations.sh successor. The original retained
-carrier remains unchanged. Final own-guide drift is still refused.
+allowlist. Its docs/bin successor also admits Probe's RuntimeStage TSDoc and
+bounded bin fixture correction. Rebuild the active commit carrier from retained
+commit-agent-probe-native-entry-docs-bin.sh. Earlier retained carriers remain
+unchanged. Final own-guide drift is still refused.
+
+Root reproduced the CRLF finding and its corrected permanent vector. Root's
+published runtime head start removes the canonical bin's stream refusal. The
+remaining fixture error was reproduced through the real legacy client and
+traced to data outside constants.ts. RuntimeStage documentation and its executed
+example now pass native parity. The reused Probe writer owns the bounded bin
+path correction serially after the docs unit. The separate scratch carrier
+amendment returned with syntax validation; root read its exact delta.

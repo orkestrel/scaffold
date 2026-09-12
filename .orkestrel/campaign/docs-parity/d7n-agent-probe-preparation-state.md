@@ -3,7 +3,7 @@
 | Package | Pending | Current state |
 | --- | --- | --- |
 | Agent | 0.0.21 | Release preparation closed at 188ff515 on clean canonical main. Campaign/main refs match. Supported overwrite/audit, registry install, final prepublish, pack and independent release reviews passed. Owner upload remains pending. |
-| Probe | 0.0.13 | Source baseline remains 93fc01d. Native entry and documentation changes are under review. Root reproduced and corrected CRLF extraction. Published runtime head start installed no-save; the source gate is rerunning. No source acceptance or upload is claimed. |
+| Probe | 0.0.13 | Source baseline remains 93fc01d. CRLF extraction is corrected and native parity passes with the RuntimeStage example. The published runtime head start removes the legacy stream refusal. Root reproduced a bin fixture lint-placement failure and the path-only alternate earns a receipt; the bounded path correction is active. Source and release acceptance remain open. |
 
 Agent's accepted-source verdict states the root-owned reviewed-state and
 intervening-writer boundary. Do not read the raw source reports as proving an

@@ -1,0 +1,55 @@
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |guides| tests/guides.test.ts > Package > keeps every compared summary and example equal to its source
+AssertionError: expected [ …(2) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   {
++     "spec": "guides/probe.md",
++     "text": "summary RuntimeStage.inspect: guide \"Inspects one case.\" source absent",
++   },
++   {
++     "spec": "guides/probe.md",
++     "text": "summary RuntimeStage.destroy: guide \"Tears down the resident tool or the mirror and releases its resources.\" source absent",
++   },
++ ]
+
+ ❯ tests/guides.test.ts:132:75
+    130|
+    131|    it('keeps every compared summary and example equal to its source', …
+    132|     expect(report.drift.filter((finding) => finding.spec === entry.spe…
+       |                                                                           ^
+    133|    })
+    134|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  |guides| tests/guides.test.ts > Package > documents an example for every method
+AssertionError: expected [ { spec: 'guides/probe.md', …(1) } ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   {
++     "spec": "guides/probe.md",
++     "text": "guides/probe.md has no example for RuntimeStage.inspect.",
++   },
++ ]
+
+ ❯ tests/guides.test.ts:143:86
+    141|
+    142|    it('documents an example for every method', () => {
+    143|     expect(report.examples.methods.filter((finding) => finding.spec ==…
+       |                                                                                      ^
+    144|    })
+    145|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
