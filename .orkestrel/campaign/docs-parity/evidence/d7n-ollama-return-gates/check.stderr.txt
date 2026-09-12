@@ -1,0 +1,6 @@
+npm notice run @orkestrel/ollama@0.0.15 check
+npm notice run tsc --noEmit --project tsconfig.json && npm run check:src
+npm notice run @orkestrel/ollama@0.0.15 check:src
+npm notice run npm run check:src:server
+npm notice run @orkestrel/ollama@0.0.15 check:src:server
+npm notice run tsc --noEmit -p configs/src/tsconfig.server.json

@@ -1,0 +1,2 @@
+npm notice run @orkestrel/ollama@0.0.15 test:guides
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project guides

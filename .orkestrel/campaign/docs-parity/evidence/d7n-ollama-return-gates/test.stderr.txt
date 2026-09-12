@@ -1,0 +1,25 @@
+npm notice run @orkestrel/ollama@0.0.15 test
+npm notice run npm run test:src && npm run test:setup && npm run test:policy && npm run test:config && npm run test:guides && npm run test:conformance
+npm notice run @orkestrel/ollama@0.0.15 test:src
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project src:server
+npm notice run @orkestrel/ollama@0.0.15 test:setup
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project setup
+npm notice run @orkestrel/ollama@0.0.15 test:policy
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project policy
+npm notice run @orkestrel/ollama@0.0.15 test:config
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project config
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |config| tests/config.test.ts > policy plugin > loads every configured policy rule through the real binary
+AssertionError: expected [ …(27) ] to include 'policy(no-mocking) src/violations/fix…'
+ ❯ tests/config.test.ts:1894:28
+    1892|     'typescript(explicit-member-accessibility) src/violations/fixture.…
+    1893|    ]) {
+    1894|     expect(violationCodes).toContain(reported)
+       |                            ^
+    1895|    }
+    1896|    expect(violationCodes).toContain('eslint(no-debugger) scripts/read.…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+

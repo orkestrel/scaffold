@@ -1,0 +1,43 @@
+{
+  "version": "0.0.15",
+  "name": "@orkestrel/ollama",
+  "problems": [
+    "invalid: @orkestrel/guide@0.0.18 C:\\Users\\mikes\\WebstormProjects\\ollama\\node_modules\\@orkestrel\\guide",
+    "invalid: @orkestrel/scaffold@0.0.64 C:\\Users\\mikes\\WebstormProjects\\ollama\\node_modules\\@orkestrel\\scaffold",
+    "invalid: @orkestrel/test@0.0.14 C:\\Users\\mikes\\WebstormProjects\\ollama\\node_modules\\@orkestrel\\test"
+  ],
+  "dependencies": {
+    "@orkestrel/guide": {
+      "version": "0.0.18",
+      "resolved": "file:C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\pass\\packed\\d7n-guide-registry-native-pack\\orkestrel-guide-0.0.18.tgz",
+      "overridden": false,
+      "invalid": "\"^0.0.17\" from the root project",
+      "problems": [
+        "invalid: @orkestrel/guide@0.0.18 C:\\Users\\mikes\\WebstormProjects\\ollama\\node_modules\\@orkestrel\\guide"
+      ]
+    },
+    "@orkestrel/scaffold": {
+      "version": "0.0.64",
+      "resolved": "file:C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\pass\\packed\\d7n-scaffold-upper-git-final-pack\\orkestrel-scaffold-0.0.64.tgz",
+      "overridden": false,
+      "invalid": "\"^0.0.63\" from the root project",
+      "problems": [
+        "invalid: @orkestrel/scaffold@0.0.64 C:\\Users\\mikes\\WebstormProjects\\ollama\\node_modules\\@orkestrel\\scaffold"
+      ]
+    },
+    "@orkestrel/test": {
+      "version": "0.0.14",
+      "resolved": "https://registry.npmjs.org/@orkestrel/test/-/test-0.0.14.tgz",
+      "overridden": false,
+      "invalid": "\"^0.0.13\" from the root project",
+      "problems": [
+        "invalid: @orkestrel/test@0.0.14 C:\\Users\\mikes\\WebstormProjects\\ollama\\node_modules\\@orkestrel\\test"
+      ]
+    }
+  },
+  "error": {
+    "code": "ELSPROBLEMS",
+    "summary": "invalid: @orkestrel/guide@0.0.18 C:\\Users\\mikes\\WebstormProjects\\ollama\\node_modules\\@orkestrel\\guide\ninvalid: @orkestrel/scaffold@0.0.64 C:\\Users\\mikes\\WebstormProjects\\ollama\\node_modules\\@orkestrel\\scaffold\ninvalid: @orkestrel/test@0.0.14 C:\\Users\\mikes\\WebstormProjects\\ollama\\node_modules\\@orkestrel\\test",
+    "detail": ""
+  }
+}
