@@ -11,11 +11,13 @@ refreshed catalog selects Ollama0.0.15 and Toolbox0.0.13 preparation. Root confi
 origin/main ancestry and installed the accepted Guide18/Scaffold64 tooling
 tarballs without changing tracked metadata. Ollama's retained documentation
 candidate landed at 463efa2d and is pushed to the campaign branch after accepted
-independent review; native guides entry migrations are in flight.
+independent review. Native source now lands at Ollama53e5fd2f and Toolboxf21e04e5,
+clean and pushed to the campaign branches after accepted independent and reused
+objective review. Read d7n-ollama-toolbox-native-source-landing.md.
 Native parity, explicit rewrite fixed points and source prepublish now pass in
 Ollama and Toolbox, including Ollama's live service suite. Supported repair
-closed the generated config failure. Source acceptance and registry preparation
-remain open. Hold Ollama overwrite: it classifies the CI-used scripts/service.sh
+closed the generated config failure. Toolbox registry preparation is next.
+Hold Ollama overwrite: it classifies the CI-used scripts/service.sh
 as foreign despite the guide's preservation promise. Nothing was deleted. Read
 d7n-ollama-toolbox-layer-plan.md and d7n-ollama-toolbox-source-gate-reading.md.
 The complete public-CLI audit reproduces the service-script classification;
