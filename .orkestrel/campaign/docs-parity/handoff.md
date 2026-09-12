@@ -30,8 +30,11 @@ d7n-dependent-supported-carrier-verdict.md for its accepted correction.
 The refreshed catalog places Agent and Probe in L5. Their fresh origin/main
 ancestry checks pass and their accepted tooling overlays preserve tracked state.
 Native-entry changes have returned under d7n-agent-probe-layer-plan.md. Agent's
-source prepublish passed; Probe's corrected source prepublish and independent
-source reviews are running. Neither package has closed. Read
+source is accepted and pushed; its final registry gates and pack passed and the
+release review is running. Probe's prior source gate reproduced the stale MCP
+legacy stream refusal. Its CRLF helper correction passes the exact root probe;
+its source gate is rerunning under the published runtime head start. Neither
+package has closed on main. Read d7n-agent-probe-preparation-state.md,
 d7n-agent-probe-catalog-result.md and the retained scout
 report, qualifying its refused shell readings with root's fresh evidence.
 MCP-to-Probe integration and later Agent/Ollama/Toolbox work remain open. Preserve Ollama's owner edits and the

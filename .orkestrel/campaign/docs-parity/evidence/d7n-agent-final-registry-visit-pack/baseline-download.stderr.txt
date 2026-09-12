@@ -1,0 +1,22 @@
+npm notice
+npm notice 📦  @orkestrel/agent@0.0.20
+npm notice Tarball Contents
+npm notice 1.1kB LICENSE
+npm notice 2.2kB README.md
+npm notice 138.4kB dist/src/core/index.cjs
+npm notice 244.5kB dist/src/core/index.cjs.map
+npm notice 226.3kB dist/src/core/index.d.cts
+npm notice 226.3kB dist/src/core/index.d.ts
+npm notice 135.3kB dist/src/core/index.js
+npm notice 243.8kB dist/src/core/index.js.map
+npm notice 4.1kB package.json
+npm notice Tarball Details
+npm notice name: @orkestrel/agent
+npm notice version: 0.0.20
+npm notice filename: orkestrel-agent-0.0.20.tgz
+npm notice package size: 327.1 kB
+npm notice unpacked size: 1.2 MB
+npm notice shasum: 03b550109ce61edf527b0e9653c603e28a8ee54e
+npm notice integrity: sha512-H80XjrBrsd1jk[...]ZwtQrsjdd1cJw==
+npm notice total files: 9
+npm notice

@@ -1,0 +1,112 @@
+--- /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/close-dependent-registry-supported-release.sh	2026-09-11 18:21:49.628852200 -0400
++++ /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/close-agent-probe-registry-supported-release.sh	2026-09-11 20:41:37.056684900 -0400
+@@ -1,9 +1,9 @@
+ #!/usr/bin/env bash
+ set -euo pipefail
+ 
+-# Carrier: close-dependent-registry-supported-release.sh <package> <expected> <version> <visit> <label>
++# Carrier: close-agent-probe-registry-supported-release.sh <package> <expected> <version> <visit> <label>
+ # Evidence: tmp/pass/<label>.
+-# Successor: close a supported-major dependent registry visit.
++# Successor: close a supported-major Agent and Probe registry visit.
+ 
+ source /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/pass-env.sh
+ 
+@@ -16,7 +16,7 @@
+ out="$SCR/$label"
+ pack="$SCR/packed/$visit-pack"
+ prepublish="$SCR/$visit-prepublish"
+-verdict="$SCAFFOLD/.orkestrel/campaign/docs-parity/d7n-$package-dependent-registry-prepared-verdict.md"
++verdict="$SCAFFOLD/.orkestrel/campaign/docs-parity/d7n-$package-agent-probe-registry-prepared-verdict.md"
+ guidepack="$SCR/packed/d7n-guide-registry-native-pack/extract/package/dist"
+ scaffoldpack="$SCR/packed/d7n-scaffold-upper-git-final-pack/extract/package/dist"
+ 
+@@ -41,31 +41,19 @@
+ }
+ 
+ case "$package" in
+-	brief) pending=0.0.8; runtime=('contract 0.0.17' 'emitter 0.0.10' 'interpret 0.0.13' 'reason 0.0.10') ;;
+-	mcp) pending=0.0.29; runtime=('codec 0.0.3' 'contract 0.0.17' 'emitter 0.0.10' 'process 0.0.11' 'sse 0.0.7' 'tool 0.0.14' 'websocket 0.0.12') ;;
+-	middleware) pending=0.0.20; runtime=('abort 0.0.10' 'budget 0.0.10' 'contract 0.0.17' 'timeout 0.0.10') ;;
+-	program) pending=0.0.13; runtime=('contract 0.0.17' 'emitter 0.0.10' 'qualifier 0.0.14' 'rater 0.0.14' 'reason 0.0.10') ;;
+-	worker) pending=0.0.12; runtime=('contract 0.0.17' 'database 0.0.14' 'emitter 0.0.10' 'pool 0.0.11' 'queue 0.0.13') ;;
+-	workflow) pending=0.0.18; runtime=('abort 0.0.10' 'budget 0.0.10' 'contract 0.0.17' 'database 0.0.14' 'emitter 0.0.10' 'queue 0.0.13' 'timeout 0.0.10') ;;
+-	*) fail 'package is not a remaining native consumer' ;;
++	agent) pending=0.0.21; runtime=('abort 0.0.10' 'budget 0.0.10' 'contract 0.0.17' 'database 0.0.14' 'emitter 0.0.10' 'queue 0.0.13' 'timeout 0.0.10' 'tool 0.0.14' 'workflow 0.0.18' 'workspace 0.0.8') ;;
++	probe) pending=0.0.13; runtime=('contract 0.0.17' 'emitter 0.0.10' 'lsp 0.0.7' 'mcp 0.0.29' 'queue 0.0.13' 'timeout 0.0.10' 'tool 0.0.14') ;;
++	*) fail 'package is not an Agent or Probe target' ;;
+ esac
+-development=('guide 0.0.18' 'scaffold 0.0.64' 'test 0.0.14' 'probe 0.0.12')
+-fields=()
++development=('guide 0.0.18' 'scaffold 0.0.64' 'test 0.0.14')
++if [ "$package" = agent ]; then
++	development+=('probe 0.0.12')
++fi
+ toolchain=('devDependencies.@microsoft/api-extractor' 'devDependencies.@types/node' 'devDependencies.oxfmt' 'devDependencies.oxlint' 'devDependencies.typescript' 'devDependencies.vite' 'devDependencies.vitest')
+-preserved=()
+-case "$package" in
+-	mcp)
+-		fields=('peerDependencies.@orkestrel/router 0.0.14' 'peerDependencies.@orkestrel/server 0.0.19' 'devDependencies.@orkestrel/router 0.0.14' 'devDependencies.@orkestrel/server 0.0.19')
+-		preserved+=('devDependencies.@modelcontextprotocol/conformance')
+-		toolchain+=('devDependencies.@vitest/browser-playwright' 'devDependencies.playwright')
+-		;;
+-	middleware)
+-		fields=('peerDependencies.@orkestrel/database 0.0.14' 'peerDependencies.@orkestrel/server 0.0.19' 'devDependencies.@orkestrel/database 0.0.14' 'devDependencies.@orkestrel/router 0.0.14' 'devDependencies.@orkestrel/server 0.0.19')
+-		;;
+-	workflow)
+-		toolchain+=('devDependencies.@vitest/browser-playwright' 'devDependencies.playwright')
+-		;;
+-esac
++externalpeers=()
++if [ "$package" = probe ]; then
++	externalpeers=('peerDependencies.oxlint' 'peerDependencies.typescript' 'peerDependencies.vitest')
++fi
+ 
+ [[ "$expected" =~ ^[0-9a-f]{40}$ ]] || fail 'expected source HEAD is unsafe'
+ [[ "$version" =~ ^0\.0\.[0-9]+$ ]] || fail 'pending version is unsafe'
+@@ -112,12 +100,6 @@
+ 	run "pin-$pin" 60s npm --prefix "$target" pkg get "$key"
+ 	test "$(<"$out/pin-$pin.stdout.txt")" = "^$2" || fail "development range differs: $key"
+ done
+-for pair in "${fields[@]}"; do
+-	set -- $pair
+-	pin=$(printf '%s' "$1" | tr './@' '---')
+-	run "pin-$pin" 60s npm --prefix "$target" pkg get "$1"
+-	test "$(<"$out/pin-$pin.stdout.txt")" = "^$2" || fail "peer or development range differs: $1"
+-done
+ test ! -e "$target/scripts/docs.ts" || fail 'retired docs script remains'
+ test ! -e "$target/scripts/guides.ts" || fail 'retired guides script remains'
+ run guide-version 60s node "$SCR/read-package-field.mjs" "$target/node_modules/@orkestrel/guide/package.json" version
+@@ -131,7 +113,7 @@
+ test "$(<"$SCR/$visit/peer-meta-final.exit.txt")" = 0 || fail 'visit peer metadata receipt failed'
+ cmp "$SCR/$visit/peer-meta-before.stdout.txt" "$SCR/$visit/peer-meta-final.stdout.txt" || fail 'visit peer metadata changed'
+ cmp "$SCR/$visit/peer-meta-final.stdout.txt" "$out/peer-meta.stdout.txt" || fail 'current peer metadata differs from visit'
+-for key in "${toolchain[@]}"; do
++for key in "${toolchain[@]}" "${externalpeers[@]}"; do
+ 	externalkey=$(printf '%s' "$key" | tr './@' '---')
+ 	test -f "$SCR/$visit/external-before-$externalkey.stdout.txt" || fail "toolchain before receipt is absent: $key"
+ 	test -f "$SCR/$visit/external-registry-$externalkey.stdout.txt" || fail "toolchain registry receipt is absent: $key"
+@@ -144,14 +126,6 @@
+ 	run "external-$externalkey" 60s npm --prefix "$target" pkg get "$key"
+ 	cmp "$SCR/$visit/external-final-$externalkey.stdout.txt" "$out/external-$externalkey.stdout.txt" || fail "current toolchain range differs from visit: $key"
+ done
+-for key in "${preserved[@]}"; do
+-	externalkey=$(printf '%s' "$key" | tr './@' '---')
+-	test "$(<"$SCR/$visit/external-before-$externalkey.exit.txt")" = 0 || fail "preserved external before receipt failed: $key"
+-	test "$(<"$SCR/$visit/external-final-$externalkey.exit.txt")" = 0 || fail "preserved external final receipt failed: $key"
+-	cmp "$SCR/$visit/external-before-$externalkey.stdout.txt" "$SCR/$visit/external-final-$externalkey.stdout.txt" || fail "preserved external range changed: $key"
+-	run "external-$externalkey" 60s npm --prefix "$target" pkg get "$key"
+-	cmp "$SCR/$visit/external-final-$externalkey.stdout.txt" "$out/external-$externalkey.stdout.txt" || fail "current preserved range differs from visit: $key"
+-done
+ 
+ run fetch 60s git -C "$target" fetch origin
+ run ancestry 60s git -C "$target" merge-base --is-ancestor origin/main HEAD
+@@ -164,7 +138,7 @@
+ 			name=${path#guides/}
+ 			name=${name%.md}
+ 			allowed=false
+-			for pair in "${runtime[@]}" "${development[@]}" "${fields[@]}"; do
++			for pair in "${runtime[@]}" "${development[@]}"; do
+ 				set -- $pair
+ 				declared=${1##*/}
+ 				test "$name" = "$declared" && allowed=true
