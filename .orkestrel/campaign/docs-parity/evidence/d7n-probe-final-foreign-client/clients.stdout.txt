@@ -1,0 +1,26 @@
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/probe
+
+ ↓ |src:bin| tests/src/bin/main.test.ts > bin entry > occupies the path the manifest declares side-effectful
+ ↓ |src:bin| tests/src/bin/main.test.ts > bin entry > starts one probe server and exports nothing
+ ↓ |src:bin| tests/src/bin/main.test.ts > bin entry > splits a reported message at a line ending and never at a bare carriage return
+ ↓ |src:bin| tests/src/bin/main.test.ts > bin entry > reports a construction refusal as a formatted stderr line without a stack
+ ↓ |src:bin| tests/src/bin/main.test.ts > bin entry > answers both protocol eras without exposing worker output on stdout
+ ↓ |src:bin| tests/src/bin/main.test.ts > bin entry > carries the verdict record beside the rendered text on both eras
+ ↓ |src:bin| tests/src/bin/main.test.ts > bin entry > carries a record whose control reports an issue per refused declaration
+ ↓ |src:bin| tests/src/bin/main.test.ts > bin entry > answers a record past the published key bound with the rendered text alone
+ ↓ |src:bin| tests/src/bin/main.test.ts > bin entry > answers a rendering past the content bound with the receipt block
+ ✓ |src:bin| tests/src/bin/main.test.ts > bin entry > answers a driven third-party client with the verdict record 10770ms
+ ✓ |src:bin| tests/src/bin/main.test.ts > bin entry > answers a pinned legacy client through the initialize path 10693ms
+ ↓ |src:bin| tests/src/bin/main.test.ts > bin entry > preserves worker diagnostics on stderr
+ ↓ |src:bin| tests/src/bin/main.test.ts > bin entry > leaves the target clean when SIGTERM reaches the entry during boot
+ ↓ |src:bin| tests/src/bin/main.test.ts > bin entry > leaves the target clean when SIGINT reaches the entry during boot
+ ↓ |src:bin| tests/src/bin/main.test.ts > bin entry > leaves the target clean when SIGTERM reaches the entry during service
+ ↓ |src:bin| tests/src/bin/main.test.ts > bin entry > leaves the target clean when SIGINT reaches the entry during service
+
+ Test Files  1 passed (1)
+      Tests  2 passed | 14 skipped (16)
+   Start at  21:55:09
+   Duration  21.90s (transform 104ms, setup 105ms, import 184ms, tests 21.46s, environment 0ms)
+
+

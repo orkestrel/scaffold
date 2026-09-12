@@ -1,0 +1,30 @@
+npm notice
+npm notice 📦  @orkestrel/probe@0.0.12
+npm notice Tarball Contents
+npm notice 1.1kB LICENSE
+npm notice 2.7kB README.md
+npm notice 413B dist/bin/main.js
+npm notice 636B dist/bin/main.js.map
+npm notice 33.9kB dist/src/core/index.cjs
+npm notice 41.3kB dist/src/core/index.cjs.map
+npm notice 53.4kB dist/src/core/index.d.cts
+npm notice 53.4kB dist/src/core/index.d.ts
+npm notice 32.1kB dist/src/core/index.js
+npm notice 40.8kB dist/src/core/index.js.map
+npm notice 104.8kB dist/src/server/index.cjs
+npm notice 210.0kB dist/src/server/index.cjs.map
+npm notice 57.5kB dist/src/server/index.d.cts
+npm notice 57.5kB dist/src/server/index.d.ts
+npm notice 101.2kB dist/src/server/index.js
+npm notice 207.2kB dist/src/server/index.js.map
+npm notice 5.1kB package.json
+npm notice Tarball Details
+npm notice name: @orkestrel/probe
+npm notice version: 0.0.12
+npm notice filename: orkestrel-probe-0.0.12.tgz
+npm notice package size: 263.1 kB
+npm notice unpacked size: 1.0 MB
+npm notice shasum: 9aa67191e38044aa576c56fbc49754739c0fbdd6
+npm notice integrity: sha512-Pmb/iXxFvW5Mn[...]Cyl23qXhcHmdg==
+npm notice total files: 17
+npm notice

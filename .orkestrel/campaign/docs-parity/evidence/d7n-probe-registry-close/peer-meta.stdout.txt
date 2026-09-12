@@ -1,0 +1,5 @@
+{
+  oxlint: { optional: true },
+  typescript: { optional: true },
+  vitest: { optional: true }
+}

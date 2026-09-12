@@ -1,0 +1,71 @@
+{
+  "mode": "constants",
+  "verdict": {
+    "case": [
+      {
+        "elapsed": 1487,
+        "issues": [],
+        "stage": "type"
+      },
+      {
+        "elapsed": 37,
+        "issues": [],
+        "stage": "lint"
+      },
+      {
+        "elapsed": 175,
+        "issues": [],
+        "stage": "runtime"
+      }
+    ],
+    "control": [
+      {
+        "elapsed": 1465,
+        "issues": [
+          {
+            "message": "Type 'string' is not assignable to type 'number'.",
+            "origin": "claimant",
+            "path": "src/core/diagnostic/constants.ts",
+            "range": {
+              "end": {
+                "character": 13,
+                "line": 0
+              },
+              "start": {
+                "character": 13,
+                "line": 0
+              }
+            }
+          }
+        ],
+        "stage": "type"
+      },
+      {
+        "elapsed": 36,
+        "issues": [],
+        "stage": "lint"
+      },
+      {
+        "elapsed": 177,
+        "issues": [],
+        "stage": "runtime"
+      }
+    ],
+    "digest": "d3bab33cfc7e97de41527d770a87b9e8",
+    "elapsed": 2972,
+    "id": "78f7cbc0-2afe-4141-b115-e8d85f9a99f1",
+    "project": {
+      "digest": "434f59254d58cf2683d453a26bd0d837",
+      "path": "configs/src/tsconfig.core.json"
+    },
+    "reason": "the source assigns a string to a number",
+    "receipt": "probe:d3bab33cfc7e97de41527d770a87b9e8:type:typescript@6.0.3:oxlint@1.82.0:vitest@4.1.11:configs/src/tsconfig.core.json@434f59254d58cf2683d453a26bd0d837",
+    "toolchain": {
+      "oxlint": "1.82.0",
+      "typescript": "6.0.3",
+      "vitest": "4.1.11"
+    }
+  },
+  "formatted": "probe 78f7cbc0-2afe-4141-b115-e8d85f9a99f1 (2972 ms)\nclaim d3bab33cfc7e97de41527d770a87b9e8\ntoolchain typescript 6.0.3, oxlint 1.82.0, vitest 4.1.11\nproject configs/src/tsconfig.core.json 434f59254d58cf2683d453a26bd0d837\nreason the source assigns a string to a number\ncase type: 0 issues (1487 ms)\ncase lint: 0 issues (37 ms)\ncase runtime: 0 issues (175 ms)\ncontrol type: 1 issue (1465 ms)\n  [claimant] src/core/diagnostic/constants.ts:1 Type 'string' is not assignable to type 'number'.\ncontrol lint: 0 issues (36 ms)\ncontrol runtime: 0 issues (177 ms)\nreceipt probe:d3bab33cfc7e97de41527d770a87b9e8:type:typescript@6.0.3:oxlint@1.82.0:vitest@4.1.11:configs/src/tsconfig.core.json@434f59254d58cf2683d453a26bd0d837"
+}
+

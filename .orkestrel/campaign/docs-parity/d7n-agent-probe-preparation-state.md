@@ -3,7 +3,7 @@
 | Package | Pending | Current state |
 | --- | --- | --- |
 | Agent | 0.0.21 | Release preparation closed at 188ff515 on clean canonical main. Campaign/main refs match. Supported overwrite/audit, registry install, final prepublish, pack and independent release reviews passed. Owner upload remains pending. |
-| Probe | 0.0.13 | Accepted source landed at c492ef3e. Registry preparation landed at 291668e9 and is pushed to the campaign branch. Supported overwrite/audit passed and removed the retired docs script. Final registry install, gate/pack and clean-main release closure remain open. |
+| Probe | 0.0.13 | Release preparation closed at 22eca15d on clean canonical main. Campaign/main refs match. Supported overwrite/audit, registry install, final prepublish, pack and independent release reviews passed. Final modern/legacy foreign-client checks passed against MCP0.0.29. Owner upload remains pending. |
 
 Agent's accepted-source verdict states the root-owned reviewed-state and
 intervening-writer boundary. Do not read the raw source reports as proving an
@@ -16,3 +16,8 @@ unrefreshed registration. Preserve the heavy-fixture and historical proof ruling
 
 The dependent upload prompt is consumed. Do not replace it until this selected
 layer is ready on clean canonical main. No authentication or upload is root-owned.
+
+The retained d7n-probe-final-registry-visit evidence is a landing-time snapshot,
+not the completed visit. Preserve it unchanged. The completed evidence is retained
+under d7n-probe-final-registry-visit-complete. Final release acceptance uses that
+successor.

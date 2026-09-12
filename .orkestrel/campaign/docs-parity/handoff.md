@@ -40,14 +40,18 @@ the measured receipt refresh passed source-to-guide rewriting and parity.
 Source reviews and d7n-probe-source-final-prepublish passed. Probe source landed
 at c492ef3e and is pushed to the campaign branch. Registry preparation landed at
 291668e9 and is pushed; supported overwrite/audit passed and removed the retired
-docs script. The final registry gate/pack and main closure remain open. Read
+docs script. Final registry gates, actual packing and independent release reviews
+passed. Probe release preparation closed at 22eca15d on clean canonical main;
+campaign/main refs match. Final modern and legacy foreign-client checks passed
+against its MCP0.0.29 graph. The registered harness remains unrefreshed. Read
+d7n-probe-registry-release-landing.md,
 d7n-probe-agent-probe-source-verdict.md,
 d7n-probe-bin-fixture-reading.md,
 d7n-probe-supported-receipt-reading.md,
 d7n-agent-probe-preparation-state.md,
 d7n-agent-probe-catalog-result.md and the retained scout
 report, qualifying its refused shell readings with root's fresh evidence.
-MCP-to-Probe integration and later Agent/Ollama/Toolbox work remain open. Preserve Ollama's owner edits and the
+Agent/Probe owner uploads and later Ollama/Toolbox work remain open. Preserve Ollama's owner edits and the
 Supervisor owner decision. Probe development re-pins and final fleet development
 alignment remain open; the generated Scaffold follow-up requires its own later
 release under d7n-scaffold-generated-followup-ruling.md.
