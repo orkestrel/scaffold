@@ -1,0 +1,183 @@
+npm notice run @orkestrel/scaffold@0.0.64 test:src:bin
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project src:bin tests/src/bin/CLI.test.ts
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 7 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:bin| tests/src/bin/CLI.test.ts > CLI upstream baselines > takes the host live when every declared digest matches and takes the floor when the repository is dark
+ScaffoldError: The vendored host cannot read the declared file at .agents/skills/enterprise-bootstrap/SKILL.md
+ ❯ readHostFloor src/server/helpers.ts:1230:10
+    1228|   const hex = readFileHex(host, path)
+    1229|   if (hex === undefined || hexToDigest(hex) !== entry.digest) {
+    1230|    throw new ScaffoldError(
+       |          ^
+    1231|     'TARGET',
+    1232|     `The vendored host cannot read the declared file at ${path}`,
+ ❯ buildInstalledHostReplies tests/setupServer.ts:1949:16
+ ❯ tests/src/bin/CLI.test.ts:696:7
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/7]⎯
+
+ FAIL  |src:bin| tests/src/bin/CLI.test.ts > CLI upstream baselines > asks the repository for no canon path while fetching a drifted vendored one
+ScaffoldError: The vendored host cannot read the declared file at .agents/skills/enterprise-bootstrap/SKILL.md
+ ❯ readHostFloor src/server/helpers.ts:1230:10
+    1228|   const hex = readFileHex(host, path)
+    1229|   if (hex === undefined || hexToDigest(hex) !== entry.digest) {
+    1230|    throw new ScaffoldError(
+       |          ^
+    1231|     'TARGET',
+    1232|     `The vendored host cannot read the declared file at ${path}`,
+ ❯ buildInstalledHostReplies tests/setupServer.ts:1949:16
+ ❯ tests/src/bin/CLI.test.ts:769:7
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/7]⎯
+
+ FAIL  |src:bin| tests/src/bin/CLI.test.ts > CLI upstream baselines > writes the same distributed new baseline when transport forces it and when offline selects it
+AssertionError: expected 1 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 1
+
+ ❯ tests/src/bin/CLI.test.ts:825:6
+    823|      '--json',
+    824|     ]),
+    825|    ).toBe(EXIT_CLEAN)
+       |      ^
+    826|    const forcedResult: MaterializeResult = JSON.parse(forced.output[0]…
+    827|    expect(forcedResult).toHaveProperty('provenance', {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/7]⎯
+
+ FAIL  |src:bin| tests/src/bin/CLI.test.ts > CLI upstream baselines > makes offline audit answer drift alone and offline repair match a forced floor write
+AssertionError: expected undefined to strictly equal { versions: 'floor', host: 'floor' }
+
+- Expected:
+{
+  "host": "floor",
+  "versions": "floor",
+}
+
++ Received:
+undefined
+
+ ❯ tests/src/bin/CLI.test.ts:900:29
+    898|    ).toBe(EXIT_DRIFT)
+    899|    const audit: AuditResult = JSON.parse(audited.output[0] ?? '')
+    900|    expect(audit.provenance).toStrictEqual({ versions: 'floor', host: '…
+       |                             ^
+    901|    expect(audited.diagnostic).toStrictEqual([])
+    902|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/7]⎯
+
+ FAIL  |src:bin| tests/src/bin/CLI.test.ts > CLI upstream baselines > runs the overwrite floor half offline and refuses its catalog half
+AssertionError: expected undefined to strictly equal { versions: 'floor', host: 'floor' }
+
+- Expected:
+{
+  "host": "floor",
+  "versions": "floor",
+}
+
++ Received:
+undefined
+
+ ❯ tests/src/bin/CLI.test.ts:974:30
+    972|    ).toBe(EXIT_DRIFT)
+    973|    const result: OverwriteResult = JSON.parse(sink.output[0] ?? '')
+    974|    expect(result.provenance).toStrictEqual({ versions: 'floor', host: …
+       |                              ^
+    975|    expect(result.note ?? '').toContain("USAGE: 'catalog' does not take…
+    976|    expect(result.entries).toStrictEqual([])
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/7]⎯
+
+ FAIL  |src:bin| tests/src/bin/CLI.test.ts > CLI overwrite > distinguishes an absent provisioner from an exact empty physical file
+AssertionError: expected 1 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 1
+
+ ❯ tests/src/bin/CLI.test.ts:4282:6
+    4280|      '--json',
+    4281|     ]),
+    4282|    ).toBe(EXIT_CLEAN)
+       |      ^
+    4283|    const absentValue = parseJSON(requireValue(absent.output[0]))
+    4284|    const absentAudit = isRecord(absentValue)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/7]⎯
+
+ FAIL  |src:bin| tests/src/bin/CLI.test.ts > CLI overwrite > does not infer a provisioner from wrong casing or a directory
+AssertionError: expected [ { …(4) }, …(6) ] to deep equally contain { path: 'scripts/Service.sh', …(4) }
+
+- Expected:
+{
+  "drift": "foreign",
+  "group": "orchestration",
+  "observed": "23212f7573722f62696e2f656e762073680a",
+  "ownership": "foreign",
+  "path": "scripts/Service.sh",
+}
+
++ Received:
+[
+  {
+    "drift": "missing",
+    "group": "orchestration",
+    "ownership": "content",
+    "path": ".claude/settings.json",
+  },
+  {
+    "drift": "missing",
+    "group": "orchestration",
+    "ownership": "content",
+    "path": "scripts/codex.sh",
+  },
+  {
+    "drift": "missing",
+    "group": "orchestration",
+    "ownership": "content",
+    "path": "scripts/cursor.sh",
+  },
+  {
+    "drift": "missing",
+    "group": "orchestration",
+    "ownership": "content",
+    "path": "scripts/deps.sh",
+  },
+  {
+    "drift": "missing",
+    "group": "orchestration",
+    "ownership": "content",
+    "path": "scripts/ollama.sh",
+  },
+  {
+    "drift": "missing",
+    "group": "orchestration",
+    "ownership": "presence",
+    "path": ".claude/agents/orkestrel.md",
+  },
+  {
+    "drift": "foreign",
+    "group": "orchestration",
+    "observed": "23212f7573722f62696e2f656e762073680a",
+    "path": "scripts/Service.sh",
+  },
+]
+
+ ❯ tests/src/bin/CLI.test.ts:4348:34
+    4346|    if (!isAudit(recasedAudit))
+    4347|     throw new Error('Recased audit output did not match its contract.')
+    4348|    expect(recasedAudit.findings).toContainEqual({
+       |                                  ^
+    4349|     path: 'scripts/Service.sh',
+    4350|     group: 'orchestration',
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/7]⎯
+

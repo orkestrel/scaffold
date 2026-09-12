@@ -1,0 +1,15 @@
+# Consolidate the Ollama setup hook
+
+The owner replaced the provisioner-preservation direction with a script consolidation: keep Scaffold's scripts/ollama.sh name and adopt the useful startup, readiness, model acquisition and warmup behavior from canonical Ollama's scripts/service.sh. Its automatic entry is Claude Code's cloud environment.
+
+Root stopped the release builder before it authored the commit carrier or ran release operations. The interrupted unit changed package.json and the named golden manifest fixtures. The pending Scaffold0.0.65, Guide18 and Probe13 metadata remains unaccepted; the lock and generated host have not been regenerated. The app-only fixture's final newline also remains to converge. No new release was committed or pushed.
+
+Root retained the suspended source/release diff as d7n-provisioner-superseded.patch. Root then reversed only the uncommitted provisioner candidate in its declared source, guide and test paths using apply_patch. The resulting tracked diff contains only the pending release metadata and golden fixtures. No discard-class Git command ran and no sibling checkout changed. The new Blueprint.provisioner contract and its tests are no longer in the working source. This supersedes the implementation and fixture-correction reports as product direction; keep those reports and their evidence unchanged.
+
+The rejected candidate's original preservation regression ran red and then green. Its guide parity passed. The broader core/server/bin runs exposed new fixture errors and unstaged host-floor readings; the writer supplied a fixture correction, but root did not run its final acceptance. The registered prove call returned the legacy-stream transport error and no terminal receipt. None of that evidence establishes the replacement hook behavior.
+
+Root directly read the scripts. The current Scaffold hook does no setup: it gates on CLAUDE_CODE_REMOTE and reports local availability. Canonical Ollama's service script can start the daemon, wait for readiness, acquire a missing configured model and warm it. The replacement must preserve cloud-only automatic execution, avoid a new public preservation API, update actual callers and retire the redundant target copy through Scaffold's supported mechanism.
+
+The bounded map brief carries the caller, test, policy and historical reading. Cursor's role pin was verified against its model listing; executable readiness and enumeration alone do not prove a model round trip. Root launched the journaled map from stable source under its own cap. Required design/acceptance lanes will use the retained objective evidence and the owner's separate independent reviewer route. No fresh verifier is authorized; root supplies the real gate readings.
+
+Agent0.0.21 and Probe0.0.13 remain registry-confirmed. Toolbox0.0.13 remains prepared on clean canonical main, not uploaded. Ollama remains at its accepted source checkpoint on the campaign branch. The consumed Agent/Probe prompt must not run again. Prepare the corrected Scaffold archive and downstream alignment before issuing a new prompt. Do not authenticate or publish.

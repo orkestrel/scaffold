@@ -1,0 +1,22 @@
+npm notice run @orkestrel/scaffold@0.0.64 test:src:server
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project src:server tests/src/server/Materializer.test.ts
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:server| tests/src/server/Materializer.test.ts > Materializer materialize > materializes a provisioner from declared vendor inventory into a vacant target
+ScaffoldError: The host source at .claude/settings.json is not a readable file.
+ ❯ Materializer.#error src/server/Materializer.ts:1228:17
+    1226|  // thrown at the site that decided it.
+    1227|  #error(code: ScaffoldErrorCode, message: string, context?: unknown): …
+    1228|   const error = new ScaffoldError(code, message, context)
+       |                 ^
+    1229|   this.#emitter.emit('error', error)
+    1230|   return error
+ ❯ Materializer.#expandRaw src/server/Materializer.ts:743:15
+ ❯ Materializer.#expand src/server/Materializer.ts:694:43
+ ❯ Materializer.#hydrate src/server/Materializer.ts:632:26
+ ❯ Materializer.materialize src/server/Materializer.ts:285:25
+ ❯ tests/src/server/Materializer.test.ts:415:33
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+

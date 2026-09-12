@@ -1,0 +1,17 @@
+npm notice run @orkestrel/scaffold@0.0.64 test:src:core
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core tests/src/core/factories.test.ts tests/src/core/validators.test.ts tests/src/core/parsers.test.ts tests/src/core/compilers.test.ts
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:core| tests/src/core/validators.test.ts > isBlueprint > requires a boolean provisioner field and refuses every extra field
+ReferenceError: buildBlueprint is not defined
+ ❯ tests/src/core/validators.test.ts:91:53
+     89| describe('isBlueprint', () => {
+     90|  it('requires a boolean provisioner field and refuses every extra fiel…
+     91|   const { provisioner: _provisioner, ...missing } = buildBlueprint()
+       |                                                     ^
+     92|   const wrong: Record<string, unknown> = { ...buildBlueprint(), provis…
+     93|   const extra: Record<string, unknown> = { ...buildBlueprint(), preser…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+

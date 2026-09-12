@@ -1,0 +1,161 @@
+[
+  {
+    "_id": "@orkestrel/markdown@0.0.14",
+    "_rev": "14-516df94357b1524ccc8e1a780f55bed2",
+    "name": "@orkestrel/markdown",
+    "dist-tags": {
+      "latest": "0.0.14"
+    },
+    "versions": [
+      "0.0.1",
+      "0.0.2",
+      "0.0.3",
+      "0.0.4",
+      "0.0.5",
+      "0.0.6",
+      "0.0.7",
+      "0.0.8",
+      "0.0.9",
+      "0.0.10",
+      "0.0.11",
+      "0.0.12",
+      "0.0.13",
+      "0.0.14"
+    ],
+    "time": {
+      "created": "2026-07-12T03:09:43.188Z",
+      "modified": "2026-09-11T12:06:13.239Z",
+      "0.0.1": "2026-07-12T03:09:43.458Z",
+      "0.0.2": "2026-07-17T22:15:36.059Z",
+      "0.0.3": "2026-07-18T05:47:45.111Z",
+      "0.0.4": "2026-07-18T08:41:58.580Z",
+      "0.0.5": "2026-07-18T09:38:21.932Z",
+      "0.0.6": "2026-07-28T17:02:11.160Z",
+      "0.0.7": "2026-07-30T15:41:01.737Z",
+      "0.0.8": "2026-08-12T11:37:47.539Z",
+      "0.0.9": "2026-08-17T20:25:27.692Z",
+      "0.0.10": "2026-08-23T01:10:08.074Z",
+      "0.0.11": "2026-08-25T16:57:01.374Z",
+      "0.0.12": "2026-08-26T17:37:56.353Z",
+      "0.0.13": "2026-09-04T20:25:25.232Z",
+      "0.0.14": "2026-09-11T12:06:13.045Z"
+    },
+    "bugs": {
+      "url": "https://github.com/orkestrel/markdown/issues"
+    },
+    "license": "MIT",
+    "homepage": "https://github.com/orkestrel/markdown#readme",
+    "keywords": [
+      "ast",
+      "commonmark",
+      "gfm",
+      "html",
+      "markdown",
+      "markdown-parser",
+      "parser",
+      "typescript"
+    ],
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/orkestrel/markdown.git"
+    },
+    "description": "A types-first markdown layer over @orkestrel/html — typed AST, both conversion directions, and sanitized HTML by default.",
+    "maintainers": [
+      "mikesaintsg <mikesaintg11@gmail.com>"
+    ],
+    "readmeFilename": "README.md",
+    "_contentLength": 61914,
+    "version": "0.0.14",
+    "type": "module",
+    "sideEffects": false,
+    "main": "./dist/src/core/index.cjs",
+    "module": "./dist/src/core/index.js",
+    "types": "./dist/src/core/index.d.ts",
+    "exports": {
+      ".": {
+        "import": {
+          "types": "./dist/src/core/index.d.ts",
+          "default": "./dist/src/core/index.js"
+        },
+        "require": {
+          "types": "./dist/src/core/index.d.cts",
+          "default": "./dist/src/core/index.cjs"
+        }
+      },
+      "./package.json": "./package.json"
+    },
+    "publishConfig": {
+      "access": "public"
+    },
+    "scripts": {
+      "clean": "node -e \"require('node:fs').rmSync('dist',{recursive:true,force:true})\"",
+      "copy": "node -e \"const fs=require('node:fs'),p=require('node:path'),a=process.argv[1],b=process.argv[2];fs.mkdirSync(p.dirname(b),{recursive:true});fs.cpSync(a,b,{force:true});console.log('Copied: '+a+' to '+b)\"",
+      "scaffold": "scaffold",
+      "lint": "oxlint --config .oxlintrc.json --fix .",
+      "check": "tsc --noEmit --project tsconfig.json && npm run check:src",
+      "check:src": "npm run check:src:core",
+      "check:src:core": "tsc --noEmit -p configs/src/tsconfig.core.json",
+      "format": "oxfmt --config .oxfmtrc.json --write .",
+      "format:check": "oxfmt --config .oxfmtrc.json --check .",
+      "lint:check": "oxlint --config .oxlintrc.json --deny-warnings .",
+      "test": "npm run test:src && npm run test:policy && npm run test:config && npm run test:setup && npm run test:guides",
+      "test:src": "vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core",
+      "test:src:core": "vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core",
+      "test:policy": "vitest run --config vite.config.ts --no-cache --reporter=dot --project policy",
+      "test:config": "vitest run --config vite.config.ts --no-cache --reporter=dot --project config",
+      "test:guides": "node --experimental-strip-types tests/guides.test.ts",
+      "build": "npm run clean && npm run build:src",
+      "build:src": "npm run build:src:core",
+      "build:src:core": "vite build --config configs/src/vite.core.config.ts && npm run copy dist/src/core/index.d.ts dist/src/core/index.d.cts",
+      "prepublishOnly": "npm run format:check && npm run lint:check && npm run check && npm run build && npm test && npm run test:distribution -- --mode release",
+      "test:distribution": "vitest run --config vite.config.ts --no-cache --reporter=dot --project distribution",
+      "test:probe": "vitest run --config vite.config.ts --no-cache --reporter=verbose --project probe",
+      "test:bench": "vitest bench --config vite.config.ts --no-cache --project probe",
+      "prepack": "npm run build",
+      "test:setup": "vitest run --config vite.config.ts --no-cache --reporter=dot --project setup"
+    },
+    "dependencies": {
+      "@orkestrel/contract": "^0.0.17",
+      "@orkestrel/html": "^0.0.9"
+    },
+    "devDependencies": {
+      "@microsoft/api-extractor": "^7.59.0",
+      "@orkestrel/guide": "^0.0.17",
+      "@orkestrel/probe": "^0.0.12",
+      "@orkestrel/scaffold": "^0.0.63",
+      "@orkestrel/test": "^0.0.14",
+      "@types/node": "^26.4.1",
+      "oxfmt": "^0.66.0",
+      "oxlint": "^1.81.0",
+      "typescript": "^6.0.3",
+      "vite": "^8.2.2",
+      "vitest": "^4.1.11"
+    },
+    "engines": {
+      "node": ">=22.12.0"
+    },
+    "gitHead": "99978d80dd2b677edd4195e71b9acd5bb7d89610",
+    "_nodeVersion": "24.20.0",
+    "_npmVersion": "12.0.2",
+    "dist": {
+      "integrity": "sha512-Xn/DSSsGD0gtK592+JIEr2Qi1a6D5dsdp15g5X5ZAq3y1TbLt2/3YuFPAguodI2cM2gz4Gvp+oaKjl3nQuM9kA==",
+      "shasum": "d22e3459aba66debef770927fbb937f290dc662c",
+      "tarball": "https://registry.npmjs.org/@orkestrel/markdown/-/markdown-0.0.14.tgz",
+      "fileCount": 9,
+      "unpackedSize": 939693,
+      "signatures": [
+        {
+          "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U",
+          "sig": "MEUCIFTJvHm8qMsfaMepEMV04ELNiX9EJkS9fag2Qy4JZPWlAiEAhbzwU3BX5b+g0I+OIzOHpc7SOzuwLDtNv/UrX0k2E+Y="
+        }
+      ]
+    },
+    "_npmUser": "mikesaintsg <mikesaintg11@gmail.com>",
+    "directories": {},
+    "_npmOperationalInternal": {
+      "host": "s3://npm-registry-packages-npm-production",
+      "tmp": "tmp/markdown_0.0.14_1789128372896_0.013670452301701053"
+    },
+    "_hasShrinkwrap": false
+  }
+]

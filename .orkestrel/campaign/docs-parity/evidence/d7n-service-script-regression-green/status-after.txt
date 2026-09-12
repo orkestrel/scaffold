@@ -1,0 +1,16 @@
+ M guides/scaffold.md
+ M src/bin/CLI.ts
+ M src/core/compilers.ts
+ M src/core/constants.ts
+ M src/core/factories.ts
+ M src/core/types.ts
+ M src/core/validators.ts
+ M src/server/Materializer.ts
+ M src/server/types.ts
+ M tests/setup.ts
+ M tests/src/bin/CLI.test.ts
+ M tests/src/core/compilers.test.ts
+ M tests/src/core/factories.test.ts
+ M tests/src/core/parsers.test.ts
+ M tests/src/core/validators.test.ts
+ M tests/src/server/Materializer.test.ts

@@ -6,6 +6,14 @@ Written 2026-09-08T03:35Z and revised 2026-09-08T04:05Z at the owner's request, 
 
 ### Active Ollama and Toolbox preparation
 
+The owner has superseded provisioner preservation with Ollama-hook consolidation.
+Keep scripts/ollama.sh and adopt the useful setup behavior from Ollama's
+scripts/service.sh. Root archived and removed the uncommitted provisioner API,
+guide and test candidate; no release was committed. Pending Scaffold65/Guide18/
+Probe13 metadata is still unaccepted. Read d7n-ollama-hook-rebaseline.md and
+d7n-ollama-hook-map-brief.md. The historical preparation readings below remain
+evidence, not the current implementation direction. No new prompt is ready.
+
 The Agent/Probe upload is registry-confirmed and its prompt is consumed. The
 refreshed catalog selects Ollama0.0.15 and Toolbox0.0.13 preparation. Root confirmed
 origin/main ancestry and installed the accepted Guide18/Scaffold64 tooling
@@ -23,7 +31,7 @@ main closure passed at21068c3; canonical local main is clean and campaign/main
 refs match. Owner upload is pending. Read d7n-toolbox-registry-release-landing.md and
 d7n-ollama-toolbox-registry-preparation-state.md.
 Hold Ollama overwrite: it classifies the CI-used scripts/service.sh
-as foreign despite the guide's preservation promise. Nothing was deleted. Read
+as foreign despite the guide's preservation promise. Nothing in canonical Ollama was deleted. Read
 d7n-ollama-toolbox-layer-plan.md and d7n-ollama-toolbox-source-gate-reading.md.
 The complete public-CLI audit reproduces the service-script classification;
 the source reading locates the lost ownership in existing-target derivation.

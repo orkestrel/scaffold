@@ -1,0 +1,2 @@
+npm notice run @orkestrel/scaffold@0.0.64 test:src:bin
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project src:bin tests/src/bin/CLI.test.ts -t preserves the existing provisioner through target-reading audit and overwrite

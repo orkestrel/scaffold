@@ -1,0 +1,958 @@
+diff --git a/guides/scaffold.md b/guides/scaffold.md
+index 9233862e..faa34414 100644
+--- a/guides/scaffold.md
++++ b/guides/scaffold.md
+@@ -155,7 +155,7 @@ Exported from `@orkestrel/scaffold`, and reachable from
+ | `ORKESTREL_RANGE_PATTERN`         | const | Matches the exact caret-pinned pre-1.0 range accepted for an `@orkestrel/*` runtime dependency.        |
+ | `PRINT_WIDTH`                     | const | Caps the columns one emitted line may occupy, matching `printWidth` in `.oxfmtrc.json`.                |
+ | `RELEASE_PROOF_COMMAND`           | const | Names the `prepublishOnly` row that runs the packed-package proof against a real registry.             |
+-| `SERVICE_SCRIPT_PATH`             | const | Names the provisioner skeleton a workspace with declared service vendors is given once.                |
++| `SERVICE_SCRIPT_PATH`             | const | Names the provisioner path generated from declared vendors or retained when observed.                  |
+ | `SERVICE_SETUP_PATH`              | const | Names the live-service readiness module whose presence makes a workspace `service`.                    |
+ | `SERVICE_TEST_INCLUDE`            | const | Names the include the live-service project covers, which is a directory rather than one proof.         |
+ | `SHOWCASE_CONFIG_PATH`            | const | Names the Vite wrapper whose presence makes a workspace `showcase`.                                    |
+@@ -565,9 +565,9 @@ other structural facts do not need creation flags. Add a root `tests/setup*.test
+ `setup`, `tests/guides.test.ts` for `guides`, `tests/integration.test.ts` for `integration`,
+ `tests/conformance.test.ts` for `conformance`, `tests/setupService.ts` for `service`,
+ `tests/setupGlobal.ts` for `global`, and `configs/app/vite.showcase.config.ts` for `showcase`;
+-reading verbs detect each exact-case file and register its fixed machinery. Add `scripts/service.sh`
+-for `vendors`. Reading verbs preserve and protect that birth-owned script, but do not infer its
+-vendor list from edited text.
++reading verbs detect each exact-case file and register its fixed machinery. An exact-case physical
++`scripts/service.sh` selects `provisioner`. Reading verbs preserve and protect that birth-owned
++script, but do not infer `vendors` from its edited or empty bytes.
+ 
+ `distribution` is not on that list. Publishing at least one `src` environment is its whole
+ condition, and scaffold writes `tests/distribution.test.ts` itself rather than waiting for you to.
+@@ -581,15 +581,17 @@ from the directories the target actually ships, because a directory is the fact
+ beside it could disagree. The remaining facts come from exact-case files: `src/bin/main.ts` selects
+ `bin`, each root `tests/setup*.test.ts` match selects `setup`, `tests/guides.test.ts` selects
+ `guides`, `tests/integration.test.ts` selects `integration`, `tests/conformance.test.ts` selects
+-`conformance`, `tests/setupService.ts` selects `service`, `tests/setupGlobal.ts` selects `global`,
+-and `configs/app/vite.showcase.config.ts` selects `showcase`. A containing directory does not select
+-the fact by itself. `tests/distribution.test.ts` selects nothing: the published `src` axis the
+-target ships already decides the `distribution` project, and the file is planned from that.
++`conformance`, `scripts/service.sh` selects `provisioner`, `tests/setupService.ts` selects `service`,
++`tests/setupGlobal.ts` selects `global`, and `configs/app/vite.showcase.config.ts` selects
++`showcase`. Each path must be a physical file contained by the target. A directory, wrong-case
++spelling, or link does not select the fact. `tests/distribution.test.ts` selects nothing: the
++published `src` axis the target ships already decides the `distribution` project, and the file is
++planned from that.
+ 
+ `vendors` is not reconstructed. Its only artifact, `scripts/service.sh`, is birth-owned, so edited
+-script text is not a trustworthy declaration of a vendor list. A present script remains in the
+-target and remains protected from deletion through the owned scripts inventory, but a reading verb
+-does not infer vendors from it.
++or empty script text is not a trustworthy declaration of a vendor list. Target reading records its
++exact physical presence as `provisioner` instead. That fact plans the same birth-owned path, so the
++script remains protected from deletion without claiming its bytes or vendor names.
+ 
+ That is why the live-service project follows `service` rather than `vendors`. A reading verb has to
+ plan the project before it can say anything about a target that runs one, and a vendor list it
+@@ -815,10 +817,10 @@ because the shape is chosen once and read afterwards: `new` refuses the advisory
+ `repair` need the plan to describe and restore a target that already has that shape. A library
+ caller creating a workspace holds the same refusal, and the Compile section states it.
+ 
+-`bin`, `setup`, `guides`, `integration`, `conformance`, `service`, `vendors`, `global`, and
++`bin`, `setup`, `guides`, `integration`, `conformance`, `provisioner`, `service`, `global`, and
+ `showcase` are structural facts. Each is set only when the workspace physically ships the directory
+ or exact-case file that defines it, never because of the workspace's name and never because a
+-sibling fact is set.
++sibling fact is set. `vendors` is declared generation inventory.
+ 
+ `setup` registers every root `tests/setup*.test.ts` proof in one Node project that loads
+ `tests/setup.ts`. A nested or wrong-case match does not set the fact. The generated manifest emits
+@@ -844,14 +846,16 @@ artifact, so a workspace publishing none has nothing for it to read and gets no
+ script, the `prepublishOnly` entry, and `tests/distribution.test.ts` itself. Limits states why this
+ is the one proof scaffold generates from the workspace's own shape.
+ 
+-`service` says the workspace runs a live-service Vitest project over `tests/service`, and it alone
+-registers that project, its `test:service` script, and the `tests/setupService.ts` readiness module
+-the project names. A publishing workspace invokes it from `prepublishOnly`; a `private: true`
+-workspace invokes it from `test`, which is the only gate it has. Its longer timeouts and disabled
+-file parallelism are the same in both. `vendors` names each external service the workspace drives
+-and emits `scripts/service.sh`, the provisioner that starts them. Neither is derivable from the
+-other: a workspace may declare vendors before it writes a suite, and a suite may drive a service the
+-skeleton does not start.
++`provisioner` says target reading observed an exact-case physical `scripts/service.sh`. It retains
++that birth-owned path without reconstructing vendor inventory. `service` says the workspace runs a
++live-service Vitest project over `tests/service`, and it alone registers that project, its
++`test:service` script, and the `tests/setupService.ts` readiness module the project names. A
++publishing workspace invokes it from `prepublishOnly`; a `private: true` workspace invokes it from
++`test`, which is the only gate it has. Its longer timeouts and disabled file parallelism are the
++same in both. `vendors` names each external service the workspace drives and emits
++`scripts/service.sh`, the provisioner that starts them. None is derivable from another: a workspace
++may declare vendors before it writes a suite, and a suite may drive a service the skeleton does not
++start.
+ 
+ `integration` projects a cross-environment composition proof for any workspace, independently of
+ whether it has a published `src`. Its generated seed imports every selected `src` and `app`
+@@ -1060,7 +1064,8 @@ after a write it prints `next: npm run format`.
+ Scaffold owns the `scripts` directory. An audit for the orchestration group reports every unplanned
+ member as foreign. `overwrite` deletes an unplanned tracked member only when the tree is clean, its
+ observed bytes still match, and the path is not protected. A planned birth-owned
+-`scripts/service.sh` survives that deletion pass.
++`scripts/service.sh`, emitted for declared vendors or observed `provisioner` presence, survives that
++deletion pass. Other unplanned tracked scripts remain deletion candidates.
+ 
+ `tests/distribution.test.ts` is the one proof scaffold generates, and the one test artifact it
+ claims by presence. Generation is the line, not writing: scaffold writes the vendored
+@@ -1415,6 +1420,9 @@ except the manifest.
+   `configs/browsers.ts` resolution, serves the bundle over a loopback server, and drives it in
+   Playwright Chromium.
+ - One template artifact each for `README.md` and `guides/README.md`.
++- A birth-owned template artifact at `scripts/service.sh` when `vendors` declares inventory or
++  `provisioner` records an existing target's script. Only declared vendors render inventory. A
++  retention-only plan can audit and repair that existing target, but cannot seed a vacant target.
+ - One template artifact each for `AGENTS.md` and `CLAUDE.md`. They are pointers rather than contracts:
+   `AGENTS.md` names the coding contract, the orchestration contract, the rules, and the skills, and
+   resolves each against a sibling scaffold checkout or the installed package; `CLAUDE.md` names the
+@@ -1489,6 +1497,11 @@ result.written // every path created
+ materializer.destroy()
+ ```
+ 
++`materialize` refuses before any write when the selected plan contains `scripts/service.sh` only
++because `provisioner` records an existing target and `vendors` is empty. A selection that excludes
++the orchestration artifact retains the normal vacant-target behavior. Declare vendors when a fresh
++workspace must receive the generated provisioner.
++
+ When a `Materializer` uses a value `Host`, each mutating call stages the host under a private
+ `#fill` root in the operating system's temporary directory and removes that root in a `finally`
+ block. A process killed during the mutation can leave the temporary root behind.
+diff --git a/src/bin/CLI.ts b/src/bin/CLI.ts
+index c4d0ae6e..8aac75ea 100644
+--- a/src/bin/CLI.ts
++++ b/src/bin/CLI.ts
+@@ -63,6 +63,7 @@ import {
+ 	replaceManifestScripts,
+ 	replacePlanRanges,
+ 	ScaffoldError,
++	SERVICE_SCRIPT_PATH,
+ 	SERVICE_SETUP_PATH,
+ 	SHOWCASE_CONFIG_PATH,
+ } from '@src/core'
+@@ -895,8 +896,9 @@ export class CLI implements CLIInterface {
+ 	// The blueprint a target describes about itself: manifest identity and fleet
+ 	// packages, environment directories, and exact structural files. Vendors stay
+ 	// unknown because their birth-owned script is not a declaration of its list.
+-	// The live-service project does not wait on that list: it follows its own
+-	// readiness module, which the root configuration names by path.
++	// Exact physical provisioner presence retains the birth-owned script without
++	// reconstructing that list. The live-service project does not wait on either:
++	// it follows its own readiness module, which the root configuration names by path.
+ 	#derive(target: string): Blueprint {
+ 		const manifest = this.#manifest(target)
+ 		const declared = manifestToName(manifest)
+@@ -910,6 +912,7 @@ export class CLI implements CLIInterface {
+ 		const guides = resolveContainedPath(target, GUIDES_TEST_PATH)
+ 		const integration = resolveContainedPath(target, INTEGRATION_TEST_PATH)
+ 		const conformance = resolveContainedPath(target, CONFORMANCE_TEST_PATH)
++		const provisioner = resolveContainedPath(target, SERVICE_SCRIPT_PATH)
+ 		const service = resolveContainedPath(target, SERVICE_SETUP_PATH)
+ 		const global = resolveContainedPath(target, GLOBAL_SETUP_PATH)
+ 		const showcase = resolveContainedPath(target, SHOWCASE_CONFIG_PATH)
+@@ -930,6 +933,7 @@ export class CLI implements CLIInterface {
+ 			guides: guides !== undefined && isExactCaseFile(guides),
+ 			integration: integration !== undefined && isExactCaseFile(integration),
+ 			conformance: conformance !== undefined && isExactCaseFile(conformance),
++			provisioner: provisioner !== undefined && isExactCaseFile(provisioner),
+ 			service: service !== undefined && isExactCaseFile(service),
+ 			global: global !== undefined && isExactCaseFile(global),
+ 			showcase: showcase !== undefined && isExactCaseFile(showcase),
+diff --git a/src/core/compilers.ts b/src/core/compilers.ts
+index 5058e61d..f003aa9f 100644
+--- a/src/core/compilers.ts
++++ b/src/core/compilers.ts
+@@ -1523,12 +1523,13 @@ export function blueprintToDocumentArtifacts(blueprint: Blueprint): readonly Con
+  * Compiles the blueprint-dependent orchestration artifacts.
+  *
+  * @param blueprint - The workspace specification.
+- * @returns A vendor inventory script when vendors are declared, otherwise none.
++ * @returns A provisioner when vendors are declared or target reading observed one, otherwise none.
+  *
+  * @remarks
+- * A vendor name does not describe startup, readiness, or cleanup. The script
+- * therefore records only the declared inventory and does not invent a service
+- * runner or test project.
++ * A vendor name does not describe startup, readiness, or cleanup. A generated
++ * script therefore records only declared inventory and does not invent a
++ * service runner or test project. Observed provisioner presence plans the same
++ * birth-owned path for retention without claiming its bytes or vendor names.
+  *
+  * @example
+  * ```ts
+@@ -1536,15 +1537,17 @@ export function blueprintToDocumentArtifacts(blueprint: Blueprint): readonly Con
+  *
+  * const plain = createBlueprint('router', { src: ['core'] })
+  * const served = createBlueprint('router', { src: ['core'], vendors: ['ollama'] })
++ * const retained = createBlueprint('router', { src: ['core'], provisioner: true })
+  *
+  * blueprintToOrchestrationArtifacts(plain) // []
+  * blueprintToOrchestrationArtifacts(served)[0]?.path // 'scripts/service.sh'
++ * blueprintToOrchestrationArtifacts(retained)[0]?.ownership // 'birth'
+  * ```
+  */
+ export function blueprintToOrchestrationArtifacts(
+ 	blueprint: Blueprint,
+ ): readonly ContentArtifact[] {
+-	if (blueprint.vendors.length === 0) return []
++	if (blueprint.vendors.length === 0 && !blueprint.provisioner) return []
+ 	const vendors = blueprint.vendors
+ 		.map((vendor, index) => `\t'${vendor}'${index === blueprint.vendors.length - 1 ? '' : ' \\'}`)
+ 		.join('\n')
+diff --git a/src/core/constants.ts b/src/core/constants.ts
+index 786d4f79..22916c78 100644
+--- a/src/core/constants.ts
++++ b/src/core/constants.ts
+@@ -296,7 +296,7 @@ export const CATALOG_OPENING_MARKER = '<!-- orkestrel:catalog -->'
+  */
+ export const CATALOG_CLOSING_MARKER = '<!-- /orkestrel:catalog -->'
+ 
+-/** Names the provisioner skeleton a workspace with declared service vendors is given once. */
++/** Names the provisioner path generated from declared vendors or retained when observed. */
+ export const SERVICE_SCRIPT_PATH = 'scripts/service.sh'
+ 
+ /** Names the shared Vitest global-setup module whose presence makes a workspace `global`. */
+diff --git a/src/core/factories.ts b/src/core/factories.ts
+index 6c2aed49..0ee73a39 100644
+--- a/src/core/factories.ts
++++ b/src/core/factories.ts
+@@ -65,6 +65,7 @@ export function createBlueprint(name: string, input?: Partial<Omit<Blueprint, 'n
+ 		guides: input?.guides ?? false,
+ 		integration: input?.integration ?? false,
+ 		conformance: input?.conformance ?? false,
++		provisioner: input?.provisioner ?? false,
+ 		service: input?.service ?? false,
+ 		vendors: input?.vendors ?? [],
+ 		global: input?.global ?? false,
+diff --git a/src/core/types.ts b/src/core/types.ts
+index 5afe14d4..945027b9 100644
+--- a/src/core/types.ts
++++ b/src/core/types.ts
+@@ -188,21 +188,23 @@ export interface Override {
+  * are runtime `@orkestrel/*` packages. A peer in the `@orkestrel` scope is a
+  * fleet pin; every other peer is a floor. `extras` are package-specific
+  * development dependencies and may carry any valid npm name.
+- * `bin`, `setup`, `guides`, `integration`, `conformance`, `service`,
+- * `vendors`, `global`, and `showcase` are structural facts: each is
+- * set only when the workspace physically ships the directory or exact-case file
+- * that defines it, never because of the workspace's name and never because a
+- * sibling fact is set.
++ * `bin`, `setup`, `guides`, `integration`, `conformance`, `provisioner`,
++ * `service`, `global`, and `showcase` are structural facts: each is set only
++ * when the workspace physically ships the directory or exact-case file that
++ * defines it, never because of the workspace's name and never because a sibling
++ * fact is set. `vendors` is declared generation inventory.
+  * `showcase` projects only a browser `app`. The gate answers an absent browser
+  * axis with a non-blocking question, so a caller that set the flag learns it
+  * emitted nothing and the compile still completes.
+  *
+- * `service` says the workspace runs a live-service Vitest project over
+- * `tests/service`, and it alone registers that project. `vendors` names each
+- * external service the workspace drives and emits the provisioner skeleton that
+- * starts them. Neither is derivable from the other: a workspace may declare
+- * vendors before it writes a suite, and a suite may drive a service the skeleton
+- * does not start.
++ * `provisioner` says target reading observed an exact-case physical
++ * `scripts/service.sh`; it retains that birth-owned path without reconstructing
++ * vendor inventory. `service` says the workspace runs a live-service Vitest
++ * project over `tests/service`, and it alone registers that project. `vendors`
++ * names each external service the workspace drives and emits the provisioner
++ * skeleton that starts them. None is derivable from another: a workspace may
++ * declare vendors before it writes a suite, and a suite may drive a service the
++ * skeleton does not start.
+  */
+ export interface Blueprint {
+ 	readonly name: string
+@@ -221,6 +223,7 @@ export interface Blueprint {
+ 	readonly guides: boolean
+ 	readonly integration: boolean
+ 	readonly conformance: boolean
++	readonly provisioner: boolean
+ 	readonly service: boolean
+ 	readonly vendors: readonly string[]
+ 	readonly global: boolean
+diff --git a/src/core/validators.ts b/src/core/validators.ts
+index 92248217..28f49c41 100644
+--- a/src/core/validators.ts
++++ b/src/core/validators.ts
+@@ -295,6 +295,7 @@ export const isBlueprint: Guard<Blueprint> = recordOf(
+ 		guides: isBoolean,
+ 		integration: isBoolean,
+ 		conformance: isBoolean,
++		provisioner: isBoolean,
+ 		service: isBoolean,
+ 		vendors: andOf(isCollection, arrayOf(isString)),
+ 		global: isBoolean,
+diff --git a/src/server/Materializer.ts b/src/server/Materializer.ts
+index db0bbf86..7fc698b5 100644
+--- a/src/server/Materializer.ts
++++ b/src/server/Materializer.ts
+@@ -49,6 +49,7 @@ import {
+ 	replaceManifestRanges,
+ 	replaceManifestScripts,
+ 	ScaffoldError,
++	SERVICE_SCRIPT_PATH,
+ } from '@src/core'
+ import { MANIFEST_NAME } from './constants.js'
+ import {
+@@ -256,7 +257,9 @@ export class Materializer implements MaterializerInterface {
+ 	 * from the vendored root, so what lands is what this package ships rather than
+ 	 * what a caller-built plan claimed it ships. A vendored directory expands into
+ 	 * one artifact per file beneath it, and a vendored directory holding no file
+-	 * at all is created as an empty directory.
++	 * at all is created as an empty directory. A selected provisioner artifact
++	 * observed without declared vendors can describe and repair an existing
++	 * target, but cannot seed a vacant target.
+ 	 */
+ 	materialize(plan: Plan, target: string): MaterializeResult {
+ 		this.#assertAlive()
+@@ -267,6 +270,17 @@ export class Materializer implements MaterializerInterface {
+ 				target: directory,
+ 			})
+ 		}
++		if (
++			accepted.blueprint.provisioner &&
++			accepted.blueprint.vendors.length === 0 &&
++			accepted.artifacts.some((artifact) => artifact.path === SERVICE_SCRIPT_PATH)
++		) {
++			throw this.#error(
++				'TARGET',
++				`The observed provisioner at ${SERVICE_SCRIPT_PATH} cannot seed a vacant target without declared vendors.`,
++				{ target: directory, path: SERVICE_SCRIPT_PATH },
++			)
++		}
+ 		const empty = this.#empty(accepted)
+ 		const hydrated = this.#hydrate(accepted)
+ 		return this.#apply(directory, hydrated.artifacts, empty, [], [])
+diff --git a/src/server/types.ts b/src/server/types.ts
+index 4335d015..956cb69a 100644
+--- a/src/server/types.ts
++++ b/src/server/types.ts
+@@ -203,6 +203,10 @@ export interface MaterializerInterface {
+ 	 * @param plan - The compiled plan to write.
+ 	 * @param target - The directory to write into; it must hold nothing the plan would collide with.
+ 	 * @returns The paths written and skipped.
++	 *
++	 * @remarks
++	 * A selected provisioner artifact observed without declared vendors is valid
++	 * for existing-target audit and repair, but cannot seed a vacant target.
+ 	 */
+ 	materialize(plan: Plan, target: string): MaterializeResult
+ 	/**
+diff --git a/tests/setup.ts b/tests/setup.ts
+index 30eee9f0..0b7dcbcf 100644
+--- a/tests/setup.ts
++++ b/tests/setup.ts
+@@ -192,6 +192,7 @@ export function buildBlueprint(fields?: Partial<Blueprint>): Blueprint {
+ 		guides: false,
+ 		integration: false,
+ 		conformance: false,
++		provisioner: false,
+ 		service: false,
+ 		vendors: [],
+ 		global: false,
+@@ -588,7 +589,11 @@ export function buildGuardCases(): readonly TestGuardCase[] {
+ 		{
+ 			name: 'isBlueprint',
+ 			guard: isBlueprint,
+-			accepted: [buildBlueprint(), buildBlueprint({ description: 'A sample workspace.' })],
++			accepted: [
++				buildBlueprint(),
++				buildBlueprint({ description: 'A sample workspace.' }),
++				buildBlueprint({ provisioner: true }),
++			],
+ 			admits: [],
+ 		},
+ 		{
+@@ -645,7 +650,11 @@ export function buildParserCases(): readonly TestParserCase[] {
+ 			name: 'parseBlueprint',
+ 			parse: parseBlueprint,
+ 			guard: isBlueprint,
+-			accepted: [buildBlueprint(), buildBlueprint({ description: 'A sample workspace.' })],
++			accepted: [
++				buildBlueprint(),
++				buildBlueprint({ description: 'A sample workspace.' }),
++				buildBlueprint({ provisioner: true }),
++			],
+ 			refused: [buildBlueprint({ name: '' }), { name: 'sample' }, undefined, 'sample'],
+ 		},
+ 		{
+diff --git a/tests/src/bin/CLI.test.ts b/tests/src/bin/CLI.test.ts
+index f617dea4..b0f20f59 100644
+--- a/tests/src/bin/CLI.test.ts
++++ b/tests/src/bin/CLI.test.ts
+@@ -22,16 +22,20 @@ import {
+ 	CATALOG_AGENT_PATH,
+ 	CATALOG_CLOSING_MARKER,
+ 	CATALOG_OPENING_MARKER,
++	contentToHex,
+ 	createBlueprint,
+ 	DECLARATION_DEV_DEPENDENCIES,
+ 	GROUPS,
++	isAudit,
+ 	isCanonPath,
+ 	RELEASE_PROOF_COMMAND,
+ 	replaceManifestScripts,
++	SERVICE_SCRIPT_PATH,
+ 	SHOWCASE_DEV_DEPENDENCIES,
+ 	SOURCE_BROWSER_DEV_DEPENDENCIES,
+ } from '@src/core'
+ import { readFileHex } from '@src/server'
++import { arrayOf, isRecord, isString, parseJSON } from '@orkestrel/contract'
+ import { requireValue } from '@orkestrel/test'
+ import {
+ 	EXIT_CLEAN,
+@@ -72,7 +76,7 @@ import {
+ 	trackFiles,
+ 	USAGE_CASES,
+ } from '../../setupServer.js'
+-import { createScratch } from '@orkestrel/test/server'
++import { createScratch, supportsFileLinks } from '@orkestrel/test/server'
+ 
+ // A setup module a maintainer wrote into. What separates it from what scaffold
+ // seeds at that path is that its text is not the seed's.
+@@ -4258,6 +4262,317 @@ describe('CLI overwrite', () => {
+ 		}
+ 	})
+ 
++	it('distinguishes an absent provisioner from an exact empty physical file', async () => {
++		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
++		try {
++			const fleet = createFleet(workspace)
++			const absent = createSink()
++			expect(
++				await new CLI({ ...REGISTRY_OPTIONS, ...absent.options }).execute([
++					'audit',
++					'--offline',
++					'--groups',
++					'orchestration',
++					'--from',
++					fleet.host,
++					'--target',
++					fleet.target,
++					'--json',
++				]),
++			).toBe(EXIT_DRIFT)
++			const absentValue = parseJSON(requireValue(absent.output[0]))
++			const absentAudit = isRecord(absentValue)
++				? { findings: absentValue.findings, questions: absentValue.questions }
++				: undefined
++			if (!isAudit(absentAudit)) throw new Error('Absent audit output did not match its contract.')
++			expect(
++				absentAudit.findings.some(
++					(finding) => finding.group === 'orchestration' && finding.drift === 'missing',
++				),
++			).toBe(true)
++			expect(absentAudit.findings.map((finding) => finding.path)).not.toContain(SERVICE_SCRIPT_PATH)
++
++			workspace.write(`target/${SERVICE_SCRIPT_PATH}`, '')
++			const present = createSink()
++			expect(
++				await new CLI({ ...REGISTRY_OPTIONS, ...present.options }).execute([
++					'audit',
++					'--offline',
++					'--groups',
++					'orchestration',
++					'--from',
++					fleet.host,
++					'--target',
++					fleet.target,
++					'--json',
++				]),
++			).toBe(EXIT_DRIFT)
++			const presentValue = parseJSON(requireValue(present.output[0]))
++			const presentAudit = isRecord(presentValue)
++				? { findings: presentValue.findings, questions: presentValue.questions }
++				: undefined
++			if (!isAudit(presentAudit))
++				throw new Error('Present audit output did not match its contract.')
++			expect(
++				presentAudit.findings.some(
++					(finding) => finding.group === 'orchestration' && finding.drift === 'missing',
++				),
++			).toBe(true)
++			expect(presentAudit.findings).toContainEqual({
++				path: SERVICE_SCRIPT_PATH,
++				group: 'orchestration',
++				ownership: 'birth',
++				drift: 'aligned',
++				observed: '',
++			})
++		} finally {
++			workspace.destroy()
++		}
++	})
++
++	it('does not infer a provisioner from wrong casing or a directory', async () => {
++		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
++		try {
++			const fleet = createFleet(workspace)
++			workspace.write('target/scripts/Service.sh', '#!/usr/bin/env sh\n')
++			const recased = createSink()
++			expect(
++				await new CLI({ ...REGISTRY_OPTIONS, ...recased.options }).execute([
++					'audit',
++					'--offline',
++					'--groups',
++					'orchestration',
++					'--from',
++					fleet.host,
++					'--target',
++					fleet.target,
++					'--json',
++				]),
++			).toBe(EXIT_DRIFT)
++			const recasedValue = parseJSON(requireValue(recased.output[0]))
++			const recasedAudit = isRecord(recasedValue)
++				? { findings: recasedValue.findings, questions: recasedValue.questions }
++				: undefined
++			if (!isAudit(recasedAudit))
++				throw new Error('Recased audit output did not match its contract.')
++			expect(recasedAudit.findings).toContainEqual({
++				path: 'scripts/Service.sh',
++				group: 'orchestration',
++				drift: 'foreign',
++				observed: contentToHex('#!/usr/bin/env sh\n'),
++			})
++			expect(recasedAudit.findings.map((finding) => finding.path)).not.toContain(
++				SERVICE_SCRIPT_PATH,
++			)
++
++			workspace.remove('target/scripts/Service.sh')
++			workspace.ensure(`target/${SERVICE_SCRIPT_PATH}`)
++			const directory = createSink()
++			expect(
++				await new CLI({ ...REGISTRY_OPTIONS, ...directory.options }).execute([
++					'audit',
++					'--offline',
++					'--groups',
++					'orchestration',
++					'--from',
++					fleet.host,
++					'--target',
++					fleet.target,
++					'--json',
++				]),
++			).toBe(EXIT_DRIFT)
++			const directoryValue = parseJSON(requireValue(directory.output[0]))
++			const directoryAudit = isRecord(directoryValue)
++				? { findings: directoryValue.findings, questions: directoryValue.questions }
++				: undefined
++			if (!isAudit(directoryAudit)) {
++				throw new Error('Directory audit output did not match its contract.')
++			}
++			expect(
++				directoryAudit.findings.some(
++					(finding) => finding.group === 'orchestration' && finding.drift === 'missing',
++				),
++			).toBe(true)
++			expect(directoryAudit.findings.map((finding) => finding.path)).not.toContain(
++				SERVICE_SCRIPT_PATH,
++			)
++		} finally {
++			workspace.destroy()
++		}
++	})
++
++	it.skipIf(!supportsFileLinks())(
++		'refuses a provisioner file link that leaves the target',
++		async () => {
++			const workspace = createScratch({ prefix: SCRATCH_PREFIX })
++			try {
++				const fleet = createFleet(workspace)
++				const outside = workspace.write('outside/service.sh', '#!/usr/bin/env sh\n')
++				workspace.ensure('target/scripts')
++				workspace.link(`target/${SERVICE_SCRIPT_PATH}`, outside)
++				const sink = createSink()
++				const code = await new CLI({ ...REGISTRY_OPTIONS, ...sink.options }).execute([
++					'audit',
++					'--offline',
++					'--groups',
++					'orchestration',
++					'--from',
++					fleet.host,
++					'--target',
++					fleet.target,
++					'--json',
++				])
++				expect(code).toBe(EXIT_DRIFT)
++				expect(sink.output.join('\n')).toContain('"code":"INVALID"')
++				expect(sink.output.join('\n')).toContain('leaves its target')
++				expect(workspace.read('outside/service.sh')).toBe('#!/usr/bin/env sh\n')
++			} finally {
++				workspace.destroy()
++			}
++		},
++	)
++
++	it('preserves the existing provisioner through target-reading audit and overwrite', async () => {
++		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
++		const server = await createUpstreamServer({
++			...FLEET_RELEASE_REPLIES,
++			...FLEET_MIRROR_REPLIES,
++			[FLEET_UPSTREAM_PATHS.organization]: {
++				status: 200,
++				body: buildOrganization(FLEET_NAMES),
++			},
++			[FLEET_UPSTREAM_PATHS.packages.guide]: { status: 200, body: buildPackument('0.1.0') },
++			[FLEET_UPSTREAM_PATHS.mirrors.guide]: {
++				status: 200,
++				body: '# Guide\n',
++				type: 'text/plain',
++			},
++		})
++		try {
++			const host = createStagedHost(workspace)
++			const target = workspace.ensure('provisioner')
++			const created = createSink()
++			expect(
++				await new CLI(buildCLIOptions(created, server.base)).execute([
++					'new',
++					'widget',
++					'--src',
++					'core',
++					'--from',
++					host,
++					'--target',
++					target,
++				]),
++			).toBe(EXIT_CLEAN)
++			expect(readFileHex(target, SERVICE_SCRIPT_PATH)).toBeUndefined()
++
++			const provisioner = '#!/usr/bin/env sh\nset -eu\n# Maintainer-owned provisioner.\n'
++			workspace.write(`provisioner/${SERVICE_SCRIPT_PATH}`, provisioner)
++			workspace.write('provisioner/scripts/docs.ts', 'retired docs\n')
++			workspace.write('provisioner/scripts/custom.ts', 'retired custom script\n')
++			const expectedProvisioner = requireValue(readFileHex(target, SERVICE_SCRIPT_PATH))
++			createRepository(target)
++			trackFiles(target)
++			commitFiles(target)
++
++			const audited = createSink()
++			expect(
++				await new CLI({ ...REGISTRY_OPTIONS, ...audited.options }).execute([
++					'audit',
++					'--offline',
++					'--groups',
++					'orchestration',
++					'--from',
++					host,
++					'--target',
++					target,
++					'--json',
++				]),
++			).toBe(EXIT_DRIFT)
++			const auditValue = parseJSON(requireValue(audited.output[0]))
++			const audit = isRecord(auditValue)
++				? { findings: auditValue.findings, questions: auditValue.questions }
++				: undefined
++			if (!isAudit(audit)) throw new Error('Audit output did not match its contract.')
++			const foreign = audit.findings
++				.filter((finding) => finding.drift === 'foreign')
++				.map((finding) => finding.path)
++
++			const overwritten = createSink()
++			expect(
++				await new CLI(buildCLIOptions(overwritten, server.base)).execute([
++					'overwrite',
++					'--groups',
++					'orchestration',
++					'--from',
++					host,
++					'--target',
++					target,
++					'--json',
++				]),
++			).toBe(EXIT_CLEAN)
++			const overwriteValue = parseJSON(requireValue(overwritten.output[0]))
++			if (
++				!isRecord(overwriteValue) ||
++				!arrayOf(isString)(overwriteValue.removed) ||
++				!isAudit(overwriteValue.audit)
++			) {
++				throw new Error('Overwrite output did not match its contract.')
++			}
++			const removed = overwriteValue.removed
++			const terminal = overwriteValue.audit.findings
++				.filter((finding) => finding.drift === 'foreign')
++				.map((finding) => finding.path)
++			const finalProvisioner = readFileHex(target, SERVICE_SCRIPT_PATH)
++			const docs = workspace.read('provisioner/scripts/docs.ts')
++			const custom = workspace.read('provisioner/scripts/custom.ts')
++
++			const reread = createSink()
++			expect(
++				await new CLI({ ...REGISTRY_OPTIONS, ...reread.options }).execute([
++					'audit',
++					'--offline',
++					'--groups',
++					'orchestration',
++					'--from',
++					host,
++					'--target',
++					target,
++					'--json',
++				]),
++			).toBe(EXIT_CLEAN)
++			const rereadValue = parseJSON(requireValue(reread.output[0]))
++			const fresh = isRecord(rereadValue)
++				? { findings: rereadValue.findings, questions: rereadValue.questions }
++				: undefined
++			if (!isAudit(fresh)) throw new Error('Fresh audit output did not match its contract.')
++			const freshForeign = fresh.findings
++				.filter((finding) => finding.drift === 'foreign')
++				.map((finding) => finding.path)
++
++			expect({
++				foreign: foreign.toSorted(),
++				removed: removed.toSorted(),
++				docs,
++				custom,
++				provisioner: finalProvisioner,
++				terminal: terminal.toSorted(),
++				fresh: freshForeign.toSorted(),
++			}).toStrictEqual({
++				foreign: ['scripts/custom.ts', 'scripts/docs.ts'],
++				removed: ['scripts/custom.ts', 'scripts/docs.ts'],
++				docs: undefined,
++				custom: undefined,
++				provisioner: expectedProvisioner,
++				terminal: [],
++				fresh: [],
++			})
++		} finally {
++			await server.destroy()
++			workspace.destroy()
++		}
++	})
++
+ 	it('deletes tracked unplanned scripts without deleting untracked files', async () => {
+ 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+ 		const server = await createUpstreamServer({
+diff --git a/tests/src/core/compilers.test.ts b/tests/src/core/compilers.test.ts
+index 6b23aa12..241a7ad7 100644
+--- a/tests/src/core/compilers.test.ts
++++ b/tests/src/core/compilers.test.ts
+@@ -1823,16 +1823,34 @@ describe('content artifact compilers', () => {
+ 		expect(guide?.content).not.toContain('[package-guide]')
+ 	})
+ 
+-	it('emits only the honest vendor inventory skeleton when vendors are declared', () => {
++	it('emits no provisioner without declared vendors or observed presence', () => {
+ 		expect(blueprintToOrchestrationArtifacts(buildBlueprint())).toStrictEqual([])
++	})
++
++	it('emits the declared vendor inventory without enabling live-service readiness', () => {
+ 		const [artifact] = blueprintToOrchestrationArtifacts(
+-			buildBlueprint({ vendors: ['ollama', 'postgres'] }),
++			buildBlueprint({ vendors: ['ollama', 'postgres'], service: false }),
+ 		)
+ 		expect(artifact?.path).toBe('scripts/service.sh')
+ 		expect(artifact?.content).toContain("'ollama'")
+ 		expect(artifact?.content).toContain("'postgres'")
+ 		expect(artifact?.content).not.toContain('test:service')
+ 	})
++
++	it('plans an observed provisioner as birth-owned without reconstructing vendor inventory', () => {
++		const [artifact] = blueprintToOrchestrationArtifacts(
++			buildBlueprint({ provisioner: true, service: false }),
++		)
++
++		expect(artifact).toMatchObject({
++			path: 'scripts/service.sh',
++			group: 'orchestration',
++			origin: 'template',
++			ownership: 'birth',
++		})
++		expect(artifact?.content).not.toContain("'ollama'")
++		expect(artifact?.content).not.toContain("'postgres'")
++	})
+ })
+ 
+ // The package-owned entry is driven as the process a workspace runs. The synthetic
+diff --git a/tests/src/core/factories.test.ts b/tests/src/core/factories.test.ts
+index a2eb3644..46cb356c 100644
+--- a/tests/src/core/factories.test.ts
++++ b/tests/src/core/factories.test.ts
+@@ -34,6 +34,7 @@ describe('createBlueprint defaults', () => {
+ 		expect(blueprint.guides).toBe(false)
+ 		expect(blueprint.integration).toBe(false)
+ 		expect(blueprint.conformance).toBe(false)
++		expect(blueprint.provisioner).toBe(false)
+ 		expect(blueprint.service).toBe(false)
+ 		expect(blueprint.global).toBe(false)
+ 		expect(blueprint.showcase).toBe(false)
+@@ -46,15 +47,17 @@ describe('createBlueprint defaults', () => {
+ })
+ 
+ describe('createBlueprint supplied fields', () => {
+-	it('lets a supplied string, list, and flag each win over its default', () => {
++	it('lets supplied strings, lists, and flags win over their defaults', () => {
+ 		const blueprint = createBlueprint('router', {
+ 			version: '1.2.3',
+ 			src: ['core', 'server'],
+ 			bin: true,
++			provisioner: true,
+ 		})
+ 		expect(blueprint.version).toBe('1.2.3')
+ 		expect(blueprint.src).toStrictEqual(['core', 'server'])
+ 		expect(blueprint.bin).toBe(true)
++		expect(blueprint.provisioner).toBe(true)
+ 	})
+ 
+ 	it('omits the description key entirely rather than setting it undefined', () => {
+diff --git a/tests/src/core/parsers.test.ts b/tests/src/core/parsers.test.ts
+index db7599d3..622ae033 100644
+--- a/tests/src/core/parsers.test.ts
++++ b/tests/src/core/parsers.test.ts
+@@ -67,12 +67,19 @@ describe('absent input', () => {
+ describe('field-level refusals', () => {
+ 	it('refuses a blueprint whose one field under test is off contract', () => {
+ 		const emptyName = buildBlueprint({ name: '' })
++		const { provisioner: _provisioner, ...missingProvisioner } = buildBlueprint()
++		const wrongProvisioner: Record<string, unknown> = {
++			...buildBlueprint(),
++			provisioner: 'present',
++		}
+ 		const wrongEnvironment: Record<string, unknown> = { ...buildBlueprint(), src: ['worker'] }
+ 		const wrongOverride: Record<string, unknown> = {
+ 			...buildBlueprint(),
+ 			overrides: [{ path: '../secrets', content: 'x' }],
+ 		}
+ 		expect(parseBlueprint(emptyName)).toBeUndefined()
++		expect(parseBlueprint(missingProvisioner)).toBeUndefined()
++		expect(parseBlueprint(wrongProvisioner)).toBeUndefined()
+ 		expect(parseBlueprint(wrongEnvironment)).toBeUndefined()
+ 		expect(parseBlueprint(wrongOverride)).toBeUndefined()
+ 		expect(parseBlueprint(buildBlueprint())).toStrictEqual(buildBlueprint())
+diff --git a/tests/src/core/validators.test.ts b/tests/src/core/validators.test.ts
+index cf360b05..96280023 100644
+--- a/tests/src/core/validators.test.ts
++++ b/tests/src/core/validators.test.ts
+@@ -4,6 +4,7 @@ import {
+ 	createBlueprint,
+ 	Compiler,
+ 	isAudit,
++	isBlueprint,
+ 	isCollection,
+ 	isCompilerHooks,
+ 	isCompilerOptions,
+@@ -20,6 +21,7 @@ import {
+ } from '@src/core'
+ import { createRecorder } from '@orkestrel/test'
+ import {
++	buildBlueprint,
+ 	buildGuardCases,
+ 	buildHostileCases,
+ 	buildUnionCases,
+@@ -85,6 +87,20 @@ describe('isPath', () => {
+ 	})
+ })
+ 
++describe('isBlueprint', () => {
++	it('requires a boolean provisioner field and refuses every extra field', () => {
++		const { provisioner: _provisioner, ...missing } = buildBlueprint()
++		const wrong: Record<string, unknown> = { ...buildBlueprint(), provisioner: 'present' }
++		const extra: Record<string, unknown> = { ...buildBlueprint(), preserved: true }
++
++		expect(isBlueprint(buildBlueprint({ provisioner: false }))).toBe(true)
++		expect(isBlueprint(buildBlueprint({ provisioner: true }))).toBe(true)
++		expect(isBlueprint(missing)).toBe(false)
++		expect(isBlueprint(wrong)).toBe(false)
++		expect(isBlueprint(extra)).toBe(false)
++	})
++})
++
+ describe('discriminated branches', () => {
+ 	for (const unionCase of buildUnionCases()) {
+ 		it(`refuses ${unionCase.label}`, () => {
+diff --git a/tests/src/server/Materializer.test.ts b/tests/src/server/Materializer.test.ts
+index 2e402295..45449c2e 100644
+--- a/tests/src/server/Materializer.test.ts
++++ b/tests/src/server/Materializer.test.ts
+@@ -10,6 +10,7 @@ import {
+ 	createBlueprint,
+ 	isFinding,
+ 	RELEASE_PROOF_COMMAND,
++	SERVICE_SCRIPT_PATH,
+ 	WORKSPACE_OWNED_PATHS,
+ } from '@src/core'
+ import {
+@@ -352,6 +353,76 @@ describe('Materializer value host', () => {
+ })
+ 
+ describe('Materializer materialize', () => {
++	it('refuses a retention-only provisioner plan for a vacant target before any write', () => {
++		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
++		const compiler = new Compiler()
++		try {
++			const host = workspace.ensure('host')
++			const target = join(workspace.path, 'project')
++			const scaffolding = compiler.compile(buildBlueprint({ provisioner: true }), ['orchestration'])
++			const plan = requireValue(scaffolding.plan)
++			const materializer = new Materializer({ host })
++			try {
++				expect(readErrorCode(() => materializer.materialize(plan, target))).toBe('TARGET')
++				expect(readErrorMessage(() => materializer.materialize(plan, target))).toContain(
++					'declared vendors',
++				)
++				expect(workspace.has('project')).toBe(false)
++			} finally {
++				materializer.destroy()
++			}
++		} finally {
++			compiler.destroy()
++			workspace.destroy()
++		}
++	})
++
++	it('materializes selected groups that exclude a retention-only provisioner', () => {
++		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
++		const compiler = new Compiler()
++		try {
++			const host = workspace.ensure('host')
++			const target = join(workspace.path, 'project')
++			const scaffolding = compiler.compile(buildBlueprint({ provisioner: true }), ['manifest'])
++			const plan = requireValue(scaffolding.plan)
++			const materializer = new Materializer({ host })
++			try {
++				const result = materializer.materialize(plan, target)
++				expect(result.written).toStrictEqual(['package.json'])
++				expect(workspace.read('project/package.json')).not.toBeUndefined()
++				expect(workspace.read(`project/${SERVICE_SCRIPT_PATH}`)).toBeUndefined()
++			} finally {
++				materializer.destroy()
++			}
++		} finally {
++			compiler.destroy()
++			workspace.destroy()
++		}
++	})
++
++	it('materializes a provisioner from declared vendor inventory into a vacant target', () => {
++		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
++		const compiler = new Compiler()
++		try {
++			const target = join(workspace.path, 'project')
++			const scaffolding = compiler.compile(buildBlueprint({ vendors: ['ollama'] }), [
++				'orchestration',
++			])
++			const plan = requireValue(scaffolding.plan)
++			const materializer = new Materializer({ host: WORKSPACE_ROOT })
++			try {
++				const result = materializer.materialize(plan, target)
++				expect(result.written).toContain(SERVICE_SCRIPT_PATH)
++				expect(workspace.read(`project/${SERVICE_SCRIPT_PATH}`)).toContain("'ollama'")
++			} finally {
++				materializer.destroy()
++			}
++		} finally {
++			compiler.destroy()
++			workspace.destroy()
++		}
++	})
++
+ 	it('writes every vendored shape into a vacant target with exact bytes', () => {
+ 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+ 		try {
