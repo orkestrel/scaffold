@@ -8,8 +8,10 @@ brief/reconcile references; GuideCommand's published contract and guide; target
 guide indices and matching package guides. Work in canonical
 C:/Users/mikes/WebstormProjects siblings only.
 
-This decides source acceptance and whether the adapted preparation carriers may
-run. It does not accept the later registry build, package archive or upload.
+This decides source acceptance and whether Toolbox's adapted preparation carrier
+may run. Ollama's source commit may proceed after acceptance, but its registry
+overwrite remains held over the service-script ownership reading. This does not
+accept a later registry build, package archive or upload.
 The objective lane reuses the owner's analyst. The independent lane did not
 write this source. The objective lane shares the native writer's engine and
 must challenge that work independently. No target writes, probes, installs,
@@ -54,8 +56,17 @@ Supported Scaffold repair replaces the generated config/policy helpers and
 writes native test:guides in the manifest. Repair's residual retired docs path
 is not a passed audit; clean-tree overwrite must remove it in registry
 preparation. The earlier isolated config failure in Ollama is not waived.
-Ollama's own prepublish must include the live service project with its prescribed
-model. No harness registration refresh is claimed.
+Ollama's own prepublish includes the live service project and exited0; its service
+run completed in 81.67s. No harness registration refresh is claimed. Its repair
+also labels scripts/service.sh foreign, although CI invokes it and the Scaffold
+guide promises preservation. Read d7n-service-script-ownership-reading-brief.md
+for the separate held question. Do not authorize Ollama overwrite or classify
+its CI script as retired. This boundary does not waive native source acceptance.
+
+The carrier report's combined bash -n invocation parses only its named command
+file, not the remaining arguments as scripts. Root ran bash -n separately for
+prepare, pack, source commit, release closure and capture; each exited0. Preserve
+the original report and this qualification.
 
 ## Claims
 

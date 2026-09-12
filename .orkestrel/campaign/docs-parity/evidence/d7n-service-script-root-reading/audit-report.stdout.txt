@@ -1,0 +1,7 @@
+┌────────────────────┬───────────────┬─────────┐
+│ path               │ group         │ drift   │
+├────────────────────┼───────────────┼─────────┤
+│ scripts/docs.ts    │ orchestration │ foreign │
+│ scripts/service.sh │ orchestration │ foreign │
+└────────────────────┴───────────────┴─────────┘
+0 of 6 planned paths drifted from the plan. Audit compared bytes at 5, existence at 1, and nothing at 0. The plan does not own 2 further paths beneath its groups.

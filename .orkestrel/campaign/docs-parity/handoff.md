@@ -18,6 +18,11 @@ closed the generated config failure. Source acceptance and registry preparation
 remain open. Hold Ollama overwrite: it classifies the CI-used scripts/service.sh
 as foreign despite the guide's preservation promise. Nothing was deleted. Read
 d7n-ollama-toolbox-layer-plan.md and d7n-ollama-toolbox-source-gate-reading.md.
+The complete public-CLI audit reproduces the service-script classification;
+the source reading locates the lost ownership in existing-target derivation.
+Read d7n-service-script-root-reading.md and the bounded
+d7n-service-script-design-brief.md. Keep Toolbox's accepted-tooling visit
+independent and keep Scaffold product bytes unchanged until that visit closes.
 No next upload command is ready.
 
 ### Confirmed Agent and Probe release

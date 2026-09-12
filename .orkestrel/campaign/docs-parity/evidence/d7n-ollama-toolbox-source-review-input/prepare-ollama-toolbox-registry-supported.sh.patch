@@ -1,0 +1,218 @@
+--- /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/prepare-agent-probe-registry-supported.sh	2026-09-11 20:35:42.849573900 -0400
++++ /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/prepare-ollama-toolbox-registry-supported.sh	2026-09-11 22:54:31.240604300 -0400
+@@ -1,12 +1,12 @@
+ #!/usr/bin/env bash
+ set -euo pipefail
+ 
+-# Carrier: prepare-agent-probe-registry-supported.sh <package> <label>
++# Carrier: prepare-ollama-toolbox-registry-supported.sh <package> <label>
+ # Evidence: tmp/pass/<label> and its action and pack suffixes.
+-# Successor: prepare the Agent and Probe registry layer.
++# Successor: prepare the Ollama and Toolbox registry layer.
+ 
+-# Predecessor: prepare-dependent-registry-supported.sh
+-# Scope: Prepare the Agent and Probe registry layer.
++# Predecessor: prepare-agent-probe-registry-supported.sh
++# Scope: Prepare the Ollama and Toolbox registry layer.
+ 
+ source /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/pass-env.sh
+ 
+@@ -16,7 +16,7 @@
+ out="$SCR/$label"
+ guide="$FLEET/guide"
+ scaffold="$SCAFFOLD"
+-verdict="$SCAFFOLD/.orkestrel/campaign/docs-parity/d7n-$package-agent-probe-source-verdict.md"
++verdict="$SCAFFOLD/.orkestrel/campaign/docs-parity/d7n-$package-ollama-toolbox-source-verdict.md"
+ guidepack="$SCR/packed/d7n-guide-registry-native-pack/extract/package/dist"
+ scaffoldpack="$SCR/packed/d7n-scaffold-upper-git-final-pack/extract/package/dist"
+ 
+@@ -62,51 +62,32 @@
+ }
+ 
+ case "$package" in
+-	agent)
+-		version=0.0.21; baseline=0.0.20
+-		runtime=('abort 0.0.10' 'budget 0.0.10' 'contract 0.0.17' 'database 0.0.14' 'emitter 0.0.10' 'queue 0.0.13' 'timeout 0.0.10' 'tool 0.0.14' 'workflow 0.0.18' 'workspace 0.0.8')
+-		priorruntime=('abort 0.0.9' 'budget 0.0.9' 'contract 0.0.16' 'database 0.0.13' 'emitter 0.0.9' 'queue 0.0.12' 'timeout 0.0.9' 'tool 0.0.13' 'workflow 0.0.17' 'workspace 0.0.7')
++	ollama)
++		version=0.0.15; baseline=0.0.14
++		runtime=('agent 0.0.21' 'budget 0.0.10' 'contract 0.0.17' 'ndjson 0.0.10' 'timeout 0.0.10' 'tool 0.0.14')
++		priorruntime=('agent 0.0.20' 'budget 0.0.9' 'contract 0.0.16' 'ndjson 0.0.9' 'timeout 0.0.9' 'tool 0.0.13')
++		development=('guide 0.0.18' 'scaffold 0.0.64' 'test 0.0.14' 'probe 0.0.13' 'abort 0.0.10' 'router 0.0.14' 'server 0.0.19' 'workspace 0.0.8')
++		priordevelopment=('guide 0.0.17' 'scaffold 0.0.63' 'test 0.0.13' 'probe 0.0.12' 'abort 0.0.9' 'router 0.0.13' 'server 0.0.18' 'workspace 0.0.7')
+ 		;;
+-	probe)
++	toolbox)
+ 		version=0.0.13; baseline=0.0.12
+-		runtime=('contract 0.0.17' 'emitter 0.0.10' 'lsp 0.0.7' 'mcp 0.0.29' 'queue 0.0.13' 'timeout 0.0.10' 'tool 0.0.14')
+-		priorruntime=('contract 0.0.16' 'emitter 0.0.9' 'lsp 0.0.6' 'mcp 0.0.28' 'queue 0.0.12' 'timeout 0.0.9' 'tool 0.0.13')
++		runtime=('agent 0.0.21' 'contract 0.0.17' 'database 0.0.14' 'form 0.0.6' 'relation 0.0.12' 'server 0.0.19' 'terminal 0.0.15' 'tool 0.0.14' 'workflow 0.0.18' 'workspace 0.0.8')
++		priorruntime=('agent 0.0.20' 'contract 0.0.16' 'database 0.0.13' 'form 0.0.5' 'relation 0.0.11' 'server 0.0.18' 'terminal 0.0.14' 'tool 0.0.13' 'workflow 0.0.17' 'workspace 0.0.7')
++		development=('guide 0.0.18' 'scaffold 0.0.64' 'test 0.0.14' 'probe 0.0.13')
++		priordevelopment=('guide 0.0.17' 'scaffold 0.0.63' 'test 0.0.13' 'probe 0.0.12')
+ 		;;
+-	*) fail 'package is outside the Agent and Probe registry layer' ;;
++	*) fail 'package is outside the Ollama and Toolbox registry layer' ;;
+ esac
+-receipt="$SCR/d7n-$package-agent-probe-source-commit/head.txt"
++receipt="$SCR/d7n-$package-ollama-toolbox-source-commit/head.txt"
+ test -f "$receipt" || fail 'source receipt is absent'
+ expected="$(<"$receipt")"
+ [[ "$expected" =~ ^[0-9a-f]{40}$ ]] || fail 'source receipt HEAD is unsafe'
+ 
+-refresheddevelopment=(
+-	'guide 0.0.18'
+-	'scaffold 0.0.64'
+-	'test 0.0.14'
+-)
+-development=("${refresheddevelopment[@]}")
+-priordevelopment=(
+-	'guide 0.0.17'
+-	'scaffold 0.0.63'
+-	'test 0.0.13'
+-)
+ priorranges=(
+ 	"${priorruntime[@]}"
+ 	"${priordevelopment[@]}"
+ )
+-if [ "$package" = agent ]; then
+-	development+=('probe 0.0.12')
+-	priordevelopment+=('probe 0.0.12')
+-fi
+-priorpins=(
+-	"${priorruntime[@]}"
+-	"${priordevelopment[@]}"
+-)
+ toolchain=('devDependencies.@microsoft/api-extractor' 'devDependencies.@types/node' 'devDependencies.oxfmt' 'devDependencies.oxlint' 'devDependencies.typescript' 'devDependencies.vite' 'devDependencies.vitest')
+-externalpeers=()
+-if [ "$package" = probe ]; then
+-	externalpeers=('peerDependencies.oxlint' 'peerDependencies.typescript' 'peerDependencies.vitest')
+-fi
+ 
+ [[ "$label" =~ ^[[:alnum:]][[:alnum:]._-]*$ ]] || fail 'evidence label is unsafe'
+ test -d "$target/.git" || fail 'canonical target is absent'
+@@ -127,16 +108,19 @@
+ test "$(node "$SCR/read-package-field.mjs" "$target/package.json" version)" = "$version" || fail 'manifest version differs'
+ capture before
+ 
+-for pair in "${priorpins[@]}"; do
++for pair in "${priorruntime[@]}"; do
+ 	set -- $pair
+-	if [[ "$1" = guide || "$1" = scaffold || "$1" = test || "$1" = probe ]]; then
+-		key="devDependencies.@orkestrel/$1"
+-	else
+-		key="dependencies.@orkestrel/$1"
+-	fi
++	key="dependencies.@orkestrel/$1"
+ 	prior=$(printf '%s' "$key" | tr './@' '---')
+ 	run "prior-$prior" 120s npm pkg get "$key"
+-	test "$(<"$out/prior-$prior.stdout.txt")" = "^$2" || fail "prior range differs: $key"
++	test "$(<"$out/prior-$prior.stdout.txt")" = "^$2" || fail "prior runtime range differs: $key"
++done
++for pair in "${priordevelopment[@]}"; do
++	set -- $pair
++	key="devDependencies.@orkestrel/$1"
++	prior=$(printf '%s' "$key" | tr './@' '---')
++	run "prior-$prior" 120s npm pkg get "$key"
++	test "$(<"$out/prior-$prior.stdout.txt")" = "^$2" || fail "prior development range differs: $key"
+ done
+ 
+ for pair in "$package $baseline" "${development[@]}" "${runtime[@]}"; do
+@@ -145,7 +129,11 @@
+ 	test "$(<"$out/registry-$1.stdout.txt")" = "$2" || fail "registry version differs: $1"
+ done
+ run peer-meta-before 120s npm pkg get peerDependenciesMeta
+-for key in "${toolchain[@]}" "${externalpeers[@]}"; do
++if [ "$package" = ollama ]; then
++	run ollama-before 120s npm pkg get devDependencies.ollama
++	test "$(<"$out/ollama-before.stdout.txt")" = 0.6.3 || fail 'Ollama client range differs'
++fi
++for key in "${toolchain[@]}"; do
+ 	externalkey=$(printf '%s' "$key" | tr './@' '---')
+ 	run "external-before-$externalkey" 120s npm pkg get "$key"
+ 	[[ "$(<"$out/external-before-$externalkey.stdout.txt")" =~ ^\^[0-9]+\.[0-9]+\.[0-9]+([-.][[:alnum:].-]+)?$ ]] || fail "toolchain field is absent or unsafe: $key"
+@@ -153,11 +141,6 @@
+ 	run "external-registry-$externalkey" 120s node "$SCR/read-supported-toolchain.mjs" "$dependency" "$(<"$out/external-before-$externalkey.stdout.txt")"
+ 	[[ "$(<"$out/external-registry-$externalkey.stdout.txt")" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || fail "toolchain registry version is unsafe: $dependency"
+ done
+-for key in "${externalpeers[@]}"; do
+-	dependency=${key#*.}
+-	run "probe-$dependency-optional-before" 120s npm pkg get "peerDependenciesMeta.$dependency.optional"
+-	test "$(<"$out/probe-$dependency-optional-before.stdout.txt")" = true || fail "Probe $dependency optional metadata differs"
+-done
+ 
+ for suffix in lock install format prepublish; do
+ 	test ! -e "$SCR/$label-$suffix" || fail "action evidence exists: $label-$suffix"
+@@ -170,14 +153,10 @@
+ 	set -- $pair
+ 	run "set-runtime-$1" 120s npm pkg set "dependencies.@orkestrel/$1=^$2"
+ done
+-for pair in "${refresheddevelopment[@]}"; do
++for pair in "${development[@]}"; do
+ 	set -- $pair
+ 	run "set-development-$1" 120s npm pkg set "devDependencies.@orkestrel/$1=^$2"
+ done
+-for key in "${externalpeers[@]}"; do
+-	externalkey=$(printf '%s' "$key" | tr './@' '---')
+-	run "set-external-$externalkey" 120s npm pkg set "$key=^$(<"$out/external-registry-$externalkey.stdout.txt")"
+-done
+ run install-runtime 600s npm install --ignore-scripts
+ run changed 120s git -C "$target" diff --name-only
+ while IFS= read -r path; do
+@@ -218,32 +197,34 @@
+ run final-scaffold-dist 120s diff -r "$scaffoldpack" "$target/node_modules/@orkestrel/scaffold/dist"
+ run peer-meta-final 120s npm pkg get peerDependenciesMeta
+ cmp "$out/peer-meta-before.stdout.txt" "$out/peer-meta-final.stdout.txt"
+-for key in "${toolchain[@]}" "${externalpeers[@]}"; do
++if [ "$package" = ollama ]; then
++	run ollama-final 120s npm pkg get devDependencies.ollama
++	cmp "$out/ollama-before.stdout.txt" "$out/ollama-final.stdout.txt" || fail 'Ollama client range changed'
++fi
++for key in "${toolchain[@]}"; do
+ 	externalkey=$(printf '%s' "$key" | tr './@' '---')
+ 	run "external-final-$externalkey" 120s npm pkg get "$key"
+ 	test "$(<"$out/external-final-$externalkey.stdout.txt")" = "^$(<"$out/external-registry-$externalkey.stdout.txt")" || fail "toolchain range differs: $key"
+ done
+-for key in "${externalpeers[@]}"; do
+-	dependency=${key#*.}
+-	run "probe-$dependency-optional-final" 120s npm pkg get "peerDependenciesMeta.$dependency.optional"
+-	test "$(<"$out/probe-$dependency-optional-final.stdout.txt")" = true || fail "final Probe $dependency optional metadata differs"
+-done
+ if run registry-lock-local 120s rg -n -e 'file:|link:|workspace:|"link"[[:space:]]*:[[:space:]]*true' package.json package-lock.json; then
+ 	fail 'manifest or lock has a local resolution'
+ fi
+ test "$(<"$out/registry-lock-local.exit.txt")" = 1 || fail 'local resolution scan failed'
+ run roots 120s npm ls --depth=0
+ 
+-for pair in "${runtime[@]}" "${development[@]}"; do
++for pair in "${runtime[@]}"; do
+ 	set -- $pair
+-	if [[ "$1" = guide || "$1" = scaffold || "$1" = test || "$1" = probe ]]; then
+-		key="devDependencies.@orkestrel/$1"
+-	else
+-		key="dependencies.@orkestrel/$1"
+-	fi
++	key="dependencies.@orkestrel/$1"
++	pin=$(printf '%s' "$key" | tr './@' '---')
++	run "pin-$pin" 120s npm pkg get "$key"
++	test "$(<"$out/pin-$pin.stdout.txt")" = "^$2" || fail "runtime pin differs: $key"
++done
++for pair in "${development[@]}"; do
++	set -- $pair
++	key="devDependencies.@orkestrel/$1"
+ 	pin=$(printf '%s' "$key" | tr './@' '---')
+ 	run "pin-$pin" 120s npm pkg get "$key"
+-	test "$(<"$out/pin-$pin.stdout.txt")" = "^$2" || fail "pin differs: $key"
++	test "$(<"$out/pin-$pin.stdout.txt")" = "^$2" || fail "development pin differs: $key"
+ done
+ 
+ baselinepattern=${baseline//./\\.}
+@@ -257,7 +238,7 @@
+ 
+ run format 120s bash "$SCR/upper-layer-action.sh" "$package" format "$label-format" 120s
+ run prepublish 900s bash "$SCR/upper-layer-action.sh" "$package" prepublish "$label-prepublish" 900s
+-run pack 600s bash "$SCR/pack-agent-probe-final-verified.sh" "$package" "$label-pack" "$version" "$label-prepublish" "$baseline"
++run pack 600s bash "$SCR/pack-ollama-toolbox-final-verified.sh" "$package" "$label-pack" "$version" "$label-prepublish" "$baseline"
+ capture after
+ cmp "$out/authored-before.sha256" "$out/authored-after.sha256"
+ cmp "$out/prepared-head.stdout.txt" "$out/head-after.txt" || fail 'source commit moved after preparation'
