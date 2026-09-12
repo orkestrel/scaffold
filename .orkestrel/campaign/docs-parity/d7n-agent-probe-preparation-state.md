@@ -2,7 +2,7 @@
 
 | Package | Pending | Current state |
 | --- | --- | --- |
-| Agent | 0.0.21 | Source accepted and pushed at 1eded029. Registry preparation committed and pushed at 19154bcb. Supported overwrite/audit, registry install, final prepublish and pack passed. Final release review is running; main closure and owner upload remain open. |
+| Agent | 0.0.21 | Release preparation closed at 188ff515 on clean canonical main. Campaign/main refs match. Supported overwrite/audit, registry install, final prepublish, pack and independent release reviews passed. Owner upload remains pending. |
 | Probe | 0.0.13 | Source baseline remains 93fc01d. Native entry and documentation changes are under review. Root reproduced and corrected CRLF extraction. Published runtime head start installed no-save; the source gate is rerunning. No source acceptance or upload is claimed. |
 
 Agent's accepted-source verdict states the root-owned reviewed-state and
