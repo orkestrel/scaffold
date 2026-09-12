@@ -1,0 +1,13 @@
+{
+    "name":  "@orkestrel/worker",
+    "version":  "0.0.12",
+    "url":  "https://registry.npmjs.org/@orkestrel/worker/-/worker-0.0.12.tgz",
+    "registrySha1":  "6ec0dff9151d6b28315dcfd503c5c025ee1dbb77",
+    "downloadedSha1":  "6ec0dff9151d6b28315dcfd503c5c025ee1dbb77",
+    "downloadedSha256":  "046e323e3b3488db028f7fac65875a9a1e2c56d981bc11592292a99a1666511d",
+    "acceptedArchiveSha256":  "046e323e3b3488db028f7fac65875a9a1e2c56d981bc11592292a99a1666511d",
+    "gitHead":  "4df117583143117a21b23246b27b6addd42ef0b9",
+    "branch":  "main",
+    "head":  "4df117583143117a21b23246b27b6addd42ef0b9",
+    "originMain":  "4df117583143117a21b23246b27b6addd42ef0b9"
+}

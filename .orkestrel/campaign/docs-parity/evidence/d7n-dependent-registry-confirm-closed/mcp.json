@@ -1,0 +1,13 @@
+{
+    "name":  "@orkestrel/mcp",
+    "version":  "0.0.29",
+    "url":  "https://registry.npmjs.org/@orkestrel/mcp/-/mcp-0.0.29.tgz",
+    "registrySha1":  "47ce2618b7b557df0202d4583d59ecb73ca58020",
+    "downloadedSha1":  "47ce2618b7b557df0202d4583d59ecb73ca58020",
+    "downloadedSha256":  "0a9a407c083aa9f4907d93e03fac095d9254a4f57d930fdfd5a3df364d09a97e",
+    "acceptedArchiveSha256":  "0a9a407c083aa9f4907d93e03fac095d9254a4f57d930fdfd5a3df364d09a97e",
+    "gitHead":  "45ba0a4b5741a79f32500479de9549c0e6a17839",
+    "branch":  "main",
+    "head":  "45ba0a4b5741a79f32500479de9549c0e6a17839",
+    "originMain":  "45ba0a4b5741a79f32500479de9549c0e6a17839"
+}

@@ -1,0 +1,6 @@
+confirmed brief
+confirmed mcp
+confirmed middleware
+confirmed program
+confirmed worker
+confirmed workflow

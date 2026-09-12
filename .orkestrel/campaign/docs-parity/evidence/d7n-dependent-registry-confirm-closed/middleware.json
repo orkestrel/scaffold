@@ -1,0 +1,13 @@
+{
+    "name":  "@orkestrel/middleware",
+    "version":  "0.0.20",
+    "url":  "https://registry.npmjs.org/@orkestrel/middleware/-/middleware-0.0.20.tgz",
+    "registrySha1":  "8e0f43e9cd1fe2715f028e59ca98c8b235e4ed04",
+    "downloadedSha1":  "8e0f43e9cd1fe2715f028e59ca98c8b235e4ed04",
+    "downloadedSha256":  "03a520c6773a8c5e9797aef8ce5c02417d9bb2358f2a905d91ed8ed068dcac42",
+    "acceptedArchiveSha256":  "03a520c6773a8c5e9797aef8ce5c02417d9bb2358f2a905d91ed8ed068dcac42",
+    "gitHead":  "af01ea39388c05da52fb954476cac0ba423a5f23",
+    "branch":  "main",
+    "head":  "af01ea39388c05da52fb954476cac0ba423a5f23",
+    "originMain":  "af01ea39388c05da52fb954476cac0ba423a5f23"
+}

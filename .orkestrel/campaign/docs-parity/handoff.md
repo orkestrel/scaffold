@@ -4,24 +4,21 @@ Written 2026-09-08T03:35Z and revised 2026-09-08T04:05Z at the owner's request, 
 
 ## Where everything is pushed
 
-### Active dependent upload preparation
+### Confirmed dependent release
 
 Brief0.0.8, MCP0.0.29, Middleware0.0.20, Program0.0.13, Worker0.0.12 and
-Workflow0.0.18 are closed for owner upload on clean canonical local main.
+Workflow0.0.18 are registry-confirmed on clean canonical local main.
 Campaign/main refs match each release HEAD in d7n-dependent-layer-prepared.md and
 d7n-dependent-registry-preparation-state.md. Final supported overwrite/audit,
 registry install, prepublishOnly and actual packing passed. Root's fresh
 d7n-dependent-confirmation-preprompt reconfirms refs and manifest/full dist equality
-after closure. No selected upload has run.
+after closure. The owner uploaded this layer. Root confirmed registry versions,
+gitHead and byte-identical accepted archives; read d7n-dependent-registry-closure.md.
 
-Root prompt.txt now contains the dependent layer's serial PowerShell upload line.
-Its parser-only check and independent/reused objective operator reviews passed.
-Read d7n-dependent-upload-handoff-verdict.md for the accepted digest and parser
-receipt qualification. The operator handoff landed at Scaffold2927df63 with
-main/campaign/designated pushes and successful before/after layer confirmation.
-Read d7n-dependent-upload-handoff-landing.md. The line is ready for owner upload;
-root has not authenticated or published.
-The prior runtime upload line is consumed and must not be rerun.
+The root prompt.txt dependent upload line is consumed and must not be rerun.
+Its accepted preparation is recorded in d7n-dependent-upload-handoff-verdict.md and
+d7n-dependent-upload-handoff-landing.md. Root has not authenticated or published.
+The prior runtime upload line is also consumed. No replacement line is prepared.
 
 Read d7n-dependent-native-source-landing.md and each source/prepared verdict for
 the accepted native-entry and documentation corrections. Preserve their historical
@@ -30,8 +27,8 @@ invent missing proof. Brief's completed mutations were not replayed during the
 supported-major recovery. Read d7n-dependent-toolchain-ruling.md and
 d7n-dependent-supported-carrier-verdict.md for its accepted correction.
 
-After the owner confirms upload, read registry versions, gitHead and served
-archives before preparing the next layer. MCP-to-Probe integration and later
+Refresh the catalog before preparing the next layer. Agent/Probe scouting is
+scoped under d7n-agent-probe-scout-driver-brief.md. MCP-to-Probe integration and later
 Agent/Ollama/Toolbox work remain open. Preserve Ollama's owner edits and the
 Supervisor owner decision. Probe development re-pins and final fleet development
 alignment remain open; the generated Scaffold follow-up requires its own later

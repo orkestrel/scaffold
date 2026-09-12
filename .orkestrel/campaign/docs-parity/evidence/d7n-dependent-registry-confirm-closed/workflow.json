@@ -1,0 +1,13 @@
+{
+    "name":  "@orkestrel/workflow",
+    "version":  "0.0.18",
+    "url":  "https://registry.npmjs.org/@orkestrel/workflow/-/workflow-0.0.18.tgz",
+    "registrySha1":  "7e9bb5ed17795ef03a701f58a8dfc3e94c3f2803",
+    "downloadedSha1":  "7e9bb5ed17795ef03a701f58a8dfc3e94c3f2803",
+    "downloadedSha256":  "f7b89c454aa2b63a267479c87a2a33ff9d69ddd02793137cc00b382cfa3073e5",
+    "acceptedArchiveSha256":  "f7b89c454aa2b63a267479c87a2a33ff9d69ddd02793137cc00b382cfa3073e5",
+    "gitHead":  "0789593a6ab1b2905b16fd2f95a5b30e700888c5",
+    "branch":  "main",
+    "head":  "0789593a6ab1b2905b16fd2f95a5b30e700888c5",
+    "originMain":  "0789593a6ab1b2905b16fd2f95a5b30e700888c5"
+}
