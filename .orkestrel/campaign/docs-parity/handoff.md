@@ -38,8 +38,10 @@ isolated legacy case and the bin file. Native parity passes with RuntimeStage's
 documentation and real example. The supported release toolchain is staged;
 the measured receipt refresh passed source-to-guide rewriting and parity.
 Source reviews and d7n-probe-source-final-prepublish passed. Probe source landed
-at c492ef3e and is pushed to the campaign branch. Its final registry visit and
-main closure remain open. Read d7n-probe-agent-probe-source-verdict.md,
+at c492ef3e and is pushed to the campaign branch. Registry preparation landed at
+291668e9 and is pushed; supported overwrite/audit passed and removed the retired
+docs script. The final registry gate/pack and main closure remain open. Read
+d7n-probe-agent-probe-source-verdict.md,
 d7n-probe-bin-fixture-reading.md,
 d7n-probe-supported-receipt-reading.md,
 d7n-agent-probe-preparation-state.md,

@@ -3,7 +3,7 @@
 | Package | Pending | Current state |
 | --- | --- | --- |
 | Agent | 0.0.21 | Release preparation closed at 188ff515 on clean canonical main. Campaign/main refs match. Supported overwrite/audit, registry install, final prepublish, pack and independent release reviews passed. Owner upload remains pending. |
-| Probe | 0.0.13 | Accepted source landed at c492ef3e and is pushed to the campaign branch. Independent/reused objective source reviews, full prepublish and reviewed-state comparisons passed. Final registry pins, optional peers, supported overwrite, final prepublish/pack and clean-main release closure remain open. |
+| Probe | 0.0.13 | Accepted source landed at c492ef3e. Registry preparation landed at 291668e9 and is pushed to the campaign branch. Supported overwrite/audit passed and removed the retired docs script. Final registry install, gate/pack and clean-main release closure remain open. |
 
 Agent's accepted-source verdict states the root-owned reviewed-state and
 intervening-writer boundary. Do not read the raw source reports as proving an
