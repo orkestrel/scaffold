@@ -1,0 +1,2 @@
+npm notice run @orkestrel/ollama@0.0.15 test:guides
+npm notice run node --experimental-strip-types tests/guides.test.ts --to guide

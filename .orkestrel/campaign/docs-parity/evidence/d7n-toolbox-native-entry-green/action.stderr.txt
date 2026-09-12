@@ -1,0 +1,31 @@
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |guides| tests/guides.test.ts > Toolbox > keeps behavioral interfaces and implementing classes in parity
+AssertionError: expected [ { …(2) }, { …(2) } ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   {
++     "spec": "guides/toolbox.md",
++     "text": "guides/toolbox.md DatabaseDefinitionStore declares members and carries no method table.",
++   },
++   {
++     "spec": "guides/toolbox.md",
++     "text": "guides/toolbox.md MemoryDefinitionStore declares members and carries no method table.",
++   },
++ ]
+
+ ❯ tests/guides.test.ts:133:82
+    131|    it('keeps behavioral interfaces and implementing classes in parity'…
+    132|     expect(report.methods.filter((finding) => finding.spec === entry.s…
+    133|     expect(report.declarations.filter((finding) => finding.spec === en…
+       |                                                                                  ^
+    134|    })
+    135|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+

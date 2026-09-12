@@ -12,9 +12,13 @@ origin/main ancestry and installed the accepted Guide18/Scaffold64 tooling
 tarballs without changing tracked metadata. Ollama's retained documentation
 candidate landed at 463efa2d and is pushed to the campaign branch after accepted
 independent review; native guides entry migrations are in flight.
-Ollama's unchanged generated config test fails alone; supported Scaffold repair
-and final prepublish remain open. Read d7n-ollama-toolbox-layer-plan.md. No next
-upload command is ready.
+Native parity, explicit rewrite fixed points and source prepublish now pass in
+Ollama and Toolbox, including Ollama's live service suite. Supported repair
+closed the generated config failure. Source acceptance and registry preparation
+remain open. Hold Ollama overwrite: it classifies the CI-used scripts/service.sh
+as foreign despite the guide's preservation promise. Nothing was deleted. Read
+d7n-ollama-toolbox-layer-plan.md and d7n-ollama-toolbox-source-gate-reading.md.
+No next upload command is ready.
 
 ### Confirmed Agent and Probe release
 

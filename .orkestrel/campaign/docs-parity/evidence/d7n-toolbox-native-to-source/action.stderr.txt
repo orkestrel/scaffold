@@ -1,0 +1,2 @@
+npm notice run @orkestrel/toolbox@0.0.13 test:guides
+npm notice run node --experimental-strip-types tests/guides.test.ts --to source

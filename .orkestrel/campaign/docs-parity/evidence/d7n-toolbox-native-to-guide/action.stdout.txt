@@ -1,0 +1,10 @@
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/toolbox
+
+·························
+
+ Test Files  1 passed (1)
+      Tests  25 passed (25)
+   Start at  22:49:18
+   Duration  902ms (transform 134ms, setup 79ms, import 657ms, tests 15ms, environment 0ms)
+
