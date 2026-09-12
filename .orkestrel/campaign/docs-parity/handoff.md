@@ -10,7 +10,8 @@ The Agent/Probe upload is registry-confirmed and its prompt is consumed. The
 refreshed catalog selects Ollama0.0.15 and Toolbox0.0.13 preparation. Root confirmed
 origin/main ancestry and installed the accepted Guide18/Scaffold64 tooling
 tarballs without changing tracked metadata. Ollama's retained documentation
-candidate is under acceptance review; Toolbox's native guides entry is in flight.
+candidate landed at 463efa2d and is pushed to the campaign branch after accepted
+independent review; native guides entry migrations are in flight.
 Ollama's unchanged generated config test fails alone; supported Scaffold repair
 and final prepublish remain open. Read d7n-ollama-toolbox-layer-plan.md. No next
 upload command is ready.
