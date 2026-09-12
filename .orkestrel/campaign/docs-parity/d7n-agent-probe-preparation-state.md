@@ -14,8 +14,10 @@ stream refusal. The current head start installs MCP0.0.29 with the published
 lower-layer graph. Keep that package reading distinct from the harness's still
 unrefreshed registration. Preserve the heavy-fixture and historical proof rulings.
 
-The dependent upload prompt is consumed. Do not replace it until this selected
-layer is ready on clean canonical main. No authentication or upload is root-owned.
+The dependent upload prompt is consumed. The selected layer is ready on clean
+canonical main, and fresh confirmation passed. The replacement Agent-then-Probe
+line passed PowerShell parsing; operator review and record landing remain open.
+No authentication or upload is root-owned.
 
 The retained d7n-probe-final-registry-visit evidence is a landing-time snapshot,
 not the completed visit. Preserve it unchanged. The completed evidence is retained

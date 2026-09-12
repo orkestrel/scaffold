@@ -4,6 +4,26 @@ Written 2026-09-08T03:35Z and revised 2026-09-08T04:05Z at the owner's request, 
 
 ## Where everything is pushed
 
+### Prepared Agent and Probe upload
+
+| Package | Pending version | Prepared state |
+| --- | --- | --- |
+| agent | 0.0.21 | Clean canonical main at 188ff5152d3878d274ac845b0845cd079c4d2232; campaign/main refs match; final prepublishOnly and actual pack passed |
+| probe | 0.0.13 | Clean canonical main at 22eca15dce31021b222dfa8652a01d2bb2c56dfe; campaign/main refs match; final prepublishOnly and actual pack passed |
+
+The root prompt.txt now contains the Agent-then-Probe upload line. Parser-only
+execution and fresh layer confirmation passed. Operator review and record landing
+are pending. No owner upload has been reported for this layer. Root has not
+authenticated or published. Read d7n-agent-probe-preparation-state.md and each
+registry release landing. The prior dependent upload is consumed.
+
+Probe's final modern and pinned legacy clients passed against MCP0.0.29. Keep
+that result separate from the unrefreshed harness registration. After the owner
+uploads Agent and Probe, confirm registry versions, gitHead and archive identity
+before preparing Ollama/Toolbox. Preserve Ollama's owner edits, the Supervisor
+owner decision, deferred Probe development alignment and the separately bumped
+generated Scaffold follow-up.
+
 ### Confirmed dependent release
 
 Brief0.0.8, MCP0.0.29, Middleware0.0.20, Program0.0.13, Worker0.0.12 and
@@ -15,10 +35,11 @@ d7n-dependent-confirmation-preprompt reconfirms refs and manifest/full dist equa
 after closure. The owner uploaded this layer. Root confirmed registry versions,
 gitHead and byte-identical accepted archives; read d7n-dependent-registry-closure.md.
 
-The root prompt.txt dependent upload line is consumed and must not be rerun.
+The prior root prompt.txt dependent upload line is consumed and must not be rerun.
 Its accepted preparation is recorded in d7n-dependent-upload-handoff-verdict.md and
 d7n-dependent-upload-handoff-landing.md. Root has not authenticated or published.
-The prior runtime upload line is also consumed. No replacement line is prepared.
+The prior runtime upload line is also consumed. Read the active upload section
+for its replacement.
 
 Read d7n-dependent-native-source-landing.md and each source/prepared verdict for
 the accepted native-entry and documentation corrections. Preserve their historical

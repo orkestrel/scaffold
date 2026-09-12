@@ -58,3 +58,16 @@ and reused objective analyst read the same final-source successor brief. Root's
 full prepublish runs without a competing writer. The review claims cover source
 corrections; green gate completion and reviewed/current state equality remain
 separate mandatory root acceptance conditions.
+
+Source and final registry acceptance have closed for Agent and Probe. Root ran
+the final gates and actual packs. The accepted closure carriers pushed matching
+campaign/main refs and selected clean canonical main. Probe's final modern and
+legacy clients passed against the canonical release graph; no refresh of the
+separate harness registration is claimed.
+
+The reused objective analyst and separate independent reviewer now hold the
+operator handoff review on d7n-agent-probe-upload-handoff-review-brief.md. They
+remain blind to each other and read-only. Root's parser and fresh layer
+confirmation replace a fresh verifier. No Workflow tool is registered, so the
+tracked native route carries this round. Only root edits campaign prose and the
+operator prompt; no package writer or build intervenes.
