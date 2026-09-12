@@ -1,0 +1,13 @@
+{
+    "name":  "@orkestrel/probe",
+    "version":  "0.0.13",
+    "url":  "https://registry.npmjs.org/@orkestrel/probe/-/probe-0.0.13.tgz",
+    "registrySha1":  "8461a8a05ef83f174a2232f9311633ee62794181",
+    "downloadedSha1":  "8461a8a05ef83f174a2232f9311633ee62794181",
+    "downloadedSha256":  "8fa05fa2962fec81ca31bfa9fbd3d8e468b7a2f638f63309add17efd9e3724b0",
+    "acceptedArchiveSha256":  "8fa05fa2962fec81ca31bfa9fbd3d8e468b7a2f638f63309add17efd9e3724b0",
+    "gitHead":  "22eca15dce31021b222dfa8652a01d2bb2c56dfe",
+    "branch":  "main",
+    "head":  "22eca15dce31021b222dfa8652a01d2bb2c56dfe",
+    "originMain":  "22eca15dce31021b222dfa8652a01d2bb2c56dfe"
+}

@@ -4,26 +4,26 @@ Written 2026-09-08T03:35Z and revised 2026-09-08T04:05Z at the owner's request, 
 
 ## Where everything is pushed
 
-### Prepared Agent and Probe upload
+### Confirmed Agent and Probe release
 
-| Package | Pending version | Prepared state |
+| Package | Published version | Confirmed state |
 | --- | --- | --- |
-| agent | 0.0.21 | Clean canonical main at 188ff5152d3878d274ac845b0845cd079c4d2232; campaign/main refs match; final prepublishOnly and actual pack passed |
-| probe | 0.0.13 | Clean canonical main at 22eca15dce31021b222dfa8652a01d2bb2c56dfe; campaign/main refs match; final prepublishOnly and actual pack passed |
+| agent | 0.0.21 | Registry-confirmed; clean canonical main at 188ff5152d3878d274ac845b0845cd079c4d2232; archive/gitHead equal accepted release |
+| probe | 0.0.13 | Registry-confirmed; clean canonical main at 22eca15dce31021b222dfa8652a01d2bb2c56dfe; archive/gitHead equal accepted release |
 
-The root prompt.txt now contains the Agent-then-Probe upload line. Parser-only
+The root prompt.txt contains the consumed Agent-then-Probe upload line. Parser-only
 execution, independent/reused objective reviews and operator landing passed.
 The prompt landed at Scaffold b73f9073 and was pushed to main, campaign and the
 designated branch. Before/after layer confirmations passed. Read
 d7n-agent-probe-upload-handoff-verdict.md and d7n-agent-probe-upload-handoff-landing.md.
-No owner upload has been reported for this layer. Root has not
-authenticated or published. Read d7n-agent-probe-preparation-state.md and each
-registry release landing. The prior dependent upload is consumed.
+The owner uploaded this layer. Root confirmed registry versions, gitHead and
+byte-identical served archives; read d7n-agent-probe-registry-closure.md.
+Root has not authenticated or published. Read d7n-agent-probe-preparation-state.md
+and each registry release landing. The prior dependent upload is consumed.
 
 Probe's final modern and pinned legacy clients passed against MCP0.0.29. Keep
-that result separate from the unrefreshed harness registration. After the owner
-uploads Agent and Probe, confirm registry versions, gitHead and archive identity
-before preparing Ollama/Toolbox. Preserve Ollama's owner edits, the Supervisor
+that result separate from the unrefreshed harness registration. Refresh the
+catalog before preparing Ollama/Toolbox. Preserve Ollama's owner edits, the Supervisor
 owner decision, deferred Probe development alignment and the separately bumped
 generated Scaffold follow-up.
 

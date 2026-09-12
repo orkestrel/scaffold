@@ -1,0 +1,13 @@
+{
+    "name":  "@orkestrel/agent",
+    "version":  "0.0.21",
+    "url":  "https://registry.npmjs.org/@orkestrel/agent/-/agent-0.0.21.tgz",
+    "registrySha1":  "790e23c3490797efe7c7e00298849717dea59520",
+    "downloadedSha1":  "790e23c3490797efe7c7e00298849717dea59520",
+    "downloadedSha256":  "c0bdf531097696a6b048d42552912664e6b2ae4c564e217e4e78990f68577b58",
+    "acceptedArchiveSha256":  "c0bdf531097696a6b048d42552912664e6b2ae4c564e217e4e78990f68577b58",
+    "gitHead":  "188ff5152d3878d274ac845b0845cd079c4d2232",
+    "branch":  "main",
+    "head":  "188ff5152d3878d274ac845b0845cd079c4d2232",
+    "originMain":  "188ff5152d3878d274ac845b0845cd079c4d2232"
+}

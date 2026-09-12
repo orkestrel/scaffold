@@ -1,9 +1,9 @@
 # Agent and Probe preparation state
 
-| Package | Pending | Current state |
+| Package | Published | Current state |
 | --- | --- | --- |
-| Agent | 0.0.21 | Release preparation closed at 188ff515 on clean canonical main. Campaign/main refs match. Supported overwrite/audit, registry install, final prepublish, pack and independent release reviews passed. Owner upload remains pending. |
-| Probe | 0.0.13 | Release preparation closed at 22eca15d on clean canonical main. Campaign/main refs match. Supported overwrite/audit, registry install, final prepublish, pack and independent release reviews passed. Final modern/legacy foreign-client checks passed against MCP0.0.29. Owner upload remains pending. |
+| Agent | 0.0.21 | Registry-confirmed at 188ff515 on clean canonical main. Served archive/gitHead equal the accepted release. |
+| Probe | 0.0.13 | Registry-confirmed at 22eca15d on clean canonical main. Served archive/gitHead equal the accepted release. Final modern/legacy clients passed against MCP0.0.29; the separate harness remains unrefreshed. |
 
 Agent's accepted-source verdict states the root-owned reviewed-state and
 intervening-writer boundary. Do not read the raw source reports as proving an
@@ -18,7 +18,8 @@ The dependent upload prompt is consumed. The selected layer is ready on clean
 canonical main, and fresh confirmation passed. The replacement Agent-then-Probe
 line passed PowerShell parsing and independent/reused objective review. It landed
 at Scaffold b73f9073 and was pushed to main/campaign/designated refs. Before/after
-layer confirmation passed. Owner upload remains pending.
+layer confirmation passed. The owner uploaded the layer and root confirmed the
+registry. This operator line is consumed and must not be rerun.
 No authentication or upload is root-owned.
 
 The retained d7n-probe-final-registry-visit evidence is a landing-time snapshot,
