@@ -1,0 +1,143 @@
+npm notice run @orkestrel/probe@0.0.13 prepublishOnly
+npm notice run npm run format:check && npm run lint:check && npm run check && npm run build && npm test && npm run test:distribution -- --mode release
+npm notice run @orkestrel/probe@0.0.13 format:check
+npm notice run oxfmt --config .oxfmtrc.json --check .
+npm notice run @orkestrel/probe@0.0.13 lint:check
+npm notice run oxlint --config .oxlintrc.json --deny-warnings .
+npm notice run @orkestrel/probe@0.0.13 check
+npm notice run tsc --noEmit --project tsconfig.json && npm run check:src
+npm notice run @orkestrel/probe@0.0.13 check:src
+npm notice run npm run check:src:core && npm run check:src:server && npm run check:src:bin
+npm notice run @orkestrel/probe@0.0.13 check:src:core
+npm notice run tsc --noEmit -p configs/src/tsconfig.core.json
+npm notice run @orkestrel/probe@0.0.13 check:src:server
+npm notice run tsc --noEmit -p configs/src/tsconfig.server.json
+npm notice run @orkestrel/probe@0.0.13 check:src:bin
+npm notice run tsc --noEmit -p configs/src/tsconfig.bin.json
+npm notice run @orkestrel/probe@0.0.13 build
+npm notice run npm run clean && npm run build:src
+npm notice run @orkestrel/probe@0.0.13 clean
+npm notice run node -e "require('node:fs').rmSync('dist',{recursive:true,force:true})"
+npm notice run @orkestrel/probe@0.0.13 build:src
+npm notice run npm run build:src:core && npm run build:src:server && npm run build:src:bin
+npm notice run @orkestrel/probe@0.0.13 build:src:core
+npm notice run vite build --config configs/src/vite.core.config.ts && npm run copy dist/src/core/index.d.ts dist/src/core/index.d.cts
+npm notice run @orkestrel/probe@0.0.13 copy
+npm notice run node -e "const fs=require('node:fs'),p=require('node:path'),a=process.argv[1],b=process.argv[2];fs.mkdirSync(p.dirname(b),{recursive:true});fs.cpSync(a,b,{force:true});console.log('Copied: '+a+' to '+b)" dist/src/core/index.d.ts dist/src/core/index.d.cts
+npm notice run @orkestrel/probe@0.0.13 build:src:server
+npm notice run vite build --config configs/src/vite.server.config.ts && npm run copy dist/src/server/index.d.ts dist/src/server/index.d.cts
+"build.lib.formats" will be ignored because "build.rolldownOptions.output" is already an array format.
+npm notice run @orkestrel/probe@0.0.13 copy
+npm notice run node -e "const fs=require('node:fs'),p=require('node:path'),a=process.argv[1],b=process.argv[2];fs.mkdirSync(p.dirname(b),{recursive:true});fs.cpSync(a,b,{force:true});console.log('Copied: '+a+' to '+b)" dist/src/server/index.d.ts dist/src/server/index.d.cts
+npm notice run @orkestrel/probe@0.0.13 build:src:bin
+npm notice run vite build --config configs/src/vite.bin.config.ts
+npm notice run @orkestrel/probe@0.0.13 test
+npm notice run npm run test:src && npm run test:policy && npm run test:config && npm run test:setup && npm run test:guides
+npm notice run @orkestrel/probe@0.0.13 test:src
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core --project src:server --project src:bin
+stderr | tests/src/server/stages/RuntimeStage.test.ts > runtime stage > recycles the resident runner after 64 written specifications, evicts disk caches, and strips the replacement warm's termination listeners
+failed to load config from C:\Users\mikes\AppData\Local\Temp\orkestrel-test-coWxdY\vite.config.ts
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 6 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:bin| tests/src/bin/main.test.ts > bin entry > carries the verdict record beside the rendered text on both eras
+AssertionError: no result on {"error":{"code":-32000,"message":"Legacy protocol 2025-11-25 cannot represent a stream result"},"id":2,"jsonrpc":"2.0"}: expected undefined to be defined
+ ❯ tests/src/bin/main.test.ts:556:46
+    554|     for (const frame of frames.slice(1)) {
+    555|      const answer = readAnswer(frame)
+    556|      expect(answer, `no result on ${frame}`).toBeDefined()
+       |                                              ^
+    557|      if (answer === undefined) continue
+    558|      const record = answer['structuredContent']
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/6]⎯
+
+ FAIL  |src:bin| tests/src/bin/main.test.ts > bin entry > carries a record whose control reports an issue per refused declaration
+TypeError: .toMatch() expects to receive a string, but got undefined
+ ❯ tests/src/bin/main.test.ts:625:28
+    623|     const broke = record.control.find((check) => check.stage === 'type…
+    624|     expect(broke?.issues.length).toBeGreaterThan(2)
+    625|     expect(record.receipt).toMatch(/^probe:/)
+       |                            ^
+    626|    } finally {
+    627|     const teardown = createTeardown()
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/6]⎯
+
+ FAIL  |src:bin| tests/src/bin/main.test.ts > bin entry > answers a record past the published key bound with the rendered text alone
+AssertionError: expected 'no receipt' to match /^receipt probe:/
+
+- Expected:
+/^receipt probe:/
+
++ Received:
+"no receipt"
+
+ ❯ tests/src/bin/main.test.ts:696:37
+    694|     const reported = /^control type: (\d+) issues/m.exec(text)?.[1]
+    695|     expect(Number(reported)).toBeGreaterThan(368)
+    696|     expect(text.split('\n').at(-1)).toMatch(/^receipt probe:/)
+       |                                     ^
+    697|     const listed = answered.get(2) ?? ''
+    698|     expect(readAnswer(listed), `no result on ${listed.slice(0, 200)}`)…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/6]⎯
+
+ FAIL  |src:bin| tests/src/bin/main.test.ts > bin entry > answers a rendering past the content bound with the receipt block
+AssertionError: expected 'no receipt' to match /^receipt probe:/
+
+- Expected:
+/^receipt probe:/
+
++ Received:
+"no receipt"
+
+ ❯ tests/src/bin/main.test.ts:775:26
+    773|     expect(lines[1]).toMatch(/^claim [0-9a-f]+$/)
+    774|     expect(lines[2]).toBe(`reason ${reason}`)
+    775|     expect(lines.at(-1)).toMatch(/^receipt probe:/)
+       |                          ^
+    776|     // The stage lines separate this answer from the whole rendering.
+    777|     expect(text).not.toContain('control runtime:')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/6]⎯
+
+ FAIL  |src:bin| tests/src/bin/main.test.ts > bin entry > answers a driven third-party client with the verdict record
+AssertionError: expected 'no receipt' to match /^receipt probe:/
+
+- Expected:
+/^receipt probe:/
+
++ Received:
+"no receipt"
+
+ ❯ tests/src/bin/main.test.ts:839:71
+    837|     expect(isVerdict(outcome.value)).toBe(true)
+    838|     if (!isVerdict(outcome.value)) return
+    839|     expect(formatVerdict(outcome.value).trimEnd().split('\n').at(-1)).…
+       |                                                                       ^
+    840|    } finally {
+    841|     const teardown = createTeardown()
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/6]⎯
+
+ FAIL  |src:bin| tests/src/bin/main.test.ts > bin entry > answers a pinned legacy client through the initialize path
+AssertionError: expected 'no receipt' to match /^receipt probe:/
+
+- Expected:
+/^receipt probe:/
+
++ Received:
+"no receipt"
+
+ ❯ tests/src/bin/main.test.ts:897:71
+    895|     expect(isVerdict(outcome.value)).toBe(true)
+    896|     if (!isVerdict(outcome.value)) return
+    897|     expect(formatVerdict(outcome.value).trimEnd().split('\n').at(-1)).…
+       |                                                                       ^
+    898|    } finally {
+    899|     const teardown = createTeardown()
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/6]⎯
+
