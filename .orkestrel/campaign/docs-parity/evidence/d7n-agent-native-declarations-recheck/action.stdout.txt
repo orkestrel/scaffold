@@ -1,0 +1,10 @@
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/agent
+
+·············x··············
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 27 passed (28)
+   Start at  20:34:25
+   Duration  1.03s (transform 168ms, setup 363ms, import 504ms, tests 16ms, environment 0ms)
+

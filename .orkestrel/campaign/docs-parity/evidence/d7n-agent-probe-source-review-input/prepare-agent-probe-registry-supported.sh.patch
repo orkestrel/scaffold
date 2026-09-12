@@ -1,0 +1,273 @@
+--- /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/prepare-dependent-registry-supported.sh	2026-09-11 18:21:49.627853200 -0400
++++ /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/prepare-agent-probe-registry-supported.sh	2026-09-11 20:35:42.849573900 -0400
+@@ -1,15 +1,12 @@
+ #!/usr/bin/env bash
+ set -euo pipefail
+ 
+-# Carrier: prepare-dependent-registry-supported.sh <package> <label>
++# Carrier: prepare-agent-probe-registry-supported.sh <package> <label>
+ # Evidence: tmp/pass/<label> and its action and pack suffixes.
+-# Successor: bind Scaffold toolchain refreshes to supported-major registry reads.
++# Successor: prepare the Agent and Probe registry layer.
+ 
+-# Predecessor: prepare-queue-rater-registry.sh
+-# Scope: remaining native consumer registry preparation.
+-
+-# Predecessor: prepare-native-consumer-registry.sh
+-# Correction: bind prior-range validation and searches to replaced ranges.
++# Predecessor: prepare-dependent-registry-supported.sh
++# Scope: Prepare the Agent and Probe registry layer.
+ 
+ source /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/pass-env.sh
+ 
+@@ -19,7 +16,7 @@
+ out="$SCR/$label"
+ guide="$FLEET/guide"
+ scaffold="$SCAFFOLD"
+-verdict="$SCAFFOLD/.orkestrel/campaign/docs-parity/d7n-$package-dependent-source-verdict.md"
++verdict="$SCAFFOLD/.orkestrel/campaign/docs-parity/d7n-$package-agent-probe-source-verdict.md"
+ guidepack="$SCR/packed/d7n-guide-registry-native-pack/extract/package/dist"
+ scaffoldpack="$SCR/packed/d7n-scaffold-upper-git-final-pack/extract/package/dist"
+ 
+@@ -65,77 +62,51 @@
+ }
+ 
+ case "$package" in
+-	brief)
+-		version=0.0.8; baseline=0.0.7
+-		runtime=('contract 0.0.17' 'emitter 0.0.10' 'interpret 0.0.13' 'reason 0.0.10')
+-		priorruntime=('contract 0.0.16' 'emitter 0.0.9' 'interpret 0.0.12' 'reason 0.0.9')
+-		;;
+-	mcp)
+-		version=0.0.29; baseline=0.0.28
+-		runtime=('codec 0.0.3' 'contract 0.0.17' 'emitter 0.0.10' 'process 0.0.11' 'sse 0.0.7' 'tool 0.0.14' 'websocket 0.0.12')
+-		priorruntime=('codec 0.0.2' 'contract 0.0.16' 'emitter 0.0.9' 'process 0.0.10' 'sse 0.0.6' 'tool 0.0.13' 'websocket 0.0.11')
+-		;;
+-	middleware)
+-		version=0.0.20; baseline=0.0.19
+-		runtime=('abort 0.0.10' 'budget 0.0.10' 'contract 0.0.17' 'timeout 0.0.10')
+-		priorruntime=('abort 0.0.9' 'budget 0.0.9' 'contract 0.0.16' 'timeout 0.0.9')
++	agent)
++		version=0.0.21; baseline=0.0.20
++		runtime=('abort 0.0.10' 'budget 0.0.10' 'contract 0.0.17' 'database 0.0.14' 'emitter 0.0.10' 'queue 0.0.13' 'timeout 0.0.10' 'tool 0.0.14' 'workflow 0.0.18' 'workspace 0.0.8')
++		priorruntime=('abort 0.0.9' 'budget 0.0.9' 'contract 0.0.16' 'database 0.0.13' 'emitter 0.0.9' 'queue 0.0.12' 'timeout 0.0.9' 'tool 0.0.13' 'workflow 0.0.17' 'workspace 0.0.7')
+ 		;;
+-	program)
++	probe)
+ 		version=0.0.13; baseline=0.0.12
+-		runtime=('contract 0.0.17' 'emitter 0.0.10' 'qualifier 0.0.14' 'rater 0.0.14' 'reason 0.0.10')
+-		priorruntime=('contract 0.0.16' 'emitter 0.0.9' 'qualifier 0.0.13' 'rater 0.0.13' 'reason 0.0.9')
+-		;;
+-	worker)
+-		version=0.0.12; baseline=0.0.11
+-		runtime=('contract 0.0.17' 'database 0.0.14' 'emitter 0.0.10' 'pool 0.0.11' 'queue 0.0.13')
+-		priorruntime=('contract 0.0.16' 'database 0.0.13' 'emitter 0.0.9' 'pool 0.0.10' 'queue 0.0.12')
+-		;;
+-	workflow)
+-		version=0.0.18; baseline=0.0.17
+-		runtime=('abort 0.0.10' 'budget 0.0.10' 'contract 0.0.17' 'database 0.0.14' 'emitter 0.0.10' 'queue 0.0.13' 'timeout 0.0.10')
+-		priorruntime=('abort 0.0.9' 'budget 0.0.9' 'contract 0.0.16' 'database 0.0.13' 'emitter 0.0.9' 'queue 0.0.12' 'timeout 0.0.9')
++		runtime=('contract 0.0.17' 'emitter 0.0.10' 'lsp 0.0.7' 'mcp 0.0.29' 'queue 0.0.13' 'timeout 0.0.10' 'tool 0.0.14')
++		priorruntime=('contract 0.0.16' 'emitter 0.0.9' 'lsp 0.0.6' 'mcp 0.0.28' 'queue 0.0.12' 'timeout 0.0.9' 'tool 0.0.13')
+ 		;;
+-	*) fail 'package is not a dependent package' ;;
++	*) fail 'package is outside the Agent and Probe registry layer' ;;
+ esac
+-receipt="$SCR/d7n-$package-dependent-source-commit/head.txt"
++receipt="$SCR/d7n-$package-agent-probe-source-commit/head.txt"
+ test -f "$receipt" || fail 'source receipt is absent'
+ expected="$(<"$receipt")"
+ [[ "$expected" =~ ^[0-9a-f]{40}$ ]] || fail 'source receipt HEAD is unsafe'
+ 
+-priorpins=(
+-	"${priorruntime[@]}"
++refresheddevelopment=(
++	'guide 0.0.18'
++	'scaffold 0.0.64'
++	'test 0.0.14'
++)
++development=("${refresheddevelopment[@]}")
++priordevelopment=(
+ 	'guide 0.0.17'
+ 	'scaffold 0.0.63'
+ 	'test 0.0.13'
+-	'probe 0.0.12'
+ )
+ priorranges=(
+ 	"${priorruntime[@]}"
+-	'guide 0.0.17'
+-	'scaffold 0.0.63'
+-	'test 0.0.13'
++	"${priordevelopment[@]}"
++)
++if [ "$package" = agent ]; then
++	development+=('probe 0.0.12')
++	priordevelopment+=('probe 0.0.12')
++fi
++priorpins=(
++	"${priorruntime[@]}"
++	"${priordevelopment[@]}"
+ )
+-fields=()
+-priorfields=()
+ toolchain=('devDependencies.@microsoft/api-extractor' 'devDependencies.@types/node' 'devDependencies.oxfmt' 'devDependencies.oxlint' 'devDependencies.typescript' 'devDependencies.vite' 'devDependencies.vitest')
+-preserved=()
+-case "$package" in
+-	mcp)
+-		fields=('peerDependencies.@orkestrel/router 0.0.14' 'peerDependencies.@orkestrel/server 0.0.19' 'devDependencies.@orkestrel/router 0.0.14' 'devDependencies.@orkestrel/server 0.0.19')
+-		priorfields=('peerDependencies.@orkestrel/router 0.0.13' 'peerDependencies.@orkestrel/server 0.0.18' 'devDependencies.@orkestrel/router 0.0.13' 'devDependencies.@orkestrel/server 0.0.18')
+-		preserved+=('devDependencies.@modelcontextprotocol/conformance')
+-		toolchain+=('devDependencies.@vitest/browser-playwright' 'devDependencies.playwright')
+-		;;
+-	middleware)
+-		fields=('peerDependencies.@orkestrel/database 0.0.14' 'peerDependencies.@orkestrel/server 0.0.19' 'devDependencies.@orkestrel/database 0.0.14' 'devDependencies.@orkestrel/router 0.0.14' 'devDependencies.@orkestrel/server 0.0.19')
+-		priorfields=('peerDependencies.@orkestrel/database 0.0.13' 'peerDependencies.@orkestrel/server 0.0.18' 'devDependencies.@orkestrel/database 0.0.13' 'devDependencies.@orkestrel/router 0.0.13' 'devDependencies.@orkestrel/server 0.0.18')
+-		;;
+-	workflow)
+-		toolchain+=('devDependencies.@vitest/browser-playwright' 'devDependencies.playwright')
+-		;;
+-esac
+-priorpins+=("${priorfields[@]}")
+-priorranges+=("${priorfields[@]}")
++externalpeers=()
++if [ "$package" = probe ]; then
++	externalpeers=('peerDependencies.oxlint' 'peerDependencies.typescript' 'peerDependencies.vitest')
++fi
+ 
+ [[ "$label" =~ ^[[:alnum:]][[:alnum:]._-]*$ ]] || fail 'evidence label is unsafe'
+ test -d "$target/.git" || fail 'canonical target is absent'
+@@ -158,9 +129,7 @@
+ 
+ for pair in "${priorpins[@]}"; do
+ 	set -- $pair
+-	if [[ "$1" = *.* ]]; then
+-		key="$1"
+-	elif [[ "$1" = guide || "$1" = scaffold || "$1" = test || "$1" = probe ]]; then
++	if [[ "$1" = guide || "$1" = scaffold || "$1" = test || "$1" = probe ]]; then
+ 		key="devDependencies.@orkestrel/$1"
+ 	else
+ 		key="dependencies.@orkestrel/$1"
+@@ -170,20 +139,13 @@
+ 	test "$(<"$out/prior-$prior.stdout.txt")" = "^$2" || fail "prior range differs: $key"
+ done
+ 
+-for pair in "$package $baseline" 'guide 0.0.18' 'scaffold 0.0.64' 'test 0.0.14' 'probe 0.0.12' "${runtime[@]}"; do
++for pair in "$package $baseline" "${development[@]}" "${runtime[@]}"; do
+ 	set -- $pair
+ 	run "registry-$1" 120s npm view "@orkestrel/$1" version
+ 	test "$(<"$out/registry-$1.stdout.txt")" = "$2" || fail "registry version differs: $1"
+ done
+-for pair in "${fields[@]}"; do
+-	set -- $pair
+-	name=${1##*/}
+-	field=$(printf '%s' "$1" | tr './@' '---')
+-	run "registry-field-$field" 120s npm view "@orkestrel/$name" version
+-	test "$(<"$out/registry-field-$field.stdout.txt")" = "$2" || fail "registry version differs: $name"
+-done
+ run peer-meta-before 120s npm pkg get peerDependenciesMeta
+-for key in "${toolchain[@]}"; do
++for key in "${toolchain[@]}" "${externalpeers[@]}"; do
+ 	externalkey=$(printf '%s' "$key" | tr './@' '---')
+ 	run "external-before-$externalkey" 120s npm pkg get "$key"
+ 	[[ "$(<"$out/external-before-$externalkey.stdout.txt")" =~ ^\^[0-9]+\.[0-9]+\.[0-9]+([-.][[:alnum:].-]+)?$ ]] || fail "toolchain field is absent or unsafe: $key"
+@@ -191,17 +153,11 @@
+ 	run "external-registry-$externalkey" 120s node "$SCR/read-supported-toolchain.mjs" "$dependency" "$(<"$out/external-before-$externalkey.stdout.txt")"
+ 	[[ "$(<"$out/external-registry-$externalkey.stdout.txt")" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || fail "toolchain registry version is unsafe: $dependency"
+ done
+-for key in "${preserved[@]}"; do
+-	externalkey=$(printf '%s' "$key" | tr './@' '---')
+-	run "external-before-$externalkey" 120s npm pkg get "$key"
+-	test -s "$out/external-before-$externalkey.stdout.txt" || fail "preserved external field is absent: $key"
++for key in "${externalpeers[@]}"; do
++	dependency=${key#*.}
++	run "probe-$dependency-optional-before" 120s npm pkg get "peerDependenciesMeta.$dependency.optional"
++	test "$(<"$out/probe-$dependency-optional-before.stdout.txt")" = true || fail "Probe $dependency optional metadata differs"
+ done
+-case "$package" in
+-	middleware)
+-		run middleware-database-optional 120s npm pkg get peerDependenciesMeta.@orkestrel/database.optional
+-		test "$(<"$out/middleware-database-optional.stdout.txt")" = true || fail 'Middleware Database optional metadata differs'
+-		;;
+-esac
+ 
+ for suffix in lock install format prepublish; do
+ 	test ! -e "$SCR/$label-$suffix" || fail "action evidence exists: $label-$suffix"
+@@ -214,14 +170,13 @@
+ 	set -- $pair
+ 	run "set-runtime-$1" 120s npm pkg set "dependencies.@orkestrel/$1=^$2"
+ done
+-for pair in 'guide 0.0.18' 'scaffold 0.0.64' 'test 0.0.14'; do
++for pair in "${refresheddevelopment[@]}"; do
+ 	set -- $pair
+ 	run "set-development-$1" 120s npm pkg set "devDependencies.@orkestrel/$1=^$2"
+ done
+-for pair in "${fields[@]}"; do
+-	set -- $pair
+-	field=$(printf '%s' "$1" | tr './@' '---')
+-	run "set-field-$field" 120s npm pkg set "$1=^$2"
++for key in "${externalpeers[@]}"; do
++	externalkey=$(printf '%s' "$key" | tr './@' '---')
++	run "set-external-$externalkey" 120s npm pkg set "$key=^$(<"$out/external-registry-$externalkey.stdout.txt")"
+ done
+ run install-runtime 600s npm install --ignore-scripts
+ run changed 120s git -C "$target" diff --name-only
+@@ -263,15 +218,15 @@
+ run final-scaffold-dist 120s diff -r "$scaffoldpack" "$target/node_modules/@orkestrel/scaffold/dist"
+ run peer-meta-final 120s npm pkg get peerDependenciesMeta
+ cmp "$out/peer-meta-before.stdout.txt" "$out/peer-meta-final.stdout.txt"
+-for key in "${toolchain[@]}"; do
++for key in "${toolchain[@]}" "${externalpeers[@]}"; do
+ 	externalkey=$(printf '%s' "$key" | tr './@' '---')
+ 	run "external-final-$externalkey" 120s npm pkg get "$key"
+ 	test "$(<"$out/external-final-$externalkey.stdout.txt")" = "^$(<"$out/external-registry-$externalkey.stdout.txt")" || fail "toolchain range differs: $key"
+ done
+-for key in "${preserved[@]}"; do
+-	externalkey=$(printf '%s' "$key" | tr './@' '---')
+-	run "external-final-$externalkey" 120s npm pkg get "$key"
+-	cmp "$out/external-before-$externalkey.stdout.txt" "$out/external-final-$externalkey.stdout.txt"
++for key in "${externalpeers[@]}"; do
++	dependency=${key#*.}
++	run "probe-$dependency-optional-final" 120s npm pkg get "peerDependenciesMeta.$dependency.optional"
++	test "$(<"$out/probe-$dependency-optional-final.stdout.txt")" = true || fail "final Probe $dependency optional metadata differs"
+ done
+ if run registry-lock-local 120s rg -n -e 'file:|link:|workspace:|"link"[[:space:]]*:[[:space:]]*true' package.json package-lock.json; then
+ 	fail 'manifest or lock has a local resolution'
+@@ -279,25 +234,18 @@
+ test "$(<"$out/registry-lock-local.exit.txt")" = 1 || fail 'local resolution scan failed'
+ run roots 120s npm ls --depth=0
+ 
+-for pair in "${runtime[@]}" 'devDependencies.@orkestrel/guide 0.0.18' 'devDependencies.@orkestrel/scaffold 0.0.64' 'devDependencies.@orkestrel/test 0.0.14' 'devDependencies.@orkestrel/probe 0.0.12'; do
++for pair in "${runtime[@]}" "${development[@]}"; do
+ 	set -- $pair
+-	if [[ "$1" != *.* ]]; then
+-		key="dependencies.@orkestrel/$1"
++	if [[ "$1" = guide || "$1" = scaffold || "$1" = test || "$1" = probe ]]; then
++		key="devDependencies.@orkestrel/$1"
+ 	else
+-		key="$1"
++		key="dependencies.@orkestrel/$1"
+ 	fi
+ 	pin=$(printf '%s' "$key" | tr './@' '---')
+ 	run "pin-$pin" 120s npm pkg get "$key"
+ 	test "$(<"$out/pin-$pin.stdout.txt")" = "^$2" || fail "pin differs: $key"
+ done
+ 
+-for pair in "${fields[@]}"; do
+-	set -- $pair
+-	pin=$(printf '%s' "$1" | tr './@' '---')
+-	run "pin-$pin" 120s npm pkg get "$1"
+-	test "$(<"$out/pin-$pin.stdout.txt")" = "^$2" || fail "pin differs: $1"
+-done
+-
+ baselinepattern=${baseline//./\\.}
+ requireAbsent self-version "(?<![0-9])$baselinepattern(?![0-9])"
+ for pair in "${priorranges[@]}"; do
+@@ -309,7 +257,7 @@
+ 
+ run format 120s bash "$SCR/upper-layer-action.sh" "$package" format "$label-format" 120s
+ run prepublish 900s bash "$SCR/upper-layer-action.sh" "$package" prepublish "$label-prepublish" 900s
+-run pack 600s bash "$SCR/pack-dependent-final-verified.sh" "$package" "$label-pack" "$version" "$label-prepublish" "$baseline"
++run pack 600s bash "$SCR/pack-agent-probe-final-verified.sh" "$package" "$label-pack" "$version" "$label-prepublish" "$baseline"
+ capture after
+ cmp "$out/authored-before.sha256" "$out/authored-after.sha256"
+ cmp "$out/prepared-head.stdout.txt" "$out/head-after.txt" || fail 'source commit moved after preparation'

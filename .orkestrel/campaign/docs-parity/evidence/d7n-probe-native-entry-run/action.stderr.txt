@@ -1,0 +1,27 @@
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |guides| tests/guides.test.ts > Package > keeps behavioral interfaces and implementing classes in parity
+AssertionError: expected [ { spec: 'guides/probe.md', …(1) } ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   {
++     "spec": "guides/probe.md",
++     "text": "guides/probe.md RuntimeStage declares members and carries no method table.",
++   },
++ ]
+
+ ❯ tests/guides.test.ts:128:82
+    126|    it('keeps behavioral interfaces and implementing classes in parity'…
+    127|     expect(report.methods.filter((finding) => finding.spec === entry.s…
+    128|     expect(report.declarations.filter((finding) => finding.spec === en…
+       |                                                                                  ^
+    129|    })
+    130|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+

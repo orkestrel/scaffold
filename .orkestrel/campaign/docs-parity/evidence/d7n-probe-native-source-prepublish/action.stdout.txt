@@ -1,0 +1,5 @@
+Checking formatting...
+
+All matched files use the correct format.
+Finished in 1707ms on 71 files using 16 threads.
+file:///C:/Users/mikes/WebstormProjects/probe/tests/guides.test.ts:349:10: warning eslint(no-shadow): 'rows' is already declared in the upper scope. help: Consider renaming 'rows' to avoid shadowing the variable from the outer scope.

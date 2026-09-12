@@ -1,0 +1,13 @@
+{
+  "project": "configs/src/tsconfig.core.json",
+  "case": {
+    "files": [{ "path": "src/core/proof/helpers.ts", "text": "export function readGreeting(): string {\n\treturn 'hello'\n}\n" }],
+    "test": { "path": "tmp/probe/transport.test.ts", "text": "import { expect, test } from 'vitest'\nimport { readGreeting } from '../../src/core/proof/helpers.js'\ntest('returns the greeting', () => expect(readGreeting()).toBe('hello'))\n" }
+  },
+  "control": {
+    "files": [{ "path": "src/core/proof/helpers.ts", "text": "export function readGreeting(): number {\n\treturn 'hello'\n}\n" }],
+    "test": { "path": "tmp/probe/transport.test.ts", "text": "import { expect, test } from 'vitest'\nimport { readGreeting } from '../../src/core/proof/helpers.js'\ntest('returns the greeting', () => expect(readGreeting()).toBe('hello'))\n" },
+    "stage": "type",
+    "reason": "Returning a string from a numeric return contract must fail typechecking."
+  }
+}

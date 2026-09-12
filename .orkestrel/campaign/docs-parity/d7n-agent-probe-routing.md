@@ -22,8 +22,21 @@ writer owns only its named Scaffold scratch scripts. No role runs installs,
 gates, builds, ref changes or publication. No Workflow tool is registered, so
 the tracked native task mechanism carries the disjoint work.
 
-Root attempted to contact the prior design analyst for reuse. The harness
-returned an agent-thread capacity error while the writers were active. This is
-not a bench-liveness result. Retry after a writer returns. Keep the owner's
-separate independent review and root-recorded gate substitution for a fresh
-verifier. No source review is claimed at this point.
+The prior design analyst became available after the writers returned. It holds
+the reused objective source review. The owner's separate independent reviewer
+holds the other lane on the same file brief, blind to the objective lane.
+Root-recorded gates replace a fresh verifier under the owner's instruction.
+The earlier thread-capacity refusal was not a bench-liveness result.
+
+Agent's native parity found missing declaration tables and store examples;
+the bounded successors closed those gaps and root source prepublish passed.
+Probe's native parity found a missing RuntimeStage table while its receipt case
+passed. The table successor returned. Root then reproduced a shadowed-variable
+lint failure and required the extracted helpers to use undefined for absence.
+That correction returned; root's corrected prepublish is running. No source
+acceptance or registry readiness is claimed before the reviews and gates close.
+
+The landing declaration successor adds guides/probe.md only to Probe's source
+allowlist. Rebuild the active commit carrier from the retained
+commit-agent-probe-native-entry-declarations.sh successor. The original retained
+carrier remains unchanged. Final own-guide drift is still refused.

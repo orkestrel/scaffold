@@ -1,0 +1,47 @@
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |guides| tests/guides.test.ts > Agent > documents an example for every method
+AssertionError: expected [ …(6) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   {
++     "spec": "guides/agent.md",
++     "text": "guides/agent.md has no example for ConversationStoreInterface.get.",
++   },
++   {
++     "spec": "guides/agent.md",
++     "text": "guides/agent.md has no example for ConversationStoreInterface.set.",
++   },
++   {
++     "spec": "guides/agent.md",
++     "text": "guides/agent.md has no example for MemoryConversationStore.get.",
++   },
++   {
++     "spec": "guides/agent.md",
++     "text": "guides/agent.md has no example for MemoryConversationStore.set.",
++   },
++   {
++     "spec": "guides/agent.md",
++     "text": "guides/agent.md has no example for DatabaseConversationStore.get.",
++   },
++   {
++     "spec": "guides/agent.md",
++     "text": "guides/agent.md has no example for DatabaseConversationStore.set.",
++   },
++ ]
+
+ ❯ tests/guides.test.ts:128:86
+    126|
+    127|    it('documents an example for every method', () => {
+    128|     expect(report.examples.methods.filter((finding) => finding.spec ==…
+       |                                                                                      ^
+    129|    })
+    130|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+

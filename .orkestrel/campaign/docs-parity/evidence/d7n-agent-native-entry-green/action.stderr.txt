@@ -1,0 +1,39 @@
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |guides| tests/guides.test.ts > Agent > keeps behavioral interfaces and implementing classes in parity
+AssertionError: expected [ …(4) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   {
++     "spec": "guides/agent.md",
++     "text": "guides/agent.md ConversationStoreInterface declares members and carries no method table.",
++   },
++   {
++     "spec": "guides/agent.md",
++     "text": "guides/agent.md DatabaseConversationStore declares members and carries no method table.",
++   },
++   {
++     "spec": "guides/agent.md",
++     "text": "guides/agent.md MemoryConversationStore declares members and carries no method table.",
++   },
++   {
++     "spec": "guides/agent.md",
++     "text": "guides/agent.md StreamInterface declares members and carries no method table.",
++   },
++ ]
+
+ ❯ tests/guides.test.ts:113:82
+    111|    it('keeps behavioral interfaces and implementing classes in parity'…
+    112|     expect(report.methods.filter((finding) => finding.spec === entry.s…
+    113|     expect(report.declarations.filter((finding) => finding.spec === en…
+       |                                                                                  ^
+    114|    })
+    115|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+

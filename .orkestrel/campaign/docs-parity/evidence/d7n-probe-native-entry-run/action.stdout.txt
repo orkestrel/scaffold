@@ -1,0 +1,10 @@
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/probe
+
+·············x················
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 29 passed (30)
+   Start at  20:45:28
+   Duration  12.06s (transform 171ms, setup 32ms, import 830ms, tests 11.05s, environment 0ms)
+

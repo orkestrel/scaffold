@@ -29,8 +29,10 @@ d7n-dependent-supported-carrier-verdict.md for its accepted correction.
 
 The refreshed catalog places Agent and Probe in L5. Their fresh origin/main
 ancestry checks pass and their accepted tooling overlays preserve tracked state.
-Native-entry writers are active under d7n-agent-probe-layer-plan.md; neither
-package has closed. Read d7n-agent-probe-catalog-result.md and the retained scout
+Native-entry changes have returned under d7n-agent-probe-layer-plan.md. Agent's
+source prepublish passed; Probe's corrected source prepublish and independent
+source reviews are running. Neither package has closed. Read
+d7n-agent-probe-catalog-result.md and the retained scout
 report, qualifying its refused shell readings with root's fresh evidence.
 MCP-to-Probe integration and later Agent/Ollama/Toolbox work remain open. Preserve Ollama's owner edits and the
 Supervisor owner decision. Probe development re-pins and final fleet development
