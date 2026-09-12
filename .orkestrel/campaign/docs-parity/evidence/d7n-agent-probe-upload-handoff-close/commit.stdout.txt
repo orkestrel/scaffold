@@ -1,0 +1,28 @@
+[main b73f9073] Record Agent and Probe operator handoff: d7n-agent-probe-upload-handoff-close
+ 30 files changed, 206 insertions(+), 5 deletions(-)
+ create mode 100644 .orkestrel/campaign/docs-parity/d7n-agent-probe-upload-handoff-independent-report.md
+ create mode 100644 .orkestrel/campaign/docs-parity/d7n-agent-probe-upload-handoff-objective-report.md
+ create mode 100644 .orkestrel/campaign/docs-parity/d7n-agent-probe-upload-handoff-review-brief.md
+ create mode 100644 .orkestrel/campaign/docs-parity/d7n-agent-probe-upload-handoff-verdict.md
+ create mode 100644 .orkestrel/campaign/docs-parity/evidence/d7n-agent-probe-confirmation-preprompt/agent/archive-check.txt
+ create mode 100644 .orkestrel/campaign/docs-parity/evidence/d7n-agent-probe-confirmation-preprompt/agent/branch.txt
+ create mode 100644 .orkestrel/campaign/docs-parity/evidence/d7n-agent-probe-confirmation-preprompt/agent/confirmation.exit.txt
+ create mode 100644 .orkestrel/campaign/docs-parity/evidence/d7n-agent-probe-confirmation-preprompt/agent/dist.diff.txt
+ create mode 100644 .orkestrel/campaign/docs-parity/evidence/d7n-agent-probe-confirmation-preprompt/agent/fetch.exit.txt
+ create mode 100644 .orkestrel/campaign/docs-parity/evidence/d7n-agent-probe-confirmation-preprompt/agent/fetch.stderr.txt
+ create mode 100644 .orkestrel/campaign/docs-parity/evidence/d7n-agent-probe-confirmation-preprompt/agent/fetch.stdout.txt
+ create mode 100644 .orkestrel/campaign/docs-parity/evidence/d7n-agent-probe-confirmation-preprompt/agent/manifest-check.txt
+ create mode 100644 .orkestrel/campaign/docs-parity/evidence/d7n-agent-probe-confirmation-preprompt/agent/refs.txt
+ create mode 100644 .orkestrel/campaign/docs-parity/evidence/d7n-agent-probe-confirmation-preprompt/agent/status.txt
+ create mode 100644 .orkestrel/campaign/docs-parity/evidence/d7n-agent-probe-confirmation-preprompt/confirmation.exit.txt
+ create mode 100644 .orkestrel/campaign/docs-parity/evidence/d7n-agent-probe-confirmation-preprompt/probe/archive-check.txt
+ create mode 100644 .orkestrel/campaign/docs-parity/evidence/d7n-agent-probe-confirmation-preprompt/probe/branch.txt
+ create mode 100644 .orkestrel/campaign/docs-parity/evidence/d7n-agent-probe-confirmation-preprompt/probe/confirmation.exit.txt
+ create mode 100644 .orkestrel/campaign/docs-parity/evidence/d7n-agent-probe-confirmation-preprompt/probe/dist.diff.txt
+ create mode 100644 .orkestrel/campaign/docs-parity/evidence/d7n-agent-probe-confirmation-preprompt/probe/fetch.exit.txt
+ create mode 100644 .orkestrel/campaign/docs-parity/evidence/d7n-agent-probe-confirmation-preprompt/probe/fetch.stderr.txt
+ create mode 100644 .orkestrel/campaign/docs-parity/evidence/d7n-agent-probe-confirmation-preprompt/probe/fetch.stdout.txt
+ create mode 100644 .orkestrel/campaign/docs-parity/evidence/d7n-agent-probe-confirmation-preprompt/probe/manifest-check.txt
+ create mode 100644 .orkestrel/campaign/docs-parity/evidence/d7n-agent-probe-confirmation-preprompt/probe/refs.txt
+ create mode 100644 .orkestrel/campaign/docs-parity/evidence/d7n-agent-probe-confirmation-preprompt/probe/status.txt
+ create mode 100644 .orkestrel/campaign/docs-parity/evidence/d7n-agent-probe-upload-prompt-parse/parse.exit.txt

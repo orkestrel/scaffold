@@ -12,8 +12,11 @@ Written 2026-09-08T03:35Z and revised 2026-09-08T04:05Z at the owner's request, 
 | probe | 0.0.13 | Clean canonical main at 22eca15dce31021b222dfa8652a01d2bb2c56dfe; campaign/main refs match; final prepublishOnly and actual pack passed |
 
 The root prompt.txt now contains the Agent-then-Probe upload line. Parser-only
-execution and fresh layer confirmation passed. Operator review and record landing
-are pending. No owner upload has been reported for this layer. Root has not
+execution, independent/reused objective reviews and operator landing passed.
+The prompt landed at Scaffold b73f9073 and was pushed to main, campaign and the
+designated branch. Before/after layer confirmations passed. Read
+d7n-agent-probe-upload-handoff-verdict.md and d7n-agent-probe-upload-handoff-landing.md.
+No owner upload has been reported for this layer. Root has not
 authenticated or published. Read d7n-agent-probe-preparation-state.md and each
 registry release landing. The prior dependent upload is consumed.
 

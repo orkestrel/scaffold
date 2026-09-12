@@ -16,7 +16,9 @@ unrefreshed registration. Preserve the heavy-fixture and historical proof ruling
 
 The dependent upload prompt is consumed. The selected layer is ready on clean
 canonical main, and fresh confirmation passed. The replacement Agent-then-Probe
-line passed PowerShell parsing; operator review and record landing remain open.
+line passed PowerShell parsing and independent/reused objective review. It landed
+at Scaffold b73f9073 and was pushed to main/campaign/designated refs. Before/after
+layer confirmation passed. Owner upload remains pending.
 No authentication or upload is root-owned.
 
 The retained d7n-probe-final-registry-visit evidence is a landing-time snapshot,

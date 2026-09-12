@@ -1,0 +1,30 @@
+ M .orkestrel/campaign/docs-parity/d7n-agent-probe-preparation-state.md
+ M .orkestrel/campaign/docs-parity/d7n-agent-probe-routing.md
+ M .orkestrel/campaign/docs-parity/handoff.md
+ M prompt.txt
+?? .orkestrel/campaign/docs-parity/d7n-agent-probe-upload-handoff-independent-report.md
+?? .orkestrel/campaign/docs-parity/d7n-agent-probe-upload-handoff-objective-report.md
+?? .orkestrel/campaign/docs-parity/d7n-agent-probe-upload-handoff-review-brief.md
+?? .orkestrel/campaign/docs-parity/d7n-agent-probe-upload-handoff-verdict.md
+?? .orkestrel/campaign/docs-parity/evidence/d7n-agent-probe-confirmation-preprompt/agent/archive-check.txt
+?? .orkestrel/campaign/docs-parity/evidence/d7n-agent-probe-confirmation-preprompt/agent/branch.txt
+?? .orkestrel/campaign/docs-parity/evidence/d7n-agent-probe-confirmation-preprompt/agent/confirmation.exit.txt
+?? .orkestrel/campaign/docs-parity/evidence/d7n-agent-probe-confirmation-preprompt/agent/dist.diff.txt
+?? .orkestrel/campaign/docs-parity/evidence/d7n-agent-probe-confirmation-preprompt/agent/fetch.exit.txt
+?? .orkestrel/campaign/docs-parity/evidence/d7n-agent-probe-confirmation-preprompt/agent/fetch.stderr.txt
+?? .orkestrel/campaign/docs-parity/evidence/d7n-agent-probe-confirmation-preprompt/agent/fetch.stdout.txt
+?? .orkestrel/campaign/docs-parity/evidence/d7n-agent-probe-confirmation-preprompt/agent/manifest-check.txt
+?? .orkestrel/campaign/docs-parity/evidence/d7n-agent-probe-confirmation-preprompt/agent/refs.txt
+?? .orkestrel/campaign/docs-parity/evidence/d7n-agent-probe-confirmation-preprompt/agent/status.txt
+?? .orkestrel/campaign/docs-parity/evidence/d7n-agent-probe-confirmation-preprompt/confirmation.exit.txt
+?? .orkestrel/campaign/docs-parity/evidence/d7n-agent-probe-confirmation-preprompt/probe/archive-check.txt
+?? .orkestrel/campaign/docs-parity/evidence/d7n-agent-probe-confirmation-preprompt/probe/branch.txt
+?? .orkestrel/campaign/docs-parity/evidence/d7n-agent-probe-confirmation-preprompt/probe/confirmation.exit.txt
+?? .orkestrel/campaign/docs-parity/evidence/d7n-agent-probe-confirmation-preprompt/probe/dist.diff.txt
+?? .orkestrel/campaign/docs-parity/evidence/d7n-agent-probe-confirmation-preprompt/probe/fetch.exit.txt
+?? .orkestrel/campaign/docs-parity/evidence/d7n-agent-probe-confirmation-preprompt/probe/fetch.stderr.txt
+?? .orkestrel/campaign/docs-parity/evidence/d7n-agent-probe-confirmation-preprompt/probe/fetch.stdout.txt
+?? .orkestrel/campaign/docs-parity/evidence/d7n-agent-probe-confirmation-preprompt/probe/manifest-check.txt
+?? .orkestrel/campaign/docs-parity/evidence/d7n-agent-probe-confirmation-preprompt/probe/refs.txt
+?? .orkestrel/campaign/docs-parity/evidence/d7n-agent-probe-confirmation-preprompt/probe/status.txt
+?? .orkestrel/campaign/docs-parity/evidence/d7n-agent-probe-upload-prompt-parse/parse.exit.txt
