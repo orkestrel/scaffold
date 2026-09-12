@@ -10,6 +10,7 @@ import type { Audit, Blueprint, Finding, Plan, ScaffoldErrorCode, Snapshot } fro
 import type { CLICommand, CLIOptions, Verb } from '../src/bin/types.js'
 import type { TestGuardCase, TestPathCase } from './setup.js'
 import type { ServerResponse } from 'node:http'
+import type { ExecuteResult } from '@orkestrel/process'
 import type { ESTree } from 'vite'
 import { execFileSync } from 'node:child_process'
 import { createServer } from 'node:http'
@@ -17,7 +18,8 @@ import { createRequire } from 'node:module'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { gzipSync } from 'node:zlib'
-import { isArray, isRecord } from '@orkestrel/contract'
+import { isArray, isRecord, isString, parseJSON } from '@orkestrel/contract'
+import { execute, resolveExecutable } from '@orkestrel/process/server'
 import { parseSync, transformWithOxc } from 'vite'
 import {
 	CATALOG_AGENT_PATH,
@@ -69,6 +71,7 @@ import {
 	MAX_UPSTREAM_TIMEOUT,
 	pathToStorage,
 	readFileHex,
+	readFileText,
 	readHostFloor,
 	stageHost,
 } from '@src/server'
@@ -279,6 +282,39 @@ export interface TestUpstreamInterface {
 	readonly accepts: ReadonlyArray<string | undefined>
 	readonly peak: number
 	arrival(path: string): Promise<void>
+	destroy(): Promise<void>
+}
+
+/** Describes the controllable protocol outcomes served by an Ollama fixture. */
+export interface TestOllamaOptions {
+	/** If `true`, `/api/show` reports the selected model; if `false`, it reports absence. */
+	readonly present?: boolean
+	/** If `true`, `/api/pull` reports completion; if `false`, it reports unfinished work. */
+	readonly pull?: boolean
+	/** If `true`, `/api/chat` reports completion; if `false`, it reports unfinished work. */
+	readonly warm?: boolean
+	/** Selects HTTP status responses independently from their protocol bodies. */
+	readonly status?: TestOllamaStatus
+}
+
+/** Describes the HTTP status responses served by an Ollama fixture. */
+export interface TestOllamaStatus {
+	readonly version?: number
+	readonly pull?: number
+	readonly warm?: number
+}
+
+/** Describes one HTTP request received by the Ollama fixture. */
+export interface TestOllamaRequest {
+	readonly method: string | undefined
+	readonly path: string | undefined
+	readonly body: unknown
+}
+
+/** Describes a running protocol-faithful Ollama fixture. */
+export interface TestOllamaInterface {
+	readonly url: string
+	readonly requests: readonly TestOllamaRequest[]
 	destroy(): Promise<void>
 }
 
@@ -2080,6 +2116,167 @@ export async function createUpstreamServer(
 			return arrivals.get(path) ?? Promise.resolve()
 		},
 		destroy: loopback.destroy,
+	}
+}
+
+/**
+ * Normalizes a host path for a Bash argument.
+ *
+ * @param path - The host path to normalize.
+ * @returns The path with slash separators Bash accepts on every supported host.
+ */
+export function normalizeBashPath(path: string): string {
+	return process.platform === 'win32' ? path.replaceAll('\\', '/') : path
+}
+
+/**
+ * Reads the configured Ollama SessionStart command.
+ *
+ * @returns The command that addresses `scripts/ollama.sh`.
+ * @throws When the settings file does not declare that command.
+ */
+export function readOllamaHookCommand(): string {
+	const text = readFileText(WORKSPACE_ROOT, '.claude/settings.json')
+	if (text === undefined) throw new Error('Claude settings are unreadable')
+	const settings = parseJSON(text)
+	if (!isRecord(settings) || !isRecord(settings.hooks) || !isArray(settings.hooks.SessionStart)) {
+		throw new Error('Claude settings declare no SessionStart hooks')
+	}
+	for (const session of settings.hooks.SessionStart) {
+		if (!isRecord(session) || !isArray(session.hooks)) continue
+		for (const hook of session.hooks) {
+			if (!isRecord(hook) || !isString(hook.command)) continue
+			if (hook.command.includes('scripts/ollama.sh')) return hook.command
+		}
+	}
+	throw new Error('Claude settings declare no Ollama SessionStart command')
+}
+
+/**
+ * Executes the configured Ollama SessionStart command against a project path.
+ *
+ * @param project - The project path exposed to the hook.
+ * @param remote - The Claude Code remote marker, or `undefined` when absent.
+ * @returns The bounded child-process outcome.
+ */
+export async function executeOllamaHook(
+	project: string,
+	remote: string | undefined,
+): Promise<ExecuteResult> {
+	const scratch = createScratch({ prefix: SCRATCH_PREFIX })
+	try {
+		const hook = scratch.write('hook.sh', `${readOllamaHookCommand()}\n`)
+		return await execute(
+			{
+				file: resolveExecutable('bash', { workspace: WORKSPACE_ROOT }) ?? 'bash',
+				arguments: [normalizeBashPath(hook)],
+				environment: {
+					CLAUDE_CODE_REMOTE: remote,
+					CLAUDE_PROJECT_DIR: normalizeBashPath(project),
+				},
+			},
+			{ workspace: WORKSPACE_ROOT, timeout: 10_000, strict: false },
+		)
+	} finally {
+		scratch.destroy()
+	}
+}
+
+/**
+ * Executes the repository's Ollama setup script against a selected endpoint and model.
+ *
+ * @param host - The endpoint exposed through `OLLAMA_HOST`.
+ * @param model - The model exposed through `OLLAMA_MODEL`.
+ * @returns The bounded child-process outcome.
+ */
+export function executeOllamaSetup(host: string, model: string): Promise<ExecuteResult> {
+	return execute(
+		{
+			file: resolveExecutable('bash', { workspace: WORKSPACE_ROOT }) ?? 'bash',
+			arguments: [normalizeBashPath(join(WORKSPACE_ROOT, 'scripts', 'ollama.sh'))],
+			environment: {
+				CI: undefined,
+				CLAUDE_CODE_REMOTE: undefined,
+				OLLAMA_HOST: host,
+				OLLAMA_MODEL: model,
+			},
+		},
+		{ workspace: WORKSPACE_ROOT, timeout: 10_000, strict: false },
+	)
+}
+
+/**
+ * Starts a real loopback HTTP fixture implementing the Ollama setup endpoints.
+ *
+ * @param options - The model-presence and completion outcomes to serve.
+ * @returns The running fixture with its recorded requests.
+ */
+export async function createOllamaServer(
+	options: TestOllamaOptions = {},
+): Promise<TestOllamaInterface> {
+	const requests: TestOllamaRequest[] = []
+	const server = createServer(async (request, response) => {
+		const chunks: Buffer[] = []
+		for await (const chunk of request) chunks.push(Buffer.from(chunk))
+		const text = Buffer.concat(chunks).toString('utf8')
+		const method = request.method
+		const path = request.url
+		requests.push({ method, path, body: text === '' ? undefined : parseJSON(text) })
+		if (method === 'GET' && path === '/api/version') {
+			const status = options.status?.version ?? 200
+			writeUpstreamReply(
+				response,
+				status >= 300 && status < 400
+					? { status, body: '{"version":"fixture"}', location: '/redirected' }
+					: { status, body: '{"version":"fixture"}' },
+			)
+			return
+		}
+		if (method === 'POST' && path === '/api/show') {
+			writeUpstreamReply(
+				response,
+				options.present === false
+					? { status: 404, body: '{"error":"model not found"}' }
+					: { status: 200, body: '{"model_info":{}}' },
+			)
+			return
+		}
+		if (method === 'POST' && path === '/api/pull') {
+			const status = options.status?.pull ?? 200
+			const body = options.pull === false ? '{"status":"pulling"}' : '{\n"status":"success"\n}'
+			writeUpstreamReply(
+				response,
+				status >= 300 && status < 400
+					? { status, body, location: '/redirected' }
+					: { status, body },
+			)
+			return
+		}
+		if (method === 'POST' && path === '/api/chat') {
+			const status = options.status?.warm ?? 200
+			const body =
+				options.warm === false
+					? '{"done":false,"message":{"role":"assistant","content":""}}'
+					: '{\n"done":true,\n"message":{"role":"assistant","content":""}\n}'
+			writeUpstreamReply(
+				response,
+				status >= 300 && status < 400
+					? { status, body, location: '/redirected' }
+					: { status, body },
+			)
+			return
+		}
+		writeUpstreamReply(response, { status: 404, body: '{"error":"not found"}' })
+	})
+	const loopback = await createLoopback(server)
+	return {
+		url: loopback.url,
+		get requests() {
+			return [...requests]
+		},
+		destroy() {
+			return loopback.destroy()
+		},
 	}
 }
 

@@ -163,8 +163,8 @@ mechanics and bounded exceptions from [color-modes.md](color-modes.md), and the 
 points from [bootstrap-reference.md](bootstrap-reference.md) → Theming & design tokens.
 
 Flip the contrast for status, tags, and callouts: a dark tone of the hue on its light tint keeps
-the color without the weight of a dark fill, and reserves the solid pair for the one element that
-should dominate. Reserve explicit foreground/background pairs for intentional solid, inverse, or
+the color without the weight of a dark fill, and reserves the solid pair for the primary
+element. Reserve explicit foreground/background pairs for intentional solid, inverse, or
 image-backed regions. Keep a secondary foreground within that region's tested contract; do not apply neutral
 grey or reduced opacity by habit. When no quieter foreground passes, separate by weight or spacing.
 Review hierarchy in light and dark independently. Preserve relative prominence and useful

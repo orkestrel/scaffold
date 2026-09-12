@@ -1,9 +1,9 @@
 {
 	"@orkestrel/contract": "^0.0.17",
-	"@orkestrel/guide": "^0.0.17",
+	"@orkestrel/guide": "^0.0.18",
 	"@orkestrel/html": "^0.0.9",
-	"@orkestrel/probe": "^0.0.12",
-	"@orkestrel/scaffold": "^0.0.64",
+	"@orkestrel/probe": "^0.0.13",
+	"@orkestrel/scaffold": "^0.0.65",
 	"@orkestrel/test": "^0.0.14",
 	"@types/node": "^26.5.0",
 	"@vitejs/plugin-vue": "^6.0.8",

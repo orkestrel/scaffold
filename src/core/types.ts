@@ -199,8 +199,8 @@ export interface Override {
  *
  * `service` says the workspace runs a live-service Vitest project over
  * `tests/service`, and it alone registers that project. `vendors` names each
- * external service the workspace drives and emits the provisioner skeleton that
- * starts them. Neither is derivable from the other: a workspace may declare
+ * external service the workspace drives and emits an inventory skeleton that
+ * starts nothing. Neither is derivable from the other: a workspace may declare
  * vendors before it writes a suite, and a suite may drive a service the skeleton
  * does not start.
  */

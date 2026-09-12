@@ -209,7 +209,7 @@ a pass label alone.
   test Escape/focus return, resize while open, and return below the threshold. Carry selected IDs,
   filters, sort, field values, and active detail context through both directions. Check reachable
   dialog actions in a short viewport and with enlarged text. Confirm actual row/filter changes,
-  not just `aria-sort`, labels, or a success message.
+  not merely `aria-sort`, labels, or a success message.
 - **Negative control.** Remove the required narrow trigger, break its target, and erase a selected
   record during a harness resize. Drive the same interaction assertions; each must fail. Mark an
   absent component not applicable rather than treating an empty locator set as success.

@@ -79,9 +79,13 @@ import {
 	CASE_FOLDING,
 	createCheckout,
 	createHostRoot,
+	createOllamaServer,
 	DIGEST_CASES,
+	executeOllamaHook,
+	executeOllamaSetup,
 	GIT_PATH_CASES,
 	listExecutablePaths,
+	normalizeBashPath,
 	PROTECTED_PATH_CASES,
 	readErrorCode,
 	SCRATCH_PREFIX,
@@ -90,6 +94,190 @@ import {
 	WORKSPACE_ROOT,
 } from '../../setupServer.js'
 import { createScratch, supportsFileLinks, supportsMode } from '@orkestrel/test/server'
+
+describe('Ollama setup', () => {
+	it("uses the running host's Bash path form", () => {
+		const path = 'directory\\literal'
+		expect(normalizeBashPath(path)).toBe(process.platform === 'win32' ? 'directory/literal' : path)
+	})
+
+	it('invokes the registered hook only in Claude Code cloud', async () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const project = join(workspace.path, 'missing-project')
+			const absent = await executeOllamaHook(project, undefined)
+			const local = await executeOllamaHook(project, 'false')
+			const cloud = await executeOllamaHook(project, 'true')
+			expect(absent.failed).toBe(false)
+			expect(local.failed).toBe(false)
+			expect(cloud.failed).toBe(true)
+			expect(cloud.stderr).toContain('scripts/ollama.sh')
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('reuses a reachable daemon and serializes the selected model as JSON data', async () => {
+		const server = await createOllamaServer()
+		const model = 'model "quoted" \\ path'
+		try {
+			const result = await executeOllamaSetup(server.url.replace('http://', ''), model)
+			expect(result.failed).toBe(false)
+			expect(server.requests).toStrictEqual([
+				{ method: 'GET', path: '/api/version', body: undefined },
+				{ method: 'POST', path: '/api/show', body: { model } },
+				{
+					method: 'POST',
+					path: '/api/chat',
+					body: {
+						model,
+						messages: [{ role: 'user', content: 'hi' }],
+						stream: false,
+						think: false,
+						keep_alive: '30m',
+						options: { num_predict: 1 },
+					},
+				},
+			])
+		} finally {
+			await server.destroy()
+		}
+	})
+
+	it('pulls an absent model before completing the warm request', async () => {
+		const server = await createOllamaServer({ present: false })
+		const model = 'fixture-model'
+		try {
+			const result = await executeOllamaSetup(server.url, model)
+			expect(result.failed).toBe(false)
+			expect(server.requests).toStrictEqual([
+				{ method: 'GET', path: '/api/version', body: undefined },
+				{ method: 'POST', path: '/api/show', body: { model } },
+				{ method: 'POST', path: '/api/pull', body: { model, stream: false } },
+				{
+					method: 'POST',
+					path: '/api/chat',
+					body: {
+						model,
+						messages: [{ role: 'user', content: 'hi' }],
+						stream: false,
+						think: false,
+						keep_alive: '30m',
+						options: { num_predict: 1 },
+					},
+				},
+			])
+		} finally {
+			await server.destroy()
+		}
+	})
+
+	it('fails when the warm response does not report completion', async () => {
+		const server = await createOllamaServer({ warm: false })
+		try {
+			const result = await executeOllamaSetup(server.url, 'fixture-model')
+			expect(result.failed).toBe(true)
+			expect(server.requests.map((request) => request.path)).toStrictEqual([
+				'/api/version',
+				'/api/show',
+				'/api/chat',
+			])
+		} finally {
+			await server.destroy()
+		}
+	})
+
+	it('fails when the pull response does not report completion', async () => {
+		const server = await createOllamaServer({ present: false, pull: false })
+		try {
+			const result = await executeOllamaSetup(server.url, 'fixture-model')
+			expect(result.failed).toBe(true)
+			expect(server.requests.map((request) => request.path)).toStrictEqual([
+				'/api/version',
+				'/api/show',
+				'/api/pull',
+			])
+		} finally {
+			await server.destroy()
+		}
+	})
+
+	it('does not classify a numeric-prefix DNS hostname as loopback', async () => {
+		const result = await executeOllamaSetup('http://127.example.invalid:11434', 'fixture-model')
+		expect(result.failed).toBe(true)
+		expect(result.stderr).toContain(
+			'the configured endpoint is unreachable; local startup is limited to HTTP loopback',
+		)
+		expect(result.stderr).not.toContain('starting Ollama from Git Bash is unsupported')
+	})
+
+	it('refuses redirected version readiness without starting a local daemon', async () => {
+		const server = await createOllamaServer({ status: { version: 302 } })
+		try {
+			const host = server.url.replace('127.0.0.1', '[::ffff:127.0.0.1]')
+			const result = await executeOllamaSetup(host, 'fixture-model')
+			expect(result.failed).toBe(true)
+			expect(result.stderr).toContain(
+				'the configured endpoint is unreachable; local startup is limited to HTTP loopback',
+			)
+			expect(server.requests.map((request) => request.path)).toStrictEqual(['/api/version'])
+		} finally {
+			await server.destroy()
+		}
+	})
+
+	it('refuses a redirected pull with a completed protocol body', async () => {
+		const server = await createOllamaServer({ present: false, status: { pull: 302 } })
+		try {
+			const result = await executeOllamaSetup(server.url, 'fixture-model')
+			expect(result.failed).toBe(true)
+			expect(server.requests.map((request) => request.path)).toStrictEqual([
+				'/api/version',
+				'/api/show',
+				'/api/pull',
+			])
+		} finally {
+			await server.destroy()
+		}
+	})
+
+	it('refuses a redirected warm response with a completed protocol body', async () => {
+		const server = await createOllamaServer({ status: { warm: 302 } })
+		try {
+			const result = await executeOllamaSetup(server.url, 'fixture-model')
+			expect(result.failed).toBe(true)
+			expect(server.requests.map((request) => request.path)).toStrictEqual([
+				'/api/version',
+				'/api/show',
+				'/api/chat',
+			])
+		} finally {
+			await server.destroy()
+		}
+	})
+
+	it('refuses malformed endpoint and model inputs before making a request', async () => {
+		const server = await createOllamaServer()
+		const credential = 'fixture-credential'
+		try {
+			const nested = await executeOllamaSetup(`${server.url}/nested`, 'fixture-model')
+			const secured = await executeOllamaSetup(
+				server.url.replace('http://', `http://${credential}@`),
+				'fixture-model',
+			)
+			const emptyHost = await executeOllamaSetup('', 'fixture-model')
+			const emptyModel = await executeOllamaSetup(server.url, '')
+			expect(nested.failed).toBe(true)
+			expect(secured.failed).toBe(true)
+			expect(emptyHost.failed).toBe(true)
+			expect(emptyModel.failed).toBe(true)
+			expect(secured.stderr).not.toContain(credential)
+			expect(server.requests).toStrictEqual([])
+		} finally {
+			await server.destroy()
+		}
+	})
+})
 
 describe('matchesMissingPath', () => {
 	it('reads only an ENOENT error as absence', () => {

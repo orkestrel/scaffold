@@ -41,7 +41,10 @@ Direct Windows daemon reuse passed at the target entry. Read
 d7n-ollama-hook-tarball-trial-reading.md. Target prepublish, including real service,
 and independent application review passed. The clean canonical campaign candidate
 is pushed atd6e868d8; read d7n-ollama-hook-candidate-verdict.md. Ubuntu run34676625435
-is executing the pushed script. No corrected release commit or upload has run.
+passed service setup on Node26 and is running the live suite. The Node22.12.0 job
+fails earlier at lint while loading configs/policy.ts. Read
+d7n-scaffold-hook-candidate-verdict.md for the source checkpoint boundary; this
+candidate is not release acceptance. No upload has run.
 
 The Agent/Probe upload is registry-confirmed and its prompt is consumed. The
 refreshed catalog selects Ollama0.0.15 and Toolbox0.0.13 preparation. Root confirmed

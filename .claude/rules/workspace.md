@@ -166,8 +166,8 @@ the `test:bench` script joins no chain, so no gate runs either mode; the project
 ignored by git; and `.claude/rules/tests.md` governs what may live there.
 
 - Define a cross-cutting project only for a proof the package actually has.
-- A live-service project is the `service` project in the preceding table, `scripts/service.sh`
-  provisions what it drives, and `.claude/rules/tests.md` governs it. Name it `service` whatever it
+- Prepare the external service before invoking the `service` project. Use `tests/setupService.ts`
+  to verify readiness, apply `.claude/rules/tests.md`, and name the project `service` whatever it
   drives.
 - In a publishing workspace, a project leaves the default run when it drives a live external
   service or is hermetic but slow — it spawns processes, packs, installs, or drives a real build.

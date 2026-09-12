@@ -1,0 +1,5 @@
+warning: in the working copy of '.orkestrel/campaign/docs-parity/evidence/d7n-ollama-hook-redirect-red/probe.stderr.txt', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of '.orkestrel/campaign/docs-parity/evidence/d7n-ollama-hook-trial-pack/baseline-dist-whitespace.txt', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of '.orkestrel/campaign/docs-parity/evidence/d7n-ollama-hook-trial-pack/baseline-dist-without-maps.txt', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of '.orkestrel/campaign/docs-parity/evidence/d7n-scaffold-hook-release-pack/baseline-dist-whitespace.txt', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of '.orkestrel/campaign/docs-parity/evidence/d7n-scaffold-hook-release-pack/baseline-dist-without-maps.txt', CRLF will be replaced by LF the next time Git touches it

@@ -296,7 +296,7 @@ export const CATALOG_OPENING_MARKER = '<!-- orkestrel:catalog -->'
  */
 export const CATALOG_CLOSING_MARKER = '<!-- /orkestrel:catalog -->'
 
-/** Names the provisioner skeleton a workspace with declared service vendors is given once. */
+/** Names the inventory skeleton a workspace with declared service vendors is given once. */
 export const SERVICE_SCRIPT_PATH = 'scripts/service.sh'
 
 /** Names the shared Vitest global-setup module whose presence makes a workspace `global`. */

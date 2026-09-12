@@ -1,0 +1,23 @@
+## main...origin/main
+ M .agents/skills/enterprise-bootstrap/SKILL.md
+ M .agents/skills/enterprise-bootstrap/references/bootstrap-reference.md
+ M .agents/skills/enterprise-bootstrap/references/color-modes.md
+ M .agents/skills/enterprise-bootstrap/references/frontend-design.md
+ M .agents/skills/enterprise-bootstrap/references/inspection.md
+ M .claude/rules/workspace.md
+ M .claude/settings.json
+ M .claude/skills/enterprise-bootstrap/SKILL.md
+ M guides/scaffold.md
+ M host.json
+ M package-lock.json
+ M package.json
+ M scripts/ollama.sh
+ M src/core/constants.ts
+ M src/core/templates.ts
+ M src/core/types.ts
+ M tests/distribution.test.ts
+ M tests/setupServer.ts
+ M tests/src/core/fixtures/app-only-toolchain.txt
+ M tests/src/core/fixtures/setup-false-manifest.txt
+ M tests/src/core/fixtures/source-manifest.txt
+ M tests/src/server/helpers.test.ts

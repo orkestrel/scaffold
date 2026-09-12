@@ -61,7 +61,7 @@ width changes at every breakpoint and is narrower on `lg` than at some `md` widt
 sidebar a fixed rail (`shell-rail-lg-fixed flex-shrink-0`) beside a flexible `min-inline-0` main
 region, not `col-3`, which grows on wide screens and collapses below its minimum on narrow ones.
 Put supporting explanation beside a narrow form in a second column rather than widening its
-fields. Percentage widths belong only where columns should scale together.
+fields. Percentage widths belong only where columns must scale together.
 
 | Breakpoint  | Class Infix | Dimensions |
 | ----------- | ----------- | ---------- |

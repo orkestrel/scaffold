@@ -70,7 +70,7 @@ beneath them. Measured on the three stock body surfaces (`bg-body` / `bg-body-te
   region in light mode) through the component's own variable and measure it.
 - For a tinted region, use the shipped same-hue pair: `text-*-emphasis` on `bg-*-subtle` (about
   10:1 for primary in the stock light theme), adapting in both modes. Keep `text-bg-*` solids for
-  the one element that should dominate.
+  the primary element.
 
 When checking utility behavior, see Bootstrap's [Background](https://getbootstrap.com/docs/5.3/utilities/background/)
 and [Colors](https://getbootstrap.com/docs/5.3/utilities/colors/) references. Distinguish the

@@ -1,0 +1,9 @@
+# Review the source checkpoint boundary
+
+Act as the owner's separate independent read-only reviewer. Reuse your existing hook source review, the HTTP mutation acceptance, the supported target application review, and root prepublish evidence. Do not reopen accepted source claims or run a fresh verifier. Read the same canonical authority as d7n-ollama-hook-target-review-brief.md. Root owns the scratch carrier; source has not moved after its accepted tarball pack.
+
+Inspect tmp/pass/commit-scaffold-hook-candidate.sh against its reviewed predecessor tmp/pass/commit-scaffold-hook-release.sh. The successor selects the successful prepublish-http receipt, requires a fresh candidate-binding receipt, expects the campaign-only checkpoint HEAD e3d5167ecf85512d28949aaa3b387b0f02133bac, adds the prescribed src/core/types.ts and tests/distribution.test.ts paths, and changes the commit message and verdict name to a source checkpoint. Its archive remains the accepted Scaffold0.0.65 trial artifact with SHA-256 08a4066e3b03cae0b525d8d0238952c4791fc394208f289d966c531639aded44. Read actual git status/diff and the accepted prepublish/pack receipts. Root will take the binding after retaining records and before executing this instrument.
+
+The decision is whether the already-tested source and metadata can be committed and pushed to the owner's required Scaffold refs while Linux release evidence remains open. The candidate verdict may accept this checkpoint only. It must not accept publication, claim a green complete CI run, or rewrite unresolved lifecycle findings. No upload command will be issued.
+
+Attempt to refute the claim that the successor preserves the predecessor's archive, source binding, branch, staging, allowed-path, ancestry, and remote-ref restrictions while incorporating only the named corrections. Report CONFIRMED, BROKEN with an exact counterexample, or UNRESOLVED. No editing, installation, source gate, push, or delegation is authorized.
