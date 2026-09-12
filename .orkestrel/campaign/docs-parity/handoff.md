@@ -17,8 +17,9 @@ objective review. Read d7n-ollama-toolbox-native-source-landing.md.
 Native parity, explicit rewrite fixed points and source prepublish now pass in
 Ollama and Toolbox, including Ollama's live service suite. Supported repair
 closed the generated config failure. Toolbox registry preparation landed at
-940ca311 and pushed to the campaign branch. Supported overwrite/audit passed;
-final install, prepublish, packing and release closure remain open. Read
+940ca311 and pushed to the campaign branch. Supported overwrite/audit, final
+registry install, prepublish and actual packing passed. Release review and
+main closure remain open. Read
 d7n-ollama-toolbox-registry-preparation-state.md.
 Hold Ollama overwrite: it classifies the CI-used scripts/service.sh
 as foreign despite the guide's preservation promise. Nothing was deleted. Read

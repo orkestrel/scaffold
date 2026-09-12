@@ -1,0 +1,23 @@
+@orkestrel/toolbox@0.0.13 C:\Users\mikes\WebstormProjects\toolbox
+├── @microsoft/api-extractor@7.59.1
+├── @orkestrel/agent@0.0.21
+├── @orkestrel/contract@0.0.17
+├── @orkestrel/database@0.0.14
+├── @orkestrel/form@0.0.6
+├── @orkestrel/guide@0.0.18
+├── @orkestrel/probe@0.0.13
+├── @orkestrel/relation@0.0.12
+├── @orkestrel/scaffold@0.0.64
+├── @orkestrel/server@0.0.19
+├── @orkestrel/terminal@0.0.15
+├── @orkestrel/test@0.0.14
+├── @orkestrel/tool@0.0.14
+├── @orkestrel/workflow@0.0.18
+├── @orkestrel/workspace@0.0.8
+├── @types/node@26.5.1
+├── oxfmt@0.67.0
+├── oxlint@1.82.0
+├── typescript@6.0.3
+├── vite@8.3.0
+└── vitest@4.1.11
+

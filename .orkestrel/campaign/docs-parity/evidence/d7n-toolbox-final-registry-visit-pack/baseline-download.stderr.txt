@@ -1,0 +1,28 @@
+npm notice
+npm notice 📦  @orkestrel/toolbox@0.0.12
+npm notice Tarball Contents
+npm notice 1.1kB LICENSE
+npm notice 1.5kB README.md
+npm notice 165.8kB dist/src/core/index.cjs
+npm notice 229.3kB dist/src/core/index.cjs.map
+npm notice 141.4kB dist/src/core/index.d.cts
+npm notice 141.4kB dist/src/core/index.d.ts
+npm notice 154.3kB dist/src/core/index.js
+npm notice 223.6kB dist/src/core/index.js.map
+npm notice 8.9kB dist/src/server/index.cjs
+npm notice 16.1kB dist/src/server/index.cjs.map
+npm notice 5.7kB dist/src/server/index.d.cts
+npm notice 5.7kB dist/src/server/index.d.ts
+npm notice 8.5kB dist/src/server/index.js
+npm notice 15.9kB dist/src/server/index.js.map
+npm notice 4.8kB package.json
+npm notice Tarball Details
+npm notice name: @orkestrel/toolbox
+npm notice version: 0.0.12
+npm notice filename: orkestrel-toolbox-0.0.12.tgz
+npm notice package size: 269.9 kB
+npm notice unpacked size: 1.1 MB
+npm notice shasum: d3f1bb38635339f00d000a0d038cd3e0a5ea1371
+npm notice integrity: sha512-yvkhemnSaEpsW[...]jHkJIhbpM3Xbg==
+npm notice total files: 15
+npm notice

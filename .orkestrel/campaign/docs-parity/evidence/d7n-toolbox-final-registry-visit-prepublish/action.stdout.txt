@@ -1,0 +1,106 @@
+Checking formatting...
+
+All matched files use the correct format.
+Finished in 1883ms on 72 files using 16 threads.
+vite v8.3.0 building client environment for production...
+transforming...
+✓ 13 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/core/index.js  157.75 kB │ gzip: 39.42 kB │ map: 227.28 kB
+
+transforming...
+✓ 13 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/core/index.cjs  169.23 kB │ gzip: 40.19 kB │ map: 232.90 kB
+
+✓ built in 219ms
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+Copied: dist/src/core/index.d.ts to dist/src/core/index.d.cts
+vite v8.3.0 building client environment for production...
+transforming...
+✓ 7 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/server/index.js  8.80 kB │ gzip: 2.79 kB │ map: 15.77 kB
+
+transforming...
+✓ 7 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/server/index.cjs  9.14 kB │ gzip: 2.86 kB │ map: 15.93 kB
+
+✓ built in 92ms
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+Copied: dist/src/server/index.d.ts to dist/src/server/index.d.cts
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/toolbox
+
+·········································································································································································································································································································································································································································································
+
+ Test Files  12 passed (12)
+      Tests  457 passed (457)
+   Start at  23:13:58
+   Duration  5.70s (transform 2.32s, setup 1.35s, import 4.19s, tests 6.50s, environment 2ms)
+
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/toolbox
+
+·················································································-·········
+
+ Test Files  1 passed (1)
+      Tests  90 passed | 1 skipped (91)
+   Start at  23:14:04
+   Duration  888ms (transform 88ms, setup 79ms, import 104ms, tests 558ms, environment 0ms)
+
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/toolbox
+
+··········································································································································································stdout | tests/config.test.ts > configuration helpers > rolls one face into a single declaration and rewrites its core specifier
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+
+·-stdout | tests/config.test.ts > configuration helpers > rolls one face into a single declaration and rewrites its core specifier
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+
+·
+
+ Test Files  1 passed (1)
+      Tests  172 passed | 1 skipped (173)
+   Start at  23:14:06
+   Duration  2.94s (transform 196ms, setup 81ms, import 419ms, tests 2.29s, environment 0ms)
+
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/toolbox
+
+·················
+
+ Test Files  2 passed (2)
+      Tests  17 passed (17)
+   Start at  23:14:09
+   Duration  333ms (transform 78ms, setup 167ms, import 52ms, tests 95ms, environment 0ms)
+
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/toolbox
+
+·························
+
+ Test Files  1 passed (1)
+      Tests  25 passed (25)
+   Start at  23:14:10
+   Duration  874ms (transform 133ms, setup 81ms, import 628ms, tests 16ms, environment 0ms)
+
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/toolbox
+
+···········
+
+ Test Files  1 passed (1)
+      Tests  11 passed (11)
+   Start at  23:14:11
+   Duration  15.34s (transform 68ms, setup 82ms, import 2.25s, tests 12.87s, environment 0ms)
+
