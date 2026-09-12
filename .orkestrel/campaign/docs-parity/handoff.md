@@ -27,9 +27,12 @@ invent missing proof. Brief's completed mutations were not replayed during the
 supported-major recovery. Read d7n-dependent-toolchain-ruling.md and
 d7n-dependent-supported-carrier-verdict.md for its accepted correction.
 
-Refresh the catalog before preparing the next layer. Agent/Probe scouting is
-scoped under d7n-agent-probe-scout-driver-brief.md. MCP-to-Probe integration and later
-Agent/Ollama/Toolbox work remain open. Preserve Ollama's owner edits and the
+The refreshed catalog places Agent and Probe in L5. Their fresh origin/main
+ancestry checks pass and their accepted tooling overlays preserve tracked state.
+Native-entry writers are active under d7n-agent-probe-layer-plan.md; neither
+package has closed. Read d7n-agent-probe-catalog-result.md and the retained scout
+report, qualifying its refused shell readings with root's fresh evidence.
+MCP-to-Probe integration and later Agent/Ollama/Toolbox work remain open. Preserve Ollama's owner edits and the
 Supervisor owner decision. Probe development re-pins and final fleet development
 alignment remain open; the generated Scaffold follow-up requires its own later
 release under d7n-scaffold-generated-followup-ruling.md.
