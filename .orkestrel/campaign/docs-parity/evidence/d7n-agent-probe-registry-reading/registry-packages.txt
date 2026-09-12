@@ -1,0 +1,17 @@
+abort
+agent
+budget
+contract
+database
+emitter
+guide
+lsp
+mcp
+probe
+queue
+scaffold
+test
+timeout
+tool
+workflow
+workspace
