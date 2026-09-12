@@ -1,0 +1,54 @@
+ M .agents/skills/enterprise-bootstrap/SKILL.md
+ M .agents/skills/enterprise-bootstrap/references/bootstrap-reference.md
+ M .agents/skills/enterprise-bootstrap/references/color-modes.md
+ M .agents/skills/enterprise-bootstrap/references/frontend-design.md
+ M .agents/skills/enterprise-bootstrap/references/inspection.md
+ M .claude/rules/workspace.md
+ M .claude/settings.json
+ M .claude/skills/enterprise-bootstrap/SKILL.md
+ M .orkestrel/campaign/docs-parity/handoff.md
+ M guides/scaffold.md
+ M host.json
+ M package-lock.json
+ M package.json
+ M scripts/ollama.sh
+ M src/core/constants.ts
+ M src/core/templates.ts
+ M src/core/types.ts
+ M tests/distribution.test.ts
+ M tests/setupServer.ts
+ M tests/src/core/fixtures/app-only-toolchain.txt
+ M tests/src/core/fixtures/setup-false-manifest.txt
+ M tests/src/core/fixtures/source-manifest.txt
+ M tests/src/server/helpers.test.ts
+?? .orkestrel/campaign/docs-parity/d7n-scaffold-hook-candidate-review-brief.md
+?? .orkestrel/campaign/docs-parity/d7n-scaffold-hook-candidate-review-report.md
+?? .orkestrel/campaign/docs-parity/d7n-scaffold-hook-candidate-verdict.md
+?? .orkestrel/campaign/docs-parity/evidence/d7n-ollama-hook-candidate-checkpoint/ancestry.exit.txt
+?? .orkestrel/campaign/docs-parity/evidence/d7n-ollama-hook-candidate-checkpoint/ancestry.stderr.txt
+?? .orkestrel/campaign/docs-parity/evidence/d7n-ollama-hook-candidate-checkpoint/ancestry.stdout.txt
+?? .orkestrel/campaign/docs-parity/evidence/d7n-ollama-hook-candidate-checkpoint/check.exit.txt
+?? .orkestrel/campaign/docs-parity/evidence/d7n-ollama-hook-candidate-checkpoint/check.stderr.txt
+?? .orkestrel/campaign/docs-parity/evidence/d7n-ollama-hook-candidate-checkpoint/check.stdout.txt
+?? .orkestrel/campaign/docs-parity/evidence/d7n-ollama-hook-candidate-checkpoint/commit.exit.txt
+?? .orkestrel/campaign/docs-parity/evidence/d7n-ollama-hook-candidate-checkpoint/commit.stderr.txt
+?? .orkestrel/campaign/docs-parity/evidence/d7n-ollama-hook-candidate-checkpoint/commit.stdout.txt
+?? .orkestrel/campaign/docs-parity/evidence/d7n-ollama-hook-candidate-checkpoint/fetch.exit.txt
+?? .orkestrel/campaign/docs-parity/evidence/d7n-ollama-hook-candidate-checkpoint/fetch.stderr.txt
+?? .orkestrel/campaign/docs-parity/evidence/d7n-ollama-hook-candidate-checkpoint/fetch.stdout.txt
+?? .orkestrel/campaign/docs-parity/evidence/d7n-ollama-hook-candidate-checkpoint/origin-campaign.exit.txt
+?? .orkestrel/campaign/docs-parity/evidence/d7n-ollama-hook-candidate-checkpoint/origin-campaign.stderr.txt
+?? .orkestrel/campaign/docs-parity/evidence/d7n-ollama-hook-candidate-checkpoint/origin-campaign.stdout.txt
+?? .orkestrel/campaign/docs-parity/evidence/d7n-ollama-hook-candidate-checkpoint/origin-docs.exit.txt
+?? .orkestrel/campaign/docs-parity/evidence/d7n-ollama-hook-candidate-checkpoint/origin-docs.stderr.txt
+?? .orkestrel/campaign/docs-parity/evidence/d7n-ollama-hook-candidate-checkpoint/origin-docs.stdout.txt
+?? .orkestrel/campaign/docs-parity/evidence/d7n-ollama-hook-candidate-checkpoint/origin-main.exit.txt
+?? .orkestrel/campaign/docs-parity/evidence/d7n-ollama-hook-candidate-checkpoint/origin-main.stderr.txt
+?? .orkestrel/campaign/docs-parity/evidence/d7n-ollama-hook-candidate-checkpoint/origin-main.stdout.txt
+?? .orkestrel/campaign/docs-parity/evidence/d7n-ollama-hook-candidate-checkpoint/publish-after.patch
+?? .orkestrel/campaign/docs-parity/evidence/d7n-ollama-hook-candidate-checkpoint/publish-before.patch
+?? .orkestrel/campaign/docs-parity/evidence/d7n-ollama-hook-candidate-checkpoint/push.exit.txt
+?? .orkestrel/campaign/docs-parity/evidence/d7n-ollama-hook-candidate-checkpoint/push.stderr.txt
+?? .orkestrel/campaign/docs-parity/evidence/d7n-ollama-hook-candidate-checkpoint/push.stdout.txt
+?? .orkestrel/campaign/docs-parity/evidence/d7n-ollama-hook-candidate-checkpoint/status-after.txt
+?? .orkestrel/campaign/docs-parity/instruments/d7/foundation-native/commit-scaffold-hook-candidate.sh

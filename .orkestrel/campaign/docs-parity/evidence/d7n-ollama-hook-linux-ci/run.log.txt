@@ -1,0 +1,693 @@
+ci (26)	Set up job	﻿2026-09-12T05:50:55.0028013Z Current runner version: '2.337.0'
+ci (26)	Set up job	2026-09-12T05:50:55.0059233Z ##[group]Runner Image Provisioner
+ci (26)	Set up job	2026-09-12T05:50:55.0060107Z Hosted Compute Agent
+ci (26)	Set up job	2026-09-12T05:50:55.0061113Z Version: 20260828.587
+ci (26)	Set up job	2026-09-12T05:50:55.0062333Z Commit: abac92662cab4cc7352de4f9f9d2e2419aad9c29
+ci (26)	Set up job	2026-09-12T05:50:55.0063607Z Build Date: 2026-08-28T16:44:25Z
+ci (26)	Set up job	2026-09-12T05:50:55.0064758Z Worker ID: {80ff14ff-5c2f-46a6-ae20-18a2eabd4126}
+ci (26)	Set up job	2026-09-12T05:50:55.0065930Z Azure Region: eastus
+ci (26)	Set up job	2026-09-12T05:50:55.0067414Z ##[endgroup]
+ci (26)	Set up job	2026-09-12T05:50:55.0069989Z ##[group]Operating System
+ci (26)	Set up job	2026-09-12T05:50:55.0071309Z Ubuntu
+ci (26)	Set up job	2026-09-12T05:50:55.0072326Z 24.04.5
+ci (26)	Set up job	2026-09-12T05:50:55.0073164Z LTS
+ci (26)	Set up job	2026-09-12T05:50:55.0074018Z ##[endgroup]
+ci (26)	Set up job	2026-09-12T05:50:55.0074930Z ##[group]Runner Image
+ci (26)	Set up job	2026-09-12T05:50:55.0076098Z Image: ubuntu-24.04
+ci (26)	Set up job	2026-09-12T05:50:55.0077154Z Version: 20260907.300.1
+ci (26)	Set up job	2026-09-12T05:50:55.0078940Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20260907.300/images/ubuntu/Ubuntu2404-Readme.md
+ci (26)	Set up job	2026-09-12T05:50:55.0082413Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20260907.300
+ci (26)	Set up job	2026-09-12T05:50:55.0084156Z ##[endgroup]
+ci (26)	Set up job	2026-09-12T05:50:55.0086238Z ##[group]GITHUB_TOKEN Permissions
+ci (26)	Set up job	2026-09-12T05:50:55.0089386Z Contents: read
+ci (26)	Set up job	2026-09-12T05:50:55.0090906Z Metadata: read
+ci (26)	Set up job	2026-09-12T05:50:55.0091806Z ##[endgroup]
+ci (26)	Set up job	2026-09-12T05:50:55.0095399Z Secret source: Actions
+ci (26)	Set up job	2026-09-12T05:50:55.0097035Z Cache mode: write
+ci (26)	Set up job	2026-09-12T05:50:55.0098481Z Prepare workflow directory
+ci (26)	Set up job	2026-09-12T05:50:55.0607249Z Prepare all required actions
+ci (26)	Set up job	2026-09-12T05:50:55.0685868Z Getting action download info
+ci (26)	Set up job	2026-09-12T05:50:55.2938021Z Download action repository 'actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd' (SHA:de0fac2e4500dabe0009e67214ff5f5447ce83dd)
+ci (26)	Set up job	2026-09-12T05:50:55.4212056Z Download action repository 'actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e' (SHA:48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e)
+ci (26)	Set up job	2026-09-12T05:50:55.6536242Z Complete job name: ci (26)
+ci (26)	Checkout code	﻿2026-09-12T05:50:55.7452597Z ##[group]Run actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+ci (26)	Checkout code	2026-09-12T05:50:55.7453715Z with:
+ci (26)	Checkout code	2026-09-12T05:50:55.7454174Z   persist-credentials: false
+ci (26)	Checkout code	2026-09-12T05:50:55.7454713Z   repository: orkestrel/ollama
+ci (26)	Checkout code	2026-09-12T05:50:55.7458883Z   token: ***
+ci (26)	Checkout code	2026-09-12T05:50:55.7459336Z   ssh-strict: true
+ci (26)	Checkout code	2026-09-12T05:50:55.7459780Z   ssh-user: git
+ci (26)	Checkout code	2026-09-12T05:50:55.7460205Z   clean: true
+ci (26)	Checkout code	2026-09-12T05:50:55.7460817Z   sparse-checkout-cone-mode: true
+ci (26)	Checkout code	2026-09-12T05:50:55.7461361Z   fetch-depth: 1
+ci (26)	Checkout code	2026-09-12T05:50:55.7461786Z   fetch-tags: false
+ci (26)	Checkout code	2026-09-12T05:50:55.7462230Z   show-progress: true
+ci (26)	Checkout code	2026-09-12T05:50:55.7462685Z   lfs: false
+ci (26)	Checkout code	2026-09-12T05:50:55.7463097Z   submodules: false
+ci (26)	Checkout code	2026-09-12T05:50:55.7463539Z   set-safe-directory: true
+ci (26)	Checkout code	2026-09-12T05:50:55.7464348Z ##[endgroup]
+ci (26)	Checkout code	2026-09-12T05:50:55.8517166Z Syncing repository: orkestrel/ollama
+ci (26)	Checkout code	2026-09-12T05:50:55.8519853Z ##[group]Getting Git version info
+ci (26)	Checkout code	2026-09-12T05:50:55.8521266Z Working directory is '/home/runner/work/ollama/ollama'
+ci (26)	Checkout code	2026-09-12T05:50:55.8523221Z [command]/usr/bin/git version
+ci (26)	Checkout code	2026-09-12T05:50:55.8588156Z git version 2.55.0
+ci (26)	Checkout code	2026-09-12T05:50:55.8614225Z ##[endgroup]
+ci (26)	Checkout code	2026-09-12T05:50:55.8635666Z Temporarily overriding HOME='/home/runner/work/_temp/e5d8a6f6-729c-4e90-bbd9-702b203c5a14' before making global git config changes
+ci (26)	Checkout code	2026-09-12T05:50:55.8637539Z Adding repository directory to the temporary git global config as a safe directory
+ci (26)	Checkout code	2026-09-12T05:50:55.8644378Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/ollama/ollama
+ci (26)	Checkout code	2026-09-12T05:50:55.8695138Z Deleting the contents of '/home/runner/work/ollama/ollama'
+ci (26)	Checkout code	2026-09-12T05:50:55.8699332Z ##[group]Initializing the repository
+ci (26)	Checkout code	2026-09-12T05:50:55.8705624Z [command]/usr/bin/git init /home/runner/work/ollama/ollama
+ci (26)	Checkout code	2026-09-12T05:50:55.8824929Z hint: Using 'master' as the name for the initial branch. This default branch name
+ci (26)	Checkout code	2026-09-12T05:50:55.8829615Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+ci (26)	Checkout code	2026-09-12T05:50:55.8831815Z hint: to use in all of your new repositories, which will suppress this warning,
+ci (26)	Checkout code	2026-09-12T05:50:55.8833091Z hint: call:
+ci (26)	Checkout code	2026-09-12T05:50:55.8833825Z hint:
+ci (26)	Checkout code	2026-09-12T05:50:55.8834669Z hint: 	git config --global init.defaultBranch <name>
+ci (26)	Checkout code	2026-09-12T05:50:55.8835664Z hint:
+ci (26)	Checkout code	2026-09-12T05:50:55.8836581Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+ci (26)	Checkout code	2026-09-12T05:50:55.8838197Z hint: 'development'. The just-created branch can be renamed via this command:
+ci (26)	Checkout code	2026-09-12T05:50:55.8839473Z hint:
+ci (26)	Checkout code	2026-09-12T05:50:55.8840132Z hint: 	git branch -m <name>
+ci (26)	Checkout code	2026-09-12T05:50:55.8841207Z hint:
+ci (26)	Checkout code	2026-09-12T05:50:55.8842215Z hint: Disable this message with "git config set advice.defaultBranchName false"
+ci (26)	Checkout code	2026-09-12T05:50:55.8843606Z Initialized empty Git repository in /home/runner/work/ollama/ollama/.git/
+ci (26)	Checkout code	2026-09-12T05:50:55.8845340Z [command]/usr/bin/git remote add origin https://github.com/orkestrel/ollama
+ci (26)	Checkout code	2026-09-12T05:50:55.8893307Z ##[endgroup]
+ci (26)	Checkout code	2026-09-12T05:50:55.8894667Z ##[group]Disabling automatic garbage collection
+ci (26)	Checkout code	2026-09-12T05:50:55.8896741Z [command]/usr/bin/git config --local gc.auto 0
+ci (26)	Checkout code	2026-09-12T05:50:55.8932121Z ##[endgroup]
+ci (26)	Checkout code	2026-09-12T05:50:55.8933315Z ##[group]Setting up auth
+ci (26)	Checkout code	2026-09-12T05:50:55.8934331Z Removing SSH command configuration
+ci (26)	Checkout code	2026-09-12T05:50:55.8939613Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+ci (26)	Checkout code	2026-09-12T05:50:55.8977521Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+ci (26)	Checkout code	2026-09-12T05:50:55.9368840Z Removing HTTP extra header
+ci (26)	Checkout code	2026-09-12T05:50:55.9380232Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+ci (26)	Checkout code	2026-09-12T05:50:55.9418682Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+ci (26)	Checkout code	2026-09-12T05:50:55.9733087Z Removing includeIf entries pointing to credentials config files
+ci (26)	Checkout code	2026-09-12T05:50:55.9752079Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+ci (26)	Checkout code	2026-09-12T05:50:55.9774561Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+ci (26)	Checkout code	2026-09-12T05:50:56.0052401Z [command]/usr/bin/git config --file /home/runner/work/_temp/git-credentials-2fe9f694-1968-474a-a2a2-bb373996fdd0.config http.https://github.com/.extraheader AUTHORIZATION: basic ***
+ci (26)	Checkout code	2026-09-12T05:50:56.0109180Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/ollama/ollama/.git.path /home/runner/work/_temp/git-credentials-2fe9f694-1968-474a-a2a2-bb373996fdd0.config
+ci (26)	Checkout code	2026-09-12T05:50:56.0157352Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/ollama/ollama/.git/worktrees/*.path /home/runner/work/_temp/git-credentials-2fe9f694-1968-474a-a2a2-bb373996fdd0.config
+ci (26)	Checkout code	2026-09-12T05:50:56.0208407Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-2fe9f694-1968-474a-a2a2-bb373996fdd0.config
+ci (26)	Checkout code	2026-09-12T05:50:56.0255609Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-2fe9f694-1968-474a-a2a2-bb373996fdd0.config
+ci (26)	Checkout code	2026-09-12T05:50:56.0311685Z ##[endgroup]
+ci (26)	Checkout code	2026-09-12T05:50:56.0312609Z ##[group]Fetching the repository
+ci (26)	Checkout code	2026-09-12T05:50:56.0325755Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +d6e868d886f2968edbcaf125a207966a6ae8dd15:refs/remotes/origin/claude/orkestrel-npm-audit-deps-14ibta
+ci (26)	Checkout code	2026-09-12T05:50:56.4299044Z From https://github.com/orkestrel/ollama
+ci (26)	Checkout code	2026-09-12T05:50:56.4322807Z  * [new ref]         d6e868d886f2968edbcaf125a207966a6ae8dd15 -> origin/claude/orkestrel-npm-audit-deps-14ibta
+ci (26)	Checkout code	2026-09-12T05:50:56.4344713Z [command]/usr/bin/git branch --list --remote origin/claude/orkestrel-npm-audit-deps-14ibta
+ci (26)	Checkout code	2026-09-12T05:50:56.4348134Z   origin/claude/orkestrel-npm-audit-deps-14ibta
+ci (26)	Checkout code	2026-09-12T05:50:56.4360990Z [command]/usr/bin/git rev-parse refs/remotes/origin/claude/orkestrel-npm-audit-deps-14ibta
+ci (26)	Checkout code	2026-09-12T05:50:56.4392057Z d6e868d886f2968edbcaf125a207966a6ae8dd15
+ci (26)	Checkout code	2026-09-12T05:50:56.4404760Z ##[endgroup]
+ci (26)	Checkout code	2026-09-12T05:50:56.4406507Z ##[group]Determining the checkout info
+ci (26)	Checkout code	2026-09-12T05:50:56.4408404Z ##[endgroup]
+ci (26)	Checkout code	2026-09-12T05:50:56.4409543Z [command]/usr/bin/git sparse-checkout disable
+ci (26)	Checkout code	2026-09-12T05:50:56.4469538Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+ci (26)	Checkout code	2026-09-12T05:50:56.4509235Z ##[group]Checking out the ref
+ci (26)	Checkout code	2026-09-12T05:50:56.4513339Z [command]/usr/bin/git checkout --progress --force -B claude/orkestrel-npm-audit-deps-14ibta refs/remotes/origin/claude/orkestrel-npm-audit-deps-14ibta
+ci (26)	Checkout code	2026-09-12T05:50:56.4716690Z Switched to a new branch 'claude/orkestrel-npm-audit-deps-14ibta'
+ci (26)	Checkout code	2026-09-12T05:50:56.4722787Z branch 'claude/orkestrel-npm-audit-deps-14ibta' set up to track 'origin/claude/orkestrel-npm-audit-deps-14ibta'.
+ci (26)	Checkout code	2026-09-12T05:50:56.4730949Z ##[endgroup]
+ci (26)	Checkout code	2026-09-12T05:50:56.4779621Z [command]/usr/bin/git log -1 --format=%H
+ci (26)	Checkout code	2026-09-12T05:50:56.4809575Z d6e868d886f2968edbcaf125a207966a6ae8dd15
+ci (26)	Checkout code	2026-09-12T05:50:56.4819801Z ##[group]Removing auth
+ci (26)	Checkout code	2026-09-12T05:50:56.4820779Z Removing SSH command configuration
+ci (26)	Checkout code	2026-09-12T05:50:56.4824478Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+ci (26)	Checkout code	2026-09-12T05:50:56.4864484Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+ci (26)	Checkout code	2026-09-12T05:50:56.5102217Z Removing HTTP extra header
+ci (26)	Checkout code	2026-09-12T05:50:56.5107050Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+ci (26)	Checkout code	2026-09-12T05:50:56.5145888Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+ci (26)	Checkout code	2026-09-12T05:50:56.5377254Z Removing includeIf entries pointing to credentials config files
+ci (26)	Checkout code	2026-09-12T05:50:56.5380884Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+ci (26)	Checkout code	2026-09-12T05:50:56.5412788Z includeif.gitdir:/home/runner/work/ollama/ollama/.git.path
+ci (26)	Checkout code	2026-09-12T05:50:56.5414756Z includeif.gitdir:/home/runner/work/ollama/ollama/.git/worktrees/*.path
+ci (26)	Checkout code	2026-09-12T05:50:56.5416442Z includeif.gitdir:/github/workspace/.git.path
+ci (26)	Checkout code	2026-09-12T05:50:56.5417873Z includeif.gitdir:/github/workspace/.git/worktrees/*.path
+ci (26)	Checkout code	2026-09-12T05:50:56.5424537Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/ollama/ollama/.git.path
+ci (26)	Checkout code	2026-09-12T05:50:56.5451152Z /home/runner/work/_temp/git-credentials-2fe9f694-1968-474a-a2a2-bb373996fdd0.config
+ci (26)	Checkout code	2026-09-12T05:50:56.5471004Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/ollama/ollama/.git.path /home/runner/work/_temp/git-credentials-2fe9f694-1968-474a-a2a2-bb373996fdd0.config
+ci (26)	Checkout code	2026-09-12T05:50:56.5499954Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/ollama/ollama/.git/worktrees/*.path
+ci (26)	Checkout code	2026-09-12T05:50:56.5528984Z /home/runner/work/_temp/git-credentials-2fe9f694-1968-474a-a2a2-bb373996fdd0.config
+ci (26)	Checkout code	2026-09-12T05:50:56.5540907Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/ollama/ollama/.git/worktrees/*.path /home/runner/work/_temp/git-credentials-2fe9f694-1968-474a-a2a2-bb373996fdd0.config
+ci (26)	Checkout code	2026-09-12T05:50:56.5583543Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git.path
+ci (26)	Checkout code	2026-09-12T05:50:56.5629519Z /github/runner_temp/git-credentials-2fe9f694-1968-474a-a2a2-bb373996fdd0.config
+ci (26)	Checkout code	2026-09-12T05:50:56.5638211Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-2fe9f694-1968-474a-a2a2-bb373996fdd0.config
+ci (26)	Checkout code	2026-09-12T05:50:56.5672918Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git/worktrees/*.path
+ci (26)	Checkout code	2026-09-12T05:50:56.5702079Z /github/runner_temp/git-credentials-2fe9f694-1968-474a-a2a2-bb373996fdd0.config
+ci (26)	Checkout code	2026-09-12T05:50:56.5713446Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-2fe9f694-1968-474a-a2a2-bb373996fdd0.config
+ci (26)	Checkout code	2026-09-12T05:50:56.5751696Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+ci (26)	Checkout code	2026-09-12T05:50:56.5977345Z Removing credentials config '/home/runner/work/_temp/git-credentials-2fe9f694-1968-474a-a2a2-bb373996fdd0.config'
+ci (26)	Checkout code	2026-09-12T05:50:56.5984791Z ##[endgroup]
+ci (26)	Set up Node.js	﻿2026-09-12T05:50:56.6391301Z ##[group]Run actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+ci (26)	Set up Node.js	2026-09-12T05:50:56.6392673Z with:
+ci (26)	Set up Node.js	2026-09-12T05:50:56.6393224Z   node-version: 26
+ci (26)	Set up Node.js	2026-09-12T05:50:56.6393830Z   cache: npm
+ci (26)	Set up Node.js	2026-09-12T05:50:56.6394420Z   check-latest: false
+ci (26)	Set up Node.js	2026-09-12T05:50:56.6403046Z   token: ***
+ci (26)	Set up Node.js	2026-09-12T05:50:56.6403703Z   package-manager-cache: true
+ci (26)	Set up Node.js	2026-09-12T05:50:56.6404456Z ##[endgroup]
+ci (26)	Set up Node.js	2026-09-12T05:50:56.8088841Z Attempting to download 26...
+ci (26)	Set up Node.js	2026-09-12T05:50:57.1107240Z Acquiring 26.8.2 - x64 from https://github.com/actions/node-versions/releases/download/26.8.2-34429851330/node-26.8.2-linux-x64.tar.gz
+ci (26)	Set up Node.js	2026-09-12T05:50:57.5952334Z Extracting ...
+ci (26)	Set up Node.js	2026-09-12T05:50:57.6099816Z [command]/usr/bin/tar xz --strip 1 --warning=no-unknown-keyword --overwrite -C /home/runner/work/_temp/31823d9d-9cad-4d66-8f99-c5663889cd2e -f /home/runner/work/_temp/e4931b26-bd09-4b87-946e-98b70fb86b3c
+ci (26)	Set up Node.js	2026-09-12T05:50:58.9782191Z Adding to the cache ...
+ci (26)	Set up Node.js	2026-09-12T05:51:01.0691890Z ##[group]Environment details
+ci (26)	Set up Node.js	2026-09-12T05:51:01.2877008Z node: v26.8.2
+ci (26)	Set up Node.js	2026-09-12T05:51:01.2878304Z npm: 11.19.1
+ci (26)	Set up Node.js	2026-09-12T05:51:01.2878638Z yarn: 1.22.22
+ci (26)	Set up Node.js	2026-09-12T05:51:01.2879409Z ##[endgroup]
+ci (26)	Set up Node.js	2026-09-12T05:51:01.2900094Z [command]/opt/hostedtoolcache/node/26.8.2/x64/bin/npm config get cache
+ci (26)	Set up Node.js	2026-09-12T05:51:01.3898453Z /home/runner/.npm
+ci (26)	Set up Node.js	2026-09-12T05:51:01.4627751Z npm cache is not found
+ci (26)	Install dependencies	﻿2026-09-12T05:51:01.4815270Z ##[group]Run npm ci --ignore-scripts
+ci (26)	Install dependencies	2026-09-12T05:51:01.4815737Z ^[[36;1mnpm ci --ignore-scripts^[[0m
+ci (26)	Install dependencies	2026-09-12T05:51:01.4858702Z shell: /usr/bin/bash -e {0}
+ci (26)	Install dependencies	2026-09-12T05:51:01.4859037Z ##[endgroup]
+ci (26)	Install dependencies	2026-09-12T05:51:04.9166424Z 
+ci (26)	Install dependencies	2026-09-12T05:51:04.9174124Z added 129 packages, and audited 130 packages in 3s
+ci (26)	Install dependencies	2026-09-12T05:51:04.9174490Z 
+ci (26)	Install dependencies	2026-09-12T05:51:04.9174746Z 29 packages are looking for funding
+ci (26)	Install dependencies	2026-09-12T05:51:04.9175159Z   run `npm fund` for details
+ci (26)	Install dependencies	2026-09-12T05:51:04.9190284Z 
+ci (26)	Install dependencies	2026-09-12T05:51:04.9190685Z 1 high severity vulnerability
+ci (26)	Install dependencies	2026-09-12T05:51:04.9191313Z 
+ci (26)	Install dependencies	2026-09-12T05:51:04.9191595Z To address all issues, run:
+ci (26)	Install dependencies	2026-09-12T05:51:04.9191943Z   npm audit fix
+ci (26)	Install dependencies	2026-09-12T05:51:04.9192098Z 
+ci (26)	Install dependencies	2026-09-12T05:51:04.9192294Z Run `npm audit` for details.
+ci (26)	Check formatting	﻿2026-09-12T05:51:04.9704582Z ##[group]Run npm run format:check
+ci (26)	Check formatting	2026-09-12T05:51:04.9704965Z ^[[36;1mnpm run format:check^[[0m
+ci (26)	Check formatting	2026-09-12T05:51:04.9743605Z shell: /usr/bin/bash -e {0}
+ci (26)	Check formatting	2026-09-12T05:51:04.9743905Z ##[endgroup]
+ci (26)	Check formatting	2026-09-12T05:51:05.0737043Z 
+ci (26)	Check formatting	2026-09-12T05:51:05.0737834Z > @orkestrel/ollama@0.0.15 format:check
+ci (26)	Check formatting	2026-09-12T05:51:05.0738656Z > oxfmt --config .oxfmtrc.json --check .
+ci (26)	Check formatting	2026-09-12T05:51:05.0739071Z 
+ci (26)	Check formatting	2026-09-12T05:51:05.1224487Z Checking formatting...
+ci (26)	Check formatting	2026-09-12T05:51:05.1224929Z 
+ci (26)	Check formatting	2026-09-12T05:51:08.1845763Z All matched files use the correct format.
+ci (26)	Check formatting	2026-09-12T05:51:08.1846389Z Finished in 3062ms on 68 files using 4 threads.
+ci (26)	Lint	﻿2026-09-12T05:51:08.2261625Z ##[group]Run npm run lint:check
+ci (26)	Lint	2026-09-12T05:51:08.2262047Z ^[[36;1mnpm run lint:check^[[0m
+ci (26)	Lint	2026-09-12T05:51:08.2298272Z shell: /usr/bin/bash -e {0}
+ci (26)	Lint	2026-09-12T05:51:08.2298545Z ##[endgroup]
+ci (26)	Lint	2026-09-12T05:51:08.3346360Z 
+ci (26)	Lint	2026-09-12T05:51:08.3347106Z > @orkestrel/ollama@0.0.15 lint:check
+ci (26)	Lint	2026-09-12T05:51:08.3347749Z > oxlint --config .oxlintrc.json --deny-warnings .
+ci (26)	Lint	2026-09-12T05:51:08.3348120Z 
+ci (26)	Lint	2026-09-12T05:51:08.8192401Z Found 0 warnings and 0 errors.
+ci (26)	Lint	2026-09-12T05:51:08.8193230Z Finished in 447ms on 41 files with 140 rules using 4 threads.
+ci (26)	Typecheck	﻿2026-09-12T05:51:08.8384040Z ##[group]Run npm run check
+ci (26)	Typecheck	2026-09-12T05:51:08.8384369Z ^[[36;1mnpm run check^[[0m
+ci (26)	Typecheck	2026-09-12T05:51:08.8421095Z shell: /usr/bin/bash -e {0}
+ci (26)	Typecheck	2026-09-12T05:51:08.8421364Z ##[endgroup]
+ci (26)	Typecheck	2026-09-12T05:51:08.9435290Z 
+ci (26)	Typecheck	2026-09-12T05:51:08.9435998Z > @orkestrel/ollama@0.0.15 check
+ci (26)	Typecheck	2026-09-12T05:51:08.9436542Z > tsc --noEmit --project tsconfig.json && npm run check:src
+ci (26)	Typecheck	2026-09-12T05:51:08.9436823Z 
+ci (26)	Typecheck	2026-09-12T05:51:12.0410653Z 
+ci (26)	Typecheck	2026-09-12T05:51:12.0411951Z > @orkestrel/ollama@0.0.15 check:src
+ci (26)	Typecheck	2026-09-12T05:51:12.0412567Z > npm run check:src:server
+ci (26)	Typecheck	2026-09-12T05:51:12.0412886Z 
+ci (26)	Typecheck	2026-09-12T05:51:12.1474617Z 
+ci (26)	Typecheck	2026-09-12T05:51:12.1475757Z > @orkestrel/ollama@0.0.15 check:src:server
+ci (26)	Typecheck	2026-09-12T05:51:12.1477146Z > tsc --noEmit -p configs/src/tsconfig.server.json
+ci (26)	Typecheck	2026-09-12T05:51:12.1477718Z 
+ci (26)	Build	﻿2026-09-12T05:51:13.1922688Z ##[group]Run npm run build
+ci (26)	Build	2026-09-12T05:51:13.1923186Z ^[[36;1mnpm run build^[[0m
+ci (26)	Build	2026-09-12T05:51:13.1970126Z shell: /usr/bin/bash -e {0}
+ci (26)	Build	2026-09-12T05:51:13.1970763Z ##[endgroup]
+ci (26)	Build	2026-09-12T05:51:13.3094606Z 
+ci (26)	Build	2026-09-12T05:51:13.3095600Z > @orkestrel/ollama@0.0.15 build
+ci (26)	Build	2026-09-12T05:51:13.3096253Z > npm run clean && npm run build:src
+ci (26)	Build	2026-09-12T05:51:13.3096579Z 
+ci (26)	Build	2026-09-12T05:51:13.4124920Z 
+ci (26)	Build	2026-09-12T05:51:13.4125864Z > @orkestrel/ollama@0.0.15 clean
+ci (26)	Build	2026-09-12T05:51:13.4126776Z > node -e "require('node:fs').rmSync('dist',{recursive:true,force:true})"
+ci (26)	Build	2026-09-12T05:51:13.4127313Z 
+ci (26)	Build	2026-09-12T05:51:13.5685048Z 
+ci (26)	Build	2026-09-12T05:51:13.5685793Z > @orkestrel/ollama@0.0.15 build:src
+ci (26)	Build	2026-09-12T05:51:13.5686386Z > npm run build:src:server
+ci (26)	Build	2026-09-12T05:51:13.5686766Z 
+ci (26)	Build	2026-09-12T05:51:13.6742879Z 
+ci (26)	Build	2026-09-12T05:51:13.6743649Z > @orkestrel/ollama@0.0.15 build:src:server
+ci (26)	Build	2026-09-12T05:51:13.6745030Z > vite build --config configs/src/vite.server.config.ts && npm run copy dist/src/server/index.d.ts dist/src/server/index.d.cts
+ci (26)	Build	2026-09-12T05:51:13.6745964Z 
+ci (26)	Build	2026-09-12T05:51:13.9422459Z ^[[36mvite v8.2.2 ^[[32mbuilding client environment for production...^[[36m^[[39m
+ci (26)	Build	2026-09-12T05:51:13.9578889Z transforming...
+ci (26)	Build	2026-09-12T05:51:13.9868907Z ✓ 9 modules transformed.
+ci (26)	Build	2026-09-12T05:51:13.9916145Z rendering chunks...
+ci (26)	Build	2026-09-12T05:51:14.0029089Z computing gzip size...
+ci (26)	Build	2026-09-12T05:51:14.0031039Z dist/src/server/index.js  25.89 kB │ gzip: 8.38 kB │ map: 45.56 kB
+ci (26)	Build	2026-09-12T05:51:14.0032011Z 
+ci (26)	Build	2026-09-12T05:51:14.0101661Z transforming...
+ci (26)	Build	2026-09-12T05:51:14.0270087Z ✓ 9 modules transformed.
+ci (26)	Build	2026-09-12T05:51:14.0294997Z rendering chunks...
+ci (26)	Build	2026-09-12T05:51:14.0366241Z computing gzip size...
+ci (26)	Build	2026-09-12T05:51:14.0373847Z dist/src/server/index.cjs  26.87 kB │ gzip: 8.52 kB │ map: 45.88 kB
+ci (26)	Build	2026-09-12T05:51:14.0374675Z 
+ci (26)	Build	2026-09-12T05:51:14.0377770Z ^[[32m✓ built in 94ms^[[39m
+ci (26)	Build	2026-09-12T05:51:16.1092238Z Analysis will use the bundled TypeScript version 5.9.3
+ci (26)	Build	2026-09-12T05:51:16.1175190Z *** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+ci (26)	Build	2026-09-12T05:51:16.5289573Z 
+ci (26)	Build	2026-09-12T05:51:16.5290096Z > @orkestrel/ollama@0.0.15 copy
+ci (26)	Build	2026-09-12T05:51:16.5291782Z > node -e "const fs=require('node:fs'),p=require('node:path'),a=process.argv[1],b=process.argv[2];fs.mkdirSync(p.dirname(b),{recursive:true});fs.cpSync(a,b,{force:true});console.log('Copied: '+a+' to '+b)" dist/src/server/index.d.ts dist/src/server/index.d.cts
+ci (26)	Build	2026-09-12T05:51:16.5292781Z 
+ci (26)	Build	2026-09-12T05:51:16.5603772Z Copied: dist/src/server/index.d.ts to dist/src/server/index.d.cts
+ci (26)	Run tests	﻿2026-09-12T05:51:16.5897133Z ##[group]Run npm test
+ci (26)	Run tests	2026-09-12T05:51:16.5897428Z ^[[36;1mnpm test^[[0m
+ci (26)	Run tests	2026-09-12T05:51:16.5933839Z shell: /usr/bin/bash -e {0}
+ci (26)	Run tests	2026-09-12T05:51:16.5934120Z ##[endgroup]
+ci (26)	Run tests	2026-09-12T05:51:16.7001249Z 
+ci (26)	Run tests	2026-09-12T05:51:16.7001878Z > @orkestrel/ollama@0.0.15 test
+ci (26)	Run tests	2026-09-12T05:51:16.7002812Z > npm run test:src && npm run test:setup && npm run test:policy && npm run test:config && npm run test:guides && npm run test:conformance
+ci (26)	Run tests	2026-09-12T05:51:16.7003315Z 
+ci (26)	Run tests	2026-09-12T05:51:16.8071101Z 
+ci (26)	Run tests	2026-09-12T05:51:16.8071758Z > @orkestrel/ollama@0.0.15 test:src
+ci (26)	Run tests	2026-09-12T05:51:16.8072829Z > vitest run --config vite.config.ts --no-cache --reporter=dot --project src:server
+ci (26)	Run tests	2026-09-12T05:51:16.8073549Z 
+ci (26)	Run tests	2026-09-12T05:51:17.1517016Z 
+ci (26)	Run tests	2026-09-12T05:51:17.1521450Z ^[[1m^[[30m^[[46m RUN ^[[49m^[[39m^[[22m ^[[36mv4.1.11 ^[[39m^[[90m/home/runner/work/ollama/ollama^[[39m
+ci (26)	Run tests	2026-09-12T05:51:17.1521866Z 
+ci (26)	Run tests	2026-09-12T05:51:18.4831221Z ^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m
+ci (26)	Run tests	2026-09-12T05:51:18.4843226Z 
+ci (26)	Run tests	2026-09-12T05:51:18.4844026Z ^[[2m Test Files ^[[22m ^[[1m^[[32m6 passed^[[39m^[[22m^[[90m (6)^[[39m
+ci (26)	Run tests	2026-09-12T05:51:18.4845144Z ^[[2m      Tests ^[[22m ^[[1m^[[32m98 passed^[[39m^[[22m^[[90m (98)^[[39m
+ci (26)	Run tests	2026-09-12T05:51:18.4845975Z ^[[2m   Start at ^[[22m 05:51:17
+ci (26)	Run tests	2026-09-12T05:51:18.4847217Z ^[[2m   Duration ^[[22m 1.32s^[[2m (transform 305ms, setup 530ms, import 554ms, tests 1.32s, environment 1ms)^[[22m
+ci (26)	Run tests	2026-09-12T05:51:18.4847990Z 
+ci (26)	Run tests	2026-09-12T05:51:18.6115743Z 
+ci (26)	Run tests	2026-09-12T05:51:18.6116463Z > @orkestrel/ollama@0.0.15 test:setup
+ci (26)	Run tests	2026-09-12T05:51:18.6117288Z > vitest run --config vite.config.ts --no-cache --reporter=dot --project setup
+ci (26)	Run tests	2026-09-12T05:51:18.6117650Z 
+ci (26)	Run tests	2026-09-12T05:51:18.9408069Z 
+ci (26)	Run tests	2026-09-12T05:51:18.9413452Z ^[[1m^[[30m^[[46m RUN ^[[49m^[[39m^[[22m ^[[36mv4.1.11 ^[[39m^[[90m/home/runner/work/ollama/ollama^[[39m
+ci (26)	Run tests	2026-09-12T05:51:18.9414208Z 
+ci (26)	Run tests	2026-09-12T05:51:19.7091186Z ^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m
+ci (26)	Run tests	2026-09-12T05:51:19.7100041Z 
+ci (26)	Run tests	2026-09-12T05:51:19.7100892Z ^[[2m Test Files ^[[22m ^[[1m^[[32m3 passed^[[39m^[[22m^[[90m (3)^[[39m
+ci (26)	Run tests	2026-09-12T05:51:19.7101865Z ^[[2m      Tests ^[[22m ^[[1m^[[32m91 passed^[[39m^[[22m^[[90m (91)^[[39m
+ci (26)	Run tests	2026-09-12T05:51:19.7102601Z ^[[2m   Start at ^[[22m 05:51:18
+ci (26)	Run tests	2026-09-12T05:51:19.7103791Z ^[[2m   Duration ^[[22m 761ms^[[2m (transform 317ms, setup 81ms, import 733ms, tests 328ms, environment 1ms)^[[22m
+ci (26)	Run tests	2026-09-12T05:51:19.7104547Z 
+ci (26)	Run tests	2026-09-12T05:51:19.8376167Z 
+ci (26)	Run tests	2026-09-12T05:51:19.8376885Z > @orkestrel/ollama@0.0.15 test:policy
+ci (26)	Run tests	2026-09-12T05:51:19.8377596Z > vitest run --config vite.config.ts --no-cache --reporter=dot --project policy
+ci (26)	Run tests	2026-09-12T05:51:19.8377987Z 
+ci (26)	Run tests	2026-09-12T05:51:20.1726066Z 
+ci (26)	Run tests	2026-09-12T05:51:20.1730761Z ^[[1m^[[30m^[[46m RUN ^[[49m^[[39m^[[22m ^[[36mv4.1.11 ^[[39m^[[90m/home/runner/work/ollama/ollama^[[39m
+ci (26)	Run tests	2026-09-12T05:51:20.1731576Z 
+ci (26)	Run tests	2026-09-12T05:51:20.6696717Z ^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[2m^[[90m-^[[39m^[[22m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m
+ci (26)	Run tests	2026-09-12T05:51:20.6706383Z 
+ci (26)	Run tests	2026-09-12T05:51:20.6707519Z ^[[2m Test Files ^[[22m ^[[1m^[[32m1 passed^[[39m^[[22m^[[90m (1)^[[39m
+ci (26)	Run tests	2026-09-12T05:51:20.6708702Z ^[[2m      Tests ^[[22m ^[[1m^[[32m90 passed^[[39m^[[22m^[[2m | ^[[22m^[[33m1 skipped^[[39m^[[90m (91)^[[39m
+ci (26)	Run tests	2026-09-12T05:51:20.6709639Z ^[[2m   Start at ^[[22m 05:51:20
+ci (26)	Run tests	2026-09-12T05:51:20.6711055Z ^[[2m   Duration ^[[22m 489ms^[[2m (transform 107ms, setup 29ms, import 108ms, tests 227ms, environment 0ms)^[[22m
+ci (26)	Run tests	2026-09-12T05:51:20.6731326Z 
+ci (26)	Run tests	2026-09-12T05:51:20.7996016Z 
+ci (26)	Run tests	2026-09-12T05:51:20.7996502Z > @orkestrel/ollama@0.0.15 test:config
+ci (26)	Run tests	2026-09-12T05:51:20.7997288Z > vitest run --config vite.config.ts --no-cache --reporter=dot --project config
+ci (26)	Run tests	2026-09-12T05:51:20.7997688Z 
+ci (26)	Run tests	2026-09-12T05:51:21.1474957Z 
+ci (26)	Run tests	2026-09-12T05:51:21.1479304Z ^[[1m^[[30m^[[46m RUN ^[[49m^[[39m^[[22m ^[[36mv4.1.11 ^[[39m^[[90m/home/runner/work/ollama/ollama^[[39m
+ci (26)	Run tests	2026-09-12T05:51:21.1480074Z 
+ci (26)	Run tests	2026-09-12T05:51:23.6330996Z ^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[90mstdout^[[2m | tests/config.test.ts^[[2m > ^[[22m^[[2mconfiguration helpers^[[2m > ^[[22m^[[2mrolls one face into a single declaration and rewrites its core specifier
+ci (26)	Run tests	2026-09-12T05:51:23.6341558Z ^[[22m^[[39mAnalysis will use the bundled TypeScript version 5.9.3
+ci (26)	Run tests	2026-09-12T05:51:23.6342484Z *** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+ci (26)	Run tests	2026-09-12T05:51:23.6343015Z 
+ci (26)	Run tests	2026-09-12T05:51:24.1073916Z ^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[2m^[[90m-^[[39m^[[22m^[[90mstdout^[[2m | tests/config.test.ts^[[2m > ^[[22m^[[2mconfiguration helpers^[[2m > ^[[22m^[[2mrolls one face into a single declaration and rewrites its core specifier
+ci (26)	Run tests	2026-09-12T05:51:24.1082189Z ^[[22m^[[39mAnalysis will use the bundled TypeScript version 5.9.3
+ci (26)	Run tests	2026-09-12T05:51:24.1084098Z *** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+ci (26)	Run tests	2026-09-12T05:51:24.1085255Z 
+ci (26)	Run tests	2026-09-12T05:51:24.1201495Z ^[[33m^[[39m^[[32m·^[[39m
+ci (26)	Run tests	2026-09-12T05:51:24.1209186Z 
+ci (26)	Run tests	2026-09-12T05:51:24.1214312Z ^[[2m Test Files ^[[22m ^[[1m^[[32m1 passed^[[39m^[[22m^[[90m (1)^[[39m
+ci (26)	Run tests	2026-09-12T05:51:24.1215708Z ^[[2m      Tests ^[[22m ^[[1m^[[32m172 passed^[[39m^[[22m^[[2m | ^[[22m^[[33m1 skipped^[[39m^[[90m (173)^[[39m
+ci (26)	Run tests	2026-09-12T05:51:24.1216776Z ^[[2m   Start at ^[[22m 05:51:21
+ci (26)	Run tests	2026-09-12T05:51:24.1217825Z ^[[2m   Duration ^[[22m 2.97s^[[2m (transform 256ms, setup 29ms, import 468ms, tests 2.35s, environment 0ms)^[[22m
+ci (26)	Run tests	2026-09-12T05:51:24.1220419Z 
+ci (26)	Run tests	2026-09-12T05:51:24.2661920Z 
+ci (26)	Run tests	2026-09-12T05:51:24.2662570Z > @orkestrel/ollama@0.0.15 test:guides
+ci (26)	Run tests	2026-09-12T05:51:24.2663123Z > node --experimental-strip-types tests/guides.test.ts
+ci (26)	Run tests	2026-09-12T05:51:24.2663432Z 
+ci (26)	Run tests	2026-09-12T05:51:24.6451870Z 
+ci (26)	Run tests	2026-09-12T05:51:24.6455873Z ^[[1m^[[30m^[[46m RUN ^[[49m^[[39m^[[22m ^[[36mv4.1.11 ^[[39m^[[90m/home/runner/work/ollama/ollama^[[39m
+ci (26)	Run tests	2026-09-12T05:51:24.6456527Z 
+ci (26)	Run tests	2026-09-12T05:51:25.2393533Z ^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m
+ci (26)	Run tests	2026-09-12T05:51:25.2397296Z 
+ci (26)	Run tests	2026-09-12T05:51:25.2401786Z ^[[2m Test Files ^[[22m ^[[1m^[[32m1 passed^[[39m^[[22m^[[90m (1)^[[39m
+ci (26)	Run tests	2026-09-12T05:51:25.2402922Z ^[[2m      Tests ^[[22m ^[[1m^[[32m22 passed^[[39m^[[22m^[[90m (22)^[[39m
+ci (26)	Run tests	2026-09-12T05:51:25.2403805Z ^[[2m   Start at ^[[22m 05:51:24
+ci (26)	Run tests	2026-09-12T05:51:25.2405195Z ^[[2m   Duration ^[[22m 588ms^[[2m (transform 79ms, setup 26ms, import 424ms, tests 9ms, environment 0ms)^[[22m
+ci (26)	Run tests	2026-09-12T05:51:25.2411161Z 
+ci (26)	Run tests	2026-09-12T05:51:25.3704853Z 
+ci (26)	Run tests	2026-09-12T05:51:25.3705545Z > @orkestrel/ollama@0.0.15 test:conformance
+ci (26)	Run tests	2026-09-12T05:51:25.3706431Z > vitest run --config vite.config.ts --no-cache --reporter=dot --project conformance
+ci (26)	Run tests	2026-09-12T05:51:25.3706854Z 
+ci (26)	Run tests	2026-09-12T05:51:25.7068345Z 
+ci (26)	Run tests	2026-09-12T05:51:25.7072357Z ^[[1m^[[30m^[[46m RUN ^[[49m^[[39m^[[22m ^[[36mv4.1.11 ^[[39m^[[90m/home/runner/work/ollama/ollama^[[39m
+ci (26)	Run tests	2026-09-12T05:51:25.7072793Z 
+ci (26)	Run tests	2026-09-12T05:51:25.8902593Z ^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m
+ci (26)	Run tests	2026-09-12T05:51:25.8907085Z 
+ci (26)	Run tests	2026-09-12T05:51:25.8911882Z ^[[2m Test Files ^[[22m ^[[1m^[[32m1 passed^[[39m^[[22m^[[90m (1)^[[39m
+ci (26)	Run tests	2026-09-12T05:51:25.8913679Z ^[[2m      Tests ^[[22m ^[[1m^[[32m17 passed^[[39m^[[22m^[[90m (17)^[[39m
+ci (26)	Run tests	2026-09-12T05:51:25.8914540Z ^[[2m   Start at ^[[22m 05:51:25
+ci (26)	Run tests	2026-09-12T05:51:25.8915734Z ^[[2m   Duration ^[[22m 178ms^[[2m (transform 32ms, setup 29ms, import 18ms, tests 6ms, environment 0ms)^[[22m
+ci (26)	Run tests	2026-09-12T05:51:25.8917273Z 
+ci (26)	Provision live service	﻿2026-09-12T05:51:25.9454432Z ##[group]Run bash scripts/ollama.sh
+ci (26)	Provision live service	2026-09-12T05:51:25.9455004Z ^[[36;1mbash scripts/ollama.sh^[[0m
+ci (26)	Provision live service	2026-09-12T05:51:25.9506072Z shell: /usr/bin/bash -e {0}
+ci (26)	Provision live service	2026-09-12T05:51:25.9506549Z ##[endgroup]
+ci (26)	Provision live service	2026-09-12T05:51:26.3188871Z >>> Installing ollama to /usr/local
+ci (26)	Provision live service	2026-09-12T05:51:26.5926517Z >>> Downloading ollama-linux-amd64.tar.zst
+ci (26)	Provision live service	2026-09-12T05:51:26.8320444Z #=#=#                                                                          
+ci (26)	Provision live service	2026-09-12T05:51:26.8321066Z 
+ci (26)	Provision live service	2026-09-12T05:51:26.9579316Z                                                                            0.7%
+ci (26)	Provision live service	2026-09-12T05:51:27.0653095Z ##                                                                         2.9%
+ci (26)	Provision live service	2026-09-12T05:51:27.1782451Z ###                                                                        5.1%
+ci (26)	Provision live service	2026-09-12T05:51:27.2906635Z #####                                                                      8.0%
+ci (26)	Provision live service	2026-09-12T05:51:27.4032890Z #######                                                                   10.9%
+ci (26)	Provision live service	2026-09-12T05:51:27.5252452Z #########                                                                 13.9%
+ci (26)	Provision live service	2026-09-12T05:51:27.6270405Z ############                                                              16.8%
+ci (26)	Provision live service	2026-09-12T05:51:27.7434558Z #############                                                             19.0%
+ci (26)	Provision live service	2026-09-12T05:51:27.8512992Z ###############                                                           21.9%
+ci (26)	Provision live service	2026-09-12T05:51:27.9656745Z #################                                                         24.1%
+ci (26)	Provision live service	2026-09-12T05:51:28.0905045Z ##################                                                        26.3%
+ci (26)	Provision live service	2026-09-12T05:51:28.2473884Z ####################                                                      28.5%
+ci (26)	Provision live service	2026-09-12T05:51:28.3874211Z ######################                                                    30.7%
+ci (26)	Provision live service	2026-09-12T05:51:28.4901284Z ######################                                                    31.4%
+ci (26)	Provision live service	2026-09-12T05:51:28.5903723Z #######################                                                   32.9%
+ci (26)	Provision live service	2026-09-12T05:51:28.7095370Z ########################                                                  34.4%
+ci (26)	Provision live service	2026-09-12T05:51:28.8305160Z ##########################                                                36.5%
+ci (26)	Provision live service	2026-09-12T05:51:28.9940787Z ###########################                                               38.7%
+ci (26)	Provision live service	2026-09-12T05:51:29.1239377Z #############################                                             40.9%
+ci (26)	Provision live service	2026-09-12T05:51:29.2363436Z ##############################                                            42.3%
+ci (26)	Provision live service	2026-09-12T05:51:29.3576575Z ###############################                                           43.9%
+ci (26)	Provision live service	2026-09-12T05:51:29.4828455Z #################################                                         46.8%
+ci (26)	Provision live service	2026-09-12T05:51:29.6271763Z ###################################                                       49.7%
+ci (26)	Provision live service	2026-09-12T05:51:29.7389149Z #####################################                                     51.9%
+ci (26)	Provision live service	2026-09-12T05:51:29.8442248Z ######################################                                    54.1%
+ci (26)	Provision live service	2026-09-12T05:51:30.0945882Z #########################################                                 57.0%
+ci (26)	Provision live service	2026-09-12T05:51:30.2542518Z ##########################################                                59.2%
+ci (26)	Provision live service	2026-09-12T05:51:30.3549485Z ############################################                              61.4%
+ci (26)	Provision live service	2026-09-12T05:51:30.4568636Z #############################################                             63.6%
+ci (26)	Provision live service	2026-09-12T05:51:30.5858189Z ###############################################                           65.8%
+ci (26)	Provision live service	2026-09-12T05:51:30.6934029Z #################################################                         68.7%
+ci (26)	Provision live service	2026-09-12T05:51:30.7961761Z ###################################################                       71.0%
+ci (26)	Provision live service	2026-09-12T05:51:30.9074178Z ####################################################                      73.1%
+ci (26)	Provision live service	2026-09-12T05:51:31.0164933Z ######################################################                    75.3%
+ci (26)	Provision live service	2026-09-12T05:51:31.1418035Z #######################################################                   76.8%
+ci (26)	Provision live service	2026-09-12T05:51:31.2453519Z #########################################################                 79.7%
+ci (26)	Provision live service	2026-09-12T05:51:31.3461159Z ##########################################################                81.9%
+ci (26)	Provision live service	2026-09-12T05:51:31.4524326Z ############################################################              84.1%
+ci (26)	Provision live service	2026-09-12T05:51:31.5541983Z ##############################################################            86.3%
+ci (26)	Provision live service	2026-09-12T05:51:31.6806230Z ###############################################################           88.6%
+ci (26)	Provision live service	2026-09-12T05:51:31.8027397Z #################################################################         91.4%
+ci (26)	Provision live service	2026-09-12T05:51:31.9275244Z ###################################################################       93.6%
+ci (26)	Provision live service	2026-09-12T05:51:32.0834256Z #####################################################################     96.5%
+ci (26)	Provision live service	2026-09-12T05:51:32.1717494Z #######################################################################   99.5%
+ci (26)	Provision live service	2026-09-12T05:51:32.1722597Z ######################################################################## 100.0%
+ci (26)	Provision live service	2026-09-12T05:51:32.1916012Z >>> Creating ollama user...
+ci (26)	Provision live service	2026-09-12T05:52:05.9457013Z >>> Adding ollama user to render group...
+ci (26)	Provision live service	2026-09-12T05:52:05.9621316Z >>> Adding ollama user to video group...
+ci (26)	Provision live service	2026-09-12T05:52:05.9775939Z >>> Adding current user to ollama group...
+ci (26)	Provision live service	2026-09-12T05:52:05.9975611Z >>> Creating ollama systemd service...
+ci (26)	Provision live service	2026-09-12T05:52:06.0078018Z >>> Enabling and starting ollama service...
+ci (26)	Provision live service	2026-09-12T05:52:06.2898834Z Created symlink /etc/systemd/system/default.target.wants/ollama.service → /etc/systemd/system/ollama.service.
+ci (26)	Provision live service	2026-09-12T05:52:08.7801723Z >>> The Ollama API is now available at 127.0.0.1:11434.
+ci (26)	Provision live service	2026-09-12T05:52:08.7802769Z WARNING: No NVIDIA/AMD GPU detected. Ollama will run in CPU-only mode.
+ci (26)	Provision live service	2026-09-12T05:52:08.7804727Z >>> Install complete. Run "ollama" from the command line.
+ci (26)	Provision live service	2026-09-12T05:52:19.2486238Z ollama.sh: Ollama is ready
+ci (26)	Run live service tests	﻿2026-09-12T05:52:19.2547345Z ##[group]Run npm run test:service
+ci (26)	Run live service tests	2026-09-12T05:52:19.2547921Z ^[[36;1mnpm run test:service^[[0m
+ci (26)	Run live service tests	2026-09-12T05:52:19.2592041Z shell: /usr/bin/bash -e {0}
+ci (26)	Run live service tests	2026-09-12T05:52:19.2592519Z ##[endgroup]
+ci (26)	Run live service tests	2026-09-12T05:52:19.3648359Z 
+ci (26)	Run live service tests	2026-09-12T05:52:19.3649062Z > @orkestrel/ollama@0.0.15 test:service
+ci (26)	Run live service tests	2026-09-12T05:52:19.3650256Z > vitest run --config vite.config.ts --no-cache --reporter=dot --project service
+ci (26)	Run live service tests	2026-09-12T05:52:19.3651413Z 
+ci (26)	Run live service tests	2026-09-12T05:52:19.7115986Z 
+ci (26)	Run live service tests	2026-09-12T05:52:19.7120405Z ^[[1m^[[30m^[[46m RUN ^[[49m^[[39m^[[22m ^[[36mv4.1.11 ^[[39m^[[90m/home/runner/work/ollama/ollama^[[39m
+ci (26)	Run live service tests	2026-09-12T05:52:19.7121383Z 
+ci (26)	Run live service tests	2026-09-12T05:57:07.9728187Z ^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m^[[33m^[[39m^[[32m·^[[39m
+ci (26)	Run live service tests	2026-09-12T05:57:07.9734074Z 
+ci (26)	Run live service tests	2026-09-12T05:57:07.9736972Z ^[[2m Test Files ^[[22m ^[[1m^[[32m11 passed^[[39m^[[22m^[[90m (11)^[[39m
+ci (26)	Run live service tests	2026-09-12T05:57:07.9738076Z ^[[2m      Tests ^[[22m ^[[1m^[[32m58 passed^[[39m^[[22m^[[90m (58)^[[39m
+ci (26)	Run live service tests	2026-09-12T05:57:07.9738804Z ^[[2m   Start at ^[[22m 05:52:19
+ci (26)	Run live service tests	2026-09-12T05:57:07.9739747Z ^[[2m   Duration ^[[22m 288.25s^[[2m (transform 225ms, setup 3.01s, import 223ms, tests 283.71s, environment 1ms)^[[22m
+ci (26)	Run live service tests	2026-09-12T05:57:07.9744277Z 
+ci (26)	Post Set up Node.js	﻿2026-09-12T05:57:08.0134790Z Post job cleanup.
+ci (26)	Post Set up Node.js	2026-09-12T05:57:08.1543209Z [command]/usr/bin/tar --posix -cf cache.tzst --exclude cache.tzst -P -C /home/runner/work/ollama/ollama --files-from manifest.txt --use-compress-program zstdmt
+ci (26)	Post Set up Node.js	2026-09-12T05:57:09.2088246Z Sent 57883659 of 57883659 (100.0%), 68.3 MBs/sec
+ci (26)	Post Set up Node.js	2026-09-12T05:57:09.3142632Z Cache saved with the key: node-cache-Linux-x64-npm-22635311128f57daff36c9328116b28f683b1ad4654f9a121d0524d9bee76de6
+ci (26)	Post Checkout code	﻿2026-09-12T05:57:09.3297825Z Post job cleanup.
+ci (26)	Post Checkout code	2026-09-12T05:57:09.4171006Z [command]/usr/bin/git version
+ci (26)	Post Checkout code	2026-09-12T05:57:09.4215330Z git version 2.55.0
+ci (26)	Post Checkout code	2026-09-12T05:57:09.4257042Z Temporarily overriding HOME='/home/runner/work/_temp/8ae4641c-d493-4606-bc5a-f03b49fd65ab' before making global git config changes
+ci (26)	Post Checkout code	2026-09-12T05:57:09.4258631Z Adding repository directory to the temporary git global config as a safe directory
+ci (26)	Post Checkout code	2026-09-12T05:57:09.4262941Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/ollama/ollama
+ci (26)	Post Checkout code	2026-09-12T05:57:09.4299090Z Removing SSH command configuration
+ci (26)	Post Checkout code	2026-09-12T05:57:09.4306313Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+ci (26)	Post Checkout code	2026-09-12T05:57:09.4347259Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+ci (26)	Post Checkout code	2026-09-12T05:57:09.4599738Z Removing HTTP extra header
+ci (26)	Post Checkout code	2026-09-12T05:57:09.4606852Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+ci (26)	Post Checkout code	2026-09-12T05:57:09.4644893Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+ci (26)	Post Checkout code	2026-09-12T05:57:09.4885126Z Removing includeIf entries pointing to credentials config files
+ci (26)	Post Checkout code	2026-09-12T05:57:09.4896925Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+ci (26)	Post Checkout code	2026-09-12T05:57:09.4936837Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+ci (26)	Complete job	﻿2026-09-12T05:57:09.5398240Z Cleaning up orphan processes
+ci (22.12.0)	Set up job	﻿2026-09-12T05:50:56.7238177Z Current runner version: '2.337.0'
+ci (22.12.0)	Set up job	2026-09-12T05:50:56.7264198Z ##[group]Runner Image Provisioner
+ci (22.12.0)	Set up job	2026-09-12T05:50:56.7265266Z Hosted Compute Agent
+ci (22.12.0)	Set up job	2026-09-12T05:50:56.7265897Z Version: 20260828.587
+ci (22.12.0)	Set up job	2026-09-12T05:50:56.7266606Z Commit: abac92662cab4cc7352de4f9f9d2e2419aad9c29
+ci (22.12.0)	Set up job	2026-09-12T05:50:56.7267425Z Build Date: 2026-08-28T16:44:25Z
+ci (22.12.0)	Set up job	2026-09-12T05:50:56.7268130Z Worker ID: {19d4eecb-db02-43dd-a47f-858ba9ea40f5}
+ci (22.12.0)	Set up job	2026-09-12T05:50:56.7268933Z Azure Region: mexicocentral
+ci (22.12.0)	Set up job	2026-09-12T05:50:56.7269553Z ##[endgroup]
+ci (22.12.0)	Set up job	2026-09-12T05:50:56.7271842Z ##[group]Operating System
+ci (22.12.0)	Set up job	2026-09-12T05:50:56.7272708Z Ubuntu
+ci (22.12.0)	Set up job	2026-09-12T05:50:56.7273254Z 24.04.5
+ci (22.12.0)	Set up job	2026-09-12T05:50:56.7273825Z LTS
+ci (22.12.0)	Set up job	2026-09-12T05:50:56.7274354Z ##[endgroup]
+ci (22.12.0)	Set up job	2026-09-12T05:50:56.7274908Z ##[group]Runner Image
+ci (22.12.0)	Set up job	2026-09-12T05:50:56.7275622Z Image: ubuntu-24.04
+ci (22.12.0)	Set up job	2026-09-12T05:50:56.7276197Z Version: 20260907.300.1
+ci (22.12.0)	Set up job	2026-09-12T05:50:56.7277308Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20260907.300/images/ubuntu/Ubuntu2404-Readme.md
+ci (22.12.0)	Set up job	2026-09-12T05:50:56.7279075Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20260907.300
+ci (22.12.0)	Set up job	2026-09-12T05:50:56.7280405Z ##[endgroup]
+ci (22.12.0)	Set up job	2026-09-12T05:50:56.7281547Z ##[group]GITHUB_TOKEN Permissions
+ci (22.12.0)	Set up job	2026-09-12T05:50:56.7283787Z Contents: read
+ci (22.12.0)	Set up job	2026-09-12T05:50:56.7284451Z Metadata: read
+ci (22.12.0)	Set up job	2026-09-12T05:50:56.7285124Z ##[endgroup]
+ci (22.12.0)	Set up job	2026-09-12T05:50:56.7287216Z Secret source: Actions
+ci (22.12.0)	Set up job	2026-09-12T05:50:56.7288317Z Cache mode: write
+ci (22.12.0)	Set up job	2026-09-12T05:50:56.7289078Z Prepare workflow directory
+ci (22.12.0)	Set up job	2026-09-12T05:50:56.7635384Z Prepare all required actions
+ci (22.12.0)	Set up job	2026-09-12T05:50:56.7683494Z Getting action download info
+ci (22.12.0)	Set up job	2026-09-12T05:50:57.1258823Z Download action repository 'actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd' (SHA:de0fac2e4500dabe0009e67214ff5f5447ce83dd)
+ci (22.12.0)	Set up job	2026-09-12T05:50:57.2383212Z Download action repository 'actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e' (SHA:48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e)
+ci (22.12.0)	Set up job	2026-09-12T05:50:57.4327589Z Complete job name: ci (22.12.0)
+ci (22.12.0)	Checkout code	﻿2026-09-12T05:50:57.5124792Z ##[group]Run actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+ci (22.12.0)	Checkout code	2026-09-12T05:50:57.5126001Z with:
+ci (22.12.0)	Checkout code	2026-09-12T05:50:57.5126486Z   persist-credentials: false
+ci (22.12.0)	Checkout code	2026-09-12T05:50:57.5127030Z   repository: orkestrel/ollama
+ci (22.12.0)	Checkout code	2026-09-12T05:50:57.5131149Z   token: ***
+ci (22.12.0)	Checkout code	2026-09-12T05:50:57.5131617Z   ssh-strict: true
+ci (22.12.0)	Checkout code	2026-09-12T05:50:57.5132064Z   ssh-user: git
+ci (22.12.0)	Checkout code	2026-09-12T05:50:57.5132496Z   clean: true
+ci (22.12.0)	Checkout code	2026-09-12T05:50:57.5132970Z   sparse-checkout-cone-mode: true
+ci (22.12.0)	Checkout code	2026-09-12T05:50:57.5133523Z   fetch-depth: 1
+ci (22.12.0)	Checkout code	2026-09-12T05:50:57.5133965Z   fetch-tags: false
+ci (22.12.0)	Checkout code	2026-09-12T05:50:57.5134425Z   show-progress: true
+ci (22.12.0)	Checkout code	2026-09-12T05:50:57.5134888Z   lfs: false
+ci (22.12.0)	Checkout code	2026-09-12T05:50:57.5135316Z   submodules: false
+ci (22.12.0)	Checkout code	2026-09-12T05:50:57.5135778Z   set-safe-directory: true
+ci (22.12.0)	Checkout code	2026-09-12T05:50:57.5136540Z ##[endgroup]
+ci (22.12.0)	Checkout code	2026-09-12T05:50:57.6143583Z Syncing repository: orkestrel/ollama
+ci (22.12.0)	Checkout code	2026-09-12T05:50:57.6146375Z ##[group]Getting Git version info
+ci (22.12.0)	Checkout code	2026-09-12T05:50:57.6147496Z Working directory is '/home/runner/work/ollama/ollama'
+ci (22.12.0)	Checkout code	2026-09-12T05:50:57.6149243Z [command]/usr/bin/git version
+ci (22.12.0)	Checkout code	2026-09-12T05:50:57.6228560Z git version 2.55.0
+ci (22.12.0)	Checkout code	2026-09-12T05:50:57.6265704Z ##[endgroup]
+ci (22.12.0)	Checkout code	2026-09-12T05:50:57.6275240Z Temporarily overriding HOME='/home/runner/work/_temp/7b62f982-ee6f-4c0b-bd90-c1fdb4927f81' before making global git config changes
+ci (22.12.0)	Checkout code	2026-09-12T05:50:57.6277682Z Adding repository directory to the temporary git global config as a safe directory
+ci (22.12.0)	Checkout code	2026-09-12T05:50:57.6282436Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/ollama/ollama
+ci (22.12.0)	Checkout code	2026-09-12T05:50:57.6341595Z Deleting the contents of '/home/runner/work/ollama/ollama'
+ci (22.12.0)	Checkout code	2026-09-12T05:50:57.6345118Z ##[group]Initializing the repository
+ci (22.12.0)	Checkout code	2026-09-12T05:50:57.6351019Z [command]/usr/bin/git init /home/runner/work/ollama/ollama
+ci (22.12.0)	Checkout code	2026-09-12T05:50:57.6509882Z hint: Using 'master' as the name for the initial branch. This default branch name
+ci (22.12.0)	Checkout code	2026-09-12T05:50:57.6511266Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+ci (22.12.0)	Checkout code	2026-09-12T05:50:57.6512690Z hint: to use in all of your new repositories, which will suppress this warning,
+ci (22.12.0)	Checkout code	2026-09-12T05:50:57.6513522Z hint: call:
+ci (22.12.0)	Checkout code	2026-09-12T05:50:57.6513956Z hint:
+ci (22.12.0)	Checkout code	2026-09-12T05:50:57.6514513Z hint: 	git config --global init.defaultBranch <name>
+ci (22.12.0)	Checkout code	2026-09-12T05:50:57.6515207Z hint:
+ci (22.12.0)	Checkout code	2026-09-12T05:50:57.6515845Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+ci (22.12.0)	Checkout code	2026-09-12T05:50:57.6516873Z hint: 'development'. The just-created branch can be renamed via this command:
+ci (22.12.0)	Checkout code	2026-09-12T05:50:57.6517694Z hint:
+ci (22.12.0)	Checkout code	2026-09-12T05:50:57.6518146Z hint: 	git branch -m <name>
+ci (22.12.0)	Checkout code	2026-09-12T05:50:57.6523796Z hint:
+ci (22.12.0)	Checkout code	2026-09-12T05:50:57.6524824Z hint: Disable this message with "git config set advice.defaultBranchName false"
+ci (22.12.0)	Checkout code	2026-09-12T05:50:57.6525999Z Initialized empty Git repository in /home/runner/work/ollama/ollama/.git/
+ci (22.12.0)	Checkout code	2026-09-12T05:50:57.6536325Z [command]/usr/bin/git remote add origin https://github.com/orkestrel/ollama
+ci (22.12.0)	Checkout code	2026-09-12T05:50:57.6591141Z ##[endgroup]
+ci (22.12.0)	Checkout code	2026-09-12T05:50:57.6592617Z ##[group]Disabling automatic garbage collection
+ci (22.12.0)	Checkout code	2026-09-12T05:50:57.6595435Z [command]/usr/bin/git config --local gc.auto 0
+ci (22.12.0)	Checkout code	2026-09-12T05:50:57.6631030Z ##[endgroup]
+ci (22.12.0)	Checkout code	2026-09-12T05:50:57.6632247Z ##[group]Setting up auth
+ci (22.12.0)	Checkout code	2026-09-12T05:50:57.6633227Z Removing SSH command configuration
+ci (22.12.0)	Checkout code	2026-09-12T05:50:57.6640047Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+ci (22.12.0)	Checkout code	2026-09-12T05:50:57.6694679Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+ci (22.12.0)	Checkout code	2026-09-12T05:50:57.7084495Z Removing HTTP extra header
+ci (22.12.0)	Checkout code	2026-09-12T05:50:57.7092736Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+ci (22.12.0)	Checkout code	2026-09-12T05:50:57.7134769Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+ci (22.12.0)	Checkout code	2026-09-12T05:50:57.7361155Z Removing includeIf entries pointing to credentials config files
+ci (22.12.0)	Checkout code	2026-09-12T05:50:57.7367913Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+ci (22.12.0)	Checkout code	2026-09-12T05:50:57.7404419Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+ci (22.12.0)	Checkout code	2026-09-12T05:50:57.7628848Z [command]/usr/bin/git config --file /home/runner/work/_temp/git-credentials-5e079517-742f-4182-888e-e4510b69c4d5.config http.https://github.com/.extraheader AUTHORIZATION: basic ***
+ci (22.12.0)	Checkout code	2026-09-12T05:50:57.7670460Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/ollama/ollama/.git.path /home/runner/work/_temp/git-credentials-5e079517-742f-4182-888e-e4510b69c4d5.config
+ci (22.12.0)	Checkout code	2026-09-12T05:50:57.7712471Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/ollama/ollama/.git/worktrees/*.path /home/runner/work/_temp/git-credentials-5e079517-742f-4182-888e-e4510b69c4d5.config
+ci (22.12.0)	Checkout code	2026-09-12T05:50:57.7754142Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-5e079517-742f-4182-888e-e4510b69c4d5.config
+ci (22.12.0)	Checkout code	2026-09-12T05:50:57.7790736Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-5e079517-742f-4182-888e-e4510b69c4d5.config
+ci (22.12.0)	Checkout code	2026-09-12T05:50:57.7826066Z ##[endgroup]
+ci (22.12.0)	Checkout code	2026-09-12T05:50:57.7827601Z ##[group]Fetching the repository
+ci (22.12.0)	Checkout code	2026-09-12T05:50:57.7836279Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +d6e868d886f2968edbcaf125a207966a6ae8dd15:refs/remotes/origin/claude/orkestrel-npm-audit-deps-14ibta
+ci (22.12.0)	Checkout code	2026-09-12T05:50:58.6883632Z From https://github.com/orkestrel/ollama
+ci (22.12.0)	Checkout code	2026-09-12T05:50:58.6885121Z  * [new ref]         d6e868d886f2968edbcaf125a207966a6ae8dd15 -> origin/claude/orkestrel-npm-audit-deps-14ibta
+ci (22.12.0)	Checkout code	2026-09-12T05:50:58.6898329Z [command]/usr/bin/git branch --list --remote origin/claude/orkestrel-npm-audit-deps-14ibta
+ci (22.12.0)	Checkout code	2026-09-12T05:50:58.6931583Z   origin/claude/orkestrel-npm-audit-deps-14ibta
+ci (22.12.0)	Checkout code	2026-09-12T05:50:58.6941621Z [command]/usr/bin/git rev-parse refs/remotes/origin/claude/orkestrel-npm-audit-deps-14ibta
+ci (22.12.0)	Checkout code	2026-09-12T05:50:58.6968960Z d6e868d886f2968edbcaf125a207966a6ae8dd15
+ci (22.12.0)	Checkout code	2026-09-12T05:50:58.6978580Z ##[endgroup]
+ci (22.12.0)	Checkout code	2026-09-12T05:50:58.6979391Z ##[group]Determining the checkout info
+ci (22.12.0)	Checkout code	2026-09-12T05:50:58.6980835Z ##[endgroup]
+ci (22.12.0)	Checkout code	2026-09-12T05:50:58.6992836Z [command]/usr/bin/git sparse-checkout disable
+ci (22.12.0)	Checkout code	2026-09-12T05:50:58.7037462Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+ci (22.12.0)	Checkout code	2026-09-12T05:50:58.7070532Z ##[group]Checking out the ref
+ci (22.12.0)	Checkout code	2026-09-12T05:50:58.7076448Z [command]/usr/bin/git checkout --progress --force -B claude/orkestrel-npm-audit-deps-14ibta refs/remotes/origin/claude/orkestrel-npm-audit-deps-14ibta
+ci (22.12.0)	Checkout code	2026-09-12T05:50:58.7272181Z Switched to a new branch 'claude/orkestrel-npm-audit-deps-14ibta'
+ci (22.12.0)	Checkout code	2026-09-12T05:50:58.7293369Z branch 'claude/orkestrel-npm-audit-deps-14ibta' set up to track 'origin/claude/orkestrel-npm-audit-deps-14ibta'.
+ci (22.12.0)	Checkout code	2026-09-12T05:50:58.7300269Z ##[endgroup]
+ci (22.12.0)	Checkout code	2026-09-12T05:50:58.7375826Z [command]/usr/bin/git log -1 --format=%H
+ci (22.12.0)	Checkout code	2026-09-12T05:50:58.7402852Z d6e868d886f2968edbcaf125a207966a6ae8dd15
+ci (22.12.0)	Checkout code	2026-09-12T05:50:58.7412352Z ##[group]Removing auth
+ci (22.12.0)	Checkout code	2026-09-12T05:50:58.7413286Z Removing SSH command configuration
+ci (22.12.0)	Checkout code	2026-09-12T05:50:58.7416242Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+ci (22.12.0)	Checkout code	2026-09-12T05:50:58.7452616Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+ci (22.12.0)	Checkout code	2026-09-12T05:50:58.7676191Z Removing HTTP extra header
+ci (22.12.0)	Checkout code	2026-09-12T05:50:58.7680482Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+ci (22.12.0)	Checkout code	2026-09-12T05:50:58.7719119Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+ci (22.12.0)	Checkout code	2026-09-12T05:50:58.7937537Z Removing includeIf entries pointing to credentials config files
+ci (22.12.0)	Checkout code	2026-09-12T05:50:58.7941009Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+ci (22.12.0)	Checkout code	2026-09-12T05:50:58.7971599Z includeif.gitdir:/home/runner/work/ollama/ollama/.git.path
+ci (22.12.0)	Checkout code	2026-09-12T05:50:58.7974312Z includeif.gitdir:/home/runner/work/ollama/ollama/.git/worktrees/*.path
+ci (22.12.0)	Checkout code	2026-09-12T05:50:58.7976981Z includeif.gitdir:/github/workspace/.git.path
+ci (22.12.0)	Checkout code	2026-09-12T05:50:58.7979196Z includeif.gitdir:/github/workspace/.git/worktrees/*.path
+ci (22.12.0)	Checkout code	2026-09-12T05:50:58.7984581Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/ollama/ollama/.git.path
+ci (22.12.0)	Checkout code	2026-09-12T05:50:58.8008093Z /home/runner/work/_temp/git-credentials-5e079517-742f-4182-888e-e4510b69c4d5.config
+ci (22.12.0)	Checkout code	2026-09-12T05:50:58.8020136Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/ollama/ollama/.git.path /home/runner/work/_temp/git-credentials-5e079517-742f-4182-888e-e4510b69c4d5.config
+ci (22.12.0)	Checkout code	2026-09-12T05:50:58.8055655Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/ollama/ollama/.git/worktrees/*.path
+ci (22.12.0)	Checkout code	2026-09-12T05:50:58.8081541Z /home/runner/work/_temp/git-credentials-5e079517-742f-4182-888e-e4510b69c4d5.config
+ci (22.12.0)	Checkout code	2026-09-12T05:50:58.8092465Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/ollama/ollama/.git/worktrees/*.path /home/runner/work/_temp/git-credentials-5e079517-742f-4182-888e-e4510b69c4d5.config
+ci (22.12.0)	Checkout code	2026-09-12T05:50:58.8129462Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git.path
+ci (22.12.0)	Checkout code	2026-09-12T05:50:58.8158119Z /github/runner_temp/git-credentials-5e079517-742f-4182-888e-e4510b69c4d5.config
+ci (22.12.0)	Checkout code	2026-09-12T05:50:58.8173022Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-5e079517-742f-4182-888e-e4510b69c4d5.config
+ci (22.12.0)	Checkout code	2026-09-12T05:50:58.8215570Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git/worktrees/*.path
+ci (22.12.0)	Checkout code	2026-09-12T05:50:58.8240619Z /github/runner_temp/git-credentials-5e079517-742f-4182-888e-e4510b69c4d5.config
+ci (22.12.0)	Checkout code	2026-09-12T05:50:58.8248810Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-5e079517-742f-4182-888e-e4510b69c4d5.config
+ci (22.12.0)	Checkout code	2026-09-12T05:50:58.8284226Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+ci (22.12.0)	Checkout code	2026-09-12T05:50:58.8507207Z Removing credentials config '/home/runner/work/_temp/git-credentials-5e079517-742f-4182-888e-e4510b69c4d5.config'
+ci (22.12.0)	Checkout code	2026-09-12T05:50:58.8514108Z ##[endgroup]
+ci (22.12.0)	Set up Node.js	﻿2026-09-12T05:50:58.8943873Z ##[group]Run actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+ci (22.12.0)	Set up Node.js	2026-09-12T05:50:58.8945675Z with:
+ci (22.12.0)	Set up Node.js	2026-09-12T05:50:58.8946578Z   node-version: 22.12.0
+ci (22.12.0)	Set up Node.js	2026-09-12T05:50:58.8947588Z   cache: npm
+ci (22.12.0)	Set up Node.js	2026-09-12T05:50:58.8948519Z   check-latest: false
+ci (22.12.0)	Set up Node.js	2026-09-12T05:50:58.8958405Z   token: ***
+ci (22.12.0)	Set up Node.js	2026-09-12T05:50:58.8959421Z   package-manager-cache: true
+ci (22.12.0)	Set up Node.js	2026-09-12T05:50:58.8960775Z ##[endgroup]
+ci (22.12.0)	Set up Node.js	2026-09-12T05:50:59.0535701Z Attempting to download 22.12.0...
+ci (22.12.0)	Set up Node.js	2026-09-12T05:51:00.1734829Z Acquiring 22.12.0 - x64 from https://github.com/actions/node-versions/releases/download/22.12.0-12152383658/node-22.12.0-linux-x64.tar.gz
+ci (22.12.0)	Set up Node.js	2026-09-12T05:51:00.6505063Z Extracting ...
+ci (22.12.0)	Set up Node.js	2026-09-12T05:51:00.6652327Z [command]/usr/bin/tar xz --strip 1 --warning=no-unknown-keyword --overwrite -C /home/runner/work/_temp/03480415-b702-46f4-a22d-8bc923020bea -f /home/runner/work/_temp/0584849e-f83f-4da6-a611-00e0268c7fcd
+ci (22.12.0)	Set up Node.js	2026-09-12T05:51:01.8111956Z Adding to the cache ...
+ci (22.12.0)	Set up Node.js	2026-09-12T05:51:03.8808372Z ##[group]Environment details
+ci (22.12.0)	Set up Node.js	2026-09-12T05:51:04.0936166Z node: v22.12.0
+ci (22.12.0)	Set up Node.js	2026-09-12T05:51:04.0936758Z npm: 10.9.0
+ci (22.12.0)	Set up Node.js	2026-09-12T05:51:04.0937115Z yarn: 1.22.22
+ci (22.12.0)	Set up Node.js	2026-09-12T05:51:04.0938016Z ##[endgroup]
+ci (22.12.0)	Set up Node.js	2026-09-12T05:51:04.0975163Z [command]/opt/hostedtoolcache/node/22.12.0/x64/bin/npm config get cache
+ci (22.12.0)	Set up Node.js	2026-09-12T05:51:04.1970265Z /home/runner/.npm
+ci (22.12.0)	Set up Node.js	2026-09-12T05:51:04.4113646Z npm cache is not found
+ci (22.12.0)	Install dependencies	﻿2026-09-12T05:51:04.4294630Z ##[group]Run npm ci --ignore-scripts
+ci (22.12.0)	Install dependencies	2026-09-12T05:51:04.4295085Z ^[[36;1mnpm ci --ignore-scripts^[[0m
+ci (22.12.0)	Install dependencies	2026-09-12T05:51:04.4337391Z shell: /usr/bin/bash -e {0}
+ci (22.12.0)	Install dependencies	2026-09-12T05:51:04.4337749Z ##[endgroup]
+ci (22.12.0)	Install dependencies	2026-09-12T05:51:04.8917667Z npm warn EBADENGINE Unsupported engine {
+ci (22.12.0)	Install dependencies	2026-09-12T05:51:04.8918748Z npm warn EBADENGINE   package: '@orkestrel/sqlite@0.0.11',
+ci (22.12.0)	Install dependencies	2026-09-12T05:51:04.8920017Z npm warn EBADENGINE   required: { node: '^22.18.0 || >=24.4.0' },
+ci (22.12.0)	Install dependencies	2026-09-12T05:51:04.8921099Z npm warn EBADENGINE   current: { node: 'v22.12.0', npm: '10.9.0' }
+ci (22.12.0)	Install dependencies	2026-09-12T05:51:04.8921864Z npm warn EBADENGINE }
+ci (22.12.0)	Install dependencies	2026-09-12T05:51:08.1051651Z 
+ci (22.12.0)	Install dependencies	2026-09-12T05:51:08.1052642Z added 129 packages, and audited 130 packages in 4s
+ci (22.12.0)	Install dependencies	2026-09-12T05:51:08.1053216Z 
+ci (22.12.0)	Install dependencies	2026-09-12T05:51:08.1053649Z 29 packages are looking for funding
+ci (22.12.0)	Install dependencies	2026-09-12T05:51:08.1055790Z   run `npm fund` for details
+ci (22.12.0)	Install dependencies	2026-09-12T05:51:08.1074398Z 
+ci (22.12.0)	Install dependencies	2026-09-12T05:51:08.1074923Z 1 high severity vulnerability
+ci (22.12.0)	Install dependencies	2026-09-12T05:51:08.1075594Z 
+ci (22.12.0)	Install dependencies	2026-09-12T05:51:08.1076125Z To address all issues, run:
+ci (22.12.0)	Install dependencies	2026-09-12T05:51:08.1077023Z   npm audit fix
+ci (22.12.0)	Install dependencies	2026-09-12T05:51:08.1077501Z 
+ci (22.12.0)	Install dependencies	2026-09-12T05:51:08.1077942Z Run `npm audit` for details.
+ci (22.12.0)	Check formatting	﻿2026-09-12T05:51:08.1271775Z ##[group]Run npm run format:check
+ci (22.12.0)	Check formatting	2026-09-12T05:51:08.1272123Z ^[[36;1mnpm run format:check^[[0m
+ci (22.12.0)	Check formatting	2026-09-12T05:51:08.1312569Z shell: /usr/bin/bash -e {0}
+ci (22.12.0)	Check formatting	2026-09-12T05:51:08.1312972Z ##[endgroup]
+ci (22.12.0)	Check formatting	2026-09-12T05:51:08.2453332Z 
+ci (22.12.0)	Check formatting	2026-09-12T05:51:08.2454040Z > @orkestrel/ollama@0.0.15 format:check
+ci (22.12.0)	Check formatting	2026-09-12T05:51:08.2454613Z > oxfmt --config .oxfmtrc.json --check .
+ci (22.12.0)	Check formatting	2026-09-12T05:51:08.2454834Z 
+ci (22.12.0)	Check formatting	2026-09-12T05:51:08.3004530Z Checking formatting...
+ci (22.12.0)	Check formatting	2026-09-12T05:51:08.3005181Z 
+ci (22.12.0)	Check formatting	2026-09-12T05:51:12.1410429Z All matched files use the correct format.
+ci (22.12.0)	Check formatting	2026-09-12T05:51:12.1411669Z Finished in 3840ms on 68 files using 4 threads.
+ci (22.12.0)	Lint	﻿2026-09-12T05:51:12.2273053Z ##[group]Run npm run lint:check
+ci (22.12.0)	Lint	2026-09-12T05:51:12.2273387Z ^[[36;1mnpm run lint:check^[[0m
+ci (22.12.0)	Lint	2026-09-12T05:51:12.2309556Z shell: /usr/bin/bash -e {0}
+ci (22.12.0)	Lint	2026-09-12T05:51:12.2310204Z ##[endgroup]
+ci (22.12.0)	Lint	2026-09-12T05:51:12.3378378Z 
+ci (22.12.0)	Lint	2026-09-12T05:51:12.3378868Z > @orkestrel/ollama@0.0.15 lint:check
+ci (22.12.0)	Lint	2026-09-12T05:51:12.3379554Z > oxlint --config .oxlintrc.json --deny-warnings .
+ci (22.12.0)	Lint	2026-09-12T05:51:12.3380032Z 
+ci (22.12.0)	Lint	2026-09-12T05:51:12.4556592Z Failed to parse oxlint configuration file.
+ci (22.12.0)	Lint	2026-09-12T05:51:12.4574392Z 
+ci (22.12.0)	Lint	2026-09-12T05:51:12.4575920Z   ^[[38;2;225;80;80;1m×^[[0m ^[[38;2;225;80;80;1mFailed to load JS plugin: ./configs/policy.ts
+ci (22.12.0)	Lint	2026-09-12T05:51:12.4578080Z   ^[[38;2;225;80;80;1m│^[[0m   TypeError [ERR_UNKNOWN_FILE_EXTENSION]: Unknown file extension ".ts" for /home/runner/work/ollama/ollama/configs/policy.ts
+ci (22.12.0)	Lint	2026-09-12T05:51:12.4580593Z   ^[[38;2;225;80;80;1m│^[[0m     at Object.getFileProtocolModuleFormat [as file:] (node:internal/modules/esm/get_format:218:9)
+ci (22.12.0)	Lint	2026-09-12T05:51:12.4582505Z   ^[[38;2;225;80;80;1m│^[[0m     at defaultGetFormat (node:internal/modules/esm/get_format:244:36)
+ci (22.12.0)	Lint	2026-09-12T05:51:12.4584272Z   ^[[38;2;225;80;80;1m│^[[0m     at defaultLoad (node:internal/modules/esm/load:122:22)
+ci (22.12.0)	Lint	2026-09-12T05:51:12.4585998Z   ^[[38;2;225;80;80;1m│^[[0m     at async ModuleLoader.loadAndTranslate (node:internal/modules/esm/loader:483:32)
+ci (22.12.0)	Lint	2026-09-12T05:51:12.4587798Z   ^[[38;2;225;80;80;1m│^[[0m     at async ModuleJob._link (node:internal/modules/esm/module_job:115:19)^[[0m
+ci (22.12.0)	Lint	2026-09-12T05:51:12.4588628Z 
+ci (22.12.0)	Lint	2026-09-12T05:51:12.4718356Z ##[error]Process completed with exit code 1.
+ci (22.12.0)	Post Checkout code	﻿2026-09-12T05:51:12.4891153Z Post job cleanup.
+ci (22.12.0)	Post Checkout code	2026-09-12T05:51:12.5749411Z [command]/usr/bin/git version
+ci (22.12.0)	Post Checkout code	2026-09-12T05:51:12.5792556Z git version 2.55.0
+ci (22.12.0)	Post Checkout code	2026-09-12T05:51:12.5835133Z Temporarily overriding HOME='/home/runner/work/_temp/249c9668-4389-4fc4-8045-7483294c58dc' before making global git config changes
+ci (22.12.0)	Post Checkout code	2026-09-12T05:51:12.5836804Z Adding repository directory to the temporary git global config as a safe directory
+ci (22.12.0)	Post Checkout code	2026-09-12T05:51:12.5841945Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/ollama/ollama
+ci (22.12.0)	Post Checkout code	2026-09-12T05:51:12.5877089Z Removing SSH command configuration
+ci (22.12.0)	Post Checkout code	2026-09-12T05:51:12.5887073Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+ci (22.12.0)	Post Checkout code	2026-09-12T05:51:12.5925116Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+ci (22.12.0)	Post Checkout code	2026-09-12T05:51:12.6172612Z Removing HTTP extra header
+ci (22.12.0)	Post Checkout code	2026-09-12T05:51:12.6174287Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+ci (22.12.0)	Post Checkout code	2026-09-12T05:51:12.6212726Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+ci (22.12.0)	Post Checkout code	2026-09-12T05:51:12.6451610Z Removing includeIf entries pointing to credentials config files
+ci (22.12.0)	Post Checkout code	2026-09-12T05:51:12.6459578Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+ci (22.12.0)	Post Checkout code	2026-09-12T05:51:12.6496042Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+ci (22.12.0)	Complete job	﻿2026-09-12T05:51:12.6986897Z Cleaning up orphan processes

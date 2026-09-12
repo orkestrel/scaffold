@@ -1,0 +1,519 @@
+Refreshing run status every 30 seconds. Press Ctrl+C to quit.
+
+* claude/orkestrel-npm-audit-deps-14ibta ci.yml · 34676625435
+Triggered via push less than a minute ago
+
+JOBS
+* ci (26) (ID 103507513066)
+  ✓ Set up job
+  ✓ Checkout code
+  ✓ Set up Node.js
+  ✓ Install dependencies
+  ✓ Check formatting
+  ✓ Lint
+  ✓ Typecheck
+  ✓ Build
+  ✓ Run tests
+  * Provision live service
+  * Run live service tests
+  * Post Set up Node.js
+  * Post Checkout code
+X ci (22.12.0) in 20s (ID 103507513115)
+  ✓ Set up job
+  ✓ Checkout code
+  ✓ Set up Node.js
+  ✓ Install dependencies
+  ✓ Check formatting
+  X Lint
+  - Typecheck
+  - Build
+  - Run tests
+  - Provision live service
+  - Run live service tests
+  - Post Set up Node.js
+  ✓ Post Checkout code
+  ✓ Complete job
+
+ANNOTATIONS
+X Process completed with exit code 1.
+ci (22.12.0): .github#19
+
+Refreshing run status every 30 seconds. Press Ctrl+C to quit.
+
+* claude/orkestrel-npm-audit-deps-14ibta ci.yml · 34676625435
+Triggered via push about 1 minute ago
+
+JOBS
+* ci (26) (ID 103507513066)
+  ✓ Set up job
+  ✓ Checkout code
+  ✓ Set up Node.js
+  ✓ Install dependencies
+  ✓ Check formatting
+  ✓ Lint
+  ✓ Typecheck
+  ✓ Build
+  ✓ Run tests
+  * Provision live service
+  * Run live service tests
+  * Post Set up Node.js
+  * Post Checkout code
+X ci (22.12.0) in 20s (ID 103507513115)
+  ✓ Set up job
+  ✓ Checkout code
+  ✓ Set up Node.js
+  ✓ Install dependencies
+  ✓ Check formatting
+  X Lint
+  - Typecheck
+  - Build
+  - Run tests
+  - Provision live service
+  - Run live service tests
+  - Post Set up Node.js
+  ✓ Post Checkout code
+  ✓ Complete job
+
+ANNOTATIONS
+X Process completed with exit code 1.
+ci (22.12.0): .github#19
+
+Refreshing run status every 30 seconds. Press Ctrl+C to quit.
+
+* claude/orkestrel-npm-audit-deps-14ibta ci.yml · 34676625435
+Triggered via push about 1 minute ago
+
+JOBS
+* ci (26) (ID 103507513066)
+  ✓ Set up job
+  ✓ Checkout code
+  ✓ Set up Node.js
+  ✓ Install dependencies
+  ✓ Check formatting
+  ✓ Lint
+  ✓ Typecheck
+  ✓ Build
+  ✓ Run tests
+  ✓ Provision live service
+  * Run live service tests
+  * Post Set up Node.js
+  * Post Checkout code
+X ci (22.12.0) in 20s (ID 103507513115)
+  ✓ Set up job
+  ✓ Checkout code
+  ✓ Set up Node.js
+  ✓ Install dependencies
+  ✓ Check formatting
+  X Lint
+  - Typecheck
+  - Build
+  - Run tests
+  - Provision live service
+  - Run live service tests
+  - Post Set up Node.js
+  ✓ Post Checkout code
+  ✓ Complete job
+
+ANNOTATIONS
+X Process completed with exit code 1.
+ci (22.12.0): .github#19
+
+Refreshing run status every 30 seconds. Press Ctrl+C to quit.
+
+* claude/orkestrel-npm-audit-deps-14ibta ci.yml · 34676625435
+Triggered via push about 2 minutes ago
+
+JOBS
+* ci (26) (ID 103507513066)
+  ✓ Set up job
+  ✓ Checkout code
+  ✓ Set up Node.js
+  ✓ Install dependencies
+  ✓ Check formatting
+  ✓ Lint
+  ✓ Typecheck
+  ✓ Build
+  ✓ Run tests
+  ✓ Provision live service
+  * Run live service tests
+  * Post Set up Node.js
+  * Post Checkout code
+X ci (22.12.0) in 20s (ID 103507513115)
+  ✓ Set up job
+  ✓ Checkout code
+  ✓ Set up Node.js
+  ✓ Install dependencies
+  ✓ Check formatting
+  X Lint
+  - Typecheck
+  - Build
+  - Run tests
+  - Provision live service
+  - Run live service tests
+  - Post Set up Node.js
+  ✓ Post Checkout code
+  ✓ Complete job
+
+ANNOTATIONS
+X Process completed with exit code 1.
+ci (22.12.0): .github#19
+
+Refreshing run status every 30 seconds. Press Ctrl+C to quit.
+
+* claude/orkestrel-npm-audit-deps-14ibta ci.yml · 34676625435
+Triggered via push about 2 minutes ago
+
+JOBS
+* ci (26) (ID 103507513066)
+  ✓ Set up job
+  ✓ Checkout code
+  ✓ Set up Node.js
+  ✓ Install dependencies
+  ✓ Check formatting
+  ✓ Lint
+  ✓ Typecheck
+  ✓ Build
+  ✓ Run tests
+  ✓ Provision live service
+  * Run live service tests
+  * Post Set up Node.js
+  * Post Checkout code
+X ci (22.12.0) in 20s (ID 103507513115)
+  ✓ Set up job
+  ✓ Checkout code
+  ✓ Set up Node.js
+  ✓ Install dependencies
+  ✓ Check formatting
+  X Lint
+  - Typecheck
+  - Build
+  - Run tests
+  - Provision live service
+  - Run live service tests
+  - Post Set up Node.js
+  ✓ Post Checkout code
+  ✓ Complete job
+
+ANNOTATIONS
+X Process completed with exit code 1.
+ci (22.12.0): .github#19
+
+Refreshing run status every 30 seconds. Press Ctrl+C to quit.
+
+* claude/orkestrel-npm-audit-deps-14ibta ci.yml · 34676625435
+Triggered via push about 3 minutes ago
+
+JOBS
+* ci (26) (ID 103507513066)
+  ✓ Set up job
+  ✓ Checkout code
+  ✓ Set up Node.js
+  ✓ Install dependencies
+  ✓ Check formatting
+  ✓ Lint
+  ✓ Typecheck
+  ✓ Build
+  ✓ Run tests
+  ✓ Provision live service
+  * Run live service tests
+  * Post Set up Node.js
+  * Post Checkout code
+X ci (22.12.0) in 20s (ID 103507513115)
+  ✓ Set up job
+  ✓ Checkout code
+  ✓ Set up Node.js
+  ✓ Install dependencies
+  ✓ Check formatting
+  X Lint
+  - Typecheck
+  - Build
+  - Run tests
+  - Provision live service
+  - Run live service tests
+  - Post Set up Node.js
+  ✓ Post Checkout code
+  ✓ Complete job
+
+ANNOTATIONS
+X Process completed with exit code 1.
+ci (22.12.0): .github#19
+
+Refreshing run status every 30 seconds. Press Ctrl+C to quit.
+
+* claude/orkestrel-npm-audit-deps-14ibta ci.yml · 34676625435
+Triggered via push about 3 minutes ago
+
+JOBS
+* ci (26) (ID 103507513066)
+  ✓ Set up job
+  ✓ Checkout code
+  ✓ Set up Node.js
+  ✓ Install dependencies
+  ✓ Check formatting
+  ✓ Lint
+  ✓ Typecheck
+  ✓ Build
+  ✓ Run tests
+  ✓ Provision live service
+  * Run live service tests
+  * Post Set up Node.js
+  * Post Checkout code
+X ci (22.12.0) in 20s (ID 103507513115)
+  ✓ Set up job
+  ✓ Checkout code
+  ✓ Set up Node.js
+  ✓ Install dependencies
+  ✓ Check formatting
+  X Lint
+  - Typecheck
+  - Build
+  - Run tests
+  - Provision live service
+  - Run live service tests
+  - Post Set up Node.js
+  ✓ Post Checkout code
+  ✓ Complete job
+
+ANNOTATIONS
+X Process completed with exit code 1.
+ci (22.12.0): .github#19
+
+Refreshing run status every 30 seconds. Press Ctrl+C to quit.
+
+* claude/orkestrel-npm-audit-deps-14ibta ci.yml · 34676625435
+Triggered via push about 4 minutes ago
+
+JOBS
+* ci (26) (ID 103507513066)
+  ✓ Set up job
+  ✓ Checkout code
+  ✓ Set up Node.js
+  ✓ Install dependencies
+  ✓ Check formatting
+  ✓ Lint
+  ✓ Typecheck
+  ✓ Build
+  ✓ Run tests
+  ✓ Provision live service
+  * Run live service tests
+  * Post Set up Node.js
+  * Post Checkout code
+X ci (22.12.0) in 20s (ID 103507513115)
+  ✓ Set up job
+  ✓ Checkout code
+  ✓ Set up Node.js
+  ✓ Install dependencies
+  ✓ Check formatting
+  X Lint
+  - Typecheck
+  - Build
+  - Run tests
+  - Provision live service
+  - Run live service tests
+  - Post Set up Node.js
+  ✓ Post Checkout code
+  ✓ Complete job
+
+ANNOTATIONS
+X Process completed with exit code 1.
+ci (22.12.0): .github#19
+
+Refreshing run status every 30 seconds. Press Ctrl+C to quit.
+
+* claude/orkestrel-npm-audit-deps-14ibta ci.yml · 34676625435
+Triggered via push about 4 minutes ago
+
+JOBS
+* ci (26) (ID 103507513066)
+  ✓ Set up job
+  ✓ Checkout code
+  ✓ Set up Node.js
+  ✓ Install dependencies
+  ✓ Check formatting
+  ✓ Lint
+  ✓ Typecheck
+  ✓ Build
+  ✓ Run tests
+  ✓ Provision live service
+  * Run live service tests
+  * Post Set up Node.js
+  * Post Checkout code
+X ci (22.12.0) in 20s (ID 103507513115)
+  ✓ Set up job
+  ✓ Checkout code
+  ✓ Set up Node.js
+  ✓ Install dependencies
+  ✓ Check formatting
+  X Lint
+  - Typecheck
+  - Build
+  - Run tests
+  - Provision live service
+  - Run live service tests
+  - Post Set up Node.js
+  ✓ Post Checkout code
+  ✓ Complete job
+
+ANNOTATIONS
+X Process completed with exit code 1.
+ci (22.12.0): .github#19
+
+Refreshing run status every 30 seconds. Press Ctrl+C to quit.
+
+* claude/orkestrel-npm-audit-deps-14ibta ci.yml · 34676625435
+Triggered via push about 5 minutes ago
+
+JOBS
+* ci (26) (ID 103507513066)
+  ✓ Set up job
+  ✓ Checkout code
+  ✓ Set up Node.js
+  ✓ Install dependencies
+  ✓ Check formatting
+  ✓ Lint
+  ✓ Typecheck
+  ✓ Build
+  ✓ Run tests
+  ✓ Provision live service
+  * Run live service tests
+  * Post Set up Node.js
+  * Post Checkout code
+X ci (22.12.0) in 20s (ID 103507513115)
+  ✓ Set up job
+  ✓ Checkout code
+  ✓ Set up Node.js
+  ✓ Install dependencies
+  ✓ Check formatting
+  X Lint
+  - Typecheck
+  - Build
+  - Run tests
+  - Provision live service
+  - Run live service tests
+  - Post Set up Node.js
+  ✓ Post Checkout code
+  ✓ Complete job
+
+ANNOTATIONS
+X Process completed with exit code 1.
+ci (22.12.0): .github#19
+
+Refreshing run status every 30 seconds. Press Ctrl+C to quit.
+
+* claude/orkestrel-npm-audit-deps-14ibta ci.yml · 34676625435
+Triggered via push about 5 minutes ago
+
+JOBS
+* ci (26) (ID 103507513066)
+  ✓ Set up job
+  ✓ Checkout code
+  ✓ Set up Node.js
+  ✓ Install dependencies
+  ✓ Check formatting
+  ✓ Lint
+  ✓ Typecheck
+  ✓ Build
+  ✓ Run tests
+  ✓ Provision live service
+  * Run live service tests
+  * Post Set up Node.js
+  * Post Checkout code
+X ci (22.12.0) in 20s (ID 103507513115)
+  ✓ Set up job
+  ✓ Checkout code
+  ✓ Set up Node.js
+  ✓ Install dependencies
+  ✓ Check formatting
+  X Lint
+  - Typecheck
+  - Build
+  - Run tests
+  - Provision live service
+  - Run live service tests
+  - Post Set up Node.js
+  ✓ Post Checkout code
+  ✓ Complete job
+
+ANNOTATIONS
+X Process completed with exit code 1.
+ci (22.12.0): .github#19
+
+Refreshing run status every 30 seconds. Press Ctrl+C to quit.
+
+* claude/orkestrel-npm-audit-deps-14ibta ci.yml · 34676625435
+Triggered via push about 6 minutes ago
+
+JOBS
+* ci (26) (ID 103507513066)
+  ✓ Set up job
+  ✓ Checkout code
+  ✓ Set up Node.js
+  ✓ Install dependencies
+  ✓ Check formatting
+  ✓ Lint
+  ✓ Typecheck
+  ✓ Build
+  ✓ Run tests
+  ✓ Provision live service
+  * Run live service tests
+  * Post Set up Node.js
+  * Post Checkout code
+X ci (22.12.0) in 20s (ID 103507513115)
+  ✓ Set up job
+  ✓ Checkout code
+  ✓ Set up Node.js
+  ✓ Install dependencies
+  ✓ Check formatting
+  X Lint
+  - Typecheck
+  - Build
+  - Run tests
+  - Provision live service
+  - Run live service tests
+  - Post Set up Node.js
+  ✓ Post Checkout code
+  ✓ Complete job
+
+ANNOTATIONS
+X Process completed with exit code 1.
+ci (22.12.0): .github#19
+
+X claude/orkestrel-npm-audit-deps-14ibta ci.yml · 34676625435
+Triggered via push about 6 minutes ago
+
+JOBS
+✓ ci (26) in 6m16s (ID 103507513066)
+  ✓ Set up job
+  ✓ Checkout code
+  ✓ Set up Node.js
+  ✓ Install dependencies
+  ✓ Check formatting
+  ✓ Lint
+  ✓ Typecheck
+  ✓ Build
+  ✓ Run tests
+  ✓ Provision live service
+  ✓ Run live service tests
+  ✓ Post Set up Node.js
+  ✓ Post Checkout code
+  ✓ Complete job
+X ci (22.12.0) in 20s (ID 103507513115)
+  ✓ Set up job
+  ✓ Checkout code
+  ✓ Set up Node.js
+  ✓ Install dependencies
+  ✓ Check formatting
+  X Lint
+  - Typecheck
+  - Build
+  - Run tests
+  - Provision live service
+  - Run live service tests
+  - Post Set up Node.js
+  ✓ Post Checkout code
+  ✓ Complete job
+
+ANNOTATIONS
+X Process completed with exit code 1.
+ci (22.12.0): .github#19
+

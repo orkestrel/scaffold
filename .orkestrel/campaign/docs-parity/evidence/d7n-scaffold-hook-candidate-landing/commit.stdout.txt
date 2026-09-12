@@ -1,0 +1,33 @@
+[main bece0bb0] Checkpoint shared Ollama setup pending Linux release proof
+ 54 files changed, 2010 insertions(+), 484 deletions(-)
+ create mode 100644 .orkestrel/campaign/docs-parity/d7n-scaffold-hook-candidate-review-brief.md
+ create mode 100644 .orkestrel/campaign/docs-parity/d7n-scaffold-hook-candidate-review-report.md
+ create mode 100644 .orkestrel/campaign/docs-parity/d7n-scaffold-hook-candidate-verdict.md
+ create mode 100644 .orkestrel/campaign/docs-parity/evidence/d7n-ollama-hook-candidate-checkpoint/ancestry.exit.txt
+ create mode 100644 .orkestrel/campaign/docs-parity/evidence/d7n-ollama-hook-candidate-checkpoint/ancestry.stderr.txt
+ create mode 100644 .orkestrel/campaign/docs-parity/evidence/d7n-ollama-hook-candidate-checkpoint/ancestry.stdout.txt
+ create mode 100644 .orkestrel/campaign/docs-parity/evidence/d7n-ollama-hook-candidate-checkpoint/check.exit.txt
+ create mode 100644 .orkestrel/campaign/docs-parity/evidence/d7n-ollama-hook-candidate-checkpoint/check.stderr.txt
+ create mode 100644 .orkestrel/campaign/docs-parity/evidence/d7n-ollama-hook-candidate-checkpoint/check.stdout.txt
+ create mode 100644 .orkestrel/campaign/docs-parity/evidence/d7n-ollama-hook-candidate-checkpoint/commit.exit.txt
+ create mode 100644 .orkestrel/campaign/docs-parity/evidence/d7n-ollama-hook-candidate-checkpoint/commit.stderr.txt
+ create mode 100644 .orkestrel/campaign/docs-parity/evidence/d7n-ollama-hook-candidate-checkpoint/commit.stdout.txt
+ create mode 100644 .orkestrel/campaign/docs-parity/evidence/d7n-ollama-hook-candidate-checkpoint/fetch.exit.txt
+ create mode 100644 .orkestrel/campaign/docs-parity/evidence/d7n-ollama-hook-candidate-checkpoint/fetch.stderr.txt
+ create mode 100644 .orkestrel/campaign/docs-parity/evidence/d7n-ollama-hook-candidate-checkpoint/fetch.stdout.txt
+ create mode 100644 .orkestrel/campaign/docs-parity/evidence/d7n-ollama-hook-candidate-checkpoint/origin-campaign.exit.txt
+ create mode 100644 .orkestrel/campaign/docs-parity/evidence/d7n-ollama-hook-candidate-checkpoint/origin-campaign.stderr.txt
+ create mode 100644 .orkestrel/campaign/docs-parity/evidence/d7n-ollama-hook-candidate-checkpoint/origin-campaign.stdout.txt
+ create mode 100644 .orkestrel/campaign/docs-parity/evidence/d7n-ollama-hook-candidate-checkpoint/origin-docs.exit.txt
+ create mode 100644 .orkestrel/campaign/docs-parity/evidence/d7n-ollama-hook-candidate-checkpoint/origin-docs.stderr.txt
+ create mode 100644 .orkestrel/campaign/docs-parity/evidence/d7n-ollama-hook-candidate-checkpoint/origin-docs.stdout.txt
+ create mode 100644 .orkestrel/campaign/docs-parity/evidence/d7n-ollama-hook-candidate-checkpoint/origin-main.exit.txt
+ create mode 100644 .orkestrel/campaign/docs-parity/evidence/d7n-ollama-hook-candidate-checkpoint/origin-main.stderr.txt
+ create mode 100644 .orkestrel/campaign/docs-parity/evidence/d7n-ollama-hook-candidate-checkpoint/origin-main.stdout.txt
+ create mode 100644 .orkestrel/campaign/docs-parity/evidence/d7n-ollama-hook-candidate-checkpoint/publish-after.patch
+ create mode 100644 .orkestrel/campaign/docs-parity/evidence/d7n-ollama-hook-candidate-checkpoint/publish-before.patch
+ create mode 100644 .orkestrel/campaign/docs-parity/evidence/d7n-ollama-hook-candidate-checkpoint/push.exit.txt
+ create mode 100644 .orkestrel/campaign/docs-parity/evidence/d7n-ollama-hook-candidate-checkpoint/push.stderr.txt
+ create mode 100644 .orkestrel/campaign/docs-parity/evidence/d7n-ollama-hook-candidate-checkpoint/push.stdout.txt
+ create mode 100644 .orkestrel/campaign/docs-parity/evidence/d7n-ollama-hook-candidate-checkpoint/status-after.txt
+ create mode 100644 .orkestrel/campaign/docs-parity/instruments/d7/foundation-native/commit-scaffold-hook-candidate.sh
