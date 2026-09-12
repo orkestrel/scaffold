@@ -13,7 +13,10 @@ Ollama's registry install and full prepublish pass. Its candidate is pushed to
 main and the campaign branch; canonical local main is clean at d6e868d8.
 Fresh archive, manifest, and complete dist comparisons pass for the selected
 packages. The root prompt.txt selects Scaffold, Ollama, then Toolbox and parses
-without execution. Read d7n-owner-upload-handoff-verdict.md. No upload has run.
+without execution. The prompt and campaign checkpoint landed at Scaffold6bccbb09
+and pushed to main, campaign, and the designated branch. Read
+d7n-owner-upload-handoff-verdict.md and d7n-owner-upload-handoff-landing.md.
+No upload has run.
 
 The active release state is recorded here.
 
