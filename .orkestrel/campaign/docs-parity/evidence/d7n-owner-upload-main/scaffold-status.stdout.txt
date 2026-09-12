@@ -1,0 +1,43 @@
+ M .orkestrel/campaign/docs-parity/handoff.md
+ M .orkestrel/campaign/docs-parity/ledger.md
+ M prompt.txt
+?? .orkestrel/campaign/docs-parity/d7n-owner-upload-carrier-brief.md
+?? .orkestrel/campaign/docs-parity/d7n-owner-upload-carrier-final-brief.md
+?? .orkestrel/campaign/docs-parity/d7n-owner-upload-carrier-final-report.md
+?? .orkestrel/campaign/docs-parity/d7n-owner-upload-carrier-report.md
+?? .orkestrel/campaign/docs-parity/d7n-owner-upload-decision.md
+?? .orkestrel/campaign/docs-parity/d7n-owner-upload-registry-reading.md
+?? .orkestrel/campaign/docs-parity/d7n-owner-upload-review-brief.md
+?? .orkestrel/campaign/docs-parity/evidence/d7n-ollama-owner-registry-install/action.exit.txt
+?? .orkestrel/campaign/docs-parity/evidence/d7n-ollama-owner-registry-install/action.stderr.txt
+?? .orkestrel/campaign/docs-parity/evidence/d7n-ollama-owner-registry-install/action.stdout.txt
+?? .orkestrel/campaign/docs-parity/evidence/d7n-ollama-owner-registry-install/branch-after.txt
+?? .orkestrel/campaign/docs-parity/evidence/d7n-ollama-owner-registry-install/branch-before.txt
+?? .orkestrel/campaign/docs-parity/evidence/d7n-ollama-owner-registry-install/diff-after.txt
+?? .orkestrel/campaign/docs-parity/evidence/d7n-ollama-owner-registry-install/diff-before.txt
+?? .orkestrel/campaign/docs-parity/evidence/d7n-ollama-owner-registry-install/head-after.txt
+?? .orkestrel/campaign/docs-parity/evidence/d7n-ollama-owner-registry-install/head-before.txt
+?? .orkestrel/campaign/docs-parity/evidence/d7n-ollama-owner-registry-install/index-after.txt
+?? .orkestrel/campaign/docs-parity/evidence/d7n-ollama-owner-registry-install/index-before.txt
+?? .orkestrel/campaign/docs-parity/evidence/d7n-ollama-owner-registry-install/manifests-after.sha256
+?? .orkestrel/campaign/docs-parity/evidence/d7n-ollama-owner-registry-install/manifests-before.sha256
+?? .orkestrel/campaign/docs-parity/evidence/d7n-ollama-owner-registry-install/status-after.txt
+?? .orkestrel/campaign/docs-parity/evidence/d7n-ollama-owner-registry-install/status-before.txt
+?? .orkestrel/campaign/docs-parity/evidence/d7n-ollama-owner-registry-prepublish/action.exit.txt
+?? .orkestrel/campaign/docs-parity/evidence/d7n-ollama-owner-registry-prepublish/action.stderr.txt
+?? .orkestrel/campaign/docs-parity/evidence/d7n-ollama-owner-registry-prepublish/action.stdout.txt
+?? .orkestrel/campaign/docs-parity/evidence/d7n-ollama-owner-registry-prepublish/branch-after.txt
+?? .orkestrel/campaign/docs-parity/evidence/d7n-ollama-owner-registry-prepublish/branch-before.txt
+?? .orkestrel/campaign/docs-parity/evidence/d7n-ollama-owner-registry-prepublish/diff-after.txt
+?? .orkestrel/campaign/docs-parity/evidence/d7n-ollama-owner-registry-prepublish/diff-before.txt
+?? .orkestrel/campaign/docs-parity/evidence/d7n-ollama-owner-registry-prepublish/head-after.txt
+?? .orkestrel/campaign/docs-parity/evidence/d7n-ollama-owner-registry-prepublish/head-before.txt
+?? .orkestrel/campaign/docs-parity/evidence/d7n-ollama-owner-registry-prepublish/index-after.txt
+?? .orkestrel/campaign/docs-parity/evidence/d7n-ollama-owner-registry-prepublish/index-before.txt
+?? .orkestrel/campaign/docs-parity/evidence/d7n-ollama-owner-registry-prepublish/manifests-after.sha256
+?? .orkestrel/campaign/docs-parity/evidence/d7n-ollama-owner-registry-prepublish/manifests-before.sha256
+?? .orkestrel/campaign/docs-parity/evidence/d7n-ollama-owner-registry-prepublish/status-after.txt
+?? .orkestrel/campaign/docs-parity/evidence/d7n-ollama-owner-registry-prepublish/status-before.txt
+?? .orkestrel/campaign/docs-parity/evidence/d7n-owner-upload-prompt-parse/parse.exit.txt
+?? .orkestrel/campaign/docs-parity/instruments/d7/foundation-native/d7n-owner-upload-carrier-final.sh
+?? .orkestrel/campaign/docs-parity/instruments/d7/foundation-native/d7n-owner-upload-carrier.sh

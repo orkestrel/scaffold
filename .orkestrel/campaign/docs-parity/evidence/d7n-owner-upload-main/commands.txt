@@ -1,0 +1,55 @@
+node /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/read-package-field.mjs /c/Users/mikes/WebstormProjects/scaffold/package.json name 
+node /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/read-package-field.mjs /c/Users/mikes/WebstormProjects/scaffold/package.json version 
+node /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/read-package-field.mjs /c/Users/mikes/WebstormProjects/ollama/package.json name 
+node /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/read-package-field.mjs /c/Users/mikes/WebstormProjects/ollama/package.json version 
+node /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/read-package-field.mjs /c/Users/mikes/WebstormProjects/toolbox/package.json name 
+node /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/read-package-field.mjs /c/Users/mikes/WebstormProjects/toolbox/package.json version 
+git -C /c/Users/mikes/WebstormProjects/scaffold branch --show-current 
+git -C /c/Users/mikes/WebstormProjects/scaffold rev-parse HEAD 
+git -C /c/Users/mikes/WebstormProjects/scaffold status --porcelain=v1 --untracked-files=all 
+git -C /c/Users/mikes/WebstormProjects/scaffold diff HEAD --binary 
+git -C /c/Users/mikes/WebstormProjects/scaffold ls-files --stage 
+git -C /c/Users/mikes/WebstormProjects/ollama branch --show-current 
+git -C /c/Users/mikes/WebstormProjects/ollama rev-parse HEAD 
+git -C /c/Users/mikes/WebstormProjects/ollama status --porcelain=v1 --untracked-files=all 
+git -C /c/Users/mikes/WebstormProjects/ollama diff HEAD --binary 
+git -C /c/Users/mikes/WebstormProjects/ollama ls-files --stage 
+git -C /c/Users/mikes/WebstormProjects/toolbox branch --show-current 
+git -C /c/Users/mikes/WebstormProjects/toolbox rev-parse HEAD 
+git -C /c/Users/mikes/WebstormProjects/toolbox status --porcelain=v1 --untracked-files=all 
+git -C /c/Users/mikes/WebstormProjects/toolbox diff HEAD --binary 
+git -C /c/Users/mikes/WebstormProjects/toolbox ls-files --stage 
+git -C /c/Users/mikes/WebstormProjects/scaffold fetch origin 
+git -C /c/Users/mikes/WebstormProjects/scaffold merge-base --is-ancestor origin/main HEAD 
+git -C /c/Users/mikes/WebstormProjects/ollama fetch origin 
+git -C /c/Users/mikes/WebstormProjects/ollama merge-base --is-ancestor origin/main HEAD 
+git -C /c/Users/mikes/WebstormProjects/toolbox fetch origin 
+git -C /c/Users/mikes/WebstormProjects/toolbox merge-base --is-ancestor origin/main HEAD 
+sha256sum /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-scaffold-hook-release-pack/orkestrel-scaffold-0.0.65.tgz 
+cmp /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-scaffold-hook-release-pack/extract/package/package.json /c/Users/mikes/WebstormProjects/scaffold/package.json 
+diff -r /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-scaffold-hook-release-pack/extract/package/dist /c/Users/mikes/WebstormProjects/scaffold/dist 
+sha256sum /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-ollama-hook-trial-pack/orkestrel-ollama-0.0.15.tgz 
+cmp /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-ollama-hook-trial-pack/extract/package/package.json /c/Users/mikes/WebstormProjects/ollama/package.json 
+diff -r /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-ollama-hook-trial-pack/extract/package/dist /c/Users/mikes/WebstormProjects/ollama/dist 
+sha256sum /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-toolbox-final-registry-visit-pack/orkestrel-toolbox-0.0.13.tgz 
+cmp /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-toolbox-final-registry-visit-pack/extract/package/package.json /c/Users/mikes/WebstormProjects/toolbox/package.json 
+diff -r /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/packed/d7n-toolbox-final-registry-visit-pack/extract/package/dist /c/Users/mikes/WebstormProjects/toolbox/dist 
+node /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/read-package-field.mjs /c/Users/mikes/WebstormProjects/ollama/node_modules/@orkestrel/scaffold/package.json version 
+node /c/Users/mikes/WebstormProjects/scaffold/tmp/pass/read-package-field.mjs /c/Users/mikes/WebstormProjects/ollama/node_modules/@orkestrel/guide/package.json version 
+sha256sum /c/Users/mikes/WebstormProjects/ollama/package.json /c/Users/mikes/WebstormProjects/ollama/package-lock.json 
+git -C /c/Users/mikes/WebstormProjects/scaffold rev-parse origin/main 
+git -C /c/Users/mikes/WebstormProjects/scaffold rev-parse origin/claude/orkestrel-npm-audit-deps-14ibta 
+git -C /c/Users/mikes/WebstormProjects/scaffold rev-parse origin/claude/docs-parity-windows-01a0810d 
+git -C /c/Users/mikes/WebstormProjects/toolbox rev-parse origin/main 
+git -C /c/Users/mikes/WebstormProjects/toolbox rev-parse origin/claude/orkestrel-npm-audit-deps-14ibta 
+git -C /c/Users/mikes/WebstormProjects/ollama rev-parse origin/claude/orkestrel-npm-audit-deps-14ibta 
+git -C /c/Users/mikes/WebstormProjects/ollama push -u origin claude/orkestrel-npm-audit-deps-14ibta 
+git -C /c/Users/mikes/WebstormProjects/ollama push origin HEAD:main 
+git -C /c/Users/mikes/WebstormProjects/ollama switch -c main --track origin/main 
+git -C /c/Users/mikes/WebstormProjects/ollama branch --show-current 
+git -C /c/Users/mikes/WebstormProjects/ollama rev-parse HEAD 
+git -C /c/Users/mikes/WebstormProjects/ollama status --porcelain=v1 --untracked-files=all 
+git -C /c/Users/mikes/WebstormProjects/ollama diff HEAD --binary 
+git -C /c/Users/mikes/WebstormProjects/ollama ls-files --stage 
+git -C /c/Users/mikes/WebstormProjects/ollama rev-parse origin/main 
+git -C /c/Users/mikes/WebstormProjects/ollama rev-parse origin/claude/orkestrel-npm-audit-deps-14ibta 

@@ -1,0 +1,46 @@
+diff --git a/.orkestrel/campaign/docs-parity/handoff.md b/.orkestrel/campaign/docs-parity/handoff.md
+index 7d7225ff..216a0acf 100644
+--- a/.orkestrel/campaign/docs-parity/handoff.md
++++ b/.orkestrel/campaign/docs-parity/handoff.md
+@@ -4,13 +4,19 @@ Written 2026-09-08T03:35Z and revised 2026-09-08T04:05Z at the owner's request,
+ 
+ ## Where everything is pushed
+ 
+-### Active Ollama and Toolbox preparation
++### Active owner-approved upload
+ 
+-The root prompt.txt selects only accepted Toolbox0.0.13 for operator upload.
+-Fresh canonical main/ref, archive, manifest/lock, and dist confirmations pass.
+-Scaffold and Ollama remain held; the command request did not waive their open
+-readings. Read d7n-toolbox-upload-prompt.md. The consumed Agent/Probe command is
+-no longer in prompt.txt. No upload has run.
++The owner authorizes Scaffold0.0.65, Ollama0.0.15, and Toolbox0.0.13 despite the
++recorded Linux lifecycle gap and Node22.12 lint-loader failure. This decision
++supersedes the Toolbox-only upload selection. Read d7n-owner-upload-decision.md.
++Root is restoring Ollama's registry-backed development install and preparing
++its clean-main promotion. The root prompt.txt selects Scaffold, Ollama, then
++Toolbox. No upload has run.
++
++### Historical Ollama and Toolbox preparation
++
++The following paragraphs retain the preparation sequence. The active owner
++decision supersedes their upload holds without changing their test readings.
+ 
+ The owner has superseded provisioner preservation with Ollama-hook consolidation.
+ Keep scripts/ollama.sh and adopt the useful setup behavior from Ollama's
+diff --git a/.orkestrel/campaign/docs-parity/ledger.md b/.orkestrel/campaign/docs-parity/ledger.md
+index 1e11d178..1d822b26 100644
+--- a/.orkestrel/campaign/docs-parity/ledger.md
++++ b/.orkestrel/campaign/docs-parity/ledger.md
+@@ -557,3 +557,4 @@ Bench state at start (2026-09-06, 22:5x UTC): Codex bench unavailable (Sol dark;
+ | 2026-09-12 | Scaffold's reviewed source checkpoint landed atbece0bb0 and pushed to main, campaign, and the designated branch. The canonical checkout and accepted archive match after landing. This records the tested implementation and metadata, not release acceptance. | `d7n-scaffold-hook-candidate-verdict.md`, `d7n-scaffold-hook-candidate-landing.md`, `evidence/d7n-scaffold-hook-candidate-landing` |
+ | 2026-09-12 | Ollama's Ubuntu Node26 job passes automatic installation and the real service suite. The workflow remains red at the Node22.12 lint-plugin loader. Linux owned-daemon failure/cleanup proof and shared tooling reconciliation remain open. No upload ran. | `d7n-ollama-hook-linux-reading.md`, `evidence/d7n-ollama-hook-linux-ci` |
+ | 2026-09-12 | The owner upload prompt selects accepted Toolbox0.0.13 only. Fresh canonical main/ref, archive, manifest/lock, and full dist comparisons pass; PowerShell syntax parsing passes without executing the command. Scaffold and Ollama remain held. | `d7n-toolbox-upload-prompt.md`, `evidence/d7n-toolbox-prompt-confirmation`, `evidence/d7n-toolbox-prompt-parse` |
++| 2026-09-12 | The owner explicitly authorizes Scaffold0.0.65, Ollama0.0.15, and Toolbox0.0.13 despite the recorded Linux lifecycle and Node22.12 lint-loader gaps. Root restored Ollama's registry install and reran complete prepublishOnly successfully, including distribution and real service. Candidate versions remain absent from the registry. Main promotion and the committed operator handoff are in progress. | `d7n-owner-upload-decision.md`, `d7n-owner-upload-registry-reading.md`, `evidence/d7n-ollama-owner-registry-install`, `evidence/d7n-ollama-owner-registry-prepublish` |
+diff --git a/prompt.txt b/prompt.txt
+index 9b6d5298..20852ee9 100644
+--- a/prompt.txt
++++ b/prompt.txt
+@@ -1 +1 @@
+-& { $ErrorActionPreference = 'Stop'; cd 'C:/Users/mikes/WebstormProjects/toolbox'; npm whoami; if ($LASTEXITCODE -ne 0) { throw 'Login check failed' }; npm publish --ignore-scripts --browser=false; if ($LASTEXITCODE -ne 0) { throw 'toolbox publish failed' } }
++& { $ErrorActionPreference = 'Stop'; cd 'C:/Users/mikes/WebstormProjects/scaffold'; npm whoami; if ($LASTEXITCODE -ne 0) { throw 'Login check failed' }; npm publish --ignore-scripts --browser=false; if ($LASTEXITCODE -ne 0) { throw 'scaffold publish failed' }; cd 'C:/Users/mikes/WebstormProjects/ollama'; npm publish --ignore-scripts --browser=false; if ($LASTEXITCODE -ne 0) { throw 'ollama publish failed' }; cd 'C:/Users/mikes/WebstormProjects/toolbox'; npm publish --ignore-scripts --browser=false; if ($LASTEXITCODE -ne 0) { throw 'toolbox publish failed' } }

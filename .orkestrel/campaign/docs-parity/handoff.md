@@ -4,13 +4,29 @@ Written 2026-09-08T03:35Z and revised 2026-09-08T04:05Z at the owner's request, 
 
 ## Where everything is pushed
 
-### Active Ollama and Toolbox preparation
+### Active owner-approved upload
 
-The root prompt.txt selects only accepted Toolbox0.0.13 for operator upload.
-Fresh canonical main/ref, archive, manifest/lock, and dist confirmations pass.
-Scaffold and Ollama remain held; the command request did not waive their open
-readings. Read d7n-toolbox-upload-prompt.md. The consumed Agent/Probe command is
-no longer in prompt.txt. No upload has run.
+The owner authorizes Scaffold0.0.65, Ollama0.0.15, and Toolbox0.0.13 despite the
+recorded Linux lifecycle gap and Node22.12 lint-loader failure. This decision
+supersedes the Toolbox-only upload selection. Read d7n-owner-upload-decision.md.
+Ollama's registry install and full prepublish pass. Its candidate is pushed to
+main and the campaign branch; canonical local main is clean at d6e868d8.
+Fresh archive, manifest, and complete dist comparisons pass for the selected
+packages. The root prompt.txt selects Scaffold, Ollama, then Toolbox and parses
+without execution. Read d7n-owner-upload-handoff-verdict.md. No upload has run.
+
+The active release state is recorded here.
+
+| Package | Prepared version | Canonical state |
+| --- | --- | --- |
+| scaffold | 0.0.65 | main; product checkpoint bece0bb0; the prompt/campaign checkpoint pushes main, claude/orkestrel-npm-audit-deps-14ibta, and designated claude/docs-parity-windows-01a0810d together |
+| ollama | 0.0.15 | clean main at d6e868d886f2968edbcaf125a207966a6ae8dd15; origin/main and campaign equal HEAD |
+| toolbox | 0.0.13 | clean main at 21068c362ec4c8cf79432da11402ae5350ba1fce; origin/main and campaign equal HEAD |
+
+### Historical Ollama and Toolbox preparation
+
+The following paragraphs retain the preparation sequence. The active owner
+decision supersedes their upload holds without changing their test readings.
 
 The owner has superseded provisioner preservation with Ollama-hook consolidation.
 Keep scripts/ollama.sh and adopt the useful setup behavior from Ollama's
