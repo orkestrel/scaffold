@@ -488,8 +488,17 @@ export const DEFAULT_VERSION = '0.0.1'
 /** Names the `engines.node` range a workspace starts with. */
 export const DEFAULT_ENGINES = `>=${MINIMUM_NODE_VERSION}`
 
-/** Holds the `devEngines` record a workspace starts with. */
-export const DEFAULT_DEV_ENGINES = Object.freeze({
+/**
+ * Holds the `devEngines` record every generated manifest carries.
+ *
+ * @remarks
+ * No blueprint field varies it. Every generated manifest names npm at the
+ * {@link MINIMUM_NPM_VERSION} floor with `onFail` set to `error`, so npm refuses an install
+ * in a generated workspace beneath that floor rather than resolving its dependency graph.
+ * The neighbouring `DEFAULT_ENGINES` constant is the Node range, and a blueprint's `engines`
+ * field does replace that one.
+ */
+export const WORKSPACE_DEV_ENGINES = Object.freeze({
 	packageManager: Object.freeze({
 		name: 'npm',
 		version: `>=${MINIMUM_NPM_VERSION}`,

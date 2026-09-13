@@ -14,16 +14,19 @@ import type { ExecuteResult } from '@orkestrel/process'
 import type { ESTree } from 'vite'
 import { execFileSync } from 'node:child_process'
 import { once } from 'node:events'
+import { copyFileSync } from 'node:fs'
 import { createServer } from 'node:http'
 import { createRequire } from 'node:module'
 import { connect, createServer as createSocketServer } from 'node:net'
-import { delimiter, join } from 'node:path'
+import { basename, delimiter, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { gzipSync } from 'node:zlib'
 import { isArray, isRecord, isString, parseJSON } from '@orkestrel/contract'
 import {
+	buildExecutableCandidates,
 	execute,
 	executeSync,
+	isFile,
 	mergeEnvironment,
 	readVariable,
 	resolveExecutable,
@@ -92,6 +95,7 @@ import {
 	createScratch,
 	type ScratchInterface,
 	supportsCase,
+	supportsFileLinks,
 } from '@orkestrel/test/server'
 import {
 	buildBlueprint,
@@ -335,7 +339,7 @@ export interface TestOllamaInterface {
  * `floor` is the exact `major.minor.patch` version the declared range floors at rather
  * than the range itself, because it is both the comparison's right side and the version
  * a provisioning install asks the registry for. `prefix` is a directory the caller owns
- * and can remove; nothing lands there when the host's own npm already satisfies the
+ * and can remove; nothing lands there when the ambient npm already satisfies the
  * floor. `environment` is the record a provisioned `PATH` is prepended to, so a proof
  * that already pins npm settings keeps them.
  */
@@ -354,7 +358,7 @@ export interface TestNpmOptions {
  * `PATH` resolves. `version` is what the environment reported rather than what the
  * caller asked for, so an assertion can name the npm the proof actually ran under.
  */
-export interface TestNpmInterface {
+export interface TestNpm {
 	readonly version: string
 	readonly environment: NodeJS.ProcessEnv
 }
@@ -513,11 +517,11 @@ export function readNpmVersion(environment: NodeJS.ProcessEnv = process.env): st
 }
 
 /**
- * Resolves an npm at or above a declared floor, and the environment that launches it.
+ * Provisions an npm at or above a declared floor, and the environment that launches it.
  *
  * @param options - The floor, the directory a provisioned copy may land in, and the
  * environment a provisioned `PATH` is prepended to.
- * @returns The version resolved, and the environment every spawn against the guarded
+ * @returns The version admitted, and the environment every spawn against the guarded
  * workspace must take.
  * @throws When provisioning fails, or when the provisioned copy still reports a version
  * beneath the floor.
@@ -525,17 +529,17 @@ export function readNpmVersion(environment: NodeJS.ProcessEnv = process.env): st
  * @remarks
  * A manifest declaring `devEngines.packageManager` refuses a host npm beneath its floor,
  * and it refuses every nested `npm run` under that install on the same reading, so a
- * proof driving such a workspace launches an admitted npm rather than the host's.
+ * proof driving such a workspace launches an admitted npm rather than the ambient one.
  * Prepending the provisioned `PATH` is what carries the selection down: a launcher form
- * that runs one version while the host's stays on `PATH` leaves the guard reading the
- * host's version and refusing. The host's own npm is used unchanged when it satisfies
+ * that runs one version while the ambient copy stays on `PATH` leaves the guard reading
+ * the ambient version and refusing. The ambient npm is used unchanged when it satisfies
  * the floor, so a conforming host installs nothing and reaches no registry.
  */
-export function resolveNpm(options: TestNpmOptions): TestNpmInterface {
+export function provisionNpm(options: TestNpmOptions): TestNpm {
 	const base = options.environment ?? process.env
-	const host = readNpmVersion(base)
-	if (compareVersions(host, options.floor) >= 0) {
-		return { version: host, environment: mergeEnvironment(false, base) }
+	const ambient = readNpmVersion(base)
+	if (compareVersions(ambient, options.floor) >= 0) {
+		return { version: ambient, environment: mergeEnvironment(false, base) }
 	}
 	const bin = join(options.prefix, 'node_modules', '.bin')
 	const provisioned = executeSync(
@@ -2376,26 +2380,108 @@ export async function executeOllamaHook(
 }
 
 /**
+ * Lists the executables `scripts/ollama.sh` launches, read from the script itself.
+ *
+ * @remarks
+ * Every name the script passes to `command -v`, and every program it runs, in alphabetical
+ * order: `curl` for its requests, `node` for its URL and JSON handling, `dirname` and `mkdir`
+ * for the temporary directory it anchors, `mktemp`, `rm`, `sh`, and `timeout` for the automatic
+ * installation, `setsid` and `sleep` for the daemon it starts and waits on, and `uname` for the
+ * kernel readings that gate both. `kill`, `printf`, `command`, `cd`, and `pwd` are Bash builtins
+ * and reach no `PATH` entry. The set is what a proof gives the script, and `ollama` is
+ * deliberately absent from it.
+ */
+export const OLLAMA_TOOLS: readonly string[] = Object.freeze([
+	'curl',
+	'dirname',
+	'mkdir',
+	'mktemp',
+	'node',
+	'rm',
+	'setsid',
+	'sh',
+	'sleep',
+	'timeout',
+	'uname',
+])
+
+/**
+ * Resolves a command name to the executable a `PATH` lookup reaches.
+ *
+ * @param tool - The command name to look up.
+ * @param environment - The environment whose `PATH` is searched. Default: this process's own.
+ * @returns The path of the first regular file the lookup reaches, or `undefined` when it reaches
+ * none.
+ *
+ * @remarks
+ * `resolveExecutable` answers `undefined` on a POSIX host, where the host runs its own lookup at
+ * spawn time, so a caller that needs the path itself reads it here. The Windows candidate set
+ * comes from `buildExecutableCandidates`, which carries that host's executable suffixes; an empty
+ * candidate set is the POSIX answer, and that branch joins the name onto each `PATH` entry in
+ * order. The reading stops at a regular file, which is one bit wider than the host's own
+ * resolver: it reads no executable bit.
+ */
+export function resolveTool(
+	tool: string,
+	environment: NodeJS.ProcessEnv = process.env,
+): string | undefined {
+	const candidates = buildExecutableCandidates(tool, WORKSPACE_ROOT, environment, process.platform)
+	if (candidates.length > 0) return candidates.find(isFile)
+	for (const entry of (readVariable(environment, 'PATH') ?? '').split(delimiter)) {
+		if (entry === '') continue
+		const candidate = join(entry, tool)
+		if (isFile(candidate)) return candidate
+	}
+	return undefined
+}
+
+/**
  * Executes the repository's Ollama setup script against a selected endpoint and model.
  *
  * @param host - The endpoint exposed through `OLLAMA_HOST`.
  * @param model - The model exposed through `OLLAMA_MODEL`.
  * @returns The bounded child-process outcome.
+ *
+ * @remarks
+ * The script runs under a `PATH` naming one owned directory, which carries the `OLLAMA_TOOLS`
+ * executables this host resolves and nothing else. A host with a real `ollama` installed would
+ * otherwise hand it to the script's local-startup branch, and a fixture that answers the
+ * readiness probe with anything but a `2xx` status reaches that branch — so a proof would launch
+ * a daemon on the host running the suite. `command -v ollama` fails under this `PATH`, and the
+ * branch refuses with exit `127` instead. Each executable is reached through a link, or through a
+ * copy where `supportsFileLinks` reports the host creates no link over a file. The interpreter
+ * itself is resolved against this process's own `PATH` and launched by path, because the spawn's
+ * own lookup reads the child's `PATH` and would find no `bash` in that directory. The directory
+ * is removed after the run.
  */
-export function executeOllamaSetup(host: string, model: string): Promise<ExecuteResult> {
-	return execute(
-		{
-			file: resolveExecutable('bash', { workspace: WORKSPACE_ROOT }) ?? 'bash',
-			arguments: [normalizeBashPath(join(WORKSPACE_ROOT, 'scripts', 'ollama.sh'))],
-			environment: {
-				CI: undefined,
-				CLAUDE_CODE_REMOTE: undefined,
-				OLLAMA_HOST: host,
-				OLLAMA_MODEL: model,
+export async function executeOllamaSetup(host: string, model: string): Promise<ExecuteResult> {
+	const tools = createScratch({ prefix: SCRATCH_PREFIX })
+	try {
+		const linked = supportsFileLinks()
+		for (const tool of OLLAMA_TOOLS) {
+			const source = resolveTool(tool)
+			if (source === undefined) continue
+			const name = basename(source)
+			if (linked) tools.link(name, source)
+			else copyFileSync(source, join(tools.path, name))
+		}
+		return await execute(
+			{
+				file: resolveTool('bash') ?? 'bash',
+				arguments: [normalizeBashPath(join(WORKSPACE_ROOT, 'scripts', 'ollama.sh'))],
+				environment: {
+					CI: undefined,
+					CLAUDE_CODE_REMOTE: undefined,
+					OLLAMA_HOST: host,
+					OLLAMA_MODEL: model,
+					PATH: tools.path,
+				},
 			},
-		},
-		{ workspace: WORKSPACE_ROOT, timeout: 10_000, strict: false },
-	)
+			{ workspace: WORKSPACE_ROOT, timeout: 10_000, strict: false },
+		)
+	} finally {
+		tools.destroy()
+	}
 }
 
 /**

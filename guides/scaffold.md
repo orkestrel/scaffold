@@ -116,7 +116,6 @@ Exported from `@orkestrel/scaffold`, and reachable from
 | `CONFORMANCE_TEST_PATH`           | const | Names the official-tooling drift proof whose presence makes a workspace `conformance`.                 |
 | `CONTROL_CHARACTER_PATTERN`       | const | Matches the Unicode controls, formatting controls, and line and paragraph separators rejected in text. |
 | `DECLARATION_DEV_DEPENDENCIES`    | const | Lists the development dependencies that roll declarations up for published source.                     |
-| `DEFAULT_DEV_ENGINES`             | const | Holds the `devEngines` record a workspace starts with.                                                 |
 | `DEFAULT_ENGINES`                 | const | Names the `engines.node` range a workspace starts with.                                                |
 | `DEFAULT_VERSION`                 | const | Names the version a workspace starts at.                                                               |
 | `DEPENDENCY_NAME_PATTERN`         | const | Matches the runtime dependency name syntax: the `@orkestrel` scope and a bare name.                    |
@@ -166,6 +165,7 @@ Exported from `@orkestrel/scaffold`, and reachable from
 | `SRC_MATRIX`                      | const | Holds the build and export settings each published `src` environment contributes, frozen.              |
 | `TAB_WIDTH`                       | const | Sets the columns one tab occupies when the formatter measures a line, matching `tabWidth`.             |
 | `VERSION_PATTERN`                 | const | Matches the exact `major.minor.patch` version syntax a blueprint declares.                             |
+| `WORKSPACE_DEV_ENGINES`           | const | Holds the `devEngines` record every generated manifest carries.                                        |
 | `WORKSPACE_OWNED_PATHS`           | const | Lists the vendored paths whose present bytes belong to each workspace, frozen.                         |
 
 #### Guards
@@ -1399,6 +1399,13 @@ read or write that file.
 
 A workspace's file set is a function of its axes plus its structural facts. Nothing is fixed
 except the manifest.
+
+Every generated manifest declares the toolchain it is gated on. The `engines.node` field carries
+the blueprint's `engines` value, which defaults to `>=22.18.0`. The `devEngines.packageManager`
+record names npm at `>=11.6.0` with its `onFail` key set to `error`, and no blueprint field varies
+that floor. An npm beneath `11.6.0` refuses the install in a generated workspace instead of
+resolving its dependency graph, and it refuses each nested `npm run` command under that install on
+the same reading, so run a generated workspace with npm `11.6.0` or later.
 
 - One computed artifact: `package.json`, with the entry points, `exports` map, scripts, and
   development dependencies its selection implies. In publishing workspaces, the emitted `prepack`

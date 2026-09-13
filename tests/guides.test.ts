@@ -90,6 +90,28 @@ await new GuideCommand({
 			expect(readme.tagline()).toBe(documented.guide.tagline())
 		})
 
+		it('states the Node floor the published manifest requires', async () => {
+			const { readFileSync } = await import('node:fs')
+			const { fileURLToPath } = await import('node:url')
+			// Read from the manifest rather than from the constant the compiler emits with:
+			// what a reader installing this package is gated on is `engines.node` in the
+			// published manifest, and the README sentence is a second statement of it that
+			// can drift on its own.
+			const manifest: unknown = JSON.parse(
+				readFileSync(fileURLToPath(new URL('../package.json', import.meta.url)), 'utf8'),
+			)
+			if (!isRecord(manifest) || !isRecord(manifest.engines)) {
+				throw new Error('The package manifest declares no engines record')
+			}
+			const declared: unknown = manifest.engines.node
+			if (typeof declared !== 'string') {
+				throw new Error('The package manifest declares no engines.node range')
+			}
+			const readme = requireValue(files['README.md'])
+			const stated = /Node (?<floor>\d+\.\d+\.\d+) or later/u.exec(readme)?.groups?.floor
+			expect(stated).toBe(declared.replace(/^>=/u, ''))
+		})
+
 		it('pairs a top-level example title across the guide and the source', () => {
 			const documented = requireValue(rows.find(({ entry }) => entry.spec === 'guides/scaffold.md'))
 			expect(

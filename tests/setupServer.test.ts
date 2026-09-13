@@ -1,12 +1,13 @@
 import { execFileSync } from 'node:child_process'
 import { existsSync, readFileSync } from 'node:fs'
 import { createServer } from 'node:http'
-import { basename, delimiter, join } from 'node:path'
+import { basename, join } from 'node:path'
 import { describe, expect, it } from 'vitest'
+import { isObject, isString } from '@orkestrel/contract'
 import { requireValue } from '@orkestrel/test'
 import { createLoopback, createScratch } from '@orkestrel/test/server'
-import { compareVersions, extractVersion, MINIMUM_NPM_VERSION, ScaffoldError } from '@src/core'
-import { readVariable } from '@orkestrel/process/server'
+import { extractVersion, MINIMUM_NPM_VERSION, ScaffoldError } from '@src/core'
+import { isFile, readVariable } from '@orkestrel/process/server'
 import { buildSnapshot } from './setup.js'
 import {
 	AUDIT_EXIT_CASES,
@@ -58,8 +59,10 @@ import {
 	HOSTILE_ARGUMENT,
 	HOSTILE_BYTES,
 	listExecutablePaths,
+	OLLAMA_TOOLS,
 	omitDependencies,
 	PROTECTED_PATH_CASES,
+	provisionNpm,
 	readErrorCode,
 	readErrorMessage,
 	readNpmFloor,
@@ -67,7 +70,7 @@ import {
 	readRejectionCode,
 	readStatements,
 	REFUSED_MANIFEST_TEXT,
-	resolveNpm,
+	resolveTool,
 	SCRATCH_PREFIX,
 	SENSITIVE_PATH_CASES,
 	STAGED_PATHS,
@@ -82,11 +85,6 @@ import {
 	VENDORED_FILES,
 	WORKSPACE_ROOT,
 } from './setupServer.js'
-
-// The npm this host resolves, read at module scope. It decides which resolution branch
-// this host can drive: a host at or above the declared floor has nothing to provision,
-// and a host beneath it provisions from the registry.
-const host = readNpmVersion()
 
 // The subject is the Node-only test infrastructure `tests/setupServer.ts` exports.
 // Every resource a case opens is released in the same case, and the mirrored suites
@@ -1050,18 +1048,21 @@ describe('the admitted npm', () => {
 		}
 	})
 
-	it('reads the host npm version as an exact version rather than as the text around one', () => {
+	it('reads the ambient npm version as an exact version rather than as the text around one', () => {
 		// A reading that kept the trailing newline, or the whole of a notice npm wrote beside
-		// the version, is not a version this package can extract.
-		expect(extractVersion(host)).not.toBe(undefined)
+		// the version, is not a version this package can extract. The reading is taken inside
+		// the case rather than at module scope, so a host carrying no npm fails the cases that
+		// need one instead of collecting none of this file.
+		expect(extractVersion(readNpmVersion())).not.toBe(undefined)
 	})
 
-	it('launches the host npm unchanged when it already satisfies the floor', () => {
+	it('launches the ambient npm unchanged when it already satisfies the floor', () => {
+		const ambient = readNpmVersion()
 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const prefix = workspace.ensure('npm')
-			const admitted = resolveNpm({ floor: host, prefix })
-			expect(admitted.version).toBe(host)
+			const admitted = provisionNpm({ floor: ambient, prefix })
+			expect(admitted.version).toBe(ambient)
 			// The independent reading: a provisioning install writes the prefix, and this
 			// branch must not have run one.
 			expect(existsSync(join(prefix, 'node_modules'))).toBe(false)
@@ -1072,38 +1073,29 @@ describe('the admitted npm', () => {
 			workspace.destroy()
 		}
 	})
+})
 
-	it.skipIf(compareVersions(host, MINIMUM_NPM_VERSION) >= 0)(
-		'provisions the floor and resolves that copy when the host npm is beneath it [inapplicable where the host npm already satisfies the floor, which leaves nothing to provision]',
-		() => {
-			const workspace = createScratch({ prefix: SCRATCH_PREFIX })
-			try {
-				const prefix = workspace.ensure('npm')
-				const admitted = resolveNpm({ floor: MINIMUM_NPM_VERSION, prefix })
-				// The second mechanism: the version the provisioned package declares of itself,
-				// read from its manifest rather than from a run. A resolution reporting the host
-				// npm, or provisioning one version and reporting another, disagrees with it.
-				const installed: unknown = JSON.parse(
-					readFileSync(join(prefix, 'node_modules', 'npm', 'package.json'), 'utf8'),
-				)
-				expect(installed).toMatchObject({ version: admitted.version })
-				expect(compareVersions(admitted.version, MINIMUM_NPM_VERSION)).toBeGreaterThanOrEqual(0)
-				expect(admitted.version).not.toBe(host)
-				// The environment is what carries the selection into a nested `npm run`, so the
-				// provisioned directory must be the first entry `PATH` offers.
-				expect(requireValue(readVariable(admitted.environment, 'PATH')).split(delimiter)[0]).toBe(
-					join(prefix, 'node_modules', '.bin'),
-				)
-			} finally {
-				workspace.destroy()
-			}
-		},
-		300_000,
-	)
+describe('the shadowed tool path', () => {
+	it('resolves a command this host carries and answers undefined for one it carries nowhere', () => {
+		// The reading the Ollama proofs build their own `PATH` from. A resolver that
+		// answered a path no file sits at would leave the script without the programs it
+		// runs, and one that answered a path for every name would put `ollama` back.
+		const resolved = requireValue(resolveTool('node'))
+		expect(isFile(resolved)).toBe(true)
+		expect(basename(resolved).startsWith('node')).toBe(true)
+		expect(resolveTool('orkestrel-scaffold-absent-command')).toBe(undefined)
+		// An environment carrying no `PATH` entry reaches nothing, which is what makes the
+		// directory the helper builds the script's whole search path rather than an
+		// addition to this host's.
+		expect(resolveTool('node', { PATH: '' })).toBe(undefined)
+		// The absence the shadow rests on: the script's local-startup branch refuses when
+		// `command -v ollama` finds nothing, so a set naming it would hand the daemon back.
+		expect(OLLAMA_TOOLS).not.toContain('ollama')
+	})
 })
 
 describe('the mapped loopback reading', () => {
-	it('agrees with what an HTTP request to the rewritten address delivers', async () => {
+	it('agrees with what an HTTP request to the rewritten address delivers, and with why it refused', async () => {
 		const reachable = await supportsMappedLoopback()
 		const loopback = await createLoopback(createServer((_request, response) => response.end('ok')))
 		try {
@@ -1112,16 +1104,30 @@ describe('the mapped loopback reading', () => {
 			// listener that answered nothing at all.
 			expect((await fetch(`http://127.0.0.1:${loopback.port}/`)).status).toBe(200)
 			// The second mechanism: an HTTP client rather than a raw socket, driving the
-			// same `::ffff:` rewrite the gated case performs against its own fixture. A
-			// reading that answered from anything but a real connection disagrees with what
-			// the request delivered.
+			// same `::ffff:` rewrite the gated case performs against its own fixture. The
+			// rejection is read for the code its cause carries rather than collapsed to a
+			// boolean, because a `false` reading claims one specific refusal: the host
+			// refused the address family. A request that failed for any other reason — a
+			// port nothing listens on, a fixture that never bound — carries a different
+			// code and disagrees with that claim, where a boolean agrees with it.
 			let delivered = false
+			let refusal: string | undefined
 			try {
 				delivered = (await fetch(`http://[::ffff:127.0.0.1]:${loopback.port}/`)).ok
-			} catch {
-				delivered = false
+			} catch (error) {
+				// The client wraps the host's refusal, so the code sits on the cause rather
+				// than on the rejection the call raised.
+				const cause: unknown = error instanceof Error ? error.cause : undefined
+				const code: unknown = isObject(cause)
+					? Object.getOwnPropertyDescriptor(cause, 'code')?.value
+					: undefined
+				refusal = isString(code) ? code : undefined
 			}
-			expect(delivered).toBe(reachable)
+			expect({ delivered, refusal }).toStrictEqual(
+				reachable
+					? { delivered: true, refusal: undefined }
+					: { delivered: false, refusal: 'EAFNOSUPPORT' },
+			)
 		} finally {
 			await loopback.destroy()
 		}

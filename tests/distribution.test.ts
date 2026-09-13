@@ -1,14 +1,21 @@
 import { spawnSync } from 'node:child_process'
 import { globSync, readFileSync } from 'node:fs'
-import { dirname, join, relative, resolve } from 'node:path'
+import { delimiter, dirname, join, relative, resolve } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
-import { CANON_PATHS, HOST_PATHS, replaceManifestRanges } from '@src/core'
+import {
+	CANON_PATHS,
+	compareVersions,
+	HOST_PATHS,
+	MINIMUM_NPM_VERSION,
+	replaceManifestRanges,
+} from '@src/core'
 import { listFiles, pathToStorage } from '@src/server'
 import { requireValue } from '@orkestrel/test'
 import { createScratch } from '@orkestrel/test/server'
+import { readVariable } from '@orkestrel/process/server'
 import { transformWithOxc } from 'vite'
 import { describe, expect, it } from 'vitest'
-import { readNpmFloor, resolveNpm } from './setupServer.js'
+import { provisionNpm, readNpmFloor, readNpmVersion } from './setupServer.js'
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const npm = process.platform === 'win32' ? 'npm.cmd' : 'npm'
@@ -29,6 +36,11 @@ const registry =
 		shell,
 	}).status === 0
 const release = import.meta.env.MODE === 'release'
+// The npm this host resolves. It decides which provisioning branch this file can drive: a
+// host at or above the declared floor has nothing to provision, and a host beneath it
+// provisions from the registry. Every case here needs npm, so the reading sits beside the
+// registry probe rather than inside one case.
+const ambient = readNpmVersion()
 
 // The declarations a consumer installs. Each is read, because an example
 // is shipped by whichever declaration prints it and a reader hovers over either.
@@ -916,7 +928,7 @@ describe('installed package consumer', () => {
 				// install; the install's own message carries npm's output, which is where a
 				// refusal names itself.
 				const floor = readNpmFloor(targetManifest)
-				const admitted = resolveNpm({ floor, prefix: workspace.ensure('npm'), environment })
+				const admitted = provisionNpm({ floor, prefix: workspace.ensure('npm'), environment })
 				const dependencies = spawnSync(
 					npm,
 					['install', '--ignore-scripts', '--no-audit', '--no-fund'],
@@ -961,5 +973,38 @@ describe('installed package consumer', () => {
 			}
 		},
 		1_200_000,
+	)
+
+	// Moved out of the `setup` project, which makes no network call: this case provisions
+	// npm from the registry, so it belongs beside the install proof that consumes the same
+	// helper. It runs only where the ambient npm is beneath the declared floor, which is
+	// the one host state that has anything to provision.
+	it.skipIf(compareVersions(ambient, MINIMUM_NPM_VERSION) >= 0)(
+		'provisions the floor and resolves that copy when the ambient npm is beneath it [inapplicable where the ambient npm already satisfies the floor, which leaves nothing to provision]',
+		() => {
+			const workspace = createScratch({ prefix: 'scaffold-e4-provision-' })
+			try {
+				const prefix = workspace.ensure('npm')
+				const admitted = provisionNpm({ floor: MINIMUM_NPM_VERSION, prefix })
+				// The second mechanism: the version the provisioned package declares of itself,
+				// read from its manifest rather than from a run. A resolution reporting the
+				// ambient npm, or provisioning one version and reporting another, disagrees with
+				// it.
+				const installed: unknown = JSON.parse(
+					readFileSync(join(prefix, 'node_modules', 'npm', 'package.json'), 'utf8'),
+				)
+				expect(installed).toMatchObject({ version: admitted.version })
+				expect(compareVersions(admitted.version, MINIMUM_NPM_VERSION)).toBeGreaterThanOrEqual(0)
+				expect(admitted.version).not.toBe(ambient)
+				// The environment is what carries the selection into a nested `npm run`, so the
+				// provisioned directory must be the first entry `PATH` offers.
+				expect(requireValue(readVariable(admitted.environment, 'PATH')).split(delimiter)[0]).toBe(
+					join(prefix, 'node_modules', '.bin'),
+				)
+			} finally {
+				workspace.destroy()
+			}
+		},
+		300_000,
 	)
 })

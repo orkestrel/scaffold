@@ -217,6 +217,26 @@ describe('Ollama setup', () => {
 		expect(result.stderr).not.toContain('starting Ollama from Git Bash is unsupported')
 	})
 
+	// The fixture answers the readiness probe with a server error, so the script reads a
+	// reachable loopback endpoint as unready and enters its local-startup branch. That is
+	// the one branch that launches a daemon, and this case is what proves the helper's
+	// `PATH` reaches no real `ollama`: the branch refuses at once with exit 127 instead of
+	// starting a host daemon and holding the suite for the script's startup deadline.
+	it('refuses an unready loopback endpoint rather than starting a host daemon', async () => {
+		const server = await createOllamaServer({ status: { version: 503 } })
+		try {
+			const result = await executeOllamaSetup(server.url, 'fixture-model')
+			expect(result.code).toBe(127)
+			expect(result.expired).toBe(false)
+			expect(result.stderr).toContain(
+				'ollama is required to start an unreachable loopback endpoint',
+			)
+			expect(server.requests.map((request) => request.path)).toStrictEqual(['/api/version'])
+		} finally {
+			await server.destroy()
+		}
+	})
+
 	// The case rewrites the fixture's address into the `::ffff:` form so the script reads a
 	// non-loopback endpoint and refuses without launching a daemon, and it then asserts the
 	// fixture answered. A host with no IPv6 stack refuses that `AF_INET6` connect with

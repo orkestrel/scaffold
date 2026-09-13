@@ -368,10 +368,11 @@ re-run. These rows stay open:
   daemon whose model was not loaded timed out at `OllamaProvider.test.ts`'s
   warmup while the other files passed, and the warm re-run passed every file.
 - **scaffold**: npm `10.9.7` and every npm from `11.0.0` through `11.5.0` crash
-  resolving a lockfile-free generated workspace at `@npmcli/arborist`'s
-  `#loadPeerSet` with an unguarded `node.parent` dereference; npm `11.6.0` is
-  the first that resolves it; `vitest` alone reproduces it and `@types/node`
-  is not involved. Measured on 2026-09-13.
+  resolving a lockfile-free generated workspace at the `#loadPeerSet` step in
+  `@npmcli/arborist`, with an unguarded `node.parent` dereference; npm `11.6.0`
+  is the first that resolves it; `vitest` alone reproduces it and `@types/node`
+  is not involved. Every version in that range was run and read from its own
+  install log. Measured on 2026-09-13.
 - **scaffold**: the proof launches the npm the generated manifest names. Every
   generated manifest carries `devEngines.packageManager` at `>=11.6.0` with
   `onFail` error, and the distribution proof provisions that npm when the
@@ -382,14 +383,37 @@ re-run. These rows stay open:
 - **scaffold**: the `test` script is an `&&` chain in scaffold, toolbox, and
   ollama (`scaffold/package.json`, `toolbox/package.json`,
   `ollama/package.json`), so one failing project hides every project after
-  it; on 2026-09-13 one red case in `src:server` suppressed five projects
-  that each pass when invoked singly. Rule on a composition that runs every
-  project and reports every failure; the repair edits the generated manifest
-  and three packages, so it is a successor version's.
-- **scaffold**: `src/core/constants.ts` pipes scaffold's own `@types/node`
-  range into every generated workspace, which typechecks against Node 26's
-  declaration surface while declaring a `22.18.0` floor. Rule whether the
-  emitted `@types/node` range tracks the declared floor.
+  it; on 2026-09-13 one red case in `src:server` suppressed every project
+  after it, each of which passes when invoked singly. Rule on a composition
+  that runs every project and reports every failure; the repair edits the
+  generated manifest and the scaffold, toolbox, and ollama manifests, so it
+  is a successor version's.
+- **scaffold**: the emitted toolchain states the generated workspace's Node
+  support in places that can disagree with the declared floor. The
+  `src/core/constants.ts` file pipes scaffold's own `@types/node` range into
+  every generated workspace, which typechecks against Node 26's declaration
+  surface while the manifest declares a `22.18.0` floor; the emitted build
+  configurations pin `target: 'node22'` for the server library, the
+  executable, and the application server (`src/core/templates.ts:169`, `:200`,
+  and `:284`), which fixes the emit at the Node 22 line while the declared
+  floor and the `@types/node` range each move on their own. Rule the whole set
+  at once: which declaration is the source of the generated workspace's Node
+  claim, and what the others derive from it.
+- **scaffold**: the generated toolchain's transitive dependencies narrow the
+  Node 24 support this package declares. The `@orkestrel/probe` package reaches
+  the `@orkestrel/sqlite@0.0.11` release through the `@orkestrel/queue` and
+  `@orkestrel/database` packages, and that release declares
+  `^22.18.0 || >=24.4.0`, so Node `24.0.0` through `24.3.x` installs a
+  generated workspace with an `EBADENGINE` warning rather than a refusal,
+  because no generated workspace sets the `engine-strict` setting. Rule whether
+  the declared Node 24 support names `24.4.0`, and read the chain again after
+  the `@orkestrel/sqlite` package publishes. Measured on 2026-09-13.
+- **scaffold**: the `supportsMappedLoopback` predicate in the
+  `tests/setupServer.ts` module reads a host capability rather than anything
+  this package owns, and the `@orkestrel/test/server` entry already publishes
+  the `supportsBytes`, `supportsCase`, `supportsDirectoryLinks`,
+  `supportsFileLinks`, and `supportsMode` siblings it belongs beside. Propose
+  it there, and drop the local predicate after that release lands.
 - **abort**: transcribe the `README.md:29,34` Usage fence into
   `tests/guides.test.ts` with `README.md` in `ROOT_FILES`; rule what a
   transcription's presence guards bind and apply that rule; rule the `Abort`

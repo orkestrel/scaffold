@@ -9,7 +9,7 @@
 npm install --save-dev @orkestrel/scaffold
 ```
 
-The executable needs Node 22.12 or later. Run it without installing anything:
+The executable needs Node 22.18.0 or later. Run it without installing anything:
 
 ```sh
 npx @orkestrel/scaffold --help

@@ -34,7 +34,6 @@ import {
 	BIN_ENTRY_PATH,
 	CATALOG_AGENT_PATH,
 	DECLARATION_DEV_DEPENDENCIES,
-	DEFAULT_DEV_ENGINES,
 	DEPENDENCY_NAME_PATTERN,
 	DISTRIBUTION_TEST_PATH,
 	ENVIRONMENTS,
@@ -58,6 +57,7 @@ import {
 	SOURCE_BROWSER_DEV_DEPENDENCIES,
 	SRC_MATRIX,
 	VERSION_PATTERN,
+	WORKSPACE_DEV_ENGINES,
 } from './constants.js'
 import {
 	artifactToFinding,
@@ -577,7 +577,7 @@ export function blueprintToManifest(blueprint: Blueprint): string {
 		devDependencies: blueprintToDevDependencies(blueprint),
 		...(Object.keys(peerDependencies).length > 0 ? { peerDependencies } : {}),
 		...(Object.keys(peerDependenciesMeta).length > 0 ? { peerDependenciesMeta } : {}),
-		devEngines: DEFAULT_DEV_ENGINES,
+		devEngines: WORKSPACE_DEV_ENGINES,
 		engines: { node: blueprint.engines },
 	}
 	return `${JSON.stringify(manifest, undefined, '\t')}\n`
