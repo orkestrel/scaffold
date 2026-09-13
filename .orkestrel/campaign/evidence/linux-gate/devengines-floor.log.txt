@@ -1,0 +1,16 @@
+ambient npm 10.9.7 on node v22.22.2
+installed npm 10.5.0 -> self-reports 10.5.0
+installed npm 10.8.3 -> self-reports 10.8.3
+installed npm 10.9.0 -> self-reports 10.9.0
+installed npm 10.9.3 -> self-reports 10.9.3
+--- guard manifest (the emitted devEngines record): does the npm read it? ---
+  10.5.0  guard  exit=1   refused=no   crash=yes  code=–            –
+  10.8.3  guard  exit=1   refused=no   crash=yes  code=–            –
+  10.9.0  guard  exit=1   refused=yes  crash=no   code=EBADDEVENGINES –
+  10.9.3  guard  exit=1   refused=yes  crash=no   code=EBADDEVENGINES –
+--- plain manifest: what does an npm that ignores the record do? ---
+  10.5.0  plain  exit=1   refused=no   crash=yes  code=–            –
+  10.8.3  plain  exit=1   refused=no   crash=yes  code=–            –
+  10.9.0  plain  exit=1   refused=no   crash=yes  code=–            –
+  10.9.3  plain  exit=1   refused=no   crash=yes  code=–            –
+DEVFLOOR-DONE
