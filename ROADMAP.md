@@ -294,8 +294,8 @@ Each row closes with a red-first proof where a test can hold it.
   it; pick one habit.
 - **Attempts matrix churn** — the `v-if`-gated matrix in `TaskView.vue` matters only if durable
   rows can disappear; prove or simplify.
-- **Busy-focus on the in-flight save** — decide whether the disabled busy submit in `SetupPanel`
-  parks focus deliberately.
+- **Busy-focus on the in-flight save** — decide whether the disabled busy submit in the
+  `SetupPanel` component parks focus deliberately.
 - **Six-surface secret sweep** — audit stderr, stdout, error contexts, responses, static assets,
   and child environments against every generated secret, with a planted-secret control per
   detector.
@@ -365,15 +365,17 @@ re-run. These rows stay open:
 
 - **ollama**: the service suite's warmup covers a cold model load, or the suite
   warms the model before its first file. On 2026-09-05 the first run on a
-  daemon whose model was not loaded timed out at the warmup in
-  `OllamaProvider.test.ts` while the other files passed, and the warm re-run
-  passed every file.
-- **scaffold**: npm `10.9.7` and every npm from `11.0.0` through `11.5.0` crash
+  daemon whose model was not loaded timed out at the warmup in the
+  `OllamaProvider.test.ts` file while the other files passed, and the warm
+  re-run passed every file.
+- **scaffold**: npm 10.9.7 and every npm from 11.0.0 through 11.5.0 crash
   resolving a lockfile-free generated workspace at the `#loadPeerSet` step in
-  `@npmcli/arborist`, with an unguarded `node.parent` dereference; npm `11.6.0`
+  `@npmcli/arborist`, with an unguarded `node.parent` dereference; npm 11.6.0
   is the first that resolves it; `vitest` alone reproduces it and `@types/node`
-  is not involved. Every version in that range was run and read from its own
-  install log, retained at
+  is not involved. An npm at 10.5.0, 10.8.3, 10.9.0, or 10.9.3 crashes the same
+  way on the plain manifest, read from
+  `.orkestrel/campaign/evidence/linux-gate/devengines-floor.log.txt`. Every
+  version in that range was run and read from its own install log, retained at
   `.orkestrel/campaign/evidence/linux-gate/npm-boundary-readings.log.txt`; the
   campaign folder is pruned at acceptance, so those readings live in git
   history from the commit that retained them. Measured on 2026-09-13.
@@ -381,7 +383,11 @@ re-run. These rows stay open:
   generated manifest carries `devEngines.packageManager` at `>=11.6.0` with
   `onFail` error, and the distribution proof provisions that npm when the
   ambient one is below the floor. `engines.npm` and `engine-strict` were
-  measured and rejected because the crash fires before engine validation.
+  measured and rejected because the crash fires before engine validation. An
+  npm from 10.9.0 on reads the `devEngines` record; an npm at 10.5.0 or 10.8.3
+  ignores it and meets the crash; every npm a supported Node bundles reads it.
+  Read from `.orkestrel/campaign/evidence/linux-gate/devengines-floor.log.txt`,
+  measured on 2026-09-13.
 - **scaffold**: node floor `22.18.0`, where type stripping is unflagged, so
   the vendored lint plugin loads; Node 22 and Node 24 stay supported.
 - **scaffold**: the `test` script is an `&&` chain in scaffold, toolbox, and
@@ -426,8 +432,11 @@ re-run. These rows stay open:
   `resolveTool` helper in `tests/setupServer.ts` accepts a regular file without
   the execute bit; the shadow directory the `executeOllamaSetup` helper builds
   in that same file is inline, unexported, and asserted nowhere, and a tool it
-  cannot resolve is dropped silently; the `OLLAMA_TOOLS` constant beside it has
-  no mechanism that can disagree with `scripts/ollama.sh`; the
+  cannot resolve is dropped silently, so whether a host
+  lacking `setsid` or `timeout` changes the exit code and the message the
+  pinned case in `tests/src/server/helpers.test.ts` asserts is unmeasured; the
+  `OLLAMA_TOOLS` constant beside it has no mechanism that can disagree with
+  `scripts/ollama.sh`; the
   `executeOllamaSetup` doc block names the endpoint parameter `host` and uses
   the same word for the machine; the `provisionNpm` doc block reads `host npm`
   where the rest of that block reads `ambient`; whether the `provisionNpm` or

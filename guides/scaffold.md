@@ -1451,12 +1451,16 @@ except the manifest.
 Every generated manifest declares the toolchain it is gated on. The `engines.node` field carries the
 blueprint's `engines` value, which defaults to the `>=22.18.0` range. The
 `devEngines.packageManager` record names npm at the `>=11.6.0` range with its `onFail` key set to
-the `error` value, and no blueprint field varies that floor. An npm beneath that floor refuses the
-`npm install` command in a generated workspace with the `EBADDEVENGINES` code instead of resolving
-the dependency graph, and it refuses each nested `npm run` command under that install on the same
-reading. So run a generated workspace on npm `11.6.0` or later. Read the ambient version with the
-`npm --version` command, and raise it with the `npm install --global npm@11.6.0` command, or a later
-release, before the first install.
+the `error` value, and no blueprint field varies that floor. An npm from 10.9.0 on reads that
+record. Such an npm beneath the floor refuses the `npm install` command in a generated workspace
+with the `EBADDEVENGINES` code instead of resolving the dependency graph. It refuses each nested
+`npm run` command under that install on the same reading. An npm older than 10.9.0 ignores the
+record and fails inside dependency resolution instead. Every npm that a supported Node bundles
+reads the record, so only an npm downgraded below 10.9.0 meets that failure. Run a generated
+workspace on npm 11.6.0 or later, because 11.6.0 is the first release that installs a generated
+workspace. Read the ambient version with the `npm --version` command, and raise it with the
+`npm install --global npm@11.6.0` command, or a later release, before the first install. These
+readings come from a Linux host on Node 22.22.2, on 2026-09-13.
 
 A workspace publishing a `src` environment rolls each published face's declarations up from that
 face's own Vite config. The seeded config calls `declarationRollup` from the vendored
