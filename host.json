@@ -28,7 +28,7 @@
 			"storage": "agents/skills/enterprise-bootstrap/SKILL.md",
 			"destination": ".agents/skills/enterprise-bootstrap/SKILL.md",
 			"executable": false,
-			"digest": "03af2a3755e39cd01934b814ae7644987fd10a656857f7b07163681a2c2cce91"
+			"digest": "fd2f390a4b3cc40bd2ca62a726e33a96132269fc3c4d466f948c36b7d0173cbe"
 		},
 		{
 			"storage": "agents/skills/enterprise-bootstrap/agents/openai.yaml",
@@ -40,19 +40,19 @@
 			"storage": "agents/skills/enterprise-bootstrap/references/bootstrap-reference.md",
 			"destination": ".agents/skills/enterprise-bootstrap/references/bootstrap-reference.md",
 			"executable": false,
-			"digest": "088f73d1714006eb7fc307331caf95848720762d4fd19c050d3c16f8493f2ea2"
+			"digest": "0406dbdf44881b9e33e27c9ead6d9ae67ab6a226e5ff7ec6e71cf07b53e5083c"
 		},
 		{
 			"storage": "agents/skills/enterprise-bootstrap/references/color-modes.md",
 			"destination": ".agents/skills/enterprise-bootstrap/references/color-modes.md",
 			"executable": false,
-			"digest": "df374b34d15867ccadae50782ed961b70cfdd19aa7ece9a7fd7c69a72ee5af04"
+			"digest": "4a7d30374e60add9207a87197c65c576dd0e0ee52ab97064597b6b31af2bc34e"
 		},
 		{
 			"storage": "agents/skills/enterprise-bootstrap/references/components.md",
 			"destination": ".agents/skills/enterprise-bootstrap/references/components.md",
 			"executable": false,
-			"digest": "3656de27f8407eb2b7f44ada3e64c0c2e88758ff30fa573f848527fe6ac4bb9e"
+			"digest": "2fde6b3dc9e168461192b01183f194aca61974b27721ca406ba684da295833e4"
 		},
 		{
 			"storage": "agents/skills/enterprise-bootstrap/references/frontend-design.md",
@@ -64,25 +64,25 @@
 			"storage": "agents/skills/enterprise-bootstrap/references/inputs.md",
 			"destination": ".agents/skills/enterprise-bootstrap/references/inputs.md",
 			"executable": false,
-			"digest": "be1e1c22e06efcc805ab0b46ecd3f2cc5f73e69aea237c8d3b1d983b810ab1dc"
+			"digest": "ec68bd122f83b186aaeebcfeea80ee745c143aeefde2f4d7e1b72d710b48dd61"
 		},
 		{
 			"storage": "agents/skills/enterprise-bootstrap/references/inspection.md",
 			"destination": ".agents/skills/enterprise-bootstrap/references/inspection.md",
 			"executable": false,
-			"digest": "3daa82a3079d23ae6280cd9a934d1ca5f51e35274bd456e7544c88992c7a5164"
+			"digest": "c2c7ed7027c8208b0ffa255abc8ca245c2ae534b5b4f311a9fe03e1e842c6f32"
 		},
 		{
 			"storage": "agents/skills/enterprise-bootstrap/references/responsive-layout.md",
 			"destination": ".agents/skills/enterprise-bootstrap/references/responsive-layout.md",
 			"executable": false,
-			"digest": "ccaa3bf07e364f26ddc9d2a96109f0b7f21c9186ac1153fc1f917e1053209d4a"
+			"digest": "44e709e8df187495e6343048891ca9ff1ff9d3f30d86e00ad8cbd97c8e29bf20"
 		},
 		{
 			"storage": "agents/skills/enterprise-bootstrap/references/utilities.md",
 			"destination": ".agents/skills/enterprise-bootstrap/references/utilities.md",
 			"executable": false,
-			"digest": "c583a023a01b44be1a7ee735ec9ee662c55ac88244ea4a7cfe71ad367ab1f480"
+			"digest": "8cec05a193672bc543439a3aa46cf7b4ffc5573527b3fe047ad575fbe73f4a2c"
 		},
 		{
 			"storage": "agents/skills/orkestrel-align-packages/SKILL.md",
@@ -785,5 +785,5 @@
 		".cursor/rules",
 		"scripts"
 	],
-	"digest": "f7db7c59125c1eeb281cab9ce70e0be3f1f9f95c2a950c53d94d176062b72570"
+	"digest": "5db82b1a3d263b827b9764db944c2e2deeebdddde0bd801c23de4b644342e147"
 }

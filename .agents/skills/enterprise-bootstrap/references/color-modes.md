@@ -280,7 +280,7 @@ inherited body text. Do not mistake the absence of a `text-*` class for the abse
 rule. Confirm the skin's badge rule; see [Badges](https://getbootstrap.com/docs/5.3/components/badge/).
 Keep a removable tag's close button in the same mode and measure its hit area; a badge's small
 font must not shrink the control below the target floor in
-[bootstrap-reference.md](bootstrap-reference.md) → WCAG 2.2 deltas.
+[bootstrap-reference.md](bootstrap-reference.md) → WCAG 2.2 requirements for app UI.
 
 ### Alerts, buttons, and selection
 

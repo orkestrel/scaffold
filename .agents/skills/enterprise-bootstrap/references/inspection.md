@@ -77,9 +77,9 @@ a pass label alone.
 - **Reading.** Report inline declarations and non-permitted style elements with their source or
   element. Record each runtime exemption by producer, element, and the property it writes — never a
   blanket component exemption, and never a producer that writes a property outside its purpose.
-  Bootstrap overlay positioning and conditional-visibility directives write runtime styles, and a
-  host script writing `progress-bar` width from `aria-valuenow` is a producer of that one property
-  ([components.md](components.md) → Progress).
+  Bootstrap overlay positioning and conditional-visibility directives write runtime styles. The host
+  script for progress owns the `width` declaration on the elements specified in
+  [components.md](components.md) → Progress.
 - **Negative control.** Feed an element with an inline declaration, then append an inline-styled
   element and a component-scoped `<style>` element to the harness tree. Every non-exempt fixture
   must be reported. Add a permitted fixture the reader must leave alone — the project stylesheet's
@@ -265,7 +265,7 @@ requested review round or campaign, use `orkestrel-polish-surface` rather than c
   right control after wrapping. Width serves the content; rails, forms, and tables use it deliberately.
 - **Type and reflow:** line length, baseline alignment, line-height, numeric comparison, and fallback
   text work at the declared widths and enlarged text. No essential content is clipped or hidden.
-- **Color, depth, and imagery:** light/dark transitions preserve hierarchy without gratuitous text overrides; color has a second encoding;
+- **Color, depth, and imagery:** transitions between declared themes preserve hierarchy without gratuitous text overrides; color has a second encoding;
   elevation describes layers; crops and icon sizes preserve useful detail; the frame stays quiet.
 - **States and restraint:** first-use, filtered-empty, loading, partial, and error retain a useful
   next step. Long or missing content holds up. The signature belongs to the brief; accessories do not

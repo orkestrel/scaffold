@@ -1,22 +1,22 @@
 # Timeout
 
-> A controllable `setTimeout` wrapper that exposes an `AbortSignal` which fires
-> on expiry, for racing work against a deadline. A `Timeout` carries a trace
-> `id`, a deadline `ms`, and `start()` / `clear()` controls — arm the deadline,
-> then race its `signal` against work to bound how long that work may run. The
-> time-bound half of the substrate's time-and-cancellation pair. Deliberately
-> thin: it is not a scheduler, not a debounce/throttle, not a retry policy —
-> just one `setTimeout` made re-armable, clearable, and parent-linkable. Its
-> native `AbortSignal` is the complete observation surface; there is no separate
-> event map. `start()` arms the deadline, `clear()` cancels it without firing,
-> and re-`start()`ing after an expiry swaps in a fresh signal, so a handle is
-> reusable across deadlines without re-construction. Source:
-> [`src/core`](../src/core). Surfaced through the `@src/core` barrel.
+> The time-bound half of the substrate's time-and-cancellation pair: a
+> controllable `setTimeout` wrapper carrying a trace `id` and a deadline `ms`,
+> whose native `AbortSignal` aborts on expiry.
+
+Arm the deadline with `start()`, then race its `signal` against work to bound
+how long that work may run; `clear()` cancels the deadline without firing it,
+and a `start()` after an expiry swaps in a fresh signal, so one handle serves a
+sequence of deadlines without re-construction. The package is deliberately
+thin: not a scheduler, not a debounce, not a retry policy — one `setTimeout`
+made re-armable, clearable, and parent-linkable. The native signal is the
+complete observation surface, so there is no separate event map. Source:
+[`src/core`](../src/core). Surfaced through the `@src/core` barrel.
 
 ## Surface
 
 Create a deadline handle, arm it, and hand its `signal` to deadline-aware
-work — `clear()` the deadline if the work finishes first:
+work — call `clear()` on the deadline if the work finishes first:
 
 ```ts
 import { createTimeout } from '@orkestrel/timeout'
@@ -39,69 +39,74 @@ code `bound`, while invalid `id`, `ms`, and `signal` values use `literal`,
 `range`, and `placement`, respectively. Each error carries safe `path`, `limit`,
 and `received` context. The package does not re-export `ContractError`.
 
-An optional parent signal CLEARS the timeout rather than expiring it if it
+An optional parent signal clears the timeout rather than expiring it if it
 aborts before the deadline. An optional `id` labels the handle for tracing and
 defaults to a random UUID.
 
 ### Factories
 
-| API             | Kind     | Summary                                                            |
-| --------------- | -------- | ------------------------------------------------------------------ |
-| `createTimeout` | function | Create a `TimeoutInterface` deadline handle from `TimeoutOptions`. |
+| API             | Kind     | Summary                                                                                           |
+| --------------- | -------- | ------------------------------------------------------------------------------------------------- |
+| `createTimeout` | function | Creates a deadline handle from validated `TimeoutOptions` and returns it as a `TimeoutInterface`. |
 
-### Entities
+### Classes
 
-| API       | Kind  | Summary                                                                       |
-| --------- | ----- | ----------------------------------------------------------------------------- |
-| `Timeout` | class | The controllable `setTimeout` wrapper; implements `TimeoutInterface` exactly. |
+| API       | Kind  | Summary                                                                                                                                                       |
+| --------- | ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Timeout` | class | Implements `TimeoutInterface` exactly, as a controllable `setTimeout` wrapper over one owned `AbortController` whose signal aborts when the deadline expires. |
 
 ### Constants
 
-| API              | Kind  | Summary                                                  |
-| ---------------- | ----- | -------------------------------------------------------- |
-| `MAX_TIMEOUT_MS` | const | Largest accepted duration: `2_147_483_647` milliseconds. |
+A `Shape` cell holds the constant's declared type.
+
+| API              | Kind  | Shape    | Summary                                                                               |
+| ---------------- | ----- | -------- | ------------------------------------------------------------------------------------- |
+| `MAX_TIMEOUT_MS` | const | `number` | Names the largest timeout duration the package accepts, `2_147_483_647` milliseconds. |
 
 ### Validators
 
-| API                 | Kind     | Summary                                                        |
-| ------------------- | -------- | -------------------------------------------------------------- |
-| `isTimeoutDuration` | function | Total validator for an integer in the inclusive timeout range. |
-| `isTimeoutSignal`   | function | Total native-brand validator for a genuine `AbortSignal`.      |
+In a guard table a `Shape` cell holds the type the guard narrows to.
+
+| API                 | Kind     | Shape         | Summary                                                                                                                                |
+| ------------------- | -------- | ------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| `isTimeoutDuration` | function | `number`      | Determines whether a value is an integer in the inclusive range from `0` through `MAX_TIMEOUT_MS`, staying total for every input.      |
+| `isTimeoutSignal`   | function | `AbortSignal` | Determines whether a value is a genuine native `AbortSignal`, staying total for a structural spoof and for a hostile or revoked proxy. |
 
 ### Helpers
 
-| API                      | Kind     | Summary                                                                                 |
-| ------------------------ | -------- | --------------------------------------------------------------------------------------- |
-| `validateTimeoutOptions` | function | Validate once-read timeout options and return a fresh copy omitting absent option keys. |
+| API                      | Kind     | Summary                                                                                                             |
+| ------------------------ | -------- | ------------------------------------------------------------------------------------------------------------------- |
+| `validateTimeoutOptions` | function | Validates once-read timeout construction options and returns a fresh normalized copy omitting absent optional keys. |
 
 ### Types
 
-| Type               | Kind      | Shape                                                                                                |
-| ------------------ | --------- | ---------------------------------------------------------------------------------------------------- |
-| `TimeoutOptions`   | interface | `{ id?: string; ms: number; signal?: AbortSignal }` — options for `createTimeout` / the constructor. |
-| `TimeoutInterface` | interface | `id` / `ms` / `signal` / `expired` data members + `start` / `clear` methods.                         |
+A `Shape` cell holds an interface's data members as bare names in braces, `?` marking an optional member and `plus` introducing its call-signature members, and a type alias's own type literal with a union's arms escaped as `\|`.
 
-The `id`, `ms`, `signal`, and `expired` members are `readonly` data members of
-`TimeoutInterface` (Surface rows, above) — its call-signature methods are
-documented under [Methods](#methods). `expired` derives directly from the owned
-signal's `aborted` state rather than storing a duplicate lifecycle flag.
+| Type               | Kind      | Shape                                           | Summary                                                                                   |
+| ------------------ | --------- | ----------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| `TimeoutOptions`   | interface | `{ id?, ms, signal? }`                          | Represents the options `createTimeout` and the `Timeout` constructor accept.              |
+| `TimeoutInterface` | interface | `{ id, ms, signal, expired } plus start, clear` | Represents a controllable deadline exposing a native `AbortSignal` that aborts on expiry. |
+
+The `id`, `ms`, `signal`, and `expired` members of `TimeoutInterface` are
+`readonly` data members (Shape cell, earlier) — its call-signature methods are
+documented under [Methods](#methods). `expired` derives directly from the
+owned signal's `aborted` state rather than storing a duplicate lifecycle flag.
 
 ## Methods
 
 The public methods of `TimeoutInterface` — every call-signature member listed
-(its `readonly` data members `id` / `ms` / `signal` / `expired` stay Surface
-rows). `Timeout` implements the interface exactly, so this doubles as the
-class's instance-method surface (AGENTS §22).
+(its `readonly` members `id` / `ms` / `signal` / `expired` have no method row).
+`Timeout` implements the interface exactly, so this doubles as the class's
+instance-method surface (AGENTS.md, Documentation contract).
 
 #### `TimeoutInterface`
 
-`start` arms (or re-arms) the deadline; `clear` cancels a pending expiry
-without firing.
+The call-signature members, each with the type it returns:
 
-| Method  | Returns | Behavior                                                                                           |
-| ------- | ------- | -------------------------------------------------------------------------------------------------- |
-| `start` | `void`  | Arm the deadline for `ms`. Re-arming swaps a fresh `signal` if the prior one fired.                |
-| `clear` | `void`  | Cancel a pending expiry without firing `signal`; after expiry, swap in a fresh non-aborted signal. |
+| Method  | Returns | Summary                                                                                                                                           |
+| ------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `start` | `void`  | Arms or re-arms the deadline for `ms`, installing a fresh `signal` when the current one has already aborted.                                      |
+| `clear` | `void`  | Cancels an armed deadline without aborting its `signal`, and resets expiry by installing a fresh signal when the current one has already aborted. |
 
 ## Contract
 
@@ -110,7 +115,7 @@ These invariants hold across `src/core` ↔ `timeout.md`:
 1. **DOC ↔ SOURCE bijection.** Every `function` / `class` / `const` /
    `interface` row in the `## Surface` tables is a real export of the timeout
    source, and every export appears as a Surface row — exhaustive, both
-   directions (AGENTS §22).
+   directions (AGENTS.md, Documentation contract).
 2. **Strict construction boundary.** `validateTimeoutOptions` requires a plain
    readable record, reads `id`, `ms`, and `signal` exactly once inside a
    contained boundary, validates them, and returns a fresh normalized copy that
@@ -121,14 +126,14 @@ These invariants hold across `src/core` ↔ `timeout.md`:
    zero intentionally expires on the next turn. Invalid inputs throw the coded
    `ContractError` taxonomy described under Surface.
 3. **Deadline signal and derived expiry.** The exposed `signal` fires (aborts)
-   on expiry. `expired` derives from that owned signal's `aborted` state, so the
-   two facts cannot drift.
+   on expiry. `expired` derives from that owned signal's `aborted` state, so
+   `expired` and `aborted` cannot drift apart.
 4. **Signal identity swaps only on a real expiry.** A cleared-but-never-fired
    timeout keeps its original `signal` (not aborted); the identity is only
    swapped for a fresh, non-aborted controller after the current controller has
    fired — whether that swap happens inside `clear()` or at the next `start()`.
 5. **Parent linking clears, never expires.** A parent `options.signal` abort
-   CLEARS the timeout — it does not expire the timeout, abort the timeout's own
+   clears the timeout — it does not expire the timeout, abort the timeout's own
    signal, or forward the parent reason. The parent listener is attached only
    while a timer is armed (added on `start()`, removed on expiry or `clear()`);
    once the parent has aborted, a later `start()` is a no-op.
@@ -142,6 +147,8 @@ These invariants hold across `src/core` ↔ `timeout.md`:
 
 ### Race work against a deadline
 
+Builds a deadline handle, arms it, and clears it in a `finally` once the race resolves:
+
 ```ts
 import { createTimeout } from '@orkestrel/timeout'
 
@@ -152,7 +159,7 @@ async function fetchWithDeadline(url: string, ms: number): Promise<Response> {
 	try {
 		return await fetch(url, { signal: timeout.signal })
 	} finally {
-		timeout.clear() // no-op if the fetch already won the race
+		timeout.clear() // cancels the still-armed deadline when the fetch won the race
 	}
 }
 ```
@@ -184,6 +191,8 @@ function withDeadline(parent: AbortSignal, ms: number) {
 
 ### Reuse a handle across deadlines
 
+Clears an armed deadline before it fires, then arms the same handle again for a fresh window:
+
 ```ts
 import { createTimeout } from '@orkestrel/timeout'
 
@@ -198,8 +207,8 @@ timeout.start() // re-armed; a fresh deadline window begins
 ### Practices
 
 - **Race, don't poll** — attach a listener to `signal` (or pass it straight to
-  an API that accepts an `AbortSignal`, e.g. `fetch`) rather than polling
-  `expired`.
+  an API that accepts an `AbortSignal`, for example `fetch`) rather than
+  polling `expired`.
 - **`clear()` is always safe to call** — clearing an idle or already-cleared
   handle is a no-op; after expiry it installs a fresh non-aborted signal. Call
   it unconditionally in a `finally`.
@@ -210,6 +219,13 @@ timeout.start() // re-armed; a fresh deadline window begins
 
 ## Tests
 
+- [`tests/guides.test.ts`](../tests/guides.test.ts) — the `## Surface` ↔
+  `src/core` bijection over value and type exports, the `TimeoutInterface` ↔
+  `Timeout` method bijection, and the equality gate: every `Summary` cell
+  against its declaration's description paragraph, the titled fence against the
+  `@example` block of that title (pinned so the titled pair cannot be retired
+  silently), and the README pitch against this guide's tagline. It also runs the
+  flagship fences and asserts the values their comments claim.
 - [`tests/src/core/Timeout.test.ts`](../tests/src/core/Timeout.test.ts) —
   public-constructor integration, real expiry / clear / replacement / churn
   behavior, signal identity and derived expiry, and the intentional parent-clear
@@ -226,8 +242,8 @@ timeout.start() // re-armed; a fresh deadline window begins
 
 ## See also
 
-- [`AGENTS.md`](../AGENTS.md) — the rules; §10 lifecycle (`start` / `clear`),
-  §8 options design, §22 documentation-as-contracts.
+- [`AGENTS.md`](../AGENTS.md) — the rules, including the documentation contract
+  and the fixed lifecycle meanings of `start` and `clear`.
 - [`contract.md`](contract.md) — the mirrored guide for `@orkestrel/contract`,
   the source of the validation primitives and `ContractError` used at the
   construction boundary.

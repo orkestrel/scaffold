@@ -178,7 +178,7 @@ Take [responsive-layout.md](references/responsive-layout.md) as the layout contr
 primary task, reading order, and access to information at every width. A contained horizontal
 table can pass document-overflow checks and still fail the task; inspect both.
 
-- Choose density for the task. Start each gap one step too large, render, and step down; compress where throughput or comparison requires it, not because the default felt cramped. Hold every target to the floor in [bootstrap-reference.md](references/bootstrap-reference.md) → WCAG 2.2 deltas, which owns the target dimensions.
+- Choose density for the task. Start each gap one step too large, render, and step down; compress where throughput or comparison requires it, not because the default felt cramped. Hold every target to the floor in [bootstrap-reference.md](references/bootstrap-reference.md) → WCAG 2.2 requirements for app UI, which owns the target dimensions.
 - Take compact controls together across a row: `btn-sm`, `form-control-sm`, `form-select-sm`, and `input-group-sm`. Do not shrink body text or targets to force one-row layouts.
 - Keep inter-group gaps larger than internal gaps. Bound forms, rails, and prose by content with a maximum width; let comparison tables use the width they need. Use percentage columns only where elements must scale together — a `col-*` login card or `col-3` sidebar changes width at every breakpoint ([bootstrap-reference.md](references/bootstrap-reference.md) → Breakpoints & layout).
 - Use `.card` where an independent group earns containment. Try spacing and type before more borders, fills, or shadows. Keep elevation tied to layering, not every available box.
@@ -224,7 +224,7 @@ When authorized, or when that exception opens:
 ## Accessibility baseline
 
 - Give the page a skip link, landmarks, and ordered headings; visual size does not dictate heading level.
-- Name icon-only controls and hold every target to the floor in [bootstrap-reference.md](references/bootstrap-reference.md) → WCAG 2.2 deltas. Preserve visible labels within accessible names.
+- Name icon-only controls and hold every target to the floor in [bootstrap-reference.md](references/bootstrap-reference.md) → WCAG 2.2 requirements for app UI. Preserve visible labels within accessible names.
 - Use `aria-current` for the current navigation item, `aria-selected` for selectable tabs, and native checked state for checkboxes/radios. Do not apply one selection attribute to every widget.
 - Wire disclosures with `aria-expanded` and `aria-controls`; wire help/errors with `aria-describedby` and invalid fields with `aria-invalid`.
 - Match announcements to urgency: polite status for routine async results, alerts for urgent failures. Do not infer urgency solely from an alert's visual styling.

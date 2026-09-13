@@ -62,7 +62,7 @@ value is a set.
   so the read view and the edit view reflow against each other.
 - **Give a locked select `disabled` and a hidden input beside it.** A native select cannot be
   read-only, so `disabled` stops its value submitting and the hidden input carries that value.
-- **Verify a chosen filter in light and dark.** Keep its native checked/pressed state and a
+- **Verify a chosen filter in every declared theme.** Keep its native checked/pressed state and a
   distinguishable visual treatment; take selection rules from [components.md](components.md) →
   Selection fills. Do not prescribe an accent color as a substitute for that check.
 - **Keep native control foregrounds and states.** For quiet chip or group backgrounds, inherit
@@ -230,7 +230,7 @@ stored in; a local datetime carries none.
 
 **Alternates.** Pair the swatch with a text field when the value is copied, pasted, or read aloud
 between people. Hold the swatch to the target floor in
-[bootstrap-reference.md](bootstrap-reference.md) → WCAG 2.2 deltas.
+[bootstrap-reference.md](bootstrap-reference.md) → WCAG 2.2 requirements for app UI.
 
 **States.** The fixed set. A color input has no empty value, so give the field a default and say what
 it is.
@@ -440,7 +440,7 @@ Use a utility-composed span so text inherits and the close control retains its n
 
 Keep tag text inherited and let the close icon follow the active mode. Measure the close button
 against the chip and its hit area against the target floor in
-[bootstrap-reference.md](bootstrap-reference.md) → WCAG 2.2 deltas. Take a retained `.badge`
+[bootstrap-reference.md](bootstrap-reference.md) → WCAG 2.2 requirements for app UI. Take a retained `.badge`
 through [color-modes.md](color-modes.md) → Badges and removable tags.
 
 **Alternates.** Where the tags come from a fixed vocabulary, this is the any-of-many category and the

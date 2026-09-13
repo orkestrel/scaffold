@@ -145,7 +145,7 @@ states, and resolve aliases at the scope where they must change. Take the constr
 
 Reuse the installed theme and its scales first. Declare new values only for a role the feature
 needs; refine one shared definition instead of accumulating per-component exceptions. Every
-system below has a Bootstrap source, a utility, and a known gap; extend the source, never the
+system in the following table has a Bootstrap source, a utility, and a known gap; extend the source, never the
 markup.
 
 | System         | Sass source                                                 | Utility                                       | Stock steps (default root)                       | Gap                                                                              |
@@ -166,8 +166,8 @@ markup.
   dark text shades in real components, then fill the gaps. Use HSL when it helps tune related
   shades; keep the project's existing format. Review fixed shade pairs in each theme rather than
   generating a new `lighten`, `darken`, or `color-mix` result at each use site. Stock ramps and
-  triads are tint/shade mixes with a fixed hue; override the nine shade variables and six triad
-  variables per brand hue, and the nine greys as one temperature-matched set
+  triads are tint/shade mixes with a fixed hue; override the shade variables and triad
+  variables per brand hue, and the greys as one temperature-matched set
   ([color-modes.md](color-modes.md) → Extend the theme).
 - **Type:** display/body/utility roles, finite `rem` sizes, working weights, and line-height per
   role. Roles may share a font. RFS scales sizes above 1.25 rem down below a 1200 px viewport
@@ -177,7 +177,7 @@ markup.
 - **Space and size:** internal, group, panel, and section gaps; control sizes; reading/form widths;
   rail width. Start with Bootstrap's shipped scale. Add a missing step through the utilities API
   only where the adjacent steps cannot express the intended relationship. Button sizes already
-  scale padding faster than font (4/8 px at 14 px, 6/12 at 16, 8/16 at 20); use the three shipped
+  scale padding faster than font (4/8 px at 14 px, 6/12 at 16, 8/16 at 20); use the shipped
   sizes rather than deriving one with `em` padding.
 - **Radius and elevation:** a small consistent family, assigned to real component/layer roles.
   Set `$border-radius` once and let components inherit it; do not hand-mix `rounded-*` per
@@ -212,7 +212,7 @@ and every consumer follows.
 `$enable-shadows: true` (off by default) paints light-from-above on controls: buttons take
 `inset 0 1px 0 rgba(#fff, .15), 0 1px 1px rgba(#000, .075)` (lit top edge, tight cast shadow),
 inputs `inset 0 1px 2px rgba(#000, .075)` (recessed), and an active button `inset 0 3px 5px`
-(pressed). Enable it when the direction wants tactile controls, and verify light and dark; the alphas
+(pressed). Enable it when the direction wants tactile controls, and verify every declared theme; the alphas
 are fixed white and black. Without the flag the `box-shadow` mixin emits nothing, so
 `--bs-btn-box-shadow` and `--bs-box-shadow-inset` have no consumer and an extension-rung override
 does nothing; the recipe is then a proposed rule.
@@ -317,7 +317,7 @@ map cannot produce. Read the generated selector out of the compiled output befor
 ### Layout and type extensions
 
 These are **project-generated classes**, not stock Bootstrap utilities. Use the existing project
-roles when present. Otherwise add only the needed entries; the values below are illustrative role
+roles when present. Otherwise add only the needed entries; the values in the following block are illustrative role
 definitions, not universal sizes.
 
 Scale steps go in the map-override slot (after `variables-dark`, before `maps`). Keys `0`–`5`
@@ -405,7 +405,7 @@ Use `w-100 measure-form` for a bounded form, `measure-prose` for a reading colum
 sibling, `max-block-lg-table` only for a warranted wide-screen bounded table scroller, `figures-tabular` for comparable
 quantities, `ls-tight` on `display-*` and `fs-1`, and `ls-wide` with `text-uppercase` labels (`em`
 is correct for tracking: it follows the element's own size). Verify those selectors in the
-compiled output before using the examples below. The font must support tabular figures. A `ch`
+compiled output before using those classes. The font must support tabular figures. A `ch`
 measure is a starting width, not a character-count proof.
 
 Without a Sass build, take an existing equivalent; otherwise propose the smallest stylesheet rule
@@ -571,7 +571,7 @@ reader does not support, use a suitable rendered-background measurement or leave
 never flatten a variable background to its average color. Name reached states beside every result.
 Wire the reader into the suite after it has settled a question.
 
-### WCAG 2.2 deltas that bite dense app UI
+### WCAG 2.2 requirements for app UI
 
 - **Target size (2.5.8, AA) — this section owns the skill's target dimensions.** Hold every applicable target at ≥ 24×24 CSS px: icon buttons, row actions, close buttons, sort carets, checkbox hit-areas, and color swatches. A smaller visual target passes only where a 24px spacing circle around it stays undisturbed — so in tight `table-sm` toolbars, pad the hit area rather than enlarging the glyph. Prefer 44×44 CSS px for a primary mobile control. Measure the rendered hit area; never infer it from a size class such as `btn-sm`. Enlarge the button or its associated label, not the icon's surrounding decoration.
 - **Focus not obscured (2.4.11, AA).** Sticky headers/footers/action bars and toast overlays must not bury the focused element. Reserve space with `scroll-margin-top` on focusables (or `scroll-padding-top` on the scroll container) equal to the sticky chrome height.
@@ -598,7 +598,7 @@ Browsers handle focus on full page loads; in an SPA **you** do:
 - On route change, move focus to the new view's `h1` (or the `<main>` with `tabindex="-1"`) so SR users hear where they landed.
 - On failed submit, focus the error summary. On a compact destructive confirm, focus the safe action; in a scrolling or structured dialog, focus a static heading at the start when an action would scroll its context away.
 - After deleting a row, move focus to a sensible neighbor (next row / the table region), never let it fall to `<body>`.
-- Anything focused programmatically under sticky chrome needs the `scroll-margin-top` offset (2.4.11 above).
+- Anything focused programmatically under sticky chrome needs the `scroll-margin-top` offset (Focus not obscured, 2.4.11, under [WCAG 2.2 requirements for app UI](#wcag-22-requirements-for-app-ui)).
 
 ### Reduced motion
 
@@ -723,7 +723,7 @@ Keep sticky header cells on an **opaque, mode-aware surface** such as `bg-body-s
 </th>
 ```
 
-- **Row actions:** keep the high-frequency actions inline and put the rest behind a per-row kebab (dropdown). Hover-only reveal fails touch and keyboard — keep at least the overflow trigger always visible and at the floor in [WCAG 2.2 deltas](#wcag-22-deltas-that-bite-dense-app-ui).
+- **Row actions:** keep the high-frequency actions inline and put the rest behind a per-row kebab (dropdown). Hover-only reveal fails touch and keyboard — keep at least the overflow trigger always visible and at the floor in [WCAG 2.2 requirements for app UI](#wcag-22-requirements-for-app-ui).
 - **Selection & bulk actions:** header checkbox with indeterminate state for partial selection; per-row checkboxes with `aria-label` naming the row ("Select INV-1042"). When selection > 0, swap the toolbar's content in place for a contextual bar — "3 selected", the batch actions, and a clear-selection escape — never push the layout down (layout-shifting chrome is an anti-pattern). Announce the count through a polite live region.
 - **Pagination vs scrolling:** paginate when users need position, totals, deep links, and "go to page N" — most enterprise CRUD. Virtualize (windowed rendering) for long uniform lists where scrolling is natural. True infinite scroll is for exploratory feeds only — never where users need a footer or a findable end.
 - **Responsive, by task:** use a compact record list for record work, a locally scrollable semantic table for essential comparison, or priority columns with an operable detail path. Preserve identity, decision fields, and actions. Choose expansion from available container width, not `md` by habit. Keep one state model across variants; take the contract from [Keep the task intact](responsive-layout.md#keep-the-task-intact).
@@ -777,7 +777,7 @@ Blocking errors are never toasts. Keep the acting verb consistent across the flo
 
 Match friction to reversibility × blast radius:
 
-1. **Undo** (soft-delete + toast with Undo) for reversible, low-stakes, frequent actions — least friction, best experience. Prefer making actions undoable over interrupting them.
+1. **Undo** (soft-delete + toast with Undo) for reversible, low-stakes, frequent actions. Prefer making actions undoable over interrupting them.
 2. **Confirm dialog** for irreversible-but-scoped operations. Restate the specific consequence ("This permanently deletes 3 invoices"), verb-labeled buttons ("Delete invoices" / "Cancel" — never Yes/No), destructive action visually separated from safe; `alertdialog` semantics; focus lands on the safe action for a compact confirmation, or a static top heading when focusing an action would scroll the consequences out of view.
 3. **Type-to-confirm** (type the entity name) only for high-blast-radius irreversible operations — delete an org, drop a dataset.
 
@@ -813,9 +813,9 @@ Do not type-gate a single-row delete; do not one-tap a tenant wipe. Confirm only
 
 Bootstrap has **no** combobox/autocomplete, date picker, multi-select tags input, data grid, or tree view. The boundary rule:
 
-- **Reach for native first:** `<input type="date">`, `<datalist>` for light autocomplete, `<select multiple>` where acceptable. Native widgets bring keyboard and AT behavior free.
-- **Reach for an established accessible library second** when the product genuinely needs the richer widget (combobox with async search, spreadsheet grid, drag-reorder tree). Budget for auditing it against the APG contract.
-- **Hand-roll last**, only with the APG contract in hand ([Accessibility](#accessibility) → Pattern contracts) and budget for the _keyboard_ half, which is most of the work.
+- **Use native controls:** `<input type="date">`, `<datalist>` for light autocomplete, and `<select multiple>` where suitable.
+- **Use an established accessible library** when native controls cannot meet the product's widget requirements; audit it against the APG contract.
+- **Implement a custom widget** only when native controls and an established accessible library cannot satisfy the requirements; read [Accessibility](#accessibility) → Pattern contracts and cover the required keyboard behavior.
 - Never fake it: a `.dropdown-menu` posing as a select, a `<div>` grid with click handlers, or a scroll-anchor "wizard" each break keyboard and AT users in ways a demo never shows.
 
 ## Common Layout Patterns

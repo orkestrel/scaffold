@@ -1,34 +1,32 @@
 # CSV
 
-> A zero-dependency, types-first RFC 4180 CSV parser and renderer — a
-> hand-written, single-pass tokenizer that turns CSV text into a typed
-> `CSVTable`, and a stateful `CSV` workspace that wraps that table with
-> query, rewrite, streaming, and export operations. Source:
-> [`src/core`](../src/core). Surfaced through the `@src/core` barrel.
+> A types-first RFC 4180 CSV parser and renderer — a hand-written,
+> single-pass tokenizer that turns CSV text into a typed `CSVTable`, and a
+> stateful `CSV` workspace that wraps that table with query, rewrite,
+> streaming, and export operations.
 
-CSV here is: parse once into a typed `CSVTable` (columns + rows), then treat
-every read as a projection of it. `parseCSV` runs a tokenizer phase
-(`readRecords`, a hand-written character scanner honoring quoting, escaping,
-and both CRLF/LF/CR line endings) then a table-building phase — header
-mapping, ragged-row handling, and optional whole-column type inference — and
-returns a `CSVParseResult` pairing the table with any `CSVError`s collected
-along the way. A `CSV` instance wraps that result with query (`find` /
-`filter` / `reduce`), rewrite (`map`), streaming, and export operations. The
-renderer — `renderCSV` (and its TSV sibling `renderTSV`) — is a separate,
-standalone, downstream projection from a table (or plain row list) back to
-text; it never assumes its input came from `parseCSV`. Every row is built
-with a null prototype, so a hostile header name (`__proto__`) can never reach
-`Object.prototype`; `renderCSV` sanitizes every field against CSV formula
-injection by default. Parsing never throws on malformed data — a
-`CSVError` (a machine-readable `code` plus `line` / `column` / `offset`) is
-collected into the result's `errors` instead, unless `strict` is set, in
-which case the first collected error throws immediately. An invalid option
+Parse once, then treat every read as a projection of the parsed table.
+`parseCSV` runs a tokenizer phase — `readRecords`, a character scanner
+honoring quoting, escaping, and CRLF, LF, and CR line endings — then a
+table-building phase of header mapping, ragged-row handling, and optional
+whole-column type inference, and returns a `CSVParseResult` pairing the table
+with any `CSVError`s collected along the way. The renderer, `renderCSV`, is a
+separate downstream projection from a table (or plain row list) back to text;
+it never assumes its input came from `parseCSV`. Every row is built with a
+null prototype, so a hostile header name (`__proto__`) can never reach
+`Object.prototype`, and `renderCSV` sanitizes every field against CSV formula
+injection by default. Parsing never throws on malformed data — a `CSVError`
+(a machine-readable `code` plus `line` / `column` / `offset`) is collected
+into the result's `errors` instead, unless `strict` is set, in which case the
+first collected error throws immediately. An invalid option
 (`INVALID_OPTION`) always throws — that is a programmer error, not a parse
-malformation.
+malformation. Source: [`src/core`](../src/core). Surfaced through the
+`@src/core` barrel.
 
 ## Surface
 
-A short intro, then a minimal usage example:
+Parse a document with `createCSV`, infer its column types, and read the rows
+as typed records:
 
 ```ts
 import { createCSV } from '@orkestrel/csv'
@@ -39,183 +37,207 @@ csv.rows // [{ name: 'Ada', age: 36 }, { name: 'Grace', age: 85 }]
 
 ### Types
 
-The full parse/render/export shape, from [`types.ts`](../src/core/types.ts).
+The full parse/render/export shape, from [`types.ts`](../src/core/types.ts). An
+interface's call-signature members are documented under
+[`## Methods`](#methods).
 
-| Type                    | Kind      | Shape                                                                                                                                                                                              |
-| ----------------------- | --------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `Row`                   | type      | `Record<string, unknown>` — a CSV row, a plain record of column values keyed by column name.                                                                                                       |
-| `CSVTable`              | interface | `{ columns: readonly string[], rows: readonly Row[] }` — a parsed table, the column order plus the parsed rows.                                                                                    |
-| `RawField`              | interface | `{ value: string, quoted: boolean }` — one raw parsed field before type inference or column mapping; `quoted` distinguishes an empty-because-`""` field from an empty-because-nothing-written one. |
-| `Position`              | interface | `{ offset: number, line: number, column: number }` — a cursor position in a parsed source, relative to the input after BOM removal; 0-based `offset`, 1-based `line`/`column`.                     |
-| `RawRecord`             | interface | `{ fields: readonly RawField[], start: Position }` — one raw parsed record plus the `Position` it begins at, before header mapping.                                                                |
-| `FieldScan`             | interface | `{ field: RawField, next: Position, errors: readonly CSVError[] }` — one scanned field plus the position immediately after it and any malformations found scanning it.                             |
-| `RecordScan`            | interface | `{ record: RawRecord, next: Position, errors: readonly CSVError[] }` — one scanned record plus the position immediately after it and any malformations found scanning it.                          |
-| `HeaderResult`          | interface | `{ columns: readonly string[], body: readonly RawRecord[], errors: readonly CSVError[] }` — a resolved header's disambiguated columns, the remaining body records, and header-related errors.      |
-| `RowResult`             | interface | `{ row?: Row, error?: CSVError }` — one built row, or the error that excluded it (see `ParseOptions.ragged`).                                                                                      |
-| `RecordsResult`         | interface | `{ records: readonly RawRecord[], errors: readonly CSVError[] }` — the tokenizer phase's result.                                                                                                   |
-| `CSVParseResult`        | interface | `{ table: CSVTable, errors: readonly CSVError[] }` — a full parse's result.                                                                                                                        |
-| `EscapeStyle`           | type      | `'double' \| 'backslash'` — how an embedded quote is escaped inside a quoted field.                                                                                                                |
-| `QuoteStyle`            | type      | `'minimal' \| 'always' \| 'nonnumeric'` — the renderer's quoting policy.                                                                                                                           |
-| `BlankPolicy`           | type      | `'keep' \| 'skip'` — how the parser treats a blank line.                                                                                                                                           |
-| `RaggedPolicy`          | type      | `'collect' \| 'pad' \| 'error'` — how the parser treats a record whose field count does not match the header.                                                                                      |
-| `ColumnType`            | type      | `'text' \| 'integer' \| 'real' \| 'boolean' \| 'json' \| 'blob'` — a portable column storage type, mirroring `@orkestrel/database`'s `ColumnType` structurally.                                    |
-| `Columns`               | type      | `Readonly<Record<string, ContractShape>>` — a table's declared columns, mirroring `@orkestrel/database`'s `Columns` structurally.                                                                  |
-| `ParseOptions`          | interface | `{ delimiter?, quote?, escape?, header?, comment?, blanks?, trim?, ragged?, infer?, limit?, strict? }` — options for parsing CSV text.                                                             |
-| `RenderOptions`         | interface | `{ delimiter?, quote?, escape?, newline?, header?, columns?, quotes?, blank?, sanitize?, bom? }` — options for rendering a table back to text.                                                     |
-| `ResolvedRenderOptions` | type      | `Required<Omit<RenderOptions, 'columns'>> & Pick<RenderOptions, 'columns'>` — the fully-resolved render configuration every quoting/rendering helper takes as its `options` parameter.             |
-| `ExportOptions`         | interface | `{ key?: string, columns?: Columns }` — options for `CSVInterface.export`.                                                                                                                         |
-| `TableExport`           | interface | `{ key: string, columns: Columns, schema: JSONSchema }` — a portable schema export, mirroring `@orkestrel/database`'s `TableExport` member-for-member.                                             |
-| `CSVErrorCode`          | type      | `'UNTERMINATED_QUOTE' \| 'BAD_QUOTE' \| 'RAGGED_ROW' \| 'DUPLICATE_HEADER' \| 'EMPTY_HEADER' \| 'LIMIT_EXCEEDED' \| 'INVALID_OPTION'` — a machine-readable `CSVError` code.                        |
-| `CSVInterface`          | interface | `{ table, rows, errors, find, filter, map, reduce, stream, toJSON, export }` — see [`## Methods`](#methods) below.                                                                                 |
+A `Shape` cell holds an interface's data members as bare names in braces, `?`
+marking an optional member and `plus` introducing its call-signature members,
+and a type alias's own type literal with a union's arms escaped as `\|`.
+
+| Type                    | Kind      | Shape                                                                                                                                 | Summary                                                                                                                                                                                                             |
+| ----------------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Row`                   | type      | `Record<string, unknown>`                                                                                                             | Represents a CSV row — a plain record of column values keyed by column name.                                                                                                                                        |
+| `CSVTable`              | interface | `{ columns, rows }`                                                                                                                   | Represents a parsed CSV table — the typed rows plus the column order they were parsed (or declared) in.                                                                                                             |
+| `RawField`              | interface | `{ value, quoted }`                                                                                                                   | Represents one raw parsed field — the value exactly as it appeared in a record, before type inference or column mapping, plus whether it was quoted in the source.                                                  |
+| `Position`              | interface | `{ offset, line, column }`                                                                                                            | Represents a cursor position in a parsed source text — relative to the input after byte-order-mark removal.                                                                                                         |
+| `RawRecord`             | interface | `{ fields, start }`                                                                                                                   | Represents one raw parsed record — its ordered `RawField`s plus where the record begins in the source, before header mapping.                                                                                       |
+| `FieldScan`             | interface | `{ field, next, errors }`                                                                                                             | Represents one scanned field — a single `RawField` the tokenizer produced, the `Position` immediately after it, and any malformations found while scanning it.                                                      |
+| `RecordScan`            | interface | `{ record, next, errors }`                                                                                                            | Represents one scanned record — a single `RawRecord` the tokenizer produced, the `Position` immediately after it, and any malformations found while scanning it.                                                    |
+| `HeaderResult`          | interface | `{ columns, body, errors }`                                                                                                           | Represents the result of resolving a header record — the disambiguated column names, the remaining body records, and any header-related errors.                                                                     |
+| `RowResult`             | interface | `{ row?, error? }`                                                                                                                    | Represents the result of building one `RawRecord` into a typed `Row` — the row, the error that excluded it, or both when `ParseOptions.ragged` is `'collect'`.                                                      |
+| `RecordsResult`         | interface | `{ records, errors }`                                                                                                                 | Represents the result of the record-splitting phase — every `RawRecord` the tokenizer produced plus any `CSVError`s collected along the way.                                                                        |
+| `CSVParseResult`        | interface | `{ table, errors }`                                                                                                                   | Represents the result of a full parse — the assembled `CSVTable` plus any `CSVError`s collected along the way.                                                                                                      |
+| `EscapeStyle`           | type      | `'double' \| 'backslash'`                                                                                                             | Names how an embedded quote character is escaped inside a quoted field.                                                                                                                                             |
+| `QuoteStyle`            | type      | `'minimal' \| 'always' \| 'nonnumeric'`                                                                                               | Names the renderer's quoting policy — which fields get wrapped in quotes.                                                                                                                                           |
+| `RaggedPolicy`          | type      | `'collect' \| 'pad' \| 'error'`                                                                                                       | Names how the parser treats a record whose field count does not match the header.                                                                                                                                   |
+| `ColumnType`            | type      | `'text' \| 'integer' \| 'real' \| 'boolean' \| 'json' \| 'blob'`                                                                      | Names a portable storage type for a column — the same literal set `@orkestrel/database` declares as `ColumnStorage` (never imported), so a CSV column map and a database table schema stay drop-in interchangeable. |
+| `Columns`               | type      | `Readonly<Record<string, ContractShape>>`                                                                                             | Represents a CSV's declared columns — a map of column name to its value `ContractShape`.                                                                                                                            |
+| `ParseOptions`          | interface | `{ delimiter?, quote?, escape?, header?, comment?, blanks?, trim?, ragged?, infer?, limit?, strict? }`                                | Represents the options for parsing CSV text into a `CSVTable`.                                                                                                                                                      |
+| `ResolvedParseOptions`  | type      | `Required<Omit<ParseOptions, 'comment'>> & Pick<ParseOptions, 'comment'>`                                                             | Represents the fully-resolved parse configuration every tokenizer and table-building helper takes — `ParseOptions` with every member defaulted except `comment`, which has no default and stays optional.           |
+| `RenderOptions`         | interface | `{ delimiter?, quote?, escape?, newline?, header?, columns?, quotes?, blank?, sanitize?, bom? }`                                      | Represents the options for rendering a `CSVTable` (or row list) back to CSV text.                                                                                                                                   |
+| `ResolvedRenderOptions` | type      | `Required<Omit<RenderOptions, 'columns'>> & Pick<RenderOptions, 'columns'>`                                                           | Represents the fully-resolved render configuration every quoting and rendering helper takes — `RenderOptions` with every member defaulted except `columns`, which has no default and stays optional.                |
+| `ExportOptions`         | interface | `{ key?, columns? }`                                                                                                                  | Represents the options for `CSVInterface.export`.                                                                                                                                                                   |
+| `TableExport`           | interface | `{ key, columns, schema }`                                                                                                            | Represents a CSV's portable definition, produced by `CSVInterface.export` — the unit of schema exchange across environments.                                                                                        |
+| `CSVErrorCode`          | type      | `'UNTERMINATED_QUOTE' \| 'BAD_QUOTE' \| 'RAGGED_ROW' \| 'DUPLICATE_HEADER' \| 'EMPTY_HEADER' \| 'LIMIT_EXCEEDED' \| 'INVALID_OPTION'` | Names a machine-readable `CSVError` code.                                                                                                                                                                           |
+| `CSVInterface`          | interface | `{ table, rows, errors } plus find, filter, map, reduce, stream, toJSON, export`                                                      | Represents a parsed, queryable CSV document — the typed `CSVTable` plus the query, rewrite, and export operations over it.                                                                                          |
 
 ### Errors
 
-From [`errors.ts`](../src/core/errors.ts). AGENTS §12: an invalid option or
-programmer error always throws a `CSVError`; a parse-time malformation is
-collected into a result's `errors` unless `strict` is set.
+From [`errors.ts`](../src/core/errors.ts). An invalid option or programmer
+error always throws a `CSVError`; a parse-time malformation is collected
+into a result's `errors` unless `strict` is set.
 
-| Error        | Kind     | Signature                               | Behavior                                                                                                                                       |
-| ------------ | -------- | --------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| `CSVError`   | class    | `extends Error`                         | Carries a `CSVErrorCode` plus, for a parse-time malformation, the 1-based `line`/`column` and 0-based `offset`, and an optional `context` bag. |
-| `isCSVError` | function | `(value: unknown) => value is CSVError` | Narrows an unknown caught value (typically a `catch` binding) to a `CSVError`.                                                                 |
+| Error        | Kind     | Signature                               | Summary                                                                                                                                                         |
+| ------------ | -------- | --------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `CSVError`   | class    | `extends Error`                         | Represents an error surfaced by the CSV layer — either thrown for a programmer error / `strict`-mode parse failure, or collected into a result's `errors` list. |
+| `isCSVError` | function | `(value: unknown) => value is CSVError` | Narrows an unknown caught value to a `CSVError`.                                                                                                                |
 
 ### Constants
 
 Centralized, frozen data the parser/renderer draw their defaults and
 canonical patterns from, from [`constants.ts`](../src/core/constants.ts).
 
-| Constant                   | Kind  | Behavior                                                                                                              |
-| -------------------------- | ----- | --------------------------------------------------------------------------------------------------------------------- |
-| `BOM`                      | const | The UTF-8 byte-order-mark character, prepended when `RenderOptions.bom` is `true`.                                    |
-| `DEFAULT_PARSE_OPTIONS`    | const | The resolved default `ParseOptions` — what `parseCSV` uses for any option left unspecified.                           |
-| `DEFAULT_RENDER_OPTIONS`   | const | The resolved default `RenderOptions` (everything but `columns`) — what `renderCSV` uses for any unspecified option.   |
-| `SANITIZE_PREFIXES`        | const | The leading characters the OWASP CSV-injection guard treats as formula-triggering (`=`, `+`, `-`, `@`, tab, CR, LF).  |
-| `POSITIONAL_COLUMN_PREFIX` | const | `'column'` — the prefix used to name positional columns (`column1`, `column2`, …).                                    |
-| `SANITIZE_ESCAPE`          | const | `"'"` — the protective prefix `sanitizeField` prepends to a field starting with a formula-triggering character.       |
-| `SUFFIX_SEPARATOR`         | const | `'_'` — the separator between a disambiguated column name and its collision counter (`name` → `name_2`, `name_3`, …). |
-| `INTEGER_PATTERN`          | const | Matches a canonical integer only — no leading zeros, no `+` sign, no scientific notation.                             |
-| `REAL_PATTERN`             | const | Matches a canonical decimal only — like `INTEGER_PATTERN` plus an optional `.` fractional part.                       |
-| `NUMERIC_PATTERN`          | const | Like `REAL_PATTERN` but also allowing a leading `+` — what the renderer treats as a plain number.                     |
-| `BOOLEAN_TRUE`             | const | `'true'` — the canonical serialized form of the boolean `true`.                                                       |
-| `BOOLEAN_FALSE`            | const | `'false'` — the canonical serialized form of the boolean `false`.                                                     |
-| `MAX_ERRORS`               | const | `100` — the maximum number of `CSVError`s collected into a parse result.                                              |
+A `Shape` cell holds the constant's declared type.
+
+| Constant                   | Kind  | Shape                                      | Summary                                                                                                                                                                                                                                                                                                   |
+| -------------------------- | ----- | ------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `BOM`                      | const | `string`                                   | Names the UTF-8 byte-order-mark character, `'\uFEFF'`, prepended when `RenderOptions.bom` is `true`.                                                                                                                                                                                                      |
+| `DEFAULT_PARSE_OPTIONS`    | const | `Required<Omit<ParseOptions, 'comment'>>`  | Holds the resolved default `ParseOptions` (everything but `comment`, which has no default) — what `parseCSV` uses for any option left unspecified: `{ delimiter: ',', quote: '"', escape: 'double', header: true, blanks: true, trim: false, ragged: 'collect', infer: false, limit: 0, strict: false }`. |
+| `DEFAULT_RENDER_OPTIONS`   | const | `Required<Omit<RenderOptions, 'columns'>>` | Holds the resolved default `RenderOptions` (everything but `columns`, which has no default) — what `renderCSV` uses for any option left unspecified: `{ delimiter: ',', quote: '"', escape: 'double', newline: '\r\n', header: true, quotes: 'minimal', blank: '', sanitize: true, bom: false }`.         |
+| `SANITIZE_PREFIXES`        | const | `ReadonlySet<string>`                      | Lists the leading characters the OWASP CSV-injection guard treats as formula-triggering — a field starting with any of these is prefixed with a protective `'` when `RenderOptions.sanitize` is `true`.                                                                                                   |
+| `POSITIONAL_COLUMN_PREFIX` | const | `string`                                   | Names the prefix used for positional columns (`column1`, `column2`, …) when `ParseOptions.header` is `false`, or a header field is empty — 1-based, `'column'`.                                                                                                                                           |
+| `SANITIZE_ESCAPE`          | const | `string`                                   | Names the protective prefix `sanitizeField` prepends to a field starting with a formula-triggering character (the OWASP CSV-injection guidance), `"'"`.                                                                                                                                                   |
+| `SUFFIX_SEPARATOR`         | const | `string`                                   | Names the separator between a disambiguated column name and its collision counter (`name` → `name_2`, `name_3`, …) — see `uniqueName`, `'_'`.                                                                                                                                                             |
+| `INTEGER_PATTERN`          | const | `RegExp`                                   | Matches a canonical integer only — an optional leading `-`, no leading zeros (except the bare digit `0`), digits only. No `+` sign, no whitespace.                                                                                                                                                        |
+| `REAL_PATTERN`             | const | `RegExp`                                   | Matches a canonical decimal only — an optional leading `-`, an integer part with no leading zeros (except the bare digit `0`), an optional `.` followed by at least one digit. No scientific notation, no `NaN` / `Infinity`, no decimal comma, no trailing dot.                                          |
+| `NUMERIC_PATTERN`          | const | `RegExp`                                   | Matches what the renderer treats as a plain number for the `'nonnumeric'` `QuoteStyle` and the sanitize `+` / `-` exemption — like `REAL_PATTERN` but also allowing a leading `+`.                                                                                                                        |
+| `BOOLEAN_TRUE`             | const | `string`                                   | Names the canonical serialized form of the boolean `true` — the string `'true'`.                                                                                                                                                                                                                          |
+| `BOOLEAN_FALSE`            | const | `string`                                   | Names the canonical serialized form of the boolean `false` — the string `'false'`.                                                                                                                                                                                                                        |
+| `MAX_ERRORS`               | const | `number`                                   | Sets the maximum number of `CSVError`s collected into a parse result, `100` — once reached, error collection stops (earlier records already parsed are kept, later malformations are silently no longer recorded).                                                                                        |
 
 ### Helpers
 
-Pure, total, zero-dependency parsing + rendering leaves from
-[`helpers.ts`](../src/core/helpers.ts) — the functional core `parsers.ts`
-composes and the projections callers reach for directly (AGENTS §5). Every
-function is unit-testable in isolation.
+Pure, total, zero-dependency leaves from
+[`helpers.ts`](../src/core/helpers.ts) — the option resolvers, the
+hand-written tokenizer and table builders `parsers.ts` composes, and the
+rendering projections callers reach for directly. Every function is
+unit-testable in isolation.
 
-| Helper                  | Kind     | Signature                                                                                                                                            | Behavior                                                                                                                                                            |
-| ----------------------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `assertValidSeparators` | function | `(delimiter: string, quote: string) => void`                                                                                                         | Validates a delimiter/quote pair — each one character, distinct, and never CR/LF/BOM. Throws `INVALID_OPTION` otherwise.                                            |
-| `resolveParseOptions`   | function | `(options?: ParseOptions) => Required<ParseOptions>`                                                                                                 | Merges `options` over `DEFAULT_PARSE_OPTIONS`; throws `INVALID_OPTION` for a bad separator pair, an empty `comment`, or a negative/non-integer `limit`.             |
-| `resolveRenderOptions`  | function | `(options?: RenderOptions) => ResolvedRenderOptions`                                                                                                 | Merges `options` over `DEFAULT_RENDER_OPTIONS`; throws `INVALID_OPTION` for a bad separator pair or an invalid `newline`.                                           |
-| `inferColumnType`       | function | `(values: readonly string[]) => ColumnType`                                                                                                          | Conservatively infers a whole column's type — never `'json'`/`'blob'`; empty cells are ignored; a leading-zero or unsafe-magnitude number stays `'text'`.           |
-| `uniqueName`            | function | `(name: string, taken: ReadonlySet<string>) => string`                                                                                               | Disambiguates one candidate name against the names already taken — unchanged if free, else suffixed `_2`, `_3`, … until unique.                                     |
-| `uniqueColumns`         | function | `(names: readonly string[]) => readonly string[]`                                                                                                    | Deterministically disambiguates header names — blank becomes positional, a repeat is suffixed `_2`, `_3`, …, via `uniqueName`.                                      |
-| `sanitizeField`         | function | `(field: string) => string`                                                                                                                          | Guards a field against CSV formula injection — prefixes a protective `'` unless the field is a plain signed number.                                                 |
-| `serializeCell`         | function | `(value: unknown, blank: string) => string`                                                                                                          | Stringifies one cell value — `blank` for `null`/`undefined`, `String(value)` for a number/boolean/bigint, `JSON.stringify` (degrading to `blank`) otherwise.        |
-| `deriveColumns`         | function | `(rows: readonly Row[]) => readonly string[]`                                                                                                        | Derives a column order from a plain row list — the first-seen union of every row's keys.                                                                            |
-| `needsQuote`            | function | `(field: string, options: ResolvedRenderOptions) => boolean`                                                                                         | The correctness floor every quoting policy respects — `true` when `field` contains the delimiter, quote, CR, or LF.                                                 |
-| `wrapQuoted`            | function | `(field: string, options: ResolvedRenderOptions) => string`                                                                                          | Wraps `field` (already known to need quoting) in `options.quote`, escaped per `options.escape` — also the `'always'` `QuoteStyle` (quotes `field` unconditionally). |
-| `quoteMinimal`          | function | `(field: string, options: ResolvedRenderOptions) => string`                                                                                          | The `'minimal'` `QuoteStyle` — quotes `field` only when `needsQuote` requires it.                                                                                   |
-| `quoteNonnumeric`       | function | `(field: string, options: ResolvedRenderOptions) => string`                                                                                          | The `'nonnumeric'` `QuoteStyle` — quotes `field` unless it is a plain number (or `needsQuote` requires it regardless).                                              |
-| `quoteStyleToPolicy`    | function | `(quotes: ResolvedRenderOptions['quotes']) => (field: string, options: ResolvedRenderOptions) => string`                                             | Selects `quoteMinimal` / `wrapQuoted` / `quoteNonnumeric` for a resolved `options.quotes`.                                                                          |
-| `renderRecord`          | function | `(row: Row, columns: readonly string[], options: ResolvedRenderOptions, quote: (field: string, options: ResolvedRenderOptions) => string) => string` | Renders one row to one delimited line — serialize, optionally sanitize, then quote each column's cell.                                                              |
-| `renderCSV`             | function | `(input: CSVTable \| readonly Row[], options?: RenderOptions) => string`                                                                             | Renders a table (or plain row list) to CSV text. Total — a circular value degrades to `options.blank` instead of throwing.                                          |
-| `renderTSV`             | function | `(input: CSVTable \| readonly Row[], options?: RenderOptions) => string`                                                                             | A thin `renderCSV` delegate forcing `delimiter: '\t'` — overrides any `options.delimiter`.                                                                          |
-| `deriveShapes`          | function | `(table: CSVTable) => Columns`                                                                                                                       | Derives one `ContractShape` per column from its cell values — the schema-inference leaf behind `CSVInterface.export` when no explicit `Columns` is given.           |
+| Helper                  | Kind     | Signature                                                                                                                                            | Summary                                                                                                                                                                                                                                       |
+| ----------------------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `assertValidSeparators` | function | `(delimiter: string, quote: string) => void`                                                                                                         | Validates a delimiter / quote pair shared by both `resolveParseOptions` and `resolveRenderOptions` — each must be exactly one character, they must differ, and neither may be CR, LF, or the BOM character.                                   |
+| `resolveParseOptions`   | function | `(options?: ParseOptions) => ResolvedParseOptions`                                                                                                   | Merges `options` over `DEFAULT_PARSE_OPTIONS` into a fully-resolved parse configuration.                                                                                                                                                      |
+| `resolveRenderOptions`  | function | `(options?: RenderOptions) => ResolvedRenderOptions`                                                                                                 | Merges `options` over `DEFAULT_RENDER_OPTIONS` into a fully-resolved render configuration.                                                                                                                                                    |
+| `uniqueName`            | function | `(name: string, taken: ReadonlySet<string>) => string`                                                                                               | Disambiguates a single column name against the names already taken — the collision leaf `uniqueColumns` composes over an entire header.                                                                                                       |
+| `uniqueColumns`         | function | `(names: readonly string[]) => readonly string[]`                                                                                                    | Disambiguates a header's column names deterministically — an empty (or whitespace-only) name becomes positional, and a name that repeats an earlier kept name is suffixed `_2`, `_3`, … until unique.                                         |
+| `sanitizeField`         | function | `(field: string) => string`                                                                                                                          | Guards a field against CSV/spreadsheet formula injection (the OWASP CSV-injection guidance) — a field starting with a formula-triggering character is prefixed with a protective `SANITIZE_ESCAPE`.                                           |
+| `serializeCell`         | function | `(value: unknown, blank: string) => string`                                                                                                          | Serializes one cell value to its rendered text — the renderer's stringify leaf, applied before sanitize/quote.                                                                                                                                |
+| `deriveColumns`         | function | `(rows: readonly Row[]) => readonly string[]`                                                                                                        | Derives a column order from a plain row list — the first-seen union of every row's keys, in encounter order.                                                                                                                                  |
+| `needsQuote`            | function | `(field: string, options: ResolvedRenderOptions) => boolean`                                                                                         | Checks `field` against the correctness floor every `QuoteStyle` policy respects — a field containing the delimiter, the quote character, CR, or LF must ALWAYS be quoted regardless of policy.                                                |
+| `wrapQuoted`            | function | `(field: string, options: ResolvedRenderOptions) => string`                                                                                          | Wraps `field` in quotes, escaping per `options.escape` — the shared quote-and-escape step every quoting policy applies once it decides `field` needs quoting; it IS the `'always'` `QuoteStyle` as well (every field quoted unconditionally). |
+| `quoteMinimal`          | function | `(field: string, options: ResolvedRenderOptions) => string`                                                                                          | Implements the `'minimal'` `QuoteStyle` — quotes a field only when `needsQuote` requires it.                                                                                                                                                  |
+| `quoteNonnumeric`       | function | `(field: string, options: ResolvedRenderOptions) => string`                                                                                          | Implements the `'nonnumeric'` `QuoteStyle` — quotes every field whose value is not a plain number (or that `needsQuote` requires regardless).                                                                                                 |
+| `renderRecord`          | function | `(row: Row, columns: readonly string[], options: ResolvedRenderOptions, quote: (field: string, options: ResolvedRenderOptions) => string) => string` | Renders one row to one delimited line — serializes every column's cell, optionally sanitizes it, then applies the given quoting policy.                                                                                                       |
+| `quoteStyleToPolicy`    | function | `(quotes: ResolvedRenderOptions['quotes']) => (field: string, options: ResolvedRenderOptions) => string`                                             | Selects the quoting-policy function for a resolved `options.quotes`.                                                                                                                                                                          |
+| `isRowList`             | function | `(source: CSVTable \| readonly Row[]) => source is readonly Row[]`                                                                                   | Narrows a `CSVTable \| readonly Row[]` union to its row-list member.                                                                                                                                                                          |
+| `renderCSV`             | function | `(input: CSVTable \| readonly Row[], options?: RenderOptions) => string`                                                                             | Renders a `CSVTable` (or a plain row list) to CSV text.                                                                                                                                                                                       |
+| `advancePosition`       | function | `(position: Position, count?: number) => Position`                                                                                                   | Advances a `Position` by `count` NON-line-break characters.                                                                                                                                                                                   |
+| `isBreakChar`           | function | `(char: string) => boolean`                                                                                                                          | Checks whether `char` starts a record separator (CR or LF).                                                                                                                                                                                   |
+| `scanBreak`             | function | `(source: string, position: Position) => Position \| undefined`                                                                                      | Consumes exactly one line break (CRLF, bare LF, or bare CR) at `position` — a CRLF pair counts as ONE break.                                                                                                                                  |
+| `scanComment`           | function | `(source: string, position: Position, options: ResolvedParseOptions) => Position \| undefined`                                                       | Consumes a comment line at `position`, when `options.comment` names one starting there — through the end of that line INCLUDING its break (or end-of-input).                                                                                  |
+| `scanUnquoted`          | function | `(source: string, position: Position, options: ResolvedParseOptions) => FieldScan`                                                                   | Scans one unquoted field starting at `position` — content runs until the delimiter, a line break, or end-of-input.                                                                                                                            |
+| `scanQuoted`            | function | `(source: string, position: Position, options: ResolvedParseOptions) => FieldScan`                                                                   | Scans one quoted field starting at `position` — `position` must be AT the opening quote character.                                                                                                                                            |
+| `scanField`             | function | `(source: string, position: Position, options: ResolvedParseOptions) => FieldScan`                                                                   | Scans one field at `position` — dispatches to `scanQuoted` when the character there is `options.quote`, else `scanUnquoted`.                                                                                                                  |
+| `scanRecord`            | function | `(source: string, position: Position, options: ResolvedParseOptions) => RecordScan`                                                                  | Scans one full record at `position` — fields separated by `options.delimiter`, ending at a break (consumed through `scanBreak`) or end-of-input.                                                                                              |
+| `readRecords`           | function | `(input: string, options?: ParseOptions) => RecordsResult`                                                                                           | Splits `input` into raw, un-mapped `RawRecord`s — the tokenizer phase beneath `parseCSV`.                                                                                                                                                     |
+| `deriveHeader`          | function | `(records: readonly RawRecord[], options: ResolvedParseOptions) => HeaderResult`                                                                     | Resolves a table's header from its raw records — disambiguates the first record's names when `options.header` is `true`, or generates positional names sized to the widest record otherwise.                                                  |
+| `buildRow`              | function | `(record: RawRecord, columns: readonly string[], options: ResolvedParseOptions) => RowResult`                                                        | Builds one `RawRecord` into one null-prototype `Row`, padding or truncating to `columns.length` per `options.ragged`.                                                                                                                         |
+
+### Inferers
+
+Whole-column type inference from
+[`inferers.ts`](../src/core/inferers.ts) — reads the raw cell text a column
+holds, rules which `ColumnType` it carries, and applies that ruling cell by
+cell.
+
+| Inferer           | Kind     | Signature                                                              | Summary                                                                                                                                                                                                                                                                                        |
+| ----------------- | -------- | ---------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `inferColumnType` | function | `(values: readonly string[]) => ColumnType`                            | Infers a whole column's `ColumnType` conservatively from its raw string values — never `'json'` or `'blob'` (those require an explicit `Columns` declaration). Empty-string cells are ignored entirely (they neither confirm nor demote a type); a column with no non-empty cells is `'text'`. |
+| `coerceInferred`  | function | `(value: string, type: ColumnType) => unknown`                         | Coerces one string cell to `type`'s typed representation — the exhaustive per-cell dispatch `inferRows` applies once a column's type is known.                                                                                                                                                 |
+| `inferRows`       | function | `(rows: readonly Row[], columns: readonly string[]) => readonly Row[]` | Applies whole-column type inference to a built row set — per column, infers its `ColumnType` from its string cells, then coerces every cell of that type through `coerceInferred`.                                                                                                             |
 
 ### Parsers
 
-The tokenizer + table-building spine, from
-[`parsers.ts`](../src/core/parsers.ts) — a hand-written, linear-time
-character scanner, no regex, no backtracking.
+The coercers, from [`parsers.ts`](../src/core/parsers.ts) — the `parseCSV`
+entry point, which composes the `helpers.ts` tokenizer, the `helpers.ts` table
+builders, and the `inferers.ts` column inference into a `CSVParseResult`, plus
+the flat cell coercers that inference dispatches to.
 
-| Parser            | Kind     | Signature                                                                                        | Behavior                                                                                                                                                                                                                                                   |
-| ----------------- | -------- | ------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `advancePosition` | function | `(position: Position, count?: number) => Position`                                               | Advances a `Position` by `count` (default `1`) non-line-break characters — `line` unchanged, `column`/`offset` shifted.                                                                                                                                    |
-| `isBreakChar`     | function | `(char: string) => boolean`                                                                      | Whether `char` starts a record separator (CR or LF).                                                                                                                                                                                                       |
-| `scanBreak`       | function | `(source: string, position: Position) => Position \| undefined`                                  | Consumes exactly one line break (CRLF, bare LF, or bare CR) at `position` — a CRLF pair counts as one break; `undefined` when not at a break.                                                                                                              |
-| `scanComment`     | function | `(source: string, position: Position, options: Required<ParseOptions>) => Position \| undefined` | Consumes a comment line at `position` (through its break or end-of-input); `undefined` when `options.comment` is `false` or no match.                                                                                                                      |
-| `scanUnquoted`    | function | `(source: string, position: Position, options: Required<ParseOptions>) => FieldScan`             | Scans one unquoted field — runs until the delimiter, a break, or end-of-input; a mid-field quote is a `BAD_QUOTE` kept literal; `options.trim` strips space/tab edges.                                                                                     |
-| `scanQuoted`      | function | `(source: string, position: Position, options: Required<ParseOptions>) => FieldScan`             | Scans one quoted field (`position` at the opening quote) — honors `options.escape`; unterminated yields `UNTERMINATED_QUOTE`, trailing garbage yields `BAD_QUOTE`.                                                                                         |
-| `scanField`       | function | `(source: string, position: Position, options: Required<ParseOptions>) => FieldScan`             | Scans one field at `position` — dispatches to `scanQuoted` when at `options.quote`, else `scanUnquoted`.                                                                                                                                                   |
-| `scanRecord`      | function | `(source: string, position: Position, options: Required<ParseOptions>) => RecordScan`            | Scans one full record — fields separated by `options.delimiter`, ending at a break (consumed) or end-of-input.                                                                                                                                             |
-| `readRecords`     | function | `(input: string, options?: ParseOptions) => RecordsResult`                                       | Splits `input` into raw, un-mapped `RawRecord`s — the tokenizer phase beneath `parseCSV`; a single leading BOM is stripped first.                                                                                                                          |
-| `deriveHeader`    | function | `(records: readonly RawRecord[], options: Required<ParseOptions>) => HeaderResult`               | Resolves a table's header — disambiguates the first record (`header: true`, via `uniqueColumns`) or generates positional names sized to the widest record (`false`).                                                                                       |
-| `buildRow`        | function | `(record: RawRecord, columns: readonly string[], options: Required<ParseOptions>) => RowResult`  | Builds one `RawRecord` into a null-prototype `Row`, padding/truncating to `columns.length` per `options.ragged`.                                                                                                                                           |
-| `coerceInferred`  | function | `(value: string, type: ColumnType) => unknown`                                                   | Coerces one string cell to `type`'s typed representation, via `coerceInteger` / `coerceReal` / `coerceBoolean`; unchanged for `'text'` (or unreachable `'json'`/`'blob'`).                                                                                 |
-| `inferRows`       | function | `(rows: readonly Row[], columns: readonly string[]) => readonly Row[]`                           | Applies whole-column type inference to a built row set — copy-on-write, never mutates `rows`.                                                                                                                                                              |
-| `parseCSV`        | function | `(input: string, options?: ParseOptions) => CSVParseResult`                                      | Parses `input` into a typed `CSVParseResult` — header mapping, ragged-row handling, and optional type inference. Never throws on malformed data unless `strict` is set.                                                                                    |
-| `coerceInteger`   | function | `(value: string) => number \| undefined`                                                         | Coerces a raw cell string to a canonical integer — `undefined` for leading zeros, decimals, unsafe magnitude, or non-numeric text. Named `coerce*` (not `parse*`) since its semantics deliberately differ from `@orkestrel/contract`'s same-named coercer. |
-| `coerceReal`      | function | `(value: string) => number \| undefined`                                                         | Coerces a raw cell string to a canonical decimal (or integer) — `undefined` otherwise. Named `coerce*` (not `parse*`) since its semantics deliberately differ from `@orkestrel/contract`'s same-named coercer.                                             |
-| `coerceBoolean`   | function | `(value: string) => boolean \| undefined`                                                        | Coerces a raw cell string to a strict boolean — `true`/`false` only for the exact canonical forms, `undefined` otherwise. Named `coerce*` (not `parse*`) since its semantics deliberately differ from `@orkestrel/contract`'s same-named coercer.          |
+| Parser         | Kind     | Signature                                                   | Summary                                                                                                                                                                               |
+| -------------- | -------- | ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `parseCSV`     | function | `(input: string, options?: ParseOptions) => CSVParseResult` | Parses `input` into a typed `CSVParseResult` — header mapping, ragged-row handling, and optional type inference on top of `readRecords`, `deriveHeader`, `buildRow`, and `inferRows`. |
+| `parseInteger` | function | `(value: string) => number \| undefined`                    | Parses a raw cell string into a canonical integer — `undefined` for anything else (leading zeros, decimals, out-of-safe-range magnitude, non-numeric text).                           |
+| `parseReal`    | function | `(value: string) => number \| undefined`                    | Parses a raw cell string into a canonical decimal (or integer) — `undefined` for anything else.                                                                                       |
+| `parseBoolean` | function | `(value: string) => boolean \| undefined`                   | Parses a raw cell string into a strict boolean — `undefined` for anything other than the exact canonical forms.                                                                       |
 
 ### Shapers
 
 Declarative `ContractShape` values (from `@orkestrel/contract`), from
 [`shapers.ts`](../src/core/shapers.ts) — one shape compiles into a guard,
-coercing parser, JSON Schema, and seeded generator.
+coercing parser, JSON Schema, and seeded generator. `deriveShapes` builds a
+whole `Columns` map of them from a table's own cell values.
 
-| Shaper            | Kind     | Signature                             | Behavior                                                                                                                 |
-| ----------------- | -------- | ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
-| `columnTypeShape` | function | `(type: ColumnType) => ContractShape` | The `ContractShape` a `ColumnType`'s values must satisfy — `text`/`blob` shape as strings, `json` as any JSON value.     |
-| `csvTableShape`   | const    | `ContractShape`                       | The shape of a `CSVTable` — an ordered `columns` list of strings plus `rows`, each an open record of JSON-shaped values. |
+| Shaper            | Kind     | Signature                             | Summary                                                                                                                                                                                                                              |
+| ----------------- | -------- | ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `columnTypeShape` | function | `(type: ColumnType) => ContractShape` | Returns the `ContractShape` a `ColumnType`'s values must satisfy.                                                                                                                                                                    |
+| `csvTableShape`   | const    | `ContractShape`                       | Represents the `ContractShape` of a `CSVTable`'s JSON-serializable projection — an ordered `columns` list of strings plus `rows`, each an open record of JSON values.                                                                |
+| `deriveShapes`    | function | `(table: CSVTable) => Columns`        | Derives one `ContractShape` per table column from that column's cell values across all rows (excluding `undefined`/empty-string cells) — the schema-inference leaf behind `CSVInterface.export` when no explicit `Columns` is given. |
 
 ### Validators
 
 Guards from [`validators.ts`](../src/core/validators.ts) — total, never
-throw, return `false` for any off-shape input (AGENTS §14).
+throw, return `false` for any off-shape input.
 
-| Guard          | Kind     | Narrows to / Tests                   | Behavior                                                                                                                                                                                                                                  |
-| -------------- | -------- | ------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `isCSVTable`   | const    | `Guard<CSVTable>`                    | Determines whether `value` is a valid `CSVTable` — an array of column names plus an array of `Row`s. Delegates its row check to `@orkestrel/contract`'s `isRecord` directly (accepts both an object literal and a null-prototype object). |
-| `isRowList`    | function | `source: CSVTable \| readonly Row[]` | Narrows a `CSVTable \| readonly Row[]` union to its row-list member — `true` when `source` is a plain row list (`Array.isArray`).                                                                                                         |
-| `isColumnType` | const    | `Guard<ColumnType>`                  | Determines whether `value` is one of the six `ColumnType` literals.                                                                                                                                                                       |
+In a guard table a `Shape` cell holds the type the guard narrows to.
+
+| Guard          | Kind  | Shape        | Summary                                                                                                         |
+| -------------- | ----- | ------------ | --------------------------------------------------------------------------------------------------------------- |
+| `isCSVTable`   | const | `CSVTable`   | Determines whether an arbitrary value is a valid `CSVTable` — an array of column names plus an array of `Row`s. |
+| `isColumnType` | const | `ColumnType` | Determines whether a value is a valid `ColumnType` literal.                                                     |
+
+### Classes
+
+The implementing class of `CSVInterface`, from [`CSV.ts`](../src/core/CSV.ts) —
+documented in full under its own heading following this table.
+
+| Name  | Kind  | Summary                                                                                                                                            |
+| ----- | ----- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `CSV` | class | Wraps a typed `CSVTable` with the query (`find` / `filter` / `reduce`), rewrite (`map`), streaming, and export operations `CSVInterface` declares. |
 
 ### `CSV`
 
-The implementing class of `CSVInterface`, from [`CSV.ts`](../src/core/CSV.ts).
-A parsed, queryable CSV document: constructed from a CSV `string` (runs
-`parseCSV`) or an already-parsed `CSVTable` (adopted AS-IS, not re-validated —
-`errors` is empty in that case). Exposes its parsed state through the
-`readonly table`, `readonly rows`, and `readonly errors` members (documented
-here in Surface prose alongside the class, per the markdown sibling's
-precedent — these carry no row in the [`## Methods`](#methods) table below,
-which lists only call-signature members). Immutable — `map` never mutates the
-stored table, it returns a new `CSV`. See [`## Methods`](#methods) for its
-public call-signature surface.
+A `CSV` is constructed from a CSV `string` (which runs `parseCSV`) or from an
+already-parsed `CSVTable` (adopted AS-IS, not re-validated — `errors` is empty
+in that case). It exposes its parsed state through the `readonly table`,
+`readonly rows`, and `readonly errors` members, and it is immutable: `map`
+never mutates the stored table, it returns a new `CSV`. See
+[`## Methods`](#methods) for its public call-signature surface.
 
 ### Factories
 
 From [`factories.ts`](../src/core/factories.ts).
 
-| Factory               | Kind     | Signature                                                             | Behavior                                                                                                        |
-| --------------------- | -------- | --------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
-| `createCSV`           | function | `(input: string \| CSVTable, options?: ParseOptions) => CSVInterface` | Creates a working `CSVInterface` from a CSV string (parses it) or an already-parsed `CSVTable` (adopted as-is). |
-| `createTableContract` | function | `(columns: Columns) => ContractInterface<Row>`                        | Compiles a `Columns` map into a `Row` contract — a guard, coercing parser, JSON Schema, and seeded generator.   |
+| Factory               | Kind     | Signature                                                             | Summary                                                                                                                                                   |
+| --------------------- | -------- | --------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `createCSV`           | function | `(input: string \| CSVTable, options?: ParseOptions) => CSVInterface` | Creates a working `CSVInterface` from a CSV string or an already-parsed `CSVTable`.                                                                       |
+| `createTableContract` | function | `(columns: Columns) => ContractInterface<Row>`                        | Compiles a `Columns` map into a `ContractInterface` for a `Row` — a guard, coercing parser, JSON Schema, and seeded generator from one shape declaration. |
 
 ## Methods
 
-The public methods of `CSVInterface`, keyed by its backticked name (AGENTS
-§22). The `readonly table` / `rows` / `errors` members are Surface-documented
-above, not listed here — this table lists exactly `CSVInterface`'s
-call-signature members.
+The public methods of `CSVInterface`, keyed by its backticked name.
 
 #### `CSVInterface`
 
-| Method   | Returns               | Behavior                                                                                                        |
-| -------- | --------------------- | --------------------------------------------------------------------------------------------------------------- |
-| `find`   | `Row \| undefined`    | Finds the first row matching a predicate, tested against each row (and its index) in table order.               |
-| `filter` | `readonly Row[]`      | Collects every row matching a predicate, in table order.                                                        |
-| `map`    | `CSVInterface`        | Rewrites every row (copy-on-write) via a callback and returns a NEW `CSVInterface`; never mutates the original. |
-| `reduce` | `T`                   | Folds the rows, in table order, into an accumulator via a plain reducer callback.                               |
-| `stream` | `ReadableStream<Row>` | A fresh, web-standard, pull-based stream over the table's rows (source order); one row enqueued per `pull`.     |
-| `toJSON` | `CSVTable`            | Returns the stored `CSVTable` — the JSON-serializable projection.                                               |
-| `export` | `TableExport`         | Produces a portable `{ key, columns, schema }` export for moving this CSV's schema elsewhere.                   |
+| Method   | Returns               | Summary                                                                                                                                                                                                                                           |
+| -------- | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `find`   | `Row \| undefined`    | Finds the first row matching `predicate`, called with each row and its index in table order.                                                                                                                                                      |
+| `filter` | `readonly Row[]`      | Collects every row matching `predicate`, called with each row and its index in table order.                                                                                                                                                       |
+| `map`    | `CSVInterface`        | Rewrites every row (copy-on-write) and returns a new `CSVInterface`, never mutating this one.                                                                                                                                                     |
+| `reduce` | `T`                   | Folds the rows, in table order, into an accumulator through `callback`.                                                                                                                                                                           |
+| `stream` | `ReadableStream<Row>` | Returns a web-standard `ReadableStream` over the table's rows (source order) — a lazy, pull-based, backpressure-respecting source that enqueues one row per `pull`. A fresh, independently-replayable stream every call; never mutates the table. |
+| `toJSON` | `CSVTable`            | Returns the stored `CSVTable` — the JSON-serializable projection.                                                                                                                                                                                 |
+| `export` | `TableExport`         | Produces a portable `TableExport` for moving this CSV's schema elsewhere.                                                                                                                                                                         |
 
 ## RFC 4180 and dialects
 
@@ -230,8 +252,7 @@ is always stripped before scanning, regardless of `options`. `delimiter`,
 prefixes it) are all caller-configurable knobs, validated by
 `assertValidSeparators` (each exactly one character, distinct from each
 other, and never CR/LF/BOM). Tab-separated output is a `renderCSV` dialect,
-not a separate parser: call `renderTSV`, or `renderCSV` with
-`delimiter: '\t'`.
+not a separate parser: call `renderCSV` with `delimiter: '\t'`.
 
 ## Total parsing and the error model
 
@@ -247,12 +268,12 @@ code units. Setting `strict: true` flips this to throw-on-
 first-error: the first collected error throws immediately instead of being
 returned. An invalid OPTION (`INVALID_OPTION` — a malformed delimiter/quote
 pair, an empty `comment`, a negative `limit`, a bad `newline`) is always a
-thrown programmer error, never collected, regardless of `strict` (AGENTS
-§12). A ragged row — a record whose field count does not match the header —
-is handled per `RaggedPolicy`: `'collect'` pads/truncates the row AND records
+thrown programmer error, never collected, regardless of `strict`. A ragged
+row — a record whose field count does not match the header — is handled per
+`RaggedPolicy`: `'collect'` pads/truncates the row AND records
 `RAGGED_ROW`; `'pad'` does the same silently (no error recorded); `'error'`
 excludes the row entirely (still recording `RAGGED_ROW`). A duplicate or
-empty header name is deterministically renamed via `uniqueColumns` (a repeat
+empty header name is deterministically renamed through `uniqueColumns` (a repeat
 gets a `_2`, `_3`, … suffix; a blank name becomes positional) so the table
 always has a full, unique column list even when the header itself was
 malformed.
@@ -300,15 +321,13 @@ A `Row` is `Record<string, unknown>` — a plain record any database `Table`'s
 runtime dependency on `@orkestrel/database` (this package never imports it).
 `CSVInterface.toJSON` returns the stored `CSVTable` — the JSON-serializable
 seam a CSV round-trips through when crossing a process boundary or a
-`JSON.stringify` call. `CSVInterface.export` (and the standalone
-`createTableContract` factory) produce a `TableExport` — `{ key, columns,
-schema }` — that mirrors `@orkestrel/database`'s `TableExport` shape
-member-for-member: `columns` is the same `Columns` map (a column name keyed
-to a `ContractShape`) either package can declare, and `schema` is the JSON
-Schema `@orkestrel/contract` compiles from it. The interop is purely
-structural — no import crosses the package boundary in either direction — so
-a CSV export re-imports losslessly as a database table definition, and vice
-versa.
+`JSON.stringify` call. `CSVInterface.export` produces a `TableExport` —
+`{ key, columns, schema }`. `@orkestrel/database` declares
+`TableDefinition { primary, columns, schema }`: this package's `Columns` map
+is structurally identical to that package's `ColumnMap`, and `schema` is the
+same JSON Schema `@orkestrel/contract` compiles from it. The two name the key
+column differently — `key` here, `primary` there. The interop is structural:
+no import crosses the package boundary in either direction.
 
 ## Streaming boundary
 
@@ -317,16 +336,17 @@ pull-based stream every call, enqueuing one already-parsed row per `pull` so
 a slow consumer's backpressure is respected. This is a POST-PARSE row
 stream, not chunked ingestion: the entire CSV text is parsed up front (by
 `parseCSV`, synchronously, into a complete `CSVTable`) before `stream()` ever
-enqueues a row. Whole-string parsing is this package's v1 boundary — there is
-no incremental/chunked parser that consumes a text stream and emits rows as
-they arrive; a caller with a very large file reads it fully into memory
-first.
+enqueues a row. The package parses a whole string. It has no incremental
+parser that consumes a text stream and emits rows as they arrive, so a
+caller with a very large file reads it fully into memory first.
 
 ## Patterns
 
 Every feature below has a compact, runnable example.
 
 ### Parse and query
+
+Parses a small CSV string with inference, then reads and filters its rows:
 
 ```ts
 import { createCSV } from '@orkestrel/csv'
@@ -339,6 +359,8 @@ const adults = csv.filter((row) => Number(row.age) >= 40) // readonly Row[]
 ```
 
 ### Rewrite with `map`, then render back
+
+Rewrites every row through `map`, then renders the new table back to CSV text:
 
 ```ts
 import { createCSV } from '@orkestrel/csv'
@@ -355,6 +377,8 @@ mutated.
 
 ### Reduce into an accumulator
 
+Folds every row into a running total through `reduce`:
+
 ```ts
 import { createCSV } from '@orkestrel/csv'
 
@@ -364,6 +388,8 @@ const total = csv.reduce<number>((sum, row) => sum + Number(row.amount), 0) // 6
 ```
 
 ### Streaming rows
+
+Drains the table through `stream` as a web-standard `ReadableStream`:
 
 ```ts
 import { createCSV } from '@orkestrel/csv'
@@ -380,6 +406,8 @@ for (let result = await reader.read(); !result.done; result = await reader.read(
 
 ### Handling errors without `strict`
 
+Collects a ragged-row malformation into `errors` instead of throwing:
+
 ```ts
 import { createCSV, isCSVError } from '@orkestrel/csv'
 
@@ -391,6 +419,8 @@ for (const error of csv.errors) {
 ```
 
 ### `strict` mode throws the first error
+
+Throws the first collected error immediately when `strict` is set:
 
 ```ts
 import { createCSV, isCSVError } from '@orkestrel/csv'
@@ -404,6 +434,8 @@ try {
 
 ### Exporting a portable schema
 
+Exports the parsed table's inferred schema as a portable `TableExport`:
+
 ```ts
 import { createCSV } from '@orkestrel/csv'
 
@@ -413,6 +445,8 @@ table.schema // a JSON Schema describing every column
 ```
 
 ### Contract-backed row validation
+
+Compiles a `Columns` map into a `ContractInterface` and validates a row against it:
 
 ```ts
 import { createTableContract, columnTypeShape } from '@orkestrel/csv'
@@ -427,25 +461,20 @@ contract.is({ id: 'x', name: 'Ada' }) // false
 
 ### Guarding an adopted table
 
+Guards an unknown value before adopting it as a `CSVTable`:
+
 ```ts
 import { createCSV, isCSVTable } from '@orkestrel/csv'
-import type { CSVTable } from '@orkestrel/csv'
 
 function adopt(candidate: unknown) {
 	if (!isCSVTable(candidate)) return undefined // total guard - never throws
-	return createCSV(candidate as CSVTable) // adopted AS-IS, not re-parsed
+	return createCSV(candidate) // adopted AS-IS, not re-parsed
 }
 ```
 
-### Rendering to TSV
-
-```ts
-import { renderTSV } from '@orkestrel/csv'
-
-renderTSV({ columns: ['a', 'b'], rows: [{ a: 1, b: 2 }] }) // 'a\tb\r\n1\t2'
-```
-
 ### Tokenizer leaves directly
+
+Calls the tokenizer and inference leaves directly, without going through `parseCSV`:
 
 ```ts
 import {
@@ -470,30 +499,40 @@ isRowList({ columns: ['a'], rows: [{ a: 1 }] }) // false
 
 ## Tests
 
-- [`../../tests/src/core/CSV.test.ts`](../tests/src/core/CSV.test.ts) —
+- [`tests/guides.test.ts`](../tests/guides.test.ts) — the `## Surface` ↔
+  `src/core` bijection (value and type exports), the `CSVInterface` ↔ `CSV`
+  method bijection, and the equality gate: every `Summary` cell against its
+  declaration's description paragraph, the titled `Parse and query` fence
+  against the `@example` block of that title (pinned so the titled pair cannot
+  be retired silently), and the README pitch against this guide's tagline. It
+  also runs the flagship fences and asserts the values their comments claim.
+- [`tests/src/core/CSV.test.ts`](../tests/src/core/CSV.test.ts) —
   construction from a string vs. an adopted table, `find`/`filter`/`reduce`,
   and `map` copy-on-write behavior.
-- [`../../tests/src/core/factories.test.ts`](../tests/src/core/factories.test.ts) —
+- [`tests/src/core/factories.test.ts`](../tests/src/core/factories.test.ts) —
   `createCSV` and `createTableContract` return working, correctly-typed
   results.
-- [`../../tests/src/core/helpers.test.ts`](../tests/src/core/helpers.test.ts) —
-  option resolution (incl. `INVALID_OPTION` throws), type inference traps,
-  cell coercion, column disambiguation, sanitization, and
-  `renderCSV`/`renderTSV`.
-- [`../../tests/src/core/parsers.test.ts`](../tests/src/core/parsers.test.ts) —
-  `readRecords` and `parseCSV`, incl. ragged-row policies, header handling,
-  and `strict`-mode throwing.
-- [`../../tests/src/core/shapers.test.ts`](../tests/src/core/shapers.test.ts) —
-  `columnTypeShape` per `ColumnType`, and `csvTableShape` structural
-  validation.
-- [`../../tests/src/core/validators.test.ts`](../tests/src/core/validators.test.ts) —
+- [`tests/src/core/helpers.test.ts`](../tests/src/core/helpers.test.ts) —
+  separator validation and option resolution (incl. `INVALID_OPTION`
+  throws), column disambiguation, sanitization, cell serialization, the
+  quoting policies, `isRowList` narrowing, `renderCSV` including its
+  tab-delimiter dialect, and the tokenizer and table-builder leaves
+  (`advancePosition` through `buildRow`).
+- [`tests/src/core/inferers.test.ts`](../tests/src/core/inferers.test.ts) —
+  `inferColumnType` against the classic inference traps, `coerceInferred`
+  dispatch per `ColumnType`, and `inferRows` copy-on-write.
+- [`tests/src/core/parsers.test.ts`](../tests/src/core/parsers.test.ts) —
+  the flat cell coercers and `parseCSV`, incl. ragged-row policies, header
+  handling, and `strict`-mode throwing.
+- [`tests/src/core/shapers.test.ts`](../tests/src/core/shapers.test.ts) —
+  `columnTypeShape` per `ColumnType`, `csvTableShape` structural validation,
+  and `deriveShapes` column derivation.
+- [`tests/src/core/validators.test.ts`](../tests/src/core/validators.test.ts) —
   `isCSVTable` and `isColumnType` soundness on well-formed and off-shape
   input, incl. its leniency-lock cases against `csvTableShape`.
 
 ## See also
 
-- [`AGENTS.md`](../AGENTS.md) — the rules; §5 centralized-file pattern,
-  §12 error handling, §14 guard totality, §22 documentation-as-contracts.
 - [`guide.md`](guide.md) — the mirrored guide for `@orkestrel/guide`, the
   devDependency powering this repo's guides-parity test suite.
 - [`contract.md`](contract.md) — the mirrored guide for `@orkestrel/contract`,

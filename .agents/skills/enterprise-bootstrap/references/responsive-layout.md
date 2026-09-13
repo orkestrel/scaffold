@@ -182,7 +182,7 @@ not guarantee escape from an overflow ancestor. Prefer a root-mounted dialog or 
 portal implementation over z-index escalation.
 
 Make touch targets comfortable without making text larger; take every dimension from
-[bootstrap-reference.md](bootstrap-reference.md) → WCAG 2.2 deltas, which owns the target floor and
+[bootstrap-reference.md](bootstrap-reference.md) → WCAG 2.2 requirements for app UI, which owns the target floor and
 the mobile preference. Keep action affordances visible without hover. Measure effective label hit
 areas for native checkboxes and switches.
 

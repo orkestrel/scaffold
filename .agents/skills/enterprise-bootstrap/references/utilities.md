@@ -375,7 +375,7 @@ flex-sm-wrap` or `col-md-auto` only when the container fits. Do not default to a
   verify the matching RTL build and the content's writing direction.
 - **Density:** drive compact/comfortable variants from shared tokens or a wrapper, not scattered
   per-element tweaks. Dense data retains readable text and control targets at the floor in
-  [bootstrap-reference.md](bootstrap-reference.md) → WCAG 2.2 deltas.
+  [bootstrap-reference.md](bootstrap-reference.md) → WCAG 2.2 requirements for app UI.
 - **Boundaries and depth:** separate with spacing first, then a surface change, then a shadow, then
   a line: `bg-body-tertiary` panels instead of bordered ones; `card border-0 shadow-sm` on a page
   surface that differs from the card; `list-group-flush`, `accordion-flush`, `table-borderless`,

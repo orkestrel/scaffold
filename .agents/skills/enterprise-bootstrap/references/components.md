@@ -160,7 +160,7 @@ For an intentional solid badge, use a measured `text-bg-*` pair rather than a so
 
 **A badge is never a textless mark.** Stock Bootstrap ships `.badge:empty { display: none }`, so an empty `<span class="badge">` used as a status dot renders nothing. Draw a textless status mark as an **icon glyph** (see [Icons](#icons) → Status glyph marks), never as a stripped badge, and confirm the mark in a capture — source review cannot see the missing paint.
 
-State a badge's intended fill and inspect the skin. For a quiet badge use `bg-*-subtle text-reset`; for an unfilled badge use `bg-transparent text-reset`. Verify the inherited foreground on that actual surface in light and dark. A fill-only utility does not remove `.badge`'s white text; see [color-modes.md](color-modes.md) → Badges and removable tags.
+State a badge's intended fill and inspect the skin. For a quiet badge use `bg-*-subtle text-reset`; for an unfilled badge use `bg-transparent text-reset`. Verify the inherited foreground on that actual surface in every declared theme. A fill-only utility does not remove `.badge`'s white text; see [color-modes.md](color-modes.md) → Badges and removable tags.
 
 A badge reporting an in-flight request is a live region: `role="status"` on the badge (or on the small wrapper that holds it) announces the settled state politely without stealing focus. Reserve `role="alert"` for urgent results ([Alerts](#alerts)).
 
@@ -205,9 +205,9 @@ Solid variants own a fixed foreground/background pair and read the same in light
 <button type="button" class="btn btn-primary" data-bs-toggle="button">Toggle</button>
 ```
 
-Icon-only buttons need `aria-label` and a target meeting the floor in [bootstrap-reference.md](bootstrap-reference.md) → WCAG 2.2 deltas — `btn-sm` icon clusters in toolbars are the common violation; pad rather than shrink.
+Icon-only buttons need `aria-label` and a target meeting the floor in [bootstrap-reference.md](bootstrap-reference.md) → WCAG 2.2 requirements for app UI — `btn-sm` icon clusters in toolbars are the common violation; pad rather than shrink.
 
-The three sizes scale padding faster than font — `btn-sm` 4/8 px at 14 px, `btn` 6/12 at 16 px, `btn-lg` 8/16 at 20 px — so a large button reads as larger, not zoomed. Use them as shipped; do not derive a fourth size with `em` padding. Weight is `$font-weight-normal`; `fw-semibold` on a button is a deliberate emphasis choice, not a default.
+The shipped sizes scale padding faster than font — `btn-sm` 4/8 px at 14 px, `btn` 6/12 at 16 px, `btn-lg` 8/16 at 20 px — so a large button reads as larger, not zoomed. Use them as shipped; do not derive another size with `em` padding. Weight is `$font-weight-normal`; `fw-semibold` on a button is a deliberate emphasis choice, not a default.
 
 Choose action rank, then a variant whose rest, hover, focus, active/checked, and disabled treatment works on its actual surface ([SKILL.md](../SKILL.md) → Hierarchy & actions). Do not override native button states with background or text utilities.
 
@@ -752,11 +752,7 @@ Popovers are **opt-in**: they do nothing until initialized in JS (see [JavaScrip
 
 ### Progress
 
-The `progress-bar` width is a runtime value: the host's own script writes it from the same number it
-puts in `aria-valuenow`, so that one `width` declaration is a named runtime producer under
-[inspection.md](inspection.md) → Style escapes. Record the producer by name and purpose. It grants no
-other inline declaration on the surface, and no other element may borrow it — every non-runtime
-width comes from a shipped utility or the project stylesheet.
+For dynamic progress, have the host script set `width` on `.progress-bar` in a standalone `.progress`, or on each `.progress` segment in `.progress-stacked`. Derive the painted width and the matching `aria-valuenow` from the same progress value. Record that script by name and purpose under [inspection.md](inspection.md) → Style escapes. Exempt only those elements' producer-written `width` declarations. Keep all other widths in shipped utilities or the project stylesheet.
 
 5.3 markup — `role="progressbar"` and the `aria-value*` attributes go on the **outer `.progress`**, not the inner bar:
 
@@ -984,7 +980,7 @@ Toasts are **opt-in** — hidden until `.show()` is called (or shown through a t
 </button>
 ```
 
-Tooltips are **opt-in** (JS init required, below). Only attach to focusable elements so keyboard users can trigger them; never put essential information _only_ in a tooltip, and never report form errors through a tooltip. `data-bs-html` with untrusted content is an XSS vector.
+Tooltips are **opt-in** (JS init required; see [JavaScript initialization](#javascript-initialization)). Only attach to focusable elements so keyboard users can trigger them; never put essential information _only_ in a tooltip, and never report form errors through a tooltip. `data-bs-html` with untrusted content is an XSS vector.
 
 ## JavaScript Initialization
 
@@ -1015,14 +1011,14 @@ Bootstrap's core CSS ships **no icons**. The `.bi` SVGs in examples come from th
 
 ### Status glyph marks
 
-The textless mark that survives both themes — dots, ticks, rings, pulses — is a glyph, not a badge ([Badge](#badge)). Inline SVG or icon font, the composition rules are the same:
+For a textless status mark — a dot, tick, ring, or pulse — use a glyph rather than a badge ([Badge](#badge)). Apply the following composition rules to inline SVG and icon fonts:
 
 ```html
 <span class="bi bi-circle-fill fs-6 lh-1" role="img" aria-label="Healthy"></span>
 <span class="bi bi-circle fs-6 lh-1" role="img" aria-label="Not started"></span>
 ```
 
-- **Inherit the owning foreground.** Keep ordinary glyphs on body or component text, including selected fills. Add `text-*-emphasis` only for a deliberate semantic tint on a known, measured surface; never apply it to every mark on a subtle fill. Measure meaningful marks at **≥ 3:1** in light and dark. Take cascade exceptions from [color-modes.md](color-modes.md).
+- **Inherit the owning foreground.** Keep ordinary glyphs on body or component text, including selected fills. Add `text-*-emphasis` only for a deliberate semantic tint on a known, measured surface; never apply it to every mark on a subtle fill. Measure meaningful marks against the bar in [SKILL.md](../SKILL.md) → Surfaces, color, contrast, in every declared theme and reached state. Take cascade exceptions from [color-modes.md](color-modes.md).
 - **Filled and hollow say different things** — done vs pending, live vs idle — so pair glyphs that share one advance width (a filled/hollow pair from the same icon family). Mixed widths make a column of marks jitter row to row.
 - **Size with `fs-*` _and_ `lh-1`.** A glyph inherits the row's line-height, so an `fs-*` bump without `lh-1` grows the line box and pushes the row taller than its neighbors.
 - Give the mark an accessible name (`role="img"` + `aria-label`, or a `.visually-hidden` word next to an `aria-hidden` glyph) — a mark whose only meaning is its color and shape is color-only status.
@@ -1060,7 +1056,7 @@ Keep the component's selected foreground on ordinary labels and glyphs. Remove a
 semantic tint before changing its active fill; handle an independently filled badge through
 [color-modes.md](color-modes.md) → Alerts, buttons, and selection.
 
-Verify that chosen and unchosen filters remain distinguishable in light and dark. Do not assume
+Verify that chosen and unchosen filters remain distinguishable in every declared theme. Do not assume
 that a neutral outline always inverts meaning or that an accent hue repairs it. Preserve the
 checked/pressed state and add a visible non-color cue when the fill alone is ambiguous.
 
@@ -1072,7 +1068,7 @@ to every selection widget.
 
 - Active nav items need `aria-current="page"` (or `aria-selected="true"` for tabs).
 - Modals and offcanvas: set `aria-labelledby`; Bootstrap traps focus and restores it on close — do not fight it; `dispose()` instances when the host unmounts in SPAs.
-- Icon-only controls always need an accessible name (`aria-label` or visually-hidden text) and a target meeting the floor in [bootstrap-reference.md](bootstrap-reference.md) → WCAG 2.2 deltas.
+- Icon-only controls always need an accessible name (`aria-label` or visually-hidden text) and a target meeting the floor in [bootstrap-reference.md](bootstrap-reference.md) → WCAG 2.2 requirements for app UI.
 
 ### Theming
 

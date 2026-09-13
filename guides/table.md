@@ -1,24 +1,34 @@
 # Table
 
-> The environment-agnostic tabular document. A `TableSchema` states what the columns are, a `Table`
-> holds the rows given against it, and one lens — sort, filter, and page — decides which of them the
-> view shows. Nothing here renders, measures a pixel, reads a keyboard, or names a host type.
->
-> **A grid, a report, a terminal listing, and a CSV export are the same abstraction.** All four hold
-> a set of records, order them, narrow them, and show a stretch of them. What differs is who draws
-> the result, and drawing is the one part this package leaves out. The table owns values; the host
-> owns everything a person looks at.
->
-> The row store is the source of truth, and it is the whole of it. Sort terms, filters, the picked
-> keys, the opened keys, and the page are held; `view` and every tally are worked out on read, so no
-> second copy of an answer can go stale. A write validates all of itself before any of it lands, and
-> announces itself once it has.
->
-> The core refuses rather than throws. Every guard returns `false` off-shape rather than throwing, every
-> parser returns `undefined` on refusal, and every row the table hands back is a frozen owned copy.
-> Table-owned refusals raise `TableError`, and each one names a caller mistake.
+> The environment-agnostic tabular document: a `TableSchema` declaring the columns, a `Table`
+> holding the rows given against it, and one lens of sort, filter, and page deciding which of them
+> the view shows.
+
+Nothing here renders, measures a pixel, reads a keyboard, or names a host type. **A grid, a report,
+a terminal listing, and a CSV export are the same abstraction.** They all hold a set of records,
+order them, narrow them, and show a stretch of them. What differs is who draws the result, and
+drawing is the one part this package leaves out. The table owns values; the host owns everything a
+person looks at.
+
+The row store is the source of truth, and it is the whole of it. Sort terms, filters, the picked
+keys, the opened keys, and the page are held; `view` and every tally are worked out on read, so no
+second copy of an answer can go stale. A write validates all of itself before any of it lands, and
+announces itself once it has.
+
+The core refuses rather than throws. Every guard returns `false` off-shape rather than throwing,
+every parser returns `undefined` on refusal, and every row the table hands back is a frozen owned
+copy. Table-owned refusals raise `TableError`, and each one names a caller mistake.
 
 ## Surface
+
+Everything in this guide is exported from `@orkestrel/table` ([`src/core`](../src/core)). The manager
+classes and the key-set shell they compose are the module's internal declarations: they stay out
+of the barrel, so no consumer can construct one, and each constructor takes the table's emitter
+and closures over state `Table` keeps private, which is why they are internal rather than
+published. Every other declaration is reachable from the barrel, so a consumer holds the
+mechanisms the package uses on itself.
+
+### Open a table
 
 Open a table, narrow it, order it, and read the rows to draw:
 
@@ -53,154 +63,164 @@ table.pagination.count // 2 — two pages of two
 table.view.map((row) => row.name) // ['Grace', 'Alan'] — page one, oldest first
 ```
 
-Everything below is exported from `@orkestrel/table` ([`src/core`](../src/core)). Nothing is
-internal: every declaration in the module is reachable from the barrel, so a consumer holds exactly
-the mechanisms the package uses on itself.
-
 ### Rows, cells, and columns
 
 The document itself — what a table declares and what one row of it holds. All data, no behavior.
 
-| API            | Kind      | Summary                                                                                                                                        |
-| -------------- | --------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| `TableKey`     | type      | A row's identity — a `string`, carried in the cell the schema's `key` names.                                                                   |
-| `TableCell`    | type      | Every value a cell can hold — a `string`, a `number`, or a `boolean`.                                                                          |
-| `TableRow`     | type      | One row keyed by column. A column nobody has filled has no key here.                                                                           |
-| `ColumnCell`   | type      | What a column's cells hold — the four-member discriminant that fixes the column's options, its comparison, and the filters that apply to it.   |
-| `ColumnChoice` | interface | One value a `choice` column offers — `value` is stored, `label` is read, `help` explains.                                                      |
-| `ColumnBase`   | interface | What every column carries whatever its cells hold — `key` / `label` / `help` / `hidden` / `meta`.                                              |
-| `TextColumn`   | interface | A column of text, compared lexically. Carries a date, a time, and a timestamp as ISO strings.                                                  |
-| `NumberColumn` | interface | A column of numbers, compared by magnitude.                                                                                                    |
-| `FlagColumn`   | interface | A column of yes-or-no answers, compared false before true.                                                                                     |
-| `ChoiceColumn` | interface | A column drawn from a declared list, compared by the order that list declares — required `choices`.                                            |
-| `TableColumn`  | type      | Any column a schema can declare — the four-member union discriminated on `cell`.                                                               |
-| `TableSchema`  | interface | Everything a table declares about itself — optional `name` / `label` / `help`, the required `key` naming row identity, and `columns` in order. |
+A `Shape` cell holds an interface's data members as bare names in braces, `?` marking an optional member and `plus` introducing its call-signature members, and a type alias's own type literal with a union's arms escaped as `\|`. An extended interface's name comes before `plus`, with the members it adds after.
+
+| API            | Kind      | Shape                                                      | Summary                                                                                                                                                                                     |
+| -------------- | --------- | ---------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `TableKey`     | type      | `string`                                                   | Represents a row's identity — a `string`, carried in the cell the schema's `key` names.                                                                                                     |
+| `TableCell`    | type      | `string \| number \| boolean`                              | Represents every value a cell can hold — a `string`, a `number`, or a `boolean`.                                                                                                            |
+| `TableRow`     | type      | `Readonly<Record<string, TableCell>>`                      | Represents one row, keyed by column. A column nobody has filled has no key here.                                                                                                            |
+| `ColumnCell`   | type      | `'text' \| 'number' \| 'flag' \| 'choice'`                 | Names what a column's cells hold — the discriminant that fixes the column's options, its comparison, and the filters that apply to it.                                                      |
+| `ColumnChoice` | interface | `{ value, label, help? }`                                  | Represents one value a `choice` column offers — `value` is stored, `label` is read, and `help` explains.                                                                                    |
+| `ColumnBase`   | interface | `{ key, label?, help?, hidden?, meta? }`                   | Describes what every column carries, whatever its cells hold — the name a row's cell uses, the text a reader sees, whether a host draws the column, and the metadata a host attaches to it. |
+| `TextColumn`   | interface | `ColumnBase plus { cell }`                                 | Represents a column of text, compared lexically. Carries a date, a time, and a timestamp as ISO strings.                                                                                    |
+| `NumberColumn` | interface | `ColumnBase plus { cell }`                                 | Represents a column of numbers, compared by magnitude.                                                                                                                                      |
+| `FlagColumn`   | interface | `ColumnBase plus { cell }`                                 | Represents a column of yes-or-no answers, compared false before true.                                                                                                                       |
+| `ChoiceColumn` | interface | `ColumnBase plus { cell, choices }`                        | Represents a column drawn from a declared list, compared by the order that list declares. It requires `choices`.                                                                            |
+| `TableColumn`  | type      | `TextColumn \| NumberColumn \| FlagColumn \| ChoiceColumn` | Represents any column a schema can declare — the union discriminated on `cell`.                                                                                                             |
+| `TableSchema`  | interface | `{ name?, label?, help?, key, columns }`                   | Holds everything a table declares about itself — how the table is described, which column carries row identity, and the columns it declares, in the order it declares them.                 |
 
 ### The lens
 
-The three axes a table reads its rows through, and the two slots that replace what a column's cell
-fixes.
+The axes a table reads its rows through, and the slots that replace what a column's cell fixes.
 
-| API              | Kind      | Summary                                                                                                                              |
-| ---------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| `TableDirection` | type      | Which way a column sorts — `'ascending' \| 'descending'`. A column nobody has sorted carries no term at all.                         |
-| `TableOrder`     | interface | One column's place in the sort — the `column` and its `direction`. The list is read left to right.                                   |
-| `FilterOperator` | type      | How a filter tests a cell — `'contains' \| 'between' \| 'equals'`.                                                                   |
-| `ContainsFilter` | interface | Keep the rows whose cell holds this `text` somewhere inside it.                                                                      |
-| `BetweenFilter`  | interface | Keep the rows whose cell falls between `minimum` and `maximum`, both included, compared the way the column compares.                 |
-| `EqualsFilter`   | interface | Keep the rows whose cell holds exactly this `value`.                                                                                 |
-| `TableFilter`    | type      | Any filter a table can hold — the three-member union discriminated on `operator`.                                                    |
-| `CellComparator` | type      | Compare two cells of one column, replacing what its `cell` fixes. Always describes ascending order; direction is applied afterwards. |
-| `CellMatcher`    | type      | Test one column's cell against a filter, replacing what its `cell` fixes. Receives every filter the table holds against that column. |
+A `Shape` cell holds an interface's data members as bare names in braces, `?` marking an optional member and `plus` introducing its call-signature members, and a type alias's own type literal with a union's arms escaped as `\|`.
+
+| API              | Kind      | Shape                                                                     | Summary                                                                                                                                        |
+| ---------------- | --------- | ------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| `TableTerm`      | interface | `{ column }`                                                              | Represents one entry of a lens list — the `column` it names. A sort term and a filter each hold one, which is why the two share a list engine. |
+| `TableDirection` | type      | `'ascending' \| 'descending'`                                             | Names which way a column sorts. A column nobody has sorted carries no term at all.                                                             |
+| `TableOrder`     | interface | `{ column, direction }`                                                   | Represents one column's place in the sort — the `column` and its `direction`. The list is read left to right.                                  |
+| `FilterOperator` | type      | `'contains' \| 'between' \| 'equals'`                                     | Names how a filter tests a cell — the operator each filter carries.                                                                            |
+| `ContainsFilter` | interface | `{ column, operator, text }`                                              | Keeps the rows whose cell holds this `text` somewhere inside it.                                                                               |
+| `BetweenFilter`  | interface | `{ column, operator, minimum, maximum }`                                  | Keeps the rows whose cell falls between `minimum` and `maximum`, both included, compared the way the column compares.                          |
+| `EqualsFilter`   | interface | `{ column, operator, value }`                                             | Keeps the rows whose cell holds exactly this `value`.                                                                                          |
+| `TableFilter`    | type      | `ContainsFilter \| BetweenFilter \| EqualsFilter`                         | Represents any filter a table can hold — the union discriminated on `operator`.                                                                |
+| `CellComparator` | type      | `(left: TableCell \| undefined, right: TableCell \| undefined) => number` | Compares two cells of one column, replacing what its `cell` fixes. Always describes ascending order; direction is applied afterwards.          |
+| `CellMatcher`    | type      | `(cell: TableCell \| undefined, filter: TableFilter) => boolean`          | Tests one column's cell against a filter, replacing what its `cell` fixes. Receives every filter the table holds against that column.          |
 
 ### The table
 
-The entity, its six managers, its factory, its contract, and the error it raises.
+The entity, its managers, its factory, its contract, and the error it raises.
 
-| API                          | Kind      | Summary                                                                                                                               |
-| ---------------------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------- |
-| `Table`                      | class     | A table — a schema, the rows held against it, and the lens they are read through. Implements `TableInterface` exactly.                |
-| `TableInterface`             | interface | The table contract — the readonly state below plus `clear` and `destroy`.                                                             |
-| `createTable`                | function  | Open a table against a schema. The schema is copied, and the copy is what the table declares.                                         |
-| `TableOptions`               | interface | How to open a table — `on` listeners, an `error` handler, seeded `rows`, per-column `comparators` and `matchers`, and a page `limit`. |
-| `TableEventMap`              | type      | Everything a table announces — `write` / `remove` / `sort` / `filter` / `select` / `expand` / `paginate` / `clear`.                   |
-| `RowManagerInterface`        | interface | The rows the table holds, in its own order.                                                                                           |
-| `RowManager`                 | class     | The row store. Implements `RowManagerInterface` exactly.                                                                              |
-| `SortManagerInterface`       | interface | The order the table reads its rows in.                                                                                                |
-| `SortManager`                | class     | The sort terms. Implements `SortManagerInterface` exactly.                                                                            |
-| `FilterManagerInterface`     | interface | Which rows the table keeps.                                                                                                           |
-| `FilterManager`              | class     | The filters. Implements `FilterManagerInterface` exactly.                                                                             |
-| `SelectionManagerInterface`  | interface | The rows somebody has picked.                                                                                                         |
-| `SelectionManager`           | class     | The picked keys. Implements `SelectionManagerInterface` exactly.                                                                      |
-| `ExpansionManagerInterface`  | interface | The rows somebody has opened up.                                                                                                      |
-| `ExpansionManager`           | class     | The opened keys. Implements `ExpansionManagerInterface` exactly.                                                                      |
-| `PaginationManagerInterface` | interface | Which stretch of the filtered rows the view shows.                                                                                    |
-| `PaginationManager`          | class     | The page arithmetic. Implements `PaginationManagerInterface` exactly.                                                                 |
-| `TableError`                 | class     | An error raised by the table domain — a machine-readable `code` and optional structured `context`.                                    |
-| `TableErrorCode`             | type      | The reason a `TableError` carries — `SCHEMA` / `COLUMN` / `KEY` / `CELL` / `DESTROYED`.                                               |
-| `isTableError`               | function  | Whether a caught value is a `TableError`, so a `catch` branches on `code` without an assertion.                                       |
+A `Shape` cell holds an interface's data members as bare names in braces, `?` marking an optional member and `plus` introducing its call-signature members, and a type alias's own type literal with a union's arms escaped as `\|`. A function row's `Shape` cell holds its signature, and a guard row's the type it narrows to. A class row's `Shape` cell holds the interface it implements, or its constructor signature where it implements none.
 
-`TableInterface`'s readonly data members stay here rather than in `## Methods`: `emitter` (the typed
-event surface), `schema` (the owned frozen copy), the six managers `rows`, `sort`, `filter`,
-`selection`, `expansion`, and `pagination`, plus `view` (the rows to draw right now), `count` (how
-many rows the filter admits), and `destroyed`. The managers carry readonly members of their own:
-`selection.keys` and `expansion.keys` are the picked and opened key sets, and `pagination` publishes
-`page`, `limit`, `offset`, and `count`.
+| API                          | Kind      | Shape                                                                                                                   | Summary                                                                                                                                                                                           |
+| ---------------------------- | --------- | ----------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Table`                      | class     | `TableInterface`                                                                                                        | Holds a schema, its rows, and the lens through which they are read, implementing `TableInterface` exactly.                                                                                        |
+| `TableInterface`             | interface | `{ emitter, schema, rows, sort, filter, selection, expansion, pagination, view, count, destroyed } plus clear, destroy` | Represents a table: what it declares, the rows it holds, and the lens it reads them through.                                                                                                      |
+| `createTable`                | function  | `(schema: TableSchema, options?: TableOptions) => TableInterface`                                                       | Opens a table against a schema. The schema is copied, and the copy is what the table declares.                                                                                                    |
+| `TableOptions`               | interface | `{ on?, error?, rows?, comparators?, matchers?, limit? }`                                                               | Describes how to open a table — the listeners wired at construction and where a throw from one goes, the rows seeded into it, the per-column comparison and test replacements, and the page size. |
+| `TableEventMap`              | type      | `{ write, remove, sort, filter, select, expand, paginate, clear }`                                                      | Lists everything a table announces, mapping each event to the payload its listeners receive.                                                                                                      |
+| `RowManagerInterface`        | interface | `{} plus row, rows, add, update, move, remove`                                                                          | Manages the rows a table holds, in the order it holds them.                                                                                                                                       |
+| `SortManagerInterface`       | interface | `{} plus order, orders, set, remove`                                                                                    | Manages the order a table reads its rows in.                                                                                                                                                      |
+| `FilterManagerInterface`     | interface | `{} plus filter, filters, set, remove`                                                                                  | Manages which rows a table keeps.                                                                                                                                                                 |
+| `SelectionManagerInterface`  | interface | `{ keys } plus select, clear, toggle`                                                                                   | Manages the rows somebody has picked.                                                                                                                                                             |
+| `ExpansionManagerInterface`  | interface | `{ keys } plus expand, clear, toggle`                                                                                   | Manages the rows somebody has opened up.                                                                                                                                                          |
+| `PaginationManagerInterface` | interface | `{ page, limit, offset, count } plus move, resize`                                                                      | Manages which stretch of the filtered rows the view shows.                                                                                                                                        |
+| `TableError`                 | class     | `new (code: TableErrorCode, message: string, context?: JSONRecord) => TableError`                                       | Represents an error raised by the table domain — a machine-readable `code` and optional structured `context`.                                                                                     |
+| `TableErrorCode`             | type      | `'SCHEMA' \| 'COLUMN' \| 'KEY' \| 'CELL' \| 'DESTROYED'`                                                                | Names the reason a `TableError` carries — the machine-readable code a `catch` branches on.                                                                                                        |
+| `isTableError`               | function  | `TableError`                                                                                                            | Determines whether a caught value is a table error, so a `catch` branches on `code` without an assertion.                                                                                         |
 
-Two members are spelled `count` and they answer two different questions, because each is the lone
-tally of the entity it belongs to. `table.count` is **rows** — how many the filter admits, before the
-page narrows them. `table.pagination.count` is **pages** — how many the admitted rows fill.
+`TableInterface`'s readonly data members stay here, in its `Shape` cell, rather than in
+`## Methods`, and each manager's own readonly members sit in that manager's cell. Every
+call-signature member is documented under [Methods](#methods).
 
-Each manager class is constructed by `Table` and exported because the contract it satisfies is
-exported: a published interface publishes the parts that satisfy it, so nothing here is a mechanism
-the package keeps for itself. Their constructors are not a documented surface. Each takes the
-table's emitter and a set of closures over state the owning table keeps private, which is what keeps
-every store single-owned, and it is not a protocol a consumer can satisfy from this guide. A
-consumer writing its own table composes `Table`, or writes its own managers against the manager
-interfaces and reads these classes as the working reference.
+The members spelled `count` answer different questions, because each is the lone tally of the
+entity it belongs to. `table.count` is **rows** — how many the filter admits, before the page narrows them.
+`table.pagination.count` is **pages** — how many the admitted rows fill.
+
+Each manager class is constructed by `Table` and stays out of the barrel, so no consumer can
+construct one. Its constructor takes the table's emitter and a set of closures over state the
+owning table keeps private, which is what keeps every store single-owned, so the class is internal
+and its interface is the published contract. A consumer writing its own table composes `Table`, or writes
+its own managers against the manager interfaces and reads these classes as the working reference.
 
 ### Constants
 
-The cell registry and six budgets. The registry is frozen, so a shared list cannot be rewritten
-under a consumer. The budgets are numbers.
+The cell registry and the budgets. The registry is frozen, so a shared list cannot be rewritten
+under a consumer.
 
-| API            | Kind  | Summary                                                                     |
-| -------------- | ----- | --------------------------------------------------------------------------- |
-| `COLUMN_CELLS` | const | Every column cell, in the order the public contract declares them.          |
-| `COLUMN_LIMIT` | const | The most columns one schema may declare: 256.                               |
-| `CHOICE_LIMIT` | const | The most choices one `choice` column may offer: 1024.                       |
-| `NAME_LIMIT`   | const | The longest schema name or column key: 128 UTF-16 code units.               |
-| `STRING_LIMIT` | const | The longest single retained string: 65536 UTF-16 code units.                |
-| `TEXT_LIMIT`   | const | The most string code units one schema may retain in total: 1048576.         |
-| `NODE_LIMIT`   | const | The most records, arrays, and leaves one schema may retain in total: 16384. |
+A `Shape` cell holds the constant's declared type.
+
+| API            | Kind  | Shape                   | Summary                                                                                       |
+| -------------- | ----- | ----------------------- | --------------------------------------------------------------------------------------------- |
+| `COLUMN_CELLS` | const | `readonly ColumnCell[]` | Lists every column cell, in the order declared by the public contract.                        |
+| `COLUMN_LIMIT` | const | `number`                | Names the maximum number of columns one schema may declare: 256.                              |
+| `CHOICE_LIMIT` | const | `number`                | Names the maximum number of choices one `choice` column may offer: 1024.                      |
+| `NAME_LIMIT`   | const | `number`                | Names the maximum length of a schema name or column key: 128 UTF-16 code units.               |
+| `STRING_LIMIT` | const | `number`                | Names the maximum length of any single retained string: 65536 UTF-16 code units.              |
+| `TEXT_LIMIT`   | const | `number`                | Names the maximum total length of every string one schema retains: 1048576 UTF-16 code units. |
+| `NODE_LIMIT`   | const | `number`                | Names the maximum total number of records, arrays, and leaves one schema retains: 16384.      |
 
 ### Guards
 
 Total `is*` guards over unknown input. None throws, none coerces, and each returns `false` for
 anything off-shape — including a hostile prototype, a symbol key, or a cyclic value.
 
-| API                       | Kind     | Summary                                                                                                              |
-| ------------------------- | -------- | -------------------------------------------------------------------------------------------------------------------- |
-| `isTableCell`             | function | Whether a value has a cell shape — a string, a finite number, or a boolean.                                          |
-| `isTableRow`              | function | Whether a value is a record whose every own key is a string and every value a `TableCell`.                           |
-| `isColumnCell`            | function | Whether a value is one of the four declared column cells.                                                            |
-| `isColumnChoice`          | function | Whether a value is one exact `ColumnChoice` record; an unknown member refuses it.                                    |
-| `isTableColumn`           | function | Whether a value is one exact discriminated `TableColumn`, checked against its cell's own options.                    |
-| `isStructuralTableSchema` | function | Whether a value has the exact shape of a `TableSchema` — the shape alone, with no domain check.                      |
-| `isTableSchema`           | function | Whether a value is a `TableSchema` a table can be opened against — the exact shape, and an audit that finds nothing. |
+In a guard table a `Shape` cell holds the type the guard narrows to.
 
-Two of them answer about a schema, and which one to reach for is which question you are asking.
+| API                       | Kind     | Shape          | Summary                                                                                                                                  |
+| ------------------------- | -------- | -------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| `isTableCell`             | function | `TableCell`    | Determines whether an unknown value has a table cell shape — a string, a finite number, or a boolean.                                    |
+| `isTableRow`              | function | `TableRow`     | Determines whether an unknown value is a record whose every own key is a string and every value a `TableCell`.                           |
+| `isColumnCell`            | function | `ColumnCell`   | Determines whether an unknown value is a declared column cell.                                                                           |
+| `isColumnChoice`          | function | `ColumnChoice` | Determines whether an unknown value is one exact `ColumnChoice` record; an unknown member refuses it.                                    |
+| `isTableColumn`           | function | `TableColumn`  | Determines whether an unknown value is one exact discriminated `TableColumn`, checked against its cell's own options.                    |
+| `isStructuralTableSchema` | function | `TableSchema`  | Determines whether an unknown value has the exact shape of a `TableSchema` — the shape alone, with no domain check.                      |
+| `isTableSchema`           | function | `TableSchema`  | Determines whether an unknown value is a `TableSchema` a table can be opened against — the exact shape, and an audit that finds nothing. |
+
+The schema guards answer about a schema, and which one to reach for is which question you are asking.
 `isStructuralTableSchema` asks whether the shape is exact: every declared member present and typed,
 and nothing else there. `isTableSchema` asks that and then asks `auditTable`, so it refuses a
 schema-shaped value carrying a domain fault or a budget breach — a `key` naming no declared column,
 a column key declared twice, a `choice` column offering nothing. It is the guard the parsers read.
-The `Table` constructor asks the same questions through `isStructuralTableSchema` and one
-`auditTable` run, so its `SCHEMA` message keeps the audit diagnostics intact. The guard, constructor,
-and `parseTable` therefore agree on which schemas are usable. Reach for the structural guard where
-you mean to run the audit yourself and read its diagnostics.
+The `Table` constructor asks in a different order. It guards the value it was handed, owns a copy
+of it, then guards and audits that copy and keeps that same object. Its `SCHEMA` message carries
+the audit diagnostics when the owned copy reaches the audit, and names
+`The schema is not a table schema` when the copy fails the guard the handed value passed. It also
+names `column "<key>" has metadata that cannot be owned` when the column's `meta` answers the
+guard's read and the clone's read differently, the message `cloneSchema` raises and the
+constructor rethrows unchanged.
+
+`isTableSchema`, the constructor, and `parseTable` agree on every schema whose reads are stable,
+which is every schema made of ordinary declared data. They part where a foreign object answers a
+property read with something other than the value a clone of it holds — a `meta` behind a `get`
+trap is the shipped case. `isTableSchema` admits such a schema, because it reads it once and the
+read answers. The constructor refuses it, because it guards the copy it owns rather than the object
+it read, and `parseTable` refuses it too, because it re-guards its own projection. Reach for the
+structural guard where you mean to run the audit yourself and read its diagnostics.
 
 ### Helpers
 
 The pure leaves the table composes: the column lookup, the identity read, the key-set engine, the
-cell gate, the comparison, the two filter tests, the two row passes, the audit, and the wire
-projections. `computeKeys`, `filterRows`, and `sortRows` propagate exceptions from supplied
-callbacks; `serializeTable` raises `SCHEMA` for a `meta` no clone can own. The other helpers are
-total over ordinary declared inputs, subject to the core's hostile-reflection boundary below.
+lens-list operations, the cell gate, the comparison, the filter tests, the row passes, the
+audit, and the wire projections. `computeKeys`, `matchesTerms`, `filterRows`, and `sortRows`
+propagate exceptions from supplied callbacks; `serializeTable` raises `SCHEMA` for a `meta` no clone
+can own. The other helpers are total over ordinary declared inputs, subject to the core's
+hostile-reflection boundary described later.
 
-| API              | Kind     | Summary                                                                                                                    |
-| ---------------- | -------- | -------------------------------------------------------------------------------------------------------------------------- |
-| `extractColumn`  | function | Find one column by key; `undefined` when the schema declares no such column.                                               |
-| `extractKey`     | function | Read a row's identity; `undefined` when its key cell is missing, empty, or not a string.                                   |
-| `computeKeys`    | function | Work out one atomic 0/1/N membership change over the keys a caller may address — the engine selection and expansion share. |
-| `matchesCell`    | function | Whether one column can hold a value — the shape gate every write and every seed passes through.                            |
-| `compareCells`   | function | Compare two of one column's cells the way its `cell` fixes, describing ascending order.                                    |
-| `admitsFilter`   | function | Whether one column admits a filter and every operand it carries — the gate `filter.set` and `matchesFilter` share.         |
-| `matchesFilter`  | function | Test one of a column's cells against one filter the way its `cell` fixes.                                                  |
-| `filterRows`     | function | Keep the rows every filter accepts, in the order given; a supplied `CellMatcher` replaces the default per column.          |
-| `sortRows`       | function | Order rows by the terms given, stably; a supplied `CellComparator` replaces the default per column.                        |
-| `auditTable`     | function | Audit a structurally valid schema for domain faults and budget breaches, returning human diagnostics.                      |
-| `serializeTable` | function | Project a schema into JSON in declaration order, dropping every absent member; raises `SCHEMA` for a `meta` it cannot own. |
-| `serializeRows`  | function | Project rows into JSON with each row's cells in the schema's column order, dropping every absent cell.                     |
+| API              | Kind     | Summary                                                                                                                     |
+| ---------------- | -------- | --------------------------------------------------------------------------------------------------------------------------- |
+| `extractColumn`  | function | Finds one column by key; `undefined` when the schema declares no such column.                                               |
+| `extractKey`     | function | Reads one row's declared identity; `undefined` when its key cell is missing, empty, or not a string.                        |
+| `computeKeys`    | function | Computes one atomic 0/1/N membership change over the keys a caller may address — the engine selection and expansion share.  |
+| `mergeTerms`     | function | Merges lens terms into a column-keyed list, replacing the entry that names the same column — the `set` write.               |
+| `removeTerms`    | function | Removes every lens term naming one of the given columns — the drop `sort.remove` and `filter.remove` share.                 |
+| `matchesTerms`   | function | Checks whether two lens lists hold the same terms in the same order, with the supplied test deciding the operands.          |
+| `matchesCell`    | function | Checks whether one column can hold a value — the shape gate every write and every seed passes through.                      |
+| `compareCells`   | function | Compares two of one column's cells the way its `cell` fixes, describing ascending order.                                    |
+| `admitsFilter`   | function | Checks whether one column admits a filter and every operand it carries — the gate `filter.set` and `matchesFilter` share.   |
+| `matchesFilter`  | function | Tests one of a column's cells against one filter the way its `cell` fixes.                                                  |
+| `filterRows`     | function | Keeps the rows every filter accepts, in the order given; a supplied `CellMatcher` replaces the default per column.          |
+| `sortRows`       | function | Orders rows by the terms given, stably; a supplied `CellComparator` replaces the default per column.                        |
+| `auditTable`     | function | Audits a structurally valid schema for domain faults and budget breaches, returning human diagnostics.                      |
+| `serializeTable` | function | Projects a schema into JSON in declaration order, dropping every absent member; raises `SCHEMA` for a `meta` it cannot own. |
+| `serializeRows`  | function | Projects rows into JSON with each row's cells in the schema's column order, dropping every absent cell.                     |
 
 ### Cloners
 
@@ -208,28 +228,30 @@ Owned frozen snapshots. The table takes one of the schema at construction and on
 admission, so a later edit to the object a caller passed changes nothing inside the table, and no
 row the table hands back is a live internal reference.
 
-| API           | Kind     | Summary                                                                                                                        |
-| ------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| `cloneRow`    | function | Own one row as a frozen copy of its cells.                                                                                     |
-| `cloneSchema` | function | Own a whole schema, freezing every nested column, choice list, choice, and `meta`; raises `SCHEMA` for a `meta` it cannot own. |
+| API           | Kind     | Summary                                                                                                                                                         |
+| ------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `cloneRow`    | function | Clones one row into an owned frozen snapshot.                                                                                                                   |
+| `cloneSchema` | function | Clones a whole schema into an owned frozen snapshot, freezing every nested column, choice list, choice, and `meta`; raises `SCHEMA` for a `meta` it cannot own. |
 
 `cloneRow` cannot fail for an ordinary row record, subject to the core's hostile-reflection boundary
-below. `cloneSchema` can also fail when a column's `meta` holds something no clone can own, such as a
+described later. `cloneSchema` can also fail when a column's `meta` holds something no clone can own, such as a
 record that refers back to itself. `meta` is typed as JSON and a cycle satisfies that type, so the
 refusal is a `TableError` coded `SCHEMA` rather than a silent partial copy. `createTable` never reaches
-it, because `isTableColumn` admits only bounded, exactly ownable JSON there and refuses such a schema
-first. This is the door a caller cloning or serializing a schema on its own meets, and
-`serializeTable` refuses the same value the same way.
+it for a schema whose reads are stable, because `isTableColumn` admits only bounded, exactly ownable
+JSON there and refuses such a schema first; a `meta` that answers the guard's read with ownable JSON
+and the clone's read with something no clone can own reaches it, and it refuses
+with `column "<key>" has metadata that cannot be owned`. This is the door a caller cloning or
+serializing a schema on its own meets, and `serializeTable` refuses the same value the same way.
 
 ### Parsers
 
 The wire boundary. Each returns `undefined` on refusal rather than throwing, and each returns an
 owned value rather than the caller's.
 
-| API          | Kind     | Summary                                                                                                       |
-| ------------ | -------- | ------------------------------------------------------------------------------------------------------------- |
-| `parseTable` | function | Parse unknown wire data into an owned, structurally valid, semantically sound schema.                         |
-| `parseRows`  | function | Parse unknown wire data into owned rows against a schema, coercing a numeric string and `'true'` / `'false'`. |
+| API          | Kind     | Summary                                                                                                                |
+| ------------ | -------- | ---------------------------------------------------------------------------------------------------------------------- |
+| `parseTable` | function | Parses unknown wire data into an owned, structurally valid, semantically sound table schema.                           |
+| `parseRows`  | function | Parses unknown wire data into owned rows against one table schema, coercing a numeric string and `'true'` / `'false'`. |
 
 **Hostile reflection.** A TypeScript shape does not guarantee that reflection succeeds. An ordinary
 helper or cloner may propagate a throw from a proxy trap or accessor. Guards and parsers contain that
@@ -237,9 +259,9 @@ throw and refuse instead. This is the hostile-reflection boundary for the whole 
 
 ## Cells
 
-Four cells, and each one fixes three things at once: what the column's cells may hold, how two of
-them compare, and which filter operators apply. Choosing the cell is the whole of a column's
-behavior, which is why there is no `sortable`, no `filterable`, and no comparison declared beside it.
+Each cell fixes what the column's cells may hold, how two of them compare, and which filter operators
+apply. Choosing the cell is the whole of a column's behavior, which is why there is no `sortable`, no
+`filterable`, and no comparison declared beside it.
 
 | Cell     | Holds     | Its own options | Compares by                  | Filters with                    |
 | -------- | --------- | --------------- | ---------------------------- | ------------------------------- |
@@ -255,6 +277,8 @@ accepts.
 
 ### text
 
+This fence declares a `text` column.
+
 ```ts
 import type { TextColumn } from '@orkestrel/table'
 
@@ -268,16 +292,20 @@ own string order, not a locale-aware collator.
 
 ### number
 
+This fence declares a `number` column.
+
 ```ts
 import type { NumberColumn } from '@orkestrel/table'
 
 const age: NumberColumn = { cell: 'number', key: 'age', label: 'Age' }
 ```
 
-A cell must be a finite number. `NaN` and both infinities are values a column cannot hold, so a
+A cell must be a finite number. `NaN` and either infinity are values a column cannot hold, so a
 write carrying one raises `TableError` coded `CELL`.
 
 ### flag
+
+This fence declares a `flag` column.
 
 ```ts
 import type { FlagColumn } from '@orkestrel/table'
@@ -286,10 +314,12 @@ const active: FlagColumn = { cell: 'flag', key: 'active', label: 'Active' }
 ```
 
 `flag` takes `equals` and nothing else. `contains` has no meaning against a boolean and `between`
-has two members it could not order usefully, so a filter carrying either against a `flag` column
+carries bounds it could not order usefully, so a filter carrying either against a `flag` column
 raises `TableError` coded `CELL`.
 
 ### choice
+
+This fence declares a `choice` column with its ordered choices.
 
 ```ts
 import type { ChoiceColumn } from '@orkestrel/table'
@@ -353,7 +383,7 @@ matchesFilter(when, '2026-03-14', range) // true
 matchesFilter(when, '2025-12-31', range) // false
 ```
 
-That is a boundary drawn on purpose, and it asks four things of the values a column holds. Every
+That is a boundary drawn on purpose, and it asks these things of the values a column holds. Every
 one of them is a comparison on the spelling, because that is the only comparison there is here.
 
 **One offset.** A column mixing offsets is not in chronological order:
@@ -385,7 +415,7 @@ serialized; whether it is drawn is the host's read of that flag.
 
 ### Reading a column
 
-Two reads turn a column key into a decision, and both are exported because a host asking the same
+These reads turn a column key into a decision, and each is exported because a host asking the same
 question before it writes needs the same answer. `extractColumn` finds the column a key names, and
 `matchesCell` is the gate every write, every seed, and every filter operand passes through.
 
@@ -455,7 +485,7 @@ table.count // 1 — the matcher folded the case; the default would not have
 
 An override receives `undefined` for a row carrying no cell there, so it decides absence for itself.
 A comparator always describes ascending order and `TableDirection` is applied afterwards, so one
-comparator serves both directions. An override for a column the schema does not declare is never
+comparator serves either direction. An override for a column the schema does not declare is never
 consulted and is not an error: the schema decides which columns exist, and the option only says how
 one of them behaves.
 
@@ -473,7 +503,7 @@ when a table declares no primary column. A database row arrives from a store tha
 key, so assuming the usual name saves a declaration and costs nothing. A table's rows arrive from a
 caller who may have joined, projected, or invented them in the browser, so the same assumption picks
 a column that may not exist, or picks one that exists and is not unique. Declaring the key is one
-line, and it is the line every refusal below is measured against.
+line, and it is the line every refusal described later is measured against.
 
 ```ts
 import { createTable, isTableError } from '@orkestrel/table'
@@ -503,7 +533,7 @@ try {
 table.rows.rows().length // 1 — a refused write changed nothing
 ```
 
-Four rules follow from it, and each one is a refusal rather than a repair:
+These rules follow from it, and each one is a refusal rather than a repair:
 
 - **A key is unique.** `add` raises `KEY` for a key the table already holds, and for a key repeated
   inside one batch. Every row in the batch is checked before any is admitted, so one duplicate
@@ -603,6 +633,27 @@ There is no cycling verb. Which direction a heading offers next is the host's de
 reads the column's term, decides, and then calls `set` or `remove`. Setting a term for a column
 already sorted replaces that column's direction **in place**, keeping its position in the list; every
 other term joins the end.
+
+Sorting and filtering keep the same list: at most one term per column, replaced in place, and
+compared as a whole before anything is announced. `mergeTerms` performs that write, `removeTerms`
+the drop, and `matchesTerms` the comparison, which takes the operand test from its caller because a
+direction and a filter's operands are not compared the same way. They are exported so that a host
+holding a lens of its own gets the same list arithmetic without writing it again.
+
+```ts
+import { matchesTerms, mergeTerms, removeTerms } from '@orkestrel/table'
+import type { TableOrder } from '@orkestrel/table'
+
+const current: readonly TableOrder[] = [
+	{ column: 'team', direction: 'ascending' },
+	{ column: 'age', direction: 'descending' },
+]
+const next = mergeTerms(current, [{ column: 'age', direction: 'ascending' }])
+
+next.map((order) => order.column) // ['team', 'age'] — the replaced term keeps its place
+matchesTerms(next, current, (order, other) => order.direction === other.direction) // false
+removeTerms(next, ['team']).map((order) => order.column) // ['age']
+```
 
 `sortRows` is the same pass without a table, for a caller that has rows and terms and no entity. It
 sorts a copy, so the list handed to it never moves.
@@ -756,12 +807,12 @@ This vocabulary is deliberately the one `@orkestrel/database` and `@orkestrel/re
 `limit` for the page size. A host doing server-side paging reads `sort.orders()`,
 `filter.filters()`, and `pagination.offset` and `pagination.limit`, and hands them to a query
 untranslated. Nothing is imported from either package and nothing is re-exported: the compatibility
-is in the words, so the two sides agree without either depending on the other.
+is in the words, so each side agrees without depending on the other.
 
 ### Selection and expansion
 
-Both hold `TableKey` sets and nothing else, and both offer the same three verbs: `select` and
-`expand` add, `clear` removes, and `toggle` turns one row around. Each takes no argument to mean
+Selection and expansion hold `TableKey` sets and nothing else, and each offers the same verbs:
+`select` and `expand` add, `clear` removes, and `toggle` turns one row around. Each takes no argument to mean
 every row, one key to mean one row, and a key list to mean those rows, and a list is checked in full
 before any of it moves.
 
@@ -809,12 +860,17 @@ table.expansion.toggle('2')
 table.expansion.keys.size // 3
 ```
 
-Both managers are the same algorithm over two sets, so it is written once. `computeKeys` takes the
-keys a caller may address, the set as it stands, the 0/1/N argument, and a decision made per key
-from that key's own membership. It returns `undefined` when any requested key is unknown, which is
-the `false` those verbs report. It returns the set it was handed when nothing moved, which is how a
-no-op stays silent. Otherwise it returns the next set. It is exported for the reason the managers
-are: a host keeping a third key set of its own gets the same atomicity without writing it again.
+The selection and the expansion manager are the same algorithm over their own key set, so it is
+written once, and so is the shell around it. `KeyManager`, the shared key-set shell, holds the store reads, the lifecycle gate, and the
+announcement, and each manager supplies only its own verbs and its own event. The shell is internal,
+like the managers that compose it.
+
+`computeKeys` is the key-set engine underneath the shell, and it is published. It takes the keys a
+caller may address, the set as it stands, the 0/1/N argument, and a decision made per key from that
+key's own membership. It returns `undefined` when any requested key is unknown, which is the `false`
+those verbs report. It returns the set it was handed when nothing moved, which is how a no-op stays
+silent. Otherwise it returns the next set. A host keeping a third key set of its own gets the same
+atomicity without writing it again.
 
 ```ts
 import { computeKeys } from '@orkestrel/table'
@@ -835,7 +891,7 @@ A table is a live projection, not a document that settles. It has no terminal su
 submit, and no result: rows arrive and leave for as long as the host holds it, and every read
 answers from what it holds at that moment.
 
-Two verbs end things, and they end different things.
+The verbs that end things end different things.
 
 - **`clear` resets, and the table stays open.** Every row goes, and sort, filter, selection,
   expansion, and the page all reset to how the table opened. The schema and the options do not move.
@@ -879,9 +935,8 @@ them raises `DESTROYED` after teardown. `destroy` itself does not.
 
 ## Events
 
-Eight events, and each carries the fact that moved. No listener sees a state the table has not
-finished writing. An event fires only when something actually moved: a write that changes nothing
-announces nothing.
+Each event carries the fact that moved. No listener sees a state the table has not finished writing.
+An event fires only when something actually moved: a write that changes nothing announces nothing.
 
 | Event      | Payload                     | Fires                                                                                                                                                                      |
 | ---------- | --------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -906,8 +961,8 @@ table therefore emits `remove`, `remove`, `select`, and then `paginate` if the p
 `TableOptions.rows` seeds quietly. Seeding announces nothing at all, so a table opens silent and
 every later write is heard.
 
-Wire listeners at construction through `TableOptions.on`, or afterwards through the `emitter`. Both
-reach the same typed emitter, and a listener that throws is isolated and reported to
+Wire listeners at construction through `TableOptions.on`, or afterwards through the `emitter`. Each
+reaches the same typed emitter, and a listener that throws is isolated and reported to
 `TableOptions.error` rather than breaking its siblings or the table.
 
 ```ts
@@ -984,9 +1039,9 @@ those bytes — reproduces them exactly. Compare two wire forms, never a wire fo
 incoming bytes.
 
 Rows travel too, and they arrive as strings far more often than not — a query string, a form post, a
-CSV cell. `parseRows` coerces exactly two things and nothing else: a numeric string into a `number`
-for a `number` column, and `'true'` or `'false'` into a boolean for a `flag` column. Every other
-value must already have its column's shape.
+CSV cell. `parseRows` coerces a numeric string into a `number` for a `number` column, and `'true'` or
+`'false'` into a boolean for a `flag` column, and nothing else. Every other value must already have
+its column's shape.
 
 `parseRows` is strict in every other direction. It reads rows against the schema, so a key the
 schema does not declare refuses the whole payload, a cell its column cannot hold refuses the whole
@@ -1050,7 +1105,7 @@ isTableSchema({ key: 'id', columns: [{ cell: 'text', key: 'id' }] }) // true
 isTableSchema({ columns: [] }) // false — `key` is required
 ```
 
-The two schema guards are where the boundary is drawn twice, because a schema can be the right shape
+The schema guards are where the boundary is drawn twice, because a schema can be the right shape
 and still be a table nobody could open. `isStructuralTableSchema` answers the shape;
 `isTableSchema` answers the shape and the audit together, and it is the single-call guard consumers
 and parsers read. The constructor reads `isStructuralTableSchema` and runs `auditTable` once so its
@@ -1073,6 +1128,11 @@ The cloners are how a value stops being the caller's. The table clones the schem
 every row at admission, and it clones every row it hands back. They are exported because a consumer
 building its own row store needs the same guarantee.
 
+Construction guards the schema it was handed, owns a copy, and then guards and audits that copy, so
+the schema a table opens against is the one it validated. A schema whose property reads and stored
+values disagree — a proxy answering a read with one value while holding another — is refused with
+`SCHEMA` instead of opened.
+
 ```ts
 import { cloneRow, cloneSchema } from '@orkestrel/table'
 
@@ -1087,7 +1147,7 @@ Object.isFrozen(cloneSchema({ key: 'id', columns: [{ cell: 'text', key: 'id' }] 
 
 ### Budgets
 
-Six budgets bound how much a schema can be, so a document that arrives from a wire cannot cost
+The budgets bound how much a schema can be, so a document that arrives from a wire cannot cost
 unbounded memory or unbounded scanning before anything decides to trust it. Every one is exported, so
 a host can check against the same number the package checks against.
 
@@ -1100,7 +1160,7 @@ a host can check against the same number the package checks against.
 | `TEXT_LIMIT`   | 1048576 | UTF-16 code units       | Every string one schema retains, together |
 | `NODE_LIMIT`   | 16384   | records, arrays, leaves | Everything one schema retains, together   |
 
-They bind at two doors, and which door a limit sits at is the whole story.
+They bind at the schema door and the value door, and which door a limit sits at is the whole story.
 
 **The schema door reports.** `auditTable` counts columns, choices, names, strings, total text, and
 total nodes — `meta` included, since it is retained like everything else — and returns one human
@@ -1111,25 +1171,25 @@ schema, so no over-budget schema is ever held.
 column, so an over-long cell is refused before anything else looks at it. `rows.add`, `rows.update`,
 and a seeded row raise `CELL`; `parseRows` returns `undefined`.
 
-`STRING_LIMIT` is the one that stands at both, so no string this package retains is longer than
-65536 code units whichever way it arrived.
+`STRING_LIMIT` is the one that stands at each door, so no string this package retains is longer
+than 65536 code units whichever way it arrived.
 
-The two whole-schema ceilings are what make the arithmetic safe. Whatever the per-item limits admit,
+The whole-schema ceilings are what make the arithmetic safe. Whatever the per-item limits admit,
 one audited schema retains at most 1048576 string code units and at most 16384 nodes, so the worst
-case is those two numbers rather than the product of the others.
+case is those ceilings rather than the product of the others.
 
-Two things stay unbounded, each for its own reason. **Rows are not budgeted**: a table legitimately
-holds a million of them, and a ceiling here would be product policy wearing a constant's name. And
-the structural **read** at the parse door is not bounded either — `parseTable` copies and guards
-every column that arrived before the audit sees one of them, so a payload four times over
-`COLUMN_LIMIT` is read four times over and then refused. Bound the size of a payload at the transport
-that delivers it, which is the only layer holding the bytes.
+Rows and the structural read stay unbounded, each for its own reason. **Rows are not budgeted**: a
+table legitimately holds a million of them, and a ceiling here would be product policy wearing a
+constant's name. And the structural **read** at the parse door is not bounded either — `parseTable`
+copies and guards every column that arrived before the audit sees one of them, so a payload four
+times over `COLUMN_LIMIT` is read four times over and then refused. Bound the size of a payload at
+the transport that delivers it, which is the only layer holding the bytes.
 
 ### Auditing a schema
 
-`auditTable` is the semantic pass beyond structural validation. It reports seven domain faults
-and every budget breach above — six the shape alone cannot see, and one, an unownable `meta`,
-that the structural guard also refuses so the three doors stay in agreement:
+`auditTable` is the semantic pass beyond structural validation. It reports the domain faults listed
+following and every budget breach stated earlier. The shape alone cannot see them, except an unownable `meta`,
+which the structural guard also refuses so the doors stay in agreement:
 
 - `key` names no declared column.
 - `key` names a `number` or `flag` column, whose cells can never hold a string identity.
@@ -1172,18 +1232,16 @@ auditTable({ key: 'id', columns: [{ cell: 'text', key: 'id' }] }) // []
 
 ## Methods
 
-The public methods of the seven behavioral interfaces, which the seven classes implement exactly and
-add nothing to. Every readonly data member stays in the `## Surface` rows above and is not repeated
-here: `TableInterface`'s `emitter`, `schema`, six managers, `view`, `count`, and `destroyed`;
-`SelectionManagerInterface.keys` and `ExpansionManagerInterface.keys`; and
-`PaginationManagerInterface`'s `page`, `limit`, `offset`, and `count`.
+The public methods of the behavioral interfaces, which their classes implement exactly and add
+nothing to. Every readonly data member stays in the `## Surface` rows stated earlier, in each
+interface's `Shape` cell, and is not repeated here.
 
 Every other row in the Surface tables is a data shape, a union, a constant, a function, or an error
 class, so none of them carries a method table. `CellComparator` and `CellMatcher` are callable
 function types with one call signature and no named members.
 
-Where a method takes no argument, one key, or a key list, that is one method with three overloads
-rather than three methods. A list is checked in full before any of it moves, and the call returns
+Where a method takes no argument, one key, or a key list, that is one method with overloads rather
+than several methods. A list is checked in full before any of it moves, and the call returns
 `true` only when every name in it names what its manager addresses: a row the table holds for
 `rows`, `selection`, and `expansion`, and a column the schema declares for `sort` and `filter`. So
 `selection.clear('9')` is `false` for a key no row carries, while `sort.remove('age')` is `true` for
@@ -1192,75 +1250,75 @@ it either way.
 
 #### `TableInterface`
 
-| Method    | Returns | Behavior                                                                                                                 |
-| --------- | ------- | ------------------------------------------------------------------------------------------------------------------------ |
-| `clear`   | `void`  | Put the table back the way it opened, holding nothing. Rows, sort, filter, selection, expansion, and the page all reset. |
-| `destroy` | `void`  | Tear the table down. Idempotent; afterwards every write raises `DESTROYED` and every getter still answers.               |
+| Method    | Returns | Summary                                                                                                                   |
+| --------- | ------- | ------------------------------------------------------------------------------------------------------------------------- |
+| `clear`   | `void`  | Puts the table back the way it opened, holding nothing. Rows, sort, filter, selection, expansion, and the page all reset. |
+| `destroy` | `void`  | Tears the table down. Idempotent; afterwards every write raises `DESTROYED` and every getter still answers.               |
 
 #### `RowManagerInterface`
 
-| Method   | Returns                   | Behavior                                                                                                           |
-| -------- | ------------------------- | ------------------------------------------------------------------------------------------------------------------ |
-| `row`    | `TableRow` or `undefined` | Find one row by key; `undefined` when the table holds no such key.                                                 |
-| `rows`   | `readonly TableRow[]`     | Every row the table holds, in its own order — unfiltered, unsorted, and unpaged.                                   |
-| `add`    | `void`                    | Take in one row or several, appending them in the order given. Every row is checked before any is admitted.        |
-| `update` | `boolean`                 | Write over one row or several, each found by the key it carries. The cells given replace; the cells left out stay. |
-| `move`   | `boolean`                 | Move one row to another place in the table's own order, counted from zero and clamped to the rows that exist.      |
-| `remove` | `void` or `boolean`       | Take out every row, one row, or several. Selection and expansion drop the keys of the rows that went.              |
+| Method   | Returns                   | Summary                                                                                                             |
+| -------- | ------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| `row`    | `TableRow` or `undefined` | Finds one row by key; `undefined` when the table holds no such key.                                                 |
+| `rows`   | `readonly TableRow[]`     | Reads every row the table holds, in its own order — unfiltered, unsorted, and unpaged.                              |
+| `add`    | `void`                    | Takes in one row or several, appending them in the order given. Every row is checked before any is admitted.        |
+| `update` | `boolean`                 | Writes over one row or several, each found by the key it carries. The cells given replace; the cells left out stay. |
+| `move`   | `boolean`                 | Moves one row to another place in the table's own order, counted from zero and clamped to the rows that exist.      |
+| `remove` | `void` or `boolean`       | Takes out every row, one row, or several. Selection and expansion drop the keys of the rows that went.              |
 
 #### `SortManagerInterface`
 
-| Method   | Returns                     | Behavior                                                                                                                                                      |
-| -------- | --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `order`  | `TableOrder` or `undefined` | Find one column's term; `undefined` when nothing sorts that column.                                                                                           |
-| `orders` | `readonly TableOrder[]`     | Every term the table sorts by, first to last, in the order they decide.                                                                                       |
-| `set`    | `void`                      | Sort by one column or several. A term for a column already sorted replaces its direction in place; others join the end. An undeclared column raises `COLUMN`. |
-| `remove` | `void` or `boolean`         | Stop sorting by everything, by one column, or by several. An undeclared column returns `false` and stops nothing.                                             |
+| Method   | Returns                     | Summary                                                                                                                                                                   |
+| -------- | --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `order`  | `TableOrder` or `undefined` | Finds one column's term; `undefined` when nothing sorts that column.                                                                                                      |
+| `orders` | `readonly TableOrder[]`     | Reads every term the table sorts by, first to last, in the order they decide.                                                                                             |
+| `set`    | `void`                      | Sorts by one column or several. A term for a column already sorted replaces its direction in place; every other term joins the end. An undeclared column raises `COLUMN`. |
+| `remove` | `void` or `boolean`         | Stops sorting by everything, by one column, or by several. An undeclared column returns `false` and stops nothing.                                                        |
 
 #### `FilterManagerInterface`
 
-| Method    | Returns                      | Behavior                                                                                                                                                                                           |
-| --------- | ---------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `filter`  | `TableFilter` or `undefined` | Find one column's filter; `undefined` when nothing filters that column.                                                                                                                            |
-| `filters` | `readonly TableFilter[]`     | Every filter the table keeps rows by, in the order they were set.                                                                                                                                  |
-| `set`     | `void`                       | Filter one column or several. A filter for a column already filtered replaces it; others join the end. An undeclared column raises `COLUMN`, and a filter the column does not admit raises `CELL`. |
-| `remove`  | `void` or `boolean`          | Stop filtering everything, one column, or several. An undeclared column returns `false` and stops nothing.                                                                                         |
+| Method    | Returns                      | Summary                                                                                                                                                                                                       |
+| --------- | ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `filter`  | `TableFilter` or `undefined` | Finds one column's filter; `undefined` when nothing filters that column.                                                                                                                                      |
+| `filters` | `readonly TableFilter[]`     | Reads every filter the table keeps rows by, in the order they were set.                                                                                                                                       |
+| `set`     | `void`                       | Filters one column or several. A filter for a column already filtered replaces it; every other one joins the end. An undeclared column raises `COLUMN`, and a filter the column does not admit raises `CELL`. |
+| `remove`  | `void` or `boolean`          | Stops filtering everything, one column, or several. An undeclared column returns `false` and stops nothing.                                                                                                   |
 
 #### `SelectionManagerInterface`
 
-| Method   | Returns             | Behavior                                                                                         |
-| -------- | ------------------- | ------------------------------------------------------------------------------------------------ |
-| `select` | `void` or `boolean` | Pick every row the table holds, one row, or several. Every row, not every visible one.           |
-| `clear`  | `void` or `boolean` | Drop every pick, one pick, or several. A known key that was not picked still answers `true`.     |
-| `toggle` | `boolean`           | Pick one row or drop it when it is already picked; over a list, turn each row around on its own. |
+| Method   | Returns             | Summary                                                                                              |
+| -------- | ------------------- | ---------------------------------------------------------------------------------------------------- |
+| `select` | `void` or `boolean` | Picks every row the table holds, one row, or several. Every row, not every visible one.              |
+| `clear`  | `void` or `boolean` | Drops every pick, one pick, or several. A known key that was not picked still answers `true`.        |
+| `toggle` | `boolean`           | Picks one row, or drops it when it is already picked; over a list, turns each row around on its own. |
 
 #### `ExpansionManagerInterface`
 
-| Method   | Returns             | Behavior                                                                                        |
-| -------- | ------------------- | ----------------------------------------------------------------------------------------------- |
-| `expand` | `void` or `boolean` | Open every row the table holds, one row, or several.                                            |
-| `clear`  | `void` or `boolean` | Close every row, one row, or several. A known key that was not open still answers `true`.       |
-| `toggle` | `boolean`           | Open one row or close it when it is already open; over a list, turn each row around on its own. |
+| Method   | Returns             | Summary                                                                                             |
+| -------- | ------------------- | --------------------------------------------------------------------------------------------------- |
+| `expand` | `void` or `boolean` | Opens every row the table holds, one row, or several.                                               |
+| `clear`  | `void` or `boolean` | Closes every row, one row, or several. A known key that was not open still answers `true`.          |
+| `toggle` | `boolean`           | Opens one row, or closes it when it is already open; over a list, turns each row around on its own. |
 
 #### `PaginationManagerInterface`
 
-| Method   | Returns | Behavior                                                                                                           |
-| -------- | ------- | ------------------------------------------------------------------------------------------------------------------ |
-| `move`   | `void`  | Show another page, counted from one and clamped to the pages that exist.                                           |
-| `resize` | `void`  | Say how many rows a page holds, keeping the first row the view was showing. Leave the argument out to stop paging. |
+| Method   | Returns | Summary                                                                                                             |
+| -------- | ------- | ------------------------------------------------------------------------------------------------------------------- |
+| `move`   | `void`  | Shows another page, counted from one and clamped to the pages that exist.                                           |
+| `resize` | `void`  | Sets how many rows a page holds, keeping the first row the view was showing. Leave the argument out to stop paging. |
 
 ### Errors
 
 `TableError` carries a machine-readable `code` and an optional structured `context`. Narrow a caught
 value with `isTableError` and branch on `code`; never match on message text.
 
-| Code        | Raised when                                                                                                                                                                                                                                                                                 |
-| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `SCHEMA`    | The schema is not a table schema, or `auditTable` found a domain fault or a budget breach — `createTable` and the `Table` constructor raise those. `serializeTable` and `cloneSchema` raise it at their own door for a `meta` no clone can own, which the guard and the audit refuse first. |
-| `COLUMN`    | A term or a filter names a column the schema does not declare.                                                                                                                                                                                                                              |
-| `KEY`       | A row's identity is missing, unusable, already taken, or repeated inside one batch.                                                                                                                                                                                                         |
-| `CELL`      | A cell is one its column cannot hold, or a filter's operator or operand is one its column cannot take.                                                                                                                                                                                      |
-| `DESTROYED` | A write reached a table that has been torn down.                                                                                                                                                                                                                                            |
+| Code        | Raised when                                                                                                                                                                                                                                                                                                                         |
+| ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `SCHEMA`    | The schema is not a table schema, or `auditTable` found a domain fault or a budget breach — `createTable` and the `Table` constructor raise those. `serializeTable` and `cloneSchema` raise it at their own door for a `meta` no clone can own, which the guard and the audit refuse first for every schema whose reads are stable. |
+| `COLUMN`    | A term or a filter names a column the schema does not declare.                                                                                                                                                                                                                                                                      |
+| `KEY`       | A row's identity is missing, unusable, already taken, or repeated inside one batch.                                                                                                                                                                                                                                                 |
+| `CELL`      | A cell is one its column cannot hold, or a filter's operator or operand is one its column cannot take.                                                                                                                                                                                                                              |
+| `DESTROYED` | A write reached a table that has been torn down.                                                                                                                                                                                                                                                                                    |
 
 ```ts
 import { createTable, isTableError } from '@orkestrel/table'
@@ -1315,10 +1373,11 @@ These invariants hold across [`src/core`](../src/core) and this guide.
 
 1. **Documented surface equals exported surface.** Every row in the `## Surface` tables is a real
    barrel export of `src/core`, and every barrel export is a row — both directions, exhaustively.
-   Nothing in this module is internal, so the parity suite's internal list is empty.
+   The manager classes and the key-set shell are internal, so the parity suite's internal list names
+   them and nothing else.
 2. **Documented methods equal interface methods.** Each `## Methods` table lists exactly its
    interface's call-signature members, and each class implements every one and adds no public
-   behavior beyond them. Seven interfaces, seven tables, seven classes.
+   behavior beyond them. Each interface has one table and one class.
 3. **Identity is a declared column's non-empty string cell.** `TableSchema.key` is required and must
    name a declared column. A row whose cell there is missing, empty, or not a string is refused with
    `KEY`, and so is a key the table already holds or a key repeated inside one batch. There is no
@@ -1327,11 +1386,11 @@ These invariants hold across [`src/core`](../src/core) and this guide.
    admits and each row it hands back, and clones and freezes the schema at construction. An edit to
    the object a caller passed changes nothing inside the table, and no getter returns a live internal
    reference.
-5. **A write is all-or-nothing, and it refuses one of two ways.** `rows.add`, `rows.update`,
-   `rows.remove`, `sort.set`, `sort.remove`, `filter.set`, `filter.remove`, and every 0/1/N verb on
-   selection and expansion check the whole argument before any of it lands. A bad value raises
-   `KEY`, `CELL`, or `COLUMN`. A name that nothing answers to returns `false` and raises nothing —
-   an unheld row key for `rows`, `selection`, and `expansion`, and an undeclared column for
+5. **A write is all-or-nothing, and it refuses by raising or by returning `false`.** `rows.add`,
+   `rows.update`, `rows.remove`, `sort.set`, `sort.remove`, `filter.set`, `filter.remove`, and every
+   0/1/N verb on selection and expansion check the whole argument before any of it lands. A bad
+   value raises `KEY`, `CELL`, or `COLUMN`. A name that nothing answers to returns `false` and raises
+   nothing — an unheld row key for `rows`, `selection`, and `expansion`, and an undeclared column for
    `sort.remove` and `filter.remove`. Either way the table is left exactly as it was.
 6. **`update` merges and cannot move a key.** The cells given replace the cells held and the cells
    left out stay as they are, and the row is found by the key it carries — so no sequence of
@@ -1389,8 +1448,8 @@ These invariants hold across [`src/core`](../src/core) and this guide.
     the page never travel.
 18. **Identity is checked at the parse door.** `parseRows` refuses the whole payload when a row has
     no usable identity, when two rows share one, when a cell's column cannot hold it, or when a key
-    names no declared column. It coerces exactly two things — a numeric string for a `number` column
-    and `'true'` / `'false'` for a `flag` column — and nothing else.
+    names no declared column. It coerces a numeric string for a `number` column and `'true'` /
+    `'false'` for a `flag` column, and nothing else.
 19. **Every retained size is budgeted.** `auditTable` reports a breach of `COLUMN_LIMIT`,
     `CHOICE_LIMIT`, `NAME_LIMIT`, `STRING_LIMIT`, `TEXT_LIMIT`, or `NODE_LIMIT`, so `createTable`
     raises `SCHEMA` and `parseTable` refuses; `matchesCell` refuses a string breaching
@@ -1399,7 +1458,7 @@ These invariants hold across [`src/core`](../src/core) and this guide.
     per-item limits never multiply. Row count is deliberately unbudgeted, and so is the structural
     read at the parse door, which is the transport's to bound.
 20. **`auditTable` returns diagnostics, not a contract.** The list's emptiness is the promise. The
-    wording of its strings is not, and no consumer should parse them.
+    wording of its strings is not. Never parse them.
 21. **Temporal values are ISO text compared lexically, under one spelling.** A date, a time, and a
     timestamp are `text` cells, and lexical order is chronological order only where a column's
     values share one offset — normally UTC `Z` — one precision, and normalized midnight spelling.
@@ -1448,11 +1507,15 @@ this package answers today through a mechanism it already exposes.
 
 ## Tests
 
-- [`tests/guides.test.ts`](../tests/guides.test.ts) — the `## Surface` ↔ barrel bijection, the seven
-  interface ↔ class method bijections, and the worked examples above executed against the real
-  source so a documented value that the code contradicts fails.
-- [`tests/src/core/Table.test.ts`](../tests/src/core/Table.test.ts) — construction, seeding, the
-  derived `view` and `count`, emission order, `clear`, `destroy`, and writes after teardown.
+- [`tests/guides.test.ts`](../tests/guides.test.ts) — the `## Surface` ↔ barrel bijection, the
+  interface ↔ class method bijections, and the equality gate: every `Summary` cell against its
+  declaration's description paragraph, the titled `Open a table` fence against the `@example` block
+  of that title (pinned so the titled pair cannot be retired silently), and the README pitch against
+  this guide's tagline. It also runs the preceding worked examples against the real source so a
+  documented value that the code contradicts fails.
+- [`tests/src/core/Table.test.ts`](../tests/src/core/Table.test.ts) — construction, schema
+  ownership, seeding, the derived `view` and `count`, emission order, `clear`, `destroy`, and writes
+  after teardown.
 - [`tests/src/core/tables/RowManager.test.ts`](../tests/src/core/tables/RowManager.test.ts) —
   `row`, `rows`, `add`, `update`, `move`, `remove`, batch atomicity, and identity refusals.
 - [`tests/src/core/tables/SortManager.test.ts`](../tests/src/core/tables/SortManager.test.ts) —
@@ -1463,15 +1526,19 @@ this package answers today through a mechanism it already exposes.
   — `select`, `clear`, `toggle`, the 0/1/N overloads, and pruning on removal.
 - [`tests/src/core/tables/ExpansionManager.test.ts`](../tests/src/core/tables/ExpansionManager.test.ts)
   — `expand`, `clear`, `toggle`, the 0/1/N overloads, and pruning on removal.
+- [`tests/src/core/tables/KeyManager.test.ts`](../tests/src/core/tables/KeyManager.test.ts) — the
+  0/1/N forms, the unknown-key refusal, the announcement only on a move, the owned key set, and the
+  gate throw passed through.
 - [`tests/src/core/tables/PaginationManager.test.ts`](../tests/src/core/tables/PaginationManager.test.ts)
   — `page`, `limit`, `offset`, `count`, `move`, `resize`, clamping, and the unpaged table.
 - [`tests/src/core/helpers.test.ts`](../tests/src/core/helpers.test.ts) — `extractColumn`,
-  `extractKey`, `computeKeys`, `matchesCell`, `compareCells`, `admitsFilter`, `matchesFilter`,
-  `filterRows`, `sortRows`, `auditTable`, `serializeTable`, `serializeRows`, and the budgets.
+  `extractKey`, `computeKeys`, `mergeTerms`, `removeTerms`, `matchesTerms`, `matchesCell`,
+  `compareCells`, `admitsFilter`, `matchesFilter`, `filterRows`, `sortRows`, `auditTable`,
+  `serializeTable`, `serializeRows`, and the budgets.
 - [`tests/src/core/validators.test.ts`](../tests/src/core/validators.test.ts) — every guard against
   valid, off-shape, and hostile input, plus guard/parser soundness in both directions.
 - [`tests/src/core/parsers.test.ts`](../tests/src/core/parsers.test.ts) — `parseTable`, `parseRows`,
-  the two coercions, identity at the parse door, and the canonical byte-stable round trip.
+  the coercions, identity at the parse door, and the canonical byte-stable round trip.
 - [`tests/src/core/cloners.test.ts`](../tests/src/core/cloners.test.ts) — every clone is owned,
   frozen, and deep enough that no caller reference survives.
 - [`tests/src/core/constants.test.ts`](../tests/src/core/constants.test.ts) — the cell registry and
