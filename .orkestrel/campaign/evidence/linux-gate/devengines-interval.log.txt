@@ -1,0 +1,38 @@
+ambient npm 10.9.7 on node v22.22.2; registry read 2026-09-13
+installed npm 10.9.1 -> self-reports 10.9.1
+installed npm 10.9.2 -> self-reports 10.9.2
+installed npm 10.9.4 -> self-reports 10.9.4
+installed npm 10.9.5 -> self-reports 10.9.5
+installed npm 10.9.6 -> self-reports 10.9.6
+installed npm 10.9.8 -> self-reports 10.9.8
+installed npm 10.9.9 -> self-reports 10.9.9
+installed npm 11.0.0 -> self-reports 11.0.0
+installed npm 11.1.0 -> self-reports 11.1.0
+installed npm 11.2.0 -> self-reports 11.2.0
+installed npm 11.3.0 -> self-reports 11.3.0
+installed npm 11.4.0 -> self-reports 11.4.0
+installed npm 11.4.1 -> self-reports 11.4.1
+installed npm 11.4.2 -> self-reports 11.4.2
+installed npm 11.5.1 -> self-reports 11.5.1
+installed npm 11.5.2 -> self-reports 11.5.2
+--- guard manifest (the emitted devEngines record) at every unmeasured release in [10.9.0, 11.6.0) ---
+  10.9.1  guard  exit=1   refused=yes  crash=no   –
+  10.9.2  guard  exit=1   refused=yes  crash=no   –
+  10.9.4  guard  exit=1   refused=yes  crash=no   –
+  10.9.5  guard  exit=1   refused=yes  crash=no   –
+  10.9.6  guard  exit=1   refused=yes  crash=no   –
+  10.9.8  guard  exit=1   refused=yes  crash=no   –
+  10.9.9  guard  exit=1   refused=yes  crash=no   –
+  11.0.0  guard  exit=1   refused=yes  crash=no   –
+  11.1.0  guard  exit=1   refused=yes  crash=no   –
+  11.2.0  guard  exit=1   refused=yes  crash=no   –
+  11.3.0  guard  exit=1   refused=yes  crash=no   –
+  11.4.0  guard  exit=1   refused=yes  crash=no   –
+  11.4.1  guard  exit=1   refused=yes  crash=no   –
+  11.4.2  guard  exit=1   refused=yes  crash=no   –
+  11.5.1  guard  exit=1   refused=yes  crash=no   –
+  11.5.2  guard  exit=1   refused=yes  crash=no   –
+--- plain manifest at the 11.5.x patch releases: does any install before 11.6.0? ---
+  11.5.1  plain  exit=1   refused=no   crash=yes  –
+  11.5.2  plain  exit=1   refused=no   crash=yes  –
+DEVINTERVAL-DONE
