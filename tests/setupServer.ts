@@ -13,13 +13,21 @@ import type { ServerResponse } from 'node:http'
 import type { ExecuteResult } from '@orkestrel/process'
 import type { ESTree } from 'vite'
 import { execFileSync } from 'node:child_process'
+import { once } from 'node:events'
 import { createServer } from 'node:http'
 import { createRequire } from 'node:module'
-import { join } from 'node:path'
+import { connect, createServer as createSocketServer } from 'node:net'
+import { delimiter, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { gzipSync } from 'node:zlib'
 import { isArray, isRecord, isString, parseJSON } from '@orkestrel/contract'
-import { execute, resolveExecutable } from '@orkestrel/process/server'
+import {
+	execute,
+	executeSync,
+	mergeEnvironment,
+	readVariable,
+	resolveExecutable,
+} from '@orkestrel/process/server'
 import { parseSync, transformWithOxc } from 'vite'
 import {
 	CATALOG_AGENT_PATH,
@@ -30,7 +38,9 @@ import {
 	blueprintToScripts,
 	CANON_PATHS,
 	Compiler,
+	compareVersions,
 	createBlueprint,
+	FLOOR_RANGE_PATTERN,
 	HOST_PATHS,
 	isDeferredPath,
 	isScaffoldError,
@@ -319,6 +329,37 @@ export interface TestOllamaInterface {
 }
 
 /**
+ * Describes the npm floor a proof needs, beside where a provisioned copy may land.
+ *
+ * @remarks
+ * `floor` is the exact `major.minor.patch` version the declared range floors at rather
+ * than the range itself, because it is both the comparison's right side and the version
+ * a provisioning install asks the registry for. `prefix` is a directory the caller owns
+ * and can remove; nothing lands there when the host's own npm already satisfies the
+ * floor. `environment` is the record a provisioned `PATH` is prepended to, so a proof
+ * that already pins npm settings keeps them.
+ */
+export interface TestNpmOptions {
+	readonly floor: string
+	readonly prefix: string
+	readonly environment?: NodeJS.ProcessEnv
+}
+
+/**
+ * Describes the npm a proof launches, beside the environment that resolves it.
+ *
+ * @remarks
+ * `environment` is the whole record a spawn takes rather than a patch over one, because
+ * a nested `npm run` inherits it and a manifest guard reads the version that inherited
+ * `PATH` resolves. `version` is what the environment reported rather than what the
+ * caller asked for, so an assertion can name the npm the proof actually ran under.
+ */
+export interface TestNpmInterface {
+	readonly version: string
+	readonly environment: NodeJS.ProcessEnv
+}
+
+/**
  * Names the repository root, resolved from this file rather than from the process.
  *
  * @remarks
@@ -377,6 +418,158 @@ export function listExecutablePaths(): readonly string[] {
  * asserts against this rather than assuming the host it was written on.
  */
 export const CASE_FOLDING: boolean = !supportsCase()
+
+/**
+ * Checks whether this host reaches an IPv4-mapped IPv6 loopback address.
+ *
+ * @returns True if a connection to `::ffff:127.0.0.1` reaches a listener bound to
+ * `127.0.0.1`; false otherwise.
+ * @throws When the host refuses the listener the reading opens, which answers nothing
+ * about the address family and must not read as a refused connection.
+ *
+ * @remarks
+ * A host built without an IPv6 stack refuses an `AF_INET6` connect with
+ * `EAFNOSUPPORT`, so a fixture address rewritten into the `::ffff:` form reaches
+ * nothing there while reaching the same listener on a host that carries the stack. A
+ * proof asserting on what such an address delivered runs where this reports true. The
+ * reading opens a real listener on `127.0.0.1` and closes it and the client socket on
+ * every path, and it reaches no address beyond loopback.
+ */
+export async function supportsMappedLoopback(): Promise<boolean> {
+	const loopback = await createLoopback(createSocketServer())
+	const socket = connect(loopback.port, '::ffff:127.0.0.1')
+	try {
+		await once(socket, 'connect')
+		return true
+	} catch {
+		return false
+	} finally {
+		socket.destroy()
+		await loopback.destroy()
+	}
+}
+
+/**
+ * Reads the npm floor a manifest declares.
+ *
+ * @param manifest - The parsed `package.json` value.
+ * @returns The exact `major.minor.patch` version the declared
+ * `devEngines.packageManager.version` range floors at.
+ * @throws When the value carries no `devEngines.packageManager.version`, or carries one
+ * that is not a `>=` floor over an exact version.
+ *
+ * @remarks
+ * A proof that installs a generated workspace reads the floor from the artifact rather
+ * than from a constant, so a raised floor reaches the proof through the manifest the
+ * compiler emitted instead of through a second declaration that can drift from it.
+ * Absence throws rather than licensing the host's own npm: the guard exists because an
+ * npm beneath the floor refuses the install, so a proof that fell back silently would
+ * report that refusal as the package's own defect.
+ *
+ * @example
+ * ```ts
+ * readNpmFloor({ devEngines: { packageManager: { version: '>=11.6.0' } } }) // '11.6.0'
+ * ```
+ */
+export function readNpmFloor(manifest: unknown): string {
+	if (!isRecord(manifest) || !isRecord(manifest.devEngines)) {
+		throw new Error('The manifest declares no devEngines record')
+	}
+	const manager: unknown = manifest.devEngines.packageManager
+	if (!isRecord(manager)) {
+		throw new Error('The manifest declares no devEngines.packageManager record')
+	}
+	const version: unknown = manager.version
+	if (!isString(version) || !FLOOR_RANGE_PATTERN.test(version)) {
+		throw new Error(
+			'The manifest declares no devEngines.packageManager.version floor of the >=major.minor.patch form',
+		)
+	}
+	return version.slice(2)
+}
+
+/**
+ * Reads the npm version an environment resolves.
+ *
+ * @param environment - The environment overrides a spawn takes. Default: this process's own.
+ * @returns The exact version the resolved npm reports for its own `--version`.
+ * @throws When the run fails, carrying what it wrote to standard error.
+ *
+ * @remarks
+ * Launched through `executeSync`, which resolves the executable itself and never uses a
+ * shell, so this reading carries no platform branch of its own. The version comes from
+ * the binary rather than from a manifest beside it, because `PATH` decides which npm a
+ * nested `npm run` launches and only a run under that environment reports the answer.
+ */
+export function readNpmVersion(environment: NodeJS.ProcessEnv = process.env): string {
+	const read = executeSync(
+		{ file: 'npm', arguments: ['--version'], environment },
+		{ workspace: WORKSPACE_ROOT, strict: false },
+	)
+	if (read.failed) {
+		throw new Error(`The npm this environment resolves refused --version: ${read.stderr}`)
+	}
+	return read.stdout.trim()
+}
+
+/**
+ * Resolves an npm at or above a declared floor, and the environment that launches it.
+ *
+ * @param options - The floor, the directory a provisioned copy may land in, and the
+ * environment a provisioned `PATH` is prepended to.
+ * @returns The version resolved, and the environment every spawn against the guarded
+ * workspace must take.
+ * @throws When provisioning fails, or when the provisioned copy still reports a version
+ * beneath the floor.
+ *
+ * @remarks
+ * A manifest declaring `devEngines.packageManager` refuses a host npm beneath its floor,
+ * and it refuses every nested `npm run` under that install on the same reading, so a
+ * proof driving such a workspace launches an admitted npm rather than the host's.
+ * Prepending the provisioned `PATH` is what carries the selection down: a launcher form
+ * that runs one version while the host's stays on `PATH` leaves the guard reading the
+ * host's version and refusing. The host's own npm is used unchanged when it satisfies
+ * the floor, so a conforming host installs nothing and reaches no registry.
+ */
+export function resolveNpm(options: TestNpmOptions): TestNpmInterface {
+	const base = options.environment ?? process.env
+	const host = readNpmVersion(base)
+	if (compareVersions(host, options.floor) >= 0) {
+		return { version: host, environment: mergeEnvironment(false, base) }
+	}
+	const bin = join(options.prefix, 'node_modules', '.bin')
+	const provisioned = executeSync(
+		{
+			file: 'npm',
+			arguments: [
+				'install',
+				'--prefix',
+				options.prefix,
+				'--ignore-scripts',
+				'--no-audit',
+				'--no-fund',
+				`npm@${options.floor}`,
+			],
+			environment: base,
+		},
+		{ workspace: WORKSPACE_ROOT, strict: false, timeout: 300_000 },
+	)
+	if (provisioned.failed) {
+		throw new Error(
+			`Provisioning npm@${options.floor} into ${options.prefix} failed: ${provisioned.stderr}`,
+		)
+	}
+	const environment = mergeEnvironment(false, base, {
+		PATH: `${bin}${delimiter}${readVariable(base, 'PATH') ?? ''}`,
+	})
+	const version = readNpmVersion(environment)
+	if (compareVersions(version, options.floor) < 0) {
+		throw new Error(
+			`The npm provisioned at ${bin} reports ${version}, beneath the ${options.floor} floor`,
+		)
+	}
+	return { version, environment }
+}
 
 /**
  * Builds a valid inert vendored-host manifest entry, with focused field replacements.

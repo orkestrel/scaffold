@@ -1,10 +1,12 @@
 import { execFileSync } from 'node:child_process'
 import { existsSync, readFileSync } from 'node:fs'
-import { basename, join } from 'node:path'
+import { createServer } from 'node:http'
+import { basename, delimiter, join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { requireValue } from '@orkestrel/test'
-import { createScratch } from '@orkestrel/test/server'
-import { ScaffoldError } from '@src/core'
+import { createLoopback, createScratch } from '@orkestrel/test/server'
+import { compareVersions, extractVersion, MINIMUM_NPM_VERSION, ScaffoldError } from '@src/core'
+import { readVariable } from '@orkestrel/process/server'
 import { buildSnapshot } from './setup.js'
 import {
 	AUDIT_EXIT_CASES,
@@ -60,13 +62,17 @@ import {
 	PROTECTED_PATH_CASES,
 	readErrorCode,
 	readErrorMessage,
+	readNpmFloor,
+	readNpmVersion,
 	readRejectionCode,
 	readStatements,
 	REFUSED_MANIFEST_TEXT,
+	resolveNpm,
 	SCRATCH_PREFIX,
 	SENSITIVE_PATH_CASES,
 	STAGED_PATHS,
 	STORAGE_PATH_CASES,
+	supportsMappedLoopback,
 	TARGET_DEV_DEPENDENCIES,
 	TARGET_MANIFEST_TEXT,
 	trackFiles,
@@ -76,6 +82,11 @@ import {
 	VENDORED_FILES,
 	WORKSPACE_ROOT,
 } from './setupServer.js'
+
+// The npm this host resolves, read at module scope. It decides which resolution branch
+// this host can drive: a host at or above the declared floor has nothing to provision,
+// and a host beneath it provisions from the registry.
+const host = readNpmVersion()
 
 // The subject is the Node-only test infrastructure `tests/setupServer.ts` exports.
 // Every resource a case opens is released in the same case, and the mirrored suites
@@ -1008,4 +1019,121 @@ describe('the tables and the derived totals', () => {
 		expect(vendored.groups).toStrictEqual(['manifest', 'docs', 'orchestration', 'guides'])
 		expect(buildVendoredPlan({ groups: ['docs'] }).artifacts).toStrictEqual(vendored.artifacts)
 	})
+})
+
+describe('the admitted npm', () => {
+	it('reads the floor out of the manifest a real compiler emitted', () => {
+		const artifact = requireValue(
+			buildCompiledPlan().artifacts.find((candidate) => candidate.path === 'package.json'),
+		)
+		const manifest: unknown = JSON.parse(requireValue(artifact.content))
+		// The floor comes out of the emitted artifact and is compared against the constant the
+		// compiler derives the declared range from, so a reading that kept the `>=` offset,
+		// dropped a component, or reached a neighbouring field disagrees with that declaration.
+		expect(readNpmFloor(manifest)).toBe(MINIMUM_NPM_VERSION)
+	})
+
+	it('refuses a manifest carrying no packageManager version, naming the field it wanted', () => {
+		expect(() => readNpmFloor(undefined)).toThrow(/devEngines/u)
+		expect(() => readNpmFloor({})).toThrow(/devEngines/u)
+		expect(() => readNpmFloor({ devEngines: {} })).toThrow(/devEngines\.packageManager/u)
+		expect(() => readNpmFloor({ devEngines: { packageManager: {} } })).toThrow(
+			/devEngines\.packageManager\.version/u,
+		)
+	})
+
+	it('refuses a declared version that is not a floor over an exact version', () => {
+		for (const version of ['11.6.0', '^11.6.0', '>=11.6', '>= 11.6.0', '>=11.6.0-rc.1', '>=']) {
+			expect(() => readNpmFloor({ devEngines: { packageManager: { version } } })).toThrow(
+				/devEngines\.packageManager\.version/u,
+			)
+		}
+	})
+
+	it('reads the host npm version as an exact version rather than as the text around one', () => {
+		// A reading that kept the trailing newline, or the whole of a notice npm wrote beside
+		// the version, is not a version this package can extract.
+		expect(extractVersion(host)).not.toBe(undefined)
+	})
+
+	it('launches the host npm unchanged when it already satisfies the floor', () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const prefix = workspace.ensure('npm')
+			const admitted = resolveNpm({ floor: host, prefix })
+			expect(admitted.version).toBe(host)
+			// The independent reading: a provisioning install writes the prefix, and this
+			// branch must not have run one.
+			expect(existsSync(join(prefix, 'node_modules'))).toBe(false)
+			expect(requireValue(readVariable(admitted.environment, 'PATH'))).toBe(
+				requireValue(readVariable(process.env, 'PATH')),
+			)
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it.skipIf(compareVersions(host, MINIMUM_NPM_VERSION) >= 0)(
+		'provisions the floor and resolves that copy when the host npm is beneath it [inapplicable where the host npm already satisfies the floor, which leaves nothing to provision]',
+		() => {
+			const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+			try {
+				const prefix = workspace.ensure('npm')
+				const admitted = resolveNpm({ floor: MINIMUM_NPM_VERSION, prefix })
+				// The second mechanism: the version the provisioned package declares of itself,
+				// read from its manifest rather than from a run. A resolution reporting the host
+				// npm, or provisioning one version and reporting another, disagrees with it.
+				const installed: unknown = JSON.parse(
+					readFileSync(join(prefix, 'node_modules', 'npm', 'package.json'), 'utf8'),
+				)
+				expect(installed).toMatchObject({ version: admitted.version })
+				expect(compareVersions(admitted.version, MINIMUM_NPM_VERSION)).toBeGreaterThanOrEqual(0)
+				expect(admitted.version).not.toBe(host)
+				// The environment is what carries the selection into a nested `npm run`, so the
+				// provisioned directory must be the first entry `PATH` offers.
+				expect(requireValue(readVariable(admitted.environment, 'PATH')).split(delimiter)[0]).toBe(
+					join(prefix, 'node_modules', '.bin'),
+				)
+			} finally {
+				workspace.destroy()
+			}
+		},
+		300_000,
+	)
+})
+
+describe('the mapped loopback reading', () => {
+	it('agrees with what an HTTP request to the rewritten address delivers', async () => {
+		const reachable = await supportsMappedLoopback()
+		const loopback = await createLoopback(createServer((_request, response) => response.end('ok')))
+		try {
+			// The control: the plain address the fixture bound, which every host running
+			// this suite reaches. It separates an address family the host refuses from a
+			// listener that answered nothing at all.
+			expect((await fetch(`http://127.0.0.1:${loopback.port}/`)).status).toBe(200)
+			// The second mechanism: an HTTP client rather than a raw socket, driving the
+			// same `::ffff:` rewrite the gated case performs against its own fixture. A
+			// reading that answered from anything but a real connection disagrees with what
+			// the request delivered.
+			let delivered = false
+			try {
+				delivered = (await fetch(`http://[::ffff:127.0.0.1]:${loopback.port}/`)).ok
+			} catch {
+				delivered = false
+			}
+			expect(delivered).toBe(reachable)
+		} finally {
+			await loopback.destroy()
+		}
+	})
+
+	// The kernel publishes its IPv6 interface table at `/proc/net/if_inet6`, and a host
+	// carrying no IPv6 stack publishes no such file. A host that mounts no `/proc/net`
+	// directory publishes the table nowhere, so it offers no reading to compare against.
+	it.skipIf(!existsSync('/proc/net'))(
+		'agrees with the IPv6 interface table the kernel publishes',
+		async () => {
+			expect(await supportsMappedLoopback()).toBe(existsSync('/proc/net/if_inet6'))
+		},
+	)
 })

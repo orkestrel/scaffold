@@ -1,0 +1,17 @@
+2026-09-13T04:59:21Z
+
+> @orkestrel/scaffold@0.0.65 test:distribution
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project distribution --mode release
+
+
+ RUN  v4.1.11 /home/user/scaffold
+
+·····
+
+ Test Files  1 passed (1)
+      Tests  5 passed (5)
+   Start at  04:59:22
+   Duration  75.37s (transform 859ms, setup 538ms, import 1.02s, tests 73.62s, environment 0ms)
+
+EXIT=0
+2026-09-13T05:00:37Z

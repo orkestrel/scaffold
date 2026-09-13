@@ -91,9 +91,15 @@ import {
 	SCRATCH_PREFIX,
 	SENSITIVE_PATH_CASES,
 	STORAGE_PATH_CASES,
+	supportsMappedLoopback,
 	WORKSPACE_ROOT,
 } from '../../setupServer.js'
 import { createScratch, supportsFileLinks, supportsMode } from '@orkestrel/test/server'
+
+// Evaluated at module scope so every case shares one reading: the probe opens a real
+// listener and a socket per call, and its answer is a property of the host rather than
+// of any case that reads it.
+const MAPPED_LOOPBACK: boolean = await supportsMappedLoopback()
 
 describe('Ollama setup', () => {
 	it("uses the running host's Bash path form", () => {
@@ -211,20 +217,28 @@ describe('Ollama setup', () => {
 		expect(result.stderr).not.toContain('starting Ollama from Git Bash is unsupported')
 	})
 
-	it('refuses redirected version readiness without starting a local daemon', async () => {
-		const server = await createOllamaServer({ status: { version: 302 } })
-		try {
-			const host = server.url.replace('127.0.0.1', '[::ffff:127.0.0.1]')
-			const result = await executeOllamaSetup(host, 'fixture-model')
-			expect(result.failed).toBe(true)
-			expect(result.stderr).toContain(
-				'the configured endpoint is unreachable; local startup is limited to HTTP loopback',
-			)
-			expect(server.requests.map((request) => request.path)).toStrictEqual(['/api/version'])
-		} finally {
-			await server.destroy()
-		}
-	})
+	// The case rewrites the fixture's address into the `::ffff:` form so the script reads a
+	// non-loopback endpoint and refuses without launching a daemon, and it then asserts the
+	// fixture answered. A host with no IPv6 stack refuses that `AF_INET6` connect with
+	// `EAFNOSUPPORT`, so the request never arrives and the assertion measures the host, which
+	// is what supportsMappedLoopback reports on.
+	it.skipIf(!MAPPED_LOOPBACK)(
+		'refuses redirected version readiness without starting a local daemon',
+		async () => {
+			const server = await createOllamaServer({ status: { version: 302 } })
+			try {
+				const host = server.url.replace('127.0.0.1', '[::ffff:127.0.0.1]')
+				const result = await executeOllamaSetup(host, 'fixture-model')
+				expect(result.failed).toBe(true)
+				expect(result.stderr).toContain(
+					'the configured endpoint is unreachable; local startup is limited to HTTP loopback',
+				)
+				expect(server.requests.map((request) => request.path)).toStrictEqual(['/api/version'])
+			} finally {
+				await server.destroy()
+			}
+		},
+	)
 
 	it('refuses a redirected pull with a completed protocol body', async () => {
 		const server = await createOllamaServer({ present: false, status: { pull: 302 } })

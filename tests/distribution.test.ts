@@ -8,6 +8,7 @@ import { requireValue } from '@orkestrel/test'
 import { createScratch } from '@orkestrel/test/server'
 import { transformWithOxc } from 'vite'
 import { describe, expect, it } from 'vitest'
+import { readNpmFloor, resolveNpm } from './setupServer.js'
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const npm = process.platform === 'win32' ? 'npm.cmd' : 'npm'
@@ -904,12 +905,30 @@ describe('installed package consumer', () => {
 					'generated/package.json',
 					`${JSON.stringify(targetManifest, undefined, '\t')}\n`,
 				)
+				// The generated manifest declares a `devEngines.packageManager` floor, and npm
+				// refuses an install beneath it rather than resolving the graph. It refuses every
+				// nested `npm run` under the gate chain on the same reading, so the install here
+				// and the gate chain that follows each take an admitted npm. The floor is read
+				// from the artifact that declares it, so raising the floor reaches this proof
+				// through the manifest rather than through a constant repeated here, and a host
+				// whose own npm satisfies the floor provisions nothing. `resolveNpm` throws when
+				// it cannot reach an admitted npm, so no assertion stands between it and the
+				// install; the install's own message carries npm's output, which is where a
+				// refusal names itself.
+				const floor = readNpmFloor(targetManifest)
+				const admitted = resolveNpm({ floor, prefix: workspace.ensure('npm'), environment })
 				const dependencies = spawnSync(
 					npm,
 					['install', '--ignore-scripts', '--no-audit', '--no-fund'],
-					{ cwd: target, encoding: 'utf8', env: environment, windowsHide: true, shell },
+					{
+						cwd: target,
+						encoding: 'utf8',
+						env: admitted.environment,
+						windowsHide: true,
+						shell,
+					},
 				)
-				expect(dependencies.status).toBe(0)
+				expect(dependencies.status, `${dependencies.stdout}\n${dependencies.stderr}`).toBe(0)
 				const lock: unknown = JSON.parse(
 					requireValue(workspace.read('generated/package-lock.json')),
 				)
@@ -932,11 +951,11 @@ describe('installed package consumer', () => {
 				const gates = spawnSync(npm, ['run', 'prepublishOnly'], {
 					cwd: target,
 					encoding: 'utf8',
-					env: environment,
+					env: admitted.environment,
 					windowsHide: true,
 					shell,
 				})
-				expect(gates.status).toBe(0)
+				expect(gates.status, `${gates.stdout}\n${gates.stderr}`).toBe(0)
 			} finally {
 				workspace.destroy()
 			}

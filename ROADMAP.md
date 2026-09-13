@@ -367,12 +367,29 @@ re-run. These rows stay open:
   warms the model before its first file. On 2026-09-05 the first run on a
   daemon whose model was not loaded timed out at `OllamaProvider.test.ts`'s
   warmup while the other files passed, and the warm re-run passed every file.
-- **scaffold**: the release-mode distribution proof (`test:distribution -- --mode
-release`) depends on the npm major that launches it. On 2026-09-05 the packed
-  consumer's `npm install` exited 1 under npm 10.9.7 with npm's own
-  `Cannot read properties of null (reading 'edgesOut')` and exited 0 under
-  npm 11.19.1 (`Tests 5 passed (5)`); rule whether the proof launches the npm the
-  `engines` field names or the field names npm 11.
+- **scaffold**: npm `10.9.7` and every npm from `11.0.0` through `11.5.0` crash
+  resolving a lockfile-free generated workspace at `@npmcli/arborist`'s
+  `#loadPeerSet` with an unguarded `node.parent` dereference; npm `11.6.0` is
+  the first that resolves it; `vitest` alone reproduces it and `@types/node`
+  is not involved. Measured on 2026-09-13.
+- **scaffold**: the proof launches the npm the generated manifest names. Every
+  generated manifest carries `devEngines.packageManager` at `>=11.6.0` with
+  `onFail` error, and the distribution proof provisions that npm when the
+  ambient one is below the floor. `engines.npm` and `engine-strict` were
+  measured and rejected because the crash fires before engine validation.
+- **scaffold**: node floor `22.18.0`, where type stripping is unflagged, so
+  the vendored lint plugin loads; Node 22 and Node 24 stay supported.
+- **scaffold**: the `test` script is an `&&` chain in scaffold, toolbox, and
+  ollama (`scaffold/package.json`, `toolbox/package.json`,
+  `ollama/package.json`), so one failing project hides every project after
+  it; on 2026-09-13 one red case in `src:server` suppressed five projects
+  that each pass when invoked singly. Rule on a composition that runs every
+  project and reports every failure; the repair edits the generated manifest
+  and three packages, so it is a successor version's.
+- **scaffold**: `src/core/constants.ts` pipes scaffold's own `@types/node`
+  range into every generated workspace, which typechecks against Node 26's
+  declaration surface while declaring a `22.18.0` floor. Rule whether the
+  emitted `@types/node` range tracks the declared floor.
 - **abort**: transcribe the `README.md:29,34` Usage fence into
   `tests/guides.test.ts` with `README.md` in `ROOT_FILES`; rule what a
   transcription's presence guards bind and apply that rule; rule the `Abort`
