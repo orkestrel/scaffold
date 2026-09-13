@@ -1,0 +1,60 @@
+# npm-matrix.sh readings (task bjmuuae8y)
+npm 10.9.7   exit=1   edgesOut_crash=yes
+npm 11.0.0   exit=1   edgesOut_crash=yes
+npm 11.6.2   exit=0   edgesOut_crash=no
+npm 12.0.2   exit=0   edgesOut_crash=no
+NPM-MATRIX-DONE
+
+[exited with code 0]
+
+# npm-bisect.sh readings (task b3ptgror8)
+npm 11.1.0   exit=1   edgesOut_crash=yes
+npm 11.2.0   exit=1   edgesOut_crash=yes
+npm 11.3.0   exit=1   edgesOut_crash=yes
+npm 11.4.0   exit=1   edgesOut_crash=yes
+npm 11.5.0   exit=1   edgesOut_crash=yes
+npm 11.6.0   exit=0   edgesOut_crash=no
+NPM-BISECT-DONE
+
+[exited with code 0]
+
+# per-version verification from each install log
+  npm 10.9.7    CRASH
+  npm 11.0.0    CRASH
+  npm 11.1.0    CRASH
+  npm 11.2.0    CRASH
+  npm 11.3.0    CRASH
+  npm 11.4.0    CRASH
+  npm 11.5.0    CRASH
+  npm 11.6.0    clean
+  npm 11.6.2    clean
+  npm 12.0.2    clean
+
+# direct-invocation re-run (task b8urz5qd3)
+installed npm 11.6.0 -> self-reports 11.6.0
+--- no guard: does the crash track the npm actually running? ---
+  ambient   plain            exit=1   refused=no   crash=yes  current=–       –
+  11.5.0    plain            exit=1   refused=no   crash=yes  current=–       –
+  11.6.0    plain            exit=0   refused=no   crash=no   current=–       added 69 packages
+--- devEngines guard: must REFUSE below 11.6.0 and ADMIT at/above ---
+  ambient   guard            exit=1   refused=yes  crash=no   current=10.9.7    –
+  11.5.0    guard            exit=1   refused=yes  crash=no   current=11.5.0    –
+  11.6.0    guard            exit=0   refused=no   crash=no   current=–       added 69 packages
+DIRECT-NPM-DONE
+
+[exited with code 0]
+
+# devEngines control via direct invocation, and the rejected npx form (tasks bupsbs3u4, bd7pkir7o)
+npm 11.5.0   exit=1   refused=yes  crash=no   –
+npm 11.6.0   exit=1   refused=yes  crash=no   –
+npm 12.0.2   exit=1   refused=yes  crash=no   –
+DEV-CONTROL-DONE
+
+[exited with code 0]
+baseline-no-guard                  exit=1   crash=yes  (no marker)
+engines.npm-only                   exit=1   crash=yes  (no marker)
+engines.npm+engine-strict          exit=1   crash=yes  (no marker)
+devEngines.packageManager          exit=1   crash=no   EBADDEVENGINES 
+ENFORCE-DONE
+
+[exited with code 0]

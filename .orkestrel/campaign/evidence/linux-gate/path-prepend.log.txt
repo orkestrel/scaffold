@@ -1,0 +1,18 @@
+ambient: npm 10.9.7
+provisioned bin dir contents:
+npm
+npx
+
+### ambient npm, nested run (expect EBADDEVENGINES)
+npm error code EBADDEVENGINES
+npm error EBADDEVENGINES The developer of this package has specified the following through devEngines
+exit=1
+
+### provisioned npm via PATH prepend, nested run (expect 11.6.0 twice-deep, exit 0)
+11.6.0
+exit=0
+
+### which npm does the shim resolve to, and does it self-report truthfully?
+/tmp/claude-0/-home-user/488431e0-a918-55f9-9e40-378c151c8130/scratchpad/pathprepend/npm/node_modules/.bin/npm
+11.6.0
+PATH-PREPEND-DONE

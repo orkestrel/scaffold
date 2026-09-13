@@ -1,0 +1,80 @@
+
+################ toolbox ################
+--- stage local scaffold 0.0.65 (no-save) ---
+stage exit=0
+0.0.65
+--- probe the repair verb's flags (first use) ---
+scaffold <verb> [options]
+
+  scaffold new <name> [--src <list>] [--app <list>] [--bin] [--deps <list>] [--offline] [--from <path>] [--target <path>] [--json]
+      scaffold a workspace
+  scaffold audit [--groups <list>] [--offline] [--from <path>] [--target <path>] [--json]
+      report how the target compares to its plan, writing nothing
+  scaffold repair [--groups <list>] [--offline] [--from <path>] [--target <path>] [--json]
+      write each planned path the target is missing or has let drift
+  scaffold catalog [--all] [--from <path>] [--target <path>] [--json]
+      regenerate the package table and refresh the guide mirrors
+  scaffold overwrite [--groups <list>] [--dirty] [--offline] [--from <path>] [--target <path>] [--json]
+      do everything repair and catalog do, then delete what the plan does not own and re-declare the dependency ranges
+--- repair --offline ---
+repair exit=0
+0 of 39 planned paths drifted from the plan. Audit compared bytes at 25, existence at 5, and nothing at 9.
+.claude/settings.json replaced (0-line delta).
+scripts/ollama.sh replaced (309 lines added).
+2 written, 38 unchanged, 0 removed in ..
+--- what repair changed ---
+ M .claude/settings.json
+ M scripts/ollama.sh
+--- audit --offline ---
+audit exit=0
+0 of 39 planned paths drifted from the plan. Audit compared bytes at 25, existence at 5, and nothing at 9.
+--- gates, each singly ---
+format:check	exit=0
+lint:check	exit=0
+check	exit=0
+build	exit=0
+test:src	exit=0
+test:policy	exit=0
+test:config	exit=0
+test:guides	exit=0
+test:setup	exit=0
+distribution	exit=0
+
+################ ollama ################
+--- stage local scaffold 0.0.65 (no-save) ---
+stage exit=0
+0.0.65
+--- probe the repair verb's flags (first use) ---
+scaffold <verb> [options]
+
+  scaffold new <name> [--src <list>] [--app <list>] [--bin] [--deps <list>] [--offline] [--from <path>] [--target <path>] [--json]
+      scaffold a workspace
+  scaffold audit [--groups <list>] [--offline] [--from <path>] [--target <path>] [--json]
+      report how the target compares to its plan, writing nothing
+  scaffold repair [--groups <list>] [--offline] [--from <path>] [--target <path>] [--json]
+      write each planned path the target is missing or has let drift
+  scaffold catalog [--all] [--from <path>] [--target <path>] [--json]
+      regenerate the package table and refresh the guide mirrors
+  scaffold overwrite [--groups <list>] [--dirty] [--offline] [--from <path>] [--target <path>] [--json]
+      do everything repair and catalog do, then delete what the plan does not own and re-declare the dependency ranges
+--- repair --offline ---
+repair exit=0
+0 of 36 planned paths drifted from the plan. Audit compared bytes at 23, existence at 5, and nothing at 8.
+0 written, 37 unchanged, 0 removed in ..
+--- what repair changed ---
+--- audit --offline ---
+audit exit=0
+0 of 36 planned paths drifted from the plan. Audit compared bytes at 23, existence at 5, and nothing at 8.
+--- gates, each singly ---
+format:check	exit=0
+lint:check	exit=0
+check	exit=0
+build	exit=0
+test:src	exit=0
+test:conformance	exit=0
+test:setup	exit=0
+test:policy	exit=0
+test:config	exit=0
+test:guides	exit=0
+distribution	exit=0
+PREFLIGHT-DONE

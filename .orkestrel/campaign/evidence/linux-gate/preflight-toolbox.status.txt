@@ -1,0 +1,10 @@
+format:check	exit=0
+lint:check	exit=0
+check	exit=0
+build	exit=0
+test:src	exit=0
+test:policy	exit=0
+test:config	exit=0
+test:guides	exit=0
+test:setup	exit=0
+distribution	exit=0
