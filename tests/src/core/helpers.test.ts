@@ -615,13 +615,14 @@ describe('matchesRange', () => {
 
 describe('matchesEngines', () => {
 	it('accepts the declared floor syntax at or above the supported minimum', () => {
-		expect(matchesEngines('>=22.12.0')).toBe(true)
+		expect(matchesEngines('>=22.18.0')).toBe(true)
 		expect(matchesEngines('>=24.0.0')).toBe(true)
-		expect(matchesEngines('>=22.11.0')).toBe(false)
+		expect(matchesEngines('>=22.17.0')).toBe(false)
+		expect(matchesEngines('>=22.12.0')).toBe(false)
 		expect(matchesEngines('>=20.0.0')).toBe(false)
-		expect(matchesEngines('22.12.0')).toBe(false)
-		expect(matchesEngines('>=22.12')).toBe(false)
-		expect(matchesEngines('^22.12.0')).toBe(false)
+		expect(matchesEngines('22.18.0')).toBe(false)
+		expect(matchesEngines('>=22.18')).toBe(false)
+		expect(matchesEngines('^22.18.0')).toBe(false)
 	})
 })
 

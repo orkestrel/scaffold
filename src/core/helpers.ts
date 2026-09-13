@@ -910,9 +910,9 @@ export function matchesRange(range: string, latest: string): boolean {
  * ```ts
  * import { matchesEngines } from '@orkestrel/scaffold'
  *
- * matchesEngines('>=22.12.0') // true
+ * matchesEngines('>=22.18.0') // true
  * matchesEngines('>=20.0.0') // false
- * matchesEngines('22.12.0') // false
+ * matchesEngines('22.18.0') // false
  * ```
  */
 export function matchesEngines(engines: string): boolean {

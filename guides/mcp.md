@@ -545,7 +545,7 @@ cleanup and never prevent it.
 The obligation is spelled `try { … } finally { await stream[Symbol.asyncDispose]() }` rather
 than `await using`, and that is a measurement rather than a preference. `tsconfig` targets
 `ESNext`, so TypeScript emits a `using` declaration verbatim instead of downlevelling it, and
-this package's declared floor — `node >= 22.12.0` — rejects the emitted module at PARSE time
+this package's declared floor — `node >= 22.18.0` — rejects the emitted module at PARSE time
 with `SyntaxError: Unexpected identifier`, taking every unrelated export in the file with it.
 The same file written with the explicit `finally` runs on that floor and discharges the
 identical obligation.

@@ -477,13 +477,25 @@ export const MAX_MANIFEST_BYTES = 1_048_576
 export const MAX_TOTAL_ARTIFACT_BYTES = 104_857_600
 
 /** Names the oldest Node version the generated toolchain supports. */
-export const MINIMUM_NODE_VERSION = '22.12.0'
+export const MINIMUM_NODE_VERSION = '22.18.0'
+
+/** Names the oldest npm version the generated toolchain supports. */
+export const MINIMUM_NPM_VERSION = '11.6.0'
 
 /** Names the version a workspace starts at. */
 export const DEFAULT_VERSION = '0.0.1'
 
 /** Names the `engines.node` range a workspace starts with. */
 export const DEFAULT_ENGINES = `>=${MINIMUM_NODE_VERSION}`
+
+/** Holds the `devEngines` record a workspace starts with. */
+export const DEFAULT_DEV_ENGINES = Object.freeze({
+	packageManager: Object.freeze({
+		name: 'npm',
+		version: `>=${MINIMUM_NPM_VERSION}`,
+		onFail: 'error',
+	}),
+})
 
 /** Holds the tooling versions scaffold and every generated workspace share. */
 export const BASE_DEV_DEPENDENCIES: Readonly<Record<string, string>> = Object.freeze({

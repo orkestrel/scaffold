@@ -73,7 +73,14 @@
 		"vite": "^8.2.2",
 		"vitest": "^4.1.11"
 	},
+	"devEngines": {
+		"packageManager": {
+			"name": "npm",
+			"version": ">=11.6.0",
+			"onFail": "error"
+		}
+	},
 	"engines": {
-		"node": ">=22.12.0"
+		"node": ">=22.18.0"
 	}
 }

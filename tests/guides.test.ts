@@ -139,7 +139,7 @@ await new GuideCommand({
 			})
 
 			expect(blueprint.version).toBe('0.0.1')
-			expect(blueprint.engines).toBe('>=22.12.0')
+			expect(blueprint.engines).toBe('>=22.18.0')
 		})
 
 		it('executes the compile refusal example', () => {

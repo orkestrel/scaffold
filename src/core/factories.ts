@@ -44,7 +44,7 @@ import { parseBlueprint } from './parsers.js'
  * })
  *
  * blueprint.version // '0.0.1'
- * blueprint.engines // '>=22.12.0'
+ * blueprint.engines // '>=22.18.0'
  * ```
  */
 export function createBlueprint(name: string, input?: Partial<Omit<Blueprint, 'name'>>): Blueprint {

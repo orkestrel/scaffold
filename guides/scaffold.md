@@ -33,7 +33,7 @@ print. Limits states what that leaves unproven and what covers it instead.
 npm install --save-dev @orkestrel/scaffold
 ```
 
-The executable needs Node 22.12 or later. Run it through `npx` without installing:
+The executable needs Node 22.18.0 or later. Run it through `npx` without installing:
 
 ```sh
 npx @orkestrel/scaffold --help
@@ -116,6 +116,7 @@ Exported from `@orkestrel/scaffold`, and reachable from
 | `CONFORMANCE_TEST_PATH`           | const | Names the official-tooling drift proof whose presence makes a workspace `conformance`.                 |
 | `CONTROL_CHARACTER_PATTERN`       | const | Matches the Unicode controls, formatting controls, and line and paragraph separators rejected in text. |
 | `DECLARATION_DEV_DEPENDENCIES`    | const | Lists the development dependencies that roll declarations up for published source.                     |
+| `DEFAULT_DEV_ENGINES`             | const | Holds the `devEngines` record a workspace starts with.                                                 |
 | `DEFAULT_ENGINES`                 | const | Names the `engines.node` range a workspace starts with.                                                |
 | `DEFAULT_VERSION`                 | const | Names the version a workspace starts at.                                                               |
 | `DEPENDENCY_NAME_PATTERN`         | const | Matches the runtime dependency name syntax: the `@orkestrel` scope and a bare name.                    |
@@ -149,6 +150,7 @@ Exported from `@orkestrel/scaffold`, and reachable from
 | `MAX_TOTAL_ARTIFACT_BYTES`        | const | Caps the bytes retained across one whole plan or audit.                                                |
 | `MAX_TOTAL_REGISTRY_BYTES`        | const | Caps the decoded bytes accepted across one registry-reading call.                                      |
 | `MINIMUM_NODE_VERSION`            | const | Names the oldest Node version the generated toolchain supports.                                        |
+| `MINIMUM_NPM_VERSION`             | const | Names the oldest npm version the generated toolchain supports.                                         |
 | `NAME_PATTERN`                    | const | Matches the bare workspace name syntax: lowercase alphanumeric with hyphens, letter first.             |
 | `ORCHESTRATION_PATH_NAMES`        | const | Lists the exact root paths that wire an agent bench or own an orchestration directory, frozen.         |
 | `ORCHESTRATION_PATH_PREFIXES`     | const | Lists the path prefixes whose contents instruct or wire an agent, frozen.                              |
@@ -775,7 +777,7 @@ const blueprint = createBlueprint('router', {
 })
 
 blueprint.version // '0.0.1'
-blueprint.engines // '>=22.12.0'
+blueprint.engines // '>=22.18.0'
 ```
 
 `src` selects published library environments and `app` selects private application environments.

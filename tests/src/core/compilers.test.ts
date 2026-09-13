@@ -484,6 +484,17 @@ describe('blueprintToDevDependencies compile tooling', () => {
 		expect(manifest).toContain('"peerDependencies": {\n\t\t"typescript": ">=6.0.0"\n\t}')
 	})
 
+	it('emits the supported Node and npm floors', () => {
+		const manifest: unknown = JSON.parse(blueprintToManifest(buildBlueprint()))
+
+		expect(manifest).toMatchObject({
+			engines: { node: '>=22.18.0' },
+			devEngines: {
+				packageManager: { name: 'npm', version: '>=11.6.0', onFail: 'error' },
+			},
+		})
+	})
+
 	it('keeps a generated source workspace manifest byte-stable', async () => {
 		const manifest = blueprintToManifest(createBlueprint('sample', { src: ['core'] }))
 
