@@ -1457,11 +1457,11 @@ with the `EBADDEVENGINES` code, before resolving the dependency graph.
 npm 10.9.7 refuses an `npm run` command in such a workspace with the same code. The releases
 measured earlier than 10.9.0, npm 10.5.0 and npm 10.8.3, ignore the record and fail inside
 dependency resolution instead. Every Node release at 22.18.0 or later bundles an npm at 10.9.0 or
-later. A generated workspace therefore meets an npm that ignores the record only where a developer
-installed such an npm in place of the bundled npm. Run a generated workspace on npm 11.6.0 or
-later, because 11.6.0 is the first release that installs a generated workspace. Read the ambient
+later. A generated workspace on Node 22.18.0 or later therefore meets an npm that ignores the record
+only under an npm other than the bundled one. Run a generated workspace on npm 11.6.0 or later:
+every release from 10.9.0 up to 11.6.0 refuses it, and 11.6.0 installs it. Read the ambient
 version with the `npm --version` command. Raise it with the `npm install --global npm@11.6.0`
-command, or a later release, before the first install; that command installs an npm that reports
+command before the first install; that command installs an npm that reports
 11.6.0. The npm readings come from a Linux host on Node 22.22.2, on 2026-09-13, and the bundled
 versions come from the Node release index read that day.
 

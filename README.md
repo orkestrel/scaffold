@@ -65,7 +65,7 @@ npm 10.5.0 and npm 10.8.3, the releases measured earlier than 10.9.0, ignore the
 inside dependency resolution instead.
 No Node release the executable supports bundles an npm earlier than 10.9.0. Read the ambient
 version with the `npm --version` command. Raise it with the `npm install --global npm@11.6.0`
-command, or a later release, before the first install.
+command before the first install.
 These readings come from a Linux host, on 2026-09-13.
 
 On Windows, run the executable as `npx scaffold …` or `node ./dist/bin/main.js …`. PowerShell

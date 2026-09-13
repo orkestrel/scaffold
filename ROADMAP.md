@@ -371,20 +371,22 @@ re-run. These rows stay open:
 - **scaffold**: npm 10.9.7 and every npm from 11.0.0 through 11.5.0 crash
   resolving a lockfile-free generated workspace at the `#loadPeerSet` step in
   the `@npmcli/arborist` package, with an unguarded `node.parent` dereference;
-  npm 11.6.0 is the first that resolves it; `vitest` alone reproduces it and
-  `@types/node` is not involved. An npm at 10.5.0, 10.8.3, 10.9.0, or 10.9.3
+  npm 11.6.0 is the first that resolves it; the `vitest` package alone reproduces it and
+  the `@types/node` package is not involved. An npm at 10.5.0, 10.8.3, 10.9.0, or 10.9.3
   crashes the same way on the plain manifest, read from the
   `.orkestrel/campaign/evidence/linux-gate/devengines-floor.log.txt` file.
   Every version in that range was run and read from its own install log, retained
-  at `.orkestrel/campaign/evidence/linux-gate/npm-boundary-readings.log.txt`; the
+  at the `.orkestrel/campaign/evidence/linux-gate/npm-boundary-readings.log.txt` file; the
   campaign folder is pruned at acceptance, so those readings live in git
   history from the commit that retained them. Measured on 2026-09-13.
 - **scaffold**: the proof launches the npm the generated manifest names. Every
-  generated manifest carries `devEngines.packageManager` at `>=11.6.0` with
-  `onFail` error, and the distribution proof provisions that npm when the
-  ambient one is earlier than the floor. `engines.npm` and `engine-strict` were
+  generated manifest carries the `devEngines.packageManager` record at the
+  `>=11.6.0` range with the `onFail` key set to the `error` value, and the
+  distribution proof provisions that npm when the
+  ambient one is earlier than the floor. The `engines.npm` field and the
+  `engine-strict` setting were
   measured and rejected because the crash fires before engine validation. An
-  npm from 10.9.0 on reads the `devEngines` record; an npm at 10.5.0 or 10.8.3
+  npm at 10.9.0 or later reads the `devEngines` record; an npm at 10.5.0 or 10.8.3
   ignores it and meets the crash; every npm a supported Node bundles reads it.
   Read from the
   `.orkestrel/campaign/evidence/linux-gate/devengines-floor.log.txt` file,
@@ -395,7 +397,7 @@ re-run. These rows stay open:
   ollama (`scaffold/package.json`, `toolbox/package.json`,
   `ollama/package.json`), so a failing project hides every project after it;
   on 2026-09-13 the unready-loopback case in
-  `tests/src/server/helpers.test.ts` went red under `src:server` and
+  the `tests/src/server/helpers.test.ts` file went red under the `src:server` project and
   suppressed every project after it, each of which passes when invoked singly.
   Rule on a composition that runs every project and reports every failure; the
   repair edits the generated manifest and the scaffold, toolbox, and ollama
@@ -426,11 +428,15 @@ re-run. These rows stay open:
   the `supportsBytes`, `supportsCase`, `supportsDirectoryLinks`,
   `supportsFileLinks`, and `supportsMode` siblings it belongs beside. Propose
   it there, and drop the local predicate after that release lands.
+- **scaffold**: the `matchesEngines` summary cell in `guides/scaffold.md` reads "at or above the
+  supported minimum"; the direction vocabulary is `earlier` and `later`, and the parity contract
+  ties the cell to the export's description paragraph in the `src/core/` tree, so the repair
+  moves the source and re-emits the `dist/src` tree. Ruled on 2026-09-13.
 - **scaffold**: the 0.0.65 fix audit ruled these test-side findings out of
-  that release. The mapped-loopback case in `tests/setupServer.test.ts`
-  hard-codes `EAFNOSUPPORT` where the `supportsMappedLoopback` predicate is the
+  that release. The mapped-loopback case in the `tests/setupServer.test.ts` file
+  hard-codes the `EAFNOSUPPORT` constant where the `supportsMappedLoopback` predicate is the
   probe that read the code, and the errno set across hosts is unmeasured; the
-  `resolveTool` helper in `tests/setupServer.ts` accepts a regular file without
+  `resolveTool` helper in the `tests/setupServer.ts` file accepts a regular file without
   the execute bit; the shadow directory the `executeOllamaSetup` helper builds
   in that same file is inline, unexported, and asserted nowhere, and a tool it
   cannot resolve is dropped silently, so whether a host lacking
@@ -438,15 +444,15 @@ re-run. These rows stay open:
   message the pinned case in the `tests/src/server/helpers.test.ts` file asserts
   is unmeasured; the
   `OLLAMA_TOOLS` constant beside it has no mechanism that can disagree with
-  `scripts/ollama.sh`; the
+  the `scripts/ollama.sh` script; the
   `executeOllamaSetup` doc block names the endpoint parameter `host` and uses
   the same word for the machine; the `provisionNpm` doc block reads `host npm`
   where the rest of that block reads `ambient`; whether the `provisionNpm` or
   `resolveNpm` name carries the registered prefix for a floor-and-fallback
   selection is an open design question for a blind pass; the claims in
-  `guides/scaffold.md` that no blueprint field varies the `devEngines` record
-  and that an npm beneath the floor refuses the install carry no executed
-  assertion in `tests/guides.test.ts`; the README pin in `tests/guides.test.ts`
+  the `guides/scaffold.md` file that no blueprint field varies the `devEngines` record
+  and that an npm earlier than the floor refuses the install carry no executed
+  assertion in the `tests/guides.test.ts` file; the README pin in the `tests/guides.test.ts` file
   imports inside its case body and anchors its regex on no subject; and nothing
   pins the `engines.node` field in `package.json` to the `MINIMUM_NODE_VERSION`
   constant in `src/core/constants.ts`. Ruled on 2026-09-13.

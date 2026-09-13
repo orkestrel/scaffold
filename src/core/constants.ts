@@ -495,8 +495,7 @@ export const DEFAULT_ENGINES = `>=${MINIMUM_NODE_VERSION}`
  * Every generated manifest names npm at the {@link MINIMUM_NPM_VERSION} floor with the `onFail`
  * key set to the `error` value, and no blueprint field varies that record. An npm at 10.9.0 or
  * later reads the `devEngines` record. Such an npm earlier than the floor refuses an install in a
- * generated workspace rather than resolving its dependency graph. An npm that does not read the
- * record fails inside dependency resolution instead.
+ * generated workspace rather than resolving its dependency graph.
  * The neighbouring `DEFAULT_ENGINES` constant is the Node range, and a blueprint's `engines`
  * field does replace that one.
  */
