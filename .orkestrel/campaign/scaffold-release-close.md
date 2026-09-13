@@ -21,4 +21,21 @@ obliges: a development-only re-pin of `@orkestrel/scaffold` in toolbox and ollam
 No target bumps and no target republishes. Pre-flighted green against the staged tarball
 (`linux-gate-target-preflight-report.md`, `evidence/linux-gate/preflight-*.status.txt`).
 
-VISITS_PLACEHOLDER
+## Post-publish visits
+
+Each target ran `evidence/linux-gate/postpublish-visit.sh` after the registry served `0.0.65`:
+re-pin to `^0.0.65` and install (the preparation commit), then the online `overwrite`, an `audit`
+at exit 0 with nothing drifted, the full install, the mutating `format`, and every gate singly
+through the release-mode distribution proof. The range sweep (`range-sweep-<target>.log.txt`) read
+every other `@orkestrel` range at the registry caret; the self-pin sweep found no prior scaffold
+range literal in `tests/` or `src/`; the rebuilt `dist/` of each target matched its published
+tarball in material content (`dist-compare-<target>.log.txt`, 0 differing entries), so no target
+bumps and no target republishes.
+
+| target | preparation commit | visit commit | published, unchanged |
+| --- | --- | --- | --- |
+| toolbox | `d92f805` | see the target's branch tip | `0.0.13` |
+| ollama | `b495097` | `e4b3a7c` | `0.0.15` |
+
+The ollama overwrite's declare step also raised the toolchain development ranges
+(`@microsoft/api-extractor`, `@types/node`, `oxfmt`, `oxlint`, `vite`); toolbox's were current.

@@ -1,0 +1,16 @@
+overwrite	exit=0
+audit	exit=0
+install	exit=0
+format	exit=0
+format:check	exit=0
+lint:check	exit=0
+check	exit=0
+build	exit=0
+test:src	exit=0
+test:src:core	exit=0
+test:src:server	exit=0
+test:policy	exit=0
+test:config	exit=0
+test:guides	exit=0
+test:setup	exit=0
+distribution(release)	exit=0
