@@ -4,7 +4,8 @@
 
 Sol `implementer`, GPT-5.6 Sol, high effort, sandbox `workspace-write`, rooted at
 `/home/user/scaffold`. You are the sole serial writer in this checkout, from a clean committed
-baseline at `2b3abca`.
+baseline. Read that baseline yourself with `git log --oneline -1`. The working tree is clean when you
+start, and git is the Orchestrator's rollback mechanism.
 
 ## Objective
 
