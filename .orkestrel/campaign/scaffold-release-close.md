@@ -34,7 +34,7 @@ bumps and no target republishes.
 
 | target | preparation commit | visit commit | published, unchanged |
 | --- | --- | --- | --- |
-| toolbox | `d92f805` | see the target's branch tip | `0.0.13` |
+| toolbox | `d92f805` | `714e25f` | `0.0.13` |
 | ollama | `b495097` | `e4b3a7c` | `0.0.15` |
 
 The ollama overwrite's declare step also raised the toolchain development ranges
