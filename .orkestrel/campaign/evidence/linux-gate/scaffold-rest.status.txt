@@ -1,0 +1,6 @@
+test:src:core	exit=0	elapsed=22s
+test:src:bin	exit=0	elapsed=13s
+test:policy	exit=0	elapsed=1s
+test:config	exit=0	elapsed=10s
+test:setup	exit=0	elapsed=2s
+test:guides	exit=0	elapsed=2s

@@ -1,0 +1,6 @@
+format:check	exit=0	elapsed=4s
+lint:check	exit=0	elapsed=0s
+check	exit=0	elapsed=4s
+build	exit=0	elapsed=4s
+test	exit=0	elapsed=10s
+distribution	exit=0	elapsed=14s

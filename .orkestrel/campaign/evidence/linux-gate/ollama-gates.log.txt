@@ -1,0 +1,197 @@
+
+########## GATE format:check ##########
+
+> @orkestrel/ollama@0.0.15 format:check
+> oxfmt --config .oxfmtrc.json --check .
+
+Checking formatting...
+
+All matched files use the correct format.
+Finished in 2842ms on 68 files using 4 threads.
+########## GATE format:check exit=0 elapsed=4s ##########
+
+########## GATE lint:check ##########
+
+> @orkestrel/ollama@0.0.15 lint:check
+> oxlint --config .oxlintrc.json --deny-warnings .
+
+########## GATE lint:check exit=0 elapsed=0s ##########
+
+########## GATE check ##########
+
+> @orkestrel/ollama@0.0.15 check
+> tsc --noEmit --project tsconfig.json && npm run check:src
+
+
+> @orkestrel/ollama@0.0.15 check:src
+> npm run check:src:server
+
+
+> @orkestrel/ollama@0.0.15 check:src:server
+> tsc --noEmit -p configs/src/tsconfig.server.json
+
+########## GATE check exit=0 elapsed=4s ##########
+
+########## GATE build ##########
+
+> @orkestrel/ollama@0.0.15 build
+> npm run clean && npm run build:src
+
+
+> @orkestrel/ollama@0.0.15 clean
+> node -e "require('node:fs').rmSync('dist',{recursive:true,force:true})"
+
+
+> @orkestrel/ollama@0.0.15 build:src
+> npm run build:src:server
+
+
+> @orkestrel/ollama@0.0.15 build:src:server
+> vite build --config configs/src/vite.server.config.ts && npm run copy dist/src/server/index.d.ts dist/src/server/index.d.cts
+
+vite v8.2.2 building client environment for production...
+transforming...
+✓ 9 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/server/index.js  25.89 kB │ gzip: 8.38 kB │ map: 45.56 kB
+
+transforming...
+✓ 9 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/server/index.cjs  26.87 kB │ gzip: 8.52 kB │ map: 45.88 kB
+
+✓ built in 165ms
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+
+> @orkestrel/ollama@0.0.15 copy
+> node -e "const fs=require('node:fs'),p=require('node:path'),a=process.argv[1],b=process.argv[2];fs.mkdirSync(p.dirname(b),{recursive:true});fs.cpSync(a,b,{force:true});console.log('Copied: '+a+' to '+b)" dist/src/server/index.d.ts dist/src/server/index.d.cts
+
+Copied: dist/src/server/index.d.ts to dist/src/server/index.d.cts
+########## GATE build exit=0 elapsed=4s ##########
+
+########## GATE test ##########
+
+> @orkestrel/ollama@0.0.15 test
+> npm run test:src && npm run test:setup && npm run test:policy && npm run test:config && npm run test:guides && npm run test:conformance
+
+
+> @orkestrel/ollama@0.0.15 test:src
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project src:server
+
+
+ RUN  v4.1.11 /home/user/ollama
+
+··································································································
+
+ Test Files  6 passed (6)
+      Tests  98 passed (98)
+   Start at  01:17:30
+   Duration  1.26s (transform 530ms, setup 641ms, import 652ms, tests 1.10s, environment 1ms)
+
+
+> @orkestrel/ollama@0.0.15 test:setup
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project setup
+
+
+ RUN  v4.1.11 /home/user/ollama
+
+···························································································
+
+ Test Files  3 passed (3)
+      Tests  91 passed (91)
+   Start at  01:17:31
+   Duration  712ms (transform 367ms, setup 74ms, import 786ms, tests 289ms, environment 0ms)
+
+
+> @orkestrel/ollama@0.0.15 test:policy
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project policy
+
+
+ RUN  v4.1.11 /home/user/ollama
+
+·················································································-·········
+
+ Test Files  1 passed (1)
+      Tests  90 passed | 1 skipped (91)
+   Start at  01:17:33
+   Duration  722ms (transform 207ms, setup 34ms, import 205ms, tests 332ms, environment 0ms)
+
+
+> @orkestrel/ollama@0.0.15 test:config
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project config
+
+
+ RUN  v4.1.11 /home/user/ollama
+
+··········································································································································································stdout | tests/config.test.ts > configuration helpers > rolls one face into a single declaration and rewrites its core specifier
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+
+·-stdout | tests/config.test.ts > configuration helpers > rolls one face into a single declaration and rewrites its core specifier
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+
+·
+
+ Test Files  1 passed (1)
+      Tests  172 passed | 1 skipped (173)
+   Start at  01:17:34
+   Duration  3.39s (transform 300ms, setup 32ms, import 535ms, tests 2.67s, environment 0ms)
+
+
+> @orkestrel/ollama@0.0.15 test:guides
+> node --experimental-strip-types tests/guides.test.ts
+
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.11 [39m[90m/home/user/ollama[39m
+
+[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m22 passed[39m[22m[90m (22)[39m
+[2m   Start at [22m 01:17:38
+[2m   Duration [22m 642ms[2m (transform 119ms, setup 45ms, import 456ms, tests 8ms, environment 0ms)[22m
+
+
+> @orkestrel/ollama@0.0.15 test:conformance
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project conformance
+
+
+ RUN  v4.1.11 /home/user/ollama
+
+·················
+
+ Test Files  1 passed (1)
+      Tests  17 passed (17)
+   Start at  01:17:39
+   Duration  200ms (transform 36ms, setup 30ms, import 19ms, tests 6ms, environment 0ms)
+
+########## GATE test exit=0 elapsed=10s ##########
+
+########## GATE distribution ##########
+
+> @orkestrel/ollama@0.0.15 test:distribution
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project distribution --mode release
+
+
+ RUN  v4.1.11 /home/user/ollama
+
+·········
+
+ Test Files  1 passed (1)
+      Tests  9 passed (9)
+   Start at  01:17:40
+   Duration  13.03s (transform 118ms, setup 31ms, import 2.45s, tests 10.41s, environment 0ms)
+
+########## GATE distribution exit=0 elapsed=14s ##########
+
+GATES-DONE ollama
+format:check	exit=0	elapsed=4s
+lint:check	exit=0	elapsed=0s
+check	exit=0	elapsed=4s
+build	exit=0	elapsed=4s
+test	exit=0	elapsed=10s
+distribution	exit=0	elapsed=14s
