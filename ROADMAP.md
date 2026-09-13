@@ -391,11 +391,11 @@ re-run. These rows stay open:
   Read from the
   `.orkestrel/campaign/evidence/linux-gate/devengines-floor.log.txt` file,
   measured on 2026-09-13.
-- **scaffold**: node floor `22.18.0`, where type stripping is unflagged, so
+- **scaffold**: node floor 22.18.0, where type stripping is unflagged, so
   the vendored lint plugin loads; Node 22 and Node 24 stay supported.
 - **scaffold**: the `test` script is an `&&` chain in scaffold, toolbox, and
-  ollama (`scaffold/package.json`, `toolbox/package.json`,
-  `ollama/package.json`), so a failing project hides every project after it;
+  ollama (the `scaffold/package.json` file, the `toolbox/package.json` file,
+  and the `ollama/package.json` file), so a failing project hides every project after it;
   on 2026-09-13 the unready-loopback case in
   the `tests/src/server/helpers.test.ts` file went red under the `src:server` project and
   suppressed every project after it, each of which passes when invoked singly.
@@ -406,32 +406,36 @@ re-run. These rows stay open:
   support in places that can disagree with the declared floor. The
   `src/core/constants.ts` file pipes scaffold's own `@types/node` range into
   every generated workspace, which typechecks against Node 26's declaration
-  surface while the manifest declares a `22.18.0` floor; the emitted build
-  configurations pin `target: 'node22'` for the server library, the
-  executable, and the application server (`src/core/templates.ts:169`, `:200`,
-  and `:284`), which fixes the emit at the Node 22 line while the declared
+  surface while the manifest declares a 22.18.0 floor; the emitted build
+  configurations pin the `target: 'node22'` setting for the server library, the
+  executable, and the application server (the `src/core/templates.ts` file at lines
+  169, 200, and 284), which fixes the emit at the Node 22 line while the declared
   floor and the `@types/node` range each move on their own. Rule the whole set
   at once: which declaration is the source of the generated workspace's Node
   claim, and what the others derive from it.
 - **scaffold**: the generated toolchain's transitive dependencies narrow the
   Node 24 support this package declares. The `@orkestrel/probe` package reaches
-  the `@orkestrel/sqlite@0.0.11` release through the `@orkestrel/queue` and
-  `@orkestrel/database` packages, and that release declares
-  `^22.18.0 || >=24.4.0`, so Node `24.0.0` through `24.3.x` installs a
+  the `@orkestrel/sqlite@0.0.11` release through the `@orkestrel/queue` package and the
+  `@orkestrel/database` package, and that release declares the
+  `^22.18.0 || >=24.4.0` range, so Node 24.0.0 through 24.3.x installs a
   generated workspace with an `EBADENGINE` warning rather than a refusal,
   because no generated workspace sets the `engine-strict` setting. Rule whether
-  the declared Node 24 support names `24.4.0`, and read the chain again after
+  the declared Node 24 support names 24.4.0, and read the chain again after
   the `@orkestrel/sqlite` package publishes. Measured on 2026-09-13.
 - **scaffold**: the `supportsMappedLoopback` predicate in the
   `tests/setupServer.ts` module reads a host capability rather than anything
   this package owns, and the `@orkestrel/test/server` entry already publishes
-  the `supportsBytes`, `supportsCase`, `supportsDirectoryLinks`,
-  `supportsFileLinks`, and `supportsMode` siblings it belongs beside. Propose
+  the `supportsBytes` predicate, the
+  `supportsCase` predicate, the `supportsDirectoryLinks` predicate, the `supportsFileLinks`
+  predicate, and the `supportsMode` predicate it belongs beside. Propose
   it there, and drop the local predicate after that release lands.
-- **scaffold**: the `matchesEngines` summary cell in `guides/scaffold.md` reads "at or above the
-  supported minimum"; the direction vocabulary is `earlier` and `later`, and the parity contract
-  ties the cell to the export's description paragraph in the `src/core/` tree, so the repair
-  moves the source and re-emits the `dist/src` tree. Ruled on 2026-09-13.
+- **scaffold**: the direction vocabulary for a version is "earlier" and "later", and the
+  shipped guide departs from it in the `matchesEngines` summary cell in the `guides/scaffold.md`
+  file ("at or above the supported minimum") and in that file's prose at lines 1166 ("the older
+  release"), 1200 ("A newer major"), 1234 ("a floor below the newest release"), and 1235 ("a
+  newer major"). The parity contract ties the cell to the export's description paragraph in the
+  `src/core/` tree, so the cell's repair moves the source and re-emits the `dist/src` tree; the
+  prose repairs move the vendored guide alone. Ruled on 2026-09-13.
 - **scaffold**: the 0.0.65 fix audit ruled these test-side findings out of
   that release. The mapped-loopback case in the `tests/setupServer.test.ts` file
   hard-codes the `EAFNOSUPPORT` constant where the `supportsMappedLoopback` predicate is the
@@ -445,17 +449,17 @@ re-run. These rows stay open:
   is unmeasured; the
   `OLLAMA_TOOLS` constant beside it has no mechanism that can disagree with
   the `scripts/ollama.sh` script; the
-  `executeOllamaSetup` doc block names the endpoint parameter `host` and uses
-  the same word for the machine; the `provisionNpm` doc block reads `host npm`
-  where the rest of that block reads `ambient`; whether the `provisionNpm` or
-  `resolveNpm` name carries the registered prefix for a floor-and-fallback
+  `executeOllamaSetup` doc block names its endpoint parameter with the `host` name and uses
+  the same word for the machine; the `provisionNpm` doc block reads "host npm" where the rest of
+  that block reads "ambient"; whether the `provisionNpm` name or the `resolveNpm` name carries the
+  registered prefix for a floor-and-fallback
   selection is an open design question for a blind pass; the claims in
   the `guides/scaffold.md` file that no blueprint field varies the `devEngines` record
   and that an npm earlier than the floor refuses the install carry no executed
   assertion in the `tests/guides.test.ts` file; the README pin in the `tests/guides.test.ts` file
   imports inside its case body and anchors its regex on no subject; and nothing
-  pins the `engines.node` field in `package.json` to the `MINIMUM_NODE_VERSION`
-  constant in `src/core/constants.ts`. Ruled on 2026-09-13.
+  pins the `engines.node` field in the `package.json` file to the `MINIMUM_NODE_VERSION`
+  constant in the `src/core/constants.ts` file. Ruled on 2026-09-13.
 - **abort**: transcribe the `README.md:29,34` Usage fence into
   `tests/guides.test.ts` with `README.md` in `ROOT_FILES`; rule what a
   transcription's presence guards bind and apply that rule; rule the `Abort`
