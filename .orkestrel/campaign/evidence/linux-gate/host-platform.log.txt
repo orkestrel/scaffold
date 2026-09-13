@@ -1,0 +1,5 @@
+# host-platform.log.txt — the host every npm reading in this folder was taken on; read 2026-09-13
+uname -srm: Linux 6.18.44-fc-v24 x86_64
+node: v22.22.2
+ambient npm: 10.9.7
+container: "Ubuntu 24.04.4 LTS"
