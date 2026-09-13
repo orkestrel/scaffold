@@ -1,8 +1,8 @@
 Script started on 2026-09-13 12:12:37+00:00 [COMMAND="npm publish /home/user/scaffold/tmp/release/orkestrel-scaffold-0.0.65.tgz --ignore-scripts --browser=false --otp=715838" <not executed on terminal>]
-[1G[0K\[1G[0K|[1G[0K/[1G[0K-[1G[0K\[1G[0K|[1G[0K/[1G[0Knpm notice
-[1G[0K/[1G[0Knpm notice package: @orkestrel/scaffold@0.0.65
-[1G[0K/[1G[0Knpm notice Tarball Contents
-[1G[0K/[1G[0Knpm notice 1.1kB LICENSE
+\|/-\|/npm notice
+/npm notice package: @orkestrel/scaffold@0.0.65
+/npm notice Tarball Contents
+/npm notice 1.1kB LICENSE
 npm notice 3.2kB README.md
 npm notice 85.9kB dist/bin/main.js
 npm notice 156.4kB dist/bin/main.js.map
@@ -143,17 +143,16 @@ npm notice 137.6kB dist/src/server/index.d.ts
 npm notice 174.8kB dist/src/server/index.js
 npm notice 281.7kB dist/src/server/index.js.map
 npm notice 5.3kB package.json
-[1G[0K/[1G[0Knpm notice Tarball Details
-[1G[0K/[1G[0Knpm notice name: @orkestrel/scaffold
-[1G[0K/[1G[0Knpm notice version: 0.0.65
-[1G[0K/[1G[0Knpm notice filename: orkestrel-scaffold-0.0.65.tgz
-[1G[0K/[1G[0Knpm notice package size: 1.2 MB
-[1G[0K/[1G[0Knpm notice unpacked size: 4.7 MB
-[1G[0K/[1G[0Knpm notice shasum: 6b9c22c13c88d7a4e31a27f61b502b3a3f8cc143
-[1G[0K/[1G[0Knpm notice integrity: sha512-c40SiMv09yxx7[...]M0em3M1G04K4w==
-[1G[0K/[1G[0Knpm notice total files: 141
-[1G[0K/[1G[0Knpm notice
-[1G[0K/[1G[0Knpm notice Publishing to https://registry.npmjs.org/ with tag latest and public access
-[1G[0K/[1G[0K-[1G[0K\[1G[0K|[1G[0K/[1G[0K-[1G[0K\[1G[0K|[1G[0K/[1G[0K-[1G[0K\[1G[0K|[1G[0K/[1G[0K-[1G[0K\[1G[0K|[1G[0K/[1G[0K-[1G[0K\[1G[0K|[1G[0K+ @orkestrel/scaffold@0.0.65
-[1G[0K|[1G[0K
+/npm notice Tarball Details
+/npm notice name: @orkestrel/scaffold
+/npm notice version: 0.0.65
+/npm notice filename: orkestrel-scaffold-0.0.65.tgz
+/npm notice package size: 1.2 MB
+/npm notice unpacked size: 4.7 MB
+/npm notice shasum: 6b9c22c13c88d7a4e31a27f61b502b3a3f8cc143
+/npm notice integrity: sha512-c40SiMv09yxx7[...]M0em3M1G04K4w==
+/npm notice total files: 141
+/npm notice
+/npm notice Publishing to https://registry.npmjs.org/ with tag latest and public access
+/-\|/-\|/-\|/-\|/-\|+ @orkestrel/scaffold@0.0.65
 Script done on 2026-09-13 12:12:41+00:00 [COMMAND_EXIT_CODE="0"]
