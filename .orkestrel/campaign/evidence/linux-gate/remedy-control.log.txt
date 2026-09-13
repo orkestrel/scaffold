@@ -1,0 +1,6 @@
+ambient npm 10.9.7 on node v22.22.2
+
+added 1 package in 3s
+exit=0
+installed npm self-reports: 11.6.0
+REMEDY-DONE

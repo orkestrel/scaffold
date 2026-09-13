@@ -1,0 +1,7 @@
+# nodejs.org/dist/index.json read 2026-09-13: lowest bundled npm across every release at or after v22.18.0
+releases counted: 82 lowest npm: 10.9.0 at v23.3.0 | highest: 11.19.1 at v26.8.2
+v23 lowest npm 10.9.0 at v23.3.0
+v22 lowest npm 10.9.3 at v22.20.0
+v24 lowest npm 11.3.0 at v24.2.0
+v25 lowest npm 11.6.2 at v25.3.0
+v26 lowest npm 11.12.1 at v26.0.0
