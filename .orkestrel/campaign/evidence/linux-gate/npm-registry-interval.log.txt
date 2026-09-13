@@ -1,0 +1,51 @@
+# npm-registry-interval.log.txt — registry read 2026-09-13: every npm release served in [10.9.0, 11.6.0) against the releases measured under the emitted devEngines record (guard rows of devengines-floor, devengines-interval, npm-boundary-readings)
+
+## registry
+10.9.0
+10.9.1
+10.9.2
+10.9.3
+10.9.4
+10.9.5
+10.9.6
+10.9.7
+10.9.8
+10.9.9
+11.0.0
+11.1.0
+11.2.0
+11.3.0
+11.4.0
+11.4.1
+11.4.2
+11.5.0
+11.5.1
+11.5.2
+
+## measured under the guard
+10.9.0  refused=yes crash=no  (devengines-floor.log.txt)
+10.9.1  refused=yes crash=no  (devengines-interval.log.txt)
+10.9.2  refused=yes crash=no  (devengines-interval.log.txt)
+10.9.3  refused=yes crash=no  (devengines-floor.log.txt)
+10.9.4  refused=yes crash=no  (devengines-interval.log.txt)
+10.9.5  refused=yes crash=no  (devengines-interval.log.txt)
+10.9.6  refused=yes crash=no  (devengines-interval.log.txt)
+10.9.8  refused=yes crash=no  (devengines-interval.log.txt)
+10.9.9  refused=yes crash=no  (devengines-interval.log.txt)
+11.0.0  refused=yes crash=no  (devengines-interval.log.txt)
+11.1.0  refused=yes crash=no  (devengines-interval.log.txt)
+11.2.0  refused=yes crash=no  (devengines-interval.log.txt)
+11.3.0  refused=yes crash=no  (devengines-interval.log.txt)
+11.4.0  refused=yes crash=no  (devengines-interval.log.txt)
+11.4.1  refused=yes crash=no  (devengines-interval.log.txt)
+11.4.2  refused=yes crash=no  (devengines-interval.log.txt)
+11.5.0  refused=yes crash=no  (npm-boundary-readings.log.txt)
+11.5.1  refused=yes crash=no  (devengines-interval.log.txt)
+11.5.2  refused=yes crash=no  (devengines-interval.log.txt)
+
+## registry releases not measured under the guard
+(none: 10.9.7 is this host's ambient npm, measured as the `ambient guard` row in npm-boundary-readings.log.txt, refused=yes crash=no, and as the nested-run reading in path-prepend.log.txt)
+## measured releases the registry does not serve
+(none)
+## every measured release refused
+yes
