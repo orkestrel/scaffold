@@ -1448,19 +1448,22 @@ except the manifest.
 - One host artifact per vendored path the workspace selects. A vendored directory is one planned
   path that expands into the files the data root stores beneath it.
 
-Every generated manifest declares the toolchain it is gated on. The `engines.node` field carries the
-blueprint's `engines` value, which defaults to the `>=22.18.0` range. The
+Every generated manifest declares the toolchain it is gated on. The `engines.node` field carries
+the blueprint's `engines` value, which defaults to the `>=22.18.0` range. The
 `devEngines.packageManager` record names npm at the `>=11.6.0` range with its `onFail` key set to
-the `error` value, and no blueprint field varies that floor. An npm from 10.9.0 on reads that
-record. Such an npm beneath the floor refuses the `npm install` command in a generated workspace
-with the `EBADDEVENGINES` code instead of resolving the dependency graph. It refuses each nested
-`npm run` command under that install on the same reading. An npm older than 10.9.0 ignores the
-record and fails inside dependency resolution instead. Every npm that a supported Node bundles
-reads the record, so only an npm downgraded below 10.9.0 meets that failure. Run a generated
-workspace on npm 11.6.0 or later, because 11.6.0 is the first release that installs a generated
-workspace. Read the ambient version with the `npm --version` command, and raise it with the
-`npm install --global npm@11.6.0` command, or a later release, before the first install. These
-readings come from a Linux host on Node 22.22.2, on 2026-09-13.
+the `error` value, and no blueprint field varies that record. An npm at 10.9.0 or later reads that
+record. Such an npm earlier than 11.6.0 refuses the `npm install` command in a generated workspace
+with the `EBADDEVENGINES` code, before resolving the dependency graph.
+npm 10.9.7 refuses an `npm run` command in such a workspace with the same code. The releases
+measured earlier than 10.9.0, npm 10.5.0 and npm 10.8.3, ignore the record and fail inside
+dependency resolution instead. Every Node release at 22.18.0 or later bundles an npm at 10.9.0 or
+later. A generated workspace therefore meets an npm that ignores the record only where a developer
+installed such an npm in place of the bundled npm. Run a generated workspace on npm 11.6.0 or
+later, because 11.6.0 is the first release that installs a generated workspace. Read the ambient
+version with the `npm --version` command. Raise it with the `npm install --global npm@11.6.0`
+command, or a later release, before the first install; that command installs an npm that reports
+11.6.0. The npm readings come from a Linux host on Node 22.22.2, on 2026-09-13, and the bundled
+versions come from the Node release index read that day.
 
 A workspace publishing a `src` environment rolls each published face's declarations up from that
 face's own Vite config. The seeded config calls `declarationRollup` from the vendored

@@ -694,7 +694,7 @@
 			"storage": "guides/scaffold.md",
 			"destination": "guides/scaffold.md",
 			"executable": false,
-			"digest": "0d02927071269ea825e2b2eee0089fbe8e641bde004cd2eccb893339b60b43e6"
+			"digest": "1896dedd931d927a42a8d520db7797ef4673fd99f7c0f0e6c4f673e5b9659929"
 		},
 		{
 			"storage": "scripts/codex.sh",
@@ -785,5 +785,5 @@
 		".cursor/rules",
 		"scripts"
 	],
-	"digest": "3a8363d34a6f2b9ba1229985f6d5410322a279ef66d3114cd4800571234bfd87"
+	"digest": "4e471bb418c70dc5802d1d19ad017f85b9b44c7c8a83f4282b1fb7cdc028a0ea"
 }

@@ -59,11 +59,14 @@ vendored data root, and the generated file set.
 ## Notes
 
 The `scaffold new` command generates a workspace that declares an npm floor of 11.6.0 in its
-`devEngines` record. An npm from 10.9.0 through 11.5.0 reads that record and refuses the
-`npm install` command with the `EBADDEVENGINES` code. An npm older than 10.9.0 ignores the record
-and fails inside dependency resolution instead. Every npm that a supported Node bundles reads the
-record. Raise npm with the `npm install --global npm@11.6.0` command, or a later release, before
-the first install. These readings come from a Linux host, on 2026-09-13.
+`devEngines` record. An npm at 10.9.0 or later and earlier than 11.6.0 refuses the `npm install`
+command there with the `EBADDEVENGINES` code, before resolving the dependency graph.
+npm 10.5.0 and npm 10.8.3, the releases measured earlier than 10.9.0, ignore the record and fail
+inside dependency resolution instead.
+No Node release the executable supports bundles an npm earlier than 10.9.0. Read the ambient
+version with the `npm --version` command. Raise it with the `npm install --global npm@11.6.0`
+command, or a later release, before the first install.
+These readings come from a Linux host, on 2026-09-13.
 
 On Windows, run the executable as `npx scaffold …` or `node ./dist/bin/main.js …`. PowerShell
 mangles npm's `--` passthrough, so avoid `npm run scaffold -- …` there.

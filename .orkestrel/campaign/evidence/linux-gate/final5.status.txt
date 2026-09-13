@@ -1,0 +1,13 @@
+build	exit=0	elapsed=12s
+format:check	exit=0	elapsed=9s
+lint:check	exit=0	elapsed=2s
+check	exit=0	elapsed=13s
+test:src:core	exit=0	elapsed=27s
+test:src:server	exit=0	elapsed=6s
+test:src:bin	exit=0	elapsed=20s
+test:policy	exit=0	elapsed=2s
+test:config	exit=0	elapsed=19s
+test:setup	exit=0	elapsed=3s
+test:guides	exit=0	elapsed=3s
+distribution(release)	exit=0	elapsed=83s
+prepublishOnly(literal)	exit=0	elapsed=197s

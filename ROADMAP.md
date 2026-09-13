@@ -370,23 +370,24 @@ re-run. These rows stay open:
   re-run passed every file.
 - **scaffold**: npm 10.9.7 and every npm from 11.0.0 through 11.5.0 crash
   resolving a lockfile-free generated workspace at the `#loadPeerSet` step in
-  `@npmcli/arborist`, with an unguarded `node.parent` dereference; npm 11.6.0
-  is the first that resolves it; `vitest` alone reproduces it and `@types/node`
-  is not involved. An npm at 10.5.0, 10.8.3, 10.9.0, or 10.9.3 crashes the same
-  way on the plain manifest, read from
-  `.orkestrel/campaign/evidence/linux-gate/devengines-floor.log.txt`. Every
-  version in that range was run and read from its own install log, retained at
-  `.orkestrel/campaign/evidence/linux-gate/npm-boundary-readings.log.txt`; the
+  the `@npmcli/arborist` package, with an unguarded `node.parent` dereference;
+  npm 11.6.0 is the first that resolves it; `vitest` alone reproduces it and
+  `@types/node` is not involved. An npm at 10.5.0, 10.8.3, 10.9.0, or 10.9.3
+  crashes the same way on the plain manifest, read from the
+  `.orkestrel/campaign/evidence/linux-gate/devengines-floor.log.txt` file.
+  Every version in that range was run and read from its own install log, retained
+  at `.orkestrel/campaign/evidence/linux-gate/npm-boundary-readings.log.txt`; the
   campaign folder is pruned at acceptance, so those readings live in git
   history from the commit that retained them. Measured on 2026-09-13.
 - **scaffold**: the proof launches the npm the generated manifest names. Every
   generated manifest carries `devEngines.packageManager` at `>=11.6.0` with
   `onFail` error, and the distribution proof provisions that npm when the
-  ambient one is below the floor. `engines.npm` and `engine-strict` were
+  ambient one is earlier than the floor. `engines.npm` and `engine-strict` were
   measured and rejected because the crash fires before engine validation. An
   npm from 10.9.0 on reads the `devEngines` record; an npm at 10.5.0 or 10.8.3
   ignores it and meets the crash; every npm a supported Node bundles reads it.
-  Read from `.orkestrel/campaign/evidence/linux-gate/devengines-floor.log.txt`,
+  Read from the
+  `.orkestrel/campaign/evidence/linux-gate/devengines-floor.log.txt` file,
   measured on 2026-09-13.
 - **scaffold**: node floor `22.18.0`, where type stripping is unflagged, so
   the vendored lint plugin loads; Node 22 and Node 24 stay supported.
@@ -425,16 +426,17 @@ re-run. These rows stay open:
   the `supportsBytes`, `supportsCase`, `supportsDirectoryLinks`,
   `supportsFileLinks`, and `supportsMode` siblings it belongs beside. Propose
   it there, and drop the local predicate after that release lands.
-- **scaffold**: the `0.0.65` fix audit ruled these test-side findings out of
+- **scaffold**: the 0.0.65 fix audit ruled these test-side findings out of
   that release. The mapped-loopback case in `tests/setupServer.test.ts`
   hard-codes `EAFNOSUPPORT` where the `supportsMappedLoopback` predicate is the
   probe that read the code, and the errno set across hosts is unmeasured; the
   `resolveTool` helper in `tests/setupServer.ts` accepts a regular file without
   the execute bit; the shadow directory the `executeOllamaSetup` helper builds
   in that same file is inline, unexported, and asserted nowhere, and a tool it
-  cannot resolve is dropped silently, so whether a host
-  lacking `setsid` or `timeout` changes the exit code and the message the
-  pinned case in `tests/src/server/helpers.test.ts` asserts is unmeasured; the
+  cannot resolve is dropped silently, so whether a host lacking
+  the `setsid` command or the `timeout` command changes the exit code and the
+  message the pinned case in the `tests/src/server/helpers.test.ts` file asserts
+  is unmeasured; the
   `OLLAMA_TOOLS` constant beside it has no mechanism that can disagree with
   `scripts/ollama.sh`; the
   `executeOllamaSetup` doc block names the endpoint parameter `host` and uses
