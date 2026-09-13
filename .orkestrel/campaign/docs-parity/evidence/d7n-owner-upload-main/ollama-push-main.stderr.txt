@@ -1,2 +1,0 @@
-To https://github.com/orkestrel/ollama
-   0f6b106..d6e868d  HEAD -> main

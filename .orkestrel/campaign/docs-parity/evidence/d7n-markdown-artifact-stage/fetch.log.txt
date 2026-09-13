@@ -1,2 +1,0 @@
-+ git -C /c/Users/mikes/WebstormProjects/markdown fetch origin
-exit=0

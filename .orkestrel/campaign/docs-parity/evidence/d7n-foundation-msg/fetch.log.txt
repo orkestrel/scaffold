@@ -1,2 +1,0 @@
-+ git -C /c/Users/mikes/WebstormProjects/msg fetch origin
-exit=0

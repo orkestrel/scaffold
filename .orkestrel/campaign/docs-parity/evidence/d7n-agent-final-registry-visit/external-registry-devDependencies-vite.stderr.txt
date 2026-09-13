@@ -1,1 +1,0 @@
-{"name":"vite","range":"^8","lookup":"found","latest":"8.3.0","major":8}

@@ -1,3 +1,0 @@
-rows compared: 32
-rows missing after: []
-non-Summary cells moved: 0

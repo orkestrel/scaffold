@@ -1,5 +1,0 @@
- M guides/lsp.md
- M src/core/factories.ts
- M src/core/types.ts
- M tests/setupServer.ts
- M tests/src/server/fixtures/protocol.mjs

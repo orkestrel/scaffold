@@ -1,2 +1,0 @@
-+ git -C /c/Users/mikes/WebstormProjects/codec fetch origin
-exit=0

@@ -1,2 +1,0 @@
-/c/Users/mikes/WebstormProjects/table/package.json: OK
-/c/Users/mikes/WebstormProjects/table/package-lock.json: OK

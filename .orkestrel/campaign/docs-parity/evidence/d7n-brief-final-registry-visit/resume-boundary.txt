@@ -1,1 +1,0 @@
-completed install; resume begins at external and optional metadata validation

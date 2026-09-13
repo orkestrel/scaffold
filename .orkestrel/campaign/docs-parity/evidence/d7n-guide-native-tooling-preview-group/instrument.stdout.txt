@@ -1,1 +1,0 @@
-{"removal":["scripts/docs.ts"],"writes":[".claude/settings.json","scripts",".claude/agents/orkestrel.md"]}

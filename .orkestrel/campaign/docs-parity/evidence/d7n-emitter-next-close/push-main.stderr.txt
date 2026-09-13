@@ -1,2 +1,0 @@
-To https://github.com/orkestrel/emitter
-   045aaca..fe7e689  HEAD -> main

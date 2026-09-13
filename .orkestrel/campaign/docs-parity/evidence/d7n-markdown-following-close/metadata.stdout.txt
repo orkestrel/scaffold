@@ -1,1 +1,0 @@
-{"name":"@orkestrel/markdown","version":"0.0.14"}

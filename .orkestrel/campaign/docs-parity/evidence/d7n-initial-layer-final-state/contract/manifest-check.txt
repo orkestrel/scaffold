@@ -1,2 +1,0 @@
-/c/Users/mikes/WebstormProjects/contract/package.json: OK
-/c/Users/mikes/WebstormProjects/contract/package-lock.json: OK

@@ -1,1 +1,0 @@
-Finished in 1478ms on 69 files using 16 threads.

@@ -1,2 +1,0 @@
- M guides/contract.md
- M tests/guides.test.ts

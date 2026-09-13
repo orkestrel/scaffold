@@ -1,2 +1,0 @@
-To https://github.com/orkestrel/mcp
-   292c966..45ba0a4  HEAD -> main

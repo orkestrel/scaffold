@@ -1,4 +1,0 @@
-.github/workflows/ci.yml
-guides/ollama.md
-package-lock.json
-package.json

@@ -1,2 +1,0 @@
- M tests/setupConformance.test.ts
- M tests/setupConformance.ts

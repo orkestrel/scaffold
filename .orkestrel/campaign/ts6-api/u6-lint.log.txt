@@ -1,4 +1,0 @@
-
-> @orkestrel/scaffold@0.0.63 lint:check
-> oxlint --config .oxlintrc.json --deny-warnings .
-

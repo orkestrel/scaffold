@@ -1,2 +1,0 @@
-To https://github.com/orkestrel/worker
-   021c8ad..de67748  HEAD -> claude/orkestrel-npm-audit-deps-14ibta

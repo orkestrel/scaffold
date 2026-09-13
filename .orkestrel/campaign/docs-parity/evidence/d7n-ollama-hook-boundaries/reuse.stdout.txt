@@ -1,1 +1,0 @@
-ollama.sh: Ollama is ready

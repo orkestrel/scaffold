@@ -1,2 +1,0 @@
-To https://github.com/orkestrel/guide
-   d3ee1bb..ccd2a79  HEAD -> main

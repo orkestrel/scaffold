@@ -1,4 +1,0 @@
-replacement-character=none
-forbidden-addition=none
-new-function=none
-exit=0

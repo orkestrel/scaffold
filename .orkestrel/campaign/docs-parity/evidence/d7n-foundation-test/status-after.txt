@@ -1,2 +1,0 @@
- M tests/config.test.ts
- M tests/setupPolicy.ts

@@ -1,6 +1,0 @@
-\npm notice integrity: sha512-c40SiMv09yxx7[...]M0em3M1G04K4w==
-\npm notice total files: 141
-\npm notice
-\npm notice Publishing to https://registry.npmjs.org/ with tag latest and public access
-\|/-\|This operation requires a one-time password.
-Enter OTP: 

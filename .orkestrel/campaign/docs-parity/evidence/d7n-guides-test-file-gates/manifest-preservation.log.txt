@@ -1,2 +1,0 @@
-package.json: OK
-package-lock.json: OK

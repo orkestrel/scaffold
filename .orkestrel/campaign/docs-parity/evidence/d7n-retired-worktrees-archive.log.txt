@@ -1,3 +1,0 @@
-Exit: 0
-archived scaffold-guides-entry
-archived scaffold-path

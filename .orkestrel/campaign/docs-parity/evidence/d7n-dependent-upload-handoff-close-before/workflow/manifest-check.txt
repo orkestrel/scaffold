@@ -1,2 +1,0 @@
-/c/Users/mikes/WebstormProjects/workflow/package.json: OK
-/c/Users/mikes/WebstormProjects/workflow/package-lock.json: OK

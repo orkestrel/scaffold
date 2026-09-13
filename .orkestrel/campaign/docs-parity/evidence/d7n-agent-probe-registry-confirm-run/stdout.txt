@@ -1,2 +1,0 @@
-confirmed agent
-confirmed probe

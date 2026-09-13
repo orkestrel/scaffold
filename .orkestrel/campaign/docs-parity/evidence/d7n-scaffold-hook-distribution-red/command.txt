@@ -1,1 +1,0 @@
-npm run test:distribution -- --mode release -t 'stages exactly the declared vendored host inventory'
