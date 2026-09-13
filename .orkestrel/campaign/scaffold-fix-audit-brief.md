@@ -14,8 +14,18 @@ version `0.0.65`, registry serving `0.0.64`. The chain of rounds:
   `u-floor-report.md`.
 - U-dist, U-probe, U-record landed at `23eca02`.
 
-This subject is a code change: the review evidence is the actual diff `git diff 2b3abca..23eca02` and
-the actual `git status --porcelain`, both supplied by path below.
+This subject is a code change. The review evidence, by path relative to `/home/user/scaffold`:
+
+- `tmp/evidence/scaffold-fix.diff.txt` — the actual diff `git diff 2b3abca..23eca02`, campaign
+  records excluded.
+- `tmp/evidence/scaffold-fix.diffstat.txt` — its stat.
+- `tmp/evidence/scaffold-fix.status.txt` — the actual `git status --porcelain` at dispatch (empty).
+- `tmp/evidence/scaffold-fix.commits.txt` — the commits under audit.
+- `.orkestrel/campaign/evidence/linux-gate/final.status.txt` and `final-verify.log.txt` — the
+  authoritative host run, and `evidence/linux-gate/u-dist-red-distribution.log.txt` beside
+  `u-dist-green-distribution.log.txt` — the failing-first pair.
+- `.orkestrel/campaign/u-dist-report.md`, `u-probe-report.md`, `u-record-report.md`,
+  `u-floor-report.md`, `linux-gate-target-preflight-report.md` — the unit reports.
 
 ## What the round decides
 
