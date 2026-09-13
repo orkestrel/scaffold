@@ -1,0 +1,47 @@
+# dist-chain-compare.sh 8de1c3a — U-fix-4 audit claim 9; run 2026-09-13
+== build 8de1c3a in /tmp/tmp.u9tCQy3kI1
+build exit=0
+== dist/src: 8de1c3a vs checkout (maps excluded, whitespace ignored)
+diff exit=1 lines=52
+diff -r -w -B -x '*.map' /tmp/tmp.u9tCQy3kI1/dist/src/core/index.cjs /home/user/scaffold/dist/src/core/index.cjs
+541,545c541,545
+< * No blueprint field varies it. Every generated manifest names npm at the
+< * {@link MINIMUM_NPM_VERSION} floor with the `onFail` key set to the `error` value. An npm from
+< * 10.9.0 on reads the `devEngines` record, so such an npm beneath that floor refuses an install in
+< * a generated workspace rather than resolving its dependency graph. An npm older than 10.9.0
+< * ignores the record.
+---
+> * Every generated manifest names npm at the {@link MINIMUM_NPM_VERSION} floor with the `onFail`
+> * key set to the `error` value, and no blueprint field varies that record. An npm at 10.9.0 or
+> * later reads the `devEngines` record. Such an npm earlier than the floor refuses an install in a
+> * generated workspace rather than resolving its dependency graph. An npm that does not read the
+> * record fails inside dependency resolution instead.
+diff -r -w -B -x '*.map' /tmp/tmp.u9tCQy3kI1/dist/src/core/index.d.cts /home/user/scaffold/dist/src/core/index.d.cts
+3418,3422c3418,3422
+<         * No blueprint field varies it. Every generated manifest names npm at the
+<         * {@link MINIMUM_NPM_VERSION} floor with the `onFail` key set to the `error` value. An npm from
+<         * 10.9.0 on reads the `devEngines` record, so such an npm beneath that floor refuses an install in
+<         * a generated workspace rather than resolving its dependency graph. An npm older than 10.9.0
+<         * ignores the record.
+---
+>         * Every generated manifest names npm at the {@link MINIMUM_NPM_VERSION} floor with the `onFail`
+>         * key set to the `error` value, and no blueprint field varies that record. An npm at 10.9.0 or
+>         * later reads the `devEngines` record. Such an npm earlier than the floor refuses an install in a
+>         * generated workspace rather than resolving its dependency graph. An npm that does not read the
+>         * record fails inside dependency resolution instead.
+diff -r -w -B -x '*.map' /tmp/tmp.u9tCQy3kI1/dist/src/core/index.d.ts /home/user/scaffold/dist/src/core/index.d.ts
+3418,3422c3418,3422
+<         * No blueprint field varies it. Every generated manifest names npm at the
+<         * {@link MINIMUM_NPM_VERSION} floor with the `onFail` key set to the `error` value. An npm from
+<         * 10.9.0 on reads the `devEngines` record, so such an npm beneath that floor refuses an install in
+<         * a generated workspace rather than resolving its dependency graph. An npm older than 10.9.0
+<         * ignores the record.
+---
+>         * Every generated manifest names npm at the {@link MINIMUM_NPM_VERSION} floor with the `onFail`
+>         * key set to the `error` value, and no blueprint field varies that record. An npm at 10.9.0 or
+>         * later reads the `devEngines` record. Such an npm earlier than the floor refuses an install in a
+>         * generated workspace rather than resolving its dependency graph. An npm that does not read the
+>         * record fails inside dependency resolution instead.
+diff -r -w -B -x '*.map' /tmp/tmp.u9tCQy3kI1/dist/src/core/index.js /home/user/scaffold/dist/src/core/index.js
+== dist/bin: 8de1c3a vs checkout (maps excluded, whitespace ignored)
+diff exit=0 lines=0
