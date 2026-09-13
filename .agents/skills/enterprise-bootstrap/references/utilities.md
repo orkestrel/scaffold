@@ -1,6 +1,6 @@
 # Bootstrap 5 Utilities Reference
 
-> Part of the `enterprise-bootstrap` package. Bootstrap **5.3.x** class index +
+> Part of the `enterprise-bootstrap` skill. Bootstrap **5.3.x** class index +
 > composition notes. Component markup: [components.md](components.md).
 > Theming, patterns, a11y: [bootstrap-reference.md](bootstrap-reference.md).
 
@@ -24,6 +24,8 @@
 .bg-opacity-10, .bg-opacity-25, .bg-opacity-50, .bg-opacity-75, .bg-opacity-100
 ```
 
+`bg-body`, `bg-body-secondary`, `bg-body-tertiary`, and `bg-*-subtle` adapt; `bg-{theme}`, `bg-light`, `bg-dark`, `bg-white`, `bg-black`, and `bg-gradient` are fixed. Inherited text on a fixed fill is never a pair — measure it in each declared mode (stock `bg-light` measures 1.2:1 in dark); a fixed fill takes `text-bg-*`, its component's foreground, or a `data-bs-theme` scope with `text-body` on the same element (the scope changes variables only; plain text inherits the outer mode's painted color).
+
 Prefer `bg-body`, `bg-body-secondary`, `bg-body-tertiary`, and `bg-*-subtle` for quiet surfaces; inherit text without an added foreground class. Treat original contextual `bg-*`, including `bg-light` and `bg-dark`, as non-adaptive in stock 5.3. Take ownership and exceptions from [color-modes.md](color-modes.md).
 
 ### Borders
@@ -43,7 +45,7 @@ Use adaptive border roles for quiet separation. Measure boundaries needed to ide
 
 - **`border-{1..5}` sets `border-width` on every side.** On a component that already has a border (`.card`, `.alert`) it thickens the whole box. For a one-side accent, zero first, restore one side, then widen — `card border-0 border-top border-4 border-primary` — utility source order (`border` → `border-{side}` → `border-width`) makes it hold, and the cleared sides have no border style so their width never paints.
 - Strengthen a rule that reads too faint with `border-2` on its soft color, not with a darker color; heavier width keeps the softness.
-- `border-{color}` is the fixed brand color in both modes; check an accent against a dark `bg-*-subtle` before shipping it.
+- `border-{color}` is the fixed brand color in light and dark; check an accent against a dark `bg-*-subtle` before shipping it.
 
 ### Colors (Text)
 
@@ -57,7 +59,7 @@ Use adaptive border roles for quiet separation. Measure boundaries needed to ide
 .text-opacity-25, .text-opacity-50, .text-opacity-75, .text-opacity-100
 ```
 
-Default ordinary text to inheritance. Original contextual `text-*` colors do not adapt in stock 5.3; body-role and `text-*-emphasis` colors do. `text-body-secondary` (body color at .75 alpha) clears 4.5:1 on every stock body surface in both modes; `text-body-tertiary` (.5 alpha) measures 3.0–4.1:1 and is decoration or disabled only. Neither, nor `text-white-50`, is a quiet tier on a colored fill — take the same-hue token from [color-modes.md](color-modes.md) → Text tiers. Do not add emphasis text automatically to subtle fills, and do not replace a component's native foreground without inspecting its state contract.
+Default ordinary text to inheritance. `text-{theme}`, `text-white`, `text-black`, `text-light`, `text-dark`, and their `-50` variants are fixed in light and dark; `text-body*`, `text-muted` (alias), and `text-*-emphasis` adapt — pair them with adaptive surfaces only ([color-modes.md](color-modes.md) → Fixed and adaptive classes). Classification and deprecation are separate axes: `text-muted` adapts and pairs correctly, and 5.3 deprecates it, so replace it with `text-body-secondary` on the deprecation rather than on a contrast reading. `text-body-secondary` (body color at .75 alpha) clears 4.5:1 on every stock body surface in light and dark; `text-body-tertiary` (.5 alpha) measures 3.0–4.1:1 there and is decoration or disabled only. Those readings bound stock 5.3.8 — re-measure under a declared theme or skin. Neither, nor `text-white-50`, is a quiet tier on a colored fill — take the same-hue token from [color-modes.md](color-modes.md) → Text tiers. Do not add emphasis text automatically to subtle fills, and do not replace a component's native foreground without inspecting its state contract.
 
 ### Display
 
@@ -165,13 +167,15 @@ Opacity is not a text tier: it reads as disabled and lets the surface show throu
 .translate-middle, .translate-middle-x, .translate-middle-y
 ```
 
+Responsive infixes: `d`, `flex`, `justify-content`, `align-*`, `order`, `float`, `gap`, spacing, `text-{bp}-start/center/end`, and `object-fit` ship them; `w`, `h`, `position`, `overflow`, `border`, `rounded`, `shadow`, `fs`, `fw`, `lh`, `text-nowrap`, `text-truncate`, `hstack`/`vstack` do not ([responsive-layout.md](responsive-layout.md) → Bootstrap's responsive surface). Generate a missing infix only where a `$utilities` entry owns the property; `hstack` and `vstack` are helpers with no entry, so no key makes them responsive ([bootstrap-reference.md](bootstrap-reference.md) → Utilities API).
+
 ### Shadows
 
 ```css
 .shadow-none, .shadow-sm, .shadow, .shadow-lg
 ```
 
-Three elevation steps: `shadow-sm` (`0 .125rem .25rem` at .075) for slightly raised cards and controls, `shadow` (`0 .5rem 1rem` at .15) for floating menus and a dragged item, `shadow-lg` (`0 1rem 3rem` at .175) for dialogs. Stock dropdowns, popovers, toasts, and modals all sit on `--bs-box-shadow`; lift a modal to the top step through `--bs-modal-box-shadow` ([bootstrap-reference.md](bootstrap-reference.md) → Elevation and depth). No shadow is a valid role.
+Assign the shipped elevation steps by layer role: `shadow-sm` (`0 .125rem .25rem` at .075) for slightly raised cards and controls, `shadow` (`0 .5rem 1rem` at .15) for floating menus and a dragged item, `shadow-lg` (`0 1rem 3rem` at .175) for dialogs. Stock dropdowns, popovers, toasts, and modals all sit on `--bs-box-shadow`; lift a modal to the top step through `--bs-modal-box-shadow` ([bootstrap-reference.md](bootstrap-reference.md) → Elevation and depth). No shadow is a valid role.
 
 ### Sizing
 
@@ -370,7 +374,8 @@ flex-sm-wrap` or `col-md-auto` only when the container fits. Do not default to a
 - **RTL:** use `ms-*`/`me-*`/`ps-*`/`pe-*`, `text-start`/`text-end`, and logical custom properties;
   verify the matching RTL build and the content's writing direction.
 - **Density:** drive compact/comfortable variants from shared tokens or a wrapper, not scattered
-  per-element tweaks. Dense data retains readable text and ≥24px control targets.
+  per-element tweaks. Dense data retains readable text and control targets at the floor in
+  [bootstrap-reference.md](bootstrap-reference.md) → WCAG 2.2 deltas.
 - **Boundaries and depth:** separate with spacing first, then a surface change, then a shadow, then
   a line: `bg-body-tertiary` panels instead of bordered ones; `card border-0 shadow-sm` on a page
   surface that differs from the card; `list-group-flush`, `accordion-flush`, `table-borderless`,
@@ -379,7 +384,7 @@ flex-sm-wrap` or `col-md-auto` only when the container fits. Do not default to a
   recognition survive. Assign `shadow-sm`, `shadow`, and `shadow-lg` by layer role; do not shadow
   every panel or replace the focus indicator with depth. A `bg-body` panel on `bg-body-tertiary`
   reads raised and `bg-body-secondary` inside `bg-body` reads inset — depth with no shadow, in
-  both modes.
+  light and dark.
 - **Accents and decoration:** one accent border per region (see [Borders](#borders)); the shipped
   `nav-underline` is the active-item accent. Alternate `bg-body` and `bg-body-tertiary` sections
   before decorating; a `bg-primary-subtle` band emphasizes one panel. `bg-gradient` is a

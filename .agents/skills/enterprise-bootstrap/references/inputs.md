@@ -3,6 +3,9 @@
 Pick an affordance from what the person is asked for, not from the name a schema gives the field.
 Where one category draws several ways, let the density and the list size decide.
 
+Each **Default** and **Alternate** names the styling rung it sits on. Take the rung names and their
+order from [SKILL.md](../SKILL.md) → The styling ladder.
+
 Read [The fixed state set](#the-fixed-state-set) before the catalog: every affordance handles that
 same set, and each category names only what it adds or changes. Take the data states a whole surface
 ships — ideal, empty, loading, partial, error — from
@@ -52,9 +55,10 @@ value is a set.
   switches without shrinking the text. Emulated viewport tests do not prove soft-keyboard behavior.
 
 - **Keep a read-only field on the same affordance the edit state uses.** Take `readonly`, or
-  `disabled` plus a carrier, and neutralize the chrome with one transparent combination declared
-  once by name — the combination is a class contract, so declare it and reuse it rather than
-  retyping the utilities. Never swap to `form-control-plaintext`: it drops the horizontal padding,
+  `disabled` plus a carrier, and neutralize the chrome with one transparent combination the project
+  declares by name in its own stylesheet and token layer. The project chooses that combination; this
+  skill prescribes none. Reuse the declared name rather than retyping the utilities at each site.
+  Never swap to `form-control-plaintext`: it drops the horizontal padding,
   so the read view and the edit view reflow against each other.
 - **Give a locked select `disabled` and a hidden input beside it.** A native select cannot be
   read-only, so `disabled` stops its value submitting and the hidden input carries that value.
@@ -78,7 +82,9 @@ value is a set.
 
 ### One line of text
 
-**Default.** An `input.form-control` under its own `label.form-label`, at rung 1.
+**Default.** An `input.form-control` under its own `label.form-label`, at the component rung.
+
+The stock control border is `var(--bs-border-color)` — 1.3:1 on the light body and 1.9:1 on the dark one — so it is decorative; the label, the field's fill against the page, and the focus ring carry recognition. Where the boundary is the only cue (a field on a same-color surface), set `--bs-border-color: var(--bs-secondary-color)` on the form scope — adaptive, about 5.6:1 light and 7:1 dark — and re-measure; never a fixed `border-dark`.
 
 ```html
 <label for="account-name" class="form-label">Account name</label>
@@ -97,7 +103,7 @@ declared transparent combination rather than dropping the control.
 ### Text over many lines
 
 **Default.** A `textarea.form-control` with a `rows` attribute sized to the expected answer, at
-rung 1.
+the component rung.
 
 ```html
 <label for="incident-notes" class="form-label">Notes</label>
@@ -114,7 +120,7 @@ count in the `.form-text`, and keep it out of a live region unless the cap is cl
 
 ### A secret
 
-**Default.** An `input[type=password].form-control` under a visible label, at rung 1.
+**Default.** An `input[type=password].form-control` under a visible label, at the component rung.
 
 ```html
 <label for="passphrase" class="form-label">Passphrase</label>
@@ -133,8 +139,8 @@ one-time code the person must read back.
 
 ### A number
 
-**Default.** An `input[type=number].form-control`, at rung 1. In a column of figures add
-`text-end font-monospace` so the digits align, at rung 2.
+**Default.** An `input[type=number].form-control`, at the component rung. In a column of figures add
+`text-end font-monospace` so the digits align, at the utility rung.
 
 ```html
 <label for="unit-count" class="form-label">Units</label>
@@ -149,7 +155,7 @@ than a quantity, take the one-line-of-text category instead.
 
 ### A number in a bounded range
 
-**Default.** An `input.form-range`, at rung 1, and only when a minimum, a maximum, and a step are all
+**Default.** An `input.form-range`, at the component rung, and only when a minimum, a maximum, and a step are all
 fixed.
 
 ```html
@@ -168,7 +174,7 @@ hand-roll: Bootstrap ships one thumb per input.
 
 ### A date
 
-**Default.** An `input[type=date].form-control`, at rung 1. Take the calendar, the keyboard model,
+**Default.** An `input[type=date].form-control`, at the component rung. Take the calendar, the keyboard model,
 and the locale format from the platform rather than authoring any of them.
 
 ```html
@@ -184,7 +190,7 @@ help text, because a native picker takes no per-day exclusion.
 
 ### A time
 
-**Default.** An `input[type=time].form-control`, at rung 1, with `step` set to the granularity the
+**Default.** An `input[type=time].form-control`, at the component rung, with `step` set to the granularity the
 value actually carries.
 
 ```html
@@ -200,7 +206,7 @@ select is the lighter control.
 
 ### A date and time
 
-**Default.** An `input[type=datetime-local].form-control`, at rung 1.
+**Default.** An `input[type=datetime-local].form-control`, at the component rung.
 
 ```html
 <label for="window-opens" class="form-label">Window opens</label>
@@ -215,7 +221,7 @@ stored in; a local datetime carries none.
 
 ### A color
 
-**Default.** An `input.form-control-color[type=color]`, at rung 1.
+**Default.** An `input.form-control-color[type=color]`, at the component rung.
 
 ```html
 <label for="brand-tint" class="form-label">Brand tint</label>
@@ -223,7 +229,8 @@ stored in; a local datetime carries none.
 ```
 
 **Alternates.** Pair the swatch with a text field when the value is copied, pasted, or read aloud
-between people. Keep the swatch at a 24×24px target or larger.
+between people. Hold the swatch to the target floor in
+[bootstrap-reference.md](bootstrap-reference.md) → WCAG 2.2 deltas.
 
 **States.** The fixed set. A color input has no empty value, so give the field a default and say what
 it is.
@@ -231,7 +238,7 @@ it is.
 ### One on/off answer
 
 **Default.** A `.form-check` holding one `input.form-check-input[type=checkbox]` and its
-`label.form-check-label`, at rung 1.
+`label.form-check-label`, at the component rung.
 
 ```html
 <div class="form-check">
@@ -250,7 +257,7 @@ flight, and reverts visibly when it fails.
 
 ### One of a few
 
-**Default.** A radio group: `fieldset` and `legend` around `.form-check` rows, at rung 1.
+**Default.** A radio group: `fieldset` and `legend` around `.form-check` rows, at the component rung.
 
 ```html
 <fieldset>
@@ -266,7 +273,7 @@ flight, and reverts visibly when it fails.
 </fieldset>
 ```
 
-**Alternates.** Take a segmented `.btn-group` of `.btn-check` radios, at rung 2, when the choice
+**Alternates.** Take a segmented `.btn-group` of `.btn-check` radios, at the utility rung, when the choice
 sits in a toolbar or a filter bar and every option fits on one row without wrapping; give the group
 `role="radiogroup"` and one accessible name. A radio group and a segmented group draw the same
 question, and the list size decides between them. Verify the chosen-state contract rather than
@@ -277,7 +284,7 @@ name it in the message, and keep the error under the last row.
 
 ### One of many
 
-**Default.** A `select.form-select`, at rung 1.
+**Default.** A `select.form-select`, at the component rung.
 
 ```html
 <label for="territory" class="form-label">Territory</label>
@@ -297,7 +304,7 @@ hidden input. A select whose options are loading is `busy`.
 
 ### One of many with an unlisted value admitted
 
-**Default.** An `input.form-control` bound to a `<datalist>`, at rung 1. The list suggests; the
+**Default.** An `input.form-control` bound to a `<datalist>`, at the component rung. The list suggests; the
 person can still submit a value it does not hold.
 
 ```html
@@ -316,7 +323,7 @@ re-target every test and journey that finds this field by role.
 
 ### Any of a few
 
-**Default.** `fieldset` and `legend` around `.form-check` checkbox rows sharing one name, at rung 1.
+**Default.** `fieldset` and `legend` around `.form-check` checkbox rows sharing one name, at the component rung.
 
 ```html
 <fieldset>
@@ -338,7 +345,7 @@ text and validate it on the group.
 
 ### Any of many
 
-**Default.** A bounded, scrollable list of `.form-check` rows inside a bordered box, at rung 2, with
+**Default.** A bounded, scrollable list of `.form-check` rows inside a bordered box, at the utility rung, with
 a filter field preceding it so the person can narrow the list before choosing.
 
 ```html
@@ -362,7 +369,7 @@ one-action way to clear it.
 
 ### A value picked from a searched list
 
-**Default.** A combobox composed from shipped classes at rung 2, with the keyboard model
+**Default.** A combobox composed from shipped classes at the utility rung, with the keyboard model
 hand-rolled against the APG combobox pattern: an `input.form-control` carrying `role="combobox"`,
 `aria-expanded`, `aria-controls`, `aria-autocomplete="list"`, and `aria-activedescendant`, over a
 `ul.dropdown-menu[role=listbox]` of `.dropdown-item` buttons.
@@ -395,7 +402,7 @@ the input stays operable throughout.
 
 ### Files
 
-**Default.** An `input[type=file].form-control`, at rung 1.
+**Default.** An `input[type=file].form-control`, at the component rung.
 
 ```html
 <label for="statement" class="form-label">Statement</label>
@@ -413,7 +420,7 @@ toast.
 
 ### An ordered set of tags
 
-**Default.** Bootstrap ships no tags input. Compose one at rung 2 from a text field that commits on
+**Default.** Bootstrap ships no tags input. Compose one at the utility rung from a text field that commits on
 Enter plus a row of quiet chips, each carrying a `btn-close` with its own accessible name.
 Use a utility-composed span so text inherits and the close control retains its normal font size.
 
@@ -432,7 +439,8 @@ Use a utility-composed span so text inherits and the close control retains its n
 ```
 
 Keep tag text inherited and let the close icon follow the active mode. Measure the close button
-against the chip and its hit area against the package target floor. Take a retained `.badge`
+against the chip and its hit area against the target floor in
+[bootstrap-reference.md](bootstrap-reference.md) → WCAG 2.2 deltas. Take a retained `.badge`
 through [color-modes.md](color-modes.md) → Badges and removable tags.
 
 **Alternates.** Where the tags come from a fixed vocabulary, this is the any-of-many category and the
@@ -444,10 +452,10 @@ control per chip.
 
 ### A rating
 
-**Default.** Bootstrap ships no rating. Draw the interactive form as a radio group at rung 2 — one
+**Default.** Bootstrap ships no rating. Draw the interactive form as a radio group at the utility rung — one
 radio per value, restyled through `.btn-check` — so the keyboard model, the name, and the submitted
 value come from the platform. Star chrome over that structure is an authored class contract at
-rung 4.
+the authored rung.
 
 ```html
 <fieldset>
@@ -467,7 +475,7 @@ per [components.md](components.md) → Status glyph marks; it is not a control. 
 
 ### A step in a sequence
 
-**Default.** Draw a step indicator from shipped parts at rung 1 — a `nav` or `.list-group-numbered`
+**Default.** Draw a step indicator from shipped parts at the component rung — a `nav` or `.list-group-numbered`
 whose current item carries `aria-current="step"`, with a `.progress` bar over a long sequence. A step
 indicator reports where the person is and holds no value, so it is not a field.
 

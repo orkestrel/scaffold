@@ -28,7 +28,7 @@
 			"storage": "agents/skills/enterprise-bootstrap/SKILL.md",
 			"destination": ".agents/skills/enterprise-bootstrap/SKILL.md",
 			"executable": false,
-			"digest": "f58af98acfa62de842476c17e71c1a98aad250cb4336a160019320a5dd6dacad"
+			"digest": "03af2a3755e39cd01934b814ae7644987fd10a656857f7b07163681a2c2cce91"
 		},
 		{
 			"storage": "agents/skills/enterprise-bootstrap/agents/openai.yaml",
@@ -40,49 +40,49 @@
 			"storage": "agents/skills/enterprise-bootstrap/references/bootstrap-reference.md",
 			"destination": ".agents/skills/enterprise-bootstrap/references/bootstrap-reference.md",
 			"executable": false,
-			"digest": "07ab83158aeeaabd965c285de6a30cbe28241e808bcad848fd6c7197fa6b9d12"
+			"digest": "088f73d1714006eb7fc307331caf95848720762d4fd19c050d3c16f8493f2ea2"
 		},
 		{
 			"storage": "agents/skills/enterprise-bootstrap/references/color-modes.md",
 			"destination": ".agents/skills/enterprise-bootstrap/references/color-modes.md",
 			"executable": false,
-			"digest": "c089bd32922e1d6ec74b55afc7cac184f6f8c58a75653647c26ddc814682bcdb"
+			"digest": "df374b34d15867ccadae50782ed961b70cfdd19aa7ece9a7fd7c69a72ee5af04"
 		},
 		{
 			"storage": "agents/skills/enterprise-bootstrap/references/components.md",
 			"destination": ".agents/skills/enterprise-bootstrap/references/components.md",
 			"executable": false,
-			"digest": "f4c9b5f2f8e7482aac2aebb0c3a837095c3ff9e8a309db1ee256673a7fdf2553"
+			"digest": "3656de27f8407eb2b7f44ada3e64c0c2e88758ff30fa573f848527fe6ac4bb9e"
 		},
 		{
 			"storage": "agents/skills/enterprise-bootstrap/references/frontend-design.md",
 			"destination": ".agents/skills/enterprise-bootstrap/references/frontend-design.md",
 			"executable": false,
-			"digest": "90e5242046776118b18f0489e5cbc82ac498935dc8c29ec2644b53327d89955c"
+			"digest": "758a87d744e632d0789f6b7175f5eb7496961640dc80886eaa70e28e7e4f2bca"
 		},
 		{
 			"storage": "agents/skills/enterprise-bootstrap/references/inputs.md",
 			"destination": ".agents/skills/enterprise-bootstrap/references/inputs.md",
 			"executable": false,
-			"digest": "7e536b0651a3347019b140d1fac29e00dba38234ae37a93e3c34281086da0cdf"
+			"digest": "be1e1c22e06efcc805ab0b46ecd3f2cc5f73e69aea237c8d3b1d983b810ab1dc"
 		},
 		{
 			"storage": "agents/skills/enterprise-bootstrap/references/inspection.md",
 			"destination": ".agents/skills/enterprise-bootstrap/references/inspection.md",
 			"executable": false,
-			"digest": "152548af42ef9322cfb398b9a6d64352f39c912c31ee324016c13959e4cfa34b"
+			"digest": "3daa82a3079d23ae6280cd9a934d1ca5f51e35274bd456e7544c88992c7a5164"
 		},
 		{
 			"storage": "agents/skills/enterprise-bootstrap/references/responsive-layout.md",
 			"destination": ".agents/skills/enterprise-bootstrap/references/responsive-layout.md",
 			"executable": false,
-			"digest": "a933fdf530d4001cc9a75d24b103d111efc428d146d2c8cf9ea934891ca21019"
+			"digest": "ccaa3bf07e364f26ddc9d2a96109f0b7f21c9186ac1153fc1f917e1053209d4a"
 		},
 		{
 			"storage": "agents/skills/enterprise-bootstrap/references/utilities.md",
 			"destination": ".agents/skills/enterprise-bootstrap/references/utilities.md",
 			"executable": false,
-			"digest": "5176a2b292cab40a1b954134042c27c4a19077a999c9f13f9bc16d8dd007063b"
+			"digest": "c583a023a01b44be1a7ee735ec9ee662c55ac88244ea4a7cfe71ad367ab1f480"
 		},
 		{
 			"storage": "agents/skills/orkestrel-align-packages/SKILL.md",
@@ -352,7 +352,7 @@
 			"storage": "claude/agents/orkestrel.md",
 			"destination": ".claude/agents/orkestrel.md",
 			"executable": false,
-			"digest": "b6c285b9923947460066ebc08f5778891ae2eac14800f40cdbcc53a63875554a"
+			"digest": "a95615dc016a4a4a1150789a58bb55c3ac91820ddd2acea8b4cdc5517279bc8f"
 		},
 		{
 			"storage": "claude/agents/planner.md",
@@ -478,7 +478,7 @@
 			"storage": "claude/skills/enterprise-bootstrap/SKILL.md",
 			"destination": ".claude/skills/enterprise-bootstrap/SKILL.md",
 			"executable": false,
-			"digest": "0973f97ccd042e53d33f72396fe1924b1de98f2a2c27338615279bb1d569e000"
+			"digest": "c8ae2dbc8337238899334cd205afe3617ef64298ac39c043b8cd3fe0885103f2"
 		},
 		{
 			"storage": "claude/skills/orkestrel-align-packages/SKILL.md",
@@ -785,5 +785,5 @@
 		".cursor/rules",
 		"scripts"
 	],
-	"digest": "06692c3a078815c3d4e0ed00c4280ce381119a1c1005334b1372c137e758dc18"
+	"digest": "f7db7c59125c1eeb281cab9ce70e0be3f1f9f95c2a950c53d94d176062b72570"
 }

@@ -441,8 +441,8 @@ re-run. These rows stay open:
   hard-codes the `EAFNOSUPPORT` constant where the `supportsMappedLoopback` predicate is the
   probe that read the code, and the errno set across hosts is unmeasured; the
   `resolveTool` helper in the `tests/setupServer.ts` file accepts a regular file without
-  the execute bit; the shadow directory the `executeOllamaSetup` helper builds
-  in that same file is inline, unexported, and asserted nowhere, and a tool it
+  the execute bit; the shadow directory assembly in the `executeOllamaSetup` helper
+  remains inline and unexported, and a tool it
   cannot resolve is dropped silently, so whether a host lacking
   the `setsid` command or the `timeout` command changes the exit code and the
   message the pinned case in the `tests/src/server/helpers.test.ts` file asserts

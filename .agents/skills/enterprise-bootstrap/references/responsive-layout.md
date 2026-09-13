@@ -1,12 +1,13 @@
 # Responsive layout
 
-> Part of the `enterprise-bootstrap` package. Use before composing a screen, shell, toolbar,
+> Part of the `enterprise-bootstrap` skill. Use before composing a screen, shell, toolbar,
 > form, overlay, or data view. Operate layer: [SKILL.md](../SKILL.md).
 
 ## Contents
 
 - [Declare the contract](#declare-the-contract)
 - [Build the base](#build-the-base)
+- [Bootstrap's responsive surface](#bootstraps-responsive-surface)
 - [Expand by available space](#expand-by-available-space)
 - [Keep the task intact](#keep-the-task-intact)
 - [Handle navigation and overlays](#handle-navigation-and-overlays)
@@ -78,6 +79,55 @@ ship breakpoint variants. Do not invent `w-md-auto`, `overflow-lg-auto`, `positi
 `min-w-0`. Responsive sticky helpers are a separate shipped family. Take missing roles through
 [Layout and type extensions](bootstrap-reference.md#layout-and-type-extensions).
 
+## Bootstrap's responsive surface
+
+Stock 5.3.8 thresholds are `min-width` breakpoints: `sm` 576, `md` 768, `lg` 992, `xl` 1200,
+`xxl` 1400 px; `xs` has no infix, so an unprefixed class is the base and `sm-*` applies from
+576 px up. `.container` caps at 540 / 720 / 960 / 1140 / 1320 px; `container-{bp}` stays fluid
+until its breakpoint; `container-fluid` always. Gutter and container padding are 1.5 rem, so a
+320 px viewport leaves 296 px of content and a 390 px viewport 366 px. Offcanvas panels are
+400 px wide (`w-100` on narrow viewports); modals are 300 / 500 / 800 / 1140 px.
+
+Families that ship breakpoint infixes, read from the utilities map: `d-*`, `flex-*`,
+`justify-content-*`, `align-items-*`, `align-self-*`, `align-content-*`, `order-*`, `float-*`,
+`gap-*`, `row-gap-*`, `column-gap-*`, every `m*`/`p*` spacing class, `text-{bp}-start/center/end`,
+`object-fit-*`; plus the grid (`col-*`, `row-cols-*`, `g-*`, `offset-*`), `container-*`,
+`sticky-{bp}-top/bottom`, and the component thresholds `navbar-expand-*`, `offcanvas-*`,
+`table-responsive-*`, `modal-fullscreen-*-down`, `dropdown-menu-{bp}-end/start`,
+`list-group-horizontal-*`.
+
+Families with no infix: `w-*`, `h-*`, `mw-*`, `vh-*`, `position-*`, `top/bottom/start/end-*`,
+`overflow-*`, `border-*`, `rounded-*`, `shadow-*`, `fs-*`, `fw-*`, `lh-*`, `text-nowrap`,
+`text-truncate`, `text-uppercase`, `opacity-*`, `hstack`/`vstack`, `btn-group-vertical`. Write
+`d-flex flex-column flex-md-row gap-3` where a stack must become a row, and generate `w-md-auto`
+or `overflow-lg-visible` through the utilities API with `responsive: true` when a role needs it.
+That key reaches a `$utilities` entry and nothing else, so it generates `w-*` and `overflow-*`
+infixes but cannot reach a component threshold, a grid class, or a helper such as `hstack`; change
+the component's own breakpoint class instead
+([bootstrap-reference.md](bootstrap-reference.md) → Utilities API).
+
+Recipes:
+
+- **Table scroller.** `<div class="table-responsive" role="region" aria-label="Invoices"
+tabindex="0">` — the shipped class is `overflow-x: auto` only; the name and `tabindex` make it
+  keyboard-reachable. `table-responsive-{bp}` scrolls only below the breakpoint.
+- **Menus in a scroller.** A scroller clips its `dropdown-menu`. Add
+  `data-bs-popper-config='{"strategy":"fixed"}'` to the toggle, or open row actions in a
+  root-mounted dialog.
+- **Dual representations.** Render the narrow list and the wide table from one data array and one
+  selection set keyed by record id. Hide the inactive view with `d-none d-lg-block` /
+  `d-lg-none` so only one is in the accessibility tree; keep every `id` unique per view; re-sync
+  selection, sort, and filter state into whichever view is active. A view that resolves is not a
+  second store.
+- **Toolbar base.** `d-grid gap-2 d-sm-flex flex-sm-wrap` stretches controls at the base and
+  releases them from `sm`; give search its own `col-12 col-md` row.
+- **Touch.** `btn` is 38 px tall at the default size, `btn-sm` 31 px, `btn-lg` 48 px. Primary
+  mobile controls take `btn` or `btn-lg`, never a scaled-up icon inside `btn-sm`.
+- **Pager.** Keep previous/next and the current page at every width; hide other numbers with
+  `d-none d-sm-block` on the `page-item` before shrinking targets.
+- **Joined groups.** A `btn-group` bent over two rows loses its shared corners; below the width
+  where its labels fit, use a `form-select` or independent wrapping buttons.
+
 ## Expand by available space
 
 Measure the content container after rails, gutters, and panel padding. A wide viewport can contain
@@ -131,10 +181,10 @@ Keep record actions outside a clipped table wrapper when necessary. Popper place
 not guarantee escape from an overflow ancestor. Prefer a root-mounted dialog or an existing
 portal implementation over z-index escalation.
 
-Make touch targets comfortable without making text larger: prefer 44×44 CSS px for primary mobile
-controls; retain the package's 24×24 minimum for every applicable target. Enlarge the actual button
-or associated label, not merely the icon's surrounding decoration. Keep action affordances visible
-without hover. Measure effective label hit areas for native checkboxes and switches.
+Make touch targets comfortable without making text larger; take every dimension from
+[bootstrap-reference.md](bootstrap-reference.md) → WCAG 2.2 deltas, which owns the target floor and
+the mobile preference. Keep action affordances visible without hover. Measure effective label hit
+areas for native checkboxes and switches.
 
 ## Handle navigation and overlays
 
@@ -168,7 +218,7 @@ Run [Responsive task and reflow](inspection.md#responsive-task-and-reflow) and
 [Responsive interaction continuity](inspection.md#responsive-interaction-continuity). Check 320 and
 390 CSS px, one wide view, and `b−1`, `b`, `b+1` for each used breakpoint; deduplicate overlaps.
 Check narrow/short landscape, long unbroken identifiers, expanded copy, enlarged text, and the
-states actually used. Cross light/dark with the important narrow/wide states.
+states actually used. Cross every declared mode with the important narrow/wide states.
 
 Require both geometry and task evidence. A page with no horizontal overflow can still hide its
 primary action, clip a menu, or push decision fields into an undiscoverable scroller. Conversely,
@@ -182,6 +232,6 @@ viewport, device-pixel-ratio change, or emulated touch a real-device or complete
 Take upstream behavior from Bootstrap's [breakpoints](https://getbootstrap.com/docs/5.3/layout/breakpoints/),
 [grid](https://getbootstrap.com/docs/5.3/layout/grid/), [flex](https://getbootstrap.com/docs/5.3/utilities/flex/),
 [offcanvas](https://getbootstrap.com/docs/5.3/components/offcanvas/), and
-[tables](https://getbootstrap.com/docs/5.3/content/tables/). Distinguish this package's test matrix
+[tables](https://getbootstrap.com/docs/5.3/content/tables/). Distinguish this skill's test matrix
 from the requirements and two-dimensional-content exception in
 [WCAG reflow](https://www.w3.org/WAI/WCAG22/Understanding/reflow.html).

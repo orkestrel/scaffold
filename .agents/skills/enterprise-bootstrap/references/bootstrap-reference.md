@@ -1,6 +1,6 @@
 # Bootstrap 5 Deep Reference — Theming, Forms, JS, Accessibility, Enterprise Patterns
 
-> Part of the `enterprise-bootstrap` package. Bootstrap **5.3.x**.
+> Part of the `enterprise-bootstrap` skill. Bootstrap **5.3.x**.
 > Component markup lookups: [components.md](components.md). Utility classes: [utilities.md](utilities.md).
 > This file holds what those do not: setup, color modes, theming/tokens, forms in
 > production, the JS lifecycle, accessibility depth, and enterprise app patterns.
@@ -48,6 +48,8 @@ Pinned CDN example (5.3.8). Prefer the installed compatible version; this is not
 - In a project with a bundler, prefer the installed `bootstrap` package (and its Sass source) over the CDN — see [Performance](#performance).
 
 ## Breakpoints & Layout
+
+Stock 5.3.8 values: breakpoints `sm` 576 · `md` 768 · `lg` 992 · `xl` 1200 · `xxl` 1400 px (`min-width`; `xs` has no infix); `.container` maxima 540 · 720 · 960 · 1140 · 1320 px; gutter and container padding 1.5 rem (296 px of content at 320 px). Only `d`, `flex`, `justify-content`, `align-*`, `order`, `float`, `gap`, spacing, text alignment, and `object-fit` utilities ship breakpoint infixes. Generate a missing responsive role only where a `$utilities` entry owns the property, per [Utilities API](#utilities-api). Full inventory and recipes: [responsive-layout.md](responsive-layout.md) → Bootstrap's responsive surface.
 
 Start with the feature's content and narrow layout, then choose its container and breakpoints.
 Take the region contract, content parity, and test matrix from [responsive-layout.md](responsive-layout.md).
@@ -189,13 +191,13 @@ that boundary; [frontend-design.md](frontend-design.md) owns the visual choices.
 
 ### Elevation and depth
 
-Three shipped steps — `--bs-box-shadow-sm` (`0 .125rem .25rem` at .075), `--bs-box-shadow`
-(`0 .5rem 1rem` at .15), `--bs-box-shadow-lg` (`0 1rem 3rem` at .175) — plus
+Bootstrap ships `--bs-box-shadow-sm` (`0 .125rem .25rem` at .075), `--bs-box-shadow`
+(`0 .5rem 1rem` at .15), and `--bs-box-shadow-lg` (`0 1rem 3rem` at .175), plus
 `--bs-box-shadow-inset`. Assign by z-position: `sm` for raised cards and controls, base for
 floating menus and a dragged item, `lg` for dialogs. Stock dropdowns, popovers, toasts, and
 modals all sit on `--bs-box-shadow` (modal: `-sm` below 576 px), which puts a blocking dialog at
-dropdown elevation. Lift it at rung 3, in the project stylesheet after Bootstrap's so the rule
-wins the `sm`-up media rule:
+dropdown elevation. Lift it at the extension rung, in the project stylesheet after Bootstrap's so
+the rule wins the `sm`-up media rule:
 
 ```css
 .modal {
@@ -210,10 +212,10 @@ and every consumer follows.
 `$enable-shadows: true` (off by default) paints light-from-above on controls: buttons take
 `inset 0 1px 0 rgba(#fff, .15), 0 1px 1px rgba(#000, .075)` (lit top edge, tight cast shadow),
 inputs `inset 0 1px 2px rgba(#000, .075)` (recessed), and an active button `inset 0 3px 5px`
-(pressed). Enable it when the direction wants tactile controls, and verify both modes; the alphas
+(pressed). Enable it when the direction wants tactile controls, and verify light and dark; the alphas
 are fixed white and black. Without the flag the `box-shadow` mixin emits nothing, so
-`--bs-btn-box-shadow` and `--bs-box-shadow-inset` have no consumer and a rung-3 override does
-nothing; the recipe is then a proposed rule.
+`--bs-btn-box-shadow` and `--bs-box-shadow-inset` have no consumer and an extension-rung override
+does nothing; the recipe is then a proposed rule.
 
 Flat depth: a `bg-body` panel on `bg-body-tertiary` reads raised and `bg-body-secondary` inside
 `bg-body` reads inset, both mode-adaptive with no shadow. A hard offset shadow is a `$box-shadow`
@@ -232,6 +234,8 @@ mode, where `border-white` does not:
 Then `rounded-circle border border-3 ring-body`.
 
 ### The CSS-variables-only path (no Sass build)
+
+When the deliverable is one self-contained HTML file, the project stylesheet is a single `<style>` block in `<head>` — tokens, declared role utilities, and extension-rung variable overrides, in that order — loaded after the Bootstrap `<link>` so equal-specificity rules win by source order. It is still one stylesheet: no `style` attribute on authored markup and no second `<style>` block beside a component ([SKILL.md](../SKILL.md) → The styling ladder owns that placement rule).
 
 Use native components and adaptive utilities before adding overrides. For a recurring component
 surface role, use its local variable rather than repainting the whole component. This optional
@@ -301,6 +305,14 @@ $utilities: map-merge(
 ```
 
 Remove with `map-remove($utilities, "width")` or set the key to `null`. This is the sanctioned answer when the shipped scale is missing a step (for example, a `vh-50` the design truly needs).
+
+**`responsive: true` reaches a utility family and nothing else.** It adds breakpoint infixes to one
+entry in the `$utilities` map, so it generates `w-md-auto` from the `width` entry and `ls-lg-tight`
+from an added `letter-spacing` entry. A component threshold (`navbar-expand-*`, `offcanvas-*`,
+`table-responsive-*`, `modal-fullscreen-*-down`), a grid class, and a helper (`visually-hidden`,
+`stretched-link`, `ratio`, `vstack`) are not `$utilities` entries, so the key cannot reach them —
+change the component's own breakpoint class instead, and never write a responsive helper name the
+map cannot produce. Read the generated selector out of the compiled output before using it.
 
 ### Layout and type extensions
 
@@ -432,7 +444,8 @@ under [SKILL.md](../SKILL.md) → When custom CSS is justified. Never ship an un
 
 - Validate a field **on blur** — after the user leaves it — never on every keystroke, and never before the user has reached the field. Exception: live feedback that _helps_ while typing (password strength, username availability, character counts).
 - After a field enters an error state, re-validate as the user types so they see the fix land.
-- Always re-check everything on submit. Keep the submit button **enabled** — a disabled submit hides _what is_ wrong; a validating submit shows it.
+- Always re-check everything on submit. Keep the submit button **enabled** while fields are invalid — a disabled submit hides _what is_ wrong; a validating submit shows it.
+- **Separate invalid from pending.** While a submit is in flight, mark the button busy — `aria-busy="true"`, a `spinner-border spinner-border-sm` inside it, its label held so the geometry does not move — and refuse a second submit from the handler. Blocking a duplicate submit of a form that already validated is a pending state; the preceding rule bars only the disable that stands in for validation. Clear the busy state on both the resolved and the failed path, and put the failure in the error summary.
 - On failed submit of a long form, render an **error summary** at the top (focus it; link each item to its field) _and_ inline messages at each field — never summary-only, never inline-only.
 - Error style = color + icon + text, stating what is wrong and how to fix it. Wire message to field with `aria-describedby`, mark the field `aria-invalid="true"`. Never report errors through a hover tooltip.
 
@@ -522,7 +535,7 @@ el.addEventListener('hidden.bs.modal', () => {
 })
 ```
 
-- **Framework reality check:** Bootstrap's JS and a virtual-DOM framework both mutating the same nodes causes bugs (stuck dropdowns, ghost backdrops). In React/Vue/Angular apps, prefer the framework-native implementations (React Bootstrap, BootstrapVueNext, ng-bootstrap) which reuse Bootstrap's CSS but own the DOM. Use raw `bootstrap.*` JS in SPAs only for leaf widgets you fully control, and dispose them on unmount.
+- **In a virtual-DOM app, take the framework-native implementation** — React Bootstrap, BootstrapVueNext, ng-bootstrap — which reuses Bootstrap's CSS and owns the DOM. Use raw `bootstrap.*` JS there only for a leaf widget the component fully controls, and dispose it on unmount. Bootstrap's JS and the framework mutating the same nodes produces stuck dropdowns and ghost backdrops.
 
 ### Popper
 
@@ -541,26 +554,26 @@ Hold the baseline in [SKILL.md](../SKILL.md) → Accessibility baseline. Its Boo
 
 **Measuring the bars:**
 
-- Hold the bars from [SKILL.md](../SKILL.md) → Surfaces, color, contrast: **≥ 4.5:1** for everything information-bearing, **≥ 3:1** for textless marks and state chrome. WCAG 2.2 permits 3:1 for large text; this package does not — size grants no lower tier.
+- Hold the bars from [SKILL.md](../SKILL.md) → Surfaces, color, contrast, which owns them. WCAG 2.2 permits 3:1 for large text; this skill does not — size grants no lower tier.
 - Measure each declared theme from the compiled cascade, never from token names. A light-theme result does not establish a dark-theme result, and a skin's values are its own.
 - Focus rings and hover fills are UI graphics: they are in scope for the 3:1 bar.
 - Disabled controls are exempt from the bars by the spec. That exemption covers legibility, not meaning — see [Destructive actions](#destructive-actions) for the one disabled state that still has to change color.
 
-**The instrument.** Bootstrap paints in translucent layers: a card header and footer are a 3% tint of the body color over the card's own background. A reader that stops at the first painted ancestor and drops its alpha treats that tint as full-strength paint, and is then wrong in **both** directions — it green-lights a pairing nobody can read, and it red-flags one that reads fine. Use a reader that:
+**The instrument.** Refuse a reading from a reader that stops at the first painted ancestor and drops its alpha. Bootstrap paints in translucent layers — a card header and footer are a 3% tint of the body color over the card's own background — so a flattening reader passes an unreadable pairing and fails a readable one. Use a reader that:
 
 - collects every painted layer from the element upward to the first opaque one, then composites them top over bottom (Porter-Duff `over`) onto that opaque base;
 - composites a translucent foreground over that result before taking the ratio, rather than reading the declared color;
-- measures each declared theme in the same run, since a theme swap re-points the tokens under every layer;
+- measures each declared theme in the same run, because a theme swap re-points the tokens under every layer;
 - carries a negative control drawn from outside the population it covers — a pairing known to fail — and voids the run if that negative control passes.
 
 Include ancestor opacity in the painted stack. For images, gradients, masks, or blend modes the
 reader does not support, use a suitable rendered-background measurement or leave the pairing open;
 never flatten a variable background to its average color. Name reached states beside every result.
-Wire the reader into the suite once it has settled a question.
+Wire the reader into the suite after it has settled a question.
 
 ### WCAG 2.2 deltas that bite dense app UI
 
-- **Target size ≥ 24×24 CSS px (2.5.8, AA).** Icon buttons, row actions, close buttons, sort carets, checkbox hit-areas. A smaller visual target passes if a 24px spacing circle around it stays undisturbed — so in tight `table-sm` toolbars, pad the hit area rather than enlarging the glyph.
+- **Target size (2.5.8, AA) — this section owns the skill's target dimensions.** Hold every applicable target at ≥ 24×24 CSS px: icon buttons, row actions, close buttons, sort carets, checkbox hit-areas, and color swatches. A smaller visual target passes only where a 24px spacing circle around it stays undisturbed — so in tight `table-sm` toolbars, pad the hit area rather than enlarging the glyph. Prefer 44×44 CSS px for a primary mobile control. Measure the rendered hit area; never infer it from a size class such as `btn-sm`. Enlarge the button or its associated label, not the icon's surrounding decoration.
 - **Focus not obscured (2.4.11, AA).** Sticky headers/footers/action bars and toast overlays must not bury the focused element. Reserve space with `scroll-margin-top` on focusables (or `scroll-padding-top` on the scroll container) equal to the sticky chrome height.
 - **Dragging alternatives (2.5.7, AA).** Any drag (row reorder, kanban, slider, resize) needs a non-drag single-pointer path: move up/down buttons, numeric input, click-to-place.
 - **Accessible authentication (3.3.8, AA).** Never block paste in password/OTP fields; support password managers; no puzzle as the only way in.
@@ -667,7 +680,7 @@ The Bootstrap implementation — a responsive offcanvas that renders inline abov
 
 ### Dense data tables
 
-**Semantics first — table vs grid.** Default to a static `<table>`: links and buttons inside cells ride the natural tab order and screen readers get real table navigation free. Reserve `role="grid"` for _editable, cell-interactive_ spreadsheet-like UIs — grid means you now own roving tabindex and full arrow-key cell navigation. Never bolt `role="grid"` onto a read-only table because it "looks like a data grid": semantics follow interaction, not appearance.
+**Semantics first — table vs grid.** Default to a static `<table>`: links and buttons inside cells ride the natural tab order and screen readers get real table navigation free. Reserve `role="grid"` for _editable, cell-interactive_ spreadsheet-like UIs — a grid hands roving tabindex and full arrow-key cell navigation to the implementation. Never bolt `role="grid"` onto a read-only table because it "looks like a data grid": semantics follow interaction, not appearance.
 
 **Craft rules:**
 
@@ -678,7 +691,7 @@ The Bootstrap implementation — a responsive offcanvas that renders inline abov
   independent column comparison or sorting. Keep key comparison columns explicit. Quiet repeated
   labels and row actions before increasing density.
 - **Density:** `table-sm` for compact; offer density as a user toggle (comfortable/compact) driven by one token or wrapper class, not per-cell tweaks. Do not shrink font below readability to fake density.
-- **Sticky header** when the table meaningfully scrolls (roughly a viewport / ~15+ rows). Not built into Bootstrap — the pattern:
+- **Sticky header** when the table scrolls its own header out of view. Not built into Bootstrap — the pattern:
 
 ```html
 <div
@@ -710,7 +723,7 @@ Keep sticky header cells on an **opaque, mode-aware surface** such as `bg-body-s
 </th>
 ```
 
-- **Row actions:** 1–3 high-frequency actions inline; the rest behind a per-row kebab (dropdown). Hover-only reveal fails touch and keyboard — keep at least the overflow trigger always visible and ≥24px.
+- **Row actions:** keep the high-frequency actions inline and put the rest behind a per-row kebab (dropdown). Hover-only reveal fails touch and keyboard — keep at least the overflow trigger always visible and at the floor in [WCAG 2.2 deltas](#wcag-22-deltas-that-bite-dense-app-ui).
 - **Selection & bulk actions:** header checkbox with indeterminate state for partial selection; per-row checkboxes with `aria-label` naming the row ("Select INV-1042"). When selection > 0, swap the toolbar's content in place for a contextual bar — "3 selected", the batch actions, and a clear-selection escape — never push the layout down (layout-shifting chrome is an anti-pattern). Announce the count through a polite live region.
 - **Pagination vs scrolling:** paginate when users need position, totals, deep links, and "go to page N" — most enterprise CRUD. Virtualize (windowed rendering) for long uniform lists where scrolling is natural. True infinite scroll is for exploratory feeds only — never where users need a footer or a findable end.
 - **Responsive, by task:** use a compact record list for record work, a locally scrollable semantic table for essential comparison, or priority columns with an operable detail path. Preserve identity, decision fields, and actions. Choose expansion from available container width, not `md` by habit. Keep one state model across variants; take the contract from [Keep the task intact](responsive-layout.md#keep-the-task-intact).
@@ -718,7 +731,7 @@ Keep sticky header cells on an **opaque, mode-aware surface** such as `bg-body-s
 
 ### Filter & search bars
 
-- One toolbar above the table: search input first (`role="search"` on the form), then the 2–4 highest-value filters as `form-select`/segmented controls, overflow filters behind a "Filters" button (offcanvas on mobile, dropdown/collapse on desktop).
+- One toolbar above the table: search input first (`role="search"` on the form), then the highest-value filters as `form-select`/segmented controls, overflow filters behind a "Filters" button (offcanvas on mobile, dropdown/collapse on desktop). Promote a filter to the toolbar because the task reaches for it, not to fill the row.
 - **Active filters must be visible and dismissible** — chips/badges with an ✕ and a "Clear all" — users must see _why_ the list is short. A filtered-empty state repeats the escape hatch.
 - Debounce live search; show result counts ("128 results") so feedback is immediate; filter state belongs in the URL when views are shareable.
 - At the base, give search a full row; stack or wrap actions and filters without shrinking labels or targets. Expand with `col-12 col-md`, `col-md-auto`, or `d-grid d-sm-flex` when they fit. Reserve a horizontal scroller for a documented spatial interaction, not an ordinary toolbar. Keep active filters and the clear path outside any disclosed extras.
@@ -729,7 +742,7 @@ Keep sticky header cells on an **opaque, mode-aware surface** such as `bg-body-s
   ⟨total⟩", where the wizard fills in its own runtime position and total); `list-group-numbered` or
   a simple nav renders it honestly.
 - Validate per step before advancing; never let a step advance carrying invalid data.
-- Back never loses data. Persist partial state (save-and-resume) for anything beyond ~3 steps or that crosses sessions.
+- Back never loses data. Persist partial state (save-and-resume) for a long sequence or one that crosses sessions.
 - Never re-ask what a previous step collected (Redundant Entry, 3.3.7) — carry it forward or offer "same as above".
 - Review step: a review summary with per-section edit links, then one clearly-named commit action ("Create account", not "Submit").
 
@@ -791,7 +804,7 @@ Do not type-gate a single-row delete; do not one-tap a tenant wipe. Confirm only
 ## Performance
 
 - **Keep one CSS system.** Extend the installed Bootstrap theme; do not add a competing framework or a parallel palette to restyle the surface.
-- **Compressed, the full build is cheap; incomplete builds are not.** Trimming through a Sass-subset build (import only the parts used — see [Theming](#theming--design-tokens)) is the sanctioned diet. Aggressive purge tools are the risky one: Bootstrap adds classes **at runtime** (`show`, `showing`, `fade`, `collapsing`, `modal-open`, `modal-backdrop`, `offcanvas-backdrop`, tooltip/popover generated markup) — purging without safelisting them ships UIs whose modals silently stop rendering. If you purge, safelist every JS-toggled class and test every overlay.
+- **Ship the full compressed build, or trim it with a Sass-subset build** that imports only the parts used (see [Theming](#theming--design-tokens)). Do not reach for a CSS purge tool first. Bootstrap adds classes **at runtime** — `show`, `showing`, `fade`, `collapsing`, `modal-open`, `modal-backdrop`, `offcanvas-backdrop`, and tooltip/popover generated markup — so a purge without a safelist ships a UI whose modals stop rendering. Where the project purges anyway, safelist every JS-toggled class and drive every overlay before shipping.
 - **Icons:** Bootstrap Icons is a separate package — prefer inline SVG or an SVG sprite (crisp, styleable through `currentColor`, no font flash) over the icon font; load only the icons used.
 - **JS:** the bundle is small, but only load it where behavior exists; per-component ESM imports (`bootstrap/js/dist/modal`) trim further in bundlers.
 - **Fonts:** reuse the existing families and load only needed weights/scripts. Add a display face only for a distinct role; use `font-display: swap` and test fallback wrapping. Keep the data face legible before and after fonts load.
@@ -838,4 +851,21 @@ Bootstrap has **no** combobox/autocomplete, date picker, multi-select tags input
 ```html
 <div class="d-none d-md-block">Hidden on mobile, visible md+</div>
 <div class="d-md-none">Visible only below md</div>
+```
+
+`d-none` removes the element from layout and the accessibility tree, which is what makes a dual presentation legal: only the active view exposes its controls. It is not a content strategy — anything hidden at the base must remain reachable through an operable path ([responsive-layout.md](responsive-layout.md) → Keep the task intact). A generated responsive role, for a utility-map property with no shipped infix:
+
+```scss
+$utilities: map-merge(
+	$utilities,
+	(
+		'width': map-merge(
+				map-get($utilities, 'width'),
+				(
+					responsive: true,
+				)
+			),
+	)
+);
+// generates w-md-auto, w-lg-50, … alongside the stock w-*
 ```

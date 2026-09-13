@@ -1,6 +1,6 @@
 # Bootstrap 5 Component Reference
 
-> Part of the `enterprise-bootstrap` package. Bootstrap **5.3.x** component
+> Part of the `enterprise-bootstrap` skill. Bootstrap **5.3.x** component
 > markup + enterprise selection notes. Utility classes: [utilities.md](utilities.md).
 > Theming, forms deep-dive, JS lifecycle, patterns: [bootstrap-reference.md](bootstrap-reference.md).
 
@@ -158,7 +158,7 @@ Reserve the solid variants for intentional prominence or a counter with its own 
 
 For an intentional solid badge, use a measured `text-bg-*` pair rather than a solid background alone. Its foreground is selected at Sass build time, not recalculated on a runtime theme change. Never make color the only carrier of meaning; keep visible text or an accessible label.
 
-**A badge is never a textless mark.** Stock Bootstrap ships `.badge:empty { display: none }`, so an empty `<span class="badge">` used as a status dot renders nothing at all — the surface silently loses the state it claimed to show, and source review never sees it. A textless status mark is an **icon glyph** (see [Icons](#icons) → Status glyph marks), not a stripped badge.
+**A badge is never a textless mark.** Stock Bootstrap ships `.badge:empty { display: none }`, so an empty `<span class="badge">` used as a status dot renders nothing. Draw a textless status mark as an **icon glyph** (see [Icons](#icons) → Status glyph marks), never as a stripped badge, and confirm the mark in a capture — source review cannot see the missing paint.
 
 State a badge's intended fill and inspect the skin. For a quiet badge use `bg-*-subtle text-reset`; for an unfilled badge use `bg-transparent text-reset`. Verify the inherited foreground on that actual surface in light and dark. A fill-only utility does not remove `.badge`'s white text; see [color-modes.md](color-modes.md) → Badges and removable tags.
 
@@ -179,6 +179,8 @@ A badge reporting an in-flight request is a live region: `role="status"` on the 
 The current page is `aria-current="page"` and not a link. Use breadcrumbs only for genuinely hierarchical models — in flat or tabbed apps they are noise.
 
 ### Buttons
+
+Solid variants own a fixed foreground/background pair and read the same in light and dark (primary and danger at 4.5:1, on the line). Outline variants paint a fixed label on the adaptive page surface: `btn-outline-secondary` is 4.7:1 on the light body and 3.3:1 on the dark one, `btn-outline-primary` 4.5 | 3.4. Lift the neutral once at the theme root — `.btn-outline-secondary { --bs-btn-color: var(--bs-emphasis-color); }` — and give an adaptive primary outline `--bs-btn-color`/`--bs-btn-border-color: var(--bs-link-color)`; `btn-link` adapts already. `btn-light`/`btn-dark` and `btn-outline-light`/`-dark` belong inside fixed fills of the opposite tone ([color-modes.md](color-modes.md) → Fixed and adaptive classes).
 
 ```html
 <button type="button" class="btn btn-primary">Primary</button>
@@ -203,7 +205,7 @@ The current page is `aria-current="page"` and not a link. Use breadcrumbs only f
 <button type="button" class="btn btn-primary" data-bs-toggle="button">Toggle</button>
 ```
 
-Icon-only buttons need `aria-label` and a ≥24×24 px target (WCAG 2.2) — `btn-sm` icon clusters in toolbars are the common violation; pad rather than shrink.
+Icon-only buttons need `aria-label` and a target meeting the floor in [bootstrap-reference.md](bootstrap-reference.md) → WCAG 2.2 deltas — `btn-sm` icon clusters in toolbars are the common violation; pad rather than shrink.
 
 The three sizes scale padding faster than font — `btn-sm` 4/8 px at 14 px, `btn` 6/12 at 16 px, `btn-lg` 8/16 at 20 px — so a large button reads as larger, not zoomed. Use them as shipped; do not derive a fourth size with `em` padding. Weight is `$font-weight-normal`; `fw-semibold` on a button is a deliberate emphasis choice, not a default.
 
@@ -504,6 +506,8 @@ Bootstrap's modal enforces focus, adds `role="dialog"`/`aria-modal="true"`, clos
 
 ### Navbar
 
+Stock 5.3 navbars are adaptive on `bg-body-tertiary`. `navbar-light` and `navbar-dark` are deprecated: a dark brand bar is `navbar bg-dark` with `data-bs-theme="dark"` plus `text-body` on the same element — the scope re-aligns the toggler icon, links, and form controls, which resolve their own color variables, while plain text inherits the outer mode's painted color — never `bg-dark` alone with inherited text. Match `navbar-expand-{bp}` to where the full destination set fits; the toggler must remain a named `navbar-toggler` with `aria-controls` and `aria-expanded`.
+
 ```html
 <nav class="navbar navbar-expand-lg bg-body-tertiary">
 	<div class="container-fluid">
@@ -704,7 +708,7 @@ when the presentation changes.
 <p aria-hidden="true">
 	<span class="placeholder col-6"></span>
 	<span class="placeholder w-75"></span>
-	<span class="placeholder" style="width: 25%;"></span>
+	<span class="placeholder w-25"></span>
 </p>
 
 <span class="placeholder col-12 placeholder-lg">Large</span>
@@ -717,7 +721,7 @@ when the presentation changes.
 <button class="btn btn-primary disabled placeholder col-4" aria-hidden="true"></button>
 ```
 
-Always wrap skeletons in `aria-hidden="true"` — they are visual scaffolding, not content. Skeleton-vs-spinner decision rules: [bootstrap-reference.md](bootstrap-reference.md) → The data states.
+Always wrap skeletons in `aria-hidden="true"` — they are visual scaffolding, not content. Size a placeholder with `col-*` or a shipped width utility; a skeleton width is a layout decision, not a runtime value, so it never takes a `style` attribute. Skeleton-vs-spinner decision rules: [bootstrap-reference.md](bootstrap-reference.md) → The data states.
 
 ### Popover (Requires Popper.js)
 
@@ -747,6 +751,12 @@ Always wrap skeletons in `aria-hidden="true"` — they are visual scaffolding, n
 Popovers are **opt-in**: they do nothing until initialized in JS (see [JavaScript initialization](#javascript-initialization)). Only attach them to focusable elements; wrap disabled elements in a `<span tabindex="0">`. `data-bs-html="true"` with untrusted content is an XSS vector.
 
 ### Progress
+
+The `progress-bar` width is a runtime value: the host's own script writes it from the same number it
+puts in `aria-valuenow`, so that one `width` declaration is a named runtime producer under
+[inspection.md](inspection.md) → Style escapes. Record the producer by name and purpose. It grants no
+other inline declaration on the surface, and no other element may borrow it — every non-runtime
+width comes from a shipped utility or the project stylesheet.
 
 5.3 markup — `role="progressbar"` and the `aria-value*` attributes go on the **outer `.progress`**, not the inner bar:
 
@@ -872,6 +882,8 @@ Gotcha: the spied element must be a scroll container (height/overflow, or focusa
 ```
 
 ### Tables
+
+`table-*` row variants are fixed pairs (`--bs-table-bg` tint with `--bs-table-color: #000`) and read as light rows inside a dark table; prefer a `bg-*-subtle` status mark in a cell. `table-responsive` is `overflow-x: auto` only — give the wrapper `role="region"`, an `aria-label`, and `tabindex="0"` so keyboard users can reach its far edge, and add `data-bs-popper-config='{"strategy":"fixed"}'` to any dropdown toggle inside it ([responsive-layout.md](responsive-layout.md) → Bootstrap's responsive surface).
 
 ```html
 <table class="table">
@@ -1040,7 +1052,7 @@ The textless mark that survives both themes — dots, ticks, rings, pulses — i
 - Prefer visible labels or `.form-floating` — placeholder-only labels fail accessibility and disappear on input.
 - Pair help and errors with `aria-describedby`; use `.invalid-feedback` with `.is-invalid` and mark the field `aria-invalid="true"`.
 - Money/units: `.input-group` + `.input-group-text`; add `.has-validation` on groups with validation feedback.
-- Show progress with `spinner-border spinner-border-sm` inside the submit button while waiting; keep submit enabled and validate on submit rather than disabling it ([bootstrap-reference.md](bootstrap-reference.md) → Forms in production).
+- Keep submit enabled while fields are invalid and validate on submit. Mark the button busy while a submit is in flight — `spinner-border spinner-border-sm` inside it, `aria-busy="true"` on it — and refuse a second submit; take the full rule from [bootstrap-reference.md](bootstrap-reference.md) → Forms in production.
 
 ### Selection fills
 
@@ -1060,7 +1072,7 @@ to every selection widget.
 
 - Active nav items need `aria-current="page"` (or `aria-selected="true"` for tabs).
 - Modals and offcanvas: set `aria-labelledby`; Bootstrap traps focus and restores it on close — do not fight it; `dispose()` instances when the host unmounts in SPAs.
-- Icon-only controls always need an accessible name (`aria-label` or visually-hidden text) and a ≥24px target.
+- Icon-only controls always need an accessible name (`aria-label` or visually-hidden text) and a target meeting the floor in [bootstrap-reference.md](bootstrap-reference.md) → WCAG 2.2 deltas.
 
 ### Theming
 

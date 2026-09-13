@@ -14,11 +14,11 @@ import type { ExecuteResult } from '@orkestrel/process'
 import type { ESTree } from 'vite'
 import { execFileSync } from 'node:child_process'
 import { once } from 'node:events'
-import { copyFileSync } from 'node:fs'
+import { chmodSync } from 'node:fs'
 import { createServer } from 'node:http'
 import { createRequire } from 'node:module'
 import { connect, createServer as createSocketServer } from 'node:net'
-import { basename, delimiter, join } from 'node:path'
+import { delimiter, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { gzipSync } from 'node:zlib'
 import { isArray, isRecord, isString, parseJSON } from '@orkestrel/contract'
@@ -95,7 +95,6 @@ import {
 	createScratch,
 	type ScratchInterface,
 	supportsCase,
-	supportsFileLinks,
 } from '@orkestrel/test/server'
 import {
 	buildBlueprint,
@@ -2327,6 +2326,16 @@ export function normalizeBashPath(path: string): string {
 }
 
 /**
+ * Renders a POSIX shell launcher for an executable at its installed path.
+ *
+ * @param source - The executable path the launcher delegates to.
+ * @returns The LF-framed shell source with literal argument forwarding.
+ */
+export function renderLauncher(source: string): string {
+	return `#!/bin/sh\nexec '${normalizeBashPath(source).replaceAll("'", "'\"'\"'")}' "$@"\n`
+}
+
+/**
  * Reads the configured Ollama SessionStart command.
  *
  * @returns The command that addresses `scripts/ollama.sh`.
@@ -2448,22 +2457,20 @@ export function resolveTool(
  * otherwise hand it to the script's local-startup branch, and a fixture that answers the
  * readiness probe with anything but a `2xx` status reaches that branch — so a proof would launch
  * a daemon on the host running the suite. `command -v ollama` fails under this `PATH`, and the
- * branch refuses with exit `127` instead. Each executable is reached through a link, or through a
- * copy where `supportsFileLinks` reports the host creates no link over a file. The interpreter
- * itself is resolved against this process's own `PATH` and launched by path, because the spawn's
- * own lookup reads the child's `PATH` and would find no `bash` in that directory. The directory
- * is removed after the run.
+ * branch refuses with exit `127` instead. Each launcher delegates to the executable at its
+ * installed path, which retains the runtime dependencies resolved beside that executable. The
+ * interpreter itself is resolved against this process's own `PATH` and launched by path, because
+ * the spawn's own lookup reads the child's `PATH` and would find no `bash` in that directory. The
+ * directory is removed after the run.
  */
 export async function executeOllamaSetup(host: string, model: string): Promise<ExecuteResult> {
 	const tools = createScratch({ prefix: SCRATCH_PREFIX })
 	try {
-		const linked = supportsFileLinks()
 		for (const tool of OLLAMA_TOOLS) {
 			const source = resolveTool(tool)
 			if (source === undefined) continue
-			const name = basename(source)
-			if (linked) tools.link(name, source)
-			else copyFileSync(source, join(tools.path, name))
+			const launcher = tools.write(tool, renderLauncher(source))
+			chmodSync(launcher, 0o755)
 		}
 		return await execute(
 			{

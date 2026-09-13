@@ -30,8 +30,9 @@ a pass label alone.
 - [Declared design scales](#declared-design-scales)
 - [Custom rule doing a utility's job](#custom-rule-doing-a-utilitys-job)
 - [Color-mode inheritance](#color-mode-inheritance)
-- [Composited contrast in both themes](#composited-contrast-in-both-themes)
+- [Composited contrast in every declared theme](#composited-contrast-in-every-declared-theme)
 - [One glyph, one meaning](#one-glyph-one-meaning)
+- [Fixed and adaptive pairing](#fixed-and-adaptive-pairing)
 - [Responsive task and reflow](#responsive-task-and-reflow)
 - [Responsive interaction continuity](#responsive-interaction-continuity)
 - [Rendered design review](#rendered-design-review)
@@ -48,7 +49,7 @@ a pass label alone.
   in the mounted tree separately; an unreachable stylesheet is an open dependency, not an empty one.
 - **Negative control.** Feed an undefined styling token to the reader, then append a harness SVG
   carrying that token through the same tree extractor. Both must be reported.
-- **Coverage.** The two controls cover set comparison and extraction, including SVG's non-string
+- **Coverage.** The controls cover set comparison and extraction, including SVG's non-string
   `className`. Use `getAttribute('class')` or an equivalent safe reader. Resolution does not prove
   the rule wins the cascade, paints the intended result, or covers a state never enumerated.
 
@@ -68,14 +69,22 @@ a pass label alone.
 
 ## Style escapes
 
-- **Property.** Authored markup carries no `style` attribute or `<style>` element.
+- **Property.** Authored markup carries no `style` attribute, and the surface's only `<style>`
+  element is the standalone-HTML project stylesheet in `<head>` that
+  [SKILL.md](../SKILL.md) → The styling ladder permits. A component-scoped `<style>` block fails.
 - **Population.** Authored templates and the freshly mounted, undriven tree. Keep source and mounted
   readings distinct so generated framework styles are not mistaken for authored declarations.
-- **Reading.** Report inline declarations and embedded style elements with their source or element.
-  Record framework/runtime exemptions by producer and purpose, never a blanket component exemption.
-  Bootstrap overlay positioning and conditional-visibility directives may write runtime styles.
+- **Reading.** Report inline declarations and non-permitted style elements with their source or
+  element. Record each runtime exemption by producer, element, and the property it writes — never a
+  blanket component exemption, and never a producer that writes a property outside its purpose.
+  Bootstrap overlay positioning and conditional-visibility directives write runtime styles, and a
+  host script writing `progress-bar` width from `aria-valuenow` is a producer of that one property
+  ([components.md](components.md) → Progress).
 - **Negative control.** Feed an element with an inline declaration, then append an inline-styled
-  element and a `<style>` element to the harness tree. Every non-exempt fixture must be reported.
+  element and a component-scoped `<style>` element to the harness tree. Every non-exempt fixture
+  must be reported. Add a permitted fixture the reader must leave alone — the project stylesheet's
+  own `<head>` block, and a recorded runtime producer writing only its declared property — so the
+  reader cannot pass by rejecting every style element.
 - **Coverage.** This covers authored and mount-time escapes, not later interactions or third-party
   internals outside the declared scope. Drive later states separately when making claims about them.
 
@@ -134,7 +143,7 @@ a pass label alone.
 - **Population.** Rendered text, status marks, badges, tags, links, fields, selected controls, table
   cells, and overlays in the actual loaded build. Include supported nested modes, skin overrides,
   and portal mount points; name the boundaries that own an explicit foreground.
-- **Reading.** Drive the existing mounted tree from light to dark and back. Read computed text,
+- **Reading.** Drive the existing mounted tree through every declared mode and back. Read computed text,
   painted backgrounds, relevant custom properties, and winning declarations after each transition.
   Confirm quiet ordinary text matches its intended inherited foreground; identify the owner when
   a component legitimately differs. Check supported system preference and reload behavior when the
@@ -144,14 +153,15 @@ a pass label alone.
   foreground/background pair. Require the reader to detect each violated contract. For projects
   using aliases, add a root-resolved foreground alias inherited into an opposite-mode scope.
   Verify each control is invalid in that build; a class name alone does not establish the defect.
-- **Coverage.** Pair the cascade reading with Composited contrast; correct inheritance can still
+- **Coverage.** Pair the cascade reading with Composited contrast in every declared theme; correct inheritance can still
   produce insufficient contrast on a changed surface. An isolated stock fixture establishes only
   that fixture's behavior, not the host skin or application. Unreached states and mounts stay open.
 
-## Composited contrast in both themes
+## Composited contrast in every declared theme
 
-- **Property.** Every measured pairing meets the package bar: 4.5:1 for information-bearing text,
-  3:1 for meaningful textless marks and state/focus chrome, in each declared theme and reached state.
+- **Property.** Every measured pairing meets the bars in [SKILL.md](../SKILL.md) → Surfaces, color,
+  contrast, in each declared theme and reached state. That section owns the bars; read them there
+  rather than from a copy here.
 - **Population.** Rendered text and meaningful graphics, their actual surfaces, and all paint layers
   affecting contrast. Name exemptions for disabled controls; do not exempt readable metadata.
 - **Reading.** Composite translucent backgrounds onto the opaque base and translucent foregrounds
@@ -177,6 +187,31 @@ a pass label alone.
   append equivalent invalid entries through the registry extractor. Report both kinds of failure.
 - **Coverage.** This proves registry consistency, not that the markup uses the correct glyph or that
   its optical size and contrast work. Capture the states that use the marks and inspect their names.
+
+## Fixed and adaptive pairing
+
+- **Property.** Every text, icon, and border color resolves against the surface it sits on with
+  tokens of the same kind: adaptive on adaptive, or fixed on a fixed fill that names its own
+  foreground or carries a `data-bs-theme` scope.
+- **Population.** Every element with a color class, and every component with a fixed foreground
+  or fill (`btn-outline-*`, `table-*`, `badge`, `progress-bar`), including template branches,
+  portals, and inline SVG with literal fills.
+- **Reading.** For each element, resolve the nearest ancestor that paints a background — class,
+  component, or scope — and classify both sides from
+  [color-modes.md](color-modes.md#fixed-and-adaptive-classes). Report mixed pairs, fixed fills
+  with inherited text — including a `data-bs-theme` scope on a fixed fill that does not carry
+  `text-body` on the same element — fixed neutrals on adaptive surfaces (`bg-light`, `bg-white`,
+  `text-dark`), `text-dark-emphasis` inside a dark scope, and outline buttons outside a measured
+  scope. Report `text-muted`, `navbar-light`, `navbar-dark`, and `btn-close-white` under a separate
+  deprecation finding: they are 5.3 deprecations rather than pairing defects, and `text-muted` pairs
+  correctly. The scan predicts a pairing failure; the contrast instrument in each declared theme
+  establishes it.
+- **Negative control.** Append `bg-light` with inherited text, `text-white` on `bg-body`,
+  `text-primary` inside a `data-bs-theme="dark"` region, and a `bg-dark` region with
+  `data-bs-theme="dark"` and plain text but no `text-body`, in a harness; each must be reported by
+  the same reader.
+- **Coverage.** Mechanical class analysis only; it does not see custom CSS, `currentColor`
+  resolution, image content, or composited opacity. Measure those in the render.
 
 ## Responsive task and reflow
 
@@ -241,13 +276,13 @@ Pair each such claim with the relevant instrument or interaction test and its ac
 
 ## When an authored rule is already earned
 
-Leave rung 4 to the developer, per [SKILL.md](../SKILL.md) → When custom CSS is justified. Write a
-rule without asking only when every condition holds:
+Leave the authored rung to the developer, per [SKILL.md](../SKILL.md) → When custom CSS is
+justified. Write a rule without asking only when every condition holds:
 
 - an instrument reports a vendor failure against a stated requirement, such as a focus ring below
   3:1 or information-bearing status text below 4.5:1;
 - the rule cites the instrument, failing reading, and required bar beside it;
-- rungs 1–3 cannot restore the requirement, and the rule repairs that failure without unrelated polish;
+- the component, utility, and extension rungs cannot restore the requirement, and the rule repairs that failure without unrelated polish;
 - the rule uses `--bs-*` paint tokens and declared scales, and the repaired result is re-measured in
   every affected theme and state.
 

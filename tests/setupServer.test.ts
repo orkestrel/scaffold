@@ -1,13 +1,13 @@
 import { execFileSync } from 'node:child_process'
-import { existsSync, readFileSync } from 'node:fs'
+import { chmodSync, existsSync, readFileSync } from 'node:fs'
 import { createServer } from 'node:http'
 import { basename, join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { isObject, isString } from '@orkestrel/contract'
 import { requireValue } from '@orkestrel/test'
-import { createLoopback, createScratch } from '@orkestrel/test/server'
+import { createLoopback, createScratch, supportsMode } from '@orkestrel/test/server'
 import { extractVersion, MINIMUM_NPM_VERSION, ScaffoldError } from '@src/core'
-import { isFile, readVariable } from '@orkestrel/process/server'
+import { execute, isFile, readVariable } from '@orkestrel/process/server'
 import { buildSnapshot } from './setup.js'
 import {
 	AUDIT_EXIT_CASES,
@@ -59,6 +59,7 @@ import {
 	HOSTILE_ARGUMENT,
 	HOSTILE_BYTES,
 	listExecutablePaths,
+	normalizeBashPath,
 	OLLAMA_TOOLS,
 	omitDependencies,
 	PROTECTED_PATH_CASES,
@@ -70,6 +71,7 @@ import {
 	readRejectionCode,
 	readStatements,
 	REFUSED_MANIFEST_TEXT,
+	renderLauncher,
 	resolveTool,
 	SCRATCH_PREFIX,
 	SENSITIVE_PATH_CASES,
@@ -1076,6 +1078,115 @@ describe('the admitted npm', () => {
 })
 
 describe('the shadowed tool path', () => {
+	it('renders an LF-framed launcher with a POSIX-quoted source and literal arguments', () => {
+		expect(renderLauncher("/path with spaces/owner's/tool")).toBe(`#!/bin/sh
+exec '/path with spaces/owner'"'"'s/tool' "$@"
+`)
+	})
+
+	it('executes the original quoted source with literal arguments', async () => {
+		// This case measures launcher quoting and argument forwarding. The Ollama setup
+		// selection measures the helper's isolation from the ambient tool path.
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const tools = workspace.ensure("tools with an apostrophe ' and spaces")
+			const source = workspace.write(
+				"original path with spaces/owner's tool.sh",
+				`#!/bin/sh
+printf 'source=%s\\n' "$0"
+printf 'first=%s\\n' "$1"
+printf 'second=%s\\n' "$2"
+command -v ollama >/dev/null 2>&1
+printf 'ollama=%s\\n' "$?"
+`,
+			)
+			const launcher = workspace.write(join(tools, 'fixture'), renderLauncher(source))
+			const missing = workspace.write(
+				join(tools, 'missing'),
+				renderLauncher(join(workspace.path, "missing owner's tool.sh")),
+			)
+			chmodSync(source, 0o755)
+			chmodSync(launcher, 0o755)
+			chmodSync(missing, 0o755)
+
+			const bash = requireValue(resolveTool('bash'))
+			const result = await execute(
+				{
+					file: bash,
+					arguments: [normalizeBashPath(launcher), 'spaced argument', 'literal$signal'],
+					environment: { PATH: tools },
+				},
+				{ strict: false, timeout: 10_000 },
+			)
+			expect(result.failed).toBe(false)
+			expect(result.stdout).toContain(`source=${normalizeBashPath(source)}\n`)
+			expect(result.stdout).toContain('first=spaced argument\n')
+			expect(result.stdout).toContain('second=literal$signal\n')
+			const ollama = requireValue(
+				result.stdout.split(/\r\n|\n/u).find((line) => line.startsWith('ollama=')),
+			)
+			expect(ollama).not.toBe('ollama=0')
+
+			const control = await execute(
+				{
+					file: bash,
+					arguments: [normalizeBashPath(missing)],
+					environment: { PATH: tools },
+				},
+				{ strict: false, timeout: 10_000 },
+			)
+			expect(control.failed).toBe(true)
+			expect(control.code).not.toBe(0)
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it.skipIf(!supportsMode())(
+		'refuses an original source without execute permission and executes it after chmod',
+		async () => {
+			const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+			try {
+				const tools = workspace.ensure('permission tools')
+				const source = workspace.write(
+					'original source.sh',
+					`#!/bin/sh
+printf 'executed\\n'
+`,
+				)
+				const launcher = workspace.write(join(tools, 'fixture'), renderLauncher(source))
+				chmodSync(source, 0o644)
+				chmodSync(launcher, 0o755)
+				const bash = requireValue(resolveTool('bash'))
+				const refused = await execute(
+					{
+						file: bash,
+						arguments: [normalizeBashPath(launcher)],
+						environment: { PATH: tools },
+					},
+					{ strict: false, timeout: 10_000 },
+				)
+				expect(refused.failed).toBe(true)
+				expect(refused.code).not.toBe(0)
+				expect(refused.stdout).not.toContain('executed')
+
+				chmodSync(source, 0o755)
+				const executed = await execute(
+					{
+						file: bash,
+						arguments: [normalizeBashPath(launcher)],
+						environment: { PATH: tools },
+					},
+					{ strict: false, timeout: 10_000 },
+				)
+				expect(executed.failed).toBe(false)
+				expect(executed.stdout).toBe('executed\n')
+			} finally {
+				workspace.destroy()
+			}
+		},
+	)
+
 	it('resolves a command this host carries and answers undefined for one it carries nowhere', () => {
 		// The reading the Ollama proofs build their own `PATH` from. A resolver that
 		// answered a path no file sits at would leave the script without the programs it

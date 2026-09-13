@@ -1,11 +1,12 @@
 # Color modes and inheritance
 
-> Part of the `enterprise-bootstrap` package. Use for foreground ownership, adaptive surfaces,
+> Part of the `enterprise-bootstrap` skill. Use for foreground ownership, adaptive surfaces,
 > nested themes, and color-mode repairs. Take the contrast bars from [SKILL.md](../SKILL.md).
 
 ## Contents
 
 - [Choose the surface](#choose-the-surface)
+- [Fixed and adaptive classes](#fixed-and-adaptive-classes)
 - [Text tiers](#text-tiers)
 - [Preserve the cascade](#preserve-the-cascade)
 - [Scope the mode](#scope-the-mode)
@@ -17,7 +18,7 @@
 
 Default to inherited text. When ordinary content owns no background, add no foreground override.
 For quiet containers and status, prefer adaptive backgrounds without an added text-color class.
-Treat this as the package default, not a claim that Bootstrap forbids its documented emphasis pairs.
+Treat this as the skill's default, not a claim that Bootstrap forbids its documented emphasis pairs.
 
 | Context                                | Use                                                                                               | Refuse by default                                                              |
 | -------------------------------------- | ------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
@@ -42,12 +43,115 @@ Measure the inherited result on its actual background. A subtle fill changes onl
 it cannot repair a fixed, translucent, or inverse foreground inherited from an ancestor. Remove
 that conflict or establish an owned surface boundary before adding a leaf override.
 
+## Fixed and adaptive classes
+
+Every Bootstrap color class resolves through one of two kinds of variable. **Adaptive** classes
+read a variable the `[data-bs-theme=dark]` block redefines — `--bs-body-color`/`-bg`,
+`--bs-emphasis-color`, `--bs-secondary-color`/`-bg`, `--bs-tertiary-color`/`-bg`,
+`--bs-*-text-emphasis`, `--bs-*-bg-subtle`, `--bs-*-border-subtle`, `--bs-border-color`,
+`--bs-link-color` — and change with the mode. **Fixed** classes read `--bs-{theme}-rgb`,
+`--bs-white-rgb`, `--bs-black-rgb`, `--bs-light-rgb`, or `--bs-dark-rgb`, which no mode
+redefines, and paint the same value in light and dark.
+
+This table classifies a class by the variable it reads, and nothing else. Deprecation is a separate
+axis: `text-muted` reads the adaptive secondary color and is deprecated, so it classifies as
+adaptive here and still gives way to `text-body-secondary` on its deprecation.
+
+| Family     | Adaptive                                                                                                                | Fixed                                                                                                                   |
+| ---------- | ----------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| Text       | `text-body`, `text-body-emphasis`, `text-body-secondary`, `text-body-tertiary`, `text-muted` (alias), `text-*-emphasis` | `text-primary` … `text-danger`, `text-light`, `text-dark`, `text-white`, `text-black`, `text-white-50`, `text-black-50` |
+| Background | `bg-body`, `bg-body-secondary`, `bg-body-tertiary`, `bg-*-subtle`                                                       | `bg-primary` … `bg-danger`, `bg-light`, `bg-dark`, `bg-white`, `bg-black`, `bg-gradient`                                |
+| Border     | `border` (default color, decorative at 1.3:1), `border-*-subtle`                                                        | `border-primary` … `border-dark`, `border-white`, `border-black`                                                        |
+| Links      | plain `<a>`, `btn-link`, `link-body-emphasis`                                                                           | `link-primary` … `link-dark`, `link-light`                                                                              |
+| Own pairs  | `.alert-*`, `.list-group-item-*`, `.form-control`, `.card`, `.dropdown-menu`, `.modal-content`, `.toast`, `.btn-close`  | `text-bg-*`, solid `btn-*`, `btn-light`/`btn-dark`, `table-*` row variants, `progress-bar`, active nav/list/page states |
+| No pair    | —                                                                                                                       | `btn-outline-*`: a fixed label and border on whatever surface the page has                                              |
+
+**Pair like with like.** Adaptive text on an adaptive surface; fixed text on a fixed fill. Treat
+every mixed pair as unproven until measured: some clear one mode and fail the other, and some fail
+light and dark alike. Read the outcome from the measurement, never from the mixture.
+
+The following readings bound stock Bootstrap 5.3.8 and nothing else. A declared theme, a skin, or an
+overridden token re-points every value in the table, so measure that theme yourself rather than
+carrying a stock number into it. Light | dark:
+
+| Mixed pair                                              | Light         | Dark          |
+| ------------------------------------------------------- | ------------- | ------------- |
+| `text-primary` / `-success` / `-danger` on `bg-body`    | 4.5           | 3.4 ✗         |
+| `text-secondary` on `bg-body`                           | 4.7           | 3.3 ✗         |
+| `text-warning` / `text-info` on `bg-body`               | 1.6 ✗ / 2.0 ✗ | 9.5 / 7.9     |
+| `text-dark`, `text-black` on `bg-body`                  | 15.4 / 21.0   | 1.0 ✗ / 1.4 ✗ |
+| `text-white`, `text-light` on `bg-body`                 | 1.0 ✗ / 1.1 ✗ | 15.4 / 14.6   |
+| Inherited text on `bg-light` / `bg-white`               | 14.6 / 15.4   | 1.2 ✗ / 1.3 ✗ |
+| Inherited text on `bg-dark` / `bg-black`                | 1.0 ✗ / 1.4 ✗ | 11.8 / 16.1   |
+| Inherited text on `bg-primary` / `-danger` / `-success` | 3.4 ✗         | 3.5 ✗         |
+| `btn-outline-secondary` label on `bg-body`              | 4.7           | 3.3 ✗         |
+| `btn-outline-primary` label on `bg-body`                | 4.5           | 3.4 ✗         |
+| `link-primary` (`--bs-primary-rgb`) on `bg-body`        | 4.5           | 3.4 ✗         |
+
+The adaptive pairs hold: `text-*-emphasis` on `bg-body` is 6.1–13.6 in light and dark and on
+`bg-*-subtle` 7.2–10.8, with one exception — `text-dark-emphasis` is 3.7 on the dark body; use
+`text-body-emphasis` for neutral emphasis. A plain link is 4.5 light and 6.4 dark because
+`--bs-link-color` is redefined; `text-primary` and `link-primary` are not.
+
+Rules:
+
+- Default to adaptive on adaptive: inherited text on `bg-body*` or `bg-*-subtle`; status text as
+  `text-*-emphasis`; links as plain links or `link-body-emphasis`.
+- A fixed fill needs a fixed foreground you can name: `text-bg-*` (white on primary, secondary,
+  success, and danger at 4.5–4.7; black on warning, info, and light; white on dark), the
+  component's own foreground, or a `data-bs-theme` scope that carries `text-body` on the same
+  element. Inherited text on a fixed fill is never a pair.
+- A `data-bs-theme` scope redefines variables only. Text color is painted once, on `<body>`, from
+  the outer mode, and plain descendants inherit that computed color — not the variable. Inside
+  the scope only rules that resolve `color` through a variable re-align: `text-body*`,
+  `text-*-emphasis`, buttons, links, `list-group-item`, form controls, `btn-close`. A paragraph,
+  a `span`, a heading without a text class, and `.card` (its `--bs-card-color` is empty, so it
+  inherits) keep the outer mode's color. The symptom is a headline in `text-body-emphasis`
+  reading correctly beside a paragraph that vanishes. Restate the surface and the foreground on
+  the scope element: take `bg-body text-body` where the fill must follow the mode, and a fixed
+  `bg-*` plus `text-body` where it must not
+  (`<section class="bg-dark text-body" data-bs-theme="dark">`).
+  Check components that leave the scope: dropdown menus, and dialogs mounted at the root.
+- Outline buttons carry a fixed label. Lift the neutral one once at the theme root —
+  `.btn-outline-secondary { --bs-btn-color: var(--bs-emphasis-color); }` — its `#6c757d` border
+  still clears the 3:1 boundary bar in light and dark (4.7 | 3.3). For an adaptive primary outline set
+  `--bs-btn-color` and `--bs-btn-border-color` to `var(--bs-link-color)`; `btn-link` already adapts.
+  `btn-outline-light` and `btn-outline-dark` belong only inside a fixed fill of the opposite tone.
+- Shadows are fixed black alphas and nearly vanish on dark surfaces; carry depth with the
+  `bg-body*` steps in dark mode.
+- Icon fonts and `fill="currentColor"` follow the text; a literal hex in an inline SVG or an
+  `<img>` is fixed. Give logos and illustrations a scoped variant or a `currentColor` path.
+
+| Legacy or mixed                                  | Adaptive replacement                                                      |
+| ------------------------------------------------ | ------------------------------------------------------------------------- |
+| `bg-light` panel                                 | `bg-body-tertiary`                                                        |
+| `bg-white`                                       | `bg-body`                                                                 |
+| Neutral `bg-dark` region                         | `bg-dark` with `data-bs-theme="dark"`, or `bg-body` inside a dark scope   |
+| `text-dark`, `text-black`                        | `text-body-emphasis`, or inherit                                          |
+| `text-white` on an adaptive surface              | inherit                                                                   |
+| `text-muted`, `text-black-50`, `text-white-50`   | `text-body-secondary`                                                     |
+| `text-primary` … `text-danger` as running text   | `text-*-emphasis`, measured                                               |
+| `border-light`, `border-dark`                    | `border`, or `border-*-subtle`                                            |
+| `navbar-light`, `navbar-dark`, `btn-close-white` | `data-bs-theme` on the navbar or region                                   |
+| `badge bg-primary` with inherited text           | `badge text-bg-primary`, or `badge bg-primary-subtle` with inherited text |
+| `link-primary` … `link-dark`                     | plain link, or `link-body-emphasis`                                       |
+
+Read that table as a replacement map, not as a classification. Replace `bg-light`, `bg-white`,
+`bg-dark`, `text-dark`, `text-black`, `text-white`, `text-black-50`, `text-white-50`,
+`border-light`, `border-dark`, and the colored `text-*` and `link-*` families because they are
+fixed. Replace `text-muted`, `navbar-light`, `navbar-dark`, and `btn-close-white` because 5.3
+deprecates them — `text-muted` already adapts, so its replacement closes a deprecation rather than
+a contrast defect.
+
 ## Text tiers
 
-Stock Bootstrap ships two readable text tiers, not three. `--bs-secondary-color` is the body color
-at 75 % alpha and `--bs-tertiary-color` at 50 % alpha, so both composite against whatever sits
-beneath them. Measured on the three stock body surfaces (`bg-body` / `bg-body-tertiary` /
-`bg-body-secondary`) in 5.3.8:
+Stock Bootstrap ships the inherited body color and `text-body-secondary` as its readable tiers;
+`text-body-tertiary` is not readable text. `--bs-secondary-color` is the body color at 75 % alpha
+and `--bs-tertiary-color` at 50 % alpha, so each composites against whatever sits beneath it.
+
+The following readings bound stock 5.3.8 on its own body surfaces (`bg-body` / `bg-body-tertiary` /
+`bg-body-secondary`). Measure a declared theme or a skin yourself; its tokens re-point every value
+here.
 
 | Tier                  | Light              | Dark              | 4.5:1 bar        |
 | --------------------- | ------------------ | ----------------- | ---------------- |
@@ -57,19 +161,19 @@ beneath them. Measured on the three stock body surfaces (`bg-body` / `bg-body-te
 
 - Use `text-body-secondary` as the one shipped quiet tier. Use `text-body-tertiary` for decoration
   or disabled chrome only; it never carries a caption, timestamp, or count someone reads.
-- Declare a third readable tier as an opaque token — override `$body-tertiary-color` and
+- Declare any further readable tier as an opaque token — override `$body-tertiary-color` and
   `$body-tertiary-color-dark`, or add a semantic token — and measure it on each surface it sits on.
   The opaque `text-secondary` (`$gray-600`) clears 4.5:1 only on pure white and does not adapt.
-- More than a dozen component variables consume the translucent secondary color — placeholders,
+- Component variables consume the translucent secondary color — placeholders,
   `.form-text`, table captions, breadcrumb dividers and the active crumb, toast headers, figure
-  captions, list-group action text, several disabled states — and inherit this table.
+  captions, list-group action text, and disabled states — and inherit this table.
 - On a colored fill, `text-body-secondary` composites the body color over the hue — grey on color —
   and `text-white-50` or `text-opacity-*` let the fill show through the glyphs. The quiet tone on a
   fill is the same hue at lower contrast: keep the owning component's foreground and quiet a line
   with weight or size, or declare a same-hue token (for the stock blue, the `$blue-200`–`$blue-300`
   region in light mode) through the component's own variable and measure it.
 - For a tinted region, use the shipped same-hue pair: `text-*-emphasis` on `bg-*-subtle` (about
-  10:1 for primary in the stock light theme), adapting in both modes. Keep `text-bg-*` solids for
+  10:1 for primary in the stock light theme), adapting in light and dark. Keep `text-bg-*` solids for
   the primary element.
 
 When checking utility behavior, see Bootstrap's [Background](https://getbootstrap.com/docs/5.3/utilities/background/)
@@ -119,12 +223,21 @@ Use the host's mode controller. With Bootstrap's attribute strategy, set the res
 `dark` value on `<html>`; scope an intentional exception with `data-bs-theme` on its boundary.
 Do not pin components to dark merely because the page happens to be dark during development.
 
-On a generic nested region, establish its surface as well as its variables:
+A nested scope changes variables, not painted colors: `color` is set on `<body>` by the outer
+mode and inherited as a computed value, so plain text inside the scope stays the outer color
+until the boundary restates it. Establish both the surface and the foreground on the scope
+element — never rely on the attribute alone, and never fix the symptom by sprinkling `text-white`
+on individual descendants:
 
 ```html
 <section data-bs-theme="dark" class="bg-body text-body p-3" aria-labelledby="preview-heading">
 	<h2 id="preview-heading" class="h6">Preview</h2>
 	<div class="bg-primary-subtle rounded p-3">This text inherits from the preview.</div>
+</section>
+
+<!-- Fixed fill or image that must not follow the page mode: keep bg-*, still restate text-body. -->
+<section data-bs-theme="dark" class="bg-dark text-body py-5" aria-labelledby="hero-heading">
+	…
 </section>
 ```
 
@@ -166,7 +279,8 @@ Do not use `.badge bg-success-subtle` alone: stock `.badge` supplies a white for
 inherited body text. Do not mistake the absence of a `text-*` class for the absence of a color
 rule. Confirm the skin's badge rule; see [Badges](https://getbootstrap.com/docs/5.3/components/badge/).
 Keep a removable tag's close button in the same mode and measure its hit area; a badge's small
-font must not shrink the control below the package target floor.
+font must not shrink the control below the target floor in
+[bootstrap-reference.md](bootstrap-reference.md) → WCAG 2.2 deltas.
 
 ### Alerts, buttons, and selection
 
@@ -214,12 +328,12 @@ Stock ramps are mechanical: `$blue-100…400` are `tint-color` mixes with white 
 are `shade-color` mixes with black, and the `-text-emphasis` / `-bg-subtle` / `-border-subtle`
 triads are the same mixes. Hue stays fixed and saturation can only fall, so any brand base short
 of full saturation washes out at the light end and goes muddy at the dark end; stock blue survives
-only because its base is 98 % saturated. For a brand color, override the nine `$brand-100…900`
-variables and the six triad variables (`$brand-text-emphasis`, `-bg-subtle`, `-border-subtle`,
+only because its base is 98 % saturated. For a brand color, override the `$brand-100…900` shade
+variables and the triad variables (`$brand-text-emphasis`, `-bg-subtle`, `-border-subtle`,
 each with its `-dark` twin) with hand-picked values before `variables` is imported; every
 `.alert-brand`, `bg-brand-subtle`, `text-brand-emphasis`, and `table-brand` then consumes them.
 Stock greys sit at hue 210° with 7–17 % saturation — cool, matched to the stock blue. For a warm
-brand, override `$gray-100…900` as a complete set of nine with one hue and temperature; never drop
+brand, override `$gray-100…900` as a complete set at one hue and temperature; never drop
 one warm grey into the cool set. Take the picking method from
 [frontend-design.md](frontend-design.md) → Color as a constrained system.
 
@@ -237,5 +351,6 @@ Do not infer their foregrounds from a desktop capture or from the theme attribut
 
 Run [Color-mode inheritance](inspection.md#color-mode-inheritance) and the applicable contrast,
 target, and rendered-review checks against the loaded Bootstrap build and skin. Exercise the
-existing mounted UI through light, dark, and back, including supported local scopes and overlays.
+existing mounted UI through every declared mode and back, including supported local scopes and
+overlays.
 Report actual coverage; do not claim a host application pass from documentation or a stock fixture.

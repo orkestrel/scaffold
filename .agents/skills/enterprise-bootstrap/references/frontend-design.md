@@ -1,7 +1,8 @@
 # Frontend Design
 
-> Part of the `enterprise-bootstrap` package. Aesthetic, hierarchy, spacing,
-> typography, color, depth, imagery, process, and copy — use when setting visual direction.
+> Part of the `enterprise-bootstrap` skill. Aesthetic, hierarchy, spacing,
+> typography, color, depth, imagery, signature, and copy — use when setting visual direction.
+> The pass order lives in [SKILL.md](../SKILL.md) → Process.
 > Operate layer: [SKILL.md](../SKILL.md).
 
 Give the surface a point of view rooted in its subject. Make the person's task clear before making
@@ -15,13 +16,17 @@ content, and its design system before choosing a direction. Use prior designs an
 hints, not templates. Draw character from the subject's materials, instruments, artifacts, and
 vernacular rather than an unrelated visual trend.
 
-Set personality through four levers — typeface, primary color, corner-radius family, and copy
-register — chosen from the audience and subject, then held on every screen. A neutral sans-serif
-and a small radius are deliberate neutrals, not missing decisions; a serif reads classic, a
-rounded sans or large radius playful, no radius formal. Keep one radius family per product: pill
-buttons beside square cards read as two products. Take the register from what the audience
-already uses, not from a competitor's interface. In an existing product these levers are set;
-carry them forward.
+Set personality through these levers — typeface, primary color, corner-radius family, and copy
+register. Choose each from the audience and subject, then hold it on every screen. In an existing
+product the levers are already set: carry them forward and move none without a brief that asks for
+it.
+
+Pick the typeface and radius against the register the brief names: take a serif for a classic
+register, a rounded sans or a large radius for a playful one, and no radius for a formal one. Take a
+neutral sans-serif and a small radius for a neutral register as a deliberate choice, never as a
+skipped one. Use one radius family per product; pill buttons beside square cards read as two
+products. Take the copy register from what the audience already uses, not from a competitor's
+interface.
 
 Start with the smallest useful feature: what the person needs to see, enter, decide, and do next.
 Compose that interaction with realistic content before choosing its navigation shell. Reuse a shell
@@ -36,7 +41,7 @@ Name the primary information, supporting context, and ancillary detail in each t
 that order readable without color: use placement, grouping, weight, and spacing before adding
 paint. When the primary element does not stand out, quiet its competitors before enlarging it.
 
-Carry hierarchy with two or three foreground tiers and two weights before reaching for size;
+Carry hierarchy with a short set of foreground tiers and a weight pair before reaching for size;
 size alone produces oversized primary text and unreadable secondary text. Use a regular body
 weight (400) and one emphasis weight (600–700); weights under 400 belong only at display sizes.
 Quiet a heavy element by lowering its contrast — an icon beside a label takes the secondary tier
@@ -105,14 +110,15 @@ to make it fit.
 Assign display, body, and utility roles; they need not be different font families. Reuse the
 product's typefaces. For a new system, take a legible UI face for repeated reading and data, and add
 a display face only where its character earns the payload. A neutral sans-serif or system stack is
-a deliberate choice, not a failure of distinctiveness. Prefer families offered in five or more
-weights; avoid condensed or short-x-height faces for UI text; keep a display face at display size,
+a deliberate choice, not a failure of distinctiveness. Prefer a family shipping the `300`–`700`
+range so display, body, and emphasis roles draw from one family; avoid condensed or
+short-x-height faces for UI text; keep a display face at display size,
 where it was drawn to work. Test the actual glyphs, numerals, weights, languages, and fallback the
 surface needs.
 
 Hand-pick a finite type scale in `rem`, with smaller jumps for UI text and larger jumps for
 display; a modular ratio yields fractional pixels and too few reading sizes. Avoid nested `em`
-font sizes that compound off-scale. Start with two working weights — regular and emphasis — and
+font sizes that compound off-scale. Start with a regular weight and an emphasis weight, and
 add another only for a distinct role. Keep captions and metadata at the smallest readable step in
 the secondary tier, not smaller in body color. Never shrink text merely to avoid fixing a cramped
 layout.
@@ -140,10 +146,11 @@ on touch or keyboard.
 
 ### Color as a constrained system
 
-Define roles, not a handful of unrelated swatches. Reuse or establish a neutral ramp, one or two
-brand families, and only the status or categorical families the feature needs. A working neutral
-ramp often needs 8–10 shades; brand and status families need enough steps for text, borders, fills,
-and interaction states. Those are starting ranges, not quotas to fill on every task.
+Define roles, not a handful of unrelated swatches. Reuse or establish a neutral ramp, the brand
+families the identity needs, and only the status or categorical families the feature needs. Build
+the neutral ramp across the shipped `100…900` steps, and give each brand and status family enough
+steps for text, borders, fills, and interaction states. Declare a step because a role consumes it,
+never to fill the ramp.
 
 Choose a family's base in a real control, its dark edge in text, and its light edge in a subtle
 surface; fill the gaps with visibly distinct steps, middle first. Define every shade up front;
@@ -167,7 +174,7 @@ the color without the weight of a dark fill, and reserves the solid pair for the
 element. Reserve explicit foreground/background pairs for intentional solid, inverse, or
 image-backed regions. Keep a secondary foreground within that region's tested contract; do not apply neutral
 grey or reduced opacity by habit. When no quieter foreground passes, separate by weight or spacing.
-Review hierarchy in light and dark independently. Preserve relative prominence and useful
+Review hierarchy in every declared mode independently. Preserve relative prominence and useful
 separation rather than mechanically inverting shades or adding a border to every dark panel.
 
 Use color to reinforce a word, glyph, position, or pattern, never to carry meaning alone. Give
@@ -196,9 +203,10 @@ Give overlapping images a ring in the background color so they never clash. Keep
 weights in one family.
 
 Spend polish on the content already present before adding another accessory — icon bullets that mean something, a brand-colored check, a
-promoted quotation mark, a link underline that completes on hover. One accent border per region
-— top of a card, side of a callout, under a heading or the active nav item — is the cheapest
-"designed" cue; five accents are a pattern. Change a section's surface before decorating it; keep
+promoted quotation mark, a link underline that completes on hover. Use one accent border per region
+— top of a card, side of a callout, under a heading, or the active nav item. Repeating that accent
+across neighboring regions turns it into a pattern and it stops reading as an accent. Change a
+section's surface before decorating it; keep
 any gradient within about 30° of hue and any pattern low-contrast and away from text. An accent,
 pattern, or background treatment supports grouping, state, or the subject; never add one to
 compensate for weak hierarchy. Take the class recipes from [utilities.md](utilities.md) →
@@ -253,36 +261,23 @@ matters. Give richer components richer content without replacing their semantics
 in a menu, related non-comparable details in one table cell, native radios inside selectable cards.
 Preserve keyboard behavior, sorting, and the comparisons the task depends on.
 
-## Process: brainstorm, explore, plan, critique, build, critique again
+## Hold the direction against defaults
+
+Run the pass order in [SKILL.md](../SKILL.md) → Process. That section owns the sequence; this file
+owns the visual decisions each pass makes.
 
 Calibrate against recurring defaults: cream with serif and terracotta; near-black with
 acid green or vermilion; broadsheet hairlines, square corners, and dense columns. These can fit a
 brief; they are not evidence that a direction fits this one. Follow a pinned direction exactly and
 use free axes deliberately, not as an excuse to rebrand an existing product.
 
-Work in small passes:
+Reject a direction that obscures the task, implies unbuilt behavior, or reads as interchangeable
+with any other product. Keep exploratory drafts private: show the selected direction, the decisions
+behind it, and the verification limits, not every discarded variation. Never claim a rendered result
+from source inspection.
 
-1. **Ground the feature.** State its job, real content, primary action, and existing constraints.
-2. **Explore the hierarchy.** Compare compact low-fidelity arrangements of that feature. Hold
-   color: body surfaces, inherited text, weight, and spacing only, until a grayscale capture
-   reads; add brand and status hue last to reinforce what already reads. Settle the reading
-   order, grouping, and narrow layout before fine styling. Discard the sketches after selecting
-   a workable arrangement.
-3. **Plan the system.** Name palette families and surface ownership; type roles, sizes, and weights; spacing
-   and width roles; radius and elevation; the signature the brief calls for or the existing identity to preserve. Reuse existing
-   tokens and record only the additions or changes. State the layout in prose or a small wireframe.
-4. **Critique, then build.** Reject a plan that obscures the task, implies unbuilt behavior, or reads
-   as interchangeable. Implement the smallest working flow, map shared tokens at their owning scope, and refine its states
-   before extending the next feature. Revise the shared plan when the render disproves it.
-5. **Critique the render.** Read task, hierarchy, grouping, type, contrast, state, and signature in
-   that order. Fix the earliest failure before decorating later layers. Recheck after the fix.
-
-Keep CSS specificity deliberate. Utilities may use `!important`; inspect the winning declaration
-instead of stacking overrides. Remove conflicting classes before escalating selector specificity.
-A class selector remains a class selector regardless of its name.
-
-Keep exploratory drafts private. Show the selected direction, relevant decisions, and verification
-limits, not every discarded variation. Do not claim a rendered result from source inspection.
+Keep specificity deliberate through [SKILL.md](../SKILL.md) → The styling ladder, which owns that
+rule.
 
 ## Restraint and self-critique
 
@@ -302,7 +297,7 @@ Review captures at the declared widths, themes, and states, with keyboard focus 
 content. Switch modes on the mounted interface; inspect inherited text, quiet fills, and selected
 controls before polishing decoration. Compare against the named design criteria; do not invent a numeric beauty score. Use
 [inspection.md](inspection.md) for measurable claims and its rendered design review for visual
-ones. Record untested coverage as open. Route a requested review campaign to `orkestrel-polish-surface`.
+ones. Record untested coverage as open.
 
 ## Writing in design
 

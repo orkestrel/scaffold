@@ -33,7 +33,7 @@ hand-roll before building one.
 
 | Layer          | File                                                        | Holds                                                              |
 | -------------- | ----------------------------------------------------------- | ------------------------------------------------------------------ |
-| Operate        | `SKILL.md`                                                  | Process, decision rules, checklist                                 |
+| Operate        | `SKILL.md`                                                  | Process, styling ladder, contrast bars, action rank, checklist     |
 | Design craft   | [frontend-design.md](references/frontend-design.md)         | Hierarchy, spacing, type, color, depth, imagery, signature, copy   |
 | Components     | [components.md](references/components.md)                   | Bootstrap markup and enterprise selection notes                    |
 | Inputs         | [inputs.md](references/inputs.md)                           | Affordance, alternates, styling rung, and states per category      |
@@ -44,8 +44,9 @@ hand-roll before building one.
 | Instruments    | [inspection.md](references/inspection.md)                   | Mechanical evidence contracts and rendered review criteria         |
 
 Take the operating rules here over a lookup example. Adapt example heading levels, action rank,
-labels, and paint to the host surface. Move illustrative inline declarations through the styling
-ladder before shipping; their presence in a lookup is not an exemption.
+labels, and paint to the host surface. Move an illustrative inline declaration through the styling
+ladder before shipping; its presence in a lookup is not an exemption. A declaration a lookup names
+as a runtime producer is the exception, and only for the property that lookup names.
 
 ---
 
@@ -57,7 +58,7 @@ ladder before shipping; their presence in a lookup is not an exemption.
 4. **Write framework-neutral markup** — semantic HTML plus Bootstrap classes. Wire behavior with the project's stack; in an SPA prefer framework-native Bootstrap wrappers over competing DOM ownership ([bootstrap-reference.md](references/bootstrap-reference.md) → JavaScript lifecycle).
 5. **Keep this folder intact** so its relative links resolve. Install or vendor it wherever the tooling looks for skills; the paths are tooling-specific, the content is not.
 6. **Use the installed Bootstrap.** Otherwise take the pinned CDN example from [bootstrap-reference.md](references/bootstrap-reference.md) → Quick start. Do not upgrade dependencies as a side effect of a visual pass.
-7. **Apply this package** to the work in its frontmatter. For a requested verdict, round, or campaign over an already rendering surface, use `orkestrel-polish-surface`; use this skill for the campaign's Bootstrap fixes.
+7. **Apply this skill** to the work in its frontmatter. For a requested verdict, round, or campaign over an already rendering surface, use `orkestrel-polish-surface`; use this skill for the campaign's Bootstrap fixes.
 
 ---
 
@@ -78,10 +79,10 @@ Read [frontend-design.md](references/frontend-design.md) before setting a direct
 visual decisions; the loop here owns their order.
 
 1. **Ground** — state the subject, audience, single job, primary action, and existing constraints. Use real content; mark fixture data as such. Start with a feature, not a navigation shell.
-2. **Plan** — record each region's narrow layout, expansion threshold, content/action parity, and overflow policy in a responsive contract. Render the primary task at 320 and 390 CSS px before expanding the shell. Settle reading order and grouping in low fidelity before paint, and hold color until the arrangement reads in grayscale (body surfaces, inherited text, weight, and spacing only). Reuse or define a compact system: **color families and surface ownership**, **type roles and scale**, **spacing and width roles**, **radius and elevation**, **a coherent signature where the brief calls for one**. Set personality once through four levers — typeface, primary color, radius family, copy register — and hold it on every screen. Record changes, not a parallel system. Take each scale's Bootstrap source, shipped steps, and gaps from [bootstrap-reference.md](references/bootstrap-reference.md) → Define the working scales.
+2. **Plan** — record each region's narrow layout, expansion threshold, content/action parity, and overflow policy in a responsive contract. Render the primary task at 320 and 390 CSS px before expanding the shell. Settle reading order and grouping in low fidelity before paint, and hold color until the arrangement reads in grayscale (body surfaces, inherited text, weight, and spacing only). Reuse or define a compact system: **color families and surface ownership**, **type roles and scale**, **spacing and width roles**, **radius and elevation**, **a coherent signature where the brief calls for one**. Set personality through these levers — typeface, primary color, radius family, and copy register — and hold each on every screen. Record changes, not a parallel system. Take each scale's Bootstrap source, shipped steps, and gaps from [bootstrap-reference.md](references/bootstrap-reference.md) → Define the working scales. State the settled layout in prose or a small wireframe before building it.
 3. **Critique the plan** — reject unclear hierarchy, invented functionality, and interchangeable styling. Follow a pinned brief; otherwise take character from the subject rather than clustered AI defaults. Do not manufacture novelty inside an established product.
-4. **Build** — implement the smallest useful flow and its data states, then refine the working feature. Use documented components and shipped utilities; map shared tokens once. Fix conflicting declarations rather than adding specificity. Extend the next feature after this one works.
-5. **Critique the render** — complete the primary flow at narrow width first; then read task, hierarchy, grouping, type, contrast, states, and signature in order. Fix the earliest failure first. Remove a needless accessory if one exists; never remove useful information to meet a quota.
+4. **Build** — implement the smallest useful flow and its data states, then refine the working feature. Use documented components and shipped utilities; map shared tokens once. Fix conflicting declarations rather than adding specificity. Revise the recorded plan when the render disproves it. Extend the next feature after this one works.
+5. **Critique the render** — complete the primary flow at narrow width first; then read task, hierarchy, grouping, type, contrast, states, and signature in order. Fix the earliest failure first, then re-read the earlier criteria against the fixed render. Remove a needless accessory if one exists; never remove useful information to meet a quota.
 
 Keep exploratory drafts private. Deliver the selected direction, the changes, and their evidence
 limits, not every discarded variation.
@@ -90,7 +91,7 @@ limits, not every discarded variation.
 snapshot. Use captures for visual claims and source to explain mechanisms; use interaction tests
 for behavior. `.agents/orchestration.md` owns this law where present. Name the coverage and any
 unverified state. Without a render-capable environment, report visual verification as open, never
-as passed. Route a requested review campaign to `orkestrel-polish-surface`.
+as passed.
 
 **Mechanical proof.** Run applicable instruments in [inspection.md](references/inspection.md) with
 their negative controls. Report population, reading, control result, and coverage. A control the
@@ -112,27 +113,41 @@ and captures are evidence, not fabricated mechanical tests or a beauty score.
 
 ### The styling ladder
 
-Reach a rung only when the preceding one cannot express the need.
+Reach a rung only when the preceding one cannot express the need. Cite a rung by its name, never by
+its position.
 
-1. **Documented component structure.** Keep required elements, nesting, modifiers, behavior, and ARIA. Use optional headers, titles, and footers only when the content needs them; a component example is not a mandate to add empty chrome.
-2. **Shipped utilities.** Compose spacing, flex, sizing, text, border, and color classes from [utilities.md](references/utilities.md). Verify extensions exist in the loaded build before authoring them.
-3. **Bootstrap extension points.** Use component `--bs-{component}-*` variables or the Sass utilities API for a recurring system gap. Declare the role once, compile where required, and verify the emitted rule.
-4. **Developer-authorized custom CSS.** Propose what Bootstrap cannot express and why. Take this rung unasked only under [inspection.md](references/inspection.md) → When an authored rule is already earned.
+1. **Component rung — documented component structure.** Keep required elements, nesting, modifiers, behavior, and ARIA. Use optional headers, titles, and footers only when the content needs them; a component example is not a mandate to add empty chrome.
+2. **Utility rung — shipped utilities.** Compose spacing, flex, sizing, text, border, and color classes from [utilities.md](references/utilities.md). Verify extensions exist in the loaded build before authoring them.
+3. **Extension rung — Bootstrap extension points.** Use component `--bs-{component}-*` variables or the Sass utilities API for a recurring system gap. Declare the role once, compile where required, and verify the emitted rule.
+4. **Authored rung — developer-authorized custom CSS.** Propose what Bootstrap cannot express and why. Take this rung unasked only under [inspection.md](references/inspection.md) → When an authored rule is already earned.
 
-Keep authored styles in the project's stylesheet and token layer, never a `style` attribute or a
-page/component `<style>` block. Do not duplicate a shipped utility. Keep raw values in declared
-primitive definitions, not component paint. These are package boundaries, not claims that inline
-CSS or custom rules cannot participate in a cascade.
+Resolve a conflict at the rung that owns it. Utilities may carry `!important`, so read the winning
+declaration in the shipped cascade and remove the conflicting class before escalating selector
+specificity. A class selector stays a class selector whatever its name.
+
+**Where an authored rule lives.** Put every authored rule in the project's stylesheet and token
+layer. A standalone HTML deliverable carries that stylesheet as one `<style>` block in `<head>` —
+tokens and declared roles, before any markup. That block is the project stylesheet.
+
+Never write a `style` attribute on authored markup, and never open a second `<style>` block beside
+a component or scoped to one. This rule fixes a location and nothing else: inline CSS and authored
+rules participate in the cascade normally, and a runtime producer named in
+[inspection.md](references/inspection.md) → Style escapes writes its own declaration.
+
+**What an authored rule may contain** is a separate rule, and the styling ladder owns it. Reach the
+authored rung only when the component, utility, and extension rungs cannot express the need. Do not
+duplicate a shipped utility, and keep raw values in declared primitive definitions rather than in
+component paint.
 
 ### Hierarchy & actions
 
-| Rank or meaning | Typical choice                                                         |
-| --------------- | ---------------------------------------------------------------------- |
-| Primary         | `btn btn-primary` — at most one dominant action per active task region |
-| Secondary       | A quieter neutral or outline variant, measured on its actual surface   |
-| Tertiary        | `btn btn-link` for an action; a real link for navigation               |
-| Destructive     | Rank first; strong `btn-danger` for the final destructive commit       |
-| Status          | Quiet badge or alert treatment; icon + color + word                    |
+| Rank or meaning | Typical choice                                                                                                                                                     |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Primary         | `btn btn-primary` — at most one dominant action per active task region                                                                                             |
+| Secondary       | `btn-outline-secondary` with `--bs-btn-color: var(--bs-emphasis-color)` set once at the theme root (the stock label is 3.3:1 on the dark body), or `btn-secondary` |
+| Tertiary        | `btn btn-link` for an action; a real link for navigation                                                                                                           |
+| Destructive     | Rank first; strong `btn-danger` for the final destructive commit                                                                                                   |
+| Status          | Quiet badge or alert treatment; icon + color + word                                                                                                                |
 
 Choose rank before hue. Do not make every action solid or every destructive action dominant.
 Outline and link-style controls are allowed only when their text, boundary or state cue, and focus
@@ -146,9 +161,11 @@ not lower the required friction. Draw a textless status mark as an icon glyph, n
 
 ### Surfaces, color, contrast
 
-- **Hold the package bars:** ≥ 4.5:1 for all information-bearing text, including large text, captions, and metadata; ≥ 3:1 for meaningful textless marks and state/focus chrome. The text floor is deliberately stricter than WCAG's large-text exception. Measure every declared theme and reached state; do not generalize one reading to all surfaces.
+- **Hold these bars — this section owns them.** ≥ 4.5:1 for all information-bearing text, including large text, captions, and metadata; ≥ 3:1 for meaningful textless marks and state/focus chrome. The text floor is deliberately stricter than WCAG's large-text exception. Measure every declared theme and reached state; do not generalize one reading to all surfaces. A ratio quoted anywhere in this skill is a stock Bootstrap reading and bounds that stock theme alone — the bars are the policy, the readings are not.
 - **Inherit ordinary text.** When content owns no background, add no foreground override. Prefer `bg-body`, `bg-body-secondary`, `bg-body-tertiary`, and `bg-*-subtle` for quiet surfaces; do not automatically add a text-color utility to them. Follow [color-modes.md](references/color-modes.md) for exceptions and component-owned colors.
-- **Keep supporting text readable.** Start with inherited color, spacing, and weight. Use `text-body-secondary` for a deliberate secondary tier — it clears 4.5:1 on every stock body surface in both modes — not for every caption. `text-body-tertiary` is body color at 50 % alpha and measures 3.0–4.1:1 on those surfaces: decoration or disabled only, never a caption someone reads. A third readable tier is a declared opaque token. Never quiet text with opacity, and do not carry a neutral secondary tier blindly onto a colored fill; inherit its tested foreground first, using a scoped opaque same-hue tier only when needed ([color-modes.md](references/color-modes.md) → Text tiers).
+- **Pair like with like.** Adaptive text on adaptive surfaces (`text-body*` and `text-*-emphasis` on `bg-body*` and `bg-*-subtle`); fixed text on fixed fills (`text-bg-*`, a component's own foreground, or a `data-bs-theme` scope that also carries `text-body` — a scope changes variables only, and plain text inherits the outer mode's painted color). Treat a mixed pair as unproven and measure it in each declared mode: `bg-light` with inherited text, `text-white` on `bg-body`, `text-primary` on the dark body, and a stock `btn-outline-secondary` label in dark mode each fail one stock mode, while inherited text on `bg-primary` fails light and dark alike. Replace `bg-light`, `bg-white`, and `text-dark` on adaptive surfaces because they are fixed ([color-modes.md](references/color-modes.md) → Fixed and adaptive classes).
+- **Clear a deprecated class on its deprecation, not on a contrast reading.** 5.3 deprecates `text-muted`, `navbar-light`, `navbar-dark`, `dropdown-menu-dark`, `btn-close-white`, and `carousel-dark`. `text-muted` still resolves through the adaptive secondary color, so it pairs correctly and is a deprecation to clear; the `navbar-*`, `dropdown-menu-dark`, `btn-close-white`, and `carousel-dark` classes give way to a `data-bs-theme` scope.
+- **Keep supporting text readable.** Start with inherited color, spacing, and weight. Use `text-body-secondary` for a deliberate secondary tier — it clears 4.5:1 on every stock body surface in light and dark — not for every caption. `text-body-tertiary` is body color at 50 % alpha and measures 3.0–4.1:1 on those stock surfaces: decoration or disabled only, never a caption someone reads. Any further readable tier is a declared opaque token, measured on the surface it sits on. Never quiet text with opacity, and do not carry a neutral secondary tier blindly onto a colored fill; inherit its tested foreground first, using a scoped opaque same-hue tier only when needed ([color-modes.md](references/color-modes.md) → Text tiers).
 - **Pair intentional solid surfaces; preserve selected foregrounds.** Let the owning component set its foreground and background, or use a tested solid pair. Do not recolor ordinary children. Keep status encoded by icon and word and capture the selected state.
 - **Inside subtle fills, measure the children against that fill.** Badge, button, and caption recipes need their own readings; a page-background result does not transfer into a card or alert.
 - **Exempt disabled controls from the contrast bars**, but visibly neutralize an unavailable destructive action and explain why with `aria-describedby`; `title` may supplement, never replace, the explanation.
@@ -161,7 +178,7 @@ Take [responsive-layout.md](references/responsive-layout.md) as the layout contr
 primary task, reading order, and access to information at every width. A contained horizontal
 table can pass document-overflow checks and still fail the task; inspect both.
 
-- Choose density for the task. Start each gap one step too large, render, and step down; compress where throughput or comparison requires it, not because the default felt cramped. Keep targets ≥ 24×24 CSS px as the package floor; measure hit areas, never infer them from `btn-sm`.
+- Choose density for the task. Start each gap one step too large, render, and step down; compress where throughput or comparison requires it, not because the default felt cramped. Hold every target to the floor in [bootstrap-reference.md](references/bootstrap-reference.md) → WCAG 2.2 deltas, which owns the target dimensions.
 - Take compact controls together across a row: `btn-sm`, `form-control-sm`, `form-select-sm`, and `input-group-sm`. Do not shrink body text or targets to force one-row layouts.
 - Keep inter-group gaps larger than internal gaps. Bound forms, rails, and prose by content with a maximum width; let comparison tables use the width they need. Use percentage columns only where elements must scale together — a `col-*` login card or `col-3` sidebar changes width at every breakpoint ([bootstrap-reference.md](references/bootstrap-reference.md) → Breakpoints & layout).
 - Use `.card` where an independent group earns containment. Try spacing and type before more borders, fills, or shadows. Keep elevation tied to layering, not every available box.
@@ -181,18 +198,19 @@ table can pass document-overflow checks and still fail the task; inspect both.
 - Choose the affordance by what the person is asked for in [inputs.md](references/inputs.md), and draw its fixed state set. Keep read-only/edit geometry stable and preserve the non-drag path for uploads.
 - Give every field a visible label or `.form-floating`, never placeholder-only. Removing redundant labels on displayed data does not apply to inputs. Naming a form does not name its individual controls.
 - Keep label, control, help, and error closer to each other than to the next field group. Use extra columns for genuinely related fields or supporting explanation, not to fill a wide canvas.
-- Validate on blur, re-validate error fields on input, and re-check on submit. Keep submit enabled; never disable it merely because fields are invalid. Show a focusable error summary and linked inline feedback (`aria-describedby`, `aria-invalid`).
+- Validate on blur, re-validate error fields on input, and re-check on submit. Keep submit enabled while fields are invalid; a disabled submit hides what is wrong. While a submit is in flight, mark the control busy and refuse a second submit — that pending block is a different state, and this rule does not bar it. Show a focusable error summary and linked inline feedback (`aria-describedby`, `aria-invalid`).
 - Take validation mechanics, autosave, and multi-step rules from [bootstrap-reference.md](references/bootstrap-reference.md) → Forms in production, Wizards & multi-step forms.
 
 ### When custom CSS is justified
 
-Exhaust rungs 1–3 before proposing a custom rule. Name the unmet requirement and the smallest rule
-that would satisfy it. A desire for a signature does not waive the styling ladder.
+Exhaust the component, utility, and extension rungs before proposing a custom rule. Name the unmet
+requirement and the smallest rule that would satisfy it. A desire for a signature does not waive the
+styling ladder.
 
-Take a rule unasked only when an instrument in [inspection.md](references/inspection.md) proves a
-vendor failure, the rule cites that reading, restores the bar and nothing else, and uses theme
-tokens. Otherwise wait for developer authorization. An unavailable Sass build is not permission to
-silently invent a second CSS system.
+Wait for developer authorization. [inspection.md](references/inspection.md) → When an authored rule
+is already earned owns the one exception and every condition that opens it; read that section rather
+than judging a shorter copy here. An unavailable Sass build is not permission to silently invent a
+second CSS system.
 
 When authorized, or when that exception opens:
 
@@ -206,7 +224,7 @@ When authorized, or when that exception opens:
 ## Accessibility baseline
 
 - Give the page a skip link, landmarks, and ordered headings; visual size does not dictate heading level.
-- Name icon-only controls and keep targets ≥ 24×24 CSS px. Preserve visible labels within accessible names.
+- Name icon-only controls and hold every target to the floor in [bootstrap-reference.md](references/bootstrap-reference.md) → WCAG 2.2 deltas. Preserve visible labels within accessible names.
 - Use `aria-current` for the current navigation item, `aria-selected` for selectable tabs, and native checked state for checkboxes/radios. Do not apply one selection attribute to every widget.
 - Wire disclosures with `aria-expanded` and `aria-controls`; wire help/errors with `aria-describedby` and invalid fields with `aria-invalid`.
 - Match announcements to urgency: polite status for routine async results, alerts for urgent failures. Do not infer urgency solely from an alert's visual styling.
@@ -234,16 +252,18 @@ Progress:
 - [ ] Typeface, primary color, radius family, and copy register set once and held; arrangement read in grayscale before hue
 - [ ] Type sizes in `rem` from the scale or its generated steps; no `em` sizes, nested `.small`, or off-scale spacing
 - [ ] Components and utilities resolved in the shipped build; input affordances and states taken from their references
-- [ ] Styling ladder held; no authored inline styles, embedded style blocks, or unearned utility duplication
+- [ ] Styling ladder held; no `style` attribute, no component-scoped `<style>` block, no unearned utility duplication; a standalone HTML deliverable carries its one project stylesheet in `<head>`
 - [ ] Tokens mapped through semantics to components; literals confined to declared primitives
 - [ ] Ordinary/subtle content inherits; solid exceptions own their pair; no fixed leaf color conceals a mode failure
+- [ ] Every text/background pair is adaptive-on-adaptive or fixed-on-fixed; fixed fills carry `text-bg-*`, their component's foreground, or a `data-bs-theme` scope with `text-body` on the same element; no `bg-light`, `bg-white`, or `text-dark` on adaptive surfaces
+- [ ] Deprecated classes cleared on their deprecation: `text-muted`, `navbar-light`, `navbar-dark`, `dropdown-menu-dark`, `btn-close-white`, `carousel-dark`
 - [ ] Secondary tier is `text-body-secondary` or a declared opaque token; no opacity or unreadable tertiary tone; secondary text on colored surfaces measured rather than assumed
-- [ ] Light/dark transitions, supported nested scopes, and overlay mounts tested without rebuilding the UI
+- [ ] Every declared mode transition, supported nested scopes, and overlay mounts tested without rebuilding the UI
 - [ ] Primary action clear; supporting content readable; destructive rank and friction both correct
 - [ ] Group spacing unambiguous; widths content-led; type/baseline/line length suitable
 - [ ] All data states built; first-use and filtered-empty distinct; errors recoverable; no invented progress
 - [ ] Images bounded and legible; depth serves layering; accents, tints, and shadows each earn their place; no needless accessories
-- [ ] Contrast measured in supported themes/states: ≥ 4.5:1 text, ≥ 3:1 meaningful marks and state/focus chrome
+- [ ] Contrast measured in every declared theme and reached state against the bars in § Surfaces, color, contrast
 - [ ] Keyboard, labels, announcements, targets, reduced motion, and non-drag paths checked
 - [ ] Forms retain visible labels, blur/submit validation, and summary + inline errors
 - [ ] Responsive contract recorded; primary task works at 320/390 CSS px before wide-screen enhancement
