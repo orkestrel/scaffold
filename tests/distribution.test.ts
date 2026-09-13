@@ -923,7 +923,7 @@ describe('installed package consumer', () => {
 				// and the gate chain that follows each take an admitted npm. The floor is read
 				// from the artifact that declares it, so raising the floor reaches this proof
 				// through the manifest rather than through a constant repeated here, and a host
-				// whose own npm satisfies the floor provisions nothing. `resolveNpm` throws when
+				// whose own npm satisfies the floor provisions nothing. `provisionNpm` throws when
 				// it cannot reach an admitted npm, so no assertion stands between it and the
 				// install; the install's own message carries npm's output, which is where a
 				// refusal names itself.

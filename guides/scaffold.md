@@ -905,7 +905,7 @@ one that answers it. So `new` refuses on any question, blocking or not, before i
 `audit` and `repair` carry the same questions through, because a target that already has that shape
 still has to be described and restored.
 
-A library caller creating a fresh workspace applies `new`'s rule itself:
+A library caller creating a fresh workspace itself applies the rule the `new` command follows:
 
 ```ts
 import { Compiler, createBlueprint } from '@orkestrel/scaffold'
@@ -1400,13 +1400,6 @@ read or write that file.
 A workspace's file set is a function of its axes plus its structural facts. Nothing is fixed
 except the manifest.
 
-Every generated manifest declares the toolchain it is gated on. The `engines.node` field carries
-the blueprint's `engines` value, which defaults to `>=22.18.0`. The `devEngines.packageManager`
-record names npm at `>=11.6.0` with its `onFail` key set to `error`, and no blueprint field varies
-that floor. An npm beneath `11.6.0` refuses the install in a generated workspace instead of
-resolving its dependency graph, and it refuses each nested `npm run` command under that install on
-the same reading, so run a generated workspace with npm `11.6.0` or later.
-
 - One computed artifact: `package.json`, with the entry points, `exports` map, scripts, and
   development dependencies its selection implies. In publishing workspaces, the emitted `prepack`
   script runs `npm run build` so a publish rebuilds `dist/` and cannot ship a stale artifact; the
@@ -1454,6 +1447,16 @@ the same reading, so run a generated workspace with npm `11.6.0` or later.
   moves every target's copy at its next `repair`.
 - One host artifact per vendored path the workspace selects. A vendored directory is one planned
   path that expands into the files the data root stores beneath it.
+
+Every generated manifest declares the toolchain it is gated on. The `engines.node` field carries the
+blueprint's `engines` value, which defaults to the `>=22.18.0` range. The
+`devEngines.packageManager` record names npm at the `>=11.6.0` range with its `onFail` key set to
+the `error` value, and no blueprint field varies that floor. An npm beneath that floor refuses the
+`npm install` command in a generated workspace with the `EBADDEVENGINES` code instead of resolving
+the dependency graph, and it refuses each nested `npm run` command under that install on the same
+reading. So run a generated workspace on npm `11.6.0` or later. Read the ambient version with the
+`npm --version` command, and raise it with the `npm install --global npm@11.6.0` command, or a later
+release, before the first install.
 
 A workspace publishing a `src` environment rolls each published face's declarations up from that
 face's own Vite config. The seeded config calls `declarationRollup` from the vendored

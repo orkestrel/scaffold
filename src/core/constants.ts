@@ -493,8 +493,9 @@ export const DEFAULT_ENGINES = `>=${MINIMUM_NODE_VERSION}`
  *
  * @remarks
  * No blueprint field varies it. Every generated manifest names npm at the
- * {@link MINIMUM_NPM_VERSION} floor with `onFail` set to `error`, so npm refuses an install
- * in a generated workspace beneath that floor rather than resolving its dependency graph.
+ * {@link MINIMUM_NPM_VERSION} floor with the `onFail` key set to the `error` value, so npm
+ * refuses an install in a generated workspace beneath that floor rather than resolving its
+ * dependency graph.
  * The neighbouring `DEFAULT_ENGINES` constant is the Node range, and a blueprint's `engines`
  * field does replace that one.
  */

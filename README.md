@@ -58,6 +58,11 @@ vendored data root, and the generated file set.
 
 ## Notes
 
+A workspace the `scaffold new` command generates declares an npm floor of `11.6.0` in its
+`devEngines` record, so an npm beneath that floor refuses the `npm install` command with the
+`EBADDEVENGINES` code; raise npm with the `npm install --global npm@11.6.0` command, or a later
+release, before the first install.
+
 On Windows, run the executable as `npx scaffold …` or `node ./dist/bin/main.js …`. PowerShell
 mangles npm's `--` passthrough, so avoid `npm run scaffold -- …` there.
 
