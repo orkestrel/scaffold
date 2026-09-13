@@ -1,0 +1,4 @@
+ambient npm on PATH: 11.6.0 (node v22.22.2)
+ Test Files  1 passed (1)
+      Tests  5 passed | 1 skipped (6)
+u2 exit=0
