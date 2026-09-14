@@ -96,7 +96,7 @@ const FLEET_NAMES: readonly string[] = Object.freeze([
 	'@orkestrel/scaffold',
 	'@orkestrel/test',
 ])
-const TARGET_MANIFEST_TEXT = TARGET_MANIFEST_FIXTURE.replace('~8.2.0', '~8.2.2')
+const TARGET_MANIFEST_TEXT = TARGET_MANIFEST_FIXTURE.replace('~8.2.0', '~8.3.0')
 
 const FLEET_RELEASE_REPLIES: Readonly<Record<string, TestUpstreamReply>> = Object.freeze({
 	[FLEET_UPSTREAM_PATHS.packages.emitter]: { status: 200, body: buildPackument('0.0.5') },
@@ -162,7 +162,7 @@ function buildTargetManifest(
 	scripts?: unknown,
 ): string {
 	const dependenciesAligned =
-		dependencies === undefined ? { '@orkestrel/emitter': '^0.0.5', vite: '~8.2.2' } : dependencies
+		dependencies === undefined ? { '@orkestrel/emitter': '^0.0.5', vite: '~8.3.0' } : dependencies
 	const declared = development === undefined ? blueprintToDevDependencies(blueprint) : development
 	const aligned =
 		typeof declared === 'object' && declared !== null && !Array.isArray(declared)
@@ -1024,7 +1024,7 @@ describe('CLI audit', () => {
 				{
 					field: 'dependencies',
 					message:
-						'vite declares the floor ~8.2.0, while the registry serves 8.2.2 within major 8.',
+						'vite declares the floor ~8.2.0, while the registry serves 8.3.0 within major 8.',
 					blocking: false,
 				},
 			])
@@ -1195,7 +1195,7 @@ describe('CLI audit', () => {
 			expect(audit.questions).toStrictEqual([
 				{
 					field: 'dependencies',
-					message: `The manifest at ${fleet.target} does not declare planned dependencies: typescript, vite, vitest. Add these exact dependency lines to dependencies or devDependencies in package.json: "typescript": "^6.0.3", "vite": "^8.2.2", "vitest": "^4.1.11",`,
+					message: `The manifest at ${fleet.target} does not declare planned dependencies: typescript, vite, vitest. Add these exact dependency lines to dependencies or devDependencies in package.json: "typescript": "^6.0.3", "vite": "^8.3.0", "vitest": "^4.1.11",`,
 					blocking: false,
 				},
 			])
@@ -2909,7 +2909,7 @@ describe('CLI audit', () => {
 				{
 					field: 'dependencies',
 					message:
-						'vite declares the floor ~8.2.0, while the registry serves 8.2.2 within major 8.',
+						'vite declares the floor ~8.2.0, while the registry serves 8.3.0 within major 8.',
 					blocking: false,
 				},
 			])
@@ -3729,7 +3729,7 @@ describe('CLI repair', () => {
 			expect(written).toContain(
 				'"prepublishOnly": "npm run format:check && npm run lint:check && npm run check && npm run build && npm test && npm run test:distribution -- --mode release && npm run verify"',
 			)
-			expect(written).toContain('"vite": "^8.2.2"')
+			expect(written).toContain('"vite": "^8.3.0"')
 			expect(workspace.read('target/vite.config.ts')).not.toBe('marker\n')
 
 			const audited = createSink()
@@ -4736,7 +4736,7 @@ describe('CLI overwrite', () => {
 				name: 'vite',
 				range: '~8.2.0',
 				lookup: 'found',
-				latest: '8.2.2',
+				latest: '8.3.0',
 				major: 8,
 			})
 			const manifest = workspace.read('target/package.json')
@@ -4745,7 +4745,7 @@ describe('CLI overwrite', () => {
 			expect(manifest).toContain(`"@orkestrel/scaffold": "^${published}"`)
 			// Nothing else in the manifest moved, which is the whole promise of
 			// rewriting a range in place rather than re-serializing the file.
-			expect(manifest).toContain('"vite": "^8.2.2"')
+			expect(manifest).toContain('"vite": "^8.3.0"')
 			expect(manifest).toContain('"description": "A sample workspace."')
 		} finally {
 			await server.destroy()
