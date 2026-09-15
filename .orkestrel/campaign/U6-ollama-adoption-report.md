@@ -1,9 +1,0 @@
-<!-- U6b — builder (Sonnet, native), ollama adoption retry on the repaired joint install. Retained from the completion notification, 2026-09-15 (146 s, 33 tool uses). -->
-
-Changes: `tests/setup.test.ts` — imported `ToolContext`; added `const CONTEXT: ToolContext = { signal: new AbortController().signal }`; passed `CONTEXT` as the second argument to all fifteen `tool.execute(...)` calls (originally lines 434, 442, 443, 452, 460, 467, 477, 483, 484, 492, 493, 502, 510, 511, 512); scoped `oxfmt --write`. `guides/tool.md` and `guides/agent.md` — byte copies from the tool and agent checkouts. No `src/**` change: `extractTools` builds `ToolCall` as `{ id, name, arguments }` and never sets `caller`. `guides/ollama.md` unchanged (no sentence names a handler signature).
-
-Second-argument uses examined: `tests/setup.test.ts` fifteen call sites (context added; no fixture reads `context.caller`); `tests/setupServer.ts:491, 509, 537` single-parameter handlers; `tests/guides.test.ts:40` is `GuideCommand.execute`, unrelated; `src/**` no `.execute(` call and no second-parameter handler; `tests/service/**` no `.execute(` call; `tests/src/core/integration.test.ts` `AbortController` uses feed `browser.stream`, unrelated.
-
-Scoped validation (writer's readings): `lint:check` 0; `check` 0 (from the 15-error baseline); `test:src:core` 0 (4 files, 99 tests); `test:setup` 0 (3 files, 96 tests); `test:guides` 0 (34 tests); `test:policy` 0 (90 passed, 1 skipped); `test:config` 0 (172 passed, 1 skipped); `format:check` 0; `cmp` on both mirrors exit 0. `test:integration` does not exist in `package.json`; `test:service` not run (Orchestrator's).
-
-`git diff --stat`: `guides/agent.md` 84, `guides/tool.md` 253, `tests/setup.test.ts` 36 (3 files, 286 insertions, 87 deletions). Status: three modified files. Deviation: none.

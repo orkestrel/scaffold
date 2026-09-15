@@ -1,3 +1,0 @@
-=== tool
-installed export names: 355 (test "version": "0.0.14", contract "version": "0.0.17")
-=== agent

@@ -1,8 +1,0 @@
-probe: export-name collisions in ollama
-date: 2026-09-15T10:12:28Z
-installed: test "version": "0.0.14", contract "version": "0.0.17"; export names read: 355 (declaration files: test core, test browser, test server, contract core)
-pattern: ^export (async )?(function|const|class) NAME\b for each installed NAME
-paths: /c/Users/mikes/WebstormProjects/ollama/src/** and /c/Users/mikes/WebstormProjects/ollama/tests/** (node_modules excluded)
-files swept: 35
-  collision: readPage at tests/setupServer.ts:1100:export async function readPage<T>(
-collisions: 1

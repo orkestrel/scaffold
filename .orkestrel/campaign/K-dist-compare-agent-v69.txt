@@ -1,2 +1,0 @@
-# dist compare agent: local 43f944a vs published 0.0.23
-verdict: no material difference — no bump owed by dist

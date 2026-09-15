@@ -1,7 +1,0 @@
-﻿Command: rg -n MCPSubscriptionState src tests guides
-exit=1; matches=0
-src/core/MCPServer.ts:1493:		// Skip listener registration on destroyed registries without relying on emitter tolerance.
-tests/src/core/MCPServer.test.ts:784:		// Bypass the literal types to prove the runtime refusal a JavaScript caller reaches.
-Pattern: coalesce into one; population: guides/mcp.md
-920:while the previous frame is unread, coalesce into one.
-matches=1

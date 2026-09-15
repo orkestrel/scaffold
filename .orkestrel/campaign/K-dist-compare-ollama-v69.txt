@@ -1,2 +1,0 @@
-# dist compare ollama: local 581a06a vs published 0.0.17
-verdict: no material difference — no bump owed by dist

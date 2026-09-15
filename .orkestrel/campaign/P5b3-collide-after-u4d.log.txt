@@ -1,7 +1,0 @@
-probe: export-name collisions in mcp
-date: 2026-09-15T10:02:57Z
-installed: test "version": "0.0.14", contract "version": "0.0.17"; export names read: 355 (declaration files: test core, test browser, test server, contract core)
-pattern: ^export (async )?(function|const|class) NAME\b for each installed NAME
-paths: /c/Users/mikes/WebstormProjects/mcp/src/** and /c/Users/mikes/WebstormProjects/mcp/tests/** (node_modules excluded)
-files swept: 98
-collisions: none

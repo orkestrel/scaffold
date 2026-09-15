@@ -1,8 +1,0 @@
-﻿npm.cmd : npm notice run @orkestrel/mcp@0.0.30 lint:check
-At line:2 char:1
-+ npm.cmd run lint:check *> tmp/codex/U4e-lint.log; $result = $LASTEXIT ...
-+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    + CategoryInfo          : NotSpecified: (npm notice run ...0.30 lint:check:String) [], RemoteException
-    + FullyQualifiedErrorId : NativeCommandError
- 
-npm notice run oxlint --config .oxlintrc.json --deny-warnings .

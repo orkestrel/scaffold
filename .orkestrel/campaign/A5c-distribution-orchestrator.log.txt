@@ -1,7 +1,0 @@
-# A5c distribution (release mode) — 2026-09-15T19:09:36Z — mcp head 8d97dd0
-# status:  M guides/mcp.md  M tests/distribution.test.ts ?? tests/fixtures/distributionPage.mjs ?? tests/fixtures/distributionScript.mjs ?? tests/fixtures/distributionServer.mjs 
- Test Files  1 passed (1)
-      Tests  19 passed | 4 skipped (23)
-   Duration  23.45s (transform 268ms, setup 446ms, import 5.06s, tests 17.79s, environment 0ms)
-exit=0 wall=24s
-# end 2026-09-15T19:10:01Z

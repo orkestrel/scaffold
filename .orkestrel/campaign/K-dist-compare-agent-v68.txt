@@ -1,6 +1,0 @@
-# dist compare agent: local aef4326 vs published 0.0.22
-material diff: src/core/index.cjs
-material diff: src/core/index.d.cts
-material diff: src/core/index.d.ts
-material diff: src/core/index.js
-verdict: material differences (4 files) — the published surface moved

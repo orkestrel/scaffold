@@ -1,9 +1,0 @@
-rg -n -U '(?::|=)\s*(?:async\s+)?function\b' tests/src/core -g '*.test.ts'
-exit=1
-
-Membership: function expressions assigned after a property colon or assignment equals, including multiline whitespace, across tests/src/core/*.test.ts. Module-scope function declarations are outside this expression search.
-Control through stdin: assigned generator and property function
-exit=0
-1:const producer = async function* () {}
-2:producer: function () {}
-

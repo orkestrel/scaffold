@@ -1,2 +1,0 @@
-
-Orchestrator reading 2026-09-15 after the U13g service run: the headless filter returned nothing; 14 msedge.exe processes total, the user's own browser windows.

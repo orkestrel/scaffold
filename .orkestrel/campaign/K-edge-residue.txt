@@ -1,2 +1,0 @@
-
-Orchestrator reading 2026-09-15: the headless filter returned nothing (no `--headless` msedge.exe); 12 msedge.exe processes total, the user's own browser windows.

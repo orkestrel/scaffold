@@ -1,5 +1,0 @@
-npm notice run @orkestrel/scaffold@0.0.67 check
-npm notice run tsc --noEmit --project tsconfig.json && npm run check:src
-tests/src/server/Materializer.test.ts(42,2): error TS2305: Module '"../../setupServer.js"' has no exported member 'readErrorCode'.
-tests/src/server/Upstream.test.ts(23,2): error TS2305: Module '"../../setupServer.js"' has no exported member 'readErrorCode'.
-tests/src/server/WriteTransaction.test.ts(17,10): error TS2305: Module '"../../setupServer.js"' has no exported member 'readErrorCode'.

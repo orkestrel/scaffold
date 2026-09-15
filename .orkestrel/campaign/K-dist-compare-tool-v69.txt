@@ -1,2 +1,0 @@
-# dist compare tool: local 8789aa9 vs published 0.0.15
-verdict: no material difference — no bump owed by dist

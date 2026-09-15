@@ -1,2 +1,0 @@
-# dist compare browser: local 70514bf vs published 0.0.16
-verdict: no material difference — no bump owed by dist

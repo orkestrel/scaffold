@@ -1,5 +1,0 @@
-guide: guides/supervisor.md
-surface entries: 700
-distinct names: 700
-first: UnitContext, Lease, UnitRecord, RunningUnit, SettledUnit, QuarantinedUnit, UnitSnapshot, UnitStatus
-methods groups: 80

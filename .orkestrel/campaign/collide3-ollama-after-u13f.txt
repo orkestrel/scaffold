@@ -1,8 +1,0 @@
-probe: export-name collisions in ollama (declarations and re-export lists)
-date: 2026-09-15T12:04:34Z
-installed: test "version": "0.0.14", contract "version": "0.0.17"; export names read: 469
-pattern A: ^export (async )?(function|const|let|class|interface|type|enum) NAME\b
-pattern B: NAME inside an export { ... } list (as its exported spelling)
-paths: /c/Users/mikes/WebstormProjects/ollama/src/** and /c/Users/mikes/WebstormProjects/ollama/tests/** (node_modules excluded)
-files swept: 35
-collisions: none
