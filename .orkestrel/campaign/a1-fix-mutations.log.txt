@@ -1,0 +1,119 @@
+=== M1 cancellation rule (F1)
+mutated: if (combined.aborted && error === combined.reason) {
+npm notice run @orkestrel/agent@0.0.21 test:src:core
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core tests/src/core/AgentProvider.test.ts -t normalizes a transport|replaces a caller
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/agent
+
+----------------------------x·----------------
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:core| tests/src/core/AgentProvider.test.ts > AgentProvider — cancellation and partial results > normalizes a transport AbortError after the local deadline
+AssertionError: expected DOMException{ stack: 'AbortError: x\…' } to be an instance of ProviderAbortError
+ ❯ tests/src/core/AgentProvider.test.ts:460:68
+    458|    timeout: 40,
+    459|   })
+    460|   await expect(provider.generate([], new AbortController().signal)).re…
+       |                                                                    ^
+    461|    ProviderAbortError,
+    462|   )
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 1 passed | 44 skipped (46)
+   Start at  17:16:07
+   Duration  703ms (transform 204ms, setup 435ms, import 40ms, tests 69ms, environment 0ms)
+
+mutant run exit=1 (expected non-zero)
+restored
+npm notice run @orkestrel/agent@0.0.21 test:src:core
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core tests/src/core/AgentProvider.test.ts -t normalizes a transport|replaces a caller
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/agent
+
+----------------------------··----------------
+
+ Test Files  1 passed (1)
+      Tests  2 passed | 44 skipped (46)
+   Start at  17:16:09
+   Duration  689ms (transform 204ms, setup 429ms, import 39ms, tests 66ms, environment 0ms)
+
+restored run exit=0 (expected 0)
+=== M2 reader-owned cancellation (F7)
+mutated: for await (const chunk of readChunks(response.body)) {
+npm notice run @orkestrel/agent@0.0.21 test:src:core
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core tests/src/core/AgentProvider.test.ts -t distinct interleaved
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/agent
+
+----------------------------------------·-----
+
+ Test Files  1 passed (1)
+      Tests  1 passed | 45 skipped (46)
+   Start at  17:16:11
+   Duration  667ms (transform 206ms, setup 429ms, import 41ms, tests 47ms, environment 0ms)
+
+mutant run exit=0 (expected non-zero)
+restored
+npm notice run @orkestrel/agent@0.0.21 test:src:core
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core tests/src/core/AgentProvider.test.ts -t distinct interleaved
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/agent
+
+----------------------------------------·-----
+
+ Test Files  1 passed (1)
+      Tests  1 passed | 45 skipped (46)
+   Start at  17:16:12
+   Duration  720ms (transform 220ms, setup 471ms, import 41ms, tests 54ms, environment 0ms)
+
+restored run exit=0 (expected 0)
+=== M3 signal-bound error read (F2)
+mutated: await readText(response.body, MAX_ERROR_BODY_LENGTH)
+npm notice run @orkestrel/agent@0.0.21 test:src:core
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core tests/src/core/AgentProvider.test.ts -t cancels a stalled 503
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/agent
+
+-------------------------------x--------------
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:core| tests/src/core/AgentProvider.test.ts > AgentProvider — cancellation and partial results > cancels a stalled 503 body within the deadline budget
+Error: Test timed out in 400ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/src/core/AgentProvider.test.ts:503:2
+    501|  })
+    502|
+    503|  it('cancels a stalled 503 body within the deadline budget', async () …
+       |  ^
+    504|   const body = new RecordedBody([], false)
+    505|   const transport = new RecordedTransport(() => new Response(body.stre…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 45 skipped (46)
+   Start at  17:16:14
+   Duration  1.05s (transform 204ms, setup 426ms, import 40ms, tests 422ms, environment 0ms)
+
+mutant run exit=1 (expected non-zero)
+restored
+npm notice run @orkestrel/agent@0.0.21 test:src:core
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core tests/src/core/AgentProvider.test.ts -t cancels a stalled 503
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/agent
+
+-------------------------------·--------------
+
+ Test Files  1 passed (1)
+      Tests  1 passed | 45 skipped (46)
+   Start at  17:16:16
+   Duration  732ms (transform 216ms, setup 427ms, import 84ms, tests 69ms, environment 0ms)
+
+restored run exit=0 (expected 0)
+file byte-identical to its pre-mutation copy

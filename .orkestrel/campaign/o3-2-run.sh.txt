@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+# Unit O3, second run (o3-brief-2.md supersedes step 3: three server-side cases — browser cancel, server abort as the abort frame, server failure as the error frame).
+# Cap: 5400 s. Journal: scaffold/tmp/codex/o3-2.jsonl. Report: ollama/tmp/units/o3-report-2.md (and o3-2-last.md).
+ROOT=/c/Users/mikes/WebstormProjects
+SCAF="$ROOT/scaffold"
+OLLAMA="C:/Users/mikes/WebstormProjects/ollama"
+cd "$SCAF" || exit 9
+cp "$SCAF/tmp/units/o3-brief-2.md" "$OLLAMA/tmp/units/o3-brief-2.md" || exit 8
+cmp "$SCAF/tmp/units/o3-brief.md" "$OLLAMA/tmp/units/o3-brief.md" || exit 7
+cmp "$SCAF/tmp/units/o3-brief-2.md" "$OLLAMA/tmp/units/o3-brief-2.md" || exit 7
+git -C "$ROOT/ollama" status --porcelain > "$SCAF/tmp/codex/o3-2.status-before.txt"
+git -C "$ROOT/ollama" rev-parse --short HEAD >> "$SCAF/tmp/codex/o3-2.status-before.txt"
+date -u +%FT%TZ > "$SCAF/tmp/codex/o3-2.launch.txt"
+timeout 5400 codex exec --json -C "$OLLAMA" --sandbox workspace-write --model gpt-6-astra -c 'model_reasoning_effort="high"' --output-last-message "$OLLAMA/tmp/units/o3-2-last.md" "Read tmp/units/o3-brief.md, tmp/units/o3-report.md, and then tmp/units/o3-brief-2.md, which supersedes the first brief's step 3, and execute them exactly. It is unit O3, second run. Complete the whole unit. Your final message must be the report the brief specifies, and you also write that report to tmp/units/o3-report-2.md." < /dev/null > "$SCAF/tmp/codex/o3-2.jsonl" 2> "$SCAF/tmp/codex/o3-2.err"
+echo "exit=$?" >> "$SCAF/tmp/codex/o3-2.launch.txt"
+git -C "$ROOT/ollama" status --porcelain > "$SCAF/tmp/codex/o3-2.status-after.txt"
+date -u +%FT%TZ >> "$SCAF/tmp/codex/o3-2.launch.txt"

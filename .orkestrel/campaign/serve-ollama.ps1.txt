@@ -1,0 +1,7 @@
+# Orchestrator tracked command: start the local Ollama daemon detached from this shell (Git Bash has no setsid on this host).
+# Writes the process id and the daemon's output under scaffold/tmp/ollama/. Stop it with: Stop-Process -Id (Get-Content serve.pid).
+$dir = 'C:\Users\mikes\WebstormProjects\scaffold\tmp\ollama'
+New-Item -ItemType Directory -Force -Path $dir | Out-Null
+$proc = Start-Process -FilePath 'ollama' -ArgumentList 'serve' -WindowStyle Hidden -PassThru -RedirectStandardOutput "$dir\serve.log.txt" -RedirectStandardError "$dir\serve.err.txt"
+$proc.Id | Out-File -FilePath "$dir\serve.pid" -Encoding ascii
+"started ollama serve pid=$($proc.Id)"

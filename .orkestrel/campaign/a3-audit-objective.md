@@ -1,0 +1,30 @@
+Lane: objective (analyst, GPT 6 Astra)
+
+1. **UNRESOLVED.** Direct inspection with the installed `Parity` class returned no findings. Every name in `a3-exports.txt` has a Surface row; missing-export and changed-pitch controls correctly failed. However, `npm.cmd run test:guides` could not execute its tests: the sandbox denied Vite’s temporary-file writes. The supplied failing log predates the abstract-class fix now present at `node_modules/@orkestrel/guide/dist/src/core/index.js:2071` and the restored row at `guides/agent.md:467`. A host run at `c052711` would settle the exit-code claim.
+
+2. **CONFIRMED.** The required tables exist at `guides/agent.md:729`, `:742`, and `:751`. Their members match the declarations, and direct parity inspection reports no method or declaration findings. These cover every missing-table declaration named at `../scaffold/.orkestrel/campaign/a3-guides-before.log.txt:81`.
+
+3. **BROKEN.** Executed source probes contradict actionable prose:
+   - **Decoded error excerpt:** `guides/agent.md:1005` says an oversized chunk is admitted whole into the decoder. With an ASCII chunk of `8192` bytes, the source consumed that chunk but produced an excerpt of exactly `2048` bytes. `src/core/helpers.ts:862` slices before decoding; `tests/src/core/AgentProvider.test.ts:285` explicitly pins this distinction. **Fix:** describe the overshoot as source bytes consumed, not decoded excerpt bytes.
+   - **Identity lifetime:** the same clause describes a minted ID “per call.” Repeated calls preserved the ID; constructing another provider produced a different ID. Construction owns the mint at `src/core/AgentProvider.ts:87`. **Fix:** separate instance identity from per-call resources.
+   - **Upstream entry on refusal:** `guides/agent.md:1114` says every refusal leaves the upstream provider unentered, including `502`. A synchronous stream-construction failure produced `ProviderError`, code `HTTP`, status `502`, and an upstream entry measurement of `1`. The adjacent `401` control measured `0`. See `src/core/RelayStream.ts:35` and `tests/src/core/factories.test.ts:64`. **Fix:** restrict the no-entry statement to authorization and body-validation refusals.
+
+4. **BROKEN.** The patterns and published imports exist, and the parser substitution is disclosed at `guides/agent.md:1087`. However, the relay transcription omits the dispatcher: compare `guides/agent.md:1101` and `:1108` with `tests/guides.test.ts:377`. Executing the actual fence succeeded; changing its dispatcher route produced `HTTP 404`, while the direct-handler transcription remained successful. The HTTP-engine configuration fence at `guides/agent.md:383` also lacks a transcription. **Fix:** execute the documented compositions and their claimed configuration behavior.
+
+5. **CONFIRMED.** `guides/agent.md:1009` names the scoped typecheck, bound transport, and Chromium receipt, and explicitly disclaims a browser test project. Supporting evidence: `configs/src/tsconfig.core.json:4`, `src/core/AgentProvider.ts:91`, `tests/src/core/AgentProvider.test.ts:38`, and `../scaffold/.orkestrel/campaign/b1-receipt.md:1`. The receipt identifies its built baseline; A3 changes no runtime source.
+
+6. **CONFIRMED.** The pitch at `README.md:3` equals the tagline at `guides/agent.md:3`; direct parity inspection and a deliberately different-pitch control verified the comparison. `guides/README.md:9` names the added classes beside `Agent`.
+
+7. **BROKEN.** Added prose violates the code-token noun rule: examples include `README.md:12` and `guides/README.md:11`. The latter index also counts a growable set with “One guide” at `:13`. **Fix:** name the functions/classes after their tokens and remove the count. A case-insensitive substitution sweep over added lines in `a3-diff.txt`, including inflection stems, found only permitted uses of “new” and “once,” plus code syntax; those matches are not findings.
+
+8. **CONFIRMED on supplied host evidence.** `../scaffold/.orkestrel/campaign/a3-gates.log.txt:30` records the core run passing with **23 files and 751 tests**. The actual source diff contains only the example-title edits at `src/core/AgentProvider.ts:32` and `src/core/factories.ts:80`; core tests are unchanged. The report names these edits and correctly states that no description paragraph changed at `a3-report.md:100`. Local suite execution was sandbox-blocked.
+
+9. **CONFIRMED.** `git diff 5d288d7 c052711` touches only the authorized README files, guide, guide tests, and the source example titles identified above. No setup addition or runtime edit appears. The worktree remained clean at `c0527117e45f785d2cc8c24d3ba10ebc89dcfe00`.
+
+10. **BROKEN.** The relay pattern does not complete the browser-to-server setup it promises. `connectRelay` captures the upstream provider and dispatcher together, then replaces browser networking with a direct dispatcher call (`guides/agent.md:1096`, `:1108`). The missing step is separating server-owned setup from browser setup and connecting the server’s HTTP requests and disconnect signal to the handler. The working Chromium receipt uses a separate server adapter (`b1-receipt.md:3`), which the guide does not teach. **Fix:** provide separate server and browser examples, use real browser fetching, and document the server adapter and disconnect wiring.
+
+**Findings outside the claims:** None.
+
+**Attacked and held:** Remote aborts preserved the upstream partial while the local signal remained unaborted; caller mutation did not change the owned request snapshot; an extra `code` member failed the error-frame guard. See `src/core/providers/RelayProvider.ts:128`, `:160`, and `src/core/shapers.ts:103`. The error-body probe also confirmed cancellation and reader-lock release despite consuming an oversized source chunk.
+
+VERDICT: FAIL 1, 3, 4, 7, 10; outside the claims: none

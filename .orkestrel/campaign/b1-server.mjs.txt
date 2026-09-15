@@ -1,0 +1,125 @@
+// B1 receipt server: serves the built @orkestrel/agent core entry and its @orkestrel closure to a
+// Chromium page through an import map, and mounts createRelay at POST /relay over a scripted
+// provider behind a custom bearer token. The page drives the browser half of the relay.
+import { createServer } from 'node:http'
+import { readFile } from 'node:fs/promises'
+import { Readable } from 'node:stream'
+import { pathToFileURL } from 'node:url'
+
+const AGENT = 'C:/Users/mikes/WebstormProjects/agent'
+const PAGE = new URL('./b1.html', import.meta.url)
+const PORT = 8765
+const TOKEN = 'fixture-token'
+const agent = await import(pathToFileURL(`${AGENT}/dist/src/core/index.js`).href)
+
+const entryPath = (name) => name === 'agent' ? `${AGENT}/dist/src/core/index.js` : `${AGENT}/node_modules/@orkestrel/${name}/dist/src/core/index.js`
+
+async function closure() {
+	const seen = new Map()
+	const queue = ['agent']
+	while (queue.length > 0) {
+		const name = queue.shift()
+		if (seen.has(name)) continue
+		const text = await readFile(entryPath(name), 'utf8')
+		const imports = [...text.matchAll(/from "@orkestrel\/([a-z]+)"/g)].map((match) => match[1])
+		seen.set(name, imports)
+		queue.push(...imports)
+	}
+	return seen
+}
+
+const graph = await closure()
+console.log('closure: ' + [...graph.keys()].join(' '))
+const importmap = JSON.stringify({ imports: Object.fromEntries([...graph.keys()].map((name) => [`@orkestrel/${name}`, `/modules/${name}/index.js`])) })
+
+class ScriptedProvider {
+	id = 'scripted'
+	name = 'scripted'
+
+	async generate(messages, signal, tools) {
+		const stream = this.stream(messages, signal, tools)
+		let step = await stream.next()
+		while (!step.done) step = await stream.next()
+		return step.value
+	}
+
+	async *stream(messages, signal) {
+		const last = messages[messages.length - 1]
+		const text = last === undefined ? '' : last.content
+		yield { channel: 'thinking', text: 'considering ' }
+		yield { channel: 'content', text: 'echo: ' }
+		if (text === 'hang') {
+			await new Promise((_resolve, reject) => {
+				signal.addEventListener('abort', () => reject(signal.reason), { once: true })
+			})
+		}
+		yield { channel: 'content', text }
+		return { content: 'echo: ' + text, thinking: 'considering ', tools: [] }
+	}
+}
+
+const handler = agent.createRelay({
+	provider: new ScriptedProvider(),
+	authorize: (request) => {
+		const ok = request.headers.get('authorization') === 'Bearer ' + TOKEN
+		console.log('relay authorize: ' + (ok ? 'accepted' : 'refused'))
+		return ok
+	},
+})
+
+function headersOf(req) {
+	const entries = []
+	for (const [key, value] of Object.entries(req.headers)) if (typeof value === 'string') entries.push([key, value])
+	return entries
+}
+
+async function serveFile(res, path, type) {
+	try {
+		const text = await readFile(path, 'utf8')
+		res.writeHead(200, { 'content-type': type, 'cache-control': 'no-store' })
+		res.end(text)
+	} catch (error) {
+		res.writeHead(404, { 'content-type': 'text/plain' })
+		res.end(String(error))
+	}
+}
+
+const server = createServer(async (req, res) => {
+	const url = new URL(req.url ?? '/', `http://localhost:${PORT}`)
+	if (req.method === 'GET' && url.pathname === '/') {
+		const page = (await readFile(PAGE, 'utf8')).replace('IMPORT_MAP', importmap)
+		res.writeHead(200, { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store' })
+		res.end(page)
+		return
+	}
+	const module = /^\/modules\/([a-z]+)\/index\.js$/.exec(url.pathname)
+	if (req.method === 'GET' && module !== null) {
+		await serveFile(res, entryPath(module[1]), 'text/javascript; charset=utf-8')
+		return
+	}
+	if (req.method === 'POST' && url.pathname === '/relay') {
+		const controller = new AbortController()
+		res.on('close', () => {
+			if (!res.writableFinished) {
+				console.log('relay: client connection closed before the response finished; aborting inbound')
+				controller.abort(new Error('client disconnected'))
+			}
+		})
+		const request = new Request(url, { method: 'POST', headers: headersOf(req), body: Readable.toWeb(req), duplex: 'half', signal: controller.signal })
+		const response = await handler(request)
+		console.log('relay response: ' + response.status)
+		res.writeHead(response.status, Object.fromEntries(response.headers))
+		if (response.body === null) {
+			res.end()
+			return
+		}
+		Readable.fromWeb(response.body).pipe(res)
+		return
+	}
+	res.writeHead(404, { 'content-type': 'text/plain' })
+	res.end('not found')
+})
+
+server.listen(PORT, '127.0.0.1', () => {
+	console.log(`b1 server listening on http://127.0.0.1:${PORT}/`)
+})

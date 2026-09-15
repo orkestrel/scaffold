@@ -1,0 +1,8 @@
+F10-complete-always-true-helpers	src/core/helpers.ts	s/return { text: text + decoder.decode(), complete }/return { text: text + decoder.decode(), complete: true }/	tests/src/core/helpers.test.ts
+F10-complete-always-true-relay	src/core/helpers.ts	s/return { text: text + decoder.decode(), complete }/return { text: text + decoder.decode(), complete: true }/	tests/src/core/factories.test.ts
+F11-no-serializer-refusal	src/core/providers/RelayProvider.ts	s/projected.tools?.some((tool) => typeof tool.parameters?.toJSON === 'function') ||/false ||/;s/typeof projected.options?.schema?.toJSON === 'function'/false/	tests/src/core/providers/RelayProvider.test.ts
+F11-no-snapshot	src/core/providers/RelayProvider.ts	s/const snapshot = cloneJSONValue(projected)/const snapshot = projected/	tests/src/core/providers/RelayProvider.test.ts
+F12-body-error-as-413	src/core/factories.ts	s/status: request.signal.aborted ? OVERSIZED_RELAY_STATUS : INVALID_RELAY_STATUS,/status: OVERSIZED_RELAY_STATUS,/	tests/src/core/factories.test.ts
+F12-upstream-rethrow	src/core/factories.ts	s/return new Response(undefined, { status: UPSTREAM_RELAY_STATUS })/throw new Error('mutated upstream')/	tests/src/core/factories.test.ts
+F13-no-return-on-inbound-abort	src/core/RelayStream.ts	/async #cancel/,/async #return/s/await this\.#return()/void 0/	tests/src/core/RelayStream.test.ts
+F16-separator-always	src/core/AgentProvider.ts	s/${detail === '' ? '' : ` - ${detail}`}/ - ${detail}/	tests/src/core/AgentProvider.test.ts

@@ -1,0 +1,1213 @@
+diff --git a/src/core/Agent.ts b/src/core/Agent.ts
+index e829c44..b45fdb3 100644
+--- a/src/core/Agent.ts
++++ b/src/core/Agent.ts
+@@ -477,7 +477,7 @@ export class Agent implements AgentInterface {
+ 				// non-abort error (the signal is not aborted) propagates so the run rejects.
+ 				if (abort.signal.aborted) {
+ 					if (isProviderAbortError(error)) {
+-						if (error.partial.thinking !== undefined) {
++						if (error.partial.thinking !== undefined && error.partial.thinking.length > 0) {
+ 							thinking = joinThinking(thinking, error.partial.thinking)
+ 						}
+ 						// The abort's partial usage — when the provider observed it mid-stream — is
+diff --git a/src/core/AgentProvider.ts b/src/core/AgentProvider.ts
+index 77a94d3..20346d6 100644
+--- a/src/core/AgentProvider.ts
++++ b/src/core/AgentProvider.ts
+@@ -25,11 +25,40 @@ import { buildProviderResult, joinThinking, readChunks, readText } from './helpe
+  * @remarks
+  * Every call owns its parser, splitter, deadline, and accumulation. Success bodies
+  * have no size limit. A qwen3 implicit-open reclassification corrects the final
+- * content while content deltas already yielded cannot be recalled.
++ * content while content deltas already yielded cannot be recalled. A subclass fills
++ * `name`, `frame`, `body`, `read`, and `finish`; the constructor takes the `split`
++ * and `strict` switches to control reasoning separation and settled-result requirements.
+  *
+  * @example
+  * ```ts
+- * const result = await provider.generate(messages, signal)
++ * import type { ProviderIncrement, ProviderParserInterface, ProviderRequest } from '@orkestrel/agent'
++ * import { AgentProvider } from '@orkestrel/agent'
++ *
++ * class TextFrame implements ProviderParserInterface<string> {
++ * 	parse(chunk: string): readonly string[] {
++ * 		return [chunk]
++ * 	}
++ * 	clear(): void {} // Raw text retains no framing state.
++ * }
++ *
++ * class TextProvider extends AgentProvider<string> {
++ * 	readonly name = 'text'
++ * 	constructor(url: string) {
++ * 		super({ url, path: '/generate' })
++ * 	}
++ * 	frame(): ProviderParserInterface<string> {
++ * 		return new TextFrame()
++ * 	}
++ * 	body(request: ProviderRequest): object {
++ * 		return { messages: request.messages }
++ * 	}
++ * 	read(record: string): ProviderIncrement {
++ * 		return { content: record, thinking: '', tools: [] }
++ * 	}
++ * 	finish(_parser: ProviderParserInterface<string>): readonly string[] {
++ * 		return [] // Raw text retains no records at end of input.
++ * 	}
++ * }
+  * ```
+  */
+ export abstract class AgentProvider<
+@@ -138,11 +167,7 @@ export abstract class AgentProvider<
+ 			if (response.body === null) {
+ 				throw new ProviderError('PROTOCOL', 'provider error: no response body')
+ 			}
+-			// The native pipe propagates cancellation even while a reader is awaiting bytes.
+-			const body = response.body.pipeThrough(new TransformStream<Uint8Array, Uint8Array>(), {
+-				signal: combined,
+-			})
+-			for await (const chunk of readChunks(body)) {
++			for await (const chunk of readChunks(response.body, combined)) {
+ 				combined.throwIfAborted()
+ 				for (const record of parser.parse(chunk)) {
+ 					yield* this.#fold(record, state, splitter, combined, (increment) => {
+@@ -152,6 +177,7 @@ export abstract class AgentProvider<
+ 					if (state.result !== undefined) return state.result
+ 				}
+ 			}
++			combined.throwIfAborted()
+ 			for (const record of this.finish(parser)) {
+ 				yield* this.#fold(record, state, splitter, combined, (increment) => {
+ 					state = increment
+@@ -171,7 +197,7 @@ export abstract class AgentProvider<
+ 				state.usage,
+ 			)
+ 		} catch (error) {
+-			if (combined.aborted && error === combined.reason && !(error instanceof ProviderAbortError)) {
++			if (combined.aborted) {
+ 				splitter?.flush()
+ 				throw new ProviderAbortError(
+ 					buildProviderResult(
+@@ -232,7 +258,8 @@ export abstract class AgentProvider<
+ 		if (!response.ok) {
+ 			let detail: string
+ 			try {
+-				detail = response.body === null ? '' : await readText(response.body, MAX_ERROR_BODY_LENGTH)
++				detail =
++					response.body === null ? '' : await readText(response.body, MAX_ERROR_BODY_LENGTH, signal)
+ 			} catch (cause) {
+ 				throw new ProviderError(
+ 					'HTTP',
+@@ -240,6 +267,7 @@ export abstract class AgentProvider<
+ 					{ status: response.status, cause },
+ 				)
+ 			}
++			signal.throwIfAborted()
+ 			throw new ProviderError('HTTP', `provider error: ${response.status} - ${detail}`, {
+ 				status: response.status,
+ 			})
+@@ -259,7 +287,11 @@ export abstract class AgentProvider<
+ 		})
+ 		try {
+ 			signal.throwIfAborted()
+-			const entries = await Promise.race([Promise.resolve().then(this.#headers), aborted.promise])
++			const hook = this.#headers
++			const entries = await Promise.race([
++				Promise.resolve().then(() => hook(signal)),
++				aborted.promise,
++			])
+ 			for (const [key, value] of Object.entries(entries)) headers.set(key, value)
+ 			return headers
+ 		} finally {
+diff --git a/src/core/errors.ts b/src/core/errors.ts
+index 5dad39c..23f3573 100644
+--- a/src/core/errors.ts
++++ b/src/core/errors.ts
+@@ -220,9 +220,19 @@ export function isAgentError(value: unknown): value is AgentError {
+ 	return value instanceof AgentError
+ }
+ 
+-/** Reports a coded provider failure with its HTTP status and underlying cause when available. */
++/**
++ * Reports a coded provider failure with its HTTP status and underlying cause when available.
++ *
++ * @remarks
++ * The provider base throws this error for a non-OK HTTP response, a missing response
++ * body, or a missing settled result when strict assembly is enabled. Concrete wire
++ * decoders also use it for malformed records and relayed provider failures.
++ * `status` is present only for an `HTTP` failure; other codes leave it undefined.
++ */
+ export class ProviderError extends Error {
++	/** Identifies the HTTP, protocol, or upstream provider failure condition. */
+ 	readonly code: ProviderErrorCode
++	/** Holds the response status for an HTTP failure, or undefined for other codes. */
+ 	readonly status: number | undefined
+ 
+ 	constructor(code: ProviderErrorCode, message: string, options?: ProviderErrorOptions) {
+diff --git a/src/core/helpers.ts b/src/core/helpers.ts
+index f851639..b1437e7 100644
+--- a/src/core/helpers.ts
++++ b/src/core/helpers.ts
+@@ -813,6 +813,7 @@ export function buildProviderResult(
+  *
+  * @param body - The readable byte stream
+  * @param limit - The maximum byte prefix, or undefined for the complete stream
++ * @param signal - The optional cancellation bound; abort returns the decoded prefix
+  * @returns The decoded prefix
+  * @example
+  * ```ts
+@@ -820,21 +821,41 @@ export function buildProviderResult(
+  * if (body !== null) await readText(body, 3) // 'ans'
+  * ```
+  */
+-export async function readText(body: ReadableStream<Uint8Array>, limit?: number): Promise<string> {
++export async function readText(
++	body: ReadableStream<Uint8Array>,
++	limit?: number,
++	signal?: AbortSignal,
++): Promise<string> {
+ 	const reader = body.getReader()
+ 	const decoder = new TextDecoder()
++	const cleanup = new AbortController()
+ 	let remaining = limit ?? Infinity
+ 	let text = ''
+ 	try {
++		signal?.addEventListener(
++			'abort',
++			() => {
++				void reader.cancel(signal.reason).catch(() => {
++					// Preserve the decoded prefix when source cancellation rejects.
++				})
++			},
++			{ once: true, signal: cleanup.signal },
++		)
++		if (signal?.aborted) {
++			await reader.cancel(signal.reason).catch(() => {
++				// An already-aborted read still returns its empty prefix.
++			})
++		}
+ 		while (remaining > 0) {
+ 			const step = await reader.read()
+-			if (step.done) break
++			if (step.done || signal?.aborted) break
+ 			const bytes = step.value.subarray(0, remaining)
+ 			text += decoder.decode(bytes, { stream: true })
+ 			remaining -= bytes.byteLength
+ 		}
+ 		return text + decoder.decode()
+ 	} finally {
++		cleanup.abort()
+ 		try {
+ 			await reader.cancel()
+ 		} catch {
+@@ -849,6 +870,7 @@ export async function readText(body: ReadableStream<Uint8Array>, limit?: number)
+  * Decodes UTF-8 chunks with a final flush and releases the stream on every exit.
+  *
+  * @param body - The readable byte stream
++ * @param signal - The optional cancellation bound; abort ends iteration without further chunks
+  * @returns Decoded text chunks, including a held decoder tail
+  * @example
+  * ```ts
+@@ -856,12 +878,32 @@ export async function readText(body: ReadableStream<Uint8Array>, limit?: number)
+  * if (body !== null) for await (const chunk of readChunks(body)) render(chunk)
+  * ```
+  */
+-export async function* readChunks(body: ReadableStream<Uint8Array>): AsyncGenerator<string> {
++export async function* readChunks(
++	body: ReadableStream<Uint8Array>,
++	signal?: AbortSignal,
++): AsyncGenerator<string> {
+ 	const reader = body.getReader()
+ 	const decoder = new TextDecoder()
++	const cleanup = new AbortController()
+ 	try {
++		signal?.addEventListener(
++			'abort',
++			() => {
++				void reader.cancel(signal.reason).catch(() => {
++					// Preserve the iteration outcome when source cancellation rejects.
++				})
++			},
++			{ once: true, signal: cleanup.signal },
++		)
++		if (signal?.aborted) {
++			await reader.cancel(signal.reason).catch(() => {
++				// An already-aborted iterator still ends without yielding.
++			})
++			return
++		}
+ 		for (;;) {
+ 			const step = await reader.read()
++			if (signal?.aborted) return
+ 			if (step.done) break
+ 			const chunk = decoder.decode(step.value, { stream: true })
+ 			if (chunk.length > 0) yield chunk
+@@ -869,6 +911,7 @@ export async function* readChunks(body: ReadableStream<Uint8Array>): AsyncGenera
+ 		const tail = decoder.decode()
+ 		if (tail.length > 0) yield tail
+ 	} finally {
++		cleanup.abort()
+ 		try {
+ 			await reader.cancel()
+ 		} catch {
+diff --git a/src/core/types.ts b/src/core/types.ts
+index 753712a..e77641a 100644
+--- a/src/core/types.ts
++++ b/src/core/types.ts
+@@ -2171,15 +2171,17 @@ export interface ProviderIncrement {
+  * @remarks
+  * `timeout` is an integer duration in milliseconds. Default: 120_000.
+  * `fetch` defaults to the global transport bound to its global receiver.
+- * `headers` runs for each request inside its deadline and overrides the JSON content type
+- * only when it returns that header. `format` is exposed to context assembly.
++ * `headers` runs for each request inside its deadline and receives the combined caller
++ * and deadline signal so token requests can share that bound. It overrides the JSON
++ * content type only when it returns that header. `format` is exposed to context assembly.
+  */
+ export interface ProviderOptions {
+ 	readonly timeout?: number
+ 	readonly fetch?: typeof globalThis.fetch
+-	readonly headers?: () =>
+-		| Readonly<Record<string, string>>
+-		| Promise<Readonly<Record<string, string>>>
++	/** Resolves request headers using the call's combined cancellation signal. */
++	readonly headers?: (
++		signal: AbortSignal,
++	) => Readonly<Record<string, string>> | Promise<Readonly<Record<string, string>>>
+ 	readonly format?: ContextFormat
+ }
+ 
+@@ -2214,7 +2216,13 @@ export interface AgentProviderInterface<
+ }
+ 
+ /** Names the machine-readable provider failure conditions. */
+-export type ProviderErrorCode = 'HTTP' | 'PROTOCOL' | 'LIMIT' | 'PROVIDER'
++export type ProviderErrorCode =
++	/** Reports a non-OK HTTP response, including a relay request rejected with status 413. */
++	| 'HTTP'
++	/** Reports a missing body, malformed wire record, or missing required settled result. */
++	| 'PROTOCOL'
++	/** Reports an upstream provider failure carried by a relay error record. */
++	| 'PROVIDER'
+ 
+ /** Carries a provider failure's HTTP status and underlying cause. */
+ export interface ProviderErrorOptions {
+@@ -2236,6 +2244,7 @@ export type RelayHandler = (request: Request) => Promise<Response>
+ export interface RelayOptions {
+ 	readonly provider: ProviderInterface
+ 	readonly authorize: (request: Request) => boolean | Promise<boolean>
++	/** Bounds the request body in bytes; the handler answers 413 when the limit is exceeded. */
+ 	readonly limit?: number
+ }
+ 
+@@ -2249,5 +2258,6 @@ export interface RelayStreamOptions {
+ /** Configures a relay destination and its fresh structural parser factory. */
+ export interface RelayProviderOptions extends ProviderOptions {
+ 	readonly url: string
+-	readonly frame: () => ProviderParserInterface
++	/** Creates a fresh parser for each relay response stream. */
++	readonly parser: () => ProviderParserInterface
+ }
+diff --git a/src/core/validators.ts b/src/core/validators.ts
+index cb0687f..e9f6c5a 100644
+--- a/src/core/validators.ts
++++ b/src/core/validators.ts
+@@ -1,5 +1,5 @@
+ import type { ConversationSnapshot, Message, Section } from './types.js'
+-import { attempt, isArray, isRecord, isString } from '@orkestrel/contract'
++import { arrayOf, attempt, isArray, isRecord, isString } from '@orkestrel/contract'
+ import { isToolCall } from '@orkestrel/tool'
+ 
+ /**
+@@ -26,8 +26,8 @@ export function isMessage(value: unknown): value is Message {
+ 		if (!isString(id) || !isString(content)) return false
+ 		if (role !== 'system' && role !== 'user' && role !== 'assistant' && role !== 'tool')
+ 			return false
+-		if (calls !== undefined && !(isArray(calls) && calls.every(isToolCall))) return false
+-		return images === undefined || (isArray(images) && images.every(isString))
++		if (calls !== undefined && !arrayOf(isToolCall)(calls)) return false
++		return images === undefined || arrayOf(isString)(images)
+ 	})
+ 	return checked.success && checked.value
+ }
+diff --git a/tests/setup.ts b/tests/setup.ts
+index 358d906..8d1c42d 100644
+--- a/tests/setup.ts
++++ b/tests/setup.ts
+@@ -432,7 +432,7 @@ export function createRecordingScheduler(): RecordingSchedulerInterface {
+ // battery is IDENTICAL across each pair. Each pair's snapshot builder + shared battery are
+ // promoted here so the contract lives in ONE place; every twin invokes the battery ONCE with its
+ // own store factory and KEEPS its twin-specific blocks local. Real data only — NO mocks. All
+-// plain `@src/core` (no `node:*` / DOM), so they load in every project. The assertions are
++// plain `@src/core` without Node or DOM imports, so they load in every project. The assertions are
+ // plain-JSON `toEqual` (no class-identity `toBe`).
+ 
+ /**
+@@ -862,6 +862,7 @@ export class ScriptedWire extends AgentProvider<string> {
+ 	readonly #records: ReadonlyMap<string, ProviderIncrement | Error>
+ 	readonly #buffered: boolean
+ 	readonly #parsers: ScriptedFrame[] = []
++	readonly #decoded: string[] = []
+ 	readonly name = 'scripted'
+ 	constructor(options: ScriptedWireOptions) {
+ 		super(options)
+@@ -871,6 +872,9 @@ export class ScriptedWire extends AgentProvider<string> {
+ 	get parsers(): readonly ScriptedFrame[] {
+ 		return this.#parsers
+ 	}
++	get decoded(): readonly string[] {
++		return this.#decoded
++	}
+ 	frame(): ScriptedFrame {
+ 		const parser = new ScriptedFrame(this.#buffered)
+ 		this.#parsers.push(parser)
+@@ -880,6 +884,7 @@ export class ScriptedWire extends AgentProvider<string> {
+ 		return request
+ 	}
+ 	read(record: string): ProviderIncrement {
++		this.#decoded.push(record)
+ 		const increment = this.#records.get(record)
+ 		if (increment instanceof Error) throw increment
+ 		return (
+@@ -900,22 +905,35 @@ export class RecordedBody {
+ 	readonly #chunks: readonly Uint8Array[]
+ 	readonly #close: boolean
+ 	readonly #failure: Error | undefined
++	readonly #cancellation: Error | undefined
+ 	readonly stream: ReadableStream<Uint8Array>
++	readonly #pending = Promise.withResolvers<void>()
+ 	#index = 0
+ 	#bytes = 0
+ 	#cancelled = false
+-	constructor(chunks: readonly Uint8Array[], close = true, failure?: Error) {
++	#reason: unknown
++	constructor(chunks: readonly Uint8Array[], close = true, failure?: Error, cancellation?: Error) {
+ 		this.#chunks = chunks
+ 		this.#close = close
+ 		this.#failure = failure
++		this.#cancellation = cancellation
+ 		this.stream = new ReadableStream(this, { highWaterMark: 0 })
+ 	}
+ 	get bytes(): number {
+ 		return this.#bytes
+ 	}
++	get count(): number {
++		return this.#index
++	}
+ 	get cancelled(): boolean {
+ 		return this.#cancelled
+ 	}
++	get pending(): Promise<void> {
++		return this.#pending.promise
++	}
++	get reason(): unknown {
++		return this.#reason
++	}
+ 	pull(controller: ReadableStreamDefaultController<Uint8Array>): void {
+ 		const chunk = this.#chunks[this.#index]
+ 		if (chunk !== undefined) {
+@@ -924,16 +942,75 @@ export class RecordedBody {
+ 			controller.enqueue(chunk)
+ 		} else if (this.#failure !== undefined) controller.error(this.#failure)
+ 		else if (this.#close) controller.close()
++		else this.#pending.resolve()
+ 	}
+-	cancel(): void {
++	cancel(reason?: unknown): void | Promise<void> {
+ 		this.#cancelled = true
++		this.#reason = reason
++		if (this.#cancellation !== undefined) return Promise.reject(this.#cancellation)
++	}
++}
++
++/** Records the call signal received by a request-header hook. */
++export class RecordedHeaders {
++	readonly #signals: AbortSignal[] = []
++	readonly #entered = Promise.withResolvers<AbortSignal>()
++	readonly #result:
++		| Readonly<Record<string, string>>
++		| Promise<Readonly<Record<string, string>>>
++		| Error
++	constructor(
++		result:
++			| Readonly<Record<string, string>>
++			| Promise<Readonly<Record<string, string>>>
++			| Error = {},
++	) {
++		this.#result = result
++	}
++	get signals(): readonly AbortSignal[] {
++		return this.#signals
++	}
++	get entered(): Promise<AbortSignal> {
++		return this.#entered.promise
++	}
++	headers(
++		signal: AbortSignal,
++	): Readonly<Record<string, string>> | Promise<Readonly<Record<string, string>>> {
++		this.#signals.push(signal)
++		this.#entered.resolve(signal)
++		if (this.#result instanceof Error) throw this.#result
++		return this.#result
+ 	}
+ }
+ 
++/** Rejects a transport with its own abort exception when the supplied signal expires. */
++export function rejectTransportOnAbort(
++	_input: RequestInfo | URL,
++	init?: RequestInit,
++): Promise<Response> {
++	const signal = requireValue(init?.signal)
++	return new Promise((_resolve, reject) => {
++		signal.addEventListener('abort', () => reject(new DOMException('x', 'AbortError')), {
++			once: true,
++		})
++	})
++}
++
++/** Returns true to expose validators that trust an input array's own methods. */
++export function acceptHostileArray(): boolean {
++	return true
++}
++
++/** Throws when a hostile proxy field is read. */
++export function throwProxyRead(): never {
++	throw new Error('unreadable field')
++}
++
+ /** Records requests and returns responses supplied by a fixture. */
+ export class RecordedTransport {
+ 	readonly #respond: () => Response | Promise<Response>
+ 	readonly #requests: Request[] = []
++	readonly #signals: AbortSignal[] = []
+ 
+ 	readonly fetch: typeof globalThis.fetch
+ 	constructor(respond: () => Response | Promise<Response>) {
+@@ -943,9 +1020,15 @@ export class RecordedTransport {
+ 	get requests(): readonly Request[] {
+ 		return this.#requests
+ 	}
++	get signals(): readonly AbortSignal[] {
++		return this.#signals
++	}
+ 
+ 	async #request(input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
+-		this.#requests.push(new Request(input, init))
++		const { signal, ...options } = init ?? {}
++		if (signal !== undefined && signal !== null) this.#signals.push(signal)
++		// Record headers and body without adding a Request-owned listener to the observed signal.
++		this.#requests.push(new Request(input, options))
+ 		return this.#respond()
+ 	}
+ }
+diff --git a/tests/src/core/Agent.test.ts b/tests/src/core/Agent.test.ts
+index 5960705..4e68d7d 100644
+--- a/tests/src/core/Agent.test.ts
++++ b/tests/src/core/Agent.test.ts
+@@ -877,6 +877,28 @@ describe('Agent — iteration cap', () => {
+ })
+ 
+ describe('Agent — abort', () => {
++	it('omits empty thinking from an abort partial', async () => {
++		const abort = new AbortController()
++		const failure = new ProviderAbortError({ content: 'x', thinking: '' })
++		const provider: ProviderInterface = {
++			id: 'empty-thinking',
++			name: 'empty-thinking',
++			async *stream() {
++				yield { channel: 'content', text: 'x' }
++				abort.abort()
++				throw failure
++			},
++			async generate() {
++				throw failure
++			},
++		}
++		const agent = createAgent(provider, { signal: abort.signal })
++		agent.context.messages.add({ role: 'user', content: 'hi' })
++		const result = await agent.generate()
++		expect(result).toEqual({ content: 'x', partial: true })
++		expect('thinking' in result).toBe(false)
++	})
++
+ 	it('a pre-aborted external signal commits a partial without calling the provider', async () => {
+ 		const provider = createScriptedProvider([{ result: { content: 'never' } }], SCRIPT_OPTIONS)
+ 		const controller = new AbortController()
+diff --git a/tests/src/core/AgentProvider.test.ts b/tests/src/core/AgentProvider.test.ts
+index e480ba8..7ef6f7e 100644
+--- a/tests/src/core/AgentProvider.test.ts
++++ b/tests/src/core/AgentProvider.test.ts
+@@ -1,4 +1,5 @@
+ import type { ContextFormat, Message, ProviderIncrement } from '@src/core'
++import { getEventListeners } from 'node:events'
+ import {
+ 	DEFAULT_PROVIDER_TIMEOUT,
+ 	MAX_ERROR_BODY_LENGTH,
+@@ -14,6 +15,8 @@ import {
+ 	drainProvider,
+ 	RecordedBody,
+ 	RecordedTransport,
++	RecordedHeaders,
++	rejectTransportOnAbort,
+ 	recordGlobalTransport,
+ 	ScriptedWire,
+ } from '../../setup.js'
+@@ -28,6 +31,7 @@ describe('AgentProvider', () => {
+ 		expect(provider.format).toBe(format)
+ 		expect(other.format).toBeUndefined()
+ 		expect(DEFAULT_PROVIDER_TIMEOUT).toBe(120_000)
++		expect(MAX_ERROR_BODY_LENGTH).toBe(2048)
+ 	})
+ 
+ 	it('binds the default global transport to its global receiver', async () => {
+@@ -88,7 +92,7 @@ describe('AgentProvider', () => {
+ 		})
+ 		await provider.generate([], new AbortController().signal)
+ 		await waitForDelay(40)
+-		expect(requireValue(transport.requests[0]).signal.aborted).toBe(false)
++		expect(requireValue(transport.signals[0]).aborted).toBe(false)
+ 		expect(requireValue(provider.parsers[0]).cleared).toBe(true)
+ 	})
+ 
+@@ -373,7 +377,7 @@ describe('AgentProvider', () => {
+ 		await waitForDelay(40)
+ 		expect(body.cancelled).toBe(true)
+ 		expect(body.stream.locked).toBe(false)
+-		expect(requireValue(transport.requests[0]).signal.aborted).toBe(false)
++		expect(requireValue(transport.signals[0]).aborted).toBe(false)
+ 		expect(requireValue(provider.parsers[0]).cleared).toBe(true)
+ 	})
+ 
+@@ -428,7 +432,98 @@ describe('AgentProvider', () => {
+ 	})
+ })
+ 
+-describe('record cancellation', () => {
++describe('AgentProvider — cancellation and partial results', () => {
++	it('refuses buffered finish records after cancellation ends a pending read', async () => {
++		const body = new RecordedBody([new TextEncoder().encode('c:unfolded')], false)
++		const transport = new RecordedTransport(() => new Response(body.stream))
++		const provider = new ScriptedWire({
++			url: 'https://provider.test',
++			fetch: transport.fetch,
++			buffered: true,
++		})
++		const abort = new AbortController()
++		const result = provider.generate([], abort.signal)
++		await body.pending
++		abort.abort()
++		await expect(result).rejects.toMatchObject({ partial: { content: '' } })
++		expect(provider.decoded).toEqual([])
++		expect(body.cancelled).toBe(true)
++		expect(body.stream.locked).toBe(false)
++		expect(requireValue(provider.parsers[0]).cleared).toBe(true)
++	})
++	it('normalizes a transport AbortError after the local deadline', async () => {
++		const provider = new ScriptedWire({
++			url: 'https://provider.test',
++			fetch: rejectTransportOnAbort,
++			timeout: 40,
++		})
++		await expect(provider.generate([], new AbortController().signal)).rejects.toBeInstanceOf(
++			ProviderAbortError,
++		)
++		expect(requireValue(provider.parsers[0]).cleared).toBe(true)
++	})
++
++	it('replaces a caller ProviderAbortError reason with the locally accumulated partial', async () => {
++		const body = new RecordedBody([new TextEncoder().encode('c:answer')], false)
++		const transport = new RecordedTransport(() => new Response(body.stream))
++		const provider = new ScriptedWire({ url: 'https://provider.test', fetch: transport.fetch })
++		const abort = new AbortController()
++		const stream = provider.stream([], abort.signal)
++		expect(await stream.next()).toEqual({
++			done: false,
++			value: { channel: 'content', text: 'answer' },
++		})
++		abort.abort(new ProviderAbortError({ content: 'foreign' }))
++		await expect(stream.next()).rejects.toMatchObject({
++			name: 'ProviderAbortError',
++			partial: { content: 'answer' },
++		})
++		expect(body.cancelled).toBe(true)
++		expect(body.stream.locked).toBe(false)
++	})
++
++	it('preserves a remote abort identity and cancels its open body with the local signal unaborted', async () => {
++		const failure = new ProviderAbortError({ content: 'remote partial' })
++		const body = new RecordedBody([new TextEncoder().encode('abort')], false)
++		const transport = new RecordedTransport(() => new Response(body.stream))
++		const provider = new ScriptedWire({
++			url: 'https://provider.test',
++			fetch: transport.fetch,
++			timeout: 40,
++			records: new Map([['abort', failure]]),
++		})
++		await expect(provider.generate([], new AbortController().signal)).rejects.toBe(failure)
++		expect(body.cancelled).toBe(true)
++		expect(body.stream.locked).toBe(false)
++		expect(requireValue(provider.parsers[0]).cleared).toBe(true)
++		await waitForDelay(60)
++		expect(requireValue(transport.signals[0]).aborted).toBe(false)
++	})
++
++	it('cancels a stalled 503 body within the deadline budget', async () => {
++		const body = new RecordedBody([], false)
++		const transport = new RecordedTransport(() => new Response(body.stream, { status: 503 }))
++		const abort = new AbortController()
++		try {
++			const provider = new ScriptedWire({
++				url: 'https://provider.test',
++				fetch: transport.fetch,
++				timeout: 40,
++			})
++			const result = provider.generate([], abort.signal)
++			await expect(result).rejects.toMatchObject({
++				name: 'ProviderAbortError',
++				partial: { content: '' },
++			})
++			expect(body.cancelled).toBe(true)
++			expect(body.stream.locked).toBe(false)
++			expect(requireValue(transport.signals[0]).aborted).toBe(true)
++			expect(requireValue(provider.parsers[0]).cleared).toBe(true)
++		} finally {
++			abort.abort()
++		}
++	}, 400)
++
+ 	it('stops between channels while retaining the complete decoded increment', async () => {
+ 		const abort = new AbortController()
+ 		const records = new Map<string, ProviderIncrement>([
+@@ -461,7 +556,251 @@ describe('record cancellation', () => {
+ 	})
+ })
+ 
+-describe('provider call boundaries', () => {
++describe('AgentProvider — call completion and isolation', () => {
++	it('clears the deadline after a non-OK response', async () => {
++		const transport = new RecordedTransport(() => new Response('unavailable', { status: 503 }))
++		const provider = new ScriptedWire({
++			url: 'https://provider.test',
++			fetch: transport.fetch,
++			timeout: 40,
++		})
++		await expect(provider.generate([], new AbortController().signal)).rejects.toMatchObject({
++			code: 'HTTP',
++		})
++		await waitForDelay(60)
++		expect(requireValue(transport.signals[0]).aborted).toBe(false)
++	})
++
++	it('clears the deadline after a decoder failure', async () => {
++		const failure = new Error('decoder failed')
++		const body = new RecordedBody([new TextEncoder().encode('poison')], false)
++		const transport = new RecordedTransport(() => new Response(body.stream))
++		const provider = new ScriptedWire({
++			url: 'https://provider.test',
++			fetch: transport.fetch,
++			timeout: 40,
++			records: new Map([['poison', failure]]),
++		})
++		await expect(provider.generate([], new AbortController().signal)).rejects.toBe(failure)
++		await waitForDelay(60)
++		expect(requireValue(transport.signals[0]).aborted).toBe(false)
++		expect(body.cancelled).toBe(true)
++		expect(body.stream.locked).toBe(false)
++	})
++
++	it('removes abort listeners after hook success and clears the deadline', async () => {
++		const pending = Promise.withResolvers<Readonly<Record<string, string>>>()
++		const hook = new RecordedHeaders(pending.promise)
++		const transport = new RecordedTransport(() => new Response('c:done'))
++		const provider = new ScriptedWire({
++			url: 'https://provider.test',
++			fetch: transport.fetch,
++			timeout: 40,
++			headers: hook.headers.bind(hook),
++		})
++		const result = provider.generate([], new AbortController().signal)
++		try {
++			await hook.entered
++			const signal = requireValue(hook.signals[0])
++			expect(getEventListeners(signal, 'abort')).toHaveLength(1)
++			pending.resolve({})
++			expect(await result).toEqual({ content: 'done' })
++			const received = requireValue(transport.signals[0])
++			expect(received).toBe(signal)
++			await waitForDelay(60)
++			expect(received.aborted).toBe(false)
++			expect(getEventListeners(received, 'abort')).toEqual([])
++		} finally {
++			pending.resolve({})
++			await result.catch(() => {
++				// Release pending work even when an earlier assertion failed.
++			})
++		}
++	})
++
++	it('removes abort listeners after hook rejection and clears the deadline', async () => {
++		const failure = new Error('header failed')
++		const hook = new RecordedHeaders(failure)
++		const provider = new ScriptedWire({
++			url: 'https://provider.test',
++			timeout: 40,
++			headers: hook.headers.bind(hook),
++		})
++		await expect(provider.generate([], new AbortController().signal)).rejects.toBe(failure)
++		await waitForDelay(60)
++		const signal = requireValue(hook.signals[0])
++		expect(signal.aborted).toBe(false)
++		expect(getEventListeners(signal, 'abort')).toEqual([])
++	})
++
++	it('removes abort listeners after caller cancellation during the hook', async () => {
++		const pending = Promise.withResolvers<Readonly<Record<string, string>>>()
++		const hook = new RecordedHeaders(pending.promise)
++		const abort = new AbortController()
++		const provider = new ScriptedWire({
++			url: 'https://provider.test',
++			timeout: 40,
++			headers: hook.headers.bind(hook),
++		})
++		const result = provider.generate([], abort.signal)
++		try {
++			await hook.entered
++			const signal = requireValue(hook.signals[0])
++			expect(getEventListeners(signal, 'abort')).toHaveLength(1)
++			abort.abort()
++			await expect(result).rejects.toBeInstanceOf(ProviderAbortError)
++			expect(getEventListeners(signal, 'abort')).toEqual([])
++		} finally {
++			pending.resolve({})
++			abort.abort()
++			await result.catch(() => {
++				// Release pending work even when an earlier assertion failed.
++			})
++		}
++	})
++
++	it('removes abort listeners after deadline expiry during the hook', async () => {
++		const pending = Promise.withResolvers<Readonly<Record<string, string>>>()
++		const hook = new RecordedHeaders(pending.promise)
++		try {
++			const provider = new ScriptedWire({
++				url: 'https://provider.test',
++				timeout: 40,
++				headers: hook.headers.bind(hook),
++			})
++			await expect(provider.generate([], new AbortController().signal)).rejects.toBeInstanceOf(
++				ProviderAbortError,
++			)
++			const signal = requireValue(hook.signals[0])
++			expect(signal.aborted).toBe(true)
++			expect(getEventListeners(signal, 'abort')).toEqual([])
++		} finally {
++			pending.resolve({})
++		}
++	})
++
++	it('leaves a poison record undecoded after a result and cancels the body', async () => {
++		const result = { content: 'authoritative' }
++		const body = new RecordedBody(
++			['c:first', 'result', 'poison'].map((chunk) => new TextEncoder().encode(chunk)),
++			false,
++		)
++		const transport = new RecordedTransport(() => new Response(body.stream))
++		const provider = new ScriptedWire({
++			url: 'https://provider.test',
++			fetch: transport.fetch,
++			records: new Map<string, ProviderIncrement | Error>([
++				['result', { content: '', thinking: '', tools: [], result }],
++				['poison', new Error('decoded poison')],
++			]),
++		})
++		const actual = await drainProvider(provider.stream([], new AbortController().signal))
++		expect(actual.result).toBe(result)
++		expect(actual.deltas).toEqual([{ channel: 'content', text: 'first' }])
++		expect(provider.decoded).toEqual(['c:first', 'result'])
++		expect(body.cancelled).toBe(true)
++		expect(body.stream.locked).toBe(false)
++	})
++
++	it('isolates distinct interleaved bodies while one splitter holds a cancelled prefix', async () => {
++		const left = new RecordedBody(
++			['left', 'c:never'].map((chunk) => new TextEncoder().encode(chunk)),
++			false,
++		)
++		const right = new RecordedBody(['right', 'c:!'].map((chunk) => new TextEncoder().encode(chunk)))
++		const bodies = [left, right]
++		const transport = new RecordedTransport(() => new Response(requireValue(bodies.shift()).stream))
++		const provider = new ScriptedWire({
++			url: 'https://provider.test',
++			fetch: transport.fetch,
++			records: new Map<string, ProviderIncrement>([
++				[
++					'left',
++					{
++						content: 'alpha<thi',
++						thinking: 'left-native',
++						tools: [{ id: 'left', name: 'lookup', arguments: { side: 'left' } }],
++						usage: { prompt: 1, completion: 2, total: 3 },
++					},
++				],
++				[
++					'right',
++					{
++						content: '<think>right-hidden</think>beta',
++						thinking: 'right-native',
++						tools: [{ id: 'right', name: 'lookup', arguments: { side: 'right' } }],
++						usage: { prompt: 4, completion: 5, total: 9 },
++					},
++				],
++			]),
++		})
++		const abort = new AbortController()
++		const cancelled = provider.stream([], abort.signal)
++		const running = provider.stream([], new AbortController().signal)
++		try {
++			expect(await cancelled.next()).toEqual({
++				done: false,
++				value: { channel: 'content', text: 'alpha' },
++			})
++			expect(await running.next()).toEqual({
++				done: false,
++				value: { channel: 'content', text: 'beta' },
++			})
++			expect(await cancelled.next()).toEqual({
++				done: false,
++				value: { channel: 'thinking', text: 'left-native' },
++			})
++			expect(await running.next()).toEqual({
++				done: false,
++				value: { channel: 'thinking', text: 'right-native' },
++			})
++			abort.abort()
++			await expect(cancelled.next()).rejects.toMatchObject({
++				partial: {
++					content: 'alpha<thi',
++					thinking: 'left-native',
++					tools: [{ id: 'left', name: 'lookup', arguments: { side: 'left' } }],
++					usage: { prompt: 1, completion: 2, total: 3 },
++				},
++			})
++			expect(await drainProvider(running)).toEqual({
++				deltas: [{ channel: 'content', text: '!' }],
++				result: {
++					content: 'beta!',
++					thinking: 'right-hidden\n\nright-native',
++					tools: [{ id: 'right', name: 'lookup', arguments: { side: 'right' } }],
++					usage: { prompt: 4, completion: 5, total: 9 },
++				},
++			})
++			await waitForDelay()
++			expect(left.cancelled).toBe(true)
++			expect(left.stream.locked).toBe(false)
++			expect(right.stream.locked).toBe(false)
++			expect(provider.parsers).toHaveLength(2)
++			expect(provider.parsers[0]).not.toBe(provider.parsers[1])
++			expect(provider.parsers.every((parser) => parser.cleared)).toBe(true)
++		} finally {
++			abort.abort()
++			await cancelled.return({ content: '' })
++			await running.return({ content: '' })
++		}
++	})
++
++	it('bounds decoded error bytes with the documented single-chunk overshoot', async () => {
++		const body = new RecordedBody([new TextEncoder().encode('x'.repeat(8192))], false)
++		const transport = new RecordedTransport(() => new Response(body.stream, { status: 503 }))
++		const provider = new ScriptedWire({ url: 'https://provider.test', fetch: transport.fetch })
++		await expect(provider.generate([], new AbortController().signal)).rejects.toMatchObject({
++			code: 'HTTP',
++			status: 503,
++			message: 'provider error: 503 - ' + 'x'.repeat(MAX_ERROR_BODY_LENGTH),
++		})
++		expect(body.bytes).toBe(8192)
++		expect(body.count).toBe(1)
++		expect(body.cancelled).toBe(true)
++		expect(body.stream.locked).toBe(false)
++	})
++
+ 	it('accepts a settled result retained by finish', async () => {
+ 		const result = { content: 'terminal', thinking: 'reason' }
+ 		const records = new Map<string, ProviderIncrement>([
+@@ -502,7 +841,7 @@ describe('provider call boundaries', () => {
+ 		})
+ 		await expect(provider.generate([], new AbortController().signal)).rejects.toBe(failure)
+ 		await waitForDelay(40)
+-		expect(requireValue(transport.requests[0]).signal.aborted).toBe(false)
++		expect(requireValue(transport.signals[0]).aborted).toBe(false)
+ 	})
+ 	it('cancels an unresolved header hook through the caller signal', async () => {
+ 		const abort = new AbortController()
+diff --git a/tests/src/core/helpers.test.ts b/tests/src/core/helpers.test.ts
+index 0e4684a..1635ffe 100644
+--- a/tests/src/core/helpers.test.ts
++++ b/tests/src/core/helpers.test.ts
+@@ -1,4 +1,5 @@
+ import type { AgentResult, ContextSectionSourceInterface, Message } from '@src/core'
++import { getEventListeners } from 'node:events'
+ import {
+ 	agentResultToJSON,
+ 	buildProviderResult,
+@@ -567,6 +568,11 @@ describe('joinThinking — the separated reasoning across a run', () => {
+ 	it('treats an empty accumulated string as absent', () => {
+ 		expect(joinThinking('', 'next')).toBe('next')
+ 	})
++
++	it('omits the separator when the next carrier is empty', () => {
++		expect(joinThinking('x', '')).toBe('x')
++		expect(joinThinking('', '')).toBe('')
++	})
+ })
+ 
+ describe('sumUsage — the running token total across a turn', () => {
+@@ -872,15 +878,7 @@ describe('intersectKeys — the scope narrow primitive', () => {
+ 	})
+ })
+ 
+-describe('joinThinking empty carriers', () => {
+-	it('omits the separator when either carrier is empty', () => {
+-		expect(joinThinking('', 'x')).toBe('x')
+-		expect(joinThinking('x', '')).toBe('x')
+-		expect(joinThinking('', '')).toBe('')
+-	})
+-})
+-
+-describe('provider stream helpers', () => {
++describe('buildProviderResult — the assembled provider turn', () => {
+ 	it('omits empty result optionals and retains populated calls and usage', () => {
+ 		expect(buildProviderResult('answer', '', [], undefined)).toEqual({ content: 'answer' })
+ 		const tools = [{ id: '1', name: 'lookup', arguments: {} }]
+@@ -892,17 +890,60 @@ describe('provider stream helpers', () => {
+ 			usage,
+ 		})
+ 	})
++})
++
++describe('readText — bounded decoded text', () => {
++	it('cancels a pending text read on abort and returns the decoded prefix', async () => {
++		const body = new RecordedBody([new TextEncoder().encode('prefix')], false)
++		const abort = new AbortController()
++		const result = readText(body.stream, undefined, abort.signal)
++		await body.pending
++		abort.abort(new Error('text cancelled'))
++		expect(body.cancelled).toBe(true)
++		expect(await result).toBe('prefix')
++		expect(body.reason).toBe(abort.signal.reason)
++		expect(body.stream.locked).toBe(false)
++		expect(getEventListeners(abort.signal, 'abort')).toEqual([])
++	}, 400)
++	it('cancels an already-aborted text read before pulling', async () => {
++		const body = new RecordedBody([new TextEncoder().encode('unread')], false)
++		const abort = new AbortController()
++		abort.abort()
++		expect(await readText(body.stream, 3, abort.signal)).toBe('')
++		expect(body.count).toBe(0)
++		expect(body.cancelled).toBe(true)
++		expect(body.reason).toBe(abort.signal.reason)
++		expect(body.stream.locked).toBe(false)
++		expect(getEventListeners(abort.signal, 'abort')).toEqual([])
++	})
++	it('preserves a successful prefix when source cancellation rejects', async () => {
++		const signal = new AbortController().signal
++		const body = new RecordedBody(
++			[new TextEncoder().encode('abcdef')],
++			false,
++			undefined,
++			new Error('cancel failed'),
++		)
++		expect(await readText(body.stream, 3, signal)).toBe('abc')
++		expect(body.cancelled).toBe(true)
++		expect(body.stream.locked).toBe(false)
++		expect(getEventListeners(signal, 'abort')).toEqual([])
++	})
+ 	it('reads a bounded byte prefix even when a chunk exceeds the limit', async () => {
++		const signal = new AbortController().signal
+ 		const body = new RecordedBody([new TextEncoder().encode('abcdef')])
+-		expect(await readText(body.stream, 3)).toBe('abc')
++		expect(await readText(body.stream, 3, signal)).toBe('abc')
+ 		expect(body.cancelled).toBe(true)
+ 		expect(body.stream.locked).toBe(false)
++		expect(getEventListeners(signal, 'abort')).toEqual([])
+ 	})
+ 	it('cancels without pulling for a zero-byte limit', async () => {
++		const signal = new AbortController().signal
+ 		const body = new RecordedBody([new TextEncoder().encode('abcdef')])
+-		expect(await readText(body.stream, 0)).toBe('')
++		expect(await readText(body.stream, 0, signal)).toBe('')
+ 		expect(body.bytes).toBe(0)
+ 		expect(body.cancelled).toBe(true)
++		expect(getEventListeners(signal, 'abort')).toEqual([])
+ 	})
+ 	it('decodes a multibyte prefix and flushes an incomplete final character', async () => {
+ 		const bytes = new TextEncoder().encode('🌍')
+@@ -911,12 +952,89 @@ describe('provider stream helpers', () => {
+ 		const partial = new RecordedBody([bytes])
+ 		expect(await readText(partial.stream, 2)).toBe('�')
+ 	})
++	it('preserves read failures and releases the text reader lock', async () => {
++		const signal = new AbortController().signal
++		const error = new Error('read failed')
++		const text = new RecordedBody([], true, error)
++		await expect(readText(text.stream, undefined, signal)).rejects.toBe(error)
++		expect(text.stream.locked).toBe(false)
++		expect(getEventListeners(signal, 'abort')).toEqual([])
++	})
++	it('reads an empty body as empty text', async () => {
++		expect(await readText(new RecordedBody([]).stream)).toBe('')
++	})
++})
++
++describe('readChunks — streamed decoded text', () => {
++	it('cancels a pending chunk read on abort and yields nothing further', async () => {
++		const body = new RecordedBody([new TextEncoder().encode('prefix')], false)
++		const abort = new AbortController()
++		const chunks = readChunks(body.stream, abort.signal)
++		expect(await chunks.next()).toEqual({ done: false, value: 'prefix' })
++		const pending = chunks.next()
++		await body.pending
++		abort.abort(new Error('chunks cancelled'))
++		expect(body.cancelled).toBe(true)
++		expect(await pending).toEqual({ done: true, value: undefined })
++		expect(body.reason).toBe(abort.signal.reason)
++		expect(body.stream.locked).toBe(false)
++		expect(getEventListeners(abort.signal, 'abort')).toEqual([])
++	}, 400)
++	it('cancels already-aborted chunk iteration before pulling', async () => {
++		const body = new RecordedBody([new TextEncoder().encode('unread')], false)
++		const abort = new AbortController()
++		abort.abort()
++		expect(await readChunks(body.stream, abort.signal).next()).toEqual({
++			done: true,
++			value: undefined,
++		})
++		expect(body.count).toBe(0)
++		expect(body.cancelled).toBe(true)
++		expect(body.reason).toBe(abort.signal.reason)
++		expect(body.stream.locked).toBe(false)
++		expect(getEventListeners(abort.signal, 'abort')).toEqual([])
++	})
++	it('discards a held decoder tail on abort even when source cancellation rejects', async () => {
++		const body = new RecordedBody(
++			[new Uint8Array([0xe2])],
++			false,
++			undefined,
++			new Error('cancel failed'),
++		)
++		const abort = new AbortController()
++		const chunks = readChunks(body.stream, abort.signal)
++		const pending = chunks.next()
++		await body.pending
++		abort.abort()
++		expect(await pending).toEqual({ done: true, value: undefined })
++		expect(body.cancelled).toBe(true)
++		expect(body.stream.locked).toBe(false)
++		expect(getEventListeners(abort.signal, 'abort')).toEqual([])
++	})
++	it('preserves a yielded chunk and consumer failure when source cancellation rejects', async () => {
++		const signal = new AbortController().signal
++		const body = new RecordedBody(
++			[new TextEncoder().encode('answer')],
++			false,
++			undefined,
++			new Error('cancel failed'),
++		)
++		const chunks = readChunks(body.stream, signal)
++		expect(await chunks.next()).toEqual({ done: false, value: 'answer' })
++		const failure = new Error('consumer failed')
++		await expect(chunks.throw(failure)).rejects.toBe(failure)
++		expect(body.cancelled).toBe(true)
++		expect(body.stream.locked).toBe(false)
++		expect(getEventListeners(signal, 'abort')).toEqual([])
++	})
+ 	it('flushes decoder state at the end of chunk iteration', async () => {
++		const signal = new AbortController().signal
+ 		const body = new RecordedBody([new Uint8Array([0xe2])])
+ 		const chunks: string[] = []
+-		for await (const chunk of readChunks(body.stream)) chunks.push(chunk)
++		for await (const chunk of readChunks(body.stream, signal)) chunks.push(chunk)
+ 		expect(chunks).toEqual(['�'])
+ 		expect(body.stream.locked).toBe(false)
++		expect(getEventListeners(signal, 'abort')).toEqual([])
+ 	})
+ 	it('decodes split UTF-8 through chunk iteration', async () => {
+ 		const bytes = new TextEncoder().encode('🌍')
+@@ -926,24 +1044,24 @@ describe('provider stream helpers', () => {
+ 		expect(chunks).toEqual(['🌍'])
+ 	})
+ 	it('releases a byte reader after early return', async () => {
++		const signal = new AbortController().signal
+ 		const body = new RecordedBody([new TextEncoder().encode('answer')], false)
+-		const chunks = readChunks(body.stream)
++		const chunks = readChunks(body.stream, signal)
+ 		expect(await chunks.next()).toEqual({ done: false, value: 'answer' })
+ 		await chunks.return(undefined)
+ 		expect(body.cancelled).toBe(true)
+ 		expect(body.stream.locked).toBe(false)
++		expect(getEventListeners(signal, 'abort')).toEqual([])
+ 	})
+ 	it('preserves read failures and releases the lock', async () => {
++		const signal = new AbortController().signal
+ 		const error = new Error('read failed')
+-		const text = new RecordedBody([], true, error)
+-		await expect(readText(text.stream)).rejects.toBe(error)
+-		expect(text.stream.locked).toBe(false)
+ 		const chunks = new RecordedBody([], true, error)
+-		await expect(readChunks(chunks.stream).next()).rejects.toBe(error)
++		await expect(readChunks(chunks.stream, signal).next()).rejects.toBe(error)
+ 		expect(chunks.stream.locked).toBe(false)
++		expect(getEventListeners(signal, 'abort')).toEqual([])
+ 	})
+-	it('reads empty bodies as empty text and empty iteration', async () => {
+-		expect(await readText(new RecordedBody([]).stream)).toBe('')
++	it('reads an empty body as empty iteration', async () => {
+ 		expect(await readChunks(new RecordedBody([]).stream).next()).toEqual({
+ 			done: true,
+ 			value: undefined,
+diff --git a/tests/src/core/validators.test.ts b/tests/src/core/validators.test.ts
+index cffd391..8c43a62 100644
+--- a/tests/src/core/validators.test.ts
++++ b/tests/src/core/validators.test.ts
+@@ -1,7 +1,7 @@
+ import { isConversationSnapshot, isMessage, isSection } from '@src/core'
+ import { roundTripJSON } from '@orkestrel/test'
+ import { describe, expect, it } from 'vitest'
+-import { buildConversationSnapshot } from '../../setup.js'
++import { acceptHostileArray, buildConversationSnapshot, throwProxyRead } from '../../setup.js'
+ 
+ // The core read-boundary guards — `isMessage`, `isSection`, and `isConversationSnapshot`. Each is
+ // TOTAL: adversarial input returns `false` and never throws, so an untrusted storage read narrows
+@@ -17,6 +17,32 @@ const withCalls = (calls: unknown): unknown => ({
+ })
+ 
+ describe('isMessage — the per-message shape guard (total + defensive)', () => {
++	it('rejects images with a hostile own every method', () => {
++		const images = Object.assign([1], { every: acceptHostileArray })
++		expect(isMessage({ id: '1', role: 'user', content: '', images })).toBe(false)
++	})
++
++	it('rejects calls with a hostile own every method', () => {
++		const calls = Object.assign([null], { every: acceptHostileArray })
++		expect(isMessage({ id: '1', role: 'assistant', content: '', calls })).toBe(false)
++	})
++
++	it('rejects a throwing proxy and a revoked proxy', () => {
++		expect(isMessage(new Proxy({}, { get: throwProxyRead }))).toBe(false)
++		const revoked = Proxy.revocable({}, {})
++		revoked.revoke()
++		expect(isMessage(revoked.proxy)).toBe(false)
++		expect(isMessage({ id: '1', role: 'user', content: '', images: revoked.proxy })).toBe(false)
++		expect(
++			isMessage({
++				id: '1',
++				role: 'assistant',
++				content: '',
++				calls: new Proxy([], { get: throwProxyRead }),
++			}),
++		).toBe(false)
++	})
++
+ 	it('rejects an arbitrary role outside the domain union', () => {
+ 		expect(isMessage({ id: '1', role: 'other', content: '' })).toBe(false)
+ 	})

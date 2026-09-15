@@ -1,0 +1,96 @@
+// Probe: in Node 24, does `source.pipeThrough(new TransformStream(), { signal })` cancel the source
+// when the signal aborts while (a) a source read is pending and (b) an unread chunk sits in the
+// transform's readable queue? Compare against cancelling the transform readable directly.
+function makeSource(chunks, log) {
+	let index = 0
+	return new ReadableStream({
+		pull(controller) {
+			if (index < chunks.length) {
+				controller.enqueue(new TextEncoder().encode(chunks[index]))
+				index += 1
+				return
+			}
+			return new Promise(() => {})
+		},
+		cancel(reason) {
+			log.push(`source.cancel(${reason?.name ?? reason})`)
+		},
+	})
+}
+
+async function settle(ms = 50) {
+	await new Promise((resolve) => setTimeout(resolve, ms))
+}
+
+// A: consume one chunk, leave the second unread in the transform queue, abort the signal, then cancel the reader.
+{
+	const log = []
+	const controller = new AbortController()
+	const piped = makeSource(['one', 'two'], log).pipeThrough(new TransformStream(), { signal: controller.signal })
+	const reader = piped.getReader()
+	await reader.read()
+	await settle()
+	controller.abort()
+	try {
+		await reader.read()
+	} catch (error) {
+		log.push(`read rejected(${error?.name ?? error})`)
+	}
+	try {
+		await reader.cancel()
+	} catch (error) {
+		log.push(`cancel rejected(${error?.name ?? error})`)
+	}
+	await settle()
+	console.log('A abort signal with unread chunk queued:', log.join(', '))
+}
+
+// B: same but cancel the reader without aborting the signal.
+{
+	const log = []
+	const piped = makeSource(['one', 'two'], log).pipeThrough(new TransformStream(), { signal: new AbortController().signal })
+	const reader = piped.getReader()
+	await reader.read()
+	await settle()
+	await reader.cancel()
+	await settle()
+	console.log('B reader cancel, no abort:', log.join(', '))
+}
+
+// C: abort the signal while the pipe awaits a source read and nothing is queued (both chunks consumed).
+{
+	const log = []
+	const controller = new AbortController()
+	const piped = makeSource(['one', 'two'], log).pipeThrough(new TransformStream(), { signal: controller.signal })
+	const reader = piped.getReader()
+	await reader.read()
+	await reader.read()
+	await settle()
+	controller.abort()
+	try {
+		await reader.read()
+	} catch (error) {
+		log.push(`read rejected(${error?.name ?? error})`)
+	}
+	try {
+		await reader.cancel()
+	} catch (error) {
+		log.push(`cancel rejected(${error?.name ?? error})`)
+	}
+	await settle()
+	console.log('C abort signal, nothing queued:', log.join(', '))
+}
+
+// D: direct reader on the source (no pipe): cancel while a read is pending.
+{
+	const log = []
+	const source = makeSource(['one'], log)
+	const reader = source.getReader()
+	await reader.read()
+	const pending = reader.read()
+	await settle()
+	await reader.cancel(new Error('direct'))
+	const step = await pending
+	await settle()
+	console.log('D direct reader cancel during pending read:', log.join(', '), `; pending settled done=${step.done}`)
+}

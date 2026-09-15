@@ -1,0 +1,132 @@
+npm notice run @orkestrel/agent@0.0.21 test:guides
+npm notice run node --experimental-strip-types tests/guides.test.ts
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.11 [39m[90mC:/Users/mikes/WebstormProjects/agent[39m
+
+[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[31mx[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[31mx[39m[33m[39m[31mx[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 3 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m [30m[42m guides [49m[39m tests/guides.test.ts[2m > [22mAgent[2m > [22mdocuments every barrel export
+[31m[1mAssertionError[22m: expected [ …(41) ] to deeply equal [][39m
+
+- Expected
++ Received
+
+- []
++ [
++   "interface AgentProviderInput",
++   "interface AgentProviderInterface",
++   "const DEFAULT_PROVIDER_TIMEOUT",
++   "const DEFAULT_RELAY_LIMIT",
++   "const INVALID_RELAY_STATUS",
++   "const MAX_ERROR_BODY_LENGTH",
++   "const OVERSIZED_RELAY_STATUS",
++   "class ProviderError",
++   "type ProviderErrorCode",
++   "interface ProviderErrorOptions",
++   "interface ProviderIncrement",
++   "interface ProviderOptions",
++   "interface ProviderParserInterface",
++   "interface ProviderRequest",
++   "const RELAY_CONTENT_TYPE",
++   "const RELAY_PROVIDER_MESSAGE",
++   "type RelayFrame",
++   "type RelayHandler",
++   "interface RelayOptions",
++   "class RelayProvider",
++   "interface RelayProviderOptions",
++   "class RelayStream",
++   "interface RelayStreamOptions",
++   "interface TextRead",
++   "const UNAUTHORIZED_RELAY_STATUS",
++   "const UPSTREAM_RELAY_STATUS",
++   "function buildProviderResult",
++   "function createRelay",
++   "function createRelayProvider",
++   "function isProviderError",
++   "const messageContract",
++   "const messageShape",
++   "const providerRequestContract",
++   "const providerRequestShape",
++   "const providerResultContract",
++   "const providerResultShape",
++   "function readChunks",
++   "function readText",
++   "const relayFrameContract",
++   "const relayFrameShape",
++   "const toolCallShape",
++ ]
+
+[36m [2m❯[22m tests/guides.test.ts:[2m104:67[22m[39m
+    [90m102|[39m
+    [90m103|[39m    [34mit[39m([32m'documents every barrel export'[39m[33m,[39m () [33m=>[39m {
+    [90m104|[39m     expect(findMissingSymbols(source.surface(), guide.surface())).toEq…
+    [90m   |[39m                                                                   [31m^[39m
+    [90m105|[39m    })
+    [90m106|[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m [30m[42m guides [49m[39m tests/guides.test.ts[2m > [22mAgent[2m > [22mkeeps behavioral interfaces and implementing classes in parity
+[31m[1mAssertionError[22m: expected [ …(3) ] to deeply equal [][39m
+
+- Expected
++ Received
+
+- []
++ [
++   {
++     "spec": "guides/agent.md",
++     "text": "guides/agent.md AgentProviderInterface declares members and carries no method table.",
++   },
++   {
++     "spec": "guides/agent.md",
++     "text": "guides/agent.md ProviderParserInterface declares members and carries no method table.",
++   },
++   {
++     "spec": "guides/agent.md",
++     "text": "guides/agent.md RelayProvider declares members and carries no method table.",
++   },
++ ]
+
+[36m [2m❯[22m tests/guides.test.ts:[2m121:82[22m[39m
+    [90m119|[39m    it('keeps behavioral interfaces and implementing classes in parity'…
+    [90m120|[39m     expect(report.methods.filter((finding) => finding.spec === entry.s…
+    [90m121|[39m     expect(report.declarations.filter((finding) => finding.spec === en…
+    [90m   |[39m                                                                                  [31m^[39m
+    [90m122|[39m    })
+    [90m123|[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m [30m[42m guides [49m[39m tests/guides.test.ts[2m > [22mAgent[2m > [22mkeeps every compared summary and example equal to its source
+[31m[1mAssertionError[22m: expected [ { spec: 'guides/agent.md', …(1) } ] to deeply equal [][39m
+
+- Expected
++ Received
+
+- []
++ [
++   {
++     "spec": "guides/agent.md",
++     "text": "summary function isMessage: guide \"Checks whether an `unknown` is structurally a `Message` record — the per-message step of the `isConversationSnapshot` and `isSection` read-boundary narrows, where a present `calls` must be an array of valid `ToolCall`s. Total, never throwing, and never an assertion; the conversation analogue of `isFile`.\" source \"Checks whether a value satisfies the domain conversation-message contract.\"",
++   },
++ ]
+
+[36m [2m❯[22m tests/guides.test.ts:[2m125:75[22m[39m
+    [90m123|[39m
+    [90m124|[39m    it('keeps every compared summary and example equal to its source', …
+    [90m125|[39m     expect(report.drift.filter((finding) => finding.spec === entry.spe…
+    [90m   |[39m                                                                           [31m^[39m
+    [90m126|[39m    })
+    [90m127|[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m3 failed[39m[22m[2m | [22m[1m[32m27 passed[39m[22m[90m (30)[39m
+[2m   Start at [22m 18:30:33
+[2m   Duration [22m 1.17s[2m (transform 206ms, setup 461ms, import 520ms, tests 24ms, environment 0ms)[22m
+

@@ -1,0 +1,244 @@
+/c/Users/mikes/WebstormProjects/agent-audit/node_modules
+=== control: whole helpers.test.ts at 573ba71
+npm notice run @orkestrel/agent@0.0.21 test:src:core
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core tests/src/core/helpers.test.ts
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/agent-audit
+
+····················································································································
+
+ Test Files  1 passed (1)
+      Tests  116 passed (116)
+   Start at  17:31:31
+   Duration  710ms (transform 208ms, setup 466ms, import 44ms, tests 38ms, environment 0ms)
+
+control exit=0 (expected 0)
+=== mutation: neutralize listener removal (cleanup.abort) in both readers
+mutated lines: 2
+npm notice run @orkestrel/agent@0.0.21 test:src:core
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core tests/src/core/helpers.test.ts
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/agent-audit
+
+····································································································xxxx·x··x·xx·xx·
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 10 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:core| tests/src/core/helpers.test.ts > readText — bounded decoded text > cancels an already-aborted text read before pulling
+AssertionError: expected [ [Function] ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   [Function anonymous],
++ ]
+
+ ❯ tests/src/core/helpers.test.ts:917:52
+    915|   expect(body.reason).toBe(abort.signal.reason)
+    916|   expect(body.stream.locked).toBe(false)
+    917|   expect(getEventListeners(abort.signal, 'abort')).toEqual([])
+       |                                                    ^
+    918|  })
+    919|  it('preserves a successful prefix when source cancellation rejects', …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/10]⎯
+
+ FAIL  |src:core| tests/src/core/helpers.test.ts > readText — bounded decoded text > preserves a successful prefix when source cancellation rejects
+AssertionError: expected [ [Function] ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   [Function anonymous],
++ ]
+
+ ❯ tests/src/core/helpers.test.ts:930:46
+    928|   expect(body.cancelled).toBe(true)
+    929|   expect(body.stream.locked).toBe(false)
+    930|   expect(getEventListeners(signal, 'abort')).toEqual([])
+       |                                              ^
+    931|  })
+    932|  it('reads a bounded byte prefix even when a chunk exceeds the limit',…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/10]⎯
+
+ FAIL  |src:core| tests/src/core/helpers.test.ts > readText — bounded decoded text > reads a bounded byte prefix even when a chunk exceeds the limit
+AssertionError: expected [ [Function] ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   [Function anonymous],
++ ]
+
+ ❯ tests/src/core/helpers.test.ts:938:46
+    936|   expect(body.cancelled).toBe(true)
+    937|   expect(body.stream.locked).toBe(false)
+    938|   expect(getEventListeners(signal, 'abort')).toEqual([])
+       |                                              ^
+    939|  })
+    940|  it('cancels without pulling for a zero-byte limit', async () => {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/10]⎯
+
+ FAIL  |src:core| tests/src/core/helpers.test.ts > readText — bounded decoded text > cancels without pulling for a zero-byte limit
+AssertionError: expected [ [Function] ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   [Function anonymous],
++ ]
+
+ ❯ tests/src/core/helpers.test.ts:946:46
+    944|   expect(body.bytes).toBe(0)
+    945|   expect(body.cancelled).toBe(true)
+    946|   expect(getEventListeners(signal, 'abort')).toEqual([])
+       |                                              ^
+    947|  })
+    948|  it('decodes a multibyte prefix and flushes an incomplete final charac…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/10]⎯
+
+ FAIL  |src:core| tests/src/core/helpers.test.ts > readText — bounded decoded text > preserves read failures and releases the text reader lock
+AssertionError: expected [ [Function] ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   [Function anonymous],
++ ]
+
+ ❯ tests/src/core/helpers.test.ts:961:46
+    959|   await expect(readText(text.stream, undefined, signal)).rejects.toBe(…
+    960|   expect(text.stream.locked).toBe(false)
+    961|   expect(getEventListeners(signal, 'abort')).toEqual([])
+       |                                              ^
+    962|  })
+    963|  it('reads an empty body as empty text', async () => {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/10]⎯
+
+ FAIL  |src:core| tests/src/core/helpers.test.ts > readChunks — streamed decoded text > cancels already-aborted chunk iteration before pulling
+AssertionError: expected [ [Function] ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   [Function anonymous],
++ ]
+
+ ❯ tests/src/core/helpers.test.ts:995:52
+    993|   expect(body.reason).toBe(abort.signal.reason)
+    994|   expect(body.stream.locked).toBe(false)
+    995|   expect(getEventListeners(abort.signal, 'abort')).toEqual([])
+       |                                                    ^
+    996|  })
+    997|  it('discards a held decoder tail on abort even when source cancellati…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/10]⎯
+
+ FAIL  |src:core| tests/src/core/helpers.test.ts > readChunks — streamed decoded text > preserves a yielded chunk and consumer failure when source cancellation rejects
+AssertionError: expected [ [Function] ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   [Function anonymous],
++ ]
+
+ ❯ tests/src/core/helpers.test.ts:1028:46
+    1026|   expect(body.cancelled).toBe(true)
+    1027|   expect(body.stream.locked).toBe(false)
+    1028|   expect(getEventListeners(signal, 'abort')).toEqual([])
+       |                                              ^
+    1029|  })
+    1030|  it('flushes decoder state at the end of chunk iteration', async () =>…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/10]⎯
+
+ FAIL  |src:core| tests/src/core/helpers.test.ts > readChunks — streamed decoded text > flushes decoder state at the end of chunk iteration
+AssertionError: expected [ [Function] ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   [Function anonymous],
++ ]
+
+ ❯ tests/src/core/helpers.test.ts:1037:46
+    1035|   expect(chunks).toEqual(['�'])
+    1036|   expect(body.stream.locked).toBe(false)
+    1037|   expect(getEventListeners(signal, 'abort')).toEqual([])
+       |                                              ^
+    1038|  })
+    1039|  it('decodes split UTF-8 through chunk iteration', async () => {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/10]⎯
+
+ FAIL  |src:core| tests/src/core/helpers.test.ts > readChunks — streamed decoded text > releases a byte reader after early return
+AssertionError: expected [ [Function] ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   [Function anonymous],
++ ]
+
+ ❯ tests/src/core/helpers.test.ts:1054:46
+    1052|   expect(body.cancelled).toBe(true)
+    1053|   expect(body.stream.locked).toBe(false)
+    1054|   expect(getEventListeners(signal, 'abort')).toEqual([])
+       |                                              ^
+    1055|  })
+    1056|  it('preserves read failures and releases the lock', async () => {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/10]⎯
+
+ FAIL  |src:core| tests/src/core/helpers.test.ts > readChunks — streamed decoded text > preserves read failures and releases the lock
+AssertionError: expected [ [Function] ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   [Function anonymous],
++ ]
+
+ ❯ tests/src/core/helpers.test.ts:1062:46
+    1060|   await expect(readChunks(chunks.stream, signal).next()).rejects.toBe(…
+    1061|   expect(chunks.stream.locked).toBe(false)
+    1062|   expect(getEventListeners(signal, 'abort')).toEqual([])
+       |                                              ^
+    1063|  })
+    1064|  it('reads an empty body as empty iteration', async () => {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/10]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  10 failed | 106 passed (116)
+   Start at  17:31:33
+   Duration  695ms (transform 215ms, setup 444ms, import 44ms, tests 43ms, environment 0ms)
+
+mutant exit=1 (expected non-zero if the listener assertions can fail)
+restored: 0 dirty paths (expected 0)

@@ -1,0 +1,80 @@
+npm notice run @orkestrel/guide@0.0.18 prepack
+npm notice run npm run build
+npm notice run @orkestrel/guide@0.0.18 build
+npm notice run npm run clean && npm run build:src
+npm notice run @orkestrel/guide@0.0.18 clean
+npm notice run node -e "require('node:fs').rmSync('dist',{recursive:true,force:true})"
+npm notice run @orkestrel/guide@0.0.18 build:src
+npm notice run npm run build:src:core && npm run build:src:server
+npm notice run @orkestrel/guide@0.0.18 build:src:core
+npm notice run vite build --config configs/src/vite.core.config.ts && npm run copy dist/src/core/index.d.ts dist/src/core/index.d.cts
+[36mvite v8.3.0 [32mbuilding client environment for production...[36m[39m
+transforming...
+✓ 13 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/core/index.js  157.62 kB │ gzip: 39.74 kB │ map: 242.90 kB
+
+transforming...
+✓ 13 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/core/index.cjs  163.08 kB │ gzip: 40.26 kB │ map: 244.67 kB
+
+[32m✓ built in 236ms[39m
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+npm notice run @orkestrel/guide@0.0.18 copy
+npm notice run node -e "const fs=require('node:fs'),p=require('node:path'),a=process.argv[1],b=process.argv[2];fs.mkdirSync(p.dirname(b),{recursive:true});fs.cpSync(a,b,{force:true});console.log('Copied: '+a+' to '+b)" dist/src/core/index.d.ts dist/src/core/index.d.cts
+Copied: dist/src/core/index.d.ts to dist/src/core/index.d.cts
+npm notice run @orkestrel/guide@0.0.18 build:src:server
+npm notice run vite build --config configs/src/vite.server.config.ts && npm run copy dist/src/server/index.d.ts dist/src/server/index.d.cts
+[36mvite v8.3.0 [32mbuilding client environment for production...[36m[39m
+[33m"build.lib.formats" will be ignored because "build.rolldownOptions.output" is already an array format.[39m
+transforming...
+✓ 15 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/server/index.js  146.49 kB │ gzip: 38.31 kB │ map: 245.92 kB
+
+transforming...
+✓ 15 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/server/index.cjs  149.94 kB │ gzip: 38.89 kB │ map: 247.32 kB
+
+[32m✓ built in 248ms[39m
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+npm notice run @orkestrel/guide@0.0.18 copy
+npm notice run node -e "const fs=require('node:fs'),p=require('node:path'),a=process.argv[1],b=process.argv[2];fs.mkdirSync(p.dirname(b),{recursive:true});fs.cpSync(a,b,{force:true});console.log('Copied: '+a+' to '+b)" dist/src/server/index.d.ts dist/src/server/index.d.cts
+Copied: dist/src/server/index.d.ts to dist/src/server/index.d.cts
+npm notice
+npm notice package: @orkestrel/guide@0.0.18
+npm notice Tarball Contents
+npm notice 1.1kB LICENSE
+npm notice 10.3kB README.md
+npm notice 163.1kB dist/src/core/index.cjs
+npm notice 244.7kB dist/src/core/index.cjs.map
+npm notice 127.3kB dist/src/core/index.d.cts
+npm notice 127.3kB dist/src/core/index.d.ts
+npm notice 157.6kB dist/src/core/index.js
+npm notice 242.9kB dist/src/core/index.js.map
+npm notice 149.9kB dist/src/server/index.cjs
+npm notice 247.3kB dist/src/server/index.cjs.map
+npm notice 30.4kB dist/src/server/index.d.cts
+npm notice 30.4kB dist/src/server/index.d.ts
+npm notice 146.5kB dist/src/server/index.js
+npm notice 245.9kB dist/src/server/index.js.map
+npm notice 4.4kB package.json
+npm notice Tarball Details
+npm notice name: @orkestrel/guide
+npm notice version: 0.0.18
+npm notice filename: orkestrel-guide-0.0.18.tgz
+npm notice package size: 465.1 kB
+npm notice unpacked size: 1.9 MB
+npm notice shasum: 54749150b9ed9b9fa21aae93ecd1680c599b2996
+npm notice integrity: sha512-2fwrZNPtgvwEF[...]FeKzxc4F+mIaw==
+npm notice total files: 15
+npm notice
+orkestrel-guide-0.0.18.tgz

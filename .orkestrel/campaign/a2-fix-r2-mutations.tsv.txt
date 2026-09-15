@@ -1,0 +1,2 @@
+R1-no-snapshot	src/core/providers/RelayProvider.ts	s/snapshot = cloneJSONValue(projected)/snapshot = projected/	tests/src/core/providers/RelayProvider.test.ts
+R2-no-cause	src/core/providers/RelayProvider.ts	s/throw new ProviderError('PROTOCOL', 'relay request is not JSON', { cause })/throw new ProviderError('PROTOCOL', 'relay request is not JSON')/	tests/src/core/providers/RelayProvider.test.ts

@@ -1,0 +1,100 @@
+=== npm run lint
+npm notice run @orkestrel/agent@0.0.21 lint
+npm notice run oxlint --config .oxlintrc.json --fix .
+=== exit=0
+=== npm run format
+npm notice run @orkestrel/agent@0.0.21 format
+npm notice run oxfmt --config .oxfmtrc.json --write .
+Finished in 1537ms on 87 files using 16 threads.
+=== exit=0
+=== npm run format:check
+npm notice run @orkestrel/agent@0.0.21 format:check
+npm notice run oxfmt --config .oxfmtrc.json --check .
+Checking formatting...
+
+All matched files use the correct format.
+Finished in 1566ms on 87 files using 16 threads.
+=== exit=0
+=== npm run lint:check
+npm notice run @orkestrel/agent@0.0.21 lint:check
+npm notice run oxlint --config .oxlintrc.json --deny-warnings .
+=== exit=0
+=== npm run check
+npm notice run @orkestrel/agent@0.0.21 check
+npm notice run tsc --noEmit --project tsconfig.json && npm run check:src
+npm notice run @orkestrel/agent@0.0.21 check:src
+npm notice run npm run check:src:core
+npm notice run @orkestrel/agent@0.0.21 check:src:core
+npm notice run tsc --noEmit -p configs/src/tsconfig.core.json
+=== exit=0
+=== npm run test:src:core
+npm notice run @orkestrel/agent@0.0.21 test:src:core
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/agent
+
+·················································································································································································································································································································································································································································································································································································································································································································································································
+
+ Test Files  23 passed (23)
+      Tests  753 passed (753)
+   Start at  19:59:12
+   Duration  2.59s (transform 5.17s, setup 8.53s, import 2.95s, tests 3.77s, environment 3ms)
+
+=== exit=0
+=== npm run test:setup
+npm notice run @orkestrel/agent@0.0.21 test:setup
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project setup
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/agent
+
+······················································
+
+ Test Files  1 passed (1)
+      Tests  54 passed (54)
+   Start at  19:59:15
+   Duration  786ms (transform 211ms, setup 453ms, import 36ms, tests 146ms, environment 0ms)
+
+=== exit=0
+=== npm run test:guides
+npm notice run @orkestrel/agent@0.0.21 test:guides
+npm notice run node --experimental-strip-types tests/guides.test.ts
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.11 [39m[90mC:/Users/mikes/WebstormProjects/agent[39m
+
+[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m43 passed[39m[22m[90m (43)[39m
+[2m   Start at [22m 19:59:17
+[2m   Duration [22m 1.15s[2m (transform 206ms, setup 454ms, import 506ms, tests 36ms, environment 0ms)[22m
+
+=== exit=0
+=== npm run build
+npm notice run @orkestrel/agent@0.0.21 build
+npm notice run npm run clean && npm run build:src
+npm notice run @orkestrel/agent@0.0.21 clean
+npm notice run node -e "require('node:fs').rmSync('dist',{recursive:true,force:true})"
+npm notice run @orkestrel/agent@0.0.21 build:src
+npm notice run npm run build:src:core
+npm notice run @orkestrel/agent@0.0.21 build:src:core
+npm notice run vite build --config configs/src/vite.core.config.ts && npm run copy dist/src/core/index.d.ts dist/src/core/index.d.cts
+[36mvite v8.3.0 [32mbuilding client environment for production...[36m[39m
+transforming...
+✓ 27 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/core/index.js  171.51 kB │ gzip: 48.61 kB │ map: 299.64 kB
+
+transforming...
+✓ 27 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/core/index.cjs  176.82 kB │ gzip: 49.15 kB │ map: 301.36 kB
+
+[32m✓ built in 382ms[39m
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+npm notice run @orkestrel/agent@0.0.21 copy
+npm notice run node -e "const fs=require('node:fs'),p=require('node:path'),a=process.argv[1],b=process.argv[2];fs.mkdirSync(p.dirname(b),{recursive:true});fs.cpSync(a,b,{force:true});console.log('Copied: '+a+' to '+b)" dist/src/core/index.d.ts dist/src/core/index.d.cts
+Copied: dist/src/core/index.d.ts to dist/src/core/index.d.cts
+=== exit=0

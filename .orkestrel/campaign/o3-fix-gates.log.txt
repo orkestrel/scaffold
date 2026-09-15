@@ -1,0 +1,100 @@
+=== daemon version: {"version":"0.33.3"}
+=== npm run lint
+npm notice run @orkestrel/ollama@0.0.15 lint
+npm notice run oxlint --config .oxlintrc.json --fix .
+=== exit=0
+=== npm run format
+npm notice run @orkestrel/ollama@0.0.15 format
+npm notice run oxfmt --config .oxfmtrc.json --write .
+Finished in 1413ms on 65 files using 16 threads.
+=== exit=0
+=== npm run format:check
+npm notice run @orkestrel/ollama@0.0.15 format:check
+npm notice run oxfmt --config .oxfmtrc.json --check .
+Checking formatting...
+
+All matched files use the correct format.
+Finished in 1435ms on 65 files using 16 threads.
+=== exit=0
+=== npm run lint:check
+npm notice run @orkestrel/ollama@0.0.15 lint:check
+npm notice run oxlint --config .oxlintrc.json --deny-warnings .
+=== exit=0
+=== npm run check
+npm notice run @orkestrel/ollama@0.0.15 check
+npm notice run tsc --noEmit --project tsconfig.json && npm run check:src
+npm notice run @orkestrel/ollama@0.0.15 check:src
+npm notice run npm run check:src:core
+npm notice run @orkestrel/ollama@0.0.15 check:src:core
+npm notice run tsc --noEmit -p configs/src/tsconfig.core.json
+=== exit=0
+=== npm run test:src:core
+npm notice run @orkestrel/ollama@0.0.15 test:src:core
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/ollama-audit
+
+···································································································
+
+ Test Files  4 passed (4)
+      Tests  99 passed (99)
+   Start at  19:25:22
+   Duration  1.13s (transform 305ms, setup 120ms, import 714ms, tests 1.28s, environment 0ms)
+
+=== exit=0
+=== npm run test:setup
+npm notice run @orkestrel/ollama@0.0.15 test:setup
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project setup
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/ollama-audit
+
+································································································
+
+ Test Files  3 passed (3)
+      Tests  96 passed (96)
+   Start at  19:25:24
+   Duration  747ms (transform 196ms, setup 85ms, import 663ms, tests 421ms, environment 0ms)
+
+=== exit=0
+=== npm run test:conformance
+npm notice run @orkestrel/ollama@0.0.15 test:conformance
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project conformance
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/ollama-audit
+
+·················
+
+ Test Files  1 passed (1)
+      Tests  17 passed (17)
+   Start at  19:25:26
+   Duration  214ms (transform 28ms, setup 34ms, import 24ms, tests 5ms, environment 0ms)
+
+=== exit=0
+=== npm run test:policy
+npm notice run @orkestrel/ollama@0.0.15 test:policy
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project policy
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/ollama-audit
+
+·················································································-·········
+
+ Test Files  1 passed (1)
+      Tests  90 passed | 1 skipped (91)
+   Start at  19:25:27
+   Duration  827ms (transform 82ms, setup 36ms, import 106ms, tests 534ms, environment 0ms)
+
+=== exit=0
+=== npm run test:service
+npm notice run @orkestrel/ollama@0.0.15 test:service
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project service
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/ollama-audit
+
+·····························································
+
+ Test Files  12 passed (12)
+      Tests  61 passed (61)
+   Start at  19:25:28
+   Duration  55.91s (transform 188ms, setup 6.01s, import 314ms, tests 47.86s, environment 1ms)
+
+=== exit=0

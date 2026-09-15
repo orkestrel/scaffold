@@ -1,0 +1,103 @@
+// Probe against the built dist at c50aee6: createRelay with a request whose body errors mid-read,
+// a request whose body stalls with an aborted signal, and a valid request driven through
+// RelayProvider in process with a fixture parser — the handler must answer, never reject.
+import { createRelay, createRelayProvider, isProviderError, isProviderAbortError } from 'file:///C:/Users/mikes/WebstormProjects/agent/dist/src/core/index.js'
+
+const provider = {
+	id: 'scripted',
+	name: 'scripted',
+	async generate() {
+		return { content: 'unused' }
+	},
+	async *stream(messages, signal) {
+		yield { channel: 'content', text: 'hel' }
+		yield { channel: 'content', text: 'lo' }
+		return { content: 'hello', thinking: 'why', tools: [{ id: 't1', name: 'lookup', arguments: { q: 1 } }], usage: { prompt: 1, completion: 2, total: 3 } }
+	},
+}
+const handler = createRelay({ provider, authorize: (request) => request.headers.get('authorization') === 'Bearer ok' })
+
+function lines() {
+	// A minimal line parser fixture standing in for @orkestrel/ndjson (agent declares no dependency on it).
+	let buffer = ''
+	return {
+		parse(chunk) {
+			buffer += chunk
+			const parts = buffer.split('\n')
+			buffer = parts.pop() ?? ''
+			const records = []
+			for (const part of parts) {
+				if (part.length === 0) continue
+				try {
+					records.push(JSON.parse(part))
+				} catch {
+					// skip malformed
+				}
+			}
+			return records
+		},
+		clear() {
+			buffer = ''
+		},
+	}
+}
+
+// A: body errors mid-read.
+{
+	const body = new ReadableStream({
+		start(controller) {
+			controller.enqueue(new TextEncoder().encode('{"messages":'))
+		},
+		pull(controller) {
+			controller.error(new Error('client dropped'))
+		},
+	})
+	const request = new Request('http://relay.test/', { method: 'POST', headers: { authorization: 'Bearer ok' }, body, duplex: 'half' })
+	try {
+		const response = await handler(request)
+		console.log('A body errors mid-read: status', response.status)
+	} catch (error) {
+		console.log('A body errors mid-read: HANDLER REJECTED', error?.message)
+	}
+}
+
+// B: valid request through RelayProvider in process.
+{
+	const relay = createRelayProvider({
+		url: 'http://relay.test/',
+		parser: lines,
+		headers: () => ({ authorization: 'Bearer ok' }),
+		fetch: (input, init) => handler(new Request(input, init)),
+	})
+	const deltas = []
+	const stream = relay.stream([{ id: '1', role: 'user', content: 'hi' }], new AbortController().signal)
+	let step = await stream.next()
+	while (!step.done) {
+		deltas.push(step.value.text)
+		step = await stream.next()
+	}
+	console.log('B in-process hop: deltas', JSON.stringify(deltas), 'result', JSON.stringify(step.value))
+}
+
+// C: wrong bearer → 401 surfaced as ProviderError HTTP 401.
+{
+	const relay = createRelayProvider({ url: 'http://relay.test/', parser: lines, headers: () => ({ authorization: 'Bearer nope' }), fetch: (input, init) => handler(new Request(input, init)) })
+	try {
+		await relay.generate([{ id: '1', role: 'user', content: 'hi' }], new AbortController().signal)
+		console.log('C wrong bearer: NO ERROR')
+	} catch (error) {
+		console.log('C wrong bearer:', isProviderError(error) ? `ProviderError ${error.code} ${error.status}` : String(error))
+	}
+}
+
+// D: request with a non-JSON argument value → refused before fetch.
+{
+	let fetched = 0
+	const relay = createRelayProvider({ url: 'http://relay.test/', parser: lines, fetch: (input, init) => { fetched += 1; return handler(new Request(input, init)) } })
+	try {
+		await relay.generate([{ id: '1', role: 'assistant', content: '', calls: [{ id: 'c', name: 'f', arguments: { fn: () => 1 } }] }], new AbortController().signal)
+		console.log('D non-JSON arguments: NO ERROR')
+	} catch (error) {
+		console.log('D non-JSON arguments:', isProviderError(error) ? `ProviderError ${error.code}` : String(error), '; fetched =', fetched)
+	}
+}

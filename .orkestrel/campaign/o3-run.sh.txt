@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+# Unit O3 (tmp/units/o3-brief.md: the relay round trips in ollama — hermetic integration and the live service proof file).
+# Cap: 5400 s. Journal: scaffold/tmp/codex/o3.jsonl. Report: ollama/tmp/units/o3-report.md (and o3-last.md).
+ROOT=/c/Users/mikes/WebstormProjects
+SCAF="$ROOT/scaffold"
+OLLAMA="C:/Users/mikes/WebstormProjects/ollama"
+cd "$SCAF" || exit 9
+mkdir -p "$OLLAMA/tmp/units"
+cp "$SCAF/tmp/units/o3-brief.md" "$OLLAMA/tmp/units/o3-brief.md" || exit 8
+cmp "$SCAF/tmp/units/o3-brief.md" "$OLLAMA/tmp/units/o3-brief.md" || exit 7
+git -C "$ROOT/ollama" status --porcelain > "$SCAF/tmp/codex/o3.status-before.txt"
+git -C "$ROOT/ollama" rev-parse --short HEAD >> "$SCAF/tmp/codex/o3.status-before.txt"
+date -u +%FT%TZ > "$SCAF/tmp/codex/o3.launch.txt"
+timeout 5400 codex exec --json -C "$OLLAMA" --sandbox workspace-write --model gpt-6-astra -c 'model_reasoning_effort="high"' --output-last-message "$OLLAMA/tmp/units/o3-last.md" "Read tmp/units/o3-brief.md and execute it exactly. It is unit O3: the relay round trips in @orkestrel/ollama, hermetic and live. Complete the whole unit. Your final message must be the report the brief specifies, and you also write that report to tmp/units/o3-report.md." < /dev/null > "$SCAF/tmp/codex/o3.jsonl" 2> "$SCAF/tmp/codex/o3.err"
+echo "exit=$?" >> "$SCAF/tmp/codex/o3.launch.txt"
+git -C "$ROOT/ollama" status --porcelain > "$SCAF/tmp/codex/o3.status-after.txt"
+date -u +%FT%TZ >> "$SCAF/tmp/codex/o3.launch.txt"

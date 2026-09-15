@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+# Unit A4 (Orchestrator tracked command): build and pack the accepted agent tree, install the tarball
+# into the ollama consumer (never link), record the replaced range, and prove resolution.
+# Restore path: `npm ci` in ollama reinstalls the registry copy from the untouched lockfile.
+set -u
+ROOT=/c/Users/mikes/WebstormProjects
+SCAF="$ROOT/scaffold"
+OUT="$SCAF/tmp/tarballs"
+mkdir -p "$OUT"
+RECEIPT="$SCAF/tmp/units/a4-receipt.md"
+{
+	echo "# A4 receipt — agent tarball into ollama"
+	echo
+	echo "date: $(date -u +%FT%TZ)"
+	echo "agent HEAD: $(git -C "$ROOT/agent" rev-parse --short HEAD)"
+	echo "agent status: [$(git -C "$ROOT/agent" status --porcelain | tr '\n' ' ')]"
+	echo "ollama HEAD: $(git -C "$ROOT/ollama" rev-parse --short HEAD)"
+	echo "ollama declared range before: $(grep '"@orkestrel/agent"' "$ROOT/ollama/package.json")"
+	echo "ollama installed before: $(grep '"version"' "$ROOT/ollama/node_modules/@orkestrel/agent/package.json")"
+	echo "installed declaration carries AgentProvider before: $(grep -c 'AgentProvider' "$ROOT/ollama/node_modules/@orkestrel/agent/dist/src/core/index.d.ts")"
+	echo "installed declaration carries UPSTREAM_RELAY_STATUS before: $(grep -c 'UPSTREAM_RELAY_STATUS' "$ROOT/ollama/node_modules/@orkestrel/agent/dist/src/core/index.d.ts")"
+} > "$RECEIPT"
+cd "$ROOT/agent" || exit 9
+npm run build > "$SCAF/tmp/units/a4-build.log.txt" 2>&1
+echo "agent build exit: $?" >> "$RECEIPT"
+npm pack --pack-destination "$OUT" > "$SCAF/tmp/units/a4-pack.log.txt" 2>&1
+echo "agent pack exit: $?" >> "$RECEIPT"
+TARBALL=$(ls -t "$OUT"/orkestrel-agent-*.tgz | head -1)
+echo "tarball: $TARBALL ($(stat -c %s "$TARBALL") bytes)" >> "$RECEIPT"
+cd "$ROOT/ollama" || exit 9
+npm install --no-save --ignore-scripts "$TARBALL" > "$SCAF/tmp/units/a4-install.log.txt" 2>&1
+echo "ollama install exit: $?" >> "$RECEIPT"
+echo "ollama declared range after: $(grep '"@orkestrel/agent"' "$ROOT/ollama/package.json")" >> "$RECEIPT"
+echo "ollama installed after: $(grep '"version"' "$ROOT/ollama/node_modules/@orkestrel/agent/package.json")" >> "$RECEIPT"
+echo "installed declaration carries AgentProvider after: $(grep -c 'AgentProvider' "$ROOT/ollama/node_modules/@orkestrel/agent/dist/src/core/index.d.ts")" >> "$RECEIPT"
+echo "installed declaration carries UPSTREAM_RELAY_STATUS after: $(grep -c 'UPSTREAM_RELAY_STATUS' "$ROOT/ollama/node_modules/@orkestrel/agent/dist/src/core/index.d.ts")" >> "$RECEIPT"
+echo "tarball entries under dist/src/core: $(tar -tzf "$TARBALL" | grep -c 'dist/src/core')" >> "$RECEIPT"
+echo "ollama package.json/lock dirty after install: [$(git -C "$ROOT/ollama" status --porcelain -- package.json package-lock.json | tr '\n' ' ')]" >> "$RECEIPT"
+cat "$RECEIPT"
