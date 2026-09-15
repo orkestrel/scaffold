@@ -39,6 +39,37 @@ describe('readPolicyDeclarations', () => {
 		})
 	}
 
+	it("reports an overloaded export's collision once", () => {
+		const scratch = createPolicySurfaceFixture()
+		try {
+			scratch.write(
+				`${POLICY_SURFACE_HOST}/guides/other.md`,
+				createPolicySurfaceGuide(['waitForCondition']),
+			)
+			scratch.write(
+				'tests/setupServer.ts',
+				'export function waitForCondition(value: string): void\n' +
+					'export function waitForCondition(value: number): void\n' +
+					'export function waitForCondition() {}',
+			)
+			expect(
+				inspectPolicyWorkspace(scratch.path).filter(
+					(violation) =>
+						violation.message === 'surface name belongs to one package: waitForCondition (other)',
+				),
+			).toEqual([
+				{
+					rule: 'surface',
+					path: 'tests/setupServer.ts',
+					line: 1,
+					message: 'surface name belongs to one package: waitForCondition (other)',
+				},
+			])
+		} finally {
+			scratch.destroy()
+		}
+	})
+
 	it('accounts for a star barrel over a namespace', () => {
 		const scratch = createPolicySurfaceFixture()
 		try {
@@ -126,6 +157,38 @@ describe('readPolicyDeclarations', () => {
 			scratch.destroy()
 		}
 	})
+
+	it('reads each signature of an exported function overload', () => {
+		expect(
+			readPolicyDeclarations(
+				'tests/setupServer.ts',
+				'export function buildResult(input: string): string\n' +
+					'export function buildResult(input: number): string\n' +
+					'export function buildResult(input: string | number): string {\n' +
+					'\treturn String(input)\n' +
+					'}\n',
+			),
+		).toEqual([
+			{ name: 'buildResult', path: 'tests/setupServer.ts', line: 1 },
+			{ name: 'buildResult', path: 'tests/setupServer.ts', line: 2 },
+			{ name: 'buildResult', path: 'tests/setupServer.ts', line: 3 },
+		])
+		expect(() => readPolicyDeclarations('tests/setupServer.ts', 'export default 1\n')).toThrow(
+			'export statement is unsupported at tests/setupServer.ts:1: ExportDefaultDeclaration',
+		)
+		expect(() =>
+			readPolicyDeclarations(
+				'tests/setupServer.ts',
+				"export import Legacy = require('node:path')\n",
+			),
+		).toThrow(
+			'export declaration is unsupported at tests/setupServer.ts:1: TSImportEqualsDeclaration',
+		)
+		expect(() => readPolicyDeclarations('tests/setupServer.ts', 'export = 1\n')).toThrow(
+			'export statement is unsupported at tests/setupServer.ts:1: TSExportAssignment',
+		)
+	})
+
 	it('locates declarations across comments and CRLF while normalizing paths', () => {
 		expect(
 			readPolicyDeclarations(

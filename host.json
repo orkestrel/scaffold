@@ -700,7 +700,7 @@
 			"storage": "guides/agent.md",
 			"destination": "guides/agent.md",
 			"executable": false,
-			"digest": "78ca060a40cc7ae1f7fe4eacb2b0b3005323d3b1bacdc1419bf5637821e7dd5d"
+			"digest": "55487dfd29fd256ff5d770b422d9fc4f45d4bfad48edf094fefa3c36a8b069ba"
 		},
 		{
 			"storage": "guides/brief.md",
@@ -958,7 +958,7 @@
 			"storage": "guides/tool.md",
 			"destination": "guides/tool.md",
 			"executable": false,
-			"digest": "e98b3d3cd0aabd8f2f8576b847759088bfea26990340de35a9773bf506e7a8eb"
+			"digest": "ad68991917befd3cc8b2816035e91ceac62fad3a281684a9d943d7fc49615d48"
 		},
 		{
 			"storage": "guides/toolbox.md",
@@ -1030,7 +1030,7 @@
 			"storage": "tests/setupPolicy.ts",
 			"destination": "tests/setupPolicy.ts",
 			"executable": false,
-			"digest": "6e8f25094817161541d66d1a18938ec6c9ae4769c530569117e2b9565e84d2b7"
+			"digest": "22f94ac2be89aa62b812077b9786a9612898576e76bb3da488e4789e130447df"
 		}
 	],
 	"roots": [
@@ -1993,5 +1993,5 @@
 			]
 		}
 	],
-	"digest": "bc26629532b44cb4ff74aab6a00194ac90d9b5982d9fa63c52844f42a54dfd7c"
+	"digest": "8b55bfbb97b10ba9237e35e4e849d1350edb368efadae447d24f59dd90b1ec25"
 }
