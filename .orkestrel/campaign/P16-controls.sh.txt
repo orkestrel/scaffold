@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+# Orchestrator probe P16 — replays the two U4j writer-only controls on byte copies and restores.
+# Control A: the old sync order (prune before reconcile) against the ordering pin.
+# Control B: #prune keeps a name the manager still holds, against the unprojectable-replacement pin.
+set -u
+S="C:/Users/mikes/AppData/Local/Temp/claude/C--Users-mikes-WebstormProjects-scaffold/bab586ba-1c34-4a7e-a280-b3a7e9f303d2/scratchpad"
+L="/c/Users/mikes/WebstormProjects/scaffold/tmp/units"
+cd /c/Users/mikes/WebstormProjects/mcp || exit 9
+F=src/browser/ModelContext.ts
+cp "$F" "$S/ModelContext.ts.u4j-backup"
+echo "before: $(sha256sum "$F" | cut -c1-16)"
+echo "== control A: prune before reconcile in #sync"
+grep -n 'this.#prune(projections, tools)' "$F"
+node "$S/p16-mutate-a.mjs" "$F"
+grep -n 'P16-A' "$F" | head -3
+npx vitest run --config vite.config.ts --project src:browser tests/src/browser/ModelContext.test.ts -t "before it releases what the change removed" > "$L/P16a-order-control.log.txt" 2>&1
+echo "control A exit=$?"
+sed 's/\x1b\[[0-9;]*m//g' "$L/P16a-order-control.log.txt" | grep -E '✓|×|Tests  |AssertionError' | cut -c1-200
+cp "$S/ModelContext.ts.u4j-backup" "$F"
+echo "restored: $(sha256sum "$F" | cut -c1-16)"
+echo "== control B: #prune keeps a name the manager still holds"
+node "$S/p16-mutate-b.mjs" "$F"
+grep -n 'P16-B' "$F" | head -3
+npx vitest run --config vite.config.ts --project src:browser tests/src/browser/ModelContext.test.ts -t "releases a registered name the manager replaced with a tool WebMCP cannot carry" > "$L/P16b-keep-control.log.txt" 2>&1
+echo "control B exit=$?"
+sed 's/\x1b\[[0-9;]*m//g' "$L/P16b-keep-control.log.txt" | grep -E '✓|×|Tests  |AssertionError' | cut -c1-200
+cp "$S/ModelContext.ts.u4j-backup" "$F"
+echo "restored: $(sha256sum "$F" | cut -c1-16)"
+git status --short | grep -c 'probe'

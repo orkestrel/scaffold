@@ -1,0 +1,10 @@
+// P16 control B: #prune keeps a name the manager still holds (the U4j writer's control).
+import { readFileSync, writeFileSync } from 'node:fs'
+const path = process.argv[2]
+const text = readFileSync(path, 'utf8')
+const guard = 'if (kept.has(name) || (tools !== undefined && held.tools !== tools)) continue'
+const at = text.indexOf(guard)
+if (at < 0 || text.indexOf(guard, at + 1) >= 0) throw new Error('prune guard not unique')
+const mutated = text.replace(guard, 'if (kept.has(name) || (tools !== undefined && held.tools !== tools) || (tools !== undefined && tools.tool(name) !== undefined)) continue // P16-B')
+writeFileSync(path, mutated)
+console.log('P16-B applied')

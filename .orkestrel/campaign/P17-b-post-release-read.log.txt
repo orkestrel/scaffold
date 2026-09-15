@@ -1,0 +1,39 @@
+npm notice run @orkestrel/ollama@0.0.16 npx
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=verbose --project service tests/service/page.test.ts -t refuses an attempt whose release crossed its allowance
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/ollama
+
+ ↓ |service| tests/service/page.test.ts > Agent tool loop in a real page (live) — the published closure > evaluates the published agent closure in a real page from an import map
+ ↓ |service| tests/service/page.test.ts > Agent tool loop in a real page (live) — a page tool through the relay > executes a page tool through an agent over a live Ollama relay and feeds its result into the next model turn
+ ↓ |service| tests/service/page.test.ts > Agent tool loop in a real page (live) — the recorders report a known fault > records a deliberate page request and a deliberate page fault outside the agent operation
+ ↓ |service| tests/service/page.test.ts > Agent tool loop in a real page (live) — a refused page credential > rejects a page relay credential before contacting Ollama
+ ↓ |service| tests/service/page.test.ts > Ollama in a real page (live) — the daemon driven directly > drives the daemon directly from the page behind its origin gate
+ ↓ |service| tests/service/page.test.ts > Agent tool loop in a real page (live) — the attempt bound > ends an over-long attempt on its own allowance and leaves no browser behind
+ ↓ |service| tests/service/page.test.ts > Agent tool loop in a real page (live) — the attempt bound > releases the acquisition its deadline outran instead of waiting on it
+ × |service| tests/service/page.test.ts > Agent tool loop in a real page (live) — the attempt bound > refuses an attempt whose release crossed its allowance 3666ms
+   → expected 'undefined' to be 'the page attempt released its browser…' // Object.is equality
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |service| tests/service/page.test.ts > Agent tool loop in a real page (live) — the attempt bound > refuses an attempt whose release crossed its allowance
+AssertionError: expected 'undefined' to be 'the page attempt released its browser…' // Object.is equality
+
+Expected: "the page attempt released its browser after its 2000 ms allowance had expired"
+Received: "undefined"
+
+ ❯ tests/service/page.test.ts:688:34
+    686|     (thrown: unknown) => thrown,
+    687|    )
+    688|    expect(describeFailure(late)).toBe(
+       |                                  ^
+    689|     `the page attempt released its browser after its ${PAGE_INTERVALS.…
+    690|    )
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 7 skipped (8)
+   Start at  09:29:45
+   Duration  4.65s (transform 95ms, setup 428ms, import 407ms, tests 3.67s, environment 0ms)
+

@@ -1,0 +1,71 @@
+ M .agents/templates/brief.md
+ M .claude/rules/names.md
+ M .claude/rules/tests.md
+ M .claude/rules/workspace.md
+ M .prettierignore
+ M guides/README.md
+ M guides/scaffold.md
+ M host.json
+ M src/bin/CLI.ts
+ M src/bin/helpers.ts
+ M src/bin/types.ts
+ M src/core/compilers.ts
+ M src/core/constants.ts
+ M src/core/helpers.ts
+ M src/server/Materializer.ts
+ M src/server/Upstream.ts
+ M src/server/constants.ts
+ M src/server/helpers.ts
+ M src/server/types.ts
+ M src/server/validators.ts
+ M tests/distribution.test.ts
+ M tests/policy.test.ts
+ M tests/setupPolicy.test.ts
+ M tests/setupPolicy.ts
+ M tests/setupServer.test.ts
+ M tests/setupServer.ts
+ M tests/src/bin/CLI.test.ts
+ M tests/src/core/compilers.test.ts
+ M tests/src/core/helpers.test.ts
+ M tests/src/server/Materializer.test.ts
+ M tests/src/server/Upstream.test.ts
+ M tests/src/server/WriteTransaction.test.ts
+ M tests/src/server/helpers.test.ts
+ M tests/src/server/validators.test.ts
+?? .orkestrel/
+?? guides/supervisor.md
+ .agents/templates/brief.md                |    9 +
+ .claude/rules/names.md                    |   13 +
+ .claude/rules/tests.md                    |   40 +-
+ .claude/rules/workspace.md                |   22 +-
+ .prettierignore                           |    3 +
+ guides/README.md                          |   16 +-
+ guides/scaffold.md                        |  144 +++-
+ host.json                                 | 1212 ++++++++++++++++++++++++++++-
+ src/bin/CLI.ts                            |  141 ++--
+ src/bin/helpers.ts                        |   13 +-
+ src/bin/types.ts                          |   16 +-
+ src/core/compilers.ts                     |   11 +-
+ src/core/constants.ts                     |   27 +-
+ src/core/helpers.ts                       |    2 +-
+ src/server/Materializer.ts                |   94 ++-
+ src/server/Upstream.ts                    |    4 +-
+ src/server/constants.ts                   |    3 +
+ src/server/helpers.ts                     |  199 ++++-
+ src/server/types.ts                       |   28 +-
+ src/server/validators.ts                  |   42 +-
+ tests/distribution.test.ts                |   62 +-
+ tests/policy.test.ts                      |  279 ++++++-
+ tests/setupPolicy.test.ts                 |  166 +++-
+ tests/setupPolicy.ts                      |  319 +++++++-
+ tests/setupServer.test.ts                 |   81 +-
+ tests/setupServer.ts                      |  160 ++--
+ tests/src/bin/CLI.test.ts                 |  218 +++++-
+ tests/src/core/compilers.test.ts          |   13 +
+ tests/src/core/helpers.test.ts            |   24 +-
+ tests/src/server/Materializer.test.ts     |  223 ++++--
+ tests/src/server/Upstream.test.ts         |   29 +-
+ tests/src/server/WriteTransaction.test.ts |   60 +-
+ tests/src/server/helpers.test.ts          |  525 +++++++++++--
+ tests/src/server/validators.test.ts       |   62 ++
+ 34 files changed, 3853 insertions(+), 407 deletions(-)

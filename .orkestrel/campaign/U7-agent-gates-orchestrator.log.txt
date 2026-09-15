@@ -1,0 +1,63 @@
+# agent gates (after-u7) — 2026-09-15T08:39:19Z
+== npm run format:check
+npm notice run @orkestrel/agent@0.0.22 format:check
+npm notice run oxfmt --config .oxfmtrc.json --check .
+Checking formatting...
+
+All matched files use the correct format.
+Finished in 1613ms on 87 files using 16 threads.
+exit=0
+== npm run lint:check
+npm notice run @orkestrel/agent@0.0.22 lint:check
+npm notice run oxlint --config .oxlintrc.json --deny-warnings .
+exit=0
+== npm run check
+npm notice run @orkestrel/agent@0.0.22 check
+npm notice run tsc --noEmit --project tsconfig.json && npm run check:src
+npm notice run @orkestrel/agent@0.0.22 check:src
+npm notice run npm run check:src:core
+npm notice run @orkestrel/agent@0.0.22 check:src:core
+npm notice run tsc --noEmit -p configs/src/tsconfig.core.json
+exit=0
+== npm run test
+
+··········································································································································································stdout | tests/config.test.ts > configuration helpers > rolls one face into a single declaration and rewrites its core specifier
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+
+·-stdout | tests/config.test.ts > configuration helpers > rolls one face into a single declaration and rewrites its core specifier
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+
+·
+
+ Test Files  1 passed (1)
+      Tests  172 passed | 1 skipped (173)
+   Start at  04:39:31
+   Duration  3.26s (transform 332ms, setup 461ms, import 406ms, tests 2.24s, environment 0ms)
+
+npm notice run @orkestrel/agent@0.0.22 test:setup
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project setup
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/agent
+
+······················································
+
+ Test Files  1 passed (1)
+      Tests  54 passed (54)
+   Start at  04:39:35
+   Duration  759ms (transform 207ms, setup 472ms, import 37ms, tests 108ms, environment 0ms)
+
+npm notice run @orkestrel/agent@0.0.22 test:guides
+npm notice run node --experimental-strip-types tests/guides.test.ts
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/agent
+
+·············································
+
+ Test Files  1 passed (1)
+      Tests  45 passed (45)
+   Start at  04:39:37
+   Duration  1.25s (transform 213ms, setup 463ms, import 530ms, tests 120ms, environment 0ms)
+
+exit=0

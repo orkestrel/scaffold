@@ -1,0 +1,1156 @@
+diff --git a/guides/mcp.md b/guides/mcp.md
+index 66b6be8..1ef8524 100644
+--- a/guides/mcp.md
++++ b/guides/mcp.md
+@@ -3275,22 +3275,24 @@ A `Shape` cell holds the constant's declared type.
+ 
+ #### Helpers
+ 
+-This table lists the WebMCP projections, the name lookup a followed change projects through,
++This table lists the WebMCP projections, the batch a publication refuses and the batch a
++followed change reconciles against, the name lookup that reports what a registry advertises,
+ the descriptor comparison `publish` reconciles a name against, and the registry guards. Each projection is the WebMCP direction of the translation
+ `toolAnnotationsToMCP` and `mcpAnnotationsToTool` perform for the MCP wire; see
+ [Core § Helpers](#helpers) for those.
+ 
+-| API                       | Kind     | Summary                                                                                       |
+-| ------------------------- | -------- | --------------------------------------------------------------------------------------------- |
+-| `toolAnnotationsToWebMCP` | function | Projects domain tool annotations onto WebMCP registry hints without inventing defaults.       |
+-| `webMCPAnnotationsToTool` | function | Projects WebMCP registry hints onto domain tool annotations without inventing defaults.       |
+-| `toolToWebMCP`            | function | Projects one advertised tool definition onto the WebMCP descriptor a registration carries.    |
+-| `describeWebMCPTool`      | function | Projects the descriptor a registry advertises for one tool name, or reports that it has none. |
+-| `webMCPToTool`            | function | Projects one registered WebMCP tool onto the tool definition an adopted tool advertises.      |
+-| `matchesDescriptor`       | function | Determines whether two WebMCP descriptors advertise the same tool to the registry.            |
+-| `buildWebMCPDescriptors`  | function | Builds the WebMCP descriptor for every tool a registry advertises, or refuses the batch.      |
+-| `isWebMCPRegistry`        | function | Determines whether an unknown value is a WebMCP tool registry.                                |
+-| `isWebMCPDocument`        | function | Determines whether an unknown value is a document exposing the WebMCP tool registry.          |
++| API                        | Kind     | Summary                                                                                       |
++| -------------------------- | -------- | --------------------------------------------------------------------------------------------- |
++| `toolAnnotationsToWebMCP`  | function | Projects domain tool annotations onto WebMCP registry hints without inventing defaults.       |
++| `webMCPAnnotationsToTool`  | function | Projects WebMCP registry hints onto domain tool annotations without inventing defaults.       |
++| `toolToWebMCP`             | function | Projects one advertised tool definition onto the WebMCP descriptor a registration carries.    |
++| `describeWebMCPTool`       | function | Projects the descriptor a registry advertises for one tool name, or reports that it has none. |
++| `webMCPToTool`             | function | Projects one registered WebMCP tool onto the tool definition an adopted tool advertises.      |
++| `matchesDescriptor`        | function | Determines whether two WebMCP descriptors advertise the same tool to the registry.            |
++| `buildWebMCPProjections`   | function | Builds the WebMCP projection of every tool a registry advertises, or refuses the batch.       |
++| `collectWebMCPProjections` | function | Collects the WebMCP projection of every tool a registry advertises that WebMCP can carry.     |
++| `isWebMCPRegistry`         | function | Determines whether an unknown value is a WebMCP tool registry.                                |
++| `isWebMCPDocument`         | function | Determines whether an unknown value is a document exposing the WebMCP tool registry.          |
+ 
+ The SSE decoders `decodeEvent` and `readEventStream` are host-independent and ship from
+ `@orkestrel/mcp`; see [Core § Helpers](#helpers).
+@@ -3323,6 +3325,7 @@ An extended interface's name comes before `plus`, with the members it adds after
+ | `WebMCPExecuteOptions`            | interface | `{ signal? }`                                                                                    | Options for the WebMCP registry's `executeTool` — the caller's cancellation signal.                                                                                                                                                                                                                                                                                                                                                                                                     |
+ | `WebMCPRegistryInterface`         | interface | `{} plus registerTool, getTools, executeTool, addEventListener, removeEventListener`             | Represents the WebMCP tool registry a document exposes as `document.modelContext`.                                                                                                                                                                                                                                                                                                                                                                                                      |
+ | `WebMCPDocument`                  | interface | `{ modelContext }`                                                                               | Describes a document that exposes the WebMCP tool registry.                                                                                                                                                                                                                                                                                                                                                                                                                             |
++| `WebMCPProjection`                | interface | `{ tool, descriptor }`                                                                           | Pairs one tool with the WebMCP descriptor a registry advertises for it.                                                                                                                                                                                                                                                                                                                                                                                                                 |
+ | `ModelContextEventMap`            | type      | `{ change: readonly [] }`                                                                        | Reports the moments a WebMCP registry's contents changed.                                                                                                                                                                                                                                                                                                                                                                                                                               |
+ | `ModelContextOptions`             | interface | `{ document?, on?, error? }`                                                                     | Options for `createModelContext` — the document to bridge and the emitter's initial wiring.                                                                                                                                                                                                                                                                                                                                                                                             |
+ | `ModelContextPublishOptions`      | interface | `{ origins? }`                                                                                   | Options for `ModelContextInterface.publish` — the origins each registration is exposed to.                                                                                                                                                                                                                                                                                                                                                                                              |
+@@ -4062,19 +4065,22 @@ this page's tools out to `document.modelContext`; `adopt` brings that registry's
+ `publish` takes a snapshot **and** subscribes. The snapshot is taken when `publish` is called,
+ before the work queues behind an earlier publication, so a manager mutated while a call waits
+ its turn does not change what that call registers. The same call then subscribes to the
+-manager's own `emitter` — `@orkestrel/tool` publishes `add`, `remove`, and `clear` — so a tool
+-added afterwards is registered, a tool removed has its registration aborted, and a `clear`
+-aborts the registrations for the tools that `clear` carried. The document registry tracks the
+-tool registry, and a consumer that changes the tool registry calls nothing.
+-
+-A `clear` releases what it cleared, and nothing else. The manager empties its map and then
+-publishes the event with the tools it removed, so a listener that adds a tool inside that same
+-dispatch leaves the addition in the manager — and the bridge registers it. Releasing every name
+-bound to the manager would take that registration back, for a tool the `clear` never removed,
+-and releasing by name alone would take it back whenever the addition reclaimed a name the
+-`clear` carried. The release is bound to what the cleared tool advertised: it takes back the
+-registration still serving that descriptor, and leaves a replacement registered under the same
+-name standing. A `remove` reads the same rule for the one tool it ended.
++manager's own `emitter` — `@orkestrel/tool` publishes `add`, `remove`, and `clear`. The
++document registry tracks the tool registry, and a consumer that changes the tool registry calls
++nothing.
++
++**A followed change is a trigger, not a fact.** Each `add`, `remove`, and `clear` queues one
++synchronisation of the registrations this handle holds for that manager against what the
++manager holds when that queued work runs, so the bridge converges on the manager's state after
++every change it follows. What the event carries cannot decide the outcome, and each of these
++cases is why: `remove` and `clear` name tools the manager no longer holds; a listener that ran
++earlier in the same dispatch can add a tool back under one of those names, with the same
++descriptor or another; the manager empties its map before it publishes `clear`, so such an
++addition stays in the manager; and `tools.destroy()` publishes `clear`, destroys its emitter,
++and then empties the map again, erasing an addition with no event left to report it. Reading
++the manager answers all of them the same way. A registration whose name the manager no longer
++advertises is aborted, and only registrations bound to that manager are — a name another
++manager's publication put there is left standing.
+ 
+ One manager is followed at a time. A `publish` naming another manager releases the subscription
+ and takes up the new one, and `destroy` releases it outright. An event from a manager this
+@@ -4083,20 +4089,24 @@ withdraw the handler from the listener array that dispatch is walking, so a list
+ republishes another manager leaves this handle's own handler still to run for a subscription
+ that no longer exists. A followed change reaches no caller, so a tool advertising neither a
+ `description` nor a `summary` is left unregistered rather than refusing anything, and a
+-registration the document registry refuses is dropped for the next `publish` to retry. Refusal
++registration the document registry refuses is dropped, so the next `publish` or the next
++synchronisation registers that name again. Refusal
+ is the caller's answer, and a followed change has no caller to give it to. That skip emits no
+ `change`, because nothing reached the document registry: compare the manager's own
+ `definitions()` with what `adopt()` returns to read the mismatch, and `describeWebMCPTool`
+ names an advertised tool the projection cannot carry.
+ 
+ Every name reconciles against what this handle registered for it, whether it arrives in a
+-snapshot or through the subscription. The same manager and an equal projection leave the
++snapshot or through a synchronisation. The same manager still holding the same tool leaves the
+ registration untouched, so a repeat registers nothing and the registry fires no `toolchange`
+-reporting a change nobody made. A changed projection, or the same name arriving from a
+-different manager, releases the registration this handle holds and registers the new descriptor
+-bound to the new manager. A name the snapshot dropped is released. Descriptor equality is
+-structural and key-order-independent, so re-authoring one schema in another key order is not a
+-change.
++reporting a change nobody made — and a descriptor JSON cannot encode, such as a cyclic
++`inputSchema`, is left alone rather than re-registered on every change to another name. Another
++tool of that manager advertising an equal descriptor leaves the registration standing too:
++execution routes through the manager by name, so the replacement's handler is already what a
++foreign agent reaches. A changed projection, or the same name arriving from a different
++manager, releases the registration this handle holds and registers the new descriptor bound to
++the new manager. A name the snapshot dropped is released. Descriptor equality is structural and
++key-order-independent, so re-authoring one schema in another key order is not a change.
+ 
+ Every tool is projected before anything is registered, so a manager holding a tool that
+ advertises neither a `description` nor a `summary` is refused whole, with an `MCPError`
+diff --git a/src/browser/ModelContext.ts b/src/browser/ModelContext.ts
+index 8d77a0b..891afca 100644
+--- a/src/browser/ModelContext.ts
++++ b/src/browser/ModelContext.ts
+@@ -9,18 +9,18 @@ import type {
+ 	WebMCPDescriptor,
+ 	WebMCPDocument,
+ 	WebMCPHandlerOptions,
++	WebMCPProjection,
+ 	WebMCPRegisteredTool,
+ 	WebMCPRegistryInterface,
+ } from './types.js'
+ import { Emitter } from '@orkestrel/emitter'
+-import { createTool, toolToDefinition } from '@orkestrel/tool'
++import { createTool } from '@orkestrel/tool'
+ import { attempt } from '@orkestrel/contract'
+ import { WEBMCP_CHANGE_EVENT } from './constants.js'
+ import {
+-	buildWebMCPDescriptors,
+-	describeWebMCPTool,
++	buildWebMCPProjections,
++	collectWebMCPProjections,
+ 	matchesDescriptor,
+-	toolToWebMCP,
+ 	webMCPToTool,
+ } from './helpers.js'
+ 
+@@ -46,20 +46,24 @@ import {
+  *   to, so a tool advertising neither a `description` nor a `summary` is left unregistered
+  *   rather than refusing anything, and that skip emits no `change` because nothing reached the
+  *   document registry; `publish` still refuses such a batch whole.
+- * - **A followed `clear` releases what it cleared.** The manager empties its map and then
+- *   publishes `clear` with the tools it removed, so an earlier listener adding a tool inside
+- *   that dispatch leaves it in the manager. The release takes back the registrations the
+- *   event's own tools are advertising, never every name bound to the manager and never a
+- *   registration made after the event under a name the event carried. A followed `remove`
+- *   reads the same rule for the one tool it ended.
+- * - **A later `publish` reconciles, and so does every followed change.** Each name is compared
+- *   with what this handle already registered for it: the same manager and an equal projection
+- *   leave the registration alone, and a changed projection or a different manager releases it
+- *   and registers the new descriptor bound to the new manager. A name the snapshot dropped is
+- *   released. Nothing has to be removed from the manager to make the registry agree with it.
++ * - **A followed change is a trigger, not a fact.** Each `add`, `remove`, or `clear` queues one
++ *   synchronisation of this handle's registrations for that manager against what the manager
++ *   holds when that queued work runs. The event cannot decide the outcome: `remove` and
++ *   `clear` name tools the manager no longer holds, an earlier listener in the same dispatch
++ *   may already have put another tool under one of those names, and the manager's `destroy`
++ *   empties its map after the `clear` it publishes. Reading the manager converges on its state
++ *   however the change was reached, so a synchronisation queued and not yet started already
++ *   covers every change that arrives before it runs and a second one is not queued.
++ * - **A later `publish` reconciles, and so does every synchronisation.** Each name is compared
++ *   with what this handle already registered for it: the same manager holding the same tool
++ *   leaves the registration alone, a different tool advertising an equal descriptor leaves it
++ *   registered and records the tool it now stands for, and anything else releases it and
++ *   registers the new descriptor bound to the new manager. A name the snapshot dropped, or a
++ *   name the manager no longer holds, is released. Nothing has to be removed from the manager
++ *   to make the registry agree with it.
+  * - **Work serializes.** Registration is asynchronous and `destroy` is not, so overlapping
+  *   calls would interleave registrations with the aborts meant to end them. Each publication
+- *   and each followed change queues behind the previous one, and every step re-reads the
++ *   and each synchronisation queues behind the previous one, and every step re-reads the
+  *   destroyed flag, so a `destroy` issued mid-publish stops the registrations that have not
+  *   happened yet instead of racing them.
+  * - **Nothing is polyfilled.** A document exposing no registry never reaches this class:
+@@ -85,30 +89,29 @@ export class ModelContext implements ModelContextInterface {
+ 	readonly #registry: WebMCPRegistryInterface
+ 	readonly #emitter: Emitter<ModelContextEventMap>
+ 	// What this handle registered, per name: the signal that releases it, the descriptor the
+-	// registry is advertising for it, and the manager its execution is bound to. Genuinely
+-	// private glue — the controller alone cannot answer whether a later publication is asking
+-	// for the same tool, and answering that is the whole of the reconciliation.
++	// registry is advertising for it, the manager's own tool the registration was made for
++	// (`tool`), and the manager its execution is bound to (`tools`). Genuinely private glue —
++	// the controller alone cannot answer whether the manager still holds the tool this
++	// registration serves, and answering that is the whole of the reconciliation.
+ 	readonly #registrations = new Map<
+ 		string,
+ 		{
+ 			readonly controller: AbortController
+ 			readonly descriptor: WebMCPDescriptor
++			readonly tool: ToolInterface
+ 			readonly tools: ToolManagerInterface
+ 		}
+ 	>()
+ 	readonly #listener: () => void
+-	// The manager this handle is following, with the exact handler references `off` needs to
++	// The manager this handle is following, with the exact handler reference `off` needs to
+ 	// release it. Genuinely private glue: the subscription is an implementation of `publish`'s
+-	// contract rather than a member a consumer reads, and the three handlers only exist so the
+-	// release takes back what the subscription added.
+-	#followed:
+-		| {
+-				readonly tools: ToolManagerInterface
+-				readonly add: (tool: ToolInterface) => void
+-				readonly remove: (tool: ToolInterface) => void
+-				readonly clear: (cleared: readonly ToolInterface[]) => void
+-		  }
+-		| undefined = undefined
++	// contract rather than a member a consumer reads, and one handler serves all three events
++	// because each of them asks for the same thing — read the manager and agree with it.
++	#followed: { readonly tools: ToolManagerInterface; readonly changed: () => void } | undefined =
++		undefined
++	// The manager whose synchronisation is queued and has not started. A second event before
++	// that work runs would read the same state twice, so it is coalesced into the first.
++	#pending: ToolManagerInterface | undefined = undefined
+ 	#queue: Promise<void> = Promise.resolve()
+ 	#destroyed = false
+ 
+@@ -142,7 +145,7 @@ export class ModelContext implements ModelContextInterface {
+ 		// waits behind an earlier one must not decide what this call registers. The projection
+ 		// is also where a tool WebMCP cannot carry refuses the whole batch, so that refusal
+ 		// reaches the caller as a rejection rather than as a synchronous throw.
+-		const snapshot = attempt(() => buildWebMCPDescriptors(tools))
++		const snapshot = attempt(() => buildWebMCPProjections(tools))
+ 		if (!snapshot.success) return Promise.reject(snapshot.error)
+ 		// Subscribed at the call, beside the snapshot, so there is no window between the two in
+ 		// which a change reaches nothing. A refused projection registers nothing and therefore
+@@ -185,25 +188,23 @@ export class ModelContext implements ModelContextInterface {
+ 	// managers publishing one name would each believe they owned it.
+ 	#follow(tools: ToolManagerInterface, options?: ModelContextPublishOptions): void {
+ 		this.#unfollow()
+-		const add = this.#added.bind(this, tools, options)
+-		const remove = this.#removed.bind(this, tools)
+-		const clear = this.#cleared.bind(this, tools)
+-		tools.emitter.on('add', add)
+-		tools.emitter.on('remove', remove)
+-		tools.emitter.on('clear', clear)
+-		this.#followed = { tools, add, remove, clear }
++		const changed = this.#changed.bind(this, tools, options)
++		tools.emitter.on('add', changed)
++		tools.emitter.on('remove', changed)
++		tools.emitter.on('clear', changed)
++		this.#followed = { tools, changed }
+ 	}
+ 
+-	// Releases the subscription by handing `off` the same references `on` received. The
+-	// installed emitter's `on` returns nothing, so the handler identities the record retains
+-	// are the cleanup.
++	// Releases the subscription by handing `off` the same reference `on` received. The
++	// installed emitter's `on` returns nothing, so the handler identity the record retains is
++	// the cleanup.
+ 	#unfollow(): void {
+ 		const followed = this.#followed
+ 		if (followed === undefined) return
+ 		this.#followed = undefined
+-		followed.tools.emitter.off('add', followed.add)
+-		followed.tools.emitter.off('remove', followed.remove)
+-		followed.tools.emitter.off('clear', followed.clear)
++		followed.tools.emitter.off('add', followed.changed)
++		followed.tools.emitter.off('remove', followed.changed)
++		followed.tools.emitter.off('clear', followed.changed)
+ 	}
+ 
+ 	// Reports whether an event is the followed manager's. `#unfollow` hands the emitter its
+@@ -217,66 +218,48 @@ export class ModelContext implements ModelContextInterface {
+ 		return this.#followed?.tools === tools
+ 	}
+ 
+-	// Registers a tool the followed manager has taken on. The descriptor is projected here, at
+-	// the event, for the reason `publish` projects at the call: what the manager advertised
+-	// when it changed is what this registration is for. A tool WebMCP cannot carry is left
+-	// unregistered, because a followed change has no caller a refusal could reach.
+-	#added(
+-		tools: ToolManagerInterface,
+-		options: ModelContextPublishOptions | undefined,
+-		tool: ToolInterface,
+-	): void {
+-		if (!this.#follows(tools)) return
+-		const descriptor = describeWebMCPTool(tools, tool.name)
+-		if (descriptor === undefined) return
+-		this.#queue = this.#queue
+-			.then(this.#reconcile.bind(this, tools, descriptor, options))
+-			.catch(() => undefined)
+-	}
+-
+-	// Releases the registration a followed removal ended. The removed tool is projected here,
+-	// at the event, because the manager no longer advertises it by the time the release runs —
+-	// and the projection is what the release is bound to. It queues rather than aborting here,
+-	// so a removal that arrives while an earlier publication is still registering that same
+-	// name releases the registration instead of racing ahead of it. A tool WebMCP could not
+-	// carry was never registered, so there is nothing for its removal to take back.
+-	#removed(tools: ToolManagerInterface, tool: ToolInterface): void {
++	// Queues one synchronisation for a change the followed manager reported. Every event takes
++	// this door, because each of them says only THAT the manager changed: `remove` and `clear`
++	// carry tools the manager no longer holds, an earlier listener in the same dispatch may
++	// already have put another tool under one of those names, and the manager's own `destroy`
++	// empties its map after the `clear` it publishes. What the event carries therefore cannot
++	// decide what to release; the manager's state when the queued work runs decides it. It
++	// queues rather than acting here, so a change arriving while an earlier publication is
++	// still registering runs after it instead of racing it.
++	#changed(tools: ToolManagerInterface, options: ModelContextPublishOptions | undefined): void {
+ 		if (!this.#follows(tools)) return
+-		const descriptor = toolToWebMCP(toolToDefinition(tool))
+-		if (descriptor === undefined) return
+-		this.#queue = this.#queue
+-			.then(this.#release.bind(this, tools, descriptor))
+-			.catch(() => undefined)
++		// A synchronisation queued and not yet started reads the manager when it runs, so it
++		// already covers every change that arrives before then. The flag holds the manager
++		// rather than a boolean, so a change from a manager a `publish` took up in the
++		// meantime still queues its own.
++		if (this.#pending === tools) return
++		this.#pending = tools
++		this.#queue = this.#queue.then(this.#sync.bind(this, tools, options)).catch(() => undefined)
+ 	}
+ 
+-	// Releases the registrations a followed clear ended — the tools the event carries, not
+-	// every name bound to the manager. The manager empties its map and THEN publishes `clear`
+-	// with the tools it removed, so an earlier listener adding a tool inside that same dispatch
+-	// leaves it in the manager and queues its registration ahead of this release. Releasing
+-	// everything bound to the manager would take that registration back, for a tool the clear
+-	// never removed — and so would releasing by name alone, where that addition took back a
+-	// name the clear carried.
+-	#cleared(tools: ToolManagerInterface, cleared: readonly ToolInterface[]): void {
+-		if (!this.#follows(tools)) return
+-		const descriptors: WebMCPDescriptor[] = []
+-		for (const tool of cleared) {
+-			const descriptor = toolToWebMCP(toolToDefinition(tool))
+-			if (descriptor !== undefined) descriptors.push(descriptor)
+-		}
+-		this.#queue = this.#queue
+-			.then(this.#releaseEach.bind(this, tools, descriptors))
+-			.catch(() => undefined)
++	// Brings this handle's registrations for one manager to what that manager holds NOW. The
++	// whole of what a followed change does: a held name the manager dropped is released, and
++	// every tool it advertises reconciles. Only registrations bound to this manager are
++	// released, so a name another manager's publication put there is left standing.
++	async #sync(tools: ToolManagerInterface, options?: ModelContextPublishOptions): Promise<void> {
++		if (this.#pending === tools) this.#pending = undefined
++		if (this.#destroyed) return
++		// A tool WebMCP cannot carry is skipped rather than refusing anything, because a
++		// followed change has no caller a refusal could reach.
++		const projections = collectWebMCPProjections(tools)
++		this.#prune(projections, tools)
++		for (const projection of projections) await this.#reconcile(tools, projection, options)
+ 	}
+ 
+ 	async #publish(
+ 		tools: ToolManagerInterface,
+-		descriptors: readonly WebMCPDescriptor[],
++		projections: readonly WebMCPProjection[],
+ 		options?: ModelContextPublishOptions,
+ 	): Promise<void> {
+ 		if (this.#destroyed) return
+-		for (const descriptor of descriptors) await this.#reconcile(tools, descriptor, options)
++		for (const projection of projections) await this.#reconcile(tools, projection, options)
+ 		if (this.#destroyed) return
+-		this.#prune(descriptors)
++		this.#prune(projections)
+ 	}
+ 
+ 	// Brings one name to the descriptor a publication or a followed change is asking for. The
+@@ -284,7 +267,7 @@ export class ModelContext implements ModelContextInterface {
+ 	// exactly the rule a `publish` would have applied to it.
+ 	async #reconcile(
+ 		tools: ToolManagerInterface,
+-		descriptor: WebMCPDescriptor,
++		projection: WebMCPProjection,
+ 		options?: ModelContextPublishOptions,
+ 	): Promise<void> {
+ 		// The flag is re-read at every step that can register, and this is that step: a
+@@ -292,12 +275,25 @@ export class ModelContext implements ModelContextInterface {
+ 		// change reaches it from a queue a `destroy` may have overtaken. Reading it once, here,
+ 		// is what keeps one rule rather than a copy per caller to drift against.
+ 		if (this.#destroyed) return
++		const { descriptor, tool } = projection
+ 		const held = this.#registrations.get(descriptor.name)
++		if (held !== undefined && held.tools === tools) {
++			// The manager holds the very tool this registration was made for, so nothing it
++			// advertises can have changed. Reading tool identity rather than comparing
++			// descriptors is also what leaves a descriptor JSON cannot encode — a cyclic
++			// `inputSchema` — alone, instead of churning it on every change to another name.
++			if (held.tool === tool) return
++			// Another tool of the same manager, under the same name, advertising the same
++			// descriptor. Execution routes through the manager by name, so a foreign agent
++			// already reaches the replacement's handler, and re-registering would abort a
++			// live registration to put an identical one back. The tool it now stands for is
++			// recorded instead.
++			if (matchesDescriptor(held.descriptor, descriptor)) {
++				this.#registrations.set(descriptor.name, { ...held, tool })
++				return
++			}
++		}
+ 		if (held !== undefined) {
+-			// The same manager advertising the same descriptor is already on the registry, so
+-			// re-registering it would churn the entry and dispatch a `toolchange` reporting a
+-			// change nobody made.
+-			if (held.tools === tools && matchesDescriptor(held.descriptor, descriptor)) return
+ 			// Anything else is a different tool under a name WebMCP keys per document, so the
+ 			// registration this handle holds is released before the new one replaces it.
+ 			// Leaving it would advertise a descriptor whose handler no longer matches it, and
+@@ -311,35 +307,17 @@ export class ModelContext implements ModelContextInterface {
+ 			// behind that nothing will ever abort.
+ 			if (this.#destroyed) return
+ 		}
+-		await this.#register(tools, descriptor, options)
+-	}
+-
+-	// Releases this handle's registration for one descriptor's name, while that registration is
+-	// still the one the event ended: bound to the manager that asked for it, and advertising
+-	// what the ended tool advertised. A release bound to the name alone would take back a
+-	// registration made AFTER the event under the same name — the addition an earlier `remove`
+-	// or `clear` listener made, whose reconciliation queues ahead of this release — for a tool
+-	// the manager still holds and the registry must keep advertising.
+-	#release(tools: ToolManagerInterface, descriptor: WebMCPDescriptor): void {
+-		const held = this.#registrations.get(descriptor.name)
+-		if (held === undefined || held.tools !== tools) return
+-		if (!matchesDescriptor(held.descriptor, descriptor)) return
+-		this.#registrations.delete(descriptor.name)
+-		held.controller.abort()
+-	}
+-
+-	// Releases one manager's registration for each of several descriptors.
+-	#releaseEach(tools: ToolManagerInterface, descriptors: readonly WebMCPDescriptor[]): void {
+-		for (const descriptor of descriptors) this.#release(tools, descriptor)
++		await this.#register(tools, projection, options)
+ 	}
+ 
+ 	async #register(
+ 		tools: ToolManagerInterface,
+-		descriptor: WebMCPDescriptor,
++		projection: WebMCPProjection,
+ 		options?: ModelContextPublishOptions,
+ 	): Promise<void> {
++		const { descriptor, tool } = projection
+ 		const controller = new AbortController()
+-		this.#registrations.set(descriptor.name, { controller, descriptor, tools })
++		this.#registrations.set(descriptor.name, { controller, descriptor, tool, tools })
+ 		try {
+ 			await this.#registry.registerTool(
+ 				{ ...descriptor, execute: this.#run.bind(this, tools, descriptor.name) },
+@@ -350,24 +328,30 @@ export class ModelContext implements ModelContextInterface {
+ 			)
+ 		} catch (error) {
+ 			// A registration the registry refused is not one this handle owns. Dropping the
+-			// entry lets a later `publish` retry the name, and the abort releases a tool a
+-			// registry recorded before it failed.
++			// entry lets a later publication or synchronisation register the name again, and
++			// the abort releases a tool a registry recorded before it failed.
+ 			this.#registrations.delete(descriptor.name)
+ 			controller.abort()
+ 			throw error
+ 		}
+ 	}
+ 
+-	// Releases the registrations whose names the snapshot no longer carries. It reads the
+-	// snapshot rather than the live manager for the same reason `publish` projects at the call:
+-	// a manager emptied mid-publication must not unregister what that publication captured.
+-	// WebMCP's unregistration path is the registration signal, so aborting is the removal.
+-	#prune(descriptors: readonly WebMCPDescriptor[]): void {
+-		const published = new Set(descriptors.map((descriptor) => descriptor.name))
++	// Releases every registration the given projections do not carry — the one release door. A
++	// publication hands it its own snapshot, across managers, because a publication decides the
++	// whole registry: reading the snapshot rather than the live manager is why a manager
++	// emptied mid-publication does not unregister what that publication captured. A
++	// synchronisation hands it what the manager advertises now, and names the manager, because
++	// a followed change decides only what that manager put there. WebMCP's unregistration path
++	// is the registration signal, so aborting is the removal.
++	#prune(projections: readonly WebMCPProjection[], tools?: ToolManagerInterface): void {
++		const kept = new Set(projections.map((projection) => projection.descriptor.name))
+ 		for (const [name, held] of this.#registrations) {
+-			if (published.has(name)) continue
++			if (kept.has(name) || (tools !== undefined && held.tools !== tools)) continue
+ 			this.#registrations.delete(name)
+ 			held.controller.abort()
++			// The abort dispatches `toolchange` synchronously, into listeners that can destroy
++			// this handle, and `destroy` takes back every remaining registration itself.
++			if (this.#destroyed) return
+ 		}
+ 	}
+ 
+diff --git a/src/browser/helpers.ts b/src/browser/helpers.ts
+index 617b1ec..7b05ae9 100644
+--- a/src/browser/helpers.ts
++++ b/src/browser/helpers.ts
+@@ -1,7 +1,13 @@
+ import type { ToolAnnotations, ToolDefinition, ToolManagerInterface } from '@orkestrel/tool'
+-import type { WebMCPAnnotations, WebMCPDescriptor, WebMCPRegisteredTool } from './types.js'
++import type {
++	WebMCPAnnotations,
++	WebMCPDescriptor,
++	WebMCPProjection,
++	WebMCPRegisteredTool,
++} from './types.js'
+ import { JSONRPC_INVALID_PARAMS, MCPError } from '@src/core'
+ import { attempt, canonicalStringify } from '@orkestrel/contract'
++import { toolToDefinition } from '@orkestrel/tool'
+ 
+ // The browser face's pure projection leaves — the WebMCP direction of the same translation
+ // `@orkestrel/mcp`'s `toolAnnotationsToMCP` / `mcpAnnotationsToTool` perform for the MCP wire.
+@@ -120,8 +126,10 @@ export function webMCPToTool(registered: WebMCPRegisteredTool): ToolDefinition {
+  * Determines whether two WebMCP descriptors advertise the same tool to the registry.
+  *
+  * @remarks
+- * The reading `ModelContextInterface.publish` reconciles a name against: equal descriptors
+- * leave the live registration alone, and anything else releases it and registers the new one.
++ * The reading `ModelContextInterface.publish` reconciles a name against once the manager's
++ * tool has changed under it: equal descriptors leave the live registration standing, because
++ * execution routes through the manager by name, and anything else releases it and registers
++ * the new one.
+  *
+  * Equality is structural and key-order-independent, through `@orkestrel/contract`'s
+  * `canonicalStringify`: `inputSchema` is the author's own JSON Schema record, and two
+@@ -180,12 +188,14 @@ export function describeWebMCPTool(
+ }
+ 
+ /**
+- * Builds the WebMCP descriptor for every tool a registry advertises, or refuses the batch.
++ * Builds the WebMCP projection of every tool a registry advertises, or refuses the batch.
+  *
+  * @remarks
+- * The WebMCP twin of `@orkestrel/mcp`'s `buildToolDescriptors`, and it reads the same
+- * `definitions()` snapshot, so a tool advertises one description across the MCP wire and the
+- * WebMCP registry alike.
++ * The WebMCP twin of `@orkestrel/mcp`'s `buildToolDescriptors`. Each tool is projected through
++ * `@orkestrel/tool`'s own `toolToDefinition` — the projection `definitions()` applies — so a
++ * tool advertises one description across the MCP wire and the WebMCP registry alike. The tool
++ * travels beside its descriptor because a registration records which tool it was made for, and
++ * a descriptor cannot report that.
+  *
+  * It refuses rather than skips. WebMCP requires `description`, and each alternative to
+  * refusing is worse: an empty string is an invented value a foreign agent reads as a real one,
+@@ -193,8 +203,8 @@ export function describeWebMCPTool(
+  * Refusing before any registration happens is also what keeps `publish` atomic — nothing is
+  * registered when one tool cannot be.
+  *
+- * @param manager - The tool registry to describe
+- * @returns One descriptor per advertised tool, in registry order
++ * @param manager - The tool registry to project
++ * @returns One projection per advertised tool, in registry order
+  * @throws Thrown as an `MCPError` carrying `-32602` when a tool advertises no description,
+  * naming the tool
+  *
+@@ -202,20 +212,50 @@ export function describeWebMCPTool(
+  * ```ts
+  * const tools = createToolManager()
+  * tools.add(createTool({ name: 'add', description: 'Adds two numbers', execute: () => 5 }))
+- * buildWebMCPDescriptors(tools).map((descriptor) => descriptor.name) // ['add']
++ * buildWebMCPProjections(tools).map((projection) => projection.descriptor.name) // ['add']
+  * ```
+  */
+-export function buildWebMCPDescriptors(manager: ToolManagerInterface): readonly WebMCPDescriptor[] {
+-	const descriptors: WebMCPDescriptor[] = []
+-	for (const definition of manager.definitions()) {
+-		const descriptor = toolToWebMCP(definition)
++export function buildWebMCPProjections(manager: ToolManagerInterface): readonly WebMCPProjection[] {
++	const projections: WebMCPProjection[] = []
++	for (const tool of manager.tools()) {
++		const descriptor = toolToWebMCP(toolToDefinition(tool))
+ 		if (descriptor === undefined) {
+ 			throw new MCPError(
+-				`WebMCP requires a description for tool '${definition.name}'`,
++				`WebMCP requires a description for tool '${tool.name}'`,
+ 				JSONRPC_INVALID_PARAMS,
+ 			)
+ 		}
+-		descriptors.push(descriptor)
++		projections.push({ tool, descriptor })
++	}
++	return projections
++}
++
++/**
++ * Collects the WebMCP projection of every tool a registry advertises that WebMCP can carry.
++ *
++ * @remarks
++ * The skipping sibling of {@link buildWebMCPProjections}, and the reading a followed change
++ * reconciles against: a followed change reaches no caller, so a tool advertising neither a
++ * `description` nor a `summary` is left out of the collection rather than refusing a batch
++ * nobody asked for.
++ *
++ * @param manager - The tool registry to project
++ * @returns One projection per advertised tool WebMCP can carry, in registry order
++ *
++ * @example
++ * ```ts
++ * const tools = createToolManager()
++ * tools.add(createTool({ name: 'bare', execute: () => 1 }))
++ * collectWebMCPProjections(tools) // []
++ * ```
++ */
++export function collectWebMCPProjections(
++	manager: ToolManagerInterface,
++): readonly WebMCPProjection[] {
++	const projections: WebMCPProjection[] = []
++	for (const tool of manager.tools()) {
++		const descriptor = toolToWebMCP(toolToDefinition(tool))
++		if (descriptor !== undefined) projections.push({ tool, descriptor })
+ 	}
+-	return descriptors
++	return projections
+ }
+diff --git a/src/browser/types.ts b/src/browser/types.ts
+index 521b0fa..0a69800 100644
+--- a/src/browser/types.ts
++++ b/src/browser/types.ts
+@@ -385,6 +385,20 @@ export interface WebMCPDocument {
+ 	readonly modelContext: WebMCPRegistryInterface
+ }
+ 
++/**
++ * Pairs one tool with the WebMCP descriptor a registry advertises for it.
++ *
++ * @remarks
++ * The bridge's own pairing rather than a WebMCP dictionary. A registration has to answer later
++ * whether the manager still holds the tool it was made for, and a descriptor alone cannot
++ * answer that: two tools can advertise identical descriptors, and a descriptor JSON cannot
++ * encode — a cyclic `inputSchema` — compares equal to none, its own included.
++ */
++export interface WebMCPProjection {
++	readonly tool: ToolInterface
++	readonly descriptor: WebMCPDescriptor
++}
++
+ /**
+  * Reports the moments a WebMCP registry's contents changed.
+  *
+@@ -466,27 +480,35 @@ export interface ModelContextInterface {
+ 	 * `publish`, so a registry mutated while this call waits registers what it held at the call
+ 	 * rather than what it holds when the queue reaches it.
+ 	 *
+-	 * The same call subscribes to the manager's own `emitter`. A tool the manager adds
+-	 * afterwards is registered, a tool it removes has its registration aborted, and a `clear`
+-	 * aborts the registrations for the tools that `clear` carried — so the document registry
+-	 * tracks the tool registry without a second call. One manager is followed at a time: a
++	 * The same call subscribes to the manager's own `emitter`. Each `add`, `remove`, and
++	 * `clear` it publishes queues one synchronisation of this handle's registrations against
++	 * what the manager holds when that queued work runs, so the document registry converges on
++	 * the tool registry after every change it follows, without a second call. The event is the
++	 * trigger and the manager is the fact: `remove` and `clear` carry tools the manager no
++	 * longer holds, a listener that ran earlier in the same dispatch may already have put
++	 * another tool under one of those names, and the manager's own `destroy` empties its map
++	 * after publishing the `clear` that reports it. One manager is followed at a time: a
+ 	 * `publish` naming another manager releases the subscription and takes up the new one, and
+ 	 * `destroy` releases it outright. An event from a manager this handle no longer follows is
+ 	 * ignored, which is what a listener republishing another manager from inside a dispatch
+ 	 * produces. A followed change reaches no caller, so a tool advertising neither a
+ 	 * `description` nor a `summary` is left unregistered rather than refusing anything, and a
+-	 * registration the document registry refuses is dropped for the next call to retry. That
++	 * registration the document registry refuses is dropped, so the next call or the next
++	 * synchronisation registers that name again. That
+ 	 * skip emits no `change`, because nothing reached the document registry: compare the
+ 	 * manager's own `definitions()` with what `adopt()` returns to read the mismatch, and
+ 	 * {@link import('./helpers.js').describeWebMCPTool} names an advertised tool the projection
+ 	 * cannot carry.
+ 	 *
+ 	 * Every name reconciles against what this handle registered for it, whether it arrives in a
+-	 * snapshot or through the subscription. An equal projection and the same manager leave the
+-	 * registration untouched, so a repeat publishes nothing and fires no `toolchange`. A changed
+-	 * projection, or the same name arriving from a different manager, aborts the registration
+-	 * this handle holds and registers the new descriptor bound to the new manager. A name the
+-	 * snapshot dropped is aborted.
++	 * snapshot or through a synchronisation. The same manager still holding the same tool
++	 * leaves the registration untouched, so a repeat publishes nothing and fires no
++	 * `toolchange`. Another tool of that manager advertising an equal descriptor leaves the
++	 * registration standing too, because execution routes through the manager by name and the
++	 * replacement's handler is already what a foreign agent reaches. A changed projection, or
++	 * the same name arriving from a different manager, aborts the registration this handle
++	 * holds and registers the new descriptor bound to the new manager. A name the snapshot
++	 * dropped, and a name the followed manager no longer holds, is aborted.
+ 	 *
+ 	 * Every tool is projected before anything is registered, so a manager holding a tool with
+ 	 * neither `description` nor `summary` is refused whole rather than half-registered.
+@@ -521,6 +543,11 @@ export interface ModelContextInterface {
+ 	 * Aborts every registration this handle made, stops following the tool registry, and
+ 	 * releases the emitter — idempotent.
+ 	 *
++	 * @remarks
++	 * The subscription is released before anything is aborted, and a synchronisation already
++	 * queued reads the destroyed handle and stops, so no registration is made after this call
++	 * and none is left behind for a later change to release.
++	 *
+ 	 * @returns Nothing
+ 	 */
+ 	destroy(): void
+diff --git a/tests/setupBrowser.ts b/tests/setupBrowser.ts
+index 51618af..4e54122 100644
+--- a/tests/setupBrowser.ts
++++ b/tests/setupBrowser.ts
+@@ -159,6 +159,13 @@ export const RESOURCE_TIMING_CAPACITY = 1000
+  * asserts an empty array for "this issued no request" and a later positive control proves the
+  * drain can report one.
+  *
++ * The browser adds a resource entry when the response COMPLETES, so a request still in flight
++ * is not observed. An empty drain therefore reports that nothing finished, and it bounds
++ * "nothing was sent" only for a scenario whose own work has already settled — every call made,
++ * resolved, and asserted. Where a claim of absence covers work that may still be in flight,
++ * read it from the transport instead, through a recorder over the frames the peer received,
++ * and leave this drain the network question it can answer.
++ *
+  * Creation raises the buffer to {@link RESOURCE_TIMING_CAPACITY} and clears it. A drain slices
+  * from a remembered length, and a browser silently drops entries once the buffer is full, so a
+  * recorder starting against a full buffer would slice past every entry added after it and
+@@ -426,6 +433,41 @@ export function createDescribedTools(value: unknown): ToolManagerInterface {
+ 	return tools
+ }
+ 
++/**
++ * Builds a registry holding one described tool whose schema JSON cannot encode.
++ *
++ * @remarks
++ * The `parameters` record references itself, which is the boundary value every descriptor
++ * comparison has to survive: `canonicalStringify` throws on it, so such a descriptor compares
++ * equal to no descriptor, its own included. A scenario about what the bridge does with a tool
++ * it cannot compare starts here.
++ *
++ * The tool is otherwise ordinary — a real `@orkestrel/tool` tool carrying a description — so
++ * WebMCP can carry it and the registry registers it like any other.
++ *
++ * @returns A registry holding the one tool, registered under `cyclic`
++ *
++ * @example
++ * ```ts
++ * const tools = createCyclicTools()
++ * tools.tools()[0]?.name // 'cyclic'
++ * ```
++ */
++export function createCyclicTools(): ToolManagerInterface {
++	const schema: Record<string, unknown> = { type: 'object' }
++	schema['self'] = schema
++	const tools = createToolManager()
++	tools.add(
++		createTool({
++			name: 'cyclic',
++			description: 'Carries a schema JSON cannot encode',
++			parameters: schema,
++			execute: () => 1,
++		}),
++	)
++	return tools
++}
++
+ /**
+  * Reads the one member a collection must hold, failing loudly when it holds any other number.
+  *
+diff --git a/tests/src/browser/ModelContext.test.ts b/tests/src/browser/ModelContext.test.ts
+index d28bd02..c03c600 100644
+--- a/tests/src/browser/ModelContext.test.ts
++++ b/tests/src/browser/ModelContext.test.ts
+@@ -13,6 +13,7 @@ import {
+ } from '@orkestrel/test'
+ import {
+ 	createBridge,
++	createCyclicTools,
+ 	createDescribedTools,
+ 	createParkedRegistration,
+ 	createParkedTool,
+@@ -115,8 +116,8 @@ describe('publish — this page registering its tools with the document registry
+ 
+ 		await bridge.publish(tools)
+ 
+-		// Registration identity, not merely a name that is still there: the same manager and an
+-		// equal projection leave the registry entry the first call made, so nothing was
++		// Registration identity, not merely a name that is still there: the same manager still
++		// holding the same tool leaves the registry entry the first call made, so nothing was
+ 		// re-registered and the registry reported no change nobody made.
+ 		expect(readOne(fixture.registrations(), 'registration')).toBe(first)
+ 		expect(recorders.change.count).toBe(0)
+@@ -183,14 +184,15 @@ describe('publish — this page registering its tools with the document registry
+ 		const trace = traceRegistrations(fixture)
+ 
+ 		// The manager is emptied between the call and the moment the publication runs. The
+-		// call still registers what the manager held at the call, and the subscription the
+-		// call armed then applies the clear — so the registry saw the snapshot arrive and
+-		// leave rather than never arrive.
++		// call still registers what the manager held at the call, and the synchronisation the
++		// subscription queued then reads the emptied manager — so the registry saw the
++		// snapshot arrive and leave rather than never arrive.
+ 		const pending = bridge.publish(tools)
+ 		tools.clear()
+ 		await pending
+-		// The clear queued behind the publication, so it runs after the call it followed
+-		// resolves. The wait is on the end state; the claim is the order the trace recorded.
++		// That synchronisation queued behind the publication, so it runs after the call it
++		// followed resolves. The wait is on the end state; the claim is the order the trace
++		// recorded.
+ 		await waitForCondition(
+ 			'the followed clear to release the registration',
+ 			() => fixture.registrations().length === 0,
+@@ -207,7 +209,8 @@ describe('publish — this page registering its tools with the document registry
+ 
+ 		// Both calls are made before either runs, so the second is still queued when the
+ 		// manager is emptied. Each registers what it captured, the second finds the first's
+-		// registration equal and leaves it alone, and the clear the follow carries releases it.
++		// registration standing for the same tool and leaves it alone, and the synchronisation
++		// the clear triggers reads the emptied manager and releases it.
+ 		const first = bridge.publish(tools)
+ 		const second = bridge.publish(tools)
+ 		tools.clear()
+@@ -324,6 +327,30 @@ describe('the registry this handle follows after publishing it', () => {
+ 		expect(fixture.registrations().map((entry) => entry.tool.name)).toEqual(['lookup', 'fresh'])
+ 	})
+ 
++	it('registers a change to a manager published while a synchronisation is queued', async () => {
++		const { fixture, bridge } = createBridge()
++		const first = createDescribedTools(5)
++		const second = createToolManager()
++		second.add(
++			createTool({ name: 'lookup', description: 'Looks up a record', execute: () => 'second' }),
++		)
++		await bridge.publish(first)
++
++		// The first manager's change queues a synchronisation that has not started when the
++		// second publication takes over the follow. The addition to that second manager has to
++		// queue its own: coalescing it into the first manager's would read a manager this
++		// handle no longer follows and register nothing for the one it does.
++		first.add(createTool({ name: 'stale', description: 'Never registered', execute: () => 1 }))
++		const publishing = bridge.publish(second)
++		second.add(
++			createTool({ name: 'fresh', description: 'Registered by the follow', execute: () => 2 }),
++		)
++		await publishing
++		await waitForDelay(50)
++
++		expect(fixture.registrations().map((entry) => entry.tool.name)).toEqual(['lookup', 'fresh'])
++	})
++
+ 	it('ignores a manager a re-entrant publish replaced', async () => {
+ 		const { fixture, bridge } = createBridge()
+ 		const first = createDescribedTools(5)
+@@ -350,8 +377,7 @@ describe('the registry this handle follows after publishing it', () => {
+ 		const { fixture, bridge } = createBridge()
+ 		const tools = createDescribedTools(5)
+ 		// The manager empties its map and THEN publishes `clear` with the tools it removed, so
+-		// an earlier listener's addition inside that dispatch stays in the manager. The bridge
+-		// follows the addition first and meets the clear after it.
++		// an earlier listener's addition inside that dispatch stays in the manager.
+ 		tools.emitter.on('clear', () => {
+ 			tools.add(createTool({ name: 'fresh', description: 'Fresh', execute: () => 1 }))
+ 		})
+@@ -360,19 +386,17 @@ describe('the registry this handle follows after publishing it', () => {
+ 		tools.clear()
+ 		await waitForDelay(50)
+ 
+-		// The clear releases the names it carried, so the registration the earlier listener's
+-		// addition asked for survives it — releasing everything bound to the manager would take
+-		// back a tool the clear never removed.
++		// The registry agrees with the manager, which holds exactly this tool: releasing what
++		// the event carried would have taken back a tool the `clear` never removed.
+ 		expect(fixture.registrations().map((entry) => entry.tool.name)).toEqual(['fresh'])
+ 	})
+ 
+ 	it('preserves a same-name addition made by an earlier clear listener', async () => {
+ 		const { fixture, bridge } = createBridge()
+ 		const tools = createDescribedTools(5)
+-		// The addition takes back the very name the clear is about to release. Its registration
+-		// queues ahead of that release, so a release reading the name alone takes back a
+-		// registration the clear never covered — the one standing under the name is the
+-		// replacement, not the tool the clear removed.
++		// The addition takes back the very name the `clear` reported, under a different
++		// descriptor. Releasing by that name would have taken back a registration the `clear`
++		// never covered — the tool standing under the name is the replacement.
+ 		tools.emitter.on('clear', () => {
+ 			tools.add(createTool({ name: 'add', description: 'Adds again', execute: () => 2 }))
+ 		})
+@@ -387,6 +411,160 @@ describe('the registry this handle follows after publishing it', () => {
+ 		expect(fixture.registrations().map((entry) => entry.tool.description)).toEqual(['Adds again'])
+ 	})
+ 
++	it('preserves an equal-descriptor replacement made by an earlier remove listener', async () => {
++		const { fixture, bridge } = createBridge()
++		const tools = createToolManager()
++		tools.add(createTool({ name: 'echo', description: 'Echoes', execute: () => 'first' }))
++		// The replacement advertises the IDENTICAL descriptor, so neither the name nor what the
++		// removed tool advertised tells the two apart. The manager's own state does: it holds
++		// the replacement, and the registry must keep advertising it.
++		tools.emitter.once('remove', () => {
++			tools.add(createTool({ name: 'echo', description: 'Echoes', execute: () => 'second' }))
++		})
++		await bridge.publish(tools)
++
++		tools.remove('echo')
++		await waitForDelay(50)
++
++		expect(fixture.registrations().map((entry) => entry.tool.name)).toEqual(['echo'])
++		// Execution routes through the manager by name, so the registration that stood through
++		// the removal reaches the replacement's handler.
++		const registered = readOne(await fixture.registry.getTools(), 'registered tool')
++		expect(await fixture.registry.executeTool(registered, {})).toBe('second')
++	})
++
++	it('preserves an equal-descriptor replacement made by an earlier clear listener', async () => {
++		const { fixture, bridge } = createBridge()
++		const tools = createToolManager()
++		tools.add(createTool({ name: 'echo', description: 'Echoes', execute: () => 'first' }))
++		tools.emitter.once('clear', () => {
++			tools.add(createTool({ name: 'echo', description: 'Echoes', execute: () => 'second' }))
++		})
++		await bridge.publish(tools)
++
++		tools.clear()
++		await waitForDelay(50)
++
++		expect(fixture.registrations().map((entry) => entry.tool.name)).toEqual(['echo'])
++		const registered = readOne(await fixture.registry.getTools(), 'registered tool')
++		expect(await fixture.registry.executeTool(registered, {})).toBe('second')
++	})
++
++	it('preserves an equal-descriptor replacement while a publication is still queued', async () => {
++		const { fixture, bridge } = createBridge()
++		const tools = createToolManager()
++		tools.add(createTool({ name: 'echo', description: 'Echoes', execute: () => 'first' }))
++		tools.emitter.once('clear', () => {
++			tools.add(createTool({ name: 'echo', description: 'Echoes', execute: () => 'second' }))
++		})
++		// Both calls are made before either runs, and the clear that replaces `echo` lands
++		// before both: each publication registers what it captured, and the change the follow
++		// carries queues behind them.
++		const first = bridge.publish(tools)
++		const second = bridge.publish(tools)
++		tools.clear()
++		await Promise.all([first, second])
++		await waitForDelay(50)
++
++		expect(fixture.registrations().map((entry) => entry.tool.name)).toEqual(['echo'])
++		const registered = readOne(await fixture.registry.getTools(), 'registered tool')
++		expect(await fixture.registry.executeTool(registered, {})).toBe('second')
++	})
++
++	it('preserves an equal-descriptor replacement while a registration is suspended', async () => {
++		const { fixture, bridge } = createBridge()
++		const tools = createToolManager()
++		tools.add(createTool({ name: 'echo', description: 'Echoes', execute: () => 'first' }))
++		tools.emitter.once('clear', () => {
++			tools.add(createTool({ name: 'echo', description: 'Echoes', execute: () => 'second' }))
++		})
++		// The registry holds the publication inside `registerTool`, so the clear and its
++		// replacement land while the registration this handle is making is still in flight.
++		const release = fixture.suspend()
++		const publishing = bridge.publish(tools)
++		await waitForCondition(
++			'the registration to reach the suspended registry',
++			() => fixture.holding() === 1,
++		)
++
++		tools.clear()
++		release()
++		await publishing
++		await waitForDelay(50)
++
++		expect(fixture.registrations().map((entry) => entry.tool.name)).toEqual(['echo'])
++		const registered = readOne(await fixture.registry.getTools(), 'registered tool')
++		expect(await fixture.registry.executeTool(registered, {})).toBe('second')
++	})
++
++	it('releases an unencodable descriptor after remove', async () => {
++		const { fixture, bridge } = createBridge()
++		const tools = createCyclicTools()
++		await bridge.publish(tools)
++
++		tools.remove('cyclic')
++		await waitForDelay(50)
++
++		// A descriptor JSON cannot encode compares equal to nothing, itself included, so a
++		// release that read descriptor equality left this registration advertising a tool the
++		// manager no longer holds. The manager's own state carries no such blind spot.
++		expect((await fixture.registry.getTools()).map((tool) => tool.name)).toEqual([])
++		expect((await bridge.adopt()).map((tool) => tool.name)).toEqual([])
++		bridge.destroy()
++		expect((await fixture.registry.getTools()).map((tool) => tool.name)).toEqual([])
++	})
++
++	it('releases an unencodable descriptor after clear', async () => {
++		const { fixture, bridge } = createBridge()
++		const tools = createCyclicTools()
++		await bridge.publish(tools)
++
++		tools.clear()
++		await waitForDelay(50)
++
++		expect((await fixture.registry.getTools()).map((tool) => tool.name)).toEqual([])
++		expect((await bridge.adopt()).map((tool) => tool.name)).toEqual([])
++		bridge.destroy()
++		expect((await fixture.registry.getTools()).map((tool) => tool.name)).toEqual([])
++	})
++
++	it('leaves an unencodable descriptor alone while its tool stays', async () => {
++		const { fixture, bridge } = createBridge()
++		const tools = createCyclicTools()
++		await bridge.publish(tools)
++		const registered = readOne(fixture.registrations(), 'registration')
++		// Armed after the publication, so it records only what the followed change does.
++		const trace = traceRegistrations(fixture)
++
++		tools.add(createTool({ name: 'other', description: 'Other', execute: () => 2 }))
++		await waitForDelay(50)
++
++		// The manager still holds the same `cyclic` instance, so its registration is left
++		// exactly as it was: one dispatch, for the tool that was actually added.
++		expect(fixture.registrations().map((entry) => entry.tool.name)).toEqual(['cyclic', 'other'])
++		expect(fixture.registrations()[0]).toBe(registered)
++		expect(trace.calls.map(([names]) => names)).toEqual([['cyclic', 'other']])
++	})
++
++	it('drops additions erased when the followed manager is destroyed', async () => {
++		const { fixture, bridge } = createBridge()
++		const tools = createDescribedTools(5)
++		// `destroy` clears the manager, publishes `clear` with what it removed, destroys its
++		// emitter, and then empties the map again — so the addition this listener makes is
++		// erased with no event left to report it. Only the manager's state at the moment the
++		// queued work runs reports that the tool is gone.
++		tools.emitter.on('clear', () => {
++			tools.add(createTool({ name: 'fresh', description: 'Fresh', execute: () => 1 }))
++		})
++		await bridge.publish(tools)
++
++		tools.destroy()
++		await waitForDelay(50)
++
++		expect(tools.tools()).toEqual([])
++		expect(fixture.registrations().map((entry) => entry.tool.name)).toEqual([])
++	})
++
+ 	it('stops following the registry after destroy', async () => {
+ 		const { fixture, bridge } = createBridge()
+ 		const tools = createDescribedTools(5)
+diff --git a/tests/src/browser/factories.test.ts b/tests/src/browser/factories.test.ts
+index 8d52149..4bcbe32 100644
+--- a/tests/src/browser/factories.test.ts
++++ b/tests/src/browser/factories.test.ts
+@@ -1105,13 +1105,19 @@ describe('createPageServer — the MCP pair hosted in the page that calls it', (
+ 		expect(page.client.connected).toBe(true)
+ 		expect(tools.map((tool) => tool.name)).toEqual(['add'])
+ 		expect(value).toEqual({ resultType: 'complete', value: 5 })
++		// Every call this scenario makes has settled by here — each one resolved and was
++		// asserted — so a request carrying that traffic would have completed, which is the
++		// population the drain reports on.
+ 		expect(drain()).toEqual([])
+ 		page.stop()
+ 
+-		// The positive control, drawn from outside the population the scenario covers: one real
+-		// request to this page's own origin. The drain must report it, or the empty reading
+-		// above measured nothing.
+-		await fetch(location.href)
++		// The control, drawn from outside the population the scenario covers: one real request
++		// to this page's own origin, read while its response is still pending and again after
++		// it completed. The pending reading is empty and the completed one is not — the drain's
++		// bound, and the proof it can report a request at all.
++		const pending = fetch(location.href)
++		expect(drain()).toEqual([])
++		await pending
+ 		await waitForCondition('the control request to reach the resource log', () => {
+ 			return drain().length > 0
+ 		})
+diff --git a/tests/src/browser/helpers.test.ts b/tests/src/browser/helpers.test.ts
+index 8c3edb4..a43cb86 100644
+--- a/tests/src/browser/helpers.test.ts
++++ b/tests/src/browser/helpers.test.ts
+@@ -1,6 +1,7 @@
+ import { describe, expect, it } from 'vitest'
+ import {
+-	buildWebMCPDescriptors,
++	buildWebMCPProjections,
++	collectWebMCPProjections,
+ 	describeWebMCPTool,
+ 	matchesDescriptor,
+ 	toolAnnotationsToWebMCP,
+@@ -134,24 +135,43 @@ describe('webMCPToTool — the inverse, reading a registered tool back as a defi
+ 	})
+ })
+ 
+-describe('buildWebMCPDescriptors — the batch, refused whole when one tool cannot carry', () => {
+-	it('describes every advertised tool in registry order', () => {
++describe('buildWebMCPProjections — the batch, refused whole when one tool cannot carry', () => {
++	it('projects every advertised tool in registry order', () => {
+ 		const tools = createToolManager()
+ 		tools.add(createTool({ name: 'add', description: 'Adds', execute: () => 5 }))
+ 		tools.add(createTool({ name: 'subtract', description: 'Subtracts', execute: () => 1 }))
+ 
+-		expect(buildWebMCPDescriptors(tools).map((descriptor) => descriptor.name)).toEqual([
++		expect(buildWebMCPProjections(tools).map((projection) => projection.descriptor.name)).toEqual([
+ 			'add',
+ 			'subtract',
+ 		])
+ 	})
+ 
++	it('carries the registry own tool beside each descriptor', () => {
++		const tools = createToolManager()
++		tools.add(
++			createTool({
++				name: 'add',
++				description: 'Adds every operand and returns their sum',
++				summary: 'Adds',
++				execute: () => 5,
++			}),
++		)
++
++		// Identity, not a copy: a registration records which tool it was made for, and a
++		// rebuilt definition would answer that question for a tool the manager never held.
++		// The descriptor beside it still advertises the summary the registry advertises.
++		const projection = readOne(buildWebMCPProjections(tools), 'projection')
++		expect(projection.tool).toBe(tools.tool('add'))
++		expect(projection.descriptor.description).toBe('Adds')
++	})
++
+ 	it('refuses the batch with a coded error naming the tool that advertises no description', () => {
+ 		const tools = createToolManager()
+ 		tools.add(createTool({ name: 'add', description: 'Adds', execute: () => 5 }))
+ 		tools.add(createTool({ name: 'bare', execute: () => 1 }))
+ 
+-		const error: unknown = captureError(() => buildWebMCPDescriptors(tools))
++		const error: unknown = captureError(() => buildWebMCPProjections(tools))
+ 
+ 		expect(isMCPError(error)).toBe(true)
+ 		expect(isMCPError(error) && error.code).toBe(-32602)
+@@ -159,6 +179,33 @@ describe('buildWebMCPDescriptors — the batch, refused whole when one tool cann
+ 	})
+ })
+ 
++describe('collectWebMCPProjections — the batch a followed change reconciles against', () => {
++	it('skips a tool WebMCP cannot carry and keeps the rest in registry order', () => {
++		const tools = createToolManager()
++		tools.add(createTool({ name: 'add', description: 'Adds', execute: () => 5 }))
++		tools.add(createTool({ name: 'bare', execute: () => 1 }))
++		tools.add(createTool({ name: 'subtract', description: 'Subtracts', execute: () => 1 }))
++
++		// The refusing sibling rejects this same registry whole. A followed change has no
++		// caller to refuse to, so the tool that cannot be carried is left out instead.
++		expect(collectWebMCPProjections(tools).map((projection) => projection.descriptor.name)).toEqual(
++			['add', 'subtract'],
++		)
++		expect(captureError(() => buildWebMCPProjections(tools))).toBeInstanceOf(Error)
++	})
++
++	it('carries the registry own tool beside each descriptor', () => {
++		const tools = createToolManager()
++		tools.add(createTool({ name: 'add', description: 'Adds', execute: () => 5 }))
++
++		expect(readOne(collectWebMCPProjections(tools), 'projection').tool).toBe(tools.tool('add'))
++	})
++
++	it('collects nothing from an empty registry', () => {
++		expect(collectWebMCPProjections(createToolManager())).toEqual([])
++	})
++})
++
+ describe('describeWebMCPTool — one name, read the way the registry advertises it', () => {
+ 	it('advertises the authored summary in place of the full description', () => {
+ 		const tools = createToolManager()

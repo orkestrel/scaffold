@@ -1,0 +1,80 @@
+npm notice run @orkestrel/ollama@0.0.16 npx
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=verbose --project service
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/ollama
+
+ ✓ |service| tests/service/page.test.ts > Agent tool loop in a real page (live) — the published closure > evaluates the published agent closure in a real page from an import map 641ms
+ ✓ |service| tests/service/page.test.ts > Agent tool loop in a real page (live) — a page tool through the relay > executes a page tool through an agent over a live Ollama relay and feeds its result into the next model turn 2041ms
+ ✓ |service| tests/service/page.test.ts > Agent tool loop in a real page (live) — the recorders report a known fault > records a deliberate page request and a deliberate page fault outside the agent operation 576ms
+ ✓ |service| tests/service/page.test.ts > Agent tool loop in a real page (live) — a refused page credential > rejects a page relay credential before contacting Ollama 594ms
+ ✓ |service| tests/service/page.test.ts > Ollama in a real page (live) — the daemon driven directly > drives the daemon directly from the page behind its origin gate 833ms
+ ✓ |service| tests/service/page.test.ts > Agent tool loop in a real page (live) — the attempt bound > ends an over-long attempt on its own allowance and leaves no browser behind 5206ms
+ ✓ |service| tests/service/page.test.ts > Agent tool loop in a real page (live) — the attempt bound > releases the acquisition its deadline outran instead of waiting on it 3818ms
+ ✓ |service| tests/service/page.test.ts > Agent tool loop in a real page (live) — the attempt bound > refuses an attempt whose release crossed its allowance 3688ms
+ ✓ |service| tests/service/OllamaProvider.test.ts > OllamaProvider (live — generate) > returns assembled content for a prompt 352ms
+ ✓ |service| tests/service/OllamaProvider.test.ts > OllamaProvider (live — generate) > a constrained short prompt yields non-empty content 105ms
+ ✓ |service| tests/service/OllamaProvider.test.ts > OllamaProvider (live — generate) > reports token usage with prompt + completion summing to total 137ms
+ ✓ |service| tests/service/OllamaProvider.test.ts > OllamaProvider (live — generate) > keeps thinking OFF — no <think> reasoning trace leaks into content 95ms
+ ✓ |service| tests/service/OllamaProvider.test.ts > OllamaProvider (live — generate) > populates result.tools when the model calls a tool (id/name/arguments) 725ms
+ ✓ |service| tests/service/OllamaProvider.test.ts > OllamaProvider (live — generate) > omits thinking when the turn produced none 150ms
+ ✓ |service| tests/service/OllamaProvider.test.ts > OllamaProvider (live — generate) > surfaces native thinking on result.thinking when think:true, with clean content 165ms
+ ✓ |service| tests/service/OllamaProvider.test.ts > OllamaProvider (live — generate) > finishes reasoning and lands the answer in content, not lost or misrouted (think→content seam) 1188ms
+ ✓ |service| tests/service/OllamaProvider.test.ts > OllamaProvider (live — generate) > produces byte-identical content across two calls with the same seed 264ms
+ ✓ |service| tests/service/OllamaProvider.test.ts > OllamaProvider (live — stream) > yields content ProviderDeltas and RETURNS the assembled result 201ms
+ ✓ |service| tests/service/OllamaProvider.test.ts > OllamaProvider (live — stream) > streams a longer answer incrementally — more than one content delta 247ms
+ ✓ |service| tests/service/OllamaProvider.test.ts > OllamaProvider (live — stream) > assembles tool calls from a streamed turn 744ms
+ ✓ |service| tests/service/OllamaProvider.test.ts > OllamaProvider (live — stream) > streams at least one thinking delta when think:true, with clean content 171ms
+ ✓ |service| tests/service/OllamaProvider.test.ts > OllamaProvider (live — abort) > throws ProviderAbortError with the partial content when aborted mid-stream 103ms
+ ✓ |service| tests/service/OllamaProvider.test.ts > OllamaProvider (live — abort) > its own timeout aborts a slow stream with ProviderAbortError carrying the partial 9080ms
+ ✓ |service| tests/service/OllamaProvider.test.ts > OllamaProvider (recording proxy — structured-output schema) > sends the schema as `format` on the wire and returns matching structured JSON; omits format when no schema is given 583ms
+ ✓ |service| tests/service/OllamaProvider.test.ts > OllamaProvider (recording proxy — transport seam custom fetch) > uses the injected fetch, not the global (a real delegating recorder) 167ms
+ ✓ |service| tests/service/OllamaProvider.test.ts > OllamaProvider (recording proxy — transport seam custom fetch) > threads a custom fetch through the STREAMING path 127ms
+ ✓ |service| tests/service/OllamaProvider.test.ts > OllamaProvider (live error status) > throws with the status and body text on a non-OK response (live 404 bad model) 3ms
+ ✓ |service| tests/service/OllamaProvider.test.ts > OllamaProvider (live error status) > throws with the status on a non-OK response (live 400 missing model) 2ms
+ ✓ |service| tests/service/OllamaProvider.test.ts > OllamaProvider (live error status) > surfaces a non-OK status on the streaming path too (live 404 bad model, before any delta) 9ms
+ ✓ |service| tests/service/OllamaProvider.test.ts > OllamaProvider (live error status) > an early consumer break completes promptly and leaves the provider reusable 312ms
+ ✓ |service| tests/service/tools.test.ts > Agent tool loop (live) — dispatch by name > a steered call to the registered `lookup` tool dispatches by name, feeds its result back, and never touches the sibling `fail` tool 1153ms
+ ✓ |service| tests/service/tools.test.ts > Agent tool loop (live) — tool-result feedback reaches the wire > a tool result is fed back into the loop as a second /api/chat request carrying the tool datum 1080ms
+ ✓ |service| tests/service/tools.test.ts > Agent tool loop (live) — a thrown tool error is isolated > the fail tool throwing surfaces as a ToolResult.error, and the loop still settles to a resolved, non-partial finish 1260ms
+ ✓ |service| tests/service/tools.test.ts > Agent tool loop (live) — authority denial blocks execution > a denylisted lookup call never executes, fires a `deny` event, and the run still resolves 1096ms
+ ✓ |service| tests/service/tools.test.ts > Agent tool loop (live) — turn-limit exhaustion > limit exhaustion with unresolved tool intent on the last allowed turn resolves partial, fires exhaust (not abort), then finish 760ms
+ ✓ |service| tests/service/tools.test.ts > Agent tool loop (live) — default limit exhaustion under sustained pressure > a two-turn limit exhausts under sustained tool pressure 1213ms
+ ✓ |service| tests/service/tools.test.ts > Agent tool loop (live) — default limit exhaustion under sustained pressure > the default limit exhausts under sustained tool pressure 4619ms
+ ✓ |service| tests/service/tools.test.ts > Agent tool loop (live) — a single turn carries multiple tool calls > a single turn can carry multiple tool calls 1663ms
+ ✓ |service| tests/service/compaction.test.ts > Agent (live) — auto-compaction folds a recap while retaining the kept tail > a recorded wire request carries a recap-prefixed message followed by the kept tail verbatim 1875ms
+ ✓ |service| tests/service/compaction.test.ts > Conversation (live) — compaction summarizes via the REAL model > compact() folds the live tail into a section + rollup, both authored by the live model, and view() shrinks 1192ms
+ ✓ |service| tests/service/compaction.test.ts > Agent (live) — AUTOMATIC compaction fires mid-run, the run continues on the compacted view > a real multi-turn run with window set folds the tail mid-run + answers from the compacted view 2462ms
+ ✓ |service| tests/service/compaction.test.ts > Agent (live) — repeated auto-compaction stays COHERENT across MULTIPLE folds > forces ≥ 2 mid-run folds and produces a valid final answer through the repeatedly-compacted context 3677ms
+ ✓ |service| tests/service/lifecycle.test.ts > Agent (live) — streamed chunk taxonomy, status lifecycle, and emitter events on one run > tokens assemble into result.content, a usage chunk is observed, status transitions idle→running→done, and the emitter fires start→turn→usage→finish in order matching the result 251ms
+ ✓ |service| tests/service/lifecycle.test.ts > Agent (live) — the think channel assembles into result.thinking > think:true separates reasoning deltas from the answer, and their join equals the settled thinking 390ms
+ ✓ |service| tests/service/lifecycle.test.ts > Agent (live) — abort() mid-stream resolves partial, never rejects > agent.abort() after the first token event settles a partial result and the emitter fires abort 96ms
+ ✓ |service| tests/service/lifecycle.test.ts > Agent (live) — a construction-time timeout resolves partial, never rejects > timeout: 1 (ms) folds into the turn cancel and settles a partial result with an abort event, completing the abort-funnel trilogy 3ms
+ ✓ |service| tests/service/lifecycle.test.ts > Agent (live) — a per-run timeout override reaches the loop > run({ timeout: 1 }) on an agent constructed with NO timeout still resolves partial with an abort event 3ms
+ ✓ |service| tests/service/lifecycle.test.ts > Agent (live) — a per-run limit override reaches the loop > run({ limit: 1 }) on an agent constructed with the default limit still exhausts at 1 turn, resolving partial with an exhaust event 301ms
+ ✓ |service| tests/service/budget.test.ts > Agent usage (live) — single-turn usage coherence at the agent layer > the single usage chunk reconciles with result.usage, and prompt + completion === total 169ms
+ ✓ |service| tests/service/budget.test.ts > Agent budget (live) — an exhausted token budget trips the loop > the run resolves (never rejects) with partial: true and an abort event once the budget is exhausted 808ms
+ ✓ |service| tests/service/budget.test.ts > Agent budget (live) — an exhausted token budget trips MID-GENERATION > a tiny completion-token budget aborts mid-stream (no tool loop needed) with partial: true, an abort event, and content bounded by the budget arithmetic 150ms
+ ✓ |service| tests/service/budget.test.ts > Agent usage (live) — multi-turn usage accumulates across provider calls > a ≥2-turn tool-loop run reports result.usage.total at least as large as each individual chunk 576ms
+ ✓ |service| tests/service/budget.test.ts > Agent reuse (live) — sequential generate() calls on ONE agent stay independent > three sequential generate() calls on the same agent all resolve non-partial with non-empty content 510ms
+ ✓ |service| tests/service/authority.test.ts > Agent tool loop (live) — an allow rule lets the tool execute > an explicit allow rule for the lookup tool lets it execute, with no deny event 1078ms
+ ✓ |service| tests/service/authority.test.ts > Agent tool loop (live) — a rule that throws during evaluation fails closed > a match function throwing during evaluation denies the call, never executes it, and the run still resolves 1206ms
+ ✓ |service| tests/service/authority.test.ts > Agent tool loop (live) — no matching rule falls back to default allow > a rule matching a different tool name never applies, and the unmatched lookup call falls back to allow 1030ms
+ ✓ |service| tests/service/transport.test.ts > browser → own server (obfuscated token) → live LLM, end-to-end > a real generate() flows through the dev-server proxy carrying ONLY the obfuscated token, and a real answer comes back 111ms
+ ✓ |service| tests/service/transport.test.ts > browser → own server (obfuscated token) → live LLM, end-to-end > the STREAMING path flows through the proxy too — deltas join to the settled content, carrying the obfuscated token 216ms
+ ✓ |service| tests/service/relay.test.ts > RelayProvider through a real server and the live daemon > generate returns a live answer through the authenticated relay 121ms
+ ✓ |service| tests/service/relay.test.ts > RelayProvider through a real server and the live daemon > streamed live deltas join to the settled relay content 208ms
+ ✓ |service| tests/service/relay.test.ts > RelayProvider through a real server and the live daemon > aborting after a live delta throws with the relay partial 102ms
+ ✓ |service| tests/service/scopes.test.ts > AgentContext scope (live, behavioral) — switching scopes changes the answer > switching scopes changes the answer 330ms
+ ✓ |service| tests/service/conversation.test.ts > Agent (live) — a throwing summarizer under auto-compaction is non-fatal > fault fires and the run still completes non-partial 695ms
+ ✓ |service| tests/service/conversation.test.ts > Agent (live) — a sentinel instruction survives a long conversation > a ZEPHYR-mandating instruction still steers the final answer after 30 seeded turns, and stays ahead of the tail on the wire 1367ms
+ ✓ |service| tests/service/factories.test.ts > createOllama (live) > returns a working ProviderInterface that generates content 171ms
+ ✓ |service| tests/service/factories.test.ts > createOllama (live) > resolves the answer text and the usage shape the Surface fence names 81ms
+ ✓ |service| tests/service/factories.test.ts > createOllama (live) > returns a ProviderInterface whose stream yields deltas and returns the result 203ms
+ ✓ |service| tests/service/factories.test.ts > createOllama (live) > the transport seam (a headers hook) does not break the real daemon path 155ms
+ ✓ |service| tests/service/schema.test.ts > Agent (live) — run({ schema }) constrains output to the requested JSON shape > a { city, population } schema yields content that parses to an object with a string city and numeric population, resolving non-partial 485ms
+
+ Test Files  13 passed (13)
+      Tests  69 passed (69)
+   Start at  09:15:39
+   Duration  74.29s (transform 220ms, setup 6.55s, import 725ms, tests 65.22s, environment 1ms)
+

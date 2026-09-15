@@ -1,0 +1,8 @@
+probe: export-name collisions in mcp (declarations and re-export lists)
+date: 2026-09-15T12:22:05Z
+installed: test "version": "0.0.14", contract "version": "0.0.17"; export names read: 469
+pattern A: ^export (async )?(function|const|let|class|interface|type|enum) NAME\b
+pattern B: NAME inside an export { ... } list (as its exported spelling)
+paths: /c/Users/mikes/WebstormProjects/mcp/src/** and /c/Users/mikes/WebstormProjects/mcp/tests/** (node_modules excluded)
+files swept: 98
+collisions: none

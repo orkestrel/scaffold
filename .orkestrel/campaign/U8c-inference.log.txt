@@ -1,0 +1,98 @@
+﻿npm.cmd : npm notice run @orkestrel/tool@0.0.14 check
+At line:2 char:11
++ $output = & npm.cmd run check 2>&1; $code = $LASTEXITCODE; $output |  ...
++           ~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (npm notice run ...ol@0.0.14 check:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+npm notice run tsc --noEmit --project tsconfig.json && npm run check:src
+tests/src/core/factories.test.ts(56,4): error TS2345: Argument of type 'EmitterInterface<ToolManagerEventMap>' is not assignable to parameter of type 'EventSourceInterface<Record<string, readonly unknown[]>>'.
+  Types of property 'on' are incompatible.
+    Type '<K extends keyof ToolManagerEventMap>(event: K, handler: EmitterHandler<ToolManagerEventMap[K]>) => void' is not assignable to type '<K extends string>(event: K, handler: (...args: readonly unknown[]) => void) => void'.
+      Types of parameters 'event' and 'event' are incompatible.
+        Type 'K' is not assignable to type 'keyof ToolManagerEventMap'.
+          Type 'string' is not assignable to type 'keyof ToolManagerEventMap'.
+tests/src/core/tools/ToolManager.test.ts(135,4): error TS2345: Argument of type 'EmitterInterface<ToolManagerEventMap>' is not assignable to parameter of type 'EventSourceInterface<Record<string, readonly unknown[]>>'.
+  Types of property 'on' are incompatible.
+    Type '<K extends keyof ToolManagerEventMap>(event: K, handler: EmitterHandler<ToolManagerEventMap[K]>) => void' is not assignable to type '<K extends string>(event: K, handler: (...args: readonly unknown[]) => void) => void'.
+      Types of parameters 'event' and 'event' are incompatible.
+        Type 'K' is not assignable to type 'keyof ToolManagerEventMap'.
+          Type 'string' is not assignable to type 'keyof ToolManagerEventMap'.
+tests/src/core/tools/ToolManager.test.ts(154,4): error TS2345: Argument of type 'EmitterInterface<ToolManagerEventMap>' is not assignable to parameter of type 'EventSourceInterface<Record<string, readonly unknown[]>>'.
+  Types of property 'on' are incompatible.
+    Type '<K extends keyof ToolManagerEventMap>(event: K, handler: EmitterHandler<ToolManagerEventMap[K]>) => void' is not assignable to type '<K extends string>(event: K, handler: (...args: readonly unknown[]) => void) => void'.
+      Types of parameters 'event' and 'event' are incompatible.
+        Type 'K' is not assignable to type 'keyof ToolManagerEventMap'.
+          Type 'string' is not assignable to type 'keyof ToolManagerEventMap'.
+tests/src/core/tools/ToolManager.test.ts(180,4): error TS2345: Argument of type 'EmitterInterface<ToolManagerEventMap>' is not assignable to parameter of type 'EventSourceInterface<Record<string, readonly unknown[]>>'.
+  Types of property 'on' are incompatible.
+    Type '<K extends keyof ToolManagerEventMap>(event: K, handler: EmitterHandler<ToolManagerEventMap[K]>) => void' is not assignable to type '<K extends string>(event: K, handler: (...args: readonly unknown[]) => void) => void'.
+      Types of parameters 'event' and 'event' are incompatible.
+        Type 'K' is not assignable to type 'keyof ToolManagerEventMap'.
+          Type 'string' is not assignable to type 'keyof ToolManagerEventMap'.
+tests/src/core/tools/ToolManager.test.ts(217,4): error TS2345: Argument of type 'EmitterInterface<ToolManagerEventMap>' is not assignable to parameter of type 'EventSourceInterface<Record<string, readonly unknown[]>>'.
+  Types of property 'on' are incompatible.
+    Type '<K extends keyof ToolManagerEventMap>(event: K, handler: EmitterHandler<ToolManagerEventMap[K]>) => void' is not assignable to type '<K extends string>(event: K, handler: (...args: readonly unknown[]) => void) => void'.
+      Types of parameters 'event' and 'event' are incompatible.
+        Type 'K' is not assignable to type 'keyof ToolManagerEventMap'.
+          Type 'string' is not assignable to type 'keyof ToolManagerEventMap'.
+tests/src/core/tools/ToolManager.test.ts(238,4): error TS2345: Argument of type 'EmitterInterface<ToolManagerEventMap>' is not assignable to parameter of type 'EventSourceInterface<Record<string, readonly unknown[]>>'.
+  Types of property 'on' are incompatible.
+    Type '<K extends keyof ToolManagerEventMap>(event: K, handler: EmitterHandler<ToolManagerEventMap[K]>) => void' is not assignable to type '<K extends string>(event: K, handler: (...args: readonly unknown[]) => void) => void'.
+      Types of parameters 'event' and 'event' are incompatible.
+        Type 'K' is not assignable to type 'keyof ToolManagerEventMap'.
+          Type 'string' is not assignable to type 'keyof ToolManagerEventMap'.
+tests/src/core/tools/ToolManager.test.ts(259,4): error TS2345: Argument of type 'EmitterInterface<ToolManagerEventMap>' is not assignable to parameter of type 'EventSourceInterface<Record<string, readonly unknown[]>>'.
+  Types of property 'on' are incompatible.
+    Type '<K extends keyof ToolManagerEventMap>(event: K, handler: EmitterHandler<ToolManagerEventMap[K]>) => void' is not assignable to type '<K extends string>(event: K, handler: (...args: readonly unknown[]) => void) => void'.
+      Types of parameters 'event' and 'event' are incompatible.
+        Type 'K' is not assignable to type 'keyof ToolManagerEventMap'.
+          Type 'string' is not assignable to type 'keyof ToolManagerEventMap'.
+tests/src/core/tools/ToolManager.test.ts(268,10): error TS2571: Object is of type 'unknown'.
+tests/src/core/tools/ToolManager.test.ts(269,10): error TS2571: Object is of type 'unknown'.
+tests/src/core/tools/ToolManager.test.ts(280,4): error TS2345: Argument of type 'EmitterInterface<ToolManagerEventMap>' is not assignable to parameter of type 'EventSourceInterface<Record<string, readonly unknown[]>>'.
+  Types of property 'on' are incompatible.
+    Type '<K extends keyof ToolManagerEventMap>(event: K, handler: EmitterHandler<ToolManagerEventMap[K]>) => void' is not assignable to type '<K extends string>(event: K, handler: (...args: readonly unknown[]) => void) => void'.
+      Types of parameters 'event' and 'event' are incompatible.
+        Type 'K' is not assignable to type 'keyof ToolManagerEventMap'.
+          Type 'string' is not assignable to type 'keyof ToolManagerEventMap'.
+tests/src/core/tools/ToolManager.test.ts(295,10): error TS2571: Object is of type 'unknown'.
+tests/src/core/tools/ToolManager.test.ts(296,10): error TS2571: Object is of type 'unknown'.
+tests/src/core/tools/ToolManager.test.ts(304,37): error TS2345: Argument of type 'EmitterInterface<ToolManagerEventMap>' is not assignable to parameter of type 'EventSourceInterface<Record<string, readonly unknown[]>>'.
+  Types of property 'on' are incompatible.
+    Type '<K extends keyof ToolManagerEventMap>(event: K, handler: EmitterHandler<ToolManagerEventMap[K]>) => void' is not assignable to type '<K extends string>(event: K, handler: (...args: readonly unknown[]) => void) => void'.
+      Types of parameters 'event' and 'event' are incompatible.
+        Type 'K' is not assignable to type 'keyof ToolManagerEventMap'.
+          Type 'string' is not assignable to type 'keyof ToolManagerEventMap'.
+tests/src/core/tools/ToolManager.test.ts(338,37): error TS2345: Argument of type 'EmitterInterface<ToolManagerEventMap>' is not assignable to parameter of type 'EventSourceInterface<Record<string, readonly unknown[]>>'.
+  Types of property 'on' are incompatible.
+    Type '<K extends keyof ToolManagerEventMap>(event: K, handler: EmitterHandler<ToolManagerEventMap[K]>) => void' is not assignable to type '<K extends string>(event: K, handler: (...args: readonly unknown[]) => void) => void'.
+      Types of parameters 'event' and 'event' are incompatible.
+        Type 'K' is not assignable to type 'keyof ToolManagerEventMap'.
+          Type 'string' is not assignable to type 'keyof ToolManagerEventMap'.
+tests/src/core/tools/ToolManager.test.ts(357,37): error TS2345: Argument of type 'EmitterInterface<ToolManagerEventMap>' is not assignable to parameter of type 'EventSourceInterface<Record<string, readonly unknown[]>>'.
+  Types of property 'on' are incompatible.
+    Type '<K extends keyof ToolManagerEventMap>(event: K, handler: EmitterHandler<ToolManagerEventMap[K]>) => void' is not assignable to type '<K extends string>(event: K, handler: (...args: readonly unknown[]) => void) => void'.
+      Types of parameters 'event' and 'event' are incompatible.
+        Type 'K' is not assignable to type 'keyof ToolManagerEventMap'.
+          Type 'string' is not assignable to type 'keyof ToolManagerEventMap'.
+tests/src/core/tools/ToolManager.test.ts(363,10): error TS2571: Object is of type 'unknown'.
+tests/src/core/tools/ToolManager.test.ts(373,4): error TS2345: Argument of type 'EmitterInterface<ToolManagerEventMap>' is not assignable to parameter of type 'EventSourceInterface<Record<string, readonly unknown[]>>'.
+  Types of property 'on' are incompatible.
+    Type '<K extends keyof ToolManagerEventMap>(event: K, handler: EmitterHandler<ToolManagerEventMap[K]>) => void' is not assignable to type '<K extends string>(event: K, handler: (...args: readonly unknown[]) => void) => void'.
+      Types of parameters 'event' and 'event' are incompatible.
+        Type 'K' is not assignable to type 'keyof ToolManagerEventMap'.
+          Type 'string' is not assignable to type 'keyof ToolManagerEventMap'.
+tests/src/core/tools/ToolManager.test.ts(395,4): error TS2345: Argument of type 'EmitterInterface<ToolManagerEventMap>' is not assignable to parameter of type 'EventSourceInterface<Record<string, readonly unknown[]>>'.
+  Types of property 'on' are incompatible.
+    Type '<K extends keyof ToolManagerEventMap>(event: K, handler: EmitterHandler<ToolManagerEventMap[K]>) => void' is not assignable to type '<K extends string>(event: K, handler: (...args: readonly unknown[]) => void) => void'.
+      Types of parameters 'event' and 'event' are incompatible.
+        Type 'K' is not assignable to type 'keyof ToolManagerEventMap'.
+          Type 'string' is not assignable to type 'keyof ToolManagerEventMap'.
+tests/src/core/tools/ToolManager.test.ts(422,4): error TS2345: Argument of type 'EmitterInterface<ToolManagerEventMap>' is not assignable to parameter of type 'EventSourceInterface<Record<string, readonly unknown[]>>'.
+  Types of property 'on' are incompatible.
+    Type '<K extends keyof ToolManagerEventMap>(event: K, handler: EmitterHandler<ToolManagerEventMap[K]>) => void' is not assignable to type '<K extends string>(event: K, handler: (...args: readonly unknown[]) => void) => void'.
+      Types of parameters 'event' and 'event' are incompatible.
+        Type 'K' is not assignable to type 'keyof ToolManagerEventMap'.
+          Type 'string' is not assignable to type 'keyof ToolManagerEventMap'.
+exit=2

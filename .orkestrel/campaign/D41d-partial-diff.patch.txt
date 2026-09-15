@@ -1,0 +1,119 @@
+diff --git a/src/server/constants.ts b/src/server/constants.ts
+index 688ed5b9..e3db4819 100644
+--- a/src/server/constants.ts
++++ b/src/server/constants.ts
+@@ -114,6 +114,9 @@ export const MAX_UPSTREAM_TIMEOUT = 300_000
+  */
+ export const MANIFEST_NAME = 'manifest.json'
+ 
++/** Names the committed inventory used as the Surface collision baseline. */
++export const INVENTORY_NAME = 'host.json'
++
+ /** Holds the raw content host a repository read addresses when a caller names none. */
+ export const DEFAULT_REPOSITORY_BASE = 'https://raw.githubusercontent.com'
+ 
+diff --git a/src/server/types.ts b/src/server/types.ts
+index 4335d015..27275044 100644
+--- a/src/server/types.ts
++++ b/src/server/types.ts
+@@ -75,8 +75,9 @@ export interface ManifestEntry {
+  *
+  * @remarks
+  * `roots` is the sorted directory inventory, which is what distinguishes a
+- * declared empty directory. `digest` is the SHA-256 of that exact entry and
+- * root membership, so a membership edit that did not update the digest is
++ * declared empty directory. `surface` records only names claimed by distinct
++ * guides, sorted by name with each owner list sorted. `digest` is the SHA-256
++ * of the exact entries, roots, and surface, so an edit without its digest is
+  * detected. A self-consistent replacement manifest defines its own smaller
+  * membership; authenticating omitted membership is outside a checksum's
+  * contract.
+@@ -84,9 +85,28 @@ export interface ManifestEntry {
+ export interface HostManifest {
+ 	readonly entries: readonly ManifestEntry[]
+ 	readonly roots: readonly string[]
++	readonly surface: readonly SurfaceCollision[]
+ 	readonly digest: string
+ }
+ 
++/** Represents a Surface name claimed by distinct package guides. */
++export interface SurfaceCollision {
++	readonly name: string
++	readonly owners: readonly string[]
++}
++
++/**
++ * Configures the committed inventory baseline and staging reports.
++ *
++ * @remarks
++ * `report` receives the baseline location or its absence. Default: writes to stderr.
++ * `inventory` is relative to the checkout. Default: `host.json`.
++ */
++export interface HostStageOptions {
++	readonly inventory?: string
++	readonly report?: (message: string) => void
++}
++
+ /**
+  * Represents a whole vendored host supplied as a value: the membership beside the bytes filling it.
+  *
+@@ -234,6 +254,10 @@ export interface MaterializerInterface {
+ 	 * @param mirrors - The fetched guides; each carries the local bytes its write is held to.
+ 	 * @param target - The directory to write into.
+ 	 * @returns The mirror paths written and skipped; a mirror already current is skipped.
++	 * @remarks
++	 * A missing target mirror can use the hosted guide after an upstream failure
++	 * or absence. A present mirror stays untouched when upstream supplies no bytes.
++	 * The observed target bytes remain the write precondition for either source.
+ 	 */
+ 	mirror(mirrors: readonly Mirror[], target: string): MaterializeResult
+ 	/**
+diff --git a/src/server/validators.ts b/src/server/validators.ts
+index 49b904df..71cce77a 100644
+--- a/src/server/validators.ts
++++ b/src/server/validators.ts
+@@ -55,6 +55,7 @@ import {
+ 	MAX_UPSTREAM_TIMEOUT,
+ 	RESERVED_SEGMENT_PATTERN,
+ } from './constants.js'
++import { computeManifestDigest } from './helpers.js'
+ 
+ /**
+  * Narrows a value to a path naming a location on this host.
+@@ -329,6 +330,15 @@ export const isManifestEntry: Guard<ManifestEntry> = recordOf({
+ export const isHostManifest: Guard<HostManifest> = recordOf({
+ 	entries: andOf(isCollection, arrayOf(isManifestEntry)),
+ 	roots: andOf(isCollection, arrayOf(isPath)),
++	surface: andOf(
++		andOf(isCollection, arrayOf(recordOf({
++			name: stringOf({ min: 1 }),
++			owners: andOf(andOf(isCollection, arrayOf(stringOf({ min: 1 }))), (owners) =>
++				owners.length > 1 && owners.every((owner, index) => index === 0 || (owners[index - 1] ?? owner) < owner),
++			),
++		}))),
++		(surface) => surface.every((collision, index) => index === 0 || (surface[index - 1]?.name ?? collision.name) < collision.name),
++	),
+ 	digest: isDigest,
+ })
+ 
+@@ -348,13 +358,16 @@ export const isHostManifest: Guard<HostManifest> = recordOf({
+  * ```ts
+  * import { isHost } from '@orkestrel/scaffold/server'
+  *
+- * const digest = 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'
++ * const digest = computeManifestDigest([], [], [])
+  *
+- * isHost({ manifest: { entries: [], roots: [], digest }, bytes: {} }) // true
+- * isHost({ manifest: { entries: [], roots: [], digest } }) // false
++ * isHost({ manifest: { entries: [], roots: [], surface: [], digest }, bytes: {} }) // true
++ * isHost({ manifest: { entries: [], roots: [], surface: [], digest } }) // false
+  * ```
+  */
+-export const isHost: Guard<Host> = recordOf({ manifest: isHostManifest, bytes: isSnapshot })
++export const isHost: Guard<Host> = andOf(
++	recordOf({ manifest: isHostManifest, bytes: isSnapshot }),
++	({ manifest }) => holds(() => manifest.digest === computeManifestDigest(manifest.entries, manifest.roots, manifest.surface)),
++)
+ 
+ /**
+  * Narrows a value to a {@link Worktree}.

@@ -1,0 +1,93 @@
+npm notice run @orkestrel/mcp@0.0.30 npx
+npm notice run vitest run --config vite.config.ts --project src:browser --reporter=verbose tests/src/browser/probe-p14.test.ts
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/mcp
+
+stdout | tests/src/browser/probe-p14.test.ts:14:2 > P14 vectors > V1a: an addition coalesced into a sync ordered before a same-manager publication survives
+P14 V1a: []
+ × |src:browser (chromium)| tests/src/browser/probe-p14.test.ts:14:2 > P14 vectors > V1a: an addition coalesced into a sync ordered before a same-manager publication survives 234ms
+   → expected [] to deeply equal [ 'fresh' ]
+stdout | tests/src/browser/probe-p14.test.ts:28:2 > P14 vectors > V1b: the same, behind a suspended registration
+P14 V1b: []
+ × |src:browser (chromium)| tests/src/browser/probe-p14.test.ts:28:2 > P14 vectors > V1b: the same, behind a suspended registration 266ms
+   → expected [] to deeply equal [ 'fresh' ]
+stdout | tests/src/browser/probe-p14.test.ts:45:2 > P14 vectors > V1c: add, then publish, then clear leaves nothing registered
+P14 V1c: ["add","fresh"]
+ × |src:browser (chromium)| tests/src/browser/probe-p14.test.ts:45:2 > P14 vectors > V1c: add, then publish, then clear leaves nothing registered 210ms
+   → expected [ 'add', 'fresh' ] to deeply equal []
+stdout | tests/src/browser/probe-p14.test.ts:59:2 > P14 vectors > V1d: a publish of another manager between a coalesced event and its sync
+P14 V1d: ["lookup"]
+ ✓ |src:browser (chromium)| tests/src/browser/probe-p14.test.ts:59:2 > P14 vectors > V1d: a publish of another manager between a coalesced event and its sync 208ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/probe-p14.test.ts:14:2 > P14 vectors > V1a: an addition coalesced into a sync ordered before a same-manager publication survives
+AssertionError: expected [] to deeply equal [ 'fresh' ]
+
+- Expected
++ Received
+
+- [
+-   "fresh",
+- ]
++ []
+
+ ❯ tests/src/browser/probe-p14.test.ts:25:16
+     23|   const names = fixture.registrations().map((entry) => entry.tool.name)
+     24|   console.log('P14 V1a:', JSON.stringify(names))
+     25|   expect(names).toEqual(['fresh'])
+       |                ^
+     26|  })
+     27|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/probe-p14.test.ts:28:2 > P14 vectors > V1b: the same, behind a suspended registration
+AssertionError: expected [] to deeply equal [ 'fresh' ]
+
+- Expected
++ Received
+
+- [
+-   "fresh",
+- ]
++ []
+
+ ❯ tests/src/browser/probe-p14.test.ts:42:16
+     40|   const names = fixture.registrations().map((entry) => entry.tool.name)
+     41|   console.log('P14 V1b:', JSON.stringify(names))
+     42|   expect(names).toEqual(['fresh'])
+       |                ^
+     43|  })
+     44|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/probe-p14.test.ts:45:2 > P14 vectors > V1c: add, then publish, then clear leaves nothing registered
+AssertionError: expected [ 'add', 'fresh' ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "add",
++   "fresh",
++ ]
+
+ ❯ tests/src/browser/probe-p14.test.ts:56:16
+     54|   const names = fixture.registrations().map((entry) => entry.tool.name)
+     55|   console.log('P14 V1c:', JSON.stringify(names))
+     56|   expect(names).toEqual([])
+       |                ^
+     57|  })
+     58|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  3 failed | 1 passed (4)
+   Start at  08:31:42
+   Duration  2.84s (transform 0ms, setup 354ms, import 9ms, tests 921ms, environment 0ms)
+

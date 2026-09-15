@@ -1,0 +1,66 @@
+npm notice run @orkestrel/scaffold@0.0.67 test:distribution
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project distribution
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/scaffold
+
+(node:19428) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead to security vulnerabilities, as the arguments are not escaped, only concatenated.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+xx···-
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |distribution| tests/distribution.test.ts > installed package consumer > stages exactly the declared vendored host inventory
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ tests/distribution.test.ts:313:6
+    311|    expect(
+    312|     staged.some((path) => destination === path || destination.startsWi…
+    313|    ).toBe(true)
+       |      ^
+    314|   }
+    315|   expect(listFiles(resolve(root, 'dist/host'))).toEqual(
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  |distribution| tests/distribution.test.ts > installed package consumer > answers every example its shipped declarations print exactly as printed
+AssertionError: expected [ …(33) ] to strictly equal [ …(31) ]
+
+- Expected
++ Received
+
+@@ -24,10 +24,12 @@
+    "dist/src/server/index.d.ts: matchesPrecondition({ path: '/tmp/project/new.md', shape: 'absent' }) // true while absent",
+    "dist/src/server/index.d.ts: result.written // every path created",
+    "dist/src/server/index.d.ts: readAnchor('/tmp/project') // { path: '/tmp/project', device: 1, inode: 2 }",
+    "dist/src/server/index.d.ts: readHostFloor().manifest // the installed floor's verified membership",
+    "dist/src/server/index.d.ts: readHostManifest('./dist/host') // the manifest, or undefined for a raw root",
++   "dist/src/server/index.d.ts: readSurfaceBaseline('./host.json') // the recorded collisions, if the inventory exists",
++   "dist/src/server/index.d.ts: readSurfaceCollisions('./guides').get('Shared') // the guides claiming Shared, if it collides",
+    "dist/src/server/index.d.ts: resolveRealPath('./packages/new/src') // the real path of `packages`, plus `new/src`",
+    "dist/src/server/index.d.ts: stageHost(process.cwd(), 'dist/host') // one ManifestEntry per file staged",
+    "dist/src/server/index.d.ts: stageInventory(process.cwd(), 'host.json') // the committed host inventory",
+    "dist/src/server/index.d.ts: isBranch('main') // false — a branch name is not a branch",
+  ]
+
+ ❯ tests/distribution.test.ts:527:20
+    525|    // the line moving with it. The lists are long because most shipped…
+    526|    // are prose, and reporting that is the point of naming them.
+    527|    expect(glossed).toStrictEqual([
+       |                    ^
+    528|     "dist/src/core/index.d.ts: ) // { path: 'README.md', group: 'docs'…
+    529|     'dist/src/core/index.d.ts: blueprintToDevDependencies(blueprint).t…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 3 passed | 1 skipped (6)
+   Start at  07:24:38
+   Duration  74.66s (transform 327ms, setup 302ms, import 1.15s, tests 73.06s, environment 0ms)
+

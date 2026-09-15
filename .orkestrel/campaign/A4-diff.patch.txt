@@ -1,0 +1,2790 @@
+diff --git a/guides/mcp.md b/guides/mcp.md
+index 8170910..0cb2050 100644
+--- a/guides/mcp.md
++++ b/guides/mcp.md
+@@ -3184,9 +3184,40 @@ parameter defaults to `globalThis`, so a worker boots with
+ `createScopeServer({ tools })` alone and a test drives the same wiring by passing a scope
+ double instead of a real worker.
+ 
+-This face is DOM-free by construction (type-checked against `lib: ["ESNext",
+-"WebWorker"]`, no `"dom"`), so it runs identically in a page, a Web Worker,
+-and a Service Worker.
++`createPageServer` is that bootstrap's page twin, and the in-page pair as one call. It owns a
++native `MessageChannel`, binds an `MCPServer` to one half and an `MCPClientInterface` to the
++other, and hands the client back on `PageServerInterface`. Assembling the same pair by hand
++means writing the channel, two transports, `bindServer`, `createDuplexClientTransport`,
++`createMCPClient`, and `bindClient` in an order `MessagePortTransport`'s own doc warns about —
++a port starts dispatching at construction, so an `await` interleaved between a transport and
++its binder drops whatever arrived in the gap. The factory never suspends between the two. The
++returned client is bound and not connected, because connection is a protocol round trip and a
++factory that returned a promise could not return the terminal beside it: call
++`await page.client.connect()` yourself. `destroy` closes the client's port first, so the client
++observes the close and reports `connected` as `false`, then unbinds both sides and closes the
++server's port; it is idempotent.
++
++`createModelContext` is the WebMCP bridge: it publishes a `ToolManagerInterface`'s tools to the
++document's `document.modelContext` registry and reads that registry back as
++`@orkestrel/tool` tools. Feature detection is the return value — `undefined` means the document
++exposes no registry — so there is no `supported` flag to read and no polyfill behind the
++factory. `publish` registers each advertised tool through `registerTool` with the projected
++annotations and retains the `AbortController` whose abort is WebMCP's own unregistration path;
++`adopt` reads `getTools` and wraps each `RegisteredTool` as a tool whose `execute` runs
++`executeTool` with the caller's `ToolContext.signal`; `destroy` aborts exactly this handle's
++registrations and touches nobody else's. See [WebMCP parity](#webmcp-parity) for the surface
++comparison, and [Declared conformance gaps](#declared-conformance-gaps) for what a browser that
++ships no registry leaves unproven.
++
++**The transports are host-neutral; the WebMCP bridge is not, and it says so at runtime.** This
++face type-checks against `lib: ["ESNext", "DOM", "DOM.Iterable"]`
++(`configs/src/tsconfig.browser.json`), because `createModelContext` takes a `Document` and
++`WebMCPRegisteredTool` carries a `Window`. Nothing else here touches a DOM-only global:
++`WebSocket`, `fetch`, `MessagePort`, and `MessageChannel` exist in a page, a Web Worker, and a
++Service Worker alike, so every transport, `createScopeServer`, and `createPageServer` run
++identically in all three. `createModelContext` reads `globalThis.document`, which is `undefined`
++in a worker, and answers `undefined` there — the same answer it gives a page whose browser
++ships no registry.
+ 
+ ```ts
+ import { createMCPClient } from '@orkestrel/mcp'
+@@ -3216,6 +3247,8 @@ const tools = await http.tools()
+ | `createScopeServer`              | function | Creates an `MCPServer` hosted inside a worker scope and wires that scope's message events to it — the browser face's bootstrap, and the twin of the Node face's `createStdioServer`.                                                                                                                      |
+ | `createScopeTransport`           | function | Adapts a hostable `ScopeInterface` (`self` in a dedicated Web Worker, or any structurally matching double) into a `ScopeTransportInterface` — the implicit, portless message channel `createScopeServer` binds for the dedicated-worker shape.                                                            |
+ | `createScopeMessageListener`     | function | Builds `createScopeServer`'s `message`-event listener — the unified dispatcher that routes every inbound event on a hostable scope, portless or port-bearing, to the right binding.                                                                                                                       |
++| `createPageServer`               | function | Creates an `MCPServer` hosted inside the calling page and hands back the client bound to it — the page twin of `createScopeServer`, and the in-page MCP pair as one call.                                                                                                                                 |
++| `createModelContext`             | function | Creates the bridge between a tool registry and a document's WebMCP registry, or reports that the document exposes none.                                                                                                                                                                                   |
+ 
+ #### Classes
+ 
+@@ -3223,6 +3256,7 @@ const tools = await http.tools()
+ | -------------------------- | ----- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+ | `WebSocketClientTransport` | class | Drives a remote MCP server over the native `WebSocket` global from the browser face, as a client `MCPMessageTransportInterface`. This class is the browser sibling of the Node face's `WebSocketClientTransport`. |
+ | `MessagePortTransport`     | class | Carries the Model Context Protocol over a native `MessagePort` from the browser face — a `MCPTransportInterface`, the genuinely new capability this face adds: MCP over `postMessage`.                            |
++| `ModelContext`             | class | Bridges a `ToolManagerInterface` and a document's WebMCP tool registry — the `ModelContextInterface` `createModelContext` returns.                                                                                |
+ 
+ #### Constants
+ 
+@@ -3232,11 +3266,24 @@ A `Shape` cell holds the constant's declared type.
+ | ---------------------------- | ----- | ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------- |
+ | `DEFAULT_MCP_SERVER_NAME`    | const | `'@orkestrel/mcp'` | Supplies the default server name `createScopeServer` reports (`initialize`'s `serverInfo.name`) when `options.name` is omitted.          |
+ | `DEFAULT_MCP_SERVER_VERSION` | const | `'1.0.0'`          | Supplies the default server version `createScopeServer` reports (`initialize`'s `serverInfo.version`) when `options.version` is omitted. |
++| `WEBMCP_CHANGE_EVENT`        | const | `'toolchange'`     | Names the WebMCP registry event the bridge republishes as its own `change`.                                                              |
+ 
+ #### Helpers
+ 
+-_This face declares none. The SSE decoders `decodeEvent` and `readEventStream` are
+-host-independent and ship from `@orkestrel/mcp`; see [Core § Helpers](#helpers)._
++The WebMCP projections and the registry guards. Each projection is the WebMCP direction of the
++translation `toolAnnotationsToMCP` and `mcpAnnotationsToTool` perform for the MCP wire; see
++[Core § Helpers](#helpers) for those. The SSE decoders `decodeEvent` and `readEventStream` are
++host-independent and ship from `@orkestrel/mcp`.
++
++| API                       | Kind     | Summary                                                                                    |
++| ------------------------- | -------- | ------------------------------------------------------------------------------------------ |
++| `toolAnnotationsToWebMCP` | function | Projects domain tool annotations onto WebMCP registry hints without inventing defaults.    |
++| `webMCPAnnotationsToTool` | function | Projects WebMCP registry hints onto domain tool annotations without inventing defaults.    |
++| `toolToWebMCP`            | function | Projects one advertised tool definition onto the WebMCP descriptor a registration carries. |
++| `webMCPToTool`            | function | Projects one registered WebMCP tool onto the tool definition an adopted tool advertises.   |
++| `buildWebMCPDescriptors`  | function | Builds the WebMCP descriptor for every tool a registry advertises, or refuses the batch.   |
++| `isWebMCPRegistry`        | function | Determines whether an unknown value is a WebMCP tool registry.                             |
++| `isWebMCPDocument`        | function | Determines whether an unknown value is a document exposing the WebMCP tool registry.       |
+ 
+ #### Types
+ 
+@@ -3245,14 +3292,32 @@ optional member and `plus` introducing its call-signature members, and a type al
+ literal with a union's arms escaped as `\|`.
+ An extended interface's name comes before `plus`, with the members it adds after.
+ 
+-| Type                              | Kind      | Shape                                                        | Summary                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+-| --------------------------------- | --------- | ------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+-| `WebSocketClientTransportOptions` | interface | `{ url, protocols? }`                                        | Options for `createWebSocketClientTransport` (browser face) — the remote MCP WebSocket endpoint and any negotiated subprotocols.                                                                                                                                                                                                                                                                                                                                                        |
+-| `MessagePortTransportOptions`     | interface | `{ port }`                                                   | Options for `createMessagePortTransport` — the native `MessagePort` a `MessagePortTransport` sends and listens on.                                                                                                                                                                                                                                                                                                                                                                      |
+-| `ScopeInterface`                  | interface | `{} plus postMessage, addEventListener, removeEventListener` | Describes the structural shape `createScopeServer` needs from a hostable scope — `self` in a dedicated Web Worker or a Service Worker (or any double matching this shape).                                                                                                                                                                                                                                                                                                              |
+-| `ScopeTransportInterface`         | interface | `MCPTransportInterface plus deliver`                         | Adapts a message-event-bearing scope (`self` in a dedicated Web Worker, or any object shaped the same way) as a duplex `MCPTransportInterface` — the internal carrier `createScopeServer` binds to route the implicit (portless) message channel, plus the `deliver` entry point the scope's own `message` listener pushes an inbound string through (the scope itself never registers `listen`'s handler for the caller — the scope server's dispatcher does, through this `deliver`). |
+-| `ScopeServerInterface`            | interface | `{} plus stop`                                               | Represents one MCP server hosted inside a worker scope — what `createScopeServer` returns.                                                                                                                                                                                                                                                                                                                                                                                              |
+-| `ScopeServerOptions`              | interface | `{ tools, name?, version? } plus accept?`                    | Options for `createScopeServer` — the live `ToolManagerInterface` to expose plus the optional server identity, mirroring `createMCPServer`'s `MCPServerOptions` (`@orkestrel/mcp`) but with `name`/`version` optional (defaulting to `DEFAULT_MCP_SERVER_NAME` / `DEFAULT_MCP_SERVER_VERSION`).                                                                                                                                                                                         |
++| Type                              | Kind      | Shape                                                                                            | Summary                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
++| --------------------------------- | --------- | ------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
++| `WebSocketClientTransportOptions` | interface | `{ url, protocols? }`                                                                            | Options for `createWebSocketClientTransport` (browser face) — the remote MCP WebSocket endpoint and any negotiated subprotocols.                                                                                                                                                                                                                                                                                                                                                        |
++| `MessagePortTransportOptions`     | interface | `{ port }`                                                                                       | Options for `createMessagePortTransport` — the native `MessagePort` a `MessagePortTransport` sends and listens on.                                                                                                                                                                                                                                                                                                                                                                      |
++| `ScopeInterface`                  | interface | `{} plus postMessage, addEventListener, removeEventListener`                                     | Describes the structural shape `createScopeServer` needs from a hostable scope — `self` in a dedicated Web Worker or a Service Worker (or any double matching this shape).                                                                                                                                                                                                                                                                                                              |
++| `ScopeTransportInterface`         | interface | `MCPTransportInterface plus deliver`                                                             | Adapts a message-event-bearing scope (`self` in a dedicated Web Worker, or any object shaped the same way) as a duplex `MCPTransportInterface` — the internal carrier `createScopeServer` binds to route the implicit (portless) message channel, plus the `deliver` entry point the scope's own `message` listener pushes an inbound string through (the scope itself never registers `listen`'s handler for the caller — the scope server's dispatcher does, through this `deliver`). |
++| `ScopeServerInterface`            | interface | `{} plus stop`                                                                                   | Represents one MCP server hosted inside a worker scope — what `createScopeServer` returns.                                                                                                                                                                                                                                                                                                                                                                                              |
++| `ScopeServerOptions`              | interface | `{ tools, name?, version? } plus accept?`                                                        | Options for `createScopeServer` — the live `ToolManagerInterface` to expose plus the optional server identity, mirroring `createMCPServer`'s `MCPServerOptions` (`@orkestrel/mcp`) but with `name`/`version` optional (defaulting to `DEFAULT_MCP_SERVER_NAME` / `DEFAULT_MCP_SERVER_VERSION`).                                                                                                                                                                                         |
++| `PageServerOptions`               | interface | `{ tools, name?, version?, client? }`                                                            | Options for `createPageServer` — the live `ToolManagerInterface` to expose, the optional server identity, and the optional settings for the client half the pair owns.                                                                                                                                                                                                                                                                                                                  |
++| `PageServerInterface`             | interface | `{ client } plus destroy`                                                                        | Represents one MCP server hosted inside the calling page — what `createPageServer` returns.                                                                                                                                                                                                                                                                                                                                                                                             |
++| `WebMCPAnnotations`               | interface | `{ readOnlyHint?, untrustedContentHint?, consequentialHint? }`                                   | Describes a tool's observable effects as the WebMCP registry declares them.                                                                                                                                                                                                                                                                                                                                                                                                             |
++| `WebMCPDescriptor`                | interface | `{ name, title?, description, inputSchema?, annotations? }`                                      | Describes the members a WebMCP tool carries into the registry and back out of it.                                                                                                                                                                                                                                                                                                                                                                                                       |
++| `WebMCPHandlerOptions`            | interface | `{ signal }`                                                                                     | Carries the execution signal the WebMCP registry hands a registered tool's callback.                                                                                                                                                                                                                                                                                                                                                                                                    |
++| `WebMCPExecuteHandler`            | type      | `(input: Readonly<Record<string, unknown>>, options: WebMCPHandlerOptions,) => Promise<unknown>` | Runs one registered WebMCP tool with the caller's input and the registry's signal.                                                                                                                                                                                                                                                                                                                                                                                                      |
++| `WebMCPTool`                      | interface | `WebMCPDescriptor plus execute`                                                                  | Describes one tool as handed to the WebMCP registry for registration.                                                                                                                                                                                                                                                                                                                                                                                                                   |
++| `WebMCPRegisteredTool`            | interface | `WebMCPDescriptor plus window, origin`                                                           | Describes one tool as the WebMCP registry reports it back.                                                                                                                                                                                                                                                                                                                                                                                                                              |
++| `WebMCPRegisterOptions`           | interface | `{ exposedTo?, signal? }`                                                                        | Options for the WebMCP registry's `registerTool` — the exposure list and the unregistration signal.                                                                                                                                                                                                                                                                                                                                                                                     |
++| `WebMCPToolsOptions`              | interface | `{ fromOrigins? }`                                                                               | Options for the WebMCP registry's `getTools` — the origins whose tools are read.                                                                                                                                                                                                                                                                                                                                                                                                        |
++| `WebMCPExecuteOptions`            | interface | `{ signal? }`                                                                                    | Options for the WebMCP registry's `executeTool` — the caller's cancellation signal.                                                                                                                                                                                                                                                                                                                                                                                                     |
++| `WebMCPRegistryInterface`         | interface | `{} plus registerTool, getTools, executeTool, addEventListener, removeEventListener`             | Represents the WebMCP tool registry a document exposes as `document.modelContext`.                                                                                                                                                                                                                                                                                                                                                                                                      |
++| `WebMCPDocument`                  | interface | `{ modelContext }`                                                                               | Describes a document that exposes the WebMCP tool registry.                                                                                                                                                                                                                                                                                                                                                                                                                             |
++| `ModelContextEventMap`            | type      | `{ change: readonly [] }`                                                                        | Reports the moments a WebMCP registry's contents changed.                                                                                                                                                                                                                                                                                                                                                                                                                               |
++| `ModelContextOptions`             | interface | `{ document?, on?, error? }`                                                                     | Options for `createModelContext` — the document to bridge and the emitter's initial wiring.                                                                                                                                                                                                                                                                                                                                                                                             |
++| `ModelContextPublishOptions`      | interface | `{ origins? }`                                                                                   | Options for `ModelContextInterface.publish` — the origins each registration is exposed to.                                                                                                                                                                                                                                                                                                                                                                                              |
++| `ModelContextAdoptOptions`        | interface | `{ origins? }`                                                                                   | Options for `ModelContextInterface.adopt` — the origins whose tools are read.                                                                                                                                                                                                                                                                                                                                                                                                           |
++| `ModelContextInterface`           | interface | `{ emitter } plus publish, adopt, destroy`                                                       | Represents the bridge between a `ToolManagerInterface` and a document's WebMCP registry — what `createModelContext` returns.                                                                                                                                                                                                                                                                                                                                                            |
+ 
+ _This face declares no `HTTPClientTransportOptions`. It is host-independent and ships from
+ `@orkestrel/mcp`; see [Core § Types](#types)._
+@@ -3865,6 +3930,74 @@ worker.stop() // release every binding this call owns
+ worker.stop() // a repeat releases nothing further
+ ```
+ 
++#### `PageServerInterface`
++
++The in-page handle `createPageServer` returns. No class implements it: the factory owns the
++`MessageChannel`, the hosted `MCPServer`, and both bindings behind it, and publishes the client
++beside the one door that ends them. The `client` data member is bound and not connected —
++`connect` is yours to await, because it is a protocol round trip rather than a construction
++step.
++
++| Method    | Returns | Summary                                                                         |
++| --------- | ------- | ------------------------------------------------------------------------------- |
++| `destroy` | `void`  | Closes both ports, unbinds both sides, and disconnects the client — idempotent. |
++
++This example hosts a server in the page, drives it, and shows that repeated cleanup is inert.
++
++```ts
++import { createPageServer } from '@orkestrel/mcp/browser'
++import { createTool, createToolManager } from '@orkestrel/tool'
++
++const tools = createToolManager()
++tools.add(createTool({ name: 'add', execute: () => 5 }))
++
++const page = createPageServer({ tools })
++await page.client.connect() // the pair negotiates over the channel; nothing touches the network
++page.destroy() // both ports closed, both sides unbound, the client disconnected
++page.destroy() // a repeat releases nothing further
++```
++
++#### `ModelContextInterface`
++
++The WebMCP bridge `createModelContext` returns, implemented by `ModelContext`. `publish` sends
++this page's tools out to `document.modelContext`; `adopt` brings that registry's tools back as
++`@orkestrel/tool` tools. The `emitter` data member republishes the registry's `toolchange` as
++`change`. Subscribe through `emitter.on`.
++
++`publish` is a snapshot rather than a subscription, because `@orkestrel/tool`'s registry
++publishes no change events: call it again after changing the registry. A second call registers
++the names this handle has not registered and aborts the ones whose names have left the manager,
++and leaves a name it already registered as it was — so replacing a definition means removing
++that name, calling `publish`, adding the replacement definition, and calling `publish` again. Every
++tool is projected before anything is registered, so a manager holding a tool that advertises
++neither a `description` nor a `summary` is refused whole, with an `MCPError` carrying `-32602`
++and naming the tool, and nothing registered.
++
++| Method    | Returns                             | Summary                                                                           |
++| --------- | ----------------------------------- | --------------------------------------------------------------------------------- |
++| `publish` | `Promise<void>`                     | Registers every tool the manager holds at this moment.                            |
++| `adopt`   | `Promise<readonly ToolInterface[]>` | Reads the document's registered tools as locally executable tools.                |
++| `destroy` | `void`                              | Aborts every registration this handle made and releases the emitter — idempotent. |
++
++This example publishes a registry to a document that exposes WebMCP, reads the document's own
++tools back, and releases only what it registered.
++
++```ts
++import { createModelContext } from '@orkestrel/mcp/browser'
++import { createTool, createToolManager } from '@orkestrel/tool'
++
++const tools = createToolManager()
++tools.add(createTool({ name: 'add', description: 'Adds two numbers', execute: () => 5 }))
++
++const bridge = createModelContext() // undefined where the document exposes no registry
++if (bridge !== undefined) {
++	bridge.emitter.on('change', () => console.log('the registry changed'))
++	await bridge.publish(tools, { origins: ['https://partner.example'] })
++	const foreign = await bridge.adopt()
++	bridge.destroy() // aborts this handle's registrations and nobody else's
++}
++```
++
+ ## Patterns
+ 
+ ### Expose a tool registry over MCP
+@@ -4489,6 +4622,37 @@ the session middleware). A deployment that already validates origin upstream say
+ `origin: { enabled: false }` rather than by passing an empty list, because delegation
+ is a different decision from an empty allowlist and deserves its own word.
+ 
++## WebMCP parity
++
++WebMCP puts a tool registry on the document — `document.modelContext` — so a page can offer its
++own capabilities to an agent running in the browser. It is a different door onto the same idea
++this package serves over a wire, so each surface it defines is compared here against what this
++package publishes, and every row ends implement, retain, or exclude with the source it was read
++from. `G5c` is the verbatim WebIDL, samples, and chromestatus reading taken from the
++[WebMCP specification](https://webmachinelearning.github.io/webmcp) on 2026-09-15; `G5` is the
++surrounding research context. `createModelContext` is where the implemented rows live.
++
++| WebMCP surface                                                                                   | Ours                                                                                             | Verdict                                                                                                                                                                                                                           | Source              |
++| ------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------- |
++| `registerTool(tool, { exposedTo, signal })`                                                      | `ModelContextInterface.publish(tools, { origins })`                                              | implement — `origins` becomes `exposedTo`, and the retained controller's abort is the unregistration path                                                                                                                         | `G5c` § 1, § 2      |
++| `getTools({ fromOrigins })`                                                                      | `ModelContextInterface.adopt({ origins })`                                                       | implement — `origins` becomes `fromOrigins`, and each `RegisteredTool` comes back as a `ToolInterface`                                                                                                                            | `G5c` § 1           |
++| `executeTool(tool, input, { signal })`                                                           | an adopted tool's `execute(args, context)`, and `ToolManagerInterface.execute` on the other side | implement — the caller's `ToolContext.signal` becomes WebMCP's `signal` in both directions                                                                                                                                        | `G5c` § 1           |
++| `toolchange` event                                                                               | `ModelContextEventMap.change`                                                                    | implement — the registry names no changed tool, so ours is a bare signal and a listener re-reads `adopt`                                                                                                                          | `G5c` § 2           |
++| Registry change events on our own tool registry                                                  | none                                                                                             | exclude — `@orkestrel/tool` publishes no events, so `publish` registers a snapshot the consumer re-publishes after changing the registry                                                                                          | `G5c` § 2           |
++| `inputSchema` (JSON Schema)                                                                      | `ToolDefinition.parameters`, derived from `ToolOptions.contract`                                 | implement, exceeds — ours validates arguments before execution                                                                                                                                                                    | `G5c` § 1; `G5` § 8 |
++| `ModelContextTool.title`                                                                         | `ToolDefinition.title`                                                                           | implement                                                                                                                                                                                                                         | `G5c` § 1           |
++| `ToolAnnotations` hints                                                                          | `ToolAnnotations { pure, untrusted, consequential }`, projected by `toolAnnotationsToWebMCP`     | implement — `pure` to `readOnlyHint`, `untrusted` to `untrustedContentHint`, `consequential` to `consequentialHint`; the MCP wire carries `pure` to `readOnlyHint` and `consequential` to `destructiveHint` and drops `untrusted` | `G5c` § 1, § 4      |
++| Declarative form attributes                                                                      | none                                                                                             | exclude — `index.bs` marks that section "entirely a TODO", the submission path is a fetch-tool paraphrase, and markup is application policy                                                                                       | `G5c` § 3           |
++| Consent and user activation                                                                      | none; `ToolAnnotations.consequential` is the datum a consent layer reads                         | exclude — no source states an activation requirement, and consent belongs to the user agent                                                                                                                                       | `G5` § 5            |
++| Origin scoping (`Permissions-Policy: tools`, `allow="tools"`)                                    | `createScopeServer`'s `accept` gate, and `publish`/`adopt`'s `origins`                           | implement the library half; the header is the application's                                                                                                                                                                       | `G5c` § 5           |
++| Cross-document handshake from the client side                                                    | none                                                                                             | exclude — separate origin, navigation, and lifecycle work with its own design round                                                                                                                                               | `G5c` § 5           |
++| Result shape (`Promise<DOMString>` in the IDL against `{ content: [...] }` in the README sample) | the executed tool's value, resolved unchanged                                                    | exclude the contradiction, retain ours — the primary source disagrees with itself, and the bridge projects to MCP content blocks in neither direction                                                                             | `G5c` § 1, § 4      |
++| Structured refusal                                                                               | a rejection carrying the failure's message, which is what the specification's own sample catches | exclude — the specification's issue #282 leaves the shape open; do not invent one                                                                                                                                                 | `G5` § 8            |
++| Streaming and partial result on abort                                                            | `notifications/progress` plus `MCPCallOptions.progress`                                          | retain, exceeds — WebMCP defines none                                                                                                                                                                                             | `G5` § 8            |
++| Resources, prompts, sampling, elicitation, tasks                                                 | published by `MCPServer` today                                                                   | retain, exceeds — WebMCP has no counterpart                                                                                                                                                                                       | `G5` § 6            |
++| Server-initiated requests                                                                        | none                                                                                             | exclude — a modern-protocol non-goal recorded under [Declared non-goals](#declared-non-goals), not a WebMCP gap                                                                                                                   | `G5` § 6            |
++| Shipping status                                                                                  | `createModelContext` returning `undefined`                                                       | exclude as a dependency — the detection is the return value, there is no `supported` flag, and the chromestatus record read on 2026-08-12 says `Proposed`, `"flag": false`, `"origintrial": false`                                | `G5c` § 7           |
++
+ ## Declared conformance gaps
+ 
+ The conformance project is a foreign-runner exchange and a schema-authority comparison,
+@@ -4835,6 +4999,25 @@ The modern-only scope of `subscriptions/listen` is a stated limit rather than a
+ it is recorded under [Declared non-goals](#declared-non-goals) with the other era-scoped
+ surfaces.
+ 
++**`document.modelContext` is proven against an IDL-faithful double alone.** `createModelContext`,
++`ModelContext`, and the `WebMCP*` wire types translate the registry the
++[WebMCP specification](https://webmachinelearning.github.io/webmcp) defines, and the
++chromestatus record read on 2026-08-12 reports that feature as `Proposed` with `"flag": false`
++and `"origintrial": false` — no browser ships it, behind a flag or in an origin trial. The real
++Chromium the browser suite drives therefore exposes no `document.modelContext`, which
++`tests/src/browser/factories.test.ts` records as its own reading of the page rather than
++assuming, and every bridge scenario runs against `tests/fixtures/modelContext.ts`: an in-memory
++implementation of that WebIDL, member for member and nothing beyond it. **What that proves:**
++the translation each way — the projected annotations, the exposure and origin options, the
++signal carried into a published tool and out to an adopted one, the `toolchange` republication,
++and the registration ownership `destroy` releases. **What it does not prove:** that a user
++agent's own registry accepts these registrations, or that an agent driving one reaches this
++page's tools. **What it costs:** nothing a consumer can reach today, because
++`createModelContext` answers `undefined` on every shipping browser, so feature absence stays
++absence instead of becoming a passing integration claim. **Closer:** a browser that ships the
++registry, after which the same scenarios run against the real global and this entry names the
++version that closed it.
++
+ **Not every guide fence is executed.** `tests/guides.test.ts` transcribes and drives the
+ flagship ones: the `tools/list` metadata pair, the stdio child's merged environment, its piped
+ stderr and the retained evidence tail, the composed stdio server's legacy handshake, the
+diff --git a/src/browser/ModelContext.ts b/src/browser/ModelContext.ts
+new file mode 100644
+index 0000000..6eca92f
+--- /dev/null
++++ b/src/browser/ModelContext.ts
+@@ -0,0 +1,198 @@
++import type { EmitterInterface } from '@orkestrel/emitter'
++import type { ToolContext, ToolInterface, ToolManagerInterface } from '@orkestrel/tool'
++import type {
++	ModelContextAdoptOptions,
++	ModelContextEventMap,
++	ModelContextInterface,
++	ModelContextOptions,
++	ModelContextPublishOptions,
++	WebMCPDescriptor,
++	WebMCPDocument,
++	WebMCPHandlerOptions,
++	WebMCPRegisteredTool,
++	WebMCPRegistryInterface,
++} from './types.js'
++import { Emitter } from '@orkestrel/emitter'
++import { createTool } from '@orkestrel/tool'
++import { WEBMCP_CHANGE_EVENT } from './constants.js'
++import { buildWebMCPDescriptors, webMCPToTool } from './helpers.js'
++
++/**
++ * Bridges a `ToolManagerInterface` and a document's WebMCP tool registry — the
++ * {@link ModelContextInterface} {@link import('./factories.js').createModelContext} returns.
++ *
++ * @remarks
++ * - **It borrows the registry, it does not own it.** The handle registers tools, retains one
++ *   `AbortController` per registration, and aborts exactly those on `destroy`. WebMCP's own
++ *   unregistration path is that abort, so a registration another handle or the page itself
++ *   made survives this handle's whole lifetime untouched.
++ * - **`publish` is a snapshot.** `@orkestrel/tool`'s registry publishes no change events, so
++ *   nothing here can follow one. A second `publish` registers the names this handle has not
++ *   registered and aborts the ones whose names have left the manager; a name already
++ *   registered stays as it was.
++ * - **Work serializes.** Registration is asynchronous and `destroy` is not, so overlapping
++ *   calls would interleave registrations with the aborts meant to end them. Each `publish`
++ *   queues behind the previous one, and every step re-reads the destroyed flag, so a `destroy`
++ *   issued mid-publish stops the registrations that have not happened yet instead of racing
++ *   them.
++ * - **Nothing is polyfilled.** A document exposing no registry never reaches this class:
++ *   {@link import('./factories.js').createModelContext} returns `undefined` instead, so feature
++ *   absence stays absence rather than becoming a local implementation a caller mistakes for
++ *   the platform.
++ * - **The result shape is the registry's.** An adopted tool resolves whatever `executeTool`
++ *   resolved, unchanged. WebMCP's IDL types that `Promise<DOMString>` while the
++ *   specification's README sample returns `{ content: [...] }`; the primary source disagrees
++ *   with itself, and normalizing either way would encode a guess as a contract.
++ *
++ * @example
++ * ```ts
++ * import { isWebMCPDocument, ModelContext } from '@orkestrel/mcp/browser'
++ *
++ * if (isWebMCPDocument(document)) {
++ * 	const bridge = new ModelContext(document)
++ * 	await bridge.publish(tools)
++ * }
++ * ```
++ */
++export class ModelContext implements ModelContextInterface {
++	readonly #registry: WebMCPRegistryInterface
++	readonly #emitter: Emitter<ModelContextEventMap>
++	readonly #controllers = new Map<string, AbortController>()
++	readonly #listener: () => void
++	#queue: Promise<void> = Promise.resolve()
++	#destroyed = false
++
++	/**
++	 * Binds a narrowed document's registry and arms the `toolchange` subscription.
++	 *
++	 * @param document - The document whose `modelContext` this handle bridges
++	 * @param options - The emitter's initial hooks and listener-error handler; see
++	 *   {@link ModelContextOptions}
++	 */
++	constructor(document: WebMCPDocument, options?: ModelContextOptions) {
++		this.#registry = document.modelContext
++		this.#emitter = new Emitter<ModelContextEventMap>({
++			...(options?.on === undefined ? {} : { on: options.on }),
++			...(options?.error === undefined ? {} : { error: options.error }),
++		})
++		// The subscription arms at construction rather than on a first `publish`, because a
++		// registry change between the two would reach nothing. The bound reference is retained
++		// so `destroy` removes the same listener it added.
++		this.#listener = this.#republish.bind(this)
++		this.#registry.addEventListener(WEBMCP_CHANGE_EVENT, this.#listener)
++	}
++
++	get emitter(): EmitterInterface<ModelContextEventMap> {
++		return this.#emitter
++	}
++
++	publish(tools: ToolManagerInterface, options?: ModelContextPublishOptions): Promise<void> {
++		const settled = this.#queue.then(() => this.#publish(tools, options))
++		// The queue tracks completion, never outcome: a rejected publish must not poison the
++		// next one, and the caller already receives the rejection through `settled`.
++		this.#queue = settled.catch(() => undefined)
++		return settled
++	}
++
++	async adopt(options?: ModelContextAdoptOptions): Promise<readonly ToolInterface[]> {
++		const registered = await this.#registry.getTools(
++			options?.origins === undefined ? {} : { fromOrigins: options.origins },
++		)
++		return registered.map((tool) =>
++			createTool({ ...webMCPToTool(tool), execute: this.#execute.bind(this, tool) }),
++		)
++	}
++
++	destroy(): void {
++		if (this.#destroyed) return
++		this.#destroyed = true
++		this.#registry.removeEventListener(WEBMCP_CHANGE_EVENT, this.#listener)
++		for (const controller of this.#controllers.values()) controller.abort()
++		this.#controllers.clear()
++		this.#emitter.destroy()
++	}
++
++	// Republishes the registry's own `toolchange` as this handle's `change`. It exists as a
++	// method so `addEventListener` and `removeEventListener` receive one stable reference.
++	#republish(): void {
++		this.#emitter.emit('change')
++	}
++
++	async #publish(tools: ToolManagerInterface, options?: ModelContextPublishOptions): Promise<void> {
++		if (this.#destroyed) return
++		// Project the whole batch before registering any of it: a tool WebMCP cannot carry
++		// refuses the call here, with nothing registered to unwind.
++		const descriptors = buildWebMCPDescriptors(tools)
++		for (const descriptor of descriptors) {
++			// Re-read after every suspension. A `destroy` that ran while the previous
++			// registration was in flight must stop the rest rather than register past it.
++			if (this.#destroyed) return
++			if (this.#controllers.has(descriptor.name)) continue
++			await this.#register(tools, descriptor, options)
++		}
++		if (this.#destroyed) return
++		this.#prune(tools)
++	}
++
++	async #register(
++		tools: ToolManagerInterface,
++		descriptor: WebMCPDescriptor,
++		options?: ModelContextPublishOptions,
++	): Promise<void> {
++		const controller = new AbortController()
++		this.#controllers.set(descriptor.name, controller)
++		try {
++			await this.#registry.registerTool(
++				{ ...descriptor, execute: this.#run.bind(this, tools, descriptor.name) },
++				{
++					...(options?.origins === undefined ? {} : { exposedTo: options.origins }),
++					signal: controller.signal,
++				},
++			)
++		} catch (error) {
++			// A registration the registry refused is not one this handle owns. Dropping the
++			// entry lets a later `publish` retry the name, and the abort releases a tool a
++			// registry recorded before it failed.
++			this.#controllers.delete(descriptor.name)
++			controller.abort()
++			throw error
++		}
++	}
++
++	// Aborts the registrations whose tools have left the manager. WebMCP's unregistration path
++	// is the registration signal, so aborting is what removes the tool from the registry.
++	#prune(tools: ToolManagerInterface): void {
++		for (const [name, controller] of this.#controllers) {
++			if (tools.tool(name) !== undefined) continue
++			controller.abort()
++			this.#controllers.delete(name)
++		}
++	}
++
++	// Runs one published tool on behalf of the registry. The registry's signal becomes the
++	// call's `ToolContext.signal`, so a foreign agent's abort reaches the local handler, and a
++	// contained failure becomes the rejection WebMCP's own samples catch.
++	async #run(
++		tools: ToolManagerInterface,
++		name: string,
++		input: Readonly<Record<string, unknown>>,
++		options: WebMCPHandlerOptions,
++	): Promise<unknown> {
++		const result = await tools.execute(
++			{ id: crypto.randomUUID(), name, arguments: input },
++			{ signal: options.signal },
++		)
++		if (!result.success) throw new Error(result.error)
++		return result.value
++	}
++
++	// Runs one adopted tool through the registry, forwarding the local caller's abort onto
++	// WebMCP's own execution signal and resolving the registry's answer unchanged.
++	#execute(
++		registered: WebMCPRegisteredTool,
++		args: Readonly<Record<string, unknown>>,
++		context: ToolContext,
++	): Promise<unknown> {
++		return this.#registry.executeTool(registered, args, { signal: context.signal })
++	}
++}
+diff --git a/src/browser/constants.ts b/src/browser/constants.ts
+index bd4a27d..0ff1959 100644
+--- a/src/browser/constants.ts
++++ b/src/browser/constants.ts
+@@ -13,3 +13,10 @@ export const DEFAULT_MCP_SERVER_NAME = '@orkestrel/mcp'
+ 
+ /** Supplies the default server version `createScopeServer` reports (`initialize`'s `serverInfo.version`) when `options.version` is omitted. */
+ export const DEFAULT_MCP_SERVER_VERSION = '1.0.0'
++
++// WebMCP registry subscription — the event name `ModelContext` binds on the document's
++// registry. The members `isWebMCPRegistry` requires are the guard shape in `validators.ts`,
++// where `objectOf` reads them, rather than a second list here that could disagree with it.
++
++/** Names the WebMCP registry event the bridge republishes as its own `change`. */
++export const WEBMCP_CHANGE_EVENT = 'toolchange'
+diff --git a/src/browser/factories.ts b/src/browser/factories.ts
+index 7334a4b..bb5e406 100644
+--- a/src/browser/factories.ts
++++ b/src/browser/factories.ts
+@@ -6,15 +6,28 @@ import type {
+ } from '@src/core'
+ import type {
+ 	MessagePortTransportOptions,
++	ModelContextInterface,
++	ModelContextOptions,
++	PageServerInterface,
++	PageServerOptions,
+ 	ScopeInterface,
+ 	ScopeServerInterface,
+ 	ScopeServerOptions,
+ 	ScopeTransportInterface,
+ 	WebSocketClientTransportOptions,
+ } from './types.js'
+-import { bindServer, createMCPServer, HTTPClientTransport } from '@src/core'
++import {
++	bindClient,
++	bindServer,
++	createDuplexClientTransport,
++	createMCPClient,
++	createMCPServer,
++	HTTPClientTransport,
++} from '@src/core'
+ import { isString } from '@orkestrel/contract'
+ import { DEFAULT_MCP_SERVER_NAME, DEFAULT_MCP_SERVER_VERSION } from './constants.js'
++import { isWebMCPDocument } from './validators.js'
++import { ModelContext } from './ModelContext.js'
+ import { MessagePortTransport } from './transports/MessagePortTransport.js'
+ import { WebSocketClientTransport } from './transports/WebSocketClientTransport.js'
+ 
+@@ -318,3 +331,122 @@ export function createScopeTransport(scope: ScopeInterface): ScopeTransportInter
+ 		},
+ 	}
+ }
++
++/**
++ * Creates an `MCPServer` hosted inside the calling page and hands back the client bound to it
++ * — the page twin of {@link createScopeServer}, and the in-page MCP pair as one call.
++ *
++ * @remarks
++ * The pair is a native `MessageChannel`: the server binds `port1`, the client drives `port2`,
++ * and no byte leaves the page. That is the point of the factory — a consumer assembling it by
++ * hand writes the channel, two transports, `bindServer`, `createDuplexClientTransport`,
++ * `createMCPClient`, and `bindClient`, in an order {@link MessagePortTransport}'s own doc warns
++ * about: a `MessagePort` starts dispatching at construction, so an `await` interleaved between
++ * a transport and its binder drops whatever arrived in the gap. This factory never suspends
++ * between the two.
++ *
++ * The returned client is bound but not connected. Connection is a protocol round trip, so it
++ * stays the consumer's `await client.connect()` rather than a promise this call hides — and a
++ * factory that returned a promise could not return the terminal beside it.
++ *
++ * `destroy` closes the client's port first, so the client observes the close and reports
++ * `connected` as `false` with its pending requests rejected, then unbinds both sides and
++ * closes the server's port. It is idempotent.
++ *
++ * @param options - The tools, the optional server identity, and the optional client settings;
++ *   see {@link PageServerOptions}
++ * @returns A {@link PageServerInterface} holding the bound client and the pair's teardown
++ *
++ * @example
++ * ```ts
++ * import { createPageServer } from '@orkestrel/mcp/browser'
++ * import { createTool, createToolManager } from '@orkestrel/tool'
++ *
++ * const tools = createToolManager()
++ * tools.add(createTool({ name: 'add', execute: () => 5 }))
++ *
++ * const page = createPageServer({ tools })
++ * await page.client.connect()
++ * const value = await page.client.call('add', {}) // { resultType: 'complete', value: 5 }
++ * page.destroy()
++ * ```
++ */
++export function createPageServer(options: PageServerOptions): PageServerInterface {
++	const { port1, port2 } = new MessageChannel()
++	const server = createMCPServer({
++		tools: options.tools,
++		identity: {
++			name: options.name ?? DEFAULT_MCP_SERVER_NAME,
++			version: options.version ?? DEFAULT_MCP_SERVER_VERSION,
++		},
++	})
++	// Construct and bind each half without suspending: `MessagePortTransport` starts its port
++	// at construction, so an `await` here would drop every frame that arrived in the gap.
++	const hosted = new MessagePortTransport({ port: port1 })
++	const unbindServer = bindServer(server, hosted)
++	const driven = new MessagePortTransport({ port: port2 })
++	const client = createMCPClient({
++		...options.client,
++		transport: createDuplexClientTransport(driven),
++	})
++	const unbindClient = bindClient(client, driven)
++	let destroyed = false
++	return {
++		client,
++		destroy(): void {
++			if (destroyed) return
++			destroyed = true
++			// Close before unbinding, in this order: the binder's `closed` handler is what tells
++			// the client its transport is gone, and unbinding first would replace that handler
++			// with a no-op and leave the client reporting a connection nothing carries.
++			driven.close()
++			unbindClient()
++			unbindServer()
++			hosted.close()
++		},
++	}
++}
++
++/**
++ * Creates the bridge between a tool registry and a document's WebMCP registry, or reports that
++ * the document exposes none.
++ *
++ * @remarks
++ * Feature detection is the return value: `undefined` means this document has no
++ * `document.modelContext`, which is the reading every browser gives today — the specification
++ * is incubating in a Community Group, and the chromestatus record read on 2026-08-12 says
++ * `Proposed` with no flag and no origin trial. There is no `supported` flag to read and no
++ * polyfill behind the factory, because a local implementation of an absent platform feature is
++ * one a caller mistakes for the platform.
++ *
++ * The bridge borrows the registry. It aborts only what it registered, so it leaves a
++ * registration the page made itself, or another bridge made, exactly as it found it.
++ *
++ * @param options - The document to bridge and the emitter's initial wiring; see
++ *   {@link ModelContextOptions}
++ * @returns A {@link ModelContextInterface}, or `undefined` when the document exposes no
++ *   WebMCP registry
++ *
++ * @example
++ * ```ts
++ * import { createModelContext } from '@orkestrel/mcp/browser'
++ * import { createToolManager } from '@orkestrel/tool'
++ *
++ * const bridge = createModelContext()
++ * if (bridge !== undefined) {
++ * 	await bridge.publish(createToolManager())
++ * 	const foreign = await bridge.adopt()
++ * 	bridge.destroy()
++ * }
++ * ```
++ */
++export function createModelContext(
++	options?: ModelContextOptions,
++): ModelContextInterface | undefined {
++	// Typed `unknown` deliberately: the DOM library declares `globalThis.document` as a
++	// `Document`, and it is `undefined` in a Web Worker and a Service Worker, so the guard
++	// rather than the declaration decides.
++	const host: unknown = options?.document ?? globalThis.document
++	if (!isWebMCPDocument(host)) return undefined
++	return new ModelContext(host, options)
++}
+diff --git a/src/browser/helpers.ts b/src/browser/helpers.ts
+new file mode 100644
+index 0000000..abb9856
+--- /dev/null
++++ b/src/browser/helpers.ts
+@@ -0,0 +1,157 @@
++import type { ToolAnnotations, ToolDefinition, ToolManagerInterface } from '@orkestrel/tool'
++import type { WebMCPAnnotations, WebMCPDescriptor, WebMCPRegisteredTool } from './types.js'
++import { JSONRPC_INVALID_PARAMS, MCPError } from '@src/core'
++
++// The browser face's pure projection leaves — the WebMCP direction of the same translation
++// `@orkestrel/mcp`'s `toolAnnotationsToMCP` / `mcpAnnotationsToTool` perform for the MCP wire.
++// They sit here rather than beside those because the surface they project onto is this face's:
++// WebMCP carries a third hint the MCP wire has no counterpart for (`untrustedContentHint`) and
++// spells the consequence differently (`consequentialHint`, not `destructiveHint`).
++
++/**
++ * Projects domain tool annotations onto WebMCP registry hints without inventing defaults.
++ *
++ * @param annotations - The authored domain annotations
++ * @returns The mapped hints; an omitted annotation stays omitted
++ *
++ * @example
++ * ```ts
++ * toolAnnotationsToWebMCP({ pure: true, untrusted: true }) // { readOnlyHint: true, untrustedContentHint: true }
++ * ```
++ */
++export function toolAnnotationsToWebMCP(annotations: ToolAnnotations): WebMCPAnnotations {
++	return {
++		...(annotations.pure === undefined ? {} : { readOnlyHint: annotations.pure }),
++		...(annotations.untrusted === undefined ? {} : { untrustedContentHint: annotations.untrusted }),
++		...(annotations.consequential === undefined
++			? {}
++			: { consequentialHint: annotations.consequential }),
++	}
++}
++
++/**
++ * Projects WebMCP registry hints onto domain tool annotations without inventing defaults.
++ *
++ * @param annotations - The registry's hints, as the WebMCP dictionary declares them
++ * @returns The mapped annotations; an omitted hint stays omitted
++ *
++ * @example
++ * ```ts
++ * webMCPAnnotationsToTool({ readOnlyHint: false, consequentialHint: true }) // { pure: false, consequential: true }
++ * ```
++ */
++export function webMCPAnnotationsToTool(annotations: WebMCPAnnotations): ToolAnnotations {
++	return {
++		...(annotations.readOnlyHint === undefined ? {} : { pure: annotations.readOnlyHint }),
++		...(annotations.untrustedContentHint === undefined
++			? {}
++			: { untrusted: annotations.untrustedContentHint }),
++		...(annotations.consequentialHint === undefined
++			? {}
++			: { consequential: annotations.consequentialHint }),
++	}
++}
++
++/**
++ * Projects one advertised tool definition onto the WebMCP descriptor a registration carries.
++ *
++ * @remarks
++ * Takes the definition a `ToolManagerInterface` advertises rather than the tool itself, so the
++ * description here is the one the MCP wire advertises too — the registry substitutes an
++ * authored `summary` for the full `description`, and reading the same projection keeps one
++ * advertised description across both surfaces.
++ *
++ * WebMCP requires `description`, so a definition carrying none cannot be registered at all.
++ * Returning `undefined` is what lets the caller refuse the whole batch before registering any
++ * of it; registering an empty string instead would be an invented value a foreign agent reads
++ * as a real one.
++ *
++ * @param definition - The advertised definition to project
++ * @returns The WebMCP descriptor, or `undefined` when the definition advertises no description
++ *
++ * @example
++ * ```ts
++ * toolToWebMCP({ name: 'add', description: 'Adds two numbers' })?.description // 'Adds two numbers'
++ * ```
++ */
++export function toolToWebMCP(definition: ToolDefinition): WebMCPDescriptor | undefined {
++	if (definition.description === undefined) return undefined
++	const annotations =
++		definition.annotations === undefined ? {} : toolAnnotationsToWebMCP(definition.annotations)
++	return {
++		name: definition.name,
++		description: definition.description,
++		...(definition.title === undefined ? {} : { title: definition.title }),
++		...(definition.parameters === undefined ? {} : { inputSchema: definition.parameters }),
++		...(Object.keys(annotations).length === 0 ? {} : { annotations }),
++	}
++}
++
++/**
++ * Projects one registered WebMCP tool onto the tool definition an adopted tool advertises.
++ *
++ * @remarks
++ * The inverse of {@link toolToWebMCP}, and deliberately lossy in the other direction: the
++ * registry's `window` and `origin` describe where the tool lives rather than what it does, and
++ * the bridge hands the whole registered record back to `executeTool` instead of rebuilding it.
++ *
++ * @param registered - The registered tool the registry reported
++ * @returns The definition an adopted tool advertises
++ *
++ * @example
++ * ```ts
++ * webMCPToTool({ name: 'add', description: 'Adds', window, origin: 'https://a.example' }).name // 'add'
++ * ```
++ */
++export function webMCPToTool(registered: WebMCPRegisteredTool): ToolDefinition {
++	const annotations =
++		registered.annotations === undefined ? {} : webMCPAnnotationsToTool(registered.annotations)
++	return {
++		name: registered.name,
++		description: registered.description,
++		...(registered.title === undefined ? {} : { title: registered.title }),
++		...(registered.inputSchema === undefined ? {} : { parameters: registered.inputSchema }),
++		...(Object.keys(annotations).length === 0 ? {} : { annotations }),
++	}
++}
++
++/**
++ * Builds the WebMCP descriptor for every tool a registry advertises, or refuses the batch.
++ *
++ * @remarks
++ * The WebMCP twin of `@orkestrel/mcp`'s `buildToolDescriptors`, and it reads the same
++ * `definitions()` snapshot, so a tool advertises one description across the MCP wire and the
++ * WebMCP registry alike.
++ *
++ * It refuses rather than skips. WebMCP requires `description`, and each alternative to
++ * refusing is worse: an empty string is an invented value a foreign agent reads as a real one,
++ * and silently dropping the tool publishes a registry missing a tool its author asked for.
++ * Refusing before any registration happens is also what keeps `publish` atomic — nothing is
++ * registered when one tool cannot be.
++ *
++ * @param manager - The tool registry to describe
++ * @returns One descriptor per advertised tool, in registry order
++ * @throws Thrown as an `MCPError` carrying `-32602` when a tool advertises no description,
++ * naming the tool
++ *
++ * @example
++ * ```ts
++ * const tools = createToolManager()
++ * tools.add(createTool({ name: 'add', description: 'Adds two numbers', execute: () => 5 }))
++ * buildWebMCPDescriptors(tools).map((descriptor) => descriptor.name) // ['add']
++ * ```
++ */
++export function buildWebMCPDescriptors(manager: ToolManagerInterface): readonly WebMCPDescriptor[] {
++	const descriptors: WebMCPDescriptor[] = []
++	for (const definition of manager.definitions()) {
++		const descriptor = toolToWebMCP(definition)
++		if (descriptor === undefined) {
++			throw new MCPError(
++				`WebMCP requires a description for tool '${definition.name}'`,
++				JSONRPC_INVALID_PARAMS,
++			)
++		}
++		descriptors.push(descriptor)
++	}
++	return descriptors
++}
+diff --git a/src/browser/index.ts b/src/browser/index.ts
+index 8b008be..5e73cce 100644
+--- a/src/browser/index.ts
++++ b/src/browser/index.ts
+@@ -1,5 +1,8 @@
+ export * from './types.js'
+ export * from './constants.js'
++export * from './validators.js'
++export * from './helpers.js'
++export * from './ModelContext.js'
+ export * from './transports/MessagePortTransport.js'
+ export * from './transports/WebSocketClientTransport.js'
+ export * from './factories.js'
+diff --git a/src/browser/types.ts b/src/browser/types.ts
+index 85634a8..11e67ca 100644
+--- a/src/browser/types.ts
++++ b/src/browser/types.ts
+@@ -1,5 +1,12 @@
+-import type { MCPTransportInterface } from '@src/core'
+-import type { ToolManagerInterface } from '@orkestrel/tool'
++import type {
++	MCPClientCapabilities,
++	MCPClientInterface,
++	MCPIdentity,
++	MCPModernVersion,
++	MCPTransportInterface,
++} from '@src/core'
++import type { ToolInterface, ToolManagerInterface } from '@orkestrel/tool'
++import type { EmitterErrorHandler, EmitterHooks, EmitterInterface } from '@orkestrel/emitter'
+ 
+ // The MCP browser-transport surface — the source of truth. The client
+ // transports for the Model Context Protocol drive a remote server from a page
+@@ -140,3 +147,351 @@ export interface ScopeServerOptions {
+ 	readonly version?: string
+ 	readonly accept?: (event: MessageEvent) => boolean
+ }
++
++// ── The in-page pair ─────────────────────────────────────────────────────────
++//
++// `createPageServer` is `createScopeServer`'s page twin: it hosts an `MCPServer` in the
++// calling context over a native `MessageChannel` and hands back the client already bound to
++// it. `PageServerOptions` mirrors `ScopeServerOptions`'s identity defaults and adds the
++// `client` group for the client half the pair owns.
++
++/**
++ * Options for {@link import('./factories.js').createPageServer} — the live
++ * {@link ToolManagerInterface} to expose, the optional server identity, and the optional
++ * settings for the client half the pair owns.
++ *
++ * @remarks
++ * - `tools` — the registry the hosted `MCPServer` dispatches `tools/call` against. Required.
++ * - `name` / `version` — the hosted server's identity, defaulting to
++ *   {@link import('./constants.js').DEFAULT_MCP_SERVER_NAME} /
++ *   {@link import('./constants.js').DEFAULT_MCP_SERVER_VERSION} exactly as
++ *   {@link ScopeServerOptions} does.
++ * - `client` — the client half's own settings, grouped because there is more than one:
++ *   `identity`, `capabilities`, `version`, and `timeout`, each forwarded to `createMCPClient`
++ *   unchanged (`@orkestrel/mcp`'s `MCPClientOptions`). The transport is not among them: the
++ *   pair owns both ends of the channel, which is the whole point of the factory.
++ */
++export interface PageServerOptions {
++	readonly tools: ToolManagerInterface
++	readonly name?: string
++	readonly version?: string
++	readonly client?: {
++		readonly identity?: MCPIdentity
++		readonly capabilities?: MCPClientCapabilities
++		readonly version?: MCPModernVersion
++		readonly timeout?: number
++	}
++}
++
++/**
++ * Represents one MCP server hosted inside the calling page — what
++ * {@link import('./factories.js').createPageServer} returns.
++ *
++ * @remarks
++ * The page twin of {@link ScopeServerInterface}, and it publishes the client beside the
++ * terminal because the pair's whole value is holding both ends. The returned `client` is
++ * bound but NOT connected: connection is a protocol round trip over the channel, so it stays
++ * the consumer's `await client.connect()` rather than a promise the factory hides.
++ *
++ * `destroy` closes the client's port first, so the client observes the close and reports
++ * `connected` as `false`, then unbinds both sides and closes the server's port. It is
++ * idempotent, and it ends this handle's lifetime permanently.
++ */
++export interface PageServerInterface {
++	/** Holds the client bound to the server this page hosts, awaiting its own `connect`. */
++	readonly client: MCPClientInterface
++	/** Closes both ports, unbinds both sides, and disconnects the client — idempotent. */
++	destroy(): void
++}
++
++// ── The WebMCP bridge ────────────────────────────────────────────────────────
++//
++// The `WebMCP*` types transliterate the WebMCP WebIDL (`document.modelContext`) member for
++// member, because TypeScript's DOM library declares none of it: the specification is
++// incubating in a Community Group and no browser ships the global (the chromestatus record
++// read on 2026-08-12 says `Proposed`, `"flag": false`, `"origintrial": false`). They are this
++// package's own declaration of a FOREIGN surface, so each keeps the IDL's exact spelling —
++// `registerTool`, `exposedTo`, `fromOrigins`, `readOnlyHint` — while every package-owned
++// member beside them stays one word. `ModelContext*` is the bridge's own vocabulary.
++
++/**
++ * Describes a tool's observable effects as the WebMCP registry declares them.
++ *
++ * @remarks
++ * Transliterates the WebMCP `ToolAnnotations` dictionary. The IDL defaults each member to
++ * `false`; this declaration keeps every member optional instead, because the bridge projects
++ * from `@orkestrel/tool`'s `ToolAnnotations` and never invents a hint the author omitted. The
++ * mapping is `pure` to `readOnlyHint`, `untrusted` to `untrustedContentHint`, and
++ * `consequential` to `consequentialHint` — a fuller correspondence than the MCP wire's, which
++ * has no counterpart for `untrusted` and spells the consequence `destructiveHint`.
++ */
++export interface WebMCPAnnotations {
++	readonly readOnlyHint?: boolean
++	readonly untrustedContentHint?: boolean
++	readonly consequentialHint?: boolean
++}
++
++/**
++ * Describes the members a WebMCP tool carries into the registry and back out of it.
++ *
++ * @remarks
++ * The WebMCP `ModelContextTool` and `RegisteredTool` dictionaries declare the same members —
++ * `name`, `title`, `description`, `inputSchema`, `annotations` — and differ only in what each
++ * adds, so this is the shared body {@link WebMCPTool} and {@link WebMCPRegisteredTool} extend.
++ * `description` is required in the IDL and stays required here, which is why `publish` refuses
++ * a tool that authors neither a description nor a summary rather than registering an empty one.
++ */
++export interface WebMCPDescriptor {
++	readonly name: string
++	readonly title?: string
++	readonly description: string
++	readonly inputSchema?: Readonly<Record<string, unknown>>
++	readonly annotations?: WebMCPAnnotations
++}
++
++/**
++ * Carries the execution signal the WebMCP registry hands a registered tool's callback.
++ *
++ * @remarks
++ * Transliterates the WebMCP `ToolExecuteCallbackOptions` dictionary, whose `signal` is
++ * required: the registry always mints one, and an `executeTool` caller's own signal is
++ * forwarded onto it.
++ */
++export interface WebMCPHandlerOptions {
++	readonly signal: AbortSignal
++}
++
++/**
++ * Runs one registered WebMCP tool with the caller's input and the registry's signal.
++ *
++ * @remarks
++ * Transliterates the WebMCP `ToolExecuteCallback` callback. The IDL types its return
++ * `Promise<any>` and this declaration narrows that to `Promise<unknown>`, because a caller
++ * must narrow what a foreign tool returned before reading it.
++ */
++export type WebMCPExecuteHandler = (
++	input: Readonly<Record<string, unknown>>,
++	options: WebMCPHandlerOptions,
++) => Promise<unknown>
++
++/**
++ * Describes one tool as handed to the WebMCP registry for registration.
++ *
++ * @remarks
++ * Transliterates the WebMCP `ModelContextTool` dictionary: {@link WebMCPDescriptor}'s members
++ * plus the required `execute` callback the registry invokes.
++ */
++export interface WebMCPTool extends WebMCPDescriptor {
++	readonly execute: WebMCPExecuteHandler
++}
++
++/**
++ * Describes one tool as the WebMCP registry reports it back.
++ *
++ * @remarks
++ * Transliterates the WebMCP `RegisteredTool` dictionary: {@link WebMCPDescriptor}'s members
++ * plus the `window` that registered the tool and the `origin` it was registered from. The
++ * bridge carries both unread — `executeTool` takes the whole record back — and reads the
++ * descriptor members alone.
++ */
++export interface WebMCPRegisteredTool extends WebMCPDescriptor {
++	readonly window: Window
++	readonly origin: string
++}
++
++/**
++ * Options for the WebMCP registry's `registerTool` — the exposure list and the
++ * unregistration signal.
++ *
++ * @remarks
++ * Transliterates the WebMCP `ModelContextRegisterToolOptions` dictionary. `exposedTo` lists
++ * the origins the registration is visible to; `signal` is WebMCP's unregistration path —
++ * aborting it removes the tool, which is why the bridge retains one controller per
++ * registration.
++ */
++export interface WebMCPRegisterOptions {
++	readonly exposedTo?: readonly string[]
++	readonly signal?: AbortSignal
++}
++
++/**
++ * Options for the WebMCP registry's `getTools` — the origins whose tools are read.
++ *
++ * @remarks
++ * Transliterates the WebMCP `ModelContextGetToolOptions` dictionary. Omitting `fromOrigins`
++ * reads this document's own registrations.
++ */
++export interface WebMCPToolsOptions {
++	readonly fromOrigins?: readonly string[]
++}
++
++/**
++ * Options for the WebMCP registry's `executeTool` — the caller's cancellation signal.
++ *
++ * @remarks
++ * Transliterates the WebMCP `ModelContextExecuteToolOptions` dictionary. The registry
++ * forwards this signal onto the {@link WebMCPHandlerOptions} it hands the tool's callback.
++ */
++export interface WebMCPExecuteOptions {
++	readonly signal?: AbortSignal
++}
++
++/**
++ * Represents the WebMCP tool registry a document exposes as `document.modelContext`.
++ *
++ * @remarks
++ * Transliterates the WebMCP `ModelContext` interface, which extends `EventTarget`: the
++ * operations plus the `toolchange` subscription the bridge republishes as
++ * {@link ModelContextEventMap}'s `change`. Only the members the bridge touches are declared,
++ * exactly as {@link ScopeInterface} declares only what `createScopeServer` touches, so a real
++ * `ModelContext` satisfies this structurally and an IDL-faithful double satisfies it without
++ * implementing the whole of `EventTarget`.
++ *
++ * `executeTool` resolves `unknown` because the primary source disagrees with itself: the IDL
++ * types it `Promise<DOMString>` while the specification's own README sample returns the MCP
++ * content shape `{ content: [...] }` from a tool's callback. The bridge records that
++ * disagreement rather than resolving it, so it neither parses the answer as text nor projects
++ * it into content blocks.
++ */
++export interface WebMCPRegistryInterface {
++	/** Registers one tool, resolving when the registry has accepted it. */
++	registerTool(tool: WebMCPTool, options?: WebMCPRegisterOptions): Promise<void>
++	/** Reads the registered tools this document may see. */
++	getTools(options?: WebMCPToolsOptions): Promise<readonly WebMCPRegisteredTool[]>
++	/** Runs one registered tool and resolves whatever its callback returned. */
++	executeTool(
++		tool: WebMCPRegisteredTool,
++		input?: Readonly<Record<string, unknown>>,
++		options?: WebMCPExecuteOptions,
++	): Promise<unknown>
++	/** Subscribes to the registry's `toolchange` event. */
++	addEventListener(type: 'toolchange', listener: () => void): void
++	/** Drops a `toolchange` subscription. */
++	removeEventListener(type: 'toolchange', listener: () => void): void
++}
++
++/**
++ * Describes a document that exposes the WebMCP tool registry.
++ *
++ * @remarks
++ * The narrowed shape {@link import('./validators.js').isWebMCPDocument} produces, and the one
++ * value {@link import('./ModelContext.js').ModelContext} needs. It declares the `modelContext`
++ * member alone rather than extending `Document`, because that member is the whole of what the
++ * bridge dereferences — a real `Document` carrying the registry satisfies it structurally, and
++ * so does any other host object that exposes one.
++ */
++export interface WebMCPDocument {
++	readonly modelContext: WebMCPRegistryInterface
++}
++
++/**
++ * Reports the moments a WebMCP registry's contents changed.
++ *
++ * @remarks
++ * Declared as a `type` alias rather than an interface, so the type-literal satisfies
++ * `EventMap` structurally. One event, because the registry publishes one: WebMCP's
++ * `toolchange` names no tool and carries no payload, so the bridge republishes it as a bare
++ * signal and a listener re-reads {@link ModelContextInterface.adopt} to learn what changed.
++ */
++export type ModelContextEventMap = {
++	/** Reports that the document's registry changed — re-read it to learn how. */
++	readonly change: readonly []
++}
++
++/**
++ * Options for {@link import('./factories.js').createModelContext} — the document to bridge
++ * and the emitter's initial wiring.
++ *
++ * @remarks
++ * - `document` — the document whose registry to bridge, defaulting to `globalThis.document`.
++ *   A document exposing no `modelContext` makes the factory return `undefined`.
++ * - `on` — the reserved initial {@link import('@orkestrel/emitter').EmitterHooks} for
++ *   {@link ModelContextEventMap}.
++ * - `error` — the emitter's listener-error handler; a listener throw routes here rather than
++ *   to a domain event.
++ */
++export interface ModelContextOptions {
++	readonly document?: Document
++	readonly on?: EmitterHooks<ModelContextEventMap>
++	readonly error?: EmitterErrorHandler
++}
++
++/**
++ * Options for {@link ModelContextInterface.publish} — the origins each registration is
++ * exposed to.
++ *
++ * @remarks
++ * `origins` is this package's one-word name for WebMCP's `exposedTo`, forwarded unchanged.
++ * Omitting it registers with no exposure list, which is the registry's own default.
++ */
++export interface ModelContextPublishOptions {
++	readonly origins?: readonly string[]
++}
++
++/**
++ * Options for {@link ModelContextInterface.adopt} — the origins whose tools are read.
++ *
++ * @remarks
++ * `origins` is this package's one-word name for WebMCP's `fromOrigins`, forwarded unchanged.
++ * Omitting it reads this document's own registrations.
++ */
++export interface ModelContextAdoptOptions {
++	readonly origins?: readonly string[]
++}
++
++/**
++ * Represents the bridge between a {@link ToolManagerInterface} and a document's WebMCP
++ * registry — what {@link import('./factories.js').createModelContext} returns.
++ *
++ * @remarks
++ * Bidirectional and symmetric: `publish` sends this page's tools out to the registry, `adopt`
++ * brings the registry's tools back in as `@orkestrel/tool` `Tool` instances. Both directions
++ * run the same annotation projection in opposite directions.
++ *
++ * The handle owns exactly what it registered. `destroy` aborts its own registrations and
++ * touches no registration another handle — or the page itself — made.
++ */
++export interface ModelContextInterface {
++	/** Holds the emitter republishing the registry's `toolchange` as `change`. */
++	readonly emitter: EmitterInterface<ModelContextEventMap>
++	/**
++	 * Registers every tool the manager holds at this moment.
++	 *
++	 * @remarks
++	 * A snapshot, not a subscription: the tool registry publishes no change events, so a
++	 * consumer that adds or removes a tool calls `publish` again. A second call registers the
++	 * names this handle has not registered yet and aborts the registrations whose names have
++	 * left the manager; a name this handle already registered is left as it was, so replacing
++	 * a definition means removing that name from the manager, calling `publish`, adding the
++	 * replacement definition, and calling `publish` again.
++	 *
++	 * Every tool is projected before anything is registered, so a manager holding a tool with
++	 * neither `description` nor `summary` is refused whole rather than half-registered.
++	 *
++	 * @param tools - The registry whose current tools are registered
++	 * @param options - The optional exposure list; see {@link ModelContextPublishOptions}
++	 * @returns Resolves after the registry has accepted each added registration
++	 * @throws Thrown when a tool carries neither a `description` nor a `summary`, because
++	 * WebMCP requires the member and an empty string would be an invented one
++	 */
++	publish(tools: ToolManagerInterface, options?: ModelContextPublishOptions): Promise<void>
++	/**
++	 * Reads the document's registered tools as locally executable tools.
++	 *
++	 * @remarks
++	 * Each returned tool's `execute` runs the registry's `executeTool` and forwards its
++	 * `ToolContext.signal` as WebMCP's `signal`, so an agent-side abort reaches the foreign
++	 * tool. The value resolves unchanged: WebMCP's own sources disagree about whether a tool
++	 * answers with a string or an MCP content record, so the bridge normalizes neither.
++	 *
++	 * @param options - The optional origin filter; see {@link ModelContextAdoptOptions}
++	 * @returns The registry's tools, in registry order
++	 */
++	adopt(options?: ModelContextAdoptOptions): Promise<readonly ToolInterface[]>
++	/**
++	 * Aborts every registration this handle made and releases the emitter — idempotent.
++	 *
++	 * @returns Nothing
++	 */
++	destroy(): void
++}
+diff --git a/src/browser/validators.ts b/src/browser/validators.ts
+new file mode 100644
+index 0000000..6dd446d
+--- /dev/null
++++ b/src/browser/validators.ts
+@@ -0,0 +1,61 @@
++import type { WebMCPDocument, WebMCPRegistryInterface } from './types.js'
++import { isFunction, objectOf } from '@orkestrel/contract'
++
++// The browser face's guards. Both narrow a FOREIGN surface no TypeScript library declares, so
++// each enforces the published WebMCP contract and no more: the operations the bridge calls and
++// the subscription it registers, each read as the IDL declares it and nothing read beyond
++// that. Both are built from `@orkestrel/contract`'s `objectOf`, which is the combinator this
++// case needs and the reason neither guard hand-rolls a read loop: it admits unknown members,
++// reads each declared member through `Reflect.get` so a prototype-carried operation satisfies
++// the shape, refuses arrays and primitives, and answers `false` on a hostile read instead of
++// throwing. Neither uses an exact-record guard. A `Document` and a `ModelContext` are platform
++// class instances whose members arrive through a prototype chain, and an exact-record guard
++// refuses exactly those — it would fail closed on every valid implementation.
++
++/**
++ * Determines whether an unknown value is a WebMCP tool registry.
++ *
++ * @remarks
++ * Reads the members the bridge dereferences — the IDL's `registerTool`, `getTools`, and
++ * `executeTool` operations, plus the `EventTarget` pair the `toolchange` subscription needs —
++ * and nothing else. A registry carrying extra members is still a registry, and a user agent's
++ * own implementation reaches every one of these through its prototype.
++ *
++ * @param value - The unknown value to inspect
++ * @returns True if the value exposes every WebMCP registry operation; false otherwise
++ *
++ * @example
++ * ```ts
++ * isWebMCPRegistry({}) // false
++ * ```
++ */
++export function isWebMCPRegistry(value: unknown): value is WebMCPRegistryInterface {
++	return objectOf({
++		registerTool: isFunction,
++		getTools: isFunction,
++		executeTool: isFunction,
++		addEventListener: isFunction,
++		removeEventListener: isFunction,
++	})(value)
++}
++
++/**
++ * Determines whether an unknown value is a document exposing the WebMCP tool registry.
++ *
++ * @remarks
++ * This is the feature detection {@link import('./factories.js').createModelContext} performs,
++ * published so a consumer can run it before deciding to build a bridge at all. It reads
++ * `modelContext` and checks it with {@link isWebMCPRegistry}; it asserts nothing about the rest
++ * of a `Document`, because that member is the whole of what the bridge needs.
++ *
++ * @param value - The unknown value to inspect
++ * @returns True if the value carries a WebMCP registry; false otherwise
++ *
++ * @example
++ * ```ts
++ * isWebMCPDocument(globalThis.document) // false in a browser that ships no WebMCP
++ * ```
++ */
++export function isWebMCPDocument(value: unknown): value is WebMCPDocument {
++	return objectOf({ modelContext: isWebMCPRegistry })(value)
++}
+diff --git a/src/core/validators.ts b/src/core/validators.ts
+index 0430614..39d28fb 100644
+--- a/src/core/validators.ts
++++ b/src/core/validators.ts
+@@ -79,6 +79,7 @@ import {
+ 	isRecord,
+ 	isString,
+ 	isUndefined,
++	objectOf,
+ } from '@orkestrel/contract'
+ import {
+ 	MCP_META_SUBSCRIPTION,
+@@ -686,7 +687,9 @@ export function isMCPResource(value: unknown): value is MCPResource {
+  * Checks whether a value carries valid consumed MCP 2026-07-28 tool annotation hints.
+  *
+  * @remarks
+- * Validates only `readOnlyHint` and `destructiveHint`; other wire fields are not consumed.
++ * Validates only `readOnlyHint` and `destructiveHint`; other wire fields are not consumed, so
++ * the open `objectOf` combinator carries them through unread. Every declared member is
++ * optional, a hostile read answers `false` rather than throwing, and an array is refused.
+  *
+  * @param value - The unknown wire annotations
+  * @returns True if consumed annotation fields are optional booleans; false otherwise
+@@ -697,15 +700,7 @@ export function isMCPResource(value: unknown): value is MCPResource {
+  * ```
+  */
+ export function isMCPToolAnnotations(value: unknown): value is MCPToolAnnotations {
+-	try {
+-		return (
+-			isRecord(value) &&
+-			(isUndefined(value['readOnlyHint']) || isBoolean(value['readOnlyHint'])) &&
+-			(isUndefined(value['destructiveHint']) || isBoolean(value['destructiveHint']))
+-		)
+-	} catch {
+-		return false
+-	}
++	return objectOf({ readOnlyHint: isBoolean, destructiveHint: isBoolean }, true)(value)
+ }
+ 
+ /**
+diff --git a/tests/fixtures/modelContext.ts b/tests/fixtures/modelContext.ts
+new file mode 100644
+index 0000000..cb7497d
+--- /dev/null
++++ b/tests/fixtures/modelContext.ts
+@@ -0,0 +1,147 @@
++// The WebMCP registry double — an in-memory implementation of the WebIDL published at
++// https://webmachinelearning.github.io/webmcp, member for member and nothing beyond it.
++//
++// It is a protocol-faithful boundary stub of a FOREIGN surface, which is the one substitution
++// the test contract permits: no browser exposes `document.modelContext` (the chromestatus
++// record read on 2026-08-12 says `Proposed`, no flag, no origin trial), so the platform object
++// this bridge translates does not exist to drive. It never stands in for any part of
++// `@orkestrel/mcp` — the bridge under test is the real `ModelContext`, driven through the real
++// `createModelContext`, and what this file supplies is only the thing the browser does not.
++//
++// `ModelContextRegistry` therefore declares exactly the IDL's own operations and inherits
++// `EventTarget` for `toolchange`. The recorder a test reads registrations through is NOT a
++// registry member: it sits on the fixture handle beside the registry, over the same map, so
++// the object installed on the document stays the shape a user agent would install.
++
++import type {
++	WebMCPRegisteredTool,
++	WebMCPRegisterOptions,
++	WebMCPRegistryInterface,
++	WebMCPExecuteOptions,
++	WebMCPTool,
++	WebMCPToolsOptions,
++} from '@src/browser'
++
++/** Supplies the default origin the registry reports for every tool registered through it. */
++export const MODEL_CONTEXT_ORIGIN = 'https://page.example'
++
++/** Holds one live registration exactly as `registerTool` received it. */
++export interface ModelContextRegistration {
++	/** The tool dictionary the caller handed `registerTool`. */
++	readonly tool: WebMCPTool
++	/** The registration options the caller handed `registerTool`, `undefined` when omitted. */
++	readonly options: WebMCPRegisterOptions | undefined
++}
++
++/** Pairs the installed registry double with the recorder over its live registrations. */
++export interface ModelContextFixtureInterface {
++	/** The IDL-faithful registry installed as the document's `modelContext`. */
++	readonly registry: WebMCPRegistryInterface
++	/** The origin the registry reports for tools registered through it. */
++	readonly origin: string
++	/** Every registration the registry holds, in registration order. */
++	registrations(): readonly ModelContextRegistration[]
++}
++
++/** Implements the WebMCP `ModelContext` interface over an injected registration map. */
++export class ModelContextRegistry extends EventTarget implements WebMCPRegistryInterface {
++	readonly #tools: Map<string, ModelContextRegistration>
++	readonly #window: Window
++	readonly #origin: string
++
++	constructor(tools: Map<string, ModelContextRegistration>, host: Window, origin: string) {
++		super()
++		this.#tools = tools
++		this.#window = host
++		this.#origin = origin
++	}
++
++	async registerTool(tool: WebMCPTool, options?: WebMCPRegisterOptions): Promise<void> {
++		this.#tools.set(tool.name, { tool, options })
++		this.dispatchEvent(new Event('toolchange'))
++		const signal = options?.signal
++		if (signal === undefined) return
++		// The specification's own sample unregisters by aborting the registration signal, so
++		// that is the whole of the removal path here. An already-aborted signal never fires the
++		// listener, so it is answered directly.
++		if (signal.aborted) this.#unregister(tool.name)
++		else signal.addEventListener('abort', this.#unregister.bind(this, tool.name))
++	}
++
++	async getTools(options?: WebMCPToolsOptions): Promise<readonly WebMCPRegisteredTool[]> {
++		const origins = options?.fromOrigins
++		if (origins !== undefined && !origins.includes(this.#origin)) return []
++		return [...this.#tools.values()].map((registration) => this.#describe(registration.tool))
++	}
++
++	async executeTool(
++		tool: WebMCPRegisteredTool,
++		input?: Readonly<Record<string, unknown>>,
++		options?: WebMCPExecuteOptions,
++	): Promise<unknown> {
++		const registration = this.#tools.get(tool.name)
++		if (registration === undefined) throw new Error(`No registered tool named '${tool.name}'`)
++		// The registry mints the signal the callback receives and follows the caller's own,
++		// which is what `ToolExecuteCallbackOptions` declaring a REQUIRED signal means.
++		// `AbortSignal.any` is the platform's own composition, so an already-aborted caller and
++		// a later abort take the same path, and an omitted caller yields a signal that never
++		// fires.
++		const caller = options?.signal
++		const signal = AbortSignal.any(caller === undefined ? [] : [caller])
++		return registration.tool.execute(input ?? {}, { signal })
++	}
++
++	// Projects one registered dictionary onto the `RegisteredTool` the IDL reports back: the
++	// shared descriptor members plus the registering window and its origin.
++	#describe(tool: WebMCPTool): WebMCPRegisteredTool {
++		return {
++			name: tool.name,
++			description: tool.description,
++			window: this.#window,
++			origin: this.#origin,
++			...(tool.title === undefined ? {} : { title: tool.title }),
++			...(tool.inputSchema === undefined ? {} : { inputSchema: tool.inputSchema }),
++			...(tool.annotations === undefined ? {} : { annotations: tool.annotations }),
++		}
++	}
++
++	#unregister(name: string): void {
++		if (!this.#tools.delete(name)) return
++		this.dispatchEvent(new Event('toolchange'))
++	}
++}
++
++/**
++ * Installs an IDL-faithful WebMCP registry on a document and returns it with its recorder.
++ *
++ * @remarks
++ * Pass a document nothing else uses — `document.implementation.createHTMLDocument()` returns a
++ * real, isolated one — so each scenario owns its registry and no test mutates the page the
++ * suite runs in.
++ *
++ * @param host - The document to install `modelContext` on
++ * @param origin - The origin the registry reports for its tools; defaults to
++ *   {@link MODEL_CONTEXT_ORIGIN}
++ * @returns The installed registry, its origin, and the recorder over its live registrations
++ *
++ * @example
++ * ```ts
++ * const fixture = installModelContext(document.implementation.createHTMLDocument())
++ * fixture.registrations() // []
++ * ```
++ */
++export function installModelContext(
++	host: Document,
++	origin: string = MODEL_CONTEXT_ORIGIN,
++): ModelContextFixtureInterface {
++	const tools = new Map<string, ModelContextRegistration>()
++	const registry = new ModelContextRegistry(tools, globalThis.window, origin)
++	Object.defineProperty(host, 'modelContext', { value: registry, configurable: true })
++	return {
++		registry,
++		origin,
++		registrations(): readonly ModelContextRegistration[] {
++			return [...tools.values()]
++		},
++	}
++}
+diff --git a/tests/setup.ts b/tests/setup.ts
+index 36026a4..fd652e8 100644
+--- a/tests/setup.ts
++++ b/tests/setup.ts
+@@ -50,7 +50,7 @@ import {
+ import { createTool, createToolManager } from '@orkestrel/tool'
+ import { createEmitter } from '@orkestrel/emitter'
+ import { createSSEParser } from '@orkestrel/sse'
+-import { createRecorder, waitForDelay } from '@orkestrel/test'
++import { createRecorder, waitForAbort, waitForDelay } from '@orkestrel/test'
+ 
+ /**
+  * Narrows an untyped value to an {@link MCPMethodHandler} the way a DYNAMIC registration must.
+@@ -1003,7 +1003,6 @@ export interface ToolRefreshResult {
+ /** Creates real tools with an observable cancellation boundary and an explicit cleanup release. */
+ export function createAbortTools(): AbortToolsInterface {
+ 	const entered = Promise.withResolvers<AbortSignal>()
+-	const aborted = Promise.withResolvers<void>()
+ 	const release = Promise.withResolvers<void>()
+ 	const tools = createToolManager()
+ 	tools.add(
+@@ -1011,14 +1010,20 @@ export function createAbortTools(): AbortToolsInterface {
+ 			name: 'wait',
+ 			execute: async (_args, context) => {
+ 				entered.resolve(context.signal)
+-				context.signal.addEventListener('abort', () => aborted.resolve(), { once: true })
+-				await Promise.race([aborted.promise, release.promise])
++				await Promise.race([waitForAbort(context.signal), release.promise])
+ 				return 'finished'
+ 			},
+ 		}),
+ 	)
+ 	tools.add(createTool({ name: 'echo', execute: (args) => args['value'] }))
+-	return { tools, entered: entered.promise, aborted: aborted.promise, release: release.resolve }
++	// `aborted` observes the same signal the handler received, so a caller reads the report
++	// without a second deferred beside the handler's own wait.
++	return {
++		tools,
++		entered: entered.promise,
++		aborted: entered.promise.then(waitForAbort),
++		release: release.resolve,
++	}
+ }
+ 
+ /** Transcribes the guide's explicit snapshot replacement for its executed proof. */
+@@ -1532,11 +1537,7 @@ export class TestTaskManager implements MCPTaskManagerInterface {
+ 	}
+ 
+ 	async #aborted(signal: AbortSignal): Promise<boolean> {
+-		if (!signal.aborted) {
+-			await new Promise<void>((resolve) =>
+-				signal.addEventListener('abort', () => resolve(), { once: true }),
+-			)
+-		}
++		await waitForAbort(signal)
+ 		return false
+ 	}
+ 
+diff --git a/tests/setupBrowser.test.ts b/tests/setupBrowser.test.ts
+index a8488a6..80b4a78 100644
+--- a/tests/setupBrowser.test.ts
++++ b/tests/setupBrowser.test.ts
+@@ -1,13 +1,13 @@
+ // Proof of `tests/setupBrowser.ts` — the peer-observation helpers the duplex claims are read
+ // through.
+ //
+-// The `setup` project runs in Node with the browser disabled, and every export of the module
+-// is host-independent, so this proof reaches all of them: `createScopeCarrier` wires two real
++// The `setup` project runs in Node with the browser disabled, so this proof reaches the
++// module's host-independent exports: `createScopeCarrier` wires two real
+ // `createScopeTransport` halves and never touches a document, `recordPort` taps a real
+ // `MessagePort` (Node's is the same `EventTarget` contract the page's is), and `drainRecorded`
+-// reads frames back over a real socket from the real Node fixture. The module holds no
+-// DOM-driving helper, because the browser face this workspace ships carries no element surface
+-// for one to drive.
++// reads frames back over a real socket from the real Node fixture. `createBridge` and
++// `recordRequests` read a `Document` and the page's Resource Timing log, so
++// `tests/src/browser` drives those inside Chromium instead.
+ //
+ // The carrier and the tap are also driven end to end by `tests/src/browser/factories.test.ts`
+ // inside Chromium. That suite proves what they carry for a real page; this one proves what they
+diff --git a/tests/setupBrowser.ts b/tests/setupBrowser.ts
+index 2666682..5a5dbd6 100644
+--- a/tests/setupBrowser.ts
++++ b/tests/setupBrowser.ts
+@@ -2,10 +2,20 @@
+ // duplex proof observes. Loaded by the `src:browser` project only.
+ 
+ import type { JSONRPCMessage } from '@src/core'
+-import type { ScopeInterface, ScopeTransportInterface } from '@src/browser'
++import type {
++	ModelContextInterface,
++	ScopeInterface,
++	ScopeTransportInterface,
++	WebMCPTool,
++} from '@src/browser'
++import type { ToolInterface, ToolManagerInterface } from '@orkestrel/tool'
++import type { ModelContextFixtureInterface } from './fixtures/modelContext.js'
+ import { decodeEvent } from '@src/core'
+-import { createScopeTransport } from '@src/browser'
++import { createModelContext, createScopeTransport } from '@src/browser'
+ import { isArray, isString } from '@orkestrel/contract'
++import { createTool, createToolManager } from '@orkestrel/tool'
++import { requireValue, waitForAbort } from '@orkestrel/test'
++import { installModelContext } from './fixtures/modelContext.js'
+ 
+ // ── Peer observation ─────────────────────────────────────────────────────────
+ //
+@@ -127,3 +137,231 @@ export async function drainRecorded(base: string): Promise<readonly JSONRPCMessa
+ 	}
+ 	return messages
+ }
++
++// ── Network observation ──────────────────────────────────────────────────────
++//
++// "No byte left the page" is a claim about the network, so it is read from the platform's own
++// network log rather than from a substituted `fetch`. Resource Timing records every request
++// the page issued, so nothing here replaces or wraps a browser API: the counter watches the
++// same entries the browser writes for a page it is not being tested on.
++
++/**
++ * Records the page's network activity and returns a drain over the requests since the last call.
++ *
++ * @remarks
++ * Reads `performance.getEntriesByType('resource')`, the browser's own log of every request the
++ * page issued. A drain returns the entry names added since the previous drain, so a scenario
++ * asserts an empty array for "this issued no request" and a later positive control proves the
++ * drain can report one.
++ *
++ * @returns A drain returning every request recorded since the last call
++ *
++ * @example
++ * ```ts
++ * const drain = recordRequests()
++ * drain() // []
++ * ```
++ */
++export function recordRequests(): () => readonly string[] {
++	let read = performance.getEntriesByType('resource').length
++	return () => {
++		const entries = performance.getEntriesByType('resource')
++		const added = entries.slice(read).map((entry) => entry.name)
++		read = entries.length
++		return added
++	}
++}
++
++// ── In-page tool scenarios ───────────────────────────────────────────────────
++//
++// A scenario that waits does so through `@orkestrel/test`: `waitForCondition` owns the poll,
++// `waitForEvent` the deferred on an event, and `waitForAbort` the deferred on a signal. Only
++// the `entered` latch is declared here, because no export reports that a handler was reached.
++
++/** Pairs a tool that parks until its context signal aborts with the promise reporting the abort. */
++export interface ParkedToolInterface {
++	/** The tool to register; its handler resolves only when its own `context.signal` aborts. */
++	readonly tool: ToolInterface
++	/** Resolves with the handler's own `context.signal` after the handler has been entered. */
++	readonly entered: Promise<AbortSignal>
++	/** Resolves the first time that same signal aborts; resolution is the whole proof. */
++	readonly aborted: Promise<void>
++}
++
++/**
++ * Builds a real tool whose handler parks until the execution context aborts it.
++ *
++ * @remarks
++ * The whole point is what the SERVER-side handler observes, so the handler parks on its own
++ * `context.signal` through `waitForAbort`. Nothing is substituted: this is an ordinary
++ * `@orkestrel/tool` tool with a handler that waits, which is what a long-running tool is.
++ *
++ * `aborted` observes the same signal the handler received, so a caller awaits the report
++ * without reaching into the handler. Resolution is the proof; there is no flag to read.
++ *
++ * @param name - The tool name to register under
++ * @returns The tool, the promise reporting its entry, and the promise reporting its abort
++ *
++ * @example
++ * ```ts
++ * const parked = createParkedTool('park')
++ * tools.add(parked.tool)
++ * ```
++ */
++export function createParkedTool(name: string): ParkedToolInterface {
++	const entry = Promise.withResolvers<AbortSignal>()
++	return {
++		tool: createTool({
++			name,
++			description: 'Parks until the execution context aborts it',
++			execute: (_args, context) => {
++				entry.resolve(context.signal)
++				return waitForAbort(context.signal)
++			},
++		}),
++		entered: entry.promise,
++		aborted: entry.promise.then(waitForAbort),
++	}
++}
++
++/** Pairs a WebMCP tool dictionary that parks until the registry aborts it with its reports. */
++export interface ParkedRegistrationInterface {
++	/** The tool dictionary to hand `registerTool`; its callback resolves only on abort. */
++	readonly tool: WebMCPTool
++	/** Resolves with the registry's own execution signal after the callback has been entered. */
++	readonly entered: Promise<AbortSignal>
++	/** Resolves the first time that same signal aborts; resolution is the whole proof. */
++	readonly aborted: Promise<void>
++}
++
++/**
++ * Builds a foreign WebMCP tool whose callback parks until the registry's signal aborts it.
++ *
++ * @remarks
++ * The counterpart of {@link createParkedTool} on the other side of the bridge: this is the
++ * tool a page other than ours registered, so an adoption scenario can prove that a local
++ * `ToolContext.signal` reaches a foreign handler through `executeTool`.
++ *
++ * @param name - The tool name to register under
++ * @returns The tool dictionary, the promise reporting its entry, and the promise reporting its abort
++ *
++ * @example
++ * ```ts
++ * const parked = createParkedRegistration('park')
++ * await fixture.registry.registerTool(parked.tool)
++ * ```
++ */
++export function createParkedRegistration(name: string): ParkedRegistrationInterface {
++	const entry = Promise.withResolvers<AbortSignal>()
++	return {
++		tool: {
++			name,
++			description: 'Parks until the registry aborts it',
++			execute: async (_input, options) => {
++				entry.resolve(options.signal)
++				await waitForAbort(options.signal)
++			},
++		},
++		entered: entry.promise,
++		aborted: entry.promise.then(waitForAbort),
++	}
++}
++
++// ── WebMCP bridge scenarios ──────────────────────────────────────────────────
++//
++// The bridge's scenarios all start from the same arrangement: an isolated document carrying
++// the IDL-faithful registry double, and a live bridge over it. That arrangement is fixture
++// assembly rather than an assertion, so it lives here and a test file imports it.
++
++/** Pairs an isolated document's installed registry double with the bridge built over it. */
++export interface BridgedDocumentInterface {
++	/** The registry double installed as that document's `modelContext`. */
++	readonly fixture: ModelContextFixtureInterface
++	/** The live bridge `createModelContext` returned for that document. */
++	readonly bridge: ModelContextInterface
++}
++
++/**
++ * Builds an isolated document carrying the WebMCP registry double, plus the bridge over it.
++ *
++ * @remarks
++ * Each call owns a fresh `document.implementation.createHTMLDocument()`, so no scenario
++ * mutates the page the suite runs in and none can see another's registrations. The bridge is
++ * the real `createModelContext` over the real `ModelContext`; only the registry is a double,
++ * because no browser exposes one.
++ *
++ * @returns The installed fixture and the live bridge
++ * @throws Thrown when the installed registry is not detected, which means the guard and the
++ * double have drifted apart
++ *
++ * @example
++ * ```ts
++ * const { fixture, bridge } = createBridge()
++ * await bridge.publish(createDescribedTools(5))
++ * ```
++ */
++export function createBridge(): BridgedDocumentInterface {
++	const host = document.implementation.createHTMLDocument()
++	const fixture = installModelContext(host)
++	const bridge = requireValue(
++		createModelContext({ document: host }),
++		'The installed registry was not detected',
++	)
++	return { fixture, bridge }
++}
++
++/**
++ * Builds a registry holding one fully described tool that answers with the value it is given.
++ *
++ * @remarks
++ * Every member WebMCP carries is authored — title, description, input schema, and all three
++ * annotation hints — so a publication scenario reads one registration and sees the whole
++ * projection rather than a partial one.
++ *
++ * @param value - The value the tool's handler returns, unchanged
++ * @returns A registry holding the one described tool
++ *
++ * @example
++ * ```ts
++ * const tools = createDescribedTools(5)
++ * tools.definitions()[0]?.name // 'add'
++ * ```
++ */
++export function createDescribedTools(value: unknown): ToolManagerInterface {
++	const tools = createToolManager()
++	tools.add(
++		createTool({
++			name: 'add',
++			title: 'Add',
++			description: 'Adds every operand and returns their sum',
++			parameters: { type: 'object', properties: { left: { type: 'number' } } },
++			annotations: { pure: true, untrusted: true, consequential: false },
++			execute: () => value,
++		}),
++	)
++	return tools
++}
++
++/**
++ * Reads the one member a collection must hold, failing loudly when it holds any other number.
++ *
++ * @remarks
++ * `requireValue` from `@orkestrel/test` covers presence; the surplus check is what this adds,
++ * so a scenario that published two tools fails on the arrangement instead of asserting against
++ * whichever one came back first.
++ *
++ * @typeParam T - The member type.
++ * @param values - The collection to read
++ * @param subject - What one member is, named in the failure message
++ * @returns The sole member
++ * @throws An `Error` when the collection holds no member or more than one
++ *
++ * @example
++ * ```ts
++ * readOne(await fixture.registry.getTools(), 'registered tool').name // 'add'
++ * ```
++ */
++export function readOne<T>(values: readonly T[], subject: string): T {
++	if (values.length > 1) throw new Error(`Expected one ${subject}, read ${values.length}`)
++	return requireValue(values[0], `Expected one ${subject}, read none`)
++}
+diff --git a/tests/src/browser/ModelContext.test.ts b/tests/src/browser/ModelContext.test.ts
+new file mode 100644
+index 0000000..ba9ee91
+--- /dev/null
++++ b/tests/src/browser/ModelContext.test.ts
+@@ -0,0 +1,320 @@
++import type { ModelContextEventMap } from '@src/browser'
++import { describe, expect, it } from 'vitest'
++import { createModelContext, isWebMCPDocument } from '@src/browser'
++import { isMCPError } from '@src/core'
++import { createTool, createToolManager } from '@orkestrel/tool'
++import { createRecorders, requireValue, waitForEvent } from '@orkestrel/test'
++import {
++	createBridge,
++	createDescribedTools,
++	createParkedRegistration,
++	createParkedTool,
++	readOne,
++} from '../../setupBrowser.js'
++import { installModelContext } from '../../fixtures/modelContext.js'
++
++// src/browser/ModelContext.ts — the WebMCP bridge, driven in real Chromium against the
++// IDL-faithful registry double. No browser exposes `document.modelContext` (the chromestatus
++// record read on 2026-08-12 says `Proposed`, no flag, no origin trial), so every scenario here
++// proves the TRANSLATION and none of them claims the native integration; `factories.test.ts`
++// records this page's own reading of the global.
++//
++// Each scenario owns an isolated `Document` from `document.implementation.createHTMLDocument()`,
++// so no test mutates the page the suite runs in and none can see another's registrations.
++
++describe('publish — this page registering its tools with the document registry', () => {
++	it('registers each advertised tool with its title, schema, and projected annotations', async () => {
++		const { fixture, bridge } = createBridge()
++
++		await bridge.publish(createDescribedTools(5))
++
++		const registered = await fixture.registry.getTools()
++		expect(registered).toEqual([
++			{
++				name: 'add',
++				title: 'Add',
++				description: 'Adds every operand and returns their sum',
++				inputSchema: { type: 'object', properties: { left: { type: 'number' } } },
++				annotations: {
++					readOnlyHint: true,
++					untrustedContentHint: true,
++					consequentialHint: false,
++				},
++				window: globalThis.window,
++				origin: fixture.origin,
++			},
++		])
++	})
++
++	it('forwards the origins option as WebMCP exposedTo', async () => {
++		const { fixture, bridge } = createBridge()
++
++		await bridge.publish(createDescribedTools(5), { origins: ['https://partner.example'] })
++
++		expect(fixture.registrations()[0]?.options?.exposedTo).toEqual(['https://partner.example'])
++	})
++
++	it('omits exposedTo when no origins were asked for', async () => {
++		const { fixture, bridge } = createBridge()
++
++		await bridge.publish(createDescribedTools(5))
++
++		expect(fixture.registrations()[0]?.options?.exposedTo).toBeUndefined()
++	})
++
++	it('refuses the whole call, registering nothing, when a tool advertises no description', async () => {
++		const { fixture, bridge } = createBridge()
++		const tools = createDescribedTools(5)
++		tools.add(createTool({ name: 'bare', execute: () => 1 }))
++
++		await expect(bridge.publish(tools)).rejects.toThrow("'bare'")
++		expect(fixture.registrations()).toEqual([])
++	})
++
++	it('reports the refusal as a coded MCP error rather than a bare throw', async () => {
++		const { bridge } = createBridge()
++		const tools = createToolManager()
++		tools.add(createTool({ name: 'bare', execute: () => 1 }))
++
++		const error: unknown = await bridge.publish(tools).catch((reason: unknown) => reason)
++
++		expect(isMCPError(error) && error.code).toBe(-32602)
++	})
++
++	it('adds the names a second call brought and aborts the ones the registry lost', async () => {
++		const { fixture, bridge } = createBridge()
++		const tools = createDescribedTools(5)
++		await bridge.publish(tools)
++
++		tools.remove('add')
++		tools.add(createTool({ name: 'subtract', description: 'Subtracts', execute: () => 1 }))
++		await bridge.publish(tools)
++
++		expect(fixture.registrations().map((entry) => entry.tool.name)).toEqual(['subtract'])
++	})
++
++	it('leaves a name it already registered alone on a second call', async () => {
++		const { fixture, bridge } = createBridge()
++		const tools = createDescribedTools(5)
++		await bridge.publish(tools)
++		const first = fixture.registrations()[0]
++
++		await bridge.publish(tools)
++
++		expect(fixture.registrations()[0]).toBe(first)
++	})
++
++	it('registers nothing after the handle is destroyed', async () => {
++		const { fixture, bridge } = createBridge()
++		bridge.destroy()
++
++		await bridge.publish(createDescribedTools(5))
++
++		expect(fixture.registrations()).toEqual([])
++	})
++})
++
++describe('a published tool, run by the registry as a foreign agent would run it', () => {
++	it('runs the local handler and answers with the value it returned, unchanged', async () => {
++		const { fixture, bridge } = createBridge()
++		// The MCP content record the WebMCP README's own sample returns, against an IDL that
++		// types `executeTool` as `Promise<DOMString>`. The bridge normalizes neither, so the
++		// record arrives exactly as the handler produced it.
++		const value = { content: [{ type: 'text', text: 'Added' }] }
++		await bridge.publish(createDescribedTools(value))
++		const registered = await fixture.registry.getTools()
++
++		expect(
++			await fixture.registry.executeTool(readOne(registered, 'registered tool'), { left: 2 }),
++		).toEqual(value)
++	})
++
++	it('surfaces a failing local handler as a rejection carrying its message', async () => {
++		const { fixture, bridge } = createBridge()
++		const tools = createToolManager()
++		tools.add(
++			createTool({
++				name: 'boom',
++				description: 'Always fails',
++				execute: () => {
++					throw new Error('kaboom')
++				},
++			}),
++		)
++		await bridge.publish(tools)
++		const registered = await fixture.registry.getTools()
++
++		await expect(
++			fixture.registry.executeTool(readOne(registered, 'registered tool'), {}),
++		).rejects.toThrow(/kaboom/)
++	})
++
++	it('carries the registry execution signal into the local handler context signal', async () => {
++		const { fixture, bridge } = createBridge()
++		const parked = createParkedTool('park')
++		const tools = createToolManager()
++		tools.add(parked.tool)
++		await bridge.publish(tools)
++		const registered = await fixture.registry.getTools()
++		const controller = new AbortController()
++
++		void fixture.registry.executeTool(
++			readOne(registered, 'registered tool'),
++			{},
++			{ signal: controller.signal },
++		)
++		await parked.entered
++		controller.abort()
++
++		// Resolution is the proof: `aborted` settles only when the handler's own context
++		// signal fires, so the resolution itself is what the claim rests on.
++		await expect(parked.aborted).resolves.toBeUndefined()
++	})
++})
++
++describe('adopt — reading the registry back as locally executable tools', () => {
++	it('reads each registered tool as a tool advertising the inverse projection', async () => {
++		const { fixture, bridge } = createBridge()
++		await fixture.registry.registerTool({
++			name: 'remote',
++			title: 'Remote',
++			description: 'Runs in another page',
++			inputSchema: { type: 'object' },
++			annotations: { readOnlyHint: true, consequentialHint: true },
++			execute: async () => 'done',
++		})
++
++		const adopted = await bridge.adopt()
++
++		expect(adopted.map((tool) => tool.name)).toEqual(['remote'])
++		expect(adopted[0]?.title).toBe('Remote')
++		expect(adopted[0]?.parameters).toEqual({ type: 'object' })
++		expect(adopted[0]?.annotations).toEqual({ pure: true, consequential: true })
++	})
++
++	it('executes an adopted tool through the registry and answers unchanged', async () => {
++		const { fixture, bridge } = createBridge()
++		const value = { content: [{ type: 'text', text: 'done' }] }
++		await fixture.registry.registerTool({
++			name: 'remote',
++			description: 'Runs in another page',
++			execute: async () => value,
++		})
++		const adopted = await bridge.adopt()
++
++		expect(await adopted[0]?.execute({}, { signal: new AbortController().signal })).toEqual(value)
++	})
++
++	it('carries the local context signal onto the foreign handler through executeTool', async () => {
++		const { fixture, bridge } = createBridge()
++		const parked = createParkedRegistration('remote')
++		await fixture.registry.registerTool(parked.tool)
++		const adopted = await bridge.adopt()
++		const controller = new AbortController()
++
++		void adopted[0]?.execute({}, { signal: controller.signal })
++		await parked.entered
++		controller.abort()
++
++		// Resolution is the proof: `aborted` settles only when the registry's own execution
++		// signal fires inside the foreign callback.
++		await expect(parked.aborted).resolves.toBeUndefined()
++	})
++
++	it('forwards the origins option as WebMCP fromOrigins', async () => {
++		const { fixture, bridge } = createBridge()
++		await bridge.publish(createDescribedTools(5))
++
++		expect(await bridge.adopt({ origins: [fixture.origin] })).toHaveLength(1)
++		expect(await bridge.adopt({ origins: ['https://elsewhere.example'] })).toEqual([])
++	})
++})
++
++describe('change — the registry event this handle republishes', () => {
++	it('emits exactly one change when the page registers a tool this handle never published', async () => {
++		const { fixture, bridge } = createBridge()
++		const recorders = createRecorders<ModelContextEventMap, 'change'>(bridge.emitter, ['change'])
++		const delivered = waitForEvent<readonly []>(
++			(listener) => bridge.emitter.on('change', listener),
++			'the bridge change event',
++		)
++
++		await fixture.registry.registerTool({
++			name: 'elsewhere',
++			description: 'Registered by the page itself',
++			execute: async () => 'done',
++		})
++
++		// The delivery parks on the event rather than polling for it; the recorder is what
++		// reports that exactly one registration produced exactly one emission.
++		expect(await delivered).toEqual([])
++		expect(recorders.change.count).toBe(1)
++	})
++
++	it('emits nothing more after the handle is destroyed', async () => {
++		const { fixture, bridge } = createBridge()
++		const recorders = createRecorders<ModelContextEventMap, 'change'>(bridge.emitter, ['change'])
++		bridge.destroy()
++
++		await fixture.registry.registerTool({
++			name: 'elsewhere',
++			description: 'Registered by the page itself',
++			execute: async () => 'done',
++		})
++
++		expect(recorders.change.count).toBe(0)
++	})
++})
++
++describe('destroy — releasing what this handle registered and nothing else', () => {
++	it('unregisters this handle tools and leaves another handle registrations standing', async () => {
++		const host = document.implementation.createHTMLDocument()
++		const fixture = installModelContext(host)
++		const mine = requireValue(createModelContext({ document: host }), 'the first bridge')
++		const theirs = requireValue(createModelContext({ document: host }), 'the second bridge')
++		const ours = createToolManager()
++		ours.add(createTool({ name: 'mine', description: 'Mine', execute: () => 1 }))
++		const other = createToolManager()
++		other.add(createTool({ name: 'theirs', description: 'Theirs', execute: () => 2 }))
++		await mine.publish(ours)
++		await theirs.publish(other)
++
++		mine.destroy()
++
++		expect(fixture.registrations().map((entry) => entry.tool.name)).toEqual(['theirs'])
++	})
++
++	it('leaves a page registration this handle never made standing', async () => {
++		const { fixture, bridge } = createBridge()
++		await fixture.registry.registerTool({
++			name: 'elsewhere',
++			description: 'Registered by the page itself',
++			execute: async () => 'done',
++		})
++		await bridge.publish(createDescribedTools(5))
++
++		bridge.destroy()
++
++		expect(fixture.registrations().map((entry) => entry.tool.name)).toEqual(['elsewhere'])
++	})
++
++	it('is inert on a repeat', async () => {
++		const { fixture, bridge } = createBridge()
++		await bridge.publish(createDescribedTools(5))
++
++		bridge.destroy()
++		bridge.destroy()
++
++		expect(fixture.registrations()).toEqual([])
++		expect(bridge.emitter.destroyed).toBe(true)
++	})
++})
++
++describe('the document the bridge was built on', () => {
++	it('is narrowed by the same guard the factory runs', () => {
++		const host = document.implementation.createHTMLDocument()
++		installModelContext(host)
++
++		expect(isWebMCPDocument(host)).toBe(true)
++	})
++})
+diff --git a/tests/src/browser/factories.test.ts b/tests/src/browser/factories.test.ts
+index 8732760..5225e01 100644
+--- a/tests/src/browser/factories.test.ts
++++ b/tests/src/browser/factories.test.ts
+@@ -1,7 +1,27 @@
+ import type { JSONRPCMessage } from '@src/core'
+-import type { ScopeInterface } from '@src/browser'
++import type {
++	ModelContextAdoptOptions,
++	ModelContextEventMap,
++	ModelContextInterface,
++	ModelContextOptions,
++	ModelContextPublishOptions,
++	PageServerInterface,
++	PageServerOptions,
++	ScopeInterface,
++	WebMCPAnnotations,
++	WebMCPDescriptor,
++	WebMCPDocument,
++	WebMCPExecuteHandler,
++	WebMCPExecuteOptions,
++	WebMCPHandlerOptions,
++	WebMCPRegisteredTool,
++	WebMCPRegisterOptions,
++	WebMCPRegistryInterface,
++	WebMCPTool,
++	WebMCPToolsOptions,
++} from '@src/browser'
+ import type { ToolManagerInterface } from '@orkestrel/tool'
+-import { describe, expect, inject, it, vi } from 'vitest'
++import { describe, expect, expectTypeOf, inject, it, vi } from 'vitest'
+ import {
+ 	bindClient,
+ 	bindServer,
+@@ -20,11 +40,14 @@ import {
+ 	MCP_WEBSOCKET_SUBPROTOCOL,
+ 	parseRequestContext,
+ } from '@src/core'
++import type { ModelContext } from '@src/browser'
+ import {
+ 	DEFAULT_MCP_SERVER_NAME,
+ 	DEFAULT_MCP_SERVER_VERSION,
+ 	createHTTPClientTransport,
+ 	createMessagePortTransport,
++	createModelContext,
++	createPageServer,
+ 	createScopeMessageListener,
+ 	createScopeServer,
+ 	createScopeTransport,
+@@ -32,7 +55,7 @@ import {
+ } from '@src/browser'
+ import { isRecord } from '@orkestrel/contract'
+ import { createTool, createToolManager } from '@orkestrel/tool'
+-import { waitForDelay } from '@orkestrel/test'
++import { requireValue, waitForCondition, waitForDelay, waitForEvent } from '@orkestrel/test'
+ import {
+ 	createCalculatorServer,
+ 	createJSONRPCRequest,
+@@ -44,7 +67,14 @@ import {
+ 	probeDuplex,
+ 	readMethods,
+ } from '../../setup.js'
+-import { createScopeCarrier, drainRecorded, recordPort } from '../../setupBrowser.js'
++import {
++	createParkedTool,
++	createScopeCarrier,
++	drainRecorded,
++	recordPort,
++	recordRequests,
++} from '../../setupBrowser.js'
++import { installModelContext } from '../../fixtures/modelContext.js'
+ 
+ // src/browser/factories.ts + src/browser/transports — the browser-face CLIENT
+ // transports (`createWebSocketClientTransport` over the native `WebSocket` global,
+@@ -1054,3 +1084,211 @@ describe('createScopeMessageListener — one collection carries both the teardow
+ 		for (const teardown of teardowns.values()) teardown()
+ 	})
+ })
++
++// ── The in-page pair, and the WebMCP bridge's feature detection ──────────────
++//
++// `createPageServer` is the whole MCP round trip with no network under it, so the claim it
++// carries is negative — nothing left the page — and a negative claim needs an instrument that
++// can report the positive. The instrument is the browser's own Resource Timing log, and the
++// scenario asserting an empty drain is followed by a control request that must appear in it.
++
++describe('createPageServer — the MCP pair hosted in the page that calls it', () => {
++	it('completes connect, tools/list, and tools/call with no request leaving the page', async () => {
++		const drain = recordRequests()
++		const page = createPageServer({ tools: createCalculatorTools() })
++
++		await page.client.connect()
++		const tools = await page.client.tools()
++		const value = await page.client.call('add', { x: 2, y: 3 })
++
++		expect(page.client.connected).toBe(true)
++		expect(tools.map((tool) => tool.name)).toEqual(['add'])
++		expect(value).toEqual({ resultType: 'complete', value: 5 })
++		expect(drain()).toEqual([])
++		page.destroy()
++
++		// The positive control, drawn from outside the population the scenario covers: one real
++		// request to this page's own origin. The drain must report it, or the empty reading
++		// above measured nothing.
++		await fetch(location.href)
++		await waitForCondition('the control request to reach the resource log', () => {
++			return drain().length > 0
++		})
++	})
++
++	it('hosts the scope server identity defaults, readable from the client over the channel', async () => {
++		const page = createPageServer({ tools: createCalculatorTools() })
++		await page.client.connect()
++
++		const identity: unknown = (await page.client.discover())['_meta']?.[MCP_META_SERVER]
++
++		expect(identity).toEqual({
++			name: DEFAULT_MCP_SERVER_NAME,
++			version: DEFAULT_MCP_SERVER_VERSION,
++		})
++		page.destroy()
++	})
++
++	it('hosts the identity the options named instead of the defaults', async () => {
++		const page = createPageServer({
++			tools: createCalculatorTools(),
++			name: 'page-host',
++			version: '2.0.0',
++		})
++		await page.client.connect()
++
++		const identity: unknown = (await page.client.discover())['_meta']?.[MCP_META_SERVER]
++
++		expect(identity).toEqual({ name: 'page-host', version: '2.0.0' })
++		page.destroy()
++	})
++
++	it('forwards the client option group to the client it builds', async () => {
++		const parked = createParkedTool('park')
++		const tools = createToolManager()
++		tools.add(parked.tool)
++		const page = createPageServer({ tools, client: { timeout: 30 } })
++		await page.client.connect()
++
++		// The deadline is the observable the group carries: a tool that never answers rejects on
++		// the configured timeout instead of on the default one.
++		await expect(page.client.call('park', {})).rejects.toThrow(/timed out/)
++
++		page.destroy()
++	})
++
++	it('hands back a client that is bound but not yet connected', () => {
++		const page = createPageServer({ tools: createCalculatorTools() })
++
++		expect(page.client.connected).toBe(false)
++
++		page.destroy()
++	})
++
++	it('leaves the client disconnected after destroy, and a repeat destroys nothing further', async () => {
++		const page = createPageServer({ tools: createCalculatorTools() })
++		await page.client.connect()
++		expect(page.client.connected).toBe(true)
++
++		page.destroy()
++		page.destroy()
++
++		expect(page.client.connected).toBe(false)
++		expect(page.client.version).toBeUndefined()
++	})
++
++	it('aborts the hosted handler when the wrapped tool context signal aborts mid-call', async () => {
++		const parked = createParkedTool('park')
++		const tools = createToolManager()
++		tools.add(parked.tool)
++		const page = createPageServer({ tools })
++		await page.client.connect()
++		const wrapped = requireValue(
++			(await page.client.tools())[0],
++			'the parked tool must be advertised',
++		)
++		const controller = new AbortController()
++
++		const call = wrapped.execute({}, { signal: controller.signal })
++		await parked.entered
++		controller.abort()
++
++		await expect(call).rejects.toThrow(/was aborted/)
++		// The claim is what the SERVER-side handler observed: the client's abort travelled the
++		// channel as `notifications/cancelled` and reached the dispatch's own context signal.
++		// `aborted` settles only on that signal, so its resolution is the whole proof.
++		await parked.aborted
++		// The connection survives an aborted call, exactly as it does over every other carrier.
++		expect(page.client.connected).toBe(true)
++		page.destroy()
++	})
++})
++
++describe('createModelContext — feature detection is the return value', () => {
++	it('reports undefined for a document exposing no registry', () => {
++		expect(
++			createModelContext({ document: document.implementation.createHTMLDocument() }),
++		).toBeUndefined()
++	})
++
++	it('records that this real Chromium page exposes no WebMCP registry', () => {
++		// The unknown this surface was built against, answered on the host the suite runs on. No
++		// browser ships the global, so the bridge's every other proof runs against the
++		// IDL-faithful double and none of them claims the native integration.
++		expect('modelContext' in document).toBe(false)
++		expect(createModelContext()).toBeUndefined()
++	})
++
++	it('builds a live bridge for a document that does expose one', () => {
++		const host = document.implementation.createHTMLDocument()
++		installModelContext(host)
++
++		const bridge = createModelContext({ document: host })
++
++		expect(bridge?.emitter.destroyed).toBe(false)
++		bridge?.destroy()
++	})
++
++	it('wires the initial emitter hooks the options carry', async () => {
++		const host = document.implementation.createHTMLDocument()
++		const fixture = installModelContext(host)
++		const built: ModelContextInterface[] = []
++		// The claim is about the INITIAL hook, so the listener the wait parks on is the one
++		// `options.on.change` carries rather than a later `emitter.on` subscription.
++		const delivered = waitForEvent<readonly []>((listener) => {
++			const bridge = createModelContext({ document: host, on: { change: listener } })
++			if (bridge !== undefined) built.push(bridge)
++		}, 'the wired change hook')
++
++		await fixture.registry.registerTool({
++			name: 'elsewhere',
++			description: 'Registered by the page itself',
++			execute: async () => 'done',
++		})
++
++		expect(await delivered).toEqual([])
++		requireValue(built[0], 'the bridge the wait built').destroy()
++	})
++})
++
++describe('the browser barrel — what a consumer of @orkestrel/mcp/browser receives', () => {
++	it('publishes the page pair and the WebMCP bridge with their declared contracts', () => {
++		expectTypeOf(createPageServer).parameter(0).toEqualTypeOf<PageServerOptions>()
++		expectTypeOf(createPageServer).returns.toEqualTypeOf<PageServerInterface>()
++		expectTypeOf(createModelContext).returns.toEqualTypeOf<ModelContextInterface | undefined>()
++		expectTypeOf<Parameters<typeof createModelContext>[0]>().toEqualTypeOf<
++			ModelContextOptions | undefined
++		>()
++		expectTypeOf<InstanceType<typeof ModelContext>>().toExtend<ModelContextInterface>()
++		expectTypeOf<ModelContextEventMap>().toEqualTypeOf<{ readonly change: readonly [] }>()
++		expectTypeOf<ModelContextPublishOptions>().toEqualTypeOf<{
++			readonly origins?: readonly string[]
++		}>()
++		expectTypeOf<ModelContextAdoptOptions>().toEqualTypeOf<{
++			readonly origins?: readonly string[]
++		}>()
++	})
++
++	it('publishes the WebMCP wire types under the IDL member names', () => {
++		expectTypeOf<WebMCPAnnotations>().toEqualTypeOf<{
++			readonly readOnlyHint?: boolean
++			readonly untrustedContentHint?: boolean
++			readonly consequentialHint?: boolean
++		}>()
++		expectTypeOf<WebMCPRegisterOptions>().toEqualTypeOf<{
++			readonly exposedTo?: readonly string[]
++			readonly signal?: AbortSignal
++		}>()
++		expectTypeOf<WebMCPToolsOptions>().toEqualTypeOf<{
++			readonly fromOrigins?: readonly string[]
++		}>()
++		expectTypeOf<WebMCPExecuteOptions>().toEqualTypeOf<{ readonly signal?: AbortSignal }>()
++		expectTypeOf<WebMCPHandlerOptions>().toEqualTypeOf<{ readonly signal: AbortSignal }>()
++		expectTypeOf<WebMCPTool>().toExtend<WebMCPDescriptor>()
++		expectTypeOf<WebMCPRegisteredTool>().toExtend<WebMCPDescriptor>()
++		expectTypeOf<WebMCPTool['execute']>().toEqualTypeOf<WebMCPExecuteHandler>()
++		expectTypeOf<WebMCPRegisteredTool['window']>().toEqualTypeOf<Window>()
++		expectTypeOf<WebMCPRegisteredTool['origin']>().toEqualTypeOf<string>()
++		expectTypeOf<WebMCPDocument['modelContext']>().toEqualTypeOf<WebMCPRegistryInterface>()
++	})
++})
+diff --git a/tests/src/browser/helpers.test.ts b/tests/src/browser/helpers.test.ts
+new file mode 100644
+index 0000000..9fd6be8
+--- /dev/null
++++ b/tests/src/browser/helpers.test.ts
+@@ -0,0 +1,158 @@
++import { describe, expect, it } from 'vitest'
++import {
++	buildWebMCPDescriptors,
++	toolAnnotationsToWebMCP,
++	toolToWebMCP,
++	webMCPAnnotationsToTool,
++	webMCPToTool,
++} from '@src/browser'
++import { isMCPError, toolAnnotationsToMCP } from '@src/core'
++import { createTool, createToolManager } from '@orkestrel/tool'
++import { captureError } from '@orkestrel/test'
++import { readOne } from '../../setupBrowser.js'
++
++// src/browser/helpers.ts — the WebMCP direction of the annotation and descriptor projection.
++// The comparison that makes these assertions falsifiable is the MCP wire's own projection,
++// which lives in `@src/core` and disagrees with this one in two named places: WebMCP carries
++// `untrustedContentHint` where MCP carries nothing, and spells the consequence
++// `consequentialHint` where MCP spells it `destructiveHint`.
++
++describe('toolAnnotationsToWebMCP — the projection WebMCP takes and the MCP wire cannot', () => {
++	it('carries untrusted onto untrustedContentHint, which the MCP wire drops entirely', () => {
++		const annotations = { pure: true, untrusted: true, consequential: false }
++
++		expect(toolAnnotationsToWebMCP(annotations)).toEqual({
++			readOnlyHint: true,
++			untrustedContentHint: true,
++			consequentialHint: false,
++		})
++		// The same input through the MCP wire's projection: `untrusted` has no counterpart and
++		// the consequence is spelled differently. Two surfaces, two projections.
++		expect(toolAnnotationsToMCP(annotations)).toEqual({
++			readOnlyHint: true,
++			destructiveHint: false,
++		})
++	})
++
++	it('invents no hint for an omitted annotation, in either direction', () => {
++		expect(toolAnnotationsToWebMCP({})).toEqual({})
++		expect(webMCPAnnotationsToTool({})).toEqual({})
++		expect(toolAnnotationsToWebMCP({ consequential: false })).toEqual({
++			consequentialHint: false,
++		})
++	})
++
++	it('round-trips every hint it carries back to the annotation it came from', () => {
++		const annotations = { pure: false, untrusted: true, consequential: true }
++
++		expect(webMCPAnnotationsToTool(toolAnnotationsToWebMCP(annotations))).toEqual(annotations)
++	})
++})
++
++describe('toolToWebMCP — the advertised definition, and the description WebMCP requires', () => {
++	it('advertises the summary as description, exactly as the MCP wire does', () => {
++		const tools = createToolManager()
++		tools.add(
++			createTool({
++				name: 'add',
++				description: 'Adds every operand and returns their sum',
++				summary: 'Adds numbers',
++				execute: () => 5,
++			}),
++		)
++		const definition = readOne(tools.definitions(), 'advertised definition')
++
++		expect(toolToWebMCP(definition)?.description).toBe('Adds numbers')
++	})
++
++	it('carries title, parameters as inputSchema, and the projected annotations', () => {
++		const parameters = { type: 'object', properties: { left: { type: 'number' } } }
++
++		expect(
++			toolToWebMCP({
++				name: 'add',
++				title: 'Add',
++				description: 'Adds numbers',
++				parameters,
++				annotations: { pure: true, untrusted: true },
++			}),
++		).toEqual({
++			name: 'add',
++			title: 'Add',
++			description: 'Adds numbers',
++			inputSchema: parameters,
++			annotations: { readOnlyHint: true, untrustedContentHint: true },
++		})
++	})
++
++	it('omits an annotations member entirely when the projection produced no hint', () => {
++		expect(toolToWebMCP({ name: 'add', description: 'Adds', annotations: {} })).toEqual({
++			name: 'add',
++			description: 'Adds',
++		})
++	})
++
++	it('reports a definition with no advertised description as unprojectable', () => {
++		expect(toolToWebMCP({ name: 'add' })).toBeUndefined()
++	})
++})
++
++describe('webMCPToTool — the inverse, reading a registered tool back as a definition', () => {
++	it('reads inputSchema back as parameters and inverts every hint', () => {
++		const schema = { type: 'object' }
++
++		expect(
++			webMCPToTool({
++				name: 'remote',
++				title: 'Remote',
++				description: 'Runs elsewhere',
++				inputSchema: schema,
++				annotations: { readOnlyHint: false, consequentialHint: true },
++				window: globalThis.window,
++				origin: 'https://partner.example',
++			}),
++		).toEqual({
++			name: 'remote',
++			title: 'Remote',
++			description: 'Runs elsewhere',
++			parameters: schema,
++			annotations: { pure: false, consequential: true },
++		})
++	})
++
++	it('drops window and origin, which say where a tool lives rather than what it does', () => {
++		const definition = webMCPToTool({
++			name: 'remote',
++			description: 'Runs elsewhere',
++			window: globalThis.window,
++			origin: 'https://partner.example',
++		})
++
++		expect(Object.keys(definition)).toEqual(['name', 'description'])
++	})
++})
++
++describe('buildWebMCPDescriptors — the batch, refused whole when one tool cannot carry', () => {
++	it('describes every advertised tool in registry order', () => {
++		const tools = createToolManager()
++		tools.add(createTool({ name: 'add', description: 'Adds', execute: () => 5 }))
++		tools.add(createTool({ name: 'subtract', description: 'Subtracts', execute: () => 1 }))
++
++		expect(buildWebMCPDescriptors(tools).map((descriptor) => descriptor.name)).toEqual([
++			'add',
++			'subtract',
++		])
++	})
++
++	it('refuses the batch with a coded error naming the tool that advertises no description', () => {
++		const tools = createToolManager()
++		tools.add(createTool({ name: 'add', description: 'Adds', execute: () => 5 }))
++		tools.add(createTool({ name: 'bare', execute: () => 1 }))
++
++		const error: unknown = captureError(() => buildWebMCPDescriptors(tools))
++
++		expect(isMCPError(error)).toBe(true)
++		expect(isMCPError(error) && error.code).toBe(-32602)
++		expect(isMCPError(error) && error.message.includes("'bare'")).toBe(true)
++	})
++})
+diff --git a/tests/src/browser/validators.test.ts b/tests/src/browser/validators.test.ts
+new file mode 100644
+index 0000000..985392a
+--- /dev/null
++++ b/tests/src/browser/validators.test.ts
+@@ -0,0 +1,112 @@
++import { describe, expect, it } from 'vitest'
++import { isWebMCPDocument, isWebMCPRegistry } from '@src/browser'
++import { isRecord } from '@orkestrel/contract'
++import { createHostileValues } from '@orkestrel/test'
++import { installModelContext } from '../../fixtures/modelContext.js'
++
++// src/browser/validators.ts — the WebMCP feature detection, run against a REAL `Document`.
++// The population that matters is platform class instances, not plain objects: a `Document`
++// reaches `modelContext` through nothing, and a `ModelContext` reaches every operation through
++// its prototype chain, so a guard built on an exact-record check would fail closed on both.
++
++// The registry operations, spelled from the WebIDL rather than read back from the guard's own
++// shape. A list taken from the source would pass for whatever the source happened to require.
++const REGISTRY_MEMBERS: readonly string[] = [
++	'registerTool',
++	'getTools',
++	'executeTool',
++	'addEventListener',
++	'removeEventListener',
++]
++
++describe('isWebMCPRegistry — narrowing a prototype-carried registry, not a plain record', () => {
++	it('accepts a class instance whose operations arrive through its prototype', () => {
++		const fixture = installModelContext(document.implementation.createHTMLDocument())
++
++		expect(isWebMCPRegistry(fixture.registry)).toBe(true)
++		// The control the guard must not be built on: an exact-record check refuses this exact
++		// value, which is why `isRecord` appears here as the rejected alternative rather than
++		// as the instrument.
++		expect(isRecord(fixture.registry)).toBe(false)
++	})
++
++	it('refuses a registry missing any one operation it would go on to call', () => {
++		for (const member of REGISTRY_MEMBERS) {
++			const partial: Record<string, () => void> = {}
++			for (const other of REGISTRY_MEMBERS) {
++				if (other !== member) partial[other] = () => {}
++			}
++
++			expect(isWebMCPRegistry(partial)).toBe(false)
++		}
++	})
++
++	it('refuses a value carrying a registry operation that is not callable', () => {
++		const partial: Record<string, unknown> = {}
++		for (const member of REGISTRY_MEMBERS) partial[member] = () => {}
++		partial['executeTool'] = 'executeTool'
++
++		expect(isWebMCPRegistry(partial)).toBe(false)
++	})
++
++	it('refuses every value that is not an object at all', () => {
++		expect(isWebMCPRegistry(undefined)).toBe(false)
++		expect(isWebMCPRegistry(null)).toBe(false)
++		expect(isWebMCPRegistry('modelContext')).toBe(false)
++		expect(isWebMCPRegistry(0)).toBe(false)
++	})
++
++	it('stays total against a value whose member read throws', () => {
++		const hostile = Object.create(null, {
++			registerTool: {
++				get: () => {
++					throw new Error('hostile accessor')
++				},
++			},
++		})
++
++		expect(isWebMCPRegistry(hostile)).toBe(false)
++	})
++
++	it('refuses every adversarial value without throwing', () => {
++		for (const [index, value] of createHostileValues().entries()) {
++			let accepted: boolean | undefined
++			expect(() => {
++				accepted = isWebMCPRegistry(value)
++			}, `hostile value ${index}`).not.toThrow()
++			expect(accepted, `hostile value ${index}`).toBe(false)
++		}
++	})
++})
++
++describe('isWebMCPDocument — the feature detection a page runs before building a bridge', () => {
++	it('accepts a real Document after a registry is installed on it', () => {
++		const host = document.implementation.createHTMLDocument()
++		expect(isWebMCPDocument(host)).toBe(false)
++
++		installModelContext(host)
++
++		expect(isWebMCPDocument(host)).toBe(true)
++	})
++
++	it('refuses a document whose modelContext is not a registry', () => {
++		const host = document.implementation.createHTMLDocument()
++		Object.defineProperty(host, 'modelContext', { value: {}, configurable: true })
++
++		expect(isWebMCPDocument(host)).toBe(false)
++	})
++
++	it('refuses this page, because no shipping browser exposes the registry', () => {
++		expect(isWebMCPDocument(document)).toBe(false)
++	})
++
++	it('refuses every adversarial value without throwing', () => {
++		for (const [index, value] of createHostileValues().entries()) {
++			let accepted: boolean | undefined
++			expect(() => {
++				accepted = isWebMCPDocument(value)
++			}, `hostile value ${index}`).not.toThrow()
++			expect(accepted, `hostile value ${index}`).toBe(false)
++		}
++	})
++})
+diff --git a/tests/src/core/MCPClient.test.ts b/tests/src/core/MCPClient.test.ts
+index 1558d2e..a240674 100644
+--- a/tests/src/core/MCPClient.test.ts
++++ b/tests/src/core/MCPClient.test.ts
+@@ -34,7 +34,7 @@ import { createHTTPClientTransport } from '@src/server'
+ import { createTool, createToolManager } from '@orkestrel/tool'
+ import { createEmitter } from '@orkestrel/emitter'
+ import { createServer } from 'node:http'
+-import { createSignal, waitForDelay } from '@orkestrel/test'
++import { createSignal, requireValue, waitForDelay } from '@orkestrel/test'
+ import { isRecord } from '@orkestrel/contract'
+ import {
+ 	createAbortTools,
+@@ -2923,8 +2923,10 @@ describe('MCPClient — wrapped tool context', () => {
+ 		try {
+ 			await client.connect()
+ 			const tools = await client.tools()
+-			const tool = tools.find((candidate) => candidate.name === 'wait')
+-			if (tool === undefined) throw new Error('Missing wait tool')
++			const tool = requireValue(
++				tools.find((candidate) => candidate.name === 'wait'),
++				'Missing wait tool',
++			)
+ 			const pending = Promise.resolve(tool.execute({}, { signal: controller.signal }))
+ 			const rejected = pending.catch((error: unknown) => error)
+ 			const signal = await probe.entered
+diff --git a/tests/src/core/MCPServer.test.ts b/tests/src/core/MCPServer.test.ts
+index 7b8d95f..2b915c6 100644
+--- a/tests/src/core/MCPServer.test.ts
++++ b/tests/src/core/MCPServer.test.ts
+@@ -77,7 +77,7 @@ import {
+ } from '@src/core'
+ import { describe, expect, expectTypeOf, it } from 'vitest'
+ import { createTool, createToolManager } from '@orkestrel/tool'
+-import { createRecorder, createRecorders, waitForDelay } from '@orkestrel/test'
++import { createRecorder, createRecorders, waitForAbort, waitForDelay } from '@orkestrel/test'
+ import {
+ 	createAbortTools,
+ 	createMemoryTransport,
+@@ -1596,9 +1596,7 @@ describe('MCPServer — W01 modern execution and progress', () => {
+ 				seen.signal = signal
+ 				seen.reporter = reporter
+ 				await reporter.report({ progress: 1 })
+-				await new Promise<void>((resolve) =>
+-					signal.addEventListener('abort', () => resolve(), { once: true }),
+-				)
++				await waitForAbort(signal)
+ 				return { resultType: 'complete', content: [{ type: 'text', text: 'aborted' }] }
+ 			},
+ 		})
+diff --git a/tests/src/core/validators.test.ts b/tests/src/core/validators.test.ts
+index 7e6a063..e10beb7 100644
+--- a/tests/src/core/validators.test.ts
++++ b/tests/src/core/validators.test.ts
+@@ -120,6 +120,7 @@ import {
+ 	SUPPORTED_MODERN_PROTOCOL_VERSIONS,
+ } from '@src/core'
+ import { describe, expect, expectTypeOf, it } from 'vitest'
++import { createHostileValues } from '@orkestrel/test'
+ import {
+ 	createHostileCorpus,
+ 	createJSONRPCNotification,
+@@ -2585,4 +2586,17 @@ describe('isMCPToolAnnotations', () => {
+ 			}),
+ 		).toBe(false)
+ 	})
++
++	it('answers every adversarial value with a boolean instead of throwing', () => {
++		// Totality is the claim here, not refusal. An object carrying neither consumed hint is
++		// a valid annotation record, so a hostile value whose members read cleanly answers
++		// `true`; refusal on a read that fails is the preceding case's claim.
++		for (const [index, value] of createHostileValues().entries()) {
++			let accepted: boolean | undefined
++			expect(() => {
++				accepted = isMCPToolAnnotations(value)
++			}, `hostile value ${index}`).not.toThrow()
++			expect(typeof accepted, `hostile value ${index}`).toBe('boolean')
++		}
++	})
+ })
+=== git status --porcelain
+ M guides/mcp.md
+AM src/browser/ModelContext.ts
+ M src/browser/constants.ts
+ M src/browser/factories.ts
+AM src/browser/helpers.ts
+ M src/browser/index.ts
+ M src/browser/types.ts
+AM src/browser/validators.ts
+ M src/core/validators.ts
+AM tests/fixtures/modelContext.ts
+ M tests/setup.ts
+ M tests/setupBrowser.test.ts
+ M tests/setupBrowser.ts
+AM tests/src/browser/ModelContext.test.ts
+ M tests/src/browser/factories.test.ts
+AM tests/src/browser/helpers.test.ts
+AM tests/src/browser/validators.test.ts
+ M tests/src/core/MCPClient.test.ts
+ M tests/src/core/MCPServer.test.ts
+ M tests/src/core/validators.test.ts

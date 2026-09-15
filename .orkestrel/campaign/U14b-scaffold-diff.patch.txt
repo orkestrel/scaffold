@@ -1,0 +1,632 @@
+diff --git a/tests/src/server/Materializer.test.ts b/tests/src/server/Materializer.test.ts
+index 2e402295..ecb89007 100644
+--- a/tests/src/server/Materializer.test.ts
++++ b/tests/src/server/Materializer.test.ts
+@@ -20,6 +20,8 @@ import {
+ 	Materializer,
+ 	readFileHex,
+ 	readHostManifest,
++	readHostFloor,
++	stageHost,
+ 	readSnapshot,
+ } from '@src/server'
+ import { describe, expect, it } from 'vitest'
+@@ -36,7 +38,8 @@ import {
+ 	CASE_FOLDING,
+ 	CATALOG_AGENT_TEXT,
+ 	createHostRoot,
+-	readErrorCode,
++	createCheckout,
++	captureScaffoldCode,
+ 	readErrorMessage,
+ 	TARGET_MANIFEST_TEXT,
+ 	SCRATCH_PREFIX,
+@@ -54,13 +57,46 @@ const MATERIALIZED = [
+ ]
+ 
+ describe('Materializer construction', () => {
++	it('reads installed reference guides without planting unclaimed mirrors', () => {
++		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
++		try {
++			const checkout = createCheckout(workspace, 'checkout')
++			workspace.write('checkout/guides/router.md', '# Router\n')
++			const host = join(workspace.path, 'host')
++			stageHost(checkout, host)
++			const floor = readHostFloor(host)
++			expect(floor.bytes['guides/router.md']).toBe(contentToHex('# Router\n'))
++			const materializer = new Materializer({ host: floor })
++			try {
++				const target = join(workspace.path, 'target')
++				const result = materializer.materialize(buildCompiledPlan(), target)
++				expect(result.written.filter((path) => path.startsWith('guides/'))).toStrictEqual([
++					'guides/README.md',
++					'guides/guide.md',
++					'guides/scaffold.md',
++				])
++				expect(workspace.has('target/guides/router.md')).toBe(false)
++				workspace.write('target/guides/router.md', '# Authored\n')
++				materializer.repair(
++					buildCompiledPlan(),
++					materializer.audit(buildCompiledPlan(), target),
++					target,
++				)
++				expect(workspace.read('target/guides/router.md')).toBe('# Authored\n')
++			} finally {
++				materializer.destroy()
++			}
++		} finally {
++			workspace.destroy()
++		}
++	})
+ 	it('refuses an option bag that is not the exact shape', () => {
+ 		// The unknown-key and misspelled-event refusals are the option guard's own
+ 		// law and are measured against it in `validators.test.ts`; what is measured
+ 		// here is that the constructor consults that guard at all, which only a
+ 		// type-valid but contract-invalid value can show.
+-		expect(readErrorCode(() => new Materializer({ host: 'dist/host*' }))).toBe('INVALID')
+-		expect(readErrorCode(() => new Materializer({ host: '' }))).toBe('INVALID')
++		expect(captureScaffoldCode(() => new Materializer({ host: 'dist/host*' }))).toBe('INVALID')
++		expect(captureScaffoldCode(() => new Materializer({ host: '' }))).toBe('INVALID')
+ 	})
+ 
+ 	it('accepts an explicit host with no manifest at all', () => {
+@@ -79,9 +115,9 @@ describe('Materializer construction', () => {
+ 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+ 		try {
+ 			const host = createHostRoot(workspace, 'host', buildVendoredManifest())
+-			expect(readErrorCode(() => new Materializer({ host }))).toBe(undefined)
++			expect(captureScaffoldCode(() => new Materializer({ host }))).toBe(undefined)
+ 			rmSync(join(host, 'AGENTS.md'))
+-			expect(readErrorCode(() => new Materializer({ host }))).toBe('TARGET')
++			expect(captureScaffoldCode(() => new Materializer({ host }))).toBe('TARGET')
+ 		} finally {
+ 			workspace.destroy()
+ 		}
+@@ -92,7 +128,7 @@ describe('Materializer construction', () => {
+ 		try {
+ 			const host = createHostRoot(workspace, 'host', buildVendoredManifest())
+ 			workspace.write('host/smuggled.md', '# Smuggled\n')
+-			expect(readErrorCode(() => new Materializer({ host }))).toBe('TARGET')
++			expect(captureScaffoldCode(() => new Materializer({ host }))).toBe('TARGET')
+ 		} finally {
+ 			workspace.destroy()
+ 		}
+@@ -123,7 +159,7 @@ describe('Materializer construction', () => {
+ 				CASE_FOLDING ? readFileHex(host, 'AGENTS.md') : undefined,
+ 			)
+ 			expect(readHostManifest(host)?.digest).toBe(recased.digest)
+-			expect(readErrorCode(() => new Materializer({ host }))).toBe('TARGET')
++			expect(captureScaffoldCode(() => new Materializer({ host }))).toBe('TARGET')
+ 		} finally {
+ 			workspace.destroy()
+ 		}
+@@ -140,7 +176,7 @@ describe('Materializer construction', () => {
+ 				],
+ 			})
+ 			const host = createHostRoot(workspace, 'host', collided)
+-			expect(readErrorCode(() => new Materializer({ host }))).toBe('TARGET')
++			expect(captureScaffoldCode(() => new Materializer({ host }))).toBe('TARGET')
+ 		} finally {
+ 			workspace.destroy()
+ 		}
+@@ -150,7 +186,7 @@ describe('Materializer construction', () => {
+ 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+ 		try {
+ 			const host = createHostRoot(workspace, 'host', buildHostManifest())
+-			expect(readErrorCode(() => new Materializer({ host }))).toBe('TARGET')
++			expect(captureScaffoldCode(() => new Materializer({ host }))).toBe('TARGET')
+ 		} finally {
+ 			workspace.destroy()
+ 		}
+@@ -263,9 +299,11 @@ describe('Materializer value host', () => {
+ 		const bytes = Object.fromEntries(
+ 			manifest.entries.map((entry) => [entry.destination, contentToHex(`${entry.destination}\n`)]),
+ 		)
+-		expect(readErrorCode(() => new Materializer({ host: { manifest, bytes } }))).toBe(undefined)
++		expect(captureScaffoldCode(() => new Materializer({ host: { manifest, bytes } }))).toBe(
++			undefined,
++		)
+ 		expect(
+-			readErrorCode(
++			captureScaffoldCode(
+ 				() =>
+ 					new Materializer({
+ 						host: { manifest: { ...manifest, roots: [...manifest.roots, 'extra'] }, bytes },
+@@ -282,11 +320,11 @@ describe('Materializer value host', () => {
+ 		const thinned = Object.fromEntries(
+ 			Object.entries(bytes).filter(([destination]) => destination !== 'AGENTS.md'),
+ 		)
+-		expect(readErrorCode(() => new Materializer({ host: { manifest, bytes: thinned } }))).toBe(
+-			'TARGET',
+-		)
+ 		expect(
+-			readErrorCode(
++			captureScaffoldCode(() => new Materializer({ host: { manifest, bytes: thinned } })),
++		).toBe('TARGET')
++		expect(
++			captureScaffoldCode(
+ 				() =>
+ 					new Materializer({
+ 						host: { manifest, bytes: { ...bytes, 'smuggled.md': contentToHex('smuggled\n') } },
+@@ -306,9 +344,9 @@ describe('Materializer value host', () => {
+ 		const bytes = Object.fromEntries(
+ 			entries.map((entry) => [entry.destination, contentToHex(`${entry.destination}\n`)]),
+ 		)
+-		expect(readErrorCode(() => new Materializer({ host: { manifest: collided, bytes } }))).toBe(
+-			'TARGET',
+-		)
++		expect(
++			captureScaffoldCode(() => new Materializer({ host: { manifest: collided, bytes } })),
++		).toBe('TARGET')
+ 	})
+ 
+ 	it('refuses a value host whose bytes miss the digest their entry declares', () => {
+@@ -317,7 +355,7 @@ describe('Materializer value host', () => {
+ 			manifest.entries.map((entry) => [entry.destination, contentToHex(`${entry.destination}\n`)]),
+ 		)
+ 		expect(
+-			readErrorCode(
++			captureScaffoldCode(
+ 				() =>
+ 					new Materializer({
+ 						host: { manifest, bytes: { ...bytes, 'AGENTS.md': contentToHex('AGENTS.md ') } },
+@@ -433,14 +471,14 @@ describe('Materializer materialize', () => {
+ 			workspace.write('project/README.md', '# Sample\n')
+ 			const materializer = new Materializer({ host })
+ 			try {
+-				expect(readErrorCode(() => materializer.materialize(buildVendoredPlan(), target))).toBe(
+-					'TARGET',
+-				)
++				expect(
++					captureScaffoldCode(() => materializer.materialize(buildVendoredPlan(), target)),
++				).toBe('TARGET')
+ 				const other = join(workspace.path, 'other')
+ 				const plan = buildVendoredPlan({
+ 					artifacts: [{ path: 'LICENSE', group: 'docs', ownership: 'presence', origin: 'host' }],
+ 				})
+-				expect(readErrorCode(() => materializer.materialize(plan, other))).toBe('TARGET')
++				expect(captureScaffoldCode(() => materializer.materialize(plan, other))).toBe('TARGET')
+ 				expect(listFiles(other)).toEqual([])
+ 			} finally {
+ 				materializer.destroy()
+@@ -457,11 +495,11 @@ describe('Materializer materialize', () => {
+ 			const errors = createRecorder<readonly [unknown]>()
+ 			const materializer = new Materializer({ host, on: { error: errors.handler } })
+ 			try {
+-				expect(readErrorCode(() => materializer.materialize(buildVendoredPlan(), ''))).toBe(
++				expect(captureScaffoldCode(() => materializer.materialize(buildVendoredPlan(), ''))).toBe(
+ 					'INVALID',
+ 				)
+ 				expect(
+-					readErrorCode(() =>
++					captureScaffoldCode(() =>
+ 						materializer.materialize(
+ 							buildVendoredPlan({ blueprint: buildBlueprint({ name: '' }) }),
+ 							join(workspace.path, 'project'),
+@@ -544,11 +582,11 @@ describe('Materializer materialize', () => {
+ 			expect(destroys.count).toBe(1)
+ 			expect(materializer.emitter.destroyed).toBe(true)
+ 			expect(
+-				readErrorCode(() => materializer.materialize(buildVendoredPlan(), workspace.path)),
++				captureScaffoldCode(() => materializer.materialize(buildVendoredPlan(), workspace.path)),
++			).toBe('DESTROYED')
++			expect(
++				captureScaffoldCode(() => materializer.audit(buildVendoredPlan(), workspace.path)),
+ 			).toBe('DESTROYED')
+-			expect(readErrorCode(() => materializer.audit(buildVendoredPlan(), workspace.path))).toBe(
+-				'DESTROYED',
+-			)
+ 		} finally {
+ 			workspace.destroy()
+ 		}
+@@ -939,9 +977,9 @@ describe('Materializer repair', () => {
+ 				rmSync(join(target, '.claude/rules/names.md'))
+ 				const audit = buildTargetAudit(target, MATERIALIZED, [])
+ 				writeFileSync(join(target, 'AGENTS.md'), '# Moved after the audit\n', 'utf8')
+-				expect(readErrorCode(() => materializer.repair(buildVendoredPlan(), audit, target))).toBe(
+-					'TARGET',
+-				)
++				expect(
++					captureScaffoldCode(() => materializer.repair(buildVendoredPlan(), audit, target)),
++				).toBe('TARGET')
+ 				expect(readFileHex(target, '.claude/rules/names.md')).toBe(undefined)
+ 			} finally {
+ 				materializer.destroy()
+@@ -1046,7 +1084,7 @@ describe('Materializer repair', () => {
+ 				}
+ 				expect(unreachable.findings.every((finding) => isFinding(finding))).toBe(true)
+ 				expect(
+-					readErrorCode(() => materializer.repair(buildVendoredPlan(), unreachable, target)),
++					captureScaffoldCode(() => materializer.repair(buildVendoredPlan(), unreachable, target)),
+ 				).toBe('TARGET')
+ 				const impossible = readErrorMessage(() =>
+ 					materializer.repair(buildVendoredPlan(), unreachable, target),
+@@ -1057,9 +1095,9 @@ describe('Materializer repair', () => {
+ 				// The same code, for a verdict the comparison could have produced and no
+ 				// longer does. Nothing was written by either refusal.
+ 				writeFileSync(join(target, 'AGENTS.md'), '# Moved after the audit\n', 'utf8')
+-				expect(readErrorCode(() => materializer.repair(buildVendoredPlan(), audit, target))).toBe(
+-					'TARGET',
+-				)
++				expect(
++					captureScaffoldCode(() => materializer.repair(buildVendoredPlan(), audit, target)),
++				).toBe('TARGET')
+ 				const moved = readErrorMessage(() =>
+ 					materializer.repair(buildVendoredPlan(), audit, target),
+ 				)
+@@ -1096,6 +1134,93 @@ describe('Materializer repair', () => {
+ })
+ 
+ describe('Materializer mirror', () => {
++	it('writes hosted bytes for an absent failed mirror and refuses a changed absence observation', () => {
++		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
++		try {
++			const host = createHostRoot(workspace, 'host', buildVendoredManifest())
++			const target = workspace.ensure('target')
++			const materializer = new Materializer({ host })
++			try {
++				const result = materializer.mirror(
++					[
++						{
++							name: '@orkestrel/guide',
++							path: 'guides/guide.md',
++							lookup: 'failed',
++							note: 'Connection refused',
++						},
++					],
++					target,
++				)
++				expect(result.written).toStrictEqual(['guides/guide.md'])
++				expect(readFileHex(target, 'guides/guide.md')).toBe(readFileHex(host, 'guides/guide.md'))
++				workspace.write('target/guides/guide.md', '# Concurrent guide\n')
++				expect(
++					captureScaffoldCode(() =>
++						materializer.mirror(
++							[
++								{
++									name: '@orkestrel/guide',
++									path: 'guides/guide.md',
++									lookup: 'failed',
++									note: 'Connection refused',
++								},
++							],
++							target,
++						),
++					),
++				).toBe('TARGET')
++				expect(workspace.read('target/guides/guide.md')).toBe('# Concurrent guide\n')
++			} finally {
++				materializer.destroy()
++			}
++		} finally {
++			workspace.destroy()
++		}
++	})
++
++	it('reports differing foreign mirrors as non-blocking catalog questions and preserves them during repair', () => {
++		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
++		try {
++			const host = createHostRoot(workspace, 'host', buildFleetManifest())
++			const target = workspace.ensure('target')
++			const materializer = new Materializer({ host })
++			try {
++				const plan = buildCompiledPlan()
++				materializer.materialize(plan, target)
++				workspace.write('target/guides/emitter.md', '# Different emitter\n')
++				workspace.write('target/guides/guide.md', '# Different guide\n')
++				workspace.write(
++					`target/guides/${plan.blueprint.name.replace('@orkestrel/', '')}.md`,
++					'# Authored guide\n',
++				)
++				const audit = materializer.audit(plan, target)
++				expect(audit.questions).toContainEqual({
++					field: 'guides/emitter.md',
++					message: 'The mirror differs from the hosted guide. Run catalog to refresh it.',
++					blocking: false,
++				})
++				expect(audit.questions).toContainEqual({
++					field: 'guides/guide.md',
++					message: 'The mirror differs from the hosted guide. Run catalog to refresh it.',
++					blocking: false,
++				})
++				expect(audit.questions.every((question) => !question.blocking)).toBe(true)
++				expect(audit.findings.find((finding) => finding.path === 'guides/guide.md')?.drift).toBe(
++					'aligned',
++				)
++				expect(audit.findings.some((finding) => finding.path === 'guides/emitter.md')).toBe(false)
++				materializer.repair(plan, audit, target)
++				expect(workspace.read('target/guides/emitter.md')).toBe('# Different emitter\n')
++				expect(workspace.read('target/guides/guide.md')).toBe('# Different guide\n')
++			} finally {
++				materializer.destroy()
++			}
++		} finally {
++			workspace.destroy()
++		}
++	})
++
+ 	it('writes a mirror whose bytes moved and skips one that is current or failed', () => {
+ 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+ 		try {
+@@ -1161,7 +1286,7 @@ describe('Materializer mirror', () => {
+ 				)
+ 				expect(created.written).toEqual(['guides/router.md'])
+ 				expect(
+-					readErrorCode(() =>
++					captureScaffoldCode(() =>
+ 						materializer.mirror(
+ 							[
+ 								{
+@@ -1266,7 +1391,7 @@ describe('Materializer catalog', () => {
+ 				expect(result.written).toEqual([])
+ 				expect(result.skipped).toEqual(['.claude/agents/orkestrel.md'])
+ 				workspace.write('project/.claude/agents/orkestrel.md', '# Orkestrel\n\nNo markers.\n')
+-				expect(readErrorCode(() => materializer.catalog(entries, target))).toBe('TARGET')
++				expect(captureScaffoldCode(() => materializer.catalog(entries, target))).toBe('TARGET')
+ 			} finally {
+ 				materializer.destroy()
+ 			}
+@@ -1339,7 +1464,7 @@ describe('Materializer declare', () => {
+ 				expect(result.written).toEqual([])
+ 				expect(result.skipped).toEqual(['package.json'])
+ 				expect(
+-					readErrorCode(() =>
++					captureScaffoldCode(() =>
+ 						materializer.declare(
+ 							{
+ 								pins: {
+@@ -1543,7 +1668,7 @@ describe('Materializer remove', () => {
+ 					questions: [],
+ 				}
+ 				expect(
+-					readErrorCode(() =>
++					captureScaffoldCode(() =>
+ 						materializer.remove(plan, audit, { tracked: ['AGENTS.md'], dirty: [] }, target),
+ 					),
+ 				).toBe('TARGET')
+@@ -1666,7 +1791,7 @@ describe('Materializer remove', () => {
+ 				const plan = buildVendoredPlan()
+ 				const audit = materializer.audit(plan, target)
+ 				expect(
+-					readErrorCode(() =>
++					captureScaffoldCode(() =>
+ 						materializer.remove(
+ 							plan,
+ 							audit,
+@@ -1680,7 +1805,7 @@ describe('Materializer remove', () => {
+ 				).toBe('TARGET')
+ 				writeFileSync(join(target, '.claude/rules/foreign.md'), '# Moved\n', 'utf8')
+ 				expect(
+-					readErrorCode(() =>
++					captureScaffoldCode(() =>
+ 						materializer.remove(
+ 							plan,
+ 							audit,
+diff --git a/tests/src/server/Upstream.test.ts b/tests/src/server/Upstream.test.ts
+index d21731f5..70458a70 100644
+--- a/tests/src/server/Upstream.test.ts
++++ b/tests/src/server/Upstream.test.ts
+@@ -20,7 +20,7 @@ import {
+ 	buildVendoredSnapshot,
+ 	createUpstreamServer,
+ 	FLEET_UPSTREAM_PATHS,
+-	readErrorCode,
++	captureScaffoldCode,
+ 	readRejectionCode,
+ 	UPSTREAM_ENDPOINT_CASES,
+ 	UPSTREAM_PATHS,
+@@ -32,17 +32,21 @@ describe('Upstream construction', () => {
+ 		// The closed-record and ceiling refusals are the option guard's own law and
+ 		// are measured against it in `validators.test.ts`; what is measured here is
+ 		// that the constructor consults that guard at all.
+-		expect(readErrorCode(() => new Upstream({ concurrency: 0 }))).toBe('INVALID')
+-		expect(readErrorCode(() => new Upstream({ repository: { branch: 'main/../etc' } }))).toBe(
++		expect(captureScaffoldCode(() => new Upstream({ concurrency: 0 }))).toBe('INVALID')
++		expect(captureScaffoldCode(() => new Upstream({ repository: { branch: 'main/../etc' } }))).toBe(
+ 			'INVALID',
+ 		)
+-		expect(readErrorCode(() => new Upstream({ retries: 1.5 }))).toBe('INVALID')
++		expect(captureScaffoldCode(() => new Upstream({ retries: 1.5 }))).toBe('INVALID')
+ 	})
+ 
+ 	it('decides the scheme and host law the endpoint guard leaves to it', () => {
+ 		for (const endpoint of UPSTREAM_ENDPOINT_CASES) {
+-			const repository = readErrorCode(() => new Upstream({ repository: { base: endpoint.base } }))
+-			const registry = readErrorCode(() => new Upstream({ registry: { base: endpoint.base } }))
++			const repository = captureScaffoldCode(
++				() => new Upstream({ repository: { base: endpoint.base } }),
++			)
++			const registry = captureScaffoldCode(
++				() => new Upstream({ registry: { base: endpoint.base } }),
++			)
+ 			expect([endpoint.label, repository]).toStrictEqual([
+ 				endpoint.label,
+ 				endpoint.accepted ? undefined : 'INVALID',
+diff --git a/tests/src/server/WriteTransaction.test.ts b/tests/src/server/WriteTransaction.test.ts
+index ac27dcc7..af4a64fd 100644
+--- a/tests/src/server/WriteTransaction.test.ts
++++ b/tests/src/server/WriteTransaction.test.ts
+@@ -14,18 +14,20 @@ import { Worker } from 'node:worker_threads'
+ import { isScaffoldError } from '@src/core'
+ import { computeDigest, listFiles, readExpectation, WriteTransaction } from '@src/server'
+ import { describe, expect, it } from 'vitest'
+-import { readErrorCode, SCRATCH_PREFIX } from '../../setupServer.js'
++import { captureScaffoldCode, SCRATCH_PREFIX } from '../../setupServer.js'
+ import { createScratch, supportsMode } from '@orkestrel/test/server'
+ 
+ describe('WriteTransaction construction', () => {
+ 	it('refuses a target, a path list, and a repeated path that are off contract', () => {
+ 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+ 		try {
+-			expect(readErrorCode(() => new WriteTransaction('', ['AGENTS.md']))).toBe('INVALID')
+-			expect(readErrorCode(() => new WriteTransaction(workspace.path, ['../secrets']))).toBe(
++			expect(captureScaffoldCode(() => new WriteTransaction('', ['AGENTS.md']))).toBe('INVALID')
++			expect(captureScaffoldCode(() => new WriteTransaction(workspace.path, ['../secrets']))).toBe(
++				'INVALID',
++			)
++			expect(captureScaffoldCode(() => new WriteTransaction(workspace.path, ['a', 'a']))).toBe(
+ 				'INVALID',
+ 			)
+-			expect(readErrorCode(() => new WriteTransaction(workspace.path, ['a', 'a']))).toBe('INVALID')
+ 		} finally {
+ 			workspace.destroy()
+ 		}
+@@ -37,7 +39,7 @@ describe('WriteTransaction construction', () => {
+ 			const outside = workspace.ensure('outside')
+ 			workspace.ensure('project')
+ 			workspace.link('project/linked', outside)
+-			const code = readErrorCode(
++			const code = captureScaffoldCode(
+ 				() => new WriteTransaction(join(workspace.path, 'project'), ['linked/names.md']),
+ 			)
+ 			// Containment resolves the link and finds the destination outside the
+@@ -57,8 +59,12 @@ describe('WriteTransaction construction', () => {
+ 			// The redirected destination is still inside the target, so containment
+ 			// passes and only the ancestor law can refuse it. That is the whole reason
+ 			// the ancestor law exists at write time.
+-			expect(readErrorCode(() => new WriteTransaction(target, ['rules/names.md']))).toBe('WRITE')
+-			expect(readErrorCode(() => new WriteTransaction(target, ['real/names.md']))).toBe(undefined)
++			expect(captureScaffoldCode(() => new WriteTransaction(target, ['rules/names.md']))).toBe(
++				'WRITE',
++			)
++			expect(captureScaffoldCode(() => new WriteTransaction(target, ['real/names.md']))).toBe(
++				undefined,
++			)
+ 		} finally {
+ 			workspace.destroy()
+ 		}
+@@ -70,7 +76,9 @@ describe('WriteTransaction construction', () => {
+ 			workspace.write('project/AGENTS.md', '# Agents\n')
+ 			const before = readdirSync(workspace.path).sort()
+ 			expect(
+-				readErrorCode(() => new WriteTransaction(join(workspace.path, 'project'), ['a', 'a'])),
++				captureScaffoldCode(
++					() => new WriteTransaction(join(workspace.path, 'project'), ['a', 'a']),
++				),
+ 			).toBe('INVALID')
+ 			expect(readdirSync(workspace.path).sort()).toEqual(before)
+ 		} finally {
+@@ -85,19 +93,19 @@ describe('WriteTransaction construction', () => {
+ 			workspace.write('project/AGENTS.md', '# Agents\n')
+ 			const destination = join(target, 'AGENTS.md')
+ 			expect(
+-				readErrorCode(
++				captureScaffoldCode(
+ 					() =>
+ 						new WriteTransaction(target, ['AGENTS.md'], [{ path: 'AGENTS.md', shape: 'absent' }]),
+ 				),
+ 			).toBe('INVALID')
+ 			expect(
+-				readErrorCode(
++				captureScaffoldCode(
+ 					() =>
+ 						new WriteTransaction(target, ['AGENTS.md'], [{ path: destination, shape: 'absent' }]),
+ 				),
+ 			).toBe('TARGET')
+ 			expect(
+-				readErrorCode(
++				captureScaffoldCode(
+ 					() =>
+ 						new WriteTransaction(
+ 							target,
+@@ -165,10 +173,14 @@ describe('WriteTransaction staging', () => {
+ 			workspace.ensure('project/rules')
+ 			const transaction = new WriteTransaction(target, ['AGENTS.md', 'rules'])
+ 			try {
+-				expect(readErrorCode(() => transaction.write('LICENSE', 'MIT\n'))).toBe('INVALID')
++				expect(captureScaffoldCode(() => transaction.write('LICENSE', 'MIT\n'))).toBe('INVALID')
+ 				transaction.write('AGENTS.md', '# Agents\n')
+-				expect(readErrorCode(() => transaction.write('AGENTS.md', '# Again\n'))).toBe('INVALID')
+-				expect(readErrorCode(() => transaction.write('rules', 'not a directory'))).toBe('TARGET')
++				expect(captureScaffoldCode(() => transaction.write('AGENTS.md', '# Again\n'))).toBe(
++					'INVALID',
++				)
++				expect(captureScaffoldCode(() => transaction.write('rules', 'not a directory'))).toBe(
++					'TARGET',
++				)
+ 			} finally {
+ 				transaction.discard()
+ 			}
+@@ -185,7 +197,7 @@ describe('WriteTransaction staging', () => {
+ 			const transaction = new WriteTransaction(target, ['scripts/codex.sh', 'missing.md'])
+ 			try {
+ 				expect(
+-					readErrorCode(() =>
++					captureScaffoldCode(() =>
+ 						transaction.copy('missing.md', join(workspace.path, 'host/absent.md'), false),
+ 					),
+ 				).toBe('TARGET')
+@@ -382,7 +394,7 @@ for (;;) {
+ 			const transaction = new WriteTransaction(target, ['rules', 'AGENTS.md'])
+ 			try {
+ 				expect(transaction.establish('rules').created).toEqual([])
+-				expect(readErrorCode(() => transaction.establish('AGENTS.md'))).toBe('TARGET')
++				expect(captureScaffoldCode(() => transaction.establish('AGENTS.md'))).toBe('TARGET')
+ 				expect(transaction.commit()).toEqual([])
+ 			} finally {
+ 				transaction.discard()
+@@ -512,7 +524,7 @@ describe('WriteTransaction commit', () => {
+ 			// before the first promotion cannot see it and the failure lands after
+ 			// `first.md` has already been replaced.
+ 			writeFileSync(join(target, 'deep'), 'a file where a directory must go\n', 'utf8')
+-			expect(readErrorCode(() => transaction.commit())).toBe('WRITE')
++			expect(captureScaffoldCode(() => transaction.commit())).toBe('WRITE')
+ 			expect(readFileSync(join(target, 'first.md'), 'utf8')).toBe('# First\n')
+ 			expect(readFileSync(join(target, 'deep'), 'utf8')).toBe('a file where a directory must go\n')
+ 			expect(readdirSync(workspace.path)).toEqual(['project'])
+@@ -533,7 +545,7 @@ describe('WriteTransaction commit', () => {
+ 			// The second destination moves after both files are staged, which is the
+ 			// window the expectation captured at construction exists to close.
+ 			writeFileSync(join(target, 'second.md'), '# Second moved\n', 'utf8')
+-			expect(readErrorCode(() => transaction.commit())).toBe('WRITE')
++			expect(captureScaffoldCode(() => transaction.commit())).toBe('WRITE')
+ 			expect(readFileSync(join(target, 'first.md'), 'utf8')).toBe('# First\n')
+ 			expect(readFileSync(join(target, 'second.md'), 'utf8')).toBe('# Second moved\n')
+ 			expect(readdirSync(workspace.path)).toEqual(['project'])
+@@ -570,7 +582,7 @@ describe('WriteTransaction commit', () => {
+ 			// A file appears where an absent destination was expected, so the promotion
+ 			// that reaches it refuses and the whole commit unwinds.
+ 			workspace.write('project/AGENTS.md', '# Planted\n')
+-			expect(readErrorCode(() => transaction.commit())).toBe('WRITE')
++			expect(captureScaffoldCode(() => transaction.commit())).toBe('WRITE')
+ 			expect(listFiles(target)).toEqual(['AGENTS.md'])
+ 			expect(readFileSync(join(target, 'AGENTS.md'), 'utf8')).toBe('# Planted\n')
+ 		} finally {
+@@ -585,7 +597,7 @@ describe('WriteTransaction commit', () => {
+ 			workspace.write('project/foreign.md', '# Foreign\n')
+ 			const transaction = new WriteTransaction(target, ['foreign.md', 'absent.md'])
+ 			try {
+-				expect(readErrorCode(() => transaction.remove('absent.md'))).toBe('TARGET')
++				expect(captureScaffoldCode(() => transaction.remove('absent.md'))).toBe('TARGET')
+ 				transaction.remove('foreign.md')
+ 				expect(readFileSync(join(target, 'foreign.md'), 'utf8')).toBe('# Foreign\n')
+ 				expect(transaction.commit()).toEqual(['foreign.md'])
+@@ -609,7 +621,7 @@ describe('WriteTransaction commit', () => {
+ 			transaction.remove('first.md')
+ 			transaction.remove('second.md')
+ 			writeFileSync(join(target, 'second.md'), '# Second moved\n', 'utf8')
+-			expect(readErrorCode(() => transaction.commit())).toBe('WRITE')
++			expect(captureScaffoldCode(() => transaction.commit())).toBe('WRITE')
+ 			expect(readFileSync(join(target, 'first.md'), 'utf8')).toBe('# First\n')
+ 			expect(readFileSync(join(target, 'second.md'), 'utf8')).toBe('# Second moved\n')
+ 		} finally {
+@@ -625,8 +637,8 @@ describe('WriteTransaction commit', () => {
+ 			transaction.write('AGENTS.md', '# Agents\n')
+ 			transaction.commit()
+ 			expect(transaction.open).toBe(false)
+-			expect(readErrorCode(() => transaction.commit())).toBe('WRITE')
+-			expect(readErrorCode(() => transaction.write('AGENTS.md', '# Again\n'))).toBe('WRITE')
++			expect(captureScaffoldCode(() => transaction.commit())).toBe('WRITE')
++			expect(captureScaffoldCode(() => transaction.write('AGENTS.md', '# Again\n'))).toBe('WRITE')
+ 			transaction.discard()
+ 			transaction.discard()
+ 			expect(readFileSync(join(target, 'AGENTS.md'), 'utf8')).toBe('# Agents\n')
+@@ -681,7 +693,7 @@ describe('WriteTransaction discard', () => {
+ 			// rollback from removing it, which is exactly the residue `discard` owes
+ 			// the caller instead of a silent success.
+ 			writeFileSync(join(target, '.claude/skills/planted.md'), '# Planted\n', 'utf8')
+-			expect(readErrorCode(() => transaction.discard())).toBe('WRITE')
++			expect(captureScaffoldCode(() => transaction.discard())).toBe('WRITE')
+ 			rmSync(join(target, '.claude'), { recursive: true, force: true })
+ 		} finally {
+ 			workspace.destroy()

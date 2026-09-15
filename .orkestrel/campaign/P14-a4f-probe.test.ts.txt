@@ -1,0 +1,73 @@
+// Orchestrator probe P14 — the A4f analyst's V1 vectors (coalescing across a same-manager
+// publication) in the real src:browser project. Copied into tests/src/browser/ for the run and
+// removed after the reading is retained.
+import { describe, expect, it } from 'vitest'
+import { createTool, createToolManager } from '@orkestrel/tool'
+import { waitForDelay } from '@orkestrel/test'
+import { createBridge, createDescribedTools } from '../../setupBrowser.js'
+
+function fresh(): ReturnType<typeof createTool> {
+	return createTool({ name: 'fresh', description: 'Fresh', execute: () => 1 })
+}
+
+describe('P14 vectors', () => {
+	it('V1a: an addition coalesced into a sync ordered before a same-manager publication survives', async () => {
+		const { fixture, bridge } = createBridge()
+		const tools = createDescribedTools(5)
+		await bridge.publish(tools)
+		tools.clear()
+		const publishing = bridge.publish(tools)
+		tools.add(fresh())
+		await publishing
+		await waitForDelay(200)
+		const names = fixture.registrations().map((entry) => entry.tool.name)
+		console.log('P14 V1a:', JSON.stringify(names))
+		expect(names).toEqual(['fresh'])
+	})
+
+	it('V1b: the same, behind a suspended registration', async () => {
+		const { fixture, bridge } = createBridge()
+		const tools = createDescribedTools(5)
+		const resume = fixture.suspend()
+		const first = bridge.publish(tools)
+		await waitForDelay(50)
+		tools.clear()
+		const second = bridge.publish(tools)
+		tools.add(fresh())
+		resume()
+		await Promise.all([first, second])
+		await waitForDelay(200)
+		const names = fixture.registrations().map((entry) => entry.tool.name)
+		console.log('P14 V1b:', JSON.stringify(names))
+		expect(names).toEqual(['fresh'])
+	})
+
+	it('V1c: add, then publish, then clear leaves nothing registered', async () => {
+		const { fixture, bridge } = createBridge()
+		const tools = createDescribedTools(5)
+		await bridge.publish(tools)
+		tools.add(fresh())
+		const publishing = bridge.publish(tools)
+		tools.clear()
+		await publishing
+		await waitForDelay(200)
+		const names = fixture.registrations().map((entry) => entry.tool.name)
+		console.log('P14 V1c:', JSON.stringify(names))
+		expect(names).toEqual([])
+	})
+
+	it('V1d: a publish of another manager between a coalesced event and its sync', async () => {
+		const { fixture, bridge } = createBridge()
+		const first = createDescribedTools(5)
+		const second = createToolManager()
+		second.add(createTool({ name: 'lookup', description: 'Looks up', execute: () => 'second' }))
+		await bridge.publish(first)
+		first.add(fresh())
+		const publishing = bridge.publish(second)
+		await publishing
+		await waitForDelay(200)
+		const names = fixture.registrations().map((entry) => entry.tool.name)
+		console.log('P14 V1d:', JSON.stringify(names))
+		expect(names).toEqual(['lookup'])
+	})
+})

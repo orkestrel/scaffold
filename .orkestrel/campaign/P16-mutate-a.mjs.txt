@@ -1,0 +1,13 @@
+// P16 control A: move #sync's prune before its reconcile loop (the pre-U4j order).
+import { readFileSync, writeFileSync } from 'node:fs'
+const path = process.argv[2]
+const text = readFileSync(path, 'utf8')
+const prune = '\t\tthis.#prune(projections, tools)\n'
+const at = text.indexOf(prune)
+if (at < 0 || text.indexOf(prune, at + 1) >= 0) throw new Error('prune line not unique')
+const loop = '\t\tfor (const projection of projections) await this.#reconcile(tools, projection, options)\n'
+const loopAt = text.lastIndexOf(loop, at)
+if (loopAt < 0) throw new Error('reconcile loop not found before the prune')
+const mutated = text.slice(0, loopAt) + '\t\tthis.#prune(projections, tools) // P16-A\n' + text.slice(loopAt, at) + text.slice(at + prune.length)
+writeFileSync(path, mutated)
+console.log('P16-A applied')

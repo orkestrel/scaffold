@@ -1,0 +1,60 @@
+npm notice run @orkestrel/mcp@0.0.30 npx
+npm notice run vitest run --config vite.config.ts --project src:browser tests/src/browser/ModelContext.test.ts -t releases a registered name the manager replaced with a tool WebMCP cannot carry
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/mcp
+
+ ❯ |src:browser (chromium)| tests/src/browser/ModelContext.test.ts (56 tests | 1 failed | 55 skipped) 67ms
+     × releases a registered name the manager replaced with a tool WebMCP cannot carry 66ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/ModelContext.test.ts:673:2 > the registry this handle follows after publishing it > releases a registered name the manager replaced with a tool WebMCP cannot carry
+AssertionError: expected [ { …(2) } ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   {
++     "options": {
++       "signal": AbortSignal {},
++     },
++     "tool": {
++       "annotations": {
++         "consequentialHint": false,
++         "readOnlyHint": true,
++         "untrustedContentHint": true,
++       },
++       "description": "Adds every operand and returns their sum",
++       "execute": [Function bound #run],
++       "inputSchema": {
++         "properties": {
++           "left": {
++             "type": "number",
++           },
++         },
++         "type": "object",
++       },
++       "name": "add",
++       "title": "Add",
++     },
++   },
++ ]
+
+ ❯ tests/src/browser/ModelContext.test.ts:685:34
+    683|   await waitForDelay(50)
+    684|
+    685|   expect(fixture.registrations()).toEqual([])
+       |                                  ^
+    686|   expect((await bridge.adopt()).map((tool) => tool.name)).toEqual([])
+    687|   // The diagnostic a consumer reads the skip through reports the same…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 55 skipped (56)
+   Start at  09:04:01
+   Duration  2.08s (transform 0ms, setup 366ms, import 21ms, tests 67ms, environment 0ms)
+

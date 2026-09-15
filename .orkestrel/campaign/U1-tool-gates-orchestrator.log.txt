@@ -1,0 +1,48 @@
+# tool gates after U1b — 2026-09-15T05:00:42Z
+== npm run format:check
+npm notice run @orkestrel/tool@0.0.14 format:check
+npm notice run oxfmt --config .oxfmtrc.json --check .
+Checking formatting...
+
+All matched files use the correct format.
+Finished in 1052ms on 42 files using 16 threads.
+exit=0
+== npm run lint:check
+npm notice run @orkestrel/tool@0.0.14 lint:check
+npm notice run oxlint --config .oxlintrc.json --deny-warnings .
+exit=0
+== npm run check
+npm notice run @orkestrel/tool@0.0.14 check
+npm notice run tsc --noEmit --project tsconfig.json && npm run check:src
+npm notice run @orkestrel/tool@0.0.14 check:src
+npm notice run npm run check:src:core
+npm notice run @orkestrel/tool@0.0.14 check:src:core
+npm notice run tsc --noEmit -p configs/src/tsconfig.core.json
+exit=0
+== npm run test
+
+npm notice run @orkestrel/tool@0.0.14 test:setup
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project setup
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/tool
+
+··
+
+ Test Files  1 passed (1)
+      Tests  2 passed (2)
+   Start at  01:00:54
+   Duration  190ms (transform 22ms, setup 21ms, import 16ms, tests 3ms, environment 0ms)
+
+npm notice run @orkestrel/tool@0.0.14 test:guides
+npm notice run node --experimental-strip-types tests/guides.test.ts
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.11 [39m[90mC:/Users/mikes/WebstormProjects/tool[39m
+
+[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m28 passed[39m[22m[90m (28)[39m
+[2m   Start at [22m 01:00:55
+[2m   Duration [22m 554ms[2m (transform 72ms, setup 20ms, import 368ms, tests 12ms, environment 0ms)[22m
+
+exit=0

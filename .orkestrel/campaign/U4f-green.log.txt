@@ -1,0 +1,82 @@
+# U4f — green after the fix (retained verbatim from the unit's report; the unit deleted its tmp/probe/ copy)
+
+## Carrier 1 — core, the refusal at the shared request entry
+
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — disconnect > rejects a request on a client that is not connected 12ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — disconnect > rejects a request on a client that has never connected 1ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — disconnect > rejects a task request on a client that is not connected 3ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — disconnect > rejects a subscription opened on a client that is not connected 3ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — disconnect > answers the discovery probe on a client that has never connected 4ms
+ Test Files  1 passed (1)
+      Tests  5 passed | 146 skipped (151)
+
+## Carrier 1 — browser, the page-stop scenarios
+
+ ✓ |src:browser (chromium)| tests/src/browser/factories.test.ts:1186:2 > createPageServer — the MCP pair hosted in the page that calls it > settles calls across page destruction 22ms
+ ✓ |src:browser (chromium)| tests/src/browser/factories.test.ts:1209:2 > createPageServer — the MCP pair hosted in the page that calls it > rejects task requests after page stop 2ms
+ ✓ |src:browser (chromium)| tests/src/browser/factories.test.ts:1233:2 > createPageServer — the MCP pair hosted in the page that calls it > rejects a subscription started after page stop 2ms
+ Test Files  1 passed (1)
+      Tests  3 passed | 58 skipped (61)
+
+## Carriers 2, 3 and 6 — tests/src/browser/ModelContext.test.ts
+
+ ✓ :36 publish > registers each advertised tool with its title, schema, and projected annotations
+ ✓ :59 publish > forwards the origins option as WebMCP exposedTo
+ ✓ :67 publish > omits exposedTo when no origins were asked for
+ ✓ :77 publish > refuses the whole call, registering nothing, when a tool advertises no description
+ ✓ :86 publish > reports the refusal as a coded MCP error rather than a bare throw
+ ✓ :96 publish > adds the names a second call brought and aborts the ones the registry lost
+ ✓ :108 publish > leaves a name it already registered alone on a second call
+ ✓ :125 publish > re-registers a name whose definition changed
+ ✓ :160 publish > rebinds a name published from a second manager
+ ✓ :180 publish > registers the snapshot the call captured, then follows the clear that emptied the manager 12ms
+ ✓ :203 publish > registers each queued publication against its own snapshot
+ ✓ :224 publish > registers nothing after the handle is destroyed
+ ✓ :235 the registry this handle follows after publishing it > registers a tool the registry adds after publish
+ ✓ :250 the registry this handle follows after publishing it > aborts the registration of a tool the registry removes
+ ✓ :266 the registry this handle follows after publishing it > aborts every registration when the registry clears
+ ✓ :282 the registry this handle follows after publishing it > follows the later manager after a second publish
+ ✓ :307 the registry this handle follows after publishing it > stops following the registry after destroy
+ ✓ :322 the registry this handle follows after publishing it > leaves a followed tool WebMCP cannot carry unregistered
+ ✓ :338 a published tool, run by the registry as a foreign agent would run it > runs the local handler and answers with the value it returned, unchanged
+ ✓ :352 a published tool > preserves the failure text in the rejection
+ ✓ :378 a published tool > carries the registry execution signal into the local handler context signal
+ ✓ :402 adopt > reads each registered tool as a tool advertising the inverse projection
+ ✓ :446 adopt > forwards the caller arguments to the foreign handler unchanged
+ ✓ :461 adopt > executes an adopted tool through the registry and answers unchanged
+ ✓ :474 adopt > carries the local context signal onto the foreign handler through executeTool
+ ✓ :490 adopt > forwards the origins option as WebMCP fromOrigins
+ ✓ :500 change > emits exactly one change when the page registers a tool this handle never published
+ ✓ :520 change > emits nothing more after the handle is destroyed
+ ✓ :542 the IDL surface the double publishes > dispatches the IDL ontoolchange handler
+ ✓ :576 destroy > unregisters this handle tools and leaves another handle registrations standing
+ ✓ :593 destroy > leaves a page registration this handle never made standing
+ ✓ :607 destroy > is inert on a repeat 12ms
+ ✓ :633 destroy > registers nothing when destroy runs during replacement unregistration
+ ✓ :652 destroy > leaves no registration alive when destroy runs mid-publish from a toolchange listener
+ ✓ :668 destroy > replaces an earlier handle registration when a second handle publishes the same name
+ ✓ :695 the document the bridge was built on > is narrowed by the same guard the factory runs
+ Test Files  1 passed (1)
+      Tests  36 passed | 2 skipped (38)
+
+## Carrier 2 — the followed-change projection leaf
+
+ ✓ |src:browser (chromium)| tests/src/browser/helpers.test.ts:163:2 > describeWebMCPTool — one name, read the way the registry advertises it > advertises the authored summary in place of the full description 1ms
+ ✓ |src:browser (chromium)| tests/src/browser/helpers.test.ts:180:2 > describeWebMCPTool — one name, read the way the registry advertises it > reports nothing for a name the registry does not advertise 0ms
+ ✓ |src:browser (chromium)| tests/src/browser/helpers.test.ts:187:2 > describeWebMCPTool — one name, read the way the registry advertises it > reports nothing for a tool that advertises no description 0ms
+ Test Files  1 passed (1)
+      Tests  3 passed | 14 skipped (17)
+
+## Whole projects
+
+src:core
+ Test Files  17 passed (17)
+      Tests  937 passed (937)
+
+src:browser
+ Test Files  6 passed (6)
+      Tests  140 passed | 2 skipped (142)
+
+src:server
+ Test Files  12 passed (12)
+      Tests  374 passed (374)

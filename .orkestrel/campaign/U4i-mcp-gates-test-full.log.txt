@@ -1,0 +1,94 @@
+npm notice run @orkestrel/mcp@0.0.30 test
+npm notice run npm run test:src && npm run test:policy && npm run test:config && npm run test:setup && npm run test:guides && npm run test:conformance && npm run test:integration
+npm notice run @orkestrel/mcp@0.0.30 test:src
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core --project src:browser --project src:server
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/mcp
+
+················································································································································································································································································································································································································································································································································································································································································································································································································································································································································································································································································································································································································································································································································································································································································--···············································
+
+ Test Files  35 passed (35)
+      Tests  1471 passed | 2 skipped (1473)
+   Start at  08:23:15
+   Duration  38.53s (transform 12.14s, setup 15.47s, import 9.24s, tests 61.05s, environment 4ms)
+
+npm notice run @orkestrel/mcp@0.0.30 test:policy
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project policy
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/mcp
+
+·················································································-·········
+
+ Test Files  1 passed (1)
+      Tests  90 passed | 1 skipped (91)
+   Start at  08:23:55
+   Duration  1.28s (transform 283ms, setup 476ms, import 86ms, tests 568ms, environment 0ms)
+
+npm notice run @orkestrel/mcp@0.0.30 test:config
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project config
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/mcp
+
+··········································································································································································stdout | tests/config.test.ts > configuration helpers > rolls one face into a single declaration and rewrites its core specifier
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+
+·-stdout | tests/config.test.ts > configuration helpers > rolls one face into a single declaration and rewrites its core specifier
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+
+·
+
+ Test Files  1 passed (1)
+      Tests  172 passed | 1 skipped (173)
+   Start at  08:23:57
+   Duration  3.66s (transform 366ms, setup 442ms, import 732ms, tests 2.34s, environment 0ms)
+
+npm notice run @orkestrel/mcp@0.0.30 test:setup
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project setup
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/mcp
+
+······················································································
+
+ Test Files  5 passed (5)
+      Tests  86 passed (86)
+   Start at  08:24:02
+   Duration  3.69s (transform 1.62s, setup 2.22s, import 1.84s, tests 3.42s, environment 0ms)
+
+npm notice run @orkestrel/mcp@0.0.30 test:guides
+npm notice run node --experimental-strip-types tests/guides.test.ts
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/mcp
+
+·········································································································································································································
+
+ Test Files  1 passed (1)
+      Tests  201 passed (201)
+   Start at  08:24:06
+   Duration  3.03s (transform 334ms, setup 460ms, import 1.26s, tests 1.17s, environment 0ms)
+
+npm notice run @orkestrel/mcp@0.0.30 test:conformance
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project conformance
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/mcp
+
+···············································
+
+ Test Files  1 passed (1)
+      Tests  47 passed (47)
+   Start at  08:24:10
+   Duration  9.94s (transform 324ms, setup 445ms, import 329ms, tests 9.02s, environment 0ms)
+
+npm notice run @orkestrel/mcp@0.0.30 test:integration
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project integration
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/mcp
+
+····
+
+ Test Files  1 passed (1)
+      Tests  4 passed (4)
+   Start at  08:24:21
+   Duration  1.66s (transform 336ms, setup 408ms, import 449ms, tests 242ms, environment 0ms)
+

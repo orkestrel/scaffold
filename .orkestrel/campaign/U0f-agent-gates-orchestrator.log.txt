@@ -1,0 +1,92 @@
+# agent gates (after-u0f-agent) — 2026-09-15T09:37:23Z — format:check, lint:check, check, build, test
+== npm run format:check
+npm notice run @orkestrel/agent@0.0.22 format:check
+npm notice run oxfmt --config .oxfmtrc.json --check .
+Checking formatting...
+
+All matched files use the correct format.
+Finished in 1578ms on 87 files using 16 threads.
+exit=0
+== npm run lint:check
+npm notice run @orkestrel/agent@0.0.22 lint:check
+npm notice run oxlint --config .oxlintrc.json --deny-warnings .
+exit=0
+== npm run check
+npm notice run @orkestrel/agent@0.0.22 check
+npm notice run tsc --noEmit --project tsconfig.json && npm run check:src
+npm notice run @orkestrel/agent@0.0.22 check:src
+npm notice run npm run check:src:core
+npm notice run @orkestrel/agent@0.0.22 check:src:core
+npm notice run tsc --noEmit -p configs/src/tsconfig.core.json
+exit=0
+== npm run build
+npm notice run @orkestrel/agent@0.0.22 build
+npm notice run npm run clean && npm run build:src
+npm notice run @orkestrel/agent@0.0.22 clean
+npm notice run node -e "require('node:fs').rmSync('dist',{recursive:true,force:true})"
+npm notice run @orkestrel/agent@0.0.22 build:src
+npm notice run npm run build:src:core
+npm notice run @orkestrel/agent@0.0.22 build:src:core
+npm notice run vite build --config configs/src/vite.core.config.ts && npm run copy dist/src/core/index.d.ts dist/src/core/index.d.cts
+vite v8.3.0 building client environment for production...
+transforming...
+✓ 27 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/core/index.js  172.35 kB │ gzip: 48.83 kB │ map: 300.47 kB
+
+transforming...
+✓ 27 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/core/index.cjs  177.65 kB │ gzip: 49.36 kB │ map: 302.20 kB
+
+✓ built in 379ms
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+npm notice run @orkestrel/agent@0.0.22 copy
+npm notice run node -e "const fs=require('node:fs'),p=require('node:path'),a=process.argv[1],b=process.argv[2];fs.mkdirSync(p.dirname(b),{recursive:true});fs.cpSync(a,b,{force:true});console.log('Copied: '+a+' to '+b)" dist/src/core/index.d.ts dist/src/core/index.d.cts
+Copied: dist/src/core/index.d.ts to dist/src/core/index.d.cts
+exit=0
+== npm run test
+
+··········································································································································································stdout | tests/config.test.ts > configuration helpers > rolls one face into a single declaration and rewrites its core specifier
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+
+·-stdout | tests/config.test.ts > configuration helpers > rolls one face into a single declaration and rewrites its core specifier
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+
+·
+
+ Test Files  1 passed (1)
+      Tests  172 passed | 1 skipped (173)
+   Start at  05:37:40
+   Duration  3.24s (transform 339ms, setup 461ms, import 415ms, tests 2.22s, environment 0ms)
+
+npm notice run @orkestrel/agent@0.0.22 test:setup
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project setup
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/agent
+
+······················································
+
+ Test Files  1 passed (1)
+      Tests  54 passed (54)
+   Start at  05:37:44
+   Duration  791ms (transform 213ms, setup 466ms, import 37ms, tests 134ms, environment 0ms)
+
+npm notice run @orkestrel/agent@0.0.22 test:guides
+npm notice run node --experimental-strip-types tests/guides.test.ts
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/agent
+
+·············································
+
+ Test Files  1 passed (1)
+      Tests  45 passed (45)
+   Start at  05:37:46
+   Duration  1.26s (transform 212ms, setup 463ms, import 514ms, tests 142ms, environment 0ms)
+
+exit=0

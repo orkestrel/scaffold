@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+# Orchestrator tracked command: the reviewer's three mutation probes against the U1c tree (each applied alone,
+# tests run, restored), then the authoritative non-mutating gates. Sequential so nothing races on Tool.ts.
+set -u
+SCAF=/c/Users/mikes/WebstormProjects/scaffold
+TOOL=/c/Users/mikes/WebstormProjects/tool
+F="$TOOL/src/core/tools/Tool.ts"
+B="$SCAF/tmp/units/Tool.ts.backup"
+LOG="$SCAF/tmp/units/tool-mutations.log.txt"
+cd "$TOOL" || exit 9
+echo "# tool mutation probes after U1c — $(date -u +%FT%TZ)" > "$LOG"
+run_mutation() {
+	local label="$1" from="$2" to="$3"
+	echo "== $label" >> "$LOG"
+	node "$SCAF/tmp/units/mutate.mjs" apply "$F" "$B" "$from" "$to" >> "$LOG" 2>&1 || { echo "apply failed" >> "$LOG"; return; }
+	npm run test:src:core 2>&1 | grep -E "Tests +[0-9]+|FAIL|✗|×|failed" | head -12 >> "$LOG"
+	echo "exit=${PIPESTATUS[0]}" >> "$LOG"
+	node "$SCAF/tmp/units/mutate.mjs" restore "$F" "$B" >> "$LOG" 2>&1
+	git diff --quiet -- src/core/tools/Tool.ts "$(git stash list >/dev/null 2>&1; echo)" 2>/dev/null
+	echo "restored-digest=$(sha1sum "$F" | cut -c1-12)" >> "$LOG"
+}
+echo "original-digest=$(sha1sum "$F" | cut -c1-12)" >> "$LOG"
+run_mutation "M1 remove explain" 'const faults = this.#contract?.explain(args) ?? []' 'const faults: readonly Fault[] = []'
+run_mutation "M2 remove parsed forwarding" 'return this.#execute(parsed, context)' 'return this.#execute(args, context)'
+run_mutation "M3 parameters unassigned" 'if (parameters !== undefined) this.parameters = parameters' 'if (parameters === null) this.parameters = parameters'
+echo "final-digest=$(sha1sum "$F" | cut -c1-12)" >> "$LOG"
+cat "$LOG"
+echo "--- gates"
+bash "$SCAF/tmp/units/tool-gates-after-u1c.sh"

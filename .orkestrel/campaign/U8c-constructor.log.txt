@@ -1,0 +1,13 @@
+﻿npm.cmd : npm notice run @orkestrel/tool@0.0.14 check
+At line:2 char:11
++ $output = & npm.cmd run check 2>&1; $code = $LASTEXITCODE; $output |  ...
++           ~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (npm notice run ...ol@0.0.14 check:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+npm notice run tsc --noEmit --project tsconfig.json && npm run check:src
+npm notice run @orkestrel/tool@0.0.14 check:src
+npm notice run npm run check:src:core
+npm notice run @orkestrel/tool@0.0.14 check:src:core
+npm notice run tsc --noEmit -p configs/src/tsconfig.core.json
+exit=0

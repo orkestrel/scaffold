@@ -1,0 +1,184 @@
+=== npm.cmd run format:check ===
+npm.cmd : npm notice run @orkestrel/tool@0.0.14 format:check
+At line:2 char:87
++ ...  format:check ==='; $output = & npm.cmd run format:check 2>&1; $code  ...
++                                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (npm notice run ...14 format:check:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+npm notice run oxfmt --config .oxfmtrc.json --check .
+Checking formatting...
+
+All matched files use the correct format.
+Finished in 1046ms on 43 files using 16 threads.
+exit=0
+=== npm.cmd run lint:check ===
+npm.cmd : npm notice run @orkestrel/tool@0.0.14 lint:check
+At line:2 char:85
++ ...  run lint:check ==='; $output = & npm.cmd run lint:check 2>&1; $code  ...
++                                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (npm notice run ...0.14 lint:check:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+npm notice run oxlint --config .oxlintrc.json --deny-warnings .
+exit=0
+=== npm.cmd run check ===
+npm.cmd : npm notice run @orkestrel/tool@0.0.14 check
+At line:2 char:80
++ ... == npm.cmd run check ==='; $output = & npm.cmd run check 2>&1; $code  ...
++                                          ~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (npm notice run ...ol@0.0.14 check:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+npm notice run tsc --noEmit --project tsconfig.json && npm run check:src
+npm notice run @orkestrel/tool@0.0.14 check:src
+npm notice run npm run check:src:core
+npm notice run @orkestrel/tool@0.0.14 check:src:core
+npm notice run tsc --noEmit -p configs/src/tsconfig.core.json
+exit=0
+=== npm.cmd run build ===
+npm.cmd : npm notice run @orkestrel/tool@0.0.14 build
+At line:2 char:80
++ ... == npm.cmd run build ==='; $output = & npm.cmd run build 2>&1; $code  ...
++                                          ~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (npm notice run ...ol@0.0.14 build:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+npm notice run npm run clean && npm run build:src
+npm notice run @orkestrel/tool@0.0.14 clean
+npm notice run node -e "require('node:fs').rmSync('dist',{recursive:true,force:true})"
+npm notice run @orkestrel/tool@0.0.14 build:src
+npm notice run npm run build:src:core
+npm notice run @orkestrel/tool@0.0.14 build:src:core
+npm notice run vite build --config configs/src/vite.core.config.ts && npm run copy dist/src/core/index.d.ts 
+dist/src/core/index.d.cts
+vite v8.3.0 building client environment for production...
+transforming...
+✓ 9 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/core/index.js  11.61 kB │ gzip: 3.71 kB │ map: 19.16 kB
+
+transforming...
+✓ 9 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/core/index.cjs  12.16 kB │ gzip: 3.81 kB │ map: 19.39 kB
+
+✓ built in 103ms
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+npm notice run @orkestrel/tool@0.0.14 copy
+npm notice run node -e "const fs=require('node:fs'),p=require('node:path'),a=process.argv[1],b=process.argv[2];fs.mkdir
+Sync(p.dirname(b),{recursive:true});fs.cpSync(a,b,{force:true});console.log('Copied: '+a+' to '+b)" 
+dist/src/core/index.d.ts dist/src/core/index.d.cts
+Copied: dist/src/core/index.d.ts to dist/src/core/index.d.cts
+exit=0
+=== npm.cmd run test:src:core ===
+npm.cmd : npm notice run @orkestrel/tool@0.0.14 test:src:core
+At line:2 char:88
++ ... est:src:core ==='; $output = & npm.cmd run test:src:core 2>&1; $code  ...
++                                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (npm notice run ...4 test:src:core:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/tool
+
+·························································································
+
+ Test Files  6 passed (6)
+      Tests  89 passed (89)
+   Start at  05:19:21
+   Duration  464ms (transform 330ms, setup 151ms, import 691ms, tests 189ms, environment 1ms)
+
+exit=0
+=== npm.cmd run test:guides ===
+npm.cmd : npm notice run @orkestrel/tool@0.0.14 test:guides
+At line:2 char:86
++ ... un test:guides ==='; $output = & npm.cmd run test:guides 2>&1; $code  ...
++                                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (npm notice run ....14 test:guides:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+npm notice run node --experimental-strip-types tests/guides.test.ts
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/tool
+
+·······························
+
+ Test Files  1 passed (1)
+      Tests  31 passed (31)
+   Start at  05:19:23
+   Duration  548ms (transform 73ms, setup 20ms, import 369ms, tests 13ms, environment 0ms)
+
+exit=0
+=== npm.cmd run test:setup ===
+npm.cmd : npm notice run @orkestrel/tool@0.0.14 test:setup
+At line:2 char:85
++ ...  run test:setup ==='; $output = & npm.cmd run test:setup 2>&1; $code  ...
++                                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (npm notice run ...0.14 test:setup:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project setup
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/tool
+
+··
+
+ Test Files  1 passed (1)
+      Tests  2 passed (2)
+   Start at  05:19:25
+   Duration  186ms (transform 21ms, setup 20ms, import 15ms, tests 3ms, environment 0ms)
+
+exit=0
+=== npm.cmd run test:policy ===
+npm.cmd : npm notice run @orkestrel/tool@0.0.14 test:policy
+At line:2 char:86
++ ... un test:policy ==='; $output = & npm.cmd run test:policy 2>&1; $code  ...
++                                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (npm notice run ....14 test:policy:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project policy
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/tool
+
+·················································································-·········
+
+ Test Files  1 passed (1)
+      Tests  90 passed | 1 skipped (91)
+   Start at  05:19:26
+   Duration  798ms (transform 83ms, setup 20ms, import 112ms, tests 521ms, environment 0ms)
+
+exit=0
+=== npm.cmd run test:config ===
+npm.cmd : npm notice run @orkestrel/tool@0.0.14 test:config
+At line:2 char:86
++ ... un test:config ==='; $output = & npm.cmd run test:config 2>&1; $code  ...
++                                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (npm notice run ....14 test:config:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project config
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/tool
+
+··········································································································································································stdout | tests/config.test.ts > configuration helpers > rolls one face into a single declaration and rewrites its core specifier
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+
+·-stdout | tests/config.test.ts > configuration helpers > rolls one face into a single declaration and rewrites its core specifier
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+
+·
+
+ Test Files  1 passed (1)
+      Tests  172 passed | 1 skipped (173)
+   Start at  05:19:28
+   Duration  2.95s (transform 195ms, setup 21ms, import 434ms, tests 2.35s, environment 0ms)
+
+exit=0

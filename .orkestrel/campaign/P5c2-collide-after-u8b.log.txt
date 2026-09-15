@@ -1,0 +1,7 @@
+probe: export-name collisions in tool
+date: 2026-09-15T09:15:00Z
+installed: test "version": "0.0.14", contract "version": "0.0.17"; export names read: 355 (declaration files: test core, test browser, test server, contract core)
+pattern: ^export (async )?(function|const|class) NAME\b for each installed NAME
+paths: /c/Users/mikes/WebstormProjects/tool/src/** and /c/Users/mikes/WebstormProjects/tool/tests/** (node_modules excluded)
+files swept: 21
+collisions: none

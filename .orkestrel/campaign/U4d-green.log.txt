@@ -1,0 +1,1096 @@
+# U4d — the green readings, after the fixes (2026-09-15)
+
+Commands: `npx vitest run --config vite.config.ts --no-cache --reporter=verbose --project src:core` and the same with `--project src:browser`.
+
+=== U4d GREEN — core project ===
+
+npm notice run @orkestrel/mcp@0.0.30 npx
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=verbose --project src:core
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/mcp
+
+ ✓ |src:core| tests/src/core/MCPMethodManager.test.ts > MCPMethodManager > resolves a registered method to the exact handler that was registered 1ms
+ ✓ |src:core| tests/src/core/MCPMethodManager.test.ts > MCPMethodManager > resolves an unregistered method to undefined (the -32601 signal, not a sentinel) 0ms
+ ✓ |src:core| tests/src/core/MCPMethodManager.test.ts > MCPMethodManager > replaces the handler when a name is registered twice 0ms
+ ✓ |src:core| tests/src/core/MCPMethodManager.test.ts > MCPMethodManager > keeps registrations independent per name 0ms
+ ✓ |src:core| tests/src/core/MCPMethodManager.test.ts > MCPMethodManager > registers an empty method name as an ordinary name 0ms
+ ✓ |src:core| tests/src/core/MCPMethodManager.test.ts > MCPMethodManager > runs a resolved handler and returns its response 1ms
+ ✓ |src:core| tests/src/core/MCPMethodManager.test.ts > MCPMethodManager > keeps the registered-method contract on the response or raw-stream arms 0ms
+ ✓ |src:core| tests/src/core/MCPMethodManager.test.ts > MCPMethodManager > narrows the registered-method parameter to the request arm 0ms
+ ✓ |src:core| tests/src/core/integration.test.ts > MCP revision boundary > advertises only the modern revision from a bare server 9ms
+ ✓ |src:core| tests/src/core/integration.test.ts > MCP revision boundary > rejects every non-modern stamped revision with modern-scoped retry data 6ms
+ ✓ |src:core| tests/src/core/integration.test.ts > MCP revision boundary > serves legacy initialize and ping only through createMCPLegacy 4ms
+ ✓ |src:core| tests/src/core/integration.test.ts > MCP revision boundary > keeps client requests modern after negotiating with a bare server 13ms
+ ✓ |src:core| tests/src/core/factories.test.ts > createMCPServer > returns a server exposing the configured identity 3ms
+ ✓ |src:core| tests/src/core/factories.test.ts > createMCPServer > dispatches over the supplied tool registry 9ms
+ ✓ |src:core| tests/src/core/factories.test.ts > createMCPServer > wires the on hooks (the reserved `on` key) to the emitter 1ms
+ ✓ |src:core| tests/src/core/factories.test.ts > createDuplexClientTransport > reports no session (the duplex port carries none) 0ms
+ ✓ |src:core| tests/src/core/factories.test.ts > createDuplexClientTransport > start is a no-op (the duplex channel is already open) 1ms
+ ✓ |src:core| tests/src/core/factories.test.ts > createDuplexClientTransport > send serializes ONE message and writes it via the duplex transport 0ms
+ ✓ |src:core| tests/src/core/factories.test.ts > createDuplexClientTransport > close closes the underlying duplex transport 0ms
+ ✓ |src:core| tests/src/core/MCPTaskClient.test.ts > MCPTaskClient — the shape > exposes exactly task / update / abort, and no plural accessor 9ms
+ ✓ |src:core| tests/src/core/MCPProgressReporter.test.ts > MCPProgressReporter > hands one report to take, settles backpressure, and stops idempotently 8ms
+ ✓ |src:core| tests/src/core/MCPProgressReporter.test.ts > MCPProgressReporter > settles pending take and report work on abort 2ms
+ ✓ |src:core| tests/src/core/MCPProgressReporter.test.ts > MCPProgressReporter > stops when payload reflection aborts before slot commit 1ms
+ ✓ |src:core| tests/src/core/MCPProgressReporter.test.ts > MCPProgressReporter > emits one owned progress snapshot despite later caller mutation 1ms
+ ✓ |src:core| tests/src/core/MCPProgressReporter.test.ts > MCPProgressReporter > rejects a second pending take without abandoning the first 1ms
+ ✓ |src:core| tests/src/core/MCPProgressReporter.test.ts > MCPProgressReporter > refuses a rival take entering on a full slot instead of stealing it 1ms
+ ✓ |src:core| tests/src/core/MCPProgressReporter.test.ts > MCPProgressReporter > refuses a resumed take a stop overtook before it reaches the resolver factory 1ms
+ ✓ |src:core| tests/src/core/MCPProgressReporter.test.ts > MCPProgressReporter > rejects backpressure and stopped states before observing a hostile payload 1ms
+ ✓ |src:core| tests/src/core/MCPProgressReporter.test.ts > MCPProgressReporter > selects invalid while live and stopped once a hostile payload aborts mid-snapshot 2ms
+ ✓ |src:core| tests/src/core/MCPProgressReporter.test.ts > MCPProgressReporter > rejects when a deferred resolver hook aborts after the payload is observed 1ms
+ ✓ |src:core| tests/src/core/MCPProgressReporter.test.ts > MCPProgressReporter > rejects a reentrant report instead of orphaning the installed slot 2ms
+ ✓ |src:core| tests/src/core/MCPProgressReporter.test.ts > MCPProgressReporter > rejects a take whose resolver hook stops the reporter before installation 1ms
+ ✓ |src:core| tests/src/core/MCPProgressReporter.test.ts > MCPProgressReporter > refuses a take whose resolver hook parks a rival consumer 1ms
+ ✓ |src:core| tests/src/core/MCPProgressReporter.test.ts > MCPProgressReporter > refuses a take whose resolver hook parks a rival consumer and fills the slot 1ms
+ ✓ |src:core| tests/src/core/MCPProgressReporter.test.ts > MCPProgressReporter > consumes a slot its own resolver hook installs instead of parking behind it 1ms
+ ✓ |src:core| tests/src/core/MCPProgressReporter.test.ts > MCPProgressReporter > clears every slot before stop invokes a hostile rejection hook 1ms
+ ✓ |src:core| tests/src/core/MCPProgressReporter.test.ts > MCPProgressReporter > clears every slot before stop detaches its abort listener 1ms
+ ✓ |src:core| tests/src/core/MCPProgressReporter.test.ts > MCPProgressReporter > refuses a repeated or lower progress value once one commits 1ms
+ ✓ |src:core| tests/src/core/MCPProgressReporter.test.ts > MCPProgressReporter > exports the execution context role without a legacy input alias 0ms
+ ✓ |src:core| tests/src/core/MCPTextStreamController.test.ts > MCPTextStreamController — translation > serializes every notification and the terminal, keeping the terminal a return 4ms
+ ✓ |src:core| tests/src/core/MCPTextStreamController.test.ts > MCPTextStreamController — translation > returns the serialized terminal alone for a stream that yields nothing 0ms
+ ✓ |src:core| tests/src/core/MCPTextStreamController.test.ts > MCPTextStreamController — delegated lifecycle > settles return() through the text face while a typed read is parked 11ms
+ ✓ |src:core| tests/src/core/MCPTextStreamController.test.ts > MCPTextStreamController — delegated lifecycle > reaches the typed producer’s cleanup rather than stopping at the adapter 31ms
+ ✓ |src:core| tests/src/core/MCPTextStreamController.test.ts > MCPTextStreamController — delegated lifecycle > propagates an external abort as a rejection, never as a serialized terminal 17ms
+ ✓ |src:core| tests/src/core/MCPTextStreamController.test.ts > MCPTextStreamController — delegated lifecycle > settles throw() through the text face and ends the typed exchange 0ms
+ ✓ |src:core| tests/src/core/MCPTextStreamController.test.ts > MCPTextStreamController — delegated lifecycle > ends the exchange when disposed 0ms
+ ✓ |src:core| tests/src/core/MCPTextStreamController.test.ts > MCPTextStreamController — delegated lifecycle > disposing the serialized face ends the TYPED exchange, not just the adapter 0ms
+ ✓ |src:core| tests/src/core/MCPTextStreamController.test.ts > MCPTextStreamController — delegated lifecycle > ends the typed exchange with no terminal, because a string cannot be one 13ms
+ ✓ |src:core| tests/src/core/MCPTextStreamController.test.ts > MCPTextStreamController — delegated lifecycle > is iterable as the async generator it claims to be 1ms
+ ✓ |src:core| tests/src/core/MCPTextStreamController.test.ts > MCPTextStreamController — delegated lifecycle > extends the text stream with the closure the protocol has no member for 0ms
+ ✓ |src:core| tests/src/core/MCPLegacy.test.ts > legacy dispatch behavior freeze > initialize-default 6ms
+ ✓ |src:core| tests/src/core/MCPLegacy.test.ts > legacy dispatch behavior freeze > initialize-legacy-anchor 1ms
+ ✓ |src:core| tests/src/core/MCPLegacy.test.ts > legacy dispatch behavior freeze > initialize-newest-legacy 1ms
+ ✓ |src:core| tests/src/core/MCPLegacy.test.ts > legacy dispatch behavior freeze > initialize-modern-requested 1ms
+ ✓ |src:core| tests/src/core/MCPLegacy.test.ts > legacy dispatch behavior freeze > initialize-missing-params 1ms
+ ✓ |src:core| tests/src/core/MCPLegacy.test.ts > legacy dispatch behavior freeze > ping-empty 0ms
+ ✓ |src:core| tests/src/core/MCPLegacy.test.ts > legacy dispatch behavior freeze > ping-params 1ms
+ ✓ |src:core| tests/src/core/MCPLegacy.test.ts > legacy dispatch behavior freeze > ping-string-id 1ms
+ ✓ |src:core| tests/src/core/MCPLegacy.test.ts > legacy dispatch behavior freeze > tools-list-empty 4ms
+ ✓ |src:core| tests/src/core/MCPLegacy.test.ts > legacy dispatch behavior freeze > tools-list-params 2ms
+ ✓ |src:core| tests/src/core/MCPLegacy.test.ts > legacy dispatch behavior freeze > tools-call-good 4ms
+ ✓ |src:core| tests/src/core/MCPLegacy.test.ts > legacy dispatch behavior freeze > tools-call-no-arguments 1ms
+ ✓ |src:core| tests/src/core/MCPLegacy.test.ts > legacy dispatch behavior freeze > tools-call-missing-value 1ms
+ ✓ |src:core| tests/src/core/MCPLegacy.test.ts > legacy dispatch behavior freeze > tools-call-nan 1ms
+ ✓ |src:core| tests/src/core/MCPLegacy.test.ts > legacy dispatch behavior freeze > tools-call-failure 2ms
+ ✓ |src:core| tests/src/core/MCPLegacy.test.ts > legacy dispatch behavior freeze > tools-call-unknown-tool 2ms
+ ✓ |src:core| tests/src/core/MCPLegacy.test.ts > legacy dispatch behavior freeze > tools-call-missing-name 1ms
+ ✓ |src:core| tests/src/core/MCPLegacy.test.ts > legacy dispatch behavior freeze > tools-call-nonstring-name 1ms
+ ✓ |src:core| tests/src/core/MCPLegacy.test.ts > legacy dispatch behavior freeze > tools-call-null-arguments 1ms
+ ✓ |src:core| tests/src/core/MCPLegacy.test.ts > legacy dispatch behavior freeze > tools-call-oversized-value 1ms
+ ✓ |src:core| tests/src/core/MCPLegacy.test.ts > legacy dispatch behavior freeze > unknown-method 0ms
+ ✓ |src:core| tests/src/core/MCPLegacy.test.ts > legacy dispatch behavior freeze > modern-method-not-found 0ms
+ ✓ |src:core| tests/src/core/MCPLegacy.test.ts > legacy dispatch behavior freeze > malformed-null-id 1ms
+ ✓ |src:core| tests/src/core/MCPLegacy.test.ts > legacy dispatch behavior freeze > malformed-fractional-id 0ms
+ ✓ |src:core| tests/src/core/MCPLegacy.test.ts > legacy dispatch behavior freeze > oversized-message 0ms
+ ✓ |src:core| tests/src/core/MCPLegacy.test.ts > legacy dispatch behavior freeze > initialized-notification 0ms
+ ✓ |src:core| tests/src/core/MCPLegacy.test.ts > the dispatch overloads > resolves an answer for a request and nothing for a notification 1ms
+ ✓ |src:core| tests/src/core/MCPLegacy.test.ts > the dispatch overloads > keeps the union arm for a caller that narrowed no further 0ms
+ ✓ |src:core| tests/src/core/MCPLegacy.test.ts > MCP legacy resource exclusions > keeps removed and legacy resource methods fail-closed 2ms
+ ✓ |src:core| tests/src/core/MCPLegacy.test.ts > MCPLegacy collapse boundaries > projects a tokened legacy tools/call stream with its progress and complete result 4ms
+ ✓ |src:core| tests/src/core/MCPLegacy.test.ts > MCPLegacy collapse boundaries > mirrors an empty-token call with no reports through the text face 3ms
+ ✓ |src:core| tests/src/core/MCPLegacy.test.ts > MCPLegacy collapse boundaries > projects a native tool error result at the tokened terminal 2ms
+ ✓ |src:core| tests/src/core/MCPLegacy.test.ts > MCPLegacy collapse boundaries > keeps a stopped tokened call isolated from its live sibling 5ms
+ ✓ |src:core| tests/src/core/MCPLegacy.test.ts > MCPLegacy collapse boundaries > does not execute when the caller aborts before the first read 2ms
+ ✓ |src:core| tests/src/core/MCPLegacy.test.ts > MCPLegacy collapse boundaries > aborts an executor immediately during an outstanding read 3ms
+ ✓ |src:core| tests/src/core/MCPLegacy.test.ts > MCPLegacy collapse boundaries > propagates return through a parked tokened request 3ms
+ ✓ |src:core| tests/src/core/MCPLegacy.test.ts > MCPLegacy collapse boundaries > aborts the source request when stop ends the adapter before its first read 2ms
+ ✓ |src:core| tests/src/core/MCPLegacy.test.ts > MCPLegacy collapse boundaries > aborts the source request when dispose ends the adapter before its first read 2ms
+ ✓ |src:core| tests/src/core/MCPLegacy.test.ts > MCPLegacy collapse boundaries > rejects a mismatched progress frame without yielding it 2ms
+ ✓ |src:core| tests/src/core/MCPLegacy.test.ts > MCPLegacy collapse boundaries > rejects and disposes override streams without a legitimate tools/call token 2ms
+ ✓ |src:core| tests/src/core/MCPLegacy.test.ts > MCPLegacy collapse boundaries > forwards the inner dispatcher emitter as the one shared error feed 0ms
+ ✓ |src:core| tests/src/core/MCPLegacy.test.ts > MCPLegacy collapse boundaries > refuses a deployment-selected task at the legacy revision boundary 2ms
+ ✓ |src:core| tests/src/core/MCPLegacy.test.ts > MCPLegacy collapse boundaries > refuses input-required at the legacy revision boundary 8ms
+ ✓ |src:core| tests/src/core/MCPLegacy.test.ts > MCPLegacy collapse boundaries > returns -32602 from the explicit legacy MRTR door guard 1ms
+ ✓ |src:core| tests/src/core/MCPLegacy.test.ts > MCPLegacy collapse boundaries > refuses tasks/get at the fixed legacy door 1ms
+ ✓ |src:core| tests/src/core/MCPLegacy.test.ts > MCPLegacy collapse boundaries > refuses tasks/update at the fixed legacy door 0ms
+ ✓ |src:core| tests/src/core/MCPLegacy.test.ts > MCPLegacy collapse boundaries > refuses tasks/cancel at the fixed legacy door 0ms
+ ✓ |src:core| tests/src/core/MCPLegacy.test.ts > MCPLegacy collapse boundaries > refuses subscriptions/listen at the fixed legacy door 0ms
+ ✓ |src:core| tests/src/core/MCPLegacy.test.ts > MCPLegacy collapse boundaries > refuses server/discover at the fixed legacy door 0ms
+ ✓ |src:core| tests/src/core/MCPLegacy.test.ts > MCPLegacy collapse boundaries > refuses resources/list at the fixed legacy door 0ms
+ ✓ |src:core| tests/src/core/MCPLegacy.test.ts > MCPLegacy collapse boundaries > refuses resources/read at the fixed legacy door 0ms
+ ✓ |src:core| tests/src/core/MCPLegacy.test.ts > MCPLegacy collapse boundaries > refuses resources/templates/list at the fixed legacy door 0ms
+ ✓ |src:core| tests/src/core/MCPLegacy.test.ts > MCPLegacy collapse boundaries > refuses prompts/list at the fixed legacy door 0ms
+ ✓ |src:core| tests/src/core/MCPLegacy.test.ts > MCPLegacy collapse boundaries > refuses prompts/get at the fixed legacy door 0ms
+ ✓ |src:core| tests/src/core/MCPLegacy.test.ts > MCPLegacy collapse boundaries > refuses completion/complete at the fixed legacy door 0ms
+ ✓ |src:core| tests/src/core/MCPLegacy.test.ts > MCPLegacy collapse boundaries > keeps a consumer-registered stream unreachable from the legacy door 0ms
+ ✓ |src:core| tests/src/core/MCPLegacy.test.ts > MCPLegacy collapse boundaries > forwards a modern consumer method through the decorator 1ms
+ ✓ |src:core| tests/src/core/MCPLegacyClientTransport.test.ts > MCPLegacyClientTransport > keeps the adapter pin on the legacy handshake and exposes the modern revision 14ms
+ ✓ |src:core| tests/src/core/MCPLegacyClientTransport.test.ts > MCPLegacyClientTransport > rejects an unsupported negotiated legacy revision before initialization completes 3ms
+ ✓ |src:core| tests/src/core/MCPLegacyClientTransport.test.ts > MCPLegacyClientTransport > rejects a negotiated revision that differs from the adapter pin 1ms
+ ✓ |src:core| tests/src/core/MCPLegacyClientTransport.test.ts > MCPLegacyClientTransport > rejects an absent legacy protocol before initialization completes 2ms
+ ✓ |src:core| tests/src/core/MCPLegacyClientTransport.test.ts > MCPLegacyClientTransport > rejects a malformed legacy protocol before initialization completes 1ms
+ ✓ |src:core| tests/src/core/MCPLegacyClientTransport.test.ts > MCPLegacyClientTransport > performs the legacy handshake and synthesizes modern discovery 4ms
+ ✓ |src:core| tests/src/core/MCPLegacyClientTransport.test.ts > MCPLegacyClientTransport > preserves legacy instructions in discovery and clears them across reconnect 8ms
+ ✓ |src:core| tests/src/core/MCPLegacyClientTransport.test.ts > MCPLegacyClientTransport > refuses a stamped legacy handshake result 2ms
+ ✓ |src:core| tests/src/core/MCPLegacyClientTransport.test.ts > MCPLegacyClientTransport > claims a foreign id-0 response while the handshake reservation is open 3ms
+ ✓ |src:core| tests/src/core/MCPLegacyClientTransport.test.ts > MCPLegacyClientTransport > answers discovery before the handshake with a correlated error 2ms
+ ✓ |src:core| tests/src/core/MCPLegacyClientTransport.test.ts > MCPLegacyClientTransport > answers a malformed correlated result and forgets its method 2ms
+ ✓ |src:core| tests/src/core/MCPLegacyClientTransport.test.ts > MCPLegacyClientTransport > bounds a forwarded request that receives no peer response 37ms
+ ✓ |src:core| tests/src/core/MCPLegacyClientTransport.test.ts > MCPLegacyClientTransport > converts a legacy tools/list result to the modern consumer shape 4ms
+ ✓ |src:core| tests/src/core/MCPLegacyClientTransport.test.ts > MCPLegacyClientTransport > converts a legacy tools/call result to the modern consumer shape 3ms
+ ✓ |src:core| tests/src/core/MCPLegacyClientTransport.test.ts > MCPLegacyClientTransport > surfaces a clear failure when the peer refuses the legacy handshake 1ms
+ ✓ |src:core| tests/src/core/MCPLegacyClientTransport.test.ts > MCPLegacyClientTransport > leaves the client disconnected when the adapter initialized notification fails 1ms
+ ✓ |src:core| tests/src/core/MCPLegacyClientTransport.test.ts > MCPLegacyClientTransport > rejects a superseded connect after the adapter initialized notification lands 1ms
+ ✓ |src:core| tests/src/core/MCPLegacyClientTransport.test.ts > MCPLegacyClientTransport > completes the adapter-owned handshake before closing a superseded connect 1ms
+ ✓ |src:core| tests/src/core/MCPLegacyClientTransport.test.ts > MCPLegacyClientTransport > waits for the superseded adapter handshake before opening the next connection 7ms
+ ✓ |src:core| tests/src/core/parsers.test.ts > parseJSONRPCMessage > returns an owned frozen request 6ms
+ ✓ |src:core| tests/src/core/parsers.test.ts > parseJSONRPCMessage > returns an owned frozen response 1ms
+ ✓ |src:core| tests/src/core/parsers.test.ts > parseJSONRPCMessage > returns undefined for a non-message record 1ms
+ ✓ |src:core| tests/src/core/parsers.test.ts > parseJSONRPCMessage > returns undefined for adversarial input 1ms
+ ✓ |src:core| tests/src/core/parsers.test.ts > parseJSONRPCMessage > rejects a guard-valid message nested deeper than the default depth bound 1ms
+ ✓ |src:core| tests/src/core/parsers.test.ts > parseJSONRPCMessage > rejects a guard-valid message whose canonical text exceeds the byte bound 0ms
+ ✓ |src:core| tests/src/core/parsers.test.ts > parseJSONRPCMessage > is sound with the composite guard over one corpus 2ms
+ ✓ |src:core| tests/src/core/parsers.test.ts > parseJSONRPCMessage > rejects a guard-valid value drawn from outside the admitted population 2ms
+ ✓ |src:core| tests/src/core/parsers.test.ts > parseJSONRPCMessage > rejects a guard-valid message whose canonical text exceeds the DEFAULT byte bound 76ms
+ ✓ |src:core| tests/src/core/parsers.test.ts > parseJSONRPCMessage > rebuilds a canonical snapshot: sorted serialization, JavaScript key order, -0 as 0 1ms
+ ✓ |src:core| tests/src/core/parsers.test.ts > parseRequestContext > projects the required metadata and optional client identity 2ms
+ ✓ |src:core| tests/src/core/parsers.test.ts > parseRequestContext > accepts complete metadata, capability, identity, logging, and progress shapes 2ms
+ ✓ |src:core| tests/src/core/parsers.test.ts > parseRequestContext > owns the projected context independently of later request mutation 1ms
+ ✓ |src:core| tests/src/core/parsers.test.ts > parseRequestContext > accepts a string unsupported revision so the caller can return -32022 1ms
+ ✓ |src:core| tests/src/core/parsers.test.ts > parseRequestContext > enforces defined output implies modern routing 1ms
+ ✓ |src:core| tests/src/core/parsers.test.ts > parseRequestContext > maps guard-positive malformed required metadata to the -32602 parse failure 2ms
+ ✓ |src:core| tests/src/core/parsers.test.ts > parseRequestContext > rejects malformed complete metadata and known capability fields 2ms
+ ✓ |src:core| tests/src/core/parsers.test.ts > parseRequestContext > is total over hostile input 0ms
+ ✓ |src:core| tests/src/core/parsers.test.ts > parseMCPInputState > parses every replay-binding field, the issued round, and optional consumer state 2ms
+ ✓ |src:core| tests/src/core/parsers.test.ts > parseMCPInputState > rejects malformed JSON and every missing or mistyped binding 1ms
+ ✓ |src:core| tests/src/core/parsers.test.ts > parseMCPInputState > parses the complete payload the rejection rows are built from 1ms
+ ✓ |src:core| tests/src/core/parsers.test.ts > parseMCPInputState > carries the revision the payload recorded even when it is not the modern one 1ms
+ ✓ |src:core| tests/src/core/parsers.test.ts > parseMCPInputState > rejects fractional and non-finite protected request ids 0ms
+ ✓ |src:core| tests/src/core/transports/HTTPClientTransport.test.ts > HTTPClientTransport — close releases the request it has in flight > close() cancels the response body a send is still reading 71ms
+ ✓ |src:core| tests/src/core/transports/HTTPClientTransport.test.ts > HTTPClientTransport — close releases the request it has in flight > surfaces the cancellation on error rather than throwing out of send 24ms
+ ✓ |src:core| tests/src/core/transports/HTTPClientTransport.test.ts > HTTPClientTransport — Mcp-Name travels in the protocol sentinel form > stamps a plain tool name literally and a name needing encoding as the sentinel 3ms
+ ✓ |src:core| tests/src/core/transports/HTTPClientTransport.test.ts > HTTPClientTransport — a non-success reply carrying no message rejects send > rejects with the status and body shape when the error body is not JSON-RPC 4ms
+ ✓ |src:core| tests/src/core/MCPTaskClient.test.ts > MCPTaskClient — the shape > reads, answers, and stops a real durable task over the wire 216ms
+ ✓ |src:core| tests/src/core/validators.test.ts > bounded hostile values > counts UTF-8 string bytes at the exact boundary 3ms
+ ✓ |src:core| tests/src/core/validators.test.ts > bounded hostile values > bounds serialized JSON bytes, object keys, and depth 2ms
+ ✓ |src:core| tests/src/core/validators.test.ts > bounded hostile values > rejects cycles while accepting hostile-looking own data keys 0ms
+ ✓ |src:core| tests/src/core/validators.test.ts > bounded hostile values > rejects Map and Set regardless of insertion order 0ms
+ ✓ |src:core| tests/src/core/validators.test.ts > bounded hostile values > rejects non-exact primitive, record, and exotic populations 1ms
+ ✓ |src:core| tests/src/core/validators.test.ts > bounded hostile values > contains accessors and hostile proxies without throwing 0ms
+ ✓ |src:core| tests/src/core/validators.test.ts > bounded hostile values > rejects exhausted budgets before retrieving child descriptors 0ms
+ ✓ |src:core| tests/src/core/validators.test.ts > bounded hostile values > counts array indices as keys and accepts a shared acyclic graph 0ms
+ ✓ |src:core| tests/src/core/validators.test.ts > rich MCP content validators > exposes total format and progress guards for their exact public contracts 2ms
+ ✓ |src:core| tests/src/core/validators.test.ts > rich MCP content validators > accepts every exact dated-schema content block and complete array-valued output 3ms
+ ✓ |src:core| tests/src/core/validators.test.ts > rich MCP content validators > rejects unstamped, non-JSON, and malformed rich results 2ms
+ ✓ |src:core| tests/src/core/validators.test.ts > rich MCP content validators > enforces standard base64, absolute URI, and integer resource-size schema formats 3ms
+ ✓ |src:core| tests/src/core/validators.test.ts > rich MCP content validators > keeps every rich-content leaf guard total over hostile values 1ms
+ ✓ |src:core| tests/src/core/validators.test.ts > RFC 3986 absolute URI validation > accepts hierarchical, non-hierarchical, IP-literal, percent-encoded, and empty components 1ms
+ ✓ |src:core| tests/src/core/validators.test.ts > RFC 3986 absolute URI validation > rejects relative, whitespace, escapes, authorities, ports, and IP literals outside the RFC 0ms
+ ✓ |src:core| tests/src/core/validators.test.ts > dated metadata, identity, and capability guards > validates exact metadata key grammar and finite JSON values 1ms
+ ✓ |src:core| tests/src/core/validators.test.ts > dated metadata, identity, and capability guards > applies the reserved server identity only to result metadata populations 1ms
+ ✓ |src:core| tests/src/core/validators.test.ts > dated metadata, identity, and capability guards > accepts only the dated logging-level literals 0ms
+ ✓ |src:core| tests/src/core/validators.test.ts > dated metadata, identity, and capability guards > validates complete identities and contains hostile identity values 0ms
+ ✓ |src:core| tests/src/core/validators.test.ts > dated metadata, identity, and capability guards > accepts exact open client capabilities and rejects malformed known declarations 1ms
+ ✓ |src:core| tests/src/core/validators.test.ts > dated metadata, identity, and capability guards > accepts exact open server capabilities and rejects malformed known declarations 1ms
+ ✓ |src:core| tests/src/core/validators.test.ts > isJSONRPCId > accepts a string id 0ms
+ ✓ |src:core| tests/src/core/validators.test.ts > isJSONRPCId > accepts an empty string, which the dated schema does not forbid 0ms
+ ✓ |src:core| tests/src/core/validators.test.ts > isJSONRPCId > accepts a finite integer id, including zero and a negative one 0ms
+ ✓ |src:core| tests/src/core/validators.test.ts > isJSONRPCId > rejects an absent id, because absence is not an id 0ms
+ ✓ |src:core| tests/src/core/validators.test.ts > isJSONRPCId > rejects a null id, which MCP omits rather than sends 0ms
+ ✓ |src:core| tests/src/core/validators.test.ts > isJSONRPCId > rejects an object, an array, a boolean, and a non-integer number 0ms
+ ✓ |src:core| tests/src/core/validators.test.ts > isJSONRPCId > answers every value in the shared adversarial corpus without throwing 1ms
+ ✓ |src:core| tests/src/core/validators.test.ts > isMCPVersion > accepts every supported revision and rejects removed or unknown revisions 0ms
+ ✓ |src:core| tests/src/core/validators.test.ts > isMCPVersion > keeps modern and legacy revision guards disjoint 0ms
+ ✓ |src:core| tests/src/core/validators.test.ts > isMCPVersion > is total over non-string values 1ms
+ ✓ |src:core| tests/src/core/validators.test.ts > isMCPSubscriptionFilter > accepts empty, complete, and extension-bearing filters 1ms
+ ✓ |src:core| tests/src/core/validators.test.ts > isMCPSubscriptionFilter > rejects invalid recognized fields and remains total over hostile input 1ms
+ ✓ |src:core| tests/src/core/validators.test.ts > isMCPSubscriptionResult > accepts a complete result carrying a JSON-RPC subscription id 1ms
+ ✓ |src:core| tests/src/core/validators.test.ts > isMCPSubscriptionResult > rejects malformed terminals and remains total over hostile input 1ms
+ ✓ |src:core| tests/src/core/validators.test.ts > multi-round-trip validators > names each capability a round needs and the client did not declare 2ms
+ ✓ |src:core| tests/src/core/validators.test.ts > multi-round-trip validators > validates every restricted primitive elicitation schema family 2ms
+ ✓ |src:core| tests/src/core/validators.test.ts > multi-round-trip validators > validates both elicitation modes while retaining deprecated legal input union members 1ms
+ ✓ |src:core| tests/src/core/validators.test.ts > multi-round-trip validators > accepts only keyed request maps and enforces input-required at-least-one-of 1ms
+ ✓ |src:core| tests/src/core/validators.test.ts > multi-round-trip validators > validates a roots listing and a sampling completion against their dated shapes 3ms
+ ✓ |src:core| tests/src/core/validators.test.ts > multi-round-trip validators > validates one sampling content block against the dated block union 1ms
+ ✓ |src:core| tests/src/core/validators.test.ts > multi-round-trip validators > answers each input response against the exact request that was issued 5ms
+ ✓ |src:core| tests/src/core/validators.test.ts > multi-round-trip validators > validates elicitation result values and remains total over hostile input 1ms
+ ✓ |src:core| tests/src/core/validators.test.ts > multi-round-trip validators > validates the issued object schema on its own, open to unrecognized annotations 2ms
+ ✓ |src:core| tests/src/core/validators.test.ts > isElicitContent > accepts a complete legal response, and undeclared properties beside it 3ms
+ ✓ |src:core| tests/src/core/validators.test.ts > isElicitContent > refuses a required name, a wrong type, and every declared bound 31ms
+ ✓ |src:core| tests/src/core/validators.test.ts > isElicitContent > refuses a value no elicitation response may carry, declared or not 2ms
+ ✓ |src:core| tests/src/core/validators.test.ts > isElicitContent > admits nothing under an unenforceable schema and stays total over hostile input 10ms
+ ✓ |src:core| tests/src/core/MCPStreamController.test.ts > controlled exchange ownership > gives the controllers no owner of last resort 8ms
+ ✓ |src:core| tests/src/core/MCPStreamController.test.ts > controlled exchange ownership > reports a synthetic controller that adds one 0ms
+ ✓ |src:core| tests/src/core/MCPStreamController.test.ts > MCPStreamController — normal completion > passes each notification through and returns the source terminal once 1ms
+ ✓ |src:core| tests/src/core/MCPStreamController.test.ts > MCPStreamController — normal completion > aborts the request lifetime once the terminal has been delivered 0ms
+ ✓ |src:core| tests/src/core/MCPStreamController.test.ts > MCPStreamController — normal completion > is iterable as the async generator it claims to be 0ms
+ ✓ |src:core| tests/src/core/MCPStreamController.test.ts > MCPStreamController — normal completion > extends the stream with the closure the protocol has no member for 0ms
+ ✓ |src:core| tests/src/core/MCPStreamController.test.ts > MCPStreamController — cancellation against a never-settling source > settles return() while a read is parked on the producer 6ms
+ ✓ |src:core| tests/src/core/MCPStreamController.test.ts > MCPStreamController — cancellation against a never-settling source > settles return() when nothing is parked and no read ever happened 0ms
+ ✓ |src:core| tests/src/core/MCPStreamController.test.ts > MCPStreamController — cancellation against a never-settling source > settles stop() while a read is parked, with no terminal for the consumer 17ms
+ ✓ |src:core| tests/src/core/MCPStreamController.test.ts > MCPStreamController — cancellation against a never-settling source > settles throw() while a read is parked and reports the same reason to both 15ms
+ ✓ |src:core| tests/src/core/MCPStreamController.test.ts > MCPStreamController — cancellation against a never-settling source > settles a parked read on external abort, with the abort reason 17ms
+ ✓ |src:core| tests/src/core/MCPStreamController.test.ts > MCPStreamController — cancellation against a never-settling source > refuses a read on an already-aborted request without touching the producer 1ms
+ ✓ |src:core| tests/src/core/MCPStreamController.test.ts > MCPStreamController — cancellation against a never-settling source > aborts the request signal BEFORE it delegates cleanup, waking a parked producer 14ms
+ ✓ |src:core| tests/src/core/MCPStreamController.test.ts > MCPStreamController — cancellation against a never-settling source > reaches the producer’s own cleanup after a consumer return 16ms
+ ✓ |src:core| tests/src/core/MCPStreamController.test.ts > MCPStreamController — idempotence and containment > keeps the exchange closed however many later closures arrive 1ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > capability predicates > recognizes implicit and explicit form capabilities but not URL-only support 4ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > capability predicates > reads the Tasks extension declaration under the extensions record 3ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > capability predicates > covers every capability predicate the barrel publishes 1ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > capability predicates > answers false rather than throwing for every hostile value a capability predicate reads 9ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > buildJSONRPCResult > builds a success envelope echoing the id 0ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > buildJSONRPCResult > carries the legacy result arm, which has no resultType 0ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > buildJSONRPCError > builds an error envelope without data when none is given 0ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > buildJSONRPCError > includes data when supplied 0ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > buildJSONRPCError > omits the id member entirely when none could be read 1ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > buildJSONRPCError > keeps an empty-string id, which is a legal id rather than an absent one 0ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > buildJSONRPCError > omits an unreadable id from the built envelope entirely 0ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > buildMethodOptions > resolves the request lifetime alone when the caller supplied no signal 0ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > buildMethodOptions > omits caller rather than carrying an undefined one 0ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > buildMethodOptions > composes the caller’s signal with the lifetime, honouring either abort 1ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > buildMethodOptions > carries the unverified caller by identity, without inspecting or copying it 0ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > buildMethodOptions > resolves a distinct signal per call, so one request cannot abort another 0ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > tool annotation projections > projects explicit annotation booleans and omits unmapped hints without defaults 1ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > buildToolCall > builds call envelopes without caller identity and preserves supplied arguments 0ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > buildToolDescriptors > maps definitions, renaming parameters to inputSchema 1ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > buildToolDescriptors > defaults inputSchema to an empty object schema when a tool declares none 0ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > buildToolDescriptors > returns an empty list for an empty registry 0ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > modern execution helpers > exposes public ownership mechanisms while retaining the private result builder 0ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > modern execution helpers > serializes object keys canonically and hashes equivalent bounded JSON identically 7ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > modern execution helpers > serializes the exact JSON string and number population at byte boundaries 0ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > modern execution helpers > captures each data descriptor once and serializes that owned snapshot 0ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > modern execution helpers > rejects non-exact arrays and invalid serializer limits without throwing 1ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > modern execution helpers > preflights array bounds and active cycles before repeated reflection 0ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > modern execution helpers > preflights a wide record after one key snapshot and before descriptors 0ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > modern execution helpers > builds the canonical Tool call and official progress notification 0ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > buildModernResult > stamps tools/list with both required cache fields, preserving zero as immediately stale 1ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > buildModernResult > stamps tools/call with resultType and neither cache field 0ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > buildModernResult > defaults a supplied cache lifetime to private scope and preserves existing metadata 0ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > era projections > removes modern stamps and returns undefined for an unstamped result 0ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > era projections > adds cache stamps only to a legacy tools/list result 1ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > era projections > adds modern metadata to a params-less legacy request 0ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > era projections > omits _meta when removing modern metadata empties it 0ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > subscription helpers > intersects requested notification families with exact server support 0ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > subscription helpers > matches only acknowledged notification families and resource URIs 0ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > subscription helpers > carries requested task identifiers only when the server can push tasks 0ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > subscription helpers > delivers a task frame only for an agreed identifier that holds as a snapshot 1ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > subscription helpers > stamps notifications while preserving metadata and overriding an offered stream id 0ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > subscription helpers > builds the exact acknowledgement and graceful closing result 0ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > buildDiscoverResult > builds the mandatory discovery result with safe cache defaults 0ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > buildDiscoverResult > carries configured instructions, zero ttl, and public scope 0ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > buildDiscoverResult > advertises the tasks extension only for a server that configured it 0ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > buildInitializeResult > uses the newest supported legacy revision when none requested 0ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > buildInitializeResult > echoes either supported legacy revision 0ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > buildInitializeResult > answers a modern initialize request with the newest legacy revision 0ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > buildInitializeResult > falls back when the requested revision requires unsupported batching 0ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > buildInitializeResult > falls back to the newest legacy revision for an unsupported requested version 0ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > bindServer > serves a legacy initialize and tools/call through the decorator over a real duplex pair 19ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > bindServer > CONTROL — a bare server answers modern-shaped initialize with -32601 over a real duplex pair 2ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > bindServer > dispatches an inbound request string and sends the reply string out 2ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > bindServer > sends nothing for a notification (no id → no reply) 2ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > bindServer > unbind detaches inbound delivery WITHOUT closing the transport 12ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > bindServer > a send throw surfaces on server.emitter error, never as an unhandled rejection 16ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > bindServer > a throwing error listener is swallowed, not rethrown into the binder 16ms
+ ✓ |src:core| tests/src/core/transports/HTTPClientTransport.test.ts > HTTPClientTransport — a non-success reply carrying no message rejects send > emits a valid JSON-RPC error body at a non-success status instead of rejecting 1ms
+ ✓ |src:core| tests/src/core/transports/HTTPClientTransport.test.ts > HTTPClientTransport — close is idempotent > emits close once however many times it is called 0ms
+ ✓ |src:core| tests/src/core/transports/HTTPClientTransport.test.ts > HTTPClientTransport — the x-mcp-header contract > excludes an invalidly annotated tool and reports the exclusion on error 3ms
+ ✓ |src:core| tests/src/core/transports/HTTPClientTransport.test.ts > HTTPClientTransport — the x-mcp-header contract > projects a listed tool arguments into encoded Mcp-Param headers, omitting a null 5ms
+ ✓ |src:core| tests/src/core/transports/HTTPClientTransport.test.ts > HTTPClientTransport — the x-mcp-header contract > projects nothing for a tool it never carried a listing for 1ms
+ ✓ |src:core| tests/src/core/transports/HTTPClientTransport.test.ts > HTTPClientTransport — the x-mcp-header contract > projects nothing for a tool a later cursorless listing no longer carries 3ms
+ ✓ |src:core| tests/src/core/transports/HTTPClientTransport.test.ts > HTTPClientTransport — the x-mcp-header contract > caches nothing from a listing a fresh one superseded before its answer arrived 3ms
+ ✓ |src:core| tests/src/core/transports/HTTPClientTransport.test.ts > HTTPClientTransport — the x-mcp-header contract > excludes and reports an invalid definition on a superseded listing it caches nothing from 3ms
+ ✓ |src:core| tests/src/core/transports/HTTPClientTransport.test.ts > HTTPClientTransport — the x-mcp-header contract > keeps both pages projectable when a fresh listing and its own continuation overlap 2ms
+ ✓ |src:core| tests/src/core/MCPLegacyClientTransport.test.ts > MCPLegacyClientTransport > supersedes a permanently parked handshake write and admits the next connect 46ms
+ ✓ |src:core| tests/src/core/MCPLegacyClientTransport.test.ts > MCPLegacyClientTransport > surfaces a failing adapter initialized notification on reconnect 2ms
+ ✓ |src:core| tests/src/core/MCPLegacyClientTransport.test.ts > MCPLegacyClientTransport > waits for the adapter handshake write on reconnect 30ms
+ ✓ |src:core| tests/src/core/MCPLegacyClientTransport.test.ts > MCPLegacyClientTransport > repeats the adapter handshake across reconnect without peer discovery 4ms
+ ✓ |src:core| tests/src/core/MCPLegacyClientTransport.test.ts > MCPLegacyClientTransport > reports when modern metadata reaches the legacy fixture 0ms
+ ✓ |src:core| tests/src/core/MCPStreamController.test.ts > MCPStreamController — idempotence and containment > contains a source promise that settles long after the consumer left 31ms
+ ✓ |src:core| tests/src/core/MCPStreamController.test.ts > MCPStreamController — idempotence and containment > refuses a second read while one is already pending 1ms
+ ✓ |src:core| tests/src/core/MCPStreamController.test.ts > MCPStreamController — idempotence and containment > ends the exchange when disposed and leaves a finished one alone 1ms
+ ✓ |src:core| tests/src/core/MCPStreamController.test.ts > MCPStreamController — idempotence and containment > rejects the consumer with the source failure and answers the same way again 1ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — hostile-input and live-resource limits over the wire > publishes frozen secure defaults sized for ordinary MCP traffic 2ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — hostile-input and live-resource limits over the wire > rejects an oversized valid wire message as -32700 before parsing it 3ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — hostile-input and live-resource limits over the wire > applies metadata bounds to translated requests and rejects byte and key overflow 4ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — hostile-input and live-resource limits over the wire > rejects prototype-pollution metadata sent by a real peer 2ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — hostile-input and live-resource limits over the wire > accepts absent requestState and bounds it before verification and after signing 20ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — hostile-input and live-resource limits over the wire > routes oversized legacy tool content through the modern -32603 pipeline 1ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — hostile-input and live-resource limits over the wire > admits only the configured number of live subscription streams and releases on close 25ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — published limits > publishes every resolved bound, with the defaults for each omitted leaf 0ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — published limits > publishes the configured value and sanitizes a hostile one back to its default 0ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — published limits > is frozen, so a bound cannot be moved out from under the checks that read it 0ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — graceful subscription closure > ends a gracefully closed subscription with the empty result, correlated by the listen id 2ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — identity > exposes the name and version from options 0ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — modern-and-legacy dispatch > answers a legacy initialize on the bare modern server as an unregistered method 1ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — modern-and-legacy dispatch > names the absent protocol version on a registered modern method 0ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — modern-and-legacy dispatch > keeps the legacy method responses byte-identical and unstamped 2ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — modern-and-legacy dispatch > rejects malformed modern metadata with -32602 1ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — modern-and-legacy dispatch > treats a present non-string version as modern and rejects it with -32602 1ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — modern-and-legacy dispatch > rejects an unsupported modern version with -32022 and exact retry data 1ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — modern-and-legacy dispatch > returns a stamped cacheable server/discover result 1ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — modern-and-legacy dispatch > returns a stamped cacheable modern tools/list result 1ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — modern-and-legacy dispatch > returns a stamped non-cacheable modern tools/call result 1ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — modern-and-legacy dispatch > keeps a value-less modern tools/call result valid and omits structured content 3ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — modern-and-legacy dispatch > returns -32601 for modern method initialize 1ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — modern-and-legacy dispatch > returns -32601 for modern method does/not/exist 1ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — modern-and-legacy dispatch > refuses modern ping because the modern revision removed it 1ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — modern-and-legacy dispatch > returns no response for a modern notification after emitting its era 1ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — W01 modern execution and progress > rejects every present non-record modern arguments value before policy or execution 3ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — W01 modern execution and progress > returns an explicitly produced complete rich result without guessing through ToolManager 2ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — W01 modern execution and progress > contains rejected execution and malformed runtime executor results as detail-free errors 2ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — W01 modern execution and progress > keeps modern Tool text and structured content on one owned observation 1ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — W01 modern execution and progress > returns an owned explicit MCP result and bounds produced content before stamping 3ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — W01 modern execution and progress > refuses non-finite results uniformly through the modern pipeline 2ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — W01 modern execution and progress > keeps the collapsed pipeline bounded and inert over hostile tool values 3ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — W01 modern execution and progress > yields backpressured progress on the original call stream before its terminal result 2ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — W01 modern execution and progress > keeps the normal ToolManager path unary and executes it exactly once despite a token 1ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — W01 modern execution and progress > rejects a repeated progress value explicitly 1ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — W01 modern execution and progress > rejects invalid and oversized progress before yielding it 2ms
+ ✓ |src:core| tests/src/core/MCPTaskClient.test.ts > MCPTaskClient — the shape > answers an input_required task through update 32ms
+ ✓ |src:core| tests/src/core/MCPTaskClient.test.ts > MCPTaskClient — the shape > rejects rather than answering undefined for a task it cannot read 10ms
+ ✓ |src:core| tests/src/core/MCPTaskClient.test.ts > MCPTaskClient — the shape > CONTROL — surfaces -32601 from a peer that configured no task extension 9ms
+ ✓ |src:core| tests/src/core/MCPTaskClient.test.ts > MCPTaskClient — the shape > issues the wire methods through the request door it was handed 1ms
+ ✓ |src:core| tests/src/core/MCPTaskClient.test.ts > MCPTaskClient — the shape > refuses a peer answer that is not a well-formed task 0ms
+ ✓ |src:core| tests/src/core/MCPTaskClient.test.ts > MCPTaskClient — the shape > refuses a peer answer that carries no completed-result stamp 0ms
+ ✓ |src:core| tests/src/core/MCPTaskClient.test.ts > MCPTaskClient — the shape > carries the peer’s result stamp and metadata through to the caller 0ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > bindServer > closing the transport deactivates the binder (further inbound is ignored) 3ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > bindServer > rebind after unbind on the SAME transport replies exactly once per request (no double dispatch) 13ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > bindServer > pumps a held-open reply onto the transport, notifications first and the response last 2ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > bindServer > routes a mid-stream send failure to server.emitter error, never as an unhandled rejection 14ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > sendStream > writes every message in order and the terminating response last 0ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > sendStream > writes only the terminating response for a stream that yields nothing 0ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > sendStream > rejects with the transport failure rather than swallowing it 1ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > exchange ownership — the instrument and its outside-population control > reports a hand-written consumer that reads one message and walks away as LEAKING 5ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > exchange ownership — the instrument and its outside-population control > reports an exchange the consumer explicitly ended as RELEASED 2ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > sendStream — ends the exchange on every exit > releases a parked producer when the transport send throws mid-stream 1ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > sendStream — ends the exchange on every exit > releases the exchange when the consumer of the pump abandons it after one message 1ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > sendStream — ends the exchange on every exit > ends the exchange on the normal exit too, after the terminating response 0ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > decodeBoundedMessage > decodes a well-formed message inside the bound 0ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > decodeBoundedMessage > refuses a well-formed message ABOVE the bound 0ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > decodeBoundedMessage > answers undefined for malformed JSON and for a value that is not a message 0ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > readCancelledId > reads the request id an inbound cancellation names 0ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > readCancelledId > cancels nothing for another notification, a request, or a malformed requestId 0ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > bindServer — exchange ownership and inbound cancellation > ends an in-flight exchange when the transport closes mid-pump 19ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > bindServer — exchange ownership and inbound cancellation > unbind→close ends every in-flight exchange 31ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — W01 modern execution and progress > rejects a fractional progress token before tool execution 1ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — W01 modern execution and progress > completes one explicit valid-token execution that reports no progress 2ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — W01 modern execution and progress > settles an active progress stream and stops reports on external abort 4ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — W01 modern execution and progress > settles a pre-aborted progress stream without executing or answering 2ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — W01 modern execution and progress > aborts execution and rejects late reports when the response generator returns 2ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — multi-round-trip input > passes the in-scope dispatch options to the principal handler 4ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — multi-round-trip input > contains continuation open rejection and an out-of-bound opened value 4ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — multi-round-trip input > contains rejected input hooks and rejects invalid resolved policy values 7ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — multi-round-trip input > returns the consumer’s keyed round and resumes under a new id from top-level echo fields 5ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — multi-round-trip input > issues one round of several kinds under the consumer’s own keys 6ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — multi-round-trip input > refuses a round the client cannot answer with no declaration at all 1ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — multi-round-trip input > refuses a round the client cannot answer with URL-only elicitation 2ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — multi-round-trip input > refuses a round the client cannot answer with every kind but roots 1ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — multi-round-trip input > rejects mutated state, a reused id, and an omitted response without running the tool 9ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — multi-round-trip input > binds principal and a real short TTL inside the protected payload 50ms
+ ✓ |src:core| tests/src/core/cloners.test.ts > snapshotJSON > returns one frozen owned value paired with its canonical text 3ms
+ ✓ |src:core| tests/src/core/cloners.test.ts > snapshotJSON > rejects unsafe and out-of-bound values without observing accessors 0ms
+ ✓ |src:core| tests/src/core/cloners.test.ts > snapshotToolResult > owns successful, value-less, and failed Tool results exactly 1ms
+ ✓ |src:core| tests/src/core/cloners.test.ts > snapshotToolResult > rejects extra, missing, accessor, and oversized Tool results 0ms
+ ✓ |src:core| tests/src/core/inferers.test.ts > inferEra > classifies the modern revision 2ms
+ ✓ |src:core| tests/src/core/inferers.test.ts > inferEra > classifies both supported legacy revisions 0ms
+ ✓ |src:core| tests/src/core/inferers.test.ts > inferEra > returns undefined for removed and unknown revisions 0ms
+ ✓ |src:core| tests/src/core/inferers.test.ts > inferEra > gives every member of each supported set the era of that set 1ms
+ ✓ |src:core| tests/src/core/inferers.test.ts > inferVersion > selects the supported modern revision without selecting a legacy offer 0ms
+ ✓ |src:core| tests/src/core/inferers.test.ts > inferVersion > returns undefined when no offered revision is supported 0ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > bindServer — exchange ownership and inbound cancellation > close→unbind ends every in-flight exchange 18ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > bindServer — exchange ownership and inbound cancellation > leaves no abandoned exchange when the pump fails and the catch reports it 14ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > bindServer — exchange ownership and inbound cancellation > never decodes an inbound message above the server own bound, and handle still answers -32700 16ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > bindServer — exchange ownership and inbound cancellation > refuses to decode a well-formed cancellation above the bound, and honours one below it 48ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > bindServer — exchange ownership and inbound cancellation > aborts the request an inbound cancellation names, and writes no response for it 32ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — multi-round-trip input > reaches modern input policy and refuses its result at the legacy revision boundary 3ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — the modern method seam > owns a direct dispatch request before routing and handler observation 1ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — the modern method seam > registers the built-in modern methods on the registry it dispatches from 0ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — the modern method seam > turns a -32601 method into an answered one by registering it 1ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — the modern method seam > replaces a built-in modern method when one is registered over it 1ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — the modern method seam > routes a translated legacy method through a replaced modern method 1ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — the modern method seam > never reaches a registered method when the modern metadata is unsupported 1ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — the modern method seam > never reaches a registered method for a legacy request of the same name 0ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — the modern method seam > resolves a signal for every handler even when the caller supplied none 1ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — the modern method seam > passes direct dispatch caller context to the registered handler 1ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — the modern method seam > passes direct handle caller context to the registered handler 1ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — the modern method seam > composes the caller’s abort signal into the handler’s lifetime through dispatch 1ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — the modern method seam > composes the caller’s abort signal into the handler’s lifetime through handle 1ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — the modern method seam > aborts the handler’s lifetime once the stream it produced has closed 1ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — the modern method seam > returns a handler’s held-open stream from dispatch, terminating with its response 1ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — the modern method seam > mirrors a held-open answer as a serialized stream through handle 1ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — the modern method seam > answers nothing for a held-open method dispatched as a notification 0ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — the modern method seam > contains a registered handler that answers nothing for a request 1ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — the modern method seam > contains the same handler through the string boundary 1ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — the modern method seam > never invokes a consumer-registered handler for a notification 1ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — modern subscriptions/listen > acknowledges the honoured subset, stamps every delivery, and closes with the same id 3ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — modern subscriptions/listen > rejects a missing notification filter and keeps the legacy method frozen 1ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — initialize > returns the default protocol version, the tools capability, and serverInfo 0ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — initialize > falls back when the requested protocol version requires unsupported batching 0ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — initialize > falls back to the default for an unsupported requested version 0ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — initialize > ignores a non-string requested version (falls back to the default) 0ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — ping > returns an empty result 0ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — tools/list > lists the registered tools with inputSchema mapped from parameters 1ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — tools/list > keeps tools/list in deterministic registry order 1ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — tools/list > lists an empty tool set for an empty registry 1ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — tools/call > aborts default tool execution on a duplex cancellation and keeps the connection usable 8ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — tools/call > passes caller identity to a custom execution handler separately from the call envelope 2ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — tools/call > advertises titles and mapped annotation hints on tools/list 1ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — tools/call > omits annotations on tools/list when a tool only declares untrusted 1ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — tools/call > forwards caller context to real tool bodies in both eras and preserves absence 3ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — tools/call > executes a tool and carries its value as structured content and JSON text 1ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — tools/call > round-trips a structured value unchanged alongside serialized JSON 1ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — tools/call > defaults arguments to an empty record when omitted 1ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — tools/call > maps an erroring tool to an isError result carrying the error text 1ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — tools/call > maps an unknown tool name to an isError result (the manager not-found error) 1ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — tools/call > rejects a missing tool name with -32602 invalid params 1ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — tools/call > rejects a non-string tool name with -32602 invalid params 1ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — notifications & unknown methods > returns no response for a request without an id (a notification) 0ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — notifications & unknown methods > returns no response for notifications/initialized 0ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — notifications & unknown methods > returns -32601 for an unknown method 0ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — notifications & unknown methods > returns no response for an unknown-method notification (no id) 0ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — handle (string boundary) > parses, dispatches, and serializes a request to a response string 0ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — handle (string boundary) > round-trips a tools/call over the string boundary 1ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — handle (string boundary) > returns a -32700 parse-error response that omits the id it could not read 0ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — handle (string boundary) > returns a -32600 invalid-request response that omits the id it could not read 0ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — handle (string boundary) > returns a -32600 invalid-request response for a parsed value that is not a message 0ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — handle (string boundary) > returns undefined (no reply) for a notification string 0ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — request event > fires request with the method and id at the top of dispatch 1ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — request event > fires request with no id for a notification, which has none to report 0ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — request event > fires request through handle as well (parse → dispatch path) 1ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — request event > EMIT SAFETY: a throwing request listener cannot corrupt the dispatch, and routes to the error handler 1ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — request event > EMIT SAFETY: a throwing error handler neither escapes nor recurses 1ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — W02-A: the modern internal-error code > answers every modern fault -32603 and none -32000, through dispatch 8ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — W02-A: the modern internal-error code > answers every modern fault -32603 and none -32000, through handle 8ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — W02-A: the modern internal-error code > answers collapsed legacy tool faults -32603 through dispatch and handle 4ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — W02-A: the modern internal-error code > publishes the modern code beside the retained legacy one 0ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — W02-A: the broadened error event > reports a contained registered-handler throw exactly once and answers detail-free 1ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — W02-A: the broadened error event > carries the caught value to the observer and never to the wire 1ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — W02-A: the broadened error event > reports a contained subscription-source throw once, as one detail-free terminal 1ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — W02-A: the broadened error event > reports nothing for a request that simply completes 1ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — W02-A: subscription capacity and containment > refuses a subscription beyond capacity with -32603 and releases the slot on close 2ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — W02-A: subscription capacity and containment > owns a produced notification before matching and stamping it 1ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — W02-A: subscription capacity and containment > drops a produced notification carrying a value that is not exact JSON 1ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — W02-A: subscription capacity and containment > returns the capacity slot when a caller abandons a producer parked on its own source 31ms
+ ✓ |src:core| tests/src/core/MCPTaskClient.test.ts > MCPTaskClient — pollIntervalMs is a datum, not a loop > CONTROL — the recorder sees a consumer-written scheduler polling over real time 217ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — connect (modern negotiation) > rejects an invalid runtime pin synchronously during construction 3ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — connect (modern negotiation) > opens the transport, discovers modern support, and reports the newest common version 7ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — connect (modern negotiation) > fires the connect event and is idempotent 2ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — connect (modern negotiation) > exposes the injected transport 0ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — modern discovery > exposes discover() and stamps its request with version, capabilities, and client identity 4ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — modern discovery > does not retry a modern request with a legacy-only offer 2ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — modern discovery > surfaces -32022 without changing a pinned modern revision 1ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — modern discovery > rejects a discovery result that does not advertise the pinned modern revision 1ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — modern discovery > makes no further discovery attempt when the one retry also returns -32022 1ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — modern discovery > surfaces a server-state discovery error without era guidance 1ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — modern discovery > names the legacy adapter only for discovery method-not-found 1ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — modern discovery > surfaces an auth-shaped HTTP refusal without era guidance 0ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — modern discovery > surfaces an unrecognized HTTP 400 without era guidance 0ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — modern discovery > surfaces an unrecognized HTTP 404 without era guidance 0ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — modern discovery > surfaces a transport send failure without era guidance 0ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — modern discovery > surfaces a malformed result after a parseable discovery response settles the modern era 1ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — modern discovery > rejects discovery carrying a mistyped known capability 1ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — modern discovery > rejects discovery carrying an unprefixed extension key 0ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — modern discovery > rejects discovery carrying a non-object extension value 1ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — modern discovery > rejects discovery carrying non-JSON metadata 0ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — modern discovery > rejects discovery carrying a malformed metadata key 0ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — modern discovery > rejects discovery carrying a malformed reserved server identity 0ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — modern discovery > owns an inbound response before routing and rejects a forged post-validation arm 1ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — modern discovery > rejects discovery carrying a non-string advertised version 1ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — modern discovery > rejects discovery carrying a fractional TTL 0ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — modern discovery > rejects discovery carrying a negative TTL 0ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — modern discovery > rejects discovery carrying a non-finite TTL 0ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — modern discovery > filters unknown string revisions and freezes the retained discovery snapshot 1ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — modern discovery > accepts a zero TTL and owns frozen metadata independently of later mutation 1ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — modern discovery > owns an inbound discovery response once before later validation 1ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — modern discovery > accepts and returns an exact open custom server capability 1ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — modern discovery > surfaces an unsupported result type from a parseable discovery response without fallback 1ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — modern discovery > bounds a silent discovery probe and surfaces its timeout 41ms
+ ✓ |src:core| tests/src/core/validators.test.ts > isRFC3339Date > accepts every real month length, including both leap-rule branches 0ms
+ ✓ |src:core| tests/src/core/validators.test.ts > isRFC3339Date > refuses a day the calendar does not have 0ms
+ ✓ |src:core| tests/src/core/validators.test.ts > isRFC3339Date > refuses a malformed spelling and stays total over hostile input 1ms
+ ✓ |src:core| tests/src/core/validators.test.ts > isRFC3339DateTime > accepts the offset forms, a fractional second, and a leap second 0ms
+ ✓ |src:core| tests/src/core/validators.test.ts > isRFC3339DateTime > refuses a day the calendar does not have 0ms
+ ✓ |src:core| tests/src/core/validators.test.ts > isRFC3339DateTime > refuses a non-RFC-3339 spelling of a perfectly real instant 0ms
+ ✓ |src:core| tests/src/core/validators.test.ts > isJSONRPCRequest > accepts a request with a numeric id 0ms
+ ✓ |src:core| tests/src/core/validators.test.ts > isJSONRPCRequest > accepts a request with a string id 0ms
+ ✓ |src:core| tests/src/core/validators.test.ts > isJSONRPCRequest > rejects a notification, which is a distinct arm rather than an id-less request 0ms
+ ✓ |src:core| tests/src/core/validators.test.ts > isJSONRPCRequest > accepts a request with a params record 0ms
+ ✓ |src:core| tests/src/core/validators.test.ts > isJSONRPCRequest > rejects a wrong jsonrpc version 0ms
+ ✓ |src:core| tests/src/core/validators.test.ts > isJSONRPCRequest > rejects a missing method 0ms
+ ✓ |src:core| tests/src/core/validators.test.ts > isJSONRPCRequest > rejects a non-string method 0ms
+ ✓ |src:core| tests/src/core/validators.test.ts > isJSONRPCRequest > rejects a null id (valid only on a response) 0ms
+ ✓ |src:core| tests/src/core/validators.test.ts > isJSONRPCRequest > rejects a non-record params 0ms
+ ✓ |src:core| tests/src/core/validators.test.ts > isJSONRPCRequest > is total on adversarial input (null, primitives, arrays) 0ms
+ ✓ |src:core| tests/src/core/validators.test.ts > isJSONRPCRequest > rejects accessor, hidden, and own-undefined request populations 0ms
+ ✓ |src:core| tests/src/core/validators.test.ts > isJSONRPCRequest > rejects fractional and non-finite numeric ids 0ms
+ ✓ |src:core| tests/src/core/validators.test.ts > isJSONRPCNotification > accepts an id-less call, with and without params 0ms
+ ✓ |src:core| tests/src/core/validators.test.ts > isJSONRPCNotification > rejects a request, whatever the id is 0ms
+ ✓ |src:core| tests/src/core/validators.test.ts > isJSONRPCNotification > rejects an own id member even when its value is not a legal id 0ms
+ ✓ |src:core| tests/src/core/validators.test.ts > isJSONRPCNotification > rejects a wrong version, a non-string method, and a non-record params 0ms
+ ✓ |src:core| tests/src/core/validators.test.ts > isJSONRPCNotification > is total over the shared adversarial corpus 1ms
+ ✓ |src:core| tests/src/core/validators.test.ts > isJSONRPCRequest / isJSONRPCNotification — mutual exclusivity > never answers true for both arms on any input 2ms
+ ✓ |src:core| tests/src/core/validators.test.ts > isJSONRPCRequest / isJSONRPCNotification — mutual exclusivity > classifies every valid invocation as exactly one arm 1ms
+ ✓ |src:core| tests/src/core/validators.test.ts > isJSONRPCRequest / isJSONRPCNotification — mutual exclusivity > is total over the shared adversarial corpus 3ms
+ ✓ |src:core| tests/src/core/validators.test.ts > isMCPResult / isMCPLegacyResult > accepts any string resultType, including one this package does not know 1ms
+ ✓ |src:core| tests/src/core/validators.test.ts > isMCPResult / isMCPLegacyResult > rejects a missing or non-string resultType 0ms
+ ✓ |src:core| tests/src/core/validators.test.ts > isMCPResult / isMCPLegacyResult > rejects result metadata that is not exact result metadata 0ms
+ ✓ |src:core| tests/src/core/validators.test.ts > isMCPResult / isMCPLegacyResult > accepts the legacy arm exactly when no resultType is present 0ms
+ ✓ |src:core| tests/src/core/validators.test.ts > isMCPResult / isMCPLegacyResult > never answers true for both arms, and is total over the adversarial corpus 4ms
+ ✓ |src:core| tests/src/core/validators.test.ts > isJSONRPCResultResponse / isJSONRPCErrorResponse — mutual exclusivity > requires an id on the result arm and permits its omission only on the error arm 0ms
+ ✓ |src:core| tests/src/core/validators.test.ts > isJSONRPCResultResponse / isJSONRPCErrorResponse — mutual exclusivity > forbids the opposite member on each arm 0ms
+ ✓ |src:core| tests/src/core/validators.test.ts > isJSONRPCResultResponse / isJSONRPCErrorResponse — mutual exclusivity > never answers true for both arms on any input 1ms
+ ✓ |src:core| tests/src/core/validators.test.ts > isJSONRPCResultResponse / isJSONRPCErrorResponse — mutual exclusivity > requires an id on the result arm and permits its absence only on the error arm 0ms
+ ✓ |src:core| tests/src/core/validators.test.ts > isJSONRPCResultResponse / isJSONRPCErrorResponse — mutual exclusivity > rejects an invocation as either arm, and is total over the adversarial corpus 2ms
+ ✓ |src:core| tests/src/core/validators.test.ts > isJSONRPCResponse > accepts a success response with a result 0ms
+ ✓ |src:core| tests/src/core/validators.test.ts > isJSONRPCResponse > rejects a null id and a non-object result, neither of which the arms permit 0ms
+ ✓ |src:core| tests/src/core/validators.test.ts > isJSONRPCResponse > accepts an error response whose unreadable id is omitted 0ms
+ ✓ |src:core| tests/src/core/validators.test.ts > isJSONRPCResponse > accepts an error response 0ms
+ ✓ |src:core| tests/src/core/validators.test.ts > isJSONRPCResponse > rejects a response carrying BOTH result and error 0ms
+ ✓ |src:core| tests/src/core/validators.test.ts > isJSONRPCResponse > rejects a response carrying NEITHER result nor error 0ms
+ ✓ |src:core| tests/src/core/validators.test.ts > isJSONRPCResponse > rejects an error object missing a numeric code 0ms
+ ✓ |src:core| tests/src/core/validators.test.ts > isJSONRPCResponse > rejects a request (no id member, has method) as a response 0ms
+ ✓ |src:core| tests/src/core/validators.test.ts > isJSONRPCResponse > is total on adversarial input 1ms
+ ✓ |src:core| tests/src/core/validators.test.ts > isJSONRPCResponse > rejects accessor and hidden response populations 1ms
+ ✓ |src:core| tests/src/core/validators.test.ts > isJSONRPCResponse > rejects fractional/non-finite ids and malformed error populations 2ms
+ ✓ |src:core| tests/src/core/validators.test.ts > isJSONRPCMessage > accepts a request 0ms
+ ✓ |src:core| tests/src/core/validators.test.ts > isJSONRPCMessage > accepts a response 0ms
+ ✓ |src:core| tests/src/core/validators.test.ts > isJSONRPCMessage > rejects a non-message record 0ms
+ ✓ |src:core| tests/src/core/validators.test.ts > isInitializeRequest > accepts an initialize request 0ms
+ ✓ |src:core| tests/src/core/validators.test.ts > isInitializeRequest > rejects another method 0ms
+ ✓ |src:core| tests/src/core/validators.test.ts > isInitializeRequest > rejects a non-request 0ms
+ ✓ |src:core| tests/src/core/validators.test.ts > isModernRequest > routes a request with the reserved protocol-version key as modern 0ms
+ ✓ |src:core| tests/src/core/validators.test.ts > isModernRequest > routes on key presence even when the protocol-version value is not a string 0ms
+ ✓ |src:core| tests/src/core/validators.test.ts > isModernRequest > does not mistake unrelated legacy metadata for the modern discriminator 0ms
+ ✓ |src:core| tests/src/core/validators.test.ts > isModernRequest > is total over hostile and malformed input 1ms
+ ✓ |src:core| tests/src/core/validators.test.ts > stable Tasks extension validators > answers every value in the shared adversarial corpus without throwing 2ms
+ ✓ |src:core| tests/src/core/validators.test.ts > stable Tasks extension validators > accepts exactly the lifecycle states 0ms
+ ✓ |src:core| tests/src/core/validators.test.ts > stable Tasks extension validators > validates a task-creation result and rejects every member defect 1ms
+ ✓ |src:core| tests/src/core/validators.test.ts > stable Tasks extension validators > validates a task snapshot and enforces the payload its status owes 1ms
+ ✓ |src:core| tests/src/core/validators.test.ts > stable Tasks extension validators > separates the wire tasks/get answer from the manager’s own snapshot 2ms
+ ✓ |src:core| tests/src/core/validators.test.ts > stable Tasks extension validators > admits a notifications/tasks frame whose params hold together as a snapshot 2ms
+ ✓ |src:core| tests/src/core/validators.test.ts > stable Tasks extension validators > accepts notification metadata with or without the reserved subscription stamp 1ms
+ ✓ |src:core| tests/src/core/validators.test.ts > isJSONRPCError > accepts an integer code with a string message and any data payload 0ms
+ ✓ |src:core| tests/src/core/validators.test.ts > isJSONRPCError > refuses a non-integer code, a non-string message, and every hostile value 1ms
+ ✓ |src:core| tests/src/core/validators.test.ts > isJSONRPCError > agrees with the envelope guard that routes through it 0ms
+ ✓ |src:core| tests/src/core/validators.test.ts > published guard totality — every door, not the one the defect arrived through > covers every guard the barrel publishes 0ms
+ ✓ |src:core| tests/src/core/validators.test.ts > published guard totality — every door, not the one the defect arrived through > reports the unbounded direct key read the published guards must not contain 1ms
+ ✓ |src:core| tests/src/core/validators.test.ts > published guard totality — every door, not the one the defect arrived through > answers false rather than throwing for every hostile value and every throwing key 291ms
+ ✓ |src:core| tests/src/core/validators.test.ts > MCPError > preserves the remote message, numeric code, and structured context 0ms
+ ✓ |src:core| tests/src/core/validators.test.ts > MCPError > uses undefined context when the remote error carries no data 0ms
+ ✓ |src:core| tests/src/core/validators.test.ts > MCPError > represents HeaderMismatch without inventing a data payload 0ms
+ ✓ |src:core| tests/src/core/validators.test.ts > MCPError > preserves MissingRequiredClientCapability data 0ms
+ ✓ |src:core| tests/src/core/validators.test.ts > MCPError > preserves exact UnsupportedProtocolVersion negotiation data 0ms
+ ✓ |src:core| tests/src/core/validators.test.ts > isMCPError > narrows only real MCPError instances 0ms
+ ✓ |src:core| tests/src/core/validators.test.ts > isMCPError > is total over hostile and primitive inputs 0ms
+ ✓ |src:core| tests/src/core/validators.test.ts > the invocation arms > requires an id on a request and forbids one on a notification 0ms
+ ✓ |src:core| tests/src/core/validators.test.ts > the invocation arms > keeps a request and a notification mutually unassignable 0ms
+ ✓ |src:core| tests/src/core/validators.test.ts > the invocation arms > narrows the union on the id at runtime as well as in the type 0ms
+ ✓ |src:core| tests/src/core/validators.test.ts > the open MCPResult contract > accepts an unknown protocol discriminator 0ms
+ ✓ |src:core| tests/src/core/validators.test.ts > the open MCPResult contract > keeps every concrete result assignable without losing its literal 0ms
+ ✓ |src:core| tests/src/core/validators.test.ts > the open MCPResult contract > still narrows a known result to its literal through its own guard 1ms
+ ✓ |src:core| tests/src/core/validators.test.ts > the legacy result arm > is disjoint from the modern contract in both directions 0ms
+ ✓ |src:core| tests/src/core/validators.test.ts > the legacy result arm > carries the legacy branch payloads the modern contract would reject 0ms
+ ✓ |src:core| tests/src/core/validators.test.ts > the legacy result arm > is what the result arm accepts alongside the modern contract 0ms
+ ✓ |src:core| tests/src/core/validators.test.ts > the modern result contracts > requires every modern stamp on a tools/list result 0ms
+ ✓ |src:core| tests/src/core/validators.test.ts > the modern result contracts > makes the modern stamp the only difference between the call results 0ms
+ ✓ |src:core| tests/src/core/validators.test.ts > the modern result contracts > keeps the input-required union enforcing at least one member 0ms
+ ✓ |src:core| tests/src/core/validators.test.ts > the modern result contracts > keeps the elicitation parameters discriminated by mode 0ms
+ ✓ |src:core| tests/src/core/validators.test.ts > MCP resource guards > validates the shared page shapes and the text-xor-blob contents discriminator 1ms
+ ✓ |src:core| tests/src/core/validators.test.ts > MCP prompt guards > validates descriptors, pages, rich messages, results, and completion parameters 1ms
+ ✓ |src:core| tests/src/core/validators.test.ts > isFieldToken — the RFC 9110 token an x-mcp-header annotation must be > admits "Region" 0ms
+ ✓ |src:core| tests/src/core/validators.test.ts > isFieldToken — the RFC 9110 token an x-mcp-header annotation must be > admits "Priority" 0ms
+ ✓ |src:core| tests/src/core/validators.test.ts > isFieldToken — the RFC 9110 token an x-mcp-header annotation must be > admits "NonAscii" 0ms
+ ✓ |src:core| tests/src/core/validators.test.ts > isFieldToken — the RFC 9110 token an x-mcp-header annotation must be > admits "value" 0ms
+ ✓ |src:core| tests/src/core/validators.test.ts > isFieldToken — the RFC 9110 token an x-mcp-header annotation must be > admits "X-Custom_Name.1" 0ms
+ ✓ |src:core| tests/src/core/validators.test.ts > isFieldToken — the RFC 9110 token an x-mcp-header annotation must be > admits "!#$%&'*+-.^_`|~" 0ms
+ ✓ |src:core| tests/src/core/validators.test.ts > isFieldToken — the RFC 9110 token an x-mcp-header annotation must be > refuses a name carrying an empty string 0ms
+ ✓ |src:core| tests/src/core/validators.test.ts > isFieldToken — the RFC 9110 token an x-mcp-header annotation must be > refuses a name carrying a space 0ms
+ ✓ |src:core| tests/src/core/validators.test.ts > isFieldToken — the RFC 9110 token an x-mcp-header annotation must be > refuses a name carrying a colon 0ms
+ ✓ |src:core| tests/src/core/validators.test.ts > isFieldToken — the RFC 9110 token an x-mcp-header annotation must be > refuses a name carrying a non-ASCII letter 0ms
+ ✓ |src:core| tests/src/core/validators.test.ts > isFieldToken — the RFC 9110 token an x-mcp-header annotation must be > refuses a name carrying a horizontal tab 0ms
+ ✓ |src:core| tests/src/core/validators.test.ts > isFieldToken — the RFC 9110 token an x-mcp-header annotation must be > refuses a name carrying a newline 0ms
+ ✓ |src:core| tests/src/core/validators.test.ts > isFieldToken — the RFC 9110 token an x-mcp-header annotation must be > refuses a name carrying a delete character 0ms
+ ✓ |src:core| tests/src/core/validators.test.ts > isFieldToken — the RFC 9110 token an x-mcp-header annotation must be > refuses a name carrying a double quote 0ms
+ ✓ |src:core| tests/src/core/validators.test.ts > isFieldToken — the RFC 9110 token an x-mcp-header annotation must be > refuses a name carrying a comma 0ms
+ ✓ |src:core| tests/src/core/validators.test.ts > isFieldToken — the RFC 9110 token an x-mcp-header annotation must be > refuses a name carrying a leading space 0ms
+ ✓ |src:core| tests/src/core/validators.test.ts > isFieldToken — the RFC 9110 token an x-mcp-header annotation must be > refuses the non-string undefined 0ms
+ ✓ |src:core| tests/src/core/validators.test.ts > isFieldToken — the RFC 9110 token an x-mcp-header annotation must be > refuses the non-string null 0ms
+ ✓ |src:core| tests/src/core/validators.test.ts > isFieldToken — the RFC 9110 token an x-mcp-header annotation must be > refuses the non-string 42 0ms
+ ✓ |src:core| tests/src/core/validators.test.ts > isFieldToken — the RFC 9110 token an x-mcp-header annotation must be > refuses the non-string true 0ms
+ ✓ |src:core| tests/src/core/validators.test.ts > isFieldToken — the RFC 9110 token an x-mcp-header annotation must be > refuses the non-string {} 0ms
+ ✓ |src:core| tests/src/core/validators.test.ts > isFieldToken — the RFC 9110 token an x-mcp-header annotation must be > refuses the non-string undefined 0ms
+ ✓ |src:core| tests/src/core/validators.test.ts > isMCPHeaderPrimitive — the schema types an annotation may sit on > admits exactly the three primitive types the protocol projects 0ms
+ ✓ |src:core| tests/src/core/validators.test.ts > isMCPHeaderPrimitive — the schema types an annotation may sit on > refuses number, the structured types, and every non-type value 0ms
+ ✓ |src:core| tests/src/core/validators.test.ts > isMCPToolAnnotations > validates consumed annotation booleans and ignores unconsumed wire fields 0ms
+ ✓ |src:core| tests/src/core/validators.test.ts > isMCPToolAnnotations > answers every adversarial value with a boolean instead of throwing 1ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — W02-A: subscription capacity and containment > returns the capacity slot when an owner stops a subscription parked on its source 16ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — W02-A: subscription capacity and containment > still refuses a second subscription while the first is genuinely live 2ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — W02-A: subscription capacity and containment > produces no terminal for a subscription its caller aborted 13ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — W02-A: what the egress boundary keeps doing > answers no notification, through dispatch or handle 7ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — W02-A: what the egress boundary keeps doing > contains a revoked and a drifting executor result as one detail-free -32603 1ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — W02-A: what the egress boundary keeps doing > controls a consumer’s own generator, so stopping it settles against a parked producer 8ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — W02-B: admission and the owned argument record > shares one frozen empty argument record, and a tool writing to it fails 2ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — W02-B: admission and the owned argument record > carries one argument reference through digest, selector, call, and execution 1ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — W02-B: admission and the owned argument record > owns the dispatched request before any observer, so deferred mutation changes nothing 13ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — W02-B: admission and the owned argument record > fires request before the _meta bound check, in both directions, carrying only scalars 1ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — W02-B: admission and the owned argument record > carries a revoked-proxy caller to a handler by identity 1ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — W02-B: admission and the owned argument record > treats hostile own keys as inert data at both doors 2ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — W02-B: MRTR ordering, binding, and re-entry > checks the form capability before the principal resolver is reached 1ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — W02-B: MRTR ordering, binding, and re-entry > separates an empty declaration from an unparsable one, at both MRTR doors 3ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — W02-B: MRTR ordering, binding, and re-entry > refuses a retry carrying answers with no state, and one carrying state with no answers 3ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — W02-B: MRTR ordering, binding, and re-entry > owns the selector’s round and schema immediately 2ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — W02-B: MRTR ordering, binding, and re-entry > binds the issued schema into protected state and enforces it on the accepted response 10ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — W02-B: MRTR ordering, binding, and re-entry > checks the capability before the principal resolver and the seal on a first round 1ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — W02-B: MRTR ordering, binding, and re-entry > gates the next round rather than the answered one on a retry 3ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — W02-B: MRTR ordering, binding, and re-entry > separates an unrecoverable carrier from a malformed opened payload 3ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — W02-B: MRTR ordering, binding, and re-entry > verifies every structural binding before resolving the principal 6ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — W02-B: MRTR ordering, binding, and re-entry > binds the original id across three rounds while re-minting the round and its expiry 7ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — modern discovery > always gives discovery a deadline without delaying a modern HTTP peer 111ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — modern discovery > applies the configured 15_000ms deadline to the negotiation probe 1ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — modern discovery > does not fall back when the modern revision is pinned 1ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — modern discovery > surfaces a transport failure after the modern era has been settled 1ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — modern discovery > stamps every modern request and sends no client notification 6ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — tools() (discovery + local-tool wrapping) > lists the remote tools as local Tools, mapping inputSchema → parameters 3ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — tools() (discovery + local-tool wrapping) > the wrapped tool's execute calls back over the transport and returns the remote value 5ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — tools() (discovery + local-tool wrapping) > a wrapped remote-erroring tool, added to a ToolManager, is isolated into a failure result 4ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — W02-B: MRTR ordering, binding, and re-entry > ignores extra inputResponses keys and still requires the issued one 5ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — call() (the content round-trip) > places input continuation state and responses as top-level tools/call params 2ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — call() (the content round-trip) > omits requestState from a retry the peer sealed no state for 1ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — call() (the content round-trip) > continues an input-required call with protected state and responses 12ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — call() (the content round-trip) > keeps changed retry arguments under the server digest refusal 8ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — call() (the content round-trip) > returns a structured value on the complete arm 3ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — call() (the content round-trip) > returns a plain string value 2ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — call() (the content round-trip) > throws when the remote tool fails (isError), carrying the error text 3ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — call() (the content round-trip) > rejects a tools/call for an unknown remote tool (the manager not-found error) 3ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — result-type safety > rejects resultType input_required with an MCPError that names it 1ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — result-type safety > rejects resultType task with an MCPError that names it 1ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — result-type safety > rejects resultType future with an MCPError that names it 1ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — id correlation > routes each response to its own pending request across concurrent calls 5ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — id correlation > surfaces a server-initiated notification on the notification event 2ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — id correlation > preserves a remote JSON-RPC error code and data as an MCPError 2ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — id correlation > settles id-less errors over real HTTP without weakening correlated isolation 31ms
+ ✓ |src:core| tests/src/core/MCPTaskClient.test.ts > MCPTaskClient — pollIntervalMs is a datum, not a loop > writes NOTHING over a window many times the peer’s hinted interval 203ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — W02-B: MRTR ordering, binding, and re-entry > rechecks expiry after the selector’s await, so an expired continuation never executes 138ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — W02-B: MRTR ordering, binding, and re-entry > rechecks the prior expiry after the seal await 79ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — per-request timeout > rejects a request the server never answers, after the deadline 41ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — W02-B: MRTR ordering, binding, and re-entry > tells a first-round caller its state expired rather than naming a retry 63ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — per-request timeout > keeps the probe deadline scoped to discovery while another request is pending 206ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — disconnect > rejects every pending request and closes the transport 2ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — disconnect > rejects a request on a client that is not connected 1ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — disconnect > rejects a request on a client that has never connected 0ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — disconnect > answers the discovery probe on a client that has never connected 1ms
+ ✓ |src:core| tests/src/core/MCPTaskClient.test.ts > MCPTaskClient — pollIntervalMs is a datum, not a loop > carries the peer’s pollIntervalMs to the caller untouched 205ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — W02-B: MRTR ordering, binding, and re-entry > still names the retry when a further round reseals past the prior window 63ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — W02-B: MRTR ordering, binding, and re-entry > introduces no consume-once: one protected state answers twice under fresh ids 5ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — W02-B: MRTR ordering, binding, and re-entry > contains a throwing selector and principal as one detail-free -32603 reported once 2ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — W02-B: MRTR ordering, binding, and re-entry > produces input_required from the built-in tools/call alone 1ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — W02-B: custom carriers and the resolved-option seam > delivers an owned carrier to a registered prompts/get and refuses malformed ones first 1ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — W02-B: custom carriers and the resolved-option seam > resolves options into every built-in registration 2ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — W03-A: the stable Tasks extension > defers a declared call and answers the manager task as a flat modern result 2ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — W03-A: the stable Tasks extension > refuses a deployment-selected task when the request lacks the capability 1ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — W03-A: the stable Tasks extension > does not reuse a capability declared at connect time for a later request 1ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — W03-A: the stable Tasks extension > runs the call inline when the deferral policy declines 1ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — W03-A: the stable Tasks extension > forwards a repeated operation key to the manager unchanged 2ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — W03-A: the stable Tasks extension > resolves the multi-round input mechanism before it considers a task 2ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — W03-A: the stable Tasks extension > answers a unary task instead of opening a progress stream 1ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — W03-A: the stable Tasks extension > supplies the call in hand with no cancellation signal of its own 1ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — W03-A: the stable Tasks extension > loses the task when the manager binds the request signal to the work 1ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — W03-A: the stable Tasks extension > keeps the task when the manager gives the work a lifetime it owns 41ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — W03-A: the stable Tasks extension > answers a successful task result for a task the manager started as input_required 1ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — W03-A: the stable Tasks extension > contains a deferral policy throw as a detail-free internal error 1ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — W03-A: the stable Tasks extension > contains a manager start throw as a detail-free internal error 1ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — W03-A: the stable Tasks extension > refuses a task the manager returned outside the content bound 1ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — W03-A: the stable Tasks extension > carries the manager optional members exactly as it produced them 2ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — W03-A: the stable Tasks extension > refuses an empty deferral key rather than silently running the call inline 1ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — W03-A: the stable Tasks extension > refuses a selected task at the legacy revision boundary 1ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — W03-A: the stable Tasks extension > advertises the extension through discovery only when it is configured 1ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — W03-A: the stable Tasks extension > leaves an unconfigured server answering exactly what it answered before 4ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — W03-B: reading one durable task > answers a task snapshot as a complete result, never a task result 2ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — W03-B: reading one durable task > carries each status payload the detail union declares 3ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — W03-B: reading one durable task > answers never-existed, purged, and unauthorized with one byte-identical refusal 4ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — disconnect > fires the disconnect event and is idempotent 1ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — connect/disconnect ordering > joins a concurrent connect into one handshake and one connect event 1ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — connect/disconnect ordering > aborts an in-flight connect when disconnect is awaited, closing the transport once 8ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — connect/disconnect ordering > closes the transport when a modern negotiation rejects 1ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — connect/disconnect ordering > waits for an in-flight disconnect before starting a reconnect 1ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — connect/disconnect ordering > runs two concurrent discover() calls as two independent requests 1ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — connect/disconnect ordering > closes the transport once when a disconnect lands during a failing attempt's own close 61ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — W03-B: reading one durable task > keeps reading a task whose ttlMs is null through a purge that removes the rest 2ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — W03-B: reading one durable task > refuses an absent, non-string, empty, or over-bound taskId with invalid params 3ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — W03-B: reading one durable task > refuses a snapshot the manager returned malformed or outside the content bound 2ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — W03-B: reading one durable task > answers a complete result for a failed task rather than an internal error 1ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — W03-B: reading one durable task > reports a mutated terminal task faithfully both times, holding no snapshot of its own 2ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — W03-B: reading one durable task > carries ttlMs and pollIntervalMs through unchanged and invents neither 3ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — W03-B: answering and stopping one durable task > forwards every input response verbatim and answers an empty complete result 4ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — W03-B: answering and stopping one durable task > forwards an already-satisfied key again and still answers success 3ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — W03-B: answering and stopping one durable task > refuses an update whose inputResponses are absent or not an object 4ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — W03-B: answering and stopping one durable task > acknowledges a cancellation the manager ignores, asserting nothing about the outcome 2ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — connect/disconnect ordering > settles a superseded connect that was retrying discovery after an unsupported version 62ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — connect/disconnect ordering > fires no disconnect event for a client that was never connected 63ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — connect/disconnect ordering > installs nothing when a modern negotiation is superseded after a successful discovery 1ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — connect/disconnect ordering > closes a negotiation superseded while the transport was still opening, once and after it opened 15ms
+ ✓ |src:core| tests/src/core/MCPTaskClient.test.ts > MCPTaskClient — pollIntervalMs is a datum, not a loop > leaves pollIntervalMs absent when the peer published none 205ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — W03-B: answering and stopping one durable task > stops a cooperating task and reports the cancelled snapshot afterwards 217ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > bindServer — exchange ownership and inbound cancellation > releases a held-open answer that was cancelled rather than pumping it 16ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > bindServer — exchange ownership and inbound cancellation > a cancellation naming a request that is not live is a silent no-op 15ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — connect/disconnect ordering > opens one transport when the transport re-enters connect synchronously from start 1ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — connect/disconnect ordering > closes nothing when disconnect is called before any connect 0ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — connect/disconnect ordering > makes a second disconnect await the close already in flight 30ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — connect/disconnect ordering > publishes the teardown before running it, so a caller sees one coherent transition 1ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — connect/disconnect ordering > surfaces a failing close from an attempt's own unwind and keeps that session reachable 1ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — connect/disconnect ordering > joins two reconnects issued while a superseded attempt is still opening 29ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — connect/disconnect ordering > waits for a superseded attempt to settle before opening the next session 47ms
+ ✓ |src:core| tests/src/core/MCPTaskClient.test.ts > MCPTaskClient — cancellation never reaches a task > sends ZERO task frames when a call that already became a task is aborted 204ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — W03-B: answering and stopping one durable task > refuses an update and a cancellation of an unresolved task identically to a read 3ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — W03-B: answering and stopping one durable task > refuses an update and a cancellation it could not prove, invoking neither 3ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — W03-B: the capability gate on every tasks method > refuses a non-declaring client with the generic capability code and the tasks payload 2ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — W03-B: the capability gate on every tasks method > distinguishes the elicitation instance from the tasks instance by payload alone 2ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — W03-B: the capability gate on every tasks method > refuses that same undeclared client when deployment policy selects a task 1ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — W03-B: the capability gate on every tasks method > ignores a capability declared at connect time but not on the tasks request 2ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — W03-B: the capability gate on every tasks method > refuses a non-declaring client before it inspects the parameters 1ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — W03-B: the contract obligations MCP cannot enforce > hands out a taskId a prompt read cannot find when the manager resolves before it persists 50ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — W03-B: the contract obligations MCP cannot enforce > lets a second principal reach the first principal task when the manager derives the handle from the key 3ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — W03-B: the contract obligations MCP cannot enforce > keeps a second principal out when the manager mints an opaque handle and scopes it 3ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — W03-B: the contract obligations MCP cannot enforce > contains a manager throw on every tasks method as a detail-free internal error 3ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — W03-B: the contract obligations MCP cannot enforce > hands every tasks method the resolved per-request options 5ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — W03-B: the contract obligations MCP cannot enforce > answers a tasks notification with nothing at all 1ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — W03-B: the tasks family on a subscriptions/listen stream > omits an identifier the store refuses, with nothing that says which refusal it was 4ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — W03-B: the tasks family on a subscriptions/listen stream > acknowledges the resolved identifiers in request order with duplicates intact 1ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — W03-B: the tasks family on a subscriptions/listen stream > omits the member entirely when the server cannot push tasks 2ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — W03-B: the tasks family on a subscriptions/listen stream > delivers an agreed identifier with no store read at delivery time 2ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCPServer — W03-B: the tasks family on a subscriptions/listen stream > refuses a malformed taskIds member as invalid params before reading the store 2ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > the held-open stream contract > yields notifications, returns a response, and accepts nothing 0ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > the held-open stream contract > binds a subscription producer to the same notification yield type 0ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCP resources/list > forwards the opaque cursor and stamps each resource page 2ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCP resources/list > omits nextCursor when the manager page capacity exceeds its remaining item count 1ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCP resources/read > reads a concrete URI from an in-memory registry and forwards method options 1ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCP resources/read > uses -32602 when the resource manager returns undefined 1ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCP resources/read > forwards inputResponses and requestState to the resource manager 1ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCP resources/read > may answer input_required without changing its result discriminator 1ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCP resources/read > refuses a manager round the client did not declare the capability for 2ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCP resources/templates/list > projects the manager-owned RFC 6570 template without expanding it 1ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCP resource capability and registration > advertises and registers resources only when the resource manager is configured 1ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCP resource capability and registration > keeps prompts/list gated while resources/list succeeds 1ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCP resource notifications > routes only opted-in resource updates and list changes 1ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCP prompts/list > forwards the shared opaque cursor and stamps each prompt page 2ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCP prompts/list > omits nextCursor when page capacity exceeds the remaining prompt count 1ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCP prompts/get > resolves string arguments to rich prompt messages and forwards method options 1ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCP prompts/get > may answer input_required without adding prompt cache fields 1ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCP prompts/get > refuses a manager round the client did not declare the capability for 2ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCP prompts/get > accepts a string, refuses a non-string before lookup, and maps a missing prompt 2ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCP completion/complete > discriminates prompt and resource references and refuses a missing reference 2ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCP completion/complete > caps a source of more than 100 candidates and marks the projection incomplete 1ms
+ ✓ |src:core| tests/src/core/MCPServer.test.ts > MCP prompt and completion capability gating > keeps prompt, resource, and completion registration independently gated 2ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — connect/disconnect ordering > lists remote tools over a peer whose close fails, deciding no ownership at all 1ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — connect/disconnect ordering > reports a failing teardown close, still announces the loss, and closes again on a retry 1ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — connect/disconnect ordering > closes a connection a faulted teardown still owes before the next connect opens 1ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — connect/disconnect ordering > closes a connection a faulted attempt-side close still owes before the next connect opens 1ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — connect/disconnect ordering > closes an owed connection for a caller that arrived during the faulting teardown 1ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — connect/disconnect ordering > rejects a teardown whose close never returns instead of wedging every later caller 72ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > bindServer — exchange ownership and inbound cancellation > retires each live-request entry on exit, so a closed carrier aborts only what is still running 818ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > bindClient > completes a modern discovery round trip over the duplex transport 17ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > bindClient > drops a malformed inbound message rather than throwing 1ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > bindClient > unbind detaches inbound delivery WITHOUT closing the transport 0ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > bindClient > closing the transport reaches client.transport.emitter close 0ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > bindClient > rebind after unbind on the SAME transport delivers exactly one message emit per reply 1ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > bindClient > a client whose duplex transport was NOT bound stays pending rather than resolving or throwing 77ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > bindClient — no registry, and why > delivers an inbound cancellation as a message instead of consuming it as a control frame 14ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > buildCancelledNotification > names the cancelled request and carries no id of its own 0ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > buildCancelledNotification > carries an optional reason and keeps a string id verbatim 0ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > buildCancelledNotification > omits the reason key entirely rather than sending an empty one 0ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > matchesResultType > admits the arms tools/call may answer with 0ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > matchesResultType > admits only complete for every other method 0ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > matchesResultType > is a whitelist — an unknown arm is refused even on tools/call 0ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > extractContentText > joins every text block and stays total over anything else 0ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > buildCallOutcome > prefers the structured value over the rendered text 0ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > buildCallOutcome > treats an explicit null as the value it is 0ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > buildCallOutcome > parses the text when there is no structured value, raw when it is not JSON 0ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > buildCallOutcome > carries a valid task arm through, frozen 0ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > buildCallOutcome > refuses a task or input arm whose payload does not match its schema 1ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > buildCallOutcome > throws a remote failure with its text, or names the tool when it carried none 0ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > the resolved method options > requires a signal where the caller-facing options make it optional 0ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > the resolved method options > hands the seam a signal that is never absent 0ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > the subscription filter contract > pins the subscription filter keys to their wire spellings 0ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > encodeSentinel — the wire form a standard header value must travel as > leaves a plain printable ASCII value literal 0ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > encodeSentinel — the wire form a standard header value must travel as > encodes a non-ASCII value 0ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > encodeSentinel — the wire form a standard header value must travel as > encodes a value carrying leading or trailing whitespace 0ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > encodeSentinel — the wire form a standard header value must travel as > encodes a value carrying an embedded newline 0ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > encodeSentinel — the wire form a standard header value must travel as > encodes a value wearing the sentinel markers, well formed or not 0ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > encodeSentinel — the wire form a standard header value must travel as > leaves a value missing either marker literal 0ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > decodeSentinel — the value a standard header carries > returns a non-sentinel value unchanged 0ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > decodeSentinel — the value a standard header carries > excludes optional whitespace around a field value per RFC 9110 0ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > decodeSentinel — the value a standard header carries > decodes a well-formed sentinel back to its UTF-8 value 0ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > decodeSentinel — the value a standard header carries > refuses a sentinel whose payload has invalid padding 0ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > decodeSentinel — the value a standard header carries > refuses a sentinel whose payload has non-alphabet characters 0ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > decodeSentinel — the value a standard header carries > refuses a sentinel whose payload sets a bit the padding discards 0ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > decodeSentinel — the value a standard header carries > refuses a sentinel whose payload is not UTF-8 0ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > decodeSentinel — the value a standard header carries > treats a value missing either marker as literal 0ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > decodeSentinel — the value a standard header carries > treats a value too short to hold both markers as literal 0ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > decodeSentinel — the value a standard header carries > reads its markers from the one pair of exported constants 0ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > decodeSentinel — the value a standard header carries > round-trips "test_simple_text" through the sentinel 0ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > decodeSentinel — the value a standard header carries > round-trips "test://static-text" through the sentinel 0ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > decodeSentinel — the value a standard header carries > round-trips "café" through the sentinel 0ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > decodeSentinel — the value a standard header carries > round-trips "﻿x" through the sentinel 0ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > decodeSentinel — the value a standard header carries > round-trips "  padded  " through the sentinel 0ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > decodeSentinel — the value a standard header carries > round-trips "two\nlines" through the sentinel 0ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > decodeSentinel — the value a standard header carries > round-trips "=?base64?SGVsbG8=?=" through the sentinel 0ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > decodeSentinel — the value a standard header carries > round-trips "=?base64?SGVsbG8?=" through the sentinel 0ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > decodeSentinel — the value a standard header carries > round-trips "=?base64?AAAA?=BBBB?=" through the sentinel 0ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > decodeSentinel — the value a standard header carries > round-trips "SGVsbG8=" through the sentinel 0ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > buildHeaderParameters — the x-mcp-header projections one inputSchema declares > reads every annotated primitive with its path and declared type 1ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > buildHeaderParameters — the x-mcp-header projections one inputSchema declares > admits an annotation nested through a chain of properties keys 0ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > buildHeaderParameters — the x-mcp-header projections one inputSchema declares > admits a schema carrying no annotation at all 0ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > buildHeaderParameters — the x-mcp-header projections one inputSchema declares > refuses the whole definition for an empty annotation 0ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > buildHeaderParameters — the x-mcp-header projections one inputSchema declares > refuses the whole definition for a space in the name 0ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > buildHeaderParameters — the x-mcp-header projections one inputSchema declares > refuses the whole definition for a colon in the name 0ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > buildHeaderParameters — the x-mcp-header projections one inputSchema declares > refuses the whole definition for a non-ASCII name 0ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > buildHeaderParameters — the x-mcp-header projections one inputSchema declares > refuses the whole definition for a control character in the name 0ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > buildHeaderParameters — the x-mcp-header projections one inputSchema declares > refuses the whole definition for a non-string annotation 0ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > buildHeaderParameters — the x-mcp-header projections one inputSchema declares > refuses the whole definition for an object-typed parameter 0ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > buildHeaderParameters — the x-mcp-header projections one inputSchema declares > refuses the whole definition for an array-typed parameter 0ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > buildHeaderParameters — the x-mcp-header projections one inputSchema declares > refuses the whole definition for a null-typed parameter 0ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > buildHeaderParameters — the x-mcp-header projections one inputSchema declares > refuses the whole definition for a number-typed parameter 0ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > buildHeaderParameters — the x-mcp-header projections one inputSchema declares > refuses the whole definition for an untyped parameter 0ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > buildHeaderParameters — the x-mcp-header projections one inputSchema declares > refuses the whole definition for a same-case duplicate name 0ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > buildHeaderParameters — the x-mcp-header projections one inputSchema declares > refuses the whole definition for a different-case duplicate name 0ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > buildHeaderParameters — the x-mcp-header projections one inputSchema declares > refuses an annotation unreachable through properties — inside an array item schema 0ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > buildHeaderParameters — the x-mcp-header projections one inputSchema declares > refuses an annotation unreachable through properties — inside a composition keyword 0ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > buildHeaderParameters — the x-mcp-header projections one inputSchema declares > refuses an annotation unreachable through properties — inside a conditional keyword 0ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > buildHeaderParameters — the x-mcp-header projections one inputSchema declares > refuses an annotation unreachable through properties — inside a $defs reference target 0ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > buildHeaderParameters — the x-mcp-header projections one inputSchema declares > refuses an annotation unreachable through properties — inside additionalProperties 0ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > buildHeaderParameters — the x-mcp-header projections one inputSchema declares > refuses an annotation unreachable through properties — on the schema root itself 0ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > buildHeaderParameters — the x-mcp-header projections one inputSchema declares > refuses a schema that is not a record 0ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > buildHeaderParameters — the x-mcp-header projections one inputSchema declares > refuses a properties chain deeper than the package JSON depth bound 0ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > buildHeaderParameters — the x-mcp-header projections one inputSchema declares > terminates on a schema whose properties chain cycles back on itself 0ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > countHeaderAnnotations — how many x-mcp-header keys a value carries anywhere > counts every occurrence whatever its position 0ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > countHeaderAnnotations — how many x-mcp-header keys a value carries anywhere > counts nothing in a value carrying none 0ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > countHeaderAnnotations — how many x-mcp-header keys a value carries anywhere > terminates on a cyclic value 0ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > extractHeaderAnnotations — the reachable half of the annotation walk > reads only what a properties chain reaches, leaving the rest to the count 0ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > extractHeaderAnnotations — the reachable half of the annotation walk > reports a non-record schema as carrying nothing rather than as invalid 0ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > renderHeaderValue — the text one projected argument travels as > carries a string as itself 0ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > renderHeaderValue — the text one projected argument travels as > renders an integer in decimal 0ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > renderHeaderValue — the text one projected argument travels as > renders a boolean lowercase 0ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > renderHeaderValue — the text one projected argument travels as > carries nothing when the runtime value contradicts the declared type 0ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > buildHeaderProjection — the Mcp-Param headers one call carries > projects each annotated argument through the sentinel encoding 0ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > buildHeaderProjection — the Mcp-Param headers one call carries > omits a header whose argument is absent or null 0ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > buildHeaderProjection — the Mcp-Param headers one call carries > projects an empty string as an empty header value rather than omitting it 0ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > buildHeaderProjection — the Mcp-Param headers one call carries > projects nothing for an empty parameter table or a non-record argument bag 0ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > extractToolSchema — the named tool inputSchema inside a tools/list answer > reads the named tool schema 0ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > extractToolSchema — the named tool inputSchema inside a tools/list answer > reads nothing for an unlisted tool or an answer carrying no tool array 0ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > decodeEvent — one SSE data payload → its JSON-RPC message > decodes a well-formed JSON-RPC envelope to the parsed message 0ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > decodeEvent — one SSE data payload → its JSON-RPC message > is undefined for malformed JSON (a JSON.parse throw, caught not raised) 0ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > decodeEvent — one SSE data payload → its JSON-RPC message > is undefined for valid JSON that is not a JSON-RPC message 0ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > buildResponseError — non-success HTTP reply without a JSON-RPC message > names an event stream that yielded no message 21ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > buildResponseError — non-success HTTP reply without a JSON-RPC message > names a JSON body that parsed to no message 1ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > buildResponseError — non-success HTTP reply without a JSON-RPC message > distinguishes an absent content type from an unsupported one 0ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > readEventStream — decode a Response SSE body into JSON-RPC messages > decodes two data events into both messages, in order 8ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > readEventStream — decode a Response SSE body into JSON-RPC messages > reassembles across the parser: a fully-terminated event emits, an unterminated trailing event does not 1ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > readEventStream — decode a Response SSE body into JSON-RPC messages > drops a data event whose payload is not a JSON-RPC message, keeping the valid ones 1ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > readEventStream — decode a Response SSE body into JSON-RPC messages > is [] for an empty body 0ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > readEventStream — decode a Response SSE body into JSON-RPC messages > is [] for a null-body Response (no stream) 0ms
+ ✓ |src:core| tests/src/core/helpers.test.ts > readEventStream — decode a Response SSE body into JSON-RPC messages > is [] for a non-event-stream JSON body (no data: events to dispatch) 0ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — connect/disconnect ordering > settles an attempt whose own close never returns, on a path no injected start can reach 63ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — connect/disconnect ordering > joins a close that outran its deadline instead of shutting one connection down twice 63ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — connect/disconnect ordering > recovers when a close that outran its deadline finally succeeds 50ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — connect/disconnect ordering > issues a fresh close when the one it stopped waiting for finally rejects 60ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — connect/disconnect ordering > closes nothing for a transport whose start opened and then rejected 1ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPMessageTransportInterface — a failing send rejects, never throws > strands nothing when a non-async send REJECTS, so a later abort writes nothing 12ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPMessageTransportInterface — a failing send rejects, never throws > records what a synchronously throwing send costs: a frame naming an undelivered request 5ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — observer safety > a throwing connect listener cannot corrupt connect, and routes to the error handler 9ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — discovery requires resultType > refuses a modern discovery result that carries no resultType 4ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — discovery requires resultType > fails CLOSED on connect rather than degrading a bad modern peer to legacy 4ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — discovery requires resultType > CONTROL — a different method omitting resultType is not refused 6ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — call() result polymorphism > answers the task arm when the server deferred the call 5ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — call() result polymorphism > answers the input_required arm when the call needs another round trip 2ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — call() result polymorphism > CONTROL — an unknown resultType is refused even on tools/call 2ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — call() result polymorphism > refuses a task arm whose payload is malformed 2ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — call() result polymorphism > refuses an input arm carrying neither requests nor state 2ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — call() result polymorphism > a wrapped tool throws rather than handing an agent a deferred answer 3ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — call() prefers structuredContent > returns the structured value rather than re-parsing the rendered text 2ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — call() prefers structuredContent > prefers an explicit null structured value over the text blocks 2ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — call() prefers structuredContent > falls back to the parsed text when the peer sent no structured value 2ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — call() prefers structuredContent > falls back to the raw text when it is not JSON 2ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — call() prefers structuredContent > carries a value-less success as an undefined value 2ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — call() prefers structuredContent > still throws a remote isError before reading any structured value 2ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — wrapped tool context > omits wrapped annotations when the wire descriptor has empty annotations 4ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — wrapped tool context > maps readOnlyHint while ignoring an unconsumed malformed openWorldHint 2ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — wrapped tool context > forwards a wrapped tool context signal to the server and preserves the connection after abort 9ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — wrapped tool context > carries title and inverse-projected annotations while advertising the authored summary 3ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — per-request cancellation > rejects the caller and tells a duplex peer which request was cancelled 1ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — per-request cancellation > carries a string abort reason on the wire and omits a non-string one 1ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — per-request cancellation > CONTROL — a duplex:false carrier settles the caller and sends ZERO frames 1ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — per-request cancellation > refuses an already-aborted caller before anything is written 1ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — per-request cancellation > sends nothing when the request is already over — a task is not the request 14ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — per-request cancellation > discards a response that arrives after the abort, silently 15ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — per-request cancellation > cancels one request and leaves the connection and its siblings alone 6ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — per-request cancellation > cancels every request one controller is driving 5ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — request-scoped progress > stamps the progress token only where a caller is listening, and routes the frames 6ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — request-scoped progress > claims stale-stamped progress for the active call before subscription routing 6ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — request-scoped progress > stamps the token on the watched request and not on its unwatched sibling 4ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — request-scoped progress > claims a frame naming an in-flight request and leaves one naming nothing 20ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — request-scoped progress > claims a well-formed frame and leaves a malformed one 15ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — request-scoped progress > contains a throwing progress handler on the client error channel 5ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — every registration is released on every exit > releases both on the exit nobody enumerates: a rejecting transport.send 41ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — every registration is released on every exit > releases both on the other exit nobody enumerates: disconnect mid-flight 31ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — every registration is released on every exit > releases both when the request simply answers 48ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — every registration is released on every exit > releases both on the request deadline 76ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — an uncorrelated response is discarded > never publishes a response nobody is waiting for as a notification 11ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — subscriptions/listen > sends the method and an empty notifications member when the filter is undefined 16ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — subscriptions/listen > yields stamped frames in order as owned snapshots and returns the validated result 15ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — subscriptions/listen > carries a task transition to a subscribed client, filtered and stamped 11ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — subscriptions/listen > keeps concurrent subscriptions isolated by their stamped request ids 6ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — subscriptions/listen > keeps an unstamped notification on the client notification event 3ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — subscriptions/listen > drops a late stamped frame after its subscription has closed 4ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — subscriptions/listen > discards stale-stamped frames that no active call or subscription claims 10ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — subscriptions/listen > rejects a peer subscription error with MCPError 4ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — subscriptions/listen > rejects a malformed subscription terminal with MCPError 3ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — subscriptions/listen > rejects the first read of a pre-aborted stream without sending 1ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — subscriptions/listen > snapshots an accessor signal before a later read aborts it 1ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — subscriptions/listen > rejects a parked read with the abort reason and sends notifications/cancelled 2ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — subscriptions/listen > fails loudly when the subscription frame queue reaches capacity 4ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — subscriptions/listen > delivers to a read parked past the configured request deadline 65ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — subscriptions/listen > rejects a parked subscription read when the client disconnects 11ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — subscriptions/listen > rejects a parked subscription read when the transport closes 11ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > the client transport event map > surfaces a parsed JSON-RPC message on the client carrier 1ms
+
+ Test Files  17 passed (17)
+      Tests  935 passed (935)
+   Start at  05:59:09
+   Duration  3.19s (transform 6.48s, setup 7.92s, import 4.08s, tests 6.87s, environment 3ms)
+
+
+=== U4d GREEN — browser project ===
+
+npm notice run @orkestrel/mcp@0.0.30 npx
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=verbose --project src:browser
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/mcp
+
+ ✓ |src:browser (chromium)| tests/src/browser/factories.test.ts:92:2 > createWebSocketClientTransport — the browser client against the Node-face WS server > connect → tools/list → tools/call(add): a value round-trips over real WebSocket frames 30ms
+ ✓ |src:browser (chromium)| tests/src/browser/factories.test.ts:113:2 > createWebSocketClientTransport — the browser client against the Node-face WS server > a remote erroring tool throws locally (isError → throw) 7ms
+ ✓ |src:browser (chromium)| tests/src/browser/factories.test.ts:125:2 > createWebSocketClientTransport — the browser client against the Node-face WS server > queues sends issued before open and flushes them, in order, once the socket opens 73ms
+ ✓ |src:browser (chromium)| tests/src/browser/factories.test.ts:145:2 > createWebSocketClientTransport — the browser client against the Node-face WS server > a server-initiated close fires the transport close event exactly once 63ms
+ ✓ |src:browser (chromium)| tests/src/browser/factories.test.ts:160:2 > createWebSocketClientTransport — the browser client against the Node-face WS server > a malformed inbound frame surfaces on error and does not throw 59ms
+ ✓ |src:browser (chromium)| tests/src/browser/factories.test.ts:177:2 > createWebSocketClientTransport — the browser client against the Node-face WS server > offers the default mcp protocol token that createWebSocketServer selects 18ms
+ ✓ |src:browser (chromium)| tests/src/browser/factories.test.ts:193:2 > createWebSocketClientTransport — the browser client against the Node-face WS server > A3: send() after close() rejects the message — no delivery, no resolve, and no queue 110ms
+ ✓ |src:browser (chromium)| tests/src/browser/factories.test.ts:243:2 > createHTTPClientTransport — one protocol-version projection, shared with the Node face > projects a complete modern context exactly as the Node face does 1ms
+ ✓ |src:browser (chromium)| tests/src/browser/factories.test.ts:243:2 > createHTTPClientTransport — one protocol-version projection, shared with the Node face > projects a version with NO capability declaration exactly as the Node face does 0ms
+ ✓ |src:browser (chromium)| tests/src/browser/factories.test.ts:243:2 > createHTTPClientTransport — one protocol-version projection, shared with the Node face > projects a version with a non-object capability declaration exactly as the Node face does 0ms
+ ✓ |src:browser (chromium)| tests/src/browser/factories.test.ts:243:2 > createHTTPClientTransport — one protocol-version projection, shared with the Node face > projects a complete context carrying an invalid logging level exactly as the Node face does 0ms
+ ✓ |src:browser (chromium)| tests/src/browser/factories.test.ts:243:2 > createHTTPClientTransport — one protocol-version projection, shared with the Node face > projects a non-string version — modern by key presence, projecting nothing exactly as the Node face does 0ms
+ ✓ |src:browser (chromium)| tests/src/browser/factories.test.ts:267:2 > createHTTPClientTransport — one protocol-version projection, shared with the Node face > carries contexts that parse on only ONE of the paths 1ms
+ ✓ |src:browser (chromium)| tests/src/browser/factories.test.ts:287:2 > createHTTPClientTransport — one protocol-version projection, shared with the Node face > a real peer receives the projected header for every context in the table 26ms
+ ✓ |src:browser (chromium)| tests/src/browser/factories.test.ts:307:2 > createHTTPClientTransport — the browser client against the Node-face streamable-HTTP session server > connect → tools/list → tools/call(add): a value round-trips over fetch + SSE 21ms
+ ✓ |src:browser (chromium)| tests/src/browser/factories.test.ts:324:2 > createHTTPClientTransport — the browser client against the Node-face streamable-HTTP session server > stamps modern protocol and method headers from each body and names only tools/call 13ms
+ ✓ |src:browser (chromium)| tests/src/browser/factories.test.ts:359:2 > createHTTPClientTransport — the browser client against the Node-face streamable-HTTP session server > captures the mcp-session-id on initialize and reuses it across two sequential requests 18ms
+ ✓ |src:browser (chromium)| tests/src/browser/factories.test.ts:388:2 > createHTTPClientTransport — the browser client against the Node-face streamable-HTTP session server > captures the negotiated protocol and sends it on the subsequent real fetch request 6ms
+ ✓ |src:browser (chromium)| tests/src/browser/factories.test.ts:413:2 > createHTTPClientTransport — the browser client against the Node-face streamable-HTTP session server > rejects an unsupported negotiated protocol (F4) and never captures its header 8ms
+ ✓ |src:browser (chromium)| tests/src/browser/factories.test.ts:451:2 > createHTTPClientTransport — the browser client against the Node-face streamable-HTTP session server > decodes the Streamable-HTTP SSE reply leg (the default framing this client requests) 7ms
+ ✓ |src:browser (chromium)| tests/src/browser/factories.test.ts:478:2 > createHTTPClientTransport — the browser client against the Node-face streamable-HTTP session server > rejects a server error response carrying no JSON-RPC message 4ms
+ ✓ |src:browser (chromium)| tests/src/browser/factories.test.ts:491:2 > createMessagePortTransport — a symmetric MCPTransportInterface over a real MessageChannel > connect → tools/list → tools/call(add): a value round-trips over port1/port2 7ms
+ ✓ |src:browser (chromium)| tests/src/browser/factories.test.ts:512:2 > createMessagePortTransport — a symmetric MCPTransportInterface over a real MessageChannel > a remote erroring tool throws locally (isError → throw) 3ms
+ ✓ |src:browser (chromium)| tests/src/browser/factories.test.ts:541:2 > duplex — driven per carrier, and observed at the peer > the WebSocket carrier declares duplex and really carries the frame 68ms
+ ✓ |src:browser (chromium)| tests/src/browser/factories.test.ts:557:2 > duplex — driven per carrier, and observed at the peer > the Streamable-HTTP carrier declares no such channel and sends nothing 68ms
+ ✓ |src:browser (chromium)| tests/src/browser/factories.test.ts:571:2 > duplex — driven per carrier, and observed at the peer > createDuplexClientTransport over a real MessageChannel carries the frame 58ms
+ ✓ |src:browser (chromium)| tests/src/browser/factories.test.ts:589:2 > duplex — driven per carrier, and observed at the peer > createDuplexClientTransport over a real scope pair carries the frame 62ms
+ ✓ |src:browser (chromium)| tests/src/browser/factories.test.ts:611:2 > duplex — driven per carrier, and observed at the peer > CONTROL: a lying one-way carrier declares duplex and the driven proof fails for it 62ms
+ ✓ |src:browser (chromium)| tests/src/browser/factories.test.ts:714:2 > createScopeServer — the default scope is the current one > wires the real global scope when no scope argument is supplied 62ms
+ ✓ |src:browser (chromium)| tests/src/browser/factories.test.ts:736:2 > createScopeServer — the default scope is the current one > stops listening on the global scope, so a later event binds nothing 31ms
+ ✓ |src:browser (chromium)| tests/src/browser/factories.test.ts:753:2 > createScopeServer — dedicated-worker-shaped scope (implicit, portless channel) > a portless string-data message round-trips through the implicit scope channel 53ms
+ ✓ |src:browser (chromium)| tests/src/browser/factories.test.ts:768:2 > createScopeServer — dedicated-worker-shaped scope (implicit, portless channel) > an event with a port on a dedicated-worker-shaped double STILL spawns a per-port binding (cross-case) 53ms
+ ✓ |src:browser (chromium)| tests/src/browser/factories.test.ts:788:2 > createScopeServer — Service-Worker-shaped scope (per-client MessagePort, no implicit postMessage) > a message event carrying a port spawns a per-port binding; the client round-trips over it 52ms
+ ✓ |src:browser (chromium)| tests/src/browser/factories.test.ts:814:2 > createScopeServer — Service-Worker-shaped scope (per-client MessagePort, no implicit postMessage) > two connecting clients (two channels) get ISOLATED sessions — a call on one never replies on the other 84ms
+ ✓ |src:browser (chromium)| tests/src/browser/factories.test.ts:839:2 > createScopeServer — stop > after stop, a new request on an already-accepted port gets NO reply 89ms
+ ✓ |src:browser (chromium)| tests/src/browser/factories.test.ts:858:2 > createScopeServer — stop > after stop, the scope listener is removed — a new port-carrying event binds nothing 32ms
+ ✓ |src:browser (chromium)| tests/src/browser/factories.test.ts:878:2 > createScopeServer — stop > a second worker.stop() is a no-op 0ms
+ ✓ |src:browser (chromium)| tests/src/browser/factories.test.ts:889:2 > createScopeServer — accept option > accept returning false drops the event: no binding, no reply 31ms
+ ✓ |src:browser (chromium)| tests/src/browser/factories.test.ts:908:2 > createScopeServer — accept option > accept filtering by event.data token: only a matching token gets bound 85ms
+ ✓ |src:browser (chromium)| tests/src/browser/factories.test.ts:942:2 > createScopeServer — stop mid-flight > stop while a request is in flight: no unhandled rejection; no reply after stop 91ms
+ ✓ |src:browser (chromium)| tests/src/browser/factories.test.ts:964:2 > createScopeServer — double-port-delivery dedup > the same port delivered twice is deduped: only one binding, only one reply per request 63ms
+ ✓ |src:browser (chromium)| tests/src/browser/factories.test.ts:984:2 > createScopeServer — hostile inbound > malformed JSON string on a bound port produces no unhandled throw (a -32700 reply) 54ms
+ ✓ |src:browser (chromium)| tests/src/browser/factories.test.ts:1002:2 > createScopeServer — hostile inbound > an oversized string on a bound port is handled without crashing 53ms
+ ✓ |src:browser (chromium)| tests/src/browser/factories.test.ts:1029:2 > createScopeServer — hostile inbound > an object payload on a portless event is ignored — no reply, no crash 53ms
+ ✓ |src:browser (chromium)| tests/src/browser/factories.test.ts:1058:2 > createScopeMessageListener — one collection carries both the teardown and the dedup > keys each accepted port binding by the port, so no dedup state sits outside the caller-owned map 0ms
+ ✓ |src:browser (chromium)| tests/src/browser/factories.test.ts:1097:2 > createPageServer — the MCP pair hosted in the page that calls it > completes connect, tools/list, and tools/call with no request leaving the page 75ms
+ ✓ |src:browser (chromium)| tests/src/browser/factories.test.ts:1120:2 > createPageServer — the MCP pair hosted in the page that calls it > hosts the scope server identity defaults, readable from the client over the channel 2ms
+ ✓ |src:browser (chromium)| tests/src/browser/factories.test.ts:1133:2 > createPageServer — the MCP pair hosted in the page that calls it > hosts the identity the options named instead of the defaults 2ms
+ ✓ |src:browser (chromium)| tests/src/browser/factories.test.ts:1147:2 > createPageServer — the MCP pair hosted in the page that calls it > forwards the client option group to the client it builds 42ms
+ ✓ |src:browser (chromium)| tests/src/browser/factories.test.ts:1161:2 > createPageServer — the MCP pair hosted in the page that calls it > hands back a client that is bound but not yet connected 1ms
+ ✓ |src:browser (chromium)| tests/src/browser/factories.test.ts:1174:2 > createPageServer — the MCP pair hosted in the page that calls it > leaves the client disconnected after stop, and a repeat stops nothing further 1ms
+ ✓ |src:browser (chromium)| tests/src/browser/factories.test.ts:1186:2 > createPageServer — the MCP pair hosted in the page that calls it > settles calls across page destruction 5ms
+ ✓ |src:browser (chromium)| tests/src/browser/factories.test.ts:1209:2 > createPageServer — the MCP pair hosted in the page that calls it > aborts the hosted handler when the wrapped tool context signal aborts mid-call 3ms
+ ✓ |src:browser (chromium)| tests/src/browser/factories.test.ts:1237:2 > createModelContext — feature detection is the return value > reports undefined for a document exposing no registry 0ms
+ ✓ |src:browser (chromium)| tests/src/browser/factories.test.ts:1243:2 > createModelContext — feature detection is the return value > records that this real Chromium page exposes no WebMCP registry 0ms
+ ✓ |src:browser (chromium)| tests/src/browser/factories.test.ts:1251:2 > createModelContext — feature detection is the return value > builds a live bridge for a document that does expose one 0ms
+ ✓ |src:browser (chromium)| tests/src/browser/factories.test.ts:1261:2 > createModelContext — feature detection is the return value > wires the initial emitter hooks the options carry 0ms
+ ✓ |src:browser (chromium)| tests/src/browser/factories.test.ts:1284:2 > the browser barrel — what a consumer of @orkestrel/mcp/browser receives > publishes the page pair and the WebMCP bridge with their declared contracts 0ms
+ ✓ |src:browser (chromium)| tests/src/browser/factories.test.ts:1307:2 > the browser barrel — what a consumer of @orkestrel/mcp/browser receives > publishes the WebMCP wire types under the IDL member names 0ms
+ ✓ |src:browser (chromium)| tests/src/browser/ModelContext.test.ts:28:2 > publish — this page registering its tools with the document registry > registers each advertised tool with its title, schema, and projected annotations 1ms
+ ✓ |src:browser (chromium)| tests/src/browser/ModelContext.test.ts:51:2 > publish — this page registering its tools with the document registry > forwards the origins option as WebMCP exposedTo 0ms
+ ✓ |src:browser (chromium)| tests/src/browser/ModelContext.test.ts:59:2 > publish — this page registering its tools with the document registry > omits exposedTo when no origins were asked for 0ms
+ ✓ |src:browser (chromium)| tests/src/browser/ModelContext.test.ts:69:2 > publish — this page registering its tools with the document registry > refuses the whole call, registering nothing, when a tool advertises no description 1ms
+ ✓ |src:browser (chromium)| tests/src/browser/ModelContext.test.ts:78:2 > publish — this page registering its tools with the document registry > reports the refusal as a coded MCP error rather than a bare throw 0ms
+ ✓ |src:browser (chromium)| tests/src/browser/ModelContext.test.ts:88:2 > publish — this page registering its tools with the document registry > adds the names a second call brought and aborts the ones the registry lost 0ms
+ ✓ |src:browser (chromium)| tests/src/browser/ModelContext.test.ts:100:2 > publish — this page registering its tools with the document registry > leaves a name it already registered alone on a second call 1ms
+ ✓ |src:browser (chromium)| tests/src/browser/ModelContext.test.ts:117:2 > publish — this page registering its tools with the document registry > re-registers a name whose definition changed 0ms
+ ✓ |src:browser (chromium)| tests/src/browser/ModelContext.test.ts:152:2 > publish — this page registering its tools with the document registry > rebinds a name published from a second manager 0ms
+ ✓ |src:browser (chromium)| tests/src/browser/ModelContext.test.ts:172:2 > publish — this page registering its tools with the document registry > captures the publish snapshot at call time 0ms
+ ✓ |src:browser (chromium)| tests/src/browser/ModelContext.test.ts:185:2 > publish — this page registering its tools with the document registry > registers each queued publication against its own snapshot 0ms
+ ✓ |src:browser (chromium)| tests/src/browser/ModelContext.test.ts:200:2 > publish — this page registering its tools with the document registry > registers nothing after the handle is destroyed 0ms
+ ✓ |src:browser (chromium)| tests/src/browser/ModelContext.test.ts:211:2 > a published tool, run by the registry as a foreign agent would run it > runs the local handler and answers with the value it returned, unchanged 0ms
+ ✓ |src:browser (chromium)| tests/src/browser/ModelContext.test.ts:225:2 > a published tool, run by the registry as a foreign agent would run it > preserves the failure text in the rejection 0ms
+ ✓ |src:browser (chromium)| tests/src/browser/ModelContext.test.ts:251:2 > a published tool, run by the registry as a foreign agent would run it > carries the registry execution signal into the local handler context signal 1ms
+ ✓ |src:browser (chromium)| tests/src/browser/ModelContext.test.ts:275:2 > adopt — reading the registry back as locally executable tools > reads each registered tool as a tool advertising the inverse projection 0ms
+ ✓ |src:browser (chromium)| tests/src/browser/ModelContext.test.ts:297:2 > adopt — reading the registry back as locally executable tools > forwards the caller arguments to the foreign handler unchanged 0ms
+ ✓ |src:browser (chromium)| tests/src/browser/ModelContext.test.ts:312:2 > adopt — reading the registry back as locally executable tools > executes an adopted tool through the registry and answers unchanged 0ms
+ ✓ |src:browser (chromium)| tests/src/browser/ModelContext.test.ts:325:2 > adopt — reading the registry back as locally executable tools > carries the local context signal onto the foreign handler through executeTool 0ms
+ ✓ |src:browser (chromium)| tests/src/browser/ModelContext.test.ts:341:2 > adopt — reading the registry back as locally executable tools > forwards the origins option as WebMCP fromOrigins 0ms
+ ✓ |src:browser (chromium)| tests/src/browser/ModelContext.test.ts:351:2 > change — the registry event this handle republishes > emits exactly one change when the page registers a tool this handle never published 0ms
+ ✓ |src:browser (chromium)| tests/src/browser/ModelContext.test.ts:371:2 > change — the registry event this handle republishes > emits nothing more after the handle is destroyed 0ms
+ ✓ |src:browser (chromium)| tests/src/browser/ModelContext.test.ts:393:2 > the IDL surface the double publishes, read as the specification declares it > dispatches the IDL ontoolchange handler 0ms
+ ✓ |src:browser (chromium)| tests/src/browser/ModelContext.test.ts:427:2 > destroy — releasing what this handle registered and nothing else > unregisters this handle tools and leaves another handle registrations standing 0ms
+ ✓ |src:browser (chromium)| tests/src/browser/ModelContext.test.ts:444:2 > destroy — releasing what this handle registered and nothing else > leaves a page registration this handle never made standing 0ms
+ ✓ |src:browser (chromium)| tests/src/browser/ModelContext.test.ts:458:2 > destroy — releasing what this handle registered and nothing else > is inert on a repeat 0ms
+ ✓ |src:browser (chromium)| tests/src/browser/ModelContext.test.ts:476:2 > destroy — releasing what this handle registered and nothing else > leaves no registration alive when destroy runs mid-publish from a toolchange listener 0ms
+ ✓ |src:browser (chromium)| tests/src/browser/ModelContext.test.ts:492:2 > destroy — releasing what this handle registered and nothing else > replaces an earlier handle registration when a second handle publishes the same name 0ms
+ ✓ |src:browser (chromium)| tests/src/browser/ModelContext.test.ts:519:2 > the document the bridge was built on > is narrowed by the same guard the factory runs 0ms
+ ↓ |src:browser (chromium)| tests/src/browser/ModelContext.test.ts:544:2 > the native registry this host exposes > publishes to the real document registry and reads its own tools back
+ ↓ |src:browser (chromium)| tests/src/browser/ModelContext.test.ts:557:2 > the native registry this host exposes > releases every registration it made on the real document registry
+ ✓ |src:browser (chromium)| tests/src/browser/helpers.test.ts:22:2 > toolAnnotationsToWebMCP — the projection WebMCP takes and the MCP wire cannot > carries untrusted onto untrustedContentHint, which the MCP wire drops entirely 0ms
+ ✓ |src:browser (chromium)| tests/src/browser/helpers.test.ts:38:2 > toolAnnotationsToWebMCP — the projection WebMCP takes and the MCP wire cannot > invents no hint for an omitted annotation, in either direction 0ms
+ ✓ |src:browser (chromium)| tests/src/browser/helpers.test.ts:46:2 > toolAnnotationsToWebMCP — the projection WebMCP takes and the MCP wire cannot > round-trips every hint it carries back to the annotation it came from 0ms
+ ✓ |src:browser (chromium)| tests/src/browser/helpers.test.ts:54:2 > toolToWebMCP — the advertised definition, and the description WebMCP requires > advertises the summary as description, exactly as the MCP wire does 0ms
+ ✓ |src:browser (chromium)| tests/src/browser/helpers.test.ts:69:2 > toolToWebMCP — the advertised definition, and the description WebMCP requires > carries title, parameters as inputSchema, and the projected annotations 0ms
+ ✓ |src:browser (chromium)| tests/src/browser/helpers.test.ts:89:2 > toolToWebMCP — the advertised definition, and the description WebMCP requires > omits an annotations member entirely when the projection produced no hint 0ms
+ ✓ |src:browser (chromium)| tests/src/browser/helpers.test.ts:96:2 > toolToWebMCP — the advertised definition, and the description WebMCP requires > reports a definition with no advertised description as unprojectable 0ms
+ ✓ |src:browser (chromium)| tests/src/browser/helpers.test.ts:102:2 > webMCPToTool — the inverse, reading a registered tool back as a definition > reads inputSchema back as parameters and inverts every hint 0ms
+ ✓ |src:browser (chromium)| tests/src/browser/helpers.test.ts:124:2 > webMCPToTool — the inverse, reading a registered tool back as a definition > drops window and origin, which say where a tool lives rather than what it does 0ms
+ ✓ |src:browser (chromium)| tests/src/browser/helpers.test.ts:137:2 > buildWebMCPDescriptors — the batch, refused whole when one tool cannot carry > describes every advertised tool in registry order 0ms
+ ✓ |src:browser (chromium)| tests/src/browser/helpers.test.ts:148:2 > buildWebMCPDescriptors — the batch, refused whole when one tool cannot carry > refuses the batch with a coded error naming the tool that advertises no description 0ms
+ ✓ |src:browser (chromium)| tests/src/browser/helpers.test.ts:162:2 > matchesDescriptor — the reading a later publish reconciles a name against > reads two authorings of one descriptor as the same tool 0ms
+ ✓ |src:browser (chromium)| tests/src/browser/helpers.test.ts:179:2 > matchesDescriptor — the reading a later publish reconciles a name against > reads a changed member as a different tool 0ms
+ ✓ |src:browser (chromium)| tests/src/browser/helpers.test.ts:196:2 > matchesDescriptor — the reading a later publish reconciles a name against > reads a descriptor JSON cannot encode as a different tool 0ms
+ ✓ |src:browser (chromium)| tests/src/browser/transports/WebSocketClientTransport.test.ts:17:2 > WebSocketClientTransport — close releases the socket it bound > close settles a start whose handshake has not opened 1ms
+ ✓ |src:browser (chromium)| tests/src/browser/transports/WebSocketClientTransport.test.ts:28:2 > WebSocketClientTransport — close releases the socket it bound > ignores the old socket close after a new socket has replaced it 166ms
+ ✓ |src:browser (chromium)| tests/src/browser/transports/WebSocketClientTransport.test.ts:55:2 > WebSocketClientTransport — close releases the socket it bound > emits close once however many times it is called 63ms
+ ✓ |src:browser (chromium)| tests/src/browser/transports/WebSocketClientTransport.test.ts:74:2 > WebSocketClientTransport — a send the channel cannot carry rejects > rejects a send issued after close rather than reporting a write nobody made 62ms
+ ✓ |src:browser (chromium)| tests/src/browser/transports/WebSocketClientTransport.test.ts:89:2 > WebSocketClientTransport — a send the channel cannot carry rejects > rejects a send issued after the server closed the socket 63ms
+ ✓ |src:browser (chromium)| tests/src/browser/transports/WebSocketClientTransport.test.ts:102:2 > WebSocketClientTransport — a send the channel cannot carry rejects > still queues a send issued before open and flushes it in order once the socket opens 77ms
+ ✓ |src:browser (chromium)| tests/src/browser/transports/WebSocketClientTransport.test.ts:118:2 > WebSocketClientTransport — a send the channel cannot carry rejects > drops a queued send at close so it never rides the next connection 63ms
+ ✓ |src:browser (chromium)| tests/src/browser/transports/WebSocketClientTransport.test.ts:137:2 > WebSocketClientTransport — a send the channel cannot carry rejects > settles the caller pending call on the closed channel instead of leaving it to time out 5ms
+ ✓ |src:browser (chromium)| tests/src/browser/transports/MessagePortTransport.test.ts:15:2 > MessagePortTransport — the port contract over a real MessageChannel > a non-string postMessage payload is ignored — no crash, no reply 65ms
+ ✓ |src:browser (chromium)| tests/src/browser/transports/MessagePortTransport.test.ts:26:2 > MessagePortTransport — the port contract over a real MessageChannel > a string postMessage payload IS delivered to the registered listen handler 51ms
+ ✓ |src:browser (chromium)| tests/src/browser/transports/MessagePortTransport.test.ts:36:2 > MessagePortTransport — the port contract over a real MessageChannel > close() closes the port — a subsequent postMessage from the peer is undelivered 56ms
+ ✓ |src:browser (chromium)| tests/src/browser/transports/MessagePortTransport.test.ts:49:2 > MessagePortTransport — the port contract over a real MessageChannel > close detaches its port listeners and clears registered callbacks 0ms
+ ✓ |src:browser (chromium)| tests/src/browser/transports/MessagePortTransport.test.ts:61:2 > MessagePortTransport — the port contract over a real MessageChannel > close() fires the registered closed handler exactly once, even called twice 0ms
+ ✓ |src:browser (chromium)| tests/src/browser/transports/MessagePortTransport.test.ts:75:2 > MessagePortTransport — the port contract over a real MessageChannel > listen/closed are single-handler-replace — a second registration replaces, never adds 51ms
+ ✓ |src:browser (chromium)| tests/src/browser/transports/MessagePortTransport.test.ts:88:2 > MessagePortTransport — the port contract over a real MessageChannel > a messageerror event does not close the transport — later well-formed messages still arrive 57ms
+ ✓ |src:browser (chromium)| tests/src/browser/validators.test.ts:17:2 > isWebMCPRegistry — narrowing a prototype-carried registry, not a plain record > accepts a class instance whose operations arrive through its prototype 0ms
+ ✓ |src:browser (chromium)| tests/src/browser/validators.test.ts:27:2 > isWebMCPRegistry — narrowing a prototype-carried registry, not a plain record > accepts a plain record carrying every registry operation 0ms
+ ✓ |src:browser (chromium)| tests/src/browser/validators.test.ts:33:2 > isWebMCPRegistry — narrowing a prototype-carried registry, not a plain record > refuses a registry missing any one operation it would go on to call 0ms
+ ✓ |src:browser (chromium)| tests/src/browser/validators.test.ts:41:2 > isWebMCPRegistry — narrowing a prototype-carried registry, not a plain record > refuses a value carrying a registry operation that is not callable 0ms
+ ✓ |src:browser (chromium)| tests/src/browser/validators.test.ts:48:2 > isWebMCPRegistry — narrowing a prototype-carried registry, not a plain record > refuses every value that is not an object at all 0ms
+ ✓ |src:browser (chromium)| tests/src/browser/validators.test.ts:55:2 > isWebMCPRegistry — narrowing a prototype-carried registry, not a plain record > stays total against a value whose member read throws 0ms
+ ✓ |src:browser (chromium)| tests/src/browser/validators.test.ts:67:2 > isWebMCPRegistry — narrowing a prototype-carried registry, not a plain record > refuses every adversarial value without throwing 1ms
+ ✓ |src:browser (chromium)| tests/src/browser/validators.test.ts:79:2 > isWebMCPDocument — the feature detection a page runs before building a bridge > accepts a real Document after a registry is installed on it 0ms
+ ✓ |src:browser (chromium)| tests/src/browser/validators.test.ts:88:2 > isWebMCPDocument — the feature detection a page runs before building a bridge > refuses a document whose modelContext is not a registry 0ms
+ ✓ |src:browser (chromium)| tests/src/browser/validators.test.ts:95:2 > isWebMCPDocument — the feature detection a page runs before building a bridge > refuses this page, because no shipping browser exposes the registry 0ms
+ ✓ |src:browser (chromium)| tests/src/browser/validators.test.ts:99:2 > isWebMCPDocument — the feature detection a page runs before building a bridge > refuses every adversarial value without throwing 1ms
+
+ Test Files  6 passed (6)
+      Tests  128 passed | 2 skipped (130)
+   Start at  05:59:13
+   Duration  5.11s (transform 0ms, setup 518ms, import 81ms, tests 2.61s, environment 0ms)
+

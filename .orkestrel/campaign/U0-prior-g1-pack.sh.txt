@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+# Orchestrator tracked command: pack the fixed @orkestrel/guide tree and install the tarball into agent as its
+# development copy (never link), recording the replaced range. Restore path: `npm ci` in agent.
+set -u
+ROOT=/c/Users/mikes/WebstormProjects
+SCAF="$ROOT/scaffold"
+OUT="$SCAF/tmp/tarballs"
+mkdir -p "$OUT"
+RECEIPT="$SCAF/tmp/units/g1-receipt.md"
+{
+	echo "# G1 receipt — guide tarball into agent"
+	echo
+	echo "date: $(date -u +%FT%TZ)"
+	echo "guide HEAD: $(git -C "$ROOT/guide" rev-parse --short HEAD)"
+	echo "guide status: [$(git -C "$ROOT/guide" status --porcelain | tr '\n' ' ')]"
+	echo "agent declared range before: $(grep '"@orkestrel/guide"' "$ROOT/agent/package.json")"
+	echo "agent installed before: $(grep '"version"' "$ROOT/agent/node_modules/@orkestrel/guide/package.json")"
+	echo "installed grammar admits abstract before: $(grep -c 'abstract' "$ROOT/agent/node_modules/@orkestrel/guide/dist/src/core/index.js")"
+} > "$RECEIPT"
+cd "$ROOT/guide" || exit 9
+npm pack --pack-destination "$OUT" > "$SCAF/tmp/units/g1-pack.log.txt" 2>&1
+echo "guide pack exit: $?" >> "$RECEIPT"
+TARBALL=$(ls -t "$OUT"/orkestrel-guide-*.tgz | head -1)
+echo "tarball: $TARBALL ($(stat -c %s "$TARBALL") bytes)" >> "$RECEIPT"
+cd "$ROOT/agent" || exit 9
+npm install --no-save --ignore-scripts "$TARBALL" > "$SCAF/tmp/units/g1-install.log.txt" 2>&1
+echo "agent install exit: $?" >> "$RECEIPT"
+echo "agent declared range after: $(grep '"@orkestrel/guide"' "$ROOT/agent/package.json")" >> "$RECEIPT"
+echo "agent installed after: $(grep '"version"' "$ROOT/agent/node_modules/@orkestrel/guide/package.json")" >> "$RECEIPT"
+echo "installed grammar admits abstract after: $(grep -c 'abstract' "$ROOT/agent/node_modules/@orkestrel/guide/dist/src/core/index.js")" >> "$RECEIPT"
+echo "agent package.json/lock dirty after install: [$(git -C "$ROOT/agent" status --porcelain -- package.json package-lock.json | tr '\n' ' ')]" >> "$RECEIPT"
+cat "$RECEIPT"

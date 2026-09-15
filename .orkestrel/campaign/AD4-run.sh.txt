@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+# AD4 objective audit lane — GPT-6 Astra, read-only codex exec rooted at the scaffold checkout. Cap 2700 s.
+# Stages the chain diff, every D4 unit report, the V3 verifier report, the per-unit gate logs, and the P6/P7 probes beside the brief.
+set -u
+SCAF="C:/Users/mikes/WebstormProjects/scaffold"
+U="AD4-audit"
+J="$SCAF/tmp/codex/$U.jsonl"
+L="$SCAF/tmp/codex/$U-last.md"
+B="$SCAF/tmp/codex/$U-brief.md"
+cp "$SCAF/tmp/units/AD4-audit-brief.md" "$B"
+cp "$SCAF/tmp/units/AD4-diff.patch" "$SCAF/tmp/codex/AD4-diff.patch"
+for f in D41b-scaffold-host-guides-report.md D42b-scaffold-catalog-floor-report.md D43-scaffold-surface-rule-report.md U14-scaffold-setup-rename-report.md U14b-scaffold-setup-rename-report.md D41c-scaffold-growth-refusal-report.md D41d-scaffold-inventory-baseline-report.md D41e-scaffold-inventory-baseline-report.md U15-scaffold-distribution-expectations-report.md D44-scaffold-prose-report.md V3-scaffold-verify-report.md D41b-scaffold-gates-orchestrator.log.txt D41c-scaffold-gates-orchestrator.log.txt D41e-scaffold-gates-orchestrator.log.txt D41e-scaffold-gates-build.out.txt U14b-scaffold-gates-orchestrator.log.txt D44-scaffold-gates-orchestrator.log.txt P6-surface-collisions.txt P7-setup-collisions.txt D4-design-planner.md D4-design-astra.md plan.md; do
+	cp "$SCAF/.orkestrel/campaign/$f" "$SCAF/tmp/codex/$f"
+done
+echo "launch unit=$U model=gpt-6-astra sandbox=read-only cap=2700 start=$(date -u +%Y-%m-%dT%H:%M:%SZ)" > "$SCAF/tmp/codex/$U.launch.txt"
+timeout 2700 codex exec --json -C "$SCAF" --sandbox read-only --model gpt-6-astra -c 'model_reasoning_effort="high"' --output-last-message "$L" "Read and execute the audit brief at $B exactly (every evidence file it names is staged beside it in tmp/codex/; the design record plan.md is there too). You hold the OBJECTIVE lane (analyst). Perform the audit directly and spawn nothing. Your final message must be the verdict shape the brief specifies." < /dev/null > "$J" 2> "$SCAF/tmp/codex/$U.err"
+EXIT=$?
+echo "exit=$EXIT end=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$SCAF/tmp/codex/$U.launch.txt"
+echo "unit=$U exit=$EXIT"
+grep -o '"thread_id":"[^"]*"' "$J" | head -1
+wc -c < "$L" 2>/dev/null

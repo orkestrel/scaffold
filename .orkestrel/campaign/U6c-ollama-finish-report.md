@@ -1,0 +1,5 @@
+<!-- U6c — builder (Sonnet, native), ollama finish round after A6. Retained from the completion notification, 2026-09-15 (105 s, 23 tool uses). -->
+
+Changes: `guides/ollama.md` invariant 3 gains the sentence that `title` and `annotations` are never sent on the `/api/chat` wire because the tool function object carries no field for either; `src/core/OllamaProvider.ts` `body` TSDoc gains the matching `@remarks`; `tests/src/core/OllamaProvider.test.ts` gains `never sends a tool title or annotations on the wire` (asserts `Object.keys(tool.function).sort()` equals `['description', 'name', 'parameters']` for a definition carrying both); `guides/tool.md` byte-copied from the tool checkout (`cmp` exit 0). `tests/guides.test.ts` untouched (parity green). `guides/agent.md` and `tests/setup.test.ts` were left as U6b left them.
+
+Scoped validation (writer's readings): `lint:check` 0; `check` 0; `test:src:core` 0 (4 files, 100 tests); `test:guides` 0 (34); `cmp` 0; `test:policy` 0 (90, 1 skipped); `test:config` 0 (172, 1 skipped); `test:setup` 0 (96); `format:check` 0. Deviation: none.

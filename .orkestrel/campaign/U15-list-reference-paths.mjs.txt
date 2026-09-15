@@ -1,0 +1,16 @@
+// Throwaway instrument for U15: lists the guide files REFERENCE_PATHS covers, so
+// tests/distribution.test.ts's `expanded` literal can be derived from the exported
+// constant rather than retyped by hand.
+import { readdirSync } from 'node:fs'
+import { resolve } from 'node:path'
+
+const REFERENCE_PATHS = ['guides']
+const root = process.cwd()
+const entries = []
+for (const path of REFERENCE_PATHS) {
+	for (const name of readdirSync(resolve(root, path)).sort()) {
+		entries.push(`${path}/${name}`)
+	}
+}
+process.stdout.write(`${entries.length}\n`)
+for (const entry of entries) process.stdout.write(`${entry}\n`)

@@ -1,0 +1,393 @@
+# U4d — the red readings, before the fixes (2026-09-15)
+
+Commands: `npx vitest run --config vite.config.ts --no-cache --reporter=verbose --project src:core tests/src/core/MCPClient.test.ts` and `npx vitest run --config vite.config.ts --no-cache --reporter=verbose --project src:browser`.
+
+=== U4d RED — before the fixes (2026-09-15) ===
+
+### npm run test:src:core -- tests/src/core/MCPClient.test.ts
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — subscriptions/listen > keeps an unstamped notification on the client notification event 3ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — subscriptions/listen > drops a late stamped frame after its subscription has closed 3ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — subscriptions/listen > discards stale-stamped frames that no active call or subscription claims 2ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — subscriptions/listen > rejects a peer subscription error with MCPError 3ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — subscriptions/listen > rejects a malformed subscription terminal with MCPError 3ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — subscriptions/listen > rejects the first read of a pre-aborted stream without sending 1ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — subscriptions/listen > snapshots an accessor signal before a later read aborts it 1ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — subscriptions/listen > rejects a parked read with the abort reason and sends notifications/cancelled 2ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — subscriptions/listen > fails loudly when the subscription frame queue reaches capacity 4ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — subscriptions/listen > delivers to a read parked past the configured request deadline 64ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — subscriptions/listen > rejects a parked subscription read when the client disconnects 2ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > MCPClient — subscriptions/listen > rejects a parked subscription read when the transport closes 2ms
+ ✓ |src:core| tests/src/core/MCPClient.test.ts > the client transport event map > surfaces a parsed JSON-RPC message on the client carrier 0ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:core| tests/src/core/MCPClient.test.ts > MCPClient — disconnect > rejects a request on a client that is not connected
+AssertionError: expected false to be -32600 // Object.is equality
+
+- Expected:
+-32600
+
++ Received:
+false
+
+ ❯ tests/src/core/MCPClient.test.ts:1648:45
+    1646|   const listed: unknown = await client.tools().catch((reason: unknown)…
+    1647|
+    1648|   expect(isMCPError(called) && called.code).toBe(-32600)
+       |                                             ^
+    1649|   expect(isMCPError(listed) && listed.code).toBe(-32600)
+    1650|   // Nothing was written: a refusal that still sent the frame would le…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  |src:core| tests/src/core/MCPClient.test.ts > MCPClient — disconnect > rejects a request on a client that has never connected
+AssertionError: expected false to be -32600 // Object.is equality
+
+- Expected:
+-32600
+
++ Received:
+false
+
+ ❯ tests/src/core/MCPClient.test.ts:1661:45
+    1659|   const called: unknown = await client.call('greet', {}).catch((reason…
+    1660|
+    1661|   expect(isMCPError(called) && called.code).toBe(-32600)
+       |                                             ^
+    1662|   expect(loopback.sent).toEqual([])
+    1663|  })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 147 passed (149)
+   Start at  05:45:51
+   Duration  2.57s (transform 350ms, setup 452ms, import 333ms, tests 1.64s, environment 0ms)
+
+
+=== U4d RED — browser project, whole suite ===
+
+npm notice run @orkestrel/mcp@0.0.30 npx
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=verbose --project src:browser
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/mcp
+
+ ✓ |src:browser (chromium)| tests/src/browser/factories.test.ts:92:2 > createWebSocketClientTransport — the browser client against the Node-face WS server > connect → tools/list → tools/call(add): a value round-trips over real WebSocket frames 31ms
+ ✓ |src:browser (chromium)| tests/src/browser/factories.test.ts:113:2 > createWebSocketClientTransport — the browser client against the Node-face WS server > a remote erroring tool throws locally (isError → throw) 7ms
+ ✓ |src:browser (chromium)| tests/src/browser/factories.test.ts:125:2 > createWebSocketClientTransport — the browser client against the Node-face WS server > queues sends issued before open and flushes them, in order, once the socket opens 73ms
+ ✓ |src:browser (chromium)| tests/src/browser/factories.test.ts:145:2 > createWebSocketClientTransport — the browser client against the Node-face WS server > a server-initiated close fires the transport close event exactly once 65ms
+ ✓ |src:browser (chromium)| tests/src/browser/factories.test.ts:160:2 > createWebSocketClientTransport — the browser client against the Node-face WS server > a malformed inbound frame surfaces on error and does not throw 52ms
+ ✓ |src:browser (chromium)| tests/src/browser/factories.test.ts:177:2 > createWebSocketClientTransport — the browser client against the Node-face WS server > offers the default mcp protocol token that createWebSocketServer selects 20ms
+ ✓ |src:browser (chromium)| tests/src/browser/factories.test.ts:193:2 > createWebSocketClientTransport — the browser client against the Node-face WS server > A3: send() after close() rejects the message — no delivery, no resolve, and no queue 112ms
+ ✓ |src:browser (chromium)| tests/src/browser/factories.test.ts:243:2 > createHTTPClientTransport — one protocol-version projection, shared with the Node face > projects a complete modern context exactly as the Node face does 1ms
+ ✓ |src:browser (chromium)| tests/src/browser/factories.test.ts:243:2 > createHTTPClientTransport — one protocol-version projection, shared with the Node face > projects a version with NO capability declaration exactly as the Node face does 0ms
+ ✓ |src:browser (chromium)| tests/src/browser/factories.test.ts:243:2 > createHTTPClientTransport — one protocol-version projection, shared with the Node face > projects a version with a non-object capability declaration exactly as the Node face does 0ms
+ ✓ |src:browser (chromium)| tests/src/browser/factories.test.ts:243:2 > createHTTPClientTransport — one protocol-version projection, shared with the Node face > projects a complete context carrying an invalid logging level exactly as the Node face does 0ms
+ ✓ |src:browser (chromium)| tests/src/browser/factories.test.ts:243:2 > createHTTPClientTransport — one protocol-version projection, shared with the Node face > projects a non-string version — modern by key presence, projecting nothing exactly as the Node face does 0ms
+ ✓ |src:browser (chromium)| tests/src/browser/factories.test.ts:267:2 > createHTTPClientTransport — one protocol-version projection, shared with the Node face > carries contexts that parse on only ONE of the paths 1ms
+ ✓ |src:browser (chromium)| tests/src/browser/factories.test.ts:287:2 > createHTTPClientTransport — one protocol-version projection, shared with the Node face > a real peer receives the projected header for every context in the table 28ms
+ ✓ |src:browser (chromium)| tests/src/browser/factories.test.ts:307:2 > createHTTPClientTransport — the browser client against the Node-face streamable-HTTP session server > connect → tools/list → tools/call(add): a value round-trips over fetch + SSE 19ms
+ ✓ |src:browser (chromium)| tests/src/browser/factories.test.ts:324:2 > createHTTPClientTransport — the browser client against the Node-face streamable-HTTP session server > stamps modern protocol and method headers from each body and names only tools/call 14ms
+ ✓ |src:browser (chromium)| tests/src/browser/factories.test.ts:359:2 > createHTTPClientTransport — the browser client against the Node-face streamable-HTTP session server > captures the mcp-session-id on initialize and reuses it across two sequential requests 21ms
+ ✓ |src:browser (chromium)| tests/src/browser/factories.test.ts:388:2 > createHTTPClientTransport — the browser client against the Node-face streamable-HTTP session server > captures the negotiated protocol and sends it on the subsequent real fetch request 6ms
+ ✓ |src:browser (chromium)| tests/src/browser/factories.test.ts:413:2 > createHTTPClientTransport — the browser client against the Node-face streamable-HTTP session server > rejects an unsupported negotiated protocol (F4) and never captures its header 8ms
+ ✓ |src:browser (chromium)| tests/src/browser/factories.test.ts:451:2 > createHTTPClientTransport — the browser client against the Node-face streamable-HTTP session server > decodes the Streamable-HTTP SSE reply leg (the default framing this client requests) 7ms
+ ✓ |src:browser (chromium)| tests/src/browser/factories.test.ts:478:2 > createHTTPClientTransport — the browser client against the Node-face streamable-HTTP session server > rejects a server error response carrying no JSON-RPC message 4ms
+ ✓ |src:browser (chromium)| tests/src/browser/factories.test.ts:491:2 > createMessagePortTransport — a symmetric MCPTransportInterface over a real MessageChannel > connect → tools/list → tools/call(add): a value round-trips over port1/port2 7ms
+ ✓ |src:browser (chromium)| tests/src/browser/factories.test.ts:512:2 > createMessagePortTransport — a symmetric MCPTransportInterface over a real MessageChannel > a remote erroring tool throws locally (isError → throw) 3ms
+ ✓ |src:browser (chromium)| tests/src/browser/factories.test.ts:541:2 > duplex — driven per carrier, and observed at the peer > the WebSocket carrier declares duplex and really carries the frame 65ms
+ ✓ |src:browser (chromium)| tests/src/browser/factories.test.ts:557:2 > duplex — driven per carrier, and observed at the peer > the Streamable-HTTP carrier declares no such channel and sends nothing 66ms
+ ✓ |src:browser (chromium)| tests/src/browser/factories.test.ts:571:2 > duplex — driven per carrier, and observed at the peer > createDuplexClientTransport over a real MessageChannel carries the frame 53ms
+ ✓ |src:browser (chromium)| tests/src/browser/factories.test.ts:589:2 > duplex — driven per carrier, and observed at the peer > createDuplexClientTransport over a real scope pair carries the frame 64ms
+ ✓ |src:browser (chromium)| tests/src/browser/factories.test.ts:611:2 > duplex — driven per carrier, and observed at the peer > CONTROL: a lying one-way carrier declares duplex and the driven proof fails for it 58ms
+ ✓ |src:browser (chromium)| tests/src/browser/factories.test.ts:714:2 > createScopeServer — the default scope is the current one > wires the real global scope when no scope argument is supplied 52ms
+ ✓ |src:browser (chromium)| tests/src/browser/factories.test.ts:736:2 > createScopeServer — the default scope is the current one > stops listening on the global scope, so a later event binds nothing 31ms
+ ✓ |src:browser (chromium)| tests/src/browser/factories.test.ts:753:2 > createScopeServer — dedicated-worker-shaped scope (implicit, portless channel) > a portless string-data message round-trips through the implicit scope channel 58ms
+ ✓ |src:browser (chromium)| tests/src/browser/factories.test.ts:768:2 > createScopeServer — dedicated-worker-shaped scope (implicit, portless channel) > an event with a port on a dedicated-worker-shaped double STILL spawns a per-port binding (cross-case) 54ms
+ ✓ |src:browser (chromium)| tests/src/browser/factories.test.ts:788:2 > createScopeServer — Service-Worker-shaped scope (per-client MessagePort, no implicit postMessage) > a message event carrying a port spawns a per-port binding; the client round-trips over it 54ms
+ ✓ |src:browser (chromium)| tests/src/browser/factories.test.ts:814:2 > createScopeServer — Service-Worker-shaped scope (per-client MessagePort, no implicit postMessage) > two connecting clients (two channels) get ISOLATED sessions — a call on one never replies on the other 85ms
+ ✓ |src:browser (chromium)| tests/src/browser/factories.test.ts:839:2 > createScopeServer — stop > after stop, a new request on an already-accepted port gets NO reply 91ms
+ ✓ |src:browser (chromium)| tests/src/browser/factories.test.ts:858:2 > createScopeServer — stop > after stop, the scope listener is removed — a new port-carrying event binds nothing 32ms
+ ✓ |src:browser (chromium)| tests/src/browser/factories.test.ts:878:2 > createScopeServer — stop > a second worker.stop() is a no-op 0ms
+ ✓ |src:browser (chromium)| tests/src/browser/factories.test.ts:889:2 > createScopeServer — accept option > accept returning false drops the event: no binding, no reply 31ms
+ ✓ |src:browser (chromium)| tests/src/browser/factories.test.ts:908:2 > createScopeServer — accept option > accept filtering by event.data token: only a matching token gets bound 86ms
+ ✓ |src:browser (chromium)| tests/src/browser/factories.test.ts:942:2 > createScopeServer — stop mid-flight > stop while a request is in flight: no unhandled rejection; no reply after stop 82ms
+ ✓ |src:browser (chromium)| tests/src/browser/factories.test.ts:964:2 > createScopeServer — double-port-delivery dedup > the same port delivered twice is deduped: only one binding, only one reply per request 59ms
+ ✓ |src:browser (chromium)| tests/src/browser/factories.test.ts:984:2 > createScopeServer — hostile inbound > malformed JSON string on a bound port produces no unhandled throw (a -32700 reply) 51ms
+ ✓ |src:browser (chromium)| tests/src/browser/factories.test.ts:1002:2 > createScopeServer — hostile inbound > an oversized string on a bound port is handled without crashing 55ms
+ ✓ |src:browser (chromium)| tests/src/browser/factories.test.ts:1029:2 > createScopeServer — hostile inbound > an object payload on a portless event is ignored — no reply, no crash 52ms
+ ✓ |src:browser (chromium)| tests/src/browser/factories.test.ts:1058:2 > createScopeMessageListener — one collection carries both the teardown and the dedup > keys each accepted port binding by the port, so no dedup state sits outside the caller-owned map 1ms
+ × |src:browser (chromium)| tests/src/browser/factories.test.ts:1097:2 > createPageServer — the MCP pair hosted in the page that calls it > completes connect, tools/list, and tools/call with no request leaving the page 4ms
+   → page.stop is not a function
+ × |src:browser (chromium)| tests/src/browser/factories.test.ts:1120:2 > createPageServer — the MCP pair hosted in the page that calls it > hosts the scope server identity defaults, readable from the client over the channel 2ms
+   → page.stop is not a function
+ × |src:browser (chromium)| tests/src/browser/factories.test.ts:1133:2 > createPageServer — the MCP pair hosted in the page that calls it > hosts the identity the options named instead of the defaults 2ms
+   → page.stop is not a function
+ × |src:browser (chromium)| tests/src/browser/factories.test.ts:1147:2 > createPageServer — the MCP pair hosted in the page that calls it > forwards the client option group to the client it builds 40ms
+   → page.stop is not a function
+ × |src:browser (chromium)| tests/src/browser/factories.test.ts:1161:2 > createPageServer — the MCP pair hosted in the page that calls it > hands back a client that is bound but not yet connected 1ms
+   → page.stop is not a function
+ × |src:browser (chromium)| tests/src/browser/factories.test.ts:1174:2 > createPageServer — the MCP pair hosted in the page that calls it > leaves the client disconnected after stop, and a repeat stops nothing further 1ms
+   → page.stop is not a function
+ × |src:browser (chromium)| tests/src/browser/factories.test.ts:1186:2 > createPageServer — the MCP pair hosted in the page that calls it > settles calls across page destruction 1ms
+   → page.stop is not a function
+ × |src:browser (chromium)| tests/src/browser/factories.test.ts:1209:2 > createPageServer — the MCP pair hosted in the page that calls it > aborts the hosted handler when the wrapped tool context signal aborts mid-call 6ms
+   → page.stop is not a function
+ ✓ |src:browser (chromium)| tests/src/browser/factories.test.ts:1237:2 > createModelContext — feature detection is the return value > reports undefined for a document exposing no registry 0ms
+ ✓ |src:browser (chromium)| tests/src/browser/factories.test.ts:1243:2 > createModelContext — feature detection is the return value > records that this real Chromium page exposes no WebMCP registry 0ms
+ ✓ |src:browser (chromium)| tests/src/browser/factories.test.ts:1251:2 > createModelContext — feature detection is the return value > builds a live bridge for a document that does expose one 0ms
+ ✓ |src:browser (chromium)| tests/src/browser/factories.test.ts:1261:2 > createModelContext — feature detection is the return value > wires the initial emitter hooks the options carry 0ms
+ ✓ |src:browser (chromium)| tests/src/browser/factories.test.ts:1284:2 > the browser barrel — what a consumer of @orkestrel/mcp/browser receives > publishes the page pair and the WebMCP bridge with their declared contracts 0ms
+ ✓ |src:browser (chromium)| tests/src/browser/factories.test.ts:1301:2 > the browser barrel — what a consumer of @orkestrel/mcp/browser receives > publishes the WebMCP wire types under the IDL member names 0ms
+ ✓ |src:browser (chromium)| tests/src/browser/ModelContext.test.ts:28:2 > publish — this page registering its tools with the document registry > registers each advertised tool with its title, schema, and projected annotations 1ms
+ ✓ |src:browser (chromium)| tests/src/browser/ModelContext.test.ts:51:2 > publish — this page registering its tools with the document registry > forwards the origins option as WebMCP exposedTo 0ms
+ ✓ |src:browser (chromium)| tests/src/browser/ModelContext.test.ts:59:2 > publish — this page registering its tools with the document registry > omits exposedTo when no origins were asked for 0ms
+ ✓ |src:browser (chromium)| tests/src/browser/ModelContext.test.ts:69:2 > publish — this page registering its tools with the document registry > refuses the whole call, registering nothing, when a tool advertises no description 1ms
+ ✓ |src:browser (chromium)| tests/src/browser/ModelContext.test.ts:78:2 > publish — this page registering its tools with the document registry > reports the refusal as a coded MCP error rather than a bare throw 0ms
+ ✓ |src:browser (chromium)| tests/src/browser/ModelContext.test.ts:88:2 > publish — this page registering its tools with the document registry > adds the names a second call brought and aborts the ones the registry lost 0ms
+ ✓ |src:browser (chromium)| tests/src/browser/ModelContext.test.ts:100:2 > publish — this page registering its tools with the document registry > leaves a name it already registered alone on a second call 0ms
+ × |src:browser (chromium)| tests/src/browser/ModelContext.test.ts:117:2 > publish — this page registering its tools with the document registry > re-registers a name whose definition changed 2ms
+   → expected 'Searches the archive' to be 'Searches the index' // Object.is equality
+ × |src:browser (chromium)| tests/src/browser/ModelContext.test.ts:152:2 > publish — this page registering its tools with the document registry > rebinds a name published from a second manager 1ms
+   → expected 'first' to be 'second' // Object.is equality
+ × |src:browser (chromium)| tests/src/browser/ModelContext.test.ts:170:2 > publish — this page registering its tools with the document registry > captures the publish snapshot at call time 2ms
+   → expected [] to deeply equal [ 'add' ]
+ × |src:browser (chromium)| tests/src/browser/ModelContext.test.ts:183:2 > publish — this page registering its tools with the document registry > registers each queued publication against its own snapshot 0ms
+   → expected [] to deeply equal [ 'add' ]
+ ✓ |src:browser (chromium)| tests/src/browser/ModelContext.test.ts:198:2 > publish — this page registering its tools with the document registry > registers nothing after the handle is destroyed 0ms
+ ✓ |src:browser (chromium)| tests/src/browser/ModelContext.test.ts:209:2 > a published tool, run by the registry as a foreign agent would run it > runs the local handler and answers with the value it returned, unchanged 0ms
+ ✓ |src:browser (chromium)| tests/src/browser/ModelContext.test.ts:223:2 > a published tool, run by the registry as a foreign agent would run it > preserves the failure text in the rejection 0ms
+ ✓ |src:browser (chromium)| tests/src/browser/ModelContext.test.ts:249:2 > a published tool, run by the registry as a foreign agent would run it > carries the registry execution signal into the local handler context signal 0ms
+ ✓ |src:browser (chromium)| tests/src/browser/ModelContext.test.ts:273:2 > adopt — reading the registry back as locally executable tools > reads each registered tool as a tool advertising the inverse projection 0ms
+ ✓ |src:browser (chromium)| tests/src/browser/ModelContext.test.ts:295:2 > adopt — reading the registry back as locally executable tools > forwards the caller arguments to the foreign handler unchanged 0ms
+ ✓ |src:browser (chromium)| tests/src/browser/ModelContext.test.ts:310:2 > adopt — reading the registry back as locally executable tools > executes an adopted tool through the registry and answers unchanged 0ms
+ ✓ |src:browser (chromium)| tests/src/browser/ModelContext.test.ts:323:2 > adopt — reading the registry back as locally executable tools > carries the local context signal onto the foreign handler through executeTool 0ms
+ ✓ |src:browser (chromium)| tests/src/browser/ModelContext.test.ts:339:2 > adopt — reading the registry back as locally executable tools > forwards the origins option as WebMCP fromOrigins 0ms
+ ✓ |src:browser (chromium)| tests/src/browser/ModelContext.test.ts:349:2 > change — the registry event this handle republishes > emits exactly one change when the page registers a tool this handle never published 0ms
+ ✓ |src:browser (chromium)| tests/src/browser/ModelContext.test.ts:369:2 > change — the registry event this handle republishes > emits nothing more after the handle is destroyed 0ms
+ ✓ |src:browser (chromium)| tests/src/browser/ModelContext.test.ts:391:2 > the IDL surface the double publishes, read as the specification declares it > dispatches the IDL ontoolchange handler 0ms
+ ✓ |src:browser (chromium)| tests/src/browser/ModelContext.test.ts:425:2 > destroy — releasing what this handle registered and nothing else > unregisters this handle tools and leaves another handle registrations standing 0ms
+ ✓ |src:browser (chromium)| tests/src/browser/ModelContext.test.ts:442:2 > destroy — releasing what this handle registered and nothing else > leaves a page registration this handle never made standing 0ms
+ ✓ |src:browser (chromium)| tests/src/browser/ModelContext.test.ts:456:2 > destroy — releasing what this handle registered and nothing else > is inert on a repeat 0ms
+ ✓ |src:browser (chromium)| tests/src/browser/ModelContext.test.ts:474:2 > destroy — releasing what this handle registered and nothing else > leaves no registration alive when destroy runs mid-publish from a toolchange listener 0ms
+ ✓ |src:browser (chromium)| tests/src/browser/ModelContext.test.ts:490:2 > destroy — releasing what this handle registered and nothing else > replaces an earlier handle registration when a second handle publishes the same name 0ms
+ ✓ |src:browser (chromium)| tests/src/browser/ModelContext.test.ts:517:2 > the document the bridge was built on > is narrowed by the same guard the factory runs 0ms
+ ↓ |src:browser (chromium)| tests/src/browser/ModelContext.test.ts:542:2 > the native registry this host exposes > publishes to the real document registry and reads its own tools back
+ ↓ |src:browser (chromium)| tests/src/browser/ModelContext.test.ts:555:2 > the native registry this host exposes > releases every registration it made on the real document registry
+ ✓ |src:browser (chromium)| tests/src/browser/transports/WebSocketClientTransport.test.ts:17:2 > WebSocketClientTransport — close releases the socket it bound > close settles a start whose handshake has not opened 1ms
+ ✓ |src:browser (chromium)| tests/src/browser/transports/WebSocketClientTransport.test.ts:28:2 > WebSocketClientTransport — close releases the socket it bound > ignores the old socket close after a new socket has replaced it 173ms
+ ✓ |src:browser (chromium)| tests/src/browser/transports/WebSocketClientTransport.test.ts:55:2 > WebSocketClientTransport — close releases the socket it bound > emits close once however many times it is called 63ms
+ ✓ |src:browser (chromium)| tests/src/browser/transports/WebSocketClientTransport.test.ts:74:2 > WebSocketClientTransport — a send the channel cannot carry rejects > rejects a send issued after close rather than reporting a write nobody made 63ms
+ ✓ |src:browser (chromium)| tests/src/browser/transports/WebSocketClientTransport.test.ts:89:2 > WebSocketClientTransport — a send the channel cannot carry rejects > rejects a send issued after the server closed the socket 63ms
+ ✓ |src:browser (chromium)| tests/src/browser/transports/WebSocketClientTransport.test.ts:102:2 > WebSocketClientTransport — a send the channel cannot carry rejects > still queues a send issued before open and flushes it in order once the socket opens 62ms
+ ✓ |src:browser (chromium)| tests/src/browser/transports/WebSocketClientTransport.test.ts:118:2 > WebSocketClientTransport — a send the channel cannot carry rejects > drops a queued send at close so it never rides the next connection 64ms
+ ✓ |src:browser (chromium)| tests/src/browser/transports/WebSocketClientTransport.test.ts:137:2 > WebSocketClientTransport — a send the channel cannot carry rejects > settles the caller pending call on the closed channel instead of leaving it to time out 11ms
+ ✓ |src:browser (chromium)| tests/src/browser/helpers.test.ts:21:2 > toolAnnotationsToWebMCP — the projection WebMCP takes and the MCP wire cannot > carries untrusted onto untrustedContentHint, which the MCP wire drops entirely 0ms
+ ✓ |src:browser (chromium)| tests/src/browser/helpers.test.ts:37:2 > toolAnnotationsToWebMCP — the projection WebMCP takes and the MCP wire cannot > invents no hint for an omitted annotation, in either direction 0ms
+ ✓ |src:browser (chromium)| tests/src/browser/helpers.test.ts:45:2 > toolAnnotationsToWebMCP — the projection WebMCP takes and the MCP wire cannot > round-trips every hint it carries back to the annotation it came from 0ms
+ ✓ |src:browser (chromium)| tests/src/browser/helpers.test.ts:53:2 > toolToWebMCP — the advertised definition, and the description WebMCP requires > advertises the summary as description, exactly as the MCP wire does 0ms
+ ✓ |src:browser (chromium)| tests/src/browser/helpers.test.ts:68:2 > toolToWebMCP — the advertised definition, and the description WebMCP requires > carries title, parameters as inputSchema, and the projected annotations 0ms
+ ✓ |src:browser (chromium)| tests/src/browser/helpers.test.ts:88:2 > toolToWebMCP — the advertised definition, and the description WebMCP requires > omits an annotations member entirely when the projection produced no hint 0ms
+ ✓ |src:browser (chromium)| tests/src/browser/helpers.test.ts:95:2 > toolToWebMCP — the advertised definition, and the description WebMCP requires > reports a definition with no advertised description as unprojectable 0ms
+ ✓ |src:browser (chromium)| tests/src/browser/helpers.test.ts:101:2 > webMCPToTool — the inverse, reading a registered tool back as a definition > reads inputSchema back as parameters and inverts every hint 0ms
+ ✓ |src:browser (chromium)| tests/src/browser/helpers.test.ts:123:2 > webMCPToTool — the inverse, reading a registered tool back as a definition > drops window and origin, which say where a tool lives rather than what it does 0ms
+ ✓ |src:browser (chromium)| tests/src/browser/helpers.test.ts:136:2 > buildWebMCPDescriptors — the batch, refused whole when one tool cannot carry > describes every advertised tool in registry order 0ms
+ ✓ |src:browser (chromium)| tests/src/browser/helpers.test.ts:147:2 > buildWebMCPDescriptors — the batch, refused whole when one tool cannot carry > refuses the batch with a coded error naming the tool that advertises no description 0ms
+ ✓ |src:browser (chromium)| tests/src/browser/transports/MessagePortTransport.test.ts:15:2 > MessagePortTransport — the port contract over a real MessageChannel > a non-string postMessage payload is ignored — no crash, no reply 59ms
+ ✓ |src:browser (chromium)| tests/src/browser/transports/MessagePortTransport.test.ts:26:2 > MessagePortTransport — the port contract over a real MessageChannel > a string postMessage payload IS delivered to the registered listen handler 59ms
+ ✓ |src:browser (chromium)| tests/src/browser/transports/MessagePortTransport.test.ts:36:2 > MessagePortTransport — the port contract over a real MessageChannel > close() closes the port — a subsequent postMessage from the peer is undelivered 52ms
+ ✓ |src:browser (chromium)| tests/src/browser/transports/MessagePortTransport.test.ts:49:2 > MessagePortTransport — the port contract over a real MessageChannel > close detaches its port listeners and clears registered callbacks 0ms
+ ✓ |src:browser (chromium)| tests/src/browser/transports/MessagePortTransport.test.ts:61:2 > MessagePortTransport — the port contract over a real MessageChannel > close() fires the registered closed handler exactly once, even called twice 0ms
+ ✓ |src:browser (chromium)| tests/src/browser/transports/MessagePortTransport.test.ts:75:2 > MessagePortTransport — the port contract over a real MessageChannel > listen/closed are single-handler-replace — a second registration replaces, never adds 55ms
+ ✓ |src:browser (chromium)| tests/src/browser/transports/MessagePortTransport.test.ts:88:2 > MessagePortTransport — the port contract over a real MessageChannel > a messageerror event does not close the transport — later well-formed messages still arrive 55ms
+ ✓ |src:browser (chromium)| tests/src/browser/validators.test.ts:17:2 > isWebMCPRegistry — narrowing a prototype-carried registry, not a plain record > accepts a class instance whose operations arrive through its prototype 0ms
+ ✓ |src:browser (chromium)| tests/src/browser/validators.test.ts:27:2 > isWebMCPRegistry — narrowing a prototype-carried registry, not a plain record > accepts a plain record carrying every registry operation 0ms
+ ✓ |src:browser (chromium)| tests/src/browser/validators.test.ts:33:2 > isWebMCPRegistry — narrowing a prototype-carried registry, not a plain record > refuses a registry missing any one operation it would go on to call 0ms
+ ✓ |src:browser (chromium)| tests/src/browser/validators.test.ts:39:2 > isWebMCPRegistry — narrowing a prototype-carried registry, not a plain record > refuses a value carrying a registry operation that is not callable 0ms
+ ✓ |src:browser (chromium)| tests/src/browser/validators.test.ts:46:2 > isWebMCPRegistry — narrowing a prototype-carried registry, not a plain record > refuses every value that is not an object at all 0ms
+ ✓ |src:browser (chromium)| tests/src/browser/validators.test.ts:53:2 > isWebMCPRegistry — narrowing a prototype-carried registry, not a plain record > stays total against a value whose member read throws 0ms
+ ✓ |src:browser (chromium)| tests/src/browser/validators.test.ts:65:2 > isWebMCPRegistry — narrowing a prototype-carried registry, not a plain record > refuses every adversarial value without throwing 1ms
+ ✓ |src:browser (chromium)| tests/src/browser/validators.test.ts:77:2 > isWebMCPDocument — the feature detection a page runs before building a bridge > accepts a real Document after a registry is installed on it 0ms
+ ✓ |src:browser (chromium)| tests/src/browser/validators.test.ts:86:2 > isWebMCPDocument — the feature detection a page runs before building a bridge > refuses a document whose modelContext is not a registry 0ms
+ ✓ |src:browser (chromium)| tests/src/browser/validators.test.ts:93:2 > isWebMCPDocument — the feature detection a page runs before building a bridge > refuses this page, because no shipping browser exposes the registry 0ms
+ ✓ |src:browser (chromium)| tests/src/browser/validators.test.ts:97:2 > isWebMCPDocument — the feature detection a page runs before building a bridge > refuses every adversarial value without throwing 1ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 12 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/factories.test.ts:1097:2 > createPageServer — the MCP pair hosted in the page that calls it > completes connect, tools/list, and tools/call with no request leaving the page
+TypeError: page.stop is not a function
+ ❯ tests/src/browser/factories.test.ts:1109:7
+    1107|   expect(value).toEqual({ resultType: 'complete', value: 5 })
+    1108|   expect(drain()).toEqual([])
+    1109|   page.stop()
+       |       ^
+    1110|
+    1111|   // The positive control, drawn from outside the population the scena…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/12]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/factories.test.ts:1120:2 > createPageServer — the MCP pair hosted in the page that calls it > hosts the scope server identity defaults, readable from the client over the channel
+TypeError: page.stop is not a function
+ ❯ tests/src/browser/factories.test.ts:1130:7
+    1128|    version: DEFAULT_MCP_SERVER_VERSION,
+    1129|   })
+    1130|   page.stop()
+       |       ^
+    1131|  })
+    1132|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/12]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/factories.test.ts:1133:2 > createPageServer — the MCP pair hosted in the page that calls it > hosts the identity the options named instead of the defaults
+TypeError: page.stop is not a function
+ ❯ tests/src/browser/factories.test.ts:1144:7
+    1142|
+    1143|   expect(identity).toEqual({ name: 'page-host', version: '2.0.0' })
+    1144|   page.stop()
+       |       ^
+    1145|  })
+    1146|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/12]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/factories.test.ts:1147:2 > createPageServer — the MCP pair hosted in the page that calls it > forwards the client option group to the client it builds
+TypeError: page.stop is not a function
+ ❯ tests/src/browser/factories.test.ts:1158:7
+    1156|   await expect(page.client.call('park', {})).rejects.toThrow(/timed ou…
+    1157|
+    1158|   page.stop()
+       |       ^
+    1159|  })
+    1160|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/12]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/factories.test.ts:1161:2 > createPageServer — the MCP pair hosted in the page that calls it > hands back a client that is bound but not yet connected
+TypeError: page.stop is not a function
+ ❯ tests/src/browser/factories.test.ts:1171:7
+    1169|
+    1170|   expect(page.client.connected).toBe(true)
+    1171|   page.stop()
+       |       ^
+    1172|  })
+    1173|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/12]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/factories.test.ts:1174:2 > createPageServer — the MCP pair hosted in the page that calls it > leaves the client disconnected after stop, and a repeat stops nothing further
+TypeError: page.stop is not a function
+ ❯ tests/src/browser/factories.test.ts:1179:7
+    1177|   expect(page.client.connected).toBe(true)
+    1178|
+    1179|   page.stop()
+       |       ^
+    1180|   page.stop()
+    1181|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/12]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/factories.test.ts:1186:2 > createPageServer — the MCP pair hosted in the page that calls it > settles calls across page destruction
+TypeError: page.stop is not a function
+ ❯ tests/src/browser/factories.test.ts:1197:7
+    1195|   const inflight = page.client.call('park', {})
+    1196|   await parked.entered
+    1197|   page.stop()
+       |       ^
+    1198|
+    1199|   await expect(inflight).rejects.toThrow(/disconnected/)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/12]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/factories.test.ts:1209:2 > createPageServer — the MCP pair hosted in the page that calls it > aborts the hosted handler when the wrapped tool context signal aborts mid-call
+TypeError: page.stop is not a function
+ ❯ tests/src/browser/factories.test.ts:1232:7
+    1230|   // The connection survives an aborted call, exactly as it does over …
+    1231|   expect(page.client.connected).toBe(true)
+    1232|   page.stop()
+       |       ^
+    1233|  })
+    1234| })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/12]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/ModelContext.test.ts:117:2 > publish — this page registering its tools with the document registry > re-registers a name whose definition changed
+AssertionError: expected 'Searches the archive' to be 'Searches the index' // Object.is equality
+
+Expected: [32m"Searches the [7mindex[27m"[39m
+Received: [31m"Searches the [7marchive[27m"[39m
+
+ ❯ tests/src/browser/ModelContext.test.ts:144:33
+    142|
+    143|   const registered = readOne(await fixture.registry.getTools(), 'regis…
+    144|   expect(registered.description).toBe('Searches the index')
+       |                                 ^
+    145|   expect(registered.inputSchema).toEqual({
+    146|    type: 'object',
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/12]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/ModelContext.test.ts:152:2 > publish — this page registering its tools with the document registry > rebinds a name published from a second manager
+AssertionError: expected 'first' to be 'second' // Object.is equality
+
+Expected: [32m"second"[39m
+Received: [31m"first"[39m
+
+ ❯ tests/src/browser/ModelContext.test.ts:167:61
+    165|
+    166|   const registered = readOne(await fixture.registry.getTools(), 'regis…
+    167|   expect(await fixture.registry.executeTool(registered, {})).toBe('sec…
+       |                                                             ^
+    168|  })
+    169|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/12]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/ModelContext.test.ts:170:2 > publish — this page registering its tools with the document registry > captures the publish snapshot at call time
+AssertionError: expected [] to deeply equal [ 'add' ]
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- [[39m
+[32m-   "add",[39m
+[32m- ][39m
+[31m+ [][39m
+
+ ❯ tests/src/browser/ModelContext.test.ts:180:66
+    178|   await pending
+    179|
+    180|   expect(fixture.registrations().map((entry) => entry.tool.name)).toEq…
+       |                                                                  ^
+    181|  })
+    182|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/12]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/ModelContext.test.ts:183:2 > publish — this page registering its tools with the document registry > registers each queued publication against its own snapshot
+AssertionError: expected [] to deeply equal [ 'add' ]
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- [[39m
+[32m-   "add",[39m
+[32m- ][39m
+[31m+ [][39m
+
+ ❯ tests/src/browser/ModelContext.test.ts:195:66
+    193|   await Promise.all([first, second])
+    194|
+    195|   expect(fixture.registrations().map((entry) => entry.tool.name)).toEq…
+       |                                                                  ^
+    196|  })
+    197|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/12]⎯
+
+
+ Test Files  2 failed | 4 passed (6)
+      Tests  12 failed | 113 passed | 2 skipped (127)
+   Start at  05:46:00
+   Duration  5.08s (transform 0ms, setup 534ms, import 78ms, tests 2.52s, environment 0ms)
+

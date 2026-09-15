@@ -1,0 +1,14 @@
+npm notice run @orkestrel/scaffold@0.0.67 test:distribution
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project distribution
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/scaffold
+
+(node:16112) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead to security vulnerabilities, as the arguments are not escaped, only concatenated.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+·····-
+
+ Test Files  1 passed (1)
+      Tests  5 passed | 1 skipped (6)
+   Start at  08:59:48
+   Duration  78.07s (transform 340ms, setup 306ms, import 1.21s, tests 76.40s, environment 0ms)
+

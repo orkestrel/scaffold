@@ -1,0 +1,18 @@
+import { execFileSync } from 'node:child_process'
+import { readFileSync, writeFileSync } from 'node:fs'
+import { createHash } from 'node:crypto'
+
+const owned = new Set(['tests/setupPolicy.ts', 'tests/policy.test.ts', 'tests/setupPolicy.test.ts', 'guides/scaffold.md'])
+const paths = execFileSync('git', ['ls-files', '-z'], { encoding: 'utf8' }).split('\0').filter(Boolean)
+const state = Object.fromEntries(paths.filter(path => !owned.has(path)).map(path => [path, createHash('sha256').update(readFileSync(path)).digest('hex')]))
+const target = 'tmp/codex/D43-inherited.json'
+if (process.argv.includes('--record')) {
+ writeFileSync(target, JSON.stringify(state))
+ writeFileSync('tmp/codex/D43-inherited.diff', execFileSync('git', ['diff']))
+ console.log('Recorded inherited tracked bytes')
+} else {
+ const baseline = JSON.parse(readFileSync(target, 'utf8'))
+ const changed = Object.keys(baseline).filter(path => baseline[path] !== state[path])
+ console.log(JSON.stringify({ unownedChanges: changed }))
+ if (changed.length) process.exitCode = 1
+}

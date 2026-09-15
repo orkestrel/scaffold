@@ -1,0 +1,103 @@
+# U4f — red first (retained verbatim from the unit's report; the unit deleted its tmp/probe/ copy)
+
+## Carrier 1 — the refusal at the shared request entry (before the fix)
+
+### core: tests/src/core/MCPClient.test.ts -t 'rejects a task request on a client that is not connected|rejects a subscription opened on a client that is not connected'
+
+ × |src:core| tests/src/core/MCPClient.test.ts > MCPClient — disconnect > rejects a task request on a client that is not connected 21ms
+   → expected -32601 to be -32600 // Object.is equality
+ × |src:core| tests/src/core/MCPClient.test.ts > MCPClient — disconnect > rejects a subscription opened on a client that is not connected 3ms
+   → expected -32601 to be -32600 // Object.is equality
+AssertionError: expected -32601 to be -32600 // Object.is equality
+AssertionError: expected -32601 to be -32600 // Object.is equality
+ Test Files  1 failed (1)
+      Tests  2 failed | 149 skipped (151)
+
+### browser: tests/src/browser/factories.test.ts -t 'rejects task requests after page stop|rejects a subscription started after page stop'
+
+ × |src:browser (chromium)| tests/src/browser/factories.test.ts:1209:2 > createPageServer — the MCP pair hosted in the page that calls it > rejects task requests after page stop 3047ms
+   → expected false to be -32600 // Object.is equality
+ × |src:browser (chromium)| tests/src/browser/factories.test.ts:1233:2 > createPageServer — the MCP pair hosted in the page that calls it > rejects a subscription started after page stop 15002ms
+   → Test timed out in 15000ms.
+AssertionError: expected false to be -32600 // Object.is equality
+Error: Test timed out in 15000ms.
+ Test Files  1 failed (1)
+      Tests  2 failed | 59 skipped (61)
+
+### re-taken with `stop` intact and ONLY the refusal disabled (`#refuse` returns undefined always)
+
+ × |src:browser (chromium)| tests/src/browser/factories.test.ts:1186:2 > createPageServer — the MCP pair hosted in the page that calls it > settles calls across page destruction 15010ms
+   → Test timed out in 15000ms.
+ × |src:browser (chromium)| tests/src/browser/factories.test.ts:1209:2 > createPageServer — the MCP pair hosted in the page that calls it > rejects task requests after page stop 3020ms
+   → expected false to be -32600 // Object.is equality
+ × |src:browser (chromium)| tests/src/browser/factories.test.ts:1233:2 > createPageServer — the MCP pair hosted in the page that calls it > rejects a subscription started after page stop 15001ms
+   → Test timed out in 15000ms.
+Error: Test timed out in 15000ms.
+AssertionError: expected false to be -32600 // Object.is equality
+Error: Test timed out in 15000ms.
+ Test Files  1 failed (1)
+      Tests  3 failed | 58 skipped (61)
+
+## Carriers 2 and 3 — the follow and the destroy-during-replacement re-check (before the fix)
+
+### tests/src/browser/ModelContext.test.ts (failing rows; the passing rows are the U4d suite unchanged)
+
+ × |src:browser (chromium)| tests/src/browser/ModelContext.test.ts:179:2 > publish — this page registering its tools with the document registry > registers the snapshot the call captured, then follows the clear that emptied the manager 3ms
+   → expected [ [ 'add' ] ] to deeply equal [ [ 'add' ], [] ]
+ × |src:browser (chromium)| tests/src/browser/ModelContext.test.ts:196:2 > publish — this page registering its tools with the document registry > registers each queued publication against its own snapshot 1ms
+   → expected [ [ 'add' ] ] to deeply equal [ [ 'add' ], [] ]
+ × |src:browser (chromium)| tests/src/browser/ModelContext.test.ts:224:2 > the registry this handle follows after publishing it > registers a tool the registry adds after publish 1006ms
+   → Event "the registry change the followed addition dispatches" was not delivered within 1000ms
+ × |src:browser (chromium)| tests/src/browser/ModelContext.test.ts:239:2 > the registry this handle follows after publishing it > aborts the registration of a tool the registry removes 1001ms
+   → Event "the registry change the followed removal dispatches" was not delivered within 1000ms
+ × |src:browser (chromium)| tests/src/browser/ModelContext.test.ts:255:2 > the registry this handle follows after publishing it > aborts every registration when the registry clears 1005ms
+   → Event "the registry change the followed clear dispatches" was not delivered within 1000ms
+ × |src:browser (chromium)| tests/src/browser/ModelContext.test.ts:271:2 > the registry this handle follows after publishing it > follows the later manager after a second publish 1010ms
+   → Event "the registry change the later manager dispatches" was not delivered within 1000ms
+ ✓ |src:browser (chromium)| tests/src/browser/ModelContext.test.ts:294:2 > the registry this handle follows after publishing it > stops following the registry after destroy 1ms
+ ✓ |src:browser (chromium)| tests/src/browser/ModelContext.test.ts:309:2 > the registry this handle follows after publishing it > leaves a followed tool WebMCP cannot carry unregistered 1ms
+ × |src:browser (chromium)| tests/src/browser/ModelContext.test.ts:616:2 > destroy — releasing what this handle registered and nothing else > registers nothing when destroy runs during replacement unregistration 4ms
+   → expected [ { …(2) } ] to deeply equal []
+AssertionError: expected [ [ 'add' ] ] to deeply equal [ [ 'add' ], [] ]
+AssertionError: expected [ [ 'add' ] ] to deeply equal [ [ 'add' ], [] ]
+AssertionError: expected [ { …(2) } ] to deeply equal []
+ Test Files  1 failed (1)
+      Tests  7 failed | 29 passed | 2 skipped (38)
+
+## Carrier 6 — mutations the strengthened tests must catch
+
+### `#reconcile`'s `if (this.#destroyed) return` deleted -> `is inert on a repeat`
+
+ × |src:browser (chromium)| tests/src/browser/ModelContext.test.ts:607:2 > destroy — releasing what this handle registered and nothing else > is inert on a repeat 16ms
+   → expected [ { …(2) } ] to deeply equal []
+AssertionError: expected [ { …(2) } ] to deeply equal []
+ Test Files  1 failed (1)
+      Tests  1 failed | 37 skipped (38)
+
+### each `webMCPAnnotationsToTool` hint pair swapped -> `reads each registered tool as a tool advertising the inverse projection`
+
+=== webMCPAnnotationsToTool: swap readOnlyHint <-> untrustedContentHint ===
+ × |src:browser (chromium)| tests/src/browser/ModelContext.test.ts:402:2 > adopt — reading the registry back as locally executable tools > reads each registered tool as a tool advertising the inverse projection 5ms
+   → expected false to be true // Object.is equality
+      Tests  1 failed | 37 skipped (38)
+=== webMCPAnnotationsToTool: swap readOnlyHint <-> consequentialHint ===
+ × |src:browser (chromium)| tests/src/browser/ModelContext.test.ts:402:2 > adopt — reading the registry back as locally executable tools > reads each registered tool as a tool advertising the inverse projection 4ms
+   → expected false to be true // Object.is equality
+      Tests  1 failed | 37 skipped (38)
+=== webMCPAnnotationsToTool: swap untrustedContentHint <-> consequentialHint ===
+ × |src:browser (chromium)| tests/src/browser/ModelContext.test.ts:402:2 > adopt — reading the registry back as locally executable tools > reads each registered tool as a tool advertising the inverse projection 4ms
+   → expected false to be true // Object.is equality
+      Tests  1 failed | 37 skipped (38)
+
+### `#unfollow()` removed from `destroy` -> `stops following the registry after destroy`
+
+ × |src:browser (chromium)| tests/src/browser/ModelContext.test.ts:307:2 > the registry this handle follows after publishing it > stops following the registry after destroy 15ms
+   → expected 3 to be +0 // Object.is equality
+AssertionError: expected 3 to be +0 // Object.is equality
+ Test Files  1 failed (1)
+      Tests  1 failed | 37 skipped (38)
+
+### recorded negative: `destroy`'s own `if (this.#destroyed) return` deleted -> the whole file stays green
+
+ Test Files  1 passed (1)
+      Tests  36 passed | 2 skipped (38)

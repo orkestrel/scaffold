@@ -1,0 +1,32 @@
+scaffold <verb> [options]
+
+  scaffold new <name> [--src <list>] [--app <list>] [--bin] [--deps <list>] [--offline] [--from <path>] [--target <path>] [--json]
+      scaffold a workspace
+  scaffold audit [--groups <list>] [--offline] [--from <path>] [--target <path>] [--json]
+      report how the target compares to its plan, writing nothing
+  scaffold repair [--groups <list>] [--offline] [--from <path>] [--target <path>] [--json]
+      write each planned path the target is missing or has let drift
+  scaffold catalog [--all] [--from <path>] [--target <path>] [--json]
+      regenerate the package table and refresh the guide mirrors
+  scaffold overwrite [--groups <list>] [--dirty] [--offline] [--from <path>] [--target <path>] [--json]
+      do everything repair and catalog do, then delete what the plan does not own and re-declare the dependency ranges
+
+options
+  --src <list>                   the published library environments to build: core, browser, server
+  --app <list>                   the private application environments to build: core, browser, server
+  --bin                          scaffold a command-line executable at src/bin/main.ts
+  --deps <list>                  the @orkestrel/* packages the workspace depends on
+  --groups <list>                the artifact groups to cover; every group when absent
+  --all                          fetch a guide for every package the organization publishes, not the declared ones alone
+  --dirty                        delete from a tree carrying uncommitted changes
+  --offline                      use the distributed dependency and vendored-host floors without reading upstream
+  --from <path>                  read the data root from a local path instead of the bundled one; catalog alone accepts it more than once
+  --target <path>                the directory the verb operates on; the working directory when absent
+  --json                         emit one machine-readable value instead of a report
+  ORKESTREL_SCAFFOLD_REGISTRY    the registry base mapped to upstream.registry.base
+  ORKESTREL_SCAFFOLD_REPOSITORY  the repository base mapped to upstream.repository.base
+
+exit codes
+  0  clean
+  1  drift or failure
+  2  usage error

@@ -1,0 +1,40 @@
+// P17: apply one named mutation to tests/setupServer.ts (the caller restores from a byte copy).
+import { readFileSync, writeFileSync } from 'node:fs'
+const [path, which] = process.argv.slice(2)
+const text = readFileSync(path, 'utf8')
+const unique = (needle) => {
+	const at = text.indexOf(needle)
+	if (at < 0 || text.indexOf(needle, at + 1) >= 0) throw new Error(`anchor not unique: ${needle.slice(0, 60)}`)
+	return at
+}
+let mutated
+if (which === 'drop-losing-release') {
+	const needle = `		const stranded = await releasePageAttempt(acquisition, bounds.release).then(
+			() => undefined,
+			(thrown: unknown) => thrown,
+		)
+`
+	unique(needle)
+	mutated = text.replace(needle, `		const stranded: unknown = undefined // P17-1\n`)
+} else if (which === 'drop-post-release-read') {
+	const needle = `	await releasePageAttempt(acquisition, bounds.release)
+	if (signal.aborted) {
+		throw new Error(
+			\`the page attempt released its browser after its \${bounds.attempt} ms allowance had expired\`,
+			{ cause: signal.reason },
+		)
+	}
+	return observed
+`
+	unique(needle)
+	mutated = text.replace(needle, `	await releasePageAttempt(acquisition, bounds.release) // P17-2\n	return observed\n`)
+} else if (which === 'turn-off-by-one') {
+	const needle = process.argv[4]
+	if (needle === undefined) throw new Error('turn anchor required')
+	unique(needle)
+	mutated = text.replace(needle, needle.replace('turn: turns.at(-1)', 'turn: turns.at(-1) + 1 /* P17-3 */'))
+} else {
+	throw new Error(`unknown mutation ${which}`)
+}
+writeFileSync(path, mutated)
+console.log(`${which} applied`)

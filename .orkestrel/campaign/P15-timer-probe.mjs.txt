@@ -1,0 +1,8 @@
+// Orchestrator probe P15 (R2): does an armed AbortSignal.timeout keep a Node process alive after the
+// race it served has settled? Node documents the timer as unref'd; this reads the fact on this host.
+const started = performance.now()
+const signal = AbortSignal.timeout(60_000)
+const raced = await Promise.race([Promise.resolve('won'), new Promise((_, reject) => signal.addEventListener('abort', () => reject(signal.reason), { once: true }))])
+process.on('exit', () => {
+	console.log(JSON.stringify({ raced, exitedAfterMs: Math.round(performance.now() - started), aborted: signal.aborted }))
+})

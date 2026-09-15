@@ -1,0 +1,16 @@
+import assert from 'node:assert/strict'
+import { readFileSync, readdirSync } from 'node:fs'
+import { readHostFloor } from '../../dist/src/server/index.js'
+
+const floor = readHostFloor()
+const inventory = JSON.parse(readFileSync('host.json', 'utf8'))
+assert.deepEqual(floor.manifest, inventory)
+const guides = readdirSync('guides').filter((name) => name.endsWith('.md')).sort()
+assert.deepEqual(
+	floor.manifest.entries.filter(({ destination }) => destination.startsWith('guides/')).map(({ destination }) => destination.slice(7)).sort(),
+	guides,
+)
+for (const name of guides) {
+	assert.equal(floor.bytes[`guides/${name}`], readFileSync(`guides/${name}`).toString('hex'))
+}
+console.log('Built reader matches the regenerated inventory and every checkout guide byte.')

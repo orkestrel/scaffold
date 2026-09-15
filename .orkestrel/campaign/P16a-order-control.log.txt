@@ -1,0 +1,43 @@
+npm notice run @orkestrel/mcp@0.0.30 npx
+npm notice run vitest run --config vite.config.ts --project src:browser tests/src/browser/ModelContext.test.ts -t before it releases what the change removed
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/mcp
+
+ ❯ |src:browser (chromium)| tests/src/browser/ModelContext.test.ts (56 tests | 1 failed | 55 skipped) 60ms
+     × registers what a change added before it releases what the change removed 58ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/ModelContext.test.ts:305:2 > the registry this handle follows after publishing it > registers what a change added before it releases what the change removed
+AssertionError: expected [ [], [ 'subtract' ] ] to deeply equal [ [ 'add', 'subtract' ], …(1) ]
+
+- Expected
++ Received
+
+  [
+-   [
+-     "add",
+-     "subtract",
+-   ],
++   [],
+    [
+      "subtract",
+    ],
+  ]
+
+ ❯ tests/src/browser/ModelContext.test.ts:319:46
+    317|   // then release what it does not. The two dispatches read in that or…
+    318|   // never withdraws a name while the tools replacing it are still bei…
+    319|   expect(trace.calls.map(([names]) => names)).toEqual([['add', 'subtra…
+       |                                              ^
+    320|   expect(fixture.registrations().map((entry) => entry.tool.name)).toEq…
+    321|  })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 55 skipped (56)
+   Start at  09:03:57
+   Duration  1.95s (transform 0ms, setup 362ms, import 20ms, tests 60ms, environment 0ms)
+

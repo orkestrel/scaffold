@@ -1,0 +1,17 @@
+<!-- A2b-S — reviewer (Opus 5, native), subjective and cross-engine lane on U2c, blind. Retained from the completion notification, 2026-09-15 (511 s, 27 tool uses). Abridged. -->
+
+1. The pre-dispatch guard — BROKEN on "changes only the pre-aborted case". Placement holds and beats A2's prescription (guard at `Agent.ts:536-540`, before the append at `:541-546`; A2's "before :542" would have left the dangling assistant-with-calls turn). Interleaving: with an `authority`, a mixed batch passes the guard, the assistant turn is appended, `#authorize` emits `deny` synchronously (`@orkestrel/emitter` `index.js:107-116`) for the denied call, a `deny` listener aborts the run, no `await` separates the emit from `tools.execute(allowed, { signal })` at `:710`, the manager refuses the allowed call with `String(reason)` (`@orkestrel/tool` `index.js:243-251`), and `:548-563` appends that text as a tool message. `AuthorityInterface.evaluate` is a second such door. Bound: the no-authority branch is closed. Fix: hoist the authority evaluation pass (with its `deny` emits) above the guard so the guard is the last statement before the append; pass `{ allowed, denials }` into the dispatch; every denied call still emits one `deny` in call order; an abort during dispatch still awaits the handler (`Agent.test.ts:1652` stays green). Pin: authority configured, one denied and one allowed call, a `deny` listener that aborts — no `tool` chunk, no assistant-with-calls message, no tool message, `partial: true`, the allowed handler never entered.
+2. Budget between turns — CONFIRMED (`Agent.ts:465`, `:494`, `:525` all before the tool block; guide `:15`, `:1200`; `types.ts:1208-1214`).
+3. No stale `caller` prose — CONFIRMED.
+4. Placeholders gone — CONFIRMED (every surviving `_args`/`_context` reads `context`).
+5. Placement and caller assertions — CONFIRMED (`tests/guides.test.ts:327-334` loads and reads the integration file; mutations that stay green: renaming the enclosing `describe`, `.skip`, dropping the file from the project; the caller assertion at `Agent.test.ts:1506-1536` binds).
+6. Guide structure — CONFIRMED.
+7. Analyst vectors closed — CONFIRMED (`Agent.test.ts:1677-1678` identity with the provider's signal; `:1661-1665`; `integration.test.ts:323-326`).
+8. Nothing else moved — CONFIRMED (14 paths in Owned plus `shapers.ts` comments; the tool mirror byte-identical in the tree under audit).
+9. Ship as 0.0.23 — BROKEN on claim 1, F1, and the open landing gate (`package.json:74-80` pins `@orkestrel/tool ^0.0.14` while `shapers.test.ts:2` imports `ToolContext`).
+
+F1 — the lede at `guides/agent.md:15` now omits the budget from the run signal's sources while `Agent.ts:768-771`, `:46`, `:62-64`, `guides/agent.md:983`, and `:1244` say the budget folds into it. Fix: restore the budget to the sources and split the destinations: the folded signal bounds the provider; a handler's `context.signal` is that same signal; the budget is charged during streaming and between turns, before dispatch, so exhaustion ends the run without dispatching.
+
+Attacked and held: the no-authority branch; the discarded assistant turn (correct — a resumed conversation must not end with unanswered calls); content loss for a non-streaming foreign provider (the guide already says "streamed"); a shared budget charged by the application; the planned-receipt sentences (A2's F6 prescription verbatim); `AUTHORITY_STATES` in `tests/setup.ts`; the harmless no-op abort after the answer exists.
+
+VERDICT: FAIL 1, 9; outside the claims: F1

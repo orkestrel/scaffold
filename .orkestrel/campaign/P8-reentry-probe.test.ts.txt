@@ -1,0 +1,73 @@
+// Orchestrator probe P8 — reproduces the A8 analyst's re-entry vectors against the U8b ToolManager
+// emitter (claims 2 and 3). Deleted after the reading is retained; nothing here is a permanent test.
+import { describe, expect, it } from 'vitest'
+import { createRecorders } from '@orkestrel/test'
+import { createTool, createToolManager } from '@src/core'
+
+function buildTool(name: string, label: string) {
+	return createTool({ name, description: label, execute: () => label })
+}
+
+describe('P8 re-entry vectors', () => {
+	it('replacement reentry preserves publication consistency', () => {
+		const manager = createToolManager()
+		const previous = buildTool('echo', 'previous')
+		const replacement = buildTool('echo', 'replacement')
+		manager.add(previous)
+		const events = createRecorders(manager.emitter, ['add', 'remove'])
+		const seen: unknown[] = []
+		manager.emitter.once('remove', () => {
+			manager.remove('echo')
+		})
+		manager.emitter.on('add', (tool) => {
+			seen.push(manager.tool(tool.name))
+		})
+		manager.add(replacement)
+		const removed = events.remove.calls.map((call) => call[0])
+		const added = events.add.calls.map((call) => call[0])
+		// Reading, not a claim: what the emitter published and what the registry holds afterwards.
+		console.log('P8 replacement: removed=', removed.map((tool) => tool.description), 'added=', added.map((tool) => tool.description), 'count=', manager.count, 'seenInAddListener=', seen.map((tool) => (tool === undefined ? 'undefined' : 'present')))
+		expect(seen).toEqual([replacement])
+	})
+
+	it('replacement without reentry is consistent (control)', () => {
+		const manager = createToolManager()
+		const previous = buildTool('echo', 'previous')
+		const replacement = buildTool('echo', 'replacement')
+		manager.add(previous)
+		const seen: unknown[] = []
+		manager.emitter.on('add', (tool) => {
+			seen.push(manager.tool(tool.name))
+		})
+		manager.add(replacement)
+		expect(seen).toEqual([replacement])
+		expect(manager.count).toBe(1)
+	})
+
+	it('destroy finishes with an empty registry', () => {
+		const manager = createToolManager()
+		const tool = buildTool('echo', 'tool')
+		manager.add(tool)
+		manager.emitter.once('clear', () => {
+			manager.add(tool)
+		})
+		manager.destroy()
+		console.log('P8 destroy repopulation: count=', manager.count, 'destroyed=', manager.emitter.destroyed)
+		expect(manager.count).toBe(0)
+	})
+
+	it('destroy prevents subsequent listener delivery', () => {
+		const manager = createToolManager()
+		const tool = buildTool('echo', 'tool')
+		const readings: boolean[] = []
+		manager.emitter.on('add', () => {
+			manager.destroy()
+		})
+		manager.emitter.on('add', () => {
+			readings.push(manager.emitter.destroyed)
+		})
+		manager.add(tool)
+		console.log('P8 destroy mid-emit: siblingRan=', readings.length, 'destroyedWhenRan=', readings)
+		expect(readings).toEqual([])
+	})
+})

@@ -1,0 +1,25 @@
+import { readFileSync } from 'node:fs'
+
+const owned = new Set([
+	'guides/scaffold.md', 'src/bin/CLI.ts', 'src/bin/helpers.ts', 'src/bin/types.ts',
+	'src/server/Materializer.ts', 'src/server/types.ts', 'tests/src/bin/CLI.test.ts',
+	'tests/src/server/Materializer.test.ts',
+])
+function blocks(path) {
+	return new Map(readFileSync(path, 'utf8').split(/(?=^diff --git )/m).filter(Boolean).map((block) => {
+		const match = /^diff --git a\/(.+) b\/.+$/m.exec(block)
+		if (!match) throw new Error('Unrecognized diff block')
+		return [match[1], block]
+	}))
+}
+function differences(before, after) {
+	return [...new Set([...before.keys(), ...after.keys()])].filter((path) => !owned.has(path) && before.get(path) !== after.get(path))
+}
+const before = blocks('tmp/codex/D42b-inherited.diff')
+const after = blocks('tmp/codex/D42b-final.diff')
+const control = new Map(after)
+control.set('host.json', `${control.get('host.json')}CONTROL`)
+if (!differences(before, control).includes('host.json')) throw new Error('Scope control failed')
+const changed = differences(before, after)
+if (changed.length) throw new Error(`Unowned changes: ${changed.join(', ')}`)
+console.log('Tracked changes outside unit ownership match the inherited diff; the host.json control is detected.')

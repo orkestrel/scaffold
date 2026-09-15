@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+# Probe: does any package in the agent's installed runtime closure import a node: module or read
+# `process` from its ROOT (core) entry? Control: the database and workflow SERVER entries must match.
+set -u
+cd /c/Users/mikes/WebstormProjects/agent/node_modules/@orkestrel || exit 1
+echo "== root (core) entries: node: imports / process reads"
+for p in */; do
+  p="${p%/}"
+  f="$p/dist/src/core/index.js"
+  if [ -f "$f" ]; then
+    n=$(grep -c -E "from ['\"]node:|require\(['\"]node:" "$f")
+    pr=$(grep -c -E "\bprocess\.(env|platform|versions|cwd|argv)\b" "$f")
+    echo "$p core: node-imports=$n process-reads=$pr size=$(wc -c < "$f")"
+  else
+    echo "$p core: (no dist/src/core/index.js)"
+  fi
+done
+echo "== control: server entries (must show node imports)"
+for f in database/dist/src/server/index.js workflow/dist/src/server/index.js; do
+  if [ -f "$f" ]; then echo "$f node-imports=$(grep -c -E "from ['\"]node:|require\(['\"]node:" "$f")"; else echo "$f missing"; fi
+done
+echo "== browser entries present"
+ls -d */dist/src/browser 2>/dev/null

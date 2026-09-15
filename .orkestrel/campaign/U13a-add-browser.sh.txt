@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+# Orchestrator tracked command (U13a): declare @orkestrel/browser ^0.0.16 as a devDependency of
+# @orkestrel/ollama (user ruling 2, D3), install it on the host, then restage the campaign tool and
+# agent tarballs (a registry install re-resolves both — the U0b clobber) through u0c-install-both.sh.
+set -u
+O=/c/Users/mikes/WebstormProjects/ollama
+SCAF=/c/Users/mikes/WebstormProjects/scaffold
+RECEIPT="$SCAF/tmp/units/u13a-receipt.md"
+cd "$O" || exit 9
+{
+	echo "# U13a receipt — @orkestrel/browser declared and installed in ollama"
+	echo
+	echo "date: $(date -u +%FT%TZ)"
+	echo "ollama HEAD: $(git rev-parse --short HEAD)"
+	echo "status before: [$(git status --porcelain | tr '\n' ' ')]"
+} > "$RECEIPT"
+npm install --save-dev --no-audit --no-fund @orkestrel/browser@^0.0.16 > "$SCAF/tmp/units/u13a-install.log.txt" 2>&1
+echo "npm install --save-dev exit: $?" >> "$RECEIPT"
+echo "declared: $(grep -n '"@orkestrel/browser"' package.json)" >> "$RECEIPT"
+echo "installed browser: $(npm ls @orkestrel/browser --depth=0 2>/dev/null | grep browser)" >> "$RECEIPT"
+echo "browser server entry present: $(test -f node_modules/@orkestrel/browser/dist/src/server/index.js && echo yes || echo no)" >> "$RECEIPT"
+echo "tool ToolErrorContext after registry install (expect clobbered): $(grep -c ToolErrorContext node_modules/@orkestrel/tool/dist/src/core/index.d.ts 2>/dev/null)" >> "$RECEIPT"
+bash "$SCAF/tmp/units/u0c-install-both.sh" ollama >> "$SCAF/tmp/units/u13a-restage.log.txt" 2>&1
+echo "restage exit: $?" >> "$RECEIPT"
+echo "tool ToolErrorContext after restage: $(grep -c ToolErrorContext node_modules/@orkestrel/tool/dist/src/core/index.d.ts) agent ToolContext: $(grep -c ToolContext node_modules/@orkestrel/agent/dist/src/core/index.d.ts)" >> "$RECEIPT"
+echo "browser still installed after restage: $(npm ls @orkestrel/browser --depth=0 2>/dev/null | grep -c browser)" >> "$RECEIPT"
+echo "lockfile diff: $(git diff --stat package-lock.json | tail -1)" >> "$RECEIPT"
+echo "status after: [$(git status --porcelain | tr '\n' ' ')]" >> "$RECEIPT"
+cat "$RECEIPT"

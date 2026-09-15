@@ -1,0 +1,82 @@
+npm notice run @orkestrel/ollama@0.0.16 test
+npm notice run npm run test:src && npm run test:setup && npm run test:policy && npm run test:config && npm run test:guides && npm run test:conformance
+npm notice run @orkestrel/ollama@0.0.16 test:src
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/ollama
+
+····································································································
+
+ Test Files  4 passed (4)
+      Tests  100 passed (100)
+   Start at  06:52:37
+   Duration  1.11s (transform 323ms, setup 92ms, import 812ms, tests 1.20s, environment 0ms)
+
+npm notice run @orkestrel/ollama@0.0.16 test:setup
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project setup
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/ollama
+
+······················································································································
+
+ Test Files  3 passed (3)
+      Tests  118 passed (118)
+   Start at  06:52:39
+   Duration  818ms (transform 259ms, setup 96ms, import 787ms, tests 545ms, environment 0ms)
+
+npm notice run @orkestrel/ollama@0.0.16 test:policy
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project policy
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/ollama
+
+·················································································-·········
+
+ Test Files  1 passed (1)
+      Tests  90 passed | 1 skipped (91)
+   Start at  06:52:40
+   Duration  811ms (transform 81ms, setup 35ms, import 105ms, tests 526ms, environment 0ms)
+
+npm notice run @orkestrel/ollama@0.0.16 test:config
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project config
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/ollama
+
+··········································································································································································stdout | tests/config.test.ts > configuration helpers > rolls one face into a single declaration and rewrites its core specifier
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+
+·-stdout | tests/config.test.ts > configuration helpers > rolls one face into a single declaration and rewrites its core specifier
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+
+·
+
+ Test Files  1 passed (1)
+      Tests  172 passed | 1 skipped (173)
+   Start at  06:52:42
+   Duration  2.85s (transform 203ms, setup 34ms, import 438ms, tests 2.23s, environment 0ms)
+
+npm notice run @orkestrel/ollama@0.0.16 test:guides
+npm notice run node --experimental-strip-types tests/guides.test.ts
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/ollama
+
+··································
+
+ Test Files  1 passed (1)
+      Tests  34 passed (34)
+   Start at  06:52:45
+   Duration  746ms (transform 120ms, setup 44ms, import 499ms, tests 53ms, environment 0ms)
+
+npm notice run @orkestrel/ollama@0.0.16 test:conformance
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project conformance
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/ollama
+
+·················
+
+ Test Files  1 passed (1)
+      Tests  17 passed (17)
+   Start at  06:52:46
+   Duration  209ms (transform 29ms, setup 35ms, import 25ms, tests 5ms, environment 0ms)
+

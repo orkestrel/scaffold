@@ -1,0 +1,81 @@
+// Probe C3 — can an Agent consume an in-process MCP server's tools with no network hop, today?
+// Published packages: @orkestrel/agent 0.0.22, @orkestrel/mcp 0.0.30, @orkestrel/tool 0.0.14.
+// Control 1: globalThis.fetch is replaced with a thrower; any network attempt fails loudly.
+// Control 2: a call to a tool the server does not hold must surface as a ToolFailure, not a hang.
+import { createAgent } from '@orkestrel/agent'
+import { bindClient, bindServer, createDuplexClientTransport, createMCPClient, createMCPServer } from '@orkestrel/mcp'
+import { createMessagePortTransport } from '@orkestrel/mcp/browser'
+import { createTool, createToolManager } from '@orkestrel/tool'
+
+let fetchCalls = 0
+globalThis.fetch = () => {
+	fetchCalls += 1
+	throw new Error('network attempted')
+}
+
+// ── the "page-native MCP server": tools live here ──────────────────────────
+let executedInServer = 0
+const serverTools = createToolManager()
+serverTools.add(
+	createTool({
+		name: 'add',
+		description: 'Adds two numbers',
+		parameters: { type: 'object', properties: { a: { type: 'number' }, b: { type: 'number' } }, required: ['a', 'b'] },
+		execute: (args) => {
+			executedInServer += 1
+			return Number(args.a) + Number(args.b)
+		},
+	}),
+)
+const server = createMCPServer({ identity: { name: 'probe-page', version: '0.0.0' }, tools: serverTools })
+
+// ── the in-page transport pair ──────────────────────────────────────────────
+const { port1, port2 } = new MessageChannel()
+const unbindServer = bindServer(server, createMessagePortTransport({ port: port1 }))
+const clientTransport = createMessagePortTransport({ port: port2 })
+const client = createMCPClient({ transport: createDuplexClientTransport(clientTransport) })
+const unbindClient = bindClient(client, clientTransport)
+await client.connect()
+
+// ── the agent holds the MCP tools as ordinary Tools ─────────────────────────
+const mcpTools = await client.tools()
+const agentTools = createToolManager()
+agentTools.add(mcpTools)
+
+const script = [
+	{ content: '', tools: [{ id: 'c1', name: 'add', arguments: { a: 2, b: 3 } }] },
+	{ content: '', tools: [{ id: 'c2', name: 'missing', arguments: {} }] },
+	{ content: 'the sum is 5' },
+]
+let turn = 0
+const provider = {
+	id: 'scripted-1',
+	name: 'scripted',
+	async generate() {
+		return script[turn++]
+	},
+	async *stream() {
+		return script[turn++]
+	},
+}
+const agent = createAgent(provider, { tools: agentTools, limit: 5 })
+agent.context.messages.add({ role: 'user', content: 'add 2 and 3' })
+const toolEvents = []
+agent.emitter.on('tool', (call, result) => toolEvents.push({ name: call.name, success: result.success, value: result.success ? result.value : result.error }))
+const result = await agent.generate()
+
+console.log(JSON.stringify({
+	definitionsSeenByAgent: agentTools.definitions().map((definition) => definition.name),
+	executedInServer,
+	toolEvents,
+	content: result.content,
+	partial: result.partial,
+	roles: agent.context.messages.messages().map((message) => message.role),
+	fetchCalls,
+}, null, 2))
+
+await client.disconnect()
+unbindClient()
+unbindServer()
+port1.close()
+port2.close()

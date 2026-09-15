@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+# AD4b objective audit lane — GPT-6 Astra, read-only codex exec rooted at the scaffold checkout. Cap 2700 s.
+# Stages the chain diff, the AD4 verdicts, the fix-round reports and diffs, the V4 verifier report, and the live catalog reading beside the brief.
+set -u
+SCAF="C:/Users/mikes/WebstormProjects/scaffold"
+U="AD4b-audit"
+J="$SCAF/tmp/codex/$U.jsonl"
+L="$SCAF/tmp/codex/$U-last.md"
+B="$SCAF/tmp/codex/$U-brief.md"
+cp "$SCAF/tmp/units/AD4b-audit-brief.md" "$B"
+cp "$SCAF/tmp/units/AD4b-diff.patch" "$SCAF/tmp/codex/AD4b-diff.patch"
+for f in AD4-audit-analyst.md AD4-audit-reviewer.md AD4-audit-checker.md U16-scaffold-capture-family-report.md D45-scaffold-audit-fixes-report.md D46-scaffold-shape-fixes-report.md D47-scaffold-prose-fixes-report.md D45-diff.patch.txt D46-diff.patch.txt D47-diff.patch.txt V4-scaffold-verify-report.md K-catalog-live.json.txt P6-surface-collisions.txt P7-setup-collisions.txt plan.md; do
+	cp "$SCAF/.orkestrel/campaign/$f" "$SCAF/tmp/codex/$f"
+done
+echo "launch unit=$U model=gpt-6-astra sandbox=read-only cap=2700 start=$(date -u +%Y-%m-%dT%H:%M:%SZ)" > "$SCAF/tmp/codex/$U.launch.txt"
+timeout 2700 codex exec --json -C "$SCAF" --sandbox read-only --model gpt-6-astra -c 'model_reasoning_effort="high"' --output-last-message "$L" "Read and execute the audit brief at $B exactly (every evidence file it names is staged beside it in tmp/codex/). You hold the OBJECTIVE lane (analyst). Perform the audit directly and spawn nothing. Your final message must be the verdict shape the brief specifies." < /dev/null > "$J" 2> "$SCAF/tmp/codex/$U.err"
+EXIT=$?
+echo "exit=$EXIT end=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$SCAF/tmp/codex/$U.launch.txt"
+echo "unit=$U exit=$EXIT"
+grep -o '"thread_id":"[^"]*"' "$J" | head -1
+wc -c < "$L" 2>/dev/null

@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+# A13b objective audit lane — GPT-6 Astra, read-only codex exec rooted at the ollama checkout. Cap 2400 s.
+# Successor of A13-run.sh: unit name, brief, journal; stages the U13c brief, report, diff, page proof, gate logs,
+# the authoritative service log, the collision probe, and the A13 verdicts beside the brief. Astra is the
+# cross-engine lane (Opus wrote U13b and U13c).
+set -u
+SCAF="C:/Users/mikes/WebstormProjects/scaffold"
+OLL="C:/Users/mikes/WebstormProjects/ollama"
+J="$SCAF/tmp/codex/A13b-audit.jsonl"
+L="$SCAF/tmp/codex/A13b-audit-last.md"
+B="$OLL/tmp/codex/A13b-audit-brief.md"
+mkdir -p "$OLL/tmp/codex"
+cp "$SCAF/tmp/units/A13b-audit-brief.md" "$B"
+for f in U13c-ollama-page-fix-brief.md U13c-ollama-page-fix-report.md U13c-diff.patch.txt U13c-page.test.ts.txt U13c-ollama-gates-orchestrator.log.txt U13c-ollama-gates-test-full.log.txt U13c-ollama-service-verbose.log.txt collide3-ollama-after-u13c.txt A13-audit-analyst.md A13-audit-reviewer.md A13-audit-checker.md; do
+	cp "$SCAF/.orkestrel/campaign/$f" "$OLL/tmp/codex/$f"
+done
+echo "launch unit=A13b-audit model=gpt-6-astra sandbox=read-only cap=2400 start=$(date -u +%Y-%m-%dT%H:%M:%SZ)" > "$SCAF/tmp/codex/A13b-audit.launch.txt"
+timeout 2400 codex exec --json -C "$OLL" --sandbox read-only --model gpt-6-astra -c 'model_reasoning_effort="high"' --output-last-message "$L" "Read and execute the audit brief at $B exactly (every evidence file it names is staged beside it in tmp/codex/). You hold the OBJECTIVE lane (analyst) and the cross-engine lane: Opus 5 wrote the unit under audit. Perform the audit directly and spawn nothing. Your final message must be the verdict shape the brief specifies." < /dev/null > "$J" 2> "$SCAF/tmp/codex/A13b-audit.err"
+EXIT=$?
+echo "exit=$EXIT end=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$SCAF/tmp/codex/A13b-audit.launch.txt"
+echo "unit=A13b-audit exit=$EXIT"
+grep -o '"thread_id":"[^"]*"' "$J" | head -1
+wc -c < "$L" 2>/dev/null

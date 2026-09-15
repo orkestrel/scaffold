@@ -1,0 +1,64 @@
+#!/usr/bin/env bash
+# Unit U0 (Orchestrator tracked command): build and pack the tool tree, install the tarball
+# (never link) into agent, mcp, and ollama in that order, and record a receipt. Re-runnable: rebuild
+# and repack whenever tool's source moves, per AGENTS.md "Fixing a dependency before it publishes".
+set -u
+ROOT=/c/Users/mikes/WebstormProjects
+SCAF="$ROOT/scaffold"
+OUT="$SCAF/tmp/tarballs"
+mkdir -p "$OUT" "$SCAF/tmp/units"
+RECEIPT="$SCAF/tmp/units/u0-receipt.md"
+TOKEN="ToolContext"
+
+{
+	echo "# U0 receipt — tool tarball into agent, mcp, ollama"
+	echo
+	echo "date: $(date -u +%FT%TZ)"
+	echo "tool HEAD: $(git -C "$ROOT/tool" rev-parse --short HEAD)"
+	echo "tool status: [$(git -C "$ROOT/tool" status --porcelain | tr '\n' ' ')]"
+} > "$RECEIPT"
+
+cd "$ROOT/tool" || exit 9
+npm run build > "$SCAF/tmp/units/u0-build.log.txt" 2>&1
+BUILD_EXIT=$?
+echo "tool build exit: $BUILD_EXIT" >> "$RECEIPT"
+if [ "$BUILD_EXIT" -ne 0 ]; then
+	echo "build failed; stopping before pack and install" >> "$RECEIPT"
+	cat "$RECEIPT"
+	exit "$BUILD_EXIT"
+fi
+
+rm -f "$OUT"/orkestrel-tool-*.tgz
+npm pack --pack-destination "$OUT" > "$SCAF/tmp/units/u0-pack.log.txt" 2>&1
+PACK_EXIT=$?
+echo "tool pack exit: $PACK_EXIT" >> "$RECEIPT"
+if [ "$PACK_EXIT" -ne 0 ]; then
+	echo "pack failed; stopping before install" >> "$RECEIPT"
+	cat "$RECEIPT"
+	exit "$PACK_EXIT"
+fi
+
+TARBALL=$(ls -t "$OUT"/orkestrel-tool-*.tgz | head -1)
+echo "tarball: $TARBALL ($(stat -c %s "$TARBALL") bytes)" >> "$RECEIPT"
+
+for CONSUMER in agent mcp ollama; do
+	echo >> "$RECEIPT"
+	echo "## $CONSUMER" >> "$RECEIPT"
+	echo "declared range before: $(grep '"@orkestrel/tool"' "$ROOT/$CONSUMER/package.json")" >> "$RECEIPT"
+	echo "installed version before: $(grep '"version"' "$ROOT/$CONSUMER/node_modules/@orkestrel/tool/package.json" 2>/dev/null)" >> "$RECEIPT"
+	BEFORE_COUNT=$(grep -c "$TOKEN" "$ROOT/$CONSUMER/node_modules/@orkestrel/tool/dist/src/core/index.d.ts" 2>/dev/null || echo 0)
+	echo "installed dist/src/core/index.d.ts contains $TOKEN before: $BEFORE_COUNT" >> "$RECEIPT"
+
+	cd "$ROOT/$CONSUMER" || exit 9
+	npm install --no-save --ignore-scripts --no-audit --no-fund "$TARBALL" > "$SCAF/tmp/units/u0-install-$CONSUMER.log.txt" 2>&1
+	INSTALL_EXIT=$?
+	echo "install exit: $INSTALL_EXIT" >> "$RECEIPT"
+
+	echo "declared range after: $(grep '"@orkestrel/tool"' "$ROOT/$CONSUMER/package.json")" >> "$RECEIPT"
+	echo "installed version after: $(grep '"version"' "$ROOT/$CONSUMER/node_modules/@orkestrel/tool/package.json" 2>/dev/null)" >> "$RECEIPT"
+	AFTER_COUNT=$(grep -c "$TOKEN" "$ROOT/$CONSUMER/node_modules/@orkestrel/tool/dist/src/core/index.d.ts" 2>/dev/null || echo 0)
+	echo "installed dist/src/core/index.d.ts contains $TOKEN after: $AFTER_COUNT" >> "$RECEIPT"
+	echo "$CONSUMER package.json/lock dirty after install: [$(git -C "$ROOT/$CONSUMER" status --porcelain -- package.json package-lock.json | tr '\n' ' ')]" >> "$RECEIPT"
+done
+
+cat "$RECEIPT"

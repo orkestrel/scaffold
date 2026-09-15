@@ -1,0 +1,24 @@
+// Applies one exact-string mutation to a file (the string must occur exactly once) or restores it from a backup.
+// Usage: node mutate.mjs apply <file> <backup> <from> <to>   |   node mutate.mjs restore <file> <backup>
+import { copyFileSync, readFileSync, writeFileSync } from 'node:fs'
+
+const [mode, file, backup, from, to] = process.argv.slice(2)
+if (mode === 'restore') {
+	copyFileSync(backup, file)
+	console.log(`restored ${file}`)
+	process.exit(0)
+}
+if (mode !== 'apply' || !file || !backup || from === undefined || to === undefined) {
+	console.error('usage: mutate.mjs apply <file> <backup> <from> <to> | restore <file> <backup>')
+	process.exit(2)
+}
+const text = readFileSync(file, 'utf8')
+const first = text.indexOf(from)
+const last = text.lastIndexOf(from)
+if (first === -1 || first !== last) {
+	console.error(`mutation target occurs ${first === -1 ? 0 : 'more than one'} time(s): ${from}`)
+	process.exit(3)
+}
+copyFileSync(file, backup)
+writeFileSync(file, text.slice(0, first) + to + text.slice(first + from.length))
+console.log(`applied: ${from} -> ${to}`)

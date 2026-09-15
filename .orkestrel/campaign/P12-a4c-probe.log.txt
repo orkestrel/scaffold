@@ -1,0 +1,71 @@
+npm notice run @orkestrel/mcp@0.0.30 npx
+npm notice run vitest run --config vite.config.ts --project src:browser tests/src/browser/probe-p12.test.ts
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/mcp
+
+stdout | tests/src/browser/probe-p12.test.ts:22:2 > P12 vectors > claim 1: requests issued inside a connect listener after stop refuse rather than park
+P12 claim 1: {"connect":"resolved","call":"rejected: MCP request 'tools/call' timed out after 1000ms","task":"rejected: MCP request 'tasks/get' timed out after 1000ms","next":"still pending after 1500 ms"}
+stdout | tests/src/browser/probe-p12.test.ts:54:2 > P12 vectors > claim 2a: an addition on a manager a re-entrant publish replaced registers nothing
+P12 claim 2a: registrations after re-entrant replacement = ["lookup","subtract"]
+ ❯ |src:browser (chromium)| tests/src/browser/probe-p12.test.ts (5 tests | 3 failed) 3420ms
+     × claim 1: requests issued inside a connect listener after stop refuse rather than park 2528ms
+     × claim 2a: an addition on a manager a re-entrant publish replaced registers nothing 211ms
+     × claim 2b: an addition made by an earlier clear listener survives the clear 205ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/probe-p12.test.ts:22:2 > P12 vectors > claim 1: requests issued inside a connect listener after stop refuse rather than park
+AssertionError: expected 'rejected: MCP request \'tools/call\' …' to be 'rejected: -32600' // Object.is equality
+
+Expected: "rejected: -32600"
+Received: "rejected: MCP request 'tools/call' timed out after 1000ms"
+
+ ❯ tests/src/browser/probe-p12.test.ts:49:24
+     47|   }
+     48|   console.log('P12 claim 1:', JSON.stringify(readings))
+     49|   expect(readings.call).toBe('rejected: -32600')
+       |                        ^
+     50|   expect(readings.task).toBe('rejected: -32600')
+     51|   expect(readings.next).toBe('rejected: -32600')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/probe-p12.test.ts:54:2 > P12 vectors > claim 2a: an addition on a manager a re-entrant publish replaced registers nothing
+AssertionError: expected [ 'lookup', 'subtract' ] to deeply equal [ 'lookup' ]
+
+- Expected
++ Received
+
+  [
+    "lookup",
++   "subtract",
+  ]
+
+ ❯ tests/src/browser/probe-p12.test.ts:69:16
+     67|   const names = fixture.registrations().map((entry) => entry.tool.name)
+     68|   console.log('P12 claim 2a: registrations after re-entrant replacemen…
+     69|   expect(names).toEqual(['lookup'])
+       |                ^
+     70|  })
+     71|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/probe-p12.test.ts:72:2 > P12 vectors > claim 2b: an addition made by an earlier clear listener survives the clear
+TypeError: tools.has is not a function
+ ❯ tests/src/browser/probe-p12.test.ts:86:9
+     84|    JSON.stringify(names),
+     85|    '| manager has fresh:',
+     86|    tools.has('fresh'),
+       |         ^
+     87|   )
+     88|   expect(names).toEqual(['fresh'])
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  3 failed | 2 passed (5)
+   Start at  07:01:50
+   Duration  5.45s (transform 0ms, setup 401ms, import 13ms, tests 3.42s, environment 0ms)
+
