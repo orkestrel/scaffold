@@ -700,7 +700,7 @@
 			"storage": "guides/agent.md",
 			"destination": "guides/agent.md",
 			"executable": false,
-			"digest": "e3e4c6a867be82526469acb3d7daff94b169788e6a3cac53541a1088c05b6bd4"
+			"digest": "78ca060a40cc7ae1f7fe4eacb2b0b3005323d3b1bacdc1419bf5637821e7dd5d"
 		},
 		{
 			"storage": "guides/brief.md",
@@ -826,7 +826,7 @@
 			"storage": "guides/ollama.md",
 			"destination": "guides/ollama.md",
 			"executable": false,
-			"digest": "42b31b4d909388cf63b68535d8c6edbe1a61300e74d511267e93e02dc3722ee4"
+			"digest": "490d3e90deac90b4f61be5dc9b72c0ae8a5e3048cdfce72c101b4b39516a1490"
 		},
 		{
 			"storage": "guides/pool.md",
@@ -1329,6 +1329,20 @@
 		},
 		{
 			"name": "ProviderInterface",
+			"owners": [
+				"agent",
+				"supervisor"
+			]
+		},
+		{
+			"name": "ProviderOptions",
+			"owners": [
+				"agent",
+				"supervisor"
+			]
+		},
+		{
+			"name": "RelayOptions",
 			"owners": [
 				"agent",
 				"supervisor"
@@ -1852,13 +1866,6 @@
 			]
 		},
 		{
-			"name": "joinThinking",
-			"owners": [
-				"agent",
-				"ollama"
-			]
-		},
-		{
 			"name": "matchesJSONDepth",
 			"owners": [
 				"contract",
@@ -1905,6 +1912,13 @@
 			"owners": [
 				"csv",
 				"indexeddb"
+			]
+		},
+		{
+			"name": "readText",
+			"owners": [
+				"agent",
+				"test"
 			]
 		},
 		{
@@ -1979,5 +1993,5 @@
 			]
 		}
 	],
-	"digest": "8d22816d89c1402d519b15d9b62833bce80c92f1f42680b80e084db4fb1467a3"
+	"digest": "bc26629532b44cb4ff74aab6a00194ac90d9b5982d9fa63c52844f42a54dfd7c"
 }
