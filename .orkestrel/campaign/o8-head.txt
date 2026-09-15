@@ -1,1 +1,0 @@
-7e733e7 docs: refresh the mirrored agent guide after the relay transcription change

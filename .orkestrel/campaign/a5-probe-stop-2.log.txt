@@ -1,8 +1,0 @@
-finally=false delay=0 hold=400: stop() 3.7 ms; drain pending=0 upgraded=0; upstream aborted at 2.4 ms; generator resumed after the hold at never; finally ran at never
-finally=false delay=10 hold=400: stop() 0.5 ms; drain pending=0 upgraded=0; upstream aborted at 1.4 ms; generator resumed after the hold at never; finally ran at never
-finally=false delay=100 hold=400: stop() 0.3 ms; drain pending=0 upgraded=0; upstream aborted at 1.8 ms; generator resumed after the hold at never; finally ran at never
-finally=true delay=0 hold=400: stop() 1.2 ms; drain pending=0 upgraded=0; upstream aborted at 0.3 ms; generator resumed after the hold at never; finally ran at never
-finally=true delay=10 hold=400: stop() 0.4 ms; drain pending=0 upgraded=0; upstream aborted at 2.1 ms; generator resumed after the hold at never; finally ran at never
-finally=true delay=100 hold=400: stop() 0.5 ms; drain pending=0 upgraded=0; upstream aborted at 1.2 ms; generator resumed after the hold at never; finally ran at never
-finally=false delay=10 hold=5000: stop() 0.5 ms; drain pending=0 upgraded=0; upstream aborted at 1.5 ms; generator resumed after the hold at never; finally ran at never
-done
