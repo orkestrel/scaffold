@@ -1,0 +1,6 @@
+listening control 200 {"aborted":false}
+status while draining: stopping
+fresh request during stop: 200 {"aborted":true}
+held request settled: held; aborted=true
+status after stop: stopped
+after-stop request: refused (ECONNREFUSED)

@@ -1,0 +1,41 @@
+// Orchestrator reproduction of the A5-R1 objective lane's claim-8 probe (2026-09-15): does the installed
+// @orkestrel/server 0.0.19 refuse a fresh connection while stop() drains an in-flight request, as its own
+// declaration and the scaffold's server guide state, or accept and dispatch it with an already-aborted signal?
+import { createDispatcher } from 'file:///C:/Users/mikes/WebstormProjects/agent/node_modules/@orkestrel/router/dist/src/core/index.js'
+import { createServer } from 'file:///C:/Users/mikes/WebstormProjects/agent/node_modules/@orkestrel/server/dist/src/server/index.js'
+
+const say = (line) => console.log(line)
+const gate = Promise.withResolvers()
+const dispatcher = createDispatcher({
+	routes: [
+		{ method: 'GET', path: '/hold', handler: async (request) => { await gate.promise; return new Response(`held; aborted=${request.signal.aborted}`) } },
+		{ method: 'GET', path: '/probe', handler: (request) => new Response(JSON.stringify({ aborted: request.signal.aborted })) },
+	],
+})
+const server = createServer({ dispatcher, state: () => undefined, host: '127.0.0.1' })
+const port = await server.start()
+const url = (path) => `http://127.0.0.1:${port}${path}`
+
+const control = await fetch(url('/probe'), { headers: { connection: 'close' } })
+say(`listening control ${control.status} ${await control.text()}`)
+const held = fetch(url('/hold'), { headers: { connection: 'close' } })
+await new Promise((resolve) => setTimeout(resolve, 50))
+const stopping = server.stop()
+await new Promise((resolve) => setTimeout(resolve, 50))
+say(`status while draining: ${server.status}`)
+try {
+	const fresh = await fetch(url('/probe'), { headers: { connection: 'close' } })
+	say(`fresh request during stop: ${fresh.status} ${await fresh.text()}`)
+} catch (error) {
+	say(`fresh request during stop: refused (${error.cause?.code ?? error.message})`)
+}
+gate.resolve()
+say(`held request settled: ${await (await held).text()}`)
+await stopping
+say(`status after stop: ${server.status}`)
+try {
+	const late = await fetch(url('/probe'), { headers: { connection: 'close' } })
+	say(`after-stop request: ${late.status}`)
+} catch (error) {
+	say(`after-stop request: refused (${error.cause?.code ?? error.message})`)
+}

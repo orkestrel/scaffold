@@ -509,3 +509,111 @@ is `v2-verdict-3.md`. Its gates rest on the packed `@orkestrel/agent` from `d84b
 guide is the byte copy at `d84b1a2` until the agent commits are pushed and the scaffold's
 `mirror` verb fetches the same bytes. The guide seam is closed on the same ruling as the agent
 guide's.
+
+
+## A5 design round — execute the relay route and server start-up in the transcription (2026-09-15)
+
+The user took decision 3 of the disposition: `@orkestrel/router` and `@orkestrel/server` are agent
+development dependencies, "so the guide transcription executes the relay route and server start-up
+rather than drive the handler directly". A5-install (Orchestrator tracked command,
+`a5-install.sh.txt`, receipt `a5-install-receipt.md`) declared them at the catalog versions; the
+reify reverted the G1 guide tarball and the script reinstalled it; the baseline committed as
+`0102259`. The design round ran on `a5-design-brief.md`: subjective lane `planner` on Opus 5
+(native), objective lane `analyst` on GPT 6 Astra (`codex exec --sandbox read-only`, thread
+`01a0a283-b02a-7ed3-932d-74c7c1ee4403`, journal `a5-design-objective.journal.jsonl.txt`), blind
+to each other. The Orchestrator's host probes (`a5-probe-*.mjs.txt` with their logs) settled the
+brief's unknowns before the ruling.
+
+### Where the lanes agree, adopted
+
+- The composition stays inline in `tests/guides.test.ts`; no fixture lands in `tests/setup.ts`
+  (host-independent by `tests.md`) and no `tests/setupServer.ts` is created for this unit.
+- The fences do not change shape: their titled twins in `src/core/factories.ts` must stay equal
+  (`documentation.md` § Parity). The transcription passes `host: '127.0.0.1'` (`tests.md` line 31)
+  and says so in the prose; the fence keeps binding every interface, as a deployed server does.
+- The browser half's `url` becomes the loopback address at the port `start()` resolved; the parser
+  substitution stays; the `SIGTERM` listener is substituted by an awaited teardown in `finally`.
+- The route is proven by the dispatcher itself over the socket: `GET /relay` answers `405` with
+  `Allow: POST`, `POST` to another path answers `404`. The received-request assertion goes.
+- The `401` crosses the socket with the upstream unentered; the `413` case stays a direct call
+  (the server's `limit` caps `body()`, which nothing here calls; the relay's own `readText` caps
+  the body it reads — settled from the installed source, `server/index.js:2044`).
+- Clause 36 (the honest browser limit) is byte-identical afterwards. The `## Tests` bullet names
+  the executed hop. "declares no dependency on … a router" becomes "no runtime dependency".
+
+### Where they differ, ruled on the probes
+
+| Tension | Planner (Opus) | Analyst (Astra) | Ruling |
+| --- | --- | --- | --- |
+| The fence comment `// stop draining new requests on shutdown` | false as written; correct it in the fence | keep the fences unchanged (the `src` twin is off-limits) | Correct it in both twins to `// refuse new connections, drain, then close`. The comment is a claim, and `stop()` refuses new connections, drains in-flight work, then closes (`scaffold/guides/server.md` § Graceful shutdown). The unit owns that one TSDoc line in `factories.ts`; the guides test's titled-example equality keeps the twins bound. |
+| Teardown: `stop()` or `destroy()` | `stop()` — the fence's call | `destroy()` — no drain risk against the 5 s case budget | `await server.stop()` in each case's `finally`, then assert `status === 'stopped'`. Measured (`a5-probe-stop*.log.txt`): `stop()` settles in ≤ 4 ms after a round trip, after a cancel alone, and after `405`/`404`/`401`/`413`; it takes ~3 s only when a completed call and a cancel share one server (a client-aborted reused keep-alive socket that `closeIdleConnections` does not reach). One server per case, the cancel on its own server, keeps `stop()` in the milliseconds. `destroy()` measured ≤ 5 ms in every order and stays the fallback the brief names. |
+| The cancel over the socket | assert it, gated on `RecordedProvider` (park the first pull, abort, wait for `returns === 1`, read `cancelled`) | exclude it from the unit; a finite script cannot hold the stream | Assert it, the planner's way. The chain fires on this host: the upstream signal aborted 1–13 ms after the browser's abort in every probe run (`a5-probe-stop-2.log.txt`, `a5-probe-stop-3.log.txt`). The prose claim at line 1127 ("a reader that goes away cancels the upstream turn") sits under no fence, and `documentation.md` requires an executed assertion for it. |
+| Case layout | one server per case, separate cases | merge the `401` into the flagship scenario for one lifecycle | One flagship case on one server in cheap-first order (`405`/`404`, `401`, then the round trip, then `stop()`), the cancel on its own server, the browser-half-alone and the byte-limit cases unchanged. The refusals precede the successful call so the "upstream unentered" reading is meaningful. |
+| The round trip's expected value | compare against the same script driven directly (never against itself) | compare against an explicit expected result too | Both assertions. |
+| Writer engine | Opus `implementer` (documentation voice, substitution boundaries) | `sol` (constraint-heavy) | Opus `implementer`: the guide prose is the larger judgment load and the test shape is fixed by this ruling. The objective audit lane then runs on Astra, the engine that did not write it. |
+
+Dropped on the record: the planner's P4 probe (`process.on('SIGTERM')` inside a Vitest worker) —
+moot, the listener is substituted; Astra's line-1127 rewrite — optional, the current paragraph is
+not false (the `serve` function is the entry for a runtime whose adapter is not `@orkestrel/server`).
+Probe P3 (the firewall prompt) is answered by the design probes themselves: every loopback bind ran
+unattended to completion.
+
+### Unit and carriers
+
+- **A5** (`implementer`, Opus 5, native, agent checkout at `0102259`): `a5-brief.md`. Owns
+  `tests/guides.test.ts`, `guides/agent.md`, and the one TSDoc line in `src/core/factories.ts`.
+- **A5-audit**: `analyst` (Astra) objective, `reviewer` (Opus) subjective, `checker` mechanical, on
+  the A5 diff; the Orchestrator's mutation control (the route path changed in a scratch copy
+  reddens the flagship case) is the instrument-can-fail reading.
+- **V3**: `verifier` gates on agent after A5. **A4-4**: rebuild and repack agent into ollama (the
+  TSDoc twin moves `dist`, so the tarball is rebuilt as the head-start rule requires). **O8**: the
+  ollama mirror of the agent guide refreshed by byte copy, its `guides` project re-run.
+
+
+### Audit round A5-R1 (2026-09-15) — reconciled
+
+Three lanes on `a5-audit-brief.md` against agent `0af0785`, blind: `analyst` on Astra
+(`a5-audit-objective.md`, thread `01a0a29f-365f-7400-a3d4-7f411d082cf0`), `reviewer` on Opus
+(`a5-audit-subjective.md`), `checker` on Sonnet (`a5-audit-mechanical.md`). V3 ran beside them:
+GATES GREEN at `0af0785`, guides 43 twice (`v3-verdict.md`). Terminal lines: Astra `FAIL 6, 7, 8, 9, 12, 13`;
+reviewer `FAIL 6, 9, 13; outside the claims: F1`; checker `FAIL 9; outside the claims: F1`.
+
+| Finding | Lanes | Reproduced | Ruling and carrier |
+| --- | --- | --- | --- |
+| The corrected fence comment `// refuse new connections, drain, then close` is false of the installed server: during `stop()` the status is `stopping`, in-flight signals are aborted, and a fresh connection is still accepted and dispatched (answered `200` with `aborted: true`); a connection is refused only after the stop completes | Astra 8 | yes — `a5-probe-stopping.mjs.txt`, `a5-probe-stopping.log.txt` | BROKEN. The comment becomes `// signal cancellation, drain, then close the listener` in both twins and the guard (A5-fix R1). The design round's ruling on the old comment stands; the replacement it chose repeated the dependency's own false sentence. Carry-forward for the `@orkestrel/server` owner: its TSDoc and the scaffold's `server.md` say `stop()` "refuses new connections", and 0.0.19 does not during the drain window. |
+| The cancel case's `finally` comment attributes the reused-socket wait to "its whole `drain` budget"; the measurement shows `pending=0` at the drain event and a ~3 s wait inside `server.close()` on the aborted socket | reviewer 6, Astra 6 | yes — `a5-probe-stop-3.log.txt` | BROKEN. The reviewer's replacement text (A5-fix R2). |
+| "The server half runs as written, apart from the `host`" — the `serve` export is not executed and the `SIGTERM` line is substituted | reviewer 6, Astra 6 | yes — read against the fence | BROKEN. The reviewer's replacement, moved above the `createServer` call (A5-fix R3). |
+| "the credential never leaves the listener's side of the hop" — nothing in the case measures it | reviewer 6, Astra 6 | yes | BROKEN as a claim the test cannot carry. The clause is removed (A5-fix R4). |
+| The byte-limit sentence at line 1099 names two different `limit` options without qualifiers, leaves bare tokens, and carries three ideas; "the browser half's `url`" and "`@orkestrel/agent` declares" are bare tokens; `ProviderError` un-backticked in a comment; "the declared path itself" misplaces its reflexive | reviewer 9, Astra 9, checker 9/F1 | yes | BROKEN. The reviewer's split sentence with the nouns supplied (A5-fix R5–R8). |
+| "declares no runtime dependency on a newline-delimited JSON parser" understates: the package declares no dependency on the parser at all, and line 1499 still says so | reviewer F1 | yes — `package.json` | BROKEN. "declares no dependency on a newline-delimited JSON parser, and no runtime dependency on a router or on a server adapter" (A5-fix R5). |
+| The substitution account omits the abort handle: the fence's `createAbort()` became `new AbortController()` | Astra 8 | yes | BROKEN. Closed by executing the fence's line: `createAbort` from `@orkestrel/abort` (a declared runtime dependency the fence imports) replaces every `AbortController` in the two socket cases, so the substitution disappears; the fence's `declare` placeholders and the typed `messages` binding are named in one sentence (A5-fix R9, R10). |
+| The cancel case's name says "mid-stream" while its gate parks the first pull | Astra 13 | yes | BROKEN. Renamed "cancels the upstream turn when the relay reader goes away with the first pull pending" (A5-fix R11). |
+| Assertions inside `finally` can replace the failure the `try` reports | reviewer R1 (referral) | reasoned from the language; not run | Accepted as a structural repair: the post-stop assertions move after the `try`/`finally` block in both socket cases (A5-fix R12). |
+| The `1000` ms bound lacks contention evidence | Astra 7 | V3: two green readings in sequence | UNRESOLVED → settled by V3 plus the Orchestrator's contended reading after the fix (the `guides` project run beside `npm run build`), recorded in the ledger. The bound stays. |
+| Whole-package regression is V3's | Astra 12 | V3 GREEN | settled. |
+
+Confirmed by every lane that ruled on them: the hop is real (claims 1), the route facts are the
+dispatcher's (2), the `401` crosses the socket (3), the comparisons are independent (4), the cancel
+proves the adapter's abort (5), parity (10), scope (11), the fold (12). The fix adopts each lane's
+prescription verbatim, so it closes with the checker, the Orchestrator's controls, and a verifier
+run rather than a fresh cross-engine round (`quality.md` § Rounds and verdicts).
+
+
+### The A5 seam closed (2026-09-15)
+
+A5-fix (`c9b35b2`, `builder`) applied R1–R12 verbatim. Its checker (`a5-fix-check-verdict.md`)
+confirmed the repairs, the twins, the guard, and the scope, and ruled two of the Orchestrator's own
+prescribed comment sentences against the code-token rule (a bare token as a sentence subject) with
+"after the case" referred as imprecise; A5-fix-2 (`debd1c5`, `builder`) applied the checker's
+wording with the stop's place named ("the `await server.stop()` call in the case's `finally` block").
+V4 read the chain green at `c9b35b2`; the contended reading (`a5-contended.log.txt`) held the
+1000 ms stop bound six times. The agent side's tip is `debd1c5`. A4-4 rebuilt and repacked it into
+ollama; the tarball differs from the A4-3 one by the single doc-comment line in `index.js` and
+`index.d.ts`. O8 refreshed the ollama mirror by byte copy (`7e733e7`, the ollama side's tip).
+V5 (ollama) and V6 (agent) are the final readings; the round count at this seam is A5-R1 plus the
+mechanical check, under the seam budget.
+
+Carry-forward recorded for the `@orkestrel/server` owner: its `stop` TSDoc and the scaffold's
+`server.md` say `stop()` "refuses new connections"; the installed 0.0.19 accepts and dispatches a
+fresh connection during the drain window with the request's signal already aborted, and refuses
+only after the stop completes (`a5-probe-stopping.log.txt`).

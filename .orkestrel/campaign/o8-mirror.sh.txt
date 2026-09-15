@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+# Unit O8 (Orchestrator tracked command): refresh ollama's mirrored agent guide from the agent checkout's guide at the
+# A5 commit, as a byte copy (the scaffold's `mirror` verb fetches the same file from the repository's main once the
+# agent commits are pushed). Successor of o6-mirror.sh.txt.
+set -u
+ROOT=/c/Users/mikes/WebstormProjects
+SCAF="$ROOT/scaffold"
+RECEIPT="$SCAF/tmp/units/o8-mirror-receipt.md"
+SRC="$ROOT/agent/guides/agent.md"
+DST="$ROOT/ollama/guides/agent.md"
+{
+	echo "# O8 mirror receipt — ollama/guides/agent.md refreshed from the agent checkout after A5"
+	echo
+	echo "date: $(date -u +%FT%TZ)"
+	echo "agent HEAD: $(git -C "$ROOT/agent" rev-parse --short HEAD)"
+	echo "agent status: [$(git -C "$ROOT/agent" status --porcelain | tr '\n' ' ')]"
+	echo "source digest before copy: $(sha256sum "$SRC" | cut -c1-64)"
+	echo "mirror digest before copy: $(sha256sum "$DST" | cut -c1-64)"
+} > "$RECEIPT"
+cp "$SRC" "$DST"
+echo "mirror digest after copy: $(sha256sum "$DST" | cut -c1-64)" >> "$RECEIPT"
+echo "mirror equals source: $(cmp -s "$SRC" "$DST" && echo yes || echo no)" >> "$RECEIPT"
+echo "ollama status after copy: [$(git -C "$ROOT/ollama" status --porcelain | tr '\n' ' ')]" >> "$RECEIPT"
+cat "$RECEIPT"

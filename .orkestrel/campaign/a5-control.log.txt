@@ -1,0 +1,25 @@
+# A5 control — the route path planted as '/relayed' in tests/guides.test.ts only
+date: 2026-09-15T01:11:48Z
+HEAD: 0af0785
+status before: []
+planted occurrences: 3
+guide untouched: 0 dirty guide lines
+--- npm run test:guides under the plant
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 3 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+[41m[1m FAIL [22m[49m [30m[42m guides [49m[39m tests/guides.test.ts[2m > [22mflagship fences[2m > [22mround trips both relay fence halves over a started listener and refuses what the route declines
+[31m[1mAssertionError[22m: expected 404 to be 405 // Object.is equality[39m
+[41m[1m FAIL [22m[49m [30m[42m guides [49m[39m tests/guides.test.ts[2m > [22mflagship fences[2m > [22mcancels the upstream turn when the relay reader goes away mid-stream
+[41m[1m FAIL [22m[49m [30m[42m guides [49m[39m tests/guides.test.ts[2m > [22mflagship fences[2m > [22mcarries the relay fence lines the transcription copies
+[31m[1mAssertionError[22m: expected '# Agent\n\n> The conversation runtime…' to contain 'routes: [{ method: \'POST\', path: \'…'[39m
++ | `RELAY_PROVIDER_MESSAGE`    | const | `string` | Names the public message for an unexpected upstream relay failure — `'relay provider failed'`, the fixed text every `error` frame carries, so an upstream failure's own message never reaches the browser.                                                                                                                                                                                                                                                                                                                    |
++ 14. **Pull and push observation surfaces on the `Agent`; the rest event-free.** The provider contract, the tool registry, the conversation store, and the `AgentContext` itself carry no Emitter, no `EventMap`, no `on` hook — they stay purely functional (of the managers the context composes, the `InstructionManager` and `ScopeManager` carry their own `emitter`s and each `Conversation` owns one, while the `ToolManager`, `WorkspaceManager`, and `ConversationManager` are event-free — as is the context that composes them). The `Agent` itself carries both a pull and a push surface. Pull: the `AgentChunk` stream (`stream().events`) yields per-token answer deltas, per-think reasoning deltas, usage chunks, and tool chunks for a live consumer. Push: the `emitter` (`AgentEventMap`) — `start` (run begins), `turn` (each iteration), `tool` (a dispatched call + result), `usage` (a turn's usage), `deny` (an authority denial — not in the chunk stream), `finish` (the settled result), `error` (a genuine failure), `abort` (a cancel), `exhaust` (a limit exhausted with unresolved tool intent — fires instead of `abort`), and `fault` (a non-fatal automatic-compaction summarizer throw — the run continues; the automatic-compaction clause) — wired through the emitter pattern (`AgentOptions.on` hooks, the `AgentOptions.error` listener-error handler, a `readonly emitter`, `new Emitter({ on: options?.on, error: options?.error })`). Per-token / per-thinking deltas are the stream's job exclusively — there is deliberately no `token` or `think` event. The emitter isolates a listener throw (it can never escape into the settle-once / wake-park loop) and routes it to its own `error` handler (the `error` option, surfaced as `(error, event)`, not a domain event; itself guarded against re-entrancy), so observation is provably side-effect-free on the 3×-hardened loop — and every emit sits after the relevant state transition / settle, so it cannot reorder control flow. A cancelled run emits `abort` (the cancel reason) then `finish` (the settled partial); a genuine error emits `error` instead of `finish`. The loop's deterministic logic is pinned in the `src:core` mirror with a scripted `ProviderInterface`.
++ **A `think: true` run needs headroom for reasoning.** Live reasoning deltas (`ProviderDelta` `'thinking'`) are not metered mid-stream (only `'content'` deltas are — thinking is charged, like content, solely through the post-turn reconcile), so a thinking model can spend a large share of a tight budget's ceiling on its reasoning before any answer content streams — the mid-stream trip can land while the model is still reasoning, committing an empty (or near-empty) `content` alongside `partial: true`. Give a `think: true` run enough budget headroom to cover its reasoning, not only its expected answer length.
++ 	// expected — this registry has no `schedulers` pool
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m3 failed[39m[22m[2m | [22m[1m[32m40 passed[39m[22m[90m (43)[39m
+exit: 1
+status after restore: []
+--- npm run test:guides restored
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m43 passed[39m[22m[90m (43)[39m
+exit: 0

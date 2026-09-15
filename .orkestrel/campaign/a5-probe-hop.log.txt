@@ -1,0 +1,11 @@
+started on 127.0.0.1:53834; address={"address":"127.0.0.1","family":"IPv4","port":53834}; DEFAULT_BODY_LIMIT=1048576
+SIGTERM listeners after the fence line: 1
+A round trip: {"content":"relayed answer"}; upstream.started=1
+B GET /relay -> 405, allow=POST
+B POST /other -> 404
+C 401: true code=HTTP status=401 message="provider error: 401"; upstream.started=1
+D 413: code=HTTP status=413 message="provider error: 413"; upstream.started=1
+E after abort: threw ProviderAbortError code=ABORT partial={"content":"One,"}
+E first delta={"channel":"content","text":"One,"}; upstream signal aborted=true after 4.0 ms
+F stop() took 3001.6 ms; status=stopped; address=undefined
+done

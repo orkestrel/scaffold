@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+# Orchestrator instrument-can-fail control for unit A5 (2026-09-15), run on the agent checkout at 0af0785 before any
+# audit lane reads it: plant the route path '/relayed' into the transcription's two dispatcher route tables (the guide
+# untouched), run the guides project, then restore the tracked file from HEAD and prove the tree clean.
+set -u
+ROOT=/c/Users/mikes/WebstormProjects
+AGENT="$ROOT/agent"
+LOG="$ROOT/scaffold/tmp/units/a5-control.log.txt"
+cd "$AGENT" || exit 9
+{
+	echo "# A5 control — the route path planted as '/relayed' in tests/guides.test.ts only"
+	echo "date: $(date -u +%FT%TZ)"
+	echo "HEAD: $(git rev-parse --short HEAD)"
+	echo "status before: [$(git status --porcelain | tr '\n' ' ')]"
+	sed -i "s|routes: \[{ method: 'POST', path: '/relay', handler }\],|routes: [{ method: 'POST', path: '/relayed', handler }],|g" tests/guides.test.ts
+	echo "planted occurrences: $(grep -c "path: '/relayed'" tests/guides.test.ts)"
+	echo "guide untouched: $(git status --porcelain -- guides/agent.md | wc -l) dirty guide lines"
+	echo "--- npm run test:guides under the plant"
+	npm run test:guides 2>&1 | grep -E "Test Files|Tests |FAIL|✓|×|AssertionError|expected" | head -30
+	echo "exit: ${PIPESTATUS[0]}"
+	git show HEAD:tests/guides.test.ts > tests/guides.test.ts
+	echo "status after restore: [$(git status --porcelain | tr '\n' ' ')]"
+	echo "--- npm run test:guides restored"
+	npm run test:guides 2>&1 | grep -E "Test Files|Tests " | head -4
+	echo "exit: ${PIPESTATUS[0]}"
+} > "$LOG" 2>&1
+cat "$LOG"

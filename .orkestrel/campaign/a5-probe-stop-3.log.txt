@@ -1,0 +1,18 @@
+order=cancel-only finally=false delay=0 hold=400: stop() 3.6 ms; drain pending=0 upgraded=0; upstream aborted at 2.3 ms; generator resumed after the hold at never; finally ran at never
+order=cancel-only finally=false delay=100 hold=400: stop() 0.5 ms; drain pending=0 upgraded=0; upstream aborted at 1.4 ms; generator resumed after the hold at never; finally ran at never
+order=cancel-only finally=false delay=600 hold=400: stop() 0.6 ms; drain pending=0 upgraded=0; upstream aborted at 1.9 ms; generator resumed after the hold at 400.9 ms; finally ran at never
+  trip first: {"content":"One, two, three"}
+order=trip-then-cancel finally=false delay=0 hold=400: stop() 3011.2 ms; drain pending=0 upgraded=0; upstream aborted at 1.3 ms; generator resumed after the hold at 399.6 ms; finally ran at never
+  trip first: {"content":"One, two, three"}
+order=trip-then-cancel finally=false delay=100 hold=400: stop() 2916.8 ms; drain pending=0 upgraded=0; upstream aborted at 3.2 ms; generator resumed after the hold at 413.2 ms; finally ran at never
+  trip first: {"content":"One, two, three"}
+order=trip-then-cancel finally=false delay=600 hold=400: stop() 2402.8 ms; drain pending=0 upgraded=0; upstream aborted at 3.3 ms; generator resumed after the hold at 413.7 ms; finally ran at never
+  trip after: {"content":"One, two, three"}
+order=cancel-then-trip finally=false delay=0 hold=400: stop() 1.1 ms; drain pending=0 upgraded=0; upstream aborted at 10.2 ms; generator resumed after the hold at 417.3 ms; finally ran at never
+  trip after: {"content":"One, two, three"}
+order=cancel-then-trip finally=false delay=100 hold=400: stop() 1.6 ms; drain pending=0 upgraded=0; upstream aborted at 9.8 ms; generator resumed after the hold at 422.0 ms; finally ran at never
+  trip after: {"content":"One, two, three"}
+order=cancel-then-trip finally=false delay=600 hold=400: stop() 0.7 ms; drain pending=0 upgraded=0; upstream aborted at 7.8 ms; generator resumed after the hold at 424.1 ms; finally ran at never
+  trip first: {"content":"One, two, three"}
+order=trip-then-cancel finally=false delay=0 hold=5000: stop() 3015.0 ms; drain pending=0 upgraded=0; upstream aborted at 2.3 ms; generator resumed after the hold at -5022.8 ms; finally ran at never
+done
