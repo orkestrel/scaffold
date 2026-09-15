@@ -1,0 +1,54 @@
+# visit browser (v68) — 2026-09-15T16:41:51Z — head f932493, dirty 0
+== 1 re-pin every @orkestrel range to the registry caret
+   @orkestrel/contract: dependencies ^0.0.17 -> ^0.0.17
+   @orkestrel/emitter: dependencies ^0.0.10 -> ^0.0.10
+   @orkestrel/html: dependencies ^0.0.9 -> ^0.0.9
+   @orkestrel/websocket: dependencies ^0.0.12 -> ^0.0.12
+   @orkestrel/guide: devDependencies ^0.0.18 -> ^0.0.19
+   @orkestrel/probe: devDependencies ^0.0.14 -> ^0.0.14
+   @orkestrel/scaffold: devDependencies ^0.0.67 -> ^0.0.68
+   @orkestrel/test: devDependencies ^0.0.14 -> ^0.0.14
+== 1b npm install
+exit=0
+== 2 preparation commit
+commit=f34fc51 exit=0
+== 3 scaffold overwrite
+exit=0
+.prettierignore replaced (3 lines added).
+tests/setupPolicy.ts replaced (431 lines added).
+tests/policy.test.ts replaced (277 lines added).
+6 written, 44 unchanged, 0 removed in ..
+50 published, 8 guides fetched, 0 no longer listed.
+== 4 scaffold audit
+exit=0
+dependencies: typescript declares major 6, while the registry serves major 7.
+dependencies: vitest declares major 4, while the registry serves major 5.
+0 of 40 planned paths drifted from the plan. Audit compared bytes at 25, existence at 5, and nothing at 10.
+== 5 full install
+exit=1
+== 6 self-pin sweep (report only)
+== 7 format
+exit=0
+== status after the visit
+ M .claude/agents/orkestrel.md
+ M .prettierignore
+ M guides/scaffold.md
+ M package.json
+ M tests/policy.test.ts
+ M tests/setupPolicy.ts
+== 8 gates
+== npm run format:check
+exit=0
+== npm run lint:check
+exit=0
+== npm run check
+exit=0
+== npm run build
+✓ 10 modules transformed.
+✓ built in 168ms
+exit=0
+== npm run test
+ Test Files  1 passed (1)
+      Tests  166 passed (166)
+exit=0
+# end 2026-09-15T16:43:07Z

@@ -1,0 +1,119 @@
+npm notice run @orkestrel/mcp@0.0.30 test:probe
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=verbose --project probe
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/mcp
+
+stdout | tmp/probe/p20-a4k-probe.test.ts > P20 — the consumer producer under a parked reader > reads how many of 32 producer writes resolve while nothing is read after the acknowledgement
+P20 backpressure: 1 of 32 writes resolved with nothing read
+
+stdout | tmp/probe/p20-a4k-probe.test.ts > P20 — the consumer producer under a parked reader > reads what arrives after the producer yields one frame and then fails before any read
+P20 failure ordering: first frame after the acknowledgement = {"jsonrpc":"2.0","method":"notifications/prompts/list_changed","params":{"_meta":{"io.modelcontextprotocol/subscriptionId":"registry"}}}
+
+ ✓ |probe| tmp/probe/p20-a4k-probe.test.ts > P20 — the consumer producer under a parked reader > reads how many of 32 producer writes resolve while nothing is read after the acknowledgement 114ms
+ ✓ |probe| tmp/probe/p20-a4k-probe.test.ts > P20 — the consumer producer under a parked reader > reads what arrives after the producer yields one frame and then fails before any read 59ms
+⎯⎯⎯⎯⎯⎯ Unhandled Errors ⎯⎯⎯⎯⎯⎯
+
+Vitest caught 31 unhandled errors during the test run.
+This might cause false positive tests. Resolve unhandled errors to make sure your tests are not affected.
+
+⎯⎯⎯⎯ Unhandled Rejection ⎯⎯⎯⎯⎯
+{ type: 'Unhandled Rejection', message: undefined, stacks: [] }
+
+⎯⎯⎯⎯ Unhandled Rejection ⎯⎯⎯⎯⎯
+{ type: 'Unhandled Rejection', message: undefined, stacks: [] }
+
+⎯⎯⎯⎯ Unhandled Rejection ⎯⎯⎯⎯⎯
+{ type: 'Unhandled Rejection', message: undefined, stacks: [] }
+
+⎯⎯⎯⎯ Unhandled Rejection ⎯⎯⎯⎯⎯
+{ type: 'Unhandled Rejection', message: undefined, stacks: [] }
+
+⎯⎯⎯⎯ Unhandled Rejection ⎯⎯⎯⎯⎯
+{ type: 'Unhandled Rejection', message: undefined, stacks: [] }
+
+⎯⎯⎯⎯ Unhandled Rejection ⎯⎯⎯⎯⎯
+{ type: 'Unhandled Rejection', message: undefined, stacks: [] }
+
+⎯⎯⎯⎯ Unhandled Rejection ⎯⎯⎯⎯⎯
+{ type: 'Unhandled Rejection', message: undefined, stacks: [] }
+
+⎯⎯⎯⎯ Unhandled Rejection ⎯⎯⎯⎯⎯
+{ type: 'Unhandled Rejection', message: undefined, stacks: [] }
+
+⎯⎯⎯⎯ Unhandled Rejection ⎯⎯⎯⎯⎯
+{ type: 'Unhandled Rejection', message: undefined, stacks: [] }
+
+⎯⎯⎯⎯ Unhandled Rejection ⎯⎯⎯⎯⎯
+{ type: 'Unhandled Rejection', message: undefined, stacks: [] }
+
+⎯⎯⎯⎯ Unhandled Rejection ⎯⎯⎯⎯⎯
+{ type: 'Unhandled Rejection', message: undefined, stacks: [] }
+
+⎯⎯⎯⎯ Unhandled Rejection ⎯⎯⎯⎯⎯
+{ type: 'Unhandled Rejection', message: undefined, stacks: [] }
+
+⎯⎯⎯⎯ Unhandled Rejection ⎯⎯⎯⎯⎯
+{ type: 'Unhandled Rejection', message: undefined, stacks: [] }
+
+⎯⎯⎯⎯ Unhandled Rejection ⎯⎯⎯⎯⎯
+{ type: 'Unhandled Rejection', message: undefined, stacks: [] }
+
+⎯⎯⎯⎯ Unhandled Rejection ⎯⎯⎯⎯⎯
+{ type: 'Unhandled Rejection', message: undefined, stacks: [] }
+
+⎯⎯⎯⎯ Unhandled Rejection ⎯⎯⎯⎯⎯
+{ type: 'Unhandled Rejection', message: undefined, stacks: [] }
+
+⎯⎯⎯⎯ Unhandled Rejection ⎯⎯⎯⎯⎯
+{ type: 'Unhandled Rejection', message: undefined, stacks: [] }
+
+⎯⎯⎯⎯ Unhandled Rejection ⎯⎯⎯⎯⎯
+{ type: 'Unhandled Rejection', message: undefined, stacks: [] }
+
+⎯⎯⎯⎯ Unhandled Rejection ⎯⎯⎯⎯⎯
+{ type: 'Unhandled Rejection', message: undefined, stacks: [] }
+
+⎯⎯⎯⎯ Unhandled Rejection ⎯⎯⎯⎯⎯
+{ type: 'Unhandled Rejection', message: undefined, stacks: [] }
+
+⎯⎯⎯⎯ Unhandled Rejection ⎯⎯⎯⎯⎯
+{ type: 'Unhandled Rejection', message: undefined, stacks: [] }
+
+⎯⎯⎯⎯ Unhandled Rejection ⎯⎯⎯⎯⎯
+{ type: 'Unhandled Rejection', message: undefined, stacks: [] }
+
+⎯⎯⎯⎯ Unhandled Rejection ⎯⎯⎯⎯⎯
+{ type: 'Unhandled Rejection', message: undefined, stacks: [] }
+
+⎯⎯⎯⎯ Unhandled Rejection ⎯⎯⎯⎯⎯
+{ type: 'Unhandled Rejection', message: undefined, stacks: [] }
+
+⎯⎯⎯⎯ Unhandled Rejection ⎯⎯⎯⎯⎯
+{ type: 'Unhandled Rejection', message: undefined, stacks: [] }
+
+⎯⎯⎯⎯ Unhandled Rejection ⎯⎯⎯⎯⎯
+{ type: 'Unhandled Rejection', message: undefined, stacks: [] }
+
+⎯⎯⎯⎯ Unhandled Rejection ⎯⎯⎯⎯⎯
+{ type: 'Unhandled Rejection', message: undefined, stacks: [] }
+
+⎯⎯⎯⎯ Unhandled Rejection ⎯⎯⎯⎯⎯
+{ type: 'Unhandled Rejection', message: undefined, stacks: [] }
+
+⎯⎯⎯⎯ Unhandled Rejection ⎯⎯⎯⎯⎯
+{ type: 'Unhandled Rejection', message: undefined, stacks: [] }
+
+⎯⎯⎯⎯ Unhandled Rejection ⎯⎯⎯⎯⎯
+{ type: 'Unhandled Rejection', message: undefined, stacks: [] }
+
+⎯⎯⎯⎯ Unhandled Rejection ⎯⎯⎯⎯⎯
+{ type: 'Unhandled Rejection', message: undefined, stacks: [] }
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+
+
+ Test Files  1 passed (1)
+      Tests  2 passed (2)
+     Errors  31 errors
+   Start at  11:37:24
+   Duration  566ms (transform 198ms, setup 244ms, import 11ms, tests 175ms, environment 0ms)
+

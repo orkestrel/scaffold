@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+# Orchestrator reading (wave.md § Visit a repository, step 9): compare a checkout's rebuilt dist/ against
+# the published tarball's dist/ for material content — sourcemaps excluded, whitespace-only differences
+# ignored. Usage: bash dist-compare.sh <checkout> <published version>. Prints the changed files and a
+# verdict line. The tarball is fetched into the session scratchpad.
+set -u
+C="${1:?checkout}"
+V="${2:?published version}"
+T="/c/Users/mikes/WebstormProjects/$C"
+SP="/c/Users/mikes/AppData/Local/Temp/claude/C--Users-mikes-WebstormProjects-scaffold/bab586ba-1c34-4a7e-a280-b3a7e9f303d2/scratchpad/dist-compare/$C"
+rm -rf "$SP"
+mkdir -p "$SP"
+cd "$SP" || exit 9
+npm pack "@orkestrel/$C@$V" --pack-destination "$SP" --silent > /dev/null 2>&1
+tgz=$(ls "$SP"/*.tgz 2>/dev/null | head -1)
+[ -z "$tgz" ] && { echo "$C@$V: no tarball fetched"; exit 2; }
+tar -xzf "$tgz" -C "$SP"
+published="$SP/package/dist"
+local_dist="$T/dist"
+echo "# dist compare $C: local $(git -C "$T" rev-parse --short HEAD) vs published $V"
+changed=0
+while IFS= read -r -d '' file; do
+	rel="${file#"$published"/}"
+	case "$rel" in *.map) continue;; esac
+	if [ ! -f "$local_dist/$rel" ]; then echo "removed locally: $rel"; changed=$((changed + 1)); continue; fi
+	if ! diff -q -w -B "$file" "$local_dist/$rel" > /dev/null; then echo "material diff: $rel"; changed=$((changed + 1)); fi
+done < <(find "$published" -type f -print0)
+while IFS= read -r -d '' file; do
+	rel="${file#"$local_dist"/}"
+	case "$rel" in *.map) continue;; esac
+	[ -f "$published/$rel" ] || { echo "added locally: $rel"; changed=$((changed + 1)); }
+done < <(find "$local_dist" -type f -print0)
+if [ "$changed" -eq 0 ]; then echo "verdict: no material difference — no bump owed by dist"; else echo "verdict: material differences ($changed files) — the published surface moved"; fi

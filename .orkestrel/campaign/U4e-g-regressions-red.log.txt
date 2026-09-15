@@ -1,0 +1,90 @@
+﻿npm.cmd : npm notice run @orkestrel/mcp@0.0.30 test:src:core
+At line:2 char:1
++ npm.cmd run test:src:core -- -t 'terminates with the failure terminal ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (npm notice run ...0 test:src:core:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core -t terminates with the 
+failure terminal when the producer throws undefined|ignores registry changes after the stream closed on a producer 
+failure
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/mcp
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------xx·-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:core| tests/src/core/MCPServer.test.ts > MCPServer — registry notifications > terminates with the failure 
+terminal when the producer throws undefined
+AssertionError: expected { done: true, value: { …(3) } } to deeply equal { done: true, value: { …(3) } }
+
+- Expected
++ Received
+
+  {
+    "done": true,
+    "value": {
+-     "error": {
+-       "code": -32603,
+-       "message": "Server error",
+-     },
+      "id": "registry",
+      "jsonrpc": "2.0",
++     "result": {
++       "_meta": {
++         "io.modelcontextprotocol/serverInfo": {
++           "name": "registry",
++           "version": "1",
++         },
++         "io.modelcontextprotocol/subscriptionId": "registry",
++       },
++       "resultType": "complete",
++     },
+    },
+  }
+
+ ❯ tests/src/core/MCPServer.test.ts:568:40
+    566|     value: { method: 'notifications/prompts/list_changed' },
+    567|    })
+    568|    expect(await fixture.stream.next()).toEqual({
+       |                                        ^
+    569|     done: true,
+    570|     value: {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  |src:core| tests/src/core/MCPServer.test.ts > MCPServer — registry notifications > ignores registry changes 
+after the stream closed on a producer failure (undefined)
+AssertionError: expected [ [ …(2) ] ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   [
++     TypeError {
++       "message": "Invalid state: Controller is already closed",
++       "code": "ERR_INVALID_STATE",
++     },
++     "clear",
++   ],
++ ]
+
+ ❯ tests/src/core/MCPServer.test.ts:606:28
+
+ Test Files  1 failed | 16 skipped (17)
+      Tests  2 failed | 1 passed | 956 skipped (959)
+   Start at  12:32:27
+   Duration  1.43s (transform 7.09s, setup 7.44s, import 4.71s, tests 76ms, environment 2ms)
+
+    604|     await waitForDelay(10)
+    605|     expect(() => tools.clear()).not.toThrow()
+    606|     expect(failures.calls).toEqual([])
+       |                            ^
+    607|     expect(await stream.next()).toEqual({
+    608|      done: true,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+

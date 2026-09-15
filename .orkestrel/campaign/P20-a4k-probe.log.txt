@@ -1,0 +1,64 @@
+npm notice run @orkestrel/mcp@0.0.30 test:probe
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=verbose --project probe
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/mcp
+
+stdout | tmp/probe/p20-a4k-probe.test.ts > P20 — the consumer producer under a parked reader > reads how many of 32 producer writes resolve while nothing is read after the acknowledgement
+P20 backpressure: 32 of 32 writes resolved with nothing read
+
+stdout | tmp/probe/p20-a4k-probe.test.ts > P20 — the consumer producer under a parked reader > reads what arrives after the producer yields one frame and then fails before any read
+P20 failure ordering: first frame after the acknowledgement = {"jsonrpc":"2.0","id":"registry","error":{"code":-32603,"message":"Server error"}}
+
+ × |probe| tmp/probe/p20-a4k-probe.test.ts > P20 — the consumer producer under a parked reader > reads how many of 32 producer writes resolve while nothing is read after the acknowledgement 120ms
+   → expected 32 to be less than 32
+ × |probe| tmp/probe/p20-a4k-probe.test.ts > P20 — the consumer producer under a parked reader > reads what arrives after the producer yields one frame and then fails before any read 63ms
+   → expected { Object (jsonrpc, id, ...) } to match object { Object (method) }
+(5 matching properties omitted from actual)
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |probe| tmp/probe/p20-a4k-probe.test.ts > P20 — the consumer producer under a parked reader > reads how many of 32 producer writes resolve while nothing is read after the acknowledgement
+AssertionError: expected 32 to be less than 32
+ ❯ tmp/probe/p20-a4k-probe.test.ts:33:21
+     31|    await waitForDelay(100)
+     32|    console.log(`P20 backpressure: ${resolved} of 32 writes resolved wi…
+     33|    expect(resolved).toBeLessThan(32)
+       |                     ^
+     34|   } finally {
+     35|    fixture.close()
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  |probe| tmp/probe/p20-a4k-probe.test.ts > P20 — the consumer producer under a parked reader > reads what arrives after the producer yields one frame and then fails before any read
+AssertionError: expected { Object (jsonrpc, id, ...) } to match object { Object (method) }
+(5 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "method": "notifications/prompts/list_changed",
++   "error": {
++     "code": -32603,
++     "message": "Server error",
++   },
++   "id": "registry",
++   "jsonrpc": "2.0",
+  }
+
+ ❯ tmp/probe/p20-a4k-probe.test.ts:49:24
+     47|    const first = await fixture.stream.next()
+     48|    console.log(`P20 failure ordering: first frame after the acknowledg…
+     49|    expect(first.value).toMatchObject({ method: 'notifications/prompts/…
+       |                        ^
+     50|   } finally {
+     51|    fixture.close()
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed (2)
+   Start at  11:21:10
+   Duration  561ms (transform 191ms, setup 234ms, import 11ms, tests 184ms, environment 0ms)
+

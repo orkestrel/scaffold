@@ -1,0 +1,19 @@
+npm notice run @orkestrel/mcp@0.0.30 test:probe
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=verbose --project probe
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/mcp
+
+stdout | tmp/probe/p21-a4m-probe.test.ts > P21 — a producer that throws a literal undefined > delivers the queued frame and then the failure terminal
+P21 identity: first={"jsonrpc":"2.0","method":"notifications/prompts/list_changed","params":{"_meta":{"io.modelcontextprotocol/subscriptionId":"registry"}}} second={"jsonrpc":"2.0","id":"registry","error":{"code":-32603,"message":"Server error"}} done=true
+
+ ✓ |probe| tmp/probe/p21-a4m-probe.test.ts > P21 — a producer that throws a literal undefined > delivers the queued frame and then the failure terminal 70ms
+stdout | tmp/probe/p21-a4m-probe.test.ts > P21 — a producer that throws a literal undefined > ignores a registry clear after the stream closed on that failure
+P21 closure: clear threw=nothing; second={"jsonrpc":"2.0","id":"registry","error":{"code":-32603,"message":"Server error"}}
+
+ ✓ |probe| tmp/probe/p21-a4m-probe.test.ts > P21 — a producer that throws a literal undefined > ignores a registry clear after the stream closed on that failure 60ms
+
+ Test Files  1 passed (1)
+      Tests  2 passed (2)
+   Start at  12:42:13
+   Duration  502ms (transform 188ms, setup 232ms, import 11ms, tests 132ms, environment 0ms)
+

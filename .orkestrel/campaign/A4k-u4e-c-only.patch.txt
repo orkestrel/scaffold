@@ -1,0 +1,109 @@
+diff --git a/tests/src/browser/factories.test.ts b/tests/src/browser/factories.test.ts
+index 55b470f..76abfd5 100644
+--- a/tests/src/browser/factories.test.ts
++++ b/tests/src/browser/factories.test.ts
+@@ -690,6 +690,8 @@ function createCalculatorTools(): ToolManagerInterface {
+ // `createJSONRPCRequest` is correctly rejected by that server with JSON-RPC -32602, and drive
+ // `server/discover` because it is the modern era's own required RPC — 2026-07-28 removes
+ // `ping`, so a bare server answers that one -32601 and it cannot carry a transport canary.
++// That bare server still advertises `tools: { listChanged: true }`, because it owns the tools
++// family and produces it from its own registry whatever the host configured.
+ function expectModernReply(message: unknown, id: number): void {
+ 	expect(JSON.parse(String(message))).toEqual({
+ 		jsonrpc: '2.0',
+@@ -697,7 +699,7 @@ function expectModernReply(message: unknown, id: number): void {
+ 		result: {
+ 			resultType: 'complete',
+ 			supportedVersions: [MCP_MODERN_VERSION],
+-			capabilities: { tools: {} },
++			capabilities: { tools: { listChanged: true } },
+ 			ttlMs: DEFAULT_MCP_CACHE_TTL,
+ 			cacheScope: 'private',
+ 			_meta: {
+diff --git a/tests/src/server/handlers.test.ts b/tests/src/server/handlers.test.ts
+index 88bfbcb..6e98a31 100644
+--- a/tests/src/server/handlers.test.ts
++++ b/tests/src/server/handlers.test.ts
+@@ -40,7 +40,7 @@ import {
+ import { startServer } from '../../setupServer.js'
+ 
+ async function* subscriptionEvents(): AsyncGenerator<JSONRPCNotification> {
+-	yield { jsonrpc: '2.0', method: 'notifications/tools/list_changed' }
++	yield { jsonrpc: '2.0', method: 'notifications/prompts/list_changed' }
+ }
+ 
+ async function* disconnectEvents(
+@@ -54,7 +54,7 @@ async function* disconnectEvents(
+ 	observe()
+ 	// This yield is reachable only after the disconnect signal was observed; the live stream
+ 	// remains idle and cannot use a producer write to trigger its own cancellation.
+-	yield { jsonrpc: '2.0', method: 'notifications/tools/list_changed' }
++	yield { jsonrpc: '2.0', method: 'notifications/prompts/list_changed' }
+ 	throw new Error('subscription client disconnected')
+ }
+ 
+@@ -449,7 +449,7 @@ describe('createMCPPostHandler', () => {
+ 			identity,
+ 			tools: createToolManager(),
+ 			subscription: {
+-				notifications: { toolsListChanged: true },
++				notifications: { promptsListChanged: true },
+ 				producer: () => subscriptionEvents(),
+ 			},
+ 		})
+@@ -466,7 +466,7 @@ describe('createMCPPostHandler', () => {
+ 						method: 'subscriptions/listen',
+ 						id: 'http-listen',
+ 						params: {
+-							notifications: { toolsListChanged: true },
++							notifications: { promptsListChanged: true },
+ 							_meta: {
+ 								[MCP_META_VERSION]: '2026-07-28',
+ 								[MCP_META_CAPABILITIES]: {},
+@@ -484,13 +484,13 @@ describe('createMCPPostHandler', () => {
+ 				jsonrpc: '2.0',
+ 				method: 'notifications/subscriptions/acknowledged',
+ 				params: {
+-					notifications: { toolsListChanged: true },
++					notifications: { promptsListChanged: true },
+ 					_meta: { [MCP_META_SUBSCRIPTION]: 'http-listen' },
+ 				},
+ 			},
+ 			{
+ 				jsonrpc: '2.0',
+-				method: 'notifications/tools/list_changed',
++				method: 'notifications/prompts/list_changed',
+ 				params: { _meta: { [MCP_META_SUBSCRIPTION]: 'http-listen' } },
+ 			},
+ 			{
+@@ -573,7 +573,7 @@ describe('createMCPPostHandler', () => {
+ 			identity: { name: 'signal-server', version: '1.0.0' },
+ 			tools: createToolManager(),
+ 			subscription: {
+-				notifications: { toolsListChanged: true },
++				notifications: { promptsListChanged: true },
+ 				producer: (_notifications, options) => {
+ 					if (options.signal === undefined) throw new Error('expected HTTP disconnect signal')
+ 					observed = options.signal
+@@ -592,7 +592,7 @@ describe('createMCPPostHandler', () => {
+ 				method: 'subscriptions/listen',
+ 				id: 'disconnect-listen',
+ 				params: {
+-					notifications: { toolsListChanged: true },
++					notifications: { promptsListChanged: true },
+ 					_meta: {
+ 						[MCP_META_VERSION]: '2026-07-28',
+ 						[MCP_META_CAPABILITIES]: {},
+diff --git a/tests/src/server/transports/WebSocketClientTransport.test.ts b/tests/src/server/transports/WebSocketClientTransport.test.ts
+index f55e2ad..452431b 100644
+--- a/tests/src/server/transports/WebSocketClientTransport.test.ts
++++ b/tests/src/server/transports/WebSocketClientTransport.test.ts
+@@ -241,7 +241,7 @@ describe('WebSocketClientTransport — drive a remote MCP server over WebSocket
+ 				result: {
+ 					resultType: 'complete',
+ 					supportedVersions: [MCP_MODERN_VERSION],
+-					capabilities: { tools: {} },
++					capabilities: { tools: { listChanged: true } },
+ 					ttlMs: DEFAULT_MCP_CACHE_TTL,
+ 					cacheScope: 'private',
+ 					_meta: {

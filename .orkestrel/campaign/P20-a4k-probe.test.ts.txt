@@ -1,0 +1,54 @@
+// P20 — Orchestrator probe: the A4k objective lane's two claim-2 vectors, replayed on the host
+// through the `probe` project. Copied to mcp/tmp/probe/ for the run and removed afterwards.
+import { describe, expect, it } from 'vitest'
+import type { JSONRPCNotification } from '@src/core'
+import { waitForDelay } from '@orkestrel/test'
+import { createRegistrySubscription } from '../../tests/setup.js'
+
+async function* failingProducer(): AsyncGenerator<JSONRPCNotification> {
+	yield { jsonrpc: '2.0', method: 'notifications/prompts/list_changed' }
+	throw new Error('P20 producer failure')
+}
+
+describe('P20 — the consumer producer under a parked reader', () => {
+	it('reads how many of 32 producer writes resolve while nothing is read after the acknowledgement', async () => {
+		const source = new TransformStream<JSONRPCNotification, JSONRPCNotification>()
+		const fixture = await createRegistrySubscription({
+			notifications: { promptsListChanged: true },
+			producer: () => source.readable,
+		})
+		try {
+			await fixture.stream.next()
+			const writer = source.writable.getWriter()
+			let resolved = 0
+			for (let index = 0; index < 32; index += 1) {
+				void writer
+					.write({ jsonrpc: '2.0', method: 'notifications/prompts/list_changed' })
+					.then(() => {
+						resolved += 1
+					})
+			}
+			await waitForDelay(100)
+			console.log(`P20 backpressure: ${resolved} of 32 writes resolved with nothing read`)
+			expect(resolved).toBeLessThan(32)
+		} finally {
+			fixture.close()
+		}
+	})
+
+	it('reads what arrives after the producer yields one frame and then fails before any read', async () => {
+		const fixture = await createRegistrySubscription({
+			notifications: { promptsListChanged: true },
+			producer: () => failingProducer(),
+		})
+		try {
+			await fixture.stream.next()
+			await waitForDelay(50)
+			const first = await fixture.stream.next()
+			console.log(`P20 failure ordering: first frame after the acknowledgement = ${JSON.stringify(first.value)}`)
+			expect(first.value).toMatchObject({ method: 'notifications/prompts/list_changed' })
+		} finally {
+			fixture.close()
+		}
+	})
+})

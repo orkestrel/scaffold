@@ -1,0 +1,9 @@
+C:\Users\mikes\scoop\apps\nodejs-lts\current\node.exe node_modules/typescript/bin/tsc --noEmit --project tsconfig.json
+tests/src/core/validators.test.ts(734,37): error TS2344: Type 'MCPConsumerFilter' does not satisfy the constraint '{ toolsListChanged?: "Expected: undefined, Actual: literal boolean: true" | "Expected: literal boolean: false, Actual: literal boolean: true"; promptsListChanged?: boolean; resourcesListChanged?: boolean; resourceSubscriptions?: readonly string[]; taskIds?: readonly string[]; }'.
+  Types of property 'toolsListChanged' are incompatible.
+    Type 'false' is not assignable to type '"Expected: undefined, Actual: literal boolean: true" | "Expected: literal boolean: false, Actual: literal boolean: true"'.
+tests/src/core/validators.test.ts(735,54): error TS2344: Type 'false | undefined' does not satisfy the constraint '"Expected: undefined, Actual: literal boolean: true" | "Expected: literal boolean: false, Actual: literal boolean: true"'.
+  Type 'undefined' is not assignable to type '"Expected: undefined, Actual: literal boolean: true" | "Expected: literal boolean: false, Actual: literal boolean: true"'.
+
+
+exit=2

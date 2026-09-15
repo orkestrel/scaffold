@@ -1,0 +1,14 @@
+ M guides/mcp.md
+ M src/core/MCPServer.ts
+ M src/core/helpers.ts
+ M src/core/types.ts
+ M src/core/validators.ts
+ M tests/guides.test.ts
+ M tests/setup.ts
+ M tests/src/browser/factories.test.ts
+ M tests/src/core/MCPClient.test.ts
+ M tests/src/core/MCPServer.test.ts
+ M tests/src/core/helpers.test.ts
+ M tests/src/core/validators.test.ts
+ M tests/src/server/handlers.test.ts
+ M tests/src/server/transports/WebSocketClientTransport.test.ts

@@ -1,0 +1,60 @@
+// P21 — Orchestrator probe: the A4m objective lane's two claim-4 vectors, replayed on the host through
+// the `probe` project after U4e-g. Copied to mcp/tmp/probe/ for the run and removed afterwards.
+import { describe, expect, it } from 'vitest'
+import type { JSONRPCNotification } from '@src/core'
+import { waitForDelay } from '@orkestrel/test'
+import { createRegistrySubscription } from '../../tests/setup.js'
+
+async function* undefinedThrowingProducer(): AsyncGenerator<JSONRPCNotification> {
+	yield { jsonrpc: '2.0', method: 'notifications/prompts/list_changed' }
+	// eslint-disable-next-line no-throw-literal -- the probe throws the literal the vector names
+	throw undefined
+}
+
+describe('P21 — a producer that throws a literal undefined', () => {
+	it('delivers the queued frame and then the failure terminal', async () => {
+		const fixture = await createRegistrySubscription({
+			notifications: { promptsListChanged: true },
+			producer: () => undefinedThrowingProducer(),
+		})
+		try {
+			await fixture.stream.next()
+			await waitForDelay(50)
+			const first = await fixture.stream.next()
+			const second = await fixture.stream.next()
+			console.log(`P21 identity: first=${JSON.stringify(first.value)} second=${JSON.stringify(second.value)} done=${second.done}`)
+			expect(first.value).toMatchObject({ method: 'notifications/prompts/list_changed' })
+			expect(second.value).toMatchObject({ error: { code: -32603 } })
+		} finally {
+			fixture.close()
+		}
+	})
+
+	it('ignores a registry clear after the stream closed on that failure', async () => {
+		const fixture = await createRegistrySubscription({
+			notifications: { promptsListChanged: true },
+			producer: () => undefinedThrowingProducer(),
+		})
+		try {
+			await fixture.stream.next()
+			// Read the queued frame first: the pull that surfaces the producer's throw happens on
+			// this read, and the failure closes the stream. The registry change then lands on a
+			// closed stream, which is the A4m vector.
+			const first = await fixture.stream.next()
+			await waitForDelay(50)
+			let thrown: unknown
+			try {
+				fixture.tools.clear()
+			} catch (error) {
+				thrown = error
+			}
+			const second = await fixture.stream.next()
+			console.log(`P21 closure: clear threw=${thrown === undefined ? 'nothing' : String(thrown)}; second=${JSON.stringify(second.value)}`)
+			expect(thrown).toBeUndefined()
+			expect(first.value).toMatchObject({ method: 'notifications/prompts/list_changed' })
+			expect(second.value).toMatchObject({ error: { code: -32603 } })
+		} finally {
+			fixture.close()
+		}
+	})
+})

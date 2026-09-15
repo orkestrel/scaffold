@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+# A4k objective audit lane — GPT-6 Astra, read-only codex exec rooted at the mcp checkout. Cap 2400 s.
+# Successor of A4i-run.sh: unit name, brief, journal, evidence set (the U4e report and its red/green logs,
+# the U4e-b report, the U4e-only and U4e-b-only patches, the after-u4e-b gates, the collision probe).
+# Astra wrote U4e, so the cross-engine reading of U4e is the reviewer's (Opus); Astra still holds the
+# objective lane per the round record, with that noted in the brief.
+set -u
+SCAF="C:/Users/mikes/WebstormProjects/scaffold"
+MCP="C:/Users/mikes/WebstormProjects/mcp"
+J="$SCAF/tmp/codex/A4k-audit.jsonl"
+L="$SCAF/tmp/codex/A4k-audit-last.md"
+B="$MCP/tmp/codex/A4k-audit-brief.md"
+cp "$SCAF/tmp/units/A4k-audit-brief.md" "$B"
+cp "$SCAF/tmp/units/A4k-diff.patch" "$MCP/tmp/codex/A4k-u4e-only.patch"
+cp "$SCAF/tmp/units/A4k-u4e-b-only.patch" "$MCP/tmp/codex/A4k-u4e-b-only.patch"
+cp "$SCAF/tmp/units/A4k-u4e-c-only.patch" "$MCP/tmp/codex/A4k-u4e-c-only.patch"
+cp "$SCAF/tmp/units/A4k-whole.patch" "$MCP/tmp/codex/A4k-whole.patch"
+for f in U4e-mcp-list-changed-brief.md U4e-mcp-list-changed-report.md U4e-b-mcp-client-tests-brief.md U4e-b-mcp-client-tests-report.md U4e-c-mcp-host-tests-brief.md U4e-c-mcp-host-tests-report.md U4e-d-mcp-guide-reply-brief.md U4e-d-mcp-guide-reply-report.md U4e-core-red.log.txt U4e-core-green.log.txt U4e-guides-red.log.txt U4e-guides-green.log.txt U4e-baseline-core.log.txt U4e-b-mcp-gates-orchestrator.log.txt U4e-b-mcp-gates-test-full.log.txt U4e-d-mcp-gates-orchestrator.log.txt U4e-d-mcp-gates-test-full.log.txt collide3-mcp-after-u4e-d.txt U4-chain-audit-verdict.md; do
+	cp "$SCAF/.orkestrel/campaign/$f" "$MCP/tmp/codex/$f"
+done
+echo "launch unit=A4k-audit model=gpt-6-astra sandbox=read-only cap=2400 start=$(date -u +%Y-%m-%dT%H:%M:%SZ)" > "$SCAF/tmp/codex/A4k-audit.launch.txt"
+timeout 2400 codex exec --json -C "$MCP" --sandbox read-only --model gpt-6-astra -c 'model_reasoning_effort="high"' --output-last-message "$L" "Read and execute the audit brief at $B exactly (every evidence file it names is staged beside it in tmp/codex/). You hold the OBJECTIVE lane (analyst). A GPT-6 Astra session wrote U4e and a Sonnet builder wrote U4e-b; you audit both from source and the Orchestrator's execution records, not from memory of any prior session. Perform the audit directly and spawn nothing. Your final message must be the verdict shape the brief specifies." < /dev/null > "$J" 2> "$SCAF/tmp/codex/A4k-audit.err"
+EXIT=$?
+echo "exit=$EXIT end=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$SCAF/tmp/codex/A4k-audit.launch.txt"
+echo "unit=A4k-audit exit=$EXIT"
+grep -o '"thread_id":"[^"]*"' "$J" | head -1
+wc -c < "$L" 2>/dev/null

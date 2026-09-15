@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+# U4e-g implementation lane — GPT-6 Astra (sol route), workspace-write codex exec rooted at the mcp checkout. Cap 3000 s
+# (U4e-e took 888 s over ten carriers; this round carries five). Stages the U4e-f pair, the A4m verdicts, the campaign
+# plan, and the U3d pair (the Output shape) beside the brief.
+set -u
+SCAF="C:/Users/mikes/WebstormProjects/scaffold"
+MCP="C:/Users/mikes/WebstormProjects/mcp"
+U="U4e-g-mcp-failure"
+J="$SCAF/tmp/codex/$U.jsonl"
+L="$SCAF/tmp/codex/$U-last.md"
+B="$MCP/tmp/codex/$U-brief.md"
+cp "$SCAF/tmp/units/$U-brief.md" "$B"
+for f in plan.md U3d-mcp-finish-brief.md U3d-mcp-finish-report.md U4e-f-mcp-shape-brief.md U4e-f-mcp-shape-report.md A4m-audit-analyst.md A4m-audit-checker.md A4l-audit-reviewer.md; do
+	cp "$SCAF/.orkestrel/campaign/$f" "$MCP/tmp/codex/$f"
+done
+echo "launch unit=$U model=gpt-6-astra sandbox=workspace-write cap=3000 start=$(date -u +%Y-%m-%dT%H:%M:%SZ)" > "$SCAF/tmp/codex/$U.launch.txt"
+timeout 3000 codex exec --json -C "$MCP" --sandbox workspace-write --model gpt-6-astra -c 'model_reasoning_effort="high"' --output-last-message "$L" "Read and execute the unit brief at $B exactly (the U4e-f brief and report, the A4m and A4l verdicts, the campaign plan, and the U3d pair are staged beside it in tmp/codex/). You hold the sol implementation route (GPT-6 Astra). Perform the assignment directly and spawn nothing. Never touch package.json, package-lock.json, dist/, src/browser/, src/server/, tests/src/browser/, tests/src/server/, tests/src/core/MCPClient.test.ts, tests/setup.ts, tests/setup.test.ts, tests/guides.test.ts, the scaffold repair set, or any file the brief lists off-limits. Your final message must be the Output shape the brief specifies." < /dev/null > "$J" 2> "$SCAF/tmp/codex/$U.err"
+EXIT=$?
+echo "exit=$EXIT end=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$SCAF/tmp/codex/$U.launch.txt"
+echo "unit=$U exit=$EXIT"
+grep -o '"thread_id":"[^"]*"' "$J" | head -1
+wc -c < "$L" 2>/dev/null

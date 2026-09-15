@@ -1,0 +1,18 @@
+﻿npm.cmd : npm notice run @orkestrel/mcp@0.0.30 test:guides
+At line:2 char:1
++ npm.cmd run test:guides *> tmp/codex/U4e-e-guides.log
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (npm notice run ....30 test:guides:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+npm notice run node --experimental-strip-types tests/guides.test.ts
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/mcp
+
+··········································································································································································································
+
+ Test Files  1 passed (1)
+      Tests  202 passed (202)
+   Start at  11:34:05
+   Duration  3.57s (transform 412ms, setup 564ms, import 1.84s, tests 957ms, environment 0ms)
+

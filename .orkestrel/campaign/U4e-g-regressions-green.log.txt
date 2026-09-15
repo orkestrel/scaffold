@@ -1,0 +1,20 @@
+﻿npm.cmd : npm notice run @orkestrel/mcp@0.0.30 test:src:core
+At line:2 char:1
++ npm.cmd run test:src:core -- -t 'terminates with the failure terminal ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (npm notice run ...0 test:src:core:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core -t terminates with the 
+failure terminal when the producer throws undefined|ignores registry changes after the stream closed on a producer 
+failure
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/mcp
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------···-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+ Test Files  1 passed | 16 skipped (17)
+      Tests  3 passed | 956 skipped (959)
+   Start at  12:33:41
+   Duration  1.50s (transform 7.53s, setup 8.26s, import 4.82s, tests 53ms, environment 2ms)
+

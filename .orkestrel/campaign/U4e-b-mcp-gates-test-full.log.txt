@@ -1,0 +1,242 @@
+npm notice run @orkestrel/mcp@0.0.30 test
+npm notice run npm run test:src && npm run test:policy && npm run test:config && npm run test:setup && npm run test:guides && npm run test:conformance && npm run test:integration
+npm notice run @orkestrel/mcp@0.0.30 test:src
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core --project src:browser --project src:server
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/mcp
+
+·····································································································································································································································································································································································································································································································································································································································································································································································································································································································································································································································x·x························································································································································································································x······································································································································x··x······x·x··x··········································································--···············································
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 8 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:server| tests/src/server/handlers.test.ts > createMCPPostHandler > pumps a held-open subscription acknowledgement, notifications, and closure onto SSE
+MCPError: Invalid subscription filter: the server owns toolsListChanged
+ ❯ new MCPServer src/core/MCPServer.ts:172:10
+    170|    !isMCPConsumerFilter(options.subscription.notifications)
+    171|   ) {
+    172|    throw new MCPError(
+       |          ^
+    173|     'Invalid subscription filter: the server owns toolsListChanged',
+    174|     JSONRPC_INVALID_PARAMS,
+ ❯ createMCPServer src/core/factories.ts:75:9
+ ❯ tests/src/server/handlers.test.ts:448:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/8]⎯
+
+ FAIL  |src:server| tests/src/server/handlers.test.ts > createMCPPostHandler > aborts an A4 subscription handler when a real HTTP client disconnects
+MCPError: Invalid subscription filter: the server owns toolsListChanged
+ ❯ new MCPServer src/core/MCPServer.ts:172:10
+    170|    !isMCPConsumerFilter(options.subscription.notifications)
+    171|   ) {
+    172|    throw new MCPError(
+       |          ^
+    173|     'Invalid subscription filter: the server owns toolsListChanged',
+    174|     JSONRPC_INVALID_PARAMS,
+ ❯ createMCPServer src/core/factories.ts:75:9
+ ❯ tests/src/server/handlers.test.ts:572:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/8]⎯
+
+ FAIL  |src:server| tests/src/server/transports/WebSocketClientTransport.test.ts > WebSocketClientTransport — drive a remote MCP server over WebSocket frames > ignores the old socket close after a new socket has replaced it
+AssertionError: expected [ { id: 2, jsonrpc: '2.0', …(1) } ] to deeply equal [ { jsonrpc: '2.0', id: 2, …(1) } ]
+
+- Expected
++ Received
+
+@@ -9,11 +9,13 @@
+            "version": "1.0.0",
+          },
+        },
+        "cacheScope": "private",
+        "capabilities": {
+-         "tools": {},
++         "tools": {
++           "listChanged": true,
++         },
+        },
+        "resultType": "complete",
+        "supportedVersions": [
+          "2026-07-28",
+        ],
+
+ ❯ tests/src/server/transports/WebSocketClientTransport.test.ts:237:20
+    235|   })
+    236|   await waitForDelay(60)
+    237|   expect(messages).toEqual([
+       |                    ^
+    238|    {
+    239|     jsonrpc: '2.0',
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/8]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/factories.test.ts:714:2 > createScopeServer — the default scope is the current one > wires the real global scope when no scope argument is supplied
+AssertionError: expected { jsonrpc: '2.0', id: 1, …(1) } to deeply equal { jsonrpc: '2.0', id: 1, …(1) }
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[33m@@ -8,11 +8,13 @@[39m
+[2m          "version": "1.0.0",[22m
+[2m        },[22m
+[2m      },[22m
+[2m      "cacheScope": "private",[22m
+[2m      "capabilities": {[22m
+[32m-       "tools": {},[39m
+[31m+       "tools": {[39m
+[31m+         "listChanged": true,[39m
+[31m+       },[39m
+[2m      },[22m
+[2m      "resultType": "complete",[22m
+[2m      "supportedVersions": [[22m
+[2m        "2026-07-28",[22m
+[2m      ],[22m
+
+ ❯ expectModernReply tests/src/browser/factories.test.ts:694:37
+    692| // `ping`, so a bare server answers that one -32601 and it cannot carr…
+    693| function expectModernReply(message: unknown, id: number): void {
+    694|  expect(JSON.parse(String(message))).toEqual({
+       |                                     ^
+    695|   jsonrpc: '2.0',
+    696|   id,
+ ❯ tests/src/browser/factories.test.ts:730:3
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/8]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/factories.test.ts:768:2 > createScopeServer — dedicated-worker-shaped scope (implicit, portless channel) > an event with a port on a dedicated-worker-shaped double STILL spawns a per-port binding (cross-case)
+AssertionError: expected { jsonrpc: '2.0', id: 1, …(1) } to deeply equal { jsonrpc: '2.0', id: 1, …(1) }
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[33m@@ -8,11 +8,13 @@[39m
+[2m          "version": "1.0.0",[22m
+[2m        },[22m
+[2m      },[22m
+[2m      "cacheScope": "private",[22m
+[2m      "capabilities": {[22m
+[32m-       "tools": {},[39m
+[31m+       "tools": {[39m
+[31m+         "listChanged": true,[39m
+[31m+       },[39m
+[2m      },[22m
+[2m      "resultType": "complete",[22m
+[2m      "supportedVersions": [[22m
+[2m        "2026-07-28",[22m
+[2m      ],[22m
+
+ ❯ expectModernReply tests/src/browser/factories.test.ts:694:37
+    692| // `ping`, so a bare server answers that one -32601 and it cannot carr…
+    693| function expectModernReply(message: unknown, id: number): void {
+    694|  expect(JSON.parse(String(message))).toEqual({
+       |                                     ^
+    695|   jsonrpc: '2.0',
+    696|   id,
+ ❯ tests/src/browser/factories.test.ts:780:2
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/8]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/factories.test.ts:908:2 > createScopeServer — accept option > accept filtering by event.data token: only a matching token gets bound
+AssertionError: expected { jsonrpc: '2.0', id: 1, …(1) } to deeply equal { jsonrpc: '2.0', id: 1, …(1) }
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[33m@@ -8,11 +8,13 @@[39m
+[2m          "version": "1.0.0",[22m
+[2m        },[22m
+[2m      },[22m
+[2m      "cacheScope": "private",[22m
+[2m      "capabilities": {[22m
+[32m-       "tools": {},[39m
+[31m+       "tools": {[39m
+[31m+         "listChanged": true,[39m
+[31m+       },[39m
+[2m      },[22m
+[2m      "resultType": "complete",[22m
+[2m      "supportedVersions": [[22m
+[2m        "2026-07-28",[22m
+[2m      ],[22m
+
+ ❯ expectModernReply tests/src/browser/factories.test.ts:694:37
+    692| // `ping`, so a bare server answers that one -32601 and it cannot carr…
+    693| function expectModernReply(message: unknown, id: number): void {
+    694|  expect(JSON.parse(String(message))).toEqual({
+       |                                     ^
+    695|   jsonrpc: '2.0',
+    696|   id,
+ ❯ tests/src/browser/factories.test.ts:932:2
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/8]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/factories.test.ts:964:2 > createScopeServer — double-port-delivery dedup > the same port delivered twice is deduped: only one binding, only one reply per request
+AssertionError: expected { jsonrpc: '2.0', id: 1, …(1) } to deeply equal { jsonrpc: '2.0', id: 1, …(1) }
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[33m@@ -8,11 +8,13 @@[39m
+[2m          "version": "1.0.0",[22m
+[2m        },[22m
+[2m      },[22m
+[2m      "cacheScope": "private",[22m
+[2m      "capabilities": {[22m
+[32m-       "tools": {},[39m
+[31m+       "tools": {[39m
+[31m+         "listChanged": true,[39m
+[31m+       },[39m
+[2m      },[22m
+[2m      "resultType": "complete",[22m
+[2m      "supportedVersions": [[22m
+[2m        "2026-07-28",[22m
+[2m      ],[22m
+
+ ❯ expectModernReply tests/src/browser/factories.test.ts:694:37
+    692| // `ping`, so a bare server answers that one -32601 and it cannot carr…
+    693| function expectModernReply(message: unknown, id: number): void {
+    694|  expect(JSON.parse(String(message))).toEqual({
+       |                                     ^
+    695|   jsonrpc: '2.0',
+    696|   id,
+ ❯ tests/src/browser/factories.test.ts:978:2
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/8]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/factories.test.ts:1029:2 > createScopeServer — hostile inbound > an object payload on a portless event is ignored — no reply, no crash
+AssertionError: expected { jsonrpc: '2.0', id: 1, …(1) } to deeply equal { jsonrpc: '2.0', id: 1, …(1) }
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[33m@@ -8,11 +8,13 @@[39m
+[2m          "version": "1.0.0",[22m
+[2m        },[22m
+[2m      },[22m
+[2m      "cacheScope": "private",[22m
+[2m      "capabilities": {[22m
+[32m-       "tools": {},[39m
+[31m+       "tools": {[39m
+[31m+         "listChanged": true,[39m
+[31m+       },[39m
+[2m      },[22m
+[2m      "resultType": "complete",[22m
+[2m      "supportedVersions": [[22m
+[2m        "2026-07-28",[22m
+[2m      ],[22m
+
+ ❯ expectModernReply tests/src/browser/factories.test.ts:694:37
+    692| // `ping`, so a bare server answers that one -32601 and it cannot carr…
+    693| function expectModernReply(message: unknown, id: number): void {
+    694|  expect(JSON.parse(String(message))).toEqual({
+       |                                     ^
+    695|   jsonrpc: '2.0',
+    696|   id,
+ ❯ tests/src/browser/factories.test.ts:1037:2
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/8]⎯
+
+
+ Test Files  3 failed | 32 passed (35)
+      Tests  8 failed | 1480 passed | 2 skipped (1490)
+   Start at  10:54:21
+   Duration  39.18s (transform 12.52s, setup 15.44s, import 9.64s, tests 61.93s, environment 5ms)
+

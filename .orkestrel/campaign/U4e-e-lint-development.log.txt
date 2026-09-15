@@ -1,0 +1,13 @@
+﻿npm.cmd : npm notice run @orkestrel/mcp@0.0.30 lint:check
+At line:2 char:1
++ npm.cmd run lint:check *> tmp/codex/U4e-e-lint-development.log
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (npm notice run ...0.30 lint:check:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+npm notice run oxlint --config .oxlintrc.json --deny-warnings .
+src/core/MCPServer.ts:1440:21: error typescript(array-type): Array type using 'T[]' is forbidden for non-simple types. Use 'Array<T>' instead. help: Replace `AsyncIterator<JSONRPCNotification>[]` with `Array<AsyncIterator<JSONRPCNotification>>`.
+src/core/MCPServer.ts:1474:14: error typescript(array-type): Array type using 'T[]' is forbidden for non-simple types. Use 'Array<T>' instead. help: Replace `AsyncIterator<JSONRPCNotification>[]` with `Array<AsyncIterator<JSONRPCNotification>>`.
+src/core/MCPServer.ts:1529:14: error typescript(array-type): Array type using 'T[]' is forbidden for non-simple types. Use 'Array<T>' instead. help: Replace `AsyncIterator<JSONRPCNotification>[]` with `Array<AsyncIterator<JSONRPCNotification>>`.
+tests/src/core/MCPServer.test.ts:501:9: warning eslint(no-shadow): 'server' is already declared in the upper scope. help: Consider renaming 'server' to avoid shadowing the variable from the outer scope.
+tests/src/core/MCPServer.test.ts:452:17: error typescript(array-type): Array type using 'T[]' is forbidden for non-simple types. Use 'Array<T>' instead. help: Replace `Promise<void>[]` with `Array<Promise<void>>`.
