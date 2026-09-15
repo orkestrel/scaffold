@@ -802,7 +802,7 @@
 			"storage": "guides/mcp.md",
 			"destination": "guides/mcp.md",
 			"executable": false,
-			"digest": "5f97c8d9c2cd262bb6261fd132db06009227dc2a2a0dc1df985fcfb526edd8b5"
+			"digest": "8cc580a9819d11771b585e8a915fcc6b7bd3ff4a575b6c6482cd76c501367664"
 		},
 		{
 			"storage": "guides/middleware.md",
@@ -826,7 +826,7 @@
 			"storage": "guides/ollama.md",
 			"destination": "guides/ollama.md",
 			"executable": false,
-			"digest": "490d3e90deac90b4f61be5dc9b72c0ae8a5e3048cdfce72c101b4b39516a1490"
+			"digest": "cec4bcaa69a0f8e191decff335f3c431b9ddf0e11d29cd6ff6368c46e1108b0f"
 		},
 		{
 			"storage": "guides/pool.md",
@@ -1993,5 +1993,5 @@
 			]
 		}
 	],
-	"digest": "8b55bfbb97b10ba9237e35e4e849d1350edb368efadae447d24f59dd90b1ec25"
+	"digest": "e5a6685504f71abc005e8f4f9e1f6167d3ecac14a966b4b7fa3701fb9805245c"
 }
