@@ -118,6 +118,68 @@ describe('isDigest', () => {
 })
 
 describe('isHost', () => {
+	it('refuses a missing surface or a collision set edited without its digest', () => {
+		const manifest = buildHostManifest({ surface: [{ name: 'Shared', owners: ['alpha', 'beta'] }] })
+		expect(isHost({ manifest, bytes: {} })).toBe(true)
+		expect(isHost({ manifest: { ...manifest, surface: undefined }, bytes: {} })).toBe(false)
+		expect(isHost({ manifest: { ...manifest, surface: [] }, bytes: {} })).toBe(false)
+		expect(
+			isHost({
+				manifest: { ...manifest, surface: [{ name: 'Shared', owners: ['alpha', 'gamma'] }] },
+				bytes: {},
+			}),
+		).toBe(false)
+	})
+
+	it('refuses unsorted, repeated, or incomplete collision declarations', () => {
+		expect(
+			isHost({
+				manifest: buildHostManifest({ surface: [{ name: 'Shared', owners: ['beta', 'alpha'] }] }),
+				bytes: {},
+			}),
+		).toBe(false)
+		expect(
+			isHost({
+				manifest: buildHostManifest({ surface: [{ name: 'Shared', owners: ['alpha', 'alpha'] }] }),
+				bytes: {},
+			}),
+		).toBe(false)
+		expect(
+			isHost({
+				manifest: buildHostManifest({ surface: [{ name: 'Shared', owners: ['alpha'] }] }),
+				bytes: {},
+			}),
+		).toBe(false)
+		expect(
+			isHost({
+				manifest: buildHostManifest({ surface: [{ name: '', owners: ['alpha', 'beta'] }] }),
+				bytes: {},
+			}),
+		).toBe(false)
+		expect(
+			isHost({
+				manifest: buildHostManifest({
+					surface: [
+						{ name: 'Shared', owners: ['alpha', 'beta'] },
+						{ name: 'Another', owners: ['alpha', 'beta'] },
+					],
+				}),
+				bytes: {},
+			}),
+		).toBe(false)
+		expect(
+			isHost({
+				manifest: buildHostManifest({
+					surface: [
+						{ name: 'Shared', owners: ['alpha', 'beta'] },
+						{ name: 'Shared', owners: ['alpha', 'beta'] },
+					],
+				}),
+				bytes: {},
+			}),
+		).toBe(false)
+	})
+
 	it('accepts a whole host whose manifest and fill are both the declared shape', () => {
 		const manifest = buildHostManifest()
 		const bytes = Object.fromEntries(

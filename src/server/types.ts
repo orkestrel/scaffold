@@ -75,8 +75,9 @@ export interface ManifestEntry {
  *
  * @remarks
  * `roots` is the sorted directory inventory, which is what distinguishes a
- * declared empty directory. `digest` is the SHA-256 of that exact entry and
- * root membership, so a membership edit that did not update the digest is
+ * declared empty directory. `surface` records only names claimed by distinct
+ * guides, sorted by name with each owner list sorted. `digest` is the SHA-256
+ * of the exact entries, roots, and surface, so an edit without its digest is
  * detected. A self-consistent replacement manifest defines its own smaller
  * membership; authenticating omitted membership is outside a checksum's
  * contract.
@@ -84,7 +85,29 @@ export interface ManifestEntry {
 export interface HostManifest {
 	readonly entries: readonly ManifestEntry[]
 	readonly roots: readonly string[]
+	readonly surface: readonly SurfaceCollision[]
 	readonly digest: string
+}
+
+/** Represents a Surface name claimed by distinct package guides. */
+export interface SurfaceCollision {
+	readonly name: string
+	readonly owners: readonly string[]
+}
+
+/**
+ * Configures the committed inventory baseline and staging reports.
+ *
+ * @remarks
+ * `report` receives the baseline location or its absence. Default: no reporting.
+ * `inventory` is relative to the checkout. Default: `host.json`.
+ * `establish`: if `true`, an absent inventory establishes the baseline; if `false`,
+ * an absent inventory refuses staging. Default: `false`.
+ */
+export interface HostStageOptions {
+	readonly inventory?: string
+	readonly establish?: boolean
+	readonly report?: (message: string) => void
 }
 
 /**
@@ -234,6 +257,10 @@ export interface MaterializerInterface {
 	 * @param mirrors - The fetched guides; each carries the local bytes its write is held to.
 	 * @param target - The directory to write into.
 	 * @returns The mirror paths written and skipped; a mirror already current is skipped.
+	 * @remarks
+	 * A missing target mirror can use the hosted guide after an upstream failure
+	 * or absence. A present mirror stays untouched when upstream supplies no bytes.
+	 * The observed target bytes remain the write precondition for either source.
 	 */
 	mirror(mirrors: readonly Mirror[], target: string): MaterializeResult
 	/**

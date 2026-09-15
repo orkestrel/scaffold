@@ -8,6 +8,7 @@ import { requireValue } from '@orkestrel/test'
 import { createLoopback, createScratch, supportsMode } from '@orkestrel/test/server'
 import { extractVersion, MINIMUM_NPM_VERSION, ScaffoldError } from '@src/core'
 import { execute, isFile, readVariable } from '@orkestrel/process/server'
+import { readHostFloor } from '@src/server'
 import { buildSnapshot } from './setup.js'
 import {
 	AUDIT_EXIT_CASES,
@@ -36,6 +37,7 @@ import {
 	CASE_FOLDING,
 	CATALOG_AGENT_ROWS_TEXT,
 	CATALOG_AGENT_TEXT,
+	CHECKOUT_GUIDE_PATHS,
 	COMMAND_CASES,
 	commitFiles,
 	CORE_GENERATED,
@@ -64,11 +66,11 @@ import {
 	omitDependencies,
 	PROTECTED_PATH_CASES,
 	provisionNpm,
-	readErrorCode,
-	readErrorMessage,
+	captureScaffoldCode,
+	captureScaffoldMessage,
 	readNpmFloor,
 	readNpmVersion,
-	readRejectionCode,
+	captureScaffoldRejection,
 	readStatements,
 	REFUSED_MANIFEST_TEXT,
 	renderLauncher,
@@ -158,11 +160,10 @@ describe('the manifest builders', () => {
 		expect(buildManifestEntry({ executable: true }).executable).toBe(true)
 	})
 
-	it('carries an arbitrary digest on the guard fixture and a membership digest on the staged one', () => {
-		// A guard reads digest syntax alone, so the guard fixture's digest is fixed and
-		// its membership is free; a reader verifies the digest against the membership
-		// beside it, so the staged fixture's digest moves with what it declares.
-		expect(buildHostManifest({ entries: [], roots: [] }).digest).toBe(buildHostManifest().digest)
+	it('digests the membership of the guard and staged fixtures', () => {
+		expect(buildHostManifest({ entries: [], roots: [] }).digest).not.toBe(
+			buildHostManifest().digest,
+		)
 		expect(buildStagedManifest({ roots: [] }).digest).not.toBe(buildStagedManifest().digest)
 		expect(buildStagedManifest()).toStrictEqual(buildStagedManifest())
 		expect(buildStagedManifest().roots).toStrictEqual(['.claude', '.claude/rules'])
@@ -190,7 +191,7 @@ describe('the manifest builders', () => {
 
 	it('declares the script root and planned file membership in the fleet manifest', () => {
 		const manifest = buildFleetManifest()
-		expect(manifest.roots).toStrictEqual(['scripts'])
+		expect(manifest.roots).toStrictEqual(['scripts', 'guides'])
 		const destinations = manifest.entries.map((entry) => entry.destination)
 		expect(new Set(destinations).size).toBe(destinations.length)
 		for (const destination of destinations) {
@@ -203,6 +204,8 @@ describe('the manifest builders', () => {
 		// missing it refuses every verb the moment a plan is hydrated.
 		expect(destinations).toContain('.claude/agents/orkestrel.md')
 		expect(destinations).toContain('LICENSE')
+		expect(destinations).toContain('guides/router.md')
+		expect(destinations).toContain('guides/supervisor.md')
 	})
 })
 
@@ -255,8 +258,13 @@ describe('the real host and checkout fixtures', () => {
 			expect([...storages].sort()).toStrictEqual([...storages])
 			expect(new Set(storages).size).toBe(storages.length)
 			for (const entry of manifest.entries) {
-				expect(workspace.read(`checkout/${entry.destination}`)).toBe(`${entry.destination}\n`)
+				expect(workspace.read(`checkout/${entry.destination}`)).toBe(
+					entry.destination === '.claude/agents/orkestrel.md'
+						? CATALOG_AGENT_ROWS_TEXT
+						: `${entry.destination}\n`,
+				)
 			}
+			for (const path of CHECKOUT_GUIDE_PATHS) expect(workspace.has(`checkout/${path}`)).toBe(true)
 			expect(manifest.entries.some((entry) => entry.executable)).toBe(true)
 			expect(
 				manifest.entries.filter((entry) => entry.executable).map((entry) => entry.destination),
@@ -401,37 +409,41 @@ describe('the option builders', () => {
 describe('the refusal readers', () => {
 	it('reports the code and the message of a scaffold refusal, and undefined for every other outcome', () => {
 		expect(
-			readErrorCode(() => {
+			captureScaffoldCode(() => {
 				throw new ScaffoldError('INVALID', 'A refused option bag')
 			}),
 		).toBe('INVALID')
 		expect(
-			readErrorMessage(() => {
+			captureScaffoldMessage(() => {
 				throw new ScaffoldError('TARGET', 'A missing target')
 			}),
 		).toBe('A missing target')
 		// Both non-refusals answer undefined, so a case naming a code fails on either
 		// rather than passing because nothing was raised.
 		expect(
-			readErrorCode(() => {
+			captureScaffoldCode(() => {
 				throw new Error('plain')
 			}),
 		).toBe(undefined)
 		expect(
-			readErrorMessage(() => {
+			captureScaffoldMessage(() => {
 				throw new Error('plain')
 			}),
 		).toBe(undefined)
-		expect(readErrorCode(() => 'a returned value')).toBe(undefined)
-		expect(readErrorMessage(() => 'a returned value')).toBe(undefined)
+		expect(captureScaffoldCode(() => 'a returned value')).toBe(undefined)
+		expect(captureScaffoldMessage(() => 'a returned value')).toBe(undefined)
 	})
 
 	it('reports the code of an asynchronous scaffold refusal, and undefined for every other outcome', async () => {
 		expect(
-			await readRejectionCode(() => Promise.reject(new ScaffoldError('FETCH', 'A refused read'))),
+			await captureScaffoldRejection(() =>
+				Promise.reject(new ScaffoldError('FETCH', 'A refused read')),
+			),
 		).toBe('FETCH')
-		expect(await readRejectionCode(() => Promise.reject(new Error('plain')))).toBe(undefined)
-		expect(await readRejectionCode(() => Promise.resolve('a resolved value'))).toBe(undefined)
+		expect(await captureScaffoldRejection(() => Promise.reject(new Error('plain')))).toBe(undefined)
+		expect(await captureScaffoldRejection(() => Promise.resolve('a resolved value'))).toBe(
+			undefined,
+		)
 	})
 })
 
@@ -714,28 +726,33 @@ describe('the upstream fixtures', () => {
 		).toStrictEqual(['LICENSE', 'guides/guide.md'])
 	})
 
-	it('answers the committed inventory and every host-owned path, and leaves a deferred path absent', () => {
-		const replies = buildInstalledHostReplies()
-		const inventory = requireValue(replies[UPSTREAM_PATHS.vendored.inventory])
-		expect(inventory.status).toBe(200)
-		expect(typeof inventory.body).toBe('string')
-		const agents = requireValue(replies[UPSTREAM_PATHS.vendored.agents])
-		expect(agents.status).toBe(200)
-		expect(agents.type).toBe('text/plain')
-		for (const path of Object.keys(replies)) {
-			expect(path.startsWith('/orkestrel/scaffold/refs/heads/main/')).toBe(true)
+	it('answers the supplied inventory and every host-owned path, and leaves a deferred path absent', () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const replies = buildInstalledHostReplies(readHostFloor(createStagedHost(workspace)))
+			const inventory = requireValue(replies[UPSTREAM_PATHS.vendored.inventory])
+			expect(inventory.status).toBe(200)
+			expect(typeof inventory.body).toBe('string')
+			const agents = requireValue(replies[UPSTREAM_PATHS.vendored.agents])
+			expect(agents.status).toBe(200)
+			expect(agents.type).toBe('text/plain')
+			for (const path of Object.keys(replies)) {
+				expect(path.startsWith('/orkestrel/scaffold/refs/heads/main/')).toBe(true)
+			}
+			// The catalog and guide surfaces own their own bytes, so the repository serves
+			// neither however the floor declares them.
+			expect(replies['/orkestrel/scaffold/refs/heads/main/.claude/agents/orkestrel.md']).toBe(
+				undefined,
+			)
+			expect(replies[UPSTREAM_PATHS.vendored.mirror]).toBe(undefined)
+			// The floor is the parameter rather than a fixed read: a floor carrying no bytes
+			// leaves the inventory as the only path the repository answers.
+			expect(
+				Object.keys(buildInstalledHostReplies({ manifest: buildStagedManifest(), bytes: {} })),
+			).toStrictEqual([UPSTREAM_PATHS.vendored.inventory])
+		} finally {
+			workspace.destroy()
 		}
-		// The catalog and guide surfaces own their own bytes, so the repository serves
-		// neither however the floor declares them.
-		expect(replies['/orkestrel/scaffold/refs/heads/main/.claude/agents/orkestrel.md']).toBe(
-			undefined,
-		)
-		expect(replies[UPSTREAM_PATHS.vendored.mirror]).toBe(undefined)
-		// The floor is the parameter rather than a fixed read: a floor carrying no bytes
-		// leaves the inventory as the only path the repository answers.
-		expect(
-			Object.keys(buildInstalledHostReplies({ manifest: buildStagedManifest(), bytes: {} })),
-		).toStrictEqual([UPSTREAM_PATHS.vendored.inventory])
 	})
 
 	it('answers a listed path with its scripted status, body, headers, and declared length', async () => {
@@ -996,7 +1013,9 @@ describe('the tables and the derived totals', () => {
 		expect(CORE_GENERATED.length).toBeGreaterThan(0)
 		expect(CORE_GENERATED_COUNT).toBe(CORE_GENERATED.length)
 		for (const artifact of CORE_GENERATED) expect(artifact.origin).not.toBe('host')
-		expect(FLEET_ARTIFACT_COUNT).toBe(buildFleetManifest().entries.length + CORE_GENERATED_COUNT)
+		expect(FLEET_ARTIFACT_COUNT).toBeLessThan(
+			buildFleetManifest().entries.length + CORE_GENERATED_COUNT,
+		)
 		expect(new Set(FLEET_BIRTH_PATHS).size).toBe(FLEET_BIRTH_PATHS.length)
 		expect(FLEET_BIRTH_COUNT).toBe(FLEET_BIRTH_PATHS.length)
 		for (const path of FLEET_BIRTH_PATHS) {

@@ -13,6 +13,7 @@ import type {
 } from '@src/core'
 import type {
 	MaterializeResult,
+	Host,
 	MaterializerInterface,
 	Worktree,
 	UpstreamOptions,
@@ -23,6 +24,7 @@ import type {
 	Baseline,
 	CatalogCommand,
 	CatalogResult,
+	CatalogResolution,
 	CLICommand,
 	CLIInterface,
 	CLIOptions,
@@ -75,6 +77,7 @@ import {
 	listFiles,
 	readFileText,
 	readHostFloor,
+	readHostManifest,
 	readSnapshot,
 	resolveContainedPath,
 } from '@src/server'
@@ -403,49 +406,69 @@ export class CLI implements CLIInterface {
 			)
 		}
 		const previous = catalogToNames(target)
-		const fetched = await this.#fetch(target, command.all === true)
-		const declarations = manifestToDependencies(this.#manifest(target))
-		const writable: DependencyPinSet = {
-			runtime: dependenciesToFleet(declarations.runtime),
-			development: dependenciesToFleet(declarations.development),
-		}
-		const releases = entriesToReleases(
-			[...writable.runtime, ...writable.development],
-			fetched.entries,
-		)
-		const pins = releasesToPins(releases, writable)
-		const refusal = fetchToRefusal(fetched.entries, fetched.mirrors)
-		if (refusal !== undefined) throw refusal
-		const guides: Baseline | undefined =
-			fetched.mirrors.length === 0
-				? undefined
-				: fetched.mirrors.some((mirror) => mirror.lookup !== 'found')
-					? 'floor'
-					: 'live'
-		const materializer = new Materializer({ host: host ?? readHostFloor() })
-		let result: MaterializeResult
+		const floor =
+			host === undefined
+				? readHostFloor()
+				: readHostManifest(host) === undefined
+					? host
+					: readHostFloor(host)
+		const materializer = new Materializer({ host: floor })
+		let outcome: CatalogResult
 		try {
-			result = mergeResults(
-				this.#publish(materializer, target, fetched.entries, fetched.mirrors),
-				materializer.declare({ pins, scripts: [] }, target),
-			)
+			const fetched = await this.#fetch(target, command.all === true, floor)
+			const guides: Baseline | undefined =
+				fetched.mirrors.length === 0
+					? undefined
+					: fetched.mirrors.some((mirror) => mirror.lookup !== 'found')
+						? 'floor'
+						: 'live'
+			if (fetched.entries === undefined) {
+				outcome = {
+					...materializer.mirror(fetched.mirrors, target),
+					mirrors: fetched.mirrors,
+					provenance: { ...(guides === undefined ? {} : { guides }) },
+					...(fetched.note === undefined ? {} : { note: fetched.note }),
+				}
+			} else {
+				const entries = fetched.entries
+				const declarations = manifestToDependencies(this.#manifest(target))
+				const writable: DependencyPinSet = {
+					runtime: dependenciesToFleet(declarations.runtime),
+					development: dependenciesToFleet(declarations.development),
+				}
+				const releases = entriesToReleases(
+					[...writable.runtime, ...writable.development],
+					fetched.entries,
+				)
+				const pins = releasesToPins(releases, writable)
+				const refusal = fetchToRefusal(fetched.entries, fetched.mirrors)
+				if (refusal !== undefined) throw refusal
+				const result = mergeResults(
+					this.#publish(materializer, target, fetched.entries, fetched.mirrors),
+					materializer.declare({ pins, scripts: [] }, target),
+				)
+				outcome = {
+					...result,
+					membership: {
+						entries,
+						dropped: previous.filter((name) => !entries.some((entry) => entry.name === name)),
+						releases,
+					},
+					mirrors: fetched.mirrors,
+					provenance: {
+						versions: 'live',
+						...(guides === undefined ? {} : { guides }),
+					},
+				}
+			}
 		} finally {
 			materializer.destroy()
 		}
-		const outcome: CatalogResult = {
-			...result,
-			entries: fetched.entries,
-			mirrors: fetched.mirrors,
-			dropped: previous.filter((name) => !fetched.entries.some((entry) => entry.name === name)),
-			releases,
-			provenance: {
-				versions: 'live',
-				...(guides === undefined ? {} : { guides }),
-			},
-		}
 		if (command.json === true) this.#report(outcome)
 		else this.#recount(outcome)
-		return guides === 'floor' ? EXIT_DRIFT : EXIT_CLEAN
+		return outcome.membership === undefined || outcome.provenance.guides === 'floor'
+			? EXIT_DRIFT
+			: EXIT_CLEAN
 	}
 
 	// `overwrite` — everything repair and catalog do, plus the steps only this
@@ -541,9 +564,7 @@ export class CLI implements CLIInterface {
 		const written = materializer.declare({ pins: versions.pins, scripts: declared.scripts }, target)
 		return {
 			...written,
-			entries: [],
 			mirrors: [],
-			dropped: [],
 			releases: versions.releases,
 			provenance: {
 				...(versions.baseline === undefined ? {} : { versions: versions.baseline }),
@@ -578,6 +599,12 @@ export class CLI implements CLIInterface {
 			const refused = versionsToRefusal(versions)
 			if (refused !== undefined) throw refused
 			const fetched = await this.#fetch(target, false)
+			if (fetched.entries === undefined)
+				throw new ScaffoldError(
+					'FETCH',
+					fetched.note ?? 'The catalog membership read did not complete.',
+				)
+			const entries = fetched.entries
 			const incomplete = fetchToRefusal(fetched.entries, fetched.mirrors)
 			if (incomplete !== undefined) throw incomplete
 			const guides: Baseline | undefined =
@@ -601,9 +628,18 @@ export class CLI implements CLIInterface {
 			if (guides === 'floor') floors.push('guides')
 			return {
 				...written,
-				entries: fetched.entries,
+				membership: {
+					entries,
+					dropped: previous.filter((name) => !entries.some((entry) => entry.name === name)),
+					releases: entriesToReleases(
+						[
+							...dependenciesToFleet(declared.pins.runtime),
+							...dependenciesToFleet(declared.pins.development),
+						],
+						entries,
+					),
+				},
 				mirrors: fetched.mirrors,
-				dropped: previous.filter((name) => !fetched.entries.some((entry) => entry.name === name)),
 				releases,
 				provenance,
 				...(floors.length === 0
@@ -618,9 +654,7 @@ export class CLI implements CLIInterface {
 				written: [],
 				skipped: [],
 				removed: [],
-				entries: [],
 				mirrors: [],
-				dropped: [],
 				releases,
 				provenance,
 				note: `The catalog step did not complete: ${errorToEnvelope(error).error.message}`,
@@ -787,10 +821,7 @@ export class CLI implements CLIInterface {
 
 	// Read the organization's published list and the guides the target draws on.
 	// The workspace never fetches its own guide: that file is its own product.
-	async #fetch(
-		target: string,
-		all: boolean,
-	): Promise<{ readonly entries: readonly CatalogEntry[]; readonly mirrors: readonly Mirror[] }> {
+	async #fetch(target: string, all: boolean, floor?: string | Host): Promise<CatalogResolution> {
 		const manifest = this.#manifest(target)
 		const own = manifestToName(manifest)
 		const dependencies = manifestToDependencies(manifest)
@@ -803,12 +834,26 @@ export class CLI implements CLIInterface {
 		]
 		const upstream = new Upstream(this.#upstream)
 		try {
-			const entries = await upstream.catalog()
-			const names = (all ? entries.map((entry) => entry.name) : declared).filter(
-				(name) => name !== own,
-			)
+			let entries: readonly CatalogEntry[] | undefined
+			let note: string | undefined
+			try {
+				entries = await upstream.catalog()
+			} catch (error) {
+				if (floor === undefined) throw error
+				note = `The catalog membership read did not complete; performed a guide-only refresh: ${errorToEnvelope(error).error.message}`
+			}
+			const population = all
+				? entries === undefined
+					? catalogToNames(floor ?? target)
+					: entries.map((entry) => entry.name)
+				: declared
+			const names = population.filter((name) => name !== own)
 			const mirrors = await upstream.fetch(names, readSnapshot(target, names.map(nameToGuide)))
-			return { entries, mirrors }
+			return {
+				...(entries === undefined ? {} : { entries }),
+				mirrors,
+				...(note === undefined ? {} : { note }),
+			}
 		} finally {
 			upstream.destroy()
 		}
@@ -1377,9 +1422,12 @@ export class CLI implements CLIInterface {
 	// The catalog outcome as a person reads it.
 	#recount(result: CatalogResult): void {
 		this.#say(resultToTally(result))
-		this.#say(
-			`${String(result.entries.length)} published, ${String(result.mirrors.filter((mirror) => mirror.lookup === 'found').length)} guide${result.mirrors.length === 1 ? '' : 's'} fetched, ${String(result.dropped.length)} no longer listed.`,
-		)
+		if (result.membership !== undefined) {
+			this.#say(
+				`${String(result.membership.entries.length)} published, ${String(result.mirrors.filter((mirror) => mirror.lookup === 'found').length)} guide${result.mirrors.length === 1 ? '' : 's'} fetched, ${String(result.membership.dropped.length)} no longer listed.`,
+			)
+		}
+		if (result.note !== undefined) this.#warn(result.note)
 		for (const mirror of result.mirrors) {
 			if (mirror.lookup !== 'found') this.#warn(`${mirror.name}: ${mirror.note}`)
 		}

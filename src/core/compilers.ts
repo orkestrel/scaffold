@@ -50,6 +50,7 @@ import {
 	NAME_PATTERN,
 	ORKESTREL_RANGE_PATTERN,
 	RELEASE_PROOF_COMMAND,
+	SEED_GUIDE_PATHS,
 	SERVICE_SCRIPT_PATH,
 	SERVICE_SETUP_PATH,
 	SHOWCASE_CONFIG_PATH,
@@ -1566,7 +1567,7 @@ export function blueprintToOrchestrationArtifacts(
  *
  * @param blueprint - The workspace specification.
  * @returns One artifact per selected vendored path in `HOST_PATHS` order, then
- * the catalog file.
+ * the seed guide mirrors and the catalog file.
  *
  * @remarks
  * Every artifact is claimed by presence, which is the strongest claim a pure
@@ -1589,6 +1590,10 @@ export function blueprintToOrchestrationArtifacts(
  * from the installed package, at the locations the `AGENTS.md` and `CLAUDE.md`
  * pointers {@link blueprintToDocumentArtifacts} emits name.
  *
+ * The {@link SEED_GUIDE_PATHS} mirrors are claimed explicitly
+ * from `REFERENCE_PATHS`. The target's own guide is excluded by
+ * {@link selectHostPaths}; the remaining reference guides grant no target claim.
+ *
  * @example
  * ```ts
  * import { blueprintToHostArtifacts, createBlueprint } from '@orkestrel/scaffold'
@@ -1600,7 +1605,7 @@ export function blueprintToOrchestrationArtifacts(
  * ```
  */
 export function blueprintToHostArtifacts(blueprint: Blueprint): readonly Artifact[] {
-	const selected = selectHostPaths(HOST_PATHS, blueprint.name)
+	const selected = selectHostPaths([...HOST_PATHS, ...SEED_GUIDE_PATHS], blueprint.name)
 	return [...selected, CATALOG_AGENT_PATH].map((path): Artifact => ({
 		path,
 		group: inferGroup(path),

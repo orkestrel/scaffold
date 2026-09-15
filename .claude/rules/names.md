@@ -121,6 +121,21 @@ The root design laws in `AGENTS.md` — one term per concept, boolean behavior s
 - Outside a declared wire body, a mirrored name never uses `kind` or `type` as a member name, and never uses a word § Rejected naming lists. A Compound File Binary (CFB) directory entry's object-type byte takes a named discriminant.
 - A declared wire body — a type whose members transliterate an external wire format field for field — keeps the external field names, `type` and `kind` included, and its TSDoc names the format it transliterates. The package's own domain type carries neither word, and the package owns the projection between the wire body and the domain type.
 
+## Fleet name ownership
+
+Give every bare exported name one owning package across the `@orkestrel` fleet. A bare name is the identifier alone, case included: the same identifier in another environment, or on another kind of declaration, is the same name, and the same word in another case is a different name.
+
+Check a public name against the fleet's published guides before adding it. The `surface` policy rule reports a name another package's guide already claims, and `.claude/rules/workspace.md` § Policy instruments fixes the instrument that reports it.
+
+The rule grandfathers a source name the target's own hosted guide claims, because that guide is the target's own claim to it. It grandfathers no root `tests/setup*.ts` export, so clear a colliding setup export before adopting the scaffold release that carries the rule. A vendored `tests/setup*.ts` module a scaffold release stages sits outside the inspected population.
+
+Resolve a reported collision with these rules, in order.
+
+1. **Reuse before renaming.** Where the colliding declarations carry the same contract, delete this one and import the owner's export. Declare the dependency that import needs, or stop and report that the dependency is not authorized.
+2. **The subject keeps the name.** Where the contracts differ, leave the name with the package whose domain the name describes, and rename the other declaration for the thing it is. Refuse a rename that makes the renamed declaration vaguer; name its own contract instead.
+3. **Qualify rather than extract.** Extract a shared package only where a proof shows the colliding declarations interchangeable and the dependency change is authorized. Otherwise qualify the name in place for the domain it serves, and route the extraction through a design round rather than renaming by fiat.
+4. **Close the collision in the code.** Change a declaration; the rule reads no allowlist a target can add a name to, and it carries no suppression. The committed `host.json` inventory in the `@orkestrel/scaffold` checkout records the collisions that predate this rule, and a release build refuses a staged collision that record does not already hold. Shrink that record by closing a collision, and never widen it to admit one. Never suppress the violation, and never edit a vendored policy instrument to clear it.
+
 ## Acronyms
 
 Keep canonical case:

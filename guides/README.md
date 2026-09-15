@@ -30,11 +30,17 @@ every symbol either barrel exports is documented.
 
 ## Line reference
 
-This repo vendors a byte-identical guide mirror for **every published `@orkestrel/*` package**,
-not only its own dependencies. Scaffold is the line's blueprint compiler: `new` seeds a
-workspace's vendored dependency guides, and `catalog` refreshes them — the declared set by
-default, or the complete published line under `--all`. Each mirror is fetched from its own
-repository's `main` at `guides/<name>.md`.
+This repository vendors a byte-identical guide mirror for **every published `@orkestrel/*`
+package**, not only its own dependencies. Scaffold is the line's blueprint compiler: `new` seeds a
+workspace with the mirrors named by `SEED_GUIDE_PATHS`. The `catalog` command refreshes the
+mirrors — the declared set by default, or the complete published line under `--all`. Each mirror is
+fetched from its own repository's `main` at `guides/<name>.md`.
+
+Every file in this directory ships inside the published package as well, at
+`dist/host/guides/<name>.md`, so an installed `@orkestrel/scaffold` carries the whole line as
+readable data. `catalog` writes that staged copy into a target whose mirror is absent and whose
+upstream read returned no bytes, and the `surface` policy rule reads the same set to decide which
+package owns an exported name.
 
 These subsets carry extra weight:
 
@@ -42,12 +48,16 @@ These subsets carry extra weight:
   `@orkestrel/contract` ([`contract.md`](contract.md)), `@orkestrel/emitter`
   ([`emitter.md`](emitter.md)), `@orkestrel/markdown` ([`markdown.md`](markdown.md)),
   `@orkestrel/process` ([`process.md`](process.md)), and `@orkestrel/template`
-  ([`template.md`](template.md)). The library faces reach contract, emitter, and template; the
-  `scaffold` executable reaches console, contract, markdown, and process.
-- **Development** — `@orkestrel/guide` ([`guide.md`](guide.md)) powers this repository's
-  guides-parity suite, [`tests/guides.test.ts`](../tests/guides.test.ts).
+  ([`template.md`](template.md)). The library faces reach contract, emitter, markdown, and
+  template; the `scaffold` executable reaches console, contract, markdown, and process.
+- **Development** — `@orkestrel/guide` ([`guide.md`](guide.md)) backs this repository's
+  guides-parity suite, [`tests/guides.test.ts`](../tests/guides.test.ts); the
+  `readSurfaceCollisions` helper in the server face, which loads it at call time; and the `surface`
+  rule in [`tests/setupPolicy.ts`](../tests/setupPolicy.ts). A consumer calling
+  `readSurfaceCollisions` supplies the package itself, because scaffold declares it for development
+  alone.
 
-Every mirror documents **that package's** surface, not anything sourced in this repo. A mirror
+Every mirror documents **that package's** surface, not anything sourced in this repository. A mirror
 that drifts from its upstream `main` is a defect: refresh it rather than editing it here.
 
 ## See also

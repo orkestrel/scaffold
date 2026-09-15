@@ -11,6 +11,7 @@ import type {
 	ManifestRegionSet,
 	Mirror,
 	Plan,
+	Question,
 	ScaffoldErrorCode,
 } from '@src/core'
 import type {
@@ -45,6 +46,7 @@ import {
 	MAX_MANIFEST_BYTES,
 	MAX_TOTAL_ARTIFACT_BYTES,
 	matchesDriftReachability,
+	nameToGuide,
 	planToFindings,
 	replaceManifestRanges,
 	replaceManifestScripts,
@@ -214,7 +216,8 @@ export class Materializer implements MaterializerInterface {
 	 *
 	 * @param plan - The compiled plan to compare.
 	 * @param target - The directory to inspect.
-	 * @returns Findings for hydrated planned paths and selected foreign candidates.
+	 * @returns Findings for hydrated planned paths and selected foreign candidates,
+	 * plus non-blocking questions for present foreign mirrors differing from hosted guides.
 	 * @throws {@link ScaffoldError} coded `INVALID` when an argument is not the
 	 * exact shape, `TARGET` when the host or target cannot be read within its
 	 * bounds, and `DESTROYED` after teardown.
@@ -332,9 +335,9 @@ export class Materializer implements MaterializerInterface {
 	 * the write cannot be staged or committed, and `DESTROYED` after teardown.
 	 *
 	 * @remarks
-	 * A verdict carrying no bytes carries a cause instead, so it is skipped rather
-	 * than written: one unreachable package never costs the caller the rest of the
-	 * fetch, and it never empties a mirror it could not replace.
+	 * A failed or absent upstream guide uses the verified hosted guide only when
+	 * the observed target copy was absent. A present copy stays untouched. A guide
+	 * unavailable from the host is skipped, retaining the upstream verdict.
 	 */
 	mirror(mirrors: readonly Mirror[], target: string): MaterializeResult {
 		this.#assertAlive()
@@ -343,10 +346,21 @@ export class Materializer implements MaterializerInterface {
 		const writes: Artifact[] = []
 		const skipped: string[] = []
 		const preconditions: WritePrecondition[] = []
+		let remaining = MAX_TOTAL_ARTIFACT_BYTES
 		for (const fetched of accepted) {
-			if (fetched.lookup !== 'found' || fetched.observed === contentToHex(fetched.content)) {
+			const hex =
+				fetched.lookup === 'found'
+					? contentToHex(fetched.content)
+					: fetched.observed === undefined
+						? this.#reference(fetched.path, remaining)
+						: undefined
+			if (hex === undefined || fetched.observed === hex) {
 				skipped.push(fetched.path)
 				continue
+			}
+			remaining -= hex.length / 2
+			if (remaining < 0) {
+				throw this.#error('TARGET', 'The guide mirrors exceed the total artifact byte limit.')
 			}
 			const current = readFileHex(directory, fetched.path)
 			if (current !== fetched.observed) {
@@ -356,13 +370,23 @@ export class Materializer implements MaterializerInterface {
 				})
 			}
 			preconditions.push(this.#bind(directory, fetched.path, current === undefined))
-			writes.push({
-				path: fetched.path,
-				group: inferGroup(fetched.path),
-				ownership: 'content',
-				origin: 'computed',
-				content: fetched.content,
-			})
+			writes.push(
+				fetched.lookup === 'found'
+					? {
+							path: fetched.path,
+							group: inferGroup(fetched.path),
+							ownership: 'content',
+							origin: 'computed',
+							content: fetched.content,
+						}
+					: {
+							path: fetched.path,
+							group: 'guides',
+							ownership: 'content',
+							origin: 'host',
+							hex,
+						},
+			)
 		}
 		return this.#apply(directory, writes, [], skipped, preconditions)
 	}
@@ -533,7 +557,7 @@ export class Materializer implements MaterializerInterface {
 	// root, measured against the bytes handed in rather than a directory walk.
 	#verify(host: Host): void {
 		const { entries, roots } = host.manifest
-		if (host.manifest.digest !== computeManifestDigest(entries, roots)) {
+		if (host.manifest.digest !== computeManifestDigest(entries, roots, host.manifest.surface)) {
 			throw this.#error(
 				'TARGET',
 				'The vendored host manifest does not cover the membership beside it.',
@@ -646,10 +670,52 @@ export class Materializer implements MaterializerInterface {
 			for (const name of listFiles(directory)) paths.add(`${root}/${name}`)
 		}
 		for (const path of listCanonPaths(target, plan.groups)) paths.add(path)
+		const questions: Question[] = []
+		if (plan.groups.includes('guides')) {
+			const directory = resolveContainedPath(target, 'guides')
+			let remaining = MAX_TOTAL_ARTIFACT_BYTES
+			for (const file of directory === undefined ? [] : listFiles(directory)) {
+				const path = `guides/${file}`
+				if (
+					file.includes('/') ||
+					file === 'README.md' ||
+					!file.endsWith('.md') ||
+					path === nameToGuide(plan.blueprint.name)
+				)
+					continue
+				const hosted = this.#reference(path, remaining)
+				if (hosted === undefined) continue
+				remaining -= hosted.length / 2
+				const present = readFileHex(target, path)
+				if (present !== undefined && present !== hosted) {
+					questions.push({
+						field: 'guides',
+						message: `The mirror at ${path} differs from the hosted guide. Run catalog to refresh it.`,
+						blocking: false,
+					})
+				}
+			}
+		}
 		return {
 			findings: planToFindings(hydrated, readSnapshot(target, [...paths])),
-			questions: [],
+			questions,
 		}
+	}
+
+	// Read an optional reference through the host's membership and digest checks.
+	#reference(path: string, budget: number): string | undefined {
+		const entry = this.#entries.get(path)
+		if (entry !== undefined) {
+			const hex = this.#read(entry, budget)
+			if (hexToDigest(hex) !== entry.digest) {
+				throw this.#error('TARGET', `The hosted guide at ${path} misses its declared digest.`, {
+					path,
+				})
+			}
+			return hex
+		}
+		if (this.#manifest !== undefined || this.#root === undefined) return undefined
+		return readFileHex(this.#root, path, Math.max(0, Math.min(MAX_ARTIFACT_BYTES, budget)))
 	}
 
 	// The target roots scaffold owns completely are exactly the host directories

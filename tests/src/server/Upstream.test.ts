@@ -20,8 +20,8 @@ import {
 	buildVendoredSnapshot,
 	createUpstreamServer,
 	FLEET_UPSTREAM_PATHS,
-	readErrorCode,
-	readRejectionCode,
+	captureScaffoldCode,
+	captureScaffoldRejection,
 	UPSTREAM_ENDPOINT_CASES,
 	UPSTREAM_PATHS,
 	VENDORED_FILES,
@@ -32,17 +32,21 @@ describe('Upstream construction', () => {
 		// The closed-record and ceiling refusals are the option guard's own law and
 		// are measured against it in `validators.test.ts`; what is measured here is
 		// that the constructor consults that guard at all.
-		expect(readErrorCode(() => new Upstream({ concurrency: 0 }))).toBe('INVALID')
-		expect(readErrorCode(() => new Upstream({ repository: { branch: 'main/../etc' } }))).toBe(
+		expect(captureScaffoldCode(() => new Upstream({ concurrency: 0 }))).toBe('INVALID')
+		expect(captureScaffoldCode(() => new Upstream({ repository: { branch: 'main/../etc' } }))).toBe(
 			'INVALID',
 		)
-		expect(readErrorCode(() => new Upstream({ retries: 1.5 }))).toBe('INVALID')
+		expect(captureScaffoldCode(() => new Upstream({ retries: 1.5 }))).toBe('INVALID')
 	})
 
 	it('decides the scheme and host law the endpoint guard leaves to it', () => {
 		for (const endpoint of UPSTREAM_ENDPOINT_CASES) {
-			const repository = readErrorCode(() => new Upstream({ repository: { base: endpoint.base } }))
-			const registry = readErrorCode(() => new Upstream({ registry: { base: endpoint.base } }))
+			const repository = captureScaffoldCode(
+				() => new Upstream({ repository: { base: endpoint.base } }),
+			)
+			const registry = captureScaffoldCode(
+				() => new Upstream({ registry: { base: endpoint.base } }),
+			)
 			expect([endpoint.label, repository]).toStrictEqual([
 				endpoint.label,
 				endpoint.accepted ? undefined : 'INVALID',
@@ -67,9 +71,9 @@ describe('Upstream construction', () => {
 	it('refuses every call after teardown', async () => {
 		const upstream = new Upstream()
 		upstream.destroy()
-		expect(await readRejectionCode(() => upstream.lookup([]))).toBe('DESTROYED')
-		expect(await readRejectionCode(() => upstream.fetch([], {}))).toBe('DESTROYED')
-		expect(await readRejectionCode(() => upstream.catalog())).toBe('DESTROYED')
+		expect(await captureScaffoldRejection(() => upstream.lookup([]))).toBe('DESTROYED')
+		expect(await captureScaffoldRejection(() => upstream.fetch([], {}))).toBe('DESTROYED')
+		expect(await captureScaffoldRejection(() => upstream.catalog())).toBe('DESTROYED')
 	})
 })
 
@@ -342,11 +346,11 @@ describe('Upstream lookup', () => {
 	it('refuses input that is not a bounded list of declared dependencies', async () => {
 		const upstream = new Upstream()
 		try {
-			expect(await readRejectionCode(() => upstream.lookup([buildDependency({ name: '' })]))).toBe(
-				'INVALID',
-			)
 			expect(
-				await readRejectionCode(() =>
+				await captureScaffoldRejection(() => upstream.lookup([buildDependency({ name: '' })])),
+			).toBe('INVALID')
+			expect(
+				await captureScaffoldRejection(() =>
 					upstream.lookup(
 						Array.from({ length: MAX_COLLECTION_ITEMS + 1 }, () => buildDependency()),
 					),
@@ -542,14 +546,14 @@ describe('Upstream fetch', () => {
 	it('refuses names and local bytes that are not the exact shape', async () => {
 		const upstream = new Upstream()
 		try {
-			expect(await readRejectionCode(() => upstream.fetch(['router'], {}))).toBe('INVALID')
+			expect(await captureScaffoldRejection(() => upstream.fetch(['router'], {}))).toBe('INVALID')
 			expect(
-				await readRejectionCode(() =>
+				await captureScaffoldRejection(() =>
 					upstream.fetch(['@orkestrel/router'], { 'guides/router.md': 'not hex' }),
 				),
 			).toBe('INVALID')
 			expect(
-				await readRejectionCode(() =>
+				await captureScaffoldRejection(() =>
 					upstream.fetch(['@orkestrel/router'], { '../secrets': contentToHex('x') }),
 				),
 			).toBe('INVALID')
@@ -876,7 +880,8 @@ describe('Upstream read', () => {
 				body: JSON.stringify({
 					entries,
 					roots: [],
-					digest: computeManifestDigest(entries, []),
+					surface: [],
+					digest: computeManifestDigest(entries, [], []),
 				}),
 			},
 			[UPSTREAM_PATHS.vendored.agents]: { status: 200, body: Buffer.from(hex, 'hex') },
@@ -907,7 +912,8 @@ describe('Upstream read', () => {
 				body: JSON.stringify({
 					entries,
 					roots: [],
-					digest: computeManifestDigest(entries, []),
+					surface: [],
+					digest: computeManifestDigest(entries, [], []),
 				}),
 			},
 			[UPSTREAM_PATHS.vendored.agents]: { status: 200, body: Buffer.from(hex, 'hex') },
@@ -983,7 +989,12 @@ describe('Upstream read', () => {
 		const server = await createUpstreamServer({
 			[UPSTREAM_PATHS.vendored.inventory]: {
 				status: 200,
-				body: JSON.stringify({ entries, roots: [], digest: computeManifestDigest(entries, []) }),
+				body: JSON.stringify({
+					entries,
+					roots: [],
+					surface: [],
+					digest: computeManifestDigest(entries, [], []),
+				}),
 			},
 		})
 		const upstream = new Upstream({ repository: { base: server.base } })
@@ -1034,7 +1045,9 @@ describe('Upstream read', () => {
 		})
 		const upstream = new Upstream({ repository: { base: server.base } })
 		try {
-			const pending = readRejectionCode(() => upstream.read([VENDORED_FILES.agents.path], {}))
+			const pending = captureScaffoldRejection(() =>
+				upstream.read([VENDORED_FILES.agents.path], {}),
+			)
 			// Deterministic without a clock: teardown happens strictly after the
 			// fixture has the request open, so the abort always lands in flight.
 			await server.arrival(UPSTREAM_PATHS.vendored.inventory)
@@ -1049,9 +1062,11 @@ describe('Upstream read', () => {
 	it('refuses paths and local bytes that are not the exact shape', async () => {
 		const upstream = new Upstream()
 		try {
-			expect(await readRejectionCode(() => upstream.read(['../secrets'], {}))).toBe('INVALID')
+			expect(await captureScaffoldRejection(() => upstream.read(['../secrets'], {}))).toBe(
+				'INVALID',
+			)
 			expect(
-				await readRejectionCode(() =>
+				await captureScaffoldRejection(() =>
 					upstream.read(
 						Array.from({ length: MAX_COLLECTION_ITEMS + 1 }, () => 'AGENTS.md'),
 						{},
@@ -1059,7 +1074,9 @@ describe('Upstream read', () => {
 				),
 			).toBe('INVALID')
 			expect(
-				await readRejectionCode(() => upstream.read(['AGENTS.md'], { 'AGENTS.md': 'not hex' })),
+				await captureScaffoldRejection(() =>
+					upstream.read(['AGENTS.md'], { 'AGENTS.md': 'not hex' }),
+				),
 			).toBe('INVALID')
 		} finally {
 			upstream.destroy()
@@ -1309,7 +1326,7 @@ describe('Upstream catalog', () => {
 			})
 			const upstream = new Upstream({ registry: { base: server.base } })
 			try {
-				expect([body, await readRejectionCode(() => upstream.catalog())]).toStrictEqual([
+				expect([body, await captureScaffoldRejection(() => upstream.catalog())]).toStrictEqual([
 					body,
 					'FETCH',
 				])
@@ -1326,7 +1343,7 @@ describe('Upstream catalog', () => {
 		})
 		const upstream = new Upstream({ registry: { base: server.base } })
 		try {
-			expect(await readRejectionCode(() => upstream.catalog())).toBe('FETCH')
+			expect(await captureScaffoldRejection(() => upstream.catalog())).toBe('FETCH')
 			// Nothing beyond the list was ever requested: without it there is no
 			// fleet to look packages up for.
 			expect(server.paths).toStrictEqual([UPSTREAM_PATHS.organization])
@@ -1551,7 +1568,7 @@ describe('Upstream transport', () => {
 		})
 		const upstream = new Upstream({ registry: { base: server.base } })
 		try {
-			const pending = readRejectionCode(() =>
+			const pending = captureScaffoldRejection(() =>
 				upstream.lookup([buildDependency({ name: '@orkestrel/router' })]),
 			)
 			// Deterministic without a clock: teardown happens strictly after the

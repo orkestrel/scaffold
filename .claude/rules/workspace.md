@@ -264,8 +264,20 @@ Policy instruments:
   a named module-scope `report{Noun}` function. Never write rule logic inline in the table. That
   arrow is the sanctioned exception to the in-body function-expression limits in
   `.claude/rules/architecture.md` for exactly that table.
-- Name no individual rule id here. This section fixes the instruments and how work is assigned
-  between them; each rule's substance stays with the law it enforces.
+- Name an individual rule id here only where the rule reads its evidence from outside the workspace
+  its instrument runs in. This section fixes the instruments and how work is assigned between them;
+  each rule's substance stays with the law it enforces.
+- `surface` is that rule, and the sweep owns it. It reads the fleet's published guides — a target
+  reads `node_modules/@orkestrel/scaffold/dist/host/guides/`, and a scaffold checkout reads its own
+  `guides/` — and compares every bare name their `## Surface` tables claim against the target's live
+  barrel exports and its own root `tests/setup*.ts` exports. `.claude/rules/names.md` § Fleet name
+  ownership defines the bare name that comparison matches and decides which declaration gives a
+  claimed name up.
+- Keep every barrel statement in the form `.claude/rules/architecture.md` § Barrel exports fixes.
+  The sweep refuses a barrel population it cannot read whole and reports that refusal as a `surface`
+  violation rather than passing over the statements it did read. A catalog row with no hosted guide,
+  and a missing hosted guide root, refuse the same way.
+- Change the code when an instrument reports a violation.
 
 ## Text integrity
 

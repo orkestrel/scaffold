@@ -14,18 +14,20 @@ import { Worker } from 'node:worker_threads'
 import { isScaffoldError } from '@src/core'
 import { computeDigest, listFiles, readExpectation, WriteTransaction } from '@src/server'
 import { describe, expect, it } from 'vitest'
-import { readErrorCode, SCRATCH_PREFIX } from '../../setupServer.js'
+import { captureScaffoldCode, SCRATCH_PREFIX } from '../../setupServer.js'
 import { createScratch, supportsMode } from '@orkestrel/test/server'
 
 describe('WriteTransaction construction', () => {
 	it('refuses a target, a path list, and a repeated path that are off contract', () => {
 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
-			expect(readErrorCode(() => new WriteTransaction('', ['AGENTS.md']))).toBe('INVALID')
-			expect(readErrorCode(() => new WriteTransaction(workspace.path, ['../secrets']))).toBe(
+			expect(captureScaffoldCode(() => new WriteTransaction('', ['AGENTS.md']))).toBe('INVALID')
+			expect(captureScaffoldCode(() => new WriteTransaction(workspace.path, ['../secrets']))).toBe(
 				'INVALID',
 			)
-			expect(readErrorCode(() => new WriteTransaction(workspace.path, ['a', 'a']))).toBe('INVALID')
+			expect(captureScaffoldCode(() => new WriteTransaction(workspace.path, ['a', 'a']))).toBe(
+				'INVALID',
+			)
 		} finally {
 			workspace.destroy()
 		}
@@ -37,7 +39,7 @@ describe('WriteTransaction construction', () => {
 			const outside = workspace.ensure('outside')
 			workspace.ensure('project')
 			workspace.link('project/linked', outside)
-			const code = readErrorCode(
+			const code = captureScaffoldCode(
 				() => new WriteTransaction(join(workspace.path, 'project'), ['linked/names.md']),
 			)
 			// Containment resolves the link and finds the destination outside the
@@ -57,8 +59,12 @@ describe('WriteTransaction construction', () => {
 			// The redirected destination is still inside the target, so containment
 			// passes and only the ancestor law can refuse it. That is the whole reason
 			// the ancestor law exists at write time.
-			expect(readErrorCode(() => new WriteTransaction(target, ['rules/names.md']))).toBe('WRITE')
-			expect(readErrorCode(() => new WriteTransaction(target, ['real/names.md']))).toBe(undefined)
+			expect(captureScaffoldCode(() => new WriteTransaction(target, ['rules/names.md']))).toBe(
+				'WRITE',
+			)
+			expect(captureScaffoldCode(() => new WriteTransaction(target, ['real/names.md']))).toBe(
+				undefined,
+			)
 		} finally {
 			workspace.destroy()
 		}
@@ -70,7 +76,9 @@ describe('WriteTransaction construction', () => {
 			workspace.write('project/AGENTS.md', '# Agents\n')
 			const before = readdirSync(workspace.path).sort()
 			expect(
-				readErrorCode(() => new WriteTransaction(join(workspace.path, 'project'), ['a', 'a'])),
+				captureScaffoldCode(
+					() => new WriteTransaction(join(workspace.path, 'project'), ['a', 'a']),
+				),
 			).toBe('INVALID')
 			expect(readdirSync(workspace.path).sort()).toEqual(before)
 		} finally {
@@ -85,19 +93,19 @@ describe('WriteTransaction construction', () => {
 			workspace.write('project/AGENTS.md', '# Agents\n')
 			const destination = join(target, 'AGENTS.md')
 			expect(
-				readErrorCode(
+				captureScaffoldCode(
 					() =>
 						new WriteTransaction(target, ['AGENTS.md'], [{ path: 'AGENTS.md', shape: 'absent' }]),
 				),
 			).toBe('INVALID')
 			expect(
-				readErrorCode(
+				captureScaffoldCode(
 					() =>
 						new WriteTransaction(target, ['AGENTS.md'], [{ path: destination, shape: 'absent' }]),
 				),
 			).toBe('TARGET')
 			expect(
-				readErrorCode(
+				captureScaffoldCode(
 					() =>
 						new WriteTransaction(
 							target,
@@ -165,10 +173,14 @@ describe('WriteTransaction staging', () => {
 			workspace.ensure('project/rules')
 			const transaction = new WriteTransaction(target, ['AGENTS.md', 'rules'])
 			try {
-				expect(readErrorCode(() => transaction.write('LICENSE', 'MIT\n'))).toBe('INVALID')
+				expect(captureScaffoldCode(() => transaction.write('LICENSE', 'MIT\n'))).toBe('INVALID')
 				transaction.write('AGENTS.md', '# Agents\n')
-				expect(readErrorCode(() => transaction.write('AGENTS.md', '# Again\n'))).toBe('INVALID')
-				expect(readErrorCode(() => transaction.write('rules', 'not a directory'))).toBe('TARGET')
+				expect(captureScaffoldCode(() => transaction.write('AGENTS.md', '# Again\n'))).toBe(
+					'INVALID',
+				)
+				expect(captureScaffoldCode(() => transaction.write('rules', 'not a directory'))).toBe(
+					'TARGET',
+				)
 			} finally {
 				transaction.discard()
 			}
@@ -185,7 +197,7 @@ describe('WriteTransaction staging', () => {
 			const transaction = new WriteTransaction(target, ['scripts/codex.sh', 'missing.md'])
 			try {
 				expect(
-					readErrorCode(() =>
+					captureScaffoldCode(() =>
 						transaction.copy('missing.md', join(workspace.path, 'host/absent.md'), false),
 					),
 				).toBe('TARGET')
@@ -382,7 +394,7 @@ for (;;) {
 			const transaction = new WriteTransaction(target, ['rules', 'AGENTS.md'])
 			try {
 				expect(transaction.establish('rules').created).toEqual([])
-				expect(readErrorCode(() => transaction.establish('AGENTS.md'))).toBe('TARGET')
+				expect(captureScaffoldCode(() => transaction.establish('AGENTS.md'))).toBe('TARGET')
 				expect(transaction.commit()).toEqual([])
 			} finally {
 				transaction.discard()
@@ -512,7 +524,7 @@ describe('WriteTransaction commit', () => {
 			// before the first promotion cannot see it and the failure lands after
 			// `first.md` has already been replaced.
 			writeFileSync(join(target, 'deep'), 'a file where a directory must go\n', 'utf8')
-			expect(readErrorCode(() => transaction.commit())).toBe('WRITE')
+			expect(captureScaffoldCode(() => transaction.commit())).toBe('WRITE')
 			expect(readFileSync(join(target, 'first.md'), 'utf8')).toBe('# First\n')
 			expect(readFileSync(join(target, 'deep'), 'utf8')).toBe('a file where a directory must go\n')
 			expect(readdirSync(workspace.path)).toEqual(['project'])
@@ -533,7 +545,7 @@ describe('WriteTransaction commit', () => {
 			// The second destination moves after both files are staged, which is the
 			// window the expectation captured at construction exists to close.
 			writeFileSync(join(target, 'second.md'), '# Second moved\n', 'utf8')
-			expect(readErrorCode(() => transaction.commit())).toBe('WRITE')
+			expect(captureScaffoldCode(() => transaction.commit())).toBe('WRITE')
 			expect(readFileSync(join(target, 'first.md'), 'utf8')).toBe('# First\n')
 			expect(readFileSync(join(target, 'second.md'), 'utf8')).toBe('# Second moved\n')
 			expect(readdirSync(workspace.path)).toEqual(['project'])
@@ -570,7 +582,7 @@ describe('WriteTransaction commit', () => {
 			// A file appears where an absent destination was expected, so the promotion
 			// that reaches it refuses and the whole commit unwinds.
 			workspace.write('project/AGENTS.md', '# Planted\n')
-			expect(readErrorCode(() => transaction.commit())).toBe('WRITE')
+			expect(captureScaffoldCode(() => transaction.commit())).toBe('WRITE')
 			expect(listFiles(target)).toEqual(['AGENTS.md'])
 			expect(readFileSync(join(target, 'AGENTS.md'), 'utf8')).toBe('# Planted\n')
 		} finally {
@@ -585,7 +597,7 @@ describe('WriteTransaction commit', () => {
 			workspace.write('project/foreign.md', '# Foreign\n')
 			const transaction = new WriteTransaction(target, ['foreign.md', 'absent.md'])
 			try {
-				expect(readErrorCode(() => transaction.remove('absent.md'))).toBe('TARGET')
+				expect(captureScaffoldCode(() => transaction.remove('absent.md'))).toBe('TARGET')
 				transaction.remove('foreign.md')
 				expect(readFileSync(join(target, 'foreign.md'), 'utf8')).toBe('# Foreign\n')
 				expect(transaction.commit()).toEqual(['foreign.md'])
@@ -609,7 +621,7 @@ describe('WriteTransaction commit', () => {
 			transaction.remove('first.md')
 			transaction.remove('second.md')
 			writeFileSync(join(target, 'second.md'), '# Second moved\n', 'utf8')
-			expect(readErrorCode(() => transaction.commit())).toBe('WRITE')
+			expect(captureScaffoldCode(() => transaction.commit())).toBe('WRITE')
 			expect(readFileSync(join(target, 'first.md'), 'utf8')).toBe('# First\n')
 			expect(readFileSync(join(target, 'second.md'), 'utf8')).toBe('# Second moved\n')
 		} finally {
@@ -625,8 +637,8 @@ describe('WriteTransaction commit', () => {
 			transaction.write('AGENTS.md', '# Agents\n')
 			transaction.commit()
 			expect(transaction.open).toBe(false)
-			expect(readErrorCode(() => transaction.commit())).toBe('WRITE')
-			expect(readErrorCode(() => transaction.write('AGENTS.md', '# Again\n'))).toBe('WRITE')
+			expect(captureScaffoldCode(() => transaction.commit())).toBe('WRITE')
+			expect(captureScaffoldCode(() => transaction.write('AGENTS.md', '# Again\n'))).toBe('WRITE')
 			transaction.discard()
 			transaction.discard()
 			expect(readFileSync(join(target, 'AGENTS.md'), 'utf8')).toBe('# Agents\n')
@@ -681,7 +693,7 @@ describe('WriteTransaction discard', () => {
 			// rollback from removing it, which is exactly the residue `discard` owes
 			// the caller instead of a silent success.
 			writeFileSync(join(target, '.claude/skills/planted.md'), '# Planted\n', 'utf8')
-			expect(readErrorCode(() => transaction.discard())).toBe('WRITE')
+			expect(captureScaffoldCode(() => transaction.discard())).toBe('WRITE')
 			rmSync(join(target, '.claude'), { recursive: true, force: true })
 		} finally {
 			workspace.destroy()

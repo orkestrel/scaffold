@@ -1,4 +1,5 @@
 import type { HostFile } from '@src/core'
+import { registerHooks } from 'node:module'
 import {
 	chmodSync,
 	existsSync,
@@ -14,10 +15,12 @@ import { once } from 'node:events'
 import { join } from 'node:path'
 import { Worker } from 'node:worker_threads'
 import { arrayOf, isRecord, isString } from '@orkestrel/contract'
+import { captureError, createRecorder, requireValue } from '@orkestrel/test'
 import {
 	ARTIFACT_TEMPLATES,
 	BASE_DEV_DEPENDENCIES,
 	CANON_PATHS,
+	CATALOG_AGENT_PATH,
 	contentToHex,
 	EXECUTABLE_PATHS,
 	GROUPS,
@@ -62,6 +65,8 @@ import {
 	readHostManifest,
 	readManifestEntry,
 	readSnapshot,
+	readSurfaceBaseline,
+	readSurfaceCollisions,
 	resolveContainedPath,
 	resolveRealPath,
 	stageBytes,
@@ -78,6 +83,8 @@ import {
 	buildVendoredManifest,
 	CASE_FOLDING,
 	createCheckout,
+	refuseGuideResolution,
+	CATALOG_AGENT_ROWS_TEXT,
 	createHostRoot,
 	createOllamaServer,
 	DIGEST_CASES,
@@ -87,10 +94,12 @@ import {
 	listExecutablePaths,
 	normalizeBashPath,
 	PROTECTED_PATH_CASES,
-	readErrorCode,
+	captureScaffoldCode,
 	SCRATCH_PREFIX,
 	SENSITIVE_PATH_CASES,
 	STORAGE_PATH_CASES,
+	STAGING_SURFACE_FILES,
+	STAGING_SURFACE_TEXT,
 	supportsMappedLoopback,
 	WORKSPACE_ROOT,
 } from '../../setupServer.js'
@@ -562,25 +571,26 @@ describe('hexToDigest', () => {
 	})
 
 	it('refuses text that does not state exact lowercase hexadecimal bytes', () => {
-		expect(readErrorCode(() => hexToDigest('0'))).toBe('INVALID')
-		expect(readErrorCode(() => hexToDigest('FF'))).toBe('INVALID')
+		expect(captureScaffoldCode(() => hexToDigest('0'))).toBe('INVALID')
+		expect(captureScaffoldCode(() => hexToDigest('FF'))).toBe('INVALID')
 	})
 })
 
 describe('computeManifestDigest', () => {
 	it('changes when membership changes and holds when it does not', () => {
 		const entries = [buildManifestEntry()]
-		const first = computeManifestDigest(entries, ['.claude'])
-		expect(computeManifestDigest([buildManifestEntry()], ['.claude'])).toBe(first)
-		expect(computeManifestDigest(entries, [])).not.toBe(first)
-		expect(computeManifestDigest([], ['.claude'])).not.toBe(first)
-		expect(computeManifestDigest([buildManifestEntry({ executable: true })], ['.claude'])).not.toBe(
-			first,
-		)
+		const first = computeManifestDigest(entries, ['.claude'], [])
+		expect(computeManifestDigest([buildManifestEntry()], ['.claude'], [])).toBe(first)
+		expect(computeManifestDigest(entries, [], [])).not.toBe(first)
+		expect(computeManifestDigest([], ['.claude'], [])).not.toBe(first)
+		expect(
+			computeManifestDigest([buildManifestEntry({ executable: true })], ['.claude'], []),
+		).not.toBe(first)
 		expect(
 			computeManifestDigest(
 				[buildManifestEntry({ digest: computeDigest('changed') })],
 				['.claude'],
+				[],
 			),
 		).not.toBe(first)
 	})
@@ -588,25 +598,27 @@ describe('computeManifestDigest', () => {
 	it('reads order as part of the membership it authenticates', () => {
 		const first = buildManifestEntry({ storage: 'a', destination: 'a' })
 		const second = buildManifestEntry({ storage: 'b', destination: 'b' })
-		expect(computeManifestDigest([first, second], [])).not.toBe(
-			computeManifestDigest([second, first], []),
+		expect(computeManifestDigest([first, second], [], [])).not.toBe(
+			computeManifestDigest([second, first], [], []),
 		)
-		expect(computeManifestDigest([], ['a', 'b'])).not.toBe(computeManifestDigest([], ['b', 'a']))
+		expect(computeManifestDigest([], ['a', 'b'], [])).not.toBe(
+			computeManifestDigest([], ['b', 'a'], []),
+		)
 	})
 
 	it('reads exactly the declared fields and nothing a caller added', () => {
 		// Built through a variable so the extra field survives to the runtime call
 		// instead of being refused by the excess-property check at the literal.
 		const extended = { ...buildManifestEntry(), note: 'added' }
-		expect(computeManifestDigest([extended], [])).toBe(
-			computeManifestDigest([buildManifestEntry()], []),
+		expect(computeManifestDigest([extended], [], [])).toBe(
+			computeManifestDigest([buildManifestEntry()], [], []),
 		)
 	})
 
 	it('leaves the lists it was handed exactly as it found them', () => {
 		const entries = [buildManifestEntry()]
 		const roots = ['.claude']
-		computeManifestDigest(entries, roots)
+		computeManifestDigest(entries, roots, [])
 		expect(entries).toEqual([buildManifestEntry()])
 		expect(roots).toEqual(['.claude'])
 	})
@@ -1000,14 +1012,14 @@ describe('listFiles', () => {
 	})
 
 	it('throws INVALID for a root that is not a host path', () => {
-		expect(readErrorCode(() => listFiles('project/nul'))).toBe('INVALID')
+		expect(captureScaffoldCode(() => listFiles('project/nul'))).toBe('INVALID')
 	})
 
 	it('throws TARGET for a root that is a file', () => {
 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const file = workspace.write('AGENTS.md', 'hi\n')
-			expect(readErrorCode(() => listFiles(file))).toBe('TARGET')
+			expect(captureScaffoldCode(() => listFiles(file))).toBe('TARGET')
 		} finally {
 			workspace.destroy()
 		}
@@ -1020,7 +1032,7 @@ describe('listFiles', () => {
 			workspace.write(`${shallow}/leaf.md`, 'leaf\n')
 			expect(listFiles(workspace.path)).toEqual([`${shallow}/leaf.md`])
 			workspace.write(`${shallow}/a/a/a/leaf.md`, 'leaf\n')
-			expect(readErrorCode(() => listFiles(workspace.path))).toBe('TARGET')
+			expect(captureScaffoldCode(() => listFiles(workspace.path))).toBe('TARGET')
 		} finally {
 			workspace.destroy()
 		}
@@ -1077,14 +1089,14 @@ describe('listDirectories', () => {
 	})
 
 	it('throws INVALID for a root that is not a host path', () => {
-		expect(readErrorCode(() => listDirectories('project/nul'))).toBe('INVALID')
+		expect(captureScaffoldCode(() => listDirectories('project/nul'))).toBe('INVALID')
 	})
 
 	it('throws TARGET for a root that is a file', () => {
 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const file = workspace.write('AGENTS.md', 'hi\n')
-			expect(readErrorCode(() => listDirectories(file))).toBe('TARGET')
+			expect(captureScaffoldCode(() => listDirectories(file))).toBe('TARGET')
 		} finally {
 			workspace.destroy()
 		}
@@ -1097,7 +1109,7 @@ describe('listDirectories', () => {
 			workspace.ensure(shallow)
 			expect(listDirectories(workspace.path).length).toBe(MAX_PATH_DEPTH - 2)
 			workspace.ensure(`${shallow}/a/a/a`)
-			expect(readErrorCode(() => listDirectories(workspace.path))).toBe('TARGET')
+			expect(captureScaffoldCode(() => listDirectories(workspace.path))).toBe('TARGET')
 		} finally {
 			workspace.destroy()
 		}
@@ -1346,13 +1358,17 @@ describe('readFileHex and readFileText', () => {
 	it('throws INVALID for a path that leaves its root or a limit outside the ceiling', () => {
 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
-			expect(readErrorCode(() => readFileHex(workspace.path, '../secrets'))).toBe('INVALID')
+			expect(captureScaffoldCode(() => readFileHex(workspace.path, '../secrets'))).toBe('INVALID')
 			expect(
-				readErrorCode(() => readFileHex(workspace.path, 'AGENTS.md', MAX_ARTIFACT_BYTES + 1)),
+				captureScaffoldCode(() => readFileHex(workspace.path, 'AGENTS.md', MAX_ARTIFACT_BYTES + 1)),
 			).toBe('INVALID')
-			expect(readErrorCode(() => readFileHex(workspace.path, 'AGENTS.md', -1))).toBe('INVALID')
-			expect(readErrorCode(() => readFileHex(workspace.path, 'AGENTS.md', 1.5))).toBe('INVALID')
-			expect(readErrorCode(() => readFileText(workspace.path, '../secrets'))).toBe('INVALID')
+			expect(captureScaffoldCode(() => readFileHex(workspace.path, 'AGENTS.md', -1))).toBe(
+				'INVALID',
+			)
+			expect(captureScaffoldCode(() => readFileHex(workspace.path, 'AGENTS.md', 1.5))).toBe(
+				'INVALID',
+			)
+			expect(captureScaffoldCode(() => readFileText(workspace.path, '../secrets'))).toBe('INVALID')
 		} finally {
 			workspace.destroy()
 		}
@@ -1401,7 +1417,7 @@ describe('readSnapshot', () => {
 		try {
 			const file = workspace.write('AGENTS.md', 'hi\n')
 			linkSync(file, join(workspace.path, 'CLAUDE.md'))
-			expect(readErrorCode(() => readSnapshot(workspace.path, ['AGENTS.md']))).toBe('TARGET')
+			expect(captureScaffoldCode(() => readSnapshot(workspace.path, ['AGENTS.md']))).toBe('TARGET')
 		} finally {
 			workspace.destroy()
 		}
@@ -1410,11 +1426,13 @@ describe('readSnapshot', () => {
 	it('throws INVALID for an off-contract target or path list', () => {
 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
-			expect(readErrorCode(() => readSnapshot('', ['AGENTS.md']))).toBe('INVALID')
-			expect(readErrorCode(() => readSnapshot(workspace.path, ['../secrets']))).toBe('INVALID')
-			expect(readErrorCode(() => readSnapshot(workspace.path, ['guides/']))).toBe('INVALID')
+			expect(captureScaffoldCode(() => readSnapshot('', ['AGENTS.md']))).toBe('INVALID')
+			expect(captureScaffoldCode(() => readSnapshot(workspace.path, ['../secrets']))).toBe(
+				'INVALID',
+			)
+			expect(captureScaffoldCode(() => readSnapshot(workspace.path, ['guides/']))).toBe('INVALID')
 			expect(
-				readErrorCode(() =>
+				captureScaffoldCode(() =>
 					readSnapshot(
 						workspace.path,
 						Array.from({ length: MAX_COLLECTION_ITEMS + 1 }, () => 'AGENTS.md'),
@@ -1483,7 +1501,7 @@ describe('readHostManifest', () => {
 				'host/manifest.json',
 				JSON.stringify({ ...manifest, entries: [...manifest.entries, buildManifestEntry()] }),
 			)
-			expect(readErrorCode(() => readHostManifest(host))).toBe('TARGET')
+			expect(captureScaffoldCode(() => readHostManifest(host))).toBe('TARGET')
 		} finally {
 			workspace.destroy()
 		}
@@ -1498,7 +1516,7 @@ describe('readHostManifest', () => {
 				'host/manifest.json',
 				JSON.stringify({ ...manifest, digest: computeDigest('') }),
 			)
-			expect(readErrorCode(() => readHostManifest(host))).toBe('TARGET')
+			expect(captureScaffoldCode(() => readHostManifest(host))).toBe('TARGET')
 		} finally {
 			workspace.destroy()
 		}
@@ -1509,11 +1527,11 @@ describe('readHostManifest', () => {
 		try {
 			const host = createHostRoot(workspace, 'host', buildStagedManifest())
 			workspace.write('host/manifest.json', '{')
-			expect(readErrorCode(() => readHostManifest(host))).toBe('TARGET')
+			expect(captureScaffoldCode(() => readHostManifest(host))).toBe('TARGET')
 			workspace.write('host/manifest.json', '{"entries":[],"roots":[]}')
-			expect(readErrorCode(() => readHostManifest(host))).toBe('TARGET')
+			expect(captureScaffoldCode(() => readHostManifest(host))).toBe('TARGET')
 			workspace.write('host/manifest.json', '[]')
-			expect(readErrorCode(() => readHostManifest(host))).toBe('TARGET')
+			expect(captureScaffoldCode(() => readHostManifest(host))).toBe('TARGET')
 		} finally {
 			workspace.destroy()
 		}
@@ -1524,14 +1542,37 @@ describe('readHostManifest', () => {
 		try {
 			const host = createHostRoot(workspace, 'host', buildStagedManifest())
 			writeFileSync(join(host, 'manifest.json'), Buffer.from([0xff, 0xfe, 0x00]))
-			expect(readErrorCode(() => readHostManifest(host))).toBe('TARGET')
+			expect(captureScaffoldCode(() => readHostManifest(host))).toBe('TARGET')
 		} finally {
 			workspace.destroy()
 		}
 	})
 
 	it('throws INVALID for a root that is not a host path', () => {
-		expect(readErrorCode(() => readHostManifest('project/nul'))).toBe('INVALID')
+		expect(captureScaffoldCode(() => readHostManifest('project/nul'))).toBe('INVALID')
+	})
+})
+
+describe('readSurfaceBaseline', () => {
+	it('reads a recorded collision set and distinguishes absence from corrupt text', () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const path = workspace.path
+			expect(readSurfaceBaseline(path)).toBeUndefined()
+			const manifest = buildStagedManifest({
+				surface: [{ name: 'Shared', owners: ['alpha', 'beta'] }],
+			})
+			workspace.write('host.json', JSON.stringify(manifest))
+			expect(readSurfaceBaseline(path)).toStrictEqual(manifest.surface)
+			workspace.write('host.json', '{')
+			expect(captureScaffoldCode(() => readSurfaceBaseline(path))).toBe('TARGET')
+			workspace.remove('host.json')
+			workspace.ensure('host.json')
+			expect(captureScaffoldCode(() => readSurfaceBaseline(path))).toBe('TARGET')
+			expect(captureScaffoldCode(() => readSurfaceBaseline(''))).toBe('INVALID')
+		} finally {
+			workspace.destroy()
+		}
 	})
 })
 
@@ -1555,20 +1596,22 @@ describe('readHostFloor', () => {
 	it('refuses an unreadable root, manifest, or declared file with TARGET', () => {
 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
-			expect(readErrorCode(() => readHostFloor(join(workspace.path, 'absent')))).toBe('TARGET')
-			expect(readErrorCode(() => readHostFloor(workspace.ensure('raw')))).toBe('TARGET')
+			expect(captureScaffoldCode(() => readHostFloor(join(workspace.path, 'absent')))).toBe(
+				'TARGET',
+			)
+			expect(captureScaffoldCode(() => readHostFloor(workspace.ensure('raw')))).toBe('TARGET')
 
 			const malformed = createHostRoot(workspace, 'malformed', buildVendoredManifest())
 			workspace.write('malformed/manifest.json', '{')
-			expect(readErrorCode(() => readHostFloor(malformed))).toBe('TARGET')
+			expect(captureScaffoldCode(() => readHostFloor(malformed))).toBe('TARGET')
 
 			const missing = createHostRoot(workspace, 'missing', buildVendoredManifest())
 			rmSync(join(missing, 'AGENTS.md'))
-			expect(readErrorCode(() => readHostFloor(missing))).toBe('TARGET')
+			expect(captureScaffoldCode(() => readHostFloor(missing))).toBe('TARGET')
 
 			const changed = createHostRoot(workspace, 'changed', buildVendoredManifest())
 			workspace.write('changed/AGENTS.md', 'changed\n')
-			expect(readErrorCode(() => readHostFloor(changed))).toBe('TARGET')
+			expect(captureScaffoldCode(() => readHostFloor(changed))).toBe('TARGET')
 		} finally {
 			workspace.destroy()
 		}
@@ -1706,7 +1749,11 @@ describe('filesToHost', () => {
 		// The emitted membership digests itself, so a reader can verify the value
 		// against the same law a staged root is verified against.
 		expect(assembled?.manifest.digest).toBe(
-			computeManifestDigest(assembled?.manifest.entries ?? [], assembled?.manifest.roots ?? []),
+			computeManifestDigest(
+				assembled?.manifest.entries ?? [],
+				assembled?.manifest.roots ?? [],
+				assembled?.manifest.surface ?? [],
+			),
 		)
 	})
 
@@ -1875,15 +1922,15 @@ describe('stageBytes', () => {
 				]),
 			)
 			const root = workspace.ensure('filled')
-			expect(readErrorCode(() => stageBytes({ manifest, bytes }, root, ['smuggled.md']))).toBe(
-				'TARGET',
-			)
+			expect(
+				captureScaffoldCode(() => stageBytes({ manifest, bytes }, root, ['smuggled.md'])),
+			).toBe('TARGET')
 			const rest = Object.fromEntries(
 				Object.entries(bytes).filter(([destination]) => destination !== 'AGENTS.md'),
 			)
-			expect(readErrorCode(() => stageBytes({ manifest, bytes: rest }, root, ['AGENTS.md']))).toBe(
-				'TARGET',
-			)
+			expect(
+				captureScaffoldCode(() => stageBytes({ manifest, bytes: rest }, root, ['AGENTS.md'])),
+			).toBe('TARGET')
 			expect(listFiles(root)).toEqual([])
 		} finally {
 			workspace.destroy()
@@ -1905,7 +1952,7 @@ describe('stageBytes', () => {
 			// the refusal below is a digest verdict rather than a staging failure.
 			expect(stageBytes({ manifest, bytes }, root, ['AGENTS.md'])).toEqual([manifest.entries[0]])
 			expect(
-				readErrorCode(() =>
+				captureScaffoldCode(() =>
 					stageBytes(
 						{ manifest, bytes: { ...bytes, 'AGENTS.md': contentToHex('AGENTS.md \n') } },
 						workspace.ensure('other'),
@@ -1914,7 +1961,7 @@ describe('stageBytes', () => {
 				),
 			).toBe('TARGET')
 			expect(
-				readErrorCode(() => stageBytes({ manifest, bytes }, 'project/nul', ['AGENTS.md'])),
+				captureScaffoldCode(() => stageBytes({ manifest, bytes }, 'project/nul', ['AGENTS.md'])),
 			).toBe('INVALID')
 		} finally {
 			workspace.destroy()
@@ -1922,7 +1969,433 @@ describe('stageBytes', () => {
 	})
 })
 
+describe('readSurfaceCollisions', () => {
+	it('refuses a missing guide module with the scaffold failure vocabulary', () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		const hooks = registerHooks({ resolve: refuseGuideResolution })
+		try {
+			expect(captureError(() => readSurfaceCollisions(workspace.path))).toMatchObject({
+				code: 'TARGET',
+				message: expect.stringContaining('@orkestrel/guide'),
+			})
+		} finally {
+			hooks.deregister()
+			workspace.destroy()
+		}
+	})
+	it('reads distinct owners from immediate guide name columns in sorted order', () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX, files: STAGING_SURFACE_FILES })
+		try {
+			workspace.write('checkout/guides/README.md', STAGING_SURFACE_TEXT)
+			workspace.write('checkout/guides/nested/gamma.md', STAGING_SURFACE_TEXT)
+			workspace.write('checkout/guides/gamma.txt', STAGING_SURFACE_TEXT)
+			expect([...readSurfaceCollisions(join(workspace.path, 'checkout/guides'))]).toStrictEqual([
+				['Another', ['alpha', 'beta']],
+				['Shared', ['alpha', 'beta']],
+			])
+			workspace.remove('checkout/guides/beta.md')
+			expect([...readSurfaceCollisions(join(workspace.path, 'checkout/guides'))]).toStrictEqual([])
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('refuses an absent guide directory and accepts a physical empty directory', () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			expect(captureScaffoldCode(() => readSurfaceCollisions(join(workspace.path, 'absent')))).toBe(
+				'TARGET',
+			)
+			expect([...readSurfaceCollisions(workspace.ensure('guides'))]).toStrictEqual([])
+		} finally {
+			workspace.destroy()
+		}
+	})
+})
+
 describe('stageHost', () => {
+	it('refuses a stage with no inventory unless establishment is asked for', () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const checkout = createCheckout(workspace, 'checkout')
+			workspace.remove('checkout/host.json')
+			const host = join(workspace.path, 'host')
+			expect(captureError(() => stageHost(checkout, host))).toMatchObject({
+				code: 'TARGET',
+				message: expect.stringContaining(join(checkout, 'host.json')),
+			})
+			expect(() => stageHost(checkout, host, { establish: false })).toThrow('establish')
+			expect(workspace.has('host')).toBe(false)
+		} finally {
+			workspace.destroy()
+		}
+	})
+	it('refuses a stage whose guides add a collision the inventory lacks', () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX, files: STAGING_SURFACE_FILES })
+		try {
+			const checkout = createCheckout(workspace, 'checkout')
+			workspace.write('checkout/guides/gamma.md', STAGING_SURFACE_TEXT)
+			workspace.write(
+				'checkout/host.json',
+				JSON.stringify(
+					buildStagedManifest({
+						surface: [
+							{ name: 'Another', owners: ['alpha', 'beta'] },
+							{ name: 'Shared', owners: ['alpha', 'beta'] },
+						],
+					}),
+				),
+			)
+			const report = createRecorder<readonly [message: string]>()
+			const error = captureError(() =>
+				stageHost(checkout, join(workspace.path, 'host'), { report: report.handler }),
+			)
+			expect(error).toMatchObject({
+				code: 'TARGET',
+				message:
+					'Staged Surface collisions differ from the inventory: Another staged (alpha, beta, gamma), recorded (alpha, beta); Shared staged (alpha, beta, gamma), recorded (alpha, beta)',
+			})
+			expect(workspace.has('host/manifest.json')).toBe(false)
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('stages when a recorded collision loses an owner', () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX, files: STAGING_SURFACE_FILES })
+		try {
+			const checkout = createCheckout(workspace, 'checkout')
+			workspace.write(
+				'checkout/host.json',
+				JSON.stringify(
+					buildStagedManifest({
+						surface: [
+							{ name: 'Another', owners: ['alpha', 'beta', 'gamma'] },
+							{ name: 'Shared', owners: ['alpha', 'beta', 'gamma'] },
+						],
+					}),
+				),
+			)
+			const report = createRecorder<readonly [message: string]>()
+			const host = join(workspace.path, 'host')
+			const entries = stageHost(checkout, host, { report: report.handler })
+			expect(readHostFloor(host).manifest.entries).toStrictEqual(entries)
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('refuses when a recorded collision gains an owner', () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX, files: STAGING_SURFACE_FILES })
+		try {
+			const checkout = createCheckout(workspace, 'checkout')
+			workspace.write(
+				'checkout/host.json',
+				JSON.stringify(
+					buildStagedManifest({
+						surface: [
+							{ name: 'Another', owners: ['alpha', 'beta'] },
+							{ name: 'Shared', owners: ['alpha', 'gamma'] },
+						],
+					}),
+				),
+			)
+			const error = captureError(() => stageHost(checkout, join(workspace.path, 'host')))
+			expect(error).toMatchObject({
+				code: 'TARGET',
+				message:
+					'Staged Surface collisions differ from the inventory: Shared staged (alpha, beta), recorded (alpha, gamma)',
+			})
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('stages when the collision set matches the inventory', () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX, files: STAGING_SURFACE_FILES })
+		try {
+			const checkout = createCheckout(workspace, 'checkout')
+			workspace.write('checkout/guides/README.md', STAGING_SURFACE_TEXT)
+			workspace.write('checkout/guides/nested/gamma.md', STAGING_SURFACE_TEXT)
+			workspace.write(
+				'checkout/host.json',
+				JSON.stringify(
+					buildStagedManifest({
+						surface: [
+							{ name: 'Another', owners: ['alpha', 'beta'] },
+							{ name: 'Shared', owners: ['alpha', 'beta'] },
+						],
+					}),
+				),
+			)
+			const report = createRecorder<readonly [message: string]>()
+			const host = join(workspace.path, 'host')
+			const entries = stageHost(checkout, host, { report: report.handler })
+			expect(readHostFloor(host).manifest.entries).toStrictEqual(entries)
+			expect(report.calls).toStrictEqual([
+				[`Inventory Surface baseline: ${join(checkout, 'host.json')}`],
+			])
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('stages when a collision the inventory carried is gone', () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX, files: STAGING_SURFACE_FILES })
+		try {
+			const checkout = createCheckout(workspace, 'checkout')
+			workspace.remove('checkout/guides/beta.md')
+			workspace.write(
+				'checkout/host.json',
+				JSON.stringify(
+					buildStagedManifest({
+						surface: [
+							{ name: 'Another', owners: ['alpha', 'beta'] },
+							{ name: 'Shared', owners: ['alpha', 'beta'] },
+						],
+					}),
+				),
+			)
+			const report = createRecorder<readonly [message: string]>()
+			const host = join(workspace.path, 'host')
+			const entries = stageHost(checkout, host, { report: report.handler })
+			expect(readHostFloor(host).manifest.entries).toStrictEqual(entries)
+			expect(requireValue(report.calls[0])[0]).toBe(
+				`Inventory Surface baseline: ${join(checkout, 'host.json')}`,
+			)
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('establishes the baseline when establishment is asked for', () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX, files: STAGING_SURFACE_FILES })
+		try {
+			const checkout = createCheckout(workspace, 'checkout')
+			workspace.remove('checkout/host.json')
+			const report = createRecorder<readonly [message: string]>()
+			const host = join(workspace.path, 'host')
+			expect(() => stageHost(checkout, host)).toThrow('establish')
+			const entries = stageHost(checkout, host, { establish: true, report: report.handler })
+			expect(readHostFloor(host).manifest.entries).toStrictEqual(entries)
+			expect(report.calls).toStrictEqual([
+				[
+					`Inventory Surface baseline absent at ${join(checkout, 'host.json')}; this stage establishes the baseline`,
+				],
+			])
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('uses the selected checkout-relative inventory and refuses an escaping path', () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX, files: STAGING_SURFACE_FILES })
+		try {
+			const checkout = createCheckout(workspace, 'checkout')
+			workspace.write('checkout/baseline.json', JSON.stringify(buildStagedManifest()))
+			expect(() =>
+				stageHost(checkout, join(workspace.path, 'host'), { inventory: 'baseline.json' }),
+			).toThrow('Staged Surface collisions differ from the inventory')
+			expect(
+				captureScaffoldCode(() =>
+					stageHost(checkout, join(workspace.path, 'escaped'), { inventory: '../baseline.json' }),
+				),
+			).toBe('INVALID')
+			expect(workspace.has('escaped')).toBe(false)
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('refuses collisions introduced over a collision-free inventory', () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX, files: STAGING_SURFACE_FILES })
+		try {
+			const checkout = createCheckout(workspace, 'checkout')
+			workspace.write('checkout/host.json', JSON.stringify(buildStagedManifest({ surface: [] })))
+			expect(() => stageHost(checkout, join(workspace.path, 'host'))).toThrow(
+				'Another staged (alpha, beta), recorded (absent); Shared staged (alpha, beta), recorded (absent)',
+			)
+			expect(workspace.has('host/manifest.json')).toBe(false)
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('compares owner sets by subset rather than collision names or owner totals', () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX, files: STAGING_SURFACE_FILES })
+		try {
+			const checkout = createCheckout(workspace, 'checkout')
+			workspace.remove('checkout/guides/beta.md')
+			workspace.write('checkout/guides/gamma.md', STAGING_SURFACE_TEXT)
+			workspace.write(
+				'checkout/host.json',
+				JSON.stringify(
+					buildStagedManifest({
+						surface: [
+							{ name: 'Another', owners: ['alpha', 'beta'] },
+							{ name: 'Shared', owners: ['alpha', 'beta'] },
+						],
+					}),
+				),
+			)
+			expect(() => stageHost(checkout, join(workspace.path, 'replaced'))).toThrow(
+				'Another staged (alpha, gamma), recorded (alpha, beta); Shared staged (alpha, gamma), recorded (alpha, beta)',
+			)
+			workspace.write(
+				'checkout/host.json',
+				JSON.stringify(
+					buildStagedManifest({
+						surface: [
+							{ name: 'Another', owners: ['alpha', 'beta', 'gamma'] },
+							{ name: 'Shared', owners: ['alpha', 'beta', 'gamma'] },
+						],
+					}),
+				),
+			)
+			const host = join(workspace.path, 'widened')
+			const entries = stageHost(checkout, host)
+			expect(readHostFloor(host).manifest.entries).toStrictEqual(entries)
+			expect(workspace.has('replaced/manifest.json')).toBe(false)
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('refuses an inventory without a recorded surface', () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX, files: STAGING_SURFACE_FILES })
+		try {
+			const checkout = createCheckout(workspace, 'checkout')
+			workspace.write(
+				'checkout/host.json',
+				JSON.stringify({ ...buildStagedManifest(), surface: undefined }),
+			)
+			const report = createRecorder<readonly [message: string]>()
+			expect(() =>
+				stageHost(checkout, join(workspace.path, 'host'), { report: report.handler }),
+			).toThrow('Host manifest is malformed')
+			expect(report.calls).toStrictEqual([])
+			expect(workspace.has('host')).toBe(false)
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('refuses an inventory whose surface is malformed', () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX, files: STAGING_SURFACE_FILES })
+		try {
+			const checkout = createCheckout(workspace, 'checkout')
+			workspace.write(
+				'checkout/host.json',
+				JSON.stringify({
+					...buildStagedManifest(),
+					surface: [{ name: 'Shared', owners: ['alpha'] }],
+				}),
+			)
+			expect(captureScaffoldCode(() => stageHost(checkout, join(workspace.path, 'host')))).toBe(
+				'TARGET',
+			)
+			expect(workspace.has('host')).toBe(false)
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('records the staged collision set in the manifest', () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX, files: STAGING_SURFACE_FILES })
+		try {
+			const checkout = createCheckout(workspace, 'checkout')
+			const host = join(workspace.path, 'host')
+			stageHost(checkout, host)
+			expect(requireValue(readHostManifest(host)).surface).toStrictEqual([
+				{ name: 'Another', owners: ['alpha', 'beta'] },
+				{ name: 'Shared', owners: ['alpha', 'beta'] },
+			])
+			expect(
+				stageInventory(checkout, join(workspace.path, 'inventory.json')).surface,
+			).toStrictEqual([
+				{ name: 'Another', owners: ['alpha', 'beta'] },
+				{ name: 'Shared', owners: ['alpha', 'beta'] },
+			])
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('refuses a manifest whose surface moved without its digest', () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const manifest = buildStagedManifest({ surface: [] })
+			const host = createHostRoot(workspace, 'host', manifest)
+			expect(readHostManifest(host)).toStrictEqual(manifest)
+			workspace.write(
+				'host/manifest.json',
+				JSON.stringify({ ...manifest, surface: [{ name: 'Shared', owners: ['alpha', 'beta'] }] }),
+			)
+			expect(captureScaffoldCode(() => readHostManifest(host))).toBe('TARGET')
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('stages every reference guide with verified bytes and installed floor membership', () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const checkout = createCheckout(workspace, 'checkout')
+			workspace.write('checkout/guides/router.md', '# Router\n')
+			workspace.write('checkout/guides/README.md', '# Guide index\n')
+			const host = join(workspace.path, 'host')
+			const entries = stageHost(checkout, host)
+			const floor = readHostFloor(host)
+			for (const name of listFiles(join(checkout, 'guides'))) {
+				const path = `guides/${name}`
+				expect(entries).toContainEqual({
+					storage: path,
+					destination: path,
+					executable: false,
+					digest: computeFileDigest(join(checkout, path)),
+				})
+				expect(floor.bytes[path]).toBe(readFileHex(checkout, path))
+			}
+			expect(floor.manifest.roots).toContain('guides')
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('refuses a catalog package without its staged guide and accepts the restored guide', () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const checkout = createCheckout(workspace, 'checkout')
+			workspace.write(`checkout/${CATALOG_AGENT_PATH}`, CATALOG_AGENT_ROWS_TEXT)
+			workspace.write('checkout/guides/contract.md', '# Contract\n')
+			workspace.write('checkout/guides/emitter.md', '# Emitter\n')
+			workspace.remove('checkout/guides/emitter.md')
+			const host = join(workspace.path, 'host')
+			expect(() => stageHost(checkout, host)).toThrow('@orkestrel/emitter')
+			expect(workspace.has('host/manifest.json')).toBe(false)
+			workspace.write('checkout/guides/emitter.md', '# Emitter\n')
+			expect(stageHost(checkout, host).map(({ destination }) => destination)).toContain(
+				'guides/emitter.md',
+			)
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('refuses reference storage collisions before publishing a manifest', () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const checkout = createCheckout(workspace, 'checkout')
+			workspace.write('checkout/guides/router.md', '# Router\n')
+			workspace.write('checkout/guides/.router.md', '# Other\n')
+			expect(() => stageHost(checkout, join(workspace.path, 'host'))).toThrow(
+				'storage name guides/router.md',
+			)
+			expect(workspace.has('host/manifest.json')).toBe(false)
+		} finally {
+			workspace.destroy()
+		}
+	})
 	it('declares the digest of the bytes staged after the source changes', async () => {
 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
@@ -2105,7 +2578,7 @@ parentPort.postMessage('ready')`,
 			const host = join(workspace.path, 'host')
 			workspace.remove('checkout/LICENSE')
 			workspace.remove('checkout/.cursor/rules')
-			expect(readErrorCode(() => stageHost(checkout, host))).toBe('TARGET')
+			expect(captureScaffoldCode(() => stageHost(checkout, host))).toBe('TARGET')
 			expect(isPhysicalDirectory(host)).toBe(false)
 			// The control: the same checkout stages cleanly after both paths are back,
 			// so the refusal is the missing membership rather than the fixture.
@@ -2123,7 +2596,7 @@ parentPort.postMessage('ready')`,
 			const checkout = createCheckout(workspace, 'checkout')
 			const host = workspace.ensure('host')
 			workspace.write('host/existing.md', 'existing\n')
-			expect(readErrorCode(() => stageHost(checkout, host))).toBe('TARGET')
+			expect(captureScaffoldCode(() => stageHost(checkout, host))).toBe('TARGET')
 			expect(listFiles(host)).toEqual(['existing.md'])
 		} finally {
 			workspace.destroy()
@@ -2135,10 +2608,12 @@ parentPort.postMessage('ready')`,
 		try {
 			const checkout = createCheckout(workspace, 'checkout')
 			const host = join(workspace.path, 'host')
-			expect(readErrorCode(() => stageHost('project/nul', host))).toBe('INVALID')
-			expect(readErrorCode(() => stageHost(checkout, 'project/nul'))).toBe('INVALID')
-			expect(readErrorCode(() => stageHost(join(workspace.path, 'absent'), host))).toBe('TARGET')
-			expect(readErrorCode(() => stageHost(workspace.write('file.md', 'hi\n'), host))).toBe(
+			expect(captureScaffoldCode(() => stageHost('project/nul', host))).toBe('INVALID')
+			expect(captureScaffoldCode(() => stageHost(checkout, 'project/nul'))).toBe('INVALID')
+			expect(captureScaffoldCode(() => stageHost(join(workspace.path, 'absent'), host))).toBe(
+				'TARGET',
+			)
+			expect(captureScaffoldCode(() => stageHost(workspace.write('file.md', 'hi\n'), host))).toBe(
 				'TARGET',
 			)
 		} finally {
@@ -2175,7 +2650,9 @@ parentPort.postMessage('ready')`,
 			workspace.write('checkout/.claude/rules/names.md', 'plain\n')
 			workspace.write('checkout/.claude/rules/.names.md', 'dotted\n')
 			expect(pathToStorage('.claude/rules/names.md')).toBe(pathToStorage('.claude/rules/.names.md'))
-			expect(readErrorCode(() => stageHost(checkout, join(workspace.path, 'host')))).toBe('TARGET')
+			expect(captureScaffoldCode(() => stageHost(checkout, join(workspace.path, 'host')))).toBe(
+				'TARGET',
+			)
 		} finally {
 			workspace.destroy()
 		}
@@ -2188,11 +2665,13 @@ parentPort.postMessage('ready')`,
 			const checkout = createCheckout(workspace, 'checkout')
 			const shared = workspace.write('checkout/.claude/rules/shared.md', 'shared\n')
 			linkSync(shared, join(workspace.path, 'checkout', '.claude', 'rules', 'twin.md'))
-			expect(readErrorCode(() => stageHost(checkout, join(workspace.path, 'host')))).toBe('TARGET')
+			expect(captureScaffoldCode(() => stageHost(checkout, join(workspace.path, 'host')))).toBe(
+				'TARGET',
+			)
 			workspace.remove('checkout/.claude/rules/shared.md')
 			workspace.remove('checkout/.claude/rules/twin.md')
 			workspace.link('checkout/.claude/rules/escape', outside.path)
-			expect(readErrorCode(() => stageHost(checkout, join(workspace.path, 'host2')))).toBe(
+			expect(captureScaffoldCode(() => stageHost(checkout, join(workspace.path, 'host2')))).toBe(
 				'INVALID',
 			)
 		} finally {
@@ -2251,7 +2730,7 @@ parentPort.postMessage('ready')`,
 				'host/manifest.json',
 				JSON.stringify({ ...manifest, entries: [...entries, buildManifestEntry()] }),
 			)
-			expect(readErrorCode(() => readHostManifest(host))).toBe('TARGET')
+			expect(captureScaffoldCode(() => readHostManifest(host))).toBe('TARGET')
 		} finally {
 			workspace.destroy()
 		}
@@ -2278,7 +2757,7 @@ describe('stageInventory', () => {
 			const checkout = createCheckout(workspace, 'checkout')
 			const path = workspace.write('host.json', 'stale\n')
 			expect(stageInventory(checkout, path)).toEqual(buildCheckoutManifest())
-			expect(readErrorCode(() => stageInventory(checkout, 'project/nul'))).toBe('INVALID')
+			expect(captureScaffoldCode(() => stageInventory(checkout, 'project/nul'))).toBe('INVALID')
 		} finally {
 			workspace.destroy()
 		}

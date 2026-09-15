@@ -31,7 +31,7 @@ import {
 	SHOWCASE_DEV_DEPENDENCIES,
 	SOURCE_BROWSER_DEV_DEPENDENCIES,
 } from '@src/core'
-import { readFileHex } from '@src/server'
+import { readFileHex, readHostFloor, stageHost } from '@src/server'
 import { requireValue } from '@orkestrel/test'
 import {
 	EXIT_CLEAN,
@@ -53,6 +53,7 @@ import {
 	buildTargetManifest as buildTargetManifestFixture,
 	commitFiles,
 	createCatalogFleet,
+	createCheckout,
 	createFleet,
 	createHostRoot,
 	createRepository,
@@ -969,14 +970,16 @@ describe('CLI upstream baselines', () => {
 			const result: OverwriteResult = JSON.parse(sink.output[0] ?? '')
 			expect(result.provenance).toStrictEqual({ versions: 'floor', host: 'floor' })
 			expect(result.note ?? '').toContain("USAGE: 'catalog' does not take --offline")
-			expect(result.entries).toStrictEqual([])
+			expect(result.membership).toBeUndefined()
+			expect(result).not.toHaveProperty('entries')
+			expect(result).not.toHaveProperty('dropped')
 			expect(result.mirrors).toStrictEqual([])
 		} finally {
 			workspace.destroy()
 		}
 	})
 
-	it('refuses a dark catalog membership endpoint without writing the target', async () => {
+	it('preserves the catalog table during a guide-only refresh after membership refusal', async () => {
 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		const dark = await createUpstreamServer({})
 		const base = dark.base
@@ -995,7 +998,10 @@ describe('CLI upstream baselines', () => {
 					'--json',
 				]),
 			).toBe(EXIT_DRIFT)
-			expect(JSON.parse(sink.output[0] ?? '')).toHaveProperty('error.code', 'FETCH')
+			const result: CatalogResult = JSON.parse(sink.output[0] ?? '')
+			expect(result.note).toContain('guide-only')
+			expect(result.provenance).toStrictEqual({ guides: 'floor' })
+			expect(result.membership).toBeUndefined()
 			expect(readFileHex(fleet.target, CATALOG_AGENT_PATH)).toBe(before)
 		} finally {
 			workspace.destroy()
@@ -1004,6 +1010,75 @@ describe('CLI upstream baselines', () => {
 })
 
 describe('CLI audit', () => {
+	it('keeps guide difference questions non-blocking and excludes the target guide during audit', async () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const fleet = createFleet(workspace)
+			const repaired = createSink()
+			expect(
+				await new CLI(repaired.options).execute([
+					'repair',
+					'--offline',
+					'--from',
+					fleet.host,
+					'--target',
+					fleet.target,
+				]),
+			).toBe(EXIT_CLEAN)
+			workspace.write('target/guides/emitter.md', '# Different emitter\n')
+			workspace.write('target/guides/README.md', '# Authored index\n')
+			const sink = createSink()
+			expect(
+				await new CLI(sink.options).execute([
+					'audit',
+					'--offline',
+					'--groups',
+					'guides',
+					'--from',
+					fleet.host,
+					'--target',
+					fleet.target,
+					'--json',
+				]),
+			).toBe(EXIT_CLEAN)
+			const result: AuditResult = JSON.parse(sink.output[0] ?? '')
+			expect(result.questions).toStrictEqual([
+				{
+					field: 'guides',
+					message:
+						'The mirror at guides/emitter.md differs from the hosted guide. Run catalog to refresh it.',
+					blocking: false,
+				},
+			])
+			const manifest: Record<string, unknown> = JSON.parse(
+				requireValue(workspace.read('target/package.json')),
+			)
+			workspace.write(
+				'target/package.json',
+				JSON.stringify({ ...manifest, name: '@orkestrel/router' }),
+			)
+			workspace.write('target/guides/router.md', '# Authored router\n')
+			const own = createSink()
+			expect(
+				await new CLI(own.options).execute([
+					'audit',
+					'--offline',
+					'--groups',
+					'guides',
+					'--from',
+					fleet.host,
+					'--target',
+					fleet.target,
+					'--json',
+				]),
+			).toBe(EXIT_CLEAN)
+			const excluded: AuditResult = JSON.parse(own.output[0] ?? '')
+			expect(excluded.questions).toStrictEqual(result.questions)
+		} finally {
+			workspace.destroy()
+		}
+	})
+
 	it('reports a stale planned foreign floor as a non-blocking dependency question', async () => {
 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
@@ -4773,6 +4848,9 @@ describe('CLI overwrite', () => {
 			expect(code).toBe(EXIT_DRIFT)
 			const result: OverwriteResult = JSON.parse(sink.output[0] ?? '')
 			expect(result.note ?? '').toContain('The catalog step did not complete')
+			expect(result.membership).toBeUndefined()
+			expect(result).not.toHaveProperty('entries')
+			expect(result).not.toHaveProperty('dropped')
 			// The destructive half is the one that already ran, so what it wrote
 			// stays written even though the run ends non-zero.
 			expect(workspace.read('target/AGENTS.md')).toBe(ARTIFACT_TEMPLATES.docs.agents)
@@ -4813,6 +4891,17 @@ describe('CLI overwrite', () => {
 			const result: OverwriteResult = JSON.parse(sink.output[0] ?? '')
 			expect(result.note ?? '').toContain('The versions step used the distributed floor')
 			expect(result.provenance).toStrictEqual({ versions: 'floor', guides: 'live' })
+			expect(
+				requireValue(result.membership).releases.every((release) =>
+					release.name.startsWith('@orkestrel/'),
+				),
+			).toBe(true)
+			expect(requireValue(result.membership).releases).toContainEqual({
+				name: '@orkestrel/emitter',
+				range: '^0.0.5',
+				lookup: 'found',
+				latest: '0.0.5',
+			})
 			expect(result.releases).toContainEqual({
 				name: 'vite',
 				range: '~8.2.0',
@@ -4829,6 +4918,127 @@ describe('CLI overwrite', () => {
 })
 
 describe('CLI catalog', () => {
+	it('writes a missing guide from the hosted floor after a guide 404 and reports drift', async () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		const server = await createUpstreamServer({
+			...FLEET_RELEASE_REPLIES,
+			[FLEET_UPSTREAM_PATHS.organization]: { status: 200, body: buildOrganization(FLEET_NAMES) },
+		})
+		try {
+			const fleet = createCatalogFleet(workspace)
+			const sink = createSink()
+			const code = await new CLI(buildCLIOptions(sink, server.base)).execute([
+				'catalog',
+				'--from',
+				fleet.host,
+				'--target',
+				fleet.target,
+				'--json',
+			])
+			const result: CatalogResult = JSON.parse(sink.output[0] ?? '')
+			expect(code).toBe(EXIT_DRIFT)
+			expect(result.provenance).toStrictEqual({ versions: 'live', guides: 'floor' })
+			expect(result.written).toContain('guides/emitter.md')
+			expect(readFileHex(fleet.target, 'guides/emitter.md')).toBe(
+				readFileHex(fleet.host, 'guides/emitter.md'),
+			)
+			expect(result.mirrors).toContainEqual(
+				expect.objectContaining({
+					path: 'guides/emitter.md',
+					lookup: 'missing',
+					note: expect.any(String),
+				}),
+			)
+		} finally {
+			await server.destroy()
+			workspace.destroy()
+		}
+	})
+
+	it('writes declared guides from the hosted floor after network refusal without catalog or version writes', async () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		const server = await createUpstreamServer({})
+		await server.destroy()
+		try {
+			const fleet = createCatalogFleet(workspace)
+			const manifest = workspace.read('target/package.json')
+			const catalog = workspace.read(`target/${CATALOG_AGENT_PATH}`)
+			const sink = createSink()
+			const code = await new CLI(buildCLIOptions(sink, server.base)).execute([
+				'catalog',
+				'--from',
+				fleet.host,
+				'--target',
+				fleet.target,
+				'--json',
+			])
+			const result: CatalogResult = JSON.parse(sink.output[0] ?? '')
+			expect(code).toBe(EXIT_DRIFT)
+			expect(result.provenance).toStrictEqual({ guides: 'floor' })
+			expect(result.note).toContain('guide-only')
+			expect(result.membership).toBeUndefined()
+			expect(result.mirrors.map((mirror) => mirror.name)).toStrictEqual(FLEET_NAMES)
+			expect(result.written).toContain('guides/emitter.md')
+			expect(readFileHex(fleet.target, 'guides/emitter.md')).toBe(
+				readFileHex(fleet.host, 'guides/emitter.md'),
+			)
+			expect(workspace.read('target/package.json')).toBe(manifest)
+			expect(workspace.read(`target/${CATALOG_AGENT_PATH}`)).toBe(catalog)
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('uses hosted catalog membership for all during a registry outage and excludes the target guide', async () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		const server = await createUpstreamServer({})
+		try {
+			const checkout = createCheckout(workspace, 'checkout')
+			const host = workspace.ensure('installed')
+			stageHost(checkout, host)
+			const target = workspace.ensure('target')
+			workspace.write(
+				'target/package.json',
+				JSON.stringify({
+					name: '@orkestrel/contract',
+					dependencies: { '@orkestrel/guide': '^0.0.1' },
+				}),
+			)
+			workspace.write('target/guides/contract.md', '# Authored contract\n')
+			const manifest = workspace.read('target/package.json')
+			const sink = createSink()
+			const code = await new CLI(buildCLIOptions(sink, server.base)).execute([
+				'catalog',
+				'--all',
+				'--from',
+				host,
+				'--target',
+				target,
+				'--json',
+			])
+			const result: CatalogResult = JSON.parse(sink.output[0] ?? '')
+			expect(code).toBe(EXIT_DRIFT)
+			expect(result.mirrors.map((mirror) => mirror.name)).toStrictEqual(['@orkestrel/emitter'])
+			expect(result.provenance).toStrictEqual({ guides: 'floor' })
+			expect(result.note).toContain('guide-only')
+			expect(result.membership).toBeUndefined()
+			expect(result.written).toStrictEqual(['guides/emitter.md'])
+			expect(readFileHex(target, 'guides/emitter.md')).toBe(
+				readHostFloor(host).bytes['guides/emitter.md'],
+			)
+			expect(workspace.read('target/guides/contract.md')).toBe('# Authored contract\n')
+			expect(workspace.read('target/package.json')).toBe(manifest)
+			expect(workspace.has(`target/${CATALOG_AGENT_PATH}`)).toBe(false)
+			expect(server.paths).toStrictEqual([
+				FLEET_UPSTREAM_PATHS.organization,
+				FLEET_UPSTREAM_PATHS.mirrors.emitter,
+			])
+		} finally {
+			await server.destroy()
+			workspace.destroy()
+		}
+	})
+
 	it('catalogs a freshly scaffolded workspace through the markers the host vendors', async () => {
 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		const server = await createUpstreamServer({
@@ -4939,7 +5149,7 @@ describe('CLI catalog', () => {
 			expect(code).toBe(EXIT_CLEAN)
 			const result: CatalogResult = JSON.parse(sink.output[0] ?? '')
 			expect(result.provenance).toStrictEqual({ versions: 'live', guides: 'live' })
-			expect(result.entries).toStrictEqual([
+			expect(requireValue(result.membership).entries).toStrictEqual([
 				{
 					name: '@orkestrel/emitter',
 					lookup: 'found',
@@ -4977,7 +5187,16 @@ describe('CLI catalog', () => {
 				'guides/scaffold.md',
 				'guides/test.md',
 			])
-			expect(result.dropped).toStrictEqual([])
+			expect(requireValue(result.membership).dropped).toStrictEqual([])
+			expect(requireValue(result.membership).releases).toContainEqual({
+				name: '@orkestrel/emitter',
+				range: '^0.0.5',
+				lookup: 'found',
+				latest: '0.0.6',
+			})
+			expect(result).not.toHaveProperty('entries')
+			expect(result).not.toHaveProperty('dropped')
+			expect(result).not.toHaveProperty('releases')
 			expect(workspace.read('target/guides/emitter.md')).toBe('# Emitter\n')
 			expect(workspace.read('target/guides/scaffold.md')).toBe('# Scaffold\n')
 			const agent = workspace.read(`target/${CATALOG_AGENT_PATH}`)
@@ -5034,7 +5253,7 @@ describe('CLI catalog', () => {
 			])
 			expect(code).toBe(EXIT_CLEAN)
 			const result: CatalogResult = JSON.parse(sink.output[0] ?? '')
-			expect(result.entries.map((entry) => entry.name)).toStrictEqual([
+			expect(requireValue(result.membership).entries.map((entry) => entry.name)).toStrictEqual([
 				'@orkestrel/emitter',
 				'@orkestrel/guide',
 				'@orkestrel/probe',
@@ -5151,7 +5370,7 @@ describe('CLI catalog', () => {
 		}
 	})
 
-	it('addresses only the endpoint it was given, so an unscripted fixture fails the run', async () => {
+	it('addresses only the endpoint it was given and reports a guide-only run when every request is refused', async () => {
 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		const server = await createUpstreamServer({})
 		try {
@@ -5166,12 +5385,19 @@ describe('CLI catalog', () => {
 				'--json',
 			])
 			expect(code).toBe(EXIT_DRIFT)
-			expect(JSON.parse(sink.output[0] ?? '')).toHaveProperty('error.code', 'FETCH')
+			const result: CatalogResult = JSON.parse(sink.output[0] ?? '')
+			expect(result.note).toContain('guide-only')
+			expect(result.membership).toBeUndefined()
 			// The control for every catalog claim above, and for the whole seam: the
 			// run addressed the fixture and nothing else, so an option that failed to
 			// reach the reader would have been answered by the published registry
 			// instead and this list would be empty.
-			expect(server.paths).toStrictEqual([FLEET_UPSTREAM_PATHS.organization])
+			expect(server.paths).toStrictEqual([
+				FLEET_UPSTREAM_PATHS.organization,
+				...Object.values(FLEET_UPSTREAM_PATHS.mirrors).filter(
+					(path) => path !== FLEET_UPSTREAM_PATHS.mirrors.router,
+				),
+			])
 		} finally {
 			await server.destroy()
 			workspace.destroy()

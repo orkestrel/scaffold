@@ -41,6 +41,15 @@ _Name each applicable rule file, the dispatch-named skill and its required refer
 governing guide or spec. Write `none` in a slot that is genuinely empty rather than dropping the
 slot._
 
+**Installed primitives.** ORKESTREL_PACKAGES_WITH_SURFACE_POINTERS.
+
+_Name every installed `@orkestrel/*` package whose exports the unit's owned files may overlap —
+`@orkestrel/test` and `@orkestrel/contract` for any unit that owns a `tests/**` or `src/**` file —
+with the pointer the unit reads first: the package's guide `## Surface` section in the scaffold
+checkout, or its declaration under `node_modules`. State that a helper, guard, wait, recorder, or
+deferred whose job an installed export does is a defect, and give the audit's checker the
+export-name probe over the diff._
+
 **Host.** SHELL, WORKING_PATH, NETWORK_AND_SANDBOX_LIMITS.
 
 _Name the shell, the working path, and the sandbox, network, and approval limits the unit's commands

@@ -565,7 +565,9 @@ export class Upstream implements UpstreamInterface {
 				note: `the vendored inventory at ${url} is not a readable manifest`,
 			}
 		}
-		if (manifest.digest !== computeManifestDigest(manifest.entries, manifest.roots)) {
+		if (
+			manifest.digest !== computeManifestDigest(manifest.entries, manifest.roots, manifest.surface)
+		) {
 			return {
 				...empty,
 				lookup: 'failed',

@@ -172,7 +172,7 @@ A test that spawns a process, packs, installs, or drives a real build is a proof
 
 Test helpers are shared infrastructure, not local test-file clutter.
 
-`@orkestrel/test` owns the helpers every workspace repeats: the call recorder, the real delay, the JSON and async collectors, and the owned scratch directory. Import them from `@orkestrel/test`, and its Node-only helpers from `@orkestrel/test/server`. Write a helper of your own only where the package exports none for the job. The following shapes are the contract a workspace codes against, not source to copy.
+`@orkestrel/test` owns the helpers every workspace repeats: the call recorder, the real delay, the JSON and async collectors, and the owned scratch directory. Import them from `@orkestrel/test`, and its Node-only helpers from `@orkestrel/test/server`. Before declaring a helper in a `tests/setup*.ts` module, read the installed surface — `guides/test.md` § Surface in the scaffold checkout, or the package's own declaration under `node_modules` — and declare only what no export does. A setup-module export whose name or job matches an installed export is a defect, whichever file declared it first. The following shapes are the contract a workspace codes against, not source to copy.
 
 - For the vendored test set (`tests/setupPolicy.ts`, `tests/policy.test.ts`, and
   `tests/config.test.ts`), keep shared helpers within that set instead of importing them from
@@ -219,9 +219,38 @@ function waitForDelay(ms?: number): Promise<void>
 Use it to yield, never to wait for something another process produces. A fixed delay chosen to
 outlast a child's startup is a race whose loss looks like a product defect: the test measures
 interpreter bootstrap rather than the behaviour it names, and it fails on a loaded host and passes on
-an idle one. Wait until a named condition holds instead, polling with `waitForDelay` inside a budget
-measured by `performance.now()`, and fail with the condition's own description when the budget
-expires.
+an idle one. Wait for a named condition, an event, or an abort with the helpers under
+§ Condition instead.
+
+### Condition
+
+Import `waitForCondition`, `waitForEvent`, `waitForAbort`, and `retryUntil` from
+`@orkestrel/test`. A polling loop, a deadline read, or a deferred that observes an abort or an
+event in a test or a setup module is a defect: `waitForCondition` owns the poll, `waitForEvent`
+the deferred on an event, and `waitForAbort` the deferred on a signal. A guide fence transcribed
+byte for byte into `tests/guides.test.ts` is the consumer's code and stays as the guide shows it.
+Each timed wait takes a `description` the timeout error names and `WaitOptions` (`budget`,
+`interval`, `signal`):
+
+```ts
+function waitForCondition(
+	description: string,
+	condition: () => boolean | Promise<boolean>,
+	options?: WaitOptions,
+): Promise<void>
+function waitForEvent<TArgs extends readonly unknown[]>(
+	subscribe: EventSubscriber<TArgs>,
+	description: string,
+	options?: WaitOptions,
+): Promise<TArgs>
+function waitForAbort(signal: AbortSignal): Promise<void>
+function retryUntil<T>(
+	description: string,
+	produce: () => T | Promise<T>,
+	satisfied: (value: T) => boolean,
+	options?: RetryOptions,
+): Promise<T>
+```
 
 ### Scratch
 

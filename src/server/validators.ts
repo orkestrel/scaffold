@@ -24,6 +24,7 @@ import {
 	recordOf,
 	stringOf,
 	unionOf,
+	whereOf,
 } from '@orkestrel/contract'
 import {
 	computeBytes,
@@ -55,6 +56,7 @@ import {
 	MAX_UPSTREAM_TIMEOUT,
 	RESERVED_SEGMENT_PATTERN,
 } from './constants.js'
+import { computeManifestDigest } from './helpers.js'
 
 /**
  * Narrows a value to a path naming a location on this host.
@@ -324,11 +326,32 @@ export const isManifestEntry: Guard<ManifestEntry> = recordOf({
  * @remarks
  * The manifest is read from a directory a caller named, so it is the least
  * trusted value the server face handles and is guarded whole: every entry, every
- * declared root, and the digest that authenticates their membership.
+ * declared root, sorted Surface collisions with distinct sorted owners, and
+ * the syntax of the digest that authenticates that membership.
  */
 export const isHostManifest: Guard<HostManifest> = recordOf({
 	entries: andOf(isCollection, arrayOf(isManifestEntry)),
 	roots: andOf(isCollection, arrayOf(isPath)),
+	surface: whereOf(
+		arrayOf(
+			recordOf({
+				name: stringOf({ min: 1 }),
+				owners: whereOf(
+					arrayOf(stringOf({ min: 1 })),
+					(owners) =>
+						isCollection(owners) &&
+						owners.length > 1 &&
+						owners.every((owner, index) => index === 0 || (owners[index - 1] ?? owner) < owner),
+				),
+			}),
+		),
+		(surface) =>
+			isCollection(surface) &&
+			surface.every(
+				(collision, index) =>
+					index === 0 || (surface[index - 1]?.name ?? collision.name) < collision.name,
+			),
+	),
 	digest: isDigest,
 })
 
@@ -340,21 +363,26 @@ export const isHostManifest: Guard<HostManifest> = recordOf({
  * directory a caller named, so both halves are guarded: the manifest by the same
  * membership law a read root is held to, and the bytes by the core snapshot law,
  * which bounds the fill and reads every key as a path and every value as exact
- * lowercase hexadecimal. Whether those halves agree with each other is the
+ * lowercase hexadecimal. The manifest's digest must match its declared entries,
+ * roots, and Surface collisions. Whether the fill agrees with the manifest is the
  * reader's question rather than this one's, because a guard has only `false` to
  * say and a mismatch has a path to name.
  *
  * @example
  * ```ts
- * import { isHost } from '@orkestrel/scaffold/server'
+ * import { computeManifestDigest, isHost } from '@orkestrel/scaffold/server'
  *
- * const digest = 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'
+ * const digest = computeManifestDigest([], [], [])
  *
- * isHost({ manifest: { entries: [], roots: [], digest }, bytes: {} }) // true
- * isHost({ manifest: { entries: [], roots: [], digest } }) // false
+ * isHost({ manifest: { entries: [], roots: [], surface: [], digest }, bytes: {} }) // true
+ * isHost({ manifest: { entries: [], roots: [], surface: [], digest } }) // false
  * ```
  */
-export const isHost: Guard<Host> = recordOf({ manifest: isHostManifest, bytes: isSnapshot })
+export const isHost: Guard<Host> = whereOf(
+	recordOf({ manifest: isHostManifest, bytes: isSnapshot }),
+	({ manifest }) =>
+		manifest.digest === computeManifestDigest(manifest.entries, manifest.roots, manifest.surface),
+)
 
 /**
  * Narrows a value to a {@link Worktree}.

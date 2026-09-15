@@ -116,12 +116,11 @@ export const BIN_ENTRY_PATH = 'src/bin/main.ts'
  * of the paths it selects: the licence, the harness permission file, the
  * session-start hooks, the shared policy
  * register, the shared policy proof, the shared policy plugin, the shared
- * configuration leaf and its proof, the byte-identical root dotfiles, and the
- * guide mirrors a generated workspace starts from. A directory entry vendors
- * everything beneath it.
+ * configuration leaf and its proof, and the byte-identical root dotfiles.
+ * A directory entry vendors everything beneath it.
  *
- * A plan carries the subset its target selects, which is why the list is a
- * candidate set rather than a plan: a workspace never mirrors its own guide.
+ * A plan carries the subset its target selects. The seed guide mirrors are
+ * claimed separately by `blueprintToHostArtifacts` through {@link SEED_GUIDE_PATHS}.
  *
  * Neither the instruction canon nor the bench and MCP wiring is here. A target reads
  * its rules, its skills, its agent roles, its bench configuration, and its MCP
@@ -146,8 +145,6 @@ export const HOST_PATHS: readonly string[] = Object.freeze([
 	'.oxlintrc.json',
 	'.oxlintignore',
 	'.prettierignore',
-	'guides/guide.md',
-	'guides/scaffold.md',
 ])
 
 /**
@@ -166,8 +163,9 @@ export const HOST_PATHS: readonly string[] = Object.freeze([
  * the installed package. The `AGENTS.md` and `CLAUDE.md` pointers scaffold plans
  * are what name each location.
  *
- * The lists are disjoint by prefix in either direction: no member of either
- * equals or sits beneath a member of the other. Staging depends on that, because
+ * This list, {@link HOST_PATHS}, and {@link REFERENCE_PATHS} are disjoint by
+ * prefix in every direction: no member equals or sits beneath another list's
+ * member. Staging depends on that, because
  * the walk covers the union and a path it discovers twice claims one storage
  * name twice, which refuses the stage.
  *
@@ -196,6 +194,29 @@ export const CANON_PATHS: readonly string[] = Object.freeze([
 	'.codex/config.toml',
 	'.cursor/mcp.json',
 	'.cursor/rules',
+])
+
+/**
+ * Lists the reference paths staged for offline reading, frozen.
+ *
+ * @remarks
+ * A directory entry covers everything beneath it. Reference membership grants
+ * no target ownership and no instruction-canon membership. Keep this list,
+ * {@link HOST_PATHS}, and {@link CANON_PATHS} disjoint by prefix in every
+ * direction; duplicate discovery refuses the stage.
+ */
+export const REFERENCE_PATHS: readonly string[] = Object.freeze(['guides'])
+
+/**
+ * Lists the guide paths a generated workspace starts with, frozen.
+ *
+ * @remarks
+ * `blueprintToHostArtifacts` claims these mirrors from {@link REFERENCE_PATHS}.
+ * `selectHostPaths` excludes the workspace's own guide from that claim.
+ */
+export const SEED_GUIDE_PATHS: readonly string[] = Object.freeze([
+	'guides/guide.md',
+	'guides/scaffold.md',
 ])
 
 /** Names the repository-relative path where the committed vendored-file inventory is served. */

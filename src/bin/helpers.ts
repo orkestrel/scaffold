@@ -17,7 +17,7 @@ import type {
 	Verb,
 	VersionResolution,
 } from './types.js'
-import type { MaterializeResult, UpstreamOptions } from '@src/server'
+import type { Host, MaterializeResult, UpstreamOptions } from '@src/server'
 import type { SessionInterface } from '@orkestrel/process'
 import { align, strip, stripControls, width } from '@orkestrel/console'
 import { attempt, isError, isRecord, isString, parseJSON } from '@orkestrel/contract'
@@ -908,7 +908,7 @@ export function targetToEnvironments(target: string, axis: string): readonly Env
 /**
  * Reads the packages a target's catalog table listed before this run.
  *
- * @param target - The target directory holding the catalog agent file.
+ * @param target - The target or raw checkout directory, or a verified value host.
  * @returns The package names the table's first column carries, in table order,
  * and no names when the file is absent.
  *
@@ -923,8 +923,13 @@ export function targetToEnvironments(target: string, axis: string): readonly Env
  * catalogToNames('./packages/router') // ['@orkestrel/contract', '@orkestrel/emitter']
  * ```
  */
-export function catalogToNames(target: string): readonly string[] {
-	const text = readFileText(target, CATALOG_AGENT_PATH)
+export function catalogToNames(target: string | Host): readonly string[] {
+	const hex = isString(target) ? undefined : target.bytes[CATALOG_AGENT_PATH]
+	const text = isString(target)
+		? readFileText(target, CATALOG_AGENT_PATH)
+		: hex === undefined
+			? undefined
+			: Buffer.from(hex, 'hex').toString('utf8')
 	if (text === undefined) return []
 	const names: string[] = []
 	for (const table of createMarkdown(text).filter(isTableNode)) {

@@ -10,6 +10,7 @@ import type { Audit, Blueprint, Finding, Plan, ScaffoldErrorCode, Snapshot } fro
 import type { CLICommand, CLIOptions, Verb } from '../src/bin/types.js'
 import type { TestGuardCase, TestPathCase } from './setup.js'
 import type { ServerResponse } from 'node:http'
+import type { ResolveHookSync } from 'node:module'
 import type { ExecuteResult } from '@orkestrel/process'
 import type { ESTree } from 'vite'
 import { execFileSync } from 'node:child_process'
@@ -45,6 +46,9 @@ import {
 	createBlueprint,
 	FLOOR_RANGE_PATTERN,
 	HOST_PATHS,
+	REFERENCE_PATHS,
+	SEED_GUIDE_PATHS,
+	blueprintToHostArtifacts,
 	isDeferredPath,
 	isScaffoldError,
 	MAX_ARTIFACT_BYTES,
@@ -87,9 +91,10 @@ import {
 	readFileText,
 	readHostFloor,
 	stageHost,
+	readSurfaceCollisions,
 } from '@src/server'
 import { optionToName } from '../src/bin/helpers.js'
-import { createRecorder, resolveRoot } from '@orkestrel/test'
+import { captureError, createRecorder, resolveRoot } from '@orkestrel/test'
 import {
 	createLoopback,
 	createScratch,
@@ -592,7 +597,7 @@ export function buildManifestEntry(fields?: Partial<ManifestEntry>): ManifestEnt
  * @returns A manifest carrying the requested fields over minimal defaults.
  */
 export function buildHostManifest(fields?: Partial<HostManifest>): HostManifest {
-	return {
+	const membership = {
 		entries: [
 			buildManifestEntry(),
 			buildManifestEntry({
@@ -602,8 +607,14 @@ export function buildHostManifest(fields?: Partial<HostManifest>): HostManifest 
 			}),
 		],
 		roots: ['.claude/rules'],
-		digest: computeDigest('scaffold'),
+		surface: [],
 		...fields,
+	}
+	return {
+		...membership,
+		digest:
+			fields?.digest ??
+			computeManifestDigest(membership.entries, membership.roots, membership.surface),
 	}
 }
 
@@ -1078,29 +1089,21 @@ export function buildBoundaryCases(): readonly TestBoundaryCase[] {
  * a test naming an expected code fails on either of them and no assertion can
  * pass because nothing was raised.
  */
-export function readErrorCode(call: () => unknown): ScaffoldErrorCode | undefined {
-	try {
-		call()
-		return undefined
-	} catch (error) {
-		return isScaffoldError(error) ? error.code : undefined
-	}
+export function captureScaffoldCode(call: () => unknown): ScaffoldErrorCode | undefined {
+	const error = captureError(call)
+	return isScaffoldError(error) ? error.code : undefined
 }
 
 /**
- * Reads the message from one synchronous scaffold refusal.
+ * Runs a synchronous call and reports the message it refused with.
  *
  * @param call - The operation expected to raise a scaffold error.
  * @returns The scaffold error's message, or `undefined` when the call returned
  * normally or raised something that is not a scaffold error.
  */
-export function readErrorMessage(call: () => unknown): string | undefined {
-	try {
-		call()
-		return undefined
-	} catch (error) {
-		return isScaffoldError(error) ? error.message : undefined
-	}
+export function captureScaffoldMessage(call: () => unknown): string | undefined {
+	const error = captureError(call)
+	return isScaffoldError(error) ? error.message : undefined
 }
 
 /**
@@ -1236,10 +1239,8 @@ export function readStatements(source: string, name: string): readonly TestState
  * @returns A manifest whose digest is computed from the membership it carries.
  *
  * @remarks
- * Distinct from {@link buildHostManifest}, which carries an arbitrary
- * syntactically valid digest because a guard reads syntax only. A reader
- * verifies the digest against the membership beside it, so it needs a manifest
- * that actually agrees with itself.
+ * Declares staged storage paths and directory roots. Unlike {@link buildHostManifest},
+ * this fixture accepts no digest override.
  */
 export function buildStagedManifest(fields?: Partial<Omit<HostManifest, 'digest'>>): HostManifest {
 	const membership = {
@@ -1251,9 +1252,13 @@ export function buildStagedManifest(fields?: Partial<Omit<HostManifest, 'digest'
 			}),
 		],
 		roots: ['.claude', '.claude/rules'],
+		surface: [],
 		...fields,
 	}
-	return { ...membership, digest: computeManifestDigest(membership.entries, membership.roots) }
+	return {
+		...membership,
+		digest: computeManifestDigest(membership.entries, membership.roots, membership.surface),
+	}
 }
 
 /**
@@ -1423,9 +1428,13 @@ export function buildVendoredManifest(
 			}),
 		],
 		roots: ['.claude', '.claude/agents', '.claude/rules', '.claude/skills', 'guides', 'scripts'],
+		surface: [],
 		...fields,
 	}
-	return { ...membership, digest: computeManifestDigest(membership.entries, membership.roots) }
+	return {
+		...membership,
+		digest: computeManifestDigest(membership.entries, membership.roots, membership.surface),
+	}
 }
 
 /**
@@ -1517,6 +1526,7 @@ export function createSink(): TestSinkInterface {
  */
 export const HOST_DIRECTORY_PATHS: readonly string[] = [
 	'scripts',
+	'guides',
 	'.agents/skills',
 	'.agents/templates',
 	'.agents/transports',
@@ -1528,18 +1538,22 @@ export const HOST_DIRECTORY_PATHS: readonly string[] = [
 ]
 
 /**
- * Lists every path a release stages, the vendored set and the instruction canon together.
+ * Lists every path a release stages, including the canon and reference set.
  *
  * @remarks
- * The stager walks `HOST_PATHS` and `CANON_PATHS` alike, so a checkout fixture
- * carrying only one of them is refused for the paths it left out. A plan claims
- * the root pointers and {@link CATALOG_AGENT_PATH} inside the canon and vendors
- * none of the rest; the pointers are written from templates, so the catalog file
- * is the only canon destination a host declares. That is why
- * {@link buildFleetManifest} declares `HOST_PATHS` plus that file while
- * {@link createCheckout} and {@link buildCheckoutManifest} read this.
+ * The stager walks `HOST_PATHS`, `CANON_PATHS`, and `REFERENCE_PATHS` alike.
+ * A checkout fixture must carry each list's membership. Target claims remain
+ * the compiler's decision; staging a reference grants no target claim.
  */
-export const STAGED_PATHS: readonly string[] = [...HOST_PATHS, ...CANON_PATHS]
+export const STAGED_PATHS: readonly string[] = [...HOST_PATHS, ...CANON_PATHS, ...REFERENCE_PATHS]
+
+/** Lists the guide files the checkout fixture supplies beside its catalog. */
+export const CHECKOUT_GUIDE_PATHS: readonly string[] = Object.freeze([
+	'guides/README.md',
+	...SEED_GUIDE_PATHS,
+	'guides/contract.md',
+	'guides/emitter.md',
+])
 
 /**
  * Builds the manifest a vendored root storing every planned path declares.
@@ -1553,17 +1567,14 @@ export const STAGED_PATHS: readonly string[] = [...HOST_PATHS, ...CANON_PATHS]
  * `HOST_PATHS`, and a host that does not carry one of them refuses the write, so
  * a fixture driving the executable needs the complete set rather than a sample.
  *
- * `blueprintToHostArtifacts` appends {@link CATALOG_AGENT_PATH} to that selection, so
- * the manifest declares it too: a host missing it refuses every verb the moment
- * the plan is hydrated. It is the only canon destination a host declares, because
- * the pointers a plan claims there carry their own content, and `HOST_PATHS`
- * itself also holds the `scripts` root. The fixture reads its current members so
- * hydration proves the canonical script membership.
+ * The manifest includes {@link CATALOG_AGENT_PATH} and the reference guides.
+ * The fixture reads the checkout's script and guide membership. Hydration must
+ * select the claimed files while leaving unclaimed reference guides in the host.
  */
 export function buildFleetManifest(): HostManifest {
 	const entries: ManifestEntry[] = []
 	const roots: string[] = []
-	for (const path of [...HOST_PATHS, CATALOG_AGENT_PATH]) {
+	for (const path of [...HOST_PATHS, CATALOG_AGENT_PATH, ...REFERENCE_PATHS]) {
 		if (!HOST_DIRECTORY_PATHS.includes(path)) {
 			entries.push(buildManifestEntry({ storage: pathToStorage(path), destination: path }))
 			continue
@@ -1581,8 +1592,11 @@ export function buildFleetManifest(): HostManifest {
 			)
 		}
 	}
-	const membership = { entries, roots }
-	return { ...membership, digest: computeManifestDigest(membership.entries, membership.roots) }
+	const membership = { entries, roots, surface: [] }
+	return {
+		...membership,
+		digest: computeManifestDigest(membership.entries, membership.roots, membership.surface),
+	}
 }
 
 /**
@@ -1593,14 +1607,17 @@ export function buildFleetManifest(): HostManifest {
  * @returns The checkout's absolute path.
  *
  * @remarks
- * The stager reads {@link STAGED_PATHS} out of core, where `HOST_PATHS` and
- * `CANON_PATHS` are fixed and no test can vary either, so the checkout beneath it
+ * The stager reads the lists {@link STAGED_PATHS} combines, so the checkout beneath it
  * is the only seam a stager test has. Every file
- * carries its own path as its content, so a file staged under the wrong storage
+ * carries its own path as its content except the catalog, which carries package rows.
+ * A file staged under the wrong storage
  * name is visible in the assertion rather than in a count. Each staged directory
- * is given one file except `.claude/skills`, which is left genuinely empty
+ * receives a sample file except `guides`, which covers the catalog and seed mirrors,
+ * and `.claude/skills`, which is left empty
  * because that is the root a file inventory cannot see and the one the manifest
  * exists to declare.
+ * Records the fixture guides' collision baseline in `host.json` so ordinary staging
+ * exercises the release path. Bootstrap controls remove that inventory explicitly.
  */
 export function createCheckout(workspace: ScratchInterface, relative: string): string {
 	const root = workspace.ensure(relative)
@@ -1611,11 +1628,56 @@ export function createCheckout(workspace: ScratchInterface, relative: string): s
 		}
 		workspace.ensure(`${relative}/${path}`)
 		if (path === '.claude/skills') continue
+		if (path === 'guides') {
+			for (const guide of CHECKOUT_GUIDE_PATHS)
+				workspace.write(`${relative}/${guide}`, `${guide}\n`)
+			continue
+		}
 		const destination = `${path}/${path === 'scripts' ? 'codex.sh' : 'sample.md'}`
 		workspace.write(`${relative}/${destination}`, `${destination}\n`)
 	}
+	workspace.write(`${relative}/${CATALOG_AGENT_PATH}`, CATALOG_AGENT_ROWS_TEXT)
+	workspace.write(
+		`${relative}/host.json`,
+		JSON.stringify(
+			buildStagedManifest({
+				surface: [...readSurfaceCollisions(join(root, 'guides'))].map(([name, owners]) => ({
+					name,
+					owners,
+				})),
+			}),
+		),
+	)
 	return root
 }
+
+/**
+ * Refuses Guide resolution while preserving the host resolver for every other module.
+ *
+ * @param specifier - The requested module name.
+ * @param context - The host resolution context.
+ * @param next - The real resolver for the remaining hook chain.
+ * @returns The host's resolution for modules outside the controlled prerequisite.
+ * @throws An error carrying `MODULE_NOT_FOUND` for `@orkestrel/guide`.
+ */
+export const refuseGuideResolution: ResolveHookSync = (specifier, context, next) => {
+	if (specifier === '@orkestrel/guide') {
+		throw Object.assign(new Error('Cannot find module @orkestrel/guide'), {
+			code: 'MODULE_NOT_FOUND',
+		})
+	}
+	return next(specifier, context)
+}
+
+/** Supplies Surface rows with repeated declarations and non-name references. */
+export const STAGING_SURFACE_TEXT =
+	'## Surface\n\n| Name | Kind | Summary |\n| --- | --- | --- |\n| `Shared` | interface | References `Mentioned`. |\n| `Shared` | interface | Repeats the same owner. |\n| `Another` | function | References `Mentioned`. |\n'
+
+/** Supplies checkout guides for inventory staging comparisons. */
+export const STAGING_SURFACE_FILES: Snapshot = Object.freeze({
+	'checkout/guides/alpha.md': STAGING_SURFACE_TEXT,
+	'checkout/guides/beta.md': STAGING_SURFACE_TEXT,
+})
 
 /**
  * Builds the manifest a host staged from {@link createCheckout} must declare.
@@ -1646,6 +1708,17 @@ export function buildCheckoutManifest(): HostManifest {
 		}
 		roots.push(path)
 		if (path === '.claude/skills') continue
+		if (path === 'guides') {
+			for (const guide of CHECKOUT_GUIDE_PATHS)
+				entries.push(
+					buildManifestEntry({
+						storage: guide,
+						destination: guide,
+						digest: computeDigest(`${guide}\n`),
+					}),
+				)
+			continue
+		}
 		const destination = `${path}/${path === 'scripts' ? 'codex.sh' : 'sample.md'}`
 		entries.push(
 			buildManifestEntry({
@@ -1656,11 +1729,22 @@ export function buildCheckoutManifest(): HostManifest {
 			}),
 		)
 	}
+	entries.push(
+		buildManifestEntry({
+			storage: pathToStorage(CATALOG_AGENT_PATH),
+			destination: CATALOG_AGENT_PATH,
+			digest: computeDigest(CATALOG_AGENT_ROWS_TEXT),
+		}),
+	)
 	const membership = {
 		entries: [...entries].sort((first, second) => (first.storage < second.storage ? -1 : 1)),
 		roots: [...roots].sort(),
+		surface: [],
 	}
-	return { ...membership, digest: computeManifestDigest(membership.entries, membership.roots) }
+	return {
+		...membership,
+		digest: computeManifestDigest(membership.entries, membership.roots, membership.surface),
+	}
 }
 
 /**
@@ -1788,12 +1872,9 @@ export const CORE_GENERATED_COUNT = CORE_GENERATED.length
  * Counts the paths a fleet target's plan claims once the vendored host has hydrated it.
  *
  * @remarks
- * Each term names a real source. The vendored membership comes from
- * {@link buildFleetManifest} rather than `HOST_PATHS`, because hydration is what
- * decides the number: every claim this manifest declares is a file, so each
- * planned vendored path is one written path and the executable writes exactly
- * this many into a vacant target. {@link CORE_GENERATED_COUNT} is everything the
- * compiler supplies on top of that membership.
+ * Match the fleet manifest's files against the compiler's host claims, including
+ * directory expansion. Unclaimed reference guides contribute no target paths.
+ * {@link CORE_GENERATED_COUNT} covers the compiler's template artifacts.
  *
  * A plan claims no vendored directory, so no run adds the extra written path a
  * declared empty root would carry. `Materializer` still materializes such a
@@ -1803,7 +1884,12 @@ export const CORE_GENERATED_COUNT = CORE_GENERATED.length
  * claims. That the plan claims the right ones is proven separately, against the
  * compiler in `src:core`.
  */
-export const FLEET_ARTIFACT_COUNT = buildFleetManifest().entries.length + CORE_GENERATED_COUNT
+export const FLEET_ARTIFACT_COUNT =
+	buildFleetManifest().entries.filter(({ destination }) =>
+		blueprintToHostArtifacts(createBlueprint('sample', { src: ['core'] })).some(
+			({ path }) => destination === path || destination.startsWith(`${path}/`),
+		),
+	).length + CORE_GENERATED_COUNT
 
 /**
  * Lists the planned paths a repair leaves alone because the workspace owns them.
@@ -2161,7 +2247,12 @@ export function buildInventory(files: readonly TestVendoredFile[]): string {
 		executable: matchesExecutablePath(file.path),
 		digest: computeDigest(file.content),
 	}))
-	return JSON.stringify({ entries, roots: [], digest: computeManifestDigest(entries, []) })
+	return JSON.stringify({
+		entries,
+		roots: [],
+		surface: [],
+		digest: computeManifestDigest(entries, [], []),
+	})
 }
 
 /**
@@ -2663,11 +2754,11 @@ export function buildCLIOptions(sink: TestSinkInterface, base: string): CLIOptio
  * rejected with something that is not a {@link ScaffoldError}.
  *
  * @remarks
- * The asynchronous counterpart to {@link readErrorCode}, and it holds the same
+ * The asynchronous counterpart to {@link captureScaffoldCode}, and it holds the same
  * line: both non-refusals answer `undefined`, so a test naming an expected code
  * fails on either of them and no assertion can pass because nothing was raised.
  */
-export async function readRejectionCode(
+export async function captureScaffoldRejection(
 	call: () => Promise<unknown>,
 ): Promise<ScaffoldErrorCode | undefined> {
 	try {

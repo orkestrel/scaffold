@@ -14,6 +14,7 @@ import {
 	MAX_TOTAL_REGISTRY_BYTES,
 	matchesRange,
 	ORKESTREL_RANGE_PATTERN,
+	SEED_GUIDE_PATHS,
 	SHOWCASE_DEV_DEPENDENCIES,
 	SOURCE_BROWSER_DEV_DEPENDENCIES,
 } from '@src/core'
@@ -85,6 +86,13 @@ function selectSeededNames(): readonly string[] {
 	}
 	return [...seeded].sort()
 }
+
+describe('seed guide paths', () => {
+	it('names the initial guide mirrors and freezes their membership', () => {
+		expect(SEED_GUIDE_PATHS).toStrictEqual(['guides/guide.md', 'guides/scaffold.md'])
+		expect(Object.isFrozen(SEED_GUIDE_PATHS)).toBe(true)
+	})
+})
 
 describe('shared dependency tables', () => {
 	// Scaffold installs most table rows itself, so those derive. The rest are

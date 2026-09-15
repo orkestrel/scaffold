@@ -1,8 +1,11 @@
 import type { Group, HostFile, Snapshot } from '@src/core'
+import type * as Guide from '@orkestrel/guide'
 import type {
 	Host,
 	HostManifest,
+	HostStageOptions,
 	ManifestEntry,
+	SurfaceCollision,
 	WriteAnchor,
 	WriteExpectation,
 	WritePrecondition,
@@ -28,12 +31,16 @@ import {
 	writeFileSync,
 } from 'node:fs'
 import { tmpdir } from 'node:os'
+import { createRequire } from 'node:module'
 import { basename, dirname, extname, join, parse, relative, resolve, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { attempt, compareValues, holds, isError, parseJSONAs } from '@orkestrel/contract'
+import { createMarkdown, flattenText, isTableNode } from '@orkestrel/markdown'
 import {
 	bytesToHex,
 	CANON_PATHS,
+	CATALOG_AGENT_PATH,
+	DEPENDENCY_NAME_PATTERN,
 	EXECUTABLE_PATHS,
 	HOST_INVENTORY_PATH,
 	HOST_PATHS,
@@ -46,6 +53,8 @@ import {
 	MAX_COLLECTION_ITEMS,
 	MAX_MANIFEST_BYTES,
 	MAX_TOTAL_ARTIFACT_BYTES,
+	nameToGuide,
+	REFERENCE_PATHS,
 	ScaffoldError,
 } from '@src/core'
 import { isFilesystemPath, isHostManifest } from './validators.js'
@@ -275,6 +284,7 @@ export function hexToDigest(hex: string): string {
  *
  * @param entries - The ordered file membership declarations.
  * @param roots - The ordered directory membership declarations.
+ * @param surface - The ordered Surface collisions and their ordered guide owners.
  * @returns The SHA-256 of that exact membership, in that exact order.
  *
  * @remarks
@@ -289,12 +299,13 @@ export function hexToDigest(hex: string): string {
  * ```ts
  * import { computeManifestDigest } from '@orkestrel/scaffold/server'
  *
- * computeManifestDigest([], []) // the digest of the empty membership
+ * computeManifestDigest([], [], []) // the digest of the empty membership
  * ```
  */
 export function computeManifestDigest(
 	entries: readonly ManifestEntry[],
 	roots: readonly string[],
+	surface: readonly SurfaceCollision[],
 ): string {
 	return computeDigest(
 		JSON.stringify({
@@ -305,6 +316,7 @@ export function computeManifestDigest(
 				digest: entry.digest,
 			})),
 			roots: [...roots],
+			surface: surface.map(({ name, owners }) => ({ name, owners: [...owners] })),
 		}),
 	)
 }
@@ -1177,7 +1189,9 @@ export function readHostManifest(
 	if (manifest === undefined) {
 		throw new ScaffoldError('TARGET', `Host manifest is malformed at ${full}`, { host })
 	}
-	if (manifest.digest !== computeManifestDigest(manifest.entries, manifest.roots)) {
+	if (
+		manifest.digest !== computeManifestDigest(manifest.entries, manifest.roots, manifest.surface)
+	) {
 		throw new ScaffoldError('TARGET', `Host manifest membership is corrupted at ${full}`, { host })
 	}
 	return manifest
@@ -1340,7 +1354,8 @@ export function filesToHost(files: readonly HostFile[], floor: Host): Host | und
 		manifest: {
 			entries,
 			roots: floor.manifest.roots,
-			digest: computeManifestDigest(entries, floor.manifest.roots),
+			surface: floor.manifest.surface,
+			digest: computeManifestDigest(entries, floor.manifest.roots, floor.manifest.surface),
 		},
 		bytes,
 	}
@@ -1440,13 +1455,17 @@ export function stageBytes(
  *
  * @param checkout - The checkout the vendored paths are read from.
  * @param host - The vendored host root to fill; it must be absent or empty.
+ * @param options - The inventory selection, establishment switch, and reporting callback.
+ * Default: no reporting.
  * @returns One entry per staged file, sorted by storage name.
  * @throws `ScaffoldError('INVALID', …)` when either argument is not a host path
  * or a vendored path leaves the checkout or the host root.
  * @throws `ScaffoldError('TARGET', …)` when the checkout is not a directory, the
  * host root is not vacant, the checkout does not carry every vendored path, two
  * vendored files claim one storage name, a vendored file is not a plain file
- * within the artifact ceiling, or the staged manifest does not read back.
+ * within the artifact ceiling, published guides are unreadable, a staged
+ * collision's owner set is not a subset of its published owner set, the inventory is absent without
+ * `establish: true`, or the staged manifest does not read back.
  * @throws `ScaffoldError('WRITE', …)` when a staged file or the manifest cannot
  * be written.
  *
@@ -1464,8 +1483,8 @@ export function stageBytes(
  * still; a build output holds nothing, is deleted whole before every build, and
  * has no concurrent reader. What replaces it is refusing early and ordering the
  * writes: the whole membership is derived before anything is created, so a
- * checkout this refuses leaves no host root at all, and `manifest.json` is
- * written last, so a stage that failed part way through leaves a root every
+ * membership refusal leaves no host root at all, and `manifest.json` is
+ * written last, so a copy or Surface refusal leaves a root every
  * reader treats as a raw checkout and fails loudly on.
  *
  * A missing vendored path is refused rather than staged around. A partial root
@@ -1475,15 +1494,20 @@ export function stageBytes(
  * once. A directory is the same case — declaring an absent directory as an empty
  * root would create an empty directory in every generated workspace.
  *
- * The walk covers `HOST_PATHS` and `CANON_PATHS` together, because a release
- * ships both: a target receives the first set, and reads the second one out of
- * the installed package. Everything downstream — the missing-path refusal, the
+ * The walk covers `HOST_PATHS`, `CANON_PATHS`, and `REFERENCE_PATHS` together.
+ * A plan selects the paths a target receives; the installed package also carries
+ * the canon and reference files for reading. Every catalog package must have a
+ * guide in the discovered membership before the host is written.
+ * Copied guides must carry no collision whose name and exact owner set the
+ * committed inventory lacks. An absent inventory requires `establish: true`;
+ * an inventory without a valid recorded Surface is refused.
+ * Everything downstream — the missing-path refusal, the
  * storage collision guard, the sort, the digests, and the root inventory — reads
- * the union, so a canon path is staged under exactly the law a vendored one is.
+ * the union, so every staged path follows the same law.
  *
  * The vendoring deny-list applies to what the walk discovers beneath a staged
  * directory, where a maintainer's local credential can legitimately sit, and
- * such a path is skipped. A path either list names itself is curated data
+ * such a path is skipped. A path a staging list names itself is curated data
  * rather than discovery, so it is staged or the stage is refused.
  *
  * @example Vendored data root
@@ -1493,7 +1517,11 @@ export function stageBytes(
  * stageHost(process.cwd(), 'dist/host') // one ManifestEntry per file staged
  * ```
  */
-export function stageHost(checkout: string, host: string): readonly ManifestEntry[] {
+export function stageHost(
+	checkout: string,
+	host: string,
+	options?: HostStageOptions,
+): readonly ManifestEntry[] {
 	if (!isFilesystemPath(checkout)) {
 		throw new ScaffoldError('INVALID', 'Staging checkout is not a host path', { checkout })
 	}
@@ -1512,7 +1540,7 @@ export function stageHost(checkout: string, host: string): readonly ManifestEntr
 	const vendored: string[] = []
 	const roots: string[] = []
 	const missing: string[] = []
-	for (const path of [...HOST_PATHS, ...CANON_PATHS]) {
+	for (const path of [...HOST_PATHS, ...CANON_PATHS, ...REFERENCE_PATHS]) {
 		const full = resolveContainedPath(source, path)
 		if (full === undefined) {
 			throw new ScaffoldError('INVALID', `Vendored path leaves its checkout at ${path}`, {
@@ -1543,6 +1571,33 @@ export function stageHost(checkout: string, host: string): readonly ManifestEntr
 			checkout: source,
 			missing,
 		})
+	}
+	const catalog = readFileText(source, CATALOG_AGENT_PATH)
+	if (catalog === undefined) {
+		throw new ScaffoldError('TARGET', `The checkout carries no catalog at ${CATALOG_AGENT_PATH}`, {
+			checkout: source,
+		})
+	}
+	const guides = new Set(vendored)
+	for (const table of createMarkdown(catalog).filter(isTableNode)) {
+		for (const row of table.rows) {
+			const [cell] = row
+			if (cell === undefined) continue
+			const name = cell.map(flattenText).join('').trim()
+			if (!DEPENDENCY_NAME_PATTERN.test(name)) continue
+			const path = nameToGuide(name)
+			if (!guides.has(path)) {
+				throw new ScaffoldError(
+					'TARGET',
+					`Catalog package ${name} has no staged guide at ${path}`,
+					{
+						checkout: source,
+						name,
+						path,
+					},
+				)
+			}
+		}
 	}
 	// Seeded with the reserved metadata name a staged host writes at its own root,
 	// the same literal `readHostManifest` reads back, so a vendored file claiming it
@@ -1577,6 +1632,28 @@ export function stageHost(checkout: string, host: string): readonly ManifestEntr
 	}
 	candidates.sort((first, second) => (first.storage < second.storage ? -1 : 1))
 	roots.sort()
+	const baseline = resolveContainedPath(source, options?.inventory ?? HOST_INVENTORY_PATH)
+	if (baseline === undefined) {
+		throw new ScaffoldError('INVALID', 'Surface inventory leaves its checkout', {
+			checkout: source,
+			inventory: options?.inventory,
+		})
+	}
+	const recorded = readSurfaceBaseline(source, options?.inventory)
+	if (recorded === undefined && options?.establish !== true) {
+		throw new ScaffoldError(
+			'TARGET',
+			`Surface inventory is absent at ${baseline}; set establish: true to establish the baseline`,
+			{ checkout: source, inventory: baseline },
+		)
+	}
+	const published =
+		recorded === undefined ? undefined : new Map(recorded.map(({ name, owners }) => [name, owners]))
+	const message =
+		published === undefined
+			? `Inventory Surface baseline absent at ${baseline}; this stage establishes the baseline`
+			: `Inventory Surface baseline: ${baseline}`
+	options?.report?.(message)
 	const root = resolve(host)
 	const established = attempt(() => mkdirSync(root, { recursive: true }))
 	if (!established.success || !isPhysicalDirectory(root)) {
@@ -1618,25 +1695,47 @@ export function stageHost(checkout: string, host: string): readonly ManifestEntr
 		}
 		entries.push({ ...entry, digest })
 	}
+	const collisions = readSurfaceCollisions(join(root, 'guides'))
+	const growth: string[] = []
+	if (published !== undefined) {
+		for (const [name, owners] of collisions) {
+			const record = published.get(name)
+			const isSubset = record !== undefined && owners.every((owner) => record.includes(owner))
+			if (!isSubset) {
+				growth.push(
+					`${name} staged (${owners.join(', ')}), recorded (${record?.join(', ') ?? 'absent'})`,
+				)
+			}
+		}
+	}
+	if (growth.length > 0) {
+		throw new ScaffoldError(
+			'TARGET',
+			`Staged Surface collisions differ from the inventory: ${growth.join('; ')}`,
+			{ checkout: source, host: root, baseline, collisions: growth },
+		)
+	}
+	const surface = [...collisions].map(([name, owners]) => ({ name, owners }))
 	const manifest: HostManifest = {
 		entries,
 		roots,
-		digest: computeManifestDigest(entries, roots),
+		surface,
+		digest: computeManifestDigest(entries, roots, surface),
 	}
 	const metadata = resolveContainedPath(root, MANIFEST_NAME)
 	if (metadata === undefined) {
 		throw new ScaffoldError('INVALID', `Host manifest leaves its root at ${root}`, { host: root })
 	}
-	const published = attempt(() =>
+	const written = attempt(() =>
 		writeFileSync(metadata, `${JSON.stringify(manifest, null, '\t')}\n`, {
 			encoding: 'utf8',
 			flag: 'wx',
 		}),
 	)
-	if (!published.success) {
+	if (!written.success) {
 		throw new ScaffoldError('WRITE', `Host manifest could not be staged at ${metadata}`, {
 			host: root,
-			error: published.error,
+			error: written.error,
 		})
 	}
 	const verified = readHostManifest(root)
@@ -1646,6 +1745,88 @@ export function stageHost(checkout: string, host: string): readonly ManifestEntr
 		})
 	}
 	return entries
+}
+
+/**
+ * Reads bare Surface names claimed by distinct package guides.
+ *
+ * @param root - The physical directory containing the package guides.
+ * @returns Colliding names and their distinct owners, sorted by name and owner.
+ * @throws `ScaffoldError('TARGET', …)` when the directory or a guide cannot be read.
+ * @throws `ScaffoldError('TARGET', …)` when `@orkestrel/guide` cannot be loaded.
+ *
+ * @remarks
+ * Reads immediate `.md` files except `README.md` through `createGuide().surface()`.
+ * Requires `@orkestrel/guide` in this module's resolution path; Scaffold declares it
+ * only for development. Loads it only when called, so importing the server entry
+ * requires no guide tooling in a production install.
+ *
+ * @example
+ * ```ts
+ * import { readSurfaceCollisions } from '@orkestrel/scaffold/server'
+ *
+ * readSurfaceCollisions('./guides').get('Shared') // the guides claiming Shared, if it collides
+ * ```
+ */
+export function readSurfaceCollisions(root: string): ReadonlyMap<string, readonly string[]> {
+	if (!isPhysicalDirectory(root)) {
+		throw new ScaffoldError('TARGET', `Surface guide directory is not readable at ${root}`, {
+			root,
+		})
+	}
+	const loaded = attempt<Pick<typeof Guide, 'createGuide'>>(() =>
+		createRequire(import.meta.url)('@orkestrel/guide'),
+	)
+	if (!loaded.success) {
+		throw new ScaffoldError('TARGET', 'Surface reflection requires the module @orkestrel/guide', {
+			root,
+			error: loaded.error,
+		})
+	}
+	const guide = loaded.value
+	const owners = new Map<string, Set<string>>()
+	for (const path of listFiles(root)) {
+		if (path.includes('/') || extname(path) !== '.md' || path === 'README.md') continue
+		const text = readFileText(root, path)
+		if (text === undefined) {
+			throw new ScaffoldError('TARGET', `Surface guide cannot be read at ${path}`, { root, path })
+		}
+		for (const symbol of guide.createGuide(text).surface()) {
+			const claimed = owners.get(symbol.name) ?? new Set<string>()
+			claimed.add(basename(path, '.md'))
+			owners.set(symbol.name, claimed)
+		}
+	}
+	const collisions = new Map<string, readonly string[]>()
+	for (const name of [...owners.keys()].sort()) {
+		const claimed = owners.get(name)
+		if (claimed !== undefined && claimed.size > 1) collisions.set(name, [...claimed].sort())
+	}
+	return collisions
+}
+
+/**
+ * Reads the Surface collision baseline from a committed inventory.
+ *
+ * @param root - The checkout's host path.
+ * @param name - The checkout-relative inventory path. Default: `host.json`.
+ * @returns The recorded collisions, or `undefined` when the inventory is absent.
+ * @throws `ScaffoldError('INVALID', …)` when `root` is not a host path or `name` leaves it.
+ * @throws `ScaffoldError('TARGET', …)` when an existing inventory is unreadable,
+ * malformed, or inconsistent with its digest.
+ *
+ * @example
+ * ```ts
+ * import { readSurfaceBaseline } from '@orkestrel/scaffold/server'
+ *
+ * readSurfaceBaseline('.') // the recorded collisions, if the inventory exists
+ * ```
+ */
+export function readSurfaceBaseline(
+	root: string,
+	name: string = HOST_INVENTORY_PATH,
+): readonly SurfaceCollision[] | undefined {
+	return readHostManifest(root, name)?.surface
 }
 
 /**
@@ -1673,7 +1854,7 @@ export function stageHost(checkout: string, host: string): readonly ManifestEntr
  * stageInventory(process.cwd(), 'host.json') // the committed host inventory
  * ```
  */
-export function stageInventory(checkout: string, path: string): HostManifest {
+export function stageInventory(checkout: string, path: string = HOST_INVENTORY_PATH): HostManifest {
 	if (!isFilesystemPath(path)) {
 		throw new ScaffoldError('INVALID', 'Inventory destination is not a host path', { path })
 	}
@@ -1705,7 +1886,7 @@ export function stageInventory(checkout: string, path: string): HostManifest {
 		const verified = text === undefined ? undefined : parseJSONAs(text, isHostManifest)
 		if (
 			verified === undefined ||
-			verified.digest !== computeManifestDigest(verified.entries, verified.roots)
+			verified.digest !== computeManifestDigest(verified.entries, verified.roots, verified.surface)
 		) {
 			throw new ScaffoldError('TARGET', `Inventory does not read back at ${target}`, {
 				path: target,

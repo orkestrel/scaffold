@@ -285,26 +285,40 @@ export interface RepairResult extends MaterializeResult {
  * Reports the machine-readable outcome of `catalog`.
  *
  * @remarks
- * `entries` is the table as it stands and `mirrors` is one verdict per
- * guide fetched. `dropped` names the packages the previous table carried that
+ * `membership` holds the completed catalog read: `entries` is the table as it
+ * stands, `releases` measures declared ranges against that read, and `dropped`
+ * names the packages the previous table carried that
  * upstream no longer lists, which is the signal that the fleet answer shrank
  * rather than that a package was genuinely retired.
+ * `mirrors` holds the guide verdicts. A membership outage omits `membership`;
+ * `note` explains the refusal, and provenance names no version read.
  */
 export interface CatalogResult extends MaterializeResult {
-	readonly entries: readonly CatalogEntry[]
+	readonly membership?: {
+		readonly entries: readonly CatalogEntry[]
+		readonly dropped: readonly string[]
+		readonly releases: readonly Release[]
+	}
 	readonly mirrors: readonly Mirror[]
-	readonly dropped: readonly string[]
-	readonly releases: readonly Release[]
 	readonly provenance: Provenance
+	readonly note?: string
+}
+
+/** Represents fetched guides beside the membership answer, when that read completed. */
+export interface CatalogResolution {
+	readonly entries?: readonly CatalogEntry[]
+	readonly mirrors: readonly Mirror[]
+	readonly note?: string
 }
 
 /**
  * Reports the machine-readable outcome of `overwrite`.
  *
  * @remarks
- * `overwrite` carries everything `repair` and `catalog` report, plus
- * `releases`, which states the manifest's `@orkestrel/*` ranges as they stood
- * against the registry before this run rewrote them. `removed` names the files
+ * `overwrite` carries everything `repair` and `catalog` report. Its top-level
+ * `releases` holds the separate version read for fleet packages and foreign
+ * tools before this run rewrote their ranges. `membership.releases` holds
+ * the fleet range evidence from the catalog read. `removed` names the files
  * it deleted. `note` is present only on a partial run: the offline half is the
  * destructive one, so a run that cannot reach upstream still persists its file
  * work and then reports, through `note` and a non-zero exit, the step it could

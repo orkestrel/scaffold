@@ -1805,6 +1805,19 @@ describe('content artifact compilers', () => {
 		).toBe(true)
 	})
 
+	it('claims only the seed guide mirrors by presence and excludes the target guide', () => {
+		const artifacts = blueprintToHostArtifacts(buildBlueprint({ name: 'router' }))
+		expect(artifacts.filter(({ group }) => group === 'guides')).toStrictEqual([
+			{ path: 'guides/guide.md', group: 'guides', ownership: 'presence', origin: 'host' },
+			{ path: 'guides/scaffold.md', group: 'guides', ownership: 'presence', origin: 'host' },
+		])
+		for (const name of ['guide', 'scaffold']) {
+			expect(
+				blueprintToHostArtifacts(buildBlueprint({ name })).map(({ path }) => path),
+			).not.toContain(`guides/${name}.md`)
+		}
+	})
+
 	// The package owns the guides proof. Scaffold emits its command and Vitest
 	// project only when guides are selected; it never vendors the authored entry.
 	it('runs the package-owned guides proof only when selected', () => {

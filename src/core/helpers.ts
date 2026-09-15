@@ -444,7 +444,7 @@ export function srcToRoot(src: readonly Environment[]): Environment | undefined 
  * @returns Every candidate except the workspace's own guide, in input order.
  *
  * @remarks
- * `HOST_PATHS` is a candidate set rather than a plan, because a workspace never
+ * The candidates include the seed guide mirrors beside `HOST_PATHS`. A workspace never
  * mirrors its own guide: that file is the workspace's own product, and vendoring
  * it would have the target overwrite its guide with the copy it published.
  *

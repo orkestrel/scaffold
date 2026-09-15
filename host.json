@@ -298,7 +298,7 @@
 			"storage": "agents/templates/brief.md",
 			"destination": ".agents/templates/brief.md",
 			"executable": false,
-			"digest": "3dc03e4e530cd125dbc0557e266daf6fb93dd09844f5cddea5fe7a6fd5f0a201"
+			"digest": "bf26aa53fef502a047698c9e309cf76c2eb37fd176e2684c836fb035630934b4"
 		},
 		{
 			"storage": "agents/transports/claude.md",
@@ -352,7 +352,7 @@
 			"storage": "claude/agents/orkestrel.md",
 			"destination": ".claude/agents/orkestrel.md",
 			"executable": false,
-			"digest": "67b0d55476f84965675994d35c0a00420ab6c4466562f3819f3a55176bcc5f04"
+			"digest": "55c181ea7cc9d485444efa6d0f85192d09a2540cbd4f4499fed4fc1bc0813792"
 		},
 		{
 			"storage": "claude/agents/planner.md",
@@ -418,7 +418,7 @@
 			"storage": "claude/rules/names.md",
 			"destination": ".claude/rules/names.md",
 			"executable": false,
-			"digest": "0188561d48473e525668435262b3456a7e4292a52790fa41fe3ce50d33bfb36d"
+			"digest": "1c9aeda4a47d94ef174e1f513da7b2710fe2a162e56a450270572ad942c95a7d"
 		},
 		{
 			"storage": "claude/rules/patterns.md",
@@ -448,7 +448,7 @@
 			"storage": "claude/rules/tests.md",
 			"destination": ".claude/rules/tests.md",
 			"executable": false,
-			"digest": "5ba1c577e6e86c6d35acd02c23339489b6c0a1c14c79249d0aab6b771d7ffac3"
+			"digest": "226d524987f169fd2262465af86032beb16a19cc8b913d18e735a4baed822cd4"
 		},
 		{
 			"storage": "claude/rules/typescript.md",
@@ -460,7 +460,7 @@
 			"storage": "claude/rules/workspace.md",
 			"destination": ".claude/rules/workspace.md",
 			"executable": false,
-			"digest": "5fbf4f0e9803ef1e4cbaa12a2cfb896cec1188f9c2fc3e020b93923319c91b2f"
+			"digest": "2c4a77209a466b13919f9203fce4f311deeda6f655beeddc5aa7e2158968267b"
 		},
 		{
 			"storage": "claude/rules/writing.md",
@@ -682,7 +682,85 @@
 			"storage": "dotfiles/prettierignore",
 			"destination": ".prettierignore",
 			"executable": false,
-			"digest": "6f8bd3b8a192c974ae6332f017c2e76179d15e2598fbd624f7cd4e9e57156ff2"
+			"digest": "5289b99377a44a49d7c223ff8441a076082660b6d9cb0e77ada9a6c638bfdf3c"
+		},
+		{
+			"storage": "guides/README.md",
+			"destination": "guides/README.md",
+			"executable": false,
+			"digest": "6d113d9dcfd4f8398162206f20c17f7fb046cadfdec06a299bb7eeb18a1dfedf"
+		},
+		{
+			"storage": "guides/abort.md",
+			"destination": "guides/abort.md",
+			"executable": false,
+			"digest": "f272c4a4d7818419120df7eb529f805ae31e623ffdb03556d4784c043f0a8fc5"
+		},
+		{
+			"storage": "guides/agent.md",
+			"destination": "guides/agent.md",
+			"executable": false,
+			"digest": "e3e4c6a867be82526469acb3d7daff94b169788e6a3cac53541a1088c05b6bd4"
+		},
+		{
+			"storage": "guides/brief.md",
+			"destination": "guides/brief.md",
+			"executable": false,
+			"digest": "1c832b7c82846c0cafb8b1d3157c3b4697baf3f5697c34cad483af6175266942"
+		},
+		{
+			"storage": "guides/browser.md",
+			"destination": "guides/browser.md",
+			"executable": false,
+			"digest": "2bd000da61376666df785bb4f51f3e7988ac821f29d9b3174abc8b716d503086"
+		},
+		{
+			"storage": "guides/budget.md",
+			"destination": "guides/budget.md",
+			"executable": false,
+			"digest": "e9aa1ced2409c74a8db59bd941372b43599a9e609d2a8c12b46c60880c6fb566"
+		},
+		{
+			"storage": "guides/codec.md",
+			"destination": "guides/codec.md",
+			"executable": false,
+			"digest": "34753f320755a729eecde87a559f97763893487bb695344a82feeb2110f55b4d"
+		},
+		{
+			"storage": "guides/console.md",
+			"destination": "guides/console.md",
+			"executable": false,
+			"digest": "c575601b79a0bc3236e4d6dd636870c1579509f459bbdcd6dc14e2a9860b2c1b"
+		},
+		{
+			"storage": "guides/contract.md",
+			"destination": "guides/contract.md",
+			"executable": false,
+			"digest": "2aa2ebffe3cb466e0c6845a8bbd1cc81f16e526f952f938430e3cfcb700cdee5"
+		},
+		{
+			"storage": "guides/csv.md",
+			"destination": "guides/csv.md",
+			"executable": false,
+			"digest": "d0607331254fce34e99859bdfa5f8e1c4ae48d310c8a3a431f175275c3605319"
+		},
+		{
+			"storage": "guides/database.md",
+			"destination": "guides/database.md",
+			"executable": false,
+			"digest": "82affd78e089b87fad745a485815307dffaaeac9915149e9ed906d99b61f9905"
+		},
+		{
+			"storage": "guides/emitter.md",
+			"destination": "guides/emitter.md",
+			"executable": false,
+			"digest": "542d147733961665e33e4a8e7048b2c05c05cb930ea67f3717e7e81b0918792c"
+		},
+		{
+			"storage": "guides/form.md",
+			"destination": "guides/form.md",
+			"executable": false,
+			"digest": "effe6b240bee575b2bcbe9dccb551f8dae6996a1d6f791d8e7615d58aed892ea"
 		},
 		{
 			"storage": "guides/guide.md",
@@ -691,10 +769,226 @@
 			"digest": "3ae72c3f2d420a987c45ffbc94b3fe43f005b374d5bb3720c600751fb7197302"
 		},
 		{
+			"storage": "guides/html.md",
+			"destination": "guides/html.md",
+			"executable": false,
+			"digest": "59cfa48c75cc8b93c1160c5a01afa5d1722a70e16cbcadeca4a4cd46277c119e"
+		},
+		{
+			"storage": "guides/indexeddb.md",
+			"destination": "guides/indexeddb.md",
+			"executable": false,
+			"digest": "ff2a2a49808a08885fc42f6758c0ceafcf1f986a5b27d401d5b15b74955761ac"
+		},
+		{
+			"storage": "guides/interpret.md",
+			"destination": "guides/interpret.md",
+			"executable": false,
+			"digest": "496dfc8f82472c713fc13a799cbcd2e415aa6506af238374fc23fd255813f788"
+		},
+		{
+			"storage": "guides/lsp.md",
+			"destination": "guides/lsp.md",
+			"executable": false,
+			"digest": "4797d16708e284f5aedffb433515c8332e23c962313410686ff1f667122aba49"
+		},
+		{
+			"storage": "guides/markdown.md",
+			"destination": "guides/markdown.md",
+			"executable": false,
+			"digest": "fc52d472e3295c78d39efb3fac243454a078ba8f8ef6b68d2b6b28df4e8fc031"
+		},
+		{
+			"storage": "guides/mcp.md",
+			"destination": "guides/mcp.md",
+			"executable": false,
+			"digest": "5f97c8d9c2cd262bb6261fd132db06009227dc2a2a0dc1df985fcfb526edd8b5"
+		},
+		{
+			"storage": "guides/middleware.md",
+			"destination": "guides/middleware.md",
+			"executable": false,
+			"digest": "2674357af960607a004dcef04e8a4d01f140a6a6ce0d30b74b65e5735bea5546"
+		},
+		{
+			"storage": "guides/msg.md",
+			"destination": "guides/msg.md",
+			"executable": false,
+			"digest": "ec7defb572feb4c3fa313055e54189e93b8a9c448cbec793d7af19d24b7796ae"
+		},
+		{
+			"storage": "guides/ndjson.md",
+			"destination": "guides/ndjson.md",
+			"executable": false,
+			"digest": "73df4f2c2283259fe0b12cd257ceda9302fe1bd9b0847a84024ed8c3e385ef51"
+		},
+		{
+			"storage": "guides/ollama.md",
+			"destination": "guides/ollama.md",
+			"executable": false,
+			"digest": "42b31b4d909388cf63b68535d8c6edbe1a61300e74d511267e93e02dc3722ee4"
+		},
+		{
+			"storage": "guides/pool.md",
+			"destination": "guides/pool.md",
+			"executable": false,
+			"digest": "2154e2b25047ef0b365286fee4348c65066bb9a51e8b4c8f4461745b908a49fe"
+		},
+		{
+			"storage": "guides/probe.md",
+			"destination": "guides/probe.md",
+			"executable": false,
+			"digest": "02be10fce821ad90f30548c24e53988bb4516f0369c46bd3d477365f27afbdba"
+		},
+		{
+			"storage": "guides/process.md",
+			"destination": "guides/process.md",
+			"executable": false,
+			"digest": "c1294ee9e29d10c28fd3e4b73d9cd622168816ddeceb2a8fd01b4877a935b026"
+		},
+		{
+			"storage": "guides/program.md",
+			"destination": "guides/program.md",
+			"executable": false,
+			"digest": "d76a34dac74feac38f7ffbb61a06b653c47b053d2c8b5fcae09624966e6a0910"
+		},
+		{
+			"storage": "guides/qualifier.md",
+			"destination": "guides/qualifier.md",
+			"executable": false,
+			"digest": "61149796aad928fc562634199cfb1ee8d9bfbf29e9c6ebd6e10694318c70f27f"
+		},
+		{
+			"storage": "guides/queue.md",
+			"destination": "guides/queue.md",
+			"executable": false,
+			"digest": "4990f36f3b06daaefafd7e41ad575da9b20a7b3613a4b848b40bd35343d28540"
+		},
+		{
+			"storage": "guides/rater.md",
+			"destination": "guides/rater.md",
+			"executable": false,
+			"digest": "df5a7684ae3575140b8e2e73bc0c322dc8b1b8e115e57a4bad42c178d22bfb20"
+		},
+		{
+			"storage": "guides/reason.md",
+			"destination": "guides/reason.md",
+			"executable": false,
+			"digest": "b001ebddb038f0d5ab9744970322687ae39a4173ffabe8e352bfd03948102a50"
+		},
+		{
+			"storage": "guides/relation.md",
+			"destination": "guides/relation.md",
+			"executable": false,
+			"digest": "0d4a1b19240cb4287a0c178eec05328a8a8f8acff1ce04ef0afb839ccf4ec814"
+		},
+		{
+			"storage": "guides/router.md",
+			"destination": "guides/router.md",
+			"executable": false,
+			"digest": "73c88d2692d756c7f902424e75ba45c09c64c3ba78bdad5e800c6abe18551f26"
+		},
+		{
 			"storage": "guides/scaffold.md",
 			"destination": "guides/scaffold.md",
 			"executable": false,
-			"digest": "3f26b6d6649a7fb5882c02d674c5c10386706e87a5305b863a0d2028a2bf5043"
+			"digest": "d831fafb8f07482f1c009766c1ea43be6fc834114d27184cf08d9a51368ca4ee"
+		},
+		{
+			"storage": "guides/sea.md",
+			"destination": "guides/sea.md",
+			"executable": false,
+			"digest": "a138945b7ac99fa778d3d116d15760a3773c4ea85ea94c1ff12f07bdd0330de5"
+		},
+		{
+			"storage": "guides/server.md",
+			"destination": "guides/server.md",
+			"executable": false,
+			"digest": "cda2cf8a0e35c0f5031cc6f9ae528ae3b5c42dd12f06aef24c1fa6bc1cad70a1"
+		},
+		{
+			"storage": "guides/sqlite.md",
+			"destination": "guides/sqlite.md",
+			"executable": false,
+			"digest": "494acc0cc4d27b37ee1b666ff1e7908220fd2f4d594f0d3e3ef5b07d6b8229de"
+		},
+		{
+			"storage": "guides/sse.md",
+			"destination": "guides/sse.md",
+			"executable": false,
+			"digest": "88c5fa0b3dadde1370f5e74f087f472cbedbdf18e695d4a82e37a4abc8e24579"
+		},
+		{
+			"storage": "guides/supervisor.md",
+			"destination": "guides/supervisor.md",
+			"executable": false,
+			"digest": "f19868bb64835bc5179f6fe49c2550f7029a8c9c99dd708fbd4fa521fe9b5e42"
+		},
+		{
+			"storage": "guides/table.md",
+			"destination": "guides/table.md",
+			"executable": false,
+			"digest": "1cd64986661674ad9d93e080bbe4117f07ca2c1a84361ddb2ecd8873911f3f83"
+		},
+		{
+			"storage": "guides/template.md",
+			"destination": "guides/template.md",
+			"executable": false,
+			"digest": "e0dda23ec042e810ee97a1907007ef06e5f6c21e579dd9d61f1c8d1612500d36"
+		},
+		{
+			"storage": "guides/terminal.md",
+			"destination": "guides/terminal.md",
+			"executable": false,
+			"digest": "1b1f8f30887c30afb01fd7571ca9485911b595fb4fe9a667492f65edb76b516b"
+		},
+		{
+			"storage": "guides/test.md",
+			"destination": "guides/test.md",
+			"executable": false,
+			"digest": "bc1935de303397113be41135f5c3da9f26dd540227cdc89d7ebfe641dbacb994"
+		},
+		{
+			"storage": "guides/timeout.md",
+			"destination": "guides/timeout.md",
+			"executable": false,
+			"digest": "f767022f246db2db76b8e2cd568978e3e0cb3a1104b6c4dd9c516b23bfeffd19"
+		},
+		{
+			"storage": "guides/tool.md",
+			"destination": "guides/tool.md",
+			"executable": false,
+			"digest": "e98b3d3cd0aabd8f2f8576b847759088bfea26990340de35a9773bf506e7a8eb"
+		},
+		{
+			"storage": "guides/toolbox.md",
+			"destination": "guides/toolbox.md",
+			"executable": false,
+			"digest": "a5a5c4679075ae6ca937d15af49189fc9e0e9e79a5fe7f4227a56be25bdf3910"
+		},
+		{
+			"storage": "guides/websocket.md",
+			"destination": "guides/websocket.md",
+			"executable": false,
+			"digest": "d7acb11fe203c7291d86082fcc73f1291492bf4c32ebe5d0ca15a6486f825b2e"
+		},
+		{
+			"storage": "guides/worker.md",
+			"destination": "guides/worker.md",
+			"executable": false,
+			"digest": "b72964712b7187a987e4ba08bec95d72487c4afeb6e4c43c631d14b4c3cbff63"
+		},
+		{
+			"storage": "guides/workflow.md",
+			"destination": "guides/workflow.md",
+			"executable": false,
+			"digest": "bd55e864f65ac1159c3424986baf78bf5c49ba71f9c743a7e1f37cb9a43edae2"
+		},
+		{
+			"storage": "guides/workspace.md",
+			"destination": "guides/workspace.md",
+			"executable": false,
+			"digest": "1353da0a0340a8ec7d7c2c08a028d95361bb75b2b03a0e743865c66eee3d0a42"
 		},
 		{
 			"storage": "scripts/codex.sh",
@@ -730,13 +1024,13 @@
 			"storage": "tests/policy.test.ts",
 			"destination": "tests/policy.test.ts",
 			"executable": false,
-			"digest": "75791e0758d4eb4a4acc954be7660790b92e1607ee783be9a741723b58c541d1"
+			"digest": "4273463de12eff09a19bfed6c8a8a52a322f4e0ef3f1628d6293198b114c595b"
 		},
 		{
 			"storage": "tests/setupPolicy.ts",
 			"destination": "tests/setupPolicy.ts",
 			"executable": false,
-			"digest": "ebe2777780193eed9d8d0641d6326535a6b5084d88aee0b6361d0b2409281ded"
+			"digest": "6e8f25094817161541d66d1a18938ec6c9ae4769c530569117e2b9565e84d2b7"
 		}
 	],
 	"roots": [
@@ -783,7 +1077,907 @@
 		".claude/skills/orkestrel-publish",
 		".codex/agents",
 		".cursor/rules",
+		"guides",
 		"scripts"
 	],
-	"digest": "638e7716d2f48779b2f36422374366d4a1fb52a9c4bb6c78c483f1e468496cb8"
+	"surface": [
+		{
+			"name": "Asset",
+			"owners": [
+				"middleware",
+				"sea"
+			]
+		},
+		{
+			"name": "BOM",
+			"owners": [
+				"csv",
+				"sse"
+			]
+		},
+		{
+			"name": "Brief",
+			"owners": [
+				"brief",
+				"supervisor"
+			]
+		},
+		{
+			"name": "CHOICE_LIMIT",
+			"owners": [
+				"form",
+				"table"
+			]
+		},
+		{
+			"name": "Check",
+			"owners": [
+				"probe",
+				"reason"
+			]
+		},
+		{
+			"name": "Client",
+			"owners": [
+				"middleware",
+				"supervisor"
+			]
+		},
+		{
+			"name": "Color",
+			"owners": [
+				"console",
+				"test"
+			]
+		},
+		{
+			"name": "ColumnSpec",
+			"owners": [
+				"console",
+				"toolbox"
+			]
+		},
+		{
+			"name": "Dispatch",
+			"owners": [
+				"brief",
+				"worker"
+			]
+		},
+		{
+			"name": "Drift",
+			"owners": [
+				"guide",
+				"scaffold"
+			]
+		},
+		{
+			"name": "Failure",
+			"owners": [
+				"contract",
+				"msg",
+				"test"
+			]
+		},
+		{
+			"name": "Finding",
+			"owners": [
+				"qualifier",
+				"scaffold"
+			]
+		},
+		{
+			"name": "Group",
+			"owners": [
+				"router",
+				"scaffold"
+			]
+		},
+		{
+			"name": "INTEGER_PATTERN",
+			"owners": [
+				"csv",
+				"form"
+			]
+		},
+		{
+			"name": "JSONRPCError",
+			"owners": [
+				"lsp",
+				"mcp"
+			]
+		},
+		{
+			"name": "JSONRPCErrorResponse",
+			"owners": [
+				"lsp",
+				"mcp"
+			]
+		},
+		{
+			"name": "JSONRPCId",
+			"owners": [
+				"lsp",
+				"mcp"
+			]
+		},
+		{
+			"name": "JSONRPCMessage",
+			"owners": [
+				"lsp",
+				"mcp"
+			]
+		},
+		{
+			"name": "JSONRPCNotification",
+			"owners": [
+				"lsp",
+				"mcp"
+			]
+		},
+		{
+			"name": "JSONRPCRequest",
+			"owners": [
+				"lsp",
+				"mcp"
+			]
+		},
+		{
+			"name": "JSONRPCResponse",
+			"owners": [
+				"lsp",
+				"mcp"
+			]
+		},
+		{
+			"name": "JSONRPCResultResponse",
+			"owners": [
+				"lsp",
+				"mcp"
+			]
+		},
+		{
+			"name": "JSONRPC_INTERNAL_ERROR",
+			"owners": [
+				"lsp",
+				"mcp"
+			]
+		},
+		{
+			"name": "JSONRPC_INVALID_PARAMS",
+			"owners": [
+				"lsp",
+				"mcp"
+			]
+		},
+		{
+			"name": "JSONRPC_INVALID_REQUEST",
+			"owners": [
+				"lsp",
+				"mcp"
+			]
+		},
+		{
+			"name": "JSONRPC_METHOD_NOT_FOUND",
+			"owners": [
+				"lsp",
+				"mcp"
+			]
+		},
+		{
+			"name": "JSONRPC_PARSE_ERROR",
+			"owners": [
+				"lsp",
+				"mcp"
+			]
+		},
+		{
+			"name": "JSONValue",
+			"owners": [
+				"contract",
+				"test"
+			]
+		},
+		{
+			"name": "JournalInterface",
+			"owners": [
+				"supervisor",
+				"test"
+			]
+		},
+		{
+			"name": "MAX_DEPTH",
+			"owners": [
+				"html",
+				"markdown"
+			]
+		},
+		{
+			"name": "METHODS",
+			"owners": [
+				"guide",
+				"router"
+			]
+		},
+		{
+			"name": "ManifestEntry",
+			"owners": [
+				"guide",
+				"scaffold"
+			]
+		},
+		{
+			"name": "NAME_LIMIT",
+			"owners": [
+				"form",
+				"table"
+			]
+		},
+		{
+			"name": "NODE_LIMIT",
+			"owners": [
+				"form",
+				"table"
+			]
+		},
+		{
+			"name": "Position",
+			"owners": [
+				"csv",
+				"workspace"
+			]
+		},
+		{
+			"name": "ProviderInterface",
+			"owners": [
+				"agent",
+				"supervisor"
+			]
+		},
+		{
+			"name": "Result",
+			"owners": [
+				"contract",
+				"msg",
+				"test"
+			]
+		},
+		{
+			"name": "Row",
+			"owners": [
+				"csv",
+				"database",
+				"indexeddb"
+			]
+		},
+		{
+			"name": "STRING_LIMIT",
+			"owners": [
+				"form",
+				"table"
+			]
+		},
+		{
+			"name": "ScopeInterface",
+			"owners": [
+				"agent",
+				"mcp"
+			]
+		},
+		{
+			"name": "Session",
+			"owners": [
+				"middleware",
+				"process"
+			]
+		},
+		{
+			"name": "SessionInterface",
+			"owners": [
+				"middleware",
+				"process"
+			]
+		},
+		{
+			"name": "SessionOptions",
+			"owners": [
+				"middleware",
+				"process"
+			]
+		},
+		{
+			"name": "Source",
+			"owners": [
+				"guide",
+				"reason"
+			]
+		},
+		{
+			"name": "Stage",
+			"owners": [
+				"probe",
+				"rater"
+			]
+		},
+		{
+			"name": "StdioClientTransport",
+			"owners": [
+				"lsp",
+				"mcp"
+			]
+		},
+		{
+			"name": "StdioClientTransportInterface",
+			"owners": [
+				"lsp",
+				"mcp"
+			]
+		},
+		{
+			"name": "StdioClientTransportOptions",
+			"owners": [
+				"lsp",
+				"mcp"
+			]
+		},
+		{
+			"name": "StreamInterface",
+			"owners": [
+				"agent",
+				"server"
+			]
+		},
+		{
+			"name": "Success",
+			"owners": [
+				"contract",
+				"msg",
+				"test"
+			]
+		},
+		{
+			"name": "Supervisor",
+			"owners": [
+				"process",
+				"supervisor"
+			]
+		},
+		{
+			"name": "TEXT_LIMIT",
+			"owners": [
+				"form",
+				"table"
+			]
+		},
+		{
+			"name": "TableEventMap",
+			"owners": [
+				"database",
+				"table"
+			]
+		},
+		{
+			"name": "TableInterface",
+			"owners": [
+				"database",
+				"table"
+			]
+		},
+		{
+			"name": "TableOptions",
+			"owners": [
+				"console",
+				"table"
+			]
+		},
+		{
+			"name": "TableSchema",
+			"owners": [
+				"database",
+				"table"
+			]
+		},
+		{
+			"name": "TaskOperation",
+			"owners": [
+				"brief",
+				"workflow"
+			]
+		},
+		{
+			"name": "Template",
+			"owners": [
+				"interpret",
+				"template"
+			]
+		},
+		{
+			"name": "TemplateManager",
+			"owners": [
+				"interpret",
+				"template"
+			]
+		},
+		{
+			"name": "TemplateManagerEventMap",
+			"owners": [
+				"interpret",
+				"template"
+			]
+		},
+		{
+			"name": "TemplateManagerInterface",
+			"owners": [
+				"interpret",
+				"template"
+			]
+		},
+		{
+			"name": "TemplateManagerOptions",
+			"owners": [
+				"interpret",
+				"template"
+			]
+		},
+		{
+			"name": "TextNode",
+			"owners": [
+				"html",
+				"markdown"
+			]
+		},
+		{
+			"name": "UNSAFE_FIELD_SEGMENTS",
+			"owners": [
+				"interpret",
+				"template"
+			]
+		},
+		{
+			"name": "WorkflowFault",
+			"owners": [
+				"supervisor",
+				"workflow"
+			]
+		},
+		{
+			"name": "cloneSchema",
+			"owners": [
+				"contract",
+				"table"
+			]
+		},
+		{
+			"name": "cloneValue",
+			"owners": [
+				"form",
+				"scaffold"
+			]
+		},
+		{
+			"name": "compareValues",
+			"owners": [
+				"contract",
+				"database"
+			]
+		},
+		{
+			"name": "computeDigest",
+			"owners": [
+				"probe",
+				"scaffold"
+			]
+		},
+		{
+			"name": "computeSize",
+			"owners": [
+				"sea",
+				"workspace"
+			]
+		},
+		{
+			"name": "createChannel",
+			"owners": [
+				"agent",
+				"test"
+			]
+		},
+		{
+			"name": "createSession",
+			"owners": [
+				"middleware",
+				"process"
+			]
+		},
+		{
+			"name": "createStdioClientTransport",
+			"owners": [
+				"lsp",
+				"mcp"
+			]
+		},
+		{
+			"name": "createTemplateManager",
+			"owners": [
+				"interpret",
+				"template"
+			]
+		},
+		{
+			"name": "decodeBase64",
+			"owners": [
+				"browser",
+				"codec",
+				"msg"
+			]
+		},
+		{
+			"name": "decodeLatin1",
+			"owners": [
+				"codec",
+				"msg"
+			]
+		},
+		{
+			"name": "decodeUTF8",
+			"owners": [
+				"codec",
+				"msg"
+			]
+		},
+		{
+			"name": "decodeWindows1252",
+			"owners": [
+				"codec",
+				"msg"
+			]
+		},
+		{
+			"name": "encodeBase64",
+			"owners": [
+				"browser",
+				"codec"
+			]
+		},
+		{
+			"name": "encodeUTF8",
+			"owners": [
+				"codec",
+				"msg"
+			]
+		},
+		{
+			"name": "errorToMessage",
+			"owners": [
+				"brief",
+				"workflow"
+			]
+		},
+		{
+			"name": "escapeRegExp",
+			"owners": [
+				"guide",
+				"interpret",
+				"router",
+				"workspace"
+			]
+		},
+		{
+			"name": "extractKey",
+			"owners": [
+				"database",
+				"table"
+			]
+		},
+		{
+			"name": "failure",
+			"owners": [
+				"msg",
+				"workflow"
+			]
+		},
+		{
+			"name": "filterRows",
+			"owners": [
+				"database",
+				"table"
+			]
+		},
+		{
+			"name": "findRule",
+			"owners": [
+				"qualifier",
+				"test"
+			]
+		},
+		{
+			"name": "foldNode",
+			"owners": [
+				"html",
+				"markdown"
+			]
+		},
+		{
+			"name": "freezeDeep",
+			"owners": [
+				"brief",
+				"supervisor"
+			]
+		},
+		{
+			"name": "hasReservedKey",
+			"owners": [
+				"program",
+				"qualifier"
+			]
+		},
+		{
+			"name": "isBoundedJSONRecord",
+			"owners": [
+				"contract",
+				"supervisor"
+			]
+		},
+		{
+			"name": "isBoundedJSONValue",
+			"owners": [
+				"contract",
+				"supervisor"
+			]
+		},
+		{
+			"name": "isBrief",
+			"owners": [
+				"brief",
+				"supervisor"
+			]
+		},
+		{
+			"name": "isCheck",
+			"owners": [
+				"probe",
+				"reason"
+			]
+		},
+		{
+			"name": "isFile",
+			"owners": [
+				"process",
+				"workspace"
+			]
+		},
+		{
+			"name": "isFinding",
+			"owners": [
+				"qualifier",
+				"scaffold"
+			]
+		},
+		{
+			"name": "isHex",
+			"owners": [
+				"codec",
+				"scaffold"
+			]
+		},
+		{
+			"name": "isJSONRPCError",
+			"owners": [
+				"lsp",
+				"mcp"
+			]
+		},
+		{
+			"name": "isJSONRPCNotification",
+			"owners": [
+				"lsp",
+				"mcp"
+			]
+		},
+		{
+			"name": "isJSONRPCRequest",
+			"owners": [
+				"lsp",
+				"mcp"
+			]
+		},
+		{
+			"name": "isJSONRPCResponse",
+			"owners": [
+				"lsp",
+				"mcp"
+			]
+		},
+		{
+			"name": "isManifestEntry",
+			"owners": [
+				"guide",
+				"scaffold"
+			]
+		},
+		{
+			"name": "isNonNegativeInteger",
+			"owners": [
+				"contract",
+				"supervisor"
+			]
+		},
+		{
+			"name": "isNonNegativeNumber",
+			"owners": [
+				"contract",
+				"supervisor"
+			]
+		},
+		{
+			"name": "isRecord",
+			"owners": [
+				"contract",
+				"msg"
+			]
+		},
+		{
+			"name": "isStage",
+			"owners": [
+				"probe",
+				"rater"
+			]
+		},
+		{
+			"name": "isTableSchema",
+			"owners": [
+				"database",
+				"table"
+			]
+		},
+		{
+			"name": "isTerminalStatus",
+			"owners": [
+				"supervisor",
+				"workflow"
+			]
+		},
+		{
+			"name": "isText",
+			"owners": [
+				"brief",
+				"workspace"
+			]
+		},
+		{
+			"name": "isTextNode",
+			"owners": [
+				"html",
+				"markdown"
+			]
+		},
+		{
+			"name": "joinThinking",
+			"owners": [
+				"agent",
+				"ollama"
+			]
+		},
+		{
+			"name": "matchesJSONDepth",
+			"owners": [
+				"contract",
+				"supervisor"
+			]
+		},
+		{
+			"name": "parseBoolean",
+			"owners": [
+				"contract",
+				"csv"
+			]
+		},
+		{
+			"name": "parseDocument",
+			"owners": [
+				"html",
+				"markdown"
+			]
+		},
+		{
+			"name": "parseInteger",
+			"owners": [
+				"contract",
+				"csv"
+			]
+		},
+		{
+			"name": "parseProvenance",
+			"owners": [
+				"html",
+				"markdown"
+			]
+		},
+		{
+			"name": "projectSpan",
+			"owners": [
+				"html",
+				"markdown"
+			]
+		},
+		{
+			"name": "readRecords",
+			"owners": [
+				"csv",
+				"indexeddb"
+			]
+		},
+		{
+			"name": "readValue",
+			"owners": [
+				"contract",
+				"test"
+			]
+		},
+		{
+			"name": "renderHTML",
+			"owners": [
+				"html",
+				"markdown"
+			]
+		},
+		{
+			"name": "rewriteDocument",
+			"owners": [
+				"html",
+				"markdown"
+			]
+		},
+		{
+			"name": "scanComment",
+			"owners": [
+				"csv",
+				"html"
+			]
+		},
+		{
+			"name": "sortRows",
+			"owners": [
+				"database",
+				"table"
+			]
+		},
+		{
+			"name": "success",
+			"owners": [
+				"msg",
+				"workflow"
+			]
+		},
+		{
+			"name": "taskShape",
+			"owners": [
+				"brief",
+				"workflow"
+			]
+		},
+		{
+			"name": "textShape",
+			"owners": [
+				"brief",
+				"html",
+				"markdown"
+			]
+		},
+		{
+			"name": "walkNodes",
+			"owners": [
+				"html",
+				"markdown"
+			]
+		},
+		{
+			"name": "wrapError",
+			"owners": [
+				"indexeddb",
+				"sqlite"
+			]
+		}
+	],
+	"digest": "8d22816d89c1402d519b15d9b62833bce80c92f1f42680b80e084db4fb1467a3"
 }

@@ -19,6 +19,7 @@ import {
 	extractVersion,
 	GROUPS,
 	HOST_PATHS,
+	REFERENCE_PATHS,
 	inferDrift,
 	inferGroup,
 	isCanonPath,
@@ -159,11 +160,22 @@ describe('isCanonPath', () => {
 		expect(isCanonPath('')).toBe(false)
 	})
 
-	// `HOST_PATHS` and `CANON_PATHS` partition the staged membership: a target
-	// receives the vendored set and reads the canon from the package. The lists are
-	// disjoint by prefix in either direction, because the stager walks their union
+	// The host, canon, and reference lists partition the staged membership.
+	// They are disjoint by prefix in every direction, because the stager walks their union
 	// and a path discovered twice claims one storage name twice.
 	it('shares no member with the vendored set, in either direction', () => {
+		expect(REFERENCE_PATHS).toStrictEqual(['guides'])
+		for (const paths of [HOST_PATHS, CANON_PATHS, REFERENCE_PATHS]) {
+			for (const others of [HOST_PATHS, CANON_PATHS, REFERENCE_PATHS]) {
+				if (paths === others) continue
+				expect(
+					paths.filter((path) =>
+						others.some((other) => path === other || path.startsWith(`${other}/`)),
+					),
+				).toStrictEqual([])
+			}
+		}
+		expect(isCanonPath('guides/router.md')).toBe(false)
 		expect(HOST_PATHS.filter((path) => isCanonPath(path))).toStrictEqual([])
 		expect(
 			CANON_PATHS.filter((canon) =>
@@ -296,11 +308,11 @@ describe('serializeTypeScriptString', () => {
 
 describe('selectHostPaths', () => {
 	it('drops the workspace’s own guide and keeps every other candidate in order', () => {
-		const selected = selectHostPaths(HOST_PATHS, 'scaffold')
+		const candidates = [...HOST_PATHS, 'guides/guide.md', 'guides/scaffold.md']
+		const selected = selectHostPaths(candidates, 'scaffold')
 		expect(selected).not.toContain('guides/scaffold.md')
 		expect(selected).toContain('guides/guide.md')
-		expect(selected).toHaveLength(HOST_PATHS.length - 1)
-		expect(selected).toStrictEqual(HOST_PATHS.filter((path) => path !== 'guides/scaffold.md'))
+		expect(selected).toStrictEqual(candidates.filter((path) => path !== 'guides/scaffold.md'))
 	})
 
 	it('keeps every candidate for a workspace that vendors no guide of its own', () => {
