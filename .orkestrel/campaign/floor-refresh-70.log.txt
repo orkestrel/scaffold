@@ -1,0 +1,26 @@
+# scaffold floor refresh for 0.0.70 — 2026-09-15T19:38:04Z — head 95bf23fc
+== guides/mcp.md from mcp pushed main 7111d57
+written, 6106 lines
+== guides/ollama.md from ollama pushed main 50d869e
+written, 381 lines
+== git diff --stat guides
+ guides/mcp.md    | 678 +++++++++++++++++++++++++++++++++++++++++++++++++------
+ guides/ollama.md |  17 +-
+ 2 files changed, 624 insertions(+), 71 deletions(-)
+== npm run build
+exit=0
+npm notice run node -e "import('./dist/src/server/index.js').then((m)=>{const n=m.stageHost(process.cwd(),'dist/host',{report: (message) => console.error(message)}).length;console.log('build-host: staged '+n+' file(s) into dist/host')})"
+Inventory Surface baseline: C:\Users\mikes\WebstormProjects\scaffold\host.json
+build-host: staged 172 file(s) into dist/host
+npm notice run node -e "import('./dist/src/server/index.js').then((m)=>{const p=process.argv[1]??'host.json',n=m.stageInventory(process.cwd(),p).entries.length;console.log('build-inventory: staged '+n+' file(s) into '+p)})"
+build-inventory: staged 172 file(s) into host.json
+== git diff --stat host.json
+ host.json | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+== the surface record's own movement
+4
+== status
+ M guides/mcp.md
+ M guides/ollama.md
+ M host.json
+# end 2026-09-15T19:38:16Z
