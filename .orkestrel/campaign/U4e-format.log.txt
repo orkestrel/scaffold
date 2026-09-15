@@ -1,0 +1,12 @@
+﻿npm.cmd : npm notice run @orkestrel/mcp@0.0.30 format:check
+At line:2 char:1
++ npm.cmd run format:check *> tmp/codex/U4e-format.log; $result = $LAST ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (npm notice run ...30 format:check:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+npm notice run oxfmt --config .oxfmtrc.json --check .
+Checking formatting...
+
+All matched files use the correct format.
+Finished in 2713ms on 133 files using 16 threads.

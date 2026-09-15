@@ -1,0 +1,12 @@
+# scaffold release chain (prerelease) — 2026-09-15T14:43:59Z — version 	"version": "0.0.68",
+== npm run prepublishOnly
+npm notice run node -e "import('./dist/src/server/index.js').then((m)=>{const n=m.stageHost(process.cwd(),'dist/host',{report: (message) => console.error(message)}).length;console.log('build-host: staged '+n+' file(s) into dist/host')})"
+	if (growth.length > 0) throw new ScaffoldError("TARGET", `Staged Surface collisions differ from the inventory: ${growth.join("; ")}`, {
+ScaffoldError: Staged Surface collisions differ from the inventory: ProviderOptions staged (agent, supervisor), recorded (absent); RelayOptions staged (agent, supervisor), recorded (absent); readText staged (agent, test), recorded (absent)
+exit=1
+== node dist/bin/main.js audit (reading beside the landing, not a gate)
+exit=1
+TARGET: The vendored host carries no manifest at C:\Users\mikes\WebstormProjects\scaffold\dist\host
+== npm pack --dry-run
+exit=1
+# end 2026-09-15T14:44:34Z

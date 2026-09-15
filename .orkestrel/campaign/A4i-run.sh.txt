@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+# A4i objective audit lane — GPT-6 Astra, read-only codex exec rooted at the mcp checkout. Cap 2400 s.
+# Successor of A4h-run.sh: unit name, brief, journal, evidence set (the U4l report, the A4h verdicts, P18,
+# the round record, the after-u4l gates, the U4l-only interdiff, the whole-chain diff). Astra is the
+# cross-engine lane (Opus wrote the chain including U4l); the reviewer and the checker run natively.
+set -u
+SCAF="C:/Users/mikes/WebstormProjects/scaffold"
+MCP="C:/Users/mikes/WebstormProjects/mcp"
+J="$SCAF/tmp/codex/A4i-audit.jsonl"
+L="$SCAF/tmp/codex/A4i-audit-last.md"
+B="$MCP/tmp/codex/A4i-audit-brief.md"
+cp "$SCAF/tmp/units/A4i-audit-brief.md" "$B"
+cp "$SCAF/tmp/units/A4i-u4l-only.patch" "$MCP/tmp/codex/A4i-u4l-only.patch"
+cp "$SCAF/tmp/units/A4h-u4k-only.patch" "$MCP/tmp/codex/A4h-u4k-only.patch"
+cp "$SCAF/tmp/units/A4i-diff.patch" "$MCP/tmp/codex/A4i-diff.patch"
+for f in U4l-mcp-browser-fix-brief.md U4l-mcp-browser-report.md U4k-mcp-browser-report.md A4h-audit-analyst.md A4h-audit-checker.md P18-a4h-probe.md P18-a4h-probe.log.txt U4-chain-audit-verdict.md U4l-mcp-gates-orchestrator.log.txt U4l-mcp-gates-test-full.log.txt collide3-mcp-after-u4l.txt; do
+	cp "$SCAF/.orkestrel/campaign/$f" "$MCP/tmp/codex/$f"
+done
+echo "launch unit=A4i-audit model=gpt-6-astra sandbox=read-only cap=2400 start=$(date -u +%Y-%m-%dT%H:%M:%SZ)" > "$SCAF/tmp/codex/A4i-audit.launch.txt"
+timeout 2400 codex exec --json -C "$MCP" --sandbox read-only --model gpt-6-astra -c 'model_reasoning_effort="high"' --output-last-message "$L" "Read and execute the audit brief at $B exactly (every evidence file it names is staged beside it in tmp/codex/). You hold the OBJECTIVE lane (analyst) and the cross-engine lane: Opus 5 wrote the unit under audit. Perform the audit directly and spawn nothing. Your final message must be the verdict shape the brief specifies." < /dev/null > "$J" 2> "$SCAF/tmp/codex/A4i-audit.err"
+EXIT=$?
+echo "exit=$EXIT end=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$SCAF/tmp/codex/A4i-audit.launch.txt"
+echo "unit=A4i-audit exit=$EXIT"
+grep -o '"thread_id":"[^"]*"' "$J" | head -1
+wc -c < "$L" 2>/dev/null

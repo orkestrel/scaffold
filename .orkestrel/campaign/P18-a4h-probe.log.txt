@@ -1,0 +1,17 @@
+# P18 — 2026-09-15T14:02:43Z — mcp ModelContext.ts reconcile-then-prune control
+before:   56ac1dc5588e259d
+mutated (eol "\n"): both callers prune after the loop, outside any finally
+mutated:  44e94539ef811a61
+== red run: npm run test:src:browser -- tests/src/browser/ModelContext.test.ts -t "releases what the manager dropped when a registration fails"
+exit=1
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  |src:browser (chromium)| tests/src/browser/ModelContext.test.ts:323:2 > the registry this handle follows after publishing it > releases what the manager dropped when a registration fails
+AssertionError: expected [ { …(2) } ] to deeply equal []
+ Test Files  1 failed (1)
+      Tests  1 failed | 56 skipped (57)
+restored: 56ac1dc5588e259d
+== green run: same command
+exit=0
+ Test Files  1 passed (1)
+      Tests  1 passed | 56 skipped (57)
+# end 2026-09-15T14:02:51Z

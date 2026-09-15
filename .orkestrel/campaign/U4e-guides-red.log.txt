@@ -1,0 +1,45 @@
+﻿
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/mcp
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------x--
+node : 
+At line:2 char:277
++ ... ne + "`n"); node node_modules/vitest/vitest.mjs run --config vite.con ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |guides| tests/guides.test.ts > guides/mcp.md — Refresh the tools an agent holds > refreshes after a server 
+registry add without re-publishing or polling
+AssertionError: expected { installed: [ 'remote' ], …(2) } to deeply equal { …(3) }
+
+- Expected
++ Received
+
+  {
+    "collisions": [],
+    "failures": [],
+    "installed": [
+      "remote",
+-     "added",
+    ],
+  }
+
+ ❯ tests/guides.test.ts:1613:21
+    1611|      }
+    1612|     }
+    1613|     expect(outcome).toEqual({ installed: ['remote', 'added'], collisio…
+       |                     ^
+    1614|     expect(
+    1615|      await fixture.tools.execute({ id: 'added', name: 'added', argumen…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 200 skipped (201)
+   Start at  10:47:56
+   Duration  2.10s (transform 348ms, setup 468ms, import 1.44s, tests 24ms, environment 0ms)
+

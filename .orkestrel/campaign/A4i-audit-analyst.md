@@ -1,0 +1,19 @@
+<!-- A4i — analyst (GPT-6 Astra, read-only codex exec rooted in mcp), objective lane closing the U4 chain after U4l. Retained from tmp/codex/A4i-audit-last.md, 2026-09-15 (377 s, thread 01a0a571-b869-7713-8bfc-ed4ca64520fe, journal tmp/codex/A4i-audit.jsonl 877 407 bytes, exit 0). -->
+
+analyst — OBJECTIVE and cross-engine lanes; auditing Opus 5 through source and Orchestrator execution evidence.
+
+1. **CONFIRMED** — [ModelContext.test.ts:181](C:/Users/mikes/WebstormProjects/mcp/tests/src/browser/ModelContext.test.ts:181) asserts the specified publication order, refusal message, exact surviving names, original `kept` registration identity, and successful retry. [P19’s log](C:/Users/mikes/WebstormProjects/scaffold/.orkestrel/campaign/P19-a4i-probe.log.txt) independently reproduces the reconcile-then-prune failure and identity-control failure, followed by restored green tests. P19 was omitted from staging; I read its retained campaign copy.
+
+2. **CONFIRMED** — [factories.test.ts:1327](C:/Users/mikes/WebstormProjects/mcp/tests/src/browser/factories.test.ts:1327) and [validators.test.ts:95](C:/Users/mikes/WebstormProjects/mcp/tests/src/browser/validators.test.ts:95) compare detection with property presence without conditional test bodies or conditional registration. Factory cleanup, isolated absence cases, the parity-matrix reference, and the corrected native-block comment are present. P19 records each inverted-expectation control failing and the restored tests passing.
+
+3. **CONFIRMED** — The relationship detects the intended discrepancy: a present property with a refused registry shape produces `false !== true`; absence produces matching false values; an accepted registry produces matching true values and enables the native block at [ModelContext.test.ts:1170](C:/Users/mikes/WebstormProjects/mcp/tests/src/browser/ModelContext.test.ts:1170). Installed `objectOf` accepts inherited operations and contains throwing reads. No misread is substantiated for the declared registry contract. This confirms the test’s routing and alarm shape, not execution against a native registry.
+
+4. **CONFIRMED** — Comparing U4k and U4l destination hashes isolates changes to the owned test files. Every destination hash in `A4i-diff.patch` matches the live tree at `b9ff0b9`; implementation, fixture, and guide match U4k. `ModelContext.ts` has SHA-256 `56ac1dc5588e259d7eaf64403e20719fb508ebdac13aba722a82b42af6da2cc3`. Tracked paths are unchanged, probe files are absent, and `git diff --check HEAD` is clean. The delta adds no helper implementation; installed primitives remain reused. The collision log reports none within its declared population.
+
+5. **CONFIRMED** — The closure walk accounts for A4 through A4h: P9 and U4d/U4f cover the original findings; P11 closes through U4f; P12 through U4g; P13/P13b through U4h; A4e’s replacement, cyclic-descriptor, and destruction findings through U4i; P14 through U4j; P16/P18 through U4k; and P19 through U4l. The A4d generation ruling, nonblocking transport-recorder disposition, R8’s design-round carrier, and lane deviations remain recorded in the [chain record](C:/Users/mikes/WebstormProjects/mcp/tmp/codex/U4-chain-audit-verdict.md) and referenced verdicts.
+
+6. **CONFIRMED** — Approve this browser foundation for `0.0.31`, U4e, and U5b. No further U4 repair is required. The [authoritative gates](C:/Users/mikes/WebstormProjects/mcp/tmp/codex/U4l-mcp-gates-orchestrator.log.txt) record exit 0 for formatting, lint, typechecking, build, and tests; P19 supplies the independent control evidence.
+
+outside: none — chain closed.
+
+VERDICT: PASS

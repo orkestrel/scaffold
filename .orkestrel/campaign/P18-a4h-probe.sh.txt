@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+# P18 — Orchestrator probe (A4h analyst claim 2): reproduce U4k carrier 2's red reading on the host.
+# Mutates ModelContext.ts to the reconcile-then-prune order (no finally), runs the named pin (red),
+# restores the byte copy, runs it again (green). Log: p18-run.log.txt beside this file.
+set -u
+SP="/c/Users/mikes/AppData/Local/Temp/claude/C--Users-mikes-WebstormProjects-scaffold/bab586ba-1c34-4a7e-a280-b3a7e9f303d2/scratchpad"
+M=/c/Users/mikes/WebstormProjects/mcp
+F="$M/src/browser/ModelContext.ts"
+LOG="$SP/p18-run.log.txt"
+T='releases what the manager dropped when a registration fails'
+{
+	echo "# P18 — $(date -u +%FT%TZ) — mcp ModelContext.ts reconcile-then-prune control"
+	cp "$F" "$SP/p18-ModelContext.ts.bak"
+	echo "before:   $(sha256sum "$F" | cut -c1-16)"
+	node "$SP/p18-mutate.mjs" || { echo "mutation failed"; cp "$SP/p18-ModelContext.ts.bak" "$F"; exit 2; }
+	echo "mutated:  $(sha256sum "$F" | cut -c1-16)"
+	cd "$M" || exit 9
+	echo "== red run: npm run test:src:browser -- tests/src/browser/ModelContext.test.ts -t \"$T\""
+	npm run test:src:browser -- tests/src/browser/ModelContext.test.ts -t "$T" > "$SP/p18-red.out.txt" 2>&1
+	echo "exit=$?"
+	sed 's/\x1b\[[0-9;]*m//g' "$SP/p18-red.out.txt" | grep -E "Tests |Test Files|AssertionError|expected|FAIL|✓|×" | head -12
+	cp "$SP/p18-ModelContext.ts.bak" "$F"
+	echo "restored: $(sha256sum "$F" | cut -c1-16)"
+	echo "== green run: same command"
+	npm run test:src:browser -- tests/src/browser/ModelContext.test.ts -t "$T" > "$SP/p18-green.out.txt" 2>&1
+	echo "exit=$?"
+	sed 's/\x1b\[[0-9;]*m//g' "$SP/p18-green.out.txt" | grep -E "Tests |Test Files" | head -3
+	echo "# end $(date -u +%FT%TZ)"
+} > "$LOG" 2>&1

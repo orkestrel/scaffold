@@ -1,0 +1,107 @@
+# browser gates (after-u14d) — 2026-09-15T14:41:45Z — format:check, lint:check, check, build, test
+== npm run format:check
+npm notice run @orkestrel/browser@0.0.16 format:check
+npm notice run oxfmt --config .oxfmtrc.json --check .
+Checking formatting...
+
+All matched files use the correct format.
+Finished in 1449ms on 135 files using 16 threads.
+exit=0
+== npm run lint:check
+npm notice run @orkestrel/browser@0.0.16 lint:check
+npm notice run oxlint --config .oxlintrc.json --deny-warnings .
+exit=0
+== npm run check
+npm notice run @orkestrel/browser@0.0.16 check
+npm notice run tsc --noEmit --project tsconfig.json && npm run check:src
+npm notice run @orkestrel/browser@0.0.16 check:src
+npm notice run npm run check:src:core && npm run check:src:server
+npm notice run @orkestrel/browser@0.0.16 check:src:core
+npm notice run tsc --noEmit -p configs/src/tsconfig.core.json
+npm notice run @orkestrel/browser@0.0.16 check:src:server
+npm notice run tsc --noEmit -p configs/src/tsconfig.server.json
+exit=0
+== npm run build
+transforming...
+✓ 43 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/core/index.js  258.51 kB │ gzip: 57.17 kB │ map: 469.53 kB
+
+transforming...
+✓ 43 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/core/index.cjs  274.68 kB │ gzip: 58.06 kB │ map: 476.34 kB
+
+✓ built in 738ms
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+npm notice run @orkestrel/browser@0.0.16 copy
+npm notice run node -e "const fs=require('node:fs'),p=require('node:path'),a=process.argv[1],b=process.argv[2];fs.mkdirSync(p.dirname(b),{recursive:true});fs.cpSync(a,b,{force:true});console.log('Copied: '+a+' to '+b)" dist/src/core/index.d.ts dist/src/core/index.d.cts
+Copied: dist/src/core/index.d.ts to dist/src/core/index.d.cts
+npm notice run @orkestrel/browser@0.0.16 build:src:server
+npm notice run vite build --config configs/src/vite.server.config.ts && npm run copy dist/src/server/index.d.ts dist/src/server/index.d.cts
+vite v8.3.0 building client environment for production...
+"build.lib.formats" will be ignored because "build.rolldownOptions.output" is already an array format.
+transforming...
+✓ 10 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/server/index.js  59.29 kB │ gzip: 15.23 kB │ map: 105.85 kB
+
+transforming...
+✓ 10 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/server/index.cjs  62.43 kB │ gzip: 15.50 kB │ map: 107.02 kB
+
+✓ built in 165ms
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+npm notice run @orkestrel/browser@0.0.16 copy
+npm notice run node -e "const fs=require('node:fs'),p=require('node:path'),a=process.argv[1],b=process.argv[2];fs.mkdirSync(p.dirname(b),{recursive:true});fs.cpSync(a,b,{force:true});console.log('Copied: '+a+' to '+b)" dist/src/server/index.d.ts dist/src/server/index.d.cts
+Copied: dist/src/server/index.d.ts to dist/src/server/index.d.cts
+exit=0
+== npm run test
+
+··········································································································································································stdout | tests/config.test.ts > configuration helpers > rolls one face into a single declaration and rewrites its core specifier
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+
+·-stdout | tests/config.test.ts > configuration helpers > rolls one face into a single declaration and rewrites its core specifier
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+
+·
+
+ Test Files  1 passed (1)
+      Tests  172 passed | 1 skipped (173)
+   Start at  10:42:21
+   Duration  3.51s (transform 424ms, setup 604ms, import 418ms, tests 2.31s, environment 0ms)
+
+npm notice run @orkestrel/browser@0.0.16 test:setup
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project setup
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/browser
+
+··················································-
+
+ Test Files  3 passed (3)
+      Tests  50 passed | 1 skipped (51)
+   Start at  10:42:26
+   Duration  3.90s (transform 945ms, setup 1.86s, import 300ms, tests 3.37s, environment 0ms)
+
+npm notice run @orkestrel/browser@0.0.16 test:guides
+npm notice run node --experimental-strip-types tests/guides.test.ts
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/browser
+
+······································································································································································
+
+ Test Files  1 passed (1)
+      Tests  166 passed (166)
+   Start at  10:42:30
+   Duration  1.46s (transform 294ms, setup 616ms, import 619ms, tests 80ms, environment 0ms)
+
+exit=0

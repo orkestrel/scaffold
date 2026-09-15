@@ -1,0 +1,42 @@
+feat: host an MCP server in the page and bridge the registry to WebMCP
+
+- `createPageServer` owns a `MessageChannel`, binds both transports synchronously, and hands
+  back the bound client; `stop` closes both ports and leaves a client on which every
+  session-bound request (`call`, `tools`, the task client, a subscription's first `next()`)
+  rejects at once with `-32600`; `discover` stays reachable before a connection.
+- `MCPClient` refuses through one door, `#refuse`, read at the shared request entry and at the
+  subscription generator's entry; it exempts only the current negotiation (generation-matched),
+  so a transport lost from inside a `connect` listener refuses every later request at once, while
+  a `disconnect` issued there defers its teardown and the drain settles what was issued.
+- `createModelContext` returns `undefined` where the document exposes no `modelContext`;
+  `publish` takes a call-time snapshot, registers each tool with the projected annotations,
+  reconciles by tool identity then descriptor, and follows the manager's own registry events:
+  each followed `add`, `remove`, or `clear` queues one synchronisation that reads the manager's
+  live state at run time (absent → released, same tool → untouched, equal descriptor under a new
+  tool → kept and re-bound, changed → re-registered, new → registered, unprojectable → skipped
+  or released), coalesced by manager with publication order respected; a later `publish` of
+  another manager replaces the subscription and `destroy` releases it. Each batch reconciles then
+  prunes in `finally`, so a failed registration still releases what the manager dropped.
+- `adopt` wraps registered tools as `Tool` instances that forward the caller's signal; `change`
+  mirrors `toolchange`; `destroy` aborts only this handle's registrations, per name;
+  `describeWebMCPTool` answers `undefined` for a name the manager holds that WebMCP cannot carry.
+- The IDL-faithful double (`registerTool`, `getTools`, `executeTool`, `toolchange`,
+  `ontoolchange`, plus `suspend`, `holding`, and a refusal member for the mutation proofs) proves
+  the translation in real Chromium; the guide's `## WebMCP parity` matrix records every row's
+  disposition, the registry follow as `implement`, the `G5` row's recorded uncertainty, and the
+  `document.modelContext` conformance gap (chromestatus read 2026-09-15, last updated
+  2026-08-12: `Proposed`, no flag, no origin trial).
+- The failure path is pinned in both callers: a followed change and a publication that fail
+  partway each release what the manager dropped and keep every name the batch carries. The host
+  records assert the relationship feature detection holds on any host — a bridge is built
+  exactly where the page exposes the registry — rather than this host's absence.
+- Test infrastructure reuses `@orkestrel/test` (`waitForCondition`, `waitForAbort`,
+  `waitForEvent`, `requireValue`, `createRecorder`) and `@orkestrel/contract` (`objectOf`);
+  `traceRegistrations` records the registry at every `toolchange`; `recordRequests` states its
+  completed-response limit; every behavioural interface carries a Methods table.
+- `guides/tool.md` mirrors the tool checkout at `fa88364`.
+
+Campaign records live in the scaffold checkout under `.orkestrel/campaign/` (units U4 to U4m,
+audits A4 to A4j, probes P9, P11, P12, P13, P14, P16, P18, P19, sweep G6).
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>

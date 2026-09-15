@@ -1,0 +1,31 @@
+// P18 — Orchestrator probe instrument. Mutates `src/browser/ModelContext.ts` so both callers prune
+// AFTER the reconcile loop with no `finally` (the reconcile-then-prune order U4k replaced), so the
+// pin `releases what the manager dropped when a registration fails` can be read red on the host.
+// Each replacement must match exactly once; the runner restores the byte copy afterwards.
+import { readFileSync, writeFileSync } from 'node:fs'
+
+const path = 'C:/Users/mikes/WebstormProjects/mcp/src/browser/ModelContext.ts'
+const source = readFileSync(path, 'utf8')
+const eol = source.includes('\r\n') ? '\r\n' : '\n'
+const loop = '\t\t\tfor (const projection of projections) await this.#reconcile(tools, projection, options)'
+const flatLoop = '\t\tfor (const projection of projections) await this.#reconcile(tools, projection, options)'
+
+function block(prune) {
+	return ['\t\ttry {', loop, '\t\t} finally {', `\t\t\t${prune}`, '\t\t}', ''].join(eol)
+}
+
+function flat(prune) {
+	return [flatLoop, `\t\t${prune}`, ''].join(eol)
+}
+
+function replaceOnce(text, before, after, label) {
+	const first = text.indexOf(before)
+	if (first < 0) throw new Error(`${label}: block not found`)
+	if (text.indexOf(before, first + 1) >= 0) throw new Error(`${label}: block not unique`)
+	return text.slice(0, first) + after + text.slice(first + before.length)
+}
+
+let mutated = replaceOnce(source, block('this.#prune(projections, tools)'), flat('this.#prune(projections, tools)'), 'sync')
+mutated = replaceOnce(mutated, block('this.#prune(projections)'), flat('this.#prune(projections)'), 'publish')
+writeFileSync(path, mutated)
+console.log(`mutated (eol ${JSON.stringify(eol)}): both callers prune after the loop, outside any finally`)

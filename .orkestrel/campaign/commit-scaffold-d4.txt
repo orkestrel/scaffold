@@ -1,0 +1,37 @@
+feat: host every guide, floor the catalog, and gate the fleet's export names
+
+- The vendored host carries every guide the catalog names (`REFERENCE_PATHS`, staged at
+  `dist/host/guides/<name>.md`; `SEED_GUIDE_PATHS` names the pair `new` plants), and `stageHost`
+  refuses a catalog row without a guide.
+- `catalog` reads the registry live and falls back to the hosted floor when it is unreachable,
+  with `'floor'` provenance, `EXIT_DRIFT` where the floor differs from the last live reading, a
+  `note`, and one `membership` entity for the completed read; `audit` asks whether a mirror differs
+  from the hosted guide, naming the path in the message.
+- The `surface` policy rule reads every target's barrels through `@orkestrel/guide`'s reflection
+  and its own `tests/setup*.ts` exports through the declaration reader (namespace, every
+  declarator, enum, class, interface, type, function, export lists, star barrels; a `default` in
+  any form and every unreadable form refuse loudly), compares bare names against the hosted guides
+  minus the target's own, grandfathers only what the target's own hosted guide claims, and reports
+  `surface name belongs to one package: NAME (OWNER)`.
+- `stageHost` refuses cross-guide collision growth against the committed inventory:
+  `HostManifest.surface` records the collisions (digest-covered), `readSurfaceBaseline(root, name)`
+  reads it, an absent inventory refuses unless `HostStageOptions.establish` asks to establish,
+  and a staged owner set that is not a subset of the recorded one refuses with a message naming
+  both sets; the record may only shrink. `report` is silent by default; `build:host` passes its
+  sink. `readSurfaceCollisions` names its `@orkestrel/guide` prerequisite and refuses its absence
+  as a `ScaffoldError`.
+- Rules: `.claude/rules/names.md` § Fleet name ownership (the bare-name identity with case, the
+  grandfather, and the resolution rules: reuse before renaming; the subject keeps the name; qualify
+  rather than extract; close the collision in the code and never widen the record);
+  `.claude/rules/workspace.md` names the `surface` instrument; `.claude/rules/tests.md` names the
+  installed wait helpers and puts the read-the-installed-surface directive in § Shared test
+  infrastructure; `.agents/templates/brief.md` carries an Installed-primitives row.
+- This checkout's own setup helpers move off installed names (`captureScaffoldCode`,
+  `captureScaffoldMessage`, `captureScaffoldRejection` on the installed `captureError`);
+  `tests/setupPolicy.ts` keeps its own scratch; `@orkestrel/guide` re-pinned to `^0.0.19` with
+  the catalog table refreshed; `host.json` is a generated inventory the formatter ignores;
+  `guides/supervisor.md` mirrors the supervisor guide at its relocated path (it landed with the retention checkpoint `f37663f1`, staged before that commit).
+
+Campaign records land in the following retention commit under `.orkestrel/campaign/`.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
