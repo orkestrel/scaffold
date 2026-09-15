@@ -1,0 +1,14 @@
+npm notice run @orkestrel/mcp@0.0.30 test:distribution
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project distribution --mode release
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/mcp
+
+(node:20652) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead to security vulnerabilities, as the arguments are not escaped, only concatenated.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+········---···-·······
+
+ Test Files  1 passed (1)
+      Tests  18 passed | 4 skipped (22)
+   Start at  14:36:13
+   Duration  22.21s (transform 267ms, setup 450ms, import 3.95s, tests 17.66s, environment 0ms)
+

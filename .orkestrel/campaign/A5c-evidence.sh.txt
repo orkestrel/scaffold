@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+# A5c evidence — Orchestrator tracked command, successor of a5b-evidence.sh (which ran after U5d). Same shape,
+# new labels: the authoritative release-mode distribution proof, the gates after-u5e, then the projects the
+# chain never reaches because the policy project's standing red short-circuits it, plus the teardown reading.
+# Logs: scaffold tmp/units/A5c-distribution-orchestrator.log.txt, gates-mcp-after-u5e.log.txt, A5c-tail-gates.log.txt
+set -u
+S=/c/Users/mikes/WebstormProjects/scaffold
+M=/c/Users/mikes/WebstormProjects/mcp
+cd "$M" || exit 9
+{
+	echo "# A5c distribution (release mode) — $(date -u +%FT%TZ) — mcp head $(git rev-parse --short HEAD)"
+	echo "# status: $(git status --short | tr '\n' ' ')"
+	start=$(date +%s)
+	npm run test:distribution -- --mode release > "$S/tmp/units/A5c-distribution-orchestrator.out.txt" 2>&1
+	code=$?
+	end=$(date +%s)
+	sed 's/\x1b\[[0-9;]*m//g' "$S/tmp/units/A5c-distribution-orchestrator.out.txt" | grep -E 'Tests |Test Files|Duration|FAIL|Error|↓' | head -40
+	echo "exit=$code wall=$((end - start))s"
+	echo "# end $(date -u +%FT%TZ)"
+} > "$S/tmp/units/A5c-distribution-orchestrator.log.txt" 2>&1
+cat "$S/tmp/units/A5c-distribution-orchestrator.log.txt"
+echo "== gates mcp after-u5e"
+bash "$S/tmp/units/gates3.sh" mcp after-u5e
+echo "== tail projects and teardown"
+{
+	echo "# A5c tail gates — $(date -u +%FT%TZ) — mcp head $(git rev-parse --short HEAD)"
+	echo "== teardown reading: distribution-* trees under the temp directory"
+	ls -d /c/Users/mikes/AppData/Local/Temp/distribution-* 2>/dev/null | wc -l
+	for project in config setup conformance integration guides; do
+		echo "== npm run test:$project"
+		npm run "test:$project" > "$S/tmp/units/A5c-tail-gates-$project.out.txt" 2>&1
+		code=$?
+		sed 's/\x1b\[[0-9;]*m//g' "$S/tmp/units/A5c-tail-gates-$project.out.txt" | grep -E 'Tests |Test Files|FAIL' | head -6
+		echo "exit=$code"
+	done
+	echo "# end $(date -u +%FT%TZ)"
+} > "$S/tmp/units/A5c-tail-gates.log.txt" 2>&1
+cat "$S/tmp/units/A5c-tail-gates.log.txt"

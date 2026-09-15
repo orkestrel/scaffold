@@ -1,0 +1,10 @@
+chore: visit scaffold 0.0.69
+
+The development-only re-pin to the published scaffold: the vendored host restored by scaffold
+overwrite, including the `surface` policy rule's declaration reader, which now accepts an exported
+function overload signature and reports one name once per file per owner. That reader is why this
+visit matters here: the 0.0.68 copy refused the overload at `src/core/helpers.ts` and left this
+checkout's policy sweep red. The audit reads exit 0 and every other @orkestrel range already equals
+the registry caret.
+
+Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>

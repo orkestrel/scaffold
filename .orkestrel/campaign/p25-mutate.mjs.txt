@@ -1,0 +1,36 @@
+// P25 mutations for the mcp composition receipts. Usage: node p25-mutate.mjs map|title
+// `map`   drops one entry from the emitted import map, so the page cannot resolve it.
+// `title` drops the page tool's `title`, so the metadata projection loses a field on the wire.
+// Each replacement is guarded on exactly one occurrence and prints what it changed.
+import { readFileSync, writeFileSync } from 'node:fs'
+
+const TEST = 'C:/Users/mikes/WebstormProjects/mcp/tests/distribution.test.ts'
+const PAGE = 'C:/Users/mikes/WebstormProjects/mcp/tests/fixtures/distributionPage.mjs'
+
+const VECTORS = {
+	map: {
+		file: TEST,
+		before: '{ imports: modules.imports }',
+		after:
+			"{ imports: Object.fromEntries(Object.entries(modules.imports).filter(([name]) => name !== '@orkestrel/emitter')) }",
+	},
+	title: {
+		file: PAGE,
+		before: "\ttitle: 'Add two numbers',\n",
+		after: '',
+	},
+}
+
+const vector = VECTORS[process.argv[2]]
+if (vector === undefined) {
+	console.error(`unknown vector: ${process.argv[2]}`)
+	process.exit(2)
+}
+const text = readFileSync(vector.file, 'utf8')
+const count = text.split(vector.before).length - 1
+if (count !== 1) {
+	console.error(`expected one occurrence, found ${count} in ${vector.file}`)
+	process.exit(2)
+}
+writeFileSync(vector.file, text.replace(vector.before, vector.after))
+console.log(`mutated ${vector.file}: ${JSON.stringify(vector.before)} -> ${JSON.stringify(vector.after)}`)

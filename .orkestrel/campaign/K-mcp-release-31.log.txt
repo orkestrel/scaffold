@@ -1,0 +1,29 @@
+# mcp release chain (v31) — 2026-09-15T19:32:25Z — "version":"0.0.31" — head 13715cb
+== npm run prepublishOnly
+ Test Files  35 passed (35)
+      Tests  1498 passed | 2 skipped (1500)
+ Test Files  1 passed (1)
+      Tests  101 passed | 1 skipped (102)
+ Test Files  1 passed (1)
+      Tests  172 passed | 1 skipped (173)
+ Test Files  5 passed (5)
+      Tests  89 passed (89)
+ Test Files  1 passed (1)
+      Tests  202 passed (202)
+ Test Files  1 passed (1)
+      Tests  47 passed (47)
+ Test Files  1 passed (1)
+      Tests  4 passed (4)
+ Test Files  1 passed (1)
+      Tests  19 passed | 4 skipped (23)
+exit=0
+== npm pack --dry-run
+exit=0
+npm notice package size: 834.0 kB
+npm notice unpacked size: 3.3 MB
+npm notice shasum: 9c4d7f4ca478b5dcce290bbee5618c2e9c733eb4
+npm notice total files: 18
+== status
+ M package-lock.json
+ M package.json
+# end 2026-09-15T19:34:37Z

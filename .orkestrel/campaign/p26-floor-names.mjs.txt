@@ -1,0 +1,46 @@
+// P26 — Orchestrator probe, read-only: which names did the scaffold 0.0.69 hosted-guide floor ADD to the
+// cross-package `## Surface` tables since 0.0.68, and does the mcp checkout declare any of them? A name added
+// by the refresh that mcp also exports becomes a new `surface` collision the moment mcp re-pins, so this is
+// read before the visit rather than discovered by it.
+// Usage: node p26-floor-names.mjs <old-host-dir> <new-host-dir> <mcp-surface-file>
+import { readdirSync, readFileSync } from 'node:fs'
+import { join } from 'node:path'
+
+function readSurfaceNames(file) {
+	const text = readFileSync(file, 'utf8')
+	const lines = text.split('\n')
+	const start = lines.findIndex((line) => line.trim() === '## Surface')
+	if (start < 0) return new Set()
+	const names = new Set()
+	for (let index = start + 1; index < lines.length; index += 1) {
+		const line = lines[index]
+		if (line.startsWith('## ')) break
+		const match = /^\|\s*`([^`]+)`/.exec(line)
+		if (match !== null) names.add(match[1])
+	}
+	return names
+}
+
+function readGuideNames(directory) {
+	const owned = new Map()
+	for (const entry of readdirSync(directory)) {
+		if (!entry.endsWith('.md') || entry === 'README.md') continue
+		owned.set(entry.slice(0, -3), readSurfaceNames(join(directory, entry)))
+	}
+	return owned
+}
+
+const [oldDir, newDir, mcpSurface] = process.argv.slice(2)
+const before = readGuideNames(oldDir)
+const after = readGuideNames(newDir)
+const mine = readSurfaceNames(mcpSurface)
+
+const added = []
+for (const [owner, names] of after) {
+	const was = before.get(owner) ?? new Set()
+	for (const name of names) if (!was.has(name)) added.push({ owner, name })
+}
+console.log(`owners compared: ${[...after.keys()].join(', ')}`)
+console.log(`names added by the refresh: ${added.length === 0 ? 'none' : added.map((a) => `${a.name} (${a.owner})`).join(', ')}`)
+const clashes = added.filter((a) => a.owner !== 'mcp' && mine.has(a.name))
+console.log(`of those, names the mcp guide also claims: ${clashes.length === 0 ? 'none' : clashes.map((c) => `${c.name} (${c.owner})`).join(', ')}`)

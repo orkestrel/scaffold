@@ -19,54 +19,39 @@ are retained in a commit.
 
 | Checkout | HEAD (local) | Working tree | State | Next |
 | --- | --- | --- | --- | --- |
-| `tool` | `0f8fb24` `chore: release tool 0.0.15` — PUSHED and PUBLISHED by the user (registry shasum `07c17603…`) | clean | released; visited against scaffold 0.0.68 (audit exit 0, gates green; `@types/node` held at `^26.5.1`) | after scaffold 0.0.69 is on the registry: re-pin `@orkestrel/scaffold` `^0.0.69`, `repair` (or `tmp/units/visit.sh tool v69`), gates, dist compare (must read no material difference: a development-only move, no bump), commit by pathspec, push |
-| `agent` | `d509108` `chore: release agent 0.0.23` — PUSHED and PUBLISHED by the user (registry shasum `028a324b…`) | clean | released; visited against scaffold 0.0.68 and tool 0.0.15; the hosted `guides/agent.md` in scaffold 0.0.69 mirrors this pushed main | the same development-only re-pin to `^0.0.69` + `repair`; push |
-| `mcp` | `8d97dd0` `chore: visit scaffold 0.0.68` on `cc34f01` (the preparation re-pin) on `18c3d33` U14e on `406b5c9` the server chain on `7959f08` the browser face — UNPUSHED | U5c RETURNED, uncommitted: `tests/distribution.test.ts` (+387: the composition receipts X5–X8, the closure, the control), new `tests/fixtures/distributionPage.mjs` and `distributionServer.mjs`, `guides/mcp.md` `## Tests` (+30); `tmp/u5/` holds the unit's own logs | LANDED: the browser face and the server chain; U14e; visited against 0.0.68 and tool 0.0.15 with ONE standing policy red (the 0.0.68 reader refuses the `buildModernResult` overload) that the scaffold 0.0.69 re-pin closes; U5c green on its owned gates (distribution 18 passed / 4 skipped in release mode; guides 202) with two recorded departures (registry agent 0.0.23 instead of the tip tarball; `@orkestrel/ndjson` in the throwaway consumer's install) and two observations (the request-closure abort drops the `notifications/cancelled` reason; a string tool value re-enters JSON-quoted) — all in `U5c-mcp-distribution-report.md` and claims 11–13 of the A5 brief | the A5 evidence RUNNING (scratchpad `a5-evidence.sh`: `npm run test:distribution -- --mode release` → `A5-distribution-orchestrator.log.txt`, then `gates3.sh mcp after-u5c`) → retain the gates as `U5c-mcp-gates-orchestrator.log.txt` / `-test-full.log.txt` → A5 (Astra through `tmp/codex/A5-run.sh` + `reviewer` + `checker`; brief `tmp/units/A5-audit-brief.md`, amended with claims 11–13) → commit U5c by pathspec (the four paths) → after scaffold 0.0.69 publishes: re-pin `^0.0.69` + `repair` (clears the policy red; commit) → bump 0.0.31 → `release-chain.sh mcp v31` → release commit → THE USER pushes and uploads |
-| `ollama` | `50d869e` `chore: release ollama 0.0.17` on `76d9caf` the visit on `b70e066` the preparation re-pin on `5c218cd` — UNPUSHED (7 commits ahead of `origin/main`) | clean | visited against scaffold 0.0.68, tool 0.0.15, and agent 0.0.23 (audit exit 0, gates green; a `guides/browser.md` mirror added; `@types/node` re-declared `^26.6.0`); dist compare vs 0.0.16: one `@remarks` paragraph material, and the runtime ranges on tool and agent moved → bumped 0.0.17; release chain GREEN (prepublishOnly exit 0; pack dry run 9 files, shasum `2fcb2c96…`) | THE USER: `git push origin main` in the ollama checkout, then `npm publish --ignore-scripts --otp=<code>` there with a fresh one-time code; confirm `npm view @orkestrel/ollama version` serves 0.0.17 (compare the registry shasum with `2fcb2c96…`); later the development-only re-pin to scaffold `^0.0.69` + `repair` |
-| `scaffold` | records checkpoint 4 on `bf7d33a2` (checkpoint 3) on `7a90fa88` `chore: release scaffold 0.0.68` — 0.0.68 PUBLISHED and PUSHED by the user | the 0.0.69 release files, uncommitted until the release commit that follows checkpoint 4: D4-9 + D4-9b (`tests/setupPolicy.ts`, `tests/setupPolicy.test.ts`), the hosted `guides/tool.md` and `guides/agent.md` refreshed from the pushed mains, `host.json` regenerated (entry digests and the manifest digest only; the surface unchanged at 129 entries), the bump to 0.0.69 (`package.json`, `package-lock.json`), three fixtures under `tests/src/core/fixtures/` re-pinned `^0.0.69` | ACCEPTED for release: D4-9 (the reader accepts `TSDeclareFunction`) audited FAIL 3 → D4-9b (the pin renamed with the declaration- and statement-refusal controls, the `function overload` matrix row, the collision key without `line` — one violation per name per file per owner) → gates `after-d49b` GREEN → AD4-9b RECONCILED PASS (`AD49b-audit-verdict.md`: checker PASS; Astra 1–6 with the merging vector closed by P24 and the release-mode vector by the chain log; the reviewer SHIP; the report-prose findings recorded, not adopted; carry-forwards: the collision pin's describe block, `export declare global`) → release chain v69b GREEN (prepublishOnly exit 0; pack dry run 190 files, shasum `f5c2f8d869ac3d772f8e46b5c14072bfa0743052`) | the release commit (`scratchpad/commit-scaffold-release-69.txt`, retained as `commit-scaffold-release-69.draft.txt`; the files in the working-tree column) → THE USER: `git push origin main` in the scaffold checkout, then `npm publish --ignore-scripts --otp=<code>` there with a fresh one-time code; confirm `npm view @orkestrel/scaffold version` serves 0.0.69 with shasum `f5c2f8d8…`; then every target re-pins `^0.0.69` + `repair` (mcp first: it clears the standing policy red) |
-| `browser` | `401b1fb` `chore: visit scaffold 0.0.68` on `f34fc51` (the preparation re-pin) on `f932493` U14d — UNPUSHED | clean | visited against 0.0.68 (audit exit 0, gates green; `@types/node` held at `^26.5.1`); dist compare vs 0.0.16: no material difference — no bump owed; D2 out of scope (`HANDOFF-D2.md`) | the development-only re-pin to scaffold `^0.0.69` + `repair` (re-declare `@types/node` `^26.6.0`); push at the landing |
+| `tool` | `0974d9e` `chore: visit scaffold 0.0.69` on `8789aa9` (the preparation re-pin) on `0f8fb24` `chore: release tool 0.0.15` (PUBLISHED) — 2 commits UNPUSHED | clean | released 0.0.15; VISITED against 0.0.69 (audit exit 0, gates green, `@types/node` `^26.6.0`; dist compare vs 0.0.15: no material difference — no bump) | push at the landing (`git push origin main`); nothing else this campaign |
+| `agent` | `cc8a5b2` `chore: visit scaffold 0.0.69` on `43f944a` (the preparation re-pin) on `d509108` `chore: release agent 0.0.23` (PUBLISHED) — 2 commits UNPUSHED | clean | released 0.0.23; VISITED against 0.0.69 (audit exit 0, gates green, `@types/node` `^26.6.0`; dist compare vs 0.0.23: no material difference — no bump) | push at the landing; nothing else this campaign |
+| `mcp` | `7111d57` `chore: release mcp 0.0.31` on `13715cb` the 0.0.69 visit on `b36cdc2` the preparation re-pin on `f9a15f4` the composition receipts on `8d97dd0` the 0.0.68 visit — UNPUSHED, 10 commits ahead of `origin/main` | clean | RELEASE-COMMITTED 0.0.31. What it publishes: the browser face (`createPageServer`, `createModelContext`), the server's registry-driven `notifications/tools/list_changed` producer with its demand-driven, failure-ordered, coalescing subscription, and the conformance rename. What landed beside it unpublished: the composition receipts (units U5c through U5g), which drive the packed artifact in a real Chromium page beside the installed agent, tool, and parser artifacts over an import map answered from the consumer's own `node_modules`. Audited across THREE rounds — A5, A5b (three contract lanes plus one blind lens per seam over six seams), A5c — which found and closed a scratch-tree leak the delta introduced, an assertion whose field name read backwards, formatter residue `oxfmt` cannot see, a header false of its own file, prose counts, a dead field, surviving duplication, an authorization no receipt could redden, an unchecked flat-install assumption, and a reached-file assertion that did not pin what it advertised. Five Orchestrator probes settled what the bench sandbox cannot run: P25, P26, P27, P28, and the landing readings. The 0.0.69 visit CLEARED the standing policy red (`101 passed / 1 skipped` where every earlier run read `1 failed`). The release chain ran green end to end: every project passing and the release-mode distribution at 19 passed / 4 skipped; pack dry run 18 files, 834.0 kB, shasum `9c4d7f4ca478b5dcce290bbee5618c2e9c733eb4` | THE USER: `git push origin main` in the mcp checkout, then `npm publish --ignore-scripts --otp=<code>` there with a fresh one-time code; confirm `npm view @orkestrel/mcp version` serves 0.0.31 and its `dist.shasum` equals `9c4d7f4c…`. Then U9/U10 re-pin probe and toolbox, and scaffold 0.0.70 refreshes the hosted `guides/mcp.md` from this pushed main |
+| `ollama` | `034f2e1` `chore: visit scaffold 0.0.69` on `581a06a` (the preparation re-pin) on `50d869e` `chore: release ollama 0.0.17` (PUSHED and PUBLISHED by the user on 2026-09-15, registry shasum `2fcb2c96…`) — 2 commits UNPUSHED | clean | RELEASED 0.0.17 on tool 0.0.15 and agent 0.0.23; VISITED against 0.0.69 (audit exit 0, gates green; dist compare vs 0.0.17: no material difference — no bump) | push at the landing; nothing else this campaign |
+| `scaffold` | `774f3cff` `chore: release scaffold 0.0.69` on `709235e1` records checkpoint 4 — PUSHED and PUBLISHED by the user on 2026-09-15 (registry shasum `f5c2f8d8…` equals the pack dry run) | clean but for the untracked `dist/` and the campaign folder's growth since checkpoint 4 | RELEASED 0.0.69: the surface reader accepts `TSDeclareFunction`, the collision consumer reports one name once per file per owner, the hosted tool and agent mirrors refreshed (D4-9, D4-9b, AD4-9, AD4-9b, P22–P24) | the targets re-pin `^0.0.69` + `repair` (`visit.sh <checkout> v69`; browser and tool running, then agent and ollama, mcp after U5d); scaffold 0.0.70 after the mcp and ollama pushes (the hosted mirrors); the final retention commit and the prune at the landing |
+| `browser` | `15c0a9b` `chore: visit scaffold 0.0.69` on `70514bf` (the preparation re-pin) on `401b1fb` (the 0.0.68 visit) on `f932493` U14d — UNPUSHED | clean | VISITED against 0.0.69 (audit exit 0, gates green, `@types/node` `^26.6.0`; dist compare vs 0.0.16: no material difference — no bump); D2 out of scope (`HANDOFF-D2.md`) | push at the landing; nothing else this campaign |
 
-Rough distance (2026-09-15, ~18:00 UTC): ollama 0.0.17 is release-committed and waits for the
-user's push and upload; scaffold 0.0.69 is accepted and release-commits after records checkpoint
-4, then the same wait. mcp's distribution receipts (U5c) returned green and are in their audit
-round (A5), then the re-pin to 0.0.69 and the release 0.0.31. After the wave: the development-only
-re-pins of tool, agent, browser, and ollama to 0.0.69; U9/U10; a scaffold 0.0.70 that refreshes
-the hosted mcp and ollama mirrors; the landing. Estimate: one audit round (A5), three uploads
-(scaffold, ollama, mcp) plus one floor-refresh upload, four development re-pins, then the landing.
+Rough distance (2026-09-15, ~19:35 UTC): scaffold 0.0.69, ollama 0.0.17, tool 0.0.15, and agent
+0.0.23 are published; tool, agent, browser, and ollama are re-pinned to 0.0.69 with no bump owed,
+their visit commits unpushed until the landing. mcp has landed its composition receipts and is in
+its 0.0.69 visit, then the bump to 0.0.31, the release chain, the release commit, and the upload.
+After that the campaign closes: U9/U10, a scaffold 0.0.70 refreshing the hosted mcp and ollama
+mirrors, and the landing push with the retention prune. Estimate: one mcp upload, one
+floor-refresh upload, then the landing.
 
 ## The remaining path, in order
 
-
-1. **scaffold 0.0.69:** ACCEPTED (AD4-9b reconciled PASS; release chain v69b green): the release
-   commit follows records checkpoint 4 → the user's push and upload →
-   `npm view @orkestrel/scaffold version` reads 0.0.69 (shasum `f5c2f8d8…`).
-2. **ollama 0.0.17:** the user's push and upload (independent of step 1: its runtime ranges sit on
-   the published tool 0.0.15 and agent 0.0.23, and its scaffold edge is development-only).
-3. **mcp:** the row's Next column: U5c → A5 → commit → re-pin `^0.0.69` + `repair` → bump 0.0.31 →
-   `release-chain.sh mcp v31` → release commit → the user's push and upload. The re-pin needs
-   0.0.69 on the registry (poll `npm view @orkestrel/scaffold versions --json`; packuments lag
-   uploads by minutes).
-4. **Fleet re-pin to 0.0.69** (tool, agent, browser, ollama; mcp inside step 3): re-pin the range,
-   `repair` (or `tmp/units/visit.sh <checkout> v69`, which also re-pins every other `@orkestrel`
-   range to the registry caret and re-declares `@types/node`), gates, dist compare against the
-   published version — a development-only move reads no material difference and obliges no bump
-   (`.agents/orchestration.md` § What a bump obliges); commit by pathspec; push.
-5. **U9/U10** (probe and toolbox re-pins to the published tool, agent, and mcp) as units after the
-   wave; their briefs are not yet written.
-6. **scaffold 0.0.70 (the floor refresh):** after the mcp and ollama pushes, refresh the hosted
+1. **mcp 0.0.31:** RELEASE-COMMITTED `7111d57`, the chain green end to end (pack shasum
+   `9c4d7f4c…`). The user pushes and uploads; confirm the registry serves 0.0.31.
+2. **U9/U10:** re-pin `probe` and `toolbox`, which still hold mcp `^0.0.30`, tool `^0.0.14`,
+   agent `^0.0.21`, and scaffold `^0.0.67`. Each is a clean tree on `chore: align published
+   development tooling`; their briefs are not yet written.
+3. **scaffold 0.0.70, the floor refresh:** after the mcp and ollama pushes, refresh the hosted
    `guides/mcp.md` and `guides/ollama.md` from their pushed mains (`git show origin/main:guides/<name>.md`
-   in each checkout; the published tarballs ship no guides), `npm run build` (the inventory must
-   admit the refresh — re-establish `host.json` with `reestablish-inventory.mjs` only where a
-   refreshed mirror moves a collision, and record what it admits and drops), bump, the release
+   in each checkout; the published tarballs ship no guides — the ollama mirror is already stale by
+   about 30 lines), `npm run build` (re-establish `host.json` with `reestablish-inventory.mjs` only
+   if a refreshed mirror moves a collision, recording what it admits and drops), bump, the release
    chain, the release commit, the user's upload; the targets' following re-pin is development-only.
-7. **Landing:** push every checkout (the user's ruling: push at landing; the release pushes happen
-   at each upload); a final retention commit of `.orkestrel/campaign/`; prune the campaign folder
-   per `orkestrel-debrief/references/retention.md`.
-8. **Out of scope by the user's ruling (2026-09-15):** the supervisor repository (its guide
-   relocation and its `npm ci` ERESOLVE) and D2, the browser reading arm — fully specified for the
-   next session in `HANDOFF-D2.md` beside this file (the goal in the user's words, both design
-   sketches, the draft brief `D2-design-brief.draft.md` with its two `TO FILL` markers and how to
-   fill them, the rulings that bind it, the browser checkout's state, the resume steps).
+4. **Landing:** push every checkout — tool `0974d9e`, browser `15c0a9b`, agent `cc8a5b2`, ollama
+   `034f2e1`, mcp `7111d57` — then a final retention commit of `.orkestrel/campaign/` and the
+   prune per `orkestrel-debrief/references/retention.md`.
+5. **Out of scope by the user's ruling (2026-09-15):** the supervisor repository, and D2, the
+   browser reading arm, fully specified for the next session in `HANDOFF-D2.md`.
 
 ## File map
 
@@ -145,11 +130,16 @@ checkouts during the campaign and from pushed `main` afterwards; the ollama page
 
 ## Open items for the user
 
-- The npm one-time codes at each remaining publish: scaffold 0.0.69 and ollama 0.0.17 (both
-  release-committed and unpushed on 2026-09-15 ~17:30 UTC), mcp 0.0.31 (after U5c and A5), and
-  scaffold 0.0.70 (the floor refresh after the mcp and ollama pushes).
-- The pushes: scaffold and ollama at their uploads; mcp at its upload; browser at the landing
-  (tool and agent are pushed).
+- The npm one-time codes at the remaining publishes: mcp 0.0.31 (`7111d57`, release-committed and
+  unpushed on 2026-09-15) and scaffold 0.0.70 (the floor refresh after the mcp push).
+- The pushes: mcp at its upload; tool, browser, agent, and ollama at the landing, each carrying
+  only its development-only re-pin to scaffold 0.0.69.
+- A ruling to confirm or overturn: the mcp distribution proof installs `@orkestrel/ndjson` into its
+  throwaway consumer for the agent relay parser, and changes no manifest. The objective lane read
+  that as an added package under R5; the subjective lane and the Orchestrator read it as the
+  consumer modelling a real application, which the agent guide itself describes
+  (`A5c-audit-verdict.md`). Overturning it means writing a parser inside the fixture, which
+  `.claude/rules/tests.md` bars.
 - The supervisor checkout's `npm ci` ERESOLVE (a middleware peer range) — outside this campaign.
 
 ## Added 2026-09-15 after AD4b

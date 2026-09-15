@@ -1,0 +1,54 @@
+npm notice run @orkestrel/mcp@0.0.30 test
+npm notice run npm run test:src && npm run test:policy && npm run test:config && npm run test:setup && npm run test:guides && npm run test:conformance && npm run test:integration
+npm notice run @orkestrel/mcp@0.0.30 test:src
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core --project src:browser --project src:server
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/mcp
+
+···········································································································································································································································································································································································································································································································································································································································································································································································································································································································································································································································································································································································································································································································································································································································································································--···············································
+
+ Test Files  35 passed (35)
+      Tests  1498 passed | 2 skipped (1500)
+   Start at  15:28:23
+   Duration  39.33s (transform 13.33s, setup 15.82s, import 10.24s, tests 62.19s, environment 4ms)
+
+npm notice run @orkestrel/mcp@0.0.30 test:policy
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project policy
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/mcp
+
+····························································································-·x·······
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |policy| tests/policy.test.ts > repository policy > enforces the workspace policy laws including surface ownership
+AssertionError: expected [ { rule: 'surface', …(2) } ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   {
++     "message": "surface population incomplete: export declaration is unsupported at src/core/helpers.ts:837: TSDeclareFunction",
++     "path": "src/core/helpers.ts",
++     "rule": "surface",
++   },
++ ]
+
+ ❯ tests/policy.test.ts:748:49
+    746| describe('repository policy', () => {
+    747|  it('enforces the workspace policy laws including surface ownership', …
+    748|   expect(inspectPolicyWorkspace(process.cwd())).toEqual([])
+       |                                                 ^
+    749|  })
+    750|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 100 passed | 1 skipped (102)
+   Start at  15:29:04
+   Duration  2.46s (transform 291ms, setup 469ms, import 264ms, tests 1.57s, environment 0ms)
+

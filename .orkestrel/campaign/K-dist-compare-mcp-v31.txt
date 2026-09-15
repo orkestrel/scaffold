@@ -1,0 +1,8 @@
+# dist compare mcp: local 8d97dd0 vs published 0.0.30
+material diff: src/browser/index.d.ts
+material diff: src/browser/index.js
+material diff: src/core/index.cjs
+material diff: src/core/index.d.cts
+material diff: src/core/index.d.ts
+material diff: src/core/index.js
+verdict: material differences (6 files) — the published surface moved

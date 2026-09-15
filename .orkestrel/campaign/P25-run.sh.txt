@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+# P25 — Orchestrator probe: replay U5d's two self-reported mutation vectors as the Orchestrator's own readings.
+# (a) one entry filtered out of the emitted import map: the composition receipts must redden on module resolution;
+# (b) the page tool's `title` dropped: the metadata projection receipts must redden.
+# Each vector mutates through a node script, runs the release-mode distribution project, then restores from a copy
+# taken first and proves the restore with cmp. Runs only with no gate and no lane live.
+# Log: scratchpad/p25.log.txt
+set -u
+S=/c/Users/mikes/WebstormProjects/scaffold
+M=/c/Users/mikes/WebstormProjects/mcp
+SP=/c/Users/mikes/AppData/Local/Temp/claude/C--Users-mikes-WebstormProjects-scaffold/bab586ba-1c34-4a7e-a280-b3a7e9f303d2/scratchpad
+cd "$M" || exit 9
+cp tests/distribution.test.ts "$SP/distribution.test.ts.p25-backup"
+cp tests/fixtures/distributionPage.mjs "$SP/distributionPage.mjs.p25-backup"
+echo "# P25 — $(date -u +%FT%TZ) — mcp head $(git rev-parse --short HEAD)"
+for vector in map title; do
+	echo "== vector $vector: mutate"
+	node "$SP/p25-mutate.mjs" "$vector"
+	npm run test:distribution -- --mode release > "$SP/p25-$vector.out.txt" 2>&1
+	echo "exit=$?"
+	sed 's/\x1b\[[0-9;]*m//g' "$SP/p25-$vector.out.txt" | grep -E 'Tests |Test Files|FAILED|Failed to resolve|AssertionError|- *"title"|→ ' | head -14
+	echo "== vector $vector: restore"
+	cp "$SP/distribution.test.ts.p25-backup" tests/distribution.test.ts
+	cp "$SP/distributionPage.mjs.p25-backup" tests/fixtures/distributionPage.mjs
+	cmp tests/distribution.test.ts "$SP/distribution.test.ts.p25-backup" && cmp tests/fixtures/distributionPage.mjs "$SP/distributionPage.mjs.p25-backup" && echo "restored: cmp 0 on both"
+done
+echo "== green after both restores"
+npm run test:distribution -- --mode release > "$SP/p25-restored.out.txt" 2>&1
+echo "exit=$?"
+sed 's/\x1b\[[0-9;]*m//g' "$SP/p25-restored.out.txt" | grep -E 'Tests |Test Files'
+git -C "$M" status --short
+echo "# P25 end $(date -u +%FT%TZ)"

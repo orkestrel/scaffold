@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+# A5b objective audit lane — GPT-6 Astra, read-only codex exec rooted at the mcp checkout. Cap 2400 s.
+# Successor of A5-run.sh: the unit name, brief, journal, and evidence set (U5c/U5d briefs and reports, the
+# A5b delta, the Orchestrator's distribution run, the gates and tail gates after U5d, the A5 verdict).
+set -u
+SCAF="C:/Users/mikes/WebstormProjects/scaffold"
+MCP="C:/Users/mikes/WebstormProjects/mcp"
+J="$SCAF/tmp/codex/A5b-audit.jsonl"
+L="$SCAF/tmp/codex/A5b-audit-last.md"
+B="$MCP/tmp/codex/A5b-audit-brief.md"
+cp "$SCAF/tmp/units/A5b-audit-brief.md" "$B"
+for f in U5c-mcp-distribution-brief.md U5d-mcp-distribution-brief.md U5c-mcp-distribution-report.md U5d-mcp-distribution-report.md A5b-diff.patch.txt A5b-distribution-orchestrator.log.txt U5d-mcp-gates-orchestrator.log.txt U5d-mcp-gates-test-full.log.txt A5b-tail-gates.log.txt P25-u5d-receipt-probe.md A5-audit-verdict.md A5-audit-analyst.md A5-audit-reviewer.md A5-audit-checker.md plan.md; do
+	cp "$SCAF/.orkestrel/campaign/$f" "$MCP/tmp/codex/$f"
+done
+echo "launch unit=A5b-audit model=gpt-6-astra sandbox=read-only cap=2400 start=$(date -u +%Y-%m-%dT%H:%M:%SZ)" > "$SCAF/tmp/codex/A5b-audit.launch.txt"
+timeout 2400 codex exec --json -C "$MCP" --sandbox read-only --model gpt-6-astra -c 'model_reasoning_effort="high"' --output-last-message "$L" "Read and execute the audit brief at $B exactly (every evidence file it names is staged beside it in tmp/codex/). You hold the OBJECTIVE lane (analyst) and the cross-engine lane: Claude Opus 5 wrote the units under audit. Perform the audit directly and spawn nothing; the sandbox cannot run Chromium or an install, so name each unexecuted vector UNRESOLVED with its exact command. Your final message must be the verdict shape the brief specifies." < /dev/null > "$J" 2> "$SCAF/tmp/codex/A5b-audit.err"
+EXIT=$?
+echo "exit=$EXIT end=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$SCAF/tmp/codex/A5b-audit.launch.txt"
+echo "unit=A5b-audit exit=$EXIT"
+grep -o '"thread_id":"[^"]*"' "$J" | head -1
+wc -c < "$L" 2>/dev/null

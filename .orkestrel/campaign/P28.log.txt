@@ -1,0 +1,30 @@
+# P28 — 2026-09-15T19:12:11Z — mcp head 8d97dd0
+== distribution-* trees before
+0
+mutated: the walk is seeded with @orkestrel/planted-p28, which the tree serves nothing for
+exit=1
+ FAIL  |distribution| tests/distribution.test.ts [ tests/distribution.test.ts ]
+Error: The consumer's installed tree serves no module for @orkestrel/planted-p28
+    1389|    throw new Error(
+    1390|     `The consumer's installed tree serves no module for ${modules.outs…
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 8 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  |distribution| tests/distribution.test.ts > installed artifacts composed in a page > evaluates every @orkestrel entry the installed agent imports [requires a browser]
+ FAIL  |distribution| tests/distribution.test.ts > installed artifacts composed in a page > runs a page tool through an installed agent with no request at all [requires a browser]
+ FAIL  |distribution| tests/distribution.test.ts > installed artifacts composed in a page > completes an in-page MCP pair with no request at all [requires a browser]
+ FAIL  |distribution| tests/distribution.test.ts > installed artifacts composed in a page > dispatches an agent call into the page server with no request at all [requires a browser]
+ FAIL  |distribution| tests/distribution.test.ts > installed artifacts composed in a page > carries a caller abort into the page server handler [requires a browser]
+== distribution-* trees after the planted stage failure
+0
+restored: cmp 0
+== green after the restore
+exit=0
+ Test Files  1 passed (1)
+      Tests  19 passed | 4 skipped (23)
+== distribution-* trees at the end
+0
+ M guides/mcp.md
+ M tests/distribution.test.ts
+?? tests/fixtures/distributionPage.mjs
+?? tests/fixtures/distributionScript.mjs
+?? tests/fixtures/distributionServer.mjs
+# P28 end 2026-09-15T19:12:50Z

@@ -1,0 +1,24 @@
+# A5b tail gates — 2026-09-15T18:37:43Z — mcp head 8d97dd0
+== teardown reading: distribution-* trees under the temp directory
+0
+== npm run test:config
+ Test Files  1 passed (1)
+      Tests  172 passed | 1 skipped (173)
+exit=0
+== npm run test:setup
+ Test Files  5 passed (5)
+      Tests  89 passed (89)
+exit=0
+== npm run test:conformance
+ Test Files  1 passed (1)
+      Tests  47 passed (47)
+exit=0
+== npm run test:integration
+ Test Files  1 passed (1)
+      Tests  4 passed (4)
+exit=0
+== npm run test:guides
+ Test Files  1 passed (1)
+      Tests  202 passed (202)
+exit=0
+# end 2026-09-15T18:38:13Z
