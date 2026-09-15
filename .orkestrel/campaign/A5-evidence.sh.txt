@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+# A5 evidence — Orchestrator tracked command: the authoritative release-mode distribution proof in mcp after U5c,
+# then the gates after-u5c (gates3.sh mcp after-u5c). Logs: tmp/units/A5-distribution-orchestrator.log.txt (+ .out),
+# tmp/units/gates-mcp-after-u5c.log.txt
+set -u
+S=/c/Users/mikes/WebstormProjects/scaffold
+M=/c/Users/mikes/WebstormProjects/mcp
+cd "$M" || exit 9
+{
+echo "# A5 distribution (release mode) — $(date -u +%FT%TZ) — mcp head $(git rev-parse --short HEAD) — $(git status --short | tr '\n' ' ')"
+start=$(date +%s)
+npm run test:distribution -- --mode release > "$S/tmp/units/A5-distribution-orchestrator.out.txt" 2>&1
+code=$?
+end=$(date +%s)
+sed 's/\x1b\[[0-9;]*m//g' "$S/tmp/units/A5-distribution-orchestrator.out.txt" | grep -E 'Tests |Test Files|Duration|FAIL|Error|✓|×|↓' | head -40
+echo "exit=$code wall=$((end - start))s"
+echo "# end $(date -u +%FT%TZ)"
+} > "$S/tmp/units/A5-distribution-orchestrator.log.txt" 2>&1
+cat "$S/tmp/units/A5-distribution-orchestrator.log.txt"
+echo "== gates mcp after-u5c"
+bash "$S/tmp/units/gates3.sh" mcp after-u5c
+echo "== gates done"
+grep -E '^== |exit=' "$S/tmp/units/gates-mcp-after-u5c.log.txt"

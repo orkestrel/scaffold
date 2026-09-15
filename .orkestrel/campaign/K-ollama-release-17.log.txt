@@ -1,0 +1,29 @@
+# ollama release chain (v17) — 2026-09-15T17:24:37Z — "version":"0.0.17" — head 76d9caf
+== npm run prepublishOnly
+ Test Files  4 passed (4)
+      Tests  100 passed (100)
+ Test Files  3 passed (3)
+      Tests  127 passed (127)
+ Test Files  1 passed (1)
+      Tests  101 passed | 1 skipped (102)
+ Test Files  1 passed (1)
+      Tests  172 passed | 1 skipped (173)
+ Test Files  1 passed (1)
+      Tests  34 passed (34)
+ Test Files  1 passed (1)
+      Tests  17 passed (17)
+ Test Files  1 passed (1)
+      Tests  9 passed (9)
+ Test Files  13 passed (13)
+      Tests  69 passed (69)
+exit=0
+== npm pack --dry-run
+exit=0
+npm notice package size: 15.9 kB
+npm notice unpacked size: 102.6 kB
+npm notice shasum: 2fcb2c96609afcf45e023a8b94d83c8eb44b5c4f
+npm notice total files: 9
+== status
+ M package-lock.json
+ M package.json
+# end 2026-09-15T17:26:34Z

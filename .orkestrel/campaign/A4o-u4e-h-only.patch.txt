@@ -1,0 +1,121 @@
+diff --git a/src/core/MCPServer.ts b/src/core/MCPServer.ts
+index af5dbad..a511f82 100644
+--- a/src/core/MCPServer.ts
++++ b/src/core/MCPServer.ts
+@@ -1529,6 +1529,10 @@ export class MCPServer implements MCPServerInterface {
+ 			iterator: AsyncIterator<JSONRPCNotification> | undefined
+ 		},
+ 	): void {
++		// #change is registered only when the honoured filter carries the tools family, and the
++		// graceful close runs only when that filter omits it, so this guard's failure check is the
++		// whole closed-stream test: a stream with these listeners closes on a failure or its signal
++		// and on nothing else.
+ 		if (signal.aborted || state.failure !== undefined || state.frame !== undefined) return
+ 		const notification: JSONRPCNotification = {
+ 			jsonrpc: '2.0',
+diff --git a/src/core/types.ts b/src/core/types.ts
+index 1c1c0a8..1d02e94 100644
+--- a/src/core/types.ts
++++ b/src/core/types.ts
+@@ -1763,8 +1763,6 @@ export interface MCPMethodOptions {
+  * The producer parks on its own event source while idle. Ending its iterable closes the
+  * subscription gracefully when the honoured filter omits the built-in tools family. A
+  * subscription honouring that family stays open until failure or signal abort.
+- * The producer advances on the stream's demand. A failure terminates the stream after
+- * the notifications it already produced.
+  * `options.signal` is the per-request cancellation signal; a producer that needs
+  * cancellation observes it directly rather than polling. The server releases the source's
+  * iterator with that signal's reason, so a `ReadableStream`-backed producer sees its pending
+diff --git a/tests/src/core/MCPServer.test.ts b/tests/src/core/MCPServer.test.ts
+index ba9ddb8..43aec44 100644
+--- a/tests/src/core/MCPServer.test.ts
++++ b/tests/src/core/MCPServer.test.ts
+@@ -523,60 +523,35 @@ describe('MCPServer — registry notifications', () => {
+ 		}
+ 	})
+ 
+-	it("delivers queued notifications before a producer failure's terminal", async () => {
+-		const fixture = await createRegistrySubscription({
+-			notifications: { promptsListChanged: true },
+-			producer: createProducerScript({
+-				frames: [{ jsonrpc: '2.0', method: 'notifications/prompts/list_changed' }],
+-				failure: { error: new Error('private producer detail') },
+-			}),
+-		})
+-		try {
+-			await fixture.stream.next()
+-			await waitForDelay(10)
+-			expect(await fixture.stream.next()).toMatchObject({
+-				done: false,
+-				value: { method: 'notifications/prompts/list_changed' },
+-			})
+-			expect(await fixture.stream.next()).toEqual({
+-				done: true,
+-				value: {
+-					jsonrpc: '2.0',
+-					id: 'registry',
+-					error: { code: JSONRPC_INTERNAL_ERROR, message: 'Server error' },
+-				},
+-			})
+-		} finally {
+-			fixture.close()
+-		}
+-	})
+-
+-	it('terminates with the failure terminal when the producer throws undefined', async () => {
+-		const fixture = await createRegistrySubscription({
+-			notifications: { promptsListChanged: true },
+-			producer: createProducerScript({
+-				frames: [{ jsonrpc: '2.0', method: 'notifications/prompts/list_changed' }],
+-				failure: { error: undefined },
+-			}),
+-		})
+-		try {
+-			await fixture.stream.next()
+-			expect(await fixture.stream.next()).toMatchObject({
+-				done: false,
+-				value: { method: 'notifications/prompts/list_changed' },
+-			})
+-			expect(await fixture.stream.next()).toEqual({
+-				done: true,
+-				value: {
+-					jsonrpc: '2.0',
+-					id: 'registry',
+-					error: { code: JSONRPC_INTERNAL_ERROR, message: 'Server error' },
+-				},
++	it.each([new Error('private producer detail'), undefined])(
++		'delivers the queued frame before the failure terminal whatever the producer threw (%s)',
++		async (error) => {
++			const fixture = await createRegistrySubscription({
++				notifications: { promptsListChanged: true },
++				producer: createProducerScript({
++					frames: [{ jsonrpc: '2.0', method: 'notifications/prompts/list_changed' }],
++					failure: { error },
++				}),
+ 			})
+-		} finally {
+-			fixture.close()
+-		}
+-	})
++			try {
++				await fixture.stream.next()
++				expect(await fixture.stream.next()).toMatchObject({
++					done: false,
++					value: { method: 'notifications/prompts/list_changed' },
++				})
++				expect(await fixture.stream.next()).toEqual({
++					done: true,
++					value: {
++						jsonrpc: '2.0',
++						id: 'registry',
++						error: { code: JSONRPC_INTERNAL_ERROR, message: 'Server error' },
++					},
++				})
++			} finally {
++				fixture.close()
++			}
++		},
++	)
+ 
+ 	it.each([undefined, new Error('private producer detail')])(
+ 		'ignores registry changes after the stream closed on a producer failure (%s)',

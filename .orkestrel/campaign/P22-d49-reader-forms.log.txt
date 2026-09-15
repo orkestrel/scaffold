@@ -1,0 +1,31 @@
+== (a) forms — 2026-09-15T17:32:39Z
+stdout | tmp/probe/p22-d49-reader-forms.test.ts > P22 reader forms
+P22 export import: THROW export declaration is unsupported at tests/setupServer.ts:1: TSImportEqualsDeclaration
+P22 export assignment: THROW export statement is unsupported at tests/setupServer.ts:1: TSExportAssignment
+P22 namespace export: THROW export statement is unsupported at tests/setupServer.ts:1: TSNamespaceExportDeclaration
+P22 declare module string: THROW export name is unreadable at tests/setupServer.ts:1
+P22 declare global: READ [{"name":"global","path":"tests/setupServer.ts","line":1}]
+P22 declare function: READ [{"name":"buildResult","path":"tests/setupServer.ts","line":1}]
+P22 abstract class: READ [{"name":"Legacy","path":"tests/setupServer.ts","line":1}]
+P22 declare const enum: READ [{"name":"Legacy","path":"tests/setupServer.ts","line":1}]
+P22 overload + namespace merge: READ [{"name":"legacy","path":"tests/setupServer.ts","line":1},{"name":"legacy","path":"tests/setupServer.ts","line":2},{"name":"legacy","path":"tests/setupServer.ts","line":3}]
+ ✓ |probe| tmp/probe/p22-d49-reader-forms.test.ts > P22 reader forms 3ms
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+== (b) mutation: line 1757 before
+				declaration.type === 'TSDeclareFunction' ||
+-- line 1757 after the deletion:
+				declaration.type === 'ClassDeclaration' ||
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  |setup| tests/setupPolicy.test.ts > readPolicyDeclarations > reads an exported function overload as one name
+Error: export declaration is unsupported at tests/setupServer.ts:1: TSDeclareFunction
+    1768|    throw new Error(`export declaration is unsupported at ${path}:${lin…
+ Test Files  1 failed (1)
+      Tests  1 failed | 30 passed (31)
+restored: cmp 0
+				declaration.type === 'TSDeclareFunction' ||
+== (c) green after the restore
+ Test Files  1 passed (1)
+      Tests  31 passed (31)
+ M tests/setupPolicy.ts
+# end 2026-09-15T17:32:44Z

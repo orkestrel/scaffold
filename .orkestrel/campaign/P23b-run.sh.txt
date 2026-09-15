@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+# P23b — successor of the P23 half of p23-then-gates.sh, whose sed mutation never matched (the tool halves a
+# backslash, so `\\n` reached sed as a newline match). The mutation is a node script (p23-mutate.mjs) that
+# restores `line` in the collision dedupe key; the pin file runs; the copy restores the file; the pin file runs
+# again. Runs only when no gate is live. Log: scratchpad/p23b.log.txt
+set -u
+S=/c/Users/mikes/WebstormProjects/scaffold
+SP=/c/Users/mikes/AppData/Local/Temp/claude/C--Users-mikes-WebstormProjects-scaffold/bab586ba-1c34-4a7e-a280-b3a7e9f303d2/scratchpad
+cd "$S" || exit 9
+echo "== P23b — $(date -u +%FT%TZ) — the key line before:"
+grep -n 'const key = `${declaration.path}' tests/setupPolicy.ts
+cp tests/setupPolicy.ts "$SP/setupPolicy.ts.p23b-backup"
+node "$SP/p23-mutate.mjs"
+echo "-- the key line mutated:"
+grep -n 'const key = `${declaration.path}' tests/setupPolicy.ts
+npm run test:setup -- tests/setupPolicy.test.ts 2>&1 | sed 's/\x1b\[[0-9;]*m//g' | grep -E 'Tests |Test Files|FAIL|AssertionError|line: [0-9]' | head -14
+cp "$SP/setupPolicy.ts.p23b-backup" tests/setupPolicy.ts
+cmp tests/setupPolicy.ts "$SP/setupPolicy.ts.p23b-backup" && echo "restored: cmp 0"
+grep -n 'const key = `${declaration.path}' tests/setupPolicy.ts
+echo "== green after the restore"
+npm run test:setup -- tests/setupPolicy.test.ts 2>&1 | sed 's/\x1b\[[0-9;]*m//g' | grep -E 'Tests |Test Files'
+git -C "$S" status --short -- tests/setupPolicy.ts
+echo "# P23b end $(date -u +%FT%TZ)"

@@ -1,0 +1,61 @@
+# visit mcp (v68) — 2026-09-15T17:08:56Z — head 18c3d33, dirty 0
+== 1 re-pin every @orkestrel range to the registry caret
+   @orkestrel/codec: dependencies ^0.0.3 -> ^0.0.3
+   @orkestrel/contract: dependencies ^0.0.17 -> ^0.0.17
+   @orkestrel/emitter: dependencies ^0.0.10 -> ^0.0.10
+   @orkestrel/process: dependencies ^0.0.12 -> ^0.0.12
+   @orkestrel/sse: dependencies ^0.0.7 -> ^0.0.7
+   @orkestrel/tool: dependencies ^0.0.14 -> ^0.0.15
+   @orkestrel/websocket: dependencies ^0.0.12 -> ^0.0.12
+   @orkestrel/guide: devDependencies ^0.0.18 -> ^0.0.19
+   @orkestrel/probe: devDependencies ^0.0.14 -> ^0.0.14
+   @orkestrel/router: devDependencies ^0.0.14 -> ^0.0.14
+   @orkestrel/scaffold: devDependencies ^0.0.67 -> ^0.0.68
+   @orkestrel/server: devDependencies ^0.0.19 -> ^0.0.19
+   @orkestrel/test: devDependencies ^0.0.14 -> ^0.0.14
+== 1b npm install
+exit=0
+== 2 preparation commit
+commit=cc34f01 exit=0
+== 3 scaffold overwrite
+exit=0
+.prettierignore replaced (3 lines added).
+tests/setupPolicy.ts replaced (431 lines added).
+tests/policy.test.ts replaced (277 lines added).
+6 written, 56 unchanged, 0 removed in ..
+50 published, 13 guides fetched, 0 no longer listed.
+== 4 scaffold audit
+exit=0
+dependencies: @vitest/browser-playwright declares major 4, while the registry serves major 5.
+dependencies: typescript declares major 6, while the registry serves major 7.
+dependencies: vitest declares major 4, while the registry serves major 5.
+0 of 47 planned paths drifted from the plan. Audit compared bytes at 28, existence at 5, and nothing at 14.
+== 5 full install
+exit=0
+== 6 self-pin sweep (report only)
+== 7 format
+exit=0
+== status after the visit
+ M .claude/agents/orkestrel.md
+ M .prettierignore
+ M guides/scaffold.md
+ M package-lock.json
+ M package.json
+ M tests/policy.test.ts
+ M tests/setupPolicy.ts
+== 8 gates
+== npm run format:check
+exit=0
+== npm run lint:check
+exit=0
+== npm run check
+exit=0
+== npm run build
+✓ 15 modules transformed.
+✓ built in 233ms
+exit=0
+== npm run test
+ Test Files  1 failed (1)
+      Tests  1 failed | 100 passed | 1 skipped (102)
+exit=1
+# end 2026-09-15T17:10:37Z

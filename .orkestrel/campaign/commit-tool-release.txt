@@ -1,0 +1,15 @@
+chore: release tool 0.0.15
+
+- Publishes the registry emitter: `ToolManagerInterface.emitter` publishes `add`, `remove`, and
+  `clear` through `ToolManagerEventMap`, and `destroy` releases it, so a consumer follows the
+  registry's own events instead of polling it (the WebMCP bridge and the MCP server's
+  `notifications/tools/list_changed` producer are its first consumers).
+- The rebuilt `dist/` differs materially from 0.0.14 in `src/core/index.{js,cjs,d.ts,d.cts}`, so
+  the published surface moved and the package bumps on its own account.
+- The release visit against scaffold 0.0.68 precedes this commit: the vendored host restored,
+  `scaffold audit` at exit 0, `@types/node` held at `^26.5.1` until the 26.6.0 tarball
+  propagates.
+
+Campaign records live in the scaffold checkout under `.orkestrel/campaign/`.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>

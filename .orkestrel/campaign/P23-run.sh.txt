@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+# P23 — Orchestrator probe: the collision-key pin red with `line` restored in the dedupe key (line 1985 of
+# tests/setupPolicy.ts), green after the restore from a copy; then the authoritative gates `after-d49b`.
+# Log: scratchpad/p23.log.txt, then tmp/units/gates-scaffold-after-d49b.log.txt
+set -u
+S=/c/Users/mikes/WebstormProjects/scaffold
+SP=/c/Users/mikes/AppData/Local/Temp/claude/C--Users-mikes-WebstormProjects-scaffold/bab586ba-1c34-4a7e-a280-b3a7e9f303d2/scratchpad
+cd "$S" || exit 9
+{
+echo "== P23 — $(date -u +%FT%TZ) — line 1985 before:"; sed -n '1985p' tests/setupPolicy.ts
+cp tests/setupPolicy.ts "$SP/setupPolicy.ts.p23-backup"
+sed -i '1985s#`${declaration.path}\n${declaration.name}\n${owner}`#`${declaration.path}\n${declaration.line}\n${declaration.name}\n${owner}`#' tests/setupPolicy.ts
+echo "-- line 1985 mutated:"; sed -n '1985p' tests/setupPolicy.ts
+npm run test:setup -- tests/setupPolicy.test.ts 2>&1 | sed 's/\x1b\[[0-9;]*m//g' | grep -E 'Tests |Test Files|FAIL|AssertionError|line: [0-9]' | head -14
+cp "$SP/setupPolicy.ts.p23-backup" tests/setupPolicy.ts
+cmp tests/setupPolicy.ts "$SP/setupPolicy.ts.p23-backup" && echo "restored: cmp 0"
+sed -n '1985p' tests/setupPolicy.ts
+echo "== green after the restore"
+npm run test:setup -- tests/setupPolicy.test.ts 2>&1 | sed 's/\x1b\[[0-9;]*m//g' | grep -E 'Tests |Test Files'
+echo "# P23 end $(date -u +%FT%TZ)"
+} > "$SP/p23.log.txt" 2>&1
+cat "$SP/p23.log.txt"
+echo "== gates after-d49b"
+bash "$S/tmp/units/gates3.sh" scaffold after-d49b
+echo "== gates done"
+cat "$S/tmp/units/gates-scaffold-after-d49b.log.txt"

@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+# A4o interdiff — successor of interdiff-a4n.sh: K from A4n-whole.patch (U4e … U4e-g), L from the live tree
+# (U4e … U4e-h, captured as A4o-whole.patch), both on 7959f08 in a fresh scratch worktree; the delta is
+# `git diff K L`. The worktree is removed afterwards.
+set -u
+S=/c/Users/mikes/WebstormProjects/scaffold
+M=/c/Users/mikes/WebstormProjects/mcp
+W="/c/Users/mikes/AppData/Local/Temp/claude/C--Users-mikes-WebstormProjects-scaffold/bab586ba-1c34-4a7e-a280-b3a7e9f303d2/scratchpad/u4e-base"
+WHOLE="$S/tmp/units/A4o-whole.patch"
+PREV="$S/tmp/units/A4n-whole.patch"
+ONLY="$S/tmp/units/A4o-u4e-h-only.patch"
+git -C "$M" diff HEAD > "$WHOLE"
+echo "whole chain: $(grep -c '^diff --git' "$WHOLE") files, $(wc -c < "$WHOLE") bytes"
+rm -rf "$W"
+git -C "$M" worktree prune
+git -C "$M" worktree add -q --detach "$W" 7959f08 || { echo "worktree add failed"; exit 2; }
+git -C "$W" apply "$PREV" || { echo "apply of A4n-whole.patch failed"; exit 3; }
+git -C "$W" add -A
+git -C "$W" -c user.name=interdiff -c user.email=interdiff@local commit -qm "state after U4e-g (scratch)"
+K=$(git -C "$W" rev-parse HEAD)
+git -C "$W" reset -q --hard 7959f08
+git -C "$W" clean -fdq
+git -C "$W" apply "$WHOLE" || { echo "apply of A4o-whole.patch failed"; exit 4; }
+git -C "$W" add -A
+git -C "$W" -c user.name=interdiff -c user.email=interdiff@local commit -qm "state after U4e-h (scratch)"
+L=$(git -C "$W" rev-parse HEAD)
+git -C "$W" diff "$K" "$L" > "$ONLY"
+echo "U4e-h-only: $(grep -c '^diff --git' "$ONLY") files, $(wc -c < "$ONLY") bytes; K=$K L=$L"
+git -C "$W" diff --stat "$K" "$L"
+git -C "$M" worktree remove --force "$W"
+git -C "$M" worktree prune
+echo "worktrees: $(git -C "$M" worktree list | wc -l)"

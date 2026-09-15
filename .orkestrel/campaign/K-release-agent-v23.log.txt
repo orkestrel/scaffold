@@ -1,0 +1,25 @@
+# agent release chain (v23) — 2026-09-15T17:10:16Z — "version":"0.0.23" — head aef4326
+== npm run prepublishOnly
+ Test Files  23 passed (23)
+      Tests  763 passed (763)
+ Test Files  1 passed (1)
+      Tests  101 passed | 1 skipped (102)
+ Test Files  1 passed (1)
+      Tests  172 passed | 1 skipped (173)
+ Test Files  1 passed (1)
+      Tests  54 passed (54)
+ Test Files  1 passed (1)
+      Tests  45 passed (45)
+ Test Files  1 passed (1)
+      Tests  9 passed (9)
+exit=0
+== npm pack --dry-run
+exit=0
+npm notice package size: 392.8 kB
+npm notice unpacked size: 1.5 MB
+npm notice shasum: 028a324b5f32d65a20605ced9d29603686190dd5
+npm notice total files: 9
+== status
+ M package-lock.json
+ M package.json
+# end 2026-09-15T17:11:00Z

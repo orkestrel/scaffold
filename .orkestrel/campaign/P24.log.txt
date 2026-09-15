@@ -1,0 +1,9 @@
+stdout | tmp/probe/p24-d49b-merging.test.ts > P24 merging forms and controls
+P24 interface merging, one file, one owner: ["tests/setupServer.ts:1 surface name belongs to one package: waitForCondition (other)"]
+P24 function + namespace merging, one file, one owner: ["tests/setupServer.ts:1 surface name belongs to one package: waitForCondition (other)"]
+P24 overload, one file, one owner: ["tests/setupServer.ts:1 surface name belongs to one package: waitForCondition (other)"]
+P24 control: distinct files, one owner: ["tests/setupBrowser.ts:1 surface name belongs to one package: waitForCondition (other)","tests/setupServer.ts:1 surface name belongs to one package: waitForCondition (other)"]
+P24 control: one file, distinct owners: ["tests/setupServer.ts:1 surface name belongs to one package: waitForCondition (other)","tests/setupServer.ts:1 surface name belongs to one package: waitForCondition (third)"]
+ ✓ |probe| tmp/probe/p24-d49b-merging.test.ts > P24 merging forms and controls 100ms
+ Test Files  1 passed (1)
+      Tests  1 passed (1)

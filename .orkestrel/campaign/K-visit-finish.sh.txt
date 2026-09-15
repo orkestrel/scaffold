@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+# Orchestrator tracked command: the tail of a release visit after an interrupted run — no install, no re-pin.
+# Runs scaffold audit (exit 0 proves the overwrite sweep), the mutating format, the gates, and prints the
+# status. Usage: bash visit-finish.sh <checkout> <label>. Logs beside the visit's own.
+set -u
+C="${1:?checkout}"
+LABEL="${2:?label}"
+SCAF=/c/Users/mikes/WebstormProjects/scaffold
+T="/c/Users/mikes/WebstormProjects/$C"
+LOG="$SCAF/tmp/units/visit-$C-$LABEL-finish.log.txt"
+cd "$T" || exit 9
+{
+	echo "# visit finish $C ($LABEL) — $(date -u +%FT%TZ) — head $(git rev-parse --short HEAD), dirty $(git status --short | wc -l)"
+	echo "== scaffold audit"
+	node node_modules/@orkestrel/scaffold/dist/bin/main.js audit > "$SCAF/tmp/units/visit-$C-$LABEL-audit.out.txt" 2>&1
+	echo "exit=$?"
+	tail -4 "$SCAF/tmp/units/visit-$C-$LABEL-audit.out.txt"
+	echo "== format"
+	npm run format > "$SCAF/tmp/units/visit-$C-$LABEL-format.out.txt" 2>&1
+	echo "exit=$?"
+	echo "== status"
+	git status --short | head -40
+	echo "== gates"
+	for s in format:check lint:check check build test; do
+		echo "== npm run $s"
+		npm run "$s" > "$SCAF/tmp/units/visit-$C-$LABEL-$s.out.txt" 2>&1
+		code=$?
+		tail -12 "$SCAF/tmp/units/visit-$C-$LABEL-$s.out.txt" | sed 's/\x1b\[[0-9;]*m//g' | grep -E "Tests |Test Files|error|Error|exit|✓|×" | head -8
+		echo "exit=$code"
+	done
+	echo "# end $(date -u +%FT%TZ)"
+} > "$LOG" 2>&1
