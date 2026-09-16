@@ -633,7 +633,7 @@ export class Upstream implements UpstreamInterface {
 		const edges: Dependency[] = []
 		for (const [name, range] of Object.entries(declared)) {
 			if (edges.length >= MAX_COLLECTION_ITEMS) break
-			if (typeof range !== 'string' || range.length === 0 || range.length > MAX_RANGE_LENGTH) {
+			if (!isString(range) || range.length === 0 || range.length > MAX_RANGE_LENGTH) {
 				continue
 			}
 			if (CONTROL_CHARACTER_PATTERN.test(name) || CONTROL_CHARACTER_PATTERN.test(range)) continue

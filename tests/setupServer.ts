@@ -18,13 +18,14 @@ import { once } from 'node:events'
 import { chmodSync } from 'node:fs'
 import { createServer } from 'node:http'
 import { createRequire } from 'node:module'
-import { connect, createServer as createSocketServer } from 'node:net'
+import { connect, createServer as createSocketServer, isIP } from 'node:net'
 import { delimiter, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { gzipSync } from 'node:zlib'
 import { isArray, isRecord, isString, parseJSON } from '@orkestrel/contract'
 import {
-	buildExecutableCandidates,
+	buildExecuteResult,
+	detach,
 	execute,
 	executeSync,
 	isFile,
@@ -94,7 +95,7 @@ import {
 	readSurfaceCollisions,
 } from '@src/server'
 import { optionToName } from '../src/bin/helpers.js'
-import { captureError, createRecorder, resolveRoot } from '@orkestrel/test'
+import { captureError, createRecorder, resolveRoot, waitForCondition } from '@orkestrel/test'
 import {
 	createLoopback,
 	createScratch,
@@ -2450,22 +2451,61 @@ export function readOllamaHookCommand(): string {
 }
 
 /**
+ * Resolves the POSIX shell that can run `scripts/ollama.sh`.
+ *
+ * @returns A PATH-resolved `bash` or `sh` regular file, or `undefined` on Windows.
+ *
+ * @remarks
+ * Running `scripts/ollama.sh` requires a POSIX process group, `setsid`, and `command -v`.
+ * Windows is not that host: a WindowsApps `bash.exe` alias is not a regular file, and Git Bash
+ * cannot terminate a Windows `ollama.exe` tree. This function therefore returns `undefined` on
+ * `win32` and never consults PATH for bash there. A POSIX host, including Claude Code Cloud,
+ * resolves `bash` then `sh` through {@link resolveTool}, which accepts only a regular file.
+ */
+export function resolveOllamaShell(): string | undefined {
+	if (process.platform === 'win32') return undefined
+	return resolveTool('bash') ?? resolveTool('sh')
+}
+
+/**
  * Executes the configured Ollama SessionStart command against a project path.
  *
  * @param project - The project path exposed to the hook.
  * @param remote - The Claude Code remote marker, or `undefined` when absent.
+ * @param environment - The Windows setup environment. Default: this process's environment.
  * @returns The bounded child-process outcome.
+ * @throws When the host cannot run the POSIX script.
+ *
+ * @remarks
+ * A POSIX host, including Claude Code Cloud, writes the registered bash command and runs it
+ * through {@link resolveOllamaShell}. Windows evaluates the remote gate in process and uses the
+ * native HTTP setup. Only local startup resolves and launches the installed Ollama executable.
  */
 export async function executeOllamaHook(
 	project: string,
 	remote: string | undefined,
+	environment: NodeJS.ProcessEnv = process.env,
 ): Promise<ExecuteResult> {
+	if (process.platform === 'win32') {
+		if (remote !== 'true') return buildOllamaResult(0, '')
+		return executeWindowsOllama(
+			readVariable(environment, 'OLLAMA_HOST') ?? 'http://127.0.0.1:11434',
+			readVariable(environment, 'OLLAMA_MODEL') ?? 'qwen3.5:2b-q4_K_M',
+			environment,
+			project,
+		)
+	}
+	const shell = resolveOllamaShell()
+	if (shell === undefined) {
+		throw new Error('Ollama hook tests require a POSIX shell and POSIX process groups')
+	}
+	const command = readOllamaHookCommand()
 	const scratch = createScratch({ prefix: SCRATCH_PREFIX })
 	try {
-		const hook = scratch.write('hook.sh', `${readOllamaHookCommand()}\n`)
+		const hook = scratch.write('hook.sh', `${command}\n`)
 		return await execute(
 			{
-				file: resolveExecutable('bash', { workspace: WORKSPACE_ROOT }) ?? 'bash',
+				file: shell,
 				arguments: [normalizeBashPath(hook)],
 				environment: {
 					CLAUDE_CODE_REMOTE: remote,
@@ -2489,7 +2529,7 @@ export async function executeOllamaHook(
  * installation, `setsid` and `sleep` for the daemon it starts and waits on, and `uname` for the
  * kernel readings that gate both. `kill`, `printf`, `command`, `cd`, and `pwd` are Bash builtins
  * and reach no `PATH` entry. The set is what a proof gives the script, and `ollama` is
- * deliberately absent from it.
+ * deliberately absent from it. Hosts without the POSIX shell capability skip the script tests.
  */
 export const OLLAMA_TOOLS: readonly string[] = Object.freeze([
 	'curl',
@@ -2515,18 +2555,17 @@ export const OLLAMA_TOOLS: readonly string[] = Object.freeze([
  *
  * @remarks
  * `resolveExecutable` answers `undefined` on a POSIX host, where the host runs its own lookup at
- * spawn time, so a caller that needs the path itself reads it here. The Windows candidate set
- * comes from `buildExecutableCandidates`, which carries that host's executable suffixes; an empty
- * candidate set is the POSIX answer, and that branch joins the name onto each `PATH` entry in
- * order. The reading stops at a regular file, which is one bit wider than the host's own
- * resolver: it reads no executable bit.
+ * spawn time, so a caller that needs the path itself reads it here. Windows delegates to that
+ * resolver for its PATH and PATHEXT lookup. POSIX joins the name onto each `PATH` entry in order.
+ * Each host accepts only regular files; the POSIX reading checks no executable bit.
  */
 export function resolveTool(
 	tool: string,
 	environment: NodeJS.ProcessEnv = process.env,
 ): string | undefined {
-	const candidates = buildExecutableCandidates(tool, WORKSPACE_ROOT, environment, process.platform)
-	if (candidates.length > 0) return candidates.find(isFile)
+	if (process.platform === 'win32') {
+		return resolveExecutable(tool, { workspace: WORKSPACE_ROOT, environment })
+	}
 	for (const entry of (readVariable(environment, 'PATH') ?? '').split(delimiter)) {
 		if (entry === '') continue
 		const candidate = join(entry, tool)
@@ -2541,22 +2580,34 @@ export function resolveTool(
  * @param host - The endpoint exposed through `OLLAMA_HOST`.
  * @param model - The model exposed through `OLLAMA_MODEL`.
  * @returns The bounded child-process outcome.
+ * @throws When the host cannot run the POSIX script.
  *
  * @remarks
- * The script runs under a `PATH` naming one owned directory, which carries the `OLLAMA_TOOLS`
- * executables this host resolves and nothing else. A host with a real `ollama` installed would
- * otherwise hand it to the script's local-startup branch, and a fixture that answers the
- * readiness probe with anything but a `2xx` status reaches that branch — so a proof would launch
- * a daemon on the host running the suite. `command -v ollama` fails under this `PATH`, and the
- * branch refuses with exit `127` instead. Each launcher delegates to the executable at its
- * installed path, which retains the runtime dependencies resolved beside that executable. The
- * interpreter itself is resolved against this process's own `PATH` and launched by path, because
- * the spawn's own lookup reads the child's `PATH` and would find no `bash` in that directory. The
- * directory is removed after the run.
+ * The POSIX script runs under a `PATH` naming one owned directory, which carries the
+ * `OLLAMA_TOOLS` executables this host resolves and nothing else. A host with a real `ollama`
+ * installed would otherwise hand it to the script's local-startup branch, and a fixture that
+ * answers the readiness probe with anything but a `2xx` status reaches that branch — so a proof
+ * would launch a daemon on the host running the suite. `command -v ollama` fails under this
+ * `PATH`, and the branch refuses with exit `127` instead. Each launcher delegates to the
+ * executable at its installed path, which retains the runtime dependencies resolved beside that
+ * executable. The interpreter itself is resolved against this process's own `PATH` and launched
+ * by path, because the spawn's own lookup reads the child's `PATH` and would find no `bash` in
+ * that directory.
+ *
+ * Windows drives the HTTP protocol in process with an empty executable search directory.
+ * Claude Code Cloud runs `scripts/ollama.sh` through its POSIX shell.
+ * The tools directory is removed after the run.
  */
 export async function executeOllamaSetup(host: string, model: string): Promise<ExecuteResult> {
 	const tools = createScratch({ prefix: SCRATCH_PREFIX })
 	try {
+		if (process.platform === 'win32') {
+			return await executeWindowsOllama(host, model, { PATH: tools.path }, tools.path)
+		}
+		const shell = resolveOllamaShell()
+		if (shell === undefined) {
+			throw new Error('Ollama setup tests require a POSIX shell and POSIX process groups')
+		}
 		for (const tool of OLLAMA_TOOLS) {
 			const source = resolveTool(tool)
 			if (source === undefined) continue
@@ -2565,7 +2616,7 @@ export async function executeOllamaSetup(host: string, model: string): Promise<E
 		}
 		return await execute(
 			{
-				file: resolveTool('bash') ?? 'bash',
+				file: shell,
 				arguments: [normalizeBashPath(join(WORKSPACE_ROOT, 'scripts', 'ollama.sh'))],
 				environment: {
 					CI: undefined,
@@ -2579,6 +2630,177 @@ export async function executeOllamaSetup(host: string, model: string): Promise<E
 		)
 	} finally {
 		tools.destroy()
+	}
+}
+
+/**
+ * Translates an in-process Ollama setup outcome into the test execution contract.
+ *
+ * @param code - The setup exit code.
+ * @param message - The diagnostic, or success message for exit zero.
+ * @param expired - If `true`, the deadline elapsed; if `false`, it did not.
+ * @returns The bounded execution outcome.
+ */
+export function buildOllamaResult(code: number, message: string, expired = false): ExecuteResult {
+	return buildExecuteResult({
+		command: 'Ollama HTTP setup',
+		stdout: Buffer.from(code === 0 ? message : ''),
+		stderr: Buffer.from(code === 0 ? '' : message),
+		code,
+		signal: null,
+		expired,
+		aborted: false,
+		truncated: false,
+		limit: 4096,
+	})
+}
+
+/**
+ * Sends a bounded Ollama HTTP request without following redirects.
+ *
+ * @param url - The endpoint URL.
+ * @param signal - The setup deadline signal.
+ * @param body - The JSON request body, or `undefined` for a GET request.
+ * @returns The response whose body the caller consumes.
+ */
+export function requestOllama(
+	url: string,
+	signal: AbortSignal,
+	body?: Readonly<Record<string, unknown>>,
+): Promise<Response> {
+	return fetch(url, {
+		method: body === undefined ? 'GET' : 'POST',
+		redirect: 'manual',
+		signal,
+		...(body === undefined
+			? {}
+			: { headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) }),
+	})
+}
+
+/**
+ * Checks Ollama version readiness within the setup deadline.
+ *
+ * @param host - The normalized endpoint origin.
+ * @param signal - The setup deadline signal.
+ * @returns True if the response has a successful HTTP status; false otherwise.
+ */
+export async function probeOllama(host: string, signal: AbortSignal): Promise<boolean> {
+	try {
+		const response = await requestOllama(
+			`${host}/api/version`,
+			AbortSignal.any([signal, AbortSignal.timeout(2000)]),
+		)
+		await response.body?.cancel()
+		return response.ok
+	} catch {
+		return false
+	}
+}
+
+/**
+ * Runs the Windows Ollama setup protocol against a selected endpoint.
+ *
+ * @param host - The HTTP origin, optionally without its scheme.
+ * @param model - The model to inspect, pull if absent, and warm.
+ * @param environment - The complete executable lookup and child environment.
+ * @param workspace - The directory used for executable lookup and native startup.
+ * @returns The setup outcome, including exit 127 when local startup has no executable.
+ *
+ * @remarks
+ * Reuses reachable endpoints without spawning. Windows local startup launches a regular-file
+ * executable through the process package's detached launcher. Fixture callers supply an empty
+ * PATH directory and workspace, so they cannot start an installed host daemon.
+ */
+export async function executeWindowsOllama(
+	host: string,
+	model: string,
+	environment: NodeJS.ProcessEnv,
+	workspace: string,
+): Promise<ExecuteResult> {
+	if (model.length === 0) return buildOllamaResult(1, 'OLLAMA_MODEL must not be empty')
+	let url: URL
+	try {
+		url = new URL(/^https?:\/\//iu.test(host) ? host : `http://${host}`)
+		if (
+			host.length === 0 ||
+			(url.protocol !== 'http:' && url.protocol !== 'https:') ||
+			url.username !== '' ||
+			url.password !== '' ||
+			url.pathname !== '/' ||
+			url.search !== '' ||
+			url.hash !== '' ||
+			url.hostname === ''
+		)
+			throw new Error('Invalid origin')
+	} catch {
+		return buildOllamaResult(
+			1,
+			'OLLAMA_HOST must be an HTTP origin without credentials, path, query, or fragment',
+		)
+	}
+	const signal = AbortSignal.timeout(10_000)
+	try {
+		if (!(await probeOllama(url.origin, signal))) {
+			const hostname = url.hostname.replace(/^\[|\]$/gu, '')
+			const loopback =
+				hostname === 'localhost' ||
+				hostname === '::1' ||
+				(isIP(hostname) === 4 && hostname.startsWith('127.'))
+			if (!loopback || url.protocol !== 'http:') {
+				return buildOllamaResult(
+					1,
+					'the configured endpoint is unreachable; local startup is limited to HTTP loopback',
+				)
+			}
+			const file = resolveExecutable('ollama', { workspace, environment })
+			if (file === undefined) {
+				return buildOllamaResult(
+					127,
+					'ollama is required to start an unreachable loopback endpoint',
+				)
+			}
+			detach(
+				{
+					file,
+					arguments: ['serve'],
+					isolated: true,
+					environment: mergeEnvironment(true, environment, { OLLAMA_HOST: url.origin }),
+				},
+				{ workspace },
+			)
+			await waitForCondition('Ollama version readiness', () => probeOllama(url.origin, signal), {
+				budget: 10_000,
+				interval: 100,
+				signal,
+			})
+		}
+		const show = await requestOllama(`${url.origin}/api/show`, signal, { model })
+		await show.body?.cancel()
+		if (show.status === 404) {
+			const pull = await requestOllama(`${url.origin}/api/pull`, signal, { model, stream: false })
+			const body = parseJSON(await pull.text())
+			if (!pull.ok || !isRecord(body) || body.status !== 'success') {
+				return buildOllamaResult(1, 'the model pull response did not report completion')
+			}
+		} else if (!show.ok) {
+			return buildOllamaResult(1, 'the model inspection request failed without reporting absence')
+		}
+		const warm = await requestOllama(`${url.origin}/api/chat`, signal, {
+			model,
+			messages: [{ role: 'user', content: 'hi' }],
+			stream: false,
+			think: false,
+			keep_alive: '30m',
+			options: { num_predict: 1 },
+		})
+		const body = parseJSON(await warm.text())
+		if (!warm.ok || !isRecord(body) || body.done !== true) {
+			return buildOllamaResult(1, 'the model warm response did not report completion')
+		}
+		return buildOllamaResult(0, 'Ollama is ready\n')
+	} catch {
+		return buildOllamaResult(1, 'Ollama setup request failed', signal.aborted)
 	}
 }
 

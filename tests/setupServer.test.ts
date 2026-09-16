@@ -7,7 +7,7 @@ import { isObject, isString } from '@orkestrel/contract'
 import { requireValue } from '@orkestrel/test'
 import { createLoopback, createScratch, supportsMode } from '@orkestrel/test/server'
 import { extractVersion, MINIMUM_NPM_VERSION, ScaffoldError } from '@src/core'
-import { execute, isFile, readVariable } from '@orkestrel/process/server'
+import { execute, isFile, readVariable, resolveExecutable } from '@orkestrel/process/server'
 import { readHostFloor } from '@src/server'
 import { buildSnapshot } from './setup.js'
 import {
@@ -46,11 +46,14 @@ import {
 	createCheckout,
 	createFleet,
 	createHostRoot,
+	createOllamaServer,
 	createRepository,
 	createSink,
 	createStagedHost,
 	createUpstreamServer,
 	DIGEST_CASES,
+	executeOllamaHook,
+	executeOllamaSetup,
 	FILESYSTEM_PATH_CASES,
 	FLEET_ARTIFACT_COUNT,
 	FLEET_BIRTH_COUNT,
@@ -74,6 +77,7 @@ import {
 	readStatements,
 	REFUSED_MANIFEST_TEXT,
 	renderLauncher,
+	resolveOllamaShell,
 	resolveTool,
 	SCRATCH_PREFIX,
 	SENSITIVE_PATH_CASES,
@@ -1103,65 +1107,71 @@ exec '/path with spaces/owner'"'"'s/tool' "$@"
 `)
 	})
 
-	it('executes the original quoted source with literal arguments', async () => {
-		// This case measures launcher quoting and argument forwarding. The Ollama setup
-		// selection measures the helper's isolation from the ambient tool path.
-		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
-		try {
-			const tools = workspace.ensure("tools with an apostrophe ' and spaces")
-			const source = workspace.write(
-				"original path with spaces/owner's tool.sh",
-				`#!/bin/sh
+	// The launcher executes POSIX shell source; Windows lacks the process-group
+	// capability resolveOllamaShell requires for the Ollama script proofs.
+	it.skipIf(resolveOllamaShell() === undefined)(
+		'executes the original quoted source with literal arguments',
+		async () => {
+			// This case measures launcher quoting and argument forwarding. The Ollama setup
+			// selection measures the helper's isolation from the ambient tool path.
+			const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+			try {
+				const tools = workspace.ensure("tools with an apostrophe ' and spaces")
+				const source = workspace.write(
+					"original path with spaces/owner's tool.sh",
+					`#!/bin/sh
 printf 'source=%s\\n' "$0"
 printf 'first=%s\\n' "$1"
 printf 'second=%s\\n' "$2"
 command -v ollama >/dev/null 2>&1
 printf 'ollama=%s\\n' "$?"
 `,
-			)
-			const launcher = workspace.write(join(tools, 'fixture'), renderLauncher(source))
-			const missing = workspace.write(
-				join(tools, 'missing'),
-				renderLauncher(join(workspace.path, "missing owner's tool.sh")),
-			)
-			chmodSync(source, 0o755)
-			chmodSync(launcher, 0o755)
-			chmodSync(missing, 0o755)
+				)
+				const launcher = workspace.write(join(tools, 'fixture'), renderLauncher(source))
+				const missing = workspace.write(
+					join(tools, 'missing'),
+					renderLauncher(join(workspace.path, "missing owner's tool.sh")),
+				)
+				chmodSync(source, 0o755)
+				chmodSync(launcher, 0o755)
+				chmodSync(missing, 0o755)
 
-			const bash = requireValue(resolveTool('bash'))
-			const result = await execute(
-				{
-					file: bash,
-					arguments: [normalizeBashPath(launcher), 'spaced argument', 'literal$signal'],
-					environment: { PATH: tools },
-				},
-				{ strict: false, timeout: 10_000 },
-			)
-			expect(result.failed).toBe(false)
-			expect(result.stdout).toContain(`source=${normalizeBashPath(source)}\n`)
-			expect(result.stdout).toContain('first=spaced argument\n')
-			expect(result.stdout).toContain('second=literal$signal\n')
-			const ollama = requireValue(
-				result.stdout.split(/\r\n|\n/u).find((line) => line.startsWith('ollama=')),
-			)
-			expect(ollama).not.toBe('ollama=0')
+				const bash = requireValue(resolveOllamaShell())
+				const result = await execute(
+					{
+						file: bash,
+						arguments: [normalizeBashPath(launcher), 'spaced argument', 'literal$signal'],
+						environment: { PATH: tools },
+					},
+					{ strict: false, timeout: 10_000 },
+				)
+				expect(result.failed).toBe(false)
+				expect(result.stdout).toContain(`source=${normalizeBashPath(source)}\n`)
+				expect(result.stdout).toContain('first=spaced argument\n')
+				expect(result.stdout).toContain('second=literal$signal\n')
+				const ollama = requireValue(
+					result.stdout.split(/\r\n|\n/u).find((line) => line.startsWith('ollama=')),
+				)
+				expect(ollama).not.toBe('ollama=0')
 
-			const control = await execute(
-				{
-					file: bash,
-					arguments: [normalizeBashPath(missing)],
-					environment: { PATH: tools },
-				},
-				{ strict: false, timeout: 10_000 },
-			)
-			expect(control.failed).toBe(true)
-			expect(control.code).not.toBe(0)
-		} finally {
-			workspace.destroy()
-		}
-	})
+				const control = await execute(
+					{
+						file: bash,
+						arguments: [normalizeBashPath(missing)],
+						environment: { PATH: tools },
+					},
+					{ strict: false, timeout: 10_000 },
+				)
+				expect(control.failed).toBe(true)
+				expect(control.code).not.toBe(0)
+			} finally {
+				workspace.destroy()
+			}
+		},
+	)
 
-	it.skipIf(!supportsMode())(
+	// The source needs a POSIX shell and executable mode bits that the filesystem enforces.
+	it.skipIf(resolveOllamaShell() === undefined || !supportsMode())(
 		'refuses an original source without execute permission and executes it after chmod',
 		async () => {
 			const workspace = createScratch({ prefix: SCRATCH_PREFIX })
@@ -1176,7 +1186,7 @@ printf 'executed\\n'
 				const launcher = workspace.write(join(tools, 'fixture'), renderLauncher(source))
 				chmodSync(source, 0o644)
 				chmodSync(launcher, 0o755)
-				const bash = requireValue(resolveTool('bash'))
+				const bash = requireValue(resolveOllamaShell())
 				const refused = await execute(
 					{
 						file: bash,
@@ -1218,10 +1228,96 @@ printf 'executed\\n'
 		// directory the helper builds the script's whole search path rather than an
 		// addition to this host's.
 		expect(resolveTool('node', { PATH: '' })).toBe(undefined)
-		// The absence the shadow rests on: the script's local-startup branch refuses when
-		// `command -v ollama` finds nothing, so a set naming it would hand the daemon back.
+		// The absence the POSIX Ollama proofs build their shadowed PATH from: the bash
+		// script's local-startup branch refuses when `command -v ollama` finds nothing.
 		expect(OLLAMA_TOOLS).not.toContain('ollama')
+		expect(resolveTool('ollama', { PATH: '' })).toBe(undefined)
 	})
+})
+
+// The Windows hook evaluates its remote gate in process; POSIX executes the registered shell.
+describe.skipIf(process.platform !== 'win32')('Ollama Windows setup', () => {
+	it('leaves local hooks idle and runs a remote hook against the selected fixture', async () => {
+		const server = await createOllamaServer()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const environment = {
+				PATH: workspace.path,
+				OLLAMA_HOST: server.url,
+				OLLAMA_MODEL: 'fixture-model',
+			}
+			expect((await executeOllamaHook(workspace.path, undefined, environment)).code).toBe(0)
+			expect((await executeOllamaHook(workspace.path, 'false', environment)).code).toBe(0)
+			expect(server.requests).toStrictEqual([])
+			expect((await executeOllamaHook(workspace.path, 'true', environment)).code).toBe(0)
+			expect(server.requests.map((request) => request.path)).toStrictEqual([
+				'/api/version',
+				'/api/show',
+				'/api/chat',
+			])
+		} finally {
+			await server.destroy()
+			workspace.destroy()
+		}
+	})
+
+	it('returns 127 when the isolated executable lookup cannot start an unready endpoint', async () => {
+		const server = await createOllamaServer({ status: { version: 503 } })
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const environment = {
+				PATH: workspace.path,
+				OLLAMA_HOST: server.url,
+				OLLAMA_MODEL: 'fixture-model',
+			}
+			expect(resolveExecutable('ollama', { workspace: workspace.path, environment })).toBe(
+				undefined,
+			)
+			const setup = await executeOllamaSetup(server.url, 'fixture-model')
+			const hook = await executeOllamaHook(workspace.path, 'true', environment)
+			for (const result of [setup, hook]) {
+				expect(result.code).toBe(127)
+				expect(result.expired).toBe(false)
+				expect(result.stderr).toContain(
+					'ollama is required to start an unreachable loopback endpoint',
+				)
+			}
+			expect(server.requests.map((request) => request.path)).toStrictEqual([
+				'/api/version',
+				'/api/version',
+			])
+		} finally {
+			await server.destroy()
+			workspace.destroy()
+		}
+	})
+
+	// The native launch requires an installed regular file; execution aliases are excluded
+	// by resolveExecutable. The selected HTTP endpoint is the fixture, never the host daemon.
+	it.skipIf(resolveExecutable('ollama') === undefined)(
+		'launches the installed Ollama executable without a shell',
+		async () => {
+			const file = requireValue(resolveExecutable('ollama'))
+			const server = await createOllamaServer()
+			try {
+				expect(isFile(file)).toBe(true)
+				const result = await execute(
+					{
+						file,
+						arguments: ['--version'],
+						environment: { OLLAMA_HOST: server.url, PATH: '' },
+					},
+					{ strict: false, timeout: 10_000 },
+				)
+				expect(result.code).toBe(0)
+				expect(result.command).toContain(file)
+				expect(`${result.stdout}${result.stderr}`).toMatch(/version/iu)
+				expect(server.requests.map((request) => request.path)).toContain('/api/version')
+			} finally {
+				await server.destroy()
+			}
+		},
+	)
 })
 
 describe('the mapped loopback reading', () => {

@@ -1723,7 +1723,7 @@ export function replaceManifestRanges(
 			if (manifest.charAt(value) === ':') {
 				value += 1
 				while (value < manifest.length && /\s/u.test(manifest.charAt(value))) value += 1
-				if (typeof key === 'string' && sectionNames.has(key) && manifest.charAt(value) === '{') {
+				if (isString(key) && sectionNames.has(key) && manifest.charAt(value) === '{') {
 					let sectionDepth = 0
 					let sectionCursor = value
 					while (sectionCursor < manifest.length) {
@@ -1801,7 +1801,7 @@ export function replaceManifestRanges(
 			}
 			valueStart += 1
 			while (valueStart < section.length && /\s/u.test(section.charAt(valueStart))) valueStart += 1
-			if (typeof key !== 'string' || section.charAt(valueStart) !== '"') {
+			if (!isString(key) || section.charAt(valueStart) !== '"') {
 				sectionCursor = keyEnd
 				continue
 			}

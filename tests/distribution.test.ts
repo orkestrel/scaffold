@@ -12,6 +12,7 @@ import {
 } from '@src/core'
 import { listFiles, pathToStorage } from '@src/server'
 import { requireValue } from '@orkestrel/test'
+import { isRecord, isString } from '@orkestrel/contract'
 import { createScratch } from '@orkestrel/test/server'
 import { readVariable } from '@orkestrel/process/server'
 import { transformWithOxc } from 'vite'
@@ -127,11 +128,11 @@ const ABSENT = '\u0000undefined'
 // reading textual is what lets the two disagree.
 function readManifestVersion(text: string): string {
 	const parsed: unknown = JSON.parse(text)
-	if (typeof parsed !== 'object' || parsed === null) {
+	if (!isRecord(parsed)) {
 		throw new Error('The manifest is not a record')
 	}
 	const version: unknown = Object.getOwnPropertyDescriptor(parsed, 'version')?.value
-	if (typeof version !== 'string') throw new Error('The manifest declares no version')
+	if (!isString(version)) throw new Error('The manifest declares no version')
 	return version
 }
 
@@ -515,7 +516,7 @@ describe('installed package consumer', () => {
 				expect(answered.stderr).toBe('')
 				expect(answered.status).toBe(0)
 				const outcomes: unknown = JSON.parse(answered.stdout)
-				if (typeof outcomes !== 'object' || outcomes === null) {
+				if (!isRecord(outcomes)) {
 					throw new Error(`${declaration.types} produced no outcomes`)
 				}
 				for (const [index, claim] of claims.entries()) {
@@ -524,12 +525,12 @@ describe('installed package consumer', () => {
 					// no outcome at all is one the block reached past rather than one the
 					// module contradicted. It is undriven for the same reason a statement
 					// is, and naming it here is what keeps the sets a partition.
-					if (typeof outcome !== 'object' || outcome === null) {
+					if (!isRecord(outcome)) {
 						undriven.push(`${declaration.types}: ${claim.text}`)
 						continue
 					}
 					const encoded: unknown = Object.getOwnPropertyDescriptor(outcome, 'encoded')?.value
-					if (typeof encoded !== 'string') {
+					if (!isString(encoded)) {
 						undriven.push(`${declaration.types}: ${claim.text}`)
 						continue
 					}
@@ -943,14 +944,14 @@ describe('installed package consumer', () => {
 				const targetManifest: unknown = JSON.parse(
 					requireValue(workspace.read('generated/package.json')),
 				)
-				if (typeof targetManifest !== 'object' || targetManifest === null) {
+				if (!isRecord(targetManifest)) {
 					throw new Error('The generated manifest is not a record')
 				}
 				const devDependencies: unknown = Object.getOwnPropertyDescriptor(
 					targetManifest,
 					'devDependencies',
 				)?.value
-				if (typeof devDependencies !== 'object' || devDependencies === null) {
+				if (!isRecord(devDependencies)) {
 					throw new Error('The generated manifest carries no development dependencies')
 				}
 				const emitted: unknown = Object.getOwnPropertyDescriptor(
@@ -996,18 +997,18 @@ describe('installed package consumer', () => {
 				const lock: unknown = JSON.parse(
 					requireValue(workspace.read('generated/package-lock.json')),
 				)
-				if (typeof lock !== 'object' || lock === null) {
+				if (!isRecord(lock)) {
 					throw new Error('The generated lockfile is not a record')
 				}
 				const packages: unknown = Object.getOwnPropertyDescriptor(lock, 'packages')?.value
-				if (typeof packages !== 'object' || packages === null) {
+				if (!isRecord(packages)) {
 					throw new Error('The generated lockfile carries no packages')
 				}
 				const scaffold: unknown = Object.getOwnPropertyDescriptor(
 					packages,
 					'node_modules/@orkestrel/scaffold',
 				)?.value
-				if (typeof scaffold !== 'object' || scaffold === null) {
+				if (!isRecord(scaffold)) {
 					throw new Error('The generated lockfile carries no installed scaffold')
 				}
 				const resolved: unknown = Object.getOwnPropertyDescriptor(scaffold, 'resolved')?.value

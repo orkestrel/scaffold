@@ -17,7 +17,7 @@ import {
 	writeFileSync,
 } from 'node:fs'
 import { basename, dirname, join, resolve } from 'node:path'
-import { attempt } from '@orkestrel/contract'
+import { attempt, isString } from '@orkestrel/contract'
 import { isCollection, isPath, ScaffoldError } from '@src/core'
 import {
 	computeDigest,
@@ -554,7 +554,7 @@ export class WriteTransaction {
 	// target exactly as it found it.
 	#preflight(): void {
 		for (const anchor of this.#created) {
-			if (typeof anchor === 'string') {
+			if (isString(anchor)) {
 				throw new ScaffoldError('WRITE', `The directory at ${anchor} changed while writing.`, {
 					target: this.#target,
 					path: anchor,
@@ -651,7 +651,7 @@ export class WriteTransaction {
 			if (!cleared.success) residue.push(cleared.error)
 		}
 		for (const created of [...this.#created].reverse()) {
-			const path = typeof created === 'string' ? created : created.path
+			const path = isString(created) ? created : created.path
 			const removed = attempt(() => rmdirSync(path))
 			if (!removed.success && !matchesMissingPath(removed.error)) residue.push(removed.error)
 		}

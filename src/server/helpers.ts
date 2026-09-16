@@ -34,7 +34,7 @@ import { tmpdir } from 'node:os'
 import { createRequire } from 'node:module'
 import { basename, dirname, extname, join, parse, relative, resolve, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { attempt, compareValues, holds, isError, parseJSONAs } from '@orkestrel/contract'
+import { attempt, compareValues, holds, isError, isNumber, parseJSONAs } from '@orkestrel/contract'
 import { createMarkdown, flattenText, isTableNode } from '@orkestrel/markdown'
 import {
 	bytesToHex,
@@ -975,7 +975,7 @@ export function readFileHex(
 	path: string,
 	limit: number = MAX_ARTIFACT_BYTES,
 ): string | undefined {
-	if (!Number.isSafeInteger(limit) || limit < 0 || limit > MAX_ARTIFACT_BYTES) {
+	if (!isNumber(limit) || !Number.isSafeInteger(limit) || limit < 0 || limit > MAX_ARTIFACT_BYTES) {
 		throw new ScaffoldError('INVALID', `Byte limit is outside the artifact ceiling at ${path}`, {
 			root,
 			path,

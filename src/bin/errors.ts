@@ -1,3 +1,4 @@
+import { isInstance } from '@orkestrel/contract'
 import { USAGE_CODE } from './constants.js'
 
 /**
@@ -55,5 +56,5 @@ export class UsageError extends Error {
  * ```
  */
 export function isUsageError(value: unknown): value is UsageError {
-	return value instanceof UsageError
+	return isInstance(value, UsageError)
 }

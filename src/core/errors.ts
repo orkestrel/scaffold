@@ -1,4 +1,5 @@
 import type { ScaffoldErrorCode } from './types.js'
+import { isInstance } from '@orkestrel/contract'
 
 /**
  * Represents the one error this package throws, carrying the coded reason it was raised.
@@ -68,5 +69,5 @@ export class ScaffoldError extends Error {
  * ```
  */
 export function isScaffoldError(value: unknown): value is ScaffoldError {
-	return value instanceof ScaffoldError
+	return isInstance(value, ScaffoldError)
 }

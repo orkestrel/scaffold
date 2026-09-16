@@ -20,7 +20,7 @@ import type {
 import type { Host, MaterializeResult, UpstreamOptions } from '@src/server'
 import type { SessionInterface } from '@orkestrel/process'
 import { align, strip, stripControls, width } from '@orkestrel/console'
-import { attempt, isError, isRecord, isString, parseJSON } from '@orkestrel/contract'
+import { attempt, isArray, isError, isRecord, isString, parseJSON } from '@orkestrel/contract'
 import { createMarkdown, flattenText, isTableNode } from '@orkestrel/markdown'
 import { createSession } from '@orkestrel/process/server'
 import {
@@ -213,25 +213,23 @@ export function argvToCommand(argv: readonly string[]): CLICommand {
 	if (verb !== 'new' && name !== undefined) {
 		throw new UsageError(`'${verb}' takes no argument, and was given '${name}'.`)
 	}
-	const paths = Array.isArray(values.from)
-		? values.from.filter((value) => typeof value === 'string')
-		: []
+	const paths = isArray(values.from) ? values.from.filter(isString) : []
 	if (verb !== 'catalog' && paths.length > 1) {
 		throw new UsageError(
 			`'${verb}' takes --from once, and was given it ${String(paths.length)} times.`,
 		)
 	}
-	const src = typeof values.src === 'string' ? values.src : undefined
-	const app = typeof values.app === 'string' ? values.app : undefined
+	const src = isString(values.src) ? values.src : undefined
+	const app = isString(values.app) ? values.app : undefined
 	const bin = values.bin === true
 	const offline = values.offline === true
-	const dependencies = typeof values.deps === 'string' ? values.deps : undefined
-	const target = typeof values.target === 'string' ? values.target : undefined
+	const dependencies = isString(values.deps) ? values.deps : undefined
+	const target = isString(values.target) ? values.target : undefined
 	const json = values.json === true
 	const [from] = paths
 	const location = target === undefined ? {} : { target }
 	const source = from === undefined ? {} : { from }
-	const selection = typeof values.groups === 'string' ? { groups: values.groups } : {}
+	const selection = isString(values.groups) ? { groups: values.groups } : {}
 	switch (verb) {
 		case 'new':
 			if (name === undefined) {
