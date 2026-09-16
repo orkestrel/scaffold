@@ -93,12 +93,12 @@
 		"prepublishOnly": "npm run format:check && npm run lint:check && npm run check && npm run build && npm test && npm run test:distribution -- --mode release"
 	},
 	"dependencies": {
-		"@orkestrel/console": "^0.0.13",
+		"@orkestrel/console": "^0.0.14",
 		"@orkestrel/contract": "^0.0.17",
 		"@orkestrel/emitter": "^0.0.10",
-		"@orkestrel/markdown": "^0.0.14",
-		"@orkestrel/process": "^0.0.12",
-		"@orkestrel/template": "^0.0.7"
+		"@orkestrel/markdown": "^0.0.15",
+		"@orkestrel/process": "^0.0.13",
+		"@orkestrel/template": "^0.0.8"
 	},
 	"devDependencies": {
 		"@microsoft/api-extractor": "^7.59.1",
