@@ -1,10 +1,10 @@
 {
 	"@orkestrel/contract": "^0.0.17",
 	"@orkestrel/guide": "^0.0.19",
-	"@orkestrel/html": "^0.0.9",
-	"@orkestrel/probe": "^0.0.14",
+	"@orkestrel/html": "^0.0.10",
+	"@orkestrel/probe": "^0.0.15",
 	"@orkestrel/scaffold": "^0.0.70",
-	"@orkestrel/test": "^0.0.14",
+	"@orkestrel/test": "^0.0.15",
 	"@types/node": "^26.5.1",
 	"@vitejs/plugin-vue": "^6.0.8",
 	"@vitest/browser-playwright": "^4.1.11",
