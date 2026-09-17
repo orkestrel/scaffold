@@ -1660,7 +1660,7 @@ describe('CLI audit', () => {
 				src: ['core'],
 				app: ['browser'],
 				bin: true,
-				setup: true,
+				setup: ['node'],
 				guides: true,
 				integration: true,
 				conformance: true,
@@ -2715,7 +2715,7 @@ describe('CLI audit', () => {
 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const fleet = createFleet(workspace)
-			const blueprint = createBlueprint('sample', { src: ['core'], setup: true })
+			const blueprint = createBlueprint('sample', { src: ['core'], setup: ['node'] })
 			workspace.write(
 				'target/package.json',
 				buildTargetManifest(blueprint, undefined, undefined, blueprintToScripts(blueprint)),
@@ -2747,7 +2747,7 @@ describe('CLI audit', () => {
 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const fleet = createFleet(workspace)
-			const blueprint = createBlueprint('sample', { src: ['core'], setup: true })
+			const blueprint = createBlueprint('sample', { src: ['core'], setup: ['node'] })
 			workspace.write(
 				'target/package.json',
 				buildTargetManifest(blueprint, undefined, undefined, blueprintToScripts(blueprint)),

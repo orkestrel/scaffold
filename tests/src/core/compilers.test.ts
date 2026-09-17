@@ -359,7 +359,7 @@ describe('replaceManifestScripts', () => {
 	it('appends a qualified script after the last declared member of its own family', () => {
 		const declared = buildBlueprint({ src: ['core'] })
 		const manifest = blueprintToManifest(declared)
-		const region = blueprintToWritableScripts(buildBlueprint({ src: ['core'], setup: true }))
+		const region = blueprintToWritableScripts(buildBlueprint({ src: ['core'], setup: ['node'] }))
 		const written = replaceManifestScripts(manifest, region)
 		const proof = region.find((script) => script.name === 'test:setup')
 
@@ -511,8 +511,8 @@ describe('blueprintToDevDependencies compile tooling', () => {
 
 describe('blueprintToScripts config projects', () => {
 	it('registers and gates setup proofs only when the blueprint selects them', async () => {
-		const absent = createBlueprint('sample', { src: ['core'], setup: false })
-		const present = createBlueprint('sample', { src: ['core'], setup: true })
+		const absent = createBlueprint('sample', { src: ['core'], setup: [] })
+		const present = createBlueprint('sample', { src: ['core'], setup: ['node'] })
 		const configuration = blueprintToRootVite(present)
 		const scripts = blueprintToScripts(present)
 
@@ -942,7 +942,7 @@ describe('blueprintToScripts config projects', () => {
 				src: ['core', 'browser', 'server'],
 				app: ['core', 'browser', 'server'],
 				bin: true,
-				setup: true,
+				setup: ['node'],
 				guides: true,
 				conformance: true,
 				service: true,
@@ -1233,7 +1233,7 @@ describe('blueprintToRootVite fixed proofs', () => {
 			src: ['core', 'server'],
 			bin: true,
 			guides: true,
-			setup: true,
+			setup: ['node'],
 		})
 		const artifacts = blueprintToConfigArtifacts(blueprint)
 

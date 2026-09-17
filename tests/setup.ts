@@ -172,7 +172,7 @@ export class TestSample {
  *
  * @example
  * ```ts
- * buildBlueprint({ src: ['core', 'server'], bin: true, setup: true })
+ * buildBlueprint({ src: ['core', 'server'], bin: true, setup: ['node'] })
  * ```
  */
 export function buildBlueprint(fields?: Partial<Blueprint>): Blueprint {
@@ -188,7 +188,7 @@ export function buildBlueprint(fields?: Partial<Blueprint>): Blueprint {
 		engines: DEFAULT_ENGINES,
 		overrides: [],
 		bin: false,
-		setup: false,
+		setup: [],
 		guides: false,
 		integration: false,
 		conformance: false,
@@ -196,6 +196,7 @@ export function buildBlueprint(fields?: Partial<Blueprint>): Blueprint {
 		vendors: [],
 		global: false,
 		showcase: false,
+		journey: false,
 		...fields,
 	}
 }

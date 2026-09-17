@@ -189,10 +189,13 @@ export interface Override {
  * fleet pin; every other peer is a floor. `extras` are package-specific
  * development dependencies and may carry any valid npm name.
  * `bin`, `setup`, `guides`, `integration`, `conformance`, `service`,
- * `vendors`, `global`, and `showcase` are structural facts: each is
+ * `vendors`, `global`, `showcase`, and `journey` are structural facts: each is
  * set only when the workspace physically ships the directory or exact-case file
  * that defines it, never because of the workspace's name and never because a
  * sibling fact is set.
+ * `setup` lists the runtimes required by root setup proofs: `node` for generic
+ * and server proofs, and `browser` for `tests/setupBrowser.test.ts`.
+ * `journey` selects the birth-owned variant wrapper for a browser application.
  * `showcase` projects only a browser `app`. The gate answers an absent browser
  * axis with a non-blocking question, so a caller that set the flag learns it
  * emitted nothing and the compile still completes.
@@ -217,7 +220,7 @@ export interface Blueprint {
 	readonly engines: string
 	readonly overrides: readonly Override[]
 	readonly bin: boolean
-	readonly setup: boolean
+	readonly setup: readonly SetupRuntime[]
 	readonly guides: boolean
 	readonly integration: boolean
 	readonly conformance: boolean
@@ -225,7 +228,11 @@ export interface Blueprint {
 	readonly vendors: readonly string[]
 	readonly global: boolean
 	readonly showcase: boolean
+	readonly journey: boolean
 }
+
+/** Names the runtime a root setup proof requires. */
+export type SetupRuntime = 'node' | 'browser'
 
 /**
  * Represents one package row of the fleet catalog.

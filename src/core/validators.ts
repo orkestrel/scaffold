@@ -291,7 +291,7 @@ export const isBlueprint: Guard<Blueprint> = recordOf(
 		engines: isString,
 		overrides: andOf(isCollection, arrayOf(isOverride)),
 		bin: isBoolean,
-		setup: isBoolean,
+		setup: andOf(isCollection, arrayOf(literalOf('node', 'browser'))),
 		guides: isBoolean,
 		integration: isBoolean,
 		conformance: isBoolean,
@@ -299,6 +299,7 @@ export const isBlueprint: Guard<Blueprint> = recordOf(
 		vendors: andOf(isCollection, arrayOf(isString)),
 		global: isBoolean,
 		showcase: isBoolean,
+		journey: isBoolean,
 	},
 	['description'],
 )

@@ -61,7 +61,7 @@ export function createBlueprint(name: string, input?: Partial<Omit<Blueprint, 'n
 		engines: input?.engines ?? DEFAULT_ENGINES,
 		overrides: input?.overrides ?? [],
 		bin: input?.bin ?? false,
-		setup: input?.setup ?? false,
+		setup: input?.setup ?? [],
 		guides: input?.guides ?? false,
 		integration: input?.integration ?? false,
 		conformance: input?.conformance ?? false,
@@ -69,6 +69,7 @@ export function createBlueprint(name: string, input?: Partial<Omit<Blueprint, 'n
 		vendors: input?.vendors ?? [],
 		global: input?.global ?? false,
 		showcase: input?.showcase ?? false,
+		journey: input?.journey ?? false,
 	}
 	const blueprint = parseBlueprint(cloneValue(candidate))
 	if (blueprint === undefined) {
