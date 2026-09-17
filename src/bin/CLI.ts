@@ -10,6 +10,7 @@ import type {
 	Plan,
 	Question,
 	Release,
+	SetupRuntime,
 } from '@src/core'
 import type {
 	MaterializeResult,
@@ -57,6 +58,7 @@ import {
 	GUIDES_TEST_PATH,
 	HOST_PATHS,
 	INTEGRATION_TEST_PATH,
+	JOURNEY_CONFIG_PATH,
 	isFloorPath,
 	manifestToDependencies,
 	manifestToName,
@@ -231,7 +233,7 @@ export class CLI implements CLIInterface {
 			src: selectionToEnvironments(command.src, 'src'),
 			app: selectionToEnvironments(command.app, 'app'),
 			bin: command.bin === true,
-			setup: false,
+			setup: [],
 			dependencies: selectionToPackages(command.dependencies).map((name) => ({
 				name,
 				range: '^0.0.0',
@@ -958,26 +960,30 @@ export class CLI implements CLIInterface {
 		const service = resolveContainedPath(target, SERVICE_SETUP_PATH)
 		const global = resolveContainedPath(target, GLOBAL_SETUP_PATH)
 		const showcase = resolveContainedPath(target, SHOWCASE_CONFIG_PATH)
+		const journey = resolveContainedPath(target, JOURNEY_CONFIG_PATH)
+		const setup = new Set<SetupRuntime>()
+		if (tests !== undefined) {
+			for (const path of listFiles(tests)) {
+				if (path.includes('/') || !path.startsWith('setup') || !path.endsWith('.test.ts')) continue
+				const proof = resolveContainedPath(tests, path)
+				if (proof !== undefined && isExactCaseFile(proof)) {
+					setup.add(path === 'setupBrowser.test.ts' ? 'browser' : 'node')
+				}
+			}
+		}
 		return createBlueprint(declared.slice(declared.lastIndexOf('/') + 1), {
 			src: targetToEnvironments(target, 'src'),
 			app: targetToEnvironments(target, 'app'),
 			dependencies: manifestToDependencies(manifest).runtime,
 			bin: bin !== undefined && isExactCaseFile(bin),
-			setup:
-				tests !== undefined &&
-				listFiles(tests).some((path) => {
-					if (path.includes('/') || !path.startsWith('setup') || !path.endsWith('.test.ts')) {
-						return false
-					}
-					const proof = resolveContainedPath(tests, path)
-					return proof !== undefined && isExactCaseFile(proof)
-				}),
+			setup: [...setup],
 			guides: guides !== undefined && isExactCaseFile(guides),
 			integration: integration !== undefined && isExactCaseFile(integration),
 			conformance: conformance !== undefined && isExactCaseFile(conformance),
 			service: service !== undefined && isExactCaseFile(service),
 			global: global !== undefined && isExactCaseFile(global),
 			showcase: showcase !== undefined && isExactCaseFile(showcase),
+			journey: journey !== undefined && isExactCaseFile(journey),
 		})
 	}
 

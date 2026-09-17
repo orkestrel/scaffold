@@ -60,7 +60,7 @@ export const CONFIG_TEMPLATES = Object.freeze({
 		// fixed, where `{{imports}}`, `{{helpers}}`, and `{{browsers}}` are selected.
 		// One fixed block costs less than a fifth conditional span, and a workspace
 		// that builds nothing carries one export nothing reads.
-		vite: `import type { PluginOption, UserConfig } from 'vite'
+		vite: `{{journey}}import type { PluginOption, UserConfig } from 'vite'
 import { mergeConfig } from 'vite'
 {{imports}}import { defineConfig } from 'vitest/config'
 import manifest from './package.json' with { type: 'json' }
@@ -334,7 +334,7 @@ function isNamedPlugin(plugin: PluginOption): plugin is { name: string } {
 			root: resolveWorkspacePath('.'),
 			dir: resolveWorkspacePath('.'),
 			include: ['tests/app/browser/**/*.test.ts'],
-			setupFiles: ['./tests/setup.ts', './tests/setupBrowser.ts'],
+{{journeyExclude}}			setupFiles: ['./tests/setup.ts', './tests/setupBrowser.ts'],
 			browser: {
 				enabled: true,
 				provider: playwright(browserOptions),
@@ -345,7 +345,29 @@ function isNamedPlugin(plugin: PluginOption): plugin is { name: string } {
 	}
 	return mergeOverride(project, override)
 }
-{{showcaseFactory}}`,
+{{showcaseFactory}}{{journeyFactory}}`,
+			journey: `
+// Replace the journey fields directly: merging would concatenate the ordinary include
+// and retain the exclusion of the journey suite.
+export function appJourney(variant: JourneyVariant, variants: readonly JourneyVariant[]): UserConfig {
+	const browser = appBrowser()
+	return {
+		...browser,
+		test: {
+			...browser.test,
+			name: { label: \`journey:\${variant.name}\`, color: 'green' },
+			include: ['tests/app/browser/integration.test.ts'],
+			exclude: [],
+			provide: { variant: variant.name, variants, capture },
+			browser: {
+				...browser.test?.browser,
+				enabled: true,
+				viewport: { width: variant.width, height: variant.height },
+			},
+		},
+	}
+}
+`,
 			// A showcase is the browser application written to its own output, so it composes
 			// on `appBrowser` and declares only what it changes. Its output boundary carries
 			// the plugin name the browser boundary carries, so the merge replaces that
@@ -461,9 +483,27 @@ export function appShowcase(override?: UserConfig): UserConfig {
 		test: {
 			name: { label: 'setup', color: 'white' },
 			include: ['tests/setup*.test.ts'],
+			exclude: ['tests/setupBrowser.test.ts'],
 			setupFiles: ['./tests/setup.ts'],
 			environment: 'node',
 			browser: { enabled: false },
+		},
+	}
+	return mergeOverride(project, override)
+}
+`,
+		browser: `export function setupBrowser(override?: UserConfig): UserConfig {
+	const project: UserConfig = {
+		resolve,
+		test: {
+			name: { label: 'setup:browser', color: 'blue' },
+			include: ['tests/setupBrowser.test.ts'],
+			setupFiles: ['./tests/setup.ts', './tests/setupBrowser.ts'],
+			browser: {
+				enabled: true,
+				provider: playwright(browserOptions),
+				instances: [{ browser: 'chromium', headless: true }],
+			},
 		},
 	}
 	return mergeOverride(project, override)
@@ -801,6 +841,22 @@ import { appShowcase } from '../../vite.config.ts'
 
 export default defineConfig(appShowcase())
 `,
+			journey: `import type { JourneyVariant } from '@orkestrel/test'
+import { defineConfig } from 'vitest/config'
+import { appJourney } from '../../vite.config.ts'
+
+// Rename and extend these viewports for the application. Apply themes through its interface.
+const VARIANTS: readonly JourneyVariant[] = Object.freeze([
+	{ name: 'desktop', width: 1280, height: 800 },
+	{ name: 'compact', width: 390, height: 844 },
+])
+
+export default defineConfig({
+	test: {
+		projects: VARIANTS.map((variant) => () => appJourney(variant, VARIANTS)),
+	},
+})
+`,
 		}),
 	}),
 	browsers: `// A generated browser workspace resolves its own Chromium here rather than in
@@ -1062,7 +1118,7 @@ export function resolveSystemBrowser(
 }
 
 /**
- * Resolves Playwright provider options for whatever browser this host can actually launch.
+ * Resolves Playwright provider options for Chromium on this host.
  *
  * @param pinned - The executable path for Playwright's pinned Chromium revision, when it has one.
  * @param platform - The Node platform whose standard layouts this call probes.
@@ -1081,6 +1137,10 @@ export function resolveSystemBrowser(
  * a discovered system channel is verified before it is named. The platform default is unverified
  * as well and exists only as a last resort: Windows takes \`msedge\`, which ships with the OS and
  * never collides with a foreground Chrome.
+ *
+ * The resolver and the gate cover Chromium alone. Reopen engine selection when another
+ * Playwright engine is installed and launches on the host with a \`captureFrame\` reading
+ * back at its declared size, or when a journey or style divergence is recorded.
  *
  * @example
  * \`\`\`ts

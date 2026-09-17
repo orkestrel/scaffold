@@ -363,6 +363,9 @@ export const SERVICE_TEST_INCLUDE = 'tests/service/**/*.test.ts'
 /** Names the Vite wrapper whose presence makes a workspace `showcase`. */
 export const SHOWCASE_CONFIG_PATH = 'configs/app/vite.showcase.config.ts'
 
+/** Names the Vite wrapper whose presence makes a workspace `journey`. */
+export const JOURNEY_CONFIG_PATH = 'configs/app/vite.journey.config.ts'
+
 /** Matches the bare workspace name syntax: lowercase alphanumeric with hyphens, letter first. */
 export const NAME_PATTERN = /^[a-z][a-z0-9-]*$/
 

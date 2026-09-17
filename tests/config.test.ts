@@ -446,6 +446,9 @@ describe('root configuration', () => {
 		if (existsSync(resolve(root, 'configs/app/vite.showcase.config.ts'))) {
 			required.push('configs/app/vite.showcase.config.ts')
 		}
+		if (existsSync(resolve(root, 'configs/app/vite.journey.config.ts'))) {
+			required.push('configs/app/vite.journey.config.ts')
+		}
 		if (required[0] === undefined) {
 			throw new Error('The workspace selects no configuration target')
 		}
@@ -460,15 +463,33 @@ describe('root configuration', () => {
 		).map((path) => path.replaceAll('\\', '/'))
 		const extra = 'configs/app/vite.core.config.ts'
 		const controlled = found.concat(extra)
+		const planted = createPolicyScratch({ prefix: 'config-journey-' })
+		const journey = 'configs/app/vite.journey.config.ts'
+		planted.write(journey, `export default {
+	test: { projects: [() => ({
+		test: {
+			name: { label: 'journey:desktop' },
+			include: ['tests/app/browser/integration.test.ts'],
+			exclude: [],
+			setupFiles: ['./tests/setup.ts', './tests/setupBrowser.ts'],
+			provide: { variant: 'desktop', variants: [{ name: 'desktop', width: 1280, height: 800 }], capture: false },
+			browser: { enabled: true, instances: [{ browser: 'chromium', headless: true }] },
+		},
+	})] },
+}\n`)
+		const targets = required.map((wrapper) => ({ wrapper, directory: root }))
+		targets.push({ wrapper: journey, directory: planted.path })
+		controlled.push(journey)
 
 		// Required wrappers come from selected src/app targets. Only that set is loaded and validated.
 		// Extra wrappers remain in the found population but are ignored before their content is read.
 		expect(controlled).toContain(extra)
 		expect(required).not.toContain(extra)
-		for (const wrapper of required) {
+		try {
+		for (const { wrapper, directory } of targets) {
 			expect(controlled).toContain(wrapper)
 			const viteMatch =
-				/^configs\/(src|app)\/vite\.(core|browser|server|bin|showcase)\.config\.ts$/u.exec(wrapper)
+				/^configs\/(src|app)\/vite\.(core|browser|server|bin|showcase|journey)\.config\.ts$/u.exec(wrapper)
 			if (viteMatch !== null) {
 				const [, axis, environment] = viteMatch
 				if (axis === undefined || environment === undefined) {
@@ -476,11 +497,42 @@ describe('root configuration', () => {
 				}
 				const loaded = await loadConfigFromFile(
 					{ command: 'build', mode: 'test', isSsrBuild: false, isPreview: false },
-					resolve(root, wrapper),
-					root,
+					resolve(directory, wrapper),
+					directory,
 					'silent',
 				)
 				if (loaded === null) throw new Error(`${wrapper} did not load`)
+				if (environment === 'journey') {
+					const projects = loaded.config.test?.projects
+					if (!Array.isArray(projects) || projects.length === 0) {
+						throw new Error(`${wrapper} carries no journey projects`)
+					}
+					const names: string[] = []
+					for (const factory of projects) {
+						if (typeof factory !== 'function') throw new Error(`${wrapper} carries no project factory`)
+						const project: unknown = await Reflect.apply(factory, undefined, [{ command: 'serve', mode: 'test' }])
+						if (typeof project !== 'object' || project === null) throw new Error('A journey project is not a configuration')
+						const test: unknown = Object.getOwnPropertyDescriptor(project, 'test')?.value
+						if (typeof test !== 'object' || test === null) throw new Error('A journey project carries no test block')
+						expect(Object.getOwnPropertyDescriptor(test, 'include')?.value).toStrictEqual(['tests/app/browser/integration.test.ts'])
+						expect(Object.getOwnPropertyDescriptor(test, 'exclude')?.value).toStrictEqual([])
+						expect(Object.getOwnPropertyDescriptor(test, 'setupFiles')?.value).toStrictEqual(['./tests/setup.ts', './tests/setupBrowser.ts'])
+						const name: unknown = Object.getOwnPropertyDescriptor(test, 'name')?.value
+						const provide: unknown = Object.getOwnPropertyDescriptor(test, 'provide')?.value
+						const browser: unknown = Object.getOwnPropertyDescriptor(test, 'browser')?.value
+						if (typeof name !== 'object' || name === null || typeof provide !== 'object' || provide === null || typeof browser !== 'object' || browser === null) throw new Error('A journey project carries no name, provide, or browser block')
+						const variant: unknown = Object.getOwnPropertyDescriptor(provide, 'variant')?.value
+						if (typeof variant !== 'string' || variant.length === 0) throw new Error('A journey project carries no variant name')
+						expect(Object.getOwnPropertyDescriptor(name, 'label')?.value).toBe(`journey:${variant}`)
+						expect(typeof Object.getOwnPropertyDescriptor(provide, 'capture')?.value).toBe('boolean')
+						expect(Object.getOwnPropertyDescriptor(browser, 'enabled')?.value).toBe(true)
+						const variants: unknown = Object.getOwnPropertyDescriptor(provide, 'variants')?.value
+						if (!Array.isArray(variants) || !variants.some((candidate: unknown) => typeof candidate === 'object' && candidate !== null && Object.getOwnPropertyDescriptor(candidate, 'name')?.value === variant)) throw new Error('A journey variant is absent from its declared set')
+						expect(names).not.toContain(variant)
+						names.push(variant)
+					}
+					continue
+				}
 				const output = loaded.config.build?.outDir
 				if (output === undefined) throw new Error(`${wrapper} carries no output`)
 				const expected =
@@ -534,6 +586,9 @@ describe('root configuration', () => {
 						: ['node']
 			expect(lib).toStrictEqual(expectedLib)
 			expect(types).toStrictEqual(expectedTypes)
+		}
+		} finally {
+			planted.destroy()
 		}
 
 		const controlRequired = [

@@ -44,6 +44,7 @@ import {
 	GUIDES_TEST_PATH,
 	HOST_PATHS,
 	INTEGRATION_TEST_PATH,
+	JOURNEY_CONFIG_PATH,
 	MAX_ARTIFACT_BYTES,
 	MAX_COLLECTION_ITEMS,
 	MAX_TOTAL_ARTIFACT_BYTES,
@@ -219,7 +220,7 @@ export function blueprintToDevDependencies(blueprint: Blueprint): Readonly<Recor
 	const merged: Record<string, string> = {
 		...BASE_DEV_DEPENDENCIES,
 		...(blueprint.src.length > 0 || blueprint.bin ? DECLARATION_DEV_DEPENDENCIES : {}),
-		...(blueprint.src.includes('browser') ? SOURCE_BROWSER_DEV_DEPENDENCIES : {}),
+		...(blueprint.src.includes('browser') || blueprint.setup.includes('browser') ? SOURCE_BROWSER_DEV_DEPENDENCIES : {}),
 		...(blueprint.app.length > 0 ? APP_DEV_DEPENDENCIES : {}),
 		...(blueprint.app.includes('browser') ? APP_BROWSER_DEV_DEPENDENCIES : {}),
 		...(blueprint.showcase && blueprint.app.includes('browser') ? SHOWCASE_DEV_DEPENDENCIES : {}),
@@ -318,9 +319,11 @@ export function blueprintToScripts(blueprint: Blueprint): Readonly<Record<string
 	scripts.test = [
 		...(compiles ? ['npm run test:src'] : []),
 		...(blueprint.app.length > 0 ? ['npm run test:app'] : []),
+		...(blueprint.journey && blueprint.app.includes('browser') ? ['npm run test:journey'] : []),
 		'npm run test:policy',
 		'npm run test:config',
-		...(blueprint.setup ? ['npm run test:setup'] : []),
+		...(blueprint.setup.includes('node') ? ['npm run test:setup'] : []),
+		...(blueprint.setup.includes('browser') ? ['npm run test:setup:browser'] : []),
 		...(blueprint.guides ? ['npm run test:guides'] : []),
 		...(blueprint.conformance ? ['npm run test:conformance'] : []),
 		...(integrates ? ['npm run test:integration'] : []),
@@ -348,7 +351,11 @@ export function blueprintToScripts(blueprint: Blueprint): Readonly<Record<string
 	}
 	scripts['test:policy'] = `${vitest} --project policy`
 	scripts['test:config'] = `${vitest} --project config`
-	if (blueprint.setup) scripts['test:setup'] = `${vitest} --project setup`
+	if (blueprint.setup.includes('node')) scripts['test:setup'] = `${vitest} --project setup`
+	if (blueprint.setup.includes('browser')) scripts['test:setup:browser'] = `${vitest} --project setup:browser`
+	if (blueprint.journey && blueprint.app.includes('browser')) {
+		scripts['test:journey'] = `vitest run --config ${JOURNEY_CONFIG_PATH} --no-cache --reporter=dot`
+	}
 	if (blueprint.guides) {
 		scripts['test:guides'] = `node --experimental-strip-types ${GUIDES_TEST_PATH}`
 	}
@@ -614,7 +621,7 @@ export function blueprintToManifest(blueprint: Blueprint): string {
 export function blueprintToMachinery(blueprint: Blueprint): ViteMachinery {
 	const hosted = blueprint.app.some((environment) => environment !== 'core')
 	return {
-		browser: blueprint.src.includes('browser') || blueprint.app.includes('browser'),
+		browser: blueprint.src.includes('browser') || blueprint.app.includes('browser') || blueprint.setup.includes('browser'),
 		vue: blueprint.app.includes('browser'),
 		output: blueprint.src.length > 0 || blueprint.bin || hosted,
 		showcase: blueprint.showcase && blueprint.app.includes('browser'),
@@ -790,7 +797,11 @@ export function blueprintToRootVite(blueprint: Blueprint): string {
 	}
 	if (blueprint.app.includes('browser')) {
 		const showcaseFactory = machinery.showcase ? CONFIG_TEMPLATES.factories.app.showcase : ''
-		factories.push(fillTemplate(CONFIG_TEMPLATES.factories.app.browser, { showcaseFactory }))
+		factories.push(fillTemplate(CONFIG_TEMPLATES.factories.app.browser, {
+			showcaseFactory,
+			journeyFactory: blueprint.journey ? CONFIG_TEMPLATES.factories.app.journey : '',
+			journeyExclude: blueprint.journey ? "\t\t\texclude: ['tests/app/browser/integration.test.ts'],\n" : '',
+		}))
 		// The row is the factory itself, never a call of it. Vitest reads
 		// `import.meta.env.MODE` as the command line's `--mode` only inside a project
 		// it calls, so an evaluated row silently turns the release-mode publish gate
@@ -805,9 +816,13 @@ export function blueprintToRootVite(blueprint: Blueprint): string {
 	projects.push('policy')
 	factories.push(CONFIG_TEMPLATES.factories.config)
 	projects.push('config')
-	if (blueprint.setup) {
+	if (blueprint.setup.includes('node')) {
 		factories.push(CONFIG_TEMPLATES.factories.setup)
 		projects.push('setup')
+	}
+	if (blueprint.setup.includes('browser')) {
+		factories.push(CONFIG_TEMPLATES.factories.browser)
+		projects.push('setupBrowser')
 	}
 	if (blueprint.guides) {
 		factories.push(CONFIG_TEMPLATES.factories.guides)
@@ -850,6 +865,7 @@ ${projects.map((project) => `\t\t\t${project},`).join('\n')}
 		body.includes(helper),
 	)
 	return fillTemplate(CONFIG_TEMPLATES.root.vite, {
+		journey: blueprint.journey && machinery.vue ? "import type { JourneyVariant } from '@orkestrel/test'\n" : '',
 		imports: imports.length === 0 ? '' : `${imports.join('\n')}\n`,
 		helpers:
 			helpers.length === 0 ? '' : `import { ${helpers.join(', ')} } from './configs/helpers.js'\n`,
@@ -858,9 +874,9 @@ ${projects.map((project) => `\t\t\t${project},`).join('\n')}
 		browsers: machinery.browser
 			? "import { resolveBrowser, resolvePinnedBrowser } from './configs/browsers.js'\n"
 			: '',
-		options: machinery.browser
+		options: (machinery.browser
 			? 'const browserOptions = resolveBrowser(resolvePinnedBrowser(), process.platform, process.env)\n\n'
-			: '',
+			: '') + (blueprint.journey && machinery.vue ? "const capture = process.env.CAPTURE === '1'\n\n" : ''),
 		factories: body,
 		projects: projectRows,
 	})
@@ -1048,6 +1064,16 @@ ${paths.join('\n')}
 			content: CONFIG_TEMPLATES.vites.app.showcase,
 		})
 	}
+	if (blueprint.journey && blueprint.app.includes('browser')) {
+		artifacts.push({
+			path: JOURNEY_CONFIG_PATH,
+			group: 'configs',
+			ownership: 'birth',
+			origin: 'template',
+			environment: 'browser',
+			content: CONFIG_TEMPLATES.vites.app.journey,
+		})
+	}
 	return artifacts
 }
 
@@ -1182,7 +1208,7 @@ export function blueprintToTestArtifacts(blueprint: Blueprint): readonly Content
 			content: ARTIFACT_TEMPLATES.tests.setup,
 		},
 	]
-	if (blueprint.src.includes('browser') || blueprint.app.includes('browser')) {
+	if (blueprintToMachinery(blueprint).browser) {
 		artifacts.push({
 			path: 'tests/setupBrowser.ts',
 			group: 'tests',
@@ -2341,6 +2367,13 @@ export function blueprintToQuestions(blueprint: Blueprint): readonly Question[] 
 			field: 'showcase',
 			message:
 				'showcase projects a browser app, and this workspace declares none, so it emits nothing.',
+			blocking: false,
+		})
+	}
+	if (blueprint.journey && !blueprint.app.includes('browser')) {
+		questions.push({
+			field: 'journey',
+			message: 'journey projects a browser app, and this workspace declares none, so it emits nothing.',
 			blocking: false,
 		})
 	}

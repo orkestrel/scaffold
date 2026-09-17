@@ -1598,6 +1598,53 @@ describe('CLI audit', () => {
 		}
 	})
 
+	it('infers journey and setup runtimes from exact-case structural paths', async () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const fleet = createFleet(workspace)
+			workspace.ensure('target/app/browser')
+			for (const state of ['absent', 'wrong', 'node', 'browser', 'present']) {
+				workspace.remove('target/tests')
+				workspace.remove('target/configs/app')
+				if (state === 'wrong') {
+					workspace.write('target/configs/app/vite.Journey.config.ts', 'export {}\n')
+					workspace.write('target/tests/SetupBrowser.test.ts', 'export {}\n')
+					workspace.write('target/tests/nested/setup.test.ts', 'export {}\n')
+				}
+				if (state === 'node' || state === 'present') {
+					workspace.write('target/tests/setupServer.test.ts', 'export {}\n')
+				}
+				if (state === 'browser' || state === 'present') {
+					workspace.write('target/tests/setupBrowser.test.ts', 'export {}\n')
+				}
+				if (state === 'present') {
+					workspace.write('target/configs/app/vite.journey.config.ts', '// adopter variants\n')
+				}
+				const blueprint = createBlueprint('sample', {
+					src: ['core'],
+					app: ['browser'],
+					journey: state === 'present',
+					setup: state === 'present' ? ['node', 'browser'] : state === 'node' ? ['node'] : state === 'browser' ? ['browser'] : [],
+				})
+				workspace.write('target/package.json', buildTargetManifest(blueprint))
+				const sink = createSink()
+				const exit = await new CLI({ ...REGISTRY_OPTIONS, ...sink.options }).execute([
+					'repair', '--groups', 'configs', '--from', fleet.host, '--target', fleet.target,
+				])
+				expect(exit, `${state}: ${sink.diagnostic.join('\n')}`).toBe(EXIT_CLEAN)
+				const root = requireValue(workspace.read('target/vite.config.ts'))
+				expect(root.includes('export function appJourney(')).toBe(state === 'present')
+				expect(root.includes("label: 'setup'")).toBe(state === 'node' || state === 'present')
+				expect(root.includes("label: 'setup:browser'")).toBe(state === 'browser' || state === 'present')
+				if (state === 'present') {
+					expect(workspace.read('target/configs/app/vite.journey.config.ts')).toBe('// adopter variants\n')
+				}
+			}
+		} finally {
+			workspace.destroy()
+		}
+	})
+
 	it('rejects wrong-case structural paths while deriving every exact fact', async () => {
 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {

@@ -192,6 +192,7 @@ function stageRootConfig(blueprint: Blueprint, workspace: ScratchInterface, pref
 		if (
 			artifact.path !== 'vite.config.ts' &&
 			artifact.path !== 'tsconfig.json' &&
+			artifact.path !== 'configs/app/vite.journey.config.ts' &&
 			artifact.path !== 'configs/browsers.ts'
 		) {
 			continue
@@ -1072,6 +1073,34 @@ describe('emitted workspaces under their own gates', () => {
 		// budget carries slack over that because the cost is contention, not work:
 		// the previous ten-second budget passed alone and reported a timeout under a
 		// full suite run, which is a red gate carrying no diagnostic.
+	}, 30_000)
+
+	it('typechecks journey variants and leaves an ordinary browser selection unchanged', () => {
+		const workspace = createScratch({ parent: ensureTmpRoot(), prefix: 'scaffold-journey-' })
+		try {
+			stageRootConfig(createBlueprint('sample', { app: ['browser'], journey: true }), workspace, 'journey')
+			stageRootConfig(createBlueprint('sample', { app: ['browser'] }), workspace, 'ordinary')
+			const root = requireValue(workspace.read('journey/vite.config.ts'))
+			const wrapper = requireValue(workspace.read('journey/configs/app/vite.journey.config.ts'))
+			expect(wrapper).toContain("import type { JourneyVariant } from '@orkestrel/test'")
+			expect(wrapper).toContain("{ name: 'desktop', width: 1280, height: 800 }")
+			expect(wrapper).toContain("{ name: 'compact', width: 390, height: 844 }")
+			expect(wrapper).toContain('VARIANTS.map((variant) => () => appJourney(variant, VARIANTS))')
+			expect(root).toContain('`journey:${variant.name}`')
+			expect(root).toContain('provide: { variant: variant.name, variants, capture }')
+			expect(root).toContain("const capture = process.env.CAPTURE === '1'")
+			expect(root).toContain("exclude: ['tests/app/browser/integration.test.ts']")
+			expect(root).toContain('viewport: { width: variant.width, height: variant.height }')
+			expect(root).toContain('exclude: []')
+			expect(checkTypes(workspace.ensure('journey'))).toBe('')
+			expect(checkTypes(workspace.ensure('ordinary'))).toBe('')
+			expect(workspace.read('ordinary/vite.config.ts')).not.toContain('journey')
+			expect(workspace.has('ordinary/configs/app/vite.journey.config.ts')).toBe(false)
+			workspace.write('journey/configs/app/vite.journey.config.ts', wrapper.replace('width: 1280', "width: 'wide'"))
+			expect(checkTypes(workspace.ensure('journey'))).toContain("Type 'string' is not assignable to type 'number'")
+		} finally {
+			workspace.destroy()
+		}
 	}, 30_000)
 
 	it('prints no line past the vendored width the formatter could have broken', () => {
