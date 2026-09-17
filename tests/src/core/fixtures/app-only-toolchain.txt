@@ -3,7 +3,7 @@
 	"@orkestrel/guide": "^0.0.20",
 	"@orkestrel/html": "^0.0.10",
 	"@orkestrel/probe": "^0.0.16",
-	"@orkestrel/scaffold": "^0.0.73",
+	"@orkestrel/scaffold": "^0.0.74",
 	"@orkestrel/test": "^0.0.17",
 	"@types/node": "^26.5.1",
 	"@vitejs/plugin-vue": "^6.0.8",
