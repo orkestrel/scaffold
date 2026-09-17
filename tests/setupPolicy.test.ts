@@ -6,7 +6,9 @@ import { requireValue } from '@orkestrel/test'
 import { POLICY_FILENAMES } from './setup.js'
 import {
 	collectPolicyDeclarations,
+	createPolicyScratch,
 	createPolicySurfaceFixture,
+	inspectSkillImports,
 	inspectPolicyWorkspace,
 	normalizePolicyFilename,
 	normalizePolicyPath,
@@ -15,7 +17,80 @@ import {
 	createPolicySurfaceGuide,
 	readPolicyDeclarations,
 	readPolicySurface,
+	readSkillExports,
 } from './setupPolicy.js'
+
+describe('readSkillExports', () => {
+	it('resolves root exports from the installed declaration entry', () => {
+		const names = readSkillExports(process.cwd(), '@orkestrel/test')
+		expect(names).toContain('waitForCondition')
+		expect(names).toContain('WaitOptions')
+		expect(names).not.toContain('s2MissingValue')
+	})
+
+	it('resolves browser exports without loading the browser runtime', () => {
+		const names = readSkillExports(process.cwd(), '@orkestrel/test/browser')
+		expect(names).toContain('clickAccessible')
+		expect(names).toContain('CaptureVariant')
+		expect(names).not.toContain('S2MissingType')
+	})
+
+	it('returns absence when an installed entry has no declaration', () => {
+		expect(readSkillExports(process.cwd(), '@orkestrel/test/missing')).toBeUndefined()
+	})
+
+	it('follows star and aliased declaration exports selected by the exports map', () => {
+		const scratch = createPolicyScratch({ prefix: 'orkestrel-skill-exports-' })
+		try {
+			scratch.write('node_modules/@orkestrel/test/package.json', JSON.stringify({
+				name: '@orkestrel/test',
+				type: 'module',
+				exports: {
+					'.': { import: { types: './entry.d.ts', default: './entry.js' } },
+					'./runtime': './runtime.js',
+				},
+			}))
+			scratch.write('node_modules/@orkestrel/test/entry.d.ts', "export * from './values.js'\nexport { Original as Renamed } from './types.js'\n")
+			scratch.write('node_modules/@orkestrel/test/values.d.ts', 'declare const exportedValue: string\ndeclare const hiddenValue: string\nexport { exportedValue }\n')
+			scratch.write('node_modules/@orkestrel/test/types.d.ts', 'export interface Original { readonly value: string }\n')
+			scratch.write('node_modules/@orkestrel/test/entry.js', 'throw new Error("The declaration reader must never execute this entry")\n')
+			scratch.write('node_modules/@orkestrel/test/runtime.js', 'export const runtimeValue = true\n')
+			expect(readSkillExports(scratch.path, '@orkestrel/test')).toEqual(['Renamed', 'exportedValue'])
+			expect(readSkillExports(scratch.path, '@orkestrel/test/values')).toBeUndefined()
+			expect(readSkillExports(scratch.path, '@orkestrel/test/runtime')).toBeUndefined()
+		} finally {
+			scratch.destroy()
+		}
+	})
+})
+
+describe('inspectSkillImports', () => {
+	it('reports a specifier with no installed declaration entry', () => {
+		expect(inspectSkillImports(process.cwd(), 'SKILL.md', '```ts\nimport { missing } from "@orkestrel/test/missing"\n```\n')).toEqual([
+			{ rule: 'skill', path: 'SKILL.md', message: 'skill fence import @orkestrel/test/missing has no installed declaration entry' },
+		])
+	})
+
+	it('reads multiline aliased and commented imports in nested fences', () => {
+		const content = '> ~~~ts\r\n> import {\r\n>   /* exported name */ s2MissingValue as local,\r\n>   type WaitOptions,\r\n> } from "@orkestrel/test"\r\n> ~~~\r\n'
+		expect(inspectSkillImports(process.cwd(), 'references/example.md', content)).toEqual([
+			{ rule: 'skill', path: 'references/example.md', message: 'skill fence import @orkestrel/test does not export s2MissingValue' },
+		])
+	})
+
+	it('reads each fence inside a list and after a longer outer fence', () => {
+		const content = '- Example\n\n  ~~~ts\n  import { s2MissingList } from "@orkestrel/test"\n  ~~~\n\n````text\n```\n````\n\n```ts\nimport type { S2MissingLater } from "@orkestrel/test"\n```\n'
+		expect(inspectSkillImports(process.cwd(), 'SKILL.md', content)).toEqual([
+			{ rule: 'skill', path: 'SKILL.md', message: 'skill fence import @orkestrel/test does not export s2MissingList' },
+			{ rule: 'skill', path: 'SKILL.md', message: 'skill fence import @orkestrel/test does not export S2MissingLater' },
+		])
+	})
+
+	it('excludes prose, table cells, and commented or quoted import text', () => {
+		const content = 'import { missing } from "@orkestrel/test"\n\n| Symbol |\n| --- |\n| `import { missing } from "@orkestrel/test"` |\n\n```ts\n// import { missing } from "@orkestrel/test"\nconst sentence = \'import { missing } from "@orkestrel/test"\'\nimport { external } from "external-package"\n```\n'
+		expect(inspectSkillImports(process.cwd(), 'SKILL.md', content)).toEqual([])
+	})
+})
 
 describe('readPolicyDeclarations', () => {
 	for (const scenario of POLICY_SURFACE_EXPORT_CASES) {

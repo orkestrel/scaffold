@@ -4,7 +4,7 @@ import {
 	hasCanonicalSegments,
 	resolveLink,
 } from '@orkestrel/guide'
-import { HOST_PATHS } from '@orkestrel/scaffold'
+import { BASE_DEV_DEPENDENCIES, HOST_PATHS } from '@orkestrel/scaffold'
 import {
 	existsSync,
 	globSync,
@@ -18,6 +18,18 @@ import {
 import { tmpdir } from 'node:os'
 import { basename, dirname, join, matchesGlob, relative as relativePath, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import {
+	createProgram,
+	createSourceFile,
+	isImportDeclaration,
+	isNamedImports,
+	isStringLiteral,
+	ModuleKind,
+	ModuleResolutionKind,
+	resolveModuleName,
+	ScriptTarget,
+	sys,
+} from 'typescript'
 import { parseSync } from 'vite'
 import { stripPolicyCode, textToPolicyHits } from '../configs/policy.js'
 
@@ -156,6 +168,7 @@ export interface PolicyControl {
 	readonly directories?: readonly string[]
 	readonly line?: number
 	readonly message?: string
+	readonly violations?: readonly PolicyViolation[]
 }
 
 /** Describes a contained temporary directory owned by one vendored test. */
@@ -955,13 +968,91 @@ export function inspectSkillTemplateTODOs(
 }
 
 /**
- * Inspects one discovered skill's required files, metadata, token, and references.
+ * Reads an installed public entry's exported declaration names without loading its runtime.
+ *
+ * @param root - The workspace whose installed packages supply the declarations.
+ * @param specifier - The public package entry to resolve through its exports map.
+ * @returns The exported names, or `undefined` when no declaration module resolves.
+ * @remarks Resolution uses the import and types conditions without workspace source aliases.
+ * The TypeScript checker follows declaration re-exports, including star and named exports.
+ */
+export function readSkillExports(root: string, specifier: string): readonly string[] | undefined {
+	const options = {
+		module: ModuleKind.ESNext,
+		moduleResolution: ModuleResolutionKind.Bundler,
+		noLib: true,
+		types: [],
+	}
+	const entry = resolveModuleName(specifier, join(root, '__skill__.mts'), options, sys).resolvedModule
+	if (entry === undefined) return undefined
+	const program = createProgram([entry.resolvedFileName], options)
+	const source = program.getSourceFile(entry.resolvedFileName)
+	if (source === undefined || !source.isDeclarationFile) return undefined
+	const checker = program.getTypeChecker()
+	const symbol = checker.getSymbolAtLocation(source)
+	if (symbol === undefined) return undefined
+	return checker.getExportsOfModule(symbol).map((entry) => entry.name).sort()
+}
+
+/**
+ * Inspects named Orkestrel imports in every Markdown fence against installed declaration exports.
+ *
+ * @param root - The workspace whose installed packages supply the declarations.
+ * @param path - The workspace-relative skill document path reported on a violation.
+ * @param content - The raw Markdown text.
+ * @returns Every unsupported package, missing declaration, or unexported binding violation.
+ * @remarks The guide parser supplies fences, including fences nested in lists and blockquotes.
+ * The TypeScript parser reads named value and type bindings, aliases, and multiline imports.
+ * Prose, table cells, indented code, default imports, namespace imports, and non-Orkestrel imports
+ * are outside this check. Every symbol a skill teaches must appear in a named import fence.
+ * Packages outside BASE_DEV_DEPENDENCIES are refused because targets need not install them.
+ * This check proves exported names, not call signatures or runtime behavior.
+ */
+export function inspectSkillImports(
+	root: string,
+	path: string,
+	content: string,
+): readonly PolicyViolation[] {
+	const violations: PolicyViolation[] = []
+	const entries = new Map<string, readonly string[] | undefined>()
+	for (const fence of createGuide(content).fences()) {
+		const source = createSourceFile('skill.ts', fence.code, ScriptTarget.Latest, true)
+		for (const statement of source.statements) {
+			if (!isImportDeclaration(statement) || !isStringLiteral(statement.moduleSpecifier)) continue
+			const specifier = statement.moduleSpecifier.text
+			const bindings = statement.importClause?.namedBindings
+			if (!specifier.startsWith('@orkestrel/') || bindings === undefined || !isNamedImports(bindings)) continue
+			const packageName = specifier.split('/').slice(0, 2).join('/')
+			if (!Object.hasOwn(BASE_DEV_DEPENDENCIES, packageName)) {
+				violations.push(createPolicyViolation('skill', path, `skill fence import ${specifier} is outside BASE_DEV_DEPENDENCIES: ${packageName}`))
+				continue
+			}
+			if (!entries.has(specifier)) entries.set(specifier, readSkillExports(root, specifier))
+			const names = entries.get(specifier)
+			if (names === undefined) {
+				violations.push(createPolicyViolation('skill', path, `skill fence import ${specifier} has no installed declaration entry`))
+				continue
+			}
+			for (const binding of bindings.elements) {
+				const name = (binding.propertyName ?? binding.name).text
+				if (!names.includes(name)) {
+					violations.push(createPolicyViolation('skill', path, `skill fence import ${specifier} does not export ${name}`))
+				}
+			}
+		}
+	}
+	return violations
+}
+
+/**
+ * Inspects one discovered skill's required files, metadata, token, references, and fenced imports.
  *
  * @param root - The workspace root to inspect.
  * @param name - The discovered skill directory name.
+ * @param installation - The workspace supplying installed declaration entries. Default: root.
  * @returns Every skill-family violation in invariant order.
  */
-export function inspectSkill(root: string, name: string): readonly PolicyViolation[] {
+export function inspectSkill(root: string, name: string, installation = root): readonly PolicyViolation[] {
 	const base = `${SKILL_FAMILY_ROOT}/${name}`
 	const skill = `${base}/SKILL.md`
 	const metadata = `${base}/agents/openai.yaml`
@@ -1013,6 +1104,7 @@ export function inspectSkill(root: string, name: string): readonly PolicyViolati
 			}
 		}
 		violations.push(...inspectSkillTemplateTODOs('skill', skill, content))
+		violations.push(...inspectSkillImports(installation, skill, content))
 	}
 	const hasMetadata = isPolicyFile(root, metadata)
 	if (!hasMetadata) {
@@ -1056,8 +1148,10 @@ export function inspectSkill(root: string, name: string): readonly PolicyViolati
 					),
 				)
 			} else {
+				const referenceContent = readFileSync(join(root, path), 'utf8')
 				violations.push(
-					...inspectSkillTemplateTODOs('skill', path, readFileSync(join(root, path), 'utf8')),
+					...inspectSkillTemplateTODOs('skill', path, referenceContent),
+					...inspectSkillImports(installation, path, referenceContent),
 				)
 			}
 		}
@@ -1148,11 +1242,12 @@ export function inspectSkill(root: string, name: string): readonly PolicyViolati
  * Inspects every immediate member of the discovered skill family.
  *
  * @param root - The workspace root to inspect.
+ * @param installation - The workspace supplying installed declaration entries. Default: root.
  * @returns Every skill-family violation in directory and invariant order.
  */
-export function inspectSkillFamily(root: string): readonly PolicyViolation[] {
+export function inspectSkillFamily(root: string, installation = root): readonly PolicyViolation[] {
 	const violations: PolicyViolation[] = []
-	for (const name of readSkillFamily(root)) violations.push(...inspectSkill(root, name))
+	for (const name of readSkillFamily(root)) violations.push(...inspectSkill(root, name, installation))
 	return violations
 }
 
@@ -2041,7 +2136,7 @@ export function inspectPolicyControl(control: PolicyControl): readonly PolicyVio
 			scratch.write(marker, '')
 			rmSync(join(scratch.path, marker))
 		}
-		if (control.rule === 'skill') return inspectSkillFamily(scratch.path)
+		if (control.rule === 'skill') return inspectSkillFamily(scratch.path, process.cwd())
 		if (control.rule === 'bridge') return inspectSkillBridges(scratch.path)
 		return inspectPolicyWorkspace(scratch.path)
 	} finally {
@@ -2121,6 +2216,72 @@ export const POLICY_CONTROLS: readonly PolicyControl[] = Object.freeze([
 
 /** Lists the physical in-family controls for every skill-family assertion class. */
 export const SKILL_POLICY_CONTROLS: readonly PolicyControl[] = Object.freeze([
+	{
+		label: 'rejects an unexported value binding in a skill fence',
+		membership: 'named value imports in canonical skill fences',
+		rule: 'skill',
+		files: [
+			{
+				path: '.agents/skills/sample/SKILL.md',
+				content: SKILL_POLICY_TEXT + '\n```ts\nimport { s2MissingValue } from "@orkestrel/test/browser"\n```\n',
+			},
+			{ path: '.agents/skills/sample/agents/openai.yaml', content: createSkillMetadata('sample') },
+		],
+		violations: [{ rule: 'skill', path: '.agents/skills/sample/SKILL.md', message: 'skill fence import @orkestrel/test/browser does not export s2MissingValue' }],
+	},
+	{
+		label: 'rejects an unexported type binding in a skill fence',
+		membership: 'named type imports in canonical skill fences',
+		rule: 'skill',
+		files: [
+			{
+				path: '.agents/skills/sample/SKILL.md',
+				content: SKILL_POLICY_TEXT + '\n```ts\nimport type { S2MissingType } from "@orkestrel/test/browser"\n```\n',
+			},
+			{ path: '.agents/skills/sample/agents/openai.yaml', content: createSkillMetadata('sample') },
+		],
+		violations: [{ rule: 'skill', path: '.agents/skills/sample/SKILL.md', message: 'skill fence import @orkestrel/test/browser does not export S2MissingType' }],
+	},
+	{
+		label: 'accepts exported value and type bindings from root and browser entries',
+		membership: 'named value and type imports in canonical skill fences',
+		rule: 'skill',
+		files: [
+			{
+				path: '.agents/skills/sample/SKILL.md',
+				content: SKILL_POLICY_TEXT + '\n```ts\nimport { waitForCondition, type WaitOptions } from "@orkestrel/test"\nimport { clickAccessible } from "@orkestrel/test/browser"\nimport type { CaptureVariant } from "@orkestrel/test/browser"\n```\n',
+			},
+			{ path: '.agents/skills/sample/agents/openai.yaml', content: createSkillMetadata('sample') },
+		],
+		violations: [],
+	},
+	{
+		label: 'rejects a fenced package outside the base dependency set',
+		membership: 'Orkestrel package imports in canonical skill fences',
+		rule: 'skill',
+		files: [
+			{
+				path: '.agents/skills/sample/SKILL.md',
+				content: SKILL_POLICY_TEXT + '\n```ts\nimport { isString } from "@orkestrel/contract"\n```\n',
+			},
+			{ path: '.agents/skills/sample/agents/openai.yaml', content: createSkillMetadata('sample') },
+		],
+		violations: [{ rule: 'skill', path: '.agents/skills/sample/SKILL.md', message: 'skill fence import @orkestrel/contract is outside BASE_DEV_DEPENDENCIES: @orkestrel/contract' }],
+	},
+	{
+		label: 'reports an unexported binding against its named reference file',
+		membership: 'named imports in fences in referenced skill documents',
+		rule: 'skill',
+		files: [
+			{ path: '.agents/skills/sample/SKILL.md', content: SKILL_REFERENCE_TEXT },
+			{ path: '.agents/skills/sample/agents/openai.yaml', content: createSkillMetadata('sample') },
+			{
+				path: '.agents/skills/sample/references/example.md',
+				content: '# Example\n\n~~~ts\nimport { s2MissingReference } from "@orkestrel/test/browser"\n~~~\n',
+			},
+		],
+		violations: [{ rule: 'skill', path: '.agents/skills/sample/references/example.md', message: 'skill fence import @orkestrel/test/browser does not export s2MissingReference' }],
+	},
 	{
 		label: 'rejects a SKILL.md without frontmatter',
 		membership: 'exact-case regular SKILL.md files in discovered skill directories',

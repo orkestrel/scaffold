@@ -91,6 +91,8 @@ Never use in-repository `@src/*` aliases in public guide examples; reserve them 
 - Do not put model routing or package version catalogs in a skill.
 - Validate every referenced resource, leave no template TODOs, and limit each skill directory to `SKILL.md`, `agents/openai.yaml`, and the `references/*.md` files its `SKILL.md` names; add no other file or directory.
 - Verify each API a skill instructs an executor to call against the installed package's public entry before landing the instruction, and name the entry you read. A skill that names a symbol its package does not export teaches an executor to write a dangling import.
+- Put every symbol a skill teaches in a named import inside a Markdown fence in `SKILL.md` or a named reference. The policy sweep reads fenced value and type imports from `@orkestrel/*` declaration entries; it does not read identifiers in prose or table cells, or validate call signatures and runtime behavior.
+- Import only packages in `BASE_DEV_DEPENDENCIES` in those fences. The sweep refuses a package outside that set because a generated workspace need not install it.
 - Write `agents/openai.yaml` as one root `interface:` mapping over exactly `display_name`, `short_description`, and `default_prompt`, in that order, each on its own two-space-indented line.
 - Research the external schema only when a consumer needs a key outside `display_name`, `short_description`, and `default_prompt`, and add no key before then.
 - Give every one of those keys a non-empty single-quoted scalar, and write an apostrophe inside it as `''`.

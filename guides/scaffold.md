@@ -1089,6 +1089,16 @@ fetched bytes rather than prose this workspace wrote, and it reports a top-level
 neither this package's own, nor `guides/README.md`, nor a catalog row, so an exclusion always
 carries its evidence.
 
+The skill sweep reads named value and type imports from `@orkestrel/*` in every Markdown fence
+in `SKILL.md` and its named references, including fences inside lists and blockquotes. It resolves
+each entry through the installed package's exports map and reads its declaration exports with
+TypeScript without loading the runtime entry. A missing binding reports the skill file, specifier,
+and exported name. A missing declaration entry or a package outside `BASE_DEV_DEPENDENCIES`
+also reports a violation. Targets need not install packages outside that base set.
+The sweep doesn't read identifiers in prose or table cells, indented code, default imports,
+namespace imports, or imports from other scopes. Every taught symbol belongs in a named import
+fence. This proof checks exported names; it doesn't check call signatures or runtime behavior.
+
 The `surface` rule in `inspectPolicyWorkspace` compares live barrel exports and target-owned root
 `tests/setup*.ts` exports with the hosted guides. It matches bare names case-sensitively across
 environments and declaration kinds. Source names claimed by the target's own hosted guide are

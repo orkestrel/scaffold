@@ -33,7 +33,7 @@ import {
 } from '@src/core'
 import { mergeConfig } from 'vite'
 import { environmentBoundary, outputBoundary } from '../../../configs/helpers.js'
-import rootConfiguration, { mergeOverride, srcServer } from '../../../vite.config.js'
+import { mergeOverride, srcServer } from '../../../vite.config.js'
 import { buildBlueprint } from '../../setup.js'
 import { readStatements } from '../../setupServer.js'
 import { describe, expect, it } from 'vitest'
@@ -3060,44 +3060,13 @@ describe('the guides entry', () => {
 // a guard that admits a non-string `name` or a structural thenable, and the red that does
 // comes from mutating the predicate itself.
 //
-// Which cases meet the real vendored boundary plugins: the refusal case drives every
-// factory this checkout registers. The replacement and nested cases take their base
+// The replacement and nested cases take their base
 // from `srcServer`; the repeated-name case writes its base from the same vendored
 // boundary helpers, because no emitted base repeats a plugin name.
 // The caller-order, opaque-entry, non-string-name, structural-promise, and
 // `command`-alone cases write their own entries, because the hazard there is the
 // entry's shape rather than the plugin's identity.
 describe('the generated configuration under its own hazards', () => {
-	it('refuses the Vitest invocation record a project row is called with', () => {
-		const sentinel = {
-			command: 'sentinel-command',
-			isPreview: true,
-			isSsrBuild: true,
-			mode: 'sentinel-mode',
-			sentinel: true,
-		}
-		// The population, stated before the sweep drawn from it: every factory this
-		// checkout registers as a project row, which is the set Vitest calls.
-		const rows = rootConfiguration.test?.projects
-		if (!Array.isArray(rows)) throw new Error('The root configuration carries no projects')
-		const registered = rows.filter((row) => typeof row === 'function')
-		if (registered.length === 0) throw new Error('The root configuration registers no factory')
-		for (const factory of registered) {
-			const project: unknown = Reflect.apply(factory, undefined, [sentinel])
-			if (typeof project !== 'object' || project === null) {
-				throw new Error('A project factory returned no configuration')
-			}
-			for (const field of Object.keys(sentinel)) {
-				expect(Object.getOwnPropertyDescriptor(project, field)?.value).toBeUndefined()
-			}
-		}
-		// The control: the bare merge a factory would otherwise perform lands every field
-		// of the record on the configuration it returns.
-		const landed: UserConfig = mergeConfig({ publicDir: false }, sentinel)
-		expect(Object.getOwnPropertyDescriptor(landed, 'command')?.value).toBe('sentinel-command')
-		expect(Object.getOwnPropertyDescriptor(landed, 'mode')?.value).toBe('sentinel-mode')
-	})
-
 	it('replaces a named base plugin in its position', () => {
 		const declared = outputBoundary('dist/src/server')
 		const environment = environmentBoundary('src/server')

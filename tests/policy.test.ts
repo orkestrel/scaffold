@@ -527,6 +527,10 @@ describe('skill family policy', () => {
 	for (const control of SKILL_POLICY_CONTROLS) {
 		it(`${control.label} [membership: ${control.membership}]`, () => {
 			const violations = inspectPolicyControl(control)
+			if (control.violations !== undefined) {
+				expect(violations).toEqual(control.violations)
+				return
+			}
 			expect(violations).toHaveLength(1)
 			expect(violations[0]?.rule).toBe(control.rule)
 			expect(control.line === undefined || violations[0]?.line === control.line).toBe(true)
