@@ -910,7 +910,7 @@
 			"storage": "guides/scaffold.md",
 			"destination": "guides/scaffold.md",
 			"executable": false,
-			"digest": "d09f09b7bb1dc49c90263e0b6b19ba1309467eafde7640df5122dd94e7dcae89"
+			"digest": "f0e53a50fc78d2016cba0be060045c09dc7fc034eaee9930fad4dcb3a4075800"
 		},
 		{
 			"storage": "guides/sea.md",
@@ -1048,7 +1048,7 @@
 			"storage": "tests/setupPolicy.ts",
 			"destination": "tests/setupPolicy.ts",
 			"executable": false,
-			"digest": "ee6304fc7ee489483bece24df2e29c0ff695c5b4a9f59d73eb46660aa1583940"
+			"digest": "9065dde1bc5ef6541a36dfb9b478d990102f804af9e5c78e0ed6b44521678974"
 		}
 	],
 	"roots": [
@@ -2001,5 +2001,5 @@
 			]
 		}
 	],
-	"digest": "bd9482a9d472490c25a96dbc8d0a6c5d929dee36c12792659142b285366b509f"
+	"digest": "90c3909263a7c87e4be729390571e85078da3fb90034fcbdd6e6e4a9722f3ac0"
 }

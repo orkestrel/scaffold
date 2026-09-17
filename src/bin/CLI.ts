@@ -45,6 +45,7 @@ import { renderTable } from '@orkestrel/console'
 import { attempt, isRecord, isString, parseJSON } from '@orkestrel/contract'
 import {
 	BIN_ENTRY_PATH,
+	blueprintToConfigArtifacts,
 	blueprintToDevDependencies,
 	blueprintToRootVite,
 	blueprintToScripts,
@@ -229,9 +230,11 @@ export class CLI implements CLIInterface {
 	// blueprint the command line describes, and write it into a vacant target.
 	async #create(command: NewCommand): Promise<number> {
 		const target = command.target ?? command.name
+		const app = selectionToEnvironments(command.app, 'app')
 		const blueprint = createBlueprint(command.name, {
 			src: selectionToEnvironments(command.src, 'src'),
-			app: selectionToEnvironments(command.app, 'app'),
+			app,
+			journey: app.includes('browser'),
 			bin: command.bin === true,
 			setup: [],
 			dependencies: selectionToPackages(command.dependencies).map((name) => ({
@@ -1045,6 +1048,32 @@ export class CLI implements CLIInterface {
 				groups: ['configs'],
 			}
 		}
+		if (!writing) {
+			const paths = new Set(
+				blueprintToConfigArtifacts(blueprint).map((artifact) =>
+					resolveContainedPath(target, artifact.path),
+				),
+			)
+			const configurations: string[] = []
+			for (const [name, script] of Object.entries(scripts)) {
+				if (!name.startsWith('test:') || !isString(script)) continue
+				const invoked = scriptToInvocations(script)
+				if (invoked === undefined) continue
+				for (const config of invoked.configs) {
+					const path = resolveContainedPath(target, config)
+					if (path !== undefined && (paths.has(path) || isExactCaseFile(path))) continue
+					configurations.push(`${name} --config ${config}`)
+				}
+			}
+			if (configurations.length > 0) {
+				return {
+					field: 'projects',
+					message: `The manifest at ${target} names a Vitest configuration the plan does not emit and the target does not hold: ${configurations.join(', ')}. Add the configuration or remove the script that names it.`,
+					blocking: false,
+					groups: ['configs'],
+				}
+			}
+		}
 		const expected = blueprintToScripts(blueprint)
 		const expectedLines = new Map<string, string>()
 		for (const [name, script] of Object.entries(expected)) {
@@ -1092,7 +1121,22 @@ export class CLI implements CLIInterface {
 			.filter(([project]) => !reachable.has(project))
 			.sort(([left], [right]) => left.localeCompare(right))
 		const ungated = missing.filter(([project]) => isString(scripts[`test:${project}`]))
-		if (ungated.length === 0) return undefined
+		if (ungated.length === 0) {
+			if (
+				!writing &&
+				expected['test:journey'] !== undefined &&
+				(!isString(scripts.test) ||
+					!scriptToInvocations(scripts.test)?.scripts.includes('test:journey'))
+			) {
+				return {
+					field: 'projects',
+					message: `The manifest at ${target} does not invoke npm run test:journey from its test chain. Add npm run test:journey after npm run test:app.`,
+					blocking: false,
+					groups: ['configs'],
+				}
+			}
+			return undefined
+		}
 		const names = ungated.map(([project]) => project)
 		const disk = parseJSON(text)
 		const written = isRecord(disk) && isRecord(disk.scripts) ? disk.scripts : {}

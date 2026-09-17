@@ -443,6 +443,44 @@ describe('CLI sanitization', () => {
 })
 
 describe('CLI new', () => {
+	it('creates the journey axis for a browser application and omits it for core', async () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const fleet = createFleet(workspace)
+			for (const app of ['browser', 'core']) {
+				const target = workspace.ensure(app)
+				const sink = createSink()
+				expect(
+					await new CLI(sink.options).execute([
+						'new',
+						'sample',
+						'--app',
+						app,
+						'--offline',
+						'--from',
+						fleet.host,
+						'--target',
+						target,
+						'--json',
+					]),
+				).toBe(EXIT_CLEAN)
+				const root = requireValue(workspace.read(`${app}/vite.config.ts`))
+				const manifest = requireValue(workspace.read(`${app}/package.json`))
+				expect(workspace.has(`${app}/configs/app/vite.journey.config.ts`)).toBe(app === 'browser')
+				expect(root.includes('export function appJourney(')).toBe(app === 'browser')
+				expect(root.includes("exclude: ['tests/app/browser/integration.test.ts']")).toBe(
+					app === 'browser',
+				)
+				expect(manifest.includes('"test:journey":')).toBe(app === 'browser')
+				expect(manifest.includes('npm run test:app && npm run test:journey')).toBe(
+					app === 'browser',
+				)
+			}
+		} finally {
+			workspace.destroy()
+		}
+	})
+
 	it('creates a bin workspace that round-trips through audit', async () => {
 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
@@ -1657,6 +1695,103 @@ describe('CLI audit', () => {
 				}
 			}
 			expect(preserved).toStrictEqual(['// adopter variants\n'])
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('reports an absent journey configuration without removing its script during repair', async () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const fleet = createFleet(workspace)
+			const target = workspace.ensure('fresh')
+			expect(
+				await new CLI(createSink().options).execute([
+					'new',
+					'sample',
+					'--app',
+					'browser',
+					'--offline',
+					'--from',
+					fleet.host,
+					'--target',
+					target,
+				]),
+			).toBe(EXIT_CLEAN)
+			workspace.remove('fresh/configs/app/vite.journey.config.ts')
+			const manifest = workspace.read('fresh/package.json')
+			for (const verb of ['audit', 'repair']) {
+				const sink = createSink()
+				await new CLI(sink.options).execute([
+					verb,
+					'--offline',
+					'--from',
+					fleet.host,
+					'--target',
+					target,
+					'--groups',
+					'configs',
+					'--json',
+				])
+				const result: Audit | RepairResult = JSON.parse(sink.output[0] ?? '')
+				const audit = 'audit' in result ? result.audit : result
+				expect(audit.questions).toContainEqual({
+					field: 'projects',
+					blocking: false,
+					message: `The manifest at ${target} names a Vitest configuration the plan does not emit and the target does not hold: test:journey --config configs/app/vite.journey.config.ts. Add the configuration or remove the script that names it.`,
+				})
+				expect(workspace.read('fresh/package.json')).toBe(manifest)
+			}
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('reports a journey invocation missing from test without rewriting the chain', async () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const fleet = createFleet(workspace)
+			const target = workspace.ensure('fresh')
+			expect(
+				await new CLI(createSink().options).execute([
+					'new',
+					'sample',
+					'--app',
+					'browser',
+					'--offline',
+					'--from',
+					fleet.host,
+					'--target',
+					target,
+				]),
+			).toBe(EXIT_CLEAN)
+			const manifest = requireValue(workspace.read('fresh/package.json')).replace(
+				' && npm run test:journey',
+				'',
+			)
+			workspace.write('fresh/package.json', manifest)
+			for (const verb of ['repair', 'audit']) {
+				const sink = createSink()
+				await new CLI(sink.options).execute([
+					verb,
+					'--offline',
+					'--from',
+					fleet.host,
+					'--target',
+					target,
+					'--groups',
+					'configs',
+					'--json',
+				])
+				const result: Audit | RepairResult = JSON.parse(sink.output[0] ?? '')
+				const audit = 'audit' in result ? result.audit : result
+				expect(audit.questions).toContainEqual({
+					field: 'projects',
+					blocking: false,
+					message: `The manifest at ${target} does not invoke npm run test:journey from its test chain. Add npm run test:journey after npm run test:app.`,
+				})
+				expect(workspace.read('fresh/package.json')).toBe(manifest)
+			}
 		} finally {
 			workspace.destroy()
 		}

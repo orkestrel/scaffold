@@ -1527,9 +1527,9 @@ export function readStatements(source: string, name: string): readonly TestState
  * type-only import as an import because that specifier must resolve too. It
  * resolves a string literal and a template literal with no expressions; every
  * other argument reports `undefined`, because an argument assembled at runtime
- * names no module a caller can rule on. Two forms sit outside the reading: an
- * `import()` written in type position, which parses as a `TSImportType` node, and
- * a load through a binding some other name holds.
+ * names no module a caller can rule on. The reading omits an `import()` in type
+ * position (`TSImportType`), a load through a binding some other name holds, and
+ * a `require` reached through a member expression such as `require.resolve`.
  *
  * @example
  * ```ts

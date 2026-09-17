@@ -751,16 +751,16 @@ export function releasesToPins(
 }
 
 /**
- * Reads the literal Vitest projects and npm run scripts one shell command invokes.
+ * Reads the literal Vitest projects, configuration paths, and npm run scripts a shell command names.
  *
  * @param script - The manifest script text to read.
- * @returns The invoked projects and scripts, or `undefined` when the command
+ * @returns The named projects, configurations, and scripts, or `undefined` when the command
  * cannot be read literally.
  *
  * @remarks
  * Quotes group a token but do not hide the option, while shell expansions make
  * its value unresolved and therefore refuse the write that asked the question.
- * An unterminated quote, a trailing escape, and an unresolved `--project` value
+ * An unterminated quote, a trailing escape, and an unresolved `--project` or `--config` value
  * all answer `undefined` rather than a partial reading.
  *
  * @example
@@ -768,7 +768,7 @@ export function releasesToPins(
  * import { scriptToInvocations } from './helpers.js'
  *
  * scriptToInvocations('vitest run --project src:core')
- * // { projects: ['src:core'], scripts: [] }
+ * // { projects: ['src:core'], configs: [], scripts: [] }
  * ```
  */
 export function scriptToInvocations(script: string): ScriptInvocations | undefined {
@@ -837,6 +837,7 @@ export function scriptToInvocations(script: string): ScriptInvocations | undefin
 	if (started) tokens.push({ value, resolved })
 
 	const projects: string[] = []
+	const configs: string[] = []
 	const scripts: string[] = []
 	for (let index = 0; index < tokens.length; index += 1) {
 		const token = tokens[index]
@@ -854,7 +855,7 @@ export function scriptToInvocations(script: string): ScriptInvocations | undefin
 			index += 2
 			continue
 		}
-		if (token.value === '--project') {
+		if (token.value === '--project' || token.value === '--config') {
 			const project = tokens[index + 1]
 			if (
 				project === undefined ||
@@ -863,19 +864,21 @@ export function scriptToInvocations(script: string): ScriptInvocations | undefin
 				['&&', '||', ';', '|', '&', '(', ')'].includes(project.value)
 			)
 				return undefined
-			projects.push(project.value)
+			const names = token.value === '--project' ? projects : configs
+			names.push(project.value)
 			index += 1
 			continue
 		}
-		if (token.value.startsWith('--project=')) {
-			const project = token.value.slice('--project='.length)
+		if (token.value.startsWith('--project=') || token.value.startsWith('--config=')) {
+			const project = token.value.slice(token.value.indexOf('=') + 1)
 			if (!token.resolved || project.length === 0) return undefined
-			projects.push(project)
+			const names = token.value.startsWith('--project=') ? projects : configs
+			names.push(project)
 			continue
 		}
-		if (!token.resolved && token.value.includes('--project')) return undefined
+		if (!token.resolved && /--project|--config/.test(token.value)) return undefined
 	}
-	return { projects, scripts }
+	return { projects, configs, scripts }
 }
 
 /**

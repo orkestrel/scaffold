@@ -659,6 +659,11 @@ describe('the parsed specifier reader', () => {
 		])
 	})
 
+	it('omits a require member expression from the specifier reading', () => {
+		expect(readSpecifiers("require.resolve('pkg')\n", 'member.cts')).toStrictEqual([])
+		expect(readSpecifiers("require('pkg')\n", 'direct.cts')).toStrictEqual(['pkg'])
+	})
+
 	it('refuses a source the parser reports an error for', () => {
 		expect(() => readSpecifiers('import { join } from\n', 'broken.ts')).toThrow(
 			'The parser refused broken.ts',

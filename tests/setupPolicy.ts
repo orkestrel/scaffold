@@ -1286,9 +1286,10 @@ export function readSkillDeclarations(
  * violation.
  * @remarks The guide parser supplies fences, including fences nested in lists and blockquotes.
  * The Oxc parser reads named value and type bindings, aliases, comments, and multiline imports.
- * A fence the parser refuses reports a violation when its text names an `@orkestrel/` specifier,
- * because error recovery drops the statements after the failure; a refused fence naming no such
- * specifier stays outside this check, as prose, table cells, indented code, default imports,
+ * A fence the parser refuses reports a violation when its text carries an `@orkestrel/` substring
+ * anywhere, including comments and string literals, because error recovery drops the statements
+ * after the failure. A refused fence without that substring stays outside this check, as prose,
+ * table cells, indented code, default imports,
  * namespace imports, and imports from other scopes do. A package outside BASE_DEV_DEPENDENCIES
  * reports a violation, and each refused declaration reading reports the cause
  * {@link SKILL_DECLARATION_MESSAGES} names. This check proves exported names, not call signatures

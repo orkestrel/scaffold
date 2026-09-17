@@ -225,7 +225,7 @@ export interface VersionResolution {
 }
 
 /**
- * Lists the literal Vitest projects and npm run scripts one shell command invokes.
+ * Lists the literal Vitest projects, configuration paths, and npm run scripts a shell command names.
  *
  * @remarks
  * Literal only: a token whose value a shell expansion decides is unresolved, so
@@ -233,6 +233,8 @@ export interface VersionResolution {
  */
 export interface ScriptInvocations {
 	readonly projects: readonly string[]
+	/** Lists literal --config values in command order, empty when none are named. */
+	readonly configs: readonly string[]
 	readonly scripts: readonly string[]
 }
 

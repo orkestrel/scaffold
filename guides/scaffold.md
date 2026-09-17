@@ -590,7 +590,11 @@ files on `main`, the scaffold repository's `host.json` file, and changed vendore
 answers a read and grant no verb write authority that it did not already have.
 
 `new --bin` creates the executable entry, its test, and its scoped Vite and TypeScript wrappers. The
-other structural facts do not need creation flags. Add a root `tests/setup*.test.ts` proof for
+`new --app browser` command selects the journey axis, creates its birth-owned wrapper, defines
+`appJourney` in the root configuration, and excludes the browser integration suite from
+`app:browser`. Its manifest declares `test:journey` and invokes it after `npm run test:app` in
+`test`. A selection without a browser application emits no journey axis. Creation leaves `setup`
+empty. The other structural facts do not need creation flags. Add a root `tests/setup*.test.ts` proof for
 `setup`, `tests/guides.test.ts` for `guides`, `tests/integration.test.ts` for `integration`,
 `tests/conformance.test.ts` for `conformance`, `tests/setupService.ts` for `service`,
 `tests/setupGlobal.ts` for `global`, `configs/app/vite.showcase.config.ts` for `showcase`, and
@@ -648,6 +652,23 @@ or malformed quote that prevents a project or script name from being resolved st
 question instead of licensing a write. The classifier is deliberately bounded to manifest script
 text that names `vitest`; an external wrapper whose name does not identify its runner supplies no
 static Vitest fact to infer.
+
+The invocation reader also reads literal `--config <path>` and `--config=<path>` values in command
+order. A configuration value containing an unresolved shell expansion makes the whole reading
+`undefined`. The executable keeps this contract in its own modules:
+
+| Declaration           | Summary                                                                                            |
+| --------------------- | -------------------------------------------------------------------------------------------------- |
+| `ScriptInvocations`   | Lists the literal Vitest projects, configuration paths, and npm run scripts a shell command names. |
+| `scriptToInvocations` | Reads the literal Vitest projects, configuration paths, and npm run scripts a shell command names. |
+
+When a `test:*` script names a configuration that the plan does not emit and the target does not
+hold, the non-blocking `projects` question names the script and configuration path. When the plan
+emits `test:journey` and the manifest's `test` chain omits `npm run test:journey`, that question
+asks you to insert the invocation after `npm run test:app`. These advisories belong to `configs`
+and remain report-only during `repair`: the command preserves the `test` chain and an unplanned
+script. A configuration emitted by the plan or present in the target does not raise the absent
+configuration advisory.
 
 `audit` still completes the comparison and reports one non-blocking `projects` question when its
 selection includes `configs`. A scoped audit that excludes `configs` omits that question. For a
@@ -881,7 +902,7 @@ because the shape is chosen once and read afterwards: `new` refuses the advisory
 caller creating a workspace holds the same refusal, and the Compile section states it.
 
 `bin`, `setup`, `guides`, `integration`, `conformance`, `service`, `vendors`, `global`, `showcase`,
-and `journey` are structural facts. Each is set only when the workspace physically ships the directory
+and `journey` are structural facts. Reading verbs set each only when the workspace physically ships the directory
 or exact-case file that defines it, never because of the workspace's name and never because a
 sibling fact is set.
 
@@ -938,7 +959,8 @@ rather than withholding it.
 no artifact, configuration, script, or dependency, and the gate reports a non-blocking question on
 that field so the caller who set it learns it emitted nothing.
 
-The `journey` flag defaults to `false` and also requires a browser application. Without that
+The library's `journey` flag defaults to `false`; `new` sets it when its `app` selection includes
+`browser`. Reading verbs infer it from the wrapper's presence. The flag requires a browser application. Without that
 application, it emits no journey configuration or script and raises a non-blocking `journey`
 question. With that application, the content-owned root configuration defines
 `appJourney(variant, variants)` and excludes `tests/app/browser/integration.test.ts` from the

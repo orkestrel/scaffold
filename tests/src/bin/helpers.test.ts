@@ -717,10 +717,22 @@ describe('scriptToInvocations', () => {
 	it('reads a project named as a separate token and as one token', () => {
 		expect(scriptToInvocations('vitest run --project src:core')).toStrictEqual({
 			projects: ['src:core'],
+			configs: [],
 			scripts: [],
 		})
 		expect(scriptToInvocations('vitest run --project=src:server')).toStrictEqual({
 			projects: ['src:server'],
+			configs: [],
+			scripts: [],
+		})
+	})
+
+	it('reads configuration paths in command order through either option spelling', () => {
+		expect(
+			scriptToInvocations('vitest run --config "configs/first path.ts" --config=configs/next.ts'),
+		).toStrictEqual({
+			projects: [],
+			configs: ['configs/first path.ts', 'configs/next.ts'],
 			scripts: [],
 		})
 	})
@@ -728,6 +740,7 @@ describe('scriptToInvocations', () => {
 	it('reads every npm run script and reads through quotes', () => {
 		expect(scriptToInvocations('npm run build && npm run "test:src"')).toStrictEqual({
 			projects: [],
+			configs: [],
 			scripts: ['build', 'test:src'],
 		})
 	})
@@ -735,6 +748,8 @@ describe('scriptToInvocations', () => {
 	it('refuses a command whose value a shell expansion decides', () => {
 		expect(scriptToInvocations('vitest run --project $PROJECT')).toBeUndefined()
 		expect(scriptToInvocations('vitest run "--project=$PROJECT"')).toBeUndefined()
+		expect(scriptToInvocations('vitest run --config $CONFIG')).toBeUndefined()
+		expect(scriptToInvocations('vitest run "--config=$CONFIG"')).toBeUndefined()
 		expect(scriptToInvocations('npm run `echo build`')).toBeUndefined()
 	})
 
@@ -743,10 +758,16 @@ describe('scriptToInvocations', () => {
 		expect(scriptToInvocations('vitest run --project src:core \\')).toBeUndefined()
 		expect(scriptToInvocations('vitest run --project=')).toBeUndefined()
 		expect(scriptToInvocations('vitest run --project && echo done')).toBeUndefined()
+		expect(scriptToInvocations('vitest run --config=')).toBeUndefined()
+		expect(scriptToInvocations('vitest run --config && echo done')).toBeUndefined()
 	})
 
 	it('reads a command naming neither a project nor a script', () => {
-		expect(scriptToInvocations('tsc --noEmit')).toStrictEqual({ projects: [], scripts: [] })
+		expect(scriptToInvocations('tsc --noEmit')).toStrictEqual({
+			projects: [],
+			configs: [],
+			scripts: [],
+		})
 	})
 })
 
