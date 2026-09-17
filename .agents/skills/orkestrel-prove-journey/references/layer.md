@@ -64,13 +64,30 @@ table type from `@orkestrel/test`. Write one of your own only where those entrie
 the act.
 
 - Place a helper you write in the workspace's browser test setup module, export it from there, and
-  name it for the human act it performs. Prove that module with `tests/setupBrowser.test.ts`, and
-  run `scaffold repair` after writing that file so the browser-enabled `setup:browser` project
-  collects it.
-- Read the package's own exports before writing anything. `AGENTS.md` § Design laws bars a helper
-  that renames a published one, and bars a second implementation of one.
+  name it for the human act it performs.
+- Read the package's own exports before writing anything, under `AGENTS.md` § Design laws.
 - Code every journey against the vocabulary in this file, which is the published one. Diagnose a
   target that stops resolving here, and fix it in the application.
+
+Prove that setup module with `tests/setupBrowser.test.ts`. A workspace born with the browser setup
+runtime carries the `setup:browser` project, the `test:setup:browser` script, and that script's
+place in the `test` chain. A workspace that acquires the runtime later activates the project in this
+order:
+
+1. Write `tests/setupBrowser.test.ts`. Writing that file selects the browser setup runtime.
+2. Add `npm run test:setup:browser` to the `test` chain.
+3. Run `scaffold repair`, which registers the browser-enabled `setup:browser` project and appends
+   the `test:setup:browser` script.
+
+Run `scaffold repair` before the chain invocation and it refuses the `configs` group:
+
+```text
+The configs group is blocked because the manifest at <target> does not reach a Vitest project the planned configuration registers: setup:browser. No chain from test invokes it. test:setup:browser is not declared, so the script is missing as well as the gate: declare it and invoke it by name from the test chain. Exclude configs from --groups to write another group.
+```
+
+Add the invocation and run `scaffold repair` again. The Node `setup` project excludes
+`tests/setupBrowser.test.ts`, so a proof of a browser helper placed anywhere else runs without a
+browser.
 
 ## What it drives
 
@@ -273,7 +290,7 @@ beside each.
 | A class-list read standing in for a settle                       | `waitForState`, `waitForAnimations`                                                              |
 | `document.elementFromPoint`                                      | `readHit`                                                                                        |
 | `element.focus()`                                                | `traverseAccessible`, `pressKeys`                                                                |
-| A navigation performed by a router call                          | The visible link or control that navigates, through `clickAccessible` or `clickAccessibleWithin` |
+| A navigation a journey step performs by a router call            | The visible link or control that navigates, through `clickAccessible` or `clickAccessibleWithin` |
 | A store or route state read standing in for a rendered assertion | `readPerception`, `readValue`, `readStates`, `waitForText`                                       |
 
 - Admit a selector only for a population that carries no role, declared in the workspace's browser

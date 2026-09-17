@@ -83,8 +83,7 @@ these.
 
 ## The proofs the suite owes
 
-The package times the registry and refuses a bad placement. It asserts nothing about either, so the
-suite carries these.
+Write each of the following proofs into the suite. The package asserts none of them.
 
 | Proof                | Runs           | Asserts                                                                            |
 | -------------------- | -------------- | ---------------------------------------------------------------------------------- |

@@ -128,11 +128,12 @@ The Orchestrator verifies the finished exec with direct evidence — git status,
 scoped validation — and carries touched files, diffstat, and deviation state into
 integration and review.
 
-On a Windows host a text-encoding shell write replaces a code point above `0x7F`, so when a bench
-unit must edit a line carrying one, the brief tells it to make that edit through the exec's own
-patch tool, never through `Get-Content`, `Set-Content`, `Out-File`, or a `>` redirection, and to
-report every such line it touched. The Orchestrator's review sweep compares the set of code points
-above `0x7F` on each touched line before and after the edit, and flags a line that lost any of them.
+On a Windows host a shell write that decodes and re-encodes text can replace a code point the active
+code page cannot represent, so when a bench unit must edit a line carrying a code point above
+`0x7F`, the brief tells it to make that edit through the exec's own patch tool, never through
+`Get-Content`, `Set-Content`, `Out-File`, or a `>` redirection, and to report every such line it
+touched. The Orchestrator's review sweep compares the set of code points above `0x7F` on each
+touched line before and after the edit, and flags a line that lost any of them.
 
 ## Routing exclusion — defensive negative-test units
 

@@ -232,7 +232,7 @@
 			"storage": "agents/skills/orkestrel-prove-journey/SKILL.md",
 			"destination": ".agents/skills/orkestrel-prove-journey/SKILL.md",
 			"executable": false,
-			"digest": "19f89dd775bd3c46f9c8004356c07e05500ec93d966125fc631b78481e32a7a6"
+			"digest": "2e18a1917b1b6ab4a523c14c9c00f5aad3d553f6c9f4b34b4cac43692c3efe55"
 		},
 		{
 			"storage": "agents/skills/orkestrel-prove-journey/agents/openai.yaml",
@@ -244,7 +244,7 @@
 			"storage": "agents/skills/orkestrel-prove-journey/references/captures.md",
 			"destination": ".agents/skills/orkestrel-prove-journey/references/captures.md",
 			"executable": false,
-			"digest": "2e1d2c51981561adbf22195b4a566becbc82dd1150e57e5f480a948069d04540"
+			"digest": "a9fcd48be6a92dd717fc69fbb2a90e0406aa1d5b238cde7c2a760d345c0c3315"
 		},
 		{
 			"storage": "agents/skills/orkestrel-prove-journey/references/decide.md",
@@ -256,7 +256,7 @@
 			"storage": "agents/skills/orkestrel-prove-journey/references/layer.md",
 			"destination": ".agents/skills/orkestrel-prove-journey/references/layer.md",
 			"executable": false,
-			"digest": "3fefd90ae896be8ecb0b1cb93d7ff9dab60c5d9fcbc1b60800d6f3fe49c48281"
+			"digest": "f61233023976dab31c20c47be18914efaba9d4c55434192ae2a67aa93531b216"
 		},
 		{
 			"storage": "agents/skills/orkestrel-prove-journey/references/statechart.md",
@@ -268,7 +268,7 @@
 			"storage": "agents/skills/orkestrel-prove-journey/references/styles.md",
 			"destination": ".agents/skills/orkestrel-prove-journey/references/styles.md",
 			"executable": false,
-			"digest": "a231f70e84e01b9d5846b138c142702d5f3b7260965d0b78d3435b85028b481c"
+			"digest": "5ec918f4739586c959015fe22e25b3b5f931d8c188c1429b03dae40cb3b02c95"
 		},
 		{
 			"storage": "agents/skills/orkestrel-publish/SKILL.md",
@@ -310,7 +310,7 @@
 			"storage": "agents/transports/codex.md",
 			"destination": ".agents/transports/codex.md",
 			"executable": false,
-			"digest": "4f1837bdcf0f9edaedaf317b6111ff7ff8d632a96bf6d31cb3a3c024ae569b35"
+			"digest": "830a8f702996c0e8f8f332dbd2555699488d09473b56062985fe4e5d88a501e6"
 		},
 		{
 			"storage": "agents/transports/cursor.md",
@@ -2001,5 +2001,5 @@
 			]
 		}
 	],
-	"digest": "637c62bfea95b0c168f6f7724a834f116f5ea75fca9f79ee2c9b821dfe81ddd9"
+	"digest": "f339bb7ef137bbfe5e85acab6e93a02cb79491922ba27febf3329dbcec7c9423"
 }

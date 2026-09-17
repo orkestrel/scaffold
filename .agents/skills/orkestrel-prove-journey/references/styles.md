@@ -108,9 +108,8 @@ provided.
 
 ## The published controls
 
-Take each reading's control from the builder this layer publishes for it, so no workspace's control
-drifts into a fixture that cannot fail. `.claude/rules/quality.md` § Instruments owns the law that
-control satisfies.
+Take each reading's control from the builder this layer publishes for it.
+`.claude/rules/quality.md` § Instruments owns the law that control satisfies.
 
 | Reading         | Control                   | What it carries                                                                        |
 | --------------- | ------------------------- | -------------------------------------------------------------------------------------- |

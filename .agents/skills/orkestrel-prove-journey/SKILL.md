@@ -90,7 +90,9 @@ start, and let it choose the capture destination, the matrix row, and the statec
   `scaffold repair`, then add `npm run test:journey` to the `test` script after `npm run test:app`.
   The repair defines `appJourney` in the root configuration, emits the `test:journey` script, and
   excludes the journey suite from the ordinary `app:browser` project. It does not rewrite the `test`
-  chain, so the chain entry is yours to add.
+  chain, so the chain entry is yours to add. Add that entry before the repair instead where you
+  prefer: `test:journey` names a configuration rather than a project, so neither order blocks the
+  repair.
 - Name each variant for the theme and the viewport it renders, such as `dark-390`. Never split the
   theme from the viewport; a split writes a filename naming a combination the run did not render.
 - Compose each variant's theme `apply` inside the test, from the variant's name. Vitest `provide`
@@ -112,10 +114,15 @@ start, and let it choose the capture destination, the matrix row, and the statec
 `scaffold audit` reports a manifest and a wrapper that disagree as one of the following questions.
 Settle the one it reports before trusting a green run.
 
-| The question `scaffold audit` reports                                                                                                                                                                                            | Settle it by                                                                             |
-| -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
-| `The manifest at <target> names a Vitest configuration the plan does not emit and the target does not hold: test:journey --config configs/app/vite.journey.config.ts. Add the configuration or remove the script that names it.` | Writing the wrapper and running `scaffold repair`, or removing the `test:journey` script |
-| `The manifest at <target> does not invoke npm run test:journey from its test chain. Add npm run test:journey after npm run test:app.`                                                                                            | Adding `npm run test:journey` to the `test` script after `npm run test:app`              |
+| The question `scaffold audit` reports                                                                                                                                                                                                                                    | Settle it by                                                                                                      |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------- |
+| `The manifest at <target> names a Vitest configuration the plan does not emit and the target does not hold: test:journey --config configs/app/vite.journey.config.ts. Add the configuration, or remove the script that names it and its invocation from the test chain.` | Writing the wrapper and running `scaffold repair`, or removing the `test:journey` script and its chain invocation |
+| `The manifest at <target> does not invoke npm run test:journey from its test chain. Add npm run test:journey after npm run test:app.`                                                                                                                                    | Adding `npm run test:journey` to the `test` script after `npm run test:app`                                       |
+
+`scaffold audit` reports the invocation question only when no chain from `test` reaches
+`npm run test:journey` through literal `npm run` calls, so a chain reaching it through an
+intermediate script raises none. It reports the configuration question only for a `test:*` script
+whose text names `vitest`, so a script naming another runner's configuration raises none either.
 
 ```ts
 import type { JourneyVariant } from '@orkestrel/test'
@@ -180,14 +187,8 @@ const VARIANTS: readonly CaptureVariant[] = inject('variants').map((variant) => 
 - Place a helper you must write in the workspace's browser test setup module, name it for the act,
   and export it from there under `.claude/rules/tests.md`. Never declare a resolver inside a test
   file.
-- Prove that setup module with `tests/setupBrowser.test.ts`. Writing that file selects the browser
-  setup runtime, so run `scaffold repair` after writing it: the repair registers the browser-enabled
-  `setup:browser` project and emits the `test:setup:browser` script. A workspace born with the
-  browser setup runtime already carries that script in its `test` chain; in a workspace that
-  acquires the runtime later, `repair` leaves the chain as written, so add
-  `npm run test:setup:browser` to it yourself. `scaffold audit` reports `setup:browser` as a project
-  no chain from `test` reaches until you do. The Node `setup` project excludes that path, so a proof
-  of a browser helper placed anywhere else runs without a browser.
+- Prove that setup module with `tests/setupBrowser.test.ts`, and activate its `setup:browser`
+  project in the order [layer.md](references/layer.md) → Import, never implement states.
 - Drive every step through the published verbs, and never dispatch a constructed event
   ([layer.md](references/layer.md) → What it drives).
 - Re-verify every target against what the application renders after any markup change
@@ -309,13 +310,10 @@ Mutate each assertion class once, read the red, restore, and read the green.
 | Journey         | Omit the act the journey performs, keeping collection valid          | The destination assertion reddens |
 | Refusal         | Make the withheld control reachable, or present, without renaming it | The asserted voice changes        |
 
-- Record the exact command and its failing count before the change, restore the tree, and record the
-  same command green.
 - Omit the act rather than weakening the assertion. An assertion a missing act leaves green cannot
   tell arrival from never having left.
 - Change reachability rather than the name. A renamed control reddens on absence, which is a finding
   the refusal family already carries.
-- Restore by rewriting what you changed. Never reach for a command that discards working-tree state.
 
 ## Accept
 
