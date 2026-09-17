@@ -18,6 +18,9 @@ import {
 	readPolicyDeclarations,
 	readPolicySurface,
 	readSkillExports,
+	readSkillDeclarations,
+	resolveSkillDeclaration,
+	SKILL_DECLARATION_REFUSALS,
 } from './setupPolicy.js'
 
 describe('readSkillExports', () => {
@@ -42,20 +45,38 @@ describe('readSkillExports', () => {
 	it('follows star and aliased declaration exports selected by the exports map', () => {
 		const scratch = createPolicyScratch({ prefix: 'orkestrel-skill-exports-' })
 		try {
-			scratch.write('node_modules/@orkestrel/test/package.json', JSON.stringify({
-				name: '@orkestrel/test',
-				type: 'module',
-				exports: {
-					'.': { import: { types: './entry.d.ts', default: './entry.js' } },
-					'./runtime': './runtime.js',
-				},
-			}))
-			scratch.write('node_modules/@orkestrel/test/entry.d.ts', "export * from './values.js'\nexport { Original as Renamed } from './types.js'\n")
-			scratch.write('node_modules/@orkestrel/test/values.d.ts', 'declare const exportedValue: string\ndeclare const hiddenValue: string\nexport { exportedValue }\n')
-			scratch.write('node_modules/@orkestrel/test/types.d.ts', 'export interface Original { readonly value: string }\n')
-			scratch.write('node_modules/@orkestrel/test/entry.js', 'throw new Error("The declaration reader must never execute this entry")\n')
+			scratch.write(
+				'node_modules/@orkestrel/test/package.json',
+				JSON.stringify({
+					name: '@orkestrel/test',
+					type: 'module',
+					exports: {
+						'.': { import: { types: './entry.d.ts', default: './entry.js' } },
+						'./runtime': './runtime.js',
+					},
+				}),
+			)
+			scratch.write(
+				'node_modules/@orkestrel/test/entry.d.ts',
+				"export * from './values.js'\nexport { Original as Renamed } from './types.js'\n",
+			)
+			scratch.write(
+				'node_modules/@orkestrel/test/values.d.ts',
+				'declare const exportedValue: string\ndeclare const hiddenValue: string\nexport { exportedValue }\n',
+			)
+			scratch.write(
+				'node_modules/@orkestrel/test/types.d.ts',
+				'export interface Original { readonly value: string }\n',
+			)
+			scratch.write(
+				'node_modules/@orkestrel/test/entry.js',
+				'throw new Error("The declaration reader must never execute this entry")\n',
+			)
 			scratch.write('node_modules/@orkestrel/test/runtime.js', 'export const runtimeValue = true\n')
-			expect(readSkillExports(scratch.path, '@orkestrel/test')).toEqual(['Renamed', 'exportedValue'])
+			expect(readSkillExports(scratch.path, '@orkestrel/test')).toEqual([
+				'Renamed',
+				'exportedValue',
+			])
 			expect(readSkillExports(scratch.path, '@orkestrel/test/values')).toBeUndefined()
 			expect(readSkillExports(scratch.path, '@orkestrel/test/runtime')).toBeUndefined()
 		} finally {
@@ -64,30 +85,140 @@ describe('readSkillExports', () => {
 	})
 })
 
+describe('readSkillDeclarations', () => {
+	it('reads declaration forms and relative value and type re-exports', () => {
+		const scratch = createPolicyScratch({ prefix: 'orkestrel-skill-forms-' })
+		try {
+			scratch.write(
+				'entry.d.ts',
+				[
+					'export * from "./values.js"',
+					'export type * from "./types.js"',
+					'export { readValue as readAlias, VALUE } from "./values.js"',
+					'export type { Options as Settings } from "./types.js"',
+					'export { type Name as Label } from "./types.js"',
+					'export * from "./esm.mjs"',
+					'export * from "./common.cjs"',
+					'export * from "./direct.d.ts"',
+				].join('\n'),
+			)
+			scratch.write(
+				'values.d.ts',
+				[
+					'export declare function readValue(): string',
+					'export declare const VALUE: string, OTHER: number',
+					'export declare class Entity {}',
+					'export declare enum Phase { Ready }',
+					'declare const local: string',
+					'declare const hidden: string',
+					'export { local as visible }',
+					'export * from "./entry.js"',
+				].join('\n'),
+			)
+			scratch.write('types.d.ts', 'export interface Options {}\nexport type Name = string\n')
+			scratch.write('esm.d.mts', 'export declare const ESM: string\n')
+			scratch.write('common.d.cts', 'export declare const COMMON: string\n')
+			scratch.write('direct.d.ts', 'export declare const DIRECT: string\n')
+			expect(readSkillDeclarations(join(scratch.path, 'entry.d.ts'))).toEqual([
+				'COMMON',
+				'DIRECT',
+				'ESM',
+				'Entity',
+				'Label',
+				'Name',
+				'OTHER',
+				'Options',
+				'Phase',
+				'Settings',
+				'VALUE',
+				'readAlias',
+				'readValue',
+				'visible',
+			])
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	for (const declaration of SKILL_DECLARATION_REFUSALS) {
+		it(`refuses an unreadable declaration inventory: ${declaration}`, () => {
+			const scratch = createPolicyScratch({ prefix: 'orkestrel-skill-refusal-' })
+			try {
+				scratch.write('entry.d.ts', declaration)
+				scratch.write('values.d.ts', 'export declare const VALUE: string\n')
+				expect(readSkillDeclarations(join(scratch.path, 'entry.d.ts'))).toBeUndefined()
+			} finally {
+				scratch.destroy()
+			}
+		})
+	}
+})
+
+describe('resolveSkillDeclaration', () => {
+	it('selects explicit declaration paths through supported conditions', () => {
+		expect(resolveSkillDeclaration('./entry.d.ts')).toBe('./entry.d.ts')
+		expect(resolveSkillDeclaration({ types: './entry.d.mts' })).toBe('./entry.d.mts')
+		expect(resolveSkillDeclaration({ import: { types: './entry.d.ts' } })).toBe('./entry.d.ts')
+		expect(resolveSkillDeclaration({ default: { types: './entry.d.cts' } })).toBe('./entry.d.cts')
+	})
+
+	it('refuses runtime paths and unsupported export conditions', () => {
+		expect(resolveSkillDeclaration('./entry.js')).toBeUndefined()
+		expect(resolveSkillDeclaration(['./entry.d.ts'])).toBeUndefined()
+		expect(resolveSkillDeclaration({ require: './entry.d.cts' })).toBeUndefined()
+		expect(resolveSkillDeclaration(null)).toBeUndefined()
+	})
+})
+
 describe('inspectSkillImports', () => {
 	it('reports a specifier with no installed declaration entry', () => {
-		expect(inspectSkillImports(process.cwd(), 'SKILL.md', '```ts\nimport { missing } from "@orkestrel/test/missing"\n```\n')).toEqual([
-			{ rule: 'skill', path: 'SKILL.md', message: 'skill fence import @orkestrel/test/missing has no installed declaration entry' },
+		expect(
+			inspectSkillImports(
+				process.cwd(),
+				'SKILL.md',
+				'```ts\nimport { missing } from "@orkestrel/test/missing"\n```\n',
+			),
+		).toEqual([
+			{
+				rule: 'skill',
+				path: 'SKILL.md',
+				message: 'skill fence import @orkestrel/test/missing has no installed declaration entry',
+			},
 		])
 	})
 
 	it('reads multiline aliased and commented imports in nested fences', () => {
-		const content = '> ~~~ts\r\n> import {\r\n>   /* exported name */ s2MissingValue as local,\r\n>   type WaitOptions,\r\n> } from "@orkestrel/test"\r\n> ~~~\r\n'
+		const content =
+			'> ~~~ts\r\n> import {\r\n>   /* exported name */ s2MissingValue as local,\r\n>   type WaitOptions,\r\n> } from "@orkestrel/test"\r\n> ~~~\r\n'
 		expect(inspectSkillImports(process.cwd(), 'references/example.md', content)).toEqual([
-			{ rule: 'skill', path: 'references/example.md', message: 'skill fence import @orkestrel/test does not export s2MissingValue' },
+			{
+				rule: 'skill',
+				path: 'references/example.md',
+				message: 'skill fence import @orkestrel/test does not export s2MissingValue',
+			},
 		])
 	})
 
 	it('reads each fence inside a list and after a longer outer fence', () => {
-		const content = '- Example\n\n  ~~~ts\n  import { s2MissingList } from "@orkestrel/test"\n  ~~~\n\n````text\n```\n````\n\n```ts\nimport type { S2MissingLater } from "@orkestrel/test"\n```\n'
+		const content =
+			'- Example\n\n  ~~~ts\n  import { s2MissingList } from "@orkestrel/test"\n  ~~~\n\n````text\n```\n````\n\n```ts\nimport type { S2MissingLater } from "@orkestrel/test"\n```\n'
 		expect(inspectSkillImports(process.cwd(), 'SKILL.md', content)).toEqual([
-			{ rule: 'skill', path: 'SKILL.md', message: 'skill fence import @orkestrel/test does not export s2MissingList' },
-			{ rule: 'skill', path: 'SKILL.md', message: 'skill fence import @orkestrel/test does not export S2MissingLater' },
+			{
+				rule: 'skill',
+				path: 'SKILL.md',
+				message: 'skill fence import @orkestrel/test does not export s2MissingList',
+			},
+			{
+				rule: 'skill',
+				path: 'SKILL.md',
+				message: 'skill fence import @orkestrel/test does not export S2MissingLater',
+			},
 		])
 	})
 
 	it('excludes prose, table cells, and commented or quoted import text', () => {
-		const content = 'import { missing } from "@orkestrel/test"\n\n| Symbol |\n| --- |\n| `import { missing } from "@orkestrel/test"` |\n\n```ts\n// import { missing } from "@orkestrel/test"\nconst sentence = \'import { missing } from "@orkestrel/test"\'\nimport { external } from "external-package"\n```\n'
+		const content =
+			'import { missing } from "@orkestrel/test"\n\n| Symbol |\n| --- |\n| `import { missing } from "@orkestrel/test"` |\n\n```ts\n// import { missing } from "@orkestrel/test"\nconst sentence = \'import { missing } from "@orkestrel/test"\'\nimport { external } from "external-package"\n```\n'
 		expect(inspectSkillImports(process.cwd(), 'SKILL.md', content)).toEqual([])
 	})
 })
@@ -481,8 +612,8 @@ describe('normalizePolicyFilename', () => {
 describe('normalizePolicyPath', () => {
 	it('changes separators without resolving segments or decoding percent text', () => {
 		expect(normalizePolicyPath('src//member.ts')).toBe('src/member.ts')
-		expect(normalizePolicyPath('src\\parent\\..\\literal%20#雪.ts')).toBe(
-			'src/parent/../literal%20#雪.ts',
+		expect(normalizePolicyPath('src\\parent\\..\\literal%20#?.ts')).toBe(
+			'src/parent/../literal%20#?.ts',
 		)
 	})
 })

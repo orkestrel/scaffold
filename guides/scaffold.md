@@ -1092,12 +1092,17 @@ carries its evidence.
 The skill sweep reads named value and type imports from `@orkestrel/*` in every Markdown fence
 in `SKILL.md` and its named references, including fences inside lists and blockquotes. It resolves
 each entry through the installed package's exports map and reads its declaration exports with
-TypeScript without loading the runtime entry. A missing binding reports the skill file, specifier,
+Vite's Oxc parser without loading the runtime entry. A missing binding reports the skill file, specifier,
 and exported name. A missing declaration entry or a package outside `BASE_DEV_DEPENDENCIES`
 also reports a violation. Targets need not install packages outside that base set.
 The sweep doesn't read identifiers in prose or table cells, indented code, default imports,
 namespace imports, or imports from other scopes. Every taught symbol belongs in a named import
 fence. This proof checks exported names; it doesn't check call signatures or runtime behavior.
+The declaration reader follows exact exports-map keys and relative star and named re-exports.
+It reads exported functions, variables, classes, enums, interfaces, types, and local export lists.
+Default exports, export assignments, ambient modules, namespace exports, non-relative re-exports,
+and unsupported exports-map forms refuse the reading. Local export lists aren't typechecked,
+and ambiguous star exports aren't resolved semantically.
 
 The `surface` rule in `inspectPolicyWorkspace` compares live barrel exports and target-owned root
 `tests/setup*.ts` exports with the hosted guides. It matches bare names case-sensitively across
