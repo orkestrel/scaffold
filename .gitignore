@@ -39,6 +39,9 @@ tests/**/__screenshots__/
 test-results/
 playwright-report/
 
+# Packed dependency tarballs (they live under tmp/ and are never committed)
+*.tgz
+
 # Model files
 *.gguf
 

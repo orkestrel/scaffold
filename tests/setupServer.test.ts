@@ -71,6 +71,7 @@ import {
 	provisionNpm,
 	captureScaffoldCode,
 	captureScaffoldMessage,
+	readManifestVersion,
 	readNpmFloor,
 	readNpmVersion,
 	captureScaffoldRejection,
@@ -1041,6 +1042,19 @@ describe('the tables and the derived totals', () => {
 		expect(paths).toContain('scripts')
 		expect(vendored.groups).toStrictEqual(['manifest', 'docs', 'orchestration', 'guides'])
 		expect(buildVendoredPlan({ groups: ['docs'] }).artifacts).toStrictEqual(vendored.artifacts)
+	})
+})
+
+describe('the manifest version reading', () => {
+	it('reads the version a manifest text declares, and refuses text declaring none', () => {
+		// The reading is textual, so the shapes it must refuse rather than return are a text that
+		// parses to something other than a record and one whose version field is not a string.
+		expect(readManifestVersion('{"name":"router","version":"0.0.1"}')).toBe('0.0.1')
+		expect(() => readManifestVersion('[]')).toThrow('The manifest is not a record')
+		expect(() => readManifestVersion('{"name":"router"}')).toThrow(
+			'The manifest declares no version',
+		)
+		expect(() => readManifestVersion('{"version":1}')).toThrow('The manifest declares no version')
 	})
 })
 

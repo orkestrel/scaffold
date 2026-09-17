@@ -13,13 +13,13 @@ import type { ServerResponse } from 'node:http'
 import type { ResolveHookSync } from 'node:module'
 import type { ExecuteResult } from '@orkestrel/process'
 import type { ESTree } from 'vite'
-import { execFileSync } from 'node:child_process'
+import { execFileSync, spawnSync } from 'node:child_process'
 import { once } from 'node:events'
-import { chmodSync } from 'node:fs'
+import { chmodSync, globSync, readFileSync } from 'node:fs'
 import { createServer } from 'node:http'
 import { createRequire } from 'node:module'
 import { connect, createServer as createSocketServer, isIP } from 'node:net'
-import { delimiter, join } from 'node:path'
+import { delimiter, join, relative as relativePath } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { gzipSync } from 'node:zlib'
 import { isArray, isRecord, isString, parseJSON } from '@orkestrel/contract'
@@ -369,6 +369,56 @@ export interface TestNpm {
 }
 
 /**
+ * Describes how this host launches npm, as the spawn options a proof hands a child.
+ *
+ * @remarks
+ * `command` is the executable name, and `shell` reports whether launching it needs one.
+ * Neither is usable without the other, so they travel together: Windows installs npm as a
+ * `.cmd` batch file, which Node refuses to launch directly after the batch-argument
+ * hardening, and `spawnSync` returns `EINVAL` with a null status rather than an exit
+ * code a caller can read. A registry probe that omits the shell is therefore false on
+ * every Windows host, and the proofs behind it never run there.
+ */
+export interface TestNpmLauncher {
+	readonly command: string
+	readonly shell: boolean
+}
+
+/**
+ * Describes the `@orkestrel/scaffold` pin a generated workspace carries after a re-pin.
+ *
+ * @remarks
+ * `range` is what the compiler emitted, which names a published version; `version` is
+ * what this checkout declares; `specifier` is the local archive reference written over
+ * the range; and `resolved` is what the install recorded in the lockfile. Each is returned
+ * rather than compared, because each pairing is a separate claim and a comparison belongs
+ * to the case that makes it.
+ */
+export interface TestGeneratedPin {
+	readonly range: string
+	readonly version: string
+	readonly specifier: string
+	readonly resolved: string
+}
+
+/**
+ * Describes a materialized generated workspace whose dependencies are installed.
+ *
+ * @remarks
+ * `path` is where the workspace was materialized, so no caller repeats that directory's
+ * name; `manifest` is the generated manifest as it was written back, so no caller
+ * re-parses it; `environment` is the record every spawn against this workspace must
+ * take, because a manifest floor refuses a nested `npm run` under any other; and `pin`
+ * carries the re-pin's own readings.
+ */
+export interface TestGeneratedWorkspace {
+	readonly path: string
+	readonly manifest: Readonly<Record<string, unknown>>
+	readonly environment: Readonly<NodeJS.ProcessEnv>
+	readonly pin: TestGeneratedPin
+}
+
+/**
  * Names the repository root, resolved from this file rather than from the process.
  *
  * @remarks
@@ -379,6 +429,19 @@ export interface TestNpm {
 export const WORKSPACE_ROOT = fileURLToPath(resolveRoot(import.meta))
 
 export const SCRATCH_PREFIX = 'orkestrel-scaffold-'
+
+/**
+ * Names how this host launches npm, read once for every proof that spawns it.
+ *
+ * @remarks
+ * Every argument the helpers in this module hand npm is a literal or a path they built,
+ * so the shell the Windows branch selects has nothing to escape. Read
+ * {@link TestNpmLauncher} for what each member decides.
+ */
+export const NPM_LAUNCHER: TestNpmLauncher = Object.freeze({
+	command: process.platform === 'win32' ? 'npm.cmd' : 'npm',
+	shell: process.platform === 'win32',
+})
 
 /**
  * Lists the tracked paths this repository records as executable.
@@ -578,6 +641,218 @@ export function provisionNpm(options: TestNpmOptions): TestNpm {
 		)
 	}
 	return { version, environment }
+}
+
+/**
+ * Reads the version a package manifest declares, from that manifest's text.
+ *
+ * @param text - The manifest's decoded bytes.
+ * @returns The exact version the text declares.
+ * @throws When the text is not a record, or declares no string version.
+ *
+ * @remarks
+ * The reading stays textual rather than importing the manifest, because a built artifact
+ * inlines its own copy of the same field at build time and the two must stay free to
+ * disagree. A proof comparing them is what reports a pack that shipped a stale pin.
+ *
+ * @example
+ * ```ts
+ * readManifestVersion('{"name":"router","version":"0.0.1"}') // '0.0.1'
+ * ```
+ */
+export function readManifestVersion(text: string): string {
+	const parsed: unknown = JSON.parse(text)
+	if (!isRecord(parsed)) throw new Error('The manifest is not a record')
+	const version: unknown = Object.getOwnPropertyDescriptor(parsed, 'version')?.value
+	if (!isString(version)) throw new Error('The manifest declares no version')
+	return version
+}
+
+/**
+ * Packs this checkout the way the registry serves it, and installs the archive into a consumer.
+ *
+ * @param workspace - The scratch directory this run owns, which receives `packed` and `consumer`.
+ * @param environment - The environment every npm call takes, carrying the cache and the peer pins.
+ * @returns The path of the archive the pack wrote and the consumer installed.
+ * @throws When the pack fails, when it writes other than one archive, or when the install fails.
+ * A child's failure carries its exit status and its spawn error beside what npm wrote, because a
+ * child that never ran reports a null status with an empty stream on each side.
+ *
+ * @remarks
+ * Packing is what a distribution proof measures, so the consumer reaches this package through its
+ * published exports alone and no caller resolves the checkout's source. The archive is installed
+ * rather than linked, because a link skips the `files` list and the exports map, which is most of
+ * what a distribution proof exists to read.
+ */
+export function installPackedScaffold(
+	workspace: ScratchInterface,
+	environment: NodeJS.ProcessEnv,
+): string {
+	const packed = workspace.ensure('packed')
+	const consumer = workspace.ensure('consumer')
+	const pack = spawnSync(
+		NPM_LAUNCHER.command,
+		['pack', '--json', '--ignore-scripts', '--pack-destination', packed],
+		{
+			cwd: WORKSPACE_ROOT,
+			encoding: 'utf8',
+			env: environment,
+			windowsHide: true,
+			shell: NPM_LAUNCHER.shell,
+		},
+	)
+	if (pack.status !== 0) {
+		throw new Error(
+			`The pack into ${packed} failed with status ${String(pack.status)} and spawn error ${String(pack.error)}: ${pack.stdout}\n${pack.stderr}`,
+		)
+	}
+	const archives = globSync('*.tgz', { cwd: packed })
+	const [archive] = archives
+	if (archive === undefined || archives.length !== 1) {
+		throw new Error(`The pack did not write one archive into ${packed}: ${archives.join(', ')}`)
+	}
+	workspace.write(
+		'consumer/package.json',
+		'{"name":"scaffold-install-consumer","private":true,"type":"module"}\n',
+	)
+	const install = spawnSync(
+		NPM_LAUNCHER.command,
+		['install', '--ignore-scripts', '--no-audit', '--no-fund', join(packed, archive)],
+		{
+			cwd: consumer,
+			encoding: 'utf8',
+			env: environment,
+			windowsHide: true,
+			shell: NPM_LAUNCHER.shell,
+		},
+	)
+	if (install.status !== 0) {
+		throw new Error(
+			`Installing ${archive} into ${consumer} failed with status ${String(install.status)} and spawn error ${String(install.error)}: ${install.stdout}\n${install.stderr}`,
+		)
+	}
+	return join(packed, archive)
+}
+
+/**
+ * Materializes one generated workspace from a blueprint expression and installs its dependencies.
+ *
+ * @param workspace - The scratch directory this run owns, already carrying the installed consumer.
+ * @param archive - The packed archive {@link installPackedScaffold} returned.
+ * @param blueprint - The blueprint expression the generating child evaluates, written as source.
+ * @param environment - The environment the generating install takes, carrying the cache and pins.
+ * @returns Where the workspace was materialized, the manifest it carries, the environment every
+ * spawn against it must take, and the readings behind its scaffold pin.
+ * @throws When the generating child fails, when the manifest or the lockfile carries none of the
+ * records this reads, or when the dependency install fails. A child's failure carries its exit
+ * status and its spawn error beside what the run wrote, because a child that never ran reports a
+ * null status with an empty stream on each side.
+ *
+ * @remarks
+ * The re-pin is what puts this checkout's own bytes under the workspace's gates: the emitted range
+ * names a published version, and installing that would measure the previous release instead of this
+ * one. The generated manifest declares a `devEngines.packageManager` floor, and npm refuses both the
+ * install and every nested `npm run` beneath it rather than resolving the graph, so the floor is read
+ * from the artifact that declares it and an admitted npm is provisioned against it. `provisionNpm`
+ * throws when it cannot reach one, so nothing stands between it and the install; the install's own
+ * message carries npm's output, which is where a refusal names itself.
+ */
+export function installGeneratedWorkspace(
+	workspace: ScratchInterface,
+	archive: string,
+	blueprint: string,
+	environment: NodeJS.ProcessEnv,
+): TestGeneratedWorkspace {
+	const consumer = workspace.ensure('consumer')
+	const path = join(workspace.path, 'generated')
+	const blocked = `The generated blueprint was blocked: ${blueprint}`
+	workspace.write(
+		'consumer/generate.mjs',
+		[
+			"import { Compiler, createBlueprint } from '@orkestrel/scaffold'",
+			"import { Materializer } from '@orkestrel/scaffold/server'",
+			`const blueprint = ${blueprint}`,
+			'const compiler = new Compiler()',
+			'const plan = compiler.compile(blueprint).plan',
+			`if (plan === undefined) throw new Error(${JSON.stringify(blocked)})`,
+			'compiler.destroy()',
+			'const materializer = new Materializer()',
+			`materializer.materialize(plan, ${JSON.stringify(path)})`,
+			'materializer.destroy()',
+		].join('\n'),
+	)
+	const generate = spawnSync(process.execPath, ['generate.mjs'], {
+		cwd: consumer,
+		encoding: 'utf8',
+		windowsHide: true,
+	})
+	if (generate.status !== 0) {
+		throw new Error(
+			`Generating ${blueprint} into ${path} failed with status ${String(generate.status)} and spawn error ${String(generate.error)}: ${generate.stdout}\n${generate.stderr}`,
+		)
+	}
+	const version = readManifestVersion(readFileSync(join(WORKSPACE_ROOT, 'package.json'), 'utf8'))
+	const emitted = workspace.read('generated/package.json')
+	if (emitted === undefined) throw new Error('The generated workspace carries no package manifest')
+	const manifest: unknown = JSON.parse(emitted)
+	if (!isRecord(manifest)) throw new Error('The generated manifest is not a record')
+	const devDependencies: unknown = Object.getOwnPropertyDescriptor(
+		manifest,
+		'devDependencies',
+	)?.value
+	if (!isRecord(devDependencies)) {
+		throw new Error('The generated manifest carries no development dependencies')
+	}
+	const range: unknown = Object.getOwnPropertyDescriptor(
+		devDependencies,
+		'@orkestrel/scaffold',
+	)?.value
+	if (!isString(range)) throw new Error('The generated manifest pins no scaffold range')
+	const specifier = `file:${relativePath(path, archive).replaceAll('\\', '/')}`
+	Object.defineProperty(devDependencies, '@orkestrel/scaffold', {
+		value: specifier,
+		writable: true,
+		enumerable: true,
+		configurable: true,
+	})
+	workspace.write('generated/package.json', `${JSON.stringify(manifest, undefined, '\t')}\n`)
+	const floor = readNpmFloor(manifest)
+	const admitted = provisionNpm({ floor, prefix: workspace.ensure('npm'), environment })
+	const dependencies = spawnSync(
+		NPM_LAUNCHER.command,
+		['install', '--ignore-scripts', '--no-audit', '--no-fund'],
+		{
+			cwd: path,
+			encoding: 'utf8',
+			env: admitted.environment,
+			windowsHide: true,
+			shell: NPM_LAUNCHER.shell,
+		},
+	)
+	if (dependencies.status !== 0) {
+		throw new Error(
+			`Installing the generated workspace at ${path} failed with status ${String(dependencies.status)} and spawn error ${String(dependencies.error)}: ${dependencies.stdout}\n${dependencies.stderr}`,
+		)
+	}
+	const locked = workspace.read('generated/package-lock.json')
+	if (locked === undefined) throw new Error('The generated install wrote no lockfile')
+	const lock: unknown = JSON.parse(locked)
+	if (!isRecord(lock)) throw new Error('The generated lockfile is not a record')
+	const packages: unknown = Object.getOwnPropertyDescriptor(lock, 'packages')?.value
+	if (!isRecord(packages)) throw new Error('The generated lockfile carries no packages')
+	const scaffold: unknown = Object.getOwnPropertyDescriptor(
+		packages,
+		'node_modules/@orkestrel/scaffold',
+	)?.value
+	if (!isRecord(scaffold)) throw new Error('The generated lockfile carries no installed scaffold')
+	const resolved: unknown = Object.getOwnPropertyDescriptor(scaffold, 'resolved')?.value
+	if (!isString(resolved)) throw new Error('The installed scaffold records no resolved specifier')
+	return {
+		path,
+		manifest,
+		environment: admitted.environment,
+		pin: { range, version, specifier, resolved },
+	}
 }
 
 /**

@@ -364,7 +364,7 @@
 			"storage": "claude/agents/orkestrel.md",
 			"destination": ".claude/agents/orkestrel.md",
 			"executable": false,
-			"digest": "7406916de6363fa1a6c5c1d5a168f02d29d6f722ac94dcf3abc868cc1ac76d7c"
+			"digest": "7627d1ac3ac59bc14f9d35d002778e018003c8ea469ceff3f9a42d65cbdd1be3"
 		},
 		{
 			"storage": "claude/agents/planner.md",
@@ -670,7 +670,7 @@
 			"storage": "dotfiles/gitignore",
 			"destination": ".gitignore",
 			"executable": false,
-			"digest": "bebf93dcfed7ee3b65eb7d22e1f6b0a00dce24fdd35568421766d88a229f43e2"
+			"digest": "e8789a7b46ab16a8a4127127fa5e9f131f7fb559936c878ef07d59afafcc08cb"
 		},
 		{
 			"storage": "dotfiles/mcp.json",
@@ -964,7 +964,7 @@
 			"storage": "guides/test.md",
 			"destination": "guides/test.md",
 			"executable": false,
-			"digest": "bc1935de303397113be41135f5c3da9f26dd540227cdc89d7ebfe641dbacb994"
+			"digest": "a230d2a918d18f0596a7c2a295054b9c994e5c90be03771e224a024edf7d1049"
 		},
 		{
 			"storage": "guides/timeout.md",
@@ -1036,7 +1036,7 @@
 			"storage": "tests/config.test.ts",
 			"destination": "tests/config.test.ts",
 			"executable": false,
-			"digest": "b880877803d909f83bc2ba4110d795cfecf620402696272e967bb55b90b66578"
+			"digest": "9c7fb4dab82b46c5fb436116929c8214fd54a94511272d2c574714b65218152f"
 		},
 		{
 			"storage": "tests/policy.test.ts",
@@ -1173,8 +1173,7 @@
 			"name": "Failure",
 			"owners": [
 				"contract",
-				"msg",
-				"test"
+				"msg"
 			]
 		},
 		{
@@ -1290,13 +1289,6 @@
 			]
 		},
 		{
-			"name": "JSONValue",
-			"owners": [
-				"contract",
-				"test"
-			]
-		},
-		{
 			"name": "JournalInterface",
 			"owners": [
 				"supervisor",
@@ -1370,8 +1362,7 @@
 			"name": "Result",
 			"owners": [
 				"contract",
-				"msg",
-				"test"
+				"msg"
 			]
 		},
 		{
@@ -1463,8 +1454,7 @@
 			"name": "Success",
 			"owners": [
 				"contract",
-				"msg",
-				"test"
+				"msg"
 			]
 		},
 		{
@@ -2011,5 +2001,5 @@
 			]
 		}
 	],
-	"digest": "e7c8c3bea04c3bca8bd83c6ca2193d09d1eed03d40e777cd46322f75b5718492"
+	"digest": "03594a395e4569cb0ee56bca94f8f3384cd282b9883ff2e75c5348b760db9eae"
 }

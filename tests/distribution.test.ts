@@ -17,31 +17,38 @@ import { createScratch } from '@orkestrel/test/server'
 import { readVariable } from '@orkestrel/process/server'
 import { transformWithOxc } from 'vite'
 import { describe, expect, it } from 'vitest'
-import { provisionNpm, readNpmFloor, readNpmVersion } from './setupServer.js'
+import {
+	installGeneratedWorkspace,
+	installPackedScaffold,
+	NPM_LAUNCHER,
+	provisionNpm,
+	readManifestVersion,
+	readNpmVersion,
+} from './setupServer.js'
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
-const npm = process.platform === 'win32' ? 'npm.cmd' : 'npm'
-// Windows needs a shell to launch a `.cmd`: Node refuses one directly since the
-// batch-argument hardening, and `spawnSync` returns `EINVAL` with a null status
-// rather than an exit code the caller can read. Every npm call in this file takes
-// it. Without it the registry probe below is false on every Windows host, so the
-// install case never runs there — in `prepublishOnly` included — and the failure
-// reads as "no registry" instead of "this proof cannot launch npm". Every argument
-// here is a literal or a path this file built, so the shell has nothing to escape.
-const shell = process.platform === 'win32'
+// Every npm call in this file takes the launcher's shell, for the reason `TestNpmLauncher`
+// states: without it the registry probe is false on every Windows host, so the install case
+// never runs there — in `prepublishOnly` included — and the failure reads as "no registry"
+// instead of "this proof cannot launch npm". Every argument this file hands npm is a literal
+// or a path this file built, so the shell has nothing to escape.
 const registry =
-	spawnSync(npm, ['ping', '--fetch-retries=0', '--fetch-timeout=1000', '--loglevel=silent'], {
-		cwd: root,
-		stdio: 'ignore',
-		timeout: 5_000,
-		windowsHide: true,
-		shell,
-	}).status === 0
+	spawnSync(
+		NPM_LAUNCHER.command,
+		['ping', '--fetch-retries=0', '--fetch-timeout=1000', '--loglevel=silent'],
+		{
+			cwd: root,
+			stdio: 'ignore',
+			timeout: 5_000,
+			windowsHide: true,
+			shell: NPM_LAUNCHER.shell,
+		},
+	).status === 0
 const release = import.meta.env.MODE === 'release'
 // The npm this host resolves. It decides which provisioning branch this file can drive: a
 // host at or above the declared floor has nothing to provision, and a host beneath it
-// provisions from the registry. Every case here needs npm, so the reading sits beside the
-// registry probe rather than inside one case.
+// provisions from the registry. Every case in this file needs npm, so the reading sits beside
+// the registry probe rather than inside one case.
 const ambient = readNpmVersion()
 
 // The declarations a consumer installs. Each is read, because an example
@@ -123,19 +130,6 @@ const KEYWORDS = [
 const ELISION = '…'
 const ABSENT = '\u0000undefined'
 
-// The version a manifest declares, read from its text. The packed core carries
-// its own copy of the same field, inlined when it was built, so keeping this
-// reading textual is what lets the two disagree.
-function readManifestVersion(text: string): string {
-	const parsed: unknown = JSON.parse(text)
-	if (!isRecord(parsed)) {
-		throw new Error('The manifest is not a record')
-	}
-	const version: unknown = Object.getOwnPropertyDescriptor(parsed, 'version')?.value
-	if (!isString(version)) throw new Error('The manifest declares no version')
-	return version
-}
-
 // The child that answers for the claims. It compiles each example block on its
 // own, so a block this instrument mis-sliced reports its own refusal instead of
 // taking the run down, and it records each claim where the example puts it, so a
@@ -172,7 +166,7 @@ const DRIVER = [
 
 describe('installed package consumer', () => {
 	it('stages exactly the declared vendored host inventory', () => {
-		// Directory members are expanded here into exact declared membership. A vendored inventory
+		// Directory members are expanded into exact declared membership. A vendored inventory
 		// change must move this declaration; a file present only because work happened in the checkout
 		// must not enter the published host.
 		const expanded = [
@@ -441,8 +435,9 @@ describe('installed package consumer', () => {
 							continue
 						}
 						// The statement the comment sits on is the shortest run of lines
-						// ending here that closes every bracket it opens, so a claim printed
-						// across several lines is driven as the one expression it is.
+						// ending at the claim's own line that closes every bracket it opens,
+						// so a claim printed across several lines is driven as the one
+						// expression it is.
 						let opening: number | undefined
 						for (let start = index; start >= 0; start -= 1) {
 							const joined = [...lines.slice(start, index), expression].join('\n').trim()
@@ -473,7 +468,7 @@ describe('installed package consumer', () => {
 						}
 						// Recorded only once it has a span, so the claim list holds exactly the
 						// claims the driver is asked to answer and an unanswered id below is a
-						// claim the block reached past rather than one already named here.
+						// claim the block reached past rather than one this list already names.
 						const id = claims.length
 						claims.push({ text: expression, encoded })
 						spans.push({ start: opening, end: index, id })
@@ -494,7 +489,7 @@ describe('installed package consumer', () => {
 						source.push(line)
 					}
 					// An example is TypeScript, so the transformer this workspace already
-					// declares erases its types rather than a pattern written here guessing at
+					// declares erases its types rather than a pattern in this file guessing at
 					// them. The name it is transformed under carries the extension, which is
 					// what selects the TypeScript syntax it strips.
 					const transformed = await transformWithOxc(source.join('\n'), 'example.ts', {
@@ -527,7 +522,7 @@ describe('installed package consumer', () => {
 					// The driver answers for every claim in a block it ran, so a claim with
 					// no outcome at all is one the block reached past rather than one the
 					// module contradicted. It is undriven for the same reason a statement
-					// is, and naming it here is what keeps the sets a partition.
+					// is, and naming it in that set is what keeps the sets a partition.
 					if (!isRecord(outcome)) {
 						undriven.push(`${declaration.types}: ${claim.text}`)
 						continue
@@ -553,10 +548,10 @@ describe('installed package consumer', () => {
 			// declaration documents another example and a number pinned to it goes stale on
 			// the next one. What stays fixed is the declaration list, so this asserts that
 			// every declaration the package ships printed a claim-shaped line of its own: an
-			// extractor that goes silent on a declaration drops that name here and the failure
-			// says which one, while an added example moves nothing. It catches silence, not
-			// thinning: any nonzero remainder keeps the declaration's name, so a rule that
-			// narrows over what a declaration prints without silencing it moves nothing here.
+			// extractor that goes silent on a declaration drops that name from the remainder and
+			// the failure says which one, while an added example moves nothing. It catches silence,
+			// not thinning: any nonzero remainder keeps the declaration's name, so a rule that
+			// narrows over what a declaration prints without silencing it moves nothing in that set.
 			// The driven-count floors that follow are what catch a partial narrowing, by
 			// pinning each declaration's driven claims above a bound.
 			expect(printing).toStrictEqual(DECLARATIONS.map((declaration) => declaration.types))
@@ -699,7 +694,7 @@ describe('installed package consumer', () => {
 		// `npm_config_legacy_peer_deps=true` the refused graph installs and the
 		// refusal below fails for a reason outside this package. Pin both peer
 		// settings to npm's defaults so the answer is the test's. An environment
-		// variable outranks every `.npmrc`, and no command line here carries the
+		// variable outranks every `.npmrc`, and no command line this case builds carries the
 		// flags that would outrank it in turn.
 		const environment = {
 			...process.env,
@@ -741,14 +736,14 @@ describe('installed package consumer', () => {
 
 			for (const source of ['peer', 'preserved', 'control', 'witness']) {
 				const pack = spawnSync(
-					npm,
+					NPM_LAUNCHER.command,
 					['pack', '--json', '--ignore-scripts', '--pack-destination', packed, '--cache', cache],
 					{
 						cwd: join(workspace.path, 'packages', source),
 						encoding: 'utf8',
 						env: environment,
 						windowsHide: true,
-						shell,
+						shell: NPM_LAUNCHER.shell,
 					},
 				)
 				expect(pack.status).toBe(0)
@@ -783,14 +778,14 @@ describe('installed package consumer', () => {
 				})}\n`,
 			)
 			const installed = spawnSync(
-				npm,
+				NPM_LAUNCHER.command,
 				['install', '--offline', '--ignore-scripts', '--no-audit', '--no-fund', '--cache', cache],
 				{
 					cwd: accepted,
 					encoding: 'utf8',
 					env: environment,
 					windowsHide: true,
-					shell,
+					shell: NPM_LAUNCHER.shell,
 				},
 			)
 			expect(installed.status, `${installed.stdout}\n${installed.stderr}`).toBe(0)
@@ -810,14 +805,14 @@ describe('installed package consumer', () => {
 				})}\n`,
 			)
 			const rejected = spawnSync(
-				npm,
+				NPM_LAUNCHER.command,
 				['install', '--offline', '--ignore-scripts', '--no-audit', '--no-fund', '--cache', cache],
 				{
 					cwd: refused,
 					encoding: 'utf8',
 					env: environment,
 					windowsHide: true,
-					shell,
+					shell: NPM_LAUNCHER.shell,
 				},
 			)
 			// A child that never ran its resolver reports the same refusal this
@@ -842,9 +837,7 @@ describe('installed package consumer', () => {
 				throw new Error('The distribution release gate requires a reachable npm registry.')
 			}
 			const workspace = createScratch({ prefix: 'scaffold-e4-install-' })
-			const packed = workspace.ensure('packed')
 			const consumer = workspace.ensure('consumer')
-			const target = join(workspace.path, 'generated')
 			const cache = workspace.ensure('cache')
 			// Pinned for the reason the refused-peer fixture above pins it: an npm
 			// environment variable outranks every `.npmrc`, so a host carrying a peer
@@ -858,26 +851,7 @@ describe('installed package consumer', () => {
 				npm_config_strict_peer_deps: 'false',
 			}
 			try {
-				const pack = spawnSync(
-					npm,
-					['pack', '--json', '--ignore-scripts', '--pack-destination', packed],
-					{ cwd: root, encoding: 'utf8', env: environment, windowsHide: true, shell },
-				)
-				expect(pack.status).toBe(0)
-				const archives = globSync('*.tgz', { cwd: packed })
-				expect(archives).toHaveLength(1)
-				const archive = archives[0]
-				if (archive === undefined) throw new Error('The package archive was not written')
-				workspace.write(
-					'consumer/package.json',
-					'{"name":"scaffold-install-consumer","private":true,"type":"module"}\n',
-				)
-				const install = spawnSync(
-					npm,
-					['install', '--ignore-scripts', '--no-audit', '--no-fund', join(packed, archive)],
-					{ cwd: consumer, encoding: 'utf8', env: environment, windowsHide: true, shell },
-				)
-				expect(install.status).toBe(0)
+				const archive = installPackedScaffold(workspace, environment)
 
 				// The self-pin every generated workspace inherits is inlined into the
 				// built core at build time, and the manifest beside it is packed from the
@@ -922,108 +896,92 @@ describe('installed package consumer', () => {
 				expect(controlled.stdout).toBe(coherence.stdout)
 				expect(controlled.stdout).not.toBe(`^${readManifestVersion(mutated)}`)
 
-				workspace.write(
-					'consumer/generate.mjs',
-					[
-						"import { Compiler, createBlueprint } from '@orkestrel/scaffold'",
-						"import { Materializer } from '@orkestrel/scaffold/server'",
-						"const blueprint = createBlueprint('proof', { src: ['core', 'server'], bin: true, integration: true })",
-						'const compiler = new Compiler()',
-						'const plan = compiler.compile(blueprint).plan',
-						"if (plan === undefined) throw new Error('The generated proof blueprint was blocked')",
-						'compiler.destroy()',
-						'const materializer = new Materializer()',
-						`materializer.materialize(plan, ${JSON.stringify(target)})`,
-						'materializer.destroy()',
-					].join('\n'),
+				const generated = installGeneratedWorkspace(
+					workspace,
+					archive,
+					"createBlueprint('proof', { src: ['core', 'server'], bin: true, integration: true })",
+					environment,
 				)
-				const generate = spawnSync(process.execPath, ['generate.mjs'], {
-					cwd: consumer,
+				// The re-pin's claims. The compiler emitted the version this checkout declares,
+				// so the range that was replaced is the one the release would have served; and the
+				// install resolved the local archive, so the following gate chain runs against these
+				// bytes rather than against the previous release.
+				expect(generated.pin.range).toBe(`^${generated.pin.version}`)
+				expect(generated.pin.resolved).toBe(generated.pin.specifier)
+				const gates = spawnSync(NPM_LAUNCHER.command, ['run', 'prepublishOnly'], {
+					cwd: generated.path,
 					encoding: 'utf8',
+					env: generated.environment,
 					windowsHide: true,
-				})
-				expect(generate.status).toBe(0)
-				const version = readManifestVersion(readFileSync(resolve(root, 'package.json'), 'utf8'))
-				const targetManifest: unknown = JSON.parse(
-					requireValue(workspace.read('generated/package.json')),
-				)
-				if (!isRecord(targetManifest)) {
-					throw new Error('The generated manifest is not a record')
-				}
-				const devDependencies: unknown = Object.getOwnPropertyDescriptor(
-					targetManifest,
-					'devDependencies',
-				)?.value
-				if (!isRecord(devDependencies)) {
-					throw new Error('The generated manifest carries no development dependencies')
-				}
-				const emitted: unknown = Object.getOwnPropertyDescriptor(
-					devDependencies,
-					'@orkestrel/scaffold',
-				)?.value
-				expect(emitted).toBe(`^${version}`)
-				const specifier = `file:${relative(target, join(packed, archive)).replaceAll('\\', '/')}`
-				Object.defineProperty(devDependencies, '@orkestrel/scaffold', {
-					value: specifier,
-					writable: true,
-					enumerable: true,
-					configurable: true,
-				})
-				workspace.write(
-					'generated/package.json',
-					`${JSON.stringify(targetManifest, undefined, '\t')}\n`,
-				)
-				// The generated manifest declares a `devEngines.packageManager` floor, and npm
-				// refuses an install beneath it rather than resolving the graph. It refuses every
-				// nested `npm run` under the gate chain on the same reading, so the install here
-				// and the gate chain that follows each take an admitted npm. The floor is read
-				// from the artifact that declares it, so raising the floor reaches this proof
-				// through the manifest rather than through a constant repeated here, and a host
-				// whose own npm satisfies the floor provisions nothing. `provisionNpm` throws when
-				// it cannot reach an admitted npm, so no assertion stands between it and the
-				// install; the install's own message carries npm's output, which is where a
-				// refusal names itself.
-				const floor = readNpmFloor(targetManifest)
-				const admitted = provisionNpm({ floor, prefix: workspace.ensure('npm'), environment })
-				const dependencies = spawnSync(
-					npm,
-					['install', '--ignore-scripts', '--no-audit', '--no-fund'],
-					{
-						cwd: target,
-						encoding: 'utf8',
-						env: admitted.environment,
-						windowsHide: true,
-						shell,
-					},
-				)
-				expect(dependencies.status, `${dependencies.stdout}\n${dependencies.stderr}`).toBe(0)
-				const lock: unknown = JSON.parse(
-					requireValue(workspace.read('generated/package-lock.json')),
-				)
-				if (!isRecord(lock)) {
-					throw new Error('The generated lockfile is not a record')
-				}
-				const packages: unknown = Object.getOwnPropertyDescriptor(lock, 'packages')?.value
-				if (!isRecord(packages)) {
-					throw new Error('The generated lockfile carries no packages')
-				}
-				const scaffold: unknown = Object.getOwnPropertyDescriptor(
-					packages,
-					'node_modules/@orkestrel/scaffold',
-				)?.value
-				if (!isRecord(scaffold)) {
-					throw new Error('The generated lockfile carries no installed scaffold')
-				}
-				const resolved: unknown = Object.getOwnPropertyDescriptor(scaffold, 'resolved')?.value
-				expect(resolved).toBe(specifier)
-				const gates = spawnSync(npm, ['run', 'prepublishOnly'], {
-					cwd: target,
-					encoding: 'utf8',
-					env: admitted.environment,
-					windowsHide: true,
-					shell,
+					shell: NPM_LAUNCHER.shell,
 				})
 				expect(gates.status, `${gates.stdout}\n${gates.stderr}`).toBe(0)
+			} finally {
+				workspace.destroy()
+			}
+		},
+		1_200_000,
+	)
+
+	// The same machinery over the other axis. A workspace declaring app environments and no src
+	// publishes nothing, so it vendors no `configs/src/` wrapper and emits no `prepublishOnly`,
+	// and the vendored proofs it does run must pass without a published face to read. Every other
+	// generated workspace in this file declares a src axis, so this case is the one that runs the
+	// vendored set against a workspace carrying none. What it does not reach is a browser-carrying
+	// workspace's gate chain, which vendors `configs/browsers.ts` and registers Playwright projects
+	// this blueprint never materializes.
+	it.skipIf(!registry && !release)(
+		'installs the packed scaffold and passes one generated app-only workspace through its gates [requires a reachable npm registry]',
+		() => {
+			if (!registry) {
+				throw new Error('The distribution release gate requires a reachable npm registry.')
+			}
+			const workspace = createScratch({ prefix: 'scaffold-e4-app-install-' })
+			const cache = workspace.ensure('cache')
+			// Pinned for the reason the preceding case pins it: an npm environment variable outranks
+			// every `.npmrc`, so a host carrying a peer policy would otherwise answer for this install.
+			const environment = {
+				...process.env,
+				npm_config_cache: cache,
+				npm_config_legacy_peer_deps: 'false',
+				npm_config_strict_peer_deps: 'false',
+			}
+			try {
+				const archive = installPackedScaffold(workspace, environment)
+				const generated = installGeneratedWorkspace(
+					workspace,
+					archive,
+					"createBlueprint('proof', { app: ['core', 'server'] })",
+					environment,
+				)
+				// The re-pin's claims, read for the reason the preceding case reads them.
+				expect(generated.pin.range).toBe(`^${generated.pin.version}`)
+				expect(generated.pin.resolved).toBe(generated.pin.specifier)
+				const scripts: unknown = Object.getOwnPropertyDescriptor(
+					generated.manifest,
+					'scripts',
+				)?.value
+				if (!isRecord(scripts)) {
+					throw new Error('The generated manifest declares no scripts')
+				}
+				// A private workspace declares no `prepublishOnly`: the distribution proof measures a
+				// packed tarball and this workspace publishes none. Its chain is therefore assembled
+				// from the scripts it does declare, in the order the repository fixes the gates. The
+				// assertion is what ties the chain to the manifest: a release that gives a private
+				// workspace a `prepublishOnly` reddens this reading rather than leaving the case
+				// running a chain the workspace no longer owns.
+				expect(Object.getOwnPropertyDescriptor(scripts, 'prepublishOnly')).toBeUndefined()
+				for (const gate of ['format:check', 'lint:check', 'check', 'build', 'test']) {
+					expect(Object.getOwnPropertyDescriptor(scripts, gate)?.value).toEqual(expect.any(String))
+					const run = spawnSync(NPM_LAUNCHER.command, ['run', gate], {
+						cwd: generated.path,
+						encoding: 'utf8',
+						env: generated.environment,
+						windowsHide: true,
+						shell: NPM_LAUNCHER.shell,
+					})
+					expect(run.status, `${gate}\n${run.stdout}\n${run.stderr}`).toBe(0)
+				}
 			} finally {
 				workspace.destroy()
 			}
