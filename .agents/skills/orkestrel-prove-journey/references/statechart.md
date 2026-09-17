@@ -10,6 +10,7 @@ import type { StateScenario, StateTransition, StatechartStatus } from '@orkestre
 import {
 	STATECHART_ATTRIBUTES,
 	STATECHART_STATUSES,
+	buildRefusal,
 	executeScenario,
 	executeScenarios,
 	requireValue,
@@ -173,6 +174,8 @@ it('walks the disclosure statechart', async () => {
   carries the original as the `cause`, so a bare assertion message still says which row failed. A
   phase that throws something other than an `Error` is named by its type, and a builder that refuses
   raises `<name>: build refused` with its own refusal as the `cause`.
+  `buildRefusal(name, cause)` from `@orkestrel/test` builds that same error, so an assertion on
+  a refused build compares against what it returns rather than against a spelled string.
 - Never assert the entity's internal state in `assert` where the transition is one a person drives.
   Assert what the interface renders, through `readPerception`, `readValue`, or `readStates`.
 
@@ -229,7 +232,7 @@ harness.destroy()
   sentence, so a screen reader and a vision model both read the run without visual chrome.
 - Take `execute` as reporting on the whole table. It carries on past a failing row, where
   `executeScenarios` stops at the first, and a builder that refuses fails its own row under the
-  runner's own refusal sentence rather than ending the run.
+  sentence `buildRefusal` builds rather than ending the run.
 - Call `execute` again to re-run the same table from a fresh tally and a cleared rendered state.
 - Call `destroy` in the test's own cleanup. It removes the mounted root and does nothing when the
   root is already gone.

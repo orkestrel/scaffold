@@ -262,7 +262,7 @@
 			"storage": "agents/skills/orkestrel-prove-journey/references/statechart.md",
 			"destination": ".agents/skills/orkestrel-prove-journey/references/statechart.md",
 			"executable": false,
-			"digest": "fbeab64c6a4c71b02f776d7009ea5443fe565933a5ec8a004e1d472db95fd782"
+			"digest": "37a16caf2ddcd90261c419e50bcee3aaa6d56de91bf8f1727321b774f19d7384"
 		},
 		{
 			"storage": "agents/skills/orkestrel-prove-journey/references/styles.md",
@@ -2001,5 +2001,5 @@
 			]
 		}
 	],
-	"digest": "d04591a38bde769e88bc43826b8e287c35b4c081413bf1dcb6c4bb1c57362387"
+	"digest": "bd9482a9d472490c25a96dbc8d0a6c5d929dee36c12792659142b285366b509f"
 }
