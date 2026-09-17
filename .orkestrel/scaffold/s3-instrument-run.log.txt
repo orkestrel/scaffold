@@ -1,0 +1,32 @@
+===== s3-relocation-control =====
+[2m9:41:05 PM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m Re-optimizing dependencies because vite config has changed
+Baseline captured: 3873405 bytes
+Control captured: 3873405 bytes; the comparison against it fails.
+The restored tree captures the baseline bytes; the real comparison passes.
+----- exit 0 -----
+tracked files modified after s3-relocation-control: 8 (baseline 8)
+===== s3-red-3-identity =====
+rival reading: mapped names pass = true; identity at the base position passes = false
+real selection: mapped names pass = true; identity at the base position passes = true
+----- exit 0 -----
+tracked files modified after s3-red-3-identity: 8 (baseline 8)
+===== s3-red-1-selection =====
+mutated: exit 1 — 1 failed | 419 skipped (420)
+restored: exit 0 — 1 passed | 419 skipped (420)
+----- exit 0 -----
+tracked files modified after s3-red-1-selection: 8 (baseline 8)
+===== s3-red-2-pinning =====
+mutated: exit 1 — 1 failed | 419 skipped (420)
+restored: exit 0 — 1 passed | 419 skipped (420)
+----- exit 0 -----
+tracked files modified after s3-red-2-pinning: 8 (baseline 8)
+===== all instruments run, tree restored =====
+ configs/src/vite.bin.config.ts    |   4 +-
+ configs/src/vite.core.config.ts   |   4 +-
+ configs/src/vite.server.config.ts |   4 +-
+ src/core/compilers.ts             | 129 ++------
+ src/core/templates.ts             | 680 +++++++++++++++++++++++---------------
+ tests/src/core/compilers.test.ts  | 519 ++++++++++++++++++++++++++---
+ tests/src/core/templates.test.ts  | 151 +++++----
+ vite.config.ts                    | 421 +++++++++++++----------
+ 8 files changed, 1277 insertions(+), 635 deletions(-)
