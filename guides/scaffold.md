@@ -1091,18 +1091,26 @@ carries its evidence.
 
 The skill sweep reads named value and type imports from `@orkestrel/*` in every Markdown fence
 in `SKILL.md` and its named references, including fences inside lists and blockquotes. It resolves
-each entry through the installed package's exports map and reads its declaration exports with
-Vite's Oxc parser without loading the runtime entry. A missing binding reports the skill file, specifier,
-and exported name. A missing declaration entry or a package outside `BASE_DEV_DEPENDENCIES`
-also reports a violation. Targets need not install packages outside that base set.
+each entry through that package's exports map — the workspace's own manifest for the package the
+workspace publishes, and `node_modules` for every other package — and reads the declaration
+exports with Vite's Oxc parser without loading the runtime entry. A missing binding reports the
+skill file, the specifier, and the exported name. A fence the parser refuses reports a violation
+when its text names an `@orkestrel/` specifier, because error recovery drops the statements after
+the failure; a refused fence naming no such specifier stays outside the sweep. A package outside
+`BASE_DEV_DEPENDENCIES` reports a violation of its own.
 The sweep doesn't read identifiers in prose or table cells, indented code, default imports,
-namespace imports, or imports from other scopes. Every taught symbol belongs in a named import
-fence. This proof checks exported names; it doesn't check call signatures or runtime behavior.
+namespace imports, or imports from other scopes. This proof checks exported names; it doesn't
+check call signatures or runtime behavior.
 The declaration reader follows exact exports-map keys and relative star and named re-exports.
 It reads exported functions, variables, classes, enums, interfaces, types, and local export lists.
-Default exports, export assignments, ambient modules, namespace exports, non-relative re-exports,
-and unsupported exports-map forms refuse the reading. Local export lists aren't typechecked,
-and ambiguous star exports aren't resolved semantically.
+Each refused reading reports its own cause: an entry specifier outside the supported grammar, an
+absent package, an exports key the map lacks or maps through a wildcard, an array, a source alias,
+or a runtime path, a declaration file the package doesn't hold, a syntax error the parser raised, a
+re-exported name the target doesn't declare, and a refused declaration form — a default export, an
+export assignment, an ambient module, a namespace export, a star export alias, or a non-relative
+re-export. A file the branch already visited contributes the names it declares itself, so a named
+re-export through a cycle resolves against those declarations. Local export lists aren't
+typechecked, and ambiguous star exports aren't resolved semantically.
 
 The `surface` rule in `inspectPolicyWorkspace` compares live barrel exports and target-owned root
 `tests/setup*.ts` exports with the hosted guides. It matches bare names case-sensitively across

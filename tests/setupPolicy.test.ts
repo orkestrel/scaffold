@@ -19,27 +19,56 @@ import {
 	readPolicySurface,
 	readSkillExports,
 	readSkillDeclarations,
+	readSkillManifest,
 	resolveSkillDeclaration,
+	SKILL_DECLARATION_MESSAGES,
 	SKILL_DECLARATION_REFUSALS,
+	SKILL_REFUSAL_CASES,
 } from './setupPolicy.js'
+
+describe('readSkillManifest', () => {
+	it('reads the manifest a directory holds and reports absence for one holding none', () => {
+		const scratch = createPolicyScratch({ prefix: 'orkestrel-skill-manifest-' })
+		try {
+			scratch.write('package.json', '{"name":"@orkestrel/sample"}')
+			const manifest = readSkillManifest(scratch.path)
+			expect(requireValue(manifest)).toEqual({ name: '@orkestrel/sample' })
+			expect(readSkillManifest(join(scratch.path, 'absent'))).toBeUndefined()
+		} finally {
+			scratch.destroy()
+		}
+	})
+})
 
 describe('readSkillExports', () => {
 	it('resolves root exports from the installed declaration entry', () => {
-		const names = readSkillExports(process.cwd(), '@orkestrel/test')
-		expect(names).toContain('waitForCondition')
-		expect(names).toContain('WaitOptions')
-		expect(names).not.toContain('s2MissingValue')
+		const entry = readSkillExports(process.cwd(), '@orkestrel/test')
+		expect(entry.outcome).toBe('read')
+		expect(entry.names).toContain('waitForCondition')
+		expect(entry.names).toContain('WaitOptions')
+		expect(entry.names).not.toContain('s2MissingValue')
 	})
 
 	it('resolves browser exports without loading the browser runtime', () => {
-		const names = readSkillExports(process.cwd(), '@orkestrel/test/browser')
-		expect(names).toContain('clickAccessible')
-		expect(names).toContain('CaptureVariant')
-		expect(names).not.toContain('S2MissingType')
+		const entry = readSkillExports(process.cwd(), '@orkestrel/test/browser')
+		expect(entry.outcome).toBe('read')
+		expect(entry.names).toContain('clickAccessible')
+		expect(entry.names).toContain('CaptureVariant')
+		expect(entry.names).not.toContain('S2MissingType')
 	})
 
-	it('returns absence when an installed entry has no declaration', () => {
-		expect(readSkillExports(process.cwd(), '@orkestrel/test/missing')).toBeUndefined()
+	it('resolves the package this workspace publishes through its own manifest', () => {
+		const entry = readSkillExports(process.cwd(), '@orkestrel/scaffold')
+		expect(entry.outcome).toBe('read')
+		expect(entry.names).toContain('BASE_DEV_DEPENDENCIES')
+		expect(entry.names).toContain('HOST_PATHS')
+	})
+
+	it('names the exports key an installed map does not declare', () => {
+		const entry = readSkillExports(process.cwd(), '@orkestrel/test/missing')
+		expect(entry.outcome).toBe('entry')
+		expect(entry.detail).toBe('./missing')
+		expect(entry.names).toEqual([])
 	})
 
 	it('follows star and aliased declaration exports selected by the exports map', () => {
@@ -73,12 +102,12 @@ describe('readSkillExports', () => {
 				'throw new Error("The declaration reader must never execute this entry")\n',
 			)
 			scratch.write('node_modules/@orkestrel/test/runtime.js', 'export const runtimeValue = true\n')
-			expect(readSkillExports(scratch.path, '@orkestrel/test')).toEqual([
+			expect(readSkillExports(scratch.path, '@orkestrel/test').names).toEqual([
 				'Renamed',
 				'exportedValue',
 			])
-			expect(readSkillExports(scratch.path, '@orkestrel/test/values')).toBeUndefined()
-			expect(readSkillExports(scratch.path, '@orkestrel/test/runtime')).toBeUndefined()
+			expect(readSkillExports(scratch.path, '@orkestrel/test/values').outcome).toBe('entry')
+			expect(readSkillExports(scratch.path, '@orkestrel/test/runtime').outcome).toBe('entry')
 		} finally {
 			scratch.destroy()
 		}
@@ -119,7 +148,9 @@ describe('readSkillDeclarations', () => {
 			scratch.write('esm.d.mts', 'export declare const ESM: string\n')
 			scratch.write('common.d.cts', 'export declare const COMMON: string\n')
 			scratch.write('direct.d.ts', 'export declare const DIRECT: string\n')
-			expect(readSkillDeclarations(join(scratch.path, 'entry.d.ts'))).toEqual([
+			const entry = readSkillDeclarations(join(scratch.path, 'entry.d.ts'))
+			expect(entry.outcome).toBe('read')
+			expect(entry.names).toEqual([
 				'COMMON',
 				'DIRECT',
 				'ESM',
@@ -140,13 +171,66 @@ describe('readSkillDeclarations', () => {
 		}
 	})
 
+	it('resolves a name re-exported through a cycle against what the visited file declares', () => {
+		const scratch = createPolicyScratch({ prefix: 'orkestrel-skill-cycle-' })
+		try {
+			scratch.write(
+				'entry.d.ts',
+				"export declare const VALUE: string\nexport { VALUE as ALIAS } from './bridge.js'\n",
+			)
+			scratch.write('bridge.d.ts', "export { VALUE } from './entry.js'\n")
+			const entry = readSkillDeclarations(join(scratch.path, 'entry.d.ts'))
+			expect(entry.outcome).toBe('read')
+			expect(entry.names).toEqual(['ALIAS', 'VALUE'])
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it('refuses a name re-exported through a cycle that the visited file does not declare', () => {
+		const scratch = createPolicyScratch({ prefix: 'orkestrel-skill-cycle-absent-' })
+		try {
+			scratch.write(
+				'entry.d.ts',
+				"export declare const VALUE: string\nexport { ABSENT } from './bridge.js'\n",
+			)
+			scratch.write('bridge.d.ts', "export { ABSENT } from './entry.js'\n")
+			const entry = readSkillDeclarations(join(scratch.path, 'entry.d.ts'))
+			expect(entry.outcome).toBe('name')
+			expect(entry.detail).toBe('ABSENT')
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it('reads a star re-export cycle without looping or dropping a declared name', () => {
+		const scratch = createPolicyScratch({ prefix: 'orkestrel-skill-cycle-star-' })
+		try {
+			scratch.write(
+				'entry.d.ts',
+				"export declare const ROOT: string\nexport * from './bridge.js'\n",
+			)
+			scratch.write(
+				'bridge.d.ts',
+				"export declare const LEAF: string\nexport * from './entry.js'\n",
+			)
+			const entry = readSkillDeclarations(join(scratch.path, 'entry.d.ts'))
+			expect(entry.outcome).toBe('read')
+			expect(entry.names).toEqual(['LEAF', 'ROOT'])
+		} finally {
+			scratch.destroy()
+		}
+	})
+
 	for (const declaration of SKILL_DECLARATION_REFUSALS) {
 		it(`refuses an unreadable declaration inventory: ${declaration}`, () => {
 			const scratch = createPolicyScratch({ prefix: 'orkestrel-skill-refusal-' })
 			try {
 				scratch.write('entry.d.ts', declaration)
 				scratch.write('values.d.ts', 'export declare const VALUE: string\n')
-				expect(readSkillDeclarations(join(scratch.path, 'entry.d.ts'))).toBeUndefined()
+				const entry = readSkillDeclarations(join(scratch.path, 'entry.d.ts'))
+				expect(Object.hasOwn(SKILL_DECLARATION_MESSAGES, entry.outcome)).toBe(true)
+				expect(entry.names).toEqual([])
 			} finally {
 				scratch.destroy()
 			}
@@ -171,7 +255,7 @@ describe('resolveSkillDeclaration', () => {
 })
 
 describe('inspectSkillImports', () => {
-	it('reports a specifier with no installed declaration entry', () => {
+	it('reports a specifier whose exports map declares no such entry', () => {
 		expect(
 			inspectSkillImports(
 				process.cwd(),
@@ -182,9 +266,91 @@ describe('inspectSkillImports', () => {
 			{
 				rule: 'skill',
 				path: 'SKILL.md',
-				message: 'skill fence import @orkestrel/test/missing has no installed declaration entry',
+				message:
+					'skill fence import @orkestrel/test/missing has no declaration entry for ./missing',
 			},
 		])
+	})
+
+	it('accepts a named import of the package this workspace publishes', () => {
+		expect(
+			inspectSkillImports(
+				process.cwd(),
+				'SKILL.md',
+				'```ts\nimport { BASE_DEV_DEPENDENCIES } from "@orkestrel/scaffold"\n```\n',
+			),
+		).toEqual([])
+	})
+
+	for (const scenario of SKILL_REFUSAL_CASES) {
+		it(`names the refusal cause: ${scenario.label}`, () => {
+			const scratch = createPolicyScratch({ prefix: 'orkestrel-skill-cause-' })
+			try {
+				for (const file of scenario.files) scratch.write(file.path, file.content)
+				expect(
+					inspectSkillImports(
+						scratch.path,
+						'SKILL.md',
+						`\`\`\`ts\nimport { VALUE } from '${scenario.specifier}'\n\`\`\`\n`,
+					),
+				).toEqual([{ rule: 'skill', path: 'SKILL.md', message: scenario.message }])
+			} finally {
+				scratch.destroy()
+			}
+		})
+	}
+
+	it('names the parser message a declaration file raised', () => {
+		const scratch = createPolicyScratch({ prefix: 'orkestrel-skill-cause-syntax-' })
+		try {
+			scratch.write(
+				'node_modules/@orkestrel/test/package.json',
+				'{"name":"@orkestrel/test","exports":{".":{"types":"./entry.d.ts"}}}',
+			)
+			scratch.write('node_modules/@orkestrel/test/entry.d.ts', 'export const =\n')
+			expect(
+				inspectSkillImports(
+					scratch.path,
+					'SKILL.md',
+					'```ts\nimport { VALUE } from "@orkestrel/test"\n```\n',
+				),
+			).toEqual([
+				{
+					rule: 'skill',
+					path: 'SKILL.md',
+					message:
+						'skill fence import @orkestrel/test has a declaration syntax error: Unexpected token',
+				},
+			])
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it('refuses a fence the parser cannot read beside an Orkestrel import', () => {
+		expect(
+			inspectSkillImports(
+				process.cwd(),
+				'SKILL.md',
+				'```ts\nimport { waitForCondition } from "@orkestrel/test"\nconst value =\n```\n',
+			),
+		).toEqual([
+			{
+				rule: 'skill',
+				path: 'SKILL.md',
+				message: 'skill fence could not be parsed: Unexpected token',
+			},
+		])
+	})
+
+	it('leaves a fence the parser cannot read outside the check when it names no Orkestrel import', () => {
+		expect(
+			inspectSkillImports(
+				process.cwd(),
+				'SKILL.md',
+				'```ts\nimport { external } from "external-package"\nconst value =\n```\n',
+			),
+		).toEqual([])
 	})
 
 	it('reads multiline aliased and commented imports in nested fences', () => {
@@ -612,8 +778,8 @@ describe('normalizePolicyFilename', () => {
 describe('normalizePolicyPath', () => {
 	it('changes separators without resolving segments or decoding percent text', () => {
 		expect(normalizePolicyPath('src//member.ts')).toBe('src/member.ts')
-		expect(normalizePolicyPath('src\\parent\\..\\literal%20#?.ts')).toBe(
-			'src/parent/../literal%20#?.ts',
+		expect(normalizePolicyPath('src\\parent\\..\\literal%20#雪.ts')).toBe(
+			'src/parent/../literal%20#雪.ts',
 		)
 	})
 })
