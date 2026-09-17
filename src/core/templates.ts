@@ -349,7 +349,10 @@ function isNamedPlugin(plugin: PluginOption): plugin is { name: string } {
 			journey: `
 // Replace the journey fields directly: merging would concatenate the ordinary include
 // and retain the exclusion of the journey suite.
-export function appJourney(variant: JourneyVariant, variants: readonly JourneyVariant[]): UserConfig {
+export function appJourney(
+	variant: JourneyVariant,
+	variants: readonly JourneyVariant[],
+): UserConfig {
 	const browser = appBrowser()
 	return {
 		...browser,

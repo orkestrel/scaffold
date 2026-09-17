@@ -679,6 +679,12 @@ describe('configuration templates', () => {
 					showcase: true,
 				}),
 				createBlueprint('unshowcased', { app: ['core', 'browser', 'server'] }),
+				createBlueprint('journeyed', {
+					app: ['core', 'browser'],
+					journey: true,
+					setup: ['node', 'browser'],
+				}),
+				createBlueprint('journeyedbare', { app: ['core', 'browser'], journey: true, setup: [] }),
 				createBlueprint('a'.repeat(19), { src: ['core', 'browser', 'server'] }),
 				createBlueprint('a'.repeat(20), { src: ['core', 'browser', 'server'] }),
 				createBlueprint('a'.repeat(MAX_NAME_LENGTH), {
