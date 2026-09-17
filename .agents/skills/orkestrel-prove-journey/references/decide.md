@@ -7,7 +7,7 @@ instrument here answers as open, and never answer it with the nearest instrument
 | -------------------------------------- | -------------------------------------------- |
 | A compiler, a linter, or a Node runner | The `prove` tool, with its negative control  |
 | A person's eye                         | The run's written artifact, named by variant |
-| A person watching a widget move        | A statechart harness deep link               |
+| A person watching a widget move        | The harness run's frames and its artifact    |
 | The browser's own resolved value       | The matrix family ([styles.md](styles.md))   |
 
 Never ask `prove` about pixels, and never ask a screenshot about types.
@@ -25,17 +25,26 @@ follow it there rather than restating it here.
 
 ## The limit that decides the split
 
-`prove` cannot serve a browser project in `@orkestrel/probe` 0.0.11. The following refusals are each
-reproduced:
+`prove` cannot serve a browser project, and the limit belongs to the installed `@orkestrel/probe`
+rather than to a version this file names. Confirm it against the copy this workspace holds before
+routing a rendered question, and record the version you read beside the ruling.
 
-- The runtime stage looks a project up by the name it infers, and a browser project is instantiated
-  under its browser-expanded name, so the lookup finds nothing and the claim is refused as missing.
-- The runtime stage pins the `threads` pool, so a browser project's specification runs in a Node
-  worker. `@orkestrel/test/browser` imports `vitest/browser` at module scope, so the browser setup
-  file throws before the case runs and the failure reads as the claim's.
+Read the pool pin, the project lookup, and the guide's own statement. Any of them holding is the
+limit holding:
 
-Never route a rendered question to `prove` while that holds. The pinned-pool refusal arrives as a
-case failure, which reads exactly like a broken claim.
+- **The pool pin.** Read the runtime stage in the installed server entry. Where it pins the
+  `threads` pool, a browser project's specification runs in a Node worker,
+  `@orkestrel/test/browser` imports `vitest/browser` at module scope, and the browser setup file
+  throws before the case runs.
+- **The project lookup.** The runtime stage looks a project up by the name it infers from the test
+  path, and a browser project is instantiated under its browser-expanded name, so the lookup finds
+  nothing and the claim is refused as missing.
+- **The guide's statement.** Read what `@orkestrel/probe`'s own guide says the stages serve. Where
+  it names no browser project, no stage claims one.
+
+Never route a rendered question to `prove` while any of them holds. The pinned-pool refusal arrives
+as a case failure, which reads exactly like a broken claim. Record the version, the pool pin you
+read, and what the guide says, so the next round re-reads rather than re-deriving.
 
 ## The rendered artifact
 
@@ -61,8 +70,18 @@ Rules the artifact obeys:
   old and part new.
 - Keep it out of version control.
 
-## The harness link
+## The harness run
 
-Send a look a person decides on to a statechart harness deep link rather than to a file. Name the
-exact link in the round, and let the person watch the widget move rather than read a still of it
-([statechart.md](statechart.md) → Build the harness a person watches).
+Send a look a person decides on to what the harness run itself produced, rather than to a still of a
+screen.
+
+- Place a capture inside the harness run at each state the decision is about, and name the frames in
+  the round. The run drove the widget through the interface, so the frames are a record of movement
+  rather than a staged pose.
+- Name the artifact beside them. Its accessible-tree lines and its journal say what the widget
+  announced while it moved, which a frame cannot carry.
+- Give the harness a final row or a demo step that leaves the widget in its most legible state, so
+  the last frame is the one a person wants to look at.
+- Name a deep link only where the workspace already ships a harness page
+  ([statechart.md](statechart.md) → A harness page is product). Never ask a round to open a link the
+  repository does not serve.
