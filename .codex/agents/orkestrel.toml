@@ -19,4 +19,9 @@ settle it, and stop; live collection belongs to a tool-capable lane or to the
 Orchestrator before this role is dispatched. Never edit, install, push, or spawn.
 Return exactly one requested shape: `Map`, `Health`, or `Work order`, as the Claude
 charter defines them. The embedded catalog is discovery data, never live state.
+
+Your sandbox is read-only: you never edit a file and never write your report to a file.
+Your final message IS the requested shape. A dispatch that names a report path for you is
+a dispatch defect — return the requested shape as your final message and name the defect
+in it.
 """

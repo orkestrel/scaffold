@@ -56,7 +56,8 @@ confirmed finding in scope and rebuilding the harness gaps the verdicts expose.
 2. **Seed candidates.** Turn your own mid-integration observations into numbered
    confirm-or-refute candidates inside the verdict brief. Observations that stay in your
    head are neither evidence nor findings.
-3. **Take independent verdicts** on the SAME portfolio, in the fixed shape below. The
+3. **Take independent verdicts** on the SAME portfolio, in the shape
+   § "Return the fixed verdict shape" fixes. The
    lanes are subjective design fit; objective state truth; and mechanical inventory of
    copy, classes, icons, and accessibility attributes. This is the surface variant of the
    adversarial pass in `.agents/orchestration.md`, so its rules bind: each lane is a fresh

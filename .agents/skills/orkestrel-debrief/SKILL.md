@@ -83,7 +83,7 @@ a practice that worked so it repeats.
 7. **Land the refinements.** Dispatch fix-now findings as bounded units under the
    repository's engine contract; make the canon edits (charters, rules, skills,
    orchestration contract) with the owner's direction where the root contract is
-   touched; re-prove per the law above.
+   touched; re-prove per the re-proving law in § "The debrief laws".
 8. **Propagate.** Portable changes are made in the scaffold repository's host inventory,
    staged, gated, and pushed — editing one project's checkout propagates nothing. Verify
    the generated-workspace proofs stay green so new projects inherit the refined canon.

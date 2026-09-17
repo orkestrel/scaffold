@@ -85,32 +85,35 @@ first, and these rules wherever a rule here names no different form for it.
 Replace each term in this table with its replacement. A literal code identifier is data, and so is
 a sample string inside a code fence or a test fixture: quote each as itself, exempt from every row.
 
-| Term                     | Replacement                               |
-| ------------------------ | ----------------------------------------- |
-| `should`                 | `must`, `can`, `might`, or the imperative |
-| `simply`, `easy`, `just` | Delete                                    |
-| `currently`, `now`       | Delete, or give the date                  |
-| `new`, `latest`          | Delete, or give the version               |
-| `utilize`, `leverage`    | `use`                                     |
-| `via`                    | `through`, `by using`                     |
-| `in order to`            | `to`                                      |
-| `e.g.`, `i.e.`           | `for example`, `that is`                  |
-| `etc.`                   | Bound the list, or recast the sentence    |
-| `performant`, `robust`   | The measured property                     |
-| `allows you to`          | `lets you`                                |
-| `and/or`                 | `and`, `or`, or `both`                    |
-| `since` (causal)         | `because`                                 |
-| `once` (temporal)        | `after`                                   |
-| `please`                 | Delete                                    |
-| `sanity check`           | `quick check`                             |
-| `dummy`                  | `placeholder`                             |
-| `blacklist`, `whitelist` | `denylist`, `allowlist`                   |
-| `master`, `slave`        | `primary`, `replica`                      |
+| Term                               | Replacement                                  |
+| ---------------------------------- | -------------------------------------------- |
+| `should`                           | `must`, `can`, `might`, or the imperative    |
+| `simply`, `easy`, `just`           | Delete                                       |
+| `currently`, `now`                 | Delete, or give the date                     |
+| `new`, `latest`                    | Delete, or give the version                  |
+| `utilize`, `leverage`              | `use`                                        |
+| `via`                              | `through`, `by using`                        |
+| `in order to`                      | `to`                                         |
+| `e.g.`, `i.e.`                     | `for example`, `that is`                     |
+| `etc.`                             | Bound the list, or recast the sentence       |
+| `performant`, `robust`             | The measured property                        |
+| `allows you to`                    | `lets you`                                   |
+| `and/or`                           | `and`, `or`, or `both`                       |
+| `since` (causal)                   | `because`                                    |
+| `once` (temporal)                  | `after`                                      |
+| `above`, `below` (cross-reference) | `preceding`, `following`, `earlier`, `later` |
+| `please`                           | Delete                                       |
+| `sanity check`                     | `quick check`                                |
+| `dummy`                            | `placeholder`                                |
+| `blacklist`, `whitelist`           | `denylist`, `allowlist`                      |
+| `master`, `slave`                  | `primary`, `replica`                         |
 
+- Register each lexical prohibition in the substitution table. Where its application depends on the
+  sense rather than the match, register it in the judged set and rule each hit.
 - `policy/no-banned-term` reads every comment and the prose sweep in `tests/setupPolicy.ts` reads
   every authored Markdown file, and each matches the rows this table bans unconditionally. The rule
-  and the sweep leave `now`, `new`, `latest`, `once`, `since`, and `master` unmatched because those
-  rows carry a permitted sense, so rule a hit in one of those rows yourself.
+  and the sweep leave `now`, `new`, `latest`, `once`, `since`, `above`, `below`, and `master`
+  unmatched because those rows carry a permitted sense, so rule a hit in one of those rows yourself.
 - Sweep case-insensitively and across inflections when checking prose against the preceding table. A
   pattern for `easy` reaches neither `Easy` nor `easier`, and a temporal `once` most often appears
   as a sentence-initial `Once`.

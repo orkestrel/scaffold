@@ -117,7 +117,7 @@ diff to read, and requires Sol to attempt refutation. The Falsification section 
 defaults to `orkestrel-falsify`; a dispatch may name a different skill that fixes another. That
 skill owns the value set and the terminal line. Point the brief at both; restate neither.
 
-## Implementer route
+## Sol route
 
 Sandbox `workspace-write`, the checkout the route writes in, its sole serial writer from a clean committed
 baseline, with owned files, off-limits files, and a deviation contract. The brief forbids
@@ -137,7 +137,7 @@ injection payloads, credential-handling probes. The filter reads the construct, 
 intent, so a legitimate negative test trips it exactly like an attack would. Observed twice
 on one unit, at the same point in the work, with nothing written to disk either time.
 
-Route such a unit to the native Opus `implementer` from the start and record the Codex
+Route such a unit to `opus` from the start and record the Codex
 bench dark for that unit with this reason. Do not soften or obscure a brief to slip past
 the filter; a bench that declines work is a routing fact, not an obstacle. The exclusion is
 per unit — everything else still routes to Sol, and an audit that merely reads existing

@@ -47,8 +47,9 @@ it. Follow `references/brief.md`. What this skill adds beyond the conduct law:
   politeness.
 - Unknowns are named as unknowns, with how the auditor reports back on them.
 
-The claim form itself is the Falsification law's — read it there. The **verdict shape** below is this
-skill's, because `.agents/orchestration.md` assigns it here; everything else about auditor conduct is the law's.
+The claim form itself is the Falsification law's — read it there. The **verdict shape** in
+§ "Verdict shape" is this skill's, because `.agents/orchestration.md` assigns it here; everything
+else about auditor conduct is the law's.
 
 ## Evidence, by subject type
 
@@ -114,15 +115,17 @@ nobody claimed.
   harder.** A fix round reviewed by the engine that wrote it is the case the round exists to avoid,
   and where the pass cannot avoid it, naming it is what recovers the round. A clean pass on its own
   engine's work is the least valuable result a lane can return.
-- Supply the evidence the subject type requires, per the table above.
+- Supply the evidence the subject type requires, per § "Evidence, by subject type".
 - Auditors edit no source and spawn nothing. Read-only describes the SUBJECT, never the lane's
   tools.
-- **Read the lane's allowlist before writing its brief.** A lane with no write tool cannot create
-  a probe; a lane with no exec tool cannot run one or read `git`. Naming either stops the unit on
-  arrival over a detail the allowlist already settled.
-- Where the lane cannot execute, run the probe yourself, record its control and its output, and
-  supply that record as the lane's evidence. The Orchestrator produces, the lane rules. Never
-  widen a lane's tools to fit a brief.
+- **Derive a lane's executable actions from its tool allowlist and its sandbox, and read both before
+  writing its brief.** A lane with no write tool cannot create a probe; a lane with no shell runs
+  none; a read-only filesystem does not forbid a nonmutating command. Naming an action the lane
+  cannot take stops the unit on arrival over a detail the allowlist and the sandbox already settled.
+- Where an attack needs a tool the lane lacks or a write its sandbox refuses, run the probe
+  yourself, record its control and its output, and supply that record as the lane's evidence before
+  ruling on the claim. The Orchestrator produces, the lane rules. Never widen a lane's tools to fit
+  a brief.
 - Blind reports are **immutable**. Nothing an auditor returns is edited, merged, or revised — by
   anyone, including the auditor — once it has been returned.
 

@@ -25,11 +25,11 @@ instead of acting as the primary Orchestrator. Do not delegate or expand its sco
 
 Which local agent carries which engine, so the contract's routing resolves here. The
 contract owns when each is used; this is only the mapping:
-- Sol: this session, plus analyst and implementer.
+- Sol: this session, plus analyst and sol.
 - Cursor Grok: the grok bridge, read-only.
 - Claude Opus 5: the planner and reviewer bridges, read-only, and the opus bridge for
   writes.
-- Luna: researcher, scout, and checker.
+- Luna: distiller, researcher, scout, and checker.
 - Terra: bridge drivers and fully specified units (builder, application, verifier).
 """
 

@@ -26,4 +26,8 @@ set and the terminal line, so a claim you cannot decide takes the value it provi
 rather than a forced PASS or FAIL. When it states acceptance criteria and no claims,
 return only PASS/FAIL, the evidence checklist, re-dispatchable failures, and
 referrals.
+
+Your sandbox is read-only: you never edit a file and never write your report to a file.
+Your final message IS the verdict. A dispatch that names a report path for you is a
+dispatch defect — return the verdict as your final message and name the defect in it.
 """

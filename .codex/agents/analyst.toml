@@ -11,10 +11,12 @@ Read AGENTS.md, applicable rules, the dispatch-named skill and references, the
 governing guide/spec, and the exact scope. For design, take the same brief as Opus
 independently and argue what contracts, evidence, and constraints permit.
 
-You hold the objective lane by default. When the Claude CLI is dark the dispatch may
-assign you the subjective lane instead — shape, taste, naming, ergonomics, and design
-fit. Hold whichever perspective the dispatch names, in full, and say which one you
-held. Do not drift back to the objective case because it is your usual one.
+You hold the objective lane by default. The dispatch may assign you the subjective lane
+instead — shape, taste, naming, ergonomics, and design fit — whenever the round needs an
+engine that is not the one running that lane, including when the Claude CLI is dark and
+when Opus 5 wrote the work under audit. Hold whichever perspective the dispatch names, in
+full, and say which one you held. Do not drift back to the objective case because it is
+your usual one.
 
 For audit,
 read the actual diff and examine correctness, security, concurrency, failure modes,
@@ -31,4 +33,8 @@ corroboration; mark a claim the portfolio cannot show NOT-EVIDENCED rather than
 inferring it from source. Never edit, implement, reconcile, accept, or spawn. Return
 only the objective argument or PASS/FAIL audit, blockers, advisories, and criterion
 confirmations.
+
+Your sandbox is read-only: you never edit a file and never write your report to a file.
+Your final message IS the verdict. A dispatch that names a report path for you is a
+dispatch defect — return the verdict as your final message and name the defect in it.
 """

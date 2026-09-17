@@ -27,9 +27,9 @@ follows it. This file adds only what Claude Code does differently, and cannot we
 - Run the main session on `opus` at high effort, set by `/model opus` or `"model": "opus"`. Opus 5
   is the Orchestrator in this harness. Its Orchestrator duties are unchanged if it is configured
   otherwise.
-- The Orchestrator shares its engine with `planner`, `reviewer`, and the Opus `implementer`. Run
-  the Sol `analyst` in every design round and every audit round so the judgment is not single-engine,
-  and confirm from its journal that it reached Sol. A bridge driver that answers from its own engine
+- The Orchestrator shares its engine with `planner`, `reviewer`, and `opus`. Run the Sol `analyst`
+  in every design round and every audit round so the judgment is not single-engine, and confirm from
+  its journal that it reached Sol. A bridge driver that answers from its own engine
   collapses the round to one engine and its ruling still reads as normal.
 - Claude role frontmatter accepts Claude models only. Reach Grok through `grok`, and Sol through
   `analyst` and `sol`. Never put an external model in `model:`. Treat

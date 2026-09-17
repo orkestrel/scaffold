@@ -5,8 +5,8 @@ decision, and it is not delegable.
 
 ## Reproduce before you act
 
-The rule beneath this whole section: **run it rather than argue it.** Every judgement below is
-cheap once the probe exists and unreliable until it does.
+The rule beneath this whole section: **run it rather than argue it.** Every judgement that follows
+is cheap once the probe exists and unreliable until it does.
 
 An auditor's finding is a **hypothesis** until the orchestrator has run it. Reproduce every sharp
 claim by hand, against the built output, before it enters a fix brief.

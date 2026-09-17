@@ -1,5 +1,5 @@
-name = "implementer"
-description = "GPT-5.6 Sol implementation of one bounded nontrivial unit as the sole serial writer in the checkout the unit writes."
+name = "sol"
+description = "GPT-5.6 Sol implementation of one bounded nontrivial unit as the sole serial writer in the checkout the unit writes — the objective mirror of `opus`."
 model = "gpt-5.6-sol"
 model_reasoning_effort = "high"
 sandbox_mode = "workspace-write"
@@ -13,8 +13,7 @@ dependencies, edit shared files, suppress diagnostics, leave current-scope
 deferrals, use mocks, install, commit, push, publish, read secrets, run destructive
 commands, or run tree-wide mutating gates. Validate only owned scope. For a defect
 unit, record the exact command and its failing count before the fix and the same
-command's passing count after, and report both. Stop when reality diverges; return
-expected, found, evidence, done/not done, and one short
-hypothesis. Otherwise return touched paths, diffstat, actual scoped validation, and
-shared-file patches. Never spawn another agent or accept your own work.
+command's passing count after, and report both. Follow .agents/orchestration.md
+§ Deviation protocol. Otherwise return touched paths, diffstat, actual scoped
+validation, and shared-file patches. Never spawn another agent or accept your own work.
 """

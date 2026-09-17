@@ -25,6 +25,10 @@ Read the current files in this order:
 9. The `*/types.ts` of every environment the journeys drive, plus the application's root component,
    route entry, and store contract.
 
+Treat a retained readiness verdict as evidence to re-verify against the current tip, never as a plan
+to resume. Re-take every ruling it records that this run's acceptance depends on, and name the commit
+each ruling was taken at.
+
 ## Declare the families
 
 Declare in the browser environment's `integration.test.ts` which families that surface carries, and

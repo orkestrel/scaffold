@@ -1,6 +1,6 @@
 ---
 name: orkestrel-build-application
-description: Design, scaffold, extend, or harden Orkestrel `app/core`, `app/browser`, and `app/server` environments. Use for app-only or mixed src/app workspaces, app environment isolation, Vue browser entries, Node server entries, app aliases/configs/scripts/tests, cross-environment contracts, and application guide parity.
+description: Wire, extend, or harden Orkestrel `app/core`, `app/browser`, and `app/server` environments — the environment's contracts, boundaries, entries, and host proofs, never the product designed inside one. Use for app-only or mixed src/app workspaces, app environment isolation, Vue browser entries, Node server entries, app aliases, configs, scripts, and tests, cross-environment contracts, and application guide parity. Do not use it to redesign an application's routes, screens, or domain behavior; take that to a design round and return here to wire what it decides.
 ---
 
 # Build an Orkestrel application
@@ -106,3 +106,20 @@ includes app/core so the shared transport contracts have one host-independent ow
 Do not add showcase, authentication, persistence, proxy, styling-system, or product
 policy unless the request requires it. Do not leave placeholders, compatibility shims,
 empty setup files, or deferred app behavior.
+
+## Accept the result
+
+Completion requires:
+
+- every selected environment's `types.ts` implemented and mirrored in tests;
+- every boundary-enforcement layer in step 6 reporting clean over the selected environments;
+- the step 7 real-host proofs run and recorded with their counts — real DOM under
+  Playwright-backed Vitest Browser Mode, loopback port zero under real fetch, and
+  executable readiness, collision exit, signal termination, and port release under real
+  child processes — each selected environment carrying the proofs its host owns;
+- guide parity green over every app export and behavioral method;
+- the repository gates green in their required order from an independent `verifier`.
+
+A selected environment still unwired, a real-host proof not taken, or an open parity row
+means the run is not finished. Report what each environment owns, the exact proof and gate
+evidence, and any residual risk. Do not call an in-scope omission future work.

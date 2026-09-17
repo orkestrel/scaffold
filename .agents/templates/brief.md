@@ -10,9 +10,10 @@ copy `# Unit UNIT_ID — SHORT_SUBJECT`. Delete each italic reminder as you fill
 under, and leave no row blank: fill a row you cannot close with a named unknown label, and
 describe that label under § Unknowns with how the unit reports back on it.
 
-For a read-only audit lane, fill the rows
-`.agents/skills/orkestrel-falsify/references/brief.md` § "The read-only audit lane's brief" names
-and delete the rest of this template.
+An audit lane is the exception that drops rows: fill the rows
+`.agents/skills/orkestrel-falsify/references/brief.md` § "The audit lane's brief" names
+and delete the rest of this template. Every other dispatch keeps every section and row heading
+verbatim.
 
 ## Role and engine
 

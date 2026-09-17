@@ -11,7 +11,7 @@ Read the current files in this order:
 
 1. `AGENTS.md`.
 2. Every applicable `.claude/rules/*.md`.
-3. Select the work lane below and read every reference that lane requires.
+3. Select the work lane § "Select the work lane" names, and read every reference that lane requires.
 4. `guides/README.md`, the governing package/domain guide, and `ROADMAP.md` when present.
 5. The authoritative `*/types.ts`, public barrels, `package.json`, build/test configuration, and decision-bearing implementation files.
 

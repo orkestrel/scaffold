@@ -86,6 +86,13 @@ names nothing else, so never write it of a lane. A verdict file's recorded reaso
 
 By default Opus 5 holds the subjective lane and Sol holds the objective lane.
 
+Swap the lanes whenever the round needs an engine that is not the one running that lane. Bench
+darkness is one trigger and the writer's engine is another: § Execution loop's audit step requires
+an auditor that did not write the work, so where Sol wrote the work under audit, give the objective
+lane to Opus 5 and the subjective lane to Sol, and reverse that where Opus 5 wrote it. Both engines
+still run, so this is a lane swap rather than a substitution. Record which engine held which lane in
+the routing ledger.
+
 When one engine is unavailable, the remaining engine runs **every** lane — still separate
 subagents, still clean contexts, still blind to each other, each told which perspective it holds.
 Record the substitution.
@@ -121,6 +128,9 @@ Fall back in this order and record the substitution:
 2. **Luna** (`gpt-5.6-luna`), when the Cursor bench is dark and Codex is available.
 3. **Sonnet**, when both benches are dark.
 
+- Dispatch `distiller` for absorption and distillation after the ladder steps past Grok, and
+  `researcher`, `scout`, or `checker` for the job each of those names. `scout` excludes deep
+  reading and `researcher` excludes repository-scale absorption, so neither takes that step.
 - Never route absorption to the Orchestrator itself, even when the Orchestrator is Grok. Keep the
   main context at decision level; in Cursor that means a Grok executor session, not this one.
 - Never spend Opus 5 or Sol on it.
@@ -155,8 +165,9 @@ when the role file already pins it.
 | Creative design and alternatives         | `planner`                       | `planner`                     | Opus 5 (native / bridge)      |
 | Design-fit review and audit              | `reviewer`                      | `reviewer`                    | Opus 5 (native / bridge)      |
 | Objective analysis and correctness audit | `analyst`                       | `analyst`                     | GPT-5.6 Sol (bridge / native) |
-| Nontrivial implementation (objective)    | `sol`                           | `implementer`                 | GPT-5.6 Sol (bridge / native) |
-| Nontrivial implementation (subjective)   | `implementer`                   | `opus`                        | Opus 5 (native / bridge)      |
+| Nontrivial implementation (objective)    | `sol`                           | `sol`                         | GPT-5.6 Sol (bridge / native) |
+| Nontrivial implementation (subjective)   | `opus`                          | `opus`                        | Opus 5 (native / bridge)      |
+| Bulk reading and evidence distillation   | `distiller`                     | `distiller`                   | Grok → Luna → Sonnet          |
 | Bounded primary-source research          | `researcher`                    | `researcher`                  | Grok → Luna → Sonnet          |
 | Repository reconnaissance                | `scout`                         | `scout`                       | Grok → Luna → Sonnet          |
 | Mechanical conformance evidence          | `checker`                       | `checker`                     | Grok → Luna → Sonnet          |
@@ -167,9 +178,11 @@ when the role file already pins it.
 
 - A **bridge** role is a cheap driver whose only work is invoking another provider's CLI. It never
   implements, judges, or endorses the result.
-- `implementer` names the harness's native implementation lane, so the token means Opus in Claude
-  Code and Sol in Codex. An engine-named bridge — `sol`, `opus` — names the other engine. Read a
-  role name against the harness you are running in, and state the engine anyway.
+- `sol` and `opus` each name one engine on both provider surfaces. The harness decides whether the
+  role is native or a bridge; the name never does. State the engine in the dispatch anyway.
+- A role name and a model alias occupy different fields — a dispatch and a role file's `name` carry
+  the role, a `model:` pin carries the alias — so the Codex `opus` bridge is a role named `opus`
+  pinned to the `gpt-5.6-terra` model.
 - Give every role a file in the scaffold checkout, under `.claude/agents/` and under
   `.codex/agents/`. The role file is where engine, effort, tools, permissions, and charter are
   pinned, and the tool allowlist is what makes the read-only floor real. A role with no file has
@@ -177,9 +190,9 @@ when the role file already pins it.
   catalog agent and no other role, and a session that dispatches roles starts on scaffold and
   attaches the target.
 - Reach every role by its own name. Do not rely on a remembered route.
-- `researcher`, `scout`, and `checker` are native lanes for jobs that belong to Grok first.
-  Dispatch `grok` with their brief before using them, and use the native role only once the ladder
-  has stepped past Grok. Record which step you are on.
+- `distiller`, `researcher`, `scout`, and `checker` are native lanes for jobs that belong to Grok
+  first. Dispatch `grok` with their brief before using them, and use the native role only after the
+  ladder has stepped past Grok. Record which step you are on.
 - `orkestrel` stays native because it carries the package catalog in its own role file. Sending its
   job to a bench means shipping that catalog across, which costs more than the bench saves.
 - A transport contract lives in `.agents/transports/`, not in an agents directory. A harness lists
@@ -188,9 +201,13 @@ when the role file already pins it.
   `.agents/transports/claude.md` the shared Opus transport contract. Neither is a route: `analyst`
   and `sol` are the named Sol bridges, `planner`, `reviewer`, and `opus` the named Opus bridges, and
   each binds its own contract by reference and pins only its route and sandbox.
+  `.agents/transports/cursor.md` is the shared Cursor transport contract, and both harnesses' `grok`
+  bridges bind it, because Cursor is native to neither. A contract's home is the provider it carries,
+  never the harness that reaches it.
 - Mirroring is by work class, not filename. A transport contract is provider-specific: the Codex
   contract carries the Sol transport the Claude-side bridges follow, the Claude contract carries the
-  Opus transport the Codex-side bridges follow, and each side's bridges bind their own.
+  Opus transport the Codex-side bridges follow, and each bridge binds the contract of the provider it
+  reaches.
 - Opus and Sol roles use high effort. Native cheap-tier roles use low or medium. Bridge drivers use
   the cheapest tier that can run a CLI.
 - Never route orchestration or acceptance across a bridge.
@@ -333,10 +350,10 @@ longer holds.
    - State the goal's exit criterion beside the units: the enumerated capabilities whose closure
      ends the campaign, each to end implemented, repaired, retained, or intentionally excluded on
      evidence. A plan that names work but not its end can only be abandoned, never finished.
-3. **Implement.** Route each nontrivial objective unit to the Sol `implementer` and each nontrivial
-   subjective unit to the Opus `implementer`, in the checkout the unit writes, one writer per
-   checkout. Route a fully specified taste-free unit to `builder`. Never route implementation to an
-   engine the unit's judgment load exceeds.
+3. **Implement.** Route each nontrivial objective unit to `sol` and each nontrivial subjective unit
+   to `opus`, in the checkout the unit writes, one writer per checkout. Route a fully specified
+   taste-free unit to `builder`. Never route implementation to an engine the unit's judgment load
+   exceeds.
 4. **Integrate.** Evaluate each distillate against its acceptance criteria, apply shared-file
    patches serially, and route cross-cutting findings. Integration applies exact returned patches
    and mechanical conflict resolution only. A new type, mechanism, behavior, or acceptance
@@ -388,9 +405,15 @@ that needs the user.
 
 ## Deviation protocol
 
-When reality diverges from a writing dispatch:
+Stop when a conflict prevents the primary objective or requires an unowned change. Resolve an
+ancillary choice within the owned scope, record the choice, and continue.
 
-1. The writer stops and reports: expected, found, exact evidence, done or not done, and at most one
+Every charter references this section rather than restating it. A charter keeps only a stop
+condition its own route owns, such as a misrouted unit it must refuse.
+
+When a writer stops:
+
+1. The writer reports: expected, found, exact evidence, done or not done, and at most one
    short hypothesis. It does not investigate, improvise, or alter the plan.
 2. The Orchestrator triages:
    - obvious correction → tighten and re-dispatch;
@@ -432,12 +455,16 @@ The harness bridge names the concrete mechanism for each of these.
   unit's instruction and its outcome are one pair on disk.
 - Name, inside a report that rests on a bench lane, that lane's journal path and session id, so
   the provenance survives the journal's sweep.
-- Amend a brief on re-run rather than restating it. A mid-campaign correction produces a successor
-  file recording what changed and why, and the original stays. A fix round's brief names the
-  findings it carries and where each came from.
+- Re-run a unit with a successor brief, never with an edit to the brief it already ran. Name the
+  successor `<unit>-brief-<n>.md`, state in it what changed and why, and leave the original in place
+  unedited. A fix round's brief names the findings it carries and where each came from.
 - Name a corrected unit's effective brief and report and the pair they supersede before that unit
   integrates. A unit whose correction landed as a serial patch or a direct reconciliation, with no
   successor pair on disk, cannot be re-run from what the campaign kept.
+- Write an audit round's numbered claims to `tmp/audit/<unit>-audit-claims.md` and point every lane
+  of the round at that one file, so "both lanes ran the same brief" stays checkable after the round.
+  Retain it as `.orkestrel/<package>/<unit>-audit-claims.md`, beside the round's verdict.
+  `.agents/skills/orkestrel-falsify/references/brief.md` owns what the claims say.
 - Write the round's verdict to `.orkestrel/<package>/<unit>-audit-verdict.md`. That file is where
   the audit step records a lane or a checker that did not run.
 - Read the copy the executor will open, not the one you wrote. A brief written in the orchestrator's
@@ -446,6 +473,8 @@ The harness bridge names the concrete mechanism for each of these.
   staged copy whose facts are false stops a unit that was correctly briefed. Verify the staged path
   and its load-bearing facts before launching, and stage into a scratch directory the subject tree
   ignores rather than into the checkout root.
+- Before dispatching a successor or accepting a round, open every file the effective brief names
+  and confirm it resolves from the executor's root. Refuse the transition when one does not.
 - Send a decision taken mid-campaign to every unit already in flight whose brief it invalidates. An
   executor cannot see a change made after it was dispatched, so it writes the state its brief
   described and the defect surfaces as its own.
@@ -453,10 +482,14 @@ The harness bridge names the concrete mechanism for each of these.
   integration, fix, probe, or capture unit: copy the brief, the returned report or distillate, the
   audit verdict, the exact executed script or instrument, and the acceptance evidence into
   `.orkestrel/<package>/` as the unit is dispatched and as it returns, then sweep only the `tmp/`
-  launch copies. A capture claim's instrument is acceptance evidence; the frames may be swept once
-  the record transcribes them, because the committed instrument re-produces the film. The **Bench
-  laws** rule "Ephemeral streams, durable records" owns journals and points here for everything
-  durable.
+  launch copies. Rewrite every `tmp/` path inside a copied artifact to the retained path it now
+  names, in the same action that copies it. A retained file naming a launch copy resolves to
+  nothing after the sweep, and the successor, the claim list, and the staged authority always do.
+  Retention covers every lane of an audit round, including the lane whose brief produced a
+  deviation: a round with a retained report and no retained brief cannot be re-run. A capture
+  claim's instrument is acceptance evidence; the frames may be swept once the record transcribes
+  them, because the committed instrument re-produces the film. The **Bench laws** rule "Ephemeral
+  streams, durable records" owns journals and points here for everything durable.
 - Name a retained log with the `<unit>.log.txt` pattern, never with a bare `.log` suffix, which the
   root `.gitignore` file ignores.
 - Promote anything that must outlive the campaign into a durable artifact before the sweep — a
@@ -519,10 +552,9 @@ The harness bridge names the concrete mechanism for each of these.
   with **Bench laws** rule "Journal first" and refuse a bench result whose journal path and session
   id are absent.
 - **Output.** The exact distilled return shape. No process diary.
-- **Deviation contract.** The required stop-and-report behaviour for writers, scoped. A conflict
-  with the primary objective stops the unit. An ancillary conflict — where a paragraph sits, which
-  heading a section takes — is the executor's to decide, record, and carry on from. An unscoped
-  contract stops a unit over a detail it was equipped to settle.
+- **Deviation contract.** Point the writer at § Deviation protocol and scope it: name the ancillary
+  choices this unit settles itself — where a paragraph sits, which heading a section takes. An
+  unscoped contract stops a unit over a detail it was equipped to settle.
 - **Acceptance criteria.** Independently checkable completion conditions.
 - **Review evidence.** What the subject type requires, per the table in `orkestrel-falsify`. For a
   code change that is the actual diff and the actual status output; omitting either is a dispatch
@@ -533,8 +565,10 @@ The harness bridge names the concrete mechanism for each of these.
 
 ### Check the brief before you send it
 
-Fill `.agents/templates/brief.md`, which carries the named scope rows and the worked reason behind
-each check. Then run this checklist against what you filled.
+Fill `.agents/templates/brief.md`, keeping its section and row headings verbatim, so a row you
+cannot close is visible as a heading with a named unknown under it rather than as an absence nobody
+can see. Add a section the unit needs; never drop one. Then run this checklist against what you
+filled.
 
 - Name the executor that will open the brief, and write the transport for that reader. A bridge
   driver and the bench engine inside that driver's CLI need opposite instructions.
@@ -629,9 +663,9 @@ command that outlives the turn that started it. Every law here binds all of them
   launch whose tail is the evidence.
 - Keep network-dependent work out of sandboxed bench execs. Bench sandboxes deny network, so
   lockfile generation, real installs, and live fetches belong to the Orchestrator's own tracked
-  commands or to the native `implementer` or `builder` as an ordinary dispatched writing unit. A
-  bench exec hanging on `npm` until its cap fires is the signature of this misroute, not of a slow
-  bench.
+  commands or to whichever of `sol`, `opus`, and `builder` runs natively in the harness, as an
+  ordinary dispatched writing unit. A bench exec hanging on `npm` until its cap fires is the
+  signature of this misroute, not of a slow bench.
 - A Workflow journals identically and dies identically, so give it the same watch — with one
   correction. A workflow journal writes only at agent start and result, so its mtime goes quiet for
   minutes during healthy work, and the liveness signal is the newest subagent transcript instead. A
@@ -743,7 +777,7 @@ transport.
    child. It fails as a **false green**. The stage never arms, the boot inspection times out, and that
    timeout produces the same rejection a genuine stage timeout produces, so a test asserting on the
    message passes inside the bench while the host's gate reports the honest red — and neither run
-   reports why they disagree. Route such a subject to the harness's native implementer, or keep it on
+   reports why they disagree. Route such a subject to the harness's native writing lane, or keep it on
    the bench and supply every executed measurement yourself. Never dispatch it to a bench and expect
    it to prove its own work. The shape to recognise is a child that exits 0 almost immediately, a
    request to it that never resolves, and a stack landing in the spawning code's exit handler.

@@ -26,14 +26,21 @@ command for the `claude` CLI, so the Orchestrator can put it to the user in the 
 it records the bench dark and re-probe when the user answers. Never install, authenticate,
 or substitute an API key, access token, or copied auth file.
 
-Journal every run: redirect --output-format stream-json to tmp/claude/<unit>.jsonl,
-which is gitignored, and record the session id. A bench unit with no journal ran on its
-driver's engine, however normal its answer reads.
+Journal every run: the resolved command redirects `--output-format stream-json` to
+`tmp/claude/<unit>.jsonl`, which is gitignored. Whoever launches the run records the session
+id from that journal. A bench unit with no journal ran on its driver's engine, however normal
+its answer reads.
 
-Briefs never travel as shell arguments. Write the brief to tmp/claude/<unit>-brief.md
-and pass a pointer to it.
+Briefs never travel as shell arguments. The brief lives at `tmp/claude/<unit>-brief.md` and
+the command passes a pointer to it.
 
-Long work is not launched by this bridge. Return the brief path, the exact resolved
+A driver pinned `workspace-write` writes that brief itself. A driver pinned `read-only` writes
+nothing at all — not the brief, not the journal, not a report: return the brief text, its
+intended path, the resolved command, and the journal path, and the Orchestrator writes the
+brief and launches the run. Check your own pinned sandbox before drafting, and take the branch
+that matches it.
+
+Long work is not launched by this bridge. Return the brief path or text, the exact resolved
 command, and the journal path, and let the Orchestrator launch it under a cap it owns.
 Never recommend a cap; you hold no record of prior runs. Never detach, poll, restart,
 or kill a run.

@@ -22,9 +22,13 @@ established list is hearsay will re-derive all of it.
 dispatch deviation. For any claim about a rendered or externally driven surface, the capture is the
 evidence and source is corroboration.
 
-**Numbered falsifiable claims.** Each is a property some concrete input, state, or interleaving
-could show false. Assign the primary lane where auditors differ in strength, but do not let an
-auditor skip a claim because it assumes the other covers it better. The claim set is the round's
+**Numbered falsifiable claims.** Write them to one file both lanes are pointed at,
+`tmp/audit/<unit>-audit-claims.md`, retained beside the round's verdict. One file is what makes
+"both lanes ran the same brief" checkable after the round, and each lane's own brief then carries
+only its role, its lane, its evidence slice, and its output shape. Each claim is a property some
+concrete input, state, or interleaving could show false. Assign the primary lane where auditors
+differ in strength, but do not let an auditor skip a claim because it assumes the other covers it
+better. The claim set is the round's
 scope: write it to cover what the subject owns, then hold it closed. An attack the round invents
 against something no claim names enters the verdict only when it is substantiated to the `BROKEN`
 standard; otherwise it is a claim for the successor brief, not a finding.
@@ -36,10 +40,11 @@ an executor inventing an answer and building on it silently.
 **The threshold.** State that a finding is worth more than a clean pass, and why: the alternative is
 a consumer finding it after publication, when the version is already spent.
 
-## The read-only audit lane's brief
+## The audit lane's brief
 
-An audit lane writes nothing and runs nothing, so its brief carries fewer rows than a writing
-unit's. Give a lane every row § Anatomy names — the subject with the evidence
+An audit lane changes no source, so its brief carries fewer rows than a writing unit's. `SKILL.md`
+§ "Run the round" fixes what a lane can execute; read it there before deciding which rows a lane
+can use. Give a lane every row § Anatomy names — the subject with the evidence
 § "Evidence, by subject type" requires of each row it occupies, what the round decides, already
 established, the numbered falsifiable claims, the unknowns, and the threshold — plus its own
 **Role and lane** row (the role, its engine, and which lane it holds) and **Output** row (the
@@ -53,8 +58,11 @@ report.
 
 ## The successor rule
 
-A re-run **amends**; it never restates. Rewriting a brief from scratch loses the shape of what has
-already been attacked, and the round re-derives it at full cost.
+A re-run takes a **successor brief** that carries the previous round forward. It never restates the
+round from scratch and never edits the brief that already ran; `.agents/orchestration.md`
+§ "Every dispatch is a file before it is a launch" fixes the successor's name and its retention.
+Rewriting a brief from scratch loses the shape of what has already been attacked, and the round
+re-derives it at full cost.
 
 A successor brief:
 

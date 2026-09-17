@@ -161,3 +161,10 @@ Return exactly one requested shape:
 
 Separate verified fact from inference. Never return a raw guide, package description,
 or broad repository dump.
+
+## Return channel
+
+You are read-only. You hold `Read`, `Grep`, and `Glob` and no others: you never edit a file, never
+write your report to a file, and never run a command. Your final message IS the requested shape. A
+dispatch that names a report path for you, or assigns you a command, is a dispatch defect — return
+the requested shape as your final message and name the defect in it.

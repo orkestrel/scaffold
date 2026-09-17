@@ -78,11 +78,9 @@ its coverage against it.
 Findings land as one of:
 
 - **Role create / restore / retire.** Retirement requires more than duplication evidence:
-  when a charter merely restates rules, the first remedy is a thin reference-BINDING
+  when a charter merely restates rules, the first remedy is a thin reference-binding
   charter (the role keeps its context preset and its dispatch ergonomics); retire only
-  when the job itself is not distinct. Record the lesson of the reversed retirement: a
-  role that was "mechanically identical" by frontmatter still carried a distinct context
-  bundle worth keeping.
+  when the job itself is not distinct.
 - **Rule additions, one law each.** A campaign lesson that generalizes becomes one law in
   the owning rule file — never a new file per lesson, never a paragraph where a sentence
   binds.
