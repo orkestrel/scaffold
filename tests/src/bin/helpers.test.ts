@@ -737,6 +737,26 @@ describe('scriptToInvocations', () => {
 		})
 	})
 
+	it('reads configuration shorthand in command order beside long options', () => {
+		expect(
+			scriptToInvocations(
+				'vitest run --config configs/start.ts -c "configs/journey path.ts" --config=configs/end.ts',
+			),
+		).toStrictEqual({
+			projects: [],
+			configs: ['configs/start.ts', 'configs/journey path.ts', 'configs/end.ts'],
+			scripts: [],
+		})
+	})
+
+	it('refuses configuration shorthand whose value a shell expansion decides', () => {
+		expect(scriptToInvocations('vitest run -c $CONFIG')).toBeUndefined()
+	})
+
+	it('refuses dangling configuration shorthand', () => {
+		expect(scriptToInvocations('vitest run -c')).toBeUndefined()
+	})
+
 	it('reads every npm run script and reads through quotes', () => {
 		expect(scriptToInvocations('npm run build && npm run "test:src"')).toStrictEqual({
 			projects: [],

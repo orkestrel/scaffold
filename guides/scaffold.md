@@ -649,12 +649,13 @@ package before a publish lifecycle script runs, so crediting it would report a d
 one. Generated integration runs from `test`. One shell-token pass reads quoted and unquoted
 `--project value` and `--project=value` forms and follows literal `npm run` calls. A shell expansion
 or malformed quote that prevents a project or script name from being resolved statically produces a
-question instead of licensing a write. The classifier is deliberately bounded to manifest script
-text that names `vitest`; an external wrapper whose name does not identify its runner supplies no
-static Vitest fact to infer.
+question instead of licensing a write. The absent-project and absent-configuration checks read
+only manifest script text that names `vitest`; the configuration check also requires a `test:*`
+script name. An external wrapper whose text does not name `vitest` supplies no static Vitest fact
+to infer for these checks.
 
-The invocation reader also reads literal `--config <path>` and `--config=<path>` values in command
-order. A configuration value containing an unresolved shell expansion makes the whole reading
+The invocation reader also reads literal `-c <path>`, `--config <path>`, and `--config=<path>` values
+in command order. A configuration value containing an unresolved shell expansion makes the whole reading
 `undefined`. The executable keeps this contract in its own modules:
 
 | Declaration           | Summary                                                                                            |
@@ -662,16 +663,19 @@ order. A configuration value containing an unresolved shell expansion makes the 
 | `ScriptInvocations`   | Lists the literal Vitest projects, configuration paths, and npm run scripts a shell command names. |
 | `scriptToInvocations` | Reads the literal Vitest projects, configuration paths, and npm run scripts a shell command names. |
 
-When a `test:*` script names a configuration that the plan does not emit and the target does not
-hold, the non-blocking `projects` question names the script and configuration path. When the plan
-emits `test:journey` and the manifest's `test` chain omits `npm run test:journey`, that question
-asks you to insert the invocation after `npm run test:app`. These advisories belong to `configs`
+When a `test:*` script whose text names `vitest` names a configuration that the plan does not emit
+and the target does not hold, the non-blocking `projects` question names the script and configuration
+path. Its remedy asks you to add the configuration, or remove the script that names it and its
+invocation from the `test` chain. When the plan emits `test:journey` and no chain from `test` reaches
+`npm run test:journey` through literal `npm run` calls, that question asks you to insert the invocation
+after `npm run test:app`. These advisories belong to `configs`
 and remain report-only during `repair`: the command preserves the `test` chain and an unplanned
 script. A configuration emitted by the plan or present in the target does not raise the absent
 configuration advisory.
 
 `audit` still completes the comparison and reports one non-blocking `projects` question when its
-selection includes `configs`. A scoped audit that excludes `configs` omits that question. For a
+selection includes `configs`. It reports the earliest of the facts it finds; settling that fact and
+re-running surfaces the next. A scoped audit that excludes `configs` omits that question. For a
 literal absent project, its advisory tells the developer to register the project or remove the
 script. For a planned project absent from the gate chains, the advisory reads the manifest after a
 writable script projection. The `scripts` question owns an absent direct `test:<project>` line. The

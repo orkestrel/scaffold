@@ -760,7 +760,8 @@ export function releasesToPins(
  * @remarks
  * Quotes group a token but do not hide the option, while shell expansions make
  * its value unresolved and therefore refuse the write that asked the question.
- * An unterminated quote, a trailing escape, and an unresolved `--project` or `--config` value
+ * Configuration paths use `-c <path>`, `--config <path>`, or `--config=<path>`.
+ * An unterminated quote, a trailing escape, and an unresolved `--project`, `--config`, or `-c` value
  * all answer `undefined` rather than a partial reading.
  *
  * @example
@@ -855,7 +856,7 @@ export function scriptToInvocations(script: string): ScriptInvocations | undefin
 			index += 2
 			continue
 		}
-		if (token.value === '--project' || token.value === '--config') {
+		if (token.value === '--project' || token.value === '--config' || token.value === '-c') {
 			const project = tokens[index + 1]
 			if (
 				project === undefined ||

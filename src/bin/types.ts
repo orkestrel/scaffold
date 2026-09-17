@@ -230,10 +230,11 @@ export interface VersionResolution {
  * @remarks
  * Literal only: a token whose value a shell expansion decides is unresolved, so
  * the whole reading answers `undefined` rather than reporting a name it guessed.
+ * Configuration paths use `-c <path>`, `--config <path>`, or `--config=<path>`.
  */
 export interface ScriptInvocations {
 	readonly projects: readonly string[]
-	/** Lists literal --config values in command order, empty when none are named. */
+	/** Lists literal configuration values in command order, empty when none are named. */
 	readonly configs: readonly string[]
 	readonly scripts: readonly string[]
 }

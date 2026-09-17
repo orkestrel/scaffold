@@ -1738,10 +1738,97 @@ describe('CLI audit', () => {
 				expect(audit.questions).toContainEqual({
 					field: 'projects',
 					blocking: false,
-					message: `The manifest at ${target} names a Vitest configuration the plan does not emit and the target does not hold: test:journey --config configs/app/vite.journey.config.ts. Add the configuration or remove the script that names it.`,
+					message: `The manifest at ${target} names a Vitest configuration the plan does not emit and the target does not hold: test:journey --config configs/app/vite.journey.config.ts. Add the configuration, or remove the script that names it and its invocation from the test chain.`,
 				})
 				expect(workspace.read('fresh/package.json')).toBe(manifest)
 			}
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('accepts a journey invocation reached through a grouped test script', async () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const fleet = createFleet(workspace)
+			const target = workspace.ensure('fresh')
+			expect(
+				await new CLI(createSink().options).execute([
+					'new',
+					'sample',
+					'--app',
+					'browser',
+					'--offline',
+					'--from',
+					fleet.host,
+					'--target',
+					target,
+				]),
+			).toBe(EXIT_CLEAN)
+			const manifest = requireValue(workspace.read('fresh/package.json'))
+				.replace(' && npm run test:journey', ' && npm run test:gui')
+				.replace('"scripts": {', '"scripts": {\n\t\t"test:gui": "npm run test:journey",')
+			workspace.write('fresh/package.json', manifest)
+			const sink = createSink()
+			expect(
+				await new CLI(sink.options).execute([
+					'audit',
+					'--offline',
+					'--from',
+					fleet.host,
+					'--target',
+					target,
+					'--groups',
+					'configs',
+					'--json',
+				]),
+			).toBe(EXIT_CLEAN)
+			const result: Audit = JSON.parse(sink.output[0] ?? '')
+			expect(result.questions.filter((question) => question.field === 'projects')).toStrictEqual([])
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('ignores a Playwright configuration in a browser target', async () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const fleet = createFleet(workspace)
+			const target = workspace.ensure('fresh')
+			expect(
+				await new CLI(createSink().options).execute([
+					'new',
+					'sample',
+					'--app',
+					'browser',
+					'--offline',
+					'--from',
+					fleet.host,
+					'--target',
+					target,
+				]),
+			).toBe(EXIT_CLEAN)
+			const manifest = requireValue(workspace.read('fresh/package.json')).replace(
+				'"scripts": {',
+				'"scripts": {\n\t\t"test:e2e": "playwright test --config playwright.config.ts",',
+			)
+			workspace.write('fresh/package.json', manifest)
+			const sink = createSink()
+			expect(
+				await new CLI(sink.options).execute([
+					'audit',
+					'--offline',
+					'--from',
+					fleet.host,
+					'--target',
+					target,
+					'--groups',
+					'configs',
+					'--json',
+				]),
+			).toBe(EXIT_CLEAN)
+			const result: Audit = JSON.parse(sink.output[0] ?? '')
+			expect(result.questions.filter((question) => question.field === 'projects')).toStrictEqual([])
 		} finally {
 			workspace.destroy()
 		}

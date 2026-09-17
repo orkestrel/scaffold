@@ -1056,7 +1056,7 @@ export class CLI implements CLIInterface {
 			)
 			const configurations: string[] = []
 			for (const [name, script] of Object.entries(scripts)) {
-				if (!name.startsWith('test:') || !isString(script)) continue
+				if (!name.startsWith('test:') || !isString(script) || !script.includes('vitest')) continue
 				const invoked = scriptToInvocations(script)
 				if (invoked === undefined) continue
 				for (const config of invoked.configs) {
@@ -1068,7 +1068,7 @@ export class CLI implements CLIInterface {
 			if (configurations.length > 0) {
 				return {
 					field: 'projects',
-					message: `The manifest at ${target} names a Vitest configuration the plan does not emit and the target does not hold: ${configurations.join(', ')}. Add the configuration or remove the script that names it.`,
+					message: `The manifest at ${target} names a Vitest configuration the plan does not emit and the target does not hold: ${configurations.join(', ')}. Add the configuration, or remove the script that names it and its invocation from the test chain.`,
 					blocking: false,
 					groups: ['configs'],
 				}
@@ -1091,22 +1091,26 @@ export class CLI implements CLIInterface {
 		}
 
 		const reachable = new Set<string>()
-		const visited = new Set<string>()
-		const pending = [...gates]
-		while (pending.length > 0) {
-			const name = pending.shift()
-			if (name === undefined || visited.has(name)) continue
-			visited.add(name)
-			const script = scripts[name]
-			if (!isString(script)) continue
-			const invoked = scriptToInvocations(script)
-			if (invoked === undefined) {
-				unresolved = true
-				continue
-			}
-			for (const project of invoked.projects) reachable.add(project)
-			for (const called of invoked.scripts) {
-				if (!visited.has(called)) pending.push(called)
+		const chains = new Map<string, Set<string>>()
+		for (const gate of gates) {
+			const visited = new Set<string>()
+			chains.set(gate, visited)
+			const pending = [gate]
+			while (pending.length > 0) {
+				const name = pending.shift()
+				if (name === undefined || visited.has(name)) continue
+				visited.add(name)
+				const script = scripts[name]
+				if (!isString(script)) continue
+				const invoked = scriptToInvocations(script)
+				if (invoked === undefined) {
+					unresolved = true
+					continue
+				}
+				for (const project of invoked.projects) reachable.add(project)
+				for (const called of invoked.scripts) {
+					if (!visited.has(called)) pending.push(called)
+				}
 			}
 		}
 		if (unresolved) {
@@ -1125,8 +1129,7 @@ export class CLI implements CLIInterface {
 			if (
 				!writing &&
 				expected['test:journey'] !== undefined &&
-				(!isString(scripts.test) ||
-					!scriptToInvocations(scripts.test)?.scripts.includes('test:journey'))
+				!chains.get('test')?.has('test:journey')
 			) {
 				return {
 					field: 'projects',

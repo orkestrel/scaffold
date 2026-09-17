@@ -659,8 +659,9 @@ describe('the parsed specifier reader', () => {
 		])
 	})
 
-	it('omits a require member expression from the specifier reading', () => {
+	it('omits member-expression calls from the specifier reading', () => {
 		expect(readSpecifiers("require.resolve('pkg')\n", 'member.cts')).toStrictEqual([])
+		expect(readSpecifiers("import.meta.resolve('pkg')\n", 'member.mts')).toStrictEqual([])
 		expect(readSpecifiers("require('pkg')\n", 'direct.cts')).toStrictEqual(['pkg'])
 	})
 

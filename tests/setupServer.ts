@@ -1529,7 +1529,7 @@ export function readStatements(source: string, name: string): readonly TestState
  * other argument reports `undefined`, because an argument assembled at runtime
  * names no module a caller can rule on. The reading omits an `import()` in type
  * position (`TSImportType`), a load through a binding some other name holds, and
- * a `require` reached through a member expression such as `require.resolve`.
+ * a member-expression call such as `require.resolve` or `import.meta.resolve`.
  *
  * @example
  * ```ts
