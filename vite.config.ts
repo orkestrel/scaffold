@@ -241,6 +241,7 @@ export function setup(override?: UserConfig): UserConfig {
 		test: {
 			name: { label: 'setup', color: 'white' },
 			include: ['tests/setup*.test.ts'],
+			exclude: ['tests/setupBrowser.test.ts'],
 			setupFiles: ['./tests/setup.ts'],
 			environment: 'node',
 			browser: { enabled: false },

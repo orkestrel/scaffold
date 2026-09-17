@@ -1603,6 +1603,7 @@ describe('CLI audit', () => {
 		try {
 			const fleet = createFleet(workspace)
 			workspace.ensure('target/app/browser')
+			const preserved: string[] = []
 			for (const state of ['absent', 'wrong', 'node', 'browser', 'present']) {
 				workspace.remove('target/tests')
 				workspace.remove('target/configs/app')
@@ -1624,22 +1625,38 @@ describe('CLI audit', () => {
 					src: ['core'],
 					app: ['browser'],
 					journey: state === 'present',
-					setup: state === 'present' ? ['node', 'browser'] : state === 'node' ? ['node'] : state === 'browser' ? ['browser'] : [],
+					setup:
+						state === 'present'
+							? ['node', 'browser']
+							: state === 'node'
+								? ['node']
+								: state === 'browser'
+									? ['browser']
+									: [],
 				})
 				workspace.write('target/package.json', buildTargetManifest(blueprint))
 				const sink = createSink()
 				const exit = await new CLI({ ...REGISTRY_OPTIONS, ...sink.options }).execute([
-					'repair', '--groups', 'configs', '--from', fleet.host, '--target', fleet.target,
+					'repair',
+					'--groups',
+					'configs',
+					'--from',
+					fleet.host,
+					'--target',
+					fleet.target,
 				])
 				expect(exit, `${state}: ${sink.diagnostic.join('\n')}`).toBe(EXIT_CLEAN)
 				const root = requireValue(workspace.read('target/vite.config.ts'))
 				expect(root.includes('export function appJourney(')).toBe(state === 'present')
 				expect(root.includes("label: 'setup'")).toBe(state === 'node' || state === 'present')
-				expect(root.includes("label: 'setup:browser'")).toBe(state === 'browser' || state === 'present')
+				expect(root.includes("label: 'setup:browser'")).toBe(
+					state === 'browser' || state === 'present',
+				)
 				if (state === 'present') {
-					expect(workspace.read('target/configs/app/vite.journey.config.ts')).toBe('// adopter variants\n')
+					preserved.push(requireValue(workspace.read('target/configs/app/vite.journey.config.ts')))
 				}
 			}
+			expect(preserved).toStrictEqual(['// adopter variants\n'])
 		} finally {
 			workspace.destroy()
 		}

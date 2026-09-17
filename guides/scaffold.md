@@ -70,6 +70,7 @@ Exported from `@orkestrel/scaffold`, and reachable from
 | `Ownership`         | type | Names what scaffold claims at an artifact's path.                                                           |
 | `Release`           | type | Represents one declared dependency range measured against a registry release.                               |
 | `ScaffoldErrorCode` | type | Names the coded reasons a scaffold error is raised.                                                         |
+| `SetupRuntime`      | type | Names the runtime a root setup proof requires.                                                              |
 | `Snapshot`          | type | Holds exact lowercase hexadecimal target bytes keyed by artifact-relative path.                             |
 
 #### Interfaces
@@ -138,6 +139,7 @@ Exported from `@orkestrel/scaffold`, and reachable from
 | `HOST_PATHS`                      | const | Lists the paths a target receives from the vendored data root, frozen.                                 |
 | `INTEGRATION_TEST_PATH`           | const | Names the cross-environment composition proof whose presence makes a workspace `integration`.          |
 | `INVALID_PATH_CHARACTER_PATTERN`  | const | Matches the visible characters a target-relative path and a Markdown path cell both forbid.            |
+| `JOURNEY_CONFIG_PATH`             | const | Names the Vite wrapper whose presence makes a workspace `journey`.                                     |
 | `MANIFEST_PATH`                   | const | Names the manifest path every compiler plan emits with birth ownership.                                |
 | `MAX_ARTIFACT_BYTES`              | const | Caps the bytes accepted for one artifact.                                                              |
 | `MAX_ARTIFACT_HEX_LENGTH`         | const | Caps the length of the hexadecimal string carrying one artifact's bytes.                               |
@@ -591,7 +593,8 @@ answers a read and grant no verb write authority that it did not already have.
 other structural facts do not need creation flags. Add a root `tests/setup*.test.ts` proof for
 `setup`, `tests/guides.test.ts` for `guides`, `tests/integration.test.ts` for `integration`,
 `tests/conformance.test.ts` for `conformance`, `tests/setupService.ts` for `service`,
-`tests/setupGlobal.ts` for `global`, and `configs/app/vite.showcase.config.ts` for `showcase`;
+`tests/setupGlobal.ts` for `global`, `configs/app/vite.showcase.config.ts` for `showcase`, and
+`configs/app/vite.journey.config.ts` for `journey`;
 reading verbs detect each exact-case file and register its fixed machinery. An explicitly supplied
 plan with `vendors` owns and protects the birth-owned `scripts/service.sh` inventory skeleton.
 Reading verbs do not infer its vendor list from edited text and cannot preserve an arbitrary present
@@ -610,7 +613,8 @@ beside it could disagree. The remaining facts come from exact-case files: `src/b
 `bin`, each root `tests/setup*.test.ts` match selects `setup`, `tests/guides.test.ts` selects
 `guides`, `tests/integration.test.ts` selects `integration`, `tests/conformance.test.ts` selects
 `conformance`, `tests/setupService.ts` selects `service`, `tests/setupGlobal.ts` selects `global`,
-and `configs/app/vite.showcase.config.ts` selects `showcase`. A containing directory does not select
+`configs/app/vite.showcase.config.ts` selects `showcase`, and
+`configs/app/vite.journey.config.ts` selects `journey`. A containing directory does not select
 the fact by itself. `tests/distribution.test.ts` selects nothing: the published `src` axis the
 target ships already decides the `distribution` project, and the file is planned from that.
 
@@ -876,14 +880,21 @@ because the shape is chosen once and read afterwards: `new` refuses the advisory
 `repair` need the plan to describe and restore a target that already has that shape. A library
 caller creating a workspace holds the same refusal, and the Compile section states it.
 
-`bin`, `setup`, `guides`, `integration`, `conformance`, `service`, `vendors`, `global`, and
-`showcase` are structural facts. Each is set only when the workspace physically ships the directory
+`bin`, `setup`, `guides`, `integration`, `conformance`, `service`, `vendors`, `global`, `showcase`,
+and `journey` are structural facts. Each is set only when the workspace physically ships the directory
 or exact-case file that defines it, never because of the workspace's name and never because a
 sibling fact is set.
 
-`setup` registers every root `tests/setup*.test.ts` proof in one Node project that loads
-`tests/setup.ts`. A nested or wrong-case match does not set the fact. The generated manifest emits
-`test:setup` and invokes it from `test` only while the fact is set.
+The `setup` member is a `readonly SetupRuntime[]`, empty by default. Target inference adds
+`browser` for the exact-case `tests/setupBrowser.test.ts` proof and `node` for every other root
+`tests/setup*.test.ts` match, including `tests/setup.test.ts` and `tests/setupServer.test.ts`.
+A nested or wrong-case match adds no runtime.
+
+The `node` runtime registers the Node `setup` project, which loads `tests/setup.ts` and excludes
+`tests/setupBrowser.test.ts`. The `browser` runtime registers `setup:browser`, which collects
+only that browser proof and loads `tests/setup.ts` and `tests/setupBrowser.ts` through Playwright
+Chromium. The generated manifest emits the selected `test:setup` and `test:setup:browser` scripts
+and invokes them from `test`. Scaffold generates no setup proof for an empty setup seed.
 
 A structural fact is read when a verb runs, not when the file appears. Writing
 `tests/integration.test.ts` into a workspace sets the fact, but the root configuration on disk was
@@ -926,6 +937,30 @@ rather than withholding it.
 `showcase` projects only when the browser `app` environment exists. Without that axis the flag adds
 no artifact, configuration, script, or dependency, and the gate reports a non-blocking question on
 that field so the caller who set it learns it emitted nothing.
+
+The `journey` flag defaults to `false` and also requires a browser application. Without that
+application, it emits no journey configuration or script and raises a non-blocking `journey`
+question. With that application, the content-owned root configuration defines
+`appJourney(variant, variants)` and excludes `tests/app/browser/integration.test.ts` from the
+ordinary `app:browser` project.
+
+Edit the variant list in `configs/app/vite.journey.config.ts`. This wrapper is birth-owned:
+scaffold creates it when absent and preserves your edits during `repair`. It imports
+`JourneyVariant` from `@orkestrel/test`, declares `readonly JourneyVariant[]`, and seeds `desktop`
+at 1280 × 800 and `compact` at 390 × 844 without a theme. Rename and extend those variants for
+your application; apply themes through the application's interface in your tests.
+
+The wrapper registers `journey:<name>` for each variant through the root factory. Each project
+collects the browser integration suite alone, sets the variant viewport, and provides `variant`
+as its name, `variants` as the declared list, and `capture` as a boolean. The root configuration
+reads `process.env.CAPTURE === '1'` for that boolean. The generated `test:journey` script runs
+`vitest run --config configs/app/vite.journey.config.ts --no-cache --reporter=dot`, and the generated
+`test` chain runs it after the application projects. With the journey axis off, the ordinary
+browser project retains its integration suite.
+
+The generated browser resolver and gate cover Chromium alone. Reopen that limit when another
+Playwright engine is installed and launches on the host with a `captureFrame` reading at the
+declared size, or when a journey or style divergence is recorded.
 
 `createBlueprint` enforces shape only. Whether the name is a name, the version a version, and the
 axis combination one this package can generate are the gate's laws, and the gate answers them with
@@ -1610,7 +1645,8 @@ except the manifest.
   bare specifier, because `vite.config.ts` derives its `alias` record from these entries in order and
   a bare specifier also matches its own subpaths. An `app` environment publishes nothing and maps no
   such entry.
-- One template artifact, `configs/browsers.ts`, for a workspace selecting `browser` on either axis.
+- One template artifact, `configs/browsers.ts`, for a workspace selecting `browser` on either
+  environment axis or in its setup runtime list.
   It resolves the Chromium the Playwright provider launches, and the root `vite.config.ts` calls it
   once into `browserOptions` and passes that to every `playwright()` provider it configures. The
   precedence is `PLAYWRIGHT_EXECUTABLE_PATH`, `PLAYWRIGHT_WS_ENDPOINT`, `PLAYWRIGHT_CHANNEL`, the

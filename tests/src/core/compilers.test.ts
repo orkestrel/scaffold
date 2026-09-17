@@ -916,14 +916,20 @@ describe('blueprintToScripts config projects', () => {
 			({ path }) => path === 'configs/app/vite.journey.config.ts',
 		)
 		expect(wrapper?.ownership).toBe('birth')
-		expect(wrapper?.content).toContain('VARIANTS.map((variant) => () => appJourney(variant, VARIANTS))')
+		expect(wrapper?.content).toContain(
+			'VARIANTS.map((variant) => () => appJourney(variant, VARIANTS))',
+		)
 		expect(blueprintToRootVite(enabled)).toContain('export function appJourney(')
-		expect(blueprintToRootVite(enabled)).toContain("exclude: ['tests/app/browser/integration.test.ts']")
+		expect(blueprintToRootVite(enabled)).toContain(
+			"exclude: ['tests/app/browser/integration.test.ts']",
+		)
 		expect(blueprintToScripts(enabled)['test:journey']).toBe(
 			'vitest run --config configs/app/vite.journey.config.ts --no-cache --reporter=dot',
 		)
 		expect(blueprintToScripts(enabled).test).toContain('npm run test:app && npm run test:journey')
-		expect(blueprintToConfigArtifacts(disabled).map(({ path }) => path)).not.toContain(wrapper?.path)
+		expect(blueprintToConfigArtifacts(disabled).map(({ path }) => path)).not.toContain(
+			wrapper?.path,
+		)
 		expect(blueprintToRootVite(disabled)).not.toContain('appJourney')
 		expect(blueprintToRootVite(disabled)).not.toContain('tests/app/browser/integration.test.ts')
 		expect(blueprintToRootVite(disabled)).toContain("include: ['tests/app/browser/**/*.test.ts']")
@@ -935,7 +941,8 @@ describe('blueprintToScripts config projects', () => {
 		const blueprint = buildBlueprint({ src: ['core'], journey: true })
 		expect(blueprintToQuestions(blueprint)).toContainEqual({
 			field: 'journey',
-			message: 'journey projects a browser app, and this workspace declares none, so it emits nothing.',
+			message:
+				'journey projects a browser app, and this workspace declares none, so it emits nothing.',
 			blocking: false,
 		})
 		expect(blueprintToConfigArtifacts(blueprint).map(({ path }) => path)).not.toContain(
@@ -951,11 +958,17 @@ describe('blueprintToScripts config projects', () => {
 		expect(root).toContain("label: 'setup:browser'")
 		expect(root).toContain("include: ['tests/setupBrowser.test.ts']")
 		expect(root).toContain("exclude: ['tests/setupBrowser.test.ts']")
-		expect(root).toMatch(/function setupBrowser[\s\S]*?setupFiles: \['\.\/tests\/setup.ts', '\.\/tests\/setupBrowser.ts'\][\s\S]*?enabled: true/u)
+		expect(root).toMatch(
+			/function setupBrowser[\s\S]*?setupFiles: \['\.\/tests\/setup.ts', '\.\/tests\/setupBrowser.ts'\][\s\S]*?enabled: true/u,
+		)
 		expect(root).toMatch(/function setupBrowser[\s\S]*?provider: playwright\(browserOptions\)/u)
 		expect(blueprintToScripts(blueprint)['test:setup:browser']).toContain('--project setup:browser')
-		expect(blueprintToScripts(blueprint).test).toContain('npm run test:setup && npm run test:setup:browser')
-		expect(blueprintToTestArtifacts(blueprint).map(({ path }) => path)).not.toContain('tests/setupBrowser.test.ts')
+		expect(blueprintToScripts(blueprint).test).toContain(
+			'npm run test:setup && npm run test:setup:browser',
+		)
+		expect(blueprintToTestArtifacts(blueprint).map(({ path }) => path)).not.toContain(
+			'tests/setupBrowser.test.ts',
+		)
 		const node = buildBlueprint({ setup: ['node'] })
 		expect(blueprintToRootVite(node)).not.toContain('function setupBrowser')
 		expect(blueprintToScripts(node)).not.toHaveProperty('test:setup:browser')

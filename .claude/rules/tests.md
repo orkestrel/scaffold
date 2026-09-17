@@ -59,9 +59,11 @@ its own:
 | `tests/setup*.test.ts`       | Reusable behavior exported from sibling `tests/setup*.ts` modules works as the workspace's suites require                                                                                    |
 | `tests/service/**/*.test.ts` | The live external services this package drives, driven for real                                                                                                                              |
 
-- Put each root `tests/setup*.test.ts` proof in the `setup` project. Keep its assertions on
-  exported test-infrastructure behavior: do not duplicate production behavior there, and do not
-  move setup-helper assertions into another cross-cutting proof.
+- Put `tests/setupBrowser.test.ts` in the browser-enabled `setup:browser` project. Put every
+  other root `tests/setup*.test.ts` proof in the Node `setup` project, and exclude the browser
+  proof from that project. Keep each proof's assertions on exported test-infrastructure behavior:
+  do not duplicate production behavior there, and do not move setup-helper assertions into another
+  cross-cutting proof.
 - `.claude/rules/workspace.md` names the Vitest project each location belongs to.
 - The `guides` project runs in Node with the browser disabled. Its subject is what the guide
   claims: that every documented name resolves, and that every fence asserting a value returns

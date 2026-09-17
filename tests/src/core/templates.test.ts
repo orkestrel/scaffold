@@ -1078,7 +1078,11 @@ describe('emitted workspaces under their own gates', () => {
 	it('typechecks journey variants and leaves an ordinary browser selection unchanged', () => {
 		const workspace = createScratch({ parent: ensureTmpRoot(), prefix: 'scaffold-journey-' })
 		try {
-			stageRootConfig(createBlueprint('sample', { app: ['browser'], journey: true }), workspace, 'journey')
+			stageRootConfig(
+				createBlueprint('sample', { app: ['browser'], journey: true }),
+				workspace,
+				'journey',
+			)
 			stageRootConfig(createBlueprint('sample', { app: ['browser'] }), workspace, 'ordinary')
 			const root = requireValue(workspace.read('journey/vite.config.ts'))
 			const wrapper = requireValue(workspace.read('journey/configs/app/vite.journey.config.ts'))
@@ -1096,8 +1100,13 @@ describe('emitted workspaces under their own gates', () => {
 			expect(checkTypes(workspace.ensure('ordinary'))).toBe('')
 			expect(workspace.read('ordinary/vite.config.ts')).not.toContain('journey')
 			expect(workspace.has('ordinary/configs/app/vite.journey.config.ts')).toBe(false)
-			workspace.write('journey/configs/app/vite.journey.config.ts', wrapper.replace('width: 1280', "width: 'wide'"))
-			expect(checkTypes(workspace.ensure('journey'))).toContain("Type 'string' is not assignable to type 'number'")
+			workspace.write(
+				'journey/configs/app/vite.journey.config.ts',
+				wrapper.replace('width: 1280', "width: 'wide'"),
+			)
+			expect(checkTypes(workspace.ensure('journey'))).toContain(
+				"Type 'string' is not assignable to type 'number'",
+			)
 		} finally {
 			workspace.destroy()
 		}

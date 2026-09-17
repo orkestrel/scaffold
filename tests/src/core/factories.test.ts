@@ -20,6 +20,7 @@ describe('createBlueprint defaults', () => {
 		expect(blueprint.keywords).toStrictEqual([])
 		expect(blueprint.src).toStrictEqual([])
 		expect(blueprint.app).toStrictEqual([])
+		expect(blueprint.setup).toStrictEqual([])
 		expect(blueprint.dependencies).toStrictEqual([])
 		expect(blueprint.peers).toStrictEqual([])
 		expect(blueprint.extras).toStrictEqual([])
@@ -30,13 +31,13 @@ describe('createBlueprint defaults', () => {
 	it('clears every flag the caller omitted', () => {
 		const blueprint = createBlueprint('router')
 		expect(blueprint.bin).toBe(false)
-		expect(blueprint.setup).toBe(false)
 		expect(blueprint.guides).toBe(false)
 		expect(blueprint.integration).toBe(false)
 		expect(blueprint.conformance).toBe(false)
 		expect(blueprint.service).toBe(false)
 		expect(blueprint.global).toBe(false)
 		expect(blueprint.showcase).toBe(false)
+		expect(blueprint.journey).toBe(false)
 	})
 
 	it('keeps the name it was given, including one the gate refuses', () => {

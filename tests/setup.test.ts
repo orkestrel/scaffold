@@ -45,7 +45,7 @@ describe('buildBlueprint', () => {
 		expect(base.app).toStrictEqual([])
 		expect(base.dependencies).toStrictEqual([])
 		expect(base.bin).toBe(false)
-		expect(base.setup).toBe(false)
+		expect(base.setup).toStrictEqual([])
 		expect(base.showcase).toBe(false)
 		expect('description' in base).toBe(false)
 		const replaced = buildBlueprint({ src: ['core', 'server'], bin: true })

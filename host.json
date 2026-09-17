@@ -460,7 +460,7 @@
 			"storage": "claude/rules/tests.md",
 			"destination": ".claude/rules/tests.md",
 			"executable": false,
-			"digest": "226d524987f169fd2262465af86032beb16a19cc8b913d18e735a4baed822cd4"
+			"digest": "d4e710cf59c3aedfcfe9ebaef9082ccf68b0146031033b759a49f86544bd401a"
 		},
 		{
 			"storage": "claude/rules/typescript.md",
@@ -472,7 +472,7 @@
 			"storage": "claude/rules/workspace.md",
 			"destination": ".claude/rules/workspace.md",
 			"executable": false,
-			"digest": "2c4a77209a466b13919f9203fce4f311deeda6f655beeddc5aa7e2158968267b"
+			"digest": "71550c25073c913d40d1307b2da3f853abbe16c96b547166f3f4520c18c0772c"
 		},
 		{
 			"storage": "claude/rules/writing.md",
@@ -706,7 +706,7 @@
 			"storage": "guides/README.md",
 			"destination": "guides/README.md",
 			"executable": false,
-			"digest": "6d113d9dcfd4f8398162206f20c17f7fb046cadfdec06a299bb7eeb18a1dfedf"
+			"digest": "864d4d728a9597f90b347d9e5b04a501be3d7fdaab137455d3e41f59fb49ad92"
 		},
 		{
 			"storage": "guides/abort.md",
@@ -910,7 +910,7 @@
 			"storage": "guides/scaffold.md",
 			"destination": "guides/scaffold.md",
 			"executable": false,
-			"digest": "e56518b48d324bb2624b37198b8d6a18d19de2b1360e39b70ebb82b5e7a3cd29"
+			"digest": "d09f09b7bb1dc49c90263e0b6b19ba1309467eafde7640df5122dd94e7dcae89"
 		},
 		{
 			"storage": "guides/sea.md",
@@ -1036,7 +1036,7 @@
 			"storage": "tests/config.test.ts",
 			"destination": "tests/config.test.ts",
 			"executable": false,
-			"digest": "9c7fb4dab82b46c5fb436116929c8214fd54a94511272d2c574714b65218152f"
+			"digest": "904357442e9d2d0b46a792ef083feba2e7eddb05eea3f4e3f3536f5f2dcd4453"
 		},
 		{
 			"storage": "tests/policy.test.ts",
@@ -2001,5 +2001,5 @@
 			]
 		}
 	],
-	"digest": "e02eb71b9ce7f7c182dbe9e28ddd52741f7abeb6c196b03eb217b2f1937e06ad"
+	"digest": "231c15503105c87f7ad0f7df93818e045183fd3a1bad5dda8e9741bb193619b7"
 }

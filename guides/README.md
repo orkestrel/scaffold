@@ -16,6 +16,11 @@ guide mirrors, and the `WriteTransaction` those writes stage through. The `scaff
 ([`src/bin`](../src/bin)) publishes no barrel, so it is documented in prose and sits outside the
 surface bijection.
 
+The [Blueprint reference](scaffold.md#blueprint) describes the journey axis and its adopter-edited
+`configs/app/vite.journey.config.ts` wrapper, the `SetupRuntime` list, and the `setup:browser`
+project. The generated workspace runs journey variants and browser setup proofs through its
+`test` chain.
+
 That bijection is the row's contract, and [`tests/guides.test.ts`](../tests/guides.test.ts)
 enforces it: every symbol the guide documents exists in the core barrel or the server barrel, and
 every symbol either barrel exports is documented.
