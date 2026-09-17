@@ -6,9 +6,8 @@ capability by reaching for a selector as a layer defect.
 ## The vocabulary
 
 Import the vocabulary from the entries that publish it: `@orkestrel/test` for what is
-host-independent, and `@orkestrel/test/browser` for what drives a browser. Every name this reference
-teaches is in the following fence, and a name absent from it is a name to verify against the
-installed entry before writing it.
+host-independent, and `@orkestrel/test/browser` for what drives a browser. Verify against the
+installed entry any name this reference or its siblings do not carry in a fence.
 
 ```ts
 import type { TextWaitOptions, WaitOptions } from '@orkestrel/test'
@@ -65,10 +64,11 @@ table type from `@orkestrel/test`. Write one of your own only where those entrie
 the act.
 
 - Place a helper you write in the workspace's browser test setup module, export it from there, and
-  name it for the human act it performs. Prove that module with `tests/setupBrowser.test.ts`, which
-  runs in the browser-enabled `setup:browser` project.
-- Read the package's own exports before writing anything. A helper that renames a published one is a
-  defect under `AGENTS.md`, and a second implementation of one drifts from the first.
+  name it for the human act it performs. Prove that module with `tests/setupBrowser.test.ts`, and
+  run `scaffold repair` after writing that file so the browser-enabled `setup:browser` project
+  collects it.
+- Read the package's own exports before writing anything. `AGENTS.md` § Design laws bars a helper
+  that renames a published one, and bars a second implementation of one.
 - Code every journey against the vocabulary in this file, which is the published one. Diagnose a
   target that stops resolving here, and fix it in the application.
 
@@ -135,33 +135,36 @@ act itself scrolls into view.
 
 ### The failure voices
 
-Assert the one voice the case means. Never write an assertion that accepts more than one.
+Assert the one voice the case means. Never write an assertion that accepts more than one. This table
+carries this layer's own voices. Read the statechart voices in [statechart.md](statechart.md) and
+the capture voices in [captures.md](captures.md).
 
-| Condition                                        | The voice thrown                                                                         | Thrown by               |
-| ------------------------------------------------ | ---------------------------------------------------------------------------------------- | ----------------------- |
-| No element carries the name                      | `No interactive element has the accessible name "<name>"`                                | `resolveRendered`       |
-| Every match fails a reachability condition       | `Interactive target "<name>" is not visible and focus-reachable`                         | `resolveRendered`       |
-| Several matches are reachable                    | `Interactive target "<name>" is ambiguous across <n> elements`                           | `resolveRendered`       |
-| Still off-viewport after being scrolled to       | `Interactive target "<name>" is unreachable after scrolling`                             | `resolveAccessible`     |
-| The region holds no reachable match              | `Interactive target "<name>" is not reachable inside "<region>"`                         | `clickAccessibleWithin` |
-| The region holds several reachable matches       | `Interactive target "<name>" is ambiguous across <n> elements inside "<region>"`         | `clickAccessibleWithin` |
-| No native disclosure is reachable under the name | `Native disclosure "<name>" is not visible and focus-reachable`                          | `clickDisclosure`       |
-| Several native disclosures carry the name        | `Native disclosure "<name>" is ambiguous across <n> elements`                            | `clickDisclosure`       |
-| Forward Tab never lands on the target            | `Interactive target "<name>" is not reachable through forward Tab traversal: <trail>`    | `traverseAccessible`    |
-| The named region is hidden                       | `Named region "<name>" is not visible`                                                   | `readPerception`        |
-| Several named regions carry the name             | `Named region "<name>" is ambiguous across <n> elements`                                 | `readPerception`        |
-| The resolved control renders no value            | `Interactive target "<name>" does not carry a value`                                     | `readValue`             |
-| A key sequence reached nothing                   | `Key sequence "<keys>" was sent with nothing focused`                                    | `pressKeys`             |
-| The state never arrived or never left            | `Condition "<subject>" did not hold within <n>ms (waited <n>ms) (last states: <states>)` | `waitForState`          |
-| The animation subject is in no document          | `Animation subject is not connected`                                                     | `waitForAnimations`     |
-| The paint never stopped moving                   | `Animation "<subject>" did not settle within <n>ms (waited <n>ms): <animations>`         | `waitForAnimations`     |
-| The sentence never arrived                       | `Condition "<description>" did not hold within <n>ms (waited <n>ms)`                     | `waitForText`           |
-| A host withholds a storage operation             | `Access is denied for <operation> "<key>"`                                               | `createStorage`         |
-| A write ran past the declared quota              | `No room is left for <key>`                                                              | `createStorage`         |
-| A style reading has no computed color            | `Computed foreground color is unavailable`                                               | `readContrast`          |
-| A class census walked nothing                    | `Class census walked no element`                                                         | `readCensus`            |
-| A contrast control cannot straddle its bar       | `Contrast control cannot straddle the bar <bar>`                                         | `buildContrast`         |
-| A database deletion was blocked                  | `IndexedDB database "<name>" is blocked by an open connection`                           | `removeDatabase`        |
+| Condition                                              | The voice thrown                                                                         | Thrown by               |
+| ------------------------------------------------------ | ---------------------------------------------------------------------------------------- | ----------------------- |
+| No element carries the name                            | `No interactive element has the accessible name "<name>"`                                | `resolveRendered`       |
+| Every match fails a reachability condition             | `Interactive target "<name>" is not visible and focus-reachable`                         | `resolveRendered`       |
+| Several matches are reachable                          | `Interactive target "<name>" is ambiguous across <n> elements`                           | `resolveRendered`       |
+| Still off-viewport after being scrolled to             | `Interactive target "<name>" is unreachable after scrolling`                             | `resolveAccessible`     |
+| The region holds no reachable match                    | `Interactive target "<name>" is not reachable inside "<region>"`                         | `clickAccessibleWithin` |
+| The region holds several reachable matches             | `Interactive target "<name>" is ambiguous across <n> elements inside "<region>"`         | `clickAccessibleWithin` |
+| No native disclosure is reachable under the name       | `Native disclosure "<name>" is not visible and focus-reachable`                          | `clickDisclosure`       |
+| Several native disclosures carry the name              | `Native disclosure "<name>" is ambiguous across <n> elements`                            | `clickDisclosure`       |
+| Forward Tab never lands on the target                  | `Interactive target "<name>" is not reachable through forward Tab traversal: <trail>`    | `traverseAccessible`    |
+| The named region is hidden                             | `Named region "<name>" is not visible`                                                   | `readPerception`        |
+| Several named regions carry the name                   | `Named region "<name>" is ambiguous across <n> elements`                                 | `readPerception`        |
+| The resolved control renders no value                  | `Interactive target "<name>" does not carry a value`                                     | `readValue`             |
+| A key sequence reached nothing                         | `Key sequence "<keys>" was sent with nothing focused`                                    | `pressKeys`             |
+| The state never arrived or never left                  | `Condition "<subject>" did not hold within <n>ms (waited <n>ms) (last states: <states>)` | `waitForState`          |
+| The animation subject is in no document                | `Animation subject is not connected`                                                     | `waitForAnimations`     |
+| The paint never stopped moving                         | `Animation "<subject>" did not settle within <n>ms (waited <n>ms): <animations>`         | `waitForAnimations`     |
+| The sentence never arrived                             | `Condition "<description>" did not hold within <n>ms (waited <n>ms)`                     | `waitForText`           |
+| A host withholds `getItem`, `setItem`, or `removeItem` | `Access is denied for <operation> "<key>"`                                               | `createStorage`         |
+| A host withholds `length`, `clear`, or `key`           | `Access is denied for <operation>`                                                       | `createStorage`         |
+| A write ran past the declared quota                    | `No room is left for <key>`                                                              | `createStorage`         |
+| A style reading has no computed color                  | `Computed foreground color is unavailable`                                               | `readContrast`          |
+| A class census walked nothing                          | `Class census walked no element`                                                         | `readCensus`            |
+| A contrast control cannot straddle its bar             | `Contrast control cannot straddle the bar <bar>`                                         | `buildContrast`         |
+| A database deletion was blocked                        | `IndexedDB database "<name>" is blocked by an open connection`                           | `removeDatabase`        |
 
 - Report an absent control and a present-but-unreachable one as different findings: absence names
   a missing control, and unreachability names the interface gating one that exists.
@@ -261,23 +264,25 @@ Assert the one voice the case means. Never write an assertion that accepts more 
 
 ## The named bans
 
-Each of the following reaches past the interface. The replacement is published, so the ban costs a
-journey nothing.
+Never reach past the interface in any of the following ways. Reach for the published replacement
+beside each.
 
-| Never                                      | Reach for                                                    |
-| ------------------------------------------ | ------------------------------------------------------------ |
-| An element resolved by id or class         | `resolveAccessible`, `resolveRendered`, and the acting verbs |
-| A class-list read standing in for a settle | `waitForState`, `waitForAnimations`                          |
-| `document.elementFromPoint`                | `readHit`                                                    |
-| `element.focus()`                          | `traverseAccessible`, `pressKeys`                            |
-| A store read or a router call              | `readPerception`, `readValue`, `readStates`, `waitForText`   |
+| Never                                                            | Reach for                                                                                        |
+| ---------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| An element resolved by id or class                               | `resolveAccessible`, `resolveRendered`, and the acting verbs                                     |
+| A class-list read standing in for a settle                       | `waitForState`, `waitForAnimations`                                                              |
+| `document.elementFromPoint`                                      | `readHit`                                                                                        |
+| `element.focus()`                                                | `traverseAccessible`, `pressKeys`                                                                |
+| A navigation performed by a router call                          | The visible link or control that navigates, through `clickAccessible` or `clickAccessibleWithin` |
+| A store or route state read standing in for a rendered assertion | `readPerception`, `readValue`, `readStates`, `waitForText`                                       |
 
 - Admit a selector only for a population that carries no role, declared in the workspace's browser
   test setup module with the reason beside it.
 - Read a class-list assertion as proving nothing about the cascade. A class present in the markup
   and absent from every loaded stylesheet resolves to nothing, and the assertion passes on it.
-- Take a store read or a router call as corroboration beside a rendered assertion, never in place of
-  one.
+- Take a store read or a route state read as corroboration beside a rendered assertion, never in
+  place of one. Never take a router call as corroboration: it changes the route rather than
+  reporting it.
 
 ## Role vocabulary
 

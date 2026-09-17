@@ -128,12 +128,11 @@ The Orchestrator verifies the finished exec with direct evidence — git status,
 scoped validation — and carries touched files, diffstat, and deviation state into
 integration and review.
 
-On a Windows host the exec's file writes can round-trip through cp1252, so a line carrying a
-non-ASCII code point comes back with that code point replaced. The brief tells the unit never to
-rewrite such a line through its shell, to edit a file carrying one only through the exec's own
-patch tool, and to report every line it had to touch. The Orchestrator's review evidence includes a
-sweep of the diff for a removed line carrying a code point above `0x7F` whose replacement carries
-none.
+On a Windows host a text-encoding shell write replaces a code point above `0x7F`, so when a bench
+unit must edit a line carrying one, the brief tells it to make that edit through the exec's own
+patch tool, never through `Get-Content`, `Set-Content`, `Out-File`, or a `>` redirection, and to
+report every such line it touched. The Orchestrator's review sweep compares the set of code points
+above `0x7F` on each touched line before and after the edit, and flags a line that lost any of them.
 
 ## Routing exclusion — defensive negative-test units
 

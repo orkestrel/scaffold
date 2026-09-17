@@ -980,9 +980,8 @@ reads `process.env.CAPTURE === '1'` for that boolean. The generated `test:journe
 `test` chain runs it after the application projects. With the journey axis off, the ordinary
 browser project retains its integration suite.
 
-The generated browser resolver and gate cover Chromium alone. Reopen that limit when another
-Playwright engine is installed and launches on the host with a `captureFrame` reading at the
-declared size, or when a journey or style divergence is recorded.
+The generated browser resolver and gate cover Chromium alone. The emitted `configs/browsers.ts` doc
+block states the condition that reopens engine selection, and is that condition's one home.
 
 `createBlueprint` enforces shape only. Whether the name is a name, the version a version, and the
 axis combination one this package can generate are the gate's laws, and the gate answers them with

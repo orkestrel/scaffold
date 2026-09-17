@@ -44,10 +44,10 @@ import {
 
 ## The worked table
 
-This is the table this layer's own browser suite runs. The entity is a native disclosure with a
-second door: the summary toggles it, and a `Dismiss` button closes it and does nothing when it is
-already closed. That second door is what gives the table a row whose event leaves the state where it
-found it, which a lone `<details>` cannot have — its one event always flips.
+Copy the shape of the following table, which is the table this layer's own browser suite runs. Its
+entity is a native disclosure with a second door: the summary toggles it, and a `Dismiss` button
+closes it and does nothing when it is already closed. Give your own table the same row that second
+door produces here — the row whose event leaves the state where it found it.
 
 ```ts
 import type { StateScenario } from '@orkestrel/test'
@@ -62,8 +62,8 @@ interface DisclosureContext {
 	readonly summary: HTMLElement
 }
 
-// A journey verb resolves its own target by accessible name, so two mounted disclosures called
-// "Advanced" are an ambiguity rather than a second fixture. Each build takes the previous one out.
+// A journey verb resolves its own target by accessible name, so a second mounted disclosure called
+// "Advanced" is an ambiguity rather than a second fixture. Each build takes the previous one out.
 let mounted: HTMLElement | undefined
 
 function buildDisclosure(): DisclosureContext {
@@ -158,8 +158,8 @@ it('walks the disclosure statechart', async () => {
 - Name each row for the door it drove. A table that names only the states reads as if one mechanism
   moved the entity, and the row where the button leaves the disclosure exactly as it found it is the
   one a name has to separate from the toggle rows beside it.
-- Remove the previous fixture inside the builder. Without that removal the next row meets two mounted
-  disclosures under one name, and the verb refuses them as ambiguous.
+- Remove the previous fixture inside the builder. Without that removal the next row meets the
+  previous disclosure beside its own under one name, and the verb refuses them as ambiguous.
 - Drive a native `<summary>` with `clickDisclosure` and an ARIA disclosure with `clickAccessible`
   settled by `waitForState` ([layer.md](layer.md) → Disclosures).
 

@@ -73,17 +73,24 @@ Resolve every target and every population by ARIA role and accessible name as re
 
 ## Read the variant once
 
-The generated workspace fans the journey suite out into one Vitest project per variant, and each
-project provides that run's axis. Read the axis once at run start, and let it choose the capture
-destination, the matrix row, and the statechart run together.
+A browser application born by `scaffold new` carries the journey axis: the
+`configs/app/vite.journey.config.ts` wrapper, the root `appJourney` factory, the `test:journey`
+script, and that script's place in the `test` chain. That wiring fans the journey suite out into one
+Vitest project per variant, and each project provides its own variant. Read the variant once at run
+start, and let it choose the capture destination, the matrix row, and the statechart run together.
 
 - Read `inject('variant')` for this run's variant name, `inject('variants')` for the declared list,
   and `inject('capture')` for whether this run writes frames.
 - Declare the provided types once, by augmenting Vitest's own `ProvidedContext` in the workspace's
   browser test setup module, so `inject` is typed rather than narrowed at each call.
-- Declare the variant list in `configs/app/vite.journey.config.ts`, the birth-owned wrapper the
-  generated workspace ships. Its presence is the journey axis. Rename and extend the seeded
+- Declare the variant list in `configs/app/vite.journey.config.ts`, the birth-owned wrapper a
+  browser application is born with. Its presence is the journey axis. Rename and extend the seeded
   viewports for this application.
+- Activate the axis in a workspace born before it: write `configs/app/vite.journey.config.ts`, run
+  `scaffold repair`, then add `npm run test:journey` to the `test` script after `npm run test:app`.
+  The repair defines `appJourney` in the root configuration, emits the `test:journey` script, and
+  excludes the journey suite from the ordinary `app:browser` project. It does not rewrite the `test`
+  chain, so the chain entry is yours to add.
 - Name each variant for the theme and the viewport it renders, such as `dark-390`. Never split the
   theme from the viewport; a split writes a filename naming a combination the run did not render.
 - Compose each variant's theme `apply` inside the test, from the variant's name. Vitest `provide`
@@ -91,9 +98,9 @@ destination, the matrix row, and the statechart run together.
   does not.
 - Apply the theme through the application's own interface wherever the application ships a theme
   control, and through the attribute the surface reads where it does not.
-- Run the axis with `npm run test:journey`, which runs that wrapper and joins the `test` chain. Run
-  `CAPTURE=1 npm run test:journey` to write the frames; the root configuration reads that flag and
-  provides it as `capture`.
+- Run the axis with `npm run test:journey`, which runs that wrapper and joins the `test` chain. Set
+  `CAPTURE` to `1` in your own shell and run `npm run test:journey` again to write the frames; the
+  root configuration reads that variable and provides it as `capture`.
 - Keep the journeys in `tests/app/browser/integration.test.ts`. Each variant project collects that
   file alone, and the ordinary `app:browser` project excludes it while the axis is on, so a journey
   written anywhere else runs in no variant.
@@ -101,6 +108,14 @@ destination, the matrix row, and the statechart run together.
   ([styles.md](references/styles.md) → Run per variant).
 - Render exactly one variant per run for the capture family
   ([captures.md](references/captures.md) → Variants).
+
+`scaffold audit` reports a manifest and a wrapper that disagree as one of the following questions.
+Settle the one it reports before trusting a green run.
+
+| The question `scaffold audit` reports                                                                                                                                                                                            | Settle it by                                                                             |
+| -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| `The manifest at <target> names a Vitest configuration the plan does not emit and the target does not hold: test:journey --config configs/app/vite.journey.config.ts. Add the configuration or remove the script that names it.` | Writing the wrapper and running `scaffold repair`, or removing the `test:journey` script |
+| `The manifest at <target> does not invoke npm run test:journey from its test chain. Add npm run test:journey after npm run test:app.`                                                                                            | Adding `npm run test:journey` to the `test` script after `npm run test:app`              |
 
 ```ts
 import type { JourneyVariant } from '@orkestrel/test'
@@ -165,10 +180,14 @@ const VARIANTS: readonly CaptureVariant[] = inject('variants').map((variant) => 
 - Place a helper you must write in the workspace's browser test setup module, name it for the act,
   and export it from there under `.claude/rules/tests.md`. Never declare a resolver inside a test
   file.
-- Prove that setup module with `tests/setupBrowser.test.ts`, which the generated workspace collects
-  in the browser-enabled `setup:browser` project and runs through `npm run test:setup:browser`. The
-  Node `setup` project excludes it, so a proof of a browser helper placed anywhere else runs without
-  a browser.
+- Prove that setup module with `tests/setupBrowser.test.ts`. Writing that file selects the browser
+  setup runtime, so run `scaffold repair` after writing it: the repair registers the browser-enabled
+  `setup:browser` project and emits the `test:setup:browser` script. A workspace born with the
+  browser setup runtime already carries that script in its `test` chain; in a workspace that
+  acquires the runtime later, `repair` leaves the chain as written, so add
+  `npm run test:setup:browser` to it yourself. `scaffold audit` reports `setup:browser` as a project
+  no chain from `test` reaches until you do. The Node `setup` project excludes that path, so a proof
+  of a browser helper placed anywhere else runs without a browser.
 - Drive every step through the published verbs, and never dispatch a constructed event
   ([layer.md](references/layer.md) → What it drives).
 - Re-verify every target against what the application renders after any markup change
@@ -219,8 +238,8 @@ and no title scheme.
 
 - Report a missing outcome as a product finding, with its evidence site, rather than inventing the
   copy the surface owes.
-- Assert the title from `document.title` per screen. A surface whose screens share one title is a
-  finding about the surface.
+- Assert the title from `document.title` per screen, against the title the product guide names for
+  that screen. Report a screen the guide gives no title as a product finding.
 
 ## Prove the refusals
 
@@ -282,8 +301,8 @@ instrument judges which claim, what `prove` cannot serve, and what the run's wri
 
 ## Mutate each assertion class
 
-An assertion is not evidence until it has failed. Mutate each assertion class once, read the red,
-restore, and read the green.
+Mutate each assertion class once, read the red, restore, and read the green.
+`.claude/rules/quality.md` § Instruments owns the law this satisfies.
 
 | Assertion class | The mutation                                                         | What must change                  |
 | --------------- | -------------------------------------------------------------------- | --------------------------------- |
@@ -291,7 +310,7 @@ restore, and read the green.
 | Refusal         | Make the withheld control reachable, or present, without renaming it | The asserted voice changes        |
 
 - Record the exact command and its failing count before the change, restore the tree, and record the
-  same command green. A test that never ran red binds to nothing.
+  same command green.
 - Omit the act rather than weakening the assertion. An assertion a missing act leaves green cannot
   tell arrival from never having left.
 - Change reachability rather than the name. A renamed control reddens on absence, which is a finding
@@ -310,8 +329,9 @@ Completion requires all of:
 - a refusal family per surface, each asserting one exact failure voice;
 - the transport family declared separately, driven through real implementations, and convergent;
 - the declared families each proven, and the declaration itself asserted;
-- the matrix family read once per declared variant, each style instrument carrying the published
-  control that must read under its bar in the same run;
+- the matrix family read once per declared variant, each style reading carrying its published
+  control from [styles.md](references/styles.md) → The published controls in the same run, and the
+  contrast reading's control straddling its declared bar;
 - the authored-class census and the `extractStyles` reading taken on the mounted surface, each
   reporting the population it walked;
 - the statechart table driven to a terminal status with no failed row, and the harness tally read
@@ -320,14 +340,15 @@ Completion requires all of:
 - one capture run per variant writing every registered file, and the disk-membership proof green;
 - the written artifact produced for every variant the run rendered, named by that variant;
 - perception assertions quoting rendered text, and the vocabulary sweep green on the whole page;
-- the browser test setup module proven by `tests/setupBrowser.test.ts` in `setup:browser`;
+- the browser test setup module proven by `tests/setupBrowser.test.ts` in the `setup:browser`
+  project `scaffold repair` registers;
 - each assertion class mutated, with the red reading and the green reading recorded;
 - the repository gates green, under the independent-verification law in `.agents/orchestration.md`.
 
 State the engine bound with the verdict. The gate renders one engine, so a claim about a second
-engine is unproven until a reading on that engine records it. The emitted `configs/browsers.ts`
-carries the limit and the condition that reopens it: another Playwright engine launching on the
-host with a `captureFrame` reading back at its declared size, or one recorded divergence.
+engine is unproven until a reading on that engine records it. The emitted `configs/browsers.ts` doc
+block is the home of that limit and of the condition that reopens it. Cite that doc block, and copy
+neither into a verdict.
 
 Report each journey by the intent it proves, the refusals it establishes, the states it placed, the
 variants it read, the statechart outcome it reached, and every surface finding the layer's refusals

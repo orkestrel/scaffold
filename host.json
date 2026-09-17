@@ -232,7 +232,7 @@
 			"storage": "agents/skills/orkestrel-prove-journey/SKILL.md",
 			"destination": ".agents/skills/orkestrel-prove-journey/SKILL.md",
 			"executable": false,
-			"digest": "682ea8a36a48263ae162ea47b7364be109496208e09f15b14bf81837f2f2b7df"
+			"digest": "19f89dd775bd3c46f9c8004356c07e05500ec93d966125fc631b78481e32a7a6"
 		},
 		{
 			"storage": "agents/skills/orkestrel-prove-journey/agents/openai.yaml",
@@ -244,7 +244,7 @@
 			"storage": "agents/skills/orkestrel-prove-journey/references/captures.md",
 			"destination": ".agents/skills/orkestrel-prove-journey/references/captures.md",
 			"executable": false,
-			"digest": "6edc02070416754fc8e4c4e18b4d11f163923f8e962cf09c5ee7730721a619d3"
+			"digest": "2e1d2c51981561adbf22195b4a566becbc82dd1150e57e5f480a948069d04540"
 		},
 		{
 			"storage": "agents/skills/orkestrel-prove-journey/references/decide.md",
@@ -256,19 +256,19 @@
 			"storage": "agents/skills/orkestrel-prove-journey/references/layer.md",
 			"destination": ".agents/skills/orkestrel-prove-journey/references/layer.md",
 			"executable": false,
-			"digest": "15be636b2ab059c838a3a7f2141d83e9b4585c93b3f665a2857f4d759c914c9c"
+			"digest": "3fefd90ae896be8ecb0b1cb93d7ff9dab60c5d9fcbc1b60800d6f3fe49c48281"
 		},
 		{
 			"storage": "agents/skills/orkestrel-prove-journey/references/statechart.md",
 			"destination": ".agents/skills/orkestrel-prove-journey/references/statechart.md",
 			"executable": false,
-			"digest": "37a16caf2ddcd90261c419e50bcee3aaa6d56de91bf8f1727321b774f19d7384"
+			"digest": "c9f378b6c0829dafc93c7be2a9285782693727b290e5687fa03489f07eae9aa4"
 		},
 		{
 			"storage": "agents/skills/orkestrel-prove-journey/references/styles.md",
 			"destination": ".agents/skills/orkestrel-prove-journey/references/styles.md",
 			"executable": false,
-			"digest": "9ced3e791b6948a78ec36cd94025ffa9ef9a03e11e45390938c56a1b4fdab3cf"
+			"digest": "a231f70e84e01b9d5846b138c142702d5f3b7260965d0b78d3435b85028b481c"
 		},
 		{
 			"storage": "agents/skills/orkestrel-publish/SKILL.md",
@@ -310,7 +310,7 @@
 			"storage": "agents/transports/codex.md",
 			"destination": ".agents/transports/codex.md",
 			"executable": false,
-			"digest": "f0816266e249f3c07ab26c890d22cc0258339d9f4e0312560aabfff93abde009"
+			"digest": "4f1837bdcf0f9edaedaf317b6111ff7ff8d632a96bf6d31cb3a3c024ae569b35"
 		},
 		{
 			"storage": "agents/transports/cursor.md",
@@ -910,7 +910,7 @@
 			"storage": "guides/scaffold.md",
 			"destination": "guides/scaffold.md",
 			"executable": false,
-			"digest": "f0e53a50fc78d2016cba0be060045c09dc7fc034eaee9930fad4dcb3a4075800"
+			"digest": "5782d98e8a6cf10269a98688770c23f3efb4f35fab4d2c0d97e0a113815af459"
 		},
 		{
 			"storage": "guides/sea.md",
@@ -2001,5 +2001,5 @@
 			]
 		}
 	],
-	"digest": "90c3909263a7c87e4be729390571e85078da3fb90034fcbdd6e6e4a9722f3ac0"
+	"digest": "356f783a3fc79cf1c56d1abd2b65bc7652f10dc082f68811bee8df7e70c1ae97"
 }

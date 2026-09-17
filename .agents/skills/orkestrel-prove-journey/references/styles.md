@@ -108,9 +108,9 @@ provided.
 
 ## The published controls
 
-An instrument is not evidence until its control has failed. Each control ships as a builder, so
-every workspace's control is the same one and none of them can drift into a fixture that cannot
-fail.
+Take each reading's control from the builder this layer publishes for it, so no workspace's control
+drifts into a fixture that cannot fail. `.claude/rules/quality.md` § Instruments owns the law that
+control satisfies.
 
 | Reading         | Control                   | What it carries                                                                        |
 | --------------- | ------------------------- | -------------------------------------------------------------------------------------- |
@@ -122,8 +122,8 @@ fail.
   remove it afterwards. Every builder returns detached nodes and mounts nothing, so where the
   control is read is the caller's decision.
 - Assert on the fields the builder returns rather than on a token or a selector written down in the
-  test. `buildCensus` hands back its own tokens, and `buildContrast` hands back the two foregrounds
-  by name.
+  test. `buildCensus` hands back its own tokens, and `buildContrast` hands back `refused` and
+  `accepted` by name.
 - Require the `refused` foreground to read under the bar and the `accepted` one to reach it, in the
   same run as the production readings. `buildContrast` refuses a bar its own stack cannot straddle,
   and that refusal is the reading: no pair it can compose settles that bar.

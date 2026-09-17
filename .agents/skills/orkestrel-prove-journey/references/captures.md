@@ -29,8 +29,8 @@ file is written to, and the flag as `enabled`.
 - Place a state with `place(state)` for the whole page, and `place(state, element)` where the
   picture is one element.
 - Take `enabled` from `inject('capture')`, which the generated root configuration provides from the
-  `CAPTURE` environment variable. An ordinary run leaves it false, so `place` returns `undefined`,
-  resizes nothing, writes nothing, and records nothing.
+  `CAPTURE` environment variable set to `1` in the shell that runs the axis. An ordinary run leaves
+  it false, so `place` returns `undefined`, resizes nothing, writes nothing, and records nothing.
 - Read `files` for the registry expanded across every variant, `placements` for what this run placed,
   and `paths` for what it wrote. Each hands back a snapshot.
 - Reach for `readFrame` where the written image itself is the subject — its decoded size, or its
