@@ -1,5 +1,6 @@
 import type { ManifestScript } from '@src/core'
 import type { ScratchInterface } from '@orkestrel/test/server'
+import type { PluginOption, UserConfig } from 'vite'
 import { createScratch, destroyScratch } from '@orkestrel/test/server'
 import { spawnSync } from 'node:child_process'
 import { existsSync, mkdirSync, readFileSync, symlinkSync } from 'node:fs'
@@ -30,6 +31,9 @@ import {
 	replaceManifestScripts,
 	srcToExports,
 } from '@src/core'
+import { mergeConfig } from 'vite'
+import { environmentBoundary, outputBoundary } from '../../../configs/helpers.js'
+import rootConfiguration, { mergeOverride, srcServer } from '../../../vite.config.js'
 import { buildBlueprint } from '../../setup.js'
 import { readStatements } from '../../setupServer.js'
 import { describe, expect, it } from 'vitest'
@@ -520,7 +524,7 @@ describe('blueprintToScripts config projects', () => {
 		expect(blueprintToRootVite(absent)).not.toContain("name: { label: 'setup',")
 		expect(blueprintToScripts(absent)).not.toHaveProperty('test:setup')
 		expect(blueprintToScripts(absent).test).not.toContain('test:setup')
-		expect(configuration).toContain('export const setup = (): UserConfig => ({')
+		expect(configuration).toContain('export function setup(override?: UserConfig): UserConfig {')
 		expect(configuration).toContain("name: { label: 'setup', color: 'white' }")
 		expect(configuration).toContain("include: ['tests/setup*.test.ts']")
 		expect(configuration).toContain("setupFiles: ['./tests/setup.ts']")
@@ -600,7 +604,7 @@ describe('blueprintToScripts config projects', () => {
 		const configuration = blueprintToRootVite(blueprint)
 		const scripts = blueprintToScripts(blueprint)
 
-		expect(configuration).toContain('export const guides = (): UserConfig => ({')
+		expect(configuration).toContain('export function guides(override?: UserConfig): UserConfig {')
 		expect(configuration).toContain("include: ['tests/guides.test.ts']")
 		expect(configuration).toContain(
 			'projects: [srcCore, policy, config, guides, distribution, probe]',
@@ -661,7 +665,9 @@ describe('blueprintToScripts config projects', () => {
 		const configuration = blueprintToRootVite(blueprint)
 		const scripts = blueprintToScripts(blueprint)
 
-		expect(configuration).toContain('export const distribution = (): UserConfig => ({')
+		expect(configuration).toContain(
+			'export function distribution(override?: UserConfig): UserConfig {',
+		)
 		expect(configuration).toContain("include: ['tests/distribution.test.ts']")
 		expect(configuration).toContain('projects: [srcCore, policy, config, distribution, probe]')
 		expect(scripts['test:distribution']).toBe(
@@ -1119,17 +1125,29 @@ describe('blueprint gate laws', () => {
 		).toStrictEqual([])
 	})
 
-	// Neither factory takes an argument. `appBrowser` is a project row, so Vitest calls
-	// it with its own environment record, and a parameter there merged those fields into
-	// the configuration it returned. `appShowcase` is registered nowhere and is reached
-	// only by the showcase wrapper's own call. `appShowcase` is generated inline here
-	// while `appBrowser` comes from the template, so one spelling drifting from the other
-	// is the failure this catches.
-	it('seals every application browser factory against a caller argument', () => {
+	// Each factory takes the caller's override. `appBrowser` is a project row, so Vitest
+	// calls it with its own environment record, and that record lands in the override
+	// position: `mergeOverride` refuses a value carrying `command` and `mode`, which makes
+	// the parameter safe, and the vendored `tests/config.test.ts` drives every registered
+	// row through that refusal. `appShowcase` is registered nowhere and is reached only by
+	// the showcase wrapper's own call, so it composes on `appBrowser` and declares only
+	// the output boundary and the build options a showcase changes. The sealed copy
+	// restores the declaration this rule replaced and must fail the same assertion.
+	it('gives every application browser factory the caller override', () => {
 		const config = blueprintToRootVite(buildBlueprint({ app: ['browser'], showcase: true }))
-		expect(config).toContain('export function appShowcase(): UserConfig {')
-		expect(config).toContain('export function appBrowser(): UserConfig {')
-		expect(config).toContain('return applicationBrowser(false)')
+		expect(config).toContain('export function appBrowser(override?: UserConfig): UserConfig {')
+		const sealed = config.replace(
+			'export function appBrowser(override?: UserConfig): UserConfig {',
+			'export function appBrowser(): UserConfig {',
+		)
+		expect(sealed).toContain('export function appBrowser(): UserConfig {')
+		expect(() => {
+			expect(sealed).toContain('export function appBrowser(override?: UserConfig): UserConfig {')
+		}).toThrow(/to contain/u)
+		expect(config).toContain('return mergeOverride(project, override)')
+		expect(config).toContain('export function appShowcase(override?: UserConfig): UserConfig {')
+		expect(config).toContain('return appBrowser(mergeOverride(showcase, override))')
+		expect(config).not.toContain('applicationBrowser')
 		expect(config).not.toContain('never[]')
 		expect(config).not.toContain('overrides are not permitted')
 	})
@@ -1178,8 +1196,8 @@ describe('blueprint gate laws', () => {
 describe('blueprintToRootVite fixed proofs', () => {
 	it('gives every bin project its contended-suite timeout and reason', () => {
 		const configuration = blueprintToRootVite(buildBlueprint({ bin: true }))
-		const start = configuration.indexOf('export const srcBin')
-		const end = configuration.indexOf('export const policy')
+		const start = configuration.indexOf('export function srcBin')
+		const end = configuration.indexOf('export function policy')
 		const bin = configuration.slice(start, end)
 
 		expect(start).toBeGreaterThan(-1)
@@ -1293,9 +1311,11 @@ describe('blueprintToRootVite fixed proofs', () => {
 		expect(bare).not.toContain("name: { label: 'service',")
 
 		const measured = blueprintToRootVite(buildBlueprint({ conformance: true }))
-		expect(measured).toContain('export const conformance = (): UserConfig => ({\n\tresolve,\n')
+		expect(measured).toContain(
+			'export function conformance(override?: UserConfig): UserConfig {\n\tconst project: UserConfig = {\n\t\tresolve,\n',
+		)
 		expect(measured).toContain("include: ['tests/conformance.test.ts']")
-		expect(measured).toContain("setupFiles: ['./tests/setup.ts'],\n\t\tenvironment: 'node',")
+		expect(measured).toContain("setupFiles: ['./tests/setup.ts'],\n\t\t\tenvironment: 'node',")
 		expect(measured).toContain(
 			'projects: [srcCore, policy, config, conformance, distribution, probe]',
 		)
@@ -1303,10 +1323,12 @@ describe('blueprintToRootVite fixed proofs', () => {
 		// The live project names its readiness module by path, so the registration
 		// and the emitted setup module have to agree on that exact path.
 		const live = blueprintToRootVite(buildBlueprint({ service: true }))
-		expect(live).toContain('export const service = (): UserConfig => ({\n\tresolve,\n')
+		expect(live).toContain(
+			'export function service(override?: UserConfig): UserConfig {\n\tconst project: UserConfig = {\n\t\tresolve,\n',
+		)
 		expect(live).toContain("include: ['tests/service/**/*.test.ts']")
 		expect(live).toContain("setupFiles: ['./tests/setup.ts', './tests/setupService.ts'],")
-		expect(live).toContain('\t\tfileParallelism: false,\n')
+		expect(live).toContain('\t\t\tfileParallelism: false,\n')
 		expect(live).toContain('projects: [srcCore, policy, config, service, distribution, probe]')
 		expect(
 			blueprintToTestArtifacts(buildBlueprint({ service: true })).map(({ path }) => path),
@@ -1342,9 +1364,11 @@ describe('blueprintToRootVite fixed proofs', () => {
 			"import { enforceBuildLog, environmentBoundary, outputBoundary } from './configs/helpers.js'\n",
 		)
 		// The removed runtime filesystem classifier leaves the URL import directly
-		// after the imports every root configuration makes.
+		// after the imports every root configuration makes. `mergeOverride` is emitted
+		// for every selection and names `PluginOption` and `mergeConfig`, so both reach
+		// a workspace that selects no showcase.
 		expect(blueprintToRootVite(buildBlueprint({ src: ['core'] }))).toContain(
-			"import type { UserConfig } from 'vite'\nimport { defineConfig } from 'vitest/config'\nimport manifest from './package.json' with { type: 'json' }\nimport tsconfig from './tsconfig.json' with { type: 'json' }\nimport { enforceBuildLog } from './configs/helpers.js'\nimport { fileURLToPath, URL } from 'node:url'",
+			"import type { PluginOption, UserConfig } from 'vite'\nimport { mergeConfig } from 'vite'\nimport { defineConfig } from 'vitest/config'\nimport manifest from './package.json' with { type: 'json' }\nimport tsconfig from './tsconfig.json' with { type: 'json' }\nimport { enforceBuildLog } from './configs/helpers.js'\nimport { fileURLToPath, URL } from 'node:url'",
 		)
 	})
 
@@ -1357,11 +1381,13 @@ describe('blueprintToRootVite fixed proofs', () => {
 				showcase: true,
 			}),
 		)
-		const appCoreStart = configuration.indexOf('export const appCore')
-		const appCoreEnd = configuration.indexOf('function applicationBrowser')
+		const appCoreStart = configuration.indexOf('export function appCore')
+		const appCoreEnd = configuration.indexOf('export function appBrowser')
 
 		expect(configuration.split('onLog: enforceBuildLog')).toHaveLength(7)
-		expect(configuration).toContain('export function appShowcase(): UserConfig {')
+		expect(configuration).toContain(
+			'export function appShowcase(override?: UserConfig): UserConfig {',
+		)
 		expect(appCoreStart).toBeGreaterThan(-1)
 		expect(appCoreEnd).toBeGreaterThan(appCoreStart)
 		expect(configuration.slice(appCoreStart, appCoreEnd)).not.toContain('enforceBuildLog')
@@ -1424,28 +1450,257 @@ describe('blueprintToRootVite fixed proofs', () => {
 		// selected source graph reaches it. Both faces carry the clause on both
 		// sides of their own branch, so neither side can lose it unseen.
 		expect(blueprintToRootVite(buildBlueprint({ src: ['browser'] }))).toContain(
-			"\t\t\texternal: (id: string) =>\n\t\t\t\tid.startsWith('@orkestrel/') ||\n\t\t\t\tpeers.some((peer) => id === peer || id.startsWith(peer + '/')),\n",
+			"\t\t\t\texternal: (id: string) =>\n\t\t\t\t\tid.startsWith('@orkestrel/') ||\n\t\t\t\t\tpeers.some((peer) => id === peer || id.startsWith(peer + '/')),\n",
 		)
 		expect(blueprintToRootVite(buildBlueprint({ src: ['core', 'browser'] }))).toContain(
-			"\t\t\texternal: (id: string) =>\n\t\t\t\tid === '@src/core' ||\n\t\t\t\tid.startsWith('@orkestrel/') ||\n\t\t\t\tpeers.some((peer) => id === peer || id.startsWith(peer + '/')),\n",
+			"\t\t\t\texternal: (id: string) =>\n\t\t\t\t\tid === '@src/core' ||\n\t\t\t\t\tid.startsWith('@orkestrel/') ||\n\t\t\t\t\tpeers.some((peer) => id === peer || id.startsWith(peer + '/')),\n",
 		)
 		expect(blueprintToRootVite(buildBlueprint({ src: ['server'] }))).toContain(
-			"\t\t\texternal: (id: string) =>\n\t\t\t\tid.startsWith('node:') ||\n\t\t\t\tid.startsWith('@orkestrel/') ||\n\t\t\t\tpeers.some((peer) => id === peer || id.startsWith(peer + '/')),\n",
+			"\t\t\t\texternal: (id: string) =>\n\t\t\t\t\tid.startsWith('node:') ||\n\t\t\t\t\tid.startsWith('@orkestrel/') ||\n\t\t\t\t\tpeers.some((peer) => id === peer || id.startsWith(peer + '/')),\n",
 		)
 		expect(blueprintToRootVite(buildBlueprint({ src: ['core', 'server'] }))).toContain(
-			"\t\t\texternal: (id: string) =>\n\t\t\t\tid === '@src/core' ||\n\t\t\t\tid.startsWith('node:') ||\n\t\t\t\tid.startsWith('@orkestrel/') ||\n\t\t\t\tpeers.some((peer) => id === peer || id.startsWith(peer + '/')),\n",
+			"\t\t\t\texternal: (id: string) =>\n\t\t\t\t\tid === '@src/core' ||\n\t\t\t\t\tid.startsWith('node:') ||\n\t\t\t\t\tid.startsWith('@orkestrel/') ||\n\t\t\t\t\tpeers.some((peer) => id === peer || id.startsWith(peer + '/')),\n",
 		)
-		// The browser plugin array has no conditional tail without a showcase, so
-		// the formatter emits its fixed entries joined.
-		expect(blueprintToRootVite(buildBlueprint({ app: ['browser'] }))).toContain(
-			"\t\tplugins: [outputBoundary(output), environmentBoundary('app/browser'), vue()],\n",
-		)
+		// The browser plugin array fits the vendored width, so the formatter emits its
+		// entries joined, and the showcase adds none of them: a showcase declares its
+		// own plugins and composes on the browser configuration.
+		const browser = blueprintToRootVite(buildBlueprint({ app: ['browser'] }))
 		const showcase = blueprintToRootVite(buildBlueprint({ app: ['browser'], showcase: true }))
-		expect(showcase).toContain('\tconst showcasePlugins: PluginOption[] = showcase\n\t\t? [\n')
+		for (const content of [browser, showcase]) {
+			expect(content).toContain(
+				"\t\tplugins: [outputBoundary(output), environmentBoundary('app/browser'), vue()],\n",
+			)
+		}
+		// The showcase plugin array carries a call the width cannot hold and an inline
+		// plugin object, so the formatter breaks it across lines.
 		expect(showcase).toContain(
-			"\t\tplugins: [\n\t\t\toutputBoundary(output),\n\t\t\tenvironmentBoundary('app/browser'),\n\t\t\tvue(),\n\t\t\t...showcasePlugins,\n",
+			"\t\tplugins: [\n\t\t\toutputBoundary(output),\n\t\t\tviteSingleFile({\n\t\t\t\tremoveViteModuleLoader: true,\n\t\t\t\tuseRecommendedBuildConfig: true,\n\t\t\t}),\n\t\t\t{\n\t\t\t\tname: 'orkestrel-showcase-html',\n",
 		)
-		expect(showcase).toContain('\t\t: []\n\treturn {\n')
+		expect(showcase).toContain('\t}\n\treturn appBrowser(mergeOverride(showcase, override))\n}\n')
+		expect(browser).not.toContain('viteSingleFile')
+	})
+
+	// The configuration a browser workspace actually runs, read as the bytes it
+	// receives rather than as a fragment of them, for a showcase selection and for the
+	// same selection without one. Every factory takes the caller's override and merges
+	// it, and no wrapper merges from outside, so both sides of the showcase branch are
+	// pinned where a generated workspace meets them.
+	it('emits every browser workspace configuration for a showcase selection and for none', () => {
+		const showcased = buildBlueprint({ src: ['core'], app: ['core', 'browser'], showcase: true })
+		const plain = buildBlueprint({ src: ['core'], app: ['core', 'browser'] })
+		const wrapperCore = `import { defineConfig } from 'vite'
+import { declarationRollup, environmentBoundary, outputBoundary } from '../helpers.js'
+import { peers, srcCore, resolveWorkspacePath } from '../../vite.config.ts'
+
+export default defineConfig(
+	srcCore({
+		publicDir: false,
+		plugins: [
+			outputBoundary('dist/src/core'),
+			environmentBoundary('src/core'),
+			declarationRollup({
+				project: resolveWorkspacePath('configs/src/tsconfig.core.json'),
+				types: ['node'],
+			}),
+		],
+		build: {
+			lib: {
+				entry: resolveWorkspacePath('src/core/index.ts'),
+				formats: ['es', 'cjs'],
+				fileName: (format: string) => (format === 'es' ? 'index.js' : 'index.cjs'),
+			},
+			outDir: 'dist/src/core',
+			rolldownOptions: {
+				external: (id: string) =>
+					id.startsWith('node:') ||
+					id.startsWith('@orkestrel/') ||
+					peers.some((peer) => id === peer || id.startsWith(peer + '/')),
+			},
+		},
+	}),
+)
+`
+		const wrapperBrowser = `import { defineConfig } from 'vite'
+import { appBrowser } from '../../vite.config.ts'
+
+export default defineConfig(appBrowser())
+`
+		const wrapperShowcase = `import { defineConfig } from 'vite'
+import { appShowcase } from '../../vite.config.ts'
+
+export default defineConfig(appShowcase())
+`
+		const showcaseWrappers: Record<string, string> = {}
+		for (const artifact of blueprintToConfigArtifacts(showcased)) {
+			if (artifact.origin === 'host' || !artifact.path.endsWith('.config.ts')) continue
+			if (!artifact.path.startsWith('configs/')) continue
+			showcaseWrappers[artifact.path] = artifact.content
+		}
+		const plainWrappers: Record<string, string> = {}
+		for (const artifact of blueprintToConfigArtifacts(plain)) {
+			if (artifact.origin === 'host' || !artifact.path.endsWith('.config.ts')) continue
+			if (!artifact.path.startsWith('configs/')) continue
+			plainWrappers[artifact.path] = artifact.content
+		}
+
+		expect(showcaseWrappers).toStrictEqual({
+			'configs/src/vite.core.config.ts': wrapperCore,
+			'configs/app/vite.browser.config.ts': wrapperBrowser,
+			'configs/app/vite.showcase.config.ts': wrapperShowcase,
+		})
+		expect(plainWrappers).toStrictEqual({
+			'configs/src/vite.core.config.ts': wrapperCore,
+			'configs/app/vite.browser.config.ts': wrapperBrowser,
+		})
+		// No emitted wrapper merges from outside the factory, and the `mergeConfig`
+		// import that let one do so moved to the root configuration where the merge is.
+		for (const content of [...Object.values(showcaseWrappers), ...Object.values(plainWrappers)]) {
+			expect(content).not.toContain('mergeConfig')
+			expect(content).toContain("import { defineConfig } from 'vite'\n")
+		}
+
+		const merge = `export function mergeOverride(base: UserConfig, override?: UserConfig): UserConfig {
+	if (override === undefined || ('command' in override && 'mode' in override)) return base
+	const merged: UserConfig = mergeConfig(base, override)
+	if (merged.plugins === undefined) return merged
+	const candidates = override.plugins ?? []
+	const taken = new Set<number>()
+	const selected: PluginOption[] = []
+	for (const plugin of base.plugins ?? []) {
+		if (!isNamedPlugin(plugin)) {
+			selected.push(plugin)
+			continue
+		}
+		const index = candidates.findIndex(
+			(candidate, position) =>
+				!taken.has(position) && isNamedPlugin(candidate) && candidate.name === plugin.name,
+		)
+		const replacement = candidates[index]
+		if (replacement === undefined) {
+			selected.push(plugin)
+		} else {
+			selected.push(replacement)
+			taken.add(index)
+		}
+	}
+	for (const [index, plugin] of candidates.entries()) {
+		if (!taken.has(index)) selected.push(plugin)
+	}
+	return { ...merged, plugins: selected }
+}
+
+function isNamedPlugin(plugin: PluginOption): plugin is { name: string } {
+	return (
+		typeof plugin === 'object' &&
+		plugin !== null &&
+		!Array.isArray(plugin) &&
+		!('then' in plugin && typeof plugin.then === 'function') &&
+		'name' in plugin &&
+		typeof plugin.name === 'string'
+	)
+}
+`
+		const factoryBrowser = `export function appBrowser(override?: UserConfig): UserConfig {
+	const output = 'dist/app/browser'
+	const project: UserConfig = {
+		resolve,
+		plugins: [outputBoundary(output), environmentBoundary('app/browser'), vue()],
+		root: resolveWorkspacePath('app/browser'),
+		publicDir: false,
+		build: {
+			assetsInlineLimit: 0,
+			emptyOutDir: true,
+			outDir: resolveWorkspacePath(output),
+			rolldownOptions: {
+				onLog: enforceBuildLog,
+				input: resolveWorkspacePath('app/browser/index.html'),
+			},
+		},
+		test: {
+			name: { label: 'app:browser', color: 'blue' },
+			root: resolveWorkspacePath('.'),
+			dir: resolveWorkspacePath('.'),
+			include: ['tests/app/browser/**/*.test.ts'],
+			setupFiles: ['./tests/setup.ts', './tests/setupBrowser.ts'],
+			browser: {
+				enabled: true,
+				provider: playwright(browserOptions),
+				instances: [{ browser: 'chromium', headless: true }],
+			},
+			fileParallelism: false,
+		},
+	}
+	return mergeOverride(project, override)
+}
+`
+		const factoryShowcase = `export function appShowcase(override?: UserConfig): UserConfig {
+	const output = 'dist/showcase'
+	const showcase: UserConfig = {
+		plugins: [
+			outputBoundary(output),
+			viteSingleFile({
+				removeViteModuleLoader: true,
+				useRecommendedBuildConfig: true,
+			}),
+			{
+				name: 'orkestrel-showcase-html',
+				transformIndexHtml: {
+					order: 'post',
+					handler(html) {
+						const stamp = new Date().toISOString()
+						return html.replace(
+							'</head>',
+							'		<meta name="build-id" content="' + stamp + '" />\\n	</head>',
+						)
+					},
+				},
+			},
+		],
+		build: {
+			// The \`appBrowser\` factory sets \`assetsInlineLimit\` to 0, so every asset becomes
+			// its own file, and 4096 is Vite's own default put back. The \`viteSingleFile\`
+			// plugin overwrites the value while the \`useRecommendedBuildConfig\` option stays
+			// true, so this line takes effect only in a workspace that turns that option off.
+			assetsInlineLimit: 4096,
+			cssMinify: 'lightningcss',
+			minify: 'oxc',
+			modulePreload: false,
+			outDir: resolveWorkspacePath(output),
+			reportCompressedSize: false,
+			sourcemap: false,
+			target: 'esnext',
+		},
+	}
+	return appBrowser(mergeOverride(showcase, override))
+}
+`
+		const showcaseConfig = blueprintToRootVite(showcased)
+		const plainConfig = blueprintToRootVite(plain)
+		for (const content of [showcaseConfig, plainConfig]) {
+			expect(content).toContain(merge)
+			expect(content).toContain(factoryBrowser)
+		}
+		expect(showcaseConfig).toContain(`${factoryBrowser}\n${factoryShowcase}`)
+		expect(plainConfig).not.toContain('appShowcase')
+		expect(plainConfig).not.toContain('viteSingleFile')
+
+		// The control, drawn from outside the population every pin above covers — a
+		// browser workspace — because a selection carrying no browser environment emits
+		// no browser wrapper and no browser factory. It establishes that the wrapper maps
+		// and the browser factory read what the selection emits rather than agreeing by
+		// shape. It establishes nothing about the merge pin, which every selection emits
+		// identically, so that pin's red comes from renaming a binding inside the emitted
+		// merge and watching this case fail.
+		const unselected = buildBlueprint({ src: ['core'], app: ['core'] })
+		const unselectedWrappers: Record<string, string> = {}
+		for (const artifact of blueprintToConfigArtifacts(unselected)) {
+			if (artifact.origin === 'host' || !artifact.path.endsWith('.config.ts')) continue
+			if (!artifact.path.startsWith('configs/')) continue
+			unselectedWrappers[artifact.path] = artifact.content
+		}
+		expect(unselectedWrappers).not.toStrictEqual(showcaseWrappers)
+		expect(unselectedWrappers).not.toStrictEqual(plainWrappers)
+		expect(blueprintToRootVite(unselected)).not.toContain(factoryBrowser)
 	})
 
 	// Both published faces roll up through `declarationRollup`, and both reach core
@@ -2786,5 +3041,238 @@ describe('the guides entry', () => {
 			await destroyScratch(empty, { budget: 5000 })
 			await destroyScratch(unhandled, { budget: 5000 })
 		}
+	})
+})
+
+// The emitted `mergeOverride` is what lets a factory take an override at all, and this
+// checkout runs the configuration this generator emits: `keeps this repository
+// byte-identical to every configuration it generates` is what ties the imports below to
+// the emitted text. Every case drives that real function.
+//
+// What the controls establish, and what they do not: a case that can contrast against the
+// bare merge carries `mergeConfig` beside the guarded call and asserts the damage the guard
+// prevents, so a guard that stopped working cannot leave both assertions passing. A case
+// that cannot contrast carries no such control, because it asserts exactly the value the
+// bare merge produces — there is no damage to show — and its load-bearing assertions are
+// identity and order instead. Which kind a case is reads off its own body: the ones with a
+// control call `mergeConfig` inside it. The two predicate cases are the exception worth
+// naming, because their kind is not visible here at all — nothing in this file discriminates
+// a guard that admits a non-string `name` or a structural thenable, and the red that does
+// comes from mutating the predicate itself.
+//
+// Which cases meet the real vendored boundary plugins: the refusal case drives every
+// factory this checkout registers. The replacement and nested cases take their base
+// from `srcServer`; the repeated-name case writes its base from the same vendored
+// boundary helpers, because no emitted base repeats a plugin name.
+// The caller-order, opaque-entry, non-string-name, structural-promise, and
+// `command`-alone cases write their own entries, because the hazard there is the
+// entry's shape rather than the plugin's identity.
+describe('the generated configuration under its own hazards', () => {
+	it('refuses the Vitest invocation record a project row is called with', () => {
+		const sentinel = {
+			command: 'sentinel-command',
+			isPreview: true,
+			isSsrBuild: true,
+			mode: 'sentinel-mode',
+			sentinel: true,
+		}
+		// The population, stated before the sweep drawn from it: every factory this
+		// checkout registers as a project row, which is the set Vitest calls.
+		const rows = rootConfiguration.test?.projects
+		if (!Array.isArray(rows)) throw new Error('The root configuration carries no projects')
+		const registered = rows.filter((row) => typeof row === 'function')
+		if (registered.length === 0) throw new Error('The root configuration registers no factory')
+		for (const factory of registered) {
+			const project: unknown = Reflect.apply(factory, undefined, [sentinel])
+			if (typeof project !== 'object' || project === null) {
+				throw new Error('A project factory returned no configuration')
+			}
+			for (const field of Object.keys(sentinel)) {
+				expect(Object.getOwnPropertyDescriptor(project, field)?.value).toBeUndefined()
+			}
+		}
+		// The control: the bare merge a factory would otherwise perform lands every field
+		// of the record on the configuration it returns.
+		const landed: UserConfig = mergeConfig({ publicDir: false }, sentinel)
+		expect(Object.getOwnPropertyDescriptor(landed, 'command')?.value).toBe('sentinel-command')
+		expect(Object.getOwnPropertyDescriptor(landed, 'mode')?.value).toBe('sentinel-mode')
+	})
+
+	it('replaces a named base plugin in its position', () => {
+		const declared = outputBoundary('dist/src/server')
+		const environment = environmentBoundary('src/server')
+		const replacement = outputBoundary('dist/showcase')
+
+		// An override naming a plugin the base declares replaces it where the base put
+		// it, which is what lets a showcase's output boundary take the browser
+		// boundary's place instead of sitting beside it.
+		const merged = mergeOverride({ plugins: [declared, environment] }, { plugins: [replacement] })
+		expect(merged.plugins).toHaveLength(2)
+		expect(merged.plugins?.[0]).toBe(replacement)
+		expect(merged.plugins?.[1]).toBe(environment)
+
+		// The same rule through a real emitted factory, whose base plugins are the ones
+		// the factory declares rather than a pair written here. The identity assertion
+		// excludes the rival reading the mapped names admit: an implementation that kept
+		// the factory's own boundary and discarded the override produces the same names
+		// in the same positions.
+		const server = srcServer({ plugins: [replacement] })
+		expect(server.plugins?.[0]).toBe(replacement)
+		expect(
+			server.plugins?.map((plugin) =>
+				typeof plugin === 'object' && plugin !== null && 'name' in plugin ? plugin.name : plugin,
+			),
+		).toStrictEqual(['orkestrel-output-boundary', 'orkestrel-environment-boundary'])
+
+		// The control: the bare merge concatenates, so the boundary the base declares
+		// survives beside the one the override names and the build audits two outputs.
+		const bare: UserConfig = mergeConfig(
+			{ plugins: [declared, environment] },
+			{ plugins: [replacement] },
+		)
+		expect(bare.plugins).toHaveLength(3)
+		expect(bare.plugins?.[0]).toBe(declared)
+		expect(bare.plugins?.[2]).toBe(replacement)
+	})
+
+	it('installs one override entry at one base position', () => {
+		const first = outputBoundary('dist/src/server')
+		const environment = environmentBoundary('src/server')
+		const second = outputBoundary('dist/app/server')
+		const replacement = outputBoundary('dist/showcase')
+
+		// A base can declare two entries under one name, and an override naming it carries
+		// one entry. That entry takes the first matching position, and the second base
+		// entry survives where the base put it: an override entry installed twice would
+		// leave the workspace auditing one output and silently dropping the other.
+		const merged = mergeOverride(
+			{ plugins: [first, environment, second] },
+			{ plugins: [replacement] },
+		)
+		expect(merged.plugins).toHaveLength(3)
+		expect(merged.plugins?.[0]).toBe(replacement)
+		expect(merged.plugins?.[1]).toBe(environment)
+		expect(merged.plugins?.[2]).toBe(second)
+
+		// The control: the bare merge appends instead of selecting, so both base entries
+		// survive beside the override and the build audits three outputs.
+		const bare: UserConfig = mergeConfig(
+			{ plugins: [first, environment, second] },
+			{ plugins: [replacement] },
+		)
+		expect(bare.plugins).toHaveLength(4)
+		expect(bare.plugins?.[0]).toBe(first)
+		expect(bare.plugins?.[2]).toBe(second)
+		expect(bare.plugins?.[3]).toBe(replacement)
+	})
+
+	it('preserves nested plugin entries without selecting their names', () => {
+		const nested = [[{ name: 'orkestrel-output-boundary' }]]
+		const server = srcServer({ plugins: [nested] })
+		expect(server.plugins?.[2]).toBe(nested)
+		expect(
+			server.plugins?.filter(
+				(plugin) =>
+					typeof plugin === 'object' &&
+					plugin !== null &&
+					'name' in plugin &&
+					plugin.name === 'orkestrel-output-boundary',
+			),
+		).toHaveLength(1)
+	})
+
+	it('preserves the caller plugin entries in their written order', () => {
+		const leading = { name: 'caller-plugin', enforce: 'pre' } satisfies PluginOption
+		const trailing = { name: 'caller-plugin', enforce: 'post' } satisfies PluginOption
+		const plugins = [leading, trailing]
+		expect(mergeOverride({}, { plugins }).plugins).toStrictEqual(plugins)
+		expect(plugins).toStrictEqual([leading, trailing])
+		const declared = { name: 'caller-plugin' }
+		expect(mergeOverride({ plugins: [declared] }, { plugins }).plugins).toStrictEqual(plugins)
+
+		// The control: the bare merge keeps the base entry the first caller entry
+		// replaces, so the workspace runs a third plugin under the same name.
+		const bare: UserConfig = mergeConfig({ plugins: [declared] }, { plugins })
+		expect(bare.plugins).toStrictEqual([declared, leading, trailing])
+	})
+
+	it('preserves opaque plugin entries on each side', () => {
+		const anonymous = {}
+		const promised = Promise.resolve({ name: 'promised-plugin' })
+		const nested = [[{ name: 'nested-plugin' }]]
+		const plugins: PluginOption[] = [nested, false, null, undefined, promised]
+		// An anonymous object is an opaque runtime entry, outside Vite's Plugin type.
+		const merged: unknown = Reflect.apply(mergeOverride, undefined, [
+			{ plugins: [...plugins, anonymous] },
+			{ plugins: [...plugins, anonymous] },
+		])
+		expect(merged).toStrictEqual({ plugins: [...plugins, anonymous, ...plugins, anonymous] })
+		// Asserted by identity as well, because `toStrictEqual` reads an anonymous `{}` as
+		// equal to a fresh empty object and would admit a merge that substituted one. The
+		// length is asserted first, so an unreadable result cannot satisfy the identity
+		// assertions through an empty population.
+		const selected: readonly unknown[] =
+			typeof merged === 'object' &&
+			merged !== null &&
+			'plugins' in merged &&
+			Array.isArray(merged.plugins)
+				? merged.plugins
+				: []
+		expect(selected).toHaveLength(12)
+		expect(selected[0]).toBe(nested)
+		expect(selected[4]).toBe(promised)
+		expect(selected[5]).toBe(anonymous)
+		expect(selected[6]).toBe(nested)
+		expect(selected[10]).toBe(promised)
+		expect(selected[11]).toBe(anonymous)
+	})
+
+	it('preserves non-string plugin names without selecting them', () => {
+		const declared = { name: 7 }
+		const replacement = { name: 7 }
+		// Untyped callers can supply names outside Vite's declared plugin contract.
+		const merged: unknown = Reflect.apply(mergeOverride, undefined, [
+			{ plugins: [declared] },
+			{ plugins: [replacement] },
+		])
+		if (
+			typeof merged !== 'object' ||
+			merged === null ||
+			!('plugins' in merged) ||
+			!Array.isArray(merged.plugins)
+		) {
+			throw new Error('The merge returned no plugin collection')
+		}
+		expect(merged.plugins).toHaveLength(2)
+		expect(merged.plugins[0]).toBe(declared)
+		expect(merged.plugins[1]).toBe(replacement)
+	})
+
+	it('preserves named structural promises without selecting them', () => {
+		const promised = Promise.resolve({ name: 'resolved-plugin' })
+		const structural = {
+			name: 'caller-plugin',
+			then: promised.then.bind(promised),
+			catch: promised.catch.bind(promised),
+			finally: promised.finally.bind(promised),
+			[Symbol.toStringTag]: 'Promise',
+		} satisfies PluginOption
+		const declared = { name: 'caller-plugin' }
+		const base = mergeOverride({ plugins: [structural] }, { plugins: [declared] })
+		const override = mergeOverride({ plugins: [declared] }, { plugins: [structural] })
+		expect(structural).not.toBeInstanceOf(Promise)
+		expect(base.plugins).toHaveLength(2)
+		expect(base.plugins?.[0]).toBe(structural)
+		expect(base.plugins?.[1]).toBe(declared)
+		expect(override.plugins).toHaveLength(2)
+		expect(override.plugins?.[0]).toBe(declared)
+		expect(override.plugins?.[1]).toBe(structural)
+	})
+
+	it('merges an override carrying command alone', () => {
+		const override = { command: 'caller-command', build: { sourcemap: false } }
+		const merged = mergeOverride({ build: { sourcemap: true } }, override)
+		expect(merged.build?.sourcemap).toBe(false)
+		expect(Object.getOwnPropertyDescriptor(merged, 'command')?.value).toBe('caller-command')
 	})
 })

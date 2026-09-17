@@ -487,24 +487,30 @@ function findWide(content: string): readonly string[] {
 		.filter((line) => measureWidth(line) > PRINT_WIDTH && !/^\t*'[^']*',?$/u.test(line))
 }
 
-// Every project factory in a module that still declares a parameter, read off the
-// parser rather than off the text: the question is what a declaration carries, and
-// a pattern reports on one spelling of it. Membership is a value-exported top-level
-// declaration whose return type is `UserConfig`, which is what Vitest calls as a
-// project row. `applicationBrowser` takes the showcase switch and is not exported,
-// so the same rule leaves it outside the population rather than exempting it, and
-// the emitted `resolveWorkspacePath` declares parameters under a return type of
-// `string`, which the same rule leaves outside it too.
-function findParameters(content: string): readonly string[] {
-	const carried: string[] = []
+// Declarations whose parameters differ from the factory or merge signature, read off
+// the parser rather than off the text: the question is what a declaration carries,
+// and a pattern reports on one spelling of it. Membership is a value-exported
+// top-level declaration whose return type is `UserConfig`, which is what Vitest calls
+// as a project row. The emitted `resolveWorkspacePath` declares parameters under a
+// return type of `string`, so the same rule leaves it outside the population. The
+// merge's own signature is the one exemption, and it is asserted through this same
+// reader beside the sweep rather than taken on trust.
+function findRefusals(content: string): readonly string[] {
+	const refused: string[] = []
 	for (const statement of readStatements(content, 'vite.config.ts')) {
 		if (statement.exported !== 'value') continue
 		for (const declaration of statement.declarations) {
-			if (declaration.returns !== 'UserConfig' || declaration.parameters.length === 0) continue
-			carried.push(declaration.name)
+			if (declaration.returns !== 'UserConfig') continue
+			const parameters = declaration.parameters.join(', ')
+			const required =
+				declaration.name === 'mergeOverride'
+					? 'base: UserConfig, override?: UserConfig'
+					: 'override?: UserConfig'
+			if (parameters === required) continue
+			refused.push(`${declaration.name}(${parameters})`)
 		}
 	}
-	return carried
+	return refused
 }
 
 // The setup seeds a target is born with, transcribed from a run that printed them
@@ -523,13 +529,14 @@ function mutateSeed(seed: string): string {
 	return `${seed.slice(0, -1)} `
 }
 
-// The refused parameter planted back into a copy of emitted or template text. Every
-// root configuration declares `policy`, so the plant lands in each one the sweep
-// walks and an empty finding is a finding rather than a module the parser skipped.
-function plantParameter(content: string): string {
+// The sealed declaration planted back into a copy of emitted or template text: the
+// override taken away, which is the shape this rule replaced. Every root
+// configuration declares `policy`, so the plant lands in each one the sweep walks and
+// an empty finding is a finding rather than a module the parser skipped.
+function sealParameter(content: string): string {
 	return content.replace(
-		'export const policy = (): UserConfig =>',
-		'export const policy = (options?: UserConfig): UserConfig =>',
+		'export function policy(override?: UserConfig): UserConfig {',
+		'export function policy(): UserConfig {',
 	)
 }
 
@@ -918,49 +925,64 @@ describe('emitted workspaces under their own gates', () => {
 		expect(strays).toStrictEqual([])
 	})
 
-	it('declares every emitted project factory without a parameter list', () => {
-		// Vitest calls a project row with its own environment record, so a factory
-		// that declared a parameter merged those fields into the configuration it
-		// returned. The controls are that parameter planted back: once into the
-		// template text the emitters carry, and once into every emitted configuration
-		// the sweep reads.
-		const planted = plantParameter(CONFIG_TEMPLATES.factories.policy)
-		expect(planted).not.toBe(CONFIG_TEMPLATES.factories.policy)
-		expect(findParameters(planted)).toStrictEqual(['policy'])
-		expect(findParameters(CONFIG_TEMPLATES.factories.policy)).toStrictEqual([])
-		// `applicationBrowser` declares a parameter and is not exported, so the rule
-		// leaves it outside the population rather than exempting it. It is read from an
-		// emitted configuration rather than from the template text it is emitted from:
-		// that text still carries its placeholders, so it is not a module a parser reads.
-		// The assertion below reads the declaration through the same reader the rule
-		// depends on and asserts it unexported, so an absent statement reddens it
+	it('declares every emitted project factory with the override parameter', () => {
+		// Vitest calls a project row with its own environment record, so a factory that
+		// declares a parameter receives those fields in the override position. The
+		// emitted `mergeOverride` is what makes the parameter safe: a `UserConfig` declares
+		// `mode` but not `command`, and the record always carries both, so a value carrying
+		// the pair returns the base unchanged. The vendored `tests/config.test.ts` drives
+		// every registered row through that refusal. This rule replaced a seal — a factory
+		// declaring no parameter at all — so the controls are that seal put back: once
+		// into the template text the emitters carry, and once into every emitted
+		// configuration the sweep reads.
+		const sealed = sealParameter(CONFIG_TEMPLATES.factories.policy)
+		expect(sealed).not.toBe(CONFIG_TEMPLATES.factories.policy)
+		expect(findRefusals(sealed)).toStrictEqual(['policy()'])
+		expect(findRefusals(CONFIG_TEMPLATES.factories.policy)).toStrictEqual([])
+		// The merge and the browser factory are read from an emitted configuration
+		// rather than from the template text they are emitted from: that text still
+		// carries its placeholders, so it is not a module a parser reads. Each
+		// declaration is read through the same reader the sweep depends on, so the one
+		// signature the sweep exempts is pinned and an absent statement reddens this
 		// rather than leaving the empty finding vacuous.
 		const browser = requireValue(
 			buildModules(createBlueprint('sample', { app: ['browser'] })).get('vite.config.ts'),
 		)
-		const applicationBrowser = readStatements(browser, 'vite.config.ts').find((statement) =>
-			statement.declarations.some(({ name }) => name === 'applicationBrowser'),
+		const statements = readStatements(browser, 'vite.config.ts')
+		const merge = statements.find((statement) =>
+			statement.declarations.some(({ name }) => name === 'mergeOverride'),
 		)
-		expect(applicationBrowser?.declarations).toStrictEqual([
-			{ name: 'applicationBrowser', parameters: ['showcase: boolean'], returns: 'UserConfig' },
+		expect(merge?.declarations).toStrictEqual([
+			{
+				name: 'mergeOverride',
+				parameters: ['base: UserConfig', 'override?: UserConfig'],
+				returns: 'UserConfig',
+			},
 		])
-		expect(applicationBrowser?.exported).toBeUndefined()
-		expect(findParameters(browser)).toStrictEqual([])
+		expect(merge?.exported).toBe('value')
+		expect(
+			statements.find((statement) =>
+				statement.declarations.some(({ name }) => name === 'appBrowser'),
+			)?.declarations,
+		).toStrictEqual([
+			{ name: 'appBrowser', parameters: ['override?: UserConfig'], returns: 'UserConfig' },
+		])
+		expect(findRefusals(browser)).toStrictEqual([])
 
 		const inspected = new Map<string, number>()
-		const carried: string[] = []
+		const refused: string[] = []
 		const blind: string[] = []
 		for (const blueprint of buildSelections()) {
 			for (const [path, content] of buildModules(blueprint)) {
 				inspected.set(path, (inspected.get(path) ?? 0) + 1)
-				for (const name of findParameters(content)) carried.push(`${path} ${name}`)
+				for (const name of findRefusals(content)) refused.push(`${path} ${name}`)
 				if (path !== 'vite.config.ts') continue
-				if (findParameters(plantParameter(content)).length === 0) blind.push(path)
+				if (findRefusals(sealParameter(content)).length === 0) blind.push(path)
 			}
 		}
 		expect(Object.fromEntries(inspected)).toStrictEqual(MODULE_EMITTERS)
 		expect(blind).toStrictEqual([])
-		expect(carried).toStrictEqual([])
+		expect(refused).toStrictEqual([])
 	})
 
 	it('emits no entry the vendored unassigned-import rule refuses', () => {
@@ -1013,35 +1035,32 @@ describe('emitted workspaces under their own gates', () => {
 			// evaluated one by its label, so the name and the label both have to agree
 			// with what that proof expects.
 			expect(application).toContain("name: { label: 'app:browser', color: 'blue' }")
-			// The factory takes no parameter, so an override passed into a project row is
-			// what the emitted workspace's own typecheck refuses. That refusal is the
-			// control: it fails where the sealed declaration is read, so a clean run
-			// cannot be a typecheck that resolved nothing.
+			// The factory takes an override typed `UserConfig`, so a key that type does
+			// not declare is what the emitted workspace's own typecheck refuses. That
+			// refusal is the control: it fails where the override parameter is read, so
+			// a clean run cannot be a typecheck that resolved nothing, and it proves the
+			// parameter carries the real type rather than an open one.
 			workspace.write(
 				'application/vite.config.ts',
 				application.replace(
 					'projects: [appBrowser,',
-					'projects: [appBrowser({ publicDir: false }),',
+					'projects: [appBrowser({ unreachable: false }),',
 				),
 			)
-			expect(checkTypes(applicationRoot)).toContain('Expected 0 arguments, but got 1')
-			expect(CONFIG_TEMPLATES.factories.app.browser).toContain(
-				'export function appBrowser(): UserConfig',
+			expect(checkTypes(applicationRoot)).toContain(
+				"'unreachable' does not exist in type 'UserConfig'",
 			)
-			expect(CONFIG_TEMPLATES.factories.app.browser).toContain('return applicationBrowser(false)')
-			// The showcase-only control removes the contextual type from the
-			// conditional plugin array. It recreates the widening that made the
-			// emitted workspace fail even though the runtime plugin list is unchanged.
-			expect(showcase).toContain('const showcasePlugins: PluginOption[] = showcase')
-			const control = showcase
-				.replace(
-					"import type { PluginOption, UserConfig } from 'vite'",
-					"import type { UserConfig } from 'vite'",
-				)
-				.replace(
-					'const showcasePlugins: PluginOption[] = showcase',
-					'const showcasePlugins = showcase',
-				)
+			expect(CONFIG_TEMPLATES.factories.app.browser).toContain(
+				'export function appBrowser(override?: UserConfig): UserConfig',
+			)
+			expect(CONFIG_TEMPLATES.factories.app.browser).toContain(
+				'return mergeOverride(project, override)',
+			)
+			// The showcase-only control removes the contextual type from the showcase
+			// configuration. It recreates the widening that made the emitted workspace
+			// fail even though the runtime plugin list is unchanged.
+			expect(showcase).toContain('\tconst showcase: UserConfig = {')
+			const control = showcase.replace('\tconst showcase: UserConfig = {', '\tconst showcase = {')
 			expect(control).not.toBe(showcase)
 			workspace.write('showcase/vite.config.ts', control)
 			const diagnostics = checkTypes(showcaseRoot)

@@ -729,20 +729,20 @@ export function blueprintToRootVite(blueprint: Blueprint): string {
 			fillTemplate(CONFIG_TEMPLATES.factories.src.browser, {
 				external: core
 					? `external: (id: string) =>
-				id === '@src/core' ||
-				id.startsWith('@orkestrel/') ||
-				peers.some((peer) => id === peer || id.startsWith(peer + '/')),`
+					id === '@src/core' ||
+					id.startsWith('@orkestrel/') ||
+					peers.some((peer) => id === peer || id.startsWith(peer + '/')),`
 					: `external: (id: string) =>
-				id.startsWith('@orkestrel/') ||
-				peers.some((peer) => id === peer || id.startsWith(peer + '/')),`,
+					id.startsWith('@orkestrel/') ||
+					peers.some((peer) => id === peer || id.startsWith(peer + '/')),`,
 				output: core
-					? "\t\t\toutput: { paths: { '@src/core': '../core/index.js' } },"
-					: '\t\t\toutput: {},',
-				exclude: core ? "\t\texclude: ['tests/src/core/**/*.test.ts'],\n" : '',
+					? "\t\t\t\toutput: { paths: { '@src/core': '../core/index.js' } },"
+					: '\t\t\t\toutput: {},',
+				exclude: core ? "\t\t\texclude: ['tests/src/core/**/*.test.ts'],\n" : '',
 				// A browser test runs in the browser, so it cannot start a Node fixture
 				// for itself. That is the case a global setup exists for, and it is why
 				// this project takes the same span the integration project does.
-				global: blueprint.global ? "\t\tglobalSetup: ['./tests/setupGlobal.ts'],\n" : '',
+				global: blueprint.global ? "\t\t\tglobalSetup: ['./tests/setupGlobal.ts'],\n" : '',
 			}),
 		)
 		projects.push('srcBrowser')
@@ -753,29 +753,29 @@ export function blueprintToRootVite(blueprint: Blueprint): string {
 			fillTemplate(CONFIG_TEMPLATES.factories.src.server, {
 				external: core
 					? `external: (id: string) =>
-				id === '@src/core' ||
-				id.startsWith('node:') ||
-				id.startsWith('@orkestrel/') ||
-				peers.some((peer) => id === peer || id.startsWith(peer + '/')),`
+					id === '@src/core' ||
+					id.startsWith('node:') ||
+					id.startsWith('@orkestrel/') ||
+					peers.some((peer) => id === peer || id.startsWith(peer + '/')),`
 					: `external: (id: string) =>
-				id.startsWith('node:') ||
-				id.startsWith('@orkestrel/') ||
-				peers.some((peer) => id === peer || id.startsWith(peer + '/')),`,
+					id.startsWith('node:') ||
+					id.startsWith('@orkestrel/') ||
+					peers.some((peer) => id === peer || id.startsWith(peer + '/')),`,
 				output: core
-					? `\t\t\toutput: [
-				{
-					format: 'es',
-					entryFileNames: 'index.js',
-					paths: { '@src/core': '../core/index.js' },
-				},
-				{
-					format: 'cjs',
-					entryFileNames: 'index.cjs',
-					paths: { '@src/core': '../core/index.cjs' },
-				},
-			],`
-					: '\t\t\toutput: {},',
-				exclude: core ? "\t\texclude: ['tests/src/core/**/*.test.ts'],\n" : '',
+					? `\t\t\t\toutput: [
+					{
+						format: 'es',
+						entryFileNames: 'index.js',
+						paths: { '@src/core': '../core/index.js' },
+					},
+					{
+						format: 'cjs',
+						entryFileNames: 'index.cjs',
+						paths: { '@src/core': '../core/index.cjs' },
+					},
+				],`
+					: '\t\t\t\toutput: {},',
+				exclude: core ? "\t\t\texclude: ['tests/src/core/**/*.test.ts'],\n" : '',
 			}),
 		)
 		projects.push('srcServer')
@@ -789,70 +789,8 @@ export function blueprintToRootVite(blueprint: Blueprint): string {
 		projects.push('appCore')
 	}
 	if (blueprint.app.includes('browser')) {
-		// The formatter reprints an array from its syntax tree and joins one that
-		// fits the vendored width, so the base plugin array is emitted joined when
-		// the showcase plugins are absent.
-		const showcasePlugins = machinery.showcase
-			? `	const showcasePlugins: PluginOption[] = showcase
-		? [
-				viteSingleFile({
-					removeViteModuleLoader: true,
-					useRecommendedBuildConfig: true,
-				}),
-				{
-					name: 'orkestrel-showcase-html',
-					transformIndexHtml: {
-						order: 'post',
-						handler(html) {
-							const stamp = new Date().toISOString()
-							return html.replace(
-								'</head>',
-								'\t\t<meta name="build-id" content="' + stamp + '" />\\n\t</head>',
-							)
-						},
-					},
-				},
-			]
-		: []
-`
-			: ''
-		const plugins = machinery.showcase
-			? `\t\tplugins: [
-			outputBoundary(output),
-			environmentBoundary('app/browser'),
-			vue(),
-			...showcasePlugins,
-		],
-`
-			: "\t\tplugins: [outputBoundary(output), environmentBoundary('app/browser'), vue()],\n"
-		const showcaseBuild = machinery.showcase
-			? `\t\t\t...(showcase
-				? {
-						cssMinify: 'lightningcss',
-						minify: 'oxc',
-						modulePreload: false,
-						reportCompressedSize: false,
-						sourcemap: false,
-						target: 'esnext',
-					}
-				: { assetsInlineLimit: 0 }),
-`
-			: '\t\t\tassetsInlineLimit: 0,\n'
-		const showcaseFactory = machinery.showcase
-			? `
-export function appShowcase(): UserConfig {
-	return applicationBrowser(true)
-}
-`
-			: ''
-		factories.push(
-			fillTemplate(CONFIG_TEMPLATES.factories.app.browser, {
-				plugins,
-				showcasePlugins,
-				showcaseBuild,
-				showcaseFactory,
-			}),
-		)
+		const showcaseFactory = machinery.showcase ? CONFIG_TEMPLATES.factories.app.showcase : ''
+		factories.push(fillTemplate(CONFIG_TEMPLATES.factories.app.browser, { showcaseFactory }))
 		// The row is the factory itself, never a call of it. Vitest reads
 		// `import.meta.env.MODE` as the command line's `--mode` only inside a project
 		// it calls, so an evaluated row silently turns the release-mode publish gate
@@ -890,7 +828,7 @@ export function appShowcase(): UserConfig {
 	if (blueprint.integration) {
 		factories.push(
 			fillTemplate(CONFIG_TEMPLATES.factories.integration, {
-				global: blueprint.global ? "\t\tglobalSetup: ['./tests/setupGlobal.ts'],\n" : '',
+				global: blueprint.global ? "\t\t\tglobalSetup: ['./tests/setupGlobal.ts'],\n" : '',
 			}),
 		)
 		projects.push('integration')
@@ -912,7 +850,6 @@ ${projects.map((project) => `\t\t\t${project},`).join('\n')}
 		body.includes(helper),
 	)
 	return fillTemplate(CONFIG_TEMPLATES.root.vite, {
-		viteTypes: machinery.showcase ? 'PluginOption, UserConfig' : 'UserConfig',
 		imports: imports.length === 0 ? '' : `${imports.join('\n')}\n`,
 		helpers:
 			helpers.length === 0 ? '' : `import { ${helpers.join(', ')} } from './configs/helpers.js'\n`,
