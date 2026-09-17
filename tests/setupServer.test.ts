@@ -75,6 +75,7 @@ import {
 	readNpmFloor,
 	readNpmVersion,
 	captureScaffoldRejection,
+	readSpecifiers,
 	readStatements,
 	REFUSED_MANIFEST_TEXT,
 	renderLauncher,
@@ -591,6 +592,79 @@ describe('the parsed statement reader', () => {
 				parameters: ['relativePath: string', 'base: string'],
 				returns: 'string',
 			},
+		])
+	})
+})
+
+describe('the parsed specifier reader', () => {
+	it('reads the module every import form names, in source order, and nothing a declaration names', () => {
+		const source = [
+			"import type { Plugin } from 'vite'",
+			"import { join } from 'node:path'",
+			"export { findDrift } from '@orkestrel/guide'",
+			"export * from './local.js'",
+			'export const value = 1',
+			'export { value as held }',
+			"const loaded = await import('@orkestrel/console')",
+			'const templated = await import(`@orkestrel/test/server`)',
+			"const required = require('@orkestrel/process')",
+			'void loaded',
+			'void templated',
+			'void required',
+			'',
+		].join('\n')
+
+		// A type-only import, a named re-export, and a star re-export each name a
+		// module that must resolve, so each reports. A local declaration and a local
+		// export list name no module and report nothing.
+		expect(readSpecifiers(source, 'module.ts')).toStrictEqual([
+			'vite',
+			'node:path',
+			'@orkestrel/guide',
+			'./local.js',
+			'@orkestrel/console',
+			'@orkestrel/test/server',
+			'@orkestrel/process',
+		])
+	})
+
+	it('reports nothing for a specifier a string literal or a comment carries', () => {
+		// The rival reading this must exclude. A text pattern reports on text, so it
+		// matches a specifier a fixture quotes and a comment names, and reports two
+		// imports a module that imports nothing makes.
+		const pattern = /\b(?:from|import|require)\s*\(?\s*(['"`])(@orkestrel\/[^'"`]+)\1/gu
+		const source = [
+			'const fixture = \'import { render } from "@orkestrel/console"\'',
+			"// import { render } from '@orkestrel/console'",
+			'void fixture',
+			'',
+		].join('\n')
+
+		expect([...source.matchAll(pattern)].map((match) => match[2])).toStrictEqual([
+			'@orkestrel/console',
+			'@orkestrel/console',
+		])
+		expect(readSpecifiers(source, 'quoted.ts')).toStrictEqual([])
+	})
+
+	it('reports undefined for an import whose argument resolves to no literal string', () => {
+		// An argument assembled at runtime names no module a caller can rule on, and
+		// an entry is what tells a caller the import is there to rule on at all.
+		expect(readSpecifiers('await import(`@orkestrel/${part}`)\n', 'expression.ts')).toStrictEqual([
+			undefined,
+		])
+		expect(readSpecifiers('await import(held)\n', 'binding.ts')).toStrictEqual([undefined])
+		expect(readSpecifiers('const held = require(name)\nvoid held\n', 'call.cts')).toStrictEqual([
+			undefined,
+		])
+	})
+
+	it('refuses a source the parser reports an error for', () => {
+		expect(() => readSpecifiers('import { join } from\n', 'broken.ts')).toThrow(
+			'The parser refused broken.ts',
+		)
+		expect(readSpecifiers("import { join } from 'node:path'\n", 'broken.ts')).toStrictEqual([
+			'node:path',
 		])
 	})
 })

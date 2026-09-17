@@ -1509,6 +1509,85 @@ export function readStatements(source: string, name: string): readonly TestState
 }
 
 /**
+ * Reads the module specifier of every import a parsed module writes, in source order.
+ *
+ * @param source - The module text to parse.
+ * @param name - The filename the parser reads the source language from.
+ * @returns One entry per import: the module it names, or `undefined` where the argument is not a
+ * string the reading can resolve.
+ *
+ * @throws Thrown when the parser reports an error, naming the first one.
+ *
+ * @remarks
+ * The subject is what a module imports, so a parser answers it and a pattern does
+ * not: a pattern matches a specifier written inside a string literal or a comment
+ * and reports a module the source never imports. The reading covers a static
+ * import, a re-export carrying a source, a dynamic `import()`, and a `require`
+ * call, which are the forms that name another module at runtime, and it reads a
+ * type-only import as an import because that specifier must resolve too. It
+ * resolves a string literal and a template literal with no expressions; every
+ * other argument reports `undefined`, because an argument assembled at runtime
+ * names no module a caller can rule on. Two forms sit outside the reading: an
+ * `import()` written in type position, which parses as a `TSImportType` node, and
+ * a load through a binding some other name holds.
+ *
+ * @example
+ * ```ts
+ * readSpecifiers("export { join } from 'node:path'\n", 'module.ts') // ['node:path']
+ * readSpecifiers('await import(held)\n', 'module.ts') // [undefined]
+ * ```
+ */
+export function readSpecifiers(source: string, name: string): ReadonlyArray<string | undefined> {
+	const parsed = parseSync(name, source)
+	const [refusal] = parsed.errors
+	if (refusal !== undefined) throw new Error(`The parser refused ${name}: ${refusal.message}`)
+	// Each entry is the node naming the module, kept with its offset so the stack
+	// walk's own order never reaches the caller.
+	const read: Array<{ readonly start: number; readonly named: Record<string, unknown> }> = []
+	const pending: unknown[] = [parsed.program]
+	while (pending.length > 0) {
+		const node = pending.pop()
+		if (isArray(node)) {
+			for (const child of node) pending.push(child)
+			continue
+		}
+		if (!isRecord(node)) continue
+		for (const child of Object.values(node)) pending.push(child)
+		const start = node.start
+		if (typeof start !== 'number') continue
+		const origin = node.source
+		if (
+			node.type === 'ImportDeclaration' ||
+			node.type === 'ExportAllDeclaration' ||
+			node.type === 'ExportNamedDeclaration' ||
+			node.type === 'ImportExpression'
+		) {
+			// A local export list carries no source, so it names no module at all. Every
+			// other form here carries the node its own specifier is written in.
+			if (isRecord(origin)) read.push({ start, named: origin })
+			continue
+		}
+		if (node.type !== 'CallExpression') continue
+		const callee = node.callee
+		if (!isRecord(callee) || callee.type !== 'Identifier' || callee.name !== 'require') continue
+		const [argument] = isArray(node.arguments) ? node.arguments : []
+		if (isRecord(argument)) read.push({ start, named: argument })
+	}
+	return read
+		.sort((first, second) => first.start - second.start)
+		.map(({ named }) => {
+			if (isString(named.value)) return named.value
+			const expressions = named.expressions
+			if (named.type !== 'TemplateLiteral' || !isArray(expressions) || expressions.length > 0)
+				return undefined
+			const [quasi] = isArray(named.quasis) ? named.quasis : []
+			if (!isRecord(quasi)) return undefined
+			const held = quasi.value
+			return isRecord(held) && isString(held.cooked) ? held.cooked : undefined
+		})
+}
+
+/**
  * Builds a vendored-host manifest that matches its own membership.
  *
  * @param fields - The membership to replace on the returned value.

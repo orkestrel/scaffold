@@ -94,6 +94,7 @@ import {
 	listExecutablePaths,
 	normalizeBashPath,
 	PROTECTED_PATH_CASES,
+	readSpecifiers,
 	captureScaffoldCode,
 	resolveOllamaShell,
 	resolveTool,
@@ -430,7 +431,6 @@ describe('vendored imports', () => {
 	// this reads against is the declaration rather than the scope. Any other
 	// `@orkestrel/*` package is undeclared wherever it lands.
 	it('imports only Orkestrel packages every workspace declares from each vendored module', () => {
-		const specifierPattern = /\b(?:from|import|require)\s*\(?\s*(['"`])(@orkestrel\/[^'"`]+)\1/gu
 		const paths = HOST_PATHS.flatMap((path) => {
 			const source = join(WORKSPACE_ROOT, path)
 			if (!existsSync(source)) return []
@@ -443,15 +443,24 @@ describe('vendored imports', () => {
 			// Only JavaScript and TypeScript module extensions can carry resolvable imports.
 			return /\.[cm]?[jt]s$/u.test(path) ? [path] : []
 		}).sort()
-		// The controls, drawn from outside the vendored set, carry the two specifier
-		// forms a module writes and both sides of the ruling. Without them a reader
-		// that extracts nothing and an allowlist that admits everything each report
-		// the same clean vendored list.
+		// The controls, drawn from outside the vendored set, carry the specifier forms a
+		// module writes, the form no reading resolves, and both sides of the ruling.
+		// Without them a reader that extracts nothing and an allowlist that admits
+		// everything each report the same clean vendored list. `control/quoted.ts` is
+		// the rival reading: a text pattern matches the specifier its fixture quotes
+		// and its comment names, and reports two imports a module that imports nothing
+		// makes.
 		const controls = [
 			{ path: 'control/from.ts', content: "import { value } from '@orkestrel/test/server'" },
 			{ path: 'control/dynamic.ts', content: 'await import(`@orkestrel/test/server`)' },
 			{ path: 'control/guide.ts', content: "import { findDrift } from '@orkestrel/guide'" },
 			{ path: 'control/console.ts', content: "import { render } from '@orkestrel/console'" },
+			{
+				path: 'control/quoted.ts',
+				content:
+					"const fixture = 'import { render } from \"@orkestrel/console\"'\n// import { render } from '@orkestrel/console'\nvoid fixture\n",
+			},
+			{ path: 'control/expression.ts', content: 'await import(`@orkestrel/${part}`)' },
 		]
 		expect(paths.length).toBeGreaterThan(0)
 		expect(paths).toContain('tests/config.test.ts')
@@ -467,9 +476,18 @@ describe('vendored imports', () => {
 		const imported: string[] = []
 		const controlled: string[] = []
 		for (const module of modules) {
-			for (const match of module.content.matchAll(specifierPattern)) {
-				const specifier = match[2]
-				if (specifier === undefined) throw new Error('A match carried no specifier capture')
+			// The parser reads the imports the module makes. A pattern reads its text, so
+			// it reports a specifier a string literal or a comment carries as an import,
+			// and the vendored set holds both of those.
+			for (const specifier of readSpecifiers(module.content, module.path)) {
+				if (specifier === undefined) {
+					// An argument assembled at runtime names no package to rule on, so the
+					// proof reports the import rather than passing over it.
+					if (module.vendored) imported.push(`${module.path}: unreadable import`)
+					else controlled.push(`${module.path}: unreadable import`)
+					continue
+				}
+				if (!specifier.startsWith('@orkestrel/')) continue
 				// A subpath names no package of its own, so the ruling reads the scope and
 				// the first segment: `@orkestrel/test/server` is declared when
 				// `@orkestrel/test` is.
@@ -487,6 +505,7 @@ describe('vendored imports', () => {
 			'control/dynamic.ts: @orkestrel/test/server declared',
 			'control/guide.ts: @orkestrel/guide declared',
 			'control/console.ts: @orkestrel/console undeclared',
+			'control/expression.ts: unreadable import',
 		])
 		expect(imported).toEqual([])
 	})
