@@ -14,7 +14,7 @@
 - [Forms in production](#forms-in-production)
 - [JavaScript lifecycle](#javascript-lifecycle)
 - [Accessibility](#accessibility)
-- [Enterprise patterns](#enterprise-patterns) — [App shell](#app-shell) · [Dense data tables](#dense-data-tables) · [Filter & search bars](#filter--search-bars) · [Wizards & multi-step forms](#wizards--multi-step-forms) · [The data states](#the-data-states) · [Feedback discipline](#feedback-discipline) · [Destructive actions](#destructive-actions)
+- [Enterprise patterns](#enterprise-patterns) — [App shell](#app-shell) · [Dense data tables](#dense-data-tables) · [Filter & search bars](#filter--search-bars) · [Wizards & multi-step forms](#wizards--multi-step-forms) · [The data states](#the-data-states) · [Refused capabilities](#refused-capabilities) · [Feedback discipline](#feedback-discipline) · [Destructive actions](#destructive-actions)
 - [RTL](#rtl)
 - [Print](#print)
 - [Performance](#performance)
@@ -114,9 +114,10 @@ measured role that requires it. Do not turn every subtle panel into a custom col
 
 ### Theme toggle
 
-Reuse the host controller. When implementing one, follow [Scope the mode](color-modes.md#scope-the-mode)
-for validated preference, automatic-mode resolution, storage failure, first paint, and overlay
-mounts. Bootstrap ships no picker; an attribute example is not a complete controller.
+Reuse the host controller. When implementing one, follow
+[Scope the mode](color-modes.md#scope-the-mode) for validated preference, automatic-mode resolution,
+first paint, and overlay mounts, and [Refused capabilities](#refused-capabilities) for a refused read
+or write. Bootstrap ships no picker; an attribute example is not a complete controller.
 
 ### Custom modes
 
@@ -484,7 +485,7 @@ Client-side, the documented pattern:
 </script>
 ```
 
-**Documented limitation (enterprise-critical):** Bootstrap's client-side validation styles and `valid/invalid-tooltip`s are **not exposed to assistive technologies**. For accessible flows use the server-side pattern — apply `.is-invalid` / `.is-valid` directly (no `.was-validated` parent needed), with `.invalid-feedback` linked through `aria-describedby` — or rely on native browser validation.
+**Documented limitation:** Bootstrap's client-side validation styles and `valid/invalid-tooltip`s are **not exposed to assistive technologies**. For accessible flows use the server-side pattern — apply `.is-invalid` / `.is-valid` directly (no `.was-validated` parent needed), with `.invalid-feedback` linked through `aria-describedby` — or rely on native browser validation.
 
 ```html
 <input
@@ -573,7 +574,12 @@ Wire the reader into the suite after it has settled a question.
 
 ### WCAG 2.2 requirements for app UI
 
-- **Target size (2.5.8, AA) — this section owns the skill's target dimensions.** Hold every applicable target at ≥ 24×24 CSS px: icon buttons, row actions, close buttons, sort carets, checkbox hit-areas, and color swatches. A smaller visual target passes only where a 24px spacing circle around it stays undisturbed — so in tight `table-sm` toolbars, pad the hit area rather than enlarging the glyph. Prefer 44×44 CSS px for a primary mobile control. Measure the rendered hit area; never infer it from a size class such as `btn-sm`. Enlarge the button or its associated label, not the icon's surrounding decoration.
+- **Target size (2.5.8, AA) — this section owns the skill's target dimensions.** Hold every applicable target at ≥ 24×24 CSS px: icon buttons, row actions, close buttons, sort carets, checkbox hit-areas, and color swatches. A smaller visual target passes only where a 24px spacing circle around it stays undisturbed — so in tight `table-sm` toolbars, pad the hit area rather than enlarging the glyph. Prefer 44×44 CSS px for a primary mobile control. Measure the rendered hit area; never infer it from a size class such as `btn-sm`. Enlarge the button or its associated label, not the icon's surrounding decoration. An inline target whose text can wrap paints one rectangle per line, and the rectangles are disjoint,
+  so the centre of its bounding box can land between them and resolve to the ancestor. Make such a
+  target `d-block`, `d-grid`, or a `stretched-link` container wherever a click must land anywhere in
+  its box. Never enlarge one through `line-height`, which widens the gap between the rectangles rather
+  than the rectangles. Measure the hit area at the narrowest supported viewport, where the target
+  wraps, not only where it fits one line.
 - **Focus not obscured (2.4.11, AA).** Sticky headers/footers/action bars and toast overlays must not bury the focused element. Reserve space with `scroll-margin-top` on focusables (or `scroll-padding-top` on the scroll container) equal to the sticky chrome height.
 - **Dragging alternatives (2.5.7, AA).** Any drag (row reorder, kanban, slider, resize) needs a non-drag single-pointer path: move up/down buttons, numeric input, click-to-place.
 - **Accessible authentication (3.3.8, AA).** Never block paste in password/OTP fields; support password managers; no puzzle as the only way in.
@@ -761,6 +767,30 @@ Design **every one** for every data surface: ideal (populated), empty, loading, 
 - **Partial:** keep available data readable, identify the missing or stale part, and scope recovery
   to it. Missing is not zero. Do not collapse the whole surface into an error when some data exists.
 - **Every error state states what failed and how to fix it**, carries a keyboard-reachable retry in place, and preserves surrounding context — a body fetch failure must not blow away the toolbar and filters.
+
+### Refused capabilities
+
+A browser capability the document asks for can refuse at the call site. A storage write raises
+`QuotaExceededError` when no room is left, and a storage read raises when the browser holds that
+capability behind a permission. Give a refusal the treatment [The data states](#the-data-states)
+requires of every other state.
+
+- **Paint before you persist.** Apply the state to the document first, then write it. A control
+  deriving its label and `aria-pressed` from a flag the write moves announces a state the document
+  is not in as soon as the write refuses.
+- **Catch at the boundary that makes the call**, not at the caller. A read that runs during
+  construction takes the whole surface down when it escapes, and the person gets a blank page
+  instead of a degraded one.
+- **Default a refused read to the state a first-time reader gets.** The person who cleared site data
+  and the person whose browser refuses the read arrive at the same screen.
+- **Keep the action working for this session.** The refusal costs the memory of the preference.
+  Never let it also cost the behavior the person asked for.
+- **Say nothing about a refusal the person does not experience.** A preference that paints and does
+  not survive the session earns no failure sentence and no retry control: the action succeeded, and
+  a retry writes the same value to the same refusing store. Where the refusal does cost the person
+  something they asked for, carry it on the channel [Feedback discipline](#feedback-discipline)
+  names for its scope — inline alert for a refusal tied to one control, banner for a capability the
+  whole surface needs.
 
 ### Feedback discipline
 

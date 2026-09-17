@@ -7,7 +7,9 @@ harness a person watches. Never write a second table for the harness.
 
 - Declare each transition as a `StateTransition` carrying its `name`, its `from` state, the `event`,
   and its `to` state. Type it on the entity's own state and event unions, so a row naming a state the
-  entity does not have fails to typecheck.
+  entity does not have fails to typecheck. A view-local reactive ref inside a component is not such
+  an entity. Never declare a state union or an event union solely to type a table; `AGENTS.md` §
+  Design laws bars a literal union that names no real domain state.
 - Write one `StateScenario` per transition, carrying that `transition` plus `arrange`, `act`, and
   `assert`. Each phase receives the context and the part of the transition it owns.
 - Put the scenarios in the workspace's browser test setup module. Put the table beside them until a
@@ -33,7 +35,8 @@ harness a person watches. Never write a second table for the harness.
 ## Drive the act the way the transition happens
 
 - Drive `act` through the journey verbs — `clickAccessible`, `clickDisclosure`, `typeAccessible`,
-  `pressKeys`, `traverseAccessible` — for every transition a person can cause.
+  `traverseAccessible` — and through `userEvent.keyboard` from `vitest/browser` where the transition
+  is a key on an already-focused control, for every transition a person can cause.
 - Drive `act` through the entity's own API only where the transition is the entity's rather than the
   person's: a lifecycle event, a transport reply, a timer the surface owns.
 - Say which door each row used, in the row's `name`. A table that mixes the doors silently reads as

@@ -257,8 +257,9 @@ then inherited into a different local mode. Consume the Bootstrap variable at th
 rebind the alias at every supported mode boundary. Custom properties resolve their references
 before inheritance; see [CSS Custom Properties](https://www.w3.org/TR/css-variables-1/).
 
-When implementing a picker, validate persisted values, tolerate unavailable storage, and resolve
-`auto` through `prefers-color-scheme` before setting the attribute. Follow system changes only
+When implementing a picker, validate persisted values and resolve `auto` through
+`prefers-color-scheme` before setting the attribute. Take a refused read or write from
+[bootstrap-reference.md](bootstrap-reference.md) → Refused capabilities. Follow system changes only
 while the preference is automatic. Apply the resolved mode before first paint, keep server/client
 initial state consistent, and update the picker's accessible state. Do not write
 `data-bs-theme="auto"` without an explicitly implemented custom mode. Take the integration details

@@ -30,6 +30,10 @@ readings follow.
 - Report which variants a result covers beside it. A pairing that appears only in a state the run
   never entered is unmeasured.
 
+Vitest `provide` carries serializable values only. Where a workspace fans one project out per
+variant, the project's provided variant carries `name`, `width`, and `height`; `apply` does not
+cross that channel. Run `apply` inside the test from the variant the project provides.
+
 ## Contrast and focus chrome
 
 - Read a text pairing with `readContrast(element)`, which composites the painted ancestors to the first
@@ -39,7 +43,7 @@ readings follow.
   are all translucent; take that refusal as the reading, because an assumed white canvas turns "this
   surface declares no background" into a number that reads like a measurement.
 - Read focus chrome with `readRing(control)`, after focus arrived through `traverseAccessible`,
-  `pressKeys`, or a real click. Pass `worn` where the chrome is painted onto a second element such
+  `userEvent.keyboard` from `vitest/browser`, or a real click. Pass `worn` where the chrome is painted onto a second element such
   as a label. It reports `undefined` for a control not matching `:focus-visible`, for the browser's
   own automatic ring, and for a focus style that only repaints the fill — treat each as a finding
   about the surface rather than as a pass.

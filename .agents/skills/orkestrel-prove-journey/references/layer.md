@@ -21,9 +21,10 @@ package publishes none for the act.
   `page` and `userEvent` from `vitest/browser`; the `@vitest/browser/context` specifier is
   deprecated and is not the import a workspace helper uses.
 - Never dispatch a constructed event from a journey. The published `createPointerEvent`,
-  `createDragEvent`, `typeInput`, and `commitInput` serve a unit test whose subject is the handler; a
-  journey drives input through `clickAccessible`, `clickAccessibleWithin`, `clickDisclosure`,
-  `typeAccessible`, `fillAccessible`, `pressKeys`, and `traverseAccessible` only.
+  `createDragEvent`, `typeInput`, and `commitInput` serve a unit test whose subject is the handler;
+  a journey drives input through `clickAccessible`, `clickAccessibleWithin`, `clickDisclosure`,
+  `typeAccessible`, `fillAccessible`, and `traverseAccessible`, and sends a bare key sequence — Enter,
+  Escape, arrows, modifiers, and combinations — with `userEvent.keyboard` from `vitest/browser`.
 - Yield with `waitForFrame` where a step needs the browser to paint before the next reading. Never
   guard a fact with a fixed delay.
 
@@ -33,12 +34,12 @@ A journey verb resolves its own target from role and accessible name, and refuse
 component instance, or a selector from the caller. A reader, a fixture builder, and a capture each
 take one, because their subject is a node the caller already holds.
 
-| Population                                                                                                                                                                                                                           | Takes an element |
-| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------- |
-| `resolveAccessible`, `resolveRendered`, `clickAccessible`, `clickAccessibleWithin`, `clickDisclosure`, `typeAccessible`, `fillAccessible`, `pressKeys`, `traverseAccessible`, `readPerception`, `readPage`, `readFocus`, `readValue` | No               |
-| `readText`, `readRole`, `readName`, `readStates`, `describeTree`, `describeFocus`, `isReachable`, `isRendered`                                                                                                                       | Yes              |
-| `readContrast`, `readRing`, `readLayers`, `readBackdrop`, `readStyle`, `readToken`, `readPixels`, `readClasses`, `extractStyles`, `extractOrphans`, `readRows`                                                                       | Yes              |
-| `mount`, `typeInput`, `commitInput`, `captureFrame`, and a portfolio's `place`                                                                                                                                                       | Yes              |
+| Population                                                                                                                                                                                                              | Takes an element |
+| ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------- |
+| `resolveAccessible`, `resolveRendered`, `clickAccessible`, `clickAccessibleWithin`, `clickDisclosure`, `typeAccessible`, `fillAccessible`, `traverseAccessible`, `readPerception`, `readPage`, `readFocus`, `readValue` | No               |
+| `readText`, `readRole`, `readName`, `readStates`, `describeTree`, `describeFocus`, `isReachable`, `isRendered`                                                                                                          | Yes              |
+| `readContrast`, `readRing`, `readLayers`, `readBackdrop`, `readStyle`, `readToken`, `readPixels`, `readClasses`, `extractStyles`, `extractOrphans`, `readRows`                                                          | Yes              |
+| `mount`, `typeInput`, `commitInput`, `captureFrame`, and a portfolio's `place`                                                                                                                                          | Yes              |
 
 Never pass an element to a verb from a journey step. Read a step that would pass one as a missing
 verb, and add the verb instead.
@@ -110,12 +111,12 @@ same reachability conditions inside the region and names the region in every voi
 
 ## Input and traversal
 
-| Verb                         | Contract                                                                                                      |
-| ---------------------------- | ------------------------------------------------------------------------------------------------------------- |
-| `typeAccessible(name, text)` | Focus the field, select all, delete, then send real keystrokes. Escape the provider's key syntax in the text. |
-| `fillAccessible(name, text)` | Replace the value in one operation for text too long to type. The real element still publishes real input.    |
-| `pressKeys(keys)`            | Send a provider keyboard sequence for Enter, arrows, modifiers, and combinations.                             |
-| `traverseAccessible(name)`   | Move focus by forward Tab from wherever focus is, and return the target after focus lands on it.              |
+| Verb                         | Contract                                                                                                                                                                                  |
+| ---------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `typeAccessible(name, text)` | Focus the field, select all, delete, then send real keystrokes. Escape the provider's key syntax in the text.                                                                             |
+| `fillAccessible(name, text)` | Replace the value in one operation for text too long to type. The real element still publishes real input.                                                                                |
+| `userEvent.keyboard(keys)`   | Send a key sequence to whatever holds focus, for Enter, Escape, arrows, modifiers, and combinations. Place focus with `traverseAccessible`, `clickAccessible`, or `typeAccessible` first. |
+| `traverseAccessible(name)`   | Move focus by forward Tab from wherever focus is, and return the target after focus lands on it.                                                                                          |
 
 - Reach for `typeAccessible` where the keystrokes are part of what the journey claims, and
   `fillAccessible` where the text is only a payload the person pastes.

@@ -31,14 +31,14 @@ Declare in the browser environment's `integration.test.ts` which families that s
 assert in the always-on proofs that every declared family is present. A declaration names which
 families a surface owes. It never switches what a declared family proves.
 
-| Family     | Declared                                            | Proves                                                                 |
-| ---------- | --------------------------------------------------- | ---------------------------------------------------------------------- |
-| Journey    | Always                                              | Each user intent reaches its outcome through the interface             |
-| Refusal    | Always                                              | Each control the surface withholds, through one exact failure voice    |
-| Matrix     | Where the surface ships more than one variant       | The values the browser resolved under each declared variant            |
-| Statechart | Where a journey drives a control that carries state | Each declared transition, driven through the interface where it can be |
-| Transport  | Where the surface persists or restarts              | Persistence, restart, and storage failure through real implementations |
-| Capture    | Under the capture flag                              | The registry times the variants, each registered file written to disk  |
+| Family     | Declared                                                                                     | Proves                                                                 |
+| ---------- | -------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| Journey    | Always                                                                                       | Each user intent reaches its outcome through the interface             |
+| Refusal    | Always                                                                                       | Each control the surface withholds, through one exact failure voice    |
+| Matrix     | Where the surface ships more than one variant                                                | The values the browser resolved under each declared variant            |
+| Statechart | Where a journey drives a transition of an entity carrying its own state and event vocabulary | Each declared transition, driven through the interface where it can be |
+| Transport  | Where the surface persists or restarts                                                       | Persistence, restart, and storage failure through real implementations |
+| Capture    | Under the capture flag                                                                       | The registry times the variants, each registered file written to disk  |
 
 - Refuse a declaration that omits a family whose trigger the surface meets. Report the omission as a
   scope finding and stop; never prove the remaining families around it.
@@ -81,6 +81,10 @@ naming a combination the run did not render.
    observe as a surface finding, and never work around it in the layer.
 7. **Type only what a person would.** Journeys carry trusted input; adversarial payloads belong to
    the transport family and the parser suites.
+8. **Perform every interaction step unconditionally.** Never gate a step on whether the control it
+   is about to drive exists or is reachable, and never branch a journey on `readRefusal`. Let the
+   resolver's failure voice name what the interface withheld. A guarded step passes whether or not
+   the control was there, so the run goes green on a surface that removed the control.
 
 ## Import the journey layer
 
@@ -113,6 +117,9 @@ placement and scope `.claude/rules/tests.md` fixes.
   a harmless transient over-refuses and breaks on the next honest implementation.
 - Assert the negative beside the positive whenever a value replaces another: the new sentence is
   present **and** the old one is gone.
+- Assert the state a control announces beside every drive that sets it, and on an unselected
+  sibling. A control announcing state owes this assertion whether or not the surface carries the
+  statechart family.
 - After a confirmed destructive action, assert through trusted input that focus landed on a visible,
   announced location.
 - Assert the whole page's perception never matches the vocabulary the product does not speak —

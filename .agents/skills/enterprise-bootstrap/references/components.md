@@ -995,7 +995,7 @@ const popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]
 const popoverList = [...popoverTriggerList].map((el) => new bootstrap.Popover(el))
 
 // Programmatic control — prefer getOrCreateInstance over `new` when the
-// element may already be initialized (e.g. by a data attribute)
+// element may already be initialized (for example, by a data attribute)
 const myModal = bootstrap.Modal.getOrCreateInstance('#myModal')
 myModal.show()
 
