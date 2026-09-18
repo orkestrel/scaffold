@@ -599,7 +599,7 @@ describe('installed package consumer', () => {
 				'dist/src/server/index.d.ts: expectation !== undefined && matchesExpectation(expectation) // true while untouched',
 				"dist/src/server/index.d.ts: matchesPrecondition({ path: '/tmp/project/new.md', shape: 'absent' }) // true while absent",
 				'dist/src/server/index.d.ts: result.written // every path created',
-				"dist/src/server/index.d.ts: readAnchor('/tmp/project') // { path: '/tmp/project', device: 1, inode: 2 }",
+				"dist/src/server/index.d.ts: anchor !== undefined && typeof anchor.device === 'bigint' && typeof anchor.inode === 'bigint' // true for a physical directory",
 				"dist/src/server/index.d.ts: readHostFloor().manifest // the installed floor's verified membership",
 				"dist/src/server/index.d.ts: readHostManifest('./dist/host') // the manifest, or undefined for a raw root",
 				"dist/src/server/index.d.ts: readSurfaceBaseline('.') // the recorded collisions, if the inventory exists",

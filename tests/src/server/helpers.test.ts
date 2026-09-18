@@ -2509,6 +2509,7 @@ parentPort.postMessage('ready')`,
 			)
 			expect(declared.length).toBe(inventory.entries.length)
 			expect(destinations.toSorted()).toStrictEqual(declared.toSorted())
+			expect(requireValue(readHostManifest(join(workspace.path, 'host')))).toStrictEqual(inventory)
 		} finally {
 			workspace.destroy()
 		}
@@ -2803,6 +2804,21 @@ describe('stageInventory', () => {
 })
 
 describe('write anchors', () => {
+	it('captures exact native bigint device and inode values', () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const target = workspace.ensure('project')
+			const native = lstatSync(target, { bigint: true })
+			const anchor = requireValue(readAnchor(target))
+			expect(anchor.device).toBe(native.dev)
+			expect(anchor.inode).toBe(native.ino)
+			expect(typeof anchor.device).toBe('bigint')
+			expect(typeof anchor.inode).toBe('bigint')
+		} finally {
+			workspace.destroy()
+		}
+	})
+
 	it('captures a directory identity and matches it while it is untouched', () => {
 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
@@ -2834,11 +2850,11 @@ describe('write anchors', () => {
 			expect(anchor).toBeDefined()
 			if (anchor === undefined) return
 			const replacement = workspace.ensure('replacement')
-			const replacementAnchor = readAnchor(replacement)
-			expect(replacementAnchor).toBeDefined()
-			if (replacementAnchor === undefined) return
+			const originalNative = lstatSync(target, { bigint: true })
+			const replacementNative = lstatSync(replacement, { bigint: true })
 			expect(
-				replacementAnchor.device === anchor.device && replacementAnchor.inode === anchor.inode,
+				replacementNative.dev === originalNative.dev &&
+					replacementNative.ino === originalNative.ino,
 			).toBe(false)
 			// The original moves aside rather than being replaced in place. Windows
 			// refuses a rename onto an existing directory, and holding the original
@@ -2847,6 +2863,37 @@ describe('write anchors', () => {
 			// for a reason that has nothing to do with the swap.
 			renameSync(target, join(workspace.path, 'retired'))
 			renameSync(replacement, target)
+			const currentNative = lstatSync(target, { bigint: true })
+			const retiredNative = lstatSync(join(workspace.path, 'retired'), { bigint: true })
+			expect(currentNative.dev).toBe(replacementNative.dev)
+			expect(currentNative.ino).toBe(replacementNative.ino)
+			expect(retiredNative.dev).toBe(originalNative.dev)
+			expect(retiredNative.ino).toBe(originalNative.ino)
+			expect(matchesAnchor(anchor)).toBe(false)
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('refuses independent device and inode mismatches', () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const anchor = requireValue(readAnchor(workspace.ensure('project')))
+			expect(matchesAnchor({ ...anchor, device: anchor.device + 1n })).toBe(false)
+			expect(matchesAnchor({ ...anchor, inode: anchor.inode + 1n })).toBe(false)
+			expect(matchesAnchor(anchor)).toBe(true)
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('reports a path replaced by a file', () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const anchor = requireValue(readAnchor(workspace.ensure('project')))
+			renameSync(anchor.path, join(workspace.path, 'retired'))
+			workspace.write('project', 'replacement\n')
+			expect(lstatSync(anchor.path).isFile()).toBe(true)
 			expect(matchesAnchor(anchor)).toBe(false)
 		} finally {
 			workspace.destroy()

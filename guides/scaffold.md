@@ -408,7 +408,7 @@ The inventory contracts carry these data members.
 | `listCanonPaths`          | function | Lists the canon paths a target holds, filtered to a plan's groups.                     |
 | `listDirectories`         | function | Lists a directory's descendant directories as sorted root-relative paths.              |
 | `listFiles`               | function | Lists a directory's files as sorted root-relative paths.                               |
-| `matchesAnchor`           | function | Tests whether a captured directory is still the same directory.                        |
+| `matchesAnchor`           | function | Tests whether a path still holds the captured directory identity.                      |
 | `matchesExecutablePath`   | function | Tests whether a vendored path is one a target receives executable.                     |
 | `matchesExpectation`      | function | Tests whether a destination still holds what was captured of it.                       |
 | `matchesGitPath`          | function | Tests whether a path addresses a target's own repository metadata.                     |
@@ -1861,6 +1861,7 @@ A transaction owns a private root beside the target on the same volume, so every
 rename rather than a copy. A failure part way through commit restores every destination it already
 promoted and removes every directory it created. No destination ever receives half-written bytes.
 It is not a journal: a process killed between promotions leaves a mixed target.
+Directory anchors capture native bigint device and inode values without numeric rounding.
 The transaction binds each directory's location rather than its lifetime, so an ancestor swapped
 for another path, a file, a symlink, or nothing is refused, and one deleted and recreated in place
 may not be.

@@ -1,0 +1,2 @@
+Command: [System.Management.Automation.Language.Parser]::ParseFile((Resolve-Path 'tmp\\release\\launch-anchor-retention.ps1'), [ref]$tokens, [ref]$errors)
+PowerShell parser: exit 0

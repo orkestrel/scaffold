@@ -375,6 +375,13 @@ for (;;) {
 					join(target, '.claude/skills'),
 				])
 				expect(result.anchor.path).toBe(join(target, '.claude/skills'))
+				for (const anchor of [result.anchor, ...result.created]) {
+					const native = lstatSync(anchor.path, { bigint: true })
+					expect(anchor.device).toBe(native.dev)
+					expect(anchor.inode).toBe(native.ino)
+					expect(typeof anchor.device).toBe('bigint')
+					expect(typeof anchor.inode).toBe('bigint')
+				}
 				expect(transaction.commit()).toEqual(['.claude/skills'])
 				expect(lstatSync(join(target, '.claude/skills')).isDirectory()).toBe(true)
 			} finally {

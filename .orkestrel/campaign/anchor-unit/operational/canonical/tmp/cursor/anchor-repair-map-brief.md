@@ -1,0 +1,9 @@
+# Map the authorized WriteAnchor repair
+
+Act as read-only Cursor Grok 4.6. Map the repair in C:/Users/mikes/WebstormProjects/scaffold/tmp/release/scaffold-0.0.75 at 2f78b38a7c938d7e4f5b5c8f2030385bfcb5d6eb. Canonical root is C:/Users/mikes/WebstormProjects/scaffold. Return evidence, never design, decisions, edits, or an acceptance verdict.
+
+Read the candidate AGENTS.md, .agents/orchestration.md, applicable .claude/rules/{names,typescript,architecture,patterns,tests,workspace,portability,documentation,writing,quality}.md, orkestrel-harden-package SKILL.md and references/centralization.md, hardening.md, contract.md; guides/README.md, guides/scaffold.md anchor/transaction sections, ROADMAP.md. Read canonical ../../../../raw/canonical/.orkestrel/campaign/directory-anchor-failure-map.md and directory-anchor-ruling.md, and canonical ../../../../raw/canonical/tmp/probe/anchor-identity-result.json. Do not absorb unrelated campaign history.
+
+Report exact affected WriteAnchor declarations, callers, exports, guide/parity rows, real filesystem tests, declared and installed dependency overlap, and minimal validation commands. Determine whether any repository consumer serializes anchors or constructs numeric anchors. Name search population and unresolved inputs. Return concise file:line evidence. Include installed Node filesystem bigint declaration and exact Orkestrel identity/attempt semantics. No broader review.
+
+Compare candidate git status before/after. No source edits, tests, builds, installs, commits, or destructive commands. No secret or credential reads; exclude .codex/config.toml, .env*, .npmrc, auth files, keys and tokens. Preserve user work. TypeScript non-negotiables: no any, assertions, non-null assertions, suppressions, npm additions, mocks, compatibility wrappers, nested helpers, or removal of contract symbols. Preserve authoritative types.ts; readonly public data, centralized declarations, and disjoint environments are mandatory.

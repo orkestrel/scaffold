@@ -1912,7 +1912,8 @@ export function stageInventory(checkout: string, path: string = HOST_INVENTORY_P
  * @returns The anchor, or `undefined` when the path is not a physical directory.
  *
  * @remarks
- * Device and inode rather than the path, because the path is the thing that can
+ * Native bigint device and inode values preserve the filesystem identity without
+ * numeric rounding. Device and inode rather than the path, because the path can
  * be swapped underneath a write. An anchor captured before a mutation and
  * checked again after it proves the directory written into sits where the
  * inspected one sat, not that it is the one that was inspected.
@@ -1921,11 +1922,12 @@ export function stageInventory(checkout: string, path: string = HOST_INVENTORY_P
  * ```ts
  * import { readAnchor } from '@orkestrel/scaffold/server'
  *
- * readAnchor('/tmp/project') // { path: '/tmp/project', device: 1, inode: 2 }
+ * const anchor = readAnchor(process.cwd())
+ * anchor !== undefined && typeof anchor.device === 'bigint' && typeof anchor.inode === 'bigint' // true for a physical directory
  * ```
  */
 export function readAnchor(path: string): WriteAnchor | undefined {
-	const status = attempt(() => lstatSync(path))
+	const status = attempt(() => lstatSync(path, { bigint: true }))
 	if (!status.success || !status.value.isDirectory() || status.value.isSymbolicLink()) {
 		return undefined
 	}
@@ -1933,7 +1935,7 @@ export function readAnchor(path: string): WriteAnchor | undefined {
 }
 
 /**
- * Tests whether a captured directory is still the same directory.
+ * Tests whether a path still holds the captured directory identity.
  *
  * @param anchor - The identity captured earlier.
  * @returns True if the path still holds a physical directory of that exact device and

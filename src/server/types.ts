@@ -181,14 +181,14 @@ export interface WritePrecondition {
  * Represents one physical directory identity captured across a write transaction.
  *
  * @remarks
- * Device and inode locate the directory and do not date it. Two directories
- * occupying one slot at different times share an anchor, so an anchor proves
+ * Native bigint device and inode values locate the directory and do not date it.
+ * Two directories occupying one slot at different times share an anchor, so an anchor proves
  * where a write lands and never that the directory was left alone.
  */
 export interface WriteAnchor {
 	readonly path: string
-	readonly device: number
-	readonly inode: number
+	readonly device: bigint
+	readonly inode: bigint
 }
 
 /** Reports the final directory anchor of a write transaction and the subset one call created. */

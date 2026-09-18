@@ -1,0 +1,37 @@
+{
+  "date": "2026-09-18",
+  "host": "Windows PowerShell 5.1",
+  "wrong-head": {
+    "command": "node tmp/release/run-anchor-gates.mjs 0000000000000000000000000000000000000000 --control; $hostexit = $LASTEXITCODE; Write-Output \"CONTROL_OUTPUT_EXISTS=$(Test-Path tmp/units/anchor-gates-control-node-2)\"; Write-Output \"HOST_EXIT=$hostexit\"; exit $hostexit",
+    "host": 1,
+    "created": false,
+    "output": "wrong-head: expected 0000000000000000000000000000000000000000; found 2f78b38a7c938d7e4f5b5c8f2030385bfcb5d6eb; no output created.\nCONTROL_OUTPUT_EXISTS=False\nHOST_EXIT=1\n"
+  },
+  "exit-seven": {
+    "command": "node tmp/release/run-anchor-gates.mjs 2f78b38a7c938d7e4f5b5c8f2030385bfcb5d6eb --control; $hostexit = $LASTEXITCODE; Write-Output \"HOST_EXIT=$hostexit\"; exit $hostexit",
+    "host": 7,
+    "native": 7,
+    "summary": 7,
+    "pid": 44912,
+    "duration": 0.13978239999999997,
+    "stdout-marker": "ANCHOR_CONTROL_STDOUT stdout-marker",
+    "stderr-marker": "ANCHOR_CONTROL_STDERR stderr-marker"
+  },
+  "existing-output": {
+    "command": "$before = Get-ChildItem tmp/units/anchor-gates-control-node-2 -File | Get-FileHash -Algorithm SHA256; node tmp/release/run-anchor-gates.mjs 2f78b38a7c938d7e4f5b5c8f2030385bfcb5d6eb --control; $hostexit = $LASTEXITCODE; $after = Get-ChildItem tmp/units/anchor-gates-control-node-2 -File | Get-FileHash -Algorithm SHA256; $changed = Compare-Object $before $after -Property Hash, Path; $changed; Write-Output \"EVIDENCE_UNCHANGED=$($null -eq $changed)\"; Write-Output \"HOST_EXIT=$hostexit\"; exit $hostexit",
+    "host": 1,
+    "unchanged": true,
+    "output": "existing-output: refusing C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\units\\anchor-gates-control-node-2; retained evidence unchanged.\nEVIDENCE_UNCHANGED=True\nHOST_EXIT=1\n"
+  },
+  "syntax": {
+    "runner": { "command": "node --check tmp/release/run-anchor-gates.mjs", "exit": 0 },
+    "control": { "command": "node --check tmp/release/anchor-gate-control.mjs", "exit": 0 }
+  },
+  "sha256": {
+    "runner-executed.mjs": "B0E5C2EA0911C9FD677A64A57C704937A5F0E60D6FF1906D3D7A8B0CE3844081",
+    "control-executed.mjs": "6BEE835FF4B1598F1967CC574183500F807F2FB0D2B63BE4083CD6FF7A3DF607",
+    "summary.json": "240E7412D349EB5B6A8075088CDFE50532E4DF4D41AA033DCDB303005FF21951",
+    "stdout.log.txt": "A281A7BB0AC8CC8EC89547150671D3634EF62C9DAAD840E43F8F7B2D660A42D3",
+    "stderr.log.txt": "E11A15559B61E6A693957895A6CA8D472DA6BA6D7F53A85B00880A8C786A9C3B"
+  }
+}

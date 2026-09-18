@@ -1,0 +1,212 @@
+# Navigate the anchor unit
+
+Retain raw originals byte-for-byte. Operational Markdown rewrites known evidence references outside fenced execution context. See [reference limitations](reference-limitations.json).
+
+- See [canonical: .orkestrel/campaign/anchor-closing-verdict.md](raw/canonical/.orkestrel/campaign/anchor-closing-verdict.md). See [operational record](operational/canonical/.orkestrel/campaign/anchor-closing-verdict.md).
+- See [canonical: .orkestrel/campaign/anchor-design-verdict.md](raw/canonical/.orkestrel/campaign/anchor-design-verdict.md). See [operational record](operational/canonical/.orkestrel/campaign/anchor-design-verdict.md).
+- See [canonical: .orkestrel/campaign/anchor-release-registry.md](raw/canonical/.orkestrel/campaign/anchor-release-registry.md). See [operational record](operational/canonical/.orkestrel/campaign/anchor-release-registry.md).
+- See [canonical: .orkestrel/campaign/anchor-repair-audit-verdict.md](raw/canonical/.orkestrel/campaign/anchor-repair-audit-verdict.md). See [operational record](operational/canonical/.orkestrel/campaign/anchor-repair-audit-verdict.md).
+- See [canonical: .orkestrel/campaign/directory-anchor-failure-map.md](raw/canonical/.orkestrel/campaign/directory-anchor-failure-map.md). See [operational record](operational/canonical/.orkestrel/campaign/directory-anchor-failure-map.md).
+- See [canonical: .orkestrel/campaign/directory-anchor-ruling.md](raw/canonical/.orkestrel/campaign/directory-anchor-ruling.md). See [operational record](operational/canonical/.orkestrel/campaign/directory-anchor-ruling.md).
+- See [canonical: tmp/audit/anchor-closing-objective-brief.md](raw/canonical/tmp/audit/anchor-closing-objective-brief.md). See [operational record](operational/canonical/tmp/audit/anchor-closing-objective-brief.md).
+- See [canonical: tmp/audit/anchor-closing-objective-report.md](raw/canonical/tmp/audit/anchor-closing-objective-report.md). See [operational record](operational/canonical/tmp/audit/anchor-closing-objective-report.md).
+- See [canonical: tmp/audit/anchor-closing-subjective-brief.md](raw/canonical/tmp/audit/anchor-closing-subjective-brief.md). See [operational record](operational/canonical/tmp/audit/anchor-closing-subjective-brief.md).
+- See [canonical: tmp/audit/anchor-closing-subjective-report.md](raw/canonical/tmp/audit/anchor-closing-subjective-report.md). See [operational record](operational/canonical/tmp/audit/anchor-closing-subjective-report.md).
+- See [canonical: tmp/audit/anchor-design-brief.md](raw/canonical/tmp/audit/anchor-design-brief.md). See [operational record](operational/canonical/tmp/audit/anchor-design-brief.md).
+- See [canonical: tmp/audit/anchor-design-objective-report.md](raw/canonical/tmp/audit/anchor-design-objective-report.md). See [operational record](operational/canonical/tmp/audit/anchor-design-objective-report.md).
+- See [canonical: tmp/audit/anchor-design-subjective-report.md](raw/canonical/tmp/audit/anchor-design-subjective-report.md). See [operational record](operational/canonical/tmp/audit/anchor-design-subjective-report.md).
+- See [canonical: tmp/audit/anchor-gate-runner-status.txt](raw/canonical/tmp/audit/anchor-gate-runner-status.txt).
+- See [canonical: tmp/audit/anchor-gate-runner.diff](raw/canonical/tmp/audit/anchor-gate-runner.diff).
+- See [canonical: tmp/audit/anchor-repair-audit-claims-2.md](raw/canonical/tmp/audit/anchor-repair-audit-claims-2.md). See [operational record](operational/canonical/tmp/audit/anchor-repair-audit-claims-2.md).
+- See [canonical: tmp/audit/anchor-repair-audit-claims.md](raw/canonical/tmp/audit/anchor-repair-audit-claims.md). See [operational record](operational/canonical/tmp/audit/anchor-repair-audit-claims.md).
+- See [canonical: tmp/audit/anchor-repair-objective-brief.md](raw/canonical/tmp/audit/anchor-repair-objective-brief.md). See [operational record](operational/canonical/tmp/audit/anchor-repair-objective-brief.md).
+- See [canonical: tmp/audit/anchor-repair-objective-report.md](raw/canonical/tmp/audit/anchor-repair-objective-report.md). See [operational record](operational/canonical/tmp/audit/anchor-repair-objective-report.md).
+- See [canonical: tmp/audit/anchor-repair-status.txt](raw/canonical/tmp/audit/anchor-repair-status.txt).
+- See [canonical: tmp/audit/anchor-repair-subjective-brief.md](raw/canonical/tmp/audit/anchor-repair-subjective-brief.md). See [operational record](operational/canonical/tmp/audit/anchor-repair-subjective-brief.md).
+- See [canonical: tmp/audit/anchor-repair-subjective-report.md](raw/canonical/tmp/audit/anchor-repair-subjective-report.md). See [operational record](operational/canonical/tmp/audit/anchor-repair-subjective-report.md).
+- See [canonical: tmp/audit/anchor-retention-claims-2.md](raw/canonical/tmp/audit/anchor-retention-claims-2.md). See [operational record](operational/canonical/tmp/audit/anchor-retention-claims-2.md).
+- See [canonical: tmp/audit/anchor-retention-claims.md](raw/canonical/tmp/audit/anchor-retention-claims.md). See [operational record](operational/canonical/tmp/audit/anchor-retention-claims.md).
+- See [canonical: tmp/audit/anchor-retention-objective-brief-2.md](raw/canonical/tmp/audit/anchor-retention-objective-brief-2.md). See [operational record](operational/canonical/tmp/audit/anchor-retention-objective-brief-2.md).
+- See [canonical: tmp/audit/anchor-retention-objective-brief.md](raw/canonical/tmp/audit/anchor-retention-objective-brief.md). See [operational record](operational/canonical/tmp/audit/anchor-retention-objective-brief.md).
+- See [canonical: tmp/audit/anchor-retention-objective-report-2.md](raw/canonical/tmp/audit/anchor-retention-objective-report-2.md). See [operational record](operational/canonical/tmp/audit/anchor-retention-objective-report-2.md).
+- See [canonical: tmp/audit/anchor-retention-objective-report.md](raw/canonical/tmp/audit/anchor-retention-objective-report.md). See [operational record](operational/canonical/tmp/audit/anchor-retention-objective-report.md).
+- See [canonical: tmp/audit/anchor-retention-subjective-brief-2.md](raw/canonical/tmp/audit/anchor-retention-subjective-brief-2.md). See [operational record](operational/canonical/tmp/audit/anchor-retention-subjective-brief-2.md).
+- See [canonical: tmp/audit/anchor-retention-subjective-brief.md](raw/canonical/tmp/audit/anchor-retention-subjective-brief.md). See [operational record](operational/canonical/tmp/audit/anchor-retention-subjective-brief.md).
+- See [canonical: tmp/audit/anchor-retention-subjective-report-2.md](raw/canonical/tmp/audit/anchor-retention-subjective-report-2.md). See [operational record](operational/canonical/tmp/audit/anchor-retention-subjective-report-2.md).
+- See [canonical: tmp/audit/anchor-retention-subjective-report.md](raw/canonical/tmp/audit/anchor-retention-subjective-report.md). See [operational record](operational/canonical/tmp/audit/anchor-retention-subjective-report.md).
+- See [canonical: tmp/cursor/anchor-mechanical-brief.md](raw/canonical/tmp/cursor/anchor-mechanical-brief.md). See [operational record](operational/canonical/tmp/cursor/anchor-mechanical-brief.md).
+- See [canonical: tmp/cursor/anchor-mechanical-report.md](raw/canonical/tmp/cursor/anchor-mechanical-report.md). See [operational record](operational/canonical/tmp/cursor/anchor-mechanical-report.md).
+- See [canonical: tmp/cursor/anchor-mechanical.ps1](raw/canonical/tmp/cursor/anchor-mechanical.ps1).
+- See [canonical: tmp/cursor/anchor-repair-map-brief.md](raw/canonical/tmp/cursor/anchor-repair-map-brief.md). See [operational record](operational/canonical/tmp/cursor/anchor-repair-map-brief.md).
+- See [canonical: tmp/cursor/anchor-repair-map-report.md](raw/canonical/tmp/cursor/anchor-repair-map-report.md). See [operational record](operational/canonical/tmp/cursor/anchor-repair-map-report.md).
+- See [canonical: tmp/cursor/anchor-repair-map.ps1](raw/canonical/tmp/cursor/anchor-repair-map.ps1).
+- See [canonical: tmp/probe/anchor-built-reading.mjs](raw/canonical/tmp/probe/anchor-built-reading.mjs).
+- See [canonical: tmp/probe/anchor-expectation-reading.mjs](raw/canonical/tmp/probe/anchor-expectation-reading.mjs).
+- See [canonical: tmp/probe/anchor-identity-result.json](raw/canonical/tmp/probe/anchor-identity-result.json).
+- See [canonical: tmp/probe/anchor-identity.mjs](raw/canonical/tmp/probe/anchor-identity.mjs).
+- See [canonical: tmp/release/anchor-gate-control.mjs](raw/canonical/tmp/release/anchor-gate-control.mjs).
+- See [canonical: tmp/release/launch-anchor-gates.ps1](raw/canonical/tmp/release/launch-anchor-gates.ps1).
+- See [canonical: tmp/release/retain-anchor-unit.mjs](raw/canonical/tmp/release/retain-anchor-unit.mjs).
+- See [canonical: tmp/release/run-anchor-gates-2.ps1](raw/canonical/tmp/release/run-anchor-gates-2.ps1).
+- See [canonical: tmp/release/run-anchor-gates.mjs](raw/canonical/tmp/release/run-anchor-gates.mjs).
+- See [canonical: tmp/release/run-anchor-gates.ps1](raw/canonical/tmp/release/run-anchor-gates.ps1).
+- See [canonical: tmp/units/anchor-gate-instrument-brief-2.md](raw/canonical/tmp/units/anchor-gate-instrument-brief-2.md). See [operational record](operational/canonical/tmp/units/anchor-gate-instrument-brief-2.md).
+- See [canonical: tmp/units/anchor-gate-instrument-brief.md](raw/canonical/tmp/units/anchor-gate-instrument-brief.md). See [operational record](operational/canonical/tmp/units/anchor-gate-instrument-brief.md).
+- See [canonical: tmp/units/anchor-gate-instrument-report-2.md](raw/canonical/tmp/units/anchor-gate-instrument-report-2.md). See [operational record](operational/canonical/tmp/units/anchor-gate-instrument-report-2.md).
+- See [canonical: tmp/units/anchor-gate-instrument-report.md](raw/canonical/tmp/units/anchor-gate-instrument-report.md). See [operational record](operational/canonical/tmp/units/anchor-gate-instrument-report.md).
+- See [canonical: tmp/units/anchor-gate-runner-brief.md](raw/canonical/tmp/units/anchor-gate-runner-brief.md). See [operational record](operational/canonical/tmp/units/anchor-gate-runner-brief.md).
+- See [canonical: tmp/units/anchor-gate-runner-report.md](raw/canonical/tmp/units/anchor-gate-runner-report.md). See [operational record](operational/canonical/tmp/units/anchor-gate-runner-report.md).
+- See [canonical: tmp/units/anchor-gates-control-node-2/control-executed.mjs](raw/canonical/tmp/units/anchor-gates-control-node-2/control-executed.mjs).
+- See [canonical: tmp/units/anchor-gates-control-node-2/host-readings.json](raw/canonical/tmp/units/anchor-gates-control-node-2/host-readings.json).
+- See [canonical: tmp/units/anchor-gates-control-node-2/runner-executed.mjs](raw/canonical/tmp/units/anchor-gates-control-node-2/runner-executed.mjs).
+- See [canonical: tmp/units/anchor-gates-control-node-2/stderr.log.txt](raw/canonical/tmp/units/anchor-gates-control-node-2/stderr.log.txt).
+- See [canonical: tmp/units/anchor-gates-control-node-2/stdout.log.txt](raw/canonical/tmp/units/anchor-gates-control-node-2/stdout.log.txt).
+- See [canonical: tmp/units/anchor-gates-control-node-2/summary.json](raw/canonical/tmp/units/anchor-gates-control-node-2/summary.json).
+- See [canonical: tmp/units/anchor-gates-control-node/control-executed.mjs](raw/canonical/tmp/units/anchor-gates-control-node/control-executed.mjs).
+- See [canonical: tmp/units/anchor-gates-control-node/runner-executed.mjs](raw/canonical/tmp/units/anchor-gates-control-node/runner-executed.mjs).
+- See [canonical: tmp/units/anchor-gates-control-node/stderr.log.txt](raw/canonical/tmp/units/anchor-gates-control-node/stderr.log.txt).
+- See [canonical: tmp/units/anchor-gates-control-node/stdout.log.txt](raw/canonical/tmp/units/anchor-gates-control-node/stdout.log.txt).
+- See [canonical: tmp/units/anchor-gates-control-node/summary.json](raw/canonical/tmp/units/anchor-gates-control-node/summary.json).
+- See [canonical: tmp/units/anchor-gates-root-tool-receipt.json](raw/canonical/tmp/units/anchor-gates-root-tool-receipt.json).
+- See [canonical: tmp/units/anchor-gates-root.err.txt](raw/canonical/tmp/units/anchor-gates-root.err.txt).
+- See [canonical: tmp/units/anchor-gates-root.log.txt](raw/canonical/tmp/units/anchor-gates-root.log.txt).
+- See [canonical: tmp/units/anchor-identity-probe-brief-2.md](raw/canonical/tmp/units/anchor-identity-probe-brief-2.md). See [operational record](operational/canonical/tmp/units/anchor-identity-probe-brief-2.md).
+- See [canonical: tmp/units/anchor-identity-probe-brief.md](raw/canonical/tmp/units/anchor-identity-probe-brief.md). See [operational record](operational/canonical/tmp/units/anchor-identity-probe-brief.md).
+- See [canonical: tmp/units/anchor-map-driver-brief.md](raw/canonical/tmp/units/anchor-map-driver-brief.md). See [operational record](operational/canonical/tmp/units/anchor-map-driver-brief.md).
+- See [canonical: tmp/units/anchor-mechanical-driver-brief.md](raw/canonical/tmp/units/anchor-mechanical-driver-brief.md). See [operational record](operational/canonical/tmp/units/anchor-mechanical-driver-brief.md).
+- See [canonical: tmp/units/anchor-release-gates-control-2/stderr.log.txt](raw/canonical/tmp/units/anchor-release-gates-control-2/stderr.log.txt).
+- See [canonical: tmp/units/anchor-release-gates-control-2/stdout.log.txt](raw/canonical/tmp/units/anchor-release-gates-control-2/stdout.log.txt).
+- See [canonical: tmp/units/anchor-release-gates-control-2/summary.json](raw/canonical/tmp/units/anchor-release-gates-control-2/summary.json).
+- See [canonical: tmp/units/anchor-release-gates-control/stderr.log.txt](raw/canonical/tmp/units/anchor-release-gates-control/stderr.log.txt).
+- See [canonical: tmp/units/anchor-release-gates-control/stdout.log.txt](raw/canonical/tmp/units/anchor-release-gates-control/stdout.log.txt).
+- See [canonical: tmp/units/anchor-release-gates-control/summary.json](raw/canonical/tmp/units/anchor-release-gates-control/summary.json).
+- See [canonical: tmp/units/anchor-release-verifier-brief-2.md](raw/canonical/tmp/units/anchor-release-verifier-brief-2.md). See [operational record](operational/canonical/tmp/units/anchor-release-verifier-brief-2.md).
+- See [canonical: tmp/units/anchor-release-verifier-brief.md](raw/canonical/tmp/units/anchor-release-verifier-brief.md). See [operational record](operational/canonical/tmp/units/anchor-release-verifier-brief.md).
+- See [canonical: tmp/units/anchor-release-verifier-report.md](raw/canonical/tmp/units/anchor-release-verifier-report.md). See [operational record](operational/canonical/tmp/units/anchor-release-verifier-report.md).
+- See [canonical: tmp/units/anchor-repair-brief-2.md](raw/canonical/tmp/units/anchor-repair-brief-2.md). See [operational record](operational/canonical/tmp/units/anchor-repair-brief-2.md).
+- See [canonical: tmp/units/anchor-repair-brief-3.md](raw/canonical/tmp/units/anchor-repair-brief-3.md). See [operational record](operational/canonical/tmp/units/anchor-repair-brief-3.md).
+- See [canonical: tmp/units/anchor-repair-brief.md](raw/canonical/tmp/units/anchor-repair-brief.md). See [operational record](operational/canonical/tmp/units/anchor-repair-brief.md).
+- See [canonical: tmp/units/anchor-retention-brief-2.md](raw/canonical/tmp/units/anchor-retention-brief-2.md). See [operational record](operational/canonical/tmp/units/anchor-retention-brief-2.md).
+- See [canonical: tmp/units/anchor-retention-brief-3.md](raw/canonical/tmp/units/anchor-retention-brief-3.md). See [operational record](operational/canonical/tmp/units/anchor-retention-brief-3.md).
+- See [canonical: tmp/units/anchor-retention-brief.md](raw/canonical/tmp/units/anchor-retention-brief.md). See [operational record](operational/canonical/tmp/units/anchor-retention-brief.md).
+- See [canonical: tmp/units/anchor-retention-evidence/additive-script-2.patch](raw/canonical/tmp/units/anchor-retention-evidence/additive-script-2.patch).
+- See [canonical: tmp/units/anchor-retention-evidence/additive-script-pre-final.patch](raw/canonical/tmp/units/anchor-retention-evidence/additive-script-pre-final.patch).
+- See [canonical: tmp/units/anchor-retention-evidence/additive-script.patch](raw/canonical/tmp/units/anchor-retention-evidence/additive-script.patch).
+- See [canonical: tmp/units/anchor-retention-evidence/additive-stat-2.txt](raw/canonical/tmp/units/anchor-retention-evidence/additive-stat-2.txt).
+- See [canonical: tmp/units/anchor-retention-evidence/additive-stat-pre-final.txt](raw/canonical/tmp/units/anchor-retention-evidence/additive-stat-pre-final.txt).
+- See [canonical: tmp/units/anchor-retention-evidence/additive-stat.txt](raw/canonical/tmp/units/anchor-retention-evidence/additive-stat.txt).
+- See [canonical: tmp/units/anchor-retention-evidence/manifest-2.json](raw/canonical/tmp/units/anchor-retention-evidence/manifest-2.json).
+- See [canonical: tmp/units/anchor-retention-evidence/manifest-3.json](raw/canonical/tmp/units/anchor-retention-evidence/manifest-3.json).
+- See [canonical: tmp/units/anchor-retention-evidence/manifest-4.json](raw/canonical/tmp/units/anchor-retention-evidence/manifest-4.json).
+- See [canonical: tmp/units/anchor-retention-evidence/manifest.json](raw/canonical/tmp/units/anchor-retention-evidence/manifest.json).
+- See [canonical: tmp/units/anchor-retention-evidence/mapping-after.json](raw/canonical/tmp/units/anchor-retention-evidence/mapping-after.json).
+- See [canonical: tmp/units/anchor-retention-evidence/mapping-before.json](raw/canonical/tmp/units/anchor-retention-evidence/mapping-before.json).
+- See [canonical: tmp/units/anchor-retention-evidence/mapping-corpus-after-2.json](raw/canonical/tmp/units/anchor-retention-evidence/mapping-corpus-after-2.json).
+- See [canonical: tmp/units/anchor-retention-evidence/mapping-corpus-after-3.json](raw/canonical/tmp/units/anchor-retention-evidence/mapping-corpus-after-3.json).
+- See [canonical: tmp/units/anchor-retention-evidence/mapping-corpus-after-4.json](raw/canonical/tmp/units/anchor-retention-evidence/mapping-corpus-after-4.json).
+- See [canonical: tmp/units/anchor-retention-evidence/mapping-corpus-after-5.json](raw/canonical/tmp/units/anchor-retention-evidence/mapping-corpus-after-5.json).
+- See [canonical: tmp/units/anchor-retention-evidence/mapping-corpus-after.json](raw/canonical/tmp/units/anchor-retention-evidence/mapping-corpus-after.json).
+- See [canonical: tmp/units/anchor-retention-evidence/mapping-corpus-before-2.json](raw/canonical/tmp/units/anchor-retention-evidence/mapping-corpus-before-2.json).
+- See [canonical: tmp/units/anchor-retention-evidence/mapping-corpus-before-3.json](raw/canonical/tmp/units/anchor-retention-evidence/mapping-corpus-before-3.json).
+- See [canonical: tmp/units/anchor-retention-evidence/mapping-corpus-before-4.json](raw/canonical/tmp/units/anchor-retention-evidence/mapping-corpus-before-4.json).
+- See [canonical: tmp/units/anchor-retention-evidence/mapping-corpus-before-5.json](raw/canonical/tmp/units/anchor-retention-evidence/mapping-corpus-before-5.json).
+- See [canonical: tmp/units/anchor-retention-evidence/mapping-corpus-before.json](raw/canonical/tmp/units/anchor-retention-evidence/mapping-corpus-before.json).
+- See [canonical: tmp/units/anchor-retention-evidence/mapping-corpus-control-2.md](raw/canonical/tmp/units/anchor-retention-evidence/mapping-corpus-control-2.md). See [operational record](operational/canonical/tmp/units/anchor-retention-evidence/mapping-corpus-control-2.md).
+- See [canonical: tmp/units/anchor-retention-evidence/mapping-corpus-control.md](raw/canonical/tmp/units/anchor-retention-evidence/mapping-corpus-control.md). See [operational record](operational/canonical/tmp/units/anchor-retention-evidence/mapping-corpus-control.md).
+- See [canonical: tmp/units/anchor-retention-evidence/mapping-corpus-proof-complete-path-executed.mjs](raw/canonical/tmp/units/anchor-retention-evidence/mapping-corpus-proof-complete-path-executed.mjs).
+- See [canonical: tmp/units/anchor-retention-evidence/mapping-corpus-proof-initial-executed.mjs](raw/canonical/tmp/units/anchor-retention-evidence/mapping-corpus-proof-initial-executed.mjs).
+- See [canonical: tmp/units/anchor-retention-evidence/mapping-corpus-proof-punctuation-executed.mjs](raw/canonical/tmp/units/anchor-retention-evidence/mapping-corpus-proof-punctuation-executed.mjs).
+- See [canonical: tmp/units/anchor-retention-evidence/mapping-corpus-proof-vector-corrected-executed.mjs](raw/canonical/tmp/units/anchor-retention-evidence/mapping-corpus-proof-vector-corrected-executed.mjs).
+- See [canonical: tmp/units/anchor-retention-evidence/mapping-corpus-proof.mjs](raw/canonical/tmp/units/anchor-retention-evidence/mapping-corpus-proof.mjs).
+- See [canonical: tmp/units/anchor-retention-evidence/mapping-origin-control.md](raw/canonical/tmp/units/anchor-retention-evidence/mapping-origin-control.md). See [operational record](operational/canonical/tmp/units/anchor-retention-evidence/mapping-origin-control.md).
+- See [canonical: tmp/units/anchor-retention-evidence/mapping-proof.mjs](raw/canonical/tmp/units/anchor-retention-evidence/mapping-proof.mjs).
+- See [canonical: tmp/units/anchor-retention-evidence/retain-anchor-unit-control-2-executed.mjs](raw/canonical/tmp/units/anchor-retention-evidence/retain-anchor-unit-control-2-executed.mjs).
+- See [canonical: tmp/units/anchor-retention-evidence/retain-anchor-unit-control-3-executed.mjs](raw/canonical/tmp/units/anchor-retention-evidence/retain-anchor-unit-control-3-executed.mjs).
+- See [canonical: tmp/units/anchor-retention-evidence/retain-anchor-unit-control-4-executed.mjs](raw/canonical/tmp/units/anchor-retention-evidence/retain-anchor-unit-control-4-executed.mjs).
+- See [canonical: tmp/units/anchor-retention-evidence/retain-anchor-unit-control-executed.mjs](raw/canonical/tmp/units/anchor-retention-evidence/retain-anchor-unit-control-executed.mjs).
+- See [canonical: tmp/units/anchor-retention-evidence/retain-anchor-unit-corpus-boundary-executed.mjs](raw/canonical/tmp/units/anchor-retention-evidence/retain-anchor-unit-corpus-boundary-executed.mjs).
+- See [canonical: tmp/units/anchor-retention-evidence/retain-anchor-unit-corpus-correction-executed.mjs](raw/canonical/tmp/units/anchor-retention-evidence/retain-anchor-unit-corpus-correction-executed.mjs).
+- See [canonical: tmp/units/anchor-retention-evidence/retain-anchor-unit-corpus-final-2-executed.mjs](raw/canonical/tmp/units/anchor-retention-evidence/retain-anchor-unit-corpus-final-2-executed.mjs).
+- See [canonical: tmp/units/anchor-retention-evidence/retain-anchor-unit-corpus-final-executed.mjs](raw/canonical/tmp/units/anchor-retention-evidence/retain-anchor-unit-corpus-final-executed.mjs).
+- See [canonical: tmp/units/anchor-retention-evidence/retain-anchor-unit-corpus-punctuation-predecessor-executed.mjs](raw/canonical/tmp/units/anchor-retention-evidence/retain-anchor-unit-corpus-punctuation-predecessor-executed.mjs).
+- See [canonical: tmp/units/anchor-retention-evidence/retain-anchor-unit-predecessor-2-executed.mjs](raw/canonical/tmp/units/anchor-retention-evidence/retain-anchor-unit-predecessor-2-executed.mjs).
+- See [canonical: tmp/units/anchor-retention-evidence/retain-anchor-unit-predecessor-executed.mjs](raw/canonical/tmp/units/anchor-retention-evidence/retain-anchor-unit-predecessor-executed.mjs).
+- See [canonical: tmp/units/anchor-retention-evidence/scoped-status-2.txt](raw/canonical/tmp/units/anchor-retention-evidence/scoped-status-2.txt).
+- See [canonical: tmp/units/anchor-retention-evidence/scoped-status-pre-final.txt](raw/canonical/tmp/units/anchor-retention-evidence/scoped-status-pre-final.txt).
+- See [canonical: tmp/units/anchor-retention-evidence/scoped-status.txt](raw/canonical/tmp/units/anchor-retention-evidence/scoped-status.txt).
+- See [canonical: tmp/units/anchor-retention-evidence/successor-delta-3.patch](raw/canonical/tmp/units/anchor-retention-evidence/successor-delta-3.patch).
+- See [canonical: tmp/units/anchor-retention-evidence/successor-delta.patch](raw/canonical/tmp/units/anchor-retention-evidence/successor-delta.patch).
+- See [canonical: tmp/units/anchor-retention-evidence/wrong-head-2.json](raw/canonical/tmp/units/anchor-retention-evidence/wrong-head-2.json).
+- See [canonical: tmp/units/anchor-retention-evidence/wrong-head-2.stderr.txt](raw/canonical/tmp/units/anchor-retention-evidence/wrong-head-2.stderr.txt).
+- See [canonical: tmp/units/anchor-retention-evidence/wrong-head-2.stdout.txt](raw/canonical/tmp/units/anchor-retention-evidence/wrong-head-2.stdout.txt).
+- See [canonical: tmp/units/anchor-retention-evidence/wrong-head-3.json](raw/canonical/tmp/units/anchor-retention-evidence/wrong-head-3.json).
+- See [canonical: tmp/units/anchor-retention-evidence/wrong-head-3.stderr.txt](raw/canonical/tmp/units/anchor-retention-evidence/wrong-head-3.stderr.txt).
+- See [canonical: tmp/units/anchor-retention-evidence/wrong-head-3.stdout.txt](raw/canonical/tmp/units/anchor-retention-evidence/wrong-head-3.stdout.txt).
+- See [canonical: tmp/units/anchor-retention-evidence/wrong-head-4.json](raw/canonical/tmp/units/anchor-retention-evidence/wrong-head-4.json).
+- See [canonical: tmp/units/anchor-retention-evidence/wrong-head-4.stderr.txt](raw/canonical/tmp/units/anchor-retention-evidence/wrong-head-4.stderr.txt).
+- See [canonical: tmp/units/anchor-retention-evidence/wrong-head-4.stdout.txt](raw/canonical/tmp/units/anchor-retention-evidence/wrong-head-4.stdout.txt).
+- See [canonical: tmp/units/anchor-retention-evidence/wrong-head-5.json](raw/canonical/tmp/units/anchor-retention-evidence/wrong-head-5.json).
+- See [canonical: tmp/units/anchor-retention-evidence/wrong-head-5.stderr.txt](raw/canonical/tmp/units/anchor-retention-evidence/wrong-head-5.stderr.txt).
+- See [canonical: tmp/units/anchor-retention-evidence/wrong-head-5.stdout.txt](raw/canonical/tmp/units/anchor-retention-evidence/wrong-head-5.stdout.txt).
+- See [canonical: tmp/units/anchor-retention-evidence/wrong-head-6.json](raw/canonical/tmp/units/anchor-retention-evidence/wrong-head-6.json).
+- See [canonical: tmp/units/anchor-retention-evidence/wrong-head-6.stderr.txt](raw/canonical/tmp/units/anchor-retention-evidence/wrong-head-6.stderr.txt).
+- See [canonical: tmp/units/anchor-retention-evidence/wrong-head-6.stdout.txt](raw/canonical/tmp/units/anchor-retention-evidence/wrong-head-6.stdout.txt).
+- See [canonical: tmp/units/anchor-retention-evidence/wrong-head-7.json](raw/canonical/tmp/units/anchor-retention-evidence/wrong-head-7.json).
+- See [canonical: tmp/units/anchor-retention-evidence/wrong-head-7.stderr.txt](raw/canonical/tmp/units/anchor-retention-evidence/wrong-head-7.stderr.txt).
+- See [canonical: tmp/units/anchor-retention-evidence/wrong-head-7.stdout.txt](raw/canonical/tmp/units/anchor-retention-evidence/wrong-head-7.stdout.txt).
+- See [canonical: tmp/units/anchor-retention-evidence/wrong-head-control-2.mjs](raw/canonical/tmp/units/anchor-retention-evidence/wrong-head-control-2.mjs).
+- See [canonical: tmp/units/anchor-retention-evidence/wrong-head-control-3.mjs](raw/canonical/tmp/units/anchor-retention-evidence/wrong-head-control-3.mjs).
+- See [canonical: tmp/units/anchor-retention-evidence/wrong-head-control-4.mjs](raw/canonical/tmp/units/anchor-retention-evidence/wrong-head-control-4.mjs).
+- See [canonical: tmp/units/anchor-retention-evidence/wrong-head-control-5.mjs](raw/canonical/tmp/units/anchor-retention-evidence/wrong-head-control-5.mjs).
+- See [canonical: tmp/units/anchor-retention-evidence/wrong-head-control-6.mjs](raw/canonical/tmp/units/anchor-retention-evidence/wrong-head-control-6.mjs).
+- See [canonical: tmp/units/anchor-retention-evidence/wrong-head-control-7.mjs](raw/canonical/tmp/units/anchor-retention-evidence/wrong-head-control-7.mjs).
+- See [canonical: tmp/units/anchor-retention-evidence/wrong-head-control.mjs](raw/canonical/tmp/units/anchor-retention-evidence/wrong-head-control.mjs).
+- See [canonical: tmp/units/anchor-retention-evidence/wrong-head.json](raw/canonical/tmp/units/anchor-retention-evidence/wrong-head.json).
+- See [canonical: tmp/units/anchor-retention-evidence/wrong-head.stderr.txt](raw/canonical/tmp/units/anchor-retention-evidence/wrong-head.stderr.txt).
+- See [canonical: tmp/units/anchor-retention-evidence/wrong-head.stdout.txt](raw/canonical/tmp/units/anchor-retention-evidence/wrong-head.stdout.txt).
+- See [canonical: tmp/units/anchor-retention-report-2.md](raw/canonical/tmp/units/anchor-retention-report-2.md). See [operational record](operational/canonical/tmp/units/anchor-retention-report-2.md).
+- See [canonical: tmp/units/anchor-retention-report.md](raw/canonical/tmp/units/anchor-retention-report.md). See [operational record](operational/canonical/tmp/units/anchor-retention-report.md).
+- See [canonical: tmp/units/anchor-staged-verifier-brief.md](raw/canonical/tmp/units/anchor-staged-verifier-brief.md). See [operational record](operational/canonical/tmp/units/anchor-staged-verifier-brief.md).
+- See [candidate: tmp/units/anchor-repair-report.md](raw/candidate/tmp/units/anchor-repair-report.md). See [operational record](operational/candidate/tmp/units/anchor-repair-report.md).
+- See [candidate: tmp/units/anchor-repair-report-3.md](raw/candidate/tmp/units/anchor-repair-report-3.md). See [operational record](operational/candidate/tmp/units/anchor-repair-report-3.md).
+- See [candidate: tmp/units/anchor-repair-evidence/callers.log.txt](raw/candidate/tmp/units/anchor-repair-evidence/callers.log.txt).
+- See [candidate: tmp/units/anchor-repair-evidence/check-server.log.txt](raw/candidate/tmp/units/anchor-repair-evidence/check-server.log.txt).
+- See [candidate: tmp/units/anchor-repair-evidence/format-check.log.txt](raw/candidate/tmp/units/anchor-repair-evidence/format-check.log.txt).
+- See [candidate: tmp/units/anchor-repair-evidence/format-write.log.txt](raw/candidate/tmp/units/anchor-repair-evidence/format-write.log.txt).
+- See [candidate: tmp/units/anchor-repair-evidence/green.log.txt](raw/candidate/tmp/units/anchor-repair-evidence/green.log.txt).
+- See [candidate: tmp/units/anchor-repair-evidence/guides.log.txt](raw/candidate/tmp/units/anchor-repair-evidence/guides.log.txt).
+- See [candidate: tmp/units/anchor-repair-evidence/inventory-build.log.txt](raw/candidate/tmp/units/anchor-repair-evidence/inventory-build.log.txt).
+- See [candidate: tmp/units/anchor-repair-evidence/inventory-parity.log.txt](raw/candidate/tmp/units/anchor-repair-evidence/inventory-parity.log.txt).
+- See [candidate: tmp/units/anchor-repair-evidence/lint-check.log.txt](raw/candidate/tmp/units/anchor-repair-evidence/lint-check.log.txt).
+- See [candidate: tmp/units/anchor-repair-evidence/prove-final-request.json](raw/candidate/tmp/units/anchor-repair-evidence/prove-final-request.json).
+- See [candidate: tmp/units/anchor-repair-evidence/prove-final-response.json](raw/candidate/tmp/units/anchor-repair-evidence/prove-final-response.json).
+- See [candidate: tmp/units/anchor-repair-evidence/prove-initial-response.json](raw/candidate/tmp/units/anchor-repair-evidence/prove-initial-response.json).
+- See [candidate: tmp/units/anchor-repair-evidence/red.log.txt](raw/candidate/tmp/units/anchor-repair-evidence/red.log.txt).
+- See [candidate: tmp/units/anchor-repair-evidence/source.diff](raw/candidate/tmp/units/anchor-repair-evidence/source.diff).
+- See [candidate: tmp/units/anchor-repair-evidence/transaction.log.txt](raw/candidate/tmp/units/anchor-repair-evidence/transaction.log.txt).
+- See [candidate: tmp/units/anchor-repair-evidence-3/after.diff](raw/candidate/tmp/units/anchor-repair-evidence-3/after.diff).
+- See [candidate: tmp/units/anchor-repair-evidence-3/before.diff](raw/candidate/tmp/units/anchor-repair-evidence-3/before.diff).
+- See [candidate: tmp/units/anchor-repair-evidence-3/format-check.log.txt](raw/candidate/tmp/units/anchor-repair-evidence-3/format-check.log.txt).
+- See [candidate: tmp/units/anchor-repair-evidence-3/guides.log.txt](raw/candidate/tmp/units/anchor-repair-evidence-3/guides.log.txt).
+- See [candidate: tmp/units/anchor-repair-evidence-3/inventory-build.log.txt](raw/candidate/tmp/units/anchor-repair-evidence-3/inventory-build.log.txt).
+- See [candidate: tmp/units/anchor-repair-evidence-3/inventory-parity.log.txt](raw/candidate/tmp/units/anchor-repair-evidence-3/inventory-parity.log.txt).
+- See [candidate: tmp/units/anchor-repair-evidence-3/preservation-file.log.txt](raw/candidate/tmp/units/anchor-repair-evidence-3/preservation-file.log.txt).
+- See [candidate: tmp/units/anchor-repair-evidence-3/preservation.log.txt](raw/candidate/tmp/units/anchor-repair-evidence-3/preservation.log.txt).
+- See [candidate: tmp/units/anchor-repair-evidence-3/preserved-hashes.json](raw/candidate/tmp/units/anchor-repair-evidence-3/preserved-hashes.json).
+- See [candidate: tmp/units/anchor-repair-evidence-3/preserved-source.diff](raw/candidate/tmp/units/anchor-repair-evidence-3/preserved-source.diff).
+- See [candidate: tmp/units/anchor-repair-evidence-3/verify-preservation.mjs](raw/candidate/tmp/units/anchor-repair-evidence-3/verify-preservation.mjs).
+- See [candidate: tmp/units/anchor-release-gates-node/stderr.log.txt](raw/candidate/tmp/units/anchor-release-gates-node/stderr.log.txt).
+- See [candidate: tmp/units/anchor-release-gates-node/stdout.log.txt](raw/candidate/tmp/units/anchor-release-gates-node/stdout.log.txt).
+- See [candidate: tmp/units/anchor-release-gates-node/summary.json](raw/candidate/tmp/units/anchor-release-gates-node/summary.json).
+- See [canonical: tmp/units/anchor-release-verifier-report-2.md](raw/canonical/tmp/units/anchor-release-verifier-report-2.md). See [operational record](operational/canonical/tmp/units/anchor-release-verifier-report-2.md).
+- See [canonical: tmp/units/anchor-root-acceptance.md](raw/canonical/tmp/units/anchor-root-acceptance.md). See [operational record](operational/canonical/tmp/units/anchor-root-acceptance.md).
+- See [canonical: tmp/units/anchor-retention-report-3.md](raw/canonical/tmp/units/anchor-retention-report-3.md). See [operational record](operational/canonical/tmp/units/anchor-retention-report-3.md).
+- See [canonical: tmp/units/anchor-retention-evidence/additive-script-3.patch](raw/canonical/tmp/units/anchor-retention-evidence/additive-script-3.patch).
+- See [canonical: tmp/units/anchor-retention-evidence/additive-stat-3.txt](raw/canonical/tmp/units/anchor-retention-evidence/additive-stat-3.txt).
+- See [canonical: tmp/units/anchor-retention-evidence/scoped-status-3.txt](raw/canonical/tmp/units/anchor-retention-evidence/scoped-status-3.txt).
+- See [canonical: tmp/audit/anchor-retention-claims-3.md](raw/canonical/tmp/audit/anchor-retention-claims-3.md). See [operational record](operational/canonical/tmp/audit/anchor-retention-claims-3.md).
+- See [canonical: tmp/audit/anchor-retention-objective-brief-3.md](raw/canonical/tmp/audit/anchor-retention-objective-brief-3.md). See [operational record](operational/canonical/tmp/audit/anchor-retention-objective-brief-3.md).
+- See [canonical: tmp/audit/anchor-retention-subjective-brief-3.md](raw/canonical/tmp/audit/anchor-retention-subjective-brief-3.md). See [operational record](operational/canonical/tmp/audit/anchor-retention-subjective-brief-3.md).
+- See [canonical: tmp/audit/anchor-retention-objective-report-3.md](raw/canonical/tmp/audit/anchor-retention-objective-report-3.md). See [operational record](operational/canonical/tmp/audit/anchor-retention-objective-report-3.md).
+- See [canonical: tmp/audit/anchor-retention-subjective-report-3.md](raw/canonical/tmp/audit/anchor-retention-subjective-report-3.md). See [operational record](operational/canonical/tmp/audit/anchor-retention-subjective-report-3.md).
+- See [canonical: tmp/units/anchor-retention-root-acceptance.md](raw/canonical/tmp/units/anchor-retention-root-acceptance.md). See [operational record](operational/canonical/tmp/units/anchor-retention-root-acceptance.md).
