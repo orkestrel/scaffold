@@ -831,7 +831,11 @@ export function blueprintToRootVite(blueprint: Blueprint): string {
 		projects.push('setup')
 	}
 	if (blueprint.setup.includes('browser')) {
-		factories.push(CONFIG_TEMPLATES.factories.browser)
+		factories.push(
+			fillTemplate(CONFIG_TEMPLATES.factories.browser, {
+				plugins: machinery.vue ? '\t\tplugins: [vue()],\n' : '',
+			}),
+		)
 		projects.push('setupBrowser')
 	}
 	if (blueprint.guides) {

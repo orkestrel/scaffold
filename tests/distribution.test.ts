@@ -12,13 +12,14 @@ import {
 } from '@src/core'
 import { listFiles, pathToStorage } from '@src/server'
 import { requireValue } from '@orkestrel/test'
-import { isRecord, isString } from '@orkestrel/contract'
+import { isArray, isRecord, isString, parseJSON } from '@orkestrel/contract'
 import { createScratch } from '@orkestrel/test/server'
-import { readVariable } from '@orkestrel/process/server'
+import { executeSync, readVariable } from '@orkestrel/process/server'
 import { transformWithOxc } from 'vite'
 import { describe, expect, it } from 'vitest'
 import {
 	installGeneratedWorkspace,
+	GENERATED_VUE_SETUP_FILES,
 	installPackedScaffold,
 	NPM_LAUNCHER,
 	provisionNpm,
@@ -982,6 +983,84 @@ describe('installed package consumer', () => {
 					})
 					expect(run.status, `${gate}\n${run.stdout}\n${run.stderr}`).toBe(0)
 				}
+			} finally {
+				workspace.destroy()
+			}
+		},
+		1_200_000,
+	)
+
+	it.skipIf(!registry && !release)(
+		'renders a Vue SFC through the generated browser setup project [requires a reachable npm registry]',
+		() => {
+			if (!registry) {
+				throw new Error('The distribution release gate requires a reachable npm registry.')
+			}
+			const workspace = createScratch({ prefix: 'scaffold-vue-setup-install-' })
+			const environment = {
+				...process.env,
+				npm_config_cache: workspace.ensure('cache'),
+				npm_config_legacy_peer_deps: 'false',
+				npm_config_strict_peer_deps: 'false',
+			}
+			try {
+				const archive = installPackedScaffold(workspace, environment)
+				const generated = installGeneratedWorkspace(
+					workspace,
+					archive,
+					"createBlueprint('proof', { app: ['browser'], setup: ['browser'] })",
+					environment,
+				)
+				for (const [path, content] of Object.entries(GENERATED_VUE_SETUP_FILES)) {
+					workspace.write(`generated/${path}`, content)
+				}
+				const proof = executeSync(
+					{
+						file: process.execPath,
+						arguments: [
+							join(generated.path, 'node_modules', 'vitest', 'vitest.mjs'),
+							'run',
+							'--config',
+							'vite.config.ts',
+							'--no-cache',
+							'--reporter=verbose',
+							'--reporter=json',
+							'--outputFile.json=tmp/setup-vue-results.json',
+							'--project',
+							'setup:browser',
+						],
+					},
+					{ workspace: generated.path, environment: generated.environment, strict: false },
+				)
+				expect(proof.code, `${proof.stdout}\n${proof.stderr}`).toBe(0)
+				expect(proof.stdout).toContain('setup:browser')
+				expect(proof.stdout).toContain('tests/setupBrowser.test.ts')
+				const report = parseJSON(
+					requireValue(workspace.read('generated/tmp/setup-vue-results.json')),
+				)
+				if (!isRecord(report) || !isArray(report.testResults)) {
+					throw new Error('The generated browser proof wrote no test results.')
+				}
+				const paired = report.testResults.find(
+					(result) =>
+						isRecord(result) &&
+						isString(result.name) &&
+						resolve(result.name) === resolve(generated.path, 'tests/setupBrowser.test.ts'),
+				)
+				if (!isRecord(paired) || !isArray(paired.assertionResults)) {
+					throw new Error('The generated browser proof reported no paired setup cases.')
+				}
+				const assertions = paired.assertionResults.filter(
+					(assertion) =>
+						isRecord(assertion) &&
+						assertion.title === 'renders the Vue component through the browser setup helper',
+				)
+				expect(assertions).toEqual([
+					expect.objectContaining({
+						title: 'renders the Vue component through the browser setup helper',
+						status: 'passed',
+					}),
+				])
 			} finally {
 				workspace.destroy()
 			}

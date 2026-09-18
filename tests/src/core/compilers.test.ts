@@ -975,6 +975,32 @@ describe('blueprintToScripts config projects', () => {
 		expect(blueprintToScripts(node).test).not.toContain('test:setup:browser')
 	})
 
+	it('selects Vue for browser setup only when the browser application selects it', () => {
+		const application = buildBlueprint({ app: ['browser'], setup: ['browser'] })
+		const applicationRoot = blueprintToRootVite(application)
+		expect(applicationRoot).toMatch(/function setupBrowser[\s\S]*?plugins: \[vue\(\)\]/u)
+		expect(applicationRoot).toContain("import vue from '@vitejs/plugin-vue'")
+		expect(blueprintToDevDependencies(application)).toHaveProperty('@vitejs/plugin-vue')
+
+		const library = buildBlueprint({ src: ['browser'], app: [], setup: ['browser'] })
+		const libraryRoot = blueprintToRootVite(library)
+		expect(libraryRoot).toContain('export function setupBrowser(')
+		expect(libraryRoot).not.toContain('vue()')
+		expect(libraryRoot).not.toContain('@vitejs/plugin-vue')
+		expect(blueprintToDevDependencies(library)).not.toHaveProperty('@vitejs/plugin-vue')
+		expect(blueprintToDevDependencies(library)).not.toHaveProperty('vue')
+
+		const setup = buildBlueprint({ src: ['core'], app: [], setup: ['browser'] })
+		expect(blueprintToRootVite(setup)).toContain('export function setupBrowser(')
+		expect(blueprintToRootVite(setup)).not.toContain('vue()')
+		expect(blueprintToRootVite(setup)).not.toContain('@vitejs/plugin-vue')
+		expect(blueprintToDevDependencies(setup)).not.toHaveProperty('vue')
+
+		const node = buildBlueprint({ src: ['core'], app: [], setup: ['node'] })
+		expect(blueprintToRootVite(node)).not.toContain('export function setupBrowser(')
+		expect(blueprintToRootVite(node)).not.toContain('@vitejs/plugin-vue')
+	})
+
 	it('registers an app-core-only integration seed in the default test gate', () => {
 		const blueprint = buildBlueprint({ src: [], app: ['core'], integration: true })
 		const scripts = blueprintToScripts(blueprint)

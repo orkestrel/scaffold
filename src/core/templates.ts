@@ -498,7 +498,7 @@ export function appShowcase(override?: UserConfig): UserConfig {
 		browser: `export function setupBrowser(override?: UserConfig): UserConfig {
 	const project: UserConfig = {
 		resolve,
-		test: {
+{{plugins}}		test: {
 			name: { label: 'setup:browser', color: 'blue' },
 			include: ['tests/setupBrowser.test.ts'],
 			setupFiles: ['./tests/setup.ts', './tests/setupBrowser.ts'],

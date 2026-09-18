@@ -855,6 +855,49 @@ export function installGeneratedWorkspace(
 	}
 }
 
+/** Defines the real Vue component and browser setup proof a generated consumer renders. */
+export const GENERATED_VUE_SETUP_FILES: Readonly<Record<string, string>> = Object.freeze({
+	'app/browser/SetupComponent.vue': [
+		'<script setup lang="ts">',
+		"const message = 'Generated Vue setup renders'",
+		'</script>',
+		'<template><p data-setup="vue">{{ message }}</p></template>',
+		'',
+	].join('\n'),
+	'tests/setupBrowser.ts': [
+		"import type { App } from 'vue'",
+		"import { createApp } from 'vue'",
+		"import SetupComponent from '../app/browser/SetupComponent.vue'",
+		'',
+		'export function renderSetupComponent(container: HTMLElement): App<Element> {',
+		'\tconst app = createApp(SetupComponent)',
+		'\tapp.mount(container)',
+		'\treturn app',
+		'}',
+		'',
+	].join('\n'),
+	'tests/setupBrowser.test.ts': [
+		"import { renderSetupComponent } from './setupBrowser.js'",
+		"import { expect, it } from 'vitest'",
+		'',
+		"it('renders the Vue component through the browser setup helper', () => {",
+		"\tconst container = document.createElement('div')",
+		'\tdocument.body.append(container)',
+		'\tconst app = renderSetupComponent(container)',
+		'\ttry {',
+		"\t\texpect(container.querySelector('p')?.dataset.setup).toBe('vue')",
+		"\t\texpect(container.querySelector('p')?.textContent).toBe(",
+		"\t\t\t'Generated Vue setup renders',",
+		'\t\t)',
+		'\t} finally {',
+		'\t\tapp.unmount()',
+		'\t\tcontainer.remove()',
+		'\t}',
+		'})',
+		'',
+	].join('\n'),
+})
+
 /**
  * Builds a valid inert vendored-host manifest entry, with focused field replacements.
  *

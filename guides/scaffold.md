@@ -921,6 +921,11 @@ only that browser proof and loads `tests/setup.ts` and `tests/setupBrowser.ts` t
 Chromium. The generated manifest emits the selected `test:setup` and `test:setup:browser` scripts
 and invokes them from `test`. Scaffold generates no setup proof for an empty setup seed.
 
+When the `app` axis selects `browser`, the browser setup project also applies the Vue
+single-file-component transform. Your `tests/setupBrowser.ts` module and its paired proof can
+import and render application Vue components. A browser setup proof without `app/browser` keeps
+the non-Vue pipeline; selecting `src/browser` alone adds no Vue plugin or dependency.
+
 A structural fact is read when a verb runs, not when the file appears. Writing
 `tests/integration.test.ts` into a workspace sets the fact, but the root configuration on disk was
 generated before that file existed and still registers no `integration` project, so `test:config`

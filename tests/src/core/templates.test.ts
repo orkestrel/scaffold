@@ -672,6 +672,9 @@ describe('configuration templates', () => {
 				}),
 				createBlueprint('server-only', { src: ['server'] }),
 				createBlueprint('browser-only', { src: ['browser'] }),
+				createBlueprint('browser-library-setup', { src: ['browser'], setup: ['browser'] }),
+				createBlueprint('browser-application-setup', { app: ['browser'], setup: ['browser'] }),
+				createBlueprint('browser-setup', { src: ['core'], setup: ['browser'] }),
 				createBlueprint('application', {
 					app: ['core', 'browser', 'server'],
 					integration: true,
