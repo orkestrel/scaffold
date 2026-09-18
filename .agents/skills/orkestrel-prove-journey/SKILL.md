@@ -95,11 +95,8 @@ start, and let it choose the capture destination, the matrix row, and the statec
   repair.
 - Name each variant for the theme and the viewport it renders, such as `dark-390`. Never split the
   theme from the viewport; a split writes a filename naming a combination the run did not render.
-- Compose each variant's theme `apply` inside the test, from the variant's name. Vitest `provide`
-  carries serializable values, so `name`, `width`, and `height` cross that channel and a function
-  does not.
-- Apply the theme through the application's own interface wherever the application ships a theme
-  control, and through the attribute the surface reads where it does not.
+- Keep the provided variants as serializable `JourneyVariant` data: `name`, `width`, and `height`.
+  Compose no callback merely to pass that data to a capture.
 - Run the axis with `npm run test:journey`, which runs that wrapper and joins the `test` chain. Set
   `CAPTURE` to `1` in your own shell and run `npm run test:journey` again to write the frames; the
   root configuration reads that variable and provides it as `capture`.
@@ -124,12 +121,28 @@ Settle the one it reports before trusting a green run.
 intermediate script raises none. It reports the configuration question only for a `test:*` script
 whose text names `vitest`, so a script naming another runner's configuration raises none either.
 
+### Prepare the capture theme
+
+- Where the application ships a theme control, await the theme action through that interface
+  before driving the state the journey captures. Pass the provided `JourneyVariant` list directly
+  to `createPortfolio` when capture needs no additional synchronous document change. Never attach
+  an asynchronous action to `CaptureVariant.apply` or re-resolve a covered theme control at capture
+  time.
+- Where the surface has no theme control, prepare the theme through the attribute the surface
+  reads. Use the optional `CaptureVariant.apply` hook only for a synchronous document change,
+  such as setting that attribute. Treat its `() => void` contract as synchronous: `createPortfolio`
+  invokes the hook without awaiting a returned promise.
+- Keep `applyTheme` as the workspace's own browser setup helper. Make it drive the theme control
+  through the published journey verbs and await the announced theme state and settled paint.
+- Put the provided-context declaration in the browser test setup module, and consume the injected
+  data in `tests/app/browser/integration.test.ts` through the following portfolio configuration.
+  Mount the shipped application entry with its real provisions before the acceptance journey runs.
+- From `tests/app/browser/integration.test.ts`, pass `../../../tmp/capture/states` as the capture
+  directory to write into the workspace's `tmp/capture/states` directory. The browser provider
+  resolves a custom screenshot path relative to the test file's directory.
+
 ```ts
 import type { JourneyVariant } from '@orkestrel/test'
-import type { CaptureVariant } from '@orkestrel/test/browser'
-import { inject } from 'vitest'
-// `applyTheme` is the workspace's own setup-module export, named for the act it performs.
-import { applyTheme } from '../../setupBrowser.js'
 
 declare module 'vitest' {
 	interface ProvidedContext {
@@ -138,13 +151,37 @@ declare module 'vitest' {
 		readonly capture: boolean
 	}
 }
+```
+
+```ts
+import { createPortfolio } from '@orkestrel/test/browser'
+import { inject } from 'vitest'
+import { applyTheme } from '../../setupBrowser.js'
 
 const VARIANT = inject('variant')
 const CAPTURE = inject('capture')
-const VARIANTS: readonly CaptureVariant[] = inject('variants').map((variant) => ({
-	...variant,
-	apply: () => applyTheme(variant.name),
-}))
+const VARIANTS = inject('variants')
+const PORTFOLIO = createPortfolio({
+	states: ['home'],
+	variants: VARIANTS,
+	variant: VARIANT,
+	directory: '../../../tmp/capture/states',
+	enabled: CAPTURE,
+})
+```
+
+At the start of the existing home acceptance journey, insert the following theme preparation before
+that journey's actions.
+
+```ts
+await applyTheme(VARIANT)
+```
+
+Immediately after that journey's actual rendered-home assertion, insert the following placement.
+Keep the existing journey and its assertions as the consumer; add no screenshot-only test.
+
+```ts
+await PORTFOLIO.place('home')
 ```
 
 ## Apply the journey laws

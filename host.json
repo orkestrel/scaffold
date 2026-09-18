@@ -232,7 +232,7 @@
 			"storage": "agents/skills/orkestrel-prove-journey/SKILL.md",
 			"destination": ".agents/skills/orkestrel-prove-journey/SKILL.md",
 			"executable": false,
-			"digest": "2e18a1917b1b6ab4a523c14c9c00f5aad3d553f6c9f4b34b4cac43692c3efe55"
+			"digest": "c558fb0abcbad2b264c509fc6f82edba4fd9a1cede95a6185eec89056df4361e"
 		},
 		{
 			"storage": "agents/skills/orkestrel-prove-journey/agents/openai.yaml",
@@ -244,7 +244,7 @@
 			"storage": "agents/skills/orkestrel-prove-journey/references/captures.md",
 			"destination": ".agents/skills/orkestrel-prove-journey/references/captures.md",
 			"executable": false,
-			"digest": "a9fcd48be6a92dd717fc69fbb2a90e0406aa1d5b238cde7c2a760d345c0c3315"
+			"digest": "e36b56406d3e8643f253196d915ea1f265aae3169e810769171f75a8ab4461f5"
 		},
 		{
 			"storage": "agents/skills/orkestrel-prove-journey/references/decide.md",
@@ -2001,5 +2001,5 @@
 			]
 		}
 	],
-	"digest": "e8845599ab7b210cffae4f2a08409ad7b073473dbb070d074d7c87b4857a73b6"
+	"digest": "4aebcf828a3010184f12f19d76db2d27dbef46cf3a04f36499eb5e2ae3291034"
 }

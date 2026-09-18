@@ -68,14 +68,12 @@ these.
 - Declare the viewport list in the birth-owned `configs/app/vite.journey.config.ts` wrapper, as
   `readonly JourneyVariant[]`. That file is the adopter's, so its names and its viewports are the
   application's to set, and the presence of that file is the journey axis.
-- Compose each variant's `apply` inside the test, from the name the project provided, and hand the
-  composed `CaptureVariant` list to `createPortfolio`. `JourneyVariant` carries the `name`, the
-  `width`, and the `height` that cross Vitest's `provide` channel; `CaptureVariant` adds the `apply`
-  that does not.
+- Prepare the theme under [SKILL.md](../SKILL.md#prepare-the-capture-theme) before driving the
+  captured state, and use the variant list that preparation requires.
 - Name each variant for the theme and the viewport it renders, such as `dark-390`. The name is the
   second half of every filename the run writes, so a variant named for one alone produces a
   portfolio nobody can tell apart.
-- Pass the whole composed list as `variants` and `inject('variant')` as `variant`.
+- Pass the whole declared list as `variants` and `inject('variant')` as `variant`.
   `createPortfolio` refuses a `variant` no declared variant carries, and `files` expands the
   registry across the whole list rather than across the one being rendered.
 - Produce the portfolio — the registry times the variants — by running the axis once per variant,
