@@ -1,0 +1,16 @@
+{
+  "version": "0.0.1",
+  "name": "roughnotes",
+  "dependencies": {
+    "@orkestrel/scaffold": {
+      "version": "0.0.75",
+      "resolved": "https://registry.npmjs.org/@orkestrel/scaffold/-/scaffold-0.0.75.tgz",
+      "overridden": false
+    },
+    "@orkestrel/test": {
+      "version": "0.0.18",
+      "resolved": "https://registry.npmjs.org/@orkestrel/test/-/test-0.0.18.tgz",
+      "overridden": false
+    }
+  }
+}

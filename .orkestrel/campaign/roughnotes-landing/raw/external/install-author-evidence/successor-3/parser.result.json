@@ -1,0 +1,7 @@
+﻿{
+    "command":  "System.Management.Automation.Language.Parser.ParseFile(launch-install-original-3.ps1)",
+    "errors":  [
+
+               ],
+    "failed":  0
+}

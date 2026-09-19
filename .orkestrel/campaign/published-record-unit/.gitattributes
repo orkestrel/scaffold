@@ -1,0 +1,4 @@
+/brief.md -text
+/raw/** -text
+/manifest.json -text
+/retention.ps1 -text

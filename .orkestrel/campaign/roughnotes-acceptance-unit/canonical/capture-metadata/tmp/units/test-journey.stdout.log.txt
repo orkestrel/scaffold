@@ -1,0 +1,18 @@
+
+> roughnotes@0.0.1 test:journey
+> vitest run --config configs/app/vite.journey.config.ts --no-cache --reporter=dot
+
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/scaffold/tmp/recovery/roughnotes
+
+Port 63315 is in use, trying another one...
+Port 63316 is in use, trying another one...
+Port 63317 is in use, trying another one...
+Port 63318 is in use, trying another one...
+················································································································································································
+
+ Test Files  4 passed (4)
+      Tests  176 passed (176)
+   Start at  17:15:51
+   Duration  70.21s (transform 0ms, setup 43.67s, import 2.55s, tests 190.90s, environment 0ms)
+

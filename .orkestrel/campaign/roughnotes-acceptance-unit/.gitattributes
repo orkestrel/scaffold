@@ -1,0 +1,11 @@
+/brief.md -text
+/brief-source.md -text
+/brief-2.md -text
+/canonical/** -text
+/recovery/** -text
+/manifest.json -text
+/report.md -text
+/retain.ps1 -text
+/brief-3.md -text
+/supplemental/** -text
+/evidence-3/** -text

@@ -1,0 +1,2532 @@
+﻿[
+    {
+        "path":  ".orkestrel/campaign/published-record-unit/.gitattributes",
+        "blob":  "f01145d34b754529596b5cf3841f8e7a0f95628c",
+        "disk":  "f01145d34b754529596b5cf3841f8e7a0f95628c",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/published-record-unit/brief-source.md",
+        "blob":  "df85f7d30a2401bafeb1bb9ab535d7c6f5d071f8",
+        "disk":  "df85f7d30a2401bafeb1bb9ab535d7c6f5d071f8",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/published-record-unit/brief.md",
+        "blob":  "df85f7d30a2401bafeb1bb9ab535d7c6f5d071f8",
+        "disk":  "df85f7d30a2401bafeb1bb9ab535d7c6f5d071f8",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/published-record-unit/index.md",
+        "blob":  "d069ce40a3e6d3048ebf2ccc4db1f19c17d8cfe7",
+        "disk":  "d069ce40a3e6d3048ebf2ccc4db1f19c17d8cfe7",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/published-record-unit/manifest.json",
+        "blob":  "6c382168f4dc77df806e984da080e1d75cfeea2a",
+        "disk":  "6c382168f4dc77df806e984da080e1d75cfeea2a",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/published-record-unit/raw/canonical/tmp/cursor/fieldpass-harness-map-brief.md",
+        "blob":  "34e421cb6c9e68cce70c71e250b8492e419273e6",
+        "disk":  "34e421cb6c9e68cce70c71e250b8492e419273e6",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/published-record-unit/raw/canonical/tmp/cursor/fieldpass-harness-map-report.md",
+        "blob":  "d2a4d69832b3972fe3daccc4e60ed08c0b9dbba8",
+        "disk":  "d2a4d69832b3972fe3daccc4e60ed08c0b9dbba8",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/published-record-unit/raw/canonical/tmp/cursor/fieldpass-harness-map.ps1",
+        "blob":  "797a2398ca0e69253a0e4b50b385b5a64b4660af",
+        "disk":  "797a2398ca0e69253a0e4b50b385b5a64b4660af",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/published-record-unit/raw/canonical/tmp/units/published-scaffold-verifier-brief.md",
+        "blob":  "67ece0204420a6c6c78dbc44b4acfd2614eab493",
+        "disk":  "67ece0204420a6c6c78dbc44b4acfd2614eab493",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/published-record-unit/raw/canonical/tmp/units/published-scaffold-verifier-report.md",
+        "blob":  "41b0684c65a1985cace0b1d5227d02bae22e49c3",
+        "disk":  "41b0684c65a1985cace0b1d5227d02bae22e49c3",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/published-record-unit/raw/publication/comparison-brief.md",
+        "blob":  "31dc5613b04afd16d9582d69235fd7092ef727d6",
+        "disk":  "31dc5613b04afd16d9582d69235fd7092ef727d6",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/published-record-unit/raw/publication/comparison-evidence/36C10F55B178C4A5A25678CD98FBC7A2885520E0247C33F16E8AE1564D0B3083.diff",
+        "blob":  "a38b20f79d7e5737b4c6c7ce5c16adc1cdaf681e",
+        "disk":  "a38b20f79d7e5737b4c6c7ce5c16adc1cdaf681e",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/published-record-unit/raw/publication/comparison-evidence/E086447C86A18A5A2399EADA5DB63F4C7A6F8FC933BD5C65E554379EC8057F48.diff",
+        "blob":  "ad56f22d19601ef296650c31f2b98e5f88fd5379",
+        "disk":  "ad56f22d19601ef296650c31f2b98e5f88fd5379",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/published-record-unit/raw/publication/comparison-evidence/comparison.json",
+        "blob":  "257be96e8df52b20f8f88ce3011eeeead6b4ddb8",
+        "disk":  "257be96e8df52b20f8f88ce3011eeeead6b4ddb8",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/published-record-unit/raw/publication/comparison-evidence/prepared-listing.txt",
+        "blob":  "fd8a64042c8893e436fc3f0f46a417cdf8581163",
+        "disk":  "fd8a64042c8893e436fc3f0f46a417cdf8581163",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/published-record-unit/raw/publication/comparison-evidence/published-listing.txt",
+        "blob":  "fd8a64042c8893e436fc3f0f46a417cdf8581163",
+        "disk":  "fd8a64042c8893e436fc3f0f46a417cdf8581163",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/published-record-unit/raw/publication/comparison-report.md",
+        "blob":  "2cebd4b4da1d07ea810da4b8d796bf2d1981ba18",
+        "disk":  "2cebd4b4da1d07ea810da4b8d796bf2d1981ba18",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/published-record-unit/raw/publication/comparison.mjs",
+        "blob":  "15141ea2c4b5c9d0942cce964a5bc92d1df5316b",
+        "disk":  "15141ea2c4b5c9d0942cce964a5bc92d1df5316b",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/published-record-unit/report.md",
+        "blob":  "b3f6e56845c6caf58029ca917b0ddd6e6272f1d0",
+        "disk":  "b3f6e56845c6caf58029ca917b0ddd6e6272f1d0",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/published-record-unit/retention.ps1",
+        "blob":  "33952eedf023f60cf693ea1f32b6483b56475a62",
+        "disk":  "33952eedf023f60cf693ea1f32b6483b56475a62",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/recovery-current.md",
+        "blob":  "ead94def536fcb754d10eece40f3d4379130c9f5",
+        "disk":  "ead94def536fcb754d10eece40f3d4379130c9f5",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/recovery-live-tasks.md",
+        "blob":  "42718ad131cbfd8a1ac9a23f4686db1891c64578",
+        "disk":  "42718ad131cbfd8a1ac9a23f4686db1891c64578",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/.gitattributes",
+        "blob":  "0886a276db21c0c80bb254129c0fb8a9c4b12b12",
+        "disk":  "a34971814eee6d398888599c56f1237376d32c06",
+        "filtered":  "0886a276db21c0c80bb254129c0fb8a9c4b12b12",
+        "mode":  "line-ending-normalization"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/brief-2.md",
+        "blob":  "46cca6d31bcce5e8b1721c7c220affbe26ed4cd2",
+        "disk":  "46cca6d31bcce5e8b1721c7c220affbe26ed4cd2",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/brief-3.md",
+        "blob":  "71e9a59c3916d08f7d2ba80d743da63ad0a1a932",
+        "disk":  "71e9a59c3916d08f7d2ba80d743da63ad0a1a932",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/brief-source.md",
+        "blob":  "db63ba074258e574ef514007f82fa7d2faa81286",
+        "disk":  "db63ba074258e574ef514007f82fa7d2faa81286",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/brief.md",
+        "blob":  "db63ba074258e574ef514007f82fa7d2faa81286",
+        "disk":  "db63ba074258e574ef514007f82fa7d2faa81286",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/canonical/.orkestrel/campaign/r-b-final-audit-verdict.md",
+        "blob":  "b5b4e22693f66c5aa5492c5477acf9199fc4e4dd",
+        "disk":  "b5b4e22693f66c5aa5492c5477acf9199fc4e4dd",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/canonical/.orkestrel/campaign/r-b-final-capture-report.md",
+        "blob":  "d4709ca651ed979545c170f5726d800a6294c08c",
+        "disk":  "d4709ca651ed979545c170f5726d800a6294c08c",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/canonical/.orkestrel/campaign/r-b-final-controls-report.md",
+        "blob":  "d65e3228ed847a937add43ca275dceb6162664e0",
+        "disk":  "d65e3228ed847a937add43ca275dceb6162664e0",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/canonical/.orkestrel/campaign/r-b-final-objective-report.md",
+        "blob":  "c9a58625c473161f30b33e8a4d9414e5412ed383",
+        "disk":  "c9a58625c473161f30b33e8a4d9414e5412ed383",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/canonical/.orkestrel/campaign/r-b-final-subjective-report.md",
+        "blob":  "ca22d0e6297482ab43bf93effa2cdff275eabfb2",
+        "disk":  "ca22d0e6297482ab43bf93effa2cdff275eabfb2",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/canonical/.orkestrel/campaign/roughnotes-registry-acceptance.md",
+        "blob":  "0429f82473a4367c3ecedadf8564a0d11992a9dc",
+        "disk":  "0429f82473a4367c3ecedadf8564a0d11992a9dc",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/canonical/.orkestrel/campaign/roughnotes-registry-adoption-audit-verdict.md",
+        "blob":  "26429bca7110e01d2befcc39aca49aca2e82bd90",
+        "disk":  "26429bca7110e01d2befcc39aca49aca2e82bd90",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/canonical/capture-metadata/README.md",
+        "blob":  "39291a33211bf402a63a18160bc398782db53952",
+        "disk":  "39291a33211bf402a63a18160bc398782db53952",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/canonical/capture-metadata/inventory.json",
+        "blob":  "044eace4b998bb73290812b04ee1c00923f68adc",
+        "disk":  "044eace4b998bb73290812b04ee1c00923f68adc",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/canonical/capture-metadata/tmp/journeys/dark-1280.txt",
+        "blob":  "3b714e1a88c2c6085d16db1a571d3257467a6eb9",
+        "disk":  "3b714e1a88c2c6085d16db1a571d3257467a6eb9",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/canonical/capture-metadata/tmp/journeys/dark-390.txt",
+        "blob":  "1b8848ee661e0cecfe24c40564bc18db8e666d25",
+        "disk":  "1b8848ee661e0cecfe24c40564bc18db8e666d25",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/canonical/capture-metadata/tmp/journeys/light-1280.txt",
+        "blob":  "083ca9a815407ee8981dae23a8509ed4640bc293",
+        "disk":  "083ca9a815407ee8981dae23a8509ed4640bc293",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/canonical/capture-metadata/tmp/journeys/light-390.txt",
+        "blob":  "0dde121a42ec0b1080944790799ad9f1457268d8",
+        "disk":  "0dde121a42ec0b1080944790799ad9f1457268d8",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/canonical/capture-metadata/tmp/units/terminal.json",
+        "blob":  "a7d7042e9260449fac1e234ed2c3c96b5f30aed3",
+        "disk":  "a7d7042e9260449fac1e234ed2c3c96b5f30aed3",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/canonical/capture-metadata/tmp/units/test-journey.json",
+        "blob":  "6105d60260823b4220efbe9386eeb01882ebcf1d",
+        "disk":  "6105d60260823b4220efbe9386eeb01882ebcf1d",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/canonical/capture-metadata/tmp/units/test-journey.stderr.log.txt",
+        "blob":  "f15a6cd71d0b147c1baa0da7a2f43a15b0ae9f79",
+        "disk":  "f15a6cd71d0b147c1baa0da7a2f43a15b0ae9f79",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/canonical/capture-metadata/tmp/units/test-journey.stdout.log.txt",
+        "blob":  "44aa5a74683946831d937672522acffd63bbb951",
+        "disk":  "44aa5a74683946831d937672522acffd63bbb951",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/canonical/tmp/audit/r-b-final-actual.diff",
+        "blob":  "a25a9a5fd2aa9120d8a4a7d624e67f83cdbd803d",
+        "disk":  "a25a9a5fd2aa9120d8a4a7d624e67f83cdbd803d",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/canonical/tmp/audit/r-b-final-audit-claims.md",
+        "blob":  "d0bec4da156a898a8356cbe9b66b19867a45e661",
+        "disk":  "d0bec4da156a898a8356cbe9b66b19867a45e661",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/canonical/tmp/audit/r-b-final-new-setup-proof.diff",
+        "blob":  "4d11a78679e99f42b2b64acc72b512c5afb67071",
+        "disk":  "4d11a78679e99f42b2b64acc72b512c5afb67071",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/canonical/tmp/audit/r-b-final-objective-brief.md",
+        "blob":  "a733f03179941eb84ba7a7fe456a64d034eb0d41",
+        "disk":  "a733f03179941eb84ba7a7fe456a64d034eb0d41",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/canonical/tmp/audit/r-b-final-status.txt",
+        "blob":  "6736203968aa8e18739d49d25216a40308bb47b1",
+        "disk":  "6736203968aa8e18739d49d25216a40308bb47b1",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/canonical/tmp/audit/r-b-final-subjective-brief.md",
+        "blob":  "822c519e79798f3906499096ef67691e92eaa6bf",
+        "disk":  "822c519e79798f3906499096ef67691e92eaa6bf",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/canonical/tmp/audit/roughnotes-registry-adoption-audit-claims.md",
+        "blob":  "80ee617f292263e7da0d0b93a46c43662f879a33",
+        "disk":  "80ee617f292263e7da0d0b93a46c43662f879a33",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/canonical/tmp/audit/roughnotes-registry-adoption-objective-brief.md",
+        "blob":  "e5060cf85ed11886cf91be6672c352539ea441b2",
+        "disk":  "e5060cf85ed11886cf91be6672c352539ea441b2",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/canonical/tmp/audit/roughnotes-registry-adoption-objective-report.md",
+        "blob":  "a2bd69a4a0ded76459f0aa3f2c780c7d82de5698",
+        "disk":  "a2bd69a4a0ded76459f0aa3f2c780c7d82de5698",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/canonical/tmp/audit/roughnotes-registry-adoption-subjective-brief.md",
+        "blob":  "5db14ac4014dbd9b6a27cbe91f94dbb5735b61e2",
+        "disk":  "5db14ac4014dbd9b6a27cbe91f94dbb5735b61e2",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/canonical/tmp/audit/roughnotes-registry-adoption-subjective-report.md",
+        "blob":  "7ec52853136c9fa603a195fba4b38eada56cb70a",
+        "disk":  "7ec52853136c9fa603a195fba4b38eada56cb70a",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/canonical/tmp/probe/retain-roughnotes-registry-capture.ps1",
+        "blob":  "9eeb63db835937e86353efebfb9fe33f09b65ab9",
+        "disk":  "9eeb63db835937e86353efebfb9fe33f09b65ab9",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/canonical/tmp/release/adopt-roughnotes-registry.mjs",
+        "blob":  "3b31f44daad8c68e95a7194a90d9eb77bb2d6a56",
+        "disk":  "3b31f44daad8c68e95a7194a90d9eb77bb2d6a56",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/canonical/tmp/release/launch-roughnotes-registry-gates.ps1",
+        "blob":  "ff496d33ab8a71e70d721807c6206674b7db344a",
+        "disk":  "ff496d33ab8a71e70d721807c6206674b7db344a",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/canonical/tmp/release/launch-roughnotes-registry.ps1",
+        "blob":  "df5df129252a1a9352d0517b5e4d2f448b4723db",
+        "disk":  "df5df129252a1a9352d0517b5e4d2f448b4723db",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/canonical/tmp/release/run-roughnotes-registry-gates.mjs",
+        "blob":  "bae3cd831ff6016e6d83839615f02612cfd8ca0e",
+        "disk":  "bae3cd831ff6016e6d83839615f02612cfd8ca0e",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/canonical/tmp/units/r-b-brief-11.md",
+        "blob":  "27d22eb3115365b7e8b3c3a7fc854e62fe1a84b6",
+        "disk":  "27d22eb3115365b7e8b3c3a7fc854e62fe1a84b6",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/canonical/tmp/units/r-b-gates-brief.md",
+        "blob":  "a448d97d4438c21649f7ebe54b457d45dc395f25",
+        "disk":  "a448d97d4438c21649f7ebe54b457d45dc395f25",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/canonical/tmp/units/roughnotes-registry-adoption-brief.md",
+        "blob":  "dfa300ec8aeaef8e987579d446ada8bcf980fb0e",
+        "disk":  "dfa300ec8aeaef8e987579d446ada8bcf980fb0e",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/canonical/tmp/units/roughnotes-registry-adoption-evidence/baseline.json",
+        "blob":  "503ea7c87c5e64d740efa3a6539ea0f879b9c56c",
+        "disk":  "503ea7c87c5e64d740efa3a6539ea0f879b9c56c",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/canonical/tmp/units/roughnotes-registry-adoption-evidence/canonical.status.txt",
+        "blob":  "46c1bb6a2203e44fee621d7b1d35001dc3e08034",
+        "disk":  "46c1bb6a2203e44fee621d7b1d35001dc3e08034",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/canonical/tmp/units/roughnotes-registry-adoption-evidence/check-launcher.ps1",
+        "blob":  "b45c6848ab0d7c79c86031ba30b443148d85cb45",
+        "disk":  "b45c6848ab0d7c79c86031ba30b443148d85cb45",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/canonical/tmp/units/roughnotes-registry-adoption-evidence/collect-evidence.mjs",
+        "blob":  "24debaeb8d34dfa72d24ccb40b64431b35f4f2c5",
+        "disk":  "24debaeb8d34dfa72d24ccb40b64431b35f4f2c5",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/canonical/tmp/units/roughnotes-registry-adoption-evidence/empty.txt",
+        "blob":  "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "disk":  "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/canonical/tmp/units/roughnotes-registry-adoption-evidence/inspect-authoring.mjs",
+        "blob":  "6ce95dc082e435d49ca4d39e05cba9fe57542fa9",
+        "disk":  "6ce95dc082e435d49ca4d39e05cba9fe57542fa9",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/canonical/tmp/units/roughnotes-registry-adoption-evidence/instrument-hashes.json",
+        "blob":  "34799c023feedc118a7b36373fedf5b459f271d0",
+        "disk":  "34799c023feedc118a7b36373fedf5b459f271d0",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/canonical/tmp/units/roughnotes-registry-adoption-evidence/owned.diff.patch",
+        "blob":  "d4c9f93a45085d43857b574219531c9082aae684",
+        "disk":  "d4c9f93a45085d43857b574219531c9082aae684",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/canonical/tmp/units/roughnotes-registry-adoption-evidence/owned.diffstat.txt",
+        "blob":  "a153e136ff512c09c5f3969b622b542819d73e7a",
+        "disk":  "a153e136ff512c09c5f3969b622b542819d73e7a",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/canonical/tmp/units/roughnotes-registry-adoption-evidence/recovery-after-authorship.json",
+        "blob":  "645f9d0fb94c1b30ea7acad9125036fdf6159637",
+        "disk":  "645f9d0fb94c1b30ea7acad9125036fdf6159637",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/canonical/tmp/units/roughnotes-registry-adoption-evidence/registry-adoption-20260918.launcher.result.json",
+        "blob":  "a1414702eddf813fa395871c3f63c432b4430b31",
+        "disk":  "a1414702eddf813fa395871c3f63c432b4430b31",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/canonical/tmp/units/roughnotes-registry-adoption-evidence/registry-adoption-20260918.launcher.stderr.log.txt",
+        "blob":  "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "disk":  "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/canonical/tmp/units/roughnotes-registry-adoption-evidence/registry-adoption-20260918.launcher.stdout.log.txt",
+        "blob":  "41b9c714352b6c5d15b9c1d2505afa8be0be07af",
+        "disk":  "41b9c714352b6c5d15b9c1d2505afa8be0be07af",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/canonical/tmp/units/roughnotes-registry-adoption-evidence/registry-adoption-20260918/after.json",
+        "blob":  "e12d6b58d194e6a1a2901498bd9fc74c51d61eff",
+        "disk":  "e12d6b58d194e6a1a2901498bd9fc74c51d61eff",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/canonical/tmp/units/roughnotes-registry-adoption-evidence/registry-adoption-20260918/before.json",
+        "blob":  "7665466374eae445eca9a458060c64fc67600f71",
+        "disk":  "7665466374eae445eca9a458060c64fc67600f71",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/canonical/tmp/units/roughnotes-registry-adoption-evidence/registry-adoption-20260918/command.json",
+        "blob":  "8aba1fc52d9101ccd417abaf519bc54ab9c17af0",
+        "disk":  "8aba1fc52d9101ccd417abaf519bc54ab9c17af0",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/canonical/tmp/units/roughnotes-registry-adoption-evidence/registry-adoption-20260918/npm.exit.json",
+        "blob":  "ae658ae57f91f438861d3ee65901fe2b0615f536",
+        "disk":  "ae658ae57f91f438861d3ee65901fe2b0615f536",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/canonical/tmp/units/roughnotes-registry-adoption-evidence/registry-adoption-20260918/npm.stderr.log.txt",
+        "blob":  "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "disk":  "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/canonical/tmp/units/roughnotes-registry-adoption-evidence/registry-adoption-20260918/npm.stdout.log.txt",
+        "blob":  "444d715b9ec6883294845d3471b6ab156c253b9e",
+        "disk":  "444d715b9ec6883294845d3471b6ab156c253b9e",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/canonical/tmp/units/roughnotes-registry-adoption-evidence/registry-adoption-20260918/package-lock.before.json",
+        "blob":  "7c0f93e34c2d540cd5afe397f3ef866ef1a8f05a",
+        "disk":  "7c0f93e34c2d540cd5afe397f3ef866ef1a8f05a",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/canonical/tmp/units/roughnotes-registry-adoption-evidence/registry-adoption-20260918/package.before.json",
+        "blob":  "2e5f830a482c6d807da744b73f4517380b555e82",
+        "disk":  "2e5f830a482c6d807da744b73f4517380b555e82",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/canonical/tmp/units/roughnotes-registry-adoption-evidence/registry-adoption-20260918/registry.json",
+        "blob":  "8a2465a8517a9645c701255cfdf9a8354a19d32f",
+        "disk":  "8a2465a8517a9645c701255cfdf9a8354a19d32f",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/canonical/tmp/units/roughnotes-registry-adoption-evidence/registry-adoption-20260918/terminal.json",
+        "blob":  "890aee51825222ca80fadb4188cc8f635ccf019b",
+        "disk":  "890aee51825222ca80fadb4188cc8f635ccf019b",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/canonical/tmp/units/roughnotes-registry-adoption-evidence/registry-mismatch.json",
+        "blob":  "0b51f1d36374c126ac3751cc2aebd905ce909f33",
+        "disk":  "0b51f1d36374c126ac3751cc2aebd905ce909f33",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/canonical/tmp/units/roughnotes-registry-adoption-evidence/registry-observed.json",
+        "blob":  "8a2465a8517a9645c701255cfdf9a8354a19d32f",
+        "disk":  "8a2465a8517a9645c701255cfdf9a8354a19d32f",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/canonical/tmp/units/roughnotes-registry-adoption-evidence/source-drift.json",
+        "blob":  "e2909a1e3fb0a0bd297e5283366d66fa91c70e61",
+        "disk":  "e2909a1e3fb0a0bd297e5283366d66fa91c70e61",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/canonical/tmp/units/roughnotes-registry-adoption-evidence/validation-results.txt",
+        "blob":  "b8395f159c0ca8d71177c719b35bc925acc13d5c",
+        "disk":  "b8395f159c0ca8d71177c719b35bc925acc13d5c",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/canonical/tmp/units/roughnotes-registry-adoption-report.md",
+        "blob":  "f974bbac344e2ab00be14c4afaa5a66ae15b6b90",
+        "disk":  "f974bbac344e2ab00be14c4afaa5a66ae15b6b90",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/canonical/tmp/units/roughnotes-registry-capture-retention-brief.md",
+        "blob":  "b302bdfbbce339a65cd91db4df3108907f6e23e7",
+        "disk":  "b302bdfbbce339a65cd91db4df3108907f6e23e7",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/canonical/tmp/units/roughnotes-registry-capture-retention-evidence/owned-status.txt",
+        "blob":  "8b137891791fe96927ad78e64b0aad7bded08bdc",
+        "disk":  "8b137891791fe96927ad78e64b0aad7bded08bdc",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/canonical/tmp/units/roughnotes-registry-capture-retention-evidence/retain-r-b-capture.before.ps1",
+        "blob":  "e17eede7226b2ada732fade0cbced121f118ed26",
+        "disk":  "e17eede7226b2ada732fade0cbced121f118ed26",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/canonical/tmp/units/roughnotes-registry-capture-retention-evidence/successor.diff.patch",
+        "blob":  "cb792fe4454e6846cda7580fe78e6dd0454cf537",
+        "disk":  "cb792fe4454e6846cda7580fe78e6dd0454cf537",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/canonical/tmp/units/roughnotes-registry-capture-retention-report.md",
+        "blob":  "cee4e71cf6c9f9095d62363c4cbf6722f5b628cc",
+        "disk":  "cee4e71cf6c9f9095d62363c4cbf6722f5b628cc",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/canonical/tmp/units/roughnotes-registry-final-verifier-brief.md",
+        "blob":  "15d3ae9a2a179e6d4f331a35119bd5bfebb15c2d",
+        "disk":  "15d3ae9a2a179e6d4f331a35119bd5bfebb15c2d",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/canonical/tmp/units/roughnotes-registry-final-verifier-report.md",
+        "blob":  "acde36c6b686ee397a7a5fce8f222a710480afe6",
+        "disk":  "acde36c6b686ee397a7a5fce8f222a710480afe6",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/canonical/tmp/units/roughnotes-registry-gates-author-evidence/control-child.mjs",
+        "blob":  "b4813498897eded17090c960ba45995e1473808b",
+        "disk":  "b4813498897eded17090c960ba45995e1473808b",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/canonical/tmp/units/roughnotes-registry-gates-author-evidence/control-successor.mjs",
+        "blob":  "02a4b364630a11329e0fbd9778b40610ed67a043",
+        "disk":  "02a4b364630a11329e0fbd9778b40610ed67a043",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/canonical/tmp/units/roughnotes-registry-gates-author-evidence/launch-roughnotes-registry-gates.before.ps1",
+        "blob":  "ff496d33ab8a71e70d721807c6206674b7db344a",
+        "disk":  "ff496d33ab8a71e70d721807c6206674b7db344a",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/canonical/tmp/units/roughnotes-registry-gates-author-evidence/recovery-status-successor.txt",
+        "blob":  "88ad2d9758f0b83d0129d06f097bb06403c62983",
+        "disk":  "88ad2d9758f0b83d0129d06f097bb06403c62983",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/canonical/tmp/units/roughnotes-registry-gates-author-evidence/roughnotes-registry-gates-author-report.before.md",
+        "blob":  "cc3e2a9a7976067aa0660f189f2f97c16ab88aeb",
+        "disk":  "cc3e2a9a7976067aa0660f189f2f97c16ab88aeb",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/canonical/tmp/units/roughnotes-registry-gates-author-evidence/run-roughnotes-registry-gates.before.mjs",
+        "blob":  "dc0ad24476e7d1f04ab441fe497c589169acac8b",
+        "disk":  "dc0ad24476e7d1f04ab441fe497c589169acac8b",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/canonical/tmp/units/roughnotes-registry-gates-author-evidence/runner-successor.diff.patch",
+        "blob":  "76f800ba679bf9af4bcef9736bbc708850bf04fc",
+        "disk":  "76f800ba679bf9af4bcef9736bbc708850bf04fc",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/canonical/tmp/units/roughnotes-registry-gates-author-report-2.md",
+        "blob":  "5e8c49d88ac6457e230f83539e457f0e620f9820",
+        "disk":  "5e8c49d88ac6457e230f83539e457f0e620f9820",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/canonical/tmp/units/roughnotes-registry-gates-brief-2.md",
+        "blob":  "b90b29b0836d63ec6fa348b46ff45af66ca42693",
+        "disk":  "b90b29b0836d63ec6fa348b46ff45af66ca42693",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/canonical/tmp/units/roughnotes-registry-gates-evidence/roughnotes-control-2-20260918/control-driver.json",
+        "blob":  "4abacd1ba01daf05222b88bc1c0f78709c905990",
+        "disk":  "4abacd1ba01daf05222b88bc1c0f78709c905990",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/canonical/tmp/units/roughnotes-registry-gates-evidence/roughnotes-control-2-20260918/control-terminal.json",
+        "blob":  "e73165366d469321e7999bfae33e2fbc040f2df2",
+        "disk":  "e73165366d469321e7999bfae33e2fbc040f2df2",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/canonical/tmp/units/roughnotes-registry-gates-evidence/roughnotes-control-2-20260918/control.json",
+        "blob":  "b060babf93dbd5e5f580de09586eefd52edfba58",
+        "disk":  "b060babf93dbd5e5f580de09586eefd52edfba58",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/canonical/tmp/units/roughnotes-registry-gates-evidence/roughnotes-control-2-20260918/control.stderr.log.txt",
+        "blob":  "46b340b5e85928cb52cece3fb4bb6cc058108df9",
+        "disk":  "46b340b5e85928cb52cece3fb4bb6cc058108df9",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/canonical/tmp/units/roughnotes-registry-gates-evidence/roughnotes-control-2-20260918/control.stdout.log.txt",
+        "blob":  "783682ee883cb80bf0b9f1a13e95c259219e7b0e",
+        "disk":  "783682ee883cb80bf0b9f1a13e95c259219e7b0e",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/canonical/tmp/units/roughnotes-registry-gates-evidence/roughnotes-registry-gates-20260918/after.json",
+        "blob":  "a08ab121229b869f7024bb0f00718828f75a2630",
+        "disk":  "a08ab121229b869f7024bb0f00718828f75a2630",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/canonical/tmp/units/roughnotes-registry-gates-evidence/roughnotes-registry-gates-20260918/before.json",
+        "blob":  "a08ab121229b869f7024bb0f00718828f75a2630",
+        "disk":  "a08ab121229b869f7024bb0f00718828f75a2630",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/canonical/tmp/units/roughnotes-registry-gates-evidence/roughnotes-registry-gates-20260918/build.json",
+        "blob":  "8702083e7bc211b7704ba409e4286839d20d0e9d",
+        "disk":  "8702083e7bc211b7704ba409e4286839d20d0e9d",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/canonical/tmp/units/roughnotes-registry-gates-evidence/roughnotes-registry-gates-20260918/build.stderr.log.txt",
+        "blob":  "f19c93ec3ea72b7859046ed6d4eebe11493111e8",
+        "disk":  "f19c93ec3ea72b7859046ed6d4eebe11493111e8",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/canonical/tmp/units/roughnotes-registry-gates-evidence/roughnotes-registry-gates-20260918/build.stdout.log.txt",
+        "blob":  "76fa055bd94299c0b742bfb12ef53060ae5c030f",
+        "disk":  "76fa055bd94299c0b742bfb12ef53060ae5c030f",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/canonical/tmp/units/roughnotes-registry-gates-evidence/roughnotes-registry-gates-20260918/check.json",
+        "blob":  "179de3c99cb9abbeb543378a198c1b533f91253e",
+        "disk":  "179de3c99cb9abbeb543378a198c1b533f91253e",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/canonical/tmp/units/roughnotes-registry-gates-evidence/roughnotes-registry-gates-20260918/check.stderr.log.txt",
+        "blob":  "223818a7296fa0d3385e866aa153961ce07c5aef",
+        "disk":  "223818a7296fa0d3385e866aa153961ce07c5aef",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/canonical/tmp/units/roughnotes-registry-gates-evidence/roughnotes-registry-gates-20260918/check.stdout.log.txt",
+        "blob":  "7b4e3046d391bfa29823c09039badbaa40f8a307",
+        "disk":  "7b4e3046d391bfa29823c09039badbaa40f8a307",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/canonical/tmp/units/roughnotes-registry-gates-evidence/roughnotes-registry-gates-20260918/format-check.json",
+        "blob":  "2581870ed52260c581acc494f171e34dc527c51f",
+        "disk":  "2581870ed52260c581acc494f171e34dc527c51f",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/canonical/tmp/units/roughnotes-registry-gates-evidence/roughnotes-registry-gates-20260918/format-check.stderr.log.txt",
+        "blob":  "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "disk":  "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/canonical/tmp/units/roughnotes-registry-gates-evidence/roughnotes-registry-gates-20260918/format-check.stdout.log.txt",
+        "blob":  "146b43dd41d37ad9ad120d376c3b61370fe82624",
+        "disk":  "146b43dd41d37ad9ad120d376c3b61370fe82624",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/canonical/tmp/units/roughnotes-registry-gates-evidence/roughnotes-registry-gates-20260918/lint-check.json",
+        "blob":  "6a7219d4a53d7d04b8dab3618cfb5b3ba6f1e3f1",
+        "disk":  "6a7219d4a53d7d04b8dab3618cfb5b3ba6f1e3f1",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/canonical/tmp/units/roughnotes-registry-gates-evidence/roughnotes-registry-gates-20260918/lint-check.stderr.log.txt",
+        "blob":  "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "disk":  "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/canonical/tmp/units/roughnotes-registry-gates-evidence/roughnotes-registry-gates-20260918/lint-check.stdout.log.txt",
+        "blob":  "1fb7625ec8558ef89a16f383ac773d07626b1f59",
+        "disk":  "1fb7625ec8558ef89a16f383ac773d07626b1f59",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/canonical/tmp/units/roughnotes-registry-gates-evidence/roughnotes-registry-gates-20260918/terminal.json",
+        "blob":  "a7d7042e9260449fac1e234ed2c3c96b5f30aed3",
+        "disk":  "a7d7042e9260449fac1e234ed2c3c96b5f30aed3",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/canonical/tmp/units/roughnotes-registry-gates-evidence/roughnotes-registry-gates-20260918/test-journey.json",
+        "blob":  "6105d60260823b4220efbe9386eeb01882ebcf1d",
+        "disk":  "6105d60260823b4220efbe9386eeb01882ebcf1d",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/canonical/tmp/units/roughnotes-registry-gates-evidence/roughnotes-registry-gates-20260918/test-journey.stderr.log.txt",
+        "blob":  "f15a6cd71d0b147c1baa0da7a2f43a15b0ae9f79",
+        "disk":  "f15a6cd71d0b147c1baa0da7a2f43a15b0ae9f79",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/canonical/tmp/units/roughnotes-registry-gates-evidence/roughnotes-registry-gates-20260918/test-journey.stdout.log.txt",
+        "blob":  "44aa5a74683946831d937672522acffd63bbb951",
+        "disk":  "44aa5a74683946831d937672522acffd63bbb951",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/canonical/tmp/units/roughnotes-registry-gates-evidence/roughnotes-registry-gates-20260918/test.json",
+        "blob":  "f4fbab07999db6bac2870e2c83f12e2a825c34fc",
+        "disk":  "f4fbab07999db6bac2870e2c83f12e2a825c34fc",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/canonical/tmp/units/roughnotes-registry-gates-evidence/roughnotes-registry-gates-20260918/test.stderr.log.txt",
+        "blob":  "c3fd3882c7c5503d9b5ca2cd0ac0d81110fea5d6",
+        "disk":  "c3fd3882c7c5503d9b5ca2cd0ac0d81110fea5d6",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/canonical/tmp/units/roughnotes-registry-gates-evidence/roughnotes-registry-gates-20260918/test.stdout.log.txt",
+        "blob":  "81ce7d5010917a51896a5bb695d5f10033824244",
+        "disk":  "81ce7d5010917a51896a5bb695d5f10033824244",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/canonical/tmp/units/roughnotes-registry-host-brief.md",
+        "blob":  "f4f41e0ff03781ad57294c5525885d6737633014",
+        "disk":  "f4f41e0ff03781ad57294c5525885d6737633014",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/canonical/tmp/units/roughnotes-registry-host-report.md",
+        "blob":  "febbbcc628154957b6dab486f180ea3f80d6e682",
+        "disk":  "febbbcc628154957b6dab486f180ea3f80d6e682",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/evidence-3/control.json",
+        "blob":  "34e47cbe97bd1774eb770a4d51852810d1ff4579",
+        "disk":  "34e47cbe97bd1774eb770a4d51852810d1ff4579",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/evidence-3/diffstat.txt",
+        "blob":  "0099e6cfa42606d557d7d3b92ea201c6071db417",
+        "disk":  "0099e6cfa42606d557d7d3b92ea201c6071db417",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/evidence-3/green.json",
+        "blob":  "16457e8d32bcff426b7223387dc8fa3232831685",
+        "disk":  "16457e8d32bcff426b7223387dc8fa3232831685",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/evidence-3/red.json",
+        "blob":  "b38740c31a808f34140fcb10807a69edce2d3c81",
+        "disk":  "b38740c31a808f34140fcb10807a69edce2d3c81",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/evidence-3/repair-output.json",
+        "blob":  "af8d1fae6bb6e20b26a22670fc093bd5c6c0535b",
+        "disk":  "af8d1fae6bb6e20b26a22670fc093bd5c6c0535b",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/evidence-3/repair.mjs",
+        "blob":  "ec56f9baecc1a9d223d395f613b4f723a106f898",
+        "disk":  "ec56f9baecc1a9d223d395f613b4f723a106f898",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/evidence-3/scoped-status.txt",
+        "blob":  "e63a9cfca19d8b08d4f0b915f2f23d3eaaa7f34c",
+        "disk":  "e63a9cfca19d8b08d4f0b915f2f23d3eaaa7f34c",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/evidence-3/validate.mjs",
+        "blob":  "11f6352eb4223e6c2d7c3a13fbbe5039992e2c5f",
+        "disk":  "11f6352eb4223e6c2d7c3a13fbbe5039992e2c5f",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/evidence-3/validation.json",
+        "blob":  "097ace7e9fa0769daad3717c47528e117bd030f8",
+        "disk":  "097ace7e9fa0769daad3717c47528e117bd030f8",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/index-3.md",
+        "blob":  "94195e606877064353b03d4a692849808b065f7b",
+        "disk":  "94195e606877064353b03d4a692849808b065f7b",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/index.md",
+        "blob":  "5f75b5cfa2a86c8f9e8caf561026ccb5ac07501b",
+        "disk":  "5f75b5cfa2a86c8f9e8caf561026ccb5ac07501b",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/manifest.json",
+        "blob":  "dc4285657696426288d2cc177b524062a3808c71",
+        "disk":  "dc4285657696426288d2cc177b524062a3808c71",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/navigate-3.mjs",
+        "blob":  "b8773aba00f9827b8d165ae518c82533facb5e16",
+        "disk":  "b8773aba00f9827b8d165ae518c82533facb5e16",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/navigate.ps1",
+        "blob":  "74775843bd5fb0869a6b5cce669ce7d4d189048b",
+        "disk":  "74775843bd5fb0869a6b5cce669ce7d4d189048b",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/navigation-manifest-3.json",
+        "blob":  "20b0314d4458924c2665d2fcc4a42e231369c5ad",
+        "disk":  "20b0314d4458924c2665d2fcc4a42e231369c5ad",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/navigation-manifest.json",
+        "blob":  "c752cd4242212cf7f62cf4848d96749fb8fe76d7",
+        "disk":  "fcaf50af87f07110e16a7c9398e88cde17116fc6",
+        "filtered":  "c752cd4242212cf7f62cf4848d96749fb8fe76d7",
+        "mode":  "line-ending-normalization"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/operational-3/canonical/.orkestrel/campaign/r-b-final-audit-verdict.md",
+        "blob":  "5796c7dada2fb264c45da48c27676cec6ca91ab1",
+        "disk":  "5796c7dada2fb264c45da48c27676cec6ca91ab1",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/operational-3/canonical/.orkestrel/campaign/r-b-final-capture-report.md",
+        "blob":  "17fb596c95587a7dc2c4a8f58f33a1538a041b7c",
+        "disk":  "17fb596c95587a7dc2c4a8f58f33a1538a041b7c",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/operational-3/canonical/.orkestrel/campaign/r-b-final-controls-report.md",
+        "blob":  "70bc4be5f2fe30e3ed40e091485395c183ac63c3",
+        "disk":  "70bc4be5f2fe30e3ed40e091485395c183ac63c3",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/operational-3/canonical/.orkestrel/campaign/r-b-final-objective-report.md",
+        "blob":  "66157092fa7b7ebc31d5acb82eb688c690ce9ef7",
+        "disk":  "66157092fa7b7ebc31d5acb82eb688c690ce9ef7",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/operational-3/canonical/.orkestrel/campaign/r-b-final-subjective-report.md",
+        "blob":  "6e2a1e00dd4f8b9d84ef4bfe6534459189639afc",
+        "disk":  "6e2a1e00dd4f8b9d84ef4bfe6534459189639afc",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/operational-3/canonical/.orkestrel/campaign/roughnotes-registry-acceptance.md",
+        "blob":  "2fdc0f14f9b1d9ad986b114f76ac78fe515c450c",
+        "disk":  "2fdc0f14f9b1d9ad986b114f76ac78fe515c450c",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/operational-3/canonical/.orkestrel/campaign/roughnotes-registry-adoption-audit-verdict.md",
+        "blob":  "1e7fb1569179deb98b2c699c2bdf3a76061bdb1f",
+        "disk":  "1e7fb1569179deb98b2c699c2bdf3a76061bdb1f",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/operational-3/canonical/tmp/audit/r-b-final-audit-claims.md",
+        "blob":  "68ed3473a9eab075f0f772c2195b9948c0b78472",
+        "disk":  "68ed3473a9eab075f0f772c2195b9948c0b78472",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/operational-3/canonical/tmp/audit/r-b-final-objective-brief.md",
+        "blob":  "fd1f3884ed3ed65a338300e1b820acde8533d41b",
+        "disk":  "fd1f3884ed3ed65a338300e1b820acde8533d41b",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/operational-3/canonical/tmp/audit/r-b-final-subjective-brief.md",
+        "blob":  "24c6603dc418a72377e6a5676d72edade28e2102",
+        "disk":  "24c6603dc418a72377e6a5676d72edade28e2102",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/operational-3/canonical/tmp/audit/roughnotes-registry-adoption-audit-claims.md",
+        "blob":  "cb15c13514ac2ac04f3408ff01c6c0d0a4696d44",
+        "disk":  "cb15c13514ac2ac04f3408ff01c6c0d0a4696d44",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/operational-3/canonical/tmp/audit/roughnotes-registry-adoption-objective-brief.md",
+        "blob":  "727cc355cc1b1a0f288ee72e1484b1b0365aa310",
+        "disk":  "727cc355cc1b1a0f288ee72e1484b1b0365aa310",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/operational-3/canonical/tmp/audit/roughnotes-registry-adoption-objective-report.md",
+        "blob":  "b29e36276dcbe0ab4c16e1c0ad0df86e322793b1",
+        "disk":  "b29e36276dcbe0ab4c16e1c0ad0df86e322793b1",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/operational-3/canonical/tmp/audit/roughnotes-registry-adoption-subjective-brief.md",
+        "blob":  "edc65c3e62ae41e778601170a062eb7532ee6d8d",
+        "disk":  "edc65c3e62ae41e778601170a062eb7532ee6d8d",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/operational-3/canonical/tmp/audit/roughnotes-registry-adoption-subjective-report.md",
+        "blob":  "0482f55cb95e402a1680bec6262aecdfd1638c94",
+        "disk":  "0482f55cb95e402a1680bec6262aecdfd1638c94",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/operational-3/canonical/tmp/units/r-b-brief-11.md",
+        "blob":  "7e45f790125656a2cf5a632e0e7f208c5eaabede",
+        "disk":  "7e45f790125656a2cf5a632e0e7f208c5eaabede",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/operational-3/canonical/tmp/units/r-b-gates-brief.md",
+        "blob":  "25ed976524bf3d2c8a4050fb94fa1d1e392876b7",
+        "disk":  "25ed976524bf3d2c8a4050fb94fa1d1e392876b7",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/operational-3/canonical/tmp/units/roughnotes-registry-adoption-brief.md",
+        "blob":  "e22824af399fa1284071a9d4a091235722edb2d1",
+        "disk":  "e22824af399fa1284071a9d4a091235722edb2d1",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/operational-3/canonical/tmp/units/roughnotes-registry-adoption-report.md",
+        "blob":  "1ac94e82775e5425449e92f5d6af823dc6aca58a",
+        "disk":  "1ac94e82775e5425449e92f5d6af823dc6aca58a",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/operational-3/canonical/tmp/units/roughnotes-registry-capture-retention-brief.md",
+        "blob":  "d6b91a1c5c4d9a81c35d38c894408bba893587dc",
+        "disk":  "d6b91a1c5c4d9a81c35d38c894408bba893587dc",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/operational-3/canonical/tmp/units/roughnotes-registry-capture-retention-report.md",
+        "blob":  "7cc8f9d9fb56e522f65c221e2af2987bbe539faf",
+        "disk":  "7cc8f9d9fb56e522f65c221e2af2987bbe539faf",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/operational-3/canonical/tmp/units/roughnotes-registry-final-verifier-brief.md",
+        "blob":  "e6ec6a43de5db97d8a635d3797c94c65f7058206",
+        "disk":  "e6ec6a43de5db97d8a635d3797c94c65f7058206",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/operational-3/canonical/tmp/units/roughnotes-registry-final-verifier-report.md",
+        "blob":  "73383b9429a0dd15a288e94da1feef0c49ff942a",
+        "disk":  "73383b9429a0dd15a288e94da1feef0c49ff942a",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/operational-3/canonical/tmp/units/roughnotes-registry-gates-author-report-2.md",
+        "blob":  "501e4f9ee8460961654832a3494d30c02b60c47f",
+        "disk":  "501e4f9ee8460961654832a3494d30c02b60c47f",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/operational-3/canonical/tmp/units/roughnotes-registry-gates-brief-2.md",
+        "blob":  "c13723289a95287ceb2b0f7bee8a1d6e319bed41",
+        "disk":  "c13723289a95287ceb2b0f7bee8a1d6e319bed41",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/operational-3/canonical/tmp/units/roughnotes-registry-host-brief.md",
+        "blob":  "78f2e89e5fc5674be0a102a6258f0dbd8596f8cf",
+        "disk":  "78f2e89e5fc5674be0a102a6258f0dbd8596f8cf",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/operational-3/canonical/tmp/units/roughnotes-registry-host-report.md",
+        "blob":  "f3d485b0c67a856864d8d703dde11c61d40166e9",
+        "disk":  "f3d485b0c67a856864d8d703dde11c61d40166e9",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/operational-3/capture.md",
+        "blob":  "631b884d7ac91d0b2a8227c78742a199910796d0",
+        "disk":  "631b884d7ac91d0b2a8227c78742a199910796d0",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/operational-3/recovery/tmp/units/r-b-gates-report.md",
+        "blob":  "8a95ce7ffdd289f84a3b3f103d234089f35c01b4",
+        "disk":  "8a95ce7ffdd289f84a3b3f103d234089f35c01b4",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/operational-3/recovery/tmp/units/r-b-report-11.md",
+        "blob":  "b1345467ec935de59bccfe282ae2b30bef3cabca",
+        "disk":  "b1345467ec935de59bccfe282ae2b30bef3cabca",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/operational-3/reproduction.md",
+        "blob":  "299a8f216b27f332b7a83ac6f9dbc63b10d66619",
+        "disk":  "299a8f216b27f332b7a83ac6f9dbc63b10d66619",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/operational-3/supplemental/canonical/.orkestrel/campaign/r-b-capture-theme-design-verdict.md",
+        "blob":  "5e4b402dabcd0c4626c4f821f2bc3bcc91304aec",
+        "disk":  "5e4b402dabcd0c4626c4f821f2bc3bcc91304aec",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/operational-3/supplemental/canonical/.orkestrel/campaign/r-b-cold-host-report.md",
+        "blob":  "0c9d7325f5b3b681fde98b4115bbe02417e2f5ce",
+        "disk":  "0c9d7325f5b3b681fde98b4115bbe02417e2f5ce",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/operational-3/supplemental/canonical/.orkestrel/campaign/r-b-variant-probe-report.md",
+        "blob":  "658ffc7b09d8682f34b48ec2cd6c921a5a619984",
+        "disk":  "658ffc7b09d8682f34b48ec2cd6c921a5a619984",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/operational-3/supplemental/canonical/tmp/audit/r-b-capture-theme-design.md",
+        "blob":  "d6c5da796f4df1999f1bff9d62d6b3b803010cf5",
+        "disk":  "d6c5da796f4df1999f1bff9d62d6b3b803010cf5",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/operational-3/supplemental/canonical/tmp/units/r-b-capture-retention-brief.md",
+        "blob":  "5573a95ebbf8939cebf1ba8c67daab54d2d0a800",
+        "disk":  "5573a95ebbf8939cebf1ba8c67daab54d2d0a800",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/operational-3/supplemental/canonical/tmp/units/r-b-capture-retention-report.md",
+        "blob":  "8f42ed53a29df8c3cdf056ba68a76871451d68dd",
+        "disk":  "8f42ed53a29df8c3cdf056ba68a76871451d68dd",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/operational-3/supplemental/canonical/tmp/units/r-b-cold-host-brief-4.md",
+        "blob":  "4e882b366fee64be0e7163372ea426c0488058e7",
+        "disk":  "4e882b366fee64be0e7163372ea426c0488058e7",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/operational-3/supplemental/canonical/tmp/units/r-b-cold-host-report-4.md",
+        "blob":  "d45430b05b2d55d5a53da08eac2ca625197c859f",
+        "disk":  "d45430b05b2d55d5a53da08eac2ca625197c859f",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/operational-3/supplemental/canonical/tmp/units/r-b-final-controls-brief-4.md",
+        "blob":  "dd6d3dfb07ecc63fad3a3ad3de5bb81fd13673b8",
+        "disk":  "dd6d3dfb07ecc63fad3a3ad3de5bb81fd13673b8",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/operational-3/supplemental/canonical/tmp/units/r-b-final-controls-report-4.md",
+        "blob":  "300f3c6fd65fe611aa270bfae7dc852ec2acb450",
+        "disk":  "300f3c6fd65fe611aa270bfae7dc852ec2acb450",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/operational-3/supplemental/canonical/tmp/units/roughnotes-registry-gates-author-report.md",
+        "blob":  "efebd31963ca72de098189237cab13d73b72c776",
+        "disk":  "efebd31963ca72de098189237cab13d73b72c776",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/operational-3/supplemental/canonical/tmp/units/roughnotes-registry-gates-brief.md",
+        "blob":  "cc7b87dff26856226687299515f2c7ed155ff42d",
+        "disk":  "cc7b87dff26856226687299515f2c7ed155ff42d",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/operational/canonical/.orkestrel/campaign/r-b-final-audit-verdict.md",
+        "blob":  "b5b4e22693f66c5aa5492c5477acf9199fc4e4dd",
+        "disk":  "b5b4e22693f66c5aa5492c5477acf9199fc4e4dd",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/operational/canonical/.orkestrel/campaign/r-b-final-capture-report.md",
+        "blob":  "d4709ca651ed979545c170f5726d800a6294c08c",
+        "disk":  "d4709ca651ed979545c170f5726d800a6294c08c",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/operational/canonical/.orkestrel/campaign/r-b-final-controls-report.md",
+        "blob":  "d65e3228ed847a937add43ca275dceb6162664e0",
+        "disk":  "d65e3228ed847a937add43ca275dceb6162664e0",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/operational/canonical/.orkestrel/campaign/r-b-final-objective-report.md",
+        "blob":  "c9a58625c473161f30b33e8a4d9414e5412ed383",
+        "disk":  "c9a58625c473161f30b33e8a4d9414e5412ed383",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/operational/canonical/.orkestrel/campaign/r-b-final-subjective-report.md",
+        "blob":  "ca22d0e6297482ab43bf93effa2cdff275eabfb2",
+        "disk":  "ca22d0e6297482ab43bf93effa2cdff275eabfb2",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/operational/canonical/.orkestrel/campaign/roughnotes-registry-acceptance.md",
+        "blob":  "0429f82473a4367c3ecedadf8564a0d11992a9dc",
+        "disk":  "0429f82473a4367c3ecedadf8564a0d11992a9dc",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/operational/canonical/.orkestrel/campaign/roughnotes-registry-adoption-audit-verdict.md",
+        "blob":  "26429bca7110e01d2befcc39aca49aca2e82bd90",
+        "disk":  "26429bca7110e01d2befcc39aca49aca2e82bd90",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/operational/canonical/tmp/audit/r-b-final-audit-claims.md",
+        "blob":  "d0bec4da156a898a8356cbe9b66b19867a45e661",
+        "disk":  "d0bec4da156a898a8356cbe9b66b19867a45e661",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/operational/canonical/tmp/audit/r-b-final-objective-brief.md",
+        "blob":  "a733f03179941eb84ba7a7fe456a64d034eb0d41",
+        "disk":  "a733f03179941eb84ba7a7fe456a64d034eb0d41",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/operational/canonical/tmp/audit/r-b-final-subjective-brief.md",
+        "blob":  "822c519e79798f3906499096ef67691e92eaa6bf",
+        "disk":  "822c519e79798f3906499096ef67691e92eaa6bf",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/operational/canonical/tmp/audit/roughnotes-registry-adoption-audit-claims.md",
+        "blob":  "80ee617f292263e7da0d0b93a46c43662f879a33",
+        "disk":  "80ee617f292263e7da0d0b93a46c43662f879a33",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/operational/canonical/tmp/audit/roughnotes-registry-adoption-objective-brief.md",
+        "blob":  "e5060cf85ed11886cf91be6672c352539ea441b2",
+        "disk":  "e5060cf85ed11886cf91be6672c352539ea441b2",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/operational/canonical/tmp/audit/roughnotes-registry-adoption-objective-report.md",
+        "blob":  "a2bd69a4a0ded76459f0aa3f2c780c7d82de5698",
+        "disk":  "a2bd69a4a0ded76459f0aa3f2c780c7d82de5698",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/operational/canonical/tmp/audit/roughnotes-registry-adoption-subjective-brief.md",
+        "blob":  "5db14ac4014dbd9b6a27cbe91f94dbb5735b61e2",
+        "disk":  "5db14ac4014dbd9b6a27cbe91f94dbb5735b61e2",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/operational/canonical/tmp/audit/roughnotes-registry-adoption-subjective-report.md",
+        "blob":  "7ec52853136c9fa603a195fba4b38eada56cb70a",
+        "disk":  "7ec52853136c9fa603a195fba4b38eada56cb70a",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/operational/canonical/tmp/units/r-b-brief-11.md",
+        "blob":  "27d22eb3115365b7e8b3c3a7fc854e62fe1a84b6",
+        "disk":  "27d22eb3115365b7e8b3c3a7fc854e62fe1a84b6",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/operational/canonical/tmp/units/roughnotes-registry-adoption-brief.md",
+        "blob":  "dfa300ec8aeaef8e987579d446ada8bcf980fb0e",
+        "disk":  "dfa300ec8aeaef8e987579d446ada8bcf980fb0e",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/operational/canonical/tmp/units/roughnotes-registry-adoption-report.md",
+        "blob":  "f974bbac344e2ab00be14c4afaa5a66ae15b6b90",
+        "disk":  "f974bbac344e2ab00be14c4afaa5a66ae15b6b90",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/operational/canonical/tmp/units/roughnotes-registry-capture-retention-brief.md",
+        "blob":  "b302bdfbbce339a65cd91db4df3108907f6e23e7",
+        "disk":  "b302bdfbbce339a65cd91db4df3108907f6e23e7",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/operational/canonical/tmp/units/roughnotes-registry-capture-retention-report.md",
+        "blob":  "5adbfb375ebc2a759f181c5ecb83d9c2510c98d4",
+        "disk":  "5adbfb375ebc2a759f181c5ecb83d9c2510c98d4",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/operational/canonical/tmp/units/roughnotes-registry-final-verifier-brief.md",
+        "blob":  "15d3ae9a2a179e6d4f331a35119bd5bfebb15c2d",
+        "disk":  "15d3ae9a2a179e6d4f331a35119bd5bfebb15c2d",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/operational/canonical/tmp/units/roughnotes-registry-final-verifier-report.md",
+        "blob":  "acde36c6b686ee397a7a5fce8f222a710480afe6",
+        "disk":  "acde36c6b686ee397a7a5fce8f222a710480afe6",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/operational/canonical/tmp/units/roughnotes-registry-gates-author-report-2.md",
+        "blob":  "1d50a0b2dff407a096928235d975802bbb11a56f",
+        "disk":  "1d50a0b2dff407a096928235d975802bbb11a56f",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/operational/canonical/tmp/units/roughnotes-registry-gates-brief-2.md",
+        "blob":  "b90b29b0836d63ec6fa348b46ff45af66ca42693",
+        "disk":  "b90b29b0836d63ec6fa348b46ff45af66ca42693",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/operational/canonical/tmp/units/roughnotes-registry-host-brief.md",
+        "blob":  "f4f41e0ff03781ad57294c5525885d6737633014",
+        "disk":  "f4f41e0ff03781ad57294c5525885d6737633014",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/operational/canonical/tmp/units/roughnotes-registry-host-report.md",
+        "blob":  "febbbcc628154957b6dab486f180ea3f80d6e682",
+        "disk":  "febbbcc628154957b6dab486f180ea3f80d6e682",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/operational/recovery/tmp/units/r-b-report-11.md",
+        "blob":  "edfe4344e0fd14183b8641a7dcc5820a3c74633f",
+        "disk":  "edfe4344e0fd14183b8641a7dcc5820a3c74633f",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/recovery/tmp/units/async-capture-rejection-11-green.log.txt",
+        "blob":  "fe703c3b72f2367c888b77a480b3cc23314f1589",
+        "disk":  "fe703c3b72f2367c888b77a480b3cc23314f1589",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/recovery/tmp/units/async-capture-rejection-11-red.log.txt",
+        "blob":  "c3557606d9c0ab59b26564025568a948283e360f",
+        "disk":  "c3557606d9c0ab59b26564025568a948283e360f",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/recovery/tmp/units/r-b-actual-11.diff",
+        "blob":  "dfd239b16af12778bb3aee761e39fd5548fe9281",
+        "disk":  "dfd239b16af12778bb3aee761e39fd5548fe9281",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/recovery/tmp/units/r-b-baseline-hashes-11.json",
+        "blob":  "59404e30dc7d8a753ca49681ffb289cc3457fd6d",
+        "disk":  "59404e30dc7d8a753ca49681ffb289cc3457fd6d",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/recovery/tmp/units/r-b-diffstat-11.txt",
+        "blob":  "8c635a75f34ed3164687637d8013409908b16f65",
+        "disk":  "8c635a75f34ed3164687637d8013409908b16f65",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/recovery/tmp/units/r-b-frozen-hashes-11.tsv",
+        "blob":  "f483861771c7402fa8040ff57d16c298224b1a9e",
+        "disk":  "f483861771c7402fa8040ff57d16c298224b1a9e",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/recovery/tmp/units/r-b-gates-evidence/build.log.txt",
+        "blob":  "fbd60cef82ab1327e49eefb1c4e438d048c6c385",
+        "disk":  "fbd60cef82ab1327e49eefb1c4e438d048c6c385",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/recovery/tmp/units/r-b-gates-evidence/check.log.txt",
+        "blob":  "5cca5589d5300159816b1fbe9b374061d4f92e71",
+        "disk":  "5cca5589d5300159816b1fbe9b374061d4f92e71",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/recovery/tmp/units/r-b-gates-evidence/final-status.log.txt",
+        "blob":  "903f42e187127f2f9236f72f12aabfca1ca94c4a",
+        "disk":  "903f42e187127f2f9236f72f12aabfca1ca94c4a",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/recovery/tmp/units/r-b-gates-evidence/format-check.log.txt",
+        "blob":  "8f00eaccb2840a7eaed9fe69dcf935b5ce090897",
+        "disk":  "8f00eaccb2840a7eaed9fe69dcf935b5ce090897",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/recovery/tmp/units/r-b-gates-evidence/lint-check.log.txt",
+        "blob":  "e0ebae90bfe3dbaa56545afa4f766ba4003b417f",
+        "disk":  "e0ebae90bfe3dbaa56545afa4f766ba4003b417f",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/recovery/tmp/units/r-b-gates-evidence/preflight.log.txt",
+        "blob":  "82a92171e3316efc4c6108c04d7661ebf3f13c61",
+        "disk":  "82a92171e3316efc4c6108c04d7661ebf3f13c61",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/recovery/tmp/units/r-b-gates-evidence/test.log.txt",
+        "blob":  "1be54f243ff9fa9531d2616b42b8fbdad99b2122",
+        "disk":  "1be54f243ff9fa9531d2616b42b8fbdad99b2122",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/recovery/tmp/units/r-b-gates-report.md",
+        "blob":  "754a01cef4eda2dd14ac99d6c5034b46034ee51a",
+        "disk":  "754a01cef4eda2dd14ac99d6c5034b46034ee51a",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/recovery/tmp/units/r-b-new-setup-proof-11.diff",
+        "blob":  "4d11a78679e99f42b2b64acc72b512c5afb67071",
+        "disk":  "4d11a78679e99f42b2b64acc72b512c5afb67071",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/recovery/tmp/units/r-b-report-11.md",
+        "blob":  "edfe4344e0fd14183b8641a7dcc5820a3c74633f",
+        "disk":  "edfe4344e0fd14183b8641a7dcc5820a3c74633f",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/recovery/tmp/units/r-b-shared-11.diff",
+        "blob":  "9fcc80d989deca985b7d613a5bc26ccc3d63b050",
+        "disk":  "9fcc80d989deca985b7d613a5bc26ccc3d63b050",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/recovery/tmp/units/r-b-status-11.txt",
+        "blob":  "297028cd2510579583d5406ae6698b1c874f19e0",
+        "disk":  "297028cd2510579583d5406ae6698b1c874f19e0",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/recovery/tmp/units/setup-generated-11-normal.log.txt",
+        "blob":  "cf3428a6d2692d050a683d11b5356792be131c9b",
+        "disk":  "cf3428a6d2692d050a683d11b5356792be131c9b",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/recovery/tmp/units/setup-generated-11-reduced.log.txt",
+        "blob":  "7a63733fa2b22d3b4b6b16fc5470cf56a8e4e164",
+        "disk":  "7a63733fa2b22d3b4b6b16fc5470cf56a8e4e164",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/report-2.md",
+        "blob":  "16dc123928f38ecb1bfb740ffee9eea6801496b9",
+        "disk":  "16dc123928f38ecb1bfb740ffee9eea6801496b9",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/report-3.md",
+        "blob":  "b4aaacbfffa5383edd9bf6f461d04d9f6f39d5ff",
+        "disk":  "b4aaacbfffa5383edd9bf6f461d04d9f6f39d5ff",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/report.md",
+        "blob":  "75c5c87902c8f9b5f7e4c4437741c9038774895f",
+        "disk":  "75c5c87902c8f9b5f7e4c4437741c9038774895f",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/retain.ps1",
+        "blob":  "3b2fb67ea3f303f154ed71fac996e7e75a357f8a",
+        "disk":  "3b2fb67ea3f303f154ed71fac996e7e75a357f8a",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/supplemental/canonical/.orkestrel/campaign/r-b-capture-theme-design-verdict.md",
+        "blob":  "fb1cecf1c3142b1cc4c4da46c9cbf47d5bbc9d4b",
+        "disk":  "fb1cecf1c3142b1cc4c4da46c9cbf47d5bbc9d4b",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/supplemental/canonical/.orkestrel/campaign/r-b-cold-host-report.md",
+        "blob":  "3dd76d03c7d4d5332623c39c760fd534d9ed55db",
+        "disk":  "3dd76d03c7d4d5332623c39c760fd534d9ed55db",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/supplemental/canonical/.orkestrel/campaign/r-b-variant-probe-report.md",
+        "blob":  "6c5b7a2d20a98fe58c5cda06afeab726b3fa9366",
+        "disk":  "6c5b7a2d20a98fe58c5cda06afeab726b3fa9366",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/supplemental/canonical/tmp/audit/r-b-capture-theme-design.md",
+        "blob":  "242c7bc4cbb295c6128c1040c2dd26551c2a59da",
+        "disk":  "242c7bc4cbb295c6128c1040c2dd26551c2a59da",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/supplemental/canonical/tmp/probe/r-b-variant-tool-5.json",
+        "blob":  "45cd052709d4ecbc47eae34826f20381d65330f3",
+        "disk":  "45cd052709d4ecbc47eae34826f20381d65330f3",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/supplemental/canonical/tmp/probe/retain-r-b-capture.ps1",
+        "blob":  "e17eede7226b2ada732fade0cbced121f118ed26",
+        "disk":  "e17eede7226b2ada732fade0cbced121f118ed26",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/supplemental/canonical/tmp/probe/run-r-b-cold-host-2.ps1",
+        "blob":  "c9244b6f275192fc500356f66b79c303396dbc74",
+        "disk":  "c9244b6f275192fc500356f66b79c303396dbc74",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/supplemental/canonical/tmp/probe/run-r-b-final-controls.ps1",
+        "blob":  "bb96cc0aa361fd8558f3c7939268be4bc367a5ae",
+        "disk":  "bb96cc0aa361fd8558f3c7939268be4bc367a5ae",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/supplemental/canonical/tmp/units/r-b-capture-retention-brief.md",
+        "blob":  "6984b63780831c4509bb35bf3ed3ed0aa12d85c3",
+        "disk":  "6984b63780831c4509bb35bf3ed3ed0aa12d85c3",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/supplemental/canonical/tmp/units/r-b-capture-retention-report.md",
+        "blob":  "2faf05e1fece8facf65a3233575192eb23e60e2f",
+        "disk":  "2faf05e1fece8facf65a3233575192eb23e60e2f",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/supplemental/canonical/tmp/units/r-b-cold-host-brief-4.md",
+        "blob":  "2576cbd92e2d28514ec5998da5570c31471a3258",
+        "disk":  "2576cbd92e2d28514ec5998da5570c31471a3258",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/supplemental/canonical/tmp/units/r-b-cold-host-parent-3.log.txt",
+        "blob":  "2e64a7dfb9ddf4034d5ef357a142d965dd9e418a",
+        "disk":  "2e64a7dfb9ddf4034d5ef357a142d965dd9e418a",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/supplemental/canonical/tmp/units/r-b-cold-host-report-4.md",
+        "blob":  "2ed03cb26a4c304426240558c09de9dc259e264a",
+        "disk":  "2ed03cb26a4c304426240558c09de9dc259e264a",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/supplemental/canonical/tmp/units/r-b-final-controls-brief-4.md",
+        "blob":  "c02b025f770b89857f759a4c481c5f212837ce33",
+        "disk":  "c02b025f770b89857f759a4c481c5f212837ce33",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/supplemental/canonical/tmp/units/r-b-final-controls-parent-3.log.txt",
+        "blob":  "d9ef3f1f32dc506d06349ea62b6d4ac67151331a",
+        "disk":  "d9ef3f1f32dc506d06349ea62b6d4ac67151331a",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/supplemental/canonical/tmp/units/r-b-final-controls-report-4.md",
+        "blob":  "6eb9561e0772f552f262129a8d64df388a830304",
+        "disk":  "6eb9561e0772f552f262129a8d64df388a830304",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/supplemental/canonical/tmp/units/roughnotes-registry-gates-author-report.md",
+        "blob":  "cc3e2a9a7976067aa0660f189f2f97c16ab88aeb",
+        "disk":  "cc3e2a9a7976067aa0660f189f2f97c16ab88aeb",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/supplemental/canonical/tmp/units/roughnotes-registry-gates-brief.md",
+        "blob":  "9795927c5780254abf70f3bc7b1070703c553791",
+        "disk":  "9795927c5780254abf70f3bc7b1070703c553791",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/supplemental/recovery/tmp/probe/r-b-final-host/app-browser-cold.config.ts",
+        "blob":  "3621259f53b01924846544037924ada4baa618d8",
+        "disk":  "3621259f53b01924846544037924ada4baa618d8",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/supplemental/recovery/tmp/probe/r-b-final-host/cache-paths.ts",
+        "blob":  "766d5b966fb95657f215eb321a57efde8325e8b5",
+        "disk":  "766d5b966fb95657f215eb321a57efde8325e8b5",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/supplemental/recovery/tmp/probe/r-b-final-host/journey-cold-2.config.ts",
+        "blob":  "3c87ed1877d8411abf27a61af4c5e2cc1ee2bd1f",
+        "disk":  "3c87ed1877d8411abf27a61af4c5e2cc1ee2bd1f",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/supplemental/recovery/tmp/probe/r-b-final-host/setup-reduced.config.ts",
+        "blob":  "eb0010752308b14d05e66e85774d0f7611e84404",
+        "disk":  "eb0010752308b14d05e66e85774d0f7611e84404",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/supplemental/recovery/tmp/probe/r-b-setup/tsconfig.json",
+        "blob":  "3ab01141346881c2bed955518248422ca91727f6",
+        "disk":  "3ab01141346881c2bed955518248422ca91727f6",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/supplemental/recovery/tmp/probe/r-b-setup/vite.generated.reduced.config.ts",
+        "blob":  "99755270b02bd6cd3a9d418201c74456f3631d7b",
+        "disk":  "99755270b02bd6cd3a9d418201c74456f3631d7b",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/supplemental/recovery/tmp/units/r-b-cold-host/journey-dark-1280-ad83c352edd440a8b906a46a6c1c6470.log.txt",
+        "blob":  "31436dccfd4338cf1672d07cebeab147ca77f7b0",
+        "disk":  "31436dccfd4338cf1672d07cebeab147ca77f7b0",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/supplemental/recovery/tmp/units/r-b-cold-host/journey-dark-390-ad83c352edd440a8b906a46a6c1c6470.log.txt",
+        "blob":  "b248faa60c83218ba77a7aa6fb0b13a0628be316",
+        "disk":  "b248faa60c83218ba77a7aa6fb0b13a0628be316",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/supplemental/recovery/tmp/units/r-b-cold-host/journey-light-1280-ad83c352edd440a8b906a46a6c1c6470.log.txt",
+        "blob":  "3956127ee4b14b4e680bbe197b9150af2bd5c643",
+        "disk":  "3956127ee4b14b4e680bbe197b9150af2bd5c643",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/supplemental/recovery/tmp/units/r-b-cold-host/journey-light-390-ad83c352edd440a8b906a46a6c1c6470.log.txt",
+        "blob":  "d6902447be4d7753e4e4e2de0e775f6454004400",
+        "disk":  "d6902447be4d7753e4e4e2de0e775f6454004400",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/supplemental/recovery/tmp/units/r-b-cold-host/outer-only-control-ad83c352edd440a8b906a46a6c1c6470.log.txt",
+        "blob":  "0fb9c31ec74ea921ea7d5afa6f9c184ceb3766b4",
+        "disk":  "0fb9c31ec74ea921ea7d5afa6f9c184ceb3766b4",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/supplemental/recovery/tmp/units/r-b-controls/content-continuation-green-20260918-115053038.log.txt",
+        "blob":  "1bf0f351eee4c5c8b45a6a84b9802a96e934d4e5",
+        "disk":  "1bf0f351eee4c5c8b45a6a84b9802a96e934d4e5",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/supplemental/recovery/tmp/units/r-b-controls/content-continuation-red-20260918-115053035.log.txt",
+        "blob":  "79b0055d532f68c716fa838e6845601694783e8c",
+        "disk":  "79b0055d532f68c716fa838e6845601694783e8c",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/supplemental/recovery/tmp/units/r-b-controls/menu-hidden-state-green-20260918-115139985.log.txt",
+        "blob":  "aaf6bc6659c78a647be31e6332ee13f995d44b85",
+        "disk":  "aaf6bc6659c78a647be31e6332ee13f995d44b85",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/supplemental/recovery/tmp/units/r-b-controls/menu-hidden-state-red-20260918-115139984.log.txt",
+        "blob":  "915de5a282bec0a052c8f06f1d897f64211c18e1",
+        "disk":  "915de5a282bec0a052c8f06f1d897f64211c18e1",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/supplemental/recovery/tmp/units/r-b-controls/menu-hidden-state-reduced-green-20260918-115214920.log.txt",
+        "blob":  "e5503a5d8fc4734ea5f5263ec27eeae4fc49110a",
+        "disk":  "e5503a5d8fc4734ea5f5263ec27eeae4fc49110a",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/supplemental/recovery/tmp/units/r-b-controls/menu-hidden-state-reduced-red-20260918-115214919.log.txt",
+        "blob":  "2f4225f47071443b9b2f84a99b1ad966732fa4b5",
+        "disk":  "2f4225f47071443b9b2f84a99b1ad966732fa4b5",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/supplemental/recovery/tmp/units/r-b-controls/menu-opened-state-green-20260918-115122586.log.txt",
+        "blob":  "a682918c7887e6689dca423975921140eb784d8d",
+        "disk":  "a682918c7887e6689dca423975921140eb784d8d",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/supplemental/recovery/tmp/units/r-b-controls/menu-opened-state-red-20260918-115122585.log.txt",
+        "blob":  "5e4044cea48c205c30092cb933fccecda3bd3691",
+        "disk":  "5e4044cea48c205c30092cb933fccecda3bd3691",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/supplemental/recovery/tmp/units/r-b-controls/menu-opened-state-reduced-green-20260918-115158560.log.txt",
+        "blob":  "0b27ef0e9d4b6819b4cc23f6341d2b497da22e6b",
+        "disk":  "0b27ef0e9d4b6819b4cc23f6341d2b497da22e6b",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/supplemental/recovery/tmp/units/r-b-controls/menu-opened-state-reduced-red-20260918-115158559.log.txt",
+        "blob":  "d65e2242e2d8327a9d67f6bf8d6d5339eeb43a4b",
+        "disk":  "d65e2242e2d8327a9d67f6bf8d6d5339eeb43a4b",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/supplemental/recovery/tmp/units/r-b-controls/sign-in-refusal-green-20260918-115109400.log.txt",
+        "blob":  "63b621978dcc7fcb6cf8f7a6a2918f3e6af6c90a",
+        "disk":  "63b621978dcc7fcb6cf8f7a6a2918f3e6af6c90a",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/supplemental/recovery/tmp/units/r-b-controls/sign-in-refusal-red-20260918-115109399.log.txt",
+        "blob":  "7bfd65d8a7274ebfce07ff2d02e23e8aceae12df",
+        "disk":  "7bfd65d8a7274ebfce07ff2d02e23e8aceae12df",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-acceptance-unit/supplemental/recovery/tmp/units/r-b-final-capture.log.txt",
+        "blob":  "3f35e930c0f4f0ac7bfe8b9ba57a0e2d7714604e",
+        "disk":  "3f35e930c0f4f0ac7bfe8b9ba57a0e2d7714604e",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-landing/.gitattributes",
+        "blob":  "1ebfb768d116131ec43562d524d0ea45f8aaa71a",
+        "disk":  "1ebfb768d116131ec43562d524d0ea45f8aaa71a",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-landing/acceptance.md",
+        "blob":  "8e482baf8004359a38af4712569ca2cd4e864f0a",
+        "disk":  "8e482baf8004359a38af4712569ca2cd4e864f0a",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-landing/brief-source.md",
+        "blob":  "18b2ce561e7ccbb52196c0dce88a7add7822d451",
+        "disk":  "18b2ce561e7ccbb52196c0dce88a7add7822d451",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-landing/brief.md",
+        "blob":  "18b2ce561e7ccbb52196c0dce88a7add7822d451",
+        "disk":  "18b2ce561e7ccbb52196c0dce88a7add7822d451",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-landing/close-records-brief.md",
+        "blob":  "598bfb68f198315ed37f7639405979c6133c1640",
+        "disk":  "598bfb68f198315ed37f7639405979c6133c1640",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-landing/close-records-report.md",
+        "blob":  "7a192c913c12dd19a6f048188db3dd986de8b97c",
+        "disk":  "7a192c913c12dd19a6f048188db3dd986de8b97c",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-landing/index.md",
+        "blob":  "197531ca0208d344aee5fb131c10baaa0c3d20f1",
+        "disk":  "197531ca0208d344aee5fb131c10baaa0c3d20f1",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-landing/landing-verifier-report.md",
+        "blob":  "9434c21e2a269ef447ea2da4fcf501cff8ac8aeb",
+        "disk":  "9434c21e2a269ef447ea2da4fcf501cff8ac8aeb",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-landing/manifest.json",
+        "blob":  "1cbcdb00cc0b5599da8be9cf45bd9259c9f8cbbe",
+        "disk":  "1cbcdb00cc0b5599da8be9cf45bd9259c9f8cbbe",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-landing/raw/canonical/tmp/units/roughnotes-integration-preparation-brief-2.md",
+        "blob":  "6fff771aa1921648abb1d4ef69d5360e2c957beb",
+        "disk":  "6fff771aa1921648abb1d4ef69d5360e2c957beb",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-landing/raw/canonical/tmp/units/roughnotes-integration-preparation-brief.md",
+        "blob":  "cf8124f92359948538f812c5d531950dc20c0df1",
+        "disk":  "cf8124f92359948538f812c5d531950dc20c0df1",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-landing/raw/canonical/tmp/units/roughnotes-landing-retention-brief.md",
+        "blob":  "18b2ce561e7ccbb52196c0dce88a7add7822d451",
+        "disk":  "18b2ce561e7ccbb52196c0dce88a7add7822d451",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-landing/raw/canonical/tmp/units/roughnotes-landing-verifier-brief.md",
+        "blob":  "457986d19a710e44687ed7f217b93004c705b14d",
+        "disk":  "457986d19a710e44687ed7f217b93004c705b14d",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-landing/raw/external/backup-metadata/original-hashes.json",
+        "blob":  "1a75d3418e0cd5eaba716ad53649a3a302f4e4b0",
+        "disk":  "1a75d3418e0cd5eaba716ad53649a3a302f4e4b0",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-landing/raw/external/backup-metadata/original-index.txt",
+        "blob":  "2263352342395c89f7bb26e64de4b46196ebf504",
+        "disk":  "2263352342395c89f7bb26e64de4b46196ebf504",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-landing/raw/external/backup-metadata/original-status.txt",
+        "blob":  "3bf8c24cb85766b4782859a4890fa6258eb741c9",
+        "disk":  "3bf8c24cb85766b4782859a4890fa6258eb741c9",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-landing/raw/external/backup-metadata/recovery-hashes.json",
+        "blob":  "ef8c2a73741f7da3023241387dfd94e53fcaa3d6",
+        "disk":  "ef8c2a73741f7da3023241387dfd94e53fcaa3d6",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-landing/raw/external/backup-metadata/recovery-staged-diffstat.txt",
+        "blob":  "b1f82d3fc1ac81a47047238aee25706c5afe84aa",
+        "disk":  "b1f82d3fc1ac81a47047238aee25706c5afe84aa",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-landing/raw/external/backup-metadata/recovery-staged-status.txt",
+        "blob":  "7a3b1faedf89f894d11803110017fcdf7e965b1a",
+        "disk":  "7a3b1faedf89f894d11803110017fcdf7e965b1a",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-landing/raw/external/backup-metadata/recovery-status.txt",
+        "blob":  "88ad2d9758f0b83d0129d06f097bb06403c62983",
+        "disk":  "88ad2d9758f0b83d0129d06f097bb06403c62983",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-landing/raw/external/brief-3.md",
+        "blob":  "1cea4c16379fec9caab928a5d9d4d0fcf8cc108f",
+        "disk":  "1cea4c16379fec9caab928a5d9d4d0fcf8cc108f",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-landing/raw/external/evidence/original-diffstat.txt",
+        "blob":  "c5d226ce06f582a60b583e6aa26c2a3c9978aa93",
+        "disk":  "c5d226ce06f582a60b583e6aa26c2a3c9978aa93",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-landing/raw/external/evidence/original-staged-diffstat.txt",
+        "blob":  "71f5fbbdcb9d7d38a7852fcd812604af55cce972",
+        "disk":  "71f5fbbdcb9d7d38a7852fcd812604af55cce972",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-landing/raw/external/evidence/original-status.txt",
+        "blob":  "3bf8c24cb85766b4782859a4890fa6258eb741c9",
+        "disk":  "3bf8c24cb85766b4782859a4890fa6258eb741c9",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-landing/raw/external/evidence/recovery-diffstat.txt",
+        "blob":  "c8006f78dab8ca5a12288285122a6bd8287da97c",
+        "disk":  "c8006f78dab8ca5a12288285122a6bd8287da97c",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-landing/raw/external/evidence/recovery-status.txt",
+        "blob":  "88ad2d9758f0b83d0129d06f097bb06403c62983",
+        "disk":  "88ad2d9758f0b83d0129d06f097bb06403c62983",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-landing/raw/external/evidence/successor-2/prepare.diff.patch",
+        "blob":  "cac52e3f52ae80aca8063ea57971732fbccc384a",
+        "disk":  "cac52e3f52ae80aca8063ea57971732fbccc384a",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-landing/raw/external/field-pass-proposal.md",
+        "blob":  "6cf544710cfc329e2b30760fca7ac4709eb02b61",
+        "disk":  "6cf544710cfc329e2b30760fca7ac4709eb02b61",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-landing/raw/external/install-audit-claims.md",
+        "blob":  "4a08e180ae76c9ee76b4e3f06f7e82bf652da547",
+        "disk":  "4a08e180ae76c9ee76b4e3f06f7e82bf652da547",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-landing/raw/external/install-audit-objective-brief.md",
+        "blob":  "3b734f2064d9d92eda42d45b719e807ae0ddc124",
+        "disk":  "3b734f2064d9d92eda42d45b719e807ae0ddc124",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-landing/raw/external/install-audit-objective-report.md",
+        "blob":  "0de9c51560ab1aa907a544a5acf2948b162965eb",
+        "disk":  "0de9c51560ab1aa907a544a5acf2948b162965eb",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-landing/raw/external/install-audit-subjective-brief.md",
+        "blob":  "e555426773817d326b8cf24d9e4d009019047eb8",
+        "disk":  "e555426773817d326b8cf24d9e4d009019047eb8",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-landing/raw/external/install-audit-subjective-report.md",
+        "blob":  "9063211d49568d0fca4ca77f8f0b693234a827a3",
+        "disk":  "9063211d49568d0fca4ca77f8f0b693234a827a3",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-landing/raw/external/install-author-evidence/successor-3/accepted.result.json",
+        "blob":  "031b4374c18786af1b8f2878d55a5ea82812a229",
+        "disk":  "031b4374c18786af1b8f2878d55a5ea82812a229",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-landing/raw/external/install-author-evidence/successor-3/accepted.snapshot.json",
+        "blob":  "e0ee4524d56b15599831bbf7eee441dd147f36bd",
+        "disk":  "e0ee4524d56b15599831bbf7eee441dd147f36bd",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-landing/raw/external/install-author-evidence/successor-3/accepted.stderr.log.txt",
+        "blob":  "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "disk":  "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-landing/raw/external/install-author-evidence/successor-3/accepted.stdout.log.txt",
+        "blob":  "5bf48fb96eb1f34fcde92cb93f666fbf25403c0f",
+        "disk":  "5bf48fb96eb1f34fcde92cb93f666fbf25403c0f",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-landing/raw/external/install-author-evidence/successor-3/admission-controls.ps1",
+        "blob":  "e22f5416721a05d3b2efded615d79c6cd9b71200",
+        "disk":  "e22f5416721a05d3b2efded615d79c6cd9b71200",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-landing/raw/external/install-author-evidence/successor-3/check-after.result.json",
+        "blob":  "e5a88e4aa86732e369e31d5f6dd5773265bc5358",
+        "disk":  "e5a88e4aa86732e369e31d5f6dd5773265bc5358",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-landing/raw/external/install-author-evidence/successor-3/check-after.stderr.log.txt",
+        "blob":  "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "disk":  "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-landing/raw/external/install-author-evidence/successor-3/check-after.stdout.log.txt",
+        "blob":  "222234dc641a56d9eb5aaf0dcfe9f458ab87dcb7",
+        "disk":  "222234dc641a56d9eb5aaf0dcfe9f458ab87dcb7",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-landing/raw/external/install-author-evidence/successor-3/check-before.result.json",
+        "blob":  "d100a0e3b996d683c42dbddc081e0db731090644",
+        "disk":  "d100a0e3b996d683c42dbddc081e0db731090644",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-landing/raw/external/install-author-evidence/successor-3/check-before.stderr.log.txt",
+        "blob":  "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "disk":  "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-landing/raw/external/install-author-evidence/successor-3/check-before.stdout.log.txt",
+        "blob":  "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "disk":  "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-landing/raw/external/install-author-evidence/successor-3/check-before.termination.json",
+        "blob":  "3863ff29bd3853f5a33ffad305423f98e9195c47",
+        "disk":  "3863ff29bd3853f5a33ffad305423f98e9195c47",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-landing/raw/external/install-author-evidence/successor-3/check-intermediate.result.json",
+        "blob":  "d682db39efaf1bb6b0ec60e8361c97fde0145f95",
+        "disk":  "d682db39efaf1bb6b0ec60e8361c97fde0145f95",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-landing/raw/external/install-author-evidence/successor-3/check-intermediate.stderr.log.txt",
+        "blob":  "6f6e51933c464d2ddd6f61e47b194a83a1a7feaf",
+        "disk":  "6f6e51933c464d2ddd6f61e47b194a83a1a7feaf",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-landing/raw/external/install-author-evidence/successor-3/check-intermediate.stdout.log.txt",
+        "blob":  "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "disk":  "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-landing/raw/external/install-author-evidence/successor-3/diff-check.result.json",
+        "blob":  "5e5bbb9ec070d6fc84e9f15d48244e56cac86ca0",
+        "disk":  "5e5bbb9ec070d6fc84e9f15d48244e56cac86ca0",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-landing/raw/external/install-author-evidence/successor-3/existing-output.result.json",
+        "blob":  "17f9080ec382386cc92cdbd15be94e114541c330",
+        "disk":  "17f9080ec382386cc92cdbd15be94e114541c330",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-landing/raw/external/install-author-evidence/successor-3/existing-output.snapshot.json",
+        "blob":  "e0ee4524d56b15599831bbf7eee441dd147f36bd",
+        "disk":  "e0ee4524d56b15599831bbf7eee441dd147f36bd",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-landing/raw/external/install-author-evidence/successor-3/existing-output.stderr.log.txt",
+        "blob":  "f7abc7af845c6fb7430519ef80ac854de63ed2b0",
+        "disk":  "f7abc7af845c6fb7430519ef80ac854de63ed2b0",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-landing/raw/external/install-author-evidence/successor-3/existing-output.stdout.log.txt",
+        "blob":  "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "disk":  "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-landing/raw/external/install-author-evidence/successor-3/native-version.result.json",
+        "blob":  "abf9bd946d921e35db2ea9cba94aeb43d8b28f65",
+        "disk":  "abf9bd946d921e35db2ea9cba94aeb43d8b28f65",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-landing/raw/external/install-author-evidence/successor-3/native-version.snapshot.json",
+        "blob":  "e0ee4524d56b15599831bbf7eee441dd147f36bd",
+        "disk":  "e0ee4524d56b15599831bbf7eee441dd147f36bd",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-landing/raw/external/install-author-evidence/successor-3/native-version.stderr.log.txt",
+        "blob":  "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "disk":  "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-landing/raw/external/install-author-evidence/successor-3/native-version.stdout.log.txt",
+        "blob":  "0bb2b7aee3a5c328305844d6ed02483fe39de6b5",
+        "disk":  "0bb2b7aee3a5c328305844d6ed02483fe39de6b5",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-landing/raw/external/install-author-evidence/successor-3/native-version/npm-version.command.json",
+        "blob":  "b0c433b4dfc2ca0eaaf588a9c4b30bd78033f79d",
+        "disk":  "b0c433b4dfc2ca0eaaf588a9c4b30bd78033f79d",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-landing/raw/external/install-author-evidence/successor-3/native-version/npm-version.result.json",
+        "blob":  "5559edb58027b365dbb339a992d6449898cba6d4",
+        "disk":  "5559edb58027b365dbb339a992d6449898cba6d4",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-landing/raw/external/install-author-evidence/successor-3/native-version/npm-version.started.json",
+        "blob":  "7c6569bc8f7a718a359b78ab287aa45d65d8d28b",
+        "disk":  "7c6569bc8f7a718a359b78ab287aa45d65d8d28b",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-landing/raw/external/install-author-evidence/successor-3/native-version/npm-version.stderr.log.txt",
+        "blob":  "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "disk":  "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-landing/raw/external/install-author-evidence/successor-3/native-version/npm-version.stdout.log.txt",
+        "blob":  "4f9445dd3b506abb15485f2556e124d42aee4017",
+        "disk":  "4f9445dd3b506abb15485f2556e124d42aee4017",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-landing/raw/external/install-author-evidence/successor-3/parser-final.result.json",
+        "blob":  "705859d34f48b81afe715bdbac035aecb20cde1b",
+        "disk":  "705859d34f48b81afe715bdbac035aecb20cde1b",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-landing/raw/external/install-author-evidence/successor-3/parser.result.json",
+        "blob":  "d3eb65ba50683bf07020096e917dba909b89e500",
+        "disk":  "d3eb65ba50683bf07020096e917dba909b89e500",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-landing/raw/external/install-author-evidence/successor-3/preservation-drift.result.json",
+        "blob":  "b51a76ea27bf513e876d51a32e3366e051fbaa14",
+        "disk":  "b51a76ea27bf513e876d51a32e3366e051fbaa14",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-landing/raw/external/install-author-evidence/successor-3/preservation-drift.snapshot.json",
+        "blob":  "e0ee4524d56b15599831bbf7eee441dd147f36bd",
+        "disk":  "e0ee4524d56b15599831bbf7eee441dd147f36bd",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-landing/raw/external/install-author-evidence/successor-3/preservation-drift.stderr.log.txt",
+        "blob":  "e9ba3039bdef0b4f5a8f56f8fa7e783526f03cdf",
+        "disk":  "e9ba3039bdef0b4f5a8f56f8fa7e783526f03cdf",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-landing/raw/external/install-author-evidence/successor-3/preservation-drift.stdout.log.txt",
+        "blob":  "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "disk":  "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-landing/raw/external/install-author-evidence/successor-3/preservation.result.json",
+        "blob":  "81b7adc291f50d639c31b3e864aa74fee5bc3107",
+        "disk":  "81b7adc291f50d639c31b3e864aa74fee5bc3107",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-landing/raw/external/install-author-evidence/successor-3/preservation.snapshot.json",
+        "blob":  "e0ee4524d56b15599831bbf7eee441dd147f36bd",
+        "disk":  "e0ee4524d56b15599831bbf7eee441dd147f36bd",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-landing/raw/external/install-author-evidence/successor-3/preservation.stderr.log.txt",
+        "blob":  "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "disk":  "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-landing/raw/external/install-author-evidence/successor-3/preservation.stdout.log.txt",
+        "blob":  "58add49825b96ab70b6bb3f0b831f2694e101503",
+        "disk":  "58add49825b96ab70b6bb3f0b831f2694e101503",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-landing/raw/external/install-author-evidence/successor-3/read-only-final.json",
+        "blob":  "d3d48ec3cd3bd2d201ff4888c1b89e6ba6bc1bbb",
+        "disk":  "d3d48ec3cd3bd2d201ff4888c1b89e6ba6bc1bbb",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-landing/raw/external/install-author-evidence/successor-3/script.diff.patch",
+        "blob":  "6f3eea29cd7d453dd23e9fed3abec51c49c80f5a",
+        "disk":  "6f3eea29cd7d453dd23e9fed3abec51c49c80f5a",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-landing/raw/external/install-author-evidence/successor-3/script.diffstat.txt",
+        "blob":  "aad3c1487ca64a8fe42fd59d95d5719038e58755",
+        "disk":  "aad3c1487ca64a8fe42fd59d95d5719038e58755",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-landing/raw/external/install-author-evidence/successor-3/wrong-head.result.json",
+        "blob":  "5ee9551a6ad617da4571f48ce2b138f1306adc53",
+        "disk":  "5ee9551a6ad617da4571f48ce2b138f1306adc53",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-landing/raw/external/install-author-evidence/successor-3/wrong-head.snapshot.json",
+        "blob":  "e0ee4524d56b15599831bbf7eee441dd147f36bd",
+        "disk":  "e0ee4524d56b15599831bbf7eee441dd147f36bd",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-landing/raw/external/install-author-evidence/successor-3/wrong-head.stderr.log.txt",
+        "blob":  "6fcad0bacdb3faf39f12e0ff632d5653576117bb",
+        "disk":  "6fcad0bacdb3faf39f12e0ff632d5653576117bb",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-landing/raw/external/install-author-evidence/successor-3/wrong-head.stdout.log.txt",
+        "blob":  "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "disk":  "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-landing/raw/external/install-author-evidence/successor-3/wrong-root.result.json",
+        "blob":  "0cabe8e0b3172a3909c0bc039cd8383d44b1c2fc",
+        "disk":  "0cabe8e0b3172a3909c0bc039cd8383d44b1c2fc",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-landing/raw/external/install-author-evidence/successor-3/wrong-root.snapshot.json",
+        "blob":  "e0ee4524d56b15599831bbf7eee441dd147f36bd",
+        "disk":  "e0ee4524d56b15599831bbf7eee441dd147f36bd",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-landing/raw/external/install-author-evidence/successor-3/wrong-root.stderr.log.txt",
+        "blob":  "ced67982aff1b6788909d615388178efdfdbd299",
+        "disk":  "ced67982aff1b6788909d615388178efdfdbd299",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-landing/raw/external/install-author-evidence/successor-3/wrong-root.stdout.log.txt",
+        "blob":  "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "disk":  "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-landing/raw/external/install-author-evidence/successor-3/wrong-status.result.json",
+        "blob":  "9a9f5e2e898fbd0292a4081d3f70a0ad1247341b",
+        "disk":  "9a9f5e2e898fbd0292a4081d3f70a0ad1247341b",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-landing/raw/external/install-author-evidence/successor-3/wrong-status.snapshot.json",
+        "blob":  "e0ee4524d56b15599831bbf7eee441dd147f36bd",
+        "disk":  "e0ee4524d56b15599831bbf7eee441dd147f36bd",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-landing/raw/external/install-author-evidence/successor-3/wrong-status.stderr.log.txt",
+        "blob":  "3dfbe8e248e0786796388e3408ed51ac76545e8b",
+        "disk":  "3dfbe8e248e0786796388e3408ed51ac76545e8b",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-landing/raw/external/install-author-evidence/successor-3/wrong-status.stdout.log.txt",
+        "blob":  "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "disk":  "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-landing/raw/external/install-brief-2.md",
+        "blob":  "35e806f43a90d5374daf9368dd4666a901aaf362",
+        "disk":  "35e806f43a90d5374daf9368dd4666a901aaf362",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-landing/raw/external/install-brief-3.md",
+        "blob":  "499ab7458f58982d99224f4af63d8ba0924a6cde",
+        "disk":  "499ab7458f58982d99224f4af63d8ba0924a6cde",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-landing/raw/external/install-brief.md",
+        "blob":  "6b68e18c6dc88433b4c57af6007bd846ef47d513",
+        "disk":  "6b68e18c6dc88433b4c57af6007bd846ef47d513",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-landing/raw/external/install-original.mjs",
+        "blob":  "bf1cedfa0dbfe7e5756eda90ebf20a061579a825",
+        "disk":  "bf1cedfa0dbfe7e5756eda90ebf20a061579a825",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-landing/raw/external/install-preexecution-ruling.md",
+        "blob":  "d014a3822beecd8bc6c3071ff52be7aa6f799393",
+        "disk":  "d014a3822beecd8bc6c3071ff52be7aa6f799393",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-landing/raw/external/install-report-2.md",
+        "blob":  "6c07384c814b6eed59a90f3582d203190b359375",
+        "disk":  "6c07384c814b6eed59a90f3582d203190b359375",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-landing/raw/external/install-report-3.md",
+        "blob":  "a3cc14ce0502f8ca0264a793879dc8baef42a07e",
+        "disk":  "a3cc14ce0502f8ca0264a793879dc8baef42a07e",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-landing/raw/external/install-report.md",
+        "blob":  "2bbc9ac3aedc6367d8723877fc79fd86f9162348",
+        "disk":  "2bbc9ac3aedc6367d8723877fc79fd86f9162348",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-landing/raw/external/landing-state.md",
+        "blob":  "d511a03b0d1d06eb97434f34bc08f186ccbea85f",
+        "disk":  "d511a03b0d1d06eb97434f34bc08f186ccbea85f",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-landing/raw/external/launch-install-original-2.ps1",
+        "blob":  "9cec79a36e92e69ae1870798403c67778b4d22a0",
+        "disk":  "9cec79a36e92e69ae1870798403c67778b4d22a0",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-landing/raw/external/launch-install-original-3.ps1",
+        "blob":  "94f17a781434e62431c4106bf617f6c3dadf5051",
+        "disk":  "94f17a781434e62431c4106bf617f6c3dadf5051",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-landing/raw/external/launch-install-original.ps1",
+        "blob":  "202f5c434a35996e92fb5d5fc3fd5145fedc31ab",
+        "disk":  "202f5c434a35996e92fb5d5fc3fd5145fedc31ab",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-landing/raw/external/original-registry-install-20260918/after.json",
+        "blob":  "e0ee4524d56b15599831bbf7eee441dd147f36bd",
+        "disk":  "e0ee4524d56b15599831bbf7eee441dd147f36bd",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-landing/raw/external/original-registry-install-20260918/before.json",
+        "blob":  "e0ee4524d56b15599831bbf7eee441dd147f36bd",
+        "disk":  "e0ee4524d56b15599831bbf7eee441dd147f36bd",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-landing/raw/external/original-registry-install-20260918/config.json",
+        "blob":  "629742018df89b5ade0fd74ab7ec20d33213cb3c",
+        "disk":  "629742018df89b5ade0fd74ab7ec20d33213cb3c",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-landing/raw/external/original-registry-install-20260918/final.json",
+        "blob":  "e0ee4524d56b15599831bbf7eee441dd147f36bd",
+        "disk":  "e0ee4524d56b15599831bbf7eee441dd147f36bd",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-landing/raw/external/original-registry-install-20260918/installed.json",
+        "blob":  "cd0ad611bc752e01bbd2afb1e702807eb35ae75e",
+        "disk":  "cd0ad611bc752e01bbd2afb1e702807eb35ae75e",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-landing/raw/external/original-registry-install-20260918/instrument.json",
+        "blob":  "265f90c829e8bba5068fc5afce8745ff7ad4c469",
+        "disk":  "265f90c829e8bba5068fc5afce8745ff7ad4c469",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-landing/raw/external/original-registry-install-20260918/npm-ci.command.json",
+        "blob":  "cb63a620ab56e4d2492310a6cef87747714b159e",
+        "disk":  "cb63a620ab56e4d2492310a6cef87747714b159e",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-landing/raw/external/original-registry-install-20260918/npm-ci.result.json",
+        "blob":  "ea5ba05e4a6823c26016b8337676876e637311dc",
+        "disk":  "ea5ba05e4a6823c26016b8337676876e637311dc",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-landing/raw/external/original-registry-install-20260918/npm-ci.started.json",
+        "blob":  "8bf99ec0e935e3dd9ba2b98888ca9e6143b34ad1",
+        "disk":  "8bf99ec0e935e3dd9ba2b98888ca9e6143b34ad1",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-landing/raw/external/original-registry-install-20260918/npm-ci.stderr.log.txt",
+        "blob":  "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "disk":  "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-landing/raw/external/original-registry-install-20260918/npm-ci.stdout.log.txt",
+        "blob":  "8b0267c5b88bb6f6c325d3cc7d0b40a00c4a7264",
+        "disk":  "8b0267c5b88bb6f6c325d3cc7d0b40a00c4a7264",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-landing/raw/external/original-registry-install-20260918/npm-ls.command.json",
+        "blob":  "96eec4aa8f15d25749a26ef7a66c22a479b94845",
+        "disk":  "96eec4aa8f15d25749a26ef7a66c22a479b94845",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-landing/raw/external/original-registry-install-20260918/npm-ls.result.json",
+        "blob":  "b917aef950a1714f7cf2ad5c87cc69ba38165cdf",
+        "disk":  "b917aef950a1714f7cf2ad5c87cc69ba38165cdf",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-landing/raw/external/original-registry-install-20260918/npm-ls.started.json",
+        "blob":  "eada5e147be67d1b7fb51a69433a15153c75098e",
+        "disk":  "eada5e147be67d1b7fb51a69433a15153c75098e",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-landing/raw/external/original-registry-install-20260918/npm-ls.stderr.log.txt",
+        "blob":  "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "disk":  "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-landing/raw/external/original-registry-install-20260918/npm-ls.stdout.log.txt",
+        "blob":  "dff3b98d0bab545b7e70af90dae517dceb97a27c",
+        "disk":  "dff3b98d0bab545b7e70af90dae517dceb97a27c",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-landing/raw/external/original-registry-install-20260918/terminal.json",
+        "blob":  "c1e377b94fd252d3334e87ef7cfe1ec6c183a965",
+        "disk":  "c1e377b94fd252d3334e87ef7cfe1ec6c183a965",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-landing/raw/external/original-status.expected.txt",
+        "blob":  "3bf8c24cb85766b4782859a4890fa6258eb741c9",
+        "disk":  "3bf8c24cb85766b4782859a4890fa6258eb741c9",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-landing/raw/external/prepare-2.ps1",
+        "blob":  "6ecd76030505589ffe938be7910a0eef5a83e632",
+        "disk":  "6ecd76030505589ffe938be7910a0eef5a83e632",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-landing/raw/external/prepare-3.ps1",
+        "blob":  "2805f4cf0ea22421a074ecd05a5f1ab117d7504e",
+        "disk":  "2805f4cf0ea22421a074ecd05a5f1ab117d7504e",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-landing/raw/external/prepare.ps1",
+        "blob":  "b6ff563538494e529af76c7a2ee79dea7b37a279",
+        "disk":  "b6ff563538494e529af76c7a2ee79dea7b37a279",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-landing/raw/external/recovery-paths.txt",
+        "blob":  "61a1445fc1aaf586a3278c0d12ca2af06dd8cadf",
+        "disk":  "61a1445fc1aaf586a3278c0d12ca2af06dd8cadf",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-landing/raw/external/recovery-status.expected.txt",
+        "blob":  "88ad2d9758f0b83d0129d06f097bb06403c62983",
+        "disk":  "88ad2d9758f0b83d0129d06f097bb06403c62983",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-landing/raw/external/report-2.md",
+        "blob":  "5e1ae92254cf44adaeb6af14c552617425dd3cb0",
+        "disk":  "5e1ae92254cf44adaeb6af14c552617425dd3cb0",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-landing/raw/external/report-3.md",
+        "blob":  "d7ff39d2074eb5d36fb88973c625173be72bc971",
+        "disk":  "d7ff39d2074eb5d36fb88973c625173be72bc971",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-landing/raw/external/report.md",
+        "blob":  "c1e385528aed2657e01cf67ade10ef9ac9bcb3fb",
+        "disk":  "c1e385528aed2657e01cf67ade10ef9ac9bcb3fb",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-landing/raw/external/verification-report.md",
+        "blob":  "4bc9d518d08e53f7c72c3829be56b7cfe691f5fb",
+        "disk":  "4bc9d518d08e53f7c72c3829be56b7cfe691f5fb",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-landing/raw/external/verify-brief-2.md",
+        "blob":  "7de8a65fb3f35db3851af9482019372824a709d1",
+        "disk":  "7de8a65fb3f35db3851af9482019372824a709d1",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-landing/raw/external/verify-brief.md",
+        "blob":  "a5fcf26a443f9fde10239facf653bfbd878448bd",
+        "disk":  "a5fcf26a443f9fde10239facf653bfbd878448bd",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-landing/report.md",
+        "blob":  "6f62ef2254bbebb8728a92ef2116f6d3329ee3be",
+        "disk":  "6f62ef2254bbebb8728a92ef2116f6d3329ee3be",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-landing/retention.ps1",
+        "blob":  "f8485792a4f7af7330d20c89e33b5e46510e177e",
+        "disk":  "f8485792a4f7af7330d20c89e33b5e46510e177e",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-records-commit/brief.md",
+        "blob":  "f9e8ad41abc86f84a1a3adcbce463a5305e1a65d",
+        "disk":  "f9e8ad41abc86f84a1a3adcbce463a5305e1a65d",
+        "mode":  "unfiltered"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-records-commit/protected-before.json",
+        "blob":  "556573823a6d017b2de64115bb3d571d32598abc",
+        "disk":  "bb424681ac256a3a60f00a42022787bc7869a61c",
+        "filtered":  "556573823a6d017b2de64115bb3d571d32598abc",
+        "mode":  "line-ending-normalization"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-records-commit/stage-targets.txt",
+        "blob":  "ed3f5bbc5a2b242bf7fd33e3e422304b14457b8a",
+        "disk":  "e70bc35865e6ad8813a998a9227011d36ec12ba3",
+        "filtered":  "ed3f5bbc5a2b242bf7fd33e3e422304b14457b8a",
+        "mode":  "line-ending-normalization"
+    },
+    {
+        "path":  ".orkestrel/campaign/roughnotes-records-commit/stage.ps1",
+        "blob":  "2564a0f45b410124ed2434c10d5c79d6a2a82e16",
+        "disk":  "2564a0f45b410124ed2434c10d5c79d6a2a82e16",
+        "mode":  "unfiltered"
+    }
+]

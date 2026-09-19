@@ -1,0 +1,13 @@
+# Continue Roughnotes landing
+
+Root committed accepted recovery source at57b738fd38d4553d0f4f6a31ff4fb1030432a389 (tool04da15 exit0). Independent staged/backup verifier GREEN is verification-report.md. Root reverse-check passed (2ecd52 exit0), applied only the exact backed-up original unstaged patch in reverse (c1f658 exit0), then fast-forwarded original main to the literal accepted hash (c75d72 exit0). Root pushed original main (887419 exit0, remote43939b8..57b738f). Original status contains only user staged .codex/agents/orkestrel.toml and .codex/hooks.json. Root verified their original staged blob IDs and working SHA256 against backup after merge (04515b exit0).
+
+Keep backup/ intact. It contains the original dirty files, binary patches, original Codex working copies, index identities, and hashes. Do not commit user backup content or delete it with campaign temporary files.
+
+Actual original npm ci has not run. Author predecessor launch-install-original-2.ps1 is rejected and immutable. Sol produced effective launch-install-original-3.ps1/install-report-3.md under install-brief-3.md. Root read the complete successor; fresh independent objective and subjective Sol lanes are auditing shared install-audit-claims.md. Opus quota remains unavailable. Root runs the script only after reconciliation. Run output will be original-registry-install-20260918. Cap300seconds per native child, scripts disabled, expected original HEAD57b738f and exact staged-only Codex status.
+
+Canonical retention writer roughnotes_retention_navigation owns only .orkestrel/campaign/roughnotes-acceptance-unit successor operational-3 additions. Earlier raw copies are exact; earlier operational copies left explicit file references unresolved and are historical. Await report-3 and independent validation before staging evidence. Root paused canonical writes during that unit.
+
+Grok4.6 fieldpass-harness-map completed exit0,254892ms, sessionefc15351-efc8-4c2d-bb1f-1440750acfbf. Raw journal/report under canonical tmp/cursor/fieldpass-harness-map*. Native transcript completeness is unproven; native hard cap unavailable. Owner's asynchronous CLI-exception question is pending. field-pass-proposal.md fixes the exact clean fixture/source/skill/prompt/tiers/cap. No field model invocation or clean fixture preparation has run. Do not treat elapsed time or a preselected option as approval.
+
+Remaining work: actual original install and independent evidence verification; retain/stage/commit accepted landing and registry/source records in Scaffold without user .codex/config/hooks/host.json/rebaseline-2 edits; clean skill field pass after owner choice; debrief and global predecessor retention/disposal checks. No cleanup is authorized.

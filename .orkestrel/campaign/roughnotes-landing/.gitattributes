@@ -1,0 +1,6 @@
+/brief.md -text
+/raw/** -text
+/manifest.json -text
+/retention.ps1 -text
+/landing-verifier-report.md -text
+/close-records-brief.md -text

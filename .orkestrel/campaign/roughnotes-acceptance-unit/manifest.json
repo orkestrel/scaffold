@@ -1,0 +1,940 @@
+﻿{
+    "purpose":  "Retained effective R-B and Roughnotes registry acceptance evidence.",
+    "roots":  {
+                  "canonical":  "C:\\Users\\mikes\\WebstormProjects\\scaffold",
+                  "recovery":  "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\recovery\\roughnotes",
+                  "capture":  "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\capture-retained\\roughnotes-registry-final-capture"
+              },
+    "effective":  {
+                      "source":  [
+                                     "canonical/tmp/units/r-b-brief-11.md",
+                                     "recovery/tmp/units/r-b-report-11.md"
+                                 ],
+                      "registry":  [
+                                       "canonical/tmp/units/roughnotes-registry-adoption-brief.md",
+                                       "canonical/.orkestrel/campaign/roughnotes-registry-acceptance.md"
+                                   ]
+                  },
+    "existingCarriers":  [
+                             ".orkestrel/campaign/recovery-retention-map.md",
+                             ".orkestrel/campaign/recovery-retention-map-ruling.md",
+                             ".orkestrel/campaign/r-b-final-audit-verdict.md",
+                             ".orkestrel/campaign/roughnotes-registry-acceptance.md"
+                         ],
+    "exclusions":  [
+                       "PNG capture images",
+                       "archive payloads",
+                       "node_modules",
+                       "bench journals",
+                       "secrets",
+                       "original-user backups"
+                   ],
+    "rewrites":  [
+
+                 ],
+    "records":  [
+                    {
+                        "source":  "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\units\\roughnotes-acceptance-retention-brief.md",
+                        "retained":  "brief-source.md",
+                        "sourceSha256":  "65A1CB13C979035A40995E5D5141E68D54A90DE28BE60B6136F0517946E32C5C",
+                        "retainedSha256":  "65A1CB13C979035A40995E5D5141E68D54A90DE28BE60B6136F0517946E32C5C",
+                        "rewrite":  false
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\WebstormProjects\\scaffold\\.orkestrel\\campaign\\r-b-final-audit-verdict.md",
+                        "retained":  "canonical/.orkestrel/campaign/r-b-final-audit-verdict.md",
+                        "sourceSha256":  "AFCCC7F13E906F8FFFD0FF7352592F81F90505A2549338AED23FE9063FD5E3E1",
+                        "retainedSha256":  "AFCCC7F13E906F8FFFD0FF7352592F81F90505A2549338AED23FE9063FD5E3E1",
+                        "rewrite":  false
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\WebstormProjects\\scaffold\\.orkestrel\\campaign\\r-b-final-objective-report.md",
+                        "retained":  "canonical/.orkestrel/campaign/r-b-final-objective-report.md",
+                        "sourceSha256":  "61166C3E4C9BC25E276C20EB28414766E1A52BEFF6D3EC9BC5D6717C25BFEB01",
+                        "retainedSha256":  "61166C3E4C9BC25E276C20EB28414766E1A52BEFF6D3EC9BC5D6717C25BFEB01",
+                        "rewrite":  false
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\WebstormProjects\\scaffold\\.orkestrel\\campaign\\r-b-final-subjective-report.md",
+                        "retained":  "canonical/.orkestrel/campaign/r-b-final-subjective-report.md",
+                        "sourceSha256":  "5C48B1ED861D8164BBD162ED9EFEDB4252D5C5BAE4393DFF43778DC961BDFBC8",
+                        "retainedSha256":  "5C48B1ED861D8164BBD162ED9EFEDB4252D5C5BAE4393DFF43778DC961BDFBC8",
+                        "rewrite":  false
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\WebstormProjects\\scaffold\\.orkestrel\\campaign\\r-b-final-controls-report.md",
+                        "retained":  "canonical/.orkestrel/campaign/r-b-final-controls-report.md",
+                        "sourceSha256":  "C08375564297FF138B2F85FE6A852CE6EAED12808809E8F082048F9A5C7608A6",
+                        "retainedSha256":  "C08375564297FF138B2F85FE6A852CE6EAED12808809E8F082048F9A5C7608A6",
+                        "rewrite":  false
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\WebstormProjects\\scaffold\\.orkestrel\\campaign\\r-b-final-capture-report.md",
+                        "retained":  "canonical/.orkestrel/campaign/r-b-final-capture-report.md",
+                        "sourceSha256":  "37091D2F17651203A005F6C33A503FBE178C8736E24DD091D902C495AE9B8735",
+                        "retainedSha256":  "37091D2F17651203A005F6C33A503FBE178C8736E24DD091D902C495AE9B8735",
+                        "rewrite":  false
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\WebstormProjects\\scaffold\\.orkestrel\\campaign\\roughnotes-registry-adoption-audit-verdict.md",
+                        "retained":  "canonical/.orkestrel/campaign/roughnotes-registry-adoption-audit-verdict.md",
+                        "sourceSha256":  "C8F5203B5C453CD25ABDE8CBDC383FE542F8A6BE69A58E5A52232988DBE89F43",
+                        "retainedSha256":  "C8F5203B5C453CD25ABDE8CBDC383FE542F8A6BE69A58E5A52232988DBE89F43",
+                        "rewrite":  false
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\WebstormProjects\\scaffold\\.orkestrel\\campaign\\roughnotes-registry-acceptance.md",
+                        "retained":  "canonical/.orkestrel/campaign/roughnotes-registry-acceptance.md",
+                        "sourceSha256":  "212BBD00AAFEF86A79BC2873C6996EEFC503690BE1A3CF8335F64F3AF588B703",
+                        "retainedSha256":  "212BBD00AAFEF86A79BC2873C6996EEFC503690BE1A3CF8335F64F3AF588B703",
+                        "rewrite":  false
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\units\\r-b-brief-11.md",
+                        "retained":  "canonical/tmp/units/r-b-brief-11.md",
+                        "sourceSha256":  "37FC3DF5077E786AEB7740062DD7DED6643EFC16D4D561CD171E109D5E72801A",
+                        "retainedSha256":  "37FC3DF5077E786AEB7740062DD7DED6643EFC16D4D561CD171E109D5E72801A",
+                        "rewrite":  false
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\units\\r-b-gates-brief.md",
+                        "retained":  "canonical/tmp/units/r-b-gates-brief.md",
+                        "sourceSha256":  "9BDB27CF4D29E20D814BC577CA1F5740C39608BD03CA18B4ED80C228E754F292",
+                        "retainedSha256":  "9BDB27CF4D29E20D814BC577CA1F5740C39608BD03CA18B4ED80C228E754F292",
+                        "rewrite":  false
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\units\\roughnotes-registry-adoption-brief.md",
+                        "retained":  "canonical/tmp/units/roughnotes-registry-adoption-brief.md",
+                        "sourceSha256":  "E5D2E283A7D97A3FAB6FEA39921F352AF42F01E980FF691116DF8297C8B3F1CD",
+                        "retainedSha256":  "E5D2E283A7D97A3FAB6FEA39921F352AF42F01E980FF691116DF8297C8B3F1CD",
+                        "rewrite":  false
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\units\\roughnotes-registry-adoption-report.md",
+                        "retained":  "canonical/tmp/units/roughnotes-registry-adoption-report.md",
+                        "sourceSha256":  "B28F03906C7632B6BE025827671DFE76A9E77CFAEC9AE5F687FFAC834130BC98",
+                        "retainedSha256":  "B28F03906C7632B6BE025827671DFE76A9E77CFAEC9AE5F687FFAC834130BC98",
+                        "rewrite":  false
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\units\\roughnotes-registry-gates-brief-2.md",
+                        "retained":  "canonical/tmp/units/roughnotes-registry-gates-brief-2.md",
+                        "sourceSha256":  "DCC94BE7A5F09868225D0112FE4343DAC986CDF7E2B2E9040D947D8361FC7185",
+                        "retainedSha256":  "DCC94BE7A5F09868225D0112FE4343DAC986CDF7E2B2E9040D947D8361FC7185",
+                        "rewrite":  false
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\units\\roughnotes-registry-gates-author-report-2.md",
+                        "retained":  "canonical/tmp/units/roughnotes-registry-gates-author-report-2.md",
+                        "sourceSha256":  "E23C775D48B1E22A48F8EE8BC2F6624F89C9C62CCEEBFD4886FED0515E23F2D9",
+                        "retainedSha256":  "E23C775D48B1E22A48F8EE8BC2F6624F89C9C62CCEEBFD4886FED0515E23F2D9",
+                        "rewrite":  false
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\units\\roughnotes-registry-host-brief.md",
+                        "retained":  "canonical/tmp/units/roughnotes-registry-host-brief.md",
+                        "sourceSha256":  "F8E23B96BF15B9CA7C09C31CFA05FC99F6EBD66609E7675C0E5EF171DD4BD4C1",
+                        "retainedSha256":  "F8E23B96BF15B9CA7C09C31CFA05FC99F6EBD66609E7675C0E5EF171DD4BD4C1",
+                        "rewrite":  false
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\units\\roughnotes-registry-host-report.md",
+                        "retained":  "canonical/tmp/units/roughnotes-registry-host-report.md",
+                        "sourceSha256":  "B9B8CD5A003854EAE003C78AC1691EC5086DC2DF929397CFBE5E452CFEF107AC",
+                        "retainedSha256":  "B9B8CD5A003854EAE003C78AC1691EC5086DC2DF929397CFBE5E452CFEF107AC",
+                        "rewrite":  false
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\units\\roughnotes-registry-capture-retention-brief.md",
+                        "retained":  "canonical/tmp/units/roughnotes-registry-capture-retention-brief.md",
+                        "sourceSha256":  "06C9920FF3CF34E236BB6A396773EBD2958D221D8808573F893236042AE702A1",
+                        "retainedSha256":  "06C9920FF3CF34E236BB6A396773EBD2958D221D8808573F893236042AE702A1",
+                        "rewrite":  false
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\units\\roughnotes-registry-capture-retention-report.md",
+                        "retained":  "canonical/tmp/units/roughnotes-registry-capture-retention-report.md",
+                        "sourceSha256":  "BD894795EA4389F5DBCEC177125C583BD0B861BAE702D26B41909A4E8DCDA74E",
+                        "retainedSha256":  "BD894795EA4389F5DBCEC177125C583BD0B861BAE702D26B41909A4E8DCDA74E",
+                        "rewrite":  false
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\units\\roughnotes-registry-final-verifier-brief.md",
+                        "retained":  "canonical/tmp/units/roughnotes-registry-final-verifier-brief.md",
+                        "sourceSha256":  "93C7C74FFA70B200739CD6D59976504A7F5C4AAD83E0FFA3433BA18ED2FA2F2C",
+                        "retainedSha256":  "93C7C74FFA70B200739CD6D59976504A7F5C4AAD83E0FFA3433BA18ED2FA2F2C",
+                        "rewrite":  false
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\units\\roughnotes-registry-final-verifier-report.md",
+                        "retained":  "canonical/tmp/units/roughnotes-registry-final-verifier-report.md",
+                        "sourceSha256":  "530B0FA3E4E033CD401F2284509BF31B0716DE6567075C88DF87D6C3F9BF64EE",
+                        "retainedSha256":  "530B0FA3E4E033CD401F2284509BF31B0716DE6567075C88DF87D6C3F9BF64EE",
+                        "rewrite":  false
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\audit\\r-b-final-audit-claims.md",
+                        "retained":  "canonical/tmp/audit/r-b-final-audit-claims.md",
+                        "sourceSha256":  "BB1E704853AB6897D3C0BDB505239630029948164E5CB5D1CF9E3736D7920C8E",
+                        "retainedSha256":  "BB1E704853AB6897D3C0BDB505239630029948164E5CB5D1CF9E3736D7920C8E",
+                        "rewrite":  false
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\audit\\r-b-final-objective-brief.md",
+                        "retained":  "canonical/tmp/audit/r-b-final-objective-brief.md",
+                        "sourceSha256":  "8FCE2C8ABDAC952F7C40E4FE41C5F93837D1DB8B039DBC88B5AB6179F3BF8465",
+                        "retainedSha256":  "8FCE2C8ABDAC952F7C40E4FE41C5F93837D1DB8B039DBC88B5AB6179F3BF8465",
+                        "rewrite":  false
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\audit\\r-b-final-subjective-brief.md",
+                        "retained":  "canonical/tmp/audit/r-b-final-subjective-brief.md",
+                        "sourceSha256":  "F29950918C1BC8BCAC26DD05137CC51302988246FFEA0196AC0E053476EE58EE",
+                        "retainedSha256":  "F29950918C1BC8BCAC26DD05137CC51302988246FFEA0196AC0E053476EE58EE",
+                        "rewrite":  false
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\audit\\r-b-final-actual.diff",
+                        "retained":  "canonical/tmp/audit/r-b-final-actual.diff",
+                        "sourceSha256":  "85FA2431718C96FB265BCC7AED1AA6B13DFEACD4BC5DF07597089B542545AE9D",
+                        "retainedSha256":  "85FA2431718C96FB265BCC7AED1AA6B13DFEACD4BC5DF07597089B542545AE9D",
+                        "rewrite":  false
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\audit\\r-b-final-new-setup-proof.diff",
+                        "retained":  "canonical/tmp/audit/r-b-final-new-setup-proof.diff",
+                        "sourceSha256":  "4C4CE1284440783A68993A66081D56A028B4F300D874F12DE6D2D723730E53AA",
+                        "retainedSha256":  "4C4CE1284440783A68993A66081D56A028B4F300D874F12DE6D2D723730E53AA",
+                        "rewrite":  false
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\audit\\r-b-final-status.txt",
+                        "retained":  "canonical/tmp/audit/r-b-final-status.txt",
+                        "sourceSha256":  "9A627CD49F8EF59994655F7060000DBCAAA34C9F109EE79412B18E68169B2B4D",
+                        "retainedSha256":  "9A627CD49F8EF59994655F7060000DBCAAA34C9F109EE79412B18E68169B2B4D",
+                        "rewrite":  false
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\audit\\roughnotes-registry-adoption-audit-claims.md",
+                        "retained":  "canonical/tmp/audit/roughnotes-registry-adoption-audit-claims.md",
+                        "sourceSha256":  "3F4B1D616F57B9203E1FA10B486614088E611267D50137D67EC97E49D61F8D30",
+                        "retainedSha256":  "3F4B1D616F57B9203E1FA10B486614088E611267D50137D67EC97E49D61F8D30",
+                        "rewrite":  false
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\audit\\roughnotes-registry-adoption-objective-brief.md",
+                        "retained":  "canonical/tmp/audit/roughnotes-registry-adoption-objective-brief.md",
+                        "sourceSha256":  "8CEDE8EE48B241A4F79C4AF21F3AD8636C8DF61845EF02B3B468460E263031F6",
+                        "retainedSha256":  "8CEDE8EE48B241A4F79C4AF21F3AD8636C8DF61845EF02B3B468460E263031F6",
+                        "rewrite":  false
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\audit\\roughnotes-registry-adoption-objective-report.md",
+                        "retained":  "canonical/tmp/audit/roughnotes-registry-adoption-objective-report.md",
+                        "sourceSha256":  "93AF2F5FC23089F127CAF8121CD583711B4D0CB497D4D0B1728E9E7F193410F1",
+                        "retainedSha256":  "93AF2F5FC23089F127CAF8121CD583711B4D0CB497D4D0B1728E9E7F193410F1",
+                        "rewrite":  false
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\audit\\roughnotes-registry-adoption-subjective-brief.md",
+                        "retained":  "canonical/tmp/audit/roughnotes-registry-adoption-subjective-brief.md",
+                        "sourceSha256":  "A65C7DF6CC3913EB7C277B863DB1146AA6CD86E5F73A1AC6081A03A63E1B313C",
+                        "retainedSha256":  "A65C7DF6CC3913EB7C277B863DB1146AA6CD86E5F73A1AC6081A03A63E1B313C",
+                        "rewrite":  false
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\audit\\roughnotes-registry-adoption-subjective-report.md",
+                        "retained":  "canonical/tmp/audit/roughnotes-registry-adoption-subjective-report.md",
+                        "sourceSha256":  "C253AE934650445FF24D5211323A8D1044FDB1472998785034D606B433AED48C",
+                        "retainedSha256":  "C253AE934650445FF24D5211323A8D1044FDB1472998785034D606B433AED48C",
+                        "rewrite":  false
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\release\\adopt-roughnotes-registry.mjs",
+                        "retained":  "canonical/tmp/release/adopt-roughnotes-registry.mjs",
+                        "sourceSha256":  "6E1C477261E508CDE625D73AF203B2B3B2050CF0A237B97991A20541E741FE67",
+                        "retainedSha256":  "6E1C477261E508CDE625D73AF203B2B3B2050CF0A237B97991A20541E741FE67",
+                        "rewrite":  false
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\release\\launch-roughnotes-registry.ps1",
+                        "retained":  "canonical/tmp/release/launch-roughnotes-registry.ps1",
+                        "sourceSha256":  "E17D682D4C8837F6CB2B5A841F76D26F71E720E1CC8DF88EEEB2887CD082548F",
+                        "retainedSha256":  "E17D682D4C8837F6CB2B5A841F76D26F71E720E1CC8DF88EEEB2887CD082548F",
+                        "rewrite":  false
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\release\\run-roughnotes-registry-gates.mjs",
+                        "retained":  "canonical/tmp/release/run-roughnotes-registry-gates.mjs",
+                        "sourceSha256":  "D4E184D2BC052C88C49D1C0C6E8E3C92892DBE40BE94FB23D2FCEF043225A570",
+                        "retainedSha256":  "D4E184D2BC052C88C49D1C0C6E8E3C92892DBE40BE94FB23D2FCEF043225A570",
+                        "rewrite":  false
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\release\\launch-roughnotes-registry-gates.ps1",
+                        "retained":  "canonical/tmp/release/launch-roughnotes-registry-gates.ps1",
+                        "sourceSha256":  "8E09376F24EFB0C74FABCAEEA7586F537ECC4F58CF048C16AC24DB545426502E",
+                        "retainedSha256":  "8E09376F24EFB0C74FABCAEEA7586F537ECC4F58CF048C16AC24DB545426502E",
+                        "rewrite":  false
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\probe\\retain-roughnotes-registry-capture.ps1",
+                        "retained":  "canonical/tmp/probe/retain-roughnotes-registry-capture.ps1",
+                        "sourceSha256":  "E2D079885543CB4B2ABC1D2A86A27374E667B808D5372DD3962B2EC024FC6445",
+                        "retainedSha256":  "E2D079885543CB4B2ABC1D2A86A27374E667B808D5372DD3962B2EC024FC6445",
+                        "rewrite":  false
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\units\\roughnotes-registry-adoption-evidence\\baseline.json",
+                        "retained":  "canonical/tmp/units/roughnotes-registry-adoption-evidence/baseline.json",
+                        "sourceSha256":  "8B24E46A6F7BA57418E4BE21B5FE2A20B51BD56E195D7EF60A254F3B2629AABD",
+                        "retainedSha256":  "8B24E46A6F7BA57418E4BE21B5FE2A20B51BD56E195D7EF60A254F3B2629AABD",
+                        "rewrite":  false
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\units\\roughnotes-registry-adoption-evidence\\canonical.status.txt",
+                        "retained":  "canonical/tmp/units/roughnotes-registry-adoption-evidence/canonical.status.txt",
+                        "sourceSha256":  "10B43B8838A90258E77D426CC5744AE74541707707588A0DF96B65A46C616DA4",
+                        "retainedSha256":  "10B43B8838A90258E77D426CC5744AE74541707707588A0DF96B65A46C616DA4",
+                        "rewrite":  false
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\units\\roughnotes-registry-adoption-evidence\\check-launcher.ps1",
+                        "retained":  "canonical/tmp/units/roughnotes-registry-adoption-evidence/check-launcher.ps1",
+                        "sourceSha256":  "F5D5125AAEF38C4BD19D87474AAAF8C7E5D2387A5C68D4D9845DFFC2E034B704",
+                        "retainedSha256":  "F5D5125AAEF38C4BD19D87474AAAF8C7E5D2387A5C68D4D9845DFFC2E034B704",
+                        "rewrite":  false
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\units\\roughnotes-registry-adoption-evidence\\collect-evidence.mjs",
+                        "retained":  "canonical/tmp/units/roughnotes-registry-adoption-evidence/collect-evidence.mjs",
+                        "sourceSha256":  "1C77FC7D8D914E9DE46F656DE640CBFF13577B00F2DC4310A361899912E30790",
+                        "retainedSha256":  "1C77FC7D8D914E9DE46F656DE640CBFF13577B00F2DC4310A361899912E30790",
+                        "rewrite":  false
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\units\\roughnotes-registry-adoption-evidence\\empty.txt",
+                        "retained":  "canonical/tmp/units/roughnotes-registry-adoption-evidence/empty.txt",
+                        "sourceSha256":  "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
+                        "retainedSha256":  "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
+                        "rewrite":  false
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\units\\roughnotes-registry-adoption-evidence\\inspect-authoring.mjs",
+                        "retained":  "canonical/tmp/units/roughnotes-registry-adoption-evidence/inspect-authoring.mjs",
+                        "sourceSha256":  "761BBB793FA5454B42834C48DCE71B9A22AA22819D42C03C7AA2B2AABDF7EC44",
+                        "retainedSha256":  "761BBB793FA5454B42834C48DCE71B9A22AA22819D42C03C7AA2B2AABDF7EC44",
+                        "rewrite":  false
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\units\\roughnotes-registry-adoption-evidence\\instrument-hashes.json",
+                        "retained":  "canonical/tmp/units/roughnotes-registry-adoption-evidence/instrument-hashes.json",
+                        "sourceSha256":  "8C14B25F9677AEFEB21EFF721AD52FD8E5F462C159AC1683B6CA0F34EE3E056C",
+                        "retainedSha256":  "8C14B25F9677AEFEB21EFF721AD52FD8E5F462C159AC1683B6CA0F34EE3E056C",
+                        "rewrite":  false
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\units\\roughnotes-registry-adoption-evidence\\owned.diff.patch",
+                        "retained":  "canonical/tmp/units/roughnotes-registry-adoption-evidence/owned.diff.patch",
+                        "sourceSha256":  "9B3C54A36B21260B8F8512D78E4BC28727F565A71883AA090597C08FE30950D0",
+                        "retainedSha256":  "9B3C54A36B21260B8F8512D78E4BC28727F565A71883AA090597C08FE30950D0",
+                        "rewrite":  false
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\units\\roughnotes-registry-adoption-evidence\\owned.diffstat.txt",
+                        "retained":  "canonical/tmp/units/roughnotes-registry-adoption-evidence/owned.diffstat.txt",
+                        "sourceSha256":  "4A6E97EA595D349FE196611A1A81C9C96E4ADCFC13CBF30BE36C380CC15836D7",
+                        "retainedSha256":  "4A6E97EA595D349FE196611A1A81C9C96E4ADCFC13CBF30BE36C380CC15836D7",
+                        "rewrite":  false
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\units\\roughnotes-registry-adoption-evidence\\recovery-after-authorship.json",
+                        "retained":  "canonical/tmp/units/roughnotes-registry-adoption-evidence/recovery-after-authorship.json",
+                        "sourceSha256":  "4596DA5940DE611F4C05D444A4F77D456215CDF209448E4B1C70661E3B833787",
+                        "retainedSha256":  "4596DA5940DE611F4C05D444A4F77D456215CDF209448E4B1C70661E3B833787",
+                        "rewrite":  false
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\units\\roughnotes-registry-adoption-evidence\\registry-adoption-20260918.launcher.result.json",
+                        "retained":  "canonical/tmp/units/roughnotes-registry-adoption-evidence/registry-adoption-20260918.launcher.result.json",
+                        "sourceSha256":  "A5BFCB2F5F7120DA0E19F1036C7A08A61F063A54C505A37B62024C5812EDC2CE",
+                        "retainedSha256":  "A5BFCB2F5F7120DA0E19F1036C7A08A61F063A54C505A37B62024C5812EDC2CE",
+                        "rewrite":  false
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\units\\roughnotes-registry-adoption-evidence\\registry-adoption-20260918.launcher.stderr.log.txt",
+                        "retained":  "canonical/tmp/units/roughnotes-registry-adoption-evidence/registry-adoption-20260918.launcher.stderr.log.txt",
+                        "sourceSha256":  "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
+                        "retainedSha256":  "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
+                        "rewrite":  false
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\units\\roughnotes-registry-adoption-evidence\\registry-adoption-20260918.launcher.stdout.log.txt",
+                        "retained":  "canonical/tmp/units/roughnotes-registry-adoption-evidence/registry-adoption-20260918.launcher.stdout.log.txt",
+                        "sourceSha256":  "38FC8D7FE51C5085FDDDF15C16146F17AF26A970960C4BA9B807559C26DECEDC",
+                        "retainedSha256":  "38FC8D7FE51C5085FDDDF15C16146F17AF26A970960C4BA9B807559C26DECEDC",
+                        "rewrite":  false
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\units\\roughnotes-registry-adoption-evidence\\registry-mismatch.json",
+                        "retained":  "canonical/tmp/units/roughnotes-registry-adoption-evidence/registry-mismatch.json",
+                        "sourceSha256":  "17511CF250E5DAD6F5FFDFA7F883CC578A06B3EF6E9BE34C7D1760B547B82224",
+                        "retainedSha256":  "17511CF250E5DAD6F5FFDFA7F883CC578A06B3EF6E9BE34C7D1760B547B82224",
+                        "rewrite":  false
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\units\\roughnotes-registry-adoption-evidence\\registry-observed.json",
+                        "retained":  "canonical/tmp/units/roughnotes-registry-adoption-evidence/registry-observed.json",
+                        "sourceSha256":  "0394E2755A67B9BD4AD8B28063E95C494B4AF438FDC247F89C7892D34356D9B2",
+                        "retainedSha256":  "0394E2755A67B9BD4AD8B28063E95C494B4AF438FDC247F89C7892D34356D9B2",
+                        "rewrite":  false
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\units\\roughnotes-registry-adoption-evidence\\source-drift.json",
+                        "retained":  "canonical/tmp/units/roughnotes-registry-adoption-evidence/source-drift.json",
+                        "sourceSha256":  "97C2DF79B5D64AB9F0F14444DF8B633F851D69C4B65CDDFF94EF984178CBADB4",
+                        "retainedSha256":  "97C2DF79B5D64AB9F0F14444DF8B633F851D69C4B65CDDFF94EF984178CBADB4",
+                        "rewrite":  false
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\units\\roughnotes-registry-adoption-evidence\\validation-results.txt",
+                        "retained":  "canonical/tmp/units/roughnotes-registry-adoption-evidence/validation-results.txt",
+                        "sourceSha256":  "8A753E33EFD5DDB9E828607089B847BA7A35DD2B3C75373FC07A4BCA66956943",
+                        "retainedSha256":  "8A753E33EFD5DDB9E828607089B847BA7A35DD2B3C75373FC07A4BCA66956943",
+                        "rewrite":  false
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\units\\roughnotes-registry-adoption-evidence\\registry-adoption-20260918\\after.json",
+                        "retained":  "canonical/tmp/units/roughnotes-registry-adoption-evidence/registry-adoption-20260918/after.json",
+                        "sourceSha256":  "4D0A236948940434BAD7DF92EDC1BC9829594F887AE5E29A09B491BCA7FEE1EA",
+                        "retainedSha256":  "4D0A236948940434BAD7DF92EDC1BC9829594F887AE5E29A09B491BCA7FEE1EA",
+                        "rewrite":  false
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\units\\roughnotes-registry-adoption-evidence\\registry-adoption-20260918\\before.json",
+                        "retained":  "canonical/tmp/units/roughnotes-registry-adoption-evidence/registry-adoption-20260918/before.json",
+                        "sourceSha256":  "6A12E5B1DC63128C243BD125710BEF92E340F9F258C31F8A2C584BBF285A7136",
+                        "retainedSha256":  "6A12E5B1DC63128C243BD125710BEF92E340F9F258C31F8A2C584BBF285A7136",
+                        "rewrite":  false
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\units\\roughnotes-registry-adoption-evidence\\registry-adoption-20260918\\command.json",
+                        "retained":  "canonical/tmp/units/roughnotes-registry-adoption-evidence/registry-adoption-20260918/command.json",
+                        "sourceSha256":  "06CCB2B924A218C2B91B794FEB4C2F5DB10A5A75E782BD5DED00A4A429EC1B25",
+                        "retainedSha256":  "06CCB2B924A218C2B91B794FEB4C2F5DB10A5A75E782BD5DED00A4A429EC1B25",
+                        "rewrite":  false
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\units\\roughnotes-registry-adoption-evidence\\registry-adoption-20260918\\npm.exit.json",
+                        "retained":  "canonical/tmp/units/roughnotes-registry-adoption-evidence/registry-adoption-20260918/npm.exit.json",
+                        "sourceSha256":  "8481FED5049786586FF0BC4AF6F51865533CB1C278CA52E5026E21AAA548625A",
+                        "retainedSha256":  "8481FED5049786586FF0BC4AF6F51865533CB1C278CA52E5026E21AAA548625A",
+                        "rewrite":  false
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\units\\roughnotes-registry-adoption-evidence\\registry-adoption-20260918\\npm.stderr.log.txt",
+                        "retained":  "canonical/tmp/units/roughnotes-registry-adoption-evidence/registry-adoption-20260918/npm.stderr.log.txt",
+                        "sourceSha256":  "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
+                        "retainedSha256":  "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
+                        "rewrite":  false
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\units\\roughnotes-registry-adoption-evidence\\registry-adoption-20260918\\npm.stdout.log.txt",
+                        "retained":  "canonical/tmp/units/roughnotes-registry-adoption-evidence/registry-adoption-20260918/npm.stdout.log.txt",
+                        "sourceSha256":  "653397F3A89CACF9C685CE9C536BF641608E2F76BB586426239401C908CD5A0F",
+                        "retainedSha256":  "653397F3A89CACF9C685CE9C536BF641608E2F76BB586426239401C908CD5A0F",
+                        "rewrite":  false
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\units\\roughnotes-registry-adoption-evidence\\registry-adoption-20260918\\package-lock.before.json",
+                        "retained":  "canonical/tmp/units/roughnotes-registry-adoption-evidence/registry-adoption-20260918/package-lock.before.json",
+                        "sourceSha256":  "07449C8EDC80D8683C4D204FB205F0C5F5553575095AAD2220D383928260C8C8",
+                        "retainedSha256":  "07449C8EDC80D8683C4D204FB205F0C5F5553575095AAD2220D383928260C8C8",
+                        "rewrite":  false
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\units\\roughnotes-registry-adoption-evidence\\registry-adoption-20260918\\package.before.json",
+                        "retained":  "canonical/tmp/units/roughnotes-registry-adoption-evidence/registry-adoption-20260918/package.before.json",
+                        "sourceSha256":  "8D1C6A11C860DBF381428A4CDA4DA86AF7C425439066F29B2A2988A766BF6163",
+                        "retainedSha256":  "8D1C6A11C860DBF381428A4CDA4DA86AF7C425439066F29B2A2988A766BF6163",
+                        "rewrite":  false
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\units\\roughnotes-registry-adoption-evidence\\registry-adoption-20260918\\registry.json",
+                        "retained":  "canonical/tmp/units/roughnotes-registry-adoption-evidence/registry-adoption-20260918/registry.json",
+                        "sourceSha256":  "0394E2755A67B9BD4AD8B28063E95C494B4AF438FDC247F89C7892D34356D9B2",
+                        "retainedSha256":  "0394E2755A67B9BD4AD8B28063E95C494B4AF438FDC247F89C7892D34356D9B2",
+                        "rewrite":  false
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\units\\roughnotes-registry-adoption-evidence\\registry-adoption-20260918\\terminal.json",
+                        "retained":  "canonical/tmp/units/roughnotes-registry-adoption-evidence/registry-adoption-20260918/terminal.json",
+                        "sourceSha256":  "0735C3E3554E366D1C2A6A12860ACB79F9B48792229F694FEFA2F76F0764929A",
+                        "retainedSha256":  "0735C3E3554E366D1C2A6A12860ACB79F9B48792229F694FEFA2F76F0764929A",
+                        "rewrite":  false
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\units\\roughnotes-registry-gates-author-evidence\\control-child.mjs",
+                        "retained":  "canonical/tmp/units/roughnotes-registry-gates-author-evidence/control-child.mjs",
+                        "sourceSha256":  "CC4F2E3DF915DE6C7BA3243E42138D96BC7A2357AD8B5663998FB04F7F7AFD27",
+                        "retainedSha256":  "CC4F2E3DF915DE6C7BA3243E42138D96BC7A2357AD8B5663998FB04F7F7AFD27",
+                        "rewrite":  false
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\units\\roughnotes-registry-gates-author-evidence\\control-successor.mjs",
+                        "retained":  "canonical/tmp/units/roughnotes-registry-gates-author-evidence/control-successor.mjs",
+                        "sourceSha256":  "C5ADD9F391E92C7714A4E2A9FDA45F348FC8EA88DFD48B13D9AE4044B8396F73",
+                        "retainedSha256":  "C5ADD9F391E92C7714A4E2A9FDA45F348FC8EA88DFD48B13D9AE4044B8396F73",
+                        "rewrite":  false
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\units\\roughnotes-registry-gates-author-evidence\\launch-roughnotes-registry-gates.before.ps1",
+                        "retained":  "canonical/tmp/units/roughnotes-registry-gates-author-evidence/launch-roughnotes-registry-gates.before.ps1",
+                        "sourceSha256":  "8E09376F24EFB0C74FABCAEEA7586F537ECC4F58CF048C16AC24DB545426502E",
+                        "retainedSha256":  "8E09376F24EFB0C74FABCAEEA7586F537ECC4F58CF048C16AC24DB545426502E",
+                        "rewrite":  false
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\units\\roughnotes-registry-gates-author-evidence\\recovery-status-successor.txt",
+                        "retained":  "canonical/tmp/units/roughnotes-registry-gates-author-evidence/recovery-status-successor.txt",
+                        "sourceSha256":  "A51BF955EF21687B1A0B9F0FE3CF197063C3F5075D88F0D65ADD41C5CAC0D8B6",
+                        "retainedSha256":  "A51BF955EF21687B1A0B9F0FE3CF197063C3F5075D88F0D65ADD41C5CAC0D8B6",
+                        "rewrite":  false
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\units\\roughnotes-registry-gates-author-evidence\\roughnotes-registry-gates-author-report.before.md",
+                        "retained":  "canonical/tmp/units/roughnotes-registry-gates-author-evidence/roughnotes-registry-gates-author-report.before.md",
+                        "sourceSha256":  "31E9609079E5A65904A06B7DAA18BF65E3C310D76A1F3F464C033E41CF600646",
+                        "retainedSha256":  "31E9609079E5A65904A06B7DAA18BF65E3C310D76A1F3F464C033E41CF600646",
+                        "rewrite":  false
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\units\\roughnotes-registry-gates-author-evidence\\run-roughnotes-registry-gates.before.mjs",
+                        "retained":  "canonical/tmp/units/roughnotes-registry-gates-author-evidence/run-roughnotes-registry-gates.before.mjs",
+                        "sourceSha256":  "0558C2EA7C08D7C2507FD05892F118D3EB1ACAE87A8C8947F837EB6746D75805",
+                        "retainedSha256":  "0558C2EA7C08D7C2507FD05892F118D3EB1ACAE87A8C8947F837EB6746D75805",
+                        "rewrite":  false
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\units\\roughnotes-registry-gates-author-evidence\\runner-successor.diff.patch",
+                        "retained":  "canonical/tmp/units/roughnotes-registry-gates-author-evidence/runner-successor.diff.patch",
+                        "sourceSha256":  "DA73E8F00A7C562AA7979B1F9C7354A6676E50320D83AE7745DE2F2D6D83167A",
+                        "retainedSha256":  "DA73E8F00A7C562AA7979B1F9C7354A6676E50320D83AE7745DE2F2D6D83167A",
+                        "rewrite":  false
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\units\\roughnotes-registry-gates-evidence\\roughnotes-registry-gates-20260918\\after.json",
+                        "retained":  "canonical/tmp/units/roughnotes-registry-gates-evidence/roughnotes-registry-gates-20260918/after.json",
+                        "sourceSha256":  "7EB0C39740544C0654A0E7BA551F6F20E2FE40D4F9112C0202D29D043C6E7E25",
+                        "retainedSha256":  "7EB0C39740544C0654A0E7BA551F6F20E2FE40D4F9112C0202D29D043C6E7E25",
+                        "rewrite":  false
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\units\\roughnotes-registry-gates-evidence\\roughnotes-registry-gates-20260918\\before.json",
+                        "retained":  "canonical/tmp/units/roughnotes-registry-gates-evidence/roughnotes-registry-gates-20260918/before.json",
+                        "sourceSha256":  "7EB0C39740544C0654A0E7BA551F6F20E2FE40D4F9112C0202D29D043C6E7E25",
+                        "retainedSha256":  "7EB0C39740544C0654A0E7BA551F6F20E2FE40D4F9112C0202D29D043C6E7E25",
+                        "rewrite":  false
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\units\\roughnotes-registry-gates-evidence\\roughnotes-registry-gates-20260918\\build.json",
+                        "retained":  "canonical/tmp/units/roughnotes-registry-gates-evidence/roughnotes-registry-gates-20260918/build.json",
+                        "sourceSha256":  "AED1F429B759C1D3AE99128FF4E71FEEF76664B9495552B219918EDFAD7E2633",
+                        "retainedSha256":  "AED1F429B759C1D3AE99128FF4E71FEEF76664B9495552B219918EDFAD7E2633",
+                        "rewrite":  false
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\units\\roughnotes-registry-gates-evidence\\roughnotes-registry-gates-20260918\\build.stderr.log.txt",
+                        "retained":  "canonical/tmp/units/roughnotes-registry-gates-evidence/roughnotes-registry-gates-20260918/build.stderr.log.txt",
+                        "sourceSha256":  "E1E86655F438126381B54A869D3DC0C537A4EAE25A4CE400188E7B07DCD783B9",
+                        "retainedSha256":  "E1E86655F438126381B54A869D3DC0C537A4EAE25A4CE400188E7B07DCD783B9",
+                        "rewrite":  false
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\units\\roughnotes-registry-gates-evidence\\roughnotes-registry-gates-20260918\\build.stdout.log.txt",
+                        "retained":  "canonical/tmp/units/roughnotes-registry-gates-evidence/roughnotes-registry-gates-20260918/build.stdout.log.txt",
+                        "sourceSha256":  "D98C75C09F44A69A380B5538271926F6A993E2520D56EC69B9AB0850EA41D9D0",
+                        "retainedSha256":  "D98C75C09F44A69A380B5538271926F6A993E2520D56EC69B9AB0850EA41D9D0",
+                        "rewrite":  false
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\units\\roughnotes-registry-gates-evidence\\roughnotes-registry-gates-20260918\\check.json",
+                        "retained":  "canonical/tmp/units/roughnotes-registry-gates-evidence/roughnotes-registry-gates-20260918/check.json",
+                        "sourceSha256":  "8EAD3DF71EE74EACF525B31C5D913FD57A2E1E06DC7488928F4E2D6ED2DBAB46",
+                        "retainedSha256":  "8EAD3DF71EE74EACF525B31C5D913FD57A2E1E06DC7488928F4E2D6ED2DBAB46",
+                        "rewrite":  false
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\units\\roughnotes-registry-gates-evidence\\roughnotes-registry-gates-20260918\\check.stderr.log.txt",
+                        "retained":  "canonical/tmp/units/roughnotes-registry-gates-evidence/roughnotes-registry-gates-20260918/check.stderr.log.txt",
+                        "sourceSha256":  "2126C45CB155DF67AA7F6EF1226B2EEF1DF462A36FAA7918312F6261D0A3B19A",
+                        "retainedSha256":  "2126C45CB155DF67AA7F6EF1226B2EEF1DF462A36FAA7918312F6261D0A3B19A",
+                        "rewrite":  false
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\units\\roughnotes-registry-gates-evidence\\roughnotes-registry-gates-20260918\\check.stdout.log.txt",
+                        "retained":  "canonical/tmp/units/roughnotes-registry-gates-evidence/roughnotes-registry-gates-20260918/check.stdout.log.txt",
+                        "sourceSha256":  "9C617815C538A13CEDD32410B64E783024C1E3C0631AA2D3A58283DBE9EA5894",
+                        "retainedSha256":  "9C617815C538A13CEDD32410B64E783024C1E3C0631AA2D3A58283DBE9EA5894",
+                        "rewrite":  false
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\units\\roughnotes-registry-gates-evidence\\roughnotes-registry-gates-20260918\\format-check.json",
+                        "retained":  "canonical/tmp/units/roughnotes-registry-gates-evidence/roughnotes-registry-gates-20260918/format-check.json",
+                        "sourceSha256":  "321463D8C2C79140614353F293A35B5AC594A4136C44049C69DED09456B2CFF9",
+                        "retainedSha256":  "321463D8C2C79140614353F293A35B5AC594A4136C44049C69DED09456B2CFF9",
+                        "rewrite":  false
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\units\\roughnotes-registry-gates-evidence\\roughnotes-registry-gates-20260918\\format-check.stderr.log.txt",
+                        "retained":  "canonical/tmp/units/roughnotes-registry-gates-evidence/roughnotes-registry-gates-20260918/format-check.stderr.log.txt",
+                        "sourceSha256":  "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
+                        "retainedSha256":  "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
+                        "rewrite":  false
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\units\\roughnotes-registry-gates-evidence\\roughnotes-registry-gates-20260918\\format-check.stdout.log.txt",
+                        "retained":  "canonical/tmp/units/roughnotes-registry-gates-evidence/roughnotes-registry-gates-20260918/format-check.stdout.log.txt",
+                        "sourceSha256":  "FAF2B70DA998159F5D7FF67AA182984689240D74A732327B05B270F3471165DD",
+                        "retainedSha256":  "FAF2B70DA998159F5D7FF67AA182984689240D74A732327B05B270F3471165DD",
+                        "rewrite":  false
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\units\\roughnotes-registry-gates-evidence\\roughnotes-registry-gates-20260918\\lint-check.json",
+                        "retained":  "canonical/tmp/units/roughnotes-registry-gates-evidence/roughnotes-registry-gates-20260918/lint-check.json",
+                        "sourceSha256":  "2043FFC8A4C8BFDE4C8DD03AB58FF4F108F0F7B973D117E60E14A3CC690C96FA",
+                        "retainedSha256":  "2043FFC8A4C8BFDE4C8DD03AB58FF4F108F0F7B973D117E60E14A3CC690C96FA",
+                        "rewrite":  false
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\units\\roughnotes-registry-gates-evidence\\roughnotes-registry-gates-20260918\\lint-check.stderr.log.txt",
+                        "retained":  "canonical/tmp/units/roughnotes-registry-gates-evidence/roughnotes-registry-gates-20260918/lint-check.stderr.log.txt",
+                        "sourceSha256":  "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
+                        "retainedSha256":  "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
+                        "rewrite":  false
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\units\\roughnotes-registry-gates-evidence\\roughnotes-registry-gates-20260918\\lint-check.stdout.log.txt",
+                        "retained":  "canonical/tmp/units/roughnotes-registry-gates-evidence/roughnotes-registry-gates-20260918/lint-check.stdout.log.txt",
+                        "sourceSha256":  "F38BA98B84BA9486885843A14865E88CDB49C8F4CB05B1DBC4F17755F2084A77",
+                        "retainedSha256":  "F38BA98B84BA9486885843A14865E88CDB49C8F4CB05B1DBC4F17755F2084A77",
+                        "rewrite":  false
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\units\\roughnotes-registry-gates-evidence\\roughnotes-registry-gates-20260918\\terminal.json",
+                        "retained":  "canonical/tmp/units/roughnotes-registry-gates-evidence/roughnotes-registry-gates-20260918/terminal.json",
+                        "sourceSha256":  "EF89C398D3B9D5D8562EC822E916195D12234CCED401404124CB526EFA0CE009",
+                        "retainedSha256":  "EF89C398D3B9D5D8562EC822E916195D12234CCED401404124CB526EFA0CE009",
+                        "rewrite":  false
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\units\\roughnotes-registry-gates-evidence\\roughnotes-registry-gates-20260918\\test-journey.json",
+                        "retained":  "canonical/tmp/units/roughnotes-registry-gates-evidence/roughnotes-registry-gates-20260918/test-journey.json",
+                        "sourceSha256":  "9DA786AC082C027C9482397D389FDDD0255200CA6C1CE144115C460C0C74963D",
+                        "retainedSha256":  "9DA786AC082C027C9482397D389FDDD0255200CA6C1CE144115C460C0C74963D",
+                        "rewrite":  false
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\units\\roughnotes-registry-gates-evidence\\roughnotes-registry-gates-20260918\\test-journey.stderr.log.txt",
+                        "retained":  "canonical/tmp/units/roughnotes-registry-gates-evidence/roughnotes-registry-gates-20260918/test-journey.stderr.log.txt",
+                        "sourceSha256":  "EE5FAD54A8EB14154FF71574B219BFE94312B9A4FDC999EA589D81E56A7C150C",
+                        "retainedSha256":  "EE5FAD54A8EB14154FF71574B219BFE94312B9A4FDC999EA589D81E56A7C150C",
+                        "rewrite":  false
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\units\\roughnotes-registry-gates-evidence\\roughnotes-registry-gates-20260918\\test-journey.stdout.log.txt",
+                        "retained":  "canonical/tmp/units/roughnotes-registry-gates-evidence/roughnotes-registry-gates-20260918/test-journey.stdout.log.txt",
+                        "sourceSha256":  "711A737E7D0ECD6EF9EDBEEB48BC3FCF5B35DEAFD5C96BB8B4D5315DBD38243A",
+                        "retainedSha256":  "711A737E7D0ECD6EF9EDBEEB48BC3FCF5B35DEAFD5C96BB8B4D5315DBD38243A",
+                        "rewrite":  false
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\units\\roughnotes-registry-gates-evidence\\roughnotes-registry-gates-20260918\\test.json",
+                        "retained":  "canonical/tmp/units/roughnotes-registry-gates-evidence/roughnotes-registry-gates-20260918/test.json",
+                        "sourceSha256":  "F9CFBDBACD3DF0987237F5E1D7347DAF442064DD8BD05BCF9DCE12705378A46C",
+                        "retainedSha256":  "F9CFBDBACD3DF0987237F5E1D7347DAF442064DD8BD05BCF9DCE12705378A46C",
+                        "rewrite":  false
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\units\\roughnotes-registry-gates-evidence\\roughnotes-registry-gates-20260918\\test.stderr.log.txt",
+                        "retained":  "canonical/tmp/units/roughnotes-registry-gates-evidence/roughnotes-registry-gates-20260918/test.stderr.log.txt",
+                        "sourceSha256":  "48A4C6CC2E37D67152CA7977A64CB37D4EB97A9DDC570B23648FDE3290A128A8",
+                        "retainedSha256":  "48A4C6CC2E37D67152CA7977A64CB37D4EB97A9DDC570B23648FDE3290A128A8",
+                        "rewrite":  false
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\units\\roughnotes-registry-gates-evidence\\roughnotes-registry-gates-20260918\\test.stdout.log.txt",
+                        "retained":  "canonical/tmp/units/roughnotes-registry-gates-evidence/roughnotes-registry-gates-20260918/test.stdout.log.txt",
+                        "sourceSha256":  "60C4A74B78D6D496926C78B2CB760DBB3EA4A7EDBEFB43713D41B4C33B81C1F8",
+                        "retainedSha256":  "60C4A74B78D6D496926C78B2CB760DBB3EA4A7EDBEFB43713D41B4C33B81C1F8",
+                        "rewrite":  false
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\units\\roughnotes-registry-gates-evidence\\roughnotes-control-2-20260918\\control-driver.json",
+                        "retained":  "canonical/tmp/units/roughnotes-registry-gates-evidence/roughnotes-control-2-20260918/control-driver.json",
+                        "sourceSha256":  "9EFDD7FCAED692815C277EF065B364C1CF2153F8BF0C828F19CE82BF6865CC3B",
+                        "retainedSha256":  "9EFDD7FCAED692815C277EF065B364C1CF2153F8BF0C828F19CE82BF6865CC3B",
+                        "rewrite":  false
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\units\\roughnotes-registry-gates-evidence\\roughnotes-control-2-20260918\\control-terminal.json",
+                        "retained":  "canonical/tmp/units/roughnotes-registry-gates-evidence/roughnotes-control-2-20260918/control-terminal.json",
+                        "sourceSha256":  "842CD056D89A0639550A0D5CEA924B670AC13485BC28D806E31D835BF100B5F1",
+                        "retainedSha256":  "842CD056D89A0639550A0D5CEA924B670AC13485BC28D806E31D835BF100B5F1",
+                        "rewrite":  false
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\units\\roughnotes-registry-gates-evidence\\roughnotes-control-2-20260918\\control.json",
+                        "retained":  "canonical/tmp/units/roughnotes-registry-gates-evidence/roughnotes-control-2-20260918/control.json",
+                        "sourceSha256":  "7DA8CA78AE55F5D00C3E25AFBCD4D8F017AF97DCB2C91FF05766D418C9E36E0C",
+                        "retainedSha256":  "7DA8CA78AE55F5D00C3E25AFBCD4D8F017AF97DCB2C91FF05766D418C9E36E0C",
+                        "rewrite":  false
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\units\\roughnotes-registry-gates-evidence\\roughnotes-control-2-20260918\\control.stderr.log.txt",
+                        "retained":  "canonical/tmp/units/roughnotes-registry-gates-evidence/roughnotes-control-2-20260918/control.stderr.log.txt",
+                        "sourceSha256":  "4FC1C3BC7AB79AEEE2F20CF427F9F1C927F2C0FA10D9856B6153174DD7A0C6E1",
+                        "retainedSha256":  "4FC1C3BC7AB79AEEE2F20CF427F9F1C927F2C0FA10D9856B6153174DD7A0C6E1",
+                        "rewrite":  false
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\units\\roughnotes-registry-gates-evidence\\roughnotes-control-2-20260918\\control.stdout.log.txt",
+                        "retained":  "canonical/tmp/units/roughnotes-registry-gates-evidence/roughnotes-control-2-20260918/control.stdout.log.txt",
+                        "sourceSha256":  "7E9DEB415EF727CA11B29D94B1BBC108B624D5661C5C28DC02A5DC5D15A0FC89",
+                        "retainedSha256":  "7E9DEB415EF727CA11B29D94B1BBC108B624D5661C5C28DC02A5DC5D15A0FC89",
+                        "rewrite":  false
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\units\\roughnotes-registry-capture-retention-evidence\\owned-status.txt",
+                        "retained":  "canonical/tmp/units/roughnotes-registry-capture-retention-evidence/owned-status.txt",
+                        "sourceSha256":  "01BA4719C80B6FE911B091A7C05124B64EEECE964E09C058EF8F9805DACA546B",
+                        "retainedSha256":  "01BA4719C80B6FE911B091A7C05124B64EEECE964E09C058EF8F9805DACA546B",
+                        "rewrite":  false
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\units\\roughnotes-registry-capture-retention-evidence\\retain-r-b-capture.before.ps1",
+                        "retained":  "canonical/tmp/units/roughnotes-registry-capture-retention-evidence/retain-r-b-capture.before.ps1",
+                        "sourceSha256":  "8C8863AB1C000F76BB9DD6947B010BF8164BB20D98EE3D41C19836C7F15127F8",
+                        "retainedSha256":  "8C8863AB1C000F76BB9DD6947B010BF8164BB20D98EE3D41C19836C7F15127F8",
+                        "rewrite":  false
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\units\\roughnotes-registry-capture-retention-evidence\\successor.diff.patch",
+                        "retained":  "canonical/tmp/units/roughnotes-registry-capture-retention-evidence/successor.diff.patch",
+                        "sourceSha256":  "3C28AA01887ACCE74CA23F5AC3B9218A56A8393DD0CE6C65F1CC68F49CE60578",
+                        "retainedSha256":  "3C28AA01887ACCE74CA23F5AC3B9218A56A8393DD0CE6C65F1CC68F49CE60578",
+                        "rewrite":  false
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\recovery\\roughnotes\\tmp\\units\\r-b-report-11.md",
+                        "retained":  "recovery/tmp/units/r-b-report-11.md",
+                        "sourceSha256":  "9D91008806A5B8E5EE02CB2BA5DDB708FF9F1BE5CCEBC2BDCC953E2420210D7F",
+                        "retainedSha256":  "9D91008806A5B8E5EE02CB2BA5DDB708FF9F1BE5CCEBC2BDCC953E2420210D7F",
+                        "rewrite":  false
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\recovery\\roughnotes\\tmp\\units\\r-b-actual-11.diff",
+                        "retained":  "recovery/tmp/units/r-b-actual-11.diff",
+                        "sourceSha256":  "4784404ED616B72C76EC51BB0F85253F14C6BFB8DE0D3C7AF062E2E63AAF0B63",
+                        "retainedSha256":  "4784404ED616B72C76EC51BB0F85253F14C6BFB8DE0D3C7AF062E2E63AAF0B63",
+                        "rewrite":  false
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\recovery\\roughnotes\\tmp\\units\\r-b-shared-11.diff",
+                        "retained":  "recovery/tmp/units/r-b-shared-11.diff",
+                        "sourceSha256":  "AB0BA6ACF6199D8569BEFA089A737617E29686C6290977ED7EE5B6C7A4543284",
+                        "retainedSha256":  "AB0BA6ACF6199D8569BEFA089A737617E29686C6290977ED7EE5B6C7A4543284",
+                        "rewrite":  false
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\recovery\\roughnotes\\tmp\\units\\r-b-new-setup-proof-11.diff",
+                        "retained":  "recovery/tmp/units/r-b-new-setup-proof-11.diff",
+                        "sourceSha256":  "4C4CE1284440783A68993A66081D56A028B4F300D874F12DE6D2D723730E53AA",
+                        "retainedSha256":  "4C4CE1284440783A68993A66081D56A028B4F300D874F12DE6D2D723730E53AA",
+                        "rewrite":  false
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\recovery\\roughnotes\\tmp\\units\\r-b-status-11.txt",
+                        "retained":  "recovery/tmp/units/r-b-status-11.txt",
+                        "sourceSha256":  "BE5E83216A103AE9F4A8D25361D20AB77456FF47DC909C003387619FC42292DE",
+                        "retainedSha256":  "BE5E83216A103AE9F4A8D25361D20AB77456FF47DC909C003387619FC42292DE",
+                        "rewrite":  false
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\recovery\\roughnotes\\tmp\\units\\r-b-diffstat-11.txt",
+                        "retained":  "recovery/tmp/units/r-b-diffstat-11.txt",
+                        "sourceSha256":  "76AA637932D1C28232926AB14E25DE453F438FE15A3DFDC6E29020CE3B5AECE7",
+                        "retainedSha256":  "76AA637932D1C28232926AB14E25DE453F438FE15A3DFDC6E29020CE3B5AECE7",
+                        "rewrite":  false
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\recovery\\roughnotes\\tmp\\units\\r-b-frozen-hashes-11.tsv",
+                        "retained":  "recovery/tmp/units/r-b-frozen-hashes-11.tsv",
+                        "sourceSha256":  "AAA047A6A533FD09E3486C37B0F5E8C248FBB186D7BA27F9DAA6E1A4ED22F089",
+                        "retainedSha256":  "AAA047A6A533FD09E3486C37B0F5E8C248FBB186D7BA27F9DAA6E1A4ED22F089",
+                        "rewrite":  false
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\recovery\\roughnotes\\tmp\\units\\r-b-baseline-hashes-11.json",
+                        "retained":  "recovery/tmp/units/r-b-baseline-hashes-11.json",
+                        "sourceSha256":  "888A527BB8FCA5D1F76C46EA0CBC68B45B38A6447452A7684B466965A65E0779",
+                        "retainedSha256":  "888A527BB8FCA5D1F76C46EA0CBC68B45B38A6447452A7684B466965A65E0779",
+                        "rewrite":  false
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\recovery\\roughnotes\\tmp\\units\\async-capture-rejection-11-red.log.txt",
+                        "retained":  "recovery/tmp/units/async-capture-rejection-11-red.log.txt",
+                        "sourceSha256":  "8B5120C71B9FFD6478D138D02E70D5A35CDCBF8E2313A5F52841BEB82E460011",
+                        "retainedSha256":  "8B5120C71B9FFD6478D138D02E70D5A35CDCBF8E2313A5F52841BEB82E460011",
+                        "rewrite":  false
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\recovery\\roughnotes\\tmp\\units\\async-capture-rejection-11-green.log.txt",
+                        "retained":  "recovery/tmp/units/async-capture-rejection-11-green.log.txt",
+                        "sourceSha256":  "AED7C04E3E8E62D91DE42EECE9BE4F0E562B288F3236C69857B6C32C645FC822",
+                        "retainedSha256":  "AED7C04E3E8E62D91DE42EECE9BE4F0E562B288F3236C69857B6C32C645FC822",
+                        "rewrite":  false
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\recovery\\roughnotes\\tmp\\units\\setup-generated-11-normal.log.txt",
+                        "retained":  "recovery/tmp/units/setup-generated-11-normal.log.txt",
+                        "sourceSha256":  "EDA105BB4A7E9E28382ED23CBBC9A031937A4267D6F6E1E87764BD5B72B48F96",
+                        "retainedSha256":  "EDA105BB4A7E9E28382ED23CBBC9A031937A4267D6F6E1E87764BD5B72B48F96",
+                        "rewrite":  false
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\recovery\\roughnotes\\tmp\\units\\setup-generated-11-reduced.log.txt",
+                        "retained":  "recovery/tmp/units/setup-generated-11-reduced.log.txt",
+                        "sourceSha256":  "1F9DA4DB98854159FD6CA130DDA4631E45CB0C89539F35B5D5391A79FF50F1DC",
+                        "retainedSha256":  "1F9DA4DB98854159FD6CA130DDA4631E45CB0C89539F35B5D5391A79FF50F1DC",
+                        "rewrite":  false
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\recovery\\roughnotes\\tmp\\units\\r-b-gates-report.md",
+                        "retained":  "recovery/tmp/units/r-b-gates-report.md",
+                        "sourceSha256":  "2D00B4F105FAB34547367FEC5448A4EB04DAB2A10ECB7B327B66977FA8EC266F",
+                        "retainedSha256":  "2D00B4F105FAB34547367FEC5448A4EB04DAB2A10ECB7B327B66977FA8EC266F",
+                        "rewrite":  false
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\recovery\\roughnotes\\tmp\\units\\r-b-gates-evidence\\build.log.txt",
+                        "retained":  "recovery/tmp/units/r-b-gates-evidence/build.log.txt",
+                        "sourceSha256":  "A3BB139BD7B70CD5D3B1C43BD34A129F223B5C7E8EEB9B5981FFEB816D58D38C",
+                        "retainedSha256":  "A3BB139BD7B70CD5D3B1C43BD34A129F223B5C7E8EEB9B5981FFEB816D58D38C",
+                        "rewrite":  false
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\recovery\\roughnotes\\tmp\\units\\r-b-gates-evidence\\check.log.txt",
+                        "retained":  "recovery/tmp/units/r-b-gates-evidence/check.log.txt",
+                        "sourceSha256":  "0067EF7CD09B5E7C019CD2AEC6D2C23BF2B8B68B74A1BB7C3F193A09B8FBECB2",
+                        "retainedSha256":  "0067EF7CD09B5E7C019CD2AEC6D2C23BF2B8B68B74A1BB7C3F193A09B8FBECB2",
+                        "rewrite":  false
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\recovery\\roughnotes\\tmp\\units\\r-b-gates-evidence\\final-status.log.txt",
+                        "retained":  "recovery/tmp/units/r-b-gates-evidence/final-status.log.txt",
+                        "sourceSha256":  "6306480837F90944741E9547DB29ADC7C065E36FB74A697673777AB41C9C5831",
+                        "retainedSha256":  "6306480837F90944741E9547DB29ADC7C065E36FB74A697673777AB41C9C5831",
+                        "rewrite":  false
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\recovery\\roughnotes\\tmp\\units\\r-b-gates-evidence\\format-check.log.txt",
+                        "retained":  "recovery/tmp/units/r-b-gates-evidence/format-check.log.txt",
+                        "sourceSha256":  "87EBF488D47A7C8AAE590B7641842097F6A9145E1323E3B1A5E2669E6FF5FDA0",
+                        "retainedSha256":  "87EBF488D47A7C8AAE590B7641842097F6A9145E1323E3B1A5E2669E6FF5FDA0",
+                        "rewrite":  false
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\recovery\\roughnotes\\tmp\\units\\r-b-gates-evidence\\lint-check.log.txt",
+                        "retained":  "recovery/tmp/units/r-b-gates-evidence/lint-check.log.txt",
+                        "sourceSha256":  "72B4192B4644F80B8DA20BA734E890BA34B8DAEC5224E2587B40B292740AF0C6",
+                        "retainedSha256":  "72B4192B4644F80B8DA20BA734E890BA34B8DAEC5224E2587B40B292740AF0C6",
+                        "rewrite":  false
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\recovery\\roughnotes\\tmp\\units\\r-b-gates-evidence\\preflight.log.txt",
+                        "retained":  "recovery/tmp/units/r-b-gates-evidence/preflight.log.txt",
+                        "sourceSha256":  "3722170A89FC54666697FC61A3A591385B7E4B3AA0EDA9B80C873CDFC68F4308",
+                        "retainedSha256":  "3722170A89FC54666697FC61A3A591385B7E4B3AA0EDA9B80C873CDFC68F4308",
+                        "rewrite":  false
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\recovery\\roughnotes\\tmp\\units\\r-b-gates-evidence\\test.log.txt",
+                        "retained":  "recovery/tmp/units/r-b-gates-evidence/test.log.txt",
+                        "sourceSha256":  "8260BC6955C2D5657F2CB3FB131867AB3B51263DECA4FD4D156E90AA8E477946",
+                        "retainedSha256":  "8260BC6955C2D5657F2CB3FB131867AB3B51263DECA4FD4D156E90AA8E477946",
+                        "rewrite":  false
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\capture-retained\\roughnotes-registry-final-capture\\inventory.json",
+                        "retained":  "canonical/capture-metadata/inventory.json",
+                        "sourceSha256":  "BA26B0AAD28E5A362529999B68BC0FAAA6629DEF62FB65988AD90AB900F04120",
+                        "retainedSha256":  "BA26B0AAD28E5A362529999B68BC0FAAA6629DEF62FB65988AD90AB900F04120",
+                        "rewrite":  false
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\capture-retained\\roughnotes-registry-final-capture\\README.md",
+                        "retained":  "canonical/capture-metadata/README.md",
+                        "sourceSha256":  "F4F3D551B821E822AF27EC73A61608B697C8118FC8394317944EACF83BF43A3F",
+                        "retainedSha256":  "F4F3D551B821E822AF27EC73A61608B697C8118FC8394317944EACF83BF43A3F",
+                        "rewrite":  false
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\capture-retained\\roughnotes-registry-final-capture\\tmp\\journeys\\dark-1280.txt",
+                        "retained":  "canonical/capture-metadata/tmp/journeys/dark-1280.txt",
+                        "sourceSha256":  "BBE474650820F70D6CBE6427FF7728CF498BB6B9CABE8F4451218FA9471062B0",
+                        "retainedSha256":  "BBE474650820F70D6CBE6427FF7728CF498BB6B9CABE8F4451218FA9471062B0",
+                        "rewrite":  false
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\capture-retained\\roughnotes-registry-final-capture\\tmp\\journeys\\dark-390.txt",
+                        "retained":  "canonical/capture-metadata/tmp/journeys/dark-390.txt",
+                        "sourceSha256":  "29E037E282D1545A0ACFD3B4F7D6ED987D232D0D9DE6DD93D1CB3D51CC04E31E",
+                        "retainedSha256":  "29E037E282D1545A0ACFD3B4F7D6ED987D232D0D9DE6DD93D1CB3D51CC04E31E",
+                        "rewrite":  false
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\capture-retained\\roughnotes-registry-final-capture\\tmp\\journeys\\light-1280.txt",
+                        "retained":  "canonical/capture-metadata/tmp/journeys/light-1280.txt",
+                        "sourceSha256":  "9CF77464273CD8D2DBE1A4FC0F7CEF401F70A26149996D8DDA34576BEA5033C9",
+                        "retainedSha256":  "9CF77464273CD8D2DBE1A4FC0F7CEF401F70A26149996D8DDA34576BEA5033C9",
+                        "rewrite":  false
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\capture-retained\\roughnotes-registry-final-capture\\tmp\\journeys\\light-390.txt",
+                        "retained":  "canonical/capture-metadata/tmp/journeys/light-390.txt",
+                        "sourceSha256":  "2EBAD04BFECF4664BBFFBF8AD64B97874AFBABD70C65BB5C4F4BC5ED10FA184F",
+                        "retainedSha256":  "2EBAD04BFECF4664BBFFBF8AD64B97874AFBABD70C65BB5C4F4BC5ED10FA184F",
+                        "rewrite":  false
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\capture-retained\\roughnotes-registry-final-capture\\tmp\\units\\terminal.json",
+                        "retained":  "canonical/capture-metadata/tmp/units/terminal.json",
+                        "sourceSha256":  "EF89C398D3B9D5D8562EC822E916195D12234CCED401404124CB526EFA0CE009",
+                        "retainedSha256":  "EF89C398D3B9D5D8562EC822E916195D12234CCED401404124CB526EFA0CE009",
+                        "rewrite":  false
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\capture-retained\\roughnotes-registry-final-capture\\tmp\\units\\test-journey.json",
+                        "retained":  "canonical/capture-metadata/tmp/units/test-journey.json",
+                        "sourceSha256":  "9DA786AC082C027C9482397D389FDDD0255200CA6C1CE144115C460C0C74963D",
+                        "retainedSha256":  "9DA786AC082C027C9482397D389FDDD0255200CA6C1CE144115C460C0C74963D",
+                        "rewrite":  false
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\capture-retained\\roughnotes-registry-final-capture\\tmp\\units\\test-journey.stderr.log.txt",
+                        "retained":  "canonical/capture-metadata/tmp/units/test-journey.stderr.log.txt",
+                        "sourceSha256":  "EE5FAD54A8EB14154FF71574B219BFE94312B9A4FDC999EA589D81E56A7C150C",
+                        "retainedSha256":  "EE5FAD54A8EB14154FF71574B219BFE94312B9A4FDC999EA589D81E56A7C150C",
+                        "rewrite":  false
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\capture-retained\\roughnotes-registry-final-capture\\tmp\\units\\test-journey.stdout.log.txt",
+                        "retained":  "canonical/capture-metadata/tmp/units/test-journey.stdout.log.txt",
+                        "sourceSha256":  "711A737E7D0ECD6EF9EDBEEB48BC3FCF5B35DEAFD5C96BB8B4D5315DBD38243A",
+                        "retainedSha256":  "711A737E7D0ECD6EF9EDBEEB48BC3FCF5B35DEAFD5C96BB8B4D5315DBD38243A",
+                        "rewrite":  false
+                    }
+                ]
+}

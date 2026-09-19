@@ -1,0 +1,109 @@
+diff --git "a/C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\units\\roughnotes-registry-gates-author-evidence\\run-roughnotes-registry-gates.before.mjs" "b/C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\release\\run-roughnotes-registry-gates.mjs"
+index dc0ad244..bae3cd83 100644
+--- "a/C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\units\\roughnotes-registry-gates-author-evidence\\run-roughnotes-registry-gates.before.mjs"
++++ "b/C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\release\\run-roughnotes-registry-gates.mjs"
+@@ -7,6 +7,7 @@ import { readIdentity, readSnapshot, requireAdoption, requireSnapshot, requireTa
+ 
+ const EVIDENCE_ROOT = 'C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\units\\roughnotes-registry-gates-evidence'
+ const CONTROL_CHILD = 'C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\units\\roughnotes-registry-gates-author-evidence\\control-child.mjs'
++const CONTROL_SUCCESSOR = 'C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\units\\roughnotes-registry-gates-author-evidence\\control-successor.mjs'
+ const RECOVERY_ROOT = 'C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\recovery\\roughnotes'
+ const INTEGRITY = 'sha512-'
+ const GATES = ['format:check', 'lint:check', 'check', 'build', 'test']
+@@ -35,29 +36,30 @@ function createDirectory(run) {
+ 	return directory
+ }
+ 
+-function createEnvironment(capture) {
++function createEnvironment(capture, marker) {
+ 	const environment = { ...process.env }
+ 	delete environment.CAPTURE
+ 	if (capture) environment.CAPTURE = '1'
++	if (marker !== undefined) environment.ROUGHNOTES_GATES_CONTROL_MARKER = marker
+ 	return environment
+ }
+ 
+-async function runChild(directory, name, script, capture) {
+-	const stdoutPath = join(directory, `${name}.stdout.log.txt`)
+-	const stderrPath = join(directory, `${name}.stderr.log.txt`)
++async function runChild(directory, command) {
++	const stdoutPath = join(directory, `${command.name}.stdout.log.txt`)
++	const stderrPath = join(directory, `${command.name}.stderr.log.txt`)
+ 	const stdout = openSync(stdoutPath, 'wx')
+ 	const stderr = openSync(stderrPath, 'wx')
+ 	const started = new Date().toISOString()
+ 	const clock = performance.now()
+-	const argumentsList = script === CONTROL_CHILD ? [CONTROL_CHILD] : [NPM_ENTRY, 'run', script]
++	const argumentsList = command.script === CONTROL_CHILD || command.script === CONTROL_SUCCESSOR ? [command.script] : [NPM_ENTRY, 'run', command.script]
+ 	try {
+ 		const result = await new Promise((resolveChild, rejectChild) => {
+-			const child = spawn(NODE_PATH, argumentsList, { cwd: RECOVERY_ROOT, env: createEnvironment(capture), shell: false, stdio: ['ignore', stdout, stderr], windowsHide: true })
++			const child = spawn(NODE_PATH, argumentsList, { cwd: RECOVERY_ROOT, env: createEnvironment(command.capture, command.marker), shell: false, stdio: ['ignore', stdout, stderr], windowsHide: true })
+ 			child.once('error', rejectChild)
+ 			child.once('close', (exit, signal) => resolveChild({ pid: child.pid, exit, signal }))
+ 		})
+-		const record = { name, script, capture, executable: NODE_PATH, arguments: argumentsList, started, ended: new Date().toISOString(), elapsed: performance.now() - clock, ...result, stdout: stdoutPath, stderr: stderrPath }
+-		writeRecord(directory, `${name}.json`, record)
++		const record = { ...command, executable: NODE_PATH, arguments: argumentsList, started, ended: new Date().toISOString(), elapsed: performance.now() - clock, ...result, stdout: stdoutPath, stderr: stderrPath }
++		writeRecord(directory, `${command.name}.json`, record)
+ 		return record
+ 	} finally {
+ 		closeSync(stdout)
+@@ -65,11 +67,21 @@ async function runChild(directory, name, script, capture) {
+ 	}
+ }
+ 
++async function runSequence(directory, commands) {
++	for (const command of commands) {
++		const record = await runChild(directory, command)
++		if (record.exit !== 0 || record.signal !== null) return record
++	}
++	return undefined
++}
++
+ async function runControl(directory) {
+-	const child = await runChild(directory, 'control', CONTROL_CHILD, false)
+-	const successor = { name: 'successor', skipped: child.exit !== 0 || child.signal !== null }
+-	writeRecord(directory, 'successor.json', successor)
+-	if (child.exit !== 7 || child.signal !== null || !successor.skipped) throw new Error('Failing-child control did not record exit 7 and skip its successor')
++	const marker = join(directory, 'successor.executed.txt')
++	const failed = await runSequence(directory, [{ name: 'control', script: CONTROL_CHILD, capture: false }, { name: 'successor', script: CONTROL_SUCCESSOR, capture: false, marker }])
++	const control = { failed: failed?.name, exit: failed?.exit, signal: failed?.signal, marker, absent: !existsSync(marker) }
++	writeRecord(directory, 'control-terminal.json', control)
++	if (failed?.name !== 'control' || failed.exit !== 7 || failed.signal !== null || !control.absent) throw new Error('Failing-child control did not stop the shared child sequence')
++	writeRecord(directory, 'control-driver.json', { exit: 0, time: new Date().toISOString() })
+ }
+ 
+ export async function execute(run) {
+@@ -83,25 +95,15 @@ export async function execute(run) {
+ 		requireAdoption(identity, integrity)
+ 		before = { source: readSnapshot(), identity }
+ 		writeRecord(directory, 'before.json', before)
+-		for (const script of GATES) {
+-			const record = await runChild(directory, script.replace(':', '-'), script, false)
+-			if (record.exit !== 0 || record.signal !== null) {
+-				const after = { source: readSnapshot(), identity: readIdentity() }
+-				writeRecord(directory, 'after.json', after)
+-				requireSnapshot(before.source, after.source)
+-				requireAdoption(after.identity, readRegistryIntegrity(after.identity))
+-				writeRecord(directory, 'terminal.json', { success: false, failed: script, exit: record.exit, signal: record.signal, time: new Date().toISOString() })
+-				return typeof record.exit === 'number' && record.exit > 0 ? record.exit : 1
+-			}
+-		}
+-		const capture = await runChild(directory, 'test-journey', 'test:journey', true)
++		const commands = [...GATES.map((script) => ({ name: script.replace(':', '-'), script, capture: false })), { name: 'test-journey', script: 'test:journey', capture: true }]
++		const failed = await runSequence(directory, commands)
+ 		const after = { source: readSnapshot(), identity: readIdentity() }
+ 		writeRecord(directory, 'after.json', after)
+ 		requireSnapshot(before.source, after.source)
+-		requireAdoption(after.identity, readRegistryIntegrity(after.identity))
+-		if (capture.exit !== 0 || capture.signal !== null) {
+-			writeRecord(directory, 'terminal.json', { success: false, failed: 'test:journey', exit: capture.exit, signal: capture.signal, time: new Date().toISOString() })
+-			return typeof capture.exit === 'number' && capture.exit > 0 ? capture.exit : 1
++		requireAdoption(after.identity, integrity)
++		if (failed !== undefined) {
++			writeRecord(directory, 'terminal.json', { success: false, failed: failed.script, exit: failed.exit, signal: failed.signal, time: new Date().toISOString() })
++			return typeof failed.exit === 'number' && failed.exit > 0 ? failed.exit : 1
+ 		}
+ 		writeRecord(directory, 'terminal.json', { success: true, gates: GATES, capture: 'test:journey', time: new Date().toISOString() })
+ 		return 0
