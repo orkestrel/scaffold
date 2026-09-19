@@ -628,7 +628,7 @@
 			"storage": "codex/config.toml",
 			"destination": ".codex/config.toml",
 			"executable": false,
-			"digest": "d37ab5cd40864ba5667f1e942979a7f0bc641aa8b9636d34a3bb93abffb6c729"
+			"digest": "c8364a20fca401e65f3c092968b1f6b4d4e025a1efd91e22beb01b3fcd39e076"
 		},
 		{
 			"storage": "configs/helpers.ts",
@@ -2001,5 +2001,5 @@
 			]
 		}
 	],
-	"digest": "24e8b79f87c0f2d40f9d28aa3637e81174fcad6041cc873c78153e521d554b6d"
+	"digest": "6e8e2b0524717bfc2b648acba0de5901c7c267a9c189155b45e3cb681b14bf6d"
 }
