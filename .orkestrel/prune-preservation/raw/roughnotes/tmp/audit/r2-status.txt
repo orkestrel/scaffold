@@ -1,0 +1,13 @@
+ M tests/conformance.test.ts
+ M tests/setup.ts
+ M vite.config.ts
+?? .orkestrel/roughnotes/r1-audit-claims.md
+?? .orkestrel/roughnotes/r1-audit-objective-brief.md
+?? .orkestrel/roughnotes/r1-audit-objective-report.md
+?? .orkestrel/roughnotes/r1-audit-subjective-report.md
+?? .orkestrel/roughnotes/r1-brief.md
+?? .orkestrel/roughnotes/r1-instruments/
+?? .orkestrel/roughnotes/r1-report.md
+?? .orkestrel/roughnotes/r1-verify-report.md
+?? .orkestrel/roughnotes/r2-brief.md
+?? .orkestrel/roughnotes/r2-report.md

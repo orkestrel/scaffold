@@ -1,0 +1,90 @@
+npm notice run roughnotes@0.0.1 test
+npm notice run npm run test:app && npm run test:journey && npm run test:policy && npm run test:config && npm run test:setup && npm run test:conformance
+npm notice run roughnotes@0.0.1 test:app
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project app:core --project app:browser
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/roughnotes
+
+···································stdout | tests/app/browser/styles/theme.test.ts:83:2 > theme > keeps accent, card paint, and focus rings local through nested mode changes
+light card: rgb(255, 255, 255); image: none; accent: rgb(200, 149, 43)
+stdout | tests/app/browser/styles/theme.test.ts:83:2 > theme > keeps accent, card paint, and focus rings local through nested mode changes
+dark card: rgb(10, 37, 64); image: linear-gradient(160deg, rgb(10, 37, 64), rgb(18, 58, 99)); accent: rgb(231, 198, 122)
+stdout | tests/app/browser/styles/theme.test.ts:83:2 > theme > keeps accent, card paint, and focus rings local through nested mode changes
+light card: rgb(255, 255, 255); image: none; accent: rgb(200, 149, 43)
+······················································································································································11:35:33 AM [vite] [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: injection "Symbol(application)" not found. 
+  at <HomeView>
+11:35:33 AM [vite] [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: Unhandled error during execution of setup function 
+  at <HomeView>
+stderr | tests/app/browser/composables/useApplication.test.ts:12:2 > useApplication > throws when APPLICATION_KEY has not been provided
+[Vue warn]: injection "Symbol(application)" not found. 
+  at <HomeView>
+stderr | tests/app/browser/composables/useApplication.test.ts:12:2 > useApplication > throws when APPLICATION_KEY has not been provided
+[Vue warn]: Unhandled error during execution of setup function 
+  at <HomeView>
+·······
+
+ Test Files  43 passed (43)
+      Tests  192 passed (192)
+   Start at  11:35:03
+   Duration  30.72s (transform 508ms, setup 3.34s, import 2.76s, tests 21.78s, environment 1ms)
+
+npm notice run roughnotes@0.0.1 test:journey
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project 'journey:*'
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/roughnotes
+
+························································-······-······-······-··
+
+ Test Files  4 passed (4)
+      Tests  76 passed | 4 skipped (80)
+   Start at  11:35:35
+   Duration  38.27s (transform 0ms, setup 34.21s, import 9.03s, tests 83.22s, environment 0ms)
+
+npm notice run roughnotes@0.0.1 test:policy
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project policy
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/roughnotes
+
+····························································································-·········
+
+ Test Files  1 passed (1)
+      Tests  101 passed | 1 skipped (102)
+   Start at  11:36:15
+   Duration  1.83s (transform 90ms, setup 42ms, import 249ms, tests 1.38s, environment 0ms)
+
+npm notice run roughnotes@0.0.1 test:config
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project config
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/roughnotes
+
+·········································································································································································-·-·-
+
+ Test Files  1 passed (1)
+      Tests  171 passed | 3 skipped (174)
+   Start at  11:36:17
+   Duration  1.75s (transform 198ms, setup 31ms, import 837ms, tests 705ms, environment 0ms)
+
+npm notice run roughnotes@0.0.1 test:setup
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project setup
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/roughnotes
+
+···
+
+ Test Files  1 passed (1)
+      Tests  3 passed (3)
+   Start at  11:36:20
+   Duration  208ms (transform 26ms, setup 32ms, import 24ms, tests 7ms, environment 0ms)
+
+npm notice run roughnotes@0.0.1 test:conformance
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project conformance
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/roughnotes
+
+············
+
+ Test Files  1 passed (1)
+      Tests  12 passed (12)
+   Start at  11:36:21
+   Duration  809ms (transform 80ms, setup 31ms, import 614ms, tests 15ms, environment 0ms)
+

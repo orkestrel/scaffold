@@ -1,0 +1,20 @@
+{
+  "date": "2026-09-18T18:04:35.235Z",
+  "host": "win32",
+  "node": "v24.20.0",
+  "command": {
+    "file": "C:\\Users\\mikes\\scoop\\apps\\nodejs-lts\\current\\node.exe",
+    "argv": [
+      "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\release\\retain-anchor-unit.mjs",
+      "0000000000000000000000000000000000000000"
+    ],
+    "cwd": "C:\\Users\\mikes\\WebstormProjects\\scaffold"
+  },
+  "instrument": "09ca756f1bc1fef649653eeaf615a01b1457f39110b17e5511c7bd542e3994f5",
+  "exit": 1,
+  "signal": null,
+  "destinationExists": false,
+  "indexUnchanged": true,
+  "stagedBefore": "",
+  "stagedAfter": ""
+}

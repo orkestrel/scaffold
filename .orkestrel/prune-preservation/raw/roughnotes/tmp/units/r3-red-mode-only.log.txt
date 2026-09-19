@@ -1,0 +1,32 @@
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/roughnotes
+
+···········x
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 11 passed (12)
+   Start at  23:18:26
+   Duration  789ms (transform 73ms, setup 26ms, import 590ms, tests 17ms, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |conformance| tests/conformance.test.ts > configuration conformance > merges a value carrying mode alone rather than reading it as the invocation record
+AssertionError: expected undefined to be '/conformance-mode-only/' // Object.is equality
+
+- Expected:
+"/conformance-mode-only/"
+
++ Received:
+undefined
+
+ ❯ tests/conformance.test.ts:304:23
+    302|   const browser = appBrowser()
+    303|   const merged = mergeOverride(browser, MODE_ONLY)
+    304|   expect(merged.base).toBe(MODE_ONLY.base)
+       |                       ^
+    305|   expect(merged.mode).toBe(MODE_ONLY.mode)
+    306|   expect(readPluginNames(merged)).toStrictEqual(readPluginNames(browse…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+

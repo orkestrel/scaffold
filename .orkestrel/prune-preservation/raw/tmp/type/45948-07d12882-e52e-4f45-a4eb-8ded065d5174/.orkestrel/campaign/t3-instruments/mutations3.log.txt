@@ -1,0 +1,183 @@
+backed up 7 files
+=== pass: context (test:src:browser) ===
+context: src/browser/factories.ts mutated
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  |src:browser (chromium)| tests/src/browser/factories.test.ts:1161:2 > createHarness > drives every phase of a row whose context is undefined
+AssertionError: expected [] to strictly equal [ 'arrange', 'act', 'assert' ]
+ Test Files  1 failed | 1 passed (2)
+      Tests  1 failed | 313 passed (314)
+restored 7 files
+
+=== pass: terminal (test:src:browser) ===
+terminal: src/browser/factories.ts mutated
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  |src:browser (chromium)| tests/src/browser/factories.test.ts:1337:2 > createHarness > writes failed and rejects by identity when the state reader throws
+AssertionError: expected 'running' to be 'failed' // Object.is equality
+ FAIL  |src:browser (chromium)| tests/src/browser/factories.test.ts:1367:2 > createHarness > writes failed and rethrows a non-Error reader throw by identity
+AssertionError: expected 'running' to be 'failed' // Object.is equality
+ Test Files  1 failed | 1 passed (2)
+      Tests  2 failed | 312 passed (314)
+restored 7 files
+
+=== pass: rerun (test:src:browser) ===
+rerun: src/browser/factories.ts mutated
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  |src:browser (chromium)| tests/src/browser/factories.test.ts:1212:2 > createHarness > clears the rendered state at the start of a re-run
+AssertionError: expected 'open' to be null
+ Test Files  1 failed | 1 passed (2)
+      Tests  1 failed | 313 passed (314)
+restored 7 files
+
+=== pass: proxy (test:src:browser) ===
+proxy: src/browser/factories.ts mutated
+proxy: src/browser/factories.ts mutated
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  |src:browser (chromium)| tests/src/browser/factories.test.ts:717:2 > createStorage > answers through its methods and intercepts no named-property access
+AssertionError: expected 'dark' to be undefined
+ Test Files  1 failed | 1 passed (2)
+      Tests  1 failed | 313 passed (314)
+restored 7 files
+
+=== pass: quota (test:src:browser) ===
+quota: src/browser/factories.ts mutated
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  |src:browser (chromium)| tests/src/browser/factories.test.ts:696:2 > createStorage > refuses a quota that is not a non-negative integer
+AssertionError: expected undefined to strictly equal Error: Storage quota must be a non-negati…
+ Test Files  1 failed | 1 passed (2)
+      Tests  1 failed | 313 passed (314)
+restored 7 files
+
+=== pass: refusal (test:src:browser) ===
+refusal: src/browser/helpers.ts mutated
+refusal: src/browser/helpers.ts mutated
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  |src:browser (chromium)| tests/src/browser/helpers.test.ts:1057:2 > readRefusal > rethrows undefined from a hostile target rather than reading it as resolved
+AssertionError: expected false to be true // Object.is equality
+ Test Files  1 failed | 1 passed (2)
+      Tests  1 failed | 313 passed (314)
+restored 7 files
+
+=== pass: departure (test:src:core) ===
+departure: src/core/helpers.ts mutated
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  |src:core| tests/src/core/helpers.test.ts > waitForText > refuses a departure the expectation carries, before it reads anything
+AssertionError: expected a thrown error to be Error: Text departure must not appear in …
+ Test Files  1 failed | 2 passed (3)
+      Tests  1 failed | 119 passed (120)
+restored 7 files
+
+=== pass: elided (test:src:browser) ===
+elided: tests/src/browser/factories.test.ts mutated
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  |src:browser (chromium)| tests/src/browser/factories.test.ts:1420:2 > createHarness > stops the bare runner at the first failing row and names that row
+AssertionError: expected undefined to be type of 'function'
+ Test Files  1 failed | 1 passed (2)
+      Tests  1 failed | 313 passed (314)
+restored 7 files
+
+=== pass: readme (test:guides) ===
+readme: README.md mutated
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 1 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+[41m[1m FAIL [22m[49m [30m[42m guides [49m[39m tests/guides.test.ts[2m > [22mnames the browser environment imports in the README as the contract names them
+[31m[1mAssertionError[22m: expected '# @orkestrel/test > The test helpers …' to contain 'imports `vitest/browser`, DOM globals…'[39m
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m49 passed[39m[22m[2m | [22m[33m1 skipped[39m[90m (51)[39m
+restored 7 files
+
+=== pass: playstate (test:src:browser) ===
+playstate: src/browser/helpers.ts mutated
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  |src:browser (chromium)| tests/src/browser/helpers.test.ts:1581:2 > waitForAnimations > resolves while a paused animation is still in the list
+Error: Animation "section" did not settle within 60ms (waited 63.79999998211861ms): 
+ FAIL  |src:browser (chromium)| tests/src/browser/helpers.test.ts:1603:2 > waitForAnimations > resolves while a finished animation filling its target is still in the list
+Error: Animation "section" did not settle within 60ms (waited 60ms): 
+ Test Files  1 failed | 1 passed (2)
+      Tests  2 failed | 312 passed (314)
+restored 7 files
+
+=== pass: spelling (test:src:browser) ===
+spelling: src/browser/factories.ts mutated
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  |src:browser (chromium)| tests/src/browser/factories.test.ts:1125:2 > createHarness > fails the row whose builder refused and runs the rows after it
+AssertionError: expected 'the summary leaves it closed: build w…' to be 'the summary leaves it closed: build r…' // Object.is equality
+ Test Files  1 failed | 1 passed (2)
+      Tests  1 failed | 313 passed (314)
+restored 7 files
+
+=== pass: pause (test:src:browser) ===
+pause: src/browser/factories.ts mutated
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  |src:browser (chromium)| tests/src/browser/factories.test.ts:1301:2 > createHarness > waits the declared pause between rows and not after the last one
+AssertionError: expected 0.09999999403953552 to be greater than or equal to 40
+ Test Files  1 failed | 1 passed (2)
+      Tests  1 failed | 313 passed (314)
+restored 7 files
+
+=== pass: order (test:src:browser) ===
+order: src/browser/factories.ts mutated
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  |src:browser (chromium)| tests/src/browser/factories.test.ts:937:2 > createHarness > mounts every row while it reads pending and writes idle only after the count
+AssertionError: expected 6 to be greater than 7
+ Test Files  1 failed | 1 passed (2)
+      Tests  1 failed | 313 passed (314)
+restored 7 files
+
+=== pass: augment (test:src:browser) ===
+augment: src/browser/helpers.ts mutated
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  |src:browser (chromium)| tests/src/browser/helpers.test.ts:1461:2 > waitForState > rethrows an abort reason spelled like its own timeout voice by identity
+AssertionError: expected false to be true // Object.is equality
+ Test Files  1 failed | 1 passed (2)
+      Tests  1 failed | 313 passed (314)
+restored 7 files
+
+=== pass: census (test:src:browser) ===
+census: src/browser/helpers.ts mutated
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  |src:browser (chromium)| tests/src/browser/helpers.test.ts:3317:2 > buildCensus > derives distinct tokens per call, each undeclared by the cascade
+AssertionError: expected 'census-authored-token' not to be 'census-authored-token' // Object.is equality
+ Test Files  1 failed | 1 passed (2)
+      Tests  1 failed | 313 passed (314)
+restored 7 files
+
+=== pass: byname (check) ===
+byname: tests/src/core/helpers.test.ts mutated
+tests/src/core/helpers.test.ts(1334,24): error TS2769: No overload matches this call.
+restored 7 files
+
+=== restored tree ===
+ M README.md
+ M guides/test.md
+ M src/browser/factories.ts
+ M src/browser/helpers.ts
+ M src/browser/types.ts
+ M src/core/constants.ts
+ M src/core/helpers.ts
+ M src/core/types.ts
+ M tests/guides.test.ts
+ M tests/src/browser/factories.test.ts
+ M tests/src/browser/helpers.test.ts
+ M tests/src/core/helpers.test.ts
+=== pass: census, re-run after the getRandomValues change (test:src:browser) ===
+backed up 7 files
+census: src/browser/helpers.ts mutated
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  |src:browser (chromium)| tests/src/browser/helpers.test.ts:3317:2 > buildCensus > derives distinct tokens per call, each undeclared by the cascade
+AssertionError: expected 'census-authored-token' not to be 'census-authored-token' // Object.is equality
+ Test Files  1 failed | 1 passed (2)
+      Tests  1 failed | 313 passed (314)
+restored 7 files
+
+=== restored tree ===
+ M README.md
+ M guides/test.md
+ M src/browser/factories.ts
+ M src/browser/helpers.ts
+ M src/browser/types.ts
+ M src/core/constants.ts
+ M src/core/helpers.ts
+ M src/core/types.ts
+ M tests/guides.test.ts
+ M tests/src/browser/factories.test.ts
+ M tests/src/browser/helpers.test.ts
+ M tests/src/core/helpers.test.ts

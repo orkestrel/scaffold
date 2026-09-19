@@ -1,0 +1,32 @@
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/roughnotes
+
+······x·····
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 11 passed (12)
+   Start at  23:18:56
+   Duration  842ms (transform 72ms, setup 26ms, import 612ms, tests 19ms, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |conformance| tests/conformance.test.ts > configuration conformance > keeps two override entries sharing a name, in the order the caller wrote them
+AssertionError: expected 2 to be 3 // Object.is equality
+
+- Expected
++ Received
+
+- 3
++ 2
+
+ ❯ tests/conformance.test.ts:209:26
+    207|   const merged = mergeOverride({ plugins: [declared] }, { plugins: [fi…
+    208|   const plugins = readPlugins(merged)
+    209|   expect(plugins.length).toBe(3)
+       |                          ^
+    210|   expect(plugins[0]).toBe(declared)
+    211|   expect(plugins[1]).toBe(first)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+

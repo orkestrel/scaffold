@@ -1,0 +1,7 @@
+Cannot find an overload for "AppendAllLines" and the argument count: "3".
+At C:\Users\mikes\WebstormProjects\scaffold\tmp\release\retain-stage-capture-recipe.ps1:282 char:1
++ [System.IO.File]::AppendAllLines($index, $unresolvedRows, [System.Tex ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (:) [], ParentContainsErrorRecordException
+    + FullyQualifiedErrorId : MethodCountCouldNotFindBest
+ 

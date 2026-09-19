@@ -1,0 +1,353 @@
+variant: dark-1280
+viewport: 1280x800
+capturing: true
+
+## accessible tree
+link "Skip to content"
+list "Contact"
+  listitem "800-428-4384"
+    link "800-428-4384, Contact"
+  listitem "rnc@roughnotes.com"
+    link "rnc@roughnotes.com, Contact"
+list "Logins"
+  listitem "RoughNotes-Pro Login"
+    link "RoughNotes-Pro Login, Logins"
+  listitem "Advantage-Plus Login"
+    link "Advantage-Plus Login, Logins"
+banner
+  navigation "Site"
+    link "R Rough Notes Since 1878"
+    list
+      listitem "About"
+        link "About, Site"
+      listitem "Publications"
+        link "Publications, Site"
+      listitem "Products"
+        link "Products, Site"
+      listitem "Shop"
+        link "Shop, Site"
+    link "Get started, Site"
+    button "Use light theme" [pressed=true]
+main "Content"
+  region "Introduction"
+    heading "The knowledge that makes independent agents unstoppable."
+    link "Get started, Introduction"
+    list
+      listitem "46,000+ Monthly readers"
+      listitem "800+ Market categories"
+      listitem "750 Classes of business"
+    article
+      heading "A permanent part of the local landscape"
+        link "A permanent part of the local landscape"
+  list
+    listitem "PF&M Analysis"
+    listitem "Risk Evaluation System"
+    listitem "The Insurance Marketplace"
+    listitem "Coverages Applicable"
+  region "Everything an agency needs, in one trusted system"
+    heading "Everything an agency needs, in one trusted system"
+    article
+      heading "RoughNotes-Pro"
+        link "RoughNotes-Pro"
+    article
+      heading "Advantage-Plus"
+        link "Advantage-Plus"
+    article
+      heading "The Insurance Marketplace"
+        link "The Insurance Marketplace"
+    article
+      heading "PF&M Online"
+        link "PF&M Online"
+    article
+      heading "Books and calculator wheels"
+        link "Books and calculator wheels"
+    article
+      heading "Rough Notes magazine"
+        link "Rough Notes magazine"
+    link "Explore products"
+  region "Find the specialty market before you write the file"
+    heading "Find the specialty market before you write the file"
+    list
+      listitem "Coverage notes on the submission Each listing carries the class conversation an agent raises before the market sees the file."
+      listitem "Hospitality through transportation The sample spans the industries producers actually place, not a decorative directory."
+    link "Search markets"
+    list
+      listitem "Restaurant general liability Hospitality"
+      listitem "Liquor liability Hospitality"
+      listitem "Equipment breakdown Hospitality"
+      listitem "Cyber and data breach Technology"
+  region "Insights that keep agents ahead of the market"
+    heading "Insights that keep agents ahead of the market"
+    article
+      heading "Mass shootings; mass confusion?"
+        link "Mass shootings; mass confusion?"
+    article
+      heading "Cyber claims trends you cannot ignore"
+        link "Cyber claims trends you cannot ignore"
+    article
+      heading "Why a softening market demands better service"
+        link "Why a softening market demands better service"
+    article
+      heading "Responsibility in leadership"
+        link "Responsibility in leadership"
+    article
+      heading "Make loss control your best salesperson"
+        link "Make loss control your best salesperson"
+    article
+      heading "Building momentum"
+        link "Building momentum"
+    link "Read the magazine"
+  region "Join the community"
+    heading "Get Rough Notes delivered — free to licensed agents"
+    link "Get started, Join the community"
+    list
+      listitem "Free print and digital subscription"
+      listitem "September magazine issue in this catalog"
+      listitem "Fixture Insurance Marketplace search"
+contentinfo "Site footer"
+  heading "Products"
+  list
+    listitem "RoughNotes-Pro"
+      link "RoughNotes-Pro, Products"
+    listitem "Advantage-Plus"
+      link "Advantage-Plus, Products"
+    listitem "The Insurance Marketplace"
+      link "The Insurance Marketplace, Products"
+  heading "Resources"
+  list
+    listitem "Publication desks"
+      link "Publication desks, Resources"
+    listitem "Magazine issue"
+      link "Magazine issue, Resources"
+    listitem "Marketplace search"
+      link "Marketplace search, Resources"
+    listitem "Newsletter"
+      link "Newsletter, Resources"
+    listitem "Free magazine delivery"
+      link "Free magazine delivery, Resources"
+  heading "Company"
+  list
+    listitem "Our story"
+      link "Our story, Company"
+    listitem "Media kits"
+      link "Media kits, Company"
+    listitem "Write to us"
+      link "Write to us, Company"
+    listitem "Shop catalog"
+      link "Shop catalog, Company"
+    listitem "Existing invoice"
+      link "Existing invoice, Company"
+    listitem "800-428-4384"
+      link "800-428-4384, Company"
+    listitem "rnc@roughnotes.com"
+      link "rnc@roughnotes.com, Company"
+
+## focus order
+1. link "Skip to content"
+2. link "800-428-4384, Contact"
+3. link "rnc@roughnotes.com, Contact"
+4. link "RoughNotes-Pro Login, Logins"
+5. link "Advantage-Plus Login, Logins"
+6. link "R Rough Notes Since 1878"
+7. link "About, Site"
+8. link "Publications, Site"
+9. link "Products, Site"
+10. link "Shop, Site"
+11. link "Get started, Site"
+12. button "Use light theme"
+13. link "Get started, Introduction"
+14. link "A permanent part of the local landscape"
+15. link "RoughNotes-Pro"
+16. link "Advantage-Plus"
+17. link "The Insurance Marketplace"
+18. link "PF&M Online"
+19. link "Books and calculator wheels"
+20. link "Rough Notes magazine"
+21. link "Explore products"
+22. link "Search markets"
+23. link "Mass shootings; mass confusion?"
+24. link "Cyber claims trends you cannot ignore"
+25. link "Why a softening market demands better service"
+26. link "Responsibility in leadership"
+27. link "Make loss control your best salesperson"
+28. link "Building momentum"
+29. link "Read the magazine"
+30. link "Get started, Join the community"
+31. link "RoughNotes-Pro, Products"
+32. link "Advantage-Plus, Products"
+33. link "The Insurance Marketplace, Products"
+34. link "Publication desks, Resources"
+35. link "Magazine issue, Resources"
+36. link "Marketplace search, Resources"
+37. link "Newsletter, Resources"
+38. link "Free magazine delivery, Resources"
+39. link "Our story, Company"
+40. link "Media kits, Company"
+41. link "Write to us, Company"
+42. link "Shop catalog, Company"
+43. link "Existing invoice, Company"
+44. link "800-428-4384, Company"
+45. link "rnc@roughnotes.com, Company"
+
+## resolved styles
+document | / | Browser Mode host title Vitest Browser Tester
+document | /about | Browser Mode host title Vitest Browser Tester
+document | /publications | Browser Mode host title Vitest Browser Tester
+document | /newsletter | Browser Mode host title Vitest Browser Tester
+document | /products | Browser Mode host title Vitest Browser Tester
+document | /products/roughnotes-pro | Browser Mode host title Vitest Browser Tester
+document | /magazine | Browser Mode host title Vitest Browser Tester
+document | /magazine/local-landscape | Browser Mode host title Vitest Browser Tester
+document | /marketplace | Browser Mode host title Vitest Browser Tester
+document | /subscribe | Browser Mode host title Vitest Browser Tester
+document | /media | Browser Mode host title Vitest Browser Tester
+document | /contact | Browser Mode host title Vitest Browser Tester
+document | /shop | Browser Mode host title Vitest Browser Tester
+document | /shop/coverages-applicable | Browser Mode host title Vitest Browser Tester
+document | /payment | Browser Mode host title Vitest Browser Tester
+escape | light-1280 | inline attributes and style elements on the mounted surface, read on home before a journey drives it | walked 369 elements | reported 2 | the permitted head block left alone
+composite | light-1280 | refused 4.032234 | accepted 18.377988 | bar 4.5
+census | light-1280 | home | every class token the mounted subtree carries, against every loaded stylesheet | walked 369 elements carrying 146 tokens | undeclared census-authored-mark-2094604809, census-authored-token-2094604809
+census | light-1280 | subscribe | every class token the mounted subtree carries, against every loaded stylesheet | walked 157 elements carrying 109 tokens | undeclared census-authored-mark-3191262756, census-authored-token-3191262756
+census | light-1280 | magazine | every class token the mounted subtree carries, against every loaded stylesheet | walked 234 elements carrying 108 tokens | undeclared census-authored-mark-3228493338, census-authored-token-3228493338
+census | light-1280 | magazine miss | every class token the mounted subtree carries, against every loaded stylesheet | walked 147 elements carrying 103 tokens | undeclared census-authored-mark-288480448, census-authored-token-288480448
+census | light-1280 | contact refused | every class token the mounted subtree carries, against every loaded stylesheet | walked 182 elements carrying 109 tokens | undeclared census-authored-mark-3598602073, census-authored-token-3598602073
+census | light-1280 | contact partial | every class token the mounted subtree carries, against every loaded stylesheet | walked 169 elements carrying 113 tokens | undeclared census-authored-mark-3797865719, census-authored-token-3797865719
+census | light-1280 | magazine empty | every class token the mounted subtree carries, against every loaded stylesheet | walked 134 elements carrying 99 tokens | undeclared census-authored-mark-4244566973, census-authored-token-4244566973
+census | light-1280 | item partial | every class token the mounted subtree carries, against every loaded stylesheet | walked 157 elements carrying 120 tokens | undeclared census-authored-mark-2502905364, census-authored-token-2502905364
+contrast | light-1280 | coverage | shell, home, subscribe, magazine, magazine miss, contact refused, contact partial, magazine empty, item partial | 236 members read | bars 4.5 text and 3 mark
+tokens | body background #0a2540 | body foreground #e8eef5
+escape | dark-1280 | inline attributes and style elements on the mounted surface, read on home before a journey drives it | walked 369 elements | reported 2 | the permitted head block left alone
+composite | dark-1280 | refused 4.032234 | accepted 18.377988 | bar 4.5
+census | dark-1280 | home | every class token the mounted subtree carries, against every loaded stylesheet | walked 369 elements carrying 146 tokens | undeclared census-authored-mark-713186731, census-authored-token-713186731
+contrast | shell | utility bar contact link | mode island | 15.538 | 4 read | bar 4.5
+contrast | shell | footer group heading | mode island | 13.303 | 3 read | bar 4.5
+contrast | shell | footer link | mode island | 15.538 | 15 read | bar 4.5
+contrast | shell | footer secondary tier | mode island | 10.110 | 2 read | bar 4.5
+contrast | home | body text | page surface | 13.303 | 2 read | bar 4.5
+contrast | home | body text | mode island | 9.927 | 15 read | bar 4.5
+contrast | home | secondary tier | page surface | 9.204 | 29 read | bar 4.5
+contrast | home | secondary tier | mode island | 7.050 | 18 read | bar 4.5
+contrast | home | section heading | page surface | 13.303 | 2 read | bar 4.5
+contrast | home | section heading | mode island | 9.927 | 4 read | bar 4.5
+contrast | home | Entry title | page surface | 15.538 | 12 read | bar 4.5
+contrast | home | Entry fact label | page surface | 10.110 | 12 read | bar 4.5
+contrast | home | Entry fact value | page surface | 13.303 | 12 read | bar 4.5
+contrast | home | confirm check mark | mode island | 8.400 | 5 read | bar 3
+contrast | home | footer destination | 15.538
+ring | home | footer destination | 15.538
+contrast | home | outline control | 13.303
+ring | home | outline control | 15.538
+census | dark-1280 | subscribe | every class token the mounted subtree carries, against every loaded stylesheet | walked 157 elements carrying 109 tokens | undeclared census-authored-mark-3174226353, census-authored-token-3174226353
+contrast | subscribe | primary commit | 13.303
+ring | subscribe | primary commit | 15.538
+census | dark-1280 | magazine | every class token the mounted subtree carries, against every loaded stylesheet | walked 234 elements carrying 108 tokens | undeclared census-authored-mark-1632018630, census-authored-token-1632018630
+contrast | magazine | secondary tier | page surface | 10.110 | 24 read | bar 4.5
+contrast | magazine | section heading | page surface | 13.303 | 2 read | bar 4.5
+contrast | magazine | Entry title | page surface | 15.538 | 7 read | bar 4.5
+contrast | magazine | Entry fact label | page surface | 10.110 | 14 read | bar 4.5
+contrast | magazine | Entry fact value | page surface | 13.303 | 14 read | bar 4.5
+contrast | magazine | filter row selected control | 13.303
+ring | magazine | filter row selected control | 15.538
+contrast | magazine | filter row unselected control | 13.303
+ring | magazine | filter row unselected control | 15.538
+census | dark-1280 | magazine miss | every class token the mounted subtree carries, against every loaded stylesheet | walked 147 elements carrying 103 tokens | undeclared census-authored-mark-3014533824, census-authored-token-3014533824
+contrast | magazine miss | notice title | page surface | 12.111 | 1 read | bar 4.5
+contrast | magazine miss | notice detail | page surface | 9.204 | 1 read | bar 4.5
+census | dark-1280 | contact refused | every class token the mounted subtree carries, against every loaded stylesheet | walked 182 elements carrying 109 tokens | undeclared census-authored-mark-3453524263, census-authored-token-3453524263
+contrast | contact refused | body text | page surface | 7.152 | 4 read | bar 4.5
+contrast | contact refused | secondary tier | page surface | 9.204 | 7 read | bar 4.5
+contrast | contact refused | form label | page surface | 13.303 | 6 read | bar 4.5
+contrast | contact refused | invalid-feedback message | page surface | 6.145 | 4 read | bar 4.5
+contrast | contact refused | error summary | page surface | 7.152 | 5 read | bar 4.5
+contrast | contact refused | plain link | 8.431
+ring | contact refused | plain link | 18.083
+census | dark-1280 | contact partial | every class token the mounted subtree carries, against every loaded stylesheet | walked 169 elements carrying 113 tokens | undeclared census-authored-mark-424908102, census-authored-token-424908102
+contrast | contact partial | notice title | page surface | 12.111 | 1 read | bar 4.5
+contrast | contact partial | notice detail | page surface | 9.204 | 1 read | bar 4.5
+census | dark-1280 | magazine empty | every class token the mounted subtree carries, against every loaded stylesheet | walked 134 elements carrying 99 tokens | undeclared census-authored-mark-4173225407, census-authored-token-4173225407
+contrast | magazine empty | notice title | page surface | 12.111 | 1 read | bar 4.5
+contrast | magazine empty | notice detail | page surface | 9.204 | 1 read | bar 4.5
+census | dark-1280 | item partial | every class token the mounted subtree carries, against every loaded stylesheet | walked 157 elements carrying 120 tokens | undeclared census-authored-mark-589825245, census-authored-token-589825245
+contrast | item partial | notice title | page surface | 12.111 | 1 read | bar 4.5
+contrast | item partial | notice detail | page surface | 9.204 | 1 read | bar 4.5
+contrast | dark-1280 | coverage | shell, home, subscribe, magazine, magazine miss, contact refused, contact partial, magazine empty, item partial | 236 members read | bars 4.5 text and 3 mark
+escape | light-390 | inline attributes and style elements on the mounted surface, read on home before a journey drives it | walked 369 elements | reported 2 | the permitted head block left alone
+composite | light-390 | refused 4.032234 | accepted 18.377988 | bar 4.5
+census | light-390 | home | every class token the mounted subtree carries, against every loaded stylesheet | walked 369 elements carrying 146 tokens | undeclared census-authored-mark-3005162194, census-authored-token-3005162194
+census | light-390 | subscribe | every class token the mounted subtree carries, against every loaded stylesheet | walked 157 elements carrying 109 tokens | undeclared census-authored-mark-2057562420, census-authored-token-2057562420
+census | light-390 | magazine | every class token the mounted subtree carries, against every loaded stylesheet | walked 234 elements carrying 108 tokens | undeclared census-authored-mark-499865926, census-authored-token-499865926
+census | light-390 | magazine miss | every class token the mounted subtree carries, against every loaded stylesheet | walked 147 elements carrying 103 tokens | undeclared census-authored-mark-1113641041, census-authored-token-1113641041
+census | light-390 | contact refused | every class token the mounted subtree carries, against every loaded stylesheet | walked 182 elements carrying 109 tokens | undeclared census-authored-mark-866952545, census-authored-token-866952545
+census | light-390 | contact partial | every class token the mounted subtree carries, against every loaded stylesheet | walked 169 elements carrying 113 tokens | undeclared census-authored-mark-2970039557, census-authored-token-2970039557
+census | light-390 | magazine empty | every class token the mounted subtree carries, against every loaded stylesheet | walked 134 elements carrying 99 tokens | undeclared census-authored-mark-717247820, census-authored-token-717247820
+census | light-390 | item partial | every class token the mounted subtree carries, against every loaded stylesheet | walked 157 elements carrying 120 tokens | undeclared census-authored-mark-3065402461, census-authored-token-3065402461
+contrast | light-390 | coverage | shell, home, subscribe, magazine, magazine miss, contact refused, contact partial, magazine empty, item partial | 236 members read | bars 4.5 text and 3 mark
+escape | dark-390 | inline attributes and style elements on the mounted surface, read on home before a journey drives it | walked 369 elements | reported 2 | the permitted head block left alone
+composite | dark-390 | refused 4.032234 | accepted 18.377988 | bar 4.5
+census | dark-390 | home | every class token the mounted subtree carries, against every loaded stylesheet | walked 369 elements carrying 146 tokens | undeclared census-authored-mark-3996922948, census-authored-token-3996922948
+census | dark-390 | subscribe | every class token the mounted subtree carries, against every loaded stylesheet | walked 157 elements carrying 109 tokens | undeclared census-authored-mark-2987816880, census-authored-token-2987816880
+census | dark-390 | magazine | every class token the mounted subtree carries, against every loaded stylesheet | walked 234 elements carrying 108 tokens | undeclared census-authored-mark-1361280764, census-authored-token-1361280764
+census | dark-390 | magazine miss | every class token the mounted subtree carries, against every loaded stylesheet | walked 147 elements carrying 103 tokens | undeclared census-authored-mark-4195294837, census-authored-token-4195294837
+census | dark-390 | contact refused | every class token the mounted subtree carries, against every loaded stylesheet | walked 182 elements carrying 109 tokens | undeclared census-authored-mark-2311013522, census-authored-token-2311013522
+census | dark-390 | contact partial | every class token the mounted subtree carries, against every loaded stylesheet | walked 169 elements carrying 113 tokens | undeclared census-authored-mark-3142231778, census-authored-token-3142231778
+census | dark-390 | magazine empty | every class token the mounted subtree carries, against every loaded stylesheet | walked 134 elements carrying 99 tokens | undeclared census-authored-mark-2478127551, census-authored-token-2478127551
+census | dark-390 | item partial | every class token the mounted subtree carries, against every loaded stylesheet | walked 157 elements carrying 120 tokens | undeclared census-authored-mark-3531694094, census-authored-token-3531694094
+contrast | dark-390 | coverage | shell, home, subscribe, magazine, magazine miss, contact refused, contact partial, magazine empty, item partial | 236 members read | bars 4.5 text and 3 mark
+
+## journal steps
+click | Get started | subscribe
+click | RoughNotes-Pro | product
+click | Program business | No articles in this category.
+click | Search markets | No markets match this search.
+click | Subscribe free | No subscription was started
+click | About | about
+click | Subscribe free | No subscription was started
+click | Media kits | media
+click | Coverages Applicable | item
+click | Calculator wheels | No items in this department.
+click | Send inquiry | No inquiry was sent
+click | Review payment | No payment was made
+read | RoughNotes-Pro Login | external
+theme | dark | restored
+theme | quota spent | painted and unremembered
+
+## page output
+
+## capture frames
+unknown-route-home--dark-1280.png
+products-unpopulated--dark-1280.png
+magazine-unpopulated--dark-1280.png
+marketplace-unpopulated--dark-1280.png
+shop-unpopulated--dark-1280.png
+media-unpopulated--dark-1280.png
+product-missing--dark-1280.png
+article-missing--dark-1280.png
+shop-missing--dark-1280.png
+home--dark-1280.png
+navigation--dark-1280.png
+subscribe--dark-1280.png
+product-listing--dark-1280.png
+product-detail--dark-1280.png
+publications--dark-1280.png
+magazine-listing--dark-1280.png
+magazine-empty--dark-1280.png
+magazine-detail--dark-1280.png
+marketplace-listing--dark-1280.png
+marketplace-miss--dark-1280.png
+subscribe-refused--dark-1280.png
+subscribe-accepted--dark-1280.png
+about--dark-1280.png
+newsletter--dark-1280.png
+newsletter-accepted--dark-1280.png
+media--dark-1280.png
+shop-listing--dark-1280.png
+shop-filtered--dark-1280.png
+shop-detail--dark-1280.png
+shop-miss--dark-1280.png
+contact--dark-1280.png
+contact-refused--dark-1280.png
+contact-accepted--dark-1280.png
+payment--dark-1280.png
+payment-refused--dark-1280.png
+payment-accepted--dark-1280.png

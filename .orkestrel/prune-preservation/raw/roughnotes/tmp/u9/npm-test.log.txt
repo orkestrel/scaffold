@@ -1,0 +1,442 @@
+npm notice run roughnotes@0.0.1 test
+npm notice run npm run test:app && npm run test:journey && npm run test:policy && npm run test:config
+npm notice run roughnotes@0.0.1 test:app
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project app:core --project app:browser
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/roughnotes
+
+·································WARNING: mixed-decls deprecation is obsolete. If you were previously silencing it, your code may now behave in unexpected ways.
+
+DEPRECATION WARNING [if-function]: The Sass if() syntax is deprecated in favor of the modern CSS syntax.
+
+Suggestion: if(sass($arg == "$value"): $value; else: $arg)
+
+More info: https://sass-lang.com/d/if-function
+
+   ╷
+58 │       $_args: append($_args, if($arg == "$key", $key, if($arg == "$value", $value, $arg)));
+   │                                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   ╵
+    node_modules\bootstrap\scss\_functions.scss 58:55  @import
+    node_modules\bootstrap\scss\bootstrap.scss 7:9     @use
+    app\browser\styles\index.scss 2:1                  root stylesheet
+
+DEPRECATION WARNING [if-function]: The Sass if() syntax is deprecated in favor of the modern CSS syntax.
+
+Suggestion: if(sass($arg == "$key"): $key; else: if($arg == "$value", $value, $arg))
+
+More info: https://sass-lang.com/d/if-function
+
+   ╷
+58 │       $_args: append($_args, if($arg == "$key", $key, if($arg == "$value", $value, $arg)));
+   │                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   ╵
+    node_modules\bootstrap\scss\_functions.scss 58:30  @import
+    node_modules\bootstrap\scss\bootstrap.scss 7:9     @use
+    app\browser\styles\index.scss 2:1                  root stylesheet
+
+DEPRECATION WARNING [if-function]: The Sass if() syntax is deprecated in favor of the modern CSS syntax.
+
+Suggestion: if(sass($l1 > $l2): divide($l1 + 0.05, $l2 + 0.05); else: divide($l2 + 0.05, $l1 + 0.05))
+
+More info: https://sass-lang.com/d/if-function
+
+    ╷
+177 │   @return if($l1 > $l2, divide($l1 + .05, $l2 + .05), divide($l2 + .05, $l1 + .05));
+    │           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ╵
+    node_modules\bootstrap\scss\_functions.scss 177:11  @import
+    node_modules\bootstrap\scss\bootstrap.scss 7:9      @use
+    app\browser\styles\index.scss 2:1                   root stylesheet
+
+DEPRECATION WARNING [if-function]: The Sass if() syntax is deprecated in favor of the modern CSS syntax.
+
+Suggestion: if(sass(divide($value, 255) < 0.04045): divide(divide($value, 255), 12.92); else: nth($_luminance-list, $value + 1))
+
+More info: https://sass-lang.com/d/if-function
+
+    ╷
+191 │     $value: if(divide($value, 255) < .04045, divide(divide($value, 255), 12.92), nth($_luminance-list, $value + 1));
+    │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ╵
+    node_modules\bootstrap\scss\_functions.scss 191:13  @import
+    node_modules\bootstrap\scss\bootstrap.scss 7:9      @use
+    app\browser\styles\index.scss 2:1                   root stylesheet
+
+DEPRECATION WARNING [if-function]: The Sass if() syntax is deprecated in favor of the modern CSS syntax.
+
+Suggestion: if(sass($weight > 0): shade-color($color, $weight); else: tint-color($color, -$weight))
+
+More info: https://sass-lang.com/d/if-function
+
+    ╷
+217 │   @return if($weight > 0, shade-color($color, $weight), tint-color($color, -$weight));
+    │           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ╵
+    node_modules\bootstrap\scss\_functions.scss 217:11  @import
+    node_modules\bootstrap\scss\bootstrap.scss 7:9      @use
+    app\browser\styles\index.scss 2:1                   root stylesheet
+
+WARNING: 78 repetitive deprecation warnings omitted.
+Run in verbose mode to see all warnings.
+
+··stdout | tests/app/browser/styles/theme.test.ts:83:2 > theme > keeps accent, card paint, and focus rings local through nested mode changes
+light card: rgb(255, 255, 255); image: none; accent: rgb(200, 149, 43)
+stdout | tests/app/browser/styles/theme.test.ts:83:2 > theme > keeps accent, card paint, and focus rings local through nested mode changes
+dark card: rgb(10, 37, 64); image: linear-gradient(160deg, rgb(10, 37, 64), rgb(18, 58, 99)); accent: rgb(231, 198, 122)
+stdout | tests/app/browser/styles/theme.test.ts:83:2 > theme > keeps accent, card paint, and focus rings local through nested mode changes
+light card: rgb(255, 255, 255); image: none; accent: rgb(200, 149, 43)
+···········································································································································4:56:43 PM [vite] [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: injection "Symbol(application)" not found. 
+  at <HomeView>
+4:56:43 PM [vite] [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: Unhandled error during execution of setup function 
+  at <HomeView>
+stderr | tests/app/browser/composables/useApplication.test.ts:12:2 > useApplication > throws when APPLICATION_KEY has not been provided
+[Vue warn]: injection "Symbol(application)" not found. 
+  at <HomeView>
+stderr | tests/app/browser/composables/useApplication.test.ts:12:2 > useApplication > throws when APPLICATION_KEY has not been provided
+[Vue warn]: Unhandled error during execution of setup function 
+  at <HomeView>
+·······
+
+ Test Files  43 passed (43)
+      Tests  181 passed (181)
+   Start at  16:56:12
+   Duration  31.47s (transform 652ms, setup 3.80s, import 3.76s, tests 20.61s, environment 1ms)
+
+npm notice run roughnotes@0.0.1 test:journey
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project 'journey:*'
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/roughnotes
+
+WARNING: mixed-decls deprecation is obsolete. If you were previously silencing it, your code may now behave in unexpected ways.
+
+DEPRECATION WARNING [if-function]: The Sass if() syntax is deprecated in favor of the modern CSS syntax.
+
+Suggestion: if(sass($arg == "$value"): $value; else: $arg)
+
+More info: https://sass-lang.com/d/if-function
+
+   ╷
+58 │       $_args: append($_args, if($arg == "$key", $key, if($arg == "$value", $value, $arg)));
+   │                                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   ╵
+    node_modules\bootstrap\scss\_functions.scss 58:55  @import
+    node_modules\bootstrap\scss\bootstrap.scss 7:9     @use
+    app\browser\styles\index.scss 2:1                  root stylesheet
+
+DEPRECATION WARNING [if-function]: The Sass if() syntax is deprecated in favor of the modern CSS syntax.
+
+Suggestion: if(sass($arg == "$key"): $key; else: if($arg == "$value", $value, $arg))
+
+More info: https://sass-lang.com/d/if-function
+
+   ╷
+58 │       $_args: append($_args, if($arg == "$key", $key, if($arg == "$value", $value, $arg)));
+   │                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   ╵
+    node_modules\bootstrap\scss\_functions.scss 58:30  @import
+    node_modules\bootstrap\scss\bootstrap.scss 7:9     @use
+    app\browser\styles\index.scss 2:1                  root stylesheet
+
+DEPRECATION WARNING [if-function]: The Sass if() syntax is deprecated in favor of the modern CSS syntax.
+
+Suggestion: if(sass($l1 > $l2): divide($l1 + 0.05, $l2 + 0.05); else: divide($l2 + 0.05, $l1 + 0.05))
+
+More info: https://sass-lang.com/d/if-function
+
+    ╷
+177 │   @return if($l1 > $l2, divide($l1 + .05, $l2 + .05), divide($l2 + .05, $l1 + .05));
+    │           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ╵
+    node_modules\bootstrap\scss\_functions.scss 177:11  @import
+    node_modules\bootstrap\scss\bootstrap.scss 7:9      @use
+    app\browser\styles\index.scss 2:1                   root stylesheet
+
+DEPRECATION WARNING [if-function]: The Sass if() syntax is deprecated in favor of the modern CSS syntax.
+
+Suggestion: if(sass(divide($value, 255) < 0.04045): divide(divide($value, 255), 12.92); else: nth($_luminance-list, $value + 1))
+
+More info: https://sass-lang.com/d/if-function
+
+    ╷
+191 │     $value: if(divide($value, 255) < .04045, divide(divide($value, 255), 12.92), nth($_luminance-list, $value + 1));
+    │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ╵
+    node_modules\bootstrap\scss\_functions.scss 191:13  @import
+    node_modules\bootstrap\scss\bootstrap.scss 7:9      @use
+    app\browser\styles\index.scss 2:1                   root stylesheet
+
+DEPRECATION WARNING [if-function]: The Sass if() syntax is deprecated in favor of the modern CSS syntax.
+
+Suggestion: if(sass($weight > 0): shade-color($color, $weight); else: tint-color($color, -$weight))
+
+More info: https://sass-lang.com/d/if-function
+
+    ╷
+217 │   @return if($weight > 0, shade-color($color, $weight), tint-color($color, -$weight));
+    │           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ╵
+    node_modules\bootstrap\scss\_functions.scss 217:11  @import
+    node_modules\bootstrap\scss\bootstrap.scss 7:9      @use
+    app\browser\styles\index.scss 2:1                   root stylesheet
+
+WARNING: mixed-decls deprecation is obsolete. If you were previously silencing it, your code may now behave in unexpected ways.
+
+WARNING: mixed-decls deprecation is obsolete. If you were previously silencing it, your code may now behave in unexpected ways.
+
+WARNING: mixed-decls deprecation is obsolete. If you were previously silencing it, your code may now behave in unexpected ways.
+
+DEPRECATION WARNING [if-function]: The Sass if() syntax is deprecated in favor of the modern CSS syntax.
+
+Suggestion: if(sass($arg == "$value"): $value; else: $arg)
+
+More info: https://sass-lang.com/d/if-function
+
+   ╷
+58 │       $_args: append($_args, if($arg == "$key", $key, if($arg == "$value", $value, $arg)));
+   │                                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   ╵
+    node_modules\bootstrap\scss\_functions.scss 58:55  @import
+    node_modules\bootstrap\scss\bootstrap.scss 7:9     @use
+    app\browser\styles\index.scss 2:1                  root stylesheet
+
+DEPRECATION WARNING [if-function]: The Sass if() syntax is deprecated in favor of the modern CSS syntax.
+
+Suggestion: if(sass($arg == "$key"): $key; else: if($arg == "$value", $value, $arg))
+
+More info: https://sass-lang.com/d/if-function
+
+   ╷
+58 │       $_args: append($_args, if($arg == "$key", $key, if($arg == "$value", $value, $arg)));
+   │                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   ╵
+    node_modules\bootstrap\scss\_functions.scss 58:30  @import
+    node_modules\bootstrap\scss\bootstrap.scss 7:9     @use
+    app\browser\styles\index.scss 2:1                  root stylesheet
+
+DEPRECATION WARNING [if-function]: The Sass if() syntax is deprecated in favor of the modern CSS syntax.
+
+Suggestion: if(sass($l1 > $l2): divide($l1 + 0.05, $l2 + 0.05); else: divide($l2 + 0.05, $l1 + 0.05))
+
+More info: https://sass-lang.com/d/if-function
+
+    ╷
+177 │   @return if($l1 > $l2, divide($l1 + .05, $l2 + .05), divide($l2 + .05, $l1 + .05));
+    │           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ╵
+    node_modules\bootstrap\scss\_functions.scss 177:11  @import
+    node_modules\bootstrap\scss\bootstrap.scss 7:9      @use
+    app\browser\styles\index.scss 2:1                   root stylesheet
+
+DEPRECATION WARNING [if-function]: The Sass if() syntax is deprecated in favor of the modern CSS syntax.
+
+Suggestion: if(sass(divide($value, 255) < 0.04045): divide(divide($value, 255), 12.92); else: nth($_luminance-list, $value + 1))
+
+More info: https://sass-lang.com/d/if-function
+
+    ╷
+191 │     $value: if(divide($value, 255) < .04045, divide(divide($value, 255), 12.92), nth($_luminance-list, $value + 1));
+    │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ╵
+    node_modules\bootstrap\scss\_functions.scss 191:13  @import
+    node_modules\bootstrap\scss\bootstrap.scss 7:9      @use
+    app\browser\styles\index.scss 2:1                   root stylesheet
+
+DEPRECATION WARNING [if-function]: The Sass if() syntax is deprecated in favor of the modern CSS syntax.
+
+Suggestion: if(sass($weight > 0): shade-color($color, $weight); else: tint-color($color, -$weight))
+
+More info: https://sass-lang.com/d/if-function
+
+    ╷
+217 │   @return if($weight > 0, shade-color($color, $weight), tint-color($color, -$weight));
+    │           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ╵
+    node_modules\bootstrap\scss\_functions.scss 217:11  @import
+    node_modules\bootstrap\scss\bootstrap.scss 7:9      @use
+    app\browser\styles\index.scss 2:1                   root stylesheet
+
+DEPRECATION WARNING [if-function]: The Sass if() syntax is deprecated in favor of the modern CSS syntax.
+
+Suggestion: if(sass($arg == "$value"): $value; else: $arg)
+
+More info: https://sass-lang.com/d/if-function
+
+   ╷
+58 │       $_args: append($_args, if($arg == "$key", $key, if($arg == "$value", $value, $arg)));
+   │                                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   ╵
+    node_modules\bootstrap\scss\_functions.scss 58:55  @import
+    node_modules\bootstrap\scss\bootstrap.scss 7:9     @use
+    app\browser\styles\index.scss 2:1                  root stylesheet
+
+DEPRECATION WARNING [if-function]: The Sass if() syntax is deprecated in favor of the modern CSS syntax.
+
+Suggestion: if(sass($arg == "$key"): $key; else: if($arg == "$value", $value, $arg))
+
+More info: https://sass-lang.com/d/if-function
+
+   ╷
+58 │       $_args: append($_args, if($arg == "$key", $key, if($arg == "$value", $value, $arg)));
+   │                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   ╵
+    node_modules\bootstrap\scss\_functions.scss 58:30  @import
+    node_modules\bootstrap\scss\bootstrap.scss 7:9     @use
+    app\browser\styles\index.scss 2:1                  root stylesheet
+
+DEPRECATION WARNING [if-function]: The Sass if() syntax is deprecated in favor of the modern CSS syntax.
+
+Suggestion: if(sass($l1 > $l2): divide($l1 + 0.05, $l2 + 0.05); else: divide($l2 + 0.05, $l1 + 0.05))
+
+More info: https://sass-lang.com/d/if-function
+
+    ╷
+177 │   @return if($l1 > $l2, divide($l1 + .05, $l2 + .05), divide($l2 + .05, $l1 + .05));
+    │           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ╵
+    node_modules\bootstrap\scss\_functions.scss 177:11  @import
+    node_modules\bootstrap\scss\bootstrap.scss 7:9      @use
+    app\browser\styles\index.scss 2:1                   root stylesheet
+
+DEPRECATION WARNING [if-function]: The Sass if() syntax is deprecated in favor of the modern CSS syntax.
+
+Suggestion: if(sass(divide($value, 255) < 0.04045): divide(divide($value, 255), 12.92); else: nth($_luminance-list, $value + 1))
+
+More info: https://sass-lang.com/d/if-function
+
+    ╷
+191 │     $value: if(divide($value, 255) < .04045, divide(divide($value, 255), 12.92), nth($_luminance-list, $value + 1));
+    │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ╵
+    node_modules\bootstrap\scss\_functions.scss 191:13  @import
+    node_modules\bootstrap\scss\bootstrap.scss 7:9      @use
+    app\browser\styles\index.scss 2:1                   root stylesheet
+
+DEPRECATION WARNING [if-function]: The Sass if() syntax is deprecated in favor of the modern CSS syntax.
+
+Suggestion: if(sass($weight > 0): shade-color($color, $weight); else: tint-color($color, -$weight))
+
+More info: https://sass-lang.com/d/if-function
+
+    ╷
+217 │   @return if($weight > 0, shade-color($color, $weight), tint-color($color, -$weight));
+    │           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ╵
+    node_modules\bootstrap\scss\_functions.scss 217:11  @import
+    node_modules\bootstrap\scss\bootstrap.scss 7:9      @use
+    app\browser\styles\index.scss 2:1                   root stylesheet
+
+DEPRECATION WARNING [if-function]: The Sass if() syntax is deprecated in favor of the modern CSS syntax.
+
+Suggestion: if(sass($arg == "$value"): $value; else: $arg)
+
+More info: https://sass-lang.com/d/if-function
+
+   ╷
+58 │       $_args: append($_args, if($arg == "$key", $key, if($arg == "$value", $value, $arg)));
+   │                                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   ╵
+    node_modules\bootstrap\scss\_functions.scss 58:55  @import
+    node_modules\bootstrap\scss\bootstrap.scss 7:9     @use
+    app\browser\styles\index.scss 2:1                  root stylesheet
+
+DEPRECATION WARNING [if-function]: The Sass if() syntax is deprecated in favor of the modern CSS syntax.
+
+Suggestion: if(sass($arg == "$key"): $key; else: if($arg == "$value", $value, $arg))
+
+More info: https://sass-lang.com/d/if-function
+
+   ╷
+58 │       $_args: append($_args, if($arg == "$key", $key, if($arg == "$value", $value, $arg)));
+   │                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   ╵
+    node_modules\bootstrap\scss\_functions.scss 58:30  @import
+    node_modules\bootstrap\scss\bootstrap.scss 7:9     @use
+    app\browser\styles\index.scss 2:1                  root stylesheet
+
+DEPRECATION WARNING [if-function]: The Sass if() syntax is deprecated in favor of the modern CSS syntax.
+
+Suggestion: if(sass($l1 > $l2): divide($l1 + 0.05, $l2 + 0.05); else: divide($l2 + 0.05, $l1 + 0.05))
+
+More info: https://sass-lang.com/d/if-function
+
+    ╷
+177 │   @return if($l1 > $l2, divide($l1 + .05, $l2 + .05), divide($l2 + .05, $l1 + .05));
+    │           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ╵
+    node_modules\bootstrap\scss\_functions.scss 177:11  @import
+    node_modules\bootstrap\scss\bootstrap.scss 7:9      @use
+    app\browser\styles\index.scss 2:1                   root stylesheet
+
+DEPRECATION WARNING [if-function]: The Sass if() syntax is deprecated in favor of the modern CSS syntax.
+
+Suggestion: if(sass(divide($value, 255) < 0.04045): divide(divide($value, 255), 12.92); else: nth($_luminance-list, $value + 1))
+
+More info: https://sass-lang.com/d/if-function
+
+    ╷
+191 │     $value: if(divide($value, 255) < .04045, divide(divide($value, 255), 12.92), nth($_luminance-list, $value + 1));
+    │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ╵
+    node_modules\bootstrap\scss\_functions.scss 191:13  @import
+    node_modules\bootstrap\scss\bootstrap.scss 7:9      @use
+    app\browser\styles\index.scss 2:1                   root stylesheet
+
+DEPRECATION WARNING [if-function]: The Sass if() syntax is deprecated in favor of the modern CSS syntax.
+
+Suggestion: if(sass($weight > 0): shade-color($color, $weight); else: tint-color($color, -$weight))
+
+More info: https://sass-lang.com/d/if-function
+
+    ╷
+217 │   @return if($weight > 0, shade-color($color, $weight), tint-color($color, -$weight));
+    │           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ╵
+    node_modules\bootstrap\scss\_functions.scss 217:11  @import
+    node_modules\bootstrap\scss\bootstrap.scss 7:9      @use
+    app\browser\styles\index.scss 2:1                   root stylesheet
+
+WARNING: 78 repetitive deprecation warnings omitted.
+Run in verbose mode to see all warnings.
+
+WARNING: 78 repetitive deprecation warnings omitted.
+Run in verbose mode to see all warnings.
+
+WARNING: 78 repetitive deprecation warnings omitted.
+Run in verbose mode to see all warnings.
+
+WARNING: 78 repetitive deprecation warnings omitted.
+Run in verbose mode to see all warnings.
+
+···················································-·····-·····-·····-··
+
+ Test Files  4 passed (4)
+      Tests  68 passed | 4 skipped (72)
+   Start at  16:56:45
+   Duration  38.21s (transform 0ms, setup 35.41s, import 12.14s, tests 78.56s, environment 0ms)
+
+npm notice run roughnotes@0.0.1 test:policy
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project policy
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/roughnotes
+
+···············································································································
+
+ Test Files  1 passed (1)
+      Tests  111 passed (111)
+   Start at  16:57:24
+   Duration  1.62s (transform 113ms, setup 19ms, import 342ms, tests 1.08s, environment 0ms)
+
+npm notice run roughnotes@0.0.1 test:config
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project config
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/roughnotes
+
+··············································
+
+ Test Files  1 passed (1)
+      Tests  46 passed (46)
+   Start at  16:57:27
+   Duration  1.73s (transform 200ms, setup 17ms, import 1.05s, tests 510ms, environment 0ms)
+
+exit=0

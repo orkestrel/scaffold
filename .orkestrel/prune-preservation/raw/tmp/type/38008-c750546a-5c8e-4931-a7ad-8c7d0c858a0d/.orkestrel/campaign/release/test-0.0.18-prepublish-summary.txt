@@ -1,0 +1,25 @@
+tip: c1b5d6d feat(browser): make isReachable refuse an element an open modal dialog leaves behind  dirty: 0
+--- registry sweep before ---
+@orkestrel/test local 0.0.17 registry 0.0.17
+dependencies     @orkestrel/contract      ^0.0.17      registry 0.0.17
+devDependencies  @orkestrel/guide         ^0.0.20      registry 0.0.20
+devDependencies  @orkestrel/probe         ^0.0.16      registry 0.0.16
+devDependencies  @orkestrel/scaffold      ^0.0.73      registry 0.0.74  <- differs
+version_EXIT=0 now 0.0.18
+install_EXIT=0
+prepublishOnly_EXIT=0
+························································································································································································································································································7:38:30 PM [vite] (client) [Unhandled error] Error: Boom
+    471 |  			window.dispatchEvent(new ErrorEvent('error', { message: 'Boom' }))
+7:38:30 PM [vite] (client) [Unhandled rejection] Unknown Error: Refused
+7:38:30 PM [vite] (client) [Unhandled error] Error: Ignored
+    480 |  			window.dispatchEvent(new ErrorEvent('error', { message: 'Ignored' }))
+      Tests  581 passed | 9 skipped (590)
+      Tests  101 passed | 1 skipped (102)
+      Tests  173 passed | 1 skipped (174)
+      Tests  24 passed (24)
+      Tests  50 passed | 1 skipped (51)
+      Tests  11 passed | 4 skipped (15)
+version literals in dist: dist/src/core/index.js:0 dist/src/browser/index.js:0 dist/src/server/index.js:0 
+ M package-lock.json
+ M package.json
+(end)

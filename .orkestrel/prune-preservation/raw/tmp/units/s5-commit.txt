@@ -1,0 +1,36 @@
+docs(skill): teach the born journey axis, one home per voice and condition, and the cp1252 rule as directives
+
+Unit S5 (`opus`, baseline bfc4ef5f; brief and report retained under
+.orkestrel/campaign/s5-brief.md and s5-report.md) closes the skill, plan of
+record, and transport findings of the S audit
+(.orkestrel/campaign/s-audit-verdict.md):
+
+- The engine limit and its reopening condition have one home, the emitted
+  `configs/browsers.ts` doc block; the skill's Accept paragraph, the guide's
+  journey paragraph, and ROADMAP row 36 point at it, and row 36 states its
+  closing condition (claims 5, 19).
+- The failure-voices table names where the statechart and capture voices live
+  and splits the storage row into the keyed and unkeyed forms `buildDenial`
+  builds (claim 12).
+- The named bans split a router navigation from a state read: the visible
+  control that navigates replaces the former, the readers replace the latter,
+  and corroboration admits a read and never a router call (claim 16).
+- The Accept bullet requires the contrast control alone to straddle a bar
+  (claim 17); the title assertion compares against the product guide and
+  invents no scheme (claim 18).
+- The skill teaches the generator S4 landed: a browser application is born
+  with the axis; an earlier workspace writes the wrapper and runs
+  `scaffold repair`; `tests/setupBrowser.test.ts` plus `scaffold repair`
+  registers `setup:browser`, and the adopter extends the `test` chain, which
+  `repair` never rewrites; the `scaffold audit` questions are quoted (claim 23).
+- .agents/transports/codex.md states the cp1252 rule as directives: the patch
+  tool, never a text-encoding shell write, and a review that compares each
+  touched line's code points above 0x7F (claim 20).
+- Restated laws, counts, and reassurance clauses are gone from the skill
+  (claim 22, F3); the capture flag is set in the reader's own shell (F2).
+
+host.json is regenerated over the vendored bytes. Gate reading retained as
+.orkestrel/campaign/s5-gates-summary.txt; the claim-7 mutation closure against
+the pin S4 landed as .orkestrel/campaign/s-fix-c7-mutations-summary.txt.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>

@@ -1,0 +1,9 @@
+# Read the installed npm pack result shape
+
+Act as builder on Terra under prior pack/adoption authoring authority. You are not alone; preserve all other work. Own only canonical tmp/release/verify-scaffold-0.0.75-pack.ps1 and adopt-scaffold-0.0.75.ps1. Do not execute, install, delete, commit or publish.
+
+The parent ran the pack script. npm pack succeeded and created tmp/release/packages/orkestrel-scaffold-0.0.75.tgz, but the script's post-pack validation assumed an array. The actual retained tmp/release/scaffold-0.0.75-pack.json is an object keyed by '@orkestrel/scaffold', whose value has name/version/filename/files/size/integrity. Read that exact JSON and npm's installed version before changing only the instrument parsing. Do not repack or overwrite the existing archive.
+
+Author a validation-only script for this existing archive/report: validate fixed paths, require exactly the intended package record, assert identity @orkestrel/scaffold/version0.0.75/filename, reject the prior forbidden root paths from file inventory, compute actual archive SHA512 integrity and require equality with the report, print SHA256/integrity/size. Read packed package/package.json with native tar -xOf and require actual archive identity/version and expected test development pin^0.0.18. Do not extract files to disk. Record built source commit c50efef0f741caafe1a80c1ef9ee4004f8be0f2b as provenance in the script output; source was unchanged after accepted gate and before this pack. Fail on any mismatch. Do not discard the failed predecessor script/report.
+
+Update adoption script to read this actual package-keyed report with the same narrow identity guards, rather than the old array assumption. Preserve all existing installation, branch, write-once metadata and generated repair guards. Native stderr is informational unless process exit is nonzero. Parent reviews/runs the verifier, then the adoption script while the R-B writer stays paused.

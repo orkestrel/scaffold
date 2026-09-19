@@ -1,0 +1,4 @@
+ .agents/skills/orkestrel-prove-journey/SKILL.md    | 53 ++++++++++++++++------
+ .../orkestrel-prove-journey/references/captures.md |  8 ++--
+ host.json                                          |  6 +--
+ 3 files changed, 46 insertions(+), 21 deletions(-)

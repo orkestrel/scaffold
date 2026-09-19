@@ -1,0 +1,346 @@
+npm notice run roughnotes@0.0.1 npx
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=verbose --project app:browser tests/app/browser/zz-audit-probe.test.ts
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/roughnotes
+
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+  ╷
+1 │ @import "mixins/banner";
+  │         ^^^^^^^^^^^^^^^
+  ╵
+    node_modules\bootstrap\scss\bootstrap.scss 1:9  @use
+    app\browser\styles\index.scss 2:1               root stylesheet
+
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+  ╷
+7 │ @import "functions";
+  │         ^^^^^^^^^^^
+  ╵
+    node_modules\bootstrap\scss\bootstrap.scss 7:9  @use
+    app\browser\styles\index.scss 2:1               root stylesheet
+
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+  ╷
+8 │ @import "variables";
+  │         ^^^^^^^^^^^
+  ╵
+    node_modules\bootstrap\scss\bootstrap.scss 8:9  @use
+    app\browser\styles\index.scss 2:1               root stylesheet
+
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+  ╷
+9 │ @import "variables-dark";
+  │         ^^^^^^^^^^^^^^^^
+  ╵
+    node_modules\bootstrap\scss\bootstrap.scss 9:9  @use
+    app\browser\styles\index.scss 2:1               root stylesheet
+
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+   ╷
+10 │ @import "maps";
+   │         ^^^^^^
+   ╵
+    node_modules\bootstrap\scss\bootstrap.scss 10:9  @use
+    app\browser\styles\index.scss 2:1                root stylesheet
+
+DEPRECATION WARNING [if-function]: The Sass if() syntax is deprecated in favor of the modern CSS syntax.
+
+Suggestion: if(sass($arg == "$value"): $value; else: $arg)
+
+More info: https://sass-lang.com/d/if-function
+
+   ╷
+58 │       $_args: append($_args, if($arg == "$key", $key, if($arg == "$value", $value, $arg)));
+   │                                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   ╵
+    node_modules\bootstrap\scss\_functions.scss 58:55  @import
+    node_modules\bootstrap\scss\bootstrap.scss 7:9     @use
+    app\browser\styles\index.scss 2:1                  root stylesheet
+
+DEPRECATION WARNING [if-function]: The Sass if() syntax is deprecated in favor of the modern CSS syntax.
+
+Suggestion: if(sass($arg == "$key"): $key; else: if($arg == "$value", $value, $arg))
+
+More info: https://sass-lang.com/d/if-function
+
+   ╷
+58 │       $_args: append($_args, if($arg == "$key", $key, if($arg == "$value", $value, $arg)));
+   │                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   ╵
+    node_modules\bootstrap\scss\_functions.scss 58:30  @import
+    node_modules\bootstrap\scss\bootstrap.scss 7:9     @use
+    app\browser\styles\index.scss 2:1                  root stylesheet
+
+DEPRECATION WARNING [if-function]: The Sass if() syntax is deprecated in favor of the modern CSS syntax.
+
+Suggestion: if(sass($l1 > $l2): divide($l1 + 0.05, $l2 + 0.05); else: divide($l2 + 0.05, $l1 + 0.05))
+
+More info: https://sass-lang.com/d/if-function
+
+    ╷
+177 │   @return if($l1 > $l2, divide($l1 + .05, $l2 + .05), divide($l2 + .05, $l1 + .05));
+    │           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ╵
+    node_modules\bootstrap\scss\_functions.scss 177:11  @import
+    node_modules\bootstrap\scss\bootstrap.scss 7:9      @use
+    app\browser\styles\index.scss 2:1                   root stylesheet
+
+DEPRECATION WARNING [if-function]: The Sass if() syntax is deprecated in favor of the modern CSS syntax.
+
+Suggestion: if(sass(divide($value, 255) < 0.04045): divide(divide($value, 255), 12.92); else: nth($_luminance-list, $value + 1))
+
+More info: https://sass-lang.com/d/if-function
+
+    ╷
+191 │     $value: if(divide($value, 255) < .04045, divide(divide($value, 255), 12.92), nth($_luminance-list, $value + 1));
+    │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ╵
+    node_modules\bootstrap\scss\_functions.scss 191:13  @import
+    node_modules\bootstrap\scss\bootstrap.scss 7:9      @use
+    app\browser\styles\index.scss 2:1                   root stylesheet
+
+DEPRECATION WARNING [if-function]: The Sass if() syntax is deprecated in favor of the modern CSS syntax.
+
+Suggestion: if(sass($weight > 0): shade-color($color, $weight); else: tint-color($color, -$weight))
+
+More info: https://sass-lang.com/d/if-function
+
+    ╷
+217 │   @return if($weight > 0, shade-color($color, $weight), tint-color($color, -$weight));
+    │           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ╵
+    node_modules\bootstrap\scss\_functions.scss 217:11  @import
+    node_modules\bootstrap\scss\bootstrap.scss 7:9      @use
+    app\browser\styles\index.scss 2:1                   root stylesheet
+
+DEPRECATION WARNING [global-builtin]: Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+Use color.mix instead.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+    ╷
+207 │   @return mix(white, $color, $weight);
+    │           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ╵
+    node_modules\bootstrap\scss\_functions.scss 207:11  tint-color()
+    node_modules\bootstrap\scss\_variables.scss 79:12   @import
+    node_modules\bootstrap\scss\bootstrap.scss 8:9      @use
+    app\browser\styles\index.scss 2:1                   root stylesheet
+
+DEPRECATION WARNING [global-builtin]: Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+Use color.mix instead.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+    ╷
+212 │   @return mix(black, $color, $weight);
+    │           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ╵
+    node_modules\bootstrap\scss\_functions.scss 212:11  shade-color()
+    node_modules\bootstrap\scss\_variables.scss 84:12   @import
+    node_modules\bootstrap\scss\bootstrap.scss 8:9      @use
+    app\browser\styles\index.scss 2:1                   root stylesheet
+
+DEPRECATION WARNING [global-builtin]: Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+Use color.mix instead.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+    ╷
+342 │ $light-bg-subtle:         mix($gray-100, $white) !default;
+    │                           ^^^^^^^^^^^^^^^^^^^^^^
+    ╵
+    node_modules\bootstrap\scss\_variables.scss 342:27  @import
+    node_modules\bootstrap\scss\bootstrap.scss 8:9      @use
+    app\browser\styles\index.scss 2:1                   root stylesheet
+
+DEPRECATION WARNING [global-builtin]: Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+Use math.unit instead.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+   ╷
+11 │     @if $prev-num == null or unit($num) == "%" or unit($prev-num) == "%" {
+   │                              ^^^^^^^^^^
+   ╵
+    node_modules\bootstrap\scss\_functions.scss 11:30  -assert-ascending()
+    node_modules\bootstrap\scss\_variables.scss 494:1  @import
+    node_modules\bootstrap\scss\bootstrap.scss 8:9     @use
+    app\browser\styles\index.scss 2:1                  root stylesheet
+
+DEPRECATION WARNING [global-builtin]: Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+Use math.unit instead.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+   ╷
+11 │     @if $prev-num == null or unit($num) == "%" or unit($prev-num) == "%" {
+   │                                                   ^^^^^^^^^^^^^^^
+   ╵
+    node_modules\bootstrap\scss\_functions.scss 11:51  -assert-ascending()
+    node_modules\bootstrap\scss\_variables.scss 494:1  @import
+    node_modules\bootstrap\scss\bootstrap.scss 8:9     @use
+    app\browser\styles\index.scss 2:1                  root stylesheet
+
+DEPRECATION WARNING [color-functions]: red() is deprecated. Suggestion:
+
+color.channel($color, "red", $space: rgb)
+
+More info: https://sass-lang.com/d/color-functions
+
+    ╷
+185 │     "r": red($color),
+    │          ^^^^^^^^^^^
+    ╵
+    node_modules\bootstrap\scss\_functions.scss 185:10  luminance()
+    node_modules\bootstrap\scss\_functions.scss 174:8   contrast-ratio()
+    node_modules\bootstrap\scss\_functions.scss 159:22  color-contrast()
+    node_modules\bootstrap\scss\_variables.scss 846:42  @import
+    node_modules\bootstrap\scss\bootstrap.scss 8:9      @use
+    app\browser\styles\index.scss 2:1                   root stylesheet
+
+DEPRECATION WARNING [color-functions]: green() is deprecated. Suggestion:
+
+color.channel($color, "green", $space: rgb)
+
+More info: https://sass-lang.com/d/color-functions
+
+    ╷
+186 │     "g": green($color),
+    │          ^^^^^^^^^^^^^
+    ╵
+    node_modules\bootstrap\scss\_functions.scss 186:10  luminance()
+    node_modules\bootstrap\scss\_functions.scss 174:8   contrast-ratio()
+    node_modules\bootstrap\scss\_functions.scss 159:22  color-contrast()
+    node_modules\bootstrap\scss\_variables.scss 846:42  @import
+    node_modules\bootstrap\scss\bootstrap.scss 8:9      @use
+    app\browser\styles\index.scss 2:1                   root stylesheet
+
+DEPRECATION WARNING [color-functions]: blue() is deprecated. Suggestion:
+
+color.channel($color, "blue", $space: rgb)
+
+More info: https://sass-lang.com/d/color-functions
+
+    ╷
+187 │     "b": blue($color)
+    │          ^^^^^^^^^^^^
+    ╵
+    node_modules\bootstrap\scss\_functions.scss 187:10  luminance()
+    node_modules\bootstrap\scss\_functions.scss 174:8   contrast-ratio()
+    node_modules\bootstrap\scss\_functions.scss 159:22  color-contrast()
+    node_modules\bootstrap\scss\_variables.scss 846:42  @import
+    node_modules\bootstrap\scss\bootstrap.scss 8:9      @use
+    app\browser\styles\index.scss 2:1                   root stylesheet
+
+DEPRECATION WARNING [color-functions]: red() is deprecated. Suggestion:
+
+color.channel($color, "red", $space: rgb)
+
+More info: https://sass-lang.com/d/color-functions
+
+   ╷
+37 │   @return red($value), green($value), blue($value);
+   │           ^^^^^^^^^^^
+   ╵
+    node_modules\bootstrap\scss\_functions.scss 37:11   to-rgb()
+    node_modules\bootstrap\scss\_variables.scss 846:31  @import
+    node_modules\bootstrap\scss\bootstrap.scss 8:9      @use
+    app\browser\styles\index.scss 2:1                   root stylesheet
+
+DEPRECATION WARNING [color-functions]: green() is deprecated. Suggestion:
+
+color.channel($color, "green", $space: rgb)
+
+More info: https://sass-lang.com/d/color-functions
+
+   ╷
+37 │   @return red($value), green($value), blue($value);
+   │                        ^^^^^^^^^^^^^
+   ╵
+    node_modules\bootstrap\scss\_functions.scss 37:24   to-rgb()
+    node_modules\bootstrap\scss\_variables.scss 846:31  @import
+    node_modules\bootstrap\scss\bootstrap.scss 8:9      @use
+    app\browser\styles\index.scss 2:1                   root stylesheet
+
+WARNING: 309 repetitive deprecation warnings omitted.
+Run in verbose mode to see all warnings.
+
+stdout | tests/app/browser/zz-audit-probe.test.ts:30:2 > audit probe > claim 4: what covers the compact masthead while the menu is open
+PROBE c4 trigger states after open: ["expanded"]
+stdout | tests/app/browser/zz-audit-probe.test.ts:30:2 > audit probe > claim 4: what covers the compact masthead while the menu is open
+PROBE c4 dialog aria-modal=true role=dialog
+stdout | tests/app/browser/zz-audit-probe.test.ts:30:2 > audit probe > claim 4: what covers the compact masthead while the menu is open
+PROBE c4 resolver masthead "Get started, Site": resolves
+stdout | tests/app/browser/zz-audit-probe.test.ts:30:2 > audit probe > claim 4: what covers the compact masthead while the menu is open
+PROBE c4 resolver menu "Get started, Menu": resolves
+stdout | tests/app/browser/zz-audit-probe.test.ts:30:2 > audit probe > claim 4: what covers the compact masthead while the menu is open
+PROBE c4 pointer at masthead centre hits: a.nav-link.fs-4 "Publications, Site"; is the masthead or inside it: false
+stdout | tests/app/browser/zz-audit-probe.test.ts:30:2 > audit probe > claim 4: what covers the compact masthead while the menu is open
+PROBE c4 header inert=false aria-hidden=none
+stdout | tests/app/browser/zz-audit-probe.test.ts:30:2 > audit probe > claim 4: what covers the compact masthead while the menu is open
+PROBE c4 active element after open: div#site-menu.offcanvas.offcanvas-end "Menu"
+stdout | tests/app/browser/zz-audit-probe.test.ts:30:2 > audit probe > claim 4: what covers the compact masthead while the menu is open
+PROBE c4 Tab traversal to the masthead from the open menu: Interactive target "Get started, Site" is not reachable through forward Tab traversal: BUTTON: > A:About > A:Publications > A:Products > A:Shop > A:Contact > A:
+stdout | tests/app/browser/zz-audit-probe.test.ts:30:2 > audit probe > claim 4: what covers the compact masthead while the menu is open
+PROBE c4 active element after traversal: button.btn-close "Close menu"
+ ✓ |app:browser (chromium)| tests/app/browser/zz-audit-probe.test.ts:30:2 > audit probe > claim 4: what covers the compact masthead while the menu is open 1436ms
+stdout | tests/app/browser/zz-audit-probe.test.ts:62:2 > audit probe > claim 5: the media screen with an empty catalog
+PROBE c5 1280: bare "Contact" anchors in the DOM: 4; refusal: Interactive target "Contact" is ambiguous across 4 elements
+stdout | tests/app/browser/zz-audit-probe.test.ts:62:2 > audit probe > claim 5: the media screen with an empty catalog
+PROBE c5 1280: page excerpt: Skip to content 800-428-4384 rnc@roughnotes.com RoughNotes-Pro Login Advantage-Plus Login R Rough Notes SINCE 1878 About Publications Products Shop Get started Media kits Rate cards, mechanical requir
+stdout | tests/app/browser/zz-audit-probe.test.ts:62:2 > audit probe > claim 5: the media screen with an empty catalog
+PROBE c5 390: bare "Contact" anchors in the DOM: 4; refusal: Interactive target "Contact" is ambiguous across 4 elements
+stdout | tests/app/browser/zz-audit-probe.test.ts:62:2 > audit probe > claim 5: the media screen with an empty catalog
+PROBE c5 390: page excerpt: Skip to content 800-428-4384 rnc@roughnotes.com RoughNotes-Pro Login Advantage-Plus Login R Rough Notes SINCE 1878 Get started Media kits Rate cards, mechanical requirements, and calendars for 2027 ma
+ ✓ |app:browser (chromium)| tests/app/browser/zz-audit-probe.test.ts:62:2 > audit probe > claim 5: the media screen with an empty catalog 1311ms
+stdout | tests/app/browser/zz-audit-probe.test.ts:85:2 > audit probe > claim 1: transitions of the announced state
+PROBE c1a after open: ["expanded"] events=show.bs.offcanvas@expanded=false,shown.bs.offcanvas@expanded=false
+stdout | tests/app/browser/zz-audit-probe.test.ts:85:2 > audit probe > claim 1: transitions of the announced state
+PROBE c1a after navigating from the menu: ["collapsed"] events=hide.bs.offcanvas@expanded=true,hidden.bs.offcanvas@expanded=true hash=#/publications
+stdout | tests/app/browser/zz-audit-probe.test.ts:85:2 > audit probe > claim 1: transitions of the announced state
+PROBE c1a reopen: ["expanded"] events=show.bs.offcanvas@expanded=false,shown.bs.offcanvas@expanded=false
+stdout | tests/app/browser/zz-audit-probe.test.ts:85:2 > audit probe > claim 1: transitions of the announced state
+PROBE c1b second click refused: locator.click: Timeout 11412ms exceeded.
+Call log:
+[2m  - waiting for locator('[data-vitest="true"]').contentFrame().ge
+ × |app:browser (chromium)| tests/app/browser/zz-audit-probe.test.ts:85:2 > audit probe > claim 1: transitions of the announced state 15008ms
+   → Test timed out in 15000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |app:browser (chromium)| tests/app/browser/zz-audit-probe.test.ts:85:2 > audit probe > claim 1: transitions of the announced state
+Error: Test timed out in 15000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/app/browser/zz-audit-probe.test.ts:85:1
+     83|  })
+     84|
+     85|  it('claim 1: transitions of the announced state', async () => {
+       | ^
+     86|   await page.viewport(390, 844)
+     87|   await openSurface()
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 2 passed (3)
+   Start at  19:10:42
+   Duration  22.32s (transform 0ms, setup 2.63s, import 775ms, tests 17.76s, environment 0ms)
+

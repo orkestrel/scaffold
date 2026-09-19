@@ -1,0 +1,14 @@
+npm notice run roughnotes@0.0.1 npx
+npm notice run scaffold audit
+guides: The mirror at guides/test.md differs from the hosted guide. Run catalog to refresh it.
+projects: The manifest at . names a Vitest project the planned configuration does not register: journey:*. Add the project to vite.config.ts or remove the script that names it.
+setup: The target at . carries a test setup module that no proof covers: tests/setupBrowser.ts. Add tests/setupBrowser.test.ts to cover it. The proof's subject is behavior only this workspace can assert, so scaffold does not write it.
+dependencies: @vitest/browser-playwright declares major 4, while the registry serves major 5.
+dependencies: typescript declares major 6, while the registry serves major 7.
+dependencies: vitest declares major 4, while the registry serves major 5.
+┌────────────────┬─────────┬───────┐
+│ path           │ group   │ drift │
+├────────────────┼─────────┼───────┤
+│ vite.config.ts │ configs │ stale │
+└────────────────┴─────────┴───────┘
+1 of 40 planned paths drifted from the plan. Audit compared bytes at 25, existence at 4, and nothing at 11.

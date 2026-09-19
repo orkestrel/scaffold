@@ -1,0 +1,15 @@
+npm notice run roughnotes@0.0.1 npx
+npm notice run vitest run --project app:browser
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/roughnotes
+
+9:25:28 AM [vite] [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: injection "Symbol(application)" not found. 
+  at <HomeView>
+9:25:28 AM [vite] [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: Unhandled error during execution of setup function 
+  at <HomeView>
+
+ Test Files  38 passed (38)
+      Tests  159 passed (159)
+   Start at  09:24:59
+   Duration  29.99s (transform 0ms, setup 3.22s, import 1.92s, tests 21.44s, environment 0ms)
+

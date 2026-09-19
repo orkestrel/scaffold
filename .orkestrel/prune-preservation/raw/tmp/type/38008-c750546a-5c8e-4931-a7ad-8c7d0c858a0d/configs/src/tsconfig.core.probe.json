@@ -1,0 +1,27 @@
+{
+	"extends": "./tsconfig.core.json",
+	"compilerOptions": {
+		"noEmit": true,
+		"declaration": false,
+		"emitDeclarationOnly": false,
+		"composite": false,
+		"incremental": true,
+		"tsBuildInfoFile": "../../.probe/configs-src-tsconfig.core.json.tsbuildinfo"
+	},
+	"files": [
+		"../../src/core/Compiler.ts",
+		"../../src/core/cloners.ts",
+		"../../src/core/compilers.ts",
+		"../../src/core/constants.ts",
+		"../../src/core/errors.ts",
+		"../../src/core/factories.ts",
+		"../../src/core/helpers.ts",
+		"../../src/core/index.ts",
+		"../../src/core/parsers.ts",
+		"../../src/core/shapers.ts",
+		"../../src/core/templates.ts",
+		"../../src/core/types.ts",
+		"../../src/core/validators.ts",
+		"../../src/core/variantProbe/constants.ts"
+	]
+}

@@ -1,0 +1,12 @@
+{
+  "success": true,
+  "gates": [
+    "format:check",
+    "lint:check",
+    "check",
+    "build",
+    "test"
+  ],
+  "capture": "test:journey",
+  "time": "2026-09-18T21:17:02.553Z"
+}

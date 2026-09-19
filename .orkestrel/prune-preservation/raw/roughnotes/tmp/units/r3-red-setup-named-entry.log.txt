@@ -1,0 +1,28 @@
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/roughnotes
+
+x··
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 2 passed (3)
+   Start at  23:18:25
+   Duration  237ms (transform 27ms, setup 36ms, import 24ms, tests 10ms, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |setup| tests/setup.test.ts > root test setup > builds a distinct entry on every call, so a caller compares entries by reference
+AssertionError: expected { name: 'setup-alpha' } not to be { name: 'setup-alpha' } // Object.is equality
+
+Compared values have no visual difference.
+
+ ❯ tests/setup.test.ts:17:21
+     15|   expect(entry.name).toBe('setup-alpha')
+     16|   expect(twin.name).toBe('setup-alpha')
+     17|   expect(entry).not.toBe(twin)
+       |                     ^
+     18|   expect(entry).toStrictEqual(twin)
+     19|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+

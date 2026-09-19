@@ -1,0 +1,23 @@
+{
+	"extends": "./tsconfig.server.json",
+	"compilerOptions": {
+		"noEmit": true,
+		"declaration": false,
+		"emitDeclarationOnly": false,
+		"composite": false,
+		"incremental": true,
+		"tsBuildInfoFile": "../../.probe/configs-src-tsconfig.server.json.tsbuildinfo"
+	},
+	"files": [
+		"../../src/server/Materializer.ts",
+		"../../src/server/Upstream.ts",
+		"../../src/server/WriteTransaction.ts",
+		"../../src/server/constants.ts",
+		"../../src/server/helpers.ts",
+		"../../src/server/index.ts",
+		"../../src/server/types.ts",
+		"../../src/server/validators.ts",
+		"../../src/server/types.ts",
+		"../../src/server/helpers.ts"
+	]
+}

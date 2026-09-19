@@ -1,0 +1,19 @@
+import { COPY, MEDIA_PATH, PRODUCTS_PATH } from '@app/browser'
+
+export const CASES = Object.freeze([
+	Object.freeze({
+		catalog: Object.freeze({ products: Object.freeze([]) }),
+		notice: 'No products in this catalog yet.',
+		path: PRODUCTS_PATH,
+	}),
+	Object.freeze({
+		catalog: Object.freeze({ assets: Object.freeze([]) }),
+		notice: COPY.absent,
+		path: MEDIA_PATH,
+	}),
+])
+
+export const VIEWPORTS = Object.freeze([
+	Object.freeze({ height: 800, width: 1280 }),
+	Object.freeze({ height: 844, width: 390 }),
+])

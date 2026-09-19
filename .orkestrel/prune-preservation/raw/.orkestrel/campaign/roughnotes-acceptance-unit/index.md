@@ -1,0 +1,11 @@
+# Roughnotes acceptance navigation
+
+Read the raw records for byte-exact evidence. Read these operational records after launch paths are swept.
+
+- [Effective R-B brief11](operational/canonical/tmp/units/r-b-brief-11.md) and [effective R-B report11](operational/recovery/tmp/units/r-b-report-11.md).
+- [Final R-B audit verdict](operational/canonical/.orkestrel/campaign/r-b-final-audit-verdict.md), [objective report](operational/canonical/.orkestrel/campaign/r-b-final-objective-report.md), and [subjective report](operational/canonical/.orkestrel/campaign/r-b-final-subjective-report.md).
+- [Registry adoption author brief](operational/canonical/tmp/units/roughnotes-registry-adoption-brief.md) and [author report](operational/canonical/tmp/units/roughnotes-registry-adoption-report.md). The [root registry acceptance](operational/canonical/.orkestrel/campaign/roughnotes-registry-acceptance.md) is a separate artifact.
+- [Registry audit claims](operational/canonical/tmp/audit/roughnotes-registry-adoption-audit-claims.md), [objective report](operational/canonical/tmp/audit/roughnotes-registry-adoption-objective-report.md), [subjective report](operational/canonical/tmp/audit/roughnotes-registry-adoption-subjective-report.md), and [audit verdict](operational/canonical/.orkestrel/campaign/roughnotes-registry-adoption-audit-verdict.md).
+- [Host report](operational/canonical/tmp/units/roughnotes-registry-host-report.md), [ordered gate report](operational/canonical/tmp/units/roughnotes-registry-gates-author-report-2.md), [capture retention report](operational/canonical/tmp/units/roughnotes-registry-capture-retention-report.md), [final verifier report](operational/canonical/tmp/units/roughnotes-registry-final-verifier-report.md), and [root acceptance](operational/canonical/.orkestrel/campaign/roughnotes-registry-acceptance.md).
+
+The raw registry scripts and logs remain execution evidence. The capture inventory and journey records are retained under `canonical/capture-metadata`; PNG images remain in the immutable external portfolio.

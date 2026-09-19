@@ -1,0 +1,56 @@
+diff --git a/tmp/units/anchor-retention-evidence/retain-anchor-unit-predecessor-executed.mjs b/tmp/release/retain-anchor-unit.mjs
+index b53c6f61..c09f595e 100644
+--- a/tmp/units/anchor-retention-evidence/retain-anchor-unit-predecessor-executed.mjs
++++ b/tmp/release/retain-anchor-unit.mjs
+@@ -8,9 +8,9 @@ const canonical = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..');
+ const candidate = join(canonical, 'tmp', 'release', 'scaffold-0.0.75');
+ const destination = '.orkestrel/campaign/anchor-unit';
+ const baseline = '2f78b38a7c938d7e4f5b5c8f2030385bfcb5d6eb';
+-const manifestPath = join(canonical, 'tmp', 'units', 'anchor-retention-evidence', 'manifest-3.json');
++const manifestPath = join(canonical, 'tmp', 'units', 'anchor-retention-evidence', 'manifest-4.json');
+ const sources = ['guides/scaffold.md', 'host.json', 'src/server/helpers.ts', 'src/server/types.ts', 'tests/distribution.test.ts', 'tests/src/server/WriteTransaction.test.ts', 'tests/src/server/helpers.test.ts'];
+-const late = ['tmp/units/anchor-release-verifier-report-2.md', 'tmp/units/anchor-root-acceptance.md', 'tmp/units/anchor-retention-report.md', 'tmp/units/anchor-retention-evidence/additive-script.patch', 'tmp/units/anchor-retention-evidence/additive-stat.txt', 'tmp/units/anchor-retention-evidence/scoped-status.txt', 'tmp/audit/anchor-retention-claims.md', 'tmp/audit/anchor-retention-objective-brief.md', 'tmp/audit/anchor-retention-subjective-brief.md', 'tmp/audit/anchor-retention-objective-report.md', 'tmp/audit/anchor-retention-subjective-report.md', 'tmp/units/anchor-retention-root-acceptance.md'];
++const late = ['tmp/units/anchor-release-verifier-report-2.md', 'tmp/units/anchor-root-acceptance.md', 'tmp/units/anchor-retention-report-2.md', 'tmp/units/anchor-retention-evidence/additive-script-2.patch', 'tmp/units/anchor-retention-evidence/additive-stat-2.txt', 'tmp/units/anchor-retention-evidence/scoped-status-2.txt', 'tmp/audit/anchor-retention-claims-2.md', 'tmp/audit/anchor-retention-objective-brief-2.md', 'tmp/audit/anchor-retention-subjective-brief-2.md', 'tmp/audit/anchor-retention-objective-report-2.md', 'tmp/audit/anchor-retention-subjective-report-2.md', 'tmp/units/anchor-retention-root-acceptance.md'];
+ const records = ['directory-anchor-ruling.md', 'directory-anchor-failure-map.md', 'anchor-design-verdict.md', 'anchor-repair-audit-verdict.md', 'anchor-closing-verdict.md', 'anchor-release-registry.md'];
+ const instruments = ['run-anchor-gates.ps1', 'run-anchor-gates-2.ps1', 'run-anchor-gates.mjs', 'anchor-gate-control.mjs', 'launch-anchor-gates.ps1', 'retain-anchor-unit.mjs'];
+ const probes = ['anchor-identity.mjs', 'anchor-identity-result.json', 'anchor-expectation-reading.mjs', 'anchor-built-reading.mjs'];
+@@ -80,13 +80,20 @@ export function rewriteRecord(entry, entries, unresolved) {
+   const root = entry.origin === 'canonical' ? canonical : candidate;
+   const text = readFileSync(resolveBounded(root, entry.original), 'utf8');
+   const mappings = [];
++  const aliases = new Map();
+   for (const item of entries) {
+     const home = item.origin === 'canonical' ? canonical : candidate;
+     const target = relative(dirname(`operational/${entry.origin}/${entry.original}`), item.retained).split(sep).join('/');
+     const absolute = resolve(home, item.original);
+     mappings.push([absolute, target], [absolute.split(sep).join('/'), target]);
+-    if (item.origin === entry.origin) mappings.push([item.original, target], [relative(dirname(resolve(root, entry.original)), resolve(root, item.original)).split(sep).join('/'), target]);
++    for (const selector of [item.origin, item.origin === 'canonical' ? 'Canonical' : 'Candidate']) mappings.push([`${selector} ${item.original}`, `${selector} ${target}`], [`${selector} \`${item.original}\``, `${selector} \`${target}\``]);
++    for (const alias of [item.original, relative(dirname(resolve(root, entry.original)), resolve(root, item.original)).split(sep).join('/')]) {
++      const targets = aliases.get(alias) ?? new Set();
++      targets.add(target);
++      aliases.set(alias, targets);
++    }
+   }
++  for (const [alias, targets] of aliases) if (targets.size === 1) for (const target of targets) mappings.push([alias, target]);
+   const metadata = relative(dirname(`operational/${entry.origin}/${entry.original}`), 'authorship-manifest.json').split(sep).join('/');
+   mappings.push([manifestPath, metadata], [manifestPath.split(sep).join('/'), metadata]);
+   if (entry.origin === 'canonical') mappings.push([relative(canonical, manifestPath).split(sep).join('/'), metadata], [relative(dirname(resolve(root, entry.original)), manifestPath).split(sep).join('/'), metadata]);
+@@ -98,7 +105,7 @@ export function rewriteRecord(entry, entries, unresolved) {
+     if (/^\s*(```|~~~)/.test(line)) { fence = !fence; return line; }
+     if (fence) { if (/tmp[\\/]/.test(line)) unresolved.push({ file: entry.original, origin: entry.origin, line, reason: 'Preserve fenced execution context and source literals.' }); return line; }
+     const rewritten = line.replace(pattern, (key) => replacements.get(key) ?? key);
+-    if (/(?:^|[\s`(])(?:[A-Za-z]:[\\/][^\s`)]*?)?tmp[\\/]/.test(rewritten)) unresolved.push({ file: entry.original, origin: entry.origin, line, reason: 'Reference has no full known retained mapping; preserve the historical or external context.' });
++    if (/(?:^|[\s`(])(?:[A-Za-z]:[\\/][^\s`)]*?)?tmp[\\/]/.test(rewritten)) unresolved.push({ file: entry.original, origin: entry.origin, line, reason: [...aliases].some(([alias, targets]) => targets.size > 1 && rewritten.includes(alias)) ? 'The same relative path names different origins; require an explicit canonical/candidate selector or absolute path.' : 'Reference has no full known retained mapping; preserve the historical or external context.' });
+     return rewritten;
+   }).join('\n');
+ }
+@@ -140,7 +147,7 @@ export function execute() {
+   if (existsSync(output)) throw new Error(`evidence-collision: ${output}`);
+   if (mode === '--manifest') {
+     const manifest = { authored: new Date().toISOString(), canonical, candidate, expected: baseline, destination, sources: sources.map((key) => ({ path: key, sha256: hashBytes(readFileSync(resolveBounded(candidate, key))) })), entries: collectFiles(), required: late.map((key) => ({ origin: 'canonical', original: key, retained: `raw/canonical/${key}` })), exclusions: ['anchor-pack artifacts (owned by post-commit pack retention)', 'Cursor journals and stderr streams', 'images and archives', 'unrelated campaign work and credentials'] };
+-    writeExclusive(canonical, 'tmp/units/anchor-retention-evidence/manifest-3.json', Buffer.from(`${JSON.stringify(manifest, null, 2)}\n`));
++    writeExclusive(canonical, 'tmp/units/anchor-retention-evidence/manifest-4.json', Buffer.from(`${JSON.stringify(manifest, null, 2)}\n`));
+     console.log('MANIFEST_AUTHORED; no destination creation or staging');
+     return;
+   }

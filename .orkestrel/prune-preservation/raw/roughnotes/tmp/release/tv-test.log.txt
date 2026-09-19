@@ -1,0 +1,99 @@
+npm notice run roughnotes@0.0.1 test
+npm notice run npm run test:app && npm run test:journey && npm run test:policy && npm run test:config && npm run test:setup && npm run test:conformance
+npm notice run roughnotes@0.0.1 test:app
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project app:core --project app:browser
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/roughnotes
+
+·································8:56:47 AM [vite] [90m[2m(client)[22m[39m Re-optimizing dependencies because lockfile has changed
+··stdout | tests/app/browser/styles/theme.test.ts:83:2 > theme > keeps accent, card paint, and focus rings local through nested mode changes
+light card: rgb(255, 255, 255); image: none; accent: rgb(200, 149, 43)
+stdout | tests/app/browser/styles/theme.test.ts:83:2 > theme > keeps accent, card paint, and focus rings local through nested mode changes
+dark card: rgb(10, 37, 64); image: linear-gradient(160deg, rgb(10, 37, 64), rgb(18, 58, 99)); accent: rgb(231, 198, 122)
+stdout | tests/app/browser/styles/theme.test.ts:83:2 > theme > keeps accent, card paint, and focus rings local through nested mode changes
+light card: rgb(255, 255, 255); image: none; accent: rgb(200, 149, 43)
+······················································································································································8:57:17 AM [vite] [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: injection "Symbol(application)" not found. 
+  at <HomeView>
+stderr | tests/app/browser/composables/useApplication.test.ts:12:2 > useApplication > throws when APPLICATION_KEY has not been provided
+[Vue warn]: injection "Symbol(application)" not found. 
+  at <HomeView>
+stderr | tests/app/browser/composables/useApplication.test.ts:12:2 > useApplication > throws when APPLICATION_KEY has not been provided
+[Vue warn]: Unhandled error during execution of setup function 
+  at <HomeView>
+8:57:17 AM [vite] [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: Unhandled error during execution of setup function 
+  at <HomeView>
+·······
+
+ Test Files  43 passed (43)
+      Tests  192 passed (192)
+   Start at  08:56:47
+   Duration  30.97s (transform 518ms, setup 3.48s, import 2.94s, tests 21.42s, environment 1ms)
+
+npm notice run roughnotes@0.0.1 test:journey
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project 'journey:*'
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/roughnotes
+
+8:57:19 AM [vite] [90m[2m(client)[22m[39m Re-optimizing dependencies because lockfile has changed
+8:57:19 AM [vite] [90m[2m(client)[22m[39m Re-optimizing dependencies because lockfile has changed
+8:57:19 AM [vite] [90m[2m(client)[22m[39m Re-optimizing dependencies because lockfile has changed
+8:57:19 AM [vite] [90m[2m(client)[22m[39m Re-optimizing dependencies because lockfile has changed
+8:57:20 AM [vite] [90m[2m(client)[22m[39m [optimizer] scanning dependencies...
+8:57:20 AM [vite] [90m[2m(client)[22m[39m [optimizer] scanning dependencies...
+8:57:20 AM [vite] [90m[2m(client)[22m[39m [optimizer] scanning dependencies...
+8:57:20 AM [vite] [90m[2m(client)[22m[39m [optimizer] scanning dependencies...
+··························································-····-······-······-··
+
+ Test Files  4 passed (4)
+      Tests  76 passed | 4 skipped (80)
+   Start at  08:57:19
+   Duration  38.58s (transform 0ms, setup 34.34s, import 8.28s, tests 84.26s, environment 0ms)
+
+npm notice run roughnotes@0.0.1 test:policy
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project policy
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/roughnotes
+
+···············································································································
+
+ Test Files  1 passed (1)
+      Tests  111 passed (111)
+   Start at  08:57:59
+   Duration  1.49s (transform 101ms, setup 32ms, import 300ms, tests 998ms, environment 0ms)
+
+npm notice run roughnotes@0.0.1 test:config
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project config
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/roughnotes
+
+··············································
+
+ Test Files  1 passed (1)
+      Tests  46 passed (46)
+   Start at  08:58:01
+   Duration  1.69s (transform 189ms, setup 32ms, import 995ms, tests 504ms, environment 0ms)
+
+npm notice run roughnotes@0.0.1 test:setup
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project setup
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/roughnotes
+
+···
+
+ Test Files  1 passed (1)
+      Tests  3 passed (3)
+   Start at  08:58:04
+   Duration  215ms (transform 26ms, setup 40ms, import 23ms, tests 7ms, environment 0ms)
+
+npm notice run roughnotes@0.0.1 test:conformance
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project conformance
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/roughnotes
+
+············
+
+ Test Files  1 passed (1)
+      Tests  12 passed (12)
+   Start at  08:58:05
+   Duration  781ms (transform 69ms, setup 32ms, import 589ms, tests 14ms, environment 0ms)
+

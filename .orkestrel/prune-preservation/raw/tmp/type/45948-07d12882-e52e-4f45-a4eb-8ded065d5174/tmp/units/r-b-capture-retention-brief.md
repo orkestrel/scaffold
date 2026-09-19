@@ -1,0 +1,13 @@
+# Retain the final Roughnotes capture
+
+Act as builder on Terra. Own only `tmp/probe/retain-r-b-capture.ps1` and `tmp/units/r-b-capture-retention-report.md` in canonical Scaffold. You are not alone in the workspace; preserve every other edit. Do not delegate, install, commit, publish, or change source. Author the instrument; the Orchestrator runs its copying operation.
+
+Read AGENTS.md, .agents/orchestration.md, .claude/rules/portability.md, documentation.md, writing.md, and quality.md. Read the orkestrel-prove-journey skill and required capture reference, orkestrel-debrief retention reference, guides/README.md, and the relevant journey guide. Follow types-first, no assertions/any/suppressions/mocks, no dependencies, no nested declarations, no speculative APIs. The work is a PowerShell evidence instrument, not product implementation.
+
+Use the fixed input root `C:\Users\mikes\WebstormProjects\scaffold\tmp\recovery\roughnotes`. Preserve `tmp/capture/states/*.png`, `tmp/journeys/*.txt`, and `tmp/units/r-b-final-capture.log.txt` into a fresh write-once destination `C:\Users\mikes\WebstormProjects\scaffold\.orkestrel\campaign\r-b-final-capture`. Refuse an existing destination. Validate resolved source and destination paths before copying; never delete or move any file. Do not copy any other tree, environment, credentials, journal, or dependency.
+
+Read the PNG signature and IHDR bytes using native .NET and record each basename, width, height, bytes, and SHA256 in a JSON inventory. Verify source and copied SHA256 equality. Preserve the variant text exactly and assert each has `capturing=true` using its actual representation; inspect that representation before implementing the assertion. Require the variants light-1280, dark-1280, light-390, and dark-390 by exact stem; reject missing variants or frames without a recognized variant suffix. Confirm a navigation frame per variant. Record actual measurements and run log provenance, not invented totals. Capture command was `$env:CAPTURE='1'; npm.cmd run test:journey` with prior environment restored. Its collected process exit was 0; actual reporter showed 176 passed, duration65.93s, start12:18:31 on2026-09-18. Do not rerun tests.
+
+Put a concise readme in the destination from the instrument. State screenshots use full-page dimensions and do not alone prove the configured viewport height. Include relative paths to inventory, text, screenshots, and log. Keep source bytes immutable; if validation fails leave partial output and report it rather than deleting evidence.
+
+Check script syntax without invoking its copying operation. Return script path, syntax result, owned status, and any deviation. Do not run the instrument.

@@ -1,0 +1,27 @@
+npm notice run roughnotes@0.0.1 test:conformance
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project conformance
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/roughnotes
+
+x···········
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |conformance| tests/conformance.test.ts > configuration conformance > merges an override into the browser configuration
+AssertionError: expected [ 'bootstrap-icons' ] to include 'vue'
+ ❯ tests/conformance.test.ts:107:44
+    105|   expect(overridden.build?.emptyOutDir).toBe(false)
+    106|   expect(overridden.optimizeDeps?.include).toContain('bootstrap-icons')
+    107|   expect(overridden.optimizeDeps?.include).toContain('vue')
+       |                                            ^
+    108|   expect(readOutputDirectory(overridden)).toBe(readOutputDirectory(pla…
+    109|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 11 passed (12)
+   Start at  18:26:54
+   Duration  817ms (transform 76ms, setup 31ms, import 611ms, tests 18ms, environment 0ms)
+

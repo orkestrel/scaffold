@@ -1,0 +1,21 @@
+== mutation A: appJourney include widened to the glob ==
+include line: 359
+ src/core/templates.ts | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+A_core_EXIT=0
+A_bin_EXIT=0
+A_config_EXIT=0
+restored A: 0 diff lines
+== mutation B: appJourney browser enabled set false ==
+enabled line: 364
+ src/core/templates.ts | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+B_core_EXIT=0
+B_bin_EXIT=0
+B_config_EXIT=0
+restored B: 0 diff lines
+== baseline (no mutation) ==
+base_core_EXIT=0
+base_bin_EXIT=0
+base_config_EXIT=0
+(end)

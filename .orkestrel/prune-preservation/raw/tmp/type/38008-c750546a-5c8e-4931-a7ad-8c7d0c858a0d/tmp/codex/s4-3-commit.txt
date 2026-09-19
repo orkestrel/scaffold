@@ -1,0 +1,35 @@
+fix(bin): read the -c shorthand, walk the test chain transitively, and bound the configuration advisory to Vitest scripts
+
+Unit S4-3 (`sol`, gpt-6-astra, baseline 24285b95; brief and report retained
+under .orkestrel/campaign/s4-brief-3.md and s4-report-3.md) closes the
+generator findings of the fix-round audit
+(.orkestrel/campaign/s-fix-audit-verdict.md):
+
+- `scriptToInvocations` reads `-c <path>` beside `--config <path>` and
+  `--config=<path>`, refuses an unresolved `-c` value, and answers `undefined`
+  for a dangling one; the contract and its guide rows name the three
+  spellings (claim 2).
+- The missing-invocation arm of the `projects` question tests membership in
+  the transitive walk from `test` the reachability check already takes, so a
+  chain that reaches `test:journey` through an intermediate script draws no
+  advisory (claim 3a; reproduced in
+  .orkestrel/campaign/s-fix-audit-reproduction/f2-audit-indirect.json and
+  f2-audit-grouped.json before the fix).
+- The absent-configuration arm skips a `test:*` script whose text does not
+  name `vitest`, matching the bound the absent-project loop honours, so a
+  Playwright `--config` draws no "Vitest configuration" advisory (claim 3b;
+  f2-audit-e2e.json before the fix).
+- The absent-configuration advisory's remedy names the chain invocation
+  beside the script (claim 8).
+- guides/scaffold.md states the classifier bound both loops honour, the
+  transitive chain sentence, and the earliest-fact-first reporting order
+  beside the one-question sentence (claims 4, 7).
+- tests/setupServer.ts names `import.meta.resolve` beside `require.resolve`
+  as a form outside the specifier reading, with its case (claim 6 residual).
+
+Each control ran red before its ruling and green after (s4-report-3.md).
+host.json is regenerated over the vendored bytes (tests/setupServer.ts,
+guides/scaffold.md). Gate reading retained as
+.orkestrel/campaign/s4-3-gates-summary.txt.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>

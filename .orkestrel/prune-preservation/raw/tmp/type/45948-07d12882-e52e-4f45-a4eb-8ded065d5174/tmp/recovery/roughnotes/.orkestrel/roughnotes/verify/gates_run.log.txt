@@ -1,0 +1,9 @@
++ cd 'C:\Users\mikes\WebstormProjects\roughnotes'
++ npm run format:check
++ echo FORMAT_EXIT=0
++ npm run lint:check
++ echo LINT_EXIT=0
++ npm run check
++ echo CHECK_EXIT=0
++ npm run build
++ echo BUILD_EXIT=0

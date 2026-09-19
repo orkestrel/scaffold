@@ -1,0 +1,25 @@
+Orchestrator reproduction of the T1+T2 audit vectors, 2026-09-17, test checkout at 17d8b61, the probe
+placed at tests/src/browser/probe.test.ts for one run and removed (retained as t-audit-probe.test.ts.txt).
+
+claim 17: {"phases":[],"status":"passed","passed":1,"failed":0,"failures":[]}
+  -> BROKEN: a builder returning undefined skips every phase and the row counts as passed.
+claim 16: {"rejection":"reader broke","status":"running","statuses":["pending","idle","running","passed","failed"]}
+  -> BROKEN: a throwing state reader rejects execute() and leaves the root at running.
+claim 15: {"failures":["same"],"results":["passed","failed"]}
+  -> held: rows keyed by identity carry the right results; only the failures list is ambiguous.
+claim 4: {"before":0,"after":0}
+  -> held: five settled waits on one instrumented signal leave no abort listener behind.
+claim 5: {"threw":false}  (reading undefined)
+  -> reproduced: a hostile target throwing undefined reads as resolved, because captureError conflates the two.
+claim 6: {"unsafeAccepted":true,"overwrite":"QuotaExceededError","seededAfterMutation":"1"}
+  -> Number.MAX_SAFE_INTEGER + 1 is accepted as a quota; an overwrite under quota consumes it (as documented); the seed is copied.
+claim 3: {"identity":true,"message":"Condition \"\"Pin\" to announce \"pressed=true\"\" did not hold forged"}
+  -> held: an abort reason shaped like the timeout voice is rethrown by identity, unaugmented.
+claim 9: npm run test:distribution -- --mode release compiles a consumer under every module resolution (t-distribution-release.log.txt).
+
+Re-run over unit T3's tree (before its checkpoint), 2026-09-17, same probe with the unsafe-quota call guarded:
+claim 17: {"phases":["arrange","act","assert"],"status":"failed","passed":0,"failed":1,"failures":["row"]}  -> closed
+claim 16: {"rejection":"reader broke","status":"failed"}  -> closed
+claim 5:  {"threw":true,"reading":"unset"}  -> closed
+claim 6:  {"unsafeAccepted":"Storage quota must be a non-negative integer","overwrite":"QuotaExceededError","seededAfterMutation":"1"}  -> closed
+claims 3, 4, 15 unchanged and held.

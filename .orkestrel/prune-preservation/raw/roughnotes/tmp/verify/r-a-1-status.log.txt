@@ -1,0 +1,9 @@
+ M app/browser/App.vue
+ M app/browser/components/HomeView.vue
+ M app/browser/constants.ts
+ M app/browser/helpers.ts
+ M tests/app/browser/App.test.ts
+ M tests/app/browser/integration.test.ts
+ M tests/app/browser/setup.ts
+exit:0
+85d1baa chore: adopt the scaffold 0.0.74 vendored floor and the journey axis

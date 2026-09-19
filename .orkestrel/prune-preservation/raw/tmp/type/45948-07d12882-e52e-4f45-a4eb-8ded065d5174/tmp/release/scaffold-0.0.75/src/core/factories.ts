@@ -1,0 +1,79 @@
+import type { Blueprint } from './types.js'
+import { cloneValue } from './cloners.js'
+import { DEFAULT_ENGINES, DEFAULT_VERSION } from './constants.js'
+import { ScaffoldError } from './errors.js'
+import { parseBlueprint } from './parsers.js'
+
+/**
+ * Constructs a {@link Blueprint} from a name and the fields that differ from the defaults.
+ *
+ * @param name - The bare workspace name.
+ * @param input - The fields to set; every omitted field takes its default.
+ * @returns The filled blueprint, owned by the caller and sharing nothing with `input`.
+ * @throws {@link ScaffoldError} coded `INVALID` when the filled record is not a
+ * blueprint.
+ *
+ * @remarks
+ * A blueprint is a closed record, and most of its fields have one sensible
+ * starting value: an empty list, a cleared flag, `DEFAULT_VERSION`, and
+ * `DEFAULT_ENGINES`. Filling them here is what lets a caller state only what its
+ * workspace actually declares.
+ *
+ * This is the construction door, and {@link parseBlueprint} is the coercing one.
+ * They differ in every part: this fills the defaults and takes a
+ * partial specification, where the parser fills nothing and takes an untrusted
+ * value; and this refuses by throwing, where the parser refuses by answering
+ * `undefined`. What they share is the law — both accept exactly what
+ * `isBlueprint` accepts.
+ *
+ * That law is structural only. Whether the name is a name, the version a
+ * version, and the environment axes a combination this package can generate
+ * are the gate's laws, and the gate answers them with {@link Question}s carrying
+ * their accepted candidates. Deciding them here as well would restate that law
+ * and let the answers disagree, so a blueprint the gate will
+ * refuse is still constructible.
+ *
+ * @example Blueprint
+ * ```ts
+ * import { createBlueprint } from '@orkestrel/scaffold'
+ *
+ * const blueprint = createBlueprint('router', {
+ * 	src: ['core', 'server'],
+ * 	dependencies: [{ name: '@orkestrel/emitter', range: '^0.0.5' }],
+ * 	bin: true,
+ * })
+ *
+ * blueprint.version // '0.0.1'
+ * blueprint.engines // '>=22.18.0'
+ * ```
+ */
+export function createBlueprint(name: string, input?: Partial<Omit<Blueprint, 'name'>>): Blueprint {
+	const candidate = {
+		name,
+		...(input?.description === undefined ? {} : { description: input.description }),
+		keywords: input?.keywords ?? [],
+		src: input?.src ?? [],
+		app: input?.app ?? [],
+		dependencies: input?.dependencies ?? [],
+		peers: input?.peers ?? [],
+		extras: input?.extras ?? [],
+		version: input?.version ?? DEFAULT_VERSION,
+		engines: input?.engines ?? DEFAULT_ENGINES,
+		overrides: input?.overrides ?? [],
+		bin: input?.bin ?? false,
+		setup: input?.setup ?? [],
+		guides: input?.guides ?? false,
+		integration: input?.integration ?? false,
+		conformance: input?.conformance ?? false,
+		service: input?.service ?? false,
+		vendors: input?.vendors ?? [],
+		global: input?.global ?? false,
+		showcase: input?.showcase ?? false,
+		journey: input?.journey ?? false,
+	}
+	const blueprint = parseBlueprint(cloneValue(candidate))
+	if (blueprint === undefined) {
+		throw new ScaffoldError('INVALID', 'The filled record is not a blueprint.', { name })
+	}
+	return blueprint
+}

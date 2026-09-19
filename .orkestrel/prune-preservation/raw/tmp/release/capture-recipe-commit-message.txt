@@ -1,0 +1,12 @@
+Keep capture preparation inside acceptance journeys
+
+Await theme actions before captured states and pass provided variants directly.
+Keep CaptureVariant.apply optional and synchronous, place frames after rendered
+assertions in existing journeys, and correct the screenshot output path.
+
+Regenerate the host inventory and retain the unit's briefs, audit, reports,
+instruments, and gate evidence. The independent prepublishOnly run exited 0;
+its missing full file log is recorded. Preserve exact evidence bytes in Git.
+
+Roughnotes independently reproduced the asynchronous-hook rejection and passed
+after the direct composition fix. Publication and registry adoption remain open.

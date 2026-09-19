@@ -1,0 +1,11 @@
+{
+	"extends": "../../tsconfig.json",
+	"include": [
+		"../../src/core/compilers.ts",
+		"../../src/core/templates.ts",
+		"../../tests/src/core/compilers.test.ts",
+		"../../tests/src/core/templates.test.ts",
+		"../../tests/distribution.test.ts",
+		"../../tests/setupServer.ts"
+	]
+}

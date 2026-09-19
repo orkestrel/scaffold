@@ -1,0 +1,13 @@
+baseline: 0d03ec79 docs(skill): name buildRefusal in the statechart reference
+dirty before: 0
+s4_EXIT=0 elapsed=111s
+--- thread ---
+{"type":"thread.started","thread_id":"01a0b118-a53b-7de2-95a2-2ae093251c15"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"I’ll read the brief
+--- report size ---
+2639 C:/Users/mikes/WebstormProjects/scaffold/tmp/codex/s4-report.md
+--- status ---
+--- diffstat ---
+--- err (non-rmcp) ---
+Reading additional input from stdin...

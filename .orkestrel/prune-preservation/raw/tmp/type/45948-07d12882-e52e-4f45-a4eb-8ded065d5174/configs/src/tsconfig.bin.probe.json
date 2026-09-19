@@ -1,0 +1,19 @@
+{
+	"extends": "./tsconfig.bin.json",
+	"compilerOptions": {
+		"noEmit": true,
+		"declaration": false,
+		"emitDeclarationOnly": false,
+		"composite": false,
+		"incremental": true,
+		"tsBuildInfoFile": "../../.probe/configs-src-tsconfig.bin.json.tsbuildinfo"
+	},
+	"files": [
+		"../../src/bin/CLI.ts",
+		"../../src/bin/constants.ts",
+		"../../src/bin/errors.ts",
+		"../../src/bin/helpers.ts",
+		"../../src/bin/main.ts",
+		"../../src/bin/types.ts"
+	]
+}

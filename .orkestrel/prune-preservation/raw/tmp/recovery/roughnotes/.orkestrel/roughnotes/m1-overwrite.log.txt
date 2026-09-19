@@ -1,0 +1,8 @@
+npm notice run roughnotes@0.0.1 npx
+npm notice run scaffold overwrite --groups configs --dirty
+0 of 15 planned paths drifted from the plan. Audit compared bytes at 14, existence at 1, and nothing at 0.
+vite.config.ts replaced (131 lines removed).
+.oxlintrc.json replaced (71 lines added).
+.prettierignore replaced (3 lines added).
+12 written, 13 unchanged, 0 removed in ..
+50 published, 8 guides fetched, 0 no longer listed.

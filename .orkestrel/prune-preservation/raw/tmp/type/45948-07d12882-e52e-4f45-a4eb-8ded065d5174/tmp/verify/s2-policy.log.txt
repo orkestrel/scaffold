@@ -1,0 +1,12 @@
+npm notice run @orkestrel/scaffold@0.0.73 test:policy
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project policy
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/scaffold
+
+···········································································································
+
+ Test Files  1 passed (1)
+      Tests  107 passed (107)
+   Start at  13:41:21
+   Duration  2.45s (transform 226ms, setup 309ms, import 236ms, tests 1.76s, environment 0ms)
+

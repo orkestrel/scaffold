@@ -1,0 +1,180 @@
+diff --git a/src/server/helpers.ts b/src/server/helpers.ts
+index 7bff4374..ce02c1c9 100644
+--- a/src/server/helpers.ts
++++ b/src/server/helpers.ts
+@@ -1912,7 +1912,8 @@ export function stageInventory(checkout: string, path: string = HOST_INVENTORY_P
+  * @returns The anchor, or `undefined` when the path is not a physical directory.
+  *
+  * @remarks
+- * Device and inode rather than the path, because the path is the thing that can
++ * Native bigint device and inode values preserve the filesystem identity without
++ * numeric rounding. Device and inode rather than the path, because the path can
+  * be swapped underneath a write. An anchor captured before a mutation and
+  * checked again after it proves the directory written into sits where the
+  * inspected one sat, not that it is the one that was inspected.
+@@ -1921,11 +1922,12 @@ export function stageInventory(checkout: string, path: string = HOST_INVENTORY_P
+  * ```ts
+  * import { readAnchor } from '@orkestrel/scaffold/server'
+  *
+- * readAnchor('/tmp/project') // { path: '/tmp/project', device: 1, inode: 2 }
++ * const anchor = readAnchor(process.cwd())
++ * anchor !== undefined && typeof anchor.device === 'bigint' && typeof anchor.inode === 'bigint' // true for a physical directory
+  * ```
+  */
+ export function readAnchor(path: string): WriteAnchor | undefined {
+-	const status = attempt(() => lstatSync(path))
++	const status = attempt(() => lstatSync(path, { bigint: true }))
+ 	if (!status.success || !status.value.isDirectory() || status.value.isSymbolicLink()) {
+ 		return undefined
+ 	}
+@@ -1933,7 +1935,7 @@ export function readAnchor(path: string): WriteAnchor | undefined {
+ }
+ 
+ /**
+- * Tests whether a captured directory is still the same directory.
++ * Tests whether a path still holds the captured directory identity.
+  *
+  * @param anchor - The identity captured earlier.
+  * @returns True if the path still holds a physical directory of that exact device and
+diff --git a/src/server/types.ts b/src/server/types.ts
+index 45a04447..41380b28 100644
+--- a/src/server/types.ts
++++ b/src/server/types.ts
+@@ -181,14 +181,14 @@ export interface WritePrecondition {
+  * Represents one physical directory identity captured across a write transaction.
+  *
+  * @remarks
+- * Device and inode locate the directory and do not date it. Two directories
+- * occupying one slot at different times share an anchor, so an anchor proves
++ * Native bigint device and inode values locate the directory and do not date it.
++ * Two directories occupying one slot at different times share an anchor, so an anchor proves
+  * where a write lands and never that the directory was left alone.
+  */
+ export interface WriteAnchor {
+ 	readonly path: string
+-	readonly device: number
+-	readonly inode: number
++	readonly device: bigint
++	readonly inode: bigint
+ }
+ 
+ /** Reports the final directory anchor of a write transaction and the subset one call created. */
+diff --git a/tests/distribution.test.ts b/tests/distribution.test.ts
+index 8f804fae..38d89a77 100644
+--- a/tests/distribution.test.ts
++++ b/tests/distribution.test.ts
+@@ -599,7 +599,7 @@ describe('installed package consumer', () => {
+ 				'dist/src/server/index.d.ts: expectation !== undefined && matchesExpectation(expectation) // true while untouched',
+ 				"dist/src/server/index.d.ts: matchesPrecondition({ path: '/tmp/project/new.md', shape: 'absent' }) // true while absent",
+ 				'dist/src/server/index.d.ts: result.written // every path created',
+-				"dist/src/server/index.d.ts: readAnchor('/tmp/project') // { path: '/tmp/project', device: 1, inode: 2 }",
++				"dist/src/server/index.d.ts: anchor !== undefined && typeof anchor.device === 'bigint' && typeof anchor.inode === 'bigint' // true for a physical directory",
+ 				"dist/src/server/index.d.ts: readHostFloor().manifest // the installed floor's verified membership",
+ 				"dist/src/server/index.d.ts: readHostManifest('./dist/host') // the manifest, or undefined for a raw root",
+ 				"dist/src/server/index.d.ts: readSurfaceBaseline('.') // the recorded collisions, if the inventory exists",
+diff --git a/tests/src/server/WriteTransaction.test.ts b/tests/src/server/WriteTransaction.test.ts
+index af4a64fd..f7f6cd4e 100644
+--- a/tests/src/server/WriteTransaction.test.ts
++++ b/tests/src/server/WriteTransaction.test.ts
+@@ -375,6 +375,13 @@ for (;;) {
+ 					join(target, '.claude/skills'),
+ 				])
+ 				expect(result.anchor.path).toBe(join(target, '.claude/skills'))
++				for (const anchor of [result.anchor, ...result.created]) {
++					const native = lstatSync(anchor.path, { bigint: true })
++					expect(anchor.device).toBe(native.dev)
++					expect(anchor.inode).toBe(native.ino)
++					expect(typeof anchor.device).toBe('bigint')
++					expect(typeof anchor.inode).toBe('bigint')
++				}
+ 				expect(transaction.commit()).toEqual(['.claude/skills'])
+ 				expect(lstatSync(join(target, '.claude/skills')).isDirectory()).toBe(true)
+ 			} finally {
+diff --git a/tests/src/server/helpers.test.ts b/tests/src/server/helpers.test.ts
+index 9da40dde..f8c295bf 100644
+--- a/tests/src/server/helpers.test.ts
++++ b/tests/src/server/helpers.test.ts
+@@ -2509,6 +2509,7 @@ parentPort.postMessage('ready')`,
+ 			)
+ 			expect(declared.length).toBe(inventory.entries.length)
+ 			expect(destinations.toSorted()).toStrictEqual(declared.toSorted())
++			expect(requireValue(readHostManifest(join(workspace.path, 'host')))).toStrictEqual(inventory)
+ 		} finally {
+ 			workspace.destroy()
+ 		}
+@@ -2803,6 +2804,21 @@ describe('stageInventory', () => {
+ })
+ 
+ describe('write anchors', () => {
++	it('captures exact native bigint device and inode values', () => {
++		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
++		try {
++			const target = workspace.ensure('project')
++			const native = lstatSync(target, { bigint: true })
++			const anchor = requireValue(readAnchor(target))
++			expect(anchor.device).toBe(native.dev)
++			expect(anchor.inode).toBe(native.ino)
++			expect(typeof anchor.device).toBe('bigint')
++			expect(typeof anchor.inode).toBe('bigint')
++		} finally {
++			workspace.destroy()
++		}
++	})
++
+ 	it('captures a directory identity and matches it while it is untouched', () => {
+ 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+ 		try {
+@@ -2834,11 +2850,11 @@ describe('write anchors', () => {
+ 			expect(anchor).toBeDefined()
+ 			if (anchor === undefined) return
+ 			const replacement = workspace.ensure('replacement')
+-			const replacementAnchor = readAnchor(replacement)
+-			expect(replacementAnchor).toBeDefined()
+-			if (replacementAnchor === undefined) return
++			const originalNative = lstatSync(target, { bigint: true })
++			const replacementNative = lstatSync(replacement, { bigint: true })
+ 			expect(
+-				replacementAnchor.device === anchor.device && replacementAnchor.inode === anchor.inode,
++				replacementNative.dev === originalNative.dev &&
++					replacementNative.ino === originalNative.ino,
+ 			).toBe(false)
+ 			// The original moves aside rather than being replaced in place. Windows
+ 			// refuses a rename onto an existing directory, and holding the original
+@@ -2847,6 +2863,37 @@ describe('write anchors', () => {
+ 			// for a reason that has nothing to do with the swap.
+ 			renameSync(target, join(workspace.path, 'retired'))
+ 			renameSync(replacement, target)
++			const currentNative = lstatSync(target, { bigint: true })
++			const retiredNative = lstatSync(join(workspace.path, 'retired'), { bigint: true })
++			expect(currentNative.dev).toBe(replacementNative.dev)
++			expect(currentNative.ino).toBe(replacementNative.ino)
++			expect(retiredNative.dev).toBe(originalNative.dev)
++			expect(retiredNative.ino).toBe(originalNative.ino)
++			expect(matchesAnchor(anchor)).toBe(false)
++		} finally {
++			workspace.destroy()
++		}
++	})
++
++	it('refuses independent device and inode mismatches', () => {
++		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
++		try {
++			const anchor = requireValue(readAnchor(workspace.ensure('project')))
++			expect(matchesAnchor({ ...anchor, device: anchor.device + 1n })).toBe(false)
++			expect(matchesAnchor({ ...anchor, inode: anchor.inode + 1n })).toBe(false)
++			expect(matchesAnchor(anchor)).toBe(true)
++		} finally {
++			workspace.destroy()
++		}
++	})
++
++	it('reports a path replaced by a file', () => {
++		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
++		try {
++			const anchor = requireValue(readAnchor(workspace.ensure('project')))
++			renameSync(anchor.path, join(workspace.path, 'retired'))
++			workspace.write('project', 'replacement\n')
++			expect(lstatSync(anchor.path).isFile()).toBe(true)
+ 			expect(matchesAnchor(anchor)).toBe(false)
+ 		} finally {
+ 			workspace.destroy()

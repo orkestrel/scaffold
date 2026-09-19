@@ -1,0 +1,32 @@
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/roughnotes
+
+·x·
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 2 passed (3)
+   Start at  23:18:23
+   Duration  236ms (transform 27ms, setup 35ms, import 23ms, tests 11ms, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |setup| tests/setup.test.ts > root test setup > refuses a configuration carrying no plugins and accepts one carrying an empty list
+AssertionError: expected [Function] to throw an error
+
+- Expected:
+null
+
++ Received:
+undefined
+
+ ❯ tests/setup.test.ts:34:36
+     32|   const empty: UserConfig = {}
+     33|   const declared: UserConfig = { plugins: [] }
+     34|   expect(() => readPlugins(empty)).toThrow('The configuration carries …
+       |                                    ^
+     35|   expect(readPlugins(declared)).toStrictEqual([])
+     36|   expect(readPlugins({ plugins: [createNamedEntry('setup-alpha')] }).l…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+

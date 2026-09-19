@@ -1,0 +1,2 @@
+Command: apply only the prescribed log, entry, and retention-label substitutions to the predecessor, then compare bytes.
+Exact named-substitution comparison: exit 0

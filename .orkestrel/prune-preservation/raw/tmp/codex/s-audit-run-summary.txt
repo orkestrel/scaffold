@@ -1,0 +1,10 @@
+s_audit_EXIT=0 elapsed=942s
+--- thread ---
+{"type":"thread.started","thread_id":"01a0b103-3eb4-7eb3-a4e1-086e2dd88d78"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"I’ll read the brief
+--- last message size ---
+14112 C:/Users/mikes/WebstormProjects/scaffold/tmp/codex/s-audit-subjective-last.md
+--- status ---
+--- err (non-rmcp) ---
+Reading additional input from stdin...

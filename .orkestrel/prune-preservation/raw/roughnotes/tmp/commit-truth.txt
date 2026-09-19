@@ -1,0 +1,55 @@
+fix(app): say what actually happens to a request
+
+Every form told the truth and every confirmation did not. Beside each submit
+control the forms read `Fixture only — nothing is sent off this device`. After
+submitting, a person read that the Indianapolis office answers their inquiry,
+that print and digital delivery is recorded for them, or that an invoice was
+recorded — with the correction placed in a continuation block further down the
+page, after the sentence that already told them it worked.
+
+A person reads the confirmation. The confirmation now carries the truth.
+
+    No inquiry was sent
+    This site is a demonstration. Nothing reached the Indianapolis office, and
+    nobody will answer this inquiry. What you typed is below, and it stays in
+    this browser.
+
+The subscribe and payment desks say the same for what they do. Each keeps the
+entered fields, which are real, and stops promising the action nobody takes.
+The heading constants carried the promise — `You are subscribed` — so the
+values changed rather than gaining a sentence underneath.
+
+The refusals carried the same promise in the refusal's clothes. `The
+subscription could not be sent` implies a valid entry would be sent, and no
+entry ever is: a probe over the real controller found no storage key written
+after three submits, and no `fetch`, `sendBeacon`, `WebSocket`, or
+`EventSource` call exists anywhere under `app/`. Each refusal now names what
+refused and what it refused — the form, and the entries — using the word this
+repository already uses for the state.
+
+Forms that collect a name, a company, an email address, and a phone number now
+say what happens to it, above the fields rather than under the submit control,
+so a person reads it before typing rather than after. The notice states only
+what the probe established: it stays in this browser, it is not sent anywhere,
+and the page discards it on close or reload. It claims no retention schedule,
+no third parties, and no rights-request address, because this application
+performs none of that and a notice describing handling that does not happen is
+the same untruth at greater length.
+
+The notice lives in the form components, so the newsletter desk inherits it
+without its own edit.
+
+A subscribe heading swung between two values by tense — `What the subscription
+carries` before acceptance, `Recorded with this subscription` after. The tense
+was the promise, so the derived label is gone and the heading describes the
+real subscription in either state.
+
+`guides/README.md` stated the retired confirmations as product truth in four
+passages, the retired refusal in a fifth, and carried `Recorded` as a second
+vocabulary for the entered fields in its data-states table. All are corrected.
+
+Every changed sentence a test asserted was updated in the same change, and each
+confirmation gained a negative binding on the promise it retired. A tree-wide
+sweep finds every retired sentence only inside those negative bindings.
+
+Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>

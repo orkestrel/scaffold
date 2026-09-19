@@ -1,0 +1,33 @@
+Probe that shot the screens the capture registry does not carry (/products, /magazine/:slug,
+/magazine, /marketplace). Written to tests/app/browser/frames.probe.test.ts, run through the
+app:browser project, read, then deleted. Frames: tmp/units/u7-probe-*.png.
+
+Command:
+  npx vitest run --config vite.config.ts --no-cache --reporter=dot --project app:browser \
+    tests/app/browser/frames.probe.test.ts
+
+import { describe, it } from 'vitest'
+import { waitForCondition } from '@orkestrel/test'
+import { captureFrame, readPage } from '@orkestrel/test/browser'
+import { clearSurface, openSurface } from './setup.js'
+
+const SHOTS = [
+	['/products', 'Choose the desk', 'u7-probe-products-1280', 1280, 800],
+	['/products', 'Choose the desk', 'u7-probe-products-390', 390, 844],
+	['/magazine/local-landscape', 'permanent part', 'u7-probe-article-1280', 1280, 800],
+	['/magazine/local-landscape', 'permanent part', 'u7-probe-article-390', 390, 844],
+	['/magazine', 'Coverage, markets', 'u7-probe-magazine-1280', 1280, 800],
+	['/marketplace', 'fixture sample of specialty', 'u7-probe-marketplace-1280', 1280, 800],
+] as const
+
+describe('u7 frames', () => {
+	it('shoots the screens the registry does not carry', async () => {
+		for (const [path, text, name, width, height] of SHOTS) {
+			const { app } = await openSurface()
+			app.open(path)
+			await waitForCondition(`${path} paints`, () => readPage().includes(text))
+			await captureFrame({ path: `../../../tmp/units/${name}.png`, width, height })
+			clearSurface()
+		}
+	}, 120_000)
+})

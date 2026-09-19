@@ -1,0 +1,142 @@
+// Orchestrator reproduction probe for the R-A audit's unresolved claims 1, 4, 5 (analyst lane).
+// Collected by the app:browser project for one run and deleted afterwards. Every reading is logged
+// under the PROBE prefix; the assertions only keep the file collectable.
+import { describe, expect, it } from 'vitest'
+import { page } from 'vitest/browser'
+import { waitForCondition } from '@orkestrel/test'
+import {
+	clickAccessible,
+	readPage,
+	readRefusal,
+	readStates,
+	resolveAccessible,
+	traverseAccessible,
+	waitForState,
+} from '@orkestrel/test/browser'
+import { COPY, buildName } from '@app/browser'
+import { clearSurface, openSite, openSurface } from './setup.js'
+
+function describeElement(element: Element | null): string {
+	if (element === null) return 'nothing'
+	const label = element.getAttribute('aria-label') ?? element.textContent?.trim().slice(0, 30) ?? ''
+	return `${element.tagName.toLowerCase()}${element.id ? `#${element.id}` : ''}${element.className ? `.${String(element.className).split(' ').slice(0, 2).join('.')}` : ''} "${label}"`
+}
+
+async function settle(): Promise<void> {
+	await new Promise((resolve) => setTimeout(resolve, 600))
+}
+
+describe('audit probe', () => {
+	it('claim 4: what covers the compact masthead while the menu is open', async () => {
+		await page.viewport(390, 844)
+		await openSurface()
+		await openSite()
+		await settle()
+		const trigger = resolveAccessible('button', COPY.menu)
+		console.info(`PROBE c4 trigger states after open: ${JSON.stringify(readStates(trigger))}`)
+		const dialog = document.querySelector('[aria-modal]')
+		console.info(`PROBE c4 dialog aria-modal=${dialog?.getAttribute('aria-modal') ?? 'none'} role=${dialog?.getAttribute('role') ?? 'none'}`)
+		const mastheadName = buildName(COPY.started, COPY.site)
+		const menuName = buildName(COPY.started, COPY.menu)
+		console.info(`PROBE c4 resolver masthead "${mastheadName}": ${readRefusal(mastheadName) ?? 'resolves'}`)
+		console.info(`PROBE c4 resolver menu "${menuName}": ${readRefusal(menuName) ?? 'resolves'}`)
+		const masthead = resolveAccessible(mastheadName)
+		const box = masthead.getBoundingClientRect()
+		const hit = document.elementFromPoint(box.left + box.width / 2, box.top + box.height / 2)
+		console.info(`PROBE c4 pointer at masthead centre hits: ${describeElement(hit)}; is the masthead or inside it: ${String(hit !== null && (hit === masthead || masthead.contains(hit)))}`)
+		const header = masthead.closest('header')
+		console.info(`PROBE c4 header inert=${String(header?.hasAttribute('inert'))} aria-hidden=${header?.getAttribute('aria-hidden') ?? 'none'}`)
+		console.info(`PROBE c4 active element after open: ${describeElement(document.activeElement)}`)
+		let traversal = 'reached'
+		try {
+			await traverseAccessible(mastheadName)
+		} catch (cause) {
+			traversal = cause instanceof Error ? cause.message.slice(0, 160) : String(cause)
+		}
+		console.info(`PROBE c4 Tab traversal to the masthead from the open menu: ${traversal}`)
+		console.info(`PROBE c4 active element after traversal: ${describeElement(document.activeElement)}`)
+		clearSurface()
+		expect(true).toBe(true)
+	})
+
+	it('claim 5: the media screen with an empty catalog', async () => {
+		for (const [width, height] of [
+			[1280, 800],
+			[390, 844],
+		] as const) {
+			await page.viewport(width, height)
+			await openSurface({ catalog: { assets: [] } })
+			window.location.hash = '#/media'
+			await waitForCondition('media has painted', () => readPage().includes(COPY.media ?? 'Media'), {
+				budget: 5000,
+				interval: 25,
+			}).catch((cause: unknown) => {
+				console.info(`PROBE c5 ${width}: media wait: ${cause instanceof Error ? cause.message.slice(0, 120) : String(cause)}`)
+			})
+			await settle()
+			const contacts = [...document.querySelectorAll('a')].filter((a) => (a.getAttribute('aria-label') ?? a.textContent?.trim()) === COPY.contact)
+			console.info(`PROBE c5 ${width}: bare "${COPY.contact}" anchors in the DOM: ${contacts.length}; refusal: ${readRefusal(COPY.contact) ?? 'resolves'}`)
+			console.info(`PROBE c5 ${width}: page excerpt: ${readPage().slice(0, 200).replaceAll('\n', ' | ')}`)
+			clearSurface()
+		}
+		expect(true).toBe(true)
+	})
+
+	it('claim 1: transitions of the announced state', async () => {
+		await page.viewport(390, 844)
+		await openSurface()
+		const trigger = resolveAccessible('button', COPY.menu)
+		const events: string[] = []
+		const menu = document.getElementById('site-menu')
+		for (const name of ['show.bs.offcanvas', 'shown.bs.offcanvas', 'hide.bs.offcanvas', 'hidden.bs.offcanvas']) {
+			menu?.addEventListener(name, () => events.push(`${name}@expanded=${trigger.getAttribute('aria-expanded')}`))
+		}
+		// (a) open, navigate through the menu, reopen
+		await openSite()
+		await settle()
+		console.info(`PROBE c1a after open: ${JSON.stringify(readStates(trigger))} events=${events.join(',')}`)
+		events.length = 0
+		await clickAccessible('link', buildName(COPY.publications, COPY.site))
+		await settle()
+		console.info(`PROBE c1a after navigating from the menu: ${JSON.stringify(readStates(trigger))} events=${events.join(',')} hash=${window.location.hash}`)
+		events.length = 0
+		await openSite()
+		await settle()
+		console.info(`PROBE c1a reopen: ${JSON.stringify(readStates(trigger))} events=${events.join(',')}`)
+		events.length = 0
+		// (b) close during opening
+		await clickAccessible('button', COPY.close)
+		await settle()
+		await clickAccessible('button', COPY.menu)
+		await clickAccessible('button', COPY.menu).catch((cause: unknown) => {
+			console.info(`PROBE c1b second click refused: ${cause instanceof Error ? cause.message.slice(0, 120) : String(cause)}`)
+		})
+		await settle()
+		console.info(`PROBE c1b after click-then-click: ${JSON.stringify(readStates(trigger))} events=${events.join(',')} menu classes=${menu?.className ?? ''}`)
+		events.length = 0
+		// (c) same-view navigation while open: open the menu on a product detail, then move to another
+		window.location.hash = '#/products/roughnotes-pro'
+		await settle()
+		await openSite().catch((cause: unknown) => {
+			console.info(`PROBE c1c open on detail refused: ${cause instanceof Error ? cause.message.slice(0, 120) : String(cause)}`)
+		})
+		await settle()
+		window.location.hash = '#/products/advantage-plus'
+		await settle()
+		console.info(`PROBE c1c same-view navigation with the menu open: ${JSON.stringify(readStates(trigger))} events=${events.join(',')} menu classes=${menu?.className ?? ''}`)
+		events.length = 0
+		// (d) compact open, then widen
+		if (!readStates(trigger).includes('expanded')) {
+			await openSite().catch(() => undefined)
+			await settle()
+		}
+		await page.viewport(1280, 800)
+		await settle()
+		console.info(`PROBE c1d after widening: ${JSON.stringify(readStates(trigger))} trigger visible=${String(trigger.checkVisibility())} events=${events.join(',')} menu classes=${menu?.className ?? ''}`)
+		await waitForState(COPY.menu, 'expanded', { absent: true }).catch((cause: unknown) => {
+			console.info(`PROBE c1d waitForState absent expanded: ${cause instanceof Error ? cause.message.slice(0, 160) : String(cause)}`)
+		})
+		clearSurface()
+		expect(true).toBe(true)
+	})
+})

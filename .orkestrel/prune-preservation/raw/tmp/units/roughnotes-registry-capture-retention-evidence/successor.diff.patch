@@ -1,0 +1,85 @@
+diff --git "a/C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\units\\roughnotes-registry-capture-retention-evidence\\retain-r-b-capture.before.ps1" "b/C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\probe\\retain-roughnotes-registry-capture.ps1"
+index e17eede7..9eeb63db 100644
+--- "a/C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\units\\roughnotes-registry-capture-retention-evidence\\retain-r-b-capture.before.ps1"
++++ "b/C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\probe\\retain-roughnotes-registry-capture.ps1"
+@@ -2,7 +2,9 @@ Set-StrictMode -Version Latest
+ $ErrorActionPreference = 'Stop'
+ 
+ $sourceRoot = 'C:\Users\mikes\WebstormProjects\scaffold\tmp\recovery\roughnotes'
+-$destination = 'C:\Users\mikes\WebstormProjects\scaffold\tmp\capture-retained\r-b-final-capture'
++$canonicalRoot = 'C:\Users\mikes\WebstormProjects\scaffold'
++$gateOutput = 'C:\Users\mikes\WebstormProjects\scaffold\tmp\units\roughnotes-registry-gates-evidence\roughnotes-registry-gates-20260918'
++$destination = 'C:\Users\mikes\WebstormProjects\scaffold\tmp\capture-retained\roughnotes-registry-final-capture'
+ $variants = @('light-1280', 'dark-1280', 'light-390', 'dark-390')
+ $signature = [byte[]](137, 80, 78, 71, 13, 10, 26, 10)
+ 
+@@ -35,6 +37,15 @@ function Require-Child {
+ 	return $resolved
+ }
+ 
++function Require-CanonicalChild {
++	param(
++		[string] $Path,
++		[string] $Label
++	)
++
++	return Require-Child -Root $canonicalRoot -Path $Path -Label $Label
++}
++
+ function Read-Png {
+ 	param([string] $Path)
+ 
+@@ -91,6 +102,22 @@ if (Test-Path -LiteralPath $destination) {
+ 	throw "Destination already exists: $destination"
+ }
+ 
++$canonicalRoot = Require-Path -Path $canonicalRoot -Label 'Canonical root'
++$gateOutput = Require-CanonicalChild -Path $gateOutput -Label 'Registry gate output'
++$terminalPath = Require-CanonicalChild -Path (Join-Path $gateOutput 'terminal.json') -Label 'Registry terminal record'
++$journeyPath = Require-CanonicalChild -Path (Join-Path $gateOutput 'test-journey.json') -Label 'Registry journey record'
++$stdoutPath = Require-CanonicalChild -Path (Join-Path $gateOutput 'test-journey.stdout.log.txt') -Label 'Registry journey standard output'
++$stderrPath = Require-CanonicalChild -Path (Join-Path $gateOutput 'test-journey.stderr.log.txt') -Label 'Registry journey standard error'
++$terminal = Get-Content -LiteralPath $terminalPath -Raw | ConvertFrom-Json
++$journeyRecord = Get-Content -LiteralPath $journeyPath -Raw | ConvertFrom-Json
++if ($terminal.success -ne $true) {
++	throw 'Registry terminal record does not report success.'
++}
++
++if ($journeyRecord.exit -ne 0 -or $null -ne $journeyRecord.signal -or $journeyRecord.capture -ne $true) {
++	throw 'Registry journey record does not report captured native success.'
++}
++
+ $workspaceTmp = Require-Path -Path 'C:\Users\mikes\WebstormProjects\scaffold\tmp' -Label 'Workspace temporary root'
+ $destination = [System.IO.Path]::GetFullPath($destination)
+ $destinationPrefix = $workspaceTmp.TrimEnd([System.IO.Path]::DirectorySeparatorChar) + [System.IO.Path]::DirectorySeparatorChar
+@@ -99,7 +126,6 @@ if (-not $destination.StartsWith($destinationPrefix, [System.StringComparison]::
+ }
+ $states = Require-Child -Root $sourceRoot -Path (Join-Path $sourceRoot 'tmp\capture\states') -Label 'Capture states'
+ $journeys = Require-Child -Root $sourceRoot -Path (Join-Path $sourceRoot 'tmp\journeys') -Label 'Journey records'
+-$log = Require-Child -Root $sourceRoot -Path (Join-Path $sourceRoot 'tmp\units\r-b-final-capture.log.txt') -Label 'Capture log'
+ $frames = @(Get-ChildItem -LiteralPath $states -File -Filter '*.png' | Sort-Object Name)
+ $journeyFiles = @(Get-ChildItem -LiteralPath $journeys -File -Filter '*.txt' | Sort-Object Name)
+ if ($frames.Count -eq 0) {
+@@ -166,8 +192,10 @@ foreach ($journey in $journeyFiles) {
+ 	Copy-Evidence -Source $journey.FullName -Target $target
+ }
+ 
+-$logTarget = Join-Path $destination 'tmp\units\r-b-final-capture.log.txt'
+-Copy-Evidence -Source $log -Target $logTarget
++Copy-Evidence -Source $stdoutPath -Target (Join-Path $destination 'tmp\units\test-journey.stdout.log.txt')
++Copy-Evidence -Source $stderrPath -Target (Join-Path $destination 'tmp\units\test-journey.stderr.log.txt')
++Copy-Evidence -Source $journeyPath -Target (Join-Path $destination 'tmp\units\test-journey.json')
++Copy-Evidence -Source $terminalPath -Target (Join-Path $destination 'tmp\units\terminal.json')
+ $inventoryPath = Join-Path $destination 'inventory.json'
+ @{
+ 	frames = $inventory
+@@ -177,7 +205,7 @@ $readmePath = Join-Path $destination 'README.md'
+ @"
+ # Roughnotes capture evidence
+ 
+-This retained evidence came from the journey capture command `$env:CAPTURE='1'; npm.cmd run test:journey` with the prior environment restored. The collected process exit was 0. The reporter recorded 176 passed, a duration of 65.93s, and a start time of 12:18:31 on 2026-09-18.
++This retained evidence came from the registry journey record. The record started $($journeyRecord.started), ended $($journeyRecord.ended), and ran for $($journeyRecord.elapsed) ms.
+ 
+-See [the inventory](inventory.json), [the journey records](tmp/journeys/), [the screenshots](tmp/capture/states/), and [the run log](tmp/units/r-b-final-capture.log.txt). Screenshots use full-page dimensions and do not alone prove the configured viewport height. Only metadata, reports, and the instrument will later be retained in the campaign commit. The PNG portfolio remains outside version control.
++See [the inventory](inventory.json), [the journey records](tmp/journeys/), [the screenshots](tmp/capture/states/), [the journey record](tmp/units/test-journey.json), [the terminal record](tmp/units/terminal.json), [standard output](tmp/units/test-journey.stdout.log.txt), and [standard error](tmp/units/test-journey.stderr.log.txt). Screenshots use full-page dimensions and do not alone prove the configured viewport height. The PNG portfolio remains outside version control.
+ "@ | Set-Content -LiteralPath $readmePath -Encoding utf8

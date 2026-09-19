@@ -1,0 +1,117 @@
+[
+    {
+        "value":  [
+                      {
+                          "original":  "tmp/release/pack-anchor-candidate.ps1",
+                          "retained":  "instrument.ps1",
+                          "sha256":  "274953706F315B3AD056855DE2738825588D6C0D06AC51C7BE5685E5F014DB5E"
+                      },
+                      {
+                          "original":  "tmp/units/anchor-pack-brief.md",
+                          "retained":  "author-brief.md",
+                          "sha256":  "B092AD2E120472F21B01F3B226B0C1E1701D286A6F44D66C2A9F0D786E6E5CA3"
+                      },
+                      {
+                          "original":  "tmp/units/anchor-pack-report.md",
+                          "retained":  "author-report.md",
+                          "sha256":  "45E700C6A5FD141364E4D51995CBFA7EFC7120A079776823BC8171CA03865C5C"
+                      },
+                      {
+                          "original":  "tmp/units/anchor-pack-evidence/predecessor-delta.patch",
+                          "retained":  "predecessor-delta.patch",
+                          "sha256":  "E42CFDBC96D864ACD5EB4AC677ACC81DCC95DB63BA1EDC193675C0A94141B659"
+                      },
+                      {
+                          "original":  "tmp/units/anchor-pack-evidence/predecessor-delta-check.txt",
+                          "retained":  "predecessor-delta-check.txt",
+                          "sha256":  "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+                      },
+                      {
+                          "original":  "tmp/units/anchor-pack-evidence/parse.txt",
+                          "retained":  "parser.txt",
+                          "sha256":  "586CAEBA2C56F51334BF71FB238CA174DABEE8B455BF36AACEB6CAD1932B6D6D"
+                      },
+                      {
+                          "original":  "tmp/units/anchor-pack-evidence/wrong-commit.txt",
+                          "retained":  "wrong-commit.txt",
+                          "sha256":  "57FF99A9F172D1EC91C103ECFAD5DC0A501DB42E41EFACB250A3BFA26EC72583"
+                      },
+                      {
+                          "original":  "tmp/units/anchor-pack-evidence/wrong-commit-control.txt",
+                          "retained":  "wrong-commit-control.txt",
+                          "sha256":  "993E035AA9DD7291DFE1A27B88A905E856C3B507C2596DB2E279D8E228BE5E6C"
+                      },
+                      {
+                          "original":  "tmp/units/anchor-pack-evidence/status.txt",
+                          "retained":  "author-status.txt",
+                          "sha256":  "7CA5C6F1ABA96B1511C3060DD0D08476170A5120A2DD47B07A8C172DDB0368C7"
+                      },
+                      {
+                          "original":  "tmp/units/anchor-pack-verifier-brief.md",
+                          "retained":  "instrument-verifier-brief.md",
+                          "sha256":  "43319055E306D52CE6CABFABA527B90090DA4956D5AFCEEF9D58437BE061D8D8"
+                      },
+                      {
+                          "original":  "tmp/units/anchor-pack-verifier-report.md",
+                          "retained":  "instrument-verifier-report.md",
+                          "sha256":  "DF666918DC10ACD9119E0280E7EDA1C39258B7E22E04EC259433388801731417"
+                      },
+                      {
+                          "original":  "tmp/units/anchor-archive-verifier-brief.md",
+                          "retained":  "archive-verifier-brief.md",
+                          "sha256":  "78F6BE5D38721A4C0B9F8FBF3B8FECA3A979095CE5EFADFF1DD67A9042F5FAA5"
+                      },
+                      {
+                          "original":  "tmp/units/anchor-archive-verifier-report.md",
+                          "retained":  "archive-verifier-report.md",
+                          "sha256":  "0BC60D03E56888192278F07EFD6BDD3AFA13F5CBC49F1BF64B753FCED4E45C3C"
+                      },
+                      {
+                          "original":  "tmp/units/anchor-archive-verifier-brief-2.md",
+                          "retained":  "archive-verifier-brief-2.md",
+                          "sha256":  "7A3AC9ACA1D419FDEA87E8D043A1FAB74DADA0A5782123E1FE378FE0D202C748"
+                      },
+                      {
+                          "original":  "tmp/release/anchor-pack/metadata.json",
+                          "retained":  "metadata.json",
+                          "sha256":  "A9C82B5A42B4946D90DB867825A4108F0F5798F185D6D4369F75B0A149124820"
+                      },
+                      {
+                          "original":  "tmp/release/anchor-pack/npm-pack.stdout.json",
+                          "retained":  "npm-pack.stdout.json",
+                          "sha256":  "B172A9B61E4DA9E4DEA6B76C69229D1E25B221A769942195A64CFD1A28C0A435"
+                      },
+                      {
+                          "original":  "tmp/release/anchor-pack/npm-pack.stderr.txt",
+                          "retained":  "npm-pack.stderr.txt",
+                          "sha256":  "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+                      },
+                      {
+                          "original":  "tmp/release/anchor-pack/archive-entries.txt",
+                          "retained":  "archive-entries.txt",
+                          "sha256":  "AE074746830BB037CBE95233AE549C13DB3B3CF9D6696BD8672B7EB647E1D7E2"
+                      },
+                      {
+                          "original":  "tmp/release/anchor-pack/archive-entries.stderr.txt",
+                          "retained":  "archive-entries.stderr.txt",
+                          "sha256":  "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+                      },
+                      {
+                          "original":  "tmp/release/anchor-pack/packed-package.json",
+                          "retained":  "packed-package.json",
+                          "sha256":  "F8CB9BCCC5240A8907B1FC0A5CA56C1BCED8683C69BC565FEBC4E17EAC1EEDF2"
+                      },
+                      {
+                          "original":  "tmp/release/anchor-pack/packed-package.json.stderr.txt",
+                          "retained":  "packed-package.json.stderr.txt",
+                          "sha256":  "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+                      }
+                  ],
+        "Count":  21
+    },
+    {
+        "original":  "tmp/units/anchor-archive-verifier-report-2.md",
+        "retained":  "archive-verifier-report-2.md",
+        "sha256":  "1757C24F9391110A6FD4B702AFB5608C98DBA69EC00DE15CDB82118EB3BD0BD1"
+    }
+]

@@ -1,0 +1,32 @@
+docs(skill): order the setup-proof activation, bound the cp1252 hazard, and remove the surviving restatements
+
+Unit S5-2 (`opus`, baseline f540107b; brief and report retained under
+.orkestrel/campaign/s5-brief-2.md and s5-2-report.md) closes the skill,
+plan-of-record, and transport findings of the fix-round audit
+(.orkestrel/campaign/s-fix-audit-verdict.md):
+
+- references/layer.md → Import, never implement carries the one statement of
+  the browser setup activation in the order `scaffold repair` accepts: write
+  tests/setupBrowser.test.ts, add `npm run test:setup:browser` to the `test`
+  chain, run `scaffold repair`; the refusal the other order meets is quoted
+  from the reproduction. SKILL.md keeps a pointer and no second statement
+  (claims 13, 17; F-C).
+- SKILL.md states the journey axis's own order and S4-3's firing conditions:
+  the invocation question fires only when no chain from `test` reaches
+  `npm run test:journey`, the configuration question only for a `test:*`
+  script naming `vitest`; the quoted remedy names the chain invocation.
+- .agents/transports/codex.md opens the cp1252 rule with the hazard and its
+  bound — a shell write that decodes and re-encodes text can replace a code
+  point the active code page cannot represent — and no cause (claim 14).
+- The recording and restore bullets under Mutate each assertion class, the
+  design-law paraphrase in layer.md, the control-drift clause in styles.md,
+  and the explanatory passage in captures.md are gone or rewritten as
+  directives (claim 15).
+- The router-navigation ban is scoped to a journey step, so the cleanup route
+  reset it names is outside it (F-A); ROADMAP row 36 names the source site
+  beside the emitted path (F-B).
+
+host.json is regenerated over the vendored bytes. Gate reading retained as
+.orkestrel/campaign/s5-2-gates-summary.txt.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>

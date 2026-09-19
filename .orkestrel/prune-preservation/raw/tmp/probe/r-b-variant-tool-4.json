@@ -1,0 +1,120 @@
+{
+  "input": {
+    "project": "configs/src/tsconfig.core.json",
+    "case": {
+      "files": [
+        {
+          "path": "src/core/variantProbe/constants.ts",
+          "text": "import type { JourneyVariant } from '@orkestrel/test'\n\nexport const VARIANT: JourneyVariant = Object.freeze({ name: 'light-390', width: 390, height: 844 })\n"
+        }
+      ],
+      "test": {
+        "path": "tmp/probe/r-b-variant/variant.test.ts",
+        "text": "import { expect, it } from 'vitest'\nimport { VARIANT } from '../../../src/core/variantProbe/constants.js'\n\nit('preserves numeric journey viewport dimensions', () => {\n\texpect(VARIANT).toEqual({ name: 'light-390', width: 390, height: 844 })\n})\n"
+      }
+    },
+    "control": {
+      "files": [
+        {
+          "path": "src/core/variantProbe/constants.ts",
+          "text": "import type { JourneyVariant } from '@orkestrel/test'\n\nexport const VARIANT: JourneyVariant = Object.freeze({ name: 'light-390', width: '390', height: 844 })\n"
+        }
+      ],
+      "test": {
+        "path": "tmp/probe/r-b-variant/variant.test.ts",
+        "text": "import { expect, it } from 'vitest'\nimport { VARIANT } from '../../../src/core/variantProbe/constants.js'\n\nit('preserves numeric journey viewport dimensions', () => {\n\texpect(VARIANT).toEqual({ name: 'light-390', width: 390, height: 844 })\n})\n"
+      },
+      "reason": "Canonical installed test0.0.17 and recovery installed test0.0.18 core declarations are byte-identical (SHA256 271626548219790506DAE47EE3AB670406E1D442214D22CBF10F6D5FB8D082E1). Their JourneyVariant width accepts a number and rejects a string at the type stage.",
+      "stage": "type"
+    }
+  },
+  "result": {
+    "content": [
+      {
+        "type": "text",
+        "text": "probe a560076b-328e-4cfd-b1e9-26cb7d738055 (5655 ms)\nclaim 4dd71ea0b0fd76a7c36a74008e5efc02\ntoolchain typescript 6.0.3, oxlint 1.83.0, vitest 4.1.11\nproject configs/src/tsconfig.core.json 8e9a45d777a98c3ae5e45e4bd78032fb\nreason Canonical installed test0.0.17 and recovery installed test0.0.18 core declarations are byte-identical (SHA256 271626548219790506DAE47EE3AB670406E1D442214D22CBF10F6D5FB8D082E1). Their JourneyVariant width accepts a number and rejects a string at the type stage.\ncase type: 0 issues (2455 ms)\ncase lint: 0 issues (966 ms)\ncase runtime: 0 issues (1138 ms)\ncontrol type: 1 issue (2793 ms)\n  [claimant] src/core/variantProbe/constants.ts:3 Type 'Readonly<{ name: \"light-390\"; width: \"390\"; height: 844; }>' is not assignable to type 'JourneyVariant'.\n  Types of property 'width' are incompatible.\n    Type 'string' is not assignable to type 'number'.\ncontrol lint: 0 issues (847 ms)\ncontrol runtime: 1 issue (1025 ms)\n  [claimant] tmp/probe/r-b-variant/variant.test.ts:5 expected { name: 'light-390', …(2) } to deeply equal { name: 'light-390', width: 390, …(1) }\nno receipt"
+      }
+    ],
+    "structuredContent": {
+      "case": [
+        {
+          "elapsed": 2455,
+          "issues": [],
+          "stage": "type"
+        },
+        {
+          "elapsed": 966,
+          "issues": [],
+          "stage": "lint"
+        },
+        {
+          "elapsed": 1138,
+          "issues": [],
+          "stage": "runtime"
+        }
+      ],
+      "control": [
+        {
+          "elapsed": 2793,
+          "issues": [
+            {
+              "message": "Type 'Readonly<{ name: \"light-390\"; width: \"390\"; height: 844; }>' is not assignable to type 'JourneyVariant'.\n  Types of property 'width' are incompatible.\n    Type 'string' is not assignable to type 'number'.",
+              "origin": "claimant",
+              "path": "src/core/variantProbe/constants.ts",
+              "range": {
+                "end": {
+                  "character": 13,
+                  "line": 2
+                },
+                "start": {
+                  "character": 13,
+                  "line": 2
+                }
+              }
+            }
+          ],
+          "stage": "type"
+        },
+        {
+          "elapsed": 847,
+          "issues": [],
+          "stage": "lint"
+        },
+        {
+          "elapsed": 1025,
+          "issues": [
+            {
+              "message": "expected { name: 'light-390', …(2) } to deeply equal { name: 'light-390', width: 390, …(1) }",
+              "origin": "claimant",
+              "path": "tmp/probe/r-b-variant/variant.test.ts",
+              "range": {
+                "end": {
+                  "character": 17,
+                  "line": 4
+                },
+                "start": {
+                  "character": 17,
+                  "line": 4
+                }
+              }
+            }
+          ],
+          "stage": "runtime"
+        }
+      ],
+      "digest": "4dd71ea0b0fd76a7c36a74008e5efc02",
+      "elapsed": 5655,
+      "id": "a560076b-328e-4cfd-b1e9-26cb7d738055",
+      "project": {
+        "digest": "8e9a45d777a98c3ae5e45e4bd78032fb",
+        "path": "configs/src/tsconfig.core.json"
+      },
+      "reason": "Canonical installed test0.0.17 and recovery installed test0.0.18 core declarations are byte-identical (SHA256 271626548219790506DAE47EE3AB670406E1D442214D22CBF10F6D5FB8D082E1). Their JourneyVariant width accepts a number and rejects a string at the type stage.",
+      "toolchain": {
+        "oxlint": "1.83.0",
+        "typescript": "6.0.3",
+        "vitest": "4.1.11"
+      }
+    }
+  }
+}

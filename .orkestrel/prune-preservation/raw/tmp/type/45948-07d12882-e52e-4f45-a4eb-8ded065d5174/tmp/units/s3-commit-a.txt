@@ -1,0 +1,37 @@
+docs(skill): teach the published journey layer and the generated workspace
+
+Unit S3 (`opus`, baseline a0440d3c; brief and report retained under
+.orkestrel/campaign/s3-brief.md and s3-report.md) rewrites
+.agents/skills/orkestrel-prove-journey against the design verdict's rulings
+D22–D27 and what units T1–T3 and S1 landed:
+
+- SKILL.md: the journey laws bind every declared family; populations resolve
+  by role and name first, a selector admitted only where the population
+  carries no role; the variant is read once through `inject` with the
+  `ProvidedContext` augmentation; the transport family's `createStorage`
+  conditions and the stalled-read ruling; commits through `pressKeys`, Tab,
+  or a named button; the intents every surface owes; the journey and refusal
+  mutations; the engine limit in Accept.
+- references/layer.md: the import fence over the taught vocabulary,
+  `pressKeys`, `waitForText` with `absent`, `waitForState`,
+  `waitForAnimations`, `readRefusal`, the extended voices, the named bans with
+  their replacements.
+- references/captures.md, styles.md: `JourneyVariant`/`CaptureVariant`,
+  the published controls, `readCensus`, the per-variant run.
+- references/statechart.md: `createHarness`, the observable statuses, the
+  executed worked table, the gate that reads the object and the markup.
+- references/decide.md: the `@orkestrel/probe` pin dropped for a read of the
+  installed version.
+- ROADMAP.md: rows 1, 10, 11, 12, 13, 16, 18, 19, 20, 21, 30, 31, and 32
+  closed with their closing clause; row 17 restated against the debrief
+  skill's field-testing reference; rows 35–37 appended.
+- .agents/transports/codex.md: the cp1252 file-write rule from the S2 audit's
+  finding 7.
+
+Every fenced binding resolves against the installed declaration entries
+(policy sweep, 110 passed). The unit reported one deviation: the tarball
+installed at dispatch predated T3 and lacked `buildRefusal`; unit S3-2 carries
+it now that 0.0.17 is installed from the registry. host.json is regenerated
+in the following commit together with the re-pin.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>

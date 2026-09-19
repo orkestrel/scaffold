@@ -1,0 +1,21 @@
+PROBE c4 trigger states after open: ["expanded"]
+PROBE c4 dialog aria-modal=true role=dialog
+PROBE c4 resolver masthead "Get started, Site": resolves
+PROBE c4 resolver menu "Get started, Menu": resolves
+PROBE c4 pointer at masthead centre hits: a.nav-link.fs-4 "Publications, Site"; is the masthead or inside it: false
+PROBE c4 header inert=false aria-hidden=none
+PROBE c4 active element after open: div#site-menu.offcanvas.offcanvas-end "Menu"
+PROBE c4 Tab traversal to the masthead from the open menu: Interactive target "Get started, Site" is not reachable through forward Tab traversal: BUTTON: > A:About > A:Publications > A:Products > A:Shop > A:Contact > A:
+PROBE c4 active element after traversal: button.btn-close "Close menu"
+ ✓ |app:browser (chromium)| tests/app/browser/zz-audit-probe.test.ts:30:2 > audit probe > claim 4: what covers the compact masthead while the menu is open 1436ms
+PROBE c5 1280: bare "Contact" anchors in the DOM: 4; refusal: Interactive target "Contact" is ambiguous across 4 elements
+PROBE c5 1280: page excerpt: Skip to content 800-428-4384 rnc@roughnotes.com RoughNotes-Pro Login Advantage-Plus Login R Rough Notes SINCE 1878 About Publications Products Shop Get started Media kits Rate cards, mechanical requir
+PROBE c5 390: bare "Contact" anchors in the DOM: 4; refusal: Interactive target "Contact" is ambiguous across 4 elements
+PROBE c5 390: page excerpt: Skip to content 800-428-4384 rnc@roughnotes.com RoughNotes-Pro Login Advantage-Plus Login R Rough Notes SINCE 1878 Get started Media kits Rate cards, mechanical requirements, and calendars for 2027 ma
+ ✓ |app:browser (chromium)| tests/app/browser/zz-audit-probe.test.ts:62:2 > audit probe > claim 5: the media screen with an empty catalog 1311ms
+PROBE c1a after open: ["expanded"] events=show.bs.offcanvas@expanded=false,shown.bs.offcanvas@expanded=false
+PROBE c1a after navigating from the menu: ["collapsed"] events=hide.bs.offcanvas@expanded=true,hidden.bs.offcanvas@expanded=true hash=#/publications
+PROBE c1a reopen: ["expanded"] events=show.bs.offcanvas@expanded=false,shown.bs.offcanvas@expanded=false
+PROBE c1b second click refused: locator.click: Timeout 11412ms exceeded.
+ × |app:browser (chromium)| tests/app/browser/zz-audit-probe.test.ts:85:2 > audit probe > claim 1: transitions of the announced state 15008ms
+Error: Test timed out in 15000ms.

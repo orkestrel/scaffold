@@ -1,0 +1,8 @@
+npm notice run roughnotes@0.0.1 format:check
+npm notice run oxfmt --config .oxfmtrc.json --check .
+Checking formatting...
+
+.claude/launch.json (0ms)
+
+Format issues found in above 1 files. Run without `--check` to fix.
+Finished in 1440ms on 130 files using 16 threads.

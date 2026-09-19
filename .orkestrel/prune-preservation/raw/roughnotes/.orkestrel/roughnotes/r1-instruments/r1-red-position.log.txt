@@ -1,0 +1,55 @@
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/roughnotes
+
+·······xx··
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 9 passed (11)
+   Start at  22:27:15
+   Duration  797ms (transform 71ms, setup 16ms, import 606ms, tests 18ms, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |conformance| tests/conformance.test.ts > configuration conformance > installs a named override entry in the position the base entry held
+AssertionError: expected { name: 'conformance-alpha' } to be { name: 'conformance-alpha' } // Object.is equality
+
+If it should pass with deep equality, replace "toBe" with "toStrictEqual"
+
+Expected: { name: 'conformance-alpha' }
+Received: serializes to the same string
+
+
+Compared values have no visual difference.
+
+ ❯ tests/conformance.test.ts:240:22
+    238|   const plugins = readPlugins(merged)
+    239|   expect(plugins.length).toBe(2)
+    240|   expect(plugins[0]).toBe(replacement)
+       |                      ^
+    241|   expect(plugins[1]).toBe(trailing)
+    242|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  |conformance| tests/conformance.test.ts > configuration conformance > replaces one base entry per override entry where the base repeats a name
+AssertionError: expected { name: 'conformance-alpha' } to be { name: 'conformance-alpha' } // Object.is equality
+
+If it should pass with deep equality, replace "toBe" with "toStrictEqual"
+
+Expected: { name: 'conformance-alpha' }
+Received: serializes to the same string
+
+
+Compared values have no visual difference.
+
+ ❯ tests/conformance.test.ts:258:22
+    256|   const plugins = readPlugins(merged)
+    257|   expect(plugins.length).toBe(2)
+    258|   expect(plugins[0]).toBe(replacement)
+       |                      ^
+    259|   expect(plugins[1]).toBe(repeated)
+    260|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+

@@ -1,0 +1,3 @@
+# Audit the original install objective boundary
+
+Role: analyst on native GPT-5.6 Sol, clean context. Read the shared install-audit-claims.md in this folder and its required authorities/evidence. Hold the objective lane. Opus is quota-unavailable until2026-09-19 21:00America/New_York; native Sol substitutes under orchestration, in separate blind lanes. The subject was written by a separate Sol author. Perform directly, spawn nothing, write nothing. Do not read the subjective lane's report. Return falsifiable claim verdicts with exact evidence and the required terminal verdict. Do not install or mutate product/source/index/evidence.

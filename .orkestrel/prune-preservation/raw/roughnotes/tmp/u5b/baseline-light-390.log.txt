@@ -1,0 +1,488 @@
+npm notice run roughnotes@0.0.1 npx
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=verbose --project journey:light-390
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/roughnotes
+
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+  ╷
+1 │ @import "mixins/banner";
+  │         ^^^^^^^^^^^^^^^
+  ╵
+    node_modules\bootstrap\scss\bootstrap.scss 1:9  @use
+    app\browser\styles\index.scss 2:1               root stylesheet
+
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+  ╷
+7 │ @import "functions";
+  │         ^^^^^^^^^^^
+  ╵
+    node_modules\bootstrap\scss\bootstrap.scss 7:9  @use
+    app\browser\styles\index.scss 2:1               root stylesheet
+
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+  ╷
+8 │ @import "variables";
+  │         ^^^^^^^^^^^
+  ╵
+    node_modules\bootstrap\scss\bootstrap.scss 8:9  @use
+    app\browser\styles\index.scss 2:1               root stylesheet
+
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+  ╷
+9 │ @import "variables-dark";
+  │         ^^^^^^^^^^^^^^^^
+  ╵
+    node_modules\bootstrap\scss\bootstrap.scss 9:9  @use
+    app\browser\styles\index.scss 2:1               root stylesheet
+
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+   ╷
+10 │ @import "maps";
+   │         ^^^^^^
+   ╵
+    node_modules\bootstrap\scss\bootstrap.scss 10:9  @use
+    app\browser\styles\index.scss 2:1                root stylesheet
+
+DEPRECATION WARNING [if-function]: The Sass if() syntax is deprecated in favor of the modern CSS syntax.
+
+Suggestion: if(sass($arg == "$value"): $value; else: $arg)
+
+More info: https://sass-lang.com/d/if-function
+
+   ╷
+58 │       $_args: append($_args, if($arg == "$key", $key, if($arg == "$value", $value, $arg)));
+   │                                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   ╵
+    node_modules\bootstrap\scss\_functions.scss 58:55  @import
+    node_modules\bootstrap\scss\bootstrap.scss 7:9     @use
+    app\browser\styles\index.scss 2:1                  root stylesheet
+
+DEPRECATION WARNING [if-function]: The Sass if() syntax is deprecated in favor of the modern CSS syntax.
+
+Suggestion: if(sass($arg == "$key"): $key; else: if($arg == "$value", $value, $arg))
+
+More info: https://sass-lang.com/d/if-function
+
+   ╷
+58 │       $_args: append($_args, if($arg == "$key", $key, if($arg == "$value", $value, $arg)));
+   │                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   ╵
+    node_modules\bootstrap\scss\_functions.scss 58:30  @import
+    node_modules\bootstrap\scss\bootstrap.scss 7:9     @use
+    app\browser\styles\index.scss 2:1                  root stylesheet
+
+DEPRECATION WARNING [if-function]: The Sass if() syntax is deprecated in favor of the modern CSS syntax.
+
+Suggestion: if(sass($l1 > $l2): divide($l1 + 0.05, $l2 + 0.05); else: divide($l2 + 0.05, $l1 + 0.05))
+
+More info: https://sass-lang.com/d/if-function
+
+    ╷
+177 │   @return if($l1 > $l2, divide($l1 + .05, $l2 + .05), divide($l2 + .05, $l1 + .05));
+    │           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ╵
+    node_modules\bootstrap\scss\_functions.scss 177:11  @import
+    node_modules\bootstrap\scss\bootstrap.scss 7:9      @use
+    app\browser\styles\index.scss 2:1                   root stylesheet
+
+DEPRECATION WARNING [if-function]: The Sass if() syntax is deprecated in favor of the modern CSS syntax.
+
+Suggestion: if(sass(divide($value, 255) < 0.04045): divide(divide($value, 255), 12.92); else: nth($_luminance-list, $value + 1))
+
+More info: https://sass-lang.com/d/if-function
+
+    ╷
+191 │     $value: if(divide($value, 255) < .04045, divide(divide($value, 255), 12.92), nth($_luminance-list, $value + 1));
+    │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ╵
+    node_modules\bootstrap\scss\_functions.scss 191:13  @import
+    node_modules\bootstrap\scss\bootstrap.scss 7:9      @use
+    app\browser\styles\index.scss 2:1                   root stylesheet
+
+DEPRECATION WARNING [if-function]: The Sass if() syntax is deprecated in favor of the modern CSS syntax.
+
+Suggestion: if(sass($weight > 0): shade-color($color, $weight); else: tint-color($color, -$weight))
+
+More info: https://sass-lang.com/d/if-function
+
+    ╷
+217 │   @return if($weight > 0, shade-color($color, $weight), tint-color($color, -$weight));
+    │           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ╵
+    node_modules\bootstrap\scss\_functions.scss 217:11  @import
+    node_modules\bootstrap\scss\bootstrap.scss 7:9      @use
+    app\browser\styles\index.scss 2:1                   root stylesheet
+
+DEPRECATION WARNING [global-builtin]: Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+Use color.mix instead.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+    ╷
+207 │   @return mix(white, $color, $weight);
+    │           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ╵
+    node_modules\bootstrap\scss\_functions.scss 207:11  tint-color()
+    node_modules\bootstrap\scss\_variables.scss 79:12   @import
+    node_modules\bootstrap\scss\bootstrap.scss 8:9      @use
+    app\browser\styles\index.scss 2:1                   root stylesheet
+
+DEPRECATION WARNING [global-builtin]: Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+Use color.mix instead.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+    ╷
+212 │   @return mix(black, $color, $weight);
+    │           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ╵
+    node_modules\bootstrap\scss\_functions.scss 212:11  shade-color()
+    node_modules\bootstrap\scss\_variables.scss 84:12   @import
+    node_modules\bootstrap\scss\bootstrap.scss 8:9      @use
+    app\browser\styles\index.scss 2:1                   root stylesheet
+
+DEPRECATION WARNING [global-builtin]: Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+Use color.mix instead.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+    ╷
+342 │ $light-bg-subtle:         mix($gray-100, $white) !default;
+    │                           ^^^^^^^^^^^^^^^^^^^^^^
+    ╵
+    node_modules\bootstrap\scss\_variables.scss 342:27  @import
+    node_modules\bootstrap\scss\bootstrap.scss 8:9      @use
+    app\browser\styles\index.scss 2:1                   root stylesheet
+
+DEPRECATION WARNING [global-builtin]: Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+Use math.unit instead.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+   ╷
+11 │     @if $prev-num == null or unit($num) == "%" or unit($prev-num) == "%" {
+   │                              ^^^^^^^^^^
+   ╵
+    node_modules\bootstrap\scss\_functions.scss 11:30  -assert-ascending()
+    node_modules\bootstrap\scss\_variables.scss 494:1  @import
+    node_modules\bootstrap\scss\bootstrap.scss 8:9     @use
+    app\browser\styles\index.scss 2:1                  root stylesheet
+
+DEPRECATION WARNING [global-builtin]: Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+Use math.unit instead.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+   ╷
+11 │     @if $prev-num == null or unit($num) == "%" or unit($prev-num) == "%" {
+   │                                                   ^^^^^^^^^^^^^^^
+   ╵
+    node_modules\bootstrap\scss\_functions.scss 11:51  -assert-ascending()
+    node_modules\bootstrap\scss\_variables.scss 494:1  @import
+    node_modules\bootstrap\scss\bootstrap.scss 8:9     @use
+    app\browser\styles\index.scss 2:1                  root stylesheet
+
+DEPRECATION WARNING [color-functions]: red() is deprecated. Suggestion:
+
+color.channel($color, "red", $space: rgb)
+
+More info: https://sass-lang.com/d/color-functions
+
+    ╷
+185 │     "r": red($color),
+    │          ^^^^^^^^^^^
+    ╵
+    node_modules\bootstrap\scss\_functions.scss 185:10  luminance()
+    node_modules\bootstrap\scss\_functions.scss 174:8   contrast-ratio()
+    node_modules\bootstrap\scss\_functions.scss 159:22  color-contrast()
+    node_modules\bootstrap\scss\_variables.scss 846:42  @import
+    node_modules\bootstrap\scss\bootstrap.scss 8:9      @use
+    app\browser\styles\index.scss 2:1                   root stylesheet
+
+DEPRECATION WARNING [color-functions]: green() is deprecated. Suggestion:
+
+color.channel($color, "green", $space: rgb)
+
+More info: https://sass-lang.com/d/color-functions
+
+    ╷
+186 │     "g": green($color),
+    │          ^^^^^^^^^^^^^
+    ╵
+    node_modules\bootstrap\scss\_functions.scss 186:10  luminance()
+    node_modules\bootstrap\scss\_functions.scss 174:8   contrast-ratio()
+    node_modules\bootstrap\scss\_functions.scss 159:22  color-contrast()
+    node_modules\bootstrap\scss\_variables.scss 846:42  @import
+    node_modules\bootstrap\scss\bootstrap.scss 8:9      @use
+    app\browser\styles\index.scss 2:1                   root stylesheet
+
+DEPRECATION WARNING [color-functions]: blue() is deprecated. Suggestion:
+
+color.channel($color, "blue", $space: rgb)
+
+More info: https://sass-lang.com/d/color-functions
+
+    ╷
+187 │     "b": blue($color)
+    │          ^^^^^^^^^^^^
+    ╵
+    node_modules\bootstrap\scss\_functions.scss 187:10  luminance()
+    node_modules\bootstrap\scss\_functions.scss 174:8   contrast-ratio()
+    node_modules\bootstrap\scss\_functions.scss 159:22  color-contrast()
+    node_modules\bootstrap\scss\_variables.scss 846:42  @import
+    node_modules\bootstrap\scss\bootstrap.scss 8:9      @use
+    app\browser\styles\index.scss 2:1                   root stylesheet
+
+DEPRECATION WARNING [color-functions]: red() is deprecated. Suggestion:
+
+color.channel($color, "red", $space: rgb)
+
+More info: https://sass-lang.com/d/color-functions
+
+   ╷
+37 │   @return red($value), green($value), blue($value);
+   │           ^^^^^^^^^^^
+   ╵
+    node_modules\bootstrap\scss\_functions.scss 37:11   to-rgb()
+    node_modules\bootstrap\scss\_variables.scss 846:31  @import
+    node_modules\bootstrap\scss\bootstrap.scss 8:9      @use
+    app\browser\styles\index.scss 2:1                   root stylesheet
+
+DEPRECATION WARNING [color-functions]: green() is deprecated. Suggestion:
+
+color.channel($color, "green", $space: rgb)
+
+More info: https://sass-lang.com/d/color-functions
+
+   ╷
+37 │   @return red($value), green($value), blue($value);
+   │                        ^^^^^^^^^^^^^
+   ╵
+    node_modules\bootstrap\scss\_functions.scss 37:24   to-rgb()
+    node_modules\bootstrap\scss\_variables.scss 846:31  @import
+    node_modules\bootstrap\scss\bootstrap.scss 8:9      @use
+    app\browser\styles\index.scss 2:1                   root stylesheet
+
+WARNING: 309 repetitive deprecation warnings omitted.
+Run in verbose mode to see all warnings.
+
+ ✓ |journey:light-390 (chromium)| tests/app/browser/integration.test.ts:260:2 > knowledge site journeys > lands on home and reaches subscribe through the content Get started control 3014ms
+ ✓ |journey:light-390 (chromium)| tests/app/browser/integration.test.ts:287:2 > knowledge site journeys > opens the featured product from the site navigation 1938ms
+ ✓ |journey:light-390 (chromium)| tests/app/browser/integration.test.ts:309:2 > knowledge site journeys > filters the magazine to an empty category and can show every article again 1254ms
+ × |journey:light-390 (chromium)| tests/app/browser/integration.test.ts:334:2 > knowledge site journeys > searches the marketplace sample, reports a miss, and restores the directory 29924ms
+   → locator.click: Timeout 29040ms exceeded.
+Call log:
+[2m  - waiting for locator('[data-vitest="true"]').contentFrame().getByRole('button', { name: 'Search markets' })[22m
+[2m    - locator resolved to <button type="submit" class="btn btn-warning">…</button>[22m
+[2m  - attempting click action[22m
+[2m    - waiting for element to be visible, enabled and stable[22m
+[2m    - element is visible, enabled and stable[22m
+[2m    - scrolling into view if needed[22m
+[2m    - done scrolling[22m
+[2m    - performing click action[22m
+[2m    - <a href="#/subscribe" class="btn btn-primary">Get started</a> from <header class="masthead border-bottom sticky-top">…</header> subtree intercepts pointer events[22m
+[2m  - retrying click action[22m
+[2m    - waiting for element to be visible, enabled and stable[22m
+[2m    - element is not stable[22m
+[2m  - retrying click action[22m
+[2m    - waiting 20ms[22m
+[2m    2 × waiting for element to be visible, enabled and stable[22m
+[2m      - element is not stable[22m
+[2m    - retrying click action[22m
+[2m      - waiting 100ms[22m
+[2m    - waiting for element to be visible, enabled and stable[22m
+[2m    - element is visible, enabled and stable[22m
+[2m    - scrolling into view if needed[22m
+[2m    - done scrolling[22m
+[2m    - performing click action[22m
+[2m    - <a href="#/subscribe" class="btn btn-primary">Get started</a> from <header class="masthead border-bottom sticky-top">…</header> subtree intercepts pointer events[22m
+[2m  13 × retrying click action[22m
+[2m       - waiting 500ms[22m
+[2m       - waiting for element to be visible, enabled and stable[22m
+[2m       - element is not stable[22m
+[2m     - retrying click action[22m
+[2m       - waiting 500ms[22m
+[2m       - waiting for element to be visible, enabled and stable[22m
+[2m       - element is not stable[22m
+[2m     - retrying click action[22m
+[2m       - waiting 500ms[22m
+[2m       - waiting for element to be visible, enabled and stable[22m
+[2m       - element is not stable[22m
+[2m     - retrying click action[22m
+[2m       - waiting 500ms[22m
+[2m       - waiting for element to be visible, enabled and stable[22m
+[2m       - element is visible, enabled and stable[22m
+[2m       - scrolling into view if needed[22m
+[2m       - done scrolling[22m
+[2m       - performing click action[22m
+[2m       - <span class="d-block">Rough Notes</span> from <header class="masthead border-bottom sticky-top">…</header> subtree intercepts pointer events[22m
+[2m  - retrying click action[22m
+[2m    - waiting 500ms[22m
+[2m    - waiting for element to be visible, enabled and stable[22m
+[2m    - element is not stable[22m
+[2m  - retrying click action[22m
+[2m    - waiting 500ms[22m
+
+ ✓ |journey:light-390 (chromium)| tests/app/browser/integration.test.ts:361:2 > knowledge site journeys > keeps subscribe enabled, announces a refusal, and accepts a valid request 1231ms
+ ✓ |journey:light-390 (chromium)| tests/app/browser/integration.test.ts:393:2 > knowledge site journeys > opens about from the site navigation 1241ms
+ ✓ |journey:light-390 (chromium)| tests/app/browser/integration.test.ts:410:2 > knowledge site journeys > opens the newsletter from the publications hub 1294ms
+ ✓ |journey:light-390 (chromium)| tests/app/browser/integration.test.ts:428:2 > knowledge site journeys > opens media kits and keeps the PDF destinations external 356ms
+ ✓ |journey:light-390 (chromium)| tests/app/browser/integration.test.ts:449:2 > knowledge site journeys > opens the shop catalog and a SKU detail 1396ms
+ ✓ |journey:light-390 (chromium)| tests/app/browser/integration.test.ts:471:2 > knowledge site journeys > keeps contact enabled, announces a refusal, and accepts a valid inquiry 1532ms
+ ✓ |journey:light-390 (chromium)| tests/app/browser/integration.test.ts:503:2 > knowledge site journeys > keeps invoice review enabled, announces a refusal, and accepts a valid amount 1435ms
+ ✓ |journey:light-390 (chromium)| tests/app/browser/integration.test.ts:539:2 > knowledge site journeys > leaves Sign In absent and keeps live logins as external links 837ms
+ ✓ |journey:light-390 (chromium)| tests/app/browser/integration.test.ts:562:2 > knowledge site journeys > reads contrast, focus chrome, authored classes, and style escapes in every variant 819ms
+ ✓ |journey:light-390 (chromium)| tests/app/browser/integration.test.ts:645:2 > knowledge site journeys > hands the persisted theme to a second session over the same storage 107ms
+ ✓ |journey:light-390 (chromium)| tests/app/browser/integration.test.ts:671:2 > knowledge site journeys > expands the registry across every declared variant into unique filenames 0ms
+ × |journey:light-390 (chromium)| tests/app/browser/integration.test.ts:678:22 > knowledge site journeys > writes every frame this run owes 4ms
+   → expected [ 'about--light-390.png', …(11) ] to deeply equal [ 'about--light-390.png', …(12) ]
+ ✓ |journey:light-390 (chromium)| tests/app/browser/integration.test.ts:691:2 > knowledge site journeys > proves every declared family and claims no family it did not prove 0ms
+ × |journey:light-390 (chromium)| tests/app/browser/integration.test.ts:695:2 > knowledge site journeys > places every registered state and places nothing else 1ms
+   → expected [ 'about', 'contact-refused', …(10) ] to deeply equal [ 'about', 'contact-refused', …(11) ]
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |journey:light-390 (chromium)| tests/app/browser/integration.test.ts:334:2 > knowledge site journeys > searches the marketplace sample, reports a miss, and restores the directory
+TimeoutError: locator.click: Timeout 29040ms exceeded.
+Call log:
+[2m  - waiting for locator('[data-vitest="true"]').contentFrame().getByRole('button', { name: 'Search markets' })[22m
+[2m    - locator resolved to <button type="submit" class="btn btn-warning">…</button>[22m
+[2m  - attempting click action[22m
+[2m    - waiting for element to be visible, enabled and stable[22m
+[2m    - element is visible, enabled and stable[22m
+[2m    - scrolling into view if needed[22m
+[2m    - done scrolling[22m
+[2m    - performing click action[22m
+[2m    - <a href="#/subscribe" class="btn btn-primary">Get started</a> from <header class="masthead border-bottom sticky-top">…</header> subtree intercepts pointer events[22m
+[2m  - retrying click action[22m
+[2m    - waiting for element to be visible, enabled and stable[22m
+[2m    - element is not stable[22m
+[2m  - retrying click action[22m
+[2m    - waiting 20ms[22m
+[2m    2 × waiting for element to be visible, enabled and stable[22m
+[2m      - element is not stable[22m
+[2m    - retrying click action[22m
+[2m      - waiting 100ms[22m
+[2m    - waiting for element to be visible, enabled and stable[22m
+[2m    - element is visible, enabled and stable[22m
+[2m    - scrolling into view if needed[22m
+[2m    - done scrolling[22m
+[2m    - performing click action[22m
+[2m    - <a href="#/subscribe" class="btn btn-primary">Get started</a> from <header class="masthead border-bottom sticky-top">…</header> subtree intercepts pointer events[22m
+[2m  13 × retrying click action[22m
+[2m       - waiting 500ms[22m
+[2m       - waiting for element to be visible, enabled and stable[22m
+[2m       - element is not stable[22m
+[2m     - retrying click action[22m
+[2m       - waiting 500ms[22m
+[2m       - waiting for element to be visible, enabled and stable[22m
+[2m       - element is not stable[22m
+[2m     - retrying click action[22m
+[2m       - waiting 500ms[22m
+[2m       - waiting for element to be visible, enabled and stable[22m
+[2m       - element is not stable[22m
+[2m     - retrying click action[22m
+[2m       - waiting 500ms[22m
+[2m       - waiting for element to be visible, enabled and stable[22m
+[2m       - element is visible, enabled and stable[22m
+[2m       - scrolling into view if needed[22m
+[2m       - done scrolling[22m
+[2m       - performing click action[22m
+[2m       - <span class="d-block">Rough Notes</span> from <header class="masthead border-bottom sticky-top">…</header> subtree intercepts pointer events[22m
+[2m  - retrying click action[22m
+[2m    - waiting 500ms[22m
+[2m    - waiting for element to be visible, enabled and stable[22m
+[2m    - element is not stable[22m
+[2m  - retrying click action[22m
+[2m    - waiting 500ms[22m
+
+ ❯ clickAccessible node_modules/@orkestrel/test/dist/src/browser/index.js:369:17
+ ❯ tests/app/browser/integration.test.ts:350:9
+    348|    )
+    349|    await fillAccessible(COPY.query, 'zzzz-no-such-market')
+    350|    await clickAccessible('button', COPY.search)
+       |         ^
+    351|    await waitForText('the miss paints', COPY.empty)
+    352|    await place('marketplace-miss')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  |journey:light-390 (chromium)| tests/app/browser/integration.test.ts:678:22 > knowledge site journeys > writes every frame this run owes
+AssertionError: expected [ 'about--light-390.png', …(11) ] to deeply equal [ 'about--light-390.png', …(12) ]
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[33m@@ -1,11 +1,10 @@[39m
+[2m  [[22m
+[2m    "about--light-390.png",[22m
+[2m    "contact-refused--light-390.png",[22m
+[2m    "home--light-390.png",[22m
+[2m    "magazine-empty--light-390.png",[22m
+[32m-   "marketplace-miss--light-390.png",[39m
+[2m    "media--light-390.png",[22m
+[2m    "newsletter--light-390.png",[22m
+[2m    "payment-refused--light-390.png",[22m
+[2m    "product-detail--light-390.png",[22m
+[2m    "shop-detail--light-390.png",[22m
+
+ ❯ tests/app/browser/integration.test.ts:681:30
+    679|   const expected = expandCaptures(STATES, [CURRENT])
+    680|   const written = portfolio.paths.map(readFileName)
+    681|   expect([...written].sort()).toEqual([...expected].sort())
+       |                              ^
+    682|   for (const path of portfolio.paths) {
+    683|    const file = readFileName(path)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  |journey:light-390 (chromium)| tests/app/browser/integration.test.ts:695:2 > knowledge site journeys > places every registered state and places nothing else
+AssertionError: expected [ 'about', 'contact-refused', …(10) ] to deeply equal [ 'about', 'contact-refused', …(11) ]
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[33m@@ -1,11 +1,10 @@[39m
+[2m  [[22m
+[2m    "about",[22m
+[2m    "contact-refused",[22m
+[2m    "home",[22m
+[2m    "magazine-empty",[22m
+[32m-   "marketplace-miss",[39m
+[2m    "media",[22m
+[2m    "newsletter",[22m
+[2m    "payment-refused",[22m
+[2m    "product-detail",[22m
+[2m    "shop-detail",[22m
+
+ ❯ tests/app/browser/integration.test.ts:696:29
+    694|
+    695|  it('places every registered state and places nothing else', () => {
+    696|   expect([...PLACED].sort()).toEqual([...STATES].sort())
+       |                             ^
+    697|  })
+    698| })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  3 failed | 15 passed (18)
+   Start at  13:22:54
+   Duration  52.96s (transform 0ms, setup 3.22s, import 1.95s, tests 46.39s, environment 0ms)
+

@@ -1,0 +1,107 @@
+
+	it('leaves a nested override entry nested rather than lifting it beside the base entries', () => {
+		const declared = createNamedEntry('conformance-alpha')
+		const nested: PluginOption = [[createNamedEntry('conformance-alpha')]]
+		const merged = mergeOverride({ plugins: [declared] }, { plugins: [nested] })
+		const plugins = readPlugins(merged)
+		expect(plugins.length).toBe(2)
+		expect(plugins[0]).toBe(declared)
+		expect(plugins[1]).toBe(nested)
+		expect(countPlugin(merged, 'conformance-alpha')).toBe(1)
+
+		// Control: the one-level flattening this merge departs from. It lifts the inner array into
+		// the nested entry's place, so the reading of that position fails against it.
+		const flattened: readonly PluginOption[] = [declared, nested].flat()
+		expect(() => expect(flattened[1]).toBe(nested)).toThrow(/expected/u)
+	})
+
+	it('keeps two override entries sharing a name, in the order the caller wrote them', () => {
+		const declared = createNamedEntry('conformance-alpha')
+		const first = createNamedEntry('conformance-beta')
+		const second = createNamedEntry('conformance-beta')
+		const merged = mergeOverride({ plugins: [declared] }, { plugins: [first, second] })
+		const plugins = readPlugins(merged)
+		expect(plugins.length).toBe(3)
+		expect(plugins[0]).toBe(declared)
+		expect(plugins[1]).toBe(first)
+		expect(plugins[2]).toBe(second)
+
+		// Control: the name-keyed selection this merge departs from. It keeps one entry per name,
+		// so it drops the first of the caller's two and the readings above fail against it.
+		const keyed = keyByName([declared, first, second])
+		expect(keyed.length).toBe(2)
+		expect(() => expect(keyed.length).toBe(3)).toThrow(/expected/u)
+		expect(() => expect(keyed[1]).toBe(first)).toThrow(/expected/u)
+	})
+
+	it('installs a named override entry in the position the base entry held', () => {
+		const declared = createNamedEntry('conformance-alpha')
+		const trailing = createNamedEntry('conformance-beta')
+		const replacement = createNamedEntry('conformance-alpha')
+		const base: UserConfig = { plugins: [declared, trailing] }
+		const merged = mergeOverride(base, { plugins: [replacement] })
+		const plugins = readPlugins(merged)
+		expect(plugins.length).toBe(2)
+		expect(plugins[0]).toBe(replacement)
+		expect(plugins[1]).toBe(trailing)
+
+		// Control: the bare `mergeConfig` these factories depart from. It concatenates the arrays,
+		// so the base entry survives beside its replacement and both readings above fail.
+		const bare: UserConfig = mergeConfig(base, { plugins: [replacement] })
+		expect(readPlugins(bare).length).toBe(3)
+		expect(() => expect(readPlugins(bare).length).toBe(2)).toThrow(/expected/u)
+		expect(() => expect(readPlugins(bare)[0]).toBe(replacement)).toThrow(/expected/u)
+	})
+
+	it('replaces one base entry per override entry where the base repeats a name', () => {
+		const declared = createNamedEntry('conformance-alpha')
+		const repeated = createNamedEntry('conformance-alpha')
+		const replacement = createNamedEntry('conformance-alpha')
+		const merged = mergeOverride(
+			{ plugins: [declared, repeated] },
+			{ plugins: [replacement] },
+		)
+		const plugins = readPlugins(merged)
+		expect(plugins.length).toBe(2)
+		expect(plugins[0]).toBe(replacement)
+		expect(plugins[1]).toBe(repeated)
+
+		// Control: the name-keyed selection this merge departs from. It collapses the base's two
+		// entries into one, so the count and the trailing entry both fail against it.
+		const keyed = keyByName([declared, repeated, replacement])
+		expect(keyed.length).toBe(1)
+		expect(() => expect(keyed.length).toBe(2)).toThrow(/expected/u)
+		expect(() => expect(keyed[1]).toBe(repeated)).toThrow(/expected/u)
+	})
+
+	it('treats an entry whose name is not a string as unnamed', () => {
+		const declared = createNumberedEntry()
+		const candidate = createNumberedEntry()
+		expect(readField(declared, 'name')).toBe(NUMBERED_NAME)
+		expect(readField(candidate, 'name')).toBe(NUMBERED_NAME)
+		const merged = mergeOverride({ plugins: [declared] }, { plugins: [candidate] })
+		const plugins = readPlugins(merged)
+		expect(plugins.length).toBe(2)
+		expect(plugins[0]).toBe(declared)
+		expect(plugins[1]).toBe(candidate)
+
+		// Control: the presence test this predicate departs from. It reads `name` without checking
+		// its type, so it matches the two entries on the number they share and the count fails.
+		const keyed = keyByName([declared, candidate])
+		expect(keyed.length).toBe(1)
+		expect(() => expect(keyed.length).toBe(2)).toThrow(/expected/u)
+	})
+
+	it('merges a value carrying command alone and refuses one carrying command and mode', () => {
+		const browser = appBrowser()
+		const merged = mergeOverride(browser, COMMAND_ONLY)
+		expect(merged.base).toBe(COMMAND_ONLY.base)
+		expect(readPluginNames(merged)).toStrictEqual(readPluginNames(browser))
+		const refused = mergeOverride(browser, INVOCATION)
+		expect(refused).toBe(browser)
+		expect(refused.base).toBeUndefined()
+
+		// Control: the refusal keyed on `command` alone that this discriminant departs from. It
+		// returns the base for both values, so the merged reading fails against the refused one.
+		expect(() => expect(refused.base).toBe(COMMAND_ONLY.base)).toThrow(/expected/u)
+	})

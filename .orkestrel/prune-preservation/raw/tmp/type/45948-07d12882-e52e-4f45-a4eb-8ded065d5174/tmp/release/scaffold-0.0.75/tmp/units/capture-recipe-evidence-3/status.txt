@@ -1,0 +1,3 @@
+ M .agents/skills/orkestrel-prove-journey/SKILL.md
+ M .agents/skills/orkestrel-prove-journey/references/captures.md
+ M host.json

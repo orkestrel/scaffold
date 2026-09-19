@@ -1,0 +1,16 @@
+BASELINE exit=0 | 5 passed (5)
+M1 appBrowser ignores its override: exit=1 | 4 ⎯⎯⎯⎯⎯⎯⎯
+    FAIL  |conformance| tests/conformance.test.ts > configuration conformance > builds the showcase on the browser configuration instead of restating it
+    FAIL  |conformance| tests/conformance.test.ts > configuration conformance > merges an override into the browser configuration
+    FAIL  |conformance| tests/conformance.test.ts > configuration conformance > merges an override into the showcase configuration
+    FAIL  |conformance| tests/conformance.test.ts > configuration conformance > refuses the invocation record a registered factory receives in the override position
+M2 appShowcase restates the browser root: exit=1 | 1 ⎯⎯⎯⎯⎯⎯⎯
+    FAIL  |conformance| tests/conformance.test.ts > configuration conformance > builds the showcase on the browser configuration instead of restating it
+M3 appShowcase drops its override: exit=1 | 1 ⎯⎯⎯⎯⎯⎯⎯
+    FAIL  |conformance| tests/conformance.test.ts > configuration conformance > merges an override into the showcase configuration
+M4 mergeOverride skips plugin selection: exit=1 | 2 ⎯⎯⎯⎯⎯⎯⎯
+    FAIL  |conformance| tests/conformance.test.ts > configuration conformance > builds the showcase on the browser configuration instead of restating it
+    FAIL  |conformance| tests/conformance.test.ts > configuration conformance > carries the Vue plugin exactly once in every configuration these factories return
+M5 mergeOverride drops the invocation guard: exit=1 | 1 ⎯⎯⎯⎯⎯⎯⎯
+    FAIL  |conformance| tests/conformance.test.ts > configuration conformance > refuses the invocation record a registered factory receives in the override position
+RESTORED exit=0 | 5 passed (5)

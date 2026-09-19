@@ -1,0 +1,6 @@
+capture-1 exit=0
+capture-1 frames=104
+capture-2 exit=0
+capture-2 frames=104
+gates exit=0
+done

@@ -1,0 +1,6 @@
+npm notice run roughnotes@0.0.1 format:check
+npm notice run oxfmt --config .oxfmtrc.json --check .
+Checking formatting...
+
+All matched files use the correct format.
+Finished in 981ms on 122 files using 16 threads.

@@ -1,0 +1,7 @@
+﻿{
+    "command":  "powershell.exe -NoProfile -File C:/Users/mikes/AppData/Local/Temp/roughnotes-integration-20260918/launch-install-original-3.ps1 -Check",
+    "exit":  1,
+    "failed":  1,
+    "passed":  0,
+    "outputExists":  false
+}

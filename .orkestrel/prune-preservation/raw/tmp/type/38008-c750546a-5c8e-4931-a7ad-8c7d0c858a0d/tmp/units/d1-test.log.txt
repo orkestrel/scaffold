@@ -1,0 +1,50 @@
+npm notice run @orkestrel/scaffold@0.0.72 test
+npm notice run npm run test:src:core && npm run test:src:server && npm run test:src:bin && npm run test:policy && npm run test:config && npm run test:setup && npm run test:guides
+npm notice run @orkestrel/scaffold@0.0.72 test:src:core
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/scaffold
+
+··············································································································································································································································································stderr | tests/src/core/templates.test.ts > emitted workspaces under their own gates > refuses a non-object peer dependency declaration at config load
+[33m[MIXED_EXPORTS] [0mEntry module "tmp/scaffold-e2-peers-JShcDK/malformed/vite.config.ts" is using named (including "config", "default", "distribution", "mergeOverride", "peers", "policy", "probe", "resolveWorkspacePath", "srcCore") and default exports together. Consumers of your bundle will have to use `chunk.default` to access the default export, which may not be what you want. Use `output.exports: "named"` to disable this warning.
+
+
+stderr | tests/src/core/templates.test.ts > emitted workspaces under their own gates > refuses a non-object peer dependency declaration at config load
+[31mfailed to load config from C:\Users\mikes\WebstormProjects\scaffold\tmp\scaffold-e2-peers-JShcDK\malformed\vite.config.ts[39m
+
+························································································································································
+
+ Test Files  9 passed (9)
+      Tests  422 passed (422)
+   Start at  09:48:56
+   Duration  22.08s (transform 2.19s, setup 2.98s, import 1.82s, tests 31.02s, environment 1ms)
+
+npm notice run @orkestrel/scaffold@0.0.72 test:src:server
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project src:server
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/scaffold
+
+··-·······················································································································---························································································································-····························································-··············································x···············-·······································································································
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:server| tests/src/server/helpers.test.ts > readHostFloor > reads the default host floor and hydrates as the default materializer does
+ScaffoldError: The vendored host cannot read the declared file at tests/config.test.ts
+ ❯ readHostFloor src/server/helpers.ts:1244:10
+    1242|   const hex = readFileHex(host, path)
+    1243|   if (hex === undefined || hexToDigest(hex) !== entry.digest) {
+    1244|    throw new ScaffoldError(
+       |          ^
+    1245|     'TARGET',
+    1246|     `The vendored host cannot read the declared file at ${path}`,
+ ❯ tests/src/server/helpers.test.ts:1600:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 4 passed (5)
+      Tests  1 failed | 465 passed | 7 skipped (473)
+   Start at  09:49:19
+   Duration  11.44s (transform 2.71s, setup 4.69s, import 676ms, tests 16.91s, environment 1ms)
+
+exit=1

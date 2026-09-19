@@ -1,0 +1,263 @@
+{
+  "platform": "win32",
+  "version": "v24.20.0",
+  "elapsed": 39.158500000000004,
+  "loops": 56,
+  "controls": {
+    "positive": true,
+    "negative": false
+  },
+  "unsafeCount": 56,
+  "unsafe": [
+    {
+      "iteration": 0,
+      "original": {
+        "lstat": {
+          "device": 782266666,
+          "inode": 61361544923188630,
+          "birthtimeMs": 1789744975492.7087
+        },
+        "stat": {
+          "device": 782266666,
+          "inode": 61361544923188630,
+          "birthtimeMs": 1789744975492.7087
+        },
+        "bigint": {
+          "lstat": {
+            "device": "782266666",
+            "inode": "61361544923188634",
+            "birthtimeMs": "1789744975492"
+          },
+          "stat": {
+            "device": "782266666",
+            "inode": "61361544923188634",
+            "birthtimeMs": "1789744975492"
+          }
+        }
+      },
+      "replacement": {
+        "lstat": {
+          "device": 782266666,
+          "inode": 112308515707817390,
+          "birthtimeMs": 1789744975492.7087
+        },
+        "stat": {
+          "device": 782266666,
+          "inode": 112308515707817390,
+          "birthtimeMs": 1789744975492.7087
+        },
+        "bigint": {
+          "lstat": {
+            "device": "782266666",
+            "inode": "112308515707817399",
+            "birthtimeMs": "1789744975492"
+          },
+          "stat": {
+            "device": "782266666",
+            "inode": "112308515707817399",
+            "birthtimeMs": "1789744975492"
+          }
+        }
+      }
+    },
+    {
+      "iteration": 1,
+      "original": {
+        "lstat": {
+          "device": 782266666,
+          "inode": 111464090777685440,
+          "birthtimeMs": 1789744975493.7087
+        },
+        "stat": {
+          "device": 782266666,
+          "inode": 111464090777685440,
+          "birthtimeMs": 1789744975493.7087
+        },
+        "bigint": {
+          "lstat": {
+            "device": "782266666",
+            "inode": "111464090777685438",
+            "birthtimeMs": "1789744975493"
+          },
+          "stat": {
+            "device": "782266666",
+            "inode": "111464090777685438",
+            "birthtimeMs": "1789744975493"
+          }
+        }
+      },
+      "replacement": {
+        "lstat": {
+          "device": 782266666,
+          "inode": 124974889659796940,
+          "birthtimeMs": 1789744975494.7112
+        },
+        "stat": {
+          "device": 782266666,
+          "inode": 124974889659796940,
+          "birthtimeMs": 1789744975494.7112
+        },
+        "bigint": {
+          "lstat": {
+            "device": "782266666",
+            "inode": "124974889659796938",
+            "birthtimeMs": "1789744975494"
+          },
+          "stat": {
+            "device": "782266666",
+            "inode": "124974889659796938",
+            "birthtimeMs": "1789744975494"
+          }
+        }
+      }
+    },
+    {
+      "iteration": 2,
+      "original": {
+        "lstat": {
+          "device": 782266666,
+          "inode": 100205091709259300,
+          "birthtimeMs": 1789744975494.7112
+        },
+        "stat": {
+          "device": 782266666,
+          "inode": 100205091709259300,
+          "birthtimeMs": 1789744975494.7112
+        },
+        "bigint": {
+          "lstat": {
+            "device": "782266666",
+            "inode": "100205091709259294",
+            "birthtimeMs": "1789744975494"
+          },
+          "stat": {
+            "device": "782266666",
+            "inode": "100205091709259294",
+            "birthtimeMs": "1789744975494"
+          }
+        }
+      },
+      "replacement": {
+        "lstat": {
+          "device": 782266666,
+          "inode": 93168217291493020,
+          "birthtimeMs": 1789744975494.7112
+        },
+        "stat": {
+          "device": 782266666,
+          "inode": 93168217291493020,
+          "birthtimeMs": 1789744975494.7112
+        },
+        "bigint": {
+          "lstat": {
+            "device": "782266666",
+            "inode": "93168217291493016",
+            "birthtimeMs": "1789744975494"
+          },
+          "stat": {
+            "device": "782266666",
+            "inode": "93168217291493016",
+            "birthtimeMs": "1789744975494"
+          }
+        }
+      }
+    }
+  ],
+  "collision": {
+    "iteration": 55,
+    "original": {
+      "anchor": {
+        "path": "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\probe\\anchor-identity-wsnbUV\\original-55",
+        "device": 782266666,
+        "inode": 54324670505422940
+      },
+      "metadata": {
+        "lstat": {
+          "device": 782266666,
+          "inode": 54324670505422940,
+          "birthtimeMs": 1789744975528.7126
+        },
+        "stat": {
+          "device": 782266666,
+          "inode": 54324670505422940,
+          "birthtimeMs": 1789744975528.7126
+        },
+        "bigint": {
+          "lstat": {
+            "device": "782266666",
+            "inode": "54324670505422941",
+            "birthtimeMs": "1789744975528"
+          },
+          "stat": {
+            "device": "782266666",
+            "inode": "54324670505422941",
+            "birthtimeMs": "1789744975528"
+          }
+        }
+      }
+    },
+    "replacement": {
+      "anchor": {
+        "path": "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\probe\\anchor-identity-wsnbUV\\replacement-55",
+        "device": 782266666,
+        "inode": 54324670505422940
+      },
+      "metadata": {
+        "lstat": {
+          "device": 782266666,
+          "inode": 54324670505422940,
+          "birthtimeMs": 1789744975528.7126
+        },
+        "stat": {
+          "device": 782266666,
+          "inode": 54324670505422940,
+          "birthtimeMs": 1789744975528.7126
+        },
+        "bigint": {
+          "lstat": {
+            "device": "782266666",
+            "inode": "54324670505422943",
+            "birthtimeMs": "1789744975528"
+          },
+          "stat": {
+            "device": "782266666",
+            "inode": "54324670505422943",
+            "birthtimeMs": "1789744975528"
+          }
+        }
+      }
+    },
+    "afterAnchor": {
+      "path": "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\probe\\anchor-identity-wsnbUV\\original-55",
+      "device": 782266666,
+      "inode": 54324670505422940
+    },
+    "after": {
+      "lstat": {
+        "device": 782266666,
+        "inode": 54324670505422940,
+        "birthtimeMs": 1789744975528.7126
+      },
+      "stat": {
+        "device": 782266666,
+        "inode": 54324670505422940,
+        "birthtimeMs": 1789744975528.7126
+      },
+      "bigint": {
+        "lstat": {
+          "device": "782266666",
+          "inode": "54324670505422943",
+          "birthtimeMs": "1789744975528"
+        },
+        "stat": {
+          "device": "782266666",
+          "inode": "54324670505422943",
+          "birthtimeMs": "1789744975528"
+        }
+      }
+    },
+    "matched": true,
+    "bigint": false,
+    "missed": true
+  }
+}

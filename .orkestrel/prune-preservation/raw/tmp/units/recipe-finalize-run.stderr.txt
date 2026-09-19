@@ -1,0 +1,59 @@
+Git failed: git diff --cached --check -- .agents/skills/orkestrel-prove-journey/SKILL.md 
+.agents/skills/orkestrel-prove-journey/references/captures.md .orkestrel/campaign/capture-recipe-unit-2/.gitattributes 
+.orkestrel/campaign/capture-recipe-unit-2/capture-recipe-audit-claims.md 
+.orkestrel/campaign/capture-recipe-unit-2/capture-recipe-audit-objective-report.md 
+.orkestrel/campaign/capture-recipe-unit-2/capture-recipe-audit-subjective-report.md 
+.orkestrel/campaign/capture-recipe-unit-2/capture-recipe-audit-verdict.md 
+.orkestrel/campaign/capture-recipe-unit-2/capture-recipe-brief-2.md 
+.orkestrel/campaign/capture-recipe-unit-2/capture-recipe-brief-3.md 
+.orkestrel/campaign/capture-recipe-unit-2/capture-recipe-brief.md 
+.orkestrel/campaign/capture-recipe-unit-2/capture-recipe-evidence-2/directory-check.mjs 
+.orkestrel/campaign/capture-recipe-unit-2/capture-recipe-gates-brief.md 
+.orkestrel/campaign/capture-recipe-unit-2/capture-recipe-gates-report.md 
+.orkestrel/campaign/capture-recipe-unit-2/capture-recipe-objective-brief.md 
+.orkestrel/campaign/capture-recipe-unit-2/capture-recipe-report-2.md 
+.orkestrel/campaign/capture-recipe-unit-2/capture-recipe-report-3.md 
+.orkestrel/campaign/capture-recipe-unit-2/capture-recipe-report.md 
+.orkestrel/campaign/capture-recipe-unit-2/capture-recipe-subjective-brief.md 
+.orkestrel/campaign/capture-recipe-unit-2/capture-recipe-successor-ruling.md 
+.orkestrel/campaign/capture-recipe-unit-2/completion.md 
+.orkestrel/campaign/capture-recipe-unit-2/finalize-recipe-stage.ps1 .orkestrel/campaign/capture-recipe-unit-2/index.md 
+.orkestrel/campaign/capture-recipe-unit-2/recipe-finalize-brief.md 
+.orkestrel/campaign/capture-recipe-unit-2/recipe-finalize-report.md 
+.orkestrel/campaign/capture-recipe-unit-2/recipe-retain-stage-brief-2.md 
+.orkestrel/campaign/capture-recipe-unit-2/recipe-retain-stage-brief-3.md 
+.orkestrel/campaign/capture-recipe-unit-2/recipe-retain-stage-brief-4.md 
+.orkestrel/campaign/capture-recipe-unit-2/recipe-retain-stage-brief.md 
+.orkestrel/campaign/capture-recipe-unit-2/recipe-retain-stage-raw-evidence-ruling.md 
+.orkestrel/campaign/capture-recipe-unit-2/recipe-retain-stage-report-2.md 
+.orkestrel/campaign/capture-recipe-unit-2/recipe-retain-stage-report-3.md 
+.orkestrel/campaign/capture-recipe-unit-2/recipe-retain-stage-report-4.md 
+.orkestrel/campaign/capture-recipe-unit-2/recipe-retain-stage-report.md 
+.orkestrel/campaign/capture-recipe-unit-2/retain-stage-capture-recipe.ps1 host.json
+At C:\Users\mikes\WebstormProjects\scaffold\tmp\release\finalize-recipe-stage.ps1:53 char:9
++         throw "Git failed: git $($Arguments -join ' ')"
++         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : OperationStopped: (Git failed: git...e.ps1 host.json:String) [], RuntimeException
+    + FullyQualifiedErrorId : Git failed: git diff --cached --check -- .agents/skills/orkestrel-prove-journey/SKILL.md 
+    .agents/skills/orkestrel-prove-journey/references/captures.md .orkestrel/campaign/capture-recipe-unit-2/.gitattri  
+  butes .orkestrel/campaign/capture-recipe-unit-2/capture-recipe-audit-claims.md .orkestrel/campaign/capture-recipe-   
+ unit-2/capture-recipe-audit-objective-report.md .orkestrel/campaign/capture-recipe-unit-2/capture-recipe-audit-sub    
+jective-report.md .orkestrel/campaign/capture-recipe-unit-2/capture-recipe-audit-verdict.md .orkestrel/campaign/ca    
+pture-recipe-unit-2/capture-recipe-brief-2.md .orkestrel/campaign/capture-recipe-unit-2/capture-recipe-brief-3.md     
+.orkestrel/campaign/capture-recipe-unit-2/capture-recipe-brief.md .orkestrel/campaign/capture-recipe-unit-2/captur    
+e-recipe-evidence-2/directory-check.mjs .orkestrel/campaign/capture-recipe-unit-2/capture-recipe-gates-brief.md .o    
+rkestrel/campaign/capture-recipe-unit-2/capture-recipe-gates-report.md .orkestrel/campaign/capture-recipe-unit-2/c    
+apture-recipe-objective-brief.md .orkestrel/campaign/capture-recipe-unit-2/capture-recipe-report-2.md .orkestrel/c    
+ampaign/capture-recipe-unit-2/capture-recipe-report-3.md .orkestrel/campaign/capture-recipe-unit-2/capture-recipe-    
+report.md .orkestrel/campaign/capture-recipe-unit-2/capture-recipe-subjective-brief.md .orkestrel/campaign/capture    
+-recipe-unit-2/capture-recipe-successor-ruling.md .orkestrel/campaign/capture-recipe-unit-2/completion.md .orkestr    
+el/campaign/capture-recipe-unit-2/finalize-recipe-stage.ps1 .orkestrel/campaign/capture-recipe-unit-2/index.md .or    
+kestrel/campaign/capture-recipe-unit-2/recipe-finalize-brief.md .orkestrel/campaign/capture-recipe-unit-2/recipe-f    
+inalize-report.md .orkestrel/campaign/capture-recipe-unit-2/recipe-retain-stage-brief-2.md .orkestrel/campaign/cap    
+ture-recipe-unit-2/recipe-retain-stage-brief-3.md .orkestrel/campaign/capture-recipe-unit-2/recipe-retain-stage-br    
+ief-4.md .orkestrel/campaign/capture-recipe-unit-2/recipe-retain-stage-brief.md .orkestrel/campaign/capture-recipe    
+-unit-2/recipe-retain-stage-raw-evidence-ruling.md .orkestrel/campaign/capture-recipe-unit-2/recipe-retain-stage-r    
+eport-2.md .orkestrel/campaign/capture-recipe-unit-2/recipe-retain-stage-report-3.md .orkestrel/campaign/capture-r    
+ecipe-unit-2/recipe-retain-stage-report-4.md .orkestrel/campaign/capture-recipe-unit-2/recipe-retain-stage-report.    
+md .orkestrel/campaign/capture-recipe-unit-2/retain-stage-capture-recipe.ps1 host.json
+ 

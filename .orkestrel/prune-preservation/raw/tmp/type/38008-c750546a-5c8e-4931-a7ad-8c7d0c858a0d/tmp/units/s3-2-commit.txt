@@ -1,0 +1,18 @@
+docs(skill): name buildRefusal in the statechart reference
+
+Unit S3-2 (`builder`, baseline abfe460e; brief and report retained under
+.orkestrel/campaign/s3-brief-2.md and s3-2-report.md) carries the deviation
+unit S3 reported: the tarball installed at S3's dispatch predated T3 and its
+core entry did not export `buildRefusal`, so the symbol could not be fenced.
+With 0.0.17 installed from the registry the binding resolves, and
+references/statechart.md now imports it in the vocabulary fence, names it in
+§ Run the table as the builder of the `<name>: build refused` error an
+assertion compares against, and names its sentence in § Mount the harness.
+
+The policy sweep reads the fence: a planted `buildRefusal2` binding in a
+scratch copy reported one violation naming it
+(.orkestrel/campaign/s3-2-instruments/). host.json is regenerated over the
+vendored byte in this commit; the gate reading is retained as
+.orkestrel/campaign/s3-2-gates-summary.txt.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>

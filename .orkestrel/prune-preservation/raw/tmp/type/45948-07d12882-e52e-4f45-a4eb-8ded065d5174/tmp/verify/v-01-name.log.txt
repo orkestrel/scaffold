@@ -1,0 +1,2 @@
+?? .orkestrel/campaign/
+ca09788c docs(skill): order the setup-proof activation, bound the cp1252 hazard, and remove the surviving restatements

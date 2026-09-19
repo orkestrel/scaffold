@@ -1,0 +1,23 @@
+npm notice run @orkestrel/scaffold@0.0.73 test:config
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project config
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/scaffold
+
+·······stdout | tests/config.test.ts > root configuration > keeps the committed host inventory aligned with the vendored checkout bytes
+host-inventory: entries=175
+
+···································································································································································stdout | tests/config.test.ts > configuration helpers > rolls one face into a single declaration and rewrites its core specifier
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+
+stdout | tests/config.test.ts > configuration helpers > rolls one face into a single declaration and rewrites its core specifier
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+
+··-·
+
+ Test Files  1 passed (1)
+      Tests  173 passed | 1 skipped (174)
+   Start at  17:20:10
+   Duration  6.08s (transform 318ms, setup 310ms, import 417ms, tests 5.20s, environment 0ms)
+

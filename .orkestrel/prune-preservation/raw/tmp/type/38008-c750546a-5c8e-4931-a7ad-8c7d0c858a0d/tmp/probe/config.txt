@@ -1,0 +1,35 @@
+npm notice run @orkestrel/scaffold@0.0.73 test:config
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project config
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/scaffold
+
+·······x··································································································································································stdout | tests/config.test.ts > configuration helpers > rolls one face into a single declaration and rewrites its core specifier
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+
+stdout | tests/config.test.ts > configuration helpers > rolls one face into a single declaration and rewrites its core specifier
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+
+··-·
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |config| tests/config.test.ts > root configuration > keeps the committed host inventory aligned with the vendored checkout bytes
+Error: The committed host inventory is stale at guides/scaffold.md, tests/setupPolicy.ts
+ ❯ tests/config.test.ts:757:12
+    755|       if (!generatedIndex.has(destination)) stale.push(destination)
+    756|      }
+    757|      throw new Error(
+       |            ^
+    758|       `The committed host inventory is stale at ${stale.length > 0 ? s…
+    759|      )
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 172 passed | 1 skipped (174)
+   Start at  14:18:30
+   Duration  5.85s (transform 328ms, setup 312ms, import 426ms, tests 4.96s, environment 0ms)
+

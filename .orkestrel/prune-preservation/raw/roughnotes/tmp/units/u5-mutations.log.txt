@@ -1,0 +1,7 @@
+baseline | unmutated | 9 passed (9) | exit 0
+monogram class | mutated | 3 failed | 6 passed (9) | exit 1
+shell href resolution | mutated | 1 failed | 8 passed (9) | exit 1
+footer group heading | mutated | 1 failed | 8 passed (9) | exit 1
+drawer action rank | mutated | 1 failed | 8 passed (9) | exit 1
+adjacent focus names | mutated | 1 failed | 8 passed (9) | exit 1
+restored | unmutated | 9 passed (9) | exit 0

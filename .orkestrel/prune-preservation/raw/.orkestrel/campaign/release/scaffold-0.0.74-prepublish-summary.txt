@@ -1,0 +1,30 @@
+tip: ca09788c docs(skill): order the setup-proof activation, bound the cp1252 hazard, and remove the surviving restatements
+dirty: 0 tracked changes
+--- registry sweep before ---
+@orkestrel/scaffold local 0.0.73 registry 0.0.73
+dependencies     @orkestrel/console       ^0.0.14      registry 0.0.14
+dependencies     @orkestrel/contract      ^0.0.17      registry 0.0.17
+dependencies     @orkestrel/emitter       ^0.0.10      registry 0.0.10
+dependencies     @orkestrel/markdown      ^0.0.15      registry 0.0.15
+dependencies     @orkestrel/process       ^0.0.13      registry 0.0.13
+dependencies     @orkestrel/template      ^0.0.8       registry 0.0.8
+devDependencies  @orkestrel/guide         ^0.0.20      registry 0.0.20
+devDependencies  @orkestrel/html          ^0.0.10      registry 0.0.10
+devDependencies  @orkestrel/probe         ^0.0.16      registry 0.0.16
+(node:25380) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead to security vulnerabilities, as the arguments are not escaped, only concatenated.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+devDependencies  @orkestrel/test          ^0.0.17      registry 0.0.17
+version_EXIT=0 now 0.0.74
+install_EXIT=0
+prepublishOnly_EXIT=1
+npm notice run node -e "import('./dist/src/server/index.js').then((m)=>{const n=m.stageHost(process.cwd(),'dist/host',{report: (message) => console.error(message)}).length;console.log('build-host: staged '+n+' file(s) into dist/host')})"
+build-host: staged 175 file(s) into dist/host
+npm notice run node -e "import('./dist/src/server/index.js').then((m)=>{const p=process.argv[1]??'host.json',n=m.stageInventory(process.cwd(),p).entries.length;console.log('build-inventory: staged '+n+' file(s) into '+p)})"
+build-inventory: staged 175 file(s) into host.json
+ FAIL  |src:core| tests/src/core/compilers.test.ts > blueprintToDevDependencies compile tooling > keeps the browser application toolchain in an app-only workspace
+Error: Snapshot `blueprintToDevDependencies compile tooling > keeps the browser application toolchain in an app-only workspace 1` mismatched
+ FAIL  |src:core| tests/src/core/compilers.test.ts > blueprintToDevDependencies compile tooling > keeps a generated source workspace manifest byte-stable
+Error: Snapshot `blueprintToDevDependencies compile tooling > keeps a generated source workspace manifest byte-stable 1` mismatched
+ FAIL  |src:core| tests/src/core/compilers.test.ts > blueprintToScripts config projects > registers and gates setup proofs only when the blueprint selects them
+Error: Snapshot `blueprintToScripts config projects > registers and gates setup proofs only when the blueprint selects them 1` mismatched
+      Tests  3 failed | 422 passed (425)

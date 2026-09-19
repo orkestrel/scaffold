@@ -1,0 +1,69 @@
+/**
+ * Merges a caller's override onto the configuration a factory declares.
+ *
+ * @param base - The configuration the factory declares.
+ * @param override - The caller's override, when one is given.
+ * @returns The merged configuration, carrying one entry per base plugin name.
+ *
+ * @remarks
+ * Vitest calls every registered project factory with its own invocation record — `command`,
+ * `mode`, `isSsrBuild`, `isPreview` — so a factory that also takes an override receives that
+ * record in the same position. A `UserConfig` declares `mode` but not `command`, and the
+ * invocation record always carries both, so a value carrying the pair is that record rather than
+ * an override. The merge returns the base unchanged and reports nothing. The
+ * `tests/config.test.ts` file drives every registered factory through it.
+ *
+ * `mergeConfig` concatenates arrays, so an override carrying `plugins` would otherwise add a
+ * second copy of a plugin the base already declares. Only named top-level objects replace a base
+ * plugin of the same name, in the base's position, and one override entry is taken at most once.
+ * An entry no base position took appends in its written order; the caller's own entries never
+ * merge with each other. Nested arrays, promises, falsy entries, and anonymous objects pass
+ * through unchanged. An override cannot remove a base plugin. Every key other than `plugins`
+ * merges as `mergeConfig` merges it, so an override's arrays elsewhere concatenate with the
+ * base's rather than replacing them.
+ *
+ * @example
+ * ```ts
+ * mergeOverride(appBrowser(), { build: { emptyOutDir: false } })
+ * ```
+ */
+export function mergeOverride(base: UserConfig, override?: UserConfig): UserConfig {
+	if (override === undefined || ('command' in override && 'mode' in override)) return base
+	const merged: UserConfig = mergeConfig(base, override)
+	if (merged.plugins === undefined) return merged
+	const candidates = override.plugins ?? []
+	const taken = new Set<number>()
+	const selected: PluginOption[] = []
+	for (const plugin of base.plugins ?? []) {
+		if (!isNamedPlugin(plugin)) {
+			selected.push(plugin)
+			continue
+		}
+		const index = candidates.findIndex(
+			(candidate, position) =>
+				!taken.has(position) && isNamedPlugin(candidate) && candidate.name === plugin.name,
+		)
+		const replacement = candidates[index]
+		if (replacement === undefined) {
+			selected.push(plugin)
+		} else {
+			selected.push(replacement)
+			taken.add(index)
+		}
+	}
+	for (const [index, plugin] of candidates.entries()) {
+		if (!taken.has(index)) selected.push(plugin)
+	}
+	return { ...merged, plugins: selected }
+}
+
+function isNamedPlugin(plugin: PluginOption): plugin is { name: string } {
+	return (
+		typeof plugin === 'object' &&
+		plugin !== null &&
+		!Array.isArray(plugin) &&
+		!('then' in plugin && typeof plugin.then === 'function') &&
+		'name' in plugin &&
+		typeof plugin.name === 'string'
+	)
+}

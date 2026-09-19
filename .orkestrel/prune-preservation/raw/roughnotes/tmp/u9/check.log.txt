@@ -1,0 +1,9 @@
+npm notice run roughnotes@0.0.1 check
+npm notice run tsc --noEmit --project tsconfig.json && npm run check:app
+npm notice run roughnotes@0.0.1 check:app
+npm notice run npm run check:app:core && npm run check:app:browser
+npm notice run roughnotes@0.0.1 check:app:core
+npm notice run tsc --noEmit -p configs/app/tsconfig.core.json
+npm notice run roughnotes@0.0.1 check:app:browser
+npm notice run vue-tsc --noEmit -p configs/app/tsconfig.browser.json
+exit=0

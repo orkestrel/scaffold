@@ -1,0 +1,13 @@
+# Recovered campaign checkpoint
+
+The interrupted Claude work has continued through accepted local source changes and release preparation. Grok4.6 absorbed the original session and mapped campaign history, open work, historical audits, field-proof requirements, and retention dependencies. No external Grok session remains active.
+
+Roughnotes' recovered application changes and journey-helper adoption passed independent source reviews, real red/green controls, normal and reduced-motion proofs, cold-host checks, the ordered full check chain, and the final capture run. The final capture recorded176passed in65.93s. Its immutable portfolio is tmp/capture-retained/r-b-final-capture; keep PNGs out of Git. Final source remains frozen in tmp/recovery/roughnotes on recovery/journey-20260918. Original neighboring Roughnotes work remains preserved. Dependency lock restoration and registry adoption remain open; this checkout still uses the historical local c50efef0 archive.
+
+The isolated Scaffold release branch recovery/scaffold-0.0.75 has accepted recipe commit2f78b38a7c938d7e4f5b5c8f2030385bfcb5d6eb on top of the release-preparation and Vue setup commits. The full prepublishOnly gate exited0 in267.883s. The returned gate evidence records that the verifier omitted its requested full filesystem log. The source commit includes retained recipe evidence and its byte-preserving Git checks. The earlier partial retention directory remains untracked and preserved.
+
+The refreshed archive is tmp/release/refreshed-pack/orkestrel-scaffold-0.0.75.tgz, built from2f78b38a. SHA256 is3FEB4860C55C64BB1136FA366757B99CD0F34C169D842E46C46A9BF53787A9A3. The pack metadata, exact instrument, authoring reports, controls, failures, and acceptance ruling are in refreshed-pack-unit/. Historical archives remain unchanged. No package upload, push, or merge occurred. Canonical main remains178c7cbb, with user .codex changes preserved.
+
+The owner answered `proceed` and authorized including the independently reproduced Windows directory-identity precision repair in this release. Directory-anchor-ruling.md records the real missed replacement caused by numeric inode rounding. Bound the repair to native identity preservation, regression evidence, affected consumers and documentation, and refreshed release artifacts.
+
+Finish the authorized fix and release branch, refresh archive evidence, integrate/push with user changes preserved, and follow the publish skill's Windows operator-upload requirement. Then restore Roughnotes' registry dependencies and lock, run repair and required gates, preserve final capture proof, complete the clean journey-skill field pass, and finish debrief/retention. Do not prune before concrete disposition and explicit owner go-ahead.

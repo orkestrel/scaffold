@@ -1,0 +1,152 @@
+{
+  "input": {
+    "project": "configs/src/tsconfig.core.json",
+    "case": {
+      "files": [
+        {
+          "path": "src/core/variantProbe/constants.ts",
+          "text": "import type { JourneyVariant } from 'C:/Users/mikes/WebstormProjects/scaffold/tmp/recovery/roughnotes/node_modules/@orkestrel/test/dist/src/core/index.js'\n\nexport const VARIANT: JourneyVariant = Object.freeze({ name: 'light-390', width: 390, height: 844 })\n"
+        }
+      ],
+      "test": {
+        "path": "tmp/probe/r-b-variant/variant.test.ts",
+        "text": "import { expect, it } from 'vitest'\nimport { VARIANT } from '../../../src/core/variantProbe/constants.js'\n\nit('preserves numeric journey viewport dimensions', () => {\n\texpect(VARIANT).toEqual({ name: 'light-390', width: 390, height: 844 })\n})\n"
+      }
+    },
+    "control": {
+      "files": [
+        {
+          "path": "src/core/variantProbe/constants.ts",
+          "text": "import type { JourneyVariant } from 'C:/Users/mikes/WebstormProjects/scaffold/tmp/recovery/roughnotes/node_modules/@orkestrel/test/dist/src/core/index.js'\n\nexport const VARIANT: JourneyVariant = Object.freeze({ name: 'light-390', width: '390', height: 844 })\n"
+        }
+      ],
+      "test": {
+        "path": "tmp/probe/r-b-variant/variant.test.ts",
+        "text": "import { expect, it } from 'vitest'\nimport { VARIANT } from '../../../src/core/variantProbe/constants.js'\n\nit('preserves numeric journey viewport dimensions', () => {\n\texpect(VARIANT).toEqual({ name: 'light-390', width: 390, height: 844 })\n})\n"
+      },
+      "reason": "The actual recovery-installed test0.0.18 JourneyVariant declaration requires numeric width; a string width must fail at the type stage.",
+      "stage": "type"
+    }
+  },
+  "result": {
+    "content": [
+      {
+        "type": "text",
+        "text": "probe e0302ed2-7971-4603-b942-b6882c092683 (5033 ms)\nclaim a9add373029b37e94402b1b16fe64a2a\ntoolchain typescript 6.0.3, oxlint 1.83.0, vitest 4.1.11\nproject configs/src/tsconfig.core.json 8e9a45d777a98c3ae5e45e4bd78032fb\nreason The actual recovery-installed test0.0.18 JourneyVariant declaration requires numeric width; a string width must fail at the type stage.\ncase type: 0 issues (2290 ms)\ncase lint: 1 issue (896 ms)\n  [claimant] src/core/variantProbe/constants.ts:1 Do not import modules using an absolute path\nhelp: Replace the absolute path with a relative path or a module alias.\ncase runtime: 0 issues (1058 ms)\ncontrol type: 1 issue (2305 ms)\n  [claimant] src/core/variantProbe/constants.ts:3 Type 'Readonly<{ name: \"light-390\"; width: \"390\"; height: 844; }>' is not assignable to type 'JourneyVariant'.\n  Types of property 'width' are incompatible.\n    Type 'string' is not assignable to type 'number'.\ncontrol lint: 1 issue (860 ms)\n  [claimant] src/core/variantProbe/constants.ts:1 Do not import modules using an absolute path\nhelp: Replace the absolute path with a relative path or a module alias.\ncontrol runtime: 1 issue (1035 ms)\n  [claimant] tmp/probe/r-b-variant/variant.test.ts:5 expected { name: 'light-390', …(2) } to deeply equal { name: 'light-390', width: 390, …(1) }\nno receipt"
+      }
+    ],
+    "structuredContent": {
+      "case": [
+        {
+          "elapsed": 2290,
+          "issues": [],
+          "stage": "type"
+        },
+        {
+          "elapsed": 896,
+          "issues": [
+            {
+              "message": "Do not import modules using an absolute path\nhelp: Replace the absolute path with a relative path or a module alias.",
+              "origin": "claimant",
+              "path": "src/core/variantProbe/constants.ts",
+              "range": {
+                "end": {
+                  "character": 154,
+                  "line": 0
+                },
+                "start": {
+                  "character": 36,
+                  "line": 0
+                }
+              }
+            }
+          ],
+          "stage": "lint"
+        },
+        {
+          "elapsed": 1058,
+          "issues": [],
+          "stage": "runtime"
+        }
+      ],
+      "control": [
+        {
+          "elapsed": 2305,
+          "issues": [
+            {
+              "message": "Type 'Readonly<{ name: \"light-390\"; width: \"390\"; height: 844; }>' is not assignable to type 'JourneyVariant'.\n  Types of property 'width' are incompatible.\n    Type 'string' is not assignable to type 'number'.",
+              "origin": "claimant",
+              "path": "src/core/variantProbe/constants.ts",
+              "range": {
+                "end": {
+                  "character": 13,
+                  "line": 2
+                },
+                "start": {
+                  "character": 13,
+                  "line": 2
+                }
+              }
+            }
+          ],
+          "stage": "type"
+        },
+        {
+          "elapsed": 860,
+          "issues": [
+            {
+              "message": "Do not import modules using an absolute path\nhelp: Replace the absolute path with a relative path or a module alias.",
+              "origin": "claimant",
+              "path": "src/core/variantProbe/constants.ts",
+              "range": {
+                "end": {
+                  "character": 154,
+                  "line": 0
+                },
+                "start": {
+                  "character": 36,
+                  "line": 0
+                }
+              }
+            }
+          ],
+          "stage": "lint"
+        },
+        {
+          "elapsed": 1035,
+          "issues": [
+            {
+              "message": "expected { name: 'light-390', …(2) } to deeply equal { name: 'light-390', width: 390, …(1) }",
+              "origin": "claimant",
+              "path": "tmp/probe/r-b-variant/variant.test.ts",
+              "range": {
+                "end": {
+                  "character": 17,
+                  "line": 4
+                },
+                "start": {
+                  "character": 17,
+                  "line": 4
+                }
+              }
+            }
+          ],
+          "stage": "runtime"
+        }
+      ],
+      "digest": "a9add373029b37e94402b1b16fe64a2a",
+      "elapsed": 5033,
+      "id": "e0302ed2-7971-4603-b942-b6882c092683",
+      "project": {
+        "digest": "8e9a45d777a98c3ae5e45e4bd78032fb",
+        "path": "configs/src/tsconfig.core.json"
+      },
+      "reason": "The actual recovery-installed test0.0.18 JourneyVariant declaration requires numeric width; a string width must fail at the type stage.",
+      "toolchain": {
+        "oxlint": "1.83.0",
+        "typescript": "6.0.3",
+        "vitest": "4.1.11"
+      }
+    }
+  }
+}

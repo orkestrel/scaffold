@@ -1,0 +1,66 @@
+npm notice run @orkestrel/scaffold@0.0.73 build
+npm notice run npm run clean && npm run build:src && npm run build:host && npm run build:inventory
+npm notice run @orkestrel/scaffold@0.0.73 clean
+npm notice run node -e "require('node:fs').rmSync('dist',{recursive:true,force:true})"
+npm notice run @orkestrel/scaffold@0.0.73 build:src
+npm notice run npm run build:src:core && npm run build:src:server && npm run build:src:bin
+npm notice run @orkestrel/scaffold@0.0.73 build:src:core
+npm notice run vite build --config configs/src/vite.core.config.ts && npm run copy dist/src/core/index.d.ts dist/src/core/index.d.cts
+[36mvite v8.3.0 [32mbuilding client environment for production...[36m[39m
+transforming...
+✓ 14 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/core/index.js  271.15 kB │ gzip: 72.97 kB │ map: 364.68 kB
+
+transforming...
+✓ 14 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/core/index.cjs  279.59 kB │ gzip: 73.73 kB │ map: 367.20 kB
+
+[32m✓ built in 260ms[39m
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+npm notice run @orkestrel/scaffold@0.0.73 copy
+npm notice run node -e "const fs=require('node:fs'),p=require('node:path'),a=process.argv[1],b=process.argv[2];fs.mkdirSync(p.dirname(b),{recursive:true});fs.cpSync(a,b,{force:true});console.log('Copied: '+a+' to '+b)" dist/src/core/index.d.ts dist/src/core/index.d.cts
+Copied: dist/src/core/index.d.ts to dist/src/core/index.d.cts
+npm notice run @orkestrel/scaffold@0.0.73 build:src:server
+npm notice run vite build --config configs/src/vite.server.config.ts && npm run copy dist/src/server/index.d.ts dist/src/server/index.d.cts
+[36mvite v8.3.0 [32mbuilding client environment for production...[36m[39m
+[33m"build.lib.formats" will be ignored because "build.rolldownOptions.output" is already an array format.[39m
+transforming...
+✓ 9 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/server/index.js  183.66 kB │ gzip: 47.93 kB │ map: 296.76 kB
+
+transforming...
+✓ 9 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/server/index.cjs  193.11 kB │ gzip: 48.45 kB │ map: 302.87 kB
+
+[32m✓ built in 229ms[39m
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+npm notice run @orkestrel/scaffold@0.0.73 copy
+npm notice run node -e "const fs=require('node:fs'),p=require('node:path'),a=process.argv[1],b=process.argv[2];fs.mkdirSync(p.dirname(b),{recursive:true});fs.cpSync(a,b,{force:true});console.log('Copied: '+a+' to '+b)" dist/src/server/index.d.ts dist/src/server/index.d.cts
+Copied: dist/src/server/index.d.ts to dist/src/server/index.d.cts
+npm notice run @orkestrel/scaffold@0.0.73 build:src:bin
+npm notice run vite build --config configs/src/vite.bin.config.ts
+[36mvite v8.3.0 [32mbuilding client environment for production...[36m[39m
+transforming...
+✓ 6 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/bin/main.js  87.55 kB │ gzip: 22.73 kB │ map: 159.76 kB
+
+[32m✓ built in 29ms[39m
+npm notice run @orkestrel/scaffold@0.0.73 build:host
+npm notice run node -e "import('./dist/src/server/index.js').then((m)=>{const n=m.stageHost(process.cwd(),'dist/host',{report: (message) => console.error(message)}).length;console.log('build-host: staged '+n+' file(s) into dist/host')})"
+Inventory Surface baseline: C:\Users\mikes\WebstormProjects\scaffold\host.json
+build-host: staged 175 file(s) into dist/host
+npm notice run @orkestrel/scaffold@0.0.73 build:inventory
+npm notice run node -e "import('./dist/src/server/index.js').then((m)=>{const p=process.argv[1]??'host.json',n=m.stageInventory(process.cwd(),p).entries.length;console.log('build-inventory: staged '+n+' file(s) into '+p)})"
+build-inventory: staged 175 file(s) into host.json

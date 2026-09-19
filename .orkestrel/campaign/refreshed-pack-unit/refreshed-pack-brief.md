@@ -1,0 +1,15 @@
+# Prepare the refreshed candidate pack instrument
+
+Act as builder on Terra. Read AGENTS.md, .agents/orchestration.md, applicable portability/workspace/quality/documentation/writing rules, orkestrel-publish skill and wave/window references, guides/README.md and scaffold guide. Preserve types and user edits, add no dependency, assertion, suppression, mock, or wrapper capability. This is a fully specified PowerShell instrument. You are not alone; preserve other files. Do not delegate.
+
+Own only `.orkestrel/campaign/refreshed-pack-unit/pack-refreshed-candidate.ps1` and `.orkestrel/campaign/refreshed-pack-unit/refreshed-pack-report.md` in canonical Scaffold. Author the script and parse it for syntax; do not run packing, install, commit, publish, delete, or move files.
+
+Use the fixed candidate `C:\Users\mikes\WebstormProjects\scaffold\tmp\release\scaffold-0.0.75`. Require an explicit -Commit argument matching a full hexadecimal commit ID; reject if candidate HEAD differs. Require its tracked working tree and index clean before packing. Ignore tmp and other ignored generated output. Verify package name@orkestrel/scaffold, version0.0.75, declared/installed/locked @orkestrel/test0.0.18 and required dist/src, dist/bin, dist/host before proceeding.
+
+Create a write-once output root `C:\Users\mikes\WebstormProjects\scaffold\tmp\release\refreshed-pack` and refuse if it already exists. Keep historical packages/orkestrel-scaffold-0.0.75.tgz and all original provenance unchanged. Verify fixed resolved roots before writes. Never remove partial output after failure.
+
+Run only `npm.cmd pack --ignore-scripts --json --pack-destination <output>` from candidate and capture its actual native exit, raw JSON stdout, and stderr separately without PowerShell treating harmless npm notices as fatal. The installed npm JSON is a package-keyed object; use the proven parsing from tmp/release/verify-scaffold-0.0.75-pack.ps1, not the older array assumption in pack-scaffold-0.0.75.ps1. Require the exact package record identity and filename; preserve raw output before validation.
+
+Validate archive SHA512 against npm integrity and record SHA256/size/source commit. Use tar -xOf to read only package/package.json and the vendored journey skill/reference; do not extract a tree. Verify manifest dependency range and exact UTF-8 content equality between packed vendored skill/reference, candidate dist/host equivalents, and source equivalents. Inspect the exact existing dist/host layout before implementing these paths. Root forbidden archive entries are .npmrc, .env*, auth.json, .codex, .claude, .orkestrel, tmp; legitimate vendored paths under dist/host are allowed. Reject absolute/traversal archive entry names. Do not inspect credential contents.
+
+Write final metadata JSON only after validation, with source commit, archive path, SHA512, SHA256, bytes, and per-vendored-file hashes. Restore original cwd and changed script preferences in finally. Return exact invocation with placeholder commit, syntax result, and deviations. No actual package operation is authorized for this unit.

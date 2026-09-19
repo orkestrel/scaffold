@@ -1,0 +1,29 @@
+Host: Windows PowerShell 5.1, 2026-09-18.
+
+Command: node --check tmp/release/adopt-roughnotes-registry.mjs
+Native exit: 0.
+Output: empty.
+
+Command: powershell.exe -NoProfile -File tmp/units/roughnotes-registry-adoption-evidence/check-launcher.ps1
+Native exit: 0.
+Output: PowerShell parser passed: C:\Users\mikes\WebstormProjects\scaffold\tmp\release\launch-roughnotes-registry.ps1
+
+Command: node tmp/units/roughnotes-registry-adoption-evidence/inspect-authoring.mjs
+Native exit: 0.
+Closing output:
+Registry identity mismatch refused: Registry name, version, or integrity mismatch
+Protected source drift refused: Protected source or deletion snapshot changed
+Authoring controls passed; live recovery source unchanged; no installation executed
+Identity and registry output: baseline.json and registry-observed.json retain the measured objects.
+Coverage: exact Scaffold registry name/version/integrity comparison and ordered source/deletion snapshot comparison; inert JSON copies invoke the exported functions the install sequence uses.
+Limits: controls do not install packages, drive the launcher, measure process-tree termination, or run consumer gates.
+
+Command: node tmp/release/adopt-roughnotes-registry.mjs
+Native exit: 1.
+Output: Usage: C:\Users\mikes\WebstormProjects\scaffold\tmp\release\adopt-roughnotes-registry.mjs VERSION VERIFIED_INTEGRITY RUN
+Coverage: omitted root parameters refuse before evidence or checkout mutation.
+
+Command: node tmp/units/roughnotes-registry-adoption-evidence/collect-evidence.mjs
+Native exit: 0.
+Closing output: Recovery identity, Git status, and protected source remain equal to the authoring baseline
+Diff and hash output: owned.diffstat.txt and instrument-hashes.json retain the measured objects.

@@ -1,0 +1,19 @@
+{
+  "name": "format-check",
+  "script": "format:check",
+  "capture": false,
+  "executable": "C:\\Users\\mikes\\scoop\\apps\\nodejs-lts\\current\\node.exe",
+  "arguments": [
+    "C:\\Users\\mikes\\scoop\\apps\\nodejs-lts\\current\\node_modules\\npm\\bin\\npm-cli.js",
+    "run",
+    "format:check"
+  ],
+  "started": "2026-09-18T21:13:04.026Z",
+  "ended": "2026-09-18T21:13:05.894Z",
+  "elapsed": 1867.7199999999998,
+  "pid": 38404,
+  "exit": 0,
+  "signal": null,
+  "stdout": "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\units\\roughnotes-registry-gates-evidence\\roughnotes-registry-gates-20260918\\format-check.stdout.log.txt",
+  "stderr": "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\units\\roughnotes-registry-gates-evidence\\roughnotes-registry-gates-20260918\\format-check.stderr.log.txt"
+}

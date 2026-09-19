@@ -1,0 +1,223 @@
+variant: light-390
+viewport: 390x844
+capturing: true
+
+## accessible tree
+link "Skip to content"
+list "Contact"
+  listitem "800-428-4384"
+    link "800-428-4384"
+  listitem "rnc@roughnotes.com"
+    link "rnc@roughnotes.com"
+list "Logins"
+  listitem "RoughNotes-Pro Login"
+    link "RoughNotes-Pro Login"
+  listitem "Advantage-Plus Login"
+    link "Advantage-Plus Login"
+banner
+  navigation "Site"
+    link "R Rough Notes Since 1878"
+    link "Get started"
+    button "Use dark theme" [pressed=false]
+    button "Menu"
+main "Content"
+  region "Introduction"
+    heading "The knowledge that makes independent agents unstoppable."
+    link "Get started"
+    link "Read the magazine"
+    list
+      listitem "46,000+ Monthly readers"
+      listitem "800+ Market categories"
+      listitem "750 Classes of business"
+    article
+      heading "A permanent part of the local landscape"
+        link "A permanent part of the local landscape"
+  list
+    listitem "PF&M Analysis"
+    listitem "Risk Evaluation System"
+    listitem "The Insurance Marketplace"
+    listitem "Coverages Applicable"
+  region "Everything an agency needs, in one trusted system"
+    heading "Everything an agency needs, in one trusted system"
+    article
+      heading "RoughNotes-Pro"
+        link "RoughNotes-Pro"
+    article
+      heading "Advantage-Plus"
+        link "Advantage-Plus"
+    article
+      heading "The Insurance Marketplace"
+        link "The Insurance Marketplace"
+    article
+      heading "PF&M Online"
+        link "PF&M Online"
+    article
+      heading "Books and calculator wheels"
+        link "Books and calculator wheels"
+    article
+      heading "Rough Notes magazine"
+        link "Rough Notes magazine"
+    link "Explore products"
+  region "Find the specialty market before you write the file"
+    heading "Find the specialty market before you write the file"
+    list
+      listitem "Coverage notes on the submission Each listing carries the class conversation an agent raises before the market sees the file."
+      listitem "Hospitality through transportation The sample spans the industries producers actually place, not a decorative directory."
+    link "Search markets"
+    list
+      listitem "Restaurant general liability Hospitality"
+      listitem "Liquor liability Hospitality"
+      listitem "Equipment breakdown Hospitality"
+      listitem "Cyber and data breach Technology"
+  region "Insights that keep agents ahead of the market"
+    heading "Insights that keep agents ahead of the market"
+    article
+      heading "Mass shootings; mass confusion?"
+        link "Mass shootings; mass confusion?"
+    article
+      heading "Cyber claims trends you cannot ignore"
+        link "Cyber claims trends you cannot ignore"
+    article
+      heading "Why a softening market demands better service"
+        link "Why a softening market demands better service"
+    article
+      heading "Responsibility in leadership"
+        link "Responsibility in leadership"
+    article
+      heading "Make loss control your best salesperson"
+        link "Make loss control your best salesperson"
+    article
+      heading "Building momentum"
+        link "Building momentum"
+    link "Read the magazine"
+  region "Get Rough Notes delivered — free to licensed agents"
+    heading "Get Rough Notes delivered — free to licensed agents"
+    list
+      listitem "Free print and digital subscription"
+      listitem "September magazine issue in this catalog"
+      listitem "Fixture Insurance Marketplace search"
+    form
+      textbox "Full name"
+      textbox "Work email"
+      button "Subscribe free"
+contentinfo "Site footer"
+  heading "Products"
+  list
+    listitem "RoughNotes-Pro"
+      link "RoughNotes-Pro"
+    listitem "Advantage-Plus"
+      link "Advantage-Plus"
+    listitem "The Insurance Marketplace"
+      link "The Insurance Marketplace"
+  heading "Resources"
+  list
+    listitem "Publication desks"
+      link "Publication desks"
+    listitem "Magazine issue"
+      link "Magazine issue"
+    listitem "Marketplace search"
+      link "Marketplace search"
+    listitem "Newsletter"
+      link "Newsletter"
+    listitem "Free magazine delivery"
+      link "Free magazine delivery"
+  heading "Company"
+  list
+    listitem "Our story"
+      link "Our story"
+    listitem "Media kits"
+      link "Media kits"
+    listitem "Write to us"
+      link "Write to us"
+    listitem "Shop catalog"
+      link "Shop catalog"
+    listitem "Existing invoice"
+      link "Existing invoice"
+    listitem "800-428-4384"
+      link "800-428-4384"
+    listitem "rnc@roughnotes.com"
+      link "rnc@roughnotes.com"
+
+## focus order
+1. link "Skip to content"
+2. link "800-428-4384"
+3. link "rnc@roughnotes.com"
+4. link "RoughNotes-Pro Login"
+5. link "Advantage-Plus Login"
+6. link "R Rough Notes Since 1878"
+7. link "Get started"
+8. button "Use dark theme"
+9. button "Menu"
+10. link "Get started"
+11. link "Read the magazine"
+12. link "A permanent part of the local landscape"
+13. link "RoughNotes-Pro"
+14. link "Advantage-Plus"
+15. link "The Insurance Marketplace"
+16. link "PF&M Online"
+17. link "Books and calculator wheels"
+18. link "Rough Notes magazine"
+19. link "Explore products"
+20. link "Search markets"
+21. link "Mass shootings; mass confusion?"
+22. link "Cyber claims trends you cannot ignore"
+23. link "Why a softening market demands better service"
+24. link "Responsibility in leadership"
+25. link "Make loss control your best salesperson"
+26. link "Building momentum"
+27. link "Read the magazine"
+28. textbox "Full name"
+29. textbox "Work email"
+30. button "Subscribe free"
+31. link "RoughNotes-Pro"
+32. link "Advantage-Plus"
+33. link "The Insurance Marketplace"
+34. link "Publication desks"
+35. link "Magazine issue"
+36. link "Marketplace search"
+37. link "Newsletter"
+38. link "Free magazine delivery"
+39. link "Our story"
+40. link "Media kits"
+41. link "Write to us"
+42. link "Shop catalog"
+43. link "Existing invoice"
+44. link "800-428-4384"
+45. link "rnc@roughnotes.com"
+
+## resolved styles
+contrast | Shop catalog | 15.538
+contrast | Subscribe free | 5.763
+ring | Subscribe free | 21.000
+
+## journal steps
+click | Get started | subscribe
+click | RoughNotes-Pro | product
+click | Program business | No articles in this category.
+click | Search markets | No markets match this search.
+click | Subscribe free | You are subscribed
+click | About | about
+click | Newsletter | newsletter
+click | Media kits | media
+click | Coverages Applicable | item
+click | Send inquiry | Your inquiry is recorded on this device
+click | Review payment | The invoice is recorded on this device
+read | RoughNotes-Pro Login | external
+theme | dark | restored
+
+## page output
+
+## capture frames
+home--light-390.png
+product-detail--light-390.png
+magazine-empty--light-390.png
+marketplace-miss--light-390.png
+subscribe-refused--light-390.png
+subscribe-accepted--light-390.png
+about--light-390.png
+newsletter--light-390.png
+media--light-390.png
+shop-listing--light-390.png
+shop-detail--light-390.png
+contact-refused--light-390.png
+payment-refused--light-390.png

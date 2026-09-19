@@ -1,0 +1,1048 @@
+diff --git a/host.json b/host.json
+index 3540e6c8..865390b4 100644
+--- a/host.json
++++ b/host.json
+@@ -1036,7 +1036,7 @@
+ 			"storage": "tests/config.test.ts",
+ 			"destination": "tests/config.test.ts",
+ 			"executable": false,
+-			"digest": "b880877803d909f83bc2ba4110d795cfecf620402696272e967bb55b90b66578"
++			"digest": "9c7fb4dab82b46c5fb436116929c8214fd54a94511272d2c574714b65218152f"
+ 		},
+ 		{
+ 			"storage": "tests/policy.test.ts",
+@@ -2011,5 +2011,5 @@
+ 			]
+ 		}
+ 	],
+-	"digest": "e7c8c3bea04c3bca8bd83c6ca2193d09d1eed03d40e777cd46322f75b5718492"
++	"digest": "f37dfdb4ccaa04d8d85d9ddd5798402f2c5fecd33addabc3bf322b05e95c653b"
+ }
+diff --git a/tests/config.test.ts b/tests/config.test.ts
+index 112eeb14..fde84138 100644
+--- a/tests/config.test.ts
++++ b/tests/config.test.ts
+@@ -5,6 +5,7 @@ import { spawnSync } from 'node:child_process'
+ import {
+ 	existsSync,
+ 	globSync,
++	lstatSync,
+ 	mkdtempSync,
+ 	mkdirSync,
+ 	readdirSync,
+@@ -63,6 +64,33 @@ import { describe, expect, it } from 'vitest'
+ 
+ const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
+ 
++// The `src` axis a declaration roll-up reads, derived from a recognized source environment that is
++// a physical directory rather than from a `src` entry of any shape. A regular file, an empty
++// directory, a directory holding no recognized environment, a symbolic link, and an entry this host
++// refuses to inspect each leave a workspace publishing nothing, and reading the entry alone would
++// put every one of them under the face proof. The inspection is caught rather than excused by
++// option: `throwIfNoEntry` excuses an absent path alone and rethrows a permission refusal, and a
++// throw on this line is a collection error that takes this whole file down in that target rather
++// than failing one case. `isPhysicalDirectory` reads the same two facts off an `lstat` and returns
++// false for every inspection error, and this reads them the same way. This is the derivation
++// `targetToEnvironments` uses, which filters the environment names by a contained physical
++// directory, and it answers the same question `blueprintToScripts`
++// answers from a blueprint's own `src` list. A workspace declaring app environments alone publishes
++// no library, so it vendors no `configs/src/` face wrapper and has no roll-up to measure. A face
++// proof is conditioned on this axis rather than on a face wrapper: a workspace that declares the
++// axis and vendors no wrapper carries the defect such a proof reports, so that workspace must still
++// fail the proof. The manifest cases read the same fact from their own `private` flag and name it
++// `manifestPublishes` for the source that decides it there; this reads the axis on disk, so a
++// workspace whose manifest and shape disagree fails one of the two rather than neither.
++const publishes = ['core', 'browser', 'server'].some((environment) => {
++	try {
++		const entry = lstatSync(resolve(root, 'src', environment))
++		return entry.isDirectory() && !entry.isSymbolicLink()
++	} catch {
++		return false
++	}
++})
++
+ // A declaration roll-up loads the extractor package, which only a workspace publishing source from
+ // `src` installs. The resolution below is the mechanism its proof is conditioned on.
+ let extractorPath: string | undefined
+@@ -199,8 +227,8 @@ describe('root configuration', () => {
+ 			setup: ['./tests/setup.ts'],
+ 		})
+ 		// A row that is a configuration rather than a factory. Every generated
+-		// workspace registers the factory itself, so this shape is required here
+-		// rather than observed: the proof exercises that resolution wherever it runs
++		// workspace registers the factory itself, so this shape is required by the
++		// expectation rather than observed: the proof exercises that resolution wherever it runs
+ 		// instead of only where a hand-written configuration happens to produce it.
+ 		expected.set('concrete', { include: 'tests/concrete.test.ts', setup: ['./tests/setup.ts'] })
+ 
+@@ -530,7 +558,7 @@ describe('root configuration', () => {
+ 		if (typeof scripts !== 'object' || scripts === null) {
+ 			throw new Error('The package manifest carries no scripts')
+ 		}
+-		const publishes = Object.getOwnPropertyDescriptor(manifest, 'private')?.value !== true
++		const manifestPublishes = Object.getOwnPropertyDescriptor(manifest, 'private')?.value !== true
+ 		const test = Object.getOwnPropertyDescriptor(scripts, 'test')?.value
+ 		const config = Object.getOwnPropertyDescriptor(scripts, 'test:config')?.value
+ 		const distribution = Object.getOwnPropertyDescriptor(scripts, 'test:distribution')?.value
+@@ -576,9 +604,9 @@ describe('root configuration', () => {
+ 		)
+ 		expect(typeof test === 'string' && test.includes('test:distribution')).toBe(false)
+ 		expect(typeof publish === 'string' && publish.includes('npm run test:distribution')).toBe(
+-			hasDistribution && publishes,
++			hasDistribution && manifestPublishes,
+ 		)
+-		expect(typeof publish === 'string').toBe(publishes)
++		expect(typeof publish === 'string').toBe(manifestPublishes)
+ 		expect(integration).toBe(
+ 			hasIntegration
+ 				? 'vitest run --config vite.config.ts --no-cache --reporter=dot --project integration'
+@@ -610,10 +638,10 @@ describe('root configuration', () => {
+ 				: undefined,
+ 		)
+ 		expect(typeof test === 'string' && test.includes('npm run test:service')).toBe(
+-			hasService && !publishes,
++			hasService && !manifestPublishes,
+ 		)
+ 		expect(typeof publish === 'string' && publish.includes('npm run test:service')).toBe(
+-			hasService && publishes,
++			hasService && manifestPublishes,
+ 		)
+ 	})
+ 
+@@ -626,14 +654,14 @@ describe('root configuration', () => {
+ 		if (typeof scripts !== 'object' || scripts === null) {
+ 			throw new Error('The package manifest carries no scripts')
+ 		}
+-		const publishes = Object.getOwnPropertyDescriptor(manifest, 'private')?.value !== true
++		const manifestPublishes = Object.getOwnPropertyDescriptor(manifest, 'private')?.value !== true
+ 		const prepack = Object.getOwnPropertyDescriptor(scripts, 'prepack')?.value
+-		expect(prepack).toBe(publishes ? 'npm run build' : undefined)
++		expect(prepack).toBe(manifestPublishes ? 'npm run build' : undefined)
+ 
+ 		const controlled = { ...scripts, prepack: 'npm run control' }
+ 		expect(() => {
+ 			const control = Object.getOwnPropertyDescriptor(controlled, 'prepack')?.value
+-			expect(control).toBe(publishes ? 'npm run build' : undefined)
++			expect(control).toBe(manifestPublishes ? 'npm run build' : undefined)
+ 		}).toThrow(/expected/u)
+ 	})
+ 
+@@ -2150,54 +2178,81 @@ describe('configuration helpers', () => {
+ 		}
+ 	})
+ 
+-	it('reads the compiler scope and fixed extractor override a declaration roll-up requires', () => {
+-		const compiler = createRequire(import.meta.url).resolve('typescript/bin/tsc')
+-		// The order mirrors ENVIRONMENTS in src/core/constants.ts; a server-only workspace vendors
+-		// no core project, so this walks to the first face the workspace actually carries.
+-		const faces = ['core', 'browser', 'server']
+-		const face = faces.find((candidate) =>
+-			existsSync(resolve(root, `configs/src/tsconfig.${candidate}.json`)),
+-		)
+-		if (face === undefined) throw new Error('The workspace declares no face project')
+-		const project = resolve(root, `configs/src/tsconfig.${face}.json`)
+-		const declared: unknown = JSON.parse(readFileSync(project, 'utf8'))
+-		if (typeof declared !== 'object' || declared === null) {
+-			throw new Error(`The ${face} project is not a TypeScript configuration record`)
+-		}
+-		const declaredOptions: unknown = Object.getOwnPropertyDescriptor(
+-			declared,
+-			'compilerOptions',
+-		)?.value
+-		if (typeof declaredOptions !== 'object' || declaredOptions === null) {
+-			throw new Error(`The ${face} project carries no compiler options`)
+-		}
+-		const declaredLib: unknown = Object.getOwnPropertyDescriptor(declaredOptions, 'lib')?.value
+-		const declaredTypes: unknown = Object.getOwnPropertyDescriptor(declaredOptions, 'types')?.value
+-		if (!configHelpers.isStringList(declaredLib) || !configHelpers.isStringList(declaredTypes)) {
+-			throw new Error(`The ${face} project declares no lib or types`)
+-		}
+-		const declaredRootDir: unknown = Object.getOwnPropertyDescriptor(
+-			declaredOptions,
+-			'rootDir',
+-		)?.value
+-		if (typeof declaredRootDir !== 'string') {
+-			throw new Error(`The ${face} project declares no rootDir`)
+-		}
+-		const expectedRoot = resolve(dirname(project), declaredRootDir)
++	// The scope reading applies only where the workspace publishes source from `src`, which is what
++	// `publishes` reads, and the name ends at that mechanism. An absent face project is the defect
++	// this case exists to report rather than a second reason to excuse it, so a workspace holding
++	// the axis and vendoring no `configs/src/` wrapper reaches the throw inside the body.
++	// A skip raises the run's skipped count where a guard inside the case would
++	// raise its passed count with nothing measured. Every generated workspace runs its projects
++	// under `--reporter=dot`, which prints a skip as an unnamed `-`, so the case name and the
++	// condition in it are read by re-running the project with a reporter that names skipped cases.
++	it.skipIf(!publishes)(
++		'reads the compiler scope a declaration roll-up requires [inapplicable where src holds no recognized environment directory]',
++		() => {
++			const compiler = createRequire(import.meta.url).resolve('typescript/bin/tsc')
++			// The order mirrors ENVIRONMENTS in src/core/constants.ts; a server-only workspace vendors
++			// no core project, so this walks to the first face the workspace actually carries.
++			const faces = ['core', 'browser', 'server']
++			const face = faces.find((candidate) =>
++				existsSync(resolve(root, `configs/src/tsconfig.${candidate}.json`)),
++			)
++			if (face === undefined) throw new Error('The workspace declares no face project')
++			const project = resolve(root, `configs/src/tsconfig.${face}.json`)
++			const declared: unknown = JSON.parse(readFileSync(project, 'utf8'))
++			if (typeof declared !== 'object' || declared === null) {
++				throw new Error(`The ${face} project is not a TypeScript configuration record`)
++			}
++			const declaredOptions: unknown = Object.getOwnPropertyDescriptor(
++				declared,
++				'compilerOptions',
++			)?.value
++			if (typeof declaredOptions !== 'object' || declaredOptions === null) {
++				throw new Error(`The ${face} project carries no compiler options`)
++			}
++			const declaredLib: unknown = Object.getOwnPropertyDescriptor(declaredOptions, 'lib')?.value
++			const declaredTypes: unknown = Object.getOwnPropertyDescriptor(
++				declaredOptions,
++				'types',
++			)?.value
++			if (!configHelpers.isStringList(declaredLib) || !configHelpers.isStringList(declaredTypes)) {
++				throw new Error(`The ${face} project declares no lib or types`)
++			}
++			const declaredRootDir: unknown = Object.getOwnPropertyDescriptor(
++				declaredOptions,
++				'rootDir',
++			)?.value
++			if (typeof declaredRootDir !== 'string') {
++				throw new Error(`The ${face} project declares no rootDir`)
++			}
++			const expectedRoot = resolve(dirname(project), declaredRootDir)
+ 
+-		const scope = configHelpers.parseProjectScope(
+-			configHelpers.readCompilerOutput(compiler, ['--showConfig', '-p', project]),
+-			project,
+-		)
+-		if (scope === undefined) throw new Error(`The ${face} project resolved no compiler scope`)
+-		// The compiler lowercases every resolved library name, so the committed project is the
+-		// second mechanism this reading is compared against rather than the reading itself.
+-		expect(scope.lib.map((entry) => entry.toLowerCase())).toStrictEqual(
+-			declaredLib.map((entry) => entry.toLowerCase()),
+-		)
+-		expect(scope.types).toStrictEqual(declaredTypes)
+-		expect(scope.root).toBe(expectedRoot)
++			const scope = configHelpers.parseProjectScope(
++				configHelpers.readCompilerOutput(compiler, ['--showConfig', '-p', project]),
++				project,
++			)
++			if (scope === undefined) throw new Error(`The ${face} project resolved no compiler scope`)
++			// The compiler lowercases every resolved library name, so the committed project is the
++			// second mechanism this reading is compared against rather than the reading itself.
++			expect(scope.lib.map((entry) => entry.toLowerCase())).toStrictEqual(
++				declaredLib.map((entry) => entry.toLowerCase()),
++			)
++			expect(scope.types).toStrictEqual(declaredTypes)
++			expect(scope.root).toBe(expectedRoot)
++		},
++	)
+ 
++	// No reading in this case reads anything under `configs/src/`, so each one applies to a workspace
++	// on either axis. The refusals are decided by the text handed to them; the compiler refusal by a
++	// path no workspace shape carries; the manifest name, the module resolution, and the extractor
++	// guard by files and packages a workspace carries on either axis. They sit apart from the
++	// preceding scope reading for that reason: the skip that excuses an app-only workspace from
++	// reading a face project must not excuse it from the helpers behind the roll-up, which it
++	// vendors whether or not it publishes.
++	it('reads the refusals, guards, overrides, and rewrites a declaration roll-up requires from every workspace', () => {
++		const compiler = createRequire(import.meta.url).resolve('typescript/bin/tsc')
++		// Any project path resolves these, because each reading is refused by the text before the
++		// path is read. The root project is the one file every workspace carries.
++		const project = resolve(root, 'tsconfig.json')
+ 		expect(configHelpers.parseProjectScope('not a configuration', project)).toBeUndefined()
+ 		expect(
+ 			configHelpers.parseProjectScope('{"compilerOptions":{"lib":[],"types":[]}}', project),
+@@ -2205,11 +2260,12 @@ describe('configuration helpers', () => {
+ 		expect(
+ 			configHelpers.parseProjectScope('{"compilerOptions":{"lib":[1],"rootDir":"."}}', project),
+ 		).toBeUndefined()
++		// The compiler's own refusal, read from a path no workspace shape carries.
+ 		expect(() =>
+ 			configHelpers.readCompilerOutput(compiler, [
+ 				'--showConfig',
+ 				'-p',
+-				resolve(root, 'configs/src/tsconfig.absent.json'),
++				resolve(root, 'configs/tsconfig.absent.json'),
+ 			]),
+ 		).toThrow('The declaration compiler failed')
+ 
+diff --git a/tests/distribution.test.ts b/tests/distribution.test.ts
+index 2c0baf1f..3ed06c19 100644
+--- a/tests/distribution.test.ts
++++ b/tests/distribution.test.ts
+@@ -17,31 +17,38 @@ import { createScratch } from '@orkestrel/test/server'
+ import { readVariable } from '@orkestrel/process/server'
+ import { transformWithOxc } from 'vite'
+ import { describe, expect, it } from 'vitest'
+-import { provisionNpm, readNpmFloor, readNpmVersion } from './setupServer.js'
++import {
++	installGeneratedWorkspace,
++	installPackedScaffold,
++	NPM_LAUNCHER,
++	provisionNpm,
++	readManifestVersion,
++	readNpmVersion,
++} from './setupServer.js'
+ 
+ const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
+-const npm = process.platform === 'win32' ? 'npm.cmd' : 'npm'
+-// Windows needs a shell to launch a `.cmd`: Node refuses one directly since the
+-// batch-argument hardening, and `spawnSync` returns `EINVAL` with a null status
+-// rather than an exit code the caller can read. Every npm call in this file takes
+-// it. Without it the registry probe below is false on every Windows host, so the
+-// install case never runs there — in `prepublishOnly` included — and the failure
+-// reads as "no registry" instead of "this proof cannot launch npm". Every argument
+-// here is a literal or a path this file built, so the shell has nothing to escape.
+-const shell = process.platform === 'win32'
++// Every npm call in this file takes the launcher's shell, for the reason `TestNpmLauncher`
++// states: without it the registry probe is false on every Windows host, so the install case
++// never runs there — in `prepublishOnly` included — and the failure reads as "no registry"
++// instead of "this proof cannot launch npm". Every argument this file hands npm is a literal
++// or a path this file built, so the shell has nothing to escape.
+ const registry =
+-	spawnSync(npm, ['ping', '--fetch-retries=0', '--fetch-timeout=1000', '--loglevel=silent'], {
+-		cwd: root,
+-		stdio: 'ignore',
+-		timeout: 5_000,
+-		windowsHide: true,
+-		shell,
+-	}).status === 0
++	spawnSync(
++		NPM_LAUNCHER.command,
++		['ping', '--fetch-retries=0', '--fetch-timeout=1000', '--loglevel=silent'],
++		{
++			cwd: root,
++			stdio: 'ignore',
++			timeout: 5_000,
++			windowsHide: true,
++			shell: NPM_LAUNCHER.shell,
++		},
++	).status === 0
+ const release = import.meta.env.MODE === 'release'
+ // The npm this host resolves. It decides which provisioning branch this file can drive: a
+ // host at or above the declared floor has nothing to provision, and a host beneath it
+-// provisions from the registry. Every case here needs npm, so the reading sits beside the
+-// registry probe rather than inside one case.
++// provisions from the registry. Every case in this file needs npm, so the reading sits beside
++// the registry probe rather than inside one case.
+ const ambient = readNpmVersion()
+ 
+ // The declarations a consumer installs. Each is read, because an example
+@@ -123,19 +130,6 @@ const KEYWORDS = [
+ const ELISION = '…'
+ const ABSENT = '\u0000undefined'
+ 
+-// The version a manifest declares, read from its text. The packed core carries
+-// its own copy of the same field, inlined when it was built, so keeping this
+-// reading textual is what lets the two disagree.
+-function readManifestVersion(text: string): string {
+-	const parsed: unknown = JSON.parse(text)
+-	if (!isRecord(parsed)) {
+-		throw new Error('The manifest is not a record')
+-	}
+-	const version: unknown = Object.getOwnPropertyDescriptor(parsed, 'version')?.value
+-	if (!isString(version)) throw new Error('The manifest declares no version')
+-	return version
+-}
+-
+ // The child that answers for the claims. It compiles each example block on its
+ // own, so a block this instrument mis-sliced reports its own refusal instead of
+ // taking the run down, and it records each claim where the example puts it, so a
+@@ -172,7 +166,7 @@ const DRIVER = [
+ 
+ describe('installed package consumer', () => {
+ 	it('stages exactly the declared vendored host inventory', () => {
+-		// Directory members are expanded here into exact declared membership. A vendored inventory
++		// Directory members are expanded into exact declared membership. A vendored inventory
+ 		// change must move this declaration; a file present only because work happened in the checkout
+ 		// must not enter the published host.
+ 		const expanded = [
+@@ -441,8 +435,9 @@ describe('installed package consumer', () => {
+ 							continue
+ 						}
+ 						// The statement the comment sits on is the shortest run of lines
+-						// ending here that closes every bracket it opens, so a claim printed
+-						// across several lines is driven as the one expression it is.
++						// ending at the claim's own line that closes every bracket it opens,
++						// so a claim printed across several lines is driven as the one
++						// expression it is.
+ 						let opening: number | undefined
+ 						for (let start = index; start >= 0; start -= 1) {
+ 							const joined = [...lines.slice(start, index), expression].join('\n').trim()
+@@ -473,7 +468,7 @@ describe('installed package consumer', () => {
+ 						}
+ 						// Recorded only once it has a span, so the claim list holds exactly the
+ 						// claims the driver is asked to answer and an unanswered id below is a
+-						// claim the block reached past rather than one already named here.
++						// claim the block reached past rather than one this list already names.
+ 						const id = claims.length
+ 						claims.push({ text: expression, encoded })
+ 						spans.push({ start: opening, end: index, id })
+@@ -494,7 +489,7 @@ describe('installed package consumer', () => {
+ 						source.push(line)
+ 					}
+ 					// An example is TypeScript, so the transformer this workspace already
+-					// declares erases its types rather than a pattern written here guessing at
++					// declares erases its types rather than a pattern in this file guessing at
+ 					// them. The name it is transformed under carries the extension, which is
+ 					// what selects the TypeScript syntax it strips.
+ 					const transformed = await transformWithOxc(source.join('\n'), 'example.ts', {
+@@ -527,7 +522,7 @@ describe('installed package consumer', () => {
+ 					// The driver answers for every claim in a block it ran, so a claim with
+ 					// no outcome at all is one the block reached past rather than one the
+ 					// module contradicted. It is undriven for the same reason a statement
+-					// is, and naming it here is what keeps the sets a partition.
++					// is, and naming it in that set is what keeps the sets a partition.
+ 					if (!isRecord(outcome)) {
+ 						undriven.push(`${declaration.types}: ${claim.text}`)
+ 						continue
+@@ -553,10 +548,10 @@ describe('installed package consumer', () => {
+ 			// declaration documents another example and a number pinned to it goes stale on
+ 			// the next one. What stays fixed is the declaration list, so this asserts that
+ 			// every declaration the package ships printed a claim-shaped line of its own: an
+-			// extractor that goes silent on a declaration drops that name here and the failure
+-			// says which one, while an added example moves nothing. It catches silence, not
+-			// thinning: any nonzero remainder keeps the declaration's name, so a rule that
+-			// narrows over what a declaration prints without silencing it moves nothing here.
++			// extractor that goes silent on a declaration drops that name from the remainder and
++			// the failure says which one, while an added example moves nothing. It catches silence,
++			// not thinning: any nonzero remainder keeps the declaration's name, so a rule that
++			// narrows over what a declaration prints without silencing it moves nothing in that set.
+ 			// The driven-count floors that follow are what catch a partial narrowing, by
+ 			// pinning each declaration's driven claims above a bound.
+ 			expect(printing).toStrictEqual(DECLARATIONS.map((declaration) => declaration.types))
+@@ -699,7 +694,7 @@ describe('installed package consumer', () => {
+ 		// `npm_config_legacy_peer_deps=true` the refused graph installs and the
+ 		// refusal below fails for a reason outside this package. Pin both peer
+ 		// settings to npm's defaults so the answer is the test's. An environment
+-		// variable outranks every `.npmrc`, and no command line here carries the
++		// variable outranks every `.npmrc`, and no command line this case builds carries the
+ 		// flags that would outrank it in turn.
+ 		const environment = {
+ 			...process.env,
+@@ -741,14 +736,14 @@ describe('installed package consumer', () => {
+ 
+ 			for (const source of ['peer', 'preserved', 'control', 'witness']) {
+ 				const pack = spawnSync(
+-					npm,
++					NPM_LAUNCHER.command,
+ 					['pack', '--json', '--ignore-scripts', '--pack-destination', packed, '--cache', cache],
+ 					{
+ 						cwd: join(workspace.path, 'packages', source),
+ 						encoding: 'utf8',
+ 						env: environment,
+ 						windowsHide: true,
+-						shell,
++						shell: NPM_LAUNCHER.shell,
+ 					},
+ 				)
+ 				expect(pack.status).toBe(0)
+@@ -783,14 +778,14 @@ describe('installed package consumer', () => {
+ 				})}\n`,
+ 			)
+ 			const installed = spawnSync(
+-				npm,
++				NPM_LAUNCHER.command,
+ 				['install', '--offline', '--ignore-scripts', '--no-audit', '--no-fund', '--cache', cache],
+ 				{
+ 					cwd: accepted,
+ 					encoding: 'utf8',
+ 					env: environment,
+ 					windowsHide: true,
+-					shell,
++					shell: NPM_LAUNCHER.shell,
+ 				},
+ 			)
+ 			expect(installed.status, `${installed.stdout}\n${installed.stderr}`).toBe(0)
+@@ -810,14 +805,14 @@ describe('installed package consumer', () => {
+ 				})}\n`,
+ 			)
+ 			const rejected = spawnSync(
+-				npm,
++				NPM_LAUNCHER.command,
+ 				['install', '--offline', '--ignore-scripts', '--no-audit', '--no-fund', '--cache', cache],
+ 				{
+ 					cwd: refused,
+ 					encoding: 'utf8',
+ 					env: environment,
+ 					windowsHide: true,
+-					shell,
++					shell: NPM_LAUNCHER.shell,
+ 				},
+ 			)
+ 			// A child that never ran its resolver reports the same refusal this
+@@ -842,9 +837,7 @@ describe('installed package consumer', () => {
+ 				throw new Error('The distribution release gate requires a reachable npm registry.')
+ 			}
+ 			const workspace = createScratch({ prefix: 'scaffold-e4-install-' })
+-			const packed = workspace.ensure('packed')
+ 			const consumer = workspace.ensure('consumer')
+-			const target = join(workspace.path, 'generated')
+ 			const cache = workspace.ensure('cache')
+ 			// Pinned for the reason the refused-peer fixture above pins it: an npm
+ 			// environment variable outranks every `.npmrc`, so a host carrying a peer
+@@ -858,26 +851,7 @@ describe('installed package consumer', () => {
+ 				npm_config_strict_peer_deps: 'false',
+ 			}
+ 			try {
+-				const pack = spawnSync(
+-					npm,
+-					['pack', '--json', '--ignore-scripts', '--pack-destination', packed],
+-					{ cwd: root, encoding: 'utf8', env: environment, windowsHide: true, shell },
+-				)
+-				expect(pack.status).toBe(0)
+-				const archives = globSync('*.tgz', { cwd: packed })
+-				expect(archives).toHaveLength(1)
+-				const archive = archives[0]
+-				if (archive === undefined) throw new Error('The package archive was not written')
+-				workspace.write(
+-					'consumer/package.json',
+-					'{"name":"scaffold-install-consumer","private":true,"type":"module"}\n',
+-				)
+-				const install = spawnSync(
+-					npm,
+-					['install', '--ignore-scripts', '--no-audit', '--no-fund', join(packed, archive)],
+-					{ cwd: consumer, encoding: 'utf8', env: environment, windowsHide: true, shell },
+-				)
+-				expect(install.status).toBe(0)
++				const archive = installPackedScaffold(workspace, environment)
+ 
+ 				// The self-pin every generated workspace inherits is inlined into the
+ 				// built core at build time, and the manifest beside it is packed from the
+@@ -922,108 +896,92 @@ describe('installed package consumer', () => {
+ 				expect(controlled.stdout).toBe(coherence.stdout)
+ 				expect(controlled.stdout).not.toBe(`^${readManifestVersion(mutated)}`)
+ 
+-				workspace.write(
+-					'consumer/generate.mjs',
+-					[
+-						"import { Compiler, createBlueprint } from '@orkestrel/scaffold'",
+-						"import { Materializer } from '@orkestrel/scaffold/server'",
+-						"const blueprint = createBlueprint('proof', { src: ['core', 'server'], bin: true, integration: true })",
+-						'const compiler = new Compiler()',
+-						'const plan = compiler.compile(blueprint).plan',
+-						"if (plan === undefined) throw new Error('The generated proof blueprint was blocked')",
+-						'compiler.destroy()',
+-						'const materializer = new Materializer()',
+-						`materializer.materialize(plan, ${JSON.stringify(target)})`,
+-						'materializer.destroy()',
+-					].join('\n'),
++				const generated = installGeneratedWorkspace(
++					workspace,
++					archive,
++					"createBlueprint('proof', { src: ['core', 'server'], bin: true, integration: true })",
++					environment,
+ 				)
+-				const generate = spawnSync(process.execPath, ['generate.mjs'], {
+-					cwd: consumer,
++				// The re-pin's claims. The compiler emitted the version this checkout declares,
++				// so the range that was replaced is the one the release would have served; and the
++				// install resolved the local archive, so the following gate chain runs against these
++				// bytes rather than against the previous release.
++				expect(generated.pin.range).toBe(`^${generated.pin.version}`)
++				expect(generated.pin.resolved).toBe(generated.pin.specifier)
++				const gates = spawnSync(NPM_LAUNCHER.command, ['run', 'prepublishOnly'], {
++					cwd: generated.path,
+ 					encoding: 'utf8',
++					env: generated.environment,
+ 					windowsHide: true,
++					shell: NPM_LAUNCHER.shell,
+ 				})
+-				expect(generate.status).toBe(0)
+-				const version = readManifestVersion(readFileSync(resolve(root, 'package.json'), 'utf8'))
+-				const targetManifest: unknown = JSON.parse(
+-					requireValue(workspace.read('generated/package.json')),
++				expect(gates.status, `${gates.stdout}\n${gates.stderr}`).toBe(0)
++			} finally {
++				workspace.destroy()
++			}
++		},
++		1_200_000,
++	)
++
++	// The same machinery over the other axis. A workspace declaring app environments and no src
++	// publishes nothing, so it vendors no `configs/src/` wrapper and emits no `prepublishOnly`,
++	// and the vendored proofs it does run must pass without a published face to read. Every other
++	// generated workspace in this file declares a src axis, so this case is the one that runs the
++	// vendored set against a workspace carrying none. What it does not reach is a browser-carrying
++	// workspace's gate chain, which vendors `configs/browsers.ts` and registers Playwright projects
++	// this blueprint never materializes.
++	it.skipIf(!registry && !release)(
++		'installs the packed scaffold and passes one generated app-only workspace through its gates [requires a reachable npm registry]',
++		() => {
++			if (!registry) {
++				throw new Error('The distribution release gate requires a reachable npm registry.')
++			}
++			const workspace = createScratch({ prefix: 'scaffold-e4-app-install-' })
++			const cache = workspace.ensure('cache')
++			// Pinned for the reason the preceding case pins it: an npm environment variable outranks
++			// every `.npmrc`, so a host carrying a peer policy would otherwise answer for this install.
++			const environment = {
++				...process.env,
++				npm_config_cache: cache,
++				npm_config_legacy_peer_deps: 'false',
++				npm_config_strict_peer_deps: 'false',
++			}
++			try {
++				const archive = installPackedScaffold(workspace, environment)
++				const generated = installGeneratedWorkspace(
++					workspace,
++					archive,
++					"createBlueprint('proof', { app: ['core', 'server'] })",
++					environment,
+ 				)
+-				if (!isRecord(targetManifest)) {
+-					throw new Error('The generated manifest is not a record')
+-				}
+-				const devDependencies: unknown = Object.getOwnPropertyDescriptor(
+-					targetManifest,
+-					'devDependencies',
++				// The re-pin's claims, read for the reason the preceding case reads them.
++				expect(generated.pin.range).toBe(`^${generated.pin.version}`)
++				expect(generated.pin.resolved).toBe(generated.pin.specifier)
++				const scripts: unknown = Object.getOwnPropertyDescriptor(
++					generated.manifest,
++					'scripts',
+ 				)?.value
+-				if (!isRecord(devDependencies)) {
+-					throw new Error('The generated manifest carries no development dependencies')
++				if (!isRecord(scripts)) {
++					throw new Error('The generated manifest declares no scripts')
+ 				}
+-				const emitted: unknown = Object.getOwnPropertyDescriptor(
+-					devDependencies,
+-					'@orkestrel/scaffold',
+-				)?.value
+-				expect(emitted).toBe(`^${version}`)
+-				const specifier = `file:${relative(target, join(packed, archive)).replaceAll('\\', '/')}`
+-				Object.defineProperty(devDependencies, '@orkestrel/scaffold', {
+-					value: specifier,
+-					writable: true,
+-					enumerable: true,
+-					configurable: true,
+-				})
+-				workspace.write(
+-					'generated/package.json',
+-					`${JSON.stringify(targetManifest, undefined, '\t')}\n`,
+-				)
+-				// The generated manifest declares a `devEngines.packageManager` floor, and npm
+-				// refuses an install beneath it rather than resolving the graph. It refuses every
+-				// nested `npm run` under the gate chain on the same reading, so the install here
+-				// and the gate chain that follows each take an admitted npm. The floor is read
+-				// from the artifact that declares it, so raising the floor reaches this proof
+-				// through the manifest rather than through a constant repeated here, and a host
+-				// whose own npm satisfies the floor provisions nothing. `provisionNpm` throws when
+-				// it cannot reach an admitted npm, so no assertion stands between it and the
+-				// install; the install's own message carries npm's output, which is where a
+-				// refusal names itself.
+-				const floor = readNpmFloor(targetManifest)
+-				const admitted = provisionNpm({ floor, prefix: workspace.ensure('npm'), environment })
+-				const dependencies = spawnSync(
+-					npm,
+-					['install', '--ignore-scripts', '--no-audit', '--no-fund'],
+-					{
+-						cwd: target,
++				// A private workspace declares no `prepublishOnly`: the distribution proof measures a
++				// packed tarball and this workspace publishes none. Its chain is therefore assembled
++				// from the scripts it does declare, in the order the repository fixes the gates. The
++				// assertion is what ties the chain to the manifest: a release that gives a private
++				// workspace a `prepublishOnly` reddens this reading rather than leaving the case
++				// running a chain the workspace no longer owns.
++				expect(Object.getOwnPropertyDescriptor(scripts, 'prepublishOnly')).toBeUndefined()
++				for (const gate of ['format:check', 'lint:check', 'check', 'build', 'test']) {
++					expect(Object.getOwnPropertyDescriptor(scripts, gate)?.value).toEqual(expect.any(String))
++					const run = spawnSync(NPM_LAUNCHER.command, ['run', gate], {
++						cwd: generated.path,
+ 						encoding: 'utf8',
+-						env: admitted.environment,
++						env: generated.environment,
+ 						windowsHide: true,
+-						shell,
+-					},
+-				)
+-				expect(dependencies.status, `${dependencies.stdout}\n${dependencies.stderr}`).toBe(0)
+-				const lock: unknown = JSON.parse(
+-					requireValue(workspace.read('generated/package-lock.json')),
+-				)
+-				if (!isRecord(lock)) {
+-					throw new Error('The generated lockfile is not a record')
+-				}
+-				const packages: unknown = Object.getOwnPropertyDescriptor(lock, 'packages')?.value
+-				if (!isRecord(packages)) {
+-					throw new Error('The generated lockfile carries no packages')
+-				}
+-				const scaffold: unknown = Object.getOwnPropertyDescriptor(
+-					packages,
+-					'node_modules/@orkestrel/scaffold',
+-				)?.value
+-				if (!isRecord(scaffold)) {
+-					throw new Error('The generated lockfile carries no installed scaffold')
++						shell: NPM_LAUNCHER.shell,
++					})
++					expect(run.status, `${gate}\n${run.stdout}\n${run.stderr}`).toBe(0)
+ 				}
+-				const resolved: unknown = Object.getOwnPropertyDescriptor(scaffold, 'resolved')?.value
+-				expect(resolved).toBe(specifier)
+-				const gates = spawnSync(npm, ['run', 'prepublishOnly'], {
+-					cwd: target,
+-					encoding: 'utf8',
+-					env: admitted.environment,
+-					windowsHide: true,
+-					shell,
+-				})
+-				expect(gates.status, `${gates.stdout}\n${gates.stderr}`).toBe(0)
+ 			} finally {
+ 				workspace.destroy()
+ 			}
+diff --git a/tests/setupServer.test.ts b/tests/setupServer.test.ts
+index 31669262..d439b838 100644
+--- a/tests/setupServer.test.ts
++++ b/tests/setupServer.test.ts
+@@ -71,6 +71,7 @@ import {
+ 	provisionNpm,
+ 	captureScaffoldCode,
+ 	captureScaffoldMessage,
++	readManifestVersion,
+ 	readNpmFloor,
+ 	readNpmVersion,
+ 	captureScaffoldRejection,
+@@ -1044,6 +1045,19 @@ describe('the tables and the derived totals', () => {
+ 	})
+ })
+ 
++describe('the manifest version reading', () => {
++	it('reads the version a manifest text declares, and refuses text declaring none', () => {
++		// The reading is textual, so the shapes it must refuse rather than return are a text that
++		// parses to something other than a record and one whose version field is not a string.
++		expect(readManifestVersion('{"name":"router","version":"0.0.1"}')).toBe('0.0.1')
++		expect(() => readManifestVersion('[]')).toThrow('The manifest is not a record')
++		expect(() => readManifestVersion('{"name":"router"}')).toThrow(
++			'The manifest declares no version',
++		)
++		expect(() => readManifestVersion('{"version":1}')).toThrow('The manifest declares no version')
++	})
++})
++
+ describe('the admitted npm', () => {
+ 	it('reads the floor out of the manifest a real compiler emitted', () => {
+ 		const artifact = requireValue(
+diff --git a/tests/setupServer.ts b/tests/setupServer.ts
+index d1e1b551..16355088 100644
+--- a/tests/setupServer.ts
++++ b/tests/setupServer.ts
+@@ -13,13 +13,13 @@ import type { ServerResponse } from 'node:http'
+ import type { ResolveHookSync } from 'node:module'
+ import type { ExecuteResult } from '@orkestrel/process'
+ import type { ESTree } from 'vite'
+-import { execFileSync } from 'node:child_process'
++import { execFileSync, spawnSync } from 'node:child_process'
+ import { once } from 'node:events'
+-import { chmodSync } from 'node:fs'
++import { chmodSync, globSync, readFileSync } from 'node:fs'
+ import { createServer } from 'node:http'
+ import { createRequire } from 'node:module'
+ import { connect, createServer as createSocketServer, isIP } from 'node:net'
+-import { delimiter, join } from 'node:path'
++import { delimiter, join, relative as relativePath } from 'node:path'
+ import { fileURLToPath } from 'node:url'
+ import { gzipSync } from 'node:zlib'
+ import { isArray, isRecord, isString, parseJSON } from '@orkestrel/contract'
+@@ -368,6 +368,56 @@ export interface TestNpm {
+ 	readonly environment: NodeJS.ProcessEnv
+ }
+ 
++/**
++ * Describes how this host launches npm, as the spawn options a proof hands a child.
++ *
++ * @remarks
++ * `command` is the executable name, and `shell` reports whether launching it needs one.
++ * Neither is usable without the other, so they travel together: Windows installs npm as a
++ * `.cmd` batch file, which Node refuses to launch directly after the batch-argument
++ * hardening, and `spawnSync` returns `EINVAL` with a null status rather than an exit
++ * code a caller can read. A registry probe that omits the shell is therefore false on
++ * every Windows host, and the proofs behind it never run there.
++ */
++export interface TestNpmLauncher {
++	readonly command: string
++	readonly shell: boolean
++}
++
++/**
++ * Describes the `@orkestrel/scaffold` pin a generated workspace carries after a re-pin.
++ *
++ * @remarks
++ * `range` is what the compiler emitted, which names a published version; `version` is
++ * what this checkout declares; `specifier` is the local archive reference written over
++ * the range; and `resolved` is what the install recorded in the lockfile. Each is returned
++ * rather than compared, because each pairing is a separate claim and a comparison belongs
++ * to the case that makes it.
++ */
++export interface TestGeneratedPin {
++	readonly range: string
++	readonly version: string
++	readonly specifier: string
++	readonly resolved: string
++}
++
++/**
++ * Describes a materialized generated workspace whose dependencies are installed.
++ *
++ * @remarks
++ * `path` is where the workspace was materialized, so no caller repeats that directory's
++ * name; `manifest` is the generated manifest as it was written back, so no caller
++ * re-parses it; `environment` is the record every spawn against this workspace must
++ * take, because a manifest floor refuses a nested `npm run` under any other; and `pin`
++ * carries the re-pin's own readings.
++ */
++export interface TestGeneratedWorkspace {
++	readonly path: string
++	readonly manifest: Readonly<Record<string, unknown>>
++	readonly environment: Readonly<NodeJS.ProcessEnv>
++	readonly pin: TestGeneratedPin
++}
++
+ /**
+  * Names the repository root, resolved from this file rather than from the process.
+  *
+@@ -380,6 +430,19 @@ export const WORKSPACE_ROOT = fileURLToPath(resolveRoot(import.meta))
+ 
+ export const SCRATCH_PREFIX = 'orkestrel-scaffold-'
+ 
++/**
++ * Names how this host launches npm, read once for every proof that spawns it.
++ *
++ * @remarks
++ * Every argument the helpers in this module hand npm is a literal or a path they built,
++ * so the shell the Windows branch selects has nothing to escape. Read
++ * {@link TestNpmLauncher} for what each member decides.
++ */
++export const NPM_LAUNCHER: TestNpmLauncher = Object.freeze({
++	command: process.platform === 'win32' ? 'npm.cmd' : 'npm',
++	shell: process.platform === 'win32',
++})
++
+ /**
+  * Lists the tracked paths this repository records as executable.
+  *
+@@ -580,6 +643,218 @@ export function provisionNpm(options: TestNpmOptions): TestNpm {
+ 	return { version, environment }
+ }
+ 
++/**
++ * Reads the version a package manifest declares, from that manifest's text.
++ *
++ * @param text - The manifest's decoded bytes.
++ * @returns The exact version the text declares.
++ * @throws When the text is not a record, or declares no string version.
++ *
++ * @remarks
++ * The reading stays textual rather than importing the manifest, because a built artifact
++ * inlines its own copy of the same field at build time and the two must stay free to
++ * disagree. A proof comparing them is what reports a pack that shipped a stale pin.
++ *
++ * @example
++ * ```ts
++ * readManifestVersion('{"name":"router","version":"0.0.1"}') // '0.0.1'
++ * ```
++ */
++export function readManifestVersion(text: string): string {
++	const parsed: unknown = JSON.parse(text)
++	if (!isRecord(parsed)) throw new Error('The manifest is not a record')
++	const version: unknown = Object.getOwnPropertyDescriptor(parsed, 'version')?.value
++	if (!isString(version)) throw new Error('The manifest declares no version')
++	return version
++}
++
++/**
++ * Packs this checkout the way the registry serves it, and installs the archive into a consumer.
++ *
++ * @param workspace - The scratch directory this run owns, which receives `packed` and `consumer`.
++ * @param environment - The environment every npm call takes, carrying the cache and the peer pins.
++ * @returns The path of the archive the pack wrote and the consumer installed.
++ * @throws When the pack fails, when it writes other than one archive, or when the install fails.
++ * A child's failure carries its exit status and its spawn error beside what npm wrote, because a
++ * child that never ran reports a null status with an empty stream on each side.
++ *
++ * @remarks
++ * Packing is what a distribution proof measures, so the consumer reaches this package through its
++ * published exports alone and no caller resolves the checkout's source. The archive is installed
++ * rather than linked, because a link skips the `files` list and the exports map, which is most of
++ * what a distribution proof exists to read.
++ */
++export function installPackedScaffold(
++	workspace: ScratchInterface,
++	environment: NodeJS.ProcessEnv,
++): string {
++	const packed = workspace.ensure('packed')
++	const consumer = workspace.ensure('consumer')
++	const pack = spawnSync(
++		NPM_LAUNCHER.command,
++		['pack', '--json', '--ignore-scripts', '--pack-destination', packed],
++		{
++			cwd: WORKSPACE_ROOT,
++			encoding: 'utf8',
++			env: environment,
++			windowsHide: true,
++			shell: NPM_LAUNCHER.shell,
++		},
++	)
++	if (pack.status !== 0) {
++		throw new Error(
++			`The pack into ${packed} failed with status ${String(pack.status)} and spawn error ${String(pack.error)}: ${pack.stdout}\n${pack.stderr}`,
++		)
++	}
++	const archives = globSync('*.tgz', { cwd: packed })
++	const [archive] = archives
++	if (archive === undefined || archives.length !== 1) {
++		throw new Error(`The pack did not write one archive into ${packed}: ${archives.join(', ')}`)
++	}
++	workspace.write(
++		'consumer/package.json',
++		'{"name":"scaffold-install-consumer","private":true,"type":"module"}\n',
++	)
++	const install = spawnSync(
++		NPM_LAUNCHER.command,
++		['install', '--ignore-scripts', '--no-audit', '--no-fund', join(packed, archive)],
++		{
++			cwd: consumer,
++			encoding: 'utf8',
++			env: environment,
++			windowsHide: true,
++			shell: NPM_LAUNCHER.shell,
++		},
++	)
++	if (install.status !== 0) {
++		throw new Error(
++			`Installing ${archive} into ${consumer} failed with status ${String(install.status)} and spawn error ${String(install.error)}: ${install.stdout}\n${install.stderr}`,
++		)
++	}
++	return join(packed, archive)
++}
++
++/**
++ * Materializes one generated workspace from a blueprint expression and installs its dependencies.
++ *
++ * @param workspace - The scratch directory this run owns, already carrying the installed consumer.
++ * @param archive - The packed archive {@link installPackedScaffold} returned.
++ * @param blueprint - The blueprint expression the generating child evaluates, written as source.
++ * @param environment - The environment the generating install takes, carrying the cache and pins.
++ * @returns Where the workspace was materialized, the manifest it carries, the environment every
++ * spawn against it must take, and the readings behind its scaffold pin.
++ * @throws When the generating child fails, when the manifest or the lockfile carries none of the
++ * records this reads, or when the dependency install fails. A child's failure carries its exit
++ * status and its spawn error beside what the run wrote, because a child that never ran reports a
++ * null status with an empty stream on each side.
++ *
++ * @remarks
++ * The re-pin is what puts this checkout's own bytes under the workspace's gates: the emitted range
++ * names a published version, and installing that would measure the previous release instead of this
++ * one. The generated manifest declares a `devEngines.packageManager` floor, and npm refuses both the
++ * install and every nested `npm run` beneath it rather than resolving the graph, so the floor is read
++ * from the artifact that declares it and an admitted npm is provisioned against it. `provisionNpm`
++ * throws when it cannot reach one, so nothing stands between it and the install; the install's own
++ * message carries npm's output, which is where a refusal names itself.
++ */
++export function installGeneratedWorkspace(
++	workspace: ScratchInterface,
++	archive: string,
++	blueprint: string,
++	environment: NodeJS.ProcessEnv,
++): TestGeneratedWorkspace {
++	const consumer = workspace.ensure('consumer')
++	const path = join(workspace.path, 'generated')
++	const blocked = `The generated blueprint was blocked: ${blueprint}`
++	workspace.write(
++		'consumer/generate.mjs',
++		[
++			"import { Compiler, createBlueprint } from '@orkestrel/scaffold'",
++			"import { Materializer } from '@orkestrel/scaffold/server'",
++			`const blueprint = ${blueprint}`,
++			'const compiler = new Compiler()',
++			'const plan = compiler.compile(blueprint).plan',
++			`if (plan === undefined) throw new Error(${JSON.stringify(blocked)})`,
++			'compiler.destroy()',
++			'const materializer = new Materializer()',
++			`materializer.materialize(plan, ${JSON.stringify(path)})`,
++			'materializer.destroy()',
++		].join('\n'),
++	)
++	const generate = spawnSync(process.execPath, ['generate.mjs'], {
++		cwd: consumer,
++		encoding: 'utf8',
++		windowsHide: true,
++	})
++	if (generate.status !== 0) {
++		throw new Error(
++			`Generating ${blueprint} into ${path} failed with status ${String(generate.status)} and spawn error ${String(generate.error)}: ${generate.stdout}\n${generate.stderr}`,
++		)
++	}
++	const version = readManifestVersion(readFileSync(join(WORKSPACE_ROOT, 'package.json'), 'utf8'))
++	const emitted = workspace.read('generated/package.json')
++	if (emitted === undefined) throw new Error('The generated workspace carries no package manifest')
++	const manifest: unknown = JSON.parse(emitted)
++	if (!isRecord(manifest)) throw new Error('The generated manifest is not a record')
++	const devDependencies: unknown = Object.getOwnPropertyDescriptor(
++		manifest,
++		'devDependencies',
++	)?.value
++	if (!isRecord(devDependencies)) {
++		throw new Error('The generated manifest carries no development dependencies')
++	}
++	const range: unknown = Object.getOwnPropertyDescriptor(
++		devDependencies,
++		'@orkestrel/scaffold',
++	)?.value
++	if (!isString(range)) throw new Error('The generated manifest pins no scaffold range')
++	const specifier = `file:${relativePath(path, archive).replaceAll('\\', '/')}`
++	Object.defineProperty(devDependencies, '@orkestrel/scaffold', {
++		value: specifier,
++		writable: true,
++		enumerable: true,
++		configurable: true,
++	})
++	workspace.write('generated/package.json', `${JSON.stringify(manifest, undefined, '\t')}\n`)
++	const floor = readNpmFloor(manifest)
++	const admitted = provisionNpm({ floor, prefix: workspace.ensure('npm'), environment })
++	const dependencies = spawnSync(
++		NPM_LAUNCHER.command,
++		['install', '--ignore-scripts', '--no-audit', '--no-fund'],
++		{
++			cwd: path,
++			encoding: 'utf8',
++			env: admitted.environment,
++			windowsHide: true,
++			shell: NPM_LAUNCHER.shell,
++		},
++	)
++	if (dependencies.status !== 0) {
++		throw new Error(
++			`Installing the generated workspace at ${path} failed with status ${String(dependencies.status)} and spawn error ${String(dependencies.error)}: ${dependencies.stdout}\n${dependencies.stderr}`,
++		)
++	}
++	const locked = workspace.read('generated/package-lock.json')
++	if (locked === undefined) throw new Error('The generated install wrote no lockfile')
++	const lock: unknown = JSON.parse(locked)
++	if (!isRecord(lock)) throw new Error('The generated lockfile is not a record')
++	const packages: unknown = Object.getOwnPropertyDescriptor(lock, 'packages')?.value
++	if (!isRecord(packages)) throw new Error('The generated lockfile carries no packages')
++	const scaffold: unknown = Object.getOwnPropertyDescriptor(
++		packages,
++		'node_modules/@orkestrel/scaffold',
++	)?.value
++	if (!isRecord(scaffold)) throw new Error('The generated lockfile carries no installed scaffold')
++	const resolved: unknown = Object.getOwnPropertyDescriptor(scaffold, 'resolved')?.value
++	if (!isString(resolved)) throw new Error('The installed scaffold records no resolved specifier')
++	return {
++		path,
++		manifest,
++		environment: admitted.environment,
++		pin: { range, version, specifier, resolved },
++	}
++}
++
+ /**
+  * Builds a valid inert vendored-host manifest entry, with focused field replacements.
+  *

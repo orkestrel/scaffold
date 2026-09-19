@@ -1,0 +1,477 @@
+npm notice run roughnotes@0.0.1 npx
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=verbose --project app:browser tests/app/browser/App.test.ts
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/roughnotes
+
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+  ╷
+1 │ @import "mixins/banner";
+  │         ^^^^^^^^^^^^^^^
+  ╵
+    node_modules\bootstrap\scss\bootstrap.scss 1:9  @use
+    app\browser\styles\index.scss 2:1               root stylesheet
+
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+  ╷
+7 │ @import "functions";
+  │         ^^^^^^^^^^^
+  ╵
+    node_modules\bootstrap\scss\bootstrap.scss 7:9  @use
+    app\browser\styles\index.scss 2:1               root stylesheet
+
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+  ╷
+8 │ @import "variables";
+  │         ^^^^^^^^^^^
+  ╵
+    node_modules\bootstrap\scss\bootstrap.scss 8:9  @use
+    app\browser\styles\index.scss 2:1               root stylesheet
+
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+  ╷
+9 │ @import "variables-dark";
+  │         ^^^^^^^^^^^^^^^^
+  ╵
+    node_modules\bootstrap\scss\bootstrap.scss 9:9  @use
+    app\browser\styles\index.scss 2:1               root stylesheet
+
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+   ╷
+10 │ @import "maps";
+   │         ^^^^^^
+   ╵
+    node_modules\bootstrap\scss\bootstrap.scss 10:9  @use
+    app\browser\styles\index.scss 2:1                root stylesheet
+
+DEPRECATION WARNING [if-function]: The Sass if() syntax is deprecated in favor of the modern CSS syntax.
+
+Suggestion: if(sass($arg == "$value"): $value; else: $arg)
+
+More info: https://sass-lang.com/d/if-function
+
+   ╷
+58 │       $_args: append($_args, if($arg == "$key", $key, if($arg == "$value", $value, $arg)));
+   │                                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   ╵
+    node_modules\bootstrap\scss\_functions.scss 58:55  @import
+    node_modules\bootstrap\scss\bootstrap.scss 7:9     @use
+    app\browser\styles\index.scss 2:1                  root stylesheet
+
+DEPRECATION WARNING [if-function]: The Sass if() syntax is deprecated in favor of the modern CSS syntax.
+
+Suggestion: if(sass($arg == "$key"): $key; else: if($arg == "$value", $value, $arg))
+
+More info: https://sass-lang.com/d/if-function
+
+   ╷
+58 │       $_args: append($_args, if($arg == "$key", $key, if($arg == "$value", $value, $arg)));
+   │                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   ╵
+    node_modules\bootstrap\scss\_functions.scss 58:30  @import
+    node_modules\bootstrap\scss\bootstrap.scss 7:9     @use
+    app\browser\styles\index.scss 2:1                  root stylesheet
+
+DEPRECATION WARNING [if-function]: The Sass if() syntax is deprecated in favor of the modern CSS syntax.
+
+Suggestion: if(sass($l1 > $l2): divide($l1 + 0.05, $l2 + 0.05); else: divide($l2 + 0.05, $l1 + 0.05))
+
+More info: https://sass-lang.com/d/if-function
+
+    ╷
+177 │   @return if($l1 > $l2, divide($l1 + .05, $l2 + .05), divide($l2 + .05, $l1 + .05));
+    │           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ╵
+    node_modules\bootstrap\scss\_functions.scss 177:11  @import
+    node_modules\bootstrap\scss\bootstrap.scss 7:9      @use
+    app\browser\styles\index.scss 2:1                   root stylesheet
+
+DEPRECATION WARNING [if-function]: The Sass if() syntax is deprecated in favor of the modern CSS syntax.
+
+Suggestion: if(sass(divide($value, 255) < 0.04045): divide(divide($value, 255), 12.92); else: nth($_luminance-list, $value + 1))
+
+More info: https://sass-lang.com/d/if-function
+
+    ╷
+191 │     $value: if(divide($value, 255) < .04045, divide(divide($value, 255), 12.92), nth($_luminance-list, $value + 1));
+    │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ╵
+    node_modules\bootstrap\scss\_functions.scss 191:13  @import
+    node_modules\bootstrap\scss\bootstrap.scss 7:9      @use
+    app\browser\styles\index.scss 2:1                   root stylesheet
+
+DEPRECATION WARNING [if-function]: The Sass if() syntax is deprecated in favor of the modern CSS syntax.
+
+Suggestion: if(sass($weight > 0): shade-color($color, $weight); else: tint-color($color, -$weight))
+
+More info: https://sass-lang.com/d/if-function
+
+    ╷
+217 │   @return if($weight > 0, shade-color($color, $weight), tint-color($color, -$weight));
+    │           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ╵
+    node_modules\bootstrap\scss\_functions.scss 217:11  @import
+    node_modules\bootstrap\scss\bootstrap.scss 7:9      @use
+    app\browser\styles\index.scss 2:1                   root stylesheet
+
+DEPRECATION WARNING [global-builtin]: Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+Use color.mix instead.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+    ╷
+207 │   @return mix(white, $color, $weight);
+    │           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ╵
+    node_modules\bootstrap\scss\_functions.scss 207:11  tint-color()
+    node_modules\bootstrap\scss\_variables.scss 79:12   @import
+    node_modules\bootstrap\scss\bootstrap.scss 8:9      @use
+    app\browser\styles\index.scss 2:1                   root stylesheet
+
+DEPRECATION WARNING [global-builtin]: Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+Use color.mix instead.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+    ╷
+212 │   @return mix(black, $color, $weight);
+    │           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ╵
+    node_modules\bootstrap\scss\_functions.scss 212:11  shade-color()
+    node_modules\bootstrap\scss\_variables.scss 84:12   @import
+    node_modules\bootstrap\scss\bootstrap.scss 8:9      @use
+    app\browser\styles\index.scss 2:1                   root stylesheet
+
+DEPRECATION WARNING [global-builtin]: Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+Use color.mix instead.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+    ╷
+342 │ $light-bg-subtle:         mix($gray-100, $white) !default;
+    │                           ^^^^^^^^^^^^^^^^^^^^^^
+    ╵
+    node_modules\bootstrap\scss\_variables.scss 342:27  @import
+    node_modules\bootstrap\scss\bootstrap.scss 8:9      @use
+    app\browser\styles\index.scss 2:1                   root stylesheet
+
+DEPRECATION WARNING [global-builtin]: Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+Use math.unit instead.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+   ╷
+11 │     @if $prev-num == null or unit($num) == "%" or unit($prev-num) == "%" {
+   │                              ^^^^^^^^^^
+   ╵
+    node_modules\bootstrap\scss\_functions.scss 11:30  -assert-ascending()
+    node_modules\bootstrap\scss\_variables.scss 494:1  @import
+    node_modules\bootstrap\scss\bootstrap.scss 8:9     @use
+    app\browser\styles\index.scss 2:1                  root stylesheet
+
+DEPRECATION WARNING [global-builtin]: Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+Use math.unit instead.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+   ╷
+11 │     @if $prev-num == null or unit($num) == "%" or unit($prev-num) == "%" {
+   │                                                   ^^^^^^^^^^^^^^^
+   ╵
+    node_modules\bootstrap\scss\_functions.scss 11:51  -assert-ascending()
+    node_modules\bootstrap\scss\_variables.scss 494:1  @import
+    node_modules\bootstrap\scss\bootstrap.scss 8:9     @use
+    app\browser\styles\index.scss 2:1                  root stylesheet
+
+DEPRECATION WARNING [color-functions]: red() is deprecated. Suggestion:
+
+color.channel($color, "red", $space: rgb)
+
+More info: https://sass-lang.com/d/color-functions
+
+    ╷
+185 │     "r": red($color),
+    │          ^^^^^^^^^^^
+    ╵
+    node_modules\bootstrap\scss\_functions.scss 185:10  luminance()
+    node_modules\bootstrap\scss\_functions.scss 174:8   contrast-ratio()
+    node_modules\bootstrap\scss\_functions.scss 159:22  color-contrast()
+    node_modules\bootstrap\scss\_variables.scss 846:42  @import
+    node_modules\bootstrap\scss\bootstrap.scss 8:9      @use
+    app\browser\styles\index.scss 2:1                   root stylesheet
+
+DEPRECATION WARNING [color-functions]: green() is deprecated. Suggestion:
+
+color.channel($color, "green", $space: rgb)
+
+More info: https://sass-lang.com/d/color-functions
+
+    ╷
+186 │     "g": green($color),
+    │          ^^^^^^^^^^^^^
+    ╵
+    node_modules\bootstrap\scss\_functions.scss 186:10  luminance()
+    node_modules\bootstrap\scss\_functions.scss 174:8   contrast-ratio()
+    node_modules\bootstrap\scss\_functions.scss 159:22  color-contrast()
+    node_modules\bootstrap\scss\_variables.scss 846:42  @import
+    node_modules\bootstrap\scss\bootstrap.scss 8:9      @use
+    app\browser\styles\index.scss 2:1                   root stylesheet
+
+DEPRECATION WARNING [color-functions]: blue() is deprecated. Suggestion:
+
+color.channel($color, "blue", $space: rgb)
+
+More info: https://sass-lang.com/d/color-functions
+
+    ╷
+187 │     "b": blue($color)
+    │          ^^^^^^^^^^^^
+    ╵
+    node_modules\bootstrap\scss\_functions.scss 187:10  luminance()
+    node_modules\bootstrap\scss\_functions.scss 174:8   contrast-ratio()
+    node_modules\bootstrap\scss\_functions.scss 159:22  color-contrast()
+    node_modules\bootstrap\scss\_variables.scss 846:42  @import
+    node_modules\bootstrap\scss\bootstrap.scss 8:9      @use
+    app\browser\styles\index.scss 2:1                   root stylesheet
+
+DEPRECATION WARNING [color-functions]: red() is deprecated. Suggestion:
+
+color.channel($color, "red", $space: rgb)
+
+More info: https://sass-lang.com/d/color-functions
+
+   ╷
+37 │   @return red($value), green($value), blue($value);
+   │           ^^^^^^^^^^^
+   ╵
+    node_modules\bootstrap\scss\_functions.scss 37:11   to-rgb()
+    node_modules\bootstrap\scss\_variables.scss 846:31  @import
+    node_modules\bootstrap\scss\bootstrap.scss 8:9      @use
+    app\browser\styles\index.scss 2:1                   root stylesheet
+
+DEPRECATION WARNING [color-functions]: green() is deprecated. Suggestion:
+
+color.channel($color, "green", $space: rgb)
+
+More info: https://sass-lang.com/d/color-functions
+
+   ╷
+37 │   @return red($value), green($value), blue($value);
+   │                        ^^^^^^^^^^^^^
+   ╵
+    node_modules\bootstrap\scss\_functions.scss 37:24   to-rgb()
+    node_modules\bootstrap\scss\_variables.scss 846:31  @import
+    node_modules\bootstrap\scss\bootstrap.scss 8:9      @use
+    app\browser\styles\index.scss 2:1                   root stylesheet
+
+WARNING: 309 repetitive deprecation warnings omitted.
+Run in verbose mode to see all warnings.
+
+ ✓ |app:browser (chromium)| tests/app/browser/App.test.ts:194:2 > App > paints the skip control and the home heading 65ms
+ ✓ |app:browser (chromium)| tests/app/browser/App.test.ts:200:2 > App > renders every footer destination from the declared groups 9ms
+ ✓ |app:browser (chromium)| tests/app/browser/App.test.ts:211:2 > App > renders every utility destination from the declared groups 7ms
+ ✓ |app:browser (chromium)| tests/app/browser/App.test.ts:227:2 > App > opens with the screen heading and gives every footer group a real one 7ms
+ ✓ |app:browser (chromium)| tests/app/browser/App.test.ts:239:2 > App > builds the brand lockup from one definition 15ms
+ ✓ |app:browser (chromium)| tests/app/browser/App.test.ts:252:2 > App > gives the shell one rank for Get started 8ms
+ ✓ |app:browser (chromium)| tests/app/browser/App.test.ts:265:2 > App > keeps the masthead sticky from lg and lets it scroll away below it 72ms
+ ✓ |app:browser (chromium)| tests/app/browser/App.test.ts:278:2 > App > leaves a scrolled-to control reaching itself under the masthead at every width 64ms
+ × |app:browser (chromium)| tests/app/browser/App.test.ts:294:2 > App > leaves no reachable control on any screen sharing a name with another 16584ms
+   → expected [ …(154) ] to deeply equal []
+ ✓ |app:browser (chromium)| tests/app/browser/App.test.ts:318:2 > App > leaves no two adjacent focus stops sharing an accessible name 44ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |app:browser (chromium)| tests/app/browser/App.test.ts:294:2 > App > leaves no reachable control on any screen sharing a name with another
+AssertionError: expected [ …(154) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "1280 px | / | Interactive target \"800-428-4384\" is ambiguous across 2 elements",
++   "1280 px | / | Interactive target \"rnc@roughnotes.com\" is ambiguous across 2 elements",
++   "1280 px | / | Interactive target \"Get started\" is ambiguous across 3 elements",
++   "1280 px | / | Interactive target \"RoughNotes-Pro\" is ambiguous across 2 elements",
++   "1280 px | / | Interactive target \"Advantage-Plus\" is ambiguous across 2 elements",
++   "1280 px | / | Interactive target \"The Insurance Marketplace\" is ambiguous across 2 elements",
++   "1280 px | /about | Interactive target \"800-428-4384\" is ambiguous across 2 elements",
++   "1280 px | /about | Interactive target \"rnc@roughnotes.com\" is ambiguous across 2 elements",
++   "1280 px | /about | Interactive target \"Publications\" is ambiguous across 2 elements",
++   "1280 px | /publications | Interactive target \"800-428-4384\" is ambiguous across 2 elements",
++   "1280 px | /publications | Interactive target \"rnc@roughnotes.com\" is ambiguous across 2 elements",
++   "1280 px | /publications | Interactive target \"Get started\" is ambiguous across 2 elements",
++   "1280 px | /publications | Interactive target \"The Insurance Marketplace\" is ambiguous across 2 elements",
++   "1280 px | /publications | Interactive target \"Newsletter\" is ambiguous across 2 elements",
++   "1280 px | /publications | Interactive target \"Media kits\" is ambiguous across 2 elements",
++   "1280 px | /products | Interactive target \"800-428-4384\" is ambiguous across 2 elements",
++   "1280 px | /products | Interactive target \"rnc@roughnotes.com\" is ambiguous across 2 elements",
++   "1280 px | /products | Interactive target \"RoughNotes-Pro\" is ambiguous across 2 elements",
++   "1280 px | /products | Interactive target \"Advantage-Plus\" is ambiguous across 2 elements",
++   "1280 px | /products | Interactive target \"The Insurance Marketplace\" is ambiguous across 2 elements",
++   "1280 px | /products/roughnotes-pro | Interactive target \"800-428-4384\" is ambiguous across 2 elements",
++   "1280 px | /products/roughnotes-pro | Interactive target \"rnc@roughnotes.com\" is ambiguous across 2 elements",
++   "1280 px | /products/roughnotes-pro | Interactive target \"Products\" is ambiguous across 2 elements",
++   "1280 px | /products/roughnotes-pro | Interactive target \"Get started\" is ambiguous across 2 elements",
++   "1280 px | /magazine | Interactive target \"800-428-4384\" is ambiguous across 2 elements",
++   "1280 px | /magazine | Interactive target \"rnc@roughnotes.com\" is ambiguous across 2 elements",
++   "1280 px | /magazine | Interactive target \"Publications\" is ambiguous across 2 elements",
++   "1280 px | /magazine | Interactive target \"Get started\" is ambiguous across 2 elements",
++   "1280 px | /magazine/local-landscape | Interactive target \"800-428-4384\" is ambiguous across 2 elements",
++   "1280 px | /magazine/local-landscape | Interactive target \"rnc@roughnotes.com\" is ambiguous across 2 elements",
++   "1280 px | /marketplace | Interactive target \"800-428-4384\" is ambiguous across 2 elements",
++   "1280 px | /marketplace | Interactive target \"rnc@roughnotes.com\" is ambiguous across 2 elements",
++   "1280 px | /marketplace | Interactive target \"Media kits\" is ambiguous across 2 elements",
++   "1280 px | /shop | Interactive target \"800-428-4384\" is ambiguous across 2 elements",
++   "1280 px | /shop | Interactive target \"rnc@roughnotes.com\" is ambiguous across 2 elements",
++   "1280 px | /shop/coverages-applicable | Interactive target \"800-428-4384\" is ambiguous across 2 elements",
++   "1280 px | /shop/coverages-applicable | Interactive target \"rnc@roughnotes.com\" is ambiguous across 2 elements",
++   "1280 px | /shop/coverages-applicable | Interactive target \"Shop catalog\" is ambiguous across 2 elements",
++   "1280 px | /media | Interactive target \"800-428-4384\" is ambiguous across 3 elements",
++   "1280 px | /media | Interactive target \"rnc@roughnotes.com\" is ambiguous across 2 elements",
++   "1280 px | /subscribe | Interactive target \"800-428-4384\" is ambiguous across 2 elements",
++   "1280 px | /subscribe | Interactive target \"rnc@roughnotes.com\" is ambiguous across 2 elements",
++   "1280 px | /newsletter | Interactive target \"800-428-4384\" is ambiguous across 2 elements",
++   "1280 px | /newsletter | Interactive target \"rnc@roughnotes.com\" is ambiguous across 2 elements",
++   "1280 px | /contact | Interactive target \"800-428-4384\" is ambiguous across 3 elements",
++   "1280 px | /contact | Interactive target \"rnc@roughnotes.com\" is ambiguous across 3 elements",
++   "1280 px | /payment | Interactive target \"800-428-4384\" is ambiguous across 2 elements",
++   "1280 px | /payment | Interactive target \"rnc@roughnotes.com\" is ambiguous across 2 elements",
++   "390 px | / | Interactive target \"800-428-4384\" is ambiguous across 2 elements",
++   "390 px | / | Interactive target \"rnc@roughnotes.com\" is ambiguous across 2 elements",
++   "390 px | / | Interactive target \"Get started\" is ambiguous across 3 elements",
++   "390 px | / | Interactive target \"RoughNotes-Pro\" is ambiguous across 2 elements",
++   "390 px | / | Interactive target \"Advantage-Plus\" is ambiguous across 2 elements",
++   "390 px | / | Interactive target \"The Insurance Marketplace\" is ambiguous across 2 elements",
++   "390 px | / | menu open | Interactive target \"800-428-4384\" is ambiguous across 2 elements",
++   "390 px | / | menu open | Interactive target \"rnc@roughnotes.com\" is ambiguous across 2 elements",
++   "390 px | / | menu open | Interactive target \"Get started\" is ambiguous across 4 elements",
++   "390 px | / | menu open | Interactive target \"RoughNotes-Pro\" is ambiguous across 2 elements",
++   "390 px | / | menu open | Interactive target \"Advantage-Plus\" is ambiguous across 2 elements",
++   "390 px | / | menu open | Interactive target \"The Insurance Marketplace\" is ambiguous across 2 elements",
++   "390 px | /about | Interactive target \"800-428-4384\" is ambiguous across 2 elements",
++   "390 px | /about | Interactive target \"rnc@roughnotes.com\" is ambiguous across 2 elements",
++   "390 px | /about | menu open | Interactive target \"800-428-4384\" is ambiguous across 2 elements",
++   "390 px | /about | menu open | Interactive target \"rnc@roughnotes.com\" is ambiguous across 2 elements",
++   "390 px | /about | menu open | Interactive target \"Get started\" is ambiguous across 2 elements",
++   "390 px | /about | menu open | Interactive target \"Publications\" is ambiguous across 2 elements",
++   "390 px | /publications | Interactive target \"800-428-4384\" is ambiguous across 2 elements",
++   "390 px | /publications | Interactive target \"rnc@roughnotes.com\" is ambiguous across 2 elements",
++   "390 px | /publications | Interactive target \"Get started\" is ambiguous across 2 elements",
++   "390 px | /publications | Interactive target \"The Insurance Marketplace\" is ambiguous across 2 elements",
++   "390 px | /publications | Interactive target \"Newsletter\" is ambiguous across 2 elements",
++   "390 px | /publications | Interactive target \"Media kits\" is ambiguous across 2 elements",
++   "390 px | /publications | menu open | Interactive target \"800-428-4384\" is ambiguous across 2 elements",
++   "390 px | /publications | menu open | Interactive target \"rnc@roughnotes.com\" is ambiguous across 2 elements",
++   "390 px | /publications | menu open | Interactive target \"Get started\" is ambiguous across 3 elements",
++   "390 px | /publications | menu open | Interactive target \"The Insurance Marketplace\" is ambiguous across 2 elements",
++   "390 px | /publications | menu open | Interactive target \"Newsletter\" is ambiguous across 2 elements",
++   "390 px | /publications | menu open | Interactive target \"Media kits\" is ambiguous across 2 elements",
++   "390 px | /products | Interactive target \"800-428-4384\" is ambiguous across 2 elements",
++   "390 px | /products | Interactive target \"rnc@roughnotes.com\" is ambiguous across 2 elements",
++   "390 px | /products | Interactive target \"RoughNotes-Pro\" is ambiguous across 2 elements",
++   "390 px | /products | Interactive target \"Advantage-Plus\" is ambiguous across 2 elements",
++   "390 px | /products | Interactive target \"The Insurance Marketplace\" is ambiguous across 2 elements",
++   "390 px | /products | menu open | Interactive target \"800-428-4384\" is ambiguous across 2 elements",
++   "390 px | /products | menu open | Interactive target \"rnc@roughnotes.com\" is ambiguous across 2 elements",
++   "390 px | /products | menu open | Interactive target \"Get started\" is ambiguous across 2 elements",
++   "390 px | /products | menu open | Interactive target \"RoughNotes-Pro\" is ambiguous across 2 elements",
++   "390 px | /products | menu open | Interactive target \"Advantage-Plus\" is ambiguous across 2 elements",
++   "390 px | /products | menu open | Interactive target \"The Insurance Marketplace\" is ambiguous across 2 elements",
++   "390 px | /products | menu open | Interactive target \"Contact\" is ambiguous across 2 elements",
++   "390 px | /products/roughnotes-pro | Interactive target \"800-428-4384\" is ambiguous across 2 elements",
++   "390 px | /products/roughnotes-pro | Interactive target \"rnc@roughnotes.com\" is ambiguous across 2 elements",
++   "390 px | /products/roughnotes-pro | Interactive target \"Get started\" is ambiguous across 2 elements",
++   "390 px | /products/roughnotes-pro | menu open | Interactive target \"800-428-4384\" is ambiguous across 2 elements",
++   "390 px | /products/roughnotes-pro | menu open | Interactive target \"rnc@roughnotes.com\" is ambiguous across 2 elements",
++   "390 px | /products/roughnotes-pro | menu open | Interactive target \"Get started\" is ambiguous across 3 elements",
++   "390 px | /products/roughnotes-pro | menu open | Interactive target \"Products\" is ambiguous across 2 elements",
++   "390 px | /magazine | Interactive target \"800-428-4384\" is ambiguous across 2 elements",
++   "390 px | /magazine | Interactive target \"rnc@roughnotes.com\" is ambiguous across 2 elements",
++   "390 px | /magazine | Interactive target \"Get started\" is ambiguous across 2 elements",
++   "390 px | /magazine | menu open | Interactive target \"800-428-4384\" is ambiguous across 2 elements",
++   "390 px | /magazine | menu open | Interactive target \"rnc@roughnotes.com\" is ambiguous across 2 elements",
++   "390 px | /magazine | menu open | Interactive target \"Get started\" is ambiguous across 3 elements",
++   "390 px | /magazine | menu open | Interactive target \"Publications\" is ambiguous across 2 elements",
++   "390 px | /magazine/local-landscape | Interactive target \"800-428-4384\" is ambiguous across 2 elements",
++   "390 px | /magazine/local-landscape | Interactive target \"rnc@roughnotes.com\" is ambiguous across 2 elements",
++   "390 px | /magazine/local-landscape | menu open | Interactive target \"800-428-4384\" is ambiguous across 2 elements",
++   "390 px | /magazine/local-landscape | menu open | Interactive target \"rnc@roughnotes.com\" is ambiguous across 2 elements",
++   "390 px | /magazine/local-landscape | menu open | Interactive target \"Get started\" is ambiguous across 2 elements",
++   "390 px | /marketplace | Interactive target \"800-428-4384\" is ambiguous across 2 elements",
++   "390 px | /marketplace | Interactive target \"rnc@roughnotes.com\" is ambiguous across 2 elements",
++   "390 px | /marketplace | Interactive target \"Media kits\" is ambiguous across 2 elements",
++   "390 px | /marketplace | menu open | Interactive target \"800-428-4384\" is ambiguous across 2 elements",
++   "390 px | /marketplace | menu open | Interactive target \"rnc@roughnotes.com\" is ambiguous across 2 elements",
++   "390 px | /marketplace | menu open | Interactive target \"Get started\" is ambiguous across 2 elements",
++   "390 px | /marketplace | menu open | Interactive target \"Media kits\" is ambiguous across 2 elements",
++   "390 px | /shop | Interactive target \"800-428-4384\" is ambiguous across 2 elements",
++   "390 px | /shop | Interactive target \"rnc@roughnotes.com\" is ambiguous across 2 elements",
++   "390 px | /shop | menu open | Interactive target \"800-428-4384\" is ambiguous across 2 elements",
++   "390 px | /shop | menu open | Interactive target \"rnc@roughnotes.com\" is ambiguous across 2 elements",
++   "390 px | /shop | menu open | Interactive target \"Get started\" is ambiguous across 2 elements",
++   "390 px | /shop/coverages-applicable | Interactive target \"800-428-4384\" is ambiguous across 2 elements",
++   "390 px | /shop/coverages-applicable | Interactive target \"rnc@roughnotes.com\" is ambiguous across 2 elements",
++   "390 px | /shop/coverages-applicable | Interactive target \"Shop catalog\" is ambiguous across 2 elements",
++   "390 px | /shop/coverages-applicable | menu open | Interactive target \"800-428-4384\" is ambiguous across 2 elements",
++   "390 px | /shop/coverages-applicable | menu open | Interactive target \"rnc@roughnotes.com\" is ambiguous across 2 elements",
++   "390 px | /shop/coverages-applicable | menu open | Interactive target \"Get started\" is ambiguous across 2 elements",
++   "390 px | /shop/coverages-applicable | menu open | Interactive target \"Shop catalog\" is ambiguous across 2 elements",
++   "390 px | /media | Interactive target \"800-428-4384\" is ambiguous across 3 elements",
++   "390 px | /media | Interactive target \"rnc@roughnotes.com\" is ambiguous across 2 elements",
++   "390 px | /media | menu open | Interactive target \"800-428-4384\" is ambiguous across 3 elements",
++   "390 px | /media | menu open | Interactive target \"rnc@roughnotes.com\" is ambiguous across 2 elements",
++   "390 px | /media | menu open | Interactive target \"Get started\" is ambiguous across 2 elements",
++   "390 px | /media | menu open | Interactive target \"Contact\" is ambiguous across 2 elements",
++   "390 px | /subscribe | Interactive target \"800-428-4384\" is ambiguous across 2 elements",
++   "390 px | /subscribe | Interactive target \"rnc@roughnotes.com\" is ambiguous across 2 elements",
++   "390 px | /subscribe | menu open | Interactive target \"800-428-4384\" is ambiguous across 2 elements",
++   "390 px | /subscribe | menu open | Interactive target \"rnc@roughnotes.com\" is ambiguous across 2 elements",
++   "390 px | /subscribe | menu open | Interactive target \"Get started\" is ambiguous across 2 elements",
++   "390 px | /newsletter | Interactive target \"800-428-4384\" is ambiguous across 2 elements",
++   "390 px | /newsletter | Interactive target \"rnc@roughnotes.com\" is ambiguous across 2 elements",
++   "390 px | /newsletter | menu open | Interactive target \"800-428-4384\" is ambiguous across 2 elements",
++   "390 px | /newsletter | menu open | Interactive target \"rnc@roughnotes.com\" is ambiguous across 2 elements",
++   "390 px | /newsletter | menu open | Interactive target \"Get started\" is ambiguous across 2 elements",
++   "390 px | /contact | Interactive target \"800-428-4384\" is ambiguous across 3 elements",
++   "390 px | /contact | Interactive target \"rnc@roughnotes.com\" is ambiguous across 3 elements",
++   "390 px | /contact | menu open | Interactive target \"800-428-4384\" is ambiguous across 3 elements",
++   "390 px | /contact | menu open | Interactive target \"rnc@roughnotes.com\" is ambiguous across 3 elements",
++   "390 px | /contact | menu open | Interactive target \"Get started\" is ambiguous across 2 elements",
++   "390 px | /payment | Interactive target \"800-428-4384\" is ambiguous across 2 elements",
++   "390 px | /payment | Interactive target \"rnc@roughnotes.com\" is ambiguous across 2 elements",
++   "390 px | /payment | menu open | Interactive target \"800-428-4384\" is ambiguous across 2 elements",
++   "390 px | /payment | menu open | Interactive target \"rnc@roughnotes.com\" is ambiguous across 2 elements",
++   "390 px | /payment | menu open | Interactive target \"Get started\" is ambiguous across 2 elements",
++ ]
+
+ ❯ tests/app/browser/App.test.ts:313:20
+    311|     clearSurface()
+    312|    }
+    313|    expect(findings).toEqual([])
+       |                    ^
+    314|   },
+    315|   CENSUS_BUDGET,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 9 passed (10)
+   Start at  18:34:49
+   Duration  22.38s (transform 0ms, setup 3.16s, import 1.04s, tests 16.88s, environment 0ms)
+

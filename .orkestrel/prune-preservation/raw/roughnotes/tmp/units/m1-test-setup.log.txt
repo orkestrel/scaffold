@@ -1,0 +1,12 @@
+npm notice run roughnotes@0.0.1 test:setup
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project setup
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/roughnotes
+
+···
+
+ Test Files  1 passed (1)
+      Tests  3 passed (3)
+   Start at  09:11:58
+   Duration  216ms (transform 26ms, setup 31ms, import 26ms, tests 7ms, environment 0ms)
+

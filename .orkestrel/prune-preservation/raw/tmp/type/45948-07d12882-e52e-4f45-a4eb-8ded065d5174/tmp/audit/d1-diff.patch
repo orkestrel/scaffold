@@ -1,0 +1,437 @@
+diff --git a/host.json b/host.json
+index 3540e6c8..541d4863 100644
+--- a/host.json
++++ b/host.json
+@@ -1036,7 +1036,7 @@
+ 			"storage": "tests/config.test.ts",
+ 			"destination": "tests/config.test.ts",
+ 			"executable": false,
+-			"digest": "b880877803d909f83bc2ba4110d795cfecf620402696272e967bb55b90b66578"
++			"digest": "ca623ae1a20daafacfd9332196c03e957f5200e6441c7e249f7024495755f11f"
+ 		},
+ 		{
+ 			"storage": "tests/policy.test.ts",
+@@ -2011,5 +2011,5 @@
+ 			]
+ 		}
+ 	],
+-	"digest": "e7c8c3bea04c3bca8bd83c6ca2193d09d1eed03d40e777cd46322f75b5718492"
++	"digest": "ec210fc08b9733ab2563e1fb31158fab176314e0f93b653b75f8b098d47d3cf8"
+ }
+diff --git a/tests/config.test.ts b/tests/config.test.ts
+index 112eeb14..c4e711de 100644
+--- a/tests/config.test.ts
++++ b/tests/config.test.ts
+@@ -63,6 +63,14 @@ import { describe, expect, it } from 'vitest'
+ 
+ const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
+ 
++// The `src` axis a declaration roll-up reads. A workspace declaring app environments alone
++// publishes no library, so it vendors no `configs/src/` face wrapper and has no roll-up to
++// measure. A face proof is conditioned on this axis rather than on a face wrapper: a declared axis
++// whose wrapper is missing is the defect such a proof exists to report, and must still fail it.
++// The manifest cases read the same fact from their own `private` flag; this reads the axis on
++// disk, so a workspace whose manifest and shape disagree fails one of the two rather than neither.
++const published = existsSync(resolve(root, 'src'))
++
+ // A declaration roll-up loads the extractor package, which only a workspace publishing source from
+ // `src` installs. The resolution below is the mechanism its proof is conditioned on.
+ let extractorPath: string | undefined
+@@ -2150,7 +2158,10 @@ describe('configuration helpers', () => {
+ 		}
+ 	})
+ 
+-	it('reads the compiler scope and fixed extractor override a declaration roll-up requires', () => {
++	// The scope reading applies only where the workspace publishes source from `src`, which is
++	// what `published` reads. A skip reports that absence in the run, where a guard inside the case
++	// would leave it passing with nothing measured.
++	it.skipIf(!published)('reads the compiler scope a declaration roll-up requires', () => {
+ 		const compiler = createRequire(import.meta.url).resolve('typescript/bin/tsc')
+ 		// The order mirrors ENVIRONMENTS in src/core/constants.ts; a server-only workspace vendors
+ 		// no core project, so this walks to the first face the workspace actually carries.
+@@ -2197,7 +2208,17 @@ describe('configuration helpers', () => {
+ 		)
+ 		expect(scope.types).toStrictEqual(declaredTypes)
+ 		expect(scope.root).toBe(expectedRoot)
++	})
+ 
++	// Every reading here is decided by the text or the value handed to it, so each one applies to a
++	// workspace on either axis. They sit apart from the preceding scope reading for that reason: the
++	// skip that excuses an app-only workspace from reading a face project must not excuse it from
++	// the helpers behind the roll-up, which it vendors whether or not it publishes.
++	it('reads the fixed extractor override and the specifier rewrites a roll-up requires', () => {
++		const compiler = createRequire(import.meta.url).resolve('typescript/bin/tsc')
++		// Any project path resolves these, because each reading is refused by the text before the
++		// path is read. The root project is the one file every workspace carries.
++		const project = resolve(root, 'tsconfig.json')
+ 		expect(configHelpers.parseProjectScope('not a configuration', project)).toBeUndefined()
+ 		expect(
+ 			configHelpers.parseProjectScope('{"compilerOptions":{"lib":[],"types":[]}}', project),
+@@ -2205,11 +2226,12 @@ describe('configuration helpers', () => {
+ 		expect(
+ 			configHelpers.parseProjectScope('{"compilerOptions":{"lib":[1],"rootDir":"."}}', project),
+ 		).toBeUndefined()
++		// The compiler's own refusal, read from a path no workspace shape carries.
+ 		expect(() =>
+ 			configHelpers.readCompilerOutput(compiler, [
+ 				'--showConfig',
+ 				'-p',
+-				resolve(root, 'configs/src/tsconfig.absent.json'),
++				resolve(root, 'configs/tsconfig.absent.json'),
+ 			]),
+ 		).toThrow('The declaration compiler failed')
+ 
+diff --git a/tests/distribution.test.ts b/tests/distribution.test.ts
+index 2c0baf1f..293187c2 100644
+--- a/tests/distribution.test.ts
++++ b/tests/distribution.test.ts
+@@ -1,3 +1,4 @@
++import type { ScratchInterface } from '@orkestrel/test/server'
+ import { spawnSync } from 'node:child_process'
+ import { globSync, readFileSync } from 'node:fs'
+ import { delimiter, dirname, join, relative, resolve } from 'node:path'
+@@ -136,6 +137,135 @@ function readManifestVersion(text: string): string {
+ 	return version
+ }
+ 
++// The artifact every generated-workspace proof starts from: this checkout packed the way the
++// registry serves it, installed into a consumer that reaches it through its published exports
++// alone. Packing is what these proofs measure, so no case here resolves the checkout's source.
++function installPackedScaffold(
++	workspace: ScratchInterface,
++	environment: NodeJS.ProcessEnv,
++): string {
++	const packed = workspace.ensure('packed')
++	const consumer = workspace.ensure('consumer')
++	const pack = spawnSync(
++		npm,
++		['pack', '--json', '--ignore-scripts', '--pack-destination', packed],
++		{ cwd: root, encoding: 'utf8', env: environment, windowsHide: true, shell },
++	)
++	expect(pack.status, `${pack.stdout}\n${pack.stderr}`).toBe(0)
++	const archives = globSync('*.tgz', { cwd: packed })
++	expect(archives).toHaveLength(1)
++	const archive = archives[0]
++	if (archive === undefined) throw new Error('The package archive was not written')
++	workspace.write(
++		'consumer/package.json',
++		'{"name":"scaffold-install-consumer","private":true,"type":"module"}\n',
++	)
++	const install = spawnSync(
++		npm,
++		['install', '--ignore-scripts', '--no-audit', '--no-fund', join(packed, archive)],
++		{ cwd: consumer, encoding: 'utf8', env: environment, windowsHide: true, shell },
++	)
++	expect(install.status, `${install.stdout}\n${install.stderr}`).toBe(0)
++	return join(packed, archive)
++}
++
++// The workspace a gate proof runs against, materialized under `generated` from the blueprint
++// expression the caller names and installed with its dependencies resolved. The re-pin is what
++// puts this checkout's own bytes under those gates: the emitted range names a published version,
++// and installing that would measure the previous release instead of this one.
++//
++// The generated manifest declares a `devEngines.packageManager` floor, and npm refuses an install
++// beneath it rather than resolving the graph. It refuses every nested `npm run` under a gate chain
++// on the same reading, so the install here and the chain the caller runs each take an admitted
++// npm. The floor is read from the artifact that declares it, so raising the floor reaches every
++// proof through the manifest rather than through a constant repeated here, and a host whose own
++// npm satisfies the floor provisions nothing. `provisionNpm` throws when it cannot reach an
++// admitted npm, so no assertion stands between it and the install; the install's own message
++// carries npm's output, which is where a refusal names itself.
++function installGeneratedWorkspace(
++	workspace: ScratchInterface,
++	archive: string,
++	blueprint: string,
++	environment: NodeJS.ProcessEnv,
++): NodeJS.ProcessEnv {
++	const consumer = workspace.ensure('consumer')
++	const target = join(workspace.path, 'generated')
++	workspace.write(
++		'consumer/generate.mjs',
++		[
++			"import { Compiler, createBlueprint } from '@orkestrel/scaffold'",
++			"import { Materializer } from '@orkestrel/scaffold/server'",
++			`const blueprint = ${blueprint}`,
++			'const compiler = new Compiler()',
++			'const plan = compiler.compile(blueprint).plan',
++			"if (plan === undefined) throw new Error('The generated blueprint was blocked')",
++			'compiler.destroy()',
++			'const materializer = new Materializer()',
++			`materializer.materialize(plan, ${JSON.stringify(target)})`,
++			'materializer.destroy()',
++		].join('\n'),
++	)
++	const generate = spawnSync(process.execPath, ['generate.mjs'], {
++		cwd: consumer,
++		encoding: 'utf8',
++		windowsHide: true,
++	})
++	expect(generate.status, `${generate.stdout}\n${generate.stderr}`).toBe(0)
++	const version = readManifestVersion(readFileSync(resolve(root, 'package.json'), 'utf8'))
++	const targetManifest: unknown = JSON.parse(requireValue(workspace.read('generated/package.json')))
++	if (!isRecord(targetManifest)) {
++		throw new Error('The generated manifest is not a record')
++	}
++	const devDependencies: unknown = Object.getOwnPropertyDescriptor(
++		targetManifest,
++		'devDependencies',
++	)?.value
++	if (!isRecord(devDependencies)) {
++		throw new Error('The generated manifest carries no development dependencies')
++	}
++	const emitted: unknown = Object.getOwnPropertyDescriptor(
++		devDependencies,
++		'@orkestrel/scaffold',
++	)?.value
++	expect(emitted).toBe(`^${version}`)
++	const specifier = `file:${relative(target, archive).replaceAll('\\', '/')}`
++	Object.defineProperty(devDependencies, '@orkestrel/scaffold', {
++		value: specifier,
++		writable: true,
++		enumerable: true,
++		configurable: true,
++	})
++	workspace.write('generated/package.json', `${JSON.stringify(targetManifest, undefined, '\t')}\n`)
++	const floor = readNpmFloor(targetManifest)
++	const admitted = provisionNpm({ floor, prefix: workspace.ensure('npm'), environment })
++	const dependencies = spawnSync(npm, ['install', '--ignore-scripts', '--no-audit', '--no-fund'], {
++		cwd: target,
++		encoding: 'utf8',
++		env: admitted.environment,
++		windowsHide: true,
++		shell,
++	})
++	expect(dependencies.status, `${dependencies.stdout}\n${dependencies.stderr}`).toBe(0)
++	const lock: unknown = JSON.parse(requireValue(workspace.read('generated/package-lock.json')))
++	if (!isRecord(lock)) {
++		throw new Error('The generated lockfile is not a record')
++	}
++	const packages: unknown = Object.getOwnPropertyDescriptor(lock, 'packages')?.value
++	if (!isRecord(packages)) {
++		throw new Error('The generated lockfile carries no packages')
++	}
++	const scaffold: unknown = Object.getOwnPropertyDescriptor(
++		packages,
++		'node_modules/@orkestrel/scaffold',
++	)?.value
++	if (!isRecord(scaffold)) {
++		throw new Error('The generated lockfile carries no installed scaffold')
++	}
++	const resolved: unknown = Object.getOwnPropertyDescriptor(scaffold, 'resolved')?.value
++	expect(resolved).toBe(specifier)
++	return admitted.environment
++}
++
+ // The child that answers for the claims. It compiles each example block on its
+ // own, so a block this instrument mis-sliced reports its own refusal instead of
+ // taking the run down, and it records each claim where the example puts it, so a
+@@ -842,7 +972,6 @@ describe('installed package consumer', () => {
+ 				throw new Error('The distribution release gate requires a reachable npm registry.')
+ 			}
+ 			const workspace = createScratch({ prefix: 'scaffold-e4-install-' })
+-			const packed = workspace.ensure('packed')
+ 			const consumer = workspace.ensure('consumer')
+ 			const target = join(workspace.path, 'generated')
+ 			const cache = workspace.ensure('cache')
+@@ -858,26 +987,7 @@ describe('installed package consumer', () => {
+ 				npm_config_strict_peer_deps: 'false',
+ 			}
+ 			try {
+-				const pack = spawnSync(
+-					npm,
+-					['pack', '--json', '--ignore-scripts', '--pack-destination', packed],
+-					{ cwd: root, encoding: 'utf8', env: environment, windowsHide: true, shell },
+-				)
+-				expect(pack.status).toBe(0)
+-				const archives = globSync('*.tgz', { cwd: packed })
+-				expect(archives).toHaveLength(1)
+-				const archive = archives[0]
+-				if (archive === undefined) throw new Error('The package archive was not written')
+-				workspace.write(
+-					'consumer/package.json',
+-					'{"name":"scaffold-install-consumer","private":true,"type":"module"}\n',
+-				)
+-				const install = spawnSync(
+-					npm,
+-					['install', '--ignore-scripts', '--no-audit', '--no-fund', join(packed, archive)],
+-					{ cwd: consumer, encoding: 'utf8', env: environment, windowsHide: true, shell },
+-				)
+-				expect(install.status).toBe(0)
++				const archive = installPackedScaffold(workspace, environment)
+ 
+ 				// The self-pin every generated workspace inherits is inlined into the
+ 				// built core at build time, and the manifest beside it is packed from the
+@@ -922,108 +1032,83 @@ describe('installed package consumer', () => {
+ 				expect(controlled.stdout).toBe(coherence.stdout)
+ 				expect(controlled.stdout).not.toBe(`^${readManifestVersion(mutated)}`)
+ 
+-				workspace.write(
+-					'consumer/generate.mjs',
+-					[
+-						"import { Compiler, createBlueprint } from '@orkestrel/scaffold'",
+-						"import { Materializer } from '@orkestrel/scaffold/server'",
+-						"const blueprint = createBlueprint('proof', { src: ['core', 'server'], bin: true, integration: true })",
+-						'const compiler = new Compiler()',
+-						'const plan = compiler.compile(blueprint).plan',
+-						"if (plan === undefined) throw new Error('The generated proof blueprint was blocked')",
+-						'compiler.destroy()',
+-						'const materializer = new Materializer()',
+-						`materializer.materialize(plan, ${JSON.stringify(target)})`,
+-						'materializer.destroy()',
+-					].join('\n'),
++				const admitted = installGeneratedWorkspace(
++					workspace,
++					archive,
++					"createBlueprint('proof', { src: ['core', 'server'], bin: true, integration: true })",
++					environment,
+ 				)
+-				const generate = spawnSync(process.execPath, ['generate.mjs'], {
+-					cwd: consumer,
++				const gates = spawnSync(npm, ['run', 'prepublishOnly'], {
++					cwd: target,
+ 					encoding: 'utf8',
++					env: admitted,
+ 					windowsHide: true,
++					shell,
+ 				})
+-				expect(generate.status).toBe(0)
+-				const version = readManifestVersion(readFileSync(resolve(root, 'package.json'), 'utf8'))
+-				const targetManifest: unknown = JSON.parse(
+-					requireValue(workspace.read('generated/package.json')),
++				expect(gates.status, `${gates.stdout}\n${gates.stderr}`).toBe(0)
++			} finally {
++				workspace.destroy()
++			}
++		},
++		1_200_000,
++	)
++
++	// The same machinery over the other axis. A workspace declaring app environments and no src
++	// publishes nothing, so it vendors no `configs/src/` wrapper and emits no `prepublishOnly`,
++	// and the vendored proofs it does run must pass without a published face to read. The
++	// preceding case declares a src axis, as every other generated workspace in this file does, so
++	// nothing here has ever run the vendored set against a workspace that carries none.
++	it.skipIf(!registry && !release)(
++		'installs the packed scaffold and passes one generated app-only workspace through its gates [requires a reachable npm registry]',
++		() => {
++			if (!registry) {
++				throw new Error('The distribution release gate requires a reachable npm registry.')
++			}
++			const workspace = createScratch({ prefix: 'scaffold-e4-app-install-' })
++			const target = join(workspace.path, 'generated')
++			const cache = workspace.ensure('cache')
++			// Pinned for the reason the preceding case pins it: an npm environment variable outranks
++			// every `.npmrc`, so a host carrying a peer policy would otherwise answer here.
++			const environment = {
++				...process.env,
++				npm_config_cache: cache,
++				npm_config_legacy_peer_deps: 'false',
++				npm_config_strict_peer_deps: 'false',
++			}
++			try {
++				const archive = installPackedScaffold(workspace, environment)
++				const admitted = installGeneratedWorkspace(
++					workspace,
++					archive,
++					"createBlueprint('proof', { app: ['core', 'server'] })",
++					environment,
+ 				)
+-				if (!isRecord(targetManifest)) {
++				const manifest: unknown = JSON.parse(requireValue(workspace.read('generated/package.json')))
++				if (!isRecord(manifest)) {
+ 					throw new Error('The generated manifest is not a record')
+ 				}
+-				const devDependencies: unknown = Object.getOwnPropertyDescriptor(
+-					targetManifest,
+-					'devDependencies',
+-				)?.value
+-				if (!isRecord(devDependencies)) {
+-					throw new Error('The generated manifest carries no development dependencies')
++				const scripts: unknown = Object.getOwnPropertyDescriptor(manifest, 'scripts')?.value
++				if (!isRecord(scripts)) {
++					throw new Error('The generated manifest declares no scripts')
+ 				}
+-				const emitted: unknown = Object.getOwnPropertyDescriptor(
+-					devDependencies,
+-					'@orkestrel/scaffold',
+-				)?.value
+-				expect(emitted).toBe(`^${version}`)
+-				const specifier = `file:${relative(target, join(packed, archive)).replaceAll('\\', '/')}`
+-				Object.defineProperty(devDependencies, '@orkestrel/scaffold', {
+-					value: specifier,
+-					writable: true,
+-					enumerable: true,
+-					configurable: true,
+-				})
+-				workspace.write(
+-					'generated/package.json',
+-					`${JSON.stringify(targetManifest, undefined, '\t')}\n`,
+-				)
+-				// The generated manifest declares a `devEngines.packageManager` floor, and npm
+-				// refuses an install beneath it rather than resolving the graph. It refuses every
+-				// nested `npm run` under the gate chain on the same reading, so the install here
+-				// and the gate chain that follows each take an admitted npm. The floor is read
+-				// from the artifact that declares it, so raising the floor reaches this proof
+-				// through the manifest rather than through a constant repeated here, and a host
+-				// whose own npm satisfies the floor provisions nothing. `provisionNpm` throws when
+-				// it cannot reach an admitted npm, so no assertion stands between it and the
+-				// install; the install's own message carries npm's output, which is where a
+-				// refusal names itself.
+-				const floor = readNpmFloor(targetManifest)
+-				const admitted = provisionNpm({ floor, prefix: workspace.ensure('npm'), environment })
+-				const dependencies = spawnSync(
+-					npm,
+-					['install', '--ignore-scripts', '--no-audit', '--no-fund'],
+-					{
++				// A private workspace declares no `prepublishOnly`: the distribution proof measures a
++				// packed tarball and this workspace publishes none. Its chain is therefore assembled
++				// from the scripts it does declare, in the order the repository fixes the gates. The
++				// assertion is what ties the chain to the manifest: a release that gives a private
++				// workspace a `prepublishOnly` reddens here rather than leaving this case running a
++				// chain the workspace no longer owns.
++				expect(Object.getOwnPropertyDescriptor(scripts, 'prepublishOnly')).toBeUndefined()
++				for (const gate of ['format:check', 'lint:check', 'check', 'build', 'test']) {
++					expect(Object.getOwnPropertyDescriptor(scripts, gate)?.value).toEqual(expect.any(String))
++					const run = spawnSync(npm, ['run', gate], {
+ 						cwd: target,
+ 						encoding: 'utf8',
+-						env: admitted.environment,
++						env: admitted,
+ 						windowsHide: true,
+ 						shell,
+-					},
+-				)
+-				expect(dependencies.status, `${dependencies.stdout}\n${dependencies.stderr}`).toBe(0)
+-				const lock: unknown = JSON.parse(
+-					requireValue(workspace.read('generated/package-lock.json')),
+-				)
+-				if (!isRecord(lock)) {
+-					throw new Error('The generated lockfile is not a record')
+-				}
+-				const packages: unknown = Object.getOwnPropertyDescriptor(lock, 'packages')?.value
+-				if (!isRecord(packages)) {
+-					throw new Error('The generated lockfile carries no packages')
+-				}
+-				const scaffold: unknown = Object.getOwnPropertyDescriptor(
+-					packages,
+-					'node_modules/@orkestrel/scaffold',
+-				)?.value
+-				if (!isRecord(scaffold)) {
+-					throw new Error('The generated lockfile carries no installed scaffold')
++					})
++					expect(run.status, `${gate}\n${run.stdout}\n${run.stderr}`).toBe(0)
+ 				}
+-				const resolved: unknown = Object.getOwnPropertyDescriptor(scaffold, 'resolved')?.value
+-				expect(resolved).toBe(specifier)
+-				const gates = spawnSync(npm, ['run', 'prepublishOnly'], {
+-					cwd: target,
+-					encoding: 'utf8',
+-					env: admitted.environment,
+-					windowsHide: true,
+-					shell,
+-				})
+-				expect(gates.status, `${gates.stdout}\n${gates.stderr}`).toBe(0)
+ 			} finally {
+ 				workspace.destroy()
+ 			}

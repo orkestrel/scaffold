@@ -1,0 +1,17 @@
+{
+  "name": "control",
+  "script": "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\units\\roughnotes-registry-gates-author-evidence\\control-child.mjs",
+  "capture": false,
+  "executable": "C:\\Users\\mikes\\scoop\\apps\\nodejs-lts\\current\\node.exe",
+  "arguments": [
+    "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\units\\roughnotes-registry-gates-author-evidence\\control-child.mjs"
+  ],
+  "started": "2026-09-18T21:07:44.349Z",
+  "ended": "2026-09-18T21:07:44.401Z",
+  "elapsed": 51.7106,
+  "pid": 36176,
+  "exit": 7,
+  "signal": null,
+  "stdout": "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\units\\roughnotes-registry-gates-evidence\\roughnotes-control-20260918\\control.stdout.log.txt",
+  "stderr": "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\units\\roughnotes-registry-gates-evidence\\roughnotes-control-20260918\\control.stderr.log.txt"
+}

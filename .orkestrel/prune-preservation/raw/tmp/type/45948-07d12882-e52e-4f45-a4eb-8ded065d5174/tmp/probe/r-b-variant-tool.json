@@ -1,0 +1,40 @@
+{
+  "input": {
+    "project": "configs/src/tsconfig.core.json",
+    "case": {
+      "files": [
+        {
+          "path": "tmp/probe/r-b-variant/constants.ts",
+          "text": "import type { JourneyVariant } from '../../recovery/roughnotes/node_modules/@orkestrel/test/dist/src/core/index.js'\n\nexport const VARIANT: JourneyVariant = { name: 'light-390', width: 390, height: 844 }\n"
+        }
+      ],
+      "test": {
+        "path": "tmp/probe/r-b-variant/variant.test.ts",
+        "text": "import { expect, it } from 'vitest'\nimport { VARIANT } from './constants.js'\n\nit('preserves numeric journey viewport dimensions', () => {\n\texpect(VARIANT).toEqual({ name: 'light-390', width: 390, height: 844 })\n})\n"
+      }
+    },
+    "control": {
+      "files": [
+        {
+          "path": "tmp/probe/r-b-variant/constants.ts",
+          "text": "import type { JourneyVariant } from '../../recovery/roughnotes/node_modules/@orkestrel/test/dist/src/core/index.js'\n\nexport const VARIANT: JourneyVariant = { name: 'light-390', width: '390', height: 844 }\n"
+        }
+      ],
+      "test": {
+        "path": "tmp/probe/r-b-variant/variant.test.ts",
+        "text": "import { expect, it } from 'vitest'\nimport { VARIANT } from './constants.js'\n\nit('preserves numeric journey viewport dimensions', () => {\n\texpect(VARIANT).toEqual({ name: 'light-390', width: 390, height: 844 })\n})\n"
+      },
+      "reason": "The actual recovery-installed test0.0.18 JourneyVariant declaration requires numeric width; a string width must fail at the type stage.",
+      "stage": "type"
+    }
+  },
+  "result": {
+    "content": [
+      {
+        "type": "text",
+        "text": "File 'tmp/probe/r-b-variant/constants.ts' is not under 'rootDir' 'src/core'. 'rootDir' is expected to contain all source files.\n  The file is in the program because:\n    Part of 'files' list in tsconfig.json"
+      }
+    ],
+    "isError": true
+  }
+}

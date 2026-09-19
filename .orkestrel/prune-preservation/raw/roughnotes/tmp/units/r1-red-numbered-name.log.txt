@@ -1,0 +1,32 @@
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/roughnotes
+
+·········x··
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 11 passed (12)
+   Start at  23:19:00
+   Duration  795ms (transform 73ms, setup 26ms, import 590ms, tests 19ms, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |conformance| tests/conformance.test.ts > configuration conformance > treats an entry whose name is not a string as unnamed
+AssertionError: expected 1 to be 2 // Object.is equality
+
+- Expected
++ Received
+
+- 2
++ 1
+
+ ❯ tests/conformance.test.ts:270:26
+    268|   const merged = mergeOverride({ plugins: [declared] }, { plugins: [ca…
+    269|   const plugins = readPlugins(merged)
+    270|   expect(plugins.length).toBe(2)
+       |                          ^
+    271|   expect(plugins[0]).toBe(declared)
+    272|   expect(plugins[1]).toBe(candidate)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+

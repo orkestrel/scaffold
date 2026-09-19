@@ -1,0 +1,14 @@
+{
+    "executable":  "C:\\Users\\mikes\\scoop\\apps\\nodejs-lts\\current\\node.exe",
+    "arguments":  [
+                      "C:\\Users\\mikes\\scoop\\apps\\nodejs-lts\\current\\node_modules\\npm\\bin\\npm-cli.js",
+                      "ci",
+                      "--ignore-scripts",
+                      "--no-audit",
+                      "--no-fund"
+                  ],
+    "directory":  "C:\\Users\\mikes\\WebstormProjects\\roughnotes",
+    "command":  "\"C:\\Users\\mikes\\scoop\\apps\\nodejs-lts\\current\\node.exe\" \"C:\\Users\\mikes\\scoop\\apps\\nodejs-lts\\current\\node_modules\\npm\\bin\\npm-cli.js\" ci --ignore-scripts --no-audit --no-fund",
+    "cap":  300,
+    "time":  "2026-09-18T21:49:18.0695811Z"
+}

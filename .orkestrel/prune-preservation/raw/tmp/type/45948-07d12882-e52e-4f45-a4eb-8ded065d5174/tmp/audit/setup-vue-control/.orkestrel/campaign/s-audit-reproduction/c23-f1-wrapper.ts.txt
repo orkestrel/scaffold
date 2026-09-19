@@ -1,0 +1,15 @@
+import type { JourneyVariant } from '@orkestrel/test'
+import { defineConfig } from 'vitest/config'
+import { appJourney } from '../../vite.config.ts'
+
+// Rename and extend these viewports for the application. Apply themes through its interface.
+const VARIANTS: readonly JourneyVariant[] = Object.freeze([
+	{ name: 'desktop', width: 1280, height: 800 },
+	{ name: 'compact', width: 390, height: 844 },
+])
+
+export default defineConfig({
+	test: {
+		projects: VARIANTS.map((variant) => () => appJourney(variant, VARIANTS)),
+	},
+})

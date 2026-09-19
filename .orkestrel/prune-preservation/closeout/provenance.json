@@ -1,0 +1,9 @@
+﻿{
+    "session":  "fc00bb11-cffe-42ea-b195-266e60d90851",
+    "model":  "Cursor Grok 4.6 High",
+    "exit":  0,
+    "elapsedMilliseconds":  243069,
+    "date":  "2026-09-19",
+    "journal":  "external scratch tmp/cursor/prune-map.jsonl",
+    "rootCorrection":  "Roughnotes recovery worktree is C:/Users/mikes/WebstormProjects/scaffold/tmp/recovery/roughnotes; the earlier verifier row label was relative-path shorthand with the wrong repository prefix."
+}

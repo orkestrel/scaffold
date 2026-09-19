@@ -1,0 +1,3 @@
+npm notice run roughnotes@0.0.1 lint:check
+npm notice run oxlint --config .oxlintrc.json --deny-warnings .
+LINT_EXIT=0

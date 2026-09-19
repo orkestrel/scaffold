@@ -1,0 +1,75 @@
+// Orchestrator reproduction of the S2 audit's subjective-lane vectors (claims 1, 2, 4 and F1).
+// A probe: it settles the findings and is deleted before the fix unit is briefed.
+import { mkdirSync, writeFileSync } from 'node:fs'
+import { join } from 'node:path'
+import { parseSync } from 'vite'
+import { describe, expect, it } from 'vitest'
+import {
+	inspectSkillImports,
+	readSkillDeclarations,
+	readSkillExports,
+} from '../../tests/setupPolicy.js'
+
+const ROOT = process.cwd()
+const FIXTURES = join(ROOT, 'tmp', 'probe', 'fixtures')
+
+describe('S2 audit vectors', () => {
+	it('claim 1: a fence carrying a valid import beside a parse error', () => {
+		const content = [
+			'# Sample',
+			'',
+			'```ts',
+			"import { s2MissingValue } from '@orkestrel/test'",
+			'const value =',
+			'```',
+			'',
+		].join('\n')
+		const parsed = parseSync('skill.ts', "import { s2MissingValue } from '@orkestrel/test'\nconst value =\n")
+		console.log('oxc errors:', parsed.errors.length, 'body statements:', parsed.program.body.length)
+		const violations = inspectSkillImports(ROOT, 'SKILL.md', content)
+		console.log('claim 1 violations:', JSON.stringify(violations))
+		expect(violations.length).toBeGreaterThan(0)
+	})
+
+	it('claim 2: named re-exports through a cycle', () => {
+		const dir = join(FIXTURES, 'cycle')
+		mkdirSync(dir, { recursive: true })
+		writeFileSync(
+			join(dir, 'entry.d.ts'),
+			"export declare const VALUE: string\nexport { VALUE as ALIAS } from './bridge.js'\n",
+		)
+		writeFileSync(join(dir, 'bridge.d.ts'), "export { VALUE } from './entry.js'\n")
+		const names = readSkillDeclarations(join(dir, 'entry.d.ts'))
+		console.log('claim 2 names:', JSON.stringify(names))
+		expect(names).toEqual(['ALIAS', 'VALUE'])
+	})
+
+	it('claim 4: a wildcard exports map', () => {
+		const pkg = join(FIXTURES, 'wildcard', 'node_modules', '@orkestrel', 'fake')
+		mkdirSync(pkg, { recursive: true })
+		writeFileSync(
+			join(pkg, 'package.json'),
+			JSON.stringify({ name: '@orkestrel/fake', version: '0.0.1', exports: { './*': { types: './*.d.ts' } } }),
+		)
+		writeFileSync(join(pkg, 'browser.d.ts'), 'export declare function clickThing(): void\n')
+		const names = readSkillExports(join(FIXTURES, 'wildcard'), '@orkestrel/fake/browser')
+		console.log('claim 4 names:', JSON.stringify(names))
+		const violations = inspectSkillImports(
+			join(FIXTURES, 'wildcard'),
+			'SKILL.md',
+			"```ts\nimport { clickThing } from '@orkestrel/fake/browser'\n```\n",
+		)
+		console.log('claim 4 violations:', JSON.stringify(violations))
+	})
+
+	it('F1: the workspace package itself resolves through node_modules alone', () => {
+		const names = readSkillExports(ROOT, '@orkestrel/scaffold')
+		console.log('F1 names:', names === undefined ? 'undefined' : names.length)
+		const violations = inspectSkillImports(
+			ROOT,
+			'SKILL.md',
+			"```ts\nimport { BASE_DEV_DEPENDENCIES } from '@orkestrel/scaffold'\n```\n",
+		)
+		console.log('F1 violations:', JSON.stringify(violations))
+	})
+})

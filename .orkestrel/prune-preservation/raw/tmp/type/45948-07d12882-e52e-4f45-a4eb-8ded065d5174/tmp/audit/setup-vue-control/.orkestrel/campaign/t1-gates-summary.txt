@@ -1,0 +1,43 @@
+lintcheck_EXIT=0
+formatcheck_EXIT=0
+check_EXIT=0
+build_EXIT=0
+core_EXIT=0
+ Test Files  3 passed (3)
+      Tests  115 passed (115)
+browser_EXIT=0
+ Test Files  2 passed (2)
+      Tests  294 passed (294)
+server_EXIT=0
+ Test Files  2 passed (2)
+      Tests  143 passed | 9 skipped (152)
+policy_EXIT=0
+ Test Files  1 passed (1)
+      Tests  101 passed | 1 skipped (102)
+config_EXIT=0
+ Test Files  1 passed (1)
+      Tests  173 passed | 1 skipped (174)
+setup_EXIT=0
+ Test Files  3 passed (3)
+      Tests  24 passed (24)
+guides_EXIT=0
+ Test Files  1 passed (1)
+      Tests  48 passed | 1 skipped (49)
+===== browser bundle: core externalized? =====
+0
+===== status =====
+ M guides/test.md
+ M src/browser/factories.ts
+ M src/browser/helpers.ts
+ M src/browser/types.ts
+ M src/core/helpers.ts
+ M src/core/types.ts
+ M tests/guides.test.ts
+ M tests/setup.ts
+ M tests/src/browser/factories.test.ts
+ M tests/src/browser/helpers.test.ts
+ M tests/src/core/helpers.test.ts
+
+[exited with code 0]
+
+Taken by the Orchestrator on 2026-09-17 over the test checkout tree carrying unit T1, script scratchpad/t1-gates.sh, logs scratchpad/verify/t1-*.log.txt. The browser bundle imports core: from "../core/index.js" (the empty single-quote grep in this summary looked for the wrong quote character; the double-quote grep taken afterward confirmed it).

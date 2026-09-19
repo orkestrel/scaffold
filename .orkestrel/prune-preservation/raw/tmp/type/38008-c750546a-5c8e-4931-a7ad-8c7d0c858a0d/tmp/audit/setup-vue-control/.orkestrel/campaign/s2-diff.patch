@@ -1,0 +1,762 @@
+diff --git a/.claude/rules/documentation.md b/.claude/rules/documentation.md
+index c3db8258..c78f0cee 100644
+--- a/.claude/rules/documentation.md
++++ b/.claude/rules/documentation.md
+@@ -91,6 +91,8 @@ Never use in-repository `@src/*` aliases in public guide examples; reserve them
+ - Do not put model routing or package version catalogs in a skill.
+ - Validate every referenced resource, leave no template TODOs, and limit each skill directory to `SKILL.md`, `agents/openai.yaml`, and the `references/*.md` files its `SKILL.md` names; add no other file or directory.
+ - Verify each API a skill instructs an executor to call against the installed package's public entry before landing the instruction, and name the entry you read. A skill that names a symbol its package does not export teaches an executor to write a dangling import.
++- Put every symbol a skill teaches in a named import inside a Markdown fence in `SKILL.md` or a named reference. The policy sweep reads fenced value and type imports from `@orkestrel/*` declaration entries; it does not read identifiers in prose or table cells, or validate call signatures and runtime behavior.
++- Import only packages in `BASE_DEV_DEPENDENCIES` in those fences. The sweep refuses a package outside that set because a generated workspace need not install it.
+ - Write `agents/openai.yaml` as one root `interface:` mapping over exactly `display_name`, `short_description`, and `default_prompt`, in that order, each on its own two-space-indented line.
+ - Research the external schema only when a consumer needs a key outside `display_name`, `short_description`, and `default_prompt`, and add no key before then.
+ - Give every one of those keys a non-empty single-quoted scalar, and write an apostrophe inside it as `''`.
+diff --git a/guides/scaffold.md b/guides/scaffold.md
+index 0714d0e0..8210196d 100644
+--- a/guides/scaffold.md
++++ b/guides/scaffold.md
+@@ -1089,6 +1089,21 @@ fetched bytes rather than prose this workspace wrote, and it reports a top-level
+ neither this package's own, nor `guides/README.md`, nor a catalog row, so an exclusion always
+ carries its evidence.
+ 
++The skill sweep reads named value and type imports from `@orkestrel/*` in every Markdown fence
++in `SKILL.md` and its named references, including fences inside lists and blockquotes. It resolves
++each entry through the installed package's exports map and reads its declaration exports with
++Vite's Oxc parser without loading the runtime entry. A missing binding reports the skill file, specifier,
++and exported name. A missing declaration entry or a package outside `BASE_DEV_DEPENDENCIES`
++also reports a violation. Targets need not install packages outside that base set.
++The sweep doesn't read identifiers in prose or table cells, indented code, default imports,
++namespace imports, or imports from other scopes. Every taught symbol belongs in a named import
++fence. This proof checks exported names; it doesn't check call signatures or runtime behavior.
++The declaration reader follows exact exports-map keys and relative star and named re-exports.
++It reads exported functions, variables, classes, enums, interfaces, types, and local export lists.
++Default exports, export assignments, ambient modules, namespace exports, non-relative re-exports,
++and unsupported exports-map forms refuse the reading. Local export lists aren't typechecked,
++and ambiguous star exports aren't resolved semantically.
++
+ The `surface` rule in `inspectPolicyWorkspace` compares live barrel exports and target-owned root
+ `tests/setup*.ts` exports with the hosted guides. It matches bare names case-sensitively across
+ environments and declaration kinds. Source names claimed by the target's own hosted guide are
+diff --git a/tests/policy.test.ts b/tests/policy.test.ts
+index 17ec43d1..320c19de 100644
+--- a/tests/policy.test.ts
++++ b/tests/policy.test.ts
+@@ -524,7 +524,17 @@ describe('skill family policy', () => {
+ 		expect(frontmatter?.description).toBe('Use this skill when a continuation contains: a colon.')
+ 	})
+ 
+-	for (const control of SKILL_POLICY_CONTROLS) {
++	for (const control of SKILL_POLICY_CONTROLS.filter(
++		(candidate) => candidate.violations !== undefined,
++	)) {
++		it(`${control.label} [membership: ${control.membership}]`, () => {
++			expect(inspectPolicyControl(control)).toEqual(control.violations)
++		})
++	}
++
++	for (const control of SKILL_POLICY_CONTROLS.filter(
++		(candidate) => candidate.violations === undefined,
++	)) {
+ 		it(`${control.label} [membership: ${control.membership}]`, () => {
+ 			const violations = inspectPolicyControl(control)
+ 			expect(violations).toHaveLength(1)
+diff --git a/tests/setupPolicy.test.ts b/tests/setupPolicy.test.ts
+index 62b10305..9f933d03 100644
+--- a/tests/setupPolicy.test.ts
++++ b/tests/setupPolicy.test.ts
+@@ -6,7 +6,9 @@ import { requireValue } from '@orkestrel/test'
+ import { POLICY_FILENAMES } from './setup.js'
+ import {
+ 	collectPolicyDeclarations,
++	createPolicyScratch,
+ 	createPolicySurfaceFixture,
++	inspectSkillImports,
+ 	inspectPolicyWorkspace,
+ 	normalizePolicyFilename,
+ 	normalizePolicyPath,
+@@ -15,8 +17,212 @@ import {
+ 	createPolicySurfaceGuide,
+ 	readPolicyDeclarations,
+ 	readPolicySurface,
++	readSkillExports,
++	readSkillDeclarations,
++	resolveSkillDeclaration,
++	SKILL_DECLARATION_REFUSALS,
+ } from './setupPolicy.js'
+ 
++describe('readSkillExports', () => {
++	it('resolves root exports from the installed declaration entry', () => {
++		const names = readSkillExports(process.cwd(), '@orkestrel/test')
++		expect(names).toContain('waitForCondition')
++		expect(names).toContain('WaitOptions')
++		expect(names).not.toContain('s2MissingValue')
++	})
++
++	it('resolves browser exports without loading the browser runtime', () => {
++		const names = readSkillExports(process.cwd(), '@orkestrel/test/browser')
++		expect(names).toContain('clickAccessible')
++		expect(names).toContain('CaptureVariant')
++		expect(names).not.toContain('S2MissingType')
++	})
++
++	it('returns absence when an installed entry has no declaration', () => {
++		expect(readSkillExports(process.cwd(), '@orkestrel/test/missing')).toBeUndefined()
++	})
++
++	it('follows star and aliased declaration exports selected by the exports map', () => {
++		const scratch = createPolicyScratch({ prefix: 'orkestrel-skill-exports-' })
++		try {
++			scratch.write(
++				'node_modules/@orkestrel/test/package.json',
++				JSON.stringify({
++					name: '@orkestrel/test',
++					type: 'module',
++					exports: {
++						'.': { import: { types: './entry.d.ts', default: './entry.js' } },
++						'./runtime': './runtime.js',
++					},
++				}),
++			)
++			scratch.write(
++				'node_modules/@orkestrel/test/entry.d.ts',
++				"export * from './values.js'\nexport { Original as Renamed } from './types.js'\n",
++			)
++			scratch.write(
++				'node_modules/@orkestrel/test/values.d.ts',
++				'declare const exportedValue: string\ndeclare const hiddenValue: string\nexport { exportedValue }\n',
++			)
++			scratch.write(
++				'node_modules/@orkestrel/test/types.d.ts',
++				'export interface Original { readonly value: string }\n',
++			)
++			scratch.write(
++				'node_modules/@orkestrel/test/entry.js',
++				'throw new Error("The declaration reader must never execute this entry")\n',
++			)
++			scratch.write('node_modules/@orkestrel/test/runtime.js', 'export const runtimeValue = true\n')
++			expect(readSkillExports(scratch.path, '@orkestrel/test')).toEqual([
++				'Renamed',
++				'exportedValue',
++			])
++			expect(readSkillExports(scratch.path, '@orkestrel/test/values')).toBeUndefined()
++			expect(readSkillExports(scratch.path, '@orkestrel/test/runtime')).toBeUndefined()
++		} finally {
++			scratch.destroy()
++		}
++	})
++})
++
++describe('readSkillDeclarations', () => {
++	it('reads declaration forms and relative value and type re-exports', () => {
++		const scratch = createPolicyScratch({ prefix: 'orkestrel-skill-forms-' })
++		try {
++			scratch.write(
++				'entry.d.ts',
++				[
++					'export * from "./values.js"',
++					'export type * from "./types.js"',
++					'export { readValue as readAlias, VALUE } from "./values.js"',
++					'export type { Options as Settings } from "./types.js"',
++					'export { type Name as Label } from "./types.js"',
++					'export * from "./esm.mjs"',
++					'export * from "./common.cjs"',
++					'export * from "./direct.d.ts"',
++				].join('\n'),
++			)
++			scratch.write(
++				'values.d.ts',
++				[
++					'export declare function readValue(): string',
++					'export declare const VALUE: string, OTHER: number',
++					'export declare class Entity {}',
++					'export declare enum Phase { Ready }',
++					'declare const local: string',
++					'declare const hidden: string',
++					'export { local as visible }',
++					'export * from "./entry.js"',
++				].join('\n'),
++			)
++			scratch.write('types.d.ts', 'export interface Options {}\nexport type Name = string\n')
++			scratch.write('esm.d.mts', 'export declare const ESM: string\n')
++			scratch.write('common.d.cts', 'export declare const COMMON: string\n')
++			scratch.write('direct.d.ts', 'export declare const DIRECT: string\n')
++			expect(readSkillDeclarations(join(scratch.path, 'entry.d.ts'))).toEqual([
++				'COMMON',
++				'DIRECT',
++				'ESM',
++				'Entity',
++				'Label',
++				'Name',
++				'OTHER',
++				'Options',
++				'Phase',
++				'Settings',
++				'VALUE',
++				'readAlias',
++				'readValue',
++				'visible',
++			])
++		} finally {
++			scratch.destroy()
++		}
++	})
++
++	for (const declaration of SKILL_DECLARATION_REFUSALS) {
++		it(`refuses an unreadable declaration inventory: ${declaration}`, () => {
++			const scratch = createPolicyScratch({ prefix: 'orkestrel-skill-refusal-' })
++			try {
++				scratch.write('entry.d.ts', declaration)
++				scratch.write('values.d.ts', 'export declare const VALUE: string\n')
++				expect(readSkillDeclarations(join(scratch.path, 'entry.d.ts'))).toBeUndefined()
++			} finally {
++				scratch.destroy()
++			}
++		})
++	}
++})
++
++describe('resolveSkillDeclaration', () => {
++	it('selects explicit declaration paths through supported conditions', () => {
++		expect(resolveSkillDeclaration('./entry.d.ts')).toBe('./entry.d.ts')
++		expect(resolveSkillDeclaration({ types: './entry.d.mts' })).toBe('./entry.d.mts')
++		expect(resolveSkillDeclaration({ import: { types: './entry.d.ts' } })).toBe('./entry.d.ts')
++		expect(resolveSkillDeclaration({ default: { types: './entry.d.cts' } })).toBe('./entry.d.cts')
++	})
++
++	it('refuses runtime paths and unsupported export conditions', () => {
++		expect(resolveSkillDeclaration('./entry.js')).toBeUndefined()
++		expect(resolveSkillDeclaration(['./entry.d.ts'])).toBeUndefined()
++		expect(resolveSkillDeclaration({ require: './entry.d.cts' })).toBeUndefined()
++		expect(resolveSkillDeclaration(null)).toBeUndefined()
++	})
++})
++
++describe('inspectSkillImports', () => {
++	it('reports a specifier with no installed declaration entry', () => {
++		expect(
++			inspectSkillImports(
++				process.cwd(),
++				'SKILL.md',
++				'```ts\nimport { missing } from "@orkestrel/test/missing"\n```\n',
++			),
++		).toEqual([
++			{
++				rule: 'skill',
++				path: 'SKILL.md',
++				message: 'skill fence import @orkestrel/test/missing has no installed declaration entry',
++			},
++		])
++	})
++
++	it('reads multiline aliased and commented imports in nested fences', () => {
++		const content =
++			'> ~~~ts\r\n> import {\r\n>   /* exported name */ s2MissingValue as local,\r\n>   type WaitOptions,\r\n> } from "@orkestrel/test"\r\n> ~~~\r\n'
++		expect(inspectSkillImports(process.cwd(), 'references/example.md', content)).toEqual([
++			{
++				rule: 'skill',
++				path: 'references/example.md',
++				message: 'skill fence import @orkestrel/test does not export s2MissingValue',
++			},
++		])
++	})
++
++	it('reads each fence inside a list and after a longer outer fence', () => {
++		const content =
++			'- Example\n\n  ~~~ts\n  import { s2MissingList } from "@orkestrel/test"\n  ~~~\n\n````text\n```\n````\n\n```ts\nimport type { S2MissingLater } from "@orkestrel/test"\n```\n'
++		expect(inspectSkillImports(process.cwd(), 'SKILL.md', content)).toEqual([
++			{
++				rule: 'skill',
++				path: 'SKILL.md',
++				message: 'skill fence import @orkestrel/test does not export s2MissingList',
++			},
++			{
++				rule: 'skill',
++				path: 'SKILL.md',
++				message: 'skill fence import @orkestrel/test does not export S2MissingLater',
++			},
++		])
++	})
++
++	it('excludes prose, table cells, and commented or quoted import text', () => {
++		const content =
++			'import { missing } from "@orkestrel/test"\n\n| Symbol |\n| --- |\n| `import { missing } from "@orkestrel/test"` |\n\n```ts\n// import { missing } from "@orkestrel/test"\nconst sentence = \'import { missing } from "@orkestrel/test"\'\nimport { external } from "external-package"\n```\n'
++		expect(inspectSkillImports(process.cwd(), 'SKILL.md', content)).toEqual([])
++	})
++})
++
+ describe('readPolicyDeclarations', () => {
+ 	for (const scenario of POLICY_SURFACE_EXPORT_CASES) {
+ 		it(`accounts for a planted setup ${scenario.label} export`, () => {
+@@ -406,8 +612,8 @@ describe('normalizePolicyFilename', () => {
+ describe('normalizePolicyPath', () => {
+ 	it('changes separators without resolving segments or decoding percent text', () => {
+ 		expect(normalizePolicyPath('src//member.ts')).toBe('src/member.ts')
+-		expect(normalizePolicyPath('src\\parent\\..\\literal%20#雪.ts')).toBe(
+-			'src/parent/../literal%20#雪.ts',
++		expect(normalizePolicyPath('src\\parent\\..\\literal%20#?.ts')).toBe(
++			'src/parent/../literal%20#?.ts',
+ 		)
+ 	})
+ })
+diff --git a/tests/setupPolicy.ts b/tests/setupPolicy.ts
+index c0af522c..63e15a6e 100644
+--- a/tests/setupPolicy.ts
++++ b/tests/setupPolicy.ts
+@@ -4,7 +4,7 @@ import {
+ 	hasCanonicalSegments,
+ 	resolveLink,
+ } from '@orkestrel/guide'
+-import { HOST_PATHS } from '@orkestrel/scaffold'
++import { BASE_DEV_DEPENDENCIES, HOST_PATHS } from '@orkestrel/scaffold'
+ import {
+ 	existsSync,
+ 	globSync,
+@@ -156,6 +156,7 @@ export interface PolicyControl {
+ 	readonly directories?: readonly string[]
+ 	readonly line?: number
+ 	readonly message?: string
++	readonly violations?: readonly PolicyViolation[]
+ }
+ 
+ /** Describes a contained temporary directory owned by one vendored test. */
+@@ -955,13 +956,228 @@ export function inspectSkillTemplateTODOs(
+ }
+ 
+ /**
+- * Inspects one discovered skill's required files, metadata, token, and references.
++ * Reads an installed public entry's exported declaration names without loading its runtime.
++ *
++ * @param root - The workspace whose installed packages supply the declarations.
++ * @param specifier - The public package entry to resolve through its exports map.
++ * @returns The exported names, or `undefined` when the declaration entry cannot be read.
++ * @remarks Reads exact exports-map keys under node_modules using types, import, and default
++ * conditions. Wildcard keys, arrays, source aliases, and runtime-only entries are unsupported.
++ * The Oxc parser reads exported function, variable, class, enum, interface, and type declarations,
++ * local export lists, and relative star and named re-exports, including aliases and type forms.
++ * Relative .js, .mjs, and .cjs targets resolve to .d.ts, .d.mts, and .d.cts declarations.
++ * Default exports, export assignments, ambient modules, namespace exports, and non-relative
++ * re-exports refuse the reading. This is a name inventory, not TypeScript semantic validation.
++ */
++export function readSkillExports(root: string, specifier: string): readonly string[] | undefined {
++	if (!/^@orkestrel\/[a-z0-9-]+(?:\/[a-z0-9-]+)*$/u.test(specifier)) return undefined
++	const segments = specifier.split('/')
++	const directory = join(root, 'node_modules', ...segments.slice(0, 2))
++	const manifestPath = join(directory, 'package.json')
++	if (!existsSync(manifestPath)) return undefined
++	const manifest: unknown = JSON.parse(readFileSync(manifestPath, 'utf8'))
++	if (!isPolicyRecord(manifest)) return undefined
++	const key = segments.length === 2 ? '.' : `./${segments.slice(2).join('/')}`
++	const exports = manifest['exports']
++	const target = resolveSkillDeclaration(
++		isPolicyRecord(exports) && Object.keys(exports).some((name) => name.startsWith('.'))
++			? exports[key]
++			: key === '.'
++				? exports
++				: undefined,
++	)
++	if (target === undefined || !target.startsWith('./') || !hasCanonicalSegments(target.slice(2)))
++		return undefined
++	return readSkillDeclarations(resolve(directory, target))
++}
++
++/**
++ * Resolves an explicit declaration target under supported exports-map conditions.
++ *
++ * @param target - The installed exports-map value.
++ * @returns The declaration path, or `undefined` for an unsupported target.
++ */
++export function resolveSkillDeclaration(target: unknown): string | undefined {
++	if (typeof target === 'string') return /\.d\.(?:ts|mts|cts)$/u.test(target) ? target : undefined
++	if (!isPolicyRecord(target)) return undefined
++	for (const condition of ['types', 'import', 'default']) {
++		if (Object.hasOwn(target, condition)) return resolveSkillDeclaration(target[condition])
++	}
++	return undefined
++}
++
++/** Supplies declaration forms the skill reader refuses instead of accepting a partial inventory. */
++export const SKILL_DECLARATION_REFUSALS = Object.freeze([
++	'export default function read(): void',
++	'declare const value: string\nexport = value',
++	'declare module "foreign" { export const value: string }',
++	'export * as vocabulary from "./values.js"',
++	'export as namespace Vocabulary',
++	'export * from "foreign"',
++	'export { absent } from "./values.js"',
++	'export * from "./absent.js"',
++	'export const =',
++])
++
++/**
++ * Reads declaration names while following relative declaration re-exports without execution.
++ *
++ * @param path - The absolute declaration path.
++ * @param ancestors - The declaration paths visited along this branch.
++ * @returns The exported names, or `undefined` for missing, invalid, or unsupported declarations.
++ * @remarks Supports the declaration forms documented on {@link readSkillExports}.
++ * Cyclic branches contribute no additional names. Local export lists supply their written names;
++ * this parser does not typecheck their bindings or resolve ambiguous star exports.
++ */
++export function readSkillDeclarations(
++	path: string,
++	ancestors: readonly string[] = [],
++): readonly string[] | undefined {
++	if (ancestors.includes(path)) return []
++	if (!existsSync(path)) return undefined
++	const source = parseSync(path, readFileSync(path, 'utf8'))
++	if (source.errors.length > 0) return undefined
++	const names = new Set<string>()
++	for (const statement of source.program.body) {
++		if (statement.type === 'ExportAllDeclaration' || statement.type === 'ExportNamedDeclaration') {
++			let targets: readonly string[] | undefined
++			if (statement.source !== null) {
++				const target = statement.source.value
++				if (!target.startsWith('./') && !target.startsWith('../')) return undefined
++				const declaration = /\.d\.(?:ts|mts|cts)$/u.test(target)
++					? target
++					: target.replace(/\.(js|mjs|cjs)$/u, (_, extension: string) =>
++							extension === 'mjs' ? '.d.mts' : extension === 'cjs' ? '.d.cts' : '.d.ts',
++						)
++				if (!/\.d\.(?:ts|mts|cts)$/u.test(declaration)) return undefined
++				targets = readSkillDeclarations(resolve(dirname(path), declaration), [...ancestors, path])
++				if (targets === undefined) return undefined
++			}
++			if (statement.type === 'ExportAllDeclaration') {
++				if (statement.exported !== null || targets === undefined) return undefined
++				for (const name of targets) names.add(name)
++				continue
++			}
++			for (const binding of statement.specifiers) {
++				const name =
++					binding.exported.type === 'Identifier' ? binding.exported.name : binding.exported.value
++				const original =
++					binding.local.type === 'Identifier' ? binding.local.name : binding.local.value
++				if (name === 'default' || (targets !== undefined && !targets.includes(original)))
++					return undefined
++				names.add(name)
++			}
++			const declaration = statement.declaration
++			if (declaration === null) continue
++			if (declaration.type === 'VariableDeclaration') {
++				for (const variable of declaration.declarations) {
++					if (variable.id.type !== 'Identifier') return undefined
++					names.add(variable.id.name)
++				}
++			} else if (
++				declaration.type === 'TSDeclareFunction' ||
++				declaration.type === 'FunctionDeclaration' ||
++				declaration.type === 'ClassDeclaration' ||
++				declaration.type === 'TSEnumDeclaration' ||
++				declaration.type === 'TSInterfaceDeclaration' ||
++				declaration.type === 'TSTypeAliasDeclaration'
++			) {
++				if (declaration.id === null) return undefined
++				names.add(declaration.id.name)
++			} else return undefined
++		} else if (
++			statement.type === 'ExportDefaultDeclaration' ||
++			statement.type === 'TSExportAssignment' ||
++			statement.type === 'TSNamespaceExportDeclaration' ||
++			statement.type === 'TSModuleDeclaration'
++		)
++			return undefined
++	}
++	return [...names].sort()
++}
++
++/**
++ * Inspects named Orkestrel imports in every Markdown fence against installed declaration exports.
++ *
++ * @param root - The workspace whose installed packages supply the declarations.
++ * @param path - The workspace-relative skill document path reported on a violation.
++ * @param content - The raw Markdown text.
++ * @returns Every unsupported package, missing declaration, or unexported binding violation.
++ * @remarks The guide parser supplies fences, including fences nested in lists and blockquotes.
++ * The Oxc parser reads named value and type bindings, aliases, comments, and multiline imports.
++ * Prose, table cells, indented code, default imports, namespace imports, and non-Orkestrel imports
++ * are outside this check. Every symbol a skill teaches must appear in a named import fence.
++ * Packages outside BASE_DEV_DEPENDENCIES are refused because targets need not install them.
++ * This check proves exported names, not call signatures or runtime behavior.
++ */
++export function inspectSkillImports(
++	root: string,
++	path: string,
++	content: string,
++): readonly PolicyViolation[] {
++	const violations: PolicyViolation[] = []
++	const entries = new Map<string, readonly string[] | undefined>()
++	for (const fence of createGuide(content).fences()) {
++		const source = parseSync('skill.ts', fence.code)
++		for (const statement of source.program.body) {
++			if (statement.type !== 'ImportDeclaration') continue
++			const specifier = statement.source.value
++			const bindings = statement.specifiers.filter((binding) => binding.type === 'ImportSpecifier')
++			if (!specifier.startsWith('@orkestrel/') || bindings.length === 0) continue
++			const packageName = specifier.split('/').slice(0, 2).join('/')
++			if (!Object.hasOwn(BASE_DEV_DEPENDENCIES, packageName)) {
++				violations.push(
++					createPolicyViolation(
++						'skill',
++						path,
++						`skill fence import ${specifier} is outside BASE_DEV_DEPENDENCIES: ${packageName}`,
++					),
++				)
++				continue
++			}
++			if (!entries.has(specifier)) entries.set(specifier, readSkillExports(root, specifier))
++			const names = entries.get(specifier)
++			if (names === undefined) {
++				violations.push(
++					createPolicyViolation(
++						'skill',
++						path,
++						`skill fence import ${specifier} has no installed declaration entry`,
++					),
++				)
++				continue
++			}
++			for (const binding of bindings) {
++				const name =
++					binding.imported.type === 'Identifier' ? binding.imported.name : binding.imported.value
++				if (!names.includes(name)) {
++					violations.push(
++						createPolicyViolation(
++							'skill',
++							path,
++							`skill fence import ${specifier} does not export ${name}`,
++						),
++					)
++				}
++			}
++		}
++	}
++	return violations
++}
++
++/**
++ * Inspects one discovered skill's required files, metadata, token, references, and fenced imports.
+  *
+  * @param root - The workspace root to inspect.
+  * @param name - The discovered skill directory name.
++ * @param installation - The workspace supplying installed declaration entries. Default: root.
+  * @returns Every skill-family violation in invariant order.
+  */
+-export function inspectSkill(root: string, name: string): readonly PolicyViolation[] {
++export function inspectSkill(
++	root: string,
++	name: string,
++	installation = root,
++): readonly PolicyViolation[] {
+ 	const base = `${SKILL_FAMILY_ROOT}/${name}`
+ 	const skill = `${base}/SKILL.md`
+ 	const metadata = `${base}/agents/openai.yaml`
+@@ -1013,6 +1229,7 @@ export function inspectSkill(root: string, name: string): readonly PolicyViolati
+ 			}
+ 		}
+ 		violations.push(...inspectSkillTemplateTODOs('skill', skill, content))
++		violations.push(...inspectSkillImports(installation, skill, content))
+ 	}
+ 	const hasMetadata = isPolicyFile(root, metadata)
+ 	if (!hasMetadata) {
+@@ -1056,8 +1273,10 @@ export function inspectSkill(root: string, name: string): readonly PolicyViolati
+ 					),
+ 				)
+ 			} else {
++				const referenceContent = readFileSync(join(root, path), 'utf8')
+ 				violations.push(
+-					...inspectSkillTemplateTODOs('skill', path, readFileSync(join(root, path), 'utf8')),
++					...inspectSkillTemplateTODOs('skill', path, referenceContent),
++					...inspectSkillImports(installation, path, referenceContent),
+ 				)
+ 			}
+ 		}
+@@ -1148,11 +1367,13 @@ export function inspectSkill(root: string, name: string): readonly PolicyViolati
+  * Inspects every immediate member of the discovered skill family.
+  *
+  * @param root - The workspace root to inspect.
++ * @param installation - The workspace supplying installed declaration entries. Default: root.
+  * @returns Every skill-family violation in directory and invariant order.
+  */
+-export function inspectSkillFamily(root: string): readonly PolicyViolation[] {
++export function inspectSkillFamily(root: string, installation = root): readonly PolicyViolation[] {
+ 	const violations: PolicyViolation[] = []
+-	for (const name of readSkillFamily(root)) violations.push(...inspectSkill(root, name))
++	for (const name of readSkillFamily(root))
++		violations.push(...inspectSkill(root, name, installation))
+ 	return violations
+ }
+ 
+@@ -2041,7 +2262,7 @@ export function inspectPolicyControl(control: PolicyControl): readonly PolicyVio
+ 			scratch.write(marker, '')
+ 			rmSync(join(scratch.path, marker))
+ 		}
+-		if (control.rule === 'skill') return inspectSkillFamily(scratch.path)
++		if (control.rule === 'skill') return inspectSkillFamily(scratch.path, process.cwd())
+ 		if (control.rule === 'bridge') return inspectSkillBridges(scratch.path)
+ 		return inspectPolicyWorkspace(scratch.path)
+ 	} finally {
+@@ -2121,6 +2342,105 @@ export const POLICY_CONTROLS: readonly PolicyControl[] = Object.freeze([
+ 
+ /** Lists the physical in-family controls for every skill-family assertion class. */
+ export const SKILL_POLICY_CONTROLS: readonly PolicyControl[] = Object.freeze([
++	{
++		label: 'rejects an unexported value binding in a skill fence',
++		membership: 'named value imports in canonical skill fences',
++		rule: 'skill',
++		files: [
++			{
++				path: '.agents/skills/sample/SKILL.md',
++				content:
++					SKILL_POLICY_TEXT +
++					'\n```ts\nimport { s2MissingValue } from "@orkestrel/test/browser"\n```\n',
++			},
++			{ path: '.agents/skills/sample/agents/openai.yaml', content: createSkillMetadata('sample') },
++		],
++		violations: [
++			{
++				rule: 'skill',
++				path: '.agents/skills/sample/SKILL.md',
++				message: 'skill fence import @orkestrel/test/browser does not export s2MissingValue',
++			},
++		],
++	},
++	{
++		label: 'rejects an unexported type binding in a skill fence',
++		membership: 'named type imports in canonical skill fences',
++		rule: 'skill',
++		files: [
++			{
++				path: '.agents/skills/sample/SKILL.md',
++				content:
++					SKILL_POLICY_TEXT +
++					'\n```ts\nimport type { S2MissingType } from "@orkestrel/test/browser"\n```\n',
++			},
++			{ path: '.agents/skills/sample/agents/openai.yaml', content: createSkillMetadata('sample') },
++		],
++		violations: [
++			{
++				rule: 'skill',
++				path: '.agents/skills/sample/SKILL.md',
++				message: 'skill fence import @orkestrel/test/browser does not export S2MissingType',
++			},
++		],
++	},
++	{
++		label: 'accepts exported value and type bindings from root and browser entries',
++		membership: 'named value and type imports in canonical skill fences',
++		rule: 'skill',
++		files: [
++			{
++				path: '.agents/skills/sample/SKILL.md',
++				content:
++					SKILL_POLICY_TEXT +
++					'\n```ts\nimport { waitForCondition, type WaitOptions } from "@orkestrel/test"\nimport { clickAccessible } from "@orkestrel/test/browser"\nimport type { CaptureVariant } from "@orkestrel/test/browser"\n```\n',
++			},
++			{ path: '.agents/skills/sample/agents/openai.yaml', content: createSkillMetadata('sample') },
++		],
++		violations: [],
++	},
++	{
++		label: 'rejects a fenced package outside the base dependency set',
++		membership: 'Orkestrel package imports in canonical skill fences',
++		rule: 'skill',
++		files: [
++			{
++				path: '.agents/skills/sample/SKILL.md',
++				content:
++					SKILL_POLICY_TEXT + '\n```ts\nimport { isString } from "@orkestrel/contract"\n```\n',
++			},
++			{ path: '.agents/skills/sample/agents/openai.yaml', content: createSkillMetadata('sample') },
++		],
++		violations: [
++			{
++				rule: 'skill',
++				path: '.agents/skills/sample/SKILL.md',
++				message:
++					'skill fence import @orkestrel/contract is outside BASE_DEV_DEPENDENCIES: @orkestrel/contract',
++			},
++		],
++	},
++	{
++		label: 'reports an unexported binding against its named reference file',
++		membership: 'named imports in fences in referenced skill documents',
++		rule: 'skill',
++		files: [
++			{ path: '.agents/skills/sample/SKILL.md', content: SKILL_REFERENCE_TEXT },
++			{ path: '.agents/skills/sample/agents/openai.yaml', content: createSkillMetadata('sample') },
++			{
++				path: '.agents/skills/sample/references/example.md',
++				content:
++					'# Example\n\n~~~ts\nimport { s2MissingReference } from "@orkestrel/test/browser"\n~~~\n',
++			},
++		],
++		violations: [
++			{
++				rule: 'skill',
++				path: '.agents/skills/sample/references/example.md',
++				message: 'skill fence import @orkestrel/test/browser does not export s2MissingReference',
++			},
++		],
++	},
+ 	{
+ 		label: 'rejects a SKILL.md without frontmatter',
+ 		membership: 'exact-case regular SKILL.md files in discovered skill directories',
+diff --git a/tests/src/core/compilers.test.ts b/tests/src/core/compilers.test.ts
+index 890de779..dd6ae3a3 100644
+--- a/tests/src/core/compilers.test.ts
++++ b/tests/src/core/compilers.test.ts
+@@ -33,7 +33,7 @@ import {
+ } from '@src/core'
+ import { mergeConfig } from 'vite'
+ import { environmentBoundary, outputBoundary } from '../../../configs/helpers.js'
+-import rootConfiguration, { mergeOverride, srcServer } from '../../../vite.config.js'
++import { mergeOverride, srcServer } from '../../../vite.config.js'
+ import { buildBlueprint } from '../../setup.js'
+ import { readStatements } from '../../setupServer.js'
+ import { describe, expect, it } from 'vitest'
+@@ -3060,44 +3060,13 @@ describe('the guides entry', () => {
+ // a guard that admits a non-string `name` or a structural thenable, and the red that does
+ // comes from mutating the predicate itself.
+ //
+-// Which cases meet the real vendored boundary plugins: the refusal case drives every
+-// factory this checkout registers. The replacement and nested cases take their base
++// The replacement and nested cases take their base
+ // from `srcServer`; the repeated-name case writes its base from the same vendored
+ // boundary helpers, because no emitted base repeats a plugin name.
+ // The caller-order, opaque-entry, non-string-name, structural-promise, and
+ // `command`-alone cases write their own entries, because the hazard there is the
+ // entry's shape rather than the plugin's identity.
+ describe('the generated configuration under its own hazards', () => {
+-	it('refuses the Vitest invocation record a project row is called with', () => {
+-		const sentinel = {
+-			command: 'sentinel-command',
+-			isPreview: true,
+-			isSsrBuild: true,
+-			mode: 'sentinel-mode',
+-			sentinel: true,
+-		}
+-		// The population, stated before the sweep drawn from it: every factory this
+-		// checkout registers as a project row, which is the set Vitest calls.
+-		const rows = rootConfiguration.test?.projects
+-		if (!Array.isArray(rows)) throw new Error('The root configuration carries no projects')
+-		const registered = rows.filter((row) => typeof row === 'function')
+-		if (registered.length === 0) throw new Error('The root configuration registers no factory')
+-		for (const factory of registered) {
+-			const project: unknown = Reflect.apply(factory, undefined, [sentinel])
+-			if (typeof project !== 'object' || project === null) {
+-				throw new Error('A project factory returned no configuration')
+-			}
+-			for (const field of Object.keys(sentinel)) {
+-				expect(Object.getOwnPropertyDescriptor(project, field)?.value).toBeUndefined()
+-			}
+-		}
+-		// The control: the bare merge a factory would otherwise perform lands every field
+-		// of the record on the configuration it returns.
+-		const landed: UserConfig = mergeConfig({ publicDir: false }, sentinel)
+-		expect(Object.getOwnPropertyDescriptor(landed, 'command')?.value).toBe('sentinel-command')
+-		expect(Object.getOwnPropertyDescriptor(landed, 'mode')?.value).toBe('sentinel-mode')
+-	})
+-
+ 	it('replaces a named base plugin in its position', () => {
+ 		const declared = outputBoundary('dist/src/server')
+ 		const environment = environmentBoundary('src/server')

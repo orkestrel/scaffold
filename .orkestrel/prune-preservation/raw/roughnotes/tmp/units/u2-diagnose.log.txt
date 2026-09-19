@@ -1,0 +1,382 @@
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/roughnotes
+
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+  ╷
+1 │ @import 'tokens';
+  │         ^^^^^^^^
+  ╵
+    app\browser\styles\index.scss 1:9  root stylesheet
+
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+  ╷
+2 │ @import 'bootstrap/scss/bootstrap';
+  │         ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  ╵
+    app\browser\styles\index.scss 2:9  root stylesheet
+
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+  ╷
+3 │ @import 'theme';
+  │         ^^^^^^^
+  ╵
+    app\browser\styles\index.scss 3:9  root stylesheet
+
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+  ╷
+4 │ @import 'signature';
+  │         ^^^^^^^^^^^
+  ╵
+    app\browser\styles\index.scss 4:9  root stylesheet
+
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+  ╷
+1 │ @import "mixins/banner";
+  │         ^^^^^^^^^^^^^^^
+  ╵
+    node_modules\bootstrap\scss\bootstrap.scss 1:9  @import
+    app\browser\styles\index.scss 2:9               root stylesheet
+
+DEPRECATION WARNING [if-function]: The Sass if() syntax is deprecated in favor of the modern CSS syntax.
+
+Suggestion: if(sass($arg == "$value"): $value; else: $arg)
+
+More info: https://sass-lang.com/d/if-function
+
+   ╷
+58 │       $_args: append($_args, if($arg == "$key", $key, if($arg == "$value", $value, $arg)));
+   │                                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   ╵
+    node_modules\bootstrap\scss\_functions.scss 58:55  @import
+    node_modules\bootstrap\scss\bootstrap.scss 7:9     @import
+    app\browser\styles\index.scss 2:9                  root stylesheet
+
+DEPRECATION WARNING [if-function]: The Sass if() syntax is deprecated in favor of the modern CSS syntax.
+
+Suggestion: if(sass($arg == "$key"): $key; else: if($arg == "$value", $value, $arg))
+
+More info: https://sass-lang.com/d/if-function
+
+   ╷
+58 │       $_args: append($_args, if($arg == "$key", $key, if($arg == "$value", $value, $arg)));
+   │                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   ╵
+    node_modules\bootstrap\scss\_functions.scss 58:30  @import
+    node_modules\bootstrap\scss\bootstrap.scss 7:9     @import
+    app\browser\styles\index.scss 2:9                  root stylesheet
+
+DEPRECATION WARNING [if-function]: The Sass if() syntax is deprecated in favor of the modern CSS syntax.
+
+Suggestion: if(sass($l1 > $l2): divide($l1 + 0.05, $l2 + 0.05); else: divide($l2 + 0.05, $l1 + 0.05))
+
+More info: https://sass-lang.com/d/if-function
+
+    ╷
+177 │   @return if($l1 > $l2, divide($l1 + .05, $l2 + .05), divide($l2 + .05, $l1 + .05));
+    │           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ╵
+    node_modules\bootstrap\scss\_functions.scss 177:11  @import
+    node_modules\bootstrap\scss\bootstrap.scss 7:9      @import
+    app\browser\styles\index.scss 2:9                   root stylesheet
+
+DEPRECATION WARNING [if-function]: The Sass if() syntax is deprecated in favor of the modern CSS syntax.
+
+Suggestion: if(sass(divide($value, 255) < 0.04045): divide(divide($value, 255), 12.92); else: nth($_luminance-list, $value + 1))
+
+More info: https://sass-lang.com/d/if-function
+
+    ╷
+191 │     $value: if(divide($value, 255) < .04045, divide(divide($value, 255), 12.92), nth($_luminance-list, $value + 1));
+    │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ╵
+    node_modules\bootstrap\scss\_functions.scss 191:13  @import
+    node_modules\bootstrap\scss\bootstrap.scss 7:9      @import
+    app\browser\styles\index.scss 2:9                   root stylesheet
+
+DEPRECATION WARNING [if-function]: The Sass if() syntax is deprecated in favor of the modern CSS syntax.
+
+Suggestion: if(sass($weight > 0): shade-color($color, $weight); else: tint-color($color, -$weight))
+
+More info: https://sass-lang.com/d/if-function
+
+    ╷
+217 │   @return if($weight > 0, shade-color($color, $weight), tint-color($color, -$weight));
+    │           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ╵
+    node_modules\bootstrap\scss\_functions.scss 217:11  @import
+    node_modules\bootstrap\scss\bootstrap.scss 7:9      @import
+    app\browser\styles\index.scss 2:9                   root stylesheet
+
+DEPRECATION WARNING [global-builtin]: Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+Use color.mix instead.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+    ╷
+207 │   @return mix(white, $color, $weight);
+    │           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ╵
+    node_modules\bootstrap\scss\_functions.scss 207:11  tint-color()
+    node_modules\bootstrap\scss\_variables.scss 79:12   @import
+    node_modules\bootstrap\scss\bootstrap.scss 8:9      @import
+    app\browser\styles\index.scss 2:9                   root stylesheet
+
+DEPRECATION WARNING [global-builtin]: Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+Use color.mix instead.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+    ╷
+212 │   @return mix(black, $color, $weight);
+    │           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ╵
+    node_modules\bootstrap\scss\_functions.scss 212:11  shade-color()
+    node_modules\bootstrap\scss\_variables.scss 84:12   @import
+    node_modules\bootstrap\scss\bootstrap.scss 8:9      @import
+    app\browser\styles\index.scss 2:9                   root stylesheet
+
+DEPRECATION WARNING [global-builtin]: Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+Use color.mix instead.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+    ╷
+342 │ $light-bg-subtle:         mix($gray-100, $white) !default;
+    │                           ^^^^^^^^^^^^^^^^^^^^^^
+    ╵
+    node_modules\bootstrap\scss\_variables.scss 342:27  @import
+    node_modules\bootstrap\scss\bootstrap.scss 8:9      @import
+    app\browser\styles\index.scss 2:9                   root stylesheet
+
+DEPRECATION WARNING [global-builtin]: Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+Use math.unit instead.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+   ╷
+11 │     @if $prev-num == null or unit($num) == "%" or unit($prev-num) == "%" {
+   │                              ^^^^^^^^^^
+   ╵
+    node_modules\bootstrap\scss\_functions.scss 11:30  -assert-ascending()
+    node_modules\bootstrap\scss\_variables.scss 494:1  @import
+    node_modules\bootstrap\scss\bootstrap.scss 8:9     @import
+    app\browser\styles\index.scss 2:9                  root stylesheet
+
+DEPRECATION WARNING [global-builtin]: Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+Use math.unit instead.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+   ╷
+11 │     @if $prev-num == null or unit($num) == "%" or unit($prev-num) == "%" {
+   │                                                   ^^^^^^^^^^^^^^^
+   ╵
+    node_modules\bootstrap\scss\_functions.scss 11:51  -assert-ascending()
+    node_modules\bootstrap\scss\_variables.scss 494:1  @import
+    node_modules\bootstrap\scss\bootstrap.scss 8:9     @import
+    app\browser\styles\index.scss 2:9                  root stylesheet
+
+DEPRECATION WARNING [color-functions]: red() is deprecated. Suggestion:
+
+color.channel($color, "red", $space: rgb)
+
+More info: https://sass-lang.com/d/color-functions
+
+    ╷
+185 │     "r": red($color),
+    │          ^^^^^^^^^^^
+    ╵
+    node_modules\bootstrap\scss\_functions.scss 185:10  luminance()
+    node_modules\bootstrap\scss\_functions.scss 174:8   contrast-ratio()
+    node_modules\bootstrap\scss\_functions.scss 159:22  color-contrast()
+    node_modules\bootstrap\scss\_variables.scss 846:42  @import
+    node_modules\bootstrap\scss\bootstrap.scss 8:9      @import
+    app\browser\styles\index.scss 2:9                   root stylesheet
+
+DEPRECATION WARNING [color-functions]: green() is deprecated. Suggestion:
+
+color.channel($color, "green", $space: rgb)
+
+More info: https://sass-lang.com/d/color-functions
+
+    ╷
+186 │     "g": green($color),
+    │          ^^^^^^^^^^^^^
+    ╵
+    node_modules\bootstrap\scss\_functions.scss 186:10  luminance()
+    node_modules\bootstrap\scss\_functions.scss 174:8   contrast-ratio()
+    node_modules\bootstrap\scss\_functions.scss 159:22  color-contrast()
+    node_modules\bootstrap\scss\_variables.scss 846:42  @import
+    node_modules\bootstrap\scss\bootstrap.scss 8:9      @import
+    app\browser\styles\index.scss 2:9                   root stylesheet
+
+DEPRECATION WARNING [color-functions]: blue() is deprecated. Suggestion:
+
+color.channel($color, "blue", $space: rgb)
+
+More info: https://sass-lang.com/d/color-functions
+
+    ╷
+187 │     "b": blue($color)
+    │          ^^^^^^^^^^^^
+    ╵
+    node_modules\bootstrap\scss\_functions.scss 187:10  luminance()
+    node_modules\bootstrap\scss\_functions.scss 174:8   contrast-ratio()
+    node_modules\bootstrap\scss\_functions.scss 159:22  color-contrast()
+    node_modules\bootstrap\scss\_variables.scss 846:42  @import
+    node_modules\bootstrap\scss\bootstrap.scss 8:9      @import
+    app\browser\styles\index.scss 2:9                   root stylesheet
+
+DEPRECATION WARNING [color-functions]: red() is deprecated. Suggestion:
+
+color.channel($color, "red", $space: rgb)
+
+More info: https://sass-lang.com/d/color-functions
+
+   ╷
+37 │   @return red($value), green($value), blue($value);
+   │           ^^^^^^^^^^^
+   ╵
+    node_modules\bootstrap\scss\_functions.scss 37:11   to-rgb()
+    node_modules\bootstrap\scss\_variables.scss 846:31  @import
+    node_modules\bootstrap\scss\bootstrap.scss 8:9      @import
+    app\browser\styles\index.scss 2:9                   root stylesheet
+
+DEPRECATION WARNING [color-functions]: green() is deprecated. Suggestion:
+
+color.channel($color, "green", $space: rgb)
+
+More info: https://sass-lang.com/d/color-functions
+
+   ╷
+37 │   @return red($value), green($value), blue($value);
+   │                        ^^^^^^^^^^^^^
+   ╵
+    node_modules\bootstrap\scss\_functions.scss 37:24   to-rgb()
+    node_modules\bootstrap\scss\_variables.scss 846:31  @import
+    node_modules\bootstrap\scss\bootstrap.scss 8:9      @import
+    app\browser\styles\index.scss 2:9                   root stylesheet
+
+WARNING: 313 repetitive deprecation warnings omitted.
+Run in verbose mode to see all warnings.
+
+ ✓ |app:browser (chromium)| tests/app/browser/integration.test.ts:233:2 > knowledge site journeys > lands on home and reaches subscribe through the content Get started control 1639ms
+ ✓ |app:browser (chromium)| tests/app/browser/integration.test.ts:260:2 > knowledge site journeys > opens the featured product from the site navigation 1801ms
+ ✓ |app:browser (chromium)| tests/app/browser/integration.test.ts:282:2 > knowledge site journeys > filters the magazine to an empty category and can show every article again 1097ms
+ ✓ |app:browser (chromium)| tests/app/browser/integration.test.ts:307:2 > knowledge site journeys > searches the marketplace sample, reports a miss, and restores the directory 1346ms
+stdout | tests/app/browser/integration.test.ts:334:2 > knowledge site journeys > keeps subscribe enabled, announces a refusal, and accepts a valid request
+U2 field before subscribe-name subscribe-summary true
+stdout | tests/app/browser/integration.test.ts:334:2 > knowledge site journeys > keeps subscribe enabled, announces a refusal, and accepts a valid request
+U2 field after subscribe-name INPUT subscribe-name true true
+stdout | tests/app/browser/integration.test.ts:334:2 > knowledge site journeys > keeps subscribe enabled, announces a refusal, and accepts a valid request
+U2 field before subscribe-email subscribe-name true
+stdout | tests/app/browser/integration.test.ts:334:2 > knowledge site journeys > keeps subscribe enabled, announces a refusal, and accepts a valid request
+U2 field after subscribe-email INPUT subscribe-email true true
+ ✓ |app:browser (chromium)| tests/app/browser/integration.test.ts:334:2 > knowledge site journeys > keeps subscribe enabled, announces a refusal, and accepts a valid request 376ms
+ ✓ |app:browser (chromium)| tests/app/browser/integration.test.ts:366:2 > knowledge site journeys > opens about from the site navigation 819ms
+ ✓ |app:browser (chromium)| tests/app/browser/integration.test.ts:383:2 > knowledge site journeys > opens the newsletter from the publications hub 877ms
+ ✓ |app:browser (chromium)| tests/app/browser/integration.test.ts:401:2 > knowledge site journeys > opens media kits and keeps the PDF destinations external 89ms
+ ✓ |app:browser (chromium)| tests/app/browser/integration.test.ts:422:2 > knowledge site journeys > opens the shop catalog and a SKU detail 948ms
+stdout | tests/app/browser/integration.test.ts:444:2 > knowledge site journeys > keeps contact enabled, announces a refusal, and accepts a valid inquiry
+U2 field before inquiry-name inquiry-summary true
+stdout | tests/app/browser/integration.test.ts:444:2 > knowledge site journeys > keeps contact enabled, announces a refusal, and accepts a valid inquiry
+U2 field after inquiry-name INPUT inquiry-name true true
+stdout | tests/app/browser/integration.test.ts:444:2 > knowledge site journeys > keeps contact enabled, announces a refusal, and accepts a valid inquiry
+U2 field before inquiry-company inquiry-name true
+stdout | tests/app/browser/integration.test.ts:444:2 > knowledge site journeys > keeps contact enabled, announces a refusal, and accepts a valid inquiry
+U2 field after inquiry-company INPUT inquiry-company true true
+stdout | tests/app/browser/integration.test.ts:444:2 > knowledge site journeys > keeps contact enabled, announces a refusal, and accepts a valid inquiry
+U2 field before inquiry-email inquiry-company true
+stdout | tests/app/browser/integration.test.ts:444:2 > knowledge site journeys > keeps contact enabled, announces a refusal, and accepts a valid inquiry
+U2 field after inquiry-email INPUT inquiry-email true true
+stdout | tests/app/browser/integration.test.ts:444:2 > knowledge site journeys > keeps contact enabled, announces a refusal, and accepts a valid inquiry
+U2 field before inquiry-phone inquiry-email true
+stdout | tests/app/browser/integration.test.ts:444:2 > knowledge site journeys > keeps contact enabled, announces a refusal, and accepts a valid inquiry
+U2 field after inquiry-phone INPUT inquiry-phone true true
+ ✓ |app:browser (chromium)| tests/app/browser/integration.test.ts:444:2 > knowledge site journeys > keeps contact enabled, announces a refusal, and accepts a valid inquiry 1184ms
+stdout | tests/app/browser/integration.test.ts:476:2 > knowledge site journeys > keeps invoice review enabled, announces a refusal, and accepts a valid amount
+U2 field before payment-customer payment-summary true
+stdout | tests/app/browser/integration.test.ts:476:2 > knowledge site journeys > keeps invoice review enabled, announces a refusal, and accepts a valid amount
+U2 field after payment-customer BODY  true true
+ × |app:browser (chromium)| tests/app/browser/integration.test.ts:476:2 > knowledge site journeys > keeps invoice review enabled, announces a refusal, and accepts a valid amount 1229ms
+   → expected '' to be 'payment-customer' // Object.is equality
+ ✓ |app:browser (chromium)| tests/app/browser/integration.test.ts:512:2 > knowledge site journeys > leaves Sign In absent and keeps live logins as external links 853ms
+ ✓ |app:browser (chromium)| tests/app/browser/integration.test.ts:535:2 > knowledge site journeys > reads contrast, focus chrome, authored classes, and style escapes in every variant 820ms
+ ✓ |app:browser (chromium)| tests/app/browser/integration.test.ts:618:2 > knowledge site journeys > hands the persisted theme to a second session over the same storage 104ms
+ ✓ |app:browser (chromium)| tests/app/browser/integration.test.ts:644:2 > knowledge site journeys > expands the registry across every declared variant into unique filenames 0ms
+ ↓ |app:browser (chromium)| tests/app/browser/integration.test.ts:651:22 > knowledge site journeys > writes every frame this run owes
+ ✓ |app:browser (chromium)| tests/app/browser/integration.test.ts:664:2 > knowledge site journeys > proves every declared family and claims no family it did not prove 0ms
+ × |app:browser (chromium)| tests/app/browser/integration.test.ts:668:2 > knowledge site journeys > places every registered state and places nothing else 3ms
+   → expected [ 'about', 'contact-refused', …(10) ] to deeply equal [ 'about', 'contact-refused', …(11) ]
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |app:browser (chromium)| tests/app/browser/integration.test.ts:476:2 > knowledge site journeys > keeps invoice review enabled, announces a refusal, and accepts a valid amount
+AssertionError: expected '' to be 'payment-customer' // Object.is equality
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- payment-customer[39m
+
+ ❯ followField tests/app/browser/integration.test.ts:150:36
+    148|  await clickAccessible('link', name)
+    149|  console.log('U2 field after', id, document.activeElement?.tagName, do…
+    150|  expect(document.activeElement?.id).toBe(id)
+       |                                    ^
+    151|  expect(window.location.hash).toBe(hashHref(path))
+    152| }
+ ❯ tests/app/browser/integration.test.ts:492:3
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  |app:browser (chromium)| tests/app/browser/integration.test.ts:668:2 > knowledge site journeys > places every registered state and places nothing else
+AssertionError: expected [ 'about', 'contact-refused', …(10) ] to deeply equal [ 'about', 'contact-refused', …(11) ]
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[33m@@ -4,11 +4,10 @@[39m
+[2m    "home",[22m
+[2m    "magazine-empty",[22m
+[2m    "marketplace-miss",[22m
+[2m    "media",[22m
+[2m    "newsletter",[22m
+[32m-   "payment-refused",[39m
+[2m    "product-detail",[22m
+[2m    "shop-detail",[22m
+[2m    "shop-listing",[22m
+[2m    "subscribe-accepted",[22m
+[2m    "subscribe-refused",[22m
+
+ ❯ tests/app/browser/integration.test.ts:669:29
+    667|
+    668|  it('places every registered state and places nothing else', () => {
+    669|   expect([...PLACED].sort()).toEqual([...STATES].sort())
+       |                             ^
+    670|  })
+    671| })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 15 passed | 1 skipped (18)
+   Start at  11:09:02
+   Duration  25.87s (transform 0ms, setup 3.63s, import 1.37s, tests 13.20s, environment 0ms)
+

@@ -1,0 +1,16 @@
+{
+  "destination": "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\recovery\\roughnotes\\tmp\\probe\\r-b-cold\\historical\\products.png",
+  "errors": {
+    "page": [],
+    "request": [],
+    "script": []
+  },
+  "final": "http://127.0.0.1:5198/#/products",
+  "heading": "The knowledge that makes independent agents unstoppable.",
+  "passed": true,
+  "screenshots": {
+    "arrival": "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\recovery\\roughnotes\\tmp\\probe\\r-b-cold\\historical\\arrival.png",
+    "destination": "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\recovery\\roughnotes\\tmp\\probe\\r-b-cold\\historical\\products.png"
+  },
+  "url": "http://127.0.0.1:5198/"
+}

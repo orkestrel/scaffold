@@ -1,0 +1,10 @@
+ ...d\\tmp\\release\\adopt-roughnotes-registry.mjs" | 214 +++++++++++++++++++++
+ 1 file changed, 214 insertions(+)
+ ...\\tmp\\release\\launch-roughnotes-registry.ps1" | 39 ++++++++++++++++++++++
+ 1 file changed, 39 insertions(+)
+ ...roughnotes-registry-adoption-evidence\\check-launcher.ps1" | 11 +++++++++++
+ 1 file changed, 11 insertions(+)
+ ...gistry-adoption-evidence\\collect-evidence.mjs" | 35 ++++++++++++++++++++++
+ 1 file changed, 35 insertions(+)
+ ...istry-adoption-evidence\\inspect-authoring.mjs" | 38 ++++++++++++++++++++++
+ 1 file changed, 38 insertions(+)

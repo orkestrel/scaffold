@@ -1,0 +1,50 @@
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/scaffold
+stdout | tmp/probe/s2-audit-vectors.test.ts > S2 audit vectors > claim 1: a fence carrying a valid import beside a parse error
+oxc errors: 1 body statements: 0
+claim 1 violations: []
+stdout | tmp/probe/s2-audit-vectors.test.ts > S2 audit vectors > claim 2: named re-exports through a cycle
+claim 2 names: undefined
+stdout | tmp/probe/s2-audit-vectors.test.ts > S2 audit vectors > claim 4: a wildcard exports map
+claim 4 names: undefined
+claim 4 violations: [{"rule":"skill","path":"SKILL.md","message":"skill fence import @orkestrel/fake/browser is outside BASE_DEV_DEPENDENCIES: @orkestrel/fake"}]
+stdout | tmp/probe/s2-audit-vectors.test.ts > S2 audit vectors > F1: the workspace package itself resolves through node_modules alone
+F1 names: undefined
+F1 violations: [{"rule":"skill","path":"SKILL.md","message":"skill fence import @orkestrel/scaffold has no installed declaration entry"}]
+ × |probe| tmp/probe/s2-audit-vectors.test.ts > S2 audit vectors > claim 1: a fence carrying a valid import beside a parse error 6ms
+   → expected 0 to be greater than 0
+ × |probe| tmp/probe/s2-audit-vectors.test.ts > S2 audit vectors > claim 2: named re-exports through a cycle 4ms
+   → expected undefined to deeply equal [ 'ALIAS', 'VALUE' ]
+ ✓ |probe| tmp/probe/s2-audit-vectors.test.ts > S2 audit vectors > claim 4: a wildcard exports map 1ms
+ ✓ |probe| tmp/probe/s2-audit-vectors.test.ts > S2 audit vectors > F1: the workspace package itself resolves through node_modules alone 0ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  |probe| tmp/probe/s2-audit-vectors.test.ts > S2 audit vectors > claim 1: a fence carrying a valid import beside a parse error
+AssertionError: expected 0 to be greater than 0
+ ❯ tmp/probe/s2-audit-vectors.test.ts:31:29
+     29|   const violations = inspectSkillImports(ROOT, 'SKILL.md', content)
+     30|   console.log('claim 1 violations:', JSON.stringify(violations))
+     31|   expect(violations.length).toBeGreaterThan(0)
+       |                             ^
+     32|  })
+     33|
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+ FAIL  |probe| tmp/probe/s2-audit-vectors.test.ts > S2 audit vectors > claim 2: named re-exports through a cycle
+AssertionError: expected undefined to deeply equal [ 'ALIAS', 'VALUE' ]
+- Expected:
+[
+  "ALIAS",
+  "VALUE",
+]
++ Received:
+undefined
+ ❯ tmp/probe/s2-audit-vectors.test.ts:44:17
+     42|   const names = readSkillDeclarations(join(dir, 'entry.d.ts'))
+     43|   console.log('claim 2 names:', JSON.stringify(names))
+     44|   expect(names).toEqual(['ALIAS', 'VALUE'])
+       |                 ^
+     45|  })
+     46|
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+ Test Files  1 failed (1)
+      Tests  2 failed | 2 passed (4)
+   Start at  13:50:24
+   Duration  490ms (transform 192ms, setup 181ms, import 168ms, tests 13ms, environment 0ms)

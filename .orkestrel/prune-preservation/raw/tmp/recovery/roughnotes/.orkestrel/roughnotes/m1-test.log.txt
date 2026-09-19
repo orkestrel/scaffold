@@ -1,0 +1,81 @@
+npm notice run roughnotes@0.0.1 test
+npm notice run npm run test:app && npm run test:journey && npm run test:policy && npm run test:config && npm run test:setup && npm run test:conformance
+npm notice run roughnotes@0.0.1 test:app
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project app:core --project app:browser
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/roughnotes
+
+···································stdout | tests/app/browser/styles/theme.test.ts:83:2 > theme > keeps accent, card paint, and focus rings local through nested mode changes
+light card: rgb(255, 255, 255); image: none; accent: rgb(200, 149, 43)
+stdout | tests/app/browser/styles/theme.test.ts:83:2 > theme > keeps accent, card paint, and focus rings local through nested mode changes
+dark card: rgb(10, 37, 64); image: linear-gradient(160deg, rgb(10, 37, 64), rgb(18, 58, 99)); accent: rgb(231, 198, 122)
+stdout | tests/app/browser/styles/theme.test.ts:83:2 > theme > keeps accent, card paint, and focus rings local through nested mode changes
+light card: rgb(255, 255, 255); image: none; accent: rgb(200, 149, 43)
+······················································································································································9:11:08 AM [vite] [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: injection "Symbol(application)" not found. 
+  at <HomeView>
+9:11:08 AM [vite] [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: Unhandled error during execution of setup function 
+  at <HomeView>
+stderr | tests/app/browser/composables/useApplication.test.ts:12:2 > useApplication > throws when APPLICATION_KEY has not been provided
+[Vue warn]: injection "Symbol(application)" not found. 
+  at <HomeView>
+stderr | tests/app/browser/composables/useApplication.test.ts:12:2 > useApplication > throws when APPLICATION_KEY has not been provided
+[Vue warn]: Unhandled error during execution of setup function 
+  at <HomeView>
+·······
+
+ Test Files  43 passed (43)
+      Tests  192 passed (192)
+   Start at  09:10:37
+   Duration  31.45s (transform 511ms, setup 3.79s, import 2.80s, tests 21.70s, environment 1ms)
+
+npm notice run roughnotes@0.0.1 test:journey
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project 'journey:*'
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/roughnotes
+
+························································-······-········-····-··
+
+ Test Files  4 passed (4)
+      Tests  76 passed | 4 skipped (80)
+   Start at  09:11:10
+   Duration  37.66s (transform 0ms, setup 35.55s, import 8.30s, tests 82.83s, environment 0ms)
+
+npm notice run roughnotes@0.0.1 test:policy
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project policy
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/roughnotes
+
+····························································································-·········
+
+ Test Files  1 passed (1)
+      Tests  101 passed | 1 skipped (102)
+   Start at  09:11:49
+   Duration  1.82s (transform 91ms, setup 42ms, import 249ms, tests 1.38s, environment 0ms)
+
+npm notice run roughnotes@0.0.1 test:config
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project config
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/roughnotes
+
+·········································································································································································x-·-
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |config| tests/config.test.ts > configuration helpers > reads the compiler scope and fixed extractor override a declaration roll-up requires
+Error: The workspace declares no face project
+ ❯ tests/config.test.ts:2161:33
+    2159|    existsSync(resolve(root, `configs/src/tsconfig.${candidate}.json`)),
+    2160|   )
+    2161|   if (face === undefined) throw new Error('The workspace declares no f…
+       |                                 ^
+    2162|   const project = resolve(root, `configs/src/tsconfig.${face}.json`)
+    2163|   const declared: unknown = JSON.parse(readFileSync(project, 'utf8'))
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 170 passed | 2 skipped (173)
+   Start at  09:11:51
+   Duration  1.67s (transform 209ms, setup 31ms, import 893ms, tests 594ms, environment 0ms)
+

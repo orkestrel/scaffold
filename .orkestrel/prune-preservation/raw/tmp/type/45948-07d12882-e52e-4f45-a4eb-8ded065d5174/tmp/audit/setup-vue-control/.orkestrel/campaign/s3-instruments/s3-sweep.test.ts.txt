@@ -1,0 +1,63 @@
+import { createGuide } from '@orkestrel/guide'
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { parseSync } from 'vite'
+import { inspectSkillImports } from '../../tests/setupPolicy.js'
+import { expect, it } from 'vitest'
+
+const SKILL = '.agents/skills/orkestrel-prove-journey'
+const PATHS = [
+	`${SKILL}/SKILL.md`,
+	`${SKILL}/references/layer.md`,
+	`${SKILL}/references/captures.md`,
+	`${SKILL}/references/styles.md`,
+	`${SKILL}/references/statechart.md`,
+	`${SKILL}/references/decide.md`,
+]
+
+function readBindings(content: string): readonly string[] {
+	const names: string[] = []
+	for (const fence of createGuide(content).fences()) {
+		const source = parseSync('skill.ts', fence.code)
+		for (const statement of source.program.body) {
+			if (statement.type !== 'ImportDeclaration') continue
+			if (!statement.source.value.startsWith('@orkestrel/')) continue
+			for (const binding of statement.specifiers) {
+				if (binding.type !== 'ImportSpecifier') continue
+				names.push(
+					binding.imported.type === 'Identifier' ? binding.imported.name : binding.imported.value,
+				)
+			}
+		}
+	}
+	return names
+}
+
+it('reads every fenced binding the skill teaches and reports nothing against them', () => {
+	let total = 0
+	for (const path of PATHS) {
+		const content = readFileSync(path, 'utf8')
+		const bindings = readBindings(content)
+		total += bindings.length
+		console.log(`POPULATION ${path} ${bindings.length}`)
+		const violations = inspectSkillImports(process.cwd(), path, content)
+		console.log(`VIOLATIONS ${path} ${JSON.stringify(violations)}`)
+		expect(violations).toEqual([])
+	}
+	console.log(`POPULATION TOTAL ${total}`)
+	expect(total).toBeGreaterThan(0)
+})
+
+it('reports a planted binding the installed browser entry does not export', () => {
+	const source = readFileSync(`${SKILL}/references/layer.md`, 'utf8')
+	const planted = source.replace('\tpressKeys,\n', '\tpressKeys,\n\tpressKeys2,\n')
+	expect(planted).not.toBe(source)
+	mkdirSync('tmp/probe/s3', { recursive: true })
+	const path = 'tmp/probe/s3/planted-layer.md'
+	writeFileSync(path, planted)
+	const violations = inspectSkillImports(process.cwd(), path, readFileSync(path, 'utf8'))
+	console.log(`PLANTED ${JSON.stringify(violations)}`)
+	expect(violations).toHaveLength(1)
+	expect(violations[0]?.message).toBe(
+		'skill fence import @orkestrel/test/browser does not export pressKeys2',
+	)
+})

@@ -1,0 +1,8 @@
+setup: The target at . carries a test setup module that no proof covers: tests/setupBrowser.ts. Add tests/setupBrowser.test.ts to cover it. The proof's subject is behavior only this workspace can assert, so scaffold does not write it.
+0 of 42 planned paths drifted from the plan. Audit compared bytes at 26, existence at 4, and nothing at 12.
+vite.config.ts replaced (89 lines removed).
+configs/browsers.ts replaced (4 lines added).
+tests/setupPolicy.ts replaced (564 lines added).
+tests/policy.test.ts replaced (10 lines added).
+tests/config.test.ts replaced (95 lines added).
+5 written, 38 unchanged, 0 removed in ..

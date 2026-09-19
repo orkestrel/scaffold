@@ -1,0 +1,1024 @@
+diff --git a/app/browser/App.vue b/app/browser/App.vue
+index a42cf68..e725bc1 100644
+--- a/app/browser/App.vue
++++ b/app/browser/App.vue
+@@ -45,55 +45,58 @@ provide(APPLICATION_KEY, app)
+ 
+ const dark = app.dark
+ const menu = useTemplateRef<HTMLElement>('menu')
++// True from the frame the dialog has finished opening to the frame it has finished closing, so a
++// settle on the announced state never resolves into a dialog that is still moving.
+ const opened = ref(false)
+ const view = computed(() => app.location.value?.meta.view ?? 'home')
+ const current = computed(() => app.location.value?.path)
+ const themeLabel = computed(() => (dark.value ? COPY.light : COPY.dark))
+ const themeIcon = computed(() => (dark.value ? 'bi-sun' : 'bi-moon'))
+-// The compact masthead keeps its own action beside the open menu, so the menu's copy announces the
+-// menu. The menu's destinations replace the masthead's instead of sitting beside them, so those
+-// keep the one name the site navigation answers to at either width.
++// The journey layer counts a control the open dialog covers as reachable, so the masthead action
++// and the menu's own copy answer to one name there until the layer models the modal. Splitting the
++// name keeps resolution unambiguous meanwhile. The menu's destinations replace the masthead's
++// instead of sitting beside them, so those keep the one name the site navigation answers to at
++// either width.
+ const startedLabel = computed(() => buildName(COPY.started, COPY.site))
+ 
+ function onMenuShown(): void {
+ 	opened.value = true
+ }
+ 
+-function onMenuClosed(): void {
+-	opened.value = false
+-}
+-
+ function onMenuHidden(): void {
+-	revealView()
++	opened.value = false
+ }
+ 
++// The dialog carries `aria-modal` from the frame the instance starts showing it to the frame it has
++// finished hiding it, so this reads the instance's own shown state. The painted `show` class
++// arrives only when the opening animation ends, and a navigation taken before that frame would
++// leave the dialog over the arriving screen.
+ function hideMenu(): boolean {
+ 	const node = menu.value
+-	if (node === null) return false
++	if (node === null || !node.hasAttribute('aria-modal')) return false
+ 	const instance = Offcanvas.getInstance(node)
+ 	if (instance === null) return false
+-	if (!node.classList.contains('show')) return false
+-	node.addEventListener('hidden.bs.offcanvas', onMenuHidden, { once: true })
++	node.addEventListener('hidden.bs.offcanvas', revealView, { once: true })
+ 	instance.hide()
+ 	return true
+ }
+ 
+-function onView(): void {
++function onLocation(): void {
+ 	if (!hideMenu()) revealView()
+ }
+ 
+ onMounted(() => {
+ 	app.start()
+ 	menu.value?.addEventListener('shown.bs.offcanvas', onMenuShown)
+-	menu.value?.addEventListener('hidden.bs.offcanvas', onMenuClosed)
++	menu.value?.addEventListener('hidden.bs.offcanvas', onMenuHidden)
+ })
+ onBeforeUnmount(() => {
+ 	menu.value?.removeEventListener('shown.bs.offcanvas', onMenuShown)
+-	menu.value?.removeEventListener('hidden.bs.offcanvas', onMenuClosed)
++	menu.value?.removeEventListener('hidden.bs.offcanvas', onMenuHidden)
+ 	app.destroy()
+ })
+ 
+-watch(view, onView, { flush: 'post' })
++watch(app.location, onLocation, { flush: 'post' })
+ </script>
+ 
+ <template>
+diff --git a/app/browser/components/HomeView.vue b/app/browser/components/HomeView.vue
+index dea392f..6e5cda1 100644
+--- a/app/browser/components/HomeView.vue
++++ b/app/browser/components/HomeView.vue
+@@ -58,7 +58,11 @@ const insights = app.catalog
+ 					built to help P&amp;C professionals win business and serve clients with confidence.
+ 				</p>
+ 				<p class="mb-0">
+-					<a class="btn btn-warning" :href="hashHref(SUBSCRIBE_PATH)">
++					<a
++						class="btn btn-warning"
++						:href="hashHref(SUBSCRIBE_PATH)"
++						:aria-label="buildName(COPY.started, COPY.introduction)"
++					>
+ 						{{ COPY.started }}
+ 						<i class="bi bi-arrow-right" aria-hidden="true"></i>
+ 					</a>
+@@ -252,11 +256,11 @@ const insights = app.catalog
+ 		</p>
+ 	</section>
+ 
+-	<section class="container-xl pb-5 pb-xl-6" aria-labelledby="join-heading">
++	<section class="container-xl pb-5 pb-xl-6" :aria-label="COPY.join">
+ 		<div class="invite rounded-4 p-4 p-lg-5 bg-body text-body" data-bs-theme="dark">
+ 			<Split>
+ 				<p class="accent small text-uppercase text-body-secondary mb-3">{{ COPY.join }}</p>
+-				<h2 id="join-heading" class="mb-3">Get Rough Notes delivered — free to licensed agents</h2>
++				<h2 class="mb-3">Get Rough Notes delivered — free to licensed agents</h2>
+ 				<p class="text-body-secondary measure mb-4">
+ 					Independent agents rely on Rough Notes for coverage intelligence, agency strategy, and the
+ 					market connections that grow a book. This site is a demonstration and sends nothing.
+diff --git a/app/browser/components/MagazineView.vue b/app/browser/components/MagazineView.vue
+index 562c904..20e36ed 100644
+--- a/app/browser/components/MagazineView.vue
++++ b/app/browser/components/MagazineView.vue
+@@ -2,7 +2,7 @@
+ import type { Category } from '@app/core'
+ import { ref, computed } from 'vue'
+ import { COPY, FILTER_CHOICES, MONTHS, PUBLICATIONS_PATH, SUBSCRIBE_PATH } from '../constants.js'
+-import { articleHref, formatIssued, hashHref } from '../helpers.js'
++import { articleHref, buildName, formatIssued, hashHref } from '../helpers.js'
+ import { CATEGORY_LABELS, filterArticles } from '@app/core'
+ import { useApplication } from '../composables/useApplication.js'
+ import Entry from './Entry.vue'
+@@ -33,16 +33,19 @@ function select(next: Category | undefined): void {
+ 		title="Magazine"
+ 		lead="Coverage, markets, and agency practice from the latest fixture issue."
+ 	>
+-		<section>
++		<section :aria-label="COPY.issue">
+ 			<Notice
+ 				v-if="issue.length === 0"
+ 				category="empty"
+ 				title="No articles in this issue yet."
+ 				detail="The desks publish monthly. The publications hub lists what Rough Notes prints between issues."
+ 			>
+-				<a class="btn btn-outline-primary" :href="hashHref(PUBLICATIONS_PATH)">{{
+-					COPY.publications
+-				}}</a>
++				<a
++					class="btn btn-outline-primary"
++					:href="hashHref(PUBLICATIONS_PATH)"
++					:aria-label="buildName(COPY.publications, COPY.issue)"
++					>{{ COPY.publications }}</a
++				>
+ 			</Notice>
+ 			<template v-else>
+ 				<div class="d-flex flex-wrap gap-2 mb-4" role="group" aria-label="Article categories">
+diff --git a/app/browser/components/MediaView.vue b/app/browser/components/MediaView.vue
+index ef77a18..4e26eb8 100644
+--- a/app/browser/components/MediaView.vue
++++ b/app/browser/components/MediaView.vue
+@@ -1,6 +1,6 @@
+ <script setup lang="ts">
+ import { COPY, CONTACT_PATH } from '../constants.js'
+-import { hashHref, readHost } from '../helpers.js'
++import { buildName, hashHref, readHost } from '../helpers.js'
+ import { CHANNELS, CHANNEL_LABELS, REPS, filterAssets } from '@app/core'
+ import { useApplication } from '../composables/useApplication.js'
+ import Frame from './Frame.vue'
+@@ -32,7 +32,12 @@ const channels = CHANNELS.map((channel) => ({
+ 				:title="COPY.absent"
+ 				detail="The advertising desk can send the current rate card and mechanical requirements."
+ 			>
+-				<a class="btn btn-outline-primary" :href="hashHref(CONTACT_PATH)">{{ COPY.contact }}</a>
++				<a
++					class="btn btn-outline-primary"
++					:href="hashHref(CONTACT_PATH)"
++					:aria-label="buildName(COPY.contact, group.label)"
++					>{{ COPY.contact }}</a
++				>
+ 			</Notice>
+ 			<ul v-else class="list-group">
+ 				<li
+diff --git a/app/browser/components/ProductsView.vue b/app/browser/components/ProductsView.vue
+index a56c80e..640b48d 100644
+--- a/app/browser/components/ProductsView.vue
++++ b/app/browser/components/ProductsView.vue
+@@ -1,6 +1,6 @@
+ <script setup lang="ts">
+ import { CONTACT_PATH, COPY } from '../constants.js'
+-import { hashHref, productHref } from '../helpers.js'
++import { buildName, hashHref, productHref } from '../helpers.js'
+ import { FEATURED_PRODUCT, matchesFeatured } from '@app/core'
+ import { useApplication } from '../composables/useApplication.js'
+ import Entry from './Entry.vue'
+@@ -30,7 +30,12 @@ const listed = products.map((product) => ({
+ 				title="No products in this catalog yet."
+ 				detail="The Indianapolis office can tell you what each desk covers and when it returns."
+ 			>
+-				<a class="btn btn-outline-primary" :href="hashHref(CONTACT_PATH)">{{ COPY.contact }}</a>
++				<a
++					class="btn btn-outline-primary"
++					:href="hashHref(CONTACT_PATH)"
++					:aria-label="buildName(COPY.contact, COPY.offerings)"
++					>{{ COPY.contact }}</a
++				>
+ 			</Notice>
+ 			<template v-else>
+ 				<div class="d-flex flex-wrap align-items-baseline justify-content-between gap-2 mb-4">
+diff --git a/app/browser/constants.ts b/app/browser/constants.ts
+index d6f3699..f56f437 100644
+--- a/app/browser/constants.ts
++++ b/app/browser/constants.ts
+@@ -163,7 +163,6 @@ export const COPY = Object.freeze({
+ 	order: 'Order form (PDF)',
+ 	billing: 'Pay on Rough Notes',
+ 	started: 'Get started',
+-	join: 'Join the community',
+ 	explore: 'Explore products',
+ 	feature: 'Read the feature',
+ 	magazine: 'Read the magazine',
+@@ -210,6 +209,7 @@ export const COPY = Object.freeze({
+ 	trail: 'Breadcrumb',
+ 	introduction: 'Introduction',
+ 	offerings: 'Product offerings',
++	join: 'Join the community',
+ 	about: 'About',
+ 	story: 'Our story',
+ 	publications: 'Publications',
+diff --git a/guides/README.md b/guides/README.md
+index f29a1e8..c74be3e 100644
+--- a/guides/README.md
++++ b/guides/README.md
+@@ -124,8 +124,9 @@ active match. It does not keep a second route flag.
+ 
+ `App.vue` mounts the skip link, the utility bar, the `masthead` `navbar`, the offcanvas menu,
+ `<main id="main">`, and the footer. `Site` names the navbar, `Content` names main, and `Site footer`
+-names the footer. Home paints an `Introduction` region. The product listing paints a `Product
+-offerings` region.
++names the footer. Home paints an `Introduction` region and a `Join the community` region. The
++product listing paints a `Product offerings` region, the magazine paints a `Magazine issue` region,
++and the media kits paint one region per channel, named by that channel's heading.
+ 
+ The masthead carries `sticky-lg-top`, so it pins from the `lg` breakpoint up and scrolls away with
+ the page under it. `app/browser/styles/_signature.scss` reserves `scroll-padding-top` at the same
+@@ -140,16 +141,23 @@ destination starts at the top rather than at the previous scroll and focus.
+ The primary action is `Get started`, which opens subscribe. It sits in the masthead at every width,
+ beside the menu trigger under `lg` and beside the destinations from `lg` up, and again inside the
+ compact menu. The masthead copies announce `Get started, Site` and the menu's copy announces
+-`Get started, Menu`, because the compact masthead keeps its own action beside the open menu and a
+-name answers for one control. Header destinations are About, Publications, Products, and Shop, and
+-each announces `Site` whichever of the two surfaces renders it, because the menu's destinations
+-replace the masthead's rather than sitting beside them. Magazine reading and marketplace search open
+-from the publications hub. Contact is in the compact menu and the footer. Sign-in is not a fake
+-session: RoughNotes-Pro Login and Advantage-Plus Login stay external `rel="noreferrer"` links. Shop
+-is in-app. The compact menu is an offcanvas dialog whose trigger announces `aria-expanded`, written
+-from the offcanvas's own `shown` and `hidden` events, so the disclosure settles on the announced
+-state rather than on the classes the framework toggles. In-app destinations there are hash links.
+-The shell hides the dialog when `location` changes. Color mode is an icon-only masthead toggle named
++`Get started, Menu`. That split is a measurement exception, not a rule: the journey layer counts a
++control the open dialog covers as reachable, so both copies answer to one name there, and the menu's
++copy carries its own name until the layer models the modal. Header destinations are About,
++Publications, Products, and Shop, and each announces `Site` whichever of the two surfaces renders
++it, because the menu's destinations replace the masthead's rather than sitting beside them. Magazine
++reading and marketplace search open from the publications hub. Contact is in the compact menu and
++the footer. Sign-in is not a fake session: RoughNotes-Pro Login and Advantage-Plus Login stay
++external `rel="noreferrer"` links. Shop is in-app. The compact menu is an offcanvas dialog whose
++trigger announces `aria-expanded`, written from the offcanvas's own `shown` and `hidden` events, so
++the value is `true` from the frame the dialog finishes opening to the frame it finishes closing.
++`tests/app/browser/App.test.ts` reads the announced value at each of those frames, and
++`tests/app/browser/setup.ts` settles the dialog on the classes the framework toggles. Bootstrap
++moves focus into the dialog before it fires `shown`, so a screen reader might never announce that
++value; the attribute is what a disclosure trigger owes, and it is what a settle can read. In-app
++destinations there are hash links. The shell hides the dialog when `location` changes, gating the
++hide on the `aria-modal` the dialog announces from the frame it starts opening, so a navigation
++taken during the opening animation hides it too. Color mode is an icon-only masthead toggle named
+ `Use dark theme` or `Use light theme`.
+ 
+ Home is a marketing thesis: a nested-dark hero carrying a nested-light magazine issue card whose own
+@@ -209,20 +217,32 @@ label is written twice.
+ - `FOOTER_GROUPS` is the footer's destinations grouped as the footer paints them: Products,
+   Resources, and Company.
+ 
+-The shell announces the region carrying each of its destinations, through `buildName`, which returns
+-the label followed by that region: `RoughNotes-Pro, Products` in the footer, `800-428-4384, Contact`
+-in the utility bar, `Products, Site` in the masthead and the compact menu. The screen's own control
+-keeps the bare label, so a listing entry, a breadcrumb step, and a screen's continuation each answer
+-to a name no other reachable control on that screen shares. Home's subscribe invite is the one
+-screen-internal repeat and announces `Get started, Join the community`. The label a reader sees opens
+-every announced name, so speech input still reaches the control by what it reads.
++The shell announces the navigation carrying each of its destinations, through `buildName`, which
++returns the label followed by that navigation: `Products, Site` in the masthead and the compact
++menu, `800-428-4384, Contact` in the utility bar's Contact cluster, and `RoughNotes-Pro, Products`
++in the footer's Products column. A screen's own control keeps the bare label, so a listing entry, a
++breadcrumb step, and a screen's continuation each answer to a name no other reachable control on
++that screen shares. Where a screen offers one label more than once, every copy a named section
++carries announces that section, and the copy no section carries keeps the bare label: home's hero
++announces `Get started, Introduction` and its invite `Get started, Join the community`; an empty
++channel's recovery on the media kits announces `Contact, Banner ads` while the screen's continuation
++stays `Contact`; an empty issue's recovery announces `Publications, Magazine issue`. Every announced
++name opens with the label the control renders, so the visible label is part of the accessible name
++(WCAG 2.2 SC 2.5.3 Label in Name).
++
++That rule is paid for in repetition. The utility bar names each list after its cluster and then
++repeats the cluster inside every link under it, so a reader hears `Contact` on entering the list and
++`800-428-4384, Contact` on the link inside it, and the footer echoes each column heading the same
++way. The alternative was scoping every journey's resolver to a region, which leaves the collision in
++the interface and moves the repair into the tests. This surface takes the repetition.
+ 
+ A `ShellGroup` carries a `title` taken from `COPY` and its `ShellLink` members. The footer paints the
+ title as a heading, the utility bar paints it as the list's accessible name, and every link in the
+-cluster announces it, so a cluster names itself and its members whichever region renders it. A `ShellLink` `destination` is an in-app navigator path when it starts with `/`,
+-and a complete external or protocol URL otherwise; `shellHref` resolves the first to a `#/` href and
+-returns the second unchanged. `mark` is the Bootstrap Icons class the link paints beside its label,
+-and is `undefined` for a link that carries no icon.
++cluster announces it, so a cluster names itself and its members whichever region renders it. A
++`ShellLink` `destination` is an in-app navigator path when it starts with `/`, and a complete
++external or protocol URL otherwise; `shellHref` resolves the first to a `#/` href and returns the
++second unchanged. `mark` is the Bootstrap Icons class the link paints beside its label, and is
++`undefined` for a link that carries no icon.
+ 
+ ## Color mode
+ 
+@@ -354,6 +374,12 @@ Every screen states what it paints when the catalog is full, when a filter or a
+ nothing, when the catalog holds no record at all, when a lookup misses, and when a request is
+ refused or accepted. A screen with no row for a state does not reach it.
+ 
++`DATA_CASES` in `tests/app/browser/setup.ts` carries one case per cell this table fills outside the
++Full column, and `tests/app/browser/App.test.ts` drives each case at both declared widths and reads
++back every accessible name more than one reachable control answers to. The Full column is what the
++route walk beside it covers, so a name that answers for two controls in any state this table
++declares reddens rather than waiting for a journey to meet it.
++
+ | Screen            | Full                                                               | Reduced       | Absent                     | Missed        | Refused                                  | Accepted                                                             |
+ | ----------------- | ------------------------------------------------------------------ | ------------- | -------------------------- | ------------- | ---------------------------------------- | -------------------------------------------------------------------- |
+ | `/`               | Hero, trust band, products, marketplace panel, issue cards, invite | —             | —                          | —             | —                                        | —                                                                    |
+@@ -397,8 +423,8 @@ what the file proved.
+ | Capture   | The registry times the variants, each registered file written to disk                        |
+ 
+ A journey drives each interaction unconditionally. A conditional click is what lets a control that
+-disappears when the application must still offer it read as a control that was pressed, so every second submit asserts the
+-control is still reachable and no acceptance has painted, then clicks.
++disappears when the application must still offer it read as a control that was pressed, so every
++second submit asserts the control is still reachable and no acceptance has painted, then clicks.
+ 
+ The matrix reads roles rather than named elements. A role names its membership rule and the bar
+ every member clears, and the reading is the worst member of the population that rule selects, split
+diff --git a/tests/app/browser/App.test.ts b/tests/app/browser/App.test.ts
+index b4ab283..cc34c37 100644
+--- a/tests/app/browser/App.test.ts
++++ b/tests/app/browser/App.test.ts
+@@ -2,11 +2,9 @@ import { afterEach, describe, expect, it } from 'vitest'
+ import { page } from 'vitest/browser'
+ import { requireValue, waitForCondition } from '@orkestrel/test'
+ import {
+-	FOCUSABLE_SELECTOR,
+ 	clickAccessible,
+ 	describeFocus,
+ 	findRule,
+-	isReachable,
+ 	readClasses,
+ 	readName,
+ 	readStates,
+@@ -15,32 +13,30 @@ import {
+ } from '@orkestrel/test/browser'
+ import {
+ 	ABOUT_PATH,
+-	CONTACT_PATH,
+ 	COPY,
+ 	FOOTER_GROUPS,
+-	HOME_PATH,
+-	MAGAZINE_PATH,
+-	MARKETPLACE_PATH,
+-	MEDIA_PATH,
+-	NEWSLETTER_PATH,
+-	PAYMENT_PATH,
+ 	PRODUCTS_PATH,
+-	PUBLICATIONS_PATH,
+-	SHOP_PATH,
+-	SUBSCRIBE_PATH,
+ 	UTILITY_GROUPS,
+ 	hashHref,
+ } from '@app/browser'
+ import {
++	CENSUS_ROUTES,
++	CLOSE_UNREACHABLE,
++	DATA_CASES,
+ 	DETAIL_SLUGS,
+ 	SETTLE_BUDGET,
+ 	SETTLE_INTERVAL,
++	SHELL_NAMES,
++	SIBLING_SLUG,
+ 	clearSurface,
+ 	closeSite,
++	followRoute,
+ 	openSite,
+ 	openSurface,
+ 	readCompact,
++	readNames,
+ 	readRefusal,
++	readShared,
+ } from './setup.js'
+ 
+ /** The hrefs the footer owes, in reading order, declared apart from the source that builds them. */
+@@ -62,130 +58,17 @@ const FOOTER_HREFS: readonly string[] = [
+ 	'mailto:rnc@roughnotes.com',
+ ]
+ 
+-/**
+- * The accessible name every shell destination announces, in reading order, declared apart from the
+- * source that builds them.
+- */
+-const SHELL_NAMES: readonly string[] = [
+-	'800-428-4384, Contact',
+-	'rnc@roughnotes.com, Contact',
+-	'RoughNotes-Pro Login, Logins',
+-	'Advantage-Plus Login, Logins',
+-	'Get started, Site',
+-	'About, Site',
+-	'Publications, Site',
+-	'Products, Site',
+-	'Shop, Site',
+-	'Get started, Site',
+-	'About, Site',
+-	'Publications, Site',
+-	'Products, Site',
+-	'Shop, Site',
+-	'Contact, Site',
+-	'Get started, Menu',
+-	'RoughNotes-Pro, Products',
+-	'Advantage-Plus, Products',
+-	'The Insurance Marketplace, Products',
+-	'Publication desks, Resources',
+-	'Magazine issue, Resources',
+-	'Marketplace search, Resources',
+-	'Newsletter, Resources',
+-	'Free magazine delivery, Resources',
+-	'Our story, Company',
+-	'Media kits, Company',
+-	'Write to us, Company',
+-	'Shop catalog, Company',
+-	'Existing invoice, Company',
+-	'800-428-4384, Company',
+-	'rnc@roughnotes.com, Company',
+-]
+-
+ /** The viewports the shell changes shape at. */
+ const WIDTHS: ReadonlyArray<readonly [number, number]> = [
+ 	[1280, 800],
+ 	[390, 844],
+ ]
+ 
+-/**
+- * The screens the product guide's data-state table names, each detail on a slug the catalog holds.
+- */
+-const ROUTES: readonly string[] = [
+-	HOME_PATH,
+-	ABOUT_PATH,
+-	PUBLICATIONS_PATH,
+-	PRODUCTS_PATH,
+-	`${PRODUCTS_PATH}/${requireValue(DETAIL_SLUGS.product)}`,
+-	MAGAZINE_PATH,
+-	`${MAGAZINE_PATH}/${requireValue(DETAIL_SLUGS.article)}`,
+-	MARKETPLACE_PATH,
+-	SHOP_PATH,
+-	`${SHOP_PATH}/${requireValue(DETAIL_SLUGS.item)}`,
+-	MEDIA_PATH,
+-	SUBSCRIBE_PATH,
+-	NEWSLETTER_PATH,
+-	CONTACT_PATH,
+-	PAYMENT_PATH,
+-]
+-
+-/** Names the voice the resolver raises when one name answers for several reachable controls. */
+-const AMBIGUOUS = 'is ambiguous across'
+-
+ /** Caps the walk over every screen at both widths, in ms. */
+ const CENSUS_BUDGET = 180_000
+ 
+-/**
+- * Reads the screen heading the shell is painting.
+- *
+- * @returns The rendered `h1` text, or an empty string before a screen has painted one
+- */
+-function readHeading(): string {
+-	return document.querySelector('#main h1')?.textContent?.trim() ?? ''
+-}
+-
+-/**
+- * Lands on one screen the way a person opening a bookmark lands on it, and waits for its heading.
+- *
+- * @param path - The registered path to land on
+- *
+- * @remarks
+- * The navigator carries `history: false`, so a hash write is the same navigation a destination link
+- * performs. The wait reads the painted heading rather than the controller, because a heading that
+- * has replaced the previous one is what tells a reader the screen arrived.
+- */
+-async function followRoute(path: string): Promise<void> {
+-	const previous = readHeading()
+-	window.location.hash = hashHref(path)
+-	await waitForCondition(
+-		`${path} paints its own heading`,
+-		() => readHeading().length > 0 && readHeading() !== previous,
+-		{ budget: SETTLE_BUDGET, interval: SETTLE_INTERVAL },
+-	)
+-}
+-
+-/**
+- * Reads every accessible name the painted screen offers a person more than one control under.
+- *
+- * @returns The resolver's own refusal for each shared name, in reading order
+- *
+- * @remarks
+- * The population is what the layer counts as focusable, filtered by the layer's own reachability,
+- * so the census walks the controls a person can reach rather than a hand-picked list. Each name
+- * then goes back through the resolver, so the finding is the voice a journey would meet.
+- */
+-function readShared(): readonly string[] {
+-	const names = new Set<string>()
+-	for (const node of document.querySelectorAll(FOCUSABLE_SELECTOR)) {
+-		if (!isReachable(node)) continue
+-		const name = readName(node)
+-		if (name.length > 0) names.add(name)
+-	}
+-	const shared: string[] = []
+-	for (const name of names) {
+-		const refusal = readRefusal(name)
+-		if (refusal !== undefined && refusal.includes(AMBIGUOUS)) shared.push(refusal)
+-	}
+-	return shared
+-}
++/** Caps the walk over every declared data state at both widths, in ms. */
++const STATES_BUDGET = 300_000
+ 
+ /**
+  * Reads what a pointer aimed at a control's own centre actually reaches.
+@@ -366,11 +249,13 @@ describe('App', () => {
+ 		'leaves no reachable control on any screen sharing a name with another',
+ 		async () => {
+ 			const findings: string[] = []
++			const unread: string[] = []
+ 			for (const [width, height] of WIDTHS) {
+ 				await page.viewport(width, height)
+ 				await openSurface()
+-				for (const [index, path] of ROUTES.entries()) {
++				for (const [index, path] of CENSUS_ROUTES.entries()) {
+ 					if (index > 0) await followRoute(path)
++					if (readNames().length === 0) unread.push(`${String(width)} px | ${path}`)
+ 					findings.push(...readShared().map((voice) => `${String(width)} px | ${path} | ${voice}`))
+ 					if (!readCompact()) continue
+ 					await openSite()
+@@ -382,11 +267,78 @@ describe('App', () => {
+ 				clearSurface()
+ 			}
+ 			await page.viewport(1280, 800)
++			expect(unread, 'a screen offered the census no reachable control').toEqual([])
+ 			expect(findings).toEqual([])
+ 		},
+ 		CENSUS_BUDGET,
+ 	)
+ 
++	it(
++		'leaves no reachable control sharing a name in any state the guide declares',
++		async () => {
++			const findings: string[] = []
++			const unread: string[] = []
++			for (const [width, height] of WIDTHS) {
++				await page.viewport(width, height)
++				for (const reached of DATA_CASES) {
++					await openSurface(reached.catalog === undefined ? {} : { catalog: reached.catalog })
++					await followRoute(reached.path)
++					await reached.act?.()
++					const place = `${String(width)} px | ${reached.path} | ${reached.state}`
++					if (readNames().length === 0) unread.push(place)
++					findings.push(...readShared().map((voice) => `${place} | ${voice}`))
++					clearSurface()
++				}
++			}
++			await page.viewport(1280, 800)
++			expect(unread, 'a declared data state offered the census no reachable control').toEqual([])
++			expect(findings).toEqual([])
++		},
++		STATES_BUDGET,
++	)
++
++	it('hides the compact menu on a navigation taken while it is still opening', async () => {
++		await page.viewport(390, 844)
++		const { host } = await openSurface()
++		const menu = requireValue(host.querySelector('#site-menu'))
++		menu.addEventListener(
++			'show.bs.offcanvas',
++			() => {
++				window.location.hash = hashHref(ABOUT_PATH)
++			},
++			{ once: true },
++		)
++		await clickAccessible('button', COPY.menu)
++		await waitForCondition(
++			'the compact menu has left the screen',
++			() => readRefusal(COPY.close) === CLOSE_UNREACHABLE,
++			{ budget: SETTLE_BUDGET, interval: SETTLE_INTERVAL },
++		)
++		expect(
++			await waitForState('button', COPY.menu, 'collapsed', { budget: SETTLE_BUDGET }),
++		).toContain('collapsed')
++		clearSurface()
++		await page.viewport(1280, 800)
++	})
++
++	it('hides the compact menu on a navigation that stays on one view', async () => {
++		await page.viewport(390, 844)
++		await openSurface()
++		await followRoute(`${PRODUCTS_PATH}/${requireValue(DETAIL_SLUGS.product)}`)
++		await openSite()
++		await followRoute(`${PRODUCTS_PATH}/${SIBLING_SLUG}`)
++		await waitForCondition(
++			'the compact menu has left the screen',
++			() => readRefusal(COPY.close) === CLOSE_UNREACHABLE,
++			{ budget: SETTLE_BUDGET, interval: SETTLE_INTERVAL },
++		)
++		expect(
++			await waitForState('button', COPY.menu, 'collapsed', { budget: SETTLE_BUDGET }),
++		).toContain('collapsed')
++		clearSurface()
++		await page.viewport(1280, 800)
++	})
++
+ 	it('leaves no two adjacent focus stops sharing an accessible name', async () => {
+ 		for (const [width, height] of WIDTHS) {
+ 			await page.viewport(width, height)
+diff --git a/tests/app/browser/helpers.test.ts b/tests/app/browser/helpers.test.ts
+index f693c50..5b62de6 100644
+--- a/tests/app/browser/helpers.test.ts
++++ b/tests/app/browser/helpers.test.ts
+@@ -1,11 +1,13 @@
+ import { describe, expect, it } from 'vitest'
+ import { requireValue } from '@orkestrel/test'
+ import {
++	COPY,
+ 	MONTHS,
+ 	THEME_DARK,
+ 	THEME_LIGHT,
+ 	THEME_STORAGE,
+ 	articleHref,
++	buildName,
+ 	createApplication,
+ 	createMemoryStorage,
+ 	formatIssued,
+@@ -43,6 +45,16 @@ describe('path helpers', () => {
+ 	})
+ })
+ 
++describe('buildName', () => {
++	it('leads with the rendered label and follows it with the region after one separator', () => {
++		expect(buildName('RoughNotes-Pro', COPY.products)).toBe('RoughNotes-Pro, Products')
++		expect(buildName(COPY.started, COPY.site)).toBe('Get started, Site')
++		expect(buildName(COPY.phone, COPY.contact)).toBe('800-428-4384, Contact')
++		expect(buildName('Label', 'Region').split(', ')).toEqual(['Label', 'Region'])
++		expect(buildName('Label', 'Region').startsWith('Label')).toBe(true)
++	})
++})
++
+ describe('formatIssued', () => {
+ 	it('formats a calendar date and returns the input when the month is out of range', () => {
+ 		expect(formatIssued('2026-09-01', MONTHS)).toBe('September 2026')
+diff --git a/tests/app/browser/setup.ts b/tests/app/browser/setup.ts
+index 8bb0f1b..5124835 100644
+--- a/tests/app/browser/setup.ts
++++ b/tests/app/browser/setup.ts
+@@ -3,11 +3,14 @@ import type { CatalogOptions, Sku } from '@app/core'
+ import type { Color } from '@orkestrel/test/browser'
+ import type { Component } from 'vue'
+ import { createApp, defineComponent, h } from 'vue'
+-import { requireValue, waitForCondition } from '@orkestrel/test'
++import { requireValue, waitForCondition, waitForText } from '@orkestrel/test'
+ import {
++	FOCUSABLE_SELECTOR,
+ 	build,
+ 	clickAccessible,
+ 	clickAccessibleWithin,
++	fillAccessible,
++	isReachable,
+ 	measureContrast,
+ 	parseCSSColor,
+ 	readCascade,
+@@ -21,15 +24,28 @@ import {
+ 	resolveAccessible,
+ 	resolveRendered,
+ } from '@orkestrel/test/browser'
+-import { createCatalog } from '@app/core'
++import { CATEGORY_LABELS, DEPARTMENT_LABELS, createCatalog } from '@app/core'
+ import {
++	ABOUT_PATH,
+ 	APPLICATION_KEY,
+ 	App,
++	CONTACT_PATH,
+ 	COPY,
++	HOME_PATH,
++	MAGAZINE_PATH,
++	MARKETPLACE_PATH,
++	MEDIA_PATH,
++	NEWSLETTER_PATH,
++	PAYMENT_PATH,
++	PRODUCTS_PATH,
++	PUBLICATIONS_PATH,
++	SHOP_PATH,
++	SUBSCRIBE_PATH,
+ 	THEME_DARK,
+ 	buildName,
+ 	createApplication,
+ 	createMemoryStorage,
++	hashHref,
+ 	useTheme,
+ } from '@app/browser'
+ 
+@@ -697,7 +713,7 @@ export async function openSurface(options?: SurfaceOptions): Promise<JourneySurf
+  * Opens subscribe through the home Introduction Get started control.
+  */
+ export async function startSubscription(): Promise<void> {
+-	await clickAccessibleWithin(COPY.introduction, 'link', COPY.started)
++	await clickAccessibleWithin(COPY.introduction, 'link', buildName(COPY.started, COPY.introduction))
+ }
+ 
+ /**
+@@ -958,6 +974,309 @@ export const DETAIL_SLUGS: Readonly<Record<string, string>> = Object.freeze({
+ 	item: 'coverages-applicable',
+ })
+ 
++/** Holds a slug no fixture collection reports, for the lookup every detail screen misses on. */
++export const MISSING_SLUG = 'no-such-record'
++
++/** Holds a second product slug the catalog reports, for a navigation that stays on one view. */
++export const SIBLING_SLUG = 'advantage-plus'
++
++/**
++ * Holds the accessible name every shell destination announces, in reading order, declared apart
++ * from the source that builds them.
++ */
++export const SHELL_NAMES: readonly string[] = [
++	'800-428-4384, Contact',
++	'rnc@roughnotes.com, Contact',
++	'RoughNotes-Pro Login, Logins',
++	'Advantage-Plus Login, Logins',
++	'Get started, Site',
++	'About, Site',
++	'Publications, Site',
++	'Products, Site',
++	'Shop, Site',
++	'Get started, Site',
++	'About, Site',
++	'Publications, Site',
++	'Products, Site',
++	'Shop, Site',
++	'Contact, Site',
++	'Get started, Menu',
++	'RoughNotes-Pro, Products',
++	'Advantage-Plus, Products',
++	'The Insurance Marketplace, Products',
++	'Publication desks, Resources',
++	'Magazine issue, Resources',
++	'Marketplace search, Resources',
++	'Newsletter, Resources',
++	'Free magazine delivery, Resources',
++	'Our story, Company',
++	'Media kits, Company',
++	'Write to us, Company',
++	'Shop catalog, Company',
++	'Existing invoice, Company',
++	'800-428-4384, Company',
++	'rnc@roughnotes.com, Company',
++]
++
++/**
++ * Holds the screens the product guide's data-state table names, each detail on a slug the catalog
++ * holds.
++ */
++export const CENSUS_ROUTES: readonly string[] = [
++	HOME_PATH,
++	ABOUT_PATH,
++	PUBLICATIONS_PATH,
++	PRODUCTS_PATH,
++	`${PRODUCTS_PATH}/${requireValue(DETAIL_SLUGS.product)}`,
++	MAGAZINE_PATH,
++	`${MAGAZINE_PATH}/${requireValue(DETAIL_SLUGS.article)}`,
++	MARKETPLACE_PATH,
++	SHOP_PATH,
++	`${SHOP_PATH}/${requireValue(DETAIL_SLUGS.item)}`,
++	MEDIA_PATH,
++	SUBSCRIBE_PATH,
++	NEWSLETTER_PATH,
++	CONTACT_PATH,
++	PAYMENT_PATH,
++]
++
++/** Names the voice the resolver raises when one name answers for several reachable controls. */
++export const AMBIGUOUS = 'is ambiguous across'
++
++/**
++ * Reads the screen heading the shell is painting.
++ *
++ * @returns The rendered `h1` text, or an empty string before a screen has painted one
++ */
++export function readHeading(): string {
++	return document.querySelector('#main h1')?.textContent?.trim() ?? ''
++}
++
++/**
++ * Lands on one screen the way a person opening a bookmark lands on it, and waits for its heading.
++ *
++ * @param path - The registered path to land on
++ *
++ * @remarks
++ * The navigator carries `history: false`, so a hash write is the same navigation a destination link
++ * performs. The wait reads the painted heading rather than the controller, because a heading that
++ * has replaced the previous one is what tells a reader the screen arrived.
++ */
++export async function followRoute(path: string): Promise<void> {
++	const previous = readHeading()
++	window.location.hash = hashHref(path)
++	await waitForCondition(
++		`${path} paints its own heading`,
++		() => readHeading().length > 0 && readHeading() !== previous,
++		{ budget: SETTLE_BUDGET, interval: SETTLE_INTERVAL },
++	)
++}
++
++/**
++ * Reads the accessible name of every control the painted screen offers a person.
++ *
++ * @returns Each reachable control's name, in document order, repeats included
++ *
++ * @remarks
++ * The population is what the layer counts as focusable, filtered by the layer's own reachability,
++ * so a census over this walks the controls a person can reach rather than a hand-picked list. A
++ * caller reads the length to establish the census read a screen at all.
++ */
++export function readNames(): readonly string[] {
++	const names: string[] = []
++	for (const node of document.querySelectorAll(FOCUSABLE_SELECTOR)) {
++		if (!isReachable(node)) continue
++		const name = readName(node)
++		if (name.length > 0) names.push(name)
++	}
++	return names
++}
++
++/**
++ * Reads every accessible name the painted screen offers a person more than one control under.
++ *
++ * @returns The resolver's own refusal for each shared name, in reading order
++ *
++ * @remarks
++ * Each name {@link readNames} reported goes back through the resolver, so the finding is the voice
++ * a journey would meet rather than a comparison this module makes itself.
++ */
++export function readShared(): readonly string[] {
++	const names = new Set(readNames())
++	const shared: string[] = []
++	for (const name of names) {
++		const refusal = readRefusal(name)
++		if (refusal !== undefined && refusal.includes(AMBIGUOUS)) shared.push(refusal)
++	}
++	return shared
++}
++
++/** Names the states the product guide's data-state table declares, as that table spells them. */
++export type DataState = 'Reduced' | 'Absent' | 'Missed' | 'Refused' | 'Accepted'
++
++/** Describes one data state the guide's table declares, and how a reader reaches it. */
++export interface DataCase {
++	/** Names the state as the guide's table names it. */
++	readonly state: DataState
++	/** Holds the screen the state belongs to. */
++	readonly path: string
++	/** Holds the collections the catalog reports, where the state needs a catalog of its own. */
++	readonly catalog?: CatalogOptions | undefined
++	/** Drives the painted screen into the state, where landing on it is not enough. */
++	readonly act?: (() => Promise<void>) | undefined
++}
++
++/**
++ * Filters the magazine to the category the fixture issue holds no article in.
++ */
++export async function selectEmptyCategory(): Promise<void> {
++	await clickAccessible('button', CATEGORY_LABELS.program)
++	await waitForText('the magazine reports the filtered-empty issue', readPage, COPY.none, {
++		budget: SETTLE_BUDGET,
++		interval: SETTLE_INTERVAL,
++	})
++}
++
++/**
++ * Filters the shop to the department the mounted catalog holds no SKU in.
++ */
++export async function selectEmptyDepartment(): Promise<void> {
++	await clickAccessible('button', DEPARTMENT_LABELS.wheels)
++	await waitForText('the shop reports the filtered-empty department', readPage, COPY.vacant, {
++		budget: SETTLE_BUDGET,
++		interval: SETTLE_INTERVAL,
++	})
++}
++
++/**
++ * Searches the marketplace for a query the sample matches nothing for.
++ */
++export async function searchMissingMarket(): Promise<void> {
++	await fillAccessible(COPY.query, 'zzzz-no-such-market')
++	await clickAccessible('button', COPY.search)
++	await waitForText('the marketplace reports the missed search', readPage, COPY.empty, {
++		budget: SETTLE_BUDGET,
++		interval: SETTLE_INTERVAL,
++	})
++}
++
++/**
++ * Submits the subscription request with every field empty, so the desk refuses it.
++ */
++export async function submitEmptySubscription(): Promise<void> {
++	await clickAccessible('button', COPY.subscribe)
++	await waitForText('the subscribe desk refuses the empty request', readPage, COPY.summary, {
++		budget: SETTLE_BUDGET,
++		interval: SETTLE_INTERVAL,
++	})
++}
++
++/**
++ * Fills and submits a subscription request the desk accepts.
++ */
++export async function submitSubscription(): Promise<void> {
++	await fillAccessible(COPY.name, 'Ada Lovelace')
++	await fillAccessible(COPY.mail, 'ada@agency.com')
++	await clickAccessible('button', COPY.subscribe)
++	await waitForText('the subscribe desk accepts the request', readPage, COPY.accepted, {
++		budget: SETTLE_BUDGET,
++		interval: SETTLE_INTERVAL,
++	})
++}
++
++/**
++ * Submits the inquiry with every field empty, so the desk refuses it.
++ */
++export async function submitEmptyInquiry(): Promise<void> {
++	await clickAccessible('button', COPY.send)
++	await waitForText('the contact desk refuses the empty inquiry', readPage, COPY.inquirySummary, {
++		budget: SETTLE_BUDGET,
++		interval: SETTLE_INTERVAL,
++	})
++}
++
++/**
++ * Fills and submits an inquiry the desk accepts, leaving its optional fields empty.
++ */
++export async function submitInquiry(): Promise<void> {
++	await fillAccessible(COPY.name, 'Ada Lovelace')
++	await fillAccessible(COPY.company, 'Agency')
++	await fillAccessible(COPY.mail, 'ada@agency.com')
++	await fillAccessible(COPY.phoneLabel, '800-428-4384')
++	await clickAccessible('button', COPY.send)
++	await waitForText('the contact desk accepts the inquiry', readPage, COPY.inquiryAccepted, {
++		budget: SETTLE_BUDGET,
++		interval: SETTLE_INTERVAL,
++	})
++}
++
++/**
++ * Submits the invoice with every field empty, so the desk refuses it.
++ */
++export async function submitEmptyInvoice(): Promise<void> {
++	await clickAccessible('button', COPY.pay)
++	await waitForText('the payment desk refuses the empty invoice', readPage, COPY.paymentSummary, {
++		budget: SETTLE_BUDGET,
++		interval: SETTLE_INTERVAL,
++	})
++}
++
++/**
++ * Fills and submits an invoice the desk accepts.
++ */
++export async function submitInvoice(): Promise<void> {
++	await fillAccessible(COPY.customer, '1001')
++	await fillAccessible(COPY.invoice, '1001')
++	await fillAccessible(COPY.amount, '78.00')
++	await clickAccessible('button', COPY.pay)
++	await waitForText('the payment desk accepts the invoice', readPage, COPY.paymentAccepted, {
++		budget: SETTLE_BUDGET,
++		interval: SETTLE_INTERVAL,
++	})
++}
++
++/**
++ * Holds every data state the product guide's table declares outside its Full column, in the
++ * table's own order.
++ *
++ * @remarks
++ * The Full column is what {@link CENSUS_ROUTES} walks, so this table carries the states a bare
++ * landing does not reach: the catalog a screen reports nothing from, the filter and the search that
++ * match nothing, the lookup that misses, the record the catalog holds incompletely, and what each
++ * desk paints after refusing and after accepting a request.
++ */
++export const DATA_CASES: readonly DataCase[] = Object.freeze([
++	Object.freeze({ state: 'Absent', path: PRODUCTS_PATH, catalog: { products: [] } }),
++	Object.freeze({ state: 'Missed', path: `${PRODUCTS_PATH}/${MISSING_SLUG}` }),
++	Object.freeze({ state: 'Reduced', path: MAGAZINE_PATH, act: selectEmptyCategory }),
++	Object.freeze({ state: 'Absent', path: MAGAZINE_PATH, catalog: { articles: [] } }),
++	Object.freeze({ state: 'Missed', path: `${MAGAZINE_PATH}/${MISSING_SLUG}` }),
++	Object.freeze({ state: 'Reduced', path: MARKETPLACE_PATH, act: searchMissingMarket }),
++	Object.freeze({ state: 'Absent', path: MARKETPLACE_PATH, catalog: { markets: [] } }),
++	Object.freeze({
++		state: 'Reduced',
++		path: SHOP_PATH,
++		catalog: { skus: [UNINDEXED_SKU] },
++		act: selectEmptyDepartment,
++	}),
++	Object.freeze({ state: 'Absent', path: SHOP_PATH, catalog: { skus: [] } }),
++	Object.freeze({ state: 'Missed', path: `${SHOP_PATH}/${MISSING_SLUG}` }),
++	Object.freeze({
++		state: 'Refused',
++		path: `${SHOP_PATH}/${UNINDEXED_SKU.id}`,
++		catalog: { skus: [UNINDEXED_SKU] },
++	}),
++	Object.freeze({ state: 'Absent', path: MEDIA_PATH, catalog: { assets: [] } }),
++	Object.freeze({ state: 'Refused', path: SUBSCRIBE_PATH, act: submitEmptySubscription }),
++	Object.freeze({ state: 'Accepted', path: SUBSCRIBE_PATH, act: submitSubscription }),
++	Object.freeze({ state: 'Refused', path: NEWSLETTER_PATH, act: submitEmptySubscription }),
++	Object.freeze({ state: 'Accepted', path: NEWSLETTER_PATH, act: submitSubscription }),
++	Object.freeze({ state: 'Refused', path: CONTACT_PATH, act: submitEmptyInquiry }),
++	Object.freeze({ state: 'Accepted', path: CONTACT_PATH, act: submitInquiry }),
++	Object.freeze({ state: 'Refused', path: PAYMENT_PATH, act: submitEmptyInvoice }),
++	Object.freeze({ state: 'Accepted', path: PAYMENT_PATH, act: submitInvoice }),
++])
++
+ /**
+  * Mounts a view that injects {@link APPLICATION_KEY} over an isolated application.
+  *

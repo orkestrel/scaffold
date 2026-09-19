@@ -1,0 +1,1007 @@
+diff --git a/.agents/skills/orkestrel-prove-journey/SKILL.md b/.agents/skills/orkestrel-prove-journey/SKILL.md
+index 8ea3a635..a0b9d644 100644
+--- a/.agents/skills/orkestrel-prove-journey/SKILL.md
++++ b/.agents/skills/orkestrel-prove-journey/SKILL.md
+@@ -73,17 +73,24 @@ Resolve every target and every population by ARIA role and accessible name as re
+ 
+ ## Read the variant once
+ 
+-The generated workspace fans the journey suite out into one Vitest project per variant, and each
+-project provides that run's axis. Read the axis once at run start, and let it choose the capture
+-destination, the matrix row, and the statechart run together.
++A browser application born by `scaffold new` carries the journey axis: the
++`configs/app/vite.journey.config.ts` wrapper, the root `appJourney` factory, the `test:journey`
++script, and that script's place in the `test` chain. That wiring fans the journey suite out into one
++Vitest project per variant, and each project provides its own variant. Read the variant once at run
++start, and let it choose the capture destination, the matrix row, and the statechart run together.
+ 
+ - Read `inject('variant')` for this run's variant name, `inject('variants')` for the declared list,
+   and `inject('capture')` for whether this run writes frames.
+ - Declare the provided types once, by augmenting Vitest's own `ProvidedContext` in the workspace's
+   browser test setup module, so `inject` is typed rather than narrowed at each call.
+-- Declare the variant list in `configs/app/vite.journey.config.ts`, the birth-owned wrapper the
+-  generated workspace ships. Its presence is the journey axis. Rename and extend the seeded
++- Declare the variant list in `configs/app/vite.journey.config.ts`, the birth-owned wrapper a
++  browser application is born with. Its presence is the journey axis. Rename and extend the seeded
+   viewports for this application.
++- Activate the axis in a workspace born before it: write `configs/app/vite.journey.config.ts`, run
++  `scaffold repair`, then add `npm run test:journey` to the `test` script after `npm run test:app`.
++  The repair defines `appJourney` in the root configuration, emits the `test:journey` script, and
++  excludes the journey suite from the ordinary `app:browser` project. It does not rewrite the `test`
++  chain, so the chain entry is yours to add.
+ - Name each variant for the theme and the viewport it renders, such as `dark-390`. Never split the
+   theme from the viewport; a split writes a filename naming a combination the run did not render.
+ - Compose each variant's theme `apply` inside the test, from the variant's name. Vitest `provide`
+@@ -91,9 +98,9 @@ destination, the matrix row, and the statechart run together.
+   does not.
+ - Apply the theme through the application's own interface wherever the application ships a theme
+   control, and through the attribute the surface reads where it does not.
+-- Run the axis with `npm run test:journey`, which runs that wrapper and joins the `test` chain. Run
+-  `CAPTURE=1 npm run test:journey` to write the frames; the root configuration reads that flag and
+-  provides it as `capture`.
++- Run the axis with `npm run test:journey`, which runs that wrapper and joins the `test` chain. Set
++  `CAPTURE` to `1` in your own shell and run `npm run test:journey` again to write the frames; the
++  root configuration reads that variable and provides it as `capture`.
+ - Keep the journeys in `tests/app/browser/integration.test.ts`. Each variant project collects that
+   file alone, and the ordinary `app:browser` project excludes it while the axis is on, so a journey
+   written anywhere else runs in no variant.
+@@ -102,6 +109,14 @@ destination, the matrix row, and the statechart run together.
+ - Render exactly one variant per run for the capture family
+   ([captures.md](references/captures.md) → Variants).
+ 
++`scaffold audit` reports a manifest and a wrapper that disagree as one of the following questions.
++Settle the one it reports before trusting a green run.
++
++| The question `scaffold audit` reports                                                                                                                                                                                            | Settle it by                                                                             |
++| -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
++| `The manifest at <target> names a Vitest configuration the plan does not emit and the target does not hold: test:journey --config configs/app/vite.journey.config.ts. Add the configuration or remove the script that names it.` | Writing the wrapper and running `scaffold repair`, or removing the `test:journey` script |
++| `The manifest at <target> does not invoke npm run test:journey from its test chain. Add npm run test:journey after npm run test:app.`                                                                                            | Adding `npm run test:journey` to the `test` script after `npm run test:app`              |
++
+ ```ts
+ import type { JourneyVariant } from '@orkestrel/test'
+ import type { CaptureVariant } from '@orkestrel/test/browser'
+@@ -165,10 +180,14 @@ const VARIANTS: readonly CaptureVariant[] = inject('variants').map((variant) =>
+ - Place a helper you must write in the workspace's browser test setup module, name it for the act,
+   and export it from there under `.claude/rules/tests.md`. Never declare a resolver inside a test
+   file.
+-- Prove that setup module with `tests/setupBrowser.test.ts`, which the generated workspace collects
+-  in the browser-enabled `setup:browser` project and runs through `npm run test:setup:browser`. The
+-  Node `setup` project excludes it, so a proof of a browser helper placed anywhere else runs without
+-  a browser.
++- Prove that setup module with `tests/setupBrowser.test.ts`. Writing that file selects the browser
++  setup runtime, so run `scaffold repair` after writing it: the repair registers the browser-enabled
++  `setup:browser` project and emits the `test:setup:browser` script. A workspace born with the
++  browser setup runtime already carries that script in its `test` chain; in a workspace that
++  acquires the runtime later, `repair` leaves the chain as written, so add
++  `npm run test:setup:browser` to it yourself. `scaffold audit` reports `setup:browser` as a project
++  no chain from `test` reaches until you do. The Node `setup` project excludes that path, so a proof
++  of a browser helper placed anywhere else runs without a browser.
+ - Drive every step through the published verbs, and never dispatch a constructed event
+   ([layer.md](references/layer.md) → What it drives).
+ - Re-verify every target against what the application renders after any markup change
+@@ -219,8 +238,8 @@ and no title scheme.
+ 
+ - Report a missing outcome as a product finding, with its evidence site, rather than inventing the
+   copy the surface owes.
+-- Assert the title from `document.title` per screen. A surface whose screens share one title is a
+-  finding about the surface.
++- Assert the title from `document.title` per screen, against the title the product guide names for
++  that screen. Report a screen the guide gives no title as a product finding.
+ 
+ ## Prove the refusals
+ 
+@@ -282,8 +301,8 @@ instrument judges which claim, what `prove` cannot serve, and what the run's wri
+ 
+ ## Mutate each assertion class
+ 
+-An assertion is not evidence until it has failed. Mutate each assertion class once, read the red,
+-restore, and read the green.
++Mutate each assertion class once, read the red, restore, and read the green.
++`.claude/rules/quality.md` § Instruments owns the law this satisfies.
+ 
+ | Assertion class | The mutation                                                         | What must change                  |
+ | --------------- | -------------------------------------------------------------------- | --------------------------------- |
+@@ -291,7 +310,7 @@ restore, and read the green.
+ | Refusal         | Make the withheld control reachable, or present, without renaming it | The asserted voice changes        |
+ 
+ - Record the exact command and its failing count before the change, restore the tree, and record the
+-  same command green. A test that never ran red binds to nothing.
++  same command green.
+ - Omit the act rather than weakening the assertion. An assertion a missing act leaves green cannot
+   tell arrival from never having left.
+ - Change reachability rather than the name. A renamed control reddens on absence, which is a finding
+@@ -310,8 +329,9 @@ Completion requires all of:
+ - a refusal family per surface, each asserting one exact failure voice;
+ - the transport family declared separately, driven through real implementations, and convergent;
+ - the declared families each proven, and the declaration itself asserted;
+-- the matrix family read once per declared variant, each style instrument carrying the published
+-  control that must read under its bar in the same run;
++- the matrix family read once per declared variant, each style reading carrying its published
++  control from [styles.md](references/styles.md) → The published controls in the same run, and the
++  contrast reading's control straddling its declared bar;
+ - the authored-class census and the `extractStyles` reading taken on the mounted surface, each
+   reporting the population it walked;
+ - the statechart table driven to a terminal status with no failed row, and the harness tally read
+@@ -320,14 +340,15 @@ Completion requires all of:
+ - one capture run per variant writing every registered file, and the disk-membership proof green;
+ - the written artifact produced for every variant the run rendered, named by that variant;
+ - perception assertions quoting rendered text, and the vocabulary sweep green on the whole page;
+-- the browser test setup module proven by `tests/setupBrowser.test.ts` in `setup:browser`;
++- the browser test setup module proven by `tests/setupBrowser.test.ts` in the `setup:browser`
++  project `scaffold repair` registers;
+ - each assertion class mutated, with the red reading and the green reading recorded;
+ - the repository gates green, under the independent-verification law in `.agents/orchestration.md`.
+ 
+ State the engine bound with the verdict. The gate renders one engine, so a claim about a second
+-engine is unproven until a reading on that engine records it. The emitted `configs/browsers.ts`
+-carries the limit and the condition that reopens it: another Playwright engine launching on the
+-host with a `captureFrame` reading back at its declared size, or one recorded divergence.
++engine is unproven until a reading on that engine records it. The emitted `configs/browsers.ts` doc
++block is the home of that limit and of the condition that reopens it. Cite that doc block, and copy
++neither into a verdict.
+ 
+ Report each journey by the intent it proves, the refusals it establishes, the states it placed, the
+ variants it read, the statechart outcome it reached, and every surface finding the layer's refusals
+diff --git a/.agents/skills/orkestrel-prove-journey/references/captures.md b/.agents/skills/orkestrel-prove-journey/references/captures.md
+index f91bb372..19a96a73 100644
+--- a/.agents/skills/orkestrel-prove-journey/references/captures.md
++++ b/.agents/skills/orkestrel-prove-journey/references/captures.md
+@@ -29,8 +29,8 @@ file is written to, and the flag as `enabled`.
+ - Place a state with `place(state)` for the whole page, and `place(state, element)` where the
+   picture is one element.
+ - Take `enabled` from `inject('capture')`, which the generated root configuration provides from the
+-  `CAPTURE` environment variable. An ordinary run leaves it false, so `place` returns `undefined`,
+-  resizes nothing, writes nothing, and records nothing.
++  `CAPTURE` environment variable set to `1` in the shell that runs the axis. An ordinary run leaves
++  it false, so `place` returns `undefined`, resizes nothing, writes nothing, and records nothing.
+ - Read `files` for the registry expanded across every variant, `placements` for what this run placed,
+   and `paths` for what it wrote. Each hands back a snapshot.
+ - Reach for `readFrame` where the written image itself is the subject — its decoded size, or its
+diff --git a/.agents/skills/orkestrel-prove-journey/references/layer.md b/.agents/skills/orkestrel-prove-journey/references/layer.md
+index c8e60ca3..9ad29b03 100644
+--- a/.agents/skills/orkestrel-prove-journey/references/layer.md
++++ b/.agents/skills/orkestrel-prove-journey/references/layer.md
+@@ -6,9 +6,8 @@ capability by reaching for a selector as a layer defect.
+ ## The vocabulary
+ 
+ Import the vocabulary from the entries that publish it: `@orkestrel/test` for what is
+-host-independent, and `@orkestrel/test/browser` for what drives a browser. Every name this reference
+-teaches is in the following fence, and a name absent from it is a name to verify against the
+-installed entry before writing it.
++host-independent, and `@orkestrel/test/browser` for what drives a browser. Verify against the
++installed entry any name this reference or its siblings do not carry in a fence.
+ 
+ ```ts
+ import type { TextWaitOptions, WaitOptions } from '@orkestrel/test'
+@@ -65,10 +64,11 @@ table type from `@orkestrel/test`. Write one of your own only where those entrie
+ the act.
+ 
+ - Place a helper you write in the workspace's browser test setup module, export it from there, and
+-  name it for the human act it performs. Prove that module with `tests/setupBrowser.test.ts`, which
+-  runs in the browser-enabled `setup:browser` project.
+-- Read the package's own exports before writing anything. A helper that renames a published one is a
+-  defect under `AGENTS.md`, and a second implementation of one drifts from the first.
++  name it for the human act it performs. Prove that module with `tests/setupBrowser.test.ts`, and
++  run `scaffold repair` after writing that file so the browser-enabled `setup:browser` project
++  collects it.
++- Read the package's own exports before writing anything. `AGENTS.md` § Design laws bars a helper
++  that renames a published one, and bars a second implementation of one.
+ - Code every journey against the vocabulary in this file, which is the published one. Diagnose a
+   target that stops resolving here, and fix it in the application.
+ 
+@@ -135,33 +135,36 @@ act itself scrolls into view.
+ 
+ ### The failure voices
+ 
+-Assert the one voice the case means. Never write an assertion that accepts more than one.
+-
+-| Condition                                        | The voice thrown                                                                         | Thrown by               |
+-| ------------------------------------------------ | ---------------------------------------------------------------------------------------- | ----------------------- |
+-| No element carries the name                      | `No interactive element has the accessible name "<name>"`                                | `resolveRendered`       |
+-| Every match fails a reachability condition       | `Interactive target "<name>" is not visible and focus-reachable`                         | `resolveRendered`       |
+-| Several matches are reachable                    | `Interactive target "<name>" is ambiguous across <n> elements`                           | `resolveRendered`       |
+-| Still off-viewport after being scrolled to       | `Interactive target "<name>" is unreachable after scrolling`                             | `resolveAccessible`     |
+-| The region holds no reachable match              | `Interactive target "<name>" is not reachable inside "<region>"`                         | `clickAccessibleWithin` |
+-| The region holds several reachable matches       | `Interactive target "<name>" is ambiguous across <n> elements inside "<region>"`         | `clickAccessibleWithin` |
+-| No native disclosure is reachable under the name | `Native disclosure "<name>" is not visible and focus-reachable`                          | `clickDisclosure`       |
+-| Several native disclosures carry the name        | `Native disclosure "<name>" is ambiguous across <n> elements`                            | `clickDisclosure`       |
+-| Forward Tab never lands on the target            | `Interactive target "<name>" is not reachable through forward Tab traversal: <trail>`    | `traverseAccessible`    |
+-| The named region is hidden                       | `Named region "<name>" is not visible`                                                   | `readPerception`        |
+-| Several named regions carry the name             | `Named region "<name>" is ambiguous across <n> elements`                                 | `readPerception`        |
+-| The resolved control renders no value            | `Interactive target "<name>" does not carry a value`                                     | `readValue`             |
+-| A key sequence reached nothing                   | `Key sequence "<keys>" was sent with nothing focused`                                    | `pressKeys`             |
+-| The state never arrived or never left            | `Condition "<subject>" did not hold within <n>ms (waited <n>ms) (last states: <states>)` | `waitForState`          |
+-| The animation subject is in no document          | `Animation subject is not connected`                                                     | `waitForAnimations`     |
+-| The paint never stopped moving                   | `Animation "<subject>" did not settle within <n>ms (waited <n>ms): <animations>`         | `waitForAnimations`     |
+-| The sentence never arrived                       | `Condition "<description>" did not hold within <n>ms (waited <n>ms)`                     | `waitForText`           |
+-| A host withholds a storage operation             | `Access is denied for <operation> "<key>"`                                               | `createStorage`         |
+-| A write ran past the declared quota              | `No room is left for <key>`                                                              | `createStorage`         |
+-| A style reading has no computed color            | `Computed foreground color is unavailable`                                               | `readContrast`          |
+-| A class census walked nothing                    | `Class census walked no element`                                                         | `readCensus`            |
+-| A contrast control cannot straddle its bar       | `Contrast control cannot straddle the bar <bar>`                                         | `buildContrast`         |
+-| A database deletion was blocked                  | `IndexedDB database "<name>" is blocked by an open connection`                           | `removeDatabase`        |
++Assert the one voice the case means. Never write an assertion that accepts more than one. This table
++carries this layer's own voices. Read the statechart voices in [statechart.md](statechart.md) and
++the capture voices in [captures.md](captures.md).
++
++| Condition                                              | The voice thrown                                                                         | Thrown by               |
++| ------------------------------------------------------ | ---------------------------------------------------------------------------------------- | ----------------------- |
++| No element carries the name                            | `No interactive element has the accessible name "<name>"`                                | `resolveRendered`       |
++| Every match fails a reachability condition             | `Interactive target "<name>" is not visible and focus-reachable`                         | `resolveRendered`       |
++| Several matches are reachable                          | `Interactive target "<name>" is ambiguous across <n> elements`                           | `resolveRendered`       |
++| Still off-viewport after being scrolled to             | `Interactive target "<name>" is unreachable after scrolling`                             | `resolveAccessible`     |
++| The region holds no reachable match                    | `Interactive target "<name>" is not reachable inside "<region>"`                         | `clickAccessibleWithin` |
++| The region holds several reachable matches             | `Interactive target "<name>" is ambiguous across <n> elements inside "<region>"`         | `clickAccessibleWithin` |
++| No native disclosure is reachable under the name       | `Native disclosure "<name>" is not visible and focus-reachable`                          | `clickDisclosure`       |
++| Several native disclosures carry the name              | `Native disclosure "<name>" is ambiguous across <n> elements`                            | `clickDisclosure`       |
++| Forward Tab never lands on the target                  | `Interactive target "<name>" is not reachable through forward Tab traversal: <trail>`    | `traverseAccessible`    |
++| The named region is hidden                             | `Named region "<name>" is not visible`                                                   | `readPerception`        |
++| Several named regions carry the name                   | `Named region "<name>" is ambiguous across <n> elements`                                 | `readPerception`        |
++| The resolved control renders no value                  | `Interactive target "<name>" does not carry a value`                                     | `readValue`             |
++| A key sequence reached nothing                         | `Key sequence "<keys>" was sent with nothing focused`                                    | `pressKeys`             |
++| The state never arrived or never left                  | `Condition "<subject>" did not hold within <n>ms (waited <n>ms) (last states: <states>)` | `waitForState`          |
++| The animation subject is in no document                | `Animation subject is not connected`                                                     | `waitForAnimations`     |
++| The paint never stopped moving                         | `Animation "<subject>" did not settle within <n>ms (waited <n>ms): <animations>`         | `waitForAnimations`     |
++| The sentence never arrived                             | `Condition "<description>" did not hold within <n>ms (waited <n>ms)`                     | `waitForText`           |
++| A host withholds `getItem`, `setItem`, or `removeItem` | `Access is denied for <operation> "<key>"`                                               | `createStorage`         |
++| A host withholds `length`, `clear`, or `key`           | `Access is denied for <operation>`                                                       | `createStorage`         |
++| A write ran past the declared quota                    | `No room is left for <key>`                                                              | `createStorage`         |
++| A style reading has no computed color                  | `Computed foreground color is unavailable`                                               | `readContrast`          |
++| A class census walked nothing                          | `Class census walked no element`                                                         | `readCensus`            |
++| A contrast control cannot straddle its bar             | `Contrast control cannot straddle the bar <bar>`                                         | `buildContrast`         |
++| A database deletion was blocked                        | `IndexedDB database "<name>" is blocked by an open connection`                           | `removeDatabase`        |
+ 
+ - Report an absent control and a present-but-unreachable one as different findings: absence names
+   a missing control, and unreachability names the interface gating one that exists.
+@@ -261,23 +264,25 @@ Assert the one voice the case means. Never write an assertion that accepts more
+ 
+ ## The named bans
+ 
+-Each of the following reaches past the interface. The replacement is published, so the ban costs a
+-journey nothing.
++Never reach past the interface in any of the following ways. Reach for the published replacement
++beside each.
+ 
+-| Never                                      | Reach for                                                    |
+-| ------------------------------------------ | ------------------------------------------------------------ |
+-| An element resolved by id or class         | `resolveAccessible`, `resolveRendered`, and the acting verbs |
+-| A class-list read standing in for a settle | `waitForState`, `waitForAnimations`                          |
+-| `document.elementFromPoint`                | `readHit`                                                    |
+-| `element.focus()`                          | `traverseAccessible`, `pressKeys`                            |
+-| A store read or a router call              | `readPerception`, `readValue`, `readStates`, `waitForText`   |
++| Never                                                            | Reach for                                                                                        |
++| ---------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
++| An element resolved by id or class                               | `resolveAccessible`, `resolveRendered`, and the acting verbs                                     |
++| A class-list read standing in for a settle                       | `waitForState`, `waitForAnimations`                                                              |
++| `document.elementFromPoint`                                      | `readHit`                                                                                        |
++| `element.focus()`                                                | `traverseAccessible`, `pressKeys`                                                                |
++| A navigation performed by a router call                          | The visible link or control that navigates, through `clickAccessible` or `clickAccessibleWithin` |
++| A store or route state read standing in for a rendered assertion | `readPerception`, `readValue`, `readStates`, `waitForText`                                       |
+ 
+ - Admit a selector only for a population that carries no role, declared in the workspace's browser
+   test setup module with the reason beside it.
+ - Read a class-list assertion as proving nothing about the cascade. A class present in the markup
+   and absent from every loaded stylesheet resolves to nothing, and the assertion passes on it.
+-- Take a store read or a router call as corroboration beside a rendered assertion, never in place of
+-  one.
++- Take a store read or a route state read as corroboration beside a rendered assertion, never in
++  place of one. Never take a router call as corroboration: it changes the route rather than
++  reporting it.
+ 
+ ## Role vocabulary
+ 
+diff --git a/.agents/skills/orkestrel-prove-journey/references/statechart.md b/.agents/skills/orkestrel-prove-journey/references/statechart.md
+index 8c56d05c..d9de9612 100644
+--- a/.agents/skills/orkestrel-prove-journey/references/statechart.md
++++ b/.agents/skills/orkestrel-prove-journey/references/statechart.md
+@@ -44,10 +44,10 @@ import {
+ 
+ ## The worked table
+ 
+-This is the table this layer's own browser suite runs. The entity is a native disclosure with a
+-second door: the summary toggles it, and a `Dismiss` button closes it and does nothing when it is
+-already closed. That second door is what gives the table a row whose event leaves the state where it
+-found it, which a lone `<details>` cannot have — its one event always flips.
++Copy the shape of the following table, which is the table this layer's own browser suite runs. Its
++entity is a native disclosure with a second door: the summary toggles it, and a `Dismiss` button
++closes it and does nothing when it is already closed. Give your own table the same row that second
++door produces here — the row whose event leaves the state where it found it.
+ 
+ ```ts
+ import type { StateScenario } from '@orkestrel/test'
+@@ -62,8 +62,8 @@ interface DisclosureContext {
+ 	readonly summary: HTMLElement
+ }
+ 
+-// A journey verb resolves its own target by accessible name, so two mounted disclosures called
+-// "Advanced" are an ambiguity rather than a second fixture. Each build takes the previous one out.
++// A journey verb resolves its own target by accessible name, so a second mounted disclosure called
++// "Advanced" is an ambiguity rather than a second fixture. Each build takes the previous one out.
+ let mounted: HTMLElement | undefined
+ 
+ function buildDisclosure(): DisclosureContext {
+@@ -158,8 +158,8 @@ it('walks the disclosure statechart', async () => {
+ - Name each row for the door it drove. A table that names only the states reads as if one mechanism
+   moved the entity, and the row where the button leaves the disclosure exactly as it found it is the
+   one a name has to separate from the toggle rows beside it.
+-- Remove the previous fixture inside the builder. Without that removal the next row meets two mounted
+-  disclosures under one name, and the verb refuses them as ambiguous.
++- Remove the previous fixture inside the builder. Without that removal the next row meets the
++  previous disclosure beside its own under one name, and the verb refuses them as ambiguous.
+ - Drive a native `<summary>` with `clickDisclosure` and an ARIA disclosure with `clickAccessible`
+   settled by `waitForState` ([layer.md](layer.md) → Disclosures).
+ 
+diff --git a/.agents/skills/orkestrel-prove-journey/references/styles.md b/.agents/skills/orkestrel-prove-journey/references/styles.md
+index 6cfd22ed..188e1219 100644
+--- a/.agents/skills/orkestrel-prove-journey/references/styles.md
++++ b/.agents/skills/orkestrel-prove-journey/references/styles.md
+@@ -108,9 +108,9 @@ provided.
+ 
+ ## The published controls
+ 
+-An instrument is not evidence until its control has failed. Each control ships as a builder, so
+-every workspace's control is the same one and none of them can drift into a fixture that cannot
+-fail.
++Take each reading's control from the builder this layer publishes for it, so no workspace's control
++drifts into a fixture that cannot fail. `.claude/rules/quality.md` § Instruments owns the law that
++control satisfies.
+ 
+ | Reading         | Control                   | What it carries                                                                        |
+ | --------------- | ------------------------- | -------------------------------------------------------------------------------------- |
+@@ -122,8 +122,8 @@ fail.
+   remove it afterwards. Every builder returns detached nodes and mounts nothing, so where the
+   control is read is the caller's decision.
+ - Assert on the fields the builder returns rather than on a token or a selector written down in the
+-  test. `buildCensus` hands back its own tokens, and `buildContrast` hands back the two foregrounds
+-  by name.
++  test. `buildCensus` hands back its own tokens, and `buildContrast` hands back `refused` and
++  `accepted` by name.
+ - Require the `refused` foreground to read under the bar and the `accepted` one to reach it, in the
+   same run as the production readings. `buildContrast` refuses a bar its own stack cannot straddle,
+   and that refusal is the reading: no pair it can compose settles that bar.
+diff --git a/.agents/transports/codex.md b/.agents/transports/codex.md
+index fec4a677..38bf456a 100644
+--- a/.agents/transports/codex.md
++++ b/.agents/transports/codex.md
+@@ -128,12 +128,11 @@ The Orchestrator verifies the finished exec with direct evidence — git status,
+ scoped validation — and carries touched files, diffstat, and deviation state into
+ integration and review.
+ 
+-On a Windows host the exec's file writes can round-trip through cp1252, so a line carrying a
+-non-ASCII code point comes back with that code point replaced. The brief tells the unit never to
+-rewrite such a line through its shell, to edit a file carrying one only through the exec's own
+-patch tool, and to report every line it had to touch. The Orchestrator's review evidence includes a
+-sweep of the diff for a removed line carrying a code point above `0x7F` whose replacement carries
+-none.
++On a Windows host a text-encoding shell write replaces a code point above `0x7F`, so when a bench
++unit must edit a line carrying one, the brief tells it to make that edit through the exec's own
++patch tool, never through `Get-Content`, `Set-Content`, `Out-File`, or a `>` redirection, and to
++report every such line it touched. The Orchestrator's review sweep compares the set of code points
++above `0x7F` on each touched line before and after the edit, and flags a line that lost any of them.
+ 
+ ## Routing exclusion — defensive negative-test units
+ 
+diff --git a/ROADMAP.md b/ROADMAP.md
+index 0efa6342..5202f089 100644
+--- a/ROADMAP.md
++++ b/ROADMAP.md
+@@ -36,5 +36,5 @@ keeps its number, so a commit message citing an item by number stays true.
+ 33. Register `ensure`, `guarantee`, `soon`, `we`, `our`, `let's`, `here`, `this document`, `foo`, `bar`, and `baz` in the `configs/policy.ts` file's term registries, matching the prohibitions `.claude/rules/writing.md` states. That file states that every lexical prohibition is registered, and the sweep reaches none of these. The file is vendored, so closing this obliges a bump, a publish, and a `repair` visit to every target.
+ 34. Give a listing entry and the footer distinct accessible names in the roughnotes application, and distinguish a screen's own action from the masthead action that shares its name. The journey pass routed around the collision rather than resolving it.
+ 35. Rule whether `@orkestrel/guide` repairs its `extractFenceImports` reader, which drops a binding preceded by a comment inside the import braces, measured 2026-09-17 against the installed package. The scaffold skill sweep parses each fence with Oxc for that reason, and a consumer reading fenced imports through the guide package reads a short list without being told.
+-36. Reopen browser-engine selection when its stated condition is met: another Playwright engine launching on the host with a `captureFrame` reading back at its declared size, or one recorded journey or style divergence. The condition lives in the emitted `configs/browsers.ts` doc block and the `.agents/skills/orkestrel-prove-journey/SKILL.md` Accept list; read it from those homes rather than restating it here.
++36. Reopen browser-engine selection when the condition the emitted `configs/browsers.ts` doc block states is met. That doc block is the condition's one home. This item closes when `configs/browsers.ts` adopts an engine-selection design, or when that doc block no longer carries the limit.
+ 37. Author `aria-expanded` on the roughnotes menu trigger. The trigger announces no state, so its disclosure cannot be settled through `waitForState` and every journey touching it falls back to reading the framework's own classes.
+diff --git a/guides/scaffold.md b/guides/scaffold.md
+index a560e790..058bec5a 100644
+--- a/guides/scaffold.md
++++ b/guides/scaffold.md
+@@ -590,7 +590,11 @@ files on `main`, the scaffold repository's `host.json` file, and changed vendore
+ answers a read and grant no verb write authority that it did not already have.
+ 
+ `new --bin` creates the executable entry, its test, and its scoped Vite and TypeScript wrappers. The
+-other structural facts do not need creation flags. Add a root `tests/setup*.test.ts` proof for
++`new --app browser` command selects the journey axis, creates its birth-owned wrapper, defines
++`appJourney` in the root configuration, and excludes the browser integration suite from
++`app:browser`. Its manifest declares `test:journey` and invokes it after `npm run test:app` in
++`test`. A selection without a browser application emits no journey axis. Creation leaves `setup`
++empty. The other structural facts do not need creation flags. Add a root `tests/setup*.test.ts` proof for
+ `setup`, `tests/guides.test.ts` for `guides`, `tests/integration.test.ts` for `integration`,
+ `tests/conformance.test.ts` for `conformance`, `tests/setupService.ts` for `service`,
+ `tests/setupGlobal.ts` for `global`, `configs/app/vite.showcase.config.ts` for `showcase`, and
+@@ -649,6 +653,23 @@ question instead of licensing a write. The classifier is deliberately bounded to
+ text that names `vitest`; an external wrapper whose name does not identify its runner supplies no
+ static Vitest fact to infer.
+ 
++The invocation reader also reads literal `--config <path>` and `--config=<path>` values in command
++order. A configuration value containing an unresolved shell expansion makes the whole reading
++`undefined`. The executable keeps this contract in its own modules:
++
++| Declaration           | Summary                                                                                            |
++| --------------------- | -------------------------------------------------------------------------------------------------- |
++| `ScriptInvocations`   | Lists the literal Vitest projects, configuration paths, and npm run scripts a shell command names. |
++| `scriptToInvocations` | Reads the literal Vitest projects, configuration paths, and npm run scripts a shell command names. |
++
++When a `test:*` script names a configuration that the plan does not emit and the target does not
++hold, the non-blocking `projects` question names the script and configuration path. When the plan
++emits `test:journey` and the manifest's `test` chain omits `npm run test:journey`, that question
++asks you to insert the invocation after `npm run test:app`. These advisories belong to `configs`
++and remain report-only during `repair`: the command preserves the `test` chain and an unplanned
++script. A configuration emitted by the plan or present in the target does not raise the absent
++configuration advisory.
++
+ `audit` still completes the comparison and reports one non-blocking `projects` question when its
+ selection includes `configs`. A scoped audit that excludes `configs` omits that question. For a
+ literal absent project, its advisory tells the developer to register the project or remove the
+@@ -881,7 +902,7 @@ because the shape is chosen once and read afterwards: `new` refuses the advisory
+ caller creating a workspace holds the same refusal, and the Compile section states it.
+ 
+ `bin`, `setup`, `guides`, `integration`, `conformance`, `service`, `vendors`, `global`, `showcase`,
+-and `journey` are structural facts. Each is set only when the workspace physically ships the directory
++and `journey` are structural facts. Reading verbs set each only when the workspace physically ships the directory
+ or exact-case file that defines it, never because of the workspace's name and never because a
+ sibling fact is set.
+ 
+@@ -938,7 +959,8 @@ rather than withholding it.
+ no artifact, configuration, script, or dependency, and the gate reports a non-blocking question on
+ that field so the caller who set it learns it emitted nothing.
+ 
+-The `journey` flag defaults to `false` and also requires a browser application. Without that
++The library's `journey` flag defaults to `false`; `new` sets it when its `app` selection includes
++`browser`. Reading verbs infer it from the wrapper's presence. The flag requires a browser application. Without that
+ application, it emits no journey configuration or script and raises a non-blocking `journey`
+ question. With that application, the content-owned root configuration defines
+ `appJourney(variant, variants)` and excludes `tests/app/browser/integration.test.ts` from the
+@@ -958,9 +980,8 @@ reads `process.env.CAPTURE === '1'` for that boolean. The generated `test:journe
+ `test` chain runs it after the application projects. With the journey axis off, the ordinary
+ browser project retains its integration suite.
+ 
+-The generated browser resolver and gate cover Chromium alone. Reopen that limit when another
+-Playwright engine is installed and launches on the host with a `captureFrame` reading at the
+-declared size, or when a journey or style divergence is recorded.
++The generated browser resolver and gate cover Chromium alone. The emitted `configs/browsers.ts` doc
++block states the condition that reopens engine selection, and is that condition's one home.
+ 
+ `createBlueprint` enforces shape only. Whether the name is a name, the version a version, and the
+ axis combination one this package can generate are the gate's laws, and the gate answers them with
+diff --git a/host.json b/host.json
+index 7a1801fe..abd06f42 100644
+--- a/host.json
++++ b/host.json
+@@ -232,7 +232,7 @@
+ 			"storage": "agents/skills/orkestrel-prove-journey/SKILL.md",
+ 			"destination": ".agents/skills/orkestrel-prove-journey/SKILL.md",
+ 			"executable": false,
+-			"digest": "682ea8a36a48263ae162ea47b7364be109496208e09f15b14bf81837f2f2b7df"
++			"digest": "19f89dd775bd3c46f9c8004356c07e05500ec93d966125fc631b78481e32a7a6"
+ 		},
+ 		{
+ 			"storage": "agents/skills/orkestrel-prove-journey/agents/openai.yaml",
+@@ -244,7 +244,7 @@
+ 			"storage": "agents/skills/orkestrel-prove-journey/references/captures.md",
+ 			"destination": ".agents/skills/orkestrel-prove-journey/references/captures.md",
+ 			"executable": false,
+-			"digest": "6edc02070416754fc8e4c4e18b4d11f163923f8e962cf09c5ee7730721a619d3"
++			"digest": "2e1d2c51981561adbf22195b4a566becbc82dd1150e57e5f480a948069d04540"
+ 		},
+ 		{
+ 			"storage": "agents/skills/orkestrel-prove-journey/references/decide.md",
+@@ -256,19 +256,19 @@
+ 			"storage": "agents/skills/orkestrel-prove-journey/references/layer.md",
+ 			"destination": ".agents/skills/orkestrel-prove-journey/references/layer.md",
+ 			"executable": false,
+-			"digest": "15be636b2ab059c838a3a7f2141d83e9b4585c93b3f665a2857f4d759c914c9c"
++			"digest": "3fefd90ae896be8ecb0b1cb93d7ff9dab60c5d9fcbc1b60800d6f3fe49c48281"
+ 		},
+ 		{
+ 			"storage": "agents/skills/orkestrel-prove-journey/references/statechart.md",
+ 			"destination": ".agents/skills/orkestrel-prove-journey/references/statechart.md",
+ 			"executable": false,
+-			"digest": "37a16caf2ddcd90261c419e50bcee3aaa6d56de91bf8f1727321b774f19d7384"
++			"digest": "c9f378b6c0829dafc93c7be2a9285782693727b290e5687fa03489f07eae9aa4"
+ 		},
+ 		{
+ 			"storage": "agents/skills/orkestrel-prove-journey/references/styles.md",
+ 			"destination": ".agents/skills/orkestrel-prove-journey/references/styles.md",
+ 			"executable": false,
+-			"digest": "9ced3e791b6948a78ec36cd94025ffa9ef9a03e11e45390938c56a1b4fdab3cf"
++			"digest": "a231f70e84e01b9d5846b138c142702d5f3b7260965d0b78d3435b85028b481c"
+ 		},
+ 		{
+ 			"storage": "agents/skills/orkestrel-publish/SKILL.md",
+@@ -310,7 +310,7 @@
+ 			"storage": "agents/transports/codex.md",
+ 			"destination": ".agents/transports/codex.md",
+ 			"executable": false,
+-			"digest": "f0816266e249f3c07ab26c890d22cc0258339d9f4e0312560aabfff93abde009"
++			"digest": "4f1837bdcf0f9edaedaf317b6111ff7ff8d632a96bf6d31cb3a3c024ae569b35"
+ 		},
+ 		{
+ 			"storage": "agents/transports/cursor.md",
+@@ -910,7 +910,7 @@
+ 			"storage": "guides/scaffold.md",
+ 			"destination": "guides/scaffold.md",
+ 			"executable": false,
+-			"digest": "d09f09b7bb1dc49c90263e0b6b19ba1309467eafde7640df5122dd94e7dcae89"
++			"digest": "5782d98e8a6cf10269a98688770c23f3efb4f35fab4d2c0d97e0a113815af459"
+ 		},
+ 		{
+ 			"storage": "guides/sea.md",
+@@ -1048,7 +1048,7 @@
+ 			"storage": "tests/setupPolicy.ts",
+ 			"destination": "tests/setupPolicy.ts",
+ 			"executable": false,
+-			"digest": "ee6304fc7ee489483bece24df2e29c0ff695c5b4a9f59d73eb46660aa1583940"
++			"digest": "9065dde1bc5ef6541a36dfb9b478d990102f804af9e5c78e0ed6b44521678974"
+ 		}
+ 	],
+ 	"roots": [
+@@ -2001,5 +2001,5 @@
+ 			]
+ 		}
+ 	],
+-	"digest": "bd9482a9d472490c25a96dbc8d0a6c5d929dee36c12792659142b285366b509f"
++	"digest": "356f783a3fc79cf1c56d1abd2b65bc7652f10dc082f68811bee8df7e70c1ae97"
+ }
+diff --git a/src/bin/CLI.ts b/src/bin/CLI.ts
+index 4c29a755..3c8ba239 100644
+--- a/src/bin/CLI.ts
++++ b/src/bin/CLI.ts
+@@ -45,6 +45,7 @@ import { renderTable } from '@orkestrel/console'
+ import { attempt, isRecord, isString, parseJSON } from '@orkestrel/contract'
+ import {
+ 	BIN_ENTRY_PATH,
++	blueprintToConfigArtifacts,
+ 	blueprintToDevDependencies,
+ 	blueprintToRootVite,
+ 	blueprintToScripts,
+@@ -229,9 +230,11 @@ export class CLI implements CLIInterface {
+ 	// blueprint the command line describes, and write it into a vacant target.
+ 	async #create(command: NewCommand): Promise<number> {
+ 		const target = command.target ?? command.name
++		const app = selectionToEnvironments(command.app, 'app')
+ 		const blueprint = createBlueprint(command.name, {
+ 			src: selectionToEnvironments(command.src, 'src'),
+-			app: selectionToEnvironments(command.app, 'app'),
++			app,
++			journey: app.includes('browser'),
+ 			bin: command.bin === true,
+ 			setup: [],
+ 			dependencies: selectionToPackages(command.dependencies).map((name) => ({
+@@ -1045,6 +1048,32 @@ export class CLI implements CLIInterface {
+ 				groups: ['configs'],
+ 			}
+ 		}
++		if (!writing) {
++			const paths = new Set(
++				blueprintToConfigArtifacts(blueprint).map((artifact) =>
++					resolveContainedPath(target, artifact.path),
++				),
++			)
++			const configurations: string[] = []
++			for (const [name, script] of Object.entries(scripts)) {
++				if (!name.startsWith('test:') || !isString(script)) continue
++				const invoked = scriptToInvocations(script)
++				if (invoked === undefined) continue
++				for (const config of invoked.configs) {
++					const path = resolveContainedPath(target, config)
++					if (path !== undefined && (paths.has(path) || isExactCaseFile(path))) continue
++					configurations.push(`${name} --config ${config}`)
++				}
++			}
++			if (configurations.length > 0) {
++				return {
++					field: 'projects',
++					message: `The manifest at ${target} names a Vitest configuration the plan does not emit and the target does not hold: ${configurations.join(', ')}. Add the configuration or remove the script that names it.`,
++					blocking: false,
++					groups: ['configs'],
++				}
++			}
++		}
+ 		const expected = blueprintToScripts(blueprint)
+ 		const expectedLines = new Map<string, string>()
+ 		for (const [name, script] of Object.entries(expected)) {
+@@ -1092,7 +1121,22 @@ export class CLI implements CLIInterface {
+ 			.filter(([project]) => !reachable.has(project))
+ 			.sort(([left], [right]) => left.localeCompare(right))
+ 		const ungated = missing.filter(([project]) => isString(scripts[`test:${project}`]))
+-		if (ungated.length === 0) return undefined
++		if (ungated.length === 0) {
++			if (
++				!writing &&
++				expected['test:journey'] !== undefined &&
++				(!isString(scripts.test) ||
++					!scriptToInvocations(scripts.test)?.scripts.includes('test:journey'))
++			) {
++				return {
++					field: 'projects',
++					message: `The manifest at ${target} does not invoke npm run test:journey from its test chain. Add npm run test:journey after npm run test:app.`,
++					blocking: false,
++					groups: ['configs'],
++				}
++			}
++			return undefined
++		}
+ 		const names = ungated.map(([project]) => project)
+ 		const disk = parseJSON(text)
+ 		const written = isRecord(disk) && isRecord(disk.scripts) ? disk.scripts : {}
+diff --git a/src/bin/helpers.ts b/src/bin/helpers.ts
+index e98ae549..59c4eedf 100644
+--- a/src/bin/helpers.ts
++++ b/src/bin/helpers.ts
+@@ -751,16 +751,16 @@ export function releasesToPins(
+ }
+ 
+ /**
+- * Reads the literal Vitest projects and npm run scripts one shell command invokes.
++ * Reads the literal Vitest projects, configuration paths, and npm run scripts a shell command names.
+  *
+  * @param script - The manifest script text to read.
+- * @returns The invoked projects and scripts, or `undefined` when the command
++ * @returns The named projects, configurations, and scripts, or `undefined` when the command
+  * cannot be read literally.
+  *
+  * @remarks
+  * Quotes group a token but do not hide the option, while shell expansions make
+  * its value unresolved and therefore refuse the write that asked the question.
+- * An unterminated quote, a trailing escape, and an unresolved `--project` value
++ * An unterminated quote, a trailing escape, and an unresolved `--project` or `--config` value
+  * all answer `undefined` rather than a partial reading.
+  *
+  * @example
+@@ -768,7 +768,7 @@ export function releasesToPins(
+  * import { scriptToInvocations } from './helpers.js'
+  *
+  * scriptToInvocations('vitest run --project src:core')
+- * // { projects: ['src:core'], scripts: [] }
++ * // { projects: ['src:core'], configs: [], scripts: [] }
+  * ```
+  */
+ export function scriptToInvocations(script: string): ScriptInvocations | undefined {
+@@ -837,6 +837,7 @@ export function scriptToInvocations(script: string): ScriptInvocations | undefin
+ 	if (started) tokens.push({ value, resolved })
+ 
+ 	const projects: string[] = []
++	const configs: string[] = []
+ 	const scripts: string[] = []
+ 	for (let index = 0; index < tokens.length; index += 1) {
+ 		const token = tokens[index]
+@@ -854,7 +855,7 @@ export function scriptToInvocations(script: string): ScriptInvocations | undefin
+ 			index += 2
+ 			continue
+ 		}
+-		if (token.value === '--project') {
++		if (token.value === '--project' || token.value === '--config') {
+ 			const project = tokens[index + 1]
+ 			if (
+ 				project === undefined ||
+@@ -863,19 +864,21 @@ export function scriptToInvocations(script: string): ScriptInvocations | undefin
+ 				['&&', '||', ';', '|', '&', '(', ')'].includes(project.value)
+ 			)
+ 				return undefined
+-			projects.push(project.value)
++			const names = token.value === '--project' ? projects : configs
++			names.push(project.value)
+ 			index += 1
+ 			continue
+ 		}
+-		if (token.value.startsWith('--project=')) {
+-			const project = token.value.slice('--project='.length)
++		if (token.value.startsWith('--project=') || token.value.startsWith('--config=')) {
++			const project = token.value.slice(token.value.indexOf('=') + 1)
+ 			if (!token.resolved || project.length === 0) return undefined
+-			projects.push(project)
++			const names = token.value.startsWith('--project=') ? projects : configs
++			names.push(project)
+ 			continue
+ 		}
+-		if (!token.resolved && token.value.includes('--project')) return undefined
++		if (!token.resolved && /--project|--config/.test(token.value)) return undefined
+ 	}
+-	return { projects, scripts }
++	return { projects, configs, scripts }
+ }
+ 
+ /**
+diff --git a/src/bin/types.ts b/src/bin/types.ts
+index 52f85e32..eb3e6387 100644
+--- a/src/bin/types.ts
++++ b/src/bin/types.ts
+@@ -225,7 +225,7 @@ export interface VersionResolution {
+ }
+ 
+ /**
+- * Lists the literal Vitest projects and npm run scripts one shell command invokes.
++ * Lists the literal Vitest projects, configuration paths, and npm run scripts a shell command names.
+  *
+  * @remarks
+  * Literal only: a token whose value a shell expansion decides is unresolved, so
+@@ -233,6 +233,8 @@ export interface VersionResolution {
+  */
+ export interface ScriptInvocations {
+ 	readonly projects: readonly string[]
++	/** Lists literal --config values in command order, empty when none are named. */
++	readonly configs: readonly string[]
+ 	readonly scripts: readonly string[]
+ }
+ 
+diff --git a/tests/setupPolicy.ts b/tests/setupPolicy.ts
+index f76dde57..8ddc6e0d 100644
+--- a/tests/setupPolicy.ts
++++ b/tests/setupPolicy.ts
+@@ -1286,9 +1286,10 @@ export function readSkillDeclarations(
+  * violation.
+  * @remarks The guide parser supplies fences, including fences nested in lists and blockquotes.
+  * The Oxc parser reads named value and type bindings, aliases, comments, and multiline imports.
+- * A fence the parser refuses reports a violation when its text names an `@orkestrel/` specifier,
+- * because error recovery drops the statements after the failure; a refused fence naming no such
+- * specifier stays outside this check, as prose, table cells, indented code, default imports,
++ * A fence the parser refuses reports a violation when its text carries an `@orkestrel/` substring
++ * anywhere, including comments and string literals, because error recovery drops the statements
++ * after the failure. A refused fence without that substring stays outside this check, as prose,
++ * table cells, indented code, default imports,
+  * namespace imports, and imports from other scopes do. A package outside BASE_DEV_DEPENDENCIES
+  * reports a violation, and each refused declaration reading reports the cause
+  * {@link SKILL_DECLARATION_MESSAGES} names. This check proves exported names, not call signatures
+diff --git a/tests/setupServer.test.ts b/tests/setupServer.test.ts
+index f69dc507..4152cea0 100644
+--- a/tests/setupServer.test.ts
++++ b/tests/setupServer.test.ts
+@@ -659,6 +659,11 @@ describe('the parsed specifier reader', () => {
+ 		])
+ 	})
+ 
++	it('omits a require member expression from the specifier reading', () => {
++		expect(readSpecifiers("require.resolve('pkg')\n", 'member.cts')).toStrictEqual([])
++		expect(readSpecifiers("require('pkg')\n", 'direct.cts')).toStrictEqual(['pkg'])
++	})
++
+ 	it('refuses a source the parser reports an error for', () => {
+ 		expect(() => readSpecifiers('import { join } from\n', 'broken.ts')).toThrow(
+ 			'The parser refused broken.ts',
+diff --git a/tests/setupServer.ts b/tests/setupServer.ts
+index 6cca7ba2..21aed075 100644
+--- a/tests/setupServer.ts
++++ b/tests/setupServer.ts
+@@ -1527,9 +1527,9 @@ export function readStatements(source: string, name: string): readonly TestState
+  * type-only import as an import because that specifier must resolve too. It
+  * resolves a string literal and a template literal with no expressions; every
+  * other argument reports `undefined`, because an argument assembled at runtime
+- * names no module a caller can rule on. Two forms sit outside the reading: an
+- * `import()` written in type position, which parses as a `TSImportType` node, and
+- * a load through a binding some other name holds.
++ * names no module a caller can rule on. The reading omits an `import()` in type
++ * position (`TSImportType`), a load through a binding some other name holds, and
++ * a `require` reached through a member expression such as `require.resolve`.
+  *
+  * @example
+  * ```ts
+diff --git a/tests/src/bin/CLI.test.ts b/tests/src/bin/CLI.test.ts
+index 8b29fba5..19610d6d 100644
+--- a/tests/src/bin/CLI.test.ts
++++ b/tests/src/bin/CLI.test.ts
+@@ -443,6 +443,44 @@ describe('CLI sanitization', () => {
+ })
+ 
+ describe('CLI new', () => {
++	it('creates the journey axis for a browser application and omits it for core', async () => {
++		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
++		try {
++			const fleet = createFleet(workspace)
++			for (const app of ['browser', 'core']) {
++				const target = workspace.ensure(app)
++				const sink = createSink()
++				expect(
++					await new CLI(sink.options).execute([
++						'new',
++						'sample',
++						'--app',
++						app,
++						'--offline',
++						'--from',
++						fleet.host,
++						'--target',
++						target,
++						'--json',
++					]),
++				).toBe(EXIT_CLEAN)
++				const root = requireValue(workspace.read(`${app}/vite.config.ts`))
++				const manifest = requireValue(workspace.read(`${app}/package.json`))
++				expect(workspace.has(`${app}/configs/app/vite.journey.config.ts`)).toBe(app === 'browser')
++				expect(root.includes('export function appJourney(')).toBe(app === 'browser')
++				expect(root.includes("exclude: ['tests/app/browser/integration.test.ts']")).toBe(
++					app === 'browser',
++				)
++				expect(manifest.includes('"test:journey":')).toBe(app === 'browser')
++				expect(manifest.includes('npm run test:app && npm run test:journey')).toBe(
++					app === 'browser',
++				)
++			}
++		} finally {
++			workspace.destroy()
++		}
++	})
++
+ 	it('creates a bin workspace that round-trips through audit', async () => {
+ 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+ 		try {
+@@ -1662,6 +1700,103 @@ describe('CLI audit', () => {
+ 		}
+ 	})
+ 
++	it('reports an absent journey configuration without removing its script during repair', async () => {
++		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
++		try {
++			const fleet = createFleet(workspace)
++			const target = workspace.ensure('fresh')
++			expect(
++				await new CLI(createSink().options).execute([
++					'new',
++					'sample',
++					'--app',
++					'browser',
++					'--offline',
++					'--from',
++					fleet.host,
++					'--target',
++					target,
++				]),
++			).toBe(EXIT_CLEAN)
++			workspace.remove('fresh/configs/app/vite.journey.config.ts')
++			const manifest = workspace.read('fresh/package.json')
++			for (const verb of ['audit', 'repair']) {
++				const sink = createSink()
++				await new CLI(sink.options).execute([
++					verb,
++					'--offline',
++					'--from',
++					fleet.host,
++					'--target',
++					target,
++					'--groups',
++					'configs',
++					'--json',
++				])
++				const result: Audit | RepairResult = JSON.parse(sink.output[0] ?? '')
++				const audit = 'audit' in result ? result.audit : result
++				expect(audit.questions).toContainEqual({
++					field: 'projects',
++					blocking: false,
++					message: `The manifest at ${target} names a Vitest configuration the plan does not emit and the target does not hold: test:journey --config configs/app/vite.journey.config.ts. Add the configuration or remove the script that names it.`,
++				})
++				expect(workspace.read('fresh/package.json')).toBe(manifest)
++			}
++		} finally {
++			workspace.destroy()
++		}
++	})
++
++	it('reports a journey invocation missing from test without rewriting the chain', async () => {
++		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
++		try {
++			const fleet = createFleet(workspace)
++			const target = workspace.ensure('fresh')
++			expect(
++				await new CLI(createSink().options).execute([
++					'new',
++					'sample',
++					'--app',
++					'browser',
++					'--offline',
++					'--from',
++					fleet.host,
++					'--target',
++					target,
++				]),
++			).toBe(EXIT_CLEAN)
++			const manifest = requireValue(workspace.read('fresh/package.json')).replace(
++				' && npm run test:journey',
++				'',
++			)
++			workspace.write('fresh/package.json', manifest)
++			for (const verb of ['repair', 'audit']) {
++				const sink = createSink()
++				await new CLI(sink.options).execute([
++					verb,
++					'--offline',
++					'--from',
++					fleet.host,
++					'--target',
++					target,
++					'--groups',
++					'configs',
++					'--json',
++				])
++				const result: Audit | RepairResult = JSON.parse(sink.output[0] ?? '')
++				const audit = 'audit' in result ? result.audit : result
++				expect(audit.questions).toContainEqual({
++					field: 'projects',
++					blocking: false,
++					message: `The manifest at ${target} does not invoke npm run test:journey from its test chain. Add npm run test:journey after npm run test:app.`,
++				})
++				expect(workspace.read('fresh/package.json')).toBe(manifest)
++			}
++		} finally {
++			workspace.destroy()
++		}
++	})
++
+ 	it('rejects wrong-case structural paths while deriving every exact fact', async () => {
+ 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+ 		try {
+diff --git a/tests/src/bin/helpers.test.ts b/tests/src/bin/helpers.test.ts
+index 13fd28d7..6aa7888d 100644
+--- a/tests/src/bin/helpers.test.ts
++++ b/tests/src/bin/helpers.test.ts
+@@ -717,10 +717,22 @@ describe('scriptToInvocations', () => {
+ 	it('reads a project named as a separate token and as one token', () => {
+ 		expect(scriptToInvocations('vitest run --project src:core')).toStrictEqual({
+ 			projects: ['src:core'],
++			configs: [],
+ 			scripts: [],
+ 		})
+ 		expect(scriptToInvocations('vitest run --project=src:server')).toStrictEqual({
+ 			projects: ['src:server'],
++			configs: [],
++			scripts: [],
++		})
++	})
++
++	it('reads configuration paths in command order through either option spelling', () => {
++		expect(
++			scriptToInvocations('vitest run --config "configs/first path.ts" --config=configs/next.ts'),
++		).toStrictEqual({
++			projects: [],
++			configs: ['configs/first path.ts', 'configs/next.ts'],
+ 			scripts: [],
+ 		})
+ 	})
+@@ -728,6 +740,7 @@ describe('scriptToInvocations', () => {
+ 	it('reads every npm run script and reads through quotes', () => {
+ 		expect(scriptToInvocations('npm run build && npm run "test:src"')).toStrictEqual({
+ 			projects: [],
++			configs: [],
+ 			scripts: ['build', 'test:src'],
+ 		})
+ 	})
+@@ -735,6 +748,8 @@ describe('scriptToInvocations', () => {
+ 	it('refuses a command whose value a shell expansion decides', () => {
+ 		expect(scriptToInvocations('vitest run --project $PROJECT')).toBeUndefined()
+ 		expect(scriptToInvocations('vitest run "--project=$PROJECT"')).toBeUndefined()
++		expect(scriptToInvocations('vitest run --config $CONFIG')).toBeUndefined()
++		expect(scriptToInvocations('vitest run "--config=$CONFIG"')).toBeUndefined()
+ 		expect(scriptToInvocations('npm run `echo build`')).toBeUndefined()
+ 	})
+ 
+@@ -743,10 +758,16 @@ describe('scriptToInvocations', () => {
+ 		expect(scriptToInvocations('vitest run --project src:core \\')).toBeUndefined()
+ 		expect(scriptToInvocations('vitest run --project=')).toBeUndefined()
+ 		expect(scriptToInvocations('vitest run --project && echo done')).toBeUndefined()
++		expect(scriptToInvocations('vitest run --config=')).toBeUndefined()
++		expect(scriptToInvocations('vitest run --config && echo done')).toBeUndefined()
+ 	})
+ 
+ 	it('reads a command naming neither a project nor a script', () => {
+-		expect(scriptToInvocations('tsc --noEmit')).toStrictEqual({ projects: [], scripts: [] })
++		expect(scriptToInvocations('tsc --noEmit')).toStrictEqual({
++			projects: [],
++			configs: [],
++			scripts: [],
++		})
+ 	})
+ })
+ 
+diff --git a/tests/src/core/templates.test.ts b/tests/src/core/templates.test.ts
+index fd07ef5f..08616ca6 100644
+--- a/tests/src/core/templates.test.ts
++++ b/tests/src/core/templates.test.ts
+@@ -1085,6 +1085,9 @@ describe('emitted workspaces under their own gates', () => {
+ 			)
+ 			stageRootConfig(createBlueprint('sample', { app: ['browser'] }), workspace, 'ordinary')
+ 			const root = requireValue(workspace.read('journey/vite.config.ts'))
++			const journey = requireValue(root.match(/export function appJourney\([^]*?\n\}/u)?.[0])
++			expect(journey).toContain("include: ['tests/app/browser/integration.test.ts']")
++			expect(journey).toContain('enabled: true')
+ 			const wrapper = requireValue(workspace.read('journey/configs/app/vite.journey.config.ts'))
+ 			expect(wrapper).toContain("import type { JourneyVariant } from '@orkestrel/test'")
+ 			expect(wrapper).toContain("{ name: 'desktop', width: 1280, height: 800 }")

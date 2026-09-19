@@ -1,0 +1,9 @@
+BASELINE exit=0 | 5 passed (5)
+CONTROL SITES: 8
+C1 every inline control inverted: exit=1 | 5 failed (5)
+    FAIL  |conformance| tests/conformance.test.ts > configuration conformance > builds the showcase on the browser configuration instead of restating it
+    FAIL  |conformance| tests/conformance.test.ts > configuration conformance > carries the Vue plugin exactly once in every configuration these factories return
+    FAIL  |conformance| tests/conformance.test.ts > configuration conformance > merges an override into the browser configuration
+    FAIL  |conformance| tests/conformance.test.ts > configuration conformance > merges an override into the showcase configuration
+    FAIL  |conformance| tests/conformance.test.ts > configuration conformance > refuses the invocation record a registered factory receives in the override position
+RESTORED exit=0 | 5 passed (5)

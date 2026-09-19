@@ -1,0 +1,19 @@
+{
+  "name": "lint-check",
+  "script": "lint:check",
+  "capture": false,
+  "executable": "C:\\Users\\mikes\\scoop\\apps\\nodejs-lts\\current\\node.exe",
+  "arguments": [
+    "C:\\Users\\mikes\\scoop\\apps\\nodejs-lts\\current\\node_modules\\npm\\bin\\npm-cli.js",
+    "run",
+    "lint:check"
+  ],
+  "started": "2026-09-18T21:13:05.898Z",
+  "ended": "2026-09-18T21:13:06.513Z",
+  "elapsed": 614.6801,
+  "pid": 31904,
+  "exit": 0,
+  "signal": null,
+  "stdout": "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\units\\roughnotes-registry-gates-evidence\\roughnotes-registry-gates-20260918\\lint-check.stdout.log.txt",
+  "stderr": "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\units\\roughnotes-registry-gates-evidence\\roughnotes-registry-gates-20260918\\lint-check.stderr.log.txt"
+}

@@ -1,0 +1,52 @@
+fix(config): adopt the hardened merge and prove what it holds
+
+This workspace carried the first draft of `mergeOverride`. The generator that
+emits it, `@orkestrel/scaffold`, carried the same draft, and four adversarial
+audit rounds found defects in it. A generated `vite.config.ts` is produced at
+scaffold time and is not restored by `repair`, so nothing brings the fix here
+on its own.
+
+`mergeOverride` and `isNamedPlugin` are now byte-identical to scaffold's
+committed copies, verified against that checkout by an instrument whose control
+alters a type token and reports the difference.
+
+What the draft did wrong, each measured rather than reasoned.
+
+It flattened one level, so a nested override entry survived as an opaque key
+and Vite's recursive flatten then exposed the duplicate name the selection
+exists to prevent. The hardened merge never flattens.
+
+It selected over the merged array, so it deduplicated the caller's own entries
+as well as base-against-override collisions: two same-named plugins a developer
+wrote became one, silently. It now walks the base and override lists
+separately.
+
+It keyed the refusal on `command` alone. A `UserConfig` declares `mode` but not
+`command`, and Vitest's invocation record always carries both, so the pair is
+the honest discriminant.
+
+It tested `'name' in plugin` while narrowing to `{ name: string }`, and
+excluded promises with `instanceof`, which misses a structural thenable and a
+cross-realm promise. The predicate now checks the type it asserts and excludes
+any entry carrying a callable `then` — the same test Vite's own `asyncFlatten`
+applies one layer later.
+
+The proofs. `tests/conformance.test.ts` covers nested entries, caller
+duplicates, replacement position, a base repeating a name, a non-string name, a
+structural promise, and each side of the discriminant including an override
+carrying `mode` alone, which a `mode`-keyed rival would wrongly refuse. Every
+case carries the rival reading as its control, and every control was shown to
+fail. `tests/setup.test.ts` and its `setup` project prove the three exported
+test helpers at the behaviours mutation showed surviving without them.
+
+The `@returns` block states an allocation rather than a shape: base positions
+are visited in order and each named position takes the earliest same-named
+override entry no earlier position took. That wording was checked by
+enumerating every allocation its clauses permit — it admits one result, where
+the wording it replaced admitted three.
+
+Nothing the application builds moved. The CSS asset is 323.24 kB, unchanged
+across every run of this work, and no wrapper or journey project changed its
+effective configuration.
+
+Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>

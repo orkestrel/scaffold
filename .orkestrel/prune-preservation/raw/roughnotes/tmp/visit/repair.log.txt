@@ -1,0 +1,6 @@
+npm notice run roughnotes@0.0.1 npx
+npm notice run scaffold repair --groups tests
+setup: The target at . carries a test setup module that no proof covers: tests/setupBrowser.ts. Add tests/setupBrowser.test.ts to cover it. The proof's subject is behavior only this workspace can assert, so scaffold does not write it.
+0 of 7 planned paths drifted from the plan. Audit compared bytes at 3, existence at 0, and nothing at 4.
+tests/config.test.ts replaced (56 lines added).
+1 written, 7 unchanged, 0 removed in ..

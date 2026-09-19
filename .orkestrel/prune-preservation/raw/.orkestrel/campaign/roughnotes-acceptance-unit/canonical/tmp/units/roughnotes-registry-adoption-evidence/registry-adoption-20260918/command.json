@@ -1,0 +1,17 @@
+{
+  "executable": "C:\\Users\\mikes\\scoop\\apps\\nodejs-lts\\current\\node.exe",
+  "entry": "C:\\Users\\mikes\\scoop\\apps\\nodejs-lts\\current\\node_modules\\npm\\bin\\npm-cli.js",
+  "arguments": [
+    "install",
+    "--save-dev",
+    "@orkestrel/scaffold@^0.0.75",
+    "@orkestrel/test@^0.0.18",
+    "--ignore-scripts",
+    "--no-audit",
+    "--no-fund",
+    "--registry=https://registry.npmjs.org"
+  ],
+  "target": "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\recovery\\roughnotes",
+  "integrity": "sha512-ueJmibzyJKE7fyATUgc+CUWIKpfUEJxUm8oXBSFSrusuZiRYF6s7SfdCyQFmB37vN8+SoUVCssKV4/54sr1fEA==",
+  "version": "0.0.75"
+}

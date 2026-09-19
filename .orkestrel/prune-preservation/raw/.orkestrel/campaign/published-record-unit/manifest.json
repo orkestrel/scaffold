@@ -1,0 +1,108 @@
+﻿{
+    "purpose":  "Raw retention for publication comparison and native-field capability map receipts.",
+    "roots":  {
+                  "publication":  "C:\\Users\\mikes\\AppData\\Local\\Temp\\scaffold-registry-20260918",
+                  "canonical":  "C:\\Users\\mikes\\WebstormProjects\\scaffold"
+              },
+    "exclusions":  [
+                       "scaffold-0.0.75.tgz",
+                       "tmp/cursor/fieldpass-harness-map.jsonl",
+                       "archives",
+                       "PNG images",
+                       "secrets",
+                       "node_modules"
+                   ],
+    "provenance":  {
+                       "session":  "efc15351-efc8-4c2d-bb1f-1440750acfbf",
+                       "exit":  0,
+                       "elapsed":  "254892ms",
+                       "fieldTest":  "not launched",
+                       "ownerChoice":  "pending asynchronous CLI exception"
+                   },
+    "records":  [
+                    {
+                        "source":  "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\units\\published-record-retention-brief.md",
+                        "retained":  "brief-source.md",
+                        "sourceSha256":  "C7BDFB85BD5762CFF1F6009AE54D12B61058DD6B140A6DB568F63B78FF312451",
+                        "retainedSha256":  "C7BDFB85BD5762CFF1F6009AE54D12B61058DD6B140A6DB568F63B78FF312451"
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\AppData\\Local\\Temp\\scaffold-registry-20260918\\comparison-brief.md",
+                        "retained":  "raw/publication/comparison-brief.md",
+                        "sourceSha256":  "20A799F84FF8A32408C4FC80C70B0A654F35209B8B7D82050B052D7C6979624B",
+                        "retainedSha256":  "20A799F84FF8A32408C4FC80C70B0A654F35209B8B7D82050B052D7C6979624B"
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\AppData\\Local\\Temp\\scaffold-registry-20260918\\comparison-report.md",
+                        "retained":  "raw/publication/comparison-report.md",
+                        "sourceSha256":  "2698B81AB97DC456274B17702B3A7015FEC5675AB376247F70197BA5B7C4384C",
+                        "retainedSha256":  "2698B81AB97DC456274B17702B3A7015FEC5675AB376247F70197BA5B7C4384C"
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\AppData\\Local\\Temp\\scaffold-registry-20260918\\comparison.mjs",
+                        "retained":  "raw/publication/comparison.mjs",
+                        "sourceSha256":  "4257F796121FE8FC5FFE06C3C1BF8EC1464BDECC16A047A13B85B3EC330866AC",
+                        "retainedSha256":  "4257F796121FE8FC5FFE06C3C1BF8EC1464BDECC16A047A13B85B3EC330866AC"
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\AppData\\Local\\Temp\\scaffold-registry-20260918\\comparison-evidence\\comparison.json",
+                        "retained":  "raw/publication/comparison-evidence/comparison.json",
+                        "sourceSha256":  "FF050624531C2711FCBCB778A50853264BF4141C261DA1D1F11CBD9D9D18860D",
+                        "retainedSha256":  "FF050624531C2711FCBCB778A50853264BF4141C261DA1D1F11CBD9D9D18860D"
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\AppData\\Local\\Temp\\scaffold-registry-20260918\\comparison-evidence\\prepared-listing.txt",
+                        "retained":  "raw/publication/comparison-evidence/prepared-listing.txt",
+                        "sourceSha256":  "6947B702E18B173CE8E89757ACAB3353BA403E478512762C412DF96C217FBC6B",
+                        "retainedSha256":  "6947B702E18B173CE8E89757ACAB3353BA403E478512762C412DF96C217FBC6B"
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\AppData\\Local\\Temp\\scaffold-registry-20260918\\comparison-evidence\\published-listing.txt",
+                        "retained":  "raw/publication/comparison-evidence/published-listing.txt",
+                        "sourceSha256":  "6947B702E18B173CE8E89757ACAB3353BA403E478512762C412DF96C217FBC6B",
+                        "retainedSha256":  "6947B702E18B173CE8E89757ACAB3353BA403E478512762C412DF96C217FBC6B"
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\AppData\\Local\\Temp\\scaffold-registry-20260918\\comparison-evidence\\36C10F55B178C4A5A25678CD98FBC7A2885520E0247C33F16E8AE1564D0B3083.diff",
+                        "retained":  "raw/publication/comparison-evidence/36C10F55B178C4A5A25678CD98FBC7A2885520E0247C33F16E8AE1564D0B3083.diff",
+                        "sourceSha256":  "ED0C35075C8EFCFA0A7D3ED397C13B9EF8D521DC88C3ADA3070495BECC0B1CC3",
+                        "retainedSha256":  "ED0C35075C8EFCFA0A7D3ED397C13B9EF8D521DC88C3ADA3070495BECC0B1CC3"
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\AppData\\Local\\Temp\\scaffold-registry-20260918\\comparison-evidence\\E086447C86A18A5A2399EADA5DB63F4C7A6F8FC933BD5C65E554379EC8057F48.diff",
+                        "retained":  "raw/publication/comparison-evidence/E086447C86A18A5A2399EADA5DB63F4C7A6F8FC933BD5C65E554379EC8057F48.diff",
+                        "sourceSha256":  "8BCA6154179DAAB04E40BDE9582970E87AC404E647E01490FAB6077DF74397A1",
+                        "retainedSha256":  "8BCA6154179DAAB04E40BDE9582970E87AC404E647E01490FAB6077DF74397A1"
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\units\\published-scaffold-verifier-brief.md",
+                        "retained":  "raw/canonical/tmp/units/published-scaffold-verifier-brief.md",
+                        "sourceSha256":  "A2E68942EA86B36578A7116058BF3A6B4023CBD6EC26C47C829CD7700EF0B86E",
+                        "retainedSha256":  "A2E68942EA86B36578A7116058BF3A6B4023CBD6EC26C47C829CD7700EF0B86E"
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\units\\published-scaffold-verifier-report.md",
+                        "retained":  "raw/canonical/tmp/units/published-scaffold-verifier-report.md",
+                        "sourceSha256":  "A163C41C34D5EC17F1C3D880700A1DC520FDF4029AC91F6BB74C92EF36106BED",
+                        "retainedSha256":  "A163C41C34D5EC17F1C3D880700A1DC520FDF4029AC91F6BB74C92EF36106BED"
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\cursor\\fieldpass-harness-map-brief.md",
+                        "retained":  "raw/canonical/tmp/cursor/fieldpass-harness-map-brief.md",
+                        "sourceSha256":  "3AAA4BA09399011E814F82069ED5F2D72DB6D241A95B8BF8256363FD638F390C",
+                        "retainedSha256":  "3AAA4BA09399011E814F82069ED5F2D72DB6D241A95B8BF8256363FD638F390C"
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\cursor\\fieldpass-harness-map-report.md",
+                        "retained":  "raw/canonical/tmp/cursor/fieldpass-harness-map-report.md",
+                        "sourceSha256":  "BBD0A784E307C9EB60C596FAC03757727440B4EF96EAD20F713B10180065D1CF",
+                        "retainedSha256":  "BBD0A784E307C9EB60C596FAC03757727440B4EF96EAD20F713B10180065D1CF"
+                    },
+                    {
+                        "source":  "C:\\Users\\mikes\\WebstormProjects\\scaffold\\tmp\\cursor\\fieldpass-harness-map.ps1",
+                        "retained":  "raw/canonical/tmp/cursor/fieldpass-harness-map.ps1",
+                        "sourceSha256":  "B1A15764F5797B6B08E401D1C5AD541DC3A550832B794CCE09791338437DE0A4",
+                        "retainedSha256":  "B1A15764F5797B6B08E401D1C5AD541DC3A550832B794CCE09791338437DE0A4"
+                    }
+                ]
+}

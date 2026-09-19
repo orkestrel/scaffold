@@ -1,0 +1,49 @@
+--- findings: path | group | ownership | drift ---
+package.json | manifest | birth | aligned
+tsconfig.json | configs | content | aligned
+vite.config.ts | configs | content | stale
+configs/browsers.ts | configs | content | aligned
+configs/app/tsconfig.core.json | configs | content | aligned
+configs/app/vite.browser.config.ts | configs | content | aligned
+configs/app/tsconfig.browser.json | configs | content | aligned
+configs/app/vite.showcase.config.ts | configs | content | aligned
+configs/helpers.ts | configs | content | aligned
+configs/policy.ts | configs | content | aligned
+.editorconfig | configs | content | aligned
+.gitattributes | configs | content | aligned
+.gitignore | configs | presence | aligned
+.oxfmtrc.json | configs | content | aligned
+.oxlintrc.json | configs | content | aligned
+.oxlintignore | configs | content | aligned
+.prettierignore | configs | content | aligned
+app/core/index.ts | source | birth | aligned
+app/browser/index.ts | source | birth | aligned
+app/browser/main.ts | source | birth | aligned
+app/browser/index.html | source | birth | aligned
+tests/setup.ts | tests | birth | aligned
+tests/setupBrowser.ts | tests | birth | aligned
+tests/app/core/index.test.ts | tests | birth | aligned
+tests/app/browser/index.test.ts | tests | birth | aligned
+tests/setupPolicy.ts | tests | content | aligned
+tests/policy.test.ts | tests | content | aligned
+tests/config.test.ts | tests | content | aligned
+guides/README.md | guides | birth | aligned
+guides/guide.md | guides | presence | aligned
+guides/scaffold.md | guides | presence | aligned
+README.md | docs | birth | aligned
+AGENTS.md | docs | content | aligned
+CLAUDE.md | docs | content | aligned
+LICENSE | docs | content | aligned
+.claude/settings.json | orchestration | content | aligned
+scripts/codex.sh | orchestration | content | aligned
+scripts/cursor.sh | orchestration | content | aligned
+scripts/deps.sh | orchestration | content | aligned
+scripts/ollama.sh | orchestration | content | aligned
+.claude/agents/orkestrel.md | orchestration | presence | aligned
+--- questions ---
+{"field":"guides","message":"The mirror at guides/test.md differs from the hosted guide. Run catalog to refresh it.","blocking":false}
+{"field":"projects","message":"The manifest at . names a Vitest project the planned configuration does not register: journey:*. Add the project to vite.config.ts or remove the script that names it.","blocking":false}
+{"field":"setup","message":"The target at . carries a test setup module that no proof covers: tests/setupBrowser.ts. Add tests/setupBrowser.test.ts to cover it. The proof's subject is behavior only this workspace can assert, so scaffold does not write it.","blocking":false}
+{"field":"dependencies","message":"@vitest/browser-playwright declares major 4, while the registry serves major 5.","blocking":false}
+{"field":"dependencies","message":"typescript declares major 6, while the registry serves major 7.","blocking":false}
+{"field":"dependencies","message":"vitest declares major 4, while the registry serves major 5.","blocking":false}

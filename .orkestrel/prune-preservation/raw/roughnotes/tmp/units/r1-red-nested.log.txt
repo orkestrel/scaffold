@@ -1,0 +1,37 @@
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/roughnotes
+
+·····x······
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 11 passed (12)
+   Start at  23:18:54
+   Duration  812ms (transform 71ms, setup 27ms, import 590ms, tests 20ms, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |conformance| tests/conformance.test.ts > configuration conformance > leaves a nested override entry nested rather than lifting it beside the base entries
+AssertionError: expected [ { name: 'conformance-alpha' } ] to be [ [ { name: 'conformance-alpha' } ] ] // Object.is equality
+
+- Expected
++ Received
+
+  [
+-   [
+    {
+      "name": "conformance-alpha",
+    },
+-   ],
+  ]
+
+ ❯ tests/conformance.test.ts:189:22
+    187|   expect(plugins.length).toBe(2)
+    188|   expect(plugins[0]).toBe(declared)
+    189|   expect(plugins[1]).toBe(nested)
+       |                      ^
+    190|   // This count reads top-level entries, because `readPluginNames` str…
+    191|   // rather than descending into it. It establishes that the merge add…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+

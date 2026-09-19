@@ -1,0 +1,50 @@
+9:step() {
+16:step lintcheck npm run lint:check
+17:step formatcheck npm run format:check
+18:step check npm run check
+19:step build npm run build
+20:step policy npm run test:policy
+21:step setup npm run test:setup
+22:step core npm run test:src:core
+23:step config npm run test:config
+24:step guides npm run test:guides
+25:step server npm run test:src:server
+26:step bin npm run test:src:bin
+lintcheck_EXIT=0
+formatcheck_EXIT=0
+check_EXIT=0
+build_EXIT=0
+npm notice run node -e "import('./dist/src/server/index.js').then((m)=>{const n=m.stageHost(process.cwd(),'dist/host',{report: (message) => console.error(message)}).length;console.log('build-host: staged '+n+' file(s) into dist/host')})"
+policy_EXIT=0
+ Test Files  1 passed (1)
+      Tests  110 passed (110)
+setup_EXIT=0
+ Test Files  3 passed (3)
+      Tests  157 passed | 3 skipped (160)
+core_EXIT=0
+failed to load config from C:\Users\mikes\WebstormProjects\scaffold\tmp\scaffold-e2-peers-BqpRVV\malformed\vite.config.ts
+ Test Files  9 passed (9)
+      Tests  421 passed (421)
+config_EXIT=0
+ Test Files  1 passed (1)
+      Tests  173 passed | 1 skipped (174)
+guides_EXIT=0
+ Test Files  1 passed (1)
+      Tests  23 passed (23)
+server_EXIT=1
+AssertionError: expected [ Array(1) ] to deeply equal []
+ Test Files  1 failed | 4 passed (5)
+      Tests  1 failed | 465 passed | 7 skipped (473)
+bin_EXIT=0
+  2  usage error
+ Test Files  3 passed (3)
+      Tests  257 passed (257)
+===== status after build =====
+ M guides/scaffold.md
+ M host.json
+ M tests/setupPolicy.test.ts
+ M tests/setupPolicy.ts
+
+[exited with code 0]
+
+Taken by the Orchestrator on 2026-09-17 over the scaffold tree carrying unit S2-4, after npm run build regenerated host.json and dist/host (script tmp/verify/s2-gates.sh, logs tmp/verify/s2-4-*.log.txt). The one red, test:src:server, is the vendored-import text pattern matching a string literal in an S2 control fixture; unit S2-5 closes it. The src:bin failures S2-4 observed were the stale host.json and are gone after the build.

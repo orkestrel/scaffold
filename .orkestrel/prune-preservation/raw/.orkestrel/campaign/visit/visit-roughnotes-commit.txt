@@ -1,0 +1,30 @@
+chore: adopt the scaffold 0.0.74 vendored floor and the journey axis
+
+The scaffold visit: `scaffold catalog` re-pins @orkestrel/scaffold to ^0.0.74
+and @orkestrel/test to ^0.0.17 from the registry and refreshes the guide
+mirrors; `npm install --ignore-scripts` resolves them; the birth-owned
+configs/app/vite.journey.config.ts wrapper is written from the seed with this
+application's four declared variants (light-1280, dark-1280, light-390,
+dark-390), and `scaffold repair` restores every vendored file — the rewritten
+orkestrel-prove-journey skill, the fenced-import sweep in tests/setupPolicy.ts,
+the parsed specifier reader in tests/setupServer.ts, the rule rows, the
+transport rule — and the content-owned root vite.config.ts, which now defines
+`appJourney(variant, variants)` in place of the hand-rolled `journey` factory
+and `VARIANTS`, and plans `test:journey` through the wrapper.
+
+Two mechanical adoptions of the emitted contract land with the visit: the
+`test:journey` script takes the planned value (the repair's configs group was
+blocked while it named `--project 'journey:*'`), and the suite's
+`ProvidedContext` augmentation gains the `capture` key the emitted factory
+provides, so `npm run check` is green. The journey suite runs green under the
+generated fan-out (four variant projects, 76 passed | 4 skipped) reading
+`inject('variant')` and `inject('variants')`; the adoption units that follow
+move it onto the published layer.
+
+Standing after this commit: `format:check` reddens on the regenerated root
+alone — the emitted `appJourney` signature exceeds the vendored formatter's
+width, a scaffold defect recorded for 0.0.75 — and `test:conformance` reddens
+on the base `optimizeDeps` list the hand-rolled root carried, which the
+adoption unit moves to the birth-owned browser wrapper.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>

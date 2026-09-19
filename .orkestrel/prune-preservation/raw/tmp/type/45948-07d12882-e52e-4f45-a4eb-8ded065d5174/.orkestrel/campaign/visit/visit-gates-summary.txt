@@ -1,0 +1,40 @@
+formatcheck_EXIT=1
+lintcheck_EXIT=0
+check_EXIT=2
+vite.config.ts(206,48): error TS2353: Object literal may only specify known properties, and 'capture' does not exist in type 'Partial<ProvidedContext>'.
+appcore_EXIT=0
+ Test Files  5 passed (5)
+      Tests  33 passed (33)
+appbrowser_EXIT=0
+6:26:03 PM [vite] (client) [console.warn] [Vue warn]: Unhandled error during execution of setup function 
+ Test Files  38 passed (38)
+      Tests  159 passed (159)
+journey_EXIT=0
+ Test Files  4 passed (4)
+      Tests  76 passed | 4 skipped (80)
+policy_EXIT=0
+ Test Files  1 passed (1)
+      Tests  109 passed | 1 skipped (110)
+config_EXIT=0
+ Test Files  1 passed (1)
+      Tests  171 passed | 3 skipped (174)
+setup_EXIT=0
+ Test Files  1 passed (1)
+      Tests  3 passed (3)
+conformance_EXIT=1
+AssertionError: expected [ 'bootstrap-icons' ] to include 'vue'
+ Test Files  1 failed (1)
+      Tests  1 failed | 11 passed (12)
+===== status =====
+ M .claude/agents/orkestrel.md
+ M configs/browsers.ts
+ M guides/scaffold.md
+ M guides/test.md
+ M package-lock.json
+ M package.json
+ M tests/config.test.ts
+ M tests/policy.test.ts
+ M tests/setupPolicy.ts
+ M vite.config.ts
+?? configs/app/vite.journey.config.ts
+(end)

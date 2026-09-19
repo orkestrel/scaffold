@@ -1,0 +1,41 @@
+diff --git a/guides/scaffold.md b/guides/scaffold.md
+index fc14eff1..6e4d517b 100644
+--- a/guides/scaffold.md
++++ b/guides/scaffold.md
+@@ -408,7 +408,7 @@ The inventory contracts carry these data members.
+ | `listCanonPaths`          | function | Lists the canon paths a target holds, filtered to a plan's groups.                     |
+ | `listDirectories`         | function | Lists a directory's descendant directories as sorted root-relative paths.              |
+ | `listFiles`               | function | Lists a directory's files as sorted root-relative paths.                               |
+-| `matchesAnchor`           | function | Tests whether a captured directory is still the same directory.                        |
++| `matchesAnchor`           | function | Tests whether a path still holds the captured directory identity.                      |
+ | `matchesExecutablePath`   | function | Tests whether a vendored path is one a target receives executable.                     |
+ | `matchesExpectation`      | function | Tests whether a destination still holds what was captured of it.                       |
+ | `matchesGitPath`          | function | Tests whether a path addresses a target's own repository metadata.                     |
+@@ -1861,6 +1861,7 @@ A transaction owns a private root beside the target on the same volume, so every
+ rename rather than a copy. A failure part way through commit restores every destination it already
+ promoted and removes every directory it created. No destination ever receives half-written bytes.
+ It is not a journal: a process killed between promotions leaves a mixed target.
++The transaction captures native bigint device and inode values without numeric rounding.
+ The transaction binds each directory's location rather than its lifetime, so an ancestor swapped
+ for another path, a file, a symlink, or nothing is refused, and one deleted and recreated in place
+ may not be.
+diff --git a/host.json b/host.json
+index ced64418..f5b83735 100644
+--- a/host.json
++++ b/host.json
+@@ -910,7 +910,7 @@
+ 			"storage": "guides/scaffold.md",
+ 			"destination": "guides/scaffold.md",
+ 			"executable": false,
+-			"digest": "333f3a020bc595672b34ebc6de5dd4277fe2d3868b49299c3f8e30e6a0d9c497"
++			"digest": "77f67192e1235dfa9c7673608c17a2cbc1b84803b902a515ca9308473f3fa43d"
+ 		},
+ 		{
+ 			"storage": "guides/sea.md",
+@@ -2001,5 +2001,5 @@
+ 			]
+ 		}
+ 	],
+-	"digest": "4aebcf828a3010184f12f19d76db2d27dbef46cf3a04f36499eb5e2ae3291034"
++	"digest": "39b84f85db01b87ae387346da4b0601ea0b5d006bfeb04ce2858d10af4645497"
+ }

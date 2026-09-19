@@ -1,0 +1,31 @@
+lintcheck_EXIT=0
+formatcheck_EXIT=0
+check_EXIT=0
+build_EXIT=0
+npm notice run node -e "import('./dist/src/server/index.js').then((m)=>{const n=m.stageHost(process.cwd(),'dist/host',{report: (message) => console.error(message)}).length;console.log('build-host: staged '+n+' file(s) into dist/host')})"
+policy_EXIT=0
+ Test Files  1 passed (1)
+      Tests  107 passed (107)
+setup_EXIT=0
+ Test Files  3 passed (3)
+      Tests  139 passed | 3 skipped (142)
+core_EXIT=0
+failed to load config from C:\Users\mikes\WebstormProjects\scaffold\tmp\scaffold-e2-peers-lf3MDU\malformed\vite.config.ts
+ Test Files  9 passed (9)
+      Tests  421 passed (421)
+config_EXIT=0
+ Test Files  1 passed (1)
+      Tests  173 passed | 1 skipped (174)
+guides_EXIT=0
+ Test Files  1 passed (1)
+      Tests  23 passed (23)
+===== status after build =====
+ M guides/scaffold.md
+ M host.json
+ M tests/policy.test.ts
+ M tests/setupPolicy.test.ts
+ M tests/setupPolicy.ts
+
+[exited with code 0]
+
+Taken by the Orchestrator on 2026-09-17 over the scaffold tree carrying unit S2 round 3, after `npm run build` regenerated host.json and dist/host. Script: tmp/verify/s2-gates.sh; logs: tmp/verify/s2-<gate>.log.txt. The "failed to load config" line in the core log is a fixture named malformed that the suite expects to fail.

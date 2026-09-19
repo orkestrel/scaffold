@@ -1,0 +1,98 @@
+import { afterEach, describe, it } from 'vitest'
+import { nextTick } from 'vue'
+import { waitForCondition } from '@orkestrel/test'
+import { captureFrame, readPage, releasePane } from '@orkestrel/test/browser'
+import { clearSurface, openSurface } from '../setup.js'
+
+const BARE = {
+	name: 'Ada Lovelace',
+	company: 'Lovelace Agency',
+	email: 'ada@agency.com',
+	phone: '800-428-4384',
+}
+
+afterEach(async () => {
+	await releasePane()
+	clearSurface()
+})
+
+describe('u8probe', () => {
+	it('shoots the accepted contact screen', async () => {
+		const { app } = await openSurface()
+		app.open('/contact')
+		await waitForCondition('contact paints', () => readPage().includes('Write the Indianapolis'))
+		app.inquiry.submit(BARE)
+		await nextTick()
+		await captureFrame({
+			path: '../../../../tmp/units/u8-probe-contact-accepted.png',
+			width: 1280,
+			height: 800,
+		})
+	})
+
+	it('shoots the accepted payment screen', async () => {
+		const { app } = await openSurface()
+		app.open('/payment')
+		await waitForCondition('payment paints', () => readPage().includes('Pay a bill'))
+		app.payment.submit({ customer: '1001', number: '4821', amount: '78.00' })
+		await nextTick()
+		await captureFrame({
+			path: '../../../../tmp/units/u8-probe-payment-accepted.png',
+			width: 1280,
+			height: 800,
+		})
+	})
+
+	it('shoots the accepted newsletter screen', async () => {
+		const { app } = await openSurface()
+		app.open('/newsletter')
+		await waitForCondition('newsletter paints', () => readPage().includes('It is about you'))
+		app.subscription.submit({ name: 'Grace Hopper', email: 'grace@agency.com' })
+		await nextTick()
+		await captureFrame({
+			path: '../../../../tmp/units/u8-probe-newsletter-accepted.png',
+			width: 1280,
+			height: 800,
+		})
+	})
+
+	it('shoots the accepted contact screen with every field filled', async () => {
+		const { app } = await openSurface()
+		app.open('/contact')
+		await waitForCondition('contact paints', () => readPage().includes('Write the Indianapolis'))
+		app.inquiry.submit({ ...BARE, title: 'Principal', message: 'Send the marketplace rate card.' })
+		await nextTick()
+		await captureFrame({
+			path: '../../../../tmp/units/u8-probe-contact-full.png',
+			width: 1280,
+			height: 800,
+		})
+	})
+
+	it('shoots the accepted subscribe screen at 390', async () => {
+		const { app } = await openSurface()
+		app.open('/subscribe')
+		await waitForCondition('subscribe paints', () => readPage().includes('Free print and digital'))
+		app.subscription.submit({ name: 'Ada Lovelace', email: 'ada@agency.com' })
+		await nextTick()
+		await captureFrame({
+			path: '../../../../tmp/units/u8-probe-subscribe-accepted-390.png',
+			width: 390,
+			height: 844,
+		})
+	})
+
+	it('shoots the newsletter request at 390', async () => {
+		const { app } = await openSurface()
+		app.open('/newsletter')
+		await waitForCondition('newsletter paints', () => readPage().includes('It is about you'))
+		await captureFrame({
+			path: '../../../../tmp/units/u8-probe-newsletter-390.png',
+			width: 390,
+			height: 844,
+		})
+	})
+})
+
+// Run with: npx vitest run --config vite.config.ts --no-cache --reporter=dot --project app:browser tests/app/browser/components/u8probe.test.ts
+// Placed at tests/app/browser/components/u8probe.test.ts for the run, then deleted.

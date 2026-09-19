@@ -1,0 +1,50 @@
+[
+    {
+        "path":  "app/browser/App.vue",
+        "sha256":  "2e6084e2233814f279ee7ce8b1ba94c1fc1b203a2f15aaaaf66d408874214f9c"
+    },
+    {
+        "path":  "app/browser/components/HomeView.vue",
+        "sha256":  "8eb53e1608aeaa032ceafa3cef4b6c43afdb0b2883622e4549228dc0b29b00d4"
+    },
+    {
+        "path":  "app/browser/components/MagazineView.vue",
+        "sha256":  "8fbe2cfe36fbd6237343aca3d053ad7301428a7e02e8d6db1e055234d016099e"
+    },
+    {
+        "path":  "app/browser/components/MediaView.vue",
+        "sha256":  "502427927a21cdf691e95286c8e26e13dc1815c3f6394000aaa9ad91e3ed5c31"
+    },
+    {
+        "path":  "app/browser/components/ProductsView.vue",
+        "sha256":  "e72b42b85e33db4a3150275c01d801e7fec274164cfaedf910e0b1b0b3ec54e3"
+    },
+    {
+        "path":  "app/browser/constants.ts",
+        "sha256":  "38a09f9be408f613ec49d93553a04a123f4d2c38cea2c9cc125bc410bf7b3420"
+    },
+    {
+        "path":  "guides/README.md",
+        "sha256":  "18dbf09b90952d8a28da09bd59ef4567f9dafa72abd3c323963416651eea5ddf"
+    },
+    {
+        "path":  "tests/app/browser/App.test.ts",
+        "sha256":  "cac4543c0e17d488b6fa7de3130d44a2f9848f3738d5f53c390162f2d94ba3c6"
+    },
+    {
+        "path":  "tests/app/browser/helpers.test.ts",
+        "sha256":  "d5e98f074f3af9812117fe14f08c27f2c510afe5b2a50075a5c04e2cad92ee44"
+    },
+    {
+        "path":  "tests/app/browser/setup.ts",
+        "sha256":  "9ff0b8f5e9b9a98ad68eb483528d530bb22d74eea9bff2cf165a927a54f0d157"
+    },
+    {
+        "path":  ".codex/agents/orkestrel.toml",
+        "sha256":  "c46c51011992582efcbcef9e7211fcb434edc385fc6e524cd61ee8f284e536f1"
+    },
+    {
+        "path":  ".codex/hooks.json",
+        "sha256":  "90c50e845a4ac1e5aa1f287d97e4eec4adc3a7c7eeb0a7f95f990d6a06ff85fa"
+    }
+]

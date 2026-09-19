@@ -1,0 +1,14 @@
+# R-B subjective audit report
+
+Native analyst r_b_subjective held the subjective lane on Sol because Opus was unavailable. Effective brief: tmp/audit/r-b-subjective-brief.md. Shared claims: tmp/audit/r-b-audit-claims.md. Returned through the native harness. Recovery-relative paths resolve under tmp/recovery/roughnotes. Preserve this original verdict; later evidence takes a successor.
+
+1. CONFIRMED — migration shape and assertion scope. Native matches checks the held element, preserving positive and negative expectations in tmp/units/r-b-actual-9.diff:909. Published readClasses explicitly includes descendants at node_modules/@orkestrel/test/dist/src/browser/index.d.ts:1592. Hit-test replacement retains anchor identity at diff:1165. Independent inventory/browser acceptance remain parent obligations.
+2. NOT-EVIDENCED — rendered Menu outcome. Source follows the measured ruling: tests/setupBrowser.ts:504 retains trigger for observation while clicks resolve role/name; named perception/dismissal follow at:512. Closing preserves strict modal refusal at:539. Supplied portfolio has no open-Menu frame; registry tests/app/browser/integration.test.ts:91 names no menu state. Source does not establish rendered appearance or motion completion.
+3. UNRESOLVED — outcome discrimination. Shared setup has no assertions and imports allowed browser/core environments. Content action at setupBrowser.ts:458; destination assertion integration.test.ts:510. Setup proof records genuine lifecycle events at setupBrowser.test.ts:120. Parent generated-host omission/refusal evidence must settle discrimination.
+4. UNRESOLVED — final capture and style proof. Integration uses provided capture state at:127; wrapper owns variants. Local gradient calculation has distinct declared purpose and image/overlay limit at setupBrowser.ts:340; acceptance/refusal controls at integration.test.ts:981. Inspected subscription-refusal and contact-accepted captures support visible outcomes. Report9 separates ordinary metadata from final capture proof. Independent controls/final capture remain pending.
+5. CONFIRMED — configuration ownership/workflow fit. configs/app/vite.browser.config.ts:4 retains appBrowser(); tests/conformance.test.ts:119 covers generic overrides. Guide teaches wrapper invocation, capture activation, menu observation and setup placement at guides/README.md:437,:457,:477. Registry .75 consumption remains unaccepted while registry serves .74.
+6. UNRESOLVED — completion evidence. No supported source defect emerged. Final gates, corrected cold-cache proof, guarded controls and retained captures remain open. Missing JourneyVariant receipt leaves attempted numeric compiler claim unproved; it is not a rendered defect or evidence against documented numeric fields.
+
+No substantiated finding outside claims. Rendered assessment limited to Chromium, as configured in configs/browsers.ts:280.
+
+R-B SUBJECTIVE: UNRESOLVED

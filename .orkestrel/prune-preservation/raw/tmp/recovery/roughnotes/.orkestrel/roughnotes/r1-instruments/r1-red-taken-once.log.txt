@@ -1,0 +1,34 @@
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/roughnotes
+
+········x··
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 10 passed (11)
+   Start at  22:27:17
+   Duration  812ms (transform 74ms, setup 16ms, import 621ms, tests 18ms, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |conformance| tests/conformance.test.ts > configuration conformance > replaces one base entry per override entry where the base repeats a name
+AssertionError: expected { name: 'conformance-alpha' } to be { name: 'conformance-alpha' } // Object.is equality
+
+If it should pass with deep equality, replace "toBe" with "toStrictEqual"
+
+Expected: { name: 'conformance-alpha' }
+Received: serializes to the same string
+
+
+Compared values have no visual difference.
+
+ ❯ tests/conformance.test.ts:259:22
+    257|   expect(plugins.length).toBe(2)
+    258|   expect(plugins[0]).toBe(replacement)
+    259|   expect(plugins[1]).toBe(repeated)
+       |                      ^
+    260|
+    261|   // Control: the name-keyed selection this merge departs from. It col…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+

@@ -1,0 +1,38 @@
+lintcheck_EXIT=0
+formatcheck_EXIT=0
+check_EXIT=0
+build_EXIT=0
+npm notice run node -e "import('./dist/src/server/index.js').then((m)=>{const n=m.stageHost(process.cwd(),'dist/host',{report: (message) => console.error(message)}).length;console.log('build-host: staged '+n+' file(s) into dist/host')})"
+policy_EXIT=0
+ Test Files  1 passed (1)
+      Tests  110 passed (110)
+setup_EXIT=0
+ Test Files  3 passed (3)
+      Tests  162 passed | 3 skipped (165)
+core_EXIT=0
+[31mfailed to load config from C:\Users\mikes\WebstormProjects\scaffold\tmp\scaffold-e2-peers-KxHt8M\malformed\vite.config.ts[39m
+ Test Files  9 passed (9)
+      Tests  425 passed (425)
+config_EXIT=0
+ Test Files  1 passed (1)
+      Tests  173 passed | 1 skipped (174)
+guides_EXIT=0
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m23 passed[39m[22m[90m (23)[39m
+server_EXIT=0
+ Test Files  5 passed (5)
+      Tests  466 passed | 7 skipped (473)
+bin_EXIT=0
+  2  usage error
+ Test Files  3 passed (3)
+      Tests  267 passed (267)
+===== status after build =====
+ M guides/scaffold.md
+ M host.json
+ M src/bin/CLI.ts
+ M src/bin/helpers.ts
+ M src/bin/types.ts
+ M tests/setupServer.test.ts
+ M tests/setupServer.ts
+ M tests/src/bin/CLI.test.ts
+ M tests/src/bin/helpers.test.ts

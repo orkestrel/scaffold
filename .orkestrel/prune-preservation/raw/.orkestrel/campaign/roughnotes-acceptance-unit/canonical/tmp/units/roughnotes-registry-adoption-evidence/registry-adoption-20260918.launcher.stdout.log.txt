@@ -1,0 +1,2 @@
+npm PID 23576
+Registry adoption succeeded; evidence C:\Users\mikes\WebstormProjects\scaffold\tmp\units\roughnotes-registry-adoption-evidence\registry-adoption-20260918

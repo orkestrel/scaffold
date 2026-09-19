@@ -1,0 +1,108 @@
+npm notice run @orkestrel/scaffold@0.0.73 test:src:core
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core --testNamePattern emits journey wiring|advises a journey selection|partitions root setup|typechecks journey variants
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/scaffold
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------···-------------------------------------------------------------------------------------------·-----------------
+
+ Test Files  2 passed | 7 skipped (9)
+      Tests  4 passed | 421 skipped (425)
+   Start at  16:34:34
+   Duration  4.37s (transform 2.50s, setup 3.16s, import 1.91s, tests 3.25s, environment 1ms)
+
+npm notice run @orkestrel/scaffold@0.0.73 test:src:bin
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project src:bin --testNamePattern infers journey and setup runtimes
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/scaffold
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------·-----------------------------------------------------------------------------------
+
+ Test Files  1 passed | 2 skipped (3)
+      Tests  1 passed | 257 skipped (258)
+   Start at  16:34:39
+   Duration  1.97s (transform 1.06s, setup 2.19s, import 262ms, tests 888ms, environment 0ms)
+
+npm notice run @orkestrel/scaffold@0.0.73 test:config
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project config --testNamePattern requires and validates every selected target wrapper
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/scaffold
+
+----·-------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+ Test Files  1 passed (1)
+      Tests  1 passed | 173 skipped (174)
+   Start at  16:34:42
+   Duration  994ms (transform 315ms, setup 316ms, import 418ms, tests 109ms, environment 0ms)
+
+npm notice run @orkestrel/scaffold@0.0.73 test:src:core
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core --testNamePattern emits journey wiring|advises a journey selection|partitions root setup|typechecks journey variants
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/scaffold
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------···-------------------------------------------------------------------------------------------·-----------------
+
+ Test Files  2 passed | 7 skipped (9)
+      Tests  4 passed | 421 skipped (425)
+   Start at  16:34:43
+   Duration  4.32s (transform 2.15s, setup 2.80s, import 1.62s, tests 3.25s, environment 1ms)
+
+npm notice run @orkestrel/scaffold@0.0.73 test:src:bin
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project src:bin --testNamePattern infers journey and setup runtimes
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/scaffold
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------·-----------------------------------------------------------------------------------
+
+ Test Files  1 passed | 2 skipped (3)
+      Tests  1 passed | 257 skipped (258)
+   Start at  16:34:49
+   Duration  1.96s (transform 1.08s, setup 2.23s, import 280ms, tests 865ms, environment 0ms)
+
+npm notice run @orkestrel/scaffold@0.0.73 test:config
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project config --testNamePattern requires and validates every selected target wrapper
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/scaffold
+
+----·-------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+ Test Files  1 passed (1)
+      Tests  1 passed | 173 skipped (174)
+   Start at  16:34:51
+   Duration  1.02s (transform 316ms, setup 318ms, import 443ms, tests 108ms, environment 0ms)
+
+npm notice run @orkestrel/scaffold@0.0.73 test:src:core
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core --testNamePattern emits journey wiring|advises a journey selection|partitions root setup|typechecks journey variants
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/scaffold
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------···-------------------------------------------------------------------------------------------·-----------------
+
+ Test Files  2 passed | 7 skipped (9)
+      Tests  4 passed | 421 skipped (425)
+   Start at  16:34:53
+   Duration  4.29s (transform 2.41s, setup 2.78s, import 1.87s, tests 3.23s, environment 1ms)
+
+npm notice run @orkestrel/scaffold@0.0.73 test:src:bin
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project src:bin --testNamePattern infers journey and setup runtimes
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/scaffold
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------·-----------------------------------------------------------------------------------
+
+ Test Files  1 passed | 2 skipped (3)
+      Tests  1 passed | 257 skipped (258)
+   Start at  16:34:58
+   Duration  1.94s (transform 1.15s, setup 2.23s, import 336ms, tests 849ms, environment 0ms)
+
+npm notice run @orkestrel/scaffold@0.0.73 test:config
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project config --testNamePattern requires and validates every selected target wrapper
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/scaffold
+
+----·-------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+ Test Files  1 passed (1)
+      Tests  1 passed | 173 skipped (174)
+   Start at  16:35:01
+   Duration  987ms (transform 312ms, setup 314ms, import 414ms, tests 109ms, environment 0ms)
+

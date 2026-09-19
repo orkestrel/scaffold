@@ -1,0 +1,6 @@
+.orkestrel/campaign/roughnotes-acceptance-unit
+.orkestrel/campaign/roughnotes-landing
+.orkestrel/campaign/published-record-unit
+.orkestrel/campaign/roughnotes-records-commit
+.orkestrel/campaign/recovery-current.md
+.orkestrel/campaign/recovery-live-tasks.md

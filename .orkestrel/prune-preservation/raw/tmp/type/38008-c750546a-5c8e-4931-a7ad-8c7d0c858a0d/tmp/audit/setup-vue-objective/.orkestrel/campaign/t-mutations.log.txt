@@ -1,0 +1,46 @@
+baseline: 17d8b61 wip(browser): checkpoint unit T2 — the statechart harness and its observable statuses
+backed up
+unknown command
+t1p1-core: exit=0       Tests  116 passed (116)
+t1p1-browser: exit=0       Tests  304 passed (304)
+restored
+t1-pass1 restored: 0 tracked changes
+backed up
+applied 13 edits
+t1-pass2 applied
+t1p2-core: exit=1       Tests  2 failed | 114 passed (116)
+t1p2-browser: exit=1       Tests  22 failed | 282 passed (304)
+restored
+t1-pass2 restored: 0 tracked changes
+backed up
+applied 4 edits
+t2-apply1 applied
+t2-apply1: exit=1       Tests  6 failed | 43 passed (49)
+restored
+t2-apply1 restored
+applied 4 edits
+t2-apply2 applied
+t2-apply2: exit=1       Tests  8 failed | 41 passed (49)
+restored
+t2-apply2 restored
+applied 2 edits
+t2-apply3 applied
+t2-apply3: exit=1       Tests  2 failed | 47 passed (49)
+restored
+t2-apply3 restored
+final: 0 tracked changes
+[exited with code 0]
+backed up
+applied 14 edits
+t1-pass1 runtime applied
+t1p1-core: exit=1       Tests  2 failed | 114 passed (116)
+t1p1-browser: exit=1       Tests  16 failed | 288 passed (304)
+restored
+restored: 0 tracked changes
+backed up
+applied 4 edits
+t1-pass1 resolution applied
+t1p1-resolution: exit=2 
+restored
+restored: 0 tracked changes
+[exited with code 0]

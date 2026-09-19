@@ -1,0 +1,514 @@
+[
+  {
+    "selector": ":root,\n[data-bs-theme=light]",
+    "colors": [
+      [
+        "--bs-primary-rgb",
+        "10, 37, 64"
+      ],
+      [
+        "--bs-secondary-rgb",
+        "74, 90, 110"
+      ],
+      [
+        "--bs-success-rgb",
+        "25, 135, 84"
+      ],
+      [
+        "--bs-info-rgb",
+        "13, 202, 240"
+      ],
+      [
+        "--bs-warning-rgb",
+        "200, 149, 43"
+      ],
+      [
+        "--bs-danger-rgb",
+        "220, 53, 69"
+      ],
+      [
+        "--bs-light-rgb",
+        "248, 249, 250"
+      ],
+      [
+        "--bs-dark-rgb",
+        "33, 37, 41"
+      ],
+      [
+        "--bs-primary-text-emphasis",
+        "#0a2540"
+      ],
+      [
+        "--bs-secondary-text-emphasis",
+        "rgb(11.6078431373%, 14.1176470588%, 17.2549019608%)"
+      ],
+      [
+        "--bs-success-text-emphasis",
+        "rgb(3.9215686275%, 21.1764705882%, 13.1764705882%)"
+      ],
+      [
+        "--bs-info-text-emphasis",
+        "rgb(2.0392156863%, 31.6862745098%, 37.6470588235%)"
+      ],
+      [
+        "--bs-warning-text-emphasis",
+        "#6b4a12"
+      ],
+      [
+        "--bs-danger-text-emphasis",
+        "rgb(34.5098039216%, 8.3137254902%, 10.8235294118%)"
+      ],
+      [
+        "--bs-light-text-emphasis",
+        "#495057"
+      ],
+      [
+        "--bs-dark-text-emphasis",
+        "#495057"
+      ],
+      [
+        "--bs-primary-bg-subtle",
+        "#e7edf5"
+      ],
+      [
+        "--bs-secondary-bg-subtle",
+        "rgb(85.8039215686%, 87.0588235294%, 88.6274509804%)"
+      ],
+      [
+        "--bs-success-bg-subtle",
+        "rgb(81.9607843137%, 90.5882352941%, 86.5882352941%)"
+      ],
+      [
+        "--bs-info-bg-subtle",
+        "rgb(81.0196078431%, 95.8431372549%, 98.8235294118%)"
+      ],
+      [
+        "--bs-warning-bg-subtle",
+        "#f6ecd4"
+      ],
+      [
+        "--bs-danger-bg-subtle",
+        "rgb(97.2549019608%, 84.1568627451%, 85.4117647059%)"
+      ],
+      [
+        "--bs-light-bg-subtle",
+        "rgb(98.6274509804%, 98.8235294118%, 99.0196078431%)"
+      ],
+      [
+        "--bs-dark-bg-subtle",
+        "#ced4da"
+      ],
+      [
+        "--bs-primary-border-subtle",
+        "#b7c5d6"
+      ],
+      [
+        "--bs-secondary-border-subtle",
+        "rgb(71.6078431373%, 74.1176470588%, 77.2549019608%)"
+      ],
+      [
+        "--bs-success-border-subtle",
+        "rgb(63.9215686275%, 81.1764705882%, 73.1764705882%)"
+      ],
+      [
+        "--bs-info-border-subtle",
+        "rgb(62.0392156863%, 91.6862745098%, 97.6470588235%)"
+      ],
+      [
+        "--bs-warning-border-subtle",
+        "#e7c67a"
+      ],
+      [
+        "--bs-danger-border-subtle",
+        "rgb(94.5098039216%, 68.3137254902%, 70.8235294118%)"
+      ],
+      [
+        "--bs-light-border-subtle",
+        "#e9ecef"
+      ],
+      [
+        "--bs-dark-border-subtle",
+        "#adb5bd"
+      ],
+      [
+        "--bs-white-rgb",
+        "255, 255, 255"
+      ],
+      [
+        "--bs-black-rgb",
+        "0, 0, 0"
+      ],
+      [
+        "--bs-body-color",
+        "#0f1b2d"
+      ],
+      [
+        "--bs-body-color-rgb",
+        "15, 27, 45"
+      ],
+      [
+        "--bs-body-bg",
+        "#ffffff"
+      ],
+      [
+        "--bs-body-bg-rgb",
+        "255, 255, 255"
+      ],
+      [
+        "--bs-emphasis-color",
+        "#000"
+      ],
+      [
+        "--bs-emphasis-color-rgb",
+        "0, 0, 0"
+      ],
+      [
+        "--bs-secondary-color",
+        "#4a5a6e"
+      ],
+      [
+        "--bs-secondary-color-rgb",
+        "74, 90, 110"
+      ],
+      [
+        "--bs-secondary-bg",
+        "#e7edf5"
+      ],
+      [
+        "--bs-secondary-bg-rgb",
+        "231, 237, 245"
+      ],
+      [
+        "--bs-tertiary-color",
+        "rgba(15, 27, 45, 0.5)"
+      ],
+      [
+        "--bs-tertiary-color-rgb",
+        "15, 27, 45"
+      ],
+      [
+        "--bs-tertiary-bg",
+        "#f5f7fa"
+      ],
+      [
+        "--bs-tertiary-bg-rgb",
+        "245, 247, 250"
+      ],
+      [
+        "--bs-heading-color",
+        "inherit"
+      ],
+      [
+        "--bs-link-color",
+        "#0a2540"
+      ],
+      [
+        "--bs-link-color-rgb",
+        "10, 37, 64"
+      ],
+      [
+        "--bs-link-hover-color",
+        "#123a63"
+      ],
+      [
+        "--bs-link-hover-color-rgb",
+        "18, 58, 99"
+      ],
+      [
+        "--bs-code-color",
+        "#d63384"
+      ],
+      [
+        "--bs-highlight-color",
+        "#0f1b2d"
+      ],
+      [
+        "--bs-highlight-bg",
+        "rgb(100%, 95.137254902%, 80.5490196078%)"
+      ],
+      [
+        "--bs-border-color",
+        "#dee2e6"
+      ],
+      [
+        "--bs-border-color-translucent",
+        "rgba(0, 0, 0, 0.175)"
+      ],
+      [
+        "--bs-focus-ring-color",
+        "rgba(10, 37, 64, 0.25)"
+      ],
+      [
+        "--bs-form-valid-color",
+        "#198754"
+      ],
+      [
+        "--bs-form-valid-border-color",
+        "#198754"
+      ],
+      [
+        "--bs-form-invalid-color",
+        "#dc3545"
+      ],
+      [
+        "--bs-form-invalid-border-color",
+        "#dc3545"
+      ]
+    ]
+  },
+  {
+    "selector": "[data-bs-theme=dark]",
+    "colors": [
+      [
+        "color-scheme",
+        "dark"
+      ],
+      [
+        "--bs-body-color",
+        "#e8eef5"
+      ],
+      [
+        "--bs-body-color-rgb",
+        "232, 238, 245"
+      ],
+      [
+        "--bs-body-bg",
+        "#0a2540"
+      ],
+      [
+        "--bs-body-bg-rgb",
+        "10, 37, 64"
+      ],
+      [
+        "--bs-emphasis-color",
+        "#ffffff"
+      ],
+      [
+        "--bs-emphasis-color-rgb",
+        "255, 255, 255"
+      ],
+      [
+        "--bs-secondary-color",
+        "#c4d2e2"
+      ],
+      [
+        "--bs-secondary-color-rgb",
+        "196, 210, 226"
+      ],
+      [
+        "--bs-secondary-bg",
+        "#123a63"
+      ],
+      [
+        "--bs-secondary-bg-rgb",
+        "18, 58, 99"
+      ],
+      [
+        "--bs-tertiary-color",
+        "rgba(232, 238, 245, 0.5)"
+      ],
+      [
+        "--bs-tertiary-color-rgb",
+        "232, 238, 245"
+      ],
+      [
+        "--bs-tertiary-bg",
+        "#0d2c4d"
+      ],
+      [
+        "--bs-tertiary-bg-rgb",
+        "13, 44, 77"
+      ],
+      [
+        "--bs-primary-text-emphasis",
+        "#d0dcea"
+      ],
+      [
+        "--bs-secondary-text-emphasis",
+        "rgb(57.4117647059%, 61.1764705882%, 65.8823529412%)"
+      ],
+      [
+        "--bs-success-text-emphasis",
+        "rgb(45.8823529412%, 71.7647058824%, 59.7647058824%)"
+      ],
+      [
+        "--bs-info-text-emphasis",
+        "rgb(43.0588235294%, 87.5294117647%, 96.4705882353%)"
+      ],
+      [
+        "--bs-warning-text-emphasis",
+        "#e7c67a"
+      ],
+      [
+        "--bs-danger-text-emphasis",
+        "rgb(91.7647058824%, 52.4705882353%, 56.2352941176%)"
+      ],
+      [
+        "--bs-light-text-emphasis",
+        "#f8f9fa"
+      ],
+      [
+        "--bs-dark-text-emphasis",
+        "#dee2e6"
+      ],
+      [
+        "--bs-primary-bg-subtle",
+        "#1b4b7e"
+      ],
+      [
+        "--bs-secondary-bg-subtle",
+        "rgb(5.8039215686%, 7.0588235294%, 8.6274509804%)"
+      ],
+      [
+        "--bs-success-bg-subtle",
+        "rgb(1.9607843137%, 10.5882352941%, 6.5882352941%)"
+      ],
+      [
+        "--bs-info-bg-subtle",
+        "rgb(1.0196078431%, 15.8431372549%, 18.8235294118%)"
+      ],
+      [
+        "--bs-warning-bg-subtle",
+        "#3a2a10"
+      ],
+      [
+        "--bs-danger-bg-subtle",
+        "rgb(17.2549019608%, 4.1568627451%, 5.4117647059%)"
+      ],
+      [
+        "--bs-light-bg-subtle",
+        "#343a40"
+      ],
+      [
+        "--bs-dark-bg-subtle",
+        "#1a1d20"
+      ],
+      [
+        "--bs-primary-border-subtle",
+        "#2a6aaa"
+      ],
+      [
+        "--bs-secondary-border-subtle",
+        "rgb(17.4117647059%, 21.1764705882%, 25.8823529412%)"
+      ],
+      [
+        "--bs-success-border-subtle",
+        "rgb(5.8823529412%, 31.7647058824%, 19.7647058824%)"
+      ],
+      [
+        "--bs-info-border-subtle",
+        "rgb(3.0588235294%, 47.5294117647%, 56.4705882353%)"
+      ],
+      [
+        "--bs-warning-border-subtle",
+        "#c8952b"
+      ],
+      [
+        "--bs-danger-border-subtle",
+        "rgb(51.7647058824%, 12.4705882353%, 16.2352941176%)"
+      ],
+      [
+        "--bs-light-border-subtle",
+        "#495057"
+      ],
+      [
+        "--bs-dark-border-subtle",
+        "#343a40"
+      ],
+      [
+        "--bs-heading-color",
+        "inherit"
+      ],
+      [
+        "--bs-link-color",
+        "#8bb4e8"
+      ],
+      [
+        "--bs-link-hover-color",
+        "#c4d2e2"
+      ],
+      [
+        "--bs-link-color-rgb",
+        "139, 180, 232"
+      ],
+      [
+        "--bs-link-hover-color-rgb",
+        "196, 210, 226"
+      ],
+      [
+        "--bs-code-color",
+        "rgb(90.3529411765%, 52%, 71.0588235294%)"
+      ],
+      [
+        "--bs-highlight-color",
+        "#e8eef5"
+      ],
+      [
+        "--bs-highlight-bg",
+        "rgb(40%, 30.2745098039%, 1.0980392157%)"
+      ],
+      [
+        "--bs-border-color",
+        "#1b4b7e"
+      ],
+      [
+        "--bs-border-color-translucent",
+        "rgba(255, 255, 255, 0.15)"
+      ],
+      [
+        "--bs-form-valid-color",
+        "rgb(45.8823529412%, 71.7647058824%, 59.7647058824%)"
+      ],
+      [
+        "--bs-form-valid-border-color",
+        "rgb(45.8823529412%, 71.7647058824%, 59.7647058824%)"
+      ],
+      [
+        "--bs-form-invalid-color",
+        "rgb(91.7647058824%, 52.4705882353%, 56.2352941176%)"
+      ],
+      [
+        "--bs-form-invalid-border-color",
+        "rgb(91.7647058824%, 52.4705882353%, 56.2352941176%)"
+      ]
+    ]
+  },
+  {
+    "selector": ":root,\n[data-bs-theme=light]",
+    "colors": []
+  },
+  {
+    "selector": "[data-bs-theme=dark]",
+    "colors": []
+  },
+  {
+    "selector": ":root,\n[data-bs-theme=light]",
+    "colors": [
+      [
+        "--bs-carousel-indicator-active-bg",
+        "#fff"
+      ],
+      [
+        "--bs-carousel-caption-color",
+        "#fff"
+      ]
+    ]
+  },
+  {
+    "selector": "[data-bs-theme=dark]",
+    "colors": [
+      [
+        "--bs-carousel-indicator-active-bg",
+        "#000"
+      ],
+      [
+        "--bs-carousel-caption-color",
+        "#000"
+      ]
+    ]
+  },
+  {
+    "selector": "[data-bs-theme=dark]",
+    "colors": []
+  }
+]

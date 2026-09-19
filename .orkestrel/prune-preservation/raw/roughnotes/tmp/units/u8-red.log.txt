@@ -1,0 +1,1234 @@
+npm notice run roughnotes@0.0.1 npx
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=verbose --project app:browser tests/app/browser/components/SubscribeView.test.ts tests/app/browser/components/NewsletterView.test.ts tests/app/browser/components/ContactView.test.ts tests/app/browser/components/PaymentView.test.ts tests/app/browser/components/SubscribeForm.test.ts tests/app/browser/components/ContactForm.test.ts tests/app/browser/components/PaymentForm.test.ts
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/roughnotes
+
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+  ╷
+1 │ @import "mixins/banner";
+  │         ^^^^^^^^^^^^^^^
+  ╵
+    node_modules\bootstrap\scss\bootstrap.scss 1:9  @use
+    app\browser\styles\index.scss 2:1               root stylesheet
+
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+  ╷
+7 │ @import "functions";
+  │         ^^^^^^^^^^^
+  ╵
+    node_modules\bootstrap\scss\bootstrap.scss 7:9  @use
+    app\browser\styles\index.scss 2:1               root stylesheet
+
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+  ╷
+8 │ @import "variables";
+  │         ^^^^^^^^^^^
+  ╵
+    node_modules\bootstrap\scss\bootstrap.scss 8:9  @use
+    app\browser\styles\index.scss 2:1               root stylesheet
+
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+  ╷
+9 │ @import "variables-dark";
+  │         ^^^^^^^^^^^^^^^^
+  ╵
+    node_modules\bootstrap\scss\bootstrap.scss 9:9  @use
+    app\browser\styles\index.scss 2:1               root stylesheet
+
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+   ╷
+10 │ @import "maps";
+   │         ^^^^^^
+   ╵
+    node_modules\bootstrap\scss\bootstrap.scss 10:9  @use
+    app\browser\styles\index.scss 2:1                root stylesheet
+
+DEPRECATION WARNING [if-function]: The Sass if() syntax is deprecated in favor of the modern CSS syntax.
+
+Suggestion: if(sass($arg == "$value"): $value; else: $arg)
+
+More info: https://sass-lang.com/d/if-function
+
+   ╷
+58 │       $_args: append($_args, if($arg == "$key", $key, if($arg == "$value", $value, $arg)));
+   │                                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   ╵
+    node_modules\bootstrap\scss\_functions.scss 58:55  @import
+    node_modules\bootstrap\scss\bootstrap.scss 7:9     @use
+    app\browser\styles\index.scss 2:1                  root stylesheet
+
+DEPRECATION WARNING [if-function]: The Sass if() syntax is deprecated in favor of the modern CSS syntax.
+
+Suggestion: if(sass($arg == "$key"): $key; else: if($arg == "$value", $value, $arg))
+
+More info: https://sass-lang.com/d/if-function
+
+   ╷
+58 │       $_args: append($_args, if($arg == "$key", $key, if($arg == "$value", $value, $arg)));
+   │                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   ╵
+    node_modules\bootstrap\scss\_functions.scss 58:30  @import
+    node_modules\bootstrap\scss\bootstrap.scss 7:9     @use
+    app\browser\styles\index.scss 2:1                  root stylesheet
+
+DEPRECATION WARNING [if-function]: The Sass if() syntax is deprecated in favor of the modern CSS syntax.
+
+Suggestion: if(sass($l1 > $l2): divide($l1 + 0.05, $l2 + 0.05); else: divide($l2 + 0.05, $l1 + 0.05))
+
+More info: https://sass-lang.com/d/if-function
+
+    ╷
+177 │   @return if($l1 > $l2, divide($l1 + .05, $l2 + .05), divide($l2 + .05, $l1 + .05));
+    │           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ╵
+    node_modules\bootstrap\scss\_functions.scss 177:11  @import
+    node_modules\bootstrap\scss\bootstrap.scss 7:9      @use
+    app\browser\styles\index.scss 2:1                   root stylesheet
+
+DEPRECATION WARNING [if-function]: The Sass if() syntax is deprecated in favor of the modern CSS syntax.
+
+Suggestion: if(sass(divide($value, 255) < 0.04045): divide(divide($value, 255), 12.92); else: nth($_luminance-list, $value + 1))
+
+More info: https://sass-lang.com/d/if-function
+
+    ╷
+191 │     $value: if(divide($value, 255) < .04045, divide(divide($value, 255), 12.92), nth($_luminance-list, $value + 1));
+    │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ╵
+    node_modules\bootstrap\scss\_functions.scss 191:13  @import
+    node_modules\bootstrap\scss\bootstrap.scss 7:9      @use
+    app\browser\styles\index.scss 2:1                   root stylesheet
+
+DEPRECATION WARNING [if-function]: The Sass if() syntax is deprecated in favor of the modern CSS syntax.
+
+Suggestion: if(sass($weight > 0): shade-color($color, $weight); else: tint-color($color, -$weight))
+
+More info: https://sass-lang.com/d/if-function
+
+    ╷
+217 │   @return if($weight > 0, shade-color($color, $weight), tint-color($color, -$weight));
+    │           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ╵
+    node_modules\bootstrap\scss\_functions.scss 217:11  @import
+    node_modules\bootstrap\scss\bootstrap.scss 7:9      @use
+    app\browser\styles\index.scss 2:1                   root stylesheet
+
+DEPRECATION WARNING [global-builtin]: Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+Use color.mix instead.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+    ╷
+207 │   @return mix(white, $color, $weight);
+    │           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ╵
+    node_modules\bootstrap\scss\_functions.scss 207:11  tint-color()
+    node_modules\bootstrap\scss\_variables.scss 79:12   @import
+    node_modules\bootstrap\scss\bootstrap.scss 8:9      @use
+    app\browser\styles\index.scss 2:1                   root stylesheet
+
+DEPRECATION WARNING [global-builtin]: Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+Use color.mix instead.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+    ╷
+212 │   @return mix(black, $color, $weight);
+    │           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ╵
+    node_modules\bootstrap\scss\_functions.scss 212:11  shade-color()
+    node_modules\bootstrap\scss\_variables.scss 84:12   @import
+    node_modules\bootstrap\scss\bootstrap.scss 8:9      @use
+    app\browser\styles\index.scss 2:1                   root stylesheet
+
+DEPRECATION WARNING [global-builtin]: Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+Use color.mix instead.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+    ╷
+342 │ $light-bg-subtle:         mix($gray-100, $white) !default;
+    │                           ^^^^^^^^^^^^^^^^^^^^^^
+    ╵
+    node_modules\bootstrap\scss\_variables.scss 342:27  @import
+    node_modules\bootstrap\scss\bootstrap.scss 8:9      @use
+    app\browser\styles\index.scss 2:1                   root stylesheet
+
+DEPRECATION WARNING [global-builtin]: Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+Use math.unit instead.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+   ╷
+11 │     @if $prev-num == null or unit($num) == "%" or unit($prev-num) == "%" {
+   │                              ^^^^^^^^^^
+   ╵
+    node_modules\bootstrap\scss\_functions.scss 11:30  -assert-ascending()
+    node_modules\bootstrap\scss\_variables.scss 494:1  @import
+    node_modules\bootstrap\scss\bootstrap.scss 8:9     @use
+    app\browser\styles\index.scss 2:1                  root stylesheet
+
+DEPRECATION WARNING [global-builtin]: Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+Use math.unit instead.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+   ╷
+11 │     @if $prev-num == null or unit($num) == "%" or unit($prev-num) == "%" {
+   │                                                   ^^^^^^^^^^^^^^^
+   ╵
+    node_modules\bootstrap\scss\_functions.scss 11:51  -assert-ascending()
+    node_modules\bootstrap\scss\_variables.scss 494:1  @import
+    node_modules\bootstrap\scss\bootstrap.scss 8:9     @use
+    app\browser\styles\index.scss 2:1                  root stylesheet
+
+DEPRECATION WARNING [color-functions]: red() is deprecated. Suggestion:
+
+color.channel($color, "red", $space: rgb)
+
+More info: https://sass-lang.com/d/color-functions
+
+    ╷
+185 │     "r": red($color),
+    │          ^^^^^^^^^^^
+    ╵
+    node_modules\bootstrap\scss\_functions.scss 185:10  luminance()
+    node_modules\bootstrap\scss\_functions.scss 174:8   contrast-ratio()
+    node_modules\bootstrap\scss\_functions.scss 159:22  color-contrast()
+    node_modules\bootstrap\scss\_variables.scss 846:42  @import
+    node_modules\bootstrap\scss\bootstrap.scss 8:9      @use
+    app\browser\styles\index.scss 2:1                   root stylesheet
+
+DEPRECATION WARNING [color-functions]: green() is deprecated. Suggestion:
+
+color.channel($color, "green", $space: rgb)
+
+More info: https://sass-lang.com/d/color-functions
+
+    ╷
+186 │     "g": green($color),
+    │          ^^^^^^^^^^^^^
+    ╵
+    node_modules\bootstrap\scss\_functions.scss 186:10  luminance()
+    node_modules\bootstrap\scss\_functions.scss 174:8   contrast-ratio()
+    node_modules\bootstrap\scss\_functions.scss 159:22  color-contrast()
+    node_modules\bootstrap\scss\_variables.scss 846:42  @import
+    node_modules\bootstrap\scss\bootstrap.scss 8:9      @use
+    app\browser\styles\index.scss 2:1                   root stylesheet
+
+DEPRECATION WARNING [color-functions]: blue() is deprecated. Suggestion:
+
+color.channel($color, "blue", $space: rgb)
+
+More info: https://sass-lang.com/d/color-functions
+
+    ╷
+187 │     "b": blue($color)
+    │          ^^^^^^^^^^^^
+    ╵
+    node_modules\bootstrap\scss\_functions.scss 187:10  luminance()
+    node_modules\bootstrap\scss\_functions.scss 174:8   contrast-ratio()
+    node_modules\bootstrap\scss\_functions.scss 159:22  color-contrast()
+    node_modules\bootstrap\scss\_variables.scss 846:42  @import
+    node_modules\bootstrap\scss\bootstrap.scss 8:9      @use
+    app\browser\styles\index.scss 2:1                   root stylesheet
+
+DEPRECATION WARNING [color-functions]: red() is deprecated. Suggestion:
+
+color.channel($color, "red", $space: rgb)
+
+More info: https://sass-lang.com/d/color-functions
+
+   ╷
+37 │   @return red($value), green($value), blue($value);
+   │           ^^^^^^^^^^^
+   ╵
+    node_modules\bootstrap\scss\_functions.scss 37:11   to-rgb()
+    node_modules\bootstrap\scss\_variables.scss 846:31  @import
+    node_modules\bootstrap\scss\bootstrap.scss 8:9      @use
+    app\browser\styles\index.scss 2:1                   root stylesheet
+
+DEPRECATION WARNING [color-functions]: green() is deprecated. Suggestion:
+
+color.channel($color, "green", $space: rgb)
+
+More info: https://sass-lang.com/d/color-functions
+
+   ╷
+37 │   @return red($value), green($value), blue($value);
+   │                        ^^^^^^^^^^^^^
+   ╵
+    node_modules\bootstrap\scss\_functions.scss 37:24   to-rgb()
+    node_modules\bootstrap\scss\_variables.scss 846:31  @import
+    node_modules\bootstrap\scss\bootstrap.scss 8:9      @use
+    app\browser\styles\index.scss 2:1                   root stylesheet
+
+WARNING: 309 repetitive deprecation warnings omitted.
+Run in verbose mode to see all warnings.
+
+ × |app:browser (chromium)| tests/app/browser/components/ContactView.test.ts:46:2 > ContactView > leaves the office panel at its own height on a quiet surface 37ms
+   → Value is required
+ × |app:browser (chromium)| tests/app/browser/components/ContactView.test.ts:58:2 > ContactView > puts the office before the form so a phone number costs no scrolling 16ms
+   → Value is required
+ × |app:browser (chromium)| tests/app/browser/components/ContactView.test.ts:70:2 > ContactView > restates an accepted inquiry without implying what was never entered 16ms
+   → expected <p …(2)></p> to be null
+ × |app:browser (chromium)| tests/app/browser/components/ContactView.test.ts:87:2 > ContactView > claims no gap on an inquiry that filled every field 18ms
+   → expected [] to deeply equal [ 'Full name', 'Company', …(4) ]
+ × |app:browser (chromium)| tests/app/browser/components/ContactView.test.ts:103:2 > ContactView > ends the accepted screen in the desks the office answers about 16ms
+   → Value is required
+ ✓ |app:browser (chromium)| tests/app/browser/components/ContactForm.test.ts:14:21 > ContactForm > keeps every summary link hittable at 320 CSS px 357ms
+ ✓ |app:browser (chromium)| tests/app/browser/components/ContactForm.test.ts:14:21 > ContactForm > keeps every summary link hittable at 390 CSS px 113ms
+ × |app:browser (chromium)| tests/app/browser/components/ContactForm.test.ts:37:2 > ContactForm > refuses on the quiet danger pair and commits in the application navy 65ms
+   → expected true to be false // Object.is equality
+ × |app:browser (chromium)| tests/app/browser/components/ContactForm.test.ts:53:2 > ContactForm > announces a refusal then accepts a valid inquiry 220ms
+   → expected null not to be null
+ ✓ |app:browser (chromium)| tests/app/browser/components/SubscribeForm.test.ts:14:21 > SubscribeForm > keeps every summary link hittable at 320 CSS px 125ms
+ ✓ |app:browser (chromium)| tests/app/browser/components/SubscribeForm.test.ts:14:21 > SubscribeForm > keeps every summary link hittable at 390 CSS px 100ms
+ × |app:browser (chromium)| tests/app/browser/components/SubscribeForm.test.ts:35:2 > SubscribeForm > refuses on the quiet danger pair and commits in the application navy 65ms
+   → expected true to be false // Object.is equality
+ × |app:browser (chromium)| tests/app/browser/components/SubscribeForm.test.ts:51:2 > SubscribeForm > announces a refusal then accepts a valid request 184ms
+   → expected null not to be null
+ ✓ |app:browser (chromium)| tests/app/browser/components/PaymentForm.test.ts:14:21 > PaymentForm > keeps every summary link hittable at 320 CSS px 118ms
+ ✓ |app:browser (chromium)| tests/app/browser/components/PaymentForm.test.ts:14:21 > PaymentForm > keeps every summary link hittable at 390 CSS px 100ms
+ × |app:browser (chromium)| tests/app/browser/components/PaymentForm.test.ts:36:2 > PaymentForm > refuses on the quiet danger pair and commits in the application navy 65ms
+   → expected true to be false // Object.is equality
+ × |app:browser (chromium)| tests/app/browser/components/PaymentForm.test.ts:52:2 > PaymentForm > announces a refusal then accepts a valid amount 200ms
+   → expected null not to be null
+ × |app:browser (chromium)| tests/app/browser/components/PaymentView.test.ts:32:2 > PaymentView > states each field hint once, beside the field it governs 6ms
+   → expected [ …(3) ] to have a length of 2 but got 3
+ × |app:browser (chromium)| tests/app/browser/components/PaymentView.test.ts:42:2 > PaymentView > leaves navy to the chrome and commits in the application navy 2ms
+   → expected <section …(2)>…(1)</section> to be null
+ × |app:browser (chromium)| tests/app/browser/components/PaymentView.test.ts:53:2 > PaymentView > reads the recorded invoice back and sends the reader on to settle it 1ms
+   → expected <p …(2)></p> to be null
+ × |app:browser (chromium)| tests/app/browser/components/NewsletterView.test.ts:26:2 > NewsletterView > composes its own screen rather than repeating the subscribe island 3ms
+   → expected <section …(2)>…(1)</section> to be null
+ × |app:browser (chromium)| tests/app/browser/components/NewsletterView.test.ts:39:2 > NewsletterView > puts its request on the page where subscribe puts it on the island 2ms
+   → expected <section …(2)>…(1)</section> to be null
+ × |app:browser (chromium)| tests/app/browser/components/NewsletterView.test.ts:47:2 > NewsletterView > ends in the request while nothing is accepted 1ms
+   → expected <button …(2)>…(1)</button> to be null
+ × |app:browser (chromium)| tests/app/browser/components/NewsletterView.test.ts:54:2 > NewsletterView > restates the accepted subscription in its own voice and continues 1ms
+   → expected <p …(2)></p> to be null
+ ✓ |app:browser (chromium)| tests/app/browser/components/SubscribeView.test.ts:26:2 > SubscribeView > paints the offer and the request while nothing is accepted 3ms
+ × |app:browser (chromium)| tests/app/browser/components/SubscribeView.test.ts:34:2 > SubscribeView > commits in the application navy rather than in gold 1ms
+   → expected false to be true // Object.is equality
+ × |app:browser (chromium)| tests/app/browser/components/SubscribeView.test.ts:41:2 > SubscribeView > restates the accepted subscription and carries a real continuation 1ms
+   → expected <p …(2)></p> to be null
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 20 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |app:browser (chromium)| tests/app/browser/components/ContactForm.test.ts:37:2 > ContactForm > refuses on the quiet danger pair and commits in the application navy
+AssertionError: expected true to be false // Object.is equality
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- false[39m
+[31m+ true[39m
+
+ ❯ tests/app/browser/components/ContactForm.test.ts:45:53
+     43|   const summary = requireValue(host.querySelector('#inquiry-summary'))
+     44|   expect(summary.getAttribute('role')).toBe('alert')
+     45|   expect(summary.classList.contains('alert-danger')).toBe(false)
+       |                                                     ^
+     46|   expect(summary.classList.contains('bg-danger-subtle')).toBe(true)
+     47|   const submit = requireValue(host.querySelector('button[type="submit"…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/20]⎯
+
+ FAIL  |app:browser (chromium)| tests/app/browser/components/ContactForm.test.ts:53:2 > ContactForm > announces a refusal then accepts a valid inquiry
+AssertionError: expected null not to be null
+ ❯ tests/app/browser/components/ContactForm.test.ts:82:41
+     80|   await waitForCondition('the inquiry is accepted', () => accepted.cou…
+     81|   expect(app.inquiry.accepted.value?.company).toBe('Agency')
+     82|   expect(host.querySelector('form')).not.toBeNull()
+       |                                         ^
+     83|  })
+     84| })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/20]⎯
+
+ FAIL  |app:browser (chromium)| tests/app/browser/components/ContactView.test.ts:46:2 > ContactView > leaves the office panel at its own height on a quiet surface
+Error: Value is required
+ ❯ requireValue node_modules/@orkestrel/test/dist/src/core/index.js:438:47
+ ❯ tests/app/browser/components/ContactView.test.ts:49:17
+     47|   await page.viewport(1280, 800)
+     48|   const { host } = mountView(ContactView)
+     49|   const office = requireValue(host.querySelector('section[aria-labelle…
+       |                 ^
+     50|   expect(office.className).not.toContain('h-100')
+     51|   expect(office.closest('[data-bs-theme="dark"]')).toBeNull()
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/20]⎯
+
+ FAIL  |app:browser (chromium)| tests/app/browser/components/ContactView.test.ts:58:2 > ContactView > puts the office before the form so a phone number costs no scrolling
+Error: Value is required
+ ❯ requireValue node_modules/@orkestrel/test/dist/src/core/index.js:438:47
+ ❯ tests/app/browser/components/ContactView.test.ts:60:17
+     58|  it('puts the office before the form so a phone number costs no scroll…
+     59|   const { host } = mountView(ContactView)
+     60|   const office = requireValue(host.querySelector('section[aria-labelle…
+       |                 ^
+     61|   const form = requireValue(host.querySelector('form'))
+     62|   expect(office.compareDocumentPosition(form) & Node.DOCUMENT_POSITION…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/20]⎯
+
+ FAIL  |app:browser (chromium)| tests/app/browser/components/ContactView.test.ts:70:2 > ContactView > restates an accepted inquiry without implying what was never entered
+AssertionError: expected <p …(2)></p> to be null
+
+[32m- Expected:[39m
+null
+
+[31m+ Received:[39m
+<p
+  class="alert alert-success mb-0"
+  role="status"
+>
+  Your inquiry is recorded on this device
+</p>
+
+ ❯ tests/app/browser/components/ContactView.test.ts:75:47
+     73|   await nextTick()
+     74|   expect(host.querySelector('form')).toBeNull()
+     75|   expect(host.querySelector('.alert-success')).toBeNull()
+       |                                               ^
+     76|   const status = requireValue(host.querySelector('p[role="status"]'))
+     77|   expect(status.textContent?.trim()).toBe(COPY.inquiryAccepted)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/20]⎯
+
+ FAIL  |app:browser (chromium)| tests/app/browser/components/ContactView.test.ts:87:2 > ContactView > claims no gap on an inquiry that filled every field
+AssertionError: expected [] to deeply equal [ 'Full name', 'Company', …(4) ]
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- [[39m
+[32m-   "Full name",[39m
+[32m-   "Company",[39m
+[32m-   "Work email",[39m
+[32m-   "Phone",[39m
+[32m-   "Title",[39m
+[32m-   "Message",[39m
+[32m- ][39m
+[31m+ [][39m
+
+ ❯ tests/app/browser/components/ContactView.test.ts:91:27
+     89|   expect(app.inquiry.submit(FULL)).toBe(true)
+     90|   await nextTick()
+     91|   expect(readLabels(host)).toEqual([
+       |                           ^
+     92|    COPY.name,
+     93|    COPY.company,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/20]⎯
+
+ FAIL  |app:browser (chromium)| tests/app/browser/components/ContactView.test.ts:103:2 > ContactView > ends the accepted screen in the desks the office answers about
+Error: Value is required
+ ❯ requireValue node_modules/@orkestrel/test/dist/src/core/index.js:438:47
+ ❯ tests/app/browser/components/ContactView.test.ts:107:15
+    105|   expect(app.inquiry.submit(BARE)).toBe(true)
+    106|   await nextTick()
+    107|   const tail = requireValue(host.querySelector('.border-top'))
+       |               ^
+    108|   const links = [...tail.querySelectorAll('a')]
+    109|   expect(links.map((link) => link.textContent?.trim())).toEqual([COPY.…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/20]⎯
+
+ FAIL  |app:browser (chromium)| tests/app/browser/components/NewsletterView.test.ts:26:2 > NewsletterView > composes its own screen rather than repeating the subscribe island
+AssertionError: expected <section …(2)>…(1)</section> to be null
+
+[32m- Expected:[39m
+null
+
+[31m+ Received:[39m
+<section
+  class="invite rounded-4 p-4 p-lg-5 bg-body text-body"
+  data-bs-theme="dark"
+>
+  <div
+    class="row g-4 g-lg-5 align-items-center"
+  >
+    <div
+      class="col-12 col-lg-6"
+    >
+      <p
+        class="accent small text-uppercase text-body-secondary mb-3"
+      >
+        Newsletter
+      </p>
+      <h1
+        class="mb-3"
+      >
+        Rough Notes newsletters
+      </h1>
+      <p
+        class="text-body-secondary mb-4"
+      >
+         It is about you, the customer, and our engagement with you. Rough Notes continues to serve independent agents, brokers, and the carriers they represent. 
+      </p>
+      <p
+        class="fw-semibold mb-3"
+      >
+        We listened, and now you can:
+      </p>
+      <ul
+        class="list-unstyled d-grid gap-3 mb-0"
+      >
+        <li
+          class="d-flex gap-3"
+        >
+          <span
+            aria-hidden="true"
+            class="confirm d-inline-flex align-items-center justify-content-center flex-shrink-0 bg-warning-subtle text-warning-emphasis"
+          >
+            <i
+              class="bi bi-check2"
+            />
+          </span>
+          <span>
+            Identify coverage gaps in efforts to reduce E&O client exposures
+          </span>
+        </li>
+        <li
+          class="d-flex gap-3"
+        >
+          <span
+            aria-hidden="true"
+            class="confirm d-inline-flex align-items-center justify-content-center flex-shrink-0 bg-warning-subtle text-warning-emphasis"
+          >
+            <i
+              class="bi bi-check2"
+            />
+          </span>
+          <span>
+            Provide excellent client experiences
+          </span>
+        </li>
+        <li
+          class="d-flex gap-3"
+        >
+          <span
+            aria-hidden="true"
+            class="confirm d-inline-flex align-items-center justify-content-center flex-shrink-0 bg-warning-subtle text-warning-emphasis"
+          >
+            <i
+              class="bi bi-check2"
+            />
+          </span>
+          <span>
+            Attract organic growth by understanding niche market expertise
+          </span>
+        </li>
+        <li
+          class="d-flex gap-3"
+        >
+          <span
+            aria-hidden="true"
+            class="confirm d-inline-flex align-items-center justify-content-center flex-shrink-0 bg-warning-subtle text-warning-emphasis"
+          >
+            <i
+              class="bi bi-check2"
+            />
+          </span>
+          <span>
+            Get answers on demand on any modern device
+          </span>
+        </li>
+      </ul>
+    </div>
+    <div
+      class="col-12 col-lg-6"
+    >
+      <div
+        class="card bg-body text-body shadow-sm"
+        data-bs-theme="light"
+      >
+        <div
+          class="card-body p-4"
+        >
+          
+          <!--v-if-->
+          <form
+            novalidate=""
+          >
+            <div
+              class="mb-3"
+            >
+              <label
+                class="form-label"
+                for="subscribe-name"
+              >
+                Full name
+              </label>
+              <input
+                aria-invalid="false"
+                autocomplete="name"
+                class="form-control"
+                id="subscribe-name"
+                type="text"
+              />
+              <!--v-if-->
+            </div>
+            <div
+              class="mb-3"
+            >
+              <label
+                class="form-label"
+                for="subscribe-email"
+              >
+                Work email
+              </label>
+              <input
+                aria-invalid="false"
+                autocomplete="email"
+                class="form-control"
+                id="subscribe-email"
+                inputmode="email"
+                type="text"
+              />
+              <!--v-if-->
+            </div>
+            <button
+              class="btn btn-warning w-100"
+              type="submit"
+            >
+              Subscribe free 
+              <i
+                aria-hidden="true"
+                class="bi bi-arrow-right"
+              />
+            </button>
+            <p
+              class="small text-body-secondary text-center mb-0 mt-3"
+            >
+               Fixture only — nothing is sent off this device. 
+            </p>
+          </form>
+          
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+ ❯ tests/app/browser/components/NewsletterView.test.ts:32:40
+     30|   )
+     31|   expect(host.textContent).toContain('It is about you, the customer')
+     32|   expect(host.querySelector('.invite')).toBeNull()
+       |                                        ^
+     33|   expect(host.querySelector('[data-bs-theme="dark"]')).toBeNull()
+     34|   const benefits = [...host.querySelectorAll('#newsletter-carries ~ ul…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/20]⎯
+
+ FAIL  |app:browser (chromium)| tests/app/browser/components/NewsletterView.test.ts:39:2 > NewsletterView > puts its request on the page where subscribe puts it on the island
+AssertionError: expected <section …(2)>…(1)</section> to be null
+
+[32m- Expected:[39m
+null
+
+[31m+ Received:[39m
+<section
+  class="invite rounded-4 p-4 p-lg-5 bg-body text-body"
+  data-bs-theme="dark"
+>
+  <div
+    class="row g-4 g-lg-5 align-items-center"
+  >
+    <div
+      class="col-12 col-lg-6"
+    >
+      <p
+        class="accent small text-uppercase text-body-secondary mb-3"
+      >
+        Newsletter
+      </p>
+      <h1
+        class="mb-3"
+      >
+        Rough Notes newsletters
+      </h1>
+      <p
+        class="text-body-secondary mb-4"
+      >
+         It is about you, the customer, and our engagement with you. Rough Notes continues to serve independent agents, brokers, and the carriers they represent. 
+      </p>
+      <p
+        class="fw-semibold mb-3"
+      >
+        We listened, and now you can:
+      </p>
+      <ul
+        class="list-unstyled d-grid gap-3 mb-0"
+      >
+        <li
+          class="d-flex gap-3"
+        >
+          <span
+            aria-hidden="true"
+            class="confirm d-inline-flex align-items-center justify-content-center flex-shrink-0 bg-warning-subtle text-warning-emphasis"
+          >
+            <i
+              class="bi bi-check2"
+            />
+          </span>
+          <span>
+            Identify coverage gaps in efforts to reduce E&O client exposures
+          </span>
+        </li>
+        <li
+          class="d-flex gap-3"
+        >
+          <span
+            aria-hidden="true"
+            class="confirm d-inline-flex align-items-center justify-content-center flex-shrink-0 bg-warning-subtle text-warning-emphasis"
+          >
+            <i
+              class="bi bi-check2"
+            />
+          </span>
+          <span>
+            Provide excellent client experiences
+          </span>
+        </li>
+        <li
+          class="d-flex gap-3"
+        >
+          <span
+            aria-hidden="true"
+            class="confirm d-inline-flex align-items-center justify-content-center flex-shrink-0 bg-warning-subtle text-warning-emphasis"
+          >
+            <i
+              class="bi bi-check2"
+            />
+          </span>
+          <span>
+            Attract organic growth by understanding niche market expertise
+          </span>
+        </li>
+        <li
+          class="d-flex gap-3"
+        >
+          <span
+            aria-hidden="true"
+            class="confirm d-inline-flex align-items-center justify-content-center flex-shrink-0 bg-warning-subtle text-warning-emphasis"
+          >
+            <i
+              class="bi bi-check2"
+            />
+          </span>
+          <span>
+            Get answers on demand on any modern device
+          </span>
+        </li>
+      </ul>
+    </div>
+    <div
+      class="col-12 col-lg-6"
+    >
+      <div
+        class="card bg-body text-body shadow-sm"
+        data-bs-theme="light"
+      >
+        <div
+          class="card-body p-4"
+        >
+          
+          <!--v-if-->
+          <form
+            novalidate=""
+          >
+            <div
+              class="mb-3"
+            >
+              <label
+                class="form-label"
+                for="subscribe-name"
+              >
+                Full name
+              </label>
+              <input
+                aria-invalid="false"
+                autocomplete="name"
+                class="form-control"
+                id="subscribe-name"
+                type="text"
+              />
+              <!--v-if-->
+            </div>
+            <div
+              class="mb-3"
+            >
+              <label
+                class="form-label"
+                for="subscribe-email"
+              >
+                Work email
+              </label>
+              <input
+                aria-invalid="false"
+                autocomplete="email"
+                class="form-control"
+                id="subscribe-email"
+                inputmode="email"
+                type="text"
+              />
+              <!--v-if-->
+            </div>
+            <button
+              class="btn btn-warning w-100"
+              type="submit"
+            >
+              Subscribe free 
+              <i
+                aria-hidden="true"
+                class="bi bi-arrow-right"
+              />
+            </button>
+            <p
+              class="small text-body-secondary text-center mb-0 mt-3"
+            >
+               Fixture only — nothing is sent off this device. 
+            </p>
+          </form>
+          
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+ ❯ tests/app/browser/components/NewsletterView.test.ts:41:81
+     39|  it('puts its request on the page where subscribe puts it on the islan…
+     40|   const newsletter = mountView(NewsletterView)
+     41|   expect(requireValue(newsletter.host.querySelector('form')).closest('…
+       |                                                                                 ^
+     42|   clearSurface()
+     43|   const subscribe = mountView(SubscribeView)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/20]⎯
+
+ FAIL  |app:browser (chromium)| tests/app/browser/components/NewsletterView.test.ts:47:2 > NewsletterView > ends in the request while nothing is accepted
+AssertionError: expected <button …(2)>…(1)</button> to be null
+
+[32m- Expected:[39m
+null
+
+[31m+ Received:[39m
+<button
+  class="btn btn-warning w-100"
+  type="submit"
+>
+  Subscribe free 
+  <i
+    aria-hidden="true"
+    class="bi bi-arrow-right"
+  />
+</button>
+
+ ❯ tests/app/browser/components/NewsletterView.test.ts:51:45
+     49|   expect(host.querySelector('#subscribe-name')).not.toBeNull()
+     50|   expect(host.querySelector('.border-top')).toBeNull()
+     51|   expect(host.querySelector('.btn-warning')).toBeNull()
+       |                                             ^
+     52|  })
+     53|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/20]⎯
+
+ FAIL  |app:browser (chromium)| tests/app/browser/components/NewsletterView.test.ts:54:2 > NewsletterView > restates the accepted subscription in its own voice and continues
+AssertionError: expected <p …(2)></p> to be null
+
+[32m- Expected:[39m
+null
+
+[31m+ Received:[39m
+<p
+  class="alert alert-success mb-0"
+  role="status"
+>
+  You are subscribed
+</p>
+
+ ❯ tests/app/browser/components/NewsletterView.test.ts:59:47
+     57|   await nextTick()
+     58|   expect(host.querySelector('form')).toBeNull()
+     59|   expect(host.querySelector('.alert-success')).toBeNull()
+       |                                               ^
+     60|   const status = requireValue(host.querySelector('p[role="status"]'))
+     61|   expect(status.textContent?.trim()).toBe(COPY.accepted)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/20]⎯
+
+ FAIL  |app:browser (chromium)| tests/app/browser/components/PaymentForm.test.ts:36:2 > PaymentForm > refuses on the quiet danger pair and commits in the application navy
+AssertionError: expected true to be false // Object.is equality
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- false[39m
+[31m+ true[39m
+
+ ❯ tests/app/browser/components/PaymentForm.test.ts:44:53
+     42|   const summary = requireValue(host.querySelector('#payment-summary'))
+     43|   expect(summary.getAttribute('role')).toBe('alert')
+     44|   expect(summary.classList.contains('alert-danger')).toBe(false)
+       |                                                     ^
+     45|   expect(summary.classList.contains('bg-danger-subtle')).toBe(true)
+     46|   const submit = requireValue(host.querySelector('button[type="submit"…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/20]⎯
+
+ FAIL  |app:browser (chromium)| tests/app/browser/components/PaymentForm.test.ts:52:2 > PaymentForm > announces a refusal then accepts a valid amount
+AssertionError: expected null not to be null
+ ❯ tests/app/browser/components/PaymentForm.test.ts:80:41
+     78|   await waitForCondition('the payment is accepted', () => accepted.cou…
+     79|   expect(app.payment.accepted.value?.amount).toBe(7800)
+     80|   expect(host.querySelector('form')).not.toBeNull()
+       |                                         ^
+     81|  })
+     82| })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/20]⎯
+
+ FAIL  |app:browser (chromium)| tests/app/browser/components/PaymentView.test.ts:32:2 > PaymentView > states each field hint once, beside the field it governs
+AssertionError: expected [ …(3) ] to have a length of 2 but got 3
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- 2[39m
+[31m+ 3[39m
+
+ ❯ tests/app/browser/components/PaymentView.test.ts:35:37
+     33|   const { host } = mountView(PaymentView)
+     34|   expect(requireValue(host.querySelector('h1')).textContent?.trim()).t…
+     35|   expect(readText(host).split(HINT)).toHaveLength(2)
+       |                                     ^
+     36|   const help = requireValue(host.querySelector('#payment-customer-help…
+     37|   expect(readText(help)).toContain(HINT)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/20]⎯
+
+ FAIL  |app:browser (chromium)| tests/app/browser/components/PaymentView.test.ts:42:2 > PaymentView > leaves navy to the chrome and commits in the application navy
+AssertionError: expected <section …(2)>…(1)</section> to be null
+
+[32m- Expected:[39m
+null
+
+[31m+ Received:[39m
+<section
+  class="invite rounded-4 p-4 p-lg-5 bg-body text-body"
+  data-bs-theme="dark"
+>
+  <div
+    class="row g-4 g-lg-5 align-items-center"
+  >
+    <div
+      class="col-12 col-lg-6"
+    >
+      <p
+        class="accent small text-uppercase text-body-secondary mb-3"
+      >
+        Existing customers
+      </p>
+      <h1
+        class="mb-3"
+      >
+        Pay a bill
+      </h1>
+      <p
+        class="text-body-secondary mb-4"
+      >
+         Enter the customer number, invoice number, and the full invoice amount. This records the request on this device. Card capture stays on Rough Notes. 
+      </p>
+      <ul
+        class="list-unstyled d-grid gap-3 mb-4"
+      >
+        <li
+          class="d-flex gap-3"
+        >
+          <span
+            aria-hidden="true"
+            class="confirm d-inline-flex align-items-center justify-content-center flex-shrink-0 bg-warning-subtle text-warning-emphasis"
+          >
+            <i
+              class="bi bi-check2"
+            />
+          </span>
+          <span>
+            Include sales tax, shipping, and handling in the amount.
+          </span>
+        </li>
+        <li
+          class="d-flex gap-3"
+        >
+          <span
+            aria-hidden="true"
+            class="confirm d-inline-flex align-items-center justify-content-center flex-shrink-0 bg-warning-subtle text-warning-emphasis"
+          >
+            <i
+              class="bi bi-check2"
+            />
+          </span>
+          <span>
+            If you do not know the customer number, use the invoice number twice.
+          </span>
+        </li>
+      </ul>
+      <p
+        class="d-flex flex-wrap gap-2 mb-0"
+      >
+        <a
+          class="btn btn-outline-secondary"
+          href="#/shop"
+        >
+          Shop
+        </a>
+        <a
+          class="btn btn-outline-secondary"
+          href="https://shoppingcart.roughnotes.com/ccpayment/"
+          rel="noreferrer"
+        >
+          Pay on Rough Notes
+        </a>
+      </p>
+    </div>
+    <div
+      class="col-12 col-lg-6"
+    >
+      <div
+        class="card bg-body text-body shadow-sm"
+        data-bs-theme="light"
+      >
+        <div
+          class="card-body p-4"
+        >
+          
+          <!--v-if-->
+          <form
+            novalidate=""
+          >
+            <div
+              class="mb-3"
+            >
+              <label
+                class="form-label"
+                for="payment-customer"
+              >
+                Customer number
+              </label>
+              <input
+                aria-describedby="payment-customer-help"
+                aria-invalid="false"
+                autocomplete="off"
+                class="form-control"
+                id="payment-customer"
+                type="text"
+              />
+              <!--v-if-->
+              <div
+                class="form-text"
+                id="payment-customer-help"
+              >
+                 If you do not know your customer number, enter the invoice number in both fields. 
+              </div>
+            </div>
+            <div
+              class="mb-3"
+            >
+              <label
+                class="form-label"
+                for="payment-number"
+              >
+                Invoice number
+              </label>
+              <input
+                aria-invalid="false"
+                autocomplete="off"
+                class="form-control"
+                id="payment-number"
+                type="text"
+              />
+              <!--v-if-->
+            </div>
+            <div
+              class="mb-3"
+            >
+              <label
+                class="form-label"
+                for="payment-amount"
+              >
+                Invoice amount
+              </label>
+              <input
+                aria-describedby="payment-amount-help"
+                aria-invalid="false"
+                autocomplete="off"
+                class="form-control"
+                id="payment-amount"
+                inputmode="decimal"
+                type="text"
+              />
+              <!--v-if-->
+              <div
+                class="form-text"
+                id="payment-amount-help"
+              >
+                 Enter the entire invoice amount, including sales tax, shipping, and handling. 
+              </div>
+            </div>
+            <button
+              class="btn btn-warning w-100"
+              type="submit"
+            >
+              Review payment 
+              <i
+                aria-hidden="true"
+                class="bi bi-arrow-right"
+              />
+            </button>
+            <p
+              class="small text-body-secondary text-center mb-0 mt-3"
+            >
+               Fixture only — no card is collected and nothing is sent off this device. 
+            </p>
+          </form>
+          
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+ ❯ tests/app/browser/components/PaymentView.test.ts:44:40
+     42|  it('leaves navy to the chrome and commits in the application navy', (…
+     43|   const { host } = mountView(PaymentView)
+     44|   expect(host.querySelector('.invite')).toBeNull()
+       |                                        ^
+     45|   expect(host.querySelector('[data-bs-theme="dark"]')).toBeNull()
+     46|   expect(host.querySelector('.btn-warning')).toBeNull()
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/20]⎯
+
+ FAIL  |app:browser (chromium)| tests/app/browser/components/PaymentView.test.ts:53:2 > PaymentView > reads the recorded invoice back and sends the reader on to settle it
+AssertionError: expected <p …(2)></p> to be null
+
+[32m- Expected:[39m
+null
+
+[31m+ Received:[39m
+<p
+  class="alert alert-success mb-0"
+  role="status"
+>
+  The invoice is recorded on this device
+</p>
+
+ ❯ tests/app/browser/components/PaymentView.test.ts:58:47
+     56|   await nextTick()
+     57|   expect(host.querySelector('form')).toBeNull()
+     58|   expect(host.querySelector('.alert-success')).toBeNull()
+       |                                               ^
+     59|   const status = requireValue(host.querySelector('p[role="status"]'))
+     60|   expect(status.textContent?.trim()).toBe(COPY.paymentAccepted)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/20]⎯
+
+ FAIL  |app:browser (chromium)| tests/app/browser/components/SubscribeForm.test.ts:35:2 > SubscribeForm > refuses on the quiet danger pair and commits in the application navy
+AssertionError: expected true to be false // Object.is equality
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- false[39m
+[31m+ true[39m
+
+ ❯ tests/app/browser/components/SubscribeForm.test.ts:43:53
+     41|   const summary = requireValue(host.querySelector('#subscribe-summary'…
+     42|   expect(summary.getAttribute('role')).toBe('alert')
+     43|   expect(summary.classList.contains('alert-danger')).toBe(false)
+       |                                                     ^
+     44|   expect(summary.classList.contains('bg-danger-subtle')).toBe(true)
+     45|   const submit = requireValue(host.querySelector('button[type="submit"…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[17/20]⎯
+
+ FAIL  |app:browser (chromium)| tests/app/browser/components/SubscribeForm.test.ts:51:2 > SubscribeForm > announces a refusal then accepts a valid request
+AssertionError: expected null not to be null
+ ❯ tests/app/browser/components/SubscribeForm.test.ts:81:41
+     79|    email: 'ada@agency.com',
+     80|   })
+     81|   expect(host.querySelector('form')).not.toBeNull()
+       |                                         ^
+     82|  })
+     83| })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[18/20]⎯
+
+ FAIL  |app:browser (chromium)| tests/app/browser/components/SubscribeView.test.ts:34:2 > SubscribeView > commits in the application navy rather than in gold
+AssertionError: expected false to be true // Object.is equality
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- true[39m
+[31m+ false[39m
+
+ ❯ tests/app/browser/components/SubscribeView.test.ts:37:51
+     35|   const { host } = mountView(SubscribeView)
+     36|   const submit = requireValue(host.querySelector('button[type="submit"…
+     37|   expect(submit.classList.contains('btn-primary')).toBe(true)
+       |                                                   ^
+     38|   expect(host.querySelector('.btn-warning')).toBeNull()
+     39|  })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[19/20]⎯
+
+ FAIL  |app:browser (chromium)| tests/app/browser/components/SubscribeView.test.ts:41:2 > SubscribeView > restates the accepted subscription and carries a real continuation
+AssertionError: expected <p …(2)></p> to be null
+
+[32m- Expected:[39m
+null
+
+[31m+ Received:[39m
+<p
+  class="alert alert-success mb-0"
+  role="status"
+>
+  You are subscribed
+</p>
+
+ ❯ tests/app/browser/components/SubscribeView.test.ts:46:47
+     44|   await nextTick()
+     45|   expect(host.querySelector('form')).toBeNull()
+     46|   expect(host.querySelector('.alert-success')).toBeNull()
+       |                                               ^
+     47|   const status = requireValue(host.querySelector('p[role="status"]'))
+     48|   expect(status.textContent?.trim()).toBe(COPY.accepted)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[20/20]⎯
+
+
+ Test Files  7 failed (7)
+      Tests  20 failed | 7 passed (27)
+   Start at  15:16:32
+   Duration  7.37s (transform 0ms, setup 2.71s, import 1.20s, tests 1.84s, environment 0ms)
+
