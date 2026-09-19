@@ -1,7 +1,0 @@
-BASELINE exit=0 | 46 passed (46)
-R1 registration removed, proof file kept: exit=1 | 2 failed | 44 passed (46)
-    FAIL  |config| tests/config.test.ts > root configuration > registers every workspace project with its fixed include and setup files
-    FAIL  |config| tests/config.test.ts > root configuration > registers proof scripts in the correct gate
-R2 test:conformance script removed, project kept: exit=1 | 1 failed | 45 passed (46)
-    FAIL  |config| tests/config.test.ts > root configuration > registers proof scripts in the correct gate
-RESTORED exit=0 | 46 passed (46)

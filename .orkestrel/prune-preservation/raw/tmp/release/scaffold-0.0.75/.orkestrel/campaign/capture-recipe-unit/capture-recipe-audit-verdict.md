@@ -1,9 +1,0 @@
-# Capture recipe audit ruling
-
-Reject successor2 solely for its standalone screenshot test. Independent objective and subjective Sol lanes each found that the example prepares a theme and places home without a rendered-home assertion, contradicting required captures.md placement law. Adopt their direct prescription: keep configuration separate, insert awaited theme preparation before actions in the existing acceptance journey, and insert placement immediately after that journey's rendered-home assertion. Do not register a screenshot-only test or invent navigation semantics. Successor brief .orkestrel/campaign/capture-recipe-unit/capture-recipe-brief-3.md owns this correction.
-
-The lanes independently confirmed the synchronous/async boundary, optional static hook, actual published API shapes, local helper attribution, valid relative screenshot destination, single preparation-rule home, generated inventory and scope/evidence distinction. Each ran the retained destination instrument: real resolver positive and wrong-base control rejected. They read actual successor2 diff/status, checked live hashes and did not treat scoped greens as release evidence.
-
-Shared claims: .orkestrel/campaign/capture-recipe-unit/capture-recipe-audit-claims.md. Lane briefs: capture-recipe-objective-brief.md and capture-recipe-subjective-brief.md in that directory. Native lanes capture_recipe_objective and capture_recipe_subjective returned CAPTURE RECIPE OBJECTIVE: FAIL and CAPTURE RECIPE SUBJECTIVE: FAIL respectively. Opus unavailable remains the reason for separate Sol substitution.
-
-Keep full release gates and published field proof pending. A source correction following this prescription needs verification of its exact instruction placement and scoped propagation; do not reopen the confirmed hook/API/path questions without new evidence. Retain the lane reports before sweeping launch copies.

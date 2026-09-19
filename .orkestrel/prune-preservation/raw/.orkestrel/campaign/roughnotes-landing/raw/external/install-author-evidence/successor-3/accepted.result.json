@@ -1,7 +1,0 @@
-﻿{
-    "command":  "powershell.exe -NoProfile -File C:/Users/mikes/AppData/Local/Temp/roughnotes-integration-20260918/install-author-evidence/successor-3/admission-controls.ps1 -Case accepted",
-    "exit":  0,
-    "expected":  0,
-    "matched":  true,
-    "outputExists":  false
-}

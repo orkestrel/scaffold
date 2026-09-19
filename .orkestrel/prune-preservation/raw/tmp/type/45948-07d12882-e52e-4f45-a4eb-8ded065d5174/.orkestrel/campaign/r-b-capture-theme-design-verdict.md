@@ -1,9 +1,0 @@
-# Capture-theme design ruling
-
-Accept the data-only portfolio repair, conditional on its real rejection guard running red before the repair and green afterward. Independent Sol objective and subjective lanes agreed that current capture journeys already await their own theme actions, while matrix/transport consumers do not require portfolio callbacks. The optional synchronous apply hook does not await the async adapter. Removing buildVariants and consuming provided JourneyVariant data directly preserves useful behavior and strict modal reachability.
-
-Record the proposed recorder's delivery timing as UNRESOLVED until measured. Attach the real unhandledrejection recorder before the content journey, assert no recorded events before teardown and remove the identical handler in finally. Do not suppress, catch or filter away the underlying rejection. Run the current async adapter red at that assertion; if delivery arrives later, measure a real browser task boundary and keep the same failing input. Then remove the adapter and rerun green.
-
-Keep direct awaited applyTheme coverage for dark/light paint and control state in setupBrowser.test.ts. Keep navigation placement, filenames and membership assertions. Update Roughnotes guide to state that captures observe the theme the journey already established. The canonical prove-journey recipe teaches the same invalid adapter and needs a separate instruction unit in the pending Scaffold release; do not repair upstream library behavior that its synchronous contract never promised.
-
-Inputs: tmp/audit/r-b-capture-theme-design.md, r-b-capture-theme-objective-brief.md, r-b-capture-theme-subjective-brief.md; native lanes r_b_objective/r_b_subjective. Each returned CAPTURE DESIGN ...: UNRESOLVED solely for unmeasured recorder timing, with composition claims confirmed. Reports must be retained with this verdict before launch-copy sweep. Opus weekly limit remains the recorded reason for native Sol substitution.

@@ -1,8 +1,0 @@
-﻿ M guides/scaffold.md
- M host.json
- M src/core/compilers.ts
- M src/core/templates.ts
- M tests/distribution.test.ts
- M tests/setupServer.ts
- M tests/src/core/compilers.test.ts
- M tests/src/core/templates.test.ts

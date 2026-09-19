@@ -1,2 +1,0 @@
-100644 59069a1f5926a5a691982125cc4e0ec72f7e69fc 0	.codex/agents/orkestrel.toml
-100644 7c6257de2940b4bf16d64f7ff20834152c899404 0	.codex/hooks.json

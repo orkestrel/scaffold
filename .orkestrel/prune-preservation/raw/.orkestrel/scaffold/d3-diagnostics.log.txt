@@ -1,6 +1,0 @@
---- spawn fault, a bare .cmd with no shell
-  shipped   : The pack into PACKED failed: undefined[LF]undefined
-  corrected : The pack into PACKED failed with status null and spawn error Error: spawnSync npm.cmd EINVAL: undefined[LF]undefined
---- non-zero exit, a real child
-  shipped   : The pack into PACKED failed: [LF]
-  corrected : The pack into PACKED failed with status 7 and spawn error undefined: [LF]

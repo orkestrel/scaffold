@@ -1,7 +1,0 @@
-﻿{
-    "command":  "git.exe diff --no-index --check -- launch-install-original-2.ps1 launch-install-original-3.ps1",
-    "exit":  1,
-    "output":  [
-
-               ]
-}

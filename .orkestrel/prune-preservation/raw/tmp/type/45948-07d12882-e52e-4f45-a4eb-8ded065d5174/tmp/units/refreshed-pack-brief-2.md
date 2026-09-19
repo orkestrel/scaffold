@@ -1,7 +1,0 @@
-# Use the measured Windows PowerShell host
-
-Apply tmp/units/refreshed-pack-brief.md with this correction. Root measured the execution shell as Windows PowerShell5.1.26100.9444; no pwsh command resolved. Calling SHA512.HashData failed because that method is absent. Use the proven Create()/ComputeHash()/Dispose() pattern from the historical archive verifier. Write final UTF-8 metadata with System.IO.File.WriteAllText and UTF8Encoding(false), not unsupported Set-Content -Encoding utf8NoBOM.
-
-Correct Invoke-Native's case-insensitive variable collision: parameter $Arguments and local $arguments are the same variable. Root's real PowerShell probe assigned the splat hashtable into the typed string[] parameter and produced a string[] holding System.Collections.Hashtable. Use an unambiguous local splat name such as $startOptions.
-
-Keep all original constraints. Syntax-check and run harmless host probes for the repaired hashing, JSON writing in an owned temporary file, and Invoke-Native with node --version redirected into an owned probe directory. These probes are authorized; pack/install/publication remains forbidden. Own additional tmp/probe/refreshed-pack-host/ probe outputs. Preserve predecessor script bytes as tmp/release/pack-refreshed-candidate-previous.ps1 before editing and return successor report tmp/units/refreshed-pack-report-2.md. Do not delete probe outputs or change the fixed candidate.

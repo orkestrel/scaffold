@@ -1,1 +1,0 @@
-TARGET: The configs group is blocked because the manifest at . names a Vitest project the planned vite.config.ts does not register: journey:*. Remove the script that names it before selecting configs, or exclude configs from --groups.

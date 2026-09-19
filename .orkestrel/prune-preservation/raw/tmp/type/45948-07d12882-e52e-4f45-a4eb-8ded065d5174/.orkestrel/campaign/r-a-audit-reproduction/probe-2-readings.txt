@@ -1,9 +1,0 @@
-PROBE c1c open on detail: ["expanded"] hash=#/products/roughnotes-pro
-PROBE c1c after same-view hash change: ["expanded"] events=none menu classes=offcanvas offcanvas-end bg-body text-body show hash=#/products/advantage-plus
-PROBE c1c after cross-view hash change: ["collapsed"] events=hide.bs.offcanvas,hidden.bs.offcanvas menu classes=offcanvas offcanvas-end bg-body text-body
- ✓ |app:browser (chromium)| tests/app/browser/zz-audit-probe-2.test.ts:15:2 > audit probe 2 > claim 1c: same-view navigation while the menu is open 3392ms
-PROBE c1d open at 390: ["expanded"]
-PROBE c1d after widening: ["expanded"] attribute=true trigger visible=false events=none menu classes=offcanvas offcanvas-end bg-body text-body show
-PROBE c1d waitForState(expanded, absent) at 1280: Interactive target "Menu" is not visible and focus-reachable
-PROBE c1d back at 390: ["expanded"] menu classes=offcanvas offcanvas-end bg-body text-body show
- ✓ |app:browser (chromium)| tests/app/browser/zz-audit-probe-2.test.ts:39:2 > audit probe 2 > claim 1d: widening past the breakpoint while the menu is open 2660ms

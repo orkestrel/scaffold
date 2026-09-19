@@ -1,5 +1,0 @@
-@orkestrel/test local 0.0.17 registry 0.0.17
-dependencies     @orkestrel/contract      ^0.0.17      registry 0.0.17
-devDependencies  @orkestrel/guide         ^0.0.20      registry 0.0.20
-devDependencies  @orkestrel/probe         ^0.0.16      registry 0.0.16
-devDependencies  @orkestrel/scaffold      ^0.0.73      registry 0.0.74  <- differs

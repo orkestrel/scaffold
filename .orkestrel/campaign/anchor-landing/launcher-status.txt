@@ -1,3 +1,0 @@
-Command: git status --short -- tmp/release/launch-anchor-retention.ps1 tmp/units/anchor-launcher-report.md tmp/units/anchor-launcher-evidence
-Exit: 0
-Output: empty; tmp is ignored.

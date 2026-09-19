@@ -1,5 +1,0 @@
-status before: 0 lines
-r1_terrain_EXIT=0 elapsed=386s
-status after: 0 lines
-"session_id":"7427e5fe-4c0b-4e5b-8c13-8d96a110a080"
-605425 C:/Users/mikes/WebstormProjects/scaffold/tmp/cursor/r1-terrain.jsonl

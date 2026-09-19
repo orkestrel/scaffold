@@ -1,3 +1,0 @@
-.orkestrel/campaign/capture-recipe-unit-2/recipe-retain-stage-run.stderr.txt:7: trailing whitespace.
-+ 
-.orkestrel/campaign/capture-recipe-unit-2/recipe-retain-stage-run.stderr.txt:7: new blank line at EOF.

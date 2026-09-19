@@ -1,9 +1,0 @@
-# Accept the direct instruction correction
-
-Parent read the actual successor3 skill and report after writer freeze. The portfolio configuration contains no test registration. The preparation fragment is explicitly inserted before the existing acceptance journey's actions; the placement fragment is explicitly inserted immediately after its actual rendered-home assertion. The text retains that journey and its assertions and prohibits screenshot-only tests. This directly implements the independent lanes' prescribed correction from capture-recipe-audit-verdict.md; no new workflow or action was added.
-
-Accept the recipe source correction subject to the independent required full release gate. The previously confirmed optional synchronous hook, actual API, local helper attribution and measured screenshot directory remain unchanged. Inventory was regenerated and scoped propagation checks passed according to report3; the independent complete gate is running separately. Do not claim field proof or registry publication from this ruling.
-
-Effective source brief: tmp/units/capture-recipe-brief-3.md, carrying the predecessor chain. Effective report: release candidate tmp/units/capture-recipe-report-3.md and capture-recipe-evidence-3/. Preserve predecessor rejected examples and lane reports as historical evidence. Roughnotes report11 independently supplies actual event-recorder red/green for the motivating defect.
-
-The independent complete gate has since returned exit0 in267.883s. Its returned evidence and missing-file-log deviation are retained in tmp/units/capture-recipe-gates-report.md. Root rechecked the frozen skill, reference, and host inventory hashes against the successor3 record; they match. The gate condition is met and the recipe source correction is accepted. Packing, publication, registry adoption, and the clean field proof remain open.

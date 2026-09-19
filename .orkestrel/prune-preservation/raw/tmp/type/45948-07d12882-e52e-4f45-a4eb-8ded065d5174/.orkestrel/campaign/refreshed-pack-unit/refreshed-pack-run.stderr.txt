@@ -1,8 +1,0 @@
-ConvertFrom-Json : Cannot process argument because the value of argument "name" is not valid. Change the value of the 
-"name" argument and run the operation again.
-At C:\Users\mikes\WebstormProjects\scaffold\tmp\release\pack-refreshed-candidate.ps1:169 char:88
-+ ... th (Join-Path $candidate 'package-lock.json') -Raw | ConvertFrom-Json
-+                                                          ~~~~~~~~~~~~~~~~
-    + CategoryInfo          : InvalidArgument: (:) [ConvertFrom-Json], PSArgumentException
-    + FullyQualifiedErrorId : Argument,Microsoft.PowerShell.Commands.ConvertFromJsonCommand
- 

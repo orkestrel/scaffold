@@ -1,9 +1,0 @@
-1. **CONFIRMED.** Held the subjective lane on GPT-5.6 Sol, substituting for unavailable Opus. The proof expresses its acceptance condition directly: the paired file, the exact case title, and `status: 'passed'` (`tmp/release/scaffold-0.0.75/tests/distribution.test.ts:1044`, `:1053`, `:1058`). Discovery assertions remain at `:1036`; real Vue rendering assertions remain in `tests/setupServer.ts:888`. Host controls reject skipped, todo, absent, and failed cases with useful diagnostics (`tmp/audit/setup-vue-skipped-control.log.txt:38`, `setup-vue-todo-control.log.txt:38`, `setup-vue-absent-control.log.txt:22`, `setup-vue-failed-control.log.txt:44`). The restored control passes (`setup-vue-restored-control.log.txt:18`).
-
-2. **CONFIRMED.** Read-only replay executed the exact acceptance block with installed contract primitives and real Vitest matchers. Valid evidence passed; missing file, malformed JSON, malformed required shapes, wrong paired path, missing title, invalid status, and duplicate named cases rejected (command chunk `8485fe`, exit `0`). Replay coverage excludes process launch, reporter production, and scratch cleanup; host controls exercise the real child. Child failure retains its render diagnostic (`setup-vue-failed-control.log.txt:67`). Cleanup remains in the unconditional `finally` block (`tmp/release/scaffold-0.0.75/tests/distribution.test.ts:1064`); the failed run’s recorded scratch directory is absent. The patch adds no dependency, public API, reusable helper, or general reporter parser.
-
-Findings fitting no claim: none.
-
-Attacked and held: A suite-level passing result can accompany skipped cases; that reporter behavior is correct. The revised proof requires the individual case to pass. Unrelated reporter metadata remains unconstrained, preserving a focused acceptance contract.
-
-VERDICT: PASS

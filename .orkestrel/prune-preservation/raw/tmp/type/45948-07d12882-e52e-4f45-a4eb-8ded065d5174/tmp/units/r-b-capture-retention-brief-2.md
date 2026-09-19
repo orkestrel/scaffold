@@ -1,3 +1,0 @@
-# Preserve capture frames outside version control
-
-Apply `tmp/units/r-b-capture-retention-brief.md` with this correction. The capture reference requires the portfolio to stay out of version control. Use the fresh write-once destination `C:\Users\mikes\WebstormProjects\scaffold\tmp\capture-retained\r-b-final-capture` instead of the `.orkestrel` destination. Preserve screenshots, text, inventory, and log there. State in the generated readme that only metadata, reports, and the instrument will later be retained in the campaign commit; the PNG portfolio remains outside version control. Do not run the script. All other ownership, validation, and permission limits remain binding.

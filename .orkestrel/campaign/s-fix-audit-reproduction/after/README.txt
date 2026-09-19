@@ -1,1 +1,0 @@
-Closure re-run of f2-probe.sh at f540107b (after S4-3), 2026-09-17: the indirect chain, the grouped chain, and the Playwright --config script each draw no question; the absent-configuration remedy names the chain invocation; the earliest-fact-first order stands as the guide states; the setup-proof repair refusal is unchanged and is the order S5-2 teaches.

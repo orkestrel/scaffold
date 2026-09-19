@@ -1,3 +1,0 @@
-npm notice run roughnotes@0.0.1 npx
-npm notice run oxlint --config .oxlintrc.json --deny-warnings tmp/units/m2-control.ts
-tmp/units/m2-control.ts:1:1: error policy(no-malformed-summary): Open this description with a third-person verb ending in s, such as Creates, Returns, or Checks whether.

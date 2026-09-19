@@ -1,3 +1,0 @@
-# Verify effective preparation successor
-
-Run the full assignment in verify-brief.md. Replace prepare-2.ps1/report-2.md with effective prepare-3.ps1/report-3.md and read brief-3.md. The predecessor root invocation exited1 at complete-status comparison before any backup or staging. Its PowerShell comparison lacked parentheses around joined operands. Successor3 corrects that expression, proves equal-array acceptance/extra-row refusal, and ran actual read-only -Check successfully before root executed it. Preserve predecessor failure as history, not a source defect. Root supplies successor3 native execution result in dispatch. Verify actual backup and staging plus original preservation. No writes, no delegates, and no repeated green source gates.

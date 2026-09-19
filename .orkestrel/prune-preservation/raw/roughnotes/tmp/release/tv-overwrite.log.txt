@@ -1,3 +1,0 @@
-npm notice run roughnotes@0.0.1 npx
-npm notice run scaffold overwrite
-TARGET: The configs group is blocked because the manifest at . names a Vitest project the planned vite.config.ts does not register: journey:*. Remove the script that names it before selecting configs, or exclude configs from --groups.
