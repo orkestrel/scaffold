@@ -39,8 +39,8 @@ SCSS mirrors TypeScript centralization. Concrete token prefixes are project-spec
 - Check `_tokens.scss` before inventing a token.
 - Put global tokens in `_tokens.scss`; put truly component-scoped custom properties on the component selector.
 - Never bury tokens in unrelated partials.
-- Never use literal colors. Use `var(--token)` or `color-mix()` over tokens. The one place a
-  literal color may appear is the value map in `_tokens.scss` that declares the token itself.
+- Never use literal colors. Use `var(--token)` or `color-mix()` over tokens. The one file a
+  literal color may appear in is `_tokens.scss`, where the token itself is declared.
 - Never repeat per-color/per-variant blocks; drive shared structure with one `@each` over a shared list.
 - If a pattern appears in at least two partials, move it to `_mixins.scss`.
 - A one-partial pattern stays inline; do not create a mixin for one caller.

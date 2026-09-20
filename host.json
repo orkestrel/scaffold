@@ -454,7 +454,7 @@
 			"storage": "claude/rules/styles.md",
 			"destination": ".claude/rules/styles.md",
 			"executable": false,
-			"digest": "5d0a8b9d36f0cff90e6cd4296ea1055c5a835c81b430c67b16d802c7adc2b6fc"
+			"digest": "9393ce28750e93f790da32e991e2edc7ca3d8cc1c527f40a43aeaabb202d52bc"
 		},
 		{
 			"storage": "claude/rules/tests.md",
@@ -2001,5 +2001,5 @@
 			]
 		}
 	],
-	"digest": "2f3058fa2460608d7aca3c151ee0344ff7f9983b824c90e1fe2f4f966c754e6c"
+	"digest": "88c796ee06464183378d3918ab25854ad2c5b0211f072f3b904e00d49bcdf26c"
 }
