@@ -1,0 +1,811 @@
+diff --git a/guides/veneer.md b/guides/veneer.md
+index ac1708e..755343a 100644
+--- a/guides/veneer.md
++++ b/guides/veneer.md
+@@ -483,6 +483,67 @@ and each is named here so a consumer does not look for it.
+ | The `breakpoint-down` mixin                      | The first responsive partial                                    |
+ | The hint surface and the component-scoped tokens | The components that paint them                                  |
+ 
++## Compatibility
++
++This section is the ledger of what Veneer accepts from Bootstrap 5.3.8. The
++tests/conformance.test.ts proof reads its rows and compares their named steps with the official
++Button recording. The Component column carries the inventory key, so later component units extend
++the same table.
++
++The table records the Button obligations and the engine obligations assigned to its unit.
++
++| Component | Kind           | Obligation                                                                                                                                                                                                                        | Proof                 | Status   |
++| --------- | -------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------- | -------- |
++| btn       | identity       | Button identifies itself as button, bs.button, and .bs.button; defaults and type defaults are inherited empty.                                                                                                                    | button.initial        | accepted |
++| btn       | attribute      | The data-bs-toggle="button" click prevents its default action and creates or reuses the instance to toggle active and aria-pressed.                                                                                               | button.click.toggle   | accepted |
++| btn       | method         | toggle() flips active and aria-pressed on every activation, without a no-op guard.                                                                                                                                                | button.click.toggle   | accepted |
++| btn       | method         | toggle() flips active and aria-pressed on every activation, without a no-op guard.                                                                                                                                                | button.click.release  | accepted |
++| btn       | method         | The static jQueryInterface invokes toggle only when config is toggle.                                                                                                                                                             | —                     | accepted |
++| btn       | initialization | defineJQueryPlugin registers Button.                                                                                                                                                                                              | —                     | accepted |
++| btn       | accessibility  | A toggle announces the button role and its pressed state, rather than a checkbox role.                                                                                                                                            | button.click.toggle   | accepted |
++| btn       | accessibility  | A toggle announces the button role and its pressed state, rather than a checkbox role.                                                                                                                                            | button.pressed.click  | accepted |
++| btn       | accessibility  | A disabled anchor carries disabled, aria-disabled="true", tabindex="-1", and role="button"; pointer activation is refused.                                                                                                        | button.disabled.click | accepted |
++| btn       | keyboard       | Space activates the focused toggle button.                                                                                                                                                                                        | button.keyboard.space | accepted |
++| btn       | keyboard       | Enter activates the focused toggle button.                                                                                                                                                                                        | button.keyboard.enter | accepted |
++| btn       | variable       | The --bs-btn-* vocabulary includes padding, font, color, background, border, shadow, disabled, and active state properties.                                                                                                       | —                     | accepted |
++| btn       | identity       | Cross-cutting engine: `VERSION` `'5.3.8'`; `DATA_KEY` `bs.${NAME}`; `EVENT_KEY` `.${DATA_KEY}`; `eventName(name)` returns `${name}${EVENT_KEY}`                                                                                   | —                     | accepted |
++| btn       | option         | Cross-cutting engine: `Default`/`DefaultType` inherited empty from `Config` unless a component overrides                                                                                                                          | —                     | accepted |
++| btn       | attribute      | Cross-cutting engine: `data-bs-config` JSON merges with `data-bs-*` attributes read by `Manipulator`; config object wins last                                                                                                     | —                     | accepted |
++| btn       | method         | Cross-cutting engine: `constructor(element, config)` no-op when `getElement(element)` is falsy; `dispose()`; `_queueCallback` through `executeAfterTransition`                                                                    | —                     | accepted |
++| btn       | method         | Cross-cutting engine: static `getInstance`, static `getOrCreateInstance(element, config = {})`, static `VERSION`                                                                                                                  | —                     | accepted |
++| btn       | initialization | Cross-cutting engine: `Data.set(this._element, DATA_KEY, this)` on construction                                                                                                                                                   | —                     | accepted |
++| btn       | method         | Cross-cutting engine: All API methods are asynchronous, return to the caller before the transition ends, and a method call mid-transition is ignored                                                                              | —                     | accepted |
++| btn       | method         | Cross-cutting engine: `dispose()` must not follow `hide()` immediately; wait for the completion event                                                                                                                             | —                     | accepted |
++| btn       | event          | Cross-cutting engine: Every plugin fires paired infinitive/past-participle events; `EventHandler.trigger` builds `new Event(event, { bubbles, cancelable: true })` and hydrates the payload                                       | —                     | accepted |
++| btn       | event          | Cross-cutting engine: Infinitive events are cancelable through `event.preventDefault()`; returning `false` from a handler also cancels                                                                                            | —                     | accepted |
++| btn       | option         | Cross-cutting engine: `Config._mergeConfigObj`: `Default`, then `data-bs-config` JSON, then `getDataAttributes`, then the `config` object; `_typeCheckConfig` type-checks against `DefaultType`                                   | —                     | accepted |
++| btn       | attribute      | Cross-cutting engine: `Manipulator.getDataAttributes` reads every `dataset` key starting `bs` except `bsConfig`, kebab-cased through `data-bs-*`                                                                                  | —                     | accepted |
++| btn       | method         | Cross-cutting engine: `SelectorEngine.getSelector` reads `data-bs-target` else `href`; `find`, `findOne`, `children`, `parents`, `prev`, `next`, `focusableChildren`, `getElementFromSelector`, `getMultipleElementsFromSelector` | —                     | accepted |
++| btn       | method         | Cross-cutting engine: `Data.set`/`get`/`remove`; one instance per element, a second key logs an error and returns                                                                                                                 | —                     | accepted |
++| btn       | attribute      | Cross-cutting engine: `enableDismissTrigger(component, method = 'hide')` binds document `click.dismiss${EVENT_KEY}` on `[data-bs-dismiss="${NAME}"]`                                                                              | —                     | accepted |
++| btn       | transition     | Cross-cutting engine: `TRANSITION_END` emulation: listens `transitionend`, emulates after `getTransitionDurationFromElement` plus `5` ms padding through `executeAfterTransition`                                                 | —                     | accepted |
++| btn       | accessibility  | Cross-cutting engine: Sanitizer allowlist and `sanitizeFn` override on Tooltip/Popover content                                                                                                                                    | —                     | accepted |
++| btn       | attribute      | Cross-cutting engine: Native `querySelector`/`querySelectorAll`; a CSS special character in a selector must be escaped                                                                                                            | —                     | accepted |
++| btn       | option         | util/config.js: Base `Config` class; `Default: {}`, `DefaultType: {}`; `NAME` getter throws; extended by `BaseComponent`, `Backdrop`, `FocusTrap`, `Swipe`, `TemplateFactory`                                                     | —                     | accepted |
++| btn       | method         | util/index.js: `getUID`, `getElement`, `isElement`, `isVisible`, `isDisabled`, `isRTL`, `toType`, `noop`, `parseSelector`, `reflow`, `execute`, `findShadowRoot`, `getNextActiveElement` exported as shared utilities             | —                     | accepted |
++| btn       | initialization | util/index.js: `getjQuery` skipped when `document.body` carries `data-bs-no-jquery`; `defineJQueryPlugin` registers `$.fn[NAME]` after `onDOMContentLoaded`                                                                       | —                     | accepted |
++
++An accepted row records scope; a named Proof step obliges the official recording to agree with the
++row. A shipped row also accepts implementation responsibility; when every row for a component is
++shipped, the built cascade must carry its official selector and custom-property sets, and the
++conformance component list must include its key. A dash marks a source or engine obligation that
++the Button interaction recording cannot drive. Transition, dismissal, sanitizer, and selector
++engine rows record shared engine scope; they do not claim that Button dispatches transition events.
++The jQuery rows retain the source inventory while the exclusion that follows limits the claim.
++
++The compatibility claim excludes contextual Reboot selectors that combine bare tags: nested
++ordered and unordered lists, code inside preformatted text or links, nested keyboard tags, and the
++sibling after a legend. It also excludes the jQuery interface and plugin registration, the
++window.bootstrap global and UMD namespace, and Bootstrap's Sass variables, maps, and mixins as a
++source API. Popper pass-through positioning options remain accepted wire keys with platform
++anchoring as an accepted difference. The sanitizer allowlist and sanitizer overrides remain in
++scope for the overlay unit.
++
+ ## Showcase
+ 
+ The private application renders the Veneer heading, the Dark mode button, and a Showcase region.
+@@ -519,3 +580,9 @@ The style proofs bind the cascade to the registry and to the calibration; see
+ [the document baseline](../tests/src/styles/elements/html.test.ts),
+ [the body baseline](../tests/src/styles/elements/body.test.ts), and
+ [the customization recipe](../tests/src/styles/integration.test.ts).
++
++The conformance proofs pin the official release and its artifact digests, reject runtime boundary
++escapes, check shipped CSS vocabulary, compare each live Button step with its fixture, and
++cross-check the compatibility rows; see [Bootstrap conformance](../tests/conformance.test.ts).
++The helper proofs read compatibility tables, built CSS, and the pinned inventory; see
++[conformance readers and recorder](../tests/setupConformance.test.ts).
+diff --git a/tests/conformance.test.ts b/tests/conformance.test.ts
+index 98b68eb..fde736f 100644
+--- a/tests/conformance.test.ts
++++ b/tests/conformance.test.ts
+@@ -1,7 +1,10 @@
+ import { readInventory, resolveContained } from '@orkestrel/test/server'
+-import { readFileSync } from 'node:fs'
++import { isRecord, parseJSON } from '@orkestrel/contract'
++import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+ import { dirname, resolve } from 'node:path'
++import { parse } from 'postcss'
+ import { describe, expect, it } from 'vitest'
++import { normalizeComplexSelector } from './setupStyles.js'
+ import {
+ 	BOOTSTRAP_BUNDLE_DIGEST,
+ 	BOOTSTRAP_CSS_DIGEST,
+@@ -9,10 +12,16 @@ import {
+ 	BOOTSTRAP_RTL_CSS_DIGEST,
+ 	BOOTSTRAP_VERSION,
+ 	FORBIDDEN_RUNTIME,
++	ORACLE_TIMEOUT,
+ 	WORKSPACE_ROOT,
+ 	collectImportClosure,
+ 	computeArtifactDigest,
+ 	readManifestMember,
++	readBuiltCascade,
++	readCompatibility,
++	readOracleInventory,
++	recordButtonOracle,
++	scanOracleObligation,
+ 	scanEscapingImport,
+ 	scanForbiddenDependency,
+ 	scanForbiddenSource,
+@@ -37,6 +46,78 @@ describe('Bootstrap reference identity', () => {
+ 	})
+ })
+ 
++describe('Bootstrap component oracle', () => {
++	it('carries every shipped component selector and custom property in the built cascade', () => {
++		const rows = readCompatibility()
++		const shipped = [...new Set(rows.map((row) => row.component))]
++			.filter((component) =>
++				rows.filter((row) => row.component === component).every((row) => row.status === 'shipped'),
++			)
++			.sort()
++		const listed: readonly string[] = []
++		const inventory = readOracleInventory()
++		const cascade = parse(readBuiltCascade())
++		const selectors = new Set<string>()
++		const properties = new Set<string>()
++		cascade.walkRules((rule) => {
++			for (const selector of rule.selectors) selectors.add(normalizeComplexSelector(selector))
++		})
++		cascade.walkDecls((declaration) => {
++			if (declaration.prop.startsWith('--')) properties.add(declaration.prop)
++		})
++		for (const component of shipped) {
++			const vocabulary = inventory.components[component]
++			expect(vocabulary, `Shipped component ${component} has no official inventory`).toBeDefined()
++			if (vocabulary === undefined) throw new Error(`Missing inventory component ${component}`)
++			for (const selector of vocabulary.selectors)
++				expect(
++					selectors.has(normalizeComplexSelector(selector)),
++					`Shipped component ${component} is missing selector ${selector}`,
++				).toBe(true)
++			for (const property of vocabulary.properties)
++				expect(
++					properties.has(property),
++					`Shipped component ${component} is missing custom property ${property}`,
++				).toBe(true)
++		}
++		expect(shipped, 'Guide shipped components and conformance component list must agree').toEqual(
++			listed,
++		)
++	})
++
++	it(
++		'records official Button behavior and matches each named fixture step',
++		async () => {
++			const path = resolve(WORKSPACE_ROOT, 'tests/fixtures/oracle/button.json')
++			if (process.env.ORACLE_REFRESH !== '1' && !existsSync(path))
++				throw new Error(
++					'Missing oracle fixture: tests/fixtures/oracle/button.json; record with ORACLE_REFRESH=1',
++				)
++			const recording = await recordButtonOracle()
++			if (process.env.ORACLE_REFRESH === '1') {
++				mkdirSync(dirname(path), { recursive: true })
++				writeFileSync(path, `${JSON.stringify(recording, undefined, '\t')}\n`)
++			}
++			const fixture = parseJSON(readFileSync(path, 'utf8'))
++			if (!isRecord(fixture) || !Array.isArray(fixture.steps))
++				throw new Error('Invalid Button oracle fixture')
++			for (const [index, step] of recording.steps.entries()) {
++				expect(parseJSON(JSON.stringify(step)), `Oracle differs at step ${step.name}`).toEqual(
++					fixture.steps[index],
++				)
++			}
++			expect(
++				parseJSON(JSON.stringify(recording)),
++				'Oracle fixture metadata or step membership differs',
++			).toEqual(fixture)
++			for (const row of readCompatibility()) {
++				expect(scanOracleObligation(row, recording)).toBeUndefined()
++			}
++		},
++		ORACLE_TIMEOUT,
++	)
++})
++
+ describe('runtime boundaries', () => {
+ 	it('declares no forbidden runtime dependency or peer', () => {
+ 		expect(
+diff --git a/tests/setupConformance.test.ts b/tests/setupConformance.test.ts
+index 02298a6..323d0c3 100644
+--- a/tests/setupConformance.test.ts
++++ b/tests/setupConformance.test.ts
+@@ -14,13 +14,19 @@ import {
+ 	BOOTSTRAP_RTL_CSS_DIGEST,
+ 	BOOTSTRAP_VERSION,
+ 	FORBIDDEN_RUNTIME,
++	ORACLE_TIMEOUT,
+ 	WORKSPACE_ROOT,
+ 	collectImportClosure,
+ 	computeArtifactDigest,
+ 	extractSpecifiers,
+ 	extractStringArgument,
+ 	readBootstrapCascade,
++	readBuiltCascade,
++	readCompatibility,
+ 	readManifestMember,
++	readOracleInventory,
++	recordButtonOracle,
++	scanOracleObligation,
+ 	scanEscapingImport,
+ 	scanForbiddenDependency,
+ 	scanForbiddenSource,
+@@ -35,19 +41,145 @@ describe('setupConformance', () => {
+ 			'BOOTSTRAP_RTL_CSS_DIGEST',
+ 			'BOOTSTRAP_VERSION',
+ 			'FORBIDDEN_RUNTIME',
++			'ORACLE_TIMEOUT',
+ 			'WORKSPACE_ROOT',
+ 			'collectImportClosure',
+ 			'computeArtifactDigest',
+ 			'extractSpecifiers',
+ 			'extractStringArgument',
+ 			'readBootstrapCascade',
++			'readBuiltCascade',
++			'readCompatibility',
+ 			'readManifestMember',
++			'readOracleControl',
++			'readOracleInventory',
++			'recordButtonOracle',
+ 			'scanEscapingImport',
+ 			'scanForbiddenDependency',
+ 			'scanForbiddenSource',
++			'scanOracleObligation',
+ 		])
+ 	})
+ 
++	it('pins the copied inventory release and digests and reads its component vocabulary', () => {
++		const inventory = readOracleInventory()
++		expect(inventory.version).toBe(BOOTSTRAP_VERSION)
++		expect(inventory.digests).toEqual({
++			'bootstrap.css': BOOTSTRAP_CSS_DIGEST,
++			'bootstrap.rtl.css': BOOTSTRAP_RTL_CSS_DIGEST,
++		})
++		expect(inventory.components.btn?.selectors).toContain('.btn')
++		expect(inventory.components.btn?.properties).toContain('--bs-btn-color')
++		const scratch = createScratch()
++		try {
++			const path = scratch.write('inventory.json', '{}')
++			expect(() => readOracleInventory(path)).toThrow('Invalid oracle inventory header')
++			scratch.write('inventory.json', '{"version":"5.3.8","digests":{"css":false},"components":{}}')
++			expect(() => readOracleInventory(path)).toThrow('Invalid oracle inventory digest css')
++			scratch.write('inventory.json', '{"version":"5.3.8","digests":{},"components":{"btn":{}}}')
++			expect(() => readOracleInventory(path)).toThrow('Invalid oracle inventory component btn')
++			scratch.write(
++				'inventory.json',
++				'{"version":"5.3.8","digests":{},"components":{"btn":{"selectors":[false],"properties":{}}}}',
++			)
++			expect(() => readOracleInventory(path)).toThrow('Invalid oracle inventory selector btn')
++		} finally {
++			scratch.destroy()
++		}
++	})
++
++	it(
++		'records and reads official control state and rejects contradicted or absent obligation steps',
++		async () => {
++			const fixture = await recordButtonOracle()
++			const rows = readCompatibility()
++			for (const row of rows) expect(scanOracleObligation(row, fixture)).toBeUndefined()
++			const step = fixture.steps.find((candidate) => candidate.name === 'button.click.toggle')
++			expect(step?.after.classes).toContain('active')
++			expect(step?.after.attributes['aria-pressed']).toBe('true')
++			expect(step?.after.focus).toBe('Toggle')
++			expect(step?.after.events).toEqual([])
++			const row = rows.find((candidate) => candidate.proof === 'button.click.toggle')
++			if (row === undefined || step === undefined)
++				throw new Error('Missing Button click obligation or reading')
++			expect(scanOracleObligation({ ...row, proof: 'button.absent' }, fixture)).toContain(
++				'missing recording step',
++			)
++			expect(
++				scanOracleObligation(
++					{ ...row, category: 'event', obligation: 'Dispatches invented.bs.button' },
++					fixture,
++				),
++			).toContain('recording contradicts obligation')
++			expect(
++				scanOracleObligation({ ...row, obligation: 'Unsupported obligation' }, fixture),
++			).toContain('obligation has no oracle predicate')
++			expect(
++				scanOracleObligation(row, {
++					...fixture,
++					steps: fixture.steps.map((candidate) =>
++						candidate === step ? { ...step, after: { ...step.after, clicks: [false] } } : candidate,
++					),
++				}),
++			).toContain('recording contradicts obligation')
++		},
++		ORACLE_TIMEOUT,
++	)
++
++	it('reads compatibility rows from a written guide and rejects missing columns and invalid statuses', () => {
++		const scratch = createScratch()
++		try {
++			const path = scratch.write(
++				'guide.md',
++				'## Compatibility\n\n| Component | Kind | Obligation | Proof | Status |\n| --- | --- | --- | --- | --- |\n| btn | method | Toggle active | button.click.toggle | accepted |\n| btn | initialization | Plugin registration | — | shipped |\n',
++			)
++			expect(readCompatibility(path)).toEqual([
++				{
++					component: 'btn',
++					category: 'method',
++					obligation: 'Toggle active',
++					proof: 'button.click.toggle',
++					status: 'accepted',
++				},
++				{
++					component: 'btn',
++					category: 'initialization',
++					obligation: 'Plugin registration',
++					proof: undefined,
++					status: 'shipped',
++				},
++			])
++			scratch.write(
++				'guide.md',
++				'## Compatibility\n\n| Component | Kind | Obligation | Status |\n| --- | --- | --- | --- |\n| btn | method | Toggle active | accepted |\n',
++			)
++			expect(() => readCompatibility(path)).toThrow(
++				'Compatibility row <header>: missing Proof column',
++			)
++			scratch.write(
++				'guide.md',
++				'## Compatibility\n\n| Component | Kind | Obligation | Proof | Status |\n| --- | --- | --- | --- | --- |\n| btn | method | Toggle active | button.click.toggle | pending |\n',
++			)
++			expect(() => readCompatibility(path)).toThrow(
++				'Compatibility row btn: Toggle active: invalid status pending',
++			)
++		} finally {
++			scratch.destroy()
++		}
++	})
++
++	it('reads the built cascade and refuses a missing artifact', () => {
++		const scratch = createScratch()
++		try {
++			const path = scratch.write('index.css', '@layer components { .btn { --bs-btn-color: red; } }')
++			expect(readBuiltCascade(path)).toBe('@layer components { .btn { --bs-btn-color: red; } }')
++			expect(readBuiltCascade()).toContain('--vn-color-primary-base')
++			expect(() => readBuiltCascade(resolve(scratch.path, 'missing.css'))).toThrow(/ENOENT/u)
++		} finally {
++			scratch.destroy()
++		}
++	})
++
+ 	it('locates this workspace and the installed Bootstrap manifest', () => {
+ 		expect(existsSync(resolve(WORKSPACE_ROOT, 'package.json'))).toBe(true)
+ 		expect(readManifestMember(resolve(WORKSPACE_ROOT, 'package.json'), 'name')).toBe(
+diff --git a/tests/setupConformance.ts b/tests/setupConformance.ts
+index 8cb457f..f55c75e 100644
+--- a/tests/setupConformance.ts
++++ b/tests/setupConformance.ts
+@@ -5,20 +5,83 @@
+ // cascade through `readBootstrapCascade`. A helper added here runs under every one of them.
+ 
+ import type { ESTree } from 'vite'
++import type { Locator } from 'playwright'
+ import { isRecord, parseJSON } from '@orkestrel/contract'
+-import { resolveContained } from '@orkestrel/test/server'
++import {
++	createGuide,
++	extractCellText,
++	findColumnIndex,
++	selectSectionBlocks,
++} from '@orkestrel/guide'
++import { createMarkdown } from '@orkestrel/markdown'
++import { createScratch, resolveContained } from '@orkestrel/test/server'
+ import { createHash } from 'node:crypto'
+ import { createRequire } from 'node:module'
+ import { existsSync, readFileSync, realpathSync } from 'node:fs'
+ import { dirname, extname, resolve } from 'node:path'
+-import { fileURLToPath } from 'node:url'
++import { fileURLToPath, pathToFileURL } from 'node:url'
++import { chromium } from 'playwright'
++import { resolveBrowser, resolvePinnedBrowser } from '../configs/browsers.js'
+ import { BOOTSTRAP_CASCADE_PATH } from './setupStyles.js'
+ import { compile } from 'sass'
+ import { parseSync, Visitor } from 'vite'
+ 
++/** Describes one compatibility obligation read from the guide's ledger. */
++export interface CompatibilityRow {
++	readonly component: string
++	readonly category: string
++	readonly obligation: string
++	readonly proof: string | undefined
++	readonly status: 'accepted' | 'shipped'
++}
++
++/** Describes the observable state after an oracle action. */
++export interface OracleReading {
++	readonly events: readonly string[]
++	readonly classes: readonly string[]
++	readonly attributes: Readonly<Record<string, string>>
++	readonly mutations: readonly string[]
++	readonly clicks: readonly boolean[]
++	readonly focus: string | undefined
++	readonly accessibility: string
++	readonly refusal: string | undefined
++	readonly identity: Readonly<Record<string, string>>
++}
++
++/** Describes a named action and the state on each side of it. */
++export interface OracleStep {
++	readonly name: string
++	readonly before: OracleReading
++	readonly after: OracleReading
++}
++
++/** Describes the official release recording and any explicitly excluded actions. */
++export interface OracleFixture {
++	readonly version: string
++	readonly component: string
++	readonly steps: readonly OracleStep[]
++	readonly excluded: ReadonlyArray<{ readonly step: string; readonly reason: string }>
++}
++
++/** Describes the official CSS vocabulary assigned to a component key. */
++export interface OracleVocabulary {
++	readonly selectors: readonly string[]
++	readonly properties: readonly string[]
++}
++
++/** Describes the pinned inventory projection the presence proof reads. */
++export interface OracleInventory {
++	readonly version: string
++	readonly digests: Readonly<Record<string, string>>
++	readonly components: Readonly<Record<string, OracleVocabulary>>
++}
++
+ /** Names the Bootstrap release this package tracks, pinned exactly in `package.json`. */
+ export const BOOTSTRAP_VERSION = '5.3.8'
+ 
++/** Sets the recorder budget from its 2550 ms contended run: twice that duration plus 5000 ms. */
++export const ORACLE_TIMEOUT = 10_100
++
+ /** Pins the installed Bootstrap LTR stylesheet's SHA-256 digest. */
+ export const BOOTSTRAP_CSS_DIGEST =
+ 	'4a50207b956a4ab943640ee993118b554a34e96a23261cfe58b9aa1807a7849b'
+@@ -247,3 +310,356 @@ export function readBootstrapCascade(): string {
+ export function computeArtifactDigest(path: string): string {
+ 	return createHash('sha256').update(readFileSync(path)).digest('hex')
+ }
++
++/**
++ * Reads the compatibility ledger through the guide's section and table projections.
++ * @param path - The Markdown document to read; defaults to the package guide.
++ * @returns The declared obligations in document order.
++ * @throws When the section, a column, a required cell, or a status is invalid.
++ */
++export function readCompatibility(
++	path: string = resolve(WORKSPACE_ROOT, 'guides/veneer.md'),
++): readonly CompatibilityRow[] {
++	const source = readFileSync(path, 'utf8')
++	if (!createGuide(source).sections().includes('Compatibility'))
++		throw new Error('Compatibility row <header>: missing section')
++	const rows: CompatibilityRow[] = []
++	const tables = selectSectionBlocks(createMarkdown(source).document, 'Compatibility').filter(
++		(block) => block.element === 'table',
++	)
++	if (tables.length === 0) throw new Error('Compatibility row <header>: missing table')
++	for (const table of tables) {
++		const columns = ['Component', 'Kind', 'Obligation', 'Proof', 'Status'].map((header) => {
++			const index = findColumnIndex(table, header)
++			if (index === undefined)
++				throw new Error(`Compatibility row <header>: missing ${header} column`)
++			return index
++		})
++		for (const row of table.rows) {
++			const [component, category, obligation, proof, status] = columns.map((index) =>
++				extractCellText(row[index] ?? []).trim(),
++			)
++			const label = `${component}: ${obligation}`
++			if (!component || !category || !obligation || !proof)
++				throw new Error(`Compatibility row ${label}: missing required cell`)
++			if (status !== 'accepted' && status !== 'shipped')
++				throw new Error(`Compatibility row ${label}: invalid status ${status}`)
++			rows.push({
++				component,
++				category,
++				obligation,
++				proof: proof === '—' ? undefined : proof,
++				status,
++			})
++		}
++	}
++	return rows
++}
++
++/**
++ * Reads the built Veneer cascade whose component vocabulary must match the inventory.
++ * @param path - The built CSS artifact; defaults to the published stylesheet.
++ * @returns The artifact's exact text.
++ * @throws When the styles build has not produced the artifact.
++ */
++export function readBuiltCascade(
++	path: string = resolve(WORKSPACE_ROOT, 'dist/src/styles/index.css'),
++): string {
++	return readFileSync(path, 'utf8')
++}
++
++/**
++ * Reads the official control's classes, attributes, focus, and accessible snapshot.
++ * @param target - The control resolved by role and accessible name.
++ * @returns The control's state before event and mutation observations are attached.
++ */
++export async function readOracleControl(target: Locator): Promise<OracleReading> {
++	const state = await target.evaluate((element) => ({
++		classes: [...element.classList],
++		attributes: Object.fromEntries(
++			[...element.attributes].map((attribute) => [attribute.name, attribute.value]),
++		),
++	}))
++	const accessibility = await target.ariaSnapshot()
++	const focused = target.page().locator(':focus')
++	const focus =
++		(await focused.count()) === 0
++			? undefined
++			: (await focused.ariaSnapshot()).match(/^\s*- \w+ "([^"]*)"/u)?.[1]
++	const identity = await target.evaluate((element) => {
++		const view = element.ownerDocument.defaultView
++		if (view === null) throw new Error('Button has no document window')
++		const bundle: unknown = Reflect.get(view, 'bootstrap')
++		if (typeof bundle !== 'object' || bundle === null)
++			throw new Error('Bootstrap bundle did not load')
++		const button: unknown = Reflect.get(bundle, 'Button')
++		if (typeof button !== 'function') throw new Error('Bootstrap Button did not load')
++		const values: Record<string, string> = {}
++		for (const key of ['NAME', 'DATA_KEY', 'EVENT_KEY', 'VERSION', 'Default', 'DefaultType']) {
++			const value: unknown = Reflect.get(button, key)
++			values[key] = typeof value === 'string' ? value : JSON.stringify(value)
++		}
++		return values
++	})
++	return {
++		events: [],
++		classes: state.classes,
++		attributes: state.attributes,
++		mutations: [],
++		clicks: [],
++		focus,
++		accessibility,
++		refusal: undefined,
++		identity,
++	}
++}
++
++/**
++ * Reads and validates the CSS inventory copied from the accepted research artifact.
++ * @param path - The JSON inventory; defaults to the oracle's data fixture.
++ * @returns Its release, digests, and component vocabulary.
++ * @throws When the inventory omits a required field or carries a malformed component.
++ */
++export function readOracleInventory(
++	path: string = resolve(WORKSPACE_ROOT, 'tests/fixtures/oracle/inventory.json'),
++): OracleInventory {
++	const inventory = parseJSON(readFileSync(path, 'utf8'))
++	if (
++		!isRecord(inventory) ||
++		typeof inventory.version !== 'string' ||
++		!isRecord(inventory.digests) ||
++		!isRecord(inventory.components)
++	)
++		throw new Error('Invalid oracle inventory header')
++	const digests: Record<string, string> = {}
++	for (const [name, digest] of Object.entries(inventory.digests)) {
++		if (typeof digest !== 'string') throw new Error(`Invalid oracle inventory digest ${name}`)
++		digests[name] = digest
++	}
++	const components: Record<string, OracleVocabulary> = {}
++	for (const [name, component] of Object.entries(inventory.components)) {
++		if (
++			!isRecord(component) ||
++			!Array.isArray(component.selectors) ||
++			!isRecord(component.properties)
++		)
++			throw new Error(`Invalid oracle inventory component ${name}`)
++		const selectors = component.selectors.map((entry: unknown) => {
++			if (!isRecord(entry) || typeof entry.selector !== 'string')
++				throw new Error(`Invalid oracle inventory selector ${name}`)
++			return entry.selector
++		})
++		components[name] = { selectors, properties: Object.keys(component.properties) }
++	}
++	return { version: inventory.version, digests, components }
++}
++
++/**
++ * Scans one guide obligation for disagreement with its named live oracle step.
++ * @param row - The guide row to check.
++ * @param fixture - The official recording to compare.
++ * @returns A row-specific failure, or undefined when the obligation agrees or has no drive.
++ */
++export function scanOracleObligation(
++	row: CompatibilityRow,
++	fixture: OracleFixture,
++): string | undefined {
++	if (row.proof === undefined) return undefined
++	const label = `Compatibility row ${row.component} | ${row.category} | ${row.obligation} | ${row.proof}`
++	const step = fixture.steps.find((candidate) => candidate.name === row.proof)
++	if (row.component !== fixture.component || step === undefined)
++		return `${label}: missing recording step`
++	const before = step.before
++	const after = step.after
++	let agrees = false
++	if (
++		row.obligation ===
++		'Button identifies itself as button, bs.button, and .bs.button; defaults and type defaults are inherited empty.'
++	) {
++		agrees =
++			after.identity.NAME === 'button' &&
++			after.identity.DATA_KEY === 'bs.button' &&
++			after.identity.EVENT_KEY === '.bs.button' &&
++			after.identity.Default === '{}' &&
++			after.identity.DefaultType === '{}'
++	} else if (
++		row.obligation ===
++		'The data-bs-toggle="button" click prevents its default action and creates or reuses the instance to toggle active and aria-pressed.'
++	) {
++		agrees =
++			after.clicks.length > 0 &&
++			after.clicks.every(Boolean) &&
++			before.classes.includes('active') !== after.classes.includes('active') &&
++			after.attributes['aria-pressed'] === String(after.classes.includes('active'))
++	} else if (
++		row.obligation ===
++		'toggle() flips active and aria-pressed on every activation, without a no-op guard.'
++	) {
++		agrees =
++			before.classes.includes('active') !== after.classes.includes('active') &&
++			after.attributes['aria-pressed'] === String(after.classes.includes('active')) &&
++			after.mutations.includes('class') &&
++			after.mutations.includes('aria-pressed')
++	} else if (
++		row.obligation ===
++		'A toggle announces the button role and its pressed state, rather than a checkbox role.'
++	) {
++		agrees =
++			after.accessibility.startsWith('- button ') &&
++			after.accessibility.includes('[pressed]') === (after.attributes['aria-pressed'] === 'true')
++	} else if (
++		row.obligation ===
++		'A disabled anchor carries disabled, aria-disabled="true", tabindex="-1", and role="button"; pointer activation is refused.'
++	) {
++		agrees =
++			after.classes.includes('disabled') &&
++			after.attributes['aria-disabled'] === 'true' &&
++			after.attributes.tabindex === '-1' &&
++			after.attributes.role === 'button' &&
++			after.refusal === 'element is not enabled' &&
++			after.clicks.length === 0 &&
++			after.mutations.length === 0
++	} else if (
++		row.obligation === 'Space activates the focused toggle button.' ||
++		row.obligation === 'Enter activates the focused toggle button.'
++	) {
++		agrees =
++			before.focus === 'Toggle' &&
++			after.focus === 'Toggle' &&
++			after.clicks.includes(true) &&
++			before.classes.includes('active') !== after.classes.includes('active') &&
++			after.attributes['aria-pressed'] === String(after.classes.includes('active'))
++	} else if (row.category === 'event') {
++		const events = row.obligation.match(/[\w-]+\.bs\.button/gu) ?? []
++		agrees = events.length > 0 && events.every((event) => after.events.includes(event))
++	} else return `${label}: obligation has no oracle predicate`
++	return agrees ? undefined : `${label}: recording contradicts obligation`
++}
++
++/**
++ * Records Button under the installed official CSS and bundle using trusted browser input.
++ * @returns The ordered recording, without writing or accepting a baseline.
++ * @throws When browser launch, page loading, or an unexpected input failure is refused.
++ * @remarks The scratch page contains only Bootstrap assets and official Button markup.
++ * The official Button source registers click.bs.button.data-api and emits no custom events.
++ */
++export async function recordButtonOracle(): Promise<OracleFixture> {
++	const options = resolveBrowser(resolvePinnedBrowser(), process.platform, process.env)
++	if (options.connectOptions !== undefined)
++		throw new Error('The oracle requires a local browser executable, not a remote connection')
++	const browser = await chromium.launch({ ...options.launchOptions, headless: true })
++	const scratch = createScratch()
++	try {
++		scratch.write('bootstrap.css', readBootstrapCascade())
++		scratch.write(
++			'bootstrap.bundle.js',
++			readFileSync(
++				resolve(dirname(BOOTSTRAP_MANIFEST_PATH), 'dist/js/bootstrap.bundle.js'),
++				'utf8',
++			),
++		)
++		const path = scratch.write(
++			'button.html',
++			'<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Button oracle</title><link rel="stylesheet" href="bootstrap.css"></head><body><button type="button" class="btn btn-primary" data-bs-toggle="button">Toggle</button><button type="button" class="btn btn-primary active" data-bs-toggle="button" aria-pressed="true">Pressed</button><a class="btn btn-primary disabled" role="button" aria-disabled="true" tabindex="-1" href="#" data-bs-toggle="button">Disabled</a><script src="bootstrap.bundle.js"></script></body></html>',
++		)
++		const page = await browser.newPage()
++		const steps: OracleStep[] = []
++		for (const reduced of [false, true]) {
++			await page.emulateMedia({ reducedMotion: reduced ? 'reduce' : 'no-preference' })
++			await page.goto(pathToFileURL(path).href)
++			for (const action of [
++				'initial',
++				'click.toggle',
++				'click.release',
++				'keyboard.space',
++				'keyboard.enter',
++				'hover',
++				'pointer.hold',
++				'pointer.release',
++				'pressed.initial',
++				'pressed.click',
++				'disabled.click',
++			]) {
++				const name = action.startsWith('pressed.')
++					? 'Pressed'
++					: action.startsWith('disabled.')
++						? 'Disabled'
++						: 'Toggle'
++				const target = page.getByRole('button', { name, exact: true })
++				const before = await readOracleControl(target)
++				const observation = await target.evaluateHandle((element) => {
++					const events: string[] = []
++					const mutations: string[] = []
++					const clicks: boolean[] = []
++					const controller = new AbortController()
++					for (const event of [
++						'click.bs.button.data-api',
++						'toggle.bs.button',
++						'toggled.bs.button',
++					]) {
++						element.addEventListener(
++							event,
++							(received) => {
++								events.push(received.type)
++							},
++							{ signal: controller.signal },
++						)
++					}
++					element.ownerDocument.addEventListener(
++						'click',
++						(event) => {
++							if (event.target === element) clicks.push(event.defaultPrevented)
++						},
++						{ signal: controller.signal },
++					)
++					const observer = new MutationObserver((records) => {
++						for (const record of records) {
++							if (record.attributeName !== null) mutations.push(record.attributeName)
++						}
++					})
++					observer.observe(element, { attributes: true })
++					return { events, mutations, clicks, observer, controller }
++				})
++				let refusal: string | undefined
++				try {
++					if (action === 'disabled.click') {
++						try {
++							await target.click({ timeout: 500 })
++						} catch (error) {
++							if (!(error instanceof Error) || !error.message.includes('element is not enabled'))
++								throw error
++							refusal = 'element is not enabled'
++						}
++					} else if (action.startsWith('click.') || action === 'pressed.click') await target.click()
++					else if (action === 'keyboard.space' || action === 'keyboard.enter') {
++						await target.press(action === 'keyboard.space' ? 'Space' : 'Enter')
++					} else if (action === 'hover' || action === 'pointer.hold') {
++						await target.hover()
++						if (action === 'pointer.hold') await page.mouse.down()
++					} else if (action === 'pointer.release') await page.mouse.up()
++					const after = await readOracleControl(target)
++					const captured = await observation.evaluate((value) => ({
++						events: value.events,
++						mutations: value.mutations,
++						clicks: value.clicks,
++					}))
++					steps.push({
++						name: `button.${reduced ? 'reduced.' : ''}${action}`,
++						before,
++						after: { ...after, ...captured, refusal },
++					})
++				} finally {
++					await observation.evaluate((value) => {
++						value.observer.disconnect()
++						value.controller.abort()
++					})
++					await observation.dispose()
++				}
++			}
++		}
++		return { version: BOOTSTRAP_VERSION, component: 'btn', steps, excluded: [] }
++	} finally {
++		await browser.close()
++		scratch.destroy()
++	}
++}

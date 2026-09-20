@@ -1,0 +1,6 @@
+﻿ M guides/veneer.md
+ M tests/conformance.test.ts
+ M tests/setupConformance.test.ts
+ M tests/setupConformance.ts
+?? tests/fixtures/oracle/button.json
+?? tests/fixtures/oracle/inventory.json
