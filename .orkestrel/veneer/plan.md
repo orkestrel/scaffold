@@ -646,7 +646,7 @@ Each entry names what changed in the plan and why, on the date it changed.
   guide and the U3-policy unit spent ten builder briefs and nine audit rounds widening the rule to
   admit it, which `.claude/rules/documentation.md` forbids ("a parity failure identifies drift;
   never suppress or weaken the test"). The three scaffold files are restored to HEAD, the diff is
-  retained (`units/u3-policy-diff-10.patch`, `units/u3-policy-withdrawal.md`), and the release
+  retained (`units/u3-policy-diff-10.patch.txt`, `units/u3-policy-withdrawal.md`), and the release
   shrinks to the styles clause and the styles side-effect entry (the standing-conditions row
   measures it). U3 is **transformed**: brief 4 (`units/u3-brief-4.md`, superseding the never-run
   brief 3) folds the token sections into `guides/veneer.md`, deletes `guides/tokens.md`, and

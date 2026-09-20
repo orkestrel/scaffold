@@ -15,7 +15,7 @@ map and the catalog mirrors.
 ## What was withdrawn
 
 The cumulative diff over `tests/setupPolicy.ts`, `tests/policy.test.ts`, and `guides/scaffold.md`
-(`units/u3-policy-diff-10.patch`, 673 lines): the directory-index accounting (`POLICY_INDEX_ROW`,
+(`units/u3-policy-diff-10.patch.txt`, 673 lines): the directory-index accounting (`POLICY_INDEX_ROW`,
 `POLICY_INDEX_LINK`, `POLICY_MAP_FILE`, `readPolicyIndex`, the catalog-only `isPolicyMirror`, the
 fence blanking), its controls and cases, and the guide paragraph. The records of its ten builder
 briefs, its reviews, and its nine audit rounds stay retained under `units/u3-policy-*` and

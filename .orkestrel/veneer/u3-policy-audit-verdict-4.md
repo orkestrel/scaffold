@@ -60,7 +60,7 @@ U3 writer's D1), and this unit existed to widen the policy so the file could sta
 `.claude/rules/documentation.md` ("a parity failure identifies drift; never suppress or weaken the
 test"). The unit is withdrawn: `tests/setupPolicy.ts`, `tests/policy.test.ts`, and
 `guides/scaffold.md` are restored to HEAD, the cumulative diff is retained as
-`units/u3-policy-diff-10.patch`, and `units/u3-policy-withdrawal.md` records the reading. The
+`units/u3-policy-diff-10.patch.txt`, and `units/u3-policy-withdrawal.md` records the reading. The
 reviewer's referral (a) — nine rounds on one seam — was the signal that the seam was the plan,
 not the code. U3's successor brief folds the token reference into `guides/veneer.md` and deletes
 `guides/tokens.md`; the vendored release carries the styles rule clause alone.
