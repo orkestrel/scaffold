@@ -1,0 +1,18 @@
+Land the distribution stage, the guide, and the README for the adoption
+
+Extends the generated distribution proof so the served consumer page
+also loads the installed package's styles target through a link and
+reads the cascade-layer order back from the loaded sheet, marked as a
+registry case. Documents the browser face in guides/veneer.md: the
+surface rows for the ColorMode controller, its factory, guard, constants,
+and types, the method group for the controller interface, the fence a
+consumer starts from, and the test links; keeps the README pitch equal
+to the guide's tagline and names the Chromium and Edge receipts and the
+open Chrome receipt. Adds the executed guide example to the parity suite.
+
+Every gate is green on managed Chromium; the registry-dependent
+distribution cases skip without --mode release. Unit U1-author run 5
+(Astra), planned in scaffold/.orkestrel/veneer/plan.md; the unit's
+report is retained beside its briefs under units/.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>

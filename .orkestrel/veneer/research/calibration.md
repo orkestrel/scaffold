@@ -75,6 +75,46 @@ disabled state through the `disabled` attribute's cursor and opacity on the host
 instrument did not read (a later Button specimen reads `opacity` and `cursor` on the disabled
 host).
 
+## Semantic roles and canvas
+
+Run 6 (2026-09-20, `units/u2-run-6.log.txt`, readings extracted to `units/u2-run-6-extract.md`)
+added the page canvas, every variant button, and every variant's `.subtle` and `.filled` styles.
+Every string below is identical on Chromium `153.0.8010.12` and Edge `153.0.4234.48`.
+
+| Role (Elements name) | Fill and border, light and dark (`.filled` and the bare variant) | Subtle text, light / dark | Subtle surface, light / dark | Subtle border, light / dark |
+| --- | --- | --- | --- | --- |
+| primary | `oklch(0.48 0.255 264)` / dark `oklch(0.7 0.15 233)` | `oklab(0.3984 -0.019591 -0.190088)` / `oklab(0.7687 -0.0641665 -0.0876326)` | `oklab(0.937595 -0.00315847 -0.0304147)` / `oklab(0.2835 -0.0162141 -0.0286911)` | `oklab(0.817996 -0.00929954 -0.088748)` / `oklab(0.4675 -0.0467086 -0.0662046)` |
+| secondary | `oklch(0.446 0.043 257.281)` both modes | `oklab(0.3746 -0.00755977 -0.0419268)` / `oklab(0.5909 -0.00760306 -0.0331373)` | `oklab(0.933515 -0.00109597 -0.00501571)` / `oklab(0.2454 -0.00409333 -0.0170135)` | `oklab(0.806096 -0.00328393 -0.0146676)` / `oklab(0.3405 -0.00630614 -0.0272793)` |
+| tertiary (Veneer addition; no Bootstrap role) | `oklch(0.541 0.281 293.009)` both modes | `oklab(0.4411 0.0759527 -0.193617)` / `oklab(0.6574 0.0759094 -0.184827)` | `oklab(0.944915 0.0132204 -0.0310197)` / `oklab(0.25965 0.0138022 -0.0495184)` | `oklab(0.839346 0.0384723 -0.0905125)` / `oklab(0.388 0.0533456 -0.135629)` |
+| success | `oklch(0.527 0.154 150.069)` both modes | `oklab(0.4313 -0.0943551 0.0412221)` / `oklab(0.6476 -0.0943983 0.0500116)` | `oklab(0.943235 -0.0159752 0.00923839)` / `oklab(0.25755 -0.0226923 0.000804124)` | `oklab(0.834446 -0.0466816 0.0269068)` / `oklab(0.381 -0.0683028 0.0321127)` |
+| warning | `oklch(0.555 0.163 48.998)` both modes | `oklab(0.4509 0.0739267 0.0735443)` / `oklab(0.6672 0.0738834 0.0823338)` | `oklab(0.946595 0.0128731 0.0147793)` / `oklab(0.26175 0.013368 0.00773032)` | `oklab(0.844246 0.0374593 0.0430679)` / `oklab(0.395 0.0518985 0.0552)` |
+| danger | `oklch(0.505 0.213 27.518)` both modes | `oklab(0.4159 0.131299 0.0563228)` / `oklab(0.6322 0.131256 0.0651124)` | `oklab(0.940595 0.0227084 0.0118271)` / `oklab(0.25425 0.0256621 0.00404)` | `oklab(0.826746 0.0661455 0.0344572)` / `oklab(0.37 0.0928787 0.042899)` |
+| information (Bootstrap `info`) | `oklch(0.5 0.134 242.749)` both modes | `oklab(0.4124 -0.0438827 -0.0959545)` / `oklab(0.6287 -0.043926 -0.087165)` | `oklab(0.939995 -0.00732276 -0.0142776)` / `oklab(0.2535 -0.0118768 -0.0285909)` | `oklab(0.824996 -0.0214454 -0.0416815)` / `oklab(0.3675 -0.0322511 -0.0658705)` |
+
+Only the primary retunes by mode; every other role keeps one fill in both modes. Filled text is
+`rgb(255, 255, 255)` on every role. The subtle tiers are Elements' own `color-mix()` results in
+oklab (the browser serializes them as `oklab(...)`), so the token contract reproduces them as
+oklab mixes over each role's fill whose percentages the U3 unit reads from Elements' token source
+and proves against these strings.
+
+| Canvas | Light | Dark |
+| --- | --- | --- |
+| `body` background | `rgb(255, 255, 255)` | `oklch(0.21 0.013 256)` |
+| `body` text | `oklch(0.208 0.042 265.755)` | `oklch(0.929 0.013 255.508)` |
+| `main` background | transparent | transparent |
+
+The full font stack on every specimen is
+`system-ui, -apple-system, "Segoe UI", roboto, "Helvetica Neue", arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"`.
+
+The sRGB triplets of the calibrated colours, read from the engines by `instruments/srgb-probe.mjs`
+and `instruments/paint-probe.mjs` (see [instruments](instruments.md)): primary light `8, 65, 234`,
+primary dark `0, 172, 236` (painted; the colour is outside the sRGB gamut), text `15, 23, 43` /
+`226, 232, 240`, border `202, 213, 226` / `64, 72, 84`, raised surface `248, 250, 252` /
+`26, 30, 36`.
+
+Hover and active fills per role, light and dark, are in `units/u2-run-6-extract.md` (the
+`color(srgb …)` strings); they calibrate the Button unit.
+
 ## Interaction states
 
 Read on the five interactive button specimens; the `active` reading was taken with the focus

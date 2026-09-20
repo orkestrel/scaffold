@@ -1,0 +1,21 @@
+Checkpoint the ColorMode engine, shell, journeys, and boundary controls
+
+Lands unit U1-author run 4's work before its successor: the browser
+face's first export set (the ColorMode controller over data-bs-theme
+with its factory, guard, constants, and types), the plain-TypeScript
+showcase shell whose Dark mode control consumes it, the browser setup
+module with the provided-context augmentation and the theme helper,
+the journey suite across the four theme-by-viewport variants with its
+refusal, matrix, and capture families, the entry proofs including the
+no-listener-on-import reading, and the conformance controls over the
+manifest, the source sweep, the import closure, and the built
+specifiers, each proved red on a planted control and green on removal.
+The peer-dependency control ran on the host after the bench sandbox
+refused to write the manifest.
+
+The distribution stage, the guides, and the final gate chain follow in
+run 5; the styles proof is red at this checkpoint because the extended
+browser setup assumes a provided variant the styles project does not
+supply.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>

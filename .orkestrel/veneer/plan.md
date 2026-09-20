@@ -547,6 +547,24 @@ Each entry names what changed in the plan and why, on the date it changed.
   (class), `ColorModeInterface`, `ColorModeOptions`, `ColorScheme` (`'light' | 'dark'`),
   `createColorMode`, `isColorScheme`, `COLOR_MODE_ATTRIBUTE`, and `COLOR_MODE_KEY`, all free in
   the hosted guides on 2026-09-20. Run 3's styles axis work stays in the tree as the unit's own.
+- 2026-09-20, U1-author landed: run 4 stopped only on the `package.json` plant the bench sandbox
+  refused (the Orchestrator took `PLANT-PEER` on the host, `units/u1-plant-peer.log.txt`) and was
+  checkpointed as `9d64c66`; run 5 finished the distribution stage, the guide, and the README and
+  landed as `ae0221d` with every gate green on managed Chromium in its report
+  (`units/u1-author-report.md`). U1-gate (`verifier`), the audit round (`reviewer` objective,
+  `analyst` subjective on Astra, `checker`) on `u1-audit-claims.md`, and the push follow.
+- 2026-09-20, U3 design round closed (`u3-design-verdict.md`): both lanes found the calibration
+  narrower than the token scope; the Orchestrator answered with calibration run 6 (variant fills,
+  subtle tiers, canvas), the `srgb-probe` and `paint-probe` instruments, and the value-source
+  law (calibration row, else Bootstrap's own value recorded as retained, else not declared). The
+  U3 brief (`units/u3-brief.md`) carries the rulings; `opus` runs it after U1 is accepted, in the
+  same checkout.
+- 2026-09-20, U2 satisfied: run 5 on managed Chromium and Edge read settled endpoints
+  (`units/u2-distill-2-report.md` § Settled check names the hint surface's 95% alpha mix as the
+  only non-endpoint string), the record is [calibration](research/calibration.md), and the index
+  names the instrument, the readings, and the record. U4a satisfied the same day (inventory,
+  obligations, ledger present and indexed; exclusions listed in the ledger for the user). U3's
+  design round opened on both lanes from `units/u3-design-brief.md`.
 - 2026-09-20, U2 instrument corrections, each from a probe or a reading rather than a guess
   (`units/u2-reach-fix.mjs`, `u2-reach-fix-2.mjs`, `u2-reach-fix-3.mjs`, run logs
   `units/u2-run-<n>.log.txt`): first-match locators and unique per-specimen reaches from the DOM

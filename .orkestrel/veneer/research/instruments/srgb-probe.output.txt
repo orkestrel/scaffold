@@ -1,0 +1,18 @@
+## chromium 153.0.8010.12
+primary light: oklch(0.48 0.255 264) -> 8, 65, 234 (color(srgb 0.0317201 0.254008 0.916075); direct oklch(0.48 0.255 264))
+primary dark: oklch(0.7 0.15 233) -> unparsed (color(srgb -0.108087 0.675236 0.924272); direct oklch(0.7 0.15 233))
+text light: oklch(0.208 0.042 265.755) -> 15, 23, 43 (color(srgb 0.0571636 0.0900503 0.168809); direct oklch(0.208 0.042 265.755))
+text dark: oklch(0.929 0.013 255.508) -> 226, 232, 240 (color(srgb 0.885835 0.910244 0.942581); direct oklch(0.929 0.013 255.508))
+border light: oklch(0.869 0.022 252.894) -> 202, 213, 226 (color(srgb 0.792236 0.835872 0.888033); direct oklch(0.869 0.022 252.894))
+border dark: oklch(0.4 0.022 256) -> 64, 72, 84 (color(srgb 0.251108 0.283918 0.328243); direct oklch(0.4 0.022 256))
+raised light: oklch(0.984 0.003 247.858) -> 248, 250, 252 (color(srgb 0.973021 0.980095 0.987007); direct oklch(0.984 0.003 247.858))
+raised dark: oklch(0.235 0.013 256) -> 26, 30, 36 (color(srgb 0.102356 0.11933 0.142261); direct oklch(0.235 0.013 256))
+## msedge 153.0.4234.48
+primary light: oklch(0.48 0.255 264) -> 8, 65, 234 (color(srgb 0.0317201 0.254008 0.916075); direct oklch(0.48 0.255 264))
+primary dark: oklch(0.7 0.15 233) -> unparsed (color(srgb -0.108087 0.675236 0.924272); direct oklch(0.7 0.15 233))
+text light: oklch(0.208 0.042 265.755) -> 15, 23, 43 (color(srgb 0.0571636 0.0900503 0.168809); direct oklch(0.208 0.042 265.755))
+text dark: oklch(0.929 0.013 255.508) -> 226, 232, 240 (color(srgb 0.885835 0.910244 0.942581); direct oklch(0.929 0.013 255.508))
+border light: oklch(0.869 0.022 252.894) -> 202, 213, 226 (color(srgb 0.792236 0.835872 0.888033); direct oklch(0.869 0.022 252.894))
+border dark: oklch(0.4 0.022 256) -> 64, 72, 84 (color(srgb 0.251108 0.283918 0.328243); direct oklch(0.4 0.022 256))
+raised light: oklch(0.984 0.003 247.858) -> 248, 250, 252 (color(srgb 0.973021 0.980095 0.987007); direct oklch(0.984 0.003 247.858))
+raised dark: oklch(0.235 0.013 256) -> 26, 30, 36 (color(srgb 0.102356 0.11933 0.142261); direct oklch(0.235 0.013 256))
