@@ -1,0 +1,1106 @@
+[
+  {
+    "repository": "veneer",
+    "path": "C:\\Users\\mikes\\WebstormProjects\\veneer",
+    "head": "fc36cec97133f448884199d32189a51c6ef9f1c9",
+    "branch": "main",
+    "status": "",
+    "manifest": {
+      "name": "veneer",
+      "version": "0.0.0",
+      "private": true,
+      "files": [
+        "src/styles",
+        "dist/src/styles"
+      ],
+      "type": "module",
+      "sideEffects": [
+        "**/*.css"
+      ],
+      "exports": {
+        ".": {
+          "types": "./src/styles/index.ts",
+          "style": "./src/styles/index.css",
+          "default": "./src/styles/index.css"
+        },
+        "./styles.css": "./src/styles/index.css",
+        "./tokens.css": "./src/styles/tokens.css",
+        "./tailwindcss.css": "./src/styles/tailwindcss.css",
+        "./bootstrap/*": "./src/styles/bootstrap/*"
+      },
+      "scripts": {
+        "dev": "vite --config configs/app/vite.browser.config.ts",
+        "build": "npm run clean && npm run build:styles && npm run build:app",
+        "build:styles": "vite build --config configs/src/vite.styles.config.ts",
+        "build:app": "vite build --config configs/app/vite.browser.config.ts",
+        "preview": "vite preview --config configs/app/vite.browser.config.ts",
+        "showcase": "vite --config configs/app/vite.showcase.config.ts",
+        "tokens": "UPDATE_SNAPSHOT=1 vitest run --config vite.config.ts --project styles:build",
+        "build:showcase": "vite build --config configs/app/vite.showcase.config.ts",
+        "show": "npm run build:showcase && mkdir -p demo && cp dist/showcase/index.html demo/showcase.html",
+        "clean": "rm -rf dist",
+        "check": "npm run check:types && npm run check:lint",
+        "check:types": "tsc --noEmit",
+        "check:lint": "oxlint --config .oxlintrc.json --ignore-path .oxlintignore .",
+        "check:fix": "oxlint --config .oxlintrc.json --ignore-path .oxlintignore --fix .",
+        "format": "oxfmt --config .oxfmtrc.json --write .",
+        "format:check": "oxfmt --config .oxfmtrc.json --check .",
+        "test": "vitest run",
+        "test:watch": "vitest",
+        "test:src:styles": "vitest run --config vite.config.ts --no-cache --reporter=dot --project src:styles",
+        "test:app:browser": "vitest run --config vite.config.ts --no-cache --reporter=dot --project app:browser",
+        "test:guides": "vitest run --config vite.config.ts --no-cache --reporter=dot --project guides"
+      },
+      "dependencies": {
+        "@popperjs/core": "^2.11.8",
+        "bootstrap": "^5.3.8"
+      },
+      "devDependencies": {
+        "@tailwindcss/vite": "^4.3.1",
+        "@types/bootstrap": "^5.2.11",
+        "@types/node": "^26.0.0",
+        "@vitest/browser": "^4.1.9",
+        "@vitest/browser-playwright": "^4.1.9",
+        "oxfmt": "^0.55.0",
+        "oxlint": "^1.70.0",
+        "playwright": "^1.61.0",
+        "postcss": "^8.5.15",
+        "tailwindcss": "^4.3.1",
+        "typescript": "^6.0.3",
+        "vite": "^8.0.16",
+        "vite-plugin-singlefile": "^2.3.3",
+        "vitest": "^4.1.9"
+      }
+    },
+    "dependencies": [
+      {
+        "name": "@popperjs/core",
+        "relationship": "dependencies",
+        "declared": "^2.11.8",
+        "resolved": "2.11.8",
+        "installed": null
+      },
+      {
+        "name": "bootstrap",
+        "relationship": "dependencies",
+        "declared": "^5.3.8",
+        "resolved": "5.3.8",
+        "installed": null
+      },
+      {
+        "name": "@tailwindcss/vite",
+        "relationship": "devDependencies",
+        "declared": "^4.3.1",
+        "resolved": "4.3.1",
+        "installed": null
+      },
+      {
+        "name": "@types/bootstrap",
+        "relationship": "devDependencies",
+        "declared": "^5.2.11",
+        "resolved": "5.2.11",
+        "installed": null
+      },
+      {
+        "name": "@types/node",
+        "relationship": "devDependencies",
+        "declared": "^26.0.0",
+        "resolved": "26.0.0",
+        "installed": null
+      },
+      {
+        "name": "@vitest/browser",
+        "relationship": "devDependencies",
+        "declared": "^4.1.9",
+        "resolved": "4.1.9",
+        "installed": null
+      },
+      {
+        "name": "@vitest/browser-playwright",
+        "relationship": "devDependencies",
+        "declared": "^4.1.9",
+        "resolved": "4.1.9",
+        "installed": null
+      },
+      {
+        "name": "oxfmt",
+        "relationship": "devDependencies",
+        "declared": "^0.55.0",
+        "resolved": "0.55.0",
+        "installed": null
+      },
+      {
+        "name": "oxlint",
+        "relationship": "devDependencies",
+        "declared": "^1.70.0",
+        "resolved": "1.70.0",
+        "installed": null
+      },
+      {
+        "name": "playwright",
+        "relationship": "devDependencies",
+        "declared": "^1.61.0",
+        "resolved": "1.61.0",
+        "installed": null
+      },
+      {
+        "name": "postcss",
+        "relationship": "devDependencies",
+        "declared": "^8.5.15",
+        "resolved": "8.5.15",
+        "installed": null
+      },
+      {
+        "name": "tailwindcss",
+        "relationship": "devDependencies",
+        "declared": "^4.3.1",
+        "resolved": "4.3.1",
+        "installed": null
+      },
+      {
+        "name": "typescript",
+        "relationship": "devDependencies",
+        "declared": "^6.0.3",
+        "resolved": "6.0.3",
+        "installed": null
+      },
+      {
+        "name": "vite",
+        "relationship": "devDependencies",
+        "declared": "^8.0.16",
+        "resolved": "8.0.16",
+        "installed": null
+      },
+      {
+        "name": "vite-plugin-singlefile",
+        "relationship": "devDependencies",
+        "declared": "^2.3.3",
+        "resolved": "2.3.3",
+        "installed": null
+      },
+      {
+        "name": "vitest",
+        "relationship": "devDependencies",
+        "declared": "^4.1.9",
+        "resolved": "4.1.9",
+        "installed": null
+      }
+    ]
+  },
+  {
+    "repository": "elements",
+    "path": "C:\\Users\\mikes\\WebstormProjects\\elements",
+    "head": "3b41900c1f89042dcbbc08f553fb212cf0bb64ec",
+    "branch": "main",
+    "status": "",
+    "manifest": {
+      "name": "elements",
+      "version": "0.0.1",
+      "description": "Semantic-first CSS/SCSS framework and Vue composable library, one partial per HTML element",
+      "files": [
+        "dist",
+        "README.md"
+      ],
+      "type": "module",
+      "sideEffects": [
+        "**/*.css",
+        "**/*.scss"
+      ],
+      "exports": {
+        "./browser": {
+          "types": "./dist/src/browser/index.d.ts",
+          "import": "./dist/src/browser/index.js",
+          "default": "./dist/src/browser/index.js"
+        },
+        "./core": {
+          "types": "./dist/src/core/index.d.ts",
+          "import": "./dist/src/core/index.js",
+          "default": "./dist/src/core/index.js"
+        },
+        "./styles": "./dist/src/styles/index.css",
+        "./styles/scss": "./dist/src/styles/scss/index.scss"
+      },
+      "publishConfig": {
+        "access": "public"
+      },
+      "scripts": {
+        "dev": "vite --config configs/app/vite.browser.config.ts",
+        "clean": "node -e \"try{require('node:fs').rmSync('dist',{recursive:true,force:true})}catch{}\"",
+        "copy": "node -e \"const fs=require('node:fs'),a=process.argv[1],b=process.argv[2];fs.cpSync(a,b,{force:true});console.log('Copied: '+a+' to '+b)\"",
+        "tmp:txt": "node -e \"const fs=require('node:fs'),p=require('node:path');function walk(d){for(const e of fs.readdirSync(d,{withFileTypes:true})){const f=p.join(d,e.name);if(e.isDirectory()){walk(f)}else if(!e.name.endsWith('.md')&&!e.name.endsWith('.txt')){const t=f+'.txt';if(!fs.existsSync(t)){fs.renameSync(f,t)}else{console.warn('Skipping '+f+' \u2014 target exists: '+t)}}}}try{walk('tmp')}catch(e){if(e.code!=='ENOENT')throw e}\"",
+        "check": "oxlint --config .oxlintrc.json --fix . && vue-tsc --noEmit --project tsconfig.json",
+        "format": "oxfmt --config .oxfmtrc.json --write",
+        "test": "vitest run --config vite.config.ts --no-cache --reporter=dot",
+        "test:app": "vitest run --config vite.config.ts --no-cache --reporter=dot --project app:core --project app:browser --project app:styles",
+        "test:app:core": "vitest run --config vite.config.ts --no-cache --reporter=dot --project app:core",
+        "test:app:browser": "vitest run --config vite.config.ts --no-cache --reporter=dot --project app:browser",
+        "test:app:styles": "vitest run --config vite.config.ts --no-cache --reporter=dot --project app:styles",
+        "test:src": "vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core --project src:browser",
+        "test:src:core": "vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core",
+        "test:src:browser": "vitest run --config vite.config.ts --no-cache --reporter=dot --project src:browser",
+        "test:src:styles": "vitest run --config vite.config.ts --no-cache --reporter=dot --project src:styles",
+        "build": "npm run clean && npm run build:src && npm run build:app",
+        "build:src": "npm run build:src:styles && npm run build:src:browser && npm run build:src:core",
+        "build:src:styles": "vite build --config configs/src/vite.styles.config.ts",
+        "build:src:browser": "vite build --config configs/src/vite.browser.config.ts && tsc -p configs/src/tsconfig.browser.json",
+        "build:src:core": "vite build --config configs/src/vite.core.config.ts && tsc -p configs/src/tsconfig.core.json",
+        "build:app": "npm run build:app:browser",
+        "build:app:browser": "vite build --config configs/app/vite.browser.config.ts",
+        "showcase": "vite --config configs/app/vite.showcase.config.ts",
+        "build:showcase": "vite build --config configs/app/vite.showcase.config.ts",
+        "show": "npm run build:showcase && npm run copy dist/showcase/index.html demo/showcase.html",
+        "prepublishOnly": "npm run format && npm run check && npm run build && npm test"
+      },
+      "dependencies": {
+        "@vue/reactivity": "^3.5.35"
+      },
+      "devDependencies": {
+        "@tailwindcss/postcss": "^4.3.0",
+        "@types/node": "^25.9.2",
+        "@vitejs/plugin-vue": "^6.0.7",
+        "@vitest/browser-playwright": "^4.1.8",
+        "oxfmt": "^0.54.0",
+        "oxlint": "^1.69.0",
+        "playwright": "^1.60.0",
+        "sass": "^1.100.0",
+        "tailwindcss": "^4.3.0",
+        "typescript": "^6.0.3",
+        "vite": "^8.0.16",
+        "vite-plugin-singlefile": "^2.3.3",
+        "vitest": "^4.1.8",
+        "vue": "^3.5.35",
+        "vue-tsc": "^3.3.4"
+      }
+    },
+    "dependencies": [
+      {
+        "name": "@vue/reactivity",
+        "relationship": "dependencies",
+        "declared": "^3.5.35",
+        "resolved": "3.5.35",
+        "installed": null
+      },
+      {
+        "name": "@tailwindcss/postcss",
+        "relationship": "devDependencies",
+        "declared": "^4.3.0",
+        "resolved": "4.3.0",
+        "installed": null
+      },
+      {
+        "name": "@types/node",
+        "relationship": "devDependencies",
+        "declared": "^25.9.2",
+        "resolved": "25.9.2",
+        "installed": null
+      },
+      {
+        "name": "@vitejs/plugin-vue",
+        "relationship": "devDependencies",
+        "declared": "^6.0.7",
+        "resolved": "6.0.7",
+        "installed": null
+      },
+      {
+        "name": "@vitest/browser-playwright",
+        "relationship": "devDependencies",
+        "declared": "^4.1.8",
+        "resolved": "4.1.8",
+        "installed": null
+      },
+      {
+        "name": "oxfmt",
+        "relationship": "devDependencies",
+        "declared": "^0.54.0",
+        "resolved": "0.54.0",
+        "installed": null
+      },
+      {
+        "name": "oxlint",
+        "relationship": "devDependencies",
+        "declared": "^1.69.0",
+        "resolved": "1.69.0",
+        "installed": null
+      },
+      {
+        "name": "playwright",
+        "relationship": "devDependencies",
+        "declared": "^1.60.0",
+        "resolved": "1.60.0",
+        "installed": null
+      },
+      {
+        "name": "sass",
+        "relationship": "devDependencies",
+        "declared": "^1.100.0",
+        "resolved": "1.100.0",
+        "installed": null
+      },
+      {
+        "name": "tailwindcss",
+        "relationship": "devDependencies",
+        "declared": "^4.3.0",
+        "resolved": "4.3.0",
+        "installed": null
+      },
+      {
+        "name": "typescript",
+        "relationship": "devDependencies",
+        "declared": "^6.0.3",
+        "resolved": "6.0.3",
+        "installed": null
+      },
+      {
+        "name": "vite",
+        "relationship": "devDependencies",
+        "declared": "^8.0.16",
+        "resolved": "8.0.16",
+        "installed": null
+      },
+      {
+        "name": "vite-plugin-singlefile",
+        "relationship": "devDependencies",
+        "declared": "^2.3.3",
+        "resolved": "2.3.3",
+        "installed": null
+      },
+      {
+        "name": "vitest",
+        "relationship": "devDependencies",
+        "declared": "^4.1.8",
+        "resolved": "4.1.8",
+        "installed": null
+      },
+      {
+        "name": "vue",
+        "relationship": "devDependencies",
+        "declared": "^3.5.35",
+        "resolved": "3.5.35",
+        "installed": null
+      },
+      {
+        "name": "vue-tsc",
+        "relationship": "devDependencies",
+        "declared": "^3.3.4",
+        "resolved": "3.3.4",
+        "installed": null
+      }
+    ]
+  },
+  {
+    "repository": "mailbox",
+    "path": "C:\\Users\\mikes\\WebstormProjects\\mailbox",
+    "head": "8b5454250a8078aa61d4a6e0508c3489f60edda1",
+    "branch": "main",
+    "status": "",
+    "manifest": {
+      "name": "mailbox",
+      "version": "0.0.1",
+      "description": "CSS/SCSS framework and Vue composable library with app showcase",
+      "files": [
+        "dist",
+        "README.md"
+      ],
+      "type": "module",
+      "sideEffects": [
+        "**/*.css",
+        "**/*.scss"
+      ],
+      "exports": {
+        "./browser": {
+          "types": "./dist/src/browser/index.d.ts",
+          "import": "./dist/src/browser/index.js",
+          "default": "./dist/src/browser/index.js"
+        },
+        "./styles": "./dist/src/styles/index.css",
+        "./styles/scss": "./dist/src/styles/scss/index.scss"
+      },
+      "publishConfig": {
+        "access": "public"
+      },
+      "scripts": {
+        "dev": "vite --config configs/app/vite.browser.config.ts",
+        "clean": "node -e \"try{require('node:fs').rmSync('dist',{recursive:true,force:true})}catch{}\"",
+        "copy": "node -e \"try{require('node:fs').cpSync(process.argv[1],process.argv[2],{force:true});console.log(`Copied: ${process.argv[1]} to ${process.argv[2]}`)}catch(e){throw e}\"",
+        "tmp:txt": "node -e \"const fs=require('node:fs'),p=require('node:path');function walk(d){for(const e of fs.readdirSync(d,{withFileTypes:true})){const f=p.join(d,e.name);if(e.isDirectory()){walk(f)}else if(!e.name.endsWith('.md')&&!e.name.endsWith('.txt')){const t=f+'.txt';if(!fs.existsSync(t)){fs.renameSync(f,t)}else{console.warn('Skipping '+f+' \u2014 target exists: '+t)}}}}try{walk('tmp')}catch(e){if(e.code!=='ENOENT')throw e}\"",
+        "check": "oxlint --config .oxlintrc.json --fix . && vue-tsc --noEmit --project tsconfig.json",
+        "format": "oxfmt --config .oxfmtrc.json --write .",
+        "test": "vitest run --config vite.config.ts --no-cache --reporter=dot",
+        "test:app:browser": "vitest run --config vite.config.ts --no-cache --reporter=dot --project app:browser",
+        "test:src": "vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core --project src:browser",
+        "test:src:core": "vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core",
+        "test:src:browser": "vitest run --config vite.config.ts --no-cache --reporter=dot --project src:browser",
+        "test:src:styles": "vitest run --config vite.config.ts --no-cache --reporter=dot --project src:styles",
+        "build": "npm run clean && npm run build:src && npm run build:app",
+        "build:src": "npm run build:src:styles && npm run build:src:browser",
+        "build:src:styles": "vite build --config configs/src/vite.styles.config.ts",
+        "build:src:browser": "vite build --config configs/src/vite.browser.config.ts && tsc -p configs/src/tsconfig.browser.json",
+        "build:app": "npm run build:app:browser",
+        "build:app:browser": "vite build --config configs/app/vite.browser.config.ts",
+        "showcase": "vite --config configs/app/vite.showcase.config.ts",
+        "build:showcase": "vite build --config configs/app/vite.showcase.config.ts",
+        "show": "npm run build:showcase && npm run copy dist/showcase/index.html demo/showcase.html",
+        "serve": "node dist/app/server/main.cjs",
+        "serve:build": "npm run build && npm run serve",
+        "prepublishOnly": "npm run format && npm run check && npm run build && npm test"
+      },
+      "dependencies": {
+        "@vue/reactivity": "^3.5.35"
+      },
+      "devDependencies": {
+        "@tailwindcss/postcss": "^4.3.0",
+        "@types/node": "^25.9.2",
+        "@vitejs/plugin-vue": "^6.0.7",
+        "@vitest/browser-playwright": "^4.1.8",
+        "bootstrap-icons": "^1.13.1",
+        "oxfmt": "^0.54.0",
+        "oxlint": "^1.69.0",
+        "sass": "^1.100.0",
+        "tailwindcss": "^4.3.0",
+        "typescript": "^6.0.3",
+        "vite": "^8.0.16",
+        "vite-plugin-singlefile": "^2.3.3",
+        "vitest": "^4.1.8",
+        "vue": "^3.5.35",
+        "vue-tsc": "^3.3.4"
+      }
+    },
+    "dependencies": [
+      {
+        "name": "@vue/reactivity",
+        "relationship": "dependencies",
+        "declared": "^3.5.35",
+        "resolved": "3.5.35",
+        "installed": null
+      },
+      {
+        "name": "@tailwindcss/postcss",
+        "relationship": "devDependencies",
+        "declared": "^4.3.0",
+        "resolved": "4.3.0",
+        "installed": null
+      },
+      {
+        "name": "@types/node",
+        "relationship": "devDependencies",
+        "declared": "^25.9.2",
+        "resolved": "25.9.2",
+        "installed": null
+      },
+      {
+        "name": "@vitejs/plugin-vue",
+        "relationship": "devDependencies",
+        "declared": "^6.0.7",
+        "resolved": "6.0.7",
+        "installed": null
+      },
+      {
+        "name": "@vitest/browser-playwright",
+        "relationship": "devDependencies",
+        "declared": "^4.1.8",
+        "resolved": "4.1.8",
+        "installed": null
+      },
+      {
+        "name": "bootstrap-icons",
+        "relationship": "devDependencies",
+        "declared": "^1.13.1",
+        "resolved": "1.13.1",
+        "installed": null
+      },
+      {
+        "name": "oxfmt",
+        "relationship": "devDependencies",
+        "declared": "^0.54.0",
+        "resolved": "0.54.0",
+        "installed": null
+      },
+      {
+        "name": "oxlint",
+        "relationship": "devDependencies",
+        "declared": "^1.69.0",
+        "resolved": "1.69.0",
+        "installed": null
+      },
+      {
+        "name": "sass",
+        "relationship": "devDependencies",
+        "declared": "^1.100.0",
+        "resolved": "1.100.0",
+        "installed": null
+      },
+      {
+        "name": "tailwindcss",
+        "relationship": "devDependencies",
+        "declared": "^4.3.0",
+        "resolved": "4.3.0",
+        "installed": null
+      },
+      {
+        "name": "typescript",
+        "relationship": "devDependencies",
+        "declared": "^6.0.3",
+        "resolved": "6.0.3",
+        "installed": null
+      },
+      {
+        "name": "vite",
+        "relationship": "devDependencies",
+        "declared": "^8.0.16",
+        "resolved": "8.0.16",
+        "installed": null
+      },
+      {
+        "name": "vite-plugin-singlefile",
+        "relationship": "devDependencies",
+        "declared": "^2.3.3",
+        "resolved": "2.3.3",
+        "installed": null
+      },
+      {
+        "name": "vitest",
+        "relationship": "devDependencies",
+        "declared": "^4.1.8",
+        "resolved": "4.1.8",
+        "installed": null
+      },
+      {
+        "name": "vue",
+        "relationship": "devDependencies",
+        "declared": "^3.5.35",
+        "resolved": "3.5.35",
+        "installed": null
+      },
+      {
+        "name": "vue-tsc",
+        "relationship": "devDependencies",
+        "declared": "^3.3.4",
+        "resolved": "3.3.4",
+        "installed": null
+      }
+    ]
+  },
+  {
+    "repository": "roughnotes",
+    "path": "C:\\Users\\mikes\\WebstormProjects\\roughnotes",
+    "head": "4a591924eeadd99a77fbf716694261218ccde828",
+    "branch": "main",
+    "status": "",
+    "manifest": {
+      "name": "roughnotes",
+      "version": "0.0.1",
+      "private": true,
+      "description": "The roughnotes application.",
+      "keywords": [],
+      "license": "MIT",
+      "files": [
+        "dist/app",
+        "README.md"
+      ],
+      "type": "module",
+      "scripts": {
+        "clean": "node -e \"require('node:fs').rmSync('dist',{recursive:true,force:true})\"",
+        "copy": "node -e \"const fs=require('node:fs'),p=require('node:path'),a=process.argv[1],b=process.argv[2];fs.mkdirSync(p.dirname(b),{recursive:true});fs.cpSync(a,b,{force:true});console.log('Copied: '+a+' to '+b)\"",
+        "format": "oxfmt --config .oxfmtrc.json --write .",
+        "format:check": "oxfmt --config .oxfmtrc.json --check .",
+        "lint": "oxlint --config .oxlintrc.json --fix .",
+        "lint:check": "oxlint --config .oxlintrc.json --deny-warnings .",
+        "check": "tsc --noEmit --project tsconfig.json && npm run check:app",
+        "check:app": "npm run check:app:core && npm run check:app:browser",
+        "check:app:core": "tsc --noEmit -p configs/app/tsconfig.core.json",
+        "check:app:browser": "vue-tsc --noEmit -p configs/app/tsconfig.browser.json",
+        "test": "npm run test:app && npm run test:journey && npm run test:policy && npm run test:config && npm run test:setup && npm run test:setup:browser && npm run test:conformance",
+        "test:app": "vitest run --config vite.config.ts --no-cache --reporter=dot --project app:core --project app:browser",
+        "test:app:core": "vitest run --config vite.config.ts --no-cache --reporter=dot --project app:core",
+        "test:app:browser": "vitest run --config vite.config.ts --no-cache --reporter=dot --project app:browser",
+        "test:journey": "vitest run --config configs/app/vite.journey.config.ts --no-cache --reporter=dot",
+        "test:policy": "vitest run --config vite.config.ts --no-cache --reporter=dot --project policy",
+        "test:config": "vitest run --config vite.config.ts --no-cache --reporter=dot --project config",
+        "test:setup": "vitest run --config vite.config.ts --no-cache --reporter=dot --project setup",
+        "test:conformance": "vitest run --config vite.config.ts --no-cache --reporter=dot --project conformance",
+        "test:probe": "vitest run --config vite.config.ts --no-cache --reporter=verbose --project probe",
+        "test:bench": "vitest bench --config vite.config.ts --no-cache --project probe",
+        "test:setup:browser": "vitest run --config vite.config.ts --no-cache --reporter=dot --project setup:browser",
+        "build": "npm run clean && npm run build:app",
+        "build:app": "npm run build:app:browser",
+        "build:app:browser": "vite build --config configs/app/vite.browser.config.ts",
+        "dev": "vite --config configs/app/vite.browser.config.ts",
+        "showcase": "vite --config configs/app/vite.showcase.config.ts",
+        "build:showcase": "vite build --config configs/app/vite.showcase.config.ts",
+        "show": "npm run format && npm run build:showcase && npm run copy dist/showcase/index.html demo/showcase.html"
+      },
+      "dependencies": {
+        "@orkestrel/emitter": "^0.0.10",
+        "@orkestrel/router": "^0.0.15"
+      },
+      "devDependencies": {
+        "@orkestrel/contract": "^0.0.17",
+        "@orkestrel/guide": "^0.0.20",
+        "@orkestrel/html": "^0.0.10",
+        "@orkestrel/probe": "^0.0.16",
+        "@orkestrel/scaffold": "^0.0.75",
+        "@orkestrel/test": "^0.0.18",
+        "@popperjs/core": "^2.11.8",
+        "@types/bootstrap": "^5.2.11",
+        "@types/node": "^26.6.1",
+        "@vitejs/plugin-vue": "^6.0.9",
+        "@vitest/browser-playwright": "^4.1.11",
+        "bootstrap": "^5.3.8",
+        "bootstrap-icons": "^1.13.1",
+        "oxfmt": "^0.68.0",
+        "oxlint": "^1.83.0",
+        "playwright": "^1.63.0",
+        "sass": "^1.104.0",
+        "typescript": "^6.0.3",
+        "vite": "^8.3.0",
+        "vite-plugin-singlefile": "^2.3.3",
+        "vitest": "^4.1.11",
+        "vue": "^3.5.43",
+        "vue-tsc": "^3.3.11"
+      },
+      "engines": {
+        "node": ">=22.12.0"
+      }
+    },
+    "dependencies": [
+      {
+        "name": "@orkestrel/emitter",
+        "relationship": "dependencies",
+        "declared": "^0.0.10",
+        "resolved": "0.0.10",
+        "installed": "0.0.10"
+      },
+      {
+        "name": "@orkestrel/router",
+        "relationship": "dependencies",
+        "declared": "^0.0.15",
+        "resolved": "0.0.15",
+        "installed": "0.0.15"
+      },
+      {
+        "name": "@orkestrel/contract",
+        "relationship": "devDependencies",
+        "declared": "^0.0.17",
+        "resolved": "0.0.17",
+        "installed": "0.0.17"
+      },
+      {
+        "name": "@orkestrel/guide",
+        "relationship": "devDependencies",
+        "declared": "^0.0.20",
+        "resolved": "0.0.20",
+        "installed": "0.0.20"
+      },
+      {
+        "name": "@orkestrel/html",
+        "relationship": "devDependencies",
+        "declared": "^0.0.10",
+        "resolved": "0.0.10",
+        "installed": "0.0.10"
+      },
+      {
+        "name": "@orkestrel/probe",
+        "relationship": "devDependencies",
+        "declared": "^0.0.16",
+        "resolved": "0.0.16",
+        "installed": "0.0.16"
+      },
+      {
+        "name": "@orkestrel/scaffold",
+        "relationship": "devDependencies",
+        "declared": "^0.0.75",
+        "resolved": "0.0.75",
+        "installed": "0.0.75"
+      },
+      {
+        "name": "@orkestrel/test",
+        "relationship": "devDependencies",
+        "declared": "^0.0.18",
+        "resolved": "0.0.18",
+        "installed": "0.0.18"
+      },
+      {
+        "name": "@popperjs/core",
+        "relationship": "devDependencies",
+        "declared": "^2.11.8",
+        "resolved": "2.11.8",
+        "installed": "2.11.8"
+      },
+      {
+        "name": "@types/bootstrap",
+        "relationship": "devDependencies",
+        "declared": "^5.2.11",
+        "resolved": "5.2.11",
+        "installed": "5.2.11"
+      },
+      {
+        "name": "@types/node",
+        "relationship": "devDependencies",
+        "declared": "^26.6.1",
+        "resolved": "26.6.1",
+        "installed": "26.6.1"
+      },
+      {
+        "name": "@vitejs/plugin-vue",
+        "relationship": "devDependencies",
+        "declared": "^6.0.9",
+        "resolved": "6.0.9",
+        "installed": "6.0.9"
+      },
+      {
+        "name": "@vitest/browser-playwright",
+        "relationship": "devDependencies",
+        "declared": "^4.1.11",
+        "resolved": "4.1.11",
+        "installed": "4.1.11"
+      },
+      {
+        "name": "bootstrap",
+        "relationship": "devDependencies",
+        "declared": "^5.3.8",
+        "resolved": "5.3.8",
+        "installed": "5.3.8"
+      },
+      {
+        "name": "bootstrap-icons",
+        "relationship": "devDependencies",
+        "declared": "^1.13.1",
+        "resolved": "1.13.1",
+        "installed": "1.13.1"
+      },
+      {
+        "name": "oxfmt",
+        "relationship": "devDependencies",
+        "declared": "^0.68.0",
+        "resolved": "0.68.0",
+        "installed": "0.68.0"
+      },
+      {
+        "name": "oxlint",
+        "relationship": "devDependencies",
+        "declared": "^1.83.0",
+        "resolved": "1.83.0",
+        "installed": "1.83.0"
+      },
+      {
+        "name": "playwright",
+        "relationship": "devDependencies",
+        "declared": "^1.63.0",
+        "resolved": "1.63.0",
+        "installed": "1.63.0"
+      },
+      {
+        "name": "sass",
+        "relationship": "devDependencies",
+        "declared": "^1.104.0",
+        "resolved": "1.104.0",
+        "installed": "1.104.0"
+      },
+      {
+        "name": "typescript",
+        "relationship": "devDependencies",
+        "declared": "^6.0.3",
+        "resolved": "6.0.3",
+        "installed": "6.0.3"
+      },
+      {
+        "name": "vite",
+        "relationship": "devDependencies",
+        "declared": "^8.3.0",
+        "resolved": "8.3.0",
+        "installed": "8.3.0"
+      },
+      {
+        "name": "vite-plugin-singlefile",
+        "relationship": "devDependencies",
+        "declared": "^2.3.3",
+        "resolved": "2.3.3",
+        "installed": "2.3.3"
+      },
+      {
+        "name": "vitest",
+        "relationship": "devDependencies",
+        "declared": "^4.1.11",
+        "resolved": "4.1.11",
+        "installed": "4.1.11"
+      },
+      {
+        "name": "vue",
+        "relationship": "devDependencies",
+        "declared": "^3.5.43",
+        "resolved": "3.5.43",
+        "installed": "3.5.43"
+      },
+      {
+        "name": "vue-tsc",
+        "relationship": "devDependencies",
+        "declared": "^3.3.11",
+        "resolved": "3.3.11",
+        "installed": "3.3.11"
+      }
+    ]
+  },
+  {
+    "repository": "scaffold",
+    "path": "C:\\Users\\mikes\\WebstormProjects\\scaffold",
+    "head": "b838db3da53a735778819977e8659bb986e0cd3d",
+    "branch": "main",
+    "status": "?? .orkestrel/",
+    "manifest": {
+      "name": "@orkestrel/scaffold",
+      "version": "0.0.75",
+      "description": "Scaffold workspaces with commands: new, audit, repair, catalog, and overwrite.",
+      "keywords": [
+        "audit",
+        "catalog",
+        "new",
+        "overwrite",
+        "repair"
+      ],
+      "homepage": "https://github.com/orkestrel/scaffold#readme",
+      "bugs": "https://github.com/orkestrel/scaffold/issues",
+      "license": "MIT",
+      "repository": {
+        "type": "git",
+        "url": "git+https://github.com/orkestrel/scaffold.git"
+      },
+      "bin": {
+        "scaffold": "dist/bin/main.js"
+      },
+      "files": [
+        "dist/src",
+        "dist/bin",
+        "dist/host",
+        "README.md"
+      ],
+      "type": "module",
+      "sideEffects": [
+        "./src/bin/main.ts",
+        "./dist/bin/main.js"
+      ],
+      "main": "./dist/src/core/index.cjs",
+      "module": "./dist/src/core/index.js",
+      "exports": {
+        ".": {
+          "import": {
+            "types": "./dist/src/core/index.d.ts",
+            "default": "./dist/src/core/index.js"
+          },
+          "require": {
+            "types": "./dist/src/core/index.d.cts",
+            "default": "./dist/src/core/index.cjs"
+          }
+        },
+        "./server": {
+          "import": {
+            "types": "./dist/src/server/index.d.ts",
+            "default": "./dist/src/server/index.js"
+          },
+          "require": {
+            "types": "./dist/src/server/index.d.cts",
+            "default": "./dist/src/server/index.cjs"
+          }
+        },
+        "./package.json": "./package.json"
+      },
+      "publishConfig": {
+        "access": "public"
+      },
+      "scripts": {
+        "clean": "node -e \"require('node:fs').rmSync('dist',{recursive:true,force:true})\"",
+        "copy": "node -e \"const fs=require('node:fs'),p=require('node:path'),a=process.argv[1],b=process.argv[2];fs.mkdirSync(p.dirname(b),{recursive:true});fs.cpSync(a,b,{force:true});console.log('Copied: '+a+' to '+b)\"",
+        "scaffold": "node ./dist/bin/main.js",
+        "lint": "oxlint --config .oxlintrc.json --fix .",
+        "check": "tsc --noEmit --project tsconfig.json && npm run check:src",
+        "check:src": "npm run check:src:core && npm run check:src:server && npm run check:src:bin",
+        "check:src:core": "tsc --noEmit -p configs/src/tsconfig.core.json",
+        "check:src:server": "tsc --noEmit -p configs/src/tsconfig.server.json",
+        "check:src:bin": "tsc --noEmit -p configs/src/tsconfig.bin.json",
+        "format": "oxfmt --config .oxfmtrc.json --write .",
+        "format:check": "oxfmt --config .oxfmtrc.json --check .",
+        "lint:check": "oxlint --config .oxlintrc.json --deny-warnings .",
+        "test": "npm run test:src:core && npm run test:src:server && npm run test:src:bin && npm run test:policy && npm run test:config && npm run test:setup && npm run test:guides",
+        "test:src:core": "vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core",
+        "test:src:server": "vitest run --config vite.config.ts --no-cache --reporter=dot --project src:server",
+        "test:src:bin": "vitest run --config vite.config.ts --no-cache --reporter=dot --project src:bin",
+        "test:policy": "vitest run --config vite.config.ts --no-cache --reporter=dot --project policy",
+        "test:config": "vitest run --config vite.config.ts --no-cache --reporter=dot --project config",
+        "test:guides": "node --experimental-strip-types tests/guides.test.ts",
+        "test:distribution": "vitest run --config vite.config.ts --no-cache --reporter=dot --project distribution",
+        "test:probe": "vitest run --config vite.config.ts --no-cache --reporter=verbose --project probe",
+        "test:bench": "vitest bench --config vite.config.ts --no-cache --project probe",
+        "test:setup": "vitest run --config vite.config.ts --no-cache --reporter=dot --project setup",
+        "build": "npm run clean && npm run build:src && npm run build:host && npm run build:inventory",
+        "build:src": "npm run build:src:core && npm run build:src:server && npm run build:src:bin",
+        "build:src:core": "vite build --config configs/src/vite.core.config.ts && npm run copy dist/src/core/index.d.ts dist/src/core/index.d.cts",
+        "build:src:server": "vite build --config configs/src/vite.server.config.ts && npm run copy dist/src/server/index.d.ts dist/src/server/index.d.cts",
+        "build:src:bin": "vite build --config configs/src/vite.bin.config.ts",
+        "build:host": "node -e \"import('./dist/src/server/index.js').then((m)=>{const n=m.stageHost(process.cwd(),'dist/host',{report: (message) => console.error(message)}).length;console.log('build-host: staged '+n+' file(s) into dist/host')})\"",
+        "build:inventory": "node -e \"import('./dist/src/server/index.js').then((m)=>{const p=process.argv[1]??'host.json',n=m.stageInventory(process.cwd(),p).entries.length;console.log('build-inventory: staged '+n+' file(s) into '+p)})\"",
+        "prepack": "npm run build",
+        "prepublishOnly": "npm run format:check && npm run lint:check && npm run check && npm run build && npm test && npm run test:distribution -- --mode release"
+      },
+      "dependencies": {
+        "@orkestrel/console": "^0.0.14",
+        "@orkestrel/contract": "^0.0.17",
+        "@orkestrel/emitter": "^0.0.10",
+        "@orkestrel/markdown": "^0.0.15",
+        "@orkestrel/process": "^0.0.13",
+        "@orkestrel/template": "^0.0.8"
+      },
+      "devDependencies": {
+        "@microsoft/api-extractor": "^7.59.1",
+        "@orkestrel/guide": "^0.0.20",
+        "@orkestrel/html": "^0.0.10",
+        "@orkestrel/probe": "^0.0.16",
+        "@orkestrel/test": "^0.0.18",
+        "@types/node": "^26.5.1",
+        "@vitest/browser-playwright": "^4.1.11",
+        "oxfmt": "^0.68.0",
+        "oxlint": "^1.83.0",
+        "playwright": "^1.63.0",
+        "typescript": "^6.0.3",
+        "vite": "^8.3.0",
+        "vitest": "^4.1.11"
+      },
+      "engines": {
+        "node": ">=22.18.0"
+      }
+    },
+    "dependencies": [
+      {
+        "name": "@orkestrel/console",
+        "relationship": "dependencies",
+        "declared": "^0.0.14",
+        "resolved": "0.0.14",
+        "installed": "0.0.14"
+      },
+      {
+        "name": "@orkestrel/contract",
+        "relationship": "dependencies",
+        "declared": "^0.0.17",
+        "resolved": "0.0.17",
+        "installed": "0.0.17"
+      },
+      {
+        "name": "@orkestrel/emitter",
+        "relationship": "dependencies",
+        "declared": "^0.0.10",
+        "resolved": "0.0.10",
+        "installed": "0.0.10"
+      },
+      {
+        "name": "@orkestrel/markdown",
+        "relationship": "dependencies",
+        "declared": "^0.0.15",
+        "resolved": "0.0.15",
+        "installed": "0.0.15"
+      },
+      {
+        "name": "@orkestrel/process",
+        "relationship": "dependencies",
+        "declared": "^0.0.13",
+        "resolved": "0.0.13",
+        "installed": "0.0.13"
+      },
+      {
+        "name": "@orkestrel/template",
+        "relationship": "dependencies",
+        "declared": "^0.0.8",
+        "resolved": "0.0.8",
+        "installed": "0.0.8"
+      },
+      {
+        "name": "@microsoft/api-extractor",
+        "relationship": "devDependencies",
+        "declared": "^7.59.1",
+        "resolved": "7.59.1",
+        "installed": "7.59.1"
+      },
+      {
+        "name": "@orkestrel/guide",
+        "relationship": "devDependencies",
+        "declared": "^0.0.20",
+        "resolved": "0.0.20",
+        "installed": "0.0.20"
+      },
+      {
+        "name": "@orkestrel/html",
+        "relationship": "devDependencies",
+        "declared": "^0.0.10",
+        "resolved": "0.0.10",
+        "installed": "0.0.10"
+      },
+      {
+        "name": "@orkestrel/probe",
+        "relationship": "devDependencies",
+        "declared": "^0.0.16",
+        "resolved": "0.0.16",
+        "installed": "0.0.16"
+      },
+      {
+        "name": "@orkestrel/test",
+        "relationship": "devDependencies",
+        "declared": "^0.0.18",
+        "resolved": "0.0.18",
+        "installed": "0.0.18"
+      },
+      {
+        "name": "@types/node",
+        "relationship": "devDependencies",
+        "declared": "^26.5.1",
+        "resolved": "26.5.1",
+        "installed": "26.5.1"
+      },
+      {
+        "name": "@vitest/browser-playwright",
+        "relationship": "devDependencies",
+        "declared": "^4.1.11",
+        "resolved": "4.1.11",
+        "installed": "4.1.11"
+      },
+      {
+        "name": "oxfmt",
+        "relationship": "devDependencies",
+        "declared": "^0.68.0",
+        "resolved": "0.68.0",
+        "installed": "0.68.0"
+      },
+      {
+        "name": "oxlint",
+        "relationship": "devDependencies",
+        "declared": "^1.83.0",
+        "resolved": "1.83.0",
+        "installed": "1.83.0"
+      },
+      {
+        "name": "playwright",
+        "relationship": "devDependencies",
+        "declared": "^1.63.0",
+        "resolved": "1.63.0",
+        "installed": "1.63.0"
+      },
+      {
+        "name": "typescript",
+        "relationship": "devDependencies",
+        "declared": "^6.0.3",
+        "resolved": "6.0.3",
+        "installed": "6.0.3"
+      },
+      {
+        "name": "vite",
+        "relationship": "devDependencies",
+        "declared": "^8.3.0",
+        "resolved": "8.3.0",
+        "installed": "8.3.0"
+      },
+      {
+        "name": "vitest",
+        "relationship": "devDependencies",
+        "declared": "^4.1.11",
+        "resolved": "4.1.11",
+        "installed": "4.1.11"
+      }
+    ]
+  }
+]
