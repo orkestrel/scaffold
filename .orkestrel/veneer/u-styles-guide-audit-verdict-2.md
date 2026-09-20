@@ -35,3 +35,17 @@ tree is recorded there for that unit. Accept, and land by pathspec from
 `units/u-styles-guide-status-2.txt`.
 
 Verdict: accept.
+
+## The objective lane, on arrival
+
+The analyst on Astra (thread `01a0c0a3-e691-7711-9d3f-9bba7d244dbb`, exit 0;
+`units/u-styles-guide-audit-2-analyst-report.md`) confirmed claims 1, 3, 4, 7, and 8 and refuted
+prose: the proof-subject sentence must narrow to the cases that read the named file, because the
+token proof also reads a second built stylesheet (claim 2); "in each of its tables" overclaims,
+because the workspace-proof and script tables of `workspace.md` carry no styles row (claim 5);
+the claims file's parenthetical that report 2 lists every token was the Orchestrator's error,
+while the section satisfies the token rule under the stated exceptions (claim 6); and finding 9
+names `is not` and `cannot` where a guide takes the contraction, and two passive `is declared`
+sentences. Under the user's ruling, each is a bound: the next unit that edits `guides/veneer.md`
+§ Styles carries them as a line item (U7's guide item; the carry note is in the U7 implementation
+brief), and the acceptance stands.
