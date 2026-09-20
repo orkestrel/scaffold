@@ -1,0 +1,151 @@
+diff --git a/guides/README.md b/guides/README.md
+index f6fe025..b3e8e39 100644
+--- a/guides/README.md
++++ b/guides/README.md
+@@ -14,12 +14,14 @@ contract in [`AGENTS.md`](../AGENTS.md).
+ showcase application ([`app/browser`](../app/browser)) has a workspace barrel, documented in prose
+ and excluded from the published surface bijection.
+ 
+-That guide's § Tokens is the reference for the stylesheet face ([`src/styles`](../src/styles)):
+-every `--vn-*` token the cascade declares, its value and its source, and the `--bs-*` alias it
+-answers. That face publishes CSS rather than declarations, so it names no TypeScript surface of its
+-own and adds no row to the concept index, whose rows are the parity targets
+-[`tests/guides.test.ts`](../tests/guides.test.ts) drives. Its own proofs are the browser suites
+-under [`tests/src/styles`](../tests/src/styles).
++That guide's § Styles is the reference for the stylesheet face's build and loading
++([`src/styles`](../src/styles)): the published artifact, the specifier that loads it, the files and
++scripts the axis owns, and each departure from the workspace rows. Its § Tokens is the reference for
++what that face declares: every `--vn-*` token the cascade carries, its value and its source, and the
++`--bs-*` alias it answers. That face publishes CSS rather than declarations, so it names no
++TypeScript surface of its own and adds no row to the concept index, whose rows are the parity
++targets [`tests/guides.test.ts`](../tests/guides.test.ts) drives. Its own proofs are the browser
++suites under [`tests/src/styles`](../tests/src/styles).
+ 
+ ## By directory
+ 
+diff --git a/guides/veneer.md b/guides/veneer.md
+index dc69f19..ac1708e 100644
+--- a/guides/veneer.md
++++ b/guides/veneer.md
+@@ -70,6 +70,121 @@ isColorModeState('dark') // true
+ isColorModeState('auto') // false
+ ```
+ 
++## Styles
++
++Veneer publishes its cascade through a standalone stylesheet subpath, `./styles`. The
++`build:src:styles` script compiles the `src/styles/index.scss` barrel to the
++`dist/src/styles/index.css` stylesheet, and the manifest's `exports` map names that file under the
++subpath. The manifest lists the `**/*.css` pattern in its `sideEffects` field, so a bundler keeps
++an import of that subpath rather than dropping it as unused.
++
++Load the cascade from your entry module, ahead of the rules of your own that override it.
++
++```ts
++import '@orkestrel/veneer/styles'
++```
++
++The specifier resolves to standalone CSS rather than to a JavaScript module, so the import carries a
++stylesheet and declares no binding. A consumer with no bundler resolves the same subpath and serves
++the resolved file with a `<link>` element instead.
++
++### Files
++
++The following files carry the axis.
++
++| File                                | Role                                                                       |
++| ----------------------------------- | -------------------------------------------------------------------------- |
++| `src/styles/index.scss`             | The compilation barrel.                                                    |
++| `src/styles/index.ts`               | The side-effect entry, and the build's library entry.                      |
++| `configs/src/vite.styles.config.ts` | The build and test wrapper, composed from the root's `srcBrowser` factory. |
++| `configs/src/tsconfig.styles.json`  | The check-only TypeScript project.                                         |
++| `tests/setupStyles.ts`              | The shared setup module the styles proofs read.                            |
++| `tests/src/styles/`                 | The browser proofs of the shipped cascade.                                 |
++
++The barrel's `@use` rules name the `_tokens.scss` and `_theme.scss` partials and the element
++partials under the `elements/` directory; the `_mixins.scss` partial reaches the build through the
++token and theme partials rather than through the barrel. The entry imports the `./index.scss`
++barrel and nothing else, and the JavaScript wrapper the build emits from it stays unexported,
++because the `./styles` subpath names the stylesheet.
++
++The wrapper replaces the plugins, the output directory, the library entry, the build options
++(keeping the root's build-log handler and dropping the browser externals and output paths), and the
++test fields it inherits, and it declares the `src:styles` project. The check-only project extends
++the root `tsconfig.json` file, narrows the `lib` option to the `ESNext` value and the `types`
++option to the `vite/client` value over the `src/styles/**/*.ts` sources, and emits nothing.
++The setup module carries the direction scanners, the shadow readers, and the Bootstrap
++compatibility oracle's retained values, and it imports no stylesheet of its own: the styles project
++loads the built cascade through its `setupFiles` array instead. § Tests names each proof under the
++`tests/src/styles/` directory.
++
++### Scripts
++
++Each script names the styles target alone, and the `src` chain it belongs to runs it after the core
++and browser targets.
++
++| Script             | Contract                                                                                            | Chained from                                                                       |
++| ------------------ | --------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
++| `build:src:styles` | Builds the `dist/src/styles` directory from the `configs/src/vite.styles.config.ts` wrapper.        | The `build:src` chain, after the `build:src:core` and `build:src:browser` scripts. |
++| `check:src:styles` | Typechecks the `src/styles/**/*.ts` sources against the `configs/src/tsconfig.styles.json` project. | The `check:src` chain, after the `check:src:core` and `check:src:browser` scripts. |
++| `test:src:styles`  | Builds the cascade, then runs the `src:styles` project.                                             | The `test:src` chain, after the root's `src:core` and `src:browser` projects.      |
++
++The `test:src:styles` script builds first because the proof's subject is the compiled cascade: the
++project loads the `dist/src/styles/index.css` file through its `setupFiles` array, and the cases
++that read the shipped cascade read the rules the browser resolved from that file rather than the
++declarations the SCSS sources carry. The mixin proofs compile their own fixture partial,
++`tests/src/styles/fixtures/mixins.scss`, and the token proofs also drive declarations the case
++writes.
++
++### Departures from the workspace rows
++
++The `.claude/rules/workspace.md` rule file carries a row for the styles axis in each of its tables:
++a `src/styles/` row in the environment table, a `@src/styles` row in the alias table, and the
++matching rows of its build-output, test-project, and scoped-check tables. Veneer's pilot departs
++from those rows as follows, and each departure names its cause.
++
++- **No `@src/styles` alias.** The root `tsconfig.json` file is the package's own content, so the
++  alias could sit there; the lint allowlist is what forecloses it. The
++  `import/no-unassigned-import` rule permits an unassigned import only for a stylesheet suffix, and
++  an alias carries none. The showcase shell imports the barrel through its
++  `../../src/styles/index.scss` relative path instead, and a generator that emits the alias widens
++  that allowlist in the same release.
++- **The wrapper composes the root's browser factory.** The root `vite.config.ts` file declares no
++  styles factory to compose, so the `configs/src/vite.styles.config.ts` wrapper spreads the
++  `srcBrowser` factory and replaces the differing fields by assignment. The root's `mergeOverride`
++  helper is not that mechanism: it keeps a base plugin no override names, so the
++  `environmentBoundary('src/browser')` plugin would stay on a styles build, and it concatenates
++  every other array, so the include list and the setup files would double.
++- **No environment boundary and no lint fence owns the `src/styles` directory.** The root's
++  `srcBrowser` and `appBrowser` factories plant the `environmentBoundary` plugin on the
++  `src/browser` and `app/browser` environments, and the `configs/src/vite.core.config.ts` wrapper
++  plants it on the `src/core` environment. The `.oxlintrc.json` file fences each of those
++  environments with its own `no-restricted-imports` patterns. Neither the boundary nor the fence
++  names the `src/styles` directory, so the generic `src/**` rules govern the styles entry alone.
++- **The `src:styles` project is declared in its own wrapper.** The root `vite.config.ts` file
++  registers the `src:core`, `src:browser`, and `app:browser` projects and the cross-cutting ones;
++  the styles project is declared in the `configs/src/vite.styles.config.ts` wrapper. So the
++  `--project src:styles` selection at the root matches no project and Vitest refuses the run, and
++  the `probe` workbench, which runs from the root configuration, cannot name the project either.
++  The `test:src:styles` script reaches it with the `--config` flag.
++- **The vendored `tests/config.test.ts` proof asserts nothing about the axis.** That proof iterates
++  the environments scaffold generates, so its alias, project, and plugin cases pass over the
++  `src/styles` directory and the `src:styles` project. The proofs under the `tests/src/styles/`
++  directory prove the cascade, the tokens, the theme, the mixins, and the elements, and no proof
++  asserts the alias, the project registration, or the configuration plugins for the axis; that gap
++  is a departure recorded here, not covered.
++- **The `tests/setup.css` file arrives with the Tailwind unit.** The workspace rows describe that
++  file as the declaration of cascade-layer order ahead of the `@import 'tailwindcss'` rule and its
++  `@source` rule. Veneer declares no Tailwind dependency and carries no such file, so it lands with
++  the unit that adds one.
++
++Scaffold's `SRC_MATRIX` constant is closed on the `core`, `browser`, and `server` environments, so
++this axis is hand-authored and its configuration files, `configs/src/vite.styles.config.ts` and
++`configs/src/tsconfig.styles.json`, are the package's own. Emitting the axis from the generator
++means the `@src/styles` alias in the root `tsconfig.json` file, the matching lint allowlist entry
++and fence, a `src/styles` owner in the environment boundary, a `srcStyles` factory and its project
++registration in the root `vite.config.ts` file, and the environment lists in the
++`tests/config.test.ts` proof.
++
+ ## Tokens
+ 
+ Veneer publishes the token registry through the `@orkestrel/veneer` specifier and the cascade that
