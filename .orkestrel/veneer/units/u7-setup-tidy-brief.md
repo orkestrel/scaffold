@@ -66,8 +66,12 @@ runtime probes under `tmp/probe/`.
 **Measurements.** Take before editing: `npm run test:src:styles`, `npm run test:setup:browser`,
 `npm run test:setup`, `npm run test:conformance` (all expected green at launch; record counts).
 
-**Control identifiers.** `PLANT-POOL`: set `pool: 'threads'` on the `setup` project; the
-working-directory case must red with the `process.chdir` refusal the comment names; restore.
+**Control identifiers.** `PLANT-POOL`: set `pool: 'threads'` on the `setup` project and run the
+`setup` project; record which failure fires — a `process.chdir` refusal (the installed
+`@types/node/process.d.ts` states `chdir` is unavailable in a worker thread) or a sibling file
+reading the scratch directory as its root (the mechanism the tree's comment at
+`tests/setupConformance.test.ts:642-644` names today); the case must red either way; restore.
+The comment you write names the failure you measured, not the one either text predicted.
 `PLANT-REACH`: add a fallback binding for a component and category no ledger row carries; the
 reach case must red naming it; restore. Name every test for what it proves, never for a control.
 
@@ -92,7 +96,7 @@ registry (not yours). A whole-suite timing failure under your own exec is an obs
 pins, the cascade constant, the `:683` doc sentence), `tests/setupStyles.test.ts`,
 `tests/setupConformance.ts` (the pins, `readCompatibility`'s label, the binding table's refusal
 and reach), `tests/setupConformance.test.ts`, `tests/src/styles/**` (the wrapper call sites
-only), `vite.config.ts` (the `setup` project's `pool` key only), `u7-setup-tidy-report.md`.
+only), `vite.config.ts` (the `setup` project's `pool` key only), `tmp/units/u7-setup-tidy-report.md`.
 
 **Shared (report-only).** None; no other unit is live in this checkout.
 
@@ -134,7 +138,12 @@ Red first where a case pins the change; record each pair with its command and co
    otherwise name the consumer in its doc block and keep it.
 4. **The row label.** `readCompatibility` labels an incomplete row by its one-based position and
    its first non-empty cell with the column named (`Compatibility row 3 (Component: btn): missing
-   required cell`); `readDeferrals` takes the same column-named form. Cases for both.
+   required cell`); `readDeferrals` takes the same column-named form. Cases for both. The reader
+   builds one `label` today (`tests/setupConformance.ts:450`) and reuses it for the invalid-status
+   message, whose wording `tests/setupConformance.test.ts:401` pins
+   (`Compatibility row btn: Toggle active: invalid status pending`); split the two paths so the
+   invalid-status message keeps its component-and-obligation label (both cells are present on
+   that path) and the pinned case stays green unchanged.
 5. **The fallback reach.** The reach assertion requires every binding, named or fallback, to
    answer at least one ledger row of its component and category; the refusal a binding with an
    empty `events` requirement produces names the binding (`binding btn | event names no events`)
@@ -150,7 +159,7 @@ Red first where a case pins the change; record each pair with its command and co
 
 ## Output
 
-Write `u7-setup-tidy-report.md` in the Veneer checkout and return its content as your
+Write `tmp/units/u7-setup-tidy-report.md` in the Veneer checkout and return its content as your
 final message: the diff per owned file; every styles case the swap reddened and how it was
 widened; the pin module decision; the item 5 decision; each control's red reading and restore
 proof; each gate's final lines; deviations in the shape § Deviation contract names.
