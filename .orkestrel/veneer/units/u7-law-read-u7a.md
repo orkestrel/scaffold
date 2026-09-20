@@ -2,7 +2,7 @@
 
 ## Checklist verdict
 
-**Verdict:** PASS — `tmp/units/u7a-brief.md` contains no rule-forbidden instruction, no surface addition beyond core/browser/server/styles, no new package, no scaffold-rule amendment, no vendored/content-owned file touch, no inadmissible fixed name, and no contradiction of a standing ruling.
+**Verdict:** PASS — `u7a-brief.md` contains no rule-forbidden instruction, no surface addition beyond core/browser/server/styles, no new package, no scaffold-rule amendment, no vendored/content-owned file touch, no inadmissible fixed name, and no contradiction of a standing ruling.
 
 ### Table 1 — Lines forbidding/violating content
 
@@ -27,6 +27,6 @@
 | `tests/src/styles/mixins.test.ts` | `.claude/rules/tests.md:13-14` |
 | `tests/src/core/index.test.ts` | `.claude/rules/tests.md:13-14` |
 | `guides/veneer.md` | `.claude/rules/documentation.md` § Authority and workflow, "maintain … the concept index" / user standing ruling "one guide per package" |
-| Report (`tmp/units/u7a-report.md`) | `.agents/orchestration.md` § Dispatch anatomy, "a native unit's pair is `tmp/units/<unit>-brief.md` and `tmp/units/<unit>-report.md`" |
+| Report (`u7a-report.md`) | `.agents/orchestration.md` § Dispatch anatomy, "a native unit's pair is `<unit>-brief.md` and `<unit>-report.md`" |
 
 **Surface line:** The document adds no surface. Every owned path sits inside the existing `core` and `styles` surfaces (`.claude/rules/workspace.md:19-25`); no `browser`, `server`, `bin`, or Vue/app path is created or edited, and `guides/scaffold.md:924-927` confirms Vue is a pipeline the `app/browser` axis applies, not an independent environment.

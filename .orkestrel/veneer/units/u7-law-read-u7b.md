@@ -26,6 +26,6 @@ Two items reviewed and found within rule bounds, not raised as departures becaus
 | `tests/src/browser/helpers.test.ts` (new) | `.claude/rules/names.md:215` |
 | `tests/src/browser/validators.test.ts` | `.claude/rules/names.md:215` |
 | `tests/src/browser/index.test.ts` | `.claude/rules/names.md:215`; barrel export-set/no-listener assertion basis in `.claude/rules/architecture.md:149-152` |
-| `tmp/units/u7b-report.md` (Output section) | no row — process/orchestration artifact, not a source or test file the centralized-file or naming tables govern |
+| `u7b-report.md` (Output section) | no row — process/orchestration artifact, not a source or test file the centralized-file or naming tables govern |
 
 The document adds no surface beyond `browser` (the package's existing core/browser/server/styles set): it scopes every write to `src/browser/**` and `tests/src/browser/**`, explicitly forbids a subpath export, side-effect entry, build wrapper, or manifest row, and touches no `app/**`, `src/core/**`, `src/styles/**`, `guides/**`, `package.json`, or `configs/**` path.

@@ -1,0 +1,50 @@
+Read the modern colour spaces and refuse an unreadable painted layer
+
+`parseColor` reads computed `oklch()`, `oklab()`, `lab()`, `lch()`, and
+`color()` values in the `srgb`, `srgb-linear`, `display-p3`, `a98-rgb`,
+`prophoto-rgb`, `rec2020`, `xyz`, `xyz-d50`, and `xyz-d65` spaces, with
+signed channels, percentage lightness, degree hues, scientific notation,
+and `none` components, beside the `rgb()` and `rgba()` forms it read
+before. Each space converts to straight sRGB through the CSS Color 4
+matrices and the sRGB transfer, then clips each channel to the 0 to 255
+scale and alpha to 0 to 1; no perceptual gamut mapping is performed. The
+conversions ship as `convertSRGB`, `convertLinearSRGB`, `convertXYZD65`,
+`convertXYZD50`, `convertOKLab`, `convertLab`, `convertDisplayP3`,
+`convertA98RGB`, `convertProPhotoRGB`, and `convertRec2020`, each cased
+against the browser's own sRGB reading of the same colour. The Rec. 2020
+decoder follows Chromium's measured piecewise transfer curve rather than
+the specification's sample decoder, because the browser control decides.
+
+`readLayers` throws an `Error` naming the element and its computed value
+when a painted background layer resolves to no readable colour, instead
+of skipping it, so `readBackdrop`, `readContrast`, and `readRing` refuse
+the same layer; a layer with an explicit zero alpha still paints nothing
+and is skipped, and an opaque layer ends the walk before a deeper
+unreadable ancestor. A non-finite component such as
+`color(srgb calc(infinity) 0 0)` stays deliberately unreadable.
+`readRing` recognises a modern-colour `box-shadow` and returns the ring's
+contrast ratio against its backdrop.
+
+The gap was found by the Veneer U7 design round: the calibrated
+`oklch()` foregrounds Veneer paints were unreadable, so no journey could
+close its paint obligation. The proof ran red first:
+`npm.cmd run test:src:browser -- tests/src/browser/helpers.test.ts -t "modern paint readings"`
+reported `17 failed | 1 passed` before the change and `18 passed` after.
+
+Test 0.0.18 stays the manifest version; the release that carries this
+change with the journey verbs is a separate, user-directed publish.
+
+Audited on four lanes (objective reviewer on Opus, subjective analyst on
+Astra, checker, verifier: every gate exit 0 on managed Chromium and Edge),
+all accepting. Bounds carried to the next change of `helpers.ts` and
+`guides/test.md`: `readRing` still returns `undefined` for an unreadable
+outline or box-shadow colour instead of refusing, and its box-shadow
+colour match cannot span nested parentheses; `convertSRGB` propagates a
+`NaN` argument through the direct exports; the `/ none` zero-alpha
+spelling and a second unclipped ProPhoto input want cases; the guide's
+Voices inventory omits the new refusal message, attributes the Rec. 2020
+decoder to Chromium where the coefficients are CSS Color 4's, and carries
+one typographic apostrophe; the `convert*` imports in the proof are
+unsorted.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>

@@ -29,7 +29,7 @@ last claim, each with a site and a one-line failure scenario.
 ## Context
 
 The retained records sit under `C:/Users/mikes/WebstormProjects/scaffold/.orkestrel/veneer/`:
-`units/test-paint-brief.md`, `units/test-paint-report.md`, and the U7 design lanes that named
+`units/test-paint-brief-2.md` (the effective brief; it carries `units/test-paint-brief.md` except item 3), `units/test-paint-report-2.md` (the report; `units/test-paint-report.md` is the superseded stop), and the U7 design lanes that named
 the gap (`units/u7-design-analyst-report.md`). Law: scaffold's `AGENTS.md`,
 `.claude/rules/tests.md`, `architecture.md`, `names.md`, `typescript.md`, `documentation.md`.
 Do not read the Test `tmp/` directory beyond the report.

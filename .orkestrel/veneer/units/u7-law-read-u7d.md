@@ -28,6 +28,6 @@ Verification notes behind the "none found" reading:
 | `tests/conformance.test.ts` | edit | `.claude/rules/tests.md:56` (Cross-cutting proofs table: `tests/conformance.test.ts` proves "where this package drifts from the official tooling it tracks") |
 | `tests/setupStyles.ts` | edit (item 7, `BOOTSTRAP_CASCADE_PATH` read only) | `.claude/rules/tests.md:198` (Place helpers by environment: `tests/setupStyles.ts` is CSS/style helpers and compiled cascade) |
 | `guides/veneer.md` | edit (§ Compatibility rows, new `### Deferred selectors` subsection under `## Styles`) | `.claude/rules/names.md:216` (Files and folders: Guide → lowercase domain, e.g. `agents.md`) and `AGENTS.md` § Documentation contract (one guide per package, user standing ruling) |
-| `tmp/units/u7d-report.md` | create | no rule row in the coding rule set; placed by `.agents/orchestration.md` § Dispatch anatomy ("Write the unit's returned report in the SAME action that commits its code... under `tmp/units/<unit>-report.md`") |
+| `u7d-report.md` | create | no rule row in the coding rule set; placed by `.agents/orchestration.md` § Dispatch anatomy ("Write the unit's returned report in the SAME action that commits its code... under `<unit>-report.md`") |
 
 The document adds no surface: every owned or off-limits path stays inside `tests/` and `guides/veneer.md` for the existing Veneer package, touches no `src/**`, `app/**`, or `package.json`, and names no Vue, RTL, or fifth-surface work.

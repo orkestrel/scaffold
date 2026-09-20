@@ -962,3 +962,15 @@ Move each unit's contract into `guides/veneer.md` as the unit begins. Keep `ROAD
 sequenced plan of record belongs in the package. Use Roughnotes as a migration example without
 changing it. Retain this plan and the research pointers; retire streams, drafts, and audit scratch
 after acceptance per the debrief skill's retention reference.
+- 2026-09-20, Test-paint accepted and landed in Test as `00e2b87` (brief 2 on Astra, thread
+  `01a0c0e0-703a-7813-af36-724868193281`; verdict `test-paint-audit-verdict.md`, four lanes
+  accepting, the verifier's whole chain exit 0 on Chromium and Edge). `parseColor` reads the
+  modern spaces through ten exported `convert*` helpers, `readLayers` refuses an unreadable
+  painted layer, and `readRing` reads a modern-colour ring; the prerequisite the U7 design
+  round's objective lane named is closed. The packed tarball (`orkestrel-test-0.0.18.tgz`, digest
+  `9a764548…`) vendors into Veneer through `units/test-paint-vendor.sh` between U7d's exit and
+  U7a's launch, so no install runs beside a live writer. Bounds carried to the next Test change
+  are listed in the verdict; none reopens this unit. Test 0.0.18 stays the manifest version.
+  Ruled: `convert*` is an admissible helper prefix with one meaning, without a rule edit. U7d
+  launched the same hour (thread `01a0c0f6-9147-7e72-96de-23d64790e7ca`, HEAD `1b80ccb`);
+  U7c's brief is drafted at `units/u7c-brief.md` for launch after U7b lands.
