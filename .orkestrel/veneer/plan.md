@@ -16,8 +16,8 @@ state is one boolean, and a table over it would need the two-literal union `AGEN
 Run the units in this order. U1 is five dispatches in one checkout, one writer at a time. U2 runs
 beside U1 in the Elements checkout. U4a and U5 run after U1-gate and write nothing in Veneer that
 survives. U3 starts after U2 and U4a close. U6 runs in the Test checkout beside U3. U4b runs in
-Veneer after U1-conform, which follows U3; S1 runs in scaffold beside U1-conform. U7 starts after
-U4b and U6 close, and finishes completely before any other component opens. The Vue environment is deferred; § Deferred: Vue environment fixes its shape.
+Veneer after U1-conform, which follows U3. U7 starts after U4b and U6 close, and finishes
+completely before any other component opens. The Vue environment is deferred; § Deferred: Vue environment fixes its shape.
 
 ## Authority and routing
 
@@ -67,7 +67,6 @@ U4b and U6 close, and finishes completely before any other component opens. The 
 | policy-styles-entry | scaffold `tests/setupPolicy.ts`, `tests/setupPolicy.test.ts`, `host.json` (commit `e8a34296`) | `builder` on Sonnet; objective review `reviewer` on Opus; vendored into Veneer by `repair --offline` |
 | U3-policy | WITHDRAWN 2026-09-20 (`units/u3-policy-withdrawal.md`): scaffold `tests/setupPolicy.ts`, `tests/policy.test.ts`, `guides/scaffold.md` restored to HEAD, the diff retained | `builder` on Sonnet, ten briefs; reviews 1 to 5 `reviewer` on Opus alone (recorded deviation); rounds 6 to 9 both lanes; `verifier` each round. The unit widened a gate to admit a file the user ruled is drift |
 | U1-conform | Veneer `src/browser`, `app`, their tests, `tests/setupConformance*.ts`, `tests/conformance.test.ts`, `tests/distribution.test.ts`, the guide's shell section, a manifest patch | `opus` on Opus 5; audit `analyst` objective, `reviewer` subjective, `checker`; `verifier` |
-| S1      | scaffold `src/core` compilers and constants, generated configs, `tests/config.test.ts`, `guides/scaffold.md` | design `planner` and `analyst`; `sol` on Astra; audit `reviewer` objective, `analyst` subjective, `checker`; `verifier` |
 | U4b     | Veneer conformance, oracle recorder, oracle fixtures      | `sol` on Astra; audit swapped as U6                                                                                     |
 | U7      | Veneer Button and its consumers                           | design `planner` and `analyst`; `sol` on Astra; audit `reviewer` objective, `analyst` subjective, `checker`; `verifier` |
 
@@ -403,30 +402,16 @@ placement claims of U3's audit round (the other half). Items, each with its rule
 - Return, report-only, the `package.json` patch removing `@tailwindcss/vite` and `tailwindcss`
   until the Tailwind unit declares them with their first consumer; `postcss` stays (U3 consumes
   it). The Orchestrator applies the patch and runs `npm install`.
-- Named bounds that wait on S1 and a repair: `main.ts` importing `@src/styles`, and the styles
-  wrapper thinning onto the root's `srcStyles` factory.
+- Two findings stay as recorded bounds, not fixes: the shell's deep relative import of
+  `src/styles/index.scss` and the whole-configuration styles wrapper. `guides/scaffold.md`
+  ("Scaffold emits no styles axis") documents that a workspace adds `src/styles/`, its
+  configuration, and its Vitest project by hand, and the root `tsconfig.json` and `vite.config.ts`
+  are content-owned, so no alias and no root factory can be added inside Veneer. They close only
+  if the user adopts the proposal in § User decisions pending.
 
 Close on: every test project green on managed Chromium and Edge; `scaffold audit` reporting no
 drift; the guide parity green; no `fixtures/` folder holding TypeScript; the audit round's
 placement claims confirmed.
-
-### S1 Scaffold styles environment
-
-In scaffold, after the vendored-only release publishes and the tree is clean. Design round first
-(`planner` and `analyst` on one brief), then `sol` on Astra; audit `reviewer` objective, `analyst`
-subjective, `checker`; then `verifier`. `.claude/rules/workspace.md` documents `src/styles/`
-(§ Environments), the `@src/styles` alias, `dist/src/styles`, the `src:styles` project with
-`setupStyles.ts`, and `configs/src/tsconfig.styles.json`, and `src/core` and `src/server` carry
-none of it: `--src` admits `core`, `browser`, and `server`, and the generated root `vite.config.ts`
-and `tsconfig.json` (content-owned, restored by `repair`) register no styles project and no alias.
-Veneer's whole-configuration `configs/src/vite.styles.config.ts` is the workaround. Add the
-environment the rule promises: `--src styles`; the generated `@src/styles` path; a `srcStyles`
-factory and its project in the generated root; thin `configs/src/vite.styles.config.ts` and
-`configs/src/tsconfig.styles.json`; `build:src:styles`, `check:src:styles`, `test:src:styles` in
-their chains; the `./styles` export to `dist/src/styles`; `tests/setupStyles.ts` in the project's
-setup list; the config proof rows; `guides/scaffold.md` § Reading a target. Then Veneer re-pins,
-repairs, and its wrapper thins (U1-conform's named bounds). S1 moves `dist/src`, so it rides a
-regular scaffold release, not the vendored-only one.
 
 ### U4b Conformance and oracle
 
@@ -770,11 +755,14 @@ Each entry names what changed in the plan and why, on the date it changed.
   `checker` on Sonnet and `reviewer` on Opus through workflow `wf_41491b15-74c`; verdict
   `veneer-conformance-verdict.md`), opened by the user's question why `ColorMode` sits in a nested
   `color-mode` folder. **Added** U1-conform (Veneer, `opus`, after U3 lands) carrying every
-  accepted finding, and S1 (scaffold, `sol`, after the vendored-only release) because two findings
-  trace to a scaffold gap: `workspace.md` documents a styles environment the compilers never
-  generate, and Veneer's whole-configuration styles wrapper is the workaround. U4b now follows
-  U1-conform. Process rule: a `fixtures/` folder under a test directory holds only data files a
-  proof loads, never a TypeScript declaration.
+  accepted finding. Two findings (the shell's deep styles import, the whole-configuration styles
+  wrapper) were first carried as a scaffold unit S1 and then withdrawn the same day: the Grok
+  scout (`units/s1-scout-report.md`, session `08309c0b`) read `guides/scaffold.md` stating that
+  scaffold emits no styles axis and a workspace adds the axis by hand, so the wrapper is the
+  documented practice and both findings are bounds. Generating the axis is a scaffold feature
+  proposal under § User decisions pending, not a conformance fix. U4b now follows U1-conform.
+  Process rule: a `fixtures/` folder under a test directory holds only data files a proof loads,
+  never a TypeScript declaration.
 
 ## User decisions pending
 
@@ -784,6 +772,14 @@ Each entry names what changed in the plan and why, on the date it changed.
   tree must stay in the working tree instead.
 - Every ledger exclusion is reported at the owning unit's acceptance; an exclusion the user rejects
   reopens as a row.
+- Proposal, not a unit: scaffold could generate the styles axis (`--src styles`; the `@src/styles`
+  path; a `srcStyles` root factory and project; thin `configs/src/vite.styles.config.ts` and
+  `configs/src/tsconfig.styles.json`; the `build:src:styles`, `check:src:styles`, and
+  `test:src:styles` scripts; the `./styles` export; `tests/setupStyles.ts` selection; the config
+  proof rows; `guides/scaffold.md`). The guide documents hand-authoring today, and the Grok map of
+  the compilers is retained (`units/s1-scout-report.md`). Adopting it is a scaffold feature that
+  rides a regular release and then thins Veneer's wrapper; declining it leaves U1-conform's two
+  bounds as the documented practice.
 
 ## Finish the package
 

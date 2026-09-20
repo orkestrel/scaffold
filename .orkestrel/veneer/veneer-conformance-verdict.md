@@ -18,8 +18,8 @@ stand. The second half (U3's files) is audited in U3's own round with placement 
 | `ColorMode` and `Showcase` each nest alone in a folder (`color-mode/`, `showcases/`), tests mirroring | both | accepted: flat at the environment root, tests mirrored, barrels and imports updated, folders deleted | U1-conform |
 | `ColorScheme` names the CSS property while its values are Bootstrap's mode; three words for one axis | reviewer | accepted: `ColorModeState`, `isColorModeState` | U1-conform |
 | `createColorMode`, `createShowcase` are pass-through factories | reviewer | accepted: deleted with their test file, cases folded into the class tests, callers construct directly | U1-conform |
-| `tsconfig.json` lacks `@src/styles`; `app/browser/main.ts` imports `../../src/styles/index.scss` | reviewer | accepted in substance; the root `tsconfig.json` and `vite.config.ts` are scaffold content-owned and `repair` restores them, and scaffold's compilers generate no styles environment although `workspace.md` documents one — the cause is a scaffold gap | S1, then U1-conform's `main.ts` import |
-| `configs/src/vite.styles.config.ts` is a whole configuration; the root registers no `src:styles` project | reviewer | accepted in substance for the same reason: the generated root must carry the `srcStyles` factory and the project, and the wrapper then thins | S1 |
+| `tsconfig.json` lacks `@src/styles`; `app/browser/main.ts` imports `../../src/styles/index.scss` | reviewer | bound, not a fix: the root `tsconfig.json` and `vite.config.ts` are scaffold content-owned, and `guides/scaffold.md` ("Scaffold emits no styles axis") documents that a workspace adds the styles axis by hand, `workspace.md` describing it as an environment because the fleet has one (the Grok map, `units/s1-scout-report.md`, confirms `SRC_MATRIX` is closed and `'styles'` is refused). Closes only if the user adopts the styles-axis proposal | § User decisions pending |
+| `configs/src/vite.styles.config.ts` is a whole configuration; the root registers no `src:styles` project | reviewer | bound for the same reason: the whole-configuration wrapper is the documented practice until scaffold generates the axis | § User decisions pending |
 | `main.ts` imports its own barrel | reviewer | accepted: import the concrete module | U1-conform |
 | `index.html` title is the birth placeholder | reviewer | accepted: `Veneer` | U1-conform |
 | `@tailwindcss/vite`, `postcss`, `tailwindcss` declared with no consumer in this half | reviewer | `postcss` keeps its consumer in U3 (`tests/setupStyles.ts` parses the Bootstrap oracle); the Tailwind pair is removed until the Tailwind unit, which declares them with their first consumer | U1-conform (manifest patch, report-only; the Orchestrator installs) |
@@ -35,6 +35,5 @@ stand. The second half (U3's files) is audited in U3's own round with placement 
 ## Order
 
 U3's writer exits → U3's audit round (read-only) → U3 lands → U1-conform writes Veneer, with the
-two S1-dependent items (the `@src/styles` import and the wrapper) left as named bounds → S1 in
-scaffold after the vendored-only release publishes → Veneer re-pins and repairs → the two bounds
-close in a U1-conform successor. U4b follows.
+two styles-axis items left as recorded bounds → U4b. The bounds close only if the user adopts the
+styles-axis proposal, which is a scaffold feature on a regular release, not a conformance fix.
