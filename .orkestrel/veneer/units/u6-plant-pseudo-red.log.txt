@@ -1,0 +1,39 @@
+﻿npm.cmd : npm notice run @orkestrel/test@0.0.18 test:src:browser
+At line:2 char:1
++ npm.cmd run test:src:browser -- tests/src/browser/helpers.test.ts -t  ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (npm notice run ...est:src:browser:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project src:browser 
+tests/src/browser/helpers.test.ts -t PLANT-PSEUDO
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/test
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------x-----------------------------------------------------
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/helpers.test.ts:3117:2 > readStyle > distinguishes pseudo-element 
+paint from its originating element (PLANT-PSEUDO)
+AssertionError: expected '0px' to be '7px' // Object.is equality
+
+Expected: [32m"[7m7[27mpx"[39m
+Received: [31m"[7m0[27mpx"[39m
+
+ ❯ tests/src/browser/helpers.test.ts:3121:54
+    3119|   buildFixture('<button class="journey-marked">Marked</button>')
+    3120|   const button = resolveAccessible('Marked')
+    3121|   expect(readStyle(button, 'padding-top', '::after')).toBe('7px')
+       |                                                      ^
+    3122|   expect(readPixels(button, 'padding-top', '::after')).toBe(7)
+    3123|   expect(readStyle(button, 'padding-top')).toBe('0px')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 287 skipped (288)
+   Start at  05:49:10
+   Duration  1.32s (transform 0ms, setup 125ms, import 105ms, tests 91ms, environment 0ms)
+

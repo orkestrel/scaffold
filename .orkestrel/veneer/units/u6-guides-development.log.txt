@@ -1,0 +1,44 @@
+﻿npm.cmd : npm notice run @orkestrel/test@0.0.18 test:guides
+At line:2 char:1
++ npm.cmd run test:guides *> tmp/codex/u6-guides-development.log; $resu ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (npm notice run ....18 test:guides:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+npm notice run node --experimental-strip-types tests/guides.test.ts
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/test
+
+····················x··························-···
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |guides| tests/guides.test.ts > guide fences > carries every fence-bearing guide heading in exactly one place
+AssertionError: expected [ …(3) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "Hold a control and read the pressed paint",
++   "Read a pseudo-element's paint",
++   "Emulate reduced motion and print",
++ ]
+
+ ❯ tests/guides.test.ts:372:65
+    370|    expect(findMissing(routed, discovered)).toEqual([])
+    371|    expect(transcribed.filter((name) => routed.includes(name))).toEqual…
+    372|    expect(findMissing(discovered, [...transcribed, ...routed])).toEqua…
+       |                                                                 ^
+    373|    expect(findMissing([...transcribed, ...routed], discovered)).toEqua…
+    374|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 49 passed | 1 skipped (51)
+   Start at  05:51:58
+   Duration  1.25s (transform 110ms, setup 42ms, import 654ms, tests 394ms, environment 0ms)
+
