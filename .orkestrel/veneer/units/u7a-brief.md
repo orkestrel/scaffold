@@ -31,7 +31,7 @@ implementation.
 
 ## Context
 
-**The tree.** `HEAD` is the U7d landing commit (named in the dispatch message); the working tree
+**The tree.** `HEAD` is the u7d-bounds landing commit, named in the dispatch message (it follows the U7d landing `7da6bb1`); the working tree
 is clean except `tmp/`. `dist/` may be absent at start (`npm.cmd run build:src:styles` builds the
 cascade the presence check reads).
 
@@ -142,7 +142,10 @@ closure), then the mixin, then the partials, then the proofs, then the guide; ru
    official `btn` selector and property not shipped, its owner, and the reason, so the deferral
    set plus the shipped set equals the official set; flip the `selector` and `variable` rows to
    `shipped`; `npm.cmd run build:src:styles` then `npm.cmd run test:conformance` green.
-6. **The proofs.** `tests/src/styles/elements/button.test.ts`: the bare button's resolved
+6. **The proofs.** (Compare a painted colour through the installed `matchesColor` over
+   `readStyle` strings; the `matchesPaintedColor` wrapper in `tests/setupBrowser.ts` measured
+   equal to the installed reader on 2026-09-20 and a later unit removes it, so a new proof takes
+   no dependency on it.) `tests/src/styles/elements/button.test.ts`: the bare button's resolved
    padding, border, radius, colour, and hover, active, and focus-visible readings against the
    calibration on the mounted specimen; `tests/src/styles/components/button.test.ts`: per role
    and theme the rest, hover, active, focus-visible, and disabled readings against the run-6

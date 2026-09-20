@@ -1,0 +1,11 @@
+== 2026-09-20T23:33:00Z land start
+7da6bb1 Key the presence check to the compatibility rows and read the deferrals (U7d)
+ M tests/setupBrowser.test.ts
+ M tests/setupBrowser.ts
+ M tests/setupConformance.test.ts
+ M tests/setupConformance.ts
+ M tests/setupStyles.test.ts
+changed: tests/setupBrowser.test.ts tests/setupBrowser.ts tests/setupConformance.test.ts tests/setupConformance.ts tests/setupStyles.test.ts 
+2bc922d Restate the paint wrappers after Test-paint and close the U7d bounds
+## main...origin/main
+== 2026-09-20T23:33:03Z land end

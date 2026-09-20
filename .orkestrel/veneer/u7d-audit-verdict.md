@@ -33,7 +33,7 @@ launched, so the verifier read the tree the next unit inherits.
 | 7 explicit `events` | CONFIRMED | CONFIRMED | — | CONFIRMED |
 | 8 non-serializable fixture | CONFIRMED | CONFIRMED | — | CONFIRMED |
 | 9 manifest-rooted read | CONFIRMED (findings 16, 17) | CONFIRMED | — | CONFIRMED; 16 and 17 carried |
-| 10 controls | UNDECIDABLE (writer's report only) | CONFIRMED from the journal's exit codes and byte comparisons | UNDECIDABLE | CONFIRMED from the bench journal (`units/u7d.jsonl`, each control exit 1 with its message, restore byte-equal), which the analyst read and the native lanes could not |
+| 10 controls | UNDECIDABLE (writer's report only) | CONFIRMED from the journal's exit codes and byte comparisons | UNDECIDABLE | CONFIRMED from the bench journal of thread `01a0c0f6-9147-7e72-96de-23d64790e7ca` (ephemeral, swept at acceptance; each control exit 1 with its message, restore byte-equal), which the analyst read and the native lanes could not |
 | 11 letter of the law | CONFIRMED | CONFIRMED | CONFIRMED | CONFIRMED |
 | 12 cases kept | CONFIRMED | CONFIRMED | CONFIRMED | CONFIRMED |
 | 13 gates | UNDECIDABLE | UNDECIDABLE | — | CONFIRMED for every gate the brief's item 8 names (verifier steps 2 to 8 and 10, exit 0 on Chromium and Edge). The whole chain's step 9 red is outside the unit: see § The whole-chain red |

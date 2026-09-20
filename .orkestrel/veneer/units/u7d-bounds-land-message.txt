@@ -1,0 +1,29 @@
+Restate the paint wrappers after Test-paint and close the U7d bounds
+
+The installed `@orkestrel/test` reader parses the modern colour spaces
+after Test-paint, so two cases in `tests/setupBrowser.test.ts` that
+asserted its old limits went false and the whole chain went red. The
+canvas and the reader were measured on 2026-09-20 and agree on every
+colour tried, out-of-gamut ones included (both clip to the sRGB cube);
+the one reading `readPaintedColor` still adds is the engine's own
+rasterization, one byte per channel. The doc blocks say that now, the
+two cases assert agreement with the installed reader, and a third case
+pins the out-of-gamut clip. The wrappers stay for the styles proofs
+that consume them; a later unit removes them.
+
+From the U7d audit: `collectShippedComponents` lists a component only
+when every selector row and every variable row it carries is shipped,
+with a split-category case; the working-directory case asserts the
+cascade's digest against `BOOTSTRAP_CSS_DIGEST` instead of re-deriving
+the reader's path and names its dependence on the `setup` project's
+`forks` pool; the pinned-release case reads the manifest and the cascade
+through the manifest-rooted constants; an incomplete deferral row is
+refused by its position and first non-empty cell; every binding with a
+named obligation must match a compatibility row, and the `Dispatches
+click` binding no row reached is deleted, its two cases rewritten to
+prove the refusals the table carries.
+
+Two planted controls reddened and were restored byte for byte; the
+brief's gates exit 0 on managed Chromium and Edge.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>

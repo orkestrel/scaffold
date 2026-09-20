@@ -986,3 +986,17 @@ after acceptance per the debrief skill's retention reference.
   closes reviewer findings 15, 16, 17, 19, 20, and 24. It precedes U7a so U7a starts green. U7a's
   brief names that flipping the rows to `shipped` arms the live presence gate (finding 18).
   Findings 21 and 22 (two deferral grammars in the guide) are carried to U7e.
+- 2026-09-20, u7d-bounds accepted and landed in Veneer as `2bc922d` (Opus, native; verdict
+  `u7d-bounds-audit-verdict.md`, four lanes accepting, the verifier's whole chain exit 0). The
+  whole chain is green again: the canvas and the installed reader were measured equal on every
+  colour tried, so the paint wrappers' doc blocks state the agreement and their two cases assert
+  it; the shipped set requires every CSS row of a category shipped; the working-directory case
+  asserts the digest; the pinned-release case reads through the manifest-rooted constants; an
+  incomplete deferral row is labelled by position; every named binding must reach a ledger row
+  and the unreachable `Dispatches click` entry is deleted. Added: `u7-setup-tidy` (native, after
+  U7a lands and before U7b): remove `readPaintedColor` and `matchesPaintedColor` and compare the
+  styles proofs through the installed `matchesColor` (§ No superfluous wrappers), pin
+  `pool: 'forks'` on the `setup` project, one Bootstrap pin and one digest imported across the
+  setup modules, the `readCompatibility` row label by position, the reach assertion over
+  fallback bindings with a refusal that names the binding, and the wording bounds the verdict
+  lists. U7a launched on the landing (Astra, thread named in `units/u7a.sh`'s journal).
