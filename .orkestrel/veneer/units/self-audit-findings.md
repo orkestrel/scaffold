@@ -6,7 +6,7 @@ Surviving findings after two refuters each (site evidence, rule fit); 35 others 
 - site: .orkestrel/veneer/units/u6-report.md:20-22, u6-audit-analyst-report.md:25, u3-audit-claims.md:6,10, u6-audit-claims.md:5-7, u6-audit-claims-2.md:5-6,39, u6-audit-claims-3.md:5-6
 - claim: Numerous retained records in the completed U1, U3, and U6 rounds still cite their evidence only by the executor-side tmp/codex or tmp/units or tmp/audit path, not by the retained units/ path the same file was copied to.
 - rule: "Rewrite every `tmp/` path inside a copied artifact to the retained path it now names, in the same action that copies it. A retained file naming a launch copy resolves to nothing after the sweep, and the successor, the claim list, and the s
-- fix: Rewrite the tmp/-path citations in the listed retained reports and claims files to the retained `.orkestrel/veneer/units/...` paths (with the `.log.txt` suffix for logs), and retain a copy of `u3-diff.patch` and `u6-diff.patch` under `.orkestrel/veneer` (or `units/`) before `tmp/audit/` and `tmp/codex/` are swept at acceptance.
+- fix: Rewrite the tmp/-path citations in the listed retained reports and claims files to the retained `.orkestrel/veneer/units/...` paths (with the `.log.txt` suffix for logs), and retain a copy of `u3-diff.patch` and `u6-diff.patch` under `.orkestrel/veneer` (or `units/`) before `tmp/audit/` and `` are swept at acceptance.
 
 ### 2. [forces] [carry] Checker's third count-phrase finding (guides/tokens.md:217) has no carrier in U3 brief-2
 - site: C:/Users/mikes/WebstormProjects/scaffold/.orkestrel/veneer/units/u3-brief-2.md (§ Execution item 3) and C:/Users/mikes/WebstormProjects/veneer/guides/tokens.md:217
@@ -58,9 +58,9 @@ Surviving findings after two refuters each (site evidence, rule fit); 35 others 
 
 ### 10. [forces] [tenets] The retained U6 report names swept launch paths and its gate logs and review evidence were never retained
 - site: C:/Users/mikes/WebstormProjects/scaffold/.orkestrel/veneer/units/u6-report-4.md:48
-- claim: The retained U6 round-4 report points at `tmp/codex/` for every gate log and for the diff and status it names as review evidence, and those files exist only in the Test checkout's launch directory, so the sweep removes the evidence the round was accepted on.
+- claim: The retained U6 round-4 report points at `` for every gate log and for the diff and status it names as review evidence, and those files exist only in the Test checkout's launch directory, so the sweep removes the evidence the round was accepted on.
 - rule: Preserve necessary plans and evidence, then remove disposable .orkestrel and tmp artifacts safely.
-- fix: Copy the named gate logs, the final diff, and the final status into `.orkestrel/veneer/units/` under the `<unit>.log.txt` pattern, then rewrite every `tmp/codex/` path inside `units/u6-report-4.md` to the retained path it now names, before anything sweeps the Test checkout's `tmp/`.
+- fix: Copy the named gate logs, the final diff, and the final status into `.orkestrel/veneer/units/` under the `<unit>.log.txt` pattern, then rewrite every `` path inside `units/u6-report-4.md` to the retained path it now names, before anything sweeps the Test checkout's `tmp/`.
 
 ### 11. [forces] [veneer] The fix brief's `readBootstrapVariables` spec names one rule where bootstrap.css has four and eight, so item 4 cannot close
 - site: C:/Users/mikes/WebstormProjects/scaffold/.orkestrel/veneer/units/u3-brief-2.md:91
@@ -166,9 +166,9 @@ Surviving findings after two refuters each (site evidence, rule fit); 35 others 
 
 ### 28. [bound] [tenets] The retained U6 successor brief cites its superseded briefs by launch path
 - site: C:/Users/mikes/WebstormProjects/scaffold/.orkestrel/veneer/units/u6-brief-5.md:5
-- claim: The retained successor brief states its authority chain in terms of `tmp/codex/` copies, so after the sweep the brief an executor opens names two documents that resolve to nothing even though both are retained beside it.
+- claim: The retained successor brief states its authority chain in terms of `` copies, so after the sweep the brief an executor opens names two documents that resolve to nothing even though both are retained beside it.
 - rule: Preserve necessary plans and evidence, then remove disposable .orkestrel and tmp artifacts safely.
-- fix: Rewrite the three `tmp/codex/` references in the retained `units/u6-brief-5.md` to `units/u6-brief-4.md`, `units/u6-brief.md`, and `units/u6-report-5.md`, and apply the same rewrite to every retained artifact that cites a launch copy.
+- fix: Rewrite the three `` references in the retained `units/u6-brief-5.md` to `units/u6-brief-4.md`, `units/u6-brief.md`, and `units/u6-report-5.md`, and apply the same rewrite to every retained artifact that cites a launch copy.
 
 ### 29. [bound] [veneer] `BOOTSTRAP_ROOT_VARIABLES` TSDoc claims Bootstrap declares the same set on `[data-bs-theme=light]`, which is false for the breakpoint rung
 - site: C:/Users/mikes/WebstormProjects/veneer/tests/setupStyles.ts:252

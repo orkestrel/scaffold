@@ -27,7 +27,7 @@ the sole writer in the Veneer checkout (`C:/Users/mikes/WebstormProjects/veneer`
 **The tree.** `HEAD` is `b661142`; the working tree carries the U3 edits, the Orchestrator's
 integration of the first report's D3, D4, and D6 patches (`tests/distribution.test.ts`,
 `guides/veneer.md` § Showcase, `configs/src/vite.styles.config.ts`), and the re-vendored policy
-files. Build on it; do not undo it. Your first report is `tmp/units/u3-report.md`.
+files. Build on it; do not undo it. Your first report is `u3-report.md`.
 
 **Standing condition.** The Orchestrator re-vendored `tests/setupPolicy.ts` and
 `tests/policy.test.ts` before launching this brief, so `npm run test:policy` is green on
@@ -205,7 +205,7 @@ step.
 
 ## Output
 
-Write `tmp/units/u3-report-2.md` and return its content: the diff summary per file; each control's
+Write `u3-report-2.md` and return its content: the diff summary per file; each control's
 red assertion and green rerun with the removal proof; the three unknowns' readings; the re-read of
 the guide rows item 2 names against `_tokens.scss`; each gate command's final lines on both
 browsers; and every deviation with expected, found, exact evidence, done or not done, and at most
