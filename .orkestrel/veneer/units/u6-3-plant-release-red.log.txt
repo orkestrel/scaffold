@@ -1,0 +1,37 @@
+Command: npm.cmd run test:src:browser -- tests/src/browser/helpers.test.ts -t "holds the pressed paint"
+npm notice run @orkestrel/test@0.0.18 test:src:browser
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project src:browser tests/src/browser/helpers.test.ts -t holds the pressed paint
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/test
+
+--------------------------------------------------x-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/helpers.test.ts:945:2 > holdAccessible > holds the pressed paint and restores it on release
+AssertionError: expected 32 to be 16 // Object.is equality
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- 16[39m
+[31m+ 32[39m
+
+ ❯ tests/src/browser/helpers.test.ts:962:44
+    960|   expect(requireValue(down.calls[0])[0].isTrusted).toBe(true)
+    961|   expect(document.documentElement.hasAttribute(POINTER_HOLD)).toBe(tru…
+    962|   expect(readPixels(button, 'padding-top')).toBe(16)
+       |                                            ^
+    963|   expect(button.matches(':active')).toBe(false)
+    964|   expect(up.count).toBe(1)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 291 skipped (292)
+   Start at  06:24:59
+   Duration  1.39s (transform 0ms, setup 134ms, import 109ms, tests 124ms, environment 0ms)
+
+
+Exit code: 1

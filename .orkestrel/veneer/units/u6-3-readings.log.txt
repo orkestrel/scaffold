@@ -1,0 +1,19 @@
+Command: npm.cmd run test:src:browser -- tests/src/browser/helpers.test.ts -t "holds the pressed paint|pins the base"
+npm notice run @orkestrel/test@0.0.18 test:src:browser
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project src:browser tests/src/browser/helpers.test.ts -t holds the pressed paint|pins the base
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/test
+
+stdout | tests/src/browser/helpers.test.ts:945:2 > holdAccessible > holds the pressed paint and restores it on release
+U6 hold {"engine":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.8010.12 Safari/537.36","ratio":1,"focus":true,"frame":{"x":275.23187255859375,"y":110,"width":156.8800048828125,"height":339.5277099609375,"top":110,"right":432.11187744140625,"bottom":449.5277099609375,"left":275.23187255859375},"width":414}
+--------------------------------------------------stdout | tests/src/browser/helpers.test.ts:3341:2 > stageMedia > pins the base, stages motion and print, and restores the host medium
+U6 media restored {"reduced":false,"print":false,"padding":1}
+·-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------·-------------------------------------
+
+ Test Files  1 passed (1)
+      Tests  2 passed | 286 skipped (288)
+   Start at  06:22:05
+   Duration  1.55s (transform 0ms, setup 128ms, import 107ms, tests 277ms, environment 0ms)
+
+
+Exit code: 0

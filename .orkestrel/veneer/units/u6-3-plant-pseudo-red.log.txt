@@ -1,0 +1,34 @@
+Command: npm.cmd run test:src:browser -- tests/src/browser/helpers.test.ts -t "distinguishes pseudo-element paint"
+npm notice run @orkestrel/test@0.0.18 test:src:browser
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project src:browser tests/src/browser/helpers.test.ts -t distinguishes pseudo-element paint
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/test
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------x--------------------------------------------------------
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/helpers.test.ts:3170:2 > readStyle > distinguishes pseudo-element paint from its originating element
+AssertionError: expected '0px' to be '7px' // Object.is equality
+
+Expected: [32m"[7m7[27mpx"[39m
+Received: [31m"[7m0[27mpx"[39m
+
+ ❯ tests/src/browser/helpers.test.ts:3176:54
+    3174|   buildFixture('<button class="journey-marked">Marked</button>')
+    3175|   const button = resolveAccessible('Marked')
+    3176|   expect(readStyle(button, 'padding-top', '::after')).toBe('7px')
+       |                                                      ^
+    3177|   expect(readPixels(button, 'padding-top', '::after')).toBe(7)
+    3178|   expect(readStyle(button, 'padding-top')).toBe('0px')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 291 skipped (292)
+   Start at  06:24:38
+   Duration  1.42s (transform 0ms, setup 130ms, import 107ms, tests 75ms, environment 0ms)
+
+
+Exit code: 1
