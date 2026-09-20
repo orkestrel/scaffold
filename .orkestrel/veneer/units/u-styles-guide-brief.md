@@ -56,8 +56,11 @@ Perform the assignment directly and spawn nothing.
    cause, in this order: no `@src/styles` alias (the root `tsconfig.json` is content-owned; the
    shell imports `../../src/styles/index.scss`; a generator that emits the alias widens the
    `import/no-unassigned-import` allowlist in the same release); the wrapper composes the root's
-   browser factory and replaces its differing fields because the root cannot carry a styles
-   factory; no environment boundary and no lint fence owns `src/styles`; `src:styles` is
+   browser factory and replaces its differing fields by assignment because the root cannot carry
+   a styles factory and the root's merger keeps a base plugin no override names (the browser
+   environment boundary) and concatenates every other array (write that reason, and never that
+   the merger cannot replace the output boundary: it replaces a same-named plugin, and every
+   output boundary shares one name); no environment boundary and no lint fence owns `src/styles`; `src:styles` is
    registered in its own wrapper, so the root's `--project` selection and the `probe` workbench
    cannot reach it; the vendored `tests/config.test.ts` iterates the generated environments and
    asserts nothing about the axis; `tests/setup.css` arrives with the Tailwind unit. Close with

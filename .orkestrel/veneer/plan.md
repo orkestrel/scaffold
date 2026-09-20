@@ -844,6 +844,23 @@ Each entry names what changed in the plan and why, on the date it changed.
   with `dist/` absent, which closes U1-conform's criterion 3. Next in order: U-styles-config on
   `sol`, then U-styles-guide on `opus`, then U4b.
 
+- 2026-09-20, U-styles-config accepted (`u-styles-config-audit-verdict-2.md`) and landed in Veneer
+  by pathspec. The unit ran on `sol` (Astra) as brief 1 and a `builder` brief 2 from one audit
+  round with the lanes swapped: the wrapper composes the root's `srcBrowser()` and replaces
+  `plugins`, `build`, and the test fields by assignment; the `src:styles` project is named like
+  every root project and loads the built cascade through its `setupFiles` array;
+  `tests/setupStyles.ts` imports no stylesheet; `test:src` chains `test:src:styles`; the
+  published digests are unchanged. Two rulings: the design verdict's reason for assignment over
+  the root merger was false (the merger replaces a same-named plugin, and every output boundary
+  shares one name; it is the browser environment boundary the merger keeps and the arrays it
+  concatenates that force assignment), corrected in the wrapper's comment and in
+  U-styles-guide's departure list, with `styles-axis-design-verdict.md` standing as the record of
+  what was believed; and the brief's criterion that `test:setup` be green with `dist/` absent
+  overstated the import removal's reach, because two cases in `tests/setupStyles.test.ts` read
+  the built artifacts by U3's design, so the criterion is `test:conformance` green with `dist/`
+  absent and `test:setup` red on those two cases alone. Next in order: U-styles-guide on `opus`,
+  then U4b.
+
 ## User decisions pending
 
 - Chrome is not installed; the plan takes managed Chromium and Edge as the two receipts and records

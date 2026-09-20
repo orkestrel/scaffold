@@ -1,0 +1,11 @@
+<!-- workflow wf_8f84b746-d91, agent a29e8dfeb3ea8de25, retained 2026-09-20 -->
+
+Check | PASS/FAIL | Site
+--- | --- | ---
+The comment | PASS | `configs/src/vite.styles.config.ts:12-16` reads (whitespace collapsed) exactly brief-2 item 1's text; contains `` the `mergeOverride` helper``; contains neither "cannot remove" nor "output boundary"; longest line (line 14) is 92 columns.
+The two remarks | PASS | `tests/setupStyles.ts:282-285` (`BOOTSTRAP_CASCADE_PATH`) and `tests/setupStyles.ts:308-313` (`extractBootstrapVariables`, first paragraph; the following paragraph at `:315-317` unchanged) each read brief-2 items 2 and 3 verbatim, whitespace collapsed; `` `setupFiles` array`` at lines 284 and 311 (twice, exactly); grep for `` setupFiles`\.`` over the file returns no match.
+The exclude | PASS | grep for `exclude:` in `configs/src/vite.styles.config.ts` returns no match.
+The diff's population | PASS | `index` blob pairs: `configs/src/vite.styles.config.ts` `fc58ce4..1cb0d6a` (round 2) vs `fc58ce4..d7834be` (round 1) — differs; `tests/setupStyles.ts` `f9b5611..0bf8320` vs `f9b5611..fbb4f69` — differs; `package.json` `cbf8bb9..3195ca2` vs `cbf8bb9..3195ca2` — identical (not in the differing set). In the two differing files' hunks, the only line-level changes versus round 1 are the comment block, the deleted `exclude: [],` line, and the two remark paragraphs; import/const/build/plugin lines are byte-identical between the two patches. `tmp/audit/u-styles-config-status-2.txt` equals `units/u-styles-config-status.txt` row for row (` M configs/src/vite.styles.config.ts`, ` M package.json`, ` M tests/setupStyles.ts`, in that order, both files).
+Writing | PASS | Every backticked token in the changed prose (`` `mergeOverride` ``, `` `setup` ``, `` `src:styles` ``, `` `node:fs` ``, `` `setupFiles` ``) is followed by a noun; no substitution-table row (`should`, `simply`, `easy`, `just`, `currently`, `utilize`, `leverage`, `via`, `in order to`, `e.g.`, `i.e.`, `etc.`, `performant`, `robust`, `allows you to`, `and/or`, `please`) appears in the comment or the two remark paragraphs.
+
+No file's blob pair differs from round 1 outside `configs/src/vite.styles.config.ts` and `tests/setupStyles.ts`.
