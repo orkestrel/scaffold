@@ -568,6 +568,16 @@ Each entry names what changed in the plan and why, on the date it changed.
   law (calibration row, else Bootstrap's own value recorded as retained, else not declared). The
   U3 brief (`units/u3-brief.md`) carries the rulings; `opus` runs it after U1 is accepted, in the
   same checkout.
+- 2026-09-20, the scaffold release grew a second vendored change and a rule clause. The U3 unit
+  found the vendored prose policy refuses a second top-level guide, which every package with more
+  than one published face needs; the U3-policy unit (`units/u3-policy-brief.md` through `-5.md`)
+  admits a guide the workspace's own `guides/README.md` links, over five rounds of objective
+  review that caught, in order, stale prose, a global regex carrying `lastIndex`, an index scan
+  reading fenced text, an assertion pinning this checkout's own guide census inside a file every
+  target vendors, and a link pattern rejecting ordinary CommonMark forms. The styles rule now
+  permits a literal colour in the token value map alone (scaffold `9b22b165`), which the U3 audit
+  asked for. Both ride the vendored-only release, so Test and Veneer re-pin from `^0.0.73` and
+  `^0.0.75` to it before either publishes. The release needs a one-time code from the user.
 - 2026-09-20, U6 design round closed (`u6-design-verdict.md`) and U6 dispatched to Astra in the
   Test checkout (`units/u6-brief.md`, `units/u6.sh`) while U3 runs in Veneer. The Orchestrator's
   `media-probe` settled the lanes' open questions (`matchMedia('print')` follows emulation; the
