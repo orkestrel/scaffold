@@ -1,0 +1,13 @@
+M	app/browser/main.ts
+M	app/browser/showcases/Showcase.ts
+M	guides/README.md
+M	src/browser/color-mode/ColorMode.ts
+M	tests/conformance.test.ts
+M	tests/distribution.test.ts
+M	tests/setupBrowser.test.ts
+M	tests/setupBrowser.ts
+M	tests/setupConformance.test.ts
+M	tests/setupConformance.ts
+M	tests/setupStyles.test.ts
+M	tests/src/browser/color-mode/ColorMode.test.ts
+M	tests/src/browser/index.test.ts

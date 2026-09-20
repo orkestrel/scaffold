@@ -553,6 +553,15 @@ Each entry names what changed in the plan and why, on the date it changed.
   landed as `ae0221d` with every gate green on managed Chromium in its report
   (`units/u1-author-report.md`). U1-gate (`verifier`), the audit round (`reviewer` objective,
   `analyst` subjective on Astra, `checker`) on `u1-audit-claims.md`, and the push follow.
+- 2026-09-20, U1 accepted at Veneer `b661142` after six audit rounds
+  (`u1-audit-verdict.md`, `u1-fix-audit-verdict.md`): round 1 refuted two claims and added six
+  findings; the fix rounds (`units/u1-fix-brief.md` through `-7.md`, on `builder`) closed them
+  and, at the RTL guard, replaced a text-pattern check with a postcss-parsed scanner whose
+  predicates are exported and proved on every edge form the lanes named, under a scope ruling
+  the Orchestrator widened twice (three-value radii, the slash form, the `background` shorthand,
+  `float`/`clear`, whole-token keywords). The verifier ran the full chain, `test:distribution`
+  included, on managed Chromium and the browser projects on Edge at every round. Three
+  non-blocking limits (N17 to N19) carry into U3. Veneer pushed to origin.
 - 2026-09-20, U3 design round closed (`u3-design-verdict.md`): both lanes found the calibration
   narrower than the token scope; the Orchestrator answered with calibration run 6 (variant fills,
   subtle tiers, canvas), the `srgb-probe` and `paint-probe` instruments, and the value-source

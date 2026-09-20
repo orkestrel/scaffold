@@ -74,6 +74,16 @@ an elements partial), `PLANT-LISTENER` (a `globalThis.addEventListener('resize',
 `src/core/constants.ts`). Name each test for what it proves, never for the control; remove every
 plant and prove removal with `git diff --exit-code -- <file>` for each planted file.
 
+**Carried from U1's audit (documented obligations that become reachable once this unit lands
+declarations).** In `tests/setupStyles.ts`, `scanPhysicalDeclaration` guards the byte-copied RTL
+cascade; extend its cascade case in `tests/setupStyles.test.ts` to require at least one
+declaration once `_tokens.scss` declares tokens; normalize whitespace inside a parenthesized
+token before the edge comparison so `calc( 1px )` equals `calc(1px)` (U1 round-6 N17); make the
+scanner's limit sentence name the value form — a side-keyword property is scanned for a `left`
+or `right` token only, so a percentage or length side is not scanned (N18); and reflow the
+wrapped clause in `matchesRadiusShorthand`'s `@returns` (N19). Those files join this unit's
+owned list for these edits only.
+
 ## Unknowns
 
 - Whether `box-shadow` collapses a registered-factor `calc()` into the calibration's exact string

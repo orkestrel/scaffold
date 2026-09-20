@@ -1,0 +1,16 @@
+Scan the shipped cascade for direction-sensitive declarations through postcss
+
+Replaces the text-pattern RTL guard with a scanner over a postcss parse
+of the built cascade: it walks every declaration, lowercases the
+property, splits values at the top level so a parenthesized group stays
+whole, ignores the important flag, and returns the first physical
+inline-axis longhand, side-keyword text-align or background-position,
+asymmetric edge shorthand, or asymmetric border-radius as the
+declaration itself. The property sets and the splitter are exported and
+proved on every edge form the audit named, and the cascade case refuses
+an empty or unbuilt file before scanning.
+
+Audit round 3 (scaffold/.orkestrel/veneer/u1-fix-audit-verdict.md)
+named each item; the report's prose names members instead of counts.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>

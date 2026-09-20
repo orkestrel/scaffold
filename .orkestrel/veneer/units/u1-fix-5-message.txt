@@ -1,0 +1,15 @@
+Export and prove the direction-sensitivity predicates
+
+Exports every predicate the cascade scanner composes, named in the
+matches form, each with a proof of a true and a false reading; makes
+the top-level value splitter quote-aware and clamps its depth; states
+the scanner's return and its parse failure in its TSDoc; and widens the
+ruling the scanner implements: a three-value radius compares its third
+value, the elliptical slash form is judged per side, the background
+shorthand's side keywords count, float and clear flag only on a side
+keyword, and a keyword inside a custom property's name is not a match.
+
+Audit round 4 (scaffold/.orkestrel/veneer/u1-fix-audit-verdict.md)
+named each item.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
