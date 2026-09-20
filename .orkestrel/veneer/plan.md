@@ -1014,3 +1014,13 @@ after acceptance per the debrief skill's retention reference.
   a deferred name the cascade carries. Ruled: that property is the U3 exception, retained where
   it is, outside U7a's deferrals and binding rows; every other close-family name is deferred.
   `units/u7a-brief-3.md` carries the ruling and relaunched (`units/u7a-3.sh`).
+- 2026-09-20, U7a's third launch stopped after the Elements partial (thread
+  `01a0c133-8cd8-7240-9305-42f99bdcae37`, `units/u7a-report-3.md`): the styles build merges
+  `border-block: 0; border-inline: 0` into `border: 0`, the CSSOM expands that shorthand into
+  `border-left-*` and `border-right-*` longhands, and the physical-axis guard in
+  `tests/src/styles/index.test.ts` refuses every physical longhand it meets. Ruled: the guard
+  over-reaches; a physical longhand whose opposite-side twin appears in the same rule with an
+  identical value is a symmetric shorthand and is admitted; `units/u7a-brief-4.md` grants the
+  guard's helper, its cases, and the guard case, keeps the brief-3 work in the tree, records the
+  forced-colours reading as an open row (the installed `MediaOptions` stages `print` and `motion`
+  only; a Test-side bound), and relaunched (`units/u7a-4.sh`).

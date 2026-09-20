@@ -6,7 +6,7 @@ set -u
 SCAFFOLD="C:/Users/mikes/WebstormProjects/scaffold"
 VENEER="C:/Users/mikes/WebstormProjects/veneer"
 LOG="$SCAFFOLD/tmp/units/u7a-land.log.txt"
-ALLOWED=" src/styles/elements/_button.scss src/styles/components/_button.scss src/styles/index.scss src/styles/_tokens.scss src/styles/_theme.scss src/styles/_mixins.scss src/core/constants.ts src/core/types.ts tests/src/styles/elements/button.test.ts tests/src/styles/components/button.test.ts tests/src/styles/mixins.test.ts tests/src/core/index.test.ts tests/conformance.test.ts guides/veneer.md "
+ALLOWED=" src/styles/elements/_button.scss src/styles/components/_button.scss src/styles/index.scss src/styles/_tokens.scss src/styles/_theme.scss src/styles/_mixins.scss src/core/constants.ts src/core/types.ts tests/src/styles/elements/button.test.ts tests/src/styles/components/button.test.ts tests/src/styles/mixins.test.ts tests/src/core/index.test.ts tests/conformance.test.ts tests/setupStyles.ts tests/setupStyles.test.ts tests/src/styles/index.test.ts guides/veneer.md "
 exec > >(tee -a "$LOG") 2>&1
 echo "== $(date -u +%Y-%m-%dT%H:%M:%SZ) land start"
 cd "$VENEER" || exit 9
