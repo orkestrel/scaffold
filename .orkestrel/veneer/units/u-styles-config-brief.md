@@ -27,8 +27,8 @@ Read from `C:/Users/mikes/WebstormProjects/scaffold`: `AGENTS.md`; `.claude/rule
 ## Context
 
 **The tree.** `HEAD` is the U1-conform landing commit (named in the dispatch message); the
-working tree is clean except `tmp/`. `node_modules` carries the U6 Test tarball and the scaffold
-tip tarball installed `--no-save`; `dist/` is built.
+working tree is clean except `tmp/`. `node_modules` carries `@orkestrel/scaffold` 0.0.76 from the
+registry and the `@orkestrel/test` 0.0.18 tarball installed `--no-save`; `dist/` is built.
 
 **Measured facts.**
 
@@ -47,9 +47,10 @@ tip tarball installed `--no-save`; `dist/` is built.
 - The Orchestrator's probe (`units/styles-axis-probe.md` beside the verdict): a stylesheet path in
   a browser project's `setupFiles` is injected as an inline sheet and its custom properties resolve
   on the document element before the test body runs.
-- `tests/setupStyles.ts:4` is `import '../dist/src/styles/index.css'`; its remarks at lines 285
-  and 557 describe that import resolving to an empty string in Node. The module is loaded by the
-  Node `setup` project (`tests/setupStyles.test.ts`) and by the browser `src:styles` project.
+- `tests/setupStyles.ts:4` is `import '../dist/src/styles/index.css'`; its remarks at lines 284
+  to 285 and at line 311 (measured at `d8b0e65`) describe that import resolving to an empty string
+  in Node. The module is loaded by the Node `setup` project (`tests/setupStyles.test.ts`) and by
+  the browser `src:styles` project.
 - `package.json:60-64,76`: `test` chains `test:src` and then `test:src:styles` separately;
   `test:src` runs `--project src:core --project src:browser`; `test:src:styles` runs
   `build:src:styles` first; `test:setup` builds nothing.
@@ -148,8 +149,12 @@ Perform the assignment directly and spawn nothing. Take the byte digests first.
    in order.
 5. **Controls.** Run `PLANT-BOUNDARY` and `PLANT-SETUP` red, restore, prove each restore.
 6. **Gates**, each with its final lines: `npm.cmd run check:src:styles`; `npm.cmd run lint:check`;
-   `npm.cmd run format:check`; with `dist/src/styles` removed, `npm.cmd run test:setup` (green:
-   the dependency is gone); `npm.cmd run test:src:styles` (rebuilds, then the browser project);
+   `npm.cmd run format:check`; with `dist/` removed entirely (`npm.cmd run clean`),
+   `npm.cmd run test:setup` and `npm.cmd run test:conformance` (both green: the stylesheet
+   dependency is gone, and `tests/setupConformance.ts` reaches `tests/setupStyles.ts` for
+   `BOOTSTRAP_CASCADE_PATH` alone, which U1-conform's report records as the one edge that made a
+   Node proof need a browser bundle); `npm.cmd run test:src:styles` (rebuilds, then the browser
+   project);
    `npm.cmd run test:src` (three projects reported); `npm.cmd run test:config`;
    `npm.cmd run test:setup:browser`; `npm.cmd run test:guides`. `test:distribution` and the Edge
    runs are the Orchestrator's verifier's.
@@ -172,8 +177,8 @@ Decide, record, and carry on from: the comment wording, the order of the replace
 1. `configs/src/vite.styles.config.ts` imports `'../../vite.config.ts'` and `'../helpers.js'` and
    nothing else from the workspace; it declares no alias table and resolves no browser.
 2. `dist/src/styles/index.css` and `index.js` digests equal the baseline.
-3. `tests/setupStyles.ts` imports no stylesheet; `npm.cmd run test:setup` exits 0 with
-   `dist/src/styles` absent.
+3. `tests/setupStyles.ts` imports no stylesheet; `npm.cmd run test:setup` and
+   `npm.cmd run test:conformance` exit 0 with `dist/` absent.
 4. `npm.cmd run test:src` runs `src:core`, `src:browser`, and `src:styles`; `npm.cmd run test`'s
    chain names `test:src:styles` nowhere.
 5. Every gate in item 6 exits 0; both controls reddened and are removed.

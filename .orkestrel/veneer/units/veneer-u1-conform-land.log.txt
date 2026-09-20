@@ -1,0 +1,84 @@
+== 2026-09-20T20:14:28Z start d8b0e65 Adopt the scaffold 0.0.76 vendored floor
+app/browser/factories.ts
+app/browser/index.html
+app/browser/index.ts
+app/browser/main.ts
+app/browser/showcases/Showcase.ts
+app/browser/styles/_shell.scss
+app/browser/styles/index.scss
+guides/veneer.md
+package-lock.json
+package.json
+src/browser/color-mode/ColorMode.ts
+src/browser/constants.ts
+src/browser/factories.ts
+src/browser/index.ts
+src/browser/types.ts
+src/browser/validators.ts
+tests/app/browser/index.test.ts
+tests/app/browser/showcases/Showcase.test.ts
+tests/conformance.test.ts
+tests/distribution.test.ts
+tests/guides.test.ts
+tests/setupBrowser.test.ts
+tests/setupBrowser.ts
+tests/setupConformance.test.ts
+tests/setupConformance.ts
+tests/src/browser/color-mode/ColorMode.test.ts
+tests/src/browser/factories.test.ts
+tests/src/browser/fixtures/constants.ts
+tests/src/browser/index.test.ts
+tests/src/browser/validators.test.ts
+app/browser/Showcase.ts
+src/browser/ColorMode.ts
+tests/app/browser/Showcase.test.ts
+tests/setupListeners.ts
+tests/src/browser/ColorMode.test.ts
+exit[add]=0
+R  app/browser/showcases/Showcase.ts -> app/browser/Showcase.ts
+D  app/browser/factories.ts
+M  app/browser/index.html
+M  app/browser/index.ts
+M  app/browser/main.ts
+M  app/browser/styles/_shell.scss
+M  app/browser/styles/index.scss
+M  guides/veneer.md
+M  package-lock.json
+M  package.json
+R  src/browser/color-mode/ColorMode.ts -> src/browser/ColorMode.ts
+M  src/browser/constants.ts
+D  src/browser/factories.ts
+M  src/browser/index.ts
+M  src/browser/types.ts
+M  src/browser/validators.ts
+R  tests/app/browser/showcases/Showcase.test.ts -> tests/app/browser/Showcase.test.ts
+M  tests/app/browser/index.test.ts
+M  tests/conformance.test.ts
+M  tests/distribution.test.ts
+M  tests/guides.test.ts
+M  tests/setupBrowser.test.ts
+M  tests/setupBrowser.ts
+M  tests/setupConformance.test.ts
+M  tests/setupConformance.ts
+A  tests/setupListeners.ts
+R  tests/src/browser/color-mode/ColorMode.test.ts -> tests/src/browser/ColorMode.test.ts
+D  tests/src/browser/factories.test.ts
+D  tests/src/browser/fixtures/constants.ts
+M  tests/src/browser/index.test.ts
+M  tests/src/browser/validators.test.ts
+[main a05e9ff] Bring the browser tree to the fleet's placement, naming, and test rules (U1-conform)
+ 31 files changed, 381 insertions(+), 971 deletions(-)
+ rename app/browser/{showcases => }/Showcase.ts (79%)
+ delete mode 100644 app/browser/factories.ts
+ rename src/browser/{color-mode => }/ColorMode.ts (76%)
+ delete mode 100644 src/browser/factories.ts
+ rename tests/app/browser/{showcases => }/Showcase.test.ts (92%)
+ create mode 100644 tests/setupListeners.ts
+ rename tests/src/browser/{color-mode => }/ColorMode.test.ts (71%)
+ delete mode 100644 tests/src/browser/factories.test.ts
+ delete mode 100644 tests/src/browser/fixtures/constants.ts
+exit[commit]=0
+To https://github.com/mikesaintsg/veneer.git
+   d8b0e65..a05e9ff  main -> main
+exit[push]=0
+== 2026-09-20T20:14:31Z end a05e9ff Bring the browser tree to the fleet's placement, naming, and test rules (U1-conform)

@@ -824,6 +824,26 @@ Each entry names what changed in the plan and why, on the date it changed.
   the Orchestrator from the retained gate report and is never put to a lane. Next in order:
   `units/veneer-repin-0.0.76.sh`, then U1-conform.
 
+- 2026-09-20, U1-conform accepted (`u1-conform-audit-verdict-5.md`) and landed in Veneer by
+  pathspec. The unit ran as brief 1 (`opus`: the flat classes, one term for the mode axis, the
+  factories deleted, the shell entry and stylesheet, the conformance and distribution split, the
+  helper prefixes, the listener control in `tests/setupListeners.ts`, the guide rows, the manifest
+  patch the Orchestrator applied) and successor briefs 2 to 6 from four audit rounds
+  (`u1-conform-audit-verdict.md` onward, claims and lane reports beside each): the app stylesheet
+  entry loads its partial with `@use` and the partial opens with the `shell` order; the mount
+  helper loads the published cascade so the showcase paints from the `elements` layer and the
+  guide's showcase sentence claims only that; the cascade readers take the sheets they walk with
+  the document's as the default; the conformance extractor reads a template-literal `require`
+  and parses with parentheses dropped. Rulings recorded on the way: the `scaffold audit` `setup`
+  question for `tests/setupListeners.ts` is accepted (a same-stem proof cannot load in the Node
+  `setup` project; the behaviour is proved in `src:browser`); `computeArtifactDigest` keeps
+  scaffold's `computeFileDigest` name for scaffold under fleet name ownership; the package's
+  bare-token register (a code token with no kind word after it) is a package-wide pass for a later
+  unit, never settled sentence by sentence; a constructor that mounts, and the `void` it costs the
+  entry, is U7's question. U-styles-config gains the criterion that `test:conformance` is green
+  with `dist/` absent, which closes U1-conform's criterion 3. Next in order: U-styles-config on
+  `sol`, then U-styles-guide on `opus`, then U4b.
+
 ## User decisions pending
 
 - Chrome is not installed; the plan takes managed Chromium and Edge as the two receipts and records
