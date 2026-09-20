@@ -50,9 +50,10 @@ component opens. The Vue environment is deferred; § Deferred: Vue environment f
 | Unit    | Writes                                                    | Role and engine                                                                                                         |
 | ------- | --------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
 | U1-del  | Veneer, one deletion commit                               | Orchestrator                                                                                                            |
-| U1a     | Veneer manifest, barrels, setup modules, proof files      | `sol` on Astra                                                                                                          |
-| U1-rep  | Veneer vendored files and gate chains                     | Orchestrator                                                                                                            |
-| U1b     | Veneer styles axis, shell application, distribution stage | `sol` on Astra                                                                                                          |
+| U1-pre  | Veneer manifest, barrels, seeds (pre-authored so Astra works with tooling) | Orchestrator                                                                                           |
+| U1-rep  | Veneer vendored files and gate chains, passes 1 to 3      | Orchestrator                                                                                                            |
+| U1-rep4 | Veneer Node setup proof, guides index, repair pass 4      | Orchestrator                                                                                                            |
+| U1-author | Veneer styles axis, theme engine, shell, setup modules, proofs, boundary controls, distribution stage (U1a and U1b merged) | `sol` on Astra; runs 1 and 2 stopped on brief defects, run 3 is the effective run |
 | U1-gate | nothing                                                   | `verifier` on Sonnet, then the Orchestrator's `audit`                                                                   |
 | U2      | Elements `node_modules`, `research/calibration*`          | `grok` for the map, `builder` for the instrument, Orchestrator for runs and the record                                  |
 | U4a     | `research/inventory*`, `obligations.md`, `ledger.md`      | `builder` for the instrument, `grok` for the reading, Orchestrator for runs and the records                             |
@@ -509,6 +510,54 @@ components to consume. It adds Vue as a fourth environment, never as a dependenc
 - Give `guides/vue.md` an executable recipe per adapter, transcribed into the environment's
   `integration.test.ts`, and drive each adapter through the showcase interface for mount, updates
   in each direction, target replacement, unmount during pending work, listener release, and remount.
+
+## Re-baseline record
+
+Each entry names what changed in the plan and why, on the date it changed.
+
+- 2026-09-20, U1: U1a and U1b run as one Astra unit, U1-author, after the Orchestrator seeded the
+  manifest, barrels, wrappers, and proofs (U1-pre) and ran three repair passes (U1-rep), so the
+  bench unit works with installed tooling and a registered root. Briefs and reports under
+  `units/u1-*`.
+- 2026-09-20, U1-rep4 added: the generated configuration proof selected a Node `setup` project
+  from the browser setup proof while `repair` registers it only from a Node setup proof. The seeded
+  conformance setup proof made the runtimes include `node`; repair pass 4 registered `setup`. The
+  scaffold defect (proof glob broader than the generator) is recorded as a separate scaffold task,
+  not fixed in this campaign.
+- 2026-09-20, U1-author transformed: the package's first behavioral export, the theme engine
+  (`createTheme`, `ThemeInterface`, `THEME_ATTRIBUTE`, `THEME_KEY`, `isThemeMode`), ships in U1
+  because the guides checker requires a documented method group and a guide over an empty surface
+  cannot pass truthfully; the shell's `Dark mode` control is its first consumer. It carries no
+  token and no component. The Vue decision and the runtime boundary are unchanged.
+- 2026-09-20, U4a routing: Grok read `bootstrap/js/src` (`units/u4a-obligations-*`); the 5.3
+  documentation pages went to the native `researcher` because the Cursor print-mode lane cannot
+  reach the web (`units/u4a-docs-*`), a recorded substitution. The inventory instrument took two
+  `builder` briefs and one Orchestrator line (four helper roots). The ledger's unit assignments are
+  the Orchestrator's, fixed in `units/u4a-ledger-brief.md`, and a `builder` materialized them.
+  U4a no longer waits for U1-gate: nothing it reads or writes depends on U1.
+- 2026-09-20, U5 satisfied: the temporary probe suite ran in Veneer's `src:browser` project on
+  managed Chromium and Edge before U1-author landed (no writer was live), every question in
+  [instruments](research/instruments.md) answered positively, and the suite is retained as
+  `units/u5-probe.test.ts` with its logs. The `:active` reading names the tester-iframe scale a
+  press helper must apply; that is U6's obligation.
+- 2026-09-20, U1-author run 3 stopped on two conflicts the briefs caused: the vendored surface
+  policy rejected the styles side-effect entry the workspace rule prescribes (a scaffold defect,
+  fixed in scaffold and vendored into Veneer by repair before run 4), and `Theme`, `ThemeOptions`,
+  and `createTheme` are owned by `@orkestrel/console`; the engine's names are `ColorMode`
+  (class), `ColorModeInterface`, `ColorModeOptions`, `ColorScheme` (`'light' | 'dark'`),
+  `createColorMode`, `isColorScheme`, `COLOR_MODE_ATTRIBUTE`, and `COLOR_MODE_KEY`, all free in
+  the hosted guides on 2026-09-20. Run 3's styles axis work stays in the tree as the unit's own.
+- 2026-09-20, U2 instrument corrections, each from a probe or a reading rather than a guess
+  (`units/u2-reach-fix.mjs`, `u2-reach-fix-2.mjs`, `u2-reach-fix-3.mjs`, run logs
+  `units/u2-run-<n>.log.txt`): first-match locators and unique per-specimen reaches from the DOM
+  probe; DOM-valid dialog selectors because the motion sampler resolves a reach with
+  `querySelector`; a document reload per route so an open top-layer surface cannot intercept the
+  next click; and settle waits after every mode switch, state drive, and close, because Grok's
+  distillate of run 4 (`units/u2-distill-report.md`) read colours mid-transition and overlay
+  `closed` rects mid-close. The record in `research/calibration.md` cites the run that produced it.
+- 2026-09-20, U2: the calibration instrument's light-mode wait assumed a `data-mode="light"`
+  attribute the showcase never writes; an Orchestrator probe read the absent attribute and the
+  instrument treats absence as light. Retained beside the run logs.
 
 ## User decisions pending
 

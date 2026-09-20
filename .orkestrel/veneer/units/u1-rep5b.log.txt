@@ -1,0 +1,10 @@
+--- install the packed local scaffold (no save; registry range ^0.0.75 stays in package.json) ---
+41 packages are looking for funding
+  run `npm fund` for details
+
+found 0 vulnerabilities
+5
+--- repair (pass 5) ---
+0 of 48 planned paths drifted from the plan. Audit compared bytes at 29, existence at 5, and nothing at 14.
+0 written, 49 unchanged, 0 removed in ..
+0

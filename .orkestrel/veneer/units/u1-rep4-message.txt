@@ -1,0 +1,15 @@
+Register the Node setup project and repair the seeded baseline
+
+Adds the conformance setup proof the audit asked for, which makes the
+blueprint's setup runtimes include node so that scaffold repair registers
+the setup project the generated configuration proof already selected
+from the browser setup proof. Wires test:setup into the test chain and
+lands what the repair pass wrote. Opens the three conformance setup
+summaries with a verb so the TSDoc rule accepts them, and rewrites the
+guides index as the concept and directory tables that the guides parity
+suite parses.
+
+Planned in scaffold/.orkestrel/veneer/plan.md, unit U1-rep4, after the
+U1-author unit stopped on the missing setup registration.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>

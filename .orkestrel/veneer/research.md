@@ -16,6 +16,11 @@ question; use its source pointers instead of repeating broad repository absorpti
 | [Platform experiment](research/browser.md)      | Human-readable token/overlay observations                      | Use [browser.json](research/browser.json) for raw data and [browser.mjs](research/browser.mjs) to repeat it; the experiment loads no product code. |
 | [Elements motion](research/motion.md)           | CSS/native/JS ownership, source paths, observed motion, risks  | Distinguish the historical showcase receipt from current source and Veneer acceptance.                                                             |
 | [Instrument readings](research/instruments.md)  | What a browser-side instrument can see, per browser and date   | A reading settles the instrument, never a Veneer behavior; repeat it with the instrument beside it.                                                |
+| [Inventory generator](research/inventory.mjs) and [inventory data](research/inventory.json) | The generated CSS inventory over the installed `bootstrap.css` and `bootstrap.rtl.css` | Regenerate from the installed package rather than editing the generated file by hand. |
+| [Obligations](research/obligations.md)          | The merged Bootstrap 5.3.8 JavaScript and documentation obligations, by component      | Cross-check a claim against the cited `file:line` or documentation page before relying on it. |
+| [Compatibility ledger](research/ledger.md)      | Every inventory and obligation row, assigned to a unit or recorded as excluded         | Read `U7 Button`'s rows as the accepted scope; every other row is open.                       |
+| [Calibration instrument](research/calibration.mjs) and [readings](research/calibration/) | Elements' showcase specimens per state and mode on Chromium and Edge, with captures and motion frames | Re-run from the scaffold checkout against the digested showcase build; run 5 is the accepted run. |
+| [Calibration record](research/calibration.md)   | The accepted foundation values, interaction states, elevation, motion, and departures U3 binds | Trace every token value to a row here; take Elements over Bootstrap where they disagree and record it. |
 
 Treat recommendations and user-condition summaries in older readings as historical input. Apply
 the plan's clarified runtime rule: Orkestrel packages are permitted; external packages are

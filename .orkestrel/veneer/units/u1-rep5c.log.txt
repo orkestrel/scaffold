@@ -1,0 +1,55 @@
+--- repair (pass 5, --offline, local scaffold e8a34296 floor) ---
+0 of 48 planned paths drifted from the plan. Audit compared bytes at 29, existence at 5, and nothing at 14.
+tests/setupPolicy.ts replaced (38 lines added).
+1 written, 48 unchanged, 0 removed in ..
+5
+--- gates ---
+All matched files use the correct format.
+Finished in 730ms on 54 files using 16 threads.
+npm notice run @orkestrel/veneer@0.0.1 lint:check
+npm notice run oxlint --config .oxlintrc.json --deny-warnings .
+npm notice run @orkestrel/veneer@0.0.1 check:app:browser
+npm notice run vue-tsc --noEmit -p configs/app/tsconfig.browser.json
+ Test Files  1 passed (1)
+      Tests  109 passed | 1 skipped (110)
+   Start at  03:18:19
+   Duration  1.89s (transform 92ms, setup 15ms, import 267ms, tests 1.46s, environment 0ms)
+
+      Tests  173 passed | 1 skipped (174)
+   Start at  03:18:22
+   Duration  3.48s (transform 212ms, setup 16ms, import 881ms, tests 2.43s, environment 0ms)
+
+      Tests  6 passed (6)
+   Start at  03:18:26
+   Duration  221ms (transform 56ms, setup 29ms, import 78ms, tests 8ms, environment 0ms)
+
+      Tests  1 passed (1)
+   Start at  03:18:29
+   Duration  983ms (transform 0ms, setup 13ms, import 5ms, tests 3ms, environment 0ms)
+
+--- audit (--offline) ---
+0 of 48 planned paths drifted from the plan. Audit compared bytes at 29, existence at 5, and nothing at 14.
+--- status ---
+ M tests/setupPolicy.ts
+?? configs/src/tsconfig.styles.json
+?? configs/src/vite.styles.config.ts
+?? src/styles/
+?? tests/setupStyles.test.ts
+?? tests/setupStyles.ts
+?? tests/src/styles/
+--- commit ---
+A  configs/src/tsconfig.styles.json
+A  configs/src/vite.styles.config.ts
+A  src/styles/_mixins.scss
+A  src/styles/_theme.scss
+A  src/styles/_tokens.scss
+A  src/styles/index.scss
+A  src/styles/index.ts
+M  tests/setupPolicy.ts
+A  tests/setupStyles.test.ts
+A  tests/setupStyles.ts
+A  tests/src/styles/index.test.ts
+f5d31f8 Land the styles axis and vendor the surface-policy fix
+a5de4c4 Register the Node setup project and repair the seeded baseline
+## main...origin/main [ahead 4]
+u1-rep5c-done
