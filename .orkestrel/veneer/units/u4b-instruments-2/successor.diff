@@ -1,0 +1,566 @@
+--- before/tests/setupConformance.ts
++++ after/tests/setupConformance.ts
+@@ -20,6 +20,7 @@
+ import { existsSync, readFileSync, realpathSync } from 'node:fs'
+ import { dirname, extname, resolve } from 'node:path'
+ import { fileURLToPath, pathToFileURL } from 'node:url'
++import { isDeepStrictEqual } from 'node:util'
+ import { chromium } from 'playwright'
+ import { resolveBrowser, resolvePinnedBrowser } from '../configs/browsers.js'
+ import { BOOTSTRAP_CASCADE_PATH } from './setupStyles.js'
+@@ -62,6 +63,95 @@
+ 	readonly steps: readonly OracleStep[]
+ 	readonly excluded: ReadonlyArray<{ readonly step: string; readonly reason: string }>
+ }
++
++/** Describes an obligation's accepted actions and its reading predicate. */
++export interface OracleBinding {
++	readonly component: string
++	readonly category: string
++	readonly obligation: string | undefined
++	readonly steps: readonly RegExp[]
++	readonly predicate: (step: OracleStep, row: CompatibilityRow) => boolean
++}
++
++/** Binds accepted obligations to the recorded actions that can prove them. */
++export const ORACLE_BINDINGS: readonly OracleBinding[] = Object.freeze([
++	{
++		component: 'btn',
++		category: 'identity',
++		obligation:
++			'Button identifies itself as button, bs.button, and .bs.button; defaults and type defaults are inherited empty.',
++		steps: [/^button\./u],
++		predicate: ({ after }) =>
++			after.identity.NAME === 'button' &&
++			after.identity.DATA_KEY === 'bs.button' &&
++			after.identity.EVENT_KEY === '.bs.button' &&
++			after.identity.Default === '{}' &&
++			after.identity.DefaultType === '{}',
++	},
++	{
++		component: 'btn',
++		category: 'attribute',
++		obligation:
++			'The data-bs-toggle="button" click prevents its default action and creates or reuses the instance to toggle active and aria-pressed.',
++		steps: [
++			/^button\.(?:reduced\.)?(?:click\.(?:toggle|release)|pressed\.click|keyboard\.(?:space|enter))$/u,
++		],
++		predicate: (step) =>
++			step.after.clicks.length > 0 && step.after.clicks.every(Boolean) && matchesOracleToggle(step),
++	},
++	{
++		component: 'btn',
++		category: 'method',
++		obligation:
++			'toggle() flips active and aria-pressed on every activation, without a no-op guard.',
++		steps: [
++			/^button\.(?:reduced\.)?(?:click\.(?:toggle|release)|pressed\.click|keyboard\.(?:space|enter)|pointer\.release)$/u,
++		],
++		predicate: (step) =>
++			matchesOracleToggle(step) &&
++			step.after.mutations.includes('class') &&
++			step.after.mutations.includes('aria-pressed'),
++	},
++	{
++		component: 'btn',
++		category: 'accessibility',
++		obligation:
++			'A toggle announces the button role and its pressed state, rather than a checkbox role.',
++		steps: [
++			/^button\.(?:reduced\.)?(?:initial|click\.(?:toggle|release)|keyboard\.(?:space|enter)|pressed\.(?:initial|click))$/u,
++		],
++		predicate: ({ after }) =>
++			(after.attributes['aria-pressed'] === 'true' ||
++				after.attributes['aria-pressed'] === 'false') &&
++			after.accessibility.startsWith('- button ') &&
++			after.accessibility.includes('[pressed]') === (after.attributes['aria-pressed'] === 'true'),
++	},
++	{
++		component: 'btn',
++		category: 'accessibility',
++		obligation:
++			'A disabled anchor carries disabled, aria-disabled="true", tabindex="-1", and role="button"; pointer activation is refused.',
++		steps: [/^button\.(?:reduced\.)?disabled\.click$/u],
++		predicate: ({ after }) =>
++			after.classes.includes('disabled') &&
++			after.attributes['aria-disabled'] === 'true' &&
++			after.attributes.tabindex === '-1' &&
++			after.attributes.role === 'button' &&
++			after.refusal === 'element is not enabled' &&
++			after.clicks.length === 0 &&
++			after.mutations.length === 0,
++	},
++	{
++		component: 'btn',
++		category: 'event',
++		obligation: undefined,
++		steps: [/^button\./u],
++		predicate: ({ after }, row) => {
++			const events = row.obligation.match(/\b(?:click|[\w-]+\.bs\.button)\b/gu) ?? []
++			return events.length > 0 && events.every((event) => after.events.includes(event))
++		},
++	},
++])
+ 
+ /** Describes the official CSS vocabulary assigned to a component key. */
+ export interface OracleVocabulary {
+@@ -455,6 +545,20 @@
+ }
+ 
+ /**
++ * Checks whether an activation flips the class and writes its explicit pressed attribute.
++ * @param step - The activation's before and after readings.
++ * @returns True if the state flips and the pressed attribute agrees; false otherwise.
++ */
++export function matchesOracleToggle(step: OracleStep): boolean {
++	const pressed = step.after.attributes['aria-pressed']
++	return (
++		(pressed === 'true' || pressed === 'false') &&
++		step.before.classes.includes('active') !== step.after.classes.includes('active') &&
++		pressed === String(step.after.classes.includes('active'))
++	)
++}
++
++/**
+  * Scans one guide obligation for disagreement with its named live oracle step.
+  * @param row - The guide row to check.
+  * @param fixture - The official recording to compare.
+@@ -469,71 +573,62 @@
+ 	const step = fixture.steps.find((candidate) => candidate.name === row.proof)
+ 	if (row.component !== fixture.component || step === undefined)
+ 		return `${label}: missing recording step`
+-	const before = step.before
+-	const after = step.after
+-	let agrees = false
+-	if (
+-		row.obligation ===
+-		'Button identifies itself as button, bs.button, and .bs.button; defaults and type defaults are inherited empty.'
+-	) {
+-		agrees =
+-			after.identity.NAME === 'button' &&
+-			after.identity.DATA_KEY === 'bs.button' &&
+-			after.identity.EVENT_KEY === '.bs.button' &&
+-			after.identity.Default === '{}' &&
+-			after.identity.DefaultType === '{}'
+-	} else if (
+-		row.obligation ===
+-		'The data-bs-toggle="button" click prevents its default action and creates or reuses the instance to toggle active and aria-pressed.'
+-	) {
+-		agrees =
+-			after.clicks.length > 0 &&
+-			after.clicks.every(Boolean) &&
+-			before.classes.includes('active') !== after.classes.includes('active') &&
+-			after.attributes['aria-pressed'] === String(after.classes.includes('active'))
+-	} else if (
+-		row.obligation ===
+-		'toggle() flips active and aria-pressed on every activation, without a no-op guard.'
+-	) {
+-		agrees =
+-			before.classes.includes('active') !== after.classes.includes('active') &&
+-			after.attributes['aria-pressed'] === String(after.classes.includes('active')) &&
+-			after.mutations.includes('class') &&
+-			after.mutations.includes('aria-pressed')
+-	} else if (
+-		row.obligation ===
+-		'A toggle announces the button role and its pressed state, rather than a checkbox role.'
+-	) {
+-		agrees =
+-			after.accessibility.startsWith('- button ') &&
+-			after.accessibility.includes('[pressed]') === (after.attributes['aria-pressed'] === 'true')
+-	} else if (
+-		row.obligation ===
+-		'A disabled anchor carries disabled, aria-disabled="true", tabindex="-1", and role="button"; pointer activation is refused.'
+-	) {
+-		agrees =
+-			after.classes.includes('disabled') &&
+-			after.attributes['aria-disabled'] === 'true' &&
+-			after.attributes.tabindex === '-1' &&
+-			after.attributes.role === 'button' &&
+-			after.refusal === 'element is not enabled' &&
+-			after.clicks.length === 0 &&
+-			after.mutations.length === 0
+-	} else if (
+-		row.obligation === 'Space activates the focused toggle button.' ||
+-		row.obligation === 'Enter activates the focused toggle button.'
+-	) {
+-		agrees =
+-			before.focus === 'Toggle' &&
+-			after.focus === 'Toggle' &&
+-			after.clicks.includes(true) &&
+-			before.classes.includes('active') !== after.classes.includes('active') &&
+-			after.attributes['aria-pressed'] === String(after.classes.includes('active'))
+-	} else if (row.category === 'event') {
+-		const events = row.obligation.match(/[\w-]+\.bs\.button/gu) ?? []
+-		agrees = events.length > 0 && events.every((event) => after.events.includes(event))
+-	} else return `${label}: obligation has no oracle predicate`
+-	return agrees ? undefined : `${label}: recording contradicts obligation`
++	const binding = ORACLE_BINDINGS.find(
++		(candidate) =>
++			candidate.component === row.component &&
++			candidate.category === row.category &&
++			(candidate.obligation === undefined || candidate.obligation === row.obligation),
++	)
++	if (binding === undefined) return `${label}: obligation has no oracle predicate`
++	if (!binding.steps.some((pattern) => pattern.test(step.name)))
++		return `${label}: proof step does not prove this obligation`
++	return binding.predicate(step, row) ? undefined : `${label}: recording contradicts obligation`
++}
++
++/**
++ * Scans a saved fixture for a difference from the live recording.
++ * @param recording - The live official recording.
++ * @param fixture - The parsed saved fixture.
++ * @returns The first differing step or metadata finding, or undefined when they agree.
++ */
++export function scanOracleFixture(recording: OracleFixture, fixture: unknown): string | undefined {
++	if (!isRecord(fixture) || !Array.isArray(fixture.steps) || !Array.isArray(fixture.excluded))
++		return 'Invalid Button oracle fixture'
++	const excluded = new Set<string>()
++	for (const exclusion of fixture.excluded) {
++		if (
++			!isRecord(exclusion) ||
++			typeof exclusion.step !== 'string' ||
++			typeof exclusion.reason !== 'string' ||
++			exclusion.reason.trim() === ''
++		)
++			return 'Invalid oracle exclusion'
++		const name = exclusion.step
++		if (
++			!recording.steps.some((step) => step.name === name) ||
++			!fixture.steps.some((step: unknown) => isRecord(step) && step.name === name)
++		)
++			return `Oracle exclusion names no recorded step: ${name}`
++		excluded.add(name)
++	}
++	for (const [index, step] of recording.steps.entries()) {
++		if (excluded.has(step.name)) continue
++		if (!isDeepStrictEqual(parseJSON(JSON.stringify(step)), fixture.steps[index]))
++			return `Oracle differs at step ${step.name}`
++	}
++	const steps = fixture.steps.map((step: unknown) =>
++		isRecord(step) && typeof step.name === 'string' && excluded.has(step.name)
++			? { name: step.name }
++			: step,
++	)
++	const compared = {
++		...recording,
++		excluded: fixture.excluded,
++		steps: recording.steps.map((step) => (excluded.has(step.name) ? { name: step.name } : step)),
++	}
++	return isDeepStrictEqual(parseJSON(JSON.stringify(compared)), { ...fixture, steps })
++		? undefined
++		: 'Oracle fixture metadata or step membership differs'
+ }
+ 
+ /**
+@@ -550,7 +645,10 @@
+ 	const browser = await chromium.launch({ ...options.launchOptions, headless: true })
+ 	const scratch = createScratch()
+ 	try {
+-		scratch.write('bootstrap.css', readBootstrapCascade())
++		scratch.write(
++			'bootstrap.css',
++			readFileSync(resolve(dirname(BOOTSTRAP_MANIFEST_PATH), 'dist/css/bootstrap.css'), 'utf8'),
++		)
+ 		scratch.write(
+ 			'bootstrap.bundle.js',
+ 			readFileSync(
+@@ -592,11 +690,7 @@
+ 					const mutations: string[] = []
+ 					const clicks: boolean[] = []
+ 					const controller = new AbortController()
+-					for (const event of [
+-						'click.bs.button.data-api',
+-						'toggle.bs.button',
+-						'toggled.bs.button',
+-					]) {
++					for (const event of ['click', 'toggle.bs.button', 'toggled.bs.button']) {
+ 						element.addEventListener(
+ 							event,
+ 							(received) => {
+--- before/tests/setupConformance.test.ts
++++ after/tests/setupConformance.test.ts
+@@ -1,10 +1,12 @@
+ // Proof of the conformance setup module: the Bootstrap identity constants and the helpers it
+ // exports, read against this workspace's own installed dependency tree.
+ 
+-import { existsSync } from 'node:fs'
++import type { OracleFixture } from './setupConformance.js'
++import { isRecord, parseJSON } from '@orkestrel/contract'
++import { existsSync, readFileSync } from 'node:fs'
+ import { resolve } from 'node:path'
+ import { createScratch } from '@orkestrel/test/server'
+-import { describe, expect, it } from 'vitest'
++import { beforeAll, describe, expect, it } from 'vitest'
+ import { parseSync, Visitor } from 'vite'
+ import * as setup from './setupConformance.js'
+ import {
+@@ -14,12 +16,14 @@
+ 	BOOTSTRAP_RTL_CSS_DIGEST,
+ 	BOOTSTRAP_VERSION,
+ 	FORBIDDEN_RUNTIME,
++	ORACLE_BINDINGS,
+ 	ORACLE_TIMEOUT,
+ 	WORKSPACE_ROOT,
+ 	collectImportClosure,
+ 	computeArtifactDigest,
+ 	extractSpecifiers,
+ 	extractStringArgument,
++	matchesOracleToggle,
+ 	readBootstrapCascade,
+ 	readBuiltCascade,
+ 	readCompatibility,
+@@ -27,6 +31,7 @@
+ 	readOracleInventory,
+ 	recordButtonOracle,
+ 	scanOracleObligation,
++	scanOracleFixture,
+ 	scanEscapingImport,
+ 	scanForbiddenDependency,
+ 	scanForbiddenSource,
+@@ -41,12 +46,14 @@
+ 			'BOOTSTRAP_RTL_CSS_DIGEST',
+ 			'BOOTSTRAP_VERSION',
+ 			'FORBIDDEN_RUNTIME',
++			'ORACLE_BINDINGS',
+ 			'ORACLE_TIMEOUT',
+ 			'WORKSPACE_ROOT',
+ 			'collectImportClosure',
+ 			'computeArtifactDigest',
+ 			'extractSpecifiers',
+ 			'extractStringArgument',
++			'matchesOracleToggle',
+ 			'readBootstrapCascade',
+ 			'readBuiltCascade',
+ 			'readCompatibility',
+@@ -57,6 +64,7 @@
+ 			'scanEscapingImport',
+ 			'scanForbiddenDependency',
+ 			'scanForbiddenSource',
++			'scanOracleFixture',
+ 			'scanOracleObligation',
+ 		])
+ 	})
+@@ -98,7 +106,7 @@
+ 			expect(step?.after.classes).toContain('active')
+ 			expect(step?.after.attributes['aria-pressed']).toBe('true')
+ 			expect(step?.after.focus).toBe('Toggle')
+-			expect(step?.after.events).toEqual([])
++			expect(step?.after.events).toEqual(['click'])
+ 			const row = rows.find((candidate) => candidate.proof === 'button.click.toggle')
+ 			if (row === undefined || step === undefined)
+ 				throw new Error('Missing Button click obligation or reading')
+@@ -125,6 +133,166 @@
+ 		},
+ 		ORACLE_TIMEOUT,
+ 	)
++
++	describe('oracle action bindings and exclusions', () => {
++		let fixture: OracleFixture
++		beforeAll(async () => {
++			fixture = await recordButtonOracle()
++		}, ORACLE_TIMEOUT)
++
++		it('binds every table entry to a saved fixture step and omits keyboard obligations', () => {
++			const saved = parseJSON(
++				readFileSync(resolve(WORKSPACE_ROOT, 'tests/fixtures/oracle/button.json'), 'utf8'),
++			)
++			if (!isRecord(saved) || !Array.isArray(saved.steps))
++				throw new Error('Missing saved oracle steps')
++			const names = saved.steps.map((step: unknown) => {
++				if (!isRecord(step) || typeof step.name !== 'string') throw new Error('Invalid saved step')
++				return step.name
++			})
++			expect(ORACLE_BINDINGS.length).toBeGreaterThan(0)
++			for (const binding of ORACLE_BINDINGS) {
++				expect(
++					names.some((name) => binding.steps.some((pattern) => pattern.test(name))),
++					binding.obligation ?? binding.category,
++				).toBe(true)
++				expect(binding.category).not.toBe('keyboard')
++			}
++			expect(readCompatibility().some((row) => row.category === 'keyboard')).toBe(false)
++		})
++
++		it('binds data-api proofs to activation steps and distinguishes an absent step', () => {
++			const row = readCompatibility().find(
++				(candidate) => candidate.category === 'attribute' && candidate.proof !== undefined,
++			)
++			if (row === undefined) throw new Error('Missing data-api obligation')
++			expect(scanOracleObligation({ ...row, proof: 'button.hover' }, fixture)).toBe(
++				`Compatibility row ${row.component} | ${row.category} | ${row.obligation} | button.hover: proof step does not prove this obligation`,
++			)
++			expect(
++				scanOracleObligation({ ...row, proof: 'button.keyboard.space' }, fixture),
++			).toBeUndefined()
++			expect(
++				scanOracleObligation({ ...row, proof: 'button.click.toggle' }, fixture),
++			).toBeUndefined()
++			expect(scanOracleObligation({ ...row, proof: 'button.absent' }, fixture)).toContain(
++				'missing recording step',
++			)
++		})
++
++		it('refuses an enabled click as proof of disabled refusal', () => {
++			const row = readCompatibility().find(
++				(candidate) => candidate.proof === 'button.disabled.click',
++			)
++			if (row === undefined) throw new Error('Missing disabled obligation')
++			expect(scanOracleObligation({ ...row, proof: 'button.click.toggle' }, fixture)).toBe(
++				`Compatibility row ${row.component} | ${row.category} | ${row.obligation} | button.click.toggle: proof step does not prove this obligation`,
++			)
++		})
++
++		it('requires an explicit pressed attribute even when the accessible toggle is released', () => {
++			const row = readCompatibility().find(
++				(candidate) => candidate.proof === 'button.pressed.click',
++			)
++			if (row === undefined) throw new Error('Missing accessibility obligation')
++			expect(scanOracleObligation(row, fixture)).toBeUndefined()
++			const altered = {
++				...fixture,
++				steps: fixture.steps.map((step) => {
++					const attributes = { ...step.after.attributes }
++					delete attributes['aria-pressed']
++					return { ...step, after: { ...step.after, attributes } }
++				}),
++			}
++			expect(scanOracleObligation(row, altered)).toContain('recording contradicts obligation')
++		})
++
++		it('proves a native click event from a live activation', () => {
++			expect(
++				scanOracleObligation(
++					{
++						component: 'btn',
++						category: 'event',
++						obligation: 'Dispatches click',
++						proof: 'button.click.toggle',
++						status: 'accepted',
++					},
++					fixture,
++				),
++			).toBeUndefined()
++		})
++
++		it('requires boolean pressed attributes for accessibility and every toggle predicate', () => {
++			const step = fixture.steps.find((candidate) => candidate.name === 'button.click.toggle')
++			if (step === undefined) throw new Error('Missing activation step')
++			expect(matchesOracleToggle(step)).toBe(true)
++			expect(matchesOracleToggle({ ...step, before: step.after })).toBe(false)
++			for (const pressed of [undefined, '', 'mixed', 'TRUE']) {
++				const attributes = { ...step.after.attributes }
++				if (pressed === undefined) delete attributes['aria-pressed']
++				else attributes['aria-pressed'] = pressed
++				const altered = { ...step, after: { ...step.after, attributes } }
++				expect(matchesOracleToggle(altered)).toBe(false)
++				for (const row of readCompatibility().filter(
++					(candidate) => candidate.proof === step.name,
++				)) {
++					expect(scanOracleObligation(row, { ...fixture, steps: [altered] })).toContain(
++						'recording contradicts obligation',
++					)
++				}
++			}
++		})
++
++		it('skips differing readings in a written excluded step and still compares other steps', () => {
++			const scratch = createScratch()
++			try {
++				const altered = {
++					...fixture,
++					excluded: [{ step: 'button.hover', reason: 'Exercises a differing excluded reading.' }],
++					steps: fixture.steps.map((step) =>
++						step.name === 'button.hover'
++							? { ...step, after: { ...step.after, focus: 'Changed' } }
++							: step,
++					),
++				}
++				const path = scratch.write('button.json', JSON.stringify(altered))
++				expect(scanOracleFixture(fixture, parseJSON(readFileSync(path, 'utf8')))).toBeUndefined()
++				expect(scanOracleFixture(fixture, { ...altered, excluded: [] })).toBe(
++					'Oracle differs at step button.hover',
++				)
++				expect(scanOracleFixture(fixture, { ...altered, version: 'changed' })).toBe(
++					'Oracle fixture metadata or step membership differs',
++				)
++				expect(
++					scanOracleFixture(fixture, {
++						...altered,
++						steps: altered.steps.filter((step) => step.name !== 'button.hover'),
++					}),
++				).toBe('Oracle exclusion names no recorded step: button.hover')
++			} finally {
++				scratch.destroy()
++			}
++		})
++
++		it('rejects exclusions outside the recording and malformed fixture metadata', () => {
++			expect(scanOracleFixture(fixture, {})).toBe('Invalid Button oracle fixture')
++			expect(
++				scanOracleFixture(fixture, {
++					...fixture,
++					excluded: [{ step: 'button.absent', reason: 'Missing.' }],
++				}),
++			).toBe('Oracle exclusion names no recorded step: button.absent')
++			expect(
++				scanOracleFixture(fixture, {
++					...fixture,
++					excluded: [{ step: 'button.hover', reason: '' }],
++				}),
++			).toBe('Invalid oracle exclusion')
++			expect(
++				scanOracleFixture(fixture, { ...fixture, steps: [...fixture.steps, fixture.steps[0]] }),
++			).toBe('Oracle fixture metadata or step membership differs')
++		})
++	})
+ 
+ 	it('reads compatibility rows from a written guide and rejects missing columns and invalid statuses', () => {
+ 		const scratch = createScratch()
+--- before/tests/conformance.test.ts
++++ after/tests/conformance.test.ts
+@@ -1,5 +1,5 @@
+ import { readInventory, resolveContained } from '@orkestrel/test/server'
+-import { isRecord, parseJSON } from '@orkestrel/contract'
++import { parseJSON } from '@orkestrel/contract'
+ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+ import { dirname, resolve } from 'node:path'
+ import { parse } from 'postcss'
+@@ -22,6 +22,7 @@
+ 	readOracleInventory,
+ 	recordButtonOracle,
+ 	scanOracleObligation,
++	scanOracleFixture,
+ 	scanEscapingImport,
+ 	scanForbiddenDependency,
+ 	scanForbiddenSource,
+@@ -99,17 +100,7 @@
+ 				writeFileSync(path, `${JSON.stringify(recording, undefined, '\t')}\n`)
+ 			}
+ 			const fixture = parseJSON(readFileSync(path, 'utf8'))
+-			if (!isRecord(fixture) || !Array.isArray(fixture.steps))
+-				throw new Error('Invalid Button oracle fixture')
+-			for (const [index, step] of recording.steps.entries()) {
+-				expect(parseJSON(JSON.stringify(step)), `Oracle differs at step ${step.name}`).toEqual(
+-					fixture.steps[index],
+-				)
+-			}
+-			expect(
+-				parseJSON(JSON.stringify(recording)),
+-				'Oracle fixture metadata or step membership differs',
+-			).toEqual(fixture)
++			expect(scanOracleFixture(recording, fixture)).toBeUndefined()
+ 			for (const row of readCompatibility()) {
+ 				expect(scanOracleObligation(row, recording)).toBeUndefined()
+ 			}
+--- before/guides/veneer.md
++++ after/guides/veneer.md
+@@ -503,8 +503,6 @@
+ | btn       | accessibility  | A toggle announces the button role and its pressed state, rather than a checkbox role.                                                                                                                                            | button.click.toggle   | accepted |
+ | btn       | accessibility  | A toggle announces the button role and its pressed state, rather than a checkbox role.                                                                                                                                            | button.pressed.click  | accepted |
+ | btn       | accessibility  | A disabled anchor carries disabled, aria-disabled="true", tabindex="-1", and role="button"; pointer activation is refused.                                                                                                        | button.disabled.click | accepted |
+-| btn       | keyboard       | Space activates the focused toggle button.                                                                                                                                                                                        | button.keyboard.space | accepted |
+-| btn       | keyboard       | Enter activates the focused toggle button.                                                                                                                                                                                        | button.keyboard.enter | accepted |
+ | btn       | variable       | The --bs-btn-* vocabulary includes padding, font, color, background, border, shadow, disabled, and active state properties.                                                                                                       | —                     | accepted |
+ | btn       | identity       | Cross-cutting engine: `VERSION` `'5.3.8'`; `DATA_KEY` `bs.${NAME}`; `EVENT_KEY` `.${DATA_KEY}`; `eventName(name)` returns `${name}${EVENT_KEY}`                                                                                   | —                     | accepted |
+ | btn       | option         | Cross-cutting engine: `Default`/`DefaultType` inherited empty from `Config` unless a component overrides                                                                                                                          | —                     | accepted |

@@ -876,6 +876,25 @@ Each entry names what changed in the plan and why, on the date it changed.
   records and the next implementation unit owning the file carries, never a fix round of its own;
   a claims file puts no lane's weight on wording. Next in order: U4b on `sol`, then U7.
 
+- 2026-09-20, U7 design round closed (`u7-design-verdict.md`; `planner` on Opus subjective,
+  `analyst` on Astra objective, one brief). U7 is transformed into a serial chain: U7-rule (the
+  runtime-entry clause of `architecture.md` admits `src/<environment>/auto.ts`), Test-paint (the
+  Test package's paint readers read `oklch()` and the modern spaces and refuse an unreadable
+  layer; a prerequisite the objective lane measured, packed into Veneer as a head start), U7d (a
+  row-keyed presence check with `selector` and `variable` rows, engine rows moved to component
+  `engine`, a deferral reader with planted controls, run first so the check fires before CSS
+  lands), U7a (the two button partials, the mixer tokens and `focus-ring` mixin, a recorded
+  subset of the `btn` inventory with the rest deferred by owner), U7b (`Button`, `Delegate`, the
+  `auto` entry, its build wrapper and manifest rows), U7c (a `sections/` family in the shell,
+  the journeys, the captures, the oracle projection, the consumer case), U7e (the guide). Struck
+  from the plan's U7 text: `createButton` (the wrapper test), RTL (the user's ruling),
+  `@orkestrel/contract` as a runtime dependency (Button declares no options a guard would earn;
+  the first consumer is `data-bs-config` merging), and the statechart table (already struck). The
+  mounting constructor stays (the round refused reviewer bound 13 with reason). Open to the user:
+  the Bootstrap method spellings behind `./browser/auto` break two naming rules wherever they
+  sit; the chain ships the data API and `Delegate` and records the spellings' mapping in
+  § Compatibility unless the user grants a naming exemption for a `ButtonAdapter`.
+
 ## User decisions pending
 
 - Chrome is not installed; the plan takes managed Chromium and Edge as the two receipts and records

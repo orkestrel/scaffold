@@ -1,0 +1,126 @@
+{
+	"name": "@orkestrel/veneer",
+	"version": "0.0.1",
+	"description": "Elements' look and motion on Bootstrap 5.3 contracts, with an owned engine and standalone CSS.",
+	"keywords": [],
+	"homepage": "https://github.com/mikesaintsg/veneer#readme",
+	"bugs": "https://github.com/mikesaintsg/veneer/issues",
+	"license": "MIT",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/mikesaintsg/veneer.git"
+	},
+	"files": [
+		"dist/src",
+		"README.md"
+	],
+	"type": "module",
+	"sideEffects": [
+		"**/*.css"
+	],
+	"main": "./dist/src/core/index.cjs",
+	"module": "./dist/src/core/index.js",
+	"exports": {
+		".": {
+			"import": {
+				"types": "./dist/src/core/index.d.ts",
+				"default": "./dist/src/core/index.js"
+			},
+			"require": {
+				"types": "./dist/src/core/index.d.cts",
+				"default": "./dist/src/core/index.cjs"
+			}
+		},
+		"./browser": {
+			"import": {
+				"types": "./dist/src/browser/index.d.ts",
+				"default": "./dist/src/browser/index.js"
+			}
+		},
+		"./styles": "./dist/src/styles/index.css",
+		"./package.json": "./package.json"
+	},
+	"publishConfig": {
+		"access": "public"
+	},
+	"scripts": {
+		"clean": "node -e \"require('node:fs').rmSync('dist',{recursive:true,force:true})\"",
+		"copy": "node -e \"const fs=require('node:fs'),p=require('node:path'),a=process.argv[1],b=process.argv[2];fs.mkdirSync(p.dirname(b),{recursive:true});fs.cpSync(a,b,{force:true});console.log('Copied: '+a+' to '+b)\"",
+		"format": "oxfmt --config .oxfmtrc.json --write .",
+		"format:check": "oxfmt --config .oxfmtrc.json --check .",
+		"lint": "oxlint --config .oxlintrc.json --fix .",
+		"lint:check": "oxlint --config .oxlintrc.json --deny-warnings .",
+		"check": "tsc --noEmit --project tsconfig.json && npm run check:src && npm run check:app",
+		"check:src": "npm run check:src:core && npm run check:src:browser && npm run check:src:styles",
+		"check:src:core": "tsc --noEmit -p configs/src/tsconfig.core.json",
+		"check:src:browser": "tsc --noEmit -p configs/src/tsconfig.browser.json",
+		"check:src:styles": "tsc --noEmit -p configs/src/tsconfig.styles.json",
+		"check:app": "npm run check:app:browser",
+		"check:app:browser": "vue-tsc --noEmit -p configs/app/tsconfig.browser.json",
+		"test": "npm run test:src && npm run test:app && npm run test:journey && npm run test:policy && npm run test:config && npm run test:setup && npm run test:setup:browser && npm run test:conformance && npm run test:guides",
+		"test:src": "vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core --project src:browser && npm run test:src:styles",
+		"test:src:core": "vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core",
+		"test:src:browser": "vitest run --config vite.config.ts --no-cache --reporter=dot --project src:browser",
+		"test:src:styles": "npm run build:src:styles && vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=dot",
+		"test:app": "vitest run --config vite.config.ts --no-cache --reporter=dot --project app:browser",
+		"test:app:browser": "vitest run --config vite.config.ts --no-cache --reporter=dot --project app:browser",
+		"test:policy": "vitest run --config vite.config.ts --no-cache --reporter=dot --project policy",
+		"test:config": "vitest run --config vite.config.ts --no-cache --reporter=dot --project config",
+		"test:journey": "vitest run --config configs/app/vite.journey.config.ts --no-cache --reporter=dot",
+		"test:probe": "vitest run --config vite.config.ts --no-cache --reporter=verbose --project probe",
+		"test:bench": "vitest bench --config vite.config.ts --no-cache --project probe",
+		"test:distribution": "vitest run --config vite.config.ts --no-cache --reporter=dot --project distribution",
+		"test:setup:browser": "vitest run --config vite.config.ts --no-cache --reporter=dot --project setup:browser",
+		"test:guides": "node --experimental-strip-types tests/guides.test.ts",
+		"test:conformance": "vitest run --config vite.config.ts --no-cache --reporter=dot --project conformance",
+		"test:setup": "vitest run --config vite.config.ts --no-cache --reporter=dot --project setup",
+		"build": "npm run clean && npm run build:src && npm run build:app",
+		"build:src": "npm run build:src:core && npm run build:src:browser && npm run build:src:styles",
+		"build:src:core": "vite build --config configs/src/vite.core.config.ts && npm run copy dist/src/core/index.d.ts dist/src/core/index.d.cts",
+		"build:src:browser": "vite build --config configs/src/vite.browser.config.ts",
+		"build:src:styles": "vite build --config configs/src/vite.styles.config.ts",
+		"build:app": "npm run build:app:browser",
+		"build:app:browser": "vite build --config configs/app/vite.browser.config.ts",
+		"dev": "vite --config configs/app/vite.browser.config.ts",
+		"showcase": "vite --config configs/app/vite.showcase.config.ts",
+		"build:showcase": "vite build --config configs/app/vite.showcase.config.ts",
+		"show": "npm run format && npm run build:showcase && npm run copy dist/showcase/index.html demo/showcase.html",
+		"prepack": "npm run build",
+		"prepublishOnly": "npm run format:check && npm run lint:check && npm run check && npm run build && npm test && npm run test:distribution -- --mode release"
+	},
+	"devDependencies": {
+		"@microsoft/api-extractor": "^7.59.1",
+		"@orkestrel/contract": "^0.0.17",
+		"@orkestrel/guide": "^0.0.20",
+		"@orkestrel/html": "^0.0.10",
+		"@orkestrel/markdown": "^0.0.15",
+		"@orkestrel/probe": "^0.0.16",
+		"@orkestrel/scaffold": "^0.0.76",
+		"@orkestrel/test": "^0.0.18",
+		"@types/node": "^26.6.2",
+		"@vitejs/plugin-vue": "^6.0.9",
+		"@vitest/browser-playwright": "^4.1.11",
+		"bootstrap": "5.3.8",
+		"oxfmt": "^0.68.0",
+		"oxlint": "^1.83.0",
+		"playwright": "^1.63.0",
+		"postcss": "^8.5.15",
+		"sass": "^1.104.1",
+		"typescript": "^6.0.3",
+		"vite": "^8.3.0",
+		"vite-plugin-singlefile": "^2.3.3",
+		"vitest": "^4.1.11",
+		"vue": "^3.5.43",
+		"vue-tsc": "^3.3.11"
+	},
+	"devEngines": {
+		"packageManager": {
+			"name": "npm",
+			"version": ">=11.6.0",
+			"onFail": "error"
+		}
+	},
+	"engines": {
+		"node": ">=22.18.0"
+	}
+}
