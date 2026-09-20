@@ -575,6 +575,17 @@ Each entry names what changed in the plan and why, on the date it changed.
   law (calibration row, else Bootstrap's own value recorded as retained, else not declared). The
   U3 brief (`units/u3-brief.md`) carries the rulings; `opus` runs it after U1 is accepted, in the
   same checkout.
+- 2026-09-20, U6 accepted on substance at audit round 6 (`u6-audit-verdict-6.md`): the media
+  settle records the first stage's readings on a `MEDIA_STAGE` root marker and releases to exactly
+  them, the pointer marker is recorded after the press send resolves and kept until the release
+  send resolves, every option is read once, and the refusal paths carry their cleanup failure as
+  `cause`; both lanes and the verifier (Chromium chain, Edge twice) agree at every round from 4 on.
+  Briefs 6 to 9 were prose and single-assertion passes on a native `builder`. The U3-policy unit
+  reached its eighth audit round (`u3-policy-audit-verdict-2.md` withdrew the round-3 ruling on
+  index-linked mirrors after both lanes rejected it; a directory-index row is the authorship
+  evidence, catalog membership the only mirror evidence). A brief of the Orchestrator's that
+  granted the source and the guide but not the test file its addendum named cost U6 one extra
+  round; recorded against the brief checklist.
 - 2026-09-20, self-audit on the user's instruction (workflow `veneer-campaign-self-audit`, run
   `wf_6a6bf589-88d`: eight lenses over the records, the checkouts, and the Orchestrator's own
   process; every finding attacked by two refuters; the surviving set retained as
