@@ -1,0 +1,31 @@
+ M README.md
+ M configs/src/vite.styles.config.ts
+ M guides/README.md
+ M guides/veneer.md
+A  src/core/constants.ts
+ M src/core/index.ts
+A  src/core/types.ts
+ M src/styles/_mixins.scss
+ M src/styles/_theme.scss
+ M src/styles/_tokens.scss
+A  src/styles/elements/_body.scss
+A  src/styles/elements/_html.scss
+ M src/styles/index.scss
+ M tests/distribution.test.ts
+A  tests/setup.test.ts
+ M tests/setup.ts
+ M tests/setupBrowser.test.ts
+ M tests/setupBrowser.ts
+ M tests/setupConformance.test.ts
+ M tests/setupConformance.ts
+ M tests/setupStyles.test.ts
+ M tests/setupStyles.ts
+ M tests/src/core/index.test.ts
+A  tests/src/styles/elements/body.test.ts
+A  tests/src/styles/elements/html.test.ts
+A  tests/src/styles/fixtures/mixins.scss
+ M tests/src/styles/index.test.ts
+A  tests/src/styles/integration.test.ts
+A  tests/src/styles/mixins.test.ts
+A  tests/src/styles/theme.test.ts
+A  tests/src/styles/tokens.test.ts
