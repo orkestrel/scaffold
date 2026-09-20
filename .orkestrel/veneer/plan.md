@@ -426,7 +426,9 @@ alias (the root `tsconfig.json` is content-owned, so the shell imports the entry
 re-derives the alias table and the browser provider instead of composing the root's `srcBrowser`
 factory with replaced `include`, `setupFiles`, name, and build; the project name is a bare string
 where the root's projects use `{ label, color }`; the `./styles` export points at the CSS file and
-the manifest's `sideEffects` and the `index.rtl.css` twin need a ruling; `test:src:styles` builds
+the manifest's `sideEffects` need a ruling (the `index.rtl.css` twin is out of scope by the
+user's ruling of 2026-09-20: it stays as emitted, unexported, and no unit spends on it);
+`test:src:styles` builds
 before it tests where no other `test:src:*` script does; the root projects list cannot register
 `src:styles`. Each departure the design round keeps is recorded in `guides/veneer.md` under a
 section a later scaffold generator can read as the pilot's shape.
@@ -789,7 +791,9 @@ Each entry names what changed in the plan and why, on the date it changed.
   environment scaffold does not generate, nothing is implemented in scaffold, and Veneer's axis
   must conform to `workspace.md`'s documented shape and every convention. **Added** U-styles
   after U1-conform, opened by a design round on the departures the census measured; U4b follows
-  U-styles.
+  U-styles. The same day the user ruled that no time or tokens go to RTL or comparable
+  variations: the design round's RTL proposals (a `./styles/rtl` export, a plugin rename, a
+  departure row) are struck, and the twin stays as emitted and unexported.
 
 ## User decisions pending
 
