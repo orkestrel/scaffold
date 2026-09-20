@@ -10,7 +10,7 @@ You edit nothing and run nothing; you have no write tools and no shell.
 Rule mechanically on the claims
 `C:/Users/mikes/WebstormProjects/scaffold/.orkestrel/veneer/u7a-audit-claims.md` marks `[mechanical]`
 with `CONFIRMED`, `REFUTED`, or `UNDECIDABLE` and the deciding evidence (`file:line` or exact
-text). Rule on no other claim. That file alone fixes the claim numbers. The effective brief is `.orkestrel/veneer/units/u7a-brief-2.md`, which carries `units/u7a-brief.md` and grants `tests/conformance.test.ts` for the `listed` array alone.
+text). Rule on no other claim. That file alone fixes the claim numbers. The effective brief is `.orkestrel/veneer/units/u7a-brief-3.md`, which carries briefs 2 and 1: `tests/conformance.test.ts` granted for the `listed` array alone, and `--bs-btn-close-filter` retained by U3 outside the deferrals.
 
 ## Evidence
 
@@ -20,7 +20,7 @@ The Orchestrator rendered the diff over the Veneer checkout's `2bc922d` at
 `C:/Users/mikes/WebstormProjects/veneer` (`src/styles/**`, `src/core/constants.ts`,
 `src/core/types.ts`, `tests/src/styles/**`, `tests/src/core/index.test.ts`, `guides/veneer.md`,
 `tests/fixtures/oracle/inventory.json`, and `dist/src/styles/index.css` where present). Read the
-retained report `C:/Users/mikes/WebstormProjects/scaffold/.orkestrel/veneer/units/u7a-report-2.md`
+retained report `C:/Users/mikes/WebstormProjects/scaffold/.orkestrel/veneer/units/u7a-report-3.md`
 only to learn what the unit claims; rule on the tree.
 
 ## Probes

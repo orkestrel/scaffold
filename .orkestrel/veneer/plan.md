@@ -1007,3 +1007,10 @@ after acceptance per the debrief skill's retention reference.
   the array alone and relaunched as thread `01a0c12d-f205-77b3-aff2-22beb621e0f8`
   (`units/u7a-2.sh`). The `u7-setup-tidy` brief is drafted (`units/u7-setup-tidy-brief.md`) for
   dispatch after U7a lands.
+- 2026-09-20, U7a's second launch stopped before editing (thread
+  `01a0c12d-f205-77b3-aff2-22beb621e0f8`, `units/u7a-report-2.md`): the inherited brief deferred
+  the whole `--bs-btn-close-*` family while `_mixins.scss` already declares
+  `--bs-btn-close-filter` as a U3 retention the guide records, and the presence scanner refuses
+  a deferred name the cascade carries. Ruled: that property is the U3 exception, retained where
+  it is, outside U7a's deferrals and binding rows; every other close-family name is deferred.
+  `units/u7a-brief-3.md` carries the ruling and relaunched (`units/u7a-3.sh`).
