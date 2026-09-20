@@ -568,6 +568,12 @@ Each entry names what changed in the plan and why, on the date it changed.
   law (calibration row, else Bootstrap's own value recorded as retained, else not declared). The
   U3 brief (`units/u3-brief.md`) carries the rulings; `opus` runs it after U1 is accepted, in the
   same checkout.
+- 2026-09-20, U6 design round closed (`u6-design-verdict.md`) and U6 dispatched to Astra in the
+  Test checkout (`units/u6-brief.md`, `units/u6.sh`) while U3 runs in Veneer. The Orchestrator's
+  `media-probe` settled the lanes' open questions (`matchMedia('print')` follows emulation; the
+  `::` check precedes `CSS.supports`), and the Test browser project's `fileParallelism: false`
+  closes the cross-file media leak. The skill vocabulary update (`orkestrel-prove-journey`
+  `references/layer.md`, `styles.md`) is added as a scaffold unit after Test publishes.
 - 2026-09-20, U2 satisfied: run 5 on managed Chromium and Edge read settled endpoints
   (`units/u2-distill-2-report.md` § Settled check names the hint surface's 95% alpha mix as the
   only non-endpoint string), the record is [calibration](research/calibration.md), and the index
