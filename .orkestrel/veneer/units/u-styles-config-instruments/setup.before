@@ -1,0 +1,1404 @@
+import { isRecord } from '@orkestrel/contract'
+import { parse } from 'postcss'
+import { collectTokenNodes, normalizeSelectorText } from './setup.js'
+
+/** Holds the physical inline-axis longhand properties that are direction-sensitive on their own. */
+export const PHYSICAL_LONGHANDS: readonly string[] = Object.freeze([
+	'margin-left',
+	'margin-right',
+	'padding-left',
+	'padding-right',
+	'left',
+	'right',
+	'border-left',
+	'border-right',
+	'border-left-width',
+	'border-right-width',
+	'border-left-style',
+	'border-right-style',
+	'border-left-color',
+	'border-right-color',
+	'border-top-left-radius',
+	'border-top-right-radius',
+	'border-bottom-left-radius',
+	'border-bottom-right-radius',
+	'background-position-x',
+	'scroll-margin-left',
+	'scroll-margin-right',
+	'scroll-padding-left',
+	'scroll-padding-right',
+])
+
+/**
+ * Holds the four-value edge shorthands whose second and fourth values must match to stay
+ * direction-neutral.
+ */
+export const EDGE_SHORTHANDS: readonly string[] = Object.freeze([
+	'margin',
+	'padding',
+	'inset',
+	'border-width',
+	'border-style',
+	'border-color',
+])
+
+/** Names the shorthand that carries corner order instead of edge order. */
+export const RADIUS_SHORTHAND = 'border-radius'
+
+/** Holds the properties whose direction keyword is flagged only when a token equals it exactly. */
+export const SIDE_KEYWORD_PROPERTIES: readonly string[] = Object.freeze([
+	'text-align',
+	'text-align-last',
+	'background-position',
+	'background',
+	'float',
+	'clear',
+])
+
+/**
+ * Holds the ancestor and descendant tag pairs the HTML content model mandates.
+ *
+ * @remarks
+ * A rule in the `elements` layer normally selects one bare tag, because a second bare tag in the
+ * same selector makes the treatment depend on a document structure the author of the markup chose.
+ * The pairs here are the ones the markup cannot avoid: each descendant has no other legal parent.
+ */
+export const MANDATED_TAG_PAIRS: ReadonlyArray<readonly [string, string]> = Object.freeze([
+	Object.freeze(['details', 'summary'] as const),
+	Object.freeze(['dl', 'dt'] as const),
+	Object.freeze(['dl', 'dd'] as const),
+	Object.freeze(['fieldset', 'legend'] as const),
+	Object.freeze(['figure', 'figcaption'] as const),
+	Object.freeze(['ol', 'li'] as const),
+	Object.freeze(['optgroup', 'option'] as const),
+	Object.freeze(['ruby', 'rp'] as const),
+	Object.freeze(['ruby', 'rt'] as const),
+	Object.freeze(['select', 'option'] as const),
+	Object.freeze(['table', 'caption'] as const),
+	Object.freeze(['table', 'colgroup'] as const),
+	Object.freeze(['table', 'tbody'] as const),
+	Object.freeze(['table', 'tfoot'] as const),
+	Object.freeze(['table', 'thead'] as const),
+	Object.freeze(['tr', 'td'] as const),
+	Object.freeze(['tr', 'th'] as const),
+	Object.freeze(['ul', 'li'] as const),
+])
+
+/**
+ * Splits a declaration value into its top-level whitespace-separated tokens.
+ *
+ * @param value - The declaration value to split.
+ * @returns The value's top-level tokens, treating parenthesized content such as `calc()` and
+ *   quoted content such as `"a b"` as part of the current token rather than a split point, never
+ *   letting the tracked parenthesis depth go below zero, and emitting a bare `/` (outside
+ *   parentheses and outside quoted strings) as its own token, whatever the surrounding spacing.
+ */
+export function splitTopLevelValues(value: string): readonly string[] {
+	const values: string[] = []
+	let current = ''
+	let depth = 0
+	let quote: '"' | "'" | undefined
+	for (const char of value) {
+		if (quote !== undefined) {
+			current += char
+			if (char === quote) quote = undefined
+			continue
+		}
+		if (char === '"' || char === "'") {
+			quote = char
+			current += char
+			continue
+		}
+		if (char === '(') depth += 1
+		if (char === ')') depth = Math.max(0, depth - 1)
+		if (/\s/u.test(char) && depth === 0) {
+			if (current.length > 0) values.push(current)
+			current = ''
+			continue
+		}
+		if (char === '/' && depth === 0) {
+			if (current.length > 0) values.push(current)
+			values.push('/')
+			current = ''
+			continue
+		}
+		current += char
+	}
+	if (current.length > 0) values.push(current)
+	return values
+}
+
+/**
+ * Matches a four-token edge shorthand whose second and fourth tokens differ.
+ *
+ * @param values - The declaration value's top-level tokens.
+ * @returns `true` when `values` holds four tokens whose second and fourth differ, `false`
+ *   otherwise.
+ */
+export function matchesEdgeShorthand(values: readonly string[]): boolean {
+	if (values.length !== 4) return false
+	const second = values[1]
+	const fourth = values[3]
+	return second !== undefined && fourth !== undefined && second !== fourth
+}
+
+/**
+ * Matches a `border-radius` value whose corner tokens are asymmetric on either side of a bare `/`.
+ *
+ * @param values - The declaration value's top-level tokens.
+ * @returns `true` when a radius side (the tokens before the bare `/`, the tokens after it, or the
+ *   whole list when no `/` is present) carries two differing tokens in a two-token side, a first or
+ *   third token that differs from the second in a three-token side — the tokens `a b c` set the
+ *   top-left corner to `a`, the top-right and bottom-left corners to `b`, and the bottom-right
+ *   corner to `c`, so a right-to-left flip swaps top-left with top-right and bottom-right with
+ *   bottom-left, and the first and third corners never swap with each other — or a first-second
+ *   or third-fourth pair that differs in a four-token side; `false` otherwise.
+ */
+export function matchesRadiusShorthand(values: readonly string[]): boolean {
+	const slashIndex = values.indexOf('/')
+	const sides =
+		slashIndex === -1 ? [values] : [values.slice(0, slashIndex), values.slice(slashIndex + 1)]
+	return sides.some((side) => {
+		if (side.length === 2) {
+			const first = side[0]
+			const second = side[1]
+			return first !== undefined && second !== undefined && first !== second
+		}
+		if (side.length === 3) {
+			const first = side[0]
+			const second = side[1]
+			const third = side[2]
+			if (first !== undefined && second !== undefined && first !== second) return true
+			return second !== undefined && third !== undefined && third !== second
+		}
+		if (side.length === 4) {
+			const first = side[0]
+			const second = side[1]
+			const third = side[2]
+			const fourth = side[3]
+			if (first !== undefined && second !== undefined && first !== second) return true
+			return third !== undefined && fourth !== undefined && third !== fourth
+		}
+		return false
+	})
+}
+
+/**
+ * Matches a value carrying a `left` or `right` token as a whole word.
+ *
+ * @param values - The declaration value's top-level tokens.
+ * @returns `true` when a token equals `left` or `right` exactly, `false` otherwise.
+ */
+export function matchesSideKeyword(values: readonly string[]): boolean {
+	return values.some((value) => value === 'left' || value === 'right')
+}
+
+/**
+ * Normalizes the whitespace inside one parenthesized value token.
+ *
+ * @param token - The top-level value token to normalize.
+ * @returns The token with every whitespace run collapsed to one space, and with the space that
+ *   follows an opening parenthesis or precedes a closing one removed, so `calc( 1px )` and
+ *   `calc(1px)` compare equal. A token carrying no parentheses is returned with its whitespace
+ *   runs collapsed and nothing else changed.
+ */
+export function normalizeValueToken(token: string): string {
+	return token.replace(/\s+/gu, ' ').replace(/\(\s+/gu, '(').replace(/\s+\)/gu, ')')
+}
+
+/**
+ * Matches a declaration whose lowercased property and value make it direction-sensitive.
+ *
+ * @param prop - The declaration's property, in its original case.
+ * @param value - The declaration's value, in its original case, without `!important`; the
+ *   comparison is case-insensitive, and each token's parenthesized whitespace is normalized
+ *   through {@link normalizeValueToken} before the comparison.
+ * @returns `true` when the property is a physical longhand; or a side-keyword property carries a
+ *   token equal to `left` or `right`; or an edge shorthand carries four tokens whose second and
+ *   fourth differ; or `border-radius` carries an asymmetric side; `false` otherwise.
+ */
+export function matchesDirectionSensitive(prop: string, value: string): boolean {
+	const lowerProp = prop.toLowerCase()
+	const tokens = splitTopLevelValues(value.toLowerCase()).map(normalizeValueToken)
+	if (PHYSICAL_LONGHANDS.includes(lowerProp)) return true
+	if (SIDE_KEYWORD_PROPERTIES.includes(lowerProp)) return matchesSideKeyword(tokens)
+	if (EDGE_SHORTHANDS.includes(lowerProp)) return matchesEdgeShorthand(tokens)
+	if (lowerProp === RADIUS_SHORTHAND) return matchesRadiusShorthand(tokens)
+	return false
+}
+
+/**
+ * Scans a stylesheet for its first direction-sensitive declaration.
+ *
+ * @param css - The stylesheet text to scan.
+ * @returns The first direction-sensitive declaration's property lowercased, then `: `, then its
+ *   value as postcss reports it, without `!important`, in document order; or `undefined` when the
+ *   stylesheet declares none. The guard covers the ruled property families only: gradient
+ *   directions, shadow offsets, and transforms are not scanned, and a side-keyword property is
+ *   scanned for a token equal to `left` or `right` alone, so a percentage or length side such as
+ *   `background-position: 0% center` is not scanned either.
+ * @throws The `CssSyntaxError` postcss raises when `css` cannot be parsed.
+ */
+export function scanPhysicalDeclaration(css: string): string | undefined {
+	const root = parse(css)
+	let found: string | undefined
+	root.walkDecls((decl) => {
+		if (matchesDirectionSensitive(decl.prop, decl.value)) {
+			found = `${decl.prop.toLowerCase()}: ${decl.value}`
+			return false
+		}
+	})
+	return found
+}
+
+/** Names the Bootstrap scopes the compatibility oracle reads. */
+export type BootstrapScope = 'root' | 'dark'
+
+/**
+ * Matches the selector each Bootstrap scope is written with, after the selector's whitespace is
+ * collapsed.
+ *
+ * @remarks
+ * The root pattern admits `:root` alone and `:root` at the head of a selector list, which is how
+ * Bootstrap writes `:root, [data-bs-theme=light]`. The dark pattern is anchored at the start, so a
+ * component rule painted inside a dark island — `.navbar-dark, .navbar[data-bs-theme=dark]` —
+ * is outside the scope while `[data-bs-theme=dark] .btn-close` is inside it.
+ */
+export const BOOTSTRAP_SCOPE_PATTERNS: Readonly<Record<BootstrapScope, RegExp>> = Object.freeze({
+	root: /^:root(,|$| )/u,
+	dark: /^\[data-bs-theme=dark\]/u,
+})
+
+/** Names the Bootstrap release the compatibility oracle reads. */
+export const BOOTSTRAP_VERSION = '5.3.8'
+
+/** Records the SHA-256 digest of the stylesheet that release ships. */
+export const BOOTSTRAP_DIGEST = '4a50207b956a4ab943640ee993118b554a34e96a23261cfe58b9aa1807a7849b'
+
+/**
+ * Locates the installed Bootstrap stylesheet the compatibility oracle reads.
+ *
+ * @remarks
+ * This module is loaded by the Node `setup` project and the browser `src:styles` project,
+ * imports no stylesheet, and takes no `node:fs` import; the styles project loads the built cascade
+ * through its `setupFiles`. The Node proof reads the file itself and hands the text to
+ * {@link extractBootstrapVariables}.
+ */
+export const BOOTSTRAP_CASCADE_PATH = 'node_modules/bootstrap/dist/css/bootstrap.css'
+
+/**
+ * Locates this package's guide, whose customization fence {@link CUSTOMIZATION_RECIPE} copies.
+ *
+ * @remarks
+ * The path is here for the same reason {@link BOOTSTRAP_CASCADE_PATH} is: a browser project loads
+ * this module, so it takes no `node:fs` import, and the Node proof reads the file itself.
+ */
+export const VENEER_GUIDE_PATH = 'guides/veneer.md'
+
+/**
+ * Extracts every custom property one Bootstrap scope declares, from the stylesheet's own text.
+ *
+ * @param cascade - The Bootstrap stylesheet's text, read from {@link BOOTSTRAP_CASCADE_PATH}.
+ * @param scope - The scope to read, matched through {@link BOOTSTRAP_SCOPE_PATTERNS}.
+ * @returns Each declaration's name and value, in source order, with a name a later rule
+ *   re-declares reported once at its first position and carrying that first rule's value,
+ *   trimmed.
+ * @throws The `CssSyntaxError` postcss raises when `cascade` cannot be parsed.
+ *
+ * @remarks
+ * The text arrives as an argument because this module imports no stylesheet: the Node `setup`
+ * project and the browser `src:styles` project load it, and the styles project loads the built
+ * cascade through its `setupFiles`. Keeping the reader pure also lets a case drive it with a
+ * written stylesheet and a control that must report nothing.
+ *
+ * This is the second mechanism {@link BOOTSTRAP_ROOT_VARIABLES}, {@link BOOTSTRAP_DARK_VARIABLES},
+ * and the retained value tables are compared against. Re-deriving those from the same hand-written
+ * source they were copied from would pass for every value the copy ever held.
+ */
+export function extractBootstrapVariables(
+	cascade: string,
+	scope: BootstrapScope,
+): ReadonlyArray<readonly [name: string, value: string]> {
+	const pattern = BOOTSTRAP_SCOPE_PATTERNS[scope]
+	const declared: Array<readonly [string, string]> = []
+	const seen = new Set<string>()
+	parse(cascade).walkRules((rule) => {
+		if (!pattern.test(normalizeSelectorText(rule.selector))) return
+		rule.walkDecls((declaration) => {
+			if (!declaration.prop.startsWith('--') || seen.has(declaration.prop)) return
+			seen.add(declaration.prop)
+			declared.push([declaration.prop, declaration.value.trim()])
+		})
+	})
+	return declared
+}
+
+/**
+ * Names every `--bs-*` variable Bootstrap declares at `:root`, in declaration order.
+ *
+ * @remarks
+ * This is the union of every rule in Bootstrap 5.3.8's `dist/css/bootstrap.css` file whose
+ * selector begins `:root`, deduplicated at each name's first position, which is what
+ * {@link extractBootstrapVariables} reads back and `tests/setupStyles.test.ts` asserts this equals.
+ * Bootstrap repeats those names on `[data-bs-theme=light]` apart from the `--bs-breakpoint-*`
+ * rung, which it declares at `:root` alone, so the union covers `:root` and
+ * `[data-bs-theme=light]`, and the light theme adds nothing to it.
+ *
+ * The list is the compatibility contract the shipped cascade owes: the `--bs-` partition of
+ * Veneer's own `:root` equals it exactly.
+ */
+export const BOOTSTRAP_ROOT_VARIABLES: readonly string[] = Object.freeze([
+	'--bs-blue',
+	'--bs-indigo',
+	'--bs-purple',
+	'--bs-pink',
+	'--bs-red',
+	'--bs-orange',
+	'--bs-yellow',
+	'--bs-green',
+	'--bs-teal',
+	'--bs-cyan',
+	'--bs-black',
+	'--bs-white',
+	'--bs-gray',
+	'--bs-gray-dark',
+	'--bs-gray-100',
+	'--bs-gray-200',
+	'--bs-gray-300',
+	'--bs-gray-400',
+	'--bs-gray-500',
+	'--bs-gray-600',
+	'--bs-gray-700',
+	'--bs-gray-800',
+	'--bs-gray-900',
+	'--bs-primary',
+	'--bs-secondary',
+	'--bs-success',
+	'--bs-info',
+	'--bs-warning',
+	'--bs-danger',
+	'--bs-light',
+	'--bs-dark',
+	'--bs-primary-rgb',
+	'--bs-secondary-rgb',
+	'--bs-success-rgb',
+	'--bs-info-rgb',
+	'--bs-warning-rgb',
+	'--bs-danger-rgb',
+	'--bs-light-rgb',
+	'--bs-dark-rgb',
+	'--bs-primary-text-emphasis',
+	'--bs-secondary-text-emphasis',
+	'--bs-success-text-emphasis',
+	'--bs-info-text-emphasis',
+	'--bs-warning-text-emphasis',
+	'--bs-danger-text-emphasis',
+	'--bs-light-text-emphasis',
+	'--bs-dark-text-emphasis',
+	'--bs-primary-bg-subtle',
+	'--bs-secondary-bg-subtle',
+	'--bs-success-bg-subtle',
+	'--bs-info-bg-subtle',
+	'--bs-warning-bg-subtle',
+	'--bs-danger-bg-subtle',
+	'--bs-light-bg-subtle',
+	'--bs-dark-bg-subtle',
+	'--bs-primary-border-subtle',
+	'--bs-secondary-border-subtle',
+	'--bs-success-border-subtle',
+	'--bs-info-border-subtle',
+	'--bs-warning-border-subtle',
+	'--bs-danger-border-subtle',
+	'--bs-light-border-subtle',
+	'--bs-dark-border-subtle',
+	'--bs-white-rgb',
+	'--bs-black-rgb',
+	'--bs-font-sans-serif',
+	'--bs-font-monospace',
+	'--bs-gradient',
+	'--bs-body-font-family',
+	'--bs-body-font-size',
+	'--bs-body-font-weight',
+	'--bs-body-line-height',
+	'--bs-body-color',
+	'--bs-body-color-rgb',
+	'--bs-body-bg',
+	'--bs-body-bg-rgb',
+	'--bs-emphasis-color',
+	'--bs-emphasis-color-rgb',
+	'--bs-secondary-color',
+	'--bs-secondary-color-rgb',
+	'--bs-secondary-bg',
+	'--bs-secondary-bg-rgb',
+	'--bs-tertiary-color',
+	'--bs-tertiary-color-rgb',
+	'--bs-tertiary-bg',
+	'--bs-tertiary-bg-rgb',
+	'--bs-heading-color',
+	'--bs-link-color',
+	'--bs-link-color-rgb',
+	'--bs-link-decoration',
+	'--bs-link-hover-color',
+	'--bs-link-hover-color-rgb',
+	'--bs-code-color',
+	'--bs-highlight-color',
+	'--bs-highlight-bg',
+	'--bs-border-width',
+	'--bs-border-style',
+	'--bs-border-color',
+	'--bs-border-color-translucent',
+	'--bs-border-radius',
+	'--bs-border-radius-sm',
+	'--bs-border-radius-lg',
+	'--bs-border-radius-xl',
+	'--bs-border-radius-xxl',
+	'--bs-border-radius-2xl',
+	'--bs-border-radius-pill',
+	'--bs-box-shadow',
+	'--bs-box-shadow-sm',
+	'--bs-box-shadow-lg',
+	'--bs-box-shadow-inset',
+	'--bs-focus-ring-width',
+	'--bs-focus-ring-opacity',
+	'--bs-focus-ring-color',
+	'--bs-form-valid-color',
+	'--bs-form-valid-border-color',
+	'--bs-form-invalid-color',
+	'--bs-form-invalid-border-color',
+	'--bs-breakpoint-xs',
+	'--bs-breakpoint-sm',
+	'--bs-breakpoint-md',
+	'--bs-breakpoint-lg',
+	'--bs-breakpoint-xl',
+	'--bs-breakpoint-xxl',
+	'--bs-btn-close-filter',
+	'--bs-carousel-indicator-active-bg',
+	'--bs-carousel-caption-color',
+	'--bs-carousel-control-icon-filter',
+])
+
+/**
+ * Names every `--bs-*` variable Bootstrap retunes under a dark selector, in declaration order.
+ *
+ * @remarks
+ * This is the union of every rule in the same pinned artifact whose selector begins
+ * `[data-bs-theme=dark]`, read back by {@link extractBootstrapVariables} and asserted equal in
+ * `tests/setupStyles.test.ts`. It spans the theme block itself, the later dark blocks carrying
+ * the close-button and carousel values, and the component rules nested under that selector, whose
+ * image-valued variables have no theme-scope light counterpart.
+ *
+ * The predicate is anchored at the start of the selector, which is what excludes
+ * `.navbar-dark, .navbar[data-bs-theme=dark]` and its `--bs-navbar-*` declarations: that rule
+ * paints a component inside a dark island rather than retuning the island itself.
+ */
+export const BOOTSTRAP_DARK_VARIABLES: readonly string[] = Object.freeze([
+	'--bs-body-color',
+	'--bs-body-color-rgb',
+	'--bs-body-bg',
+	'--bs-body-bg-rgb',
+	'--bs-emphasis-color',
+	'--bs-emphasis-color-rgb',
+	'--bs-secondary-color',
+	'--bs-secondary-color-rgb',
+	'--bs-secondary-bg',
+	'--bs-secondary-bg-rgb',
+	'--bs-tertiary-color',
+	'--bs-tertiary-color-rgb',
+	'--bs-tertiary-bg',
+	'--bs-tertiary-bg-rgb',
+	'--bs-primary-text-emphasis',
+	'--bs-secondary-text-emphasis',
+	'--bs-success-text-emphasis',
+	'--bs-info-text-emphasis',
+	'--bs-warning-text-emphasis',
+	'--bs-danger-text-emphasis',
+	'--bs-light-text-emphasis',
+	'--bs-dark-text-emphasis',
+	'--bs-primary-bg-subtle',
+	'--bs-secondary-bg-subtle',
+	'--bs-success-bg-subtle',
+	'--bs-info-bg-subtle',
+	'--bs-warning-bg-subtle',
+	'--bs-danger-bg-subtle',
+	'--bs-light-bg-subtle',
+	'--bs-dark-bg-subtle',
+	'--bs-primary-border-subtle',
+	'--bs-secondary-border-subtle',
+	'--bs-success-border-subtle',
+	'--bs-info-border-subtle',
+	'--bs-warning-border-subtle',
+	'--bs-danger-border-subtle',
+	'--bs-light-border-subtle',
+	'--bs-dark-border-subtle',
+	'--bs-heading-color',
+	'--bs-link-color',
+	'--bs-link-hover-color',
+	'--bs-link-color-rgb',
+	'--bs-link-hover-color-rgb',
+	'--bs-code-color',
+	'--bs-highlight-color',
+	'--bs-highlight-bg',
+	'--bs-border-color',
+	'--bs-border-color-translucent',
+	'--bs-form-valid-color',
+	'--bs-form-valid-border-color',
+	'--bs-form-invalid-color',
+	'--bs-form-invalid-border-color',
+	'--bs-form-select-bg-img',
+	'--bs-form-switch-bg',
+	'--bs-navbar-toggler-icon-bg',
+	'--bs-accordion-btn-icon',
+	'--bs-accordion-btn-active-icon',
+	'--bs-btn-close-filter',
+	'--bs-carousel-indicator-active-bg',
+	'--bs-carousel-caption-color',
+	'--bs-carousel-control-icon-filter',
+])
+
+/**
+ * Names the dark-scope variables Veneer declares that Bootstrap does not retune in dark.
+ *
+ * @remarks
+ * Bootstrap's primary fill is one color in light and in dark, so Bootstrap retunes neither the
+ * fill, its channel triplet, nor the focus ring built from it. Veneer's primary does retune, and
+ * a custom property carries its `var()` references already substituted, so each of these must be
+ * re-declared inside every scope that selects a mode.
+ */
+export const THEME_DARK_ADDITIONS: readonly string[] = Object.freeze([
+	'--bs-focus-ring-color',
+	'--bs-primary',
+	'--bs-primary-rgb',
+])
+
+/**
+ * Records each color-valued token Veneer retains from Bootstrap, the alias it answers, and the
+ * value Bootstrap declares for that alias.
+ *
+ * @remarks
+ * The value is Bootstrap's own, and `tests/setupStyles.test.ts` asserts each row against what
+ * {@link extractBootstrapVariables} reads at `root` scope, so a Bootstrap bump reddens there. The
+ * browser proof compares the shipped cascade's resolved token against the same value, so a drifted
+ * retained value reddens there. The table is what carries the reading between the Node `setup`
+ * project and the browser `src:styles` project, because a Node project resolves a raw CSS import to
+ * an empty string.
+ *
+ * A row is a value claim rather than a naming claim: `--vn-form-valid` answers
+ * `--bs-form-valid-color` and takes Elements' success fill, so the pairing is Bootstrap's and the
+ * value is not, and that row is outside this table. `--bs-gray` and `--bs-gray-dark` carry no
+ * canonical token of their own, so each is paired with the ramp rung Veneer points it at.
+ *
+ * A retained alias whose value is text carries no row in either table. `--bs-font-monospace` and
+ * `--bs-gradient`, which `--vn-font-mono` and `--vn-surface-gradient` answer, resolve to a font
+ * stack and to a gradient image, and neither the painted-channel reading this table drives nor the
+ * pixel reading {@link RETAINED_LENGTH_ALIASES} drives reaches one. Veneer also writes the gradient
+ * over its own palette token, so that pair agrees as rendered rather than as text.
+ */
+export const RETAINED_COLOR_ALIASES: ReadonlyArray<
+	readonly [token: string, alias: string, value: string]
+> = Object.freeze([
+	Object.freeze(['--vn-palette-blue', '--bs-blue', '#0d6efd'] as const),
+	Object.freeze(['--vn-palette-indigo', '--bs-indigo', '#6610f2'] as const),
+	Object.freeze(['--vn-palette-purple', '--bs-purple', '#6f42c1'] as const),
+	Object.freeze(['--vn-palette-pink', '--bs-pink', '#d63384'] as const),
+	Object.freeze(['--vn-palette-red', '--bs-red', '#dc3545'] as const),
+	Object.freeze(['--vn-palette-orange', '--bs-orange', '#fd7e14'] as const),
+	Object.freeze(['--vn-palette-yellow', '--bs-yellow', '#ffc107'] as const),
+	Object.freeze(['--vn-palette-green', '--bs-green', '#198754'] as const),
+	Object.freeze(['--vn-palette-teal', '--bs-teal', '#20c997'] as const),
+	Object.freeze(['--vn-palette-cyan', '--bs-cyan', '#0dcaf0'] as const),
+	Object.freeze(['--vn-palette-black-base', '--bs-black', '#000'] as const),
+	Object.freeze(['--vn-palette-white-base', '--bs-white', '#fff'] as const),
+	Object.freeze(['--vn-gray-100', '--bs-gray-100', '#f8f9fa'] as const),
+	Object.freeze(['--vn-gray-200', '--bs-gray-200', '#e9ecef'] as const),
+	Object.freeze(['--vn-gray-300', '--bs-gray-300', '#dee2e6'] as const),
+	Object.freeze(['--vn-gray-400', '--bs-gray-400', '#ced4da'] as const),
+	Object.freeze(['--vn-gray-500', '--bs-gray-500', '#adb5bd'] as const),
+	Object.freeze(['--vn-gray-600', '--bs-gray-600', '#6c757d'] as const),
+	Object.freeze(['--vn-gray-700', '--bs-gray-700', '#495057'] as const),
+	Object.freeze(['--vn-gray-800', '--bs-gray-800', '#343a40'] as const),
+	Object.freeze(['--vn-gray-900', '--bs-gray-900', '#212529'] as const),
+	Object.freeze(['--vn-gray-600', '--bs-gray', '#6c757d'] as const),
+	Object.freeze(['--vn-gray-800', '--bs-gray-dark', '#343a40'] as const),
+	Object.freeze(['--vn-color-light-base', '--bs-light', '#f8f9fa'] as const),
+	Object.freeze(['--vn-color-dark-base', '--bs-dark', '#212529'] as const),
+	Object.freeze(['--vn-surface-secondary-base', '--bs-secondary-bg', '#e9ecef'] as const),
+	Object.freeze([
+		'--vn-border-translucent',
+		'--bs-border-color-translucent',
+		'rgba(0, 0, 0, 0.175)',
+	] as const),
+])
+
+/**
+ * Records each length-valued token Veneer retains from Bootstrap, the alias it answers, and the
+ * value Bootstrap declares for that alias.
+ *
+ * @remarks
+ * The browser proof compares each row as a number rather than as text, because Veneer authors a
+ * retained length through its own scale — `calc(1rem * var(--vn-factor-radius))` against
+ * Bootstrap's `1rem` — and the claim is the length the engine resolves, not the expression that
+ * reaches it. `tests/setupStyles.test.ts` pins each value to the stylesheet the same way it pins
+ * {@link RETAINED_COLOR_ALIASES}.
+ *
+ * `--bs-border-radius-2xl` is outside the table: Bootstrap declares it as
+ * `var(--bs-border-radius-xxl)`, and Veneer declares that alias itself, so reading Bootstrap's
+ * value for it inside Veneer's own document would compare the cascade with itself.
+ */
+export const RETAINED_LENGTH_ALIASES: ReadonlyArray<
+	readonly [token: string, alias: string, value: string]
+> = Object.freeze([
+	Object.freeze(['--vn-radius-xlarge', '--bs-border-radius-xl', '1rem'] as const),
+	Object.freeze(['--vn-radius-xxlarge', '--bs-border-radius-xxl', '2rem'] as const),
+	Object.freeze(['--vn-radius-pill', '--bs-border-radius-pill', '50rem'] as const),
+	Object.freeze(['--vn-breakpoint-xs', '--bs-breakpoint-xs', '0'] as const),
+	Object.freeze(['--vn-breakpoint-sm', '--bs-breakpoint-sm', '576px'] as const),
+	Object.freeze(['--vn-breakpoint-md', '--bs-breakpoint-md', '768px'] as const),
+	Object.freeze(['--vn-breakpoint-lg', '--bs-breakpoint-lg', '992px'] as const),
+	Object.freeze(['--vn-breakpoint-xl', '--bs-breakpoint-xl', '1200px'] as const),
+	Object.freeze(['--vn-breakpoint-xxl', '--bs-breakpoint-xxl', '1400px'] as const),
+])
+
+/** Carries one `box-shadow` layer as the browser resolved it. */
+export interface ShadowLayer {
+	/** Holds the layer's color, as the first token the resolved layer carries. */
+	readonly color: string
+	/** Holds the layer's offsets, blur, and spread in order, each in pixels. */
+	readonly lengths: readonly number[]
+	/** Holds whether the layer paints inside the box. */
+	readonly inset: boolean
+}
+
+/**
+ * Extracts the layers one resolved `box-shadow` value carries.
+ *
+ * @param value - The resolved `box-shadow` value, such as the one `readStyle` returns.
+ * @returns One entry per layer, in paint order. A layer's first token is its color, the `inset`
+ *   keyword is taken out wherever it appears, and every remaining token is read as a pixel length
+ *   through `Number.parseFloat`. A layer carrying no token at all is dropped.
+ *
+ * @remarks
+ * A browser resolves `box-shadow` with the color first and every length in pixels, whatever the
+ * author wrote, so comparing the parts is what lets a proof assert the lengths as numbers and the
+ * color through {@link matchesPaintedColor} rather than against one engine's serialization of the
+ * whole value.
+ */
+export function extractShadowLayers(value: string): readonly ShadowLayer[] {
+	return splitTopLevelList(value).flatMap((layer) => {
+		const tokens = splitTopLevelValues(layer)
+		const parts = tokens.filter((token) => token !== 'inset')
+		const color = parts[0]
+		if (color === undefined) return []
+		const lengths = parts.slice(1).map((part) => Number.parseFloat(part))
+		return [{ color, lengths, inset: tokens.length !== parts.length }]
+	})
+}
+
+/**
+ * Checks whether a character is one of the whitespace characters CSS separates its syntax on.
+ *
+ * @param char - The character to judge, as one UTF-16 unit of selector or declaration text.
+ * @returns True if the character is a space, a tab, a line feed, a carriage return, or a form
+ *   feed; false otherwise. Every other character JavaScript's own whitespace class carries is an
+ *   identifier character to CSS, the no-break space among them, so a selector reader splitting
+ *   on JavaScript whitespace would read `h1`, a no-break space, and `p` as two compounds rather
+ *   than as the one identifier they are.
+ */
+export function matchesCSSWhitespace(char: string): boolean {
+	return char === ' ' || char === '\t' || char === '\n' || char === '\r' || char === '\f'
+}
+
+/**
+ * Trims the whitespace one text writes as syntax from each end of it.
+ *
+ * @param text - The selector or declaration text to trim.
+ * @returns The text without the leading and trailing characters {@link matchesCSSWhitespace} names
+ *   that the grammar {@link walkSelector} states reads as syntax. A no-break space is kept,
+ *   because it belongs to the identifier it is written in, and so is a space or a tab an escape or
+ *   a quotation owns: `h1\ ` ends in the identifier `h1 ` rather than in a separator, and
+ *   trimming that space would name a different element.
+ */
+export function trimCSSWhitespace(text: string): string {
+	const steps = walkSelector(text)
+	let start = 0
+	let end = steps.length
+	while (start < end) {
+		const step = steps[start]
+		if (step === undefined || step.literal || !matchesCSSWhitespace(step.char)) break
+		start += 1
+	}
+	while (end > start) {
+		const step = steps[end - 1]
+		if (step === undefined || step.literal || !matchesCSSWhitespace(step.char)) break
+		end -= 1
+	}
+	return text.slice(start, end)
+}
+
+/** Names the combinators CSS joins two compound selectors with. */
+export type SelectorCombinator = ' ' | '>' | '+' | '~'
+
+/**
+ * Carries the bare tags one compound selector names and the combinator reaching that compound.
+ */
+export interface SelectorCompound {
+	/**
+	 * Holds every bare tag the compound names, lowercased, as {@link extractCompoundTags} reads
+	 * them. A compound names the tag its leading identifier decodes to, so a compound holding a
+	 * tag holds that one and a compound opening with a `.`, a `[`, or a `:` holds none.
+	 */
+	readonly tags: readonly string[]
+	/** Holds the combinator reaching this compound, or `undefined` where it is the first. */
+	readonly combinator: SelectorCombinator | undefined
+}
+
+/** Carries one CSS escape, decoded to the character it stands for and measured in written units. */
+export interface SelectorEscape {
+	/**
+	 * Holds the character the escape stands for, or the empty string where nothing follows the
+	 * `\`.
+	 */
+	readonly text: string
+	/** Holds how many UTF-16 units the escape occupies in the text, the `\` counted. */
+	readonly length: number
+}
+
+/**
+ * Reads the CSS escape a backslash opens.
+ *
+ * @param text - The selector or declaration text carrying the escape.
+ * @param index - The index of the `\` the escape opens with.
+ * @returns The character the escape stands for, with the span it occupies. A `\` followed by one to
+ *   six hexadecimal digits stands for that code point, and one character that
+ *   {@link matchesCSSWhitespace} names, written after the digits, ends the escape and belongs to
+ *   it, so `\64 p` is `dp` and `\64x` is `dx`. A `\` followed by anything else stands for that
+ *   character, so `\l` is `l` and `\+` is `+`. A code point of zero, a surrogate, or one past the
+ *   Unicode range stands for U+FFFD, as CSS substitutes it, and a `\` ending the text stands for
+ *   nothing.
+ */
+export function readEscape(text: string, index: number): SelectorEscape {
+	const after = text.slice(index + 1)
+	const hex = after.match(/^[0-9a-fA-F]{1,6}/u)?.[0]
+	if (hex === undefined) {
+		const [first] = [...after]
+		return first === undefined ? { text: '', length: 1 } : { text: first, length: 1 + first.length }
+	}
+	const code = Number.parseInt(hex, 16)
+	const outside = code === 0 || code > 0x10ffff || (code >= 0xd800 && code <= 0xdfff)
+	const ended = matchesCSSWhitespace(after[hex.length] ?? '') ? 1 : 0
+	return {
+		text: outside ? String.fromCodePoint(0xfffd) : String.fromCodePoint(code),
+		length: 1 + hex.length + ended,
+	}
+}
+
+/** Carries one character of walked selector text with the state the walk read it under. */
+export interface SelectorStep {
+	/** Holds the character itself, as the one UTF-16 unit the walked text writes at `index`. */
+	readonly char: string
+	/** Holds the character's position in the walked text, so `text[step.index]` is `step.char`. */
+	readonly index: number
+	/**
+	 * Holds how many groups enclose the character. A group's own opener and its matching closer
+	 * carry the depth the group sits at rather than the depth inside it, so a whole group reads at
+	 * the depth its caller wrote it at and its contents read one deeper.
+	 */
+	readonly depth: number
+	/**
+	 * Holds whether the character belongs to a string: the quotation mark opening one, every
+	 * character up to its match, and the match itself. A quoted character is always literal.
+	 */
+	readonly quoted: boolean
+	/**
+	 * Holds whether the character is text rather than selector syntax: a quotation mark, every
+	 * character between one and its match, a backslash, and the character a backslash escapes. A
+	 * literal character opens no group, closes none, and separates nothing, and is quoted or part
+	 * of an escape.
+	 */
+	readonly literal: boolean
+}
+
+/**
+ * Walks selector text once, reporting each character with the nesting and quotation it sits in.
+ *
+ * @param text - The selector text to walk. A declaration value carries the same grammar for the
+ *   part of it this walk reads, which is why {@link splitTopLevelList} serves both.
+ * @returns One step per UTF-16 unit of `text`, in written order and at the same index.
+ *
+ * @remarks
+ * This is the grammar every selector reader in this module reads through. The readers that read
+ * these steps are {@link findGroupEnd}, {@link trimCSSWhitespace}, {@link splitTopLevelList},
+ * {@link splitTopLevelCompounds}, {@link normalizeComplexSelector}, {@link readIdentifier},
+ * {@link extractSelectorIdentifiers}, {@link extractCompoundTags}, and {@link scanUnreadForm},
+ * and that list is closed. A reader obtains an identifier from {@link readIdentifier}, which
+ * reads these same steps, and every other reader in it reads the steps themselves, so every one
+ * of them answers a given form the same way. Each remaining reader is built on those:
+ * {@link extractSelectorCompounds} reads a complex selector through
+ * {@link normalizeComplexSelector}, {@link splitTopLevelCompounds}, and
+ * {@link extractCompoundTags}; {@link matchesLooseTagPair} reads a selector list through
+ * {@link scanUnreadForm}, {@link splitTopLevelList}, and {@link extractSelectorCompounds}; and
+ * {@link extractShadowLayers} reads a declaration value through {@link splitTopLevelList} and
+ * {@link splitTopLevelValues}, which carries its own reading of a value's tokens.
+ *
+ * The one selector test outside the walk is `BOOTSTRAP_SCOPE_PATTERNS` in
+ * {@link extractBootstrapVariables}, which matches a scope selector such as `:root` as a whole and
+ * reads no compound, combinator, or group of it. That path compares the selector
+ * `normalizeSelectorText` in `tests/setup.ts` collapses, which drops every quotation mark and
+ * collapses JavaScript's own whitespace, so the rules this grammar fixes for a quoted character
+ * and for a no-break space govern every reader here and none of that match.
+ *
+ * The grammar is strings, escapes, groups, identifiers, combinators, and comma lists, and nothing
+ * else. A `"` or a `'` opens a string that the same mark closes, and every character of it, the
+ * marks included, is quoted and literal. A `\` and the escape it opens, as {@link readEscape}
+ * measures it, are literal wherever they appear, so an escaped quotation mark leaves its string
+ * open, an escaped `+` belongs to the identifier around it rather than joining two compounds, and
+ * the whitespace ending a hexadecimal escape separates nothing. A `(` or a `[` opens a group that
+ * a `)` or a `]` closes, groups nest, and `depth` counts the ones still open; a closer with no
+ * opener leaves `depth` at zero. An identifier runs over letters, digits, `-`, `_`, the characters
+ * past U+007F, and escapes, which {@link readIdentifier} decodes. A `>`, a `+`, or a `~` outside a
+ * group and outside quotation is a combinator, a run of the whitespace
+ * {@link matchesCSSWhitespace} names is the descendant combinator, and a comma outside a group
+ * separates complex selectors. Every pseudo-class and every pseudo-element reads as part of the
+ * compound it is written in and names no tag, so `h1:not(p)` names `h1` alone and `:not(h1)` names
+ * none.
+ *
+ * Text outside that grammar is walked rather than refused, so the walk answers for any input. An
+ * unterminated string leaves every character after its opening mark literal to the end of the
+ * text, and an unclosed group leaves every character after it one deeper to the end, which is what
+ * makes {@link findGroupEnd} answer `text.length` for a group that never closes. A construct the
+ * grammar does not carry is a different matter, because a reader would answer from a misreading of
+ * it rather than from the text: {@link scanUnreadForm} names each one — the namespace separator,
+ * a `:has()` argument, an `of` clause, a comment, and the functional list an `:is()` or
+ * `:where()` argument writes — and {@link matchesLooseTagPair} refuses a selector carrying it.
+ */
+export function walkSelector(text: string): readonly SelectorStep[] {
+	const steps: SelectorStep[] = []
+	let depth = 0
+	let quote: '"' | "'" | undefined
+	let remaining = 0
+	for (const [index, char] of text.split('').entries()) {
+		const escaped = remaining > 0
+		const inside = quote !== undefined
+		const quoted = inside || (!escaped && (char === '"' || char === "'"))
+		const literal = escaped || quoted || char === '\\'
+		if (escaped) remaining -= 1
+		else if (char === '\\') remaining = readEscape(text, index).length - 1
+		else if (inside) quote = char === quote ? undefined : quote
+		else if (char === '"' || char === "'") quote = char
+		else if (char === ')' || char === ']') depth = Math.max(0, depth - 1)
+		steps.push({ char, index, depth, quoted, literal })
+		if (!literal && (char === '(' || char === '[')) depth += 1
+	}
+	return steps
+}
+
+/** Carries one identifier read out of walked selector text, decoded and located. */
+export interface SelectorIdentifier {
+	/** Holds the identifier's text with every escape decoded, in the case the text writes it. */
+	readonly text: string
+	/** Holds the index the identifier ends before, so the step at `end` is the first past it. */
+	readonly end: number
+}
+
+/**
+ * Reads the identifier written at one position of walked selector text.
+ *
+ * @param steps - The walk of the whole text, as {@link walkSelector} returns it.
+ * @param start - The index of the identifier's first character.
+ * @returns The identifier's decoded text with the index it ends before, or `undefined` where no
+ *   identifier begins at `start`. An identifier is written with letters, digits, `-`, `_`, any
+ *   character past U+007F, and escapes, so `details-card` is one identifier rather than the tag
+ *   `details`, and `detai\ls` is the tag `details` however it is written. Every escape is decoded
+ *   by {@link readEscape}, so `det\ails` is `det`, a line feed, and `ils`. A character the grammar
+ *   {@link walkSelector} states reads as quoted or as syntax ends the identifier, and a quoted
+ *   character begins none, so the attribute value in `[a="\64"]` is text rather than an identifier
+ *   and `a"b"` holds the one identifier `a`.
+ */
+export function readIdentifier(
+	steps: readonly SelectorStep[],
+	start: number,
+): SelectorIdentifier | undefined {
+	const text = steps.map((step) => step.char).join('')
+	let decoded = ''
+	let index = start
+	while (index < steps.length) {
+		const step = steps[index]
+		if (step === undefined || step.quoted) break
+		if (step.literal && step.char === '\\') {
+			const escape = readEscape(text, index)
+			decoded += escape.text
+			index += escape.length
+			continue
+		}
+		if (step.literal || !/[-_a-zA-Z0-9]|[\u{0080}-\u{10FFFF}]/u.test(step.char)) break
+		decoded += step.char
+		index += 1
+	}
+	return index > start ? { text: decoded, end: index } : undefined
+}
+
+/**
+ * Extracts every identifier one text writes, in written order.
+ *
+ * @param text - The selector text to read, such as the argument of a functional pseudo-class.
+ * @returns Each identifier {@link readIdentifier} reads, decoded and in the case the text writes
+ *   it. A run of identifier characters is one identifier however it is written, so `2n\ of` is the
+ *   one identifier `2n of` while `2n of` is `2n` and `of`; anything that is not an identifier
+ *   character bounds one, so `of.x` writes `of` and `x`; and a quoted character opens none, so
+ *   `[a="of"]` writes only `a`.
+ *
+ * @remarks
+ * A keyword written inside a functional argument is an identifier, so a reader that lists the
+ * argument's identifiers finds the keyword through an escape, a case change, and a punctuation
+ * boundary alike, where a reader comparing the argument's whitespace-separated text finds it only
+ * where it is written without either. {@link scanUnreadForm} reads the `of` clause this way.
+ */
+export function extractSelectorIdentifiers(text: string): readonly string[] {
+	const steps = walkSelector(text)
+	const identifiers: string[] = []
+	let index = 0
+	while (index < steps.length) {
+		const written = readIdentifier(steps, index)
+		if (written === undefined) {
+			index += 1
+			continue
+		}
+		identifiers.push(written.text)
+		index = written.end
+	}
+	return identifiers
+}
+
+/**
+ * Splits text on the commas that separate its top-level items.
+ *
+ * @param text - The selector or declaration value to split.
+ * @returns Each item, trimmed by {@link trimCSSWhitespace} so a whitespace an escape owns stays
+ *   with the identifier that owns it, with an empty item dropped. A comma the grammar
+ *   {@link walkSelector} states puts inside a group or a string belongs to the item around it and
+ *   is not a split point, so `:not(h1, h2) + p` stays one selector, `[title="a,b"] p` stays one,
+ *   and `rgba(0, 0, 0, 0.5) 0 1px 2px` stays one shadow layer.
+ */
+export function splitTopLevelList(text: string): readonly string[] {
+	const parts: string[] = []
+	let current = ''
+	for (const step of walkSelector(text)) {
+		if (step.char === ',' && step.depth === 0 && !step.literal) {
+			parts.push(current)
+			current = ''
+			continue
+		}
+		current += step.char
+	}
+	parts.push(current)
+	return parts.map((part) => trimCSSWhitespace(part)).filter((part) => part.length > 0)
+}
+
+/**
+ * Normalizes one complex selector so every combinator stands alone between its compounds.
+ *
+ * @param complex - The complex selector text to normalize.
+ * @returns The text with each `>`, `+`, and `~` the grammar {@link walkSelector} states reads as a
+ *   combinator surrounded by one space, every other top-level run of the whitespace
+ *   {@link matchesCSSWhitespace} names collapsed to one space, and the result trimmed, so `h1+p`
+ *   and `h1 + p` read the same. Every other character is copied through byte for byte, so
+ *   `[title="a  b"]` and `[title="a b"]` stay the different selectors they are, `:not(h1,  p)`
+ *   keeps its own spacing, and the escaped `+` in `h1\+p` stays part of the one identifier it
+ *   belongs to.
+ */
+export function normalizeComplexSelector(complex: string): string {
+	let normalized = ''
+	let spaced = false
+	for (const step of walkSelector(complex)) {
+		const top = step.depth === 0 && !step.literal
+		if (top && matchesCSSWhitespace(step.char)) {
+			spaced = true
+			continue
+		}
+		if (top && (step.char === '>' || step.char === '+' || step.char === '~')) {
+			if (normalized.length > 0) normalized += ' '
+			normalized += step.char
+			spaced = true
+			continue
+		}
+		if (spaced && normalized.length > 0) normalized += ' '
+		spaced = false
+		normalized += step.char
+	}
+	return normalized
+}
+
+/**
+ * Splits one normalized complex selector into the compounds and combinators it writes.
+ *
+ * @param complex - The complex selector's text, as {@link normalizeComplexSelector} returns it.
+ * @returns Each compound in selector order, with a `>`, `+`, or `~` written between two of them
+ *   returned in its own place between them. Only the whitespace {@link matchesCSSWhitespace} names
+ *   splits, so a no-break space belongs to the identifier it is written in; whitespace the grammar
+ *   {@link walkSelector} states puts inside a group or a string belongs to the compound around it
+ *   and is never a split point, so `:not(h1, p)` stays one compound, `[title='a b']` stays part of
+ *   the compound carrying it, the escaped quotation mark in `[title="a\" b"]` leaves the string
+ *   open so the space after it still belongs to that attribute value, and `h1\ p` is the one
+ *   identifier it escapes to.
+ *
+ * @remarks
+ * {@link splitTopLevelValues} answers the same question for a declaration value and cannot be used
+ * here: it emits a bare `/` as a token of its own, which a declaration value needs and a selector
+ * never writes, and it tracks no bracket depth, which an attribute selector needs.
+ */
+export function splitTopLevelCompounds(complex: string): readonly string[] {
+	const compounds: string[] = []
+	let current = ''
+	for (const step of walkSelector(complex)) {
+		if (step.depth === 0 && !step.literal && matchesCSSWhitespace(step.char)) {
+			if (current.length > 0) compounds.push(current)
+			current = ''
+			continue
+		}
+		current += step.char
+	}
+	if (current.length > 0) compounds.push(current)
+	return compounds
+}
+
+/**
+ * Locates the character closing the parenthesis or bracket that opens at one position.
+ *
+ * @param text - The selector text to walk.
+ * @param open - The index of the `(` or `[` the group opens with.
+ * @returns The index of the `)` or `]` closing that group: the first closer the grammar
+ *   {@link walkSelector} states reads back at the opener's own depth, so a nested group counts as
+ *   part of this one and a closer inside quotation or behind a backslash closes nothing. An
+ *   unclosed group returns `text.length`, so a caller slicing to it takes the rest of the text.
+ */
+export function findGroupEnd(text: string, open: number): number {
+	const steps = walkSelector(text)
+	const opener = steps[open]
+	if (opener === undefined) return text.length
+	for (const step of steps) {
+		if (step.index <= open || step.literal || step.depth !== opener.depth) continue
+		if (step.char === ')' || step.char === ']') return step.index
+	}
+	return text.length
+}
+
+/**
+ * Extracts every bare tag one compound selector names.
+ *
+ * @param compound - The compound selector text to read.
+ * @returns The tag the compound's leading identifier decodes to, lowercased, as the one entry of
+ *   the list, or an empty list where the compound names none. The identifier is read by
+ *   {@link readIdentifier}, so it runs through a `-`, a `_`, a digit, and an escape:
+ *   `details-card` names `details-card` rather than `details`, and `detai\ls` names `details`. A
+ *   tag is written as an identifier opening with an ASCII letter, so a compound opening with a
+ *   `.`, a `[`, a `:`, or a digit names none.
+ *
+ * @remarks
+ * The tag is lowercased because a tag name is ASCII case-insensitive, so `P.lead` names `p`.
+ *
+ * A pseudo-class and a pseudo-element belong to the compound they are written in and name no tag
+ * of their own, so `h1:not(p)` and `h1:nth-child(2n)` each name `h1` and `:not(h1)` names none.
+ * The functional lists `:is()` and `:where()` would each name the tags of the complex selectors
+ * written inside them, so a compound writing one selects through a tree of alternatives rather
+ * than through the one chain of compounds this grammar reads. {@link scanUnreadForm} names them
+ * among the forms it leaves unread, and {@link matchesLooseTagPair} refuses a selector writing
+ * one.
+ */
+export function extractCompoundTags(compound: string): readonly string[] {
+	const bare = readIdentifier(walkSelector(compound), 0)
+	if (bare === undefined || !/^[a-zA-Z]/u.test(bare.text)) return []
+	return [bare.text.toLowerCase()]
+}
+
+/**
+ * Extracts the tag-naming compounds one complex selector writes, each with the combinator that
+ * reaches it.
+ *
+ * @param complex - One complex selector's text, without a comma list around it.
+ * @returns Each compound naming at least one tag, in selector order. The first carries
+ *   `undefined`; every later one carries the combinator written before it, and a descendant
+ *   combinator where none was written. A compound naming no tag is dropped, so the compounds on
+ *   either side of it read as joined by the combinator that reaches the later one: `h1 .x p` is
+ *   `h1` joined to `p` by the descendant combinator, `h1 .x > p` joins the same two by the child
+ *   combinator, and `.card h1 ~ p` opens at `h1`.
+ *
+ * @remarks
+ * A compound naming no tag places no demand on the markup, so a pair reaching across it is the
+ * pair the selector would write without it. Dropping it is what lets one rule judge `h1 .x p` and
+ * `h1 p` alike.
+ *
+ * A compound is one entry whatever else it writes beside its tag, because a compound selects one
+ * element rather than joining two.
+ */
+export function extractSelectorCompounds(complex: string): readonly SelectorCompound[] {
+	const compounds: SelectorCompound[] = []
+	let join: SelectorCombinator | undefined
+	for (const part of splitTopLevelCompounds(normalizeComplexSelector(complex))) {
+		if (part === '>' || part === '+' || part === '~') {
+			join = part
+			continue
+		}
+		const tags = extractCompoundTags(part)
+		if (tags.length > 0) {
+			compounds.push({ tags, combinator: compounds.length > 0 ? (join ?? ' ') : undefined })
+		}
+		join = undefined
+	}
+	return compounds
+}
+
+/**
+ * Scans a selector for a construct the readers of this module do not carry.
+ *
+ * @param selector - The selector text to scan, a comma list included.
+ * @returns The name of the first construct outside the grammar {@link walkSelector} states, or
+ *   `undefined` where the selector writes none. The constructs are the namespace separator `|`, a
+ *   `:has()` argument, the `of` clause an `:nth-` pseudo-class takes, a comment, which an unquoted
+ *   `/` followed by `*` opens, and the functional list an `:is()` or `:where()` argument writes.
+ *   The dash-match operator `|=` is an attribute operator rather than a namespace separator, and
+ *   a character the grammar reads as quoted or escaped is text rather than one of these, so
+ *   `[title=':is(h1)']` writes none of them.
+ *
+ *   A pseudo-class name is an identifier read through {@link readIdentifier}, so it is found at any
+ *   depth, in any case, and through an escape: `:IS(`, `:i\73(`, and the `:is(` inside `:not()`
+ *   each name the functional list. The `of` keyword is an identifier too, so the argument's
+ *   identifiers are read through {@link extractSelectorIdentifiers} and any one of them that
+ *   case-folds to `of` names the clause: `\6f f`, `o\66`, `OF.x`, and `of[x]` each write the
+ *   keyword, while `2n\ of` writes the single identifier `2n of` and writes no keyword.
+ *
+ * @remarks
+ * Each of these decides which element a selector matches, and each would be read here as something
+ * else: a namespace separator as part of the identifier beside it, a `:has()` argument as a group
+ * naming no tag, an `of` clause as a stray compound, and a comment as compounds of its own. A
+ * functional list is the widest of them, because each alternative it lists is a complex selector
+ * of its own: a compound writing one selects through a tree of alternatives, while every reader
+ * here reads the one chain of compounds a selector writes. Veneer's own `elements` layer writes
+ * none of these, and a partial that wants a list can write its selectors flat, so the guard
+ * refuses the form rather than modelling it.
+ *
+ * {@link matchesLooseTagPair} refuses a selector carrying one rather than answering from that
+ * misreading, so every selector it judges is one this grammar reads whole.
+ */
+export function scanUnreadForm(selector: string): string | undefined {
+	const steps = walkSelector(selector)
+	for (const step of steps) {
+		if (step.literal) continue
+		if (step.char === '/' && steps[step.index + 1]?.char === '*') return 'comment'
+		if (step.char === '|' && steps[step.index + 1]?.char !== '=') return 'namespace separator'
+		if (step.char !== ':') continue
+		const name = readIdentifier(steps, step.index + 1)
+		if (name === undefined) continue
+		const open = steps[name.end]
+		if (open === undefined || open.char !== '(' || open.literal) continue
+		const lowered = name.text.toLowerCase()
+		if (lowered === 'has') return ':has() argument'
+		if (lowered === 'is' || lowered === 'where') return 'functional list'
+		if (!lowered.startsWith('nth-')) continue
+		const inside = selector.slice(open.index + 1, findGroupEnd(selector, open.index))
+		const written = extractSelectorIdentifiers(inside)
+		if (written.some((identifier) => identifier.toLowerCase() === 'of')) return 'of clause'
+	}
+	return undefined
+}
+
+/**
+ * Matches a selector joining two bare tags the HTML content model does not mandate.
+ *
+ * @param selector - The selector text to judge, a comma list included.
+ * @returns `true` when any complex selector in the list joins two tag-naming compounds by a
+ *   sibling combinator, or joins them by a descendant or child combinator outside
+ *   {@link MANDATED_TAG_PAIRS}; `false` otherwise. A comma separates complex selectors rather than
+ *   joining compounds, so `h1, p` is a list and never a pair. A selector carrying one tag-naming
+ *   compound or none is never a pair, so `:not(h1) + p` carries the one compound `p` and is none.
+ * @throws Thrown when the selector carries a construct {@link scanUnreadForm} names, because the
+ *   readers here would answer that selector from a misreading of it. The error names the form.
+ *
+ * @remarks
+ * A mandated pair states that the descendant has no other legal parent, which is a containment
+ * claim. A sibling combinator makes no such claim, so `details + summary` is a loose pair while
+ * `details summary` is not.
+ *
+ * The compounds judged are the ones {@link extractSelectorCompounds} reads, so a compound naming
+ * no tag is already dropped and `h1 .x p` is judged as `h1 p`. Each compound's tags are read as a
+ * list, and the pair is loose as soon as one tag on each side makes it loose.
+ */
+export function matchesLooseTagPair(selector: string): boolean {
+	const form = scanUnreadForm(selector)
+	if (form !== undefined) throw new Error(`matchesLooseTagPair reads no ${form}: ${selector}`)
+	return splitTopLevelList(selector).some((complex) => {
+		const compounds = extractSelectorCompounds(complex)
+		return compounds.some((compound, index) => {
+			const previous = compounds[index - 1]
+			if (previous === undefined || compound.combinator === undefined) return false
+			if (compound.combinator !== ' ' && compound.combinator !== '>') return true
+			return compound.tags.some((descendant) =>
+				previous.tags.some(
+					(ancestor) =>
+						!MANDATED_TAG_PAIRS.some(
+							([mandated, held]) => mandated === ancestor && held === descendant,
+						),
+				),
+			)
+		})
+	})
+}
+
+/**
+ * Collects every custom-property name a token registry carries, in registry order.
+ *
+ * @param value - The registry node to walk: a group, or the custom-property name at a leaf.
+ * @returns Each leaf name beneath the node, and the node itself when it is already a name.
+ *
+ * @remarks
+ * This is {@link collectTokenNodes} reduced to its leaves. That walk lives in `tests/setup.ts`
+ * because every project loads that module, and the Node core proof reads the same tree for the
+ * path law.
+ */
+export function collectTokenNames(value: unknown): readonly string[] {
+	return collectTokenNodes(value).flatMap(([, node]) => (typeof node === 'string' ? [node] : []))
+}
+
+/**
+ * Collects every registry group declaring both a color and its channel triplet.
+ *
+ * @param value - The registry node to walk.
+ * @returns Each group's color name paired with its triplet name, outermost group first. A group
+ *   carrying one of the pair and not the other is not returned.
+ */
+export function collectTripletGroups(value: unknown): ReadonlyArray<readonly [string, string]> {
+	return collectTokenNodes(value).flatMap(([, node]) => {
+		if (!isRecord(node)) return []
+		const color: unknown = node.base
+		const triplet: unknown = node.rgb
+		const pair: ReadonlyArray<readonly [string, string]> =
+			typeof color === 'string' && typeof triplet === 'string' ? [[color, triplet]] : []
+		return pair
+	})
+}
+
+/**
+ * Records the settled color Elements' built showcase renders for each role tier, per mode.
+ *
+ * @remarks
+ * Each row is a role, a mode, a tier, and the color that tier resolved to. The readings come from
+ * `dist/showcase/index.html` at commit `3b41900` on 2026-09-20, on managed Chromium
+ * `153.0.8010.12` and on Edge `153.0.4234.48`, which reported the same string for every row.
+ * `information` is the Elements name of the role Bootstrap calls `info`. The `light` and `dark`
+ * roles Bootstrap names have no Elements specimen, so no row measures them and their tiers follow
+ * the same expressions unmeasured.
+ */
+export const CALIBRATED_TIERS: ReadonlyArray<
+	readonly [role: string, mode: string, tier: string, color: string]
+> = Object.freeze([
+	Object.freeze(['primary', 'light', 'base', 'oklch(0.48 0.255 264)'] as const),
+	Object.freeze(['primary', 'dark', 'base', 'oklch(0.7 0.15 233)'] as const),
+	Object.freeze(['primary', 'light', 'subtle', 'oklab(0.937595 -0.00315847 -0.0304147)'] as const),
+	Object.freeze(['primary', 'dark', 'subtle', 'oklab(0.2835 -0.0162141 -0.0286911)'] as const),
+	Object.freeze(['primary', 'light', 'emphasis', 'oklab(0.3984 -0.019591 -0.190088)'] as const),
+	Object.freeze(['primary', 'dark', 'emphasis', 'oklab(0.7687 -0.0641665 -0.0876326)'] as const),
+	Object.freeze(['primary', 'light', 'border', 'oklab(0.817996 -0.00929954 -0.088748)'] as const),
+	Object.freeze(['primary', 'dark', 'border', 'oklab(0.4675 -0.0467086 -0.0662046)'] as const),
+	Object.freeze(['secondary', 'light', 'base', 'oklch(0.446 0.043 257.281)'] as const),
+	Object.freeze(['secondary', 'dark', 'base', 'oklch(0.446 0.043 257.281)'] as const),
+	Object.freeze([
+		'secondary',
+		'light',
+		'subtle',
+		'oklab(0.933515 -0.00109597 -0.00501571)',
+	] as const),
+	Object.freeze(['secondary', 'dark', 'subtle', 'oklab(0.2454 -0.00409333 -0.0170135)'] as const),
+	Object.freeze([
+		'secondary',
+		'light',
+		'emphasis',
+		'oklab(0.3746 -0.00755977 -0.0419268)',
+	] as const),
+	Object.freeze(['secondary', 'dark', 'emphasis', 'oklab(0.5909 -0.00760306 -0.0331373)'] as const),
+	Object.freeze([
+		'secondary',
+		'light',
+		'border',
+		'oklab(0.806096 -0.00328393 -0.0146676)',
+	] as const),
+	Object.freeze(['secondary', 'dark', 'border', 'oklab(0.3405 -0.00630614 -0.0272793)'] as const),
+	Object.freeze(['tertiary', 'light', 'base', 'oklch(0.541 0.281 293.009)'] as const),
+	Object.freeze(['tertiary', 'dark', 'base', 'oklch(0.541 0.281 293.009)'] as const),
+	Object.freeze(['tertiary', 'light', 'subtle', 'oklab(0.944915 0.0132204 -0.0310197)'] as const),
+	Object.freeze(['tertiary', 'dark', 'subtle', 'oklab(0.25965 0.0138022 -0.0495184)'] as const),
+	Object.freeze(['tertiary', 'light', 'emphasis', 'oklab(0.4411 0.0759527 -0.193617)'] as const),
+	Object.freeze(['tertiary', 'dark', 'emphasis', 'oklab(0.6574 0.0759094 -0.184827)'] as const),
+	Object.freeze(['tertiary', 'light', 'border', 'oklab(0.839346 0.0384723 -0.0905125)'] as const),
+	Object.freeze(['tertiary', 'dark', 'border', 'oklab(0.388 0.0533456 -0.135629)'] as const),
+	Object.freeze(['success', 'light', 'base', 'oklch(0.527 0.154 150.069)'] as const),
+	Object.freeze(['success', 'dark', 'base', 'oklch(0.527 0.154 150.069)'] as const),
+	Object.freeze(['success', 'light', 'subtle', 'oklab(0.943235 -0.0159752 0.00923839)'] as const),
+	Object.freeze(['success', 'dark', 'subtle', 'oklab(0.25755 -0.0226923 0.000804124)'] as const),
+	Object.freeze(['success', 'light', 'emphasis', 'oklab(0.4313 -0.0943551 0.0412221)'] as const),
+	Object.freeze(['success', 'dark', 'emphasis', 'oklab(0.6476 -0.0943983 0.0500116)'] as const),
+	Object.freeze(['success', 'light', 'border', 'oklab(0.834446 -0.0466816 0.0269068)'] as const),
+	Object.freeze(['success', 'dark', 'border', 'oklab(0.381 -0.0683028 0.0321127)'] as const),
+	Object.freeze(['warning', 'light', 'base', 'oklch(0.555 0.163 48.998)'] as const),
+	Object.freeze(['warning', 'dark', 'base', 'oklch(0.555 0.163 48.998)'] as const),
+	Object.freeze(['warning', 'light', 'subtle', 'oklab(0.946595 0.0128731 0.0147793)'] as const),
+	Object.freeze(['warning', 'dark', 'subtle', 'oklab(0.26175 0.013368 0.00773032)'] as const),
+	Object.freeze(['warning', 'light', 'emphasis', 'oklab(0.4509 0.0739267 0.0735443)'] as const),
+	Object.freeze(['warning', 'dark', 'emphasis', 'oklab(0.6672 0.0738834 0.0823338)'] as const),
+	Object.freeze(['warning', 'light', 'border', 'oklab(0.844246 0.0374593 0.0430679)'] as const),
+	Object.freeze(['warning', 'dark', 'border', 'oklab(0.395 0.0518985 0.0552)'] as const),
+	Object.freeze(['danger', 'light', 'base', 'oklch(0.505 0.213 27.518)'] as const),
+	Object.freeze(['danger', 'dark', 'base', 'oklch(0.505 0.213 27.518)'] as const),
+	Object.freeze(['danger', 'light', 'subtle', 'oklab(0.940595 0.0227084 0.0118271)'] as const),
+	Object.freeze(['danger', 'dark', 'subtle', 'oklab(0.25425 0.0256621 0.00404)'] as const),
+	Object.freeze(['danger', 'light', 'emphasis', 'oklab(0.4159 0.131299 0.0563228)'] as const),
+	Object.freeze(['danger', 'dark', 'emphasis', 'oklab(0.6322 0.131256 0.0651124)'] as const),
+	Object.freeze(['danger', 'light', 'border', 'oklab(0.826746 0.0661455 0.0344572)'] as const),
+	Object.freeze(['danger', 'dark', 'border', 'oklab(0.37 0.0928787 0.042899)'] as const),
+	Object.freeze(['info', 'light', 'base', 'oklch(0.5 0.134 242.749)'] as const),
+	Object.freeze(['info', 'dark', 'base', 'oklch(0.5 0.134 242.749)'] as const),
+	Object.freeze(['info', 'light', 'subtle', 'oklab(0.939995 -0.00732276 -0.0142776)'] as const),
+	Object.freeze(['info', 'dark', 'subtle', 'oklab(0.2535 -0.0118768 -0.0285909)'] as const),
+	Object.freeze(['info', 'light', 'emphasis', 'oklab(0.4124 -0.0438827 -0.0959545)'] as const),
+	Object.freeze(['info', 'dark', 'emphasis', 'oklab(0.6287 -0.043926 -0.087165)'] as const),
+	Object.freeze(['info', 'light', 'border', 'oklab(0.824996 -0.0214454 -0.0416815)'] as const),
+	Object.freeze(['info', 'dark', 'border', 'oklab(0.3675 -0.0322511 -0.0658705)'] as const),
+])
+
+/**
+ * Carries the customization recipe `guides/veneer.md` shows under Tokens.
+ *
+ * @remarks
+ * The guide claims what this recipe does to a consumer's spacing, to the primary role's whole tier
+ * family, to a translucent fill written through the channel triplet, and to a dark island.
+ * `tests/src/styles/integration.test.ts` loads this text and reads each of those results.
+ *
+ * Copy this string from that fence, and change it with the fence. The fence carries no `@example`
+ * title for `tests/guides.test.ts` to match it by, so `tests/setupStyles.test.ts` reads
+ * {@link VENEER_GUIDE_PATH} itself and requires this text inside it: an edit to the fence alone
+ * reddens that case.
+ */
+export const CUSTOMIZATION_RECIPE = `:root {
+	--vn-factor-density: 1.25;
+	--vn-color-primary-base: #2e7d32;
+	--vn-color-primary-rgb: 46, 125, 50;
+}
+
+[data-bs-theme='dark'] {
+	--vn-color-primary-base: #66bb6a;
+	--vn-color-primary-rgb: 102, 187, 106;
+}
+
+.brand-veil {
+	background-color: rgba(var(--vn-color-primary-rgb), 0.5);
+}`
+
+/**
+ * Carries the customization recipe cut down to the fill override, with the channel triplet left
+ * out.
+ *
+ * @remarks
+ * `guides/veneer.md` warns under Customization that a rule of the consumer's own reading the
+ * triplet keeps painting the old brand where only the fill is overridden. This is that omission,
+ * and `tests/src/styles/integration.test.ts` loads it and reads what the triplet still paints.
+ */
+export const FILL_ONLY_RECIPE = `:root {
+	--vn-color-primary-base: #2e7d32;
+}`

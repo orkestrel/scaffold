@@ -1,0 +1,129 @@
+diff --git a/configs/src/vite.styles.config.ts b/configs/src/vite.styles.config.ts
+index fc58ce4..d7834be 100644
+--- a/configs/src/vite.styles.config.ts
++++ b/configs/src/vite.styles.config.ts
+@@ -1,21 +1,20 @@
+ import { defineConfig } from 'vitest/config'
+-import { playwright } from '@vitest/browser-playwright'
+-import { fileURLToPath } from 'node:url'
+-import tsconfig from '../../tsconfig.json' with { type: 'json' }
+ import { outputBoundary } from '../helpers.js'
+-import { resolveBrowser, resolvePinnedBrowser } from '../browsers.js'
++import { resolveWorkspacePath, srcBrowser } from '../../vite.config.ts'
+ 
++const browser = srcBrowser()
++const {
++	external: _external,
++	output: _output,
++	...rolldownOptions
++} = browser.build?.rolldownOptions ?? {}
++
++// The root supplies the alias table, the disabled public directory, and the resolved
++// Playwright provider once for the workspace; the fields a styles build differs in are
++// replaced by assignment because `mergeOverride` cannot remove the browser output boundary,
++// which refuses this output directory.
+ export default defineConfig({
+-	resolve: {
+-		alias: Object.entries(tsconfig.compilerOptions.paths).reduce((aliases, [key, values]) => {
+-			const [path] = values
+-			if (path === undefined) throw new Error('tsconfig path alias ' + key + ' has no target')
+-			return Object.assign(aliases, {
+-				[key]: fileURLToPath(new URL('../../' + path, import.meta.url)),
+-			})
+-		}, {}),
+-	},
+-	publicDir: false,
++	...browser,
+ 	plugins: [
+ 		outputBoundary('dist/src/styles'),
+ 		{
+@@ -34,21 +33,23 @@ export default defineConfig({
+ 		outDir: 'dist/src/styles',
+ 		emptyOutDir: true,
+ 		lib: {
+-			entry: fileURLToPath(new URL('../../src/styles/index.ts', import.meta.url)),
++			entry: resolveWorkspacePath('src/styles/index.ts'),
+ 			formats: ['es'],
+ 			fileName: 'index',
+ 			cssFileName: 'index',
+ 		},
++		rolldownOptions,
+ 	},
+ 	test: {
+-		name: 'src:styles',
++		...browser.test,
++		name: { label: 'src:styles', color: 'cyan' },
+ 		include: ['tests/src/styles/**/*.test.ts'],
+-		setupFiles: ['./tests/setup.ts', './tests/setupBrowser.ts', './tests/setupStyles.ts'],
+-		browser: {
+-			enabled: true,
+-			provider: playwright(resolveBrowser(resolvePinnedBrowser(), process.platform, process.env)),
+-			instances: [{ browser: 'chromium', headless: true }],
+-		},
+-		fileParallelism: false,
++		exclude: [],
++		setupFiles: [
++			'./tests/setup.ts',
++			'./tests/setupBrowser.ts',
++			'./tests/setupStyles.ts',
++			'./dist/src/styles/index.css',
++		],
+ 	},
+ })
+diff --git a/package.json b/package.json
+index cbf8bb9..3195ca2 100644
+--- a/package.json
++++ b/package.json
+@@ -57,8 +57,8 @@
+ 		"check:src:styles": "tsc --noEmit -p configs/src/tsconfig.styles.json",
+ 		"check:app": "npm run check:app:browser",
+ 		"check:app:browser": "vue-tsc --noEmit -p configs/app/tsconfig.browser.json",
+-		"test": "npm run test:src && npm run test:src:styles && npm run test:app && npm run test:journey && npm run test:policy && npm run test:config && npm run test:setup && npm run test:setup:browser && npm run test:conformance && npm run test:guides",
+-		"test:src": "vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core --project src:browser",
++		"test": "npm run test:src && npm run test:app && npm run test:journey && npm run test:policy && npm run test:config && npm run test:setup && npm run test:setup:browser && npm run test:conformance && npm run test:guides",
++		"test:src": "vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core --project src:browser && npm run test:src:styles",
+ 		"test:src:core": "vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core",
+ 		"test:src:browser": "vitest run --config vite.config.ts --no-cache --reporter=dot --project src:browser",
+ 		"test:src:styles": "npm run build:src:styles && vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=dot",
+diff --git a/tests/setupStyles.ts b/tests/setupStyles.ts
+index f9b5611..fbb4f69 100644
+--- a/tests/setupStyles.ts
++++ b/tests/setupStyles.ts
+@@ -1,7 +1,6 @@
+ import { isRecord } from '@orkestrel/contract'
+ import { parse } from 'postcss'
+ import { collectTokenNodes, normalizeSelectorText } from './setup.js'
+-import '../dist/src/styles/index.css'
+ 
+ /** Holds the physical inline-axis longhand properties that are direction-sensitive on their own. */
+ export const PHYSICAL_LONGHANDS: readonly string[] = Object.freeze([
+@@ -280,10 +279,10 @@ export const BOOTSTRAP_DIGEST = '4a50207b956a4ab943640ee993118b554a34e96a23261cf
+  * Locates the installed Bootstrap stylesheet the compatibility oracle reads.
+  *
+  * @remarks
+- * The path is here and the text is not: this module is loaded by the browser projects that import
+- * the scanners beside it, so it takes no `node:fs` import, and a raw CSS import resolves to an
+- * empty string in the Node project that runs the oracle. The Node proof reads the file itself and
+- * hands the text to {@link extractBootstrapVariables}.
++ * This module is loaded by the Node `setup` project and the browser `src:styles` project,
++ * imports no stylesheet, and takes no `node:fs` import; the styles project loads the built cascade
++ * through its `setupFiles`. The Node proof reads the file itself and hands the text to
++ * {@link extractBootstrapVariables}.
+  */
+ export const BOOTSTRAP_CASCADE_PATH = 'node_modules/bootstrap/dist/css/bootstrap.css'
+ 
+@@ -307,10 +306,10 @@ export const VENEER_GUIDE_PATH = 'guides/veneer.md'
+  * @throws The `CssSyntaxError` postcss raises when `cascade` cannot be parsed.
+  *
+  * @remarks
+- * The text arrives as an argument rather than through an import, because a Vitest project running
+- * in Node resolves a raw CSS import to an empty string, and this module is loaded there as well as
+- * in the browser. Keeping the reader pure also lets a case drive it with a written stylesheet and
+- * a control that must report nothing.
++ * The text arrives as an argument because this module imports no stylesheet: the Node `setup`
++ * project and the browser `src:styles` project load it, and the styles project loads the built
++ * cascade through its `setupFiles`. Keeping the reader pure also lets a case drive it with a
++ * written stylesheet and a control that must report nothing.
+  *
+  * This is the second mechanism {@link BOOTSTRAP_ROOT_VARIABLES}, {@link BOOTSTRAP_DARK_VARIABLES},
+  * and the retained value tables are compared against. Re-deriving those from the same hand-written
