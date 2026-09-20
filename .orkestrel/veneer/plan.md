@@ -807,6 +807,22 @@ Each entry names what changed in the plan and why, on the date it changed.
   npm session proved expired, and the user logged in and uploaded. Test re-pins first
   (`units/test-repin-0.0.76.sh`); Veneer re-pins after U3 lands. Process rule: prepare the layer
   and prove the gates before asking for a code, and read `npm whoami` before asking.
+- 2026-09-20, U3 accepted (`u3-audit-verdict-10.md`) and landed in Veneer by pathspec. The unit
+  ran as brief 4 (the fold of the withdrawn policy into `guides/veneer.md`) and successor briefs
+  5 to 13, with audit rounds 2 to 10 (`u3-audit-verdict-2.md` onward, claims and lane reports
+  beside each). Rounds 4 to 8 chased the selector guard's reading of `:is()` and `:where()`
+  through seven doors; round 8 ruled the functional lists out of the grammar (the guard reads
+  Veneer's own elements layer, which writes none), brief 12 removed the expansion readers, and
+  round 9 confirmed the guard's behaviour on every input either lane tried, refuting only six
+  readings that lacked a case; brief 13 (`builder`) added them with a red proof and round 10
+  accepted. Every later unit that names `tests/setupStyles.ts` reads its grammar sentence as the
+  contract: strings, escapes, groups, identifiers, combinators, and comma lists, with a fence
+  refusing the namespace separator, `:has()`, the `of` clause, comments, and functional lists.
+  Process findings: a lane brief written by substitution from the previous round carries stale
+  claim numbers, so every round's briefs and claims are written fresh; a read-only lane receives
+  the rendered diff and status; the verifier runs beside the lanes, so the gate claim is ruled by
+  the Orchestrator from the retained gate report and is never put to a lane. Next in order:
+  `units/veneer-repin-0.0.76.sh`, then U1-conform.
 
 ## User decisions pending
 
