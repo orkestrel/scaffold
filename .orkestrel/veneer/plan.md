@@ -87,7 +87,7 @@ completely before any other component opens. The Vue environment is deferred; §
 | Veneer's lockfile at `fc36cec` describes the legacy manifest.                                                                                                                                                                                         | Regenerate it with `npm install` from the authored manifest before the first `npm ci`; record the lockfile digest in `node_modules/.orkestrel-lock.sha256` per `CLAUDE.md`.                                                                             |
 | Veneer's tree is clean at `fc36cec` with no `node_modules`; Elements at `3b41900`, Mailbox at `8b54542`, Test at `f49bc7f` (`0.0.18`), all clean.                                                                                                     | Every unit reads `git status --porcelain` before and after; the legacy itemized tree stays reachable at `fc36cec`.                                                                                                                                       |
 | A `codex exec` sandbox denies network, runs PowerShell with script execution disabled (`npm.cmd run x`), blocks `prove`, and cannot write outside its `-C` root.                                                                                      | Put those facts in every Astra brief's Host and Standing rows.                                                                                                                                                                                           |
-| Scaffold's tip carries an unpublished vendored change over the published `0.0.75`, measured against the installed package's manifest: the same paths, two digests changed — `.claude/rules/styles.md` (the literal-colour clause, "the one file a literal color may appear in is `_tokens.scss`") and `tests/setupPolicy.ts` (the styles side-effect entry, `e8a34296`). A target reads the rule files from the installed package (`node_modules/@orkestrel/scaffold/dist/host/claude/rules/`), not from its own tree. | Vendor it into a consumer by building scaffold, packing, installing the tarball `--no-save`, and running `repair --offline` there (`units/scaffold-vendored-land-2.sh`). Test (`^0.0.73`) and Veneer (`^0.0.75`) re-pin to the release after it publishes. A package documents itself in `guides/<package>.md` alone; a stray-guide red is the package's drift, never a policy question. |
+| Scaffold `0.0.76` is published (2026-09-20, `units/scaffold-release-0.0.76.md`): the vendored-only release carrying the styles rule's literal-colour clause ("the one file a literal color may appear in is `_tokens.scss`") and the styles side-effect entry. A target reads the rule files from the installed package (`node_modules/@orkestrel/scaffold/dist/host/claude/rules/`), not from its own tree. | Test and Veneer re-pin to `^0.0.76`, run `repair`, and prove their gates (Test: `units/test-repin-0.0.76.sh`; Veneer after U3 lands, with the U6 Test tarball reinstalled in the same install command, because a later `--no-save` install reverts an earlier one). A package documents itself in `guides/<package>.md` alone; a stray-guide red is the package's drift, never a policy question. |
 
 ## Build this product
 
@@ -801,6 +801,12 @@ Each entry names what changed in the plan and why, on the date it changed.
   U-styles. The same day the user ruled that no time or tokens go to RTL or comparable
   variations: the design round's RTL proposals (a `./styles/rtl` export, a plugin rename, a
   departure row) are struck, and the twin stays as emitted and unexported.
+- 2026-09-20, scaffold `0.0.76` published (`units/scaffold-release-0.0.76.md`). The first upload
+  attempt ran `prepublishOnly` inside the code's life and stopped on unswept self-pin fixtures;
+  the layer was then prepared per the publish skill (sweep, gates outside the window), the stored
+  npm session proved expired, and the user logged in and uploaded. Test re-pins first
+  (`units/test-repin-0.0.76.sh`); Veneer re-pins after U3 lands. Process rule: prepare the layer
+  and prove the gates before asking for a code, and read `npm whoami` before asking.
 
 ## User decisions pending
 

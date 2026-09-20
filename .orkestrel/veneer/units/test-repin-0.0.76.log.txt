@@ -1,0 +1,35 @@
+== 2026-09-20T14:55:52Z start 8f65e79 Add the journey verbs, the pseudo-element readers, and the media stage
+before: ^0.0.73
+
+changed 1 package, and audited 131 packages in 995ms
+
+30 packages are looking for funding
+  run `npm fund` for details
+
+found 0 vulnerabilities
+exit[install]=0
+after: ^0.0.76 installed: 0.0.76
+TARGET: The configs group is blocked because the manifest at . does not reach a Vitest project the planned configuration registers: setup:browser. No chain from test or prepublishOnly invokes it. test:setup:browser is not declared, so the script is missing as well as the gate: declare it and invoke it by name from the test or prepublishOnly chain. Exclude configs from --groups to write another group.
+exit[repair]=1
+guides: The mirror at guides/scaffold.md differs from the hosted guide. Run catalog to refresh it.
+scripts: The manifest at . does not declare a planned script: test:setup:browser. Add this exact script line to package.json: "test:setup:browser": "vitest run --config vite.config.ts --no-cache --reporter=dot --project setup:browser",
+projects: the manifest at . does not reach a Vitest project the planned configuration registers: setup:browser. No chain from test or prepublishOnly invokes it. test:setup:browser is not declared, so the script is missing as well as the gate: declare it and invoke it by name from the test or prepublishOnly chain.
+dependencies: @types/node declares the floor ^26.6.1, while the registry serves 26.6.2 within major 26.
+dependencies: @vitest/browser-playwright declares major 4, while the registry serves major 5.
+dependencies: typescript declares major 6, while the registry serves major 7.
+dependencies: vitest declares major 4, while the registry serves major 5.
+┌──────────────────────┬─────────┬───────┐
+│ path                 │ group   │ drift │
+├──────────────────────┼─────────┼───────┤
+│ vite.config.ts       │ configs │ stale │
+│ configs/browsers.ts  │ configs │ stale │
+│ tests/setupPolicy.ts │ tests   │ stale │
+│ tests/policy.test.ts │ tests   │ stale │
+│ tests/config.test.ts │ tests   │ stale │
+└──────────────────────┴─────────┴───────┘
+5 of 45 planned paths drifted from the plan. Audit compared bytes at 28, existence at 5, and nothing at 12.
+exit[audit]=1
+== status
+ M package-lock.json
+ M package.json
+== 2026-09-20T14:55:59Z end
