@@ -1,0 +1,31 @@
+== 2026-09-20T14:57:24Z visit start
+manifest: test:setup:browser declared and chained
+exit[manifest]=0
+guides: The mirror at guides/scaffold.md differs from the hosted guide. Run catalog to refresh it.
+0 of 45 planned paths drifted from the plan. Audit compared bytes at 28, existence at 5, and nothing at 12.
+vite.config.ts replaced (29 lines added).
+configs/browsers.ts replaced (4 lines added).
+tests/setupPolicy.ts replaced (602 lines added).
+tests/policy.test.ts replaced (10 lines added).
+tests/config.test.ts replaced (95 lines added).
+6 written, 40 unchanged, 0 removed in ..
+exit[repair]=0
+2 written, 4 unchanged, 0 removed in ..
+50 published, 4 guides fetched, 0 no longer listed.
+exit[catalog]=0
+dependencies: @vitest/browser-playwright declares major 4, while the registry serves major 5.
+dependencies: typescript declares major 6, while the registry serves major 7.
+dependencies: vitest declares major 4, while the registry serves major 5.
+0 of 45 planned paths drifted from the plan. Audit compared bytes at 28, existence at 5, and nothing at 12.
+exit[audit]=0
+== status
+ M .claude/agents/orkestrel.md
+ M configs/browsers.ts
+ M guides/scaffold.md
+ M package-lock.json
+ M package.json
+ M tests/config.test.ts
+ M tests/policy.test.ts
+ M tests/setupPolicy.ts
+ M vite.config.ts
+== 2026-09-20T14:57:33Z visit end
