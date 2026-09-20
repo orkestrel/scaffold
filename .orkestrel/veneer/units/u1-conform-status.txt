@@ -1,0 +1,34 @@
+ D app/browser/factories.ts
+ M app/browser/index.html
+ M app/browser/index.ts
+ M app/browser/main.ts
+ D app/browser/showcases/Showcase.ts
+ M app/browser/styles/_shell.scss
+ M app/browser/styles/index.scss
+ M guides/veneer.md
+ M package-lock.json
+ M package.json
+ D src/browser/color-mode/ColorMode.ts
+ M src/browser/constants.ts
+ D src/browser/factories.ts
+ M src/browser/index.ts
+ M src/browser/types.ts
+ M src/browser/validators.ts
+ M tests/app/browser/index.test.ts
+ D tests/app/browser/showcases/Showcase.test.ts
+ M tests/conformance.test.ts
+ M tests/distribution.test.ts
+ M tests/guides.test.ts
+ M tests/setupBrowser.ts
+ M tests/setupConformance.test.ts
+ M tests/setupConformance.ts
+ D tests/src/browser/color-mode/ColorMode.test.ts
+ D tests/src/browser/factories.test.ts
+ D tests/src/browser/fixtures/constants.ts
+ M tests/src/browser/index.test.ts
+ M tests/src/browser/validators.test.ts
+?? app/browser/Showcase.ts
+?? src/browser/ColorMode.ts
+?? tests/app/browser/Showcase.test.ts
+?? tests/setupListeners.ts
+?? tests/src/browser/ColorMode.test.ts
