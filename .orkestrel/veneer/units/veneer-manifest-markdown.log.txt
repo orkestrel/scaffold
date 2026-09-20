@@ -1,0 +1,38 @@
+== 2026-09-20T21:40:39Z start ef1a563 Record the styles axis in the guide (U-styles-guide)
+installed-markdown: 0.0.15
+
+changed 1 package, and audited 179 packages in 1s
+
+38 packages are looking for funding
+  run `npm fund` for details
+
+found 0 vulnerabilities
+npm warn install-scripts 1 package had install scripts blocked because they are not covered by allowScripts:
+npm warn install-scripts   @parcel/watcher@2.6.0 (install: node-gyp rebuild)
+npm warn install-scripts
+npm warn install-scripts Run `npm install-scripts ls` to review, or `npm install-scripts approve <pkg>` to allow.
+exit[install]=0
+test-exports-after-install: 0
+
+changed 1 package, and audited 179 packages in 3s
+
+38 packages are looking for funding
+  run `npm fund` for details
+
+found 0 vulnerabilities
+npm warn install-scripts 1 package had install scripts blocked because they are not covered by allowScripts:
+npm warn install-scripts   @parcel/watcher@2.6.0 (install: node-gyp rebuild)
+npm warn install-scripts
+npm warn install-scripts Run `npm install-scripts ls` to review, or `npm install-scripts approve <pkg>` to allow.
+exit[install-test]=0
+test-exports-after-tarball: 12
+declared: ^0.0.15
+setup: The target at . carries a test setup module that no proof covers: tests/setupListeners.ts. Add tests/setupListeners.test.ts to cover it. The proof's subject is behavior only this workspace can assert, so scaffold does not write it.
+dependencies: @vitest/browser-playwright declares major 4, while the registry serves major 5.
+dependencies: typescript declares major 6, while the registry serves major 7.
+dependencies: vitest declares major 4, while the registry serves major 5.
+0 of 48 planned paths drifted from the plan. Audit compared bytes at 29, existence at 5, and nothing at 14.
+exit[audit]=0
+ M package-lock.json
+ M package.json
+== 2026-09-20T21:40:47Z end
