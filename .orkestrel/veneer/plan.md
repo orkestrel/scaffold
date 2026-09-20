@@ -861,6 +861,21 @@ Each entry names what changed in the plan and why, on the date it changed.
   absent and `test:setup` red on those two cases alone. Next in order: U-styles-guide on `opus`,
   then U4b.
 
+- 2026-09-20, U-styles-guide accepted (`u-styles-guide-audit-verdict-2.md`) and landed in Veneer
+  by pathspec. The unit ran on `opus` as brief 1 and brief 2 from one audit round: `## Styles`
+  sits between the examples and the tokens with the files, the scripts, and the departures from
+  the workspace rows, each read from the tree; the README points at § Styles for the face's
+  build and loading and at § Tokens for what it declares. The round refuted sentences the tree
+  contradicted (which cases read the shipped cascade, who plants the core boundary, the coverage
+  the styles proofs carry) and the register (bare code tokens, one count), and brief 2 rewrote
+  them. Recorded, not carried: the subjective lane's referral on whether the RTL artifact ought
+  to be built and published at all is outside the campaign by the user's ruling. U-styles is
+  closed: the pilot's shape and every departure with its cause are in the guide for a later
+  scaffold generator to read. The same day the user ruled that rounds focus on implementation
+  rather than on comments and doc sentences: from here a prose finding is a bound the verdict
+  records and the next implementation unit owning the file carries, never a fix round of its own;
+  a claims file puts no lane's weight on wording. Next in order: U4b on `sol`, then U7.
+
 ## User decisions pending
 
 - Chrome is not installed; the plan takes managed Chromium and Edge as the two receipts and records
