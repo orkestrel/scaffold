@@ -1,0 +1,19 @@
+﻿npm.cmd : npm notice run @orkestrel/test@0.0.18 test:src:browser
+At line:2 char:1
++ npm.cmd run test:src:browser -- tests/src/browser/helpers.test.ts -t  ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (npm notice run ...est:src:browser:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project src:browser 
+tests/src/browser/helpers.test.ts -t retains a rejected release marker|restores every media axis|unnamed.*override
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/test
+
+---------------------------------------------------------·----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------··--·-----------------------------------
+
+ Test Files  1 passed (1)
+      Tests  4 passed | 290 skipped (294)
+   Start at  06:50:26
+   Duration  2.14s (transform 0ms, setup 129ms, import 107ms, tests 898ms, environment 0ms)
+

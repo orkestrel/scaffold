@@ -1,0 +1,42 @@
+﻿npm.cmd : npm notice run @orkestrel/test@0.0.18 test:src:browser
+At line:2 char:1
++ npm.cmd run test:src:browser -- tests/src/browser/helpers.test.ts -t  ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (npm notice run ...est:src:browser:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project src:browser 
+tests/src/browser/helpers.test.ts -t changing options
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/test
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------x------------------------------------
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/helpers.test.ts:3448:2 > stageMedia > restores provider overrides 
+when changing options leave a staged query unsatisfied
+AssertionError: expected false to be true // Object.is equality
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- true[39m
+[31m+ false[39m
+
+ ❯ tests/src/browser/helpers.test.ts:3470:61
+    3468|    motion: true,
+    3469|   })).rejects.toThrow('Media emulation did not reach the tester: print…
+    3470|   expect(matchMedia('(prefers-color-scheme: dark)').matches).toBe(!dar…
+       |                                                             ^
+    3471|   expect(matchMedia('(prefers-reduced-motion: reduce)').matches).toBe(…
+    3472|   expect(matchMedia('print').matches).toBe(false)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 294 skipped (295)
+   Start at  06:51:35
+   Duration  2.53s (transform 0ms, setup 133ms, import 108ms, tests 1.24s, environment 0ms)
+
