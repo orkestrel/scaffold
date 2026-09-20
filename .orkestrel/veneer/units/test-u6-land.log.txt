@@ -1,0 +1,19 @@
+== 2026-09-20T12:17:56Z land start
+ M guides/test.md
+ M src/browser/constants.ts
+ M src/browser/helpers.ts
+ M src/browser/types.ts
+ M tests/setup.ts
+ M tests/src/browser/helpers.test.ts
+8f65e79 Add the journey verbs, the pseudo-element readers, and the media stage
+Copied: dist/src/server/index.d.ts to dist/src/server/index.d.cts
+npm notice
+orkestrel-test-0.0.18.tgz
+tarball: C:/Users/mikes/WebstormProjects/test/tmp/pack/orkestrel-test-0.0.18.tgz
+52603dd64e2bdb1a2aa7f4ab05210abb7e5c7d555f914524abc0d1e9d59ca5a3 *C:/Users/mikes/WebstormProjects/test/tmp/pack/orkestrel-test-0.0.18.tgz
+replaced range: ^0.0.18 installed: 0.0.18
+npm warn install-scripts
+npm warn install-scripts Run `npm install-scripts ls` to review, or `npm install-scripts approve <pkg>` to allow.
+installed now: 0.0.18
+24
+== 2026-09-20T12:18:21Z land end
