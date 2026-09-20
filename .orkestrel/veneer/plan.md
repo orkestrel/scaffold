@@ -411,9 +411,16 @@ placement claims confirmed.
 
 ### U-styles The styles-environment pilot
 
-After U1-conform closes; in Veneer. Design round first (`planner` on Opus and `analyst` on Astra,
-one brief: `units/styles-axis-design-brief.md`), then the writer the reconciled design names,
-then the audit round (both lanes, `checker`), then `verifier`. The user's decision of 2026-09-20:
+After U1-conform closes; in Veneer. The design round closed on 2026-09-20
+(`styles-axis-design-verdict.md`: both lanes agreed on every question; RTL struck by the user).
+Two serialized writers: U-styles-config on `sol` (Astra) for the wrapper composed from the root's
+`srcBrowser()`, the `{ label, color }` project name, the `test:src` aggregation, and the cascade
+load moved out of `tests/setupStyles.ts` into the shape the Orchestrator's `setupFiles` probe
+selects; then U-styles-guide on `opus` for the `## Styles` section of `guides/veneer.md` (between
+`## Examples` and `## Tokens`: the loading fence, `### Files`, `### Scripts`, `### Departures from
+the workspace rows` with the generator sentence) and the `guides/README.md` sentence. Then the
+audit round (both lanes, `checker`), then `verifier`. `tests/setup.css` arrives with the Tailwind
+unit. The user's decision of 2026-09-20:
 Veneer pilots the `src/styles` environment scaffold does not generate; implement nothing in
 scaffold. Measured on 2026-09-20 against `.claude/rules/workspace.md`: present and matching —
 `src/styles/index.ts` importing `./index.scss`; `configs/src/tsconfig.styles.json` check-only with
