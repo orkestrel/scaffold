@@ -1,0 +1,29 @@
+<!-- codex exec, gpt-6-astra, read-only, OBJECTIVE lane; journal u-styles-guide-audit-analyst.jsonl (ephemeral, swept at acceptance); thread 01a0c093-1773-76d3-9e7e-291f95f5d077; exit 0; retained 2026-09-20 -->
+
+Read-only source audit. No gates were rerun.
+
+1. **CONFIRMED — Place and shape.** [guides/veneer.md:73](C:/Users/mikes/WebstormProjects/veneer/guides/veneer.md:73) has the required placement, headings, loading fence, and consumer instructions. The stylesheet export and side-effect declaration match [package.json:18](C:/Users/mikes/WebstormProjects/veneer/package.json:18) and its `./styles` mapping at line 40.
+
+2. **CONFIRMED — Files table.** The entries match their artifacts. [src/styles/index.scss:1](C:/Users/mikes/WebstormProjects/veneer/src/styles/index.scss:1) loads tokens, theme, and element partials; the token and theme partials load mixins. The TypeScript entry contains only the stylesheet import. [vite.styles.config.ts:17](C:/Users/mikes/WebstormProjects/veneer/configs/src/vite.styles.config.ts:17) replaces the relevant configuration fields and loads built CSS through its setup array. [tsconfig.styles.json:2](C:/Users/mikes/WebstormProjects/veneer/configs/src/tsconfig.styles.json:2) has the documented inheritance, scope, and no-emit setting. The setup module’s imports contain no stylesheet.
+
+3. **REFUTED — Scripts and proof subject.** The script contracts and parent chains match [package.json:54](C:/Users/mikes/WebstormProjects/veneer/package.json:54), lines 61–64, and lines 78–81. Building before testing is accurately described. However, [guides/veneer.md:128](C:/Users/mikes/WebstormProjects/veneer/guides/veneer.md:128) extends that explanation to “every case” reading rules from the built stylesheet. [mixins.test.ts:14](C:/Users/mikes/WebstormProjects/veneer/tests/src/styles/mixins.test.ts:14) imports a separate SCSS fixture; its reduced-motion case reads padding declared by [fixtures/mixins.scss:17](C:/Users/mikes/WebstormProjects/veneer/tests/src/styles/fixtures/mixins.scss:17). [tokens.test.ts:310](C:/Users/mikes/WebstormProjects/veneer/tests/src/styles/tokens.test.ts:310) tests inline cyclic declarations. Narrow the sentence to the shipped-cascade cases and identify the fixture-based mixin proofs.
+
+4. **REFUTED — Departures.** The guide misattributes the core boundary installation. [guides/veneer.md:150](C:/Users/mikes/WebstormProjects/veneer/guides/veneer.md:150) says the root plants the boundary on core, browser, and application browser. The root’s [srcCore factory:104](C:/Users/mikes/WebstormProjects/veneer/vite.config.ts:104) installs no plugin; [vite.core.config.ts:10](C:/Users/mikes/WebstormProjects/veneer/configs/src/vite.core.config.ts:10) installs the core boundary.
+
+   The statement “The proofs under `tests/src/styles/` carry that weight instead” at guide line 161 also overstates coverage. Those suites assert cascade, token, theme, mixin, and element behavior. They do not replace the omitted alias, project-registration, and configuration-plugin assertions.
+
+   The remaining departure facts hold: the alias is absent; the lint allowlist requires stylesheet suffixes; the shell uses the relative SCSS import; the merger retains unmatched base plugins; the wrapper owns the styles project; the root project list omits it; and the installed generator matrix names core, browser, and server. The supplied report records the root-selection refusal as `No projects matched the filter "src:styles".` Correct the attribution and coverage sentence without changing those established facts.
+
+5. **CONFIRMED — README paragraph.** [guides/README.md:17](C:/Users/mikes/WebstormProjects/veneer/guides/README.md:17) assigns the references as claimed. Its concept row covers the published TypeScript faces. [tests/guides.test.ts:41](C:/Users/mikes/WebstormProjects/veneer/tests/guides.test.ts:41) selects that row, and line 64 iterates the rows for parity assertions. The styles entry exports no TypeScript declarations.
+
+6. **REFUTED — Writing and parity law.** The section violates the code-token noun rule in [writing.md:48](C:/Users/mikes/WebstormProjects/scaffold/.claude/rules/writing.md:48). Clear examples include “through its `setupFiles` instead” at guide line 114, “`test:src:styles` builds first” at line 128, and “`import/no-unassigned-import` permits” at line 140. Add the appropriate nouns and sweep the added prose for the same defect. “One standalone stylesheet” at line 75 also states a growable-set count prohibited by [AGENTS.md:172](C:/Users/mikes/WebstormProjects/scaffold/AGENTS.md:172); remove “one.”
+
+   The section has the requested fence language and contains no relative links or excluded direction terminology. The inventory patterns match [tests/guides.test.ts:29](C:/Users/mikes/WebstormProjects/veneer/tests/guides.test.ts:29). The writer reports a passing guide gate; that does not establish compliance with the prose rules.
+
+7. **CONFIRMED — Scope honesty.** The supplied status names only the owned guide files. The report exists under ``, and the instruments exist under `tmp/u-styles-guide/`. The read-only `git check-ignore` command identified the report and instrument paths as ignored.
+
+8. **UNDECIDABLE — Gates.** The retained verifier report was absent at `.orkestrel/veneer/units/u-styles-guide-gate-report.md` when checked. The available whole-test log reaches a passing guide run, but does not establish every claimed exit code or the complete scaffold-audit output. This ruling remains with the Orchestrator upon receiving the verifier’s evidence.
+
+No additional findings fall outside the supplied claims.
+
+Verdict: fix round with claims 3, 4, and 6.
