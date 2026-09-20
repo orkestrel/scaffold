@@ -25,9 +25,14 @@ placement, § Wrapper test, § Class order, § Entity subfolders, § Barrel expo
 
 ## Context
 
-**The tree.** `HEAD` is U3's landing commit (the Orchestrator names it in the dispatch message);
-the working tree is clean at start except `tmp/`. `node_modules` carries the U6 Test tarball and
-the scaffold tip tarball, installed `--no-save` in one command.
+**The tree.** `HEAD` is the commit the Orchestrator names in the dispatch message (U3 landed as
+`6ddaa3c`, and the scaffold `^0.0.76` re-pin commits on top of it); the working tree is clean at
+start except `tmp/`. `node_modules` carries `@orkestrel/scaffold` 0.0.76 from the registry and the
+`@orkestrel/test` 0.0.18 tarball installed `--no-save`; `scaffold audit` exits 0 on this tree.
+Under `.claude/rules/tests.md`, `tests/setupBrowser.ts` builds the shell for the `setup:browser`
+proof and calls `createShowcase` at its line 32, and `tests/guides.test.ts` executes the guide's
+flagship fence through `isColorScheme` at its lines 39 and 60; both files change with items 2 and
+3 and are granted for those lines alone.
 
 **Fleet convention, measured.** A lone class sits flat at its environment root
 (`scaffold/src/core/Compiler.ts`, `console/src/core/Capture.ts`,
@@ -61,11 +66,13 @@ not items here.
 `tests/setupConformance.ts`, `tests/setupConformance.test.ts`, `tests/conformance.test.ts`,
 `tests/distribution.test.ts`, `guides/veneer.md` (§ Surface rows for the renamed and deleted
 exports, and one sentence under the shell's section), `guides/README.md` (the rows those changes
-touch). **Shared (report-only).** `package.json` (return the exact patch removing
-`@tailwindcss/vite` and `tailwindcss`; the Orchestrator applies it and runs `npm install`).
-**Off-limits.** Every content-owned and vendored path, `src/core/**`, `src/styles/**`,
-`tests/src/styles/**`, `tests/src/core/**`, `tests/setup.ts`, `tests/setupBrowser.ts`,
-`tests/setupStyles*.ts`, `tests/setup.test.ts`, `tests/guides.test.ts`, `tests/config.test.ts`.
+touch), `tests/setupBrowser.ts` (the `createShowcase` call alone: construct `Showcase` directly),
+`tests/guides.test.ts` (the `isColorScheme` import and calls alone). **Shared (report-only).**
+`package.json` (return the exact patch removing `@tailwindcss/vite` and `tailwindcss`; the
+Orchestrator applies it and runs `npm install`). **Off-limits.** Every content-owned and vendored
+path, `src/core/**`, `src/styles/**`, `tests/src/styles/**`, `tests/src/core/**`, `tests/setup.ts`,
+`tests/setupBrowser.test.ts`, `tests/setupStyles*.ts`, `tests/setup.test.ts`,
+`tests/config.test.ts`, and every line of the two granted files beyond the ones named.
 
 ## Execution
 
@@ -144,7 +151,8 @@ TSDoc and guide wording, the shell layer's name.
 3. `tests/conformance.test.ts` passes on a checkout with no `dist/src` built.
 4. `format:check`, `lint:check`, `check`, `build` exit 0; every test project exits 0 on managed
    Chromium; `test:src` and `test:app` exit 0 on Edge.
-5. `git status --porcelain` shows only owned files and the report.
+5. `git status --porcelain` shows only owned files (the two granted files included) and the
+   report.
 
 ## Review evidence
 
