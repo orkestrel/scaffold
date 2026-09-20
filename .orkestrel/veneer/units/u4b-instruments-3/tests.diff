@@ -1,0 +1,16 @@
+diff --git a/tmp/u4b/successor-3/before/setupConformance.test.ts b/tests/setupConformance.test.ts
+index 71b72f9..4230dd9 100644
+--- a/tmp/u4b/successor-3/before/setupConformance.test.ts
++++ b/tests/setupConformance.test.ts
+@@ -152,10 +152,7 @@ describe('setupConformance', () => {
+ 			})
+ 			expect(ORACLE_BINDINGS.length).toBeGreaterThan(0)
+ 			for (const binding of ORACLE_BINDINGS) {
+-				expect(
+-					names.some((name) => binding.steps.some((pattern) => pattern.test(name))),
+-					binding.obligation ?? binding.category,
+-				).toBe(true)
++				expect(names.some((name) => binding.steps.some((pattern) => pattern.test(name)))).toBe(true)
+ 				expect(binding.category).not.toBe('keyboard')
+ 			}
+ 			expect(readCompatibility().some((row) => row.category === 'keyboard')).toBe(false)
