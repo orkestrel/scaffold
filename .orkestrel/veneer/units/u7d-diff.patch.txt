@@ -1,0 +1,807 @@
+diff --git a/guides/veneer.md b/guides/veneer.md
+index f0b3498..6ac7da1 100644
+--- a/guides/veneer.md
++++ b/guides/veneer.md
+@@ -135,6 +135,14 @@ declarations the SCSS sources carry. The mixin proofs compile their own fixture
+ `tests/src/styles/fixtures/mixins.scss`, and the token proofs also drive declarations the case
+ writes.
+ 
++### Deferred selectors
++
++Each row names an official selector or custom property withheld from the built cascade, its reason,
++and the owning unit that deletes the row when it ships the name.
++
++| Name | Owner | Reason |
++| ---- | ----- | ------ |
++
+ ### Departures from the workspace rows
+ 
+ The `.claude/rules/workspace.md` rule file carries a row for the styles axis in each of its tables:
+@@ -488,12 +496,13 @@ and each is named here so a consumer does not look for it.
+ This section is the ledger of what Veneer accepts from Bootstrap 5.3.8. The
+ tests/conformance.test.ts proof reads its rows and compares their named steps with the official
+ Button recording. The Component column carries the inventory key, so later component units extend
+-the same table.
++the same table; engine names the shared official engine and is never shipped as CSS.
+ 
+ The table records the Button obligations and the engine obligations assigned to its unit.
+ 
+ | Component | Kind           | Obligation                                                                                                                                                                                                                        | Proof                 | Status   |
+ | --------- | -------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------- | -------- |
++| btn       | selector       | Every official `.btn` selector the ledger assigns to Button is present in the built cascade; the deferred selectors are listed under § Styles                                                                                     | —                     | accepted |
+ | btn       | identity       | Button identifies itself as button, bs.button, and .bs.button; defaults and type defaults are inherited empty.                                                                                                                    | button.initial        | accepted |
+ | btn       | attribute      | The data-bs-toggle="button" click prevents its default action and creates or reuses the instance to toggle active and aria-pressed.                                                                                               | button.click.toggle   | accepted |
+ | btn       | method         | toggle() flips active and aria-pressed on every activation, without a no-op guard.                                                                                                                                                | button.click.toggle   | accepted |
+@@ -503,34 +512,35 @@ The table records the Button obligations and the engine obligations assigned to
+ | btn       | accessibility  | A toggle announces the button role and its pressed state, rather than a checkbox role.                                                                                                                                            | button.click.toggle   | accepted |
+ | btn       | accessibility  | A toggle announces the button role and its pressed state, rather than a checkbox role.                                                                                                                                            | button.pressed.click  | accepted |
+ | btn       | accessibility  | A disabled anchor carries disabled, aria-disabled="true", tabindex="-1", and role="button"; pointer activation is refused.                                                                                                        | button.disabled.click | accepted |
+-| btn       | variable       | The --bs-btn-* vocabulary includes padding, font, color, background, border, shadow, disabled, and active state properties.                                                                                                       | —                     | accepted |
+-| btn       | identity       | Cross-cutting engine: `VERSION` `'5.3.8'`; `DATA_KEY` `bs.${NAME}`; `EVENT_KEY` `.${DATA_KEY}`; `eventName(name)` returns `${name}${EVENT_KEY}`                                                                                   | —                     | accepted |
+-| btn       | option         | Cross-cutting engine: `Default`/`DefaultType` inherited empty from `Config` unless a component overrides                                                                                                                          | —                     | accepted |
+-| btn       | attribute      | Cross-cutting engine: `data-bs-config` JSON merges with `data-bs-*` attributes read by `Manipulator`; config object wins last                                                                                                     | —                     | accepted |
+-| btn       | method         | Cross-cutting engine: `constructor(element, config)` no-op when `getElement(element)` is falsy; `dispose()`; `_queueCallback` through `executeAfterTransition`                                                                    | —                     | accepted |
+-| btn       | method         | Cross-cutting engine: static `getInstance`, static `getOrCreateInstance(element, config = {})`, static `VERSION`                                                                                                                  | —                     | accepted |
+-| btn       | initialization | Cross-cutting engine: `Data.set(this._element, DATA_KEY, this)` on construction                                                                                                                                                   | —                     | accepted |
+-| btn       | method         | Cross-cutting engine: All API methods are asynchronous, return to the caller before the transition ends, and a method call mid-transition is ignored                                                                              | —                     | accepted |
+-| btn       | method         | Cross-cutting engine: `dispose()` must not follow `hide()` immediately; wait for the completion event                                                                                                                             | —                     | accepted |
+-| btn       | event          | Cross-cutting engine: Every plugin fires paired infinitive/past-participle events; `EventHandler.trigger` builds `new Event(event, { bubbles, cancelable: true })` and hydrates the payload                                       | —                     | accepted |
+-| btn       | event          | Cross-cutting engine: Infinitive events are cancelable through `event.preventDefault()`; returning `false` from a handler also cancels                                                                                            | —                     | accepted |
+-| btn       | option         | Cross-cutting engine: `Config._mergeConfigObj`: `Default`, then `data-bs-config` JSON, then `getDataAttributes`, then the `config` object; `_typeCheckConfig` type-checks against `DefaultType`                                   | —                     | accepted |
+-| btn       | attribute      | Cross-cutting engine: `Manipulator.getDataAttributes` reads every `dataset` key starting `bs` except `bsConfig`, kebab-cased through `data-bs-*`                                                                                  | —                     | accepted |
+-| btn       | method         | Cross-cutting engine: `SelectorEngine.getSelector` reads `data-bs-target` else `href`; `find`, `findOne`, `children`, `parents`, `prev`, `next`, `focusableChildren`, `getElementFromSelector`, `getMultipleElementsFromSelector` | —                     | accepted |
+-| btn       | method         | Cross-cutting engine: `Data.set`/`get`/`remove`; one instance per element, a second key logs an error and returns                                                                                                                 | —                     | accepted |
+-| btn       | attribute      | Cross-cutting engine: `enableDismissTrigger(component, method = 'hide')` binds document `click.dismiss${EVENT_KEY}` on `[data-bs-dismiss="${NAME}"]`                                                                              | —                     | accepted |
+-| btn       | transition     | Cross-cutting engine: `TRANSITION_END` emulation: listens `transitionend`, emulates after `getTransitionDurationFromElement` plus `5` ms padding through `executeAfterTransition`                                                 | —                     | accepted |
+-| btn       | accessibility  | Cross-cutting engine: Sanitizer allowlist and `sanitizeFn` override on Tooltip/Popover content                                                                                                                                    | —                     | accepted |
+-| btn       | attribute      | Cross-cutting engine: Native `querySelector`/`querySelectorAll`; a CSS special character in a selector must be escaped                                                                                                            | —                     | accepted |
+-| btn       | option         | util/config.js: Base `Config` class; `Default: {}`, `DefaultType: {}`; `NAME` getter throws; extended by `BaseComponent`, `Backdrop`, `FocusTrap`, `Swipe`, `TemplateFactory`                                                     | —                     | accepted |
+-| btn       | method         | util/index.js: `getUID`, `getElement`, `isElement`, `isVisible`, `isDisabled`, `isRTL`, `toType`, `noop`, `parseSelector`, `reflow`, `execute`, `findShadowRoot`, `getNextActiveElement` exported as shared utilities             | —                     | accepted |
+-| btn       | initialization | util/index.js: `getjQuery` skipped when `document.body` carries `data-bs-no-jquery`; `defineJQueryPlugin` registers `$.fn[NAME]` after `onDOMContentLoaded`                                                                       | —                     | accepted |
++| btn       | variable       | Every official `--bs-btn-*` custom property less the deferred ones is declared                                                                                                                                                    | —                     | accepted |
++| engine    | identity       | Cross-cutting engine: `VERSION` `'5.3.8'`; `DATA_KEY` `bs.${NAME}`; `EVENT_KEY` `.${DATA_KEY}`; `eventName(name)` returns `${name}${EVENT_KEY}`                                                                                   | —                     | accepted |
++| engine    | option         | Cross-cutting engine: `Default`/`DefaultType` inherited empty from `Config` unless a component overrides                                                                                                                          | —                     | accepted |
++| engine    | attribute      | Cross-cutting engine: `data-bs-config` JSON merges with `data-bs-*` attributes read by `Manipulator`; config object wins last                                                                                                     | —                     | accepted |
++| engine    | method         | Cross-cutting engine: `constructor(element, config)` no-op when `getElement(element)` is falsy; `dispose()`; `_queueCallback` through `executeAfterTransition`                                                                    | —                     | accepted |
++| engine    | method         | Cross-cutting engine: static `getInstance`, static `getOrCreateInstance(element, config = {})`, static `VERSION`                                                                                                                  | —                     | accepted |
++| engine    | initialization | Cross-cutting engine: `Data.set(this._element, DATA_KEY, this)` on construction                                                                                                                                                   | —                     | accepted |
++| engine    | method         | Cross-cutting engine: All API methods are asynchronous, return to the caller before the transition ends, and a method call mid-transition is ignored                                                                              | —                     | accepted |
++| engine    | method         | Cross-cutting engine: `dispose()` must not follow `hide()` immediately; wait for the completion event                                                                                                                             | —                     | accepted |
++| engine    | event          | Cross-cutting engine: Every plugin fires paired infinitive/past-participle events; `EventHandler.trigger` builds `new Event(event, { bubbles, cancelable: true })` and hydrates the payload                                       | —                     | accepted |
++| engine    | event          | Cross-cutting engine: Infinitive events are cancelable through `event.preventDefault()`; returning `false` from a handler also cancels                                                                                            | —                     | accepted |
++| engine    | option         | Cross-cutting engine: `Config._mergeConfigObj`: `Default`, then `data-bs-config` JSON, then `getDataAttributes`, then the `config` object; `_typeCheckConfig` type-checks against `DefaultType`                                   | —                     | accepted |
++| engine    | attribute      | Cross-cutting engine: `Manipulator.getDataAttributes` reads every `dataset` key starting `bs` except `bsConfig`, kebab-cased through `data-bs-*`                                                                                  | —                     | accepted |
++| engine    | method         | Cross-cutting engine: `SelectorEngine.getSelector` reads `data-bs-target` else `href`; `find`, `findOne`, `children`, `parents`, `prev`, `next`, `focusableChildren`, `getElementFromSelector`, `getMultipleElementsFromSelector` | —                     | accepted |
++| engine    | method         | Cross-cutting engine: `Data.set`/`get`/`remove`; one instance per element, a second key logs an error and returns                                                                                                                 | —                     | accepted |
++| engine    | attribute      | Cross-cutting engine: `enableDismissTrigger(component, method = 'hide')` binds document `click.dismiss${EVENT_KEY}` on `[data-bs-dismiss="${NAME}"]`                                                                              | —                     | accepted |
++| engine    | transition     | Cross-cutting engine: `TRANSITION_END` emulation: listens `transitionend`, emulates after `getTransitionDurationFromElement` plus `5` ms padding through `executeAfterTransition`                                                 | —                     | accepted |
++| engine    | accessibility  | Cross-cutting engine: Sanitizer allowlist and `sanitizeFn` override on Tooltip/Popover content                                                                                                                                    | —                     | accepted |
++| engine    | attribute      | Cross-cutting engine: Native `querySelector`/`querySelectorAll`; a CSS special character in a selector must be escaped                                                                                                            | —                     | accepted |
++| engine    | option         | util/config.js: Base `Config` class; `Default: {}`, `DefaultType: {}`; `NAME` getter throws; extended by `BaseComponent`, `Backdrop`, `FocusTrap`, `Swipe`, `TemplateFactory`                                                     | —                     | accepted |
++| engine    | method         | util/index.js: `getUID`, `getElement`, `isElement`, `isVisible`, `isDisabled`, `isRTL`, `toType`, `noop`, `parseSelector`, `reflow`, `execute`, `findShadowRoot`, `getNextActiveElement` exported as shared utilities             | —                     | accepted |
++| engine    | initialization | util/index.js: `getjQuery` skipped when `document.body` carries `data-bs-no-jquery`; `defineJQueryPlugin` registers `$.fn[NAME]` after `onDOMContentLoaded`                                                                       | —                     | accepted |
+ 
+ An accepted row records scope; a named Proof step obliges the official recording to agree with the
+-row. A shipped row also accepts implementation responsibility; when every row for a component is
+-shipped, the built cascade must carry its official selector and custom-property sets, and the
+-conformance component list must include its key. A dash marks a source or engine obligation that
+-the Button interaction recording cannot drive. Transition, dismissal, sanitizer, and selector
++row. A shipped selector or variable row requires its official vocabulary less the deferrals under
++§ Styles to be present in the built cascade; no deferred name may be present, and each must belong
++to the official inventory of a component with a CSS row. The conformance component list includes a
++key exactly when its selector and variable rows are shipped. Those CSS rows carry a dash in Proof,
++as do source and engine obligations the Button interaction recording cannot drive. Transition, dismissal, sanitizer, and selector
+ engine rows record shared engine scope; they do not claim that Button dispatches transition events.
+ The jQuery rows retain the source inventory while the exclusion that follows limits the claim.
+ 
+diff --git a/tests/conformance.test.ts b/tests/conformance.test.ts
+index 64ba78e..2265720 100644
+--- a/tests/conformance.test.ts
++++ b/tests/conformance.test.ts
+@@ -2,9 +2,7 @@ import { readInventory, resolveContained } from '@orkestrel/test/server'
+ import { parseJSON } from '@orkestrel/contract'
+ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+ import { dirname, resolve } from 'node:path'
+-import { parse } from 'postcss'
+ import { describe, expect, it } from 'vitest'
+-import { normalizeComplexSelector } from './setupStyles.js'
+ import {
+ 	BOOTSTRAP_BUNDLE_DIGEST,
+ 	BOOTSTRAP_CSS_DIGEST,
+@@ -15,10 +13,13 @@ import {
+ 	ORACLE_TIMEOUT,
+ 	WORKSPACE_ROOT,
+ 	collectImportClosure,
++	collectShippedComponents,
++	scanCompatibilityPresence,
+ 	computeArtifactDigest,
+ 	readManifestMember,
+ 	readBuiltCascade,
+ 	readCompatibility,
++	readDeferrals,
+ 	readOracleInventory,
+ 	recordButtonOracle,
+ 	scanOracleObligation,
+@@ -50,37 +51,11 @@ describe('Bootstrap reference identity', () => {
+ describe('Bootstrap component oracle', () => {
+ 	it('carries every shipped component selector and custom property in the built cascade', () => {
+ 		const rows = readCompatibility()
+-		const shipped = [...new Set(rows.map((row) => row.component))]
+-			.filter((component) =>
+-				rows.filter((row) => row.component === component).every((row) => row.status === 'shipped'),
+-			)
+-			.sort()
++		const shipped = collectShippedComponents(rows)
+ 		const listed: readonly string[] = []
+-		const inventory = readOracleInventory()
+-		const cascade = parse(readBuiltCascade())
+-		const selectors = new Set<string>()
+-		const properties = new Set<string>()
+-		cascade.walkRules((rule) => {
+-			for (const selector of rule.selectors) selectors.add(normalizeComplexSelector(selector))
+-		})
+-		cascade.walkDecls((declaration) => {
+-			if (declaration.prop.startsWith('--')) properties.add(declaration.prop)
+-		})
+-		for (const component of shipped) {
+-			const vocabulary = inventory.components[component]
+-			expect(vocabulary, `Shipped component ${component} has no official inventory`).toBeDefined()
+-			if (vocabulary === undefined) throw new Error(`Missing inventory component ${component}`)
+-			for (const selector of vocabulary.selectors)
+-				expect(
+-					selectors.has(normalizeComplexSelector(selector)),
+-					`Shipped component ${component} is missing selector ${selector}`,
+-				).toBe(true)
+-			for (const property of vocabulary.properties)
+-				expect(
+-					properties.has(property),
+-					`Shipped component ${component} is missing custom property ${property}`,
+-				).toBe(true)
+-		}
++		expect(
++			scanCompatibilityPresence(rows, readOracleInventory(), readDeferrals(), readBuiltCascade()),
++		).toBeUndefined()
+ 		expect(shipped, 'Guide shipped components and conformance component list must agree').toEqual(
+ 			listed,
+ 		)
+diff --git a/tests/setupConformance.test.ts b/tests/setupConformance.test.ts
+index 4230dd9..52bc49e 100644
+--- a/tests/setupConformance.test.ts
++++ b/tests/setupConformance.test.ts
+@@ -4,7 +4,7 @@
+ import type { OracleFixture } from './setupConformance.js'
+ import { isRecord, parseJSON } from '@orkestrel/contract'
+ import { existsSync, readFileSync } from 'node:fs'
+-import { resolve } from 'node:path'
++import { dirname, resolve } from 'node:path'
+ import { createScratch } from '@orkestrel/test/server'
+ import { beforeAll, describe, expect, it } from 'vitest'
+ import { parseSync, Visitor } from 'vite'
+@@ -20,6 +20,7 @@ import {
+ 	ORACLE_TIMEOUT,
+ 	WORKSPACE_ROOT,
+ 	collectImportClosure,
++	collectShippedComponents,
+ 	computeArtifactDigest,
+ 	extractSpecifiers,
+ 	extractStringArgument,
+@@ -27,9 +28,11 @@ import {
+ 	readBootstrapCascade,
+ 	readBuiltCascade,
+ 	readCompatibility,
++	readDeferrals,
+ 	readManifestMember,
+ 	readOracleInventory,
+ 	recordButtonOracle,
++	scanCompatibilityPresence,
+ 	scanOracleObligation,
+ 	scanOracleFixture,
+ 	scanEscapingImport,
+@@ -50,17 +53,21 @@ describe('setupConformance', () => {
+ 			'ORACLE_TIMEOUT',
+ 			'WORKSPACE_ROOT',
+ 			'collectImportClosure',
++			'collectShippedComponents',
+ 			'computeArtifactDigest',
+ 			'extractSpecifiers',
+ 			'extractStringArgument',
++			'matchesOracleEvents',
+ 			'matchesOracleToggle',
+ 			'readBootstrapCascade',
+ 			'readBuiltCascade',
+ 			'readCompatibility',
++			'readDeferrals',
+ 			'readManifestMember',
+ 			'readOracleControl',
+ 			'readOracleInventory',
+ 			'recordButtonOracle',
++			'scanCompatibilityPresence',
+ 			'scanEscapingImport',
+ 			'scanForbiddenDependency',
+ 			'scanForbiddenSource',
+@@ -219,6 +226,48 @@ describe('setupConformance', () => {
+ 			).toBeUndefined()
+ 		})
+ 
++		it('selects an exact event obligation after the wildcard and reads required events from its binding', () => {
++			const step = fixture.steps.find((candidate) => candidate.name === 'button.click.toggle')
++			const binding = ORACLE_BINDINGS.find(
++				(candidate) => candidate.obligation === 'Dispatches click',
++			)
++			if (step === undefined || binding === undefined)
++				throw new Error('Missing click step or binding')
++			expect(
++				ORACLE_BINDINGS.findIndex(
++					(candidate) => candidate.category === 'event' && candidate.obligation === undefined,
++				),
++			).toBeLessThan(ORACLE_BINDINGS.indexOf(binding))
++			expect(
++				scanOracleObligation(
++					{
++						component: 'btn',
++						category: 'event',
++						obligation: 'Dispatches click',
++						proof: step.name,
++						status: 'accepted',
++					},
++					fixture,
++				),
++			).toBeUndefined()
++			expect(binding.predicate(step, binding)).toBe(true)
++			expect(
++				binding.predicate(step, { ...binding, obligation: 'Wording carries no event name' }),
++			).toBe(true)
++			expect(binding.predicate(step, { ...binding, events: ['keydown'] })).toBe(false)
++			expect(binding.predicate(step, { ...binding, events: ['click', 'keydown'] })).toBe(false)
++		})
++
++		it('returns an invalid-fixture finding for values JSON cannot serialize', () => {
++			const cyclic: Record<string, unknown> = { ...fixture }
++			cyclic.self = cyclic
++			expect(scanOracleFixture(fixture, cyclic)).toBe('Invalid Button oracle fixture')
++			expect(scanOracleFixture(fixture, { ...fixture, value: 1n })).toBe(
++				'Invalid Button oracle fixture',
++			)
++			expect(scanOracleFixture(fixture, undefined)).toBe('Invalid Button oracle fixture')
++		})
++
+ 		it('requires boolean pressed attributes for accessibility and every toggle predicate', () => {
+ 			const step = fixture.steps.find((candidate) => candidate.name === 'button.click.toggle')
+ 			if (step === undefined) throw new Error('Missing activation step')
+@@ -345,6 +394,177 @@ describe('setupConformance', () => {
+ 		}
+ 	})
+ 
++	it('reads deferred selectors and properties only within their Styles subsection', () => {
++		const scratch = createScratch()
++		try {
++			const path = scratch.write(
++				'guide.md',
++				'## Styles\n\n### Files\n\n| File | Role |\n| --- | --- |\n| index.css | Cascade |\n\n### Deferred selectors\n\n| Name | Owner | Reason |\n| --- | --- | --- |\n| `.btn-close` | Passive | Close button |\n| `--bs-btn-close-color` | Passive | Close color |\n\n### Scripts\n\n| Script | Role |\n| --- | --- |\n| build | Cascade |\n\n## Other\n\n### Deferred selectors\n\n| Name | Owner | Reason |\n| --- | --- | --- |\n| ignored | Other | Outside Styles |\n',
++			)
++			expect(readDeferrals(path)).toEqual([
++				{ name: '.btn-close', owner: 'Passive', reason: 'Close button' },
++				{ name: '--bs-btn-close-color', owner: 'Passive', reason: 'Close color' },
++			])
++			scratch.write(
++				'guide.md',
++				'## Styles\n\n### Deferred selectors\n\n| Name | Owner | Reason |\n| --- | --- | --- |\n',
++			)
++			expect(readDeferrals(path)).toEqual([])
++			scratch.write('guide.md', '## Other\n\n### Deferred selectors\n')
++			expect(() => readDeferrals(path)).toThrow('missing Styles / Deferred selectors subsection')
++			scratch.write('guide.md', '## Styles\n\n### Deferred selectors\n')
++			expect(() => readDeferrals(path)).toThrow('missing table')
++			scratch.write(
++				'guide.md',
++				'## Styles\n\n### Deferred selectors\n\n| Name | Reason |\n| --- | --- |\n',
++			)
++			expect(() => readDeferrals(path)).toThrow('missing Owner column')
++			scratch.write(
++				'guide.md',
++				'## Styles\n\n### Deferred selectors\n\n| Name | Owner | Reason |\n| --- | --- | --- |\n| .btn-close | | Close button |\n',
++			)
++			expect(() => readDeferrals(path)).toThrow('Deferral row .btn-close: missing required cell')
++		} finally {
++			scratch.destroy()
++		}
++	})
++
++	it('selects shipped CSS keys independently of behavior rows and excludes the shared engine', () => {
++		const rows = readCompatibility().map((row) => ({ ...row, status: 'shipped' as const }))
++		expect(collectShippedComponents([])).toEqual([])
++		expect(collectShippedComponents(rows.map((row) => ({ ...row, status: 'accepted' })))).toEqual(
++			[],
++		)
++		expect(collectShippedComponents(rows)).toEqual(['btn'])
++		expect(
++			collectShippedComponents(
++				rows.map((row) => (row.category === 'method' ? { ...row, status: 'accepted' } : row)),
++			),
++		).toEqual(['btn'])
++		for (const category of ['selector', 'variable']) {
++			expect(collectShippedComponents(rows.filter((row) => row.category !== category))).toEqual([])
++			expect(
++				collectShippedComponents(
++					rows.map((row) => (row.category === category ? { ...row, status: 'accepted' } : row)),
++				),
++			).toEqual([])
++		}
++		expect(collectShippedComponents(rows.map((row) => ({ ...row, component: 'engine' })))).toEqual(
++			[],
++		)
++	})
++
++	it('partitions shipped vocabulary against written CSS and refuses missing, present-deferred, and unknown names', () => {
++		const scratch = createScratch()
++		try {
++			const rows = readCompatibility().map((row) => ({ ...row, status: 'shipped' as const }))
++			const inventory = {
++				version: BOOTSTRAP_VERSION,
++				digests: {},
++				components: {
++					btn: {
++						selectors: ['.btn', '.btn > .label', '.btn-close'],
++						properties: ['--bs-btn-color', '--bs-btn-close-color'],
++					},
++				},
++			}
++			const guide = scratch.write(
++				'guide.md',
++				'## Styles\n\n### Deferred selectors\n\n| Name | Owner | Reason |\n| --- | --- | --- |\n| .btn-close | Passive | Close button |\n| --bs-btn-close-color | Passive | Close color |\n',
++			)
++			const deferrals = readDeferrals(guide)
++			const path = scratch.write(
++				'index.css',
++				'@layer components { .btn, .btn>.label { --bs-btn-color: red; } }',
++			)
++			expect(
++				scanCompatibilityPresence(rows, inventory, deferrals, readBuiltCascade(path)),
++			).toBeUndefined()
++			expect(scanCompatibilityPresence(rows, inventory, [], readBuiltCascade(path))).toBe(
++				'Shipped component btn is missing selector .btn-close',
++			)
++			scratch.write('index.css', '.btn { --bs-btn-color: red; }')
++			expect(scanCompatibilityPresence(rows, inventory, deferrals, readBuiltCascade(path))).toBe(
++				'Shipped component btn is missing selector .btn > .label',
++			)
++			scratch.write('index.css', '.btn, .btn>.label { color: var(--bs-btn-color); }')
++			expect(scanCompatibilityPresence(rows, inventory, deferrals, readBuiltCascade(path))).toBe(
++				'Shipped component btn is missing custom property --bs-btn-color',
++			)
++			scratch.write('index.css', '.btn-close { color: red; }')
++			expect(scanCompatibilityPresence(rows, inventory, deferrals, readBuiltCascade(path))).toBe(
++				'Deferred name .btn-close is present in the built cascade',
++			)
++			scratch.write('index.css', ':root { --bs-btn-close-color: red; }')
++			expect(scanCompatibilityPresence(rows, inventory, deferrals, readBuiltCascade(path))).toBe(
++				'Deferred name --bs-btn-close-color is present in the built cascade',
++			)
++			expect(
++				scanCompatibilityPresence(
++					rows,
++					inventory,
++					[{ name: '.outside', owner: 'Passive', reason: 'Unknown selector' }],
++					readBuiltCascade(path),
++				),
++			).toBe('Deferred name .outside is outside the official inventory for btn')
++			expect(scanCompatibilityPresence(rows, { ...inventory, components: {} }, [], '')).toBe(
++				'Shipped component btn has no official inventory',
++			)
++			expect(
++				scanCompatibilityPresence(
++					rows.map((row) => ({ ...row, status: 'accepted' })),
++					inventory,
++					[],
++					'',
++				),
++			).toBeUndefined()
++			for (const category of ['selector', 'variable']) {
++				expect(
++					scanCompatibilityPresence(
++						rows.map((row) => ({
++							...row,
++							status: row.category === category ? 'shipped' : 'accepted',
++						})),
++						inventory,
++						[],
++						'',
++					),
++				).toContain(
++					category === 'selector'
++						? 'missing selector .btn'
++						: 'missing custom property --bs-btn-color',
++				)
++			}
++		} finally {
++			scratch.destroy()
++		}
++	})
++
++	it('skips engine and CSS obligations whose Proof cell is a dash', () => {
++		const rows = readCompatibility().filter(
++			(row) =>
++				row.component === 'engine' || row.category === 'selector' || row.category === 'variable',
++		)
++		expect(new Set(rows.map((row) => row.component))).toEqual(new Set(['btn', 'engine']))
++		expect(
++			rows
++				.filter((row) => row.component === 'btn')
++				.map((row) => row.category)
++				.sort(),
++		).toEqual(['selector', 'variable'])
++		for (const row of rows) {
++			expect(row.proof).toBeUndefined()
++			expect(
++				scanOracleObligation(row, {
++					version: BOOTSTRAP_VERSION,
++					component: 'btn',
++					steps: [],
++					excluded: [],
++				}),
++			).toBeUndefined()
++		}
++	})
++
+ 	it('locates this workspace and the installed Bootstrap manifest', () => {
+ 		expect(existsSync(resolve(WORKSPACE_ROOT, 'package.json'))).toBe(true)
+ 		expect(readManifestMember(resolve(WORKSPACE_ROOT, 'package.json'), 'name')).toBe(
+@@ -365,6 +585,20 @@ describe('setupConformance', () => {
+ 		expect(cascade).toContain('--bs-blue')
+ 	})
+ 
++	it('reads the manifest-rooted Bootstrap cascade outside the workspace working directory', () => {
++		const scratch = createScratch()
++		const directory = process.cwd()
++		try {
++			process.chdir(scratch.path)
++			expect(readBootstrapCascade()).toBe(
++				readFileSync(resolve(dirname(BOOTSTRAP_MANIFEST_PATH), 'dist/css/bootstrap.css'), 'utf8'),
++			)
++		} finally {
++			process.chdir(directory)
++			scratch.destroy()
++		}
++	})
++
+ 	it('pins a distinct digest for the CSS, the RTL CSS, and the bundle', () => {
+ 		const HEX_DIGEST = /^[0-9a-f]{64}$/u
+ 		expect(BOOTSTRAP_CSS_DIGEST).toMatch(HEX_DIGEST)
+diff --git a/tests/setupConformance.ts b/tests/setupConformance.ts
+index 9a0cd30..3bfde2c 100644
+--- a/tests/setupConformance.ts
++++ b/tests/setupConformance.ts
+@@ -13,7 +13,7 @@ import {
+ 	findColumnIndex,
+ 	selectSectionBlocks,
+ } from '@orkestrel/guide'
+-import { createMarkdown } from '@orkestrel/markdown'
++import { createMarkdown, flattenText } from '@orkestrel/markdown'
+ import { createScratch, resolveContained } from '@orkestrel/test/server'
+ import { createHash } from 'node:crypto'
+ import { createRequire } from 'node:module'
+@@ -22,8 +22,9 @@ import { dirname, extname, resolve } from 'node:path'
+ import { fileURLToPath, pathToFileURL } from 'node:url'
+ import { isDeepStrictEqual } from 'node:util'
+ import { chromium } from 'playwright'
++import { parse } from 'postcss'
+ import { resolveBrowser, resolvePinnedBrowser } from '../configs/browsers.js'
+-import { BOOTSTRAP_CASCADE_PATH } from './setupStyles.js'
++import { normalizeComplexSelector } from './setupStyles.js'
+ import { compile } from 'sass'
+ import { parseSync, Visitor } from 'vite'
+ 
+@@ -36,6 +37,13 @@ export interface CompatibilityRow {
+ 	readonly status: 'accepted' | 'shipped'
+ }
+ 
++/** Describes an official CSS name withheld until its owning unit ships it. */
++export interface DeferralRow {
++	readonly name: string
++	readonly owner: string
++	readonly reason: string
++}
++
+ /** Describes the observable state after an oracle action. */
+ export interface OracleReading {
+ 	readonly events: readonly string[]
+@@ -70,16 +78,22 @@ export interface OracleBinding {
+ 	readonly category: string
+ 	readonly obligation: string | undefined
+ 	readonly steps: readonly RegExp[]
+-	readonly predicate: (step: OracleStep, row: CompatibilityRow) => boolean
++	readonly events: readonly string[]
++	readonly predicate: (step: OracleStep, binding: OracleBinding) => boolean
+ }
+ 
+-/** Binds accepted obligations to the recorded actions that can prove them. */
++/**
++ * Binds accepted obligations to the recorded actions that can prove them.
++ * Exact obligations take precedence over undefined-obligation fallbacks, regardless of array order.
++ * Event bindings name required events explicitly; an empty event set proves no event obligation.
++ */
+ export const ORACLE_BINDINGS: readonly OracleBinding[] = Object.freeze([
+ 	{
+ 		component: 'btn',
+ 		category: 'identity',
+ 		obligation:
+ 			'Button identifies itself as button, bs.button, and .bs.button; defaults and type defaults are inherited empty.',
++		events: [],
+ 		steps: [/^button\./u],
+ 		predicate: ({ after }) =>
+ 			after.identity.NAME === 'button' &&
+@@ -93,6 +107,7 @@ export const ORACLE_BINDINGS: readonly OracleBinding[] = Object.freeze([
+ 		category: 'attribute',
+ 		obligation:
+ 			'The data-bs-toggle="button" click prevents its default action and creates or reuses the instance to toggle active and aria-pressed.',
++		events: [],
+ 		steps: [
+ 			/^button\.(?:reduced\.)?(?:click\.(?:toggle|release)|pressed\.click|keyboard\.(?:space|enter))$/u,
+ 		],
+@@ -104,6 +119,7 @@ export const ORACLE_BINDINGS: readonly OracleBinding[] = Object.freeze([
+ 		category: 'method',
+ 		obligation:
+ 			'toggle() flips active and aria-pressed on every activation, without a no-op guard.',
++		events: [],
+ 		steps: [
+ 			/^button\.(?:reduced\.)?(?:click\.(?:toggle|release)|pressed\.click|keyboard\.(?:space|enter)|pointer\.release)$/u,
+ 		],
+@@ -117,6 +133,7 @@ export const ORACLE_BINDINGS: readonly OracleBinding[] = Object.freeze([
+ 		category: 'accessibility',
+ 		obligation:
+ 			'A toggle announces the button role and its pressed state, rather than a checkbox role.',
++		events: [],
+ 		steps: [
+ 			/^button\.(?:reduced\.)?(?:initial|click\.(?:toggle|release)|keyboard\.(?:space|enter)|pressed\.(?:initial|click))$/u,
+ 		],
+@@ -131,6 +148,7 @@ export const ORACLE_BINDINGS: readonly OracleBinding[] = Object.freeze([
+ 		category: 'accessibility',
+ 		obligation:
+ 			'A disabled anchor carries disabled, aria-disabled="true", tabindex="-1", and role="button"; pointer activation is refused.',
++		events: [],
+ 		steps: [/^button\.(?:reduced\.)?disabled\.click$/u],
+ 		predicate: ({ after }) =>
+ 			after.classes.includes('disabled') &&
+@@ -145,11 +163,17 @@ export const ORACLE_BINDINGS: readonly OracleBinding[] = Object.freeze([
+ 		component: 'btn',
+ 		category: 'event',
+ 		obligation: undefined,
++		events: [],
+ 		steps: [/^button\./u],
+-		predicate: ({ after }, row) => {
+-			const events = row.obligation.match(/\b(?:click|[\w-]+\.bs\.button)\b/gu) ?? []
+-			return events.length > 0 && events.every((event) => after.events.includes(event))
+-		},
++		predicate: matchesOracleEvents,
++	},
++	{
++		component: 'btn',
++		category: 'event',
++		obligation: 'Dispatches click',
++		events: ['click'],
++		steps: [/^button\./u],
++		predicate: matchesOracleEvents,
+ 	},
+ ])
+ 
+@@ -379,15 +403,15 @@ export function collectImportClosure(entry: string): ReadonlySet<string> {
+ /**
+  * Reads the installed Bootstrap stylesheet the compatibility oracle measures.
+  *
+- * @returns The stylesheet's text, read from `BOOTSTRAP_CASCADE_PATH`.
++ * @returns The stylesheet's text, resolved from the installed Bootstrap manifest.
+  *
+  * @remarks
+- * `tests/setupStyles.ts` holds that path and not this text, because the browser projects load it
+- * and it takes no `node:fs` import. This module is Node-only, so the read lives here and every
+- * Node proof needing the text calls this instead of repeating the read at case scope.
++ * The recorder and digest proof use the same manifest root, including a hoisted installation.
++ * The browser-visible path remains in `tests/setupStyles.ts`; this Node-only read does not
++ * depend on the working directory.
+  */
+ export function readBootstrapCascade(): string {
+-	return readFileSync(BOOTSTRAP_CASCADE_PATH, 'utf8')
++	return readFileSync(resolve(dirname(BOOTSTRAP_MANIFEST_PATH), 'dist/css/bootstrap.css'), 'utf8')
+ }
+ 
+ /**
+@@ -446,6 +470,48 @@ export function readCompatibility(
+ 	return rows
+ }
+ 
++/**
++ * Reads deferred CSS names from the Styles section's Deferred selectors subsection.
++ * @param path - The Markdown document to read; defaults to the package guide.
++ * @returns Deferred names with their owning unit and reason, in document order.
++ * @throws When the subsection, table, column, or required cell is missing.
++ */
++export function readDeferrals(
++	path: string = resolve(WORKSPACE_ROOT, 'guides/veneer.md'),
++): readonly DeferralRow[] {
++	const document = createMarkdown(readFileSync(path, 'utf8')).document
++	const rows: DeferralRow[] = []
++	let active = false
++	let found = false
++	let tabled = false
++	for (const block of selectSectionBlocks(document, 'Styles')) {
++		if (block.element === 'heading' && block.level === 3) {
++			if (active) break
++			active = flattenText(block).trim() === 'Deferred selectors'
++			if (active) found = true
++			continue
++		}
++		if (!active || block.element !== 'table') continue
++		tabled = true
++		const columns = ['Name', 'Owner', 'Reason'].map((header) => {
++			const index = findColumnIndex(block, header)
++			if (index === undefined) throw new Error(`Deferral row <header>: missing ${header} column`)
++			return index
++		})
++		for (const row of block.rows) {
++			const [name, owner, reason] = columns.map((index) =>
++				(row[index] ?? []).map(flattenText).join('').trim(),
++			)
++			if (!name || !owner || !reason) throw new Error(`Deferral row ${name}: missing required cell`)
++			rows.push({ name, owner, reason })
++		}
++	}
++	if (!found)
++		throw new Error('Deferral row <header>: missing Styles / Deferred selectors subsection')
++	if (!tabled) throw new Error('Deferral row <header>: missing table')
++	return rows
++}
++
+ /**
+  * Reads the built Veneer cascade whose component vocabulary must match the inventory.
+  * @param path - The built CSS artifact; defaults to the published stylesheet.
+@@ -458,6 +524,91 @@ export function readBuiltCascade(
+ 	return readFileSync(path, 'utf8')
+ }
+ 
++/**
++ * Collects component keys whose selector and variable obligations are shipped.
++ * @param rows - The guide's compatibility obligations.
++ * @returns Sorted component keys, excluding the shared engine.
++ */
++export function collectShippedComponents(rows: readonly CompatibilityRow[]): readonly string[] {
++	return [...new Set(rows.map((row) => row.component))]
++		.filter(
++			(component) =>
++				component !== 'engine' &&
++				['selector', 'variable'].every((category) =>
++					rows.some(
++						(row) =>
++							row.component === component && row.category === category && row.status === 'shipped',
++					),
++				),
++		)
++		.sort()
++}
++
++/**
++ * Scans shipped CSS obligations and deferrals against the official vocabulary and built cascade.
++ * @param rows - The guide's compatibility obligations; each shipped CSS row binds its own set.
++ * @param inventory - The official vocabulary by component.
++ * @param deferrals - Official names withheld by their owning units.
++ * @param cascade - The built CSS text, including written fixtures in reader proofs.
++ * @returns The first named failure, or undefined when the partition and presence agree.
++ * @remarks
++ * A deferral must belong to a component with a selector or variable row, even while accepted.
++ * Names shared by inventory keys apply to every matching key. Deferred names must be absent
++ * regardless of row status. Selector comparison uses the cascade's normalization.
++ */
++export function scanCompatibilityPresence(
++	rows: readonly CompatibilityRow[],
++	inventory: OracleInventory,
++	deferrals: readonly DeferralRow[],
++	cascade: string,
++): string | undefined {
++	const obligations = rows.filter(
++		(row) =>
++			row.component !== 'engine' && (row.category === 'selector' || row.category === 'variable'),
++	)
++	const components = [...new Set(obligations.map((row) => row.component))]
++	const selectors = new Set<string>()
++	const properties = new Set<string>()
++	const parsed = parse(cascade)
++	parsed.walkRules((rule) => {
++		for (const selector of rule.selectors) selectors.add(normalizeComplexSelector(selector))
++	})
++	parsed.walkDecls((declaration) => {
++		if (declaration.prop.startsWith('--')) properties.add(declaration.prop)
++	})
++	const deferred = new Set(deferrals.map((row) => row.name))
++	for (const { name } of deferrals) {
++		if (
++			!components.some((component) => {
++				const vocabulary = inventory.components[component]
++				return vocabulary?.selectors.includes(name) || vocabulary?.properties.includes(name)
++			})
++		)
++			return `Deferred name ${name} is outside the official inventory for ${components.join(', ')}`
++		if (
++			name.startsWith('--') ? properties.has(name) : selectors.has(normalizeComplexSelector(name))
++		)
++			return `Deferred name ${name} is present in the built cascade`
++	}
++	for (const row of obligations) {
++		if (row.status !== 'shipped') continue
++		const vocabulary = inventory.components[row.component]
++		if (vocabulary === undefined)
++			return `Shipped component ${row.component} has no official inventory`
++		const names = row.category === 'selector' ? vocabulary.selectors : vocabulary.properties
++		for (const name of names) {
++			if (deferred.has(name)) continue
++			const present =
++				row.category === 'selector'
++					? selectors.has(normalizeComplexSelector(name))
++					: properties.has(name)
++			if (!present)
++				return `Shipped component ${row.component} is missing ${row.category === 'selector' ? 'selector' : 'custom property'} ${name}`
++		}
++	}
++	return undefined
++}
++
+ /**
+  * Reads the official control's classes, attributes, focus, and accessible snapshot.
+  * @param target - The control resolved by role and accessible name.
+@@ -558,6 +709,18 @@ export function matchesOracleToggle(step: OracleStep): boolean {
+ 	)
+ }
+ 
++/**
++ * Checks whether a recorded action contains every event required by its binding.
++ * @param step - The recorded action to inspect.
++ * @param binding - The explicit required event names, independent of obligation prose.
++ * @returns True if the required set is nonempty and every event occurred; false otherwise.
++ */
++export function matchesOracleEvents(step: OracleStep, binding: OracleBinding): boolean {
++	return (
++		binding.events.length > 0 && binding.events.every((event) => step.after.events.includes(event))
++	)
++}
++
+ /**
+  * Scans one guide obligation for disagreement with its named live oracle step.
+  * @param row - The guide row to check.
+@@ -573,16 +736,16 @@ export function scanOracleObligation(
+ 	const step = fixture.steps.find((candidate) => candidate.name === row.proof)
+ 	if (row.component !== fixture.component || step === undefined)
+ 		return `${label}: missing recording step`
+-	const binding = ORACLE_BINDINGS.find(
+-		(candidate) =>
+-			candidate.component === row.component &&
+-			candidate.category === row.category &&
+-			(candidate.obligation === undefined || candidate.obligation === row.obligation),
++	const bindings = ORACLE_BINDINGS.filter(
++		(candidate) => candidate.component === row.component && candidate.category === row.category,
+ 	)
++	const binding =
++		bindings.find((candidate) => candidate.obligation === row.obligation) ??
++		bindings.find((candidate) => candidate.obligation === undefined)
+ 	if (binding === undefined) return `${label}: obligation has no oracle predicate`
+ 	if (!binding.steps.some((pattern) => pattern.test(step.name)))
+ 		return `${label}: proof step does not prove this obligation`
+-	return binding.predicate(step, row) ? undefined : `${label}: recording contradicts obligation`
++	return binding.predicate(step, binding) ? undefined : `${label}: recording contradicts obligation`
+ }
+ 
+ /**
+@@ -590,9 +753,15 @@ export function scanOracleObligation(
+  * @param recording - The live official recording.
+  * @param fixture - The saved fixture, normalized through the same JSON round-trip as the recording.
+  * @returns The first differing step or metadata finding, or undefined when they agree.
++ * Returns `Invalid Button oracle fixture` when the fixture cannot be serialized to JSON.
+  */
+ export function scanOracleFixture(recording: OracleFixture, fixture: unknown): string | undefined {
+-	const saved = parseJSON(JSON.stringify(fixture))
++	let saved: unknown
++	try {
++		saved = parseJSON(JSON.stringify(fixture))
++	} catch {
++		return 'Invalid Button oracle fixture'
++	}
+ 	if (!isRecord(saved) || !Array.isArray(saved.steps) || !Array.isArray(saved.excluded))
+ 		return 'Invalid Button oracle fixture'
+ 	const excluded = new Set<string>()

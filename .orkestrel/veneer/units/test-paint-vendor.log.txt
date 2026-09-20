@@ -1,0 +1,16 @@
+== 2026-09-20T22:53:30Z vendor start
+tarball: C:/Users/mikes/WebstormProjects/test/tmp/pack/orkestrel-test-0.0.18.tgz
+9a764548113aec3846ca28e5d24f7b917fbb2a6b0f2f3190b5183a6b99609582 *C:/Users/mikes/WebstormProjects/test/tmp/pack/orkestrel-test-0.0.18.tgz
+1b80ccb Hold Veneer to Bootstrap with a live oracle and a compatibility ledger (U4b)
+ M guides/veneer.md
+ M tests/conformance.test.ts
+ M tests/setupConformance.test.ts
+ M tests/setupConformance.ts
+replaced range: ^0.0.18 installed: 0.0.18
+npm warn install-scripts
+npm warn install-scripts Run `npm install-scripts ls` to review, or `npm install-scripts approve <pkg>` to allow.
+installed now: 0.0.18
+conversion declarations: 10
+journey declarations: 24
+markdown still installed: 0.0.15
+== 2026-09-20T22:53:34Z vendor end

@@ -974,3 +974,15 @@ after acceptance per the debrief skill's retention reference.
   Ruled: `convert*` is an admissible helper prefix with one meaning, without a rule edit. U7d
   launched the same hour (thread `01a0c0f6-9147-7e72-96de-23d64790e7ca`, HEAD `1b80ccb`);
   U7c's brief is drafted at `units/u7c-brief.md` for launch after U7b lands.
+- 2026-09-20, U7d accepted and landed in Veneer as `7da6bb1` (Astra, thread
+  `01a0c0f6-9147-7e72-96de-23d64790e7ca`; verdict `u7d-audit-verdict.md`, four lanes accepting).
+  The presence check keys off Button's `selector` and `variable` rows, `readDeferrals` reads the
+  empty `### Deferred selectors` table, the cross-cutting rows carry `engine`, and the U4b bounds
+  (exact binding first, explicit `events`, the non-serializable fixture finding, the
+  manifest-rooted cascade path) are closed. Added: `u7d-bounds` (`opus`, native; brief
+  `units/u7d-bounds-brief.md`), because vendoring the Test-paint tarball made two
+  `tests/setupBrowser.test.ts` cases false (they asserted the installed reader's old limits) and
+  the verifier's whole chain went red on them; the unit restates what the paint wrappers add and
+  closes reviewer findings 15, 16, 17, 19, 20, and 24. It precedes U7a so U7a starts green. U7a's
+  brief names that flipping the rows to `shipped` arms the live presence gate (finding 18).
+  Findings 21 and 22 (two deferral grammars in the guide) are carried to U7e.

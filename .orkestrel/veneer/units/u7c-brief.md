@@ -170,7 +170,7 @@ specimen table and copy), `app/browser/sections/ButtonSection.ts` (new),
 `tests/app/browser/integration.test.ts`; `tests/setup.ts` (the projection helper) and
 `tests/setup.test.ts`; `tests/setupBrowser.ts` and `tests/setupBrowser.test.ts` (only where
 `mountShowcase` must expose the section); `tests/distribution.test.ts` (the consumer case);
-`tmp/units/u7c-report.md`.
+`u7c-report.md`.
 
 **Shared (report-only).** None; no other unit is live in this checkout.
 
@@ -270,7 +270,7 @@ after each item.
 
 ## Output
 
-Write `tmp/units/u7c-report.md` in the Veneer checkout and return its content as your final
+Write `u7c-report.md` in the Veneer checkout and return its content as your final
 message: the diff per owned file; the specimen table as rendered; the projection shape; each
 journey's reading (the strings and values asserted); the `STATES` list and the capture paths a
 capture run wrote; each control's red reading and restore proof; each gate's final lines on both

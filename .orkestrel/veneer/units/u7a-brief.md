@@ -134,7 +134,11 @@ closure), then the mixin, then the partials, then the proofs, then the guide; ru
    the mixin; hover and active tints through the mixer; forced-colors fallbacks through the
    `forced-colors` mixin with system colours held as tokens; the transition. Every shipped
    official selector literal; nothing direction-specific.
-5. **The deferral table and the rows.** Fill `### Deferred selectors` under § Styles with every
+5. **The deferral table and the rows.** (At the baseline the live presence assertion in
+   `tests/conformance.test.ts` cannot fail: both Button CSS rows are `accepted` and the deferral
+   table is empty, so every loop in `scanCompatibilityPresence` is skipped. Flipping the rows to
+   `shipped` is what arms that gate; run `test:conformance` red on the flip before the partials
+   carry every selector, and record the red.) Fill `### Deferred selectors` under § Styles with every
    official `btn` selector and property not shipped, its owner, and the reason, so the deferral
    set plus the shipped set equals the official set; flip the `selector` and `variable` rows to
    `shipped`; `npm.cmd run build:src:styles` then `npm.cmd run test:conformance` green.
