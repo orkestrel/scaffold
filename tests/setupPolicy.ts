@@ -96,6 +96,13 @@ export const POLICY_SURFACE_EXPORT_CASES = Object.freeze([
 export const POLICY_SURFACE_BARREL_PATTERN =
 	/^\s*export\s+\*\s+from\s+(?:'(\.\.?\/[^']+\.js)'|"(\.\.?\/[^"]+\.js)")\s*;?\s*$/u
 
+/** Names the workspace-relative styles side-effect entry the workspace rule prescribes. */
+export const POLICY_SURFACE_STYLES_ENTRY = 'src/styles/index.ts'
+
+/** Names the violation reported when the styles side-effect entry does not import `./index.scss` alone. */
+export const POLICY_SURFACE_STYLES_MESSAGE =
+	'surface population incomplete: styles entry must import ./index.scss and nothing else'
+
 /**
  * Creates a guide whose surface claims the supplied fixture names.
  *
@@ -2233,15 +2240,46 @@ export function collectPolicyDeclarations(
  *
  * @param root - The workspace root to inspect.
  * @returns The parsed declarations and incomplete-population violations.
+ * @remarks
+ * The `src/styles/index.ts` side-effect entry is excluded from barrel validation and instead
+ * requires exactly one bare `./index.scss` import.
  */
 export function readPolicySurface(root: string): PolicySurfacePopulation {
 	const files: Record<string, string> = {}
 	for (const path of globSync('src/**/*.ts', { cwd: root }).map(normalizePolicyPath).sort()) {
 		files[path] = readFileSync(join(root, path), 'utf8')
 	}
-	const barrels = Object.keys(files).filter((path) => path.endsWith('/index.ts'))
+	const barrels = Object.keys(files).filter(
+		(path) => path.endsWith('/index.ts') && path !== POLICY_SURFACE_STYLES_ENTRY,
+	)
 	const targets = new Set<string>()
 	const violations: PolicyViolation[] = []
+	const stylesEntry = files[POLICY_SURFACE_STYLES_ENTRY]
+	if (stylesEntry !== undefined) {
+		const stylesSource = parseSync(POLICY_SURFACE_STYLES_ENTRY, stylesEntry)
+		const stylesStatement =
+			stylesSource.errors.length === 0 ? stylesSource.program.body[0] : undefined
+		const stylesValid =
+			stylesSource.errors.length === 0 &&
+			stylesSource.program.body.length === 1 &&
+			stylesStatement?.type === 'ImportDeclaration' &&
+			stylesStatement.specifiers.length === 0 &&
+			stylesStatement.source.value === './index.scss'
+		if (!stylesValid) {
+			const line =
+				stylesStatement === undefined
+					? 1
+					: stylesEntry.slice(0, stylesStatement.start).split(/\r\n|\n/u).length
+			violations.push(
+				createPolicyViolation(
+					'surface',
+					POLICY_SURFACE_STYLES_ENTRY,
+					POLICY_SURFACE_STYLES_MESSAGE,
+					line,
+				),
+			)
+		}
+	}
 	for (const path of barrels) {
 		const text = files[path]
 		if (text === undefined) continue

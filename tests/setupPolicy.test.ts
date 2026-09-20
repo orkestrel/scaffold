@@ -627,6 +627,43 @@ describe('readPolicySurface', () => {
 		}
 	})
 
+	it('accepts the styles side-effect entry without barrel validation', () => {
+		const scratch = createPolicySurfaceFixture()
+		try {
+			scratch.write('src/core/index.ts', "export * from './helpers.js'\n")
+			scratch.write('src/core/helpers.ts', 'export function readSample() {}\n')
+			scratch.write('src/styles/index.ts', "import './index.scss'\n")
+			expect(readPolicySurface(scratch.path)).toEqual({
+				declarations: [{ name: 'readSample', path: 'src/core/helpers.ts', line: 1 }],
+				violations: [],
+			})
+		} finally {
+			scratch.destroy()
+		}
+	})
+
+	it('refuses a styles entry that is not a bare ./index.scss import', () => {
+		const scratch = createPolicySurfaceFixture()
+		try {
+			scratch.write('src/styles/tokens.ts', 'export const token = 1\n')
+			scratch.write('src/styles/index.ts', "export * from './tokens.js'\n")
+			expect(readPolicySurface(scratch.path)).toEqual({
+				declarations: [],
+				violations: [
+					{
+						rule: 'surface',
+						path: 'src/styles/index.ts',
+						line: 1,
+						message:
+							'surface population incomplete: styles entry must import ./index.scss and nothing else',
+					},
+				],
+			})
+		} finally {
+			scratch.destroy()
+		}
+	})
+
 	it('refuses an unresolved barrel target through the workspace route', () => {
 		const scratch = createPolicySurfaceFixture()
 		try {
