@@ -1,0 +1,62 @@
+npm notice run @orkestrel/veneer@0.0.1 test:policy
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project policy
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer
+
+·································································································x··-·x·······
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |policy| tests/policy.test.ts > prose policy > accounts for every top-level guide as this package, the index, or a catalog row
+AssertionError: expected [ 'guides/tokens.md' ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "guides/tokens.md",
++ ]
+
+ ❯ tests/policy.test.ts:671:62
+    669|   const guides = readPolicyProse(root).filter((path) => POLICY_MIRROR_…
+    670|   expect(guides.length).toBeGreaterThan(0)
+    671|   expect(guides.filter((path) => isPolicyStray(root, path))).toEqual([…
+       |                                                              ^
+    672|   const other = readPolicyCatalog(root).find((name) => name !== own)
+    673|   if (other === undefined) throw new Error('The catalog registers no o…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  |policy| tests/policy.test.ts > repository policy > enforces the workspace policy laws including surface ownership
+AssertionError: expected [ { rule: 'prose', …(2) } ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   {
++     "message": "guide is the package's own, the map, or a catalog row",
++     "path": "guides/tokens.md",
++     "rule": "prose",
++   },
++ ]
+
+ ❯ tests/policy.test.ts:758:49
+    756| describe('repository policy', () => {
+    757|  it('enforces the workspace policy laws including surface ownership', …
+    758|   expect(inspectPolicyWorkspace(process.cwd())).toEqual([])
+       |                                                 ^
+    759|  })
+    760|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 107 passed | 1 skipped (110)
+   Start at  08:31:59
+   Duration  2.14s (transform 105ms, setup 17ms, import 296ms, tests 1.66s, environment 0ms)
+
+exit=1

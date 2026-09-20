@@ -1,0 +1,76 @@
+// Temporary consumer probe for U6 (Orchestrator's instrument): a Veneer test importing each new
+// `@orkestrel/test/browser` export from the installed tarball and driving it against a fixture.
+// Deleted after its readings are recorded; retained beside the U6 records in scaffold.
+import type { MediaOptions } from '@orkestrel/test/browser'
+import {
+	holdAccessible,
+	hoverAccessible,
+	MEDIA_STAGE,
+	POINTER_HOLD,
+	readPixels,
+	readStyle,
+	releaseMedia,
+	releasePointer,
+	resolveAccessible,
+	sendProtocol,
+	stageMedia,
+} from '@orkestrel/test/browser'
+import { afterEach, describe, expect, it } from 'vitest'
+
+const mounted: Element[] = []
+
+function mountProbe(markup: string, css: string): HTMLElement {
+	const style = document.createElement('style')
+	style.textContent = css
+	const host = document.createElement('div')
+	host.innerHTML = markup
+	document.head.append(style)
+	document.body.append(host)
+	mounted.push(style, host)
+	return host
+}
+
+afterEach(async () => {
+	for (const element of mounted.splice(0)) element.remove()
+	await releasePointer()
+	await releaseMedia()
+})
+
+describe('U6 consumer probe', () => {
+	it('hovers, holds, and releases through the installed verbs', async () => {
+		mountProbe(
+			'<button class="probe">Probe</button>',
+			'.probe { padding-top: 10px } .probe:hover { padding-top: 20px } .probe:active { padding-top: 30px }',
+		)
+		const button = resolveAccessible('Probe')
+		expect(readPixels(button, 'padding-top')).toBe(10)
+		await hoverAccessible('Probe')
+		expect(readPixels(button, 'padding-top')).toBe(20)
+		await holdAccessible('button', 'Probe')
+		expect(readPixels(button, 'padding-top')).toBe(30)
+		expect(document.documentElement.hasAttribute(POINTER_HOLD)).toBe(true)
+		await releasePointer()
+		expect(readPixels(button, 'padding-top')).toBe(10)
+		expect(document.documentElement.hasAttribute(POINTER_HOLD)).toBe(false)
+	})
+
+	it('reads a pseudo-element and stages media through the installed helpers', async () => {
+		mountProbe(
+			'<button class="probe">Marked</button>',
+			'.probe::after { content: ""; padding-top: 7px } .probe { padding-top: 1px } @media (prefers-reduced-motion: reduce) { .probe { padding-top: 2px } } @media print { .probe { padding-top: 3px } }',
+		)
+		const button = resolveAccessible('Marked')
+		expect(readStyle(button, 'padding-top', '::after')).toBe('7px')
+		expect(() => readStyle(button, 'padding-top', ':hover')).toThrow()
+		const options: MediaOptions = { motion: false }
+		await stageMedia(options)
+		expect(document.documentElement.hasAttribute(MEDIA_STAGE)).toBe(true)
+		expect(readPixels(button, 'padding-top')).toBe(2)
+		await stageMedia({ print: true })
+		expect(readPixels(button, 'padding-top')).toBe(3)
+		await releaseMedia()
+		expect(document.documentElement.hasAttribute(MEDIA_STAGE)).toBe(false)
+		expect(matchMedia('print').matches).toBe(false)
+		await sendProtocol('Emulation.setEmulatedMedia', { media: '', features: [] })
+	})
+})

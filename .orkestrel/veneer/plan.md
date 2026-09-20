@@ -58,10 +58,10 @@ component opens. The Vue environment is deferred; § Deferred: Vue environment f
 | U2      | Elements `node_modules`, `research/calibration*`          | `grok` for the map, `builder` for the instrument, Orchestrator for runs and the record                                  |
 | U4a     | `research/inventory*`, `obligations.md`, `ledger.md`      | `builder` for the instrument, `grok` for the reading, Orchestrator for runs and the records                             |
 | U5      | one temporary Veneer test, `research/instruments.md`      | Orchestrator                                                                                                            |
-| U3      | Veneer styles, core, styles tests, tokens guide           | `opus` on Opus 5; audit `analyst` objective, `reviewer` subjective                                                       |
+| U3      | Veneer styles, core, styles tests, the guide's token sections | `opus` on Opus 5; audit `analyst` objective, `reviewer` subjective                                                   |
 | U6      | Test checkout; Veneer's installed tarball                 | `sol` on Astra; audit `reviewer` objective, `analyst` subjective; Orchestrator packs and installs                        |
 | policy-styles-entry | scaffold `tests/setupPolicy.ts`, `tests/setupPolicy.test.ts`, `host.json` (commit `e8a34296`) | `builder` on Sonnet; objective review `reviewer` on Opus; vendored into Veneer by `repair --offline` |
-| U3-policy | scaffold `tests/setupPolicy.ts`, `tests/policy.test.ts`, `guides/scaffold.md`, `host.json` | `builder` on Sonnet, seven briefs; reviews 1 to 5 `reviewer` on Opus alone (recorded deviation); round 6 both lanes (`reviewer` objective, `analyst` on Astra subjective); `verifier` before the release commit |
+| U3-policy | WITHDRAWN 2026-09-20 (`units/u3-policy-withdrawal.md`): scaffold `tests/setupPolicy.ts`, `tests/policy.test.ts`, `guides/scaffold.md` restored to HEAD, the diff retained | `builder` on Sonnet, ten briefs; reviews 1 to 5 `reviewer` on Opus alone (recorded deviation); rounds 6 to 9 both lanes; `verifier` each round. The unit widened a gate to admit a file the user ruled is drift |
 | U4b     | Veneer conformance, oracle recorder, oracle fixtures      | `sol` on Astra; audit swapped as U6                                                                                     |
 | U7      | Veneer Button and its consumers                           | design `planner` and `analyst`; `sol` on Astra; audit `reviewer` objective, `analyst` subjective, `checker`; `verifier` |
 
@@ -81,7 +81,7 @@ component opens. The Vue environment is deferred; § Deferred: Vue environment f
 | Veneer's lockfile at `fc36cec` describes the legacy manifest.                                                                                                                                                                                         | Regenerate it with `npm install` from the authored manifest before the first `npm ci`; record the lockfile digest in `node_modules/.orkestrel-lock.sha256` per `CLAUDE.md`.                                                                             |
 | Veneer's tree is clean at `fc36cec` with no `node_modules`; Elements at `3b41900`, Mailbox at `8b54542`, Test at `f49bc7f` (`0.0.18`), all clean.                                                                                                     | Every unit reads `git status --porcelain` before and after; the legacy itemized tree stays reachable at `fc36cec`.                                                                                                                                       |
 | A `codex exec` sandbox denies network, runs PowerShell with script execution disabled (`npm.cmd run x`), blocks `prove`, and cannot write outside its `-C` root.                                                                                      | Put those facts in every Astra brief's Host and Standing rows.                                                                                                                                                                                           |
-| Scaffold's working tree carries an unpublished vendored change over the published `0.0.75`: the stray-guide rule admitting a guide the directory index maps, and the styles rule's literal-colour clause; `repair` restores `tests/setupPolicy.ts`, `tests/policy.test.ts`, `guides/scaffold.md`, and `.claude/rules/styles.md` in every target. | Vendor it into a consumer by building scaffold, packing, installing the tarball `--no-save`, and running `repair --offline` there (the flag reads the installed package's own host floor). Test (`^0.0.73`) and Veneer (`^0.0.75`) re-pin to the release after it publishes. No unit diagnoses the stray-guide red before the re-vendor. |
+| Scaffold's tip carries an unpublished vendored change over the published `0.0.75`, measured against the installed package's manifest: the same paths, two digests changed — `.claude/rules/styles.md` (the literal-colour clause, "the one file a literal color may appear in is `_tokens.scss`") and `tests/setupPolicy.ts` (the styles side-effect entry, `e8a34296`). A target reads the rule files from the installed package (`node_modules/@orkestrel/scaffold/dist/host/claude/rules/`), not from its own tree. | Vendor it into a consumer by building scaffold, packing, installing the tarball `--no-save`, and running `repair --offline` there (`units/scaffold-vendored-land-2.sh`). Test (`^0.0.73`) and Veneer (`^0.0.75`) re-pin to the release after it publishes. A package documents itself in `guides/<package>.md` alone; a stray-guide red is the package's drift, never a policy question. |
 
 ## Build this product
 
@@ -106,7 +106,7 @@ engine, tag-only semantic defaults, and explicit class control.
 
 Exclude from the compatibility claim: Bootstrap's Sass source API, unchanged `bootstrap` imports,
 `window.bootstrap`, jQuery, and every contextual Reboot rule that pairs two bare tags. Record each
-excluded row in `guides/compatibility.md` with its reason, report every exclusion to the user at the
+excluded row in `guides/veneer.md` § Compatibility with its reason, report every exclusion to the user at the
 owning unit's acceptance, and add no tag-pair allowlist.
 
 ## Exit criterion
@@ -300,7 +300,7 @@ Read [tokens](research/tokens.md), [platform](research/platform.md), [instrument
   color roles with the subtle, emphasis, and border tiers, surface and text tiers, spacing scale,
   type scale and families, radius scale, border, elevation, motion durations and easings, focus ring,
   and the z-index ladder. Take every value from `calibration.md`; where Elements and Bootstrap
-  disagree, take Elements and record the departure in `guides/tokens.md`.
+  disagree, take Elements and record the departure in `guides/veneer.md` § Departures from Bootstrap.
 - Declare the `--bs-*` root compatibility scope in `_tokens.scss` as aliases of `--vn-*` for the
   complete `:root` list in `research/inventory.json`, in one pass.
 - Make `src/styles/_theme.scss` the theme authority: `[data-bs-theme='dark']` retunes the
@@ -330,8 +330,11 @@ Read [tokens](research/tokens.md), [platform](research/platform.md), [instrument
   reduced-motion result through a mounted specimen. `index.test.ts` walks the cascade through
   `readRules()` and rejects any rule in the elements layer whose selector combines two bare tags
   outside the HTML-mandated pairings, with a planted control rule that must be rejected.
-- Guides: write `guides/tokens.md` with the reference map, the customization recipe, and the
-  Elements departures; transcribe the recipe fence into `tests/src/styles/integration.test.ts`.
+- Guides: the package has one guide, `guides/veneer.md`. Add to it the token sections — the
+  reference map, the Bootstrap variables Veneer retains, the customization recipe, the departures
+  from Bootstrap, and the deferred names — and transcribe the recipe fence into
+  `tests/src/styles/integration.test.ts`. No `guides/tokens.md`: the vendored stray-guide rule
+  refuses a second guide, and that refusal is the convention (user ruling, 2026-09-20).
 
 Close on: the parity test red on a planted unmapped `:root` name, on a mapped name removed from
 SCSS, and on a `:root` declaration relocated into a scoped rule, each restored green; consumer,
@@ -364,7 +367,7 @@ After U3 closes; in Veneer. Role `sol` on Astra; audit `reviewer` objective and 
 subjective. Read [conformance](research/conformance.md), `research/inventory.json`, and
 `research/obligations.md`.
 
-- Extend `tests/conformance.test.ts` (Node) to assert, for every component `guides/compatibility.md`
+- Extend `tests/conformance.test.ts` (Node) to assert, for every component `guides/veneer.md` § Compatibility
   marks accepted, that the official selector set and custom-property set for that component are
   present in the built `dist/src/styles/index.css`; a component the guide accepts and the test omits
   fails, and a component the test lists and the guide does not fails.
@@ -376,14 +379,12 @@ subjective. Read [conformance](research/conformance.md), `research/inventory.jso
   and refusals as `tests/__fixtures__/oracle/<component>.json`. The recorder writes a fixture only
   under `ORACLE_REFRESH=1`; every ordinary run re-records live, compares with the committed file, and
   fails when the file is missing or differs. Cross-check each fixture against the component's rows in
-  `guides/compatibility.md` — event types, cancelability, keyboard behavior, dismissal — and fail on
+  `guides/veneer.md` § Compatibility — event types, cancelability, keyboard behavior, dismissal — and fail on
   a row the recording contradicts or omits. Record Button's fixture in this unit.
-- Write `guides/compatibility.md` with the ledger's Button rows, the accepted list, and the
-  exclusions. It is a second top-level guide with no TypeScript surface, the shape U3 found the
-  vendored policy and the guides checker refuse: map it from a workspace directory in
-  `guides/README.md` § By directory (the amended stray-guide rule admits a guide the directory
-  index maps) and keep it out of § By concept. The re-vendor of the amended policy into Veneer is
-  a prerequisite.
+- Add a `## Compatibility` section to `guides/veneer.md` with the ledger's Button rows, the
+  accepted list, and the exclusions; every later component unit adds its rows there. No second
+  guide: the package documents itself in `guides/veneer.md` alone, and `tests/conformance.test.ts`
+  reads the accepted list from that section.
 
 Close on: the accepted-list control red then green; the missing-fixture and differing-fixture
 controls red then green; the cross-check red on a planted contradicting row; official JavaScript
@@ -434,7 +435,7 @@ Scope, from the ledger's Button rows and Elements' button treatment:
   TypeScript, and its own tests cover mount, engine-to-view and view-to-engine updates, target
   replacement, destruction during pending work, listener release, and remount through the showcase
   interface.
-- Guides and showcase: `guides/browser.md` opens with Button; `guides/compatibility.md` marks Button
+- Guides and showcase: `guides/browser.md` opens with Button; `guides/veneer.md` § Compatibility marks Button
   accepted; `guides/styles.md` gains the button partials; the showcase's first section renders every
   button specimen with the theme control; parity green.
 
@@ -639,6 +640,21 @@ Each entry names what changed in the plan and why, on the date it changed.
 - 2026-09-20, U2: the calibration instrument's light-mode wait assumed a `data-mode="light"`
   attribute the showcase never writes; an Orchestrator probe read the absent attribute and the
   instrument treats absence as light. Retained beside the run logs.
+- 2026-09-20, U3-policy withdrawn on the user's ruling that a package documents itself in one
+  guide, `guides/<package>.md`, never split into smaller guides. `guides/tokens.md` came from this
+  plan's U3 text, copied from the Elements guide layout; the vendored policy refused it as a stray
+  guide and the U3-policy unit spent ten builder briefs and nine audit rounds widening the rule to
+  admit it, which `.claude/rules/documentation.md` forbids ("a parity failure identifies drift;
+  never suppress or weaken the test"). The three scaffold files are restored to HEAD, the diff is
+  retained (`units/u3-policy-diff-10.patch`, `units/u3-policy-withdrawal.md`), and the release
+  shrinks to the styles clause and the styles side-effect entry (the standing-conditions row
+  measures it). U3 is **transformed**: brief 4 (`units/u3-brief-4.md`, superseding the never-run
+  brief 3) folds the token sections into `guides/veneer.md`, deletes `guides/tokens.md`, and
+  points the map and the README at the one guide; Veneer's stray-guide red closes by that fold.
+  U4b is **transformed** the same way: the compatibility ledger is a `## Compatibility` section
+  of `guides/veneer.md`, with no re-vendor prerequisite. Process rule from this entry: before a
+  plan or brief names a file, check the name against scaffold's `AGENTS.md`, the rule map, and
+  the fleet's existing layout; a vendored gate's refusal in a unit report is a plan defect first.
 
 ## User decisions pending
 
