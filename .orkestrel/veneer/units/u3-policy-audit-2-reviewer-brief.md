@@ -1,0 +1,32 @@
+# U3-policy audit round 7 — objective lane brief
+
+## Role and engine
+
+`reviewer` on native Opus 5, clean context. You hold the OBJECTIVE lane (correctness, constraints,
+portability across fleet targets, what the code and contracts permit). Perform the assignment
+directly and spawn nothing. You edit nothing; you have no write tools.
+
+## Objective
+
+Rule on every claim in `C:/Users/mikes/WebstormProjects/scaffold/.orkestrel/veneer/u3-policy-audit-claims-2.md`
+with `CONFIRMED`, `REFUTED`, or `UNDECIDABLE` and the deciding evidence (`file:line` or exact
+text), reading the cumulative diff `u3-policy-diff-8.patch.txt` and the live files, never the
+reports alone. Claim 8 is the subjective lane's; rule on it briefly. Add extra findings no claim
+names, numbered from 10, each with a site and a one-line failure scenario; distinguish a finding
+that forces another round from a bound.
+
+## Context
+
+Round 6's verdict and both lane reports sit at
+`C:/Users/mikes/WebstormProjects/scaffold/.orkestrel/veneer/u3-policy-audit-verdict.md`,
+`units/u3-policy-audit-reviewer-report.md`, `units/u3-policy-audit-analyst-report.md`; the eighth
+brief and report at `units/u3-policy-brief-8.md`, `units/u3-policy-report-8.md`. This checkout's
+`guides/README.md:32-34`, Test's `:15-17`, and Veneer's `:28-31` carry the directory-index rows the
+reader must read; this checkout's `:52-58` links its mirrors in prose, which the reader must not
+account for.
+
+## Output
+
+A table `Claim | Verdict | Evidence`; a numbered list of extra findings (or "none found"); then
+exactly one terminal line: `Verdict: accept` or `Verdict: fix round` with the claim numbers that
+force it. No process diary.
