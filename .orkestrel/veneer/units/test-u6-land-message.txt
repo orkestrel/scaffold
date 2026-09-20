@@ -1,0 +1,27 @@
+Add the journey verbs, the pseudo-element readers, and the media stage
+
+`@orkestrel/test/browser` gains `hoverAccessible`, `holdAccessible`,
+`releasePointer`, `stageMedia`, `releaseMedia`, and `sendProtocol`,
+with `MediaOptions`, `POINTER_HOLD`, and `MEDIA_STAGE`; `readStyle` and
+`readPixels` take a pseudo-element argument guarded by the `::` prefix
+and `CSS.supports`.
+
+The hold maps the control's centre through the tester iframe's painted
+scale, sends the press through the provider's DevTools session, records
+its marker only after the press send resolves, reads `:active` back, and
+releases before refusing a miss. The release keeps the marker until its
+send resolves, so a rejected send is retried.
+
+The media stage records the readings it observes before its first stage
+on a root marker and re-sends the unnamed axes with each stage, so a
+provider override survives; the release restores exactly the recorded
+readings as explicit emulation and waits per axis for them, because a
+reset that waits for stability has no knowable target. A refusal on
+either path restores what it carried in and reaches the caller with the
+cleanup failure attached as its cause.
+
+Every voice, bound, and pattern is in the guide with its transcribed
+case; the controls carry red and green logs of one command each; the
+gates are green on managed Chromium and on Edge.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
