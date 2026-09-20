@@ -1,0 +1,28 @@
+## chromium 153.0.8010.12
+base {"print":false,"screen":true,"reduce":false,"padding":"1px"}
+print {"print":true,"screen":false,"reduce":false,"padding":"3px"}
+reduce {"print":false,"screen":true,"reduce":true,"padding":"2px"}
+restored {"print":false,"screen":true,"reduce":false,"padding":"1px"}
+supports ::before: bare=true star=true
+supports ::after: bare=true star=true
+supports ::backdrop: bare=true star=true
+supports ::details-content: bare=true star=true
+supports ::marker: bare=true star=true
+supports ::placeholder: bare=true star=true
+supports ::selection: bare=true star=true
+supports ::journey-absent: bare=false star=false
+supports :hover: bare=true star=true
+## msedge 153.0.4234.48
+base {"print":false,"screen":true,"reduce":false,"padding":"1px"}
+print {"print":true,"screen":false,"reduce":false,"padding":"3px"}
+reduce {"print":false,"screen":true,"reduce":true,"padding":"2px"}
+restored {"print":false,"screen":true,"reduce":false,"padding":"1px"}
+supports ::before: bare=true star=true
+supports ::after: bare=true star=true
+supports ::backdrop: bare=true star=true
+supports ::details-content: bare=true star=true
+supports ::marker: bare=true star=true
+supports ::placeholder: bare=true star=true
+supports ::selection: bare=true star=true
+supports ::journey-absent: bare=false star=false
+supports :hover: bare=true star=true
