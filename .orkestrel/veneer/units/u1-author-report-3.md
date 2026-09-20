@@ -44,7 +44,7 @@ The created files are:
 - `tests/setupStyles.test.ts`
 - `tests/src/styles/index.test.ts`
 
-The overwritten file is `tmp/codex/u1-author-report.md`. No existing tracked file was changed.
+The overwritten file is `u1-author-report.md`. No existing tracked file was changed.
 
 The readings after the styles changes were:
 

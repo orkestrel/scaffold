@@ -3,7 +3,7 @@
 # host from the target's installed @orkestrel/scaffold, not from the local build): install the
 # packed local scaffold into Veneer's node_modules without saving, vendor the surface-policy fix
 # through repair pass 5, read the gates over the styles axis run 3 left, commit by pathspec.
-# Log: scaffold/tmp/units/u1-rep5b.log.txt.
+# Log: scaffold/units/u1-rep5b.log.txt.
 set -e
 cd "C:/Users/mikes/WebstormProjects/veneer"
 TARBALL="tmp/pack/orkestrel-scaffold-0.0.75.tgz"
@@ -30,7 +30,7 @@ echo "--- commit ---"
 git add -- tests/setupPolicy.ts tests/policy.test.ts configs/src/tsconfig.styles.json configs/src/vite.styles.config.ts src/styles tests/setupStyles.ts tests/setupStyles.test.ts tests/src/styles
 git add -u -- .claude .oxlintrc.json .oxfmtrc.json .oxlintignore .prettierignore .editorconfig .gitattributes AGENTS.md CLAUDE.md scripts guides/guide.md guides/scaffold.md configs/browsers.ts configs/helpers.ts configs/policy.ts tsconfig.json vite.config.ts 2>/dev/null || true
 git status --short
-git commit -q -F "units/u1-rep5-message.txt"
+git commit -q -F "u1-rep5-message.txt"
 git log --oneline -2
 git status --short --branch
 echo "u1-rep5b-done"

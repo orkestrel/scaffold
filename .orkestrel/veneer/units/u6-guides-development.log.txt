@@ -1,6 +1,6 @@
 ﻿npm.cmd : npm notice run @orkestrel/test@0.0.18 test:guides
 At line:2 char:1
-+ npm.cmd run test:guides *> tmp/codex/u6-guides-development.log; $resu ...
++ npm.cmd run test:guides *> u6-guides-development.log.txt; $resu ...
 + ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     + CategoryInfo          : NotSpecified: (npm notice run ....18 test:guides:String) [], RemoteException
     + FullyQualifiedErrorId : NativeCommandError

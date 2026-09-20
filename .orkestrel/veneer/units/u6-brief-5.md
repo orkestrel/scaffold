@@ -2,13 +2,13 @@
 
 ## What changed and why
 
-This brief supersedes `tmp/codex/u6-brief-4.md` for the remainder of the unit; every section of
-`tmp/codex/u6-brief.md` stands except where this brief says otherwise. Round 3 (objective lane on
+This brief supersedes `u6-brief-4.md` for the remainder of the unit; every section of
+`u6-brief.md` stands except where this brief says otherwise. Round 3 (objective lane on
 Opus, subjective lane on Astra, verifier with Edge run twice) confirmed the per-query waits, the
 inverse-staging axis cases, the pointer retry, the narrowed remarks, the guide parity, and every
 earlier contract, and refuted the settle claim on the same counterexample from both lanes. The
 verdict is `C:/Users/mikes/WebstormProjects/scaffold/.orkestrel/veneer/u6-audit-verdict-3.md`;
-read its § Ruling on the settle before editing. The lane reports sit beside it under `units/`.
+read its § Ruling on the settle before editing. The lane reports sit beside it under ``.
 
 The ruling: the settle has had no knowable target, so every version of "wait for the readings to
 stabilise" has left a hole. Give it one, the way this layer already does for the pointer and the
@@ -83,7 +83,7 @@ stand as they are).
 
 ## Output
 
-Write `tmp/codex/u6-report-5.md` and return its content: the diff summary per owned file; the
+Write `u6-report-5.md` and return its content: the diff summary per owned file; the
 marker's value form; each new or changed case and what it proves; each gate's exit code and final
 lines with both browser runs; every deviation in the usual shape. Do not restate earlier reports.
 

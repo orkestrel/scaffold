@@ -2,14 +2,14 @@
 
 ## What this supersedes
 
-This brief supersedes `tmp/units/u4a-inventory-brief.md`, which stays in place unedited. Every
+This brief supersedes `u4a-inventory-brief.md`, which stays in place unedited. Every
 section of that brief stands except where this file amends it. The same role and engine apply:
 `builder` on native Sonnet, performing the assignment directly and spawning nothing, writing only
 `C:/Users/mikes/WebstormProjects/scaffold/.orkestrel/veneer/research/inventory.mjs`.
 
 ## Why a successor
 
-The Orchestrator ran the instrument on 2026-09-20 (`tmp/units/u4a-inventory-run.log.txt`). It
+The Orchestrator ran the instrument on 2026-09-20 (`u4a-inventory-run.log.txt`). It
 parsed both stylesheets, wrote `inventory.json` with every key, and reported `unassigned: 326`.
 Reading those selectors shows they fall into named gaps in the grouping constants rather than
 into genuinely unassignable rules:

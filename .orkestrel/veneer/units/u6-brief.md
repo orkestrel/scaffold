@@ -22,7 +22,7 @@ green. Publish nothing.
 `C:/Users/mikes/WebstormProjects/scaffold/.orkestrel/veneer/units/u6-design-planner-report.md`,
 as amended by the Orchestrator's rulings in
 `C:/Users/mikes/WebstormProjects/scaffold/.orkestrel/veneer/u6-design-verdict.md`. Where the two
-disagree, the verdict wins. The objective lane's report (`units/u6-design-analyst-report.md`)
+disagree, the verdict wins. The objective lane's report (`u6-design-analyst-report.md`)
 supplies the teardown-on-failure proofs and the risk list; read its § Proofs and § Risks once.
 
 **Readings the design rests on.**
@@ -138,7 +138,7 @@ helpers, then the proofs, then the guide.
 
 ## Output
 
-Write `tmp/codex/u6-report.md` in this checkout and return its content: the files changed; the
+Write `u6-report.md` in this checkout and return its content: the files changed; the
 name checks; each control's red and green readings; the two unknowns' readings; each gate
 command's final lines; the exact voices as shipped; and every deviation with expected, found,
 exact evidence, done or not done, and at most one hypothesis. No process diary.

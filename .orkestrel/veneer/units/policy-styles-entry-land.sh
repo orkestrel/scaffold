@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Land the surface-policy styles-entry fix in scaffold: rebuild dist (the vendored host copy), run
-# the scoped gates, commit by pathspec. Log: scaffold/tmp/units/policy-styles-entry-land.log.txt.
+# the scoped gates, commit by pathspec. Log: scaffold/units/policy-styles-entry-land.log.txt.
 set -e
 cd "C:/Users/mikes/WebstormProjects/scaffold"
 echo "--- build ---"
@@ -16,6 +16,6 @@ echo "--- status ---"
 git status --short | grep -v "^?? .orkestrel\|^ M .orkestrel" || true
 echo "--- commit ---"
 git add -- tests/setupPolicy.ts tests/setupPolicy.test.ts host.json
-git commit -q -F "units/policy-styles-entry-message.txt"
+git commit -q -F "policy-styles-entry-message.txt"
 git log --oneline -1
 echo "policy-land-done"

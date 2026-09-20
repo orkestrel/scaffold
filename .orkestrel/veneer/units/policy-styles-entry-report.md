@@ -24,4 +24,4 @@ Reverted the `readPolicySurface` change (restored the original single `barrels` 
 
 `git status --porcelain` shows only `tests/setupPolicy.ts` and `tests/setupPolicy.test.ts` modified beyond the pre-existing `.orkestrel/veneer/` entries.
 
-Landed by the Orchestrator as scaffold `e8a34296` (`units/policy-styles-entry-land.sh`, log beside it) after `npm run build` staged the vendored copy; `host.json` moved with it.
+Landed by the Orchestrator as scaffold `e8a34296` (`policy-styles-entry-land.sh`, log beside it) after `npm run build` staged the vendored copy; `host.json` moved with it.

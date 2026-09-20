@@ -2,13 +2,13 @@
 
 ## What this supersedes
 
-This brief supersedes `tmp/codex/u1-author-brief-2.md`, which in turn amends
-`tmp/codex/u1-author-brief.md`; both stay in place unedited. Read the first brief, then brief 2,
+This brief supersedes `u1-author-brief-2.md`, which in turn amends
+`u1-author-brief.md`; both stay in place unedited. Read the first brief, then brief 2,
 then this one. Every section of those briefs stands except where this file amends them.
 
 ## Why a successor
 
-Run 2 (journal `../scaffold/tmp/codex/u1-author-2.jsonl`, thread
+Run 2 (journal `../scaffold/units/u1-author-2.jsonl`, thread
 `01a0bd9a-fafb-7030-813c-299678dd895e`) stopped before editing because brief 2 named
 `src/browser/guards.ts` for the `isThemeMode` guard, while
 `../scaffold/.claude/rules/architecture.md` § Centralized-file pattern places guards in
@@ -33,5 +33,5 @@ clean at `a5de4c4`, and run 2's baseline measurements match brief 2's amended ev
 
 ## Output
 
-As brief 2 states: overwrite `tmp/codex/u1-author-report.md` with the full report, adding one row
+As brief 2 states: overwrite `u1-author-report.md` with the full report, adding one row
 for each placement correction you made under amendment 2.

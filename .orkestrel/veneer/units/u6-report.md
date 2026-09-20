@@ -7,7 +7,7 @@ The changed files are:
 - `src/browser/helpers.ts`: adds the protocol, hover, hold/release, and media stage/release helpers; extends the style readers with `pseudo`.
 - `tests/src/browser/helpers.test.ts`: adds browser cases, teardown hooks, controls, and Patterns transcriptions.
 - `guides/test.md`: adds Surface, Voices, Limits, Bounds, and Patterns documentation.
-- `tmp/codex/u6-report.md`: this report.
+- `u6-report.md`: this report.
 
 The existing browser barrel exports these declarations without an edit. `tests/src/browser/index.test.ts` does not exist. `package.json` and `README.md` are unchanged.
 
@@ -17,9 +17,9 @@ The controls produced these readings on managed Chromium:
 
 | Control | Red reading | Green reading | Evidence |
 | --- | --- | --- | --- |
-| PLANT-SCALE | The suite's unscaled protocol press failed the pressed-paint assertion: `expected 16 to be 32`. | The unscaled point reads `16`; the mapped hold reads `32`. | `tmp/codex/u6-plant-scale-red.log`; `tmp/codex/u6-browser-green.log` |
-| PLANT-PSEUDO | Removing the pseudo argument from the CSSOM call failed the comparison: `expected '0px' to be '7px'`. | The pseudo reads `'7px'` and `7`; the element reads `'0px'`. | `tmp/codex/u6-plant-pseudo-red.log`; `tmp/codex/u6-browser-green.log` |
-| PLANT-RELEASE | Omitting the explicit pointer release failed the cleanup assertion: `expected 32 to be 16`. | Held paint reads `32`, released paint reads `16`, and the marker disappears. | `tmp/codex/u6-plant-release-red.log`; `tmp/codex/u6-browser-green.log` |
+| PLANT-SCALE | The suite's unscaled protocol press failed the pressed-paint assertion: `expected 16 to be 32`. | The unscaled point reads `16`; the mapped hold reads `32`. | `u6-plant-scale-red.log.txt`; `u6-browser-green.log.txt` |
+| PLANT-PSEUDO | Removing the pseudo argument from the CSSOM call failed the comparison: `expected '0px' to be '7px'`. | The pseudo reads `'7px'` and `7`; the element reads `'0px'`. | `u6-plant-pseudo-red.log.txt`; `u6-browser-green.log.txt` |
+| PLANT-RELEASE | Omitting the explicit pointer release failed the cleanup assertion: `expected 32 to be 16`. | Held paint reads `32`, released paint reads `16`, and the marker disappears. | `u6-plant-release-red.log.txt`; `u6-browser-green.log.txt` |
 
 Each red command exited `1` and ended with `Test Files  1 failed (1)` and `Tests  1 failed | 287 skipped (288)`. The commands were:
 
@@ -42,7 +42,7 @@ The unknowns have these readings:
 | What iframe geometry reached the hold? | Tester width `414`; painted frame width `156.8800048828125`, left `275.23187255859375`, top `110`. The hold recomputed its scale from those readings. |
 | What media state returned after release? | `{"reduced":false,"print":false,"padding":1}`. |
 
-Verification commands have the following results. Logs are under `tmp/codex/`.
+Verification commands have the following results. Logs are under ``.
 
 | Command | Exit | Final lines or status |
 | --- | --- | --- |
@@ -87,9 +87,9 @@ Deviations and incomplete requirements are recorded here.
 | Explicit release followed by a hook causes no second release. | The verdict requires `releaseMedia` to send an unconditional reset; pointer release sends button-up only while its marker exists. | Proved no second pointer-up event and stable media defaults after repeated reset. Did not claim that media teardown sends no command. |
 | Execute proof through `prove`. | The brief explicitly states that `prove` is blocked here. | Used real managed-Chromium tests and manual plants. No `prove` receipt is claimed. |
 | Every gate passes and built artifacts represent the change. | The routing blocker stopped work before the acceptance chain and rebuild. | Not done. The sentinel lint fix and final post-plant state also await verification. |
-| `git status --porcelain` includes the report. | `git check-ignore tmp/codex/u6-report.md` returns that path. | The report exists under the required ignored `tmp/` directory; no ignore or index change was made. |
+| `git status --porcelain` includes the report. | `git check-ignore u6-report.md` returns that path. | The report exists under the required ignored `tmp/` directory; no ignore or index change was made. |
 
-The actual final diff is retained at `tmp/codex/u6-final.diff`, and the status reading at `tmp/codex/u6-final-status.txt`. HEAD remains `f49bc7f`. The status output is:
+The actual final diff is retained at `u6-final.diff`, and the status reading at `u6-final-status.txt`. HEAD remains `f49bc7f`. The status output is:
 
 ```text
  M guides/test.md

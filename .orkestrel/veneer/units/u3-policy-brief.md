@@ -101,7 +101,7 @@ Perform the assignment directly and spawn nothing.
 
 ## Output
 
-Write `tmp/units/u3-policy-report.md` in this checkout and return its content: the diff summary;
+Write `u3-policy-report.md` in this checkout and return its content: the diff summary;
 the control's red assertion and the green rerun; each gate command's final lines; and every
 deviation with expected, found, exact evidence, done or not done, and at most one hypothesis. No
 process diary.

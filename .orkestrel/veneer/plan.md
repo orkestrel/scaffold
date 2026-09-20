@@ -43,7 +43,7 @@ component opens. The Vue environment is deferred; § Deferred: Vue environment f
   `checker` where the criteria are mechanical. Where Astra wrote the unit, `reviewer` on Opus holds
   the objective lane and `analyst` on Astra the subjective lane; where Opus wrote it, `analyst`
   holds the objective lane and `reviewer` the subjective lane and is told its engine wrote the work.
-- Write every brief to `tmp/units/<unit>-brief.md` before launch, capture the report beside it, and
+- Write every brief to `units/<unit>-brief.md` before launch, capture the report beside it, and
   retain both under `.orkestrel/veneer/` as the unit returns. Write audit claims to
   `tmp/audit/<unit>-audit-claims.md` and the verdict to `.orkestrel/veneer/<unit>-audit-verdict.md`.
 
@@ -60,6 +60,8 @@ component opens. The Vue environment is deferred; § Deferred: Vue environment f
 | U5      | one temporary Veneer test, `research/instruments.md`      | Orchestrator                                                                                                            |
 | U3      | Veneer styles, core, styles tests, tokens guide           | `opus` on Opus 5; audit `analyst` objective, `reviewer` subjective                                                       |
 | U6      | Test checkout; Veneer's installed tarball                 | `sol` on Astra; audit `reviewer` objective, `analyst` subjective; Orchestrator packs and installs                        |
+| policy-styles-entry | scaffold `tests/setupPolicy.ts`, `tests/setupPolicy.test.ts`, `host.json` (commit `e8a34296`) | `builder` on Sonnet; objective review `reviewer` on Opus; vendored into Veneer by `repair --offline` |
+| U3-policy | scaffold `tests/setupPolicy.ts`, `tests/policy.test.ts`, `guides/scaffold.md`, `host.json` | `builder` on Sonnet, seven briefs; reviews 1 to 5 `reviewer` on Opus alone (recorded deviation); round 6 both lanes (`reviewer` objective, `analyst` on Astra subjective); `verifier` before the release commit |
 | U4b     | Veneer conformance, oracle recorder, oracle fixtures      | `sol` on Astra; audit swapped as U6                                                                                     |
 | U7      | Veneer Button and its consumers                           | design `planner` and `analyst`; `sol` on Astra; audit `reviewer` objective, `analyst` subjective, `checker`; `verifier` |
 
@@ -79,6 +81,7 @@ component opens. The Vue environment is deferred; § Deferred: Vue environment f
 | Veneer's lockfile at `fc36cec` describes the legacy manifest.                                                                                                                                                                                         | Regenerate it with `npm install` from the authored manifest before the first `npm ci`; record the lockfile digest in `node_modules/.orkestrel-lock.sha256` per `CLAUDE.md`.                                                                             |
 | Veneer's tree is clean at `fc36cec` with no `node_modules`; Elements at `3b41900`, Mailbox at `8b54542`, Test at `f49bc7f` (`0.0.18`), all clean.                                                                                                     | Every unit reads `git status --porcelain` before and after; the legacy itemized tree stays reachable at `fc36cec`.                                                                                                                                       |
 | A `codex exec` sandbox denies network, runs PowerShell with script execution disabled (`npm.cmd run x`), blocks `prove`, and cannot write outside its `-C` root.                                                                                      | Put those facts in every Astra brief's Host and Standing rows.                                                                                                                                                                                           |
+| Scaffold's working tree carries an unpublished vendored change over the published `0.0.75`: the stray-guide rule admitting a guide the directory index maps, and the styles rule's literal-colour clause; `repair` restores `tests/setupPolicy.ts`, `tests/policy.test.ts`, `guides/scaffold.md`, and `.claude/rules/styles.md` in every target. | Vendor it into a consumer by building scaffold, packing, installing the tarball `--no-save`, and running `repair --offline` there (the flag reads the installed package's own host floor). Test (`^0.0.73`) and Veneer (`^0.0.75`) re-pin to the release after it publishes. No unit diagnoses the stray-guide red before the re-vendor. |
 
 ## Build this product
 
@@ -376,7 +379,11 @@ subjective. Read [conformance](research/conformance.md), `research/inventory.jso
   `guides/compatibility.md` — event types, cancelability, keyboard behavior, dismissal — and fail on
   a row the recording contradicts or omits. Record Button's fixture in this unit.
 - Write `guides/compatibility.md` with the ledger's Button rows, the accepted list, and the
-  exclusions.
+  exclusions. It is a second top-level guide with no TypeScript surface, the shape U3 found the
+  vendored policy and the guides checker refuse: map it from a workspace directory in
+  `guides/README.md` § By directory (the amended stray-guide rule admits a guide the directory
+  index maps) and keep it out of § By concept. The re-vendor of the amended policy into Veneer is
+  a prerequisite.
 
 Close on: the accepted-list control red then green; the missing-fixture and differing-fixture
 controls red then green; the cross-check red on a planted contradicting row; official JavaScript
@@ -568,6 +575,26 @@ Each entry names what changed in the plan and why, on the date it changed.
   law (calibration row, else Bootstrap's own value recorded as retained, else not declared). The
   U3 brief (`units/u3-brief.md`) carries the rulings; `opus` runs it after U1 is accepted, in the
   same checkout.
+- 2026-09-20, self-audit on the user's instruction (workflow `veneer-campaign-self-audit`, run
+  `wf_6a6bf589-88d`: eight lenses over the records, the checkouts, and the Orchestrator's own
+  process; every finding attacked by two refuters; the surviving set retained as
+  `units/self-audit-findings.md`). What it changed: the native audit lanes' dispatch texts are
+  retained as briefs (they had lived in launch arguments alone); every retained record cites its
+  evidence by the retained path (`units/retention-rewrite.mjs`); the routing ledger gains the two
+  scaffold-writing units; the standing conditions gain the unreleased vendored change; U4b's
+  guide bullet carries the stray-guide and concept-index constraints U3 found; the U3 fix brief is
+  replaced (`units/u3-brief-3.md`) because its Bootstrap reader specified one rule where the
+  stylesheet declares many, it claimed a re-vendor that had not happened, and it dropped a
+  checker count; the elevation lengths, the font stack departure, the Bootstrap-value proofs, the
+  factor proofs, the tier proof, and the helper homes join that brief from the tenets and
+  Veneer-tree lenses. Two process breaches are recorded against the Orchestrator: the policy
+  unit's briefs 5 and 7 ordered a role to run `git checkout --` in another checkout, which the
+  permission floor bars (brief 7 was stopped and re-issued as brief 8 with a copy-back restore),
+  and the styles-rule clause was committed alone with the host inventory stale (it lands with the
+  inventory in the release commit). The U3-policy unit ran the objective lane alone for five
+  rounds; round 6 ran both lanes, and the subjective lane withdrew the Orchestrator's ruling on
+  index-linked mirrors (`u3-policy-audit-verdict.md`). From this point every native lane's brief
+  is a file before its launch, every fan-out is a workflow, and every round runs both lanes.
 - 2026-09-20, the scaffold release grew a second vendored change and a rule clause. The U3 unit
   found the vendored prose policy refuses a second top-level guide, which every package with more
   than one published face needs; the U3-policy unit (`units/u3-policy-brief.md` through `-5.md`)

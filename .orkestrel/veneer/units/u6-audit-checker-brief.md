@@ -13,8 +13,8 @@ assignment directly and spawn nothing. You edit nothing; you have no write tools
 
 Read first: `C:/Users/mikes/WebstormProjects/scaffold/AGENTS.md` and
 `C:/Users/mikes/WebstormProjects/scaffold/.claude/rules/documentation.md`, `tests.md`, `writing.md`.
-Then the claims file `C:/Users/mikes/WebstormProjects/test/tmp/audit/u6-audit-claims.md` and the
-diff `C:/Users/mikes/WebstormProjects/test/tmp/audit/u6-diff.patch`.
+Then the claims file `C:/Users/mikes/WebstormProjects/scaffold/.orkestrel/veneer/u6-audit-claims.md` and the
+diff `C:/Users/mikes/WebstormProjects/scaffold/.orkestrel/veneer/units/u6-diff.patch.txt`.
 
 Check mechanically, reading the live files, and report each with the exact evidence:
 
@@ -32,7 +32,7 @@ B. Claim 10: in `guides/test.md`, list the `Surface` row for each of `MediaOptio
    for each, the `ROUTED_FENCES` entry in `tests/setup.ts` and the test case in
    `tests/src/browser/helpers.test.ts` that transcribes it (quote the `it(` line).
 C. Claim 9: for each of `PLANT-SCALE`, `PLANT-PSEUDO`, `PLANT-RELEASE`, quote the red assertion
-   line from the matching `tmp/codex/u6-plant-*-red.log` (UTF-16 transcript; read as text) and
+   line from the matching `u6-plant-*-red.log` (UTF-16 transcript; read as text) and
    confirm `grep -n "PLANT-" tests/src/browser/helpers.test.ts src/browser/helpers.ts` returns
    nothing.
 D. Claim 11: run the search the report describes over

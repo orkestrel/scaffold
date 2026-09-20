@@ -1,0 +1,12 @@
+﻿npm.cmd : npm notice run @orkestrel/test@0.0.18 format:check
+At line:2 char:1
++ npm.cmd run format:check *> u6-round4-format-check.log.txt; $re ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (npm notice run ...18 format:check:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+npm notice run oxfmt --config .oxfmtrc.json --check .
+Checking formatting...
+
+All matched files use the correct format.
+Finished in 1110ms on 60 files using 16 threads.

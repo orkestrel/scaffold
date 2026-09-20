@@ -8,7 +8,7 @@ The changes made in this fix round are:
 | `tests/src/browser/helpers.test.ts` | Stages motion opposite the recorded host reading before restore; proves print paint survives a motion-only stage, unnamed color-scheme and forced-colors overrides survive staging, and an absent second name receives the double-hold voice. Removes diagnostic logs and annotates the sentinel assertions. Uses the existing condition helper for asynchronous feature delivery and restoration. Existing control names remain unchanged. |
 | `guides/test.md` | Aligns the release summary with TSDoc, documents clearing provider-configured overrides, distinguishes verified stages from `print: false`, updates the motion-restore example and its proof, and joins the Bounds list. |
 
-The controls used `npm.cmd run test:src:browser -- tests/src/browser/helpers.test.ts -t '<filter>'`. Each red/green pair ran the same command; every log is under `tmp/codex/`.
+The controls used `npm.cmd run test:src:browser -- tests/src/browser/helpers.test.ts -t '<filter>'`. Each red/green pair ran the same command; every log is under ``.
 
 | Control and filter | Red reading | Green reading | Logs |
 | --- | --- | --- | --- |
@@ -16,7 +16,7 @@ The controls used `npm.cmd run test:src:browser -- tests/src/browser/helpers.tes
 | Pseudo: `distinguishes pseudo-element paint` | Dropping the `pseudo` argument gives exit 1: `expected '0px' to be '7px'`. | Restored argument: exit 0; `1 passed`; pseudo reads `'7px'`/`7`, originating element reads `'0px'`. | `u6-3-plant-pseudo-red.log`, `u6-3-plant-pseudo-green.log` |
 | Release: `holds the pressed paint` | Omitting the explicit release gives exit 1: `expected 32 to be 16`. | Restored release: exit 0; `1 passed`; padding returns to `16`, active state clears, and the trusted pointer-up is recorded. | `u6-3-plant-release-red.log`, `u6-3-plant-release-green.log` |
 
-The removed diagnostics were captured in `tmp/codex/u6-3-readings.log` by the filter `holds the pressed paint|pins the base` (exit 0, `2 passed`):
+The removed diagnostics were captured in `u6-3-readings.log.txt` by the filter `holds the pressed paint|pins the base` (exit 0, `2 passed`):
 
 ```text
 userAgent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.8010.12 Safari/537.36
@@ -27,9 +27,9 @@ frame: {"x":275.23187255859375,"y":110,"width":156.8800048828125,"height":339.52
 restored media: {"reduced":false,"print":false,"padding":1}
 ```
 
-The additional media readings record the engine's own `dark: false`, `forced: false`, and `reduced: false` in `tmp/codex/u6-3-axes-readings.log`. The corrected focused run, `u6-3-axes-green.log`, exits 0 with `2 passed`: dark and active forced-colors each survive a motion-only stage, then restore to their recorded host readings. Neither re-sent feature was refused. The print-preservation case reads `print: true` and padding `3` after staging motion.
+The additional media readings record the engine's own `dark: false`, `forced: false`, and `reduced: false` in `u6-3-axes-readings.log.txt`. The corrected focused run, `u6-3-axes-green.log`, exits 0 with `2 passed`: dark and active forced-colors each survive a motion-only stage, then restore to their recorded host readings. Neither re-sent feature was refused. The print-preservation case reads `print: true` and padding `3` after staging motion.
 
-The following commands ran in the required order. Gate logs are under `tmp/codex/`, named `u6-3-<suffix>.log` as listed.
+The following commands ran in the required order. Gate logs are under ``, named `u6-3-<suffix>.log` as listed.
 
 | Command | Exit | Final output lines | Log suffix |
 | --- | --- | --- | --- |
@@ -56,7 +56,7 @@ The deviations and ancillary decisions are:
 
 As the brief specifies, the controls use the CLI; `prove` was not run because the brief records it blocked. Edge was not run in this unit.
 
-Final review evidence is saved as `tmp/codex/u6-3-final-diff.txt` and `tmp/codex/u6-3-final-status.txt`. `git diff --check` exits 0. The search `rg -n 'console\.log' tests/src/browser/helpers.test.ts` finds no match. Final `git status --porcelain` is exactly:
+Final review evidence is saved as `u6-3-final-diff.txt` and `u6-3-final-status.txt`. `git diff --check` exits 0. The search `rg -n 'console\.log' tests/src/browser/helpers.test.ts` finds no match. Final `git status --porcelain` is exactly:
 
 ```text
  M guides/test.md

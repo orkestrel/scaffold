@@ -2,9 +2,9 @@
 
 ## What changed and why
 
-This brief supersedes `tmp/units/u3-policy-brief.md` for the remainder of the unit; every section
+This brief supersedes `u3-policy-brief.md` for the remainder of the unit; every section
 of that brief stands except where this one says otherwise. The objective review (`reviewer` on
-Opus, `units/u3-policy-review-report.md`) confirmed the mechanism and the control and found the
+Opus, `u3-policy-review-report.md`) confirmed the mechanism and the control and found the
 items under § Execution, each named with its finding number. The Orchestrator ran `npm run build`
 after the first run, which restaged `host.json` (finding 8); that file is now dirty on purpose and
 stays off-limits.
@@ -62,7 +62,7 @@ restaged; do not touch it).
 
 ## Output
 
-Write `tmp/units/u3-policy-report-2.md` and return its content: the diff summary per file; the
+Write `u3-policy-report-2.md` and return its content: the diff summary per file; the
 new control row's reading; each gate command's exit code and final lines; and every deviation with
 expected, found, exact evidence, done or not done, and at most one hypothesis.
 

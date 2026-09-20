@@ -2,7 +2,7 @@
 
 ## What changed and why
 
-This brief supersedes `tmp/codex/u6-brief.md` for the remainder of the unit; every section of
+This brief supersedes `u6-brief.md` for the remainder of the unit; every section of
 that brief stands except where this one says otherwise. The unit stopped because the guide
 parity proof requires the three new Patterns headings in `ROUTED_FENCES` at `tests/setup.ts:71`,
 and the original brief listed `tests/setup*.ts` as off-limits. That line was too broad: the
@@ -31,7 +31,7 @@ Chromium green, and prove the post-plant tree green on the whole browser project
 **The tree.** `HEAD` is `f49bc7f`; the working tree carries the U6 edits from the first run
 (`git status --porcelain` lists `guides/test.md`, `src/browser/constants.ts`,
 `src/browser/helpers.ts`, `src/browser/types.ts`, `tests/src/browser/helpers.test.ts`). Build on
-that tree; do not undo it. The first run's report is `tmp/codex/u6-report.md`, its logs sit
+that tree; do not undo it. The first run's report is `u6-report.md`, its logs sit
 beside it, and every plant is already removed.
 
 **The registry.** `tests/setup.ts:71` declares `ROUTED_FENCES` as a frozen record mapping a
@@ -74,7 +74,7 @@ entries only. **Off-limits.** Every vendored path (`tests/setupPolicy.ts`, `test
 
 ## Output
 
-Write `tmp/codex/u6-report-2.md` and return its content: the `ROUTED_FENCES` diff; the lint
+Write `u6-report-2.md` and return its content: the `ROUTED_FENCES` diff; the lint
 re-run's final lines; each gate command's exit code and final lines; the `grep` reading; and every
 deviation with expected, found, exact evidence, done or not done, and at most one hypothesis. Do
 not restate the first report.

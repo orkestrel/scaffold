@@ -14,9 +14,9 @@ that writes.
 
 Read first: `C:/Users/mikes/WebstormProjects/scaffold/AGENTS.md` and
 `C:/Users/mikes/WebstormProjects/scaffold/.claude/rules/documentation.md`, `styles.md`,
-`writing.md`. Then the claims file `C:/Users/mikes/WebstormProjects/veneer/tmp/audit/u3-audit-claims.md`,
-the diff `C:/Users/mikes/WebstormProjects/veneer/tmp/audit/u3-diff.patch`, and the report
-`C:/Users/mikes/WebstormProjects/veneer/tmp/units/u3-report.md`.
+`writing.md`. Then the claims file `C:/Users/mikes/WebstormProjects/scaffold/.orkestrel/veneer/u3-audit-claims.md`,
+the diff `C:/Users/mikes/WebstormProjects/scaffold/.orkestrel/veneer/units/u3-diff.patch.txt`, and the report
+`C:/Users/mikes/WebstormProjects/scaffold/.orkestrel/veneer/units/u3-report.md`.
 
 Check mechanically, reading the live files, and report each with the exact evidence:
 

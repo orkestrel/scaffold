@@ -1,0 +1,18 @@
+﻿npm.cmd : npm notice run @orkestrel/test@0.0.18 test:setup
+At line:2 char:1
++ npm.cmd run test:setup *> u6-round4-test-setup.log.txt; $result ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (npm notice run ...0.18 test:setup:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project setup
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/test
+
+························
+
+ Test Files  3 passed (3)
+      Tests  24 passed (24)
+   Start at  06:55:35
+   Duration  389ms (transform 156ms, setup 116ms, import 259ms, tests 25ms, environment 0ms)
+

@@ -3,11 +3,11 @@
 Subject: the U3 diff in the Veneer checkout `C:/Users/mikes/WebstormProjects/veneer`, from
 `b661142` to the working tree the dispatch names, made by `opus` (native Opus 5) from
 `C:/Users/mikes/WebstormProjects/scaffold/.orkestrel/veneer/units/u3-brief.md`, with its report
-`tmp/units/u3-report.md`, plus the Orchestrator's serial integration of the report's three exact
+`units/u3-report.md`, plus the Orchestrator's serial integration of the report's three exact
 patches (D3 in `tests/distribution.test.ts`, D4 in `guides/veneer.md`, D6 in
 `configs/src/vite.styles.config.ts`). Rule on every claim with `CONFIRMED`, `REFUTED`, or
 `UNDECIDABLE` and the deciding evidence (`file:line` or exact text). Read the actual diff
-(`tmp/audit/u3-diff.patch`, tracked changes first, then each untracked file against `/dev/null`)
+(`units/u3-diff.patch.txt`, tracked changes first, then each untracked file against `/dev/null`)
 and the live checkout, never the report alone. The design the unit implements is
 `C:/Users/mikes/WebstormProjects/scaffold/.orkestrel/veneer/units/u3-design-planner-report.md`
 as amended by `C:/Users/mikes/WebstormProjects/scaffold/.orkestrel/veneer/u3-design-verdict.md`;

@@ -16,15 +16,15 @@ Read, in this order, before ruling:
 1. `C:/Users/mikes/WebstormProjects/scaffold/AGENTS.md`, then `.claude/rules/styles.md`,
    `names.md`, `typescript.md`, `architecture.md`, `tests.md`, `documentation.md`, `writing.md`
    under `C:/Users/mikes/WebstormProjects/scaffold/.claude/rules/`.
-2. The claims file `C:/Users/mikes/WebstormProjects/veneer/tmp/audit/u3-audit-claims.md` (16
+2. The claims file `C:/Users/mikes/WebstormProjects/scaffold/.orkestrel/veneer/u3-audit-claims.md` (16
    numbered falsifiable claims). It is the audit's subject.
-3. The actual diff `C:/Users/mikes/WebstormProjects/veneer/tmp/audit/u3-diff.patch` (tracked
+3. The actual diff `C:/Users/mikes/WebstormProjects/scaffold/.orkestrel/veneer/units/u3-diff.patch.txt` (tracked
    changes, then each untracked file against `/dev/null`), and the live files in
    `C:/Users/mikes/WebstormProjects/veneer` (HEAD `b661142` plus the uncommitted U3 diff):
    `src/core/constants.ts`, `src/core/types.ts`, `src/styles/_tokens.scss`, `_theme.scss`,
    `_mixins.scss`, `index.scss`, `elements/*.scss`, `tests/setupStyles.ts`, `tests/src/styles/**`,
    `tests/src/core/index.test.ts`, `guides/tokens.md`, `guides/veneer.md`, `guides/README.md`.
-4. The unit's report `C:/Users/mikes/WebstormProjects/veneer/tmp/units/u3-report.md`.
+4. The unit's report `C:/Users/mikes/WebstormProjects/scaffold/.orkestrel/veneer/units/u3-report.md`.
 5. The design the unit implements:
    `C:/Users/mikes/WebstormProjects/scaffold/.orkestrel/veneer/units/u3-design-planner-report.md`
    as amended by `C:/Users/mikes/WebstormProjects/scaffold/.orkestrel/veneer/u3-design-verdict.md`

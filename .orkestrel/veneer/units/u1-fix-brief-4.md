@@ -2,7 +2,7 @@
 
 ## What this supersedes
 
-This brief supersedes `tmp/units/u1-fix-brief-3.md`; briefs 1 to 3 stand as landed in `a0447d2`.
+This brief supersedes `u1-fix-brief-3.md`; briefs 1 to 3 stand as landed in `a0447d2`.
 Same role and engine: `builder` on native Sonnet, sole writer in
 `C:/Users/mikes/WebstormProjects/veneer` (clean at `a0447d2`), performing the assignment directly
 and spawning nothing. No `git` command that writes.
@@ -64,19 +64,19 @@ Comments and strings are not declarations (postcss never yields them as `Declara
    `inset-inline:0`, `:root{content:" left:1px"}`, `/* margin-left:1px */`, the layer
    statement alone; and the cascade case calling it on the built `index.css` with the RTL
    byte-identity assertion, as before.
-3. **Report prose** (finding 20): in `tmp/units/u1-fix-report.md`, replace "the three" and
+3. **Report prose** (finding 20): in `u1-fix-report.md`, replace "the three" and
    "the four owned files" with the members named, and append `## Successor 4` per § Output.
 4. **Gates.** `npm run format:check`, `lint:check`, `check`, `test:setup`, `test:src:styles`
    (which builds first), `test:conformance`. Record each command's final lines.
 
 ## Scope
 
-**Owned.** `tests/setupStyles.ts`, `tests/setupStyles.test.ts`, `tmp/units/u1-fix-report.md`.
+**Owned.** `tests/setupStyles.ts`, `tests/setupStyles.test.ts`, `u1-fix-report.md`.
 **Off-limits.** Everything else. Add no dependency; `postcss` is already declared.
 
 ## Output
 
-Append `## Successor 4` to `tmp/units/u1-fix-report.md`: each fixture with the scanner's return,
+Append `## Successor 4` to `u1-fix-report.md`: each fixture with the scanner's return,
 the gate readings, and `git status --porcelain`; return that section.
 
 ## Acceptance criteria

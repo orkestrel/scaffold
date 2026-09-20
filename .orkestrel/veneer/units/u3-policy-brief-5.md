@@ -2,9 +2,9 @@
 
 ## What changed and why
 
-This brief supersedes `tmp/units/u3-policy-brief-4.md` for the remainder of the unit; the earlier
+This brief supersedes `u3-policy-brief-4.md` for the remainder of the unit; the earlier
 briefs stand except where this one says otherwise. The fourth objective review
-(`units/u3-policy-review-report-4.md`) confirmed the widened pattern, the control rows, the
+(`u3-policy-review-report-4.md`) confirmed the widened pattern, the control rows, the
 mechanism, and the regex safety, and refuted the portability claim. The refuted assertion is my
 clause from brief 4 § 1, not your work.
 
@@ -64,7 +64,7 @@ Two readings the Orchestrator took on the host, which this brief rests on:
 
 ## Output
 
-Write `tmp/units/u3-policy-report-5.md` and return its content: the diff summary; each new case's
+Write `u3-policy-report-5.md` and return its content: the diff summary; each new case's
 reading; the Roughnotes run's final lines and the restore confirmation; each gate's exit code and
 final lines; deviations in the usual shape.
 

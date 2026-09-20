@@ -2,7 +2,7 @@
 
 ## What this supersedes
 
-This brief supersedes `tmp/units/u1-fix-brief-2.md`; briefs 1 and 2 stand as landed in `690bbb4`.
+This brief supersedes `u1-fix-brief-2.md`; briefs 1 and 2 stand as landed in `690bbb4`.
 Same role and engine: `builder` on native Sonnet, sole writer in
 `C:/Users/mikes/WebstormProjects/veneer` (clean at `690bbb4`), performing the assignment directly
 and spawning nothing. No `git` command that writes the index, the stash, or the working tree.
@@ -41,7 +41,7 @@ also forbade), and this brief corrects both.
    that adds a listener passes an anonymous callback directly to `addEventListener` with an
    `AbortController` signal and aborts it afterwards, so no `const listener = …` and no function
    declaration sits inside a test callback.
-4. **Report honesty** (finding N1). Append to `tmp/units/u1-fix-report.md` a `## Correction`
+4. **Report honesty** (finding N1). Append to `u1-fix-report.md` a `## Correction`
    section stating that the first run's per-step green counts in its fix table were the
    end-state readings written into every row, that the projects were run once at the end, and
    that the red readings stand as measured; then the `## Successor 3` section below.
@@ -51,11 +51,11 @@ also forbade), and this brief corrects both.
 ## Scope
 
 **Owned.** `tests/setupStyles.ts`, `tests/setupStyles.test.ts`, `tests/setupBrowser.test.ts`,
-`tests/setupConformance.test.ts`, `tmp/units/u1-fix-report.md`. **Off-limits.** Everything else.
+`tests/setupConformance.test.ts`, `u1-fix-report.md`. **Off-limits.** Everything else.
 
 ## Output
 
-Append `## Correction` and `## Successor 3` to `tmp/units/u1-fix-report.md`: the fixture
+Append `## Correction` and `## Successor 3` to `u1-fix-report.md`: the fixture
 readings of fix 1 (each flagged and permitted string with the function's return), the gate
 readings, and `git status --porcelain`; return both sections.
 

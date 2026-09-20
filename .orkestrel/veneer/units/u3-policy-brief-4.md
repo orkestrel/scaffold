@@ -2,9 +2,9 @@
 
 ## What changed and why
 
-This brief supersedes `tmp/units/u3-policy-brief-3.md` for the remainder of the unit; the earlier
+This brief supersedes `u3-policy-brief-3.md` for the remainder of the unit; the earlier
 briefs stand except where this one says otherwise. The third objective review
-(`units/u3-policy-review-report-3.md`) confirmed every claim and found that the literal index list
+(`u3-policy-review-report-3.md`) confirmed every claim and found that the literal index list
 this unit asserts is not portable. `tests/policy.test.ts` is vendored: `host.json` copies it
 byte-identical into every target and `scaffold repair` restores it there, so an assertion pinning
 this checkout's own `guides/README.md` census turns `test:policy` red in Veneer, Test, and every
@@ -49,7 +49,7 @@ other target for no policy defect. That defect is mine, from brief 1 § 5, not t
 
 ## Output
 
-Write `tmp/units/u3-policy-report-4.md` and return its content: the diff summary; each new row's or
+Write `u3-policy-report-4.md` and return its content: the diff summary; each new row's or
 case's reading; each gate's exit code and final lines; deviations in the usual shape.
 
 ## Deviation contract

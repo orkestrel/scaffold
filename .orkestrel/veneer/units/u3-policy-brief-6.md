@@ -2,9 +2,9 @@
 
 ## What changed and why
 
-This brief supersedes `tmp/units/u3-policy-brief-5.md` for the remainder of the unit; the earlier
+This brief supersedes `u3-policy-brief-5.md` for the remainder of the unit; the earlier
 briefs stand except where this one says otherwise. The fifth objective review
-(`units/u3-policy-review-report-5.md`) confirmed portability, the accepted and rejected link sets,
+(`u3-policy-review-report-5.md`) confirmed portability, the accepted and rejected link sets,
 the derivation, the remarks, and every earlier claim, and refuted one: `POLICY_INDEX_LINK` names
 the capture group `name` in both branches of its alternation, and a duplicate named group is a
 `SyntaxError` on the Node floor this package declares (`package.json` `engines.node` is
@@ -49,7 +49,7 @@ catch it; the whole `policy` project would fail to collect in a target on Node 2
 
 ## Output
 
-Write `tmp/units/u3-policy-report-6.md` and return its content: the diff summary; each new case's
+Write `u3-policy-report-6.md` and return its content: the diff summary; each new case's
 reading; the pattern with its edition table; each gate's exit code and final lines; deviations in
 the usual shape.
 

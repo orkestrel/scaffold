@@ -59,11 +59,11 @@ The execution deviation was resolved as follows:
 
 | Expected | Found and exact evidence | Done or not done | Hypothesis |
 | --- | --- | --- | --- |
-| A reliable `test:src` exit reading before the subsequent gates. | The invocation redirected through PowerShell returned `1`, although its log ended with `Test Files  7 passed (7)` and `Tests  603 passed \| 2 expected fail \| 9 skipped (614)`. The log also contains `FullyQualifiedErrorId : NativeCommandError` for an npm notice. See `tmp/codex/u6-2-test-src.log`. `test:policy` ran after that ambiguous reading. | Done: reran `npm.cmd run test:src` without redirection; it exited `0`. Repeated `test:policy` after that pass, then completed the remaining gates in order. No source fix was needed. | PowerShell's handling of redirected native stderr caused the initial exit discrepancy. |
+| A reliable `test:src` exit reading before the subsequent gates. | The invocation redirected through PowerShell returned `1`, although its log ended with `Test Files  7 passed (7)` and `Tests  603 passed \| 2 expected fail \| 9 skipped (614)`. The log also contains `FullyQualifiedErrorId : NativeCommandError` for an npm notice. See `u6-2-test-src.log.txt`. `test:policy` ran after that ambiguous reading. | Done: reran `npm.cmd run test:src` without redirection; it exited `0`. Repeated `test:policy` after that pass, then completed the remaining gates in order. No source fix was needed. | PowerShell's handling of redirected native stderr caused the initial exit discrepancy. |
 
 The build and configuration test emitted the API Extractor TypeScript-version advisory. The source run emitted `Boom`, `Refused`, and `Ignored` diagnostics from the journal fixture in `tests/src/browser/factories.test.ts`. Those commands exited `0`; no suppression or configuration change was made.
 
-The final diff is saved at `tmp/codex/u6-2-final.diff`, and the status reading at `tmp/codex/u6-2-final-status.txt`. `git diff --check` exited `0` with no diagnostics. The report is saved at `tmp/codex/u6-report-2.md` under the ignored scratch directory. The status lists only owned files:
+The final diff is saved at `u6-2-final.diff`, and the status reading at `u6-2-final-status.txt`. `git diff --check` exited `0` with no diagnostics. The report is saved at `u6-report-2.md` under the ignored scratch directory. The status lists only owned files:
 
 ```text
  M guides/test.md

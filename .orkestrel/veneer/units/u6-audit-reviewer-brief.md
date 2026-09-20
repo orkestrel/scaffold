@@ -15,14 +15,14 @@ Read, in this order, before ruling:
 1. `C:/Users/mikes/WebstormProjects/scaffold/AGENTS.md`, then `.claude/rules/tests.md`,
    `typescript.md`, `names.md`, `architecture.md`, `browser.md`, `documentation.md`, `writing.md`
    under `C:/Users/mikes/WebstormProjects/scaffold/.claude/rules/`.
-2. The claims file `C:/Users/mikes/WebstormProjects/test/tmp/audit/u6-audit-claims.md` (13
+2. The claims file `C:/Users/mikes/WebstormProjects/scaffold/.orkestrel/veneer/u6-audit-claims.md` (13
    numbered falsifiable claims). It is the audit's subject.
-3. The actual diff `C:/Users/mikes/WebstormProjects/test/tmp/audit/u6-diff.patch` (the working
+3. The actual diff `C:/Users/mikes/WebstormProjects/scaffold/.orkestrel/veneer/units/u6-diff.patch.txt` (the working
    tree of `C:/Users/mikes/WebstormProjects/test` at HEAD `f49bc7f` plus the uncommitted U6
    changes; read the live files there too — `src/browser/helpers.ts`, `src/browser/types.ts`,
    `src/browser/constants.ts`, `tests/src/browser/helpers.test.ts`, `tests/setup.ts`,
    `guides/test.md`).
-4. The unit's reports `C:/Users/mikes/WebstormProjects/test/tmp/codex/u6-report.md` and
+4. The unit's reports `C:/Users/mikes/WebstormProjects/scaffold/.orkestrel/veneer/units/u6-report.md` and
    `u6-report-2.md`, and the control logs beside them (`u6-plant-*-red.log`,
    `u6-browser-green.log`; they are UTF-16 PowerShell transcripts, read them as text).
 5. The design the unit implements:

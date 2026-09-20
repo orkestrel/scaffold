@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Orchestrator reading of the scoped gates over U1-author run 4's tree, before the checkpoint
-# commit and the successor brief. Log: scaffold/tmp/units/u1-run4-gates.log.txt.
+# commit and the successor brief. Log: scaffold/units/u1-run4-gates.log.txt.
 cd "C:/Users/mikes/WebstormProjects/veneer" || exit 9
 for step in "format:check" "lint:check" "check" "test:src" "test:src:styles" "test:app" "test:journey" "test:policy" "test:config" "test:setup" "test:setup:browser" "test:conformance" "test:guides"; do
   echo "=== $step ==="

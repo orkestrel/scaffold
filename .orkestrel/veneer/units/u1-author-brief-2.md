@@ -2,12 +2,12 @@
 
 ## What this supersedes
 
-This brief supersedes `tmp/codex/u1-author-brief.md`, which stays in place unedited. Every section
+This brief supersedes `u1-author-brief.md`, which stays in place unedited. Every section
 of that brief stands except where this file amends it. Read that brief first, then this one.
 
 ## Why a successor
 
-The first run (journal `../scaffold/tmp/codex/u1-author.jsonl`, thread
+The first run (journal `../scaffold/units/u1-author.jsonl`, thread
 `01a0bd8e-edb5-7572-9734-2725d363c3fe`) stopped before editing because the generated
 `tests/config.test.ts` selected a `setup` project the root did not register. The Orchestrator
 closed that in commit `a5de4c4` (unit U1-rep4): `scaffold repair` registered the Node `setup`
@@ -131,5 +131,5 @@ Criterion 5 reads: `test:src`, `test:src:styles`, `test:app`, `test:journey`, `t
 
 ## Output
 
-As the first brief states, at `tmp/codex/u1-author-report.md`; overwrite the stop report the first
+As the first brief states, at `u1-author-report.md`; overwrite the stop report the first
 run left there. Add one row naming which alias the app used to reach the engine.

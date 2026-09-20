@@ -2,9 +2,9 @@
 
 ## What changed and why
 
-This brief supersedes `tmp/units/u3-policy-brief-6.md` for the remainder of the unit; the earlier
+This brief supersedes `u3-policy-brief-6.md` for the remainder of the unit; the earlier
 briefs stand except where this one says otherwise. Round 6 ran both lanes on
-`tmp/audit/u3-policy-audit-claims.md`. The subjective lane (`units/u3-policy-audit-analyst-report.md`)
+`../u3-policy-audit-claims.md`. The subjective lane (`u3-policy-audit-analyst-report.md`)
 refuted the design ruling under claim 7 and the Orchestrator agrees: an index *link* is
 navigation, not authorship. This checkout's own `guides/README.md` links every dependency mirror in
 prose (lines 52 to 58) and says in the same section that a mirror documents that package's
@@ -83,7 +83,7 @@ paragraph at `:1151-1157` alone). **Off-limits.** Everything else.
 
 ## Output
 
-Write `tmp/units/u3-policy-report-7.md` and return its content: the diff summary; each new case's
+Write `u3-policy-report-7.md` and return its content: the diff summary; each new case's
 and row's reading; the two targets' readings and restore confirmations; each gate's exit code and
 final lines; deviations in the usual shape.
 

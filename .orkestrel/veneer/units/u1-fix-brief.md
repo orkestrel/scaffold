@@ -20,10 +20,10 @@ from the checkout. No install, no `scaffold` verb, no tree-wide `format` (format
 by path, then run `format:check`).
 
 **Findings and their sources.** The objective lane (`reviewer`, native Opus 5,
-`units/u1-audit-reviewer-report.md`) and the subjective lane (`analyst` on Astra,
-`units/u1-audit-analyst-report.md`) both refuted claims 6 and 8 of
+`u1-audit-reviewer-report.md`) and the subjective lane (`analyst` on Astra,
+`u1-audit-analyst-report.md`) both refuted claims 6 and 8 of
 `u1-audit-claims.md`; the reviewer added F1 to F6 and the analyst added findings 14 and 15. The
-verifier (`units/u1-gate-report.md`) settled claim 13 green.
+verifier (`u1-gate-report.md`) settled claim 13 green.
 
 **Installed primitives.** `@orkestrel/test/server` exports `resolveContained(root, target)`
 ("resolves a target that stays below a root directory, or `undefined` when the target escapes";
@@ -117,7 +117,7 @@ named beside it.
 
 ## Output
 
-Write `tmp/units/u1-fix-report.md` in the Veneer checkout and return its content: one row per fix
+Write `u1-fix-report.md` in the Veneer checkout and return its content: one row per fix
 with its site, the red reading where one was required, and the project's green reading; the gate
 table; any deviation with expected, found, exact evidence, done or not done, and at most one
 hypothesis. No process diary.

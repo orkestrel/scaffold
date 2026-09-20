@@ -1,6 +1,6 @@
 ﻿npm.cmd : npm notice run @orkestrel/test@0.0.18 test:src:browser
 At line:2 char:1
-+ npm.cmd run test:src:browser *> tmp/codex/u6-round4-browser-1.log; $r ...
++ npm.cmd run test:src:browser *> u6-round4-browser-1.log.txt; $r ...
 + ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     + CategoryInfo          : NotSpecified: (npm notice run ...est:src:browser:String) [], RemoteException
     + FullyQualifiedErrorId : NativeCommandError

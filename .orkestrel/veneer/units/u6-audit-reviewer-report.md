@@ -1,6 +1,6 @@
 # U6 audit — objective lane (reviewer, native Opus 5, 2026-09-20, 588 s)
 
-Judged against `test/tmp/audit/u6-diff.patch`, the live checkout, the retained logs, and the design
+Judged against `test/units/u6-diff.patch.txt`, the live checkout, the retained logs, and the design
 as amended by `u6-design-verdict.md`.
 
 ## Per-claim verdicts

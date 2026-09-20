@@ -2,14 +2,14 @@
 
 ## What changed and why
 
-This brief supersedes `tmp/codex/u6-brief-3.md` for the remainder of the unit; every section of
-`tmp/codex/u6-brief.md` stands except where this brief says otherwise. Round 2 (objective lane on
+This brief supersedes `u6-brief-3.md` for the remainder of the unit; every section of
+`u6-brief.md` stands except where this brief says otherwise. Round 2 (objective lane on
 Opus, subjective lane on Astra, verifier) confirmed every claim: the hold ordering, the release
 keying, the unnamed-axis carry-through, the discriminating motion proofs, the documentation
 repairs, the control receipts, the suite hygiene, the bounded waits, every round-1 contract, and
 the gates on both engines. It found the defects under § Execution. The verdict is
 `C:/Users/mikes/WebstormProjects/scaffold/.orkestrel/veneer/u6-audit-verdict-2.md`; the lane
-reports sit beside it under `units/`.
+reports sit beside it under ``.
 
 The through-line is one mechanism: a media override reaches `matchMedia` a variable number of
 frames after the protocol command returns. A single frame wait is not a settle, in either
@@ -86,7 +86,7 @@ Chromium runs the browser project here.
 
 ## Output
 
-Write `tmp/codex/u6-report-4.md` and return its content: the diff summary per owned file; the
+Write `u6-report-4.md` and return its content: the diff summary per owned file; the
 readings your settle takes (how many polls each axis needed, recorded from a run); the new cases
 and what each proves; each gate command's exit code and final lines, with both browser-project
 runs; and every deviation with expected, found, exact evidence, done or not done, and at most one

@@ -17,17 +17,17 @@ Perform the assignment directly and spawn nothing. You edit nothing; you have no
 Read, in this order, before ruling:
 1. `AGENTS.md`, then `.claude/rules/tests.md`, `typescript.md`, `names.md`, `architecture.md`,
    `browser.md`, `documentation.md`, `writing.md` under the scaffold checkout.
-2. The round-2 claims file `test/tmp/audit/u6-audit-claims-2.md` (10 numbered claims). It is the
+2. The round-2 claims file `test/../u6-audit-claims-2.md` (10 numbered claims). It is the
    audit's subject.
-3. The round-1 record: `u6-audit-verdict.md` and `units/u6-audit-reviewer-report.md`,
-   `units/u6-audit-analyst-report.md` (the findings the fix must close).
-4. The cumulative diff `test/tmp/audit/u6-diff.patch` and the live files in the Test checkout
+3. The round-1 record: `u6-audit-verdict.md` and `u6-audit-reviewer-report.md`,
+   `u6-audit-analyst-report.md` (the findings the fix must close).
+4. The cumulative diff `test/units/u6-diff.patch.txt` and the live files in the Test checkout
    (HEAD `f49bc7f` plus the uncommitted U6 diff): `src/browser/helpers.ts`, `src/browser/types.ts`,
    `src/browser/constants.ts`, `tests/src/browser/helpers.test.ts`, `tests/setup.ts`,
    `guides/test.md`.
-5. The reports `test/tmp/codex/u6-report-3.md` (the fix run) and the control logs
-   `tmp/codex/u6-3-*.log` beside it (read them as text; some may be UTF-16).
-6. The design: `units/u6-design-planner-report.md` as amended by `u6-design-verdict.md` (the
+5. The reports `test/units/u6-report-3.md` (the fix run) and the control logs
+   `u6-3-*.log` beside it (read them as text; some may be UTF-16).
+6. The design: `u6-design-planner-report.md` as amended by `u6-design-verdict.md` (the
    verdict wins).
 
 Rule on every claim 1 to 10 with `CONFIRMED`, `REFUTED`, or `UNDECIDABLE` and the deciding evidence
@@ -45,10 +45,10 @@ round` followed by the claim numbers that force it. No process diary.
 
 ## Round 3
 
-Same role and output shape, over `test/tmp/audit/u6-audit-claims-3.md` (10 claims), the prior
-record (`u6-audit-verdict.md`, `u6-audit-verdict-2.md`, `units/u6-audit-2-reviewer-report.md`,
-`units/u6-audit-2-analyst-report.md`), the cumulative diff, the live files, the report
-`test/tmp/codex/u6-report-4.md` and the logs `tmp/codex/u6-round4-*.log`.
+Same role and output shape, over `test/../u6-audit-claims-3.md` (10 claims), the prior
+record (`u6-audit-verdict.md`, `u6-audit-verdict-2.md`, `u6-audit-2-reviewer-report.md`,
+`u6-audit-2-analyst-report.md`), the cumulative diff, the live files, the report
+`test/units/u6-report-4.md` and the logs `u6-round4-*.log`.
 
 Claim 3 asks for a judgment, not only a reading: the refusal case drives its refusal with an
 options object whose `print` accessor answers differently on successive reads. Rule whether that

@@ -2,7 +2,7 @@
 
 ## What this supersedes
 
-This brief supersedes `tmp/units/u1-fix-brief.md` for one remaining finding; the first brief's
+This brief supersedes `u1-fix-brief.md` for one remaining finding; the first brief's
 ten fixes stand as landed in the working tree (uncommitted, 13 files) and are not redone. Same
 role and engine: `builder` on native Sonnet, sole writer in `C:/Users/mikes/WebstormProjects/veneer`,
 performing the assignment directly and spawning nothing.
@@ -42,7 +42,7 @@ not repeat it.
 
 ## Output
 
-Append a section `## Successor 2` to `tmp/units/u1-fix-report.md` in the Veneer checkout with the
+Append a section `## Successor 2` to `u1-fix-report.md` in the Veneer checkout with the
 distribution reading before and after, the three gate readings, and `git status --porcelain`;
 return that section as your final message.
 

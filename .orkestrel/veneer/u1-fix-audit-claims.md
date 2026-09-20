@@ -4,7 +4,7 @@ Subject: the fix-round diff in the Veneer checkout `C:/Users/mikes/WebstormProje
 from `ae0221d` to the commit the dispatch names, made by `builder` (native Sonnet) from
 `units/u1-fix-brief.md` and `units/u1-fix-brief-2.md`, with its report `units/u1-fix-report.md`.
 Rule on every claim with `CONFIRMED`, `REFUTED`, or `UNDECIDABLE` and the deciding evidence. Read
-the actual diff (`tmp/audit/u1-fix-diff.patch`) and the checkout, never the report alone.
+the actual diff (`units/u1-fix-diff.patch.txt`) and the checkout, never the report alone.
 
 1. **Containment.** `readEscapingImport` in `tests/setupConformance.ts` decides containment only
    through `resolveContained` imported from `@orkestrel/test/server`, keeping its specifier

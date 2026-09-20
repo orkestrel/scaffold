@@ -14,9 +14,9 @@ constraints, what the code permits) of an audit of a small scaffold unit that na
 (`builder`) wrote. Perform the assignment directly and spawn nothing. You edit nothing; you have no
 write tools.
 
-Subject: the diff `tmp/audit/u3-policy-diff.patch` over `tests/setupPolicy.ts` and
+Subject: the diff `u3-policy-diff.patch.txt` over `tests/setupPolicy.ts` and
 `tests/policy.test.ts` in the scaffold checkout (read the live files too), made from the brief
-`tmp/units/u3-policy-brief.md`. Law: `AGENTS.md`, `.claude/rules/typescript.md`, `names.md`,
+`u3-policy-brief.md`. Law: `AGENTS.md`, `.claude/rules/typescript.md`, `names.md`,
 `tests.md`, `writing.md`.
 
 Rule on each claim with `CONFIRMED`, `REFUTED`, or `UNDECIDABLE` and the deciding evidence:

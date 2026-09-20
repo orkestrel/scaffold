@@ -13,7 +13,7 @@ and correcting the seeds that unit U1-author measured red.
 
 ## Context
 
-U1-author (Astra, 2026-09-20, journal `tmp/codex/u1-author.jsonl`, thread
+U1-author (Astra, 2026-09-20, journal `u1-author.jsonl`, thread
 `01a0bd8e-edb5-7572-9734-2725d363c3fe`) stopped before editing with this evidence: the generated
 `tests/config.test.ts:207` selects a required `setup` project from `globSync('tests/setup*.test.ts')`,
 which the seeded `tests/setupBrowser.test.ts` matches, while `scaffold repair` registers `setup` only

@@ -2,7 +2,7 @@
 
 Subject: the cumulative U3-policy diff in the scaffold checkout `C:/Users/mikes/WebstormProjects/scaffold`
 over `tests/setupPolicy.ts`, `tests/policy.test.ts`, and `guides/scaffold.md`
-(`tmp/audit/u3-policy-diff-6.patch`), made by `builder` (native Sonnet) across six briefs
+(`units/u3-policy-diff-6.patch.txt`), made by `builder` (native Sonnet) across six briefs
 (`.orkestrel/veneer/units/u3-policy-brief.md` through `-6.md`) with reports `u3-policy-report.md`
 through `-6.md` and five objective reviews `u3-policy-review-report.md` through `-5.md` beside
 them. `host.json` is restaged by the Orchestrator's `npm run build` and is not part of the diff.

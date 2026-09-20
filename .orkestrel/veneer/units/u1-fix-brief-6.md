@@ -2,7 +2,7 @@
 
 ## What this supersedes
 
-This brief supersedes `tmp/units/u1-fix-brief-5.md` for one item; successors 1 to 5 stand as
+This brief supersedes `u1-fix-brief-5.md` for one item; successors 1 to 5 stand as
 landed. Same role and engine: `builder` on native Sonnet, sole writer in
 `C:/Users/mikes/WebstormProjects/veneer` (clean at the successor-5 commit), performing the
 assignment directly and spawning nothing. No `git` command that writes.
@@ -32,12 +32,12 @@ against `b` `2px`), not permitted.
 
 ## Scope
 
-**Owned.** `tests/setupStyles.ts`, `tests/setupStyles.test.ts`, `tmp/units/u1-fix-report.md`
+**Owned.** `tests/setupStyles.ts`, `tests/setupStyles.test.ts`, `u1-fix-report.md`
 (append `## Successor 6`). **Off-limits.** Everything else.
 
 ## Output
 
-Append `## Successor 6` to `tmp/units/u1-fix-report.md`: the radius readings and the gate
+Append `## Successor 6` to `u1-fix-report.md`: the radius readings and the gate
 readings and `git status --porcelain`; return that section.
 
 ## Acceptance criteria

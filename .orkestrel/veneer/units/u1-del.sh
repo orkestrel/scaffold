@@ -4,7 +4,7 @@ set -e
 cd "C:/Users/mikes/WebstormProjects/veneer"
 git status --short
 git rm -r -q -- src/styles app/browser/helpers.ts app/browser/styles app/browser/index.html app/browser/main.ts app/browser/env.d.ts tests demo ROADMAP.md guides configs/src/vite.styles.config.ts configs/app/vite.browser.config.ts
-git commit -q -F "units/u1-del-message.txt" -- src/styles app/browser/helpers.ts app/browser/styles app/browser/index.html app/browser/main.ts app/browser/env.d.ts tests demo ROADMAP.md guides configs/src/vite.styles.config.ts configs/app/vite.browser.config.ts
+git commit -q -F "u1-del-message.txt" -- src/styles app/browser/helpers.ts app/browser/styles app/browser/index.html app/browser/main.ts app/browser/env.d.ts tests demo ROADMAP.md guides configs/src/vite.styles.config.ts configs/app/vite.browser.config.ts
 git log --oneline -1
 git status --short --branch
 echo "--- bootstrap imports left under app and src ---"

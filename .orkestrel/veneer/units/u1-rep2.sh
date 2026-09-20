@@ -25,7 +25,7 @@ node ../scaffold/dist/bin/main.js audit --target . 2>&1 | tail -12 || true
 echo "--- commit ---"
 git add -- .claude .editorconfig .gitattributes .oxlintignore .oxlintrc.json .prettierignore AGENTS.md CLAUDE.md LICENSE README.md app configs guides package-lock.json package.json scripts src tests tsconfig.json vite.config.ts
 git status --short
-git commit -q -F "units/u1-rep2-message.txt"
+git commit -q -F "u1-rep2-message.txt"
 git log --oneline -2
 git status --short --branch
 echo "u1-rep2-done"

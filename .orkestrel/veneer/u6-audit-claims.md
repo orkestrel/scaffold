@@ -2,9 +2,9 @@
 
 Subject: the U6 diff in the Test checkout `C:/Users/mikes/WebstormProjects/test`, from `f49bc7f`
 (0.0.18) to the working tree the dispatch names, made by Astra (`codex exec`, thread
-`01a0be31-81c3-7262-b16a-3dfb9ff70b0c`) from `tmp/codex/u6-brief.md`, with its report
-`tmp/codex/u6-report.md`. Rule on every claim with `CONFIRMED`, `REFUTED`, or `UNDECIDABLE` and
-the deciding evidence (`file:line` or exact text). Read the actual diff (`tmp/audit/u6-diff.patch`)
+`01a0be31-81c3-7262-b16a-3dfb9ff70b0c`) from `units/u6-brief.md`, with its report
+`units/u6-report.md`. Rule on every claim with `CONFIRMED`, `REFUTED`, or `UNDECIDABLE` and
+the deciding evidence (`file:line` or exact text). Read the actual diff (`units/u6-diff.patch.txt`)
 and the checkout, never the report alone. The design the unit implements is
 `C:/Users/mikes/WebstormProjects/scaffold/.orkestrel/veneer/units/u6-design-planner-report.md`
 as amended by `C:/Users/mikes/WebstormProjects/scaffold/.orkestrel/veneer/u6-design-verdict.md`;

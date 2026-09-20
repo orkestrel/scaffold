@@ -1,6 +1,6 @@
 # Unit U1-gate — successor brief 2
 
-This brief supersedes `tmp/units/u1-gate-brief.md` for the fix-round commit; every section of
+This brief supersedes `u1-gate-brief.md` for the fix-round commit; every section of
 that brief stands except these amendments. Same role and engine: `verifier` on native Sonnet,
 running commands and reporting exit codes, editing nothing.
 

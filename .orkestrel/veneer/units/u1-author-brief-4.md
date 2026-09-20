@@ -2,13 +2,13 @@
 
 ## What this supersedes
 
-This brief supersedes `tmp/codex/u1-author-brief-3.md`, which amends brief 2, which amends brief 1;
+This brief supersedes `u1-author-brief-3.md`, which amends brief 2, which amends brief 1;
 all three stay in place unedited. Read them in order, then this one. Every section of those
 briefs stands except where this file amends them.
 
 ## Why a successor
 
-Run 3 (journal `../scaffold/tmp/codex/u1-author-3.jsonl`, thread
+Run 3 (journal `../scaffold/units/u1-author-3.jsonl`, thread
 `01a0bd9f-0fa9-7dc0-a3bc-34396e65634e`) implemented the styles axis, proved it, and stopped on
 two conflicts the briefs caused:
 
@@ -75,5 +75,5 @@ the tests as before.
 
 ## Output
 
-As brief 2 states: overwrite `tmp/codex/u1-author-report.md` with the full report. Add one table
+As brief 2 states: overwrite `u1-author-report.md` with the full report. Add one table
 of the public names declared with the hosted guide each was checked against.

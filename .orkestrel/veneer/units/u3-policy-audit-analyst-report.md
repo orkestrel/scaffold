@@ -1,4 +1,4 @@
-# U3-policy audit round 6 — subjective lane (analyst on Astra, codex exec read-only, thread 01a0be8a-2885-7b91-a5b2-25aa541333eb, journal units/u3-policy-audit-analyst.sh, 2026-09-20)
+# U3-policy audit round 6 — subjective lane (analyst on Astra, codex exec read-only, thread 01a0be8a-2885-7b91-a5b2-25aa541333eb, journal u3-policy-audit-analyst.sh, 2026-09-20)
 
 This is a source review with read-only, in-memory regex checks on Node v24.20.0. I ran no gate or command that writes files.
 

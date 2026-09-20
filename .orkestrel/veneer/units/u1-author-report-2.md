@@ -2,9 +2,9 @@ U1-author stopped before implementation under the brief's deviation contract. Th
 
 The blocking deviation is:
 
-- Expected: implement `isThemeMode(value: unknown): value is ThemeMode` in `src/browser/guards.ts`, as `tmp/codex/u1-author-brief-2.md:92` requires.
+- Expected: implement `isThemeMode(value: unknown): value is ThemeMode` in `src/browser/guards.ts`, as `u1-author-brief-2.md:92` requires.
 - Found: `../scaffold/.claude/rules/architecture.md:22` assigns guards solely to `*/validators.ts`. At line 153 it states: “The kind table is mandatory whether or not an instrument can see the violation.” The exhaustive function-file list in `configs/policy.ts:158-174` includes `validators.ts` and excludes `guards.ts`.
-- Exact stop instruction: `tmp/codex/u1-author-brief.md:266-267` says, “Stop and report” on “a rule that forbids a file this brief names.”
+- Exact stop instruction: `u1-author-brief.md:266-267` says, “Stop and report” on “a rule that forbids a file this brief names.”
 - Done: read the briefs in order, identified the placement conflict, ran the required baseline measurements, and overwrote the previous report.
 - Not done: implementation, mutation controls, builds, and final acceptance gates. No implementation fix was attempted because the named-file conflict itself triggers the stop.
 - Required resolution: amend the brief to own and require `src/browser/validators.ts` and its mirrored proof instead of `src/browser/guards.ts`, or resolve the rule in scaffold. This unit did neither. No hypothesis is needed.
@@ -41,7 +41,7 @@ The journey command finds no `tests/app/browser/integration.test.ts` for `journe
 
 The changed-file path list is:
 
-- `tmp/codex/u1-author-report.md`
+- `u1-author-report.md`
 
 The controls have no red or green-after-removal readings because none was planted:
 

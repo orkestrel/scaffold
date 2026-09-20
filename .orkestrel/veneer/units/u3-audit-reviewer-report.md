@@ -1,6 +1,6 @@
 # U3 audit — subjective lane (reviewer, native Opus 5, 2026-09-20, 663 s)
 
-Ruled against the live checkout, `veneer/tmp/audit/u3-diff.patch`, `u3-design-verdict.md`, and the
+Ruled against the live checkout, `veneer/units/u3-diff.patch.txt`, `u3-design-verdict.md`, and the
 research sources.
 
 ## Per-claim verdicts

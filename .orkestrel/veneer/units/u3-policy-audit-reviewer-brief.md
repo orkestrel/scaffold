@@ -8,9 +8,9 @@ directly and spawn nothing. You edit nothing; you have no write tools.
 
 ## Objective
 
-Rule on every claim in `C:/Users/mikes/WebstormProjects/scaffold/tmp/audit/u3-policy-audit-claims.md`
+Rule on every claim in `C:/Users/mikes/WebstormProjects/scaffold/.orkestrel/veneer/u3-policy-audit-claims.md`
 with `CONFIRMED`, `REFUTED`, or `UNDECIDABLE` and the deciding evidence (`file:line` or exact text),
-reading the cumulative diff `tmp/audit/u3-policy-diff-6.patch` and the live files, never the
+reading the cumulative diff `u3-policy-diff-6.patch.txt` and the live files, never the
 reports alone. Claim 7 is the subjective lane's; rule on it briefly. Add extra findings no claim
 names, numbered from 9, each with a site and a one-line failure scenario; distinguish a finding
 that forces another round from one worth recording as a bound; a wording preference that changes

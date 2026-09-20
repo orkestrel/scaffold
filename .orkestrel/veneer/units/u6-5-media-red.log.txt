@@ -1,0 +1,90 @@
+﻿npm.cmd : npm notice run @orkestrel/test@0.0.18 test:src:browser
+At line:2 char:1
++ npm.cmd run test:src:browser -- tests/src/browser/helpers.test.ts -t  ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (npm notice run ...est:src:browser:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project src:browser 
+tests/src/browser/helpers.test.ts -t Media
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/test
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------··xx···x·-----------------------------------
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/helpers.test.ts:3398:2 > stageMedia > preserves a provider color 
+scheme inverse through stage and release
+AssertionError: expected false to be true // Object.is equality
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- true[39m
+[31m+ false[39m
+
+ ❯ tests/src/browser/helpers.test.ts:3413:61
+    3411|   expect(matchMedia('(prefers-color-scheme: dark)').matches).toBe(!dar…
+    3412|   await releaseMedia()
+    3413|   expect(matchMedia('(prefers-color-scheme: dark)').matches).toBe(!dar…
+       |                                                             ^
+    3414|  })
+    3415|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/helpers.test.ts:3416:2 > stageMedia > preserves a provider forced 
+colors inverse through stage and release
+AssertionError: expected false to be true // Object.is equality
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- true[39m
+[31m+ false[39m
+
+ ❯ tests/src/browser/helpers.test.ts:3431:56
+    3429|   expect(matchMedia('(forced-colors: active)').matches).toBe(!forced)
+    3430|   await releaseMedia()
+    3431|   expect(matchMedia('(forced-colors: active)').matches).toBe(!forced)
+       |                                                        ^
+    3432|  })
+    3433|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  |src:browser (chromium)| tests/src/browser/helpers.test.ts:3483:2 > releaseMedia > restores provider inverses 
+on every axis after changing print and motion
+AssertionError: expected [ false, false, false, false ] to deeply equal [ true, true, true, true ]
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  [[22m
+[32m-   true,[39m
+[32m-   true,[39m
+[32m-   true,[39m
+[32m-   true,[39m
+[31m+   false,[39m
+[31m+   false,[39m
+[31m+   false,[39m
+[31m+   false,[39m
+[2m  ][22m
+
+ ❯ tests/src/browser/helpers.test.ts:3511:5
+    3509|    matchMedia('(prefers-color-scheme: dark)').matches,
+    3510|    matchMedia('(forced-colors: active)').matches,
+    3511|   ]).toEqual([true, !reduced, !dark, !forced])
+       |     ^
+    3512|  })
+    3513|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  3 failed | 6 passed | 287 skipped (296)
+   Start at  07:14:17
+   Duration  5.38s (transform 0ms, setup 127ms, import 109ms, tests 1.50s, environment 0ms)
+

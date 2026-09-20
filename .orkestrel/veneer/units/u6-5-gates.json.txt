@@ -1,0 +1,68 @@
+[
+  {
+    "command": "npm.cmd run format:check",
+    "exit": 0,
+    "log": "u6-5-gate-1.log.txt",
+    "tail": "npm notice run @orkestrel/test@0.0.18 format:check\nnpm notice run oxfmt --config .oxfmtrc.json --check .\nChecking formatting...\nAll matched files use the correct format.\nFinished in 1203ms on 60 files using 16 threads."
+  },
+  {
+    "command": "npm.cmd run lint:check",
+    "exit": 0,
+    "log": "u6-5-gate-2.log.txt",
+    "tail": "npm notice run @orkestrel/test@0.0.18 lint:check\nnpm notice run oxlint --config .oxlintrc.json --deny-warnings ."
+  },
+  {
+    "command": "npm.cmd run check",
+    "exit": 0,
+    "log": "u6-5-gate-3.log.txt",
+    "tail": "npm notice run @orkestrel/test@0.0.18 check\nnpm notice run tsc --noEmit --project tsconfig.json && npm run check:src\nnpm notice run @orkestrel/test@0.0.18 check:src\nnpm notice run npm run check:src:core && npm run check:src:browser && npm run check:src:server\nnpm notice run @orkestrel/test@0.0.18 check:src:core\nnpm notice run tsc --noEmit -p configs/src/tsconfig.core.json\nnpm notice run @orkestrel/test@0.0.18 check:src:browser\nnpm notice run tsc --noEmit -p configs/src/tsconfig.browser.json\nnpm notice run @orkestrel/test@0.0.18 check:src:server\nnpm notice run tsc --noEmit -p configs/src/tsconfig.server.json"
+  },
+  {
+    "command": "npm.cmd run build",
+    "exit": 0,
+    "log": "u6-5-gate-4.log.txt",
+    "tail": "dist/src/server/index.js  39.69 kB │ gzip: 11.45 kB │ map: 56.90 kB\ntransforming...\n✓ 6 modules transformed.\nrendering chunks...\ncomputing gzip size...\ndist/src/server/index.cjs  41.72 kB │ gzip: 11.71 kB │ map: 58.56 kB\n✓ built in 98ms\nAnalysis will use the bundled TypeScript version 5.9.3\n*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.\nnpm notice run @orkestrel/test@0.0.18 copy\nnpm notice run node -e \"const fs=require('node:fs'),p=require('node:path'),a=process.argv[1],b=process.argv[2];fs.mkdirSync(p.dirname(b),{recursive:true});fs.cpSync(a,b,{force:true});console.log('Copied: '+a+' to '+b)\" dist/src/server/index.d.ts dist/src/server/index.d.cts\nCopied: dist/src/server/index.d.ts to dist/src/server/index.d.cts"
+  },
+  {
+    "command": "npm.cmd run test:src",
+    "exit": 0,
+    "log": "u6-5-gate-5.log.txt",
+    "tail": "    482 |  \t\t\tObject.assign(console, channels)\n > node_modules/@vitest/runner/dist/chunk-artifact.js?v=ece605d0:302:11\n > node_modules/@vitest/runner/dist/chunk-artifact.js?v=ece605d0:1903:26\n > node_modules/@vitest/runner/dist/chunk-artifact.js?v=ece605d0:2326:20\n > runWithCancel node_modules/@vitest/runner/dist/chunk-artifact.js?v=ece605d0:2323:10\n > node_modules/@vitest/runner/dist/chunk-artifact.js?v=ece605d0:2305:20\n > runWithTimeout node_modules/@vitest/runner/dist/chunk-artifact.js?v=ece605d0:2272:10\n······································\n Test Files  7 passed (7)\n      Tests  612 passed | 2 expected fail | 9 skipped (623)\n   Start at  07:20:41\n   Duration  30.98s (transform 647ms, setup 896ms, import 785ms, tests 30.08s, environment 0ms)"
+  },
+  {
+    "command": "npm.cmd run test:policy",
+    "exit": 0,
+    "log": "u6-5-gate-6.log.txt",
+    "tail": "npm notice run @orkestrel/test@0.0.18 test:policy\nnpm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project policy\n RUN  v4.1.11 C:/Users/mikes/WebstormProjects/test\n····························································································-·········\n Test Files  1 passed (1)\n      Tests  101 passed | 1 skipped (102)\n   Start at  07:21:13\n   Duration  2.01s (transform 107ms, setup 49ms, import 283ms, tests 1.51s, environment 0ms)"
+  },
+  {
+    "command": "npm.cmd run test:config",
+    "exit": 0,
+    "log": "u6-5-gate-7.log.txt",
+    "tail": " RUN  v4.1.11 C:/Users/mikes/WebstormProjects/test\n············································································································································································-stdout | tests/config.test.ts > configuration helpers > rolls one face into a single declaration and rewrites its core specifier\nAnalysis will use the bundled TypeScript version 5.9.3\n*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.\nstdout | tests/config.test.ts > configuration helpers > rolls one face into a single declaration and rewrites its core specifier\nAnalysis will use the bundled TypeScript version 5.9.3\n*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.\n·\n Test Files  1 passed (1)\n      Tests  173 passed | 1 skipped (174)\n   Start at  07:21:16\n   Duration  3.42s (transform 203ms, setup 43ms, import 810ms, tests 2.41s, environment 0ms)"
+  },
+  {
+    "command": "npm.cmd run test:setup",
+    "exit": 0,
+    "log": "u6-5-gate-8.log.txt",
+    "tail": "npm notice run @orkestrel/test@0.0.18 test:setup\nnpm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project setup\n RUN  v4.1.11 C:/Users/mikes/WebstormProjects/test\n························\n Test Files  3 passed (3)\n      Tests  24 passed (24)\n   Start at  07:21:20\n   Duration  399ms (transform 148ms, setup 109ms, import 263ms, tests 27ms, environment 0ms)"
+  },
+  {
+    "command": "npm.cmd run test:guides",
+    "exit": 0,
+    "log": "u6-5-gate-9.log.txt",
+    "tail": "npm notice run @orkestrel/test@0.0.18 test:guides\nnpm notice run node --experimental-strip-types tests/guides.test.ts\n RUN  v4.1.11 C:/Users/mikes/WebstormProjects/test\n···············································-···\n Test Files  1 passed (1)\n      Tests  50 passed | 1 skipped (51)\n   Start at  07:21:21\n   Duration  1.18s (transform 112ms, setup 43ms, import 616ms, tests 372ms, environment 0ms)"
+  },
+  {
+    "command": "npm.cmd run test:src:browser",
+    "exit": 0,
+    "log": "u6-5-gate-10.log.txt",
+    "tail": "    482 |  \t\t\tObject.assign(console, channels)\n > node_modules/@vitest/runner/dist/chunk-artifact.js?v=ece605d0:302:11\n > node_modules/@vitest/runner/dist/chunk-artifact.js?v=ece605d0:1903:26\n > node_modules/@vitest/runner/dist/chunk-artifact.js?v=ece605d0:2326:20\n > runWithCancel node_modules/@vitest/runner/dist/chunk-artifact.js?v=ece605d0:2323:10\n > node_modules/@vitest/runner/dist/chunk-artifact.js?v=ece605d0:2305:20\n > runWithTimeout node_modules/@vitest/runner/dist/chunk-artifact.js?v=ece605d0:2272:10\n······································\n Test Files  2 passed (2)\n      Tests  349 passed | 2 expected fail (351)\n   Start at  07:21:23\n   Duration  26.98s (transform 0ms, setup 154ms, import 129ms, tests 25.56s, environment 0ms)"
+  },
+  {
+    "command": "npm.cmd run test:src:browser",
+    "exit": 0,
+    "log": "u6-5-gate-11.log.txt",
+    "tail": "    482 |  \t\t\tObject.assign(console, channels)\n > node_modules/@vitest/runner/dist/chunk-artifact.js?v=ece605d0:302:11\n > node_modules/@vitest/runner/dist/chunk-artifact.js?v=ece605d0:1903:26\n > node_modules/@vitest/runner/dist/chunk-artifact.js?v=ece605d0:2326:20\n > runWithCancel node_modules/@vitest/runner/dist/chunk-artifact.js?v=ece605d0:2323:10\n > node_modules/@vitest/runner/dist/chunk-artifact.js?v=ece605d0:2305:20\n > runWithTimeout node_modules/@vitest/runner/dist/chunk-artifact.js?v=ece605d0:2272:10\n······································\n Test Files  2 passed (2)\n      Tests  349 passed | 2 expected fail (351)\n   Start at  07:21:51\n   Duration  26.77s (transform 0ms, setup 160ms, import 136ms, tests 25.34s, environment 0ms)"
+  }
+]

@@ -22,11 +22,11 @@ cascade to the registry and to the calibrated readings on managed Chromium and E
 as amended by the Orchestrator's rulings in
 `C:/Users/mikes/WebstormProjects/scaffold/.orkestrel/veneer/u3-design-verdict.md`. Where the two
 disagree, the verdict wins. The objective lane's report
-(`units/u3-design-analyst-report.md`) lists the risks the verdict rules on; read its § Risks once.
+(`u3-design-analyst-report.md`) lists the risks the verdict rules on; read its § Risks once.
 
 **Values.** `C:/Users/mikes/WebstormProjects/scaffold/.orkestrel/veneer/research/calibration.md`
 (runs 5 and 6 of 2026-09-20: type, space, colour including § Semantic roles and canvas,
-interaction states, elevation, motion, departures), `units/u2-run-6-extract.md` (every
+interaction states, elevation, motion, departures), `u2-run-6-extract.md` (every
 per-variant string), and `research/instruments.md` (the sRGB triplets, including the painted dark
 primary `0, 172, 236`). For the subtle tiers' mix percentages you may read Elements' token
 source at `C:/Users/mikes/WebstormProjects/elements/src/styles/_tokens.scss` and its variant
@@ -161,7 +161,7 @@ then the guide; run the narrowest project after each step.
 
 ## Output
 
-Write `tmp/units/u3-report.md` in the Veneer checkout and return its content: the files created
+Write `u3-report.md` in the Veneer checkout and return its content: the files created
 and changed; every planted control with its red assertion and green removal; the two unknowns'
 readings; the name checks; each gate command's final lines on both browsers; every value you
 declared that traces to a Bootstrap retained value, with its reason; and every deviation with

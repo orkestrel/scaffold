@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # U1-rep4: wire test:setup, run repair pass 4 to register the Node setup project, read the gates,
-# commit by pathspec. Log: scaffold/tmp/units/u1-rep4.log.txt.
+# commit by pathspec. Log: scaffold/units/u1-rep4.log.txt.
 set -e
 cd "C:/Users/mikes/WebstormProjects/veneer"
 echo "--- wire test:setup into the chain ---"

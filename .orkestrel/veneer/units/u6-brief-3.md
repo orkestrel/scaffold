@@ -2,13 +2,13 @@
 
 ## What changed and why
 
-This brief supersedes `tmp/codex/u6-brief-2.md` for the remainder of the unit; every section of
-`tmp/codex/u6-brief.md` stands except where this brief says otherwise. The audit round on the tree
+This brief supersedes `u6-brief-2.md` for the remainder of the unit; every section of
+`u6-brief.md` stands except where this brief says otherwise. The audit round on the tree
 you left (objective lane on Opus, subjective lane on Astra, checker, verifier) confirmed the shape
 and the gates (full chain green on managed Chromium; `test:src:browser` green on Edge) and found
 the defects listed under § Execution. Each names the lane and finding it came from. The verdict is
 `C:/Users/mikes/WebstormProjects/scaffold/.orkestrel/veneer/u6-audit-verdict.md`; the lane
-reports sit beside it under `units/`.
+reports sit beside it under ``.
 
 ## Role and engine
 
@@ -68,7 +68,7 @@ Perform the assignment directly and spawn nothing. Source first, then proofs, th
    `const scale = 1` (drop the frame ratio) in `holdAccessible`, run
    `npm.cmd run test:src:browser -- tests/src/browser/helpers.test.ts -t 'misses at the unscaled point'`
    and record the mapped-hold assertion red; restore the source; run the same command green;
-   keep both logs under `tmp/codex/` as `u6-3-plant-scale-red.log` and `u6-3-plant-scale-green.log`.
+   keep both logs under `` as `u6-3-plant-scale-red.log` and `u6-3-plant-scale-green.log`.
    Do the same for the pseudo control (plant: drop the `pseudo` argument from the
    `getComputedStyle` call; command `-t 'distinguishes pseudo-element paint'`) and the release
    control (plant: omit the explicit release in the case; command `-t 'holds the pressed paint'`),
@@ -86,7 +86,7 @@ Perform the assignment directly and spawn nothing. Source first, then proofs, th
 
 ## Output
 
-Write `tmp/codex/u6-report-3.md` and return its content: the diff summary per owned file; each
+Write `u6-report-3.md` and return its content: the diff summary per owned file; each
 control's red and green readings with the log names; the readings the removed logs printed; each
 gate command's exit code and final lines; and every deviation with expected, found, exact
 evidence, done or not done, and at most one hypothesis. Do not restate the earlier reports.

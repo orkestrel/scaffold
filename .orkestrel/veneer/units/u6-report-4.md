@@ -8,7 +8,7 @@ The changes for this round are:
 | `tests/src/browser/helpers.test.ts` | Adds immediate all-axis release readings, a real staged-query refusal with provider-override restoration, and a real protocol-rejection pointer retry. Colour-scheme and forced-colours cases stage the recorded host value's inverse and read restoration without an extra wait. The Patterns transcription clears emulation before recording the host preference. |
 | `guides/test.md` | Aligns the release description and Summary, adds the release exhaustion voice, documents settle bounds and refusal restoration, narrows omitted-axis preservation, documents pointer retry behavior, and opens the media example's actions with `await releaseMedia()`. |
 
-The settle readings came from `tmp/codex/u6-round4-polls.log`, recorded on 2026-09-20 at 06:53:05 on managed Chromium. Temporary counters and logging were removed before the gates. Readings below use the order `[print, reduce, dark, forced]`.
+The settle readings came from `u6-round4-polls.log.txt`, recorded on 2026-09-20 at 06:53:05 on managed Chromium. Temporary counters and logging were removed before the gates. Readings below use the order `[print, reduce, dark, forced]`.
 
 | Run observation | Readings and polls |
 | --- | --- |
@@ -35,7 +35,7 @@ The focused red/green command was:
 npm.cmd run test:src:browser -- tests/src/browser/helpers.test.ts -t 'retains a rejected release marker|restores every media axis|unnamed.*override'
 ```
 
-Before the fix it exited 1: `2 failed | 2 passed | 290 skipped (294)`. The pointer marker was `null` instead of `invalidxinvalid`; the release reading was `[false,false,true,false]` instead of `[false,false,false,false]`. After the fix the same command exited 0: `4 passed | 290 skipped (294)`. Logs: `u6-round4-before.log` and `u6-round4-after.log` under `tmp/codex/`.
+Before the fix it exited 1: `2 failed | 2 passed | 290 skipped (294)`. The pointer marker was `null` instead of `invalidxinvalid`; the release reading was `[false,false,true,false]` instead of `[false,false,false,false]`. After the fix the same command exited 0: `4 passed | 290 skipped (294)`. Logs: `u6-round4-before.log` and `u6-round4-after.log` under ``.
 
 The refusal case's focused command was:
 
@@ -43,9 +43,9 @@ The refusal case's focused command was:
 npm.cmd run test:src:browser -- tests/src/browser/helpers.test.ts -t 'changing options'
 ```
 
-It exited 0 with `1 passed | 294 skipped (295)`. Replacing restoration with the old `await releaseMedia()` cleanup made it exit 1 with `1 failed | 294 skipped (295)` at the provider colour-scheme assertion: expected `true`, received `false`. The control edit was removed; the restored case passed in the instrumented run and every final browser-containing gate. Logs: `u6-round4-refusal.log`, `u6-round4-refusal-control.log`, and `u6-round4-polls.log` under `tmp/codex/`.
+It exited 0 with `1 passed | 294 skipped (295)`. Replacing restoration with the old `await releaseMedia()` cleanup made it exit 1 with `1 failed | 294 skipped (295)` at the provider colour-scheme assertion: expected `true`, received `false`. The control edit was removed; the restored case passed in the instrumented run and every final browser-containing gate. Logs: `u6-round4-refusal.log`, `u6-round4-refusal-control.log`, and `u6-round4-polls.log` under ``.
 
-The final gate readings are recorded below. Log names are relative to `tmp/codex/`.
+The final gate readings are recorded below. Log names are relative to ``.
 
 | Command | Exit | Final result lines | Log |
 | --- | --- | --- | --- |
@@ -78,7 +78,7 @@ The deviations and bounded decisions are:
 
 No axis refused its requested emulated reading. No gate remained red after its owned-file fix. No hypothesis is required for these deviations. Edge was not run in this assignment.
 
-The final review artifacts are `tmp/codex/u6-round4-final.diff`, `tmp/codex/u6-round4-final-status.txt`, this report, and the browser logs named above. `git diff --check` exits 0. The build leaves the updated browser implementation and declarations in `dist/src/browser/`.
+The final review artifacts are `u6-round4-final.diff`, `u6-round4-final-status.txt`, this report, and the browser logs named above. `git diff --check` exits 0. The build leaves the updated browser implementation and declarations in `dist/src/browser/`.
 
 The final `git status --porcelain` output is:
 

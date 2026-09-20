@@ -247,14 +247,14 @@ project after each step.
    and `test:guides`. The root registers no project for the Node setup proofs until the
    Orchestrator runs `scaffold repair` after you return, so run `tests/setupConformance.test.ts`
    and `tests/setupStyles.test.ts` through a throwaway configuration you write at
-   `tmp/codex/vite.setup.config.ts` (git ignores `tmp/`): one Node project, `include` naming those
+   `vite.setup.config.ts` (git ignores `tmp/`): one Node project, `include` naming those
    two files, `setupFiles` `['./tests/setup.ts']`, run as
-   `npx.cmd vitest run --config tmp/codex/vite.setup.config.ts`. Record each command and its final
+   `npx.cmd vitest run --config vite.setup.config.ts`. Record each command and its final
    lines.
 
 ## Output
 
-Write `tmp/codex/u1-author-report.md` in this checkout and return its content as your final
+Write `u1-author-report.md` in this checkout and return its content as your final
 message: the measurements before editing; the files created and changed as a path list; each
 planted control with its exact red output and the green after removal; each gate command with its
 final lines; the RTL mechanism you chose; the `vue-tsc` unknown's reading; any patch you need in a

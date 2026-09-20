@@ -27,7 +27,7 @@ medium`). **PASS** (`test:guides` green is a gate reading, not reproduced here)
 
 ## C. Controls
 
-Red assertions: `tmp/codex/u6-plant-scale-red.log:19` `AssertionError: expected 16 to be 32`;
+Red assertions: `u6-plant-scale-red.log.txt:19` `AssertionError: expected 16 to be 32`;
 `u6-plant-pseudo-red.log:19` `expected '0px' to be '7px'`; `u6-plant-release-red.log:21`
 `expected 32 to be 16`. `grep -n "PLANT-" tests/src/browser/helpers.test.ts src/browser/helpers.ts`
 returns nothing in the live tree. **PASS**

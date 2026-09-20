@@ -9,8 +9,8 @@ lane `reviewer` on Opus, `checker`) confirmed the registry, the cascade shape, t
 the carried obligations, and the guides' structure, and found the defects under § Execution. Each
 item names the lane finding it carries. The verdict with the Orchestrator's rulings is
 `C:/Users/mikes/WebstormProjects/scaffold/.orkestrel/veneer/u3-audit-verdict.md`; the lane
-reports are `units/u3-audit-analyst-report.md`, `units/u3-audit-reviewer-report.md`, and
-`units/u3-audit-checker-report.md` beside it. Read the verdict's § Rulings before editing.
+reports are `u3-audit-analyst-report.md`, `u3-audit-reviewer-report.md`, and
+`u3-audit-checker-report.md` beside it. Read the verdict's § Rulings before editing.
 
 Since your run, the Orchestrator integrated your D3, D4, and D6 patches (`tests/distribution.test.ts`,
 `guides/veneer.md` § Showcase, `configs/src/vite.styles.config.ts`), and re-vendored
@@ -25,7 +25,7 @@ the sole writer in the Veneer checkout (`C:/Users/mikes/WebstormProjects/veneer`
 ## Context
 
 **The tree.** `HEAD` is `b661142`; the working tree carries the U3 edits and the integrations
-named. Build on it; do not undo it. Your report is `tmp/units/u3-report.md`.
+named. Build on it; do not undo it. Your report is `u3-report.md`.
 
 **Installed primitives to check before writing a helper.** `@orkestrel/test/browser` and
 `@orkestrel/test` (`node_modules/@orkestrel/test/dist/src/{browser,core,server}/index.d.ts`):
@@ -137,7 +137,7 @@ proofs, then the guide; run the narrowest project after each step.
 
 ## Output
 
-Write `tmp/units/u3-report-2.md` and return its content: the diff summary per file; each control's
+Write `u3-report-2.md` and return its content: the diff summary per file; each control's
 red assertion and green rerun; each gate command's final lines on both browsers; and every
 deviation with expected, found, exact evidence, done or not done, and at most one hypothesis. Do
 not restate the first report.

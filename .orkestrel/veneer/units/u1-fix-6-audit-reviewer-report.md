@@ -18,7 +18,7 @@ N17 (low): the edge comparison is textual (`:100-105`). N18 (low): the limit sen
 
 ## Unresolved from this lane
 
-The gate readings and the cascade case rest on the verifier (settled green, `units/u1-gate-report-6.md`); the name list and status confirm the unit wrote nothing outside its owned files.
+The gate readings and the cascade case rest on the verifier (settled green, `u1-gate-report-6.md`); the name list and status confirm the unit wrote nothing outside its owned files.
 
 ## Referral
 

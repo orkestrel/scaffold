@@ -1,0 +1,5 @@
+npm notice run @orkestrel/test@0.0.18 lint:check
+npm notice run oxlint --config .oxlintrc.json --deny-warnings .
+src/browser/helpers.ts:651:5: warning eslint(preserve-caught-error): There is no cause error attached to this new thrown error. help: Preserve the original error by using the `cause` property when re-throwing errors.
+src/browser/helpers.ts:651:5: error eslint(no-unsafe-finally): Unsafe `finally` block. help: Control flow inside `try` or `catch` blocks will be overwritten by this statement.
+src/browser/helpers.ts:653:4: error eslint(no-unsafe-finally): Unsafe `finally` block. help: Control flow inside `try` or `catch` blocks will be overwritten by this statement.

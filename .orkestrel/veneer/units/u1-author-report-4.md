@@ -27,7 +27,7 @@ The measurements before editing were:
 | `npm.cmd run test:guides` | 1 | `Test Files  1 failed (1)`; `Tests  4 failed \| 13 passed (17)` |
 | `npm.cmd run test:setup:browser` | 0 | `Test Files  1 passed (1)`; `Tests  1 passed (1)` |
 
-The baseline logs are `tmp/codex/u1-baseline-*.log`. The guides output names the expected findings:
+The baseline logs are `u1-baseline-*.log`. The guides output names the expected findings:
 
 ```text
 guides/veneer.md has no ## Methods section.
@@ -75,7 +75,7 @@ tests/setupBrowser.ts
 tests/setupConformance.test.ts
 tests/setupConformance.ts
 tests/src/browser/index.test.ts
-tmp/codex/u1-author-report.md
+u1-author-report.md
 ```
 
 The report and generated evidence are ignored by Git. `git status --porcelain` names only owned implementation and test paths. `git diff --check` exits 0. The styles-axis files from the preceding unit remain unchanged.

@@ -2,12 +2,12 @@
 
 ## What this supersedes
 
-This brief supersedes `tmp/codex/u1-author-brief-4.md`; briefs 1 to 4 stay in place unedited and
+This brief supersedes `u1-author-brief-4.md`; briefs 1 to 4 stay in place unedited and
 stand except where this file amends them. Read them in order, then this one.
 
 ## Why a successor
 
-Run 4 (journal `../scaffold/tmp/codex/u1-author-4.jsonl`, thread
+Run 4 (journal `../scaffold/units/u1-author-4.jsonl`, thread
 `01a0bdaf-45c6-7613-bde7-1a39ceeb248c`) implemented the ColorMode engine, the shell, the browser
 setup module, the journeys with captures, the entry proofs, and the conformance controls, ran four
 of the five planted controls red and green, and stopped when the sandbox refused to write
@@ -18,7 +18,7 @@ checkout is clean at that commit.
 
 ## Amended evidence
 
-**`PLANT-PEER`, taken by the Orchestrator on 2026-09-20 (`../scaffold/tmp/units/u1-plant-peer.log.txt`).**
+**`PLANT-PEER`, taken by the Orchestrator on 2026-09-20 (`../scaffold/units/u1-plant-peer.log.txt`).**
 With `peerDependencies: { vue: '^3.5.43' }` planted in `package.json`, `npm run test:conformance`
 exited 1: `runtime boundaries > declares no forbidden runtime dependency or peer` failed with
 `expected 'vue' to be undefined`. With the manifest restored byte for byte (sha256 `b0589825…`),
@@ -48,7 +48,7 @@ with:
 
 ## Amended output
 
-Overwrite `tmp/codex/u1-author-report.md` with the complete report for the whole unit: carry
+Overwrite `u1-author-report.md` with the complete report for the whole unit: carry
 forward run 4's measurements, control readings, journey mutations, and file lists (they are the
 unit's own), add the Orchestrator's `PLANT-PEER` row, and add this run's distribution, guides,
 README, and final gate readings. Name the alias the app used to reach the engine, the placement

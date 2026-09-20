@@ -2,14 +2,14 @@
 
 ## What this supersedes
 
-This brief supersedes `tmp/units/u1-fix-brief-6.md`; successors 1 to 6 stand as landed in
+This brief supersedes `u1-fix-brief-6.md`; successors 1 to 6 stand as landed in
 `e9f2a2f`. Same role and engine: `builder` on native Sonnet, sole writer in
 `C:/Users/mikes/WebstormProjects/veneer` (clean at `e9f2a2f`), performing the assignment directly
 and spawning nothing. No `git` command that writes.
 
 ## Why a successor
 
-Round 5's objective lane (`units/u1-fix-5-audit-reviewer-report.md`) found two readings the
+Round 5's objective lane (`u1-fix-5-audit-reviewer-report.md`) found two readings the
 successor-5 diff introduced and four documentation defects, and referred one scope gap and one
 naming question, ruled here.
 
@@ -44,7 +44,7 @@ naming question, ruled here.
    edge shorthand with four tokens whose second and fourth differ; or `border-radius` with an
    asymmetric side; `false` otherwise); `matchesRadiusShorthand`'s two-token clause reads "two
    differing tokens in a two-token side"; `scanPhysicalDeclaration` names the R6 limit.
-5. **Report record** (N16). In `tmp/units/u1-fix-report.md`: under `### Deviation` in
+5. **Report record** (N16). In `u1-fix-report.md`: under `### Deviation` in
    `## Successor 5` and at the `border-radius:1px 2px 1px / 3px 3px 3px` row, add a one-line
    note "superseded by ## Successor 6, which corrected the rule and the fixture"; replace the
    temporal "now flags" with "flags"; then append `## Successor 7`.
@@ -53,13 +53,13 @@ naming question, ruled here.
 
 ## Scope
 
-**Owned.** `tests/setupStyles.ts`, `tests/setupStyles.test.ts`, `tmp/units/u1-fix-report.md`.
+**Owned.** `tests/setupStyles.ts`, `tests/setupStyles.test.ts`, `u1-fix-report.md`.
 **Off-limits.** Everything else. Check every new or renamed export against the hosted guides'
 `Surface` rows and record the check.
 
 ## Output
 
-Append `## Successor 7` to `tmp/units/u1-fix-report.md`: the export set, the new fixture
+Append `## Successor 7` to `u1-fix-report.md`: the export set, the new fixture
 readings, the name checks, the gate readings, and `git status --porcelain`; return that section.
 
 ## Acceptance criteria

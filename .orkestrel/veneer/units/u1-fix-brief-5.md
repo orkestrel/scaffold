@@ -2,7 +2,7 @@
 
 ## What this supersedes
 
-This brief supersedes `tmp/units/u1-fix-brief-4.md`; briefs 1 to 4 stand as landed in `bd4284c`.
+This brief supersedes `u1-fix-brief-4.md`; briefs 1 to 4 stand as landed in `bd4284c`.
 Same role and engine: `builder` on native Sonnet, sole writer in
 `C:/Users/mikes/WebstormProjects/veneer` (clean at `bd4284c`), performing the assignment directly
 and spawning nothing. No `git` command that writes.
@@ -67,14 +67,14 @@ and outside quoted strings; `!important` is not part of the value):
 
 ## Scope
 
-**Owned.** `tests/setupStyles.ts`, `tests/setupStyles.test.ts`, `tmp/units/u1-fix-report.md`
+**Owned.** `tests/setupStyles.ts`, `tests/setupStyles.test.ts`, `u1-fix-report.md`
 (append `## Successor 5`). **Off-limits.** Everything else. Before naming an export, check it
 against every `Surface` row in `node_modules/@orkestrel/scaffold/dist/host/guides/*.md` and
 record the check.
 
 ## Output
 
-Append `## Successor 5` to `tmp/units/u1-fix-report.md`: the export set, each predicate's true
+Append `## Successor 5` to `u1-fix-report.md`: the export set, each predicate's true
 and false readings, every new fixture's reading, the name checks, the gate readings, and
 `git status --porcelain`; return that section.
 

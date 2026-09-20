@@ -2,7 +2,7 @@
 
 Subject: the Veneer checkout `C:/Users/mikes/WebstormProjects/veneer` at the commit the dispatch
 names (U1-author runs 3 to 5 on Astra, landed as `f5d31f8`, `9d64c66`, and the run-5 commit), its
-report `tmp/codex/u1-author-report.md`, and the diff from `a5de4c4` to that commit. Rule on every
+report `units/u1-author-report.md`, and the diff from `a5de4c4` to that commit. Rule on every
 claim with `CONFIRMED`, `REFUTED`, or `UNDECIDABLE`, each with the evidence (file and line, or the
 command and its output) that decides it. Read the actual diff and status, never the report alone.
 

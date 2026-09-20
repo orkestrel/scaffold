@@ -34,7 +34,7 @@
 
 ## Findings outside the claims
 
-**N1.** `units/u1-fix-report.md:7-11` — per-step green readings could not have been produced at those steps (the `setup` project count was 12 at the baseline and 14 only at the end); the projects were run once at the end. The red readings are consistent with the pre-change code and unaffected.
+**N1.** `u1-fix-report.md:7-11` — per-step green readings could not have been produced at those steps (the `setup` project count was 12 at the baseline and 14 only at the end); the projects were run once at the end. The red readings are consistent with the pre-change code and unaffected.
 
 **N2.** `tests/setupConformance.test.ts:60` — a count in a case name ("pins three distinct digests").
 
@@ -42,7 +42,7 @@
 
 ## Referrals
 
-Claims 11 and 13 need the verifier (supplied: `units/u1-gate-report-2.md`); claim 12 needs `git stash list` (supplied above). Dispatch defect in `u1-fix-brief.md`: step 5 planted in a file the brief listed off-limits.
+Claims 11 and 13 need the verifier (supplied: `u1-gate-report-2.md`); claim 12 needs `git stash list` (supplied above). Dispatch defect in `u1-fix-brief.md`: step 5 planted in a file the brief listed off-limits.
 
 ## Observation
 

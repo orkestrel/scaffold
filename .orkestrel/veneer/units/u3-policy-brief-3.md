@@ -2,9 +2,9 @@
 
 ## What changed and why
 
-This brief supersedes `tmp/units/u3-policy-brief-2.md` for the remainder of the unit; every
+This brief supersedes `u3-policy-brief-2.md` for the remainder of the unit; every
 section of `u3-policy-brief.md` and `u3-policy-brief-2.md` stands except where this one says
-otherwise. The second objective review (`units/u3-policy-review-report-2.md`) closed findings 7, 9,
+otherwise. The second objective review (`u3-policy-review-report-2.md`) closed findings 7, 9,
 10, 11, 12 of round 1 and found the items under § Execution. The Orchestrator's ruling on its
 finding 10: an index link is the workspace's own claim to author that guide; a mirror the
 catalog stops registering while the index still links it enters the term sweep, and the banned
@@ -57,7 +57,7 @@ paragraph at `:1151-1155` alone). **Off-limits.** Everything else.
 
 ## Output
 
-Write `tmp/units/u3-policy-report-3.md` and return its content: the diff summary; the new control's
+Write `u3-policy-report-3.md` and return its content: the diff summary; the new control's
 red and green readings; each gate's exit code and final lines; deviations in the usual shape.
 
 ## Deviation contract

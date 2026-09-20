@@ -16,7 +16,7 @@ The run 5 baseline measurements before editing were:
 | `npm.cmd run test:guides` | 1 | `Test Files  1 failed (1)`; `Tests  5 failed \| 12 passed (17)` |
 | `npm.cmd run test:setup:browser` | 0 | `Test Files  1 passed (1)`; `Tests  3 passed (3)` |
 
-The logs are `tmp/codex/u1-run5-baseline-*.log`. The guide failures covered missing barrel documentation, method groups, a mapped self import, links, and test links.
+The logs are `u1-run5-baseline-*.log`. The guide failures covered missing barrel documentation, method groups, a mapped self import, links, and test links.
 
 Run 5 changes these owned paths:
 
@@ -26,7 +26,7 @@ guides/README.md
 guides/veneer.md
 tests/distribution.test.ts
 tests/guides.test.ts
-tmp/codex/u1-author-report.md
+u1-author-report.md
 ```
 
 The distribution page resolves `<installed package>/styles` through the consumer's package resolver, reads that installed target, and bundles its stylesheet link. The added `[requires the registry]` case reads `link.sheet` and the `CSSLayerStatementRule` names in a real browser. It expects `theme, reset, base, elements, components, utilities` and rejects `utilities` alone. The generated cases remain. The local registry readiness check did not answer, so the installed-browser assertions were collected but not executed.
@@ -64,7 +64,7 @@ The run 4 measurements before editing, carried from its report at `f5d31f8`, wer
 | `npm.cmd run test:guides` | 1 | `Test Files  1 failed (1)`; `Tests  4 failed \| 13 passed (17)` |
 | `npm.cmd run test:setup:browser` | 0 | `Test Files  1 passed (1)`; `Tests  1 passed (1)` |
 
-The baseline logs are `tmp/codex/u1-baseline-*.log`. The guides output names the expected findings:
+The baseline logs are `u1-baseline-*.log`. The guides output names the expected findings:
 
 ```text
 guides/veneer.md has no ## Methods section.
@@ -112,7 +112,7 @@ tests/setupBrowser.ts
 tests/setupConformance.test.ts
 tests/setupConformance.ts
 tests/src/browser/index.test.ts
-tmp/codex/u1-author-report.md
+u1-author-report.md
 ```
 
 The report and generated evidence are ignored by Git. Those implementation paths are unchanged in run 5.
@@ -323,7 +323,7 @@ The final gate readings are:
 | `npm.cmd run test:guides` | 0 | `Test Files  1 passed (1)`; `Tests  18 passed (18)` |
 | `npm.cmd run test:distribution` | 0 | `Test Files  1 passed (1)`; `Tests  1 passed \| 6 skipped (7)` |
 
-The ordered gate chain ran before the added guide-example assertion. After that test-only edit, format, lint, typechecking, guide parity, and conformance passed again. Logs are `tmp/codex/u1-run5-final-*.log`. The guide repair first changed `5 failed | 12 passed` to `17 passed`; the executed example adds the passing case in the final reading.
+The ordered gate chain ran before the added guide-example assertion. After that test-only edit, format, lint, typechecking, guide parity, and conformance passed again. Logs are `u1-run5-final-*.log`. The guide repair first changed `5 failed | 12 passed` to `17 passed`; the executed example adds the passing case in the final reading.
 
 The journey skips are the capture-flag cases; run 4's enabled capture receipt appears earlier. The policy skip requires an authored local substitution-table file, which this scaffold target does not carry. The configuration skip is the unavailable-extractor branch because the extractor is installed. Distribution skips require registry readiness. Every required test project collected files. The styles import failure described in brief 5 did not recur.
 
@@ -344,7 +344,7 @@ dist/src/styles/index.rtl.css
 
 API Extractor reports bundled TypeScript 5.9.3 against workspace TypeScript 6.0.3; the build exits 0. The prescribed Vitest and TypeScript dependency ranges remain unchanged.
 
-Run 5 verified plant removal against the committed checkpoint. `git diff --exit-code --` returned 0 for each of `package.json`, `src/browser/index.ts`, `tests/src/browser/index.test.ts`, and `app/browser/main.ts`. `Test-Path src/browser/probe.ts` returned `False`. The Orchestrator's peer-control log is `../scaffold/tmp/units/u1-plant-peer.log.txt`; brief 5 records the restored manifest digest prefix `b0589825…`. No peer plant was attempted in run 5.
+Run 5 verified plant removal against the committed checkpoint. `git diff --exit-code --` returned 0 for each of `package.json`, `src/browser/index.ts`, `tests/src/browser/index.test.ts`, and `app/browser/main.ts`. `Test-Path src/browser/probe.ts` returned `False`. The Orchestrator's peer-control log is `../scaffold/units/u1-plant-peer.log.txt`; brief 5 records the restored manifest digest prefix `b0589825…`. No peer plant was attempted in run 5.
 
 The final status names only:
 
@@ -356,7 +356,7 @@ The final status names only:
  M tests/guides.test.ts
 ```
 
-The report exists under ignored `tmp/codex/`; Git status therefore does not list it. `git diff --check` exits 0. A text-integrity scan of those changed paths found no replacement character, prohibited control character, or matched mojibake sequence using `\uFFFD|[\u0000-\u0008\u000B\u000C\u000E-\u001F]|Ã.|Â.|â€`. No source API or setup export was added in run 5. Existing package primitives and the distribution stage are reused.
+The report exists under ignored ``; Git status therefore does not list it. `git diff --check` exits 0. A text-integrity scan of those changed paths found no replacement character, prohibited control character, or matched mojibake sequence using `\uFFFD|[\u0000-\u0008\u000B\u000C\u000E-\u001F]|Ã.|Â.|â€`. No source API or setup export was added in run 5. Existing package primitives and the distribution stage are reused.
 
 No permanent or temporary shared-file patch remains necessary.
 
