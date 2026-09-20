@@ -8,14 +8,16 @@ Every browser proof in this plan runs through the journey skill and its referenc
 axis with its variant projects, the refusal family, the resolved-style matrix, the statechart table
 run and mounted in the harness, and the capture portfolio. U1 registers that axis in Veneer; U3 uses
 it for the token contract; every component from Button on uses all of it to test, audit, and refine
-what renders. No separate pilot fixture exists: Button is the first journey and the first
-statechart.
+what renders. No separate pilot fixture exists: Button is the first journey. The statechart family
+opens at the first component whose entity carries a real state vocabulary (Collapse, with
+`closed`, `opening`, `open`, `closing`), with its table in `tests/setupBrowser.ts`; Button's engine
+state is one boolean, and a table over it would need the two-literal union `AGENTS.md` bars.
 
 Run the units in this order. U1 is five dispatches in one checkout, one writer at a time. U2 runs
 beside U1 in the Elements checkout. U4a and U5 run after U1-gate and write nothing in Veneer that
 survives. U3 starts after U2 and U4a close. U6 runs in the Test checkout beside U3. U4b runs in
-Veneer after U3. U7 starts after U4b and U6 close, and finishes completely before any other
-component opens. The Vue environment is deferred; § Deferred: Vue environment fixes its shape.
+Veneer after U1-conform, which follows U3; S1 runs in scaffold beside U1-conform. U7 starts after
+U4b and U6 close, and finishes completely before any other component opens. The Vue environment is deferred; § Deferred: Vue environment fixes its shape.
 
 ## Authority and routing
 
@@ -28,7 +30,9 @@ component opens. The Vue environment is deferred; § Deferred: Vue environment f
   for the Test-package unit, [journey proof](../../.agents/skills/orkestrel-prove-journey/SKILL.md)
   and its references for every browser proof, [falsify](../../.agents/skills/orkestrel-falsify/SKILL.md)
   for every audit round, and [enterprise Bootstrap](../../.agents/skills/enterprise-bootstrap/SKILL.md)
-  for visual craft. Elements' identity and the owned implementation override a stock Bootstrap recipe.
+  for visual craft, and [polish surface](../../.agents/skills/orkestrel-polish-surface/SKILL.md) for
+  every verdict on a capture portfolio. Elements' identity and the owned implementation override a
+  stock Bootstrap recipe.
 - Route by engine as the user fixed on 2026-09-20: Cursor carries Grok 4.6 only
   (`cursor-grok-4.6-high`, versioned entry, `--mode=ask`, read-only); Codex carries `gpt-6-astra`
   only, never `gpt-5.6-sol`; the `planner`, `reviewer`, and `opus` lanes run as native Claude
@@ -62,6 +66,8 @@ component opens. The Vue environment is deferred; § Deferred: Vue environment f
 | U6      | Test checkout; Veneer's installed tarball                 | `sol` on Astra; audit `reviewer` objective, `analyst` subjective; Orchestrator packs and installs                        |
 | policy-styles-entry | scaffold `tests/setupPolicy.ts`, `tests/setupPolicy.test.ts`, `host.json` (commit `e8a34296`) | `builder` on Sonnet; objective review `reviewer` on Opus; vendored into Veneer by `repair --offline` |
 | U3-policy | WITHDRAWN 2026-09-20 (`units/u3-policy-withdrawal.md`): scaffold `tests/setupPolicy.ts`, `tests/policy.test.ts`, `guides/scaffold.md` restored to HEAD, the diff retained | `builder` on Sonnet, ten briefs; reviews 1 to 5 `reviewer` on Opus alone (recorded deviation); rounds 6 to 9 both lanes; `verifier` each round. The unit widened a gate to admit a file the user ruled is drift |
+| U1-conform | Veneer `src/browser`, `app`, their tests, `tests/setupConformance*.ts`, `tests/conformance.test.ts`, `tests/distribution.test.ts`, the guide's shell section, a manifest patch | `opus` on Opus 5; audit `analyst` objective, `reviewer` subjective, `checker`; `verifier` |
+| S1      | scaffold `src/core` compilers and constants, generated configs, `tests/config.test.ts`, `guides/scaffold.md` | design `planner` and `analyst`; `sol` on Astra; audit `reviewer` objective, `analyst` subjective, `checker`; `verifier` |
 | U4b     | Veneer conformance, oracle recorder, oracle fixtures      | `sol` on Astra; audit swapped as U6                                                                                     |
 | U7      | Veneer Button and its consumers                           | design `planner` and `analyst`; `sol` on Astra; audit `reviewer` objective, `analyst` subjective, `checker`; `verifier` |
 
@@ -91,16 +97,16 @@ engine, tag-only semantic defaults, and explicit class control.
 
 | Decision      | Required implementation                                                                                                                                                                                                                                                                                                                                                                       |
 | ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Runtime       | Declare `@orkestrel/*` runtime packages only, each with its first consumer. Keep Vue, `@vue/reactivity`, Bootstrap, Popper, Tailwind, and every other package development-only; `vue` may appear only as an optional peer, and only once the deferred `./vue` entry exists. Enforce through the manifest sections, a transitive relative-import closure from every published barrel, a foreign-specifier and escaping-import sweep over `src/**`, `app/**`, and `tests/**`, the rolled-up declarations' specifiers, and the installed-consumer proof. |
+| Runtime       | Declare `@orkestrel/*` runtime packages only, each with its first consumer. Keep Vue, `@vue/reactivity`, Bootstrap, Popper, Tailwind, and every other non-Orkestrel package development-only; `vue` may appear only as an optional peer, and only after the deferred `./vue` entry exists. Enforce through the manifest sections, a transitive relative-import closure from every published barrel, a foreign-specifier and escaping-import sweep over `src/**`, `app/**`, and `tests/**`, the rolled-up declarations' specifiers, and the installed-consumer proof. |
 | Prior art     | Adapt Elements' motion, tokens, and native-first factories and Mailbox's Bootstrap-class engines into owned code under Scaffold's conventions. Import no sibling source and no `@vue/reactivity`. Reuse `@orkestrel/contract` at the option boundary of every entity when the first entity lands.                                                                                              |
 | Semantics     | Give a bare tag only what is true of every instance of that tag: UA repair, platform-stripped affordance, its single fixed meaning, and HTML-mandated pairings. Infer no component from ancestors, descendants, siblings, roles, or tag combinations. Reserve composition for explicit classes.                                                                                                 |
 | Class control | Let a class override a tag default at equal or lower specificity through cascade-layer order. Initialize every component-local token at the component root so a nested unrelated component inherits no variant. Keep Bootstrap's class-anchored structures.                                                                                                                                   |
 | Identity      | Take typography, spacing, radius, border, elevation, palette, and motion values from Elements' measured specimens. Keep theme, density, and radius as independent factor tokens. Prove each shipped theme on rendered specimens.                                                                                                                                                                |
 | Tokens        | Keep `--vn-*` canonical in `_tokens.scss`. Bind every `:root` variable Bootstrap 5.3.8 declares and every `--bs-{component}-*` variable to `--vn-*` values. Support `data-bs-theme` islands. Add no `--set-*` vocabulary. Publish the TypeScript token registry `TOKEN_NAMES` from `src/core`: a frozen, grouped, typed map whose leaves are the `--vn-*` names, the map every test reads a token through and every consumer maps against. SCSS holds the values; ship no TypeScript value duplication, no generated authoritative CSS, and no authored-value snapshot. |
 | CSS           | Author SCSS under Scaffold's centralized partial rules and ship compiled standalone LTR and RTL CSS that needs no Sass, Tailwind, external stylesheet, or consumer build. Declare the cascade-layer order once in `_tokens.scss`. Load `_mixins.scss` only from consuming partials. Publish granular component CSS only with a consumer and a proved dependency closure.                   |
-| JavaScript    | Publish `./browser` as a pure entry that attaches no document listener on import, and `./browser/auto` as the explicit data-API side-effect entry. Model each component as one class with `#` fields, a readonly plain state, one-word methods, and a typed `CustomEvent` model on the host element with a namespaced wire type.                                                             |
-| Compatibility | Treat Bootstrap's data attributes, `*.bs.*` event types, option keys, and static methods as a declared wire body per `.claude/rules/names.md` § General vocabulary, projected over the same engine at one translation boundary. Keep Veneer's native API in Orkestrel naming. Prove policy acceptance of that boundary in U7 before widening it.                                            |
-| Vue           | Deferred. Keep the engine framework-agnostic; write no Vue code in the package or the showcase until the Vue environment opens. When it opens, it is a fourth environment beside core, browser, and styles: `src/vue/` with its own scoped TypeScript and Vite wrappers, its own tests, and the `./vue` export, with `vue` an optional peer the consumer installs. § Deferred: Vue environment fixes the shape. |
+| JavaScript    | Publish `./browser` as a pure entry that attaches no document listener on import, and `./browser/auto` as the explicit data-API side-effect entry. No placement row admits a side-effect module under `src/browser/` today, so U7's design round names the file `./browser/auto` resolves to; where no row admits it, the ruling lands as a scaffold rule change before U7 implements it, and U7 owns the manifest `exports` and `sideEffects` entries for it. Model each component as one class with `#` fields, a readonly plain state, one-word methods, and a typed `CustomEvent` model on the host element with a namespaced wire type, dispatched and subscribed through the shared dispatch and listener helpers in `src/browser/helpers.ts` and bound from `options.on` through one `bindEventMap` helper (`.claude/rules/patterns.md`). |
+| Compatibility | Treat Bootstrap's data attributes, `*.bs.*` event types, and option keys as a declared wire body per `.claude/rules/names.md` § General vocabulary, projected over the same engine at one translation boundary. The exemption reaches transliterated fields, not a foreign class's method set: `getInstance`, `getOrCreateInstance`, and `dispose` are rejected names, so the Bootstrap-spelled method surface lives in an adapter the design round places behind the `./browser/auto` entry, never on an engine class, and no instrument reads a method name, so a green gate proves nothing about it. Keep Veneer's native API in Orkestrel naming. |
+| Vue           | Deferred. Keep the engine framework-agnostic; write no Vue code in the package or the shell until the Vue environment opens. When it opens, it is a further environment beside core, browser, and styles: `src/vue/` with its own scoped TypeScript and Vite wrappers, its own tests, and the `./vue` export, with `vue` an optional peer the consumer installs, and it opens only after a scaffold change carries `src/vue` through `.claude/rules/workspace.md` (environments, aliases, test project matrix, typecheck scopes). § Deferred: Vue environment fixes the shape. |
 | Native APIs   | Prefer Chromium platform APIs where they satisfy the contract. Keep Bootstrap-class hosts working without conversion to `dialog` or `popover` markup; a native popover supplies no modal focus containment, so the engine owns it for `.modal` hosts.                                                                                                                                         |
 | Browsers      | Target managed Chromium and Edge stable explicitly, record each receipt separately, and infer no support range from Tailwind or Bootstrap's Browserslist.                                                                                                                                                                                                                                      |
 
@@ -114,9 +120,10 @@ owning unit's acceptance, and add no tag-pair allowlist.
 The campaign ends when every row of the compatibility ledger is implemented, intentionally excluded
 with a recorded reason the user has seen, or retained as an accepted difference; every shipped Veneer
 addition has the same closing evidence as a compatibility row; the standalone packed CSS and the
-Orkestrel-only runtime pass the installed-consumer proof on both receipts; the accepted appearance
-and motion carry captured acceptance against Elements' specimens; the guides claim only what those
-proofs show; and the gate chain is green. The Vue environment and publication are separate
+Orkestrel-only runtime pass the installed-consumer proof on every recorded receipt; the accepted
+appearance and motion carry captured acceptance against Elements' specimens, ruled through the
+`orkestrel-polish-surface` skill; the guide claims only what those proofs show; and the gate chain
+is green. The Vue environment and publication are separate
 user-directed tasks.
 
 ## Foundation units
@@ -315,7 +322,8 @@ Read [tokens](research/tokens.md), [platform](research/platform.md), [instrument
 - Publish the name map: `src/core/types.ts` declares `TokenName`, the union of every `--vn-*` name,
   and `TokenMap`, the readonly grouped record whose leaves are `TokenName` values;
   `src/core/constants.ts` declares the frozen `TOKEN_NAMES: TokenMap`. Import no CSS, touch no DOM,
-  and register no listener in `src/core`; prove that in `tests/src/core/constants.test.ts`.
+  and register no listener in `src/core`; prove that in `tests/src/core/index.test.ts` (no test file
+  exists solely for `constants.ts`, per `.claude/rules/tests.md`).
 - Tests, all in the `src:styles` project and named for their partials. `tokens.test.ts` collects
   every `:root` rule through `readRules()` over the built LTR cascade and again over the built RTL
   cascade loaded into the tester document, unions their custom-property names, partitions them on
@@ -361,9 +369,68 @@ After U5; in the Test checkout beside U3. Role `sol` on Astra under package alig
 Close on: Test's gates green; the tarball installed and recorded; a Veneer test importing each new
 export green on both receipts.
 
+### U1-conform Veneer tree conformance
+
+After U3's audit round closes and U3 lands; in Veneer. Role `opus` on Opus 5 (placement, naming,
+and voice); audit `analyst` objective, `reviewer` subjective, and `checker`; then `verifier`. The
+findings are `veneer-conformance-verdict.md` (the half no writer owned during the audit) and the
+placement claims of U3's audit round (the other half). Items, each with its rule:
+
+- Flatten `src/browser/color-mode/ColorMode.ts` to `src/browser/ColorMode.ts` and
+  `app/browser/showcases/Showcase.ts` to `app/browser/Showcase.ts`, mirror the tests, update the
+  barrels and imports, delete both folders (`architecture.md` § Entity subfolders; `names.md`
+  § Files and folders).
+- Rename `ColorScheme` to `ColorModeState` and `isColorScheme` to `isColorModeState`; set
+  `COLOR_MODE_KEY` to `'color-mode'` (one concept, one term).
+- Delete the pass-through factories `createColorMode` and `createShowcase`, their barrel rows,
+  and `tests/src/browser/factories.test.ts`, folding its cases into the class tests; callers
+  construct directly (`architecture.md` § Wrapper test).
+- `app/browser/main.ts` imports the concrete module, never its own barrel; `index.html` titles
+  the document `Veneer`; the `Showcase` constructor keeps to fields and calls one `#mount()`.
+- `app/browser/styles/_shell.scss` takes the app's own cascade layer, `app/browser/styles/index.scss`
+  declares the order, and the deferred-work comment becomes a present-tense statement
+  (`styles.md`; `AGENTS.md` § TTTDD).
+- Move the built-artifact case out of `tests/conformance.test.ts` into `tests/distribution.test.ts`
+  (`tests.md` § Root proofs); rename `tests/setupConformance.ts` helpers by the prefix table
+  (`extract*`, `scan*`, `collect*`, `compute*`; `readManifestMember` stays) and `WORKSPACE_PATH`
+  to `WORKSPACE_ROOT`, updating every importer.
+- Move the load-time listener control out of `tests/src/browser/fixtures/constants.ts` into a
+  `tests/setup*.ts` module named for what it does, delete the folder, and repoint the dynamic
+  import. A `fixtures/` folder under a test directory holds only data files a proof loads (SCSS,
+  JSON), never a TypeScript declaration.
+- Record in `guides/veneer.md` § Shell that the shell is framework-free by design while scaffold
+  mandates the Vue toolchain for an `app/browser` environment.
+- Return, report-only, the `package.json` patch removing `@tailwindcss/vite` and `tailwindcss`
+  until the Tailwind unit declares them with their first consumer; `postcss` stays (U3 consumes
+  it). The Orchestrator applies the patch and runs `npm install`.
+- Named bounds that wait on S1 and a repair: `main.ts` importing `@src/styles`, and the styles
+  wrapper thinning onto the root's `srcStyles` factory.
+
+Close on: every test project green on managed Chromium and Edge; `scaffold audit` reporting no
+drift; the guide parity green; no `fixtures/` folder holding TypeScript; the audit round's
+placement claims confirmed.
+
+### S1 Scaffold styles environment
+
+In scaffold, after the vendored-only release publishes and the tree is clean. Design round first
+(`planner` and `analyst` on one brief), then `sol` on Astra; audit `reviewer` objective, `analyst`
+subjective, `checker`; then `verifier`. `.claude/rules/workspace.md` documents `src/styles/`
+(§ Environments), the `@src/styles` alias, `dist/src/styles`, the `src:styles` project with
+`setupStyles.ts`, and `configs/src/tsconfig.styles.json`, and `src/core` and `src/server` carry
+none of it: `--src` admits `core`, `browser`, and `server`, and the generated root `vite.config.ts`
+and `tsconfig.json` (content-owned, restored by `repair`) register no styles project and no alias.
+Veneer's whole-configuration `configs/src/vite.styles.config.ts` is the workaround. Add the
+environment the rule promises: `--src styles`; the generated `@src/styles` path; a `srcStyles`
+factory and its project in the generated root; thin `configs/src/vite.styles.config.ts` and
+`configs/src/tsconfig.styles.json`; `build:src:styles`, `check:src:styles`, `test:src:styles` in
+their chains; the `./styles` export to `dist/src/styles`; `tests/setupStyles.ts` in the project's
+setup list; the config proof rows; `guides/scaffold.md` § Reading a target. Then Veneer re-pins,
+repairs, and its wrapper thins (U1-conform's named bounds). S1 moves `dist/src`, so it rides a
+regular scaffold release, not the vendored-only one.
+
 ### U4b Conformance and oracle
 
-After U3 closes; in Veneer. Role `sol` on Astra; audit `reviewer` objective and `analyst`
+After U1-conform closes; in Veneer. Role `sol` on Astra; audit `reviewer` objective and `analyst`
 subjective. Read [conformance](research/conformance.md), `research/inventory.json`, and
 `research/obligations.md`.
 
@@ -371,20 +438,24 @@ subjective. Read [conformance](research/conformance.md), `research/inventory.jso
   marks accepted, that the official selector set and custom-property set for that component are
   present in the built `dist/src/styles/index.css`; a component the guide accepts and the test omits
   fails, and a component the test lists and the guide does not fails.
-- Author the oracle inside the same project: `tests/setupConformance.ts` gains a recorder that
-  launches Playwright directly, loads a fixture page carrying only the pinned official
+- Author the oracle inside the same project: `tests/setupConformance.ts` (package-owned; `scaffold
+  repair` restores no `setupConformance` module, and U4b owns it) gains a recorder that launches
+  Playwright directly, loads a fixture page carrying only the pinned official
   `bootstrap.css` and `bootstrap.bundle.js`, drives the official component markup through Playwright
   actions by role and name — click, keyboard, hover, pointer hold and release, reduced-motion
   emulation — and records the ordered event types, class changes, attribute changes, focus targets,
-  and refusals as `tests/__fixtures__/oracle/<component>.json`. The recorder writes a fixture only
-  under `ORACLE_REFRESH=1`; every ordinary run re-records live, compares with the committed file, and
-  fails when the file is missing or differs. Cross-check each fixture against the component's rows in
+  and refusals as `tests/fixtures/oracle/<component>.json` (the `fixtures/` form this checkout
+  already uses). The recorder writes a fixture only under `ORACLE_REFRESH=1`; every ordinary run
+  re-records live, compares with the committed file, and fails when the file is missing or differs;
+  because the recorder launches Playwright inside the `conformance` project that `test` runs, U4b's
+  brief sizes that project's timeout from a contended run. Cross-check each fixture against the component's rows in
   `guides/veneer.md` § Compatibility — event types, cancelability, keyboard behavior, dismissal — and fail on
   a row the recording contradicts or omits. Record Button's fixture in this unit.
 - Add a `## Compatibility` section to `guides/veneer.md` with the ledger's Button rows, the
   accepted list, and the exclusions; every later component unit adds its rows there. No second
   guide: the package documents itself in `guides/veneer.md` alone, and `tests/conformance.test.ts`
-  reads the accepted list from that section.
+  reads the accepted list from that section through the installed `@orkestrel/guide` reader that
+  `tests/guides.test.ts` already imports, never through a local Markdown scan.
 
 Close on: the accepted-list control red then green; the missing-fixture and differing-fixture
 controls red then green; the cross-check red on a planted contradicting row; official JavaScript
@@ -400,47 +471,52 @@ objective, `analyst` subjective, `checker`), then `verifier`.
 Scope, from the ledger's Button rows and Elements' button treatment:
 
 - CSS: `elements/_button.scss` gives a bare `<button>` Elements' compact neutral default and its
-  same-element states. `components/_button.scss` owns `.btn`, the eight `.btn-{variant}` and
-  `.btn-outline-{variant}` classes, `.btn-link`, `.btn-sm`, `.btn-lg`, `.btn-check` with its label,
+  same-element states. `components/_button.scss` owns `.btn`, every `.btn-{variant}` and
+  `.btn-outline-{variant}` class the ledger's Button rows name, `.btn-link`, `.btn-sm`, `.btn-lg`, `.btn-check` with its label,
   `.active`, `.show`, `.disabled`, `:disabled`, `fieldset:disabled .btn`, anchor hosts with
   `aria-disabled`, every `--bs-btn-*` variable Bootstrap declares bound to `--vn-*`, the focus ring,
   hover and active tints derived from the variant fill as Elements does, forced-colors fallbacks, RTL,
   and the 150 ms feedback transition with its reduced-motion pair.
-- Engine: `src/browser/buttons/Button.ts` as one class over a `<button>` or anchor host with a
+- Engine: `src/browser/Button.ts` (flat: a lone class nests only when a family exists, per
+  `.claude/rules/architecture.md` § Entity subfolders; a family's design round decides its folder
+  when a sibling lands) as one class over a `<button>` or anchor host with a
   readonly `pressed` state, `toggle()`, and `destroy()`, where `toggle()` toggles the host's `active`
   class and writes `aria-pressed` from the toggled result as `js/src/button.js` does; the `toggle`
   event on the host with a namespaced wire type; option validation through `@orkestrel/contract`
   (declared as the first runtime dependency); `createButton` in `factories.ts`; repeated
   construction, destruction during work, detached hosts, and consumer-attribute restoration proven
-  in `tests/src/browser/buttons/Button.test.ts`.
+  in `tests/src/browser/Button.test.ts`.
 - Compatibility boundary: `data-bs-toggle="button"` through the `./browser/auto` entry with one
   delegated listener and its removal, which calls `preventDefault` and resolves its host through
   `closest('[data-bs-toggle="button"]')`, proven from a click on a child element; the `Button` static
-  and instance spellings (`getInstance`, `getOrCreateInstance`, `toggle`, `dispose`) as a declared
-  wire body projected over the engine. Prove policy acceptance of that boundary with `lint:check`
-  and the policy sweep before widening it to another component.
-- Journeys, in `tests/app/browser/integration.test.ts` on the journey axis, driving the showcase's
+  and instance spellings (`getInstance`, `getOrCreateInstance`, `toggle`, `dispose`) in the adapter
+  the design round places behind the `./browser/auto` entry, never on the engine class, because the
+  wire-body exemption reaches transliterated fields and no instrument reads a method name; the
+  design round records that placement in `guides/veneer.md` § Compatibility before it widens to
+  another component.
+- Journeys, in `tests/app/browser/integration.test.ts` on the journey axis, driving the shell's
   Button section: click and keyboard toggling with `aria-pressed` and the `.active` class read
   through the rendered surface; disabled refusal through the exact voice; a covered action refused
   through the exact voice, uncovered through the interface, and activated; focus ring through
-  `readRing` after real focus; contrast per variant, per theme, per state through `readContrast`
-  with its control; hover and active through the U6 verbs; reduced motion through the U6 helper;
-  anchor and native hosts; the statechart table run and mounted in the harness; captures of every
+  `readRing` after real focus; contrast per variant and per state through `readContrast` with its
+  control (the variant names the theme); hover and active through the U6 verbs; reduced motion
+  through the U6 helper; anchor and native hosts; no statechart table (Button's state is one
+  boolean; the family opens at Collapse); captures of every
   variant by state by theme placed from the journeys that reach them, with the always-on filename
   and placement proofs and the capture-run membership proof; a planted failing journey whose journal
   and tree artifacts are retained while the run stays red; the oracle fixture compared on the same
   markup and actions. Resolved-style readings stay in the styles suite.
 - Consumers: the distribution stage exercises the packed CSS, `./browser`, and `./browser/auto`
-  offline as a vanilla consumer; the showcase's Button section drives the engine from plain
+  offline as a vanilla consumer; the shell's Button section drives the engine from plain
   TypeScript, and its own tests cover mount, engine-to-view and view-to-engine updates, target
-  replacement, destruction during pending work, listener release, and remount through the showcase
+  replacement, destruction during pending work, listener release, and remount through the shell
   interface.
-- Guides and showcase: `guides/browser.md` opens with Button; `guides/veneer.md` § Compatibility marks Button
-  accepted; `guides/styles.md` gains the button partials; the showcase's first section renders every
-  button specimen with the theme control; parity green.
+- Guide and shell: `guides/veneer.md` § Browser opens with Button, § Compatibility marks Button
+  accepted, and § Styles gains the button partials; the shell's first section renders every button
+  specimen with the theme control; parity green.
 
 Accept Button only when every applicable row of § Close each component on browser evidence has its
-instrument and its evidence on both receipts, with Elements' button captures beside Veneer's for the
+instrument and its evidence on every recorded receipt, with Elements' button captures beside Veneer's for the
 accepted departures. A row whose instrument the provider cannot reach stays open on the record; it
 never passes.
 
@@ -458,16 +534,16 @@ never passes.
 | Obligation        | Closing evidence                                                                                                                                                                                                                                                                       |
 | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Tokens            | Override canonical and compatible variables in their documented scopes and read the consumer property and geometry on the target and an unchanged neighbor; exercise fallbacks, invalid values, cycles, and nested themes against independent expectations.                            |
-| Semantics/classes | Move the bare tag through unrelated hosts with equal inherited inputs and read equal results; prove class control and local-token isolation; prove utility ownership in the supported Tailwind recipes once the Tailwind unit lands.                                                    |
+| Semantics/classes | Move the bare tag through unrelated hosts with equal inherited inputs and read equal results; prove class control and local-token isolation; prove utility ownership in the supported Tailwind recipes after the Tailwind unit lands.                                                    |
 | States/access     | Reach hover, active, focus-visible, disabled, checked, open, and ARIA states through real input; prove activation, refusal, focus ownership and restoration, hit targets, geometry, clipping, and overflow.                                                                             |
 | Paint             | Read resolved consumers and explicit pseudo-elements; measure composed contrast and focus within the reader's capability; leave image, gradient, mask, and blend measurements open until an instrument exists.                                                                         |
 | Motion            | Record properties, duration, easing, distance, completion, and interruption policy; observe entry and exit frames, cancellation and reversal, reduced motion, and destruction; settled endpoints or `getAnimations()` alone prove nothing.                                            |
 | Lifecycle         | Compare ordered events, cancellation, completion, dismissal, and cleanup against the oracle fixture; prove zero-duration and reduced-motion completion without a fixed fallback timer.                                                                                                 |
 | Coordinates       | Run the applicable theme, density, radius, viewport, direction, print, and media cases; record managed Chromium and Edge separately.                                                                                                                                                   |
-| Artifacts         | Generate style rows, journals, accessible and focus evidence, statechart results, and captures from the journeys reaching those states; observe motion separately from settled captures.                                                                                              |
+| Artifacts         | Generate style rows, journals, accessible and focus evidence, statechart results where the entity carries a state vocabulary, and captures from the journeys reaching those states; observe motion separately from settled captures; rule on the capture portfolio through `orkestrel-polish-surface`. |
 | Distribution      | Pack and install with the declared Orkestrel closure in isolation; exercise the accepted CSS, JavaScript, and declarations offline from a vanilla consumer.                                                                                                |
 
-Update the guides, the showcase, parity, and the ledger together. Run scoped checks during the work
+Update the guide, the shell, parity, and the ledger together. Run scoped checks during the work
 and the acceptance gates in order. Obtain the audit round and the Orchestrator's ruling. Start the
 successor only after the fixed scope closes; route an unrelated finding to the ledger row that owns
 it.
@@ -483,11 +559,17 @@ Open each family as bounded units in mechanism order. Use the ledger to decide c
 | Forms                 | Form control, Select, Checks and radios, Switches, Range, Input group, Floating labels, Form layout, Validation.                                                                                                           |
 | Disclosure/navigation | Collapse before Accordion; Navs, Tabs, Dropdown, Navbar, Scrollspy.                                                                                                                                                       |
 | Overlays/feedback     | Modal, Offcanvas, Tooltip, Popover, Alert, Toast, Carousel; introduce focus containment, scroll locking, anchor positioning, sanitization, and transition coordination with their first consumer.                          |
-| Helpers/utilities     | Every helper and utility group Bootstrap documents.                                                                                                                                                                       |
+| Helpers/utilities     | Every helper and utility group Bootstrap documents, authored as Veneer CSS inside the standalone bundle, so a drop-in consumer needs no Tailwind build; the Tailwind profiles are an additional supported combination.      |
 | Cross-cutting         | Color modes, breakpoints, RTL, print, variable overrides, transitions, reduced motion, and the Tailwind profiles; close the applicable coordinates inside each component and open the Tailwind unit after Button and Card. |
 
-Tailwind unit: keep standalone Veneer as the baseline; for the complete Bootstrap utility profile use
-prefixed Tailwind theme and utilities without Preflight; qualify an unprefixed profile separately,
+Each component unit's design round checks its class, interface, options, and factory names against
+the hosted guides' `## Surface` tables (`.claude/rules/names.md` § Fleet name ownership) before
+implementation and records the resolution: `Progress`, `Spinner`, `Table`, `Form`, `Range`, and
+`Theme` are already owned by other packages, as `Theme` was when it stopped U1-author run 3.
+
+Tailwind unit: keep standalone Veneer, with its own utility CSS, as the baseline; for a consumer who
+already builds Tailwind, qualify prefixed Tailwind theme and utilities without Preflight as a second
+supported profile; qualify an unprefixed profile separately,
 omitting the conflicting Bootstrap utilities and naming structural classes explicitly; prove normal
 and important precedence separately; keep the compiler input apart from the browser-ready CSS.
 
@@ -499,7 +581,10 @@ one only with a real consumer and a bounded contract.
 ## Deferred: Vue environment
 
 Open this unit only on the user's instruction, after the component queue has enough accepted
-components to consume. It adds Vue as a fourth environment, never as a dependency of the engine.
+components to consume. It adds Vue as a further environment, never as a dependency of the engine,
+and its prerequisite is a scaffold unit that carries `src/vue` through `.claude/rules/workspace.md`
+(the environments table, the aliases, the test project matrix, the typecheck scopes); a Veneer unit
+never invents a published environment the fleet canon does not list.
 
 - Place the adapters under `src/vue/` with `types.ts`, `composables/` or `factories.ts` as the
   design round rules, and an `index.ts` barrel. Each adapter projects one engine class's readonly
@@ -515,9 +600,18 @@ components to consume. It adds Vue as a fourth environment, never as a dependenc
   else foreign; every other entry's closure still may not; the built `dist/src/vue/index.js` keeps
   `vue` as an external specifier; the installed-consumer proof gains a Vue consumer beside the
   vanilla one and proves the vanilla consumer still resolves with Vue absent.
-- Give `guides/vue.md` an executable recipe per adapter, transcribed into the environment's
-  `integration.test.ts`, and drive each adapter through the showcase interface for mount, updates
-  in each direction, target replacement, unmount during pending work, listener release, and remount.
+- Give `guides/veneer.md` § Vue an executable recipe per adapter, transcribed into
+  `tests/src/vue/integration.test.ts`, and drive each adapter through the shell interface for mount,
+  updates in each direction, target replacement, unmount during pending work, listener release, and
+  remount.
+
+## Deferred: Showcase target
+
+The demonstration surface is the shell, `app/browser`, and the plan uses that one term for it.
+Scaffold's `showcase` target (`configs/app/vite.showcase.config.ts`, the `build:showcase` script,
+`demo/showcase.html`, the showcase column of `guides/README.md`) is a separate single-file build
+no unit has authored; `vite-plugin-singlefile` sits in U1's manifest with no consumer until one
+does. Open that unit after U7 from the shell's own entry, or strike the dependency with it.
 
 ## Re-baseline record
 
@@ -653,8 +747,34 @@ Each entry names what changed in the plan and why, on the date it changed.
   points the map and the README at the one guide; Veneer's stray-guide red closes by that fold.
   U4b is **transformed** the same way: the compatibility ledger is a `## Compatibility` section
   of `guides/veneer.md`, with no re-vendor prerequisite. Process rule from this entry: before a
-  plan or brief names a file, check the name against scaffold's `AGENTS.md`, the rule map, and
-  the fleet's existing layout; a vendored gate's refusal in a unit report is a plan defect first.
+  plan or brief names a file or an exported name, check it against scaffold's `AGENTS.md`, the
+  rule map, the fleet's existing layout, and the hosted guides' `## Surface` tables; a vendored
+  gate's refusal in a unit report is a plan defect first.
+- 2026-09-20, plan conformance audit (`units/plan-conformance-brief.md`; `checker` on Sonnet and
+  `reviewer` on Opus through workflow `wf_a12cf13d-5bf`; verdict `plan-conformance-verdict.md`).
+  Every remaining unit was read against scaffold's law and the fleet's layout after the user's
+  ruling. Corrected in this entry's commit: Button is the first journey but not the first
+  statechart (its state is one boolean; the family opens at Collapse); `./browser/auto` and the
+  Bootstrap-spelled method surface are design-round placements, not instrument-proved ones;
+  `tests/src/core/constants.test.ts` struck for `index.test.ts`; `tests/setupConformance.ts`
+  recorded as package-owned; `tests/fixtures/oracle/`; `Button.ts` flat; `guides/browser.md`,
+  `guides/styles.md`, and `guides/vue.md` folded into `guides/veneer.md` sections; one term,
+  "shell", for `app/browser`, with scaffold's `showcase` target deferred as its own unit; the
+  fleet-name check added to every component design round; utilities ship as Veneer CSS with the
+  Tailwind profiles additional; `src/vue` gated on a scaffold canon change;
+  `orkestrel-polish-surface` bound for portfolio verdicts; the counts and `once` hits rewritten.
+  Carried to U3's audit claims because the writer is live: `resetSpecimens` is a banned lifecycle
+  synonym (`clearSpecimens`), and each new setup helper must name the installed export it overlaps
+  (`render`, `readContrast`, `matchesColor`) or yield to it.
+- 2026-09-20, Veneer tree conformance audit, first half (`units/veneer-conformance-brief.md`;
+  `checker` on Sonnet and `reviewer` on Opus through workflow `wf_41491b15-74c`; verdict
+  `veneer-conformance-verdict.md`), opened by the user's question why `ColorMode` sits in a nested
+  `color-mode` folder. **Added** U1-conform (Veneer, `opus`, after U3 lands) carrying every
+  accepted finding, and S1 (scaffold, `sol`, after the vendored-only release) because two findings
+  trace to a scaffold gap: `workspace.md` documents a styles environment the compilers never
+  generate, and Veneer's whole-configuration styles wrapper is the workaround. U4b now follows
+  U1-conform. Process rule: a `fixtures/` folder under a test directory holds only data files a
+  proof loads, never a TypeScript declaration.
 
 ## User decisions pending
 
@@ -667,7 +787,7 @@ Each entry names what changed in the plan and why, on the date it changed.
 
 ## Finish the package
 
-Move each unit's contract into Veneer's guides as the unit begins. Keep `ROADMAP.md` absent until a
+Move each unit's contract into `guides/veneer.md` as the unit begins. Keep `ROADMAP.md` absent until a
 sequenced plan of record belongs in the package. Use Roughnotes as a migration example without
 changing it. Retain this plan and the research pointers; retire streams, drafts, and audit scratch
 after acceptance per the debrief skill's retention reference.
