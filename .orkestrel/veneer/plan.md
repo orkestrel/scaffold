@@ -1000,3 +1000,10 @@ after acceptance per the debrief skill's retention reference.
   setup modules, the `readCompatibility` row label by position, the reach assertion over
   fallback bindings with a refusal that names the binding, and the wording bounds the verdict
   lists. U7a launched on the landing (Astra, thread named in `units/u7a.sh`'s journal).
+- 2026-09-20, U7a's first launch stopped before editing (thread
+  `01a0c12a-a2e9-7ab3-badc-3546bcc95ea2`, `units/u7a-report.md`): the brief withheld
+  `tests/conformance.test.ts`, whose explicit `listed` array the row flip to `shipped` must name
+  (U7d's two-sided shipping rule). The Orchestrator's scope error; `units/u7a-brief-2.md` grants
+  the array alone and relaunched as thread `01a0c12d-f205-77b3-aff2-22beb621e0f8`
+  (`units/u7a-2.sh`). The `u7-setup-tidy` brief is drafted (`units/u7-setup-tidy-brief.md`) for
+  dispatch after U7a lands.
