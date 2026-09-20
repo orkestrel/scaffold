@@ -895,6 +895,39 @@ Each entry names what changed in the plan and why, on the date it changed.
   sit; the chain ships the data API and `Delegate` and records the spellings' mapping in
   § Compatibility unless the user grants a naming exemption for a `ButtonAdapter`.
 
+- 2026-09-20, U4b accepted (`u4b-audit-verdict-2.md`) and landed in Veneer by pathspec. The
+  unit ran on `sol` (Astra) as brief 1 and successor briefs 2 and 3 from one audit round with
+  the lanes swapped (the cross-check bound to the recorded actions through a data table, an
+  explicit pressed attribute, the comparison over the fixture's JSON form with its exclusion
+  list honoured, the native `click` recorded, two keyboard rows without a ledger source
+  removed, and `@orkestrel/markdown` declared by the user's ruling that an Orkestrel package may
+  be declared): `tests/conformance.test.ts` carries the oracle (a Playwright
+  recorder launched from the Node `conformance` project over the official Bootstrap 5.3.8 CSS and
+  bundle in a scratch page, driving the official Button markup by role and name, with and without
+  reduced motion), the fixture `tests/fixtures/oracle/button.json` written only under
+  `ORACLE_REFRESH=1` and compared live on every ordinary run, the cross-check of the fixture
+  against `guides/veneer.md` § Compatibility through the guide reader, and the presence check of
+  every shipped component's official selector and custom-property set in the built cascade
+  against a pinned inventory copy; four planted controls reddened and were restored; the
+  recorder's timeout is measured from a contended run. `## Compatibility` sits between the tokens
+  and the showcase with Button's rows `accepted` and the proof step each names. Rulings: Chromium
+  launches from a Node Vitest worker inside the bench sandbox on this host, so a recorder unit
+  can prove itself there; the inventory ships as data under `tests/fixtures/oracle/` rather than
+  being read from the campaign folder. Next in order: U7 Button, opened by a design round
+  (`units/u7-design-brief.md`).
+
+- 2026-09-20, the user's correction on U7: the `./browser/auto` entry, its build wrapper, its
+  manifest rows, and the scaffold rule amendment that admitted it were the Orchestrator's
+  invention ("you're making up surfaces, follow our project conventions"), carried into the plan's
+  U7 text and through the design round. Struck: U7-rule (its commit `bff4ed94` reverted as
+  `48afc878`), the `auto` entry, the second build, the manifest rows, and the Bootstrap method
+  spellings. Transformed: the data API is `Delegate`, a class exported from the existing
+  `./browser` barrel that a consumer's own entry constructs (the showcase's `main.ts` in U7c);
+  § Compatibility records each Bootstrap spelling's mapping. Standing rule from here: a package
+  takes no surface scaffold does not generate, and scaffold's rules are never amended to fit a
+  package idea; a plan line that names such a surface is put to the user before the design round.
+  U7b's scope shrinks to `src/browser/*` and its proofs; the chain is otherwise unchanged.
+
 ## User decisions pending
 
 - Chrome is not installed; the plan takes managed Chromium and Edge as the two receipts and records

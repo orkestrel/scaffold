@@ -26,24 +26,25 @@ Serial in Veneer, one writer at a time; Test-paint runs in the Test checkout on 
 
 | Unit | Role, engine | Owns | Closes |
 | --- | --- | --- | --- |
-| U7-rule | `builder`, Sonnet, in scaffold | `.claude/rules/architecture.md` runtime-entry clause | the placement of `src/<environment>/auto.ts` |
+| U7-rule | struck by the user's correction (§ below); its commit reverted | — | — |
 | Test-paint | `sol`, Astra, in Test | the colour parsers and readers, their proof, `guides/test.md` | the paint readers' reach; packed into Veneer as a head start |
 | U7d | `sol`, Astra | `tests/setupConformance.ts`, its proof, `tests/conformance.test.ts` | row-keyed shipped status, `readDeferrals`, planted controls; runs first so the presence check fires before CSS lands |
 | U7a | `sol`, Astra | the two button partials, `index.scss`, the mixer tokens and `focus-ring` mixin, the styles proofs, the deferral table and shipped rows in the guide | Tokens, Semantics/classes, the CSS half of Paint |
-| U7b | `sol`, Astra | `src/browser/*` (`Button`, `Delegate`, `auto`, types, constants, helpers, validators, barrel), `configs/src/vite.auto.config.ts`, `package.json` exports and scripts (report-only patch), the browser proofs | Lifecycle, the JavaScript half of Distribution |
+| U7b | `sol`, Astra | `src/browser/*` (`Button`, `Delegate`, types, constants, helpers, validators, barrel) and the browser proofs; no new entry, wrapper, or manifest row | Lifecycle, the JavaScript half of Distribution through the existing `./browser` walk |
 | U7c | `opus`, Opus 5 | `app/browser/**` (sections family), `tests/app/browser/**`, `tests/setup.ts` projection, `tests/distribution.test.ts` case | States/access, Paint, Motion, Coordinates, Artifacts, Distribution |
 | U7e | `opus`, Opus 5 | `guides/veneer.md`, `guides/README.md` | parity, the carried prose bounds |
 
 Each unit: one audit round with the lanes swapped by writer, `checker` where mechanical, `verifier` over the chain; a prose finding is a bound.
 
-## Open to the user
+## The user's correction, 2026-09-20
 
-The plan's U7 text promises the Bootstrap method spellings (`getInstance`, `getOrCreateInstance`,
-`toggle`, `dispose`) in an adapter behind `./browser/auto`. Both lanes agree the spellings cannot
-sit on the engine; the planner shows they also break two naming rules (`get*` accessors, `dispose`
-as a synonym for `destroy`) wherever they sit, and the analyst's shape needs a rule exemption.
-Two paths: ship the data API and `Delegate` now and record the spellings' mapping in
-§ Compatibility (`getOrCreateInstance` is the delegation's reuse, `dispose` is `destroy`,
-`getInstance` unpublished), deferring an adapter to a consumer that needs it; or grant a naming
-exemption for the compatibility boundary and ship `ButtonAdapter` behind the auto entry in U7b.
-The chain proceeds on the first path unless the user chooses the second.
+The user refused the `./browser/auto` entry: "you're making up surfaces, follow our project
+conventions". The entry, its build wrapper, its manifest rows, and the scaffold rule amendment
+(`bff4ed94`, reverted as `48afc878`) came from the plan's U7 text the Orchestrator wrote, not
+from scaffold's shape or the user's words. Ruling: no new subpath export, no side-effect entry,
+no second build, no rule change. The data API is `Delegate`, a class exported from the existing
+`./browser` barrel that a consumer's own entry constructs (the showcase's `main.ts` constructs
+one in U7c); the Bootstrap method spellings are not shipped, and § Compatibility records each
+spelling's mapping (`getOrCreateInstance` is the delegation's reuse, `dispose` is `destroy`,
+`getInstance` unpublished). U7-rule is struck and reverted; U7b's scope shrinks to `src/browser/*`
+and its proofs. The question that section had left open is closed by the same ruling.
