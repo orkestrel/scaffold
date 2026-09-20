@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+# U7 design round, objective lane: Astra (analyst) through codex exec read-only rooted at the
+# WebstormProjects folder so it reads scaffold and Veneer at once. Journal: u7-design-analyst.jsonl.
+cd "C:/Users/mikes/WebstormProjects/scaffold" || exit 9
+timeout 3600 codex exec --json -C "C:/Users/mikes/WebstormProjects" --skip-git-repo-check --sandbox read-only --model gpt-6-astra -c 'model_reasoning_effort="high"' --output-last-message "units/u7-design-analyst-last.md" "You hold the OBJECTIVE lane (correctness, constraints, what the installed packages, the rules, and the oracle fixture permit) of the design round for U7 Button in the Veneer package. Open and follow ./scaffold/tmp/units/u7-design-brief.md exactly; it names every file to read (scaffold's law under ./scaffold/AGENTS.md and ./scaffold/.claude/rules/, the plan and research under ./scaffold/.orkestrel/veneer/, and the Veneer tree under ./veneer/) and the questions to answer. You propose and never accept; the planner on another engine holds the subjective lane and you do not see its answer. Run no command that writes. Return your answer in the shape the brief's Output section fixes as your last message." < /dev/null > "units/u7-design-analyst.jsonl" 2> "units/u7-design-analyst.err"
+echo "exit=$?" >> "units/u7-design-analyst.err"
