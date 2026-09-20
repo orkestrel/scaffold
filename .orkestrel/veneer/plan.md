@@ -103,9 +103,9 @@ engine, tag-only semantic defaults, and explicit class control.
 | Class control | Let a class override a tag default at equal or lower specificity through cascade-layer order. Initialize every component-local token at the component root so a nested unrelated component inherits no variant. Keep Bootstrap's class-anchored structures.                                                                                                                                   |
 | Identity      | Take typography, spacing, radius, border, elevation, palette, and motion values from Elements' measured specimens. Keep theme, density, and radius as independent factor tokens. Prove each shipped theme on rendered specimens.                                                                                                                                                                |
 | Tokens        | Keep `--vn-*` canonical in `_tokens.scss`. Bind every `:root` variable Bootstrap 5.3.8 declares and every `--bs-{component}-*` variable to `--vn-*` values. Support `data-bs-theme` islands. Add no `--set-*` vocabulary. Publish the TypeScript token registry `TOKEN_NAMES` from `src/core`: a frozen, grouped, typed map whose leaves are the `--vn-*` names, the map every test reads a token through and every consumer maps against. SCSS holds the values; ship no TypeScript value duplication, no generated authoritative CSS, and no authored-value snapshot. |
-| CSS           | Author SCSS under Scaffold's centralized partial rules and ship compiled standalone LTR and RTL CSS that needs no Sass, Tailwind, external stylesheet, or consumer build. Declare the cascade-layer order once in `_tokens.scss`. Load `_mixins.scss` only from consuming partials. Publish granular component CSS only with a consumer and a proved dependency closure.                   |
-| JavaScript    | Publish `./browser` as a pure entry that attaches no document listener on import, and `./browser/auto` as the explicit data-API side-effect entry. No placement row admits a side-effect module under `src/browser/` today, so U7's design round names the file `./browser/auto` resolves to; where no row admits it, the ruling lands as a scaffold rule change before U7 implements it, and U7 owns the manifest `exports` and `sideEffects` entries for it. Model each component as one class with `#` fields, a readonly plain state, one-word methods, and a typed `CustomEvent` model on the host element with a namespaced wire type, dispatched and subscribed through the shared dispatch and listener helpers in `src/browser/helpers.ts` and bound from `options.on` through one `bindEventMap` helper (`.claude/rules/patterns.md`). |
-| Compatibility | Treat Bootstrap's data attributes, `*.bs.*` event types, and option keys as a declared wire body per `.claude/rules/names.md` § General vocabulary, projected over the same engine at one translation boundary. The exemption reaches transliterated fields, not a foreign class's method set: `getInstance`, `getOrCreateInstance`, and `dispose` are rejected names, so the Bootstrap-spelled method surface lives in an adapter the design round places behind the `./browser/auto` entry, never on an engine class, and no instrument reads a method name, so a green gate proves nothing about it. Keep Veneer's native API in Orkestrel naming. |
+| CSS           | Author SCSS under Scaffold's centralized partial rules and ship compiled standalone CSS that needs no Sass, Tailwind, external stylesheet, or consumer build (the `index.rtl.css` twin stays as emitted and unexported by the user's ruling of 2026-09-20; no unit spends work on it). Declare the cascade-layer order once in `_tokens.scss`. Load `_mixins.scss` only from consuming partials. Publish granular component CSS only with a consumer and a proved dependency closure.                   |
+| JavaScript    | Publish `./browser` as a pure entry that attaches no document listener on import. The data API is `Delegate`, a class exported from that same barrel that a consumer's own entry constructs; the package takes no subpath export, side-effect entry, build wrapper, or manifest row that scaffold does not generate, and scaffold's rules are never amended to fit a package idea (the user's ruling of 2026-09-20). Model each component as one class with `#` fields, a readonly plain state, one-word methods, and a typed `CustomEvent` model on the host element with a namespaced wire type, dispatched and subscribed through the shared dispatch and listener helpers in `src/browser/helpers.ts` and bound from `options.on` through one `bindEventMap` helper (`.claude/rules/patterns.md`). |
+| Compatibility | Treat Bootstrap's data attributes, `*.bs.*` event types, and option keys as a declared wire body per `.claude/rules/names.md` § General vocabulary, projected over the same engine at one translation boundary. The exemption reaches transliterated fields, not a foreign class's method set: `getInstance`, `getOrCreateInstance`, and `dispose` are rejected names, so no Bootstrap-spelled method ships anywhere; `guides/veneer.md` § Compatibility records each spelling's mapping onto the native API, and no instrument reads a method name, so a green gate proves nothing about it. Keep Veneer's native API in Orkestrel naming. |
 | Vue           | Deferred. Keep the engine framework-agnostic; write no Vue code in the package or the shell until the Vue environment opens. When it opens, it is a further environment beside core, browser, and styles: `src/vue/` with its own scoped TypeScript and Vite wrappers, its own tests, and the `./vue` export, with `vue` an optional peer the consumer installs, and it opens only after a scaffold change carries `src/vue` through `.claude/rules/workspace.md` (environments, aliases, test project matrix, typecheck scopes). § Deferred: Vue environment fixes the shape. |
 | Native APIs   | Prefer Chromium platform APIs where they satisfy the contract. Keep Bootstrap-class hosts working without conversion to `dialog` or `popover` markup; a native popover supplies no modal focus containment, so the engine owns it for `.modal` hosts.                                                                                                                                         |
 | Browsers      | Target managed Chromium and Edge stable explicitly, record each receipt separately, and infer no support range from Tailwind or Bootstrap's Browserslist.                                                                                                                                                                                                                                      |
@@ -481,8 +481,15 @@ executing nowhere outside the recorder; guide parity green.
 
 After U4b and U6 close. The first component and the journey pilot. Design round first (`planner`
 and `analyst` on one brief, ruling among others on how the `.active` class and `aria-pressed` derive
-from the engine's `pressed` state), then `sol` on Astra implements, then the audit round (`reviewer`
-objective, `analyst` subjective, `checker`), then `verifier`.
+from the engine's `pressed` state), then the chain `u7-design-verdict.md` § The chain fixes: U7d,
+U7a, and U7b on `sol` (Astra), U7c and U7e on `opus`, each followed by its audit round with the
+lanes swapped by writer (`reviewer` objective and `analyst` subjective after a `sol` unit, the
+reverse after an `opus` unit), `checker` where the criteria are mechanical, then `verifier`.
+Test-paint, in the Test checkout, precedes U7c.
+
+The package's surface stays `.`, `./browser`, `./server`, and `./styles`. U7 adds no subpath
+export, no side-effect entry, no build wrapper, and no manifest row (the user's ruling of
+2026-09-20, recorded in `u7-design-verdict.md` § The user's correction).
 
 Scope, from the ledger's Button rows and Elements' button treatment:
 
@@ -491,25 +498,30 @@ Scope, from the ledger's Button rows and Elements' button treatment:
   `.btn-outline-{variant}` class the ledger's Button rows name, `.btn-link`, `.btn-sm`, `.btn-lg`, `.btn-check` with its label,
   `.active`, `.show`, `.disabled`, `:disabled`, `fieldset:disabled .btn`, anchor hosts with
   `aria-disabled`, every `--bs-btn-*` variable Bootstrap declares bound to `--vn-*`, the focus ring,
-  hover and active tints derived from the variant fill as Elements does, forced-colors fallbacks, RTL,
-  and the 150 ms feedback transition with its reduced-motion pair.
+  hover and active tints derived from the variant fill as Elements does, forced-colors fallbacks,
+  and the 150 ms feedback transition with its reduced-motion pair. A `btn` selector the partials
+  do not ship sits in the `### Deferred selectors` table under `guides/veneer.md` § Styles, and the
+  presence check reads that table.
 - Engine: `src/browser/Button.ts` (flat: a lone class nests only when a family exists, per
   `.claude/rules/architecture.md` § Entity subfolders; a family's design round decides its folder
   when a sibling lands) as one class over a `<button>` or anchor host with a
-  readonly `pressed` state, `toggle()`, and `destroy()`, where `toggle()` toggles the host's `active`
-  class and writes `aria-pressed` from the toggled result as `js/src/button.js` does; the `toggle`
-  event on the host with a namespaced wire type; option validation through `@orkestrel/contract`
-  (declared as the first runtime dependency); `createButton` in `factories.ts`; repeated
-  construction, destruction during work, detached hosts, and consumer-attribute restoration proven
-  in `tests/src/browser/Button.test.ts`.
-- Compatibility boundary: `data-bs-toggle="button"` through the `./browser/auto` entry with one
-  delegated listener and its removal, which calls `preventDefault` and resolves its host through
-  `closest('[data-bs-toggle="button"]')`, proven from a click on a child element; the `Button` static
-  and instance spellings (`getInstance`, `getOrCreateInstance`, `toggle`, `dispose`) in the adapter
-  the design round places behind the `./browser/auto` entry, never on the engine class, because the
-  wire-body exemption reaches transliterated fields and no instrument reads a method name; the
-  design round records that placement in `guides/veneer.md` § Compatibility before it widens to
-  another component.
+  readonly `pressed` state derived from the host's `active` class, `toggle()`, and `destroy()`,
+  where `toggle()` toggles the host's `active` class, writes `aria-pressed` from the toggled
+  result as `js/src/button.js` does, then dispatches the non-cancelable bubbling `toggle` event
+  with the namespaced wire type and returns the state; hooks through the `on` option bound by
+  `bindEventMap`; hand predicates in `validators.ts` and `@orkestrel/contract` unchanged as a
+  devDependency (no runtime dependency in U7: Button declares no option a guard would earn); no
+  factory; repeated construction, destruction during work, detached hosts, double-ownership
+  refusal, and consumer-attribute restoration proven in `tests/src/browser/Button.test.ts`.
+- Compatibility boundary: `data-bs-toggle="button"` through `Delegate`, a class exported from the
+  existing `./browser` barrel that a consumer's own entry constructs (the showcase's `main.ts`
+  does in U7c): one delegated native `click` listener on its root and its removal in `destroy()`,
+  which calls `preventDefault`, resolves its host through `closest('[data-bs-toggle="button"]')`,
+  refuses a disabled host, and drives one engine per host from a private `WeakMap`, proven from a
+  click on a child element; importing `./browser` registers no listener. The Bootstrap method
+  spellings (`getInstance`, `getOrCreateInstance`, `toggle`, `dispose`) are not shipped;
+  `guides/veneer.md` § Compatibility records each spelling's mapping (`getOrCreateInstance` is the
+  delegation's reuse, `dispose` is `destroy`, `getInstance` unpublished).
 - Journeys, in `tests/app/browser/integration.test.ts` on the journey axis, driving the shell's
   Button section: click and keyboard toggling with `aria-pressed` and the `.active` class read
   through the rendered surface; disabled refusal through the exact voice; a covered action refused
@@ -522,11 +534,12 @@ Scope, from the ledger's Button rows and Elements' button treatment:
   and placement proofs and the capture-run membership proof; a planted failing journey whose journal
   and tree artifacts are retained while the run stays red; the oracle fixture compared on the same
   markup and actions. Resolved-style readings stay in the styles suite.
-- Consumers: the distribution stage exercises the packed CSS, `./browser`, and `./browser/auto`
-  offline as a vanilla consumer; the shell's Button section drives the engine from plain
-  TypeScript, and its own tests cover mount, engine-to-view and view-to-engine updates, target
-  replacement, destruction during pending work, listener release, and remount through the shell
-  interface.
+- Consumers: the distribution stage exercises the packed CSS and `./browser` from the packed
+  archive as a vanilla consumer that imports `Button` and constructs a `Delegate`; the shell's
+  Button section (`app/browser/sections/ButtonSection.ts`, the first member of the `sections/`
+  family behind `SectionInterface`) drives the engine from plain TypeScript, and its own tests
+  cover mount, engine-to-view and view-to-engine updates, target replacement, destruction during
+  pending work, listener release, and remount through the shell interface.
 - Guide and shell: `guides/veneer.md` § Browser opens with Button, § Compatibility marks Button
   accepted, and § Styles gains the button partials; the shell's first section renders every button
   specimen with the theme control; parity green.
