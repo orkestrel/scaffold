@@ -13,7 +13,7 @@ Rule on every claim in `C:/Users/mikes/WebstormProjects/scaffold/.orkestrel/vene
 `CONFIRMED`, `REFUTED`, or `UNDECIDABLE` and the deciding evidence (`file:line` or exact quoted
 text), against the cumulative diff `C:/Users/mikes/WebstormProjects/scaffold/.orkestrel/veneer/units/u6-diff.patch.txt`,
 the live files in `C:/Users/mikes/WebstormProjects/test` (`src/browser/helpers.ts`,
-`tests/src/browser/helpers.test.ts`, `guides/test.md`), the report `u6-report-7.md`, and
+`tests/src/browser/helpers.test.ts`, `guides/test.md`), the reports `u6-report-7.md` and `u6-report-8.md`, and
 round 5's record (`C:/Users/mikes/WebstormProjects/scaffold/.orkestrel/veneer/u6-audit-verdict-5.md`,
 `units/u6-audit-5-reviewer-report.md`, `units/u6-audit-5-analyst-report.md`). Law:
 `C:/Users/mikes/WebstormProjects/scaffold/AGENTS.md`, `.claude/rules/tests.md`, `typescript.md`,

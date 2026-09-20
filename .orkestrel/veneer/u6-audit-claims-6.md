@@ -2,7 +2,7 @@
 
 Subject: the cumulative U6 diff in the Test checkout `C:/Users/mikes/WebstormProjects/test`, from
 `f49bc7f` (0.0.18) to the working tree, after the run a native `builder` made from
-`units/u6-brief-7.md` (report `units/u6-report-7.md`) on round 5's findings
+`units/u6-brief-7.md` and `units/u6-brief-8.md` (reports `units/u6-report-7.md` and `units/u6-report-8.md`) on round 5's findings
 (`C:/Users/mikes/WebstormProjects/scaffold/.orkestrel/veneer/u6-audit-verdict-5.md`). Rule on every
 claim with `CONFIRMED`, `REFUTED`, or `UNDECIDABLE` and the deciding evidence (`file:line` or exact
 text). Read the actual diff (`units/u6-diff.patch.txt`) and the live checkout, never the report
@@ -26,6 +26,6 @@ alone. Law: `C:/Users/mikes/WebstormProjects/scaffold/AGENTS.md` and `.claude/ru
    ordering, the missed-press `try`, the sentinels without a unit identifier, the six owned files
    and nothing else; no `any`, `as`, `!`, `@ts-*`, `eslint-disable`, nested function, hidden
    helper, or `console` statement.
-6. **Gates.** Every gate the seventh report lists reproduces green on managed Chromium and
+6. **Gates.** Every gate the seventh and eighth reports list reproduces green on managed Chromium and
    `PLAYWRIGHT_CHANNEL=msedge npm run test:src:browser` is green on Edge twice (the verifier's
    reading).
