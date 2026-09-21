@@ -3,7 +3,7 @@
 ## Role and engine
 
 `sol` on Astra (GPT-6 Astra through `codex exec`, `workspace-write`), the sole writer in the
-Veneer checkout (`C:/Users/mikes/WebstormProjects/veneer`), HEAD `CL2_LANDING_SHA` (the CL2
+Veneer checkout (`C:/Users/mikes/WebstormProjects/veneer`), HEAD `9f5ffda` (the CL2
 landing), tracked tree clean. You are the bench engine reading the brief inside your own CLI:
 perform the assignment directly and spawn nothing.
 
