@@ -31,6 +31,17 @@ no wording, comment, or guide-prose change beyond what a code change requires.
    following cases, because the teardown releases the pointer and the media only. Add
    `releasePane()` to the independently attempted releases (the installed helper requires the
    paired release; a release with nothing staged must be harmless, read its declaration).
+4. (reviewer 8) `tests/app/browser/integration.test.ts`, the mode-switch journey (about lines
+   156 to 164): `PORTFOLIO.place('home-dark')` is taken straight after the click on `Dark mode`
+   with the pointer still resting on the control, so both `home-dark` frames carry the
+   published bare-button hover mix while the `home` frames, shot at arrival, do not; a reader
+   comparing the two reads the hover fill as a mode difference. Release the pointer before
+   placing `home-dark`, assert the control does not match `:hover` at the shot, and keep the
+   restoring click after.
+5. (reviewer referral) `tests/app/browser/Showcase.test.ts`: the `header button` rule's safety
+   rests on an invariant nothing asserts. Add to the existing region case the assertion that
+   the header holds the mode control and no other button, and that every region (`Showcase`,
+   `Buttons`) sits inside `main`, so a `.btn` specimen landing in the header would red.
 
 ## Role, engine, law, context, host, unknowns, deviation contract
 
@@ -40,18 +51,23 @@ Perform the assignment directly and spawn nothing.
 
 ## Scope
 
-Owned: `tests/app/browser/integration.test.ts` and `u7f-fix-report-2.md`. Every
-other file is off-limits this round.
+Owned: `tests/app/browser/integration.test.ts`, `tests/app/browser/Showcase.test.ts`, and
+`u7f-fix-report-2.md`. Every other file is off-limits this round.
 
 ## Execution
 
-1. Items 3, 2, then 1. For item 2 record the red by reasoning from the predicate's shape over
-   the retained artifact entries (a plant is not needed: the analyst's replay is the red); for
-   item 1 record the red by reasoning from the reading's position (a capture that loses hover
-   reads the rest fill at the deciding reading).
+1. Items 3, 5, 4, 2, then 1. For item 2 record the red by reasoning from the predicate's shape
+   over the retained artifact entries (a plant is not needed: the analyst's replay is the red);
+   for item 1 record the red by reasoning from the reading's position (a capture that loses
+   hover reads the rest fill at the deciding reading); for item 4 record the control's `:hover`
+   reading at the shot before and after.
 2. Run and record: `npm run format:check`, `npm run lint:check`, `npm run check`,
-   `npm run test:journey`, `CAPTURE=1 npm run test:journey`, `npm test`, then
-   `PLAYWRIGHT_CHANNEL=msedge npm run test:journey`.
+   `npm run test:app:browser`, `npm run test:journey`, `npm test`,
+   `PLAYWRIGHT_CHANNEL=msedge npm run test:app:browser`,
+   `PLAYWRIGHT_CHANNEL=msedge npm run test:journey`, and last of all
+   `CAPTURE=1 npm run test:journey`, so the portfolio and the per-variant artifacts (which
+   every journey run rewrites, and only a capture run fills with frame paths) are in step when
+   you return; confirm each `tmp/capture/<variant>.txt` ends with its frame paths and say so.
 
 ## Output
 
