@@ -22,7 +22,7 @@ Button family) are closed and landed. The Content/layout family is under way, de
 `content-layout-design-verdict.md` as units CL0 to CL13 in mechanism order: CL0 calibration
 (landed as `research/calibration-content.md`), CL1 the proof contract (landed), CL2 tokens and
 breakpoint mixins (landed), CL3 the reset partial and the text Reboot tags (landed), CL3b the
-muted-text and raised-surface tokens (added, running, § State), CL4 the remaining Reboot
+muted-text and raised-surface tokens (landed), CL4 the remaining Reboot
 tags flipping the `reboot` key, CL5 typography classes, CL6 links, CL7 containers, CL8 grid and
 gutters, CL9 tables, CL10 images and figures, CL11 the journey and helper bounds, CL12 the guide
 pass, CL13 the portfolio verdict against Elements. Routing: CL1, CL3, CL4, CL6 to CL9 on Astra
@@ -34,97 +34,79 @@ verifier, and landed by a script that refuses any file outside the owned set.
 
 | Checkout | HEAD | Meaning |
 | --- | --- | --- |
-| Veneer | `9bb306e` | CL3 landed and pushed; the tracked tree is clean |
-| Scaffold | `7f10e9c6` or later (confirm with `git log --oneline -1`) | every record through CL3's acceptance retained and pushed; `.orkestrel/veneer/` is tracked |
+| Veneer | `d822d59` | CL3b landed and pushed; the tracked tree is clean |
+| Scaffold | `148549a2` or later (confirm with `git log --oneline -1`) | every record through CL4's scope read retained and pushed; `.orkestrel/veneer/` is tracked |
 
 Landed in Veneer during the last session: CL1 `00a5bdc` (`cl1-audit-verdict.md`, two rounds),
 CL2 `9f5ffda` (`cl2-audit-verdict.md`, two rounds), CL3 `9bb306e` (`cl3-audit-verdict.md`, three
-rounds). Earlier landings are listed in the memory file `veneer-campaign-state.md` and in
+rounds), CL3b `d822d59` (`cl3b-audit-verdict.md`, two rounds). Earlier landings are listed in the memory file `veneer-campaign-state.md` and in
 `plan.md`.
 
-**CL3 is closed and landed as `9bb306e`** after three audit rounds (`cl3-audit-verdict.md`;
-briefs `units/cl3-brief-2.md` to `-5.md`, reports `units/cl3-report.md` to `-4.md`, the landing
-log `units/cl3-land.log.txt`). Round 3 accepted on all four lanes. Three colour limits are
-recorded rather than closed in it: the muted text of `address` and `dd`, the raised surface of
-`pre`, `samp`, and `var` (both CL3b's), and the link colours' equality with the record (CL6's).
-The `b` tag is CL4's.
+**CL3 and CL3b are closed and landed.** CL3 at `9bb306e` after three audit rounds
+(`cl3-audit-verdict.md`), CL3b at `d822d59` after two (`cl3b-audit-verdict.md`), each accepted on
+all four lanes with a verifier green against the tree that landed. Together they land the reset
+partial, twenty text tag partials with mirrored proofs whose case tables and mode table live in
+`tests/setupStyles.ts`, four shared blocks consolidated into mixins, `ContentSection` with the
+shell's main region addressable by fragment, and the Content colour tokens: `--vn-text-muted`,
+the retuned `--vn-surface-raised`, `--vn-surface-code` in the theme maps, the `font.mono` group,
+and `--vn-line-code`. The dark theme's mix anchor is pinned to the literal
+`oklch(0.235 0.013 256)` so no dark role tier moved when the raised surface took the record's
+value; `tests/src/styles/integration.test.ts:92` pins that tier and is the standing falsifier.
 
-**CL3b returned and its round 1 is reconciled (`cl3b-audit-verdict.md`): fix round.** The unit
-(`units/cl3b-report.md`) measured the dark anchor hazard and pinned the anchor to
-`oklch(0.235 0.013 256)`, so every dark role border tier holds its `9bb306e` value while
-`--vn-surface-raised` moves to the record; it landed `--vn-text-muted`, the `surface-code` map
-key, a `font.mono` group with `--vn-font-mono-base` and `--vn-font-mono-short`, `--vn-line-code`,
-the rebinding of the five partials, and the corner-radius rows. All four lanes ran and the
-verifier is green on both browsers. Claim 4 is refuted on necessity and recorded: the registry's
-path law does not compel the group, so the rename stands on the name the brief's instruction
-implies; no code changes. One defect forces round 2.
+Still open from those units, each with its carrier: the link colours' equality with the record
+is CL6's; a later component surface unit measures its own raised value rather than assuming
+`--vn-surface-raised` still names the popover surface (CL12 restates the guide sentence); the
+description-list case field's name and the mode-invariant token case's duplicate registration go
+to the next unit that touches them.
 
-**Brief 3 is running on Opus at the end of the last session**: `units/cl3b-brief-3.md` (the
-inline mode matrices in `tests/src/styles/tokens.test.ts` read the setup module's `TEXT_MODES`,
-including a third one CL3 left behind, plus a sweep of the styles suite). Its report will be
-`C:/Users/mikes/WebstormProjects/veneer/tmp/units/cl3b-report-2.md`; an Agent dispatch returns it
-as the agent's final message, so read it from that file if the session ended first.
+**CL4 is in its scope read at the end of the last session.** `units/cl4-brief.md` carries the
+base `d822d59`; `units/cl4-scope-read-brief.md` is the read, dispatched to a native `checker`.
+Its item 3 is the one that decides CL4's shape: how `scanCompatibilityPresence` matches a
+shipped selector and an excluded name. On its return, fold the readings and every amendment into
+`TMP/units/cl4-brief-2.md`, stage it into `C:/Users/mikes/WebstormProjects/veneer/tmp/units/`,
+verify with `diff -q`, and dispatch on Astra.
 
-CL3b's round-2 kit is the round-1 kit with `-2` names: derive it by `sed` from the `TMP/` copies
-(`TMP/units/cl3b-audit-reviewer-brief.md`, `cl3b-audit-checker-brief.md`, `cl3b-gate-brief.md`,
-`TMP/codex/cl3b-audit-analyst.sh` and its watch) and from `units/cl3b-audit-wf.js`, with the
-claims in `TMP/audit/cl3b-audit-claims-2.md` and the evidence from
-`bash units/render-cl3b.sh -2`. The landing kit is ready: `TMP/units/cl3b-land.sh` (its allowlist
-is CL3b's owned set plus the two element globs) and `TMP/units/cl3b-land-message.txt`.
+## What to do first: dispatch and close CL4
 
-## What to do first: close CL3b
+CL4 is an Astra unit, so its lanes sit as CL3's did: the **Opus reviewer holds the OBJECTIVE
+lane and the Astra analyst the SUBJECTIVE lane**. Derive its kit from CL3's round-3 `TMP/`
+copies, never from the retained ones.
 
-CL3b is an Opus unit, so its lanes stay swapped as CL2's were: the **Opus reviewer holds the
-SUBJECTIVE lane and the Astra analyst the OBJECTIVE lane**. Round 1's kit is on disk and round
-2's is one `sed` away from it.
+1. Read the scope read's return (an Agent dispatch returns it as the agent's final message).
+   Retain it as `units/cl4-scope-read-report.md` with a header naming the brief it read. Rule on
+   every row it marks `amend`, and settle the unclear rows it reports rather than leaving them
+   to the writer.
+2. Write `TMP/units/cl4-brief-2.md` as a delta over `units/cl4-brief.md` (shape:
+   `units/cl3-brief-2.md`), folding in the scope read's findings and its answer to how the
+   presence scan matches. Stage it into `C:/Users/mikes/WebstormProjects/veneer/tmp/units/` and
+   verify with `diff -q`. Retain both.
+3. Derive `TMP/codex/cl4.sh` and `cl4-watch.sh` from `TMP/codex/cl3-4.sh` and its watch: the
+   launcher's prompt names the brief, the report path, and the base. Launch it as a background
+   command with a Monitor on the watch. A CL unit exec has taken 30 to 45 minutes under the
+   script's own `timeout 7200`; CL4 is larger, so expect longer and do not relaunch on silence:
+   read liveness from the journal and the owned files' mtimes.
+4. On its report: retain it, render the evidence with a `units/render-cl4.sh` copied from
+   `units/render-cl3b.sh` with the base `d822d59` and the `cl4` names, write
+   `TMP/audit/cl4-audit-claims.md`, derive the four-lane kit from CL3's round-3 `TMP/` copies and
+   `units/cl3-audit-3-wf.js`, and launch the lanes together and blind. Do not type into the
+   session while a Workflow runs.
+5. Reconcile into `cl4-audit-verdict.md`, land with a `TMP/units/cl4-land.sh` whose allowlist is
+   CL4's owned set and a message file you write, retain the log, append the plan entry, update
+   `veneer-campaign-state.md`, run `node units/retention-rewrite.mjs`, and commit scaffold by
+   pathspec. Never `git add -A`.
 
-1. Run `ps -eo pid,comm | grep -i codex` and expect nothing (brief 3 is a native Agent, not a
-   bench exec). Read brief 3's report: an Agent dispatch returns it as the agent's final
-   message; if the session ended first, read
-   `C:/Users/mikes/WebstormProjects/veneer/tmp/units/cl3b-report-2.md`. Retain it as
-   `units/cl3b-report-2.md`.
-2. Render round 2's evidence: `bash units/render-cl3b.sh -2` writes
-   `TMP/audit/cl3b-diff-2.patch` and `TMP/audit/cl3b-status-2.txt`; retain both as
-   `units/cl3b-diff-2.patch.txt` and `units/cl3b-status-2.txt`. Write
-   `TMP/audit/cl3b-audit-claims-2.md` (shape: `cl3-audit-claims-3.md`): one claim for the fix,
-   one for the sweep's result, and the `[mechanical]` scope, law, and gates claim. Retain it as
-   `cl3b-audit-claims-2.md`.
-3. Derive the `-2` kit by `sed` from the `TMP/` round-1 copies (never from the retained ones)
-   and copy `units/cl3b-audit-wf.js` to `units/cl3b-audit-2-wf.js` naming the `-2` briefs.
-   Launch the four lanes together and blind: the analyst as a background command with a Monitor
-   on its watch, and the Workflow by absolute `scriptPath`. Do not type into the session while a
-   Workflow runs.
-4. Read the lanes (`node units/dump-lanes.mjs <runId> cl3b-2`, which names them by role; the
-   analyst from its `-last.md` with the journal path and thread id in a header comment), append
-   `## Round 2` to `cl3b-audit-verdict.md` in its round-1 shape, and on accept run
-   `bash TMP/units/cl3b-land.sh` (its message file `TMP/units/cl3b-land-message.txt` is already
-   written).
-5. Retain the log as `units/cl3b-land.log.txt`, append the plan entry, update
-   `veneer-campaign-state.md`, run `node units/retention-rewrite.mjs` from the scaffold root, and
-   commit scaffold by pathspec with a message file under `TMP/units/`. Never `git add -A`.
+## Then CL5 to CL13
 
-## Then CL4
-
-`units/cl4-brief.md` is drafted with the placeholder `CL3_LANDING_SHA`; replace it with CL3b's
-landing, which is the tree CL4 starts from. Its terrain is `units/cl4-scout-report.md` (Grok:
-every `reboot` inventory selector by family with its owner and guard verdict). Steps:
-`sed -i 's/CL3_LANDING_SHA/<sha>/' TMP/units/cl4-brief.md`; scope-read it (§ How every unit runs,
-step 1); fold the readings and amendments into `TMP/units/cl4-brief-2.md`; stage it into
-`C:/Users/mikes/WebstormProjects/veneer/tmp/units/` and verify with `diff -q`; derive
-`TMP/codex/cl4.sh` and `cl4-watch.sh` from `TMP/codex/cl3-4.sh` and its watch (the launcher's
-prompt names the brief and the report path); launch as a background command with a Monitor;
-derive the audit kit from the `TMP/` CL3 round-3 copies (CL4 is an Astra unit, so the lanes sit
-as CL3's did: Opus reviewer objective, Astra analyst subjective) and from
-`units/cl3-audit-3-wf.js` and `units/render-cl3.sh` with CL4's base. CL4 lands the `b` tag, the
-form, table, media, and interactive partials, the `reboot` Compatibility row as `shipped`,
-`listed` growing to `['btn', 'reboot']`, and the `Excluded` rows.
-
-After CL4: CL5 to CL13 per `content-layout-design-verdict.md` § Units (routing ledger there).
-Brief each from the design row, the planner's criteria (`units/content-layout-design-planner-report.md`),
-and the analyst's unit (`units/content-layout-design-analyst-report.md`); scope-read first. CL5
-carries the stripe light-scope assertion, the heading letter-spacing row, and the shell's
-document-global `main` id. CL13 reuses the U7f portfolio shape (`u7f-verdict.md`,
-`units/u7f-harness-3.mjs`, `units/u7f-recapture.sh`).
+Per `content-layout-design-verdict.md` § Units (the routing ledger is there). Brief each from
+the design row, the planner's criteria (`units/content-layout-design-planner-report.md`), and
+the analyst's unit (`units/content-layout-design-analyst-report.md`); scope-read first. CL5
+(Opus) carries the stripe light-scope assertion, the heading letter-spacing row, the shell's
+document-global `main` id, and the description-list case field's name. CL6 (Astra) carries the
+link map's retune and the anchor's `--vn-link-*` versus `--bs-*` binding. CL11 carries
+`visitBreakpoint`'s bare `finally`, the hold's two uncased refusals, the U7c `resolveButton`
+rename, and `driveOracle` root scoping. CL12 carries every guide bound a unit reported. CL13
+reuses the U7f portfolio shape (`u7f-verdict.md`, `units/u7f-harness-3.mjs`,
+`units/u7f-recapture.sh`).
 
 ## Standing rulings from the user (binding)
 
@@ -198,14 +180,18 @@ document-global `main` id. CL13 reuses the U7f portfolio shape (`u7f-verdict.md`
 
 ## Bounds carried and open questions
 
-Carried bounds (each names its carrier): CL3b takes the muted text and raised surface (above);
-CL6 takes the link map's retune; CL5 takes the stripe light-scope assertion
-(`cl2-audit-verdict.md` round 2, reviewer 6); CL11 takes `visitBreakpoint`'s bare `finally`
-restore, the hold's two uncased refusals (`cl1-audit-verdict.md` round 2, reviewer 6 and 7),
-the U7c `resolveButton` prefix rename, and `driveOracle` root scoping; CL12 takes any guide
-bound a unit reports (CL3's report asks it to keep the guide's calibration claims within the
-measured bindings); the Test 0.0.19 release (user-directed, OTP) takes the `captureFrame`
-element bounds and the forced-colours `MediaOptions` axis.
+Carried bounds, each with its carrier: CL5 takes the stripe light-scope assertion
+(`cl2-audit-verdict.md` round 2), the heading letter-spacing row and the shell's document-global
+`main` id (`cl3-audit-verdict.md` round 2), the description-list case field's name and the
+mode-invariant token case's duplicate registration (`cl3b-audit-verdict.md`); CL6 takes the link
+map's retune and the anchor's `--vn-link-*` versus `--bs-*` binding (`cl3-audit-verdict.md`
+round 1); CL11 takes `visitBreakpoint`'s bare `finally` restore, the hold's two uncased refusals
+(`cl1-audit-verdict.md` round 2), the U7c `resolveButton` prefix rename, and `driveOracle` root
+scoping; CL12 takes every guide bound a unit reported, including the sentence that still
+promises component surfaces will consume `--vn-surface-raised` now that it carries the code
+block's reading; the first unit that lands a component surface reading that token measures its
+own value rather than assuming this one; the Test 0.0.19 release (user-directed, OTP) takes the
+`captureFrame` element bounds and the forced-colours `MediaOptions` axis.
 
 Open questions for the user, to report at the family's acceptance: the outline pair's ghost on
 its own canvas; dark primary's white text below 4.5:1 (shared with Elements); the latched

@@ -4,7 +4,7 @@ Role: `checker` on native Sonnet, read-only, clean context. Perform the assignme
 spawn nothing. (The tedious-work ladder routes a scope read to `grok` first; this campaign
 reserves the Cursor bench for terrain maps, and the ladder step is recorded in the plan.)
 
-Subject: `C:/Users/mikes/WebstormProjects/scaffold/tmp/units/cl4-brief.md`, the brief a bench
+Subject: `C:/Users/mikes/WebstormProjects/scaffold/.orkestrel/veneer/units/cl4-brief.md`, the brief a bench
 writer (Astra) will open next, against the live Veneer checkout at
 `C:/Users/mikes/WebstormProjects/veneer` (HEAD `d822d59`, the CL3b landing; tracked tree clean).
 CL4 is the largest unit of this family: it lands seventeen partials, flips the conformance
