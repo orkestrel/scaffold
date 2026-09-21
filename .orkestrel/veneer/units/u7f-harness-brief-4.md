@@ -2,8 +2,8 @@
 
 ## What changed and why
 
-This brief supersedes `tmp/units/u7f-harness-brief-3.md`; briefs 1 to 3 stand, and
-`tmp/units/u7f-harness-report-3.md` is the baseline. Round 2 of the verdict's mechanical lane
+This brief supersedes `u7f-harness-brief-3.md`; briefs 1 to 3 stand, and
+`u7f-harness-report-3.md` is the baseline. Round 2 of the verdict's mechanical lane
 (`C:/Users/mikes/WebstormProjects/scaffold/.orkestrel/veneer/units/lane-u7f-2-checker.md`, item
 10) found that the `# Toggle` ARIA snapshot appended to each variant's `.txt` is taken after the
 restoring click, so it announces the host at rest (`Off — click to turn on`) while the pressed
@@ -24,19 +24,19 @@ tree at the pressed moment.
 
 ## Role, engine, law, context, scope, deviation contract
 
-As in briefs 1 to 3, verbatim. Copy `tmp/units/u7f-harness-3.mjs` to `tmp/units/u7f-harness-4.mjs`
+As in briefs 1 to 3, verbatim. Copy `u7f-harness-3.mjs` to `u7f-harness-4.mjs`
 and edit the copy. The output directory is emptied on each run as before.
 
 ## Execution
 
 1. Make the two changes in the copy; keep every existing frame and artifact name.
-2. Run `node tmp/units/u7f-harness-4.mjs` once from the scaffold root; list the output
+2. Run `node u7f-harness-4.mjs` once from the scaffold root; list the output
    directory; print the `# Toggle` block of `light-1280.txt` and the settled `box-shadow` per
    variant.
 
 ## Output
 
-Write `tmp/units/u7f-harness-report-4.md` and return it: the two changes as landed, the run's
+Write `u7f-harness-report-4.md` and return it: the two changes as landed, the run's
 console output, the listing with byte sizes, the `# Toggle` block per variant, the settled
 `box-shadow` per variant beside round 3's transitional reading, and the scaffold checkout's
 `git status --porcelain`.
