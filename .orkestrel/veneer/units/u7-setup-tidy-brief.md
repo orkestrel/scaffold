@@ -96,7 +96,7 @@ registry (not yours). A whole-suite timing failure under your own exec is an obs
 pins, the cascade constant, the `:683` doc sentence), `tests/setupStyles.test.ts`,
 `tests/setupConformance.ts` (the pins, `readCompatibility`'s label, the binding table's refusal
 and reach), `tests/setupConformance.test.ts`, `tests/src/styles/**` (the wrapper call sites
-only), `vite.config.ts` (the `setup` project's `pool` key only), `tmp/units/u7-setup-tidy-report.md`.
+only), `vite.config.ts` (the `setup` project's `pool` key only), `u7-setup-tidy-report.md`.
 
 **Shared (report-only).** None; no other unit is live in this checkout.
 
@@ -159,7 +159,7 @@ Red first where a case pins the change; record each pair with its command and co
 
 ## Output
 
-Write `tmp/units/u7-setup-tidy-report.md` in the Veneer checkout and return its content as your
+Write `u7-setup-tidy-report.md` in the Veneer checkout and return its content as your
 final message: the diff per owned file; every styles case the swap reddened and how it was
 widened; the pin module decision; the item 5 decision; each control's red reading and restore
 proof; each gate's final lines; deviations in the shape § Deviation contract names.

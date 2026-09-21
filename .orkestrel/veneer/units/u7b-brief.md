@@ -127,7 +127,7 @@ the classes, then the proofs; run `npm.cmd run check:src:browser` and
 
 ## Output
 
-Write `tmp/units/u7b-report.md` and return its content: the diff per file; the ownership
+Write `u7b-report.md` and return its content: the diff per file; the ownership
 decision; each control's red reading and restore proof; each gate's final lines on both engines;
 deviations in the usual shape.
 

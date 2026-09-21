@@ -1034,3 +1034,12 @@ after acceptance per the debrief skill's retention reference.
   relaunched (`units/u7a-5.sh`). Standing lesson for every later brief: derive the owned set by
   running the suite against the change's shape (the export-set, parity, and inventory cases),
   not from the files that declare the thing changing.
+- 2026-09-20, U7a's fifth launch completed the implementation (thread
+  `01a0c144-d819-7343-a531-d0fdf62a76aa`, `units/u7a-report-5.md`): both partials, the mixer
+  and Button tokens, the `focus-ring` mixin, the proofs on Chromium and Edge, the deferral
+  partition, the shipped rows with `listed = ['btn']`, four controls red and restored, every gate
+  exit 0, cascade digest `d544aae8…`. It stopped on its own contract review: the case matrices
+  sit inline in the Button test files while `tests.md` places them in a setup file, and the
+  setup-file grant covered one helper alone. `units/u7a-brief-6.md` grants the tables and
+  relaunched (`units/u7a-6.sh`). The forced-colours reading is an open row (Test-side bound:
+  `MediaOptions` gains a forced-colours axis).
