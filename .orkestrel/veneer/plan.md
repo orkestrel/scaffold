@@ -1281,3 +1281,21 @@ after acceptance per the debrief skill's retention reference.
   `research/calibration-content.md` (one table per surface across the eighteen surfaces the Grok
   map named, every specimen attached), indexed from `research.md`; CL3, CL6, and CL9 bind their
   values to it. CL1 (the proof contract, Astra) runs in Veneer beside it.
+- 2026-09-21, CL1 landed in Veneer as `00a5bdc` after two audit rounds (`cl1-audit-verdict.md`;
+  briefs `units/cl1-brief.md` and `units/cl1-brief-2.md`, reports `units/cl1-report.md` and
+  `units/cl1-report-2.md`, the landing log `units/cl1-land.log.txt`). Round 2 accepted on every
+  lane: the reviewer on Opus held the objective lane and the Astra analyst the subjective lane
+  (Astra wrote the unit and the fix), the checker ruled the mechanical claims, and the verifier
+  ran every gate green on managed Chromium and Edge. What landed: the conformance scanner's
+  terminal `Excluded` owner with membership and nested-absence checks, the property-free
+  admission on the selector row, the root-scoped oracle drive (`readOracleButton`,
+  `pressOracleKeys`, `holdOraclePointer` reproducing the installed hold's body with the release
+  rejection as `cause`), `BREAKPOINT_CASES` frozen in `tests/setupStyles.ts`, and
+  `visitBreakpoint` in `tests/setupBrowser.ts` over the static `page` import with restore in
+  `finally`. Bounds carried, not defects: reviewer 6 (`visitBreakpoint` restores in a bare
+  `finally`, so a restore rejection would replace the action's failure) and reviewer 7 (the
+  hold's unreachable-after-scrolling refusal and its pressed-state miss with a successful release
+  have no case) go to the next unit that owns `tests/setupBrowser.ts` (CL11 as planned); the
+  analyst's note that U7c's `resolveButton` carries the same prefix defect stays with CL11.
+  **Unchanged:** CL2 to CL13. Next: CL2 (Opus) after its scope read
+  (`units/cl2-scope-read-brief.md`), then CL3 (Astra) with its scroll-behavior probe.

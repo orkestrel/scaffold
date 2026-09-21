@@ -3,7 +3,7 @@
 ## Role and engine
 
 `opus` on native Opus 5, the sole writer in the Veneer checkout
-(`C:/Users/mikes/WebstormProjects/veneer`), HEAD `CL1_LANDING_SHA` (the CL1 landing), tracked
+(`C:/Users/mikes/WebstormProjects/veneer`), HEAD `00a5bdc` (the CL1 landing), tracked
 tree clean. Perform the assignment directly and spawn nothing.
 
 ## Objective

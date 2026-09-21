@@ -49,3 +49,43 @@ which owns that helper's consumers.
 ### Terminal (round 1)
 
 Verdict: fix round. `units/cl1-brief-2.md` on Astra; Opus stays the objective auditor.
+
+## Round 2 (2026-09-21, the fix round under `units/cl1-brief-2.md`)
+
+Lanes: reviewer on Opus 5 holding the OBJECTIVE lane (`units/lane-cl1-2-reviewer.md`,
+workflow `wf_6d2440af-6b2`); analyst on Astra holding the SUBJECTIVE lane
+(`units/cl1-audit-2-analyst-report.md`, thread `01a0c341-527e-75f3-87ba-df727d88fc3e`, exit 0);
+checker on Sonnet (`units/lane-cl1-2-checker.md`); verifier on Sonnet
+(`units/lane-cl1-2-verifier.md`) over `units/cl1-gate-brief.md`. Astra wrote the unit and the
+fix, so the lanes stay swapped from round 1. Claims: `cl1-audit-claims-2.md`; evidence
+`units/cl1-diff-2.patch.txt` and `units/cl1-status-2.txt` over the base `060ce02`.
+
+| Claim | Reviewer (objective, Opus) | Analyst (subjective, Astra) | Checker | Verifier |
+| --- | --- | --- | --- | --- |
+| 1 `readOracleButton` | CONFIRMED (`tests/setupBrowser.ts:303`, callers, import, inventory, cases; no `resolveOracleButton` outside `node_modules`) | CONFIRMED | CONFIRMED | — |
+| 2 `visitBreakpoint` home | CONFIRMED (`tests/setupBrowser.ts:38-46` over the static import; no node project loads the browser setup; inventories moved) | CONFIRMED | CONFIRMED | — |
+| 3 hold cleanup `cause` | CONFIRMED (`tests/setupBrowser.ts:359-366`, the installed verb's shape at `index.js:599-606`; case `setupBrowser.test.ts:253-285` with a real release rejection) | CONFIRMED | CONFIRMED | — |
+| 4 test data names | CONFIRMED (identity assertion; `.unreachable-selector` absent from the pinned inventory) | CONFIRMED | CONFIRMED | — |
+| 5 scope, law, gates | CONFIRMED static half; gate half assigned to the verifier | UNDECIDABLE as a whole, no blocker | CONFIRMED mechanical half; gate half deferred | every step exit 0 on Chromium and Edge; `scaffold audit` reports only the pre-existing `setupListeners` note and the three registry majors |
+
+Reconciliation. Every claim is CONFIRMED by every lane that could rule on it, and the verifier
+closes claim 5's gate half: `format:check`, `lint:check`, `check`, `build`, `test:setup`,
+`test:setup:browser`, `test:conformance`, `test:src:styles`, `test:app:browser`, `test:journey`,
+`test:guides`, the whole `npm test` chain, and the Edge runs of the browser setup, the styles
+project, and the journeys all exit 0, with the status identical before and after. The analyst's
+UNDECIDABLE on claim 5 is the gate half it could not run, which the verifier ran.
+
+Reviewer extra findings, non-blocking, carried as bounds:
+
+6. `visitBreakpoint` restores in a bare `finally`, so a restore rejection would replace the
+   action's failure (the class claim 3 closed in the hold). No case reaches a rejecting
+   `page.viewport`. Carrier: the next unit that owns `tests/setupBrowser.ts` (CL11 as planned;
+   an earlier unit that takes that file takes the bound).
+7. `holdOraclePointer` has no case for the unreachable-after-scrolling refusal or for the
+   pressed-state miss with a successful release. Same carrier.
+
+No lane found an implementation defect that forces another round.
+
+### Terminal (round 2)
+
+Verdict: accept. Land with `units/cl1-land.sh`.
