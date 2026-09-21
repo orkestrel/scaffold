@@ -32,7 +32,7 @@ The placement Unknown is closed within scope. The setup proof tests its sibling 
 
 The duplication Unknown is also closed. `scanStyleBlocks` reads authored SCSS declaration blocks without expanding includes; it does not read the built cascade. Its subject and traversal differ from this PostCSS selector/media comparison. The shared built-file read and selector normalization already have reusable implementations, which this proof imports. No duplicate file loader or selector parser was added.
 
-The emission controls ran through `tmp/units/cl8-run-controls-4.sh`. Each artifact control first ran `npm.cmd run build:src:styles`, exiting `0`. The plant and restoration instrument is `tmp/units/cl8-controls-4.mjs`; the combined record is `tmp/units/cl8-controls-4.log`.
+The emission controls ran through `cl8-run-controls-4.sh`. Each artifact control first ran `npm.cmd run build:src:styles`, exiting `0`. The plant and restoration instrument is `cl8-controls-4.mjs`; the combined record is `cl8-controls-4.log.txt`.
 
 For the missing-selector control, the instrument removed `.col-md-1` from the built cascade, including its rule when no other selector remained. It left the inventory and case tables unchanged. The exact failing and restored command was:
 
@@ -40,7 +40,7 @@ For the missing-selector control, the instrument removed `.col-md-1` from the bu
 npm.cmd run test:setup -- tests/setupStyles.test.ts -t 'binds the built grid selector'
 ```
 
-The failing output in `tmp/units/cl8-missing-red-4.log` identifies the missing selector at its recorded condition:
+The failing output in `cl8-missing-red-4.log.txt` identifies the missing selector at its recorded condition:
 
 ```text
 FAIL |setup| tests/setupStyles.test.ts > styles setup > binds the built grid selector and media-condition multiset to the inventory minus deferrals
@@ -53,7 +53,7 @@ Test Files  1 failed (1)
 EXIT_CODE=1
 ```
 
-For the extra-selector control, the instrument appended `.offset-12 { margin-inline-start: 100% }` to the built cascade. That selector is outside the recorded offset vocabulary. The same command failed; `tmp/units/cl8-extra-red-4.log` records:
+For the extra-selector control, the instrument appended `.offset-12 { margin-inline-start: 100% }` to the built cascade. That selector is outside the recorded offset vocabulary. The same command failed; `cl8-extra-red-4.log.txt` records:
 
 ```text
 FAIL |setup| tests/setupStyles.test.ts > styles setup > binds the built grid selector and media-condition multiset to the inventory minus deferrals
@@ -66,7 +66,7 @@ Test Files  1 failed (1)
 EXIT_CODE=1
 ```
 
-After each plant, the instrument verified that the file still matched the planted bytes, restored its saved original bytes, and asserted byte equality. The same test command then returned this output, retained separately in `cl8-missing-green-4.log` and `cl8-extra-green-4.log` under `tmp/units/`:
+After each plant, the instrument verified that the file still matched the planted bytes, restored its saved original bytes, and asserted byte equality. The same test command then returned this output, retained separately in `cl8-missing-green-4.log` and `cl8-extra-green-4.log` under ``:
 
 ```text
 Test Files  1 passed (1)
@@ -99,7 +99,7 @@ The control narrowed the construction in `tests/setupStyles.ts` from `[boundary 
 npm.cmd run test:setup -- tests/setupStyles.test.ts -t 'pins the grid viewport readings'
 ```
 
-The failure in `tmp/units/cl8-readings-red-4.log` was the literal-readings assertion. Its diff removed the expected `575`, `767`, `991`, `1199`, and `1399` readings:
+The failure in `cl8-readings-red-4.log.txt` was the literal-readings assertion. Its diff removed the expected `575`, `767`, `991`, `1199`, and `1399` readings:
 
 ```text
 FAIL |setup| tests/setupStyles.test.ts > styles setup > pins the grid viewport readings on each side of every breakpoint
@@ -110,7 +110,7 @@ Test Files  1 failed (1)
 EXIT_CODE=1
 ```
 
-The instrument restored the saved bytes, and `tmp/units/cl8-readings-green-4.log` records:
+The instrument restored the saved bytes, and `cl8-readings-green-4.log.txt` records:
 
 ```text
 Test Files  1 passed (1)
@@ -134,9 +134,9 @@ The remaining findings are closed as follows:
 
 The accepted partial, extraction, guide rows, deferrals, and conformance listing were not edited in this round. The partial retains its earlier restoration digest, `d315484bd133235d5e0d27ef5b83d5090f68e526f8d8f53eb56b62e20b3f9433`. The precision ruling remains resolved: this proof compares selectors and conditions; browser assertions keep their existing tolerances, and the partial's arithmetic is unchanged.
 
-The prior closed findings remain recorded in `tmp/units/cl8-report-3.md`: `npm.cmd run test:conformance` caught the blank line that disconnected the grid deferrals from their table, and `npm.cmd test` at the journey census caught the unshipped `border` and `p-2` specimen classes. Their fixes remain in place. Conformance and journeys pass in this run.
+The prior closed findings remain recorded in `cl8-report-3.md`: `npm.cmd run test:conformance` caught the blank line that disconnected the grid deferrals from their table, and `npm.cmd test` at the journey census caught the unshipped `border` and `p-2` specimen classes. Their fixes remain in place. Conformance and journeys pass in this run.
 
-The gate commands ran on Windows on 2026-09-21 through Git Bash and `npm.cmd`. `tmp/units/cl8-run-gates-4.sh` runs the ordered chain, and `tmp/units/cl8-gate-4.sh` records each command's exit status before reading its log. Log paths in the following table are relative to `tmp/units/`.
+The gate commands ran on Windows on 2026-09-21 through Git Bash and `npm.cmd`. `cl8-run-gates-4.sh` runs the ordered chain, and `cl8-gate-4.sh` records each command's exit status before reading its log. Log paths in the following table are relative to ``.
 
 | Command | Exit | Final result lines | Log |
 | --- | --- | --- | --- |
@@ -164,7 +164,7 @@ The complete `npm.cmd test` chain reached these results. Each command exited `0`
 | `test:conformance` | `Test Files 1 passed (1)`; `Tests 10 passed (10)` |
 | `test:guides` | `Test Files 1 passed (1)`; `Tests 18 passed (18)` |
 
-The browser resolver reading in `tmp/units/cl8-browsers-4.log` returns `{}` for the default with pinned Chromium at `C:\Users\mikes\AppData\Local\ms-playwright\chromium-1243\chrome-win64\chrome.exe`, and `{"launchOptions":{"channel":"msedge"}}` for Edge. The existing journey, policy, and config skips remain unchanged. Vite reported module-externalization warnings and an initial Sass dependency-optimization reload; the browser projects completed successfully. No configuration or skip was changed.
+The browser resolver reading in `cl8-browsers-4.log.txt` returns `{}` for the default with pinned Chromium at `C:\Users\mikes\AppData\Local\ms-playwright\chromium-1243\chrome-win64\chrome.exe`, and `{"launchOptions":{"channel":"msedge"}}` for Edge. The existing journey, policy, and config skips remain unchanged. Vite reported module-externalization warnings and an initial Sass dependency-optimization reload; the browser projects completed successfully. No configuration or skip was changed.
 
 The actual `git diff --stat` output follows. It excludes the untracked grid partial and proof.
 

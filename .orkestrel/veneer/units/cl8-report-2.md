@@ -9,7 +9,7 @@ CL8 is incomplete. The extraction and its container-preservation proof pass, but
 
 The blocker is `tests/setupConformance.test.ts:932`. Its `skips engine and CSS obligations whose Proof cell is a dash` case compares the guide's component set with a literal set that omits `col`, `offset`, and `row`. Brief 1 requires those guide rows and explicitly excludes `tests/setupConformance.ts` and its proof. Brief 2 leaves that exclusion intact. The scaffold `.agents/orchestration.md` deviation protocol requires: “Stop when a conflict prevents the primary objective or requires an unowned change.” The needed successor grant is `tests/setupConformance.test.ts` for updating that component-set assertion to include the required keys. That file remains unchanged.
 
-The final `npm.cmd test` run exited `1`; `tmp/units/cl8-test-final-2.log` records the failure:
+The final `npm.cmd test` run exited `1`; `cl8-test-final-2.log.txt` records the failure:
 
 ```text
 FAIL |setup| tests/setupConformance.test.ts > setupConformance > skips engine and CSS obligations whose Proof cell is a dash
@@ -47,7 +47,7 @@ The extraction introduces these mixins in `src/styles/_mixins.scss`:
 
 Only the shared declarations in `_container.scss` changed, becoming mixin calls. No other container line changed.
 
-The container comparison uses `tmp/units/cl8-container-comparison.mjs`. Before editing the extraction sites, `npm.cmd run build:src:styles` exited `0` and ended with `✓ built in 491ms`. The instrument parsed `dist/src/styles/index.css` with PostCSS and retained every rule containing a container selector, including navigation combinators. For each rule it recorded its position among all rules, selector list, enclosing layers and media conditions, and ordered declarations including importance. It saved the original cascade and the records under `tmp/units/`.
+The container comparison uses `cl8-container-comparison.mjs`. Before editing the extraction sites, `npm.cmd run build:src:styles` exited `0` and ended with `✓ built in 491ms`. The instrument parsed `dist/src/styles/index.css` with PostCSS and retained every rule containing a container selector, including navigation combinators. For each rule it recorded its position among all rules, selector list, enclosing layers and media conditions, and ordered declarations including importance. It saved the original cascade and the records under ``.
 
 After extraction, the same build command exited `0` and ended with `✓ built in 491ms`. The instrument compared the parsed records without sorting declarations or rules. It also compared the entire cascade byte-for-byte. Negative controls reversed a declaration list and moved a global rule position; each was rejected. A final comparison after the later builds returned the same result:
 
@@ -58,9 +58,9 @@ Whole cascade byte-identical: true
 final: 7 container rules; SHA-256 f9e83cb469f7de33cce51af0487e09cc6a616d206700936ff25f04b4254568c3
 ```
 
-The before, after, and final container-record digests are identical. Their records are `cl8-container-before.json`, `cl8-container-after.json`, and `cl8-container-final.json` under `tmp/units/`. `git diff --exit-code -- tests/src/styles/components/container.test.ts` exited `0`. The unchanged container proof passes in the full styles project on managed Chromium and Edge.
+The before, after, and final container-record digests are identical. Their records are `cl8-container-before.json`, `cl8-container-after.json`, and `cl8-container-final.json` under ``. `git diff --exit-code -- tests/src/styles/components/container.test.ts` exited `0`. The unchanged container proof passes in the full styles project on managed Chromium and Edge.
 
-The shared-block sweep passes. `npm.cmd run test:setup -- tests/setupStyles.test.ts` exited `0`, reporting `Test Files 1 passed (1)` and `Tests 82 passed (82)`. The direct `scanStyleBlocks()` reading is retained in `tmp/units/cl8-sweep-2.json`; its full output follows:
+The shared-block sweep passes. `npm.cmd run test:setup -- tests/setupStyles.test.ts` exited `0`, reporting `Test Files 1 passed (1)` and `Tests 82 passed (82)`. The direct `scanStyleBlocks()` reading is retained in `cl8-sweep-2.json`; its full output follows:
 
 ```json
 {
@@ -135,7 +135,7 @@ The gutter browser proof passes at the default values and after canonical and al
 
 The numbered widths, offsets, row-column counts, automatic widths, flexible widths, and cascade collisions pass at the breakpoint boundary and its neighboring viewports. The unconditioned cases run at 375px and 1401px. The right-to-left offset resolves on the right physical margin. No shipped browser assertion was relaxed, and no browser failure required changing the partial.
 
-The emitted-selector instrument, `tmp/units/cl8-emission.mjs`, reads the built cascade through PostCSS and compares its complete grid selector/media-condition multiset with the raw inventory rows after excluding the deferred families. It normalizes selector whitespace and equivalent minimum-width notation. It reports an exact match, with no extra grid selector. Controls removing a breakpoint condition and adding `.row-gap-0` are rejected. Its emitted records are `tmp/units/cl8-built-grid-2.json`.
+The emitted-selector instrument, `cl8-emission.mjs`, reads the built cascade through PostCSS and compares its complete grid selector/media-condition multiset with the raw inventory rows after excluding the deferred families. It normalizes selector whitespace and equivalent minimum-width notation. It reports an exact match, with no extra grid selector. Controls removing a breakpoint condition and adding `.row-gap-0` are rejected. Its emitted records are `cl8-built-grid-2.json`.
 
 The required emitted-value control changed only the row's `margin-inline` factor from `-0.5` to `-0.25`. The command was identical for the failing and passing runs:
 
@@ -143,7 +143,7 @@ The required emitted-value control changed only the row's `margin-inline` factor
 npm.cmd run test:src:styles -- tests/src/styles/components/grid.test.ts -t 'resolves the default gutter'
 ```
 
-The failing run exited `1`; `tmp/units/cl8-control-red-2.log` records:
+The failing run exited `1`; `cl8-control-red-2.log.txt` records:
 
 ```text
 FAIL |[object Object] (chromium)| tests/src/styles/components/grid.test.ts:18:2 > grid gutters > resolves the default gutter and canonical and alias overrides on physical sides
@@ -159,14 +159,14 @@ Test Files  1 failed (1)
      Tests  1 failed | 13 skipped (14)
 ```
 
-After restoring the exact bytes, the command exited `0`; `tmp/units/cl8-control-green-2.log` records:
+After restoring the exact bytes, the command exited `0`; `cl8-control-green-2.log.txt` records:
 
 ```text
 Test Files  1 passed (1)
      Tests  1 passed | 13 skipped (14)
 ```
 
-The skips are the command's name filter. The complete grid suite subsequently passes. `tmp/units/cl8-mutation.mjs` saves the original bytes, verifies that only the intended mutation is present before restoration, restores the saved bytes, and asserts byte equality. The original, restored, and final partial share this SHA-256 digest:
+The skips are the command's name filter. The complete grid suite subsequently passes. `cl8-mutation.mjs` saves the original bytes, verifies that only the intended mutation is present before restoration, restores the saved bytes, and asserts byte equality. The original, restored, and final partial share this SHA-256 digest:
 
 ```text
 d315484bd133235d5e0d27ef5b83d5090f68e526f8d8f53eb56b62e20b3f9433
@@ -218,11 +218,11 @@ Test Files  1 passed (1)
      Tests  10 passed (10)
 ```
 
-The reader then lists `col`, `offset`, and `row`, reads every grid deferral, and returns no presence failure. The reading is retained in `tmp/units/cl8-accounting-2.json`. No deferred selector is emitted. The conformance machinery and its proof were not edited.
+The reader then lists `col`, `offset`, and `row`, reads every grid deferral, and returns no presence failure. The reading is retained in `cl8-accounting-2.json`. No deferred selector is emitted. The conformance machinery and its proof were not edited.
 
 The full test chain also exposed and closed a retained specimen defect. The grid markup used the unshipped `border` and `p-2` classes. The journey census rejected them with `expected [ 'border', 'p-2' ] to deeply equal []`; the initial chain reported `4 failed | 80 passed | 4 skipped (88)` for journeys. Removing those unused wrappers from the owned layout specimens makes the next chain report `84 passed | 4 skipped (88)`. The journey proof remains unchanged. Its capture-only cases account for those skips.
 
-The final gate chain ran in the required order on Windows on 2026-09-21. Browser projects used managed Chromium unless the command selected Edge. Logs use the `tmp/units/cl8-` prefix shown in the table.
+The final gate chain ran in the required order on Windows on 2026-09-21. Browser projects used managed Chromium unless the command selected Edge. Logs use the `cl8-` prefix shown in the table.
 
 | Command | Exit | Final result | Log suffix |
 | --- | --- | --- | --- |
@@ -247,7 +247,7 @@ The final `npm.cmd test` chain completed these projects before stopping:
 
 `test:setup:browser` and `test:guides` were not reached. Conformance passed independently before the chain. The app:browser project passed through `test:app`; the equivalent `npm.cmd run test:app:browser` alias was not separately invoked. A successor must close the excluded setup assertion and finish the required green chain and guide gate.
 
-An additional raw-width probe is flagged, not claimed green. It required exact equality with 200px, beyond the shipped test's `toBeCloseTo(..., 1)` assertion, and returned `199.984px` for Veneer's `.col-md-4` on a 600px row. A subsequent exact comparison with unminified Bootstrap returned `200px` for Bootstrap and failed too. The built Veneer percentage is `33.3333%`; the inventory records `33.33333333%`. The optional probe did not reach its Edge capture or write its final readings artifact. Its failures are retained in `tmp/units/cl8-browser-readings-2.log` and `tmp/units/cl8-browser-readings-final-2.log`. No shipped assertion was changed to absorb that difference. The passing suite establishes the authored tolerance and cascade behavior, not exact subpixel equality with unminified Bootstrap.
+An additional raw-width probe is flagged, not claimed green. It required exact equality with 200px, beyond the shipped test's `toBeCloseTo(..., 1)` assertion, and returned `199.984px` for Veneer's `.col-md-4` on a 600px row. A subsequent exact comparison with unminified Bootstrap returned `200px` for Bootstrap and failed too. The built Veneer percentage is `33.3333%`; the inventory records `33.33333333%`. The optional probe did not reach its Edge capture or write its final readings artifact. Its failures are retained in `cl8-browser-readings-2.log.txt` and `cl8-browser-readings-final-2.log.txt`. No shipped assertion was changed to absorb that difference. The passing suite establishes the authored tolerance and cascade behavior, not exact subpixel equality with unminified Bootstrap.
 
 The PowerShell logging wrapper was refused by the host's script-execution policy before invoking npm. Subsequent logged commands used Git Bash and `npm.cmd`, with native exit codes. The probe MCP was unavailable as the brief anticipated. No dependency installation or process-tree proof was attempted. Browser runs reported module-externalization warnings, and configuration tests reported API Extractor's bundled TypeScript-version warning; neither was their failing result.
 

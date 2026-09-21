@@ -34,49 +34,53 @@ verifier, and landed by a script that refuses any file outside the owned set.
 
 | Checkout | HEAD | Meaning |
 | --- | --- | --- |
-| Veneer | `a9172df` | CL7 landed and pushed; the tracked tree is clean unless a unit is live |
-| Scaffold | `27aa5dfd` | every record through CL7's landing retained and pushed |
+| Veneer | `d2c5bb3` | CL8 landed and pushed; the tracked tree is clean unless a unit is live |
+| Scaffold | confirm with `git log --oneline -1` | every record through CL8's landing retained and pushed |
 
 Landed in Veneer: CL1 `00a5bdc`, CL2 `9f5ffda`, CL3 `9bb306e`, CL3b `d822d59`, CL4 `bc580c1`,
-CL4b `5240e36`, CL5 `ea82419`, CL5b `4f817db`, CL5c `c1c81a4`, CL6 `c8f53f8`, CL7 `a9172df`. Each
-has a verdict file named for it.
+CL4b `5240e36`, CL5 `ea82419`, CL5b `4f817db`, CL5c `c1c81a4`, CL6 `c8f53f8`, CL7 `a9172df`,
+CL8 `d2c5bb3`. Each has a verdict file named for it.
 
-Shipping keys: the reboot key, the button, the typography and content keys, the link key, and the
-container key. **Each of those units' objective lane compared its key's inventory selector set
-against the built cascade in both directions and found them equal**, which is the accounting this
-family exists to produce.
+Shipping keys: the reboot key, the button, the typography and content keys, the link key, the
+container key, and the grid's row, col, and offset keys. **Each unit's objective lane compared its
+key's inventory selector set against the built cascade in both directions and found them equal**,
+which is the accounting this family exists to produce.
 
-**The shared-block rule enforces itself.** `scanStyleBlocks` in `tests/setupConformance.ts`
-sweeps every partial under `src/styles/` recursively — a population that includes the mixins
-file itself — and a case asserts the tree carries no cross-file shared block. One bound rides on
-the next unit that touches it, holding four false negatives in constructs the tree does not
-contain.
+**Three standing proofs enforce the accounting, and each catches a different class.**
 
-**The ramp binds its tokens in both directions.** A case in `tests/setupStyles.test.ts` compiles
-the real `breakpoints()` map, drops the zero boundary, and compares the remaining names against
-the registry's container keys as sets. A ramp boundary added without its token reddens there, and
-a container token with no ramp member reddens too. The chain continues: the `:root` set assertion
-forces every registry leaf to be a declared custom property, so a generated rule cannot name a
-variable that does not exist.
+- `scanStyleBlocks` sweeps every partial under `src/styles/` recursively — a population that
+  includes the mixins file — and a case asserts the tree carries no cross-file shared block. It has
+  now caught three units. When a brief tells a unit to copy a pattern from another partial, grant
+  that partial: the honest fix reaches both copies.
+- A case in `tests/setupStyles.test.ts` compiles the real `breakpoints()` map and compares the
+  non-zero names against the registry's container keys as sets, and compares the zero names against
+  the ramp's own zero keys. A ramp boundary added without its token reddens, and so does the reverse.
+- A case in the same file compares the built cascade's grid selector and media-condition **multiset**
+  against the pinned record minus the guide's deferrals. This is the only proof that runs from the
+  cascade back to the record, so it is the only one that catches a selector shipping that the record
+  does not carry. It covers the grid keys alone; extending it to every key is a candidate unit.
 
-## What to do first: CL8, the grid and gutters
+**Two gaps in the accounting are measured and waiting on the user**, in
+`units/value-accounting-finding.md`: nothing compares declaration values at all, and nothing rejects
+an unrecorded selector outside the grid keys. Both are the same gap — the accounting runs one way —
+and closing them is one unit with a departure table beside the deferral table. It moves the family's
+exit criterion, so it is a rescope rather than a re-baseline.
 
-**CL7 is closed.** Its scout is dispatched for CL8's terrain.
+## What to do first: CL8b, the gutter and gap step utilities
 
-**CL8** is the grid and gutters — the `row`, `col`, `offset`, `g`, `gx`, and `gy` keys, the largest
-remaining unit by key count, and the first whose keys are generated families rather than fixed
-selector lists. Its terrain brief is `units/cl8-scout-brief.md`, dispatched on Cursor Grok over the
-CL7 landing. Map the terrain before briefing, never during a live writer: this campaign has twice
-had a map go stale under one, once caught only by luck.
+**CL8b's brief is written and its rulings are settled** — `units/cl8b-brief.md` over
+`units/cl8b-rulings.md`, both from measurement rather than a scout, so no terrain unit is needed.
+Scope-read the brief, then dispatch `sol` on Astra over the CL8 landing.
 
-CL7 leaves CL8 the pattern to follow and three bounds to carry. The pattern is the container
-partial and its proof: a loop over the ramp that skips the zero boundary and accumulates named
-variants, a proof that drives real viewport resizes and reads resolved values rather than tokens,
-and case tables that live in `tests/setupStyles.ts` carrying no assertions of their own. The bounds
-are the container variant table, a literal list that no assertion binds to the ramp, so a later ramp
-boundary would ship a variant class with no browser reading of its own — derive a variant list from
-the ramp instead; and the ordering and annotation slips in the showcase wiring and the setup tables,
-which CL8 writes next.
+It ships the `g`, `gx`, `gy`, and `row-gap` keys and closes the `row` key by shipping the selectors
+CL8 deferred to it, deleting those deferral rows as it goes. Two rulings decide it and the brief
+carries both. The steps take a scale of their own carrying no density factor, because every Veneer
+space token is multiplied by that factor and the gutter tokens are not, so reading the space scale
+would make a utility and the default it overrides disagree at any density but the identity. And the
+gutter classes ship as Bootstrap groups them, two rules per step, because the record carries each
+combined class twice and Bootstrap's own distribution shows that faithful — a single rule per step
+resolves identically and still reddens CL8's multiset proof.
+
 ## Then CL9 to CL13
 
 Per `content-layout-design-verdict.md` § Units (the routing ledger is there). Brief each from
@@ -85,8 +89,14 @@ the analyst's unit (`units/content-layout-design-analyst-report.md`); scope-read
 
 - **CL9** tables. **CL10** helpers: the icon-link, ratio, and vertical-rule keys. **CL11**
   journeys and captures. **CL12** the guide. **CL13** the portfolio verdict.
-- **CL8** carries CL7's container variant table, which no assertion binds to the ramp, and the
-  ordering and annotation slips in the showcase wiring and the setup tables.
+- **CL8b** carries the `.row-gap-*` deferral rows CL8 assigned it, and the multiset behaviour that
+  fixes its two-rule gutter shape.
+- **A candidate successor unit** carries CL8's built-side findings with the measurement in
+  `units/value-accounting-finding.md`: the projects that read the built artifact run no build of
+  their own, and the emitted-vocabulary population misses a re-layered or descendant-combinator
+  emission. Both sit with the value-accounting proposal, which is the user's call.
+- **Whichever unit first ships a family recorded under a downward condition** carries CL8's finding
+  that the condition normalizer equates only the minimum-width spelling.
 - **CL11** carries `visitBreakpoint`'s bare `finally`, the hold's uncased refusals, the U7c
   `resolveButton` rename, and `driveOracle` root scoping.
 - **CL12** carries every guide bound a unit reported, including CL7's: a token-table sentence that
@@ -101,6 +111,7 @@ the analyst's unit (`units/content-layout-design-analyst-report.md`); scope-read
 After this family: six more families — Passive, Forms, Disclosure and navigation, Overlays and
 feedback, Helpers and utilities, and Cross-cutting — then the package is finished and published.
 Publishing is the user's decision and runs on a one-time code.
+
 ## Standing rulings from the user (binding)
 
 - **The Content/layout family is the baseline, and conformance is the deliverable.** The user's

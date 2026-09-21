@@ -7,7 +7,7 @@ directly and spawn nothing.
 
 ## Objective
 
-Rule on whether `C:/Users/mikes/WebstormProjects/scaffold/tmp/units/cl8-brief.md` can be dispatched
+Rule on whether `C:/Users/mikes/WebstormProjects/scaffold/.orkestrel/veneer/units/cl8-brief.md` can be dispatched
 as written. Report every defect that would stop, misdirect, or under-scope the unit, each with a
 `file:line` site and the correction it needs. End with one terminal line: `Dispatch: go`, or
 `Dispatch: fix` naming the defects that force it.
@@ -16,7 +16,7 @@ This is a pre-dispatch check of a brief, not a review of code. The unit has not 
 
 ## The subject
 
-The brief at `tmp/units/cl8-brief.md`, against the live Veneer checkout at
+The brief at `cl8-brief.md`, against the live Veneer checkout at
 `C:/Users/mikes/WebstormProjects/veneer`, which sits clean at commit `a9172df`.
 
 Supporting records, for what the brief inherits rather than for its correctness:

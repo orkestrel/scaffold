@@ -99,3 +99,95 @@ standing ruling that audits cover implementation only, neither is a finding.
 Round 1 verdict: **fix round**, carrying the subjective lane's claim 6 and the objective lane's
 findings 12, 13, 14, and 15. The checker and the verifier returned `Verdict: accept` on their own
 slices.
+
+## Round 2 (2026-09-21), the fix round under brief 4
+
+The fix round closed both forcing findings and the three that rode with them. Claims:
+`cl8-audit-claims-2.md`. Lanes, launched together and blind: analyst on Astra holding the SUBJECTIVE
+lane (`units/cl8-audit-2-analyst-report.md`, Codex thread
+`01a0c63c-2f0e-73f0-8008-cb07c652e050`, exit 0); reviewer on Opus 5 holding the OBJECTIVE lane
+(`units/lane-cl8-2-reviewer.md`, workflow `wf_9f0ebbc3-9f2`); checker on Sonnet
+(`units/lane-cl8-2-checker.md`); verifier on Sonnet (`units/lane-cl8-2-verifier.md`) over
+`units/cl8-gate-2-brief.md`.
+
+| Claim | Reviewer (objective, Opus) | Analyst (subjective, Astra) | Checker | Verifier |
+| --- | --- | --- | --- | --- |
+| 1 the emitted vocabulary is bound to the record | CONFIRMED (**traced every operand to its source**: the cascade through the reader the conformance proof uses, the record through the raw pinned fixture rather than the projecting reader — which is necessary, because that reader drops the condition the comparison needs — and the deferrals through their parser. The comparison retains duplicates and is pinned to do so, and the notation equivalence is real: the artifact and the record spell the same condition differently) | CONFIRMED (**ran the collector read-only against the live artifact** and rejected an omitted selector, an added one, a duplicate conditioned one, and an emitted deferred name) | CONFIRMED (confirmed the collector returns a sorted array with duplicates retained rather than a set) | `test:setup` exit 0, its case total risen by the round's new cases |
+| 2 it reddens in both directions | CONFIRMED on falsifiability by construction; the runs report-only. **Ruled on the plant site**: the built-artifact plant proves both directions, and the source-to-cascade step is closed by round 1's own attack and by the gate chain rebuilding before this project runs. The residual — a source edit in a run that does not rebuild — is finding 7 | UNDECIDABLE for the historical runs; **repeated the source attack itself in memory** and found the retained comparison rejected the selectors an extended step list emits | Report-only, as the claim states | — |
+| 3 the assertion that could not fail is falsifiable | CONFIRMED (the readings are a literal table with no reference to the constructing expression, and round 1's self-derivation is gone from the diff) | CONFIRMED on implementation; **ruled the literal form the right trade**: a wrong literal disagrees with the construction, while a changed boundary still faces the separate ramp binding, so re-pinning keeps an independent check that re-derivation would destroy | — | — |
+| 4 the three non-forcing findings are closed | CONFIRMED (**ruled the zero-row binding against the failure it was named for**: the ramp compiler no longer filters the zero member, so a second zero entry changes exactly one operand and reddens on either side; both consumers key on boundary; the extracted function has its callers and its place in the exports set; the showcase selector addresses the specimen by an attribute that carries its name) | CONFIRMED (**rejected an added table name, an added ramp name, and a duplicate table name** in memory) | CONFIRMED (confirmed the compiler derives from every breakpoint and buckets in code, so a second zero key inflates the compared array) | — |
+| 5 nothing round 1 accepted moved | CONFIRMED (**compared blob hashes across the two patches**: the partial, the mixins, the container, the barrel, the guide, the listing, and the granted conformance assertion are identical in both) | CONFIRMED | CONFIRMED by the same comparison | — |
+| 6 scope, law, gates | CONFIRMED on scope, delta, and law (**ruled each near-miss**: the JSON default import is not a default export, and the two type positions typecheck for reasons it names); the gate half report-only | UNDECIDABLE as a whole; scope and law confirmed | CONFIRMED on scope and law; the gate half plainly outside the slice | **every step exit 0 on managed Chromium and Edge, status identical before and after**, scaffold audit clean on the planned paths |
+
+Reconciliation. Every claim's substance is confirmed by every lane that could rule on it, and the
+lanes agree on which halves are report-only. The gate half three lanes referred is closed by the
+verifier's own chain.
+
+**The question round 1 left open is closed from both ends.** The Orchestrator asked whether planting
+in the built artifact leaves the source-to-cascade step unproved, since round 1's attack was at
+source. The objective lane ruled that the step is closed by round 1's attack and by the gate chain's
+own build ordering. The subjective lane did better than rule: it re-ran the source attack itself and
+watched the retained comparison reject what an extended step list emits. So the chain holds end to
+end — a source edit reaches the cascade, and a cascade discrepancy reddens the assertion.
+
+**The proof is stronger than the unit's own controls established.** Between the two judgment lanes
+the retained collector was attacked with an omitted selector, an extra selector, a duplicate
+conditioned selector, an emitted deferred name, an added table name, an added ramp name, and a
+duplicate table name. Each was rejected. The duplicate case matters beyond this unit: it confirms
+the multiset behaviour that CL8b's two-rule gutter shape depends on.
+
+**The Orchestrator's first-party reading.** Before the round I confirmed that the project reading the
+built artifact runs no build of its own, that the reader throws on a missing artifact rather than
+passing, and that the conformance proof already reads the same artifact the same way. That is the
+substance of finding 7, and both lanes reached it independently.
+
+Findings, none forcing:
+
+- **Objective 7, to a successor unit.** The new proof reads the built artifact from a project that
+  runs no build, so a source edit followed by that project alone reads the previous build and
+  passes — the exact failure the proof exists to catch. It does not force a round because this is
+  the tree's established posture rather than something the round introduced: the conformance proof
+  reads the same artifact through the same reader from a project with no build step, and the gate
+  chain rebuilds before either runs. Closing it means making the build a prerequisite of the
+  projects that read the artifact, which touches a file no brief granted.
+- **Objective 8, a watch item.** The extracted ramp compiler imports `sass` dynamically from a
+  module the browser styles project loads as a setup file, where before this round that module
+  referenced no Node-only package. The risk is the dependency optimizer reloading the page mid-run
+  and failing a case unrelated to the change; the unit's own report notes one such reload. **The
+  authoritative independent run is green on both engines**, so the risk is latent rather than live.
+  Watch it on the next authoritative run of the browser projects.
+- **Objective 9, to whichever unit first ships a downward-condition family.** The condition
+  normalizer equates only the minimum-width spelling, so a family recorded under a maximum width and
+  emitted through the downward mixin would redden though the conditions agree. Inert today: every
+  grid condition in the record is a minimum width and the partial emits only the upward mixin.
+- **Objective 10, to the same successor as finding 7.** The built-side population anchors its prefix
+  test at the start of the selector and collects only media ancestry, so a grid class emitted as a
+  descendant of another selector, or moved into a different layer or wrapped in a support condition,
+  is invisible to the "nothing extra ships" half. Inert today: nothing in the tree emits either
+  shape and the whole cascade is one layer block.
+
+Round 2 verdict: **accept**. Every lane's terminal line was `Verdict: accept`.
+
+## Acceptance
+
+CL8 is accepted on both rounds. The grid ships the row, its column children, the row-column counts,
+the columns, and the offsets, at every condition the record carries, with nothing extra and every
+withheld name deferred to the unit that closes it. The emitted vocabulary is now bound to the record
+in both directions, which is the accounting this family exists to produce, and the binding was
+attacked from seven angles across two lanes without a survivor. The declaration values match the
+record once the logical-property ruling is applied, with one computed-equivalent difference recorded
+rather than closed. The extraction left the container's cascade byte-identical, proved by reading the
+substitution and by compiling both forms. Gates green on managed Chromium and Edge under an
+independent verifier, with the status identical before and after.
+
+Carried forward:
+
+- **To CL8b**, which ships the step utilities: the `.row-gap-*` deferral rows to delete, and the
+  multiset behaviour that fixes its two-rule gutter shape.
+- **To a successor unit**, with the accounting finding in `units/value-accounting-finding.md`:
+  findings 7 and 10, both about the built-side reading — a project that reads the artifact without
+  building it, and a population that misses a re-layered or descendant-combinator emission.
+- **To whichever unit first ships a downward-condition family**: finding 9.
+- **As a watch item on the next authoritative browser run**: finding 8.
+- **Accepted as a difference**: the breakpoint-scoped zero offset emitting a percentage zero where
+  the record carries a unitless zero.

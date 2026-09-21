@@ -13,7 +13,7 @@
 set -u
 SCAFFOLD="C:/Users/mikes/WebstormProjects/scaffold"
 VENEER="C:/Users/mikes/WebstormProjects/veneer"
-LOG="$SCAFFOLD/tmp/units/cl8-land.log.txt"
+LOG="$SCAFFOLD/.orkestrel/veneer/units/cl8-land.log.txt"
 ALLOWED=" src/styles/components/_container.scss tests/setupConformance.test.ts app/browser/Showcase.ts app/browser/constants.ts app/browser/index.ts app/browser/sections/LayoutSection.ts guides/veneer.md src/styles/_mixins.scss src/styles/index.scss tests/app/browser/sections/LayoutSection.test.ts tests/conformance.test.ts tests/setupStyles.test.ts tests/setupStyles.ts "
 exec > >(tee -a "$LOG") 2>&1
 echo "== $(date -u +%Y-%m-%dT%H:%M:%SZ) land start"
@@ -36,7 +36,7 @@ for file in $CHANGED; do
 done
 if [ -z "$CHANGED" ]; then echo "refused: nothing to land"; exit 2; fi
 git add -- $CHANGED || exit 2
-git -c core.hooksPath=/dev/null commit -q -F "$SCAFFOLD/tmp/units/cl8-land-message.txt" || exit 3
+git -c core.hooksPath=/dev/null commit -q -F "$SCAFFOLD/.orkestrel/veneer/units/cl8-land-message.txt" || exit 3
 git log --oneline -1
 git status --porcelain --untracked-files=all | grep -v '^?? tmp'
 git push -q origin main 2>&1 | tail -1

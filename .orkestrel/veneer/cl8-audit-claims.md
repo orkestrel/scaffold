@@ -7,7 +7,7 @@ it. Reports: `units/cl8-report.md` and `units/cl8-report-2.md`, each a stop, and
 `units/cl8-report-3.md`, the run that finished. Terrain: `units/cl8-scout-report.md`, which the
 briefs supersede where they differ. Scope read: `units/cl8-scope-read-report.md`.
 
-Evidence: the rendered diff `tmp/audit/cl8-diff.patch` and status `tmp/audit/cl8-status.txt`, the
+Evidence: the rendered diff `units/cl8-diff.patch.txt` and status `tmp/audit/cl8-status.txt`, the
 live tree, and the built `dist/src/styles/index.css`.
 
 **Scope of this audit.** Implementation only: correctness, rule compliance, test sufficiency, scope

@@ -23,7 +23,7 @@ and got that selector in the cascade while both binding operands still agreed, b
 moved. The presence scan does not catch it either: it checks that required names are present, never
 that no extra name ships.
 
-**You already wrote the fix.** `tmp/units/cl8-emission.mjs` compares the built cascade's grid
+**You already wrote the fix.** `cl8-emission.mjs` compares the built cascade's grid
 selectors and media conditions against the inventory minus the deferred families, normalizing
 selector whitespace and equivalent minimum-width notation, and its controls reject a removed
 condition and an added withheld selector. It is a launch-directory instrument rather than a proof.

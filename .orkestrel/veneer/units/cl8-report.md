@@ -28,7 +28,7 @@ The Unknowns have these outcomes.
 | Row-column and column collision | The authored cascade places flexible columns before row-column counts and numbered columns after them. The browser proof asserts that the count overrides a flexible column and that a numbered width overrides the count. This behavior remains unverified because the browser proof has not run. |
 | Shared-block sweep | Failed. The container and row share the gutter aliases. The container and row-child rule also share full inline size and inline gutter padding. The required extraction reaches the off-limits container partial. |
 
-The sweep command was `npm.cmd run test:setup -- tests/setupStyles.test.ts`, with exit code `1`. Its log is `tmp/units/cl8-setup-initial.log`. The failure identifies these shared declarations.
+The sweep command was `npm.cmd run test:setup -- tests/setupStyles.test.ts`, with exit code `1`. Its log is `cl8-setup-initial.log.txt`. The failure identifies these shared declarations.
 
 ```text
 components/_container.scss:11 and components/_grid.scss:6

@@ -4,8 +4,8 @@ Subject: the whole CL8 change in the Veneer checkout (`C:/Users/mikes/WebstormPr
 over the base `a9172df` (the CL7 landing), after the fix round `sol` ran under
 `.orkestrel/veneer/units/cl8-brief-4.md` (over briefs 3, 2, and 1, in force beneath it). Round 1's
 verdict is `.orkestrel/veneer/cl8-audit-verdict.md`; the fix report is `units/cl8-report-4.md`.
-Evidence: the rendered diff `tmp/audit/cl8-diff-2.patch` and status `tmp/audit/cl8-status-2.txt`,
-round 1's `tmp/audit/cl8-diff.patch` for a diff-to-diff reading, the live tree, and the built
+Evidence: the rendered diff `units/cl8-diff-2.patch.txt` and status `tmp/audit/cl8-status-2.txt`,
+round 1's `units/cl8-diff.patch.txt` for a diff-to-diff reading, the live tree, and the built
 `dist/src/styles/index.css`.
 
 **Scope of this round.** Implementation only: correctness, rule compliance, test sufficiency, scope

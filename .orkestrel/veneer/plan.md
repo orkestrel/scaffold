@@ -1860,3 +1860,60 @@ decomposition, so CL8 splits and two keys stop being what the plan assumed.
   retunes — but CL8 takes no token for its column percentages, which are structural divisions of
   the grid rather than a scale.
 - **Unchanged:** CL9 to CL13.
+
+### Re-baseline after CL8 (2026-09-21, landed `d2c5bb3`)
+
+- **Satisfied: CL8, the grid rows, columns, and offsets.** The cascade carries the row with its
+  gutter aliases and negative margins, its direct children taking their share of the gutter, the
+  row-column counts, the flexible and automatic and numbered columns, and the offsets, each
+  unconditioned and at every breakpoint the ramp carries. Every selector the record carries under
+  the three keys ships at its condition, nothing extra ships, and every emitted declaration carries
+  the recorded value once the logical-property ruling is applied.
+  **The keys were prefix buckets and the accounting says so.** The row key also carries every
+  row-gap utility and the col key three form-label classes. Each withheld name has its own deferral
+  row naming the unit that closes it — the gap utilities to CL8b, the form-label classes to Forms,
+  which is their only inventory record. All three keys list, because a deferral records a departure
+  rather than withholding a key.
+  **The emitted vocabulary is now bound to the record in both directions**, which the commit message
+  does not state because it was written before the fix round. A retained assertion compares the built
+  cascade's grid selector and media-condition multiset against the record minus the guide's
+  deferrals, with every operand read from its real source. Across two audit lanes it was attacked
+  with an omitted selector, an extra selector, a duplicate conditioned selector, an emitted deferred
+  name, an added table name, an added ramp name, and a duplicate table name, and rejected each. This
+  is the first unit whose accounting runs from the cascade back to the record rather than only
+  forward.
+  **Two stops, both the Orchestrator's fault, both now rules.** Brief 1 told the unit to copy the
+  container's gutter-alias pattern and then withheld that partial, so the standing shared-block sweep
+  fired on a duplication the unit could not fix inside its scope. Brief 1 also withheld the
+  conformance setup proof, dropping a grant CL7 held over the assertion that enumerates every
+  component carrying guide rows. Both rules landed in `.agents/orchestration.md` § Check the brief
+  before you send it, at `fe23b640` and `d3e2313f`.
+  **The extraction left the container untouched in effect.** The blocks the grid would have shared
+  moved to the mixins file as two mixins with two callers each, and the container's emitted cascade
+  is byte-identical — ruled by reading the substitution's declaration order and confirmed by
+  compiling both forms.
+  **Accepted as a difference:** the breakpoint-scoped zero offset emits a percentage zero where the
+  record carries a unitless zero, which resolves identically at every width.
+- **Added: a successor unit for the built-side reading**, carrying CL8's findings 7 and 10 with the
+  measurement in `units/value-accounting-finding.md`. The projects that read the built artifact run
+  no build of their own, so a source edit followed by one of those projects alone reads the previous
+  build; and the emitted-vocabulary population anchors its prefix test at the selector's start and
+  collects only media ancestry, so a re-layered or descendant-combinator emission is invisible to
+  the "nothing extra" half. Both are the tree's established posture rather than CL8's doing, and the
+  first touches a file no brief granted. **This unit is a candidate rather than scheduled work**: it
+  sits with the value-accounting proposal, which is the user's call because it moves the family's
+  exit criterion.
+- **Transformed: CL8b.** Its rulings are settled ahead of its brief from measurement rather than
+  scouting. The step utilities take a scale of their own carrying no density factor, because every
+  Veneer space token is multiplied by that factor while the gutter tokens are not, so reading the
+  space scale would make a utility and the default it overrides resolve to different lengths at any
+  density but the identity. And the gutter classes ship as Bootstrap groups them, two rules per step,
+  because the record carries each combined class twice and Bootstrap's own distribution shows that
+  faithful rather than flattened — a tidier single rule would resolve identically and still redden
+  CL8's multiset proof.
+- **Carried to whichever unit first ships a family recorded under a downward condition:** CL8's
+  finding 9, that the condition normalizer equates only the minimum-width spelling.
+- **A watch item on the next authoritative browser run:** CL8's finding 8, that the extracted ramp
+  compiler imports Sass dynamically from a module the browser styles project loads as a setup file.
+  The authoritative independent run is green on both engines, so the risk is latent.
+- **Unchanged:** CL9 to CL13.
