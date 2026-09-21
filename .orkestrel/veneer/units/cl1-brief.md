@@ -36,7 +36,7 @@ number is a re-read, never a stop):
   every `selector` and `variable` row reads `shipped`; `scanCompatibilityPresence` (about line
   623) requires every official selector string of a shipped key, less the deferrals, in the
   built cascade and names the first missing selector and its component; `readOracleInventory`
-  (about line 752) projects the pinned fixture `tests/fixtures/oracle/inventory.json` to
+  (about line 728) projects the pinned fixture `tests/fixtures/oracle/inventory.json` to
   selector strings.
 - `tests/conformance.test.ts` (about line 55) holds the explicit `listed` array, `['btn']`.
 - `tests/setupBrowser.ts`: `ORACLE_ACTIONS` (about line 221) drives by accessible name over the
@@ -51,6 +51,12 @@ number is a re-read, never a stop):
   (`node_modules/@vitest/browser/context.d.ts` about line 814).
 - The `src:styles` project loads `tests/setupBrowser.ts` under the `src/browser` environment
   boundary, which refuses a static `@app/browser` import there (U7c report 2, D1).
+- `tests/app/browser/integration.test.ts` is an existing consumer this unit does not own: it calls
+  `driveOracle(mounted.section, '')` and `driveOracle(mounted.section, 'reduced.')` (about lines
+  557 and 569) and, in its capture-membership case, `page.viewport(variant.width, variant.height)`
+  (about line 595) with no restore. Keep `driveOracle`'s signature so those calls compile and stay
+  green; the root scoping lives inside the driver and its actions. The journey's own viewport
+  call is the journey unit's (CL11), not this unit's: read it, change nothing there.
 - Host: Windows, Git Bash; run scripts as `npm.cmd run <name>`; managed Chromium is the
   default and Edge runs through `PLAYWRIGHT_CHANNEL=msedge`; the `prove` tool is blocked in
   this sandbox, so a red-then-green pair is recorded from real runs; a nested `git` or `npm
@@ -81,7 +87,7 @@ helper's browser proof belongs there rather than in `tests/setupBrowser.test.ts`
 `.claude/rules/tests.md` and record), the one sentence in `guides/veneer.md` that introduces
 the `### Deferred selectors` table (it gains the `Excluded` owner's meaning: a name no unit
 will ship, required absent from the cascade), `cl1-report.md`. Off-limits: `src/**`,
-`app/**`, every other test, `tests/fixtures/**`, `package.json`, `configs/**`, the vendored
+`app/**`, `tests/app/browser/integration.test.ts` (read-only, its calls preserved), every other test, `tests/fixtures/**`, `package.json`, `configs/**`, the vendored
 files, the rest of the guide.
 
 ## Execution
