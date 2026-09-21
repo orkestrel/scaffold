@@ -1457,3 +1457,18 @@ after acceptance per the debrief skill's retention reference.
   it; the lane ruled on the claims file's numbering and recorded the mismatch, and no ruling rests
   on it. **Unchanged:** CL4 next (`units/cl4-brief.md`, placeholder `CL3_LANDING_SHA` takes
   `d822d59`), then CL5 to CL13.
+- 2026-09-21, CL4 dispatched on Astra under `units/cl4-brief-2.md` over `units/cl4-brief.md`,
+  after a scope read (`units/cl4-scope-read-report.md`) confirmed every ownership mark, corrected
+  the `MANDATED_TAG_PAIRS` citation, and read the presence scan's mechanics out of the code: a
+  shipped row's selector must appear in the built cascade by exact normalized equality with the
+  inventory's text, `walkRules` recursing into nested and grouped rules, and an `Excluded` name
+  must be a whole selector validated against every component and absent from the cascade. The
+  Orchestrator additionally read the fixture and `readOracleInventory` and recorded in brief 2
+  that the `reboot` component's projected property list is empty (no custom-property obligation)
+  and its selector list carries 117 entries, which is the population the partials must satisfy.
+  Brief 2 also carries what the read settled: every CL4 family is unowned, `_button.scss` carries
+  none of the reboot selectors yet, the elements-layer guard admits a vendor pseudo-element or an
+  attribute-only selector without an edit, the app barrel is a wildcard, the section proof's fixed
+  count and sequence grow, `collectShippedComponents` moves with `listed`, the reset partial's
+  universal and hidden rows already satisfy their inventory rows in the reset layer, and no
+  `option` selector exists. **Unchanged:** CL5 to CL13.
