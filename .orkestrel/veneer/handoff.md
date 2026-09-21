@@ -109,15 +109,13 @@ a CL unit exec has taken 30 to 45 minutes under the script's own `timeout 7200`)
    and gates claim; correct the two wording items round 1 refuted: `abbr[title]` is the only
    `abbr` rule, and `_var.scss` carries the record's shorter stack); copy it to
    `cl3-audit-claims-2.md`.
-3. Launch round 2's four lanes together, blind to each other, with `-2` kits derived by `sed`
-   from the `TMP/` round-1 kits (never from the retained copies), as `units/cl2-audit-2-*` were
-   from CL2's: `TMP/units/cl3-audit-2-reviewer-brief.md` (OBJECTIVE, Opus) and
-   `TMP/units/cl3-audit-2-checker-brief.md` naming `cl3-audit-claims-2.md`, `cl3-diff-2.patch`,
-   `cl3-status-2.txt`, and `units/cl3-brief-4.md` and `units/cl3-report-3.md` as the effective
-   brief and report; `TMP/codex/cl3-audit-2-analyst.sh` and `cl3-audit-2-analyst-watch.sh`
-   (SUBJECTIVE, Astra; run the script as a background command with a Monitor on the watch; an
-   audit lane has taken 10 to 20 minutes); a Workflow script copied from `units/cl3-audit-wf.js`
-   to `units/cl3-audit-2-wf.js` naming the `-2` briefs and the unchanged
+3. Launch round 2's four lanes together, blind to each other. The `-2` kit is already derived
+   and on disk: `TMP/units/cl3-audit-2-reviewer-brief.md` (OBJECTIVE, Opus) and
+   `TMP/units/cl3-audit-2-checker-brief.md` name `cl3-audit-claims-2.md`, `cl3-diff-2.patch`,
+   `cl3-status-2.txt`, `units/cl3-brief-4.md`, and `units/cl3-report-3.md`;
+   `TMP/codex/cl3-audit-2-analyst.sh` and `cl3-audit-2-analyst-watch.sh` (SUBJECTIVE, Astra: run
+   the script as a background command with a Monitor on the watch; an audit lane has taken 10
+   to 20 minutes); `units/cl3-audit-2-wf.js` names the `-2` briefs and the unchanged
    `TMP/units/cl3-gate-brief.md`, run as
    `Workflow({ scriptPath: 'C:/Users/mikes/WebstormProjects/scaffold/.orkestrel/veneer/units/cl3-audit-2-wf.js' })`
    (a round has taken 5 to 16 minutes). Do not type into the session while a Workflow runs: the
