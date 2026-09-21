@@ -1170,3 +1170,11 @@ after acceptance per the debrief skill's retention reference.
   proof file (a bound for the next setup unit); the registry serves later majors of
   `@vitest/browser-playwright`, `typescript`, and `vitest` (the user's call). U7c dispatches on
   Opus over `0cbb563` with the U7b landing's `Delegate` reading (root membership) in its message.
+- 2026-09-21, U7c dispatched on native Opus over Veneer `0cbb563` after a clean checker scope
+  read of `units/u7c-brief.md` against the landed tree (`units/u7c-scope-read-brief.md`,
+  `units/u7c-scope-read-report.md`: every named path resolves, every re-taken reading holds,
+  every falsified assertion is owned, no vendored path owned). The dispatch message
+  (`units/u7c-dispatch-message.txt`) carries the re-taken readings, the root-membership
+  `Delegate` rule, and the scoped formatter and lint rewrites as granted forms, so a line-fit or
+  alias diagnostic is not a stop. Opus writes, so the U7c audit gives the objective lane to the
+  Astra analyst and the subjective lane to the Opus reviewer.
