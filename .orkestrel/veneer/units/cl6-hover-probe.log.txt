@@ -1,0 +1,9 @@
+== what the record carries
+light rest, from oklab             srgb 0.051055 0.212846 0.672640   rgb(13, 54, 172)
+light hover, as recorded           srgb 0.040793 0.170295 0.538144   rgb(10, 43, 137)
+dark rest, from oklab              srgb 0.311424 0.725670 0.931488   rgb(79, 185, 238)
+dark hover, as recorded            srgb 0.248988 0.580565 0.745237   rgb(63, 148, 190)
+
+== the candidate expressions
+primary light, oklch(48% .255 264) srgb 0.031808 0.253975 0.916022   rgb(8, 65, 234)
+primary dark, oklch(70% .15 233)   srgb 0.000000 0.675202 0.924215   rgb(0, 172, 236)

@@ -1726,3 +1726,26 @@ after acceptance per the debrief skill's retention reference.
   `src/styles/` reads the older highlight token pair, so a consumer retuning it sees nothing move;
   whether it stays as a Bootstrap-compatibility alias or is removed is the user's decision.
   **Unchanged:** CL6 dispatched over this landing; CL7 to CL13.
+- 2026-09-21, CL6 stopped before implementation and was relaunched (`units/cl6-report.md`, thread
+  `01a0c573-adf2-7b10-82e6-aee5c3eab882`, exit 0; relaunch thread
+  `01a0c578-5ed7-72d3-bf4f-528500d4673d`). The stop was correct and the tree was untouched: the
+  calibration record gives the anchor's hover colour as a resolved triple and shows the
+  specimen's own colour property identical at rest and hover, so it never states how the hover
+  colour is produced, and the brief's stop condition existed to prevent binding a number whose
+  mechanism the unit could not name. **The Orchestrator resolved it by measurement, not by
+  ruling** (`units/cl6-hover-probe.mjs`, `units/cl6-hover-mechanism.md`): converting the
+  record's rest colours to sRGB and dividing the recorded hover channels by them gives 0.799 to
+  0.800 on every channel in both modes, and multiplying each rest channel by 0.8 reproduces the
+  recorded hover to within the rounding of the record's own decimals. So the hover colour is the
+  rest colour at eighty percent in sRGB, which is what mixing twenty percent black produces.
+  **Two consequences:** the mechanism is identical in both modes, so Elements darkens on hover in
+  dark mode while Veneer currently lightens by mixing white; and Veneer already uses this
+  expression in light mode on a different base, so the retune is a change of base plus a change
+  of direction in dark, not a new mechanism. `units/cl6-brief-3.md` carries the binding and the
+  relaunch names it.
+  **The user's framing, landed as a standing ruling:** the Content/layout family is the baseline
+  and conformance is the deliverable, so every selector a key carries ends shipped, excluded with
+  a recorded reason, or recorded as a departure, and none ends unaccounted for; prefer the
+  machine-checkable form of any accounting over the prose form, so a future Bootstrap major is a
+  re-pin and a scan rather than an archaeology exercise. **Unchanged:** CL7 briefed at
+  `units/cl7-brief.md`, not yet scope-read; CL8 to CL13.

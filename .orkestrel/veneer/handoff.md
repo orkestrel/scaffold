@@ -104,6 +104,16 @@ reuses the U7f portfolio shape (`u7f-verdict.md`, `units/u7f-harness-3.mjs`,
 
 ## Standing rulings from the user (binding)
 
+- **The Content/layout family is the baseline, and conformance is the deliverable.** The user's
+  framing, stated during CL6: these units exist to nail down the source and the proofs, with
+  Bootstrap fully accounted for and every addition, removal, and change recorded, so movement is
+  noticed and a future Bootstrap major can be tracked rather than guessed at. Read every unit's
+  obligations in that light. **Every selector a key carries ends shipped, excluded with a
+  recorded reason, or recorded as a departure, and none ends unaccounted for.** A departure only
+  a person would notice is not recorded; a departure a scan or a proof catches is. Prefer the
+  machine-checkable form of any accounting over the prose form, which is the same ruling as
+  implementation over prose applied to the ledger.
+
 - Implementation over prose. Comments and guides are the bare minimum to pass; audits cover
   implementation only (correctness, rule compliance, test sufficiency, scope honesty). A
   wording finding is a bound folded into the next implementation unit, never a fix round.
