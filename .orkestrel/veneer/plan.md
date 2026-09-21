@@ -1213,3 +1213,16 @@ after acceptance per the debrief skill's retention reference.
   `units/prose-bounds-carry.md`). Carried forward: reviewer round-2 finding 10 to the second
   section's unit; the Test-side `captureFrame` and `readStates` findings to the Test 0.0.19
   release unit; the paint calibration readings and the two deferral grammars to the user.
+- 2026-09-21, re-baseline after U7c: **added** U7f, the Button portfolio verdict the U7 acceptance
+  clause and the exit criterion already require ("captured acceptance against Elements'
+  specimens, ruled through the `orkestrel-polish-surface` skill"). A Grok scout of the Elements
+  checkout (`units/elements-button-scout-report.md`) finds no capture harness, no state grid,
+  and no rendered comparison artifact there, only the numeric calibration Veneer already reads
+  from Elements' built showcase, so the Elements side is produced by a throwaway spawned harness
+  the Orchestrator owns (`units/u7f-harness-brief.md`, `builder`), and the verdict round runs
+  the three lanes the skill names (subjective design fit, objective state truth, mechanical
+  inventory) on one portfolio: Veneer's 48 frames and per-variant artifacts from the U7c
+  capture run (preflighted: non-blank frames, non-empty accessibility trees, step logs, empty
+  console logs) beside Elements' frames. U7e (the guide) runs in parallel because it owns
+  `guides/veneer.md` alone. **Unchanged**: the component queue after U7. Not a rescope: the exit
+  criterion already named the captured acceptance.
