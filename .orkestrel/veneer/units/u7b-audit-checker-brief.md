@@ -18,9 +18,9 @@ audits cover implementation only: report no wording, comment, doc-block, or guid
 The Orchestrator rendered the diff over the Veneer checkout's `91e5906` at
 `C:/Users/mikes/WebstormProjects/scaffold/.orkestrel/veneer/units/u7b-diff.patch.txt` (tracked and untracked
 files) and the status at `tmp/audit/u7b-status.txt`. Read those and the live Veneer tree at
-`C:/Users/mikes/WebstormProjects/veneer` (`src/browser/**`, `tests/src/browser/**`,
+`C:/Users/mikes/WebstormProjects/veneer` (`src/browser/**`, `src/core/errors.ts`, `src/core/index.ts`, `tests/src/browser/**`, `tests/src/core/**`,
 `package.json`, `configs/**`). Read the retained report
-`.orkestrel/veneer/units/u7b-report.md` only to learn what the unit claims; rule on the tree.
+`.orkestrel/veneer/units/u7b-report-2.md` (with `u7b-report.md`) only to learn what the unit claims; rule on the tree.
 
 ## Probes
 

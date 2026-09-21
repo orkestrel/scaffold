@@ -1114,3 +1114,13 @@ after acceptance per the debrief skill's retention reference.
   `forks` pool instead. Carried: the `event` binding apparatus returns with the first real
   `btn | event` ledger row; the installed reader's forced-colours limit is a Test-side bound.
   Next: U7b on the bench from `91e5906`.
+- 2026-09-21, U7b returned complete on Astra from the tidy landing `91e5906` (thread
+  `01a0c1cf-d569-7140-8e47-d0a6d15c56bd`, `units/u7b-report.md`): `Button` and `Delegate` flat
+  in `src/browser/`, `emitEvent` and `bindEventMap` in `helpers.ts`, the `isButtonHost` and
+  `isButtonEvent` guards, the barrel registering no listener on import, the two controls red and
+  restored, every gate exit 0 on Chromium and Edge; no new surface. One deviation: the
+  constructor refusals throw a native `TypeError` where `typescript.md` requires an `AppError`
+  with a `code` and a guard, and the brief granted no `errors.ts` (the Orchestrator's omission).
+  Ruled: `AppError` and `isAppError` live in `src/core/errors.ts` (host-independent, reached
+  through the core barrel). `units/u7b-brief-2.md` carries the ruling and relaunched
+  (`units/u7b-2.sh`).

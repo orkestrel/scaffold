@@ -32,7 +32,7 @@ site and a one-line failure scenario.
 ## Context
 
 The retained records sit under `C:/Users/mikes/WebstormProjects/scaffold/.orkestrel/veneer/`:
-`units/u7b-brief.md` (the brief), `units/u7b-report.md` (the report), `u7-design-verdict.md`
+`units/u7b-brief-2.md` (the effective brief, carrying `units/u7b-brief.md`: the `AppError` contract in `src/core/errors.ts`), `units/u7b-report.md` and `units/u7b-report-2.md` (the reports), `u7-design-verdict.md`
 (questions 1 to 4 and § The user's correction: no `auto` entry, no adapter, no Bootstrap method
 spellings; `Delegate` behind the existing `./browser` barrel), `units/u7-design-planner-report.md`
 §§ 1 to 4, `units/u7-design-analyst-report.md`. Law: scaffold's `AGENTS.md`,
