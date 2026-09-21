@@ -63,3 +63,37 @@ Findings:
 ### Terminal (round 1)
 
 Verdict: fix round. `units/cl2-brief-3.md` on Opus (the writer); Astra stays the objective auditor.
+
+## Round 2 (2026-09-21, the fix round under `units/cl2-brief-3.md`)
+
+Lanes: analyst on Astra holding the OBJECTIVE lane (`units/cl2-audit-2-analyst-report.md`,
+thread `01a0c386-6bb1-72f2-a343-bbc58bad152f`, exit 0); reviewer on Opus 5 holding the
+SUBJECTIVE lane (`units/lane-cl2-2-reviewer.md`, workflow `wf_7897df4d-942`); checker on Sonnet
+(`units/lane-cl2-2-checker.md`); verifier on Sonnet (`units/lane-cl2-2-verifier.md`) over
+`units/cl2-gate-brief.md`. Opus wrote the unit and the fix, so the lanes stay swapped from round
+1 and the objective auditor is an engine that did not write the work. Claims:
+`cl2-audit-claims-2.md`; evidence `units/cl2-diff-2.patch.txt` and `units/cl2-status-2.txt` over
+the base `00a5bdc`; fix report `units/cl2-report-2.md`.
+
+| Claim | Analyst (objective, Astra) | Reviewer (subjective, Opus) | Checker | Verifier |
+| --- | --- | --- | --- | --- |
+| 1 hidden constant folded | CONFIRMED (AST: no hidden declaration; the extracted function executed on both spellings) | CONFIRMED (pattern read; the setup proof byte-identical between rounds) | CONFIRMED | — |
+| 2 two-width gates | CONFIRMED (a duplicate or reversed reading violates `[576, 768]`); plant run report-only | CONFIRMED; plant run report-only | CONFIRMED | — |
+| 3 non-failing assertion replaced | CONFIRMED (the installed flat walk cannot associate a selector with its gate) | CONFIRMED (`.vn-probe-open` declared and ungated) | CONFIRMED | — |
+| 4 stripe placement asserted | CONFIRMED (declaration inside `theme-tokens`; the built cascade declares `5%` in both scopes) | CONFIRMED (the assertion alone binds the closure) | CONFIRMED | — |
+| 5 scope, law, gates | CONFIRMED (raw diff: only the three owned files moved; the verifier's round-2 report read) | CONFIRMED on scope, identity, residue, and sweep; gate half assigned to the verifier | CONFIRMED | every step exit 0 on Chromium and Edge; status identical before and after; `scaffold audit` reports only the pre-existing `setupListeners` note and the three registry majors |
+
+Reconciliation. Every claim is CONFIRMED on every lane that could rule on it, and the verifier
+closes the gate half. The analyst's in-memory attacks (extra registry and cascade names, the
+guard's removal, the fixture conditions against the built tokens) all held. The reviewer's
+extra finding 6 is non-blocking and carried: the stripe assertion binds the dark closure alone,
+so a declaration at `:root` and inside the dark scope but not the light one would pass every
+case; the shipped source declares the property once inside `theme-tokens`, which both scopes
+include, so the gap needs a second deliberate edit to reach. Carrier: the next unit that owns
+`tests/src/styles/tokens.test.ts` (CL5, the typography tokens' consumer proofs, as planned),
+which reads the light scope in the same expectation or asserts the two scopes' canonical lists
+against each other in both directions.
+
+### Terminal (round 2)
+
+Verdict: accept. Land with `units/cl2-land.sh`.

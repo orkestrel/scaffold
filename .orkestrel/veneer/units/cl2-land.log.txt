@@ -1,0 +1,17 @@
+== 2026-09-21T10:38:57Z land start
+00a5bdc Teach the proofs the Content/layout contract (CL1)
+ M guides/veneer.md
+ M src/core/constants.ts
+ M src/styles/_mixins.scss
+ M src/styles/_tokens.scss
+ M tests/setupBrowser.test.ts
+ M tests/setupBrowser.ts
+ M tests/setupStyles.test.ts
+ M tests/setupStyles.ts
+ M tests/src/styles/fixtures/mixins.scss
+ M tests/src/styles/mixins.test.ts
+ M tests/src/styles/tokens.test.ts
+changed: guides/veneer.md src/core/constants.ts src/styles/_mixins.scss src/styles/_tokens.scss tests/setupBrowser.test.ts tests/setupBrowser.ts tests/setupStyles.test.ts tests/setupStyles.ts tests/src/styles/fixtures/mixins.scss tests/src/styles/mixins.test.ts tests/src/styles/tokens.test.ts 
+9f5ffda Land the Content/layout tokens and the breakpoint mixins (CL2)
+## main...origin/main
+== 2026-09-21T10:39:00Z land end

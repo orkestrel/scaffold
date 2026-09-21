@@ -1,0 +1,743 @@
+diff --git a/guides/veneer.md b/guides/veneer.md
+index f6edde9..dfb2d83 100644
+--- a/guides/veneer.md
++++ b/guides/veneer.md
+@@ -433,6 +433,7 @@ Each row gives one value for every mode, its `Source`, and the `--bs-*` variable
+ | `--vn-font-sans`                          | Elements' system stack, beginning `system-ui`                                         | `elements` — the family on every specimen       | `--bs-font-sans-serif`, `--bs-body-font-family`  |
+ | `--vn-font-mono`                          | Bootstrap's monospace stack                                                           | `bootstrap` — no Elements specimen renders code | `--bs-font-monospace`                            |
+ | `--vn-size-1` through `--vn-size-8`       | `0.75rem`, `0.875rem`, `1rem`, `1.125rem`, `1.25rem`, `1.5rem`, `1.875rem`, `2.25rem` | `elements` — the type table's 12 to 36 px steps | `--bs-body-font-size` reads `--vn-size-2`        |
++| `--vn-display-1` through `--vn-display-6` | `5rem`, `4.5rem`, `4rem`, `3.5rem`, `3rem`, `2.5rem`                                  | `bootstrap` — `$display-font-sizes`             | none                                             |
+ | `--vn-line-body`, `--vn-line-heading`     | `1.5`, `1.2`                                                                          | `elements` — the type table's rhythm            | `--bs-body-line-height` reads `--vn-line-body`   |
+ | `--vn-weight-body`, `--vn-weight-heading` | `400`, `600`                                                                          | `elements` — the type table's weights           | `--bs-body-font-weight` reads `--vn-weight-body` |
+ 
+@@ -442,17 +443,18 @@ The table lists the length tokens the layout is built from: the space scale, the
+ scale, and the elevation rungs. Each row gives its value, its `Source`, and the `--bs-*` variables
+ it answers, and a row whose dark mode differs writes the dark reading into its own `Value` cell.
+ 
+-| Token                                     | Value                                                                                                                                                                                                                                                                                                                                                                                 | Source                                              | Alias                                                                  |
+-| ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------- | ---------------------------------------------------------------------- |
+-| `--vn-space-1`                            | `calc(0.125rem * var(--vn-factor-density))`, giving 2 px                                                                                                                                                                                                                                                                                                                              | `derived` — the scale expression at N = 1           | none                                                                   |
+-| `--vn-space-2` through `--vn-space-8`     | the scale expression `calc(N * 0.125rem * var(--vn-factor-density))` at N = 2 through 8, giving 4 to 16 px                                                                                                                                                                                                                                                                            | `elements` — the space table's paddings             | none                                                                   |
+-| `--vn-border-width`, `--vn-border-style`  | `1px`, `solid`                                                                                                                                                                                                                                                                                                                                                                        | `elements` — every bordered specimen draws 1 px     | `--bs-border-width`, `--bs-border-style`                               |
+-| `--vn-border-color`                       | `oklch(0.869 0.022 252.894)`, dark `oklch(0.4 0.022 256)`                                                                                                                                                                                                                                                                                                                             | `elements` — border                                 | `--bs-border-color`                                                    |
+-| `--vn-border-translucent`                 | `color-mix(in srgb, var(--vn-palette-black-base) 17.5%, transparent)`, dark white at `15%`                                                                                                                                                                                                                                                                                            | `bootstrap` — Bootstrap's own translucent edge      | `--bs-border-color-translucent`                                        |
+-| `--vn-radius-small`, `-base`, `-large`    | `calc(0.25rem * var(--vn-factor-radius))`, `0.375rem`, `0.5rem` scaled the same way                                                                                                                                                                                                                                                                                                   | `elements` — the 4, 6, 8 px radius scale            | `--bs-border-radius-sm`, `--bs-border-radius`, `--bs-border-radius-lg` |
+-| `--vn-radius-xlarge`, `-xxlarge`, `-pill` | `1rem` and `2rem` scaled the same way, then `50rem`                                                                                                                                                                                                                                                                                                                                   | `bootstrap` — no Elements specimen renders them     | `--bs-border-radius-xl`, `-xxl`, `-2xl`, `-pill`                       |
+-| `--vn-shadow-1`, `-2`, `-3`               | Elements' hint, popover, and dialog pairs, each length in `rem` scaled by `var(--vn-factor-elevation)` and each color `rgba(var(--vn-palette-black-rgb), α)`: `0 0.0625rem 0.125rem` at `0.05` over `0 0.0625rem 0.1875rem` at `0.09`; `0 0.125rem 0.25rem` at `0.06` over `0 0.5rem 1rem -0.25rem` at `0.12`; `0 0.25rem 0.5rem` at `0.07` over `0 1.5rem 2.75rem -0.5rem` at `0.22` | `elements` — the elevation table                    | `--bs-box-shadow-sm`, `--bs-box-shadow`, `--bs-box-shadow-lg`          |
+-| `--vn-shadow-inset`                       | `inset 0 0.0625rem 0.125rem` at `0.075`, each length scaled by `var(--vn-factor-elevation)` and the color written the same way as the preceding rungs                                                                                                                                                                                                                                 | `bootstrap` — no Elements specimen renders an inset | `--bs-box-shadow-inset`                                                |
++| Token                                     | Value                                                                                                                                                                                                                                                                                                                                                                                 | Source                                                     | Alias                                                                  |
++| ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------- | ---------------------------------------------------------------------- |
++| `--vn-space-1`                            | `calc(0.125rem * var(--vn-factor-density))`, giving 2 px                                                                                                                                                                                                                                                                                                                              | `derived` — the scale expression at N = 1                  | none                                                                   |
++| `--vn-space-2` through `--vn-space-8`     | the scale expression `calc(N * 0.125rem * var(--vn-factor-density))` at N = 2 through 8, giving 4 to 16 px                                                                                                                                                                                                                                                                            | `elements` — the space table's paddings                    | none                                                                   |
++| `--vn-space-12`, `--vn-space-24`          | the same expression at N = 12 and N = 24, giving 24 px and 48 px                                                                                                                                                                                                                                                                                                                      | `bootstrap` — `$spacers` 4 and 5, read by the gutter scale | none                                                                   |
++| `--vn-border-width`, `--vn-border-style`  | `1px`, `solid`                                                                                                                                                                                                                                                                                                                                                                        | `elements` — every bordered specimen draws 1 px            | `--bs-border-width`, `--bs-border-style`                               |
++| `--vn-border-color`                       | `oklch(0.869 0.022 252.894)`, dark `oklch(0.4 0.022 256)`                                                                                                                                                                                                                                                                                                                             | `elements` — border                                        | `--bs-border-color`                                                    |
++| `--vn-border-translucent`                 | `color-mix(in srgb, var(--vn-palette-black-base) 17.5%, transparent)`, dark white at `15%`                                                                                                                                                                                                                                                                                            | `bootstrap` — Bootstrap's own translucent edge             | `--bs-border-color-translucent`                                        |
++| `--vn-radius-small`, `-base`, `-large`    | `calc(0.25rem * var(--vn-factor-radius))`, `0.375rem`, `0.5rem` scaled the same way                                                                                                                                                                                                                                                                                                   | `elements` — the 4, 6, 8 px radius scale                   | `--bs-border-radius-sm`, `--bs-border-radius`, `--bs-border-radius-lg` |
++| `--vn-radius-xlarge`, `-xxlarge`, `-pill` | `1rem` and `2rem` scaled the same way, then `50rem`                                                                                                                                                                                                                                                                                                                                   | `bootstrap` — no Elements specimen renders them            | `--bs-border-radius-xl`, `-xxl`, `-2xl`, `-pill`                       |
++| `--vn-shadow-1`, `-2`, `-3`               | Elements' hint, popover, and dialog pairs, each length in `rem` scaled by `var(--vn-factor-elevation)` and each color `rgba(var(--vn-palette-black-rgb), α)`: `0 0.0625rem 0.125rem` at `0.05` over `0 0.0625rem 0.1875rem` at `0.09`; `0 0.125rem 0.25rem` at `0.06` over `0 0.5rem 1rem -0.25rem` at `0.12`; `0 0.25rem 0.5rem` at `0.07` over `0 1.5rem 2.75rem -0.5rem` at `0.22` | `elements` — the elevation table                           | `--bs-box-shadow-sm`, `--bs-box-shadow`, `--bs-box-shadow-lg`          |
++| `--vn-shadow-inset`                       | `inset 0 0.0625rem 0.125rem` at `0.075`, each length scaled by `var(--vn-factor-elevation)` and the color written the same way as the preceding rungs                                                                                                                                                                                                                                 | `bootstrap` — no Elements specimen renders an inset        | `--bs-box-shadow-inset`                                                |
+ 
+ #### Motion, focus, validation, breakpoints, and stacking
+ 
+@@ -475,30 +477,40 @@ it answers, and a row whose dark mode differs writes the dark reading into its o
+ | `--vn-stack-popover`, `-hint`, `-toast`                  | `1070`, `1080`, `1090`                                                                              | `bootstrap` — retained from `$zindex-popover`, `$zindex-tooltip`, and `$zindex-toast`                                                               | none                                                                                                                 |
+ 
+ Veneer keeps Bootstrap's breakpoint names verbatim because a consumer predicts `--bs-breakpoint-md`
+-from `--vn-breakpoint-md`. The stacking ladder takes Veneer's own component words: `drawer` is
++from `--vn-breakpoint-md`. `src/styles/_mixins.scss` holds the one Sass source those widths are
++emitted from, and the `breakpoint-up` and `breakpoint-down` mixins gate a partial's declarations at
++the same widths: `breakpoint-up` reaches every viewport at and above a name's boundary, and
++`breakpoint-down` every viewport below it. The zero boundary is at or below every viewport and
++above none, so `breakpoint-up(xs)` emits its content unwrapped and `breakpoint-down(xs)` emits
++nothing. A name the ramp does not carry fails the build.
++
++The stacking ladder takes Veneer's own component words: `drawer` is
+ Bootstrap's offcanvas, `dialog` its modal, and `hint` its tooltip. Bootstrap declares that ladder as
+ Sass variables on its component rules rather than as root custom properties, so each rung retains
+ Bootstrap's own number and answers no `--bs-*` alias.
+ 
+ ### Button states and bindings
+ 
+-Button uses the following canonical defaults. The light mixer is the measured sRGB endpoint of
+-the bare hover fill, rather than literal black or the body-text token. The dark mixer is white.
++Button uses the following canonical defaults. The state tokens among them are shared, so a later
++component that tints a surface reads the same mixer and the same percentages. The light mixer is
++the measured sRGB endpoint of the bare hover fill, rather than literal black or the body-text
++token. The dark mixer is white.
+ The hover and active percentages reproduce the run-6 filled-role readings in managed Chromium
+ and Edge; the bare fills carry the same endpoint at the corresponding alpha.
+ 
+-| Token                     | Value                                                                                   | Source                                                                        | Alias                                           |
+-| ------------------------- | --------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- | ----------------------------------------------- |
+-| `--vn-state-mixer`        | light `color(srgb 0.00742457 0.0232852 0.0925134)`; dark `var(--vn-palette-white-base)` | `elements` — the bare hover and active endpoints                              | Button hover and active backgrounds             |
+-| `--vn-state-hover`        | `12%`                                                                                   | `elements` — hover tint                                                       | Button hover backgrounds                        |
+-| `--vn-state-active`       | `22%`                                                                                   | `elements` — active tint                                                      | Button active backgrounds                       |
+-| `--vn-button-opacity`     | `0.65`                                                                                  | `bootstrap` — retained disabled opacity; Elements' opacity was not calibrated | `--bs-btn-disabled-opacity`                     |
+-| `--vn-button-shadow`      | `none`                                                                                  | `elements` — button elevation                                                 | `--bs-btn-box-shadow`, `--bs-btn-active-shadow` |
+-| `--vn-button-transparent` | `transparent`                                                                           | `elements` — bare resting fill                                                | Neutral Button backgrounds and borders          |
+-| `--vn-button-face`        | `ButtonFace`                                                                            | `derived` — system button surface under forced colors                         | Button background fallbacks                     |
+-| `--vn-button-text`        | `ButtonText`                                                                            | `derived` — system button foreground under forced colors                      | Button foreground and border fallbacks          |
+-| `--vn-button-highlight`   | `Highlight`                                                                             | `derived` — system focus and selection under forced colors                    | Button focus outline and state backgrounds      |
+-| `--vn-button-disabled`    | `GrayText`                                                                              | `derived` — system disabled foreground under forced colors                    | Button disabled foreground and border fallbacks |
++| Token                     | Value                                                                                   | Source                                                                                                  | Alias                                           |
++| ------------------------- | --------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- | ----------------------------------------------- |
++| `--vn-state-mixer`        | light `color(srgb 0.00742457 0.0232852 0.0925134)`; dark `var(--vn-palette-white-base)` | `elements` — the bare hover and active endpoints                                                        | Button hover and active backgrounds             |
++| `--vn-state-hover`        | `12%`                                                                                   | `elements` — hover tint                                                                                 | Button hover backgrounds                        |
++| `--vn-state-active`       | `22%`                                                                                   | `elements` — active tint                                                                                | Button active backgrounds                       |
++| `--vn-state-stripe`       | `5%`                                                                                    | `bootstrap` — retained `$table-striped-bg-factor`, until an Elements table specimen measures a row tint | Striped table-row backgrounds                   |
++| `--vn-button-opacity`     | `0.65`                                                                                  | `bootstrap` — retained disabled opacity; Elements' opacity was not calibrated                           | `--bs-btn-disabled-opacity`                     |
++| `--vn-button-shadow`      | `none`                                                                                  | `elements` — button elevation                                                                           | `--bs-btn-box-shadow`, `--bs-btn-active-shadow` |
++| `--vn-button-transparent` | `transparent`                                                                           | `elements` — bare resting fill                                                                          | Neutral Button backgrounds and borders          |
++| `--vn-button-face`        | `ButtonFace`                                                                            | `derived` — system button surface under forced colors                                                   | Button background fallbacks                     |
++| `--vn-button-text`        | `ButtonText`                                                                            | `derived` — system button foreground under forced colors                                                | Button foreground and border fallbacks          |
++| `--vn-button-highlight`   | `Highlight`                                                                             | `derived` — system focus and selection under forced colors                                              | Button focus outline and state backgrounds      |
++| `--vn-button-disabled`    | `GrayText`                                                                              | `derived` — system disabled foreground under forced colors                                              | Button disabled foreground and border fallbacks |
+ 
+ The state tokens are declared at the root and inside each explicit theme scope, so a light island
+ inside a dark island restores the light mixer. The declaration-only `focus-ring` mixin takes a
+@@ -657,7 +669,6 @@ and each is named here so a consumer does not look for it.
+ | Name                                             | Waiting on                                      |
+ | ------------------------------------------------ | ----------------------------------------------- |
+ | `scroll-padding` on the document                 | The first sticky header, which fixes the offset |
+-| The `breakpoint-down` mixin                      | The first responsive partial                    |
+ | The hint surface and the component-scoped tokens | The components that paint them                  |
+ 
+ ## Compatibility
+diff --git a/src/core/constants.ts b/src/core/constants.ts
+index ad7d00d..d533b52 100644
+--- a/src/core/constants.ts
++++ b/src/core/constants.ts
+@@ -180,6 +180,8 @@ export const TOKEN_NAMES = Object.freeze({
+ 		6: '--vn-space-6',
+ 		7: '--vn-space-7',
+ 		8: '--vn-space-8',
++		12: '--vn-space-12',
++		24: '--vn-space-24',
+ 	} as const),
+ 	font: Object.freeze({
+ 		sans: '--vn-font-sans',
+@@ -195,6 +197,14 @@ export const TOKEN_NAMES = Object.freeze({
+ 		7: '--vn-size-7',
+ 		8: '--vn-size-8',
+ 	} as const),
++	display: Object.freeze({
++		1: '--vn-display-1',
++		2: '--vn-display-2',
++		3: '--vn-display-3',
++		4: '--vn-display-4',
++		5: '--vn-display-5',
++		6: '--vn-display-6',
++	} as const),
+ 	line: Object.freeze({
+ 		body: '--vn-line-body',
+ 		heading: '--vn-line-heading',
+@@ -229,6 +239,7 @@ export const TOKEN_NAMES = Object.freeze({
+ 		mixer: '--vn-state-mixer',
+ 		hover: '--vn-state-hover',
+ 		active: '--vn-state-active',
++		stripe: '--vn-state-stripe',
+ 	} as const),
+ 	button: Object.freeze({
+ 		opacity: '--vn-button-opacity',
+diff --git a/src/styles/_mixins.scss b/src/styles/_mixins.scss
+index b1a25a0..6098b6b 100644
+--- a/src/styles/_mixins.scss
++++ b/src/styles/_mixins.scss
+@@ -1,5 +1,55 @@
+ @use 'sass:map';
+ 
++// Returns the layout boundaries, as the one Sass source of every width the ramp carries.
++//
++// `_tokens.scss` loads this file, so it emits `--vn-breakpoint-*` by walking this map, and the
++// breakpoint mixins read their media conditions from the same entries. A published token and the
++// condition that switches at it therefore cannot name two different widths, and the proofs guard
++// the emission rather than a hand-copied pair. The values live here rather than in `_tokens.scss`
++// because a partial reaches this file and not that one.
++@function breakpoints() {
++	@return (xs: 0, sm: 576px, md: 768px, lg: 992px, xl: 1200px, xxl: 1400px);
++}
++
++// Returns one boundary's width, refusing a name the ramp does not carry so a typo fails the build
++// rather than emitting a condition nothing matches.
++@function breakpoint($name) {
++	$widths: breakpoints();
++	@if not map.has-key($widths, $name) {
++		@error 'Unknown breakpoint #{$name}. The ramp carries #{map.keys($widths)}.';
++	}
++	@return map.get($widths, $name);
++}
++
++// Emits its content for every viewport at and above the named boundary.
++//
++// The zero boundary is at or below every viewport, so this emits the content with no media wrapper
++// there rather than a condition that is always true.
++@mixin breakpoint-up($name) {
++	$width: breakpoint($name);
++	@if $width == 0 {
++		@content;
++	} @else {
++		@media (width >= #{$width}) {
++			@content;
++		}
++	}
++}
++
++// Emits its content for every viewport below the named boundary.
++//
++// No viewport is below the zero boundary, so this emits nothing there. That keeps the pair total
++// over every published name: a caller walking the ramp reads the region each name names, and needs
++// no case of its own at either end.
++@mixin breakpoint-down($name) {
++	$width: breakpoint($name);
++	@if $width != 0 {
++		@media (width < #{$width}) {
++			@content;
++		}
++	}
++}
++
+ @mixin reduced-motion {
+ 	@media (prefers-reduced-motion: reduce) {
+ 		@content;
+@@ -83,6 +133,7 @@
+ 	--vn-state-mixer: #{map.get($values, 'state-mixer')};
+ 	--vn-state-hover: #{map.get($values, 'state-hover')};
+ 	--vn-state-active: #{map.get($values, 'state-active')};
++	--vn-state-stripe: #{map.get($values, 'state-stripe')};
+ 	--vn-color-primary-base: #{map.get($values, 'primary')};
+ 	--vn-color-primary-rgb: #{map.get($values, 'primary-rgb')};
+ 	@include role-each(
+diff --git a/src/styles/_tokens.scss b/src/styles/_tokens.scss
+index 8a29de2..7ff3c24 100644
+--- a/src/styles/_tokens.scss
++++ b/src/styles/_tokens.scss
+@@ -1,4 +1,5 @@
+ @use 'mixins' as *;
++@use 'sass:map';
+ 
+ @layer theme, reset, base, elements, components, utilities;
+ 
+@@ -19,6 +20,7 @@ $light: (
+ 	'state-mixer': 'color(srgb 0.00742457 0.0232852 0.0925134)',
+ 	'state-hover': 12%,
+ 	'state-active': 22%,
++	'state-stripe': 5%,
+ 	'primary': 'oklch(0.48 0.255 264)',
+ 	'primary-rgb': '8, 65, 234',
+ 	'tint': 12%,
+@@ -60,6 +62,7 @@ $dark: (
+ 	'state-mixer': 'var(--vn-palette-white-base)',
+ 	'state-hover': 12%,
+ 	'state-active': 22%,
++	'state-stripe': 5%,
+ 	'primary': 'oklch(0.7 0.15 233)',
+ 	'primary-rgb': '0, 172, 236',
+ 	'tint': 15%,
+@@ -214,6 +217,13 @@ $assets: (
+ 		--vn-size-7: 1.875rem;
+ 		--vn-size-8: 2.25rem;
+ 
++		--vn-display-1: 5rem;
++		--vn-display-2: 4.5rem;
++		--vn-display-3: 4rem;
++		--vn-display-4: 3.5rem;
++		--vn-display-5: 3rem;
++		--vn-display-6: 2.5rem;
++
+ 		--vn-line-body: 1.5;
+ 		--vn-line-heading: 1.2;
+ 		--vn-weight-body: 400;
+@@ -227,6 +237,8 @@ $assets: (
+ 		--vn-space-6: calc(0.75rem * var(--vn-factor-density));
+ 		--vn-space-7: calc(0.875rem * var(--vn-factor-density));
+ 		--vn-space-8: calc(1rem * var(--vn-factor-density));
++		--vn-space-12: calc(1.5rem * var(--vn-factor-density));
++		--vn-space-24: calc(3rem * var(--vn-factor-density));
+ 
+ 		--vn-border-width: 1px;
+ 		--vn-border-style: solid;
+@@ -272,12 +284,9 @@ $assets: (
+ 		--vn-button-highlight: Highlight;
+ 		--vn-button-disabled: GrayText;
+ 
+-		--vn-breakpoint-xs: 0;
+-		--vn-breakpoint-sm: 576px;
+-		--vn-breakpoint-md: 768px;
+-		--vn-breakpoint-lg: 992px;
+-		--vn-breakpoint-xl: 1200px;
+-		--vn-breakpoint-xxl: 1400px;
++		@each $name, $width in breakpoints() {
++			--vn-breakpoint-#{$name}: #{$width};
++		}
+ 
+ 		--vn-stack-dropdown: 1000;
+ 		--vn-stack-sticky: 1020;
+@@ -364,11 +373,8 @@ $assets: (
+ 		--bs-focus-ring-width: var(--vn-focus-width);
+ 		--bs-focus-ring-opacity: var(--vn-focus-opacity);
+ 
+-		--bs-breakpoint-xs: var(--vn-breakpoint-xs);
+-		--bs-breakpoint-sm: var(--vn-breakpoint-sm);
+-		--bs-breakpoint-md: var(--vn-breakpoint-md);
+-		--bs-breakpoint-lg: var(--vn-breakpoint-lg);
+-		--bs-breakpoint-xl: var(--vn-breakpoint-xl);
+-		--bs-breakpoint-xxl: var(--vn-breakpoint-xxl);
++		@each $name in map.keys(breakpoints()) {
++			--bs-breakpoint-#{$name}: var(--vn-breakpoint-#{$name});
++		}
+ 	}
+ }
+diff --git a/tests/setupBrowser.test.ts b/tests/setupBrowser.test.ts
+index e2cd307..7311aed 100644
+--- a/tests/setupBrowser.test.ts
++++ b/tests/setupBrowser.test.ts
+@@ -18,7 +18,7 @@ import {
+ } from '@orkestrel/test/browser'
+ import { afterEach, describe, expect, it } from 'vitest'
+ import { page } from 'vitest/browser'
+-import { BREAKPOINT_CASES } from './setupStyles.js'
++import { BREAKPOINT_CASES, parseMediaWidth } from './setupStyles.js'
+ import oracle from './fixtures/oracle/button.json'
+ import * as setup from './setupBrowser.js'
+ import {
+@@ -26,6 +26,7 @@ import {
+ 	buildOracleComparison,
+ 	BUTTON_CLASS,
+ 	collectLayer,
++	collectMediaConditions,
+ 	collectPainted,
+ 	collectNestedRules,
+ 	collectScopeProperties,
+@@ -109,6 +110,7 @@ describe('browser setup', () => {
+ 				'applyTheme',
+ 				'buildOracleComparison',
+ 				'collectLayer',
++				'collectMediaConditions',
+ 				'collectNestedRules',
+ 				'collectPainted',
+ 				'collectScopeProperties',
+@@ -626,6 +628,34 @@ describe('browser setup', () => {
+ 		expect(collectLayer('components', sheets)).toEqual([])
+ 	})
+ 
++	it('reports the gate around a selector, where the installed rule walk reports the gate and the gated rule apart', () => {
++		const element = specimens.load(
++			'@layer components {' +
++				'@media (width >= 576px) { .vn-probe-gated { color: rgb(1, 2, 3) } }' +
++				'@media (width < 768px) { .vn-probe-gated { color: rgb(4, 5, 6) } }' +
++				'}' +
++				'.vn-probe-open { color: rgb(7, 8, 9) }',
++		)
++		const sheet = requireValue(element.sheet, 'The gated fixture parsed to no sheet')
++		const rules = collectNestedRules(sheet.cssRules)
++		// The two gates carry different widths, so the reading binds their order as well as their
++		// membership, and it stays serialization-agnostic by comparing the widths rather than the
++		// condition text.
++		expect(collectMediaConditions(rules, '  .vn-probe-gated  ').map(parseMediaWidth)).toEqual([
++			576, 768,
++		])
++		expect(collectMediaConditions(rules, '.vn-probe-absent')).toEqual([])
++		// The installed walk reports the media rule and the rule it holds as two entries of one flat
++		// list, so both fixture gates come back whichever selector the caller is asking about, and a
++		// reading taken from it cannot say which gate holds which selector. This walk answers per
++		// selector, so the fixture rule that sits under no gate reports nothing.
++		const flat = readRules().flatMap((rule) =>
++			rule instanceof CSSMediaRule ? [parseMediaWidth(rule.conditionText)] : [],
++		)
++		expect(flat).toContain(576)
++		expect(flat).toContain(768)
++		expect(collectMediaConditions(rules, '.vn-probe-open')).toEqual([])
++	})
+ 	it('unions the custom properties a split scope declares, where the installed rule lookup reads one rule', () => {
+ 		const element = specimens.load(PROBE_CASCADE)
+ 		const sheet = requireValue(element.sheet, 'The probe cascade parsed to no sheet')
+diff --git a/tests/setupBrowser.ts b/tests/setupBrowser.ts
+index 21c6018..92e8b08 100644
+--- a/tests/setupBrowser.ts
++++ b/tests/setupBrowser.ts
+@@ -718,6 +718,42 @@ export function collectScopeProperties(
+ 	return names
+ }
+ 
++/**
++ * Collects the media conditions that gate one selector's declarations.
++ *
++ * @param rules - The cascade rules to read, such as the ones a {@link collectNestedRules} walk
++ *   returns or the installed `readRules` export reports for the whole page.
++ * @param selector - The gated rule's selector text, compared the way
++ *   {@link collectScopeProperties} compares one.
++ * @returns The `conditionText` of every media rule holding a rule with that selector, in the order
++ *   the rules were given. A selector no media rule gates reports nothing, which is the same reading
++ *   a selector no rule declares gives.
++ *
++ * @remarks
++ * A mixin that wraps its content in `@media` is proved by the condition it emitted, and the CSSOM
++ * reports that condition on the grouping rule rather than on the style rule the caller named. This
++ * walks from the media rule down, so a caller asks about the selector it wrote and reads back the
++ * gate around it.
++ *
++ * A browser normalizes a condition as it serializes it, so compare the width the condition names
++ * through the `parseMediaWidth` export in `tests/setupStyles.ts` rather than the text.
++ */
++export function collectMediaConditions(
++	rules: readonly CSSRule[],
++	selector: string,
++): readonly string[] {
++	const wanted = normalizeSelectorText(selector)
++	return rules.flatMap((rule) =>
++		rule instanceof CSSMediaRule &&
++		collectNestedRules(rule.cssRules).some(
++			(nested) =>
++				nested instanceof CSSStyleRule && normalizeSelectorText(nested.selectorText) === wanted,
++		)
++			? [rule.conditionText]
++			: [],
++	)
++}
++
+ /**
+  * Collects the rules one named layer of the shipped cascade holds.
+  *
+diff --git a/tests/setupStyles.test.ts b/tests/setupStyles.test.ts
+index de37a4b..2c0a0fd 100644
+--- a/tests/setupStyles.test.ts
++++ b/tests/setupStyles.test.ts
+@@ -32,6 +32,7 @@ import {
+ 	matchesSideKeyword,
+ 	normalizeComplexSelector,
+ 	normalizeValueToken,
++	parseMediaWidth,
+ 	PHYSICAL_LONGHANDS,
+ 	RADIUS_SHORTHAND,
+ 	readEscape,
+@@ -94,6 +95,7 @@ describe('styles setup', () => {
+ 				'matchesSideKeyword',
+ 				'normalizeComplexSelector',
+ 				'normalizeValueToken',
++				'parseMediaWidth',
+ 				'readEscape',
+ 				'readIdentifier',
+ 				'scanPhysicalDeclaration',
+@@ -106,6 +108,19 @@ describe('styles setup', () => {
+ 			].sort(),
+ 		)
+ 	})
++	it('reads the width out of either spelling of a width condition, and refuses a condition naming none', () => {
++		expect(parseMediaWidth('(width >= 576px)')).toBe(576)
++		expect(parseMediaWidth('(width < 0px)')).toBe(0)
++		expect(parseMediaWidth('(min-width: 576px)')).toBe(576)
++		expect(parseMediaWidth('(max-width: 575.98px)')).toBe(575.98)
++		expect(parseMediaWidth('screen and (width >= 1400px)')).toBe(1400)
++		expect(parseMediaWidth('(forced-colors: active)')).toBeUndefined()
++		expect(parseMediaWidth('(prefers-reduced-motion: reduce)')).toBeUndefined()
++		// The comparison this serves is against a token the document resolved to pixels, so a width
++		// in any other unit is refused rather than read as a pixel count.
++		expect(parseMediaWidth('(width >= 36rem)')).toBeUndefined()
++		expect(parseMediaWidth('(height >= 576px)')).toBeUndefined()
++	})
+ 	it('freezes the boundary table and its below, at, and above readings', () => {
+ 		expect(BREAKPOINT_CASES.map((entry) => [entry.boundary, ...entry.readings])).toEqual([
+ 			[375, 374, 375, 376],
+@@ -249,6 +264,22 @@ describe('styles setup', () => {
+ 		expect(existsSync('dist/src/styles/index.css')).toBe(true)
+ 		expect(existsSync('dist/src/styles/index.rtl.css')).toBe(true)
+ 	})
++	it('refuses a breakpoint name the ramp does not carry, and gates each name it does', () => {
++		const loader = "@use 'mixins' as *; "
++		const unknown = `${loader}.probe { @include breakpoint-up(xxxl) { inset: 0 } }`
++		const gated = `${loader}.probe { @include breakpoint-down(sm) { inset: 0 } }`
++		const zero =
++			`${loader}.probe-up { @include breakpoint-up(xs) { inset: 0 } }` +
++			'.probe-down { @include breakpoint-down(xs) { inset: 0 } }'
++		expect(() => compileString(unknown, { loadPaths: ['src/styles'] })).toThrow(/xxxl/u)
++		expect(compileString(gated, { loadPaths: ['src/styles'] }).css).toContain('(width < 576px)')
++		// The zero boundary is at or below every viewport and above none, so the pair stays total
++		// over the published names without a condition that always matches or one that never does.
++		const emitted = compileString(zero, { loadPaths: ['src/styles'] }).css
++		expect(emitted).toContain('.probe-up')
++		expect(emitted).not.toContain('@media')
++		expect(emitted).not.toContain('.probe-down')
++	})
+ 	it('refuses an asset key the dark map does not declare, and declares the alias for one it does', () => {
+ 		const absent = "@use 'tokens' with ($assets: ('probe-absent': '--vn-probe'));\n@use 'theme';\n"
+ 		const present =
+diff --git a/tests/setupStyles.ts b/tests/setupStyles.ts
+index 5e11ee7..f231a2a 100644
+--- a/tests/setupStyles.ts
++++ b/tests/setupStyles.ts
+@@ -1042,6 +1042,31 @@ export const RETAINED_LENGTH_ALIASES: ReadonlyArray<
+ 	Object.freeze(['--vn-breakpoint-xxl', '--bs-breakpoint-xxl', '1400px'] as const),
+ ])
+ 
++/**
++ * Parses the viewport width one media condition switches at.
++ *
++ * @param condition - The condition text, such as the `conditionText` a `CSSMediaRule` carries.
++ * @returns The width in pixels, and `undefined` where the condition names no width in pixels.
++ *
++ * @remarks
++ * A browser is free to serialize `(width >= 576px)` back as `(min-width: 576px)`, and the two
++ * spellings name one boundary, so a proof comparing an emitted condition with a published token
++ * reads the number rather than the text. The first alternative reads the range form Veneer
++ * authors and the second the legacy pair, each carrying the width as the one length in the
++ * condition. A width written in any other unit reads as `undefined` rather than as a pixel count,
++ * because the comparison this serves is against a token the document resolved to pixels.
++ */
++export function parseMediaWidth(condition: string): number | undefined {
++	const matched =
++		/\bwidth\s*[<>]=?\s*(-?\d+(?:\.\d+)?)px|\b(?:min|max)-width\s*:\s*(-?\d+(?:\.\d+)?)px/u.exec(
++			condition,
++		)
++	if (matched === null) return undefined
++	const width = matched[1] ?? matched[2]
++	if (width === undefined) return undefined
++	return Number.parseFloat(width)
++}
++
+ /** Carries one `box-shadow` layer as the browser resolved it. */
+ export interface ShadowLayer {
+ 	/** Holds the layer's color, as the first token the resolved layer carries. */
+diff --git a/tests/src/styles/fixtures/mixins.scss b/tests/src/styles/fixtures/mixins.scss
+index 2b59e60..c9368bd 100644
+--- a/tests/src/styles/fixtures/mixins.scss
++++ b/tests/src/styles/fixtures/mixins.scss
+@@ -31,3 +31,20 @@
+ 	--vn-text-body-base: var(--vn-palette-black-base);
+ 	@include role-each(probe, 12%, 35%, var(--vn-surface-body-base));
+ }
++
++// Compiles both breakpoint mixins over every published name, so the proof reads the condition the
++// mixin emitted and the declaration it gated rather than the Sass source that authored them. The
++// names come from `breakpoints()` itself, so a name added to the ramp arrives here with it.
++@each $name, $width in breakpoints() {
++	.vn-fixture-up-#{$name} {
++		@include breakpoint-up($name) {
++			padding-block-start: 1px;
++		}
++	}
++
++	.vn-fixture-down-#{$name} {
++		@include breakpoint-down($name) {
++			padding-block-start: 1px;
++		}
++	}
++}
+diff --git a/tests/src/styles/mixins.test.ts b/tests/src/styles/mixins.test.ts
+index d98018e..6a2ab99 100644
+--- a/tests/src/styles/mixins.test.ts
++++ b/tests/src/styles/mixins.test.ts
+@@ -12,9 +12,10 @@ import {
+ 	sendProtocol,
+ 	stageMedia,
+ } from '@orkestrel/test/browser'
++import { TOKEN_NAMES } from '@src/core'
+ import { afterEach, describe, expect, it } from 'vitest'
+-import { specimens } from '../../setupBrowser.js'
+-import { extractShadowLayers } from '../../setupStyles.js'
++import { collectMediaConditions, specimens, visitBreakpoint } from '../../setupBrowser.js'
++import { BREAKPOINT_CASES, extractShadowLayers, parseMediaWidth } from '../../setupStyles.js'
+ import './fixtures/mixins.scss'
+ 
+ afterEach(async () => {
+@@ -121,3 +122,104 @@ describe('declaration mixins', () => {
+ 		).toBe(true)
+ 	})
+ })
++
++describe('breakpoint mixins', () => {
++	// The registry's own key order is the published ramp, so the proof walks the names Veneer
++	// declares rather than a second list that could fall behind them.
++	const names = Object.keys(TOKEN_NAMES.breakpoint)
++
++	it('emits each condition at the width its own published token resolves to', () => {
++		const container = specimens.mount(
++			names
++				.map(
++					(name) =>
++						`<div id="boundary-${name}" style="padding: var(--vn-breakpoint-${name})"></div>`,
++				)
++				.join(''),
++		)
++		const rules = readRules()
++		const readings = names.map((name) => ({
++			name,
++			width: readPixels(
++				requireValue(container.querySelector(`#boundary-${name}`), `No specimen for ${name}`),
++				'padding-top',
++			),
++			up: collectMediaConditions(rules, `.vn-fixture-up-${name}`).map(parseMediaWidth),
++			down: collectMediaConditions(rules, `.vn-fixture-down-${name}`).map(parseMediaWidth),
++		}))
++		// The zero boundary is at or below every viewport, so `breakpoint-up` wraps its content in
++		// nothing there and `breakpoint-down` emits no rule at all; every other name gates both
++		// directions at the width its token carries.
++		expect(readings.map(({ name, up, down }) => [name, up, down])).toEqual(
++			readings.map(({ name, width }) => (width === 0 ? [name, [], []] : [name, [width], [width]])),
++		)
++		expect(readings.filter(({ width }) => width === 0).map(({ name }) => name)).toEqual(['xs'])
++		expect(findRule('.vn-fixture-up-xs')).not.toBeUndefined()
++		expect(findRule('.vn-fixture-down-xs')).toBeUndefined()
++	})
++
++	it('applies the up content at and above each boundary, and the down content below it', async () => {
++		const container = specimens.mount(
++			names
++				.flatMap((name) => [
++					`<div id="boundary-${name}" style="padding: var(--vn-breakpoint-${name})"></div>`,
++					`<div id="up-${name}" class="vn-fixture-up-${name}"></div>`,
++					`<div id="down-${name}" class="vn-fixture-down-${name}"></div>`,
++				])
++				.join(''),
++		)
++		const boundaries = names.map((name) => ({
++			name,
++			width: readPixels(
++				requireValue(container.querySelector(`#boundary-${name}`), `No specimen for ${name}`),
++				'padding-top',
++			),
++		}))
++		// Every boundary above zero is one the suite's own case table drives, so the readings below,
++		// at, and above it come from a declaration the Sass source cannot move.
++		const driven = boundaries.flatMap(({ name, width }) =>
++			width === 0
++				? []
++				: [
++						{
++							name,
++							width,
++							entry: requireValue(
++								BREAKPOINT_CASES.find((candidate) => candidate.boundary === width),
++								`No boundary case drives ${name} at ${String(width)}`,
++							),
++						},
++					],
++		)
++		expect(driven.map(({ name }) => name)).toEqual(names.filter((name) => name !== 'xs'))
++		const drift: unknown[] = []
++		for (const { name, width, entry } of driven) {
++			for (const reading of entry.readings) {
++				const applied = await visitBreakpoint(reading, () => ({
++					up: readPixels(
++						requireValue(container.querySelector(`#up-${name}`), `No up specimen for ${name}`),
++						'padding-block-start',
++					),
++					down: readPixels(
++						requireValue(container.querySelector(`#down-${name}`), `No down specimen for ${name}`),
++						'padding-block-start',
++					),
++					xs: readPixels(
++						requireValue(container.querySelector('#up-xs'), 'No zero-boundary specimen'),
++						'padding-block-start',
++					),
++				}))
++				const expected = {
++					up: reading >= width ? 1 : 0,
++					down: reading < width ? 1 : 0,
++					xs: 1,
++				}
++				if (applied.up !== expected.up || applied.down !== expected.down || applied.xs !== 1) {
++					drift.push([name, reading, applied, expected])
++				}
++			}
++		}
++		expect(driven.flatMap(({ entry }) => entry.readings).length).toBeGreaterThan(0)
++		expect(drift).toEqual([])
++	})
++})
+diff --git a/tests/src/styles/tokens.test.ts b/tests/src/styles/tokens.test.ts
+index a352b1a..c718838 100644
+--- a/tests/src/styles/tokens.test.ts
++++ b/tests/src/styles/tokens.test.ts
+@@ -224,6 +224,91 @@ describe('token cascade', () => {
+ 		}
+ 		expect(readPixels(specimen, 'padding-top')).toBe(6)
+ 	})
++	it('continues the space ramp at its index law, and rescales both new steps with the density factor', () => {
++		const steps = [TOKEN_NAMES.space[1], TOKEN_NAMES.space[12], TOKEN_NAMES.space[24]]
++		const container = specimens.mount(
++			steps
++				.map(
++					(token, index) =>
++						`<div id="space-${String(index)}" style="padding: var(${token})"></div>`,
++				)
++				.join(''),
++		)
++		const mounted = steps.map((token, index) =>
++			requireValue(container.querySelector(`#space-${String(index)}`), `No specimen for ${token}`),
++		)
++		// The ramp's law is the index by 0.125rem, so the first step's 2 px is what makes 24 px the
++		// twelfth step and 48 px the twenty-fourth rather than two lengths chosen for a gutter.
++		expect(mounted.map((element) => readPixels(element, 'padding-top'))).toEqual([2, 24, 48])
++		document.documentElement.style.setProperty(TOKEN_NAMES.factor.density, '1.25')
++		try {
++			expect(mounted.map((element) => readPixels(element, 'padding-top'))).toEqual([2.5, 30, 60])
++		} finally {
++			document.documentElement.style.removeProperty(TOKEN_NAMES.factor.density)
++		}
++		expect(mounted.map((element) => readPixels(element, 'padding-top'))).toEqual([2, 24, 48])
++	})
++	it('resolves each display size to the retained Bootstrap step, and leaves it outside the density scale', () => {
++		const sizes = [
++			TOKEN_NAMES.display[1],
++			TOKEN_NAMES.display[2],
++			TOKEN_NAMES.display[3],
++			TOKEN_NAMES.display[4],
++			TOKEN_NAMES.display[5],
++			TOKEN_NAMES.display[6],
++		]
++		const container = specimens.mount(
++			sizes
++				.map(
++					(token, index) =>
++						`<div id="display-${String(index)}" style="padding: var(${token})"></div>`,
++				)
++				.join(''),
++		)
++		const mounted = sizes.map((token, index) =>
++			requireValue(
++				container.querySelector(`#display-${String(index)}`),
++				`No specimen for ${token}`,
++			),
++		)
++		expect(mounted.map((element) => readPixels(element, 'padding-top'))).toEqual([
++			80, 72, 64, 56, 48, 40,
++		])
++		// A display size is a type step rather than a spacing step, so the density factor leaves it
++		// where it is, the way the size ramp beside it answers.
++		document.documentElement.style.setProperty(TOKEN_NAMES.factor.density, '1.25')
++		try {
++			expect(mounted.map((element) => readPixels(element, 'padding-top'))).toEqual([
++				80, 72, 64, 56, 48, 40,
++			])
++		} finally {
++			document.documentElement.style.removeProperty(TOKEN_NAMES.factor.density)
++		}
++	})
++	it('resolves the stripe percentage to the retained Bootstrap tint in each mode', () => {
++		const sheet = requireValue(readCascadeSheet(), 'The document loaded no Veneer cascade')
++		// A mode island inherits the `:root` value, so a reading taken on the island holds wherever
++		// the stripe is declared. The dark closure's own declaration list is what places the stripe
++		// beside the hover and active percentages.
++		expect(
++			collectScopeProperties(collectNestedRules(sheet.cssRules), "[data-bs-theme='dark']"),
++		).toContain(TOKEN_NAMES.state.stripe)
++		const container = specimens.mount(
++			'<div id="light" data-bs-theme="light"></div><div id="dark" data-bs-theme="dark"></div>',
++		)
++		const light = requireValue(container.querySelector('#light'), 'No light scope')
++		const dark = requireValue(container.querySelector('#dark'), 'No dark scope')
++		expect([
++			readToken(light, TOKEN_NAMES.state.stripe),
++			readToken(light, TOKEN_NAMES.state.hover),
++			readToken(light, TOKEN_NAMES.state.active),
++		]).toEqual(['5%', '12%', '22%'])
++		expect([
++			readToken(dark, TOKEN_NAMES.state.stripe),
++			readToken(dark, TOKEN_NAMES.state.hover),
++			readToken(dark, TOKEN_NAMES.state.active),
++		]).toEqual(['5%', '12%', '22%'])
++	})
+ 	it('rescales a radius consumer when the radius factor is set on the document element', () => {
+ 		const specimen = requireValue(
+ 			specimens.mount(`<div style="border-radius: var(${TOKEN_NAMES.radius.base})"></div>`)

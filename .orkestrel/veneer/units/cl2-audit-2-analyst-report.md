@@ -1,0 +1,17 @@
+<!-- CL2 audit round 2, objective lane on Astra (gpt-6-astra, read-only, codex exec -C scaffold), journal cl2-audit-2-analyst.jsonl (swept at acceptance), thread 01a0c386-6bb1-72f2-a343-bbc58bad152f, exit 0, retained 2026-09-21. -->
+
+1. **CONFIRMED.** [parseMediaWidth](/C:/Users/mikes/WebstormProjects/veneer/tests/setupStyles.ts:1059) contains the regex at its sole use. AST inspection found no hidden module declaration. Executing the extracted function returned the claimed range and legacy widths and `undefined` for the width-free conditions. The setup proof’s diff is byte-identical between rounds.
+
+2. **CONFIRMED.** The [reader case](/C:/Users/mikes/WebstormProjects/veneer/tests/setupBrowser.test.ts:631) uses distinct boundaries and asserts `[576, 768]`. Duplicating the first result or reversing their order violates that assertion. The historical plant failure remains **report-only**, recorded in [the fix report](/C:/Users/mikes/WebstormProjects/scaffold/.orkestrel/veneer/units/cl2-report-2.md:107).
+
+3. **CONFIRMED.** The [replacement assertions](/C:/Users/mikes/WebstormProjects/veneer/tests/setupBrowser.test.ts:653) require the flat reading to contain `576` and `768`, while the declared, ungated selector returns `[]`. The absent-selector assertion remains. The installed `readRules` implementation returns a flat walk; it does not associate a selector with its enclosing gate. The corresponding plant run remains **report-only**.
+
+4. **CONFIRMED.** The [stripe proof](/C:/Users/mikes/WebstormProjects/veneer/tests/src/styles/tokens.test.ts:288) checks the dark scope’s declarations before checking resolved values. The declaration remains inside [theme-tokens](/C:/Users/mikes/WebstormProjects/veneer/src/styles/_mixins.scss:136). My read of the built cascade found `5%` declared in the light and dark scopes. The rebuilt placement-plant failure and value-only passing control remain **report-only**, recorded in [the fix report](/C:/Users/mikes/WebstormProjects/scaffold/.orkestrel/veneer/units/cl2-report-2.md:197).
+
+5. **CONFIRMED.** Raw diff comparison found changes between rounds only in the authorized fix files; every other section is byte-identical. AST inspection found no prohibited added syntax, suppressed or skipped cases, or control-named cases. The setup export inventories match their declarations, and the protected helper bodies equal the base. The independent [round-2 verifier](/C:/Users/mikes/WebstormProjects/scaffold/.orkestrel/veneer/units/lane-cl2-2-verifier.md:8) records exit `0` for the gates, including Chromium and Edge, unchanged status, and only the stated scaffold-audit notices.
+
+Additional attacks held: in-memory Sass compilation confirmed matching fixture conditions and built breakpoint tokens, unwrapped `up(xs)`, absent `down(xs)`, and unknown-name refusal. Registry equality held for LTR and RTL; extra registry and cascade names each failed the comparison. Removing the Sass guard in memory defeated the refusal assertion. Density and viewport execution are supported by the retained verifier runs; I did not rerun browser commands.
+
+No additional implementation finding forces another round. No command I ran wrote files.
+
+Verdict: accept

@@ -1316,3 +1316,21 @@ after acceptance per the debrief skill's retention reference.
   because no Node project includes the styles proofs and the config is vendored. The fix round
   runs on Opus under `units/cl2-brief-3.md`; Astra stays the objective auditor. **Unchanged:**
   CL3 to CL13.
+- 2026-09-21, CL2 landed in Veneer as `9f5ffda` after two audit rounds (`cl2-audit-verdict.md`;
+  briefs `units/cl2-brief-2.md` and `units/cl2-brief-3.md`, reports `units/cl2-report.md` and
+  `units/cl2-report-2.md`, the landing log `units/cl2-land.log.txt`). Round 2 accepted on every
+  lane: the Astra analyst held the objective lane (Opus wrote the unit and the fix), the Opus
+  reviewer the subjective lane, the checker ruled the mechanical claims, and the verifier ran
+  every gate green on managed Chromium and Edge. What landed: `--vn-space-12`, `--vn-space-24`,
+  `--vn-display-1` to `-6`, `--vn-state-stripe` in the registry and the cascade; the
+  `breakpoints()` function in `_mixins.scss` as the one source of the breakpoint widths, from
+  which `_tokens.scss` emits `--vn-breakpoint-*` and the `--bs-*` aliases and the
+  `breakpoint-up` and `breakpoint-down` mixins read range-syntax conditions (`xs` unwrapped
+  upward, nothing downward; an unknown name refused at compile time); `collectMediaConditions`
+  in the browser setup and `parseMediaWidth` in the styles setup; proofs at both depths and the
+  compile-time refusal proof in `tests/setupStyles.test.ts` (the ruled home of a Node-side Sass
+  compile proof). Bound carried, not a defect: reviewer 6 of round 2 (the stripe assertion binds
+  the dark closure alone) goes to CL5, which next owns `tests/src/styles/tokens.test.ts`.
+  **Unchanged:** CL3 to CL13, and every later unit consumes the mixins through
+  `breakpoint-up`/`breakpoint-down` rather than a literal width. Next: CL3 (Astra) after its
+  scope read, with the scroll-behavior probe first.
