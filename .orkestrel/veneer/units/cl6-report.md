@@ -38,4 +38,4 @@ warning: unable to access 'C:\Users\mikes/.config/git/ignore': Permission denied
 warning: unable to access 'C:\Users\mikes/.config/git/ignore': Permission denied
 ```
 
-Only this report was written, under the ignored `tmp/units/` directory.
+Only this report was written, under the ignored `` directory.

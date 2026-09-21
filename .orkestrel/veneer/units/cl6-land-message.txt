@@ -1,0 +1,41 @@
+Ship the link classes and bind the anchor to the record (CL6)
+
+The published cascade carries the link component classes: a coloured class
+for every role and for body emphasis at rest, hover, and focus, the opacity
+utilities, the underline offset utilities, the underline colour classes, and
+the underline opacity utilities, each utility with its hover twin. No selector
+the pinned inventory records under the link key is excluded, so the key reads
+`shipped` and joins the listed set with a variable row behind each of its two
+custom properties.
+
+The anchor's colours now resolve to what the Elements record measured, in both
+modes. The record gives the hover colour as a resolved triple and shows the
+specimen's own colour property identical at rest and hover, so it never states
+how the hover colour is produced. Converting the record's rest colours and
+dividing the recorded hover channels by them gives eight tenths on every
+channel in both modes, so the hover colour is the rest colour at eighty
+percent in sRGB, which is a twenty percent black mix. The base takes the
+record's primary-over-body-text mix and the hover takes that black mix in both
+modes, replacing the white mix the dark theme carried. The dark theme
+therefore darkens on hover now, as the record does, rather than lightening.
+
+The opacity utilities make a dormant variable live. The anchor already read
+Bootstrap's link opacity with an opaque fallback and nothing assigned it, so
+the fallback was always what applied. Its own proof reads an anchor opaque,
+applies an opacity utility, reads the expected alpha at rest and hover, and
+reads opaque again once the class is removed.
+
+The link-styled button follows the link colour, because it reads those tokens
+directly. Its partial is unchanged; only the two readings its proof pins move.
+The foundation calibration record carries no link rows, so those values were
+derived rather than measured, which is why following the retune is correct
+rather than a regression.
+
+Removing one shipped selector from the built cascade reddens the presence scan
+with a message naming the component and the selector, and a permanent case
+asserts that finding.
+
+Every gate exits 0 on managed Chromium and Edge. The audit is recorded in
+scaffold's `.orkestrel/veneer/cl6-audit-verdict.md` file.
+
+Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>

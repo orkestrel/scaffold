@@ -1,0 +1,25 @@
+== 2026-09-21T20:18:07Z land start
+c1c81a4 One specimen section, and the mark twin closed (CL5c)
+ M app/browser/Showcase.ts
+ M app/browser/constants.ts
+ M app/browser/index.ts
+ M guides/veneer.md
+ M src/styles/_tokens.scss
+ M src/styles/elements/_a.scss
+ M src/styles/index.scss
+ M tests/app/browser/Showcase.test.ts
+ M tests/app/browser/index.test.ts
+ M tests/conformance.test.ts
+ M tests/setupConformance.test.ts
+ M tests/setupStyles.test.ts
+ M tests/setupStyles.ts
+ M tests/src/styles/components/button.test.ts
+ M tests/src/styles/elements/a.test.ts
+?? app/browser/sections/LinkSection.ts
+?? src/styles/components/_link.scss
+?? tests/app/browser/sections/LinkSection.test.ts
+?? tests/src/styles/components/link.test.ts
+changed: app/browser/Showcase.ts app/browser/constants.ts app/browser/index.ts app/browser/sections/LinkSection.ts guides/veneer.md src/styles/_tokens.scss src/styles/components/_link.scss src/styles/elements/_a.scss src/styles/index.scss tests/app/browser/Showcase.test.ts tests/app/browser/index.test.ts tests/app/browser/sections/LinkSection.test.ts tests/conformance.test.ts tests/setupConformance.test.ts tests/setupStyles.test.ts tests/setupStyles.ts tests/src/styles/components/button.test.ts tests/src/styles/components/link.test.ts tests/src/styles/elements/a.test.ts 
+c8f53f8 Ship the link classes and bind the anchor to the record (CL6)
+## main...origin/main
+== 2026-09-21T20:18:10Z land end

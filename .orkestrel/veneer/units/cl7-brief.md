@@ -138,7 +138,7 @@ key needs. If closing a criterion needs one, stop and report.
 
 ## Output
 
-Write `tmp/units/cl7-report.md` in the Veneer checkout and return it: the blast-radius table
+Write `cl7-report.md` in the Veneer checkout and return it: the blast-radius table
 before and after; each token with its value and its registry leaf; each selector group and how it
 is emitted; the variable rows the listed function required and the proof each rests on; the
 readings at and around each boundary; the red-then-green pair; the sweep's result; the guide

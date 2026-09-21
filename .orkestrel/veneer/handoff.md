@@ -34,59 +34,43 @@ verifier, and landed by a script that refuses any file outside the owned set.
 
 | Checkout | HEAD | Meaning |
 | --- | --- | --- |
-| Veneer | `c1c81a4` | CL5c landed and pushed; the tracked tree is clean unless a unit is live |
-| Scaffold | confirm with `git log --oneline -1` | every record through CL5c's landing retained and pushed; `.orkestrel/veneer/` is tracked |
+| Veneer | `c8f53f8` | CL6 landed and pushed; the tracked tree is clean unless a unit is live |
+| Scaffold | confirm with `git log --oneline -1` | every record through CL6's landing retained and pushed |
 
-Landed in Veneer so far: CL1 `00a5bdc`, CL2 `9f5ffda`, CL3 `9bb306e`, CL3b `d822d59`, CL4
-`bc580c1`, CL4b `5240e36`, CL5 `ea82419`, CL5b `4f817db`, CL5c `c1c81a4`. Each has a verdict file
-named for it.
+Landed in Veneer: CL1 `00a5bdc`, CL2 `9f5ffda`, CL3 `9bb306e`, CL3b `d822d59`, CL4 `bc580c1`,
+CL4b `5240e36`, CL5 `ea82419`, CL5b `4f817db`, CL5c `c1c81a4`, CL6 `c8f53f8`. Each has a verdict
+file named for it.
 
-**CL3 and CL3b** land the reset partial, the text tag partials with mirrored proofs, the first
-shared blocks consolidated into mixins, the content section, and the Content colour tokens. The
-dark theme's mix anchor is pinned to a literal so no dark role tier moved when the raised surface
-took the record's value; `tests/src/styles/integration.test.ts:92` is the standing falsifier.
+**Seventeen keys ship**: the reboot key, the button, the sixteen typography and content keys, and
+the link key. **CL6's objective lane compared the link key's inventory selector set against the
+built cascade in both directions and found them equal**, which is the accounting this family
+exists to produce.
 
-**CL4 and CL4b** land the remaining Reboot tag partials, the `reboot` compatibility key with its
-presence scan, the excluded rows, the selector canonicalization the build's downlevelling needs,
-and the two proof obligations CL4's own audit found.
+**The shared-block rule enforces itself.** `scanStyleBlocks` in `tests/setupConformance.ts`
+sweeps every partial under `src/styles/` recursively — a population that includes the mixins
+file itself — and a case asserts the tree carries no cross-file shared block. One bound rides on
+the next unit that touches it, holding four false negatives in constructs the tree does not
+contain.
 
-**CL5, CL5b, and CL5c** land the typography and content classes and everything their audits
-found. Sixteen keys read `shipped` and joined the listed set. The heading and display class twins
-read the tokens their tags read. **The shared-block rule now enforces itself**: `scanStyleBlocks`
-in `tests/setupConformance.ts` sweeps every partial under `src/styles/` and a case asserts the
-tree carries no cross-file shared block, so a duplicated block reddens the suite rather than
-surfacing in an audit. CL5c was the first unit to write one after that gate shipped and the gate
-caught it. Three showcase sections now extend one base, and the mark class and tag render alike
-through one mixin reading two registry-backed tokens carrying the CSS system colours.
+## What to do first: close CL7, then CL8
 
-**One bound rides on the next unit that touches the sweep**, holding four false negatives, each in
-a construct the tree does not contain: a property name inside a quoted nested interpolation,
-whitespace at an interpolation's boundary, a filename holding a literal backslash, and an
-unclosed interpolation. None makes the gate report duplication that does not exist.
+**CL7 is dispatched** on Astra over `c8f53f8` (thread `01a0c5ad-fc7a-76e1-ab4e-1f76eb7bc6f5`),
+under `units/cl7-brief.md` with `units/cl7-brief-2.md` above it, its terrain at
+`units/cl7-scout-report.md`, its rulings at `units/cl7-rulings.md`, and its scope read at
+`units/cl7-scope-read-report.md`. If this session ended before it returned, read the Veneer
+status first: an unlanded CL7 working tree is the unit's output, not drift.
 
-## What to do first: close CL6, then CL7
+Four facts decide it and its briefs carry all four. The ramp already covers every media
+condition the container key carries, so no new ramp member is needed. The navigation combinators
+ship rather than being excluded, because their declarations are self-contained layout on the
+container and the rule simply never matches until a consumer brings navigation markup. The
+container widths and the gutter take tokens of their own, and the space scale's twelfth member
+carries the gutter's value today with exactly two consumers, both named by the scope read. And
+the key carries two custom properties, so like the link key it needs variable rows with proofs.
 
-**CL6 is dispatched** on Astra over `c1c81a4` (thread `01a0c573-adf2-7b10-82e6-aee5c3eab882`),
-under `units/cl6-brief.md` with `units/cl6-brief-2.md` above it, its terrain at
-`units/cl6-scout-report.md`, its central ruling at `units/cl6-retune-measurement.md`, and its
-scope read at `units/cl6-scope-read-report.md`. If this session ended before it returned, read the
-Veneer status first: an unlanded CL6 working tree is the unit's output, not drift.
-
-Three facts decide that unit and its briefs carry all three. The link key carries two custom
-properties, so it is **not** admitted to the shipped set by the empty-properties branch and needs
-variable rows with proofs. The opacity utilities it ships are what make Bootstrap's dormant
-link-opacity variable live, which changes the anchor's behaviour and needs its own proof rather
-than riding on a presence scan. And **the retune reaches the Button family**: the link-styled
-button reads the link tokens directly, so its proof's two pinned readings move. That is ruled
-correct rather than a regression, because the foundation calibration record carries no link rows,
-so those values were derived rather than measured. The partial itself needs no edit, since it
-reads the tokens through variables.
-
-**CL7** has its terrain at `units/cl7-scout-report.md` and its rulings at `units/cl7-rulings.md`;
-its brief is not yet written. The ramp covers every condition the container key carries. Its three
-rulings: the navigation combinators ship, the container widths and the gutter take tokens of their
-own with a blast-radius reading first, and the proof drives the viewport through the existing case
-table and visitor.
+**CL8** is the grid and gutters, six keys, the largest remaining unit by key count. Map its
+terrain **after CL7 lands**, not during: this campaign has twice had a map go stale under a live
+writer, once caught only by luck.
 
 ## Then CL5 to CL13
 

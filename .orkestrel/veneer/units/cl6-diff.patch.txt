@@ -1,0 +1,791 @@
+diff --git a/app/browser/Showcase.ts b/app/browser/Showcase.ts
+index bfe3508..217d702 100644
+--- a/app/browser/Showcase.ts
++++ b/app/browser/Showcase.ts
+@@ -4,6 +4,7 @@ import { ColorMode } from '@src/browser'
+ import { SHOWCASE_COPY } from './constants.js'
+ import { ButtonSection } from './sections/ButtonSection.js'
+ import { ContentSection } from './sections/ContentSection.js'
++import { LinkSection } from './sections/LinkSection.js'
+ import { MediaSection } from './sections/MediaSection.js'
+ import { TypeSection } from './sections/TypeSection.js'
+ 
+@@ -72,6 +73,7 @@ export class Showcase implements ShowcaseInterface {
+ 			new ContentSection(this.#main),
+ 			new TypeSection(this.#main),
+ 			new MediaSection(this.#main),
++			new LinkSection(this.#main),
+ 		]
+ 	}
+ 
+diff --git a/app/browser/constants.ts b/app/browser/constants.ts
+index af6eef2..205888f 100644
+--- a/app/browser/constants.ts
++++ b/app/browser/constants.ts
+@@ -433,3 +433,39 @@ export const MEDIA_SPECIMENS: readonly MarkupSpecimen[] = Object.freeze([
+ 			'<figure class="figure"><img class="figure-img" alt="Figure class specimen" width="120" height="80" src="data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'120\' height=\'80\'%3E%3Cpath d=\'M10 70L60 10L110 70Z\'/%3E%3C/svg%3E"><figcaption class="figure-caption">A figure with its caption.</figcaption></figure>',
+ 	}),
+ ])
++
++/** Holds the Links section's visible copy and accessible name. */
++export const LINK_COPY = Object.freeze({
++	region: 'Links',
++	paragraph:
++		'Explore link colors, opacity, underline spacing, and independent underline colors. Hover or focus a link to compare its states.',
++})
++
++/** Lists the link specimens in their rendering order. */
++export const LINK_SPECIMENS: readonly MarkupSpecimen[] = Object.freeze([
++	Object.freeze({
++		name: 'Role links',
++		markup:
++			'<p><a href="#main" class="link-primary">Primary link</a> <a href="#main" class="link-secondary">Secondary link</a> <a href="#main" class="link-success">Success link</a> <a href="#main" class="link-info">Info link</a> <a href="#main" class="link-warning">Warning link</a> <a href="#main" class="link-danger">Danger link</a> <a href="#main" class="link-light">Light link</a> <a href="#main" class="link-dark">Dark link</a> <a href="#main" class="link-body-emphasis">Body emphasis link</a></p>',
++	}),
++	Object.freeze({
++		name: 'Link opacity',
++		markup:
++			'<p><a href="#main">Opaque anchor</a> <a href="#main" class="link-opacity-10">Link opacity 10%</a> <a href="#main" class="link-opacity-25">Link opacity 25%</a> <a href="#main" class="link-opacity-50">Link opacity 50%</a> <a href="#main" class="link-opacity-75">Link opacity 75%</a> <a href="#main" class="link-opacity-100">Link opacity 100%</a> <a href="#main" class="link-opacity-10-hover">Hover link opacity 10%</a> <a href="#main" class="link-opacity-25-hover">Hover link opacity 25%</a> <a href="#main" class="link-opacity-50-hover">Hover link opacity 50%</a> <a href="#main" class="link-opacity-75-hover">Hover link opacity 75%</a> <a href="#main" class="link-opacity-100-hover">Hover link opacity 100%</a></p>',
++	}),
++	Object.freeze({
++		name: 'Underline offsets',
++		markup:
++			'<p><a href="#main" class="link-offset-1">Offset 1</a> <a href="#main" class="link-offset-2">Offset 2</a> <a href="#main" class="link-offset-3">Offset 3</a> <a href="#main" class="link-offset-1-hover">Hover offset 1</a> <a href="#main" class="link-offset-2-hover">Hover offset 2</a> <a href="#main" class="link-offset-3-hover">Hover offset 3</a></p>',
++	}),
++	Object.freeze({
++		name: 'Underline colors',
++		markup:
++			'<p><a href="#main" class="link-underline-primary">Primary underline</a> <a href="#main" class="link-underline-secondary">Secondary underline</a> <a href="#main" class="link-underline-success">Success underline</a> <a href="#main" class="link-underline-info">Info underline</a> <a href="#main" class="link-underline-warning">Warning underline</a> <a href="#main" class="link-underline-danger">Danger underline</a> <a href="#main" class="link-underline-light">Light underline</a> <a href="#main" class="link-underline-dark">Dark underline</a> <a href="#main" class="link-underline">Link underline</a></p>',
++	}),
++	Object.freeze({
++		name: 'Underline opacity',
++		markup:
++			'<p><a href="#main" class="link-underline link-underline-opacity-0">Underline opacity 0%</a> <a href="#main" class="link-underline link-underline-opacity-10">Underline opacity 10%</a> <a href="#main" class="link-underline link-underline-opacity-25">Underline opacity 25%</a> <a href="#main" class="link-underline link-underline-opacity-50">Underline opacity 50%</a> <a href="#main" class="link-underline link-underline-opacity-75">Underline opacity 75%</a> <a href="#main" class="link-underline link-underline-opacity-100">Underline opacity 100%</a> <a href="#main" class="link-underline link-underline-opacity-0-hover">Hover underline opacity 0%</a> <a href="#main" class="link-underline link-underline-opacity-10-hover">Hover underline opacity 10%</a> <a href="#main" class="link-underline link-underline-opacity-25-hover">Hover underline opacity 25%</a> <a href="#main" class="link-underline link-underline-opacity-50-hover">Hover underline opacity 50%</a> <a href="#main" class="link-underline link-underline-opacity-75-hover">Hover underline opacity 75%</a> <a href="#main" class="link-underline link-underline-opacity-100-hover">Hover underline opacity 100%</a></p>',
++	}),
++])
+diff --git a/app/browser/index.ts b/app/browser/index.ts
+index 15fe707..11a3d4e 100644
+--- a/app/browser/index.ts
++++ b/app/browser/index.ts
+@@ -3,6 +3,7 @@ export * from './constants.js'
+ export * from './Showcase.js'
+ export * from './sections/ButtonSection.js'
+ export * from './sections/ContentSection.js'
++export * from './sections/LinkSection.js'
+ export * from './sections/MediaSection.js'
+ export * from './sections/SpecimenSection.js'
+ export * from './sections/TypeSection.js'
+diff --git a/guides/veneer.md b/guides/veneer.md
+index d014c9f..56d7637 100644
+--- a/guides/veneer.md
++++ b/guides/veneer.md
+@@ -765,6 +765,9 @@ must add a forced-colors axis before this reading closes.
+ 
+ | Component     | Kind           | Obligation                                                                                                                                                                                                                        | Proof                 | Status   |
+ | ------------- | -------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------- | -------- |
++| link          | selector       | Every official link selector is present; role colors read Veneer's role tokens at rest, hover, and focus instead of Bootstrap's literal state colors.                                                                             | —                     | shipped  |
++| link          | variable       | The `--bs-link-opacity` utilities resolve their declared alpha; the anchor behavior is proved in `tests/src/styles/elements/a.test.ts` and the scale in `tests/src/styles/components/link.test.ts`.                               | —                     | shipped  |
++| link          | variable       | The `--bs-link-underline-opacity` utilities resolve their declared alpha and control decoration independently of text, proved in `tests/src/styles/components/link.test.ts`.                                                      | —                     | shipped  |
+ | reboot        | selector       | Every official Reboot selector is present in the built cascade except the Excluded names under § Styles.                                                                                                                          | —                     | shipped  |
+ | h1            | selector       | The official `.h1` class is present in the built cascade, carrying the size token its `h1` tag carries.                                                                                                                           | —                     | shipped  |
+ | h2            | selector       | The official `.h2` class is present in the built cascade, carrying the size token its `h2` tag carries.                                                                                                                           | —                     | shipped  |
+diff --git a/src/styles/_tokens.scss b/src/styles/_tokens.scss
+index 267b102..693e062 100644
+--- a/src/styles/_tokens.scss
++++ b/src/styles/_tokens.scss
+@@ -41,10 +41,10 @@ $light: (
+ 	'surface-tertiary-rgb': '248, 249, 250',
+ 	'highlight': 'color-mix(in srgb, var(--vn-palette-white-base) 80%, var(--vn-color-warning-base))',
+ 	'surface-code': 'color-mix(in oklab, var(--vn-text-body-base) 12%, transparent)',
+-	'link': 'var(--vn-color-primary-base)',
+-	'link-rgb': '8, 65, 234',
+-	'link-hover': 'color-mix(in srgb, var(--vn-palette-black-base) 20%, var(--vn-link-base))',
+-	'link-hover-rgb': '6, 52, 187',
++	'link': 'color-mix(in oklab, var(--vn-color-primary-base) 70%, var(--vn-text-body-base))',
++	'link-rgb': '13, 54, 172',
++	'link-hover': 'color-mix(in srgb, var(--vn-link-base) 80%, black)',
++	'link-hover-rgb': '10, 43, 137',
+ 	'border': 'oklch(0.869 0.022 252.894)',
+ 	'translucent': 'color-mix(in srgb, var(--vn-palette-black-base) 17.5%, transparent)',
+ 	'valid': 'var(--vn-color-success-base)',
+@@ -88,10 +88,10 @@ $dark: (
+ 	'surface-tertiary-rgb': '43, 48, 53',
+ 	'highlight': 'color-mix(in srgb, var(--vn-palette-black-base) 60%, var(--vn-color-warning-base))',
+ 	'surface-code': 'color-mix(in oklab, var(--vn-text-body-base) 12%, transparent)',
+-	'link': 'color-mix(in srgb, var(--vn-palette-white-base) 40%, var(--vn-color-primary-base))',
+-	'link-rgb': '85, 205, 243',
+-	'link-hover': 'color-mix(in srgb, var(--vn-palette-white-base) 20%, var(--vn-link-base))',
+-	'link-hover-rgb': '119, 215, 246',
++	'link': 'color-mix(in oklab, var(--vn-color-primary-base) 80%, var(--vn-text-body-base))',
++	'link-rgb': '79, 185, 238',
++	'link-hover': 'color-mix(in srgb, var(--vn-link-base) 80%, black)',
++	'link-hover-rgb': '63, 148, 190',
+ 	'border': 'oklch(0.4 0.022 256)',
+ 	'translucent': 'color-mix(in srgb, var(--vn-palette-white-base) 15%, transparent)',
+ 	'valid': 'var(--vn-color-success-emphasis)',
+diff --git a/src/styles/elements/_a.scss b/src/styles/elements/_a.scss
+index 932a845..72dbc78 100644
+--- a/src/styles/elements/_a.scss
++++ b/src/styles/elements/_a.scss
+@@ -1,9 +1,9 @@
+ @layer elements {
+ 	a {
+-		color: rgba(var(--vn-link-rgb), var(--bs-link-opacity, 1));
++		color: rgb(from var(--vn-link-base) r g b / var(--bs-link-opacity, 1));
+ 		text-decoration: var(--vn-link-decoration);
+ 		&:hover {
+-			color: rgba(var(--vn-link-hover-rgb), var(--bs-link-opacity, 1));
++			color: rgb(from var(--vn-link-hover-base) r g b / var(--bs-link-opacity, 1));
+ 		}
+ 	}
+ 	a:not([href]):not([class]) {
+diff --git a/src/styles/index.scss b/src/styles/index.scss
+index 20f98e0..f468a5a 100644
+--- a/src/styles/index.scss
++++ b/src/styles/index.scss
+@@ -45,3 +45,4 @@
+ @use 'components/list';
+ @use 'components/quote';
+ @use 'components/image';
++@use 'components/link';
+diff --git a/tests/app/browser/Showcase.test.ts b/tests/app/browser/Showcase.test.ts
+index b42654e..ac68baf 100644
+--- a/tests/app/browser/Showcase.test.ts
++++ b/tests/app/browser/Showcase.test.ts
+@@ -1,6 +1,7 @@
+ import {
+ 	BUTTON_SPECIMENS,
+ 	CONTENT_SPECIMENS,
++	LINK_SPECIMENS,
+ 	MEDIA_SPECIMENS,
+ 	Showcase,
+ 	TYPE_SPECIMENS,
+@@ -61,13 +62,13 @@ describe('Showcase', () => {
+ 			const regions = [...host.querySelectorAll('section')].map((section) =>
+ 				section.getAttribute('aria-label'),
+ 			)
+-			expect(regions).toStrictEqual(['Showcase', 'Buttons', 'Content', 'Type', 'Media'])
++			expect(regions).toStrictEqual(['Showcase', 'Buttons', 'Content', 'Type', 'Media', 'Links'])
+ 			expect(
+ 				[...host.querySelectorAll('[data-specimen]')].map((element) =>
+ 					element.getAttribute('data-specimen'),
+ 				),
+ 			).toEqual(
+-				[...CONTENT_SPECIMENS, ...TYPE_SPECIMENS, ...MEDIA_SPECIMENS].map(
++				[...CONTENT_SPECIMENS, ...TYPE_SPECIMENS, ...MEDIA_SPECIMENS, ...LINK_SPECIMENS].map(
+ 					(specimen) => specimen.name,
+ 				),
+ 			)
+diff --git a/tests/app/browser/index.test.ts b/tests/app/browser/index.test.ts
+index 3593af8..d75f106 100644
+--- a/tests/app/browser/index.test.ts
++++ b/tests/app/browser/index.test.ts
+@@ -14,6 +14,9 @@ describe('app browser entry', () => {
+ 			'CONTENT_COPY',
+ 			'CONTENT_SPECIMENS',
+ 			'ContentSection',
++			'LINK_COPY',
++			'LINK_SPECIMENS',
++			'LinkSection',
+ 			'MEDIA_COPY',
+ 			'MEDIA_SPECIMENS',
+ 			'MediaSection',
+diff --git a/tests/conformance.test.ts b/tests/conformance.test.ts
+index e829c8c..9ef3042 100644
+--- a/tests/conformance.test.ts
++++ b/tests/conformance.test.ts
+@@ -49,6 +49,19 @@ describe('Bootstrap reference identity', () => {
+ })
+ 
+ describe('Bootstrap component oracle', () => {
++	it('reports an omitted link hover selector even when its resting twin ships', () => {
++		const cascade = readBuiltCascade()
++		const selector = '.link-opacity-10-hover:hover'
++		expect(cascade).toContain(selector)
++		expect(
++			scanCompatibilityPresence(
++				readCompatibility(),
++				readOracleInventory(),
++				readDeferrals(),
++				cascade.replaceAll(selector, '.omitted-link-opacity-10:hover'),
++			),
++		).toContain(selector)
++	})
+ 	it('carries every shipped component selector and custom property in the built cascade', () => {
+ 		const rows = readCompatibility()
+ 		const shipped = collectShippedComponents(rows)
+@@ -66,6 +79,7 @@ describe('Bootstrap component oracle', () => {
+ 			'img',
+ 			'initialism',
+ 			'lead',
++			'link',
+ 			'list-inline',
+ 			'list-unstyled',
+ 			'mark',
+diff --git a/tests/setupConformance.test.ts b/tests/setupConformance.test.ts
+index ea3791b..0e483b6 100644
+--- a/tests/setupConformance.test.ts
++++ b/tests/setupConformance.test.ts
+@@ -945,6 +945,7 @@ describe('setupConformance', () => {
+ 				'img',
+ 				'initialism',
+ 				'lead',
++				'link',
+ 				'list-inline',
+ 				'list-unstyled',
+ 				'mark',
+diff --git a/tests/setupStyles.test.ts b/tests/setupStyles.test.ts
+index ba84b69..e8a5d49 100644
+--- a/tests/setupStyles.test.ts
++++ b/tests/setupStyles.test.ts
+@@ -18,6 +18,10 @@ import {
+ 	FILL_ONLY_RECIPE,
+ 	IMAGE_PAINT_CASES,
+ 	LIST_CLASS_CASES,
++	LINK_ROLES,
++	LINK_OPACITY_CASES,
++	LINK_OFFSET_CASES,
++	LINK_UNDERLINE_OPACITY_CASES,
+ 	collectTokenNames,
+ 	collectTripletGroups,
+ 	extractCompoundTags,
+@@ -63,6 +67,47 @@ import {
+ } from './setupStyles.js'
+ 
+ describe('styles setup', () => {
++	it('carries the pinned link role and utility scales as frozen case data', () => {
++		expect(LINK_ROLES).toEqual([
++			'primary',
++			'secondary',
++			'success',
++			'info',
++			'warning',
++			'danger',
++			'light',
++			'dark',
++		])
++		expect(LINK_OPACITY_CASES.map(({ step, value }) => [step, value])).toEqual([
++			[10, 0.1],
++			[25, 0.25],
++			[50, 0.5],
++			[75, 0.75],
++			[100, 1],
++		])
++		expect(LINK_UNDERLINE_OPACITY_CASES.map(({ step, value }) => [step, value])).toEqual([
++			[0, 0],
++			[10, 0.1],
++			[25, 0.25],
++			[50, 0.5],
++			[75, 0.75],
++			[100, 1],
++		])
++		expect(LINK_OFFSET_CASES.map(({ step, value }) => [step, value])).toEqual([
++			[1, '2px'],
++			[2, '4px'],
++			[3, '6px'],
++		])
++		for (const table of [
++			LINK_ROLES,
++			LINK_OPACITY_CASES,
++			LINK_UNDERLINE_OPACITY_CASES,
++			LINK_OFFSET_CASES,
++		]) {
++			expect(Object.isFrozen(table)).toBe(true)
++			expect(table.every((entry) => Object.isFrozen(entry))).toBe(true)
++		}
++	})
+ 	it('carries no shared written declaration block across style partials', () => {
+ 		const sweep = scanStyleBlocks()
+ 		expect(sweep.files).toEqual(
+@@ -95,6 +140,10 @@ describe('styles setup', () => {
+ 				'IMAGE_PAINT_CASES',
+ 				'IMAGE_SOURCE',
+ 				'LIST_CLASS_CASES',
++				'LINK_ROLES',
++				'LINK_OPACITY_CASES',
++				'LINK_OFFSET_CASES',
++				'LINK_UNDERLINE_OPACITY_CASES',
+ 				'MANDATED_TAG_PAIRS',
+ 				'PHYSICAL_LONGHANDS',
+ 				'QUOTE_FOOTER_CASES',
+diff --git a/tests/setupStyles.ts b/tests/setupStyles.ts
+index db2b7e8..a39816e 100644
+--- a/tests/setupStyles.ts
++++ b/tests/setupStyles.ts
+@@ -14,12 +14,52 @@ export const TEXT_A_CASES = Object.freeze(
+ 	TEXT_MODES.map((mode) =>
+ 		Object.freeze({
+ 			mode,
+-			color: mode === 'light' ? 'rgb(8, 65, 234)' : 'rgb(85, 205, 243)',
+-			hover: mode === 'light' ? 'rgb(6, 52, 187)' : 'rgb(119, 215, 246)',
++			color:
++				mode === 'light'
++					? 'oklab(0.3984 -0.019591 -0.190088)'
++					: 'oklab(0.7458 -0.0728685 -0.0983535)',
++			hover:
++				mode === 'light'
++					? 'color(srgb 0.0407929 0.170295 0.538144)'
++					: 'color(srgb 0.248988 0.580565 0.745237)',
+ 		}),
+ 	),
+ )
+ 
++/** Lists the Bootstrap role names whose link classes read Veneer's role channels. */
++export const LINK_ROLES = Object.freeze([
++	'primary',
++	'secondary',
++	'success',
++	'info',
++	'warning',
++	'danger',
++	'light',
++	'dark',
++])
++
++/** Holds the link opacity utility names and their resolved values. */
++export const LINK_OPACITY_CASES = Object.freeze([
++	Object.freeze({ step: 10, value: 0.1 }),
++	Object.freeze({ step: 25, value: 0.25 }),
++	Object.freeze({ step: 50, value: 0.5 }),
++	Object.freeze({ step: 75, value: 0.75 }),
++	Object.freeze({ step: 100, value: 1 }),
++])
++
++/** Holds the underline opacity scale, including its transparent endpoint. */
++export const LINK_UNDERLINE_OPACITY_CASES = Object.freeze([
++	Object.freeze({ step: 0, value: 0 }),
++	...LINK_OPACITY_CASES,
++])
++
++/** Holds the underline offsets at the specimen's explicit 16px font size. */
++export const LINK_OFFSET_CASES = Object.freeze([
++	Object.freeze({ step: 1, value: '2px' }),
++	Object.freeze({ step: 2, value: '4px' }),
++	Object.freeze({ step: 3, value: '6px' }),
++])
++
+ /** Holds the mode and resolved readings for the abbr element family. */
+ export const TEXT_ABBR_CASES = Object.freeze(
+ 	TEXT_MODES.map((mode) =>
+diff --git a/tests/src/styles/components/button.test.ts b/tests/src/styles/components/button.test.ts
+index 486447b..731a75f 100644
+--- a/tests/src/styles/components/button.test.ts
++++ b/tests/src/styles/components/button.test.ts
+@@ -229,14 +229,11 @@ describe('button classes', () => {
+ 			'No link button',
+ 		)
+ 		await stageMedia({ motion: false })
+-		expect(matchesColor(readStyle(button, 'color'), 'oklch(0.48 0.255 264)')).toBe(true)
++		expect(matchesColor(readStyle(button, 'color'), 'oklab(0.3984 -0.019591 -0.190088)')).toBe(true)
+ 		expect(readStyle(button, 'text-decoration-line')).toBe('underline')
+ 		await hoverAccessible('Link specimen')
+ 		expect(
+-			matchesColor(
+-				readStyle(button, 'color'),
+-				'color-mix(in srgb, black 20%, oklch(0.48 0.255 264))',
+-			),
++			matchesColor(readStyle(button, 'color'), 'color(srgb 0.0407929 0.170295 0.538144)'),
+ 		).toBe(true)
+ 		expect(matchesColor(readStyle(button, 'background-color'), 'transparent')).toBe(true)
+ 		await holdAccessible('Link specimen')
+diff --git a/tests/src/styles/elements/a.test.ts b/tests/src/styles/elements/a.test.ts
+index 54204ed..e8aaa71 100644
+--- a/tests/src/styles/elements/a.test.ts
++++ b/tests/src/styles/elements/a.test.ts
+@@ -1,5 +1,5 @@
+ import { requireValue } from '@orkestrel/test'
+-import { matchesColor, readStyle, readToken } from '@orkestrel/test/browser'
++import { matchesColor, parseCSSColor, readStyle, readToken } from '@orkestrel/test/browser'
+ import { page } from 'vitest/browser'
+ import { afterEach, describe, expect, it } from 'vitest'
+ import { specimens } from '../../../setupBrowser.js'
+@@ -10,7 +10,7 @@ afterEach(() => {
+ })
+ 
+ describe('anchor treatment', () => {
+-	// The required link tokens retain their existing values; the calibration difference is reported.
++	// The record measures the primary-over-canvas mix and its sRGB black hover mix.
+ 	it.each(TEXT_A_CASES)(
+ 		'reads the link tokens and restores the no-href default in $mode mode',
+ 		async ({ mode, color, hover }) => {
+@@ -56,8 +56,27 @@ describe('anchor treatment', () => {
+ 		expect(
+ 			matchesColor(
+ 				readStyle(requireValue(host.querySelector('a'), 'No anchor'), 'color'),
+-				'rgba(8, 65, 234, 0.5)',
++				'color(srgb 0.0509911 0.212869 0.672679 / 0.5)',
+ 			),
+ 		).toBe(true)
+ 	})
++	it.each(TEXT_A_CASES)(
++		'activates the opacity utility and restores opaque fallback in $mode',
++		async ({ mode, color, hover }) => {
++			const host = specimens.mount(
++				`<div data-bs-theme="${mode}"><a href="#content">Opacity specimen</a></div>`,
++			)
++			const anchor = requireValue(host.querySelector('a'), 'No anchor')
++			expect(matchesColor(readStyle(anchor, 'color'), color)).toBe(true)
++			expect(requireValue(parseCSSColor(readStyle(anchor, 'color')), 'No color')[3]).toBe(1)
++			anchor.className = 'link-opacity-50'
++			expect(Number(readToken(anchor, '--bs-link-opacity'))).toBe(0.5)
++			expect(requireValue(parseCSSColor(readStyle(anchor, 'color')), 'No color')[3]).toBe(0.5)
++			await page.elementLocator(anchor).hover()
++			expect(requireValue(parseCSSColor(readStyle(anchor, 'color')), 'No hover color')[3]).toBe(0.5)
++			anchor.removeAttribute('class')
++			expect(matchesColor(readStyle(anchor, 'color'), hover)).toBe(true)
++			expect(requireValue(parseCSSColor(readStyle(anchor, 'color')), 'No hover color')[3]).toBe(1)
++		},
++	)
+ })
+diff --git a/app/browser/sections/LinkSection.ts b/app/browser/sections/LinkSection.ts
+new file mode 100644
+index 0000000..46f5fec
+--- /dev/null
++++ b/app/browser/sections/LinkSection.ts
+@@ -0,0 +1,21 @@
++import { LINK_COPY, LINK_SPECIMENS } from '../constants.js'
++import { SpecimenSection } from './SpecimenSection.js'
++
++/**
++ * Renders the declared link class specimens into a named region.
++ *
++ * @example
++ * ```ts
++ * const section = new LinkSection(document.body)
++ * section.destroy()
++ * ```
++ */
++export class LinkSection extends SpecimenSection {
++	/**
++	 * Mounts the Links region and its specimens in table order.
++	 * @param host - The element receiving the section.
++	 */
++	constructor(host: HTMLElement) {
++		super(host, LINK_COPY, LINK_SPECIMENS)
++	}
++}
+diff --git a/src/styles/components/_link.scss b/src/styles/components/_link.scss
+new file mode 100644
+index 0000000..42f1b11
+--- /dev/null
++++ b/src/styles/components/_link.scss
+@@ -0,0 +1,67 @@
++@use '../tokens' as *;
++
++@layer components {
++	@each $role in $aliased {
++		.link-#{$role},
++		.link-#{$role}:hover,
++		.link-#{$role}:focus {
++			color: rgba(var(--vn-color-#{$role}-rgb), var(--bs-link-opacity, 1)) !important;
++			text-decoration-color: rgba(
++				var(--vn-color-#{$role}-rgb),
++				var(--bs-link-underline-opacity, 1)
++			) !important;
++		}
++	}
++
++	.link-body-emphasis {
++		color: rgba(var(--vn-text-emphasis-rgb), var(--bs-link-opacity, 1)) !important;
++		text-decoration-color: rgba(
++			var(--vn-text-emphasis-rgb),
++			var(--bs-link-underline-opacity, 1)
++		) !important;
++		&:hover,
++		&:focus {
++			color: rgba(var(--vn-text-emphasis-rgb), var(--bs-link-opacity, 0.75)) !important;
++			text-decoration-color: rgba(
++				var(--vn-text-emphasis-rgb),
++				var(--bs-link-underline-opacity, 0.75)
++			) !important;
++		}
++	}
++
++	@each $opacity in 10, 25, 50, 75, 100 {
++		.link-opacity-#{$opacity},
++		.link-opacity-#{$opacity}-hover:hover {
++			--bs-link-opacity: #{$opacity * 0.01};
++		}
++	}
++
++	@each $offset in 1, 2, 3 {
++		.link-offset-#{$offset},
++		.link-offset-#{$offset}-hover:hover {
++			text-underline-offset: #{$offset * 0.125em} !important;
++		}
++	}
++
++	@each $role in $aliased {
++		.link-underline-#{$role} {
++			--bs-link-underline-opacity: 1;
++			text-decoration-color: rgba(
++				var(--vn-color-#{$role}-rgb),
++				var(--bs-link-underline-opacity)
++			) !important;
++		}
++	}
++
++	.link-underline {
++		--bs-link-underline-opacity: 1;
++		text-decoration-color: rgba(var(--vn-link-rgb), var(--bs-link-underline-opacity, 1)) !important;
++	}
++
++	@each $opacity in 0, 10, 25, 50, 75, 100 {
++		.link-underline-opacity-#{$opacity},
++		.link-underline-opacity-#{$opacity}-hover:hover {
++			--bs-link-underline-opacity: #{$opacity * 0.01};
++		}
++	}
++}
+diff --git a/tests/app/browser/sections/LinkSection.test.ts b/tests/app/browser/sections/LinkSection.test.ts
+new file mode 100644
+index 0000000..c39498c
+--- /dev/null
++++ b/tests/app/browser/sections/LinkSection.test.ts
+@@ -0,0 +1,90 @@
++import { LINK_COPY, LINK_SPECIMENS, LinkSection } from '@app/browser'
++import { requireValue } from '@orkestrel/test'
++import { build, mount } from '@orkestrel/test/browser'
++import { describe, expect, it } from 'vitest'
++
++describe('LinkSection', () => {
++	it('renders the declared specimens and the complete link class families', () => {
++		const host = mount(build('div'))
++		const section = new LinkSection(host)
++		try {
++			expect(section.host).toBe(host)
++			const region = requireValue(host.querySelector('section'), 'No Links region')
++			expect(region.getAttribute('aria-label')).toBe('Links')
++			expect(region.querySelector('p')?.textContent).toBe(LINK_COPY.paragraph)
++			const rendered = [...region.querySelectorAll('[data-specimen]')]
++			expect(rendered.map((element) => element.getAttribute('data-specimen'))).toEqual([
++				'Role links',
++				'Link opacity',
++				'Underline offsets',
++				'Underline colors',
++				'Underline opacity',
++			])
++			expect(rendered.map((element) => element.innerHTML)).toEqual(
++				LINK_SPECIMENS.map((specimen) => specimen.markup),
++			)
++			const anchors = [...region.querySelectorAll('a')]
++			const names = anchors.map((anchor) => anchor.textContent)
++			expect([...new Set(names)]).toEqual(names)
++			expect(names).toContain('Primary link')
++			expect(names).not.toContain('Primary')
++			expect(
++				anchors.every(
++					(anchor) => anchor.getAttribute('href') === '#main' && anchor.textContent !== '',
++				),
++			).toBe(true)
++			expect([...new Set(anchors.flatMap((anchor) => [...anchor.classList]))].sort()).toEqual(
++				[
++					...[
++						'primary',
++						'secondary',
++						'success',
++						'info',
++						'warning',
++						'danger',
++						'light',
++						'dark',
++					].flatMap((role) => [`link-${role}`, `link-underline-${role}`]),
++					'link-body-emphasis',
++					'link-underline',
++					...[10, 25, 50, 75, 100].flatMap((step) => [
++						`link-opacity-${String(step)}`,
++						`link-opacity-${String(step)}-hover`,
++					]),
++					...[1, 2, 3].flatMap((step) => [
++						`link-offset-${String(step)}`,
++						`link-offset-${String(step)}-hover`,
++					]),
++					...[0, 10, 25, 50, 75, 100].flatMap((step) => [
++						`link-underline-opacity-${String(step)}`,
++						`link-underline-opacity-${String(step)}-hover`,
++					]),
++				].sort(),
++			)
++			expect(Object.isFrozen(LINK_COPY)).toBe(true)
++			expect(Object.isFrozen(LINK_SPECIMENS)).toBe(true)
++			expect(LINK_SPECIMENS.every((specimen) => Object.isFrozen(specimen))).toBe(true)
++		} finally {
++			section.destroy()
++			host.remove()
++		}
++	})
++
++	it('releases its region and leaves neighboring content through repeated destruction', () => {
++		const host = mount(build('div'))
++		const neighbor = build('p', { text: 'Existing content' })
++		host.append(neighbor)
++		const section = new LinkSection(host)
++		try {
++			const region = requireValue(host.querySelector('section'), 'No Links region')
++			expect(region.isConnected).toBe(true)
++			section.destroy()
++			expect(region.isConnected).toBe(false)
++			section.destroy()
++			expect([...host.children]).toEqual([neighbor])
++		} finally {
++			section.destroy()
++			host.remove()
++		}
++	})
++})
+diff --git a/tests/src/styles/components/link.test.ts b/tests/src/styles/components/link.test.ts
+new file mode 100644
+index 0000000..2379b5d
+--- /dev/null
++++ b/tests/src/styles/components/link.test.ts
+@@ -0,0 +1,151 @@
++import { requireValue } from '@orkestrel/test'
++import { matchesColor, parseCSSColor, readStyle, readToken } from '@orkestrel/test/browser'
++import { page } from 'vitest/browser'
++import { afterEach, describe, expect, it } from 'vitest'
++import { specimens } from '../../../setupBrowser.js'
++import {
++	LINK_ROLES,
++	LINK_OPACITY_CASES,
++	LINK_OFFSET_CASES,
++	LINK_UNDERLINE_OPACITY_CASES,
++	TEXT_MODES,
++} from '../../../setupStyles.js'
++
++afterEach(() => {
++	specimens.clear()
++})
++
++describe.each(TEXT_MODES)('link classes in %s mode', (mode) => {
++	it.each(LINK_ROLES)('reads the %s role channels at rest, hover, and focus', async (role) => {
++		const host = specimens.mount(
++			`<div data-bs-theme="${mode}"><a href="#content" class="link-${role}">Role link</a></div>`,
++		)
++		const anchor = requireValue(host.querySelector('a'), 'No role link')
++		const color = `rgb(${readToken(anchor, `--vn-color-${role}-rgb`)})`
++		expect(matchesColor(readStyle(anchor, 'color'), color)).toBe(true)
++		expect(matchesColor(readStyle(anchor, 'text-decoration-color'), color)).toBe(true)
++		await page.elementLocator(anchor).hover()
++		expect(matchesColor(readStyle(anchor, 'color'), color)).toBe(true)
++		expect(matchesColor(readStyle(anchor, 'text-decoration-color'), color)).toBe(true)
++		await page.elementLocator(host).hover({ position: { x: 500, y: 0 } })
++		anchor.focus()
++		expect(anchor.matches(':hover')).toBe(false)
++		expect(anchor.matches(':focus')).toBe(true)
++		expect(matchesColor(readStyle(anchor, 'color'), color)).toBe(true)
++		expect(matchesColor(readStyle(anchor, 'text-decoration-color'), color)).toBe(true)
++		anchor.style.setProperty(`--vn-color-${role}-rgb`, '20, 80, 140')
++		anchor.style.setProperty('--bs-link-opacity', '0.5')
++		anchor.style.setProperty('--bs-link-underline-opacity', '0.25')
++		expect(readStyle(anchor, 'color')).toBe('rgba(20, 80, 140, 0.5)')
++		expect(readStyle(anchor, 'text-decoration-color')).toBe('rgba(20, 80, 140, 0.25)')
++	})
++
++	it('retains the emphasis fallback and lets explicit opacities override it', async () => {
++		const host = specimens.mount(
++			`<div data-bs-theme="${mode}"><a href="#content" class="link-body-emphasis">Emphasis</a></div>`,
++		)
++		const anchor = requireValue(host.querySelector('a'), 'No emphasis link')
++		const channels = readToken(anchor, '--vn-text-emphasis-rgb')
++		expect(matchesColor(readStyle(anchor, 'color'), `rgb(${channels})`)).toBe(true)
++		await page.elementLocator(anchor).hover()
++		expect(matchesColor(readStyle(anchor, 'color'), `rgba(${channels}, 0.75)`)).toBe(true)
++		expect(
++			matchesColor(readStyle(anchor, 'text-decoration-color'), `rgba(${channels}, 0.75)`),
++		).toBe(true)
++		await page.elementLocator(host).hover({ position: { x: 500, y: 0 } })
++		anchor.focus()
++		expect(matchesColor(readStyle(anchor, 'color'), `rgba(${channels}, 0.75)`)).toBe(true)
++		anchor.classList.add('link-opacity-100', 'link-underline-opacity-50')
++		expect(matchesColor(readStyle(anchor, 'color'), `rgb(${channels})`)).toBe(true)
++		expect(matchesColor(readStyle(anchor, 'text-decoration-color'), `rgba(${channels}, 0.5)`)).toBe(
++			true,
++		)
++	})
++
++	it.each(LINK_OPACITY_CASES)(
++		'resolves opacity $step and activates its hover twin',
++		async ({ step, value }) => {
++			const host = specimens.mount(
++				`<div data-bs-theme="${mode}"><a href="#content" class="link-opacity-${step}">Opacity</a></div>`,
++			)
++			const anchor = requireValue(host.querySelector('a'), 'No opacity link')
++			expect(Number(readToken(anchor, '--bs-link-opacity'))).toBe(value)
++			expect(requireValue(parseCSSColor(readStyle(anchor, 'color')), 'No color')[3]).toBe(value)
++			anchor.className = `link-opacity-${step}-hover`
++			expect(requireValue(parseCSSColor(readStyle(anchor, 'color')), 'No color')[3]).toBe(1)
++			await page.elementLocator(anchor).hover()
++			expect(Number(readToken(anchor, '--bs-link-opacity'))).toBe(value)
++			expect(requireValue(parseCSSColor(readStyle(anchor, 'color')), 'No color')[3]).toBe(value)
++		},
++	)
++
++	it.each(LINK_OFFSET_CASES)(
++		'resolves offset $step and activates its hover twin',
++		async ({ step, value }) => {
++			const host = specimens.mount(
++				`<div data-bs-theme="${mode}"><a href="#content" class="link-offset-${step}" style="font-size:16px">Offset</a></div>`,
++			)
++			const anchor = requireValue(host.querySelector('a'), 'No offset link')
++			expect(readStyle(anchor, 'text-underline-offset')).toBe(value)
++			anchor.className = `link-offset-${step}-hover`
++			expect(readStyle(anchor, 'text-underline-offset')).toBe('auto')
++			await page.elementLocator(anchor).hover()
++			expect(readStyle(anchor, 'text-underline-offset')).toBe(value)
++		},
++	)
++
++	it.each(LINK_ROLES)(
++		'paints the %s underline independently of text and reads its opacity',
++		(role) => {
++			const host = specimens.mount(
++				`<div data-bs-theme="${mode}"><a href="#content" class="link-underline-${role}">Underline</a></div>`,
++			)
++			const anchor = requireValue(host.querySelector('a'), 'No underline link')
++			expect(readToken(anchor, '--bs-link-underline-opacity')).toBe('1')
++			expect(
++				matchesColor(
++					readStyle(anchor, 'text-decoration-color'),
++					`rgb(${readToken(anchor, `--vn-color-${role}-rgb`)})`,
++				),
++			).toBe(true)
++			const color = readStyle(anchor, 'color')
++			anchor.style.setProperty(`--vn-color-${role}-rgb`, '20, 80, 140')
++			anchor.classList.add('link-underline-opacity-25')
++			expect(readStyle(anchor, 'text-decoration-color')).toBe('rgba(20, 80, 140, 0.25)')
++			expect(readStyle(anchor, 'color')).toBe(color)
++		},
++	)
++
++	it.each(LINK_UNDERLINE_OPACITY_CASES)(
++		'resolves underline opacity $step and activates its hover twin',
++		async ({ step, value }) => {
++			const host = specimens.mount(
++				`<div data-bs-theme="${mode}"><a href="#content" class="link-underline link-underline-opacity-${step}">Underline opacity</a></div>`,
++			)
++			const anchor = requireValue(host.querySelector('a'), 'No underline opacity link')
++			expect(Number(readToken(anchor, '--bs-link-underline-opacity'))).toBe(value)
++			expect(
++				matchesColor(
++					readStyle(anchor, 'text-decoration-color'),
++					`rgba(${readToken(anchor, '--vn-link-rgb')}, ${String(value)})`,
++				),
++			).toBe(true)
++			anchor.className = `link-underline link-underline-opacity-${step}-hover`
++			expect(readToken(anchor, '--bs-link-underline-opacity')).toBe('1')
++			expect(
++				requireValue(
++					parseCSSColor(readStyle(anchor, 'text-decoration-color')),
++					'No underline color',
++				)[3],
++			).toBe(1)
++			await page.elementLocator(anchor).hover()
++			expect(Number(readToken(anchor, '--bs-link-underline-opacity'))).toBe(value)
++			expect(
++				requireValue(
++					parseCSSColor(readStyle(anchor, 'text-decoration-color')),
++					'No underline color',
++				)[3],
++			).toBeCloseTo(value, 2)
++		},
++	)
++})

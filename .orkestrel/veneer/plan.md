@@ -1749,3 +1749,37 @@ after acceptance per the debrief skill's retention reference.
   machine-checkable form of any accounting over the prose form, so a future Bootstrap major is a
   re-pin and a scan rather than an archaeology exercise. **Unchanged:** CL7 briefed at
   `units/cl7-brief.md`, not yet scope-read; CL8 to CL13.
+- 2026-09-21, CL6 and its landing `c8f53f8` (`cl6-audit-verdict.md`, one round, four lanes
+  accepting): the link component classes ship complete — a coloured class for every role and for
+  body emphasis at rest, hover, and focus, the opacity utilities, the underline offset utilities,
+  the underline colour classes, and the underline opacity utilities, each utility with its hover
+  twin — and the key reads `shipped` with a variable row behind each of its two custom
+  properties. **The objective lane extracted every selector the pinned inventory records under
+  the key and compared the set against the built cascade in both directions: equal, nothing
+  extra, nothing missing, no deferral row naming one.** That is the accounting the user's
+  baseline framing asks for, verified rather than asserted.
+  **The first run stopped before writing anything, correctly.** Its brief required the hover
+  mechanism to come from the calibration record, and the record does not state one: it gives the
+  hover colour as a resolved triple and shows the specimen's own colour property identical at
+  rest and hover. **The Orchestrator resolved it by measurement** (`units/cl6-hover-probe.mjs`,
+  `units/cl6-hover-mechanism.md`): the recorded hover channels are the rest channels at eighty
+  percent in sRGB, which is a twenty percent black mix, identical in both modes. So Elements
+  darkens on hover in dark mode while Veneer lightened, and the retune is a change of base plus a
+  change of direction rather than a new mechanism. The objective lane recomputed both mixes
+  independently and matched the record to about 1.5e-4, the record's own rounding.
+  **The retune reached the closed Button family**, as the scope read had found: the link-styled
+  button reads the link tokens, so its proof's two pinned readings moved. Ruled correct because
+  the foundation calibration record carries no link rows, so those values were derived rather
+  than measured. Its partial was never touched, since it reads tokens through variables.
+  **A scope-read error was corrected by the unit at its own gate.** The read said the conformance
+  setup proof's cases run against synthetic rows for other components; one case calls the whole
+  compatibility table, the unit's chain failed there, and both lanes ruled the read wrong and the
+  edit inside its grant.
+  **Carried:** the guide's token section still states the pre-retune link values and no gate
+  reads those rows, to the guide's owner with every bound the unit listed; the partial's
+  unnamespaced token load against its sibling's namespaced form; and the section proof's
+  enumerations restating what the setup module pins, which drifts safely. **Recorded as a trap:**
+  the link base restates verbatim the expression the role mixin emits for the primary emphasis
+  tier, so light mode resolves alike; a later reader simplifying it into a reference to that tier
+  would silently couple two independently calibrated values.
+  **Unchanged:** CL7 dispatched over this landing; CL8 to CL13.
