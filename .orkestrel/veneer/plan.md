@@ -1250,3 +1250,14 @@ after acceptance per the debrief skill's retention reference.
   regenerated Veneer portfolio beside the round-3 Elements portfolio (`units/u7f-verdict-brief-2.md`).
   Test-side bounds carried to the Test 0.0.19 release unit: `captureFrame` re-establishing the
   pointer after it stages the pane and leaving the pane staged until its caller releases it.
+- 2026-09-21, U7f accepted: the Button portfolio verdict converged in round 3 (`u7f-verdict.md`),
+  every item RENDERED-PROVEN against Veneer's final portfolio over `060ce02` beside Elements'
+  round-4 harness portfolio. **U7 (Button) is closed on browser evidence**: the ledger's accepted
+  rows implemented (U7a, U7b, U7c), the guide corrected (U7e), the shell repaired and the proofs
+  strengthened (U7f-fix), and the captured acceptance against Elements' specimens ruled through
+  the `orkestrel-polish-surface` skill. Reported to the user at this acceptance: the recorded
+  departures (pressed fill, disabled dimming) and the design questions (the outline pair, the
+  dark primary contrast, the latched fill, the dark dimmed-versus-active cyan, the control's
+  treatment), the Test-side bounds for the 0.0.19 release unit, and the forced-colours axis.
+  Next: the Content/layout family's design round (`units/content-layout-design-brief.md`) on the
+  Grok terrain map, then its units in mechanism order per § Component queue.

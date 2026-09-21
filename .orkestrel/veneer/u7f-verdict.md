@@ -92,3 +92,34 @@ wording; Elements' declared ring is read from its step log once settled.
 
 `ANOTHER ROUND(4, 10)`, both on the Elements harness record: `units/u7f-harness-brief-4.md`
 (`builder`), then a narrow round 3 on items 4 and 10 against the repaired artifacts.
+
+## Round 3, 2026-09-21 (narrow: items 4 and 10)
+
+The Elements harness at round 4 (`units/u7f-harness-4.mjs`, report `units/u7f-harness-report-4.md`)
+settles the ring's `box-shadow` before the padded focus-ring shot (alpha `0.45` at `3px`, the
+declared 45% and `0.1875rem`, against round 3's transitional `0.333519` at `2.22346px`) and
+appends the toggle section's snapshot while pressed beside the rest snapshot. Brief:
+`units/u7f-verdict-brief-3.md`.
+
+| Lane | Role | Engine | Record | Terminal line |
+| --- | --- | --- | --- | --- |
+| objective state truth | `analyst` | Astra, `codex exec` read-only with the two ring frames attached, thread `01a0c305-e80b-7bf0-9218-427d2a3e5ced`, exit 0 | `units/u7f-verdict-3-analyst.sh`, `units/lane-u7f-3-analyst.md` | `CONVERGED` (item 4 RENDERED-PROVEN: the settled reading matches the declaration and Veneer's treatment) |
+| mechanical inventory | `checker` | native Sonnet, Workflow `wf_03bee2c8-7b7` | `units/lane-u7f-3-checker.md` | `CONVERGED` (item 10 RENDERED-PROVEN: both sides announce a pressed host and a disabled host in a comparable shape) |
+| subjective design fit | `reviewer` | not run this round | — | converged in round 2 on every item it holds; nothing in round 3 changed a design reading |
+
+### Terminal
+
+`CONVERGED`. Every item of the twelve is RENDERED-PROVEN against the final portfolio: Veneer's
+48 frames and artifacts over `060ce02` (`units/u7f-recapture.log.txt`) beside Elements' 28 frames
+and artifacts from the round-4 harness. Recorded departures, Veneer's by design: the pressed fill
+(Bootstrap's active fill against Elements' base fill), the disabled dimming (`0.65` against
+`0.5`), the ring weight (the same treatment; Elements' declared values now match Veneer's). Design
+questions for the user, not defects: the light and dark outline pair each a ghost on its own
+canvas; the dark primary calibration under white text below 4.5:1 (shared with Elements); the
+latched `.active` fill equal to the momentary `:active` mix; the dimmed and the active cyan close
+in dark; the repaired control near the `Outline secondary` treatment. Portfolio limits recorded
+for a later round: no element-scale toggled-host frame on either side; no padded ring frame on
+the Veneer side. Test-side bounds for the Test 0.0.19 release unit: `captureFrame` re-establishing
+the pointer after it stages the pane and leaving the pane staged until its caller releases it;
+element frames blank beyond roughly 900 px at the 1280 variant; page frames clearing `:hover`;
+`readStates` announcing `disabled`.
