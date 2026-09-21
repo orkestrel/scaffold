@@ -80,7 +80,7 @@ which are complements; disabled dimming `opacity: 0.65` (Veneer, Bootstrap's val
     with Elements' ARIA snapshot.
 11. Copy and inventory: the region name `Buttons`, the section copy sentence, the specimen names
     as the table declares them, the `btn-*` classes in the DOM against the table (from the
-    journey artifacts and the retained specimen table in `units/u7c-report.md`).
+    journey artifacts and the retained specimen table in `C:/Users/mikes/WebstormProjects/scaffold/.orkestrel/veneer/units/u7c-report.md`).
 12. The shell: the `Dark mode` control renders as a plain button outside the cascade's `.btn`
     treatment. Rule whether that is a shell design choice to keep or a portfolio defect.
 
