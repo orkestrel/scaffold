@@ -1,0 +1,507 @@
+diff --git a/src/styles/_mixins.scss b/src/styles/_mixins.scss
+index b88b7e1..fbd7609 100644
+--- a/src/styles/_mixins.scss
++++ b/src/styles/_mixins.scss
+@@ -1,5 +1,17 @@
+ @use 'sass:map';
+ 
++@mixin heading-text {
++	margin: 0;
++	font-weight: var(--vn-weight-heading);
++	line-height: var(--vn-line-heading);
++	color: var(--bs-heading-color);
++}
++
++@mixin image-size {
++	max-inline-size: 100%;
++	block-size: auto;
++}
++
+ @mixin control-text {
+ 	margin: 0;
+ 	font-family: inherit;
+diff --git a/src/styles/components/_image.scss b/src/styles/components/_image.scss
+index b3f2368..a72d116 100644
+--- a/src/styles/components/_image.scss
++++ b/src/styles/components/_image.scss
+@@ -1,8 +1,9 @@
++@use '../mixins' as *;
++
+ @layer components {
+ 	.img-fluid,
+ 	.img-thumbnail {
+-		max-inline-size: 100%;
+-		block-size: auto;
++		@include image-size;
+ 	}
+ 
+ 	.img-thumbnail {
+diff --git a/src/styles/components/_type.scss b/src/styles/components/_type.scss
+index 3b44070..aff2e55 100644
+--- a/src/styles/components/_type.scss
++++ b/src/styles/components/_type.scss
+@@ -1,3 +1,5 @@
++@use '../mixins' as *;
++
+ @layer components {
+ 	.h1,
+ 	.h2,
+@@ -5,10 +7,7 @@
+ 	.h4,
+ 	.h5,
+ 	.h6 {
+-		margin: 0;
+-		font-weight: var(--vn-weight-heading);
+-		line-height: var(--vn-line-heading);
+-		color: var(--bs-heading-color);
++		@include heading-text;
+ 	}
+ 	@for $level from 1 through 6 {
+ 		.h#{$level} {
+diff --git a/src/styles/elements/_heading.scss b/src/styles/elements/_heading.scss
+index a95cf6a..05f82eb 100644
+--- a/src/styles/elements/_heading.scss
++++ b/src/styles/elements/_heading.scss
+@@ -1,3 +1,5 @@
++@use '../mixins' as *;
++
+ @layer elements {
+ 	h1,
+ 	h2,
+@@ -5,10 +7,7 @@
+ 	h4,
+ 	h5,
+ 	h6 {
+-		margin: 0;
+-		font-weight: var(--vn-weight-heading);
+-		line-height: var(--vn-line-heading);
+-		color: var(--bs-heading-color);
++		@include heading-text;
+ 	}
+ 	@for $level from 1 through 6 {
+ 		h#{$level} {
+diff --git a/src/styles/elements/_img.scss b/src/styles/elements/_img.scss
+index f4b8da6..fba84e3 100644
+--- a/src/styles/elements/_img.scss
++++ b/src/styles/elements/_img.scss
+@@ -1,8 +1,9 @@
++@use '../mixins' as *;
++
+ @layer elements {
+ 	img {
+ 		display: block;
+-		max-inline-size: 100%;
+-		block-size: auto;
++		@include image-size;
+ 		vertical-align: middle;
+ 	}
+ }
+diff --git a/tests/setupConformance.test.ts b/tests/setupConformance.test.ts
+index a937b02..185641f 100644
+--- a/tests/setupConformance.test.ts
++++ b/tests/setupConformance.test.ts
+@@ -5,7 +5,7 @@ import type { OracleBinding, OracleFixture } from './setupConformance.js'
+ import { isRecord, parseJSON } from '@orkestrel/contract'
+ import { createHash } from 'node:crypto'
+ import { existsSync, readFileSync } from 'node:fs'
+-import { resolve } from 'node:path'
++import { relative, resolve } from 'node:path'
+ import { createScratch } from '@orkestrel/test/server'
+ import { beforeAll, describe, expect, it } from 'vitest'
+ import { parseSync, Visitor } from 'vite'
+@@ -41,8 +41,147 @@ import {
+ 	scanEscapingImport,
+ 	scanForbiddenDependency,
+ 	scanForbiddenSource,
++	scanStyleBlocks,
+ } from './setupConformance.js'
+ 
++describe('scanStyleBlocks', () => {
++	it('discovers root and nested partials and reports every file pair and block intersection', () => {
++		const scratch = createScratch()
++		try {
++			const root = scratch.write('_root.scss', '.root { margin: 0; color: inherit; }')
++			const element = scratch.write(
++				'elements/_sample.scss',
++				'.sample { color: inherit; margin: 0; }',
++			)
++			const component = scratch.write(
++				'components/nested/_sample.scss',
++				'.sample { margin: 0; color: inherit; }\n.other { margin: 0; color: inherit; }',
++			)
++			scratch.write('index.scss', '.excluded { margin: 0; color: inherit; }')
++			scratch.write('_excluded.css', '.excluded { margin: 0; color: inherit; }')
++			scratch.ensure('_directory.scss')
++			const sweep = scanStyleBlocks(scratch.path)
++			expect(sweep.files).toEqual(
++				[root, component, element].map((path) => relative(scratch.path, path)),
++			)
++			expect(sweep.pairs).toBe(3)
++			expect(
++				sweep.shared.map(({ left, right, declarations }) => ({
++					left: [left.path, left.line],
++					right: [right.path, right.line],
++					declarations,
++				})),
++			).toEqual([
++				{
++					left: ['_root.scss', 1],
++					right: [relative(scratch.path, component), 1],
++					declarations: ['margin: 0', 'color: inherit'],
++				},
++				{
++					left: ['_root.scss', 1],
++					right: [relative(scratch.path, component), 2],
++					declarations: ['margin: 0', 'color: inherit'],
++				},
++				{
++					left: ['_root.scss', 1],
++					right: [relative(scratch.path, element), 1],
++					declarations: ['margin: 0', 'color: inherit'],
++				},
++				{
++					left: [relative(scratch.path, component), 1],
++					right: [relative(scratch.path, element), 1],
++					declarations: ['margin: 0', 'color: inherit'],
++				},
++				{
++					left: [relative(scratch.path, component), 2],
++					right: [relative(scratch.path, element), 1],
++					declarations: ['margin: 0', 'color: inherit'],
++				},
++			])
++		} finally {
++			scratch.destroy()
++		}
++	})
++
++	it('keeps sibling and nested blocks separate and counts distinct declarations only', () => {
++		const scratch = createScratch()
++		try {
++			scratch.write('_whole.scss', '.whole { margin: 0; color: inherit; }')
++			scratch.write(
++				'_split.scss',
++				'.parent { margin: 0; .child { color: inherit; } }\n.other { color: inherit; }',
++			)
++			scratch.write('_repeated.scss', '.repeat { margin: 0; margin: 0; }')
++			scratch.write('_included.scss', '@use "mixins"; .included { @include heading-text; }')
++			expect(scanStyleBlocks(scratch.path).shared).toEqual([])
++			scratch.remove('_whole.scss')
++			scratch.write(
++				'_split.scss',
++				'.first { margin: 0; color: inherit; } .second { margin: 0; color: inherit; }',
++			)
++			expect(scanStyleBlocks(scratch.path).shared).toEqual([])
++		} finally {
++			scratch.destroy()
++		}
++	})
++
++	it('reads multiline declarations past comments and interpolation without expanding includes', () => {
++		const scratch = createScratch()
++		try {
++			scratch.write(
++				'_left.scss',
++				'// ignored { margin: 5px; }\r\n@layer elements {\r\n.item-#{$level} {\r\n/* ignored } ; */ margin:\r\n 0;\r\n--sample: var(--token,\r\n inherit);\r\ncolor: inherit\r\n}\r\n}',
++			)
++			scratch.write(
++				'_right.scss',
++				'.right { margin: 0; --sample: var(--token, inherit); color: inherit; }',
++			)
++			const sweep = scanStyleBlocks(scratch.path)
++			expect(sweep.shared).toHaveLength(1)
++			expect(sweep.shared[0]?.left.line).toBe(3)
++			expect(sweep.shared[0]?.declarations).toEqual([
++				'margin: 0',
++				'--sample: var(--token, inherit)',
++				'color: inherit',
++			])
++		} finally {
++			scratch.destroy()
++		}
++	})
++
++	it('protects quoted punctuation and whitespace from block grouping and normalization', () => {
++		const scratch = createScratch()
++		try {
++			scratch.write('_left.scss', '.left { content: "a  b; } //"; margin: 0; }')
++			scratch.write('_right.scss', '.right { content: "a b; } //"; margin: 0; }')
++			expect(scanStyleBlocks(scratch.path).shared).toEqual([])
++			scratch.write('_right.scss', '.right { content: "a  b; } //"; margin: 0; }')
++			expect(scanStyleBlocks(scratch.path).shared[0]?.declarations).toEqual([
++				'content: "a  b; } //"',
++				'margin: 0',
++			])
++		} finally {
++			scratch.destroy()
++		}
++	})
++
++	it('returns empty readings for empty and singleton populations and refuses a missing root', () => {
++		const scratch = createScratch()
++		try {
++			expect(scanStyleBlocks(scratch.path)).toEqual({ files: [], pairs: 0, shared: [] })
++			scratch.write('_single.scss', '.single { margin: 0; color: inherit; }')
++			expect(scanStyleBlocks(scratch.path)).toEqual({
++				files: ['_single.scss'],
++				pairs: 0,
++				shared: [],
++			})
++			expect(() => scanStyleBlocks(resolve(scratch.path, 'missing'))).toThrow('ENOENT')
++		} finally {
++			scratch.destroy()
++		}
++	})
++})
++
+ describe('setupConformance', () => {
+ 	it('declares the identity constants and the helpers the conformance proof measures with', () => {
+ 		expect(Object.keys(setup).sort()).toEqual([
+@@ -77,6 +216,7 @@ describe('setupConformance', () => {
+ 			'scanForbiddenSource',
+ 			'scanOracleFixture',
+ 			'scanOracleObligation',
++			'scanStyleBlocks',
+ 		])
+ 	})
+ 
+diff --git a/tests/setupConformance.ts b/tests/setupConformance.ts
+index d84df2e..43644de 100644
+--- a/tests/setupConformance.ts
++++ b/tests/setupConformance.ts
+@@ -17,8 +17,8 @@ import { createMarkdown, flattenText } from '@orkestrel/markdown'
+ import { createScratch, resolveContained } from '@orkestrel/test/server'
+ import { createHash } from 'node:crypto'
+ import { createRequire } from 'node:module'
+-import { existsSync, readFileSync, realpathSync } from 'node:fs'
+-import { dirname, extname, resolve } from 'node:path'
++import { existsSync, readdirSync, readFileSync, realpathSync } from 'node:fs'
++import { dirname, extname, relative, resolve } from 'node:path'
+ import { fileURLToPath, pathToFileURL } from 'node:url'
+ import { isDeepStrictEqual } from 'node:util'
+ import { chromium } from 'playwright'
+@@ -230,6 +230,121 @@ export const BOOTSTRAP_MANIFEST_PATH = resolve(
+ 	'package.json',
+ )
+ 
++/** Describes written declarations belonging to one brace block in a style partial. */
++export interface StyleBlock {
++	readonly path: string
++	readonly line: number
++	readonly declarations: readonly string[]
++}
++
++/** Describes a declaration block shared by distinct style partials. */
++export interface StyleOverlap {
++	readonly left: StyleBlock
++	readonly right: StyleBlock
++	readonly declarations: readonly string[]
++}
++
++/** Reports the discovered partials, compared file pairs, and shared declaration blocks. */
++export interface StyleSweepResult {
++	readonly files: readonly string[]
++	readonly pairs: number
++	readonly shared: readonly StyleOverlap[]
++}
++
++/**
++ * Scans every SCSS partial under a directory for shared written declaration blocks.
++ * @param root - The styles directory. Default: the workspace's `src/styles` directory.
++ * @returns Relative partial paths, the compared pair count, and every block intersection carrying
++ * at least two distinct identical declarations.
++ * @throws When the directory or a discovered partial cannot be read.
++ * @remarks
++ * Reads authored text without expanding includes. Braces inside strings, comments, interpolation,
++ * and parenthesized values do not open declaration blocks. Whitespace outside strings is folded;
++ * declaration order and repeated copies of one declaration do not affect an intersection.
++ * @example
++ * ```ts
++ * scanStyleBlocks().shared // [] after shared blocks move into mixins
++ * ```
++ */
++export function scanStyleBlocks(
++	root: string = resolve(WORKSPACE_ROOT, 'src/styles'),
++): StyleSweepResult {
++	const files = readdirSync(root, { recursive: true, withFileTypes: true })
++		.filter((entry) => entry.isFile() && /^_.*\.scss$/u.test(entry.name))
++		.map((entry) => relative(root, resolve(entry.parentPath, entry.name)))
++		.sort()
++	const members = files.map((path) => {
++		const blocks: StyleBlock[] = []
++		const stack: Array<{ readonly line: number; readonly declarations: Set<string> }> = []
++		let statement = ''
++		let line = 1
++		let parentheses = 0
++		let interpolation = 0
++		// Token boundaries protect quoted punctuation and comments before brace grouping.
++		for (const match of readFileSync(resolve(root, path), 'utf8').matchAll(
++			/\/\*[\s\S]*?\*\/|\/\/[^\r\n]*|"(?:\\[\s\S]|[^"\\])*"|'(?:\\[\s\S]|[^'\\])*'|#\{|\\[\s\S]|\r\n|\n|[^]/gu,
++		)) {
++			const token = match[0]
++			const start = line
++			line += token.split(/\r\n|\n/u).length - 1
++			if (token.startsWith('/*') || token.startsWith('//')) {
++				statement += ' '
++				continue
++			}
++			if (token === '#{') interpolation += 1
++			else if (interpolation > 0 && token === '{') interpolation += 1
++			else if (interpolation > 0 && token === '}') {
++				interpolation -= 1
++				statement += token
++				continue
++			}
++			if (interpolation > 0) {
++				statement += token
++				continue
++			}
++			if (token === '(') parentheses += 1
++			if (token === ')') parentheses -= 1
++			if (parentheses === 0 && token === '{') {
++				stack.push({ line: start, declarations: new Set() })
++				statement = ''
++				continue
++			}
++			if (parentheses === 0 && (token === ';' || token === '}')) {
++				const declaration = /^\s*(--[\w-]+|[a-z-]+)\s*:\s*(\S[\s\S]*)$/u.exec(statement)
++				const property = declaration?.[1]
++				const value = declaration?.[2]?.trim()
++				if (property !== undefined && value !== undefined)
++					stack.at(-1)?.declarations.add(`${property}: ${value}`)
++				statement = ''
++				if (token === '}') {
++					const block = stack.pop()
++					if (block !== undefined && block.declarations.size > 0)
++						blocks.push({ path, line: block.line, declarations: [...block.declarations] })
++				}
++				continue
++			}
++			statement += /^\s+$/u.test(token) ? (statement.endsWith(' ') ? '' : ' ') : token
++		}
++		return blocks
++	})
++	const shared: StyleOverlap[] = []
++	let pairs = 0
++	for (const [index, left] of members.entries()) {
++		for (const right of members.slice(index + 1)) {
++			pairs += 1
++			for (const first of left) {
++				for (const second of right) {
++					const declarations = first.declarations.filter((entry) =>
++						second.declarations.includes(entry),
++					)
++					if (declarations.length >= 2) shared.push({ left: first, right: second, declarations })
++				}
++			}
++		}
++	}
++	return { files, pairs, shared }
++}
++
+ /**
+  * Reads one string member of a JSON manifest.
+  *
+diff --git a/tests/setupStyles.test.ts b/tests/setupStyles.test.ts
+index 41799a0..d9baa17 100644
+--- a/tests/setupStyles.test.ts
++++ b/tests/setupStyles.test.ts
+@@ -1,9 +1,10 @@
+ import { existsSync, readFileSync } from 'node:fs'
++import { dirname } from 'node:path'
+ import { TOKEN_NAMES } from '@src/core'
+ import { parse } from 'postcss'
+ import { compileString } from 'sass'
+ import { describe, expect, it } from 'vitest'
+-import { readBootstrapCascade } from './setupConformance.js'
++import { readBootstrapCascade, scanStyleBlocks } from './setupConformance.js'
+ import * as setup from './setupStyles.js'
+ import {
+ 	BOOTSTRAP_DARK_VARIABLES,
+@@ -61,6 +62,16 @@ import {
+ } from './setupStyles.js'
+ 
+ describe('styles setup', () => {
++	it('carries no shared written declaration block across style partials', () => {
++		const sweep = scanStyleBlocks()
++		expect(sweep.files).toEqual(
++			expect.arrayContaining(['_mixins.scss', '_tokens.scss', '_theme.scss', '_reset.scss']),
++		)
++		for (const folder of ['elements', 'components'])
++			expect(sweep.files.some((path) => dirname(path) === folder)).toBe(true)
++		expect(sweep.shared).toEqual([])
++	})
++
+ 	it('exports the scanner, the predicates, the collectors, and the compatibility oracle, and nothing the document has to answer', () => {
+ 		expect(Object.keys(setup).sort()).toEqual(
+ 			[
+@@ -81,6 +92,7 @@ describe('styles setup', () => {
+ 				'EDGE_SHORTHANDS',
+ 				'FILL_ONLY_RECIPE',
+ 				'IMAGE_PAINT_CASES',
++				'IMAGE_SOURCE',
+ 				'LIST_CLASS_CASES',
+ 				'MANDATED_TAG_PAIRS',
+ 				'PHYSICAL_LONGHANDS',
+diff --git a/tests/setupStyles.ts b/tests/setupStyles.ts
+index 20fb6c0..51f289c 100644
+--- a/tests/setupStyles.ts
++++ b/tests/setupStyles.ts
+@@ -2,6 +2,10 @@ import { isRecord } from '@orkestrel/contract'
+ import { parse } from 'postcss'
+ import { collectTokenNodes, normalizeSelectorText } from './setup.js'
+ 
++/** Supplies an intrinsic 240 by 160 image without a network request. */
++export const IMAGE_SOURCE =
++	"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='160'%3E%3C/svg%3E"
++
+ /** Lists the modes exercised by the text element cases. */
+ export const TEXT_MODES = Object.freeze(['light', 'dark'] as const)
+ 
+diff --git a/tests/src/styles/components/image.test.ts b/tests/src/styles/components/image.test.ts
+index 79fe5f6..0e1f11a 100644
+--- a/tests/src/styles/components/image.test.ts
++++ b/tests/src/styles/components/image.test.ts
+@@ -2,10 +2,7 @@ import { requireValue } from '@orkestrel/test'
+ import { matchesColor, readPixels, readStyle } from '@orkestrel/test/browser'
+ import { afterEach, describe, expect, it } from 'vitest'
+ import { specimens } from '../../../setupBrowser.js'
+-import { IMAGE_PAINT_CASES } from '../../../setupStyles.js'
+-
+-const SOURCE =
+-	"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='160'%3E%3C/svg%3E"
++import { IMAGE_PAINT_CASES, IMAGE_SOURCE } from '../../../setupStyles.js'
+ 
+ afterEach(() => {
+ 	specimens.clear()
+@@ -28,7 +25,7 @@ describe('image classes', () => {
+ 
+ 	it('holds a classed image inside its container and keeps its proportions', async () => {
+ 		const host = specimens.mount(
+-			`<div style="inline-size: 120px"><img class="img-fluid" alt="Fluid specimen" width="240" height="160" src="${SOURCE}"></div>`,
++			`<div style="inline-size: 120px"><img class="img-fluid" alt="Fluid specimen" width="240" height="160" src="${IMAGE_SOURCE}"></div>`,
+ 		)
+ 		const element = requireValue(host.querySelector('img'), 'No fluid image')
+ 		await element.decode()
+diff --git a/tests/src/styles/elements/img.test.ts b/tests/src/styles/elements/img.test.ts
+index 99861fd..87fc977 100644
+--- a/tests/src/styles/elements/img.test.ts
++++ b/tests/src/styles/elements/img.test.ts
+@@ -2,7 +2,7 @@ import { requireValue } from '@orkestrel/test'
+ import { readPixels, readStyle } from '@orkestrel/test/browser'
+ import { afterEach, describe, expect, it } from 'vitest'
+ import { specimens } from '../../../setupBrowser.js'
+-import { TEXT_MODES } from '../../../setupStyles.js'
++import { IMAGE_SOURCE, TEXT_MODES } from '../../../setupStyles.js'
+ 
+ afterEach(() => {
+ 	specimens.clear()
+@@ -13,7 +13,7 @@ describe('img calibrated treatment', () => {
+ 		'preserves proportions within the calibrated constraint in %s mode',
+ 		async (mode) => {
+ 			const host = specimens.mount(
+-				`<div data-bs-theme="${mode}" style="inline-size: 120px"><img alt="Local specimen" width="240" height="160" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='160'%3E%3C/svg%3E"></div>`,
++				`<div data-bs-theme="${mode}" style="inline-size: 120px"><img alt="Local specimen" width="240" height="160" src="${IMAGE_SOURCE}"></div>`,
+ 			)
+ 			const element = requireValue(host.querySelector('img'), 'No image')
+ 			await element.decode()

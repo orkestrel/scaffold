@@ -103,11 +103,19 @@ reuses the U7f portfolio shape (`u7f-verdict.md`, `units/u7f-harness-3.mjs`,
   every lane to audit prose, which is how CL5's round produced two guide findings under a ruling
   that bars them. Judge a guide row only where a unit's own criterion names it, and carry its
   facts as a bound for the unit that owns the guide.
-- Three claim-drafting rules the campaign's own audits established, each after a lane caught the
-  Orchestrator: state only what a failing assertion itself reports, never what a run that aborted
-  left passing; take the measurement before writing a claim that two artifacts are identical;
-  and check a claim asserting something of every member of a set against the exceptions the same
-  claims file already names.
+- **Write a claim only from a source you read, never from the unit's report.** Five claim-drafting
+  defects across this campaign share one root: the report said something, the Orchestrator
+  restated it as a claim, and a lane found the nuance the report had smoothed over. Every claim
+  must either carry the Orchestrator's own check of the primary source, or be written as what the
+  unit reports rather than as what is true. The five, each caught by a lane:
+  - Stating what a failing run left passing, when the later assertions never executed.
+  - Claiming two artifacts identical without taking the measurement first.
+  - Claiming something of every member of a set, contradicting an exception the same claims file
+    named a few lines earlier.
+  - Writing a guide-row claim under a ruling that bars auditing prose, which instructs every lane
+    to audit prose whatever the brief says beside it.
+  - Claiming a unit exceeded its brief without reading the Unknown in that brief which had told
+    the unit to settle exactly that question.
 - One guide per package: `guides/veneer.md` only. Surfaces are core, browser, server, styles
   only; Vue is a deferred service; no invented surfaces (no subpath export, side-effect entry,
   build wrapper, or rule amendment beyond scaffold's shape).
@@ -190,15 +198,42 @@ block's reading; the first unit that lands a component surface reading that toke
 own value rather than assuming this one; the Test 0.0.19 release (user-directed, OTP) takes the
 `captureFrame` element bounds and the forced-colours `MediaOptions` axis.
 
-Open questions for the user, to report at the family's acceptance: the outline pair's ghost on
-its own canvas; dark primary's white text below 4.5:1 (shared with Elements); the latched
-`.active` equalling the `:active` mix; dimmed versus active cyan in dark; the repaired control
-near Outline secondary; the forced-colours axis (Test-side); the `pool: 'forks'` pin in
-scaffold's vendored `vite.config.ts`; the registry's later majors (`@vitest/browser-playwright`,
-`typescript`, `vitest`); the two deferral grammars; the grid judged against the pinned
-Bootstrap page (an accepted difference); the build dropping vendor prefixes it judges redundant
-for its targets; the `::-moz-focus-inner` exclusion meaning no Gecko inner-focus repair ships;
-the fixed heading scale, which CL5's class twins now follow rather than Bootstrap's fluid sizes.
+Open questions for the user, to report at the family's acceptance, grouped by the decision each
+one asks for. Report them in these groups rather than as one list: the groups are what makes the
+report answerable.
+
+**Rendered appearance the user may want to overrule.** Each is a value the package ships that a
+reading justifies and a person might still reject.
+
+- The outline pair's ghost on its own canvas.
+- Dark primary's white text below the 4.5:1 contrast floor, shared with Elements.
+- The latched `.active` equalling the `:active` mix, and dimmed against active cyan in dark.
+- The repaired control sitting near Outline secondary.
+- The fixed heading scale: Veneer's headings are smaller than Bootstrap's at every level but the
+  sixth, and CL5's class twins follow the tag rather than Bootstrap's fluid sizes.
+- The mark highlight following the system colours Elements measured rather than Bootstrap's
+  highlight properties, so retuning those Bootstrap properties moves nothing (CL5c's ruling).
+- The link colours moving to the values the record measured, so a consumer who matched the
+  current link colour sees it change (CL6's ruling).
+
+**Accepted differences from Bootstrap.** Each ships knowingly and needs no decision unless the
+user disagrees.
+
+- The grid judged against the pinned Bootstrap page rather than an Elements specimen.
+- The build dropping vendor prefixes it judges redundant for its targets.
+- The `::-moz-focus-inner` exclusion, so no Gecko inner-focus repair ships.
+- The two deferral grammars.
+- The container key's navigation combinators shipping while the navigation family stays deferred,
+  so those rules reference a class this cascade never defines (CL7's ruling).
+
+**Decisions that are the user's alone.**
+
+- The registry's later majors: `@vitest/browser-playwright`, `typescript`, `vitest`.
+- The `pool: 'forks'` pin in scaffold's vendored `vite.config.ts`.
+
+**Cross-package.**
+
+- The forced-colours axis, which is Test-side.
 
 ## Gotchas that cost time last session
 
