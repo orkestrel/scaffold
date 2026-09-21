@@ -1,0 +1,24 @@
+Give the mode control one affordance and shoot the pointer frames settled (U7f-fix)
+
+The portfolio verdict's first round found the shell's `Dark mode` control
+reading as bare text in light and a rounded panel in dark, because the
+cascade's bare-button hover mix was the only mark it carried and that mix
+inverts with the mode. The `shell` layer now paints the header's control a
+border from the cascade's own border tokens, so it reads the same in both
+themes and wears no `.btn` treatment; the proof drives the control by
+keyboard and reads its resolved affordance equal across modes.
+
+The hover and active element frames are shot with reduced motion staged
+and the tester pane staged before the pointer lands, because the capture's
+own pane staging moved the document out from under the pointer and the
+frame caught the host on its way back to rest; each frame now carries the
+settled mix the pointer reading records. The per-variant artifact also
+carries the section's accessibility tree at the pressed moment, so the
+`Toggle` host's `pressed` state is on the record beside its frame.
+
+Every proof ran red before its fix and green after; every gate exits 0 on
+managed Chromium and Edge; the capture run regenerated the portfolio. The
+audit is recorded in scaffold's `.orkestrel/veneer/u7f-fix-audit-verdict.md`
+file and the verdict rounds in `u7f-verdict.md`.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
