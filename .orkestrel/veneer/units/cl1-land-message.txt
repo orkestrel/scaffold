@@ -1,0 +1,25 @@
+Teach the proofs the Content/layout contract (CL1)
+
+The conformance scanner learns a permanent exclusion: an `Excluded` owner
+in the guide's deferral table is terminal, its name is validated against
+the pinned inventory, and it must stay absent from every selector of the
+built cascade, nested rules included, with the offender named. A key whose
+official property set is empty now ships on its selector row alone, and
+Button stays withheld while its variable row is missing or accepted.
+
+The oracle driver acts inside the root it is given: the bounded target is
+resolved under the root, keys go to that target after it is focused, and a
+held pointer holds that element through the installed protocol, so two
+sections carrying the same accessible name no longer share one drive. The
+styles setup gains the frozen breakpoint case table at 375, 576, 768, 992,
+1200, and 1400 with the readings on either side of each boundary, and a
+`visitBreakpoint` helper over `page.viewport` that restores the starting
+viewport on every path; a setter file was measured not to leak its size
+into the next file, and the restoration proof reddened on a helper that
+did not restore.
+
+Every proof ran red before its change and green after; every gate exits
+0 on managed Chromium and Edge. The audit is recorded in scaffold's
+`.orkestrel/veneer/cl1-audit-verdict.md` file.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
