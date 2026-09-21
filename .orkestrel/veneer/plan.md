@@ -1380,3 +1380,11 @@ after acceptance per the debrief skill's retention reference.
   unlayered important plant (reviewer 13). Carried: `_var.scss`'s literal mono stack and
   `_pre.scss`'s untokenized line height to CL3b (reviewer 11); the anchor reading the `--vn-link-*`
   tokens rather than the `--bs-*` aliases to CL6 (reviewer 12). **Unchanged:** CL3b, CL4 to CL13.
+- 2026-09-21, CL3 round 2 (`cl3-audit-verdict.md`): the fix round under brief 4 closed every
+  carried finding on all four lanes, and the verifier's first run for the unit reports every
+  gate green on both browsers. One more rule-compliance finding forces round 3 (the shared
+  script-text block of `_sub.scss` and `_sup.scss` into a mixin, with a sweep of the partials for
+  any other shared block and the duplicate `text-size-adjust` dropped from `_body.scss`), under
+  `units/cl3-brief-5.md` on Astra. Carried: the `surface-code` theme-map key to CL3b (the emitter
+  holds a literal); the heading letter-spacing row and the shell's document-global `main` id to
+  CL5 (the next owner of the type scale and `Showcase.ts`). **Unchanged:** CL3b, CL4 to CL13.

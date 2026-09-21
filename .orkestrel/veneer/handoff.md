@@ -92,43 +92,55 @@ both browsers; the fix also moved `BUTTON_BARE_VALUES` from `button.test.ts` int
 module under the same table rule. The round-2 evidence is rendered (`units/cl3-diff-2.patch.txt`,
 `units/cl3-status-2.txt`) and the claims are written (`cl3-audit-claims-2.md`).
 
-**Round 2's four lanes were launched together, blind to each other, at the end of the last
-session** and may have finished while no session was attached:
+**Round 2 is reconciled (`cl3-audit-verdict.md` § Round 2): fix round.** All four lanes ran;
+every carried fix is confirmed and the verifier reports every gate green on both browsers. One
+rule-compliance finding forces round 3: `_sub.scss` and `_sup.scss` share a script-text block
+that belongs in a mixin. Carried out of the unit: the `surface-code` theme-map key to CL3b; the
+heading letter-spacing row and the shell's document-global `main` id to CL5.
 
-- The Astra analyst (SUBJECTIVE): journal `TMP/codex/cl3-audit-2-analyst.jsonl`, thread
-  `01a0c3cf-a250-7f60-99f0-8d71be7dc3e3`; its verdict is `TMP/codex/cl3-audit-2-analyst-last.md`
-  once `TMP/codex/cl3-audit-2-analyst.err` carries an `exit=` line.
-- Workflow run `wf_78ef993b-448` from `units/cl3-audit-2-wf.js`: the Opus reviewer (OBJECTIVE),
-  the checker, the verifier over `TMP/units/cl3-gate-brief.md`; the dump script finds its journal
-  by run id under the old session's folder.
+**Brief 5 is running on Astra at the end of the last session**: `units/cl3-brief-5.md` (the
+script-text mixin, the duplicate `text-size-adjust` dropped from `_body.scss`, and a sweep of
+every partial for any other shared block), launched by `TMP/codex/cl3-4.sh` (journal
+`TMP/codex/cl3-4.jsonl`, thread `01a0c3d8-ba0e-7661-a6ad-7d51fcca2e0c`; `exit=` appears in
+`TMP/codex/cl3-4.err` when it ends; a small fix exec has taken 20 to 35 minutes). Its report is
+`C:/Users/mikes/WebstormProjects/veneer/tmp/units/cl3-report-4.md`, its last message
+`TMP/codex/cl3-4-last.md`. The round-3 kit is derived and on disk:
+`TMP/units/cl3-audit-3-reviewer-brief.md`, `TMP/units/cl3-audit-3-checker-brief.md`,
+`TMP/codex/cl3-audit-3-analyst.sh` with its watch, and `units/cl3-audit-3-wf.js`, all naming
+`cl3-audit-claims-3.md`, `cl3-diff-3.patch`, `cl3-status-3.txt`, `units/cl3-brief-5.md`, and
+`units/cl3-report-4.md`.
 
 ## What to do first: close CL3
 
-1. Run `ps -eo pid,comm | grep -i codex`; while a `codex` process is live, the analyst lane is
-   still running: wait for `exit=` in `TMP/codex/cl3-audit-2-analyst.err` rather than
-   relaunching.
-2. If a lane never finished (no `exit=` line, or `node units/dump-lanes.mjs wf_78ef993b-448 cl3-2`
-   writes fewer than three lane files), re-run only that lane: the analyst by
-   `bash TMP/codex/cl3-audit-2-analyst.sh` as a background command with a Monitor on
-   `bash TMP/codex/cl3-audit-2-analyst-watch.sh` (an audit lane has taken 10 to 20 minutes); the
-   native lanes by
-   `Workflow({ scriptPath: 'C:/Users/mikes/WebstormProjects/scaffold/.orkestrel/veneer/units/cl3-audit-2-wf.js', resumeFromRunId: 'wf_78ef993b-448' })`
-   (completed agents replay from cache; a round has taken 5 to 16 minutes). Do not type into the
-   session while a Workflow runs: the harness relays a user message into its subagents as a
-   superseding instruction, which is how round 1 lost two lanes.
-3. Kept for a further round: a fix round is `TMP/units/cl3-brief-5.md` on Astra, launched by a
-   copy of `TMP/codex/cl3-3.sh` with the brief and report names bumped and a copy of its watch
-   (a CL unit exec has taken 30 to 45 minutes under the script's own `timeout 7200`); its
-   evidence from `bash units/render-cl3.sh -3`, its claims in `TMP/audit/cl3-audit-claims-3.md`,
-   its kit derived by `sed` from the `TMP/` round-2 kits (never from the retained copies), its
-   Workflow script copied from `units/cl3-audit-2-wf.js`.
-4. Read the lanes: the analyst from `TMP/codex/cl3-audit-2-analyst-last.md` (retain as
-   `units/cl3-audit-2-analyst-report.md` with the journal path and thread id in a header
-   comment); the native lanes by `node units/dump-lanes.mjs wf_78ef993b-448 cl3-2`, which
-   writes `units/lane-cl3-2-reviewer.md`, `-checker.md`, and `-verifier.md` from the agents'
-   role files. Append `## Round 2` to `cl3-audit-verdict.md` in its round-1 shape (one table
-   with a column per lane, findings, carried bounds, one terminal line); a lane that answered
-   something other than its brief is recorded as not run and re-run alone (step 2).
+1. Run `ps -eo pid,comm | grep -i codex`; while a `codex` process is live, brief 5 is still
+   running: wait for `exit=` in `TMP/codex/cl3-4.err` rather than relaunching. If the exec died
+   without an exit line, judge the tree by the report's presence and the owned files' mtimes
+   (`.agents/orchestration.md` § Reading liveness) and relaunch by copying `TMP/codex/cl3-4.sh`
+   to `cl3-5.sh` with the same brief.
+2. Retain the report as `units/cl3-report-4.md` with a header naming the journal and thread.
+   Render round 3's evidence: `bash units/render-cl3.sh -3` writes `TMP/audit/cl3-diff-3.patch`
+   and `TMP/audit/cl3-status-3.txt`; copy them to `units/cl3-diff-3.patch.txt` and
+   `units/cl3-status-3.txt`. Write `TMP/audit/cl3-audit-claims-3.md` in the shape of
+   `cl3-audit-claims-2.md` (one claim per carried finding, one for the sweep's result, and the
+   `[mechanical]` scope, law, and gates claim); copy it to `cl3-audit-claims-3.md`.
+3. Launch round 3's four lanes together, blind to each other: `bash TMP/codex/cl3-audit-3-analyst.sh`
+   as a background command with a Monitor on `bash TMP/codex/cl3-audit-3-analyst-watch.sh` (an
+   audit lane has taken 10 to 20 minutes), and
+   `Workflow({ scriptPath: 'C:/Users/mikes/WebstormProjects/scaffold/.orkestrel/veneer/units/cl3-audit-3-wf.js' })`
+   (a round has taken 5 to 16 minutes). Do not type into the session while a Workflow runs: the
+   harness relays a user message into its subagents as a superseding instruction, which is how
+   round 1 lost two lanes. If a lane never finished, re-run only that lane (the Workflow with
+   `resumeFromRunId`, which replays completed agents from cache).
+4. Read the lanes: the analyst from `TMP/codex/cl3-audit-3-analyst-last.md` (retain as
+   `units/cl3-audit-3-analyst-report.md` with the journal path and thread id in a header
+   comment); the native lanes by `node units/dump-lanes.mjs <runId> cl3-3`, which writes
+   `units/lane-cl3-3-reviewer.md`, `-checker.md`, and `-verifier.md` from the agents' role
+   files. Append `## Round 3` to `cl3-audit-verdict.md` in the shape of its rounds 1 and 2
+   (one table with a column per lane, findings, carried bounds, one terminal line); a lane that
+   answered something other than its brief is recorded as not run and re-run alone. A further
+   fix round is `TMP/units/cl3-brief-6.md` on Astra, launched by a copy of `TMP/codex/cl3-4.sh`
+   with the brief and report names bumped, its kit derived by `sed` from the `TMP/` round-3
+   kits (never from the retained copies).
 5. On accept: write `TMP/units/cl3-land-message.txt` (shape: `units/cl2-land-message.txt`;
    name the recorded limits and their carriers), run `bash TMP/units/cl3-land.sh` (its
    allowlist carries brief 3's grants and the `src/styles/elements/_*.scss` and

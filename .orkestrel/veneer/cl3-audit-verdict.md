@@ -79,3 +79,53 @@ Findings:
 
 Verdict: fix round. `units/cl3-brief-4.md` on Astra (the writer); the Opus reviewer stays the
 objective auditor; round 2 runs the analyst, the reviewer, the checker, and the verifier.
+
+## Round 2 (2026-09-21, the fix round under `units/cl3-brief-4.md`)
+
+Lanes, launched together and blind: analyst on Astra holding the SUBJECTIVE lane
+(`units/cl3-audit-2-analyst-report.md`, thread `01a0c3cf-a250-7f60-99f0-8d71be7dc3e3`, exit 0);
+reviewer on Opus 5 holding the OBJECTIVE lane (`units/lane-cl3-2-reviewer.md`, workflow
+`wf_78ef993b-448`); checker on Sonnet (`units/lane-cl3-2-checker.md`); verifier on Sonnet
+(`units/lane-cl3-2-verifier.md`) over `units/cl3-gate-brief.md`, the first verifier run for this
+unit. Claims: `cl3-audit-claims-2.md`; evidence `units/cl3-diff-2.patch.txt` and
+`units/cl3-status-2.txt` over the base `9f5ffda`; fix report `units/cl3-report-3.md`.
+
+| Claim | Analyst (subjective, Astra) | Reviewer (objective, Opus) | Checker | Verifier |
+| --- | --- | --- | --- | --- |
+| 1 `main` id and fragment proof | CONFIRMED | CONFIRMED (the host is attached, so the document lookup is real; the specimen blob unchanged) | — | — |
+| 2 one `code-text` mixin | CONFIRMED (read-only Sass compile: values unchanged, `pre` order only; the mixin alone emits nothing) | CONFIRMED (declaration equivalence against round 1's inline blocks) | — | — |
+| 3 case tables in the setup module | CONFIRMED | CONFIRMED (inventory closed by `.sort()`; no matrix or table remains in the proofs; moved expectations unchanged) | — | — |
+| 4 no `console` call | CONFIRMED | CONFIRMED | — | — |
+| 5 unlayered important plant | CONFIRMED | CONFIRMED (the reading is forced by the declared layer order) | — | — |
+| 6 scope, law, gates | UNDECIDABLE on the gate half | UNDECIDABLE on the gate half; scope, law, residue, and registry agreement CONFIRMED (blob hashes across rounds) | CONFIRMED on scope, the round-1 identity of the untracked set, the law sweep, the partials, the values, the section, and the guide; gate half UNRESOLVED | every step exit 0 on managed Chromium and Edge, `npm test` exit 0, status identical before and after, `scaffold audit` reports only the pre-existing `setupListeners` note and the three registry majors |
+
+Reconciliation. Every carried finding is closed on every lane, and the verifier closes the gate
+half both engines left open. Findings outside the claims:
+
+- **Analyst 7 (forces round 3).** `_sub.scss` and `_sup.scss` repeat `position`, `font-size`,
+  `line-height`, and `vertical-align`; the styles rule moves a pattern shared by two partials
+  into `_mixins.scss`. Same class as round 1's analyst 11, ruled the same way.
+- **Reviewer 7 (carried into round 3, cheap).** `_body.scss` re-declares `text-size-adjust`,
+  which `_html.scss` already sets and which inherits; the built cascade carries it twice and no
+  proof reads it. Fix: drop the body declaration.
+- **Reviewer 8 (carried to CL3b).** `--vn-surface-code` is a literal in the emitter while every
+  sibling surface reads the theme maps; CL3b adds a `surface-code` key to `$light` and `$dark`
+  and the emitter reads it. CL3b owns the token files.
+- **Reviewer 9 (carried to CL5).** The record reads `letter-spacing: -0.36px` on `h1` and the
+  heading partial binds none; the type-scale owner rules the row in or out and pins the
+  reading.
+- **Reviewer 10 (carried to CL5).** The shell writes a document-global `main` id from a
+  constructor that takes a host, so two live shells would duplicate it; the next owner of
+  `Showcase.ts` (CL5 adds its sections) gives the id to the entry or resolves the region by
+  reference.
+- **Reviewer 11.** The verifier gap it names is closed by this round's verifier lane.
+
+### Findings carried into round 3 (`units/cl3-brief-5.md`)
+
+1. Analyst 7: the shared script-text block of `_sub.scss` and `_sup.scss` into one mixin.
+2. Reviewer 7: the duplicate `text-size-adjust` dropped from `_body.scss`.
+
+### Terminal (round 2)
+
+Verdict: fix round. `units/cl3-brief-5.md` on Astra (the writer); the Opus reviewer stays the
+objective auditor; round 3 runs all four lanes.
