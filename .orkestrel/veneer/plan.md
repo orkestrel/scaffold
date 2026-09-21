@@ -1299,3 +1299,20 @@ after acceptance per the debrief skill's retention reference.
   analyst's note that U7c's `resolveButton` carries the same prefix defect stays with CL11.
   **Unchanged:** CL2 to CL13. Next: CL2 (Opus) after its scope read
   (`units/cl2-scope-read-brief.md`), then CL3 (Astra) with its scroll-behavior probe.
+- 2026-09-21, CL2 dispatched on Opus under `units/cl2-brief-2.md` after the scope read
+  (`units/cl2-scope-read-report.md`) found brief 1 naming breakpoint mixins that did not exist;
+  brief 2 made them authored work over one Sass source. The unit landed the tokens
+  (`--vn-space-12`, `-24`, `--vn-display-1` to `-6`, `--vn-state-stripe`), the `breakpoints()`
+  function in `_mixins.scss` from which `_tokens.scss` emits the breakpoint tokens and the
+  `breakpoint-up` and `breakpoint-down` mixins read their range-syntax conditions, the
+  compile-time refusal of an unknown name, `collectMediaConditions` in the browser setup and
+  `parseMediaWidth` in the styles setup, and the proofs at both depths (`units/cl2-report.md`).
+  Round 1 (`cl2-audit-verdict.md`): every claim confirmed and every gate green on both engines;
+  one defect forces a fix round (a hidden module-scope regex constant in `tests/setupStyles.ts`,
+  found by the analyst and the reviewer alike), with three reviewer test-sufficiency findings
+  carried (the reader case's same-width gates, an assertion that cannot fail, the stripe
+  placement unbound by its proof). Ruled on the reviewer's referral: a Node-side Sass compile
+  proof of a partial's refusal lives in `tests/setupStyles.test.ts` beside its precedent,
+  because no Node project includes the styles proofs and the config is vendored. The fix round
+  runs on Opus under `units/cl2-brief-3.md`; Astra stays the objective auditor. **Unchanged:**
+  CL3 to CL13.
