@@ -1440,3 +1440,20 @@ after acceptance per the debrief skill's retention reference.
   assuming this one, because the token now carries the code block's reading (CL12 restates the
   guide sentence); the description-list case field's name goes to the next unit that grows that
   table. **Unchanged:** CL4 to CL13.
+- 2026-09-21, CL3b landed in Veneer as `d822d59` after two audit rounds (`cl3b-audit-verdict.md`;
+  briefs `units/cl3b-brief.md` to `-3.md`, reports `units/cl3b-report.md` and `-2.md`, the landing
+  log `units/cl3b-land.log.txt`). Round 2 accepted on every lane: the Astra analyst held the
+  objective lane, the Opus reviewer the subjective lane, the checker ruled the mechanical claims,
+  and the round-2 verifier ran every gate green on both browsers against the tree that landed.
+  What landed: `--vn-text-muted` and the raised surface at the record's values, the dark mix
+  anchor pinned to `oklch(0.235 0.013 256)` so no dark role tier moved, the `surface-code` map
+  key, the `font.mono` group (`--vn-font-mono-base` and `--vn-font-mono-short`), `--vn-line-code`,
+  the rebinding of `_address`, `_dl`, `_pre`, `_samp`, `_var`, the corner-radius rows, and the
+  token proof's registrations on the setup module's mode table. Carried: a later component
+  surface unit measures its own raised value rather than assuming this token (CL12 restates the
+  guide sentence); the description-list case field's name and the mode-invariant case's duplicate
+  registration go to the next unit that touches them. Recorded deviation: the round-2 reviewer
+  brief kept round 1's lane-focus sentence, because a derived kit substituted rather than rewrote
+  it; the lane ruled on the claims file's numbering and recorded the mismatch, and no ruling rests
+  on it. **Unchanged:** CL4 next (`units/cl4-brief.md`, placeholder `CL3_LANDING_SHA` takes
+  `d822d59`), then CL5 to CL13.

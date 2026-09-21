@@ -3,8 +3,8 @@
 ## Role and engine
 
 `sol` on Astra (GPT-6 Astra through `codex exec`, `workspace-write`), the sole writer in the
-Veneer checkout (`C:/Users/mikes/WebstormProjects/veneer`), HEAD `CL3_LANDING_SHA` (the CL3
-landing), tracked tree clean. You are the bench engine reading the brief inside your own CLI:
+Veneer checkout (`C:/Users/mikes/WebstormProjects/veneer`), HEAD `d822d59` (the CL3b
+landing, which carries CL3 beneath it), tracked tree clean. You are the bench engine reading the brief inside your own CLI:
 perform the assignment directly and spawn nothing.
 
 ## Objective
@@ -38,12 +38,15 @@ figures, images where Elements carries the specimen) and Bootstrap's own rules
 (`node_modules/bootstrap/scss/_reboot.scss` in the Veneer checkout; the form controls and the
 interactive tags are retained from it, recorded as such).
 
-What CL3 landed (read it from the tree at `CL3_LANDING_SHA`; a fact here that has moved is a
+What CL3 and CL3b landed (read it from the tree at `d822d59`; a fact here that has moved is a
 re-read, never a stop): `src/styles/_reset.scss` in the `reset` layer (`*`, `*::before`,
 `*::after` box sizing; `[hidden]`; the scroll behaviour), the text tag partials under
 `src/styles/elements/`, their mirrored proofs under `tests/src/styles/elements/`,
 `app/browser/sections/ContentSection.ts` over the frozen `CONTENT_SPECIMENS` table typed by
-`ContentSpecimen`, and the guide's files-table and departure rows. The `b` tag is a `reboot`
+`ContentSpecimen`, the guide's files-table and departure rows, and CL3b's tokens (`--vn-text-muted`,
+the retuned `--vn-surface-raised` with the dark mix anchor pinned to a literal, `--vn-surface-code`
+in the theme maps, the `font.mono` group, `--vn-line-code`) with the code family and the muted
+tags rebound to them. The `b` tag is a `reboot`
 selector CL3 did not land (`units/cl4-scout-report.md` § 3): it is yours, as `_b.scss`.
 
 The partial set this unit lands, from the terrain map § 2, one bare tag per file with the

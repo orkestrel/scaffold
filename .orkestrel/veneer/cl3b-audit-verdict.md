@@ -63,3 +63,53 @@ Findings:
 
 Verdict: fix round. `units/cl3b-brief-3.md` on Opus (the writer); the Astra analyst stays the
 objective auditor; round 2 runs all four lanes.
+
+## Round 2 (2026-09-21, the fix round under `units/cl3b-brief-3.md`)
+
+Lanes, launched together and blind: analyst on Astra holding the OBJECTIVE lane
+(`units/cl3b-audit-2-analyst-report.md`, thread `01a0c42d-847a-7252-81c6-c37d692be31d`, exit 0);
+reviewer on Opus 5 holding the SUBJECTIVE lane (`units/lane-cl3b-2-reviewer.md`, workflow
+`wf_35f9dff8-90a`); checker on Sonnet (`units/lane-cl3b-2-checker.md`); verifier on Sonnet
+(`units/lane-cl3b-2-verifier.md`) over `units/cl3b-gate-brief.md`. Claims:
+`cl3b-audit-claims-2.md`; evidence `units/cl3b-diff-2.patch.txt` and `units/cl3b-status-2.txt`
+over the base `9bb306e`; fix report `units/cl3b-report-2.md`. Round 1's rulings carry unchanged.
+
+| Claim | Analyst (objective, Astra) | Reviewer (subjective, Opus) | Checker | Verifier |
+| --- | --- | --- | --- | --- |
+| 1 the three registrations read `TEXT_MODES` | CONFIRMED | CONFIRMED, with a scope note: the claim is true of the fix round's delta, and `tests/setupStyles.ts` is edited by CL3b as a whole | CONFIRMED | — |
+| 2 the registrations bind and the table narrows | UNDECIDABLE on the run (report-only); the narrowing conjunct CONFIRMED by its own read-only typecheck | UNDECIDABLE on the run; narrowing CONFIRMED; **one conjunct REFUTED**: the third case has no mode ternary, so the plant's description does not hold for it, which the report itself says | — | — |
+| 3 the sweep | CONFIRMED (independent traversal: every `.each` argument imported, no loop or callback registration) | CONFIRMED (re-run independently, every hit ruled) | — | — |
+| 4 nothing else moved by hand | CONFIRMED (reconstructed round 1's proof, applied only the prescribed substitutions, and compared syntax trees; its controls broke the comparison) | CONFIRMED (character-identical apart from the two substitutions and the reflow) | — | — |
+| 5 scope, law, gates | UNDECIDABLE on the gate half; scope and law CONFIRMED | UNDECIDABLE on the gate half; scope, delta, and law CONFIRMED (the two statuses are line-for-line identical and only the token proof's blob moved) | REFUTED as a conjunction, on the gate half alone; every other sub-claim CONFIRMED | every step exit 0 on managed Chromium and Edge, `npm test` and the journeys exit 0, status identical before and after, `scaffold audit` reports only the pre-existing `setupListeners` note and the three registry majors |
+
+Reconciliation. Every implementation claim is CONFIRMED on every lane that could rule on it. The
+analyst, the reviewer, and the checker each leave exactly one conjunct open, the gate half, and
+each names the same remedy: a verifier run against the round-2 tree. That run is
+`units/lane-cl3b-2-verifier.md`, the verifier lane of this round, launched with the other three
+after brief 3 returned and blind to them, reading the same eighteen-path status at `9bb306e`.
+The condition all three set is met, so the round accepts; the checker's terminal line names only
+that conjunct and its own extra finding is the same gap.
+
+Claim 2's refuted conjunct is a wording defect in the claims file, not in the code: the plant
+reddened all six registrations, and the third case's values are mode-invariant, so its plant
+needed no ternary. Recorded against the claim.
+
+Findings and corrections:
+
+- **Reviewer 6 (observation, carried).** The shorter-stack and code-rhythm case registers once
+  per mode while both its assertions are mode-invariant, so the dark registration repeats the
+  light reading. It masks nothing and landed in round 1. Carrier: the next unit that touches that
+  block registers it once or asserts the mode-invariance directly.
+- **Reviewer 7.** Claim 2's plant description is corrected here rather than carried.
+- **Reviewer 8 (my dispatch defect, recorded).** `units/cl3b-audit-2-reviewer-brief.md` still
+  directs the hardest reading at "claim 4: the renamed token", which is round 1's numbering;
+  claims-2's claim 4 is the no-hand-edit claim, and the claims file carries round 1's rename
+  ruling as closed. I derived the round-2 reviewer brief from round 1's by substitution and
+  replaced that paragraph in the analyst script but not in the reviewer brief. The lane ruled on
+  the claims file's numbering, which is the authority, and recorded the mismatch; no ruling
+  rests on the stale sentence. The lesson for the next `-2` kit: a derived brief's lane-focus
+  paragraph is rewritten, not substituted.
+
+### Terminal (round 2)
+
+Verdict: accept. Land with `units/cl3b-land.sh`.
