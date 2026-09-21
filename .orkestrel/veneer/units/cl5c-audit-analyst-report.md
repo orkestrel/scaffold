@@ -1,0 +1,30 @@
+No implementation defect forces another round. This audit used source inspection and read-only, in-memory checks. Browser runs, historical mutations, and the full gate chain remain report-only.
+
+1. **CONFIRMED.** [SpecimenSection.ts:29](C:/Users/mikes/WebstormProjects/veneer/app/browser/sections/SpecimenSection.ts:29) owns construction, copy, specimen containers, host access, and destruction. Each subclass supplies its own constants through `super`. These constructors narrow the supplied data meaningfully. `ButtonSection` is byte-identical to `4f817db`.
+
+2. **UNDECIDABLE — reported execution.** Byte comparisons confirm the section proofs, showcase proof, and `Showcase.ts` are unchanged. [Showcase.ts:70](C:/Users/mikes/WebstormProjects/veneer/app/browser/Showcase.ts:70) preserves construction order; its destruction loop preserves that order. The reported passing runs were not independently rerun.
+
+3. **CONFIRMED.** [SpecimenSection.test.ts:7](C:/Users/mikes/WebstormProjects/veneer/tests/app/browser/sections/SpecimenSection.test.ts:7) supplies independent copy and markup, then pins the label, paragraph, specimen names, markup, and child order. Its empty-table case covers attachment and repeated destruction. The subclass proofs retain their markup, ordering, host, and neighbor-preservation assertions. No previously implemented section behavior was lost in the extraction.
+
+4. **CONFIRMED.** [The mixin](C:/Users/mikes/WebstormProjects/veneer/src/styles/_mixins.scss:15) supplies the complete treatment. The tag and class blocks contain only its include. In-memory Sass compilation and the shipped CSS independently produced matching declarations:
+   `color:var(--vn-text-mark); background-color:var(--vn-surface-mark); padding:0 .1875em`.
+
+5. **CONFIRMED within the claimed modes.** The registry leaves at [constants.ts:134](C:/Users/mikes/WebstormProjects/veneer/src/core/constants.ts:134) and `:151` obey the path law. Executing the registry traversal found no path mismatch; parsing the built CSS found exact root-partition equality and no duplicate root token declarations. [The token declarations](C:/Users/mikes/WebstormProjects/veneer/src/styles/_tokens.scss:209) carry plain system-colour keywords, with no theme override or variable dependency that could freeze a root-mode colour. Chromium’s implementation returns yellow for `Mark` and black for `MarkText` without branching on colour scheme. See [Chromium’s system-colour implementation](https://chromium.googlesource.com/chromium/src/+/fc92cc6dc0a63cab87ad5e4ff9d3b17cdd7df198/third_party/blink/renderer/core/layout/layout_theme.cc). This does not establish universal colour invariance across user agents or user settings.
+
+6. **UNDECIDABLE — report-only rendered reading.** The mark proof and `TEXT_MARK_CASES` are byte-identical to the baseline. [The retained report](C:/Users/mikes/WebstormProjects/scaffold/.orkestrel/veneer/units/cl5c-report-2.md:45) records unchanged padding and black-on-yellow paint. The declarations support that result, but this lane did not independently measure the browser before and after.
+
+7. **UNDECIDABLE for the historical plants; the comparison mechanism is confirmed.** [type.test.ts:122](C:/Users/mikes/WebstormProjects/veneer/tests/src/styles/components/type.test.ts:122) pins the span independently before comparing it with the tag. The shipped cascade offers no alternative matching rule that supplies the span’s yellow background or inline padding. Body text colour can inherit onto the span, but the shipped body colour differs from the pinned black; the universal reset supplies only box sizing. The installed rendering helper adds an unstyled container, and `readStyle` calls `getComputedStyle`. The padding mutations remain [report-only evidence](C:/Users/mikes/WebstormProjects/scaffold/.orkestrel/veneer/units/cl5c-report-2.md:93).
+
+8. **CONFIRMED for the live sweep result.** Direct execution of `scanStyleBlocks()` returned `shared: []` and discovered the mixin and its consumers. This agrees with [the standing assertion](C:/Users/mikes/WebstormProjects/veneer/tests/setupStyles.test.ts:65). The earlier duplicate-block failure and the complete `test:setup` run remain report-only.
+
+9. **CONFIRMED.** [The report](C:/Users/mikes/WebstormProjects/scaffold/.orkestrel/veneer/units/cl5c-report.md:125) records the caption readings in light and dark modes. The bindings remain distinct, and the difference assertion is unchanged. [image.test.ts:63](C:/Users/mikes/WebstormProjects/veneer/tests/src/styles/components/image.test.ts:63) pins `inline-block`, `column`, and `8px`; changing the display to flex or grid fails the existing display assertion. The caption measurements themselves are report-only.
+
+10. **UNDECIDABLE for the historical mutation run; the invariant is confirmed.** [setupStyles.test.ts:241](C:/Users/mikes/WebstormProjects/veneer/tests/setupStyles.test.ts:241) compares every retune value against the combined default-size set. An in-memory reading found no overlap, and a `36px` control produced an overlap. That check does not independently establish the reported suite failure or the styles project’s concurrent green result.
+
+11. **CONFIRMED.** [type.test.ts:48](C:/Users/mikes/WebstormProjects/veneer/tests/src/styles/components/type.test.ts:48) registers the painted-host colour assertions separately. The agreement case retains size, line, weight, margin, and inherited-colour equality on its own host.
+
+12. **UNDECIDABLE as a complete gate claim.** The live status matches the supplied status, and the changed paths fit the effective grants. The implementation additions contain none of the prohibited constructs named by the claim, and no plant residue was found. `git diff --check 4f817db` passed. The writer’s gate results are report-only; independent verifier output establishing the claimed chain and before/after status was not present in the supplied evidence.
+
+No additional implementation finding is raised. The undecidable portions require execution evidence, not an implementation fix round.
+
+Verdict: accept

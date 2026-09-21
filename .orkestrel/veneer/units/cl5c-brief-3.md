@@ -73,7 +73,7 @@ stays off-limits, including every other partial, `tests/setupConformance.ts`, `t
 
 ## Output
 
-Write `tmp/units/cl5c-report-2.md` in the Veneer checkout and return it: the mixin's name and its
+Write `cl5c-report-2.md` in the Veneer checkout and return it: the mixin's name and its
 consumers; the two registry leaves; the tag's paint before and after; the sweep's result; the
 comparison case and the mutation that reddens it; whether a gate required a guide row and which;
 each step's exit code and final lines on both engines; the actual `git diff --stat` and

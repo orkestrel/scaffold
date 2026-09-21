@@ -8,7 +8,7 @@ above it. Reports: `units/cl5c-report.md` (the run that stopped on the mark ruli
 `units/cl5c-scope-read-report.md`. The mark ruling's evidence is
 `units/cl5-twin-measurement.md`.
 
-Evidence: the rendered diff `tmp/audit/cl5c-diff.patch` and status `tmp/audit/cl5c-status.txt`,
+Evidence: the rendered diff `units/cl5c-diff.patch.txt` and status `tmp/audit/cl5c-status.txt`,
 the live tree, and the built `dist/src/styles/index.css`.
 
 **Scope of this audit.** Implementation only: correctness, rule compliance, test sufficiency,

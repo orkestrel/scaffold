@@ -13,7 +13,7 @@ a row you rule `unclear` names what you could not settle and why.
 
 ## The brief under review
 
-`C:/Users/mikes/WebstormProjects/scaffold/tmp/units/cl6-brief.md`, with its terrain map at
+`C:/Users/mikes/WebstormProjects/scaffold/.orkestrel/veneer/units/cl6-brief.md`, with its terrain map at
 `.orkestrel/veneer/units/cl6-scout-report.md` and the Orchestrator's ruling at
 `units/cl6-retune-measurement.md`. Read both for context and rule against the tree, not against
 them.

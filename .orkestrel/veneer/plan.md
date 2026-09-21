@@ -1687,3 +1687,42 @@ after acceptance per the debrief skill's retention reference.
   prior commit. Durable rulings are verified by reading the file back and committed in the same
   action from here.
   **Unchanged:** CL5c dispatched over this landing; CL6 to CL13.
+- 2026-09-21, CL5c and its landing `c1c81a4` (`cl5c-audit-verdict.md`, two rounds): three
+  showcase specimen sections that held the same body now extend one base, each still its own
+  constructible export because the barrel proof pins the export names and each section proof
+  constructs its class by name; the base carries a proof of its own, built with rows no shipped
+  constant holds. The mark class and the mark tag now render alike because both include one mixin
+  reading two registry-backed tokens carrying the CSS system colours the content calibration
+  measured. The retune tables assert their values disjoint from every default size, and the
+  heading colour control has its own case.
+  **The unit stopped once, correctly.** Its first run implemented the mark ruling, measured two
+  blockers, reverted the style files, and reported the patches. One blocker was the sweep CL5b had
+  just landed, catching the shared treatment written into both partials — **the gate working as
+  designed, on the first unit to write a duplicated block after it shipped**. The other was the
+  token registry's root partition. **That scope was the Orchestrator's defect:** the correction
+  was drafted against the styles rule's prose and checked against neither the sweep the
+  Orchestrator had itself commissioned nor the partition the token proof asserts. Brief 3 granted
+  exactly those two files and the unit closed it with no deviation.
+  **Round 1 accepted on all four lanes and two findings went back anyway.** The unit had added an
+  assertion protecting the heading retune tables against a value equal to its own default, then
+  created the identical unguarded seam for the two mark tokens in the same change: both proofs
+  pinned literals that resolve the same whether the mixin reads the tokens or carries the bare
+  keywords. The second was a shared row type carrying one section's name. Round 2 closed both,
+  and the Orchestrator's own probe (`units/cl5c-probe.sh`) reddened exactly one case on inlining
+  the keywords **while the mark tag's own proof stayed green under the identical edit**, which is
+  the finding's whole premise made concrete.
+  **The Orchestrator's own defects, the seventh through ninth.** A claim credited the figure
+  residue readings with guarding the display when the pre-existing display assertion is what
+  reddens; brief 4 carried two criteria that could not both hold, which the unit resolved
+  correctly and recorded; and the derived round-2 lane brief kept the previous round's evidence
+  list, so it never named the brief and report the round was auditing. The rule that follows is
+  landed in `handoff.md`: when deriving a lane brief, rewrite the lane focus **and** the evidence
+  list, naming the round's own effective brief and report.
+  **The landing script refused its first run** on the file the rename's annotations live in, which
+  was correct because the list predated brief 4. It was widened to that one file with the brief
+  clause and the unit's deviation report named in the script header.
+  **Carried:** the shared copy type is declared and annotated on no producer, to the unit that
+  next owns the app constants. **Reported to the user:** after this unit no rule under
+  `src/styles/` reads the older highlight token pair, so a consumer retuning it sees nothing move;
+  whether it stays as a Bootstrap-compatibility alias or is removed is the user's decision.
+  **Unchanged:** CL6 dispatched over this landing; CL7 to CL13.

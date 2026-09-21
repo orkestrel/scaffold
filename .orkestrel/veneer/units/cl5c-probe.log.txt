@@ -1,0 +1,50 @@
+== baseline
+4f817db Close the shared-block class and make the rule enforce itself (CL5b)
+-- mixins hash before:
+cd277cae16c3992c1f2a73f1a1ab22715753f57f
+== plant: inline the system colour keywords into the shared mixin
+plant: one replacement in C:/Users/mikes/WebstormProjects/veneer/src/styles/_mixins.scss
+-- the type proof with the keywords inlined:
+[32m-   "background-color": "rgb(68, 85, 102)",[39m
+[32m-   "color": "rgb(17, 34, 51)",[39m
+[31m+   "background-color": "rgb(255, 255, 0)",[39m
+[31m+   "color": "rgb(0, 0, 0)",[39m
+[2m  }[22m
+
+ ❯ tests/src/styles/components/type.test.ts:165:5
+    163|      ]),
+    164|     ),
+    165|    ).toEqual(retuned)
+       |     ^
+    166|  })
+    167| })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 35 passed (36)
+   Start at  15:28:26
+   Duration  1.29s (transform 0ms, setup 163ms, import 21ms, tests 15ms, environment 0ms)
+
+-- the mark tag proof with the keywords inlined (must stay green):
+
+ Test Files  1 passed (1)
+      Tests  2 passed (2)
+   Start at  15:28:29
+   Duration  1.26s (transform 0ms, setup 166ms, import 16ms, tests 4ms, environment 0ms)
+
+== restore
+restore: one replacement in C:/Users/mikes/WebstormProjects/veneer/src/styles/_mixins.scss
+-- mixins hash after:
+cd277cae16c3992c1f2a73f1a1ab22715753f57f
+-- the type proof restored:
+
+ Test Files  1 passed (1)
+      Tests  36 passed (36)
+   Start at  15:28:33
+   Duration  1.27s (transform 0ms, setup 166ms, import 19ms, tests 11ms, environment 0ms)
+
+== final tree
+18
+== probe end

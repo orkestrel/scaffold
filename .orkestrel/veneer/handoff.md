@@ -34,12 +34,12 @@ verifier, and landed by a script that refuses any file outside the owned set.
 
 | Checkout | HEAD | Meaning |
 | --- | --- | --- |
-| Veneer | `4f817db` | CL5b landed and pushed; the tracked tree is clean unless a successor is live |
-| Scaffold | confirm with `git log --oneline -1` | every record through CL5b's landing retained and pushed; `.orkestrel/veneer/` is tracked |
+| Veneer | `c1c81a4` | CL5c landed and pushed; the tracked tree is clean unless a unit is live |
+| Scaffold | confirm with `git log --oneline -1` | every record through CL5c's landing retained and pushed; `.orkestrel/veneer/` is tracked |
 
 Landed in Veneer so far: CL1 `00a5bdc`, CL2 `9f5ffda`, CL3 `9bb306e`, CL3b `d822d59`, CL4
-`bc580c1`, CL4b `5240e36`, CL5 `ea82419`, CL5b `4f817db`. Each has a verdict file named for it.
-Earlier landings are listed in the memory file `veneer-campaign-state.md` and in `plan.md`.
+`bc580c1`, CL4b `5240e36`, CL5 `ea82419`, CL5b `4f817db`, CL5c `c1c81a4`. Each has a verdict file
+named for it.
 
 **CL3 and CL3b** land the reset partial, the text tag partials with mirrored proofs, the first
 shared blocks consolidated into mixins, the content section, and the Content colour tokens. The
@@ -50,50 +50,43 @@ took the record's value; `tests/src/styles/integration.test.ts:92` is the standi
 presence scan, the excluded rows, the selector canonicalization the build's downlevelling needs,
 and the two proof obligations CL4's own audit found.
 
-**CL5 lands the typography and content classes** at `ea82419`. Four component partials, two
-showcase regions, and sixteen keys flipped to `shipped` and joined to the listed set. Its heading
-and display class twins read the tokens their tags read, proved by comparing the tag and the
-class in one host and by a retune matrix covering every level.
+**CL5, CL5b, and CL5c** land the typography and content classes and everything their audits
+found. Sixteen keys read `shipped` and joined the listed set. The heading and display class twins
+read the tokens their tags read. **The shared-block rule now enforces itself**: `scanStyleBlocks`
+in `tests/setupConformance.ts` sweeps every partial under `src/styles/` and a case asserts the
+tree carries no cross-file shared block, so a duplicated block reddens the suite rather than
+surfacing in an audit. CL5c was the first unit to write one after that gate shipped and the gate
+caught it. Three showcase sections now extend one base, and the mark class and tag render alike
+through one mixin reading two registry-backed tokens carrying the CSS system colours.
 
-**CL5b closes the shared-block class** at `4f817db`, after two rounds. The two blocks duplicated
-across the element and component folders are mixins, and **the sweep now ships as a standing
-proof**: `scanStyleBlocks` in `tests/setupConformance.ts` reads every partial recursively under
-`src/styles/`, groups declarations by brace block, and reports every cross-file block two
-partials share, with the tree-is-clean case in `tests/setupStyles.test.ts`. A duplicated block
-written by any future unit reddens the suite instead of surfacing in an audit two rounds later.
-**One bound rides on the next unit that touches that function**, holding four false negatives,
-each in a construct the tree does not contain: a property name inside a quoted nested
-interpolation, whitespace at an interpolation's boundary, a filename holding a literal backslash,
-and an unclosed interpolation. None makes the gate report duplication that does not exist.
+**One bound rides on the next unit that touches the sweep**, holding four false negatives, each in
+a construct the tree does not contain: a property name inside a quoted nested interpolation,
+whitespace at an interpolation's boundary, a filename holding a literal backslash, and an
+unclosed interpolation. None makes the gate report duplication that does not exist.
 
-## What to do first: close CL5c, then CL6 and CL7
+## What to do first: close CL6, then CL7
 
-**CL5c is dispatched** on native Opus over `4f817db`, under `units/cl5c-brief.md` with
-`units/cl5c-brief-2.md` above it, its scope read at `units/cl5c-scope-read-report.md`. It
-replaces three near-identical specimen sections with one implementation, applies the twin rule to
-the mark pair, and closes two proof-integrity gaps. If this session ended before it returned,
-read the Veneer status first: an unlanded CL5c working tree is the unit's output, not drift.
+**CL6 is dispatched** on Astra over `c1c81a4` (thread `01a0c573-adf2-7b10-82e6-aee5c3eab882`),
+under `units/cl6-brief.md` with `units/cl6-brief-2.md` above it, its terrain at
+`units/cl6-scout-report.md`, its central ruling at `units/cl6-retune-measurement.md`, and its
+scope read at `units/cl6-scope-read-report.md`. If this session ended before it returned, read the
+Veneer status first: an unlanded CL6 working tree is the unit's output, not drift.
 
-**Its mark ruling was corrected by the scope read and the correction matters.** No predicate
-anywhere inspects a declaration's colour value, so nothing would have refused the CSS system
-colour keywords the first ruling named. But the styles rule bans a literal colour and permits
-only a token reference or a mix over tokens, and a bare system keyword is neither. So both the
-tag and the class read two new tokens carrying those keywords, which is what the calibration
-record shows Elements itself did. `units/cl5-twin-measurement.md` carries the reading.
-
-**CL6** is an Astra unit, briefed at `units/cl6-brief.md`, with its terrain at
-`units/cl6-scout-report.md` and its central ruling measured at
-`units/cl6-retune-measurement.md`. Scope-read it before dispatch. Two facts its brief already
-carries: the link key's inventory entry holds two custom properties, so unlike CL5's keys it is
-**not** admitted by the empty-properties branch and needs variable rows with proofs; and the
-utility families it ships are what make Bootstrap's dormant link-opacity variable live, which
-changes the anchor's behaviour and needs its own proof.
+Three facts decide that unit and its briefs carry all three. The link key carries two custom
+properties, so it is **not** admitted to the shipped set by the empty-properties branch and needs
+variable rows with proofs. The opacity utilities it ships are what make Bootstrap's dormant
+link-opacity variable live, which changes the anchor's behaviour and needs its own proof rather
+than riding on a presence scan. And **the retune reaches the Button family**: the link-styled
+button reads the link tokens directly, so its proof's two pinned readings move. That is ruled
+correct rather than a regression, because the foundation calibration record carries no link rows,
+so those values were derived rather than measured. The partial itself needs no edit, since it
+reads the tokens through variables.
 
 **CL7** has its terrain at `units/cl7-scout-report.md` and its rulings at `units/cl7-rulings.md`;
-its brief is not yet written. The ramp covers every condition the container key carries, so CL2's
-mixins suffice. Its three rulings: the navigation combinators ship, the container widths and the
-gutter take tokens of their own with a blast-radius reading first, and the proof drives the
-viewport through the existing case table and visitor.
+its brief is not yet written. The ramp covers every condition the container key carries. Its three
+rulings: the navigation combinators ship, the container widths and the gutter take tokens of their
+own with a blast-radius reading first, and the proof drives the viewport through the existing case
+table and visitor.
 
 ## Then CL5 to CL13
 
@@ -132,6 +125,16 @@ reuses the U7f portfolio shape (`u7f-verdict.md`, `units/u7f-harness-3.mjs`,
     to audit prose whatever the brief says beside it.
   - Claiming a unit exceeded its brief without reading the Unknown in that brief which had told
     the unit to settle exactly that question.
+  - Crediting a proof with a guard it does not carry, when a neighbouring assertion is what
+    actually reddens.
+  - Writing two acceptance criteria that cannot both hold, so the unit must break one to close
+    the other. Read a brief's criteria against each other before dispatch, not only against the
+    tree.
+- **A derived lane brief is rewritten in two places, not one.** The lane focus was already
+  recorded; the evidence list is the other. A round-2 brief derived from round 1 kept round 1's
+  evidence list and never named the effective brief and report of the round under audit, and the
+  lane had to find them through the claims file. When deriving, rewrite the lane focus **and**
+  the evidence list, naming the round's own brief and report in the latter.
 - One guide per package: `guides/veneer.md` only. Surfaces are core, browser, server, styles
   only; Vue is a deferred service; no invented surfaces (no subpath export, side-effect entry,
   build wrapper, or rule amendment beyond scaffold's shape).
@@ -246,6 +249,11 @@ user disagrees.
 - The two deferral grammars.
 - The container key's navigation combinators shipping while the navigation family stays deferred,
   so those rules reference a class this cascade never defines (CL7's ruling).
+
+- The older highlight token pair now has no consumer under `src/styles/`, because the mark class
+  was their only reader through the Bootstrap aliases. A consumer retuning that pair sees nothing
+  move. Whether it stays as a Bootstrap-compatibility alias with no Veneer consumer or is removed
+  is a decision, not a defect (CL5c's audit, subjective 13).
 
 **Decisions that are the user's alone.**
 

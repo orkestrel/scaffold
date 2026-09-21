@@ -1,0 +1,742 @@
+diff --git a/app/browser/constants.ts b/app/browser/constants.ts
+index 0261acb..af6eef2 100644
+--- a/app/browser/constants.ts
++++ b/app/browser/constants.ts
+@@ -1,4 +1,4 @@
+-import type { ButtonSpecimen, ContentSpecimen } from './types.js'
++import type { ButtonSpecimen, MarkupSpecimen } from './types.js'
+ 
+ /** Holds the showcase's visible copy and accessible names. */
+ export const SHOWCASE_COPY = Object.freeze({
+@@ -238,7 +238,7 @@ export const CONTENT_COPY = Object.freeze({
+ })
+ 
+ /** Lists the Content specimens in their rendering order. */
+-export const CONTENT_SPECIMENS: readonly ContentSpecimen[] = Object.freeze([
++export const CONTENT_SPECIMENS: readonly MarkupSpecimen[] = Object.freeze([
+ 	Object.freeze({ name: 'Heading 1', markup: '<h1>Heading 1</h1>' }),
+ 	Object.freeze({ name: 'Heading 2', markup: '<h2>Heading 2</h2>' }),
+ 	Object.freeze({ name: 'Heading 3', markup: '<h3>Heading 3</h3>' }),
+@@ -360,7 +360,7 @@ export const TYPE_COPY = Object.freeze({
+ })
+ 
+ /** Lists the Type specimens in their rendering order. */
+-export const TYPE_SPECIMENS: readonly ContentSpecimen[] = Object.freeze([
++export const TYPE_SPECIMENS: readonly MarkupSpecimen[] = Object.freeze([
+ 	Object.freeze({ name: 'Heading class 1', markup: '<div class="h1">Heading class 1</div>' }),
+ 	Object.freeze({ name: 'Heading class 2', markup: '<div class="h2">Heading class 2</div>' }),
+ 	Object.freeze({ name: 'Heading class 3', markup: '<div class="h3">Heading class 3</div>' }),
+@@ -416,7 +416,7 @@ export const MEDIA_COPY = Object.freeze({
+ })
+ 
+ /** Lists the Media specimens in their rendering order. */
+-export const MEDIA_SPECIMENS: readonly ContentSpecimen[] = Object.freeze([
++export const MEDIA_SPECIMENS: readonly MarkupSpecimen[] = Object.freeze([
+ 	Object.freeze({
+ 		name: 'Fluid image',
+ 		markup:
+diff --git a/app/browser/index.ts b/app/browser/index.ts
+index 9705bf5..15fe707 100644
+--- a/app/browser/index.ts
++++ b/app/browser/index.ts
+@@ -4,4 +4,5 @@ export * from './Showcase.js'
+ export * from './sections/ButtonSection.js'
+ export * from './sections/ContentSection.js'
+ export * from './sections/MediaSection.js'
++export * from './sections/SpecimenSection.js'
+ export * from './sections/TypeSection.js'
+diff --git a/app/browser/sections/ContentSection.ts b/app/browser/sections/ContentSection.ts
+index 9dd2376..5b1d115 100644
+--- a/app/browser/sections/ContentSection.ts
++++ b/app/browser/sections/ContentSection.ts
+@@ -1,5 +1,5 @@
+-import type { SectionInterface } from '../types.js'
+ import { CONTENT_COPY, CONTENT_SPECIMENS } from '../constants.js'
++import { SpecimenSection } from './SpecimenSection.js'
+ 
+ /**
+  * Renders the declared text specimens into a named region.
+@@ -10,36 +10,13 @@ import { CONTENT_COPY, CONTENT_SPECIMENS } from '../constants.js'
+  * section.destroy()
+  * ```
+  */
+-export class ContentSection implements SectionInterface {
+-	readonly #host: HTMLElement
+-	readonly #section: HTMLElement
+-
++export class ContentSection extends SpecimenSection {
+ 	/**
+-	 * Mounts the region and its specimens in table order.
++	 * Mounts the Content region and its specimens in table order.
+ 	 *
+ 	 * @param host - The element receiving the section.
+ 	 */
+ 	constructor(host: HTMLElement) {
+-		this.#host = host
+-		this.#section = document.createElement('section')
+-		this.#section.setAttribute('aria-label', CONTENT_COPY.region)
+-		const paragraph = document.createElement('p')
+-		paragraph.textContent = CONTENT_COPY.paragraph
+-		this.#section.append(paragraph)
+-		for (const specimen of CONTENT_SPECIMENS) {
+-			const container = document.createElement('div')
+-			container.setAttribute('data-specimen', specimen.name)
+-			container.innerHTML = specimen.markup
+-			this.#section.append(container)
+-		}
+-		this.#host.append(this.#section)
+-	}
+-
+-	get host(): HTMLElement {
+-		return this.#host
+-	}
+-
+-	destroy(): void {
+-		this.#section.remove()
++		super(host, CONTENT_COPY, CONTENT_SPECIMENS)
+ 	}
+ }
+diff --git a/app/browser/sections/MediaSection.ts b/app/browser/sections/MediaSection.ts
+index 3816b41..91a03c4 100644
+--- a/app/browser/sections/MediaSection.ts
++++ b/app/browser/sections/MediaSection.ts
+@@ -1,5 +1,5 @@
+-import type { SectionInterface } from '../types.js'
+ import { MEDIA_COPY, MEDIA_SPECIMENS } from '../constants.js'
++import { SpecimenSection } from './SpecimenSection.js'
+ 
+ /**
+  * Renders the declared image and figure class specimens into a named region.
+@@ -10,36 +10,13 @@ import { MEDIA_COPY, MEDIA_SPECIMENS } from '../constants.js'
+  * section.destroy()
+  * ```
+  */
+-export class MediaSection implements SectionInterface {
+-	readonly #host: HTMLElement
+-	readonly #section: HTMLElement
+-
++export class MediaSection extends SpecimenSection {
+ 	/**
+-	 * Mounts the region and its specimens in table order.
++	 * Mounts the Media region and its specimens in table order.
+ 	 *
+ 	 * @param host - The element receiving the section.
+ 	 */
+ 	constructor(host: HTMLElement) {
+-		this.#host = host
+-		this.#section = document.createElement('section')
+-		this.#section.setAttribute('aria-label', MEDIA_COPY.region)
+-		const paragraph = document.createElement('p')
+-		paragraph.textContent = MEDIA_COPY.paragraph
+-		this.#section.append(paragraph)
+-		for (const specimen of MEDIA_SPECIMENS) {
+-			const container = document.createElement('div')
+-			container.setAttribute('data-specimen', specimen.name)
+-			container.innerHTML = specimen.markup
+-			this.#section.append(container)
+-		}
+-		this.#host.append(this.#section)
+-	}
+-
+-	get host(): HTMLElement {
+-		return this.#host
+-	}
+-
+-	destroy(): void {
+-		this.#section.remove()
++		super(host, MEDIA_COPY, MEDIA_SPECIMENS)
+ 	}
+ }
+diff --git a/app/browser/sections/TypeSection.ts b/app/browser/sections/TypeSection.ts
+index 2090eab..95718aa 100644
+--- a/app/browser/sections/TypeSection.ts
++++ b/app/browser/sections/TypeSection.ts
+@@ -1,5 +1,5 @@
+-import type { SectionInterface } from '../types.js'
+ import { TYPE_COPY, TYPE_SPECIMENS } from '../constants.js'
++import { SpecimenSection } from './SpecimenSection.js'
+ 
+ /**
+  * Renders the declared typography, list, and quotation class specimens into a named region.
+@@ -10,36 +10,13 @@ import { TYPE_COPY, TYPE_SPECIMENS } from '../constants.js'
+  * section.destroy()
+  * ```
+  */
+-export class TypeSection implements SectionInterface {
+-	readonly #host: HTMLElement
+-	readonly #section: HTMLElement
+-
++export class TypeSection extends SpecimenSection {
+ 	/**
+-	 * Mounts the region and its specimens in table order.
++	 * Mounts the Type region and its specimens in table order.
+ 	 *
+ 	 * @param host - The element receiving the section.
+ 	 */
+ 	constructor(host: HTMLElement) {
+-		this.#host = host
+-		this.#section = document.createElement('section')
+-		this.#section.setAttribute('aria-label', TYPE_COPY.region)
+-		const paragraph = document.createElement('p')
+-		paragraph.textContent = TYPE_COPY.paragraph
+-		this.#section.append(paragraph)
+-		for (const specimen of TYPE_SPECIMENS) {
+-			const container = document.createElement('div')
+-			container.setAttribute('data-specimen', specimen.name)
+-			container.innerHTML = specimen.markup
+-			this.#section.append(container)
+-		}
+-		this.#host.append(this.#section)
+-	}
+-
+-	get host(): HTMLElement {
+-		return this.#host
+-	}
+-
+-	destroy(): void {
+-		this.#section.remove()
++		super(host, TYPE_COPY, TYPE_SPECIMENS)
+ 	}
+ }
+diff --git a/app/browser/types.ts b/app/browser/types.ts
+index e30d716..5858979 100644
+--- a/app/browser/types.ts
++++ b/app/browser/types.ts
+@@ -14,8 +14,16 @@ export interface SectionInterface {
+ 	destroy(): void
+ }
+ 
++/** Describes one region's accessible name and the lead paragraph it opens with. */
++export interface SectionCopy {
++	/** Names the region inside the showcase. */
++	readonly region: string
++	/** Holds the lead paragraph the region renders before its specimens. */
++	readonly paragraph: string
++}
++
+ /** Describes one markup specimen and the authored markup a section renders for it. */
+-export interface ContentSpecimen {
++export interface MarkupSpecimen {
+ 	/** Names the specimen inside the region rendering it. */
+ 	readonly name: string
+ 	/** Holds the trusted application markup rendered for the specimen. */
+diff --git a/src/core/constants.ts b/src/core/constants.ts
+index c6a34b7..55735f8 100644
+--- a/src/core/constants.ts
++++ b/src/core/constants.ts
+@@ -131,6 +131,7 @@ export const TOKEN_NAMES = Object.freeze({
+ 		heading: '--vn-text-heading',
+ 		code: '--vn-text-code',
+ 		highlight: '--vn-text-highlight',
++		mark: '--vn-text-mark',
+ 	} as const),
+ 	surface: Object.freeze({
+ 		body: Object.freeze({
+@@ -147,6 +148,7 @@ export const TOKEN_NAMES = Object.freeze({
+ 			rgb: '--vn-surface-tertiary-rgb',
+ 		} as const),
+ 		highlight: '--vn-surface-highlight',
++		mark: '--vn-surface-mark',
+ 		code: '--vn-surface-code',
+ 		gradient: '--vn-surface-gradient',
+ 	} as const),
+diff --git a/src/styles/_mixins.scss b/src/styles/_mixins.scss
+index fbd7609..cd277ca 100644
+--- a/src/styles/_mixins.scss
++++ b/src/styles/_mixins.scss
+@@ -12,6 +12,12 @@
+ 	block-size: auto;
+ }
+ 
++@mixin mark-text {
++	padding: 0 0.1875em;
++	color: var(--vn-text-mark);
++	background-color: var(--vn-surface-mark);
++}
++
+ @mixin control-text {
+ 	margin: 0;
+ 	font-family: inherit;
+diff --git a/src/styles/_tokens.scss b/src/styles/_tokens.scss
+index 72d38e4..267b102 100644
+--- a/src/styles/_tokens.scss
++++ b/src/styles/_tokens.scss
+@@ -202,6 +202,12 @@ $assets: (
+ 		--vn-color-dark-rgb: 33, 37, 41;
+ 
+ 		--vn-text-heading: inherit;
++		// The mark pair carries the CSS system colors the content calibration measured, which is
++		// what the user agent paints a bare `mark` with and what Elements binds its own mark tokens
++		// to. They are mode-independent, so they sit here rather than in the theme closure, and a
++		// consumer retunes the mark highlight here rather than through `--bs-highlight-bg`.
++		--vn-text-mark: marktext;
++		--vn-surface-mark: mark;
+ 		--vn-surface-gradient: linear-gradient(
+ 			180deg,
+ 			color-mix(in srgb, var(--vn-palette-white-base) 15%, transparent),
+diff --git a/src/styles/components/_type.scss b/src/styles/components/_type.scss
+index aff2e55..ef45d03 100644
+--- a/src/styles/components/_type.scss
++++ b/src/styles/components/_type.scss
+@@ -40,9 +40,7 @@
+ 	}
+ 
+ 	.mark {
+-		padding: 0.1875em;
+-		color: var(--bs-highlight-color);
+-		background-color: var(--bs-highlight-bg);
++		@include mark-text;
+ 	}
+ 
+ 	.initialism {
+diff --git a/src/styles/elements/_mark.scss b/src/styles/elements/_mark.scss
+index 2184dd8..0a3c227 100644
+--- a/src/styles/elements/_mark.scss
++++ b/src/styles/elements/_mark.scss
+@@ -1,5 +1,7 @@
++@use '../mixins' as *;
++
+ @layer elements {
+ 	mark {
+-		padding: 0 0.1875em;
++		@include mark-text;
+ 	}
+ }
+diff --git a/tests/app/browser/index.test.ts b/tests/app/browser/index.test.ts
+index 1f5c475..3593af8 100644
+--- a/tests/app/browser/index.test.ts
++++ b/tests/app/browser/index.test.ts
+@@ -2,8 +2,9 @@ import * as entry from '@app/browser'
+ import { describe, expect, it } from 'vitest'
+ 
+ describe('app browser entry', () => {
+-	// `SectionInterface`, `ShowcaseInterface`, and `ButtonSpecimen` are types, so the runtime key set
+-	// is the whole of what the barrel publishes and naming it is what proves they are types.
++	// `ShowcaseInterface`, `SectionInterface`, `SectionCopy`, `MarkupSpecimen`, and `ButtonSpecimen`
++	// are types, so the runtime key set is the whole of what the barrel publishes and naming it is
++	// what proves they are types.
+ 	it('exports the showcase surface, the specimen table, and the sections family', () => {
+ 		expect(Object.keys(entry).sort()).toStrictEqual([
+ 			'BUTTON_COPY',
+@@ -18,6 +19,7 @@ describe('app browser entry', () => {
+ 			'MediaSection',
+ 			'SHOWCASE_COPY',
+ 			'Showcase',
++			'SpecimenSection',
+ 			'TYPE_COPY',
+ 			'TYPE_SPECIMENS',
+ 			'TypeSection',
+diff --git a/tests/setupStyles.test.ts b/tests/setupStyles.test.ts
+index d9baa17..ba84b69 100644
+--- a/tests/setupStyles.test.ts
++++ b/tests/setupStyles.test.ts
+@@ -55,6 +55,7 @@ import {
+ 	TYPE_HEADING_CASES,
+ 	TYPE_HEADING_TOKEN_CASES,
+ 	TYPE_MARK_CASES,
++	TYPE_MARK_TOKEN_CASES,
+ 	TYPE_TEXT_CASES,
+ 	trimCSSWhitespace,
+ 	VENEER_GUIDE_PATH,
+@@ -128,6 +129,7 @@ describe('styles setup', () => {
+ 				'TYPE_HEADING_CASES',
+ 				'TYPE_HEADING_TOKEN_CASES',
+ 				'TYPE_MARK_CASES',
++				'TYPE_MARK_TOKEN_CASES',
+ 				'TYPE_TEXT_CASES',
+ 				'VENEER_GUIDE_PATH',
+ 				'collectTokenNames',
+@@ -223,6 +225,12 @@ describe('styles setup', () => {
+ 			['display-5', '--vn-display-5'],
+ 			['display-6', '--vn-display-6'],
+ 		])
++		// Each mark retune row names the painting property it moves and the token that property
++		// reads, so a row missing from the table is a mark token nothing retunes.
++		expect(TYPE_MARK_TOKEN_CASES.map((entry) => [entry.property, entry.token])).toEqual([
++			['color', '--vn-text-mark'],
++			['background-color', '--vn-surface-mark'],
++		])
+ 		expect(TYPE_TEXT_CASES.map((entry) => entry.name)).toEqual(['lead', 'small', 'initialism'])
+ 		expect(LIST_CLASS_CASES.map((entry) => entry.name)).toEqual(['list-unstyled', 'list-inline'])
+ 		for (const table of [TYPE_MARK_CASES, QUOTE_FOOTER_CASES, IMAGE_PAINT_CASES]) {
+@@ -231,6 +239,29 @@ describe('styles setup', () => {
+ 		// The footer keeps one gray in both modes, so the table declares that rather than leaving a
+ 		// reader to infer it from two rows that happen to agree.
+ 		expect(new Set(QUOTE_FOOTER_CASES.map((entry) => entry.color)).size).toBe(1)
++		// A retune row discriminates only by naming a size no level resolves by default: a row set
++		// to a default reads the same whether its level names its own token, a sibling's token, or a
++		// literal, so the retune matrix would pass while proving none of them. The disjointness is
++		// what arms that matrix, and nothing else asserts it.
++		// The set is widened to `string` on purpose: the frozen tables carry literal types, so a
++		// narrowly typed set refuses the reading outright and the invariant would rest on the two
++		// unions staying disjoint rather than on an assertion a changed row can fail.
++		const defaults = new Set<string>([
++			...TYPE_HEADING_CASES.map((entry) => entry.size),
++			...TYPE_DISPLAY_CASES.map((entry) => entry.size),
++		])
++		expect(
++			[...TYPE_HEADING_TOKEN_CASES, ...TYPE_DISPLAY_TOKEN_CASES]
++				.filter((entry) => defaults.has(entry.value))
++				.map((entry) => entry.value),
++		).toEqual([])
++		// The mark retune rows carry the same invariant over paint: a row set to the system color
++		// its token already resolves to reads the same whether the treatment names the token or
++		// carries the keyword, so the retune would pass while proving neither.
++		const painted = new Set<string>(TYPE_MARK_CASES.flatMap((entry) => Object.values(entry.values)))
++		expect(
++			TYPE_MARK_TOKEN_CASES.filter((entry) => painted.has(entry.value)).map((entry) => entry.value),
++		).toEqual([])
+ 		for (const table of [
+ 			TYPE_HEADING_CASES,
+ 			TYPE_HEADING_TOKEN_CASES,
+@@ -238,6 +269,7 @@ describe('styles setup', () => {
+ 			TYPE_DISPLAY_TOKEN_CASES,
+ 			TYPE_TEXT_CASES,
+ 			TYPE_MARK_CASES,
++			TYPE_MARK_TOKEN_CASES,
+ 			LIST_CLASS_CASES,
+ 			QUOTE_FOOTER_CASES,
+ 			IMAGE_PAINT_CASES,
+diff --git a/tests/setupStyles.ts b/tests/setupStyles.ts
+index 51f289c..db2b7e8 100644
+--- a/tests/setupStyles.ts
++++ b/tests/setupStyles.ts
+@@ -795,21 +795,49 @@ export const TYPE_TEXT_CASES = Object.freeze([
+ 	}),
+ ])
+ 
+-/** Holds the mode and resolved readings for the mark class, which paints where its tag does not. */
++/**
++ * Holds the mode and resolved readings for the mark class, which carries its tag's treatment onto
++ * an element the user agent's own highlight rule does not reach.
++ *
++ * The rows repeat the values `TEXT_MARK_CASES` carries because the class and the tag include one
++ * mixin over one token pair, and they stay two tables so a drift in either side reddens the side
++ * that drifted: one shared table would carry a retuned tag reading into the class's expectation
++ * with nothing red.
++ */
+ export const TYPE_MARK_CASES = Object.freeze(
+ 	TEXT_MODES.map((mode) =>
+ 		Object.freeze({
+ 			mode,
+-			padding: '2.625px',
+-			color: mode === 'light' ? 'oklch(0.208 0.042 265.755)' : 'oklch(0.929 0.013 255.508)',
+-			background:
+-				mode === 'light'
+-					? 'color-mix(in srgb, white 80%, oklch(0.555 0.163 48.998))'
+-					: 'color-mix(in srgb, black 60%, oklch(0.555 0.163 48.998))',
++			values: Object.freeze({
++				'padding-block-start': '0px',
++				'padding-inline-start': '2.625px',
++				color: 'rgb(0, 0, 0)',
++				'background-color': 'rgb(255, 255, 0)',
++			}),
+ 		}),
+ 	),
+ )
+ 
++/**
++ * Holds each mark painting property, the token the treatment reads it from, and a value to retune
++ * that token to.
++ *
++ * @remarks
++ * The mark tokens carry system color keywords, and a resolved reading agrees with the token and
++ * with the bare keyword of the same value, so a treatment asserted against its default alone reads
++ * the same whether it names the tokens or carries the keywords. Each row carries a color neither
++ * keyword resolves to, and a case declares both tokens on one host: a treatment carrying the
++ * keywords reads the system color there and reddens.
++ */
++export const TYPE_MARK_TOKEN_CASES = Object.freeze([
++	Object.freeze({ property: 'color', token: '--vn-text-mark', value: 'rgb(17, 34, 51)' }),
++	Object.freeze({
++		property: 'background-color',
++		token: '--vn-surface-mark',
++		value: 'rgb(68, 85, 102)',
++	}),
++])
++
+ /** Holds the list classes and the readings each one takes over the list tag it sits on. */
+ export const LIST_CLASS_CASES = Object.freeze([
+ 	Object.freeze({
+diff --git a/tests/src/styles/components/image.test.ts b/tests/src/styles/components/image.test.ts
+index 0e1f11a..09a6b5b 100644
+--- a/tests/src/styles/components/image.test.ts
++++ b/tests/src/styles/components/image.test.ts
+@@ -55,8 +55,14 @@ describe('image classes', () => {
+ 			expect(matchesColor(readStyle(thumbnail, 'background-color'), surface)).toBe(true)
+ 			expect(matchesColor(readStyle(thumbnail, 'border-block-start-color'), border)).toBe(true)
+ 			// The figure tag lays its children out in a column, so the class taking the inline box
+-			// back is the reading that tells the two layers apart.
++			// back is the reading that tells the two layers apart. The tag's direction and gap
++			// resolve on the classed box as well and apply to nothing there, because the box is no
++			// longer flex. Reading the residue beside the display is what holds that inertness to a
++			// condition: a change giving the class a flex or grid display reddens here rather than
++			// re-arming an 8px gap on every captioned figure with nothing to report it.
+ 			expect(readStyle(figure, 'display')).toBe('inline-block')
++			expect(readStyle(figure, 'flex-direction')).toBe('column')
++			expect(readStyle(figure, 'gap')).toBe('8px')
+ 			expect(readStyle(image, 'margin-block-end')).toBe('8px')
+ 			expect(readStyle(image, 'line-height')).toBe('14px')
+ 			expect(readStyle(element, 'font-size')).toBe('12.25px')
+diff --git a/tests/src/styles/components/type.test.ts b/tests/src/styles/components/type.test.ts
+index 61e3c45..6865778 100644
+--- a/tests/src/styles/components/type.test.ts
++++ b/tests/src/styles/components/type.test.ts
+@@ -1,5 +1,5 @@
+ import { requireValue } from '@orkestrel/test'
+-import { matchesColor, readStyle } from '@orkestrel/test/browser'
++import { readStyle } from '@orkestrel/test/browser'
+ import { afterEach, describe, expect, it } from 'vitest'
+ import { specimens } from '../../../setupBrowser.js'
+ import {
+@@ -8,6 +8,7 @@ import {
+ 	TYPE_HEADING_CASES,
+ 	TYPE_HEADING_TOKEN_CASES,
+ 	TYPE_MARK_CASES,
++	TYPE_MARK_TOKEN_CASES,
+ 	TYPE_TEXT_CASES,
+ } from '../../../setupStyles.js'
+ 
+@@ -35,21 +36,26 @@ describe('type classes', () => {
+ 			expect(readStyle(element, 'font-weight')).toBe(readStyle(tag, 'font-weight'))
+ 			expect(readStyle(element, 'margin')).toBe('0px')
+ 			expect(readStyle(element, 'margin')).toBe(readStyle(tag, 'margin'))
+-			expect(readStyle(element, 'color')).toBe(readStyle(tag, 'color'))
+ 			// `--bs-heading-color` resolves through `--vn-text-heading` to `inherit`, so on a host
+-			// that declares none of its own a class carrying no color reads what it inherits and a
+-			// class carrying the declaration reads the same value. The pair is read again through a
+-			// host that declares a heading color, where only the declaration delivers it.
+-			const painted = specimens.mount(
++			// that declares none of its own the pair agrees whether or not either carries the
++			// declaration. The case that follows reads the declaration itself.
++			expect(readStyle(element, 'color')).toBe(readStyle(tag, 'color'))
++		},
++	)
++
++	// The colour the heading mixin declares is delivered only on a host that declares the token, so
++	// it gets its own case rather than a reading at the end of the size case: an earlier assertion
++	// failing there hid this one, and a colour regression reported under a case about size.
++	it.each(TYPE_HEADING_CASES)(
++		'delivers a declared heading color to the $twin class and to its own tag',
++		({ twin }) => {
++			const host = specimens.mount(
+ 				`<div style="color: var(--vn-text-body-base); --bs-heading-color: rgb(20, 80, 140)"><${twin}>Tag</${twin}><div class="${twin}">Class twin</div></div>`,
+ 			)
+-			const paintedTag = requireValue(painted.querySelector(twin), 'No painted heading tag')
+-			const paintedClass = requireValue(
+-				painted.querySelector(`.${twin}`),
+-				'No painted heading class',
+-			)
+-			expect(readStyle(paintedClass, 'color')).toBe('rgb(20, 80, 140)')
+-			expect(readStyle(paintedClass, 'color')).toBe(readStyle(paintedTag, 'color'))
++			const tag = requireValue(host.querySelector(twin), 'No painted heading tag')
++			const element = requireValue(host.querySelector(`.${twin}`), 'No painted heading class')
++			expect(readStyle(element, 'color')).toBe('rgb(20, 80, 140)')
++			expect(readStyle(element, 'color')).toBe(readStyle(tag, 'color'))
+ 		},
+ 	)
+ 
+@@ -110,23 +116,52 @@ describe('type classes', () => {
+ 		).toEqual(values)
+ 	})
+ 
+-	// The bare `mark` tag carries the user agent's own paint, so the class is what puts the
+-	// highlight tokens on the page. The pair is mounted together and both are read, because a class
+-	// that painted nothing would pass a reading taken on the class alone.
++	// The user agent's highlight rule reaches the `mark` element alone, so the class is what carries
++	// the treatment onto anything else. The case mounts the class on a span beside the bare tag and
++	// compares every reading: a class on a `mark` would agree with its tag whether or not the class
++	// painted anything, and a span that painted nothing would still pass a reading taken alone.
+ 	it.each(TYPE_MARK_CASES)(
+-		'paints the mark class from the highlight tokens in $mode mode',
+-		({ mode, padding, color, background }) => {
++		'renders the mark class as the bare mark tag renders in $mode mode',
++		({ mode, values }) => {
+ 			const host = specimens.mount(
+-				`<div data-bs-theme="${mode}"><mark>Tag</mark><mark class="mark">Class</mark></div>`,
++				`<div data-bs-theme="${mode}"><mark>Tag</mark><span class="mark">Class</span></div>`,
+ 			)
+-			const tag = requireValue(host.querySelector('mark:not(.mark)'), 'No mark tag')
++			const tag = requireValue(host.querySelector('mark'), 'No mark tag')
+ 			const element = requireValue(host.querySelector('.mark'), 'No mark class')
+-			expect(readStyle(element, 'padding-block-start')).toBe(padding)
+-			expect(readStyle(element, 'padding-inline-start')).toBe(padding)
+-			expect(readStyle(tag, 'padding-block-start')).toBe('0px')
+-			expect(matchesColor(readStyle(element, 'color'), color)).toBe(true)
+-			expect(matchesColor(readStyle(element, 'background-color'), background)).toBe(true)
+-			expect(matchesColor(readStyle(tag, 'background-color'), 'rgb(255, 255, 0)')).toBe(true)
++			const rendered = Object.fromEntries(
++				Object.keys(values).map((property) => [property, readStyle(element, property)]),
++			)
++			expect(rendered).toEqual(values)
++			expect(rendered).toEqual(
++				Object.fromEntries(
++					Object.keys(values).map((property) => [property, readStyle(tag, property)]),
++				),
++			)
+ 		},
+ 	)
++
++	// A resolved color agrees with the token's value and with the bare system keyword of the same
++	// value, so the tokens the treatment names are read by retuning both on one host. The tag and
++	// the class are read together because one mixin serves both: a treatment carrying the keywords
++	// reads the system color here and reddens, and the retune point a consumer is given disappears
++	// with nothing else red.
++	it('reads the mark paint from the mark tokens on the tag and on the class', () => {
++		const host = specimens.mount(
++			`<div style="${TYPE_MARK_TOKEN_CASES.map((entry) => `${entry.token}: ${entry.value}`).join('; ')}"><mark>Tag</mark><span class="mark">Class</span></div>`,
++		)
++		const tag = requireValue(host.querySelector('mark'), 'No retuned mark tag')
++		const element = requireValue(host.querySelector('.mark'), 'No retuned mark class')
++		const retuned = Object.fromEntries(
++			TYPE_MARK_TOKEN_CASES.map((entry) => [entry.property, entry.value]),
++		)
++		for (const subject of [tag, element])
++			expect(
++				Object.fromEntries(
++					TYPE_MARK_TOKEN_CASES.map((entry) => [
++						entry.property,
++						readStyle(subject, entry.property),
++					]),
++				),
++			).toEqual(retuned)
++	})
+ })
+diff --git a/app/browser/sections/SpecimenSection.ts b/app/browser/sections/SpecimenSection.ts
+new file mode 100644
+index 0000000..9f22dea
+--- /dev/null
++++ b/app/browser/sections/SpecimenSection.ts
+@@ -0,0 +1,52 @@
++import type { MarkupSpecimen, SectionCopy, SectionInterface } from '../types.js'
++
++/**
++ * Renders a declared specimen table into a named region and owns that region until destruction.
++ *
++ * @remarks
++ * Construction mounts the region: a constructed section is a mounted section, so there is no second
++ * lifecycle verb and no unmounted state to tear down. The copy and the table are the whole of what
++ * separates one specimen section from another, so each named section supplies its own pair and
++ * inherits every behavior from here.
++ *
++ * @example
++ * ```ts
++ * const section = new SpecimenSection(document.body, CONTENT_COPY, CONTENT_SPECIMENS)
++ * section.destroy()
++ * ```
++ */
++export class SpecimenSection implements SectionInterface {
++	readonly #host: HTMLElement
++	readonly #section: HTMLElement
++
++	/**
++	 * Mounts the region and its specimens in table order.
++	 *
++	 * @param host - The element receiving the section.
++	 * @param copy - The region's accessible name and lead paragraph.
++	 * @param specimens - The specimens the region renders, in render order.
++	 */
++	constructor(host: HTMLElement, copy: SectionCopy, specimens: readonly MarkupSpecimen[]) {
++		this.#host = host
++		this.#section = document.createElement('section')
++		this.#section.setAttribute('aria-label', copy.region)
++		const paragraph = document.createElement('p')
++		paragraph.textContent = copy.paragraph
++		this.#section.append(paragraph)
++		for (const specimen of specimens) {
++			const container = document.createElement('div')
++			container.setAttribute('data-specimen', specimen.name)
++			container.innerHTML = specimen.markup
++			this.#section.append(container)
++		}
++		this.#host.append(this.#section)
++	}
++
++	get host(): HTMLElement {
++		return this.#host
++	}
++
++	destroy(): void {
++		this.#section.remove()
++	}
++}
+diff --git a/tests/app/browser/sections/SpecimenSection.test.ts b/tests/app/browser/sections/SpecimenSection.test.ts
+new file mode 100644
+index 0000000..45ee907
+--- /dev/null
++++ b/tests/app/browser/sections/SpecimenSection.test.ts
+@@ -0,0 +1,74 @@
++import { MEDIA_COPY, MEDIA_SPECIMENS, MediaSection, SpecimenSection } from '@app/browser'
++import { requireValue } from '@orkestrel/test'
++import { build, mount } from '@orkestrel/test/browser'
++import { describe, expect, it } from 'vitest'
++
++describe('SpecimenSection', () => {
++	it('renders the supplied copy and table into a named region, lead first', () => {
++		const host = mount(build('div'))
++		const section = new SpecimenSection(host, { region: 'Probe', paragraph: 'The lead copy.' }, [
++			{ name: 'First', markup: '<b>First specimen</b>' },
++			{ name: 'Second', markup: '<i>Second specimen</i>' },
++		])
++		try {
++			expect(section.host).toBe(host)
++			const region = requireValue(host.querySelector('section'), 'No region')
++			expect(region.getAttribute('aria-label')).toBe('Probe')
++			expect(requireValue(region.querySelector('p'), 'No lead paragraph').textContent).toBe(
++				'The lead copy.',
++			)
++			const rendered = [...region.querySelectorAll('[data-specimen]')]
++			expect(rendered.map((element) => element.getAttribute('data-specimen'))).toEqual([
++				'First',
++				'Second',
++			])
++			expect(rendered.map((element) => element.innerHTML)).toEqual([
++				'<b>First specimen</b>',
++				'<i>Second specimen</i>',
++			])
++			// The copy and the table are read at construction rather than at a class declaration, so
++			// this region carries names no shipped table holds and the reading is of the base itself.
++			expect([...region.children].map((element) => element.localName)).toEqual(['p', 'div', 'div'])
++		} finally {
++			section.destroy()
++			host.remove()
++		}
++	})
++
++	it('mounts the region and its lead alone for an empty table', () => {
++		const host = mount(build('div'))
++		const section = new SpecimenSection(host, { region: 'Empty', paragraph: 'No specimens.' }, [])
++		try {
++			const region = requireValue(host.querySelector('section'), 'No region')
++			expect([...region.children].map((element) => element.localName)).toEqual(['p'])
++			expect(region.isConnected).toBe(true)
++			section.destroy()
++			expect(region.isConnected).toBe(false)
++			section.destroy()
++			expect([...host.children]).toEqual([])
++		} finally {
++			section.destroy()
++			host.remove()
++		}
++	})
++
++	// Each named section supplies a copy and a table and inherits every behavior, so the region a
++	// named section renders equals the region the base renders from that same pair. A behavior that
++	// moved into one named section would leave the two regions apart.
++	it('renders what the base renders from the same copy and table', () => {
++		const host = mount(build('div'))
++		const section = new MediaSection(host)
++		const twin = new SpecimenSection(host, MEDIA_COPY, MEDIA_SPECIMENS)
++		try {
++			expect(section).toBeInstanceOf(SpecimenSection)
++			const [named, base] = [...host.querySelectorAll('section')]
++			expect(requireValue(named, 'No named region').outerHTML).toBe(
++				requireValue(base, 'No base region').outerHTML,
++			)
++		} finally {
++			section.destroy()
++			twin.destroy()
++			host.remove()
++		}
++	})
++})

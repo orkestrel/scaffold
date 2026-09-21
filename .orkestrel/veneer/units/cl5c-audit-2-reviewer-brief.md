@@ -1,4 +1,4 @@
-# CL5c audit — subjective lane brief
+# CL5c audit round 2 — subjective lane brief
 
 ## Role and engine
 
@@ -13,7 +13,7 @@ you have no write tools and no shell.
 
 ## Objective
 
-Rule on every claim of `C:/Users/mikes/WebstormProjects/scaffold/.orkestrel/veneer/cl5c-audit-claims.md`
+Rule on every claim of `C:/Users/mikes/WebstormProjects/scaffold/.orkestrel/veneer/cl5c-audit-claims-2.md`
 with CONFIRMED, REFUTED, or UNDECIDABLE and the deciding evidence (`file:line` or exact text),
 add any extra finding that is an implementation defect (numbered after the last claim, with a
 site and a one-line failure scenario, distinguishing one that forces a fix round from one that
@@ -23,8 +23,8 @@ claims that force it.
 ## Evidence
 
 The Orchestrator rendered the diff over the CL5b landing `4f817db` at
-`C:/Users/mikes/WebstormProjects/scaffold/.orkestrel/veneer/units/cl5c-diff.patch.txt` (tracked changes plus a
-no-index rendering of every new file) and the status at `tmp/audit/cl5c-status.txt`. Read those
+`C:/Users/mikes/WebstormProjects/scaffold/.orkestrel/veneer/units/cl5c-diff-2.patch.txt` (tracked changes plus a
+no-index rendering of every new file) and the status at `tmp/audit/cl5c-status-2.txt`. Read those
 and the live Veneer tree at `C:/Users/mikes/WebstormProjects/veneer`, including the section files
 and their proofs, `app/browser/types.ts` and `index.ts`, `src/styles/_mixins.scss`,
 `_tokens.scss`, `src/styles/elements/_mark.scss` and `_figure.scss`,
@@ -40,16 +40,16 @@ law under the Veneer checkout (`AGENTS.md`, `.claude/rules/architecture.md`, `br
 `application.md`, `tests.md`, `styles.md`, `names.md`). Rule on the diff and the live files,
 never on a report's word alone; a report-only claim is recorded as report-only.
 
-**Where to push hardest.** Three places. First, the shared base: the unit chose a concrete base
-the three extend over one parameterized class, on the ground that each section must stay its own
-constructible export. Rule whether that constraint is real and whether the form it chose is the
-one a reader of this application would expect, or whether it trades one duplication for an
-inheritance a composition would serve better. Second, the mark comparison's use of a span: rule
-whether that genuinely isolates the class's own treatment, and whether anything else in the
-cascade could deliver the same paint to a span and make the comparison pass for the wrong reason.
-Third, the two tokens: rule whether the root scope is right for them given every other paint
-token's home, and whether their names carry their meaning in the registry's vocabulary rather
-than describing their first consumer.
+**Where to push hardest.** Round 1 settled the shapes; this round added a retune case and renamed
+a type, so push on those two and on what they touched. First, the retune case: rule whether its
+host values are genuinely unreachable by either system colour keyword on either engine, because a
+retune value a keyword could resolve to would make the case pass while proving nothing, which is
+the exact defect it exists to prevent and the one this unit already guarded elsewhere. Second,
+rule whether reading both the tag and the span in one case is the right shape or whether it
+conflates two subjects, given that one mixin serves both and the comparison case beside it
+already pins their agreement. Third, the rename: rule whether the new name reads as this
+application's vocabulary beside the button section's own row type, and whether any place that
+should have followed it did not, including a doc block or a comment naming the old name.
 
 ## Scope of judgment
 
