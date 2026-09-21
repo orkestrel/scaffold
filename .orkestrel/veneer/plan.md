@@ -1203,3 +1203,13 @@ after acceptance per the debrief skill's retention reference.
   `Showcase.test.ts` re-declaring the ownership rule with a tautological close). Carried as
   `units/u7c-brief-3.md` on Opus. Reviewer finding 10 (`driveOracle` scopes the host reading
   only) is carried to the unit that adds the second section.
+- 2026-09-21, U7c brief 3 returned complete on Opus (`units/u7c-report-3.md`): the calibrated
+  `FOCUS_RING` table pinned per mode, the teardown marker refusing the next mount, the setup
+  proofs' cleanup under `finally`, `Showcase.test.ts` over `BUTTON_SELECTOR` with a non-empty
+  guard. Round 3: all four lanes accept (the verifier green on every step, the whole chain's
+  exit read from its log). Verdict accept; landed as Veneer `92aad70` through
+  `units/u7c-land.sh`. U7 (Button) is closed on browser evidence except the guide, which U7e
+  corrects to the landed truth (bounds in `units/u7c-guide-bounds.md` and
+  `units/prose-bounds-carry.md`). Carried forward: reviewer round-2 finding 10 to the second
+  section's unit; the Test-side `captureFrame` and `readStates` findings to the Test 0.0.19
+  release unit; the paint calibration readings and the two deferral grammars to the user.

@@ -93,3 +93,31 @@ section.
 
 Verdict: fix round. `units/u7c-brief-3.md` on native Opus; the Astra analyst stays the objective
 auditor.
+
+## Round 3, 2026-09-21 (the second fix round: brief 3)
+
+Opus wrote the fix, so the Astra analyst holds the objective lane. Claims:
+`u7c-audit-claims-3.md`. Evidence: `units/u7c-diff-3.patch.txt` beside round 2's,
+`units/u7c-status-3.txt`.
+
+| Lane | Role | Engine | Record | Terminal line |
+| --- | --- | --- | --- | --- |
+| objective | `analyst` | Astra, `codex exec` read-only, thread `01a0c2a0-cbd9-7370-873b-7edd6bb87d2e`, exit 0 | `units/u7c-audit-3-analyst.sh`, `units/u7c-audit-3-analyst-report.md` | accept; claims 1 to 4 CONFIRMED, the gate half of 5 referred to the verifier |
+| subjective | `reviewer` | native Opus 5, Workflow `wf_0cd99cbf-009` | `units/u7c-audit-3-reviewer-brief.md`, `units/lane-u7c-3-reviewer.md` | accept; no extra finding |
+| mechanical | `checker` | native Sonnet, the same Workflow | `units/u7c-audit-3-checker-brief.md`, `units/lane-u7c-3-checker.md` | accept |
+| gates | `verifier` | native Sonnet, the same Workflow | `units/u7c-gate-brief.md`, `units/lane-u7c-3-verifier.md` | every step exit 0 (nineteen steps; the whole chain's exit read from its log after a premature harness notification, recorded as an anomaly) |
+
+Claims 1 to 4 CONFIRMED by the analyst and the reviewer; claim 5's scope and law half CONFIRMED
+by all three judging lanes (the round-3 delta is exactly the five named test files by blob
+comparison, the owned set alone in the status, the law sweep clean) and its gate half CONFIRMED
+from the verifier. The reviewer's two referrals (the 3-decimal pin's tolerance across variants
+and engines, settled by the verifier's green journey runs on Chromium and Edge; the name-list
+close in `Showcase.test.ts` holding by construction, with the non-empty guard and the
+selector-derived partition as the material strengthening) are recorded. Carried forward, not
+this unit's: reviewer round-2 finding 10 (`driveOracle` scopes its host reading only) to the
+unit that adds the second section; the Test-side `captureFrame` and `readStates` findings and
+the paint calibration readings to their owners (report 1 § Findings carried out of scope).
+
+### Terminal (round 3)
+
+Verdict: accept. Landed as Veneer `92aad70` through `units/u7c-land.sh` (log `units/u7c-land.log.txt`, message `units/u7c-land-message.txt`), pushed to `origin/main`.

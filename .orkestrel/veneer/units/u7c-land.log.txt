@@ -1,0 +1,22 @@
+== 2026-09-21T06:27:45Z land start
+0cbb563 Ship the Button engine and the delegated data API behind ./browser (U7b)
+ M app/browser/Showcase.ts
+ M app/browser/constants.ts
+ M app/browser/index.ts
+ M app/browser/main.ts
+ M app/browser/styles/_shell.scss
+ M app/browser/types.ts
+ M tests/app/browser/Showcase.test.ts
+ M tests/app/browser/index.test.ts
+ M tests/app/browser/integration.test.ts
+ M tests/distribution.test.ts
+ M tests/setup.test.ts
+ M tests/setup.ts
+ M tests/setupBrowser.test.ts
+ M tests/setupBrowser.ts
+?? app/browser/sections/ButtonSection.ts
+?? tests/app/browser/sections/ButtonSection.test.ts
+changed: app/browser/Showcase.ts app/browser/constants.ts app/browser/index.ts app/browser/main.ts app/browser/sections/ButtonSection.ts app/browser/styles/_shell.scss app/browser/types.ts tests/app/browser/Showcase.test.ts tests/app/browser/index.test.ts tests/app/browser/integration.test.ts tests/app/browser/sections/ButtonSection.test.ts tests/distribution.test.ts tests/setup.test.ts tests/setup.ts tests/setupBrowser.test.ts tests/setupBrowser.ts 
+92aad70 Render the Button specimens and prove them on the mounted page (U7c)
+## main...origin/main
+== 2026-09-21T06:27:48Z land end
