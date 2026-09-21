@@ -1178,3 +1178,18 @@ after acceptance per the debrief skill's retention reference.
   `Delegate` rule, and the scoped formatter and lint rewrites as granted forms, so a line-fit or
   alias diagnostic is not a stop. Opus writes, so the U7c audit gives the objective lane to the
   Astra analyst and the subjective lane to the Opus reviewer.
+- 2026-09-21, U7c brief 1 returned complete on Opus (`units/u7c-report.md`): the `sections/`
+  family with `ButtonSection` over the frozen specimen table, the projection, the journeys, the
+  capture registry, the `./browser` consumer case; every gate exit 0 on Chromium and Edge;
+  deviations D1 to D8 settled in scope. Round 1 (the Astra analyst objective, the Opus reviewer
+  subjective, the checker, the verifier on `u7c-audit-claims.md`): the verifier green on every
+  step; the judging lanes rule a fix round on the partial ownership-partition proof, the
+  self-comparing exclusion assertion, the dark ring sweep over one specimen, the unexported
+  oracle driver and case matrices in the test file, the teardown without `finally`, the
+  entity-subfolder barrel, the `.btn`-bound helper named generally, and the distribution reader
+  carrying a non-export reading. Carried as `units/u7c-brief-2.md` on Opus (the Astra analyst
+  stays the objective auditor). Guide bounds 1 to 10 carried to U7e in
+  `units/u7c-guide-bounds.md`; Test-side findings (element frames blank beyond roughly 900 px at
+  the 1280 variant, page frames clearing `:hover`, `readStates` announcing `disabled`) recorded
+  for the Test 0.0.19 release unit; the paint calibration readings join the user's open design
+  question.
