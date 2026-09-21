@@ -1275,3 +1275,9 @@ after acceptance per the debrief skill's retention reference.
   `Content/layout` row implemented, excluded with a reason the user sees, or retained. Next:
   CL0 (Grok specimen map, then the calibration instrument) beside CL1 (Astra), each after a scope
   read.
+- 2026-09-21, CL0 landed in scaffold's record (`40cbbd9a`): the content calibration instrument
+  `research/calibration-content.mjs` (a sibling of the accepted instrument, which stays
+  byte-identical), its readings on managed Chromium and Edge in both modes, and the record
+  `research/calibration-content.md` (one table per surface across the eighteen surfaces the Grok
+  map named, every specimen attached), indexed from `research.md`; CL3, CL6, and CL9 bind their
+  values to it. CL1 (the proof contract, Astra) runs in Veneer beside it.
