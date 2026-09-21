@@ -594,6 +594,11 @@ filled.
   brief so the unit re-derives the set.
 - Grant a behaviour with the tests that pin it, a constant with every fixture and expectation
   derived from it, and a template change with the materialized copy the package generates from it.
+- Grant the file a brief tells the unit to copy a pattern from, wherever a standing gate forbids
+  duplicating that pattern. Naming a pattern to follow and withholding the file it lives in
+  instructs the unit into a gate failure it cannot fix inside its scope: the honest fix touches both
+  copies, and extracting one side alone breaks the same rule from the other direction. The unit then
+  stops, correctly, and the round is spent on a contradiction the brief carried.
 - Read each criterion against the off-limits list, line by line. Grant the file a criterion needs or
   strike that criterion. A file the change will break that appears in neither list is unscoped.
 - Where a scope line names the `tests/**` or `src/**` glob, name the paths the `scaffold repair`
