@@ -1367,3 +1367,16 @@ after acceptance per the debrief skill's retention reference.
   their proofs' rows. CL3 lands with those limits recorded in its report and claims. The `b`
   tag stays with CL4. CL3's round-1 audit runs on the swapped lanes (Opus reviewer objective,
   Astra analyst subjective) with the checker and the verifier. **Unchanged:** CL4 to CL13.
+- 2026-09-21, CL3 round 1 (`cl3-audit-verdict.md`): the Astra analyst (subjective) and the Opus
+  reviewer (objective) confirmed every claim; the checker and the verifier did not run, because
+  a user message typed into the session while their workflow ran was relayed into both
+  subagents as a superseding instruction and each answered it instead of its brief (recorded
+  with their returns; round 2 runs all four lanes). Fix round under `units/cl3-brief-4.md` on
+  Astra: the shell's `main` gets its id so the content specimen's fragment resolves (analyst
+  10); the code family's shared text treatment becomes one mixin in `_mixins.scss` (analyst 11);
+  the mirrored proofs' mode matrices and expected-value tables move into `tests/setupStyles.ts`
+  with its inventory (analyst 12, the setup files granted for that alone); the `console.log`
+  the unit left in the token proof is deleted (reviewer 10); the reset proof gains the
+  unlayered important plant (reviewer 13). Carried: `_var.scss`'s literal mono stack and
+  `_pre.scss`'s untokenized line height to CL3b (reviewer 11); the anchor reading the `--vn-link-*`
+  tokens rather than the `--bs-*` aliases to CL6 (reviewer 12). **Unchanged:** CL3b, CL4 to CL13.
