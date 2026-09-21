@@ -34,17 +34,17 @@ verifier, and landed by a script that refuses any file outside the owned set.
 
 | Checkout | HEAD | Meaning |
 | --- | --- | --- |
-| Veneer | `c8f53f8` | CL6 landed and pushed; the tracked tree is clean unless a unit is live |
-| Scaffold | confirm with `git log --oneline -1` | every record through CL6's landing retained and pushed |
+| Veneer | `a9172df` | CL7 landed and pushed; the tracked tree is clean unless a unit is live |
+| Scaffold | `27aa5dfd` | every record through CL7's landing retained and pushed |
 
 Landed in Veneer: CL1 `00a5bdc`, CL2 `9f5ffda`, CL3 `9bb306e`, CL3b `d822d59`, CL4 `bc580c1`,
-CL4b `5240e36`, CL5 `ea82419`, CL5b `4f817db`, CL5c `c1c81a4`, CL6 `c8f53f8`. Each has a verdict
-file named for it.
+CL4b `5240e36`, CL5 `ea82419`, CL5b `4f817db`, CL5c `c1c81a4`, CL6 `c8f53f8`, CL7 `a9172df`. Each
+has a verdict file named for it.
 
-**Seventeen keys ship**: the reboot key, the button, the sixteen typography and content keys, and
-the link key. **CL6's objective lane compared the link key's inventory selector set against the
-built cascade in both directions and found them equal**, which is the accounting this family
-exists to produce.
+Shipping keys: the reboot key, the button, the typography and content keys, the link key, and the
+container key. **Each of those units' objective lane compared its key's inventory selector set
+against the built cascade in both directions and found them equal**, which is the accounting this
+family exists to produce.
 
 **The shared-block rule enforces itself.** `scanStyleBlocks` in `tests/setupConformance.ts`
 sweeps every partial under `src/styles/` recursively — a population that includes the mixins
@@ -52,40 +52,55 @@ file itself — and a case asserts the tree carries no cross-file shared block. 
 the next unit that touches it, holding four false negatives in constructs the tree does not
 contain.
 
-## What to do first: close CL7, then CL8
+**The ramp binds its tokens in both directions.** A case in `tests/setupStyles.test.ts` compiles
+the real `breakpoints()` map, drops the zero boundary, and compares the remaining names against
+the registry's container keys as sets. A ramp boundary added without its token reddens there, and
+a container token with no ramp member reddens too. The chain continues: the `:root` set assertion
+forces every registry leaf to be a declared custom property, so a generated rule cannot name a
+variable that does not exist.
 
-**CL7 is dispatched** on Astra over `c8f53f8` (thread `01a0c5ad-fc7a-76e1-ab4e-1f76eb7bc6f5`),
-under `units/cl7-brief.md` with `units/cl7-brief-2.md` above it, its terrain at
-`units/cl7-scout-report.md`, its rulings at `units/cl7-rulings.md`, and its scope read at
-`units/cl7-scope-read-report.md`. If this session ended before it returned, read the Veneer
-status first: an unlanded CL7 working tree is the unit's output, not drift.
+## What to do first: CL8, the grid and gutters
 
-Four facts decide it and its briefs carry all four. The ramp already covers every media
-condition the container key carries, so no new ramp member is needed. The navigation combinators
-ship rather than being excluded, because their declarations are self-contained layout on the
-container and the rule simply never matches until a consumer brings navigation markup. The
-container widths and the gutter take tokens of their own, and the space scale's twelfth member
-carries the gutter's value today with exactly two consumers, both named by the scope read. And
-the key carries two custom properties, so like the link key it needs variable rows with proofs.
+**CL7 is closed.** Its scout is dispatched for CL8's terrain.
 
-**CL8** is the grid and gutters, six keys, the largest remaining unit by key count. Map its
-terrain **after CL7 lands**, not during: this campaign has twice had a map go stale under a live
-writer, once caught only by luck.
+**CL8** is the grid and gutters — the `row`, `col`, `offset`, `g`, `gx`, and `gy` keys, the largest
+remaining unit by key count, and the first whose keys are generated families rather than fixed
+selector lists. Its terrain brief is `units/cl8-scout-brief.md`, dispatched on Cursor Grok over the
+CL7 landing. Map the terrain before briefing, never during a live writer: this campaign has twice
+had a map go stale under one, once caught only by luck.
 
-## Then CL5 to CL13
+CL7 leaves CL8 the pattern to follow and three bounds to carry. The pattern is the container
+partial and its proof: a loop over the ramp that skips the zero boundary and accumulates named
+variants, a proof that drives real viewport resizes and reads resolved values rather than tokens,
+and case tables that live in `tests/setupStyles.ts` carrying no assertions of their own. The bounds
+are the container variant table, a literal list that no assertion binds to the ramp, so a later ramp
+boundary would ship a variant class with no browser reading of its own — derive a variant list from
+the ramp instead; and the ordering and annotation slips in the showcase wiring and the setup tables,
+which CL8 writes next.
+## Then CL9 to CL13
 
 Per `content-layout-design-verdict.md` § Units (the routing ledger is there). Brief each from
 the design row, the planner's criteria (`units/content-layout-design-planner-report.md`), and
-the analyst's unit (`units/content-layout-design-analyst-report.md`); scope-read first. CL5 is
-landed; the bounds it was to carry that no landed unit closed — the stripe light-scope assertion,
-the shell's document-global `main` id, and the description-list case field's name — pass to the
-next unit that owns each file. CL6 (Astra) carries the
-link map's retune and the anchor's `--vn-link-*` versus `--bs-*` binding. CL11 carries
-`visitBreakpoint`'s bare `finally`, the hold's two uncased refusals, the U7c `resolveButton`
-rename, and `driveOracle` root scoping. CL12 carries every guide bound a unit reported. CL13
-reuses the U7f portfolio shape (`u7f-verdict.md`, `units/u7f-harness-3.mjs`,
-`units/u7f-recapture.sh`).
+the analyst's unit (`units/content-layout-design-analyst-report.md`); scope-read first.
 
+- **CL9** tables. **CL10** helpers: the icon-link, ratio, and vertical-rule keys. **CL11**
+  journeys and captures. **CL12** the guide. **CL13** the portfolio verdict.
+- **CL8** carries CL7's container variant table, which no assertion binds to the ramp, and the
+  ordering and annotation slips in the showcase wiring and the setup tables.
+- **CL11** carries `visitBreakpoint`'s bare `finally`, the hold's uncased refusals, the U7c
+  `resolveButton` rename, and `driveOracle` root scoping.
+- **CL12** carries every guide bound a unit reported, including CL7's: a token-table sentence that
+  stopped being true of the code when the gutter became its own token, and the container and gutter
+  tokens having no token-table row.
+- **CL13** reuses the U7f portfolio shape (`u7f-verdict.md`, `units/u7f-harness-3.mjs`,
+  `units/u7f-recapture.sh`).
+- The bounds CL5 was to carry that no landed unit closed — the stripe light-scope assertion, the
+  shell's document-global `main` id, and the description-list case field's name — pass to the next
+  unit that owns each file.
+
+After this family: six more families — Passive, Forms, Disclosure and navigation, Overlays and
+feedback, Helpers and utilities, and Cross-cutting — then the package is finished and published.
+Publishing is the user's decision and runs on a one-time code.
 ## Standing rulings from the user (binding)
 
 - **The Content/layout family is the baseline, and conformance is the deliverable.** The user's
@@ -106,11 +121,11 @@ reuses the U7f portfolio shape (`u7f-verdict.md`, `units/u7f-harness-3.mjs`,
   every lane to audit prose, which is how CL5's round produced two guide findings under a ruling
   that bars them. Judge a guide row only where a unit's own criterion names it, and carry its
   facts as a bound for the unit that owns the guide.
-- **Write a claim only from a source you read, never from the unit's report.** Five claim-drafting
+- **Write a claim only from a source you read, never from the unit's report.** The claim-drafting
   defects across this campaign share one root: the report said something, the Orchestrator
   restated it as a claim, and a lane found the nuance the report had smoothed over. Every claim
   must either carry the Orchestrator's own check of the primary source, or be written as what the
-  unit reports rather than as what is true. The five, each caught by a lane:
+  unit reports rather than as what is true. Each of these was caught by a lane:
   - Stating what a failing run left passing, when the later assertions never executed.
   - Claiming two artifacts identical without taking the measurement first.
   - Claiming something of every member of a set, contradicting an exception the same claims file
@@ -124,17 +139,19 @@ reuses the U7f portfolio shape (`u7f-verdict.md`, `units/u7f-harness-3.mjs`,
   - Writing two acceptance criteria that cannot both hold, so the unit must break one to close
     the other. Read a brief's criteria against each other before dispatch, not only against the
     tree.
-- **A derived lane brief is rewritten in three places, not one.** Three separate occurrences, each
-  caught by a lane:
-  1. **The lane focus**, which otherwise argues the previous round's claim numbers.
-  2. **The evidence list's brief and report paths**, which otherwise name the previous round's
-     effective brief and report rather than the one under audit.
-  3. **The evidence list's subject files**, which otherwise name the previous unit's files. CL7's
-     objective lane was handed CL6's link partial, anchor partial, and section, and never told
-     about the three files CL7 created; it worked from the rendered diff instead.
-
-  A substitution over paths catches the second and misses the first and third. **Rewrite all
-  three by hand, then read the brief once as the lane will receive it.**
+- **A derived launch artifact is rewritten in every field that names the subject.** The rule and
+  the fields it covers now live in `.agents/orchestration.md` § Dispatch anatomy, landed in
+  scaffold `27aa5dfd`. It got there because this campaign produced the defect in four consecutive
+  rounds, each caught by a lane: a brief's lane focus arguing the previous round's claim numbers;
+  its evidence paths naming the previous round's brief and report; its subject files naming the
+  previous unit's files, so CL7's objective lane was handed CL6's partials and never told about
+  the files CL7 created; and CL7's round-2 workflow carrying CL5's description with its objective
+  node labelled subjective. A substitution over paths catches one of those and misses the rest.
+  Rewrite each by hand, then read the artifact start to finish as its executor will receive it.
+- **Every file a brief names must exist when the round launches.** CL7's round-2 objective lane
+  was told to read a verdict file the Orchestrator had not yet written, and wrote the finding up as
+  a dispatch defect. The contract already required this; the failure was writing a record during
+  the round it documents instead of before dispatch.
 - **The rules live in the scaffold checkout, not in the subject.** Every lane brief through CL7
   said "the law under the Veneer checkout (`AGENTS.md`, `.claude/rules/…`)". That checkout holds
   `AGENTS.md` and `CLAUDE.md` only, and its `AGENTS.md` redirects to scaffold. Name it correctly:
