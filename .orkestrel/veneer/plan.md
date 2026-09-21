@@ -1412,3 +1412,17 @@ after acceptance per the debrief skill's retention reference.
   colours. Bound carried to CL3b: the untested corner radii (reviewer 6 of round 3). The landing
   script's allowlist was extended to `tests/setupStyles.ts` and its proof, which brief 4 granted
   and round 2 audited, before it would commit. **Unchanged:** CL3b next, then CL4 to CL13.
+- 2026-09-21, CL3b dispatched and returned on Opus (`units/cl3b-report.md`) under
+  `units/cl3b-brief-2.md` over `units/cl3b-brief.md`, after a scope read
+  (`units/cl3b-scope-read-report.md`) confirmed every fact and found the assertion the dark anchor
+  hazard reaches. The unit measured the hazard and took the pin branch: `$dark`'s `anchor` now
+  holds the literal `oklch(0.235 0.013 256)` with its reason recorded beside it, so every dark
+  role border tier keeps the value U7 calibrated it on while `--vn-surface-raised` moves to the
+  record. **Added by the unit as an ancillary choice, to audit:** `--vn-font-mono` became
+  `--vn-font-mono-base` with a `font.mono` group, because the registry's path law forces a group
+  for a second monospace name; the rename reaches every consumer and no rendered stack moved.
+  Also landed: `--vn-text-muted`, the `surface-code` map key, `--vn-font-mono-short`,
+  `--vn-line-code`, the rebinding of the five partials, and the corner-radius rows CL3 round 3
+  carried. Round 1 runs on all four lanes over `cl3b-audit-claims.md`, with the lanes swapped as
+  CL2's were (Opus wrote it, so the Astra analyst holds the objective lane).
+  **Unchanged:** CL4 to CL13.
