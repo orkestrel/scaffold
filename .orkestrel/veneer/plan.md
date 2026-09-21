@@ -1063,3 +1063,13 @@ after acceptance per the debrief skill's retention reference.
   is refuted by measurement. Ruled: the literal endpoint stays as the calibration's measured
   value; the retuning case is deleted. `units/u7a-brief-8.md` carries the reversion and the
   remaining findings 6, 7, 2, 4, 8, 1, the controls, and the gates.
+- 2026-09-20, U7a brief 8 (thread `01a0c17a-c664-7020-9ffd-03ecd2280140`, `units/u7a-report-8.md`)
+  closed findings 9 (reverted on measurement), 6, and 7 and stopped on finding 2: the brief's
+  4.5:1 text-over-fill floor for every role and mode fails on the calibrated dark fills (dark
+  primary reads 2.59:1 at rest, white over `oklch(0.7 0.15 233)`), which are Elements' measured
+  values and not U7a's to change; the `light` role's black foreground made every light-role
+  state pass. Ruled: the floor applies to the `light` role alone (the defect the reviewer named);
+  the other roles' ratios are pinned at their measured values so a regression reads, and the
+  dark-fill contrast is recorded for the user as a design question outside the campaign's exit
+  criterion. `units/u7a-brief-9.md` carries the ruling and the remaining findings 4, 8, 1, the
+  controls, and the gates.

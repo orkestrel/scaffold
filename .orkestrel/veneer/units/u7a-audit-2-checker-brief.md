@@ -19,7 +19,7 @@ The Orchestrator rendered the round-2 diff over the Veneer checkout's `2bc922d` 
 `C:/Users/mikes/WebstormProjects/scaffold/.orkestrel/veneer/units/u7a-diff-2.patch.txt`, round 1's rendered diff over the same base
 at `u7a-diff.patch.txt`, and the status at `tmp/audit/u7a-status-2.txt`. Read those and
 the live Veneer tree at `C:/Users/mikes/WebstormProjects/veneer`. Read the retained report
-`.orkestrel/veneer/units/u7a-report-8.md` (with `u7a-report-7.md`) only to learn what the unit claims; rule on the tree.
+`.orkestrel/veneer/units/u7a-report-9.md` (with `-8.md` and `-7.md`) only to learn what the unit claims; rule on the tree.
 
 ## Probes
 

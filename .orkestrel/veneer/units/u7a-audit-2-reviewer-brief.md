@@ -21,8 +21,8 @@ fix round's own edits stand out), and the status at
 `tmp/audit/u7a-status-2.txt`; read those and the live Veneer tree
 (`C:/Users/mikes/WebstormProjects/veneer`), never the report alone. Your own round-1 findings
 are `units/lane-u7a-reviewer.md` items 16 to 26; the analyst's claim 9 is in
-`units/u7a-audit-analyst-report.md`; the fix briefs are `units/u7a-brief-7.md` and `units/u7a-brief-8.md` (finding 9 reverted on
-measurement) with their reports `units/u7a-report-7.md` and `units/u7a-report-8.md`. The user has ruled that audits cover implementation only: report no
+`units/u7a-audit-analyst-report.md`; the fix briefs are `units/u7a-brief-7.md`, `-8.md`, and `-9.md` (finding 9 reverted on
+measurement; the contrast floor narrowed to the light role) with their reports `units/u7a-report-7.md`, `-8.md`, and `-9.md`. The user has ruled that audits cover implementation only: report no
 wording, comment, doc-block, or guide-prose finding. Add extra findings only for an
 implementation defect the fix round introduced, numbered after the last claim, each with a site
 and a one-line failure scenario.
