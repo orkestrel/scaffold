@@ -592,6 +592,16 @@ filled.
   golden digest over generated output, the consumer script naming the removed union member.
 - Derive that set by running the suite. Where you cannot run it, name the search's bound in the
   brief so the unit re-derives the set.
+- Find the enumerating assertions by searching for the population's EXISTING members, never by
+  reasoning about which files look relevant. A literal set or list naming every member of a growing
+  population goes false the moment a unit adds one, and it can sit in a file whose name suggests it
+  holds only machinery. Grep the tree for a member the population already has; every file that comes
+  back is a file the unit must own. Reasoning finds the obvious site and misses the rest, and the
+  miss surfaces as the unit's stop.
+- Diff the previous unit's actual status against this brief's owned set whenever a series of units
+  adds members to one population. A grant the previous sibling needed and this brief omits is the
+  likeliest gap, because each brief is written from the plan rather than from what the last unit
+  touched.
 - Grant a behaviour with the tests that pin it, a constant with every fixture and expectation
   derived from it, and a template change with the materialized copy the package generates from it.
 - Grant the file a brief tells the unit to copy a pattern from, wherever a standing gate forbids
