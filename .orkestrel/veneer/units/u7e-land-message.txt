@@ -1,0 +1,21 @@
+Correct the guide to what the landed Button mechanisms show (U7e)
+
+`guides/veneer.md` claims only what the U7 proofs show. § Showcase now
+names the `Buttons` region carrying every declared specimen and the
+`Delegate` the entry constructs beside the showcase, and says the styles
+entry ships the bare button treatment and the `.btn` treatments and no
+treatment for another component. § Tests links the section proof. The
+proof-subject sentence in § Styles narrows to the cases that read the
+loaded file, because the token proof also reads a second built stylesheet
+through a raw import, and the workspace-departures sentence narrows to the
+tables keyed by environment. § Departures from Bootstrap gains the row for
+`--bs-btn-focus-shadow-rgb`, which Veneer declares for consumers and reads
+in no rule because `--bs-btn-focus-box-shadow` carries its own ring
+expression. The Button rows of § Compatibility were true as written and
+are unchanged.
+
+Every gate exits 0: `format:check`, `test:guides`, `test:policy`,
+`test:conformance`, and the whole `npm test` chain. The audit is recorded
+in scaffold's `.orkestrel/veneer/u7e-audit-verdict.md` file.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>

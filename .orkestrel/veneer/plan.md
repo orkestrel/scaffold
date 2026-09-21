@@ -1226,3 +1226,15 @@ after acceptance per the debrief skill's retention reference.
   console logs) beside Elements' frames. U7e (the guide) runs in parallel because it owns
   `guides/veneer.md` alone. **Unchanged**: the component queue after U7. Not a rescope: the exit
   criterion already named the captured acceptance.
+- 2026-09-21, U7e returned complete on Opus (`units/u7e-report.md`): five bounds corrected in
+  `guides/veneer.md`, the § Compatibility unknown true as written, one further false sentence
+  (the styles entry "ships no component treatments") corrected under the objective; audited by
+  the Astra analyst alone plus the verifier under the user's ruling on guides (recorded in
+  `u7e-audit-verdict.md`); accepted and landed as Veneer `7f6d5f6`. U7f round 1 (three lanes on
+  Veneer's 48 frames beside Elements' twenty): `ANOTHER ROUND(2, 4, 5, 6, 9, 10, 12)`; the
+  harness gaps closed by rounds 2 and 3 of the spawned harness (`units/u7f-harness-3.mjs`,
+  the padded focus-ring frame, the settled theme and pointer shots, the States section and the
+  toggle host's pressed-moment state); the Veneer-side findings (the shell control's affordance
+  inverting with the theme, the hover and active frames shot inside the transition, the tree
+  taken only at arrival) carried as `units/u7f-fix-brief.md` on Opus over `7f6d5f6`, whose
+  `CAPTURE=1` run regenerates the portfolio for round 2.
