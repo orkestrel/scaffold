@@ -3,7 +3,7 @@
 Role: `checker` on native Sonnet, read-only, clean context. Perform the assignment directly and
 spawn nothing.
 
-Subject: `C:/Users/mikes/WebstormProjects/scaffold/tmp/units/u7c-brief.md`, the brief a native
+Subject: `C:/Users/mikes/WebstormProjects/scaffold/.orkestrel/veneer/units/u7c-brief.md`, the brief a native
 Opus writer will open next, against the live Veneer checkout at
 `C:/Users/mikes/WebstormProjects/veneer` (HEAD `0cbb563`, the U7b landing; tracked tree clean).
 The dispatch message that accompanies the brief is

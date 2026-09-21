@@ -1,0 +1,35 @@
+Render the Button specimens and prove them on the mounted page (U7c)
+
+The showcase gains a `sections/` family whose first member,
+`ButtonSection`, renders every row of the frozen `BUTTON_SPECIMENS` table
+into a `.specimens` grid (layout only, in the shell layer), owns one
+`Button` engine per plain host, leaves each `data-bs-toggle` host to the
+`Delegate` the entry constructs beside the `Showcase`, and destroys its
+engines in construction order. `SectionInterface` and `ButtonSpecimen`
+join `app/browser/types.ts`; the section's proof cross-checks the table's
+`btn-*` classes against the loaded cascade, so a shipped variant the table
+omits reddens.
+
+The journeys drive the mounted section on every variant: the delegated
+click landing on a label's span, the keyboard drives, the two disabled
+forms refused with the exact sentence and no mutation, a covered host that
+the hold refuses until the cover is gone, the focus ring reached by Tab and
+equal across every specimen, the composed contrast set pinned with its
+members below 4.5 enumerated, hover and active readings with release, the
+motion axis under staged media, and every recorded oracle step driven and
+compared in the recording's order on both motion axes through one
+projection, `readingToProjection`, that reduces the fixture and the live
+reading alike. The capture registry gains the primary button's rest,
+pressed, focus, hover, and active states with their dark twins, page or
+element frames as each state's paint requires. The distribution stage
+gains a consumer case that imports `Button` and `Delegate` from the packed
+archive's `./browser` entry and drives both in a real browser. The
+package's surface is unchanged.
+
+Every gate exits 0 on managed Chromium and Edge. Three controls reddened
+and were restored byte for byte; the projection plant as first specified
+left the oracle comparison green because one reducer serves both sides, so
+a one-sided plant proved the comparison instead. The audit is recorded in
+scaffold's `.orkestrel/veneer/u7c-audit-verdict.md` file.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>

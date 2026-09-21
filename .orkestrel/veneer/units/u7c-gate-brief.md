@@ -43,21 +43,28 @@ capture each command's last twelve lines:
 4. `npm run check`
 5. `npm run build`
 6. `npm run test:setup`
-7. `npm run test:app:browser`
-8. the capture run of the app browser project as the config selects it (state the exact command)
-9. `npm run test:distribution`
-10. `npm test` (the whole chain)
-11. `PLAYWRIGHT_CHANNEL=msedge npm run test:app:browser`
-12. `node node_modules/@orkestrel/scaffold/dist/bin/main.js audit --target .` (read-only)
-13. `ls tmp/capture/states | head -40` (the capture files the run wrote, names only)
-14. `git status --porcelain --untracked-files=all | grep -v '^?? tmp/'` again
+7. `npm run test:setup:browser`
+8. `npm run test:app:browser`
+9. `npm run test:journey` (the `journey`, `refusal`, `matrix`, and `capture` families run under
+   `configs/app/vite.journey.config.ts`, not under the `app:browser` project)
+10. `CAPTURE=1 npm run test:journey` (the capture run; `CAPTURE` is the environment value the
+    root configuration reads)
+11. `npm run test:distribution`
+12. `npm run test:guides`
+13. `npm test` (the whole chain, as a background command logged under `tmp/`)
+14. `PLAYWRIGHT_CHANNEL=msedge npm run test:journey`
+15. `PLAYWRIGHT_CHANNEL=msedge npm run test:app:browser`
+16. `PLAYWRIGHT_CHANNEL=msedge npm run test:setup:browser`
+17. `node node_modules/@orkestrel/scaffold/dist/bin/main.js audit --target .` (read-only)
+18. `ls tmp/capture/states` (the capture files the run wrote, names only)
+19. `git status --porcelain --untracked-files=all | grep -v '^?? tmp/'` again
 
 Write nothing into the checkout except the `npm test` log under `tmp/` and the captures the
 run itself writes.
 
 ## Output
 
-Your final message is: one table `Step | Command | Exit | Final lines` with every step; the exact
+Your final message is: one table `Step | Command | Exit | Final lines` with every step (the whole chain can exceed ten minutes, so run `npm test` as a harness-tracked background command and read its log); the exact
 failure excerpt for every non-zero exit; the audit's full output; the capture listing; both
 status readings verbatim; and nothing else. No process diary.
 
