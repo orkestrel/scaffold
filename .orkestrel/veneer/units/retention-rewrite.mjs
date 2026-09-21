@@ -22,6 +22,10 @@ const SELF = new Set(['retention-rewrite.mjs', 'retention-rewrite.sh', 'handoff.
 const CLAIMS = String.raw`([a-z0-9-]+-audit-claims(?:-[0-9]+)?\.md)`
 const PATCH = String.raw`([a-z0-9-]+-diff(?:-[0-9]+)?\.patch)`
 const NAME = String.raw`([A-Za-z0-9._-]+)`
+// A journal (`.jsonl`) and its error stream (`.err`) are swept at acceptance and have no retained
+// name, so a citation of one keeps its launch path: the provenance the bench laws require is the
+// path plus the thread id, and rewriting the path to a retained name that never exists loses it.
+const EPHEMERAL = String.raw`[A-Za-z0-9._-]+\.(?:jsonl|err)\b`
 
 function rewrite(text, inUnits) {
 	const rootRel = inUnits ? '../' : ''
@@ -34,12 +38,12 @@ function rewrite(text, inUnits) {
 	out = out.replace(new RegExp(`${SUBJECT}tmp/audit/${CLAIMS}`, 'g'), `${ABS_REC}/$1`)
 	out = out.replace(new RegExp(`${SUBJECT}tmp/audit/${PATCH}`, 'g'), `${ABS_REC}/units/$1.txt`)
 	out = out.replace(new RegExp(`${SUBJECT}tmp/(?:codex|units)/${NAME}\\.log\\b`, 'g'), `${ABS_REC}/units/$1.log.txt`)
-	out = out.replace(new RegExp(`${SUBJECT}tmp/(?:codex|units)/`, 'g'), `${ABS_REC}/units/`)
+	out = out.replace(new RegExp(`${SUBJECT}tmp/(?:codex|units)/(?!${EPHEMERAL})`, 'g'), `${ABS_REC}/units/`)
 	// Relative launch paths.
 	out = out.replace(new RegExp(`(^|[^A-Za-z0-9_./-])tmp/audit/${CLAIMS}`, 'g'), `$1${rootRel}$2`)
 	out = out.replace(new RegExp(`(^|[^A-Za-z0-9_./-])tmp/audit/${PATCH}`, 'g'), `$1${unitsRel}$2.txt`)
 	out = out.replace(new RegExp(`(^|[^A-Za-z0-9_./-])tmp/(?:codex|units)/${NAME}\\.log\\b`, 'g'), `$1${unitsRel}$2.log.txt`)
-	out = out.replace(new RegExp(`(^|[^A-Za-z0-9_./-])tmp/(?:codex|units)/`, 'g'), `$1${unitsRel}`)
+	out = out.replace(new RegExp(`(^|[^A-Za-z0-9_./-])tmp/(?:codex|units)/(?!${EPHEMERAL})`, 'g'), `$1${unitsRel}`)
 	return out
 }
 

@@ -1,17 +1,16 @@
-// Dump every result row of a Workflow journal to a file named by the agent id, so the lane
-// reports of an audit round can be retained and then renamed by content.
+// Dump every result row of a Workflow journal to a retained lane file, named by the agent's role
+// (read from the `agent-<id>.meta.json` beside the journal) so no rename by content is needed.
 //
 // Usage: node .orkestrel/veneer/units/dump-lanes.mjs <runId> <prefix> [journalPath]
-//   → .orkestrel/veneer/units/<prefix>-<agentId>.md, one per result row.
+//   → .orkestrel/veneer/units/lane-<prefix>-<agentType>.md, one per result row
+//     (a second agent of the same type gets `-<agentType>-<agentId>`; a row with no meta file
+//     falls back to the agent id).
 //
 // Without journalPath the script looks for the run under every session folder of this project:
 // ~/.claude/projects/C--Users-mikes-WebstormProjects-scaffold/<sessionId>/subagents/workflows/<runId>/journal.jsonl
-// Rename the dumped files by content afterwards: the verifier's report carries the header
-// `Step | Command | Exit`, the reviewer's opens with `Lane held`, and the checker's is the rest.
-// Never key on the word `Referrals`: the reviewer and the checker both use it.
 import { existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { homedir } from 'node:os'
-import { join } from 'node:path'
+import { dirname, join } from 'node:path'
 
 const [runId, prefix, journalArgument] = process.argv.slice(2)
 if (!runId || !prefix) {
@@ -30,12 +29,18 @@ const lines = readFileSync(journal, 'utf8')
 	.split('\n')
 	.filter((line) => line.length > 0)
 	.map((line) => JSON.parse(line))
+const seen = new Map()
 for (const row of lines) {
 	if (row.type !== 'result') continue
-	const name = `${prefix}-${row.agentId}.md`
+	const meta = readMeta(dirname(journal), row.agentId)
+	const role = meta?.agentType ?? row.agentId
+	const count = (seen.get(role) ?? 0) + 1
+	seen.set(role, count)
+	const name = count === 1 ? `lane-${prefix}-${role}.md` : `lane-${prefix}-${role}-${row.agentId}.md`
+	const engine = meta ? `${meta.agentType} on ${meta.model}` : 'role unknown'
 	writeFileSync(
 		out + name,
-		`<!-- workflow ${runId}, agent ${row.agentId}, label unknown, retained ${stamp} -->\n\n${row.result}\n`,
+		`<!-- workflow ${runId}, agent ${row.agentId}, ${engine}, retained ${stamp} -->\n\n${row.result}\n`,
 	)
 	console.log(`${name} ${row.result.length} :: ${row.result.slice(0, 120).replace(/\n/gu, ' / ')}`)
 }
@@ -49,4 +54,14 @@ function findJournal(root, id) {
 		if (existsSync(candidate)) return candidate
 	}
 	return undefined
+}
+
+function readMeta(folder, agentId) {
+	const path = join(folder, `agent-${agentId}.meta.json`)
+	if (!existsSync(path)) return undefined
+	const parsed = JSON.parse(readFileSync(path, 'utf8'))
+	if (typeof parsed !== 'object' || parsed === null) return undefined
+	const agentType = typeof parsed.agentType === 'string' ? parsed.agentType : undefined
+	const model = typeof parsed.model === 'string' ? parsed.model : 'unknown'
+	return agentType === undefined ? undefined : { agentType, model }
 }
