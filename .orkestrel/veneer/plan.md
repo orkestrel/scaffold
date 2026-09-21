@@ -1055,3 +1055,11 @@ after acceptance per the debrief skill's retention reference.
   the text token. Not carried: the unread `--bs-btn-focus-shadow-rgb` (a departure row for
   U7e), the symmetric-pair admission's enforcement trade, the Edge configuration remark (the
   verifier's Edge run closed it).
+- 2026-09-20, U7a's fix round (brief 7, thread `01a0c172-44b3-7ff0-a300-9c01f9c289e4`,
+  `units/u7a-report-7.md`) closed findings 3 (state tokens inside `theme-tokens`) and 5 (the
+  `focus-ring` mixin's neutral `--vn-focus-highlight` and `--vn-focus-reset` defaults) and
+  stopped on finding 9: binding the light mixer to the text token breaks every light-mode
+  calibration proof, so the reviewer's premise (the literal is the text token's sRGB rendering)
+  is refuted by measurement. Ruled: the literal endpoint stays as the calibration's measured
+  value; the retuning case is deleted. `units/u7a-brief-8.md` carries the reversion and the
+  remaining findings 6, 7, 2, 4, 8, 1, the controls, and the gates.
