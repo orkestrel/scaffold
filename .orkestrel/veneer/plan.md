@@ -1472,3 +1472,19 @@ after acceptance per the debrief skill's retention reference.
   count and sequence grow, `collectShippedComponents` moves with `listed`, the reset partial's
   universal and hidden rows already satisfy their inventory rows in the reset layer, and no
   `option` selector exists. **Unchanged:** CL5 to CL13.
+- 2026-09-21, CL4 stopped under brief 2 (`units/cl4-report.md`, thread
+  `01a0c440-c01e-7da1-bc12-9bc0a535d6f6`) on a real defect the scope read and I had both got
+  wrong: the minifier downlevels the authored `*::before` and `*::after` to the legacy `:before`
+  and `:after`, so the presence scan reports them missing while the cascade ships them. The unit
+  refused to work around it in an owned partial and refused to touch the off-limits files, which
+  is the right stop. **Measured before ruling** (`units/cl4-selector-gap.mjs`, read-only): of the
+  pinned `reboot` row's 117 selectors, 64 are absent by the scan's exact rule, and exactly two of
+  those are present under a spelling equivalence; the other 62 are CL4's own unshipped tags and
+  the excluded combinations. **Ruled:** the defect is in the comparison, not in `_reset.scss` and
+  not in the partials, so `units/cl4-brief-3.md` grants `normalizeComplexSelector` and its proof
+  for a narrow canonicalization (the four legacy single-colon pseudo-elements folded to their
+  double-colon forms, and a universal dropped only where it precedes a pseudo-element), with a
+  proof that a genuinely absent selector still reports absent and a stop if the rule would have
+  to widen. Folding it into CL4 rather than a separate unit keeps one unit per commit: the tree
+  already carries CL4's deliberately red guide row and `listed`, so landing a separate unit
+  first would have to run its gates against that red state. **Unchanged:** CL5 to CL13.
