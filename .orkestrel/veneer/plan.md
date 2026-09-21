@@ -1238,3 +1238,15 @@ after acceptance per the debrief skill's retention reference.
   inverting with the theme, the hover and active frames shot inside the transition, the tree
   taken only at arrival) carried as `units/u7f-fix-brief.md` on Opus over `7f6d5f6`, whose
   `CAPTURE=1` run regenerates the portfolio for round 2.
+- 2026-09-21, U7f-fix landed as Veneer `060ce02` after two audit rounds (`u7f-fix-audit-verdict.md`):
+  the header control's border in the `shell` layer, the pointer frames shot with reduced motion
+  and the pane staged around them (a measured deviation: the capture's own pane staging moved the
+  document from under the pointer, and the handed-back layout reads the opposite of the frame),
+  the pressed-moment tree, then the test-sufficiency fixes the audit found (the deciding hover
+  readings in the re-staged pane, the arrival tree selected by a property only a tree carries,
+  `releasePane` in the teardown, the pointer released before `home-dark`, the header-and-`main`
+  invariant). Process rule recorded: the capture run comes last before portfolio evidence is
+  assembled (`units/u7f-recapture.sh`). Round 2 of the portfolio verdict launched on the
+  regenerated Veneer portfolio beside the round-3 Elements portfolio (`units/u7f-verdict-brief-2.md`).
+  Test-side bounds carried to the Test 0.0.19 release unit: `captureFrame` re-establishing the
+  pointer after it stages the pane and leaving the pane staged until its caller releases it.

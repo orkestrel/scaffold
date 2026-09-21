@@ -1,0 +1,9 @@
+== 2026-09-21T08:03:04Z land start
+7f6d5f6 Correct the guide to what the landed Button mechanisms show (U7e)
+ M app/browser/styles/_shell.scss
+ M tests/app/browser/Showcase.test.ts
+ M tests/app/browser/integration.test.ts
+changed: app/browser/styles/_shell.scss tests/app/browser/Showcase.test.ts tests/app/browser/integration.test.ts 
+060ce02 Give the mode control one affordance and shoot the pointer frames settled (U7f-fix)
+## main...origin/main
+== 2026-09-21T08:03:07Z land end
