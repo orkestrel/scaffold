@@ -129,3 +129,48 @@ half both engines left open. Findings outside the claims:
 
 Verdict: fix round. `units/cl3-brief-5.md` on Astra (the writer); the Opus reviewer stays the
 objective auditor; round 3 runs all four lanes.
+
+## Round 3 (2026-09-21, the fix round under `units/cl3-brief-5.md`)
+
+Lanes, launched together and blind: analyst on Astra holding the SUBJECTIVE lane
+(`units/cl3-audit-3-analyst-report.md`, thread `01a0c3f0-c0a9-78a2-8816-39374850bcb8`, exit 0);
+reviewer on Opus 5 holding the OBJECTIVE lane (`units/lane-cl3-3-reviewer.md`, workflow
+`wf_a5aba98c-1ba`); checker on Sonnet (`units/lane-cl3-3-checker.md`); verifier on Sonnet
+(`units/lane-cl3-3-verifier.md`) over `units/cl3-gate-brief.md`. Claims:
+`cl3-audit-claims-3.md`; evidence `units/cl3-diff-3.patch.txt` and `units/cl3-status-3.txt` over
+the base `9f5ffda`; report `units/cl3-report-4.md`.
+
+| Claim | Analyst (subjective, Astra) | Reviewer (objective, Opus) | Checker | Verifier |
+| --- | --- | --- | --- | --- |
+| 1 `script-text` mixin | CONFIRMED (in-memory compile: identical CSS before and after) | CONFIRMED (the built cascade declares each property once; the proofs' blobs unchanged) | — | — |
+| 2 `text-size-adjust` deduplicated | CONFIRMED (each spelling once, under `html`, none under `body`) | CONFIRMED (the report's correction of the brief's line-count grep is honest: the built file is minified onto one line) | — | — |
+| 3 the sweep | CONFIRMED (its own read-only sweep returns empty; run against round 2's partials it detects the three duplications) | CONFIRMED (the instrument's population is every partial, its pairing every distinct unordered pair, its threshold two declarations; an independent read of the remaining partials finds no pair above it) | — | — |
+| 4 no reading moved, no proof touched | CONFIRMED (capture equality; a changed-value control fails the comparison) | CONFIRMED in substance, with a wording correction: `tests/**` files appear in the rendered patch because it renders the whole CL3 change, so the claim holds of the round-3 delta, where every test blob is identical | — | — |
+| 5 scope, law, gates | UNDECIDABLE on the gate half, asking for a round-3 verifier receipt | CONFIRMED on scope and law (eight blobs differ, every one in brief 5's owned set); gate half UNDECIDABLE | CONFIRMED | every step exit 0 on managed Chromium and Edge, `npm test` and the journeys exit 0, status identical before and after, `scaffold audit` reports only the pre-existing `setupListeners` note and the three registry majors |
+
+Reconciliation. Every implementation claim is CONFIRMED on every lane that could rule on it. The
+analyst's terminal line names claim 5, and its own text states the reason is an
+acceptance-evidence gap that "supplies no implementation repair" and that "a round-3 verifier
+receipt would settle this claim"; the reviewer's finding 7 says the same. That receipt is
+`units/lane-cl3-3-verifier.md`, produced by the verifier lane of this round, which the analyst
+could not see because the lanes run blind. The condition both lanes set is met, so the round
+accepts. The reviewer's correction to claim 4 is recorded against the claim.
+
+Findings outside the claims:
+
+- **Reviewer 6 (carried to CL3b).** The shipped corner radii have no proof: `code-surface`'s
+  `border-radius: var(--vn-radius-small)` (included by `_code.scss` and `_kbd.scss`) and
+  `_pre.scss`'s `border-radius: var(--vn-radius-base)` are read by no case table, so deleting
+  either leaves the suite green while those surfaces render square. The gap predates round 3;
+  the extraction consolidated it rather than introducing it. CL3b already owns `_pre.scss` and
+  the token rows, and takes this with a grant for the three case tables in
+  `tests/setupStyles.ts`, adding the radius row the button proof's reading models.
+- **Reviewer's recorded sweep limit (no action).** The instrument's source-map filter cannot see
+  a pair where one partial includes a mixin and another repeats its declarations literally; the
+  only live candidate, `_var.scss`, shares one declaration with `code-text`'s output and stays
+  below the threshold.
+- **Analyst and reviewer 7.** The gate gap they name is closed by this round's verifier.
+
+### Terminal (round 3)
+
+Verdict: accept. Land with `units/cl3-land.sh`.

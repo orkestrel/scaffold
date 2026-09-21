@@ -1396,3 +1396,19 @@ after acceptance per the debrief skill's retention reference.
   `list-space` for the ordered and unordered lists), with every captured reading equal before
   and after on both receipts, no proof edited, and every gate green. Round 3's audit runs on
   all four lanes over `cl3-audit-claims-3.md`. **Unchanged:** CL3b, CL4 to CL13.
+- 2026-09-21, CL3 landed in Veneer as `9bb306e` after three audit rounds (`cl3-audit-verdict.md`;
+  briefs `units/cl3-brief-2.md` to `-5.md`, reports `units/cl3-report.md` to `-4.md`, the landing
+  log `units/cl3-land.log.txt`). Round 3 accepted on every lane: the Astra analyst held the
+  subjective lane, the Opus reviewer the objective lane, the checker ruled the mechanical claims,
+  and the verifier ran every gate green on managed Chromium and Edge. The analyst and the reviewer
+  each left the gate half open asking for a round-3 verifier receipt; that receipt is the same
+  round's verifier lane, which the lanes could not see because they run blind, so the condition
+  they set is met and the round accepts. What landed: `_reset.scss` in the reset layer, twenty text
+  tag partials with mirrored proofs whose case tables live in `tests/setupStyles.ts`, the code
+  family on `--vn-text-code` and `--vn-surface-code`, four shared blocks consolidated into mixins
+  (`code-text`, `code-surface`, `script-text`, `list-space`) with a sweep of every partial pair
+  that returns nothing, and `ContentSection` with the shell's main region addressable by
+  fragment. Recorded rather than closed: the muted text, the raised surfaces, and the link
+  colours. Bound carried to CL3b: the untested corner radii (reviewer 6 of round 3). The landing
+  script's allowlist was extended to `tests/setupStyles.ts` and its proof, which brief 4 granted
+  and round 2 audited, before it would commit. **Unchanged:** CL3b next, then CL4 to CL13.

@@ -1,12 +1,14 @@
 #!/usr/bin/env bash
 # Land CL3 in the Veneer checkout. The Orchestrator's own tracked command (commit and push are
-# barred to roles). Steps: confirm every tracked or untracked change outside tmp/ is one of the
+# barred to roles). The allowed set is the union of the effective briefs 2 to 5: brief 4 granted
+# tests/setupStyles.ts and its proof for the case tables, which round 2 audited and confirmed.
+# Steps: confirm every tracked or untracked change outside tmp/ is one of the
 # files the brief owns; commit them by pathspec with cl3-land-message.txt; push.
 set -u
 SCAFFOLD="C:/Users/mikes/WebstormProjects/scaffold"
 VENEER="C:/Users/mikes/WebstormProjects/veneer"
 LOG="$SCAFFOLD/tmp/units/cl3-land.log.txt"
-ALLOWED=" src/styles/_reset.scss src/styles/index.scss src/styles/_tokens.scss src/styles/_mixins.scss src/core/constants.ts tests/src/styles/tokens.test.ts tests/src/styles/index.test.ts tests/src/styles/reset.test.ts app/browser/constants.ts app/browser/types.ts app/browser/index.ts app/browser/Showcase.ts app/browser/sections/ContentSection.ts tests/app/browser/sections/ContentSection.test.ts tests/app/browser/Showcase.test.ts tests/app/browser/index.test.ts guides/veneer.md "
+ALLOWED=" src/styles/_reset.scss src/styles/index.scss src/styles/_tokens.scss src/styles/_mixins.scss src/core/constants.ts tests/src/styles/tokens.test.ts tests/src/styles/index.test.ts tests/src/styles/reset.test.ts tests/setupStyles.ts tests/setupStyles.test.ts app/browser/constants.ts app/browser/types.ts app/browser/index.ts app/browser/Showcase.ts app/browser/sections/ContentSection.ts tests/app/browser/sections/ContentSection.test.ts tests/app/browser/Showcase.test.ts tests/app/browser/index.test.ts guides/veneer.md "
 exec > >(tee -a "$LOG") 2>&1
 echo "== $(date -u +%Y-%m-%dT%H:%M:%SZ) land start"
 cd "$VENEER" || exit 9
