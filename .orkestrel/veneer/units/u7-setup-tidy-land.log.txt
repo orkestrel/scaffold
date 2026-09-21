@@ -1,0 +1,17 @@
+== 2026-09-21T02:33:28Z land start
+12e1bd6 Ship Button's cascade with its deferral partition and shipped rows (U7a)
+ M tests/setupBrowser.test.ts
+ M tests/setupBrowser.ts
+ M tests/setupConformance.test.ts
+ M tests/setupConformance.ts
+ M tests/setupStyles.test.ts
+ M tests/setupStyles.ts
+ M tests/src/styles/elements/body.test.ts
+ M tests/src/styles/integration.test.ts
+ M tests/src/styles/mixins.test.ts
+ M tests/src/styles/theme.test.ts
+ M tests/src/styles/tokens.test.ts
+changed: tests/setupBrowser.test.ts tests/setupBrowser.ts tests/setupConformance.test.ts tests/setupConformance.ts tests/setupStyles.test.ts tests/setupStyles.ts tests/src/styles/elements/body.test.ts tests/src/styles/integration.test.ts tests/src/styles/mixins.test.ts tests/src/styles/theme.test.ts tests/src/styles/tokens.test.ts 
+91e5906 Retire the paint wrappers and settle the setup modules' pins and refusals
+## main...origin/main
+== 2026-09-21T02:33:30Z land end

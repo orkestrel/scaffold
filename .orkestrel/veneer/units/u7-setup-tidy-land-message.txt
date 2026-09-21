@@ -1,0 +1,31 @@
+Retire the paint wrappers and settle the setup modules' pins and refusals
+
+The installed `@orkestrel/test` reader parses the modern colour spaces
+and measured equal to the canvas paint on every colour tried, so
+`readPaintedColor` and `matchesPaintedColor` leave `tests/setupBrowser.ts`
+with their cases, and every styles proof compares through the installed
+`matchesColor`. The one triplet case that passed only through the canvas's
+byte rounding now asserts what is true: each channel within one whole
+step of the authored triplet. The forced-colours proof compares the two
+computed strings directly, because the installed reader mounts its probe
+inside the forced-colours emulation and reports every pair equal there.
+
+One release pin and one CSS digest remain, in `tests/setupConformance.ts`;
+the styles module's duplicates and the workspace-relative cascade path
+leave with the case whose subject was their agreement.
+`describeIncompleteRow` labels an incomplete compatibility or deferral row
+by its position and the first filled column, the invalid-status wording
+unchanged. The binding-table case asserts every entry, named or fallback,
+answers a ledger row of its component and category; the `btn | event`
+fallback no row reached is deleted, and an entry that names no events is
+refused as such before the recording is blamed.
+
+The working-directory case's comment names the measured failure under a
+thread pool (`process.chdir() is not supported in workers`) and the
+default `forks` pool the `setup` project runs under. The pin the unit
+placed on that project in `vite.config.ts` is not landed: the root Vite
+configuration is scaffold's vendored file, and the pin belongs in
+scaffold's vendored configuration. Two planted controls reddened and were
+restored byte for byte; every gate exits 0 on managed Chromium and Edge.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>

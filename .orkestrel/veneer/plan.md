@@ -1106,3 +1106,11 @@ after acceptance per the debrief skill's retention reference.
   forced-colours emulation (a Test-side bound). Audit launched: the objective analyst on Astra,
   the subjective reviewer on Opus, the checker, and the verifier, on
   `u7-setup-tidy-audit-claims.md`.
+- 2026-09-21, `u7-setup-tidy` accepted (four lanes accepting; verdict
+  `u7-setup-tidy-audit-verdict.md`) and landed in Veneer as `91e5906`. At integration the
+  Orchestrator reverted the unit's `vite.config.ts` pool pin: the root Vite configuration is
+  scaffold's vendored file (`scaffold audit` reported it stale), so the pin is a scaffold-side
+  bound for the user to direct, and the working-directory case's comment names the default
+  `forks` pool instead. Carried: the `event` binding apparatus returns with the first real
+  `btn | event` ledger row; the installed reader's forced-colours limit is a Test-side bound.
+  Next: U7b on the bench from `91e5906`.
