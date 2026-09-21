@@ -25,8 +25,7 @@ selector set against the official inventory copy at `tests/fixtures/oracle/inven
 `--bs-btn-*` binding row in `guides/veneer.md` § Tokens against the partial; check the mixer
 tokens against the run-6 strings in
 `C:/Users/mikes/WebstormProjects/scaffold/.orkestrel/veneer/units/u2-run-6-extract.md` and the
-calibration in `.orkestrel/veneer/research/calibration.md`. The user has ruled that rounds focus
-on implementation: a wording finding is a bound, never a round-forcer. Add extra findings no
+calibration in `.orkestrel/veneer/research/calibration.md`. The user has ruled (2026-09-20) that audits cover implementation only: correctness, rule compliance, test sufficiency, scope honesty. Do not report wording, comment, doc-block, or guide-prose findings at all; a guide is judged by parity passing and by the rows the readers consume, nothing else. Add extra findings no
 claim names, numbered after the last claim, each with a site and a one-line failure scenario.
 
 ## Context

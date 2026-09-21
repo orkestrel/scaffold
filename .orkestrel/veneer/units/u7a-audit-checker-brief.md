@@ -55,8 +55,7 @@ only to learn what the unit claims; rule on the tree.
 ## Law
 
 Scaffold's `AGENTS.md` (§ Non-negotiable rules, § Design laws), `.claude/rules/styles.md`,
-`names.md`, `typescript.md`, `tests.md`, `documentation.md` (§ Parity). A wording finding is a
-bound, never a round-forcer.
+`names.md`, `typescript.md`, `tests.md`, `documentation.md` (§ Parity). The user has ruled (2026-09-20) that audits cover implementation only: correctness, rule compliance, test sufficiency, scope honesty. Do not report wording, comment, doc-block, or guide-prose findings at all; a guide is judged by parity passing and by the rows the readers consume, nothing else.
 
 ## Output
 

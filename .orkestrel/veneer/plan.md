@@ -1043,3 +1043,15 @@ after acceptance per the debrief skill's retention reference.
   setup-file grant covered one helper alone. `units/u7a-brief-6.md` grants the tables and
   relaunched (`units/u7a-6.sh`). The forced-colours reading is an open row (Test-side bound:
   `MediaOptions` gains a forced-colours axis).
+- 2026-09-20, U7a round 1 audited on the brief-6 tree under the user's narrowed scope
+  (implementation only; no wording, comment, or guide-prose findings): the verifier's whole
+  chain exit 0 on Chromium and Edge, the checker accepts, the analyst and the objective
+  reviewer each rule a fix round. Carried into `units/u7a-brief-7.md` (Astra, the fix round):
+  the outline active and ring proofs; the `light` role's white-on-white text with a contrast
+  case per role and mode; the state tokens moved into `theme-tokens`; `userEvent` replaced by
+  the installed helpers; the `focus-ring` mixin decoupled from the button token group; the
+  disabled shadow read through `--bs-btn-box-shadow`; the bare `.btn:active` superset dropped
+  with an unchecked-label case; the mixin proof's guarded keystroke; the light mixer end as
+  the text token. Not carried: the unread `--bs-btn-focus-shadow-rgb` (a departure row for
+  U7e), the symmetric-pair admission's enforcement trade, the Edge configuration remark (the
+  verifier's Edge run closed it).

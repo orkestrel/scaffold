@@ -17,7 +17,7 @@ styles proofs through the installed `matchesColor`; pin the `setup` project's po
 working-directory case's comment at the pin; keep one Bootstrap release pin and one CSS digest
 across the setup modules and drop the workspace-relative cascade constant if nothing consumes it;
 label an incomplete compatibility row by its position; make the binding reach assertion cover
-fallback entries and the refusal name the binding; and land the wording bounds the verdict lists.
+fallback entries and the refusal name the binding. Wording, comment, and doc-block findings are out of scope by the user's ruling; the unit lands code changes only.
 
 ## Context
 
@@ -150,9 +150,7 @@ Red first where a case pins the change; record each pair with its command and co
    rather than the recording. Run `PLANT-REACH` red first. Where the surviving `btn | event`
    fallback answers no ledger row, delete it and rewrite its cases over a fixture table, or keep
    it with the ledger row it serves — decide from the ledger, record the decision.
-6. **Wording.** The collector's summary reads `Collects component keys carrying only shipped
-   selector and variable obligations.`; the deferral label names its column (item 4).
-7. **Gates.** `npm run format:check`, `npm run lint:check`, `npm run check`,
+6. **Gates.** `npm run format:check`, `npm run lint:check`, `npm run check`,
    `npm run test:setup`, `npm run test:setup:browser`, `npm run test:src:styles`,
    `npm run test:conformance`, `npm run test:config`, `PLAYWRIGHT_CHANNEL=msedge npm run
    test:src:styles`; record each command's final lines.
