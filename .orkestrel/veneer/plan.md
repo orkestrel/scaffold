@@ -1130,3 +1130,12 @@ after acceptance per the debrief skill's retention reference.
   and `BUTTON_HOST_OWNED`, every gate exit 0 on Chromium and Edge. Audit launched on the
   brief-2 tree: the objective reviewer on Opus (lane swap), the subjective analyst on Astra,
   the checker, and the verifier, on `u7b-audit-claims.md`.
+- 2026-09-21, U7b round 1 audited on the brief-2 tree (implementation only): the checker
+  accepts; the analyst and the objective reviewer each rule a fix round; the verifier reads
+  every gate green except `test:guides`, which the eighteen new exports fail (brief 1 kept the
+  guide off-limits and omitted that gate: the Orchestrator's errors). Carried into
+  `units/u7b-brief-3.md` (Astra, thread named in `units/u7b-3.sh`'s journal): the anchor
+  write-order observation; the delegate never throwing out of its listener on an owned host
+  (an owned host is left to its owner); the owned set pruned of disconnected hosts on each
+  click; the guide's parity minimum (one Surface row per export, the method tables). Round 2
+  audits the fix with Opus as the engine that did not write it.
