@@ -31,7 +31,7 @@ read through the correction: no `auto` entry, no adapter, no Bootstrap method sp
 
 ## Context
 
-**The tree.** `HEAD` is the U7a landing commit (named in the dispatch message); the working tree
+**The tree.** `HEAD` is the u7-setup-tidy landing commit, named in the dispatch message (it follows the U7a landing); the working tree
 is clean except `tmp/`. `node_modules` carries `@orkestrel/scaffold` 0.0.76, the declared
 `@orkestrel/markdown`, and the `@orkestrel/test` 0.0.18 tarball installed `--no-save`.
 
@@ -127,7 +127,7 @@ the classes, then the proofs; run `npm.cmd run check:src:browser` and
 
 ## Output
 
-Write `u7b-report.md` and return its content: the diff per file; the ownership
+Write `tmp/units/u7b-report.md` and return its content: the diff per file; the ownership
 decision; each control's red reading and restore proof; each gate's final lines on both engines;
 deviations in the usual shape.
 
@@ -135,7 +135,10 @@ deviations in the usual shape.
 
 Stop and report on: a gate red after your own fix inside owned files; a need to edit an
 off-limits file. Decide, record, and carry on from: the ownership's placement, names within the
-prefix table, case order, doc-block wording.
+prefix table, case order, doc-block wording. An existing assertion in an owned file that
+enumerates a population your change grows — an export-set equality, a registry or parity list, a
+member count — is yours to update in the same step; record each such update in the report with
+the case title and the name added. That is an ancillary choice, not a stop.
 
 ## Acceptance criteria
 

@@ -96,7 +96,7 @@ registry (not yours). A whole-suite timing failure under your own exec is an obs
 pins, the cascade constant, the `:683` doc sentence), `tests/setupStyles.test.ts`,
 `tests/setupConformance.ts` (the pins, `readCompatibility`'s label, the binding table's refusal
 and reach), `tests/setupConformance.test.ts`, `tests/src/styles/**` (the wrapper call sites
-only), `vite.config.ts` (the `setup` project's `pool` key only), `u7-setup-tidy-report.md`.
+only), `vite.config.ts` (the `setup` project's `pool` key only), `tmp/units/u7-setup-tidy-report.md`.
 
 **Shared (report-only).** None; no other unit is live in this checkout.
 
@@ -159,7 +159,7 @@ Red first where a case pins the change; record each pair with its command and co
 
 ## Output
 
-Write `u7-setup-tidy-report.md` in the Veneer checkout and return its content as your
+Write `tmp/units/u7-setup-tidy-report.md` in the Veneer checkout and return its content as your
 final message: the diff per owned file; every styles case the swap reddened and how it was
 widened; the pin module decision; the item 5 decision; each control's red reading and restore
 proof; each gate's final lines; deviations in the shape § Deviation contract names.
@@ -170,7 +170,11 @@ Follow `.agents/orchestration.md` § Deviation protocol. Stop and report (expect
 evidence, done or not done, one hypothesis) on: a gate red after your own fix inside owned files;
 a need to edit an off-limits file; a styles case that reddens on the swap for a reason other than
 byte quantization. Decide, record, and carry on from: which module keeps the pins, the label's
-exact wording, the item 5 choice, case titles, doc-block wording.
+exact wording, the item 5 choice, case titles, doc-block wording. An existing assertion in an
+owned file that enumerates a population your change grows or shrinks — the export-set cases in
+`tests/setupBrowser.test.ts` and `tests/setupStyles.test.ts`, a registry or parity list, a
+member count — is yours to update in the same step; record each such update in the report with
+the case title and the names added or removed. That is an ancillary choice, not a stop.
 
 ## Acceptance criteria
 
