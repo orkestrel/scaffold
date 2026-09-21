@@ -34,12 +34,13 @@ verifier, and landed by a script that refuses any file outside the owned set.
 
 | Checkout | HEAD | Meaning |
 | --- | --- | --- |
-| Veneer | `9f5ffda` | CL2 landed and pushed; the working tree carries CL3's uncommitted files (58 paths outside the ignored `tmp/` at the last reading) |
-| Scaffold | `83591056` or later (confirm with `git log --oneline -1`) | every record through CL3's round-1 launch retained and pushed; `.orkestrel/veneer/` is tracked |
+| Veneer | `9bb306e` | CL3 landed and pushed; the tracked tree is clean |
+| Scaffold | `7f10e9c6` or later (confirm with `git log --oneline -1`) | every record through CL3's acceptance retained and pushed; `.orkestrel/veneer/` is tracked |
 
 Landed in Veneer during the last session: CL1 `00a5bdc` (`cl1-audit-verdict.md`, two rounds),
-CL2 `9f5ffda` (`cl2-audit-verdict.md`, two rounds). Earlier landings are listed in the memory
-file `veneer-campaign-state.md` and in `plan.md`.
+CL2 `9f5ffda` (`cl2-audit-verdict.md`, two rounds), CL3 `9bb306e` (`cl3-audit-verdict.md`, three
+rounds). Earlier landings are listed in the memory file `veneer-campaign-state.md` and in
+`plan.md`.
 
 **CL3 returned under brief 3 on Astra and is in its round-1 audit.** The unit was a
 `codex exec` launched by `TMP/codex/cl3-2.sh` (journal `TMP/codex/cl3-2.jsonl`, thread
