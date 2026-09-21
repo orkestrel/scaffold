@@ -1543,3 +1543,17 @@ after acceptance per the debrief skill's retention reference.
   audit runs on all four lanes over `cl4-audit-claims.md`, with the reviewer's brief pointing the
   hardest reading at the three rulings this unit took, the canonicalization first.
   **Unchanged:** CL5 to CL13.
+- 2026-09-21, CL4 round 1 (`cl4-audit-verdict.md`): all four lanes ran, every claim confirmed on
+  the lanes that could rule on it, and the verifier's eighteen steps green on both browsers. Both
+  engines independently verified the substance: the Astra lane executed the readers and scanner
+  in memory and planted an excluded name inside nested rules to see the scan catch it; the Opus
+  lane checked every non-excluded inventory name against the built cascade by hand and looked
+  specifically for a pair the canonicalization could mask, finding none. Four findings return in
+  `units/cl4-brief-7.md`: `_fieldset.scss` hardcodes the `xl` width where CL2's `breakpoint-up`
+  exists (a second literal for one boundary, with no gate comparing them); two declaration
+  blocks repeat across partials and need mixins, with a folder-wide sweep so the class closes
+  rather than the instances; the non-visible focus rule ships unproven because the button's
+  outline reading is taken in the state that rule excludes; and two values the report calls
+  retained differ from Bootstrap and must be matched or recorded. **Open question for the user,
+  added:** excluding `::-moz-focus-inner` means the published cascade ships no Gecko
+  inner-focus repair where Bootstrap's does. **Unchanged:** CL5 to CL13.
