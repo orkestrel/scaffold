@@ -1,0 +1,1109 @@
+diff --git a/tests/setupBrowser.test.ts b/tests/setupBrowser.test.ts
+index 0936ad7..1281b63 100644
+--- a/tests/setupBrowser.test.ts
++++ b/tests/setupBrowser.test.ts
+@@ -2,9 +2,7 @@ import { requireValue } from '@orkestrel/test'
+ import {
+ 	build,
+ 	findRule,
+-	matchesColor,
+ 	mount,
+-	parseCSSColor,
+ 	readPerception,
+ 	readRefusal,
+ 	readRules,
+@@ -18,11 +16,9 @@ import {
+ 	collectLayer,
+ 	collectNestedRules,
+ 	collectScopeProperties,
+-	matchesPaintedColor,
+ 	mountShowcase,
+ 	PROBE_CASCADE,
+ 	readCascadeSheet,
+-	readPaintedColor,
+ 	recordListeners,
+ 	specimens,
+ } from './setupBrowser.js'
+@@ -33,7 +29,7 @@ afterEach(() => {
+ })
+ 
+ describe('browser setup', () => {
+-	it('exports the showcase mount, the probe cascade, the specimen registry, the painted-color readers, and the cascade readers', () => {
++	it('exports the showcase mount, the probe cascade, the specimen registry, and the cascade readers', () => {
+ 		expect(Object.keys(setup).sort()).toEqual(
+ 			[
+ 				'PROBE_CASCADE',
+@@ -42,10 +38,8 @@ describe('browser setup', () => {
+ 				'collectLayer',
+ 				'collectNestedRules',
+ 				'collectScopeProperties',
+-				'matchesPaintedColor',
+ 				'mountShowcase',
+ 				'readCascadeSheet',
+-				'readPaintedColor',
+ 				'recordListeners',
+ 				'specimens',
+ 			].sort(),
+@@ -122,30 +116,6 @@ describe('browser setup', () => {
+ 		expect([first.isConnected, second.isConnected]).toEqual([false, false])
+ 	})
+ 
+-	it('reads the channels a browser paints for a color, and refuses a value it cannot paint', () => {
+-		const translucent = requireValue(
+-			readPaintedColor('rgba(0, 128, 255, 0.5)'),
+-			'The engine painted no channels for a translucent color',
+-		)
+-		expect(translucent.slice(0, 3)).toEqual([0, 128, 255])
+-		// The canvas stores the alpha in one byte, so a half-transparent color reads back at 128/255.
+-		expect(translucent[3]).toBeCloseTo(0.5, 2)
+-		expect(readPaintedColor('rebeccapurple')).toEqual([102, 51, 153, 1])
+-		expect(readPaintedColor('not-a-color')).toBeUndefined()
+-	})
+-
+-	it('agrees with the installed reader that a mix and the modern color function it paints are one color', () => {
+-		const mix = 'color-mix(in oklab, #000 50%, #fff)'
+-		const recorded = 'oklab(0.5 0 0)'
+-		expect(matchesPaintedColor(mix, recorded)).toBe(true)
+-		expect(matchesColor(mix, recorded)).toBe(true)
+-	})
+-
+-	it('refuses two colors that paint differently, and refuses an unpaintable side', () => {
+-		expect(matchesPaintedColor('rebeccapurple', 'rgb(102, 51, 154)')).toBe(false)
+-		expect(matchesPaintedColor('rebeccapurple', 'not-a-color')).toBe(false)
+-	})
+-
+ 	it('takes out a recorded container, and leaves one the installed render attached', () => {
+ 		const recorded = specimens.mount('<div id="recorded"></div>')
+ 		const rival = render('<div id="rival"></div>')
+@@ -172,46 +142,6 @@ describe('browser setup', () => {
+ 		}
+ 	})
+ 
+-	it('reads a modern color function as whole-byte channels the installed reader agrees with', () => {
+-		// `oklab(0.5 0 0)` declares a neutral grey: its `a` and `b` chroma axes are zero, so the red,
+-		// green, and blue channels the engine paints are equal, opaque, and strictly inside the
+-		// black-to-white range. The canvas holds each channel in one byte, so the three read back
+-		// exactly equal; the installed reader converts through the CSS Color 4 matrices and its
+-		// three differ in their last places.
+-		const painted = requireValue(
+-			readPaintedColor('oklab(0.5 0 0)'),
+-			'The engine painted no channels for an oklab recording',
+-		)
+-		const [red, green, blue, alpha] = painted
+-		expect([green, blue]).toEqual([red, red])
+-		expect(alpha).toBe(1)
+-		expect(red).toBeGreaterThan(0)
+-		expect(red).toBeLessThan(255)
+-		const read = requireValue(
+-			parseCSSColor('oklab(0.5 0 0)'),
+-			'The installed reader computed no channels for an oklab recording',
+-		)
+-		expect(matchesColor(read, painted)).toBe(true)
+-	})
+-
+-	it('paints an out-of-gamut color on the sRGB edge the installed reader clips it to', () => {
+-		const wide = 'oklch(0.6 0.3 150)'
+-		const painted = requireValue(
+-			readPaintedColor(wide),
+-			'The engine painted no channels for an out-of-gamut oklch recording',
+-		)
+-		const read = requireValue(
+-			parseCSSColor(wide),
+-			'The installed reader computed no channels for an out-of-gamut oklch recording',
+-		)
+-		// The recording names more chroma than sRGB carries, so neither reading gamut-maps it: each
+-		// lands on the cube's surface with a channel driven to an edge of the 0-255 range.
+-		const channels = painted.slice(0, 3)
+-		expect(channels.some((channel) => channel === 0 || channel === 255)).toBe(true)
+-		expect(channels.every((channel) => Number.isInteger(channel))).toBe(true)
+-		expect(matchesColor(read, painted)).toBe(true)
+-	})
+-
+ 	it('selects the sheet carrying the theme layer, where the installed rule walk names no sheet', () => {
+ 		const plain = specimens.load('.vn-probe-plain { color: rgb(7, 8, 9) }')
+ 		const element = specimens.load(PROBE_CASCADE)
+diff --git a/tests/setupBrowser.ts b/tests/setupBrowser.ts
+index e8d25f2..92c9c64 100644
+--- a/tests/setupBrowser.ts
++++ b/tests/setupBrowser.ts
+@@ -3,7 +3,6 @@ import { createRecorder, requireValue } from '@orkestrel/test'
+ import {
+ 	build,
+ 	clickAccessible,
+-	matchesColor,
+ 	mount,
+ 	render,
+ 	waitForAnimations,
+@@ -193,85 +192,6 @@ export class SpecimenManager {
+  */
+ export const specimens = new SpecimenManager()
+ 
+-/**
+- * Reads the sRGB channels a browser paints for one CSS color expression.
+- *
+- * @param value - Any fully substituted color expression the CSSOM accepts, such as the computed
+- *   value of a custom property or of a resolved color property.
+- * @returns The painted channels on the 0-255 scale with the alpha on the 0-1 scale, or `undefined`
+- *   when the CSSOM refuses the expression or the canvas is unavailable.
+- *
+- * @remarks
+- * The installed `parseCSSColor` export resolves a color expression by reading a probe element's
+- * computed `color` and converting that reading through the CSS Color 4 matrices, clipping each
+- * encoded channel into the sRGB cube. This paints the expression onto a one-pixel canvas and reads
+- * the pixel back, so the answer is the engine's own rasterization rather than a second run of that
+- * conversion. That is the reading this adds: a `-rgb` triplet has to equal what the browser
+- * renders, and a comparison resolved through the same matrices the recording was derived from
+- * cannot report a disagreement with the renderer.
+- *
+- * The canvas holds each channel in one byte, so the channels come back as integers and the alpha
+- * as a multiple of 1/255, where the installed reader returns unrounded channels. The `matchesColor`
+- * export carries a half-step tolerance that covers the difference.
+- *
+- * Measured on 2026-09-20 against `@orkestrel/test` 0.0.18 in Chromium, the paint and the installed
+- * reader agreed within that tolerance on `oklab(0.5 0 0)` and on `color-mix(in oklab, #000 50%,
+- * #fff)`, and agreed on the out-of-gamut `oklch(0.7 0.4 30)`, which the paint and the reader both
+- * put at `[255, 0, 0, 1]`. The canvas clips an out-of-gamut color to the cube rather than
+- * gamut-mapping it, as the reader does.
+- *
+- * A `var()` reference resolves nowhere here, because a canvas has no cascade. Read the token
+- * first, then pass what the cascade computed for it.
+- */
+-export function readPaintedColor(
+-	value: string,
+-): readonly [number, number, number, number] | undefined {
+-	const probe = document.createElement('span')
+-	probe.style.color = value
+-	if (probe.style.color === '') return undefined
+-	const canvas = document.createElement('canvas')
+-	canvas.width = 1
+-	canvas.height = 1
+-	const context = canvas.getContext('2d')
+-	if (context === null) return undefined
+-	context.fillStyle = value
+-	context.fillRect(0, 0, 1, 1)
+-	const [red, green, blue, alpha] = context.getImageData(0, 0, 1, 1).data
+-	if (red === undefined || green === undefined || blue === undefined || alpha === undefined) {
+-		return undefined
+-	}
+-	return [red, green, blue, alpha / 255]
+-}
+-
+-/**
+- * Determines whether two color expressions paint the same color.
+- *
+- * @param first - A fully substituted color expression.
+- * @param second - A fully substituted color expression.
+- * @returns `true` when both paint channels that agree within a browser's own rounding; `false`
+- *   otherwise, including when either expression paints nothing readable.
+- *
+- * @remarks
+- * This is `matchesColor` over the pair {@link readPaintedColor} returns, so each side is compared
+- * as the engine rendered it. That is what a calibration comparison needs: a recorded reading is an
+- * `oklch()` or `oklab()` string and a derived tier resolves to a `color-mix()`, and the installed
+- * `matchesColor` export resolves each string side through `parseCSSColor` and its own conversion,
+- * so the comparison never leaves the matrices the recording was derived from. Painting each side
+- * first asks the renderer instead, which is the reading a treatment has to agree with.
+- *
+- * It sits here rather than in `tests/setupStyles.ts` because `@orkestrel/test/browser` refuses
+- * to load outside browser mode, and that module is loaded by the Node project that proves it.
+- *
+- * A `var()` reference is the expression this excludes: neither side reaches the cascade, so read
+- * the token first and pass what the cascade computed for it.
+- */
+-export function matchesPaintedColor(first: string, second: string): boolean {
+-	const left = readPaintedColor(first)
+-	const right = readPaintedColor(second)
+-	if (left === undefined || right === undefined) return false
+-	return matchesColor(left, right)
+-}
+-
+ /**
+  * Reads the stylesheet the shipped cascade was loaded into.
+  *
+diff --git a/tests/setupConformance.test.ts b/tests/setupConformance.test.ts
+index 0ad4bce..b841460 100644
+--- a/tests/setupConformance.test.ts
++++ b/tests/setupConformance.test.ts
+@@ -1,7 +1,7 @@
+ // Proof of the conformance setup module: the Bootstrap identity constants and the helpers it
+ // exports, read against this workspace's own installed dependency tree.
+ 
+-import type { OracleFixture } from './setupConformance.js'
++import type { OracleBinding, OracleFixture } from './setupConformance.js'
+ import { isRecord, parseJSON } from '@orkestrel/contract'
+ import { createHash } from 'node:crypto'
+ import { existsSync, readFileSync } from 'node:fs'
+@@ -23,6 +23,7 @@ import {
+ 	collectImportClosure,
+ 	collectShippedComponents,
+ 	computeArtifactDigest,
++	describeIncompleteRow,
+ 	extractSpecifiers,
+ 	extractStringArgument,
+ 	matchesOracleEvents,
+@@ -57,6 +58,7 @@ describe('setupConformance', () => {
+ 			'collectImportClosure',
+ 			'collectShippedComponents',
+ 			'computeArtifactDigest',
++			'describeIncompleteRow',
+ 			'extractSpecifiers',
+ 			'extractStringArgument',
+ 			'matchesOracleEvents',
+@@ -122,12 +124,14 @@ describe('setupConformance', () => {
+ 			expect(scanOracleObligation({ ...row, proof: 'button.absent' }, fixture)).toContain(
+ 				'missing recording step',
+ 			)
++			// The shipped table carries no `event` entry, so a row in that category selects nothing;
++			// the row below names a category that has entries and an obligation none of them carries.
+ 			expect(
+ 				scanOracleObligation(
+ 					{ ...row, category: 'event', obligation: 'Dispatches invented.bs.button' },
+ 					fixture,
+ 				),
+-			).toContain('recording contradicts obligation')
++			).toContain('obligation has no oracle predicate')
+ 			expect(
+ 				scanOracleObligation({ ...row, obligation: 'Unsupported obligation' }, fixture),
+ 			).toContain('obligation has no oracle predicate')
+@@ -184,6 +188,22 @@ describe('setupConformance', () => {
+ 			expect(obligations.some((row) => row.category === 'keyboard')).toBe(false)
+ 		})
+ 
++		it('binds every entry to a ledger row of its own component and category, fallbacks included', () => {
++			const rows = readCompatibility()
++			expect(ORACLE_BINDINGS.length).toBeGreaterThan(0)
++			// A named entry is already held to its obligation wording. This reads the weaker fact a
++			// fallback is held to: an entry no ledger row of its component and category can select
++			// judges nothing, and it stays in the table looking like a proof.
++			expect(
++				ORACLE_BINDINGS.filter(
++					(binding) =>
++						!rows.some(
++							(row) => row.component === binding.component && row.category === binding.category,
++						),
++				).map((binding) => `${binding.component} | ${binding.category}`),
++			).toEqual([])
++		})
++
+ 		it('binds data-api proofs to activation steps and distinguishes an absent step', () => {
+ 			const row = readCompatibility().find(
+ 				(candidate) => candidate.category === 'attribute' && candidate.proof !== undefined,
+@@ -231,6 +251,29 @@ describe('setupConformance', () => {
+ 		})
+ 
+ 		it('refuses an event obligation the table names no events for, and one it binds no predicate for', () => {
++			const silent: OracleBinding = {
++				component: 'btn',
++				category: 'event',
++				obligation: undefined,
++				events: [],
++				steps: [/^button\./u],
++				predicate: matchesOracleEvents,
++			}
++			expect(
++				scanOracleObligation(
++					{
++						component: 'btn',
++						category: 'event',
++						obligation: 'Dispatches click',
++						proof: 'button.click.toggle',
++						status: 'accepted',
++					},
++					fixture,
++					[silent],
++				),
++			).toBe(
++				'Compatibility row btn | event | Dispatches click | button.click.toggle: binding btn | event names no events',
++			)
+ 			expect(
+ 				scanOracleObligation(
+ 					{
+@@ -241,6 +284,7 @@ describe('setupConformance', () => {
+ 						status: 'accepted',
+ 					},
+ 					fixture,
++					[{ ...silent, events: ['keydown'] }],
+ 				),
+ 			).toBe(
+ 				'Compatibility row btn | event | Dispatches click | button.click.toggle: recording contradicts obligation',
+@@ -263,11 +307,15 @@ describe('setupConformance', () => {
+ 
+ 		it('reads the required events from the binding rather than from the obligation wording', () => {
+ 			const step = fixture.steps.find((candidate) => candidate.name === 'button.click.toggle')
+-			const binding = ORACLE_BINDINGS.find(
+-				(candidate) => candidate.category === 'event' && candidate.obligation === undefined,
+-			)
+-			if (step === undefined || binding === undefined)
+-				throw new Error('Missing click step or event binding')
++			if (step === undefined) throw new Error('Missing click step')
++			const binding: OracleBinding = {
++				component: 'btn',
++				category: 'event',
++				obligation: undefined,
++				events: [],
++				steps: [/^button\./u],
++				predicate: matchesOracleEvents,
++			}
+ 			expect(matchesOracleEvents(step, binding)).toBe(false)
+ 			expect(matchesOracleEvents(step, { ...binding, events: ['click'] })).toBe(true)
+ 			expect(
+@@ -405,6 +453,51 @@ describe('setupConformance', () => {
+ 		}
+ 	})
+ 
++	it('names an incomplete compatibility row by its position and the first column it filled', () => {
++		const scratch = createScratch()
++		const header =
++			'## Compatibility\n\n| Component | Kind | Obligation | Proof | Status |\n| --- | --- | --- | --- | --- |\n'
++		const complete = '| btn | method | Toggle active | button.click.toggle | accepted |\n'
++		try {
++			const path = scratch.write('guide.md', `${header}| btn | method | | proof | accepted |\n`)
++			expect(() => readCompatibility(path)).toThrow(
++				'Compatibility row 1 (Component: btn): missing required cell',
++			)
++			scratch.write('guide.md', `${header}${complete}| | method | Toggle | proof | accepted |\n`)
++			expect(() => readCompatibility(path)).toThrow(
++				'Compatibility row 2 (Kind: method): missing required cell',
++			)
++			scratch.write('guide.md', `${header}${complete}${complete}|  |  |  |  | accepted |\n`)
++			expect(() => readCompatibility(path)).toThrow('Compatibility row 3: missing required cell')
++		} finally {
++			scratch.destroy()
++		}
++	})
++
++	it('names the first filled column, and names no column when every cell is empty', () => {
++		expect(
++			describeIncompleteRow(
++				'Compatibility',
++				2,
++				new Map([
++					['Component', ''],
++					['Kind', 'method'],
++					['Obligation', 'Toggle active'],
++				]),
++			),
++		).toBe('Compatibility row 3 (Kind: method): missing required cell')
++		expect(
++			describeIncompleteRow(
++				'Deferral',
++				0,
++				new Map([
++					['Name', ''],
++					['Owner', ''],
++				]),
++			),
++		).toBe('Deferral row 1: missing required cell')
++	})
++
+ 	it('reads the built cascade and refuses a missing artifact', () => {
+ 		const scratch = createScratch()
+ 		try {
+@@ -447,13 +540,15 @@ describe('setupConformance', () => {
+ 				'## Styles\n\n### Deferred selectors\n\n| Name | Owner | Reason |\n| --- | --- | --- |\n| .btn-close | | Close button |\n',
+ 			)
+ 			expect(() => readDeferrals(path)).toThrow(
+-				'Deferral row 1 (.btn-close): missing required cell',
++				'Deferral row 1 (Name: .btn-close): missing required cell',
+ 			)
+ 			scratch.write(
+ 				'guide.md',
+ 				'## Styles\n\n### Deferred selectors\n\n| Name | Owner | Reason |\n| --- | --- | --- |\n| .btn-close | Passive | Close button |\n| | Passive | Close color |\n',
+ 			)
+-			expect(() => readDeferrals(path)).toThrow('Deferral row 2 (Passive): missing required cell')
++			expect(() => readDeferrals(path)).toThrow(
++				'Deferral row 2 (Owner: Passive): missing required cell',
++			)
+ 			scratch.write(
+ 				'guide.md',
+ 				'## Styles\n\n### Deferred selectors\n\n| Name | Owner | Reason |\n| --- | --- | --- |\n| | | |\n',
+@@ -639,9 +734,9 @@ describe('setupConformance', () => {
+ 		const scratch = createScratch()
+ 		const directory = process.cwd()
+ 		try {
+-			// The case mutates the working directory, so it needs a process of its own: the `setup`
+-			// project takes the default `forks` pool, and under a thread pool the files running
+-			// beside this one would read the scratch directory as their own root.
++			// The case mutates the working directory, so it needs a process rather than a worker
++			// thread: the `setup` project pins `pool: 'forks'` in `vite.config.ts`, and under a
++			// thread pool this line throws `process.chdir() is not supported in workers`.
+ 			process.chdir(scratch.path)
+ 			expect(createHash('sha256').update(readBootstrapCascade()).digest('hex')).toBe(
+ 				BOOTSTRAP_CSS_DIGEST,
+diff --git a/tests/setupConformance.ts b/tests/setupConformance.ts
+index df7f4e6..9f8dca4 100644
+--- a/tests/setupConformance.ts
++++ b/tests/setupConformance.ts
+@@ -87,7 +87,10 @@ export interface OracleBinding {
+  * Every named obligation carries the exact wording of a compatibility row, so an entry the ledger
+  * does not name binds nothing; an entry whose obligation is undefined answers for every row of its
+  * component and category that no named entry claims first, regardless of array order.
+- * Event bindings name required events explicitly; an empty event set proves no event obligation.
++ * Every entry answers at least one ledger row of its component and category; an entry no row can
++ * select judges nothing while reading as a proof. An `event` entry names its required events
++ * explicitly, and one that names none is refused by {@link scanOracleObligation} as a fault in
++ * this table rather than in the recording.
+  */
+ export const ORACLE_BINDINGS: readonly OracleBinding[] = Object.freeze([
+ 	{
+@@ -161,14 +164,6 @@ export const ORACLE_BINDINGS: readonly OracleBinding[] = Object.freeze([
+ 			after.clicks.length === 0 &&
+ 			after.mutations.length === 0,
+ 	},
+-	{
+-		component: 'btn',
+-		category: 'event',
+-		obligation: undefined,
+-		events: [],
+-		steps: [/^button\./u],
+-		predicate: matchesOracleEvents,
+-	},
+ ])
+ 
+ /** Describes the official CSS vocabulary assigned to a component key. */
+@@ -184,13 +179,27 @@ export interface OracleInventory {
+ 	readonly components: Readonly<Record<string, OracleVocabulary>>
+ }
+ 
+-/** Names the Bootstrap release this package tracks, pinned exactly in `package.json`. */
++/**
++ * Names the Bootstrap release this package tracks, pinned exactly in `package.json`.
++ *
++ * @remarks
++ * This is the workspace's only release pin. `tests/setupStyles.test.ts` reads it from here rather
++ * than from the module it proves, because the styles setup module also loads in the browser
++ * project and this one is Node-only.
++ */
+ export const BOOTSTRAP_VERSION = '5.3.8'
+ 
+ /** Sets the recorder budget from its 2550 ms contended run: twice that duration plus 5000 ms. */
+ export const ORACLE_TIMEOUT = 10_100
+ 
+-/** Pins the installed Bootstrap LTR stylesheet's SHA-256 digest. */
++/**
++ * Pins the installed Bootstrap LTR stylesheet's SHA-256 digest.
++ *
++ * @remarks
++ * This is the workspace's only digest for that stylesheet. Every proof that hashes the cascade —
++ * through `readBootstrapCascade` or through {@link computeArtifactDigest} over the manifest-rooted
++ * path — compares against this constant.
++ */
+ export const BOOTSTRAP_CSS_DIGEST =
+ 	'4a50207b956a4ab943640ee993118b554a34e96a23261cfe58b9aa1807a7849b'
+ 
+@@ -419,6 +428,38 @@ export function computeArtifactDigest(path: string): string {
+ 	return createHash('sha256').update(readFileSync(path)).digest('hex')
+ }
+ 
++/**
++ * Describes a ledger row that leaves a required cell empty.
++ *
++ * @param subject - The ledger the row belongs to, such as `Compatibility` or `Deferral`.
++ * @param index - The row's position in its own table, counted from zero.
++ * @param cells - Each required column's header and the text the row put under it, in column
++ *   order.
++ * @returns The refusal message, naming the row by its one-based position and by the first column
++ *   it did fill.
++ *
++ * @remarks
++ * The cell a row omits can be the one that identifies it, so a label built from that cell alone
++ * reads as a refusal of a row the table does not have. The position names the row whatever it
++ * omitted, and the first filled column says which cell the reader did get. Naming the column
++ * beside the cell is what keeps `btn` from reading as the missing obligation.
++ *
++ * @example
++ * ```ts
++ * describeIncompleteRow('Compatibility', 2, new Map([['Component', 'btn'], ['Obligation', '']]))
++ * // 'Compatibility row 3 (Component: btn): missing required cell'
++ * ```
++ */
++export function describeIncompleteRow(
++	subject: string,
++	index: number,
++	cells: ReadonlyMap<string, string>,
++): string {
++	const filled = [...cells].find(([, text]) => text !== '')
++	const named = filled === undefined ? '' : ` (${filled[0]}: ${filled[1]})`
++	return `${subject} row ${String(index + 1)}${named}: missing required cell`
++}
++
+ /**
+  * Reads the compatibility ledger through the guide's section and table projections.
+  * @param path - The Markdown document to read; defaults to the package guide.
+@@ -443,15 +484,28 @@ export function readCompatibility(
+ 				throw new Error(`Compatibility row <header>: missing ${header} column`)
+ 			return index
+ 		})
+-		for (const row of table.rows) {
++		for (const [position, row] of table.rows.entries()) {
+ 			const [component, category, obligation, proof, status] = columns.map((index) =>
+ 				extractCellText(row[index] ?? []).trim(),
+ 			)
+-			const label = `${component}: ${obligation}`
+-			if (!component || !category || !obligation || !proof)
+-				throw new Error(`Compatibility row ${label}: missing required cell`)
++			if (!component || !category || !obligation || !proof) {
++				throw new Error(
++					describeIncompleteRow(
++						'Compatibility',
++						position,
++						new Map([
++							['Component', component ?? ''],
++							['Kind', category ?? ''],
++							['Obligation', obligation ?? ''],
++							['Proof', proof ?? ''],
++						]),
++					),
++				)
++			}
++			// Both cells this label names are present on the status path, so it identifies the row
++			// by what it declares rather than by where it sits.
+ 			if (status !== 'accepted' && status !== 'shipped')
+-				throw new Error(`Compatibility row ${label}: invalid status ${status}`)
++				throw new Error(`Compatibility row ${component}: ${obligation}: invalid status ${status}`)
+ 			rows.push({
+ 				component,
+ 				category,
+@@ -497,12 +551,17 @@ export function readDeferrals(
+ 				(row[column] ?? []).map(flattenText).join('').trim(),
+ 			)
+ 			if (!name || !owner || !reason) {
+-				// The name cell can be the missing one, so the label is the row's own position plus
+-				// whichever cell the row did fill; a label built from the name alone reads as a
+-				// refusal of a row that is not there.
+-				const filled = [name, owner, reason].find((cell) => cell !== '')
+-				const label = filled === undefined ? `${position + 1}` : `${position + 1} (${filled})`
+-				throw new Error(`Deferral row ${label}: missing required cell`)
++				throw new Error(
++					describeIncompleteRow(
++						'Deferral',
++						position,
++						new Map([
++							['Name', name ?? ''],
++							['Owner', owner ?? ''],
++							['Reason', reason ?? ''],
++						]),
++					),
++				)
+ 			}
+ 			rows.push({ name, owner, reason })
+ 		}
+@@ -730,24 +789,37 @@ export function matchesOracleEvents(step: OracleStep, binding: OracleBinding): b
+  * Scans one guide obligation for disagreement with its named live oracle step.
+  * @param row - The guide row to check.
+  * @param fixture - The official recording to compare.
++ * @param bindings - The entries to select the row's predicate from. Default: {@link ORACLE_BINDINGS}.
+  * @returns A row-specific failure, or undefined when the obligation agrees or has no drive.
++ *
++ * @remarks
++ * The table is a parameter so a proof can drive an entry the shipped table does not carry. Every
++ * shipped entry answers a ledger row, which leaves the refusals an unserviceable entry produces
++ * with nothing real to fire on.
++ *
++ * An `event` entry naming no required events refuses by name rather than through its predicate.
++ * The predicate would report the recording as contradicting the obligation, which sends a reader
++ * to the browser for a fault that is in the table.
+  */
+ export function scanOracleObligation(
+ 	row: CompatibilityRow,
+ 	fixture: OracleFixture,
++	bindings: readonly OracleBinding[] = ORACLE_BINDINGS,
+ ): string | undefined {
+ 	if (row.proof === undefined) return undefined
+ 	const label = `Compatibility row ${row.component} | ${row.category} | ${row.obligation} | ${row.proof}`
+ 	const step = fixture.steps.find((candidate) => candidate.name === row.proof)
+ 	if (row.component !== fixture.component || step === undefined)
+ 		return `${label}: missing recording step`
+-	const bindings = ORACLE_BINDINGS.filter(
++	const matched = bindings.filter(
+ 		(candidate) => candidate.component === row.component && candidate.category === row.category,
+ 	)
+ 	const binding =
+-		bindings.find((candidate) => candidate.obligation === row.obligation) ??
+-		bindings.find((candidate) => candidate.obligation === undefined)
++		matched.find((candidate) => candidate.obligation === row.obligation) ??
++		matched.find((candidate) => candidate.obligation === undefined)
+ 	if (binding === undefined) return `${label}: obligation has no oracle predicate`
++	if (binding.category === 'event' && binding.events.length === 0)
++		return `${label}: binding ${binding.component} | ${binding.category} names no events`
+ 	if (!binding.steps.some((pattern) => pattern.test(step.name)))
+ 		return `${label}: proof step does not prove this obligation`
+ 	return binding.predicate(step, binding) ? undefined : `${label}: recording contradicts obligation`
+diff --git a/tests/setupStyles.test.ts b/tests/setupStyles.test.ts
+index f69841a..70c8e10 100644
+--- a/tests/setupStyles.test.ts
++++ b/tests/setupStyles.test.ts
+@@ -1,25 +1,14 @@
+-import { createHash } from 'node:crypto'
+ import { existsSync, readFileSync } from 'node:fs'
+-import { resolve } from 'node:path'
+ import { TOKEN_NAMES } from '@src/core'
+ import { parse } from 'postcss'
+ import { compileString } from 'sass'
+ import { describe, expect, it } from 'vitest'
+-import {
+-	BOOTSTRAP_MANIFEST_PATH,
+-	WORKSPACE_ROOT,
+-	computeArtifactDigest,
+-	readBootstrapCascade,
+-	readManifestMember,
+-} from './setupConformance.js'
++import { readBootstrapCascade } from './setupConformance.js'
+ import * as setup from './setupStyles.js'
+ import {
+-	BOOTSTRAP_CASCADE_PATH,
+ 	BOOTSTRAP_DARK_VARIABLES,
+-	BOOTSTRAP_DIGEST,
+ 	BOOTSTRAP_ROOT_VARIABLES,
+ 	BOOTSTRAP_SCOPE_PATTERNS,
+-	BOOTSTRAP_VERSION,
+ 	CALIBRATED_TIERS,
+ 	CUSTOMIZATION_RECIPE,
+ 	EDGE_SHORTHANDS,
+@@ -80,9 +69,6 @@ describe('styles setup', () => {
+ 				'FILL_ONLY_RECIPE',
+ 				'MANDATED_TAG_PAIRS',
+ 				'PHYSICAL_LONGHANDS',
+-				'BOOTSTRAP_CASCADE_PATH',
+-				'BOOTSTRAP_DIGEST',
+-				'BOOTSTRAP_VERSION',
+ 				'RADIUS_SHORTHAND',
+ 				'RETAINED_COLOR_ALIASES',
+ 				'RETAINED_LENGTH_ALIASES',
+@@ -811,16 +797,6 @@ describe('styles setup', () => {
+ 			),
+ 		).toEqual([])
+ 	})
+-	it('reads the pinned Bootstrap release the oracle was copied from', () => {
+-		expect(readManifestMember(BOOTSTRAP_MANIFEST_PATH, 'version')).toBe(BOOTSTRAP_VERSION)
+-		expect(createHash('sha256').update(readBootstrapCascade()).digest('hex')).toBe(BOOTSTRAP_DIGEST)
+-		// The styles project loads the cascade through a path relative to the workspace root and the
+-		// Node proof reads it through the installed manifest; the shared digest is what says the two
+-		// name one artifact.
+-		expect(computeArtifactDigest(resolve(WORKSPACE_ROOT, BOOTSTRAP_CASCADE_PATH))).toBe(
+-			BOOTSTRAP_DIGEST,
+-		)
+-	})
+ 	it('overrides in the customization recipe only names the token registry declares', () => {
+ 		const declared = new Set(collectTokenNames(TOKEN_NAMES))
+ 		const overridden: string[] = []
+diff --git a/tests/setupStyles.ts b/tests/setupStyles.ts
+index 61f164e..48bc8d0 100644
+--- a/tests/setupStyles.ts
++++ b/tests/setupStyles.ts
+@@ -657,36 +657,21 @@ export const BOOTSTRAP_SCOPE_PATTERNS: Readonly<Record<BootstrapScope, RegExp>>
+ 	dark: /^\[data-bs-theme=dark\]/u,
+ })
+ 
+-/** Names the Bootstrap release the compatibility oracle reads. */
+-export const BOOTSTRAP_VERSION = '5.3.8'
+-
+-/** Records the SHA-256 digest of the stylesheet that release ships. */
+-export const BOOTSTRAP_DIGEST = '4a50207b956a4ab943640ee993118b554a34e96a23261cfe58b9aa1807a7849b'
+-
+-/**
+- * Locates the installed Bootstrap stylesheet the compatibility oracle reads.
+- *
+- * @remarks
+- * This module is loaded by the Node `setup` project and the browser `src:styles` project,
+- * imports no stylesheet, and takes no `node:fs` import; the styles project loads the built
+- * cascade through its `setupFiles` array. The Node proof reads the file itself and hands the text
+- * to {@link extractBootstrapVariables}.
+- */
+-export const BOOTSTRAP_CASCADE_PATH = 'node_modules/bootstrap/dist/css/bootstrap.css'
+-
+ /**
+  * Locates this package's guide, whose customization fence {@link CUSTOMIZATION_RECIPE} copies.
+  *
+  * @remarks
+- * The path is here for the same reason {@link BOOTSTRAP_CASCADE_PATH} is: a browser project loads
+- * this module, so it takes no `node:fs` import, and the Node proof reads the file itself.
++ * A browser project loads this module, so it takes no `node:fs` import and the Node proof reads
++ * the file itself. `tests/setupConformance.ts` holds the release pin and the cascade digest for
++ * the same reason in reverse: it is Node-only, so a constant it declares cannot reach the browser
++ * project this module runs in.
+  */
+ export const VENEER_GUIDE_PATH = 'guides/veneer.md'
+ 
+ /**
+  * Extracts every custom property one Bootstrap scope declares, from the stylesheet's own text.
+  *
+- * @param cascade - The Bootstrap stylesheet's text, read from {@link BOOTSTRAP_CASCADE_PATH}.
++ * @param cascade - The Bootstrap stylesheet's text, such as the text `readBootstrapCascade` reads.
+  * @param scope - The scope to read, matched through {@link BOOTSTRAP_SCOPE_PATTERNS}.
+  * @returns Each declaration's name and value, in source order, with a name a later rule
+  *   re-declares reported once at its first position and carrying that first rule's value,
+@@ -1068,7 +1053,7 @@ export interface ShadowLayer {
+  * @remarks
+  * A browser resolves `box-shadow` with the color first and every length in pixels, whatever the
+  * author wrote, so comparing the parts is what lets a proof assert the lengths as numbers and the
+- * color through {@link matchesPaintedColor} rather than against one engine's serialization of the
++ * color through the installed `matchesColor` export rather than against one engine's serialization of the
+  * whole value.
+  */
+ export function extractShadowLayers(value: string): readonly ShadowLayer[] {
+diff --git a/tests/src/styles/elements/body.test.ts b/tests/src/styles/elements/body.test.ts
+index e345ecd..67b8ebe 100644
+--- a/tests/src/styles/elements/body.test.ts
++++ b/tests/src/styles/elements/body.test.ts
+@@ -1,6 +1,5 @@
+-import { readPixels, readStyle } from '@orkestrel/test/browser'
++import { matchesColor, readPixels, readStyle } from '@orkestrel/test/browser'
+ import { describe, expect, it } from 'vitest'
+-import { matchesPaintedColor } from '../../../setupBrowser.js'
+ 
+ describe('body baseline', () => {
+ 	it('sets the body type to the calibrated size, rhythm, weight, and family', () => {
+@@ -10,12 +9,10 @@ describe('body baseline', () => {
+ 		expect(readStyle(document.body, 'font-family').split(',')[0]).toBe('system-ui')
+ 	})
+ 	it('paints the body canvas and copy in the calibrated colors', () => {
+-		expect(
+-			matchesPaintedColor(readStyle(document.body, 'background-color'), 'rgb(255, 255, 255)'),
+-		).toBe(true)
+-		expect(
+-			matchesPaintedColor(readStyle(document.body, 'color'), 'oklch(0.208 0.042 265.755)'),
+-		).toBe(true)
++		expect(matchesColor(readStyle(document.body, 'background-color'), 'rgb(255, 255, 255)')).toBe(
++			true,
++		)
++		expect(matchesColor(readStyle(document.body, 'color'), 'oklch(0.208 0.042 265.755)')).toBe(true)
+ 	})
+ 	it('declares no transition on the body, which Elements renders at rest', () => {
+ 		expect(readStyle(document.body, 'transition-duration')).toBe('0s')
+diff --git a/tests/src/styles/integration.test.ts b/tests/src/styles/integration.test.ts
+index 374ac8b..68fe660 100644
+--- a/tests/src/styles/integration.test.ts
++++ b/tests/src/styles/integration.test.ts
+@@ -1,7 +1,7 @@
+ import { requireValue } from '@orkestrel/test'
+-import { readPixels, readStyle } from '@orkestrel/test/browser'
++import { matchesColor, readPixels, readStyle } from '@orkestrel/test/browser'
+ import { afterEach, describe, expect, it } from 'vitest'
+-import { matchesPaintedColor, specimens } from '../../setupBrowser.js'
++import { specimens } from '../../setupBrowser.js'
+ import { CUSTOMIZATION_RECIPE, FILL_ONLY_RECIPE } from '../../setupStyles.js'
+ 
+ afterEach(() => {
+@@ -27,34 +27,30 @@ describe('token customization', () => {
+ 		const triplet = requireValue(container.querySelector('#triplet'), 'No triplet specimen')
+ 		const veil = requireValue(container.querySelector('#veil'), 'No veil specimen')
+ 		expect(readPixels(spaced, 'padding-top')).toBe(6)
+-		expect(
+-			matchesPaintedColor(readStyle(filled, 'background-color'), 'oklch(0.48 0.255 264)'),
+-		).toBe(true)
++		expect(matchesColor(readStyle(filled, 'background-color'), 'oklch(0.48 0.255 264)')).toBe(true)
+ 		specimens.load(CUSTOMIZATION_RECIPE)
+ 		expect(readPixels(spaced, 'padding-top')).toBe(7.5)
+-		expect(matchesPaintedColor(readStyle(filled, 'background-color'), '#2e7d32')).toBe(true)
++		expect(matchesColor(readStyle(filled, 'background-color'), '#2e7d32')).toBe(true)
+ 		expect(
+-			matchesPaintedColor(
++			matchesColor(
+ 				readStyle(subtle, 'background-color'),
+ 				'color-mix(in oklab, #2e7d32 12%, rgb(255, 255, 255))',
+ 			),
+ 		).toBe(true)
+ 		expect(
+-			matchesPaintedColor(
++			matchesColor(
+ 				readStyle(emphasis, 'color'),
+ 				'color-mix(in oklab, #2e7d32 70%, oklch(0.208 0.042 265.755))',
+ 			),
+ 		).toBe(true)
+ 		expect(
+-			matchesPaintedColor(
++			matchesColor(
+ 				readStyle(border, 'border-top-color'),
+ 				'color-mix(in oklab, #2e7d32 35%, rgb(255, 255, 255))',
+ 			),
+ 		).toBe(true)
+-		expect(matchesPaintedColor(readStyle(triplet, 'background-color'), '#2e7d32')).toBe(true)
+-		expect(matchesPaintedColor(readStyle(veil, 'background-color'), 'rgba(46, 125, 50, 0.5)')).toBe(
+-			true,
+-		)
++		expect(matchesColor(readStyle(triplet, 'background-color'), '#2e7d32')).toBe(true)
++		expect(matchesColor(readStyle(veil, 'background-color'), 'rgba(46, 125, 50, 0.5)')).toBe(true)
+ 	})
+ 	it('leaves a consumer rule reading the channel triplet on the old brand where the fill alone is overridden', () => {
+ 		const container = specimens.mount(
+@@ -66,7 +62,7 @@ describe('token customization', () => {
+ 		const brand = readStyle(veil, 'background-color')
+ 		expect(brand).not.toBe('rgba(0, 0, 0, 0)')
+ 		specimens.load(FILL_ONLY_RECIPE)
+-		expect(matchesPaintedColor(readStyle(filled, 'background-color'), '#2e7d32')).toBe(true)
++		expect(matchesColor(readStyle(filled, 'background-color'), '#2e7d32')).toBe(true)
+ 		expect(readStyle(veil, 'background-color')).toBe(brand)
+ 	})
+ 	it('carries the retuned brand into the dark island and into its own dark tiers', () => {
+@@ -83,19 +79,19 @@ describe('token customization', () => {
+ 		const subtle = requireValue(container.querySelector('#subtle'), 'No subtle specimen')
+ 		const border = requireValue(container.querySelector('#border'), 'No border specimen')
+ 		const triplet = requireValue(container.querySelector('#triplet'), 'No triplet specimen')
+-		expect(matchesPaintedColor(readStyle(filled, 'background-color'), '#66bb6a')).toBe(true)
++		expect(matchesColor(readStyle(filled, 'background-color'), '#66bb6a')).toBe(true)
+ 		expect(
+-			matchesPaintedColor(
++			matchesColor(
+ 				readStyle(subtle, 'background-color'),
+ 				'color-mix(in oklab, #66bb6a 15%, oklch(0.21 0.013 256))',
+ 			),
+ 		).toBe(true)
+ 		expect(
+-			matchesPaintedColor(
++			matchesColor(
+ 				readStyle(border, 'border-top-color'),
+ 				'color-mix(in oklab, #66bb6a 50%, oklch(0.235 0.013 256))',
+ 			),
+ 		).toBe(true)
+-		expect(matchesPaintedColor(readStyle(triplet, 'background-color'), '#66bb6a')).toBe(true)
++		expect(matchesColor(readStyle(triplet, 'background-color'), '#66bb6a')).toBe(true)
+ 	})
+ })
+diff --git a/tests/src/styles/mixins.test.ts b/tests/src/styles/mixins.test.ts
+index d492a50..d98018e 100644
+--- a/tests/src/styles/mixins.test.ts
++++ b/tests/src/styles/mixins.test.ts
+@@ -13,7 +13,7 @@ import {
+ 	stageMedia,
+ } from '@orkestrel/test/browser'
+ import { afterEach, describe, expect, it } from 'vitest'
+-import { matchesPaintedColor, specimens } from '../../setupBrowser.js'
++import { specimens } from '../../setupBrowser.js'
+ import { extractShadowLayers } from '../../setupStyles.js'
+ import './fixtures/mixins.scss'
+ 
+@@ -83,9 +83,13 @@ describe('declaration mixins', () => {
+ 		await sendProtocol('Emulation.setEmulatedMedia', {
+ 			features: [{ name: 'forced-colors', value: 'active' }],
+ 		})
+-		expect(matchesPaintedColor(readStyle(specimen, 'color'), resting)).toBe(false)
++		// Both readings are this engine's serialization of a computed `color`, so they compare as
++		// strings. A color reader cannot answer here: `parseCSSColor` resolves each side through a
++		// mounted probe element, and forced colors force that probe's computed `color` to the same
++		// palette entry whatever the side declared, so every pair it is asked about matches.
++		expect(readStyle(specimen, 'color')).not.toBe(resting)
+ 		await sendProtocol('Emulation.setEmulatedMedia', { media: '', features: [] })
+-		expect(matchesPaintedColor(readStyle(specimen, 'color'), resting)).toBe(true)
++		expect(readStyle(specimen, 'color')).toBe(resting)
+ 	})
+ 	it('paints the subtle, emphasis, and border tiers at the percentages it was given', () => {
+ 		const rule = requireValue(findRule('.vn-fixture-role'), 'The role fixture emitted no rule')
+@@ -98,19 +102,19 @@ describe('declaration mixins', () => {
+ 			'The role fixture mounted no specimen',
+ 		)
+ 		expect(
+-			matchesPaintedColor(
++			matchesColor(
+ 				readToken(specimen, '--vn-color-probe-subtle'),
+ 				'color-mix(in oklab, #0d6efd 12%, #fff)',
+ 			),
+ 		).toBe(true)
+ 		expect(
+-			matchesPaintedColor(
++			matchesColor(
+ 				readToken(specimen, '--vn-color-probe-emphasis'),
+ 				'color-mix(in oklab, #0d6efd 70%, #000)',
+ 			),
+ 		).toBe(true)
+ 		expect(
+-			matchesPaintedColor(
++			matchesColor(
+ 				readToken(specimen, '--vn-color-probe-border'),
+ 				'color-mix(in oklab, #0d6efd 35%, #fff)',
+ 			),
+diff --git a/tests/src/styles/theme.test.ts b/tests/src/styles/theme.test.ts
+index 7588294..eb6536b 100644
+--- a/tests/src/styles/theme.test.ts
++++ b/tests/src/styles/theme.test.ts
+@@ -1,8 +1,8 @@
+ import { requireValue } from '@orkestrel/test'
+-import { readStyle } from '@orkestrel/test/browser'
++import { matchesColor, readStyle } from '@orkestrel/test/browser'
+ import { TOKEN_NAMES } from '@src/core'
+ import { afterEach, describe, expect, it } from 'vitest'
+-import { matchesPaintedColor, specimens } from '../../setupBrowser.js'
++import { specimens } from '../../setupBrowser.js'
+ 
+ afterEach(() => {
+ 	document.documentElement.removeAttribute('data-bs-theme')
+@@ -21,32 +21,20 @@ describe('theme scopes', () => {
+ 		const canvas = requireValue(container.querySelector('#canvas'), 'No canvas specimen')
+ 		const border = requireValue(container.querySelector('#border'), 'No border specimen')
+ 		const ring = requireValue(container.querySelector('#ring'), 'No ring specimen')
+-		expect(matchesPaintedColor(readStyle(text, 'color'), 'oklch(0.208 0.042 265.755)')).toBe(true)
+-		expect(matchesPaintedColor(readStyle(canvas, 'background-color'), 'rgb(255, 255, 255)')).toBe(
++		expect(matchesColor(readStyle(text, 'color'), 'oklch(0.208 0.042 265.755)')).toBe(true)
++		expect(matchesColor(readStyle(canvas, 'background-color'), 'rgb(255, 255, 255)')).toBe(true)
++		expect(matchesColor(readStyle(border, 'border-top-color'), 'oklch(0.869 0.022 252.894)')).toBe(
+ 			true,
+ 		)
+ 		expect(
+-			matchesPaintedColor(readStyle(border, 'border-top-color'), 'oklch(0.869 0.022 252.894)'),
+-		).toBe(true)
+-		expect(
+-			matchesPaintedColor(
+-				readStyle(ring, 'outline-color'),
+-				'oklab(0.48 -0.0266547 -0.253603 / 0.45)',
+-			),
++			matchesColor(readStyle(ring, 'outline-color'), 'oklab(0.48 -0.0266547 -0.253603 / 0.45)'),
+ 		).toBe(true)
+ 		document.documentElement.setAttribute('data-bs-theme', 'dark')
+-		expect(matchesPaintedColor(readStyle(text, 'color'), 'oklch(0.929 0.013 255.508)')).toBe(true)
+-		expect(
+-			matchesPaintedColor(readStyle(canvas, 'background-color'), 'oklch(0.21 0.013 256)'),
+-		).toBe(true)
+-		expect(matchesPaintedColor(readStyle(border, 'border-top-color'), 'oklch(0.4 0.022 256)')).toBe(
+-			true,
+-		)
++		expect(matchesColor(readStyle(text, 'color'), 'oklch(0.929 0.013 255.508)')).toBe(true)
++		expect(matchesColor(readStyle(canvas, 'background-color'), 'oklch(0.21 0.013 256)')).toBe(true)
++		expect(matchesColor(readStyle(border, 'border-top-color'), 'oklch(0.4 0.022 256)')).toBe(true)
+ 		expect(
+-			matchesPaintedColor(
+-				readStyle(ring, 'outline-color'),
+-				'oklab(0.7 -0.0902723 -0.119795 / 0.45)',
+-			),
++			matchesColor(readStyle(ring, 'outline-color'), 'oklab(0.7 -0.0902723 -0.119795 / 0.45)'),
+ 		).toBe(true)
+ 	})
+ 	it('holds a binding to a mode-independent token across the same switch', () => {
+@@ -58,8 +46,8 @@ describe('theme scopes', () => {
+ 		)
+ 		const light = readStyle(fill, 'background-color')
+ 		document.documentElement.setAttribute('data-bs-theme', 'dark')
+-		expect(matchesPaintedColor(readStyle(fill, 'background-color'), light)).toBe(true)
+-		expect(matchesPaintedColor(light, 'oklch(0.527 0.154 150.069)')).toBe(true)
++		expect(matchesColor(readStyle(fill, 'background-color'), light)).toBe(true)
++		expect(matchesColor(light, 'oklch(0.527 0.154 150.069)')).toBe(true)
+ 	})
+ 	it('follows the selected mode with color-scheme, and leaves the scheme unset without the attribute', () => {
+ 		expect(readStyle(document.documentElement, 'color-scheme')).toBe('normal')
+diff --git a/tests/src/styles/tokens.test.ts b/tests/src/styles/tokens.test.ts
+index eb9b158..a352b1a 100644
+--- a/tests/src/styles/tokens.test.ts
++++ b/tests/src/styles/tokens.test.ts
+@@ -1,12 +1,18 @@
+ import { requireValue } from '@orkestrel/test'
+-import { readPixels, readRootToken, readStyle, readToken } from '@orkestrel/test/browser'
++import {
++	matchesColor,
++	parseCSSColor,
++	readPixels,
++	readRootToken,
++	readStyle,
++	readToken,
++} from '@orkestrel/test/browser'
+ import { TOKEN_NAMES } from '@src/core'
+ import { afterEach, describe, expect, it } from 'vitest'
+ import rtlCascade from '../../../dist/src/styles/index.rtl.css?raw'
+ import {
+ 	collectNestedRules,
+ 	collectScopeProperties,
+-	matchesPaintedColor,
+ 	readCascadeSheet,
+ 	specimens,
+ } from '../../setupBrowser.js'
+@@ -70,7 +76,7 @@ describe('token cascade', () => {
+ 		const drift = CALIBRATED_TIERS.flatMap(([role, mode, tier, color]) => {
+ 			const scope = mode === 'dark' ? scopes.dark : scopes.light
+ 			const resolved = readToken(scope, `--vn-color-${role}-${tier}`)
+-			return matchesPaintedColor(resolved, color) ? [] : [[role, mode, tier, resolved, color]]
++			return matchesColor(resolved, color) ? [] : [[role, mode, tier, resolved, color]]
+ 		})
+ 		expect(CALIBRATED_TIERS.length).toBeGreaterThan(0)
+ 		expect(drift).toEqual([])
+@@ -84,11 +90,23 @@ describe('token cascade', () => {
+ 			requireValue(container.querySelector('#light'), 'No light scope'),
+ 			requireValue(container.querySelector('#dark'), 'No dark scope'),
+ 		]
++		// A triplet is authored as whole channels, so it carries the author's rounding of the color
++		// its own token resolves to, and a mix landing on an exact half rounds the other way in the
++		// source than the engine's own arithmetic does: `--vn-surface-tertiary-base` computes to
++		// [42.500085, 47.500125, 52.49991] where the triplet declares 43, 48, 53. One whole step is
++		// the distance that rounding can put between them; anything wider is a retuned token whose
++		// triplet was left behind.
+ 		const drift = scopes.flatMap((scope) =>
+ 			pairs.flatMap(([color, triplet]) => {
+-				const painted = readToken(scope, color)
+ 				const channels = readToken(scope, triplet)
+-				return matchesPaintedColor(painted, `rgb(${channels})`) ? [] : [[color, painted, channels]]
++				const painted = parseCSSColor(readToken(scope, color))
++				const declared = parseCSSColor(`rgb(${channels})`)
++				if (painted === undefined || declared === undefined) return [[color, painted, channels]]
++				const [red, green, blue, alpha] = painted
++				const rounded = alpha === declared[3] && Math.abs(red - declared[0]) <= 1
++				const matched =
++					rounded && Math.abs(green - declared[1]) <= 1 && Math.abs(blue - declared[2]) <= 1
++				return matched ? [] : [[color, painted, channels]]
+ 			}),
+ 		)
+ 		expect(pairs.length).toBeGreaterThan(0)
+@@ -97,7 +115,7 @@ describe('token cascade', () => {
+ 	it('resolves every retained color token to the value Bootstrap declares for its alias', () => {
+ 		const drift = RETAINED_COLOR_ALIASES.flatMap(([token, alias, retained]) => {
+ 			const resolved = readRootToken(token)
+-			return matchesPaintedColor(resolved, retained) ? [] : [[token, alias, resolved, retained]]
++			return matchesColor(resolved, retained) ? [] : [[token, alias, resolved, retained]]
+ 		})
+ 		expect(RETAINED_COLOR_ALIASES.length).toBeGreaterThan(0)
+ 		expect(drift).toEqual([])
+@@ -138,8 +156,8 @@ describe('token cascade', () => {
+ 			requireValue(container.querySelector('#dark'), 'No dark scope'),
+ 			TOKEN_NAMES.focus.color,
+ 		)
+-		expect(matchesPaintedColor(light, 'oklab(0.48 -0.0266547 -0.253603 / 0.45)')).toBe(true)
+-		expect(matchesPaintedColor(dark, 'oklab(0.7 -0.0902723 -0.119795 / 0.45)')).toBe(true)
++		expect(matchesColor(light, 'oklab(0.48 -0.0266547 -0.253603 / 0.45)')).toBe(true)
++		expect(matchesColor(dark, 'oklab(0.7 -0.0902723 -0.119795 / 0.45)')).toBe(true)
+ 	})
+ 	it('resolves a consumer of the compatibility radius alias to the calibrated radius', () => {
+ 		const specimen = requireValue(
+@@ -161,10 +179,10 @@ describe('token cascade', () => {
+ 		])
+ 		expect(layers.map((layer) => layer.inset)).toEqual([false, false])
+ 		expect(
+-			matchesPaintedColor(requireValue(layers[0], 'No first layer').color, 'rgba(0, 0, 0, 0.07)'),
++			matchesColor(requireValue(layers[0], 'No first layer').color, 'rgba(0, 0, 0, 0.07)'),
+ 		).toBe(true)
+ 		expect(
+-			matchesPaintedColor(requireValue(layers[1], 'No second layer').color, 'rgba(0, 0, 0, 0.22)'),
++			matchesColor(requireValue(layers[1], 'No second layer').color, 'rgba(0, 0, 0, 0.22)'),
+ 		).toBe(true)
+ 	})
+ 	it('resolves the inset shadow to the retained inset geometry, and rescales it with the elevation factor', () => {
+@@ -177,7 +195,7 @@ describe('token cascade', () => {
+ 		expect(layers.map((layer) => layer.lengths)).toEqual([[0, 1, 2, 0]])
+ 		expect(layers.map((layer) => layer.inset)).toEqual([true])
+ 		expect(
+-			matchesPaintedColor(requireValue(layers[0], 'No inset layer').color, 'rgba(0, 0, 0, 0.075)'),
++			matchesColor(requireValue(layers[0], 'No inset layer').color, 'rgba(0, 0, 0, 0.075)'),
+ 		).toBe(true)
+ 		document.documentElement.style.setProperty(TOKEN_NAMES.factor.elevation, '2')
+ 		try {
+@@ -327,7 +345,7 @@ describe('token cascade', () => {
+ 		)
+ 		const outer = requireValue(container.querySelector('#outer'), 'No outer specimen')
+ 		const inner = requireValue(container.querySelector('#inner'), 'No inner specimen')
+-		expect(matchesPaintedColor(readStyle(outer, 'color'), 'oklch(0.929 0.013 255.508)')).toBe(true)
+-		expect(matchesPaintedColor(readStyle(inner, 'color'), 'oklch(0.208 0.042 265.755)')).toBe(true)
++		expect(matchesColor(readStyle(outer, 'color'), 'oklch(0.929 0.013 255.508)')).toBe(true)
++		expect(matchesColor(readStyle(inner, 'color'), 'oklch(0.208 0.042 265.755)')).toBe(true)
+ 	})
+ })
+diff --git a/vite.config.ts b/vite.config.ts
+index 4f834ca..ce970f4 100644
+--- a/vite.config.ts
++++ b/vite.config.ts
+@@ -304,6 +304,11 @@ export function setup(override?: UserConfig): UserConfig {
+ 			setupFiles: ['./tests/setup.ts'],
+ 			environment: 'node',
+ 			browser: { enabled: false },
++			// A proof here mutates the working directory, which needs a process rather than a
++			// worker thread: under `threads` the run reports `process.chdir() is not supported in
++			// workers`. The default is already `forks`; the pin is what keeps that default from
++			// moving underneath the proof.
++			pool: 'forks',
+ 		},
+ 	}
+ 	return mergeOverride(project, override)

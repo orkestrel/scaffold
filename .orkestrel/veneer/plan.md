@@ -1094,3 +1094,15 @@ after acceptance per the debrief skill's retention reference.
   (verdict `u7a-audit-verdict.md`). Carried: the unread `--bs-btn-focus-shadow-rgb` departure
   row (U7e), the dark-fill contrast question (the user), the forced-colours reading (a
   Test-side `MediaOptions` axis). Next: `u7-setup-tidy` on the landing, then U7b.
+- 2026-09-21, `u7-setup-tidy` returned green on Opus from the U7a landing `12e1bd6`
+  (`units/u7-setup-tidy-report.md`): the paint wrappers deleted and every styles proof comparing
+  through the installed `matchesColor`; `pool: 'forks'` pinned on the `setup` project with the
+  measured `process.chdir` refusal named; one release pin and one CSS digest in
+  `tests/setupConformance.ts`; `describeIncompleteRow` labelling both readers' refusals by
+  position and column; the reach case over every binding with the unreachable `btn | event`
+  fallback deleted and the `names no events` refusal; two controls red and restored; every gate
+  exit 0 on Chromium and Edge. One resolution recorded for the ruling: the forced-colours case
+  compares computed strings directly because the installed reader's probe sits inside the
+  forced-colours emulation (a Test-side bound). Audit launched: the objective analyst on Astra,
+  the subjective reviewer on Opus, the checker, and the verifier, on
+  `u7-setup-tidy-audit-claims.md`.
