@@ -68,7 +68,6 @@ $ grep -n "^export " tests/setupBrowser.ts
 51:export async function recordListeners(
 78:export async function applyTheme(variant: string): Promise<void> {
 123:export class SpecimenManager {
-216:export function readPaintedColor(
 284:export function readCascadeSheet(
 377:export function collectLayer(
 $ grep -n "describe(\|it(" tests/distribution.test.ts | sed -n '1,12p'
@@ -92,7 +91,7 @@ $ head -c 400 tests/fixtures/oracle/button.json
   "accessibility": "- button \"Toggle\"", "identity": { ... } }, "after": { ... } }, ...
 ```
 
-RE-TAKEN AT LAUNCH (the dispatch message states each): the HEAD sha (the U7b landing commit); the
+RE-TAKEN AT LAUNCH (the dispatch message states each): the tidy unit removed `readPaintedColor` and `matchesPaintedColor` from `tests/setupBrowser.ts` (compare colours through the installed `matchesColor`); the installed `MediaOptions` stages `print` and `motion` only, so no journey stages forced colours; the HEAD sha (the U7b landing commit); the
 `src/browser/index.ts` export list after U7b (`Button`, `Delegate`, `BUTTON_TOGGLE`,
 `BUTTON_SELECTOR`, `BUTTON_ACTIVE`, the guards, `emitEvent`, `bindEventMap`, beside `ColorMode`);
 the `### Deferred selectors` rows under `guides/veneer.md` § Styles after U7a; the installed
