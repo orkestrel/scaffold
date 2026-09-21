@@ -1557,3 +1557,28 @@ after acceptance per the debrief skill's retention reference.
   retained differ from Bootstrap and must be matched or recorded. **Open question for the user,
   added:** excluding `::-moz-focus-inner` means the published cascade ships no Gecko
   inner-focus repair where Bootstrap's does. **Unchanged:** CL5 to CL13.
+- 2026-09-21, CL4 round 2 and the landing `bc580c1` (`cl4-audit-verdict.md` § Round 2): the fix
+  round under `units/cl4-brief-7.md` ran on Astra (thread `01a0c488-2fdf-7330-aa3a-faa22f12f39d`,
+  exit 0) and all four lanes accepted it. The legend's size step reads `breakpoint-up(xl)`, and
+  one width literal is left under `src/`, in the ramp that is its Sass source. The folder-wide
+  sweep over every partial pair extracted `control-text`, `border-reset`, `box-reset`,
+  `caption-text`, and `cell-space`, reaching into CL3's `_hr.scss` as brief 7 anticipated; both
+  engines checked the emission independently, the Astra lane finding the shipped cascade
+  byte-identical to the pre-extraction baseline and the Opus lane checking every consumer
+  declaration by declaration. The non-visible focus case asserts the state before reading it, and
+  the planted outline fails exactly where it must. The two Bootstrap departures are recorded in
+  the guide. **The Orchestrator's own defect:** three of the round's claims were written wrong —
+  `cell-space` takes no caller content, the red sweep record ran after two extractions rather
+  than none, and the round-2 status adds two granted paths rather than nothing, with `_figure.scss`
+  being CL4's own new file rather than CL3's. Every one was caught by a lane and corrected on the
+  record; none was an implementation defect. The lesson: a claim asserting that two artifacts are
+  identical states a measurement, so take the measurement before writing the claim rather than
+  after a lane disputes it. **Added:** CL4b, a small successor unit carrying CL4's two proof
+  obligations — pin the horizontal rule's `border: 0` that `box-reset` now supplies, and give
+  `ContentSection`'s name and markup assertions an independent control. Both are test-side, both
+  were found by the audit, and no later unit in the plan owns either file, so they take a unit of
+  their own rather than diluting CL5. **Transformed:** CL5 acquires a ruling its brief carries,
+  that the `.h1` through `.h6` and `.display-*` class twins read the same tokens their tag
+  partials read rather than Bootstrap's fluid sizes, so a heading tag and its class twin agree
+  inside Veneer; the fixed heading scale is already an open question reported to the user, and the
+  display tokens for the large-viewport caps already exist. **Unchanged:** CL6 to CL13.

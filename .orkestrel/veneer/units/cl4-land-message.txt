@@ -1,0 +1,43 @@
+Ship the remaining Reboot tags and the `reboot` key (CL4)
+
+The published cascade carries a partial for each remaining Reboot tag: `b`,
+`details`, `fieldset`, `figure`, `iframe`, `img`, `input`, `label`,
+`optgroup`, `output`, `progress`, `select`, `svg`, `table`, `textarea`, and
+`tr`. Each selects one bare tag plus that tag's own pseudo-class, attribute,
+and mandated-pair selectors, and each ships a proof that reads its resolved
+values out of the built cascade.
+
+With those families landed, the guide's compatibility table gains the
+`reboot` key, so the conformance scan compares every selector Bootstrap's
+pinned inventory lists against what Veneer's build emits. The selectors the
+package does not ship are recorded as excluded rows carrying the reason each
+takes, and the scan proves every one of them absent.
+
+The build downlevels a double-colon pseudo-element to its legacy single-colon
+form, so the scan's comparison folds `:before`, `:after`, `:first-line`, and
+`:first-letter`, and drops a universal sitting immediately before a
+pseudo-element. A genuinely absent selector stays absent through that fold,
+which its own case proves.
+
+The legend's size step reads `breakpoint-up(xl)` rather than a literal width,
+so the published token and the condition that switches at it cannot name two
+different widths.
+
+A declaration block shared by two partials is a mixin. The `control-text`,
+`border-reset`, `box-reset`, `caption-text`, and `cell-space` mixins each
+take one home in `src/styles/_mixins.scss`, found by a sweep over every pair
+of partials in the folder. Each consumer keeps its own selector and its
+distinct declarations, and the emitted cascade is unchanged.
+
+The non-visible focus rule on `button` has a value proof that reads the
+outline in a focused, not-focus-visible state, so changing that value
+reddens.
+
+Two departures from Bootstrap are recorded in the guide: `colgroup` joins the
+border-reset group Bootstrap's own group does not carry, and `th` keeps
+`text-align: inherit` without Bootstrap's `-webkit-match-parent` fallback.
+
+Every gate exits 0 on managed Chromium and Edge. The audit is recorded in
+scaffold's `.orkestrel/veneer/cl4-audit-verdict.md` file.
+
+Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
