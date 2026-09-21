@@ -52,3 +52,43 @@ dispatched to `builder`), `units/u7f-harness-brief-3.md` (the settle before the 
 shots, the toggle host's state at the pressed moment), `units/u7f-fix-brief.md` (`opus`, Veneer:
 the shell affordance, the hover and active frames under staged reduced motion, the tree at the
 pressed moment), then a recapture of both sides and round 2 on the new portfolio.
+
+## Round 2, 2026-09-21
+
+The regenerated portfolio: Veneer's 48 frames and artifacts from the Orchestrator's capture run
+over the U7f-fix landing `060ce02` (`units/u7f-recapture.sh`, the capture run last so the
+artifacts carry their frame paths), beside Elements' 28 frames and artifacts from the harness at
+round 3 (`units/u7f-harness-3.mjs`). Brief: `units/u7f-verdict-brief-2.md`, the round-1 items
+under their numbers.
+
+| Lane | Role | Engine | Record | Terminal line |
+| --- | --- | --- | --- | --- |
+| subjective design fit | `reviewer` | native Opus 5, Workflow `wf_3ac564b2-16b` | `units/lane-u7f-2-reviewer.md` | `CONVERGED` |
+| objective state truth | `analyst` | Astra, `codex exec` read-only with twenty-five frames attached, thread `01a0c2fd-f15c-7db1-9f22-7098bd0b147b`, exit 0 | `units/u7f-verdict-2-analyst.sh`, `units/lane-u7f-2-analyst.md` | `ANOTHER ROUND(4)` |
+| mechanical inventory | `checker` | native Sonnet, the same Workflow | `units/lane-u7f-2-checker.md` | `ANOTHER ROUND(10)` |
+
+### Reconciliation
+
+| Item | Ruling |
+| --- | --- |
+| 1, 2, 3, 7, 8 | RENDERED-PROVEN by both judging lanes, no regression; Elements' dark rest frame now settled at the shared dark calibration |
+| 4 focus | Veneer's ring proven (page frame plus one ring value on every specimen); the reviewer rules the two treatments the same design at different weights, the analyst reads Elements' padded ring frame as shot mid-transition (alpha `0.333519` at `2.22346px` against the declared 45% and `0.1875rem`), so the Elements ring value is NOT-EVIDENCED until the harness settles the `box-shadow` before the shot; carried to `units/u7f-harness-brief-4.md` and a narrow round 3 |
+| 5 pressed | RENDERED-PROVEN by both: Veneer paints Bootstrap's active fill on the toggled host and announces it pressed; Elements' host announces pressed and keeps its base fill (a recorded departure, Elements' to carry); the reviewer's pixel referral on the `Toggle` step at page scale is answered by the analyst's decode |
+| 6 hover and active | RENDERED-PROVEN by both: the two packages land on the same settled mixes to every recorded digit |
+| 9 disabled | RENDERED-PROVEN by both: Elements' `0.5` dims harder and washes its own label; Veneer keeps Bootstrap's `0.65`, a recorded departure |
+| 10 the tree | RENDERED-PROVEN by the analyst (Veneer's trees; Elements' `# States` snapshots supply comparable pressed and disabled announcements); the checker's NOT-EVIDENCED is the Elements `# Toggle` snapshot taken at rest, a harness record gap carried to `units/u7f-harness-brief-4.md`; a narrow round 3 reads the repaired artifact |
+| 11 copy and inventory | RENDERED-PROVEN by the checker (the region name, the names in table order, `undeclared: []`, the filename law, 48 and 28 frames against the registries) |
+| 12 the shell control | RENDERED-PROVEN by the reviewer (the same unfilled bordered control in both themes and at both viewports) and by the analyst's referral |
+
+Recorded for the user as design questions, not defects: Veneer's latched `.active` fill equals
+its momentary `:active` mix (Bootstrap's pairing), so a held and a latched button read alike; the
+repaired control sits near the `Outline secondary` treatment; in dark the dimmed and the active
+cyan sit close. Portfolio limits recorded, not required: no element-scale frame of a toggled host
+on either side; no padded ring frame on the Veneer side (its ring is compared through declared
+values and the readings). The brief's premise "the ring at 45% in both" was the Orchestrator's
+wording; Elements' declared ring is read from its step log once settled.
+
+### Terminal (round 2)
+
+`ANOTHER ROUND(4, 10)`, both on the Elements harness record: `units/u7f-harness-brief-4.md`
+(`builder`), then a narrow round 3 on items 4 and 10 against the repaired artifacts.
