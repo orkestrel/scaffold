@@ -1073,3 +1073,12 @@ after acceptance per the debrief skill's retention reference.
   dark-fill contrast is recorded for the user as a design question outside the campaign's exit
   criterion. `units/u7a-brief-9.md` carries the ruling and the remaining findings 4, 8, 1, the
   controls, and the gates.
+- 2026-09-20, U7a brief 9 (thread `01a0c188-437b-7041-ba8f-36e85a57c179`, `units/u7a-report-9.md`)
+  closed every finding of the round (the `light` role's black foreground with the floor for
+  that role and the other roles' ratios pinned; `userEvent` replaced by `pressKeys`,
+  `hoverAccessible`, `clickAccessible`; the mixin proof's guarded keystroke; the outline active
+  and ring proofs), ran `PLANT-LIGHT` and `PLANT-CHECK` red and restored byte-for-byte, and
+  stopped on lint: `vitest/no-conditional-expect` rejects the contrast case's floor-or-pin
+  branch. `units/u7a-brief-10.md` splits the population into two tables with unconditional
+  assertions and runs the remaining gates. The measured dark-fill ratios (dark primary 2.59:1
+  at rest under white text) are recorded for the user as a design question outside this unit.
