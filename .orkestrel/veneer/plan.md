@@ -1822,3 +1822,41 @@ after acceptance per the debrief skill's retention reference.
   code when the gutter became its own token, and the container and gutter tokens having no
   token-table row.
 - **Unchanged:** CL8 dispatched over this landing; CL9 to CL13.
+
+### Re-baseline before CL8 (2026-09-21, on measured terrain)
+
+The scout's map put six keys in one unit. Measuring the pinned inventory directly changed the
+decomposition, so CL8 splits and two keys stop being what the plan assumed.
+
+- **The pinned inventory keys by class prefix, so two of CL8's keys are buckets.** Under the `row`
+  key sit the grid row's rules and also every `.row-gap-*` utility; under the `col` key sit the
+  grid columns and also the three `.col-form-label*` classes. Measured from
+  `tests/fixtures/oracle/inventory.json` with the probes retained at `units/cl8-*-probe.mjs`:
+  `row` carries 44 grid rows and 36 gap rows, `col` carries 84 grid columns and 3 form-label rows,
+  `offset` carries 71 rows and nothing else.
+- **`.row-gap-*` is recorded identically under its own `row-gap` key**, so shipping it once
+  satisfies both keys. **`.col-form-label*` is recorded under no form key**, so nothing in the
+  Forms family will force those three selectors — the `col` key is their only record.
+- **Added: CL8 splits into CL8 and CL8b.** CL8 ships the grid layout rules — the row, its column
+  children, the row-column counts, the columns, and the offsets. CL8b ships the step utilities —
+  `g`, `gx`, `gy`, and `row-gap` — which all set a spacing value across steps and breakpoint
+  infixes and all need the same token decision. The split is by mechanism: layout rules that read a
+  value against utilities that set one. Grouping `.row-gap-*` with the gutter utilities rather than
+  with the grid row puts it with the siblings it shares a generation rule with.
+- **Transformed: `row` and `col` do not close in CL8.** CL8 records `.row-gap-*` as deferred to
+  CL8b and `.col-form-label*` as deferred to the Forms family, each with its reason. `offset`
+  closes in CL8, `row` closes when CL8b lands, and `col` closes when Forms ships the label classes.
+  Shipping a selector into the wrong partial to make a key list would be the opposite of the
+  accounting this family exists to produce.
+- **The gap triple is a question for the user at the family's acceptance.** `gap`, `row-gap`, and
+  `column-gap` are one mechanism, and CL8b must ship `row-gap` because the `row` key requires it.
+  Whether to pull `gap` and `column-gap` forward into this family rather than leaving them to
+  Cross-cutting moves this family's exit criterion, so it is the user's call rather than a
+  re-baseline. CL8b ships `row-gap` alone and records the other two as the utilities family's, with
+  a note to reuse CL8b's step tokens.
+- **A ruling CL7 stated needs correcting where it is reused.** CL7's record says the styles rule
+  bars a literal length outside the token file. The rule bars literal **colors**. The container and
+  gutter tokens are still right, on the reason that stands — they are a published scale a consumer
+  retunes — but CL8 takes no token for its column percentages, which are structural divisions of
+  the grid rather than a scale.
+- **Unchanged:** CL9 to CL13.
