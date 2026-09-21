@@ -1139,3 +1139,11 @@ after acceptance per the debrief skill's retention reference.
   (an owned host is left to its owner); the owned set pruned of disconnected hosts on each
   click; the guide's parity minimum (one Surface row per export, the method tables). Round 2
   audits the fix with Opus as the engine that did not write it.
+- 2026-09-21, U7b brief 3 (thread `01a0c1ee-e5ae-7b61-a1a7-e4c780920eba`, `units/u7b-report-3.md`)
+  completed the fix round: the anchor write-order case red on a planted reversal and green;
+  the delegate catching only `BUTTON_HOST_OWNED` and leaving an owned host to its owner (two
+  cases recording no browser error event); the disconnected-host pruning on each delegated
+  click with restoration of the detached hosts; the guide's parity minimum for the eighteen
+  exports with `test:guides` green; every gate exit 0 on Chromium and Edge. Round 2 launched on
+  the fix-round tree: the objective reviewer on Opus (the engine that did not write it), the
+  subjective analyst on Astra, the checker, and the verifier, on `u7b-audit-claims-2.md`.
