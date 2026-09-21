@@ -1517,3 +1517,18 @@ after acceptance per the debrief skill's retention reference.
   is a dash and its Status is `shipped`, which I read, so the dash-proof loop beneath the set
   assertion holds for the new rows unchanged.
   **Unchanged:** CL5 to CL13.
+- 2026-09-21, CL4 stopped a fourth time (`units/cl4-report-4.md`, thread
+  `01a0c466-9a30-7fe2-beae-d01792bccb6e`): the five granted sites are applied and green, and two
+  further cases in the same proof assert that removing or accepting a CSS category's rows
+  withholds every component, which holds only while every component carries both a selector and a
+  variable obligation. Reboot has no custom properties, and CL1 deliberately ships a
+  property-free component on its selector row alone, so the production behaviour is right and
+  the cases encode a single-component assumption. **My defect:** the brief-5 sweep matched the
+  shape `['btn']` and missed two cases asserting emptiness, so that grant was incomplete and the
+  unit paid for it with a stop. **Ruled** (`units/cl4-brief-6.md`): grant the whole proof file
+  for one purpose, closing the class rather than the instance — every case deriving rows from
+  the live ledger scopes its manipulation to the component it is about, so no case restates the
+  ledger's population; no subject changes and no assertion weakens; stop rather than change what
+  a case proves. The brief hands over my full sweep of the file's eleven ledger call sites and
+  tells the unit not to trust it to be complete.
+  **Unchanged:** CL5 to CL13.
