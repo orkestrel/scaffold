@@ -1488,3 +1488,19 @@ after acceptance per the debrief skill's retention reference.
   to widen. Folding it into CL4 rather than a separate unit keeps one unit per commit: the tree
   already carries CL4's deliberately red guide row and `listed`, so landing a separate unit
   first would have to run its gates against that red state. **Unchanged:** CL5 to CL13.
+- 2026-09-21, CL4 stopped a second time under brief 3's own stop condition
+  (`units/cl4-report-2.md`, thread `01a0c447-35b6-78d3-9fa5-50301751a1c6`): the granted
+  canonicalization landed and closed the two reset spellings, and then the build dropped the
+  authored `::-webkit-file-upload-button` while keeping the standard `::file-selector-button`.
+  **Measured again before ruling:** with the partials in place the cascade emits 141 selectors,
+  12 are absent by the scan's rule, the canonicalization recovers the two reset spellings, nine
+  of the remaining ten are the exclusions the unit already wrote, and exactly one is new. So the
+  ruling is one selector. **Ruled** (`units/cl4-brief-4.md`): exclude the prefixed alias with a
+  reason naming the build's targets, and remove its authored rule so the source agrees with the
+  exclusion (a kept rule would break the absence check if the targets ever changed); do not
+  canonicalize the two file-button spellings together, because they are different selectors with
+  different support and folding them would defeat the falsification case brief 3 required.
+  **Open question for the user, at family acceptance:** Veneer's build drops vendor prefixes it
+  judges redundant for its targets, which decides what older browsers receive; the campaign has
+  accepted that twice now by exclusion rather than by configuring CSS targets.
+  **Unchanged:** CL5 to CL13.
