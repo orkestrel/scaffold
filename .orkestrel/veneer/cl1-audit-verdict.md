@@ -79,8 +79,8 @@ Reviewer extra findings, non-blocking, carried as bounds:
 
 6. `visitBreakpoint` restores in a bare `finally`, so a restore rejection would replace the
    action's failure (the class claim 3 closed in the hold). No case reaches a rejecting
-   `page.viewport`. Carrier: the next unit that owns `tests/setupBrowser.ts` (CL11 as planned;
-   an earlier unit that takes that file takes the bound).
+   `page.viewport`. Carrier: the next unit that owns `tests/setupBrowser.ts` (CL11; a unit that owns the file for another reason does not
+   take them).
 7. `holdOraclePointer` has no case for the unreachable-after-scrolling refusal or for the
    pressed-state miss with a successful release. Same carrier.
 

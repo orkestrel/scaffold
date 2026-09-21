@@ -6,7 +6,10 @@
 SUBJECTIVE lane (design fit and shape: the new token names against the ramps' laws and the
 registry's grouping, the `display` group's mapping onto Bootstrap's class numbers, the stripe
 percentage's place beside the hover and active percentages in the theme closure, the
-media-condition reader's shape and home, the guide rows' fit in the reference map), and Astra
+breakpoint mixins' shape — the one Sass source shared with the `--vn-breakpoint-*`
+declarations and where it sits under the styles rule's table, the range-syntax conditions, the
+`xs` behaviour, the compile-time refusal of an unknown name — the media-condition reader's
+shape and home, the guide rows' fit in the reference map), and Astra
 holds the objective lane on another engine. Read the work as work you did not write. Perform
 the assignment directly and spawn nothing. You edit nothing and run nothing; you have no write
 tools and no shell.
@@ -26,8 +29,9 @@ The Orchestrator rendered the diff over the Veneer checkout's CL1 landing (the b
 the claims file) at `C:/Users/mikes/WebstormProjects/scaffold/.orkestrel/veneer/units/cl2-diff.patch.txt` and
 the status at `tmp/audit/cl2-status.txt`; read those and the live Veneer tree at
 `C:/Users/mikes/WebstormProjects/veneer`. Read the retained records under
-`C:/Users/mikes/WebstormProjects/scaffold/.orkestrel/veneer/`: `units/cl2-brief.md` (the
-effective brief), `units/cl2-report.md` (the unit's report), `content-layout-design-verdict.md`
+`C:/Users/mikes/WebstormProjects/scaffold/.orkestrel/veneer/`: `units/cl2-brief-2.md` (the
+effective brief; `units/cl2-brief.md` is superseded, and `units/cl2-scope-read-report.md`
+records why), `units/cl2-report.md` (the unit's report), `content-layout-design-verdict.md`
 (the token rulings), `units/content-layout-design-planner-report.md` § 3 and CL2's criteria,
 `units/content-layout-design-analyst-report.md` § Token proposal, and the law under that
 checkout (`AGENTS.md`, `.claude/rules/styles.md`, `tests.md`, `typescript.md`, `names.md`,

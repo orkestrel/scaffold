@@ -17,8 +17,9 @@ its full gate chain on managed Chromium and its styles project on Edge.
 `git log --oneline -1`). The working tree is dirty on purpose: the CL2 files
 (`src/styles/_tokens.scss`, `_mixins.scss`, `src/core/types.ts`, `src/core/constants.ts`,
 `tests/src/core/index.test.ts`, `tests/src/styles/tokens.test.ts`, `mixins.test.ts`, its
-fixture, `tests/setupStyles.ts` and its proof, `guides/veneer.md`), plus untracked files under
-`tmp/`. Run no install. No writer is live.
+fixture, `tests/setupStyles.ts` and its proof, `tests/setupBrowser.ts` and its proof where
+the unit added a reader, `guides/veneer.md`), plus untracked files under `tmp/`. Run no
+install. No writer is live.
 
 **Host.** Windows, Git Bash. Run every command from that checkout with `npm run <name>`. Edge
 runs through the `PLAYWRIGHT_CHANNEL=msedge` environment variable. The whole chain can exceed
@@ -45,15 +46,17 @@ capture each command's last twelve lines:
 6. `npm run test:src:core`
 7. `npm run test:src:styles`
 8. `npm run test:setup`
-9. `npm run test:conformance`
-10. `npm run test:guides`
-11. `npm run test:policy`
-12. `npm run test:app:browser`
-13. `npm test` (the whole chain, as a background command logged under `tmp/`)
-14. `PLAYWRIGHT_CHANNEL=msedge npm run test:src:styles`
-15. `PLAYWRIGHT_CHANNEL=msedge npm run test:app:browser`
-16. `node node_modules/@orkestrel/scaffold/dist/bin/main.js audit --target .` (read-only)
-17. `git status --porcelain --untracked-files=all | grep -v '^?? tmp/'` again
+9. `npm run test:setup:browser`
+10. `npm run test:conformance`
+11. `npm run test:guides`
+12. `npm run test:policy`
+13. `npm run test:app:browser`
+14. `npm test` (the whole chain, as a background command logged under `tmp/`)
+15. `PLAYWRIGHT_CHANNEL=msedge npm run test:src:styles`
+16. `PLAYWRIGHT_CHANNEL=msedge npm run test:setup:browser`
+17. `PLAYWRIGHT_CHANNEL=msedge npm run test:app:browser`
+18. `node node_modules/@orkestrel/scaffold/dist/bin/main.js audit --target .` (read-only)
+19. `git status --porcelain --untracked-files=all | grep -v '^?? tmp/'` again
 
 Write nothing into the checkout except the `npm test` log under `tmp/`.
 

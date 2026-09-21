@@ -1295,7 +1295,7 @@ after acceptance per the debrief skill's retention reference.
   `finally`. Bounds carried, not defects: reviewer 6 (`visitBreakpoint` restores in a bare
   `finally`, so a restore rejection would replace the action's failure) and reviewer 7 (the
   hold's unreachable-after-scrolling refusal and its pressed-state miss with a successful release
-  have no case) go to the next unit that owns `tests/setupBrowser.ts` (CL11 as planned); the
+  have no case) go to CL11, which owns `tests/setupBrowser.ts` for the helpers (a unit that owns the file for another reason does not take them); the
   analyst's note that U7c's `resolveButton` carries the same prefix defect stays with CL11.
   **Unchanged:** CL2 to CL13. Next: CL2 (Opus) after its scope read
   (`units/cl2-scope-read-brief.md`), then CL3 (Astra) with its scroll-behavior probe.
