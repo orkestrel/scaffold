@@ -49,58 +49,59 @@ recorded rather than closed in it: the muted text of `address` and `dd`, the rai
 `pre`, `samp`, and `var` (both CL3b's), and the link colours' equality with the record (CL6's).
 The `b` tag is CL4's.
 
-**CL3b is running on Opus at the end of the last session**: `units/cl3b-brief-2.md` over
-`units/cl3b-brief.md` beneath it (the scope read that corrected brief 1 is
-`units/cl3b-scope-read-report.md`). It lands `--vn-text-muted`, the raised surface at the
-record's values, the `surface-code` map key, the font and line-height tokens `_var.scss` and
-`_pre.scss` need, the rebinding of those five partials, and the corner-radius rows CL3 round 3
-carried. Its hazard: the dark map's `anchor` reads `var(--vn-surface-raised)` and `role-each`
-mixes every dark role tier against it, so brief 2 has the unit pin that anchor to the literal
-`oklch(0.235 0.013 256)` while the raised surface moves, keeping
-`tests/src/styles/integration.test.ts:92` (which is off-limits to it) true. Its report will be
-`C:/Users/mikes/WebstormProjects/veneer/tmp/units/cl3b-report.md`; an Agent dispatch returns it
-as the agent's final message, so read it from that file if the session ends first.
+**CL3b returned and its round 1 is reconciled (`cl3b-audit-verdict.md`): fix round.** The unit
+(`units/cl3b-report.md`) measured the dark anchor hazard and pinned the anchor to
+`oklch(0.235 0.013 256)`, so every dark role border tier holds its `9bb306e` value while
+`--vn-surface-raised` moves to the record; it landed `--vn-text-muted`, the `surface-code` map
+key, a `font.mono` group with `--vn-font-mono-base` and `--vn-font-mono-short`, `--vn-line-code`,
+the rebinding of the five partials, and the corner-radius rows. All four lanes ran and the
+verifier is green on both browsers. Claim 4 is refuted on necessity and recorded: the registry's
+path law does not compel the group, so the rename stands on the name the brief's instruction
+implies; no code changes. One defect forces round 2.
+
+**Brief 3 is running on Opus at the end of the last session**: `units/cl3b-brief-3.md` (the
+inline mode matrices in `tests/src/styles/tokens.test.ts` read the setup module's `TEXT_MODES`,
+including a third one CL3 left behind, plus a sweep of the styles suite). Its report will be
+`C:/Users/mikes/WebstormProjects/veneer/tmp/units/cl3b-report-2.md`; an Agent dispatch returns it
+as the agent's final message, so read it from that file if the session ended first.
+
+CL3b's round-2 kit is the round-1 kit with `-2` names: derive it by `sed` from the `TMP/` copies
+(`TMP/units/cl3b-audit-reviewer-brief.md`, `cl3b-audit-checker-brief.md`, `cl3b-gate-brief.md`,
+`TMP/codex/cl3b-audit-analyst.sh` and its watch) and from `units/cl3b-audit-wf.js`, with the
+claims in `TMP/audit/cl3b-audit-claims-2.md` and the evidence from
+`bash units/render-cl3b.sh -2`. The landing kit is ready: `TMP/units/cl3b-land.sh` (its allowlist
+is CL3b's owned set plus the two element globs) and `TMP/units/cl3b-land-message.txt`.
 
 ## What to do first: close CL3b
 
-CL3b is an Opus unit, so its audit lanes swap the other way from CL3's: the **Opus reviewer
-holds the SUBJECTIVE lane and the Astra analyst the OBJECTIVE lane**, as CL2's did. Derive its
-kit from CL2's `TMP/` copies, not from CL3's.
+CL3b is an Opus unit, so its lanes stay swapped as CL2's were: the **Opus reviewer holds the
+SUBJECTIVE lane and the Astra analyst the OBJECTIVE lane**. Round 1's kit is on disk and round
+2's is one `sed` away from it.
 
-1. Read the unit's report. An Agent dispatch returns it as the agent's final message; if the
-   session ended first, read
-   `C:/Users/mikes/WebstormProjects/veneer/tmp/units/cl3b-report.md`. Retain it as
-   `units/cl3b-report.md`. Check `git -C C:/Users/mikes/WebstormProjects/veneer status` for the
-   owned set and `git log --oneline -1` for the unchanged HEAD `9bb306e`.
-2. Render the evidence with a `units/render-cl3b.sh` copied from `units/render-cl3.sh` with the
-   base `9bb306e` and the `cl3b` names; retain `units/cl3b-diff.patch.txt` and
-   `units/cl3b-status.txt`.
-3. Write `TMP/audit/cl3b-audit-claims.md` (shape: `cl3-audit-claims-3.md`), one claim per
-   execution item of `units/cl3b-brief.md` as brief 2 amends it, with the `[mechanical]` scope,
-   law, and gates claim last. Cover in particular: the anchor measurement and the pin, with no
-   dark role tier moved from `9bb306e`; each new token's map key, closure line, registry leaf,
-   proof, and guide row; each rebound partial's reading against its record row; the radius rows
-   reddening on a deleted declaration; the two guide rows corrected to what the code does.
-   Retain it as `cl3b-audit-claims.md`.
-4. Launch the four lanes together, blind to each other: copy
-   `TMP/codex/cl2-audit-analyst.sh` and its watch to `cl3b-audit-analyst.sh` (OBJECTIVE lane,
-   Astra; it must name the `cl3b` claims, diff, status, brief, and report, and the Veneer files
-   this unit touched), copy `TMP/units/cl2-audit-reviewer-brief.md` and
-   `cl2-audit-checker-brief.md` to their `cl3b` names (the reviewer's lane is SUBJECTIVE), copy
-   `TMP/units/cl3-gate-brief.md` to `cl3b-gate-brief.md` with the owned set restated, and copy
-   `units/cl2-audit-wf.js` to `units/cl3b-audit-wf.js` naming those briefs. Run the analyst as a
-   background command with a Monitor on its watch, and the Workflow by absolute `scriptPath`. Do
-   not type into the session while a Workflow runs.
-5. Read the lanes (`node units/dump-lanes.mjs <runId> cl3b`, which names the files by role; the
-   analyst from its `-last.md` with the journal path and thread id in a header comment), write
-   `cl3b-audit-verdict.md` in the shape of `cl3-audit-verdict.md`, and on accept land with a
-   `TMP/units/cl3b-land.sh` copied from `TMP/units/cl3-land.sh` with CL3b's owned set as its
-   allowlist and a message file you write. A landing script that refuses a file is right: widen
-   the allowlist only to what an effective brief actually granted, and say so in the script's
-   header, the way CL3's records its brief-4 grant.
-6. Retain the log, append the plan entry, update `veneer-campaign-state.md`, run
-   `node units/retention-rewrite.mjs`, and commit scaffold by pathspec with a message file under
-   `TMP/units/`. Never `git add -A`.
+1. Run `ps -eo pid,comm | grep -i codex` and expect nothing (brief 3 is a native Agent, not a
+   bench exec). Read brief 3's report: an Agent dispatch returns it as the agent's final
+   message; if the session ended first, read
+   `C:/Users/mikes/WebstormProjects/veneer/tmp/units/cl3b-report-2.md`. Retain it as
+   `units/cl3b-report-2.md`.
+2. Render round 2's evidence: `bash units/render-cl3b.sh -2` writes
+   `TMP/audit/cl3b-diff-2.patch` and `TMP/audit/cl3b-status-2.txt`; retain both as
+   `units/cl3b-diff-2.patch.txt` and `units/cl3b-status-2.txt`. Write
+   `TMP/audit/cl3b-audit-claims-2.md` (shape: `cl3-audit-claims-3.md`): one claim for the fix,
+   one for the sweep's result, and the `[mechanical]` scope, law, and gates claim. Retain it as
+   `cl3b-audit-claims-2.md`.
+3. Derive the `-2` kit by `sed` from the `TMP/` round-1 copies (never from the retained ones)
+   and copy `units/cl3b-audit-wf.js` to `units/cl3b-audit-2-wf.js` naming the `-2` briefs.
+   Launch the four lanes together and blind: the analyst as a background command with a Monitor
+   on its watch, and the Workflow by absolute `scriptPath`. Do not type into the session while a
+   Workflow runs.
+4. Read the lanes (`node units/dump-lanes.mjs <runId> cl3b-2`, which names them by role; the
+   analyst from its `-last.md` with the journal path and thread id in a header comment), append
+   `## Round 2` to `cl3b-audit-verdict.md` in its round-1 shape, and on accept run
+   `bash TMP/units/cl3b-land.sh` (its message file `TMP/units/cl3b-land-message.txt` is already
+   written).
+5. Retain the log as `units/cl3b-land.log.txt`, append the plan entry, update
+   `veneer-campaign-state.md`, run `node units/retention-rewrite.mjs` from the scaffold root, and
+   commit scaffold by pathspec with a message file under `TMP/units/`. Never `git add -A`.
 
 ## Then CL4
 
@@ -233,6 +234,12 @@ Bootstrap page (an accepted difference).
   selectors are not scanned until CL4 adds the `reboot` row.
 - `RETAINED_COLOR_ALIASES` in `tests/setupStyles.ts` does not pin `--bs-code-color`; the
   presence name lists do.
+
+- Never put backticks inside a program you pass to `node -e` or any other shell argument: Git Bash
+  runs them as command substitution before the program is parsed, and the text that reaches the
+  program is silently stripped. Write the program to a file and run the file, and pass any text
+  it inserts as a file path rather than as a literal. `units/splice-handoff.mjs` does that
+  for this file.
 
 ## Memory
 
