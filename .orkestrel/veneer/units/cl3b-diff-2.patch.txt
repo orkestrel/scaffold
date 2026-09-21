@@ -1,0 +1,700 @@
+diff --git a/guides/veneer.md b/guides/veneer.md
+index 3de9cde..09c6b2c 100644
+--- a/guides/veneer.md
++++ b/guides/veneer.md
+@@ -393,14 +393,17 @@ takes Bootstrap's role names as the compatibility axis and Elements' measured fi
+ Only the primary fill retunes by mode. Each role's tiers are oklab mixes over that role's own fill,
+ so a retuned fill carries its whole family with it.
+ 
+-| Tier                         | Light expression                                               | Dark expression                                             | Alias                       |
+-| ---------------------------- | -------------------------------------------------------------- | ----------------------------------------------------------- | --------------------------- |
+-| `--vn-color-{role}-subtle`   | `color-mix(in oklab, {fill} 12%, var(--vn-surface-body-base))` | the same mix at `15%`                                       | `--bs-{role}-bg-subtle`     |
+-| `--vn-color-{role}-emphasis` | `color-mix(in oklab, {fill} 70%, var(--vn-text-body-base))`    | the same mix                                                | `--bs-{role}-text-emphasis` |
+-| `--vn-color-{role}-border`   | `color-mix(in oklab, {fill} 35%, var(--vn-surface-body-base))` | `color-mix(in oklab, {fill} 50%, var(--vn-surface-raised))` | `--bs-{role}-border-subtle` |
++| Tier                         | Light expression                                               | Dark expression                                           | Alias                       |
++| ---------------------------- | -------------------------------------------------------------- | --------------------------------------------------------- | --------------------------- |
++| `--vn-color-{role}-subtle`   | `color-mix(in oklab, {fill} 12%, var(--vn-surface-body-base))` | the same mix at `15%`                                     | `--bs-{role}-bg-subtle`     |
++| `--vn-color-{role}-emphasis` | `color-mix(in oklab, {fill} 70%, var(--vn-text-body-base))`    | the same mix                                              | `--bs-{role}-text-emphasis` |
++| `--vn-color-{role}-border`   | `color-mix(in oklab, {fill} 35%, var(--vn-surface-body-base))` | `color-mix(in oklab, {fill} 50%, oklch(0.235 0.013 256))` | `--bs-{role}-border-subtle` |
+ 
+ The percentages are Elements' own, and `tests/src/styles/tokens.test.ts` resolves each measured
+-role's tier against the color Elements renders for it.
++role's tier against the color Elements renders for it. The dark border tier mixes against a literal
++rather than against `--vn-surface-raised`, because that literal is the surface the tiers were
++calibrated on and the raised surface carries its own content reading; `src/styles/_tokens.scss`
++holds it as the dark `anchor` entry.
+ 
+ `--vn-color-{role}-rgb` carries the fill's sRGB rendering as channels, for a consumer writing
+ `rgba(var(--vn-color-primary-rgb), 0.5)`. A fill outside the sRGB gamut takes the color the engine
+@@ -419,21 +422,27 @@ variables it answers.
+ | `--vn-text-emphasis-base`, `-rgb`     | `var(--vn-palette-black-base)`, `var(--vn-palette-black-rgb)`                                             | `var(--vn-palette-white-base)`, `var(--vn-palette-white-rgb)`                  | `elements` — dialog text                               | `--bs-emphasis-color`, `--bs-emphasis-color-rgb` |
+ | `--vn-text-secondary`                 | `color-mix(in srgb, var(--vn-text-body-base) 75%, transparent)`                                           | the same expression                                                            | `derived` — Bootstrap's own 75% step                   | `--bs-secondary-color`                           |
+ | `--vn-text-tertiary`                  | the same expression at `50%`                                                                              | the same expression                                                            | `derived` — Bootstrap's own 50% step                   | `--bs-tertiary-color`                            |
++| `--vn-text-muted`                     | `oklch(0.446 0.043 257.281)`                                                                              | `oklch(0.704 0.04 256.788)`                                                    | `elements` — address and description text              | none                                             |
+ | `--vn-text-heading`                   | `inherit`                                                                                                 | `inherit`                                                                      | `bootstrap` — headings take the body color             | `--bs-heading-color`                             |
+ | `--vn-text-code`                      | `var(--vn-text-body-base)`                                                                                | the same expression                                                            | `elements` — inline code text                          | `--bs-code-color`                                |
+ | `--vn-text-highlight`                 | `var(--vn-text-body-base)`                                                                                | the same expression                                                            | `bootstrap` — the highlight takes body copy            | `--bs-highlight-color`                           |
+ | `--vn-surface-body-base`, `-rgb`      | `var(--vn-palette-white-base)`, `var(--vn-palette-white-rgb)`                                             | `oklch(0.21 0.013 256)`, `20, 25, 30`                                          | `elements` — the page canvas                           | `--bs-body-bg`, `--bs-body-bg-rgb`               |
+-| `--vn-surface-raised`                 | `oklch(0.984 0.003 247.858)`                                                                              | `oklch(0.235 0.013 256)`                                                       | `elements` — popover and drawer surface                | none                                             |
++| `--vn-surface-raised`                 | `oklch(0.968 0.007 247.896)`                                                                              | `oklch(0.265 0.014 256)`                                                       | `elements` — code block, sample, and variable surface  | none                                             |
+ | `--vn-surface-secondary-base`, `-rgb` | `var(--vn-gray-200)`, `233, 236, 239`                                                                     | `var(--vn-gray-800)`, `52, 58, 64`                                             | `bootstrap` — no Elements specimen renders the tier    | `--bs-secondary-bg`, `--bs-secondary-bg-rgb`     |
+ | `--vn-surface-tertiary-base`, `-rgb`  | `var(--vn-gray-100)`, `248, 249, 250`                                                                     | `color-mix(in srgb, var(--vn-gray-800) 50%, var(--vn-gray-900))`, `43, 48, 53` | `derived` — reaches Bootstrap's `#2b3035`              | `--bs-tertiary-bg`, `--bs-tertiary-bg-rgb`       |
+ | `--vn-surface-highlight`              | `color-mix(in srgb, var(--vn-palette-white-base) 80%, var(--vn-color-warning-base))`                      | the same mix over `var(--vn-palette-black-base) 60%`                           | `derived` — Bootstrap's own tint over the warning role | `--bs-highlight-bg`                              |
+ | `--vn-surface-code`                   | `color-mix(in oklab, var(--vn-text-body-base) 12%, transparent)`                                          | the same expression                                                            | `elements` — inline code surface                       | none                                             |
+ | `--vn-surface-gradient`               | `linear-gradient(180deg, color-mix(in srgb, var(--vn-palette-white-base) 15%, transparent), transparent)` | the same expression                                                            | `bootstrap` — Bootstrap's own gradient                 | `--bs-gradient`                                  |
+ 
+-`--vn-surface-raised` is the color Elements paints its popover and drawer on. Veneer declares it
+-here because the dark border tier mixes against it; the component surfaces that consume it land with
++`--vn-surface-raised` is the color Elements paints behind a code block, a sample, and a variable,
++and the `pre`, `samp`, and `var` tags read it. The component surfaces that also consume it land with
+ their components.
+ 
++`--vn-text-muted` is the muted text Elements renders on an address and on a description in a
++description list, and those two tags read it. `--vn-text-secondary` is Bootstrap's own 75% step over
++the body text and answers `--bs-secondary-color`, which Bootstrap's `.text-muted` class reads, so
++the two names carry different values for different consumers.
++
+ #### Links
+ 
+ The table lists the link tokens: the resting color, the hover color, and the decoration. Each row
+@@ -450,14 +459,15 @@ gives its light value, its dark value, its `Source`, and the `--bs-*` variables
+ The table lists the type tokens: the families, the size scale, the line heights, and the weights.
+ Each row gives one value for every mode, its `Source`, and the `--bs-*` variables it answers.
+ 
+-| Token                                     | Value                                                                                 | Source                                          | Alias                                            |
+-| ----------------------------------------- | ------------------------------------------------------------------------------------- | ----------------------------------------------- | ------------------------------------------------ |
+-| `--vn-font-sans`                          | Elements' system stack, beginning `system-ui`                                         | `elements` — the family on every specimen       | `--bs-font-sans-serif`, `--bs-body-font-family`  |
+-| `--vn-font-mono`                          | Bootstrap's monospace stack                                                           | `bootstrap` — no Elements specimen renders code | `--bs-font-monospace`                            |
+-| `--vn-size-1` through `--vn-size-8`       | `0.75rem`, `0.875rem`, `1rem`, `1.125rem`, `1.25rem`, `1.5rem`, `1.875rem`, `2.25rem` | `elements` — the type table's 12 to 36 px steps | `--bs-body-font-size` reads `--vn-size-2`        |
+-| `--vn-display-1` through `--vn-display-6` | `5rem`, `4.5rem`, `4rem`, `3.5rem`, `3rem`, `2.5rem`                                  | `bootstrap` — `$display-font-sizes`             | none                                             |
+-| `--vn-line-body`, `--vn-line-heading`     | `1.5`, `1.2`                                                                          | `elements` — the type table's rhythm            | `--bs-body-line-height` reads `--vn-line-body`   |
+-| `--vn-weight-body`, `--vn-weight-heading` | `400`, `600`                                                                          | `elements` — the type table's weights           | `--bs-body-font-weight` reads `--vn-weight-body` |
++| Token                                                   | Value                                                                                              | Source                                                                                     | Alias                                            |
++| ------------------------------------------------------- | -------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ | ------------------------------------------------ |
++| `--vn-font-sans`                                        | Elements' system stack, beginning `system-ui`                                                      | `elements` — the family on every specimen                                                  | `--bs-font-sans-serif`, `--bs-body-font-family`  |
++| `--vn-font-mono-base`                                   | `SFMono-Regular`, `Menlo`, `Monaco`, `Consolas`, `'Liberation Mono'`, `'Courier New'`, `monospace` | `elements` — the code family's stack, after the leading `ui-monospace` each partial writes | `--bs-font-monospace`                            |
++| `--vn-font-mono-short`                                  | `SFMono-Regular`, `Menlo`, `monospace`                                                             | `elements` — the shorter stack a variable takes                                            | none                                             |
++| `--vn-size-1` through `--vn-size-8`                     | `0.75rem`, `0.875rem`, `1rem`, `1.125rem`, `1.25rem`, `1.5rem`, `1.875rem`, `2.25rem`              | `elements` — the type table's 12 to 36 px steps                                            | `--bs-body-font-size` reads `--vn-size-2`        |
++| `--vn-display-1` through `--vn-display-6`               | `5rem`, `4.5rem`, `4rem`, `3.5rem`, `3rem`, `2.5rem`                                               | `bootstrap` — `$display-font-sizes`                                                        | none                                             |
++| `--vn-line-body`, `--vn-line-heading`, `--vn-line-code` | `1.5`, `1.2`, `1.6`                                                                                | `elements` — the type table's rhythm, and the looser rhythm a code block takes             | `--bs-body-line-height` reads `--vn-line-body`   |
++| `--vn-weight-body`, `--vn-weight-heading`               | `400`, `600`                                                                                       | `elements` — the type table's weights                                                      | `--bs-body-font-weight` reads `--vn-weight-body` |
+ 
+ #### Space, border, radius, and elevation
+ 
+@@ -669,9 +679,9 @@ variable rather than through a Veneer token it names directly.
+ Veneer drops the `"Noto Sans"`, `"Liberation Sans"`, and `"Noto Color Emoji"` families Bootstrap
+ lists, because no Elements specimen renders any of them.
+ 
+-`--vn-line-heading` at `1.2` and `--vn-radius-base` at `0.375rem` agree with Bootstrap's own values.
+-They are recorded here rather than in the table, so a reader looking for them meets the agreement
+-instead of an omission.
++`--vn-line-heading` at `1.2`, `--vn-radius-base` at `0.375rem`, and `--vn-font-mono-base` agree with
++Bootstrap's own values. They are recorded here rather than in the table, so a reader looking for them
++meets the agreement instead of an omission.
+ 
+ The `.btn-tertiary` and `.btn-outline-tertiary` classes are Veneer additions over the tertiary
+ role. Filled-role text stays white and the border keeps its resting fill during hover and active
+diff --git a/src/core/constants.ts b/src/core/constants.ts
+index dfc9e1e..c6a34b7 100644
+--- a/src/core/constants.ts
++++ b/src/core/constants.ts
+@@ -127,6 +127,7 @@ export const TOKEN_NAMES = Object.freeze({
+ 		} as const),
+ 		secondary: '--vn-text-secondary',
+ 		tertiary: '--vn-text-tertiary',
++		muted: '--vn-text-muted',
+ 		heading: '--vn-text-heading',
+ 		code: '--vn-text-code',
+ 		highlight: '--vn-text-highlight',
+@@ -186,7 +187,10 @@ export const TOKEN_NAMES = Object.freeze({
+ 	} as const),
+ 	font: Object.freeze({
+ 		sans: '--vn-font-sans',
+-		mono: '--vn-font-mono',
++		mono: Object.freeze({
++			base: '--vn-font-mono-base',
++			short: '--vn-font-mono-short',
++		} as const),
+ 	} as const),
+ 	size: Object.freeze({
+ 		1: '--vn-size-1',
+@@ -209,6 +213,7 @@ export const TOKEN_NAMES = Object.freeze({
+ 	line: Object.freeze({
+ 		body: '--vn-line-body',
+ 		heading: '--vn-line-heading',
++		code: '--vn-line-code',
+ 	} as const),
+ 	weight: Object.freeze({
+ 		body: '--vn-weight-body',
+diff --git a/src/styles/_mixins.scss b/src/styles/_mixins.scss
+index c5c7fa8..cc004a8 100644
+--- a/src/styles/_mixins.scss
++++ b/src/styles/_mixins.scss
+@@ -1,7 +1,7 @@
+ @use 'sass:map';
+ 
+ @mixin code-text($size: 90%, $padding: 0.125em 0.25em) {
+-	font-family: ui-monospace, var(--vn-font-mono);
++	font-family: ui-monospace, var(--vn-font-mono-base);
+ 	font-size: $size;
+ 	padding: $padding;
+ 	color: var(--vn-text-code);
+@@ -172,6 +172,7 @@
+ 	--vn-text-emphasis-rgb: #{map.get($values, 'emphasis-rgb')};
+ 	--vn-text-secondary: color-mix(in srgb, var(--vn-text-body-base) 75%, transparent);
+ 	--vn-text-tertiary: color-mix(in srgb, var(--vn-text-body-base) 50%, transparent);
++	--vn-text-muted: #{map.get($values, 'muted')};
+ 	--vn-text-code: #{map.get($values, 'code')};
+ 	--vn-text-highlight: var(--vn-text-body-base);
+ 	--vn-surface-body-base: #{map.get($values, 'canvas')};
+@@ -182,7 +183,7 @@
+ 	--vn-surface-tertiary-base: #{map.get($values, 'surface-tertiary')};
+ 	--vn-surface-tertiary-rgb: #{map.get($values, 'surface-tertiary-rgb')};
+ 	--vn-surface-highlight: #{map.get($values, 'highlight')};
+-	--vn-surface-code: color-mix(in oklab, var(--vn-text-body-base) 12%, transparent);
++	--vn-surface-code: #{map.get($values, 'surface-code')};
+ 	--vn-link-base: #{map.get($values, 'link')};
+ 	--vn-link-rgb: #{map.get($values, 'link-rgb')};
+ 	--vn-link-hover-base: #{map.get($values, 'link-hover')};
+diff --git a/src/styles/_tokens.scss b/src/styles/_tokens.scss
+index 33b39fb..72d38e4 100644
+--- a/src/styles/_tokens.scss
++++ b/src/styles/_tokens.scss
+@@ -30,15 +30,17 @@ $light: (
+ 	'text-rgb': '15, 23, 43',
+ 	'emphasis': 'var(--vn-palette-black-base)',
+ 	'emphasis-rgb': 'var(--vn-palette-black-rgb)',
++	'muted': 'oklch(0.446 0.043 257.281)',
+ 	'code': 'var(--vn-text-body-base)',
+ 	'canvas': 'var(--vn-palette-white-base)',
+ 	'canvas-rgb': 'var(--vn-palette-white-rgb)',
+-	'raised': 'oklch(0.984 0.003 247.858)',
++	'raised': 'oklch(0.968 0.007 247.896)',
+ 	'surface-secondary': 'var(--vn-gray-200)',
+ 	'surface-secondary-rgb': '233, 236, 239',
+ 	'surface-tertiary': 'var(--vn-gray-100)',
+ 	'surface-tertiary-rgb': '248, 249, 250',
+ 	'highlight': 'color-mix(in srgb, var(--vn-palette-white-base) 80%, var(--vn-color-warning-base))',
++	'surface-code': 'color-mix(in oklab, var(--vn-text-body-base) 12%, transparent)',
+ 	'link': 'var(--vn-color-primary-base)',
+ 	'link-rgb': '8, 65, 234',
+ 	'link-hover': 'color-mix(in srgb, var(--vn-palette-black-base) 20%, var(--vn-link-base))',
+@@ -67,20 +69,25 @@ $dark: (
+ 	'primary-rgb': '0, 172, 236',
+ 	'tint': 15%,
+ 	'edge': 50%,
+-	'anchor': 'var(--vn-surface-raised)',
++	// The surface every dark role's border tier mixes against. It holds the value those tiers were
++	// calibrated on, and `raised` holds the Content record's own reading of Elements' raised
++	// surface, so the two are separate values rather than one token read twice.
++	'anchor': 'oklch(0.235 0.013 256)',
+ 	'text': 'oklch(0.929 0.013 255.508)',
+ 	'text-rgb': '226, 232, 240',
+ 	'emphasis': 'var(--vn-palette-white-base)',
+ 	'emphasis-rgb': 'var(--vn-palette-white-rgb)',
++	'muted': 'oklch(0.704 0.04 256.788)',
+ 	'code': 'var(--vn-text-body-base)',
+ 	'canvas': 'oklch(0.21 0.013 256)',
+ 	'canvas-rgb': '20, 25, 30',
+-	'raised': 'oklch(0.235 0.013 256)',
++	'raised': 'oklch(0.265 0.014 256)',
+ 	'surface-secondary': 'var(--vn-gray-800)',
+ 	'surface-secondary-rgb': '52, 58, 64',
+ 	'surface-tertiary': 'color-mix(in srgb, var(--vn-gray-800) 50%, var(--vn-gray-900))',
+ 	'surface-tertiary-rgb': '43, 48, 53',
+ 	'highlight': 'color-mix(in srgb, var(--vn-palette-black-base) 60%, var(--vn-color-warning-base))',
++	'surface-code': 'color-mix(in oklab, var(--vn-text-body-base) 12%, transparent)',
+ 	'link': 'color-mix(in srgb, var(--vn-palette-white-base) 40%, var(--vn-color-primary-base))',
+ 	'link-rgb': '85, 205, 243',
+ 	'link-hover': 'color-mix(in srgb, var(--vn-palette-white-base) 20%, var(--vn-link-base))',
+@@ -205,8 +212,9 @@ $assets: (
+ 		--vn-font-sans:
+ 			system-ui, -apple-system, 'Segoe UI', roboto, 'Helvetica Neue', arial, sans-serif,
+ 			'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
+-		--vn-font-mono:
++		--vn-font-mono-base:
+ 			SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
++		--vn-font-mono-short: SFMono-Regular, Menlo, monospace;
+ 
+ 		--vn-size-1: 0.75rem;
+ 		--vn-size-2: 0.875rem;
+@@ -226,6 +234,7 @@ $assets: (
+ 
+ 		--vn-line-body: 1.5;
+ 		--vn-line-heading: 1.2;
++		--vn-line-code: 1.6;
+ 		--vn-weight-body: 400;
+ 		--vn-weight-heading: 600;
+ 
+@@ -345,7 +354,7 @@ $assets: (
+ 		--bs-dark-rgb: var(--vn-color-dark-rgb);
+ 
+ 		--bs-font-sans-serif: var(--vn-font-sans);
+-		--bs-font-monospace: var(--vn-font-mono);
++		--bs-font-monospace: var(--vn-font-mono-base);
+ 		--bs-gradient: var(--vn-surface-gradient);
+ 
+ 		--bs-body-font-family: var(--vn-font-sans);
+diff --git a/src/styles/elements/_address.scss b/src/styles/elements/_address.scss
+index 0ffda65..12fe20f 100644
+--- a/src/styles/elements/_address.scss
++++ b/src/styles/elements/_address.scss
+@@ -3,5 +3,6 @@
+ 		margin: 0 0 var(--vn-space-7);
+ 		font-style: normal;
+ 		line-height: inherit;
++		color: var(--vn-text-muted);
+ 	}
+ }
+diff --git a/src/styles/elements/_dl.scss b/src/styles/elements/_dl.scss
+index e44b709..86da25c 100644
+--- a/src/styles/elements/_dl.scss
++++ b/src/styles/elements/_dl.scss
+@@ -10,5 +10,6 @@
+ 	}
+ 	dd {
+ 		margin: 0;
++		color: var(--vn-text-muted);
+ 	}
+ }
+diff --git a/src/styles/elements/_pre.scss b/src/styles/elements/_pre.scss
+index 1770402..ce0ccd9 100644
+--- a/src/styles/elements/_pre.scss
++++ b/src/styles/elements/_pre.scss
+@@ -6,7 +6,8 @@
+ 		display: block;
+ 		margin: 0;
+ 		overflow: auto;
+-		line-height: 1.6;
++		line-height: var(--vn-line-code);
++		background-color: var(--vn-surface-raised);
+ 		border: var(--vn-border-width) solid var(--vn-border-color);
+ 		border-radius: var(--vn-radius-base);
+ 	}
+diff --git a/src/styles/elements/_samp.scss b/src/styles/elements/_samp.scss
+index 42e1852..7445092 100644
+--- a/src/styles/elements/_samp.scss
++++ b/src/styles/elements/_samp.scss
+@@ -3,5 +3,6 @@
+ @layer elements {
+ 	samp {
+ 		@include code-text;
++		background-color: var(--vn-surface-raised);
+ 	}
+ }
+diff --git a/src/styles/elements/_var.scss b/src/styles/elements/_var.scss
+index be99de1..d5d671a 100644
+--- a/src/styles/elements/_var.scss
++++ b/src/styles/elements/_var.scss
+@@ -1,9 +1,10 @@
+ @layer elements {
+ 	var {
+-		font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
++		font-family: ui-monospace, var(--vn-font-mono-short);
+ 		font-size: 95%;
+ 		font-style: italic;
+ 		padding-inline: 0.25em;
+ 		color: var(--vn-text-code);
++		background-color: var(--vn-surface-raised);
+ 	}
+ }
+diff --git a/tests/setupStyles.ts b/tests/setupStyles.ts
+index 1b1e69c..f82a39f 100644
+--- a/tests/setupStyles.ts
++++ b/tests/setupStyles.ts
+@@ -42,7 +42,7 @@ export const TEXT_ADDRESS_CASES = Object.freeze(
+ 				'font-style': 'normal',
+ 				'line-height': '21px',
+ 			}),
+-			color: mode === 'light' ? 'oklch(0.208 0.042 265.755)' : 'oklch(0.929 0.013 255.508)',
++			color: mode === 'light' ? 'oklch(0.446 0.043 257.281)' : 'oklch(0.704 0.04 256.788)',
+ 		}),
+ 	),
+ )
+@@ -76,6 +76,7 @@ export const TEXT_CODE_CASES = Object.freeze(
+ 				'padding-inline-start': '3.15px',
+ 				'overflow-wrap': 'break-word',
+ 			}),
++			radius: 4,
+ 			color: mode === 'light' ? 'oklch(0.208 0.042 265.755)' : 'oklch(0.929 0.013 255.508)',
+ 			background:
+ 				mode === 'light'
+@@ -99,6 +100,7 @@ export const TEXT_DL_CASES = Object.freeze(
+ 				gap: '8px 16px',
+ 			}),
+ 			color: mode === 'light' ? 'oklch(0.208 0.042 265.755)' : 'oklch(0.929 0.013 255.508)',
++			muted: mode === 'light' ? 'oklch(0.446 0.043 257.281)' : 'oklch(0.704 0.04 256.788)',
+ 		}),
+ 	),
+ )
+@@ -143,6 +145,7 @@ export const TEXT_KBD_CASES = Object.freeze(
+ 				'padding-inline-start': '4.59375px',
+ 				'border-block-start-width': '1px',
+ 			}),
++			radius: 4,
+ 			color: mode === 'light' ? 'oklch(0.208 0.042 265.755)' : 'oklch(0.929 0.013 255.508)',
+ 			border:
+ 				mode === 'light'
+@@ -217,9 +220,10 @@ export const TEXT_PRE_CASES = Object.freeze(
+ 				overflow: 'auto',
+ 				margin: '0px',
+ 				'border-block-start-width': '1px',
+-				'background-color': 'rgba(0, 0, 0, 0)',
+ 			}),
++			radius: 6,
+ 			color: mode === 'light' ? 'oklch(0.208 0.042 265.755)' : 'oklch(0.929 0.013 255.508)',
++			background: mode === 'light' ? 'oklch(0.968 0.007 247.896)' : 'oklch(0.265 0.014 256)',
+ 			border: mode === 'light' ? 'oklch(0.869 0.022 252.894)' : 'oklch(0.4 0.022 256)',
+ 			family:
+ 				'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
+@@ -237,9 +241,9 @@ export const TEXT_SAMP_CASES = Object.freeze(
+ 				'line-height': '18.9px',
+ 				'padding-block-start': '1.575px',
+ 				'padding-inline-start': '3.15px',
+-				'background-color': 'rgba(0, 0, 0, 0)',
+ 			}),
+ 			color: mode === 'light' ? 'oklch(0.208 0.042 265.755)' : 'oklch(0.929 0.013 255.508)',
++			background: mode === 'light' ? 'oklch(0.968 0.007 247.896)' : 'oklch(0.265 0.014 256)',
+ 			family:
+ 				'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
+ 		}),
+@@ -327,9 +331,9 @@ export const TEXT_VAR_CASES = Object.freeze(
+ 				'line-height': '19.95px',
+ 				'padding-inline-start': '3.325px',
+ 				'font-style': 'italic',
+-				'background-color': 'rgba(0, 0, 0, 0)',
+ 			}),
+ 			color: mode === 'light' ? 'oklch(0.208 0.042 265.755)' : 'oklch(0.929 0.013 255.508)',
++			background: mode === 'light' ? 'oklch(0.968 0.007 247.896)' : 'oklch(0.265 0.014 256)',
+ 			family: 'ui-monospace, SFMono-Regular, Menlo, monospace',
+ 		}),
+ 	),
+@@ -1311,7 +1315,7 @@ export const THEME_DARK_ADDITIONS: readonly string[] = Object.freeze([
+  * canonical token of their own, so each is paired with the ramp rung Veneer points it at.
+  *
+  * A retained alias whose value is text carries no row in either table. `--bs-font-monospace` and
+- * `--bs-gradient`, which `--vn-font-mono` and `--vn-surface-gradient` answer, resolve to a font
++ * `--bs-gradient`, which `--vn-font-mono-base` and `--vn-surface-gradient` answer, resolve to a font
+  * stack and to a gradient image, and neither the painted-channel reading this table drives nor the
+  * pixel reading {@link RETAINED_LENGTH_ALIASES} drives reaches one. Veneer also writes the gradient
+  * over its own palette token, so that pair agrees as rendered rather than as text.
+diff --git a/tests/src/styles/elements/address.test.ts b/tests/src/styles/elements/address.test.ts
+index 0413565..dc7696d 100644
+--- a/tests/src/styles/elements/address.test.ts
++++ b/tests/src/styles/elements/address.test.ts
+@@ -9,7 +9,7 @@ afterEach(() => {
+ })
+ 
+ describe('address text treatment', () => {
+-	// The record supplies geometry; muted text remains unbound because its dark token is outside this unit.
++	// The record supplies the geometry and the muted text `--vn-text-muted` carries.
+ 	it.each(TEXT_ADDRESS_CASES)(
+ 		'resolves the address values in $mode mode',
+ 		({ mode, values, color }) => {
+diff --git a/tests/src/styles/elements/code.test.ts b/tests/src/styles/elements/code.test.ts
+index a2d4a57..8758a0c 100644
+--- a/tests/src/styles/elements/code.test.ts
++++ b/tests/src/styles/elements/code.test.ts
+@@ -1,5 +1,5 @@
+ import { requireValue } from '@orkestrel/test'
+-import { matchesColor, readStyle, readToken } from '@orkestrel/test/browser'
++import { matchesColor, readPixels, readStyle, readToken } from '@orkestrel/test/browser'
+ import { afterEach, describe, expect, it } from 'vitest'
+ import { specimens } from '../../../setupBrowser.js'
+ import { TEXT_CODE_CASES } from '../../../setupStyles.js'
+@@ -12,7 +12,7 @@ describe('code text treatment', () => {
+ 	// The content calibration supplies these independent resolved values.
+ 	it.each(TEXT_CODE_CASES)(
+ 		'resolves the code values in $mode mode',
+-		({ mode, values, color, background, family }) => {
++		({ mode, values, color, background, family, radius }) => {
+ 			const host = specimens.mount(
+ 				`<div data-bs-theme="${mode}" style="color: var(--vn-text-body-base)"><code>value</code></div>`,
+ 			)
+@@ -28,6 +28,7 @@ describe('code text treatment', () => {
+ 			)
+ 			expect(readStyle(element, 'font-family')).toBe(family)
+ 			expect(matchesColor(readStyle(element, 'background-color'), background)).toBe(true)
++			expect(readPixels(element, 'border-start-start-radius')).toBe(radius)
+ 		},
+ 	)
+ })
+diff --git a/tests/src/styles/elements/dl.test.ts b/tests/src/styles/elements/dl.test.ts
+index 7f510da..3937e09 100644
+--- a/tests/src/styles/elements/dl.test.ts
++++ b/tests/src/styles/elements/dl.test.ts
+@@ -9,22 +9,27 @@ afterEach(() => {
+ })
+ 
+ describe('dl text treatment', () => {
+-	// The record supplies geometry; muted text remains unbound because its dark token is outside this unit.
+-	it.each(TEXT_DL_CASES)('resolves the dl values in $mode mode', ({ mode, values, color }) => {
+-		const host = specimens.mount(
+-			`<div data-bs-theme="${mode}" style="color: var(--vn-text-body-base)"><dl style="inline-size: 520px"><dt>Term</dt><dd>Description</dd></dl></div>`,
+-		)
+-		const element = requireValue(host.querySelector('dl'), 'No dl specimen')
+-		expect(
+-			Object.fromEntries(
+-				Object.keys(values).map((property) => [property, readStyle(element, property)]),
+-			),
+-		).toEqual(values)
+-		expect(matchesColor(readStyle(element, 'color'), color)).toBe(true)
++	// The record supplies the geometry, the term weight, and the muted description text.
++	it.each(TEXT_DL_CASES)(
++		'resolves the dl values in $mode mode',
++		({ mode, values, color, muted }) => {
++			const host = specimens.mount(
++				`<div data-bs-theme="${mode}" style="color: var(--vn-text-body-base)"><dl style="inline-size: 520px"><dt>Term</dt><dd>Description</dd></dl></div>`,
++			)
++			const element = requireValue(host.querySelector('dl'), 'No dl specimen')
++			expect(
++				Object.fromEntries(
++					Object.keys(values).map((property) => [property, readStyle(element, property)]),
++				),
++			).toEqual(values)
++			expect(matchesColor(readStyle(element, 'color'), color)).toBe(true)
+ 
+-		expect(readStyle(requireValue(host.querySelector('dt'), 'No term'), 'font-weight')).toBe('600')
+-		expect(readStyle(requireValue(host.querySelector('dd'), 'No description'), 'margin')).toBe(
+-			'0px',
+-		)
+-	})
++			expect(readStyle(requireValue(host.querySelector('dt'), 'No term'), 'font-weight')).toBe(
++				'600',
++			)
++			const description = requireValue(host.querySelector('dd'), 'No description')
++			expect(readStyle(description, 'margin')).toBe('0px')
++			expect(matchesColor(readStyle(description, 'color'), muted)).toBe(true)
++		},
++	)
+ })
+diff --git a/tests/src/styles/elements/kbd.test.ts b/tests/src/styles/elements/kbd.test.ts
+index d8adf64..4033203 100644
+--- a/tests/src/styles/elements/kbd.test.ts
++++ b/tests/src/styles/elements/kbd.test.ts
+@@ -1,5 +1,5 @@
+ import { requireValue } from '@orkestrel/test'
+-import { matchesColor, readStyle, readToken } from '@orkestrel/test/browser'
++import { matchesColor, readPixels, readStyle, readToken } from '@orkestrel/test/browser'
+ import { afterEach, describe, expect, it } from 'vitest'
+ import { specimens } from '../../../setupBrowser.js'
+ import { TEXT_KBD_CASES } from '../../../setupStyles.js'
+@@ -12,7 +12,7 @@ describe('kbd text treatment', () => {
+ 	// The content calibration supplies these independent resolved values.
+ 	it.each(TEXT_KBD_CASES)(
+ 		'resolves the kbd values in $mode mode',
+-		({ mode, values, color, border, background, family }) => {
++		({ mode, values, color, border, background, family, radius }) => {
+ 			const host = specimens.mount(
+ 				`<div data-bs-theme="${mode}" style="color: var(--vn-text-body-base)"><kbd>Ctrl</kbd></div>`,
+ 			)
+@@ -29,6 +29,7 @@ describe('kbd text treatment', () => {
+ 			expect(readStyle(element, 'font-family')).toBe(family)
+ 			expect(matchesColor(readStyle(element, 'border-block-start-color'), border)).toBe(true)
+ 			expect(matchesColor(readStyle(element, 'background-color'), background)).toBe(true)
++			expect(readPixels(element, 'border-start-start-radius')).toBe(radius)
+ 		},
+ 	)
+ })
+diff --git a/tests/src/styles/elements/pre.test.ts b/tests/src/styles/elements/pre.test.ts
+index a59fa34..1272f91 100644
+--- a/tests/src/styles/elements/pre.test.ts
++++ b/tests/src/styles/elements/pre.test.ts
+@@ -1,5 +1,5 @@
+ import { requireValue } from '@orkestrel/test'
+-import { matchesColor, readStyle, readToken } from '@orkestrel/test/browser'
++import { matchesColor, readPixels, readStyle, readToken } from '@orkestrel/test/browser'
+ import { afterEach, describe, expect, it } from 'vitest'
+ import { specimens } from '../../../setupBrowser.js'
+ import { TEXT_PRE_CASES } from '../../../setupStyles.js'
+@@ -9,10 +9,10 @@ afterEach(() => {
+ })
+ 
+ describe('pre text treatment', () => {
+-	// The geometry follows the code-family record; the transparent surface is retained because the measured raised surface has no granted token.
++	// The geometry, the raised surface, and the corner follow the code-family record.
+ 	it.each(TEXT_PRE_CASES)(
+ 		'resolves the pre values in $mode mode',
+-		({ mode, values, color, border, family }) => {
++		({ mode, values, color, background, border, family, radius }) => {
+ 			const host = specimens.mount(
+ 				`<div data-bs-theme="${mode}" style="color: var(--vn-text-body-base)"><pre>first\nsecond</pre></div>`,
+ 			)
+@@ -27,7 +27,9 @@ describe('pre text treatment', () => {
+ 				true,
+ 			)
+ 			expect(readStyle(element, 'font-family')).toBe(family)
++			expect(matchesColor(readStyle(element, 'background-color'), background)).toBe(true)
+ 			expect(matchesColor(readStyle(element, 'border-block-start-color'), border)).toBe(true)
++			expect(readPixels(element, 'border-start-start-radius')).toBe(radius)
+ 		},
+ 	)
+ })
+diff --git a/tests/src/styles/elements/samp.test.ts b/tests/src/styles/elements/samp.test.ts
+index ba344e2..03e65ae 100644
+--- a/tests/src/styles/elements/samp.test.ts
++++ b/tests/src/styles/elements/samp.test.ts
+@@ -9,10 +9,10 @@ afterEach(() => {
+ })
+ 
+ describe('samp text treatment', () => {
+-	// The geometry follows the code-family record; the transparent surface is retained because the measured raised surface has no granted token.
++	// The geometry and the raised surface follow the code-family record.
+ 	it.each(TEXT_SAMP_CASES)(
+ 		'resolves the samp values in $mode mode',
+-		({ mode, values, color, family }) => {
++		({ mode, values, color, background, family }) => {
+ 			const host = specimens.mount(
+ 				`<div data-bs-theme="${mode}" style="color: var(--vn-text-body-base)"><samp>Result</samp></div>`,
+ 			)
+@@ -27,6 +27,7 @@ describe('samp text treatment', () => {
+ 				true,
+ 			)
+ 			expect(readStyle(element, 'font-family')).toBe(family)
++			expect(matchesColor(readStyle(element, 'background-color'), background)).toBe(true)
+ 		},
+ 	)
+ })
+diff --git a/tests/src/styles/elements/var.test.ts b/tests/src/styles/elements/var.test.ts
+index fde8683..fcd58a3 100644
+--- a/tests/src/styles/elements/var.test.ts
++++ b/tests/src/styles/elements/var.test.ts
+@@ -9,10 +9,10 @@ afterEach(() => {
+ })
+ 
+ describe('var text treatment', () => {
+-	// The geometry follows the code-family record; the transparent surface is retained because the measured raised surface has no granted token.
++	// The geometry, the shorter monospace stack, and the raised surface follow the record.
+ 	it.each(TEXT_VAR_CASES)(
+ 		'resolves the var values in $mode mode',
+-		({ mode, values, color, family }) => {
++		({ mode, values, color, background, family }) => {
+ 			const host = specimens.mount(
+ 				`<div data-bs-theme="${mode}" style="color: var(--vn-text-body-base)"><var>result</var></div>`,
+ 			)
+@@ -27,6 +27,7 @@ describe('var text treatment', () => {
+ 				true,
+ 			)
+ 			expect(readStyle(element, 'font-family')).toBe(family)
++			expect(matchesColor(readStyle(element, 'background-color'), background)).toBe(true)
+ 		},
+ 	)
+ })
+diff --git a/tests/src/styles/tokens.test.ts b/tests/src/styles/tokens.test.ts
+index 2a3949f..410b4ee 100644
+--- a/tests/src/styles/tokens.test.ts
++++ b/tests/src/styles/tokens.test.ts
+@@ -25,6 +25,7 @@ import {
+ 	extractShadowLayers,
+ 	RETAINED_COLOR_ALIASES,
+ 	RETAINED_LENGTH_ALIASES,
++	TEXT_MODES,
+ 	THEME_DARK_ADDITIONS,
+ } from '../../setupStyles.js'
+ 
+@@ -436,30 +437,92 @@ describe('token cascade', () => {
+ })
+ 
+ describe('code calibration tokens', () => {
+-	it.each(['light', 'dark'])(
+-		'resolves text and surface to the code-inline record in %s mode',
++	it.each(TEXT_MODES)('resolves text and surface to the code-inline record in %s mode', (mode) => {
++		const host = specimens.mount(
++			`<div data-bs-theme="${mode}" style="color: var(--vn-text-code); background-color: var(--vn-surface-code)"></div>`,
++		)
++		const element = requireValue(host.firstElementChild, 'No code token consumer')
++		expect(readToken(element, TOKEN_NAMES.text.code)).toBe(
++			readToken(element, TOKEN_NAMES.text.body.base),
++		)
++		expect(
++			matchesColor(
++				readStyle(element, 'color'),
++				mode === 'light' ? 'oklch(0.208 0.042 265.755)' : 'oklch(0.929 0.013 255.508)',
++			),
++		).toBe(true)
++		expect(
++			matchesColor(
++				readStyle(element, 'background-color'),
++				mode === 'light'
++					? 'oklab(0.208 -0.00310889 -0.0418848 / 0.12)'
++					: 'oklab(0.929 -0.00325318 -0.0125864 / 0.12)',
++			),
++		).toBe(true)
++	})
++})
++
++describe('content calibration tokens', () => {
++	it.each(TEXT_MODES)(
++		'resolves the muted text and the raised surface to the content record in %s mode',
+ 		(mode) => {
+ 			const host = specimens.mount(
+-				`<div data-bs-theme="${mode}" style="color: var(--vn-text-code); background-color: var(--vn-surface-code)"></div>`,
+-			)
+-			const element = requireValue(host.firstElementChild, 'No code token consumer')
+-			expect(readToken(element, TOKEN_NAMES.text.code)).toBe(
+-				readToken(element, TOKEN_NAMES.text.body.base),
++				`<div data-bs-theme="${mode}">` +
++					`<div id="muted" style="color: var(${TOKEN_NAMES.text.muted})"></div>` +
++					`<div id="raised" style="background-color: var(${TOKEN_NAMES.surface.raised})"></div>` +
++					'</div>',
+ 			)
++			const muted = requireValue(host.querySelector('#muted'), 'No muted specimen')
++			const raised = requireValue(host.querySelector('#raised'), 'No raised specimen')
+ 			expect(
+ 				matchesColor(
+-					readStyle(element, 'color'),
+-					mode === 'light' ? 'oklch(0.208 0.042 265.755)' : 'oklch(0.929 0.013 255.508)',
++					readStyle(muted, 'color'),
++					mode === 'light' ? 'oklch(0.446 0.043 257.281)' : 'oklch(0.704 0.04 256.788)',
+ 				),
+ 			).toBe(true)
+ 			expect(
+ 				matchesColor(
+-					readStyle(element, 'background-color'),
+-					mode === 'light'
+-						? 'oklab(0.208 -0.00310889 -0.0418848 / 0.12)'
+-						: 'oklab(0.929 -0.00325318 -0.0125864 / 0.12)',
++					readStyle(raised, 'background-color'),
++					mode === 'light' ? 'oklch(0.968 0.007 247.896)' : 'oklch(0.265 0.014 256)',
+ 				),
+ 			).toBe(true)
+ 		},
+ 	)
++	// The raised surface and the dark border anchor were one value until the content record
++	// retuned the surface. The anchor keeps the value the role tiers are calibrated on, so this
++	// reading is what separates them.
++	it('leaves the dark role border tiers on the anchor the raised surface no longer carries', () => {
++		const host = specimens.mount(
++			'<div data-bs-theme="dark">' +
++				`<div id="border" style="background-color: var(${TOKEN_NAMES.color.primary.border})"></div>` +
++				`<div id="raised" style="background-color: var(${TOKEN_NAMES.surface.raised})"></div>` +
++				'</div>',
++		)
++		const border = requireValue(host.querySelector('#border'), 'No border specimen')
++		const raised = requireValue(host.querySelector('#raised'), 'No raised specimen')
++		expect(
++			matchesColor(
++				readStyle(border, 'background-color'),
++				'color-mix(in oklab, oklch(0.7 0.15 233) 50%, oklch(0.235 0.013 256))',
++			),
++		).toBe(true)
++		expect(matchesColor(readStyle(raised, 'background-color'), 'oklch(0.235 0.013 256)')).toBe(
++			false,
++		)
++	})
++	it.each(TEXT_MODES)(
++		'resolves the shorter monospace stack and the code block rhythm in %s mode',
++		(mode) => {
++			const host = specimens.mount(
++				`<div data-bs-theme="${mode}">` +
++					`<div id="stack" style="font-family: var(${TOKEN_NAMES.font.mono.short})"></div>` +
++					`<div id="rhythm" style="font-size: 10px; line-height: var(${TOKEN_NAMES.line.code})"></div>` +
++					'</div>',
++			)
++			const stack = requireValue(host.querySelector('#stack'), 'No stack specimen')
++			const rhythm = requireValue(host.querySelector('#rhythm'), 'No rhythm specimen')
++			expect(readStyle(stack, 'font-family')).toBe('SFMono-Regular, Menlo, monospace')
++			expect(readPixels(rhythm, 'line-height')).toBe(16)
++		},
++	)
+ })
