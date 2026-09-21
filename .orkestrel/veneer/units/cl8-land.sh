@@ -1,16 +1,20 @@
 #!/usr/bin/env bash
 # Land CL8 in the Veneer checkout. The Orchestrator's own tracked command (commit and push are
-# barred to roles). The allowed set is CL8's brief § Scope: the grid partial and its proof, the
-# styles barrel, the styles setup module and its proof, the conformance listing, the guide's
-# compatibility and deferral rows, the layout showcase section and its proof, the showcase wiring,
-# and the mixins file, which the brief granted only for a shared block the sweep reports.
+# barred to roles). The allowed set is the union of CL8's three briefs' scopes: the grid partial and
+# its proof, the styles barrel, the styles setup module and its proof, the conformance listing, the
+# guide's compatibility and deferral rows, the layout showcase section and its proof, the showcase
+# wiring, and the mixins file, which brief 1 granted for a shared block the sweep reports.
+# Brief 2 added src/styles/components/_container.scss, for replacing the declaration blocks the
+# sweep named with calls to the extracted mixins and for nothing else.
+# Brief 3 added tests/setupConformance.test.ts, for adding the grid keys to the one assertion that
+# enumerates every component carrying guide rows, and for nothing else.
 # Steps: confirm every tracked or untracked change outside tmp/ is one of those files; commit them
 # by pathspec with the retained message; push.
 set -u
 SCAFFOLD="C:/Users/mikes/WebstormProjects/scaffold"
 VENEER="C:/Users/mikes/WebstormProjects/veneer"
 LOG="$SCAFFOLD/tmp/units/cl8-land.log.txt"
-ALLOWED=" app/browser/Showcase.ts app/browser/constants.ts app/browser/index.ts app/browser/sections/LayoutSection.ts guides/veneer.md src/styles/_mixins.scss src/styles/index.scss tests/app/browser/sections/LayoutSection.test.ts tests/conformance.test.ts tests/setupStyles.test.ts tests/setupStyles.ts "
+ALLOWED=" src/styles/components/_container.scss tests/setupConformance.test.ts app/browser/Showcase.ts app/browser/constants.ts app/browser/index.ts app/browser/sections/LayoutSection.ts guides/veneer.md src/styles/_mixins.scss src/styles/index.scss tests/app/browser/sections/LayoutSection.test.ts tests/conformance.test.ts tests/setupStyles.test.ts tests/setupStyles.ts "
 exec > >(tee -a "$LOG") 2>&1
 echo "== $(date -u +%Y-%m-%dT%H:%M:%SZ) land start"
 cd "$VENEER" || exit 9

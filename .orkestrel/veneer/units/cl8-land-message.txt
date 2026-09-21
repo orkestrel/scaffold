@@ -1,0 +1,48 @@
+Ship the grid rows, columns, and offsets (CL8)
+
+The published cascade carries the grid: the row with its gutter aliases and
+negative margins, its direct children taking their share of the gutter, the
+row-column counts, the flexible and automatic and numbered columns, and the
+offsets, each unconditioned and at every breakpoint the ramp carries.
+
+Every selector the pinned inventory records under the three keys ships at the
+condition it records, and every emitted declaration carries the recorded
+value once the logical-property ruling is applied. Compiling the styles entry
+unminified and comparing against the record leaves one difference: the
+breakpoint-scoped zero offset emits a percentage zero where the record has a
+unitless zero, which resolves identically.
+
+Two of the keys are prefix buckets rather than clean keys, so this unit ships
+the grid selectors and records the rest. The row key also carries every
+row-gap utility, which CL8b owns because they share a generation rule with
+the gutter step utilities. The col key also carries three form-label classes,
+which belong to Forms and which no form key records, so the col key is their
+only record. Each withheld name has its own deferral row naming the unit that
+closes it, and the presence scan refuses a deferred name found in the
+cascade.
+
+One loop over the breakpoint ramp emits both the unconditioned and the
+breakpoint-scoped variants, taking an empty infix at the zero boundary, and
+the offset's zero member exists only in its breakpoint form because that is
+what the record carries. The column widths are percentages of the grid's own
+division rather than a retunable scale, so this unit adds no token.
+
+The generated vocabulary is bound to its sources. The setup proof asserts the
+grid tables' breakpoint infixes against the compiled ramp, the column steps
+and the row-column counts against the inventory, and the whole generated
+selector set against the inventory minus the withheld families, so a ramp
+boundary or an inventory step added later reddens instead of shipping a class
+with no reading. That binding is the finding CL7's audit carried here.
+
+The declaration blocks the grid would have shared with the container moved to
+the mixins file, because the standing sweep forbids a block shared by two
+partials and the honest fix reaches both copies. The container's emitted
+cascade is unchanged, proved by comparing the built declarations before and
+after with negative controls on the comparison itself, and its proof is
+untouched and passing.
+
+Every gate exits 0 on managed Chromium, and the styles, browser-setup, and
+app-browser projects exit 0 on Edge. The audit is recorded in scaffold's
+`.orkestrel/veneer/cl8-audit-verdict.md` file.
+
+Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
