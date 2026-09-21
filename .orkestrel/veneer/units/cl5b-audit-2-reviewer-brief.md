@@ -10,7 +10,7 @@ have no write tools and no shell.
 
 ## Objective
 
-Rule on every claim of `C:/Users/mikes/WebstormProjects/scaffold/tmp/audit/cl5b-audit-claims-2.md`
+Rule on every claim of `C:/Users/mikes/WebstormProjects/scaffold/.orkestrel/veneer/cl5b-audit-claims-2.md`
 with CONFIRMED, REFUTED, or UNDECIDABLE and the deciding evidence (`file:line` or exact text),
 add any extra finding that is an implementation defect (numbered after the last claim, with a
 site and a one-line failure scenario, distinguishing one that forces a fix round from one that
@@ -20,7 +20,7 @@ claims that force it.
 ## Evidence
 
 The Orchestrator rendered the diff over the CL5 landing `ea82419` at
-`C:/Users/mikes/WebstormProjects/scaffold/tmp/audit/cl5b-diff-2.patch` and the status at
+`C:/Users/mikes/WebstormProjects/scaffold/.orkestrel/veneer/units/cl5b-diff-2.patch.txt` and the status at
 `tmp/audit/cl5b-status-2.txt`. Read those and the live Veneer tree at
 `C:/Users/mikes/WebstormProjects/veneer`, including `src/styles/_mixins.scss`, the four touched
 partials, `tests/setupConformance.ts` and its proof, `tests/setupStyles.ts` and its proof, both

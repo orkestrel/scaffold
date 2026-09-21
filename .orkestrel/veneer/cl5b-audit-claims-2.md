@@ -4,8 +4,8 @@ Subject: the whole CL5b change in the Veneer checkout (`C:/Users/mikes/WebstormP
 over the base `ea82419` (the CL5 landing), after the fix round `sol` ran under
 `.orkestrel/veneer/units/cl5b-brief-3.md` (over briefs 2 and 1, in force beneath it). Round 1's
 verdict is `.orkestrel/veneer/cl5b-audit-verdict.md`; the fix report is `units/cl5b-report-2.md`.
-Evidence: the rendered diff `tmp/audit/cl5b-diff-2.patch` and status `tmp/audit/cl5b-status-2.txt`,
-round 1's `tmp/audit/cl5b-diff.patch` for a diff-to-diff reading, and the live tree.
+Evidence: the rendered diff `units/cl5b-diff-2.patch.txt` and status `tmp/audit/cl5b-status-2.txt`,
+round 1's `units/cl5b-diff.patch.txt` for a diff-to-diff reading, and the live tree.
 
 **Scope of this round.** Implementation only: correctness, rule compliance, test sufficiency,
 scope honesty. Rule on no guide row and report no prose finding of any kind. Round 1's rulings

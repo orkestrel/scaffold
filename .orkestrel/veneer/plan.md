@@ -1651,3 +1651,39 @@ after acceptance per the debrief skill's retention reference.
   property does not change on hover so the hover mechanism must be found before binding it, and
   the utility families CL6 ships are what make the dormant Bootstrap opacity variable live.
   **Unchanged:** CL6 to CL13.
+- 2026-09-21, CL5b and its landing `4f817db` (`cl5b-audit-verdict.md`, two rounds): the two
+  declaration blocks duplicated across the element and component folders are mixins, and the
+  shared-block sweep ships as a covered function with a case asserting the tree carries none, so
+  the rule stops needing an auditor. The built stylesheet is byte-identical before and after, by
+  size and digest, and the comparison reports its own changed-byte control as different, so the
+  identity reading means something. The sweep's population is every partial recursively under
+  `src/styles/`, which the unit settled from brief 1's third Unknown rather than exceeding its
+  brief. It needs no package: the precise instrument this began as used a source-map library that
+  reaches this tree only as another package's dependency, and reading the written source instead
+  returns the same answer using only Node's own file reading.
+  **Round 1 accepted on all four lanes and went back anyway.** The objective lane traced the
+  sweep's tokenizer against every construct in the tree and found four ways the gate narrowed,
+  the worst being that a declaration whose property name is interpolated never entered a block at
+  all, so the role-each mixin's whole body was invisible. A gate that silently misses a class of
+  duplication is worse than one that fires, and those findings had no other carrier.
+  **Round 2 closed all four and the lanes split on the first.** The objective lane confirmed it
+  against flat interpolation, which is what the tree contains; the subjective lane refuted it
+  against a property name wrapped in a quoted nested interpolation, demonstrated by executing the
+  reading loop. Both readings hold. Ruled accept: the remaining escapes cover constructs the tree
+  does not contain, and the argument for closing them now — that CL8's gutter utilities might
+  need nested interpolation — weakened on checking, because gutter classes interpolate a selector
+  rather than a property name. **One bound carried** to the next unit that touches the sweep,
+  holding all four false negatives, each in a construct the tree does not contain and none of
+  which makes the gate report duplication that does not exist.
+  **The Orchestrator's own defects, the fifth and sixth.** A claim framed the population as wider
+  than the brief required, when that brief's own Unknown had told the unit to settle it; and an
+  acceptance criterion asserted in general what the fix delivered for a pinned pair. Both were
+  caught by the objective lane against documents the Orchestrator wrote. The rule that covers
+  both is landed in `handoff.md` § Standing rulings: write a claim only from a source you read,
+  never by restating a report, and a criterion asserting something in general is a claim.
+  **Also recorded:** two handoff edits made after the previous records commit were absent when
+  checked and were re-applied and committed in the same step (`7ef4c1da`). The cause is not
+  established; the retention rewriter skips that file by name and git reported it clean at the
+  prior commit. Durable rulings are verified by reading the file back and committed in the same
+  action from here.
+  **Unchanged:** CL5c dispatched over this landing; CL6 to CL13.

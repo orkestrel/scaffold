@@ -13,7 +13,7 @@ fact. Row 1 is the one the brief cannot be dispatched without.
 
 ## The brief under review
 
-`C:/Users/mikes/WebstormProjects/scaffold/tmp/units/cl5b-brief.md`, with its measurements at
+`C:/Users/mikes/WebstormProjects/scaffold/.orkestrel/veneer/units/cl5b-brief.md`, with its measurements at
 `.orkestrel/veneer/units/sweep-styles-authored.log.txt` and
 `units/sweep-styles-source-2.log.txt`. The subject checkout is
 `C:/Users/mikes/WebstormProjects/veneer`, HEAD `ea82419`, tracked tree clean.

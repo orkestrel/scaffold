@@ -73,3 +73,75 @@ fires, and none of these findings had another carrier.
 
 Verdict: fix round. `units/cl5b-brief-3.md` on Astra, the writer, carrying the four findings that
 narrow the gate. Round 2 runs all four lanes with the same assignment.
+
+## Round 2 (2026-09-21) — the fix round under `units/cl5b-brief-3.md`
+
+Subject: the whole CL5b change after the fix round, over the same base `ea82419`. Claims:
+`cl5b-audit-claims-2.md`, carrying no guide-row claim. Evidence: `units/cl5b-diff-2.patch.txt`,
+`units/cl5b-status-2.txt`, round 1's `units/cl5b-diff.patch.txt` for a diff-to-diff reading.
+Report: `units/cl5b-report-2.md`.
+
+Lanes, launched together and blind: analyst on Astra holding the SUBJECTIVE lane
+(`units/cl5b-audit-2-analyst-report.md`, thread `01a0c519-0ef1-7bc2-9fe3-279ff430a10a`, exit 0);
+reviewer on Opus 5 holding the OBJECTIVE lane (`units/lane-cl5b-2-reviewer.md`, workflow
+`wf_ad77eb91-98a`); checker on Sonnet (`units/lane-cl5b-2-checker.md`); verifier on Sonnet
+(`units/lane-cl5b-2-verifier.md`) over `units/cl5b-gate-2-brief.md`.
+
+| Claim | Reviewer (objective, Opus) | Analyst (subjective, Astra) | Checker | Verifier |
+| --- | --- | --- | --- | --- |
+| 1 interpolated property names enter their block | CONFIRMED (traced the widened pattern against the live tree; the previously invisible bodies now yield their declarations, and the case failed before the change) | REFUTED, forces a round (a property name wrapped in a quoted nested interpolation still escapes, demonstrated by executing the reading loop) | — | — |
+| 2 proved against the tree, no residue | CONFIRMED (read the retained red and green logs and swept the tree for either round's plant markers independently) | UNDECIDABLE, execution report-only; no residue found | — | — |
+| 3 interpolation whitespace folds, quoted whitespace survives | CONFIRMED (the carve-out is airtight by tokenization rather than by a later guard, so a string holding a brace or an interpolation is inert) | CONFIRMED | — | — |
+| 4 the parenthesis counter cannot go negative | CONFIRMED (clamping can only admit blocks, never suppress them) | CONFIRMED | — | — |
+| 5 forward slashes on every host | CONFIRMED (normalized at discovery and carried into every block record, so the list and the diagnostics share one spelling) | CONFIRMED | — | — |
+| 6 three findings red before, green after | CONFIRMED (traced each against round 1's pattern and raw-append branch; each must fail there) | UNDECIDABLE, execution report-only | — | — |
+| 7 nothing round 1 settled moved | CONFIRMED (checked every newly visible declaration for a cross-file collision; the remaining blobs are byte-identical between the rounds) | CONFIRMED | — | — |
+| 8 scope, law, gates | CONFIRMED on scope, law, and the unit's own readings | UNDECIDABLE as a complete gate claim | CONFIRMED on scope and law; gate half outside the slice | every step exit 0, both status readings identical |
+
+Reconciliation.
+
+**The lanes split on claim 1, and both are right about different inputs.** The objective lane
+confirmed it against flat interpolation, which is what the tree contains and what round 1's
+finding was about. The subjective lane refuted it against a property name wrapped in a quoted
+nested interpolation, and demonstrated the escape by executing the reading loop rather than by
+reading the pattern. Both readings hold; the pattern's interpolation group stops at the first
+closing brace, which is correct for the flat form and wrong for the nested one.
+
+**Ruled: accept, and carry the escape as a bound.** Round 2 was worth sending because its blind
+spot covered a construct the tree uses pervasively, in the role-each mixin and the aliased loop.
+The remaining escapes cover constructs the tree does not contain: a search for a quoted nested
+interpolation under `src/styles/` returns nothing. The argument for closing them now was that
+CL8's gutter utilities might need nested interpolation, and checking that argument weakened it,
+because gutter classes interpolate a selector rather than a property name. Sending a third round
+for constructs nothing uses would apply round 2's rule where its evidence no longer supports it.
+The objective lane recommends the same disposition for its own findings.
+
+**The Orchestrator's own defect, the sixth.** Brief 3's acceptance criterion 2 reads that two
+spellings of one interpolation differing only in internal whitespace compare equal. The objective
+lane's finding 9 shows that is met for the pinned run-length pair and not in general, because
+nothing trims at the interpolation's boundaries while everything outside one is trimmed. The
+criterion was written wider than the fix it asked for. The rule already recorded in
+`handoff.md` § Standing rulings covers it: a criterion asserting something in general is a claim,
+and it gets the same treatment as one.
+
+### The single bound carried out of CL5b
+
+To the next unit that touches the sweep, as one item rather than four:
+
+1. A property name inside a quoted nested interpolation escapes the reader, because the
+   interpolation group ends at the first closing brace instead of respecting the quoted-token
+   boundary the tokenizer already recognizes (subjective 1).
+2. Whitespace at an interpolation's boundary separates two spellings, because nothing trims after
+   the opening brace or before the closing one (objective 9).
+3. Normalizing separators rewrites a path whose filename legitimately holds a backslash, which
+   cannot occur on this host and fails loudly rather than silently elsewhere (objective 10).
+4. The interpolation counter has no ceiling guard matching the parenthesis floor, so an unclosed
+   interpolation would suppress a whole file's blocks; unreachable in compiling source, and it is
+   round-1 code the fix round did not touch (objective 11).
+
+Every one is a false negative in a construct the tree does not contain. None makes the gate report
+duplication that does not exist.
+
+### Terminal (round 2)
+
+Verdict: accept. CL5b lands at the round-2 tree.

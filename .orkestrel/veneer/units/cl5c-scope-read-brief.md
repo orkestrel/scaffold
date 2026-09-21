@@ -13,7 +13,7 @@ fact; a row you rule `unclear` names what you could not settle and why.
 
 ## The brief under review
 
-`C:/Users/mikes/WebstormProjects/scaffold/tmp/units/cl5c-brief.md`, with the Orchestrator's
+`C:/Users/mikes/WebstormProjects/scaffold/.orkestrel/veneer/units/cl5c-brief.md`, with the Orchestrator's
 calibration reading at `.orkestrel/veneer/units/cl5-twin-measurement.md`. The subject checkout is
 `C:/Users/mikes/WebstormProjects/veneer`, whose HEAD is the CL5 landing `ea82419` and whose
 working tree carries CL5b's completed change, pending its landing. CL5c will start from exactly

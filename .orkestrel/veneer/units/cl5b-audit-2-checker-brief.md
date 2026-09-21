@@ -8,7 +8,7 @@ the assignment directly and spawn nothing.
 ## Objective
 
 Rule on every claim marked `[mechanical]` in
-`C:/Users/mikes/WebstormProjects/scaffold/tmp/audit/cl5b-audit-claims-2.md` with CONFIRMED,
+`C:/Users/mikes/WebstormProjects/scaffold/.orkestrel/veneer/cl5b-audit-claims-2.md` with CONFIRMED,
 REFUTED, or UNDECIDABLE and `file:line` evidence, run the probes below, add any extra finding
 that is an implementation defect (numbered after the last claim), and end with one terminal line:
 `Verdict: accept` or `Verdict: fix round` with the claims that force it.
@@ -20,7 +20,7 @@ a fix round for its absence.
 ## Evidence
 
 The rendered diff over the CL5 landing `ea82419` at
-`C:/Users/mikes/WebstormProjects/scaffold/tmp/audit/cl5b-diff-2.patch` and the status at
+`C:/Users/mikes/WebstormProjects/scaffold/.orkestrel/veneer/units/cl5b-diff-2.patch.txt` and the status at
 `tmp/audit/cl5b-status-2.txt`; the live Veneer tree at `C:/Users/mikes/WebstormProjects/veneer`;
 the retained briefs, scope read, and report under
 `C:/Users/mikes/WebstormProjects/scaffold/.orkestrel/veneer/units/`, read only to learn what the
@@ -31,7 +31,7 @@ unit claims. Rule on the tree.
 - The status is identical between the two rounds, path for path, with no addition and no removal.
 - The diff-to-diff delta is exactly `tests/setupConformance.ts` and
   `tests/setupConformance.test.ts`. Compare every other file's blob hashes between
-  `tmp/audit/cl5b-diff.patch` and `tmp/audit/cl5b-diff-2.patch` and name any that differ. The two
+  `cl5b-diff.patch.txt` and `cl5b-diff-2.patch.txt` and name any that differ. The two
   mixins, the four extraction consumers, the fixture, and both image proofs must be byte-identical
   across the rounds.
 - The manifest and the lockfile are absent from both diffs. Name every import the round's changed

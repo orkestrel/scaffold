@@ -1,6 +1,6 @@
 CL5b brief 3 is implemented. The ordered gates passed on Windows on 2026-09-21, including managed Chromium and the specified Edge runs. The sweep still reports no shared block on the unplanted tree.
 
-This report follows `tmp/units/cl5b-brief-3.md`, with briefs 2 and 1 governing unchanged sections, and supersedes `tmp/units/cl5b-report.md` for this fix round. HEAD remains `ea82419`. Work ran directly in the supplied sol-on-Astra role; no agent was spawned. The outer launch's journal path and session identifier were not supplied.
+This report follows `cl5b-brief-3.md`, with briefs 2 and 1 governing unchanged sections, and supersedes `cl5b-report.md` for this fix round. HEAD remains `ea82419`. Work ran directly in the supplied sol-on-Astra role; no agent was spawned. The outer launch's journal path and session identifier were not supplied.
 
 The changes are confined to the sweep function and its cases. The finding sites are as follows.
 
@@ -19,7 +19,7 @@ The same focused command ran before and after the implementation changes:
 vitest run --config vite.config.ts --no-cache --reporter=verbose --project setup tests/setupConformance.test.ts -t scanStyleBlocks
 ```
 
-The recorded results were as follows. Log names in this report resolve under `tmp/units/`.
+The recorded results were as follows. Log names in this report resolve under ``.
 
 | Reading | Exit | Final result | Log |
 | --- | --- | --- | --- |
@@ -30,7 +30,7 @@ Only the path, interpolated-property, and interpolation-whitespace cases failed 
 
 The executed sweep reading was `population=48; pairs=1128; hits=0`, exit 0, recorded in `cl5b-fix-population.log.txt`. Its population remains every regular `_*.scss` partial recursively under `src/styles`, including root partials. This agrees with round 1. The temporary population test was removed. The sweep compares written declaration blocks; it does not expand includes or establish semantic CSS equivalence.
 
-`tmp/units/cl5b-fix-plant.mjs` appended an interpolated-property block to previously untouched `src/styles/elements/_address.scss` and `src/styles/components/_quote.scss`. Inside an `@each` loop, it declared `--cl5b-#{$role}-first: 17px` and `--cl5b-#{$role}-second: 23px`. It ran this command with the plant and after restoring the original buffers:
+`cl5b-fix-plant.mjs` appended an interpolated-property block to previously untouched `src/styles/elements/_address.scss` and `src/styles/components/_quote.scss`. Inside an `@each` loop, it declared `--cl5b-#{$role}-first: 17px` and `--cl5b-#{$role}-second: 23px`. It ran this command with the plant and after restoring the original buffers:
 
 ```text
 vitest run --config vite.config.ts --no-cache --reporter=verbose --project setup tests/setupStyles.test.ts
@@ -45,7 +45,7 @@ The plant results were as follows.
 
 Only `carries no shared written declaration block across style partials` failed. Its diagnostic reported the interpolated declarations at `components/_quote.scss:24` and `elements/_address.scss:11`. Removal reported `original bytes restored=true` for each file. Neither plant file has a diff. Searching `src` and `tests` for `cl5b-plant|cl5b-interpolation-plant|--cl5b-` returned no matches, covering the earlier plant and this round's plant.
 
-`tmp/units/cl5b-fix-gates.mjs` ran the ordered chain through `cl5b-run.mjs`, capturing actual child exit codes. Managed runs remove `PLAYWRIGHT_CHANNEL`; Edge runs set it to `msedge`. The browser-selection check returned `{}` for managed Chromium and `{"launchOptions":{"channel":"msedge"}}` for Edge.
+`cl5b-fix-gates.mjs` ran the ordered chain through `cl5b-run.mjs`, capturing actual child exit codes. Managed runs remove `PLAYWRIGHT_CHANNEL`; Edge runs set it to `msedge`. The browser-selection check returned `{}` for managed Chromium and `{"launchOptions":{"channel":"msedge"}}` for Edge.
 
 The gate exits and final substantive lines were as follows. Every listed log ends with `EXIT_CODE=0`.
 

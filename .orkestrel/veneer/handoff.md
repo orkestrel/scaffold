@@ -34,12 +34,12 @@ verifier, and landed by a script that refuses any file outside the owned set.
 
 | Checkout | HEAD | Meaning |
 | --- | --- | --- |
-| Veneer | `ea82419` | CL5 landed and pushed; the tracked tree is clean unless a successor is live |
-| Scaffold | confirm with `git log --oneline -1` | every record through CL5's landing retained and pushed; `.orkestrel/veneer/` is tracked |
+| Veneer | `4f817db` | CL5b landed and pushed; the tracked tree is clean unless a successor is live |
+| Scaffold | confirm with `git log --oneline -1` | every record through CL5b's landing retained and pushed; `.orkestrel/veneer/` is tracked |
 
 Landed in Veneer so far: CL1 `00a5bdc`, CL2 `9f5ffda`, CL3 `9bb306e`, CL3b `d822d59`, CL4
-`bc580c1`, CL4b `5240e36`, CL5 `ea82419`. Each has a verdict file named for it. Earlier landings
-are listed in the memory file `veneer-campaign-state.md` and in `plan.md`.
+`bc580c1`, CL4b `5240e36`, CL5 `ea82419`, CL5b `4f817db`. Each has a verdict file named for it.
+Earlier landings are listed in the memory file `veneer-campaign-state.md` and in `plan.md`.
 
 **CL3 and CL3b** land the reset partial, the text tag partials with mirrored proofs, the first
 shared blocks consolidated into mixins, the content section, and the Content colour tokens. The
@@ -48,36 +48,52 @@ took the record's value; `tests/src/styles/integration.test.ts:92` is the standi
 
 **CL4 and CL4b** land the remaining Reboot tag partials, the `reboot` compatibility key with its
 presence scan, the excluded rows, the selector canonicalization the build's downlevelling needs,
-the folder sweep that turned every shared block in the element folder into a mixin, and the two
-proof obligations CL4's own audit found.
+and the two proof obligations CL4's own audit found.
 
-**CL5 lands the typography and content classes** at `ea82419`, accepted after one fix round. Four
-component partials, two showcase regions, and sixteen keys flipped to `shipped` and joined to the
-listed set. Its heading and display class twins read the tokens their tags read, proved by
-comparing the tag and the class in one host and by a retune matrix covering every level.
+**CL5 lands the typography and content classes** at `ea82419`. Four component partials, two
+showcase regions, and sixteen keys flipped to `shipped` and joined to the listed set. Its heading
+and display class twins read the tokens their tags read, proved by comparing the tag and the
+class in one host and by a retune matrix covering every level.
 
-## What to do first: CL5's two successors, then CL6
+**CL5b closes the shared-block class** at `4f817db`, after two rounds. The two blocks duplicated
+across the element and component folders are mixins, and **the sweep now ships as a standing
+proof**: `scanStyleBlocks` in `tests/setupConformance.ts` reads every partial recursively under
+`src/styles/`, groups declarations by brace block, and reports every cross-file block two
+partials share, with the tree-is-clean case in `tests/setupStyles.test.ts`. A duplicated block
+written by any future unit reddens the suite instead of surfacing in an audit two rounds later.
+**One bound rides on the next unit that touches that function**, holding four false negatives,
+each in a construct the tree does not contain: a property name inside a quoted nested
+interpolation, whitespace at an interpolation's boundary, a filename holding a literal backslash,
+and an unclosed interpolation. None makes the gate report duplication that does not exist.
 
-Both are implementation work CL5's audit found and CL5's scope barred. Both are briefed and
-retained; neither has run.
+## What to do first: close CL5c, then CL6 and CL7
 
-**CL5b** (`units/cl5b-brief.md`, `sol` on Astra) extracts the two declaration blocks duplicated
-across the element and component folders and lands the shared-block sweep as a standing proof so
-the rule stops needing an auditor. **Its scope is measured, not estimated:** two instruments agree
-the whole open space is two pairs over 44 partials and 946 pairs
-(`units/sweep-styles-authored.log.txt`, `units/sweep-styles-source-2.log.txt`). The precise
-instrument needs `source-map-js`, which this package does not declare, so the brief bars it and
-the dependency-free text form reproduces the same answer. **A scope read is dispatched**
-(`units/cl5b-scope-read-brief.md`) whose row 1 settles where a filesystem-reading proof can live;
-fold its answer into `units/cl5b-brief-2.md` before dispatching.
+**CL5c is dispatched** on native Opus over `4f817db`, under `units/cl5c-brief.md` with
+`units/cl5c-brief-2.md` above it, its scope read at `units/cl5c-scope-read-report.md`. It
+replaces three near-identical specimen sections with one implementation, applies the twin rule to
+the mark pair, and closes two proof-integrity gaps. If this session ended before it returned,
+read the Veneer status first: an unlanded CL5c working tree is the unit's output, not drift.
 
-**CL5c** (`units/cl5c-brief.md`, `opus`) replaces three near-identical specimen sections with one
-implementation, applies the twin rule to the mark pair, and closes round 2's two proof-integrity
-gaps. Its mark ruling rests on `units/cl5-twin-measurement.md`: Elements sets its own mark tokens
-to the CSS system colours, Veneer's tag reproduces that, and the class is the side that departs.
+**Its mark ruling was corrected by the scope read and the correction matters.** No predicate
+anywhere inspects a declaration's colour value, so nothing would have refused the CSS system
+colour keywords the first ruling named. But the styles rule bans a literal colour and permits
+only a token reference or a mix over tokens, and a bare system keyword is neither. So both the
+tag and the class read two new tokens carrying those keywords, which is what the calibration
+record shows Elements itself did. `units/cl5-twin-measurement.md` carries the reading.
 
-**CL6** is an Astra unit whose terrain is mapped (`units/cl6-scout-report.md`) and whose central
-ruling is measured (`units/cl6-retune-measurement.md`). Scope-read its brief before dispatch.
+**CL6** is an Astra unit, briefed at `units/cl6-brief.md`, with its terrain at
+`units/cl6-scout-report.md` and its central ruling measured at
+`units/cl6-retune-measurement.md`. Scope-read it before dispatch. Two facts its brief already
+carries: the link key's inventory entry holds two custom properties, so unlike CL5's keys it is
+**not** admitted by the empty-properties branch and needs variable rows with proofs; and the
+utility families it ships are what make Bootstrap's dormant link-opacity variable live, which
+changes the anchor's behaviour and needs its own proof.
+
+**CL7** has its terrain at `units/cl7-scout-report.md` and its rulings at `units/cl7-rulings.md`;
+its brief is not yet written. The ramp covers every condition the container key carries, so CL2's
+mixins suffice. Its three rulings: the navigation combinators ship, the container widths and the
+gutter take tokens of their own with a blast-radius reading first, and the proof drives the
+viewport through the existing case table and visitor.
 
 ## Then CL5 to CL13
 
