@@ -1532,3 +1532,14 @@ after acceptance per the debrief skill's retention reference.
   a case proves. The brief hands over my full sweep of the file's eleven ledger call sites and
   tells the unit not to trust it to be complete.
   **Unchanged:** CL5 to CL13.
+- 2026-09-21, CL4 returned complete under brief 6 (`units/cl4-report-5.md`, thread
+  `01a0c46f-d6bd-72a2-942f-3fb0f0548a0a`): the sixteen new partials plus the reboot selectors
+  `_button.scss` lacked, the `reboot` row `shipped` with `listed` reading `['btn', 'reboot']`, the
+  ten-row exclusion set with every name absent from the cascade, the canonicalization inside its
+  grant, the scoped conformance cases, the content specimens, and the whole gate chain green on
+  managed Chromium and both Edge runs. Its measured comparison: the scan missed 64 selectors
+  before the partials and 12 after, the canonicalization recovering exactly the two reset
+  spellings in both readings, so the final ten misses are exactly the exclusion set. Round 1's
+  audit runs on all four lanes over `cl4-audit-claims.md`, with the reviewer's brief pointing the
+  hardest reading at the three rulings this unit took, the canonicalization first.
+  **Unchanged:** CL5 to CL13.
