@@ -25,7 +25,7 @@ fact in this section from `tests/fixtures/oracle/inventory.json` directly.
 `components.row` sit 44 grid rows and 36 `.row-gap-*` rows; under `components.col` sit 84 grid
 columns and 3 `.col-form-label*` rows. The `.row-gap-*` selectors are recorded identically under
 `components['row-gap']`. **Your unit ships the grid selectors only.** The rulings under Obligation
-3 say what happens to the rest; do not ship them and do not invent a home for them.
+2 say what happens to the rest; do not ship them and do not invent a home for them.
 
 The grid selector families, measured:
 
@@ -63,6 +63,17 @@ from the inventory and the ramp, never from this table**, which is a map rather 
   Write the loop the grid needs; do not copy the container's accumulation.
 - **Drive every generated family with one `@each` over a shared list.** `.claude/rules/styles.md`
   bars repeating per-variant blocks. A written-out ladder of twelve column widths is such a block.
+- **The deferral mechanism already exists; use it rather than rediscovering it.** `guides/veneer.md`
+  carries a `### Deferred selectors` table of `Name | Owner | Reason`, where the owner is the unit
+  that deletes the row when it ships the name, or the terminal `Excluded` for a name no unit will
+  ship. `tests/setupConformance.ts` reads it through `readDeferrals` and consumes it in
+  `scanCompatibilityPresence`, which **skips a deferred name** when checking a shipped row and
+  **refuses a deferred name that is present in the built cascade**. Read both before writing a row.
+- **A deferral does not withhold the key.** `collectShippedComponents` withholds a key when one of
+  its own guide rows reads `accepted` beside a shipped one; a deferral row is a separate table and
+  does not enter that decision. So a key with shipped rows and a deferral for the names it does not
+  yet carry **does** join the listed set, and the deferral records the departure. That is the
+  accounting this family exists to produce, so use it rather than withholding a key.
 
 ## Obligation 1 — the partial
 
@@ -88,19 +99,30 @@ key rather than reproducing Bootstrap from memory.
 This is the obligation the family exists for. Read `tests/setupConformance.ts` before deciding
 anything here.
 
-- **`offset` ships whole.** Its properties object is empty, so the empty-properties branch of
-  `collectShippedComponents` admits it on selector rows alone. Add it to the listed value in
-  `tests/conformance.test.ts` in sorted position, and give the guide a shipped selector row per
-  family.
-- **`row` and `col` do not ship whole in this unit**, because `.row-gap-*` and `.col-form-label*`
-  remain. Record each as a deferred selector with its reason and the unit that closes it:
-  `.row-gap-*` to CL8b, which ships the step utilities that set the same custom properties;
-  `.col-form-label*` to the Forms family, because those three selectors carry form-label typography
-  and no form key records them, so nothing else will force them. Do not add `row` or `col` to the
-  listed value, and do not ship a selector to make a key list.
-- **Report the deferral mechanism you used.** If the guide has no deferred-selector section, or the
-  conformance run has no way to record a deferral, say so in your report as a deviation rather than
-  inventing one.
+**All three keys end listed, with the names this unit does not carry recorded as deferrals.**
+
+- **`offset` and `col` carry empty properties objects**, so the empty-properties branch of
+  `collectShippedComponents` admits each on selector rows alone. **`row` carries
+  `--bs-gutter-x` and `--bs-gutter-y`**, so it needs a shipped variable row for each, which the
+  row rule's own declarations make true. Verify each of those three facts against
+  `tests/fixtures/oracle/inventory.json` before you rely on it.
+- Give the guide a shipped selector row per family per key, and `row` its two variable rows. Add
+  `col`, `offset`, and `row` to the listed value in `tests/conformance.test.ts` in sorted position.
+- **Record a deferral row per withheld name**, in the `### Deferred selectors` table. The table
+  keys by name, and the presence scan tests each inventory name for membership in the deferred set,
+  so a family needs a row for every selector it withholds rather than one row for the family. That
+  is every `.row-gap-*` selector the inventory records under the `row` key, to owner `CL8b`,
+  because that unit ships the step utilities that set the same custom properties; and
+  `.col-form-label`, `.col-form-label-lg`, and `.col-form-label-sm`, to the owner that ships the
+  form-label classes, because those carry form-label typography and **no form key records them**,
+  so the `col` key is their only record and nothing else would ever force them.
+- The `.row-gap-*` rows are transient by design: CL8b deletes them when it ships those selectors.
+  Write them anyway. A withheld name with no row is an unaccounted departure, which is the one
+  outcome this family refuses.
+- **Do not emit a deferred selector.** The presence scan refuses a deferred name found in the built
+  cascade, so shipping one turns the deferral into a gate failure.
+- Do not ship a selector into this partial merely to avoid a deferral row. A recorded departure is
+  the outcome this family wants; a form-label rule inside a grid partial is not.
 
 ## Obligation 3 — the proof reads the browser
 
@@ -132,20 +154,24 @@ specimens and this is the same family. Add grid specimens — a row with numbere
 auto and flexible columns, an offset, and a row-column count — and extend
 `tests/app/browser/sections/LayoutSection.test.ts` for what you add.
 
-**Carried from CL7's audit, to close while you are in these files:** the showcase wiring in
-`app/browser/index.ts` and `app/browser/Showcase.ts` places the layout section out of the
-alphabetical order its neighbours hold, `tests/setupStyles.test.ts` places the container tables out
-of the order its neighbours hold, and `app/browser/constants.ts` annotates the layout copy constant
-where every sibling copy constant is unannotated. Fix all three.
+**Carried from CL7's audit, to close while you are in these files.** Each site was re-checked
+against the current tree; fix each and report what you found:
+
+- `app/browser/index.ts` and `app/browser/Showcase.ts` place the layout section out of the
+  alphabetical order its neighbours hold.
+- `app/browser/constants.ts` annotates the layout copy constant where every sibling copy constant
+  is unannotated, and that annotation is the only reason its type is imported into the file.
+- `tests/setupStyles.test.ts` carries an ordering slip in its import list and a different one in
+  both the import list and the exports assertion. In the **import list**, the container entries
+  precede `CALIBRATED_TIERS`, which sorts before them. In the import list **and** the exports
+  assertion, `LIST_CLASS_CASES` precedes the `LINK_*` entries, which sort before it. The exports
+  assertion's container entries are already ordered correctly — do not move them there.
 
 ## Unknowns
 
 The Orchestrator does not know these and has not guessed. Settle each from the tree and report what
 you found.
 
-- **Whether the guide and the conformance run already carry a deferred-selector mechanism**, and
-  what shape a deferral row takes. Obligation 2 depends on it. If none exists, report that rather
-  than inventing one, and leave `row` and `col` unlisted with the reason in your report.
 - **Whether `.col`, `.col-auto`, and the `auto` row-column members need the flex shorthand the
   inventory records or a longhand equivalent**, given that the inventory's flattened declarations
   record `flex` and the rules elsewhere in this tree prefer longhands. Read what the container and
@@ -225,7 +251,8 @@ Cheap first.
 3. `npm run build` exits 0, and the built cascade carries every grid selector the inventory records
    under `row`, `col`, and `offset`, at the condition it records, with nothing extra.
 4. `npm run test:setup` exits 0, including the shared-block sweep and your binding assertions.
-5. `npm run test:conformance` exits 0 with `offset` listed, and `row` and `col` not listed.
+5. `npm run test:conformance` exits 0 with `row`, `col`, and `offset` listed, a deferral row
+   recorded for every withheld name, and no deferred selector present in the built cascade.
 6. `npm run test:src:styles` exits 0 on managed Chromium and on Edge.
 7. `npm run test:app:browser` and `npm run test:guides` exit 0.
 8. `npm test` exits 0.
