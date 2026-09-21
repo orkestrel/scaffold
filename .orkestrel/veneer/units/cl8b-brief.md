@@ -93,6 +93,16 @@ rather than inventing a placement.
   built cascade's grid selector and media-condition multiset against the record minus the guide's
   deferrals. Bring these keys into it. Prove it still fails in both directions with a control you
   plant and remove, recording the command, its failing output, and the same command green.
+
+  **Two edit sites make that extension load-bearing, and one of them reddens whether or not you make
+  it.** The collector's prefix test in `tests/setupStyles.ts` admits a selector beginning `.row`,
+  `.col`, or `.offset`, so `.row-gap-0` is already collected on the built side through the `row`
+  alternative — while the recorded side reads `oracle.components['row']`, which does not carry the
+  gap entries, because they sit under the separate `row-gap` key. **So the moment you ship
+  `.row-gap-*`, that assertion goes red until its key tuple names `row-gap`.** That is the proof
+  working, not a defect in it. The other site is the prefix test itself, which does not admit `.g-`,
+  `.gx-`, or `.gy-` and must. Both files are yours. Make each edit deliberately and say in your
+  report what each one was for; do not discover the redness and work backwards from it.
 - **Read the browser.** Follow `tests/src/styles/components/grid.test.ts`: real viewport visits
   through `visitBreakpoint`, resolved values through `readStyle`, `readPixels`, and `readToken`.
   Read a step utility's effect on a row's resolved margins and its child's resolved padding, at and
