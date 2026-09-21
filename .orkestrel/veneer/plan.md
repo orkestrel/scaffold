@@ -1193,3 +1193,13 @@ after acceptance per the debrief skill's retention reference.
   the 1280 variant, page frames clearing `:hover`, `readStates` announcing `disabled`) recorded
   for the Test 0.0.19 release unit; the paint calibration readings join the user's open design
   question.
+- 2026-09-21, U7c brief 2 returned complete on Opus (`units/u7c-report-2.md`): the eight
+  round-1 findings closed; the case matrices and the oracle driver moved to the setup files
+  (`collectPainted` over the rendered surface because the `src/browser` environment boundary
+  refuses a static app import in `tests/setupBrowser.ts`); every gate exit 0 on Chromium and
+  Edge. Round 2: the checker accepts and the verifier is green on every step; the analyst and
+  the reviewer substantiate four test-layer findings (the ring ratio pinned only relative to the
+  same run, the next case mounting after a failed teardown, the setup proofs' cleanup ordering,
+  `Showcase.test.ts` re-declaring the ownership rule with a tautological close). Carried as
+  `units/u7c-brief-3.md` on Opus. Reviewer finding 10 (`driveOracle` scopes the host reading
+  only) is carried to the unit that adds the second section.
