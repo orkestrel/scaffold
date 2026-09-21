@@ -56,3 +56,40 @@ wording. Observations outside the unit from the verifier's `scaffold audit`: unc
 
 Verdict: fix round. `units/u7c-brief-2.md` on native Opus; the Astra analyst stays the objective
 auditor.
+
+## Round 2, 2026-09-21 (the fix round: brief 2)
+
+Opus wrote the fix, so the Astra analyst holds the objective lane. Claims:
+`u7c-audit-claims-2.md`. Evidence: `units/u7c-diff-2.patch.txt` beside round 1's,
+`units/u7c-status-2.txt`.
+
+| Lane | Role | Engine | Record | Terminal line |
+| --- | --- | --- | --- | --- |
+| objective | `analyst` | Astra, `codex exec` read-only, thread `01a0c28d-5e6c-75a2-971e-9112825cdddf`, exit 0 | `units/u7c-audit-2-analyst.sh`, `units/u7c-audit-2-analyst-report.md` | fix round with claims 2 and 4 and finding 8 |
+| subjective | `reviewer` | native Opus 5, Workflow `wf_82c12b75-cad` | `units/u7c-audit-2-reviewer-brief.md`, `units/lane-u7c-2-reviewer.md` | fix round on findings 8 and 9; finding 10 carried forward |
+| mechanical | `checker` | native Sonnet, the same Workflow | `units/u7c-audit-2-checker-brief.md`, `units/lane-u7c-2-checker.md` | accept |
+| gates | `verifier` | native Sonnet, the same Workflow | `units/u7c-gate-brief.md`, `units/lane-u7c-2-verifier.md` | every step exit 0 (nineteen steps, `npm test`, `CAPTURE=1 test:journey`, the Edge runs, the read-only `scaffold audit` included) |
+
+Claims 1, 3, 5, and 6 CONFIRMED by the analyst and the reviewer (6 by the checker too); claim 7
+CONFIRMED from the verifier. Claim 2 REFUTED by the analyst on its last conjunct: the ring value
+is pinned only relative to the same run's `Primary` reading, in both modes. Claim 4 REFUTED by
+the analyst: the teardown aggregates a rejected release, but the next case mounts regardless.
+Analyst finding 8: the setup proofs repeat the release-before-cleanup ordering. Reviewer
+findings 8 and 9: `Showcase.test.ts` re-declares the ownership rule by hand and closes on a
+tautology with no non-empty guard. Claim 6's `test:probe` conjunct was the Orchestrator's
+wording (the script pre-exists at `0cbb563`). Reviewer finding 10 (`driveOracle` honours its
+root for the host reading only) is recorded and carried to the unit that adds the second
+section.
+
+### Findings carried into the fix round (`units/u7c-brief-3.md`)
+
+1. Analyst 2: the calibrated ring ratios pinned per mode from an exported table.
+2. Analyst 4: a teardown failure marker that refuses to mount the next case.
+3. Analyst 8: the setup proofs' mount cleanup in an unconditional `finally`.
+4. Reviewer 8 and 9: `Showcase.test.ts` derives `owned` from `BUTTON_SELECTOR`, guards it
+   non-empty, and closes on the reclaimed-host name list.
+
+### Terminal (round 2)
+
+Verdict: fix round. `units/u7c-brief-3.md` on native Opus; the Astra analyst stays the objective
+auditor.
