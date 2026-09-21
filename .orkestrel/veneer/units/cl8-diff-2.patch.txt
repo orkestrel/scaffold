@@ -1,0 +1,854 @@
+diff --git a/app/browser/Showcase.ts b/app/browser/Showcase.ts
+index 444c959..18f462b 100644
+--- a/app/browser/Showcase.ts
++++ b/app/browser/Showcase.ts
+@@ -4,8 +4,8 @@ import { ColorMode } from '@src/browser'
+ import { SHOWCASE_COPY } from './constants.js'
+ import { ButtonSection } from './sections/ButtonSection.js'
+ import { ContentSection } from './sections/ContentSection.js'
+-import { LinkSection } from './sections/LinkSection.js'
+ import { LayoutSection } from './sections/LayoutSection.js'
++import { LinkSection } from './sections/LinkSection.js'
+ import { MediaSection } from './sections/MediaSection.js'
+ import { TypeSection } from './sections/TypeSection.js'
+ 
+diff --git a/app/browser/constants.ts b/app/browser/constants.ts
+index 6d11859..80f9098 100644
+--- a/app/browser/constants.ts
++++ b/app/browser/constants.ts
+@@ -1,4 +1,4 @@
+-import type { ButtonSpecimen, MarkupSpecimen, SectionCopy } from './types.js'
++import type { ButtonSpecimen, MarkupSpecimen } from './types.js'
+ 
+ /** Holds the showcase's visible copy and accessible names. */
+ export const SHOWCASE_COPY = Object.freeze({
+@@ -470,13 +470,13 @@ export const LINK_SPECIMENS: readonly MarkupSpecimen[] = Object.freeze([
+ 	}),
+ ])
+ /** Holds the Layout section's visible copy and accessible name. */
+-export const LAYOUT_COPY: SectionCopy = Object.freeze({
++export const LAYOUT_COPY = Object.freeze({
+ 	region: 'Layout',
+ 	paragraph:
+-		'Containers center content with inline gutters. Resize the viewport to compare their breakpoint caps.',
++		'Containers center content with inline gutters. Resize the viewport to compare their caps and the grid columns, offsets, and row counts.',
+ })
+ 
+-/** Lists the fluid, capped, responsive, and navigation container specimens. */
++/** Lists the container and grid specimens. */
+ export const LAYOUT_SPECIMENS: readonly MarkupSpecimen[] = Object.freeze([
+ 	Object.freeze({
+ 		name: 'Capped container',
+@@ -509,4 +509,24 @@ export const LAYOUT_SPECIMENS: readonly MarkupSpecimen[] = Object.freeze([
+ 			)
+ 			.join(''),
+ 	}),
++	Object.freeze({
++		name: 'Numbered columns',
++		markup:
++			'<div class="container-fluid"><div class="row"><div class="col-12 col-md-4">One third at md</div><div class="col-12 col-md-8">Two thirds at md</div></div></div>',
++	}),
++	Object.freeze({
++		name: 'Auto and flexible columns',
++		markup:
++			'<div class="container-fluid"><div class="row"><div class="col-auto">Auto</div><div class="col">Remaining space</div></div></div>',
++	}),
++	Object.freeze({
++		name: 'Offset column',
++		markup:
++			'<div class="container-fluid"><div class="row"><div class="col-8 offset-2">Offset by two columns</div></div></div>',
++	}),
++	Object.freeze({
++		name: 'Row-column count',
++		markup:
++			'<div class="container-fluid"><div class="row row-cols-1 row-cols-md-3"><div>First column</div><div>Second column</div><div>Third column</div></div></div>',
++	}),
+ ])
+diff --git a/app/browser/index.ts b/app/browser/index.ts
+index 0789783..4f5e7f8 100644
+--- a/app/browser/index.ts
++++ b/app/browser/index.ts
+@@ -3,8 +3,8 @@ export * from './constants.js'
+ export * from './Showcase.js'
+ export * from './sections/ButtonSection.js'
+ export * from './sections/ContentSection.js'
+-export * from './sections/LinkSection.js'
+ export * from './sections/LayoutSection.js'
++export * from './sections/LinkSection.js'
+ export * from './sections/MediaSection.js'
+ export * from './sections/SpecimenSection.js'
+ export * from './sections/TypeSection.js'
+diff --git a/app/browser/sections/LayoutSection.ts b/app/browser/sections/LayoutSection.ts
+index 05f870e..83faec9 100644
+--- a/app/browser/sections/LayoutSection.ts
++++ b/app/browser/sections/LayoutSection.ts
+@@ -2,7 +2,7 @@ import { LAYOUT_COPY, LAYOUT_SPECIMENS } from '../constants.js'
+ import { SpecimenSection } from './SpecimenSection.js'
+ 
+ /**
+- * Renders the declared container specimens into a named layout region.
++ * Renders the declared container and grid specimens into a named layout region.
+  *
+  * @example
+  * ```ts
+diff --git a/guides/veneer.md b/guides/veneer.md
+index 474141a..16d5dfb 100644
+--- a/guides/veneer.md
++++ b/guides/veneer.md
+@@ -287,6 +287,45 @@ and the owning unit that deletes the row when it ships the name, or the terminal
+ | `--bs-btn-close-focus-shadow`                                       | Passive    | Close button supplies this property.                                                                                                                                                                            |
+ | `--bs-btn-close-focus-opacity`                                      | Passive    | Close button supplies this property.                                                                                                                                                                            |
+ | `--bs-btn-close-disabled-opacity`                                   | Passive    | Close button supplies this property.                                                                                                                                                                            |
++| `.row-gap-0`                                                        | CL8b       | The gutter step utilities own this row-gap selector and delete this deferral when they ship.                                                                                                                    |
++| `.row-gap-1`                                                        | CL8b       | The gutter step utilities own this row-gap selector and delete this deferral when they ship.                                                                                                                    |
++| `.row-gap-2`                                                        | CL8b       | The gutter step utilities own this row-gap selector and delete this deferral when they ship.                                                                                                                    |
++| `.row-gap-3`                                                        | CL8b       | The gutter step utilities own this row-gap selector and delete this deferral when they ship.                                                                                                                    |
++| `.row-gap-4`                                                        | CL8b       | The gutter step utilities own this row-gap selector and delete this deferral when they ship.                                                                                                                    |
++| `.row-gap-5`                                                        | CL8b       | The gutter step utilities own this row-gap selector and delete this deferral when they ship.                                                                                                                    |
++| `.row-gap-sm-0`                                                     | CL8b       | The gutter step utilities own this row-gap selector and delete this deferral when they ship.                                                                                                                    |
++| `.row-gap-sm-1`                                                     | CL8b       | The gutter step utilities own this row-gap selector and delete this deferral when they ship.                                                                                                                    |
++| `.row-gap-sm-2`                                                     | CL8b       | The gutter step utilities own this row-gap selector and delete this deferral when they ship.                                                                                                                    |
++| `.row-gap-sm-3`                                                     | CL8b       | The gutter step utilities own this row-gap selector and delete this deferral when they ship.                                                                                                                    |
++| `.row-gap-sm-4`                                                     | CL8b       | The gutter step utilities own this row-gap selector and delete this deferral when they ship.                                                                                                                    |
++| `.row-gap-sm-5`                                                     | CL8b       | The gutter step utilities own this row-gap selector and delete this deferral when they ship.                                                                                                                    |
++| `.row-gap-md-0`                                                     | CL8b       | The gutter step utilities own this row-gap selector and delete this deferral when they ship.                                                                                                                    |
++| `.row-gap-md-1`                                                     | CL8b       | The gutter step utilities own this row-gap selector and delete this deferral when they ship.                                                                                                                    |
++| `.row-gap-md-2`                                                     | CL8b       | The gutter step utilities own this row-gap selector and delete this deferral when they ship.                                                                                                                    |
++| `.row-gap-md-3`                                                     | CL8b       | The gutter step utilities own this row-gap selector and delete this deferral when they ship.                                                                                                                    |
++| `.row-gap-md-4`                                                     | CL8b       | The gutter step utilities own this row-gap selector and delete this deferral when they ship.                                                                                                                    |
++| `.row-gap-md-5`                                                     | CL8b       | The gutter step utilities own this row-gap selector and delete this deferral when they ship.                                                                                                                    |
++| `.row-gap-lg-0`                                                     | CL8b       | The gutter step utilities own this row-gap selector and delete this deferral when they ship.                                                                                                                    |
++| `.row-gap-lg-1`                                                     | CL8b       | The gutter step utilities own this row-gap selector and delete this deferral when they ship.                                                                                                                    |
++| `.row-gap-lg-2`                                                     | CL8b       | The gutter step utilities own this row-gap selector and delete this deferral when they ship.                                                                                                                    |
++| `.row-gap-lg-3`                                                     | CL8b       | The gutter step utilities own this row-gap selector and delete this deferral when they ship.                                                                                                                    |
++| `.row-gap-lg-4`                                                     | CL8b       | The gutter step utilities own this row-gap selector and delete this deferral when they ship.                                                                                                                    |
++| `.row-gap-lg-5`                                                     | CL8b       | The gutter step utilities own this row-gap selector and delete this deferral when they ship.                                                                                                                    |
++| `.row-gap-xl-0`                                                     | CL8b       | The gutter step utilities own this row-gap selector and delete this deferral when they ship.                                                                                                                    |
++| `.row-gap-xl-1`                                                     | CL8b       | The gutter step utilities own this row-gap selector and delete this deferral when they ship.                                                                                                                    |
++| `.row-gap-xl-2`                                                     | CL8b       | The gutter step utilities own this row-gap selector and delete this deferral when they ship.                                                                                                                    |
++| `.row-gap-xl-3`                                                     | CL8b       | The gutter step utilities own this row-gap selector and delete this deferral when they ship.                                                                                                                    |
++| `.row-gap-xl-4`                                                     | CL8b       | The gutter step utilities own this row-gap selector and delete this deferral when they ship.                                                                                                                    |
++| `.row-gap-xl-5`                                                     | CL8b       | The gutter step utilities own this row-gap selector and delete this deferral when they ship.                                                                                                                    |
++| `.row-gap-xxl-0`                                                    | CL8b       | The gutter step utilities own this row-gap selector and delete this deferral when they ship.                                                                                                                    |
++| `.row-gap-xxl-1`                                                    | CL8b       | The gutter step utilities own this row-gap selector and delete this deferral when they ship.                                                                                                                    |
++| `.row-gap-xxl-2`                                                    | CL8b       | The gutter step utilities own this row-gap selector and delete this deferral when they ship.                                                                                                                    |
++| `.row-gap-xxl-3`                                                    | CL8b       | The gutter step utilities own this row-gap selector and delete this deferral when they ship.                                                                                                                    |
++| `.row-gap-xxl-4`                                                    | CL8b       | The gutter step utilities own this row-gap selector and delete this deferral when they ship.                                                                                                                    |
++| `.row-gap-xxl-5`                                                    | CL8b       | The gutter step utilities own this row-gap selector and delete this deferral when they ship.                                                                                                                    |
++| `.col-form-label`                                                   | Forms      | Form-label typography belongs to Forms; the col inventory key is its only record.                                                                                                                               |
++| `.col-form-label-lg`                                                | Forms      | Form-label typography belongs to Forms; the col inventory key is its only record.                                                                                                                               |
++| `.col-form-label-sm`                                                | Forms      | Form-label typography belongs to Forms; the col inventory key is its only record.                                                                                                                               |
+ 
+ ### Departures from the workspace rows
+ 
+@@ -765,6 +804,22 @@ must add a forced-colors axis before this reading closes.
+ 
+ | Component     | Kind           | Obligation                                                                                                                                                                                                                        | Proof                 | Status   |
+ | ------------- | -------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------- | -------- |
++| row           | selector       | The `.row` family ships with logical sizing and margins; resolved behavior is proved in `tests/src/styles/components/grid.test.ts`. Withheld names are recorded under Styles / Deferred selectors.                                | —                     | shipped  |
++| row           | selector       | The `.row > *` family ships with logical sizing and margins; resolved behavior is proved in `tests/src/styles/components/grid.test.ts`. Withheld names are recorded under Styles / Deferred selectors.                            | —                     | shipped  |
++| row           | selector       | The `.row-cols-auto > *` family ships with logical sizing and margins; resolved behavior is proved in `tests/src/styles/components/grid.test.ts`. Withheld names are recorded under Styles / Deferred selectors.                  | —                     | shipped  |
++| row           | selector       | The `.row-cols-{n} > *` family ships with logical sizing and margins; resolved behavior is proved in `tests/src/styles/components/grid.test.ts`. Withheld names are recorded under Styles / Deferred selectors.                   | —                     | shipped  |
++| row           | selector       | The `.row-cols-{bp}-auto > *` family ships with logical sizing and margins; resolved behavior is proved in `tests/src/styles/components/grid.test.ts`. Withheld names are recorded under Styles / Deferred selectors.             | —                     | shipped  |
++| row           | selector       | The `.row-cols-{bp}-{n} > *` family ships with logical sizing and margins; resolved behavior is proved in `tests/src/styles/components/grid.test.ts`. Withheld names are recorded under Styles / Deferred selectors.              | —                     | shipped  |
++| col           | selector       | The `.col` family ships with logical sizing and margins; resolved behavior is proved in `tests/src/styles/components/grid.test.ts`. Withheld names are recorded under Styles / Deferred selectors.                                | —                     | shipped  |
++| col           | selector       | The `.col-auto` family ships with logical sizing and margins; resolved behavior is proved in `tests/src/styles/components/grid.test.ts`. Withheld names are recorded under Styles / Deferred selectors.                           | —                     | shipped  |
++| col           | selector       | The `.col-{n}` family ships with logical sizing and margins; resolved behavior is proved in `tests/src/styles/components/grid.test.ts`. Withheld names are recorded under Styles / Deferred selectors.                            | —                     | shipped  |
++| col           | selector       | The `.col-{bp}` family ships with logical sizing and margins; resolved behavior is proved in `tests/src/styles/components/grid.test.ts`. Withheld names are recorded under Styles / Deferred selectors.                           | —                     | shipped  |
++| col           | selector       | The `.col-{bp}-auto` family ships with logical sizing and margins; resolved behavior is proved in `tests/src/styles/components/grid.test.ts`. Withheld names are recorded under Styles / Deferred selectors.                      | —                     | shipped  |
++| col           | selector       | The `.col-{bp}-{n}` family ships with logical sizing and margins; resolved behavior is proved in `tests/src/styles/components/grid.test.ts`. Withheld names are recorded under Styles / Deferred selectors.                       | —                     | shipped  |
++| offset        | selector       | The `.offset-{n}` family ships with logical sizing and margins; resolved behavior is proved in `tests/src/styles/components/grid.test.ts`. Withheld names are recorded under Styles / Deferred selectors.                         | —                     | shipped  |
++| offset        | selector       | The `.offset-{bp}-{n}` family ships with logical sizing and margins; resolved behavior is proved in `tests/src/styles/components/grid.test.ts`. Withheld names are recorded under Styles / Deferred selectors.                    | —                     | shipped  |
++| row           | variable       | The `--bs-gutter-x` property aliases `--vn-gutter-x`; default gutters and canonical and direct overrides are resolved in `tests/src/styles/components/grid.test.ts`.                                                              | —                     | shipped  |
++| row           | variable       | The `--bs-gutter-y` property aliases `--vn-gutter-y`; default gutters and canonical and direct overrides are resolved in `tests/src/styles/components/grid.test.ts`.                                                              | —                     | shipped  |
+ | container     | selector       | Every official container selector is present, including the navigation combinators; breakpoint caps and fluid widths are resolved in `tests/src/styles/components/container.test.ts`.                                             | —                     | shipped  |
+ | container     | variable       | The `--bs-gutter-x` property resolves from `--vn-gutter-x` and controls inline padding, with canonical and direct overrides proved in `tests/src/styles/components/container.test.ts`.                                            | —                     | shipped  |
+ | container     | variable       | The `--bs-gutter-y` property resolves from `--vn-gutter-y`, with its zero default and canonical and direct overrides proved in `tests/src/styles/components/container.test.ts`.                                                   | —                     | shipped  |
+diff --git a/src/styles/_mixins.scss b/src/styles/_mixins.scss
+index cd277ca..133c5ee 100644
+--- a/src/styles/_mixins.scss
++++ b/src/styles/_mixins.scss
+@@ -1,5 +1,16 @@
+ @use 'sass:map';
+ 
++@mixin alias-gutters {
++	--bs-gutter-x: var(--vn-gutter-x);
++	--bs-gutter-y: var(--vn-gutter-y);
++}
++
++@mixin pad-gutters {
++	inline-size: 100%;
++	@content;
++	padding-inline: calc(var(--bs-gutter-x) * 0.5);
++}
++
+ @mixin heading-text {
+ 	margin: 0;
+ 	font-weight: var(--vn-weight-heading);
+diff --git a/src/styles/components/_container.scss b/src/styles/components/_container.scss
+index e3b4a6c..b5646b7 100644
+--- a/src/styles/components/_container.scss
++++ b/src/styles/components/_container.scss
+@@ -9,10 +9,8 @@
+ 	.container-lg,
+ 	.container-xl,
+ 	.container-xxl {
+-		--bs-gutter-x: var(--vn-gutter-x);
+-		--bs-gutter-y: var(--vn-gutter-y);
+-		inline-size: 100%;
+-		padding-inline: calc(var(--bs-gutter-x) * 0.5);
++		@include alias-gutters;
++		@include pad-gutters;
+ 		margin-inline: auto;
+ 	}
+ 
+diff --git a/src/styles/index.scss b/src/styles/index.scss
+index 1854efe..5cea391 100644
+--- a/src/styles/index.scss
++++ b/src/styles/index.scss
+@@ -47,3 +47,4 @@
+ @use 'components/image';
+ @use 'components/link';
+ @use 'components/container';
++@use 'components/grid';
+diff --git a/tests/app/browser/sections/LayoutSection.test.ts b/tests/app/browser/sections/LayoutSection.test.ts
+index 8592a9b..a8b26ea 100644
+--- a/tests/app/browser/sections/LayoutSection.test.ts
++++ b/tests/app/browser/sections/LayoutSection.test.ts
+@@ -20,6 +20,10 @@ describe('LayoutSection', () => {
+ 				'Fluid container',
+ 				'Responsive containers',
+ 				'Navigation containers',
++				'Numbered columns',
++				'Auto and flexible columns',
++				'Offset column',
++				'Row-column count',
+ 			])
+ 			expect(rendered.map((element) => element.innerHTML)).toEqual(
+ 				LAYOUT_SPECIMENS.map((specimen) => specimen.markup),
+@@ -33,9 +37,22 @@ describe('LayoutSection', () => {
+ 				'container-xl',
+ 				'container-xxl',
+ 			]) {
+-				expect(region.querySelector(`[data-specimen]:not(:last-child) .${name}`)).not.toBeNull()
++				expect(
++					region.querySelector(
++						`[data-specimen]:not([data-specimen="Navigation containers"]) .${name}`,
++					),
++				).not.toBeNull()
+ 				expect(region.querySelector(`.navbar > .${name}`)).not.toBeNull()
+ 			}
++			for (const selector of [
++				'[data-specimen="Numbered columns"] .row > .col-12.col-md-4',
++				'[data-specimen="Numbered columns"] .row > .col-12.col-md-8',
++				'[data-specimen="Auto and flexible columns"] .row > .col-auto',
++				'[data-specimen="Auto and flexible columns"] .row > .col',
++				'[data-specimen="Offset column"] .row > .col-8.offset-2',
++				'[data-specimen="Row-column count"] .row.row-cols-1.row-cols-md-3',
++			])
++				expect(region.querySelector(selector)).not.toBeNull()
+ 			expect(Object.isFrozen(LAYOUT_COPY)).toBe(true)
+ 			expect(Object.isFrozen(LAYOUT_SPECIMENS)).toBe(true)
+ 			expect(LAYOUT_SPECIMENS.every((specimen) => Object.isFrozen(specimen))).toBe(true)
+diff --git a/tests/conformance.test.ts b/tests/conformance.test.ts
+index 36c7560..ec661d5 100644
+--- a/tests/conformance.test.ts
++++ b/tests/conformance.test.ts
+@@ -81,6 +81,7 @@ describe('Bootstrap component oracle', () => {
+ 		const listed: readonly string[] = [
+ 			'blockquote',
+ 			'btn',
++			'col',
+ 			'container',
+ 			'display',
+ 			'figure',
+@@ -97,7 +98,9 @@ describe('Bootstrap component oracle', () => {
+ 			'list-inline',
+ 			'list-unstyled',
+ 			'mark',
++			'offset',
+ 			'reboot',
++			'row',
+ 			'small',
+ 		]
+ 		expect(
+diff --git a/tests/setupConformance.test.ts b/tests/setupConformance.test.ts
+index 361e8e0..57e3edc 100644
+--- a/tests/setupConformance.test.ts
++++ b/tests/setupConformance.test.ts
+@@ -933,6 +933,7 @@ describe('setupConformance', () => {
+ 			new Set([
+ 				'blockquote',
+ 				'btn',
++				'col',
+ 				'display',
+ 				'engine',
+ 				'container',
+@@ -950,7 +951,9 @@ describe('setupConformance', () => {
+ 				'list-inline',
+ 				'list-unstyled',
+ 				'mark',
++				'offset',
+ 				'reboot',
++				'row',
+ 				'small',
+ 			]),
+ 		)
+diff --git a/tests/setupStyles.test.ts b/tests/setupStyles.test.ts
+index a00c3f0..31df47a 100644
+--- a/tests/setupStyles.test.ts
++++ b/tests/setupStyles.test.ts
+@@ -4,28 +4,41 @@ import { TOKEN_NAMES } from '@src/core'
+ import { parse } from 'postcss'
+ import { compileString } from 'sass'
+ import { describe, expect, it } from 'vitest'
+-import { readBootstrapCascade, scanStyleBlocks } from './setupConformance.js'
++import oracle from './fixtures/oracle/inventory.json'
++import {
++	readBootstrapCascade,
++	readBuiltCascade,
++	readDeferrals,
++	readOracleInventory,
++	scanStyleBlocks,
++} from './setupConformance.js'
+ import * as setup from './setupStyles.js'
+ import {
+ 	BOOTSTRAP_DARK_VARIABLES,
+ 	BOOTSTRAP_ROOT_VARIABLES,
+ 	BOOTSTRAP_SCOPE_PATTERNS,
+ 	BREAKPOINT_CASES,
++	CALIBRATED_TIERS,
+ 	CONTAINER_CLASS_CASES,
+ 	CONTAINER_WIDTH_CASES,
+-	CALIBRATED_TIERS,
+ 	CUSTOMIZATION_RECIPE,
+ 	EDGE_SHORTHANDS,
+ 	extractBootstrapVariables,
+ 	FILL_ONLY_RECIPE,
++	GRID_BREAKPOINT_CASES,
++	GRID_COLUMN_STEPS,
++	GRID_COUNT_STEPS,
++	GRID_OFFSET_STEPS,
+ 	IMAGE_PAINT_CASES,
+-	LIST_CLASS_CASES,
+-	LINK_ROLES,
+-	LINK_OPACITY_CASES,
+ 	LINK_OFFSET_CASES,
++	LINK_OPACITY_CASES,
++	LINK_ROLES,
+ 	LINK_UNDERLINE_OPACITY_CASES,
++	LIST_CLASS_CASES,
++	collectGridVocabulary,
+ 	collectTokenNames,
+ 	collectTripletGroups,
++	compileBreakpointRamp,
+ 	extractCompoundTags,
+ 	extractSelectorCompounds,
+ 	extractSelectorIdentifiers,
+@@ -69,16 +82,121 @@ import {
+ } from './setupStyles.js'
+ 
+ describe('styles setup', () => {
+-	it('matches the non-zero ramp names to the container token keys', () => {
+-		const ramp = compileString(
+-			"@use 'mixins' as *; .ramp { @each $name, $width in breakpoints() { @if $width != 0 { #{$name}: #{$width}; } } }",
+-			{ loadPaths: ['src/styles'] },
+-		).css
+-		const names = new Set<string>()
+-		parse(ramp).walkDecls(({ prop }) => {
+-			names.add(prop)
+-		})
+-		expect(names).toEqual(new Set(Object.keys(TOKEN_NAMES.container)))
++	it('binds every grid breakpoint and numbered family to the ramp and inventory', async () => {
++		const ramp = await compileBreakpointRamp()
++		expect(
++			GRID_BREAKPOINT_CASES.filter(({ boundary }) => boundary === 0).map(({ name }) => name),
++		).toEqual(ramp.zero)
++		expect(
++			new Map(
++				GRID_BREAKPOINT_CASES.filter(({ boundary }) => boundary !== 0).map(({ name, boundary }) => [
++					name,
++					boundary,
++				]),
++			),
++		).toEqual(ramp.members)
++		const inventory = readOracleInventory()
++		expect(GRID_COLUMN_STEPS).toEqual(
++			inventory.components.col?.selectors.flatMap((selector) => {
++				const match = /^\.col-(\d+)$/u.exec(selector)
++				return match ? [Number(match[1])] : []
++			}),
++		)
++		expect(GRID_COUNT_STEPS).toEqual(
++			inventory.components.row?.selectors.flatMap((selector) => {
++				const match = /^\.row-cols-(\d+) > \*$/u.exec(selector)
++				return match ? [Number(match[1])] : []
++			}),
++		)
++		const generated: { row: string[]; col: string[]; offset: string[] } = {
++			row: ['.row', '.row > *'],
++			col: [],
++			offset: [],
++		}
++		for (const { name, boundary } of GRID_BREAKPOINT_CASES) {
++			const infix = boundary === 0 ? '' : `-${name}`
++			generated.col.push(
++				`.col${infix}`,
++				`.col${infix}-auto`,
++				...GRID_COLUMN_STEPS.map((step) => `.col${infix}-${String(step)}`),
++			)
++			generated.row.push(
++				`.row-cols${infix}-auto > *`,
++				...GRID_COUNT_STEPS.map((step) => `.row-cols${infix}-${String(step)} > *`),
++			)
++			generated.offset.push(
++				...GRID_OFFSET_STEPS.filter((step) => boundary !== 0 || step !== 0).map(
++					(step) => `.offset${infix}-${String(step)}`,
++				),
++			)
++		}
++		for (const key of ['col', 'offset', 'row'] as const) {
++			expect(new Set(generated[key])).toEqual(
++				new Set(
++					inventory.components[key]?.selectors.filter(
++						(selector) =>
++							!selector.startsWith('.row-gap-') && !selector.startsWith('.col-form-label'),
++					),
++				),
++			)
++		}
++		for (const table of [
++			GRID_BREAKPOINT_CASES,
++			GRID_COLUMN_STEPS,
++			GRID_COUNT_STEPS,
++			GRID_OFFSET_STEPS,
++		])
++			expect(Object.isFrozen(table)).toBe(true)
++		for (const entry of GRID_BREAKPOINT_CASES) {
++			expect(Object.isFrozen(entry)).toBe(true)
++			expect(Object.isFrozen(entry.readings)).toBe(true)
++		}
++	})
++	it('pins the grid viewport readings on each side of every breakpoint', () => {
++		expect(GRID_BREAKPOINT_CASES.map(({ boundary, readings }) => [boundary, ...readings])).toEqual([
++			[0, 375, 1401],
++			[576, 575, 576, 577],
++			[768, 767, 768, 769],
++			[992, 991, 992, 993],
++			[1200, 1199, 1200, 1201],
++			[1400, 1399, 1400, 1401],
++		])
++	})
++	it('binds the built grid selector and media-condition multiset to the inventory minus deferrals', () => {
++		const deferred = new Set(readDeferrals().map(({ name }) => name))
++		const recorded = (['row', 'col', 'offset'] as const)
++			.flatMap((key) => {
++				const component = oracle.components[key]
++				return component.selectors
++					.filter(({ selector }) => !deferred.has(selector))
++					.map((entry) => {
++						const rule = `${entry.selector} {}`
++						return 'condition' in entry ? `${entry.condition} { ${rule} }` : rule
++					})
++			})
++			.join('\n')
++		expect(collectGridVocabulary(readBuiltCascade())).toEqual(collectGridVocabulary(recorded))
++	})
++	it('normalizes grid selector spacing and minimum widths while retaining media ancestry and duplicates', () => {
++		expect(
++			collectGridVocabulary(
++				'@media (min-width: 576px) { .row > * {} .col-sm {} .col-sm {} } .offset-1 {} .row-gap-0 {} .col-form-label {} .container {}',
++			),
++		).toEqual([
++			'[".col-form-label",[]]',
++			'[".col-sm",["(width>=576px)"]]',
++			'[".col-sm",["(width>=576px)"]]',
++			'[".offset-1",[]]',
++			'[".row > *",["(width>=576px)"]]',
++			'[".row-gap-0",[]]',
++		])
++		expect(
++			collectGridVocabulary('@media screen { @media (width >= 576px) { .col-sm {} } }'),
++		).toEqual(['[".col-sm",["screen","(width>=576px)"]]'])
++	})
++	it('matches the non-zero ramp names to the container token keys', async () => {
++		const ramp = await compileBreakpointRamp()
++		expect(new Set(ramp.members.keys())).toEqual(new Set(Object.keys(TOKEN_NAMES.container)))
+ 	})
+ 	it('pins the frozen container variants and payload widths against the retained scale', () => {
+ 		expect(CONTAINER_CLASS_CASES.map(({ name, boundary }) => [name, boundary])).toEqual([
+@@ -178,13 +296,17 @@ describe('styles setup', () => {
+ 				'CUSTOMIZATION_RECIPE',
+ 				'EDGE_SHORTHANDS',
+ 				'FILL_ONLY_RECIPE',
++				'GRID_BREAKPOINT_CASES',
++				'GRID_COLUMN_STEPS',
++				'GRID_COUNT_STEPS',
++				'GRID_OFFSET_STEPS',
+ 				'IMAGE_PAINT_CASES',
+ 				'IMAGE_SOURCE',
+-				'LIST_CLASS_CASES',
+-				'LINK_ROLES',
+-				'LINK_OPACITY_CASES',
+ 				'LINK_OFFSET_CASES',
++				'LINK_OPACITY_CASES',
++				'LINK_ROLES',
+ 				'LINK_UNDERLINE_OPACITY_CASES',
++				'LIST_CLASS_CASES',
+ 				'MANDATED_TAG_PAIRS',
+ 				'PHYSICAL_LONGHANDS',
+ 				'QUOTE_FOOTER_CASES',
+@@ -222,8 +344,10 @@ describe('styles setup', () => {
+ 				'TYPE_MARK_TOKEN_CASES',
+ 				'TYPE_TEXT_CASES',
+ 				'VENEER_GUIDE_PATH',
++				'collectGridVocabulary',
+ 				'collectTokenNames',
+ 				'collectTripletGroups',
++				'compileBreakpointRamp',
+ 				'extractBootstrapVariables',
+ 				'extractCompoundTags',
+ 				'extractSelectorCompounds',
+diff --git a/tests/setupStyles.ts b/tests/setupStyles.ts
+index b561446..5c056f1 100644
+--- a/tests/setupStyles.ts
++++ b/tests/setupStyles.ts
+@@ -1,3 +1,4 @@
++import type { AnyNode } from 'postcss'
+ import { TOKEN_NAMES } from '@src/core'
+ import { isRecord } from '@orkestrel/contract'
+ import { parse } from 'postcss'
+@@ -417,6 +418,83 @@ export const CONTAINER_WIDTH_CASES = Object.freeze([
+ 	Object.freeze({ boundary: 1400, width: 1320, token: TOKEN_NAMES.container.xxl }),
+ ])
+ 
++/** Lists the grid infixes and real viewport readings around their activation boundaries. */
++export const GRID_BREAKPOINT_CASES = Object.freeze(
++	[
++		{ name: 'xs', boundary: 0 },
++		{ name: 'sm', boundary: 576 },
++		{ name: 'md', boundary: 768 },
++		{ name: 'lg', boundary: 992 },
++		{ name: 'xl', boundary: 1200 },
++		{ name: 'xxl', boundary: 1400 },
++	].map(({ name, boundary }) =>
++		Object.freeze({
++			name,
++			boundary,
++			readings: Object.freeze(
++				boundary === 0 ? [375, 1401] : [boundary - 1, boundary, boundary + 1],
++			),
++		}),
++	),
++)
++
++/** Lists the numbered column steps retained by the grid inventory. */
++export const GRID_COLUMN_STEPS = Object.freeze([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12])
++
++/** Lists the numbered row-column counts retained by the grid inventory. */
++export const GRID_COUNT_STEPS = Object.freeze([1, 2, 3, 4, 5, 6])
++
++/** Lists the offset steps, with zero emitted only at a non-zero breakpoint. */
++export const GRID_OFFSET_STEPS = Object.freeze([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11])
++
++/**
++ * Compiles the shared breakpoint ramp into its zero keys and non-zero members.
++ * @returns The zero-boundary names and the named non-zero boundaries in ramp order.
++ * @remarks Loads Sass only when the Node setup proof calls this function.
++ */
++export async function compileBreakpointRamp(): Promise<{
++	readonly zero: readonly string[]
++	readonly members: ReadonlyMap<string, number>
++}> {
++	const { compileString } = await import('sass')
++	const ramp = compileString(
++		"@use 'mixins' as *; .ramp { @each $name, $width in breakpoints() { #{$name}: #{$width}; } }",
++		{ loadPaths: ['src/styles'] },
++	).css
++	const zero: string[] = []
++	const members = new Map<string, number>()
++	parse(ramp).walkDecls(({ prop, value }) => {
++		const boundary = Number.parseFloat(value)
++		if (boundary === 0) zero.push(prop)
++		else members.set(prop, boundary)
++	})
++	return { zero, members }
++}
++
++/**
++ * Collects the grid selector and enclosing media-condition multiset from a CSS cascade.
++ * @param cascade - The CSS text to inspect, including withheld grid families when present.
++ * @returns Sorted serialized selector/condition pairs, retaining duplicate rules.
++ * @remarks Normalizes selector spacing and equivalent minimum-width notation, never values.
++ */
++export function collectGridVocabulary(cascade: string): readonly string[] {
++	const vocabulary: string[] = []
++	parse(cascade).walkRules((rule) => {
++		for (const selector of rule.selectors) {
++			if (!/^\.(?:row|col|offset)(?:-|[^\w-]|$)/u.test(selector)) continue
++			const conditions: string[] = []
++			for (let parent: AnyNode | undefined = rule.parent; parent; parent = parent.parent) {
++				if (parent.type === 'atrule' && parent.name === 'media')
++					conditions.unshift(
++						parent.params.replace(/min-width\s*:\s*/gu, 'width>=').replaceAll(/\s+/gu, ''),
++					)
++			}
++			vocabulary.push(JSON.stringify([normalizeComplexSelector(selector), conditions]))
++		}
++	})
++	return vocabulary.sort()
++}
++
+ /** Holds the transition durations and focus-ring lengths for the bare-button cases. */
+ export const BUTTON_BARE_VALUES = Object.freeze({
+ 	durations: Object.freeze(['0.15s', '0.15s', '0.15s', '0.15s', '0.15s']),
+diff --git a/src/styles/components/_grid.scss b/src/styles/components/_grid.scss
+new file mode 100644
+index 0000000..e6a4dca
+--- /dev/null
++++ b/src/styles/components/_grid.scss
+@@ -0,0 +1,75 @@
++@use 'sass:list';
++@use 'sass:math';
++@use '../mixins' as *;
++
++@layer components {
++	.row {
++		@include alias-gutters;
++		display: flex;
++		flex-wrap: wrap;
++		margin-block-start: calc(-1 * var(--bs-gutter-y));
++		margin-inline: calc(-0.5 * var(--bs-gutter-x));
++	}
++
++	.row > * {
++		flex-shrink: 0;
++		@include pad-gutters {
++			max-inline-size: 100%;
++		}
++		margin-block-start: var(--bs-gutter-y);
++	}
++
++	$columns: 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12;
++	$counts: auto, 1, 2, 3, 4, 5, 6;
++	$offsets: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11;
++	@each $name, $boundary in breakpoints() {
++		$infix: '';
++		@if $boundary != 0 {
++			$infix: '-#{$name}';
++		}
++		@include breakpoint-up($name) {
++			.col#{$infix} {
++				flex: 1 0 0;
++			}
++
++			@each $count in $counts {
++				.row-cols#{$infix}-#{$count} > * {
++					flex: 0 0 auto;
++					@if $count == auto {
++						inline-size: auto;
++					} @else {
++						inline-size: math.div(math.round(math.div(10000000000, $count)), 100000000) * 1%;
++					}
++				}
++			}
++
++			.col#{$infix}-auto {
++				flex: 0 0 auto;
++				inline-size: auto;
++			}
++
++			@each $column in $columns {
++				.col#{$infix}-#{$column} {
++					flex: 0 0 auto;
++					inline-size: math.div(
++							math.round(math.div($column, list.length($columns)) * 10000000000),
++							100000000
++						) *
++						1%;
++				}
++			}
++
++			@each $offset in $offsets {
++				@if $boundary != 0 or $offset != 0 {
++					.offset#{$infix}-#{$offset} {
++						margin-inline-start: math.div(
++								math.round(math.div($offset, list.length($columns)) * 10000000000),
++								100000000
++							) *
++							1%;
++					}
++				}
++			}
++		}
++	}
++}
+diff --git a/tests/src/styles/components/grid.test.ts b/tests/src/styles/components/grid.test.ts
+new file mode 100644
+index 0000000..351cac6
+--- /dev/null
++++ b/tests/src/styles/components/grid.test.ts
+@@ -0,0 +1,163 @@
++import { TOKEN_NAMES } from '@src/core'
++import { requireValue } from '@orkestrel/test'
++import { readPixels, readStyle, readToken } from '@orkestrel/test/browser'
++import { afterEach, describe, expect, it } from 'vitest'
++import { specimens, visitBreakpoint } from '../../../setupBrowser.js'
++import {
++	GRID_BREAKPOINT_CASES,
++	GRID_COLUMN_STEPS,
++	GRID_COUNT_STEPS,
++	GRID_OFFSET_STEPS,
++} from '../../../setupStyles.js'
++
++afterEach(() => {
++	specimens.clear()
++})
++
++describe('grid gutters', () => {
++	it('resolves the default gutter and canonical and alias overrides on physical sides', () => {
++		const host = specimens.mount('<div class="row"><div></div></div>')
++		const row = requireValue(host.querySelector('.row'), 'No row specimen')
++		const child = requireValue(row.firstElementChild, 'No column specimen')
++		if (!(row instanceof HTMLElement)) throw new Error('Row is not an HTML element')
++		expect(readStyle(row, 'display')).toBe('flex')
++		expect(readStyle(row, 'flex-wrap')).toBe('wrap')
++		expect(readToken(row, '--bs-gutter-x')).toBe('1.5rem')
++		expect(readToken(row, '--bs-gutter-y')).toBe('0')
++		expect(readPixels(row, 'margin-left')).toBe(-12)
++		expect(readPixels(row, 'margin-right')).toBe(-12)
++		expect(readPixels(row, 'margin-top')).toBe(0)
++		expect(readPixels(child, 'padding-left')).toBe(12)
++		expect(readPixels(child, 'padding-right')).toBe(12)
++		expect(readPixels(child, 'margin-top')).toBe(0)
++		expect(readStyle(child, 'flex-shrink')).toBe('0')
++		expect(readStyle(child, 'max-width')).toBe('100%')
++		row.style.setProperty(TOKEN_NAMES.gutter.x, '2rem')
++		expect(readToken(row, '--bs-gutter-x')).toBe('2rem')
++		expect(readPixels(row, 'margin-left')).toBe(-16)
++		expect(readPixels(row, 'margin-right')).toBe(-16)
++		expect(readPixels(child, 'padding-left')).toBe(16)
++		expect(readPixels(child, 'padding-right')).toBe(16)
++		row.style.setProperty(TOKEN_NAMES.gutter.y, '0.5rem')
++		expect(readToken(row, '--bs-gutter-y')).toBe('0.5rem')
++		expect(readPixels(row, 'margin-top')).toBe(-8)
++		expect(readPixels(child, 'margin-top')).toBe(8)
++		expect(readStyle(row, 'row-gap')).toBe('normal')
++		row.style.setProperty('--bs-gutter-x', '3rem')
++		row.style.setProperty('--bs-gutter-y', '1rem')
++		expect(readToken(row, '--bs-gutter-x')).toBe('3rem')
++		expect(readToken(row, '--bs-gutter-y')).toBe('1rem')
++		expect(readPixels(row, 'margin-left')).toBe(-24)
++		expect(readPixels(row, 'margin-right')).toBe(-24)
++		expect(readPixels(child, 'padding-left')).toBe(24)
++		expect(readPixels(child, 'padding-right')).toBe(24)
++		expect(readPixels(row, 'margin-top')).toBe(-16)
++		expect(readPixels(child, 'margin-top')).toBe(16)
++	})
++})
++
++describe('grid variants', () => {
++	it.each(GRID_BREAKPOINT_CASES)(
++		'resolves numbered columns and offsets around the $name boundary',
++		async ({ name, boundary, readings }) => {
++			const infix = boundary === 0 ? '' : `-${name}`
++			const offsets = GRID_OFFSET_STEPS.filter((step) => boundary !== 0 || step !== 0)
++			const host = specimens.mount(
++				`<div class="row" style="width:600px">${GRID_COLUMN_STEPS.map((step) => `<div class="col${infix}-${String(step)}"></div>`).join('')}${offsets.map((step) => `<div class="col-1 offset${infix}-${String(step)}"></div>`).join('')}</div>`,
++			)
++			const row = requireValue(host.querySelector('.row'), 'No row specimen')
++			for (const viewport of readings) {
++				await visitBreakpoint(viewport, () => {
++					expect(window.innerWidth).toBe(viewport)
++					const width = readPixels(row, 'width')
++					for (const step of GRID_COLUMN_STEPS) {
++						const child = requireValue(
++							host.querySelector(`.col${infix}-${String(step)}`),
++							'No numbered column',
++						)
++						expect(
++							readPixels(child, 'width'),
++							`${name} column ${String(step)} at ${String(viewport)}`,
++						).toBeCloseTo(viewport < boundary ? width : (width * step) / 12, 1)
++					}
++					for (const step of offsets) {
++						const child = requireValue(
++							host.querySelector(`.offset${infix}-${String(step)}`),
++							'No offset column',
++						)
++						expect(
++							readPixels(child, 'margin-left'),
++							`${name} offset ${String(step)} at ${String(viewport)}`,
++						).toBeCloseTo(viewport < boundary ? 0 : (width * step) / 12, 1)
++					}
++				})
++			}
++		},
++	)
++
++	it.each(GRID_BREAKPOINT_CASES)(
++		'resolves row-column counts and automatic and flexible columns around the $name boundary',
++		async ({ name, boundary, readings }) => {
++			const infix = boundary === 0 ? '' : `-${name}`
++			const host = specimens.mount(
++				`${GRID_COUNT_STEPS.map((step) => `<div class="row row-cols${infix}-${String(step)}" style="width:600px"><div></div><div></div></div>`).join('')}<div class="row row-cols${infix}-auto" style="width:600px"><div><span style="display:block;width:96px"></span></div></div><div class="row" data-flex style="width:600px"><div class="col${infix}-auto"><span style="display:block;width:96px"></span></div><div class="col${infix}"></div></div><div class="row row-cols${infix}-2" data-collision style="width:600px"><div class="col${infix}-4"></div><div class="col${infix}"></div></div>`,
++			)
++			for (const viewport of readings) {
++				await visitBreakpoint(viewport, () => {
++					expect(window.innerWidth).toBe(viewport)
++					for (const step of GRID_COUNT_STEPS) {
++						const row = requireValue(
++							host.querySelector(`.row-cols${infix}-${String(step)}`),
++							'No count row',
++						)
++						for (const child of row.children)
++							expect(readPixels(child, 'width')).toBeCloseTo(
++								viewport < boundary ? 600 : 600 / step,
++								1,
++							)
++					}
++					const automatic = requireValue(
++						host.querySelector(`.row-cols${infix}-auto > div`),
++						'No automatic count child',
++					)
++					expect(readPixels(automatic, 'width')).toBe(viewport < boundary ? 600 : 120)
++					expect(readStyle(automatic, 'flex')).toBe('0 0 auto')
++					const fixed = requireValue(
++						host.querySelector('[data-flex] > :first-child'),
++						'No automatic column',
++					)
++					const flexible = requireValue(
++						host.querySelector('[data-flex] > :last-child'),
++						'No flexible column',
++					)
++					expect(readPixels(fixed, 'width')).toBe(viewport < boundary ? 600 : 120)
++					expect(readPixels(flexible, 'width')).toBe(viewport < boundary ? 600 : 480)
++					expect(readStyle(fixed, 'flex')).toBe('0 0 auto')
++					expect(readStyle(flexible, 'flex')).toBe(viewport < boundary ? '0 0 auto' : '1 0 0px')
++					const numbered = requireValue(
++						host.querySelector('[data-collision] > :first-child'),
++						'No collision column',
++					)
++					const counted = requireValue(
++						host.querySelector('[data-collision] > :last-child'),
++						'No counted flexible column',
++					)
++					expect(readPixels(numbered, 'width')).toBeCloseTo(viewport < boundary ? 600 : 200, 1)
++					expect(readPixels(counted, 'width')).toBe(viewport < boundary ? 600 : 300)
++					expect(readStyle(numbered, 'flex')).toBe('0 0 auto')
++					expect(readStyle(counted, 'flex')).toBe('0 0 auto')
++				})
++			}
++		},
++	)
++
++	it('resolves the logical offset to the right physical margin in right-to-left layout', () => {
++		const host = specimens.mount(
++			'<div class="row" dir="rtl" style="width:600px"><div class="col-4 offset-2"></div></div>',
++		)
++		const child = requireValue(host.querySelector('.col-4'), 'No right-to-left column')
++		expect(readPixels(child, 'width')).toBeCloseTo(200, 1)
++		expect(readPixels(child, 'margin-right')).toBeCloseTo(100, 1)
++		expect(readPixels(child, 'margin-left')).toBe(0)
++	})
++})

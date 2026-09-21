@@ -42,3 +42,26 @@ until they ship, and CL8 defers them to this unit. `gap` and `column-gap` are th
 and the same scale, but no Content/layout key requires them, so pulling them forward would move
 this family's exit criterion. They stay with the utilities family, which reuses this unit's step
 scale rather than declaring a second one.
+
+## Ruling: the gutter classes ship as Bootstrap groups them, two rules per step
+
+The record carries every `.g-*` class twice, once per gutter property. That is not an artifact of
+how the inventory flattens: Bootstrap's own distribution emits two grouped rules,
+
+```css
+.g-0, .gx-0 { --bs-gutter-x: 0; }
+.g-0, .gy-0 { --bs-gutter-y: 0; }
+```
+
+so the horizontal rule groups the combined class with the horizontal-only class, and the vertical
+rule groups it with the vertical-only class. Emit that shape. A single rule per step carrying both
+declarations would resolve identically in a browser and would still be wrong here, because the
+emitted-vocabulary proof CL8 retained compares a multiset: the record carries the combined
+selector twice, so a cascade carrying it once reddens.
+
+That comparison is therefore correct as CL8 built it, and this ruling is a consequence of it rather
+than an exception to it. The instrument behind this reading is `units/cl8b-shape-probe.mjs`, with
+the Bootstrap distribution read at `node_modules/bootstrap/dist/css/bootstrap.css`.
+
+The `row-gap` key's classes carry one property each and no grouping with another key's classes, so
+they ship as their own rules.
