@@ -32,7 +32,7 @@ claim names, numbered after the last claim, each with a site and a one-line fail
 ## Context
 
 The retained records sit under `C:/Users/mikes/WebstormProjects/scaffold/.orkestrel/veneer/`:
-`units/u7a-brief.md` (the brief), `units/u7a-report-4.md` (the report; `units/u7a-report.md`, `-2`, and `-3` are the superseded stops), `units/u7a-brief-4.md` (the effective brief, carrying briefs 3, 2, and 1: the conformance list granted, `--bs-btn-close-filter` the U3 exception, the physical-axis guard admitting a symmetric shorthand), `u7-design-verdict.md`
+`units/u7a-brief.md` (the brief), `units/u7a-report-5.md` (the report; `units/u7a-report.md`, `-2`, `-3`, and `-4` are the superseded stops), `units/u7a-brief-5.md` (the effective brief, carrying briefs 4, 3, 2, and 1, with a standing clause that an enumerating assertion the change grows is the unit's to update: the conformance list granted, `--bs-btn-close-filter` the U3 exception, the physical-axis guard admitting a symmetric shorthand), `u7-design-verdict.md`
 (question 5's ruling), `units/u7-design-planner-report.md` § 5, `units/u7-design-analyst-report.md`
 ("The CSS"), `research/ledger.md` (which selectors belong to later units). Law: scaffold's
 `AGENTS.md`, `.claude/rules/styles.md`, `tests.md`, `names.md`, `documentation.md`,

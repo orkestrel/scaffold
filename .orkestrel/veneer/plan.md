@@ -1024,3 +1024,13 @@ after acceptance per the debrief skill's retention reference.
   guard's helper, its cases, and the guard case, keeps the brief-3 work in the tree, records the
   forced-colours reading as an open row (the installed `MediaOptions` stages `print` and `motion`
   only; a Test-side bound), and relaunched (`units/u7a-4.sh`).
+- 2026-09-20, U7a's fourth launch stopped on the export-inventory case in
+  `tests/setupStyles.test.ts` that the new `filterAsymmetricDeclarations` export grows (thread
+  `01a0c13c-794d-73e3-950e-0089eb3b523e`, `units/u7a-report-4.md`); the guard helper, its
+  cases, and the rewritten guard case landed in the tree and the styles project passed. Four
+  stops in one unit, each on a file or an assertion the change makes false that the brief did
+  not name: `units/u7a-brief-5.md` adds a standing clause for the unit (an enumerating
+  assertion the owned change grows is the unit's to update, recorded in the report) and
+  relaunched (`units/u7a-5.sh`). Standing lesson for every later brief: derive the owned set by
+  running the suite against the change's shape (the export-set, parity, and inventory cases),
+  not from the files that declare the thing changing.
