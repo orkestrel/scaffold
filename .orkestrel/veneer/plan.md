@@ -1504,3 +1504,16 @@ after acceptance per the debrief skill's retention reference.
   judges redundant for its targets, which decides what older browsers receive; the campaign has
   accepted that twice now by exclusion rather than by configuring CSS targets.
   **Unchanged:** CL5 to CL13.
+- 2026-09-21, CL4 stopped a third time (`units/cl4-report-3.md`, thread
+  `01a0c450-d1a6-7311-bc86-a6fad903bd74`), with the presence scan green, every assigned partial
+  carrying a mirrored proof, and the exclusion set at ten rows: the off-limits
+  `tests/setupConformance.test.ts` enumerates the ledger's shipped components as `btn` alone, so
+  the `reboot` row makes four of its assertions false. **Swept before ruling:** the file has five
+  such sites, not the three the unit reached, and one of them pairs the real ledger's rows with a
+  synthetic inventory that knows only `btn`, so its fix is to narrow the rows rather than to grow
+  the fixture; a sixth case takes more rows safely and needs no edit. **Ruled**
+  (`units/cl4-brief-5.md`): grant that file for exactly those five sites, each keeping what it
+  proves, and finish brief 1's gate chain including both Edge runs. The reboot row's Proof cell
+  is a dash and its Status is `shipped`, which I read, so the dash-proof loop beneath the set
+  assertion holds for the new rows unchanged.
+  **Unchanged:** CL5 to CL13.
