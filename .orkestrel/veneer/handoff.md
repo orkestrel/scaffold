@@ -124,11 +124,22 @@ reuses the U7f portfolio shape (`u7f-verdict.md`, `units/u7f-harness-3.mjs`,
   - Writing two acceptance criteria that cannot both hold, so the unit must break one to close
     the other. Read a brief's criteria against each other before dispatch, not only against the
     tree.
-- **A derived lane brief is rewritten in two places, not one.** The lane focus was already
-  recorded; the evidence list is the other. A round-2 brief derived from round 1 kept round 1's
-  evidence list and never named the effective brief and report of the round under audit, and the
-  lane had to find them through the claims file. When deriving, rewrite the lane focus **and**
-  the evidence list, naming the round's own brief and report in the latter.
+- **A derived lane brief is rewritten in three places, not one.** Three separate occurrences, each
+  caught by a lane:
+  1. **The lane focus**, which otherwise argues the previous round's claim numbers.
+  2. **The evidence list's brief and report paths**, which otherwise name the previous round's
+     effective brief and report rather than the one under audit.
+  3. **The evidence list's subject files**, which otherwise name the previous unit's files. CL7's
+     objective lane was handed CL6's link partial, anchor partial, and section, and never told
+     about the three files CL7 created; it worked from the rendered diff instead.
+
+  A substitution over paths catches the second and misses the first and third. **Rewrite all
+  three by hand, then read the brief once as the lane will receive it.**
+- **The rules live in the scaffold checkout, not in the subject.** Every lane brief through CL7
+  said "the law under the Veneer checkout (`AGENTS.md`, `.claude/rules/…`)". That checkout holds
+  `AGENTS.md` and `CLAUDE.md` only, and its `AGENTS.md` redirects to scaffold. Name it correctly:
+  `AGENTS.md` at the subject checkout root, and the rule files under
+  `C:/Users/mikes/WebstormProjects/scaffold/.claude/rules/`.
 - One guide per package: `guides/veneer.md` only. Surfaces are core, browser, server, styles
   only; Vue is a deferred service; no invented surfaces (no subpath export, side-effect entry,
   build wrapper, or rule amendment beyond scaffold's shape).
