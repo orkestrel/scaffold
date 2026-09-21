@@ -17,7 +17,7 @@ const REC = '.orkestrel/veneer'
 const UNITS = `${REC}/units`
 const ABS_REC = 'C:/Users/mikes/WebstormProjects/scaffold/.orkestrel/veneer'
 const SUBJECT = '(?:C:/Users/mikes/WebstormProjects/(?:test|veneer|scaffold)/)'
-const SELF = new Set(['retention-rewrite.mjs', 'retention-rewrite.sh'])
+const SELF = new Set(['retention-rewrite.mjs', 'retention-rewrite.sh', 'handoff.md'])
 
 const CLAIMS = String.raw`([a-z0-9-]+-audit-claims(?:-[0-9]+)?\.md)`
 const PATCH = String.raw`([a-z0-9-]+-diff(?:-[0-9]+)?\.patch)`
