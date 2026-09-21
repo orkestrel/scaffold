@@ -1261,3 +1261,17 @@ after acceptance per the debrief skill's retention reference.
   treatment), the Test-side bounds for the 0.0.19 release unit, and the forced-colours axis.
   Next: the Content/layout family's design round (`units/content-layout-design-brief.md`) on the
   Grok terrain map, then its units in mechanism order per § Component queue.
+- 2026-09-21, the Content/layout family's design round reconciled (`content-layout-design-verdict.md`;
+  planner `units/content-layout-design-planner-report.md`, analyst
+  `units/content-layout-design-analyst-report.md`, Grok map `units/content-layout-scout-report.md`).
+  **Added** the family's units CL0 to CL13 in mechanism order with their routing ledger (CL0
+  calibration in Elements; CL1 contract, CL3, CL4, CL6, CL7, CL8, CL9 on Astra; CL2, CL5, CL10,
+  CL11, CL12 on Opus; CL13 the portfolio verdict), the token rulings (`--vn-space-12`,
+  `--vn-space-24`, `--vn-display-1` to `-6`, `--vn-state-stripe`; consumer fallbacks for the
+  link opacities and `--bs-body-text-align`), the one-table exclusion grammar with `Excluded` as
+  a terminal owner, `page.viewport` as the breakpoint axis, Bootstrap's own values as the grid's
+  source with the pinned official page as the portfolio's second side (an accepted difference
+  to report), and the probes each unit takes first. The exit criterion is unchanged: every
+  `Content/layout` row implemented, excluded with a reason the user sees, or retained. Next:
+  CL0 (Grok specimen map, then the calibration instrument) beside CL1 (Astra), each after a scope
+  read.
