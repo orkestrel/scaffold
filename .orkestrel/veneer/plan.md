@@ -1617,3 +1617,37 @@ after acceptance per the debrief skill's retention reference.
   twins depart from Bootstrap on the value at every level but `h6` while the display twins ship
   Bootstrap's capped value exactly, so one guide row cannot cover both honestly.
   **Unchanged:** CL6 to CL13.
+- 2026-09-21, CL5 and its landing `ea82419` (`cl5-audit-verdict.md`, two rounds): the typography
+  and content classes ship as four component partials with mirrored proofs, two showcase regions,
+  and sixteen keys flipped to `shipped` in the compatibility table and the listed set. Round 1
+  ran all four lanes and forced a round on two proofs that could not fail: the heading twin's
+  colour assertion compared against a value the host supplied by inheritance, and the token
+  retune exercised one heading level and one display level out of twelve. **The two lanes
+  disagreed on the second, substantively rather than factually:** the subjective lane confirmed
+  because the partial is one loop over the levels, the objective lane refuted because a proof,
+  not a source reading, must catch the edit that replaces the loop. The objective lane is right
+  about what a proof is for. Round 2 closed both, and the writer proved the repaired matrix fires
+  by planting a literal equal to a level's default, which no default-value case can observe; the
+  Orchestrator repeated that reading first-hand after every lane exited (`units/cl5-probe.sh`),
+  matching the writer's account down to the partial's restored hash. Round 2's objective lane
+  returned `fix round` for execution evidence on two claims while stating no implementation
+  defect was established; the round's own verifier and that probe close both, so it is recorded
+  as evidence rather than work.
+  **The user reaffirmed mid-round that audits cover implementation only and that prose follows
+  implementation.** Two of the four findings the Orchestrator had drafted into the fix round were
+  guide rows; they were cut before dispatch and recorded as bounds. **The Orchestrator's own
+  defects, the third and fourth of the campaign:** a claim asserting something of every member of
+  a set contradicted an exception the same claims file named, and a claim asserting a property of
+  three guide rows invited both lanes to audit prose under a ruling that bars it. The rules that
+  follow are landed in `handoff.md` § Standing rulings: check a universal claim against the
+  exceptions the same file names, and **write no guide-row claim into a claims file at all**.
+  **Added:** CL5b (`units/cl5b-brief.md`), the two cross-folder duplicated blocks plus the sweep
+  as a standing proof, its scope measured before the verdict at exactly two pairs over 44
+  partials and 946 pairs by two independent instruments; and CL5c (`units/cl5c-brief.md`), one
+  specimen-section implementation replacing three, the class twin rulings with the Orchestrator's
+  calibration reading at `units/cl5-twin-measurement.md`, and round 2's two proof-integrity gaps.
+  **Prepared:** CL6's central ruling is measured at `units/cl6-retune-measurement.md` — the
+  shipped link colour is not the record's in either mode or either state, the record's own colour
+  property does not change on hover so the hover mechanism must be found before binding it, and
+  the utility families CL6 ships are what make the dormant Bootstrap opacity variable live.
+  **Unchanged:** CL6 to CL13.

@@ -1,0 +1,34 @@
+Ship the typography and content classes (CL5)
+
+The published cascade carries four component partials: type, list, quote, and
+image. Between them they emit every selector Bootstrap's pinned inventory
+records under the heading, display, lead, small, mark, initialism, list,
+quotation, image, and figure keys, so each of those keys reads `shipped` and
+joins the listed set. None needs a variable row, because each carries an empty
+property set in the inventory.
+
+The heading and display class twins read the tokens their own tags read
+rather than Bootstrap's fluid sizes, so a heading and a span carrying its
+class render alike on one page. That is how Bootstrap builds those classes
+too, by extending the tags. The proof compares the tag and the class in one
+host rather than asserting two literals that happen to agree, and a retune
+case reads every heading level and every display level back through the token
+that level names, so a literal equal to a level's default reddens.
+
+The class block's colour is pinned by a host declaring the heading colour
+property explicitly. Without that host the only colour assertion compared
+against a value the class inherited, so deleting the declaration left the
+proof green.
+
+Every other value is retained from Bootstrap's own line, written through the
+token that already carries it where one does, and on the logical axis where
+Bootstrap writes a physical one.
+
+The showcase gains two regions rendering those classes, and every section
+proof carries a literal markup control beside its literal name control, so a
+change inside a specimen's markup reddens instead of passing.
+
+Every gate exits 0 on managed Chromium and Edge. The audit is recorded in
+scaffold's `.orkestrel/veneer/cl5-audit-verdict.md` file.
+
+Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>

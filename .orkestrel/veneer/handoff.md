@@ -34,68 +34,59 @@ verifier, and landed by a script that refuses any file outside the owned set.
 
 | Checkout | HEAD | Meaning |
 | --- | --- | --- |
-| Veneer | `5240e36` | CL4b landed and pushed; the tracked tree is clean unless CL5 is live |
-| Scaffold | confirm with `git log --oneline -1` | every record through CL4b's landing retained and pushed; `.orkestrel/veneer/` is tracked |
+| Veneer | `ea82419` | CL5 landed and pushed; the tracked tree is clean unless a successor is live |
+| Scaffold | confirm with `git log --oneline -1` | every record through CL5's landing retained and pushed; `.orkestrel/veneer/` is tracked |
 
-Landed in Veneer so far: CL1 `00a5bdc` (`cl1-audit-verdict.md`, two rounds), CL2 `9f5ffda`
-(`cl2-audit-verdict.md`, two rounds), CL3 `9bb306e` (`cl3-audit-verdict.md`, three rounds), CL3b
-`d822d59` (`cl3b-audit-verdict.md`, two rounds), CL4 `bc580c1` (`cl4-audit-verdict.md`, two
-rounds), CL4b `5240e36` (`cl4b-audit-verdict.md`, one round). Earlier landings are listed in the
-memory file `veneer-campaign-state.md` and in `plan.md`.
+Landed in Veneer so far: CL1 `00a5bdc`, CL2 `9f5ffda`, CL3 `9bb306e`, CL3b `d822d59`, CL4
+`bc580c1`, CL4b `5240e36`, CL5 `ea82419`. Each has a verdict file named for it. Earlier landings
+are listed in the memory file `veneer-campaign-state.md` and in `plan.md`.
 
-**CL3 and CL3b are closed and landed.** Together they land the reset partial, the text tag
-partials with mirrored proofs whose case tables and mode table live in `tests/setupStyles.ts`,
-the first shared blocks consolidated into mixins, `ContentSection` with the shell's main region
-addressable by fragment, and the Content colour tokens: `--vn-text-muted`, the retuned
-`--vn-surface-raised`, `--vn-surface-code` in the theme maps, the `font.mono` group, and
-`--vn-line-code`. The dark theme's mix anchor is pinned to the literal `oklch(0.235 0.013 256)`
-so no dark role tier moved when the raised surface took the record's value;
-`tests/src/styles/integration.test.ts:92` pins that tier and is the standing falsifier.
+**CL3 and CL3b** land the reset partial, the text tag partials with mirrored proofs, the first
+shared blocks consolidated into mixins, the content section, and the Content colour tokens. The
+dark theme's mix anchor is pinned to a literal so no dark role tier moved when the raised surface
+took the record's value; `tests/src/styles/integration.test.ts:92` is the standing falsifier.
 
-**CL4 is closed and landed at `bc580c1`**, accepted on all four lanes after one fix round. It
-ships the remaining Reboot tag partials with their proofs, the `reboot` compatibility key with
-the presence scan comparing the pinned inventory against the built cascade, the excluded rows
-with the reason each carries, the selector canonicalization that folds the legacy pseudo-element
-spellings the build downlevels to, the legend boundary reading `breakpoint-up(xl)`, the folder
-sweep that turned every shared declaration block into a mixin, the non-visible focus proof, and
-the two Bootstrap departures recorded in the guide.
+**CL4 and CL4b** land the remaining Reboot tag partials, the `reboot` compatibility key with its
+presence scan, the excluded rows, the selector canonicalization the build's downlevelling needs,
+the folder sweep that turned every shared block in the element folder into a mixin, and the two
+proof obligations CL4's own audit found.
 
-**CL4b is closed and landed at `5240e36`**, accepted on all four lanes in one round. It pins the
-border reset `box-reset` supplies to the horizontal rule and gives the content section's proof a
-literal name control. The Orchestrator took both mutation readings itself after the unit exited,
-through `units/cl4b-probe.sh`, because no lane could re-execute them.
+**CL5 lands the typography and content classes** at `ea82419`, accepted after one fix round. Four
+component partials, two showcase regions, and sixteen keys flipped to `shipped` and joined to the
+listed set. Its heading and display class twins read the tokens their tags read, proved by
+comparing the tag and the class in one host and by a retune matrix covering every level.
 
-Still open from those units, each with its carrier: the link colours' equality with the record is
-CL6's; a later component surface unit measures its own raised value rather than assuming
-`--vn-surface-raised` still names the popover surface (CL12 restates the guide sentence); the
-description-list case field's name and the mode-invariant token case's duplicate registration go
-to the next unit that touches them.
+## What to do first: CL5's two successors, then CL6
 
-## What to do first: close CL5, then CL6
+Both are implementation work CL5's audit found and CL5's scope barred. Both are briefed and
+retained; neither has run.
 
-**CL5 is dispatched** on native Opus over `5240e36`, under `units/cl5-brief.md` with
-`units/cl5-brief-2.md` above it. Its terrain map (`units/cl5-scout-report.md`) and scope read
-(`units/cl5-scope-read-report.md`) are retained. If this session ended before CL5 returned, read
-the Veneer tree's status first: an unlanded CL5 working tree is the unit's output, not drift.
+**CL5b** (`units/cl5b-brief.md`, `sol` on Astra) extracts the two declaration blocks duplicated
+across the element and component folders and lands the shared-block sweep as a standing proof so
+the rule stops needing an auditor. **Its scope is measured, not estimated:** two instruments agree
+the whole open space is two pairs over 44 partials and 946 pairs
+(`units/sweep-styles-authored.log.txt`, `units/sweep-styles-source-2.log.txt`). The precise
+instrument needs `source-map-js`, which this package does not declare, so the brief bars it and
+the dependency-free text form reproduces the same answer. **A scope read is dispatched**
+(`units/cl5b-scope-read-brief.md`) whose row 1 settles where a filesystem-reading proof can live;
+fold its answer into `units/cl5b-brief-2.md` before dispatching.
 
-On its report: retain it, render the evidence with `units/render-cl4b.sh` copied to
-`render-cl5.sh` with the base `5240e36` and the `cl5` names, write the claims file, and run the
-four-lane round. **CL5 is an Opus unit, so the lanes take their default places: the Opus reviewer
-holds the SUBJECTIVE lane and the Astra analyst the OBJECTIVE lane** — the reverse of CL3 and
-CL4, whose writer was Astra. Then reconcile into `cl5-audit-verdict.md` and land.
+**CL5c** (`units/cl5c-brief.md`, `opus`) replaces three near-identical specimen sections with one
+implementation, applies the twin rule to the mark pair, and closes round 2's two proof-integrity
+gaps. Its mark ruling rests on `units/cl5-twin-measurement.md`: Elements sets its own mark tokens
+to the CSS system colours, Veneer's tag reproduces that, and the class is the side that departs.
 
-**CL6** is an Astra unit, so its lanes swap back. Its terrain map is already taken and retained
-at `units/cl6-scout-report.md`, covering the link inventory key, the anchor partial's opacity
-expression, the link tokens, and the record's anchor readings. Scope-read its brief before
-dispatch, as every unit here does.
+**CL6** is an Astra unit whose terrain is mapped (`units/cl6-scout-report.md`) and whose central
+ruling is measured (`units/cl6-retune-measurement.md`). Scope-read its brief before dispatch.
 
 ## Then CL5 to CL13
 
 Per `content-layout-design-verdict.md` § Units (the routing ledger is there). Brief each from
 the design row, the planner's criteria (`units/content-layout-design-planner-report.md`), and
-the analyst's unit (`units/content-layout-design-analyst-report.md`); scope-read first. CL5
-(Opus) carries the stripe light-scope assertion, the heading letter-spacing row, the shell's
-document-global `main` id, and the description-list case field's name. CL6 (Astra) carries the
+the analyst's unit (`units/content-layout-design-analyst-report.md`); scope-read first. CL5 is
+landed; the bounds it was to carry that no landed unit closed — the stripe light-scope assertion,
+the shell's document-global `main` id, and the description-list case field's name — pass to the
+next unit that owns each file. CL6 (Astra) carries the
 link map's retune and the anchor's `--vn-link-*` versus `--bs-*` binding. CL11 carries
 `visitBreakpoint`'s bare `finally`, the hold's two uncased refusals, the U7c `resolveButton`
 rename, and `driveOracle` root scoping. CL12 carries every guide bound a unit reported. CL13
@@ -107,6 +98,16 @@ reuses the U7f portfolio shape (`u7f-verdict.md`, `units/u7f-harness-3.mjs`,
 - Implementation over prose. Comments and guides are the bare minimum to pass; audits cover
   implementation only (correctness, rule compliance, test sufficiency, scope honesty). A
   wording finding is a bound folded into the next implementation unit, never a fix round.
+  Reaffirmed by the user during CL5's round 1, with the mechanism that enforces it: **a claims
+  file carries no guide-row claim at all.** A claim asserting a property of a guide row invites
+  every lane to audit prose, which is how CL5's round produced two guide findings under a ruling
+  that bars them. Judge a guide row only where a unit's own criterion names it, and carry its
+  facts as a bound for the unit that owns the guide.
+- Three claim-drafting rules the campaign's own audits established, each after a lane caught the
+  Orchestrator: state only what a failing assertion itself reports, never what a run that aborted
+  left passing; take the measurement before writing a claim that two artifacts are identical;
+  and check a claim asserting something of every member of a set against the exceptions the same
+  claims file already names.
 - One guide per package: `guides/veneer.md` only. Surfaces are core, browser, server, styles
   only; Vue is a deferred service; no invented surfaces (no subpath export, side-effect entry,
   build wrapper, or rule amendment beyond scaffold's shape).

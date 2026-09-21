@@ -1,0 +1,11 @@
+population: 44 partials over src/styles/elements and src/styles/components
+pairs compared: 946
+hits: 2
+
+src/styles/elements/_heading.scss { h1, h2, h3, h4, h5, h6 }
+src/styles/components/_type.scss { .h1, .h2, .h3, .h4, .h5, .h6 }
+  shared: margin: 0 ; font-weight: var(--vn-weight-heading) ; line-height: var(--vn-line-heading) ; color: var(--bs-heading-color)
+
+src/styles/elements/_img.scss { img }
+src/styles/components/_image.scss { .img-fluid, .img-thumbnail }
+  shared: max-inline-size: 100% ; block-size: auto
