@@ -1089,3 +1089,8 @@ after acceptance per the debrief skill's retention reference.
   to report 9's on both engines, cascade digest `14cbc6fa…`. Round 2 of the audit launched on
   the fix-round tree: the objective reviewer on Opus (the engine that did not write it), the
   subjective analyst on Astra, the checker, and the verifier, on `u7a-audit-claims-2.md`.
+- 2026-09-20, U7a accepted (round 2: four lanes accepting, the verifier's whole chain exit 0
+  on Chromium and Edge, cascade digest `14cbc6fa…`) and landed in Veneer as `12e1bd6`
+  (verdict `u7a-audit-verdict.md`). Carried: the unread `--bs-btn-focus-shadow-rgb` departure
+  row (U7e), the dark-fill contrast question (the user), the forced-colours reading (a
+  Test-side `MediaOptions` axis). Next: `u7-setup-tidy` on the landing, then U7b.

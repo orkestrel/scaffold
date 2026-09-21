@@ -61,3 +61,35 @@ active and ring unread), 25 (the light mixer end as the text token).
 ### Terminal (round 1)
 
 Verdict: fix round. `units/u7a-brief-7.md` on Astra (thread `01a0c172-44b3-7ff0-a300-9c01f9c289e4`).
+
+## Round 2, 2026-09-20 (the fix round: briefs 7 to 10)
+
+The fix round ran as four briefs on Astra (`units/u7a-brief-7.md` to `-10.md`, reports
+`units/u7a-report-7.md` to `-10.md`): finding 9 reverted on measurement, the contrast floor
+narrowed to the `light` role with the other roles pinned, the contrast assertions split into two
+tables. Astra wrote it, so Opus holds the objective lane as the engine that did not write it.
+Claims: `u7a-audit-claims-2.md`. Evidence: `units/u7a-diff-2.patch.txt` beside round 1's
+`units/u7a-diff.patch.txt`, `units/u7a-status-2.txt`.
+
+| Lane | Role | Engine | Record | Terminal line |
+| --- | --- | --- | --- | --- |
+| objective | `reviewer` | native Opus 5, Workflow `wf_1c4871ab-c64` | `units/u7a-audit-2-reviewer-brief.md`, `units/lane-u7a-2-reviewer.md` | accept, no extra findings |
+| subjective | `analyst` | Astra, `codex exec` read-only, thread `01a0c1a0-97db-7531-bd00-d1f87cd38761`, exit 0 | `units/u7a-audit-2-analyst.sh`, `units/u7a-audit-2-analyst-report.md` | accept |
+| mechanical | `checker` | native Sonnet, the same Workflow | `units/u7a-audit-2-checker-brief.md`, `units/lane-u7a-2-checker.md` | accept |
+| gates | `verifier` | native Sonnet, the same Workflow | `units/u7a-gate-brief.md`, `units/lane-u7a-2-verifier.md` | sixteen steps exit 0, `npm test` and both Edge projects included; cascade digest `14cbc6fa…` |
+
+Every claim 1 to 10 CONFIRMED by the reviewer and the analyst (10 by the checker too); claim 11
+CONFIRMED from the verifier. The reviewer records, without objection, that the pinned table
+encodes dark-mode ratios below 4.5 for primary, tertiary, success, info, and warning: the
+narrowing this round was directed to make, and a design question for the user (the calibrated
+fills are Elements' measured values).
+
+Anomaly, recorded: between the verifier's first and second status readings the four untracked
+files moved to staged (`A`), with no `git add` in its steps; the content was unchanged and every
+gate ran green against it. The landing commits them by pathspec either way.
+
+## Terminal
+
+Verdict: accept. Landed by `units/u7a-land.sh` with `units/u7a-land-message.txt`. Carried
+forward: the unread `--bs-btn-focus-shadow-rgb` departure row (U7e); the dark-fill contrast
+question (the user); the forced-colours reading (a Test-side `MediaOptions` axis).

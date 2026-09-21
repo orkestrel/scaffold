@@ -1,0 +1,20 @@
+== 2026-09-21T01:56:21Z land start
+2bc922d Restate the paint wrappers after Test-paint and close the U7d bounds
+ M guides/veneer.md
+ M src/core/constants.ts
+ M src/styles/_mixins.scss
+ M src/styles/_tokens.scss
+A  src/styles/components/_button.scss
+A  src/styles/elements/_button.scss
+ M src/styles/index.scss
+ M tests/conformance.test.ts
+ M tests/setupStyles.test.ts
+ M tests/setupStyles.ts
+A  tests/src/styles/components/button.test.ts
+A  tests/src/styles/elements/button.test.ts
+ M tests/src/styles/index.test.ts
+ M tests/src/styles/mixins.test.ts
+changed: guides/veneer.md src/core/constants.ts src/styles/_mixins.scss src/styles/_tokens.scss src/styles/components/_button.scss src/styles/elements/_button.scss src/styles/index.scss tests/conformance.test.ts tests/setupStyles.test.ts tests/setupStyles.ts tests/src/styles/components/button.test.ts tests/src/styles/elements/button.test.ts tests/src/styles/index.test.ts tests/src/styles/mixins.test.ts 
+12e1bd6 Ship Button's cascade with its deferral partition and shipped rows (U7a)
+## main...origin/main
+== 2026-09-21T01:56:24Z land end
