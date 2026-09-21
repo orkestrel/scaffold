@@ -19,7 +19,7 @@ The rendered diff over the CL2 landing `9f5ffda` at
 `C:/Users/mikes/WebstormProjects/scaffold/.orkestrel/veneer/units/cl3-diff.patch.txt` and the status at
 `tmp/audit/cl3-status.txt`; the live Veneer tree at `C:/Users/mikes/WebstormProjects/veneer`;
 the retained brief and report under `C:/Users/mikes/WebstormProjects/scaffold/.orkestrel/veneer/units/`
-(`cl3-brief-2.md`, the effective brief; `cl3-report.md`), read only to learn what the unit
+(`cl3-brief-3.md` the effective brief with `cl3-brief-2.md` in force beneath it; `cl3-report-2.md`), read only to learn what the unit
 claims; rule on the tree.
 
 ## Probes
@@ -30,8 +30,8 @@ claims; rule on the tree.
   and `tests/src/styles/reset.test.ts`, `tests/src/styles/index.test.ts`,
   `app/browser/sections/ContentSection.ts`, `app/browser/constants.ts`, `types.ts`, `index.ts`,
   `Showcase.ts`, `tests/app/browser/sections/ContentSection.test.ts`,
-  `tests/app/browser/Showcase.test.ts`, `tests/app/browser/index.test.ts`, `guides/veneer.md`);
-  `src/styles/components/**`, `_tokens.scss`, `_theme.scss`, `_mixins.scss`, `src/core/**`,
+  `tests/app/browser/Showcase.test.ts`, `tests/app/browser/index.test.ts`, `guides/veneer.md`, and brief 3's grants: `src/styles/_tokens.scss`, `src/styles/_mixins.scss`, `src/core/constants.ts`, `tests/src/styles/tokens.test.ts`);
+  `src/styles/components/**`, `_theme.scss`, `src/core/types.ts`,
   `src/browser/**`, `tests/setup*.ts` and their proofs, `tests/conformance.test.ts`,
   `tests/app/browser/integration.test.ts`, `tests/fixtures/**`, `package.json`, `configs/**`,
   and the vendored files are absent from the diff.

@@ -28,8 +28,8 @@ no-index rendering of every new file) and the status at `tmp/audit/cl3-status.tx
 and the live Veneer tree at `C:/Users/mikes/WebstormProjects/veneer`, including
 `dist/src/styles/index.css` (the built cascade) and `node_modules/bootstrap/scss/_reboot.scss`.
 Read the retained records under `C:/Users/mikes/WebstormProjects/scaffold/.orkestrel/veneer/`:
-`units/cl3-brief-2.md` (the effective brief; `units/cl3-brief.md` is superseded and
-`units/cl3-scope-read-report.md` records why), `units/cl3-report.md` (the unit's report),
+`units/cl3-brief-3.md` (the effective brief, succeeding `units/cl3-brief-2.md` after the deviation stop recorded in `units/cl3-report.md`; `units/cl3-brief.md` is superseded and
+`units/cl3-scope-read-report.md` records why), `units/cl3-report-2.md` (the unit's report),
 `content-layout-design-verdict.md` (the rulings), `units/content-layout-design-planner-report.md`
 § 2, § 3, § 7 and the CL3 criteria, `units/content-layout-design-analyst-report.md` units 2 and
 3, `research/calibration-content.md` (the values the partials bind to), and the law under that

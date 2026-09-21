@@ -1334,3 +1334,18 @@ after acceptance per the debrief skill's retention reference.
   **Unchanged:** CL3 to CL13, and every later unit consumes the mixins through
   `breakpoint-up`/`breakpoint-down` rather than a literal width. Next: CL3 (Astra) after its
   scope read, with the scroll-behavior probe first.
+- 2026-09-21, CL3 dispatched on Astra under `units/cl3-brief-2.md` after the scope read
+  (`units/cl3-scope-read-report.md`) amended four rows of brief 1 (no `sections/` aggregate in the
+  app barrel; no `reboot` row in the guide's Compatibility table, which CL4 adds as `shipped`;
+  the departure rows under `### Departures from Bootstrap`; the design reports' paths) and took
+  the launch readings. The unit stopped under the deviation protocol (`units/cl3-report.md`):
+  brief 2 bound the code family's paint to `--vn-text-code`, whose value is Bootstrap's pink,
+  while CL0's record reads Elements' inline code as the body text colour on a 12 % tint of it,
+  and the token files were off-limits. Its scroll-behaviour probe passed the journey suite on
+  both browsers with the rule planted. **Added** to CL3 by `units/cl3-brief-3.md` (the ruling,
+  under the design's "adapt values, never selectors"): `--vn-text-code` resolves to the body
+  text (`--bs-code-color` still aliases it; a departure row), a new `--vn-surface-code` token
+  in the theme closure with its registry leaf, proof, and guide row; brief 3 grants
+  `_tokens.scss`, `_mixins.scss`, `src/core/constants.ts`, and `tests/src/styles/tokens.test.ts`
+  for exactly that, and narrows the token stop to a token neither CL2 nor brief 3 grants. The
+  landing allowlist and the audit kit follow. **Unchanged:** CL4 to CL13.
