@@ -1426,3 +1426,17 @@ after acceptance per the debrief skill's retention reference.
   carried. Round 1 runs on all four lanes over `cl3b-audit-claims.md`, with the lanes swapped as
   CL2's were (Opus wrote it, so the Astra analyst holds the objective lane).
   **Unchanged:** CL4 to CL13.
+- 2026-09-21, CL3b round 1 (`cl3b-audit-verdict.md`): all four lanes ran with the lanes swapped
+  as CL2's were, every claim confirmed on the lanes that could rule on it, and the verifier green
+  on both browsers. Claim 4 is **refuted on necessity** and recorded: the registry's path law does
+  not force a group merely because a second monospace token exists (the Astra lane executed a
+  counterexample), so the rename stands on the name the brief's own instruction implies, not on a
+  law that compels it; the implementation is coherent and unchanged. One defect forces round 2:
+  the unit's new token cases declare inline mode matrices where the setup module already exports
+  `TEXT_MODES`, the rule CL3 round 2 landed across the element proofs; `units/cl3b-brief-3.md` on
+  Opus closes it and sweeps the styles suite, including a third inline matrix CL3 left in the
+  token proof because that file was outside its round-2 owned set. Carried: a later unit that
+  lands a component surface reading `--vn-surface-raised` measures its own value rather than
+  assuming this one, because the token now carries the code block's reading (CL12 restates the
+  guide sentence); the description-list case field's name goes to the next unit that grows that
+  table. **Unchanged:** CL4 to CL13.
