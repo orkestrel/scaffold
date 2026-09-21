@@ -1349,3 +1349,21 @@ after acceptance per the debrief skill's retention reference.
   `_tokens.scss`, `_mixins.scss`, `src/core/constants.ts`, and `tests/src/styles/tokens.test.ts`
   for exactly that, and narrows the token stop to a token neither CL2 nor brief 3 grants. The
   landing allowlist and the audit kit follow. **Unchanged:** CL4 to CL13.
+- 2026-09-21, CL3 returned under brief 3 (`units/cl3-report-2.md`, thread
+  `01a0c397-fde9-7752-a904-3d76bff7ba31`): the reset partial, the twenty text tag partials with
+  mirrored proofs, the code family tokens under brief 3's ruling (`--vn-text-code` as the body
+  text, `--vn-surface-code` at 12 %), `ContentSection`, and the guide rows; every gate green on
+  both browsers; every proof red then green. The report names three calibration limits it
+  could not close inside its grant. **Ruled:** the link colours' equality with the record is
+  CL6's (the links unit retunes the link map; CL3 binds the tokens, which is the mechanism);
+  the muted text of `address` and `dd` (Elements' `--color-text-muted`, light
+  `oklch(0.446 0.043 257.281)`, dark `oklch(0.704 0.04 256.788)`) and the raised surface of
+  `pre`, `samp`, and `var` (Elements' `--color-surface-raised`, light `oklch(0.968 0.007 247.896)`,
+  dark `oklch(0.265 0.014 256)`; Veneer's `--vn-surface-raised` differs slightly) are a token
+  gap of the same class as the code family. **Added:** CL3b on Opus, after CL3 lands and before
+  CL4: a `--vn-text-muted` token (theme maps, closure, `text.muted` leaf, proof, guide row),
+  the `--vn-surface-raised` retune to the record (with whatever proof pins the old value), and
+  the rebinding of `_address.scss`, `_dl.scss`, `_pre.scss`, `_samp.scss`, and `_var.scss` with
+  their proofs' rows. CL3 lands with those limits recorded in its report and claims. The `b`
+  tag stays with CL4. CL3's round-1 audit runs on the swapped lanes (Opus reviewer objective,
+  Astra analyst subjective) with the checker and the verifier. **Unchanged:** CL4 to CL13.
