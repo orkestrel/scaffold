@@ -1582,3 +1582,38 @@ after acceptance per the debrief skill's retention reference.
   partials read rather than Bootstrap's fluid sizes, so a heading tag and its class twin agree
   inside Veneer; the fixed heading scale is already an open question reported to the user, and the
   display tokens for the large-viewport caps already exist. **Unchanged:** CL6 to CL13.
+- 2026-09-21, CL4b and its landing `5240e36` (`cl4b-audit-verdict.md`): the small successor unit
+  CL4's audit created, written by `builder` on native Sonnet, accepted on all four lanes in one
+  round. The horizontal rule's case table pins the inline and block-end border widths at zero, so
+  the reset `box-reset` supplies is guarded, and the content section's proof carries a literal
+  specimen-name sequence beside the tag sequence it already had. Two lanes confirmed the
+  falsifiability by construction, and the Orchestrator took the mutation readings itself after
+  the unit exited (`units/cl4b-probe.sh`): dropping the mixin's border emission reddens exactly
+  the three new entries while the margin, the block-start width and style, and the opacity match
+  in the same object, and renaming the first specimen reddens the new literal assertion alone.
+  The checker's fix-round line asked for an independent gate run, which the round's own verifier
+  had already supplied blind; that is a lane-blindness artifact rather than a defect, and it is
+  recorded as discharged rather than carried. **The Orchestrator's own defect, the second of its
+  class:** claim 2 said the red run left the colour passing, and the colour assertion sits after
+  the failing object assertion so it never ran. The rule that follows: state only what the
+  failing assertion itself reports, never what a run that aborted left passing. **Added to CL5:**
+  an independent control for the content section's markup assertion, which CL4's verdict stated
+  as the name and markup assertions and CL4b's brief scoped to names — the under-scoping was the
+  Orchestrator's. **Unchanged:** CL5's own scope, CL6 to CL13.
+
+- 2026-09-21, CL5 dispatched over `5240e36` on native Opus under `units/cl5-brief.md` with
+  `units/cl5-brief-2.md` above it. Its terrain was mapped by a Grok lane before dispatch
+  (`units/cl5-scout-report.md`) and its brief was checked against the tree by a `checker` scope
+  read (`units/cl5-scope-read-report.md`), which returned amendments folded into brief 2: the
+  showcase barrel takes one re-export line per section, `collectShippedComponents` is the
+  function that decides `listed` and admits these keys with no variable row, exactly one
+  ledger-derived case changes population, `tests/app/browser/Showcase.test.ts` is owned outright
+  for its region sequence, no predicate refuses this unit's compound selectors, no gate governs
+  the image class's axis, and the calibration record measures tag families only so every class
+  value here is retained from Bootstrap. **Two grants the scope read did not ask for:**
+  `src/styles/_mixins.scss` for a block shared by two of this unit's partials, with a sweep over
+  every component partial pair before the gates, because CL4's audit returned that finding twice
+  and a mid-unit stop was the alternative; and the measured heading table, because the heading
+  twins depart from Bootstrap on the value at every level but `h6` while the display twins ship
+  Bootstrap's capped value exactly, so one guide row cannot cover both honestly.
+  **Unchanged:** CL6 to CL13.

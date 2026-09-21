@@ -1,0 +1,23 @@
+Close CL4's two carried proof obligations (CL4b)
+
+Two proofs passed for a reason weaker than the thing they guard. Both now
+fail on the mutation they exist to catch.
+
+The horizontal rule's case table pins the inline and block-end border widths
+at zero, so the border reset the `box-reset` mixin supplies is guarded.
+Dropping that reset returns the user-agent border on those sides, which the
+table previously let through while the margin, the block-start border, the
+opacity, and the colour all still matched.
+
+The content section's proof carries a literal specimen-name sequence beside
+the tag sequence it already carried. Its name and markup assertions compare
+the specimen table against itself, so renaming a specimen left them green.
+The literal sequence is the independent control, and a rename now reddens it.
+
+Each change was proved red before green, with the planted file restored to
+its state at the CL4 landing.
+
+Every gate exits 0. The audit is recorded in scaffold's
+`.orkestrel/veneer/cl4b-audit-verdict.md` file.
+
+Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>

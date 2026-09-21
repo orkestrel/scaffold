@@ -1,0 +1,70 @@
+diff --git a/tests/app/browser/sections/ContentSection.test.ts b/tests/app/browser/sections/ContentSection.test.ts
+index d25e2ed..9ad9cac 100644
+--- a/tests/app/browser/sections/ContentSection.test.ts
++++ b/tests/app/browser/sections/ContentSection.test.ts
+@@ -15,6 +15,51 @@ describe('ContentSection', () => {
+ 			expect(rendered.map((element) => element.getAttribute('data-specimen'))).toEqual(
+ 				CONTENT_SPECIMENS.map((specimen) => specimen.name),
+ 			)
++			expect(CONTENT_SPECIMENS.map((specimen) => specimen.name)).toEqual([
++				'Heading 1',
++				'Heading 2',
++				'Heading 3',
++				'Heading 4',
++				'Heading 5',
++				'Heading 6',
++				'Paragraph',
++				'Rule',
++				'Linked anchor',
++				'Placeholder anchor',
++				'Unordered list',
++				'Ordered list',
++				'Description list',
++				'Blockquote',
++				'Address',
++				'Abbreviation',
++				'Strong',
++				'Small',
++				'Mark',
++				'Subscript',
++				'Superscript',
++				'Code',
++				'Preformatted',
++				'Keyboard',
++				'Sample',
++				'Variable',
++				'Bold',
++				'Figure',
++				'Image',
++				'SVG',
++				'Table',
++				'Table row',
++				'Label',
++				'Button',
++				'Input',
++				'Select',
++				'Option group',
++				'Textarea',
++				'Fieldset',
++				'Output',
++				'Frame',
++				'Details',
++				'Progress',
++			])
+ 			expect(rendered.map((element) => element.innerHTML)).toEqual(
+ 				CONTENT_SPECIMENS.map((specimen) => specimen.markup),
+ 			)
+diff --git a/tests/setupStyles.ts b/tests/setupStyles.ts
+index b23f513..4133889 100644
+--- a/tests/setupStyles.ts
++++ b/tests/setupStyles.ts
+@@ -126,6 +126,9 @@ export const TEXT_HR_CASES = Object.freeze(
+ 				margin: '0px',
+ 				'border-block-start-width': '1px',
+ 				'border-block-start-style': 'solid',
++				'border-inline-start-width': '0px',
++				'border-inline-end-width': '0px',
++				'border-block-end-width': '0px',
+ 				opacity: '0.2',
+ 			}),
+ 			color: mode === 'light' ? 'oklch(0.208 0.042 265.755)' : 'oklch(0.929 0.013 255.508)',

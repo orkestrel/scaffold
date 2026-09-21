@@ -34,14 +34,14 @@ verifier, and landed by a script that refuses any file outside the owned set.
 
 | Checkout | HEAD | Meaning |
 | --- | --- | --- |
-| Veneer | `bc580c1` | CL4 landed and pushed; the tracked tree is clean |
-| Scaffold | confirm with `git log --oneline -1` | every record through CL4's landing retained and pushed; `.orkestrel/veneer/` is tracked |
+| Veneer | `5240e36` | CL4b landed and pushed; the tracked tree is clean unless CL5 is live |
+| Scaffold | confirm with `git log --oneline -1` | every record through CL4b's landing retained and pushed; `.orkestrel/veneer/` is tracked |
 
 Landed in Veneer so far: CL1 `00a5bdc` (`cl1-audit-verdict.md`, two rounds), CL2 `9f5ffda`
 (`cl2-audit-verdict.md`, two rounds), CL3 `9bb306e` (`cl3-audit-verdict.md`, three rounds), CL3b
 `d822d59` (`cl3b-audit-verdict.md`, two rounds), CL4 `bc580c1` (`cl4-audit-verdict.md`, two
-rounds). Earlier landings are listed in the memory file `veneer-campaign-state.md` and in
-`plan.md`.
+rounds), CL4b `5240e36` (`cl4b-audit-verdict.md`, one round). Earlier landings are listed in the
+memory file `veneer-campaign-state.md` and in `plan.md`.
 
 **CL3 and CL3b are closed and landed.** Together they land the reset partial, the text tag
 partials with mirrored proofs whose case tables and mode table live in `tests/setupStyles.ts`,
@@ -58,8 +58,12 @@ the presence scan comparing the pinned inventory against the built cascade, the 
 with the reason each carries, the selector canonicalization that folds the legacy pseudo-element
 spellings the build downlevels to, the legend boundary reading `breakpoint-up(xl)`, the folder
 sweep that turned every shared declaration block into a mixin, the non-visible focus proof, and
-the two Bootstrap departures recorded in the guide. Its four deviation stops and both audit
-rounds are in `cl4-audit-verdict.md` and in `plan.md`.
+the two Bootstrap departures recorded in the guide.
+
+**CL4b is closed and landed at `5240e36`**, accepted on all four lanes in one round. It pins the
+border reset `box-reset` supplies to the horizontal rule and gives the content section's proof a
+literal name control. The Orchestrator took both mutation readings itself after the unit exited,
+through `units/cl4b-probe.sh`, because no lane could re-execute them.
 
 Still open from those units, each with its carrier: the link colours' equality with the record is
 CL6's; a later component surface unit measures its own raised value rather than assuming
@@ -67,29 +71,23 @@ CL6's; a later component surface unit measures its own raised value rather than 
 description-list case field's name and the mode-invariant token case's duplicate registration go
 to the next unit that touches them.
 
-## What to do first: CL4b, then CL5
+## What to do first: close CL5, then CL6
 
-**CL4b** is a small successor unit carrying CL4's two proof obligations, both found by its audit
-and both test-side. No later unit in the plan owns either file, which is why they take a unit
-rather than diluting CL5.
+**CL5 is dispatched** on native Opus over `5240e36`, under `units/cl5-brief.md` with
+`units/cl5-brief-2.md` above it. Its terrain map (`units/cl5-scout-report.md`) and scope read
+(`units/cl5-scope-read-report.md`) are retained. If this session ended before CL5 returned, read
+the Veneer tree's status first: an unlanded CL5 working tree is the unit's output, not drift.
 
-1. Pin the `border: 0` that `box-reset` supplies to the horizontal rule. Its proof pins the
-   margin and the block-start border only, so dropping the include returns the user-agent border
-   on the other sides with the suite green.
-2. Give `ContentSection`'s name and markup assertions an independent control. They compare the
-   specimen table against itself, so the tag sequence is the only control the file has.
+On its report: retain it, render the evidence with `units/render-cl4b.sh` copied to
+`render-cl5.sh` with the base `5240e36` and the `cl5` names, write the claims file, and run the
+four-lane round. **CL5 is an Opus unit, so the lanes take their default places: the Opus reviewer
+holds the SUBJECTIVE lane and the Astra analyst the OBJECTIVE lane** — the reverse of CL3 and
+CL4, whose writer was Astra. Then reconcile into `cl5-audit-verdict.md` and land.
 
-Route it to `builder` on the cheap native tier with both obligations fully specified, audit it
-with one lane on an engine the Orchestrator does not share plus a `checker`, and land it the way
-every unit lands.
-
-**CL5** is an Opus unit, so its lanes take the default assignment: the Opus reviewer holds the
-SUBJECTIVE lane and the Astra analyst the OBJECTIVE lane. Its terrain is already mapped and
-retained at `units/cl5-scout-report.md`, so its brief does not re-read the inventory. The ruling
-its brief carries is already taken: the `.h1` through `.h6` and `.display-*` class twins read the
-same tokens their tag partials read rather than Bootstrap's fluid sizes, so a heading tag and its
-class twin agree inside Veneer. The fixed heading scale is already an open question reported to
-the user, and the display tokens for the large-viewport caps already exist in the token file.
+**CL6** is an Astra unit, so its lanes swap back. Its terrain map is already taken and retained
+at `units/cl6-scout-report.md`, covering the link inventory key, the anchor partial's opacity
+expression, the link tokens, and the record's anchor readings. Scope-read its brief before
+dispatch, as every unit here does.
 
 ## Then CL5 to CL13
 
@@ -176,9 +174,9 @@ reuses the U7f portfolio shape (`u7f-verdict.md`, `units/u7f-harness-3.mjs`,
 
 ## Bounds carried and open questions
 
-Carried bounds, each with its carrier: CL4b takes the horizontal rule's `border: 0` pin and the
-content section's independent control (`cl4-audit-verdict.md` round 2); CL5 takes the stripe
-light-scope assertion
+Carried bounds, each with its carrier: CL4b took the horizontal rule's `border: 0` pin and the
+content section's name control and is landed; CL5 takes the markup half of that control, which
+CL4b's brief scoped out (`cl4b-audit-verdict.md` reviewer 7), the stripe light-scope assertion
 (`cl2-audit-verdict.md` round 2), the heading letter-spacing row and the shell's document-global
 `main` id (`cl3-audit-verdict.md` round 2), the description-list case field's name and the
 mode-invariant token case's duplicate registration (`cl3b-audit-verdict.md`); CL6 takes the link
