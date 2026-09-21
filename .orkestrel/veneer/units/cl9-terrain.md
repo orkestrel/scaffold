@@ -28,9 +28,20 @@ Its families:
   1  .table-warning  .table-danger  .table-light  .table-dark
 ```
 
-**Nothing else rides under this prefix**, unlike the grid's keys. No neighbouring key shares a
-selector with it, and `.caption-top` is recorded under `table` alone, so this unit ships it rather
-than deferring it — it sets the caption side, which is table behaviour.
+**Nothing else rides under this prefix and no other key shares a selector with it**, unlike the
+grid's keys. That is checked exhaustively rather than by prefix: `units/cl9-overlap-probe.mjs`
+compares this key's selectors against **every** key in the record and finds no shared selector, and
+finds `.caption-top` the only selector whose leading class is not a table name — with `caption-top`
+not itself a key, so `table` is its only record and this unit ships it rather than deferring it. It
+sets the caption side, which is table behaviour.
+
+**The exhaustive form of that check is the point.** CL8's `row` key carried every `.row-gap-*`
+selector while a separate `row-gap` key carried the same ones, and a prefix-limited check would not
+have found it — the first version of this terrain record used exactly such a check and reached the
+right answer for the wrong reason. A key whose selectors another key also carries cannot be added to
+the emitted-vocabulary comparison's key tuple beside that other key, because the recorded side then
+counts each selector twice against a cascade emitting it once. So the tuple question is settled here
+in advance: `table` can join the tuple on its own account.
 
 ## The fact that decides the unit
 
