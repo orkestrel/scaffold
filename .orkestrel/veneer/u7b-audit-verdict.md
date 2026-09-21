@@ -52,3 +52,30 @@ subjective lane. All four ran, blind to each other, on one claims file.
 ### Terminal (round 1)
 
 Verdict: fix round. `units/u7b-brief-3.md` on Astra (thread `01a0c1ee-e5ae-7b61-a1a7-e4c780920eba`).
+
+## Round 2, 2026-09-21 (the fix round: brief 3)
+
+Astra wrote the fix round, so Opus holds the objective lane as the engine that did not write it.
+Claims: `u7b-audit-claims-2.md`. Evidence: `units/u7b-diff-2.patch.txt` beside round 1's,
+`units/u7b-status-2.txt`.
+
+| Lane | Role | Engine | Record | Terminal line |
+| --- | --- | --- | --- | --- |
+| objective | `reviewer` | native Opus 5, Workflow `wf_29f0f46b-a83` | `units/u7b-audit-2-reviewer-brief.md`, `units/lane-u7b-2-reviewer.md` | fix round on findings 8 and 9 (one fix) |
+| subjective | `analyst` | Astra, `codex exec` read-only, thread `01a0c1f9-c745-7aa1-850e-edeeb1521b52`, exit 0 | `units/u7b-audit-2-analyst.sh`, `units/u7b-audit-2-analyst-report.md` | accept |
+| mechanical | `checker` | native Sonnet, the same Workflow | `units/u7b-audit-2-checker-brief.md`, `units/lane-u7b-2-checker.md` | accept |
+| gates | `verifier` | native Sonnet, the same Workflow | `units/u7b-gate-brief.md`, `units/lane-u7b-2-verifier.md` | fourteen steps exit 0, `npm test` and `test:guides` included |
+
+Every claim 1 to 6 CONFIRMED by the reviewer and the analyst (5 and 6 by the checker too); claim
+7 CONFIRMED from the verifier. The reviewer's findings 8 and 9: the prune key brief 3 fixed,
+`button.host.isConnected`, is document connectivity, not membership of the delegate's root, so a
+fragment-rooted host is rebuilt on every click (and re-toggles against the oracle) and a host
+moved out of the root while connected is never released. The key was the Orchestrator's; ruled:
+root membership (`this.#root.contains(button.host)`), carried as `units/u7b-brief-4.md` with two
+cases (a fragment root clicked twice; a host moved out of the root then pruned and acquired by a
+consumer). The reviewer's caveat on claim 2 (the rethrow conjunct holds by construction, no case
+reaches it) is recorded, not carried.
+
+### Terminal (round 2)
+
+Verdict: fix round. `units/u7b-brief-4.md` on Astra.

@@ -1147,3 +1147,9 @@ after acceptance per the debrief skill's retention reference.
   exports with `test:guides` green; every gate exit 0 on Chromium and Edge. Round 2 launched on
   the fix-round tree: the objective reviewer on Opus (the engine that did not write it), the
   subjective analyst on Astra, the checker, and the verifier, on `u7b-audit-claims-2.md`.
+- 2026-09-21, U7b round 2 on the brief-3 tree: the analyst, the checker, and the verifier
+  (fourteen steps exit 0, `npm test` and `test:guides` included) accept; the objective reviewer
+  rules one more fix: the prune key brief 3 fixed (`isConnected`) is document connectivity, not
+  root membership, so a fragment-rooted host is rebuilt on every click and a host moved out of
+  the root is never released. The key was the Orchestrator's. `units/u7b-brief-4.md` (Astra)
+  changes it to `this.#root.contains(host)` with two cases; round 3 audits the fix.
