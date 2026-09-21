@@ -1124,3 +1124,9 @@ after acceptance per the debrief skill's retention reference.
   Ruled: `AppError` and `isAppError` live in `src/core/errors.ts` (host-independent, reached
   through the core barrel). `units/u7b-brief-2.md` carries the ruling and relaunched
   (`units/u7b-2.sh`).
+- 2026-09-21, U7b brief 2 (thread `01a0c1de-e09c-7c51-a98c-540ba05517ab`, `units/u7b-report-2.md`)
+  landed the error contract in the tree: `AppError` (`code`, optional `context`, the cause
+  forwarded) and `isAppError` in `src/core/errors.ts`, `Button`'s refusals `BUTTON_HOST_INVALID`
+  and `BUTTON_HOST_OWNED`, every gate exit 0 on Chromium and Edge. Audit launched on the
+  brief-2 tree: the objective reviewer on Opus (lane swap), the subjective analyst on Astra,
+  the checker, and the verifier, on `u7b-audit-claims.md`.

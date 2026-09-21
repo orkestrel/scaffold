@@ -1,0 +1,16 @@
+AM src/browser/Button.ts
+A  src/browser/Delegate.ts
+ M src/browser/constants.ts
+A  src/browser/helpers.ts
+ M src/browser/index.ts
+ M src/browser/types.ts
+ M src/browser/validators.ts
+ M src/core/index.ts
+AM tests/src/browser/Button.test.ts
+A  tests/src/browser/Delegate.test.ts
+A  tests/src/browser/helpers.test.ts
+ M tests/src/browser/index.test.ts
+ M tests/src/browser/validators.test.ts
+ M tests/src/core/index.test.ts
+?? src/core/errors.ts
+?? tests/src/core/errors.test.ts
