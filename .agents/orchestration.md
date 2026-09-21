@@ -583,6 +583,12 @@ filled.
 - Paste the command and its output behind every factual claim — paths, counts, registrations, file
   existence. Name the scope any search covered, and check a fact against the code rather than
   against another artifact that states it.
+- Search the campaign's own record for every fact a brief asserts, and reconcile any disagreement
+  before dispatch. A brief that contradicts a measurement the campaign already took is the most
+  expensive kind of wrong fact, because the scope read cannot save you: it checks the brief against
+  the tree with the brief's framing in hand, so it reproduces the error as often as it catches it.
+  The unit reading the record cold is the only reader positioned to refuse, and by then the round is
+  spent. Grep the plan and the retained reports for the subject, not just the tree.
 - Take every measurement under the conditions the unit runs in, or have the unit take it before
   doing anything else.
 - Ask what the change does to every fact you measured, and fix each criterion to the state the unit
