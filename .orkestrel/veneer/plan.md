@@ -1082,3 +1082,10 @@ after acceptance per the debrief skill's retention reference.
   branch. `units/u7a-brief-10.md` splits the population into two tables with unconditional
   assertions and runs the remaining gates. The measured dark-fill ratios (dark primary 2.59:1
   at rest under white text) are recorded for the user as a design question outside this unit.
+- 2026-09-20, U7a brief 10 (thread `01a0c198-a0e8-78a2-b3fa-4c506a08b474`, `units/u7a-report-10.md`)
+  completed the fix round: the contrast population split into `BUTTON_CONTRAST_FLOOR_CASES` (the
+  `light` role at the 4.5 floor) and `BUTTON_CONTRAST_RATIO_CASES` (every other role pinned),
+  no conditional expect, every gate exit 0 on Chromium and Edge, the 90 contrast readings equal
+  to report 9's on both engines, cascade digest `14cbc6fa…`. Round 2 of the audit launched on
+  the fix-round tree: the objective reviewer on Opus (the engine that did not write it), the
+  subjective analyst on Astra, the checker, and the verifier, on `u7a-audit-claims-2.md`.
