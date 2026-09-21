@@ -1,0 +1,596 @@
+diff --git a/guides/veneer.md b/guides/veneer.md
+index f1fb465..f6edde9 100644
+--- a/guides/veneer.md
++++ b/guides/veneer.md
+@@ -171,7 +171,7 @@ writes.
+ ### Deferred selectors
+ 
+ Each row names an official selector or custom property withheld from the built cascade, its reason,
+-and the owning unit that deletes the row when it ships the name.
++and the owning unit that deletes the row when it ships the name, or the terminal owner `Excluded` for a name no unit will ship and that must remain absent from the cascade.
+ 
+ | Name                                                                | Owner      | Reason                                           |
+ | ------------------------------------------------------------------- | ---------- | ------------------------------------------------ |
+diff --git a/tests/setupBrowser.test.ts b/tests/setupBrowser.test.ts
+index fce4dd2..bc43836 100644
+--- a/tests/setupBrowser.test.ts
++++ b/tests/setupBrowser.test.ts
+@@ -16,6 +16,8 @@ import {
+ 	traverseAccessible,
+ } from '@orkestrel/test/browser'
+ import { afterEach, describe, expect, it } from 'vitest'
++import { page } from 'vitest/browser'
++import { BREAKPOINT_CASES, visitBreakpoint } from './setupStyles.js'
+ import oracle from './fixtures/oracle/button.json'
+ import * as setup from './setupBrowser.js'
+ import {
+@@ -27,14 +29,17 @@ import {
+ 	collectNestedRules,
+ 	collectScopeProperties,
+ 	driveOracle,
++	holdOraclePointer,
+ 	mountShowcase,
+ 	ORACLE_ACTIONS,
+ 	ORACLE_EXCLUDED,
+ 	PROBE_CASCADE,
++	pressOracleKeys,
+ 	readCascadeSheet,
+ 	recordListeners,
+ 	recordState,
+ 	resolveButton,
++	resolveOracleButton,
+ 	specimens,
+ } from './setupBrowser.js'
+ 
+@@ -43,6 +48,53 @@ afterEach(() => {
+ 	document.documentElement.removeAttribute('data-bs-theme')
+ })
+ 
++describe('breakpoint viewport restoration', () => {
++	const original = { width: window.innerWidth, height: window.innerHeight }
++
++	it('reads every breakpoint boundary and restores after successful readings', async () => {
++		for (const entry of BREAKPOINT_CASES) {
++			for (const width of entry.readings) {
++				const reading = await visitBreakpoint(width, () => ({
++					width: window.innerWidth,
++					height: window.innerHeight,
++					matched: window.matchMedia(`(min-width: ${entry.boundary}px)`).matches,
++				}))
++				expect(reading).toEqual({
++					width,
++					height: original.height,
++					matched: width >= entry.boundary,
++				})
++			}
++		}
++		expect({ width: window.innerWidth, height: window.innerHeight }).toEqual(original)
++	})
++
++	it('restores after synchronous and asynchronous failures and nested viewport changes', async () => {
++		const failure = new Error('CL1 breakpoint reading failure')
++		await expect(
++			visitBreakpoint(576, () => {
++				throw failure
++			}),
++		).rejects.toBe(failure)
++		expect({ width: window.innerWidth, height: window.innerHeight }).toEqual(original)
++		await expect(
++			visitBreakpoint(768, async () => {
++				await page.viewport(992, 800)
++				throw failure
++			}),
++		).rejects.toBe(failure)
++		expect({ width: window.innerWidth, height: window.innerHeight }).toEqual(original)
++		await visitBreakpoint(1200, async () => {
++			await visitBreakpoint(375, () => expect(window.innerWidth).toBe(375))
++			expect(window.innerWidth).toBe(1200)
++		})
++	})
++
++	it('leaves the following case at the original viewport', () => {
++		expect({ width: window.innerWidth, height: window.innerHeight }).toEqual(original)
++	})
++})
++
+ describe('browser setup', () => {
+ 	it('exports the showcase mount, the case matrices, the oracle drive, the recorders, and the cascade readers', () => {
+ 		expect(Object.keys(setup).sort()).toEqual(
+@@ -59,11 +111,14 @@ describe('browser setup', () => {
+ 				'collectPainted',
+ 				'collectScopeProperties',
+ 				'driveOracle',
++				'holdOraclePointer',
+ 				'mountShowcase',
++				'pressOracleKeys',
+ 				'readCascadeSheet',
+ 				'recordListeners',
+ 				'recordState',
+ 				'resolveButton',
++				'resolveOracleButton',
+ 				'specimens',
+ 			].sort(),
+ 		)
+@@ -148,6 +203,50 @@ describe('browser setup', () => {
+ 		}
+ 	})
+ 
++	it('isolates the oracle drive from a duplicate Toggle in another mounted section', async () => {
++		const mounted = await mountShowcase()
++		const neighbor = mount(build('section'))
++		const duplicate = resolveButton(mounted.section, 'Toggle').cloneNode(true)
++		neighbor.append(duplicate)
++		mounted.host.before(neighbor)
++		try {
++			const host = resolveButton(neighbor, 'Toggle')
++			const pressed = host.getAttribute('aria-pressed')
++			host.focus()
++			const reading = await recordState(host, async () => {
++				const driven = await driveOracle(mounted.section, '')
++				expect(driven.get('button.click.toggle')?.clicks).toStrictEqual([true])
++				expect(driven.get('button.click.toggle')?.pressed).toBe('true')
++				expect(driven.get('button.keyboard.space')?.pressed).toBe('true')
++				expect(driven.get('button.keyboard.enter')?.pressed).toBe('false')
++				expect(driven.get('button.hover')?.refused).toBe(false)
++				expect(driven.get('button.pointer.hold')?.refused).toBe(false)
++			})
++			expect(reading.refusal).toBeUndefined()
++			expect(reading.clicks).toStrictEqual([])
++			expect(reading.mutations).toStrictEqual([])
++			expect(host.getAttribute('aria-pressed')).toBe(pressed)
++			expect(host.classList.contains('active')).toBe(false)
++			const target = resolveButton(mounted.section, 'Toggle')
++			const active = target.classList.contains('active')
++			host.focus()
++			await pressOracleKeys(mounted.section, 'Toggle', ' ')
++			expect(target.getAttribute('aria-pressed')).toBe(String(!active))
++			expect(host.getAttribute('aria-pressed')).toBe(pressed)
++			await holdOraclePointer(mounted.section, 'Toggle')
++			expect(resolveButton(mounted.section, 'Toggle').matches(':active')).toBe(true)
++			expect(host.matches(':active')).toBe(false)
++			await expect(holdOraclePointer(neighbor, 'Toggle')).rejects.toThrow('Pointer is already held')
++		} finally {
++			try {
++				await releasePointer()
++			} finally {
++				neighbor.remove()
++				mounted.cleanup()
++			}
++		}
++	})
++
+ 	it('sets one drive beside the recording, and reports an absent step rather than passing over it', async () => {
+ 		const mounted = await mountShowcase()
+ 		try {
+@@ -266,6 +365,12 @@ describe('browser setup', () => {
+ 			const refused = resolveButton(mounted.section, 'Disabled')
+ 			expect(refused.localName).toBe('a')
+ 			expect(refused.getAttribute('aria-disabled')).toBe('true')
++			expect(() => resolveOracleButton(mounted.section, 'Disabled')).toThrow(
++				'Interactive target "Disabled" is not visible and focus-reachable',
++			)
++			expect(() => resolveOracleButton(mounted.section, 'Sign in')).toThrow(
++				'No button in the root announces the accessible name "Sign in"',
++			)
+ 			expect(readRefusal('button', 'Disabled')).toBe(
+ 				'Interactive target "Disabled" is not visible and focus-reachable',
+ 			)
+diff --git a/tests/setupBrowser.ts b/tests/setupBrowser.ts
+index bf80b3a..e3b24d0 100644
+--- a/tests/setupBrowser.ts
++++ b/tests/setupBrowser.ts
+@@ -5,17 +5,21 @@ import { createRecorder, requireValue } from '@orkestrel/test'
+ import {
+ 	build,
+ 	clickAccessible,
+-	holdAccessible,
+-	hoverAccessible,
++	isReachable,
++	isOutsideViewport,
+ 	mount,
+ 	pressKeys,
++	POINTER_HOLD,
+ 	readName,
+ 	readStates,
+ 	releasePointer,
++	sendProtocol,
+ 	render,
+ 	waitForAnimations,
++	waitForFrame,
+ 	waitForState,
+ } from '@orkestrel/test/browser'
++import { userEvent } from 'vitest/browser'
+ import { Delegate } from '@src/browser'
+ import oracle from './fixtures/oracle/button.json'
+ import { normalizeSelectorText, readingToProjection } from './setup.js'
+@@ -131,7 +135,7 @@ export function resolveButton(root: ParentNode, name: string): HTMLElement {
+  *
+  * @example
+  * ```ts
+- * const reading = await recordState(host, () => clickAccessible('button', 'Toggle'))
++ * const reading = await recordState(host, () => userEvent.click(resolveOracleButton(root, 'Toggle')))
+  * ```
+  */
+ export async function recordState(
+@@ -221,25 +225,122 @@ export function collectPainted(root: ParentNode): readonly HTMLElement[] {
+ export const ORACLE_ACTIONS: ReadonlyArray<{
+ 	readonly action: string
+ 	readonly name: string
+-	drive(): Promise<void>
++	drive(root: ParentNode): Promise<void>
+ }> = Object.freeze([
+ 	{ action: 'initial', name: 'Toggle', drive: async () => undefined },
+-	{ action: 'click.toggle', name: 'Toggle', drive: () => clickAccessible('button', 'Toggle') },
+-	{ action: 'click.release', name: 'Toggle', drive: () => clickAccessible('button', 'Toggle') },
+-	{ action: 'keyboard.space', name: 'Toggle', drive: () => pressKeys(' ') },
+-	{ action: 'keyboard.enter', name: 'Toggle', drive: () => pressKeys('{Enter}') },
+-	{ action: 'hover', name: 'Toggle', drive: () => hoverAccessible('button', 'Toggle') },
+-	{ action: 'pointer.hold', name: 'Toggle', drive: () => holdAccessible('button', 'Toggle') },
++	{
++		action: 'click.toggle',
++		name: 'Toggle',
++		drive: (root: ParentNode) => userEvent.click(resolveOracleButton(root, 'Toggle')),
++	},
++	{
++		action: 'click.release',
++		name: 'Toggle',
++		drive: (root: ParentNode) => userEvent.click(resolveOracleButton(root, 'Toggle')),
++	},
++	{
++		action: 'keyboard.space',
++		name: 'Toggle',
++		drive: (root: ParentNode) => pressOracleKeys(root, 'Toggle', ' '),
++	},
++	{
++		action: 'keyboard.enter',
++		name: 'Toggle',
++		drive: (root: ParentNode) => pressOracleKeys(root, 'Toggle', '{Enter}'),
++	},
++	{
++		action: 'hover',
++		name: 'Toggle',
++		drive: (root: ParentNode) => userEvent.hover(resolveOracleButton(root, 'Toggle')),
++	},
++	{
++		action: 'pointer.hold',
++		name: 'Toggle',
++		drive: (root: ParentNode) => holdOraclePointer(root, 'Toggle'),
++	},
+ 	{ action: 'pointer.release', name: 'Toggle', drive: () => releasePointer() },
+ 	{ action: 'pressed.initial', name: 'Pressed', drive: async () => undefined },
+-	{ action: 'pressed.click', name: 'Pressed', drive: () => clickAccessible('button', 'Pressed') },
++	{
++		action: 'pressed.click',
++		name: 'Pressed',
++		drive: (root: ParentNode) => userEvent.click(resolveOracleButton(root, 'Pressed')),
++	},
+ 	{
+ 		action: 'disabled.click',
+ 		name: 'Disabled',
+-		drive: () => clickAccessible('button', 'Disabled'),
++		drive: (root: ParentNode) => userEvent.click(resolveOracleButton(root, 'Disabled')),
+ 	},
+ ])
+ 
++/**
++ * Resolves a reachable oracle button inside its assigned root.
++ * @param root - The subtree holding the oracle specimens.
++ * @param name - The exact accessible name.
++ * @returns The reachable button.
++ * @throws When the button is absent or refuses interaction.
++ */
++export function resolveOracleButton(root: ParentNode, name: string): HTMLElement {
++	const target = resolveButton(root, name)
++	if (!isReachable(target))
++		throw new Error(`Interactive target "${name}" is not visible and focus-reachable`)
++	return target
++}
++
++/**
++ * Focuses the assigned oracle button before sending trusted keyboard input.
++ * @param root - The subtree holding the oracle specimens.
++ * @param name - The exact accessible name.
++ * @param keys - The installed keyboard verb's key sequence.
++ * @returns A promise resolving after the keys are sent.
++ */
++export async function pressOracleKeys(root: ParentNode, name: string, keys: string): Promise<void> {
++	resolveOracleButton(root, name).focus()
++	await pressKeys(keys)
++}
++
++/**
++ * Holds a trusted pointer on the oracle button resolved inside its assigned root.
++ * @param root - The subtree holding the oracle specimens.
++ * @param name - The exact accessible name.
++ * @returns A promise resolving when the button enters its active state.
++ * @throws When a pointer is held, the button is unreachable, or pressing fails.
++ * @remarks
++ * The installed hold verb accepts only document-wide names. This element-bound path uses its
++ * protocol and marker so the installed release verb owns cleanup.
++ */
++export async function holdOraclePointer(root: ParentNode, name: string): Promise<void> {
++	const held = document.documentElement.getAttribute(POINTER_HOLD)
++	if (held !== null) throw new Error(`Pointer is already held at ${held}`)
++	const target = resolveOracleButton(root, name)
++	if (isOutsideViewport(target.getBoundingClientRect()))
++		target.scrollIntoView({ block: 'nearest', behavior: 'instant' })
++	const box = target.getBoundingClientRect()
++	if (isOutsideViewport(box))
++		throw new Error(`Interactive target "${name}" is unreachable after scrolling`)
++	const frame = window.frameElement?.getBoundingClientRect()
++	const scale = frame === undefined ? 1 : frame.width / window.innerWidth
++	const x = (frame?.left ?? 0) + (box.left + box.width / 2) * scale
++	const y = (frame?.top ?? 0) + (box.top + box.height / 2) * scale
++	await sendProtocol('Input.dispatchMouseEvent', { type: 'mouseMoved', x, y })
++	await sendProtocol('Input.dispatchMouseEvent', {
++		type: 'mousePressed',
++		x,
++		y,
++		button: 'left',
++		buttons: 1,
++		clickCount: 1,
++	})
++	document.documentElement.setAttribute(POINTER_HOLD, `${String(x)}x${String(y)}`)
++	try {
++		await waitForFrame()
++		if (!target.matches(':active'))
++			throw new Error(`Interactive target "${name}" did not enter the pressed state`)
++	} catch (error) {
++		await releasePointer()
++		throw error
++	}
++}
++
+ /**
+  * Lists the step names the official recording excluded, read from the recording itself.
+  *
+@@ -289,7 +390,7 @@ export async function driveOracle(
+ 	const driven = new Map<string, ButtonProjection>()
+ 	for (const step of ORACLE_ACTIONS) {
+ 		const host = resolveButton(root, step.name)
+-		const reading = await recordState(host, step.drive)
++		const reading = await recordState(host, () => step.drive(root))
+ 		driven.set(`button.${prefix}${step.action}`, readingToProjection(reading))
+ 	}
+ 	return driven
+diff --git a/tests/setupConformance.test.ts b/tests/setupConformance.test.ts
+index acd6e36..cd44d53 100644
+--- a/tests/setupConformance.test.ts
++++ b/tests/setupConformance.test.ts
+@@ -559,6 +559,59 @@ describe('setupConformance', () => {
+ 		}
+ 	})
+ 
++	it('rejects excluded names across the cascade even before their inventory key has a guide row', () => {
++		const scratch = createScratch()
++		try {
++			const path = scratch.write(
++				'excluded.md',
++				'## Styles\n\n### Deferred selectors\n\n| Name | Owner | Reason |\n| --- | --- | --- |\n| ol ol | Excluded | Contextual list styling |\n',
++			)
++			const exclusions = readDeferrals(path)
++			expect(exclusions).toEqual([
++				{ name: 'ol ol', owner: 'Excluded', reason: 'Contextual list styling' },
++			])
++			const inventory = readOracleInventory()
++			expect(scanCompatibilityPresence([], inventory, exclusions, '')).toBeUndefined()
++			expect(
++				scanCompatibilityPresence(
++					[],
++					inventory,
++					exclusions,
++					'@layer reset { @media (min-width: 1px) { .control, ol ol { color: red } } }',
++				),
++			).toBe('Excluded name ol ol is present in the built cascade')
++			expect(
++				scanCompatibilityPresence(
++					[],
++					inventory,
++					[{ name: '.cl1-outside', owner: 'Excluded', reason: 'Unknown selector' }],
++					'',
++				),
++			).toBe('Excluded name .cl1-outside is outside the official inventory')
++		} finally {
++			scratch.destroy()
++		}
++	})
++
++	it('admits a property-free inventory key on its shipped selector row alone', () => {
++		const scratch = createScratch()
++		try {
++			const path = scratch.write(
++				'property-free.md',
++				'## Compatibility\n\n| Component | Kind | Obligation | Proof | Status |\n| --- | --- | --- | --- | --- |\n| reboot | selector | Official selectors | — | shipped |\n',
++			)
++			const rows = readCompatibility(path)
++			expect(readOracleInventory().components.reboot?.properties).toEqual([])
++			expect(readOracleInventory().components.reboot?.selectors).toContain('body')
++			expect(collectShippedComponents(rows)).toEqual(['reboot'])
++			expect(collectShippedComponents(rows.map((row) => ({ ...row, status: 'accepted' })))).toEqual(
++				[],
++			)
++		} finally {
++			scratch.destroy()
++		}
++	})
++
+ 	it('selects shipped CSS keys independently of behavior rows and excludes the shared engine', () => {
+ 		const rows = readCompatibility().map((row) => ({ ...row, status: 'shipped' as const }))
+ 		expect(collectShippedComponents([])).toEqual([])
+diff --git a/tests/setupConformance.ts b/tests/setupConformance.ts
+index 9f8dca4..d84df2e 100644
+--- a/tests/setupConformance.ts
++++ b/tests/setupConformance.ts
+@@ -521,7 +521,7 @@ export function readCompatibility(
+ /**
+  * Reads deferred CSS names from the Styles section's Deferred selectors subsection.
+  * @param path - The Markdown document to read; defaults to the package guide.
+- * @returns Deferred names with their owning unit and reason, in document order.
++ * @returns Withheld names with their owning unit or terminal Excluded owner and reason, in document order.
+  * @throws When the subsection, table, column, or required cell is missing.
+  */
+ export function readDeferrals(
+@@ -587,13 +587,17 @@ export function readBuiltCascade(
+ /**
+  * Collects component keys whose every selector and variable obligation is shipped.
+  * @param rows - The guide's compatibility obligations.
++ * @param inventory - The official vocabulary; defaults to the pinned oracle inventory.
+  * @returns Sorted component keys, excluding the shared engine.
+  * @remarks
+- * A key qualifies only when it carries at least one selector row and at least one variable row and
++ * A key requires a selector row and, when its official properties are nonempty, a variable row;
+  * every row of either category reads shipped. An accepted row beside a shipped one withholds the
+  * key, so a partly shipped vocabulary never reports as a shipped one.
+  */
+-export function collectShippedComponents(rows: readonly CompatibilityRow[]): readonly string[] {
++export function collectShippedComponents(
++	rows: readonly CompatibilityRow[],
++	inventory: OracleInventory = readOracleInventory(),
++): readonly string[] {
+ 	return [...new Set(rows.map((row) => row.component))]
+ 		.filter(
+ 			(component) =>
+@@ -602,7 +606,12 @@ export function collectShippedComponents(rows: readonly CompatibilityRow[]): rea
+ 					const owned = rows.filter(
+ 						(row) => row.component === component && row.category === category,
+ 					)
+-					return owned.length > 0 && owned.every((row) => row.status === 'shipped')
++					return (
++						(owned.length > 0 ||
++							(category === 'variable' &&
++								inventory.components[component]?.properties.length === 0)) &&
++						owned.every((row) => row.status === 'shipped')
++					)
+ 				}),
+ 		)
+ 		.sort()
+@@ -612,11 +621,12 @@ export function collectShippedComponents(rows: readonly CompatibilityRow[]): rea
+  * Scans shipped CSS obligations and deferrals against the official vocabulary and built cascade.
+  * @param rows - The guide's compatibility obligations; each shipped CSS row binds its own set.
+  * @param inventory - The official vocabulary by component.
+- * @param deferrals - Official names withheld by their owning units.
++ * @param deferrals - Official names withheld by their owning units or permanently Excluded.
+  * @param cascade - The built CSS text, including written fixtures in reader proofs.
+  * @returns The first named failure, or undefined when the partition and presence agree.
+  * @remarks
+  * A deferral must belong to a component with a selector or variable row, even while accepted.
++ * An Excluded name requires inventory membership without a guide row for its component.
+  * Names shared by inventory keys apply to every matching key. Deferred names must be absent
+  * regardless of row status. Selector comparison uses the cascade's normalization.
+  */
+@@ -641,18 +651,21 @@ export function scanCompatibilityPresence(
+ 		if (declaration.prop.startsWith('--')) properties.add(declaration.prop)
+ 	})
+ 	const deferred = new Set(deferrals.map((row) => row.name))
+-	for (const { name } of deferrals) {
++	for (const { name, owner } of deferrals) {
++		const excluded = owner === 'Excluded'
++		const label = excluded ? 'Excluded' : 'Deferred'
++		const candidates = excluded ? Object.keys(inventory.components) : components
+ 		if (
+-			!components.some((component) => {
++			!candidates.some((component) => {
+ 				const vocabulary = inventory.components[component]
+ 				return vocabulary?.selectors.includes(name) || vocabulary?.properties.includes(name)
+ 			})
+ 		)
+-			return `Deferred name ${name} is outside the official inventory for ${components.join(', ')}`
++			return `${label} name ${name} is outside the official inventory${excluded ? '' : ` for ${components.join(', ')}`}`
+ 		if (
+ 			name.startsWith('--') ? properties.has(name) : selectors.has(normalizeComplexSelector(name))
+ 		)
+-			return `Deferred name ${name} is present in the built cascade`
++			return `${label} name ${name} is present in the built cascade`
+ 	}
+ 	for (const row of obligations) {
+ 		if (row.status !== 'shipped') continue
+diff --git a/tests/setupStyles.test.ts b/tests/setupStyles.test.ts
+index 70c8e10..25e0987 100644
+--- a/tests/setupStyles.test.ts
++++ b/tests/setupStyles.test.ts
+@@ -9,6 +9,7 @@ import {
+ 	BOOTSTRAP_DARK_VARIABLES,
+ 	BOOTSTRAP_ROOT_VARIABLES,
+ 	BOOTSTRAP_SCOPE_PATTERNS,
++	BREAKPOINT_CASES,
+ 	CALIBRATED_TIERS,
+ 	CUSTOMIZATION_RECIPE,
+ 	EDGE_SHORTHANDS,
+@@ -56,6 +57,7 @@ describe('styles setup', () => {
+ 				'BOOTSTRAP_DARK_VARIABLES',
+ 				'BOOTSTRAP_ROOT_VARIABLES',
+ 				'BOOTSTRAP_SCOPE_PATTERNS',
++				'BREAKPOINT_CASES',
+ 				'BUTTON_BARE_CASES',
+ 				'BUTTON_CONTRAST_FLOOR_CASES',
+ 				'BUTTON_CONTRAST_RATIO_CASES',
+@@ -101,9 +103,26 @@ describe('styles setup', () => {
+ 				'splitTopLevelValues',
+ 				'trimCSSWhitespace',
+ 				'walkSelector',
++				'visitBreakpoint',
+ 			].sort(),
+ 		)
+ 	})
++	it('freezes the boundary table and its below, at, and above readings', () => {
++		expect(BREAKPOINT_CASES.map((entry) => [entry.boundary, ...entry.readings])).toEqual([
++			[375, 374, 375, 376],
++			[576, 575, 576, 577],
++			[768, 767, 768, 769],
++			[992, 991, 992, 993],
++			[1200, 1199, 1200, 1201],
++			[1400, 1399, 1400, 1401],
++		])
++		expect(Object.isFrozen(BREAKPOINT_CASES)).toBe(true)
++		for (const entry of BREAKPOINT_CASES) {
++			expect(Object.isFrozen(entry)).toBe(true)
++			expect(Object.isFrozen(entry.readings)).toBe(true)
++		}
++	})
++
+ 	it('flags every property the direction tables name, and each one through the shape its own table decides', () => {
+ 		expect(
+ 			PHYSICAL_LONGHANDS.filter((name) => scanPhysicalDeclaration(`${name}:1px`) === undefined),
+diff --git a/tests/setupStyles.ts b/tests/setupStyles.ts
+index 48bc8d0..9e922d6 100644
+--- a/tests/setupStyles.ts
++++ b/tests/setupStyles.ts
+@@ -2,6 +2,38 @@ import { isRecord } from '@orkestrel/contract'
+ import { parse } from 'postcss'
+ import { collectTokenNodes, normalizeSelectorText } from './setup.js'
+ 
++/** Lists the viewport readings immediately below, at, and above each layout boundary. */
++export const BREAKPOINT_CASES = Object.freeze(
++	[375, 576, 768, 992, 1200, 1400].map((boundary) =>
++		Object.freeze({
++			boundary,
++			readings: Object.freeze([boundary - 1, boundary, boundary + 1]),
++		}),
++	),
++)
++
++/**
++ * Visits a breakpoint viewport and restores its starting size after the reading settles.
++ * @param width - The viewport width in CSS pixels; the starting height is retained.
++ * @param action - The reading to take at that viewport.
++ * @returns The reading's result.
++ * @throws When resizing or the reading fails, after attempting restoration.
++ * @example
++ * ```ts
++ * await visitBreakpoint(576, () => window.innerWidth)
++ * ```
++ */
++export async function visitBreakpoint<T>(width: number, action: () => T | Promise<T>): Promise<T> {
++	const { page } = await import('vitest/browser')
++	const starting = { width: window.innerWidth, height: window.innerHeight }
++	try {
++		await page.viewport(width, starting.height)
++		return await action()
++	} finally {
++		await page.viewport(starting.width, starting.height)
++	}
++}
++
+ /**
+  * Holds the theme and paint readings for the bare-button geometry and interaction cases.
+  */
