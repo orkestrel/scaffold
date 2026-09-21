@@ -1388,3 +1388,11 @@ after acceptance per the debrief skill's retention reference.
   `units/cl3-brief-5.md` on Astra. Carried: the `surface-code` theme-map key to CL3b (the emitter
   holds a literal); the heading letter-spacing row and the shell's document-global `main` id to
   CL5 (the next owner of the type scale and `Showcase.ts`). **Unchanged:** CL3b, CL4 to CL13.
+- 2026-09-21, CL3 round 3 dispatched and returned on Astra (`units/cl3-report-4.md`, thread
+  `01a0c3d8-ba0e-7661-a6ad-7d51fcca2e0c`): the `script-text` mixin closes the shared block of
+  `_sub.scss` and `_sup.scss`, `_body.scss` drops the `text-size-adjust` the root already
+  declares, and the brief's sweep of every partial pair found and extracted two more shared
+  blocks into argument-free mixins (`code-surface` for the code and keyboard surfaces,
+  `list-space` for the ordered and unordered lists), with every captured reading equal before
+  and after on both receipts, no proof edited, and every gate green. Round 3's audit runs on
+  all four lanes over `cl3-audit-claims-3.md`. **Unchanged:** CL3b, CL4 to CL13.
