@@ -231,6 +231,11 @@ reading justifies and a person might still reject.
   highlight properties, so retuning those Bootstrap properties moves nothing (CL5c's ruling).
 - The link colours moving to the values the record measured, so a consumer who matched the
   current link colour sees it change (CL6's ruling).
+- The link-styled button's colour moving with them, because it reads the link tokens directly.
+  That is a visible change to a component of the closed Button family. The foundation calibration
+  record carries no link rows, so those values were derived rather than measured, which is why
+  following the retune is ruled correct rather than a regression (CL6's ruling, from the scope
+  read).
 
 **Accepted differences from Bootstrap.** Each ships knowingly and needs no decision unless the
 user disagrees.
