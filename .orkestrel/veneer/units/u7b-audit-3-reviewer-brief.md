@@ -32,7 +32,7 @@ site and a one-line failure scenario.
 ## Context
 
 The retained records sit under `C:/Users/mikes/WebstormProjects/scaffold/.orkestrel/veneer/`:
-`units/u7b-brief-4.md` (the fix-round brief, carrying briefs 3 to 1), `units/u7b-report-4.md` with `units/u7b-report-3.md`, `-2.md`, and `u7b-report.md` (the reports), `u7b-audit-verdict.md` (round 1 and the findings carried), your own round-2 findings in `units/lane-u7b-2-reviewer.md` items 8 and 9, and round 2's rendered diff at `u7b-diff-2.patch.txt` beside round 2's so the fix round's edits stand out, `u7-design-verdict.md`
+`units/u7b-brief-4.md`, `units/u7b-brief-5.md`, and `units/u7b-brief-6.md` (the fix-round briefs, carrying briefs 3 to 1), `units/u7b-report-6.md` with `units/u7b-report-5.md`, `units/u7b-report-4.md`, `units/u7b-report-3.md`, `-2.md`, and `u7b-report.md` (the reports), `u7b-audit-verdict.md` (round 1 and the findings carried), your own round-2 findings in `units/lane-u7b-2-reviewer.md` items 8 and 9, and round 2's rendered diff at `u7b-diff-2.patch.txt` beside round 2's so the fix round's edits stand out, `u7-design-verdict.md`
 (questions 1 to 4 and § The user's correction: no `auto` entry, no adapter, no Bootstrap method
 spellings; `Delegate` behind the existing `./browser` barrel), `units/u7-design-planner-report.md`
 §§ 1 to 4, `units/u7-design-analyst-report.md`. Law: scaffold's `AGENTS.md`,

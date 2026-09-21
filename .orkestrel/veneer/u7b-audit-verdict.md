@@ -79,3 +79,38 @@ reaches it) is recorded, not carried.
 ### Terminal (round 2)
 
 Verdict: fix round. `units/u7b-brief-4.md` on Astra.
+
+## Round 3, 2026-09-21 (the second fix round: briefs 4 to 6)
+
+Astra wrote briefs 4 to 6, so Opus holds the objective lane as the engine that did not write
+them. Claims: `u7b-audit-claims-3.md`. Evidence: `units/u7b-diff-3.patch.txt` beside round 2's,
+`units/u7b-status-3.txt`. Brief 4 landed the root-membership key with its two cases and stopped
+on lint (the `toThrowError` alias at the two new assertions); brief 5 replaced the alias and
+stopped on `format:check` because the shortened calls fit one line and the brief had forbidden
+any further change; brief 6 ran the scoped formatter on the owned file (the path form probed
+read-only on the host first) and every gate to completion on Chromium and Edge. The two stops
+were the Orchestrator's over-tight briefs, recorded in `units/u7b-report-4.md` and
+`units/u7b-report-5.md`.
+
+| Lane | Role | Engine | Record | Terminal line |
+| --- | --- | --- | --- | --- |
+| objective | `reviewer` | native Opus 5, Workflow `wf_1e3098ba-965` | `units/u7b-audit-3-reviewer-brief.md`, `units/lane-u7b-3-reviewer.md` | accept; claims 1 to 3 CONFIRMED, claim 4 referred to the verifier |
+| subjective | `analyst` | Astra, `codex exec` read-only, thread `01a0c22a-da10-70a0-9697-88610c80b7a6`, exit 0 | `units/u7b-audit-3-analyst.sh`, `units/u7b-audit-3-analyst-report.md` | claims 1 to 3 CONFIRMED, claim 4 UNDECIDABLE pending the verifier |
+| mechanical | `checker` | native Sonnet, the same Workflow | `units/u7b-audit-3-checker-brief.md`, `units/lane-u7b-3-checker.md` | accept |
+| gates | `verifier` | native Sonnet, the same Workflow | `units/u7b-gate-brief.md`, `units/lane-u7b-3-verifier.md` | every step exit 0: `format:check`, `lint:check`, `check`, `build`, `test:src:browser` on Chromium and Edge, `test:setup`, `test:setup:browser` on Chromium and Edge, `test:guides`, `npm test`, the read-only `scaffold audit`; the status identical before and after |
+
+Claims 1 to 3 CONFIRMED by the reviewer and the analyst (3 by the checker too); claim 4
+CONFIRMED from the verifier. The reviewer finds the prune predicate and the acquisition guard
+now one rule (`root.contains(host)`), the round's only source change the one condition in
+`src/browser/Delegate.ts` (every other blob identical across the round-2 and round-3
+renderings), and no defect the key introduces; it names one residual gap, not required: no case
+clicks twice under a detached element root, which holds by construction because `Node.contains`
+has no branch on node kind. Recorded, not carried. The reviewer's record caveat that round-2
+claim 2's test line citations moved with the inserted fragment case is recorded. Observations
+outside the unit's scope from the verifier's read-only `scaffold audit`: `tests/setupListeners.ts`
+is a setup module with no proof file (a bound for the next setup unit), and the registry serves
+a later major of `@vitest/browser-playwright`, `typescript`, and `vitest` (the user's call).
+
+### Terminal (round 3)
+
+Verdict: accept. Landed as Veneer `0cbb563` through `units/u7b-land.sh` (log `units/u7b-land.log.txt`, message `units/u7b-land-message.txt`), pushed to `origin/main`.

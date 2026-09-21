@@ -1,0 +1,25 @@
+<!-- workflow wf_1e3098ba-965, agent af05fe494156732c8, label unknown, retained 2026-09-21 -->
+
+## Audit verdict — U7b round 3 checker (mechanical claims only)
+
+**Claim table**
+
+| Claim | Verdict | Evidence |
+|---|---|---|
+| 3 `[mechanical]` — round-3 diff differs from round-2's only in `src/browser/Delegate.ts` and `tests/src/browser/Delegate.test.ts`; status shows only brief 2's owned set (`src/core/errors.ts`, `src/core/types.ts`, `src/core/index.ts`, `tests/src/core/errors.test.ts`, `tests/src/core/index.test.ts` per `u7b-brief-2.md:33-36`, plus brief 1's set) plus `guides/veneer.md` from brief 3; no `any`, no assertion outside `as const`, no non-null assertion, no suppression, no skip; no case named for a control; no `PLANT` residue; barrel and export-set cases unchanged; round-2 confirmations undisturbed | CONFIRMED | Every hunk in `u7b-diff-2.patch.txt` and `u7b-diff-3.patch.txt` is byte-identical except `src/browser/Delegate.ts` (blob `466e377`→`793bf7f`, `#activate` line: `button.host.isConnected` → `this.#root.contains(button.host)`) and `tests/src/browser/Delegate.test.ts` (`2c89bf8`→`2526da4`, adds "reuses a fragment-rooted engine across clicks" and "releases a connected host moved outside the root on a later unrelated click"). `tmp/audit/u7b-status-3.txt:1-17` lists exactly the 17 lines that are brief 2's owned set (per `u7b-brief-2.md:33-36` and `u7b-brief.md`) plus `guides/veneer.md`. Grep of `u7b-diff-3.patch.txt` for `: any`, `!.`, `!)`, `@ts-`, `eslint-disable`, `public `/`private `/`protected `, `it.skip`/`test.skip`/`.todo`/`.fails`, `PLANT`, and a bare-cast `as ` returned no matches (only prose "as a bubbling"). `src/browser/index.ts` and `tests/src/browser/index.test.ts` hunks are identical between the two patches. |
+
+**Probe readings**
+
+- **Surface**: `package.json` carries no diff hunk (`exports`/`sideEffects` unchanged, confirmed against the live `package.json`). `src/browser/` on disk (`Glob`) lists exactly `ColorMode.ts`, `types.ts`, `constants.ts`, `validators.ts`, `helpers.ts`, `index.ts`, `Button.ts`, `Delegate.ts` — no extra file. `configs/**` has no diff hunk. Live `src/browser/index.ts` star-exports `types.js`, `constants.js`, `helpers.js`, `validators.js`, `ColorMode.js`, `Button.js`, `Delegate.js` and nothing else.
+- **Placement**: `Button.ts` and `Delegate.ts` sit flat at `src/browser/`, each one class plus imports; types in `types.ts`, constants in `constants.ts`, helpers in `helpers.ts`, guards in `validators.ts`; no nested folder in the diff or on disk.
+- **Export set**: `tests/src/browser/index.test.ts:11-25` asserts the sorted barrel export set (`BUTTON_ACTIVE`, `BUTTON_SELECTOR`, `BUTTON_TOGGLE`, `Button`, `COLOR_MODE_ATTRIBUTE`, `COLOR_MODE_KEY`, `ColorMode`, `Delegate`, `bindEventMap`, `emitEvent`, `isButtonEvent`, `isButtonHost`, `isColorModeState`), matching the live barrel; the same file's second case still asserts `recordListeners` finds no `document`/`window` target on barrel import.
+- **Names**: every interface member/option key in `src/browser/types.ts` is one word (`host`, `pressed`, `toggle`, `destroy`, `root`, `on`); wire event is `'toggle.vn.button'` (`src/browser/constants.ts`, `BUTTON_TOGGLE`); `BUTTON_TOGGLE`, `BUTTON_SELECTOR`, `BUTTON_ACTIVE` exist; helpers `emitEvent`/`bindEventMap` use `{verb}{Noun}`.
+- **Letter of the law**: swept `u7b-diff-3.patch.txt` — no `: any`, ` as ` cast, `!.`, `!)`, `@ts-`, `eslint-disable`, `public `/`private `/`protected `, parameter property, `it.skip`/`.todo`/`.fails`/`test.skip`, or `PLANT` residue found. Every module-scope function added (`emitEvent`, `bindEventMap`, `isButtonHost`, `isButtonEvent`, `AppError`, `isAppError`) is exported and tested. No nested function declarations outside the permitted anonymous-callback/return forms. No case title names a control. Interface properties are `readonly`.
+- **Installed-primitive probe**: grepped `node_modules/@orkestrel/test/dist/src/browser/index.d.ts`, `.../test/dist/src/core/index.d.ts`, and `node_modules/@orkestrel/contract/dist/src/core/index.d.ts` for `dispatch|emit|bind|listen` function exports — no match in any of the three; no overlap with `emitEvent`, `bindEventMap`, `isButtonHost`, or `isButtonEvent`.
+- **Scope**: `tmp/audit/u7b-status-3.txt` lines are exactly brief 2's granted set (`src/browser/{Button,Delegate,constants,helpers,index,types,validators}.ts`, `src/core/{errors,index}.ts`, matching test files) plus `guides/veneer.md` (brief 3's grant, `u7b-brief-3.md:58-62`). `src/styles/**`, `app/**`, `tests/app/**`, `tests/setup*.ts`, `tests/conformance*.ts`, `tests/distribution.test.ts`, `configs/**` are absent from both the diff and the status.
+
+**Extra findings**
+
+None found in the round-3 delta (`src/browser/Delegate.ts`, `tests/src/browser/Delegate.test.ts`). The root-membership prune (`this.#root.contains(button.host)`) correctly covers the two claimed cases (fragment-rooted reuse, connected-but-relocated host), the `Set` mutation-during-iteration pattern is unchanged from the confirmed round-2 form, and no new lint/type/test-policy violation appears in the diff.
+
+Verdict: accept

@@ -1153,3 +1153,20 @@ after acceptance per the debrief skill's retention reference.
   root membership, so a fragment-rooted host is rebuilt on every click and a host moved out of
   the root is never released. The key was the Orchestrator's. `units/u7b-brief-4.md` (Astra)
   changes it to `this.#root.contains(host)` with two cases; round 3 audits the fix.
+- 2026-09-21, U7b briefs 4 to 6 on Astra (threads `01a0c219-dbbc-70e3-aa7f-cac926de5ac1`,
+  `01a0c220-c9f3-7391-b4dd-bbaa5b2bde02`, `01a0c225-2cd3-77e0-9611-bb7e36232cbd`; reports
+  `units/u7b-report-4.md` to `-6.md`): brief 4 landed the root-membership key with its two
+  cases (red on the old key, green on the new) and stopped on lint at the `toThrowError` alias;
+  brief 5 replaced the alias and stopped on `format:check`, the shortened calls fitting one line
+  under a brief that forbade any further change; brief 6 ran the scoped formatter on the owned
+  file (the path form probed read-only on the host first) and every gate to completion on
+  Chromium and Edge. The two stops were the Orchestrator's over-tight briefs. Round 3 launched
+  on the brief-6 tree on `u7b-audit-claims-3.md`.
+- 2026-09-21, U7b round 3: the objective reviewer on Opus, the subjective analyst on Astra, and
+  the checker accept (claims 1 to 3 CONFIRMED; the prune predicate and the acquisition guard
+  now one rule); the verifier settles claim 4 with every step exit 0 (`npm test`, `test:guides`,
+  Chromium and Edge, the read-only `scaffold audit`). Verdict accept; landed as Veneer `0cbb563`
+  through `units/u7b-land.sh`. Observations outside the unit: `tests/setupListeners.ts` has no
+  proof file (a bound for the next setup unit); the registry serves later majors of
+  `@vitest/browser-playwright`, `typescript`, and `vitest` (the user's call). U7c dispatches on
+  Opus over `0cbb563` with the U7b landing's `Delegate` reading (root membership) in its message.

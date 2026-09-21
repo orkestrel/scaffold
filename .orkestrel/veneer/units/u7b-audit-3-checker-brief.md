@@ -20,7 +20,7 @@ The Orchestrator rendered the diff over the Veneer checkout's `91e5906` at
 files) and the status at `tmp/audit/u7b-status-3.txt`. Read those and the live Veneer tree at
 `C:/Users/mikes/WebstormProjects/veneer` (`src/browser/**`, `src/core/errors.ts`, `src/core/index.ts`, `tests/src/browser/**`, `tests/src/core/**`,
 `package.json`, `configs/**`). Read the retained report
-`.orkestrel/veneer/units/u7b-report-4.md` (with `-3.md`, `-2.md`, and `u7b-report.md`) only to learn what the unit claims; rule on the tree.
+`.orkestrel/veneer/units/u7b-report-6.md` (with `-5.md`, `-4.md`, `-3.md`, `-2.md`, and `u7b-report.md`) only to learn what the unit claims; rule on the tree.
 
 ## Probes
 
