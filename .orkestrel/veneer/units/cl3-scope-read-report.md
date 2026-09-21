@@ -23,7 +23,7 @@
 | Guide § Styles files table, § Departures, § Showcase region sentence | files table at `veneer/guides/veneer.md:122-135`; § Showcase region sentence at `:740-741` ("a Buttons region carrying every declared button specimen"); **§ Departures is ambiguous**: the guide has two headings, `### Departures from the workspace rows` (`:240`) and `### Departures from Bootstrap` (`:616`), and the brief names neither explicitly |
 | Calibration records present | yes | `.orkestrel/veneer/research/calibration-content.md` and `research/calibration.md` both resolve (Glob) |
 | `node_modules/bootstrap/scss/_reboot.scss` in Veneer checkout | yes | resolves (Glob) |
-| Planner/analyst/scout reports at `units/content-layout-*-report.md` | resolve, but only relative to `.orkestrel/veneer/`, not `` | `.orkestrel/veneer/units/content-layout-design-planner-report.md`, `-analyst-report.md`, `scout-report.md` all exist; brief's Context paragraph writes them as bare `units/...` without the `.orkestrel/veneer/` prefix it gives the design-verdict file two lines earlier, so a writer resolving relative to its own `` root finds nothing there |
+| Planner/analyst/scout reports at `units/content-layout-*-report.md` | resolve, but only relative to `.orkestrel/veneer/`, not the launch directory | `.orkestrel/veneer/units/content-layout-design-planner-report.md`, `-analyst-report.md`, `scout-report.md` all exist; brief's Context paragraph writes them as bare `units/...` without the `.orkestrel/veneer/` prefix it gives the design-verdict file two lines earlier, so a writer resolving relative to its own launch root finds nothing there |
 
 ## Item 2 — Readings taken now
 
