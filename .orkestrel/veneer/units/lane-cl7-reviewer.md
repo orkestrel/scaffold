@@ -34,7 +34,7 @@ I held the **objective** lane: correctness under the shipped cascade and the pin
 
 ## Dispatch defects
 
-- The brief's **Evidence** section (`tmp/units/cl7-audit-reviewer-brief.md:26-30`) names the CL6 subject, not CL7's: `src/styles/components/_link.scss`, `src/styles/elements/_a.scss`, "the link and anchor and button proofs", "the link section and its proof". It never names `src/styles/components/_container.scss`, `tests/src/styles/components/container.test.ts`, or `app/browser/sections/LayoutSection.ts` — the three files this unit created. I worked from the rendered diff and status instead.
+- The brief's **Evidence** section (`cl7-audit-reviewer-brief.md:26-30`) names the CL6 subject, not CL7's: `src/styles/components/_link.scss`, `src/styles/elements/_a.scss`, "the link and anchor and button proofs", "the link section and its proof". It never names `src/styles/components/_container.scss`, `tests/src/styles/components/container.test.ts`, or `app/browser/sections/LayoutSection.ts` — the three files this unit created. I worked from the rendered diff and status instead.
 - The brief directs me to "the law under the Veneer checkout (`AGENTS.md`, `.claude/rules/styles.md`, `tests.md`, …)". `C:/Users/mikes/WebstormProjects/veneer/.claude/rules/` does not exist; only `AGENTS.md` and `CLAUDE.md` are there. I read the rules from the scaffold checkout.
 
 ## Referral

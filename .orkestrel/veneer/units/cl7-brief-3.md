@@ -63,7 +63,7 @@ Briefs 1 and 2's owned set, unchanged. Nothing is added.
 
 ## Output
 
-Write `tmp/units/cl7-report-2.md` in the Veneer checkout and return it: the new assertion and its
+Write `cl7-report-2.md` in the Veneer checkout and return it: the new assertion and its
 red-then-green pair with the plant's removal; the direction axis removed with the case count and
 duration before and after; each step's exit code and final lines on both engines; the actual
 `git diff --stat` and `git status --porcelain --untracked-files=all`. Keep it short.

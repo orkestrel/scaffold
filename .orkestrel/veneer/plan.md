@@ -1783,3 +1783,42 @@ after acceptance per the debrief skill's retention reference.
   tier, so light mode resolves alike; a later reader simplifying it into a reference to that tier
   would silently couple two independently calibrated values.
   **Unchanged:** CL7 dispatched over this landing; CL8 to CL13.
+
+### Re-baseline after CL7 (2026-09-21, landed `a9172df`)
+
+- **Satisfied: CL7, the container family and the gutter.** The cascade carries the container key's
+  whole selector set — the fluid shell for every variant, the breakpoint-scoped maximum widths, and
+  the navigation combinators — and the key reads `shipped` with a variable row behind each of its
+  gutter properties. **Two lanes independently extracted the key's selector set from the pinned
+  inventory and compared it against the built cascade in both directions: equal, nothing extra,
+  nothing missing, no deferral row naming one.** The fluid variant takes no cap, which the
+  inventory also records.
+  **The caps are generated, not written out.** A loop over the breakpoint ramp skips the zero
+  boundary and accumulates the named variants, so each variant starts capping at its own boundary
+  and then takes the larger caps, and a ramp retune reaches every cap without an edit per cap. No
+  ramp member changed: every media condition the key carries already matched a named breakpoint at
+  the same width, with only the spelling differing.
+  **The widths and the gutter took tokens of their own rather than reusing the space ramp.** The
+  space scale's twelfth member carries the gutter's value by coincidence; it is density-scaled and
+  the gutter must not be, so a shared token would have coupled them. The member's consumers, its
+  registry entry and the density assertion, read identically before and after at both density
+  factors.
+  **The silent-failure path the audit found is closed.** The cap loop iterates the ramp and reads a
+  container token per boundary, and the only ramp-to-token assertion ran one way, so a later unit
+  adding a ramp boundary without its token would have emitted a cap whose variable names nothing,
+  fallen back to no cap, and left every gate green. The fix round added a set assertion that
+  compiles the real ramp and compares it against the registry's container keys symmetrically. The
+  objective lane then followed the whole chain — ramp name, registry key, declared custom property,
+  emitted declaration — and found each link asserted.
+  **A proof axis that could not fail was removed.** The container proof wrapped every case in a
+  direction axis while asserting only direction-symmetric properties, and the direction attribute
+  alone does not switch the loaded cascade. Three lanes compared the proof against its pre-removal
+  copy by different means and found the wrapper and the attributes as the only difference.
+  **Carried to CL8**, which writes the same files next: the container variant table is a literal
+  list that no assertion binds to the ramp, so a later ramp boundary would ship a variant class with
+  no browser reading of its own — derive a variant list from the ramp instead; and the ordering and
+  annotation slips in the showcase wiring and the setup tables.
+  **Carried to CL12**, which owns the guide: a token-table sentence that stopped being true of the
+  code when the gutter became its own token, and the container and gutter tokens having no
+  token-table row.
+- **Unchanged:** CL8 dispatched over this landing; CL9 to CL13.

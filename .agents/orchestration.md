@@ -461,6 +461,14 @@ The harness bridge names the concrete mechanism for each of these.
 - Name a corrected unit's effective brief and report and the pair they supersede before that unit
   integrates. A unit whose correction landed as a serial patch or a direct reconciliation, with no
   successor pair on disk, cannot be re-run from what the campaign kept.
+- When you copy a previous round's or unit's launch artifact to derive this one's, rewrite every
+  field that names the subject, not only the ones the edit was about. That covers each brief's lane
+  focus, its evidence and report paths, its subject files, and the path it gives for the law; the
+  claims file's subject line; each driver and watch script's header, journal, and output paths; and
+  the workflow's `meta.description` and every node's label. Read the derived copy start to finish
+  against the round it launches before launching it. A field carried over from the source names a
+  different subject and still reads as deliberate, so the lane works around it or rules on the wrong
+  file, and the retained record attributes that to the round.
 - Write an audit round's numbered claims to `tmp/audit/<unit>-audit-claims.md` and point every lane
   of the round at that one file, so "both lanes ran the same brief" stays checkable after the round.
   Retain it as `.orkestrel/<package>/<unit>-audit-claims.md`, beside the round's verdict.

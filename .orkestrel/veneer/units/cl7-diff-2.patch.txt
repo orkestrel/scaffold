@@ -1,0 +1,617 @@
+diff --git a/app/browser/Showcase.ts b/app/browser/Showcase.ts
+index 217d702..444c959 100644
+--- a/app/browser/Showcase.ts
++++ b/app/browser/Showcase.ts
+@@ -5,6 +5,7 @@ import { SHOWCASE_COPY } from './constants.js'
+ import { ButtonSection } from './sections/ButtonSection.js'
+ import { ContentSection } from './sections/ContentSection.js'
+ import { LinkSection } from './sections/LinkSection.js'
++import { LayoutSection } from './sections/LayoutSection.js'
+ import { MediaSection } from './sections/MediaSection.js'
+ import { TypeSection } from './sections/TypeSection.js'
+ 
+@@ -74,6 +75,7 @@ export class Showcase implements ShowcaseInterface {
+ 			new TypeSection(this.#main),
+ 			new MediaSection(this.#main),
+ 			new LinkSection(this.#main),
++			new LayoutSection(this.#main),
+ 		]
+ 	}
+ 
+diff --git a/app/browser/constants.ts b/app/browser/constants.ts
+index 205888f..6d11859 100644
+--- a/app/browser/constants.ts
++++ b/app/browser/constants.ts
+@@ -1,4 +1,4 @@
+-import type { ButtonSpecimen, MarkupSpecimen } from './types.js'
++import type { ButtonSpecimen, MarkupSpecimen, SectionCopy } from './types.js'
+ 
+ /** Holds the showcase's visible copy and accessible names. */
+ export const SHOWCASE_COPY = Object.freeze({
+@@ -469,3 +469,44 @@ export const LINK_SPECIMENS: readonly MarkupSpecimen[] = Object.freeze([
+ 			'<p><a href="#main" class="link-underline link-underline-opacity-0">Underline opacity 0%</a> <a href="#main" class="link-underline link-underline-opacity-10">Underline opacity 10%</a> <a href="#main" class="link-underline link-underline-opacity-25">Underline opacity 25%</a> <a href="#main" class="link-underline link-underline-opacity-50">Underline opacity 50%</a> <a href="#main" class="link-underline link-underline-opacity-75">Underline opacity 75%</a> <a href="#main" class="link-underline link-underline-opacity-100">Underline opacity 100%</a> <a href="#main" class="link-underline link-underline-opacity-0-hover">Hover underline opacity 0%</a> <a href="#main" class="link-underline link-underline-opacity-10-hover">Hover underline opacity 10%</a> <a href="#main" class="link-underline link-underline-opacity-25-hover">Hover underline opacity 25%</a> <a href="#main" class="link-underline link-underline-opacity-50-hover">Hover underline opacity 50%</a> <a href="#main" class="link-underline link-underline-opacity-75-hover">Hover underline opacity 75%</a> <a href="#main" class="link-underline link-underline-opacity-100-hover">Hover underline opacity 100%</a></p>',
+ 	}),
+ ])
++/** Holds the Layout section's visible copy and accessible name. */
++export const LAYOUT_COPY: SectionCopy = Object.freeze({
++	region: 'Layout',
++	paragraph:
++		'Containers center content with inline gutters. Resize the viewport to compare their breakpoint caps.',
++})
++
++/** Lists the fluid, capped, responsive, and navigation container specimens. */
++export const LAYOUT_SPECIMENS: readonly MarkupSpecimen[] = Object.freeze([
++	Object.freeze({
++		name: 'Capped container',
++		markup: '<div class="container">Capped at each layout boundary.</div>',
++	}),
++	Object.freeze({
++		name: 'Fluid container',
++		markup: '<div class="container-fluid">Fluid at every viewport width.</div>',
++	}),
++	Object.freeze({
++		name: 'Responsive containers',
++		markup: ['sm', 'md', 'lg', 'xl', 'xxl']
++			.map((name) => `<div class="container-${name}">Fluid until the ${name} boundary.</div>`)
++			.join(''),
++	}),
++	Object.freeze({
++		name: 'Navigation containers',
++		markup: [
++			'container',
++			'container-fluid',
++			'container-sm',
++			'container-md',
++			'container-lg',
++			'container-xl',
++			'container-xxl',
++		]
++			.map(
++				(name) =>
++					`<div class="navbar"><div class="${name}"><span>${name}</span><span>Navigation content</span></div></div>`,
++			)
++			.join(''),
++	}),
++])
+diff --git a/app/browser/index.ts b/app/browser/index.ts
+index 11a3d4e..0789783 100644
+--- a/app/browser/index.ts
++++ b/app/browser/index.ts
+@@ -4,6 +4,7 @@ export * from './Showcase.js'
+ export * from './sections/ButtonSection.js'
+ export * from './sections/ContentSection.js'
+ export * from './sections/LinkSection.js'
++export * from './sections/LayoutSection.js'
+ export * from './sections/MediaSection.js'
+ export * from './sections/SpecimenSection.js'
+ export * from './sections/TypeSection.js'
+diff --git a/guides/veneer.md b/guides/veneer.md
+index 56d7637..474141a 100644
+--- a/guides/veneer.md
++++ b/guides/veneer.md
+@@ -765,6 +765,9 @@ must add a forced-colors axis before this reading closes.
+ 
+ | Component     | Kind           | Obligation                                                                                                                                                                                                                        | Proof                 | Status   |
+ | ------------- | -------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------- | -------- |
++| container     | selector       | Every official container selector is present, including the navigation combinators; breakpoint caps and fluid widths are resolved in `tests/src/styles/components/container.test.ts`.                                             | —                     | shipped  |
++| container     | variable       | The `--bs-gutter-x` property resolves from `--vn-gutter-x` and controls inline padding, with canonical and direct overrides proved in `tests/src/styles/components/container.test.ts`.                                            | —                     | shipped  |
++| container     | variable       | The `--bs-gutter-y` property resolves from `--vn-gutter-y`, with its zero default and canonical and direct overrides proved in `tests/src/styles/components/container.test.ts`.                                                   | —                     | shipped  |
+ | link          | selector       | Every official link selector is present; role colors read Veneer's role tokens at rest, hover, and focus instead of Bootstrap's literal state colors.                                                                             | —                     | shipped  |
+ | link          | variable       | The `--bs-link-opacity` utilities resolve their declared alpha; the anchor behavior is proved in `tests/src/styles/elements/a.test.ts` and the scale in `tests/src/styles/components/link.test.ts`.                               | —                     | shipped  |
+ | link          | variable       | The `--bs-link-underline-opacity` utilities resolve their declared alpha and control decoration independently of text, proved in `tests/src/styles/components/link.test.ts`.                                                      | —                     | shipped  |
+diff --git a/src/core/constants.ts b/src/core/constants.ts
+index 55735f8..2469365 100644
+--- a/src/core/constants.ts
++++ b/src/core/constants.ts
+@@ -270,6 +270,17 @@ export const TOKEN_NAMES = Object.freeze({
+ 		xl: '--vn-breakpoint-xl',
+ 		xxl: '--vn-breakpoint-xxl',
+ 	} as const),
++	container: Object.freeze({
++		sm: '--vn-container-sm',
++		md: '--vn-container-md',
++		lg: '--vn-container-lg',
++		xl: '--vn-container-xl',
++		xxl: '--vn-container-xxl',
++	} as const),
++	gutter: Object.freeze({
++		x: '--vn-gutter-x',
++		y: '--vn-gutter-y',
++	} as const),
+ 	stack: Object.freeze({
+ 		dropdown: '--vn-stack-dropdown',
+ 		sticky: '--vn-stack-sticky',
+diff --git a/src/styles/_tokens.scss b/src/styles/_tokens.scss
+index 693e062..ceee965 100644
+--- a/src/styles/_tokens.scss
++++ b/src/styles/_tokens.scss
+@@ -303,6 +303,14 @@ $assets: (
+ 			--vn-breakpoint-#{$name}: #{$width};
+ 		}
+ 
++		--vn-container-sm: 540px;
++		--vn-container-md: 720px;
++		--vn-container-lg: 960px;
++		--vn-container-xl: 1140px;
++		--vn-container-xxl: 1320px;
++		--vn-gutter-x: 1.5rem;
++		--vn-gutter-y: 0;
++
+ 		--vn-stack-dropdown: 1000;
+ 		--vn-stack-sticky: 1020;
+ 		--vn-stack-fixed: 1030;
+diff --git a/src/styles/index.scss b/src/styles/index.scss
+index f468a5a..1854efe 100644
+--- a/src/styles/index.scss
++++ b/src/styles/index.scss
+@@ -46,3 +46,4 @@
+ @use 'components/quote';
+ @use 'components/image';
+ @use 'components/link';
++@use 'components/container';
+diff --git a/tests/app/browser/Showcase.test.ts b/tests/app/browser/Showcase.test.ts
+index ac68baf..2a851a8 100644
+--- a/tests/app/browser/Showcase.test.ts
++++ b/tests/app/browser/Showcase.test.ts
+@@ -2,6 +2,7 @@ import {
+ 	BUTTON_SPECIMENS,
+ 	CONTENT_SPECIMENS,
+ 	LINK_SPECIMENS,
++	LAYOUT_SPECIMENS,
+ 	MEDIA_SPECIMENS,
+ 	Showcase,
+ 	TYPE_SPECIMENS,
+@@ -62,15 +63,27 @@ describe('Showcase', () => {
+ 			const regions = [...host.querySelectorAll('section')].map((section) =>
+ 				section.getAttribute('aria-label'),
+ 			)
+-			expect(regions).toStrictEqual(['Showcase', 'Buttons', 'Content', 'Type', 'Media', 'Links'])
++			expect(regions).toStrictEqual([
++				'Showcase',
++				'Buttons',
++				'Content',
++				'Type',
++				'Media',
++				'Links',
++				'Layout',
++			])
+ 			expect(
+ 				[...host.querySelectorAll('[data-specimen]')].map((element) =>
+ 					element.getAttribute('data-specimen'),
+ 				),
+ 			).toEqual(
+-				[...CONTENT_SPECIMENS, ...TYPE_SPECIMENS, ...MEDIA_SPECIMENS, ...LINK_SPECIMENS].map(
+-					(specimen) => specimen.name,
+-				),
++				[
++					...CONTENT_SPECIMENS,
++					...TYPE_SPECIMENS,
++					...MEDIA_SPECIMENS,
++					...LINK_SPECIMENS,
++					...LAYOUT_SPECIMENS,
++				].map((specimen) => specimen.name),
+ 			)
+ 			expect(readPerception('Showcase')).toBe('Explore the color mode with the Dark mode control.')
+ 			const specimens = [...host.querySelectorAll(`.${BUTTON_CLASS}`)]
+diff --git a/tests/app/browser/index.test.ts b/tests/app/browser/index.test.ts
+index d75f106..fc6cb9a 100644
+--- a/tests/app/browser/index.test.ts
++++ b/tests/app/browser/index.test.ts
+@@ -14,8 +14,11 @@ describe('app browser entry', () => {
+ 			'CONTENT_COPY',
+ 			'CONTENT_SPECIMENS',
+ 			'ContentSection',
++			'LAYOUT_COPY',
++			'LAYOUT_SPECIMENS',
+ 			'LINK_COPY',
+ 			'LINK_SPECIMENS',
++			'LayoutSection',
+ 			'LinkSection',
+ 			'MEDIA_COPY',
+ 			'MEDIA_SPECIMENS',
+diff --git a/tests/conformance.test.ts b/tests/conformance.test.ts
+index 9ef3042..36c7560 100644
+--- a/tests/conformance.test.ts
++++ b/tests/conformance.test.ts
+@@ -49,6 +49,19 @@ describe('Bootstrap reference identity', () => {
+ })
+ 
+ describe('Bootstrap component oracle', () => {
++	it('reports an omitted container navigation selector even when its fluid shell ships', () => {
++		const cascade = readBuiltCascade()
++		const selector = '.navbar>.container-fluid'
++		expect(cascade).toContain(selector)
++		expect(
++			scanCompatibilityPresence(
++				readCompatibility(),
++				readOracleInventory(),
++				readDeferrals(),
++				cascade.replaceAll(selector, '.omitted-navbar>.container-fluid'),
++			),
++		).toContain('.navbar > .container-fluid')
++	})
+ 	it('reports an omitted link hover selector even when its resting twin ships', () => {
+ 		const cascade = readBuiltCascade()
+ 		const selector = '.link-opacity-10-hover:hover'
+@@ -68,6 +81,7 @@ describe('Bootstrap component oracle', () => {
+ 		const listed: readonly string[] = [
+ 			'blockquote',
+ 			'btn',
++			'container',
+ 			'display',
+ 			'figure',
+ 			'h1',
+diff --git a/tests/setupConformance.test.ts b/tests/setupConformance.test.ts
+index 0e483b6..361e8e0 100644
+--- a/tests/setupConformance.test.ts
++++ b/tests/setupConformance.test.ts
+@@ -935,6 +935,7 @@ describe('setupConformance', () => {
+ 				'btn',
+ 				'display',
+ 				'engine',
++				'container',
+ 				'figure',
+ 				'h1',
+ 				'h2',
+diff --git a/tests/setupStyles.test.ts b/tests/setupStyles.test.ts
+index e8a5d49..a00c3f0 100644
+--- a/tests/setupStyles.test.ts
++++ b/tests/setupStyles.test.ts
+@@ -11,6 +11,8 @@ import {
+ 	BOOTSTRAP_ROOT_VARIABLES,
+ 	BOOTSTRAP_SCOPE_PATTERNS,
+ 	BREAKPOINT_CASES,
++	CONTAINER_CLASS_CASES,
++	CONTAINER_WIDTH_CASES,
+ 	CALIBRATED_TIERS,
+ 	CUSTOMIZATION_RECIPE,
+ 	EDGE_SHORTHANDS,
+@@ -67,6 +69,43 @@ import {
+ } from './setupStyles.js'
+ 
+ describe('styles setup', () => {
++	it('matches the non-zero ramp names to the container token keys', () => {
++		const ramp = compileString(
++			"@use 'mixins' as *; .ramp { @each $name, $width in breakpoints() { @if $width != 0 { #{$name}: #{$width}; } } }",
++			{ loadPaths: ['src/styles'] },
++		).css
++		const names = new Set<string>()
++		parse(ramp).walkDecls(({ prop }) => {
++			names.add(prop)
++		})
++		expect(names).toEqual(new Set(Object.keys(TOKEN_NAMES.container)))
++	})
++	it('pins the frozen container variants and payload widths against the retained scale', () => {
++		expect(CONTAINER_CLASS_CASES.map(({ name, boundary }) => [name, boundary])).toEqual([
++			['container', 0],
++			['container-fluid', undefined],
++			['container-sm', 576],
++			['container-md', 768],
++			['container-lg', 992],
++			['container-xl', 1200],
++			['container-xxl', 1400],
++		])
++		expect(
++			CONTAINER_WIDTH_CASES.map(({ boundary, width, token }) => [boundary, width, token]),
++		).toEqual([
++			[576, 540, '--vn-container-sm'],
++			[768, 720, '--vn-container-md'],
++			[992, 960, '--vn-container-lg'],
++			[1200, 1140, '--vn-container-xl'],
++			[1400, 1320, '--vn-container-xxl'],
++		])
++		for (const table of [CONTAINER_CLASS_CASES, CONTAINER_WIDTH_CASES]) {
++			expect(Object.isFrozen(table)).toBe(true)
++			expect(table.every((entry) => Object.isFrozen(entry))).toBe(true)
++		}
++		for (const { boundary } of CONTAINER_WIDTH_CASES)
++			expect(BREAKPOINT_CASES.some((entry) => entry.boundary === boundary)).toBe(true)
++	})
+ 	it('carries the pinned link role and utility scales as frozen case data', () => {
+ 		expect(LINK_ROLES).toEqual([
+ 			'primary',
+@@ -134,6 +173,8 @@ describe('styles setup', () => {
+ 				'BUTTON_OUTLINE_CASES',
+ 				'BUTTON_SIZE_CASES',
+ 				'CALIBRATED_TIERS',
++				'CONTAINER_CLASS_CASES',
++				'CONTAINER_WIDTH_CASES',
+ 				'CUSTOMIZATION_RECIPE',
+ 				'EDGE_SHORTHANDS',
+ 				'FILL_ONLY_RECIPE',
+diff --git a/tests/setupStyles.ts b/tests/setupStyles.ts
+index a39816e..b561446 100644
+--- a/tests/setupStyles.ts
++++ b/tests/setupStyles.ts
+@@ -1,3 +1,4 @@
++import { TOKEN_NAMES } from '@src/core'
+ import { isRecord } from '@orkestrel/contract'
+ import { parse } from 'postcss'
+ import { collectTokenNodes, normalizeSelectorText } from './setup.js'
+@@ -396,6 +397,26 @@ export const BREAKPOINT_CASES = Object.freeze(
+ 	),
+ )
+ 
++/** Lists the container variants and the boundary where each starts accepting caps. */
++export const CONTAINER_CLASS_CASES = Object.freeze([
++	Object.freeze({ name: 'container', boundary: 0 }),
++	Object.freeze({ name: 'container-fluid', boundary: undefined }),
++	Object.freeze({ name: 'container-sm', boundary: 576 }),
++	Object.freeze({ name: 'container-md', boundary: 768 }),
++	Object.freeze({ name: 'container-lg', boundary: 992 }),
++	Object.freeze({ name: 'container-xl', boundary: 1200 }),
++	Object.freeze({ name: 'container-xxl', boundary: 1400 }),
++])
++
++/** Pins the Bootstrap container payload widths independently of the breakpoint ramp. */
++export const CONTAINER_WIDTH_CASES = Object.freeze([
++	Object.freeze({ boundary: 576, width: 540, token: TOKEN_NAMES.container.sm }),
++	Object.freeze({ boundary: 768, width: 720, token: TOKEN_NAMES.container.md }),
++	Object.freeze({ boundary: 992, width: 960, token: TOKEN_NAMES.container.lg }),
++	Object.freeze({ boundary: 1200, width: 1140, token: TOKEN_NAMES.container.xl }),
++	Object.freeze({ boundary: 1400, width: 1320, token: TOKEN_NAMES.container.xxl }),
++])
++
+ /** Holds the transition durations and focus-ring lengths for the bare-button cases. */
+ export const BUTTON_BARE_VALUES = Object.freeze({
+ 	durations: Object.freeze(['0.15s', '0.15s', '0.15s', '0.15s', '0.15s']),
+diff --git a/app/browser/sections/LayoutSection.ts b/app/browser/sections/LayoutSection.ts
+new file mode 100644
+index 0000000..05f870e
+--- /dev/null
++++ b/app/browser/sections/LayoutSection.ts
+@@ -0,0 +1,21 @@
++import { LAYOUT_COPY, LAYOUT_SPECIMENS } from '../constants.js'
++import { SpecimenSection } from './SpecimenSection.js'
++
++/**
++ * Renders the declared container specimens into a named layout region.
++ *
++ * @example
++ * ```ts
++ * const section = new LayoutSection(document.body)
++ * section.destroy()
++ * ```
++ */
++export class LayoutSection extends SpecimenSection {
++	/**
++	 * Mounts the Layout region and its specimens in table order.
++	 * @param host - The element receiving the section.
++	 */
++	constructor(host: HTMLElement) {
++		super(host, LAYOUT_COPY, LAYOUT_SPECIMENS)
++	}
++}
+diff --git a/src/styles/components/_container.scss b/src/styles/components/_container.scss
+new file mode 100644
+index 0000000..e3b4a6c
+--- /dev/null
++++ b/src/styles/components/_container.scss
+@@ -0,0 +1,43 @@
++@use 'sass:list';
++@use '../mixins' as *;
++
++@layer components {
++	.container,
++	.container-fluid,
++	.container-sm,
++	.container-md,
++	.container-lg,
++	.container-xl,
++	.container-xxl {
++		--bs-gutter-x: var(--vn-gutter-x);
++		--bs-gutter-y: var(--vn-gutter-y);
++		inline-size: 100%;
++		padding-inline: calc(var(--bs-gutter-x) * 0.5);
++		margin-inline: auto;
++	}
++
++	$containers: '.container';
++	@each $name, $width in breakpoints() {
++		@if $width != 0 {
++			$containers: list.append($containers, '.container-#{$name}', comma);
++			@include breakpoint-up($name) {
++				#{$containers} {
++					max-inline-size: var(--vn-container-#{$name});
++				}
++			}
++		}
++	}
++
++	.navbar > .container,
++	.navbar > .container-fluid,
++	.navbar > .container-sm,
++	.navbar > .container-md,
++	.navbar > .container-lg,
++	.navbar > .container-xl,
++	.navbar > .container-xxl {
++		display: flex;
++		flex-wrap: inherit;
++		align-items: center;
++		justify-content: space-between;
++	}
++}
+diff --git a/tests/app/browser/sections/LayoutSection.test.ts b/tests/app/browser/sections/LayoutSection.test.ts
+new file mode 100644
+index 0000000..8592a9b
+--- /dev/null
++++ b/tests/app/browser/sections/LayoutSection.test.ts
+@@ -0,0 +1,65 @@
++import type { SectionInterface } from '@app/browser'
++import { LAYOUT_COPY, LAYOUT_SPECIMENS, LayoutSection, SpecimenSection } from '@app/browser'
++import { requireValue } from '@orkestrel/test'
++import { build, mount } from '@orkestrel/test/browser'
++import { describe, expect, it } from 'vitest'
++
++describe('LayoutSection', () => {
++	it('renders every declared specimen through the shared section contract', () => {
++		const host = mount(build('div'))
++		const section: SectionInterface = new LayoutSection(host)
++		try {
++			expect(section).toBeInstanceOf(SpecimenSection)
++			expect(section.host).toBe(host)
++			const region = requireValue(host.querySelector('section'), 'No Layout region')
++			expect(region.getAttribute('aria-label')).toBe('Layout')
++			expect(region.querySelector('p')?.textContent).toBe(LAYOUT_COPY.paragraph)
++			const rendered = [...region.querySelectorAll('[data-specimen]')]
++			expect(rendered.map((element) => element.getAttribute('data-specimen'))).toEqual([
++				'Capped container',
++				'Fluid container',
++				'Responsive containers',
++				'Navigation containers',
++			])
++			expect(rendered.map((element) => element.innerHTML)).toEqual(
++				LAYOUT_SPECIMENS.map((specimen) => specimen.markup),
++			)
++			for (const name of [
++				'container',
++				'container-fluid',
++				'container-sm',
++				'container-md',
++				'container-lg',
++				'container-xl',
++				'container-xxl',
++			]) {
++				expect(region.querySelector(`[data-specimen]:not(:last-child) .${name}`)).not.toBeNull()
++				expect(region.querySelector(`.navbar > .${name}`)).not.toBeNull()
++			}
++			expect(Object.isFrozen(LAYOUT_COPY)).toBe(true)
++			expect(Object.isFrozen(LAYOUT_SPECIMENS)).toBe(true)
++			expect(LAYOUT_SPECIMENS.every((specimen) => Object.isFrozen(specimen))).toBe(true)
++		} finally {
++			section.destroy()
++			host.remove()
++		}
++	})
++
++	it('releases its region and preserves neighboring content through repeated destruction', () => {
++		const host = mount(build('div'))
++		const neighbor = build('p', { text: 'Existing content' })
++		host.append(neighbor)
++		const section: SectionInterface = new LayoutSection(host)
++		try {
++			const region = requireValue(host.querySelector('section'), 'No Layout region')
++			expect(region.isConnected).toBe(true)
++			section.destroy()
++			expect(region.isConnected).toBe(false)
++			section.destroy()
++			expect([...host.children]).toEqual([neighbor])
++		} finally {
++			section.destroy()
++			host.remove()
++		}
++	})
++})
+diff --git a/tests/src/styles/components/container.test.ts b/tests/src/styles/components/container.test.ts
+new file mode 100644
+index 0000000..99822aa
+--- /dev/null
++++ b/tests/src/styles/components/container.test.ts
+@@ -0,0 +1,107 @@
++import { TOKEN_NAMES } from '@src/core'
++import { requireValue } from '@orkestrel/test'
++import { readPixels, readStyle, readToken } from '@orkestrel/test/browser'
++import { afterEach, describe, expect, it } from 'vitest'
++import { specimens, visitBreakpoint } from '../../../setupBrowser.js'
++import {
++	BREAKPOINT_CASES,
++	CONTAINER_CLASS_CASES,
++	CONTAINER_WIDTH_CASES,
++} from '../../../setupStyles.js'
++
++afterEach(() => {
++	specimens.clear()
++})
++
++describe('container classes', () => {
++	it.each(BREAKPOINT_CASES)(
++		'reads every variant around the $boundary boundary',
++		async ({ readings }) => {
++			const host = specimens.mount(
++				`<div style="width:100vw">${CONTAINER_CLASS_CASES.map(({ name }) => `<div class="${name}"></div>`).join('')}</div>`,
++			)
++			for (const viewport of readings) {
++				await visitBreakpoint(viewport, () => {
++					expect(window.innerWidth).toBe(viewport)
++					for (const { name, boundary } of CONTAINER_CLASS_CASES) {
++						const element = requireValue(host.querySelector(`.${name}`), `No ${name} specimen`)
++						const cap =
++							boundary === undefined || viewport < boundary
++								? undefined
++								: CONTAINER_WIDTH_CASES.findLast((entry) => entry.boundary <= viewport)
++						expect(readStyle(element, 'max-width'), `${name} at ${String(viewport)}`).toBe(
++							cap === undefined ? 'none' : `${String(cap.width)}px`,
++						)
++						expect(readPixels(element, 'width')).toBe(cap?.width ?? viewport)
++						expect(readPixels(element, 'padding-left')).toBe(12)
++						expect(readPixels(element, 'padding-right')).toBe(12)
++						expect(readPixels(element, 'margin-left')).toBe(
++							(viewport - (cap?.width ?? viewport)) / 2,
++						)
++						expect(readPixels(element, 'margin-right')).toBe(
++							(viewport - (cap?.width ?? viewport)) / 2,
++						)
++					}
++				})
++			}
++		},
++	)
++
++	it.each(CONTAINER_CLASS_CASES)(
++		'resolves the gutter properties and overrides on $name',
++		({ name }) => {
++			const host = specimens.mount(`<div class="${name}"></div>`)
++			const element = requireValue(host.querySelector(`.${name}`), 'No container specimen')
++			if (!(element instanceof HTMLElement)) throw new Error('Container is not an HTML element')
++			expect(readToken(element, '--bs-gutter-x')).toBe('1.5rem')
++			expect(readToken(element, '--bs-gutter-y')).toBe('0')
++			expect(readPixels(element, 'padding-inline-start')).toBe(12)
++			expect(readPixels(element, 'padding-inline-end')).toBe(12)
++			element.style.setProperty(TOKEN_NAMES.gutter.x, '2rem')
++			element.style.setProperty(TOKEN_NAMES.gutter.y, '0.5rem')
++			expect(readToken(element, '--bs-gutter-x')).toBe('2rem')
++			expect(readToken(element, '--bs-gutter-y')).toBe('0.5rem')
++			expect(readPixels(element, 'padding-inline-start')).toBe(16)
++			expect(readPixels(element, 'padding-inline-end')).toBe(16)
++			expect(readPixels(element, 'padding-block-start')).toBe(0)
++			element.style.setProperty('--bs-gutter-x', '3rem')
++			element.style.setProperty('--bs-gutter-y', '1rem')
++			expect(readToken(element, '--bs-gutter-x')).toBe('3rem')
++			expect(readToken(element, '--bs-gutter-y')).toBe('1rem')
++			expect(readPixels(element, 'padding-inline-start')).toBe(24)
++			expect(readPixels(element, 'padding-inline-end')).toBe(24)
++		},
++	)
++
++	it.each(CONTAINER_CLASS_CASES)('resolves the navigation combinator for $name', ({ name }) => {
++		const host = specimens.mount(
++			`<div class="navbar" style="flex-wrap:wrap"><div class="${name}"></div></div><div class="${name}"></div>`,
++		)
++		const element = requireValue(
++			host.querySelector(`.navbar > .${name}`),
++			'No navigation container',
++		)
++		expect(readStyle(element, 'display')).toBe('flex')
++		expect(readStyle(element, 'flex-wrap')).toBe('wrap')
++		expect(readStyle(element, 'align-items')).toBe('center')
++		expect(readStyle(element, 'justify-content')).toBe('space-between')
++		const standalone = requireValue(host.lastElementChild, 'No standalone container')
++		expect(readStyle(standalone, 'display')).toBe('block')
++	})
++})
++
++describe('container tokens', () => {
++	it.each(CONTAINER_WIDTH_CASES)(
++		'retunes the cap at $boundary through $token',
++		async ({ boundary, token }) => {
++			const host = specimens.mount('<div class="container" style="width:100vw"></div>')
++			const element = requireValue(host.querySelector('.container'), 'No container specimen')
++			if (!(element instanceof HTMLElement)) throw new Error('Container is not an HTML element')
++			element.style.setProperty(token, '500px')
++			await visitBreakpoint(boundary, () => {
++				expect(readStyle(element, 'max-width')).toBe('500px')
++				expect(readPixels(element, 'width')).toBe(500)
++			})
++		},
++	)
++})

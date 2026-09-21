@@ -1,6 +1,6 @@
 CL7 is implemented from `c8f53f8` under `cl7-brief-2.md` and the unchanged portions of `cl7-brief.md`. The container key reads `shipped`. Every inventory selector ships; none is excluded or unaccounted for. The requested gate chain and Edge suites exit 0. Execution was direct, with no spawned agents and no commit.
 
-The blast-radius readings are unchanged. The before and after density runs each exit 0 (`Tests 1 passed`); their logs are `tmp/units/cl7-space-before.log` and `cl7-space-after.log`.
+The blast-radius readings are unchanged. The before and after density runs each exit 0 (`Tests 1 passed`); their logs are `cl7-space-before.log.txt` and `cl7-space-after.log`.
 
 | Consumer | Before | After |
 | --- | --- | --- |
@@ -52,7 +52,7 @@ The failure controls ran against rebuilt CSS: the presence scan in Node and the 
 | `npm run test:conformance -- -t 'carries every shipped'` | Exit 1, `Tests 1 failed`; omitting `.navbar > .container-fluid` reports `Shipped component container is missing selector .navbar > .container-fluid`. | Exit 0, `Tests 1 passed`. |
 | `npm run test:src:styles -- container.test.ts -t 'ltr direction.*around the 576 boundary'` | Exit 1, `Tests 1 failed`; changing the small token to 541px reports `container at 576: expected '541px' to be '540px'`. | Exit 0, `Tests 1 passed`. |
 
-The retained conformance test also removes the navigation selector from a cascade copy and asserts the missing-selector diagnostic. Control logs use the `cl7-selector-{red,green}` and `cl7-width-{red,green}` names under `tmp/units/`.
+The retained conformance test also removes the navigation selector from a cascade copy and asserts the missing-selector diagnostic. Control logs use the `cl7-selector-{red,green}` and `cl7-width-{red,green}` names under ``.
 
 `LayoutSection` extends `SpecimenSection`. Its table renders capped and fluid containers, responsive variants, and navigation parents containing each variant with labeled spans. The section proof checks the region, every specimen's markup, the class populations, and repeated destruction preserving neighboring content. Showcase and barrel proofs include it.
 
@@ -63,7 +63,7 @@ The shared-block sweep covers every recursive style partial, including `_mixins.
 - Record the logical-axis substitution for Bootstrap's physical width, padding, and margin declarations. Horizontal LTR/RTL readings match the baseline; vertical writing modes were not measured.
 - Document independent gutter tokens, their component-scoped Bootstrap aliases, and their independence from the density-scaled space ramp. No default cap or gutter value departs from the baseline.
 
-The following command results are retained under `tmp/units/`. `cl7-gates.cjs` records the ordered chain in `cl7-gates.json` and `cl7-gate-*.log`. Edge rows set `PLAYWRIGHT_CHANNEL=msedge`; other browser runs use managed Chromium.
+The following command results are retained under ``. `cl7-gates.cjs` records the ordered chain in `cl7-gates.json` and `cl7-gate-*.log`. Edge rows set `PLAYWRIGHT_CHANNEL=msedge`; other browser runs use managed Chromium.
 
 | Step | Exit | Final result lines |
 | --- | --- | --- |

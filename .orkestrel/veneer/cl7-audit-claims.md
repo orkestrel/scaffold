@@ -6,7 +6,7 @@ Subject: unit CL7 in the Veneer checkout (`C:/Users/mikes/WebstormProjects/venee
 `units/cl7-report.md`. Terrain: `units/cl7-scout-report.md`. Rulings: `units/cl7-rulings.md`.
 Scope read: `units/cl7-scope-read-report.md`.
 
-Evidence: the rendered diff `tmp/audit/cl7-diff.patch` and status `tmp/audit/cl7-status.txt`, the
+Evidence: the rendered diff `units/cl7-diff.patch.txt` and status `tmp/audit/cl7-status.txt`, the
 live tree, and the built `dist/src/styles/index.css`.
 
 **Scope of this audit.** Implementation only: correctness, rule compliance, test sufficiency,
