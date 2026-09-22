@@ -51,7 +51,47 @@ reading into its case. Test registration stays in the proof file.
 
 ### Obligation 5 — the reviewer's findings
 
-<!-- REVIEWER -->
+The `reviewer` on Opus ruled `VERDICT: FAIL 3, 8` with findings outside the claims
+(`/home/user/scaffold/.orkestrel/veneer/units/f8a-audit-reviewer-verdict.md`). Claim 3's falsified
+conjunct is the claims text's own (the planted sheet lives in `tests/setupBrowser.test.ts` and
+`tests/src/styles/index.test.ts`, which is stronger than the claim), and claim 8 is settled by the
+finished log. The findings you carry:
+
+- **F1.** `CASCADE_PREFIX` duplicates `TOKEN_PREFIX` from `tests/setup.ts`. Delete it; import
+  `TOKEN_PREFIX` in `tests/setupBrowser.ts` and use it at the `startsWith` predicate and the
+  `{@link}`; drop the export-list entry; change the import and the expected member in
+  `tests/src/styles/index.test.ts`.
+- **F2** (with analyst 6, obligation 3). Head the profile table's layers column
+  `Layers Tailwind fills in a consumer build`, and say in the closing paragraph that the workspace's
+  profiles scan the derived candidate list rather than markup, so the executed `tailwind` profile
+  emits nothing and that silence is what proves the exclusion complete.
+- **F3.** One sentence in § Tailwind states the exclusion line's membership rule: a shared class name
+  Veneer declares with `!important` wins by importance and needs no exclusion; a shared name Veneer
+  declares normally is named on the line. F8b lands the proof prose; the sentence lands now because
+  the pointer at the F6 sentence promises it.
+- **F4.** The one-home sentence is false as written (the list is repeated in
+  `tests/fixtures/tailwind/preflight.css` and in both recipe fences). Make it true by mechanism: add a
+  case to `tests/tailwind/profiles.test.ts` reading `guides/veneer.md?raw` and
+  `tests/fixtures/tailwind/preflight.css?raw`, extracting every `@source not inline("…")` line, and
+  asserting each equals the line in `tests/setup.css`; then write the sentence as what holds — the
+  proof reads the list from `tests/setup.css` and holds every other copy equal to it, so a release
+  that ships another shared name extends the line and the copies redden until they match.
+- **F5, the cheap half.** Mark the `@source './src';` line inside each recipe fence with a CSS
+  comment naming it as the consumer's own markup directory, and move the sentence that says so
+  ahead of the first fence. The executed consumer-shaped recipe (with the trailing cascade import
+  and a markup fixture) is F8b's, and the section says so in one sentence beside the fences.
+- **F7.** Extend the § Files table with rows for `configs/src/vite.tailwind.config.ts`,
+  `tests/setup.css`, `tests/fixtures/tailwind/`, and `tests/tailwind/`, and name the wrapper in the
+  hand-authored configuration paragraph.
+- **Lesser, carried.** Rename `REACHED` to `FLOOR_SELECTORS`; head the entry column `Entry`; write
+  the link sentence as `the profiles proof reads it from that file rather than repeating it; see
+  [stylesheet profiles](../tests/tailwind/profiles.test.ts)`; retitle the reader case
+  `reads Veneer's sheet while a Tailwind stylesheet is loaded`; in `tests/src/styles/index.test.ts`
+  the comment names `--lightningcss-` as the minifier's lowering of `light-dark()`, permitted and
+  not required (obligation 2).
+- **Referral R1, ruled.** `source(none)` on the utilities import is what silences the directory
+  scan; `theme.css` generates no utility and needs none. No change.
+
 
 ## Scope
 
@@ -74,4 +114,5 @@ unverified.
 3. `npm run test:src:styles` exits 0 with the standalone case no longer requiring `--lightningcss-`.
 4. `npm run test:setup:browser` exits 0 with the moved readers' cases present.
 5. `npm run test:guides` and `npm run test:policy` exit 0.
-6. `grep -c '^function\|^const [a-z][A-Za-z]* = (' tests/tailwind/profiles.test.ts` prints 0.
+6. `grep -rn 'CASCADE_PREFIX' tests configs guides` prints nothing.
+7. `grep -c '^function\|^const [a-z][A-Za-z]* = (' tests/tailwind/profiles.test.ts` prints 0.
