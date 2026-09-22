@@ -34,4 +34,16 @@ The fix round runs on `opus` in the same worktree from `units/f5c-brief-2.md`; i
 `units/f5c-report-2.md`, its evidence `units/f5c-fix.diff`, its gate log `units/f5c-fix-gates.log.txt`,
 and its objective auditor `analyst` on Astra (`units/f5c-fix-audit-analyst-verdict.md`).
 
-ROUND-2 OUTCOME: pending
+ROUND-2 OUTCOME: accepted 2026-09-22, landed on the session branch as `8e42c8a` (cherry-pick of
+`unit/f5c` `2aa787a`; the tokens test kept F5c's value gate and dropped the right-to-left case F6 had
+removed). The fix round's `analyst` on Astra ruled `VERDICT: FAIL 2, 3, 9; outside the claims:
+NESTED_HELPER` (`units/f5c-fix-audit-analyst-verdict.md`): claim 3 was the claims text's own baseline
+error, claim 9 read `ENOENT` for a gate log never staged at the named path (the chain was green, the
+journey re-run alone green, `units/f5c-fix-gates.log.txt` and `units/f5c-fix-journey-rerun.log.txt`),
+and the Orchestrator's host control (`units/f5c-claim2-control.sh`, log
+`units/f5c-claim2-control.log.txt`) showed the dark-cell mutation reddens the value gate naming every
+role's subtle tier. Round 3 (`units/f5c-brief-3.md`, `units/f5c-report-3.md`) closed claim 2's Role
+cardinality hole and the nested helper with two red-then-green plants; its `analyst` on Astra ruled
+`VERDICT: FAIL 4; outside the claims: none` (`units/f5c-fix-3-audit-analyst-verdict.md`), claim 4
+being the Orchestrator's own guide sentence overstating the reader, corrected in the exact form the
+lane named before landing; the scoped chain is green (`units/f5c-fix-3-gates.log.txt`).

@@ -1,0 +1,21 @@
+# F5c TOKENS-TRUTH round 3 — `analyst` verdict (GPT-6 Astra, objective lane)
+
+Journal `tmp/codex/f5c-fix-3-audit-analyst.jsonl` (swept at acceptance), thread `01a0cab1-ef28-7b20-bf31-f4c6c4b97223`, exit 0. Brief: `.orkestrel/veneer/units/f5c-fix-3-audit-analyst-brief.md`. Claim 4's finding (the sentence's `and no other` overstated the reader) was corrected by the Orchestrator in the same prose before landing, in the exact form the lane named.
+
+1. **CONFIRMED.** In-memory execution of the actual reader rejected `Role | Light | Dark` with `` `primary` | `red` | prose ``, naming `Dark`. Appending `` , `red` `` to the guide’s secondary Fill cell threw with that cell named. The unmodified guide returned 175 rows. The guards sit before the row loop and inside the Role branch respectively. [tests/setupStyles.ts:783](/home/user/veneer-f5c/tests/setupStyles.ts:783), [tests/setupStyles.ts:851](/home/user/veneer-f5c/tests/setupStyles.ts:851).
+
+2. **CONFIRMED.** Removing both guards in memory reproduced the reported failures: the header plant threw `states no light fill`, which fails its expected diagnostic; the surplus plant returned the first fill without throwing. Restoring the guards produced both expected messages. The single-fill control returned `red` for both modes, and the unmodified fixture retained its distinct light and dark values. These assertions distinguish the mutations. The header control is the sibling fixture-reading case; the surplus control is inline. Host Vitest replay: `npm run test:setup`, with the guards removed and then restored. [tests/setupStyles.test.ts:1208](/home/user/veneer-f5c/tests/setupStyles.test.ts:1208), [tests/setupStyles.test.ts:1308](/home/user/veneer-f5c/tests/setupStyles.test.ts:1308), [tests/setupStyles.test.ts:1327](/home/user/veneer-f5c/tests/setupStyles.test.ts:1327).
+
+3. **CONFIRMED.** AST inspection found no function declaration or assignment inside the callback; `const tier` has no match. Both readings remain. Executing them returned `15%` and `16%` respectively; replacing the mutated reading with the original would fail the second equality assertion. The anonymous callbacks passed directly to `find` are permitted. [tests/setupStyles.test.ts:1351](/home/user/veneer-f5c/tests/setupStyles.test.ts:1351).
+
+4. **BROKEN.** The sentence overstates the reader’s accepted column shape. Replacing the fixture’s `Alias` header with `Notes` still returned the primary row unchanged, despite the stated four-column shape “and no other.” The reader rejects enumerated surplus headers; it does not enforce that exhaustive shape. Smallest fix: distinguish the guide’s actual four-column layout from the reader’s refusal of additional **recognized** columns, and state the fill limit per mode. The `Dark` and surplus-fill refusals themselves hold; accepting `Alias` is correct. [guides/veneer.md:499](/home/user/veneer-f5c/guides/veneer.md:499), [tests/setupStyles.ts:784](/home/user/veneer-f5c/tests/setupStyles.ts:784).
+
+5. **CONFIRMED.** Live status exactly matched the supplied six-file status, and the supplied diff matched the live scoped diff byte-for-byte. `tmp/probe/` is absent. [f5c-fix-3-status.txt:1](/home/user/scaffold/tmp/audit/f5c-fix-3-status.txt:1).
+
+6. **CONFIRMED.** The log, read last, records exit 0 for formatting, lint, checking, setup, styles, guides, and policy. It reports 134 setup tests, 413 styles tests, 18 guide tests, and 109 policy tests passing with one skipped. Its terminal completion marker is present. [f5c-fix-3-gates.log.txt:11](/home/user/scaffold/tmp/audit/f5c-fix-3-gates.log.txt:11), [f5c-fix-3-gates.log.txt:4129](/home/user/scaffold/tmp/audit/f5c-fix-3-gates.log.txt:4129).
+
+Findings outside the claims: none.
+
+Attacked and held: the documented in-cell mode split remains valid; two spans separated by `, dark ` represent one value per mode and correctly survive the surplus-value refusal. [tests/setupStyles.ts:845](/home/user/veneer-f5c/tests/setupStyles.ts:845).
+
+VERDICT: FAIL 4; outside the claims: none
