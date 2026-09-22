@@ -116,3 +116,17 @@ fold back into `tests/setupStyles.ts`; `tests/setupConformance.ts` (Node-only he
 earlier round) becomes `tests/setupServer.ts`; `tests/setupListeners.ts` (a load-time fixture)
 moves under `tests/fixtures/`. The correction is one unit, F5e SETUP-CONVENTION, on `opus`,
 sequenced before F5d; the queued briefs that name the retired modules are rewritten after it lands.
+
+## D13 ruling, 2026-09-22 (later the same day)
+
+> Continue, quick changes, instead of Opus 5, use the new Opus 5.5. Also, update scaffold and the
+> agents where you can find them in the dot files as well as AGENTS.md and CLAUDE.md, we need to
+> bump the versions of agents, going forward Grok should be 4.7, Opus at 5.5 and Sol should be gpt
+> 6 Astra.
+
+As read: the engines are Opus 5.5 (reached through the `opus` alias the Claude bridge fixes, never
+a fixed model ID), GPT-6 Astra (`gpt-6-astra`) in place of GPT-5.6 Sol, and Grok 4.7
+(`grok-4.7-high`) on the Cursor bench; the role names `opus`, `sol`, and `grok` stay as the routes.
+Landed in scaffold at 06f9387 across the orchestration contract, the transport contracts, the
+Claude and Codex role files, the Codex configuration, the Cursor rule, the readiness script, and
+the Claude bridge; the queued Veneer briefs and the pending roadmap fold carry Opus 5.5.
