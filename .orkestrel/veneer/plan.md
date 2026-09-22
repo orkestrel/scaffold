@@ -21,9 +21,7 @@ This folder keeps only what the open units still read; git history archives ever
   Sonnet): `units/b-passive-a-brief-2.md` (`veneer-ba`), `units/b-passive-b-brief-2.md`
   (`veneer-bb`), `units/b-passive-c-brief-2.md` (`veneer-bc`), `units/b-passive-d-brief-2.md`
   (`veneer-bd`), `units/b-passive-e-brief-3.md` (`veneer-be`), `units/b-forms-range-brief-4.md`
-  (`veneer-bfr`); B-FORMS-VALIDATION (`veneer-bfv`, round 2 audited, `bfv-fix-2-audit-analyst-verdict.md`)
-  and B-SWEEP (`veneer-bsw`, from `aca0423`, `units/b-sweep-brief-3.md` after its audit) land first,
-  in that order; F8b SHARED-PREFLIGHT (`veneer-f8b`, from `0783b2b`) is audited and folds into F8c
+  (`veneer-bfr`); B-SWEEP and B-FORMS-VALIDATION have landed on the session branch; F8b SHARED-PREFLIGHT (`veneer-f8b`, from `0783b2b`) is audited and folds into F8c
   SERVICE, whose design round runs on `units/f8c-design-brief.md` under D19. Their audit claims,
   lane briefs, verdicts, and reports sit beside them as each round runs.
 - `units/decisions-round-2.md` also carries the Orchestrator's rulings D14 to D22 taken in this
@@ -34,6 +32,9 @@ This folder keeps only what the open units still read; git history archives ever
   Set-literal, `ButtonSection` exclusion, and `CAPTURE_KEYS` spread rewrites as exact integration
   edits, scoped gates, one verifier chain at the family's close, the deciding journey re-run alone,
   the roadmap fold, and the push to `main`.
+- Closed on the session branch, awaiting the gate chain before the push to `main`: B-SWEEP
+  (`71b7388`), B-FORMS-VALIDATION (`d4f78e5`, roadmap fold 13 at `c99494a`), and J1 JOURNEY-BUDGET
+  (`units/j1-journey-budget-brief.md`, landing after the chain).
 - Closed on the session branch and on `main`, their artifacts pruned with a promotion record in
   the prune commit: F8a (`0783b2b`), L1 (`ec816c5`), F5b, F5c, F6, F7, F5d, F5e, F5a, F4, F3, and
   the Test releases; `veneer-audit-verdict.md` and `cl13-verdict.md` are the verdicts those briefs cited.

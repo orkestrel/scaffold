@@ -1,0 +1,30 @@
+Land the validation states: was-validated, is-valid, and is-invalid as a Bootstrap 5.3.8 baseline
+
+Unit B-FORMS-VALIDATION on Opus over two rounds, audited by analyst on
+Astra, reviewer on Opus, and checker on Sonnet, the fix round by analyst
+on Astra.
+
+- src/styles/components/_validation.scss emits every recorded selector of
+  the three keys plus the feedback and tooltip rules, once from a loop
+  over the state list; the focus shadows bind --vn-focus-width and the
+  colours read the --bs-form-* aliases; no --vn-* token was added.
+- src/styles/_tokens.scss gains the $icons map: the forms glyphs as the
+  release's data URIs, each named for the release variable it came from,
+  and the setup proof binds each glyph to the release declaration that
+  bakes it.
+- attributeSelector prefers, among the keys that record a selector, the
+  one the selector's own classes name, longest first, with a plant
+  recorded red then green.
+- The proof reads borders, marks, focus rings through the token they
+  resolve from, the was-validated scope, feedback and tooltip visibility,
+  the tooltip radius against its alias, and the token, override, factor,
+  and mode readings; the showcase gains the Validation region with its
+  rest scenarios in CASCADE_KEYS and VALIDATION_KEYS for the focus page
+  frames.
+- The guide gains Validation classes, the Files row naming the proof, the
+  compatibility rows, and the departure rows under Tokens; the
+  theme-scope removal of the select caret and switch knob is carried by
+  SELECT and CHECK, and the tooltip specimens by GROUP.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_016FizZRKTTm49XXhLB8eGTK
