@@ -14,8 +14,8 @@ This folder keeps only what the open units still read; git history archives ever
 - `units/f5-terrain-report.md`, `units/f6-terrain-report.md`, `units/f7-terrain-report.md`, and
   `units/f5d-terrain.md` are the terrain records the queued briefs point at, with
   `units/f5-plan.md`, `units/value-gap-probe.mjs`, and `units/cl13-portfolio-observations.md`.
-- `units/f5b-brief.md`, `units/f5c-brief.md`, `units/f5d-brief.md`, `units/f5e-brief.md`,
-  `units/f6-brief.md`, and `units/f7-brief.md` are the queued and live units.
+- `units/f5b-brief.md`, `units/f5c-brief.md`, `units/f5d-brief.md`, `units/f6-brief.md`, and
+  `units/f7-brief.md` are the queued and live units.
 
 A unit's report, audit lanes, verdict, instruments, and gate evidence are retained here while it
 runs and pruned in the commit that follows its acceptance, with the promotion record in that
