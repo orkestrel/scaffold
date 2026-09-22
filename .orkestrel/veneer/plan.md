@@ -19,13 +19,13 @@ This folder keeps only what the open units still read; git history archives ever
 - The live units, each in its own worktree from Veneer commit `3a9202a`: `units/b-passive-a-brief.md`
   through `units/b-passive-e-brief.md` (worktrees `veneer-ba` to `veneer-be`),
   `units/b-forms-validation-brief.md` (`veneer-bfv`), `units/b-forms-range-brief.md`
-  (`veneer-bfr`), and `units/f8a-brief-2.md` (the F8a fix round in `veneer-f8`, from `6e74ec9`),
+  (`veneer-bfr`), and `units/f8b-brief.md` (F8b SHARED-PREFLIGHT in `veneer-f8b`, from `0783b2b`),
   with their audit claims, lane briefs, and verdicts beside them as each round runs.
-- Closed on the session branch and on `main`: F5b, F5c, F6, and F7 (their reconciled verdicts
-  `f5b-audit-verdict.md`, `f5c-audit-verdict.md`, `f6-audit-verdict.md`, `f7-audit-verdict.md`
-  carry each round's outcome and the commit it landed as), F5d, F5e, F5a, F4, F3, and the
-  Test releases; `veneer-audit-verdict.md` and `cl13-verdict.md` are the verdicts those briefs cited.
-- Queued: F8b SHARED-PREFLIGHT after the F8a fix round; B-FORMS GROUP, CHECK, FLOATING, CONTROL,
+- Closed on the session branch and on `main`: F8a, L1, F5b, F5c, F6, and F7 (their reconciled
+  verdicts `f8a-audit-verdict.md`, `l1-audit-verdict.md`, `f5b-audit-verdict.md`,
+  `f5c-audit-verdict.md`, `f6-audit-verdict.md`, `f7-audit-verdict.md` carry each round's outcome
+  and the commit it landed as), F5d, F5e, F5a, F4, F3, and the Test releases; `veneer-audit-verdict.md` and `cl13-verdict.md` are the verdicts those briefs cited.
+- Queued: B-FORMS GROUP, CHECK, FLOATING, CONTROL,
   SELECT, and CLOSE in the landing order the B-FORMS verdict fixes; F7b CAPTION-SPECIMEN after the
   B-PASSIVE integration; B-COLLAPSE through B-CROSS per the roadmap's family queue; then
   P1 SCAFFOLD-PROPAGATE, X-EXIT, and X-RETENTION.
