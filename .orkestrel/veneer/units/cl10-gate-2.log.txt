@@ -1,0 +1,42 @@
+CL10 gate evidence, round 2 — independent verifier on the native cheap tier, Veneer checkout,
+2026-09-22. Taken AFTER both judgment lanes exited, so its build rewrote no cascade a lane was
+reading. Round 1 ran the verifier beside the lanes; this round did not.
+
+Subject: CL10's authored work and its fix round together, uncommitted over the CL9 landing 5e011a3.
+
+Managed Chromium, in order, each run bare:
+
+  npm run format:check   exit 0   All matched files use the correct format, 208 files, 857ms
+  npm run lint:check     exit 0   No warnings or errors (oxlint --deny-warnings, silent success)
+  npm run check          exit 0   tsc --noEmit over root, src:core, src:browser, src:styles;
+                                  vue-tsc --noEmit for app:browser. No diagnostics.
+  npm run build          exit 0   dist/app/browser/assets/index-CbQmBJu7.js 33.20 kB, built in 609ms
+  npm test               exit 0   every project passed, ending test:guides 18 passed
+
+Edge, through PLAYWRIGHT_CHANNEL=msedge:
+
+  npm run test:src:styles      exit 0   58 files, 411 tests, 38.99s
+  npm run test:setup:browser   exit 0   1 file, 35 tests, 5.05s
+  npm run test:app:browser     exit 0   10 files, 26 tests, 3.69s
+
+Overall: GREEN, every gate exit 0.
+
+Digest reading, taken as a required part of this report because an audit lane refused to confirm a
+digest claim resting only on the writer's own report:
+
+  sha256sum dist/src/styles/index.css dist/src/styles/index.rtl.css
+  0d8e87332f2184836faff4fe8f09aed307e7fafc0376f6dfbf5556a03ecadec2 *dist/src/styles/index.css
+  0d8e87332f2184836faff4fe8f09aed307e7fafc0376f6dfbf5556a03ecadec2 *dist/src/styles/index.rtl.css
+
+That is the digest round 1 produced and the digest the fix round reported, reproduced by a build this
+verifier ran itself. The ratio loop's destructuring moved no emitted byte, and the right-to-left twin
+is byte-identical to the upright cascade.
+
+Reported anomalies, ruled benign:
+
+- Vite console.warn lines about path, fs, url, and source-map-js being externalized for browser
+  compatibility, throughout the styles and setup-browser output. Harness transform warnings, present
+  before this unit, no exit code affected.
+- lint:check printed nothing beyond the npm notice preamble. That is oxlint's silent success with
+  --deny-warnings and no findings, confirmed by exit 0, not a truncated log.
+- No file was written or altered by the verifier; the tree's expected dirtiness was left intact.

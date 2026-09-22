@@ -4,6 +4,8 @@
 # proofs, the styles barrel, the styles setup module and its proof, the conformance listing, the
 # conformance setup proof's one enumerating assertion, the guide's rows for these keys, and the
 # showcase specimens with the proofs of the sections they joined.
+# The fix round added tests/setupBrowser.ts and tests/setupBrowser.test.ts to the owned set, granted
+# narrowly for the extracted reader and its proof; both are in the allowed list below.
 # CL10 added no showcase section: the specimens went into the Links, Media, and Layout sections the
 # tree already registers, so neither app/browser/Showcase.ts nor app/browser/index.ts is in the
 # status and neither is listed here. The brief granted the token file and the registry only if the
@@ -15,7 +17,7 @@ set -u
 SCAFFOLD="C:/Users/mikes/WebstormProjects/scaffold"
 VENEER="C:/Users/mikes/WebstormProjects/veneer"
 LOG="$SCAFFOLD/.orkestrel/veneer/units/cl10-land.log.txt"
-ALLOWED=" app/browser/constants.ts guides/veneer.md src/styles/components/_icon-link.scss src/styles/components/_ratio.scss src/styles/components/_vr.scss src/styles/index.scss tests/app/browser/sections/LayoutSection.test.ts tests/app/browser/sections/LinkSection.test.ts tests/app/browser/sections/MediaSection.test.ts tests/conformance.test.ts tests/setupConformance.test.ts tests/setupStyles.test.ts tests/setupStyles.ts tests/src/styles/components/icon-link.test.ts tests/src/styles/components/ratio.test.ts tests/src/styles/components/vr.test.ts "
+ALLOWED=" app/browser/constants.ts guides/veneer.md tests/setupBrowser.test.ts tests/setupBrowser.ts src/styles/components/_icon-link.scss src/styles/components/_ratio.scss src/styles/components/_vr.scss src/styles/index.scss tests/app/browser/sections/LayoutSection.test.ts tests/app/browser/sections/LinkSection.test.ts tests/app/browser/sections/MediaSection.test.ts tests/conformance.test.ts tests/setupConformance.test.ts tests/setupStyles.test.ts tests/setupStyles.ts tests/src/styles/components/icon-link.test.ts tests/src/styles/components/ratio.test.ts tests/src/styles/components/vr.test.ts "
 exec > >(tee -a "$LOG") 2>&1
 echo "== $(date -u +%Y-%m-%dT%H:%M:%SZ) land start"
 cd "$VENEER" || exit 9

@@ -2014,3 +2014,56 @@ decomposition, so CL8 splits and two keys stop being what the plan assumed.
   regression case reading its rows from the guide's default path.
 - **Unchanged:** CL11 to CL13, and the two questions still with the user — the cross-cutting
   reconciliation unit in `units/value-accounting-finding.md` and CL8b's gap-triple question.
+
+## Re-baseline after CL10 (2026-09-22)
+
+CL10 landed at Veneer `0e0b055`: the icon-link, ratio, and vertical-rule keys, two audit rounds, and
+one fix round. **The Content/layout family is closed.** The conformance listing now admits 31 keys.
+
+- **Satisfied: CL10.** Struck. Both rounds' verdicts are `cl10-audit-verdict.md` and
+  `cl10-audit-2-verdict.md`. Round 1 accepted the shipped cascade and forced a fix round on two
+  test-quality findings; round 2 accepted with both lanes agreeing on every claim.
+- **Corrected, and it changes how later briefs are written.** The vocabulary comparison is **not** the
+  only assertion that catches an extra emitted selector — CL10's own icon-class binding pins the
+  selectors mentioning that class to an exhaustive list and rejects a fourth. The claim narrows to
+  "the only assertion that catches an extra selector anywhere in the admitted vocabulary". The entry
+  above it, written after CL9, overstated this and is superseded here rather than edited.
+- **Corrected, measured.** The prediction that a grid-copied rounding scale would redden that
+  comparison is wrong twice over: the build shortens every percentage to six significant digits, and
+  the comparison never compares declaration values at all. Its own doc block says so. The scale claim
+  is true at the source, and CL10 proves it there by compiling the partial with Sass.
+- **A latent defect closed that predated the family.** The comparison's selector boundary was
+  ASCII-only, so it admitted a longer name whose extension was non-ASCII or backslash-escaped — for
+  the grid, gutter, and table prefixes as well as the new ones. Nothing false had shipped, confirmed
+  by searching both built cascades and the record. The boundary is now one shared continuation rule.
+- **A brief premise was false and the campaign nearly carried it.** A scope read reported the
+  reduced-motion preference undrivable after inspecting the browser page interface; the mechanism is
+  an installed export already driven by sibling proofs in the same tree. The unit refused the premise.
+  The rule widened in `.agents/orchestration.md`: answer any question of the form "can this tree do X"
+  by searching for X already being done, never by inspecting the interface that would do it.
+- **Satisfied: the three findings carried from CL9.** CL10's fix round closed the vacuous freeze
+  portion and the regression case's guide-path dependency; the equivalence's narrowness was ruled to
+  need no change, on the record, because the condition is unreachable and the doc block states the
+  narrow rule the code implements.
+- **Added, small:** the normalizer regression case's local inventory literal supplies selectors as
+  plain strings where the real oracle supplies objects. It predates CL10. Carried by whichever unit
+  next owns that case; not CL11, CL12, or CL13, none of which owns it.
+- **Added, campaign-wide:** the compatibility table carries a row per family for the generated
+  families and a row per key for the fixed-selector keys. The per-key form is the better contract,
+  because the presence scan obliges a component's entire recorded vocabulary from one row. Settling it
+  rewrites rows for landed keys, so it belongs to the cross-cutting reconciliation unit.
+- **Added, a bound on the departures mechanism.** No test reads the guide's departures, and the
+  presence scan compares names only. A future Bootstrap major that retuned a recorded value would
+  leave every departure bullet stale with the gates green, while one that added or removed a selector
+  reddens the presence scan at once. Same gap as `units/value-accounting-finding.md`, second
+  dimension; carried there.
+- **Added, a bound for a later family:** a helper key with no subject region has no showcase home. The
+  tree groups sections by subject and the guide now states that rule, but a key such as the
+  visually-hidden family has no subject region and the rule does not say what happens then.
+- **Unchanged:** CL11 journeys and captures, CL12 the guide, CL13 the portfolio verdict, and the two
+  questions still with the user.
+- **CL11 acquired a prerequisite.** CL10's fix round was granted `tests/setupBrowser.ts` narrowly and
+  added one export there, so CL11's brief is written against the post-fix tree rather than against
+  what the design row assumed. Its own findings in that module — the bare `finally` in the breakpoint
+  visitor, the hold's uncased refusals, the button resolver's rename, and the oracle driver's root
+  scoping — are untouched and still CL11's.

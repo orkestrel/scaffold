@@ -36,18 +36,18 @@ verifier, and landed by a script that refuses any file outside the owned set.
 
 | Checkout | HEAD | Meaning |
 | --- | --- | --- |
-| Veneer | `5e011a3` | CL9 landed and pushed. The tracked tree carries CL10's authored work UNCOMMITTED, and its fix round is in flight over it |
-| Scaffold | `3591daa2` | every record through CL10's round-1 verdict retained and pushed |
+| Veneer | `0e0b055` | CL10 landed and pushed; the tracked tree is clean unless a unit is live |
+| Scaffold | confirm with `git log --oneline -1` | every record through CL10's landing retained and pushed |
 
 Landed in Veneer: CL1 `00a5bdc`, CL2 `9f5ffda`, CL3 `9bb306e`, CL3b `d822d59`, CL4 `bc580c1`,
 CL4b `5240e36`, CL5 `ea82419`, CL5b `4f817db`, CL5c `c1c81a4`, CL6 `c8f53f8`, CL7 `a9172df`,
-CL8 `d2c5bb3`, CL8b `8c70787`, CL9 `5e011a3`. Each has a verdict file named for it.
+CL8 `d2c5bb3`, CL8b `8c70787`, CL9 `5e011a3`, CL10 `0e0b055`. Each has a verdict file named for it.
 
-**The whole surface is measured**, in `units/remaining-surface.md`: the record carries 135 keys and
-the conformance listing admits 28 after CL9, which is 810 selectors of 3552. **The Content/layout
-family closes at 31 keys** once CL10 ships the icon-link, ratio, and vertical-rule keys, leaving 104
-keys to the six later families. That file groups the remainder by family with sizes, so each family's
-design round starts from a measurement.
+**The whole surface is measured**, in `units/remaining-surface.md`: the record carries 135 keys, and
+the conformance listing admits 31 after CL10 closed the Content/layout family. That leaves 104 keys to
+the six later families. That file groups the remainder by family with sizes, so each family's design
+round starts from a measurement — but it was written after CL9, so re-derive its selector totals from
+the listing rather than reading its counts as current.
 
 **Five standing proofs enforce the accounting, and each catches a different class.**
 
@@ -87,42 +87,24 @@ table. It moves the family's exit criterion, so it is a rescope rather than a re
 gap-triple question is also still open**: whether to pull the `gap` and `column-gap` keys forward to
 sit with `row-gap`, which CL8b shipped because the `row` key required it.
 
-## What to do first: finish CL10's fix round, then land it
+## What to do first: CL11, journeys and captures
 
-**CL10 is written and its round 1 is ruled.** It shipped the icon-link, ratio, and vertical-rule keys;
-`cl10-audit-verdict.md` carries the round. Round 1 accepted the shipped cascade — both judgment lanes
-agreed the three keys ship whole with nothing extra and nothing deferred, and the gates ran green on
-both engines first run (`units/cl10-gate.log.txt`). **Reopen none of that.**
+**The Content/layout family is closed.** CL10 landed the last three keys and the conformance listing
+admits 31 keys.
 
-The verdict was **fix round**, on two test-quality findings: the collector's ASCII-only selector
-boundary with the control that overstates its coverage, and a function assigned inside a test body,
-which the lint rule cannot see because its scope excludes the test tree. Seven further findings ride
-along, five of them in files the round already opens and two carried in from CL9.
+CL11 owns `tests/app/browser/integration.test.ts`, `tests/setup.ts`, `tests/setupBrowser.ts`, and the
+distribution consumer page. It carries four findings of its own: the bare `finally` in the breakpoint
+visitor, the hold's uncased refusals, the button resolver's rename from the U7c round, and the oracle
+driver's root scoping.
 
-**The fix round runs on Astra**, because Opus 5 wrote round 1 and the auditor must be an engine that
-did not write the work — which is also why round 1's lanes were swapped, Astra objective and the Opus
-reviewer subjective. Its brief is `units/cl10-brief-2.md` over `units/cl10-brief.md`, its measurements
-are in `units/cl10-fix-terrain.md`, and its driver is `units/cl10-2.sh`.
+**Measure its terrain before writing its brief, and measure it against the post-CL10 tree.** CL10's
+fix round was granted `tests/setupBrowser.ts` narrowly and added one export there, `readParentOffset`,
+with its proof. Nothing else in that module moved, so CL11's four findings are untouched — but a
+terrain record measured before `0e0b055` cites a file that has since changed.
 
-On its return: retain the report, re-render evidence with `units/render-cl10.sh 5e011a3`, run round 2
-with the lanes swapped back (**Opus objective, Astra subjective**, because Astra wrote this round),
-then land with `units/cl10-land.sh`, whose message file must be written first.
+Route CL11 to `opus`. Its audit lanes then swap: Astra objective, the Opus reviewer subjective.
 
-**The fix round is granted `tests/setupBrowser.ts` narrowly**, for one export and its proof. CL11 owns
-that module's other findings, so **write CL11's brief against the post-fix tree**, not against what the
-design row assumed.
-
-Two corrections CL10 produced that a successor brief must carry:
-
-- **The reduced-motion preference IS drivable.** `stageMedia` is an installed export with a motion
-  field, already driven by sibling proofs in this tree. A scope read said otherwise, that finding
-  reached CL10's brief, and the unit refused it. The scope-read report carries a correction header.
-- **The ratio precision prediction was wrong.** The terrain said a grid-copied rounding scale would
-  redden the vocabulary comparison. It would not: the build shortens every percentage to six
-  significant digits, and more decisively the comparison never compares declaration values at all. The
-  scale claim is true at the source, and CL10 proves it there by compiling the partial.
-
-## Then CL11 to CL13
+## Then CL12 and CL13
 
 Per `content-layout-design-verdict.md` § Units (the routing ledger is there). Brief each from
 the design row, the planner's criteria (`units/content-layout-design-planner-report.md`), and
