@@ -1,0 +1,927 @@
+diff --git a/README.md b/README.md
+index 75c9bc3..b34c161 100644
+--- a/README.md
++++ b/README.md
+@@ -14,11 +14,12 @@ npm test
+ 
+ On Windows PowerShell, invoke npm through `npm.cmd`. The browser receipts are recorded separately:
+ 
+-| Browser                           | Receipt                                                                                                                                                                      |
+-| --------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+-| Managed Chromium, revision `1243` | The source, application, setup, styles, and journey projects pass on Windows on 2026-09-20. The journey variants are `light-1280`, `dark-1280`, `light-390`, and `dark-390`. |
+-| Edge `153.0.4234.48`              | The host verification receipt remains assigned to the Orchestrator: run `npm test` with `PLAYWRIGHT_CHANNEL=msedge`. No Edge result is inferred from Chromium.               |
+-| Chrome                            | Open: Chrome is not installed on this host. Install Chrome and run the browser gates with `PLAYWRIGHT_CHANNEL=chrome` to obtain its receipt.                                 |
++| Browser                                                        | Receipt                                                                                                                                                                                                                                                                                                                                                                                                       |
++| -------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
++| Chromium `153.0.8010.12` (Playwright revision `1243`, Windows) | The source, application, setup, styles, and journey projects pass on 2026-09-20. The journey variants are `light-1280`, `dark-1280`, `light-390`, and `dark-390`.                                                                                                                                                                                                                                             |
++| Chromium `141.0.7390.37` (Playwright revision `1194`, Linux)   | The gate chain passes on 2026-09-22: `format:check`, `lint:check`, `check`, `build`, and every test project, with the oracle fixture `tests/fixtures/oracle/button.json` re-recorded on this build. Two `src:browser` cases that read `event.target` off a stored event after dispatch on a detached host read `null` here and the host on Chromium 153; they read it inside the listener since this receipt. |
++| Edge `153.0.4234.48`                                           | The host verification receipt remains assigned to the Orchestrator: run `npm test` with `PLAYWRIGHT_CHANNEL=msedge`. No Edge result is inferred from Chromium.                                                                                                                                                                                                                                                |
++| Chrome                                                         | Open: Chrome is not installed on this host. Install Chrome and run the browser gates with `PLAYWRIGHT_CHANNEL=chrome` to obtain its receipt.                                                                                                                                                                                                                                                                  |
+ 
+ The installed-package browser and standalone stylesheet proofs run through
+ `npm run test:distribution`. Registry-dependent cases skip when `npm ping` cannot reach the
+diff --git a/guides/veneer.md b/guides/veneer.md
+index 68bb7d8..d1c2ddb 100644
+--- a/guides/veneer.md
++++ b/guides/veneer.md
+@@ -44,6 +44,12 @@ every other value selects light mode. Applying light mode removes the attribute.
+ restores a valid stored mode when you supply storage, and otherwise leaves the root unchanged.
+ Storage operations use the supplied browser storage directly and propagate its errors.
+ 
++The delegate acquires a host on its first delegated click and reuses that engine on later clicks. A
++host removed from the root, or moved outside it, keeps its toggled state until the next click that
++reaches the root or the delegate's destruction, whichever comes first, and is restored and released
++then. A host reinserted before that click keeps its engine and its state. A host reinserted after
++its release is acquired again, with a fresh engine, on its next delegated click.
++
+ ## Methods
+ 
+ The interface exposes the following lifecycle operations.
+diff --git a/src/browser/Button.ts b/src/browser/Button.ts
+index 332a47e..4c832c2 100644
+--- a/src/browser/Button.ts
++++ b/src/browser/Button.ts
+@@ -22,6 +22,7 @@ export class Button implements ButtonInterface {
+ 	static readonly #hosts = new WeakSet<HTMLElement>()
+ 	readonly #host: HTMLElement
+ 	readonly #active: boolean
++	readonly #classified: boolean
+ 	readonly #attribute: string | null
+ 	readonly #controller = new AbortController()
+ 
+@@ -50,6 +51,7 @@ export class Button implements ButtonInterface {
+ 		}
+ 		this.#host = host
+ 		this.#active = host.classList.contains(BUTTON_ACTIVE)
++		this.#classified = host.hasAttribute('class')
+ 		this.#attribute = host.getAttribute('aria-pressed')
+ 		bindEventMap(host, options?.on, this.#controller.signal)
+ 		Button.#hosts.add(host)
+@@ -75,6 +77,7 @@ export class Button implements ButtonInterface {
+ 		if (this.#controller.signal.aborted) return
+ 		this.#controller.abort()
+ 		this.#host.classList.toggle(BUTTON_ACTIVE, this.#active)
++		if (!this.#classified && this.#host.classList.length === 0) this.#host.removeAttribute('class')
+ 		if (this.#attribute === null) this.#host.removeAttribute('aria-pressed')
+ 		else this.#host.setAttribute('aria-pressed', this.#attribute)
+ 		Button.#hosts.delete(this.#host)
+diff --git a/tests/fixtures/oracle/button.json b/tests/fixtures/oracle/button.json
+index 7686a33..ed3d873 100644
+--- a/tests/fixtures/oracle/button.json
++++ b/tests/fixtures/oracle/button.json
+@@ -1,6 +1,7 @@
+ {
+ 	"version": "5.3.8",
+ 	"component": "btn",
++	"browser": "141.0.7390.37",
+ 	"steps": [
+ 		{
+ 			"name": "button.initial",
+diff --git a/tests/setup.ts b/tests/setup.ts
+index 0f6b07c..5f36c60 100644
+--- a/tests/setup.ts
++++ b/tests/setup.ts
+@@ -1,5 +1,32 @@
+ import { isRecord } from '@orkestrel/contract'
+ 
++/**
++ * Describes an event and its host fields captured during delivery.
++ *
++ * @typeParam TEvent - The delivered event type.
++ * @typeParam TTarget - The host's event target type.
++ */
++export interface EventReading<TEvent, TTarget> {
++	/** Holds the delivered event by identity. */
++	readonly event: TEvent
++	/** Holds the target at delivery. */
++	readonly target: TTarget | null
++	/** Holds the subscribed target at delivery. */
++	readonly current: TTarget | null
++	/** Holds the related target, or undefined when the event has no such member. */
++	readonly related: unknown
++	/** Lists the event path at delivery. */
++	readonly path: readonly TTarget[]
++}
++
++/** Describes a button's original class and pressed attributes for restoration. */
++export interface ButtonRestoration {
++	/** Holds the class attribute, or undefined when absent. */
++	readonly classes: string | undefined
++	/** Holds the aria-pressed attribute, or undefined when absent. */
++	readonly pressed: string | undefined
++}
++
+ /** Names the prefix every canonical custom property the token registry carries begins with. */
+ export const TOKEN_PREFIX = '--vn-'
+ 
+diff --git a/tests/setupBrowser.test.ts b/tests/setupBrowser.test.ts
+index 2101ff5..56bb9ac 100644
+--- a/tests/setupBrowser.test.ts
++++ b/tests/setupBrowser.test.ts
+@@ -19,7 +19,7 @@ import {
+ 	resolveAccessible,
+ 	traverseAccessible,
+ } from '@orkestrel/test/browser'
+-import { afterEach, describe, expect, it } from 'vitest'
++import { afterEach, describe, expect, it, onTestFinished } from 'vitest'
+ import { page } from 'vitest/browser'
+ import { CAPTURE_CONTROLS } from './setup.js'
+ import { BREAKPOINT_CASES, parseMediaWidth } from './setupStyles.js'
+@@ -44,18 +44,19 @@ import {
+ 	pressOracleKeys,
+ 	readCascadeSheet,
+ 	recordListeners,
++	recordEvents,
+ 	recordState,
+ 	readButton,
+ 	readOracleButton,
+ 	readParentOffset,
+ 	readSpecimen,
+ 	SPECIMEN_ATTRIBUTE,
+-	specimens,
++	scene,
+ 	visitBreakpoint,
+ } from './setupBrowser.js'
+ 
+ afterEach(() => {
+-	specimens.clear()
++	scene.clear()
+ 	document.documentElement.removeAttribute('data-bs-theme')
+ })
+ 
+@@ -142,6 +143,45 @@ describe('breakpoint viewport restoration', () => {
+ })
+ 
+ describe('browser setup', () => {
++	it('records event delivery on attached and detached hosts until abort', () => {
++		for (const root of [build('div'), mount(build('div'))]) {
++			onTestFinished(() => root.remove())
++			const host = build('button')
++			const related = build('button')
++			root.append(host, related)
++			const controller = new AbortController()
++			onTestFinished(() => controller.abort())
++			const events = recordEvents(root, 'completed', controller.signal)
++			expect(events.count).toBe(0)
++			const event = new Event('completed', { bubbles: true })
++			host.dispatchEvent(event)
++			expect(events.count).toBe(1)
++			const reading = requireValue(events.calls[0]?.[0], 'No event reading')
++			expect(reading.event).toBe(event)
++			expect(reading.target).toBe(host)
++			expect(reading.current).toBe(root)
++			expect(reading.related).toBeUndefined()
++			expect(reading.path[0]).toBe(host)
++			expect(reading.path[1]).toBe(root)
++			const next = new MouseEvent('completed', { bubbles: true, relatedTarget: related })
++			host.dispatchEvent(next)
++			expect(events.count).toBe(2)
++			const delivered = requireValue(events.calls[1]?.[0], 'No subsequent event reading')
++			expect(delivered.event).toBe(next)
++			expect(delivered.target).toBe(host)
++			expect(delivered.current).toBe(root)
++			expect(delivered.related).toBe(related)
++			expect(delivered.path[0]).toBe(host)
++			host.dispatchEvent(new Event('unrelated', { bubbles: true }))
++			expect(events.count).toBe(2)
++			controller.abort()
++			host.dispatchEvent(event)
++			expect(events.count).toBe(2)
++			const aborted = recordEvents(root, 'completed', controller.signal)
++			host.dispatchEvent(event)
++			expect(aborted.count).toBe(0)
++		}
++	})
+ 	it('distinguishes retained blank and painted PNG frames by pixels across the image', async () => {
+ 		expect(await measureFrameVariation(CAPTURE_CONTROLS.blank)).toBe(0)
+ 		expect(await measureFrameVariation(CAPTURE_CONTROLS.painted)).toBeGreaterThan(0)
+@@ -150,7 +190,7 @@ describe('browser setup', () => {
+ 		await expect(measureFrameVariation('')).rejects.toMatchObject({ name: 'EncodingError' })
+ 	})
+ 	it('reads signed painted offsets from the parent independently of its viewport position', () => {
+-		const host = specimens.mount(
++		const host = scene.mount(
+ 			'<div style="position:fixed;left:120px;top:40px;border:3px solid;padding:20px"><svg style="display:block;width:10px;height:10px"></svg></div>',
+ 		)
+ 		const parent = requireValue(host.querySelector('div'), 'No offset parent specimen')
+@@ -173,11 +213,12 @@ describe('browser setup', () => {
+ 		expect(Object.keys(setup).sort()).toEqual(
+ 			[
+ 				'BUTTON_CLASS',
++				'BUTTON_RESTORATIONS',
+ 				'ORACLE_ACTIONS',
+ 				'ORACLE_EXCLUDED',
+ 				'PROBE_CASCADE',
+ 				'SPECIMEN_ATTRIBUTE',
+-				'SpecimenManager',
++				'SceneManager',
+ 				'applyTheme',
+ 				'buildOracleComparison',
+ 				'collectLayer',
+@@ -192,12 +233,13 @@ describe('browser setup', () => {
+ 				'pressOracleKeys',
+ 				'readCascadeSheet',
+ 				'recordListeners',
++				'recordEvents',
+ 				'recordState',
+ 				'readButton',
+ 				'readOracleButton',
+ 				'readParentOffset',
+ 				'readSpecimen',
+-				'specimens',
++				'scene',
+ 				'visitBreakpoint',
+ 			].sort(),
+ 		)
+@@ -407,7 +449,7 @@ describe('browser setup', () => {
+ 		// The host is fixed to the viewport, so its containing block is the viewport itself and no
+ 		// scroll moves it. Nothing about reachability refuses it: it is connected, laid out, and in
+ 		// the focus order, which is why the refusal is the hold's own rather than the reader's.
+-		const root = specimens.mount(
++		const root = scene.mount(
+ 			'<section><button type="button" class="btn btn-primary" style="position: fixed; inset-block-start: 10px; inset-inline-start: -400px; inline-size: 120px">Parked</button></section>',
+ 		)
+ 		const target = readButton(root, 'Parked')
+@@ -672,31 +714,31 @@ describe('browser setup', () => {
+ 		}
+ 	})
+ 
+-	it('attaches a specimen the case can address, and takes it out again on request', () => {
+-		const container = specimens.mount('<div id="probe" class="marker"></div>')
++	it('attaches a node the case can address, and takes it out again on request', () => {
++		const container = scene.mount('<div id="probe" class="marker"></div>')
+ 		const probe = container.querySelector('#probe')
+ 		expect(container.isConnected).toBe(true)
+ 		expect(probe?.classList.contains('marker')).toBe(true)
+-		specimens.clear()
++		scene.clear()
+ 		expect(container.isConnected).toBe(false)
+-		specimens.clear()
++		scene.clear()
+ 		expect(document.querySelectorAll('#probe')).toHaveLength(0)
+ 	})
+ 
+ 	it('takes out every node one case added, in one call', () => {
+-		const first = specimens.mount('<div></div>')
+-		const second = specimens.load('.vn-probe-marker { color: rgb(1, 2, 3) }')
++		const first = scene.mount('<div></div>')
++		const second = scene.load('.vn-probe-marker { color: rgb(1, 2, 3) }')
+ 		expect([first.isConnected, second.isConnected]).toEqual([true, true])
+ 		expect(second.sheet?.cssRules).toHaveLength(1)
+-		specimens.clear()
++		scene.clear()
+ 		expect([first.isConnected, second.isConnected]).toEqual([false, false])
+ 	})
+ 
+ 	it('takes out a recorded container, and leaves one the installed render attached', () => {
+-		const recorded = specimens.mount('<div id="recorded"></div>')
++		const recorded = scene.mount('<div id="recorded"></div>')
+ 		const rival = render('<div id="rival"></div>')
+ 		try {
+-			specimens.clear()
++			scene.clear()
+ 			expect(recorded.isConnected).toBe(false)
+ 			expect(rival.isConnected).toBe(true)
+ 		} finally {
+@@ -705,12 +747,12 @@ describe('browser setup', () => {
+ 	})
+ 
+ 	it('puts a loaded sheet in the head and takes it out, where an installed mount leaves it in the body', () => {
+-		const recorded = specimens.load('.vn-probe-head { color: rgb(1, 2, 3) }')
++		const recorded = scene.load('.vn-probe-head { color: rgb(1, 2, 3) }')
+ 		const rival = mount(build('style', { text: '.vn-probe-body { color: rgb(4, 5, 6) }' }))
+ 		try {
+ 			expect(recorded.parentElement).toBe(document.head)
+ 			expect(rival.parentElement).toBe(document.body)
+-			specimens.clear()
++			scene.clear()
+ 			expect(recorded.isConnected).toBe(false)
+ 			expect(rival.isConnected).toBe(true)
+ 		} finally {
+@@ -719,8 +761,8 @@ describe('browser setup', () => {
+ 	})
+ 
+ 	it('selects the sheet carrying the theme layer, where the installed rule walk names no sheet', () => {
+-		const plain = specimens.load('.vn-probe-plain { color: rgb(7, 8, 9) }')
+-		const element = specimens.load(PROBE_CASCADE)
++		const plain = scene.load('.vn-probe-plain { color: rgb(7, 8, 9) }')
++		const element = scene.load(PROBE_CASCADE)
+ 		const sheets = [
+ 			requireValue(plain.sheet, 'The plain fixture parsed to no sheet'),
+ 			requireValue(element.sheet, 'The probe cascade parsed to no sheet'),
+@@ -738,7 +780,7 @@ describe('browser setup', () => {
+ 	it('walks the document by default, selecting the published cascade over a sheet a case fixtured', async () => {
+ 		const mounted = await mountShowcase()
+ 		try {
+-			const element = specimens.load(PROBE_CASCADE)
++			const element = scene.load(PROBE_CASCADE)
+ 			const selected = requireValue(readCascadeSheet(), 'The document loaded no Veneer cascade')
+ 			expect(selected).not.toBe(element.sheet)
+ 			expect(
+@@ -757,9 +799,9 @@ describe('browser setup', () => {
+ 	})
+ 
+ 	it('reports no sheet where no named sheet declares a theme layer, and refuses a layer read there', () => {
+-		const plain = specimens.load('.vn-probe-plain { color: rgb(7, 8, 9) }')
++		const plain = scene.load('.vn-probe-plain { color: rgb(7, 8, 9) }')
+ 		const sheet = requireValue(plain.sheet, 'The plain fixture parsed to no sheet')
+-		specimens.load(PROBE_CASCADE)
++		scene.load(PROBE_CASCADE)
+ 		expect(readCascadeSheet([sheet])).toBeUndefined()
+ 		expect(() => collectLayer('elements', [sheet])).toThrow('The sheets carry no Veneer cascade')
+ 		// The installed walk takes no sheets, so it reads the whole page: the cascade loaded beside
+@@ -771,7 +813,7 @@ describe('browser setup', () => {
+ 	})
+ 
+ 	it('reports a grouping rule before the rules it holds, where the installed walk reports by level', () => {
+-		const element = specimens.load(PROBE_CASCADE)
++		const element = scene.load(PROBE_CASCADE)
+ 		const sheet = requireValue(element.sheet, 'The probe cascade parsed to no sheet')
+ 		expect(
+ 			collectNestedRules(sheet.cssRules).flatMap((rule) =>
+@@ -801,7 +843,7 @@ describe('browser setup', () => {
+ 	})
+ 
+ 	it('reads every rule of the named layer block, and reports nothing for a layer the cascade never fills', () => {
+-		const element = specimens.load(PROBE_CASCADE)
++		const element = scene.load(PROBE_CASCADE)
+ 		const sheets = [requireValue(element.sheet, 'The probe cascade parsed to no sheet')]
+ 		expect(
+ 			collectLayer('elements', sheets).flatMap((rule) =>
+@@ -812,7 +854,7 @@ describe('browser setup', () => {
+ 	})
+ 
+ 	it('reports the gate around a selector, where the installed rule walk reports the gate and the gated rule apart', () => {
+-		const element = specimens.load(
++		const element = scene.load(
+ 			'@layer components {' +
+ 				'@media (width >= 576px) { .vn-probe-gated { color: rgb(1, 2, 3) } }' +
+ 				'@media (width < 768px) { .vn-probe-gated { color: rgb(4, 5, 6) } }' +
+@@ -840,7 +882,7 @@ describe('browser setup', () => {
+ 		expect(collectMediaConditions(rules, '.vn-probe-open')).toEqual([])
+ 	})
+ 	it('unions the custom properties a split scope declares, where the installed rule lookup reads one rule', () => {
+-		const element = specimens.load(PROBE_CASCADE)
++		const element = scene.load(PROBE_CASCADE)
+ 		const sheet = requireValue(element.sheet, 'The probe cascade parsed to no sheet')
+ 		const rules = collectNestedRules(sheet.cssRules)
+ 		expect(collectScopeProperties(rules, '  .vn-probe-scope  ')).toEqual([
+diff --git a/tests/setupBrowser.ts b/tests/setupBrowser.ts
+index 1d50b1d..6907852 100644
+--- a/tests/setupBrowser.ts
++++ b/tests/setupBrowser.ts
+@@ -1,5 +1,5 @@
+-import type { JourneyVariant } from '@orkestrel/test'
+-import type { ButtonProjection, ButtonReading } from './setup.js'
++import type { JourneyVariant, RecorderInterface } from '@orkestrel/test'
++import type { ButtonProjection, ButtonReading, ButtonRestoration, EventReading } from './setup.js'
+ import { isRecord } from '@orkestrel/contract'
+ import { createRecorder, requireValue } from '@orkestrel/test'
+ import {
+@@ -614,6 +614,51 @@ export async function recordListeners(
+ 	return recorder.calls.map(([target]) => target)
+ }
+ 
++/**
++ * Records event fields inside the listener until the supplied signal aborts.
++ *
++ * @param target - The target to subscribe to.
++ * @param name - The event name to record.
++ * @param signal - The signal that releases the listener.
++ * @returns The recorder of delivery-time readings, in delivery order.
++ * @example
++ * ```ts
++ * const controller = new AbortController()
++ * const events = recordEvents(root, 'toggle.vn.button', controller.signal)
++ * button.toggle()
++ * events.calls[0]?.[0].target === button.host
++ * controller.abort()
++ * ```
++ */
++export function recordEvents(
++	target: EventTarget,
++	name: string,
++	signal: AbortSignal,
++): RecorderInterface<readonly [EventReading<Event, EventTarget>]> {
++	const recorder = createRecorder<readonly [EventReading<Event, EventTarget>]>()
++	target.addEventListener(
++		name,
++		(event) => {
++			recorder.handler({
++				event,
++				target: event.target,
++				current: event.currentTarget,
++				related: 'relatedTarget' in event ? event.relatedTarget : undefined,
++				path: event.composedPath(),
++			})
++		},
++		{ signal },
++	)
++	return recorder
++}
++
++/** Lists the original class and pressed attributes the button restoration proof crosses. */
++export const BUTTON_RESTORATIONS: readonly ButtonRestoration[] = Object.freeze(
++	[undefined, 'active btn', ' active  btn ', 'btn', ''].flatMap((classes) =>
++		[undefined, 'true', 'false', 'mixed'].map((pressed) => Object.freeze({ classes, pressed })),
++	),
++)
++
+ /**
+  * Applies a variant's color mode through the mounted showcase control and awaits paint.
+  *
+@@ -665,7 +710,7 @@ export const PROBE_CASCADE = `@layer theme, components, elements;
+  * node and record nothing, and `mount`'s own documentation names a recorded container built in a
+  * setup module as the shape a workspace is meant to build, which is this one.
+  */
+-export class SpecimenManager {
++export class SceneManager {
+ 	readonly #nodes: Element[] = []
+ 
+ 	/**
+@@ -673,17 +718,17 @@ export class SpecimenManager {
+ 	 *
+ 	 * @param markup - The fixture markup to parse, such as `<div data-bs-theme="dark"></div>`.
+ 	 * @returns The attached container holding the fixture's own nodes, so a case addresses a
+-	 *   specimen through `querySelector` on it.
++	 *   node through `querySelector` on it.
+ 	 *
+ 	 * @remarks
+ 	 * The installed `render` export parses the markup and attaches the container, and this is that
+ 	 * call with the removal recorded. Recording is the one thing `render` cannot do: its own
+ 	 * documentation hands removal back to the caller and tells a workspace to build a recorded
+-	 * container in a setup module, so a style file that mounts many small specimens per case either
++	 * container in a setup module, so a style file that mounts many small nodes per case either
+ 	 * records them here or leaves each case's nodes on the page for the next case to resolve
+ 	 * against.
+ 	 *
+-	 * The container itself declares nothing, so every custom property a specimen reads inherits from
++	 * The container itself declares nothing, so every custom property a mounted node reads inherits from
+ 	 * `:root` exactly as it would on a consumer's page.
+ 	 */
+ 	mount(markup: string): HTMLDivElement {
+@@ -736,7 +781,7 @@ export class SpecimenManager {
+  * One registry per page is what makes an `afterEach` hook's cleanup complete: a proof holding its
+  * own registry would leave another proof's nodes behind.
+  */
+-export const specimens = new SpecimenManager()
++export const scene = new SceneManager()
+ 
+ /**
+  * Reads an element's painted horizontal offset from its parent's left border edge.
+diff --git a/tests/setupConformance.test.ts b/tests/setupConformance.test.ts
+index c71777a..4f50874 100644
+--- a/tests/setupConformance.test.ts
++++ b/tests/setupConformance.test.ts
+@@ -554,6 +554,14 @@ describe('setupConformance', () => {
+ 				}
+ 				const path = scratch.write('button.json', JSON.stringify(altered))
+ 				expect(scanOracleFixture(fixture, parseJSON(readFileSync(path, 'utf8')))).toBeUndefined()
++				expect(
++					scanOracleFixture(fixture, { ...altered, browser: 'different-build' }),
++				).toBeUndefined()
++				const { browser: _browser, ...missing } = altered
++				expect(scanOracleFixture(fixture, missing)).toBe('Invalid Button oracle fixture')
++				expect(scanOracleFixture(fixture, { ...altered, browser: 141 })).toBe(
++					'Invalid Button oracle fixture',
++				)
+ 				expect(scanOracleFixture(fixture, { ...altered, excluded: [] })).toBe(
+ 					'Oracle differs at step button.hover',
+ 				)
+@@ -977,6 +985,7 @@ describe('setupConformance', () => {
+ 				scanOracleObligation(row, {
+ 					version: BOOTSTRAP_VERSION,
+ 					component: 'btn',
++					browser: '141.0.7390.37',
+ 					steps: [],
+ 					excluded: [],
+ 				}),
+diff --git a/tests/setupConformance.ts b/tests/setupConformance.ts
+index e91a1e7..ccce0c1 100644
+--- a/tests/setupConformance.ts
++++ b/tests/setupConformance.ts
+@@ -68,6 +68,7 @@ export interface OracleStep {
+ export interface OracleFixture {
+ 	readonly version: string
+ 	readonly component: string
++	readonly browser: string
+ 	readonly steps: readonly OracleStep[]
+ 	readonly excluded: ReadonlyArray<{ readonly step: string; readonly reason: string }>
+ }
+@@ -960,6 +961,7 @@ export function scanOracleObligation(
+  * @param fixture - The saved fixture, normalized through the same JSON round-trip as the recording.
+  * @returns The first differing step or metadata finding, or undefined when they agree.
+  * Returns `Invalid Button oracle fixture` when the fixture cannot be serialized to JSON.
++ * @remarks The browser build is required provenance and is excluded from comparison across builds.
+  */
+ export function scanOracleFixture(recording: OracleFixture, fixture: unknown): string | undefined {
+ 	let saved: unknown
+@@ -968,7 +970,12 @@ export function scanOracleFixture(recording: OracleFixture, fixture: unknown): s
+ 	} catch {
+ 		return 'Invalid Button oracle fixture'
+ 	}
+-	if (!isRecord(saved) || !Array.isArray(saved.steps) || !Array.isArray(saved.excluded))
++	if (
++		!isRecord(saved) ||
++		typeof saved.browser !== 'string' ||
++		!Array.isArray(saved.steps) ||
++		!Array.isArray(saved.excluded)
++	)
+ 		return 'Invalid Button oracle fixture'
+ 	const excluded = new Set<string>()
+ 	for (const exclusion of saved.excluded) {
+@@ -997,12 +1004,14 @@ export function scanOracleFixture(recording: OracleFixture, fixture: unknown): s
+ 			? { name: step.name }
+ 			: step,
+ 	)
++	const { browser: _recordedBrowser, ...recorded } = recording
++	const { browser: _savedBrowser, ...metadata } = saved
+ 	const compared = {
+-		...recording,
++		...recorded,
+ 		excluded: saved.excluded,
+ 		steps: recording.steps.map((step) => (excluded.has(step.name) ? { name: step.name } : step)),
+ 	}
+-	return isDeepStrictEqual(parseJSON(JSON.stringify(compared)), { ...saved, steps })
++	return isDeepStrictEqual(parseJSON(JSON.stringify(compared)), { ...metadata, steps })
+ 		? undefined
+ 		: 'Oracle fixture metadata or step membership differs'
+ }
+@@ -1127,7 +1136,13 @@ export async function recordButtonOracle(): Promise<OracleFixture> {
+ 				}
+ 			}
+ 		}
+-		return { version: BOOTSTRAP_VERSION, component: 'btn', steps, excluded: [] }
++		return {
++			version: BOOTSTRAP_VERSION,
++			component: 'btn',
++			browser: browser.version(),
++			steps,
++			excluded: [],
++		}
+ 	} finally {
+ 		await browser.close()
+ 		scratch.destroy()
+diff --git a/tests/src/browser/Button.test.ts b/tests/src/browser/Button.test.ts
+index f7c295e..999200b 100644
+--- a/tests/src/browser/Button.test.ts
++++ b/tests/src/browser/Button.test.ts
+@@ -5,6 +5,7 @@ import { attempt } from '@orkestrel/contract'
+ import { createRecorder } from '@orkestrel/test'
+ import { build } from '@orkestrel/test/browser'
+ import { describe, expect, it, onTestFinished } from 'vitest'
++import { BUTTON_RESTORATIONS, recordEvents } from '../../setupBrowser.js'
+ 
+ describe('Button', () => {
+ 	it('constructs over button and anchor hosts without normalizing their markup', () => {
+@@ -112,6 +113,7 @@ describe('Button', () => {
+ 		const hooks = createRecorder<readonly [CustomEvent<ButtonDetail>]>()
+ 		const controller = new AbortController()
+ 		onTestFinished(() => controller.abort())
++		const readings = recordEvents(root, 'toggle.vn.button', controller.signal)
+ 		root.addEventListener(
+ 			'toggle.vn.button',
+ 			(event) => {
+@@ -129,7 +131,9 @@ describe('Button', () => {
+ 		const event = hooks.calls[0]?.[0]
+ 		expect(event).toBeInstanceOf(CustomEvent)
+ 		expect(event?.type).toBe('toggle.vn.button')
+-		expect(event?.target).toBe(host)
++		expect(readings.count).toBe(1)
++		expect(readings.calls[0]?.[0].event).toBe(event)
++		expect(readings.calls[0]?.[0].target).toBe(host)
+ 		expect(event?.bubbles).toBe(true)
+ 		expect(event?.cancelable).toBe(false)
+ 		expect(event?.defaultPrevented).toBe(false)
+@@ -175,6 +179,37 @@ describe('Button', () => {
+ 		expect(host.getAttribute('aria-label')).toBe('Consumer label')
+ 	})
+ 
++	it.each(BUTTON_RESTORATIONS)(
++		'restores original membership and attribute presence for class=$classes and aria-pressed=$pressed',
++		({ classes, pressed }) => {
++			const host = build('button')
++			if (classes !== undefined) host.setAttribute('class', classes)
++			if (pressed !== undefined) host.setAttribute('aria-pressed', pressed)
++			const active = host.classList.contains('active')
++			const tokens = Array.from(host.classList).filter((token) => token !== 'active')
++			const button = new Button(host)
++			onTestFinished(() => button.destroy())
++			button.toggle()
++			button.destroy()
++			expect(host.classList.contains('active')).toBe(active)
++			expect(Array.from(host.classList).filter((token) => token !== 'active')).toEqual(tokens)
++			expect(host.hasAttribute('class')).toBe(classes !== undefined)
++			expect(host.hasAttribute('aria-pressed')).toBe(pressed !== undefined)
++			expect(host.getAttribute('aria-pressed')).toBe(pressed ?? null)
++		},
++	)
++
++	it('keeps consumer class tokens on a host constructed without a class attribute', () => {
++		const host = build('button')
++		const button = new Button(host)
++		onTestFinished(() => button.destroy())
++		button.toggle()
++		host.classList.add('consumer', 'retained')
++		button.destroy()
++		expect(Array.from(host.classList)).toEqual(['consumer', 'retained'])
++		expect(host.hasAttribute('class')).toBe(true)
++	})
++
+ 	it('restores absent and empty attributes distinctly on detached hosts', () => {
+ 		const host = build('button', { classes: 'active' })
+ 		const anchor = build('a', { attributes: { 'aria-pressed': '' } })
+diff --git a/tests/src/browser/helpers.test.ts b/tests/src/browser/helpers.test.ts
+index d790ab0..bcce2c3 100644
+--- a/tests/src/browser/helpers.test.ts
++++ b/tests/src/browser/helpers.test.ts
+@@ -3,25 +3,26 @@ import { bindEventMap, emitEvent } from '@src/browser'
+ import { createRecorder } from '@orkestrel/test'
+ import { build } from '@orkestrel/test/browser'
+ import { describe, expect, it, onTestFinished } from 'vitest'
++import { recordEvents } from '../../setupBrowser.js'
+ 
+ describe('emitEvent', () => {
+ 	it('dispatches the supplied type and detail synchronously through the parent', () => {
+ 		const root = build('div')
+ 		const host = build('button')
+ 		root.append(host)
+-		const events = createRecorder<readonly [Event]>()
+ 		const controller = new AbortController()
+ 		onTestFinished(() => controller.abort())
+-		root.addEventListener('completed', events.handler, { signal: controller.signal })
++		const events = recordEvents(root, 'completed', controller.signal)
+ 		const detail = { pressed: false }
+ 		emitEvent(host, 'completed', detail)
+ 		expect(events.count).toBe(1)
+-		const event = events.calls[0]?.[0]
++		const reading = events.calls[0]?.[0]
++		const event = reading?.event
+ 		expect(event).toBeInstanceOf(CustomEvent)
+ 		if (!(event instanceof CustomEvent)) throw new Error('Expected a custom event')
+ 		expect(event.type).toBe('completed')
+ 		expect(event.detail).toBe(detail)
+-		expect(event.target).toBe(host)
++		expect(reading?.target).toBe(host)
+ 		expect(event.bubbles).toBe(true)
+ 		expect(event.cancelable).toBe(false)
+ 	})
+diff --git a/tests/src/styles/tokens.test.ts b/tests/src/styles/tokens.test.ts
+index 410b4ee..0898403 100644
+--- a/tests/src/styles/tokens.test.ts
++++ b/tests/src/styles/tokens.test.ts
+@@ -14,7 +14,7 @@ import {
+ 	collectNestedRules,
+ 	collectScopeProperties,
+ 	readCascadeSheet,
+-	specimens,
++	scene,
+ } from '../../setupBrowser.js'
+ import {
+ 	BOOTSTRAP_DARK_VARIABLES,
+@@ -30,7 +30,7 @@ import {
+ } from '../../setupStyles.js'
+ 
+ afterEach(() => {
+-	specimens.clear()
++	scene.clear()
+ })
+ 
+ describe('token cascade', () => {
+@@ -44,7 +44,7 @@ describe('token cascade', () => {
+ 		expect(declared.length).toBe(canonical.length + compatible.length)
+ 	})
+ 	it('declares the same partitions in the right-to-left cascade', () => {
+-		const element = specimens.load(rtlCascade)
++		const element = scene.load(rtlCascade)
+ 		const sheet = requireValue(element.sheet, 'The right-to-left cascade parsed to no sheet')
+ 		const declared = collectScopeProperties(collectNestedRules(sheet.cssRules), ':root')
+ 		expect([...declared.filter((name) => name.startsWith('--vn-'))].sort()).toEqual(
+@@ -62,12 +62,13 @@ describe('token cascade', () => {
+ 		const canonical = light.filter((name) => name.startsWith('--vn-'))
+ 		expect(canonical.length).toBeGreaterThan(0)
+ 		expect(canonical.filter((name) => !dark.includes(name))).toEqual([])
++		expect(dark.filter((name) => name.startsWith('--vn-') && !light.includes(name))).toEqual([])
+ 		expect([...dark.filter((name) => name.startsWith('--bs-'))].sort()).toEqual(
+ 			[...BOOTSTRAP_DARK_VARIABLES, ...THEME_DARK_ADDITIONS].sort(),
+ 		)
+ 	})
+ 	it('resolves each calibrated role tier to the color Elements renders for it', () => {
+-		const container = specimens.mount(
++		const container = scene.mount(
+ 			'<div id="light" data-bs-theme="light"></div><div id="dark" data-bs-theme="dark"></div>',
+ 		)
+ 		const scopes = {
+@@ -84,7 +85,7 @@ describe('token cascade', () => {
+ 	})
+ 	it('resolves each channel triplet to the color its own token paints, in each mode', () => {
+ 		const pairs = collectTripletGroups(TOKEN_NAMES)
+-		const container = specimens.mount(
++		const container = scene.mount(
+ 			'<div id="light" data-bs-theme="light"></div><div id="dark" data-bs-theme="dark"></div>',
+ 		)
+ 		const scopes = [
+@@ -122,7 +123,7 @@ describe('token cascade', () => {
+ 		expect(drift).toEqual([])
+ 	})
+ 	it('resolves every retained length token to the length Bootstrap declares for its alias', () => {
+-		const container = specimens.mount(
++		const container = scene.mount(
+ 			RETAINED_LENGTH_ALIASES.map(
+ 				([token, , value], index) =>
+ 					`<div id="veneer-${String(index)}" style="padding-top: var(${token})"></div>` +
+@@ -146,7 +147,7 @@ describe('token cascade', () => {
+ 		expect(drift).toEqual([])
+ 	})
+ 	it('resolves the focus ring to the calibrated ring color in each mode', () => {
+-		const container = specimens.mount(
++		const container = scene.mount(
+ 			'<div id="light" data-bs-theme="light"></div><div id="dark" data-bs-theme="dark"></div>',
+ 		)
+ 		const light = readToken(
+@@ -162,15 +163,14 @@ describe('token cascade', () => {
+ 	})
+ 	it('resolves a consumer of the compatibility radius alias to the calibrated radius', () => {
+ 		const specimen = requireValue(
+-			specimens.mount('<div style="border-radius: var(--bs-border-radius)"></div>')
+-				.firstElementChild,
++			scene.mount('<div style="border-radius: var(--bs-border-radius)"></div>').firstElementChild,
+ 			'No radius specimen',
+ 		)
+ 		expect(readPixels(specimen, 'border-top-left-radius')).toBe(6)
+ 	})
+ 	it('resolves a consumer of the compatibility elevation alias to the calibrated dialog shadow', () => {
+ 		const specimen = requireValue(
+-			specimens.mount('<div style="box-shadow: var(--bs-box-shadow-lg)"></div>').firstElementChild,
++			scene.mount('<div style="box-shadow: var(--bs-box-shadow-lg)"></div>').firstElementChild,
+ 			'No elevation specimen',
+ 		)
+ 		const layers = extractShadowLayers(readStyle(specimen, 'box-shadow'))
+@@ -188,7 +188,7 @@ describe('token cascade', () => {
+ 	})
+ 	it('resolves the inset shadow to the retained inset geometry, and rescales it with the elevation factor', () => {
+ 		const specimen = requireValue(
+-			specimens.mount(`<div style="box-shadow: var(${TOKEN_NAMES.shadow.inset})"></div>`)
++			scene.mount(`<div style="box-shadow: var(${TOKEN_NAMES.shadow.inset})"></div>`)
+ 				.firstElementChild,
+ 			'No inset specimen',
+ 		)
+@@ -212,8 +212,7 @@ describe('token cascade', () => {
+ 	})
+ 	it('rescales every consumer when the density factor is set on the document element', () => {
+ 		const specimen = requireValue(
+-			specimens.mount(`<div style="padding: var(${TOKEN_NAMES.space[3]})"></div>`)
+-				.firstElementChild,
++			scene.mount(`<div style="padding: var(${TOKEN_NAMES.space[3]})"></div>`).firstElementChild,
+ 			'No spacing specimen',
+ 		)
+ 		expect(readPixels(specimen, 'padding-top')).toBe(6)
+@@ -227,7 +226,7 @@ describe('token cascade', () => {
+ 	})
+ 	it('continues the space ramp at its index law, and rescales both new steps with the density factor', () => {
+ 		const steps = [TOKEN_NAMES.space[1], TOKEN_NAMES.space[12], TOKEN_NAMES.space[24]]
+-		const container = specimens.mount(
++		const container = scene.mount(
+ 			steps
+ 				.map(
+ 					(token, index) =>
+@@ -258,7 +257,7 @@ describe('token cascade', () => {
+ 			TOKEN_NAMES.display[5],
+ 			TOKEN_NAMES.display[6],
+ 		]
+-		const container = specimens.mount(
++		const container = scene.mount(
+ 			sizes
+ 				.map(
+ 					(token, index) =>
+@@ -289,12 +288,15 @@ describe('token cascade', () => {
+ 	it('resolves the stripe percentage to the retained Bootstrap tint in each mode', () => {
+ 		const sheet = requireValue(readCascadeSheet(), 'The document loaded no Veneer cascade')
+ 		// A mode island inherits the `:root` value, so a reading taken on the island holds wherever
+-		// the stripe is declared. The dark closure's own declaration list is what places the stripe
++		// the stripe is declared. Each mode's own declaration list is what places the stripe
+ 		// beside the hover and active percentages.
++		expect(
++			collectScopeProperties(collectNestedRules(sheet.cssRules), "[data-bs-theme='light']"),
++		).toContain(TOKEN_NAMES.state.stripe)
+ 		expect(
+ 			collectScopeProperties(collectNestedRules(sheet.cssRules), "[data-bs-theme='dark']"),
+ 		).toContain(TOKEN_NAMES.state.stripe)
+-		const container = specimens.mount(
++		const container = scene.mount(
+ 			'<div id="light" data-bs-theme="light"></div><div id="dark" data-bs-theme="dark"></div>',
+ 		)
+ 		const light = requireValue(container.querySelector('#light'), 'No light scope')
+@@ -312,7 +314,7 @@ describe('token cascade', () => {
+ 	})
+ 	it('rescales a radius consumer when the radius factor is set on the document element', () => {
+ 		const specimen = requireValue(
+-			specimens.mount(`<div style="border-radius: var(${TOKEN_NAMES.radius.base})"></div>`)
++			scene.mount(`<div style="border-radius: var(${TOKEN_NAMES.radius.base})"></div>`)
+ 				.firstElementChild,
+ 			'No radius specimen',
+ 		)
+@@ -327,7 +329,7 @@ describe('token cascade', () => {
+ 	})
+ 	it('rescales an elevation consumer when the elevation factor is set on the document element', () => {
+ 		const specimen = requireValue(
+-			specimens.mount(`<div style="box-shadow: var(${TOKEN_NAMES.shadow[2]})"></div>`)
++			scene.mount(`<div style="box-shadow: var(${TOKEN_NAMES.shadow[2]})"></div>`)
+ 				.firstElementChild,
+ 			'No elevation specimen',
+ 		)
+@@ -357,9 +359,8 @@ describe('token cascade', () => {
+ 	})
+ 	it('rescales a motion consumer when the motion factor is set on the document element', () => {
+ 		const specimen = requireValue(
+-			specimens.mount(
+-				`<div style="transition-duration: var(${TOKEN_NAMES.motion.feedback})"></div>`,
+-			).firstElementChild,
++			scene.mount(`<div style="transition-duration: var(${TOKEN_NAMES.motion.feedback})"></div>`)
++				.firstElementChild,
+ 			'No motion specimen',
+ 		)
+ 		expect(readStyle(specimen, 'transition-duration')).toBe('0.15s')
+@@ -373,8 +374,7 @@ describe('token cascade', () => {
+ 	})
+ 	it('falls back to the factor initial value when the document element is given an invalid factor', () => {
+ 		const specimen = requireValue(
+-			specimens.mount(`<div style="padding: var(${TOKEN_NAMES.space[3]})"></div>`)
+-				.firstElementChild,
++			scene.mount(`<div style="padding: var(${TOKEN_NAMES.space[3]})"></div>`).firstElementChild,
+ 			'No spacing specimen',
+ 		)
+ 		expect(readPixels(specimen, 'padding-top')).toBe(6)
+@@ -387,8 +387,7 @@ describe('token cascade', () => {
+ 	})
+ 	it('drops a consumer of an unregistered token the document element declares invalidly', () => {
+ 		const specimen = requireValue(
+-			specimens.mount(`<div style="padding: var(${TOKEN_NAMES.space[3]})"></div>`)
+-				.firstElementChild,
++			scene.mount(`<div style="padding: var(${TOKEN_NAMES.space[3]})"></div>`).firstElementChild,
+ 			'No spacing specimen',
+ 		)
+ 		document.documentElement.style.setProperty(TOKEN_NAMES.space[3], 'banana')
+@@ -400,7 +399,7 @@ describe('token cascade', () => {
+ 		expect(readPixels(specimen, 'padding-top')).toBe(6)
+ 	})
+ 	it('rescales a subtree that re-declares the scale beside the factor, and holds one that sets the factor alone', () => {
+-		const container = specimens.mount(
++		const container = scene.mount(
+ 			`<div id="partial" style="${TOKEN_NAMES.factor.density}: 2">` +
+ 				`<div id="held" style="padding: var(${TOKEN_NAMES.space[3]})"></div></div>` +
+ 				`<div id="complete" style="${TOKEN_NAMES.factor.density}: 2; ${TOKEN_NAMES.space[3]}: calc(0.375rem * var(${TOKEN_NAMES.factor.density}))">` +
+@@ -412,7 +411,7 @@ describe('token cascade', () => {
+ 		expect(readPixels(scaled, 'padding-top')).toBe(12)
+ 	})
+ 	it('resolves a cyclic token reference to the guaranteed-invalid value', () => {
+-		const container = specimens.mount(
++		const container = scene.mount(
+ 			'<div id="island" style="--probe-a: var(--probe-b); --probe-b: var(--probe-a)">' +
+ 				'<div id="consumer" style="padding: var(--probe-a)"></div></div>',
+ 		)
+@@ -422,7 +421,7 @@ describe('token cascade', () => {
+ 		expect(readPixels(consumer, 'padding-top')).toBe(0)
+ 	})
+ 	it('returns a light island nested inside a dark island to the light body color', () => {
+-		const container = specimens.mount(
++		const container = scene.mount(
+ 			'<div data-bs-theme="dark">' +
+ 				`<div id="outer" style="color: var(${TOKEN_NAMES.text.body.base})"></div>` +
+ 				'<div data-bs-theme="light">' +
+@@ -438,7 +437,7 @@ describe('token cascade', () => {
+ 
+ describe('code calibration tokens', () => {
+ 	it.each(TEXT_MODES)('resolves text and surface to the code-inline record in %s mode', (mode) => {
+-		const host = specimens.mount(
++		const host = scene.mount(
+ 			`<div data-bs-theme="${mode}" style="color: var(--vn-text-code); background-color: var(--vn-surface-code)"></div>`,
+ 		)
+ 		const element = requireValue(host.firstElementChild, 'No code token consumer')
+@@ -466,7 +465,7 @@ describe('content calibration tokens', () => {
+ 	it.each(TEXT_MODES)(
+ 		'resolves the muted text and the raised surface to the content record in %s mode',
+ 		(mode) => {
+-			const host = specimens.mount(
++			const host = scene.mount(
+ 				`<div data-bs-theme="${mode}">` +
+ 					`<div id="muted" style="color: var(${TOKEN_NAMES.text.muted})"></div>` +
+ 					`<div id="raised" style="background-color: var(${TOKEN_NAMES.surface.raised})"></div>` +
+@@ -492,7 +491,7 @@ describe('content calibration tokens', () => {
+ 	// retuned the surface. The anchor keeps the value the role tiers are calibrated on, so this
+ 	// reading is what separates them.
+ 	it('leaves the dark role border tiers on the anchor the raised surface no longer carries', () => {
+-		const host = specimens.mount(
++		const host = scene.mount(
+ 			'<div data-bs-theme="dark">' +
+ 				`<div id="border" style="background-color: var(${TOKEN_NAMES.color.primary.border})"></div>` +
+ 				`<div id="raised" style="background-color: var(${TOKEN_NAMES.surface.raised})"></div>` +
+@@ -513,7 +512,7 @@ describe('content calibration tokens', () => {
+ 	it.each(TEXT_MODES)(
+ 		'resolves the shorter monospace stack and the code block rhythm in %s mode',
+ 		(mode) => {
+-			const host = specimens.mount(
++			const host = scene.mount(
+ 				`<div data-bs-theme="${mode}">` +
+ 					`<div id="stack" style="font-family: var(${TOKEN_NAMES.font.mono.short})"></div>` +
+ 					`<div id="rhythm" style="font-size: 10px; line-height: var(${TOKEN_NAMES.line.code})"></div>` +
