@@ -75,3 +75,9 @@ its `test:policy` run timed out at 5 s under the same load (`units/f8a-fold-12-g
 The deciding re-run of `test:journey` and `test:policy` alone is armed to fire when the one-minute
 load average falls under 8, per § Writing concurrency rule 10, and `main` fast-forwards when it is
 green. The session branch carries `0783b2b` and `aca0423` and is pushed.
+
+The armed re-run fired at 22:06 at a one-minute load of 7.3 and ran at 23 after the VALIDATION
+audit lanes and the RANGE fix unit launched (`units/f8a-landing-deciding-rerun.log.txt`):
+`test:policy` exit 0, which settles fold 12's policy gate; `test:journey` exit 1 with the same
+15 s timeouts, one traversal reading that skipped alternate Button specimens, and the portfolio
+cases cascading from the unplaced frames. A second re-run is armed for a one-minute load under 5.

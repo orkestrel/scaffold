@@ -1,0 +1,216 @@
+=== deciding re-run of test:journey and test:policy over aca0423, armed 21:53:36, waits for load1 < 8 (max 60 min)
+=== load 7.30 17.23 24.71 at 22:06:39
+
+> @orkestrel/veneer@0.0.1 test:journey
+> vitest run --config configs/app/vite.journey.config.ts --no-cache --reporter=dot
+
+
+ RUN  v4.1.11 /home/user/veneer
+
+Port 63315 is in use, trying another one...
+Port 63316 is in use, trying another one...
+Port 63317 is in use, trying another one...
+Port 63318 is in use, trying another one...
+················xx···x·x·····xxx··········xx··················································x···x·
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 11 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |journey:light-1280 (chromium)| tests/app/browser/integration.test.ts:267:2 > journey > toggles a native host and an anchor host through the keyboard
+Error: Test timed out in 15000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/app/browser/integration.test.ts:267:1
+    265|  })
+    266|
+    267|  it('toggles a native host and an anchor host through the keyboard', a…
+       | ^
+    268|   const native = await traverseAccessible('Toggle')
+    269|   expect(document.activeElement).toBe(native)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/11]⎯
+
+ FAIL  |journey:light-1280 (chromium)| tests/app/browser/integration.test.ts:334:2 > journey > paints a focus ring on every variant reached through the keyboard
+Error: Test timed out in 15000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/app/browser/integration.test.ts:334:1
+    332|  })
+    333|
+    334|  it('paints a focus ring on every variant reached through the keyboard…
+       | ^
+    335|   await applyTheme(LIGHT)
+    336|   const painted = collectPainted(mounted.section)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/11]⎯
+
+ FAIL  |journey:dark-1280 (chromium)| tests/app/browser/integration.test.ts:267:2 > journey > toggles a native host and an anchor host through the keyboard
+Error: Test timed out in 15000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/app/browser/integration.test.ts:267:1
+    265|  })
+    266|
+    267|  it('toggles a native host and an anchor host through the keyboard', a…
+       | ^
+    268|   const native = await traverseAccessible('Toggle')
+    269|   expect(document.activeElement).toBe(native)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/11]⎯
+
+ FAIL  |journey:dark-1280 (chromium)| tests/app/browser/integration.test.ts:334:2 > journey > paints a focus ring on every variant reached through the keyboard
+Error: Test timed out in 15000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/app/browser/integration.test.ts:334:1
+    332|  })
+    333|
+    334|  it('paints a focus ring on every variant reached through the keyboard…
+       | ^
+    335|   await applyTheme(LIGHT)
+    336|   const painted = collectPainted(mounted.section)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/11]⎯
+
+ FAIL  |journey:dark-1280 (chromium)| tests/app/browser/integration.test.ts:373:2 > journey > paints one focus ring on every variant in dark mode as well
+Error: Interactive target "Primary" is not reachable through forward Tab traversal: BUTTON:Success > BUTTON:Info > BUTTON:Danger > BUTTON:Dark > BUTTON:Outline secondary > BUTTON:Outline success > BUTTON:Outline warning > BUTTON:Outline danger > BUTTON:Link > BUTTON:Large > BUTTON:Selected > BUTTON:Pressed > A:Return to content > BUTTON:Reboot button > SELECT:First choice
+Second  > TEXTAREA: > IFRAME: > A:Primary link > A:Success link > A:Warning link > A:Light link > A:Body emphasis link > A:Link opacity 10% > A:Link opacity 50% > A:Link opacity 75% > A:Hover link opacity 1 > A:Hover link opacity 5 > A:Hover link opacity 1 > A:Offset 3 > A:Hover offset 2 > A:Primary underline > A:Success underline > A:Warning underline > A:Danger underline > A:Link underline > A:Shifting icon link > A:Underline opacity 10 > A:Underline opacity 50 > A:Underline opacity 10 > A:Hover underline opac > A:Hover underline opac > A:Hover underline opac > BUTTON:Dark mode > BUTTON:Secondary
+ ❯ driveTraversal node_modules/@orkestrel/test/dist/src/browser/index.js:890:7
+ ❯ tests/app/browser/integration.test.ts:382:16
+    380|   for (const specimen of painted) {
+    381|    const name = readName(specimen)
+    382|    const host = await traverseAccessible(name)
+       |                ^
+    383|    traversed.push(host)
+    384|    if (!host.matches(':focus-visible')) unfocused.push(name)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/11]⎯
+
+ FAIL  |journey:dark-1280 (chromium)| tests/app/browser/integration.test.ts:759:2 > portfolio > expands one filename per scenario and variant, and places every registered scenario
+AssertionError: expected [ 'base', 'capped-container', …(6) ] to strictly equal [ 'base', 'capped-container', …(7) ]
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  [[22m
+[2m    "base",[22m
+[2m    "capped-container",[22m
+[2m    "numbered-columns",[22m
+[2m    "primary-active",[22m
+[32m-   "primary-focus",[39m
+[2m    "primary-hover",[22m
+[2m    "role-links",[22m
+[2m    "showcase",[22m
+[2m    "toggle-pressed",[22m
+[2m  ][22m
+
+ ❯ tests/app/browser/integration.test.ts:777:39
+    775|   // Every registered scenario was reached, none twice, and none unreg…
+    776|   // refuses a scenario it does not carry, so this pairs that refusal …
+    777|   expect([...FRAMES.scenarios].sort()).toStrictEqual([...CAPTURE_SCENA…
+       |                                       ^
+    778|  })
+    779|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/11]⎯
+
+ FAIL  |journey:dark-1280 (chromium)| tests/app/browser/integration.test.ts:873:2 > portfolio > reads every frame this variant left in the portfolio directory inside its declared region
+AssertionError: expected [ 'base', 'capped-container', …(6) ] to strictly equal [ 'base', 'capped-container', …(7) ]
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  [[22m
+[2m    "base",[22m
+[2m    "capped-container",[22m
+[2m    "numbered-columns",[22m
+[2m    "primary-active",[22m
+[32m-   "primary-focus",[39m
+[2m    "primary-hover",[22m
+[2m    "role-links",[22m
+[2m    "showcase",[22m
+[2m    "toggle-pressed",[22m
+[2m  ][22m
+
+ ❯ tests/app/browser/integration.test.ts:883:37
+    881|    FRAMES.placements.map((placement) => [placement.scenario, placement…
+    882|   )
+    883|   expect([...regions.keys()].sort()).toStrictEqual([...CAPTURE_SCENARI…
+       |                                     ^
+    884|   const expanded = CAPTURE_SCENARIOS.map((scenario) => `${scenario}--$…
+    885|   const present: string[] = []
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/11]⎯
+
+ FAIL  |journey:light-390 (chromium)| tests/app/browser/integration.test.ts:267:2 > journey > toggles a native host and an anchor host through the keyboard
+Error: Test timed out in 15000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/app/browser/integration.test.ts:267:1
+    265|  })
+    266|
+    267|  it('toggles a native host and an anchor host through the keyboard', a…
+       | ^
+    268|   const native = await traverseAccessible('Toggle')
+    269|   expect(document.activeElement).toBe(native)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/11]⎯
+
+ FAIL  |journey:light-390 (chromium)| tests/app/browser/integration.test.ts:334:2 > journey > paints a focus ring on every variant reached through the keyboard
+Error: Test timed out in 15000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/app/browser/integration.test.ts:334:1
+    332|  })
+    333|
+    334|  it('paints a focus ring on every variant reached through the keyboard…
+       | ^
+    335|   await applyTheme(LIGHT)
+    336|   const painted = collectPainted(mounted.section)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/11]⎯
+
+ FAIL  |journey:light-390 (chromium)| tests/app/browser/integration.test.ts:373:2 > journey > paints one focus ring on every variant in dark mode as well
+Error: Interactive target "Primary" is not reachable through forward Tab traversal: BUTTON:Tertiary > BUTTON:Info > BUTTON:Danger > BUTTON:Dark > BUTTON:Outline secondary > BUTTON:Outline tertiary > BUTTON:Outline info > BUTTON:Outline light > BUTTON:Link > BUTTON:Large > A:Anchor > BUTTON:Pressed > A:Return to content > BUTTON:Reboot button > INPUT: > TEXTAREA: > INPUT: > A:Primary link > A:Success link > A:Warning link > A:Danger link > A:Body emphasis link > A:Link opacity 10% > A:Link opacity 25% > A:Link opacity 75% > A:Hover link opacity 1 > A:Hover link opacity 7 > A:Offset 1 > A:Offset 3 > A:Hover offset 2 > A:Primary underline > A:Success underline > A:Warning underline > A:Light underline > A:Link underline > A:Shifting icon link > A:Underline opacity 10 > A:Underline opacity 50 > A:Underline opacity 10 > A:Hover underline opac > A:Hover underline opac > A:Hover underline opac > DIV:Material shipments
+M > DIV:Material shipments
+M > DIV:Material shipments
+M > BUTTON:Dark mode > BUTTON:Secondary
+ ❯ driveTraversal node_modules/@orkestrel/test/dist/src/browser/index.js:890:7
+ ❯ tests/app/browser/integration.test.ts:382:16
+    380|   for (const specimen of painted) {
+    381|    const name = readName(specimen)
+    382|    const host = await traverseAccessible(name)
+       |                ^
+    383|    traversed.push(host)
+    384|    if (!host.matches(':focus-visible')) unfocused.push(name)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/11]⎯
+
+ FAIL  |journey:dark-390 (chromium)| tests/app/browser/integration.test.ts:267:2 > journey > toggles a native host and an anchor host through the keyboard
+Error: Test timed out in 15000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/app/browser/integration.test.ts:267:1
+    265|  })
+    266|
+    267|  it('toggles a native host and an anchor host through the keyboard', a…
+       | ^
+    268|   const native = await traverseAccessible('Toggle')
+    269|   expect(document.activeElement).toBe(native)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/11]⎯
+
+
+ Test Files  4 failed (4)
+      Tests  11 failed | 89 passed (100)
+   Start at  22:06:40
+   Duration  94.94s (transform 0ms, setup 5.02s, import 1.80s, tests 292.71s, environment 0ms)
+
+=== test:journey exit=1 (22:08:17) load 23.45
+
+> @orkestrel/veneer@0.0.1 test:policy
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project policy
+
+
+ RUN  v4.1.11 /home/user/veneer
+
+····································································································-·········
+
+ Test Files  1 passed (1)
+      Tests  109 passed | 1 skipped (110)
+   Start at  22:08:20
+   Duration  6.52s (transform 852ms, setup 310ms, import 1.26s, tests 4.29s, environment 0ms)
+
+=== test:policy exit=0 (22:08:27) load 22.89
