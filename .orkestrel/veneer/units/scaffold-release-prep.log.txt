@@ -1,0 +1,671 @@
+=== npm 11.19.1 node v22.22.2 HEAD 3541abe status:  (17:25:54)
+=== registry: scaffold 0.0.76; test 0.0.20 (17:25:55)
+=== re-pin @orkestrel/test to the registry caret (17:25:55)
+
+changed 1 package in 2s
+=== re-pin exit=0 range now ^0.0.20 (17:25:57)
+=== catalog constant carries no ^0.0.18 literal (17:25:57)
+=== npm ci from the lockfile (17:25:57)
+
+added 130 packages, and audited 131 packages in 3s
+
+30 packages are looking for funding
+  run `npm fund` for details
+
+found 0 vulnerabilities
+=== npm ci exit=0 (17:26:00)
+=== lock marker 029d885e73fc8af7 (17:26:00)
+=== self-pin sweep: 0.0.76 literals under src and tests: 0; ^0.0.18 literals for test: 4 (17:26:00)
+=== npm run format (mutating converge) (17:26:00)
+
+> @orkestrel/scaffold@0.0.76 format
+> oxfmt --config .oxfmtrc.json --write .
+
+Finished in 8390ms on 228 files using 4 threads.
+=== format exit=0 (17:26:09)
+=== npm version 0.0.77 --no-git-tag-version (17:26:09)
+v0.0.77
+=== bump exit=0 manifest 0.0.77 lock 0.0.77 (17:26:09)
+=== npm run format:check (17:26:09)
+
+> @orkestrel/scaffold@0.0.77 format:check
+> oxfmt --config .oxfmtrc.json --check .
+
+Checking formatting...
+
+All matched files use the correct format.
+Finished in 8607ms on 228 files using 4 threads.
+=== format:check exit=0 (17:26:18)
+=== npm run lint:check (17:26:18)
+
+> @orkestrel/scaffold@0.0.77 lint:check
+> oxlint --config .oxlintrc.json --deny-warnings .
+
+=== lint:check exit=0 (17:26:19)
+=== npm run check (17:26:19)
+
+> @orkestrel/scaffold@0.0.77 check
+> tsc --noEmit --project tsconfig.json && npm run check:src
+
+
+> @orkestrel/scaffold@0.0.77 check:src
+> npm run check:src:core && npm run check:src:server && npm run check:src:bin
+
+
+> @orkestrel/scaffold@0.0.77 check:src:core
+> tsc --noEmit -p configs/src/tsconfig.core.json
+
+
+> @orkestrel/scaffold@0.0.77 check:src:server
+> tsc --noEmit -p configs/src/tsconfig.server.json
+
+
+> @orkestrel/scaffold@0.0.77 check:src:bin
+> tsc --noEmit -p configs/src/tsconfig.bin.json
+
+=== check exit=0 (17:26:30)
+=== npm run build (17:26:30)
+
+> @orkestrel/scaffold@0.0.77 build
+> npm run clean && npm run build:src && npm run build:host && npm run build:inventory
+
+
+> @orkestrel/scaffold@0.0.77 clean
+> node -e "require('node:fs').rmSync('dist',{recursive:true,force:true})"
+
+
+> @orkestrel/scaffold@0.0.77 build:src
+> npm run build:src:core && npm run build:src:server && npm run build:src:bin
+
+
+> @orkestrel/scaffold@0.0.77 build:src:core
+> vite build --config configs/src/vite.core.config.ts && npm run copy dist/src/core/index.d.ts dist/src/core/index.d.cts
+
+vite v8.3.0 building client environment for production...
+transforming...
+✓ 14 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/core/index.js  271.23 kB │ gzip: 73.00 kB │ map: 364.86 kB
+
+transforming...
+✓ 14 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/core/index.cjs  279.70 kB │ gzip: 73.76 kB │ map: 367.40 kB
+
+✓ built in 783ms
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+
+> @orkestrel/scaffold@0.0.77 copy
+> node -e "const fs=require('node:fs'),p=require('node:path'),a=process.argv[1],b=process.argv[2];fs.mkdirSync(p.dirname(b),{recursive:true});fs.cpSync(a,b,{force:true});console.log('Copied: '+a+' to '+b)" dist/src/core/index.d.ts dist/src/core/index.d.cts
+
+Copied: dist/src/core/index.d.ts to dist/src/core/index.d.cts
+
+> @orkestrel/scaffold@0.0.77 build:src:server
+> vite build --config configs/src/vite.server.config.ts && npm run copy dist/src/server/index.d.ts dist/src/server/index.d.cts
+
+vite v8.3.0 building client environment for production...
+"build.lib.formats" will be ignored because "build.rolldownOptions.output" is already an array format.
+transforming...
+✓ 9 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/server/index.js  183.86 kB │ gzip: 47.99 kB │ map: 296.98 kB
+
+transforming...
+✓ 9 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/server/index.cjs  193.30 kB │ gzip: 48.51 kB │ map: 303.09 kB
+
+✓ built in 553ms
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+
+> @orkestrel/scaffold@0.0.77 copy
+> node -e "const fs=require('node:fs'),p=require('node:path'),a=process.argv[1],b=process.argv[2];fs.mkdirSync(p.dirname(b),{recursive:true});fs.cpSync(a,b,{force:true});console.log('Copied: '+a+' to '+b)" dist/src/server/index.d.ts dist/src/server/index.d.cts
+
+Copied: dist/src/server/index.d.ts to dist/src/server/index.d.cts
+
+> @orkestrel/scaffold@0.0.77 build:src:bin
+> vite build --config configs/src/vite.bin.config.ts
+
+vite v8.3.0 building client environment for production...
+transforming...
+✓ 6 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/bin/main.js  89.52 kB │ gzip: 23.18 kB │ map: 163.19 kB
+
+✓ built in 43ms
+
+> @orkestrel/scaffold@0.0.77 build:host
+> node -e "import('./dist/src/server/index.js').then((m)=>{const n=m.stageHost(process.cwd(),'dist/host',{report: (message) => console.error(message)}).length;console.log('build-host: staged '+n+' file(s) into dist/host')})"
+
+Inventory Surface baseline: /home/user/scaffold/host.json
+build-host: staged 175 file(s) into dist/host
+
+> @orkestrel/scaffold@0.0.77 build:inventory
+> node -e "import('./dist/src/server/index.js').then((m)=>{const p=process.argv[1]??'host.json',n=m.stageInventory(process.cwd(),p).entries.length;console.log('build-inventory: staged '+n+' file(s) into '+p)})"
+
+build-inventory: staged 175 file(s) into host.json
+=== build exit=0 (17:26:42)
+=== npm run test (17:26:42)
+
+> @orkestrel/scaffold@0.0.77 test
+> npm run test:src:core && npm run test:src:server && npm run test:src:bin && npm run test:policy && npm run test:config && npm run test:setup && npm run test:guides
+
+
+> @orkestrel/scaffold@0.0.77 test:src:core
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core
+
+
+ RUN  v4.1.11 /home/user/scaffold
+
+·············································································································································x·····xx···············································································································································································································stderr | tests/src/core/templates.test.ts > emitted workspaces under their own gates > refuses a non-object peer dependency declaration at config load
+[33m[MIXED_EXPORTS] [0mEntry module "tmp/scaffold-e2-peers-F9xSkQ/malformed/vite.config.ts" is using named (including "config", "default", "distribution", "mergeOverride", "peers", "policy", "probe", "resolveWorkspacePath", "srcCore") and default exports together. Consumers of your bundle will have to use `chunk.default` to access the default export, which may not be what you want. Use `output.exports: "named"` to disable this warning.
+
+
+stderr | tests/src/core/templates.test.ts > emitted workspaces under their own gates > refuses a non-object peer dependency declaration at config load
+failed to load config from /home/user/scaffold/tmp/scaffold-e2-peers-F9xSkQ/malformed/vite.config.ts
+
+······································································
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |src:core| tests/src/core/compilers.test.ts > blueprintToDevDependencies compile tooling > keeps the browser application toolchain in an app-only workspace
+Error: Snapshot `blueprintToDevDependencies compile tooling > keeps the browser application toolchain in an app-only workspace 1` mismatched
+
+- Expected
++ Received
+
+@@ -1,12 +1,12 @@
+  {
+  	"@orkestrel/contract": "^0.0.17",
+  	"@orkestrel/guide": "^0.0.20",
+  	"@orkestrel/html": "^0.0.10",
+  	"@orkestrel/probe": "^0.0.16",
+- 	"@orkestrel/scaffold": "^0.0.76",
++ 	"@orkestrel/scaffold": "^0.0.77",
+- 	"@orkestrel/test": "^0.0.18",
++ 	"@orkestrel/test": "^0.0.20",
+  	"@types/node": "^26.5.1",
+  	"@vitejs/plugin-vue": "^6.0.8",
+  	"@vitest/browser-playwright": "^4.1.11",
+  	"oxfmt": "^0.68.0",
+  	"oxlint": "^1.83.0",
+
+ ❯ tests/src/core/compilers.test.ts:449:3
+    447|    expect.arrayContaining(['@orkestrel/html', 'vue', '@orkestrel/test'…
+    448|   )
+    449|   await expect(JSON.stringify(planned, undefined, '\t')).toMatchFileSn…
+       |   ^
+    450|    'fixtures/app-only-toolchain.txt',
+    451|   )
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  |src:core| tests/src/core/compilers.test.ts > blueprintToDevDependencies compile tooling > keeps a generated source workspace manifest byte-stable
+Error: Snapshot `blueprintToDevDependencies compile tooling > keeps a generated source workspace manifest byte-stable 1` mismatched
+
+- Expected
++ Received
+
+@@ -62,12 +62,12 @@
+  	"dependencies": {},
+  	"devDependencies": {
+  		"@microsoft/api-extractor": "^7.59.1",
+  		"@orkestrel/guide": "^0.0.20",
+  		"@orkestrel/probe": "^0.0.16",
+- 		"@orkestrel/scaffold": "^0.0.76",
++ 		"@orkestrel/scaffold": "^0.0.77",
+- 		"@orkestrel/test": "^0.0.18",
++ 		"@orkestrel/test": "^0.0.20",
+  		"@types/node": "^26.5.1",
+  		"oxfmt": "^0.68.0",
+  		"oxlint": "^1.83.0",
+  		"typescript": "^6.0.3",
+  		"vite": "^8.3.0",
+
+ ❯ tests/src/core/compilers.test.ts:508:3
+    506|   // moves it. Regenerate it with `npm run test:src:core -- -u` and re…
+    507|   // diff; it is the tripwire for every other byte.
+    508|   await expect(manifest).toMatchFileSnapshot('fixtures/source-manifest…
+       |   ^
+    509|  })
+    510| })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  |src:core| tests/src/core/compilers.test.ts > blueprintToScripts config projects > registers and gates setup proofs only when the blueprint selects them
+Error: Snapshot `blueprintToScripts config projects > registers and gates setup proofs only when the blueprint selects them 1` mismatched
+
+- Expected
++ Received
+
+@@ -62,12 +62,12 @@
+  	"dependencies": {},
+  	"devDependencies": {
+  		"@microsoft/api-extractor": "^7.59.1",
+  		"@orkestrel/guide": "^0.0.20",
+  		"@orkestrel/probe": "^0.0.16",
+- 		"@orkestrel/scaffold": "^0.0.76",
++ 		"@orkestrel/scaffold": "^0.0.77",
+- 		"@orkestrel/test": "^0.0.18",
++ 		"@orkestrel/test": "^0.0.20",
+  		"@types/node": "^26.5.1",
+  		"oxfmt": "^0.68.0",
+  		"oxlint": "^1.83.0",
+  		"typescript": "^6.0.3",
+  		"vite": "^8.3.0",
+
+ ❯ tests/src/core/compilers.test.ts:521:3
+    519|   // A release moves the fixture through its floors and self-pin; rege…
+    520|   // with `npm run test:src:core -- -u` and review the diff.
+    521|   await expect(blueprintToManifest(absent)).toMatchFileSnapshot(
+       |   ^
+    522|    'fixtures/setup-false-manifest.txt',
+    523|   )
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+  Snapshots  3 failed
+ Test Files  1 failed | 8 passed (9)
+      Tests  3 failed | 423 passed (426)
+   Start at  17:26:43
+   Duration  22.65s (transform 2.63s, setup 2.13s, import 1.84s, tests 41.43s, environment 21ms)
+
+=== test exit=1 (17:27:05)
+=== npm run test:distribution -- --mode release (17:27:05)
+
+> @orkestrel/scaffold@0.0.77 test:distribution
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project distribution --mode release
+
+
+ RUN  v4.1.11 /home/user/scaffold
+
+·······-
+
+ Test Files  1 passed (1)
+      Tests  7 passed | 1 skipped (8)
+   Start at  17:27:06
+   Duration  137.08s (transform 521ms, setup 321ms, import 940ms, tests 135.65s, environment 0ms)
+
+=== test:distribution release exit=0 (17:29:23)
+=== dist embeds:       1 0.0.77  (17:29:23)
+=== fetch published tarball (17:29:23)
+npm notice
+npm notice package: @orkestrel/scaffold@0.0.76
+npm notice Tarball Contents
+npm notice 1.1kB LICENSE
+npm notice 3.2kB README.md
+npm notice 89.5kB dist/bin/main.js
+npm notice 163.2kB dist/bin/main.js.map
+npm notice 18.0kB dist/host/AGENTS.md
+npm notice 69.3kB dist/host/agents/orchestration.md
+npm notice 249B dist/host/agents/skills/enterprise-bootstrap/agents/openai.yaml
+npm notice 57.9kB dist/host/agents/skills/enterprise-bootstrap/references/bootstrap-reference.md
+npm notice 26.6kB dist/host/agents/skills/enterprise-bootstrap/references/color-modes.md
+npm notice 46.8kB dist/host/agents/skills/enterprise-bootstrap/references/components.md
+npm notice 21.6kB dist/host/agents/skills/enterprise-bootstrap/references/frontend-design.md
+npm notice 24.9kB dist/host/agents/skills/enterprise-bootstrap/references/inputs.md
+npm notice 21.7kB dist/host/agents/skills/enterprise-bootstrap/references/inspection.md
+npm notice 16.0kB dist/host/agents/skills/enterprise-bootstrap/references/responsive-layout.md
+npm notice 25.7kB dist/host/agents/skills/enterprise-bootstrap/references/utilities.md
+npm notice 29.9kB dist/host/agents/skills/enterprise-bootstrap/SKILL.md
+npm notice 230B dist/host/agents/skills/orkestrel-align-packages/agents/openai.yaml
+npm notice 2.2kB dist/host/agents/skills/orkestrel-align-packages/references/fleet.md
+npm notice 2.9kB dist/host/agents/skills/orkestrel-align-packages/references/integration.md
+npm notice 4.0kB dist/host/agents/skills/orkestrel-align-packages/SKILL.md
+npm notice 231B dist/host/agents/skills/orkestrel-build-application/agents/openai.yaml
+npm notice 7.8kB dist/host/agents/skills/orkestrel-build-application/SKILL.md
+npm notice 295B dist/host/agents/skills/orkestrel-debrief/agents/openai.yaml
+npm notice 5.4kB dist/host/agents/skills/orkestrel-debrief/references/field-testing.md
+npm notice 6.6kB dist/host/agents/skills/orkestrel-debrief/references/instruction-audit.md
+npm notice 7.5kB dist/host/agents/skills/orkestrel-debrief/references/retention.md
+npm notice 6.7kB dist/host/agents/skills/orkestrel-debrief/SKILL.md
+npm notice 314B dist/host/agents/skills/orkestrel-falsify/agents/openai.yaml
+npm notice 8.1kB dist/host/agents/skills/orkestrel-falsify/references/brief.md
+npm notice 8.9kB dist/host/agents/skills/orkestrel-falsify/references/reconcile.md
+npm notice 15.9kB dist/host/agents/skills/orkestrel-falsify/SKILL.md
+npm notice 242B dist/host/agents/skills/orkestrel-harden-package/agents/openai.yaml
+npm notice 4.7kB dist/host/agents/skills/orkestrel-harden-package/references/centralization.md
+npm notice 2.9kB dist/host/agents/skills/orkestrel-harden-package/references/contract.md
+npm notice 5.6kB dist/host/agents/skills/orkestrel-harden-package/references/hardening.md
+npm notice 2.9kB dist/host/agents/skills/orkestrel-harden-package/references/research.md
+npm notice 7.1kB dist/host/agents/skills/orkestrel-harden-package/SKILL.md
+npm notice 263B dist/host/agents/skills/orkestrel-polish-surface/agents/openai.yaml
+npm notice 6.4kB dist/host/agents/skills/orkestrel-polish-surface/references/capture-harness.md
+npm notice 7.1kB dist/host/agents/skills/orkestrel-polish-surface/SKILL.md
+npm notice 353B dist/host/agents/skills/orkestrel-prove-journey/agents/openai.yaml
+npm notice 7.2kB dist/host/agents/skills/orkestrel-prove-journey/references/captures.md
+npm notice 5.0kB dist/host/agents/skills/orkestrel-prove-journey/references/decide.md
+npm notice 26.2kB dist/host/agents/skills/orkestrel-prove-journey/references/layer.md
+npm notice 13.3kB dist/host/agents/skills/orkestrel-prove-journey/references/statechart.md
+npm notice 9.4kB dist/host/agents/skills/orkestrel-prove-journey/references/styles.md
+npm notice 26.9kB dist/host/agents/skills/orkestrel-prove-journey/SKILL.md
+npm notice 328B dist/host/agents/skills/orkestrel-publish/agents/openai.yaml
+npm notice 9.9kB dist/host/agents/skills/orkestrel-publish/references/wave.md
+npm notice 12.9kB dist/host/agents/skills/orkestrel-publish/references/window.md
+npm notice 4.8kB dist/host/agents/skills/orkestrel-publish/SKILL.md
+npm notice 8.4kB dist/host/agents/templates/brief.md
+npm notice 2.6kB dist/host/agents/transports/claude.md
+npm notice 10.3kB dist/host/agents/transports/codex.md
+npm notice 4.5kB dist/host/agents/transports/cursor.md
+npm notice 3.7kB dist/host/CLAUDE.md
+npm notice 3.8kB dist/host/claude/agents/analyst.md
+npm notice 2.0kB dist/host/claude/agents/application.md
+npm notice 2.2kB dist/host/claude/agents/builder.md
+npm notice 3.4kB dist/host/claude/agents/checker.md
+npm notice 2.0kB dist/host/claude/agents/distiller.md
+npm notice 2.3kB dist/host/claude/agents/grok.md
+npm notice 2.2kB dist/host/claude/agents/opus.md
+npm notice 28.8kB dist/host/claude/agents/orkestrel.md
+npm notice 3.1kB dist/host/claude/agents/planner.md
+npm notice 2.1kB dist/host/claude/agents/researcher.md
+npm notice 5.9kB dist/host/claude/agents/reviewer.md
+npm notice 1.7kB dist/host/claude/agents/scout.md
+npm notice 3.3kB dist/host/claude/agents/sol.md
+npm notice 2.2kB dist/host/claude/agents/verifier.md
+npm notice 3.4kB dist/host/claude/rules/application.md
+npm notice 21.4kB dist/host/claude/rules/architecture.md
+npm notice 1.1kB dist/host/claude/rules/browser.md
+npm notice 9.5kB dist/host/claude/rules/documentation.md
+npm notice 14.2kB dist/host/claude/rules/names.md
+npm notice 7.4kB dist/host/claude/rules/patterns.md
+npm notice 5.0kB dist/host/claude/rules/portability.md
+npm notice 18.8kB dist/host/claude/rules/quality.md
+npm notice 4.0kB dist/host/claude/rules/styles.md
+npm notice 24.7kB dist/host/claude/rules/tests.md
+npm notice 5.0kB dist/host/claude/rules/typescript.md
+npm notice 24.3kB dist/host/claude/rules/workspace.md
+npm notice 9.2kB dist/host/claude/rules/writing.md
+npm notice 37.1kB dist/host/claude/settings.json
+npm notice 1.4kB dist/host/claude/skills/enterprise-bootstrap/SKILL.md
+npm notice 877B dist/host/claude/skills/orkestrel-align-packages/SKILL.md
+npm notice 972B dist/host/claude/skills/orkestrel-build-application/SKILL.md
+npm notice 816B dist/host/claude/skills/orkestrel-debrief/SKILL.md
+npm notice 866B dist/host/claude/skills/orkestrel-falsify/SKILL.md
+npm notice 1.1kB dist/host/claude/skills/orkestrel-harden-package/SKILL.md
+npm notice 883B dist/host/claude/skills/orkestrel-polish-surface/SKILL.md
+npm notice 1.4kB dist/host/claude/skills/orkestrel-prove-journey/SKILL.md
+npm notice 730B dist/host/claude/skills/orkestrel-publish/SKILL.md
+npm notice 2.4kB dist/host/codex/agents/analyst.toml
+npm notice 1.5kB dist/host/codex/agents/application.toml
+npm notice 1.6kB dist/host/codex/agents/builder.toml
+npm notice 2.0kB dist/host/codex/agents/checker.toml
+npm notice 1.8kB dist/host/codex/agents/distiller.toml
+npm notice 2.4kB dist/host/codex/agents/grok.toml
+npm notice 1.8kB dist/host/codex/agents/opus.toml
+npm notice 1.9kB dist/host/codex/agents/orkestrel.toml
+npm notice 2.4kB dist/host/codex/agents/planner.toml
+npm notice 1.6kB dist/host/codex/agents/researcher.toml
+npm notice 2.3kB dist/host/codex/agents/reviewer.toml
+npm notice 1.4kB dist/host/codex/agents/scout.toml
+npm notice 1.3kB dist/host/codex/agents/sol.toml
+npm notice 1.0kB dist/host/codex/agents/verifier.toml
+npm notice 1.6kB dist/host/codex/config.toml
+npm notice 39.7kB dist/host/configs/helpers.ts
+npm notice 49.6kB dist/host/configs/policy.ts
+npm notice 263B dist/host/cursor/mcp.json
+npm notice 1.5kB dist/host/cursor/rules/orchestration.mdc
+npm notice 249B dist/host/dotfiles/editorconfig
+npm notice 95B dist/host/dotfiles/gitattributes
+npm notice 761B dist/host/dotfiles/gitignore
+npm notice 192B dist/host/dotfiles/mcp.json
+npm notice 358B dist/host/dotfiles/oxfmtrc.json
+npm notice 157B dist/host/dotfiles/oxlintignore
+npm notice 17.2kB dist/host/dotfiles/oxlintrc.json
+npm notice 647B dist/host/dotfiles/prettierignore
+npm notice 16.9kB dist/host/guides/abort.md
+npm notice 306.1kB dist/host/guides/agent.md
+npm notice 87.1kB dist/host/guides/brief.md
+npm notice 253.7kB dist/host/guides/browser.md
+npm notice 21.0kB dist/host/guides/budget.md
+npm notice 39.6kB dist/host/guides/codec.md
+npm notice 150.7kB dist/host/guides/console.md
+npm notice 206.7kB dist/host/guides/contract.md
+npm notice 56.7kB dist/host/guides/csv.md
+npm notice 190.4kB dist/host/guides/database.md
+npm notice 16.2kB dist/host/guides/emitter.md
+npm notice 118.3kB dist/host/guides/form.md
+npm notice 165.5kB dist/host/guides/guide.md
+npm notice 95.6kB dist/host/guides/html.md
+npm notice 54.6kB dist/host/guides/indexeddb.md
+npm notice 84.8kB dist/host/guides/interpret.md
+npm notice 48.0kB dist/host/guides/lsp.md
+npm notice 163.2kB dist/host/guides/markdown.md
+npm notice 678.1kB dist/host/guides/mcp.md
+npm notice 111.8kB dist/host/guides/middleware.md
+npm notice 98.8kB dist/host/guides/msg.md
+npm notice 8.8kB dist/host/guides/ndjson.md
+npm notice 55.1kB dist/host/guides/ollama.md
+npm notice 17.0kB dist/host/guides/pool.md
+npm notice 104.8kB dist/host/guides/probe.md
+npm notice 124.4kB dist/host/guides/process.md
+npm notice 57.8kB dist/host/guides/program.md
+npm notice 41.8kB dist/host/guides/qualifier.md
+npm notice 42.7kB dist/host/guides/queue.md
+npm notice 22.4kB dist/host/guides/rater.md
+npm notice 4.3kB dist/host/guides/README.md
+npm notice 166.9kB dist/host/guides/reason.md
+npm notice 35.2kB dist/host/guides/relation.md
+npm notice 77.8kB dist/host/guides/router.md
+npm notice 177.2kB dist/host/guides/scaffold.md
+npm notice 42.8kB dist/host/guides/sea.md
+npm notice 65.6kB dist/host/guides/server.md
+npm notice 27.4kB dist/host/guides/sqlite.md
+npm notice 15.0kB dist/host/guides/sse.md
+npm notice 408.1kB dist/host/guides/supervisor.md
+npm notice 110.0kB dist/host/guides/table.md
+npm notice 23.8kB dist/host/guides/template.md
+npm notice 145.5kB dist/host/guides/terminal.md
+npm notice 319.5kB dist/host/guides/test.md
+npm notice 13.6kB dist/host/guides/timeout.md
+npm notice 34.3kB dist/host/guides/tool.md
+npm notice 173.2kB dist/host/guides/toolbox.md
+npm notice 31.3kB dist/host/guides/websocket.md
+npm notice 41.8kB dist/host/guides/worker.md
+npm notice 230.5kB dist/host/guides/workflow.md
+npm notice 47.7kB dist/host/guides/workspace.md
+npm notice 1.1kB dist/host/LICENSE
+npm notice 50.1kB dist/host/manifest.json
+npm notice 1.3kB dist/host/scripts/codex.sh
+npm notice 1.4kB dist/host/scripts/cursor.sh
+npm notice 1.8kB dist/host/scripts/deps.sh
+npm notice 10.1kB dist/host/scripts/ollama.sh
+npm notice 103.4kB dist/host/tests/config.test.ts
+npm notice 30.3kB dist/host/tests/policy.test.ts
+npm notice 124.2kB dist/host/tests/setupPolicy.ts
+npm notice 279.7kB dist/src/core/index.cjs
+npm notice 367.4kB dist/src/core/index.cjs.map
+npm notice 245.7kB dist/src/core/index.d.cts
+npm notice 245.7kB dist/src/core/index.d.ts
+npm notice 271.2kB dist/src/core/index.js
+npm notice 364.9kB dist/src/core/index.js.map
+npm notice 193.3kB dist/src/server/index.cjs
+npm notice 303.1kB dist/src/server/index.cjs.map
+npm notice 142.5kB dist/src/server/index.d.cts
+npm notice 142.5kB dist/src/server/index.d.ts
+npm notice 183.9kB dist/src/server/index.js
+npm notice 297.0kB dist/src/server/index.js.map
+npm notice 5.3kB package.json
+npm notice Tarball Details
+npm notice name: @orkestrel/scaffold
+npm notice version: 0.0.76
+npm notice filename: orkestrel-scaffold-0.0.76.tgz
+npm notice package size: 2.5 MB
+npm notice unpacked size: 10.3 MB
+npm notice shasum: 6b6be78112c0a5c24a9071402bd845ec3babd96c
+npm notice integrity: sha512-9wLCXovy2u7pE[...]cToV24dcr0gtA==
+npm notice total files: 193
+npm notice
+orkestrel-scaffold-0.0.76.tgz
+=== published tarball extracted: bin host src  (17:29:24)
+=== material diff of rebuilt dist against published (sourcemaps excluded, whitespace ignored) (17:29:24)
+Files /tmp/claude-0/-home-user/a00e22e1-18d9-5489-8624-ccf383fdf277/scratchpad/scaffold-published/package/dist/host/CLAUDE.md and dist/host/CLAUDE.md differ
+Files /tmp/claude-0/-home-user/a00e22e1-18d9-5489-8624-ccf383fdf277/scratchpad/scaffold-published/package/dist/host/agents/orchestration.md and dist/host/agents/orchestration.md differ
+Files /tmp/claude-0/-home-user/a00e22e1-18d9-5489-8624-ccf383fdf277/scratchpad/scaffold-published/package/dist/host/agents/transports/claude.md and dist/host/agents/transports/claude.md differ
+Files /tmp/claude-0/-home-user/a00e22e1-18d9-5489-8624-ccf383fdf277/scratchpad/scaffold-published/package/dist/host/agents/transports/codex.md and dist/host/agents/transports/codex.md differ
+Files /tmp/claude-0/-home-user/a00e22e1-18d9-5489-8624-ccf383fdf277/scratchpad/scaffold-published/package/dist/host/agents/transports/cursor.md and dist/host/agents/transports/cursor.md differ
+Files /tmp/claude-0/-home-user/a00e22e1-18d9-5489-8624-ccf383fdf277/scratchpad/scaffold-published/package/dist/host/claude/agents/analyst.md and dist/host/claude/agents/analyst.md differ
+Files /tmp/claude-0/-home-user/a00e22e1-18d9-5489-8624-ccf383fdf277/scratchpad/scaffold-published/package/dist/host/claude/agents/application.md and dist/host/claude/agents/application.md differ
+Files /tmp/claude-0/-home-user/a00e22e1-18d9-5489-8624-ccf383fdf277/scratchpad/scaffold-published/package/dist/host/claude/agents/builder.md and dist/host/claude/agents/builder.md differ
+Files /tmp/claude-0/-home-user/a00e22e1-18d9-5489-8624-ccf383fdf277/scratchpad/scaffold-published/package/dist/host/claude/agents/opus.md and dist/host/claude/agents/opus.md differ
+Files /tmp/claude-0/-home-user/a00e22e1-18d9-5489-8624-ccf383fdf277/scratchpad/scaffold-published/package/dist/host/claude/agents/planner.md and dist/host/claude/agents/planner.md differ
+Files /tmp/claude-0/-home-user/a00e22e1-18d9-5489-8624-ccf383fdf277/scratchpad/scaffold-published/package/dist/host/claude/agents/reviewer.md and dist/host/claude/agents/reviewer.md differ
+Files /tmp/claude-0/-home-user/a00e22e1-18d9-5489-8624-ccf383fdf277/scratchpad/scaffold-published/package/dist/host/claude/agents/sol.md and dist/host/claude/agents/sol.md differ
+Files /tmp/claude-0/-home-user/a00e22e1-18d9-5489-8624-ccf383fdf277/scratchpad/scaffold-published/package/dist/host/codex/agents/analyst.toml and dist/host/codex/agents/analyst.toml differ
+Files /tmp/claude-0/-home-user/a00e22e1-18d9-5489-8624-ccf383fdf277/scratchpad/scaffold-published/package/dist/host/codex/agents/planner.toml and dist/host/codex/agents/planner.toml differ
+Files /tmp/claude-0/-home-user/a00e22e1-18d9-5489-8624-ccf383fdf277/scratchpad/scaffold-published/package/dist/host/codex/agents/reviewer.toml and dist/host/codex/agents/reviewer.toml differ
+Files /tmp/claude-0/-home-user/a00e22e1-18d9-5489-8624-ccf383fdf277/scratchpad/scaffold-published/package/dist/host/codex/agents/sol.toml and dist/host/codex/agents/sol.toml differ
+Files /tmp/claude-0/-home-user/a00e22e1-18d9-5489-8624-ccf383fdf277/scratchpad/scaffold-published/package/dist/host/codex/config.toml and dist/host/codex/config.toml differ
+Files /tmp/claude-0/-home-user/a00e22e1-18d9-5489-8624-ccf383fdf277/scratchpad/scaffold-published/package/dist/host/cursor/rules/orchestration.mdc and dist/host/cursor/rules/orchestration.mdc differ
+Files /tmp/claude-0/-home-user/a00e22e1-18d9-5489-8624-ccf383fdf277/scratchpad/scaffold-published/package/dist/host/manifest.json and dist/host/manifest.json differ
+Files /tmp/claude-0/-home-user/a00e22e1-18d9-5489-8624-ccf383fdf277/scratchpad/scaffold-published/package/dist/host/scripts/codex.sh and dist/host/scripts/codex.sh differ
+Files /tmp/claude-0/-home-user/a00e22e1-18d9-5489-8624-ccf383fdf277/scratchpad/scaffold-published/package/dist/src/core/index.cjs and dist/src/core/index.cjs differ
+Files /tmp/claude-0/-home-user/a00e22e1-18d9-5489-8624-ccf383fdf277/scratchpad/scaffold-published/package/dist/src/core/index.js and dist/src/core/index.js differ
+=== dist diff exit=1 (1 = differs) (17:29:24)
+=== host files that differ: (17:29:24)
+  Files /tmp/claude-0/-home-user/a00e22e1-18d9-5489-8624-ccf383fdf277/scratchpad/scaffold-published/package/dist/host/CLAUDE.md and dist/host/CLAUDE.md differ
+  Files /tmp/claude-0/-home-user/a00e22e1-18d9-5489-8624-ccf383fdf277/scratchpad/scaffold-published/package/dist/host/agents/orchestration.md and dist/host/agents/orchestration.md differ
+  Files /tmp/claude-0/-home-user/a00e22e1-18d9-5489-8624-ccf383fdf277/scratchpad/scaffold-published/package/dist/host/agents/transports/claude.md and dist/host/agents/transports/claude.md differ
+  Files /tmp/claude-0/-home-user/a00e22e1-18d9-5489-8624-ccf383fdf277/scratchpad/scaffold-published/package/dist/host/agents/transports/codex.md and dist/host/agents/transports/codex.md differ
+  Files /tmp/claude-0/-home-user/a00e22e1-18d9-5489-8624-ccf383fdf277/scratchpad/scaffold-published/package/dist/host/agents/transports/cursor.md and dist/host/agents/transports/cursor.md differ
+  Files /tmp/claude-0/-home-user/a00e22e1-18d9-5489-8624-ccf383fdf277/scratchpad/scaffold-published/package/dist/host/claude/agents/analyst.md and dist/host/claude/agents/analyst.md differ
+  Files /tmp/claude-0/-home-user/a00e22e1-18d9-5489-8624-ccf383fdf277/scratchpad/scaffold-published/package/dist/host/claude/agents/application.md and dist/host/claude/agents/application.md differ
+  Files /tmp/claude-0/-home-user/a00e22e1-18d9-5489-8624-ccf383fdf277/scratchpad/scaffold-published/package/dist/host/claude/agents/builder.md and dist/host/claude/agents/builder.md differ
+  Files /tmp/claude-0/-home-user/a00e22e1-18d9-5489-8624-ccf383fdf277/scratchpad/scaffold-published/package/dist/host/claude/agents/opus.md and dist/host/claude/agents/opus.md differ
+  Files /tmp/claude-0/-home-user/a00e22e1-18d9-5489-8624-ccf383fdf277/scratchpad/scaffold-published/package/dist/host/claude/agents/planner.md and dist/host/claude/agents/planner.md differ
+  Files /tmp/claude-0/-home-user/a00e22e1-18d9-5489-8624-ccf383fdf277/scratchpad/scaffold-published/package/dist/host/claude/agents/reviewer.md and dist/host/claude/agents/reviewer.md differ
+  Files /tmp/claude-0/-home-user/a00e22e1-18d9-5489-8624-ccf383fdf277/scratchpad/scaffold-published/package/dist/host/claude/agents/sol.md and dist/host/claude/agents/sol.md differ
+  Files /tmp/claude-0/-home-user/a00e22e1-18d9-5489-8624-ccf383fdf277/scratchpad/scaffold-published/package/dist/host/codex/agents/analyst.toml and dist/host/codex/agents/analyst.toml differ
+  Files /tmp/claude-0/-home-user/a00e22e1-18d9-5489-8624-ccf383fdf277/scratchpad/scaffold-published/package/dist/host/codex/agents/planner.toml and dist/host/codex/agents/planner.toml differ
+  Files /tmp/claude-0/-home-user/a00e22e1-18d9-5489-8624-ccf383fdf277/scratchpad/scaffold-published/package/dist/host/codex/agents/reviewer.toml and dist/host/codex/agents/reviewer.toml differ
+  Files /tmp/claude-0/-home-user/a00e22e1-18d9-5489-8624-ccf383fdf277/scratchpad/scaffold-published/package/dist/host/codex/agents/sol.toml and dist/host/codex/agents/sol.toml differ
+  Files /tmp/claude-0/-home-user/a00e22e1-18d9-5489-8624-ccf383fdf277/scratchpad/scaffold-published/package/dist/host/codex/config.toml and dist/host/codex/config.toml differ
+  Files /tmp/claude-0/-home-user/a00e22e1-18d9-5489-8624-ccf383fdf277/scratchpad/scaffold-published/package/dist/host/cursor/rules/orchestration.mdc and dist/host/cursor/rules/orchestration.mdc differ
+  Files /tmp/claude-0/-home-user/a00e22e1-18d9-5489-8624-ccf383fdf277/scratchpad/scaffold-published/package/dist/host/manifest.json and dist/host/manifest.json differ
+  Files /tmp/claude-0/-home-user/a00e22e1-18d9-5489-8624-ccf383fdf277/scratchpad/scaffold-published/package/dist/host/scripts/codex.sh and dist/host/scripts/codex.sh differ
+=== audit through the built entry (read-only) (17:29:24)
+dependencies: @types/node declares the floor ^26.5.1, while the registry serves 26.6.2 within major 26.
+dependencies: oxfmt declares the floor ^0.68.0, while the registry serves 0.70.0 within major 0.
+dependencies: oxlint declares the floor ^1.83.0, while the registry serves 1.85.0 within major 1.
+dependencies: typescript declares major 6, while the registry serves major 7.
+dependencies: vitest declares major 4, while the registry serves major 5.
+┌───────────────────────────────────────────────────────────────────────┬───────────────┬─────────┐
+│ path                                                                  │ group         │ drift   │
+├───────────────────────────────────────────────────────────────────────┼───────────────┼─────────┤
+│ AGENTS.md                                                             │ docs          │ stale   │
+│ CLAUDE.md                                                             │ docs          │ stale   │
+│ .mcp.json                                                             │ orchestration │ foreign │
+│ .agents/orchestration.md                                              │ orchestration │ foreign │
+│ .agents/skills/enterprise-bootstrap/SKILL.md                          │ orchestration │ foreign │
+│ .agents/skills/enterprise-bootstrap/agents/openai.yaml                │ orchestration │ foreign │
+│ .agents/skills/enterprise-bootstrap/references/bootstrap-reference.md │ orchestration │ foreign │
+│ .agents/skills/enterprise-bootstrap/references/color-modes.md         │ orchestration │ foreign │
+│ .agents/skills/enterprise-bootstrap/references/components.md          │ orchestration │ foreign │
+│ .agents/skills/enterprise-bootstrap/references/frontend-design.md     │ orchestration │ foreign │
+│ .agents/skills/enterprise-bootstrap/references/inputs.md              │ orchestration │ foreign │
+│ .agents/skills/enterprise-bootstrap/references/inspection.md          │ orchestration │ foreign │
+│ .agents/skills/enterprise-bootstrap/references/responsive-layout.md   │ orchestration │ foreign │
+│ .agents/skills/enterprise-bootstrap/references/utilities.md           │ orchestration │ foreign │
+│ .agents/skills/orkestrel-align-packages/SKILL.md                      │ orchestration │ foreign │
+│ .agents/skills/orkestrel-align-packages/agents/openai.yaml            │ orchestration │ foreign │
+│ .agents/skills/orkestrel-align-packages/references/fleet.md           │ orchestration │ foreign │
+│ .agents/skills/orkestrel-align-packages/references/integration.md     │ orchestration │ foreign │
+│ .agents/skills/orkestrel-build-application/SKILL.md                   │ orchestration │ foreign │
+│ .agents/skills/orkestrel-build-application/agents/openai.yaml         │ orchestration │ foreign │
+│ .agents/skills/orkestrel-debrief/SKILL.md                             │ orchestration │ foreign │
+│ .agents/skills/orkestrel-debrief/agents/openai.yaml                   │ orchestration │ foreign │
+│ .agents/skills/orkestrel-debrief/references/field-testing.md          │ orchestration │ foreign │
+│ .agents/skills/orkestrel-debrief/references/instruction-audit.md      │ orchestration │ foreign │
+│ .agents/skills/orkestrel-debrief/references/retention.md              │ orchestration │ foreign │
+│ .agents/skills/orkestrel-falsify/SKILL.md                             │ orchestration │ foreign │
+│ .agents/skills/orkestrel-falsify/agents/openai.yaml                   │ orchestration │ foreign │
+│ .agents/skills/orkestrel-falsify/references/brief.md                  │ orchestration │ foreign │
+│ .agents/skills/orkestrel-falsify/references/reconcile.md              │ orchestration │ foreign │
+│ .agents/skills/orkestrel-harden-package/SKILL.md                      │ orchestration │ foreign │
+│ .agents/skills/orkestrel-harden-package/agents/openai.yaml            │ orchestration │ foreign │
+│ .agents/skills/orkestrel-harden-package/references/centralization.md  │ orchestration │ foreign │
+│ .agents/skills/orkestrel-harden-package/references/contract.md        │ orchestration │ foreign │
+│ .agents/skills/orkestrel-harden-package/references/hardening.md       │ orchestration │ foreign │
+│ .agents/skills/orkestrel-harden-package/references/research.md        │ orchestration │ foreign │
+│ .agents/skills/orkestrel-polish-surface/SKILL.md                      │ orchestration │ foreign │
+│ .agents/skills/orkestrel-polish-surface/agents/openai.yaml            │ orchestration │ foreign │
+│ .agents/skills/orkestrel-polish-surface/references/capture-harness.md │ orchestration │ foreign │
+│ .agents/skills/orkestrel-prove-journey/SKILL.md                       │ orchestration │ foreign │
+│ .agents/skills/orkestrel-prove-journey/agents/openai.yaml             │ orchestration │ foreign │
+│ .agents/skills/orkestrel-prove-journey/references/captures.md         │ orchestration │ foreign │
+│ .agents/skills/orkestrel-prove-journey/references/decide.md           │ orchestration │ foreign │
+│ .agents/skills/orkestrel-prove-journey/references/layer.md            │ orchestration │ foreign │
+│ .agents/skills/orkestrel-prove-journey/references/statechart.md       │ orchestration │ foreign │
+│ .agents/skills/orkestrel-prove-journey/references/styles.md           │ orchestration │ foreign │
+│ .agents/skills/orkestrel-publish/SKILL.md                             │ orchestration │ foreign │
+│ .agents/skills/orkestrel-publish/agents/openai.yaml                   │ orchestration │ foreign │
+│ .agents/skills/orkestrel-publish/references/wave.md                   │ orchestration │ foreign │
+│ .agents/skills/orkestrel-publish/references/window.md                 │ orchestration │ foreign │
+│ .agents/templates/brief.md                                            │ orchestration │ foreign │
+│ .agents/transports/claude.md                                          │ orchestration │ foreign │
+│ .agents/transports/codex.md                                           │ orchestration │ foreign │
+│ .agents/transports/cursor.md                                          │ orchestration │ foreign │
+│ .claude/agents/analyst.md                                             │ orchestration │ foreign │
+│ .claude/agents/application.md                                         │ orchestration │ foreign │
+│ .claude/agents/builder.md                                             │ orchestration │ foreign │
+│ .claude/agents/checker.md                                             │ orchestration │ foreign │
+│ .claude/agents/distiller.md                                           │ orchestration │ foreign │
+│ .claude/agents/grok.md                                                │ orchestration │ foreign │
+│ .claude/agents/opus.md                                                │ orchestration │ foreign │
+│ .claude/agents/planner.md                                             │ orchestration │ foreign │
+│ .claude/agents/researcher.md                                          │ orchestration │ foreign │
+│ .claude/agents/reviewer.md                                            │ orchestration │ foreign │
+│ .claude/agents/scout.md                                               │ orchestration │ foreign │
+│ .claude/agents/sol.md                                                 │ orchestration │ foreign │
+│ .claude/agents/verifier.md                                            │ orchestration │ foreign │
+│ .claude/rules/application.md                                          │ orchestration │ foreign │
+│ .claude/rules/architecture.md                                         │ orchestration │ foreign │
+│ .claude/rules/browser.md                                              │ orchestration │ foreign │
+│ .claude/rules/documentation.md                                        │ orchestration │ foreign │
+│ .claude/rules/names.md                                                │ orchestration │ foreign │
+│ .claude/rules/patterns.md                                             │ orchestration │ foreign │
+│ .claude/rules/portability.md                                          │ orchestration │ foreign │
+│ .claude/rules/quality.md                                              │ orchestration │ foreign │
+│ .claude/rules/styles.md                                               │ orchestration │ foreign │
+│ .claude/rules/tests.md                                                │ orchestration │ foreign │
+│ .claude/rules/typescript.md                                           │ orchestration │ foreign │
+│ .claude/rules/workspace.md                                            │ orchestration │ foreign │
+│ .claude/rules/writing.md                                              │ orchestration │ foreign │
+│ .claude/skills/enterprise-bootstrap/SKILL.md                          │ orchestration │ foreign │
+│ .claude/skills/orkestrel-align-packages/SKILL.md                      │ orchestration │ foreign │
+│ .claude/skills/orkestrel-build-application/SKILL.md                   │ orchestration │ foreign │
+│ .claude/skills/orkestrel-debrief/SKILL.md                             │ orchestration │ foreign │
+│ .claude/skills/orkestrel-falsify/SKILL.md                             │ orchestration │ foreign │
+│ .claude/skills/orkestrel-harden-package/SKILL.md                      │ orchestration │ foreign │
+│ .claude/skills/orkestrel-polish-surface/SKILL.md                      │ orchestration │ foreign │
+│ .claude/skills/orkestrel-prove-journey/SKILL.md                       │ orchestration │ foreign │
+│ .claude/skills/orkestrel-publish/SKILL.md                             │ orchestration │ foreign │
+│ .codex/agents/analyst.toml                                            │ orchestration │ foreign │
+│ .codex/agents/application.toml                                        │ orchestration │ foreign │
+│ .codex/agents/builder.toml                                            │ orchestration │ foreign │
+│ .codex/agents/checker.toml                                            │ orchestration │ foreign │
+│ .codex/agents/distiller.toml                                          │ orchestration │ foreign │
+│ .codex/agents/grok.toml                                               │ orchestration │ foreign │
+│ .codex/agents/opus.toml                                               │ orchestration │ foreign │
+│ .codex/agents/orkestrel.toml                                          │ orchestration │ foreign │
+│ .codex/agents/planner.toml                                            │ orchestration │ foreign │
+│ .codex/agents/researcher.toml                                         │ orchestration │ foreign │
+│ .codex/agents/reviewer.toml                                           │ orchestration │ foreign │
+│ .codex/agents/scout.toml                                              │ orchestration │ foreign │
+│ .codex/agents/sol.toml                                                │ orchestration │ foreign │
+│ .codex/agents/verifier.toml                                           │ orchestration │ foreign │
+│ .codex/config.toml                                                    │ orchestration │ foreign │
+│ .cursor/mcp.json                                                      │ orchestration │ foreign │
+│ .cursor/rules/orchestration.mdc                                       │ orchestration │ foreign │
+└───────────────────────────────────────────────────────────────────────┴───────────────┴─────────┘
+2 of 42 planned paths drifted from the plan. Audit compared bytes at 27, existence at 4, and nothing at 11. The plan does not own 103 further paths beneath its groups.
+=== audit exit=1 (17:29:27)
+=== status:  M host.json  M package-lock.json  M package.json  (17:29:27)
+=== prep done
