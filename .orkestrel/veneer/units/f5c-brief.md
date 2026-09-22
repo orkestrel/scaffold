@@ -133,9 +133,9 @@ Correct every stale row to the measured value. Rewrite the Links rows for `--vn-
 `color-mix` the cascade declares in each mode, and add the sentence under the Links table that
 names it as a departure from Bootstrap's link colour with a pointer to the F5b ledger row (return
 the ledger row as a `ROADMAP.md`-style patch for § Departures in the report if the ledger lacks
-it). Add the factor-override cases the verdict's claim 9 names: for each factor token beyond
-density, a nested island that overrides the factor and a reader that proves the dependent tokens
-follow it.
+it). The radius, elevation, and motion override cases the verdict's claim 9 asked for exist in
+`tests/src/styles/tokens.test.ts` (the terrain's § B names each by title); confirm each still runs
+green after the rows change and report the titles. Add a case only for a factor that lacks one.
 
 ### Obligation 4 — the highlight pair
 

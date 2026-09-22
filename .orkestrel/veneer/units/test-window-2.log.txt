@@ -1,0 +1,5 @@
+=== HEAD 936bc4a version 0.0.20 15:40:37
+=== whoami: mikesaintsg
+=== publish exit=0
+=== registry now serves: 0.0.19
+=== window done

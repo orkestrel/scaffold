@@ -68,7 +68,8 @@ per-component counts in your report; that reading is the population the ledger m
 
 **Standing conditions.** The tracked tree is clean at the launch commit; `tmp/` is untracked and
 ignored. `tests/setupPolicy.ts` and `tests/policy.test.ts` are restored by `scaffold repair` and
-off-limits. `tests/fixtures/oracle/inventory.json` is the accepted oracle and never changes here.
+off-limits. `tests/fixtures/oracle/inventory.json` is the accepted oracle; it changes here only
+through the D5 script Obligation 6 fixes, never by hand.
 `tests/guides.test.ts` compares each guide `Summary` cell with its export's doc paragraph and reads
 the table shapes the parity command expects; a new table under § Compatibility's neighbours must
 keep the guide's heading order and column form (a leading and trailing pipe, one header row, one
@@ -86,8 +87,10 @@ separator row).
 ## Scope
 
 **Owned.** `tests/setupConformance.ts` and `tests/setupConformance.test.ts` (the ledger types,
-readers, and comparison, with their inventory rows and plants), `tests/conformance.test.ts` (the
-gates), `guides/veneer.md` § Departures from Bootstrap (replaced by the two tables this brief
+readers, and comparison, with their inventory rows and plants; the RTL digest and its reader
+removed), `tests/conformance.test.ts` (the gates; the RTL digest assertion removed),
+`tests/fixtures/oracle/inventory.json` (the `rtl` fields removed through the script only),
+`guides/veneer.md` § Departures from Bootstrap (replaced by the two tables this brief
 fixes), § Deferred names (its two rows read or retired by the reader), and § Bootstrap variables
 Veneer retains (the two filters' rows move into the ledger; the prose names the ledger).
 
@@ -97,7 +100,8 @@ cannot explain returns as an exact patch in the report).
 **Off-limits.** `src/**`, `app/**`, `configs/**`, `vite.config.ts`, `tsconfig.json`, `package.json`,
 `package-lock.json`, `tests/setupPolicy.ts`, `tests/policy.test.ts`, `tests/setup.ts`,
 `tests/setup.test.ts`, `tests/setupCases.ts`, `tests/setupCalibration.ts`, `tests/setupStyles.ts`,
-`tests/setupBrowser.ts`, `tests/src/**`, `tests/app/**`, `tests/fixtures/**`, `README.md`,
+`tests/setupBrowser.ts`, `tests/src/**`, `tests/app/**`, every other file under `tests/fixtures/**`,
+`README.md`,
 `ROADMAP.md`, and every guide section this brief does not name. A departure whose fix belongs in
 `src/styles/**` is a ledger row with `departure` set from the union, never a source edit.
 
@@ -180,6 +184,19 @@ if a reader can bind its two rows to a measured absence, add the reader and the 
 delete the section and carry its two facts into the ledger or the deferral table, and say which in
 the report.
 
+### Obligation 6 — no right-to-left support in the conformance proof (D5)
+
+Delete `BOOTSTRAP_RTL_CSS_DIGEST` and every read of it: the assertion in `tests/conformance.test.ts`
+that pins the RTL CSS bytes (keep the CSS and bundle pins), its inventory row in
+`tests/setupConformance.test.ts`, and any `rtl` member `OracleInventory` or `readOracleInventory`
+declares or reads. Remove the `rtl` field from every component in
+`tests/fixtures/oracle/inventory.json` with a script under `tmp/probe/` that parses the JSON,
+deletes that one field per component, and writes it back through `JSON.stringify` with a tab
+indent, then formats the file with the scoped `oxfmt` command; delete the script before you
+return, and report the digest of the file before and after. Touch no other field. F6 removes the
+built `index.rtl.css` twin, its plugin, and its proofs; you remove nothing under `configs/**` or
+`tests/setupStyles.test.ts`.
+
 ### Obligation 5 — the prose
 
 Update the guide sentences that introduce the replaced sections so each names the reader that
@@ -215,7 +232,8 @@ cell's wording, the readers' exact signatures within the rulings, case titles, d
    passing over the real guide and the real built cascade.
 4. `npm run test:guides` and `npm run test:policy` exit 0.
 5. `grep -n 'No reader parses' guides/veneer.md` prints nothing.
-6. `git status --porcelain` lists owned files only.
+6. `grep -rn 'BOOTSTRAP_RTL_CSS_DIGEST\|"rtl"' tests/setupConformance.ts tests/setupConformance.test.ts tests/conformance.test.ts tests/fixtures/oracle/inventory.json` prints nothing.
+7. `git status --porcelain` lists owned files only.
 
 **Observations, not criteria.** The whole-chain `npm test` reading; the comparison's wall clock.
 
