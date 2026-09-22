@@ -11,7 +11,7 @@ the auditor that did not write it. The Orchestrator settled claim 1's export acc
 `units/f5a-claim1-control.log.txt` and claim 15(a)'s reachability with the host probe
 `units/f5a-namespace-probe.mjs` and its log before ruling. The fixes landed as Orchestrator edits
 under `units/f5a-brief-2.md` through `units/f5a-fix.py`, and the chain re-ran as
-`units/f5a-gates-2.log.txt`.
+`units/f5a-gates-2.log.txt` and `units/f5a-gates-3.log.txt`.
 
 ## Rulings per claim
 
@@ -29,7 +29,7 @@ under `units/f5a-brief-2.md` through `units/f5a-fix.py`, and the chain re-ran as
 | 10 sweep binds on both passes | referred | CONFIRMED | CONFIRMED | Held. |
 | 11 signatures real | referred | NOT-EVIDENCED (`tailwind`) | UNRESOLVED (`tailwind`) | BROKEN on one member: no Tailwind distribution is installed to measure `tailwind` against. Fixed: removed; Tailwind's guard is the specifier pass over `tailwindcss` and `@tailwindcss/`. The rest are measured in the installed Bootstrap and Vue bundles. |
 | 12 guide true, in parity | CONFIRMED | CONFIRMED (voice nits) | BROKEN (prose) | BROKEN in prose: "no other legal parent" contradicted the table (`li` under `ol` and `ul`). Fixed in the guide and the table's doc; the engine "answers the question" and the causal "so" is cut. |
-| 13 gate chain green | CONFIRMED | CONFIRMED | CONFIRMED | Held (run 1); run 2 covers the fixes. |
+| 13 gate chain green | CONFIRMED | CONFIRMED | CONFIRMED | Held (run 1). Run 2 over the fixes read one red: the conformance inventory literal listed `matchesSignature` out of order; run 3 re-ran the setup project green with the format and lint checks (`units/f5a-gates-3.log.txt`). |
 | 14 scope honest | CONFIRMED | CONFIRMED | CONFIRMED | Held. |
 | 15 the unit's flagged claims | referred | BROKEN (a) | UNRESOLVED (a) | (a) BROKEN as documented: the refusal branch was recorded as undrivable and its justification over-claimed. The host probe shows a namespaced rule drives it from a real `CSSStyleRule`; fixed with the `audit\|p` case and a doc that claims what the guard does (a named refusal before any mount). (b) held: no reentrant interleaving is reachable, and the per-call reader removes the question. (c) is claim 11. |
 | 16 prose holds | CONFIRMED (terms) / UNRESOLVED (counts) | BROKEN (report) | BROKEN (report, prose) | BROKEN in prose: "across the three" fixed; the conformance case title names no tally. The unit's report keeps its tallies as the verbatim record of what it returned; test counts and line sizes are measurements with their run. |

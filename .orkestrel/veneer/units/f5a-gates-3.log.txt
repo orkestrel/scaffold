@@ -1,0 +1,32 @@
+=== npm run test:setup (run 3, after the inventory order fix) 16:28:35
+
+> @orkestrel/veneer@0.0.1 test:setup
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project setup
+
+
+ RUN  v4.1.11 /home/user/veneer
+
+·····················································································································································
+
+ Test Files  5 passed (5)
+      Tests  149 passed (149)
+   Start at  16:28:36
+   Duration  9.13s (transform 2.51s, setup 191ms, import 6.82s, tests 8.66s, environment 0ms)
+
+=== test:setup exit=0 16:28:45
+=== npm run format:check
+
+> @orkestrel/veneer@0.0.1 format:check
+> oxfmt --config .oxfmtrc.json --check .
+
+Checking formatting...
+
+All matched files use the correct format.
+Finished in 1410ms on 213 files using 4 threads.
+=== format:check exit=0
+=== npm run lint:check
+
+> @orkestrel/veneer@0.0.1 lint:check
+> oxlint --config .oxlintrc.json --deny-warnings .
+
+=== lint:check exit=0
