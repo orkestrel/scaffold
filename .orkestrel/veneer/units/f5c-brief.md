@@ -85,7 +85,7 @@ departure returns as an exact patch in the report.
 
 **Off-limits.** every other `src/**` file, `app/**`, `configs/**`, `vite.config.ts`,
 `tsconfig.json`, `package.json`, `package-lock.json`, `tests/setupPolicy.ts`, `tests/policy.test.ts`,
-`tests/setup.ts`, `tests/setup.test.ts`, `tests/setupStyles.ts`, `tests/setupStyles.ts`,
+`tests/setup.ts`, `tests/setup.test.ts`,
 `tests/setupBrowser.ts`, `tests/setupServer.ts`, `tests/conformance.test.ts`, every other
 `tests/src/**` file, `tests/app/**`, `tests/fixtures/**`, `README.md`, `ROADMAP.md`, and every
 guide section this brief does not name.

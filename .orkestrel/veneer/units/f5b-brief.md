@@ -89,7 +89,7 @@ separator row).
 
 ## Scope
 
-**Owned.** `tests/setupServer.ts` and `tests/setupServer.test.ts` (the ledger types,
+**Owned.** `src/styles/elements/_body.scss` (the `--bs-body-text-align` fallback `start` removed, so the declaration reads `text-align: var(--bs-body-text-align)` as Bootstrap writes it; the departure row that recorded the fallback retires with it, per D2 and D6 and the F5d report's finding 2), `tests/setupServer.ts` and `tests/setupServer.test.ts` (the ledger types,
 readers, and comparison, with their inventory rows and plants; the RTL digest and its reader
 removed; the elements tag reader), `tests/conformance.test.ts` (the gates; the RTL digest assertion
 removed; the tag-population case), `tests/setupStyles.ts` (the `ELEMENT_TAGS` doc only),
@@ -103,11 +103,12 @@ cannot explain returns as an exact patch in the report).
 
 **Off-limits.** `src/**`, `app/**`, `configs/**`, `vite.config.ts`, `tsconfig.json`, `package.json`,
 `package-lock.json`, `tests/setupPolicy.ts`, `tests/policy.test.ts`, `tests/setup.ts`,
-`tests/setup.test.ts`, `tests/setupStyles.ts` beyond that doc, `tests/setupStyles.ts`, `tests/setupStyles.ts`,
+`tests/setup.test.ts`, `tests/setupStyles.ts` beyond that doc,
 `tests/setupBrowser.ts`, `tests/src/**`, `tests/app/**`, every other file under `tests/fixtures/**`,
 `README.md`,
 `ROADMAP.md`, and every guide section this brief does not name. A departure whose fix belongs in
-`src/styles/**` is a ledger row with `departure` set from the union, never a source edit.
+`src/styles/**` is a ledger row with `departure` set from the union, never a source edit; the
+`_body.scss` fallback removal named under Owned is the one exception this brief grants.
 
 **What asserts the state this change ends.** The inventory case "declares the identity constants
 and the helpers the conformance proof measures with" in `tests/setupServer.test.ts` (the new

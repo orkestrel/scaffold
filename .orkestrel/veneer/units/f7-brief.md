@@ -92,7 +92,7 @@ exact patch).
 
 **Off-limits.** `src/**`, every other `app/**` file, `configs/**`, `vite.config.ts`, `tsconfig.json`,
 `package.json`, `package-lock.json`, `tests/setupPolicy.ts`, `tests/policy.test.ts`,
-`tests/setupStyles.ts`, `tests/setupStyles.ts`, `tests/setupStyles.ts`,
+`tests/setupStyles.ts`,
 `tests/setupServer.ts`, `tests/conformance.test.ts`, `tests/src/**`, every other
 `tests/app/**` file, `tests/fixtures/**`, `README.md`, `ROADMAP.md`, and every guide section this
 brief does not name.
