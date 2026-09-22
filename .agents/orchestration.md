@@ -595,6 +595,11 @@ filled.
   the tree with the brief's framing in hand, so it reproduces the error as often as it catches it.
   The unit reading the record cold is the only reader positioned to refuse, and by then the round is
   spent. Grep the plan and the retained reports for the subject, not just the tree.
+- Better, give each measurement one home and keep the brief out of it. Put the measurements in a
+  terrain record the brief names and stages beside itself, and write the brief as rulings and
+  obligations that point at it. A measurement restated in a brief is a second copy that can drift
+  from the first, and the drift is invisible because both artifacts look authoritative. Tell the unit
+  which artifact wins when they disagree, and to stop rather than resolve it.
 - Take every measurement under the conditions the unit runs in, or have the unit take it before
   doing anything else.
 - Ask what the change does to every fact you measured, and fix each criterion to the state the unit
