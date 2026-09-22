@@ -69,7 +69,7 @@ per-component counts in your report; that reading is the population the ledger m
 **Standing conditions.** The tracked tree is clean at the launch commit; `tmp/` is untracked and
 ignored. `tests/setupPolicy.ts` and `tests/policy.test.ts` are restored by `scaffold repair` and
 off-limits. `tests/fixtures/oracle/inventory.json` is the accepted oracle; it changes here only
-through the D5 script Obligation 6 fixes, never by hand.
+through the D5 script Obligation 5 fixes, never by hand.
 `tests/guides.test.ts` compares each guide `Summary` cell with its export's doc paragraph and reads
 the table shapes the parity command expects; a new table under § Compatibility's neighbours must
 keep the guide's heading order and column form (a leading and trailing pipe, one header row, one
@@ -90,7 +90,8 @@ separator row).
 
 **Owned.** `tests/setupConformance.ts` and `tests/setupConformance.test.ts` (the ledger types,
 readers, and comparison, with their inventory rows and plants; the RTL digest and its reader
-removed), `tests/conformance.test.ts` (the gates; the RTL digest assertion removed),
+removed; the elements tag reader), `tests/conformance.test.ts` (the gates; the RTL digest assertion
+removed; the tag-population case), `tests/setupCases.ts` (the `ELEMENT_TAGS` doc only),
 `tests/fixtures/oracle/inventory.json` (the `rtl` fields removed through the script only),
 `guides/veneer.md` § Departures from Bootstrap (replaced by the two tables this brief
 fixes), § Deferred names (its two rows read or retired by the reader), and § Bootstrap variables
@@ -101,7 +102,7 @@ cannot explain returns as an exact patch in the report).
 
 **Off-limits.** `src/**`, `app/**`, `configs/**`, `vite.config.ts`, `tsconfig.json`, `package.json`,
 `package-lock.json`, `tests/setupPolicy.ts`, `tests/policy.test.ts`, `tests/setup.ts`,
-`tests/setup.test.ts`, `tests/setupCases.ts`, `tests/setupCalibration.ts`, `tests/setupStyles.ts`,
+`tests/setup.test.ts`, `tests/setupCases.ts` beyond that doc, `tests/setupCalibration.ts`, `tests/setupStyles.ts`,
 `tests/setupBrowser.ts`, `tests/src/**`, `tests/app/**`, every other file under `tests/fixtures/**`,
 `README.md`,
 `ROADMAP.md`, and every guide section this brief does not name. A departure whose fix belongs in
@@ -186,7 +187,19 @@ if a reader can bind its two rows to a measured absence, add the reader and the 
 delete the section and carry its two facts into the ledger or the deferral table, and say which in
 the report.
 
-### Obligation 6 — no right-to-left support in the conformance proof (D5)
+### Obligation 6 — the elements layer's tag population binds `ELEMENT_TAGS` (F5a reviewer F4)
+
+The tag column of `ELEMENT_TAGS` in `tests/setupCases.ts` is written by hand and bound to no
+reading (its doc says so). Add to `tests/setupConformance.ts` a reader over the unminified compile
+that returns, for the `elements` layer, the set of type selectors its rules select (the leading
+type token of each compound in each selector, read from the `postcss` rule's `selector` string —
+this is a string read of compiled output, not a selector grammar, and it reports a compound it
+cannot read rather than skipping it), and add the case to `tests/conformance.test.ts` that requires
+that set to equal the distinct values of the table's tag column, with a plant in
+`tests/setupConformance.test.ts` over a scratch sheet that proves the reader binds. Correct the
+table's doc to name the binding.
+
+### Obligation 5 — no right-to-left support in the conformance proof (D5)
 
 Delete `BOOTSTRAP_RTL_CSS_DIGEST` and every read of it: the assertion in `tests/conformance.test.ts`
 that pins the RTL CSS bytes (keep the CSS and bundle pins), its inventory row in
@@ -199,7 +212,7 @@ return, and report the digest of the file before and after. Touch no other field
 built `index.rtl.css` twin, its plugin, and its proofs; you remove nothing under `configs/**` or
 `tests/setupStyles.test.ts`.
 
-### Obligation 5 — the prose
+### Obligation 7 — the prose
 
 Update the guide sentences that introduce the replaced sections so each names the reader that
 parses it and the gate that reddens on drift, in the voice `.claude/rules/writing.md` fixes. Keep
@@ -230,8 +243,8 @@ cell's wording, the readers' exact signatures within the rulings, case titles, d
 1. `npm run format:check`, `npm run lint:check`, and `npm run check` exit 0.
 2. `npm run test:setup` exits 0 with the ledger readers, the comparison, and the compile export in
    the inventory case, and the three plants present.
-3. `npm run build:src && npm run test:conformance` exits 0 with the ledger gates present and
-   passing over the real guide and the real built cascade.
+3. `npm run build:src && npm run test:conformance` exits 0 with the ledger gates and the
+   tag-population case present and passing over the real guide and the real built cascade.
 4. `npm run test:guides` and `npm run test:policy` exit 0.
 5. `grep -n 'No reader parses' guides/veneer.md` prints nothing.
 6. `grep -rn 'BOOTSTRAP_RTL_CSS_DIGEST\|"rtl"' tests/setupConformance.ts tests/setupConformance.test.ts tests/conformance.test.ts tests/fixtures/oracle/inventory.json` prints nothing.
