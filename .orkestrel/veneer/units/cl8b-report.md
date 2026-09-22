@@ -46,7 +46,7 @@ The collector prefix was deliberately extended to admit `g`, `gx`, and `gy`. The
 The executed build command and its final output were:
 
 ```text
-bash tmp/units/cl8b-run.sh styles-build npm.cmd run build:src:styles
+bash cl8b-run.sh styles-build npm.cmd run build:src:styles
 
 dist/src/styles/index.css      81.76 kB │ gzip: 10.34 kB
 dist/src/styles/index.rtl.css  81.76 kB │ gzip: 10.34 kB
@@ -58,7 +58,7 @@ EXIT=0
 The setup command and its failing output were:
 
 ```text
-bash tmp/units/cl8b-run.sh setup-initial npm.cmd run test:setup -- tests/setupStyles.test.ts
+bash cl8b-run.sh setup-initial npm.cmd run test:setup -- tests/setupStyles.test.ts
 
 FAIL |setup| tests/setupStyles.test.ts > styles setup > binds the built grid selector and media-condition multiset to the inventory minus deferrals
 AssertionError: expected [ '[".col",[]]', …(378) ] to deeply equal [ '[".col",[]]', …(414) ]
@@ -74,7 +74,7 @@ Test Files  1 failed (1)
 EXIT=1
 ```
 
-The complete logs are `tmp/units/cl8b-styles-build.log.txt` and `tmp/units/cl8b-setup-initial.log.txt`. The setup diff repeats the same missing duplicate across the recorded row-gap vocabulary.
+The complete logs are `cl8b-styles-build.log.txt.txt` and `cl8b-setup-initial.log.txt.txt`. The setup diff repeats the same missing duplicate across the recorded row-gap vocabulary.
 
 The probe tool refused before execution with this exact response:
 

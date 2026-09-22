@@ -1,0 +1,24 @@
+<!-- analyst on gpt-6-astra, exit 0, retained 2026-09-22. Codex exec thread
+01a0c686-94cf-7941-b865-35b45489dc3c, launched by
+units/cl8b-audit-2-analyst.sh, journalled at tmp/codex/cl8b-audit-2-analyst.jsonl and swept at
+acceptance. Astra wrote the unit and its fixes, so it holds the SUBJECTIVE lane. -->
+
+# CL8b audit round 2 — verdict (SUBJECTIVE lane, Astra)
+
+1. **CONFIRMED.** The density case remains coherent: the padding control establishes that the retune took effect before the gutter and gap assertions test independence. The control reads 6 → 12 → 6; the root mutation is removed in `finally`. A missing retune fails the padding assertion; a density-carrying step fails the geometry assertions. See [gap.test.ts:55](C:/Users/mikes/WebstormProjects/veneer/tests/src/styles/utilities/gap.test.ts:55). The subsequent step override tests the same scale’s intended customization boundary.
+
+2. **CONFIRMED — report-only execution evidence.** The mutation is the defect named: it replaces each step value with `calc(<length> * var(--vn-factor-density))`, preserving the original length and declaration scope. See [cl8b-evidence-3.mjs:54](C:/Users/mikes/WebstormProjects/scaffold/.orkestrel/veneer/units/cl8b-evidence-3.mjs:54). The retained run reports `expected -24 to be -12`; restoration returns the case green. I independently matched the live CSS and test digests to the recorded restored digests. I did not rerun the mutations.
+
+3. **CONFIRMED.** The yielded infix and boundary describe the same ramp entry, so the contract fits its callers. The grid needs the boundary for its offset-zero guard; the gap caller explicitly ignores it. This does require an unused binding for an infix-only caller, but introduces no unrelated responsibility or speculative capability. The [mixin body](C:/Users/mikes/WebstormProjects/veneer/src/styles/_mixins.scss:123) preserves traversal and media wrapping; the [grid guard](C:/Users/mikes/WebstormProjects/veneer/src/styles/components/_grid.scss:58) receives the original boundary. My read-only comparison exited 0 and found the retained pre-extraction and built LTR/RTL CSS byte-identical.
+
+4. **CONFIRMED — report-only control evidence.** The comparison retains declaration importance, rule order, declaration order, and ancestor conditions. Its complete-buffer comparison also catches positional changes outside the selected populations. See [cl8b-evidence-3.mjs:23](C:/Users/mikes/WebstormProjects/scaffold/.orkestrel/veneer/units/cl8b-evidence-3.mjs:23). The retained priority-removal comparison exits 1; restoration returns it green. This establishes the stated comparison contract, without treating it as a general semantic-equivalence checker.
+
+5. **CONFIRMED.** The priority case expresses a recognizable cascade obligation: a consumer’s unlayered normal declaration applies to the plain row, while the important utility retains its value. The baseline assertion excludes an absent competing sheet. See [gap.test.ts:83](C:/Users/mikes/WebstormProjects/veneer/tests/src/styles/utilities/gap.test.ts:83). The cascade loads through [setupFiles](C:/Users/mikes/WebstormProjects/veneer/configs/src/vite.styles.config.ts:48), and the [loader](C:/Users/mikes/WebstormProjects/veneer/tests/setupBrowser.ts:598) subsequently appends the consumer sheet to the head. The reported priority mutation changes the reading from 24 to 7. The [folder guard](C:/Users/mikes/WebstormProjects/veneer/tests/setupStyles.test.ts:312) includes utilities; the [showcase](C:/Users/mikes/WebstormProjects/veneer/app/browser/constants.ts:535) and [proof](C:/Users/mikes/WebstormProjects/veneer/tests/app/browser/sections/LayoutSection.test.ts:62) derive their steps from the registry.
+
+6. **CONFIRMED.** Comparing the supplied patches confines the delta to the density and priority cases, ramp extraction, folder guard, and showcase derivation. The token scale, registry leaves, guide accounting, conformance listing, and recorded tuple retain their round-1 patches. The gap declaration bodies remain unchanged; only their enclosing ramp traversal moves. No accepted ruling needs reopening.
+
+7. **UNDECIDABLE as a whole.** Scope and implementation-law portions are confirmed. The status comparison adds only `src/styles/_mixins.scss` and `src/styles/components/_grid.scss`, removes nothing, and the grid change is the extraction call site. The retained writer gate logs report exit 0 for the required Chromium and Edge commands. **The independent round-2 verifier result and its before/after status evidence were not available**, so that portion remains report-only and unconfirmed. This is an outstanding acceptance-evidence requirement, not an implementation defect requiring another fix round.
+
+No additional implementation finding forces another round. Every cited line was checked against its named file.
+
+Verdict: accept

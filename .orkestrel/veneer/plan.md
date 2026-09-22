@@ -1917,3 +1917,50 @@ decomposition, so CL8 splits and two keys stop being what the plan assumed.
   compiler imports Sass dynamically from a module the browser styles project loads as a setup file.
   The authoritative independent run is green on both engines, so the risk is latent.
 - **Unchanged:** CL9 to CL13.
+
+### Re-baseline after CL8b (2026-09-22, landed `8c70787`)
+
+- **Satisfied: CL8b, the gutter and gap step utilities.** The cascade carries the combined gutter
+  class, each single-axis gutter class, and the row-gap class, at every step and breakpoint the ramp
+  carries, in Bootstrap's own two-rule grouping. That grouping is load-bearing rather than
+  cosmetic: the record carries the combined class twice because Bootstrap emits it twice, and the
+  emitted-vocabulary proof compares a multiset, so a single rule per step would resolve identically
+  in a browser and still redden.
+  **The steps take a scale of their own, carrying no density factor**, because every Veneer space
+  token is multiplied by that factor while the gutter defaults are not — reading the space scale
+  would have made a utility and the default it overrides disagree at any density but the identity.
+  **The `row` key closes here**, its deferral rows deleted as its gap selectors arrived.
+  **The comparison gained the three gutter keys and not the gap key**, because the row key already
+  carries those selectors and naming both would count each twice against a cascade emitting each
+  once. That asymmetry between the recorded tuple and the collector's prefix is deliberate, and both
+  audit lanes ruled that making them mechanically identical would corrupt the accounting.
+  **The shared loop preamble moved to a mixin** yielding the infix and the boundary, because a
+  pattern in two partials belongs there and the grid's offset guard needs the boundary. Both
+  partials emit byte-identical cascades across the extraction, ruled on the substitution and
+  corroborated by an instrument that was itself proved to catch a priority change.
+  **The important priority carries an assertion now.** A consumer's unlayered rule is loaded after
+  the cascade and the utility is read to still win — which matters because the utility sits in the
+  last layer, where an unlayered declaration would otherwise outrank it outright.
+- **Two stops, both on my errors, and the second changed how briefs are written.** The first was a
+  scope gap. The second was a brief asserting the opposite of a measurement this campaign had
+  already taken and recorded correctly; the unit read the record cold and refused. The rule landed
+  first as "reconcile a brief's facts against the campaign's record", then in a better form: **give
+  each measurement one home and keep the brief out of it.** CL9's brief is the first written that
+  way — its measurements live in `units/cl9-terrain.md` and the brief restates none of them.
+- **An audit lane confirmed a claim on citations that could not exist**, four hundred lines past a
+  75-line file's end, arguing against a lane that had read it. That verdict was discarded at the
+  claim level after a sample of the lane's other citations was verified exact, and the rule landed:
+  check that each lane's citations resolve before weighing a conflict. Every lane of the next round
+  was told the same, and both judgment lanes closed by confirming they had checked.
+- **Added, carried, and still the user's call:** the cross-cutting reconciliation unit in
+  `units/value-accounting-finding.md`, now carrying CL8's findings 7 and 10 as well. It moves the
+  family's exit criterion, so it is a rescope rather than a re-baseline.
+- **Carried to whichever unit next owns the mixin fixture:** the extracted ramp mixin has no fixture
+  case of its own, though both its yielded values are pinned through its callers' emitted output.
+- **Transformed: CL9.** Its terrain is measured (`units/cl9-terrain.md`) and its brief written
+  (`units/cl9-brief.md`), with its scope read staged. Two facts decide it. Every breakpoint-scoped
+  selector the table key carries is recorded under a **maximum** width, making it the first
+  production consumer of the downward mixin; and the equivalence its comparison must learn is
+  arithmetic rather than a string rewrite, because Bootstrap's downward boundary is the named
+  boundary less a fraction while the mixin emits the range form.
+- **Unchanged:** CL10 to CL13.

@@ -34,52 +34,59 @@ verifier, and landed by a script that refuses any file outside the owned set.
 
 | Checkout | HEAD | Meaning |
 | --- | --- | --- |
-| Veneer | `d2c5bb3` | CL8 landed and pushed; the tracked tree is clean unless a unit is live |
-| Scaffold | confirm with `git log --oneline -1` | every record through CL8's landing retained and pushed |
+| Veneer | `8c70787` | CL8b landed and pushed; the tracked tree is clean unless a unit is live |
+| Scaffold | confirm with `git log --oneline -1` | every record through CL8b's landing retained and pushed |
 
 Landed in Veneer: CL1 `00a5bdc`, CL2 `9f5ffda`, CL3 `9bb306e`, CL3b `d822d59`, CL4 `bc580c1`,
 CL4b `5240e36`, CL5 `ea82419`, CL5b `4f817db`, CL5c `c1c81a4`, CL6 `c8f53f8`, CL7 `a9172df`,
-CL8 `d2c5bb3`. Each has a verdict file named for it.
+CL8 `d2c5bb3`, CL8b `8c70787`. Each has a verdict file named for it.
 
 Shipping keys: the reboot key, the button, the typography and content keys, the link key, the
-container key, and the grid's row, col, and offset keys. **Each unit's objective lane compared its
-key's inventory selector set against the built cascade in both directions and found them equal**,
-which is the accounting this family exists to produce.
+container key, the grid's row, col, and offset keys, and the gutter and gap step keys. **Each unit's
+objective lane compared its key's inventory selector set against the built cascade in both
+directions and found them equal**, which is the accounting this family exists to produce.
 
-**Three standing proofs enforce the accounting, and each catches a different class.**
+**Four standing proofs enforce the accounting, and each catches a different class.**
 
-- `scanStyleBlocks` sweeps every partial under `src/styles/` recursively — a population that
-  includes the mixins file — and a case asserts the tree carries no cross-file shared block. It has
-  now caught three units. When a brief tells a unit to copy a pattern from another partial, grant
-  that partial: the honest fix reaches both copies.
-- A case in `tests/setupStyles.test.ts` compiles the real `breakpoints()` map and compares the
-  non-zero names against the registry's container keys as sets, and compares the zero names against
-  the ramp's own zero keys. A ramp boundary added without its token reddens, and so does the reverse.
-- A case in the same file compares the built cascade's grid selector and media-condition **multiset**
-  against the pinned record minus the guide's deferrals. This is the only proof that runs from the
-  cascade back to the record, so it is the only one that catches a selector shipping that the record
-  does not carry. It covers the grid keys alone; extending it to every key is a candidate unit.
+- `scanStyleBlocks` sweeps every partial under `src/styles/` recursively and a case asserts no
+  cross-file shared declaration block, with a guard that the sweep discovered each folder so it
+  cannot pass by finding nothing. It has caught three units. **When a brief tells a unit to copy a
+  pattern from another partial, grant that partial**: the honest fix reaches both copies.
+- A case in `tests/setupStyles.test.ts` compiles the real `breakpoints()` map and binds its non-zero
+  names to the registry's container keys and its zero names to the ramp's own zero keys.
+- A case in the same file compares the built cascade's selector and media-condition **multiset**
+  against the pinned record minus the guide's deferrals, for the keys its tuple names. **This is the
+  only proof that runs from the cascade back to the record.** Its tuple and its selector prefix cover
+  different populations on purpose — the tuple selects inventory buckets, the prefix selects emitted
+  vocabulary — and making them identical would corrupt the accounting.
+- The utilities' density independence is read at the document root with a positive control proving
+  the factor arrived, after a round-1 audit found a version that set the factor on a subtree and so
+  could not fail.
 
 **Two gaps in the accounting are measured and waiting on the user**, in
 `units/value-accounting-finding.md`: nothing compares declaration values at all, and nothing rejects
-an unrecorded selector outside the grid keys. Both are the same gap — the accounting runs one way —
-and closing them is one unit with a departure table beside the deferral table. It moves the family's
-exit criterion, so it is a rescope rather than a re-baseline.
+an unrecorded selector outside the keys the comparison's tuple names. Both are the same gap — the
+accounting runs one way — and closing them is one unit with a departure table beside the deferral
+table. It moves the family's exit criterion, so it is a rescope rather than a re-baseline.
 
-## What to do first: CL8b, the gutter and gap step utilities
+## What to do first: CL9, the table key
 
-**CL8b's brief is written and its rulings are settled** — `units/cl8b-brief.md` over
-`units/cl8b-rulings.md`, both from measurement rather than a scout, so no terrain unit is needed.
-Scope-read the brief, then dispatch `sol` on Astra over the CL8 landing.
+**CL9's terrain is measured and its brief written**, with its scope read staged:
+`units/cl9-terrain.md`, `units/cl9-brief.md`, `units/cl9-scope-read-brief.md`. No scout is needed.
+Dispatch the scope read, fold its findings, then dispatch `sol` on Astra over the CL8b landing.
 
-It ships the `g`, `gx`, `gy`, and `row-gap` keys and closes the `row` key by shipping the selectors
-CL8 deferred to it, deleting those deferral rows as it goes. Two rulings decide it and the brief
-carries both. The steps take a scale of their own carrying no density factor, because every Veneer
-space token is multiplied by that factor and the gutter tokens are not, so reading the space scale
-would make a utility and the default it overrides disagree at any density but the identity. And the
-gutter classes ship as Bootstrap groups them, two rules per step, because the record carries each
-combined class twice and Bootstrap's own distribution shows that faithful — a single rule per step
-resolves identically and still reddens CL8's multiset proof.
+**The brief restates no measurement.** Every measured fact lives in the terrain record, and the brief
+points there. That is deliberate: a brief earlier in this campaign restated a measurement, the copy
+drifted, and a unit spent a round refusing the false premise. The rule is in
+`.agents/orchestration.md` § Check the brief before you send it — give each measurement one home and
+keep the brief out of it.
+
+Two facts decide CL9 and the terrain record carries both. Every breakpoint-scoped selector the table
+key carries is recorded under a **maximum** width, so this is the first production consumer of the
+downward mixin. And the equivalence the emitted-vocabulary comparison must learn is **arithmetic**
+rather than a string rewrite: Bootstrap's downward boundary is the named boundary less a fraction,
+while the mixin emits the modern range form at the boundary itself. The mixin stays as it is; the
+equivalence belongs in the comparison.
 
 ## Then CL9 to CL13
 
@@ -89,14 +96,13 @@ the analyst's unit (`units/content-layout-design-analyst-report.md`); scope-read
 
 - **CL9** tables. **CL10** helpers: the icon-link, ratio, and vertical-rule keys. **CL11**
   journeys and captures. **CL12** the guide. **CL13** the portfolio verdict.
-- **CL8b** carries the `.row-gap-*` deferral rows CL8 assigned it, and the multiset behaviour that
-  fixes its two-rule gutter shape.
+- **CL9** carries CL8's finding that the comparison's condition normalizer equates only the
+  minimum-width spelling, because this is the first key recorded under maximum widths. Its brief
+  makes that work rather than a bound.
 - **A candidate successor unit** carries CL8's built-side findings with the measurement in
   `units/value-accounting-finding.md`: the projects that read the built artifact run no build of
   their own, and the emitted-vocabulary population misses a re-layered or descendant-combinator
   emission. Both sit with the value-accounting proposal, which is the user's call.
-- **Whichever unit first ships a family recorded under a downward condition** carries CL8's finding
-  that the condition normalizer equates only the minimum-width spelling.
 - **CL11** carries `visitBreakpoint`'s bare `finally`, the hold's uncased refusals, the U7c
   `resolveButton` rename, and `driveOracle` root scoping.
 - **CL12** carries every guide bound a unit reported, including CL7's: a token-table sentence that

@@ -6,7 +6,7 @@ stop report at units/cl8b-report.md. -->
 
 CL8b’s implementation and requested CLI proofs are complete. The corrected multiset assertion passes, the row key closes, and the gate chain passes on managed Chromium. The styles, browser-setup, and app-browser projects also pass on Edge. HEAD remains `d2c5bb3`. Nothing was committed, pushed, or installed, and no agents were spawned.
 
-The effective assignment is `tmp/units/cl8b-brief-2.md` over `tmp/units/cl8b-brief.md`. This report supersedes the stop report at `tmp/units/cl8b-report.md`.
+The effective assignment is `cl8b-brief-2.md` over `cl8b-brief.md`. This report supersedes the stop report at `cl8b-report.md`.
 
 The shipped vocabulary is as follows.
 
@@ -40,16 +40,16 @@ The collector prefix remains `/^\.(?:row|col|offset|g|gx|gy)(?:-|[^\w-]|$)/u`. T
 The corrected setup and conformance commands returned the following results.
 
 ```text
-bash tmp/units/cl8b-run.sh styles-build-2 npm.cmd run build:src:styles
+bash cl8b-run.sh styles-build-2 npm.cmd run build:src:styles
 ✓ built in 443ms
 EXIT=0
 
-bash tmp/units/cl8b-run.sh setup-corrected npm.cmd run test:setup
+bash cl8b-run.sh setup-corrected npm.cmd run test:setup
  Test Files  3 passed (3)
       Tests  147 passed (147)
 EXIT=0
 
-bash tmp/units/cl8b-run.sh conformance-2 npm.cmd run test:conformance
+bash cl8b-run.sh conformance-2 npm.cmd run test:conformance
  Test Files  1 passed (1)
       Tests  10 passed (10)
 EXIT=0
@@ -71,7 +71,7 @@ step = 0, 1, 2, 3, 4, 5
 The conformance assertion requires the shipped selectors and properties, rejects the remaining deferrals if emitted, and compares the guide’s shipped keys with the sorted listing containing `g`, `gx`, `gy`, and `row-gap`. The supplemental accounting command returned:
 
 ```text
-bash tmp/units/cl8b-run.sh accounting-2 node tmp/units/cl8b-accounting-2.mjs
+bash cl8b-run.sh accounting-2 node cl8b-accounting-2.mjs
 row-gap recorded=36 emitted=36 missing=0 extra=0 deferred=0
 g: entries=72 distinct=36 properties=["--bs-gutter-x","--bs-gutter-y"]
 steps=[0,1,2,3,4,5]
@@ -84,13 +84,13 @@ steps=[0,1,2,3,4,5]
 EXIT=0
 ```
 
-The multiset controls modify only the built `dist/src/styles/index.css` file. Their instrument is `tmp/units/cl8b-control-2.mjs`. It saves the original bytes, makes the named change through PostCSS, and restores those exact bytes. The assertion measures selector multiplicity and media ancestry within its admitted prefixes; it does not measure declaration values.
+The multiset controls modify only the built `dist/src/styles/index.css` file. Their instrument is `cl8b-control-2.mjs`. It saves the original bytes, makes the named change through PostCSS, and restores those exact bytes. The assertion measures selector multiplicity and media ancestry within its admitted prefixes; it does not measure declaration values.
 
 For the missing-selector control, the instrument removes `.gx-0` from its horizontal rule while retaining `.g-0`. These are the exact commands and relevant failing output.
 
 ```text
-bash tmp/units/cl8b-run.sh missing-plant-2 node tmp/units/cl8b-control-2.mjs plant missing
-bash tmp/units/cl8b-run.sh missing-red-2 npm.cmd run test:setup -- tests/setupStyles.test.ts -t "binds the built grid selector and media-condition multiset"
+bash cl8b-run.sh missing-plant-2 node cl8b-control-2.mjs plant missing
+bash cl8b-run.sh missing-red-2 npm.cmd run test:setup -- tests/setupStyles.test.ts -t "binds the built grid selector and media-condition multiset"
 
 FAIL |setup| tests/setupStyles.test.ts > styles setup > binds the built grid selector and media-condition multiset to the inventory minus deferrals
 AssertionError: expected [ '[".col",[]]', …(377) ] to deeply equal [ '[".col",[]]', …(378) ]
@@ -103,8 +103,8 @@ AssertionError: expected [ '[".col",[]]', …(377) ] to deeply equal [ '[".col",
       Tests  1 failed | 86 skipped (87)
 EXIT=1
 
-bash tmp/units/cl8b-run.sh missing-restore-2 node tmp/units/cl8b-control-2.mjs restore missing
-bash tmp/units/cl8b-run.sh missing-green-2 npm.cmd run test:setup -- tests/setupStyles.test.ts -t "binds the built grid selector and media-condition multiset"
+bash cl8b-run.sh missing-restore-2 node cl8b-control-2.mjs restore missing
+bash cl8b-run.sh missing-green-2 npm.cmd run test:setup -- tests/setupStyles.test.ts -t "binds the built grid selector and media-condition multiset"
 
  Test Files  1 passed (1)
       Tests  1 passed | 86 skipped (87)
@@ -114,8 +114,8 @@ EXIT=0
 For the extra-selector control, the instrument appends `.gx-unrecorded { --bs-gutter-x: 0 }`. That selector lies under an admitted gutter prefix and outside the recorded vocabulary. The commands and relevant output are:
 
 ```text
-bash tmp/units/cl8b-run.sh extra-plant-2 node tmp/units/cl8b-control-2.mjs plant extra
-bash tmp/units/cl8b-run.sh extra-red-2 npm.cmd run test:setup -- tests/setupStyles.test.ts -t "binds the built grid selector and media-condition multiset"
+bash cl8b-run.sh extra-plant-2 node cl8b-control-2.mjs plant extra
+bash cl8b-run.sh extra-red-2 npm.cmd run test:setup -- tests/setupStyles.test.ts -t "binds the built grid selector and media-condition multiset"
 
 FAIL |setup| tests/setupStyles.test.ts > styles setup > binds the built grid selector and media-condition multiset to the inventory minus deferrals
 AssertionError: expected [ '[".col",[]]', …(379) ] to deeply equal [ '[".col",[]]', …(378) ]
@@ -128,8 +128,8 @@ AssertionError: expected [ '[".col",[]]', …(379) ] to deeply equal [ '[".col",
       Tests  1 failed | 86 skipped (87)
 EXIT=1
 
-bash tmp/units/cl8b-run.sh extra-restore-2 node tmp/units/cl8b-control-2.mjs restore extra
-bash tmp/units/cl8b-run.sh extra-green-2 npm.cmd run test:setup -- tests/setupStyles.test.ts -t "binds the built grid selector and media-condition multiset"
+bash cl8b-run.sh extra-restore-2 node cl8b-control-2.mjs restore extra
+bash cl8b-run.sh extra-green-2 npm.cmd run test:setup -- tests/setupStyles.test.ts -t "binds the built grid selector and media-condition multiset"
 
  Test Files  1 passed (1)
       Tests  1 passed | 86 skipped (87)
@@ -141,14 +141,14 @@ The initial browser run exposed a lexical mismatch in the authored token asserti
 The same browser command failed before that normalization and passed after it:
 
 ```text
-bash tmp/units/cl8b-run.sh gap-browser-2 npm.cmd run test:src:styles -- tests/src/styles/utilities/gap.test.ts
+bash cl8b-run.sh gap-browser-2 npm.cmd run test:src:styles -- tests/src/styles/utilities/gap.test.ts
 
 AssertionError: expected '.25rem' to be '0.25rem' // Object.is equality
  Test Files  1 failed (1)
       Tests  6 failed | 1 passed (7)
 EXIT=1
 
-bash tmp/units/cl8b-run.sh gap-browser-normalized-2 npm.cmd run test:src:styles -- tests/src/styles/utilities/gap.test.ts
+bash cl8b-run.sh gap-browser-normalized-2 npm.cmd run test:src:styles -- tests/src/styles/utilities/gap.test.ts
 
  Test Files  1 passed (1)
       Tests  7 passed (7)
@@ -172,8 +172,8 @@ The authored density and retuning case also passes. With the specimen’s densit
 The emitted-value control changes the horizontal declaration shared by `.g-1` and `.gx-1` from `var(--vn-gap-1)` to `var(--vn-gap-2)`. It invokes Vitest directly so the styles script does not rebuild over the planted value. These are the commands and output.
 
 ```text
-bash tmp/units/cl8b-run.sh value-plant-2 node tmp/units/cl8b-control-2.mjs plant value
-bash tmp/units/cl8b-run.sh value-red-2 node node_modules/vitest/vitest.mjs run --config configs/src/vite.styles.config.ts --no-cache --reporter=dot tests/src/styles/utilities/gap.test.ts -t "resolves every step around the 'xs' boundary"
+bash cl8b-run.sh value-plant-2 node cl8b-control-2.mjs plant value
+bash cl8b-run.sh value-red-2 node node_modules/vitest/vitest.mjs run --config configs/src/vite.styles.config.ts --no-cache --reporter=dot tests/src/styles/utilities/gap.test.ts -t "resolves every step around the 'xs' boundary"
 
 FAIL |[object Object] (chromium)| tests/src/styles/utilities/gap.test.ts:13:32 > gap utilities > resolves every step around the 'xs' boundary
 AssertionError: expected -4 to be -2 // Object.is equality
@@ -187,8 +187,8 @@ AssertionError: expected -4 to be -2 // Object.is equality
       Tests  1 failed | 6 skipped (7)
 EXIT=1
 
-bash tmp/units/cl8b-run.sh value-restore-2 node tmp/units/cl8b-control-2.mjs restore value
-bash tmp/units/cl8b-run.sh value-green-2 node node_modules/vitest/vitest.mjs run --config configs/src/vite.styles.config.ts --no-cache --reporter=dot tests/src/styles/utilities/gap.test.ts -t "resolves every step around the 'xs' boundary"
+bash cl8b-run.sh value-restore-2 node cl8b-control-2.mjs restore value
+bash cl8b-run.sh value-green-2 node node_modules/vitest/vitest.mjs run --config configs/src/vite.styles.config.ts --no-cache --reporter=dot tests/src/styles/utilities/gap.test.ts -t "resolves every step around the 'xs' boundary"
 
  Test Files  1 passed (1)
       Tests  1 passed | 6 skipped (7)
@@ -215,8 +215,8 @@ The final build after the browser gates has that digest too. The filtered contro
 The browser-host instrument launched the resolved browsers on Windows on 2026-09-21. Its commands were:
 
 ```text
-bash tmp/units/cl8b-run.sh browser-host-2 node --experimental-strip-types tmp/units/cl8b-browser-host-2.mjs
-bash tmp/units/cl8b-run.sh browser-edge-host-2 env PLAYWRIGHT_CHANNEL=msedge node --experimental-strip-types tmp/units/cl8b-browser-host-2.mjs
+bash cl8b-run.sh browser-host-2 node --experimental-strip-types cl8b-browser-host-2.mjs
+bash cl8b-run.sh browser-edge-host-2 env PLAYWRIGHT_CHANNEL=msedge node --experimental-strip-types cl8b-browser-host-2.mjs
 ```
 
 Managed Chromium resolved to `C:\Users\mikes\AppData\Local\ms-playwright\chromium-1243\chrome-win64\chrome.exe`, with no executable, endpoint, or channel override; its version was `153.0.8010.12`. Edge resolved through `{"launchOptions":{"channel":"msedge"}}` and returned version `153.0.4234.48`. Each launch exited 0.
@@ -225,11 +225,11 @@ The gate chain ran in the required order. The table gives the exact commands, ex
 
 | Command | Exit | Final result |
 | --- | --- | --- |
-| `bash tmp/units/cl8b-run.sh gate-format-2 npm.cmd run format:check` | 0 | `All matched files use the correct format.` |
-| `bash tmp/units/cl8b-run.sh gate-lint-2 npm.cmd run lint:check` | 0 | `EXIT=0`; no diagnostic output. |
-| `bash tmp/units/cl8b-run.sh gate-check-2 npm.cmd run check` | 0 | `vue-tsc --noEmit -p configs/app/tsconfig.browser.json`, then `EXIT=0`. |
-| `bash tmp/units/cl8b-run.sh gate-build-2 npm.cmd run build` | 0 | `✓ built in 567ms`, then `EXIT=0`. |
-| `bash tmp/units/cl8b-run.sh gate-test-2 npm.cmd test` | 0 | Guides finished with `Test Files  1 passed (1)`, `Tests  18 passed (18)`, then `EXIT=0`. |
+| `bash cl8b-run.sh gate-format-2 npm.cmd run format:check` | 0 | `All matched files use the correct format.` |
+| `bash cl8b-run.sh gate-lint-2 npm.cmd run lint:check` | 0 | `EXIT=0`; no diagnostic output. |
+| `bash cl8b-run.sh gate-check-2 npm.cmd run check` | 0 | `vue-tsc --noEmit -p configs/app/tsconfig.browser.json`, then `EXIT=0`. |
+| `bash cl8b-run.sh gate-build-2 npm.cmd run build` | 0 | `✓ built in 567ms`, then `EXIT=0`. |
+| `bash cl8b-run.sh gate-test-2 npm.cmd test` | 0 | Guides finished with `Test Files  1 passed (1)`, `Tests  18 passed (18)`, then `EXIT=0`. |
 
 The managed-Chromium test chain contains these actual result lines.
 
@@ -252,12 +252,12 @@ The explicit app-browser alias and the Edge commands returned these results.
 
 | Command | Exit | Final result lines |
 | --- | --- | --- |
-| `bash tmp/units/cl8b-run.sh chromium-app-browser-2 npm.cmd run test:app:browser` | 0 | `Test Files  9 passed (9)`; `Tests  24 passed (24)` |
-| `bash tmp/units/cl8b-run.sh edge-styles-2 env PLAYWRIGHT_CHANNEL=msedge npm.cmd run test:src:styles` | 0 | `Test Files  54 passed (54)`; `Tests  356 passed (356)` |
-| `bash tmp/units/cl8b-run.sh edge-setup-browser-2 env PLAYWRIGHT_CHANNEL=msedge npm.cmd run test:setup:browser` | 0 | `Test Files  1 passed (1)`; `Tests  33 passed (33)` |
-| `bash tmp/units/cl8b-run.sh edge-app-browser-2 env PLAYWRIGHT_CHANNEL=msedge npm.cmd run test:app:browser` | 0 | `Test Files  9 passed (9)`; `Tests  24 passed (24)` |
+| `bash cl8b-run.sh chromium-app-browser-2 npm.cmd run test:app:browser` | 0 | `Test Files  9 passed (9)`; `Tests  24 passed (24)` |
+| `bash cl8b-run.sh edge-styles-2 env PLAYWRIGHT_CHANNEL=msedge npm.cmd run test:src:styles` | 0 | `Test Files  54 passed (54)`; `Tests  356 passed (356)` |
+| `bash cl8b-run.sh edge-setup-browser-2 env PLAYWRIGHT_CHANNEL=msedge npm.cmd run test:setup:browser` | 0 | `Test Files  1 passed (1)`; `Tests  33 passed (33)` |
+| `bash cl8b-run.sh edge-app-browser-2 env PLAYWRIGHT_CHANNEL=msedge npm.cmd run test:app:browser` | 0 | `Test Files  9 passed (9)`; `Tests  24 passed (24)` |
 
-The logs retain the browser externalization warnings and API Extractor’s TypeScript-version notice; neither caused a failing gate. Every wrapper command writes its complete output to `tmp/units/cl8b-<label>.log.txt`, where the label is the argument following `cl8b-run.sh`.
+The logs retain the browser externalization warnings and API Extractor’s TypeScript-version notice; neither caused a failing gate. Every wrapper command writes its complete output to `cl8b-<label>.log.txt`, where the label is the argument following `cl8b-run.sh`.
 
 The actual final `git diff --stat` output is:
 

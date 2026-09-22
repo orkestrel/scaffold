@@ -7,7 +7,7 @@ Subject: unit CL8b in the Veneer checkout (`C:/Users/mikes/WebstormProjects/vene
 rulings: `units/cl8b-rulings.md`, measured rather than scouted. Scope read:
 `units/cl8b-scope-read-report.md`.
 
-Evidence: the rendered diff `tmp/audit/cl8b-diff.patch` and status `tmp/audit/cl8b-status.txt`, the
+Evidence: the rendered diff `units/cl8b-diff.patch.txt` and status `tmp/audit/cl8b-status.txt`, the
 live tree, and the built `dist/src/styles/index.css`.
 
 **Scope of this audit.** Implementation only: correctness, rule compliance, test sufficiency, scope

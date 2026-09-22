@@ -8,7 +8,7 @@ assignment directly and spawn nothing.
 ## Objective
 
 Rule on every claim marked `[mechanical]` in
-`C:/Users/mikes/WebstormProjects/scaffold/tmp/audit/cl8b-audit-claims.md` with CONFIRMED, REFUTED, or
+`C:/Users/mikes/WebstormProjects/scaffold/.orkestrel/veneer/cl8b-audit-claims.md` with CONFIRMED, REFUTED, or
 UNDECIDABLE and `file:line` evidence, run the probes below, add any extra finding that is an
 implementation defect (numbered after the last claim), and end with one terminal line:
 `Verdict: accept` or `Verdict: fix round` with the claims that force it.
@@ -19,7 +19,7 @@ round for its absence.
 
 ## Evidence
 
-The rendered diff over the CL8 landing `d2c5bb3` at `tmp/audit/cl8b-diff.patch` and the status at
+The rendered diff over the CL8 landing `d2c5bb3` at `cl8b-diff.patch.txt` and the status at
 `tmp/audit/cl8b-status.txt`, both under `C:/Users/mikes/WebstormProjects/scaffold/`; the live Veneer
 tree at `C:/Users/mikes/WebstormProjects/veneer`, including `src/styles/utilities/_gap.scss`,
 `src/styles/index.scss`, `src/styles/_tokens.scss`, `src/core/constants.ts`,

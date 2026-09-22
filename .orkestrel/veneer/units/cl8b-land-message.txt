@@ -1,0 +1,39 @@
+Ship the gutter and gap step utilities (CL8b)
+
+The published cascade carries the gutter and gap step utilities: the combined
+gutter class, each single-axis gutter class, and the row-gap class, at every
+step and every breakpoint the ramp carries.
+
+They ship in Bootstrap's own grouping, two rules per step, with the combined
+class in the horizontal rule and again in the vertical one. That shape is
+not cosmetic: the pinned record carries the combined class twice because
+Bootstrap emits it twice, and the emitted-vocabulary proof compares a
+multiset, so a tidier single rule per step would resolve identically in a
+browser and still redden.
+
+The steps read a scale of their own, carrying no density factor. Veneer's
+space tokens hold four of the six values but every one of them is multiplied
+by that factor while the gutter defaults are not, so reading the space scale
+would have made a utility and the default it overrides resolve to different
+lengths at any density but the identity.
+
+The row key closes here. Its gap selectors were deferred to this unit when
+the grid shipped, and their deferral rows are deleted as the selectors
+arrive. The emitted-vocabulary comparison gains the three gutter keys and
+not the gap key, because the row key already carries those selectors and
+naming both would count each twice against a cascade emitting each once.
+
+The loop preamble the grid and these utilities shared moved to a mixin that
+yields the infix and the boundary, because a pattern in two partials belongs
+there and the grid's offset guard needs the boundary. Both partials emit
+byte-identical cascades across the extraction.
+
+The important priority carries an assertion now: a consumer's unlayered rule
+is loaded after the cascade, and the utility is read to still win. Without
+the priority it would not, because an unlayered declaration outranks every
+layered one.
+
+Every gate exits 0 on managed Chromium and Edge. The audit is recorded in
+scaffold's .orkestrel/veneer/cl8b-audit-verdict.md file.
+
+Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
