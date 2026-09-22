@@ -1,0 +1,19 @@
+# L1 LEDGER-HOME — `analyst` verdict (GPT-6 Astra, objective lane)
+
+Journal `tmp/codex/l1-audit-analyst.jsonl` (swept at acceptance), thread `01a0caef-79a4-7613-bdec-37be8fb82362`, exit 0. Brief: `.orkestrel/veneer/units/l1-audit-analyst-brief.md`. MISSING-CLAIMS is upheld against the Orchestrator's launcher, which named a claims file the round never staged; the lane ruled on the brief's own claims, which are the round's claims. Claim 5 read the chain mid-run; the finished chain is green on every gate (`l1-gates.log.txt`).
+
+1. **CONFIRMED** — [guides/veneer.md:935](/home/user/veneer-ledger/guides/veneer.md:935), [guides/veneer.md:1924](/home/user/veneer-ledger/guides/veneer.md:1924). Independent row diffs against `ed4a8ec` exit 0. Introductions, legend, refresh command, and component headings survive unchanged. Section comparisons differ only by the separating blank line. Placement, directory removal, and guide inventory match the claim. A mutated header makes the comparison report a difference.
+
+2. **CONFIRMED** — [tests/setupServer.ts:1138](/home/user/veneer-ledger/tests/setupServer.ts:1138), [tests/setupServer.ts:1213](/home/user/veneer-ledger/tests/setupServer.ts:1213). Real default readers successfully load the guide. Fixtures and plants select `Tokens`; [tests/guides.test.ts:29](/home/user/veneer-ledger/tests/guides.test.ts:29) inventories `guides/*.md`. Conformance is unchanged. A read-only execution comparing the compiled cascade with the guide returns empty drift. Changing the parsed `.blockquote` font-size value in memory produces the expected unrecorded `var(--vn-size-5)` and stale `var(--vn-size-4)` rows. The assertions at [tests/conformance.test.ts:165](/home/user/veneer-ledger/tests/conformance.test.ts:165) distinguish that mutation. No Vitest project or filesystem mutation was used.
+
+3. **CONFIRMED** — [guides/veneer.md:879](/home/user/veneer-ledger/guides/veneer.md:879), [guides/veneer.md:890](/home/user/veneer-ledger/guides/veneer.md:890), [guides/veneer.md:2120](/home/user/veneer-ledger/guides/veneer.md:2120), [guides/README.md:19](/home/user/veneer-ledger/guides/README.md:19). References and wording match. The requested obsolete-reference pattern finds nothing under `guides` and `tests`.
+
+4. **CONFIRMED** — [l1-status.txt:1](/home/user/scaffold/tmp/audit/l1-status.txt:1). The supplied status contains exactly the claimed paths. The supplied diff matches the live diff against `ed4a8ec`. The live working tree is clean after commit `ec816c5`; this does not contradict the recorded precommit status.
+
+5. **UNRESOLVED** — [l1-gates.log.txt:4252](/home/user/scaffold/tmp/audit/l1-gates.log.txt:4252). Completed stages report exit 0 through `test:journey`. The final reading reaches `test:policy` without `=== gates done`. A completed log with successful remaining exits would settle this claim.
+
+**Outside the claims — MISSING-CLAIMS: BROKEN.** Reading `/home/user/scaffold/tmp/audit/l1-audit-claims.md` fails with `ENOENT`; a subsequent existence check also fails. The launch names an unavailable authority, contrary to [orchestration.md:498](/home/user/scaffold/.agents/orchestration.md:498). The verdicts therefore cover the embedded brief claims only. Supply the shared claims artifact and verify its agreement with the embedded claims. This finding concerns the dispatch, not the ledger implementation.
+
+**Attacked and held:** Claims 1–4 held under the attacks recorded above. Separating Markdown blank lines preserve row bytes; a committed clean tree preserves the recorded change scope. No additional attacks are claimed.
+
+VERDICT: FAIL 5; outside the claims: MISSING-CLAIMS
