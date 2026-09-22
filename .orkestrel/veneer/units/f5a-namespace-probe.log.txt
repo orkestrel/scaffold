@@ -1,0 +1,17 @@
+{
+  "version": "Chrome/141.0.0.0",
+  "out": [
+    {
+      "rule": "CSSNamespaceRule",
+      "text": "@namespace s url(\"urn:audit\");"
+    },
+    {
+      "selectorText": "s|p",
+      "matches": "THROWS SyntaxError: Failed to execute 'matches' on 'Element': 's|p' is not a valid selector."
+    },
+    {
+      "selectorText": "p",
+      "matches": true
+    }
+  ]
+}
