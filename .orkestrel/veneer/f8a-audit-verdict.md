@@ -58,3 +58,20 @@ reading rather than a defect. The unit landed on the session branch as `0783b2b`
 `guides/veneer.md` § Files and the `tests/setupBrowser.test.ts` inventory resolved by
 `units/f8a-landing-resolve.py`); the deciding chain is `units/f8a-landing-gates.sh` over that
 commit, recorded in § Landing when it finishes.
+
+## Landing
+
+The deciding chain `units/f8a-landing-gates.sh` over `0783b2b` (`units/f8a-landing-gates.log.txt`,
+2026-09-22 21:32 to 21:47) is green on every gate except `test:journey`, whose four failures are
+15 s timeouts in the keyboard, focus-ring, and pointer cases of the `light-1280` variant. The
+re-run of `test:journey` alone at 21:50 (`units/f8a-landing-journey-rerun.log.txt`) failed sixteen
+cases the same way, with the portfolio cases cascading from the frames the timed-out cases never
+placed; the container's one-minute load average read 33.9 on 4 CPUs while eight units ran. The
+diagnostic run of the `light-1280` variant with a 90 s case timeout under the same load
+(`units/f8a-landing-journey-diagnostic.log.txt`) passed every case (`Tests 25 passed (25)`,
+exit 0), which separates the timing reading from a regression: the cases hold and exceed the
+configured 15 s under load. Roadmap fold 12 (`aca0423`) passed `format:check` and `test:guides`;
+its `test:policy` run timed out at 5 s under the same load (`units/f8a-fold-12-gates.log.txt`).
+The deciding re-run of `test:journey` and `test:policy` alone is armed to fire when the one-minute
+load average falls under 8, per § Writing concurrency rule 10, and `main` fast-forwards when it is
+green. The session branch carries `0783b2b` and `aca0423` and is pushed.

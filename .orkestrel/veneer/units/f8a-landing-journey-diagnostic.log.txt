@@ -1,0 +1,16 @@
+=== diagnostic: journey light-1280 with a 90 s case timeout over aca0423, load 31.13 33.99 30.17 on 4 cpus (21:51:46)
+
+ RUN  v4.1.11 /home/user/veneer
+
+Port 63315 is in use, trying another one...
+Port 63316 is in use, trying another one...
+Port 63317 is in use, trying another one...
+Port 63318 is in use, trying another one...
+·························
+
+ Test Files  1 passed (1)
+      Tests  25 passed (25)
+   Start at  21:51:51
+   Duration  70.36s (transform 0ms, setup 585ms, import 165ms, tests 56.79s, environment 0ms)
+
+=== exit=0 (21:53:02)

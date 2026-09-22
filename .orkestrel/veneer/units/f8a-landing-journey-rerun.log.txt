@@ -1,0 +1,319 @@
+=== npm run test:journey alone over 0783b2b (21:47:56)
+
+> @orkestrel/veneer@0.0.1 test:journey
+> vitest run --config configs/app/vite.journey.config.ts --no-cache --reporter=dot
+
+
+ RUN  v4.1.11 /home/user/veneer
+
+Port 63315 is in use, trying another one...
+Port 63316 is in use, trying another one...
+Port 63317 is in use, trying another one...
+Port 63318 is in use, trying another one...
+Port 63319 is in use, trying another one...
+Port 63320 is in use, trying another one...
+Port 63316 is in use, trying another one...
+Port 63317 is in use, trying another one...
+Port 63318 is in use, trying another one...
+Port 63319 is in use, trying another one...
+Port 63320 is in use, trying another one...
+Port 63317 is in use, trying another one...
+Port 63318 is in use, trying another one...
+Port 63319 is in use, trying another one...
+Port 63320 is in use, trying another one...
+Port 63318 is in use, trying another one...
+Port 63319 is in use, trying another one...
+Port 63320 is in use, trying another one...
+Port 63321 is in use, trying another one...
+Port 63321 is in use, trying another one...
+Port 63321 is in use, trying another one...
+Port 63322 is in use, trying another one...
+Port 63322 is in use, trying another one...
+Port 63323 is in use, trying another one...
+················x··x·x··x····xx··x·x············x·············x······x·······x····x··x········x···x·
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 16 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |journey:light-1280 (chromium)| tests/app/browser/integration.test.ts:267:2 > journey > toggles a native host and an anchor host through the keyboard
+Error: Test timed out in 15000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/app/browser/integration.test.ts:267:1
+    265|  })
+    266|
+    267|  it('toggles a native host and an anchor host through the keyboard', a…
+       | ^
+    268|   const native = await traverseAccessible('Toggle')
+    269|   expect(document.activeElement).toBe(native)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/16]⎯
+
+ FAIL  |journey:light-1280 (chromium)| tests/app/browser/integration.test.ts:334:2 > journey > paints a focus ring on every variant reached through the keyboard
+Error: Test timed out in 15000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/app/browser/integration.test.ts:334:1
+    332|  })
+    333|
+    334|  it('paints a focus ring on every variant reached through the keyboard…
+       | ^
+    335|   await applyTheme(LIGHT)
+    336|   const painted = collectPainted(mounted.section)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/16]⎯
+
+ FAIL  |journey:light-1280 (chromium)| tests/app/browser/integration.test.ts:373:2 > journey > paints one focus ring on every variant in dark mode as well
+Error: Test timed out in 15000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/app/browser/integration.test.ts:373:1
+    371|  })
+    372|
+    373|  it('paints one focus ring on every variant in dark mode as well', asy…
+       | ^
+    374|   await applyTheme(DARK)
+    375|   const painted = collectPainted(mounted.section)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/16]⎯
+
+ FAIL  |journey:light-1280 (chromium)| tests/app/browser/integration.test.ts:449:2 > journey > repaints a host under the pointer while it is hovered and while it is held
+Error: Interactive target "Primary" did not enter the pressed state
+ ❯ driveHold node_modules/@orkestrel/test/dist/src/browser/index.js:685:8
+ ❯ holdAccessible node_modules/@orkestrel/test/dist/src/browser/index.js:599:1
+ ❯ tests/app/browser/integration.test.ts:512:3
+    510|    await hoverAccessible('button', 'Primary')
+    511|    await releaseMedia()
+    512|    await holdAccessible('button', 'Primary')
+       |   ^
+    513|    await waitForAnimations(host)
+    514|    const held = readStyle(host, 'background-color')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/16]⎯
+
+ FAIL  |journey:light-1280 (chromium)| tests/app/browser/integration.test.ts:759:2 > portfolio > expands one filename per scenario and variant, and places every registered scenario
+AssertionError: expected [ 'base', 'capped-container', …(6) ] to strictly equal [ 'base', 'capped-container', …(7) ]
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[33m@@ -1,10 +1,9 @@[39m
+[2m  [[22m
+[2m    "base",[22m
+[2m    "capped-container",[22m
+[2m    "numbered-columns",[22m
+[32m-   "primary-active",[39m
+[2m    "primary-focus",[22m
+[2m    "primary-hover",[22m
+[2m    "role-links",[22m
+[2m    "showcase",[22m
+[2m    "toggle-pressed",[22m
+
+ ❯ tests/app/browser/integration.test.ts:777:39
+    775|   // Every registered scenario was reached, none twice, and none unreg…
+    776|   // refuses a scenario it does not carry, so this pairs that refusal …
+    777|   expect([...FRAMES.scenarios].sort()).toStrictEqual([...CAPTURE_SCENA…
+       |                                       ^
+    778|  })
+    779|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/16]⎯
+
+ FAIL  |journey:light-1280 (chromium)| tests/app/browser/integration.test.ts:873:2 > portfolio > reads every frame this variant left in the portfolio directory inside its declared region
+AssertionError: expected [ 'base', 'capped-container', …(6) ] to strictly equal [ 'base', 'capped-container', …(7) ]
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[33m@@ -1,10 +1,9 @@[39m
+[2m  [[22m
+[2m    "base",[22m
+[2m    "capped-container",[22m
+[2m    "numbered-columns",[22m
+[32m-   "primary-active",[39m
+[2m    "primary-focus",[22m
+[2m    "primary-hover",[22m
+[2m    "role-links",[22m
+[2m    "showcase",[22m
+[2m    "toggle-pressed",[22m
+
+ ❯ tests/app/browser/integration.test.ts:883:37
+    881|    FRAMES.placements.map((placement) => [placement.scenario, placement…
+    882|   )
+    883|   expect([...regions.keys()].sort()).toStrictEqual([...CAPTURE_SCENARI…
+       |                                     ^
+    884|   const expanded = CAPTURE_SCENARIOS.map((scenario) => `${scenario}--$…
+    885|   const present: string[] = []
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/16]⎯
+
+ FAIL  |journey:dark-1280 (chromium)| tests/app/browser/integration.test.ts:267:2 > journey > toggles a native host and an anchor host through the keyboard
+Error: Test timed out in 15000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/app/browser/integration.test.ts:267:1
+    265|  })
+    266|
+    267|  it('toggles a native host and an anchor host through the keyboard', a…
+       | ^
+    268|   const native = await traverseAccessible('Toggle')
+    269|   expect(document.activeElement).toBe(native)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/16]⎯
+
+ FAIL  |journey:light-390 (chromium)| tests/app/browser/integration.test.ts:267:2 > journey > toggles a native host and an anchor host through the keyboard
+Error: Test timed out in 15000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/app/browser/integration.test.ts:267:1
+    265|  })
+    266|
+    267|  it('toggles a native host and an anchor host through the keyboard', a…
+       | ^
+    268|   const native = await traverseAccessible('Toggle')
+    269|   expect(document.activeElement).toBe(native)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/16]⎯
+
+ FAIL  |journey:light-390 (chromium)| tests/app/browser/integration.test.ts:334:2 > journey > paints a focus ring on every variant reached through the keyboard
+Error: Test timed out in 15000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/app/browser/integration.test.ts:334:1
+    332|  })
+    333|
+    334|  it('paints a focus ring on every variant reached through the keyboard…
+       | ^
+    335|   await applyTheme(LIGHT)
+    336|   const painted = collectPainted(mounted.section)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/16]⎯
+
+ FAIL  |journey:light-390 (chromium)| tests/app/browser/integration.test.ts:373:2 > journey > paints one focus ring on every variant in dark mode as well
+Error: Animation "body" did not settle within 1000ms (waited 1005ms): box-shadow, box-shadow
+ ❯ waitForAnimations node_modules/@orkestrel/test/dist/src/browser/index.js:1355:10
+ ❯ applyTheme tests/setupBrowser.ts:1013:1
+    1011|  }
+    1012|  await waitForState('button', 'Dark mode', `pressed=${String(dark)}`)
+    1013|  await waitForAnimations(document.body)
+       | ^
+    1014| }
+    1015|
+ ❯ tests/app/browser/integration.test.ts:374:2
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/16]⎯
+
+ FAIL  |journey:dark-390 (chromium)| tests/app/browser/integration.test.ts:267:2 > journey > toggles a native host and an anchor host through the keyboard
+Error: Test timed out in 15000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/app/browser/integration.test.ts:267:1
+    265|  })
+    266|
+    267|  it('toggles a native host and an anchor host through the keyboard', a…
+       | ^
+    268|   const native = await traverseAccessible('Toggle')
+    269|   expect(document.activeElement).toBe(native)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/16]⎯
+
+ FAIL  |journey:dark-390 (chromium)| tests/app/browser/integration.test.ts:334:2 > journey > paints a focus ring on every variant reached through the keyboard
+Error: Test timed out in 15000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/app/browser/integration.test.ts:334:1
+    332|  })
+    333|
+    334|  it('paints a focus ring on every variant reached through the keyboard…
+       | ^
+    335|   await applyTheme(LIGHT)
+    336|   const painted = collectPainted(mounted.section)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/16]⎯
+
+ FAIL  |journey:dark-390 (chromium)| tests/app/browser/integration.test.ts:373:2 > journey > paints one focus ring on every variant in dark mode as well
+Error: Test timed out in 15000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/app/browser/integration.test.ts:373:1
+    371|  })
+    372|
+    373|  it('paints one focus ring on every variant in dark mode as well', asy…
+       | ^
+    374|   await applyTheme(DARK)
+    375|   const painted = collectPainted(mounted.section)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/16]⎯
+
+ FAIL  |journey:dark-390 (chromium)| tests/app/browser/integration.test.ts:449:2 > journey > repaints a host under the pointer while it is hovered and while it is held
+AssertionError: expected false to be true // Object.is equality
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- true[39m
+[31m+ false[39m
+
+ ❯ tests/app/browser/integration.test.ts:515:35
+    513|    await waitForAnimations(host)
+    514|    const held = readStyle(host, 'background-color')
+    515|    expect(host.matches(':active')).toBe(true)
+       |                                   ^
+    516|    expect(held).not.toBe(hovered)
+    517|    await stageMedia({ motion: false })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/16]⎯
+
+ FAIL  |journey:dark-390 (chromium)| tests/app/browser/integration.test.ts:759:2 > portfolio > expands one filename per scenario and variant, and places every registered scenario
+AssertionError: expected [ 'base', 'capped-container', …(5) ] to strictly equal [ 'base', 'capped-container', …(7) ]
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  [[22m
+[2m    "base",[22m
+[2m    "capped-container",[22m
+[2m    "numbered-columns",[22m
+[32m-   "primary-active",[39m
+[2m    "primary-focus",[22m
+[32m-   "primary-hover",[39m
+[2m    "role-links",[22m
+[2m    "showcase",[22m
+[2m    "toggle-pressed",[22m
+[2m  ][22m
+
+ ❯ tests/app/browser/integration.test.ts:777:39
+    775|   // Every registered scenario was reached, none twice, and none unreg…
+    776|   // refuses a scenario it does not carry, so this pairs that refusal …
+    777|   expect([...FRAMES.scenarios].sort()).toStrictEqual([...CAPTURE_SCENA…
+       |                                       ^
+    778|  })
+    779|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/16]⎯
+
+ FAIL  |journey:dark-390 (chromium)| tests/app/browser/integration.test.ts:873:2 > portfolio > reads every frame this variant left in the portfolio directory inside its declared region
+AssertionError: expected [ 'base', 'capped-container', …(5) ] to strictly equal [ 'base', 'capped-container', …(7) ]
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  [[22m
+[2m    "base",[22m
+[2m    "capped-container",[22m
+[2m    "numbered-columns",[22m
+[32m-   "primary-active",[39m
+[2m    "primary-focus",[22m
+[32m-   "primary-hover",[39m
+[2m    "role-links",[22m
+[2m    "showcase",[22m
+[2m    "toggle-pressed",[22m
+[2m  ][22m
+
+ ❯ tests/app/browser/integration.test.ts:883:37
+    881|    FRAMES.placements.map((placement) => [placement.scenario, placement…
+    882|   )
+    883|   expect([...regions.keys()].sort()).toStrictEqual([...CAPTURE_SCENARI…
+       |                                     ^
+    884|   const expanded = CAPTURE_SCENARIOS.map((scenario) => `${scenario}--$…
+    885|   const present: string[] = []
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/16]⎯
+
+
+ Test Files  4 failed (4)
+      Tests  16 failed | 84 passed (100)
+   Start at  21:48:00
+   Duration  155.06s (transform 0ms, setup 19.05s, import 10.08s, tests 387.72s, environment 0ms)
+
+=== test:journey exit=1 (21:50:38)

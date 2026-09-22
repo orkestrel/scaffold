@@ -1,0 +1,56 @@
+=== fold 12 gates over aca0423 (21:48:38)
+
+> @orkestrel/veneer@0.0.1 format:check
+> oxfmt --config .oxfmtrc.json --check .
+
+Checking formatting...
+
+All matched files use the correct format.
+Finished in 70029ms on 214 files using 4 threads.
+=== format:check exit=0 (21:49:51)
+
+> @orkestrel/veneer@0.0.1 test:policy
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project policy
+
+
+ RUN  v4.1.11 /home/user/veneer
+
+····································································································-·x·······
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |policy| tests/policy.test.ts > repository policy > enforces the workspace policy laws including surface ownership
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/policy.test.ts:757:2
+    755|
+    756| describe('repository policy', () => {
+    757|  it('enforces the workspace policy laws including surface ownership', …
+       |  ^
+    758|   expect(inspectPolicyWorkspace(process.cwd())).toEqual([])
+    759|  })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 108 passed | 1 skipped (110)
+   Start at  21:50:02
+   Duration  23.22s (transform 2.77s, setup 865ms, import 3.76s, tests 16.61s, environment 0ms)
+
+=== test:policy exit=1 (21:50:26)
+
+> @orkestrel/veneer@0.0.1 test:guides
+> node --experimental-strip-types tests/guides.test.ts
+
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.11 [39m[90m/home/user/veneer[39m
+
+[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m[33m[39m[32m·[39m
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m18 passed[39m[22m[90m (18)[39m
+[2m   Start at [22m 21:50:40
+[2m   Duration [22m 4.74s[2m (transform 346ms, setup 208ms, import 3.88s, tests 17ms, environment 0ms)[22m
+
+=== test:guides exit=0 (21:50:45)
