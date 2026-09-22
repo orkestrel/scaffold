@@ -374,6 +374,12 @@ longer holds.
      successor-brief rule, the verdict shape and its single terminal line, and the reconciliation
      discipline.
    - Reconcile the lanes that ran. Drop, on the record, any finding no lane can substantiate.
+   - Where two lanes contradict each other, check first that each one's citations resolve in the
+     file it names, before weighing the arguments. A line number past a file's end settles the
+     disagreement in one command, and a lane that confirmed a claim on evidence that cannot exist
+     has its verdict on that claim discarded rather than balanced against the other lane's. Discard
+     the claim, not the lane: verify a sample of that lane's other citations, and keep the readings
+     that hold.
 6. **Verify.** Have one independent `verifier` run the authoritative gates.
 7. **Re-baseline.** Reconcile the remaining plan against what the phase revealed, before dispatching
    the next one.

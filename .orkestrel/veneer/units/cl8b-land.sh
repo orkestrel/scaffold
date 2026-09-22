@@ -12,7 +12,7 @@ set -u
 SCAFFOLD="C:/Users/mikes/WebstormProjects/scaffold"
 VENEER="C:/Users/mikes/WebstormProjects/veneer"
 LOG="$SCAFFOLD/tmp/units/cl8b-land.log.txt"
-ALLOWED=" app/browser/Showcase.ts app/browser/constants.ts app/browser/index.ts app/browser/sections/LayoutSection.ts guides/veneer.md src/core/constants.ts src/styles/_mixins.scss src/styles/_tokens.scss src/styles/components/_container.scss src/styles/components/_grid.scss src/styles/index.scss tests/app/browser/sections/LayoutSection.test.ts tests/conformance.test.ts tests/setupConformance.test.ts tests/setupStyles.test.ts tests/setupStyles.ts tests/src/styles/components/grid.test.ts "
+ALLOWED=" src/styles/utilities/_gap.scss tests/src/styles/utilities/gap.test.ts app/browser/Showcase.ts app/browser/constants.ts app/browser/index.ts app/browser/sections/LayoutSection.ts guides/veneer.md src/core/constants.ts src/styles/_mixins.scss src/styles/_tokens.scss src/styles/components/_container.scss src/styles/components/_grid.scss src/styles/index.scss tests/app/browser/sections/LayoutSection.test.ts tests/conformance.test.ts tests/setupConformance.test.ts tests/setupStyles.test.ts tests/setupStyles.ts tests/src/styles/components/grid.test.ts "
 exec > >(tee -a "$LOG") 2>&1
 echo "== $(date -u +%Y-%m-%dT%H:%M:%SZ) land start"
 cd "$VENEER" || exit 9
@@ -20,11 +20,11 @@ git log --oneline -1
 git status --porcelain --untracked-files=all | grep -v '^?? tmp'
 CHANGED=$(git status --porcelain --untracked-files=all | grep -v '^?? tmp' | awk '{print $2}' | sort)
 echo "changed: $(echo "$CHANGED" | tr '\n' ' ')"
-# The new partial's and proof's paths are the unit's own choice within its scope, so they are not
-# listed above. The refusal below is expected to name them on the first run: read the unit's report,
-# confirm each is the file it says it created, then add that exact path here with the brief clause
-# that granted it. Never widen this with a glob — a glob over the partials would admit a file the
-# unit was told not to touch, which is what this gate exists to refuse.
+# The new partial's and proof's paths were the unit's own choice within its scope. It chose
+# src/styles/utilities/_gap.scss and tests/src/styles/utilities/gap.test.ts, reported in
+# units/cl8b-report-2.md, and both are added to ALLOWED above by their exact paths under brief 1's
+# grant of "the new partial and its proof". Never widen this with a glob — a glob over the partials
+# would admit a file the unit was told not to touch, which is what this gate exists to refuse.
 for file in $CHANGED; do
   case "$ALLOWED" in
     *" $file "*) ;;
