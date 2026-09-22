@@ -98,3 +98,21 @@ D5 removed the writing direction they served; every proof reads the physical pro
 direction sentences and the image row say physical. The revert is one unit, F5d PHYSICAL, on
 `opus`, sequenced after F5a and before F5b so the ledger measures the reverted cascade and needs no
 logical-to-physical map.
+
+## D12 ruling, 2026-09-22 (later the same day)
+
+> Where did setupCases and setupCalibration come from? I think you went off the reservation there,
+> you need to stick to what scaffold propagates and what we have as conventions as per
+> AGENTS.md/CLAUDE.md and their folders and files, read them again thoroughly if you forgot. Only
+> thing different that was blessed was the new styles surface and what we have for the future
+> which would be the vue service.
+
+As read: the root `tests/` setup modules are the set `.claude/rules/tests.md` fixes by
+environment — `setup.ts`, `setupBrowser.ts`, `setupServer.ts`, `setupStyles.ts` — plus the
+vendored `setupPolicy.ts`, and nothing else; the styles surface and a future `src/vue` environment
+are the only blessed departures from what scaffold propagates. `tests/setupCases.ts` and
+`tests/setupCalibration.ts` (F5a's split, the Orchestrator's own decomposition, not a convention)
+fold back into `tests/setupStyles.ts`; `tests/setupConformance.ts` (Node-only helpers from an
+earlier round) becomes `tests/setupServer.ts`; `tests/setupListeners.ts` (a load-time fixture)
+moves under `tests/fixtures/`. The correction is one unit, F5e SETUP-CONVENTION, on `opus`,
+sequenced before F5d; the queued briefs that name the retired modules are rewritten after it lands.
