@@ -1,0 +1,175 @@
+diff --git a/guides/veneer.md b/guides/veneer.md
+index 7358e4c..4007ef6 100644
+--- a/guides/veneer.md
++++ b/guides/veneer.md
+@@ -218,8 +218,8 @@ the root `tsconfig.json` file, narrows the `lib` option to the `ESNext` value an
+ option to the `vite/client` value over the `src/styles/**/*.ts` sources, and emits nothing.
+ The styles proofs load the host-independent `tests/setupStyles.ts`, which holds the case tables
+ and the markup strings, the value lists copied from Bootstrap's own stylesheet and from Elements'
+-built showcase, and the shadow readers and the selector normalizer. They
+-read the installed cascade through the Node-only `tests/setupServer.ts`; `tests/setup.ts` carries
++built showcase, the shadow readers, and the selector normalizer. They read the installed cascade
++through the Node-only `tests/setupServer.ts`; `tests/setup.ts` carries
+ the shared helpers and `tests/setupBrowser.ts` the DOM helpers. Each setup module has its own
+ proof of the same name, and none imports a stylesheet: the styles project loads the built cascade
+ through its `setupFiles` array instead. Each partial has one proof of the
+@@ -266,10 +266,10 @@ The class restores inherited cell alignment and border color over the bare-cell
+ cells resolve bottom, body cells resolve top, and cell borders receive the table's contextual color.
+ Class padding overrides the bare cell's density spacing.
+ 
+-Responsive wrappers use physical horizontal overflow and the downward breakpoint mixin. Their overflow
+-scrolls below the named boundary and is absent at and above it. The unconditional wrapper scrolls
+-at every viewport. The vocabulary proof compares Bootstrap's `max-width: (N - 0.02)px` boundary
+-with Veneer's `width < Npx` form by adding 0.02 to the recorded boundary.
++Responsive wrappers use physical horizontal overflow and the downward breakpoint mixin. Their
++overflow scrolls below the named boundary and is absent at and above it. The unconditional wrapper
++scrolls at every viewport. The vocabulary proof compares Bootstrap's `max-width: (N - 0.02)px`
++boundary with Veneer's `width < Npx` form by adding 0.02 to the recorded boundary.
+ 
+ ### Helper classes
+ 
+@@ -318,9 +318,9 @@ These are the keys' recorded departures.
+   Veneer writes `var(--vn-motion-feedback) var(--vn-ease-standard)`, which resolves to `0.15s ease`
+   and rescales with `--vn-factor-motion`, as `.btn` does. A transition written outside those tokens
+   would ignore the motion factor the package publishes.
+-- **The shift's direction is physical.** `translate3d(0.25em, 0, 0)` moves the icon to the right,
+-  and one byte stream serves either writing direction, so the icon shifts the same way under each.
+-  Bootstrap's own right-to-left sheet flips it.
++- **Bootstrap flips the shift and Veneer does not.** `translate3d(0.25em, 0, 0)` moves the icon to
++  the right, and one byte stream serves either writing direction, so the icon shifts the same way
++  under each. Bootstrap's own right-to-left sheet flips it.
+ 
+ ### Deferred selectors
+ 
+@@ -1021,7 +1021,7 @@ must add a forced-colors axis before this reading closes.
+ | icon-link     | selector       | Ships the icon combinator and hover/focus shifts; underline color reads `--vn-link-rgb`, and timing reads Veneer's motion tokens instead of Bootstrap values. Proof: `tests/src/styles/components/icon-link.test.ts`.             | —                     | shipped  |
+ | ratio         | selector       | Every official `.ratio` selector ships, the pseudo-element and the named aspects included; resolved boxes and child fill are proved in `tests/src/styles/components/ratio.test.ts`.                                               | —                     | shipped  |
+ | ratio         | variable       | The `--bs-aspect-ratio` property carries each name's own height over its width, and a direct override retunes any box; both are proved in `tests/src/styles/components/ratio.test.ts`.                                            | —                     | shipped  |
+-| vr            | selector       | The `.vr` family ships in the components layer, reading `--bs-border-width` for its inline size; resolved width, stretch, and paint are proved in `tests/src/styles/components/vr.test.ts`.                                       | —                     | shipped  |
++| vr            | selector       | The `.vr` family ships in the components layer, reading `--bs-border-width` for its width; resolved width, stretch, and paint are proved in `tests/src/styles/components/vr.test.ts`.                                             | —                     | shipped  |
+ | engine        | identity       | Cross-cutting engine: `VERSION` `'5.3.8'`; `DATA_KEY` `bs.${NAME}`; `EVENT_KEY` `.${DATA_KEY}`; `eventName(name)` returns `${name}${EVENT_KEY}`                                                                                   | —                     | accepted |
+ | engine        | option         | Cross-cutting engine: `Default`/`DefaultType` inherited empty from `Config` unless a component overrides                                                                                                                          | —                     | accepted |
+ | engine        | attribute      | Cross-cutting engine: `data-bs-config` JSON merges with `data-bs-*` attributes read by `Manipulator`; config object wins last                                                                                                     | —                     | accepted |
+diff --git a/src/styles/components/_button.scss b/src/styles/components/_button.scss
+index d9a7f29..0128466 100644
+--- a/src/styles/components/_button.scss
++++ b/src/styles/components/_button.scss
+@@ -50,10 +50,7 @@
+ 		user-select: none;
+ 		background-color: var(--bs-btn-bg);
+ 		border: var(--bs-btn-border-width) solid var(--bs-btn-border-color);
+-		border-top-left-radius: var(--bs-btn-border-radius);
+-		border-top-right-radius: var(--bs-btn-border-radius);
+-		border-bottom-left-radius: var(--bs-btn-border-radius);
+-		border-bottom-right-radius: var(--bs-btn-border-radius);
++		border-radius: var(--bs-btn-border-radius);
+ 		box-shadow: var(--bs-btn-box-shadow);
+ 		@include transition(
+ 			(
+diff --git a/src/styles/elements/_button.scss b/src/styles/elements/_button.scss
+index c293452..cb0e657 100644
+--- a/src/styles/elements/_button.scss
++++ b/src/styles/elements/_button.scss
+@@ -13,10 +13,7 @@
+ 			color: var(--vn-text-body-base);
+ 			background-color: var(--vn-button-transparent);
+ 		}
+-		border-top-left-radius: var(--vn-radius-base);
+-		border-top-right-radius: var(--vn-radius-base);
+-		border-bottom-left-radius: var(--vn-radius-base);
+-		border-bottom-right-radius: var(--vn-radius-base);
++		border-radius: var(--vn-radius-base);
+ 		box-shadow: var(--vn-button-shadow);
+ 		cursor: pointer;
+ 		@include transition(
+diff --git a/tests/setupStyles.test.ts b/tests/setupStyles.test.ts
+index accd341..d7c0f3a 100644
+--- a/tests/setupStyles.test.ts
++++ b/tests/setupStyles.test.ts
+@@ -52,6 +52,27 @@ import {
+ 	TABLE_ROLE_CASES,
+ 	TABLE_SELECTORS,
+ 	THEME_DARK_ADDITIONS,
++	TEXT_A_CASES,
++	TEXT_ABBR_CASES,
++	TEXT_ADDRESS_CASES,
++	TEXT_BLOCKQUOTE_CASES,
++	TEXT_CODE_CASES,
++	TEXT_DL_CASES,
++	TEXT_HEADING_CASES,
++	TEXT_HR_CASES,
++	TEXT_KBD_CASES,
++	TEXT_MARK_CASES,
++	TEXT_MODES,
++	TEXT_OL_CASES,
++	TEXT_P_CASES,
++	TEXT_PRE_CASES,
++	TEXT_SAMP_CASES,
++	TEXT_SMALL_CASES,
++	TEXT_STRONG_CASES,
++	TEXT_SUB_CASES,
++	TEXT_SUP_CASES,
++	TEXT_UL_CASES,
++	TEXT_VAR_CASES,
+ 	TYPE_DISPLAY_CASES,
+ 	TYPE_DISPLAY_TOKEN_CASES,
+ 	TYPE_HEADING_CASES,
+@@ -1078,6 +1099,38 @@ describe('styles setup', () => {
+ 			expect(table.every((entry) => Object.isFrozen(entry))).toBe(true)
+ 		}
+ 	})
++	it('freezes every text case table with its entries', () => {
++		// A text table's keys moved to Bootstrap's physical properties under D11, and a table that
++		// thawed would let a proof rewrite the expectation it reads, so each table and each entry
++		// is frozen.
++		const tables: ReadonlyArray<readonly unknown[]> = [
++			TEXT_A_CASES,
++			TEXT_ABBR_CASES,
++			TEXT_ADDRESS_CASES,
++			TEXT_BLOCKQUOTE_CASES,
++			TEXT_CODE_CASES,
++			TEXT_DL_CASES,
++			TEXT_HEADING_CASES,
++			TEXT_HR_CASES,
++			TEXT_KBD_CASES,
++			TEXT_MARK_CASES,
++			TEXT_MODES,
++			TEXT_OL_CASES,
++			TEXT_P_CASES,
++			TEXT_PRE_CASES,
++			TEXT_SAMP_CASES,
++			TEXT_SMALL_CASES,
++			TEXT_STRONG_CASES,
++			TEXT_SUB_CASES,
++			TEXT_SUP_CASES,
++			TEXT_UL_CASES,
++			TEXT_VAR_CASES,
++		]
++		for (const table of tables) {
++			expect(Object.isFrozen(table)).toBe(true)
++			expect(table.every((entry) => Object.isFrozen(entry))).toBe(true)
++		}
++	})
+ 	it('names every partial the elements layer ships, and gives each mandated child a legal parent', () => {
+ 		const partials = readdirSync('src/styles/elements')
+ 			.flatMap((name) =>
+diff --git a/tests/setupStyles.ts b/tests/setupStyles.ts
+index 9a8d2cf..5372147 100644
+--- a/tests/setupStyles.ts
++++ b/tests/setupStyles.ts
+@@ -1,9 +1,9 @@
+-// Styles setup: the readers that walk a cascade, the selector grammar the normalizer stands on,
+-// the frozen case tables the style proofs drive their scenarios from, and the retained value lists
+-// the compatibility oracle measures the shipped cascade against. Host-independent: the Node `setup` project and the
+-// browser `src:styles` project both load it, so it takes no `node:*` import and reads no
+-// document. A helper that reads a file or a process belongs in `tests/setupServer.ts`, and a
+-// helper that drives a document belongs in `tests/setupBrowser.ts`.
++// Styles setup: the readers that walk a cascade, the selector grammar the normalizer stands on, the
++// frozen case tables the style proofs drive their scenarios from, and the retained value lists the
++// compatibility oracle measures the shipped cascade against. Host-independent: the Node `setup`
++// project and the browser `src:styles` project both load it, so it takes no `node:*` import and
++// reads no document. A helper that reads a file or a process belongs in `tests/setupServer.ts`, and
++// a helper that drives a document belongs in `tests/setupBrowser.ts`.
+ 
+ import type { AnyNode } from 'postcss'
+ import { isRecord } from '@orkestrel/contract'
