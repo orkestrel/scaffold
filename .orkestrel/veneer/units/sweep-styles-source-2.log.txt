@@ -1,9 +1,0 @@
-population: 44 partials over src/styles/elements and src/styles/components
-pairs compared: 946
-hits: 2
-
-src/styles/elements/_heading.scss and src/styles/components/_type.scss
-  shared: margin: 0 ; font-weight: var(--vn-weight-heading) ; line-height: var(--vn-line-heading) ; color: var(--bs-heading-color)
-
-src/styles/elements/_img.scss and src/styles/components/_image.scss
-  shared: max-inline-size: 100% ; block-size: auto

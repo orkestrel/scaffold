@@ -24,10 +24,11 @@ instruments and the unminified compile they use, § E the sites the audit named 
 the inventory fixture's shape) and in the retained probe `./tmp/units/value-gap-probe.mjs` (the
 comparison it runs and the logical-property map it applies). Read both first. Where this brief and
 those records disagree, the records and the tree win, and you stop and report the disagreement
-rather than resolving it. The distillate was taken before F4, F5a, and F5d landed: guide line
-numbers have moved, the cascade and its proofs are physical (D11), `tests/setupStyles.ts` no longer holds the case tables (F5a moved them to
-`tests/setupCases.ts` and the calibration to `tests/setupCalibration.ts`), and the visitor inside
-`extractSpecifiers` is now a module-scope constant. Locate every site by its symbol or its heading,
+rather than resolving it. The distillate was taken before F4, F5a, F5e, and F5d landed: guide
+line numbers have moved, the cascade and its proofs are physical (D11), the tag-pair grammar is
+gone and `ELEMENT_TAGS` and `MANDATED_TAG_PAIRS` sit beside the case tables in
+`tests/setupStyles.ts`, the Node-only helpers are `tests/setupServer.ts` (F5e), and the specifier
+walk is the `SpecifierReader` class there (F5a). Locate every site by its symbol or its heading,
 never by the distillate's line.
 
 ## Context
@@ -49,7 +50,7 @@ and `.../browser/index.d.ts`; the guide `## Surface` in `/home/user/scaffold/gui
 `node_modules`. A helper, guard, wait, recorder, or reader whose job an installed export does is a
 defect. `readCompatibility`, `readDeferrals`, `readBuiltCascade`, `readBootstrapCascade`,
 `collectShippedComponents`, `scanCompatibilityPresence`, and `readOracleInventory` in
-`tests/setupConformance.ts` are the existing table and cascade readers; the new readers stand
+`tests/setupServer.ts` are the existing table and cascade readers; the new readers stand
 beside them and reuse their parsing.
 
 **Host.** Linux, bash, Node 22; run every `npm` command with npm 11 on `PATH`:
@@ -88,10 +89,10 @@ separator row).
 
 ## Scope
 
-**Owned.** `tests/setupConformance.ts` and `tests/setupConformance.test.ts` (the ledger types,
+**Owned.** `tests/setupServer.ts` and `tests/setupServer.test.ts` (the ledger types,
 readers, and comparison, with their inventory rows and plants; the RTL digest and its reader
 removed; the elements tag reader), `tests/conformance.test.ts` (the gates; the RTL digest assertion
-removed; the tag-population case), `tests/setupCases.ts` (the `ELEMENT_TAGS` doc only),
+removed; the tag-population case), `tests/setupStyles.ts` (the `ELEMENT_TAGS` doc only),
 `tests/fixtures/oracle/inventory.json` (the `rtl` fields removed through the script only),
 `guides/veneer.md` § Departures from Bootstrap (replaced by the two tables this brief
 fixes), § Deferred names (its two rows read or retired by the reader), and § Bootstrap variables
@@ -102,14 +103,14 @@ cannot explain returns as an exact patch in the report).
 
 **Off-limits.** `src/**`, `app/**`, `configs/**`, `vite.config.ts`, `tsconfig.json`, `package.json`,
 `package-lock.json`, `tests/setupPolicy.ts`, `tests/policy.test.ts`, `tests/setup.ts`,
-`tests/setup.test.ts`, `tests/setupCases.ts` beyond that doc, `tests/setupCalibration.ts`, `tests/setupStyles.ts`,
+`tests/setup.test.ts`, `tests/setupStyles.ts` beyond that doc, `tests/setupStyles.ts`, `tests/setupStyles.ts`,
 `tests/setupBrowser.ts`, `tests/src/**`, `tests/app/**`, every other file under `tests/fixtures/**`,
 `README.md`,
 `ROADMAP.md`, and every guide section this brief does not name. A departure whose fix belongs in
 `src/styles/**` is a ledger row with `departure` set from the union, never a source edit.
 
 **What asserts the state this change ends.** The inventory case "declares the identity constants
-and the helpers the conformance proof measures with" in `tests/setupConformance.test.ts` (the new
+and the helpers the conformance proof measures with" in `tests/setupServer.test.ts` (the new
 exports join it); every `tests/guides.test.ts` parity reading over the sections you replace (run
 `npm run test:guides` after the prose moves); the § Departures from Bootstrap prose that
 `grep -n 'Departures from Bootstrap\|Deferred names\|No reader parses' guides/veneer.md` finds
@@ -129,7 +130,7 @@ readers and the comparison, then the plants and the gates, then the guide tables
 
 ### Obligation 1 — the ledger types
 
-In `tests/setupConformance.ts`, beside `CompatibilityRow` and `DeferralRow`, declare the readonly
+In `tests/setupServer.ts`, beside `CompatibilityRow` and `DeferralRow`, declare the readonly
 `DepartureRow` (`component`, `selector`, `property`, `condition` — the enclosing at-rule text or
 `undefined` when none — `recorded`, `emitted`, `departure`) and the readonly `AdditionRow`
 (`component`, `name`, `category` — the axis that varies: `selector`, `declaration`, `property`,
@@ -162,7 +163,7 @@ its component, selector, property, and the two values in the failure message); e
 still names a difference the comparison reports (a stale row is named); every addition the
 comparison reports has a row in § Additions; every addition row still names an emitted name; and
 every § Deferred selectors row still names a selector absent from the built cascade (a shipped
-selector with a deferral row is named). Prove each gate in `tests/setupConformance.test.ts` with
+selector with a deferral row is named). Prove each gate in `tests/setupServer.test.ts` with
 a plant over a scratch guide string and a scratch cascade string — a planted difference, a planted
 stale row, a planted extra name — so each reader binds. Name the plants in the case titles by
 what they prove, never as controls.
@@ -191,7 +192,7 @@ the report.
 
 Delete `BOOTSTRAP_RTL_CSS_DIGEST` and every read of it: the assertion in `tests/conformance.test.ts`
 that pins the RTL CSS bytes (keep the CSS and bundle pins), its inventory row in
-`tests/setupConformance.test.ts`, and any `rtl` member `OracleInventory` or `readOracleInventory`
+`tests/setupServer.test.ts`, and any `rtl` member `OracleInventory` or `readOracleInventory`
 declares or reads. Remove the `rtl` field from every component in
 `tests/fixtures/oracle/inventory.json` with a script under `tmp/probe/` that parses the JSON,
 deletes that one field per component, and writes it back through `JSON.stringify` with a tab
@@ -202,14 +203,14 @@ built `index.rtl.css` twin, its plugin, and its proofs; you remove nothing under
 
 ### Obligation 6 — the elements layer's tag population binds `ELEMENT_TAGS` (F5a reviewer F4)
 
-The tag column of `ELEMENT_TAGS` in `tests/setupCases.ts` is written by hand and bound to no
-reading (its doc says so). Add to `tests/setupConformance.ts` a reader over the unminified compile
+The tag column of `ELEMENT_TAGS` in `tests/setupStyles.ts` is written by hand and bound to no
+reading (its doc says so). Add to `tests/setupServer.ts` a reader over the unminified compile
 that returns, for the `elements` layer, the set of type selectors its rules select (the leading
 type token of each compound in each selector, read from the `postcss` rule's `selector` string —
 this is a string read of compiled output, not a selector grammar, and it reports a compound it
 cannot read rather than skipping it), and add the case to `tests/conformance.test.ts` that requires
 that set to equal the distinct values of the table's tag column, with a plant in
-`tests/setupConformance.test.ts` over a scratch sheet that proves the reader binds. Correct the
+`tests/setupServer.test.ts` over a scratch sheet that proves the reader binds. Correct the
 table's doc to name the binding.
 
 ### Obligation 7 — the prose
@@ -247,7 +248,7 @@ cell's wording, the readers' exact signatures within the rulings, case titles, d
    tag-population case present and passing over the real guide and the real built cascade.
 4. `npm run test:guides` and `npm run test:policy` exit 0.
 5. `grep -n 'No reader parses' guides/veneer.md` prints nothing.
-6. `grep -rn 'BOOTSTRAP_RTL_CSS_DIGEST\|"rtl"' tests/setupConformance.ts tests/setupConformance.test.ts tests/conformance.test.ts tests/fixtures/oracle/inventory.json` prints nothing.
+6. `grep -rn 'BOOTSTRAP_RTL_CSS_DIGEST\|"rtl"' tests/setupServer.ts tests/setupServer.test.ts tests/conformance.test.ts tests/fixtures/oracle/inventory.json` prints nothing.
 7. `git status --porcelain` lists owned files only.
 
 **Observations, not criteria.** The whole-chain `npm test` reading; the comparison's wall clock.

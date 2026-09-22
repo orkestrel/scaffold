@@ -1,2 +1,0 @@
-npm notice run @orkestrel/test@0.0.18 lint:check
-npm notice run oxlint --config .oxlintrc.json --deny-warnings .

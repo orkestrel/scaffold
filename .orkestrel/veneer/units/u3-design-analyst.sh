@@ -1,2 +1,0 @@
-#!/bin/sh
-codex exec --json -C "C:/Users/mikes/WebstormProjects/scaffold" --sandbox read-only --model gpt-6-astra -c 'model_reasoning_effort="high"' --output-last-message "u3-design-analyst-last.md" "Read and execute the brief at u3-design-brief.md exactly, holding the objective lane. Your final message must be the Output it specifies." < /dev/null > "u3-design-analyst.jsonl" 2> "u3-design-analyst.err"

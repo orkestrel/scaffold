@@ -1,9 +1,0 @@
- M tests/setupBrowser.test.ts
- M tests/setupConformance.test.ts
- M tests/setupStyles.test.ts
- M tests/setupStyles.ts
-a0447d2 Prove the RTL guard on fixtures and tidy the setup proofs
-690bbb4 Close the U1 audit findings on the adoption
-143 C:/Users/mikes/WebstormProjects/scaffold/.orkestrel/veneer/units/u1-fix-3-diff.patch.txt
-## main...origin/main [ahead 8]
-u1-fix-land-3-done

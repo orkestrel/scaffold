@@ -1,9 +1,0 @@
-﻿npm.cmd : npm notice run @orkestrel/test@0.0.18 lint:check
-At line:2 char:1
-+ npm.cmd run lint:check *> u6-round4-lint-check.log.txt; $result ...
-+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    + CategoryInfo          : NotSpecified: (npm notice run ...0.18 lint:check:String) [], RemoteException
-    + FullyQualifiedErrorId : NativeCommandError
- 
-npm notice run oxlint --config .oxlintrc.json --deny-warnings .
-tests/src/browser/helpers.test.ts:1075:43: error vitest(require-to-throw-message): Require a message for "toThrow". help: Add an error message to "toThrow"

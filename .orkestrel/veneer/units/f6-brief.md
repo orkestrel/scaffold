@@ -27,7 +27,7 @@ nearest Contract declaration; § E the shell, the caption, and the description l
 5, 8, 10, 11, 21, 24; reviewer F1, F2). Read both first. Where this brief and those records
 disagree, the records and the tree win, and you stop and report the disagreement rather than
 resolving it. The distillate predates F4, F5a, F5d, F5b, and F5c: line numbers have moved, the case
-tables and calibration live in `tests/setupCases.ts` and `tests/setupCalibration.ts`, the tag-pair
+tables and calibration live in `tests/setupStyles.ts` and `tests/setupStyles.ts`, the tag-pair
 grammar and the direction machinery are gone, the cascade is physical (D11), the conformance side of D5 (the RTL digest and the inventory `rtl` fields) is
 already removed, and the guide's § Departures is the F5b ledger. Locate every site by symbol or
 heading, never by line.
@@ -92,7 +92,7 @@ never undone), `tests/src/browser/ColorMode.test.ts`, `tests/src/browser/Delegat
 removed), `tests/setupStyles.test.ts` (the RTL proofs removed),
 `tests/src/styles/tokens.test.ts` (the RTL partition case removed; the role-token matrix added),
 `tests/src/styles/theme.test.ts`, `tests/src/styles/components/table.test.ts` (the caption opt-out
-case), `src/styles/components/_table.scss` (the caption opt-out class), `tests/setupCases.ts` and
+case), `src/styles/components/_table.scss` (the caption opt-out class), `tests/setupStyles.ts` and
 every `tests/src/styles/elements/dl.test.ts` read of the renamed field, `app/browser/styles/_shell.scss`,
 `app/browser/Showcase.ts`, `app/browser/constants.ts` if the shell class or the `main` change needs
 a constant, `tests/app/browser/Showcase.test.ts`, `guides/veneer.md` § Tests (the layer-order

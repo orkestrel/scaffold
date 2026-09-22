@@ -1,8 +1,0 @@
- M tests/setupStyles.test.ts
- M tests/setupStyles.ts
-e9f2a2f Judge a three-value radius by the corners a flip swaps
-6b1c303 Export and prove the direction-sensitivity predicates
-bd4284c Scan the shipped cascade for direction-sensitive declarations through postcss
-303 C:/Users/mikes/WebstormProjects/scaffold/.orkestrel/veneer/units/u1-fix-6-diff.patch.txt
-## main...origin/main [ahead 11]
-u1-fix-land-6-done

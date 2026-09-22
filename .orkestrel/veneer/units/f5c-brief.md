@@ -23,7 +23,7 @@ disposition cells; § E the `--vn-link-base` site and its stale guide row) and i
 overrides, the filters). Read both first. Where this brief and those records disagree, the records
 and the tree win, and you stop and report the disagreement rather than resolving it. The distillate
 predates F4, F5a, and F5b: guide line numbers have moved, `CALIBRATED_TIERS` and the oracle value
-lists live in `tests/setupCalibration.ts`, and `collectTokenNames` and `collectTripletGroups` live
+lists live in `tests/setupStyles.ts`, and `collectTokenNames` and `collectTripletGroups` live
 in `tests/setupStyles.ts`. Locate every site by symbol or heading, never by line.
 
 ## Context
@@ -42,7 +42,7 @@ and `.../browser/index.d.ts`; `readRules`, `findRule`, `readCascade`, `readCensu
 cascade readers, and the guide `## Surface` in `/home/user/scaffold/guides/test.md` states each),
 `@orkestrel/contract`, `postcss` and `sass` under `node_modules`. A helper whose job an installed
 export does is a defect. `collectTokenNames` and `collectTripletGroups` in `tests/setupStyles.ts`
-read the token registry; `readDeferrals` in `tests/setupConformance.ts` is the table-reading
+read the token registry; `readDeferrals` in `tests/setupServer.ts` is the table-reading
 pattern; `compileExpandedCascade` (F5b) is the unminified compile.
 
 **Host.** Linux, bash, Node 22; run every `npm` command with npm 11 on `PATH`:
@@ -85,8 +85,8 @@ departure returns as an exact patch in the report.
 
 **Off-limits.** every other `src/**` file, `app/**`, `configs/**`, `vite.config.ts`,
 `tsconfig.json`, `package.json`, `package-lock.json`, `tests/setupPolicy.ts`, `tests/policy.test.ts`,
-`tests/setup.ts`, `tests/setup.test.ts`, `tests/setupCases.ts`, `tests/setupCalibration.ts`,
-`tests/setupBrowser.ts`, `tests/setupConformance.ts`, `tests/conformance.test.ts`, every other
+`tests/setup.ts`, `tests/setup.test.ts`, `tests/setupStyles.ts`, `tests/setupStyles.ts`,
+`tests/setupBrowser.ts`, `tests/setupServer.ts`, `tests/conformance.test.ts`, every other
 `tests/src/**` file, `tests/app/**`, `tests/fixtures/**`, `README.md`, `ROADMAP.md`, and every
 guide section this brief does not name.
 

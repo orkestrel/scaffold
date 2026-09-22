@@ -1,4 +1,0 @@
---- check ---
---- run ---
-browser chromium failed to launch or run: TimeoutError: page.waitForFunction: Timeout 5000ms exceeded.
-browser msedge failed to launch or run: TimeoutError: page.waitForFunction: Timeout 5000ms exceeded.

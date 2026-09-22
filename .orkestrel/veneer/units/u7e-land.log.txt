@@ -1,7 +1,0 @@
-== 2026-09-21T06:54:50Z land start
-92aad70 Render the Button specimens and prove them on the mounted page (U7c)
- M guides/veneer.md
-changed: guides/veneer.md 
-7f6d5f6 Correct the guide to what the landed Button mechanisms show (U7e)
-## main...origin/main
-== 2026-09-21T06:54:52Z land end

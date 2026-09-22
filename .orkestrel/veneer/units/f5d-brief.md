@@ -23,11 +23,12 @@ user ruled this on 2026-09-22 (D11: "revert to bootstrap").
 `src/styles/**`, the proofs that read them, the direction machinery's exports and their one
 outside consumer, and the guide sentences), and the oracle inventory
 `tests/fixtures/oracle/inventory.json` records, per selector, the property names and values
-Bootstrap writes (read it through `readOracleInventory` in `tests/setupConformance.ts`, or parse
+Bootstrap writes (read it through `readOracleInventory` in `tests/setupServer.ts`, or parse
 it directly in a probe). Read the terrain first. Where this brief and those records disagree, the
 records and the tree win, and you stop and report the disagreement rather than resolving it. The
 terrain's `tests/**` readings predate F5a's landing; re-take them at launch with the terrain's own
-commands, because F5a moved the case tables into `tests/setupCases.ts`.
+commands, because F5e returned the root setup modules to the fleet's fixed set (the case tables
+live in `tests/setupStyles.ts`, the Node-only helpers in `tests/setupServer.ts`).
 
 ## Context
 
@@ -83,7 +84,7 @@ its logical reads are reported as a patch.
 
 **Owned.** Every file under `src/styles/**` (the declarations only; no token, layer, or selector
 change), `tests/setupStyles.ts` and `tests/setupStyles.test.ts` (the direction machinery and its
-cases removed), `tests/setupCases.ts` and `tests/setupCases.test.ts` (case-table property names),
+cases removed), `tests/setupStyles.ts` and `tests/setupStyles.test.ts` (case-table property names),
 `tests/setupBrowser.test.ts` and `tests/setup.ts` where the terrain lists a logical read,
 `tests/src/styles/**` (every proof that reads a logical property; `index.test.ts` loses the
 "declares no physical inline-axis property anywhere in the shipped cascade" case), and
@@ -97,8 +98,8 @@ patch), `tests/app/browser/integration.test.ts` (one logical read returns as a p
 
 **Off-limits.** `src/browser/**`, `src/core/**`, `app/**`, `configs/**`, `vite.config.ts`,
 `tsconfig.json`, `package.json`, `package-lock.json`, `tests/setupPolicy.ts`, `tests/policy.test.ts`,
-`tests/setup.test.ts`, `tests/setupCalibration.ts`, `tests/setupCalibration.test.ts`,
-`tests/setupConformance.ts`, `tests/setupConformance.test.ts`, `tests/conformance.test.ts`,
+`tests/setup.test.ts`, `tests/setupStyles.ts`, `tests/setupStyles.test.ts`,
+`tests/setupServer.ts`, `tests/setupServer.test.ts`, `tests/conformance.test.ts`,
 `tests/src/browser/**`, `tests/src/core/**`, `tests/app/**`, `tests/journey/**`,
 `tests/distribution.test.ts`, `tests/fixtures/**`, `README.md`, `ROADMAP.md`, and every guide
 section this brief does not name.
@@ -109,7 +110,7 @@ case; the `tests/setupStyles.test.ts` cases over `PHYSICAL_LONGHANDS`, `EDGE_SHO
 `SIDE_KEYWORD_PROPERTIES`, the shorthand splitters, `matchesDirectionSensitive`,
 `filterAsymmetricDeclarations`, and `scanPhysicalDeclaration` (search bound:
 `grep -n 'PHYSICAL_LONGHANDS\|EDGE_SHORTHANDS\|SIDE_KEYWORD\|scanPhysicalDeclaration\|filterAsymmetric\|matchesDirectionSensitive\|splitTopLevelValues\|matchesEdgeShorthand\|matchesRadiusShorthand\|matchesSideKeyword\|normalizeValueToken' tests/setupStyles.test.ts`);
-the styles setup module's export inventory case; the case-table freezes in `tests/setupCases.test.ts`
+the styles setup module's export inventory case; the case-table freezes in `tests/setupStyles.test.ts`
 whose values name a logical property; `tests/guides.test.ts` over the sections you edit.
 
 **Tools and limits.** Read, Grep, Glob, Edit, Write, Bash for the gate commands, `grep`, `git
@@ -142,7 +143,7 @@ at the mixin. Change no value, no token, no selector, no layer.
 
 Update every proof that reads a logical property to read the physical one, keeping each expected
 value (the same box resolves the same pixels; a changed expectation is a report item, never a
-silent edit). Update the case tables in `tests/setupCases.ts` whose keys name logical properties.
+silent edit). Update the case tables in `tests/setupStyles.ts` whose keys name logical properties.
 Return the `tests/distribution.test.ts` and `tests/app/browser/integration.test.ts` reads as
 exact patches.
 
@@ -191,7 +192,7 @@ titles, doc wording.
 4. `npm run test:setup` and `npm run test:setup:browser` exit 0 with the machinery's inventory rows
    gone.
 5. `npm run test:conformance`, `npm run test:guides`, and `npm run test:policy` exit 0.
-6. `grep -rnE '(margin|padding|border|inset)-(inline|block)|\b(inline|block)-size\b|border-(start|end)-(start|end)-radius|text-align:\s*(start|end)' src/styles tests/src/styles tests/setupCases.ts tests/setupStyles.ts guides/veneer.md` prints nothing.
+6. `grep -rnE '(margin|padding|border|inset)-(inline|block)|\b(inline|block)-size\b|border-(start|end)-(start|end)-radius|text-align:\s*(start|end)' src/styles tests/src/styles tests/setupStyles.ts tests/setupStyles.ts guides/veneer.md` prints nothing.
 7. `git status --porcelain` lists owned files only.
 
 **Observations, not criteria.** The whole-chain `npm test` reading; the journey suite's reading;

@@ -1,6 +1,0 @@
-﻿ M guides/veneer.md
- M package-lock.json
- M package.json
- M tests/conformance.test.ts
- M tests/setupConformance.test.ts
- M tests/setupConformance.ts
