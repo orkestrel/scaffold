@@ -7,7 +7,7 @@ directly and spawn nothing.
 
 ## Objective
 
-Rule on whether `C:/Users/mikes/WebstormProjects/scaffold/tmp/units/cl10-brief.md` can be dispatched
+Rule on whether `C:/Users/mikes/WebstormProjects/scaffold/.orkestrel/veneer/units/cl10-brief.md` can be dispatched
 as written. Report every defect that would stop, misdirect, or under-scope the unit, each with a
 `file:line` site and the correction it needs. End with one terminal line: `Dispatch: go`, or
 `Dispatch: fix` naming the defects that force it.
@@ -19,7 +19,7 @@ have the line and that the line says what you claim.
 
 ## The subject, and how this brief is built
 
-The brief at `tmp/units/cl10-brief.md`, against the live Veneer checkout at
+The brief at `cl10-brief.md`, against the live Veneer checkout at
 `C:/Users/mikes/WebstormProjects/veneer`. **The checkout will sit at the CL9 landing when this unit
 dispatches, which has not happened yet** — CL9 is in a fix round as you read this. So read the tree
 as it stands, and where a fact could move with CL9's landing, say so rather than ruling it wrong.

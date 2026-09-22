@@ -6,7 +6,7 @@ Subject: unit CL9 in the Veneer checkout (`C:/Users/mikes/WebstormProjects/venee
 `units/cl9-terrain.md`, measured rather than scouted and **the single home for this key's
 measurements** — the brief restates none of them. Scope read: `units/cl9-scope-read-report.md`.
 
-Evidence: the rendered diff `tmp/audit/cl9-diff.patch` and status `tmp/audit/cl9-status.txt`, the
+Evidence: the rendered diff `units/cl9-diff.patch.txt` and status `tmp/audit/cl9-status.txt`, the
 live tree, the built `dist/src/styles/index.css`, the pinned record, and the installed Bootstrap
 distribution.
 

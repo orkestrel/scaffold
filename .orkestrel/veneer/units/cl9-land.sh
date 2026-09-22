@@ -12,7 +12,7 @@
 set -u
 SCAFFOLD="C:/Users/mikes/WebstormProjects/scaffold"
 VENEER="C:/Users/mikes/WebstormProjects/veneer"
-LOG="$SCAFFOLD/tmp/units/cl9-land.log.txt"
+LOG="$SCAFFOLD/.orkestrel/veneer/units/cl9-land.log.txt"
 ALLOWED=" app/browser/Showcase.ts app/browser/constants.ts app/browser/index.ts app/browser/sections/TableSection.ts guides/veneer.md src/styles/components/_table.scss src/styles/index.scss tests/app/browser/Showcase.test.ts tests/app/browser/index.test.ts tests/app/browser/sections/TableSection.test.ts tests/conformance.test.ts tests/setupConformance.test.ts tests/setupStyles.test.ts tests/setupStyles.ts tests/src/styles/components/table.test.ts "
 exec > >(tee -a "$LOG") 2>&1
 echo "== $(date -u +%Y-%m-%dT%H:%M:%SZ) land start"
@@ -29,7 +29,7 @@ for file in $CHANGED; do
 done
 if [ -z "$CHANGED" ]; then echo "refused: nothing to land"; exit 2; fi
 git add -- $CHANGED || exit 2
-git -c core.hooksPath=/dev/null commit -q -F "$SCAFFOLD/tmp/units/cl9-land-message.txt" || exit 3
+git -c core.hooksPath=/dev/null commit -q -F "$SCAFFOLD/.orkestrel/veneer/units/cl9-land-message.txt" || exit 3
 git log --oneline -1
 git status --porcelain --untracked-files=all | grep -v '^?? tmp'
 git push -q origin main 2>&1 | tail -1

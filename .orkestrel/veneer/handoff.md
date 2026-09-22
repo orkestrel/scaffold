@@ -36,71 +36,74 @@ verifier, and landed by a script that refuses any file outside the owned set.
 
 | Checkout | HEAD | Meaning |
 | --- | --- | --- |
-| Veneer | `8c70787` | CL8b landed and pushed; the tracked tree is clean unless a unit is live |
-| Scaffold | confirm with `git log --oneline -1` | every record through CL8b's landing retained and pushed |
+| Veneer | `5e011a3` | CL9 landed and pushed; the tracked tree is clean unless a unit is live |
+| Scaffold | confirm with `git log --oneline -1` | every record through CL9's landing retained and pushed |
 
 Landed in Veneer: CL1 `00a5bdc`, CL2 `9f5ffda`, CL3 `9bb306e`, CL3b `d822d59`, CL4 `bc580c1`,
 CL4b `5240e36`, CL5 `ea82419`, CL5b `4f817db`, CL5c `c1c81a4`, CL6 `c8f53f8`, CL7 `a9172df`,
-CL8 `d2c5bb3`, CL8b `8c70787`. Each has a verdict file named for it.
+CL8 `d2c5bb3`, CL8b `8c70787`, CL9 `5e011a3`. Each has a verdict file named for it.
 
-Shipping keys: the reboot key, the button, the typography and content keys, the link key, the
-container key, the grid's row, col, and offset keys, and the gutter and gap step keys. **Each unit's
-objective lane compared its key's inventory selector set against the built cascade in both
-directions and found them equal**, which is the accounting this family exists to produce.
+**The whole surface is measured**, in `units/remaining-surface.md`: the record carries 135 keys and
+the conformance listing admits 28 after CL9, which is 810 selectors of 3552. **The Content/layout
+family closes at 31 keys** once CL10 ships the icon-link, ratio, and vertical-rule keys, leaving 104
+keys to the six later families. That file groups the remainder by family with sizes, so each family's
+design round starts from a measurement.
 
-**Four standing proofs enforce the accounting, and each catches a different class.**
+**Five standing proofs enforce the accounting, and each catches a different class.**
 
 - `scanStyleBlocks` sweeps every partial under `src/styles/` recursively and a case asserts no
-  cross-file shared declaration block, with a guard that the sweep discovered each folder so it
-  cannot pass by finding nothing. It has caught three units. **When a brief tells a unit to copy a
-  pattern from another partial, grant that partial**: the honest fix reaches both copies.
+  cross-file shared declaration block, with a guard that the sweep discovered each folder so it cannot
+  pass by finding nothing. **When a brief tells a unit to copy a pattern from another partial, grant
+  that partial**: the honest fix reaches both copies.
 - A case in `tests/setupStyles.test.ts` compiles the real `breakpoints()` map and binds its non-zero
   names to the registry's container keys and its zero names to the ramp's own zero keys.
 - A case in the same file compares the built cascade's selector and media-condition **multiset**
-  against the pinned record minus the guide's deferrals, for the keys its tuple names. **This is the
-  only proof that runs from the cascade back to the record.** Its tuple and its selector prefix cover
-  different populations on purpose — the tuple selects inventory buckets, the prefix selects emitted
-  vocabulary — and making them identical would corrupt the accounting.
-- The utilities' density independence is read at the document root with a positive control proving
-  the factor arrived, after a round-1 audit found a version that set the factor on a subtree and so
-  could not fail.
+  against the pinned record minus the guide's deferrals, for the keys its tuple names. It understands
+  both breakpoint directions: an upward condition by a spelling rewrite, a downward one by arithmetic,
+  because the record's downward boundary is the named one less two hundredths. **This is the only
+  assertion in the tree that catches an extra emitted selector** — the presence scan reports a missing
+  name and never an extra one, and the family bindings compare against the record rather than a token
+  source. Its tuple and its selector prefix cover different populations on purpose.
+- The utilities' density independence is read at the document root with a positive control proving the
+  factor arrived.
+- The table key's custom-property layering is read with sentinel values, and its accent fallback
+  discriminates a dropped chain, a literal substitution, and a wrong precedence.
 
 **Two gaps in the accounting are measured and waiting on the user**, in
 `units/value-accounting-finding.md`: nothing compares declaration values at all, and nothing rejects
 an unrecorded selector outside the keys the comparison's tuple names. Both are the same gap — the
 accounting runs one way — and closing them is one unit with a departure table beside the deferral
-table. It moves the family's exit criterion, so it is a rescope rather than a re-baseline.
+table. It moves the family's exit criterion, so it is a rescope rather than a re-baseline. **CL8b's
+gap-triple question is also still open**: whether to pull the `gap` and `column-gap` keys forward to
+sit with `row-gap`, which CL8b shipped because the `row` key required it.
 
-## What to do first: CL9, the table key
+## What to do first: CL10, the icon-link, ratio, and vertical-rule keys
 
-**CL9's terrain is measured and its brief written**, with its scope read staged:
-`units/cl9-terrain.md`, `units/cl9-brief.md`, `units/cl9-scope-read-brief.md`. No scout is needed.
-Dispatch the scope read, fold its findings, then dispatch `sol` on Astra over the CL8b landing.
+**CL10's terrain is measured, its brief written, and its scope read staged**: `units/cl10-terrain.md`,
+`units/cl10-brief.md`, `units/cl10-scope-read-brief.md`, with `units/render-cl10.sh` taking its base
+commit as an argument. No scout is needed. Dispatch the scope read, fold its findings, then dispatch
+`opus` natively.
 
-**The brief restates no measurement.** Every measured fact lives in the terrain record, and the brief
-points there. That is deliberate: a brief earlier in this campaign restated a measurement, the copy
-drifted, and a unit spent a round refusing the false premise. The rule is in
-`.agents/orchestration.md` § Check the brief before you send it — give each measurement one home and
-keep the brief out of it.
+**CL10 routes to Opus, not the bench** — the first such unit since CL5. So its audit lanes swap:
+Astra takes the OBJECTIVE lane and the Opus reviewer the SUBJECTIVE one, because the auditor must be
+an engine that did not write the work.
 
-Two facts decide CL9 and the terrain record carries both. Every breakpoint-scoped selector the table
-key carries is recorded under a **maximum** width, so this is the first production consumer of the
-downward mixin. And the equivalence the emitted-vocabulary comparison must learn is **arithmetic**
-rather than a string rewrite: Bootstrap's downward boundary is the named boundary less a fraction,
-while the mixin emits the modern range form at the boundary itself. The mixin stays as it is; the
-equivalence belongs in the comparison.
+Four questions its terrain closed by measurement, so the unit does not re-derive them: the
+reduced-motion condition needs no equivalence work because Veneer's mixin emits the record's text and
+both sides parse identically; the aspect ratios derive from their names but at a precision **two
+decimal places wider than the grid's**, so a loop copying the grid's arithmetic emits a value the eye
+calls identical and the comparison rejects; the undefined icon class ships under CL7's ruling for the
+container's navigation combinators; and no token is needed, so the token file and the registry are
+off-limits with an instruction to stop rather than add one.
 
-## Then CL9 to CL13
+## Then CL10 to CL13
 
 Per `content-layout-design-verdict.md` § Units (the routing ledger is there). Brief each from
 the design row, the planner's criteria (`units/content-layout-design-planner-report.md`), and
 the analyst's unit (`units/content-layout-design-analyst-report.md`); scope-read first.
 
-- **CL9** tables. **CL10** helpers: the icon-link, ratio, and vertical-rule keys. **CL11**
+- **CL10** the icon-link, ratio, and vertical-rule keys. **CL11**
   journeys and captures. **CL12** the guide. **CL13** the portfolio verdict.
-- **CL9** carries CL8's finding that the comparison's condition normalizer equates only the
-  minimum-width spelling, because this is the first key recorded under maximum widths. Its brief
-  makes that work rather than a bound.
 - **A candidate successor unit** carries CL8's built-side findings with the measurement in
   `units/value-accounting-finding.md`: the projects that read the built artifact run no build of
   their own, and the emitted-vocabulary population misses a re-layered or descendant-combinator

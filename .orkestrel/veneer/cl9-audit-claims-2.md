@@ -5,8 +5,8 @@ the base `8c70787` (the CL8b landing), after the fix round `sol` ran under
 `.orkestrel/veneer/units/cl9-brief-2.md` (over `units/cl9-brief.md`, in force beneath it). Round 1's
 verdict is `.orkestrel/veneer/cl9-audit-verdict.md`; the fix report is `units/cl9-report-2.md`.
 Terrain: `units/cl9-terrain.md`, the single home for this key's measurements. Evidence: the rendered
-diff `tmp/audit/cl9-diff-2.patch` and status `tmp/audit/cl9-status-2.txt`, round 1's
-`tmp/audit/cl9-diff.patch` for a diff-to-diff reading, the live tree, and the built cascade.
+diff `units/cl9-diff-2.patch.txt` and status `tmp/audit/cl9-status-2.txt`, round 1's
+`units/cl9-diff.patch.txt` for a diff-to-diff reading, the live tree, and the built cascade.
 
 **Scope of this round.** Implementation only. Report no wording or prose finding; the guide's rows
 stay in scope as a contract. **Round 1's rulings carry unchanged and are not reopened** — the shipped

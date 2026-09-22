@@ -26,14 +26,14 @@ The new equivalence is: **“`(max-width: Bpx)` normalizes to `(width < (B + 0.0
 
 I read `parseMediaWidth` and left it unchanged: it recognizes both spellings but returns only the number, losing the direction needed here. Focused tests reject a changed boundary and an opposite direction. Production optimization also spells `:nth-child(even)` as `:nth-child(2n)`; selector normalization now recognizes that equivalence while preserving quoted and escaped text and keeping odd expressions distinct.
 
-**Vocabulary controls and restoration.** Each command below was executed in order. The control helper saves the original bytes before planting and compares SHA-256 after restoring. Full outputs are retained in `tmp/units/cl9-final-{missing,extra,boundary}-{plant,red,restore,green}.log`.
+**Vocabulary controls and restoration.** Each command below was executed in order. The control helper saves the original bytes before planting and compares SHA-256 after restoring. Full outputs are retained in `cl9-final-{missing,extra,boundary}-{plant,red,restore,green}.log`.
 
 Missing recorded selector:
 
 ```text
-node tmp/units/cl9-control.mjs plant missing -final
+node cl9-control.mjs plant missing -final
 npm.cmd run test:setup -- "--testNamePattern=binds the built grid selector"
-node tmp/units/cl9-control.mjs restore missing -final
+node cl9-control.mjs restore missing -final
 npm.cmd run test:setup -- "--testNamePattern=binds the built grid selector"
 ```
 
@@ -48,9 +48,9 @@ EXIT: 1
 Unrecorded selector:
 
 ```text
-node tmp/units/cl9-control.mjs plant extra -final
+node cl9-control.mjs plant extra -final
 npm.cmd run test:setup -- "--testNamePattern=binds the built grid selector"
-node tmp/units/cl9-control.mjs restore extra -final
+node cl9-control.mjs restore extra -final
 npm.cmd run test:setup -- "--testNamePattern=binds the built grid selector"
 ```
 
@@ -65,9 +65,9 @@ EXIT: 1
 Boundary shifted outside the equivalence:
 
 ```text
-node tmp/units/cl9-control.mjs plant boundary -final
+node cl9-control.mjs plant boundary -final
 npm.cmd run test:setup -- "--testNamePattern=binds the built grid selector"
-node tmp/units/cl9-control.mjs restore boundary -final
+node cl9-control.mjs restore boundary -final
 npm.cmd run test:setup -- "--testNamePattern=binds the built grid selector"
 ```
 
@@ -100,9 +100,9 @@ EXIT: 0
 An additional normalizer regression control removes the fractional correction itself:
 
 ```text
-node tmp/units/cl9-control.mjs plant normalizer
+node cl9-control.mjs plant normalizer
 npm.cmd run test:setup -- "--testNamePattern=equates fractional maximum"
-node tmp/units/cl9-control.mjs restore normalizer
+node cl9-control.mjs restore normalizer
 npm.cmd run test:setup -- "--testNamePattern=equates fractional maximum"
 ```
 
@@ -117,9 +117,9 @@ MATCH true
 **Emitted-value control.** The source mutation changes base cell block padding from `0.5rem` to `0.75rem`. The styles command builds the cascade before browser readings:
 
 ```text
-node tmp/units/cl9-control.mjs plant value -final
+node cl9-control.mjs plant value -final
 npm.cmd run test:src:styles -- tests/src/styles/components/table.test.ts
-node tmp/units/cl9-control.mjs restore value -final
+node cl9-control.mjs restore value -final
 npm.cmd run test:src:styles -- tests/src/styles/components/table.test.ts
 ```
 
@@ -149,9 +149,9 @@ MATCH true
 EXIT: 0
 ```
 
-Full evidence is in `tmp/units/cl9-final-value-{plant,red,restore,green}.log`. The unmutated geometry proof also initially exposed inherited alignment and border-color failures; both were repaired within the owned partial and are covered by the final passing cases.
+Full evidence is in `cl9-final-value-{plant,red,restore,green}.log`. The unmutated geometry proof also initially exposed inherited alignment and border-color failures; both were repaired within the owned partial and are covered by the final passing cases.
 
-**Required gate chain.** The final chain ran in the required order using Windows' runnable `npm.cmd` entry. Logs are `tmp/units/cl9-final-{format-check,lint-check,check,build,test}.log`.
+**Required gate chain.** The final chain ran in the required order using Windows' runnable `npm.cmd` entry. Logs are `cl9-final-{format-check,lint-check,check,build,test}.log`.
 
 | Command | Exit | Final result |
 | --- | --- | --- |
@@ -184,9 +184,9 @@ The requested second-engine commands also passed:
 | `PLAYWRIGHT_CHANNEL=msedge npm.cmd run test:setup:browser` | 0 | `Test Files 1 passed (1)`; `Tests 33 passed (33)` |
 | `PLAYWRIGHT_CHANNEL=msedge npm.cmd run test:app:browser` | 0 | `Test Files 10 passed (10)`; `Tests 26 passed (26)` |
 
-Edge logs are `tmp/units/cl9-edge-test-{src-styles,setup-browser,app-browser}.log`. Host-only formatting, lint, type, and build gates do not select a browser engine. Existing conditional skips concern capture-only journey cases, the unavailable policy canon term file, and the alternate extractor branch; this unit adds no skips.
+Edge logs are `cl9-edge-test-{src-styles,setup-browser,app-browser}.log`. Host-only formatting, lint, type, and build gates do not select a browser engine. Existing conditional skips concern capture-only journey cases, the unavailable policy canon term file, and the alternate extractor branch; this unit adds no skips.
 
-Showcase captures at 390px/light and 1024px/dark were generated with `node --experimental-strip-types tmp/units/cl9-capture.mjs`, exit 0. I inspected the responsive and contextual specimens. The narrow responsive wrapper measured 390px with 569px content and `overflow: auto`; at desktop the small wrapper read `overflow: visible`. The changed-source text-integrity sweep reported `TEXT INTEGRITY []`. `git diff --check` exited 0.
+Showcase captures at 390px/light and 1024px/dark were generated with `node --experimental-strip-types cl9-capture.mjs`, exit 0. I inspected the responsive and contextual specimens. The narrow responsive wrapper measured 390px with 569px content and `overflow: auto`; at desktop the small wrapper read `overflow: visible`. The changed-source text-integrity sweep reported `TEXT INTEGRITY []`. `git diff --check` exited 0.
 
 **Actual diff and status.** `git diff --stat` output follows; Git does not include the four untracked new source/proof files in this stat.
 
@@ -227,8 +227,8 @@ warning: unable to access 'C:\Users\mikes/.config/git/ignore': Permission denied
 ?? tests/src/styles/components/table.test.ts
 ```
 
-All listed source and proof paths are owned by this brief. Evidence and this report remain under ignored `tmp/units/`.
+All listed source and proof paths are owned by this brief. Evidence and this report remain under ignored ``.
 
-**Limits and remaining work.** No required product change or gate remains open. The supplemental frontend audit returned a false positive at unchanged `src/browser/Delegate.ts:25`, interpreting `new Set<Button>()` as an actionless HTML button; its output is retained in `tmp/units/cl9-premium-audit.json`. The build reports API Extractor's bundled TypeScript 5.9.3 versus project TypeScript 6.0.3 warning but exits successfully. Neither observation required an out-of-scope change.
+**Limits and remaining work.** No required product change or gate remains open. The supplemental frontend audit returned a false positive at unchanged `src/browser/Delegate.ts:25`, interpreting `new Set<Button>()` as an actionless HTML button; its output is retained in `cl9-premium-audit.json`. The build reports API Extractor's bundled TypeScript 5.9.3 versus project TypeScript 6.0.3 warning but exits successfully. Neither observation required an out-of-scope change.
 
 The available probe invocation was rejected with `MCP tool call requires approval, but approval policy is never`. No probe receipt was issued. The executed Vitest red/green controls and restoration digests above are the available falsification evidence; no receipt is claimed.

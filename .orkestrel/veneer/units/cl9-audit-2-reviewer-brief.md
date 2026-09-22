@@ -8,7 +8,7 @@ write. Perform the assignment directly and spawn nothing. You edit nothing and r
 
 ## Objective
 
-Rule on every claim of `C:/Users/mikes/WebstormProjects/scaffold/tmp/audit/cl9-audit-claims-2.md`
+Rule on every claim of `C:/Users/mikes/WebstormProjects/scaffold/.orkestrel/veneer/cl9-audit-claims-2.md`
 with CONFIRMED, REFUTED, or UNDECIDABLE and the deciding evidence, add any extra finding that is an
 implementation defect (numbered after the last claim, with a site and a one-line failure scenario,
 distinguishing one that forces a fix round from one that does not), and end with one terminal line:
@@ -30,8 +30,8 @@ the passing case?** Write that answer into your evidence rather than describing 
 ## Evidence
 
 The Orchestrator rendered the diff over the CL8b landing `8c70787` at
-`C:/Users/mikes/WebstormProjects/scaffold/tmp/audit/cl9-diff-2.patch` and the status at
-`tmp/audit/cl9-status-2.txt`; round 1's diff is at `tmp/audit/cl9-diff.patch`.
+`C:/Users/mikes/WebstormProjects/scaffold/.orkestrel/veneer/units/cl9-diff-2.patch.txt` and the status at
+`tmp/audit/cl9-status-2.txt`; round 1's diff is at `cl9-diff.patch.txt`.
 
 Read those and these files in the live Veneer tree at `C:/Users/mikes/WebstormProjects/veneer`:
 

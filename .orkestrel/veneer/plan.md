@@ -1964,3 +1964,53 @@ decomposition, so CL8 splits and two keys stop being what the plan assumed.
   arithmetic rather than a string rewrite, because Bootstrap's downward boundary is the named
   boundary less a fraction while the mixin emits the range form.
 - **Unchanged:** CL10 to CL13.
+
+### Re-baseline after CL9 (2026-09-22, landed `5e011a3`)
+
+- **Satisfied: CL9, the table key.** Twenty-nine recorded entries ship at their conditions, nothing
+  extra, nothing deferred, with a selector row per family and a variable row for each of the fourteen
+  custom properties. The custom-property layering — text resolving state over type over base, the
+  inset shadow resolving state over type over accent — is read with sentinel values rather than
+  assumed.
+  **The first key recorded under maximum widths**, so the first production consumer of the downward
+  breakpoint mixin. The mixin stays as it is and the equivalence went into the comparison, where it is
+  arithmetic rather than a spelling rewrite: the record's boundary is the named one less two
+  hundredths. An audit lane verified the rounding in binary64 at every recorded boundary, showing the
+  representation error stays below half the unit in the last place.
+  **Teaching the comparison that direction exposed a defect in a function every key's presence scan
+  uses.** Its guard against rewriting inside a legacy pseudo-element tested whether the preceding
+  character was a colon but not whether that colon was escaped, while the guard immediately after it
+  tested both. The guard now matches its neighbour, and a case drives the real presence scanner to pin
+  it. Both lanes established independently that no already-shipped key's reading moves — one by
+  enumerating every instance in the record, one by scanning the record and the cascade for the trigger.
+  **The contextual colours derive from Veneer's role tokens rather than the record's fixed values**,
+  recorded as a departure with browser controls that restore the record's own inputs, so a changed
+  record surfaces rather than being absorbed. The role loop reads the token module's Bootstrap-aligned
+  list, which an audit lane ruled the only one the vocabulary comparison permits: the broader list
+  carries a role the record does not, and that assertion is the only thing in the tree that would
+  catch it.
+- **A rule landed between the rounds, and it changed the second one.** Twice in a row the objective
+  lane had confirmed a claim about a proof that the subjective lane refuted, and the subjective lane
+  was right both times — once a factor set where the token could not see it, once an assertion a
+  literal would satisfy. Both proofs read correctly and neither could fail. So the audit step now
+  requires every lane, before confirming a claim about a proof, to name the mutation that would make
+  it fail and say whether the assertions distinguish that mutation from the passing case
+  (`.agents/orchestration.md`, scaffold `8779c95f`). **Round 2 shows the effect**: the objective lane
+  enumerated three distinct mutations of the corrected accent case and showed it discriminates all
+  three, and the lanes did not contradict each other.
+- **A property of the accounting worth carrying to every later key unit.** The vocabulary comparison
+  is the **only** assertion in the tree that catches an *extra* emitted selector. The presence scan
+  reports a missing name and never an extra one, and the family bindings compare against the record
+  rather than against a token source. So a unit that emits a selector the record does not carry is
+  caught there and nowhere else.
+- **Transformed: CL10.** Its terrain is measured (`units/cl10-terrain.md`), its brief written
+  (`units/cl10-brief.md`), and its scope read staged. It routes to Opus natively rather than to the
+  bench, so its audit lanes swap: Astra takes the objective lane and the Opus reviewer the subjective
+  one. Four questions its terrain closed by measurement: the reduced-motion condition needs no
+  equivalence work, the aspect ratios derive but at a precision two decimal places wider than the
+  grid's, the undefined icon class ships under CL7's ruling, and no token is needed.
+- **Carried to whichever unit next touches the freeze assertions or the normalizer:** a vacuous
+  portion of the freeze loop over string containers, the equivalence's exact-text narrowness, and the
+  regression case reading its rows from the guide's default path.
+- **Unchanged:** CL11 to CL13, and the two questions still with the user — the cross-cutting
+  reconciliation unit in `units/value-accounting-finding.md` and CL8b's gap-triple question.

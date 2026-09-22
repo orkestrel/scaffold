@@ -10,7 +10,7 @@ no write tools and no shell.
 
 ## Objective
 
-Rule on every claim of `C:/Users/mikes/WebstormProjects/scaffold/tmp/audit/cl9-audit-claims.md` with
+Rule on every claim of `C:/Users/mikes/WebstormProjects/scaffold/.orkestrel/veneer/cl9-audit-claims.md` with
 CONFIRMED, REFUTED, or UNDECIDABLE and the deciding evidence (`file:line` or exact text), add any
 extra finding that is an implementation defect (numbered after the last claim, with a site and a
 one-line failure scenario, distinguishing one that forces a fix round from one that does not), and
@@ -27,7 +27,7 @@ verdict, because it argues against a lane that read the file.
 ## Evidence
 
 The Orchestrator rendered the diff over the CL8b landing `8c70787` at
-`C:/Users/mikes/WebstormProjects/scaffold/tmp/audit/cl9-diff.patch` and the status at
+`C:/Users/mikes/WebstormProjects/scaffold/.orkestrel/veneer/units/cl9-diff.patch.txt` and the status at
 `tmp/audit/cl9-status.txt`.
 
 Read those and these files in the live Veneer tree at `C:/Users/mikes/WebstormProjects/veneer`,

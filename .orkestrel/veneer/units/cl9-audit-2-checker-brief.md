@@ -8,7 +8,7 @@ assignment directly and spawn nothing.
 ## Objective
 
 Rule on every claim marked `[mechanical]` in
-`C:/Users/mikes/WebstormProjects/scaffold/tmp/audit/cl9-audit-claims-2.md` with CONFIRMED, REFUTED,
+`C:/Users/mikes/WebstormProjects/scaffold/.orkestrel/veneer/cl9-audit-claims-2.md` with CONFIRMED, REFUTED,
 or UNDECIDABLE and `file:line` evidence, run the probes below, add any extra finding that is an
 implementation defect (numbered after the last claim), and end with one terminal line:
 `Verdict: accept` or `Verdict: fix round` with the claims that force it.
@@ -21,7 +21,7 @@ evidence you have and say plainly that the independent run is not in your slice.
 
 ## Evidence
 
-The rendered diff at `tmp/audit/cl9-diff-2.patch`, round 1's at `tmp/audit/cl9-diff.patch`, and the
+The rendered diff at `cl9-diff-2.patch.txt`, round 1's at `cl9-diff.patch.txt`, and the
 statuses `tmp/audit/cl9-status-2.txt` and `tmp/audit/cl9-status.txt`, all under
 `C:/Users/mikes/WebstormProjects/scaffold/`; the live Veneer tree at
 `C:/Users/mikes/WebstormProjects/veneer`, including `tests/setupStyles.ts`,
