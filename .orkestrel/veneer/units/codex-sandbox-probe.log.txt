@@ -1,0 +1,50 @@
+=== core project under codex sandbox (14:06:01)
+
+> @orkestrel/veneer@0.0.1 test:src:core
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core
+
+
+ RUN  v4.1.11 /home/user/veneer
+
+········
+
+ Test Files  2 passed (2)
+      Tests  8 passed (8)
+   Start at  14:06:02
+   Duration  315ms (transform 211ms, setup 159ms, import 97ms, tests 41ms, environment 0ms)
+
+=== core exit=0 (14:06:03)
+=== browser project (helpers file) under codex sandbox (14:06:03)
+
+> @orkestrel/veneer@0.0.1 test:src:browser
+> vitest run --config vite.config.ts --no-cache --reporter=dot --project src:browser tests/src/browser/helpers.test.ts
+
+
+ RUN  v4.1.11 /home/user/veneer
+
+
+⎯⎯⎯⎯⎯⎯ Unhandled Errors ⎯⎯⎯⎯⎯⎯
+
+Vitest caught 1 unhandled error during the test run.
+This might cause false positive tests. Resolve unhandled errors to make sure your tests are not affected.
+
+⎯⎯⎯⎯⎯⎯ Unhandled Error ⎯⎯⎯⎯⎯⎯⎯
+Error: listen EPERM: operation not permitted 127.0.0.1:63315
+ ❯ Server.setupListenHandle [as _listen2] node:net:1918:21
+ ❯ listenInCluster node:net:1997:12
+ ❯ GetAddrInfoReqWrap.callback node:net:2206:7
+ ❯ GetAddrInfoReqWrap.onlookupall [as oncomplete] node:dns:134:8
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+Serialized Error: { code: 'EPERM', errno: -1, syscall: 'listen', address: '127.0.0.1', port: 63315 }
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+
+
+ Test Files  no tests
+      Tests  no tests
+     Errors  1 error
+   Start at  14:06:04
+   Duration  56ms (transform 0ms, setup 0ms, import 0ms, tests 0ms, environment 0ms)
+
+=== browser exit=1 (14:06:04)
+=== probe done
