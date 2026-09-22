@@ -35,4 +35,13 @@ The fix round runs on `opus` in the same worktree from `units/f7-brief-2.md`; it
 `units/f7-report-2.md`, its evidence `units/f7-fix.diff`, its gate log `units/f7-fix-gates.log.txt`,
 and its objective auditor `analyst` on Astra (`units/f7-fix-audit-analyst-verdict.md`).
 
-ROUND-2 OUTCOME: pending
+ROUND-2 OUTCOME: accepted 2026-09-22, landed on the session branch as `64e69f6` (cherry-pick of
+`unit/f7` `57cd0e1`; the § Showcase paragraph merged F6's shell sentences with the fix round's actor
+phrasing and its capture-registry paragraph). `analyst` on Astra ruled `VERDICT: FAIL 4; outside the
+claims: none` on the fix round (`units/f7-fix-audit-analyst-verdict.md`): the tree assertions read the
+whole artifact body. The Orchestrator wrote the two-line fix under `units/f7-brief-3.md`, took the host
+control (`units/f7-claim4-control.sh`, log `units/f7-claim4-control.log.txt`: the tree half forced to
+its fallback fails exactly the setup case and the journey case in every variant, the restored file
+matches its digest and passes), and `analyst` on Astra ruled `VERDICT: PASS` on it
+(`units/f7-fix-3-audit-analyst-verdict.md`). Every other fix-round claim CONFIRMED; the fix-round gate
+chain is green on every gate (`units/f7-fix-gates.log.txt`).
