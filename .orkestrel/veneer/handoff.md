@@ -36,8 +36,8 @@ verifier, and landed by a script that refuses any file outside the owned set.
 
 | Checkout | HEAD | Meaning |
 | --- | --- | --- |
-| Veneer | `5e011a3` | CL9 landed and pushed; the tracked tree is clean unless a unit is live |
-| Scaffold | confirm with `git log --oneline -1` | every record through CL9's landing retained and pushed |
+| Veneer | `5e011a3` | CL9 landed and pushed. The tracked tree carries CL10's authored work UNCOMMITTED, and its fix round is in flight over it |
+| Scaffold | `3591daa2` | every record through CL10's round-1 verdict retained and pushed |
 
 Landed in Veneer: CL1 `00a5bdc`, CL2 `9f5ffda`, CL3 `9bb306e`, CL3b `d822d59`, CL4 `bc580c1`,
 CL4b `5240e36`, CL5 `ea82419`, CL5b `4f817db`, CL5c `c1c81a4`, CL6 `c8f53f8`, CL7 `a9172df`,
@@ -60,10 +60,20 @@ design round starts from a measurement.
 - A case in the same file compares the built cascade's selector and media-condition **multiset**
   against the pinned record minus the guide's deferrals, for the keys its tuple names. It understands
   both breakpoint directions: an upward condition by a spelling rewrite, a downward one by arithmetic,
-  because the record's downward boundary is the named one less two hundredths. **This is the only
-  assertion in the tree that catches an extra emitted selector** — the presence scan reports a missing
-  name and never an extra one, and the family bindings compare against the record rather than a token
-  source. Its tuple and its selector prefix cover different populations on purpose.
+  because the record's downward boundary is the named one less two hundredths. **It is the only
+  assertion that catches an extra emitted selector anywhere in the admitted vocabulary** — the presence
+  scan reports a missing name and never an extra one, and the family bindings compare against the
+  record rather than a token source. CL10's round 1 narrowed that claim from "the only assertion in the
+  tree": CL10's own icon-class binding pins the selectors mentioning the icon class to an exhaustive
+  list and so rejects an extra one within that subset. Its tuple and its selector prefix cover
+  different populations on purpose.
+  **It compares selectors and enclosing conditions only — never declaration values.** Its own doc block
+  says so. Do not write a brief predicting it will redden on a changed value; it cannot.
+  **Its selector boundary carried a latent defect through CL10**, measured in
+  `units/cl10-fix-terrain.md`: the negated class is ASCII-only, so a longer name whose extension is
+  non-ASCII or backslash-escaped was admitted as if it belonged to the prefix's family. CL10's fix
+  round closes it for every prefix. Nothing false shipped, because no such selector exists in the
+  cascade or in Bootstrap's distribution.
 - The utilities' density independence is read at the document root with a positive control proving the
   factor arrived.
 - The table key's custom-property layering is read with sentinel values, and its accent fallback
@@ -77,26 +87,42 @@ table. It moves the family's exit criterion, so it is a rescope rather than a re
 gap-triple question is also still open**: whether to pull the `gap` and `column-gap` keys forward to
 sit with `row-gap`, which CL8b shipped because the `row` key required it.
 
-## What to do first: CL10, the icon-link, ratio, and vertical-rule keys
+## What to do first: finish CL10's fix round, then land it
 
-**CL10's terrain is measured, its brief written, and its scope read staged**: `units/cl10-terrain.md`,
-`units/cl10-brief.md`, `units/cl10-scope-read-brief.md`, with `units/render-cl10.sh` taking its base
-commit as an argument. No scout is needed. Dispatch the scope read, fold its findings, then dispatch
-`opus` natively.
+**CL10 is written and its round 1 is ruled.** It shipped the icon-link, ratio, and vertical-rule keys;
+`cl10-audit-verdict.md` carries the round. Round 1 accepted the shipped cascade — both judgment lanes
+agreed the three keys ship whole with nothing extra and nothing deferred, and the gates ran green on
+both engines first run (`units/cl10-gate.log.txt`). **Reopen none of that.**
 
-**CL10 routes to Opus, not the bench** — the first such unit since CL5. So its audit lanes swap:
-Astra takes the OBJECTIVE lane and the Opus reviewer the SUBJECTIVE one, because the auditor must be
-an engine that did not write the work.
+The verdict was **fix round**, on two test-quality findings: the collector's ASCII-only selector
+boundary with the control that overstates its coverage, and a function assigned inside a test body,
+which the lint rule cannot see because its scope excludes the test tree. Seven further findings ride
+along, five of them in files the round already opens and two carried in from CL9.
 
-Four questions its terrain closed by measurement, so the unit does not re-derive them: the
-reduced-motion condition needs no equivalence work because Veneer's mixin emits the record's text and
-both sides parse identically; the aspect ratios derive from their names but at a precision **two
-decimal places wider than the grid's**, so a loop copying the grid's arithmetic emits a value the eye
-calls identical and the comparison rejects; the undefined icon class ships under CL7's ruling for the
-container's navigation combinators; and no token is needed, so the token file and the registry are
-off-limits with an instruction to stop rather than add one.
+**The fix round runs on Astra**, because Opus 5 wrote round 1 and the auditor must be an engine that
+did not write the work — which is also why round 1's lanes were swapped, Astra objective and the Opus
+reviewer subjective. Its brief is `units/cl10-brief-2.md` over `units/cl10-brief.md`, its measurements
+are in `units/cl10-fix-terrain.md`, and its driver is `units/cl10-2.sh`.
 
-## Then CL10 to CL13
+On its return: retain the report, re-render evidence with `units/render-cl10.sh 5e011a3`, run round 2
+with the lanes swapped back (**Opus objective, Astra subjective**, because Astra wrote this round),
+then land with `units/cl10-land.sh`, whose message file must be written first.
+
+**The fix round is granted `tests/setupBrowser.ts` narrowly**, for one export and its proof. CL11 owns
+that module's other findings, so **write CL11's brief against the post-fix tree**, not against what the
+design row assumed.
+
+Two corrections CL10 produced that a successor brief must carry:
+
+- **The reduced-motion preference IS drivable.** `stageMedia` is an installed export with a motion
+  field, already driven by sibling proofs in this tree. A scope read said otherwise, that finding
+  reached CL10's brief, and the unit refused it. The scope-read report carries a correction header.
+- **The ratio precision prediction was wrong.** The terrain said a grid-copied rounding scale would
+  redden the vocabulary comparison. It would not: the build shortens every percentage to six
+  significant digits, and more decisively the comparison never compares declaration values at all. The
+  scale claim is true at the source, and CL10 proves it there by compiling the partial.
+
+## Then CL11 to CL13
 
 Per `content-layout-design-verdict.md` § Units (the routing ledger is there). Brief each from
 the design row, the planner's criteria (`units/content-layout-design-planner-report.md`), and
