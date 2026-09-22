@@ -1,8 +1,16 @@
 # Veneer campaign handoff
 
-Written 2026-09-21 for the next Claude Code session on this machine. Read this file, then the
-appended entries at the end of `plan.md` (the last entries of the file, after its earlier
+Written 2026-09-21, last revised 2026-09-22 when the Content/layout family closed. Read this file,
+then the appended entries at the end of `plan.md` (the last entries of the file, after its earlier
 re-baseline record), then the latest verdict named under § State, before dispatching anything.
+
+**Read `tenets.txt` too, and read it early.** It sits beside this file at
+`.orkestrel/veneer/tenets.txt` — **not** at the scaffold root, where an earlier instruction implied.
+It carries the product tenets and execution constraints the user's requirements reduce to, and the
+design and every implementation unit are judged against it. A session that reads the plan and skips
+the tenets is missing half the contract; that happened in the session that closed this family, and the
+tenets were read only at its review.
+
 The law is unchanged: `AGENTS.md`, `.agents/orchestration.md`, and `.claude/rules/*.md` in the
 scaffold checkout, read before every dispatch.
 
@@ -104,6 +112,20 @@ does, so read them before planning one.
 **Before any later family's capture work, read CL13's finding 1.** The frame grammar means opposite
 things on the two sides of a comparison, it ships with every family's frames including the Button
 family's, and it corrupts the reading method rather than the subject. Name it at that dispatch.
+
+### Owed at this acceptance, and not yet done
+
+- **The prune.** `.agents/orchestration.md` § Where campaign artifacts live requires pruning the
+  campaign folder in a commit at acceptance, following
+  `.agents/skills/orkestrel-debrief/references/retention.md` before deleting anything. The family has
+  closed and the folder is unpruned. Git history is the archive; the working tree is the workspace.
+- **A self-audit of the closing session is in flight**, over the plan, the tenets, `AGENTS.md`,
+  `.agents/orchestration.md`, `.claude/rules/*`, `CLAUDE.md`, retention integrity, and whether the
+  Orchestrator's own reports matched its evidence. Its surviving findings belong in this file and in
+  `plan.md` before the next family is planned.
+- **Three stray zero-byte files sit at the scaffold root**: `The`, `journey`, and `records,`, all
+  created in the same millisecond on 2026-09-21, which is redirect debris from an unquoted string.
+  They are untracked and carry nothing. Remove them, but look before deleting.
 
 ## The six later families
 

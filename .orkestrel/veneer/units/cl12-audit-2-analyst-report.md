@@ -1,0 +1,31 @@
+<!-- analyst on Astra (gpt-6-astra), bench lane, read-only, clean context. Held the SUBJECTIVE
+lane of CL12 audit round 2. Journal tmp/codex/cl12-audit-2-analyst.jsonl, exit=0. Terminal line: Verdict: accept.
+RETAINED LATE, at the campaign's own review, after the Orchestrator found it had not retained
+every lane of every audit round as .agents/orchestration.md requires. The report text is the
+lane's own, unedited. -->
+
+1. **CONFIRMED.** [Guide § Tokens → Space, border, radius, and elevation](C:/Users/mikes/WebstormProjects/veneer/guides/veneer.md), currently around 640: the replacement supports predicting the cap. Reading the built CSS directly gives `.container-sm` caps of `540px`, `720px`, `960px`, `1140px`, and `1320px` at the respective `576px`, `768px`, `992px`, `1200px`, and `1400px` boundaries. Each successive selector list retains the narrower containers. The wider-boundary reading defeats the old interpretation; the replacement describes it correctly.
+
+2. **CONFIRMED.** [Report § Fluid clause measured before editing](C:/Users/mikes/WebstormProjects/scaffold/.orkestrel/veneer/units/cl12-report-2.md), currently around 28: I reran the read-only cascade instrument; no cap rule selects `.container-fluid`. In [container classes → “reads every variant around the $boundary boundary”](C:/Users/mikes/WebstormProjects/veneer/tests/src/styles/components/container.test.ts), the fluid case has an undefined boundary and explicitly asserts `max-width: none` and viewport-wide width. The case data covers immediately before, at, and after every named boundary. The journal records the scoped run passing. Adding a fluid cap at `768px` would contradict those assertions; this is an asserted reading, not an inference from test presence.
+
+3. **CONFIRMED.** [Guide § Tokens → Deferred names](C:/Users/mikes/WebstormProjects/veneer/guides/veneer.md), currently around 881: the justification concerns inventory membership. My inventory projection found the deferred names absent and `.container` present as a positive control. `readOracleInventory` projects selectors and custom properties; `scanCompatibilityPresence` checks that vocabulary. The standard status of `scroll-padding` therefore does not contradict the stated reason.
+
+4. **CONFIRMED.** [Report § Reader unknown closed](C:/Users/mikes/WebstormProjects/scaffold/.orkestrel/veneer/units/cl12-report-2.md), currently around 38: rerunning `readings.mjs` returned identical Styles, Compatibility, Surface, Methods, and fence projections, plus byte-identical table lines. Renaming the Styles deferral heading produced a different projection. The saved baseline’s Git hash matches the supplied round-1 diff’s destination hash, so the comparison uses the correct baseline.
+
+5. **CONFIRMED.** [Report § Corrections to round 1’s report](C:/Users/mikes/WebstormProjects/scaffold/.orkestrel/veneer/units/cl12-report-2.md), currently around 42: the range, grammar, sweep-attribution, and completeness-gate corrections are stated explicitly together. They distinguish column conversion from row relocation and withdraw the ledger’s unsupported discovery attribution. The round-to-round diff contains only the container paragraph and deferred-name justification.
+
+6. **CONFIRMED.** [Report § Corrections to round 1’s report → proposed completeness gate](C:/Users/mikes/WebstormProjects/scaffold/.orkestrel/veneer/units/cl12-report-2.md), currently around 47: the recommendation is implementable. It identifies table name cells, required payload columns, light/dark handling, and expansion or explicit conversion of range and composite cells. Its required negative control distinguishes row completeness from prose mentions. I deleted the mark row in memory: its backticked name remained in prose while its table row disappeared. The proposed successor must reject precisely that state.
+
+7. **CONFIRMED.** [Report § Gate freshness and results](C:/Users/mikes/WebstormProjects/scaffold/.orkestrel/veneer/units/cl12-report-2.md), currently around 49: the guide’s filesystem modification time is `2026-09-22 07:54:52 UTC`; the gate records begin afterward at `07:55:27 UTC`. Journaled digest readings during verification and after the final checks agree with the live SHA-256, `ADA43FD94AD85E7ECFB5A2D5EEB00200F63E6DFE82E978DE6136241AC6730A0B`. The ordering is supported beyond the report’s assertion.
+
+8. **CONFIRMED.** [Report § Gate freshness and results](C:/Users/mikes/WebstormProjects/scaffold/.orkestrel/veneer/units/cl12-report-2.md), currently around 64: the initial log contains npm notices wrapped as `NativeCommandError`, and the journal records shell exit `1`. The separate `cmd.exe` rerun records exit `0` and reaches the final guides result. The report preserves the distinction and labels the full suite as the unit’s observation.
+
+9. **CONFIRMED.** [Report § Actual diff and status](C:/Users/mikes/WebstormProjects/scaffold/.orkestrel/veneer/units/cl12-report-2.md), currently around 68: the supplied status names only `guides/veneer.md`. The live diff against `eb1cd71` agrees; the README diff is empty.
+
+10. **CONFIRMED.** [Report § Actual diff and status](C:/Users/mikes/WebstormProjects/scaffold/.orkestrel/veneer/units/cl12-report-2.md), currently around 68: the baseline comparison contains only prose replacements. The executed table comparison remains equal, including Compatibility; no row or granularity changed in this round.
+
+11. **CONFIRMED.** [Report § Limits and remaining work](C:/Users/mikes/WebstormProjects/scaffold/.orkestrel/veneer/units/cl12-report-2.md), currently around 85: it explicitly states that no receipt was issued and that test readings are not receipts. The supplied instruments and results support that distinction.
+
+12. **CONFIRMED.** [Report § Limits and remaining work](C:/Users/mikes/WebstormProjects/scaffold/.orkestrel/veneer/units/cl12-report-2.md), currently around 85: the reported guide changes match the isolated diff. The report keeps the completeness gate, shorthand conventions, carried mirror review, and compatibility granularity as successor work. It claims neither their implementation nor an authoritative post-unit suite run.
+
+Verdict: accept
