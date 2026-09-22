@@ -1,0 +1,1790 @@
+diff --git a/guides/veneer.md b/guides/veneer.md
+index 7358e4c..3cd628c 100644
+--- a/guides/veneer.md
++++ b/guides/veneer.md
+@@ -1072,10 +1072,13 @@ the icon links, and a Layout region carrying the container, grid, and gutter spe
+ vertical rule, and a Table region carrying the table variant and responsive specimens. Each helper
+ key sits in the region whose subject it belongs to rather than in a region of its own, which is how
+ every other section is grouped: the image classes and the figure classes share Media, and the
+-quotation classes sit in Type. Its button drives the controller and
+-announces the selected mode, and its entry constructs a `Delegate` instance beside the showcase.
+-The application barrel is a workspace implementation surface and is outside this guide's published
+-API tables.
++quotation classes sit in Type. The showcase's own button drives the controller and announces the
++selected mode, and its entry constructs a `Delegate` instance beside the showcase. The application
++barrel is a workspace implementation surface and is outside this guide's published API tables.
++
++That placement is what the capture registry addresses a frame by: every registered scenario names
++the specimen or the region that is its subject, and § Tests gives the filename law built on it, so a
++shipped key no region renders has no subject to register and no frame to be read from.
+ 
+ Scaffold mandates the Vue toolchain for an `app/browser` environment, and this shell declares no
+ component in it: the shell is framework-free by design, so the showcase drives the published
+@@ -1105,6 +1108,70 @@ The application proofs drive the shell through its interface; see
+ [typography class specimens](../tests/app/browser/sections/TypeSection.test.ts),
+ [media class specimens](../tests/app/browser/sections/MediaSection.test.ts), and
+ [showcase journeys](../tests/app/browser/integration.test.ts).
++
++The journey run also writes the capture portfolio an appearance round is ruled on. Each frame is
++named `<scenario>--<theme>-<viewport>.png`: the stem names the scenario alone, and the token after
++the separator is the variant that rendered it, which is its theme and its viewport together. A run
++photographs only the mode its own variant names, so the theme a filename claims and the theme its
++frame shows are one reading, and no token names the project that shot the frame.
++
++A scenario's stem is its own subject's stem, and a driven state follows that stem: the `Primary`
++specimen held under the pointer is `primary-active`. A subject is a specimen one of the showcase
++tables declares, or the region a page frame reads the surface through. The `tests/setup.ts` module
++declares that grammar as the types the registry rows are written in, so a scenario spelling a
++project suffix or a mode token fails the typecheck at the row declaring it. The registry proof in
++[showcase journeys](../tests/app/browser/integration.test.ts) holds every registered subject against
++those tables and against the rendered surface, so a scenario whose subject the showcase stops
++rendering reddens rather than photographing something else under the same name.
++
++The stem is what lets this portfolio be sorted against a counterpart portfolio by subject rather
++than by hand. The rule comes from the Bootstrap 5.3.8 portfolio the CL13 round shot of the same
++markup, whose stems match that registry's specimen names. Nothing here pairs the two directories:
++no listing of that portfolio is retained in this repository, so the appearance round that reads one
++pairs the rows and rules on the alignment.
++
++| Veneer stem        | Subject                                               |
++| ------------------ | ----------------------------------------------------- |
++| `capped-container` | the `Capped container` specimen's own container       |
++| `numbered-columns` | the `Numbered columns` specimen's own row             |
++| `base`             | the `Base` table specimen                             |
++| `role-links`       | the `Role links` specimen, every anchor it renders    |
++| `showcase`         | the `Showcase` region, as a frame of the resting page |
++| `primary-focus`    | the `Primary` specimen reached by keyboard traversal  |
++| `primary-hover`    | the `Primary` specimen under the pointer              |
++| `primary-active`   | the `Primary` specimen held under the pointer         |
++| `toggle-pressed`   | the `Toggle` specimen driven to its pressed state     |
++
++An element frame carries its whole specimen and the background that specimen renders against, and
++the element the scenario is about is the frame's declared region. A crop of that element alone
++carries one role link and none of the paint behind it, which is why the frame is the specimen and
++the region is the reading. The written frame is read back through the installed `readFrame` function
++for its size and the color its bottom row paints, and its declared region is read for the fraction
++of pixels differing from that region's first pixel; a region painting one color is refused as a
++blank.
++
++The guard's population is the frames on disk under `tmp/capture/states`, discovered from the
++registry's own expansion and read back whether or not this run wrote a file, so an ordinary journey
++run guards the frames an earlier capture run left. Each frame is paired with the region its scenario
++declared while the shot was staged, because the written file carries no box and the handed-back
++document no longer holds one. A directory holding no frame is reported as that, and held to the
++directory rather than passed over as a clean sweep.
++
++One accessibility artifact covers one subject and one variant, and it is named
++`<subject>--<theme>-<viewport>-accessibility.txt`. Its stem is the subject's where a frame's stem is
++the scenario's, so the Button scenarios' frames share the `primary` and the `toggle` artifact. Each
++artifact names its subject, its variant, and the state its reading was taken in, which is `rest`:
++the reading is taken on arrival while a driven frame shows focus, the pointer, or a press. It
++carries that subject's accessible tree and its keyboard focus order, both read through a scope
++enclosing the subject, so a subject that is itself a control records its own role and name rather
++than reporting itself unreachable. The per-variant manifest `tmp/capture/<variant>.txt` keeps the
++whole page's tree, the focus inventory, the interaction log, and every reading the journeys took.
++
++The two portfolios read side by side within one stated limit: a counterpart frame is shot on a blank
++page carrying the specimen alone, and a Veneer frame is a lift out of the mounted showcase. The
++hosts are not the same document, so inherited context is not proven identical, and a difference
++between the sides is bounded by that before it is read as a cascade difference.
++
+ The style proofs bind the cascade to the registry and to the calibration; see
+ [token parity and values](../tests/src/styles/tokens.test.ts),
+ [theme scopes](../tests/src/styles/theme.test.ts),
+diff --git a/tests/app/browser/integration.test.ts b/tests/app/browser/integration.test.ts
+index 4d47096..3ddcbee 100644
+--- a/tests/app/browser/integration.test.ts
++++ b/tests/app/browser/integration.test.ts
+@@ -1,3 +1,4 @@
++import type { CaptureFilename, CaptureSubject } from '../../setup.js'
+ import { requireValue } from '@orkestrel/test'
+ import {
+ 	build,
+@@ -19,6 +20,7 @@ import {
+ 	readContrast,
+ 	readHit,
+ 	readName,
++	readFrame,
+ 	readPage,
+ 	readPerception,
+ 	readRefusal,
+@@ -28,7 +30,6 @@ import {
+ 	releaseMedia,
+ 	releasePane,
+ 	releasePointer,
+-	resolveAccessible,
+ 	stageMedia,
+ 	stagePane,
+ 	traverseAccessible,
+@@ -38,21 +39,34 @@ import {
+ import { afterAll, afterEach, beforeEach, describe, expect, inject, it } from 'vitest'
+ import { commands, page } from 'vitest/browser'
+ import {
+-	BUTTON_STATES,
++	BUTTON_SPECIMENS,
++	CONTENT_SPECIMENS,
++	LAYOUT_SPECIMENS,
++	LINK_SPECIMENS,
++	MEDIA_SPECIMENS,
++	SHOWCASE_COPY,
++	TABLE_SPECIMENS,
++	TYPE_SPECIMENS,
++} from '@app/browser'
++import {
++	buildStem,
++	CAPTURE_KEYS,
++	CAPTURE_SCENARIOS,
+ 	CASCADE_KEYS,
+-	CASCADE_STATES,
+ 	CONTRAST_BAR,
+ 	DISABLED_OPACITY,
+ 	FOCUS_RING,
+-	PORTFOLIO_STATES,
++	isVariantName,
+ 	UNDER_BAR,
+ } from '../../setup.js'
+ import {
+ 	applyTheme,
+ 	buildOracleComparison,
+ 	collectPainted,
++	describeSubject,
+ 	driveOracle,
+-	measureFrameVariation,
++	FrameManager,
++	measureVariation,
+ 	mountShowcase,
+ 	ORACLE_ACTIONS,
+ 	ORACLE_EXCLUDED,
+@@ -60,33 +74,51 @@ import {
+ 	readButton,
+ 	readOracleButton,
+ 	readSpecimen,
++	readSubject,
+ } from '../../setupBrowser.js'
+ 
+-const VARIANT = inject('variant')
++const PROVIDED = inject('variant')
++if (!isVariantName(PROVIDED)) {
++	throw new Error(`The journey variant "${PROVIDED}" names no theme and viewport width`)
++}
++// The project provides the variant as a plain string, and every filename this run writes and reads
++// back is built on it, so its grammar is settled here rather than at each name.
++const VARIANT = PROVIDED
+ const VARIANTS = inject('variants')
+ const CAPTURE = inject('capture')
+-const FAMILIES = Object.freeze(['journey', 'refusal', 'matrix', ...(CAPTURE ? ['capture'] : [])])
++const FAMILIES = Object.freeze(['journey', 'refusal', 'matrix', 'capture'])
+ const PROVEN = new Set<string>()
+-const PLACED = new Set<string>()
++// One spelling of the portfolio's directory. The portfolio resolves it from this file and the
++// runner's own file commands resolve it from the workspace root, so a guard reading a frame back
++// and a capture writing one address the same directory.
++const STATES = 'tmp/capture/states'
+ const PORTFOLIO = createPortfolio({
+-	states: PORTFOLIO_STATES,
++	states: CAPTURE_SCENARIOS,
+ 	variants: VARIANTS,
+ 	variant: VARIANT,
+-	directory: '../../../tmp/capture/states',
++	directory: `../../../${STATES}`,
+ 	enabled: CAPTURE,
+ })
++const FRAMES = new FrameManager(PORTFOLIO)
+ const JOURNAL = createJournal()
+ const ARTIFACT: string[] = []
++const ACCESSIBILITY = 'accessibility'
+ 
+-// The registered light and dark variants, so a journey applying a mode names the matrix rather than a
+-// viewport of its own.
++// The registered light and dark variants at this run's own viewport. A run photographs only the
++// mode its own variant names, so the theme a filename carries and the theme its frame shows are one
++// reading; and a mode string borrowed from another width would label every artifact of a 390 run
++// with a 1280 variant's name.
++const WIDTH = requireValue(
++	VARIANTS.find((variant) => variant.name === VARIANT),
++	`The variant matrix registers no variant named ${VARIANT}`,
++).width
+ const LIGHT = requireValue(
+-	VARIANTS.find((variant) => variant.name.startsWith('light-')),
+-	'The variant matrix registers no light mode',
++	VARIANTS.find((variant) => variant.width === WIDTH && variant.name.startsWith('light-')),
++	`The variant matrix registers no light mode at ${String(WIDTH)} wide`,
+ ).name
+ const DARK = requireValue(
+-	VARIANTS.find((variant) => variant.name.startsWith('dark-')),
+-	'The variant matrix registers no dark mode',
++	VARIANTS.find((variant) => variant.width === WIDTH && variant.name.startsWith('dark-')),
++	`The variant matrix registers no dark mode at ${String(WIDTH)} wide`,
+ ).name
+ 
+ let mounted: Awaited<ReturnType<typeof mountShowcase>>
+@@ -156,13 +188,11 @@ describe('journey', () => {
+ 		expect(readPage()).not.toMatch(/schema|transport|engine/iu)
+ 		ARTIFACT.push(describeTree(mounted.host))
+ 		JOURNAL.record('arrive', 'Showcase', readPerception('Showcase'))
+-		PLACED.add('home')
+-		await PORTFOLIO.place('home')
++		await FRAMES.page('showcase', readSubject(mounted.host, SHOWCASE_COPY.region))
+ 	})
+ 
+ 	it('switches the announced and painted mode through the control', async () => {
+ 		await applyTheme(LIGHT)
+-		const control = resolveAccessible('button', 'Dark mode')
+ 		const light = readStyle(document.body, 'background-color')
+ 		await clickAccessible('button', 'Dark mode')
+ 		expect(await waitForState('button', 'Dark mode', 'pressed=true')).toContain('pressed=true')
+@@ -171,18 +201,12 @@ describe('journey', () => {
+ 		const dark = readStyle(document.body, 'background-color')
+ 		expect(dark).not.toBe(light)
+ 		JOURNAL.record('click', 'Dark mode', dark)
+-		// The click that switched the mode leaves the pointer resting on the control, and the
+-		// published bare-button treatment paints a hover mix there. The `home` frame is shot at
+-		// arrival with no pointer on the page, so a `home-dark` frame shot under the click carries a
+-		// mark its pair does not and a reader comparing the two reads the hover fill as a mode
+-		// difference. The pointer is parked and the mix is allowed to settle out before the shot,
+-		// and the reading that decides it is taken straight after the placement: the shot is what
+-		// has to have found the control unhovered, not the moment before it.
++		// No frame is shot here. The arrival frame is placed in the mode this run's own variant
++		// names, so the dark arrival frame is the dark run's, taken with no pointer on the page; a
++		// frame shot under this click would carry the hover mix the published bare-button treatment
++		// paints on the control it was clicked with, and a reader comparing the two modes would read
++		// that mark as a mode difference.
+ 		await releasePointer()
+-		await waitForAnimations(control)
+-		PLACED.add('home-dark')
+-		await PORTFOLIO.place('home-dark')
+-		expect(control.matches(':hover')).toBe(false)
+ 		await clickAccessible('button', 'Dark mode')
+ 		expect(await waitForState('button', 'Dark mode', 'pressed=false')).toContain('pressed=false')
+ 		await waitForAnimations(document.body)
+@@ -326,8 +350,7 @@ describe('journey', () => {
+ 			await waitForAnimations(host)
+ 			rings.set(name, readRing(host))
+ 			if (name === 'Primary') {
+-				PLACED.add('button-primary-focus')
+-				await PORTFOLIO.place('button-primary-focus')
++				if (VARIANT === LIGHT) await FRAMES.page('primary-focus', host)
+ 				framed = host.matches(':focus-visible')
+ 			}
+ 		}
+@@ -362,8 +385,7 @@ describe('journey', () => {
+ 			await waitForAnimations(host)
+ 			rings.set(name, readRing(host))
+ 			if (name === 'Primary') {
+-				PLACED.add('button-primary-focus-dark')
+-				await PORTFOLIO.place('button-primary-focus-dark')
++				if (VARIANT === DARK) await FRAMES.page('primary-focus', host)
+ 				framed = host.matches(':focus-visible')
+ 			}
+ 		}
+@@ -442,7 +464,9 @@ describe('journey', () => {
+ 		const settled: Array<readonly [string, string]> = []
+ 		for (const mode of [LIGHT, DARK]) {
+ 			await applyTheme(mode)
+-			const suffix = mode === DARK ? '-dark' : ''
++			// Both modes are driven and read in every run; the frames are placed in the mode this
++			// run's own variant names, which is the theme its filenames carry.
++			const shooting = mode === VARIANT
+ 			const host = readButton(mounted.section, 'Primary')
+ 			const rest = readStyle(host, 'background-color')
+ 			// The pointer is aimed at the staged layout rather than the fitted one, because a host
+@@ -458,8 +482,7 @@ describe('journey', () => {
+ 			expect(hovered).not.toBe(rest)
+ 			await stageMedia({ motion: false })
+ 			durations.push([`hover ${mode}`, readStyle(host, 'transition-duration')])
+-			PLACED.add(`button-primary-hover${suffix}`)
+-			await PORTFOLIO.place(`button-primary-hover${suffix}`, host)
++			if (shooting) await FRAMES.place('primary-hover', host)
+ 			// Both readings that decide the frame are taken here, before the pointer is placed
+ 			// again, and in the layout the shot was taken in: the capture stages the pane, shoots,
+ 			// and hands the pane back before it returns, and the hand-back moves the document out
+@@ -493,8 +516,7 @@ describe('journey', () => {
+ 			expect(held).not.toBe(hovered)
+ 			await stageMedia({ motion: false })
+ 			durations.push([`active ${mode}`, readStyle(host, 'transition-duration')])
+-			PLACED.add(`button-primary-active${suffix}`)
+-			await PORTFOLIO.place(`button-primary-active${suffix}`, host)
++			if (shooting) await FRAMES.place('primary-active', host)
+ 			restored.push([`active ${mode}`, readStyle(host, 'background-color')])
+ 			settled.push([`active ${mode}`, held])
+ 			await releaseMedia()
+@@ -530,23 +552,23 @@ describe('journey', () => {
+ 		expect(readStyle(host, 'transition-duration')).toBe(moving)
+ 	})
+ 
+-	it('renders the resting section and a driven pressed state in both modes', async () => {
++	it('drives a delegated host to pressed and photographs it in both modes', async () => {
+ 		const host = readButton(mounted.section, 'Toggle')
+ 		for (const mode of [LIGHT, DARK]) {
+ 			await applyTheme(mode)
+-			const suffix = mode === DARK ? '-dark' : ''
+ 			await waitForAnimations(document.body)
+ 			expect(document.documentElement.getAttribute('data-bs-theme')).toBe(
+ 				mode === DARK ? 'dark' : null,
+ 			)
+ 			expect(host.classList.contains('active')).toBe(false)
+-			PLACED.add(`button-primary-rest${suffix}`)
+-			await PORTFOLIO.place(`button-primary-rest${suffix}`)
+ 			await clickAccessible('button', 'Toggle')
+ 			expect(await waitForState('button', 'Toggle', 'pressed=true')).toContain('pressed=true')
+ 			await waitForAnimations(host)
+-			PLACED.add(`button-primary-pressed${suffix}`)
+-			await PORTFOLIO.place(`button-primary-pressed${suffix}`)
++			// The frame is the host's own, not the page's: a page frame at rest and a page frame
++			// with one host pressed are one document apart in 8000 pixels, and the resting page is
++			// already the arrival frame. The pressed paint is what this scenario claims, so the
++			// frame carries the host that paints it.
++			if (mode === VARIANT) await FRAMES.place('toggle-pressed', host)
+ 			expect(host.classList.contains('active')).toBe(true)
+ 			// The artifact's other tree is taken on arrival, where nothing is pressed, so the pressed
+ 			// moment has no record unless it is written here. The region is the narrowest subtree
+@@ -569,32 +591,37 @@ describe('journey', () => {
+ 		for (const mode of [LIGHT, DARK]) {
+ 			await applyTheme(mode)
+ 			await waitForAnimations(document.body)
+-			const suffix = mode === DARK ? '-dark' : ''
+ 			for (const key of CASCADE_KEYS) {
+-				const specimen = readSpecimen(mounted.host, key.specimen)
+-				const subject = requireValue(
++				const specimen = readSpecimen(mounted.host, key.subject)
++				const element = requireValue(
+ 					specimen.querySelector(key.selector),
+-					`The "${key.specimen}" specimen renders no ${key.selector}`,
++					`The "${key.subject}" specimen renders no ${key.selector}`,
+ 				)
+-				// The frame is shot on a copy of the specimen lifted to the document's start. A
+-				// page frame covers the whole document, so one shot at rest is one image whatever
+-				// state name it carries; and an element frame taken where the showcase renders
++				// The frame is shot on a copy of the whole specimen lifted to the document's start,
++				// and the copy's own element inside it is the region the written frame is read on.
++				// A page frame covers the whole document, so one shot at rest is one image whatever
++				// scenario name it carries; and an element frame taken where the showcase renders
+ 				// these specimens comes back blank white, measured at both registered widths. The
+-				// lift is what the harness can photograph. The property comparison checks only the
+-				// declared treatment; the capture-only proof reads the written pixels for blanks.
++				// lift is what the harness can photograph. Shooting the selector's own element
++				// instead would crop the specimen to one of its role links, with none of the
++				// background the paint is read against. The property comparison checks only the
++				// declared treatment; the written frame is read back separately.
+ 				const lifted = build('div')
+ 				lifted.append(specimen.cloneNode(true))
+ 				document.body.prepend(lifted)
+ 				try {
++					const frame = requireValue(
++						lifted.firstElementChild,
++						`The lifted "${key.subject}" specimen carries no copy`,
++					)
+ 					const copy = requireValue(
+-						lifted.querySelector(key.selector),
+-						`The lifted "${key.specimen}" specimen renders no ${key.selector}`,
++						frame.querySelector(key.selector),
++						`The lifted "${key.subject}" specimen renders no ${key.selector}`,
+ 					)
+-					rendered.set(`${mode}|${key.state}`, readStyle(subject, key.property))
+-					framed.set(`${mode}|${key.state}`, readStyle(copy, key.property))
+-					paint.set(`${mode}|${key.state}`, readStyle(copy, 'color'))
+-					PLACED.add(`${key.state}${suffix}`)
+-					await PORTFOLIO.place(`${key.state}${suffix}`, copy)
++					rendered.set(`${mode}|${key.scenario}`, readStyle(element, key.property))
++					framed.set(`${mode}|${key.scenario}`, readStyle(copy, key.property))
++					paint.set(`${mode}|${key.scenario}`, readStyle(copy, 'color'))
++					if (mode === VARIANT) await FRAMES.place(key.scenario, copy, frame)
+ 				} finally {
+ 					lifted.remove()
+ 				}
+@@ -606,25 +633,19 @@ describe('journey', () => {
+ 		expect([...framed]).toStrictEqual([...rendered])
+ 		// The row and the container are laid out by rules no mode retunes, so a reading that moved
+ 		// with the mode would be the theme reaching a layout rule.
+-		expect(rendered.get(`${LIGHT}|row-numbered-rest`)).toBe('flex')
+-		expect(rendered.get(`${DARK}|row-numbered-rest`)).toBe('flex')
+-		expect(rendered.get(`${LIGHT}|container-capped-rest`)).toBe(
+-			rendered.get(`${DARK}|container-capped-rest`),
+-		)
+-		// Their layout stays fixed across modes, but their inherited text paint earns dark twins.
+-		expect(paint.get(`${LIGHT}|container-capped-rest`)).not.toBe(
+-			paint.get(`${DARK}|container-capped-rest`),
+-		)
+-		expect(paint.get(`${LIGHT}|row-numbered-rest`)).not.toBe(paint.get(`${DARK}|row-numbered-rest`))
++		expect(rendered.get(`${LIGHT}|numbered-columns`)).toBe('flex')
++		expect(rendered.get(`${DARK}|numbered-columns`)).toBe('flex')
++		expect(rendered.get(`${LIGHT}|capped-container`)).toBe(rendered.get(`${DARK}|capped-container`))
++		// Their layout stays fixed across modes, but their inherited text paint earns a dark frame.
++		expect(paint.get(`${LIGHT}|capped-container`)).not.toBe(paint.get(`${DARK}|capped-container`))
++		expect(paint.get(`${LIGHT}|numbered-columns`)).not.toBe(paint.get(`${DARK}|numbered-columns`))
+ 		ARTIFACT.push(JSON.stringify({ reading: 'cascade text paint', readings: [...paint] }))
+-		// The table border and the link color are theme tokens, which is what earns each key its
+-		// dark twin: a pair of frames whose paint never moved would be one frame registered twice.
+-		expect(rendered.get(`${LIGHT}|table-base-rest`)).not.toBe(
+-			rendered.get(`${DARK}|table-base-rest`),
+-		)
+-		expect(rendered.get(`${LIGHT}|link-role-rest`)).not.toBe(rendered.get(`${DARK}|link-role-rest`))
++		// The table border and the link color are theme tokens, which is what earns each key a frame
++		// in each mode: a pair whose paint never moved would be one frame registered twice.
++		expect(rendered.get(`${LIGHT}|base`)).not.toBe(rendered.get(`${DARK}|base`))
++		expect(rendered.get(`${LIGHT}|role-links`)).not.toBe(rendered.get(`${DARK}|role-links`))
+ 		expect([...rendered].filter(([, value]) => value.length === 0)).toStrictEqual([])
+-		JOURNAL.record('read', 'cascade keys', String(rendered.get(`${LIGHT}|link-role-rest`)))
++		JOURNAL.record('read', 'cascade keys', String(rendered.get(`${LIGHT}|role-links`)))
+ 	})
+ 
+ 	it('matches the official recording step for step on the same markup', async () => {
+@@ -737,19 +758,99 @@ describe('matrix', () => {
+ })
+ 
+ describe('portfolio', () => {
+-	it('expands unique filenames and places every registered state from a journey', () => {
+-		const files = expandCaptures(PORTFOLIO_STATES, VARIANTS)
++	it('expands one filename per scenario and variant, and places every registered scenario', () => {
++		const files = expandCaptures(CAPTURE_SCENARIOS, VARIANTS)
+ 		expect(PORTFOLIO.files).toEqual(files)
+ 		expect(new Set(files).size).toBe(files.length)
+ 		for (const variant of VARIANTS) {
+-			expect(files).toContain(`home--${variant.name}.png`)
+-			expect(files).toContain(`home-dark--${variant.name}.png`)
+-			for (const state of [...BUTTON_STATES, ...CASCADE_STATES]) {
+-				expect(files).toContain(`${state}--${variant.name}.png`)
+-				expect(files).toContain(`${state}-dark--${variant.name}.png`)
++			for (const scenario of CAPTURE_SCENARIOS) {
++				expect(files).toContain(`${scenario}--${variant.name}.png`)
+ 			}
+ 		}
+-		expect(PLACED).toEqual(new Set(PORTFOLIO_STATES))
++		// The expanded filename law, read off the expansion rather than described beside it: a
++		// stem naming the scenario alone, then the theme and the viewport of the variant that
++		// rendered it. What a scenario itself may spell is held in `tests/setup.test.ts`, which is
++		// where the registry is the subject; this case is about what the expansion makes of it.
++		expect(
++			files.filter((file) => !/^[a-z\d]+(?:-[a-z\d]+)*--(?:light|dark)-\d+\.png$/u.test(file)),
++		).toStrictEqual([])
++		// Every registered scenario was reached, none twice, and none unregistered: the portfolio
++		// refuses a scenario it does not carry, so this pairs that refusal with the reverse.
++		expect([...FRAMES.scenarios].sort()).toStrictEqual([...CAPTURE_SCENARIOS].sort())
++	})
++
++	it('names a specimen the showcase declares, or its own region, as every scenario subject', () => {
++		const declared = new Set([
++			...[
++				BUTTON_SPECIMENS,
++				CONTENT_SPECIMENS,
++				LAYOUT_SPECIMENS,
++				LINK_SPECIMENS,
++				MEDIA_SPECIMENS,
++				TABLE_SPECIMENS,
++				TYPE_SPECIMENS,
++			].flatMap((table) => table.map((specimen) => specimen.name)),
++			SHOWCASE_COPY.region,
++		])
++		expect(CAPTURE_KEYS).not.toStrictEqual([])
++		expect(CAPTURE_KEYS.filter((key) => !declared.has(key.subject))).toStrictEqual([])
++		// The declared name has to reach the rendered surface as well, and one reader resolves it:
++		// a labelled specimen container, a named region, or a rendered host announcing the name.
++		expect(CAPTURE_KEYS.map((key) => readSubject(mounted.host, key.subject).isConnected)).toEqual(
++			CAPTURE_KEYS.map(() => true),
++		)
++	})
++
++	it('writes each subject its own accessibility artifact for the variant that rendered it', async () => {
++		await applyTheme(VARIANT)
++		const written: string[] = []
++		const bodies = new Map<CaptureSubject, string>()
++		for (const subject of new Set(CAPTURE_KEYS.map((key) => key.subject))) {
++			// Every reading is taken here, on arrival, which is the state the artifact names. The
++			// Button scenarios drive focus, the pointer, and a press for their own frames, so the
++			// artifact beside those frames states the state it was read in rather than implying
++			// the frame's.
++			const body = describeSubject(readSubject(mounted.host, subject), {
++				name: subject,
++				variant: VARIANT,
++				state: 'rest',
++			})
++			const path = `${STATES}/${buildStem(subject)}--${VARIANT}-${ACCESSIBILITY}.txt`
++			await commands.writeFile(path, body)
++			written.push(path)
++			bodies.set(subject, body)
++		}
++		// The per-variant manifest keeps the whole page's tree and the run's interaction log; these
++		// are the per-subject halves a side-by-side reading needs, because a reviewer comparing one
++		// specimen against another portfolio's cannot separate a cascade difference from a
++		// dump-format one in a whole-page dump.
++		expect(new Set(written).size).toBe(written.length)
++		expect(written).toHaveLength(bodies.size)
++		// A subject that is itself a control records its own role and name in each half. The
++		// installed focus walk describes an element's controls and is not itself one of them, so a
++		// reading taken on the button alone calls the Primary specimen unreachable while the page
++		// inventory in the manifest beside it lists that same control.
++		const primary = requireValue(bodies.get('Primary'), 'No artifact was written for Primary')
++		expect(primary).toContain('button "Primary"')
++		expect(primary.slice(primary.indexOf('focus:'))).toContain('button "Primary"')
++		// Each artifact is about its own subject rather than about the page it was read on: the
++		// Role links specimen names the links it renders, and the Showcase region's page reading
++		// names none of them.
++		const links = requireValue(bodies.get('Role links'), 'No artifact was written for Role links')
++		const showcase = requireValue(bodies.get('Showcase'), 'No artifact was written for Showcase')
++		expect(links).toContain('link "')
++		expect(showcase).toContain('region "Showcase"')
++		expect(showcase).not.toContain('link "')
++		expect(links).not.toBe(showcase)
++		// A subject presenting no roled element and no reachable control records those readings
++		// rather than an empty file: the capped container is a bare div.
++		const capped = requireValue(
++			bodies.get('Capped container'),
++			'No artifact was written for Capped container',
++		)
++		expect(capped).toContain('No element in this subject carries a role.')
++		expect(capped).toContain('No control inside this subject is reachable.')
++		ARTIFACT.push(JSON.stringify({ reading: 'accessibility', artifacts: written }))
+ 	})
+ 
+ 	it('records the toggle host as pressed at the moment its frame was shot', () => {
+@@ -771,20 +872,63 @@ describe('portfolio', () => {
+ 		expect(arrival.filter((entry) => !entry.includes('button "Toggle"'))).toStrictEqual([])
+ 	})
+ 
+-	it.runIf(CAPTURE)(
+-		'writes every registered filename with non-blank pixels for the rendered variant',
+-		async () => {
+-			PROVEN.add('capture')
+-			expect(PORTFOLIO.paths.map((path) => path.split(/[\\/]/u).at(-1)).sort()).toEqual(
+-				PORTFOLIO_STATES.map((state) => `${state}--${VARIANT}.png`).sort(),
++	it('reads every frame this variant left in the portfolio directory inside its declared region', async () => {
++		PROVEN.add('capture')
++		// The population is the frames on disk rather than the files this run wrote, so a run with
++		// the capture flag unset guards the frames an earlier capture run left. Each one is paired
++		// with the region its own scenario declared while the shot was staged: the written file
++		// does not carry that box and the handed-back document no longer holds it, so the region is
++		// recorded at placement on every run and looked up here.
++		const regions = new Map(
++			FRAMES.placements.map((placement) => [placement.scenario, placement.region]),
++		)
++		expect([...regions.keys()].sort()).toStrictEqual([...CAPTURE_SCENARIOS].sort())
++		const expanded = CAPTURE_SCENARIOS.map((scenario) => `${scenario}--${VARIANT}.png`)
++		const present: string[] = []
++		for (const scenario of CAPTURE_SCENARIOS) {
++			const frame: CaptureFilename = `${scenario}--${VARIANT}.png`
++			const path = `${STATES}/${frame}`
++			const encoded = await commands.readFile(path, 'base64').catch(() => undefined)
++			if (encoded === undefined) continue
++			present.push(frame)
++			const reading = await readFrame(path)
++			const region = requireValue(
++				regions.get(scenario),
++				`No region was recorded for the "${scenario}" scenario`,
+ 			)
+-			for (const path of PORTFOLIO.paths) {
+-				const variation = await measureFrameVariation(await commands.readFile(path, 'base64'))
+-				ARTIFACT.push(JSON.stringify({ reading: 'frame variation', path, variation }))
+-				expect(variation, `Uniform blank frame: ${path}`).toBeGreaterThan(0)
+-			}
+-		},
+-	)
++			const variation = await measureVariation(encoded, region)
++			ARTIFACT.push(
++				JSON.stringify({
++					reading: 'frame',
++					scenario,
++					path,
++					width: reading.width,
++					height: reading.height,
++					floor: reading.floor,
++					region,
++					variation,
++				}),
++			)
++			expect(reading.width).toBeGreaterThan(0)
++			expect(reading.height).toBeGreaterThan(0)
++			expect(variation, `Uniform frame region: ${path}`).toBeGreaterThan(0)
++		}
++		// A capture run writes every registered scenario before this case runs, so with the flag
++		// set the population is the whole expansion. With it unset the population is whatever an
++		// earlier capture run left: the whole expansion, or nothing at all before any run has
++		// written one. A population between the two is a capture that stopped part way.
++		expect(PORTFOLIO.paths).toHaveLength(CAPTURE ? expanded.length : 0)
++		expect(present).toStrictEqual(CAPTURE || present.length > 0 ? expanded : [])
++		// An empty population is held to the directory rather than passed over: the first expanded
++		// name is read directly, so a guard that reads nothing while that frame sits on disk
++		// reddens here instead of recording a clean sweep.
++		const first = requireValue(expanded[0], 'The registry expands to no frame')
++		const direct = await commands.readFile(`${STATES}/${first}`, 'base64').catch(() => undefined)
++		expect(present.length > 0).toBe(direct !== undefined)
++		ARTIFACT.push(
++			JSON.stringify({ reading: 'guard', directory: STATES, variant: VARIANT, frames: present }),
++		)
++	})
+ 
+ 	it('proves every declared family and declares every proven family', () => {
+ 		expect(PROVEN).toEqual(new Set(FAMILIES))
+diff --git a/tests/setup.test.ts b/tests/setup.test.ts
+index a46cbae..375d53d 100644
+--- a/tests/setup.test.ts
++++ b/tests/setup.test.ts
+@@ -2,16 +2,19 @@ import type { ButtonReading } from './setup.js'
+ import { describe, expect, it } from 'vitest'
+ import * as setup from './setup.js'
+ import {
+-	BUTTON_STATES,
++	BUTTON_KEYS,
++	buildStem,
++	CAPTURE_KEYS,
++	CAPTURE_SCENARIOS,
+ 	CASCADE_KEYS,
+-	CASCADE_STATES,
+ 	collectTokenNodes,
+ 	CONTRAST_BAR,
+ 	DISABLED_OPACITY,
+ 	FOCUS_RING,
++	isVariantName,
+ 	normalizeSelectorText,
+-	PORTFOLIO_STATES,
+ 	readingToProjection,
++	SHOWCASE_KEYS,
+ 	UNDER_BAR,
+ } from './setup.js'
+ 
+@@ -42,63 +45,87 @@ const RESTING: ButtonReading = {
+ }
+ 
+ describe('shared setup', () => {
+-	it('exports the token prefix, the case matrices, the registry walk, the normalizer, and the reduction', () => {
++	it('exports the token prefix, the capture registry, the case matrices, the walks, and the reduction', () => {
+ 		expect(Object.keys(setup).sort()).toEqual(
+ 			[
+-				'BUTTON_STATES',
++				'BUTTON_KEYS',
+ 				'CAPTURE_CONTROLS',
++				'CAPTURE_KEYS',
++				'CAPTURE_SCENARIOS',
+ 				'CASCADE_KEYS',
+-				'CASCADE_STATES',
+ 				'CONTRAST_BAR',
+ 				'DISABLED_OPACITY',
+ 				'FOCUS_RING',
+-				'PORTFOLIO_STATES',
++				'SHOWCASE_KEYS',
+ 				'TOKEN_PREFIX',
+ 				'UNDER_BAR',
++				'buildStem',
+ 				'collectTokenNodes',
++				'isVariantName',
+ 				'normalizeSelectorText',
+ 				'readingToProjection',
+ 			].sort(),
+ 		)
+ 	})
+-	it('registers one light Button state per photographed scope, and no dark twin among them', () => {
+-		expect(BUTTON_STATES).not.toStrictEqual([])
+-		expect(BUTTON_STATES.filter((state) => !/^button-primary-[a-z]+$/u.test(state))).toStrictEqual(
+-			[],
+-		)
+-		// A hand-written dark twin would be photographed twice, because the portfolio derives one.
+-		expect(BUTTON_STATES.filter((state) => state.endsWith('-dark'))).toStrictEqual([])
+-		expect(new Set(BUTTON_STATES).size).toBe(BUTTON_STATES.length)
++	it('registers one scenario per photographed frame, each naming the subject it shows', () => {
++		expect(CAPTURE_KEYS).toStrictEqual([...SHOWCASE_KEYS, ...BUTTON_KEYS, ...CASCADE_KEYS])
++		expect(CAPTURE_SCENARIOS).toStrictEqual(CAPTURE_KEYS.map((key) => key.scenario))
++		expect(new Set(CAPTURE_SCENARIOS).size).toBe(CAPTURE_SCENARIOS.length)
++		expect(CAPTURE_KEYS.filter((key) => key.subject.length === 0)).toStrictEqual([])
++	})
++	it('names each scenario for its own subject, which is what aligns the two portfolios', () => {
++		// The stem is the alignment rule: a counterpart portfolio names a frame after the specimen
++		// it shows, so a scenario whose stem is its subject's stem sorts into the same row. A
++		// driven state follows the stem rather than replacing it.
++		expect(
++			CAPTURE_KEYS.filter((key) => {
++				const stem = buildStem(key.subject)
++				return key.scenario !== stem && !key.scenario.startsWith(`${stem}-`)
++			}),
++		).toStrictEqual([])
++	})
++	it('carries no mode token in a scenario, because the variant names the mode', () => {
++		// A mode inside the stem is what made one grammar mean opposite things on the two sides of
++		// a comparison: the token after the separator named the project that shot the frame rather
++		// than the theme it rendered, so `--dark` read light on one side and dark on the other.
++		expect(
++			CAPTURE_SCENARIOS.filter((scenario) => /(?:^|-)(?:light|dark)(?:-|$)/u.test(scenario)),
++		).toStrictEqual([])
++		expect(
++			CAPTURE_SCENARIOS.filter((scenario) => !/^[a-z\d]+(?:-[a-z\d]+)*$/u.test(scenario)),
++		).toStrictEqual([])
+ 	})
+ 	it('describes each photographed cascade key by its specimen, its element, and its property', () => {
+ 		expect(CASCADE_KEYS).not.toStrictEqual([])
+ 		expect(
+ 			CASCADE_KEYS.filter(
+ 				(key) =>
+-					key.specimen.length === 0 || !key.selector.startsWith('.') || key.property.length === 0,
++					key.subject.length === 0 || !key.selector.startsWith('.') || key.property.length === 0,
+ 			),
+ 		).toStrictEqual([])
+ 		// One specimen answers for one key here. Two rows reading one specimen would place two
+ 		// frames of the same markup, which is the duplication the registry refuses.
+-		expect(new Set(CASCADE_KEYS.map((key) => key.specimen)).size).toBe(CASCADE_KEYS.length)
++		expect(new Set(CASCADE_KEYS.map((key) => key.subject)).size).toBe(CASCADE_KEYS.length)
+ 		expect(new Set(CASCADE_KEYS.map((key) => key.selector)).size).toBe(CASCADE_KEYS.length)
+ 	})
+-	it('registers one light state per photographed cascade key, and no dark twin among them', () => {
+-		expect(CASCADE_STATES).not.toStrictEqual([])
+-		expect(CASCADE_STATES.filter((state) => !/^[a-z]+-[a-z]+-rest$/u.test(state))).toStrictEqual([])
+-		// A hand-written dark twin would be photographed twice, because the portfolio derives one.
+-		expect(CASCADE_STATES.filter((state) => state.endsWith('-dark'))).toStrictEqual([])
+-		expect(new Set(CASCADE_STATES).size).toBe(CASCADE_STATES.length)
+-		// The two registries name disjoint families, so neither grows a state the other already
+-		// places.
+-		expect(CASCADE_STATES.filter((state) => BUTTON_STATES.includes(state))).toStrictEqual([])
+-	})
+-	it('registers each Button state, each cascade key, and the home beside a dark twin, without repeating one', () => {
+-		expect(new Set(PORTFOLIO_STATES).size).toBe(PORTFOLIO_STATES.length)
+-		const twinned = PORTFOLIO_STATES.filter((state) => !state.endsWith('-dark'))
+-		expect(twinned.filter((state) => !PORTFOLIO_STATES.includes(`${state}-dark`))).toStrictEqual([])
+-		expect(twinned).toStrictEqual(['home', ...BUTTON_STATES, ...CASCADE_STATES])
+-		expect(PORTFOLIO_STATES).toHaveLength(twinned.length * 2)
++	it('reduces a declared subject name to one hyphen-separated stem', () => {
++		expect(buildStem('Capped container')).toBe('capped-container')
++		expect(buildStem('Role links')).toBe('role-links')
++		expect(buildStem('Base')).toBe('base')
++		expect(buildStem('Responsive-sm')).toBe('responsive-sm')
++		expect(buildStem('  Caption at top  ')).toBe('caption-at-top')
++	})
++	it('reads a variant name as a theme followed by the viewport width it renders at', () => {
++		// The journey is handed its variant as a plain string by its own project, and every
++		// filename it writes is built on that string, so the grammar is checked before it is used.
++		expect(isVariantName('light-1280')).toBe(true)
++		expect(isVariantName('dark-390')).toBe(true)
++		// The refused spellings are the ones the old grammar produced: a project token appended to
++		// the variant, and a project token standing where the theme belongs.
++		expect(isVariantName('light-390-chromium')).toBe(false)
++		expect(isVariantName('chromium-390')).toBe(false)
++		expect(isVariantName('light')).toBe(false)
++		expect(isVariantName('light-')).toBe(false)
+ 	})
+ 	it('measures contrast against the ratio body text is read at, and dimming below full opacity', () => {
+ 		expect(CONTRAST_BAR).toBe(4.5)
+diff --git a/tests/setup.ts b/tests/setup.ts
+index f8ca476..f28fa98 100644
+--- a/tests/setup.ts
++++ b/tests/setup.ts
+@@ -7,10 +7,14 @@ export const TOKEN_PREFIX = '--vn-'
+  * Retains the strategy probe's PNG bytes as controls for the capture pixel reading.
+  * @remarks
+  * These are the actual `plain--light-390.png` and `lifted-link--light-390.png` frames from
+- * `tmp/probe`, retained inline so the proof survives a scratch-directory sweep. They have the same
+- * dimensions; only the lifted frame carries content. Neither image was synthesized for this test.
++ * `tmp/probe`, retained inline so the proof survives a scratch-directory sweep. They share the
++ * dimensions recorded beside them; only the lifted frame carries content, and it paints nothing in
++ * its own top band, so a region naming that band reads uniform inside a frame that varies. Neither
++ * image was synthesized for this test.
+  */
+ export const CAPTURE_CONTROLS = Object.freeze({
++	width: 73,
++	height: 20,
+ 	blank:
+ 		'iVBORw0KGgoAAAANSUhEUgAAAEkAAAAUCAIAAABOAYeiAAAAMklEQVR4nOzPAQ0AAAjDMELwb/no2LM66CWZUju9vDF5Y/LG5I3JG5M3Jm9M3pi8MT0AAAD//7fJuXkAAAAGSURBVAMA9gIDKAhzDUIAAAAASUVORK5CYII=',
+ 	painted:
+@@ -18,61 +22,225 @@ export const CAPTURE_CONTROLS = Object.freeze({
+ })
+ 
+ /**
+- * Lists the Button states a journey photographs, each in the light mode its own frame shows.
++ * Builds the filename stem one declared subject name carries.
++ *
++ * @param name - The subject's declared name, as a specimen table or a region's copy spells it.
++ * @returns The name lowercased, with every run of characters outside `a-z` and `0-9` reduced to one
++ *   separating hyphen and no leading or trailing separator.
+  *
+  * @remarks
+- * Each state is photographed at the scope its own paint needs, and each scope was measured rather
+- * than assumed. A page frame is used where the paint sits outside the specimen's border box — the
+- * focus ring is cropped away by an element frame — and where the specimen would be out of an element
+- * frame's horizontal reach: a specimen beyond roughly 900 px in the tester came back blank white at
+- * the 1280-wide variants while the same specimen photographed correctly at 390. An element frame is
+- * used for hover and active, because staging the pane for a page frame moves the pointer off the
+- * specimen and the frame would carry the resting fill under a name that claims otherwise, while the
+- * element frame keeps the pointer on it; each of those journeys reads the state again after the shot.
+- *
+- * A disabled frame and an outline frame are not registered: every frame renders the whole section, so
+- * each would duplicate the rest frame rather than show anything it does not.
++ * This module is loaded by every project, which is what puts the reduction here: the journey names
++ * an artifact with it and the registry proof holds every scenario against it. The stem is also what
++ * lets this portfolio be paired with a counterpart one: CL13 measured that the Bootstrap 5.3.8
++ * portfolio names a frame after the specimen it shows, so a scenario whose stem is its subject's
++ * stem sorts into the same row as the frame of the same specimen on that side.
++ *
++ * @example
++ * ```ts
++ * buildStem('Capped container') // 'capped-container'
++ * ```
+  */
+-export const BUTTON_STATES: readonly string[] = Object.freeze([
+-	'button-primary-rest',
+-	'button-primary-pressed',
+-	'button-primary-focus',
+-	'button-primary-hover',
+-	'button-primary-active',
+-])
++export function buildStem(name: string): string {
++	return name
++		.toLowerCase()
++		.replace(/[^a-z\d]+/gu, '-')
++		.replace(/^-|-$/gu, '')
++}
++
++/**
++ * Names one theme a registered variant renders the surface in.
++ *
++ * @remarks
++ * A theme is half of a variant's name, and it is the half a frame's filename claims. A scenario
++ * carries neither half, because the run that photographs it renders one mode at one viewport.
++ */
++export type CaptureTheme = 'dark' | 'light'
++
++/**
++ * Spells one registered variant's name: the theme a run renders, then the viewport width it renders
++ * at.
++ *
++ * @remarks
++ * The token after a filename's separator is a variant's own name, so this type is that token's
++ * grammar: `light-390` names a variant and `light-390-chromium` names none, and the refused suffix
++ * is the one that made a frame's name claim the project that shot it. The name is what this type
++ * carries; `@orkestrel/test` owns `CaptureVariant` for the variant itself, which pairs that name
++ * with a viewport and the change a run applies before it renders.
++ */
++export type CaptureVariantName = `${CaptureTheme}-${number}`
++
++/**
++ * Names one showcase subject a registered scenario photographs.
++ *
++ * @remarks
++ * Every member is a name the showcase itself declares: a specimen one of its tables labels, or the
++ * region a page frame reads the surface through. The journey's portfolio proof holds each member
++ * against those declarations and against the rendered surface, so a name this list carries and the
++ * showcase stops rendering reddens there rather than photographing something else under it.
++ */
++export type CaptureSubject =
++	| 'Base'
++	| 'Capped container'
++	| 'Numbered columns'
++	| 'Primary'
++	| 'Role links'
++	| 'Showcase'
++	| 'Toggle'
++
++/**
++ * Names one state a journey drives its subject to, or reads that subject in.
++ *
++ * @remarks
++ * A driven state follows the stem inside a scenario's name, and the accessibility artifact beside
++ * the frames records the state its own reading was taken in. `rest` is what the showcase renders on
++ * arrival, so it names a reading rather than a drive.
++ */
++export type CaptureState = 'active' | 'focus' | 'hover' | 'pressed' | 'rest'
++
++/**
++ * Reduces one declared name to the filename stem it carries.
++ *
++ * @typeParam S - The declared name to reduce. Default: every declared subject, so the bare type is
++ *   the stem of each one.
++ *
++ * @remarks
++ * This is {@link buildStem}'s rule at the type level, for the names this registry declares: each
++ * space becomes one hyphen and the rest is lowercased. Deriving the stems from the subjects rather
++ * than writing them out again is what keeps a subject and its stem one declaration.
++ */
++export type CaptureStem<S extends string = CaptureSubject> = S extends `${infer Head} ${infer Tail}`
++	? `${Lowercase<Head>}-${CaptureStem<Tail>}`
++	: Lowercase<S>
++
++/**
++ * Names one registered scenario: a subject's stem, and the state a journey drives that subject to.
++ *
++ * @remarks
++ * The type carries the filename law the registry is held to, so a scenario carrying a project
++ * suffix or a mode token fails the typecheck at the row declaring it rather than at the proof that
++ * reads the written names back.
++ */
++export type CaptureScenario = CaptureStem | `${CaptureStem}-${CaptureState}`
+ 
+-/** Describes one shipped cascade key a journey photographs and reads the treatment of. */
+-export interface CascadeKey {
+-	/** Holds the portfolio state the key's own light frame is registered under. */
+-	readonly state: string
+-	/** Names the showcase specimen the key is rendered as, as that section's own table declares it. */
+-	readonly specimen: string
++/**
++ * Spells one written frame's filename: the scenario, the variant that rendered it, and the
++ * extension.
++ *
++ * @remarks
++ * The journey builds every name it reads back through this type, so a guard looking for a frame on
++ * disk and the expansion a capture writes spell one grammar.
++ */
++export type CaptureFilename = `${CaptureScenario}--${CaptureVariantName}.png`
++
++/**
++ * Reports whether one provided name spells a registered variant.
++ *
++ * @param name - The name to read, as the journey's own project provides it.
++ * @returns True when the name is a theme followed by the viewport width it renders at.
++ *
++ * @remarks
++ * The variant matrix is declared in the journey's project configuration as plain strings, so the
++ * journey narrows the name it was handed through this before it builds a filename from it.
++ *
++ * @example
++ * ```ts
++ * isVariantName('light-390') // true
++ * ```
++ */
++export function isVariantName(name: string): name is CaptureVariantName {
++	return /^(?:dark|light)-\d+$/u.test(name)
++}
++
++/**
++ * Describes one scenario a journey photographs, and the showcase subject its frame shows.
++ *
++ * @remarks
++ * The subject is what makes a registered scenario checkable: it names a specimen one of the
++ * showcase tables declares, or the region a page frame reads the surface through, so a frame
++ * carries a claim about a named part of the surface rather than about whatever the shot contained.
++ * The journey reads the subject back off the mounted showcase, and the portfolio proof holds the
++ * registry against the declared tables, so a scenario whose subject the showcase stops rendering
++ * reddens instead of photographing something else under the same name.
++ */
++export interface CaptureKey {
++	/** Names the scenario the frame's own filename carries. */
++	readonly scenario: CaptureScenario
++	/** Names the showcase subject the frame shows: a declared specimen, or a page frame's region. */
++	readonly subject: CaptureSubject
++}
++
++/**
++ * Describes one shipped cascade key a journey photographs and reads the treatment of.
++ *
++ * @remarks
++ * The selector addresses the element inside the specimen whose treatment the key ships, and the
++ * frame is shot over the whole specimen rather than over that element: the selector's own crop
++ * carries one role link and none of the background the paint is read against. The
++ * selector stays the declared sampling region the written frame is guarded on.
++ */
++export interface CascadeKey extends CaptureKey {
+ 	/** Holds the selector the key's own element answers to inside that specimen. */
+ 	readonly selector: string
+ 	/** Names the resolved property the journey reads the key's treatment from. */
+ 	readonly property: string
+ }
+ 
++/**
++ * Lists the scenarios a journey photographs as a frame of the whole page.
++ *
++ * @remarks
++ * The arrival frame is the one shot of the resting page the portfolio holds. A second resting page
++ * frame under another name was registered until this registry carried subjects, and it was
++ * byte-identical to this one at every variant, which is the duplication a page frame invites: one
++ * shot of the resting document is one image whatever scenario name it carries.
++ */
++export const SHOWCASE_KEYS: readonly CaptureKey[] = Object.freeze([
++	Object.freeze({ scenario: 'showcase', subject: 'Showcase' }),
++])
++
++/**
++ * Lists the Button scenarios a journey photographs, each naming the specimen it drives.
++ *
++ * @remarks
++ * Each scenario is photographed at the scope its own paint needs, and each scope was measured
++ * rather than assumed. The focus scenario is a page frame because the ring paints outside the
++ * host's border box and an element frame crops it away; its declared region names the host, so a
++ * reader of an 8000-pixel page frame is pointed at the part the scenario claims. Hover, active,
++ * and pressed are element frames of the driven host: staging the pane for a page frame moves the
++ * pointer off the specimen and the frame would carry the resting fill under a name that claims
++ * otherwise, while the element frame keeps the pointer on it. Each of those journeys reads the
++ * state again after its own shot.
++ *
++ * A disabled frame and an outline frame are not registered: neither drives a state the resting
++ * page does not already show.
++ */
++export const BUTTON_KEYS: readonly CaptureKey[] = Object.freeze([
++	Object.freeze({ scenario: 'primary-focus', subject: 'Primary' }),
++	Object.freeze({ scenario: 'primary-hover', subject: 'Primary' }),
++	Object.freeze({ scenario: 'primary-active', subject: 'Primary' }),
++	Object.freeze({ scenario: 'toggle-pressed', subject: 'Toggle' }),
++])
++
+ /**
+  * Lists the content and layout keys a journey photographs, each with the specimen that renders it
+  * and the property its treatment is read from.
+  *
+  * @remarks
+- * The rows are the keys the consumer page reads out of the packed stylesheet — the capped container,
+- * the numbered-column row, the base table, and the role link — so the portfolio and that page answer
+- * for one family rather than two. A key is addressed by its specimen label rather than by its class,
+- * because one class answers for several specimens: the Layout table alone renders several containers.
++ * The rows are the keys the consumer page reads out of the packed stylesheet — the capped
++ * container, the numbered-column row, the base table, and the role link — so the portfolio and
++ * that page answer for one family rather than two. A key is addressed by its specimen label rather
++ * than by its class, because one class answers for several specimens: the Layout table alone
++ * renders several containers.
+  *
+  * Each property is one the key's own rule sets. The journey also reads the container and row text
+- * color across modes: their layout stays fixed while their text paint earns the dark twins.
++ * color across modes: their layout stays fixed while their text paint earns the dark frames.
+  *
+  * Two placement rulings were measured rather than assumed, and each one is why these frames are
+  * shot the way they are.
+  *
+  * A **page frame** covers the whole document, so one shot of the resting page is one image whatever
+- * state name it carries. The home and Button rest frames show the same resting page, though their
+- * bytes can differ. A cascade state shot that way would duplicate the arrival frame rather than show
+- * the key it names.
++ * scenario name it carries. A cascade scenario shot that way would duplicate the arrival frame
++ * rather than show the key it names.
+  *
+  * An **element frame** taken where the showcase renders these specimens comes back blank white. The
+  * capped container, the numbered-column row, the base table, and the role link sit around 3500 to
+@@ -80,68 +248,67 @@ export interface CascadeKey {
+  * the 390-wide variants, as did the role link at the 1280-wide ones. The same specimens, copied and
+  * put at the document's start, photograph correctly at both widths — which is what the journey does,
+  * comparing each key's declared property on the showcase specimen and the copy after placement.
+- * That comparison covers only the declared property. The capture-only proof separately reads every
+- * written frame's pixels and refuses a uniform blank.
++ * That comparison covers only the declared property. The written frame is separately read back for
++ * its size, its floor, and the variation inside its declared region.
+  *
+  * A hover or focus frame is registered for none of them. The showcase renders each key at rest and
+  * the journey reads each key at rest, so a pointer state would be a claim about a paint no journey
+- * here drives. That is what separates these from the Button states, where the pointer journey drives
+- * hover and active and reads each one back after its own shot.
++ * here drives. That is what separates these from the Button scenarios, where the pointer journey
++ * drives hover and active and reads each one back after its own shot.
+  */
+ export const CASCADE_KEYS: readonly CascadeKey[] = Object.freeze([
+ 	Object.freeze({
+-		state: 'container-capped-rest',
+-		specimen: 'Capped container',
++		scenario: 'capped-container',
++		subject: 'Capped container',
+ 		selector: '.container',
+ 		property: 'max-width',
+ 	}),
+ 	Object.freeze({
+-		state: 'row-numbered-rest',
+-		specimen: 'Numbered columns',
++		scenario: 'numbered-columns',
++		subject: 'Numbered columns',
+ 		selector: '.row',
+ 		property: 'display',
+ 	}),
+ 	Object.freeze({
+-		state: 'table-base-rest',
+-		specimen: 'Base',
++		scenario: 'base',
++		subject: 'Base',
+ 		selector: '.table',
+ 		property: 'border-bottom-color',
+ 	}),
+ 	Object.freeze({
+-		state: 'link-role-rest',
+-		specimen: 'Role links',
++		scenario: 'role-links',
++		subject: 'Role links',
+ 		selector: '.link-primary',
+ 		property: 'color',
+ 	}),
+ ])
+ 
+ /**
+- * Lists the cascade-key states a journey photographs, each in the light mode its own frame shows.
++ * Lists every scenario the showcase portfolio registers, in capture order.
+  *
+  * @remarks
+- * The list is derived from {@link CASCADE_KEYS} rather than written beside it, so a key the journey
+- * reaches and a state the portfolio registers cannot drift apart. The journey's own placement is
+- * what proves a registered state was reached.
++ * The list is derived from the registry tables rather than written beside them, so a scenario the
++ * journey reaches and a scenario the portfolio registers cannot drift apart. The journey's own
++ * placement is what proves a registered scenario was reached.
+  */
+-export const CASCADE_STATES: readonly string[] = Object.freeze(CASCADE_KEYS.map((key) => key.state))
++export const CAPTURE_KEYS: readonly CaptureKey[] = Object.freeze([
++	...SHOWCASE_KEYS,
++	...BUTTON_KEYS,
++	...CASCADE_KEYS,
++])
+ 
+ /**
+- * Lists every state the showcase portfolio registers, in capture order.
++ * Lists the filename stem of every registered scenario, in capture order.
+  *
+  * @remarks
+- * A dark twin exists for each state because the theme is a document state the journey applies rather
+- * than a viewport the project fixes, so a run at any registered variant photographs both modes. The
+- * state names the mode its own frame shows; the variant the filename ends in names the project that
+- * shot it, whose own prefix is where its journeys start.
++ * A stem carries the scenario alone. The theme and the viewport are the variant the filename ends
++ * in, and a run photographs only the mode its own variant names, so the mode a frame shows and the
++ * mode its name claims are the same reading. The stem is a subject's own, which is the rule that
++ * lets this directory be sorted against a counterpart portfolio's by subject rather than by hand.
+  */
+-export const PORTFOLIO_STATES: readonly string[] = Object.freeze([
+-	'home',
+-	'home-dark',
+-	...BUTTON_STATES,
+-	...BUTTON_STATES.map((state) => `${state}-dark`),
+-	...CASCADE_STATES,
+-	...CASCADE_STATES.map((state) => `${state}-dark`),
+-])
++export const CAPTURE_SCENARIOS: readonly CaptureScenario[] = Object.freeze(
++	CAPTURE_KEYS.map((key) => key.scenario),
++)
+ 
+ /**
+  * Holds the bar a composed contrast reading is measured against: the WCAG 2.x ratio for body text at
+diff --git a/tests/setupBrowser.test.ts b/tests/setupBrowser.test.ts
+index faf4a7c..aadfed1 100644
+--- a/tests/setupBrowser.test.ts
++++ b/tests/setupBrowser.test.ts
+@@ -3,6 +3,8 @@ import { requireValue } from '@orkestrel/test'
+ import {
+ 	build,
+ 	clickAccessible,
++	createPortfolio,
++	describeFocus,
+ 	findRule,
+ 	isOutsideViewport,
+ 	isReachable,
+@@ -34,10 +36,12 @@ import {
+ 	collectPainted,
+ 	collectNestedRules,
+ 	collectScopeProperties,
++	describeSubject,
+ 	driveOracle,
++	FrameManager,
+ 	holdOraclePointer,
+ 	mountShowcase,
+-	measureFrameVariation,
++	measureVariation,
+ 	ORACLE_ACTIONS,
+ 	ORACLE_EXCLUDED,
+ 	PROBE_CASCADE,
+@@ -49,7 +53,9 @@ import {
+ 	readButton,
+ 	readOracleButton,
+ 	readParentOffset,
++	readRegion,
+ 	readSpecimen,
++	readSubject,
+ 	SPECIMEN_ATTRIBUTE,
+ 	scene,
+ 	visitBreakpoint,
+@@ -182,12 +188,183 @@ describe('browser setup', () => {
+ 			expect(aborted.count).toBe(0)
+ 		}
+ 	})
+-	it('distinguishes retained blank and painted PNG frames by pixels across the image', async () => {
+-		expect(await measureFrameVariation(CAPTURE_CONTROLS.blank)).toBe(0)
+-		expect(await measureFrameVariation(CAPTURE_CONTROLS.painted)).toBeGreaterThan(0)
++	it('distinguishes retained blank and painted PNG frames by the pixels of a declared region', async () => {
++		const whole = { x: 0, y: 0, width: CAPTURE_CONTROLS.width, height: CAPTURE_CONTROLS.height }
++		expect(await measureVariation(CAPTURE_CONTROLS.blank, whole)).toBe(0)
++		expect(await measureVariation(CAPTURE_CONTROLS.painted, whole)).toBeGreaterThan(0)
++	})
++	it('reads only the declared region, reporting a painted frame with a uniform band as uniform', async () => {
++		// The painted control carries its content below its top band, so a region naming that band
++		// reads uniform inside a frame that varies. A sampler ignoring its argument reports the
++		// whole image here and reddens.
++		const band = { x: 0, y: 0, width: CAPTURE_CONTROLS.width, height: 4 }
++		expect(await measureVariation(CAPTURE_CONTROLS.painted, band)).toBe(0)
++		expect(
++			await measureVariation(CAPTURE_CONTROLS.painted, {
++				...band,
++				height: CAPTURE_CONTROLS.height,
++			}),
++		).toBeGreaterThan(0)
++	})
++	it('clips a region reaching past the frame, and refuses one that clips to nothing', async () => {
++		const over = {
++			x: 0,
++			y: 0,
++			width: CAPTURE_CONTROLS.width * 2,
++			height: CAPTURE_CONTROLS.height * 2,
++		}
++		// The clip is pinned to the frame's own pixels rather than bounded: an unclamped read takes
++		// the rows the image does not have as transparent and divides by a region four times the
++		// frame, so this equality is what removing the clamps reddens.
++		const whole = { x: 0, y: 0, width: CAPTURE_CONTROLS.width, height: CAPTURE_CONTROLS.height }
++		const clipped = await measureVariation(CAPTURE_CONTROLS.painted, over)
++		expect(clipped).toBe(await measureVariation(CAPTURE_CONTROLS.painted, whole))
++		expect(clipped).toBeGreaterThan(0)
++		expect(clipped).toBeLessThan(1)
++		await expect(
++			measureVariation(CAPTURE_CONTROLS.painted, {
++				x: CAPTURE_CONTROLS.width,
++				y: 0,
++				width: CAPTURE_CONTROLS.width,
++				height: CAPTURE_CONTROLS.height,
++			}),
++		).rejects.toThrow('clips to nothing')
+ 	})
+ 	it('refuses undecodable frame bytes', async () => {
+-		await expect(measureFrameVariation('')).rejects.toMatchObject({ name: 'EncodingError' })
++		await expect(
++			measureVariation('', {
++				x: 0,
++				y: 0,
++				width: CAPTURE_CONTROLS.width,
++				height: CAPTURE_CONTROLS.height,
++			}),
++		).rejects.toMatchObject({ name: 'EncodingError' })
++	})
++	it('reads a subject box in the coordinates of the frame it is photographed inside', () => {
++		const host = scene.mount(
++			'<div style="position:fixed;left:40px;top:30px;width:200px;height:100px"><span style="display:block;margin:10px;width:50px;height:20px"></span></div>',
++		)
++		const frame = requireValue(host.querySelector('div'), 'No frame specimen')
++		const subject = requireValue(frame.querySelector('span'), 'No subject specimen')
++		const ratio = window.devicePixelRatio
++		expect(readRegion(subject, frame)).toStrictEqual({
++			x: 10 * ratio,
++			y: 10 * ratio,
++			width: 50 * ratio,
++			height: 20 * ratio,
++		})
++		// A page frame covers the scrolled document, so its origin is the document's own rather
++		// than the viewport's: a fixed box sits at its client position plus the page offsets.
++		expect(readRegion(subject)).toStrictEqual({
++			x: (50 + window.scrollX) * ratio,
++			y: (40 + window.scrollY) * ratio,
++			width: 50 * ratio,
++			height: 20 * ratio,
++		})
++	})
++	it('resolves a capture subject through a specimen label, a region name, or a rendered host', async () => {
++		const mounted = await mountShowcase()
++		try {
++			expect(readSubject(mounted.host, 'Role links').getAttribute(SPECIMEN_ATTRIBUTE)).toBe(
++				'Role links',
++			)
++			expect(readSubject(mounted.host, 'Showcase').getAttribute('aria-label')).toBe('Showcase')
++			expect(readSubject(mounted.host, 'Primary').classList.contains(BUTTON_CLASS)).toBe(true)
++			expect(() => readSubject(mounted.host, 'Nothing renders this')).toThrow(
++				'No rendered subject answers to the name "Nothing renders this"',
++			)
++			// The showcase labels a Content specimen `Table` and a region `Table`, so one name
++			// reaches two declarations and neither is preferred over the other.
++			expect(() => readSubject(mounted.host, 'Table')).toThrow('rendered subjects answer')
++		} finally {
++			mounted.cleanup()
++		}
++	})
++	it('describes a control-rooted subject through a scope that encloses it', () => {
++		const host = scene.mount('<section><p>copy</p><button type="button">Toggle</button></section>')
++		const section = requireValue(host.querySelector('section'), 'No scope specimen')
++		const control = requireValue(host.querySelector('button'), 'No control specimen')
++		const preceding = requireValue(control.previousElementSibling, 'No element precedes it')
++		const body = describeSubject(control, {
++			name: 'Toggle',
++			variant: 'light-390',
++			state: 'rest',
++		})
++		expect(body).toContain('subject: Toggle')
++		expect(body).toContain('variant: light-390')
++		// The state the reading was taken in is the artifact's own, not the state the frames beside
++		// it show: the Button scenarios drive focus, the pointer, and a press for those frames.
++		expect(body).toContain('state: rest')
++		// The installed focus walk describes an element's controls and is not itself one of them,
++		// so a reading taken on the control alone calls it unreachable. The enclosing scope is
++		// what puts the subject into its own focus order, and this pair is the contrast.
++		expect(describeFocus(control)).toBe('')
++		expect(body.slice(body.indexOf('focus:'))).toContain('1. button "Toggle"')
++		expect(body).toContain('button "Toggle"')
++		// The scope is temporary: the subject keeps its own parent and its own position.
++		expect(control.parentElement).toBe(section)
++		expect(control.previousElementSibling).toBe(preceding)
++	})
++	it('records a subject presenting no role and no control as each of those readings', () => {
++		const host = scene.mount('<div><span>copy</span></div>')
++		const bare = requireValue(host.querySelector('div'), 'No bare specimen')
++		const body = describeSubject(bare, {
++			name: 'Capped container',
++			variant: 'dark-1280',
++			state: 'rest',
++		})
++		expect(body).toContain('No element in this subject carries a role.')
++		expect(body).toContain('No control inside this subject is reachable.')
++	})
++	it('refuses a subject with no parent to be read through', () => {
++		expect(() =>
++			describeSubject(build('button'), {
++				name: 'Primary',
++				variant: 'light-1280',
++				state: 'rest',
++			}),
++		).toThrow('is not in a document to be read through')
++	})
++	it('resolves an element answering to two declarations as the one subject it is', () => {
++		const host = scene.mount(
++			`<button type="button" class="${BUTTON_CLASS}" ${SPECIMEN_ATTRIBUTE}="Primary">Primary</button>`,
++		)
++		// A rendered host carrying its own specimen label answers to the specimen selector and to
++		// the button selector. Collecting the candidates as a list rather than a set counts it
++		// twice and refuses a name exactly one element answers to.
++		expect(readSubject(host, 'Primary').localName).toBe('button')
++	})
++	it('records every placed scenario, and writes no placement while the portfolio is disabled', async () => {
++		const mounted = await mountShowcase()
++		const portfolio = createPortfolio({
++			states: ['role-links'],
++			variants: [{ name: 'light-1280', width: 1280, height: 800 }],
++			variant: 'light-1280',
++			directory: '../tmp/capture/states',
++		})
++		const frames = new FrameManager(portfolio)
++		try {
++			const subject = readSubject(mounted.host, 'Role links')
++			await frames.place('role-links', subject)
++			expect(frames.scenarios).toStrictEqual(['role-links'])
++			// The region is recorded whether or not the portfolio wrote a file, which is what lets
++			// a run with the capture flag unset read back the frames an earlier capture run left
++			// on disk: the box is gone by then, and the written file never carried it.
++			const placement = requireValue(frames.placements[0], 'No placement was recorded')
++			expect(frames.placements).toHaveLength(1)
++			expect(placement.scenario).toBe('role-links')
++			expect(placement.region.width).toBeGreaterThan(0)
++			expect(placement.region.height).toBeGreaterThan(0)
++			// A disabled portfolio writes nothing and refuses no name either: a scenario it does
++			// not carry is accepted in silence. The manager's own list is therefore what a run with
++			// no files proves its registry agreement from, which is why the journey compares that
++			// list against the registry rather than leaning on the portfolio's refusal.
++			expect(portfolio.placements).toStrictEqual([])
++			await frames.page('base', subject)
++			expect(frames.scenarios).toStrictEqual(['role-links', 'base'])
++		} finally {
++			mounted.cleanup()
++		}
+ 	})
+ 	it('reads signed painted offsets from the parent independently of its viewport position', () => {
+ 		const host = scene.mount(
+@@ -217,6 +394,7 @@ describe('browser setup', () => {
+ 				'ORACLE_ACTIONS',
+ 				'ORACLE_EXCLUDED',
+ 				'PROBE_CASCADE',
++				'FrameManager',
+ 				'SPECIMEN_ATTRIBUTE',
+ 				'SceneManager',
+ 				'applyTheme',
+@@ -226,10 +404,11 @@ describe('browser setup', () => {
+ 				'collectNestedRules',
+ 				'collectPainted',
+ 				'collectScopeProperties',
++				'describeSubject',
+ 				'driveOracle',
+ 				'holdOraclePointer',
+ 				'mountShowcase',
+-				'measureFrameVariation',
++				'measureVariation',
+ 				'pressOracleKeys',
+ 				'readCascadeSheet',
+ 				'recordListeners',
+@@ -238,7 +417,9 @@ describe('browser setup', () => {
+ 				'readButton',
+ 				'readOracleButton',
+ 				'readParentOffset',
++				'readRegion',
+ 				'readSpecimen',
++				'readSubject',
+ 				'scanPositionalPairs',
+ 				'scene',
+ 				'visitBreakpoint',
+diff --git a/tests/setupBrowser.ts b/tests/setupBrowser.ts
+index 7faa1e9..22c04cf 100644
+--- a/tests/setupBrowser.ts
++++ b/tests/setupBrowser.ts
+@@ -1,10 +1,20 @@
+ import type { JourneyVariant, RecorderInterface } from '@orkestrel/test'
+-import type { ButtonProjection, ButtonReading } from './setup.js'
++import type { PortfolioInterface } from '@orkestrel/test/browser'
++import type {
++	ButtonProjection,
++	ButtonReading,
++	CaptureScenario,
++	CaptureState,
++	CaptureSubject,
++	CaptureVariantName,
++} from './setup.js'
+ import { isRecord } from '@orkestrel/contract'
+ import { createRecorder, requireValue } from '@orkestrel/test'
+ import {
+ 	build,
+ 	clickAccessible,
++	describeFocus,
++	describeTree,
+ 	isReachable,
+ 	isOutsideViewport,
+ 	mount,
+@@ -12,9 +22,11 @@ import {
+ 	POINTER_HOLD,
+ 	readName,
+ 	readStates,
++	releasePane,
+ 	releasePointer,
+ 	sendProtocol,
+ 	render,
++	stagePane,
+ 	waitForAnimations,
+ 	waitForFrame,
+ 	waitForState,
+@@ -25,29 +37,87 @@ import oracle from './fixtures/oracle/button.json'
+ import { normalizeSelectorText, readingToProjection } from './setup.js'
+ 
+ /**
+- * Measures the fraction of a decoded PNG whose pixels differ from its first pixel.
++ * Describes the part of a written frame a reading covers, in the frame's own device pixels.
++ *
++ * @remarks
++ * A frame's origin is its own top-left corner: the element's box for an element frame, and the
++ * document's for a page frame. {@link readRegion} converts a live box into that space, so a region
++ * declared while the shot was staged still names the same pixels after the pane is handed back.
++ */
++export interface FrameRegion {
++	/** Holds the region's left edge, measured from the frame's own left edge. */
++	readonly x: number
++	/** Holds the region's top edge, measured from the frame's own top edge. */
++	readonly y: number
++	/** Holds the region's width. */
++	readonly width: number
++	/** Holds the region's height. */
++	readonly height: number
++}
++
++/**
++ * Pairs one placed scenario with the subject region a guard reads inside that scenario's frame.
++ *
++ * @remarks
++ * The region is recorded where the frame is placed, because the elements a journey photographs are
++ * gone by the time the written files are read back: a guard that recomputed the box would be
++ * measuring a document the frame does not show. It is recorded whether or not the portfolio wrote
++ * a file, so a run with capture off can still read back the frames an earlier capture run left on
++ * disk at this run's own variant.
++ */
++export interface FramePlacement {
++	/** Holds the scenario the frame is registered under. */
++	readonly scenario: CaptureScenario
++	/** Holds the subject's box inside that frame. */
++	readonly region: FrameRegion
++}
++
++/**
++ * Measures the fraction of one region of a decoded PNG whose pixels differ from the region's first
++ * pixel.
++ *
+  * @param encoded - The written PNG bytes encoded as base64.
+- * @returns The fraction of pixels with a different RGBA value; zero for a uniform frame.
+- * @throws Thrown when the browser cannot decode the PNG or create a canvas context.
++ * @param region - The region to read, in the frame's own device pixels. A region reaching outside
++ *   the decoded image is clipped to it.
++ * @returns The fraction of the read pixels carrying a different RGBA value; zero for a region that
++ *   paints one color.
++ * @throws Thrown when the browser cannot decode the PNG or create a canvas context, and when the
++ *   region clips to no pixel of the image.
++ *
+  * @remarks
+- * The installed frame reader reports dimensions and a bottom-row floor only. This reading samples
+- * every pixel, so content away from that row contributes too. Variation detects a uniform blank,
+- * not the identity or correctness of the pictured specimen; unrelated paint can also vary.
++ * The region is the declaration that makes the reading evidence about the scenario: a frame of a
++ * whole specimen varies wherever the surrounding page does, so a reading over the whole image
++ * answers for the shot rather than for the subject the scenario names. The installed frame reader
++ * reports dimensions and a bottom-row floor, neither of which separates a painted subject from a
++ * blank one, so this reading is taken here and the two are recorded together.
++ *
++ * Variation detects a region painting one color, not the identity or correctness of the pictured
++ * specimen.
++ *
+  * @example
+  * ```ts
+- * const variation = await measureFrameVariation(await commands.readFile(path, 'base64'))
++ * const variation = await measureVariation(await commands.readFile(path, 'base64'), region)
+  * ```
+  */
+-export async function measureFrameVariation(encoded: string): Promise<number> {
++export async function measureVariation(encoded: string, region: FrameRegion): Promise<number> {
+ 	const image = new Image()
+ 	image.src = `data:image/png;base64,${encoded}`
+ 	await image.decode()
++	const left = Math.max(0, Math.min(Math.round(region.x), image.width))
++	const top = Math.max(0, Math.min(Math.round(region.y), image.height))
++	const width = Math.min(Math.round(region.width), image.width - left)
++	const height = Math.min(Math.round(region.height), image.height - top)
++	if (width < 1 || height < 1) {
++		throw new Error(
++			`The declared region clips to nothing inside a ${String(image.width)}x${String(image.height)} frame`,
++		)
++	}
+ 	const context = requireValue(
+ 		new OffscreenCanvas(image.width, image.height).getContext('2d'),
+ 		'The captured frame requires a 2D canvas',
+ 	)
+ 	context.drawImage(image, 0, 0)
+-	const pixels = context.getImageData(0, 0, image.width, image.height).data
++	const pixels = context.getImageData(left, top, width, height).data
+ 	let varied = 0
+ 	for (let offset = 4; offset < pixels.length; offset += 4) {
+ 		if (
+@@ -58,7 +128,38 @@ export async function measureFrameVariation(encoded: string): Promise<number> {
+ 		)
+ 			varied += 1
+ 	}
+-	return varied / (image.width * image.height)
++	return varied / (width * height)
++}
++
++/**
++ * Reads one element's box in the coordinates of the frame it is photographed inside.
++ *
++ * @param subject - The element the scenario names, whose box the guard reads.
++ * @param frame - The element the frame covers. Omit it for a page frame, whose origin is the
++ *   document's own.
++ * @returns The subject's box in the frame's device pixels.
++ *
++ * @remarks
++ * Read the box while the pane is staged at the geometry the shot uses. A capture stages the pane,
++ * shoots, and hands it back, so a box read in the handed-back layout describes a document the frame
++ * does not show. A page frame covers the scrolled document rather than the viewport, so the page
++ * offsets are added back.
++ *
++ * @example
++ * ```ts
++ * readRegion(readButton(section, 'Primary'))
++ * ```
++ */
++export function readRegion(subject: Element, frame?: Element): FrameRegion {
++	const box = subject.getBoundingClientRect()
++	const origin = frame?.getBoundingClientRect()
++	const ratio = window.devicePixelRatio
++	return {
++		x: (box.x - (origin?.x ?? -window.scrollX)) * ratio,
++		y: (box.y - (origin?.y ?? -window.scrollY)) * ratio,
++		width: box.width * ratio,
++		height: box.height * ratio,
++	}
+ }
+ 
+ /** Resizes the tester viewport to one size in CSS pixels, the way the installed page verb does. */
+@@ -248,6 +349,219 @@ export function readSpecimen(root: ParentNode, name: string): HTMLElement {
+ 	return element
+ }
+ 
++/**
++ * Reads the rendered subject a capture key names.
++ *
++ * @param root - The subtree the showcase is mounted in.
++ * @param name - The subject's declared name: a specimen label, a region's accessible name, or the
++ *   accessible name a rendered button announces.
++ * @returns The element the showcase renders that subject as.
++ * @throws An `Error` when the root renders no subject of that name, when separate declarations
++ *   answer to it, and when the element is not an HTML element.
++ *
++ * @remarks
++ * The declarations are read together because the showcase labels its subjects in separate ways: a
++ * markup section wraps each specimen in a labelled container, the Button section renders its
++ * specimens as bare hosts announcing their own names, and a region carries its accessible name. A
++ * registry naming a subject that separate declarations answer to is refused rather than resolved by
++ * precedence, because the frame and the artifact beside it would then be about whichever
++ * declaration this reader happened to prefer.
++ *
++ * The candidates are collected as a set, because one element can answer two of the selectors: a
++ * rendered button inside a labelled specimen container is matched by both, and counting it twice
++ * would refuse a name only one element answers to.
++ *
++ * @example
++ * ```ts
++ * readSubject(mounted.host, 'Role links')
++ * ```
++ */
++export function readSubject(root: ParentNode, name: string): HTMLElement {
++	const matched = [
++		...new Set([
++			...root.querySelectorAll(`[${SPECIMEN_ATTRIBUTE}]`),
++			...root.querySelectorAll('section[aria-label]'),
++			...root.querySelectorAll(`.${BUTTON_CLASS}`),
++		]),
++	].filter(
++		(candidate) =>
++			candidate.getAttribute(SPECIMEN_ATTRIBUTE) === name ||
++			candidate.getAttribute('aria-label') === name ||
++			(candidate.classList.contains(BUTTON_CLASS) && readName(candidate) === name),
++	)
++	if (matched.length > 1) {
++		throw new Error(`${String(matched.length)} rendered subjects answer to the name "${name}"`)
++	}
++	const element = requireValue(matched[0], `No rendered subject answers to the name "${name}"`)
++	if (!(element instanceof HTMLElement)) {
++		throw new Error(`The "${name}" subject is not an HTML element`)
++	}
++	return element
++}
++
++/**
++ * Describes one photographed subject the way the artifact written beside its frames records it.
++ *
++ * @remarks
++ * The name is the registry's own, not the accessible name the element announces: a specimen
++ * container carries its label in an attribute and a page frame's region carries an accessible name,
++ * so one reading covers both. The state is the one the subject was read in, which is not always the
++ * one its frames show — the Button scenarios drive focus, hover, and press, and this reading is
++ * taken on arrival.
++ */
++export interface SubjectReading {
++	/** Names the subject, as the capture registry declares it. */
++	readonly name: CaptureSubject
++	/** Names the variant that rendered the surface this reading was taken on. */
++	readonly variant: CaptureVariantName
++	/** Names the state the subject was read in. */
++	readonly state: CaptureState
++}
++
++/**
++ * Describes one subject's accessible tree and focus order as the artifact beside its frames.
++ *
++ * @param subject - The rendered element a registered scenario names, which must be in the document.
++ * @param reading - The subject's declared name, the variant that rendered it, and the state it was
++ *   read in.
++ * @returns The artifact's body: the reading's own heading lines, the accessible tree, and the
++ *   keyboard focus order.
++ * @throws An `Error` when the subject has no parent to read it through.
++ *
++ * @remarks
++ * Both walks are taken through a scope wrapped around the subject, because the installed focus walk
++ * describes an element's own controls and is not itself one of them: a subject that is a control —
++ * every Button scenario's is — records no focus order at all when the walk starts at it, and the
++ * artifact then says the specimen is unreachable while the page inventory beside it lists the same
++ * control. The scope carries no role, so the tree reads the same through it, and the subject is put
++ * back where it was before this returns.
++ *
++ * @example
++ * ```ts
++ * describeSubject(readSubject(host, 'Primary'), { name: 'Primary', variant: 'light-390', state: 'rest' })
++ * ```
++ */
++export function describeSubject(subject: HTMLElement, reading: SubjectReading): string {
++	const parent = requireValue(
++		subject.parentElement,
++		`The "${reading.name}" subject is not in a document to be read through`,
++	)
++	const scope = build('div')
++	parent.insertBefore(scope, subject)
++	scope.append(subject)
++	try {
++		const tree = describeTree(scope)
++		const focus = describeFocus(scope)
++		return [
++			`subject: ${reading.name}`,
++			`variant: ${reading.variant}`,
++			`state: ${reading.state}`,
++			'tree:',
++			tree.length > 0 ? tree : 'No element in this subject carries a role.',
++			'focus:',
++			focus.length > 0 ? focus : 'No control inside this subject is reachable.',
++		].join('\n')
++	} finally {
++		scope.replaceWith(subject)
++	}
++}
++
++/**
++ * Holds the scenarios one run placed, each with the region a guard reads inside its frame.
++ *
++ * @remarks
++ * The region is recorded where the frame is placed, because the elements a journey photographs are
++ * gone by the time the written files are read back: a guard that recomputed a box would be
++ * measuring a document the frame does not show. The pane is staged around every placement rather
++ * than left to the capture's own staging, because the region has to be read in the layout the shot
++ * is taken in — a capture finds a pane already staged at that geometry and moves nothing — and
++ * because a run that writes no file then drives the same path as one that does. The pane is handed
++ * back on every path, including a refused placement, so a case that fails here leaves no surface
++ * the runner is no longer fitting.
++ *
++ * {@link FrameManager.place} shoots an element frame and {@link FrameManager.page} a page frame, so
++ * the scope a frame covers is named at every call site. An omitted argument carried that meaning
++ * until a reader had to know which overload a two-argument call was.
++ */
++export class FrameManager {
++	readonly #portfolio: PortfolioInterface
++	readonly #scenarios: CaptureScenario[] = []
++	readonly #placements: FramePlacement[] = []
++
++	/**
++	 * Records against one run's own capture portfolio.
++	 *
++	 * @param portfolio - The portfolio the run places its frames through.
++	 */
++	constructor(portfolio: PortfolioInterface) {
++		this.#portfolio = portfolio
++	}
++
++	/** Lists every scenario placed so far, in placement order, written or not. */
++	get scenarios(): readonly CaptureScenario[] {
++		return this.#scenarios
++	}
++
++	/** Lists every placed scenario so far, each with the region its subject declares. */
++	get placements(): readonly FramePlacement[] {
++		return this.#placements
++	}
++
++	/**
++	 * Places one element frame and records the subject's region inside it.
++	 *
++	 * @param scenario - The registered scenario the frame is placed under.
++	 * @param subject - The element the scenario names, whose box is the frame's declared region.
++	 * @param frame - The element the frame covers. Default: the subject, so the frame is the
++	 *   subject's own box.
++	 * @returns Completion after the placement, whether or not the portfolio wrote a file.
++	 * @throws Whatever the portfolio refuses the placement with: an unregistered scenario, a
++	 *   scenario already placed, or a written frame that does not read back as this shot's bytes.
++	 */
++	async place(
++		scenario: CaptureScenario,
++		subject: Element,
++		frame: Element = subject,
++	): Promise<void> {
++		await this.#shoot(scenario, subject, frame)
++	}
++
++	/**
++	 * Places one page frame and records the subject's region inside it.
++	 *
++	 * @param scenario - The registered scenario the frame is placed under.
++	 * @param subject - The element the scenario names, whose box is the frame's declared region.
++	 * @returns Completion after the placement, whether or not the portfolio wrote a file.
++	 * @throws Whatever the portfolio refuses the placement with.
++	 *
++	 * @remarks
++	 * A page frame covers the scrolled document rather than any one element, so the subject names
++	 * the part of it the scenario claims and the region points a reader of an 8000-pixel frame at
++	 * that part.
++	 */
++	async page(scenario: CaptureScenario, subject: Element): Promise<void> {
++		await this.#shoot(scenario, subject, undefined)
++	}
++
++	// Stages the pane, reads the region in the staged layout, places, and hands the pane back. The
++	// region is recorded on every run and the portfolio's path on the runs that write one, so the
++	// guard has a region for a frame an earlier run left on disk.
++	async #shoot(
++		scenario: CaptureScenario,
++		subject: Element,
++		frame: Element | undefined,
++	): Promise<void> {
++		this.#scenarios.push(scenario)
++		await stagePane(window.innerWidth, window.innerHeight)
++		try {
++			this.#placements.push({ scenario, region: readRegion(subject, frame) })
++			await this.#portfolio.place(scenario, frame)
++		} finally {
++			await releasePane()
++		}
++	}
++}
++
+ /**
+  * Records one button host's observable state across one action.
+  *
