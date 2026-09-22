@@ -23,9 +23,11 @@ Button family) are closed and landed. The Content/layout family is under way, de
 (landed as `research/calibration-content.md`), CL1 the proof contract (landed), CL2 tokens and
 breakpoint mixins (landed), CL3 the reset partial and the text Reboot tags (landed), CL3b the
 muted-text and raised-surface tokens (landed), CL4 the remaining Reboot
-tags flipping the `reboot` key, CL5 typography classes, CL6 links, CL7 containers, CL8 grid and
-gutters, CL9 tables, CL10 images and figures, CL11 the journey and helper bounds, CL12 the guide
-pass, CL13 the portfolio verdict against Elements. Routing: CL1, CL3, CL4, CL6 to CL9 on Astra
+tags flipping the `reboot` key, CL5 typography classes, CL6 links, CL7 containers, CL8 grid,
+CL8b the gutter and gap step utilities, CL9 tables, CL10 the icon-link, ratio, and vertical-rule
+keys, CL11 the journey and helper bounds, CL12 the guide pass, CL13 the portfolio verdict against
+Elements. The image and figure keys are not CL10's: they shipped with the content work and are
+already listed. Routing: CL1, CL3, CL4, CL6 to CL9 on Astra
 (`sol`); CL2, CL3b, CL5, CL10 to CL12 on Opus (`opus`); CL13 the portfolio verdict lanes. Every
 unit is scope-read before dispatch, audited on the adversarial lanes plus a checker and a
 verifier, and landed by a script that refuses any file outside the owned set.
