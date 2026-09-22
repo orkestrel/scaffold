@@ -22,7 +22,7 @@
 			"storage": "agents/orchestration.md",
 			"destination": ".agents/orchestration.md",
 			"executable": false,
-			"digest": "7aeeb20489b78b65030ae9542e4ea4d36ce7b90246e66e5f516db95fa52c4214"
+			"digest": "d90a3808fe395a76407b3dc2ab4560509b5930930b04d326434f596951371e50"
 		},
 		{
 			"storage": "agents/skills/enterprise-bootstrap/SKILL.md",
@@ -2001,5 +2001,5 @@
 			]
 		}
 	],
-	"digest": "668e3a634fd6be141f27c03f3949ea02e8a26b7f5d9c3fb2e8c744eb7e79e96d"
+	"digest": "b1785371b9c05514926a6a7a43e0e9fea363754cf5c2017ea6102f9718924bee"
 }
