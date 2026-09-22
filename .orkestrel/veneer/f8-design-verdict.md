@@ -122,3 +122,16 @@ the installed PostCSS plugin in the browser project; every shared name is import
 excluded by the recipe, derived at run time with a floor; every preflight move is a recorded row; the
 guide carries the recipes and the rules; `npm run test:src:tailwind` is green and in `npm test`; the
 manifest and the built cascade carry no Tailwind requirement.
+
+## Amendment D16 — the cascade import sits with the imports (2026-09-22)
+
+F8b measured (its report § Unknown 1) that Vite's bundled `postcss-import` ends a stylesheet's import
+block at the first statement that is neither `@charset` nor a `@layer` statement, so a cascade
+`@import` written after a `@source` rule is dropped from the tree before `@tailwindcss/postcss` sees
+it, while `@tailwindcss/postcss` alone accepts the trailing form. Ruling 10's enumerated order (the
+`@source` rules and the exclusion line before the cascade import) is amended: every `@import` rule
+sits ahead of the `@source` rules in the `tailwind` and `preflight` recipes and in
+`tests/fixtures/tailwind/consumer.css`, and the guide states why. Nothing about the cascade changes:
+Veneer's rules still follow Tailwind's in source order. The `resolve.alias` entry in
+`configs/src/vite.tailwind.config.ts` mapping `@orkestrel/veneer/styles` to the built cascade is
+required under the root alias table (which maps `@orkestrel/veneer` to `src/core/index.ts`).

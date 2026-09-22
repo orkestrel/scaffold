@@ -3,8 +3,6 @@
  M app/browser/index.ts
  M guides/ledger/departures.md
  M guides/veneer.md
- M src/styles/_mixins.scss
- M src/styles/elements/_fieldset.scss
  M src/styles/index.scss
  M tests/app/browser/Showcase.test.ts
  M tests/app/browser/index.test.ts

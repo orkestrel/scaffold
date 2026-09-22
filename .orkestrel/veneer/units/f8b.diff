@@ -1,0 +1,1810 @@
+diff --git a/configs/src/vite.tailwind.config.ts b/configs/src/vite.tailwind.config.ts
+index ead0cfd..11ec54d 100644
+--- a/configs/src/vite.tailwind.config.ts
++++ b/configs/src/vite.tailwind.config.ts
+@@ -37,6 +37,10 @@ const cascadeCandidates: Plugin = {
+ const browser = srcBrowser()
+ const { build: _build, ...shared } = browser
+ 
++// The stylesheet subpath is written ahead of the inherited table, because an alias matches a
++// specifier that starts with its own name followed by a separator and the first match wins.
++const CONSUMER_ALIAS = Object.assign({ '@orkestrel/veneer/styles': CASCADE }, shared.resolve?.alias)
++
+ // The root supplies the alias table, the disabled public directory, and the resolved Playwright
+ // provider once for the workspace, the way the styles wrapper takes them. The fields a Tailwind
+ // run differs in are replaced by assignment rather than merged, for the reason that wrapper
+@@ -44,6 +48,13 @@ const { build: _build, ...shared } = browser
+ // profiles through the PostCSS plugin and emits no artifact of its own.
+ export default defineConfig({
+ 	...shared,
++	// A consumer resolves `@orkestrel/veneer/styles` through the manifest's `exports` map, which
++	// names the built cascade. This workspace is that package, and the root alias table maps the
++	// package name to the core entry, so the subpath would resolve under it to a path inside a
++	// TypeScript file. The entry restores the consumer's resolution for the stylesheet subpath
++	// alone, ahead of the package-name alias it sits in front of, so the executed consumer recipe
++	// reaches the same artifact a consumer installs.
++	resolve: { ...shared.resolve, alias: CONSUMER_ALIAS },
+ 	plugins: [cascadeCandidates],
+ 	css: { postcss: { plugins: [tailwindcss()] } },
+ 	test: {
+diff --git a/guides/veneer.md b/guides/veneer.md
+index 7904fa1..123a67b 100644
+--- a/guides/veneer.md
++++ b/guides/veneer.md
+@@ -235,13 +235,13 @@ The following files carry the axis.
+ | `src/styles/index.ts`                   | The side-effect entry, and the build's library entry.                                                                                                                      |
+ | `configs/src/vite.styles.config.ts`     | The build and test wrapper, composed from the root's `srcBrowser` factory.                                                                                                 |
+ | `configs/src/tsconfig.styles.json`      | The check-only TypeScript project.                                                                                                                                         |
+-| `tests/setupStyles.ts`                  | The cascade readers, the normalizer, the case tables, and the retained value lists.                                                                                        |
+-| `tests/setupServer.ts`                  | The Node-only readers: the installed and built cascade, the guide's compatibility, deferral, and ledger tables, the cascade comparison, and the elements-layer tag reader. |
++| `tests/setupStyles.ts`                  | The cascade readers, the normalizer, the guide table and fence readers, the case tables, and the retained value lists.                                                     |
++| `tests/setupServer.ts`                  | The Node-only readers: the installed and built cascades, the guide's compatibility, deferral, and ledger rows, the cascade comparisons, and the elements-layer tag reader. |
+ | `tests/src/styles/`                     | The browser proofs of the shipped cascade.                                                                                                                                 |
+ | `configs/src/vite.tailwind.config.ts`   | The Tailwind test wrapper, and the plugin deriving the candidate class names.                                                                                              |
+ | `tests/setup.css`                       | The `tailwind` profile the Tailwind proofs execute, and the home of the exclusion line.                                                                                    |
+-| `tests/fixtures/tailwind/`              | The `preflight` profile and the unexcluded instrument.                                                                                                                     |
+-| `tests/tailwind/`                       | The browser proofs of the Tailwind profiles.                                                                                                                               |
++| `tests/fixtures/tailwind/`              | The `preflight` profile, the unexcluded instrument, the executed consumer profile, and the markup that profile scans.                                                      |
++| `tests/tailwind/`                       | The browser proofs of the Tailwind profiles, the consumer pairing, and the preflight pairing.                                                                              |
+ 
+ The barrel's `@use` rules name the `_tokens.scss` and `_theme.scss` partials and the element
+ partials under the `elements/`, `components/`, and `utilities/` directories; the `_mixins.scss` partial reaches the build through the
+@@ -284,11 +284,11 @@ their build compiles. Veneer supports Tailwind 4.3.
+ 
+ The following table names each profile, what its entry declares, and where the pairing is proved.
+ 
+-| Profile      | Entry                                                                       | Layers Tailwind fills in a consumer build | Tailwind parts                                          | Proof                                                                      |
+-| ------------ | --------------------------------------------------------------------------- | ----------------------------------------- | ------------------------------------------------------- | -------------------------------------------------------------------------- |
+-| `standalone` | The cascade alone.                                                          | None.                                     | None.                                                   | [layer order and position independence](../tests/src/styles/index.test.ts) |
+-| `tailwind`   | The order line, the composable imports, the source rules, then the cascade. | `theme` and `utilities`.                  | `tailwindcss/theme.css` and `tailwindcss/utilities.css` | [stylesheet profiles](../tests/tailwind/profiles.test.ts)                  |
+-| `preflight`  | The order line, the bare import, the source rules, then the cascade.        | `theme`, `base`, and `utilities`.         | `tailwindcss`                                           | [stylesheet profiles](../tests/tailwind/profiles.test.ts)                  |
++| Profile      | Entry                                                                       | Layers Tailwind fills in a consumer build | Tailwind parts                                          | Proof                                                                                                                      |
++| ------------ | --------------------------------------------------------------------------- | ----------------------------------------- | ------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
++| `standalone` | The cascade alone.                                                          | None.                                     | None.                                                   | [layer order and position independence](../tests/src/styles/index.test.ts)                                                 |
++| `tailwind`   | The order line, the composable imports, the cascade, then the source rules. | `theme` and `utilities`.                  | `tailwindcss/theme.css` and `tailwindcss/utilities.css` | [stylesheet profiles](../tests/tailwind/profiles.test.ts) and [the consumer pairing](../tests/tailwind/shared.test.ts)     |
++| `preflight`  | The order line, the bare import, the cascade, then the source rules.        | `theme`, `base`, and `utilities`.         | `tailwindcss`                                           | [stylesheet profiles](../tests/tailwind/profiles.test.ts) and [the preflight pairing](../tests/tailwind/preflight.test.ts) |
+ 
+ Under the composable imports, Tailwind fills a layer only for the utilities it generates from the
+ markup your `@source` rule names: the `utilities` layer carries those rules and the `theme` layer
+@@ -309,18 +309,21 @@ The `standalone` profile is the product, and § Styles states it: import `@orkes
+ and nothing else.
+ 
+ In each recipe that follows, `@source './src'` is the line you change: it names your own markup
+-directory, which is what Tailwind scans to decide which utilities to generate. The first recipe is
+-the `tailwind` profile, which composes Tailwind's theme and utilities and leaves the reset to
+-Veneer's own `reset` and `elements` layers.
++directory, which is what Tailwind scans to decide which utilities to generate. Every `@import` rule
++sits ahead of the `@source` rules, because CSS ends a stylesheet's import block at the first
++statement that is neither `@charset` nor a `@layer` statement: a bundler that inlines `@import`
++rules drops one written after a `@source` rule, and the cascade import is the one you lose. The
++first recipe is the `tailwind` profile, which composes Tailwind's theme and utilities and leaves the
++reset to Veneer's own `reset` and `elements` layers.
+ 
+ ```css
+ @layer theme, reset, base, elements, components, utilities;
+ @import 'tailwindcss/theme.css' layer(theme);
+ @import 'tailwindcss/utilities.css' layer(utilities);
++@import '@orkestrel/veneer/styles';
+ /* Your own markup directory. */
+ @source './src';
+ @source not inline("caption-bottom caption-top col-auto col-1 col-2 col-3 col-4 col-5 col-6 col-7 col-8 col-9 col-10 col-11 col-12 container table");
+-@import '@orkestrel/veneer/styles';
+ ```
+ 
+ The following recipe is the `preflight` profile, which takes the bare import so Tailwind's own reset
+@@ -330,14 +333,24 @@ Veneer's element treatment rather than over it.
+ ```css
+ @layer theme, reset, base, elements, components, utilities;
+ @import 'tailwindcss';
++@import '@orkestrel/veneer/styles';
+ /* Your own markup directory. */
+ @source './src';
+ @source not inline("caption-bottom caption-top col-auto col-1 col-2 col-3 col-4 col-5 col-6 col-7 col-8 col-9 col-10 col-11 col-12 container table");
+-@import '@orkestrel/veneer/styles';
+ ```
+ 
+-No proof compiles either recipe in the shape it ships here. The executed consumer-shaped profile,
+-with a markup fixture and the trailing cascade import, lands with the shared-name proof.
++The workspace compiles the `tailwind` recipe as written. `tests/fixtures/tailwind/consumer.css` is
++that fence with one line changed — `@source './markup.html';` names the markup fixture beside it in
++place of your own directory — and [the consumer pairing](../tests/tailwind/shared.test.ts) holds
++every other line of the file equal to the fence, so a recipe edited here and not there reddens
++rather than shipping a recipe nothing compiled. The same proof reads the sheet that recipe compiles to: the cascade import
++resolves through the manifest's `./styles` subpath, so the sheet carries Veneer's token namespace
++and its component rules; the markup's `px-8` utility is generated, so the `@source` line reached the
++scanner; every element carrying a shared class name resolves exactly what the shipped cascade alone
++resolves for it; and `px-8` moves the button's padding off the `.btn` declaration, which is the
++override a consumer pairs Tailwind for. `tests/fixtures/tailwind/unexcluded.css` is the negative
++control: with the exclusion line dropped, the same reading moves `.col-1`'s `grid-column-start` from
++`auto` to `1`, which is what shows the equality can see a Tailwind rule winning.
+ 
+ The order line never changes between profiles. It is the line `src/styles/_tokens.scss` declares,
+ and declaring it ahead of the Tailwind import is what makes Tailwind's own narrower order merge as
+@@ -351,10 +364,21 @@ generation and Veneer's declaration is the only one the page carries.
+ 
+ `tests/setup.css` is where the workspace writes that line. The profiles proof reads it from that
+ file rather than repeating it, and holds every written copy equal to it — the recipes in this
+-section and `tests/fixtures/tailwind/preflight.css`; see
++section, `tests/fixtures/tailwind/preflight.css`, and `tests/fixtures/tailwind/consumer.css`; see
+ [stylesheet profiles](../tests/tailwind/profiles.test.ts). So a release that ships another shared
+ class name extends the line, and every copy left behind reddens until it matches.
+ 
++Nothing writes the shared set down either. [The consumer pairing](../tests/tailwind/shared.test.ts)
++derives it per run as the class names the built cascade and the unexcluded instrument both declare,
++and asserts that `container`, `table`, `col-1`, `caption-top`, and `caption-bottom` are among them,
++so a derivation that reached an empty stylesheet cannot read as a clean result. It then holds the
++exclusion line equal to the derived names Veneer declares without `!important`, which states the
++rule as an equality: a name that joins the set joins the line, and a name Veneer starts declaring
++with `!important` leaves it. The importance branch runs over the names Veneer does declare with one.
++No shipped shared name is important, so that branch is driven by a planted important declaration for
++one shared name, and it reads what the rule claims: with the exclusion line dropped and Tailwind's
++own rule on the page, the important declaration is still what the element resolves.
++
+ The workspace executes the profiles from `tests/setup.css` for the `tailwind` profile and
+ `tests/fixtures/tailwind/preflight.css` for the `preflight` profile. Those profiles scan the
+ candidate list the `configs/src/vite.tailwind.config.ts` wrapper derives from the built cascade
+@@ -367,6 +391,228 @@ attaches the `@tailwindcss/postcss` plugin, writes the candidate list before Tai
+ declares the `src:tailwind` project. Run `npm run test:src:tailwind`, which builds the cascade
+ first.
+ 
++Veneer's `elements` layer sits after `base`, so Tailwind's reset arrives under Veneer's own element
++treatment rather than over it: every property Veneer declares for an overlapping element keeps the
++value the standalone cascade resolves for it, and what the `preflight` profile adds is the
++properties Veneer leaves alone. [The preflight pairing](../tests/tailwind/preflight.test.ts) derives
++the overlap — the tags the compiled `base` layer's type selectors name, intersected with the tags
++Veneer's elements partials style — renders one neutral element per tag, and reads every property
++that layer declares before and after the profile loads. Each property Veneer's own rules declare for
++the tag is asserted unchanged, and each property that moved is a row of the following table.
++
++The border style and the tab size move on every overlapping element, because the reset's universal
++rule declares them: it sets a border style the elements never paint, because it sets the border
++width to zero beside it, and it lowers the tab size. The rest of the rows are the form controls and
++the document root, which preflight resets to inherit the page's own font, color, and background.
++
++The `Tag`, `Property`, `Standalone`, and `Preflight` columns name the element, the property, the
++value the shipped cascade alone resolves for it, and the value the `preflight` profile resolves,
++each as Chromium 141 reports it. The proof holds the measured pairs and the recorded rows equal in
++both directions, so a move this table does not carry and a row the pairing no longer produces each
++redden.
++
++| Tag        | Property                      | Standalone            | Preflight                                                                                                                                                                               |
++| ---------- | ----------------------------- | --------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
++| `a`        | `border-bottom-style`         | `none`                | `solid`                                                                                                                                                                                 |
++| `a`        | `border-left-style`           | `none`                | `solid`                                                                                                                                                                                 |
++| `a`        | `border-right-style`          | `none`                | `solid`                                                                                                                                                                                 |
++| `a`        | `border-top-style`            | `none`                | `solid`                                                                                                                                                                                 |
++| `a`        | `tab-size`                    | `8`                   | `4`                                                                                                                                                                                     |
++| `abbr`     | `border-bottom-style`         | `none`                | `solid`                                                                                                                                                                                 |
++| `abbr`     | `border-left-style`           | `none`                | `solid`                                                                                                                                                                                 |
++| `abbr`     | `border-right-style`          | `none`                | `solid`                                                                                                                                                                                 |
++| `abbr`     | `border-top-style`            | `none`                | `solid`                                                                                                                                                                                 |
++| `abbr`     | `tab-size`                    | `8`                   | `4`                                                                                                                                                                                     |
++| `b`        | `border-bottom-style`         | `none`                | `solid`                                                                                                                                                                                 |
++| `b`        | `border-left-style`           | `none`                | `solid`                                                                                                                                                                                 |
++| `b`        | `border-right-style`          | `none`                | `solid`                                                                                                                                                                                 |
++| `b`        | `border-top-style`            | `none`                | `solid`                                                                                                                                                                                 |
++| `b`        | `tab-size`                    | `8`                   | `4`                                                                                                                                                                                     |
++| `button`   | `tab-size`                    | `8`                   | `4`                                                                                                                                                                                     |
++| `code`     | `border-bottom-style`         | `none`                | `solid`                                                                                                                                                                                 |
++| `code`     | `border-left-style`           | `none`                | `solid`                                                                                                                                                                                 |
++| `code`     | `border-right-style`          | `none`                | `solid`                                                                                                                                                                                 |
++| `code`     | `border-top-style`            | `none`                | `solid`                                                                                                                                                                                 |
++| `code`     | `tab-size`                    | `8`                   | `4`                                                                                                                                                                                     |
++| `h1`       | `border-bottom-style`         | `none`                | `solid`                                                                                                                                                                                 |
++| `h1`       | `border-left-style`           | `none`                | `solid`                                                                                                                                                                                 |
++| `h1`       | `border-right-style`          | `none`                | `solid`                                                                                                                                                                                 |
++| `h1`       | `border-top-style`            | `none`                | `solid`                                                                                                                                                                                 |
++| `h1`       | `tab-size`                    | `8`                   | `4`                                                                                                                                                                                     |
++| `h2`       | `border-bottom-style`         | `none`                | `solid`                                                                                                                                                                                 |
++| `h2`       | `border-left-style`           | `none`                | `solid`                                                                                                                                                                                 |
++| `h2`       | `border-right-style`          | `none`                | `solid`                                                                                                                                                                                 |
++| `h2`       | `border-top-style`            | `none`                | `solid`                                                                                                                                                                                 |
++| `h2`       | `tab-size`                    | `8`                   | `4`                                                                                                                                                                                     |
++| `h3`       | `border-bottom-style`         | `none`                | `solid`                                                                                                                                                                                 |
++| `h3`       | `border-left-style`           | `none`                | `solid`                                                                                                                                                                                 |
++| `h3`       | `border-right-style`          | `none`                | `solid`                                                                                                                                                                                 |
++| `h3`       | `border-top-style`            | `none`                | `solid`                                                                                                                                                                                 |
++| `h3`       | `tab-size`                    | `8`                   | `4`                                                                                                                                                                                     |
++| `h4`       | `border-bottom-style`         | `none`                | `solid`                                                                                                                                                                                 |
++| `h4`       | `border-left-style`           | `none`                | `solid`                                                                                                                                                                                 |
++| `h4`       | `border-right-style`          | `none`                | `solid`                                                                                                                                                                                 |
++| `h4`       | `border-top-style`            | `none`                | `solid`                                                                                                                                                                                 |
++| `h4`       | `tab-size`                    | `8`                   | `4`                                                                                                                                                                                     |
++| `h5`       | `border-bottom-style`         | `none`                | `solid`                                                                                                                                                                                 |
++| `h5`       | `border-left-style`           | `none`                | `solid`                                                                                                                                                                                 |
++| `h5`       | `border-right-style`          | `none`                | `solid`                                                                                                                                                                                 |
++| `h5`       | `border-top-style`            | `none`                | `solid`                                                                                                                                                                                 |
++| `h5`       | `tab-size`                    | `8`                   | `4`                                                                                                                                                                                     |
++| `h6`       | `border-bottom-style`         | `none`                | `solid`                                                                                                                                                                                 |
++| `h6`       | `border-left-style`           | `none`                | `solid`                                                                                                                                                                                 |
++| `h6`       | `border-right-style`          | `none`                | `solid`                                                                                                                                                                                 |
++| `h6`       | `border-top-style`            | `none`                | `solid`                                                                                                                                                                                 |
++| `h6`       | `tab-size`                    | `8`                   | `4`                                                                                                                                                                                     |
++| `hr`       | `tab-size`                    | `8`                   | `4`                                                                                                                                                                                     |
++| `html`     | `-webkit-tap-highlight-color` | `rgba(0, 0, 0, 0.18)` | `rgba(0, 0, 0, 0)`                                                                                                                                                                      |
++| `html`     | `border-bottom-style`         | `none`                | `solid`                                                                                                                                                                                 |
++| `html`     | `border-left-style`           | `none`                | `solid`                                                                                                                                                                                 |
++| `html`     | `border-right-style`          | `none`                | `solid`                                                                                                                                                                                 |
++| `html`     | `border-top-style`            | `none`                | `solid`                                                                                                                                                                                 |
++| `html`     | `font-family`                 | `"Times New Roman"`   | `-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", "Noto Sans", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"` |
++| `html`     | `line-height`                 | `normal`              | `24px`                                                                                                                                                                                  |
++| `html`     | `tab-size`                    | `8`                   | `4`                                                                                                                                                                                     |
++| `iframe`   | `display`                     | `inline`              | `block`                                                                                                                                                                                 |
++| `iframe`   | `tab-size`                    | `8`                   | `4`                                                                                                                                                                                     |
++| `iframe`   | `vertical-align`              | `baseline`            | `middle`                                                                                                                                                                                |
++| `img`      | `border-bottom-style`         | `none`                | `solid`                                                                                                                                                                                 |
++| `img`      | `border-left-style`           | `none`                | `solid`                                                                                                                                                                                 |
++| `img`      | `border-right-style`          | `none`                | `solid`                                                                                                                                                                                 |
++| `img`      | `border-top-style`            | `none`                | `solid`                                                                                                                                                                                 |
++| `img`      | `tab-size`                    | `8`                   | `4`                                                                                                                                                                                     |
++| `input`    | `background-color`            | `rgb(255, 255, 255)`  | `rgba(0, 0, 0, 0)`                                                                                                                                                                      |
++| `input`    | `border-bottom-color`         | `rgb(118, 118, 118)`  | `oklch(0.208 0.042 265.755)`                                                                                                                                                            |
++| `input`    | `border-bottom-style`         | `inset`               | `solid`                                                                                                                                                                                 |
++| `input`    | `border-bottom-width`         | `2px`                 | `0px`                                                                                                                                                                                   |
++| `input`    | `border-left-color`           | `rgb(118, 118, 118)`  | `oklch(0.208 0.042 265.755)`                                                                                                                                                            |
++| `input`    | `border-left-style`           | `inset`               | `solid`                                                                                                                                                                                 |
++| `input`    | `border-left-width`           | `2px`                 | `0px`                                                                                                                                                                                   |
++| `input`    | `border-right-color`          | `rgb(118, 118, 118)`  | `oklch(0.208 0.042 265.755)`                                                                                                                                                            |
++| `input`    | `border-right-style`          | `inset`               | `solid`                                                                                                                                                                                 |
++| `input`    | `border-right-width`          | `2px`                 | `0px`                                                                                                                                                                                   |
++| `input`    | `border-top-color`            | `rgb(118, 118, 118)`  | `oklch(0.208 0.042 265.755)`                                                                                                                                                            |
++| `input`    | `border-top-style`            | `inset`               | `solid`                                                                                                                                                                                 |
++| `input`    | `border-top-width`            | `2px`                 | `0px`                                                                                                                                                                                   |
++| `input`    | `color`                       | `rgb(0, 0, 0)`        | `oklch(0.208 0.042 265.755)`                                                                                                                                                            |
++| `input`    | `height`                      | `27px`                | `21px`                                                                                                                                                                                  |
++| `input`    | `padding-block-end`           | `1px`                 | `0px`                                                                                                                                                                                   |
++| `input`    | `padding-block-start`         | `1px`                 | `0px`                                                                                                                                                                                   |
++| `input`    | `padding-bottom`              | `1px`                 | `0px`                                                                                                                                                                                   |
++| `input`    | `padding-inline-start`        | `2px`                 | `0px`                                                                                                                                                                                   |
++| `input`    | `padding-left`                | `2px`                 | `0px`                                                                                                                                                                                   |
++| `input`    | `padding-right`               | `2px`                 | `0px`                                                                                                                                                                                   |
++| `input`    | `padding-top`                 | `1px`                 | `0px`                                                                                                                                                                                   |
++| `input`    | `tab-size`                    | `8`                   | `4`                                                                                                                                                                                     |
++| `input`    | `text-decoration-color`       | `rgb(0, 0, 0)`        | `oklch(0.208 0.042 265.755)`                                                                                                                                                            |
++| `kbd`      | `tab-size`                    | `8`                   | `4`                                                                                                                                                                                     |
++| `ol`       | `border-bottom-style`         | `none`                | `solid`                                                                                                                                                                                 |
++| `ol`       | `border-left-style`           | `none`                | `solid`                                                                                                                                                                                 |
++| `ol`       | `border-right-style`          | `none`                | `solid`                                                                                                                                                                                 |
++| `ol`       | `border-top-style`            | `none`                | `solid`                                                                                                                                                                                 |
++| `ol`       | `tab-size`                    | `8`                   | `4`                                                                                                                                                                                     |
++| `optgroup` | `border-bottom-color`         | `rgb(0, 0, 0)`        | `oklch(0.208 0.042 265.755)`                                                                                                                                                            |
++| `optgroup` | `border-bottom-style`         | `none`                | `solid`                                                                                                                                                                                 |
++| `optgroup` | `border-left-color`           | `rgb(0, 0, 0)`        | `oklch(0.208 0.042 265.755)`                                                                                                                                                            |
++| `optgroup` | `border-left-style`           | `none`                | `solid`                                                                                                                                                                                 |
++| `optgroup` | `border-right-color`          | `rgb(0, 0, 0)`        | `oklch(0.208 0.042 265.755)`                                                                                                                                                            |
++| `optgroup` | `border-right-style`          | `none`                | `solid`                                                                                                                                                                                 |
++| `optgroup` | `border-top-color`            | `rgb(0, 0, 0)`        | `oklch(0.208 0.042 265.755)`                                                                                                                                                            |
++| `optgroup` | `border-top-style`            | `none`                | `solid`                                                                                                                                                                                 |
++| `optgroup` | `color`                       | `rgb(0, 0, 0)`        | `oklch(0.208 0.042 265.755)`                                                                                                                                                            |
++| `optgroup` | `font-weight`                 | `700`                 | `400`                                                                                                                                                                                   |
++| `optgroup` | `tab-size`                    | `8`                   | `4`                                                                                                                                                                                     |
++| `optgroup` | `text-decoration-color`       | `rgb(0, 0, 0)`        | `oklch(0.208 0.042 265.755)`                                                                                                                                                            |
++| `pre`      | `tab-size`                    | `8`                   | `4`                                                                                                                                                                                     |
++| `progress` | `border-bottom-style`         | `none`                | `solid`                                                                                                                                                                                 |
++| `progress` | `border-left-style`           | `none`                | `solid`                                                                                                                                                                                 |
++| `progress` | `border-right-style`          | `none`                | `solid`                                                                                                                                                                                 |
++| `progress` | `border-top-style`            | `none`                | `solid`                                                                                                                                                                                 |
++| `progress` | `tab-size`                    | `8`                   | `4`                                                                                                                                                                                     |
++| `samp`     | `border-bottom-style`         | `none`                | `solid`                                                                                                                                                                                 |
++| `samp`     | `border-left-style`           | `none`                | `solid`                                                                                                                                                                                 |
++| `samp`     | `border-right-style`          | `none`                | `solid`                                                                                                                                                                                 |
++| `samp`     | `border-top-style`            | `none`                | `solid`                                                                                                                                                                                 |
++| `samp`     | `tab-size`                    | `8`                   | `4`                                                                                                                                                                                     |
++| `select`   | `background-color`            | `rgb(239, 239, 239)`  | `rgba(0, 0, 0, 0)`                                                                                                                                                                      |
++| `select`   | `border-bottom-color`         | `rgb(118, 118, 118)`  | `oklch(0.208 0.042 265.755)`                                                                                                                                                            |
++| `select`   | `border-bottom-width`         | `1px`                 | `0px`                                                                                                                                                                                   |
++| `select`   | `border-left-color`           | `rgb(118, 118, 118)`  | `oklch(0.208 0.042 265.755)`                                                                                                                                                            |
++| `select`   | `border-left-width`           | `1px`                 | `0px`                                                                                                                                                                                   |
++| `select`   | `border-right-color`          | `rgb(118, 118, 118)`  | `oklch(0.208 0.042 265.755)`                                                                                                                                                            |
++| `select`   | `border-right-width`          | `1px`                 | `0px`                                                                                                                                                                                   |
++| `select`   | `border-top-color`            | `rgb(118, 118, 118)`  | `oklch(0.208 0.042 265.755)`                                                                                                                                                            |
++| `select`   | `border-top-width`            | `1px`                 | `0px`                                                                                                                                                                                   |
++| `select`   | `color`                       | `rgb(0, 0, 0)`        | `oklch(0.208 0.042 265.755)`                                                                                                                                                            |
++| `select`   | `height`                      | `20px`                | `18px`                                                                                                                                                                                  |
++| `select`   | `tab-size`                    | `8`                   | `4`                                                                                                                                                                                     |
++| `select`   | `text-decoration-color`       | `rgb(0, 0, 0)`        | `oklch(0.208 0.042 265.755)`                                                                                                                                                            |
++| `small`    | `border-bottom-style`         | `none`                | `solid`                                                                                                                                                                                 |
++| `small`    | `border-left-style`           | `none`                | `solid`                                                                                                                                                                                 |
++| `small`    | `border-right-style`          | `none`                | `solid`                                                                                                                                                                                 |
++| `small`    | `border-top-style`            | `none`                | `solid`                                                                                                                                                                                 |
++| `small`    | `tab-size`                    | `8`                   | `4`                                                                                                                                                                                     |
++| `strong`   | `border-bottom-style`         | `none`                | `solid`                                                                                                                                                                                 |
++| `strong`   | `border-left-style`           | `none`                | `solid`                                                                                                                                                                                 |
++| `strong`   | `border-right-style`          | `none`                | `solid`                                                                                                                                                                                 |
++| `strong`   | `border-top-style`            | `none`                | `solid`                                                                                                                                                                                 |
++| `strong`   | `tab-size`                    | `8`                   | `4`                                                                                                                                                                                     |
++| `sub`      | `border-bottom-style`         | `none`                | `solid`                                                                                                                                                                                 |
++| `sub`      | `border-left-style`           | `none`                | `solid`                                                                                                                                                                                 |
++| `sub`      | `border-right-style`          | `none`                | `solid`                                                                                                                                                                                 |
++| `sub`      | `border-top-style`            | `none`                | `solid`                                                                                                                                                                                 |
++| `sub`      | `tab-size`                    | `8`                   | `4`                                                                                                                                                                                     |
++| `summary`  | `border-bottom-style`         | `none`                | `solid`                                                                                                                                                                                 |
++| `summary`  | `border-left-style`           | `none`                | `solid`                                                                                                                                                                                 |
++| `summary`  | `border-right-style`          | `none`                | `solid`                                                                                                                                                                                 |
++| `summary`  | `border-top-style`            | `none`                | `solid`                                                                                                                                                                                 |
++| `summary`  | `tab-size`                    | `8`                   | `4`                                                                                                                                                                                     |
++| `sup`      | `border-bottom-style`         | `none`                | `solid`                                                                                                                                                                                 |
++| `sup`      | `border-left-style`           | `none`                | `solid`                                                                                                                                                                                 |
++| `sup`      | `border-right-style`          | `none`                | `solid`                                                                                                                                                                                 |
++| `sup`      | `border-top-style`            | `none`                | `solid`                                                                                                                                                                                 |
++| `sup`      | `tab-size`                    | `8`                   | `4`                                                                                                                                                                                     |
++| `svg`      | `border-bottom-style`         | `none`                | `solid`                                                                                                                                                                                 |
++| `svg`      | `border-left-style`           | `none`                | `solid`                                                                                                                                                                                 |
++| `svg`      | `border-right-style`          | `none`                | `solid`                                                                                                                                                                                 |
++| `svg`      | `border-top-style`            | `none`                | `solid`                                                                                                                                                                                 |
++| `svg`      | `display`                     | `inline`              | `block`                                                                                                                                                                                 |
++| `svg`      | `tab-size`                    | `8`                   | `4`                                                                                                                                                                                     |
++| `table`    | `border-bottom-color`         | `rgb(128, 128, 128)`  | `oklch(0.208 0.042 265.755)`                                                                                                                                                            |
++| `table`    | `border-bottom-style`         | `none`                | `solid`                                                                                                                                                                                 |
++| `table`    | `border-left-color`           | `rgb(128, 128, 128)`  | `oklch(0.208 0.042 265.755)`                                                                                                                                                            |
++| `table`    | `border-left-style`           | `none`                | `solid`                                                                                                                                                                                 |
++| `table`    | `border-right-color`          | `rgb(128, 128, 128)`  | `oklch(0.208 0.042 265.755)`                                                                                                                                                            |
++| `table`    | `border-right-style`          | `none`                | `solid`                                                                                                                                                                                 |
++| `table`    | `border-top-color`            | `rgb(128, 128, 128)`  | `oklch(0.208 0.042 265.755)`                                                                                                                                                            |
++| `table`    | `border-top-style`            | `none`                | `solid`                                                                                                                                                                                 |
++| `table`    | `tab-size`                    | `8`                   | `4`                                                                                                                                                                                     |
++| `textarea` | `background-color`            | `rgb(255, 255, 255)`  | `rgba(0, 0, 0, 0)`                                                                                                                                                                      |
++| `textarea` | `border-bottom-color`         | `rgb(118, 118, 118)`  | `oklch(0.208 0.042 265.755)`                                                                                                                                                            |
++| `textarea` | `border-bottom-width`         | `1px`                 | `0px`                                                                                                                                                                                   |
++| `textarea` | `border-left-color`           | `rgb(118, 118, 118)`  | `oklch(0.208 0.042 265.755)`                                                                                                                                                            |
++| `textarea` | `border-left-width`           | `1px`                 | `0px`                                                                                                                                                                                   |
++| `textarea` | `border-right-color`          | `rgb(118, 118, 118)`  | `oklch(0.208 0.042 265.755)`                                                                                                                                                            |
++| `textarea` | `border-right-width`          | `1px`                 | `0px`                                                                                                                                                                                   |
++| `textarea` | `border-top-color`            | `rgb(118, 118, 118)`  | `oklch(0.208 0.042 265.755)`                                                                                                                                                            |
++| `textarea` | `border-top-width`            | `1px`                 | `0px`                                                                                                                                                                                   |
++| `textarea` | `color`                       | `rgb(0, 0, 0)`        | `oklch(0.208 0.042 265.755)`                                                                                                                                                            |
++| `textarea` | `height`                      | `48px`                | `42px`                                                                                                                                                                                  |
++| `textarea` | `padding-block-end`           | `2px`                 | `0px`                                                                                                                                                                                   |
++| `textarea` | `padding-block-start`         | `2px`                 | `0px`                                                                                                                                                                                   |
++| `textarea` | `padding-bottom`              | `2px`                 | `0px`                                                                                                                                                                                   |
++| `textarea` | `padding-inline-start`        | `2px`                 | `0px`                                                                                                                                                                                   |
++| `textarea` | `padding-left`                | `2px`                 | `0px`                                                                                                                                                                                   |
++| `textarea` | `padding-right`               | `2px`                 | `0px`                                                                                                                                                                                   |
++| `textarea` | `padding-top`                 | `2px`                 | `0px`                                                                                                                                                                                   |
++| `textarea` | `tab-size`                    | `8`                   | `4`                                                                                                                                                                                     |
++| `textarea` | `text-decoration-color`       | `rgb(0, 0, 0)`        | `oklch(0.208 0.042 265.755)`                                                                                                                                                            |
++| `ul`       | `border-bottom-style`         | `none`                | `solid`                                                                                                                                                                                 |
++| `ul`       | `border-left-style`           | `none`                | `solid`                                                                                                                                                                                 |
++| `ul`       | `border-right-style`          | `none`                | `solid`                                                                                                                                                                                 |
++| `ul`       | `border-top-style`            | `none`                | `solid`                                                                                                                                                                                 |
++| `ul`       | `tab-size`                    | `8`                   | `4`                                                                                                                                                                                     |
++
+ ### Scripts
+ 
+ Each script names the styles target alone, and the `src` chain it belongs to runs it after the core
+@@ -2528,8 +2774,11 @@ The style proofs bind the cascade to the registry and to the calibration; see
+ Those proofs resolve declarations against the cascade's layer order; § Styles states that order and
+ names the partial that declares it.
+ The Tailwind proofs compile each profile through the installed PostCSS plugin and load it over the
+-shipped cascade; see [stylesheet profiles](../tests/tailwind/profiles.test.ts). § Tailwind names
+-the profiles and the recipe each one carries.
++shipped cascade; see [stylesheet profiles](../tests/tailwind/profiles.test.ts),
++[the consumer pairing](../tests/tailwind/shared.test.ts), and
++[the preflight pairing](../tests/tailwind/preflight.test.ts). § Tailwind names the profiles, the
++recipe each one carries, the shared class names that recipe withholds, and every property preflight
++moves.
+ 
+ The conformance proofs pin the official release and its artifact digests, reject runtime boundary
+ escapes, check shipped CSS vocabulary, compare each live Button step with its fixture, and
+diff --git a/tests/fixtures/tailwind/consumer.css b/tests/fixtures/tailwind/consumer.css
+new file mode 100644
+index 0000000..d88a8bc
+--- /dev/null
++++ b/tests/fixtures/tailwind/consumer.css
+@@ -0,0 +1,7 @@
++@layer theme, reset, base, elements, components, utilities;
++@import 'tailwindcss/theme.css' layer(theme);
++@import 'tailwindcss/utilities.css' layer(utilities);
++@import '@orkestrel/veneer/styles';
++/* Your own markup directory. */
++@source './markup.html';
++@source not inline("caption-bottom caption-top col-auto col-1 col-2 col-3 col-4 col-5 col-6 col-7 col-8 col-9 col-10 col-11 col-12 container table");
+diff --git a/tests/fixtures/tailwind/markup.html b/tests/fixtures/tailwind/markup.html
+new file mode 100644
+index 0000000..728a69f
+--- /dev/null
++++ b/tests/fixtures/tailwind/markup.html
+@@ -0,0 +1,38 @@
++<div class="container">
++	<div class="row">
++		<div class="col-1">One</div>
++		<div class="col-2">Two</div>
++		<div class="col-3">Three</div>
++		<div class="col-4">Four</div>
++		<div class="col-5">Five</div>
++		<div class="col-6">Six</div>
++		<div class="col-7">Seven</div>
++		<div class="col-8">Eight</div>
++		<div class="col-9">Nine</div>
++		<div class="col-10">Ten</div>
++		<div class="col-11">Eleven</div>
++		<div class="col-12">Twelve</div>
++		<div class="col-auto">Auto</div>
++	</div>
++	<table class="table">
++		<caption class="caption-top">
++			Named above the rows
++		</caption>
++		<tbody>
++			<tr>
++				<td>Cell</td>
++			</tr>
++		</tbody>
++	</table>
++	<table class="table">
++		<caption class="caption-bottom">
++			Named below the rows
++		</caption>
++		<tbody>
++			<tr>
++				<td>Cell</td>
++			</tr>
++		</tbody>
++	</table>
++	<button type="button" class="btn px-8">Action</button>
++</div>
+diff --git a/tests/setupBrowser.test.ts b/tests/setupBrowser.test.ts
+index 16b76d6..a0b4c3d 100644
+--- a/tests/setupBrowser.test.ts
++++ b/tests/setupBrowser.test.ts
+@@ -33,6 +33,7 @@ import {
+ 	BUTTON_CLASS,
+ 	collectClassNames,
+ 	collectCustomProperties,
++	collectDeclaredProperties,
+ 	collectFilledLayers,
+ 	collectInlineSources,
+ 	collectLayer,
+@@ -43,6 +44,7 @@ import {
+ 	collectNestedRules,
+ 	collectScopeProperties,
+ 	collectSelectors,
++	collectSharedNames,
+ 	collectSheetRules,
+ 	describeSubject,
+ 	driveOracle,
+@@ -56,6 +58,7 @@ import {
+ 	PROBE_CASCADE,
+ 	pressOracleKeys,
+ 	readCascadeSheet,
++	readComputedSnapshot,
+ 	readLayerStatement,
+ 	recordListeners,
+ 	recordEvents,
+@@ -411,6 +414,7 @@ describe('browser setup', () => {
+ 				'buildOracleComparison',
+ 				'collectClassNames',
+ 				'collectCustomProperties',
++				'collectDeclaredProperties',
+ 				'collectFilledLayers',
+ 				'collectInlineSources',
+ 				'collectLayer',
+@@ -421,6 +425,7 @@ describe('browser setup', () => {
+ 				'collectPainted',
+ 				'collectScopeProperties',
+ 				'collectSelectors',
++				'collectSharedNames',
+ 				'collectSheetRules',
+ 				'describeSubject',
+ 				'driveOracle',
+@@ -430,6 +435,7 @@ describe('browser setup', () => {
+ 				'measureVariation',
+ 				'pressOracleKeys',
+ 				'readCascadeSheet',
++				'readComputedSnapshot',
+ 				'readLayerStatement',
+ 				'recordListeners',
+ 				'recordEvents',
+@@ -1349,6 +1355,47 @@ describe('scanPositionalPairs', () => {
+ 			'details > summary',
+ 		])
+ 	})
++	it('reads the class names two stylesheet groups both declare', () => {
++		const shipped = loadSheet('@layer components { .col-1, .container { margin: 0 } }')
++		const generated = loadSheet('@layer utilities { .container, .px-8 { padding: 0 } }')
++		// The reading is a name intersection rather than a rule comparison, because the question a
++		// pairing asks is which declaration a page carrying that class resolves to.
++		expect(collectSharedNames([generated], [shipped])).toEqual(['container'])
++		expect(collectSharedNames([shipped], [generated])).toEqual(['container'])
++		expect(collectSharedNames([generated], [])).toEqual([])
++	})
++
++	it('reads the properties a rule list declares, apart from the custom ones', () => {
++		const sheet = loadSheet(
++			'@layer base { .vn-probe-one { margin-top: 0; --vn-probe-held: 1px } .vn-probe-two { margin-top: 1px; tab-size: 4 } }',
++		)
++		const rules = collectLayerRules('base', [sheet])
++		// A property two rules declare is reported once, and a custom property is left out: the
++		// population is the longhands a computed style resolves for an element.
++		expect(collectDeclaredProperties(rules)).toEqual(['margin-top', 'tab-size'])
++		expect(collectCustomProperties([sheet])).toEqual(['--vn-probe-held'])
++		expect(collectDeclaredProperties([])).toEqual([])
++	})
++
++	it("copies an element's resolved values out of the live computed style", () => {
++		const host = scene.mount('<p class="vn-probe-subject">Text</p>')
++		const subject = requireValue(host.querySelector('p'), 'The fixture rendered no paragraph')
++		const named = readComputedSnapshot(subject, ['margin-top', 'tab-size'])
++		expect([...named.keys()]).toEqual(['margin-top', 'tab-size'])
++		// The map is a copy, which is the whole point: the live declaration object reports the
++		// element's current state on every read, so a before-and-after comparison taken from it
++		// would compare each value with itself.
++		scene.load('@layer components { .vn-probe-subject { margin-top: 13px } }')
++		expect(readComputedSnapshot(subject, ['margin-top']).get('margin-top')).toBe('13px')
++		expect(named.get('margin-top')).not.toBe('13px')
++		// The default population is every non-custom longhand the computed style enumerates, which
++		// is the widest reading a comparison can take.
++		const every = readComputedSnapshot(subject)
++		expect([...every.keys()].filter((property) => property.startsWith('--'))).toEqual([])
++		expect(every.get('margin-top')).toBe('13px')
++		expect([...every.keys()].length).toBeGreaterThan(named.size)
++	})
++
+ 	it('reads a rule that joins a tag to itself', () => {
+ 		const planted = requireValue(
+ 			scene.load('@layer elements { li + li { margin: 0 } }').sheet,
+diff --git a/tests/setupBrowser.ts b/tests/setupBrowser.ts
+index fcc8ee0..a7a06e3 100644
+--- a/tests/setupBrowser.ts
++++ b/tests/setupBrowser.ts
+@@ -1547,6 +1547,89 @@ export function collectClassNames(
+ 	return names
+ }
+ 
++/**
++ * Collects the class names two groups of stylesheets both declare rules for.
++ *
++ * @param sheets - The stylesheets whose order the reading is reported in, such as the compiled
++ *   Tailwind instrument's.
++ * @param others - The stylesheets the first group's names are held against, such as the shipped
++ *   cascade's.
++ * @returns Each name {@link collectClassNames} reads from both groups, in the first group's
++ *   declaration order.
++ *
++ * @remarks
++ * This is the shared-name population the Tailwind pairing rules are written about: a name Veneer
++ * declares that Tailwind also generates. It is derived from what each side actually declares
++ * rather than written down, so a name a release ships joins it without anyone refreshing a list,
++ * and a proof asserting a floor of known members is what keeps a derivation that found nothing
++ * from reading as a clean result.
++ *
++ * A name one side declares only inside a selector the other never writes is still shared, because
++ * the population is names rather than rules: the question a pairing asks is which declaration a
++ * page carrying that class resolves to.
++ */
++export function collectSharedNames(
++	sheets: Iterable<CSSStyleSheet>,
++	others: Iterable<CSSStyleSheet>,
++): readonly string[] {
++	const declared = collectClassNames(others)
++	return collectClassNames(sheets).filter((name) => declared.includes(name))
++}
++
++/**
++ * Collects the properties a rule list's style rules declare, apart from custom properties.
++ *
++ * @param rules - The rules to read, such as the ones {@link collectLayerRules} returns for a
++ *   layer block.
++ * @returns Each declared property name, in declaration order, reported once at its first
++ *   position.
++ *
++ * @remarks
++ * {@link collectCustomProperties} answers the neighbouring question about a whole document's
++ * custom properties. This takes a rule list and leaves the custom ones out, because the population
++ * a reset comparison walks is the properties a computed style resolves for an element: a custom
++ * property carries no computed longhand of its own to compare.
++ *
++ * A grouping rule contributes nothing itself, so a list that carries a media query alongside its
++ * children reports each child's properties once.
++ */
++export function collectDeclaredProperties(rules: Iterable<CSSRule>): readonly string[] {
++	const names: string[] = []
++	for (const rule of rules) {
++		if (!(rule instanceof CSSStyleRule)) continue
++		for (const property of rule.style) {
++			if (!property.startsWith('--') && !names.includes(property)) names.push(property)
++		}
++	}
++	return names
++}
++
++/**
++ * Reads one element's resolved values as a map a later reading is compared against.
++ *
++ * @param element - The element to read, mounted and laid out.
++ * @param properties - The property names to read. Every non-custom property the computed style
++ *   enumerates is the default, which is the widest reading a comparison can take.
++ * @returns Each named property's resolved value, keyed by the property.
++ *
++ * @remarks
++ * The map is taken rather than the live `CSSStyleDeclaration` object, because that object reports
++ * the element's current state on every read: a reading taken before a stylesheet loads and
++ * compared with one taken after would compare the same values with themselves. Copying the values
++ * out is what makes the before-and-after comparison a comparison.
++ *
++ * A custom property is left out of the default population, because a computed style enumerates
++ * only the ones the element resolves and the comparison is about the longhands a reset moves.
++ */
++export function readComputedSnapshot(
++	element: Element,
++	properties?: readonly string[],
++): ReadonlyMap<string, string> {
++	const computed = getComputedStyle(element)
++	const names = properties ?? Array.from(computed).filter((name) => !name.startsWith('--'))
++	return new Map(names.map((name) => [name, computed.getPropertyValue(name)]))
++}
++
+ /** Carries one `@source inline(…)` directive a stylesheet's own bytes declare. */
+ export interface InlineSource {
+ 	readonly excluded: boolean
+diff --git a/tests/setupServer.test.ts b/tests/setupServer.test.ts
+index 1837b48..7108981 100644
+--- a/tests/setupServer.test.ts
++++ b/tests/setupServer.test.ts
+@@ -51,7 +51,6 @@ import {
+ 	computeArtifactDigest,
+ 	describeAddition,
+ 	describeDeparture,
+-	describeIncompleteRow,
+ 	describeSite,
+ 	describeValueCell,
+ 	extractSpecifiers,
+@@ -63,7 +62,6 @@ import {
+ 	readAdditions,
+ 	readCascadeBlocks,
+ 	readCompoundTag,
+-	readTableCells,
+ 	readValueCell,
+ 	scanLedgerDrift,
+ 	scanShippedDeferrals,
+@@ -88,8 +86,6 @@ import {
+ 	scanForbiddenDependency,
+ 	scanForbiddenSource,
+ 	scanStyleBlocks,
+-	selectSubsectionTables,
+-	selectTableColumns,
+ 	splitTopLevelCompounds,
+ } from './setupServer.js'
+ 
+@@ -312,7 +308,6 @@ describe('server setup', () => {
+ 			'computeArtifactDigest',
+ 			'describeAddition',
+ 			'describeDeparture',
+-			'describeIncompleteRow',
+ 			'describeSite',
+ 			'describeValueCell',
+ 			'extractSpecifiers',
+@@ -338,7 +333,6 @@ describe('server setup', () => {
+ 			'readManifestMember',
+ 			'readOracleControl',
+ 			'readOracleInventory',
+-			'readTableCells',
+ 			'readValueCell',
+ 			'recordButtonOracle',
+ 			'scanCompatibilityPresence',
+@@ -351,8 +345,6 @@ describe('server setup', () => {
+ 			'scanOracleObligation',
+ 			'scanShippedDeferrals',
+ 			'scanStyleBlocks',
+-			'selectSubsectionTables',
+-			'selectTableColumns',
+ 			'splitTopLevelCompounds',
+ 		])
+ 	})
+@@ -816,30 +808,6 @@ describe('server setup', () => {
+ 		}
+ 	})
+ 
+-	it('names the first filled column, and names no column when every cell is empty', () => {
+-		expect(
+-			describeIncompleteRow(
+-				'Compatibility',
+-				2,
+-				new Map([
+-					['Component', ''],
+-					['Kind', 'method'],
+-					['Obligation', 'Toggle active'],
+-				]),
+-			),
+-		).toBe('Compatibility row 3 (Kind: method): missing required cell')
+-		expect(
+-			describeIncompleteRow(
+-				'Deferral',
+-				0,
+-				new Map([
+-					['Name', ''],
+-					['Owner', ''],
+-				]),
+-			),
+-		).toBe('Deferral row 1: missing required cell')
+-	})
+-
+ 	it('reads the built cascade and refuses a missing artifact', () => {
+ 		const scratch = createScratch()
+ 		try {
+@@ -1465,19 +1433,6 @@ describe('server setup', () => {
+ 			expect(readAdditions(path).map(describeAddition)).toEqual([
+ 				'btn | .btn-tertiary | — | selector',
+ 			])
+-			expect(
+-				selectSubsectionTables(source, 'Tokens', 'Additions', 'Addition').map(
+-					(table) => table.rows.length,
+-				),
+-			).toEqual([1])
+-			const [table] = selectSubsectionTables(source, 'Tokens', 'Additions', 'Addition')
+-			expect(
+-				table === undefined ? [] : selectTableColumns(table, ['Category', 'Name'], 'Addition'),
+-			).toEqual([3, 1])
+-			expect(table === undefined ? [] : readTableCells(table.rows[0] ?? [], [1, 3])).toEqual([
+-				'.btn-tertiary',
+-				'selector',
+-			])
+ 		} finally {
+ 			scratch.destroy()
+ 		}
+diff --git a/tests/setupServer.ts b/tests/setupServer.ts
+index b21a48b..40dd966 100644
+--- a/tests/setupServer.ts
++++ b/tests/setupServer.ts
+@@ -8,16 +8,10 @@
+ // cascade through `readBootstrapCascade`. A helper added here runs under every one of them.
+ 
+ import type { ESTree } from 'vite'
+-import type { InlineNode, TableNode } from '@orkestrel/markdown'
+ import type { Locator } from 'playwright'
+ import { isRecord, parseJSON } from '@orkestrel/contract'
+-import {
+-	createGuide,
+-	extractCellText,
+-	findColumnIndex,
+-	selectSectionBlocks,
+-} from '@orkestrel/guide'
+-import { createMarkdown, flattenText } from '@orkestrel/markdown'
++import { createGuide, extractCellText, selectSectionBlocks } from '@orkestrel/guide'
++import { createMarkdown } from '@orkestrel/markdown'
+ import { createScratch, resolveContained } from '@orkestrel/test/server'
+ import { createHash } from 'node:crypto'
+ import { createRequire } from 'node:module'
+@@ -29,10 +23,14 @@ import { chromium } from 'playwright'
+ import { AtRule, parse } from 'postcss'
+ import { resolveBrowser, resolvePinnedBrowser } from '../configs/browsers.js'
+ import {
++	describeIncompleteRow,
+ 	MANDATED_TAG_PAIRS,
+ 	matchesCSSWhitespace,
+ 	normalizeComplexSelector,
+ 	readIdentifier,
++	readTableCells,
++	selectSubsectionTables,
++	selectTableColumns,
+ 	walkSelector,
+ } from './setupStyles.js'
+ import { compile } from 'sass'
+@@ -920,38 +918,6 @@ export function computeArtifactDigest(path: string): string {
+ 	return createHash('sha256').update(readFileSync(path)).digest('hex')
+ }
+ 
+-/**
+- * Describes a ledger row that leaves a required cell empty.
+- *
+- * @param subject - The ledger the row belongs to, such as `Compatibility` or `Deferral`.
+- * @param index - The row's position in its own table, counted from zero.
+- * @param cells - Each required column's header and the text the row put under it, in column
+- *   order.
+- * @returns The refusal message, naming the row by its one-based position and by the first column
+- *   it did fill.
+- *
+- * @remarks
+- * The cell a row omits can be the one that identifies it, so a label built from that cell alone
+- * reads as a refusal of a row the table does not have. The position names the row whatever it
+- * omitted, and the first filled column says which cell the reader did get. Naming the column
+- * beside the cell is what keeps `btn` from reading as the missing obligation.
+- *
+- * @example
+- * ```ts
+- * describeIncompleteRow('Compatibility', 2, new Map([['Component', 'btn'], ['Obligation', '']]))
+- * // 'Compatibility row 3 (Component: btn): missing required cell'
+- * ```
+- */
+-export function describeIncompleteRow(
+-	subject: string,
+-	index: number,
+-	cells: ReadonlyMap<string, string>,
+-): string {
+-	const filled = [...cells].find(([, text]) => text !== '')
+-	const named = filled === undefined ? '' : ` (${filled[0]}: ${filled[1]})`
+-	return `${subject} row ${String(index + 1)}${named}: missing required cell`
+-}
+-
+ /**
+  * Reads the compatibility ledger through the guide's section and table projections.
+  * @param path - The Markdown document to read; defaults to the package guide.
+@@ -1047,81 +1013,6 @@ export function readDeferrals(
+ 	return rows
+ }
+ 
+-/**
+- * Selects the tables written under one level-3 subsection of a guide section.
+- *
+- * @param source - The Markdown document's text.
+- * @param section - The level-2 section holding the subsection.
+- * @param subsection - The level-3 heading whose tables the caller reads.
+- * @param subject - The ledger name each refusal names, such as `Deferral` or `Departure`.
+- * @returns Every table between that heading and the next level-3 heading, in document order.
+- * @throws When the subsection is missing, or carries no table.
+- *
+- * @remarks
+- * The walk stops at the following level-3 heading, so a table under another subsection of the same
+- * section belongs to that subsection alone and a second table of the same title elsewhere in the
+- * guide is not read.
+- */
+-export function selectSubsectionTables(
+-	source: string,
+-	section: string,
+-	subsection: string,
+-	subject: string,
+-): readonly TableNode[] {
+-	const tables: TableNode[] = []
+-	let active = false
+-	let found = false
+-	for (const block of selectSectionBlocks(createMarkdown(source).document, section)) {
+-		if (block.element === 'heading' && block.level === 3) {
+-			if (active) break
+-			active = flattenText(block).trim() === subsection
+-			if (active) found = true
+-			continue
+-		}
+-		if (active && block.element === 'table') tables.push(block)
+-	}
+-	if (!found)
+-		throw new Error(`${subject} row <header>: missing ${section} / ${subsection} subsection`)
+-	if (tables.length === 0) throw new Error(`${subject} row <header>: missing table`)
+-	return tables
+-}
+-
+-/**
+- * Locates each named column of one guide table.
+- *
+- * @param table - The table to read.
+- * @param headers - The required column headers, in the order the reader takes their cells.
+- * @param subject - The ledger name each refusal names.
+- * @returns Each header's column index, in the order the headers were named.
+- * @throws When the table carries no column of one of those headers.
+- */
+-export function selectTableColumns(
+-	table: TableNode,
+-	headers: readonly string[],
+-	subject: string,
+-): readonly number[] {
+-	return headers.map((header) => {
+-		const index = findColumnIndex(table, header)
+-		if (index === undefined) throw new Error(`${subject} row <header>: missing ${header} column`)
+-		return index
+-	})
+-}
+-
+-/**
+- * Reads one table row's named cells as flattened text.
+- *
+- * @param row - The row's cells, in column order.
+- * @param columns - The column indexes to read, as {@link selectTableColumns} returns them.
+- * @returns Each cell's text with its markup flattened and its padding trimmed, so a code span
+- *   reads as the token it wraps.
+- */
+-export function readTableCells(
+-	row: ReadonlyArray<readonly InlineNode[]>,
+-	columns: readonly number[],
+-): readonly string[] {
+-	return columns.map((column) => (row[column] ?? []).map(flattenText).join('').trim())
+-}
+-
+ /**
+  * Reads the measured departure ledger from its guide's Departures subsection.
+  *
+diff --git a/tests/setupStyles.test.ts b/tests/setupStyles.test.ts
+index 884b04d..b18ea52 100644
+--- a/tests/setupStyles.test.ts
++++ b/tests/setupStyles.test.ts
+@@ -9,6 +9,7 @@ import { describe, expect, it } from 'vitest'
+ import oracle from './fixtures/oracle/inventory.json'
+ import {
+ 	BOOTSTRAP_VERSION,
++	LEDGER_GUIDE,
+ 	readBootstrapCascade,
+ 	readBuiltCascade,
+ 	readDeferrals,
+@@ -82,13 +83,16 @@ import {
+ 	TYPE_MARK_TOKEN_CASES,
+ 	TYPE_TEXT_CASES,
+ 	VENEER_GUIDE_PATH,
++	collectFencedBlocks,
+ 	collectGridVocabulary,
+ 	collectReferenceRows,
+ 	collectRowTokens,
++	collectTypeSelectors,
+ 	collectTokenNames,
+ 	collectTripletGroups,
+ 	compileBreakpointRamp,
+ 	extractBootstrapVariables,
++	describeIncompleteRow,
+ 	extractShadowLayers,
+ 	matchesCSSWhitespace,
+ 	normalizeComplexSelector,
+@@ -96,6 +100,10 @@ import {
+ 	parseMediaWidth,
+ 	readEscape,
+ 	readIdentifier,
++	readPreflightDepartures,
++	readTableCells,
++	selectSubsectionTables,
++	selectTableColumns,
+ 	splitCellSpans,
+ 	splitTopLevelList,
+ 	splitTopLevelValues,
+@@ -182,12 +190,15 @@ describe('styles setup', () => {
+ 				'TYPE_TEXT_CASES',
+ 				'UNMAPPED_TOKENS',
+ 				'VENEER_GUIDE_PATH',
++				'collectFencedBlocks',
+ 				'collectGridVocabulary',
+ 				'collectReferenceRows',
+ 				'collectRowTokens',
+ 				'collectTokenNames',
+ 				'collectTripletGroups',
++				'collectTypeSelectors',
+ 				'compileBreakpointRamp',
++				'describeIncompleteRow',
+ 				'extractBootstrapVariables',
+ 				'extractShadowLayers',
+ 				'matchesCSSWhitespace',
+@@ -196,6 +207,10 @@ describe('styles setup', () => {
+ 				'parseMediaWidth',
+ 				'readEscape',
+ 				'readIdentifier',
++				'readPreflightDepartures',
++				'readTableCells',
++				'selectSubsectionTables',
++				'selectTableColumns',
+ 				'splitCellSpans',
+ 				'splitTopLevelList',
+ 				'splitTopLevelValues',
+@@ -1422,4 +1437,112 @@ describe('reference map refusals', () => {
+ 		expect(normalizeDeclaration('15%')).toBe(normalizeDeclaration('15.0%'))
+ 		expect(normalizeDeclaration('15%')).not.toBe(normalizeDeclaration('16%'))
+ 	})
++	it('names the first filled column, and names no column when every cell is empty', () => {
++		expect(
++			describeIncompleteRow(
++				'Compatibility',
++				2,
++				new Map([
++					['Component', ''],
++					['Kind', 'method'],
++					['Obligation', 'Toggle active'],
++				]),
++			),
++		).toBe('Compatibility row 3 (Kind: method): missing required cell')
++		expect(
++			describeIncompleteRow(
++				'Deferral',
++				0,
++				new Map([
++					['Name', ''],
++					['Owner', ''],
++				]),
++			),
++		).toBe('Deferral row 1: missing required cell')
++	})
++	it("selects one subsection's tables, their columns, and their cells", () => {
++		const source = `${LEDGER_GUIDE}\n### Other names\n\n| Component | Name | Condition | Category | Reason |\n| --- | --- | --- | --- | --- |\n| \`btn\` | \`.btn-quaternary\` | \u2014 | selector | Outside the subsection. |\n`
++		// The walk stops at the following level-3 heading, so the table under `Other names` belongs
++		// to that subsection and the reader never reaches it.
++		expect(
++			selectSubsectionTables(source, 'Tokens', 'Additions', 'Addition').map(
++				(table) => table.rows.length,
++			),
++		).toEqual([1])
++		const selected = requireValue(
++			selectSubsectionTables(source, 'Tokens', 'Additions', 'Addition')[0],
++			'The subsection states no table',
++		)
++		expect(selectTableColumns(selected, ['Category', 'Name'], 'Addition')).toEqual([3, 1])
++		expect(readTableCells(selected.rows[0] ?? [], [1, 3])).toEqual(['.btn-tertiary', 'selector'])
++		expect(() => selectSubsectionTables(source, 'Tokens', 'Absent', 'Addition')).toThrow(
++			'Addition row <header>: missing Tokens / Absent subsection',
++		)
++		expect(() => selectTableColumns(selected, ['Absent'], 'Addition')).toThrow(
++			'Addition row <header>: missing Absent column',
++		)
++	})
++	it('reads the fenced blocks of one language, and leaves every other block out', () => {
++		const source = [
++			'# Fences',
++			'',
++			'```css',
++			'.btn { color: red }',
++			'```',
++			'',
++			'```ts',
++			'const one = 1',
++			'```',
++			'',
++		].join('\n')
++		expect(collectFencedBlocks(source, 'css')).toEqual(['.btn { color: red }'])
++		expect(collectFencedBlocks(source, 'ts')).toEqual(['const one = 1'])
++		expect(collectFencedBlocks(source, 'scss')).toEqual([])
++		expect(
++			collectFencedBlocks(readFileSync(VENEER_GUIDE_PATH, 'utf8'), 'css').filter((block) =>
++				block.includes("@import 'tailwindcss/theme.css'"),
++			),
++		).toHaveLength(1)
++	})
++	it('reads the tag a compound opens with, and none where it opens with something else', () => {
++		expect(collectTypeSelectors(['h1, h2:not(p), .btn'])).toEqual(['h1', 'h2'])
++		expect(collectTypeSelectors(['*, ::before, ::after'])).toEqual([])
++		// A descendant's own tag is not read: a rule written that way treats the tag through its
++		// position rather than by its name.
++		expect(collectTypeSelectors(['ol li', 'table'])).toEqual(['ol', 'table'])
++		expect(collectTypeSelectors(['a', 'a:hover'])).toEqual(['a'])
++	})
++	it('reads the preflight departures the guide records, and refuses a table it cannot resolve', () => {
++		const rows = readPreflightDepartures(readFileSync(VENEER_GUIDE_PATH, 'utf8'))
++		expect(rows).toContainEqual({
++			tag: 'html',
++			property: 'tab-size',
++			standalone: '8',
++			preflight: '4',
++		})
++		const section = '## Styles\n\n### Tailwind\n\n'
++		const table =
++			'| Tag | Property | Standalone | Preflight |\n| --- | --- | --- | --- |\n| `a` | `tab-size` | `8` | `4` |\n'
++		expect(readPreflightDepartures(`${section}${table}`)).toEqual([
++			{ tag: 'a', property: 'tab-size', standalone: '8', preflight: '4' },
++		])
++		// The subsection carries the profile table beside this one, so a table is selected by its
++		// own columns; a table stating none of them is not this ledger.
++		expect(() =>
++			readPreflightDepartures(
++				`${section}| Profile | Entry |\n| --- | --- |\n| \`tailwind\` | The recipe. |\n`,
++			),
++		).toThrow('Preflight departure row <header>: missing table')
++		expect(() => readPreflightDepartures(`${section}${table}\n${table}`)).toThrow(
++			'Preflight departure row <header>: several tables state the columns',
++		)
++		expect(() =>
++			readPreflightDepartures(
++				`${section}| Tag | Property | Standalone | Preflight |\n| --- | --- | --- | --- |\n`,
++			),
++		).toThrow('Preflight departure row <header>: the table states no row')
++		expect(() => readPreflightDepartures(`${section}${table.replace('| `8` ', '|  ')}`)).toThrow(
++			'Preflight departure row 1 (Tag: a): missing required cell',
++		)
++	})
+ })
+diff --git a/tests/setupStyles.ts b/tests/setupStyles.ts
+index 84a3f65..1cd7022 100644
+--- a/tests/setupStyles.ts
++++ b/tests/setupStyles.ts
+@@ -6,6 +6,7 @@
+ // a helper that drives a document belongs in `tests/setupBrowser.ts`.
+ 
+ import type { AnyNode } from 'postcss'
++import type { InlineNode, TableNode } from '@orkestrel/markdown'
+ import { isRecord } from '@orkestrel/contract'
+ import { extractCellText, findColumnIndex, selectSectionBlocks } from '@orkestrel/guide'
+ import { createMarkdown, flattenText } from '@orkestrel/markdown'
+@@ -895,6 +896,225 @@ export function collectReferenceRows(
+ 	return rows
+ }
+ 
++// The guide's table and fence projections, shared by the Node ledger readers in
++// `tests/setupServer.ts` and by the browser proofs that read the guide through a `?raw` import.
++// Each one takes text or a parsed node and names no path, so the file reading stays with the
++// caller that has a filesystem.
++
++/**
++ * Describes a ledger row that leaves a required cell empty.
++ *
++ * @param subject - The ledger the row belongs to, such as `Compatibility` or `Deferral`.
++ * @param index - The row's position in its own table, counted from zero.
++ * @param cells - Each required column's header and the text the row put under it, in column
++ *   order.
++ * @returns The refusal message, naming the row by its one-based position and by the first column
++ *   it did fill.
++ *
++ * @remarks
++ * The cell a row omits can be the one that identifies it, so a label built from that cell alone
++ * reads as a refusal of a row the table does not have. The position names the row whatever it
++ * omitted, and the first filled column says which cell the reader did get. Naming the column
++ * beside the cell is what keeps `btn` from reading as the missing obligation.
++ *
++ * @example
++ * ```ts
++ * describeIncompleteRow('Compatibility', 2, new Map([['Component', 'btn'], ['Obligation', '']]))
++ * // 'Compatibility row 3 (Component: btn): missing required cell'
++ * ```
++ */
++export function describeIncompleteRow(
++	subject: string,
++	index: number,
++	cells: ReadonlyMap<string, string>,
++): string {
++	const filled = [...cells].find(([, text]) => text !== '')
++	const named = filled === undefined ? '' : ` (${filled[0]}: ${filled[1]})`
++	return `${subject} row ${String(index + 1)}${named}: missing required cell`
++}
++
++/**
++ * Selects the tables written under one level-3 subsection of a guide section.
++ *
++ * @param source - The Markdown document's text.
++ * @param section - The level-2 section holding the subsection.
++ * @param subsection - The level-3 heading whose tables the caller reads.
++ * @param subject - The ledger name each refusal names, such as `Deferral` or `Departure`.
++ * @returns Every table between that heading and the next level-3 heading, in document order.
++ * @throws When the subsection is missing, or carries no table.
++ *
++ * @remarks
++ * The walk stops at the following level-3 heading, so a table under another subsection of the same
++ * section belongs to that subsection alone and a second table of the same title elsewhere in the
++ * guide is not read.
++ */
++export function selectSubsectionTables(
++	source: string,
++	section: string,
++	subsection: string,
++	subject: string,
++): readonly TableNode[] {
++	const tables: TableNode[] = []
++	let active = false
++	let found = false
++	for (const block of selectSectionBlocks(createMarkdown(source).document, section)) {
++		if (block.element === 'heading' && block.level === 3) {
++			if (active) break
++			active = flattenText(block).trim() === subsection
++			if (active) found = true
++			continue
++		}
++		if (active && block.element === 'table') tables.push(block)
++	}
++	if (!found)
++		throw new Error(`${subject} row <header>: missing ${section} / ${subsection} subsection`)
++	if (tables.length === 0) throw new Error(`${subject} row <header>: missing table`)
++	return tables
++}
++
++/**
++ * Locates each named column of one guide table.
++ *
++ * @param table - The table to read.
++ * @param headers - The required column headers, in the order the reader takes their cells.
++ * @param subject - The ledger name each refusal names.
++ * @returns Each header's column index, in the order the headers were named.
++ * @throws When the table carries no column of one of those headers.
++ */
++export function selectTableColumns(
++	table: TableNode,
++	headers: readonly string[],
++	subject: string,
++): readonly number[] {
++	return headers.map((header) => {
++		const index = findColumnIndex(table, header)
++		if (index === undefined) throw new Error(`${subject} row <header>: missing ${header} column`)
++		return index
++	})
++}
++
++/**
++ * Reads one table row's named cells as flattened text.
++ *
++ * @param row - The row's cells, in column order.
++ * @param columns - The column indexes to read, as {@link selectTableColumns} returns them.
++ * @returns Each cell's text with its markup flattened and its padding trimmed, so a code span
++ *   reads as the token it wraps.
++ */
++export function readTableCells(
++	row: ReadonlyArray<readonly InlineNode[]>,
++	columns: readonly number[],
++): readonly string[] {
++	return columns.map((column) => (row[column] ?? []).map(flattenText).join('').trim())
++}
++
++/**
++ * Collects the fenced blocks a Markdown document writes in one language.
++ *
++ * @param source - The Markdown document's text.
++ * @param language - The info string a block opens with, such as `css`.
++ * @returns Each matching block's verbatim content in document order, without its fences.
++ *
++ * @remarks
++ * The blocks are read through the installed Markdown parser rather than by splitting the document
++ * on its fence marks, so a fence inside another block and an info string carrying more than the
++ * language are the parser's question rather than this reader's. A proof holding a recipe in the
++ * guide equal to the file that executes it compares the block this returns, so prose naming the
++ * same directive is outside the comparison.
++ */
++export function collectFencedBlocks(source: string, language: string): readonly string[] {
++	const blocks: string[] = []
++	for (const node of createMarkdown(source).walk()) {
++		if (node.element === 'codeBlock' && node.lang === language) blocks.push(node.code)
++	}
++	return blocks
++}
++
++/**
++ * Collects the tags a selector list names with a type selector.
++ *
++ * @param selectors - The selector texts to read, such as the ones a layer's style rules declare.
++ * @returns Each tag named by the leading type selector of a complex selector in one of those
++ *   lists, distinct and in reading order.
++ *
++ * @remarks
++ * The reading is the leading compound's own identifier, through the grammar
++ * {@link walkSelector} states and {@link readIdentifier} decodes, so `h1:not(p)` names `h1`,
++ * `.btn` and `::backdrop` and `*` name none, and a descendant's tag in `ol li` is not read: a rule
++ * written that way treats `li` through its position rather than by its name, which is the
++ * distinction `ELEMENT_TAGS` and the elements layer are written on.
++ */
++export function collectTypeSelectors(selectors: readonly string[]): readonly string[] {
++	const tags: string[] = []
++	for (const selector of selectors) {
++		for (const complex of splitTopLevelList(selector)) {
++			const identifier = readIdentifier(walkSelector(complex), 0)
++			if (identifier !== undefined && !tags.includes(identifier.text)) tags.push(identifier.text)
++		}
++	}
++	return tags
++}
++
++/** Carries one preflight departure row: a tag and the property each profile resolves for it. */
++export interface PreflightDeparture {
++	/** Holds the tag the row's first cell names. */
++	readonly tag: string
++	/** Holds the property whose computed value the row records. */
++	readonly property: string
++	/** Holds the value the standalone document resolves for that pair. */
++	readonly standalone: string
++	/** Holds the value the preflight profile resolves for it. */
++	readonly preflight: string
++}
++
++/**
++ * Reads the preflight departure table from the guide's Tailwind subsection.
++ *
++ * @param source - The Markdown document's text.
++ * @returns Each recorded pair in document order.
++ * @throws When the subsection carries no table of those columns, carries several, states no row,
++ *   or writes a row with a cell missing.
++ *
++ * @remarks
++ * The subsection carries the profile table beside this one, so the table is selected by its own
++ * columns rather than by its position. Several such tables are refused rather than concatenated:
++ * a proof holding the recorded pairs equal to the measured ones cannot tell a second table from a
++ * first one that grew, and a split record is how a departure hides.
++ */
++export function readPreflightDepartures(source: string): readonly PreflightDeparture[] {
++	const headers = ['Tag', 'Property', 'Standalone', 'Preflight']
++	const subject = 'Preflight departure'
++	const tables = selectSubsectionTables(source, 'Styles', 'Tailwind', subject).filter((table) =>
++		headers.every((header) => findColumnIndex(table, header) !== undefined),
++	)
++	const [table] = tables
++	if (table === undefined) throw new Error(`${subject} row <header>: missing table`)
++	if (tables.length > 1)
++		throw new Error(`${subject} row <header>: several tables state the columns`)
++	if (table.rows.length === 0) throw new Error(`${subject} row <header>: the table states no row`)
++	const columns = selectTableColumns(table, headers, subject)
++	const rows: PreflightDeparture[] = []
++	for (const [position, row] of table.rows.entries()) {
++		const [tag, property, standalone, preflight] = readTableCells(row, columns)
++		if (!tag || !property || !standalone || !preflight) {
++			throw new Error(
++				describeIncompleteRow(
++					subject,
++					position,
++					new Map([
++						['Tag', tag ?? ''],
++						['Property', property ?? ''],
++						['Standalone', standalone ?? ''],
++						['Preflight', preflight ?? ''],
++					]),
++				),
++			)
++		}
++		rows.push({ tag, property, standalone, preflight })
++	}
++	return rows
++}
++
+ // The frozen case tables and markup strings the style proofs drive their scenarios from. A table
+ // here carries written data and nothing that reads a cascade.
+ 
+diff --git a/tests/tailwind/preflight.test.ts b/tests/tailwind/preflight.test.ts
+new file mode 100644
+index 0000000..efe1678
+--- /dev/null
++++ b/tests/tailwind/preflight.test.ts
+@@ -0,0 +1,155 @@
++import { requireValue } from '@orkestrel/test'
++import { afterEach, describe, expect, it } from 'vitest'
++import {
++	collectDeclaredProperties,
++	collectLayerRules,
++	loadSheet,
++	readCascadeSheet,
++	readComputedSnapshot,
++	scene,
++} from '../setupBrowser.js'
++import { collectTypeSelectors, ELEMENT_TAGS, readPreflightDepartures } from '../setupStyles.js'
++import guideSource from '../../guides/veneer.md?raw'
++import preflightProfile from '../fixtures/tailwind/preflight.css?inline'
++
++// The tags the overlap has to reach before a reading taken over it means anything. Each one is a
++// tag Tailwind's reset and Veneer's elements layer both treat, so a derivation that found nothing
++// cannot pass the case that uses it.
++const FLOOR_TAGS = ['a', 'button', 'h1', 'hr', 'img', 'input', 'table', 'textarea']
++
++// One neutral rendering per tag the derivation can reach, with the relative the HTML content model
++// mandates around it and text content where the tag takes it. Nothing here carries a class or a
++// style of its own, so what the proof reads is the tag's own treatment. The `html` row carries no
++// markup: a document has one root element, and the proof reads that one.
++const NEUTRAL_MARKUP: ReadonlyArray<readonly [tag: string, markup: string]> = Object.freeze([
++	Object.freeze(['a', '<a href="#place">Link</a>'] as const),
++	Object.freeze(['abbr', '<abbr title="Abbreviation">Abbr</abbr>'] as const),
++	Object.freeze(['b', '<b>Bold</b>'] as const),
++	Object.freeze(['button', '<button type="button">Button</button>'] as const),
++	Object.freeze(['code', '<code>code</code>'] as const),
++	Object.freeze(['h1', '<h1>Heading</h1>'] as const),
++	Object.freeze(['h2', '<h2>Heading</h2>'] as const),
++	Object.freeze(['h3', '<h3>Heading</h3>'] as const),
++	Object.freeze(['h4', '<h4>Heading</h4>'] as const),
++	Object.freeze(['h5', '<h5>Heading</h5>'] as const),
++	Object.freeze(['h6', '<h6>Heading</h6>'] as const),
++	Object.freeze(['hr', '<hr>'] as const),
++	Object.freeze(['html', ''] as const),
++	Object.freeze(['iframe', '<iframe title="Frame"></iframe>'] as const),
++	Object.freeze(['img', '<img alt="">'] as const),
++	Object.freeze(['input', '<input>'] as const),
++	Object.freeze(['kbd', '<kbd>Key</kbd>'] as const),
++	Object.freeze(['ol', '<ol><li>Item</li></ol>'] as const),
++	Object.freeze([
++		'optgroup',
++		'<select><optgroup label="Group"><option>Option</option></optgroup></select>',
++	] as const),
++	Object.freeze(['pre', '<pre>preformatted</pre>'] as const),
++	Object.freeze(['progress', '<progress></progress>'] as const),
++	Object.freeze(['samp', '<samp>sample</samp>'] as const),
++	Object.freeze(['select', '<select><option>Option</option></select>'] as const),
++	Object.freeze(['small', '<small>Small</small>'] as const),
++	Object.freeze(['strong', '<strong>Strong</strong>'] as const),
++	Object.freeze(['sub', '<sub>Sub</sub>'] as const),
++	Object.freeze(['summary', '<details><summary>Summary</summary></details>'] as const),
++	Object.freeze(['sup', '<sup>Sup</sup>'] as const),
++	Object.freeze(['svg', '<svg viewBox="0 0 8 8"></svg>'] as const),
++	Object.freeze([
++		'table',
++		'<table><caption>Caption</caption><tbody><tr><td>Cell</td></tr></tbody></table>',
++	] as const),
++	Object.freeze(['textarea', '<textarea></textarea>'] as const),
++	Object.freeze(['ul', '<ul><li>Item</li></ul>'] as const),
++])
++
++afterEach(() => {
++	scene.clear()
++})
++
++describe('the preflight pairing', () => {
++	it('derives the overlapping tags and the properties the reset declares', () => {
++		const sheet = loadSheet(preflightProfile)
++		const reset = collectLayerRules('base', [sheet])
++		// The tags the reset treats are the type selectors of its own style rules. Its universal
++		// rule and its pseudo-element rules name none, which is why the reading is the leading type
++		// selector rather than the selector text.
++		const treated = collectTypeSelectors(
++			reset.flatMap((rule) => (rule instanceof CSSStyleRule ? [rule.selectorText] : [])),
++		)
++		const styled = ELEMENT_TAGS.flatMap(([, tags]) => [...tags])
++		const overlap = treated.filter((tag) => styled.includes(tag))
++		for (const tag of FLOOR_TAGS) expect(overlap).toContain(tag)
++		// The property set is what the comparison walks, so the reset's universal rule contributes
++		// its properties to every element's reading rather than to the elements it names.
++		expect(collectDeclaredProperties(reset)).toContain('tab-size')
++		// The fixture table is held to the derived overlap rather than maintained beside it, so a
++		// tag the reset gains is a tag this proof has to render before it can read anything.
++		expect(overlap.filter((tag) => !NEUTRAL_MARKUP.some(([name]) => name === tag))).toEqual([])
++	})
++
++	it('keeps every property the elements layer declares, and records every property it moves', () => {
++		const cascade = requireValue(readCascadeSheet(), 'The document loaded no Veneer cascade')
++		const elements = collectLayerRules('elements', [cascade])
++		const sheet = loadSheet(preflightProfile)
++		const reset = collectLayerRules('base', [sheet])
++		const properties = collectDeclaredProperties(reset)
++		const overlap = collectTypeSelectors(
++			reset.flatMap((rule) => (rule instanceof CSSStyleRule ? [rule.selectorText] : [])),
++		).filter((tag) => ELEMENT_TAGS.flatMap(([, tags]) => [...tags]).includes(tag))
++		for (const tag of FLOOR_TAGS) expect(overlap).toContain(tag)
++		scene.clear()
++		const measured: string[] = []
++		const kept: string[] = []
++		for (const tag of overlap) {
++			const fixture = requireValue(
++				NEUTRAL_MARKUP.find(([name]) => name === tag),
++				`The fixture table renders no ${tag}`,
++			)
++			const host = scene.mount(fixture[1])
++			const subject =
++				tag === 'html'
++					? document.documentElement
++					: requireValue(host.querySelector(tag), `The fixture rendered no ${tag}`)
++			const standalone = readComputedSnapshot(subject, properties)
++			loadSheet(preflightProfile)
++			const paired = readComputedSnapshot(subject, properties)
++			// Veneer's `elements` layer sits after `base`, so every property Veneer's own reboot
++			// declares for the tag keeps the value the shipped cascade resolves for it. A rule
++			// naming the tag in any of its states counts, because the layer order decides the
++			// question for all of them at once.
++			const declared = elements.flatMap((rule) =>
++				rule instanceof CSSStyleRule && collectTypeSelectors([rule.selectorText]).includes(tag)
++					? Array.from(rule.style)
++					: [],
++			)
++			for (const property of properties) {
++				if (!declared.includes(property)) continue
++				kept.push(`${tag} | ${property}`)
++				expect(`${tag} | ${property} | ${String(paired.get(property))}`).toBe(
++					`${tag} | ${property} | ${String(standalone.get(property))}`,
++				)
++			}
++			for (const [property, value] of standalone) {
++				const resolved = paired.get(property)
++				if (resolved !== value)
++					measured.push(`${tag} | ${property} | ${value} | ${String(resolved)}`)
++			}
++			scene.clear()
++		}
++		// A run whose comparison read nothing at all would report no move and no kept property, and
++		// pass every reading taken over either list.
++		expect(kept).toContain('hr | border-top-style')
++		expect(measured).toContain('html | tab-size | 8 | 4')
++		// Every move is a row of the guide's table, and every row is a move. The comparison is the
++		// whole population both ways, so a move the guide does not record and a row the pairing no
++		// longer produces each redden.
++		const recorded = readPreflightDepartures(guideSource)
++			.map((row) => `${row.tag} | ${row.property} | ${row.standalone} | ${row.preflight}`)
++			.sort()
++		expect([...measured].sort()).toEqual(recorded)
++		// The comparison is only worth something if it can see either kind of drift, so both are
++		// planted here against the rows the guide actually states.
++		expect([...measured].sort()).not.toEqual(recorded.slice(1))
++		expect([...measured].sort()).not.toEqual([...recorded, 'a | tab-size | 8 | 2'].sort())
++	})
++})
+diff --git a/tests/tailwind/profiles.test.ts b/tests/tailwind/profiles.test.ts
+index 44d759b..a178e44 100644
+--- a/tests/tailwind/profiles.test.ts
++++ b/tests/tailwind/profiles.test.ts
+@@ -8,12 +8,15 @@ import {
+ 	collectLayerOrder,
+ 	collectLayerRules,
+ 	collectSelectors,
++	collectSharedNames,
+ 	loadSheet,
+ 	readCascadeSheet,
+ 	readLayerStatement,
+ 	scene,
+ } from '../setupBrowser.js'
++import { collectFencedBlocks } from '../setupStyles.js'
+ import guideSource from '../../guides/veneer.md?raw'
++import consumerSource from '../fixtures/tailwind/consumer.css?raw'
+ import tailwindProfile from '../setup.css?inline'
+ import tailwindSource from '../setup.css?raw'
+ import preflightProfile from '../fixtures/tailwind/preflight.css?inline'
+@@ -129,17 +132,21 @@ describe('stylesheet profiles', () => {
+ 		const emitted = collectSelectors([instrument])
+ 		for (const selector of FLOOR_SELECTORS) expect(emitted).toContain(selector)
+ 		// The instrument's own control names are read from the directive that adds them rather than
+-		// repeated here, so the list has one home on this side too. Every remaining name the
+-		// compiler generated is on the exclusion line, which is what makes the line complete for
+-		// the class names this release ships rather than for the ones the floor happens to list.
++		// repeated here, so the list has one home on this side too. Every name the compiler
++		// generated that the cascade also declares is on the exclusion line, which is what makes
++		// the line complete for the class names this release ships rather than for the ones the
++		// floor happens to list, and everything else it generated is the control.
+ 		const control = collectInlineSources(unexcludedSource).flatMap((source) =>
+ 			source.excluded ? [] : source.names,
+ 		)
++		const cascade = requireValue(readCascadeSheet(), 'The document loaded no Veneer cascade')
++		const shared = collectSharedNames([instrument], [cascade])
++		expect(shared.filter((name) => !excluded.includes(name))).toEqual([])
+ 		expect(
+-			collectClassNames([instrument]).filter(
+-				(name) => !excluded.includes(name) && !control.includes(name),
+-			),
+-		).toEqual([])
++			collectClassNames([instrument])
++				.filter((name) => !shared.includes(name))
++				.sort(),
++		).toEqual([...control].sort())
+ 		scene.clear()
+ 		expect(collectSelectors([loadSheet(tailwindProfile)])).toEqual([])
+ 	})
+@@ -153,16 +160,16 @@ describe('stylesheet profiles', () => {
+ 			exclusion,
+ 			'The tailwind profile declares no exclusion line',
+ 		).names
+-		// Only the guide's CSS fences are read as CSS. Its prose names the directive too, and the
+-		// reader refuses a form it cannot parse rather than skipping it, so handing it the whole
+-		// document reports the prose as a malformed directive — which is the reader working.
+-		const fences = guideSource
+-			.split('```')
+-			.filter((block, index) => index % 2 === 1 && block.startsWith('css\n'))
++		// Only the guide's CSS fences are read as CSS, through the shared fence reader. Its prose
++		// names the directive too, and the reader refuses a form it cannot parse rather than
++		// skipping it, so handing it the whole document reports the prose as a malformed directive
++		// — which is the reader working.
++		const fences = collectFencedBlocks(guideSource, 'css')
+ 		expect(fences).not.toEqual([])
+ 		const copies = [
+ 			...collectInlineSources(fences.join('\n')),
+ 			...collectInlineSources(preflightSource),
++			...collectInlineSources(consumerSource),
+ 		]
+ 		expect(copies).not.toEqual([])
+ 		for (const copy of copies) {
+diff --git a/tests/tailwind/shared.test.ts b/tests/tailwind/shared.test.ts
+new file mode 100644
+index 0000000..56f8c67
+--- /dev/null
++++ b/tests/tailwind/shared.test.ts
+@@ -0,0 +1,250 @@
++import { requireValue } from '@orkestrel/test'
++import { afterEach, describe, expect, it } from 'vitest'
++import {
++	collectClassNames,
++	collectInlineSources,
++	collectLayerOrder,
++	collectLayerRules,
++	collectSharedNames,
++	collectSheetRules,
++	loadSheet,
++	readCascadeSheet,
++	readComputedSnapshot,
++	scene,
++} from '../setupBrowser.js'
++import { collectFencedBlocks } from '../setupStyles.js'
++import guideSource from '../../guides/veneer.md?raw'
++import consumerProfile from '../fixtures/tailwind/consumer.css?inline'
++import consumerSource from '../fixtures/tailwind/consumer.css?raw'
++import consumerMarkup from '../fixtures/tailwind/markup.html?raw'
++import unexcludedInstrument from '../fixtures/tailwind/unexcluded.css?inline'
++
++// The names the shared derivation has to reach before its silence means anything. A derivation
++// that read an empty stylesheet returns nothing, which satisfies every membership reading taken
++// over it, so these are asserted present before the set is used for anything else.
++const FLOOR_NAMES = ['container', 'table', 'col-1', 'caption-top', 'caption-bottom']
++
++// The line the executed profile changes, and the line the shipped recipe writes in its place. A
++// consumer names their own markup directory here; the fixture names the markup file beside it.
++const EXECUTED_SOURCE = "@source './markup.html';"
++const SHIPPED_SOURCE = "@source './src';"
++
++afterEach(() => {
++	scene.clear()
++})
++
++describe('the consumer pairing', () => {
++	it('executes the recipe the guide ships, apart from the markup line each one names', () => {
++		// The guide writes both recipes as `css` fences, and the composable imports are what tells
++		// them apart: the `preflight` recipe takes the bare import instead. Reading the fences
++		// through the Markdown parser rather than splitting the document on its fence marks is what
++		// keeps prose naming the same directive outside the comparison.
++		const recipes = collectFencedBlocks(guideSource, 'css').filter((block) =>
++			block.includes("@import 'tailwindcss/theme.css'"),
++		)
++		expect(recipes).toHaveLength(1)
++		const recipe = requireValue(recipes[0], 'The guide writes no tailwind recipe')
++		expect(recipe.split('\n').filter((line) => line.startsWith("@source '"))).toEqual([
++			SHIPPED_SOURCE,
++		])
++		expect(consumerSource.split('\n').filter((line) => line.startsWith("@source '"))).toEqual([
++			EXECUTED_SOURCE,
++		])
++		// Every other line is the shipped text, so a recipe edited in the guide and not in the file
++		// the project compiles reddens here rather than shipping an untried recipe.
++		expect(
++			consumerSource
++				.trimEnd()
++				.split('\n')
++				.filter((line) => line !== EXECUTED_SOURCE),
++		).toEqual(
++			recipe
++				.trimEnd()
++				.split('\n')
++				.filter((line) => line !== SHIPPED_SOURCE),
++		)
++	})
++
++	it('resolves the cascade import, and declares the order the cascade puts the document in', () => {
++		// The document carries the shipped cascade alone at this point, so its own layer order is
++		// the reading the compiled profile is held against.
++		const placed = collectLayerOrder()
++		const sheet = loadSheet(consumerProfile)
++		// Tailwind declares its generated properties layer ahead of the order line the entry wrote,
++		// and leaves the entry's own names in their declared order behind it.
++		expect(collectLayerOrder([sheet])).toEqual(['properties', ...placed])
++		// The import resolved through the manifest's stylesheet subpath: the compiled profile
++		// carries Veneer's own token namespace inside its `theme` block, which is the signature
++		// `readCascadeSheet` selects a Veneer cascade by, and the component rules behind it.
++		expect(readCascadeSheet([sheet])).toBe(sheet)
++		const components = collectLayerRules('components', [sheet]).flatMap((rule) =>
++			rule instanceof CSSStyleRule ? [rule.selectorText] : [],
++		)
++		expect(components).toContain('.btn')
++		// The markup the `@source` line names was scanned: the control utility the fixture's button
++		// carries is generated, and it is a name the cascade declares no rule for.
++		const utilities = collectLayerRules('utilities', [sheet]).flatMap((rule) =>
++			rule instanceof CSSStyleRule ? [rule.selectorText] : [],
++		)
++		expect(utilities).toContain('.px-8')
++	})
++
++	it('derives the shared class names, and mounts an element for every one of them', () => {
++		const cascade = requireValue(readCascadeSheet(), 'The document loaded no Veneer cascade')
++		// The instrument is the profile without its exclusion line, so what it emits is what
++		// Tailwind generates for the candidate names the built cascade declares. The shared set is
++		// what both sides declare, derived per run rather than written down.
++		const instrument = loadSheet(unexcludedInstrument)
++		const shared = collectSharedNames([instrument], [cascade])
++		for (const name of FLOOR_NAMES) expect(shared).toContain(name)
++		// The exclusion line names exactly the shared names Veneer declares normally. A name whose
++		// Veneer declaration is important wins by importance in any layer order and leaves the
++		// line; a name Veneer declares normally has to be on it.
++		const importantRules = collectSheetRules([cascade]).flatMap((rule) =>
++			rule instanceof CSSStyleRule &&
++			Array.from(rule.style).some(
++				(property) => rule.style.getPropertyPriority(property) === 'important',
++			)
++				? [rule.cssText]
++				: [],
++		)
++		const important = collectClassNames([loadSheet(importantRules.join('\n'))])
++		const [exclusion] = collectInlineSources(consumerSource).filter((source) => source.excluded)
++		const excluded = requireValue(
++			exclusion,
++			'The consumer profile declares no exclusion line',
++		).names
++		expect([...excluded].sort()).toEqual(shared.filter((name) => !important.includes(name)).sort())
++		// The fixture is held to the derived set rather than maintained beside it, so a name the
++		// set gains is a name the markup has to carry before this proof can read anything about it.
++		const host = scene.mount(consumerMarkup)
++		expect(
++			shared.filter((name) => host.querySelectorAll(`.${CSS.escape(name)}`).length === 0),
++		).toEqual([])
++	})
++
++	it('leaves every shared name resolving to the declaration the cascade ships', () => {
++		const cascade = requireValue(readCascadeSheet(), 'The document loaded no Veneer cascade')
++		const instrument = loadSheet(unexcludedInstrument)
++		const shared = collectSharedNames([instrument], [cascade])
++		for (const name of FLOOR_NAMES) expect(shared).toContain(name)
++		// The instrument goes back off the page before the reading, so the standalone snapshot is
++		// the shipped cascade alone resolving the fixture.
++		scene.clear()
++		const host = scene.mount(consumerMarkup)
++		const subjects = shared.flatMap((name) =>
++			Array.from(host.querySelectorAll(`.${CSS.escape(name)}`), (element) => ({
++				name,
++				element,
++			})),
++		)
++		expect(subjects).not.toEqual([])
++		const standalone = subjects.map((subject) => readComputedSnapshot(subject.element))
++		loadSheet(consumerProfile)
++		// Every longhand the computed style enumerates is compared, so a Tailwind rule reaching one
++		// of these elements reports whatever it declares rather than only the properties a reader
++		// thought to name.
++		expect(
++			subjects.flatMap((subject, index) => {
++				const after = readComputedSnapshot(subject.element)
++				return Array.from(requireValue(standalone[index], 'The snapshot was never taken')).flatMap(
++					([property, value]) =>
++						after.get(property) === value
++							? []
++							: [`${subject.name} ${property}: ${value} became ${String(after.get(property))}`],
++				)
++			}),
++		).toEqual([])
++	})
++
++	it('keeps an important shared declaration whatever the recipe withholds', () => {
++		const cascade = requireValue(readCascadeSheet(), 'The document loaded no Veneer cascade')
++		const instrument = loadSheet(unexcludedInstrument)
++		const shared = collectSharedNames([instrument], [cascade])
++		scene.clear()
++		const host = scene.mount(consumerMarkup)
++		// This is the other half of the shared-name rule: a name Veneer declares with `!important`
++		// wins by importance in any layer order, so the recipe need not withhold it. Every shared
++		// name the cascade ships today is a normal declaration, so the plant is what drives the
++		// branch — one important declaration for a shared name, which is what a release shipping
++		// such a name would land in a layer of its own.
++		const planted = loadSheet('@layer components { .col-1 { grid-column-start: 5 !important } }')
++		const importantRules = collectSheetRules([cascade, planted]).flatMap((rule) =>
++			rule instanceof CSSStyleRule &&
++			Array.from(rule.style).some(
++				(property) => rule.style.getPropertyPriority(property) === 'important',
++			)
++				? [rule.cssText]
++				: [],
++		)
++		const important = collectClassNames([loadSheet(importantRules.join('\n'))])
++		const branch = shared.filter((name) => important.includes(name))
++		expect(branch).toContain('col-1')
++		const subjects = branch.flatMap((name) =>
++			Array.from(host.querySelectorAll(`.${CSS.escape(name)}`)),
++		)
++		expect(subjects).not.toEqual([])
++		const standalone = subjects.map((element) => readComputedSnapshot(element))
++		// The instrument is the recipe with its exclusion line dropped, so Tailwind's own rule for
++		// each of these names is on the page and loses to the important declaration anyway.
++		loadSheet(unexcludedInstrument)
++		expect(
++			subjects.flatMap((element, index) => {
++				const after = readComputedSnapshot(element)
++				return Array.from(requireValue(standalone[index], 'The snapshot was never taken')).flatMap(
++					([property, value]) =>
++						after.get(property) === value
++							? []
++							: [`${property}: ${value} became ${String(after.get(property))}`],
++				)
++			}),
++		).toEqual([])
++	})
++
++	it('moves a shared name when the exclusion line is dropped', () => {
++		// The equality the preceding case reads is only worth something if the reading can see a
++		// Tailwind rule winning, and the instrument is the same profile without the one line that
++		// withholds the shared names. The floor is the pair it moves on the fixture's first column.
++		const host = scene.mount(consumerMarkup)
++		const column = requireValue(host.querySelector('.col-1'), 'The fixture mounts no col-1')
++		const standalone = readComputedSnapshot(column)
++		loadSheet(unexcludedInstrument)
++		const after = readComputedSnapshot(column)
++		expect(
++			Array.from(standalone).flatMap(([property, value]) =>
++				after.get(property) === value
++					? []
++					: [`${property}: ${value} became ${String(after.get(property))}`],
++			),
++		).toContain('grid-column-start: auto became 1')
++	})
++
++	it('overrides a component declaration with a utility Tailwind alone generates', () => {
++		const host = scene.mount(consumerMarkup)
++		const button = requireValue(host.querySelector('.btn'), 'The fixture mounts no button')
++		const standalone = readComputedSnapshot(button, ['padding-left', 'padding-right'])
++		const sheet = loadSheet(consumerProfile)
++		const [generated] = collectLayerRules('utilities', [sheet]).flatMap((rule) =>
++			rule instanceof CSSStyleRule && rule.selectorText === '.px-8' ? [rule] : [],
++		)
++		const declared = requireValue(generated, 'The consumer sheet generates no px-8 rule').style
++		// The value is read from the rule the compiler wrote and resolved in this document, rather
++		// than written here: `px-8` is eight steps of Tailwind's own spacing variable, and a theme
++		// that moves that variable moves this reading with it.
++		expect(declared.cssText).toContain('--spacing')
++		const probe = scene.mount('')
++		probe.style.cssText = declared.cssText
++		const resolved = requireValue(
++			readComputedSnapshot(probe, ['padding-left']).get('padding-left'),
++			'The probe resolved no padding',
++		)
++		const overridden = readComputedSnapshot(button, ['padding-left', 'padding-right'])
++		expect([overridden.get('padding-left'), overridden.get('padding-right')]).toEqual([
++			resolved,
++			resolved,
++		])
++		// The component's own padding is what the utility had to beat, and the order line is what
++		// lets it: `utilities` sits after `components`.
++		expect(standalone.get('padding-left')).not.toBe(resolved)
++	})
++})

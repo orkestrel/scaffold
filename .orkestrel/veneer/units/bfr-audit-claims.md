@@ -2,11 +2,13 @@
 
 Subject: the B-FORMS-RANGE unit's uncommitted writes in `/home/user/veneer-bfr` over `3a9202a`
 (`form-range`), written by `opus` from `/home/user/veneer-bfr/tmp/units/b-forms-range-brief.md`
-with the fix round `b-forms-range-brief-2.md` on `builder` and one Orchestrator integration edit
-(the `range-focus` placement unguarded; `b-forms-range-report-2.md` § Orchestrator correction),
+with the fix rounds `b-forms-range-brief-2.md` and `b-forms-range-brief-3.md` on `builder` (the
+second reverses the `flush-box` extraction under ruling D15, `tmp/units/b-sweep-design-verdict.md`)
+and one Orchestrator integration edit (the `range-focus` placement unguarded;
+`b-forms-range-report-2.md` § Orchestrator correction),
 under the design `/home/user/veneer-bfr/tmp/units/b-forms-design-verdict.md` and the family record
 `b-passive-family.md`. Evidence: `/home/user/scaffold/tmp/audit/bfr.diff` (the whole diff,
-untracked files as additions), `bfr-status.txt`, the reports `bfr-report.md` and `bfr-report-2.md`,
+untracked files as additions), `bfr-status.txt`, the reports `bfr-report.md`, `bfr-report-2.md`, and `bfr-report-3.md`,
 the frames under `/home/user/veneer-bfr/tmp/capture/states/`, the inventory
 `/home/user/veneer-bfr/tests/fixtures/oracle/inventory.json`, and the release stylesheet
 `/home/user/veneer-bfr/node_modules/bootstrap/dist/css/bootstrap.css`. Every lane rules each claim
@@ -18,9 +20,9 @@ mutation named and whether the assertions distinguish it.
    host, `:focus` with both engines' thumb shadows, `::-moz-focus-outer`, the WebKit and Gecko
    thumbs and tracks each in its own rule, the held fills, `:disabled` with its twins, the
    reduced-motion twins through the `transition` mixin) from one `@each` over a partial-local engine
-   list; the host rule takes `@include flush-box` (width and padding, the fix round's D2 mixin shared
-   with `legend` in `_fieldset.scss`) and the compiled `.form-range` and `legend` rules carry
-   `width: 100%` and `padding: 0`; no bare `[type=range]` rule ships.
+   list; the host rule writes `width: 100%`, `height`, `padding: 0`, `appearance`, and the transparent
+   background inline (the `flush-box` extraction reversed; `_mixins.scss` and `_fieldset.scss` are
+   back at their `3a9202a` content); no bare `[type=range]` rule ships.
 2. **Token rulings.** Each value in the report's per-value table is a token the shipped partials
    bind or a permitted literal: the space and radius steps, the primary role fill
    `var(--vn-color-primary-base)`, the held tint as `color-mix` over the role and white, the focus
@@ -49,15 +51,17 @@ mutation named and whether the assertions distinguish it.
    voice, states the per-engine emission, the departures, and the two evidence limits (no computed
    style for a part; no drive for a held thumb); the § Files row follows `_vr.scss`; the prose
    follows `writing.md`; no `guides/ledger/` path.
-7. **The fix round.** The three patches landed as written (`'form-range',` after `'figure',`; the
-   `flush-box` mixin before `border-reset` with both callers; `FORM_RANGE_KEYS` and the placement)
-   and `npm run test:setup` moved from `2 failed | 160 passed` to `162 passed`; the `flush-box`
-   mixin's fate under the family design round is not this audit's question.
+7. **The fix rounds.** RANGE-2 landed `'form-range',` after `'figure',` in the shipped-key Set
+   literal, `FORM_RANGE_KEYS`, and the placement; RANGE-3 reversed the `flush-box` extraction
+   exactly, so `npm run test:setup` reads `1 failed | 161 passed` on the shared-block sweep alone
+   (`.form-range` and `legend` sharing two declarations), which B-SWEEP's recalibration under D15
+   settles at integration; rule that the sweep case is the only red and that the compiled cascade is
+   unchanged by the round trip.
 8. **Scope is honest.** The status lists the RANGE unit's owned and shared files plus the fix
    round's owned files and nothing else; `tests/setupServer.ts`'s `attributeSelector` region is
    untouched; the vendored files are untouched; no `tmp/probe/` residue.
-9. **Gates.** `format:check`, `lint:check`, `check`, `build:src`, `test:setup` (162),
-   `test:src:styles` (422), `test:app` (28), `test:conformance`, `test:guides`, `test:policy` green
-   per the fix round's report; `test:journey` red in the fix round only on the portfolio case
+9. **Gates.** `format:check`, `lint:check`, `check`, `build:src`, `test:src:styles` (422),
+   `test:app` (28), `test:conformance`, `test:guides`, `test:policy` green per the fix rounds'
+   reports; `test:setup` red on the sweep case alone after RANGE-3; `test:journey` red in the fix round only on the portfolio case
    reading the guarded `range-focus` frame, which the Orchestrator's correction addresses and the
    deciding run settles; `npm test` not run.
