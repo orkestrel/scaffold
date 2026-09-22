@@ -1,0 +1,18 @@
+Size the journey's test budget from the showcase it walks
+
+Unit J1 JOURNEY-BUDGET on Sonnet (builder), from B-PASSIVE-E's
+measurement.
+
+- configs/app/vite.journey.config.ts composes each variant project
+  through the root appJourney factory with a testTimeout of 120000 ms
+  applied through mergeOverride, and records the measurement that sizes
+  it: the keyboard traversal walks every interactive target in the
+  mounted showcase for each target it reaches, so its cost grows with
+  the regions the showcase renders; 10.0 s against the Table-era surface,
+  15.9 s after three passive component regions landed.
+- The journey proof of the budget is the session branch's own gate
+  chain; the unit's worktree could not run a browser project because its
+  shared node_modules sits outside the worktree's package root.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_016FizZRKTTm49XXhLB8eGTK
