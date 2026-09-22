@@ -1,0 +1,1258 @@
+diff --git a/configs/src/vite.tailwind.config.ts b/configs/src/vite.tailwind.config.ts
+new file mode 100644
+index 0000000..ead0cfd
+--- /dev/null
++++ b/configs/src/vite.tailwind.config.ts
+@@ -0,0 +1,60 @@
++import type { Plugin } from 'vite'
++import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
++import { dirname } from 'node:path'
++import tailwindcss from '@tailwindcss/postcss'
++import { defineConfig } from 'vitest/config'
++import { resolveWorkspacePath, srcBrowser } from '../../vite.config.ts'
++
++// Matches a class selector in the built cascade, including an escaped character, so a name the
++// stylesheet writes as `.col-1` is read back as `col-1`.
++const CASCADE_CLASS = /(?:^|[\s,{}>+~()])\.((?:\\.|[A-Za-z0-9_-])+)/gu
++
++const CASCADE = resolveWorkspacePath('dist/src/styles/index.css')
++const CANDIDATES = resolveWorkspacePath('tmp/tailwind/candidates.txt')
++
++// Tailwind ignores a stylesheet named as a scan source and scans a text file, so the compiler
++// reaches the shipped class names through a list derived from the built cascade rather than
++// through the cascade itself. The list is derived per run instead of committed, so a name a later
++// release ships is a candidate the proof sees without anyone remembering to refresh a fixture.
++// The hook runs while the configuration resolves, before any stylesheet is transformed, so the
++// list is on disk before Tailwind reads the `@source` rule that names it.
++const cascadeCandidates: Plugin = {
++	name: 'veneer-tailwind-candidates',
++	enforce: 'pre',
++	configResolved() {
++		const names = new Set<string>()
++		for (const match of readFileSync(CASCADE, 'utf8').matchAll(CASCADE_CLASS)) {
++			const [, name] = match
++			if (name !== undefined) names.add(name.replaceAll(/\\(.)/gu, '$1'))
++		}
++		if (names.size === 0)
++			throw new Error('[veneer-tailwind-candidates] The built cascade declares no class')
++		mkdirSync(dirname(CANDIDATES), { recursive: true })
++		writeFileSync(CANDIDATES, [...names].sort().join('\n') + '\n', 'utf8')
++	},
++}
++
++const browser = srcBrowser()
++const { build: _build, ...shared } = browser
++
++// The root supplies the alias table, the disabled public directory, and the resolved Playwright
++// provider once for the workspace, the way the styles wrapper takes them. The fields a Tailwind
++// run differs in are replaced by assignment rather than merged, for the reason that wrapper
++// records. The inherited build block is dropped rather than replaced: this project compiles
++// profiles through the PostCSS plugin and emits no artifact of its own.
++export default defineConfig({
++	...shared,
++	plugins: [cascadeCandidates],
++	css: { postcss: { plugins: [tailwindcss()] } },
++	test: {
++		...browser.test,
++		name: { label: 'src:tailwind', color: 'green' },
++		include: ['tests/tailwind/**/*.test.ts'],
++		setupFiles: [
++			'./tests/setup.ts',
++			'./tests/setupBrowser.ts',
++			'./tests/setupStyles.ts',
++			'./dist/src/styles/index.css',
++		],
++	},
++})
+diff --git a/guides/veneer.md b/guides/veneer.md
+index b86697c..4d61bf0 100644
+--- a/guides/veneer.md
++++ b/guides/veneer.md
+@@ -150,7 +150,7 @@ Every Bootstrap utility Veneer ships carries the `!important` Bootstrap writes f
+ adds none Bootstrap does not write. Outside the class utilities, the `[hidden]` rule in the `reset`
+ layer and the calendar-picker indicator rule in the `elements` layer carry one as well, each
+ matching Bootstrap's own declaration. Where a class name exists in Bootstrap and in Tailwind, the
+-declaration Veneer ships is Bootstrap's.
++declaration Veneer ships is Bootstrap's; § Tailwind states how a paired build keeps that true.
+ 
+ Override an important utility from inside that utility's own layer, which your sheet re-opens by
+ name. An important declaration in a layer beats an important declaration outside every layer,
+@@ -235,6 +235,10 @@ The following files carry the axis.
+ | `tests/setupStyles.ts`                  | The cascade readers, the normalizer, the case tables, and the retained value lists.              |
+ | `tests/setupServer.ts`                  | The Node-only reader the styles proofs load the installed and built cascade through.             |
+ | `tests/src/styles/`                     | The browser proofs of the shipped cascade.                                                       |
++| `configs/src/vite.tailwind.config.ts`   | The Tailwind test wrapper, and the plugin deriving the candidate class names.                    |
++| `tests/setup.css`                       | The `tailwind` profile the Tailwind proofs execute, and the home of the exclusion line.          |
++| `tests/fixtures/tailwind/`              | The `preflight` profile and the unexcluded instrument.                                           |
++| `tests/tailwind/`                       | The browser proofs of the Tailwind profiles.                                                     |
+ 
+ The barrel's `@use` rules name the `_tokens.scss` and `_theme.scss` partials and the element
+ partials under the `elements/`, `components/`, and `utilities/` directories; the `_mixins.scss` partial reaches the build through the
+@@ -269,6 +273,97 @@ leading-underscore partial resolved, which `npm run test:policy` enforces, and
+ and body baselines, the class proofs, and the gutter utilities; each remaining tag proof sits
+ beside its element partial.
+ 
++### Tailwind
++
++Veneer declares no Tailwind dependency and ships no rule whose reason is Tailwind. A consumer who
++already builds with Tailwind pairs the two by choosing a profile, which is the entry stylesheet
++their build compiles. Veneer supports Tailwind 4.3.
++
++The following table names each profile, what its entry declares, and where the pairing is proved.
++
++| Profile      | Entry                                                                       | Layers Tailwind fills in a consumer build | Tailwind parts                                          | Proof                                                                      |
++| ------------ | --------------------------------------------------------------------------- | ----------------------------------------- | ------------------------------------------------------- | -------------------------------------------------------------------------- |
++| `standalone` | The cascade alone.                                                          | None.                                     | None.                                                   | [layer order and position independence](../tests/src/styles/index.test.ts) |
++| `tailwind`   | The order line, the composable imports, the source rules, then the cascade. | `theme` and `utilities`.                  | `tailwindcss/theme.css` and `tailwindcss/utilities.css` | [stylesheet profiles](../tests/tailwind/profiles.test.ts)                  |
++| `preflight`  | The order line, the bare import, the source rules, then the cascade.        | `theme`, `base`, and `utilities`.         | `tailwindcss`                                           | [stylesheet profiles](../tests/tailwind/profiles.test.ts)                  |
++
++Under the composable imports, Tailwind fills a layer only for the utilities it generates from the
++markup your `@source` rule names: the `utilities` layer carries those rules and the `theme` layer
++carries the variables those rules read. A build whose markup uses no Tailwind utility therefore
++fills no layer at all. The bare import differs, because preflight is not generated from your
++markup: it fills `base` and reads font variables of its own, so the `preflight` profile carries
++`theme` and `base` whatever your markup uses.
++[stylesheet profiles](../tests/tailwind/profiles.test.ts) reads that difference.
++
++Where a generated utility registers a custom property
++of its own, Tailwind also generates a `properties` layer and declares `@layer properties;` ahead of
++the order line your entry wrote. That placement adds a layer in front of Veneer's and leaves
++Veneer's named layers in their declared order;
++[stylesheet profiles](../tests/tailwind/profiles.test.ts) reads both orders, the compiled
++stylesheet's own and the one the document resolves against.
++
++The `standalone` profile is the product, and § Styles states it: import `@orkestrel/veneer/styles`
++and nothing else.
++
++In each recipe that follows, `@source './src'` is the line you change: it names your own markup
++directory, which is what Tailwind scans to decide which utilities to generate. The first recipe is
++the `tailwind` profile, which composes Tailwind's theme and utilities and leaves the reset to
++Veneer's own `reset` and `elements` layers.
++
++```css
++@layer theme, reset, base, elements, components, utilities;
++@import 'tailwindcss/theme.css' layer(theme);
++@import 'tailwindcss/utilities.css' layer(utilities);
++/* Your own markup directory. */
++@source './src';
++@source not inline("caption-bottom caption-top col-auto col-1 col-2 col-3 col-4 col-5 col-6 col-7 col-8 col-9 col-10 col-11 col-12 container table");
++@import '@orkestrel/veneer/styles';
++```
++
++The following recipe is the `preflight` profile, which takes the bare import so Tailwind's own reset
++fills the `base` layer. Veneer's `elements` layer sits after `base`, so the reset arrives under
++Veneer's element treatment rather than over it.
++
++```css
++@layer theme, reset, base, elements, components, utilities;
++@import 'tailwindcss';
++/* Your own markup directory. */
++@source './src';
++@source not inline("caption-bottom caption-top col-auto col-1 col-2 col-3 col-4 col-5 col-6 col-7 col-8 col-9 col-10 col-11 col-12 container table");
++@import '@orkestrel/veneer/styles';
++```
++
++No proof compiles either recipe in the shape it ships here. The executed consumer-shaped profile,
++with a markup fixture and the trailing cascade import, lands with the shared-name proof.
++
++The order line never changes between profiles. It is the line `src/styles/_tokens.scss` declares,
++and declaring it ahead of the Tailwind import is what makes Tailwind's own narrower order merge as
++a no-op.
++
++The exclusion line names the class names Veneer and Tailwind both declare and Veneer declares
++without `!important`. A shared name Veneer ships with its `!important` declaration wins by
++importance whatever the layer order, so it needs no entry; a shared name Veneer declares normally
++would otherwise resolve to Tailwind's rule, so the line withholds that name from Tailwind's
++generation and Veneer's declaration is the only one the page carries.
++
++`tests/setup.css` is where the workspace writes that line. The profiles proof reads it from that
++file rather than repeating it, and holds every written copy equal to it — the recipes in this
++section and `tests/fixtures/tailwind/preflight.css`; see
++[stylesheet profiles](../tests/tailwind/profiles.test.ts). So a release that ships another shared
++class name extends the line, and every copy left behind reddens until it matches.
++
++The workspace executes the profiles from `tests/setup.css` for the `tailwind` profile and
++`tests/fixtures/tailwind/preflight.css` for the `preflight` profile. Those profiles scan the
++candidate list the `configs/src/vite.tailwind.config.ts` wrapper derives from the built cascade
++rather than your markup, and every name that list offers is on the exclusion line, so the executed
++`tailwind` profile emits nothing at all — and that silence is what proves the exclusion complete.
++The instrument `tests/fixtures/tailwind/unexcluded.css` drops the line and adds an
++`@source inline(…)` control naming utilities the cascade declares no class for, so the same
++compilation emits something and the composed imports are read from what it emits. The wrapper
++attaches the `@tailwindcss/postcss` plugin, writes the candidate list before Tailwind compiles, and
++declares the `src:tailwind` project. Run `npm run test:src:tailwind`, which builds the cascade
++first.
++
+ ### Scripts
+ 
+ Each script names the styles target alone, and the `src` chain it belongs to runs it after the core
+@@ -492,14 +587,26 @@ pilot departs from those rows as follows, and each departure names its cause.
+   directory prove the cascade, the tokens, the theme, the mixins, and the elements, and no proof
+   asserts the alias, the project registration, or the configuration plugins for the axis; that gap
+   is a departure recorded here, not covered.
+-- **The `tests/setup.css` file arrives with the Tailwind unit.** The workspace rows describe that
+-  file as the declaration of cascade-layer order ahead of the `@import 'tailwindcss'` rule and its
+-  `@source` rule. Veneer declares no Tailwind dependency and carries no such file, so it lands with
+-  the unit that adds one.
++- **The `tests/setup.css` file reaches a document through the Tailwind proof alone.** The workspace
++  rows wire that file into the browser setup and the styles setup, so every browser proof would load
++  it. Veneer declares no Tailwind dependency and the `standalone` profile is the product, so wiring
++  it there would put a compiled Tailwind stylesheet in front of every proof of a cascade that ships
++  without one. The `src:tailwind` project's proof imports the file and loads it per case instead,
++  and the standalone case in `tests/src/styles/index.test.ts` reads that no stylesheet compiled from
++  it reaches the styles document.
++- **The canonical file carries the composable imports, and the bare import sits in a fixture.** The
++  workspace rows describe the file as cascade-layer order ahead of the `@import 'tailwindcss'` rule
++  and its `@source` rule. The `tests/setup.css` file carries `tailwindcss/theme.css` and
++  `tailwindcss/utilities.css` in their layers instead, because Veneer's own `reset` and `elements`
++  layers are the reset and Tailwind's belongs to the `preflight` profile.
++  `tests/fixtures/tailwind/preflight.css` carries the bare import, and
++  `tests/fixtures/tailwind/unexcluded.css` carries the canonical file without its exclusion line.
++  § Tailwind states what each profile declares.
+ 
+ Scaffold's `SRC_MATRIX` constant is closed on the `core`, `browser`, and `server` environments, so
+-this axis is hand-authored and its configuration files, `configs/src/vite.styles.config.ts` and
+-`configs/src/tsconfig.styles.json`, are the package's own. Emitting the axis from the generator
++this axis is hand-authored and its configuration files, `configs/src/vite.styles.config.ts`,
++`configs/src/tsconfig.styles.json`, and the `configs/src/vite.tailwind.config.ts` wrapper § Tailwind
++describes, are the package's own. Emitting the axis from the generator
+ means the `@src/styles` alias in the root `tsconfig.json` file, the matching lint allowlist entry
+ and fence, a `src/styles` owner in the environment boundary, a `srcStyles` factory and its project
+ registration in the root `vite.config.ts` file, and the environment lists in the
+@@ -1184,6 +1291,9 @@ The style proofs bind the cascade to the registry and to the calibration; see
+ [the customization recipe](../tests/src/styles/integration.test.ts).
+ Those proofs resolve declarations against the cascade's layer order; § Styles states that order and
+ names the partial that declares it.
++The Tailwind proofs compile each profile through the installed PostCSS plugin and load it over the
++shipped cascade; see [stylesheet profiles](../tests/tailwind/profiles.test.ts). § Tailwind names
++the profiles and the recipe each one carries.
+ 
+ The conformance proofs pin the official release and its artifact digests, reject runtime boundary
+ escapes, check shipped CSS vocabulary, compare each live Button step with its fixture, and
+diff --git a/package.json b/package.json
+index ec3563e..6105617 100644
+--- a/package.json
++++ b/package.json
+@@ -58,10 +58,11 @@
+ 		"check:app": "npm run check:app:browser",
+ 		"check:app:browser": "vue-tsc --noEmit -p configs/app/tsconfig.browser.json",
+ 		"test": "npm run test:src && npm run test:app && npm run test:journey && npm run test:policy && npm run test:config && npm run test:setup && npm run test:setup:browser && npm run test:conformance && npm run test:guides",
+-		"test:src": "vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core --project src:browser && npm run test:src:styles",
++		"test:src": "vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core --project src:browser && npm run test:src:styles && npm run test:src:tailwind",
+ 		"test:src:core": "vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core",
+ 		"test:src:browser": "vitest run --config vite.config.ts --no-cache --reporter=dot --project src:browser",
+ 		"test:src:styles": "npm run build:src:styles && vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=dot",
++		"test:src:tailwind": "npm run build:src:styles && vitest run --config configs/src/vite.tailwind.config.ts --no-cache --reporter=dot",
+ 		"test:app": "vitest run --config vite.config.ts --no-cache --reporter=dot --project app:browser",
+ 		"test:app:browser": "vitest run --config vite.config.ts --no-cache --reporter=dot --project app:browser",
+ 		"test:policy": "vitest run --config vite.config.ts --no-cache --reporter=dot --project policy",
+diff --git a/tests/fixtures/tailwind/preflight.css b/tests/fixtures/tailwind/preflight.css
+new file mode 100644
+index 0000000..65e97e2
+--- /dev/null
++++ b/tests/fixtures/tailwind/preflight.css
+@@ -0,0 +1,6 @@
++/* The `preflight` profile: the `tailwind` profile with the bare import in place of the two
++   composable ones, so Tailwind's own reset fills the `base` layer. See guides/veneer.md § Tailwind. */
++@layer theme, reset, base, elements, components, utilities;
++@import 'tailwindcss' source(none);
++@source '../../../tmp/tailwind/candidates.txt';
++@source not inline("caption-bottom caption-top col-auto col-1 col-2 col-3 col-4 col-5 col-6 col-7 col-8 col-9 col-10 col-11 col-12 container table");
+diff --git a/tests/fixtures/tailwind/unexcluded.css b/tests/fixtures/tailwind/unexcluded.css
+new file mode 100644
+index 0000000..fc951ea
+--- /dev/null
++++ b/tests/fixtures/tailwind/unexcluded.css
+@@ -0,0 +1,8 @@
++/* The `tailwind` profile without its exclusion line: the instrument that proves the exclusion list
++   complete. Every name this profile emits and the excluded one does not is a name the list covers.
++   See guides/veneer.md § Tailwind. */
++@layer theme, reset, base, elements, components, utilities;
++@import 'tailwindcss/theme.css' layer(theme);
++@import 'tailwindcss/utilities.css' layer(utilities) source(none);
++@source '../../../tmp/tailwind/candidates.txt';
++@source inline("px-8 font-bold");
+diff --git a/tests/setup.css b/tests/setup.css
+new file mode 100644
+index 0000000..85067fd
+--- /dev/null
++++ b/tests/setup.css
+@@ -0,0 +1,12 @@
++/* The `tailwind` profile, as the `src:tailwind` project executes it. The order line is the one
++   `src/styles/_tokens.scss` declares, and it never changes between profiles. The composable
++   imports carry `source(none)` and the candidates list the project writes, so the compiler's scan
++   target is the built cascade's own class names rather than this workspace's markup; a consumer's
++   recipe drops `source(none)` and names its own markup instead. The exclusion line is the one home
++   of the names Veneer declares without `!important` that Tailwind also generates.
++   See guides/veneer.md § Tailwind. */
++@layer theme, reset, base, elements, components, utilities;
++@import 'tailwindcss/theme.css' layer(theme);
++@import 'tailwindcss/utilities.css' layer(utilities) source(none);
++@source '../tmp/tailwind/candidates.txt';
++@source not inline("caption-bottom caption-top col-auto col-1 col-2 col-3 col-4 col-5 col-6 col-7 col-8 col-9 col-10 col-11 col-12 container table");
+diff --git a/tests/setupBrowser.test.ts b/tests/setupBrowser.test.ts
+index 2583a67..cd4a7b8 100644
+--- a/tests/setupBrowser.test.ts
++++ b/tests/setupBrowser.test.ts
+@@ -21,7 +21,7 @@ import {
+ } from '@orkestrel/test/browser'
+ import { afterEach, describe, expect, it, onTestFinished } from 'vitest'
+ import { page } from 'vitest/browser'
+-import { CAPTURE_CONTROLS } from './setup.js'
++import { CAPTURE_CONTROLS, TOKEN_PREFIX } from './setup.js'
+ import { BREAKPOINT_CASES, MANDATED_TAG_PAIRS, parseMediaWidth } from './setupStyles.js'
+ import oracle from './fixtures/oracle/button.json'
+ import * as setup from './setupBrowser.js'
+@@ -29,13 +29,22 @@ import {
+ 	applyTheme,
+ 	buildOracleComparison,
+ 	BUTTON_CLASS,
++	collectClassNames,
++	collectCustomProperties,
++	collectFilledLayers,
++	collectInlineSources,
+ 	collectLayer,
++	collectLayerOrder,
++	collectLayerRules,
+ 	collectMediaConditions,
+ 	collectPainted,
+ 	collectNestedRules,
+ 	collectScopeProperties,
++	collectSelectors,
++	collectSheetRules,
+ 	driveOracle,
+ 	holdOraclePointer,
++	loadSheet,
+ 	mountShowcase,
+ 	measureFrameVariation,
+ 	ORACLE_ACTIONS,
+@@ -43,6 +52,7 @@ import {
+ 	PROBE_CASCADE,
+ 	pressOracleKeys,
+ 	readCascadeSheet,
++	readLayerStatement,
+ 	recordListeners,
+ 	recordEvents,
+ 	recordState,
+@@ -221,17 +231,27 @@ describe('browser setup', () => {
+ 				'SceneManager',
+ 				'applyTheme',
+ 				'buildOracleComparison',
++				'collectClassNames',
++				'collectCustomProperties',
++				'collectFilledLayers',
++				'collectInlineSources',
+ 				'collectLayer',
++				'collectLayerOrder',
++				'collectLayerRules',
+ 				'collectMediaConditions',
+ 				'collectNestedRules',
+ 				'collectPainted',
+ 				'collectScopeProperties',
++				'collectSelectors',
++				'collectSheetRules',
+ 				'driveOracle',
+ 				'holdOraclePointer',
++				'loadSheet',
+ 				'mountShowcase',
+ 				'measureFrameVariation',
+ 				'pressOracleKeys',
+ 				'readCascadeSheet',
++				'readLayerStatement',
+ 				'recordListeners',
+ 				'recordEvents',
+ 				'recordState',
+@@ -897,6 +917,237 @@ describe('browser setup', () => {
+ 			),
+ 		).toEqual(['--vn-probe-one'])
+ 	})
++
++	it('refuses a theme layer carrying a foreign token, wherever it sits among the named sheets', () => {
++		// A Tailwind stylesheet compiled from a profile that pairs the cascade fills a `theme` layer
++		// block of its own, so the block alone no longer names a sheet. The plant wears that shape
++		// and nothing else: one `theme` block, one `:root` rule, one token outside Veneer's
++		// namespace. The reading is taken with the plant on each side of the probe cascade, because
++		// the reader answers with the first sheet that matches and a plant placed after a match
++		// would be refused by position rather than by signature.
++		const rival = requireValue(
++			scene.load('@layer theme { :root { --tw-probe: 1 } }').sheet,
++			'The planted theme sheet parsed to no sheet',
++		)
++		const cascade = requireValue(
++			scene.load(PROBE_CASCADE).sheet,
++			'The probe cascade parsed to no sheet',
++		)
++		expect(readCascadeSheet([rival])).toBeUndefined()
++		expect(readCascadeSheet([rival, cascade])).toBe(cascade)
++		expect(readCascadeSheet([cascade, rival])).toBe(cascade)
++		expect(() => collectLayer('theme', [rival])).toThrow('The sheets carry no Veneer cascade')
++		// The plant and the cascade differ in the namespace alone: both declare a `theme` block
++		// holding a custom property, and only one of them declares it under Veneer's prefix.
++		expect(collectCustomProperties([rival])).toEqual(['--tw-probe'])
++		expect(collectCustomProperties([cascade]).every((name) => name.startsWith(TOKEN_PREFIX))).toBe(
++			true,
++		)
++	})
++
++	it('reads layer order by first declaration, where a block list reports the filled layers alone', () => {
++		const element = scene.load(PROBE_CASCADE)
++		const sheets = [requireValue(element.sheet, 'The probe cascade parsed to no sheet')]
++		// The probe cascade names `components` in its order statement and fills no block for it, so
++		// a reading taken from the blocks alone loses that layer and reports the other two in the
++		// order they were filled rather than the order they were placed.
++		expect(collectLayerOrder(sheets)).toEqual(['theme', 'components', 'elements'])
++		expect(
++			collectNestedRules(sheets[0]?.cssRules ?? []).flatMap((rule) =>
++				rule instanceof CSSLayerBlockRule ? [rule.name] : [],
++			),
++		).toEqual(['theme', 'elements'])
++		// A name declared again keeps its first position, which is what makes the reading the
++		// document's effective order rather than a list of every declaration.
++		const later = requireValue(
++			scene.load('@layer elements, theme, rival;').sheet,
++			'The later statement parsed to no sheet',
++		)
++		expect(collectLayerOrder([...sheets, later])).toEqual([
++			'theme',
++			'components',
++			'elements',
++			'rival',
++		])
++		expect(collectLayerOrder([])).toEqual([])
++	})
++
++	it('reads every declared custom property, where the scope reading answers for one selector', () => {
++		const element = scene.load(PROBE_CASCADE)
++		const sheets = [requireValue(element.sheet, 'The probe cascade parsed to no sheet')]
++		// The probe cascade splits its scope across two rules and declares a third property on a
++		// descendant, so the reading has to union the split and reach past the named scope.
++		expect(collectCustomProperties(sheets)).toEqual([
++			'--vn-probe-one',
++			'--vn-probe-two',
++			'--vn-probe-three',
++		])
++		expect(
++			collectScopeProperties(collectNestedRules(sheets[0]?.cssRules ?? []), '.vn-probe-scope'),
++		).toEqual(['--vn-probe-one', '--vn-probe-two'])
++		expect(collectCustomProperties([])).toEqual([])
++	})
++
++	it('walks every named sheet and skips one whose rules the document refuses', () => {
++		const first = loadSheet(PROBE_CASCADE)
++		const second = loadSheet('@layer rival { .vn-probe-rival { color: rgb(1, 2, 3) } }')
++		// The walk concatenates in the order the sheets were named, which is what makes every
++		// reading built on it a document-order reading.
++		expect(
++			collectSheetRules([first, second]).flatMap((rule) =>
++				rule instanceof CSSLayerBlockRule ? [rule.name] : [],
++			),
++		).toEqual(['theme', 'elements', 'rival'])
++		// A stylesheet the document cannot read throws on its rule list. The walk skips it and
++		// reports the sheets it could read, where the installed walk takes no sheets at all and so
++		// cannot be asked about a named population. The refusal is driven by a real `CSSStyleSheet`
++		// presenting the `SecurityError` the platform presents for a cross-origin sheet, because
++		// the tester serves one origin and so carries no sheet the document genuinely refuses.
++		const refused = new CSSStyleSheet()
++		Object.defineProperty(refused, 'cssRules', {
++			get() {
++				throw new DOMException('Refused', 'SecurityError')
++			},
++		})
++		expect(collectSheetRules([refused, first]).length).toBe(collectSheetRules([first]).length)
++		expect(collectSheetRules([])).toEqual([])
++	})
++
++	it('loads a stylesheet and answers with the parsed sheet, where the scene answers with the element', () => {
++		const sheet = loadSheet(PROBE_CASCADE)
++		const element = requireValue(document.head.lastElementChild, 'The load attached no element')
++		// The scene records the element, so the same call answers both questions: the element for a
++		// case reading its attributes, and the sheet for every reader in this module.
++		expect(element).toBeInstanceOf(HTMLStyleElement)
++		expect(element instanceof HTMLStyleElement ? element.sheet : undefined).toBe(sheet)
++		expect(collectFilledLayers([sheet])).toEqual(['theme', 'elements'])
++		scene.clear()
++		expect(element.isConnected).toBe(false)
++	})
++
++	it('reads the opening layer statement, and refuses a sheet that opens with another rule', () => {
++		expect(readLayerStatement(loadSheet(PROBE_CASCADE))).toEqual([
++			'theme',
++			'components',
++			'elements',
++		])
++		// A compiler that prepends a generated layer moves the consumer's statement off the front,
++		// which the refusal reports by naming the rule it found instead. A sheet with no rule at
++		// all is refused the same way rather than answering with an empty order.
++		expect(readLayerStatement(loadSheet('@layer generated;\n@layer theme, elements;'))).toEqual([
++			'generated',
++		])
++		expect(() => readLayerStatement(loadSheet('.vn-probe-plain { color: rgb(7, 8, 9) }'))).toThrow(
++			'The stylesheet opens with',
++		)
++		expect(() => readLayerStatement(loadSheet(''))).toThrow('The stylesheet opens with no rule')
++	})
++
++	it('reads one named layer out of the sheets it is given, where the cascade reading resolves one first', () => {
++		const probe = loadSheet(PROBE_CASCADE)
++		const rival = loadSheet('@layer elements { .vn-probe-rival { color: rgb(4, 5, 6) } }')
++		// The reading takes the sheets as given, so a stylesheet that is not the Veneer cascade can
++		// be asked which of its own rules sit in a named layer. That is the question a compiled
++		// profile raises, and `collectLayer` cannot be asked it: it resolves the cascade first and
++		// refuses the sheets that carry none.
++		expect(
++			collectLayerRules('elements', [probe, rival]).flatMap((rule) =>
++				rule instanceof CSSStyleRule ? [rule.selectorText] : [],
++			),
++		).toEqual(['.vn-probe-leaf', '.vn-probe-rival'])
++		expect(() => collectLayer('elements', [rival])).toThrow('The sheets carry no Veneer cascade')
++		// A layer the sheets place and never fill and a name none of them declares both answer with
++		// nothing, which is why `collectLayer` keeps its refusal for the unloaded cascade.
++		expect(collectLayerRules('components', [probe])).toEqual([])
++		expect(collectLayerRules('absent', [probe])).toEqual([])
++		// The cascade reading is this reading over the sheet it resolves, so the two agree where
++		// both can be asked.
++		expect(collectLayerRules('theme', [probe])).toEqual(collectLayer('theme', [probe]))
++	})
++
++	it('reports the filled layers apart from the placed ones, where the order reading merges them', () => {
++		const sheets = [loadSheet(PROBE_CASCADE)]
++		// The probe cascade places `components` in its order statement and fills no block for it.
++		// The order reading reports it because it was placed; this reading leaves it out because
++		// nothing filled it, and that difference is the whole reason both readings exist.
++		expect(collectFilledLayers(sheets)).toEqual(['theme', 'elements'])
++		expect(collectLayerOrder(sheets)).toEqual(['theme', 'components', 'elements'])
++		// A layer opened twice is reported at each block, because a compiler that split its output
++		// across two blocks of one layer is a fact a profile proof has to be able to see.
++		expect(
++			collectFilledLayers([loadSheet('@layer a { .vn-x { color: red } } @layer a { .vn-y {} }')]),
++		).toEqual(['a', 'a'])
++		expect(collectFilledLayers([])).toEqual([])
++	})
++
++	it('reports every declared selector, including the ones a grouping rule holds', () => {
++		const sheets = [loadSheet(PROBE_CASCADE)]
++		expect(collectSelectors(sheets)).toEqual([
++			'.vn-probe-scope',
++			'.vn-probe-scope',
++			'.vn-probe-scope .vn-probe-card',
++			'.vn-probe-leaf',
++		])
++		// Repeats are kept, where the class-name reading answers once per name. A media query is a
++		// grouping rule like a layer block, so the rule it holds is reported too.
++		expect(
++			collectSelectors([loadSheet('@media (width >= 576px) { .vn-probe-gated { color: red } }')]),
++		).toEqual(['.vn-probe-gated'])
++		expect(collectSelectors([])).toEqual([])
++	})
++
++	it('reads class names out of selector text, resolving the escapes a utility name carries', () => {
++		// The grammar is the one `configs/src/vite.tailwind.config.ts` offers candidates to the
++		// compiler with, so a name offered there is read back here in the form it was offered.
++		// An element selector, a pseudo-element, and a universal selector declare no class name.
++		const sheet = loadSheet(
++			'@layer utilities { .col-1, .px-8 { margin: 0 } .vn-probe-scope .vn-probe-card { margin: 0 }' +
++				' .p-\\[2px\\] { padding: 2px } *, ::before, ::after { box-sizing: border-box } html { margin: 0 } }',
++		)
++		expect(collectClassNames([sheet])).toEqual([
++			'col-1',
++			'px-8',
++			'vn-probe-scope',
++			'vn-probe-card',
++			'p-[2px]',
++		])
++		// The selector reading answers with the compound selector whole, which is what makes the
++		// name reading a different question rather than a formatting of the same one.
++		expect(collectSelectors([sheet])).toContain('.vn-probe-scope .vn-probe-card')
++		expect(collectClassNames([])).toEqual([])
++	})
++
++	it('reads the source directives a stylesheet declares, apart from what a compiler does with them', () => {
++		const source = [
++			"@import 'tailwindcss/utilities.css' layer(utilities) source(none);",
++			'@source inline("px-8 font-bold");',
++			'@source not inline("container table");',
++		].join('\n')
++		expect(collectInlineSources(source)).toEqual([
++			{ excluded: false, names: ['px-8', 'font-bold'] },
++			{ excluded: true, names: ['container', 'table'] },
++		])
++		// The directive never reaches the compiled output, so the reading is of the bytes. That is
++		// what lets one file's list be compared with another's, and an empty list and a file with
++		// no directive are told apart rather than both answering with nothing.
++		expect(collectInlineSources('@source not inline("");')).toEqual([{ excluded: true, names: [] }])
++		expect(collectInlineSources("@source './src';")).toEqual([])
++		// Tailwind accepts either quotation mark, so a copy written with the other one is the same
++		// list rather than no list. A reader blind to one form reports a drifted copy as a file that
++		// declares nothing, and a comparison against nothing passes.
++		expect(collectInlineSources("@source not inline('container table');")).toEqual([
++			{ excluded: true, names: ['container', 'table'] },
++		])
++		expect(collectInlineSources('@source  not  inline( "container" );')).toEqual([
++			{ excluded: true, names: ['container'] },
++		])
++		// A form this grammar cannot read is refused by name, rather than skipped into the same
++		// empty answer a file with no directive gives.
++		expect(() => collectInlineSources('@source not inline(container);')).toThrow(
++			'is written in a form this reader does not parse',
++		)
++		expect(() => collectInlineSources('@source inline("mixed\');')).toThrow('@source inline("mixed')
++	})
+ })
+ 
+ describe('scanPositionalPairs', () => {
+diff --git a/tests/setupBrowser.ts b/tests/setupBrowser.ts
+index 7faa1e9..292bf31 100644
+--- a/tests/setupBrowser.ts
++++ b/tests/setupBrowser.ts
+@@ -22,7 +22,7 @@ import {
+ import { page, userEvent } from 'vitest/browser'
+ import { Delegate } from '@src/browser'
+ import oracle from './fixtures/oracle/button.json'
+-import { normalizeSelectorText, readingToProjection } from './setup.js'
++import { normalizeSelectorText, readingToProjection, TOKEN_PREFIX } from './setup.js'
+ 
+ /**
+  * Measures the fraction of a decoded PNG whose pixels differ from its first pixel.
+@@ -831,16 +831,21 @@ export function readParentOffset(element: Element): number {
+  * @param sheets - The stylesheets to walk. The document's own sheets are the default, and a caller
+  *   that fixtures a sheet passes it instead, so the reading is about the sheets the caller named
+  *   rather than about whatever else the shared page has loaded.
+- * @returns The first stylesheet in `sheets` declaring a layer block named `theme`, or `undefined`
+- *   when none of them declares one.
++ * @returns The first stylesheet in `sheets` whose `theme` layer block declares a custom property
++ *   in the {@link TOKEN_PREFIX} namespace, or `undefined` when none of them does.
+  *
+  * @remarks
+  * The installed `readRules` export walks every stylesheet the document loaded and reports one flat
+  * rule list, which names no sheet. That is what this adds: a browser test page carries the runner's
+  * own stylesheets and the application shell's beside the one under test, so a reading taken across
+- * every loaded sheet reports on a population the package does not own. The `theme` layer block is
+- * the shipped cascade's own signature: Veneer declares it and nothing else in the tester document
+- * does.
++ * every loaded sheet reports on a population the package does not own.
++ *
++ * A `theme` layer block alone does not name the sheet, because a Tailwind stylesheet compiled from
++ * a profile that pairs the cascade declares one too and fills it with Tailwind's own theme
++ * properties. The signature is the block plus a token in Veneer's own namespace, which no Tailwind
++ * output carries. The `tests/tailwind/profiles.test.ts` proof reads Veneer's sheet with a
++ * Tailwind sheet loaded beside it, and `tests/setupBrowser.test.ts` plants a `theme` block
++ * declaring a foreign token to prove the reader refuses one.
+  *
+  * A sheet whose rules the document cannot read is skipped rather than ending the walk.
+  */
+@@ -850,11 +855,20 @@ export function readCascadeSheet(
+ 	for (const sheet of sheets) {
+ 		let rules: readonly CSSRule[]
+ 		try {
+-			rules = Array.from(sheet.cssRules)
++			rules = collectNestedRules(sheet.cssRules)
+ 		} catch {
+ 			continue
+ 		}
+-		const owned = rules.some((rule) => rule instanceof CSSLayerBlockRule && rule.name === 'theme')
++		const owned = rules.some(
++			(rule) =>
++				rule instanceof CSSLayerBlockRule &&
++				rule.name === 'theme' &&
++				collectNestedRules(rule.cssRules).some(
++					(nested) =>
++						nested instanceof CSSStyleRule &&
++						Array.from(nested.style).some((property) => property.startsWith(TOKEN_PREFIX)),
++				),
++		)
+ 		if (owned) return sheet
+ 	}
+ 	return undefined
+@@ -978,13 +992,292 @@ export function collectLayer(
+ 	sheets: Iterable<CSSStyleSheet> = document.styleSheets,
+ ): readonly CSSRule[] {
+ 	const sheet = requireValue(readCascadeSheet(sheets), 'The sheets carry no Veneer cascade')
+-	return collectNestedRules(sheet.cssRules).flatMap((rule) =>
++	return collectLayerRules(name, [sheet])
++}
++
++/**
++ * Collects the rules the given stylesheets put inside one named layer block.
++ *
++ * @param name - The layer's name.
++ * @param sheets - The stylesheets to walk. The document's own sheets are the default.
++ * @returns Every rule inside a block of that name, nested rules included, in declaration order. A
++ *   layer the stylesheets place and never fill returns no rules, and so does a name none of them
++ *   declares.
++ *
++ * @remarks
++ * {@link collectLayer} is this reading over the Veneer cascade, resolved first and refused when the
++ * sheets carry none. This takes the sheets as given, because a compiled Tailwind profile is not the
++ * cascade and a reading about where that compiler put a declaration has to be able to name the
++ * layer it is asking about. A reading taken across a whole stylesheet cannot: a declaration moved
++ * out of `theme` and into another layer is still on the sheet.
++ *
++ * A sheet whose rules the document cannot read is skipped rather than ending the walk.
++ */
++export function collectLayerRules(
++	name: string,
++	sheets: Iterable<CSSStyleSheet> = document.styleSheets,
++): readonly CSSRule[] {
++	return collectSheetRules(sheets).flatMap((rule) =>
+ 		rule instanceof CSSLayerBlockRule && rule.name === name
+ 			? collectNestedRules(rule.cssRules)
+ 			: [],
+ 	)
+ }
+ 
++/**
++ * Reads the cascade-layer order the given stylesheets put a document in.
++ *
++ * @param sheets - The stylesheets to walk, in the order the document loaded them. The document's
++ *   own sheets are the default, which is the effective order every rule on the page resolves
++ *   against; a caller reading one sheet's own order passes that sheet alone.
++ * @returns Each layer name at the position it was first declared, whether a `@layer` statement or
++ *   a `@layer` block declared it, with a name declared again reported once at its first position.
++ *
++ * @remarks
++ * Layer order is settled by first declaration, so the reading has to be a first-appearance walk
++ * rather than a list of blocks: the shipped cascade names `base` in a statement and fills no block
++ * for it, and a stylesheet that pairs Tailwind with the cascade re-declares names the cascade
++ * already placed. Both readings are what a profile proof compares, and neither is a rule count.
++ *
++ * A sheet whose rules the document cannot read is skipped rather than ending the walk.
++ */
++export function collectLayerOrder(
++	sheets: Iterable<CSSStyleSheet> = document.styleSheets,
++): readonly string[] {
++	const order: string[] = []
++	for (const rule of collectSheetRules(sheets)) {
++		const names =
++			rule instanceof CSSLayerStatementRule
++				? Array.from(rule.nameList)
++				: rule instanceof CSSLayerBlockRule
++					? [rule.name]
++					: []
++		for (const name of names) {
++			if (!order.includes(name)) order.push(name)
++		}
++	}
++	return order
++}
++
++/**
++ * Collects every rule the given stylesheets hold, nested rules included.
++ *
++ * @param sheets - The stylesheets to walk, in the order the document loaded them. The document's
++ *   own sheets are the default, and a caller reading one loaded sheet passes that sheet alone.
++ * @returns Each sheet's rules in turn, each rule followed by the rules nested inside it.
++ *
++ * @remarks
++ * {@link collectNestedRules} descends one rule list, which a caller holding a sheet already has.
++ * This is the sheet-level walk every reading over a page shares, and the one place the refusal
++ * lives: a stylesheet the document cannot read throws on its rule list, and a reading about the
++ * other sheets must not end there. Skipping is right rather than throwing, because a browser test
++ * page carries the runner's own stylesheets beside the ones under test.
++ */
++export function collectSheetRules(
++	sheets: Iterable<CSSStyleSheet> = document.styleSheets,
++): readonly CSSRule[] {
++	const rules: CSSRule[] = []
++	for (const sheet of sheets) {
++		try {
++			rules.push(...collectNestedRules(sheet.cssRules))
++		} catch {
++			continue
++		}
++	}
++	return rules
++}
++
++/**
++ * Collects every custom property the given stylesheets declare, wherever they declare it.
++ *
++ * @param sheets - The stylesheets to walk. The document's own sheets are the default, and a caller
++ *   reading one loaded sheet passes that sheet alone.
++ * @returns Each declared custom property, in declaration order, with a name a later rule
++ *   re-declares reported once at its first position.
++ *
++ * @remarks
++ * {@link collectScopeProperties} answers the neighbouring question for one named scope, which is
++ * what a token proof asks. This asks what the whole document declares, because the question a
++ * pairing proof asks is whether a namespace reached the page at all, and a foreign stylesheet
++ * declares its tokens wherever it likes: Tailwind's theme writes to `:root, :host` and its utility
++ * variables write to a universal selector. Naming a scope would decide the answer in advance.
++ *
++ * A sheet whose rules the document cannot read is skipped rather than ending the walk.
++ */
++export function collectCustomProperties(
++	sheets: Iterable<CSSStyleSheet> = document.styleSheets,
++): readonly string[] {
++	const declared: string[] = []
++	for (const rule of collectSheetRules(sheets)) {
++		if (!(rule instanceof CSSStyleRule)) continue
++		for (const property of rule.style) {
++			if (property.startsWith('--') && !declared.includes(property)) declared.push(property)
++		}
++	}
++	return declared
++}
++
++/**
++ * Loads one stylesheet into the document and answers with the sheet the document parsed.
++ *
++ * @param css - The stylesheet text to load, such as a compiled Tailwind profile.
++ * @returns The parsed stylesheet, recorded for the {@link scene} registry's own cleanup.
++ * @throws An `Error` when the document parses the text into no stylesheet.
++ *
++ * @remarks
++ * {@link SceneManager.load} answers with the element, because a case that reads the element's own
++ * attributes needs it. Every reader in this module takes a `CSSStyleSheet`, so a case that loads a
++ * stylesheet to read it crosses that gap, and this is the one place the crossing lives.
++ */
++export function loadSheet(css: string): CSSStyleSheet {
++	return requireValue(scene.load(css).sheet, 'The loaded text parsed to no stylesheet')
++}
++
++/**
++ * Reads the layer statement a stylesheet opens with.
++ *
++ * @param sheet - The stylesheet to read, such as a compiled Tailwind profile's.
++ * @returns The layer names that statement lists, in declared order.
++ * @throws An `Error` naming the opening rule when the sheet opens with anything else.
++ *
++ * @remarks
++ * {@link collectLayerOrder} answers the neighbouring question across a whole sheet and absorbs
++ * every later declaration into a first-appearance walk. This is about the first rule alone, which
++ * is where a cascade-layer order has to be declared for the declaration to place the layers, so a
++ * compiler that moved the statement is a refusal rather than a matching order.
++ *
++ * The refusal names the rule it found, because a stylesheet that opens with a different rule is
++ * normally one a compiler prepended something to.
++ */
++export function readLayerStatement(sheet: CSSStyleSheet): readonly string[] {
++	const [first] = Array.from(sheet.cssRules)
++	if (!(first instanceof CSSLayerStatementRule)) {
++		throw new Error(`The stylesheet opens with ${first?.cssText ?? 'no rule'}`)
++	}
++	return Array.from(first.nameList)
++}
++
++/**
++ * Collects the layers the given stylesheets open a block for.
++ *
++ * @param sheets - The stylesheets to walk. The document's own sheets are the default.
++ * @returns Each filled layer's name, in the order the blocks open, with a layer opened again
++ *   reported at each of its blocks.
++ *
++ * @remarks
++ * {@link collectLayerOrder} reports where a layer was placed, and a statement places one without
++ * filling it. This reports what was filled, which is the difference between a compiler that
++ * generated rules for a layer and one that named it and generated nothing. A profile proof needs
++ * both readings, because an empty emission is a legitimate result there.
++ *
++ * A sheet whose rules the document cannot read is skipped rather than ending the walk.
++ */
++export function collectFilledLayers(
++	sheets: Iterable<CSSStyleSheet> = document.styleSheets,
++): readonly string[] {
++	return collectSheetRules(sheets).flatMap((rule) =>
++		rule instanceof CSSLayerBlockRule ? [rule.name] : [],
++	)
++}
++
++/**
++ * Collects the selectors the given stylesheets declare style rules for.
++ *
++ * @param sheets - The stylesheets to walk. The document's own sheets are the default.
++ * @returns Each style rule's selector text, in declaration order, repeats included.
++ *
++ * @remarks
++ * A grouped rule's own selector is reported, so a rule inside a layer block or a media query
++ * counts. Repeats are kept, because a selector declared twice is a fact about the stylesheet that
++ * a proof comparing a compiler's output against its input has to be able to see.
++ *
++ * A sheet whose rules the document cannot read is skipped rather than ending the walk.
++ */
++export function collectSelectors(
++	sheets: Iterable<CSSStyleSheet> = document.styleSheets,
++): readonly string[] {
++	return collectSheetRules(sheets).flatMap((rule) =>
++		rule instanceof CSSStyleRule ? [rule.selectorText] : [],
++	)
++}
++
++/**
++ * Collects the class names the given stylesheets declare rules for.
++ *
++ * @param sheets - The stylesheets to walk. The document's own sheets are the default.
++ * @returns Each class name, in declaration order, reported once at its first position and with its
++ *   selector escapes resolved, so `.col-1` reports `col-1`.
++ *
++ * @remarks
++ * {@link collectSelectors} answers with selector text, which carries the element and pseudo-element
++ * selectors a reset writes and reports a compound selector whole. The population a Tailwind pairing
++ * proof compares is class names, so this reads them out of the selector text with the grammar the
++ * `configs/src/vite.tailwind.config.ts` wrapper reads the built cascade with. One grammar on both
++ * sides is what makes the comparison a comparison: a name the wrapper offers the compiler as a
++ * candidate is read back here in the form it was offered.
++ *
++ * A sheet whose rules the document cannot read is skipped rather than ending the walk.
++ */
++export function collectClassNames(
++	sheets: Iterable<CSSStyleSheet> = document.styleSheets,
++): readonly string[] {
++	const names: string[] = []
++	for (const selector of collectSelectors(sheets)) {
++		for (const match of selector.matchAll(/(?:^|[\s,{}>+~()])\.((?:\\.|[A-Za-z0-9_-])+)/gu)) {
++			const [, name] = match
++			if (name === undefined) continue
++			const resolved = name.replaceAll(/\\(.)/gu, '$1')
++			if (!names.includes(resolved)) names.push(resolved)
++		}
++	}
++	return names
++}
++
++/** Carries one `@source inline(…)` directive a stylesheet's own bytes declare. */
++export interface InlineSource {
++	readonly excluded: boolean
++	readonly names: readonly string[]
++}
++
++/**
++ * Collects the `@source inline(…)` directives a stylesheet's own bytes declare.
++ *
++ * @param source - The stylesheet text, such as a `?raw` import of a profile or of a guide holding
++ *   a profile in a fence.
++ * @returns Each directive in written order, `excluded` for the negated form and the names the
++ *   directive lists.
++ *
++ * @remarks
++ * This reads the bytes rather than a compiled sheet, because the directive is an instruction to the
++ * compiler and never reaches the output. That is what lets one file's list be compared with
++ * another's: a proof reads the workspace's own list from the profile that declares it and holds
++ * every repeat equal to it, so a copy that drifted reports rather than passing unread.
++ *
++ * The names are whitespace-separated as Tailwind reads them, and a brace range is not expanded,
++ * so a list written with one reports that range as a single name.
++ *
++ * Tailwind accepts either quotation mark around the list, so both are read. A directive this
++ * grammar cannot read is refused rather than skipped: a comparison between two files' lists is
++ * only as good as its reading of each file, and a directive that parses to nothing looks exactly
++ * like a file that declares none.
++ */
++export function collectInlineSources(source: string): readonly InlineSource[] {
++	const parsed = Array.from(
++		source.matchAll(/@source\s+(not\s+)?inline\(\s*(['"])([^'"]*)\2\s*\)/gu),
++	)
++	const declared = Array.from(source.matchAll(/@source\s+(?:not\s+)?inline\(/gu))
++	const missed = declared.find((match) => !parsed.some((one) => one.index === match.index))
++	if (missed !== undefined) {
++		throw new Error(
++			`The directive at ${missed.index} is written in a form this reader does not parse: ${source.slice(missed.index, missed.index + 60)}`,
++		)
++	}
++	return parsed.map((match) => ({
++		excluded: match[1] !== undefined,
++		names: (match[3] ?? '').split(/\s+/u).filter((name) => name !== ''),
++	}))
++}
++
+ /**
+  * Scans one layer's rules for a treatment that depends on where its tag sits in the markup.
+  *
+diff --git a/tests/src/styles/index.test.ts b/tests/src/styles/index.test.ts
+index 29e1f3d..68bb13c 100644
+--- a/tests/src/styles/index.test.ts
++++ b/tests/src/styles/index.test.ts
+@@ -1,12 +1,15 @@
+ import { requireValue } from '@orkestrel/test'
+ import { afterEach, describe, expect, it } from 'vitest'
+ import {
++	collectCustomProperties,
+ 	collectLayer,
++	collectLayerOrder,
+ 	collectNestedRules,
+ 	readCascadeSheet,
+ 	scanPositionalPairs,
+ 	scene,
+ } from '../../setupBrowser.js'
++import { TOKEN_PREFIX } from '../../setup.js'
+ import { ELEMENT_TAGS, MANDATED_TAG_PAIRS } from '../../setupStyles.js'
+ 
+ const STYLED_TAGS = [...new Set(ELEMENT_TAGS.flatMap(([, tags]) => tags))]
+@@ -18,19 +21,57 @@ afterEach(() => {
+ describe('shipped cascade', () => {
+ 	it('orders every layer before the rules that fill them', () => {
+ 		const sheet = requireValue(readCascadeSheet(), 'The document loaded no Veneer cascade')
+-		const order: string[] = []
+-		for (const rule of collectNestedRules(sheet.cssRules)) {
+-			const names =
+-				rule instanceof CSSLayerStatementRule
+-					? Array.from(rule.nameList)
+-					: rule instanceof CSSLayerBlockRule
+-						? [rule.name]
+-						: []
+-			for (const name of names) {
+-				if (!order.includes(name)) order.push(name)
+-			}
+-		}
+-		expect(order).toEqual(['theme', 'reset', 'base', 'elements', 'components', 'utilities'])
++		expect(collectLayerOrder([sheet])).toEqual([
++			'theme',
++			'reset',
++			'base',
++			'elements',
++			'components',
++			'utilities',
++		])
++	})
++	it('loads the shipped cascade alone, with no Tailwind stylesheet beside it', () => {
++		// The standalone profile is the product: `@orkestrel/veneer/styles` on its own. Two readings
++		// carry that claim. The first is namespace membership, because a compiled Tailwind
++		// stylesheet declares its theme tokens under prefixes of its own and its utility variables
++		// under `--tw-`. The second is that one sheet on the page declares a cascade layer at all,
++		// and that it is the sheet the reader identifies as Veneer's.
++		//
++		// The `--lightningcss-` namespace is the minifier's own lowering of `light-dark()` in the
++		// built cascade rather than anything the sources declare, so the reading permits it and does
++		// not require it: a toolchain release that stops emitting it leaves this case green, and one
++		// that emits a namespace nobody predicted still reddens it.
++		const namespaces = new Set(
++			collectCustomProperties().map((name) => name.slice(0, name.indexOf('-', 2) + 1)),
++		)
++		namespaces.delete('--lightningcss-')
++		expect([...namespaces].sort()).toEqual(['--bs-', TOKEN_PREFIX])
++		const cascade = requireValue(readCascadeSheet(), 'The document loaded no Veneer cascade')
++		const layered = Array.from(document.styleSheets).filter(
++			(sheet) => collectLayerOrder([sheet]).length > 0,
++		)
++		expect(layered).toEqual([cascade])
++		// Both readings are only as good as their ability to fail, and the standalone document
++		// carries nothing that can move them, so the control is planted. The plant wears the shape a
++		// Tailwind stylesheet arrives in: a `theme` layer block declaring a token of its own.
++		scene.load('@layer theme { :root { --tw-probe: 1 } }')
++		expect(collectCustomProperties().filter((name) => name.startsWith('--tw-'))).toEqual([
++			'--tw-probe',
++		])
++		// The same namespace reading reports the plant, so the set it compares is one a foreign
++		// stylesheet moves rather than one nothing on this page could.
++		const planted = new Set(
++			collectCustomProperties().map((name) => name.slice(0, name.indexOf('-', 2) + 1)),
++		)
++		planted.delete('--lightningcss-')
++		expect([...planted].sort()).toEqual(['--bs-', '--tw-', TOKEN_PREFIX])
++		expect(
++			Array.from(document.styleSheets).filter((sheet) => collectLayerOrder([sheet]).length > 0)
++				.length,
++		).toBe(2)
++		// The plant declares a `theme` block and no Veneer token, so the reader still answers with
++		// the shipped cascade rather than with the sheet that arrived after it.
++		expect(readCascadeSheet()).toBe(cascade)
+ 	})
+ 	it('gives every styled tag the same treatment wherever the markup puts it', () => {
+ 		const rules = collectLayer('elements').filter((rule) => rule instanceof CSSStyleRule)
+diff --git a/tests/tailwind/profiles.test.ts b/tests/tailwind/profiles.test.ts
+new file mode 100644
+index 0000000..44d759b
+--- /dev/null
++++ b/tests/tailwind/profiles.test.ts
+@@ -0,0 +1,202 @@
++import { requireValue } from '@orkestrel/test'
++import { afterEach, describe, expect, it } from 'vitest'
++import {
++	collectClassNames,
++	collectCustomProperties,
++	collectFilledLayers,
++	collectInlineSources,
++	collectLayerOrder,
++	collectLayerRules,
++	collectSelectors,
++	loadSheet,
++	readCascadeSheet,
++	readLayerStatement,
++	scene,
++} from '../setupBrowser.js'
++import guideSource from '../../guides/veneer.md?raw'
++import tailwindProfile from '../setup.css?inline'
++import tailwindSource from '../setup.css?raw'
++import preflightProfile from '../fixtures/tailwind/preflight.css?inline'
++import preflightSource from '../fixtures/tailwind/preflight.css?raw'
++import unexcludedInstrument from '../fixtures/tailwind/unexcluded.css?inline'
++import unexcludedSource from '../fixtures/tailwind/unexcluded.css?raw'
++
++// The order Veneer's own `_tokens.scss` partial declares, which every profile repeats unchanged.
++const ORDER = ['theme', 'reset', 'base', 'elements', 'components', 'utilities']
++
++// The floor the exclusion list has to clear. A scan that reached the compiler with nothing in it
++// emits no rule at all, which would satisfy every other reading in this file, so the instrument
++// has to be shown emitting these before its silence under the exclusion line means anything.
++const FLOOR_SELECTORS = ['.container', '.table', '.col-1', '.caption-top', '.caption-bottom']
++
++// The theme variables the instrument's control utilities read: `px-8` resolves its padding from the
++// spacing scale and `font-bold` its weight from the weight scale. Tailwind keeps a theme variable
++// only for a utility it generated, so these are present exactly when the theme import was composed
++// and a utility that reads them was emitted.
++const CONTROL_VARIABLES = ['--spacing', '--font-weight-bold']
++
++afterEach(() => {
++	scene.clear()
++})
++
++describe('stylesheet profiles', () => {
++	it('declares the one order line in every profile, and leaves the document order unmoved', () => {
++		// The cascade is loaded as a setup file, so its own order statement is already the
++		// document's. A profile arriving after it re-declares names that are already placed, which
++		// is what makes the pairing safe: a layer's position is settled by its first declaration.
++		expect(collectLayerOrder()).toEqual(ORDER)
++		for (const compiled of [tailwindProfile, preflightProfile]) {
++			const sheet = loadSheet(compiled)
++			expect(readLayerStatement(sheet)).toEqual(ORDER)
++			expect(collectLayerOrder()).toEqual(ORDER)
++		}
++		// The instrument's control registers a custom property, so Tailwind prepends a generated
++		// layer statement of its own and the order line follows it. The following case reads that
++		// placement; the reading here is that the order line is declared unchanged behind it.
++		const instrument = loadSheet(unexcludedInstrument)
++		expect(collectLayerOrder([instrument]).slice(-ORDER.length)).toEqual(ORDER)
++		expect(collectLayerOrder().slice(0, ORDER.length)).toEqual(ORDER)
++	})
++	it('fills Tailwind reset only under the preflight profile', () => {
++		// This is the difference the two profile names stand for. The `tailwind` profile composes
++		// the theme and utilities imports and reaches no reset; the `preflight` profile takes the
++		// bare import, which fills the `base` layer with Tailwind's reset and declares Tailwind's
++		// own theme tokens beside it.
++		const tailwind = loadSheet(tailwindProfile)
++		expect(collectFilledLayers([tailwind])).toEqual([])
++		expect(collectCustomProperties([tailwind])).toEqual([])
++		scene.clear()
++		const preflight = loadSheet(preflightProfile)
++		expect(collectFilledLayers([preflight])).toEqual(['theme', 'base'])
++		expect(collectCustomProperties([preflight])).toContain('--font-sans')
++		expect(collectSelectors([preflight])).not.toEqual([])
++	})
++	it('composes the theme and utilities imports, proved by a candidate the cascade never ships', () => {
++		// Every name the candidate list offers is on the exclusion line, so the `tailwind` profile
++		// emits nothing and its silence cannot tell a composed profile from one whose imports were
++		// deleted. The instrument carries an `@source inline(…)` control naming utilities the built
++		// cascade declares no class for, so its emission is positive: the `theme` block holds the
++		// variables those utilities read, and the `utilities` block holds their rules. Removing
++		// either import takes one of those readings away.
++		const [control] = collectInlineSources(unexcludedSource).filter((source) => !source.excluded)
++		const names = requireValue(control, 'The instrument declares no candidate control').names
++		const instrument = loadSheet(unexcludedInstrument)
++		// Each reading names the layer block it is asking about rather than taking the whole sheet,
++		// because the claim is about where the compiler put the declaration. A theme variable read
++		// off the whole stylesheet is still found when the block holding it is no longer `theme`.
++		const variables = collectLayerRules('theme', [instrument]).flatMap((rule) =>
++			rule instanceof CSSStyleRule ? Array.from(rule.style) : [],
++		)
++		for (const variable of CONTROL_VARIABLES) expect(variables).toContain(variable)
++		const utilities = collectLayerRules('utilities', [instrument]).flatMap((rule) =>
++			rule instanceof CSSStyleRule ? [rule.selectorText] : [],
++		)
++		for (const name of names) expect(utilities).toContain(`.${name}`)
++		// Both readings are only as good as their ability to fail on a declaration that moved, and
++		// the compiler puts each one where it belongs, so the control is planted: the same compiled
++		// bytes with the `theme` block relabelled. The scoped reading reports nothing there, while a
++		// reading taken across the whole stylesheet still finds every variable.
++		scene.clear()
++		const moved = loadSheet(unexcludedInstrument.replace('@layer theme {', '@layer reset {'))
++		expect(collectLayerRules('theme', [moved])).toEqual([])
++		for (const variable of CONTROL_VARIABLES) {
++			expect(collectCustomProperties([moved])).toContain(variable)
++		}
++	})
++	it('places the generated properties layer before the order line, leaving the named layers in order', () => {
++		// A utility that registers a custom property makes Tailwind generate a `properties` layer,
++		// and Tailwind declares that layer ahead of the order line the entry wrote. The placement is
++		// what a consumer meets, so the reading is of the compiled stylesheet's own order: the
++		// generated layer comes first and Veneer's named layers follow in their declared order.
++		const instrument = loadSheet(unexcludedInstrument)
++		expect(collectFilledLayers([instrument])).toContain('properties')
++		expect(collectLayerOrder([instrument])).toEqual(['properties', ...ORDER])
++		// In this document the cascade placed the named layers before the profile arrived, so the
++		// generated layer takes the one position left rather than moving any of them.
++		expect(collectLayerOrder()).toEqual([...ORDER, 'properties'])
++	})
++	it('withholds every shared class name the exclusion line names, and emits them without it', () => {
++		const [exclusion] = collectInlineSources(tailwindSource).filter((source) => source.excluded)
++		const excluded = requireValue(
++			exclusion,
++			'The tailwind profile declares no exclusion line',
++		).names
++		for (const selector of FLOOR_SELECTORS) expect(excluded).toContain(selector.slice(1))
++		// The instrument is the `tailwind` profile without its exclusion line, so what it emits and
++		// the profile does not is exactly what the line withheld. Reading the instrument first
++		// proves the candidates list reached the compiler at all.
++		const instrument = loadSheet(unexcludedInstrument)
++		const emitted = collectSelectors([instrument])
++		for (const selector of FLOOR_SELECTORS) expect(emitted).toContain(selector)
++		// The instrument's own control names are read from the directive that adds them rather than
++		// repeated here, so the list has one home on this side too. Every remaining name the
++		// compiler generated is on the exclusion line, which is what makes the line complete for
++		// the class names this release ships rather than for the ones the floor happens to list.
++		const control = collectInlineSources(unexcludedSource).flatMap((source) =>
++			source.excluded ? [] : source.names,
++		)
++		expect(
++			collectClassNames([instrument]).filter(
++				(name) => !excluded.includes(name) && !control.includes(name),
++			),
++		).toEqual([])
++		scene.clear()
++		expect(collectSelectors([loadSheet(tailwindProfile)])).toEqual([])
++	})
++	it('holds every written copy of the exclusion line equal to the profile that declares it', () => {
++		// The guide's recipes and the preflight fixture each repeat the list, so the claim that the
++		// profile is its one home is only true if something holds the copies to it. This is that
++		// something: a release that extends the line and leaves a copy behind reddens here rather
++		// than shipping two lists that disagree.
++		const [exclusion] = collectInlineSources(tailwindSource).filter((source) => source.excluded)
++		const declared = requireValue(
++			exclusion,
++			'The tailwind profile declares no exclusion line',
++		).names
++		// Only the guide's CSS fences are read as CSS. Its prose names the directive too, and the
++		// reader refuses a form it cannot parse rather than skipping it, so handing it the whole
++		// document reports the prose as a malformed directive — which is the reader working.
++		const fences = guideSource
++			.split('```')
++			.filter((block, index) => index % 2 === 1 && block.startsWith('css\n'))
++		expect(fences).not.toEqual([])
++		const copies = [
++			...collectInlineSources(fences.join('\n')),
++			...collectInlineSources(preflightSource),
++		]
++		expect(copies).not.toEqual([])
++		for (const copy of copies) {
++			expect(copy.excluded).toBe(true)
++			expect(copy.names).toEqual(declared)
++		}
++	})
++	it('declares the Tailwind parts each profile is named for, and repeats them in the instrument', () => {
++		// The preceding case proves the instrument's imports load-bearing, and the instrument is a
++		// copy. This holds the copy to the profile and pins what the profile imports, so deleting a
++		// part from either file reports here. Without it the `tailwind` profile could lose a part
++		// and stay green, because every name its candidate list offers is excluded and a profile
++		// with no Tailwind parts at all emits the same nothing.
++		const declared = tailwindSource.split('\n').filter((line) => line.startsWith('@import '))
++		expect(declared).toEqual([
++			"@import 'tailwindcss/theme.css' layer(theme);",
++			"@import 'tailwindcss/utilities.css' layer(utilities) source(none);",
++		])
++		expect(unexcludedSource.split('\n').filter((line) => line.startsWith('@import '))).toEqual(
++			declared,
++		)
++		// The `preflight` profile is the one that differs, and the bare import is the difference.
++		expect(preflightSource.split('\n').filter((line) => line.startsWith('@import '))).toEqual([
++			"@import 'tailwindcss' source(none);",
++		])
++	})
++	it("reads Veneer's sheet while a Tailwind stylesheet is loaded", () => {
++		const cascade = requireValue(readCascadeSheet(), 'The document loaded no Veneer cascade')
++		const preflight = loadSheet(preflightProfile)
++		// The preflight profile fills a `theme` layer block, which is what the reader used to
++		// select a sheet by, so this is the sheet a signature of that shape would answer with.
++		expect(collectFilledLayers([preflight])).toContain('theme')
++		expect(readCascadeSheet([preflight])).toBeUndefined()
++		expect(readCascadeSheet([preflight, cascade])).toBe(cascade)
++		expect(readCascadeSheet()).toBe(cascade)
++	})
++})

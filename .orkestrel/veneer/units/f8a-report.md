@@ -681,3 +681,179 @@ $ grep -n '^const ' tests/tailwind/profiles.test.ts
 - **`npm test` was not run this round.** The brief's gate list does not name it, and this worktree
   still carries no `dist/src/core/index.js`, which reddens `test:setup` and `test:conformance` for a
   reason the first report records.
+
+## Round 3
+
+Successor brief `tmp/units/f8a-brief-3.md`, the second fix round, over
+`f8a-fix-audit-analyst-verdict.md` (`FAIL 1, 3, 5`). Same worktree, baseline `6e74ec9`, 2026-09-22.
+F-DISPATCH is the Orchestrator's launch evidence and is not carried here.
+
+### Obligation 1 — the theme reading is scoped (analyst 1)
+
+`tests/setupBrowser.ts` gains `collectLayerRules(name, sheets)`: the rules the given stylesheets put
+inside one named layer block, with no cascade resolution. `collectLayer` is now that reading over
+the sheet `readCascadeSheet` resolves, so the refusal it owns stays where it was and the body is no
+longer duplicated.
+
+The control case reads each fact out of the block it belongs to:
+
+- `collectLayerRules('theme', [instrument])` for `--spacing` and `--font-weight-bold`;
+- `collectLayerRules('utilities', [instrument])` for the control's rules.
+
+Both inline readings the case carried over the whole sheet are gone. The case also plants a live
+control: the same compiled bytes with `@layer theme {` relabelled, where the scoped reading reports
+nothing and a whole-sheet reading still finds every variable.
+
+Command for every reading here:
+
+```text
+npm exec -- vitest run --config configs/src/vite.tailwind.config.ts --no-cache --reporter=dot tests/tailwind/profiles.test.ts
+```
+
+| Mutation | Reading |
+| --- | --- |
+| the instrument's `theme` block relabelled to `reset`, scoped reading in place | **red** — `1 failed \| 7 passed (8)`: `expected [] to include '--spacing'` at `profiles.test.ts:74` |
+| the same relabelling, reading taken across the whole stylesheet | **green** — `Tests 8 passed (8)` |
+
+The second row is the defect the audit found, reproduced. The pair is the proof that the scoping is
+what distinguishes the move, rather than the relabelling being caught by something else.
+
+### Obligation 2 — the guide's empty-emission statement is bounded (analyst 3)
+
+§ Tailwind's paragraph after the profile table now states the composable case first and the bare
+import second:
+
+> Under the composable imports, Tailwind fills a layer only for the utilities it generates from the
+> markup your `@source` rule names: the `utilities` layer carries those rules and the `theme` layer
+> carries the variables those rules read. A build whose markup uses no Tailwind utility therefore
+> fills no layer at all. The bare import differs, because preflight is not generated from your
+> markup: it fills `base` and reads font variables of its own, so the `preflight` profile carries
+> `theme` and `base` whatever your markup uses.
+> [stylesheet profiles](../tests/tailwind/profiles.test.ts) reads that difference.
+
+The generated-`properties` sentence follows as its own paragraph, unchanged in substance. The
+existing fixture assertion agrees with the new text without edit: `fills Tailwind reset only under
+the preflight profile` asserts `collectFilledLayers([preflight])` equals `['theme', 'base']` while
+the same profile's candidate population is fully excluded.
+
+### Obligation 3 — the directive reader parses every supported form (analyst 5)
+
+`collectInlineSources` reads either quotation mark and tolerates whitespace inside the parentheses.
+It no longer skips what it cannot read: it counts the `@source … inline(` occurrences, and refuses
+by naming the first one the strict grammar did not match at the same index.
+
+Controls added to its case in `tests/setupBrowser.test.ts`:
+
+- `@source not inline('container table');` reads as `{ excluded: true, names: ['container', 'table'] }`;
+- `@source  not  inline( "container" );` reads the same through the whitespace;
+- `@source not inline(container);` throws `is written in a form this reader does not parse`;
+- `@source inline("mixed');` throws naming the directive text it refused.
+
+The copy-equality mutation the audit named, command as preceding:
+
+| Mutation | Reading |
+| --- | --- |
+| the guide's first exclusion copy rewritten with single quotes and `col-7` removed | **red** — `1 failed \| 7 passed (8)`: `expected [ 'caption-bottom', …(15) ] to deeply equal [ 'caption-bottom', …(16) ]`, naming `- "col-7"` |
+
+The guide was restored from a copy; `grep -c 'not inline("' guides/veneer.md` prints `2` and no
+single-quoted copy remains.
+
+**The refusal found a defect in the round-2 case on its first run.** The copy-equality case handed
+`collectInlineSources` the whole guide, and § Tailwind's own prose names the directive as
+`@source inline(…)`. The new refusal reported it:
+
+```text
+Error: The directive at 30158 is written in a form this reader does not parse: @source inline(…)` control naming utilities the cascade decl
+```
+
+That reading was wrong in round 2 and passed silently, because the old grammar skipped the prose
+instead of refusing it. The case now reads the guide's `css` fences alone — a trivial one-use split
+inlined into the case — so it parses CSS as CSS and prose as neither. Both guide fences and the
+fixture stay in the compared population, which the case asserts is non-empty on each side.
+
+### A further export, and its case
+
+`collectLayerRules` is inventoried in the export-list case and has its own case,
+`reads one named layer out of the sheets it is given, where the cascade reading resolves one first`:
+it reads a named layer across sheets that are not the cascade, shows `collectLayer` refusing the
+same sheets, keeps the empty answers for a placed-and-unfilled layer and an undeclared name apart
+from that refusal, and asserts the two readings agree where both can be asked.
+
+### Touched files
+
+| File | Summary |
+| --- | --- |
+| `/home/user/veneer-f8/tests/setupBrowser.ts` | Adds `collectLayerRules` and routes `collectLayer` through it; `collectInlineSources` reads either quotation mark and refuses an unparsable directive by name. |
+| `/home/user/veneer-f8/tests/setupBrowser.test.ts` | Inventories `collectLayerRules` and adds its case; adds the single-quoted, whitespace, and refusal controls to the directive case. |
+| `/home/user/veneer-f8/tests/tailwind/profiles.test.ts` | Scopes the theme and utilities readings to their layer blocks; plants the relabelled-block control; reads the guide's `css` fences alone in the copy-equality case. |
+| `/home/user/veneer-f8/guides/veneer.md` | Bounds the empty-emission statement to the composable imports and states the bare import's emission beside it. |
+
+### Gate exits
+
+| Gate | Exit | Reading |
+| --- | --- | --- |
+| `npm run format:check` | 0 | All matched files use the correct format |
+| `npm run lint:check` | 0 | no output |
+| `npm run check` | 0 | root and every scoped project |
+| `npm run test:src:tailwind` | 0 | Test Files 1 passed (1); Tests 8 passed (8) |
+| `npm run test:setup:browser` | 0 | Test Files 1 passed (1); Tests 56 passed (56) |
+| `npm run test:guides` | 0 | exit 0 |
+| `npm run test:policy` | 0 | exit 0 |
+
+Observed beside them, not in the brief's list: `npm run test:src:styles` exit 0, Test Files 58
+passed (58), Tests 416 passed (416).
+
+### Acceptance criteria
+
+1. `format:check`, `lint:check`, `check` exit 0. **Met.**
+2. `test:src:tailwind` exits 0 with the scoped theme reading and its mutation recorded red. **Met.**
+3. `test:setup:browser` exits 0 with the single-quoted control present. **Met.**
+4. `test:guides` and `test:policy` exit 0. **Met.**
+
+### `git status --porcelain`
+
+```text
+ M guides/veneer.md
+ M package.json
+ M tests/setupBrowser.test.ts
+ M tests/setupBrowser.ts
+ M tests/src/styles/index.test.ts
+?? configs/src/vite.tailwind.config.ts
+?? tests/fixtures/tailwind/
+?? tests/setup.css
+?? tests/tailwind/
+```
+
+`git diff 6e74ec9 --stat`:
+
+```text
+ guides/veneer.md               | 124 +++++++++++++++-
+ package.json                   |   3 +-
+ tests/setupBrowser.test.ts     | 253 ++++++++++++++++++++++++++++++++-
+ tests/setupBrowser.ts          | 311 +++++++++++++++++++++++++++++++++++++++--
+ tests/src/styles/index.test.ts |  67 +++++++--
+ 5 files changed, 727 insertions(+), 31 deletions(-)
+```
+
+### Deviations
+
+- **One export beyond the brief.** Obligation 1 asks for a scoped reading and names no mechanism.
+  Writing it inline would have put a second block-finding reading in the same case beside the
+  existing one, so it landed as `collectLayerRules`, with `collectLayer` routed through it and a
+  case of its own. Owned files only.
+- **The copy-equality case's guide reading changed.** Not named by the brief. The new refusal
+  reported the case parsing guide prose as CSS, which was a live defect in round 2's work, so the
+  reading is now scoped to the `css` fences. Recorded earlier with the exact refusal text.
+
+### Claims I flag unverified
+
+- **Tailwind's acceptance of the single-quoted directive is the analyst's measurement, not mine.**
+  I made the reader parse both forms on that reading. What I measured is that the reader now reports
+  the drifted single-quoted copy, which is what the gate exists for; I did not re-compile a
+  single-quoted profile through the installed plugin.
+- **The refusal covers the forms I could name.** It fires on any `@source … inline(` the strict
+  grammar does not match at the same index, so an unquoted list and a mismatched pair are refused.
+  A directive form Tailwind adds later would be refused rather than read, which is the safe
+  direction but still a red gate someone has to open this function to clear.
+- **`npm test` was not run this round**, for the reason the first report records: this worktree
+  carries no `dist/src/core/index.js`, and the brief's gate list does not name the full suite.
