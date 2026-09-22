@@ -1,0 +1,15 @@
+=== f8b D6 settle over veneer-f8b (22:32:55)
+build:src:core exit=0
+ Test Files  3 passed (3)
+      Tests  164 passed (164)
+test:setup exit=0
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  |conformance| tests/conformance.test.ts > runtime boundaries > bundles no forbidden runtime into a published JavaScript entry
+ Test Files  1 failed (1)
+      Tests  1 failed | 16 passed (17)
+test:conformance exit=1
+=== f8b D6 settle 2: full build:src then test:conformance (22:34:19)
+build:src exit=0
+ Test Files  1 passed (1)
+      Tests  17 passed (17)
+test:conformance exit=0

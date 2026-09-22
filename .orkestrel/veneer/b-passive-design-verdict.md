@@ -73,3 +73,16 @@ Every unit `opus` (served `claude-opus-5`); each audit round `analyst` on Astra 
 Orchestrator integrates.
 
 VERDICT: the plan above; briefs B-PASSIVE-A to E drafted after F5b, F5c, F6, and F7 land.
+
+## Amendment D17 — a specimen whose resting paint is empty registers no frame (2026-09-22)
+
+The capture instrument resets every animation to its first step before the shot. A grow spinner's
+first step is `transform: scale(0)` at `opacity: 0`, so its frame region declares no pixel (an empty
+region or a uniform frame, as B-PASSIVE-E measured on every variant), and no host, border, or
+background changes what the subject itself paints. Ruling 5's whole-specimen frame is amended for
+that case alone: a specimen whose only paint is an animation frame after its first step renders in
+the showcase, registers no capture scenario, records the reason in the registry's doc comment and
+in the guide's § Showcase, and its proof reads the animation timeline instead. Every other
+specimen keeps ruling 5 unchanged. The objective lane's request for a bordered host is refused on
+this reading: the host would be the frame's only paint, and a frame of a host is not a frame of the
+subject.

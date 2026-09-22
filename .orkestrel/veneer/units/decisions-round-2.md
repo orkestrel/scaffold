@@ -150,3 +150,9 @@ Orchestrator ruling from the B-SWEEP design round (`b-sweep-design-verdict.md`):
 inline; the sweep reports duplication through `findDuplicates` beside an unchanged `scanStyleBlocks`
 under `(shared >= 2 && shared * 2 > min(left, right)) || shared >= 6`; the styles rule states the
 coincidence line; `list-reset` is the one accepted mixin because it is Bootstrap's own.
+
+## D17 — an empty resting paint registers no frame (2026-09-22)
+
+Orchestrator amendment to the B-PASSIVE design verdict's ruling 5 (recorded there): a specimen
+whose only paint is an animation frame after its first step (the grow spinners) renders in the
+showcase, registers no capture scenario with the reason recorded, and its proof reads the timeline.
