@@ -1,0 +1,29 @@
+CLAIM3
+before=|null live=active|true after=|null restored=true second=BUTTON_HOST_OWNED toggleAfterDestroy=false wroteAfterDestroy=false reown=constructed
+before=active|null live=|false after=active|null restored=true second=BUTTON_HOST_OWNED toggleAfterDestroy=true wroteAfterDestroy=false reown=constructed
+before=|false live=active|true after=|false restored=true second=BUTTON_HOST_OWNED toggleAfterDestroy=false wroteAfterDestroy=false reown=constructed
+before=active|true live=|false after=active|true restored=true second=BUTTON_HOST_OWNED toggleAfterDestroy=true wroteAfterDestroy=false reown=constructed
+before=btn|true live=btn active|true after=btn|true restored=true second=BUTTON_HOST_OWNED toggleAfterDestroy=false wroteAfterDestroy=false reown=constructed
+stdout | tests/src/browser/integration.test.ts:57:2 > probe: Delegate contract (claim 4) > toggles nested clicks, refuses disabled hosts, releases removed hosts, leaves owned hosts, restores on destroy
+CLAIM4
+nestedChildClick pressed=true aria=true
+disabled attr=false class=false aria=false
+ownedByConsumer pressed=false consumerPressed=false
+removedHost afterRelease=|null
+anchor pressed=true defaultPrevented=true hash=
+events=nested,removed,nested,anchor
+afterDestroy nested=|null anchor=|null owned=|null
+clickAfterDestroy nested=|null
+stdout | tests/src/browser/integration.test.ts:120:2 > probe: colour-mode islands (claims 5 and 10) > compares apply(light) on a nested root against an explicit light attribute under a dark ancestor
+CLAIM5
+root=#fff
+outerDark=oklch(21% .013 256)
+explicitLight={"bg":"#fff","scheme":"light"}
+applyDark={"bg":"oklch(21% .013 256)","scheme":"dark","attr":"dark"}
+applyLight={"bg":"oklch(21% .013 256)","scheme":"dark","attr":null}
+applyLightEqualsExplicitLight=false
+ ✓ |src:browser (chromium)| tests/src/browser/integration.test.ts:19:2 > probe: Button restoration (claim 3) > restores every initial state byte for byte and refuses a second owner 4ms
+ ✓ |src:browser (chromium)| tests/src/browser/integration.test.ts:57:2 > probe: Delegate contract (claim 4) > toggles nested clicks, refuses disabled hosts, releases removed hosts, leaves owned hosts, restores on destroy 2ms
+ ✓ |src:browser (chromium)| tests/src/browser/integration.test.ts:120:2 > probe: colour-mode islands (claims 5 and 10) > compares apply(light) on a nested root against an explicit light attribute under a dark ancestor 2ms
+ Test Files  1 passed (1)
+      Tests  3 passed (3)

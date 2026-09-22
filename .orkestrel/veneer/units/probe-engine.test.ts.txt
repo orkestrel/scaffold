@@ -1,0 +1,145 @@
+// TEMPORARY ORCHESTRATOR PROBE for the audit round (claims 3, 4, 5, 10). Deleted before the lanes launch.
+import { describe, expect, it } from 'vitest'
+import { Button, ColorMode, Delegate } from '@src/browser'
+import { isAppError } from '@src/core'
+import '../../../dist/src/styles/index.css'
+
+function snapshot(host: HTMLElement): string {
+	return `${host.className}|${host.getAttribute('aria-pressed')}`
+}
+
+describe('probe: Button restoration (claim 3)', () => {
+	const states: ReadonlyArray<{ readonly className: string; readonly pressed: string | null }> = [
+		{ className: '', pressed: null },
+		{ className: 'active', pressed: null },
+		{ className: '', pressed: 'false' },
+		{ className: 'active', pressed: 'true' },
+		{ className: 'btn', pressed: 'true' },
+	]
+	it('restores every initial state byte for byte and refuses a second owner', () => {
+		const rows: string[] = []
+		for (const state of states) {
+			const host = document.createElement('button')
+			host.className = state.className
+			if (state.pressed !== null) host.setAttribute('aria-pressed', state.pressed)
+			document.body.append(host)
+			const before = snapshot(host)
+			const button = new Button(host)
+			let second = 'constructed'
+			try {
+				new Button(host)
+			} catch (error) {
+				second = isAppError(error) ? error.code : String(error)
+			}
+			button.toggle()
+			button.toggle()
+			button.toggle()
+			const live = snapshot(host)
+			button.destroy()
+			const after = snapshot(host)
+			const afterToggle = button.toggle()
+			const afterToggleSnapshot = snapshot(host)
+			let reowned = 'constructed'
+			try {
+				new Button(host).destroy()
+			} catch (error) {
+				reowned = isAppError(error) ? error.code : String(error)
+			}
+			rows.push(`before=${before} live=${live} after=${after} restored=${before === after} second=${second} toggleAfterDestroy=${afterToggle} wroteAfterDestroy=${after !== afterToggleSnapshot} reown=${reowned}`)
+			host.remove()
+		}
+		console.log(['CLAIM3', ...rows].join('\n'))
+		expect(rows.length).toBe(states.length)
+	})
+})
+
+describe('probe: Delegate contract (claim 4)', () => {
+	it('toggles nested clicks, refuses disabled hosts, releases removed hosts, leaves owned hosts, restores on destroy', () => {
+		const root = document.createElement('div')
+		document.body.append(root)
+		const make = (attributes: Readonly<Record<string, string>>, nested: boolean): HTMLButtonElement => {
+			const host = document.createElement('button')
+			host.setAttribute('data-bs-toggle', 'button')
+			for (const [name, value] of Object.entries(attributes)) host.setAttribute(name, value)
+			if (nested) {
+				const span = document.createElement('span')
+				span.textContent = 'label'
+				host.append(span)
+			} else host.textContent = 'label'
+			root.append(host)
+			return host
+		}
+		const events: string[] = []
+		root.addEventListener('toggle.vn.button', (event) => {
+			if (event.target instanceof HTMLElement) events.push(event.target.id || 'anon')
+		})
+		const nested = make({ id: 'nested' }, true)
+		const disabledAttribute = make({ id: 'disabledAttribute', disabled: '' }, false)
+		const disabledClass = make({ id: 'disabledClass', class: 'disabled' }, false)
+		const ariaDisabled = make({ id: 'ariaDisabled', 'aria-disabled': 'true' }, false)
+		const owned = make({ id: 'owned' }, false)
+		const removed = make({ id: 'removed' }, false)
+		const anchor = document.createElement('a')
+		anchor.id = 'anchor'
+		anchor.setAttribute('data-bs-toggle', 'button')
+		anchor.setAttribute('role', 'button')
+		anchor.href = '#somewhere'
+		anchor.textContent = 'anchor'
+		root.append(anchor)
+		const consumer = new Button(owned)
+		const delegate = new Delegate({ root })
+		const click = (target: Element) => target.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }))
+		const rows: string[] = []
+		click(nested.firstElementChild ?? nested)
+		rows.push(`nestedChildClick pressed=${nested.classList.contains('active')} aria=${nested.getAttribute('aria-pressed')}`)
+		click(disabledAttribute)
+		click(disabledClass)
+		click(ariaDisabled)
+		rows.push(`disabled attr=${disabledAttribute.classList.contains('active')} class=${disabledClass.classList.contains('active')} aria=${ariaDisabled.classList.contains('active')}`)
+		click(owned)
+		rows.push(`ownedByConsumer pressed=${owned.classList.contains('active')} consumerPressed=${consumer.pressed}`)
+		click(removed)
+		removed.remove()
+		click(nested)
+		rows.push(`removedHost afterRelease=${snapshot(removed)}`)
+		const cancelled = !click(anchor)
+		rows.push(`anchor pressed=${anchor.classList.contains('active')} defaultPrevented=${cancelled} hash=${location.hash}`)
+		rows.push(`events=${events.join(',')}`)
+		delegate.destroy()
+		rows.push(`afterDestroy nested=${snapshot(nested)} anchor=${anchor.className}|${anchor.getAttribute('aria-pressed')} owned=${snapshot(owned)}`)
+		click(nested)
+		rows.push(`clickAfterDestroy nested=${snapshot(nested)}`)
+		consumer.destroy()
+		root.remove()
+		console.log(['CLAIM4', ...rows].join('\n'))
+		expect(rows.length).toBeGreaterThan(0)
+	})
+})
+
+describe('probe: colour-mode islands (claims 5 and 10)', () => {
+	it('compares apply(light) on a nested root against an explicit light attribute under a dark ancestor', () => {
+		const outer = document.createElement('div')
+		outer.setAttribute('data-bs-theme', 'dark')
+		const inner = document.createElement('div')
+		const leaf = document.createElement('p')
+		leaf.textContent = 'leaf'
+		inner.append(leaf)
+		outer.append(inner)
+		document.body.append(outer)
+		const read = (name: string) => getComputedStyle(leaf).getPropertyValue(name).trim()
+		inner.setAttribute('data-bs-theme', 'light')
+		const explicitLight = { bg: read('--bs-body-bg'), scheme: getComputedStyle(inner).colorScheme }
+		inner.removeAttribute('data-bs-theme')
+		const controller = new ColorMode({ root: inner })
+		controller.apply('dark')
+		const underDark = { bg: read('--bs-body-bg'), scheme: getComputedStyle(inner).colorScheme, attr: inner.getAttribute('data-bs-theme') }
+		controller.apply('light')
+		const underApplyLight = { bg: read('--bs-body-bg'), scheme: getComputedStyle(inner).colorScheme, attr: inner.getAttribute('data-bs-theme') }
+		const rootValue = getComputedStyle(document.documentElement).getPropertyValue('--bs-body-bg').trim()
+		const outerValue = getComputedStyle(outer).getPropertyValue('--bs-body-bg').trim()
+		console.log(['CLAIM5', `root=${rootValue}`, `outerDark=${outerValue}`, `explicitLight=${JSON.stringify(explicitLight)}`, `applyDark=${JSON.stringify(underDark)}`, `applyLight=${JSON.stringify(underApplyLight)}`, `applyLightEqualsExplicitLight=${underApplyLight.bg === explicitLight.bg}`].join('\n'))
+		controller.destroy()
+		outer.remove()
+		expect(explicitLight.bg.length).toBeGreaterThan(0)
+	})
+})
