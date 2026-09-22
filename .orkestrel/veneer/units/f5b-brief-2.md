@@ -133,18 +133,51 @@ proofs.
 Remove "three classes of difference" and "Two Elements behaviors" from the guide and "seven cells"
 from `tests/setupServer.ts`, naming the members where a sentence needs them.
 
-### Obligation 7 — the reviewer's findings
+### Obligation 7 — the reviewer's findings (`f5b-audit-reviewer-verdict.md`)
 
-Read `f5b-audit-reviewer-verdict.md` beside this brief and close every finding it marks BROKEN or
-names as a finding that falls inside the owned files; report each by its label with what changed, and
-report any it names outside the owned files as a patch.
+- Claim 4: add the retained plant for the deferral gate's normalization step — a scratch guide and
+  scratch cascade whose written deferral name differs from the emitted selector only in combinator
+  spacing — driven through the centralized scanner of obligation 2.
+- F-1: the `:root` reason (obligation 3) and a re-check of every § Additions `reason` cell that
+  asserts what the release writes or omits, against `node_modules/bootstrap/dist/css/bootstrap.css`;
+  correct each false one and list them.
+- F-2: the `Departure` legend defines `dropped` as "leaves the property with no value, by omitting
+  the declaration or by writing it empty" and `declared` as "writes the value in a form or at a value
+  the other members do not name", and the § Departures introduction states that the comparison is
+  textual, so a row can record a difference in notation whose computed value matches — reconciled
+  with obligation 3's ruling that an emitted empty value against a recorded non-empty one is
+  `declared` (if the two conflict, obligation 3 wins and the legend says so).
+- F-3: rename `collectDepartures` to `collectLedger` and `CascadeAddition` to `Addition`, updating
+  every consumer, inventory row, and guide sentence.
+- F-4: write each per-component heading with its key in backticks (`#### \`btn\``).
+- The property-fallback loop (the reviewer's third referral): where two shipped components could
+  claim one emitted declaration, attribute once and refuse the second claim with both keys named, and
+  plant it.
+- Name the refresh command (`npm run build:src && npm run test:conformance`) in § Departures before
+  the loop description.
+- The § Files row for `tests/setupServer.ts` (claim 9's residue) names the ledger readers and the tag
+  reader among the module's roles.
+
+### Obligation 8 — the ledger's home (the reviewer's referral to the Orchestrator, ruled)
+
+Move the `### Departures` and `### Additions` tables out of `guides/veneer.md` into a new guide file
+`guides/ledger.md` (H1 "Ledger", a one-sentence blockquote tagline, an introduction naming the
+readers, the gates, the refresh command, and the legend; then the two sections with their tables in
+the shape the readers parse). `guides/veneer.md` § Tokens keeps `### Departures`, `### Additions`, and
+`### Outside the ledger` as short sections whose paragraphs state the contract and point at
+`guides/ledger.md` for the rows (a relative link the link parity gate resolves). `readDepartures` and
+`readAdditions` take the new file's path from the conformance proof; `guides/README.md` indexes the
+new guide in both its concept and directory indexes. Return the `ROADMAP.md` § Records patch naming
+`guides/ledger.md` beside `guides/veneer.md`. `npm run test:guides` and `npm run test:policy` must
+exit 0 over both files.
 
 ## Scope
 
 **Owned.** `tests/setupServer.ts`, `tests/setupServer.test.ts`, `tests/conformance.test.ts`,
 `tests/setupStyles.ts` (the `ELEMENT_TAGS` doc and the relatives it names), `guides/veneer.md`
-§ Departures, § Additions, § Outside the ledger, § Deferred selectors, and § Compatibility. The
-first run's granted files stay as they are.
+§ Departures, § Additions, § Outside the ledger, § Deferred selectors, § Compatibility, and the
+§ Files row for `tests/setupServer.ts`; `guides/ledger.md` (new); `guides/README.md` (the index
+rows). The first run's granted files stay as they are.
 
 **Shared (report-only).** `ROADMAP.md`. **Off-limits.** everything else, `src/**` and
 `tests/fixtures/**` included.
@@ -187,7 +220,10 @@ introduction sentences' wording within the rulings.
 3. `npm run build:src && npm run test:conformance` exits 0 over the refreshed ledger.
 4. `npm run test:guides` and `npm run test:policy` exit 0.
 5. `grep -n 'three classes of difference\|Two Elements behaviors' guides/veneer.md; grep -n 'seven cells' tests/setupServer.ts` prints nothing.
-6. `git status --porcelain` lists the first run's files and nothing outside the owned set.
+6. `ls guides/ledger.md` resolves, `grep -c '^#### ' guides/veneer.md` prints 0 for the ledger's
+   per-component headings (they moved), and `grep -n 'collectDepartures\|CascadeAddition' tests guides` prints nothing.
+7. `git status --porcelain` lists the first run's files plus `guides/ledger.md` and `guides/README.md`
+   and nothing outside the owned set.
 
 **Observations, not criteria.** The whole-chain `npm test` reading; the comparison's wall clock.
 
