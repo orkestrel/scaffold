@@ -7,18 +7,19 @@ record and the tree disagree.
 
 ## The ledger (F5b ACCOUNTING-LEDGER)
 
-- The departure tables live in `guides/ledger/departures.md`, under `# Departure ledger`, a
-  tagline, `## Cascade`, `### Departures` (the introduction, the legend, and the refresh command),
-  then one `#### \`<key>\`` table per shipped component in barrel order, columns
+- The departure tables live in `guides/veneer.md` under `## Tokens`, `### Departures` (the
+  introduction, the legend, and the refresh command), then one `#### \`<key>\`` table per shipped
+  component in barrel order, columns
   `Component | Selector | Property | Condition | Bootstrap 5.3.8 | Veneer | Departure`. Where family ruling 5 says
   "under `### Departures` in the guide", read this file.
-- The addition table lives in `guides/ledger/additions.md`, under `## Cascade` and `### Additions`,
+- The addition table lives in `guides/veneer.md` under `## Tokens` and `### Additions`,
   columns `Component | Name | Condition | Category | Reason`. Family ruling 5's addition row shape
   gains the `Condition` cell (the at-rule condition the site sits under, or `—`).
-- `guides/veneer.md` § Tokens keeps `### Outside the ledger` and carries `### The ledger`, a pointer
-  at both files; write no ledger row into `guides/veneer.md`.
+- `### Outside the ledger` follows those two sections (D14: `guides/` holds guides alone, so no
+  `guides/ledger/` directory exists; a worktree cut before L1 LEDGER-HOME landed still carries it,
+  and its rows move into the guide at integration).
 - The readers are `readDepartures()` and `readAdditions()` in `tests/setupServer.ts`, defaulting to
-  the two files; the comparison is `collectLedger` (formerly `collectDepartures`) and
+  the guide; the comparison is `collectLedger` (formerly `collectDepartures`) and
   `collectAdditions`; the addition type is `Addition` (formerly `CascadeAddition`); the drift gates
   read `scanLedgerDrift` and `scanShippedDeferrals`; `describeDeparture` and `describeAddition`
   print the row a gate asks you to add.

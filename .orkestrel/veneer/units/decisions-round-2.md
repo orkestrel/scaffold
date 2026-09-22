@@ -130,3 +130,16 @@ a fixed model ID), GPT-6 Astra (`gpt-6-astra`) in place of GPT-5.6 Sol, and Grok
 Landed in scaffold at 06f9387 across the orchestration contract, the transport contracts, the
 Claude and Codex role files, the Codex configuration, the Cursor rule, the readiness script, and
 the Claude bridge; the queued Veneer briefs and the pending roadmap fold carry Opus 5.5.
+
+## D14 (2026-09-22)
+
+Verbatim: "Why is there even a `guides/ledger`? That makes no sense and does not follow our
+conventions at all, only guides are allowed on the guides folder and the guide for veneer is
+veneer.md. Don't make stuff up like that, follow our conventions, read the AGENTS.md/CLAUDE.md and
+the agents/rules/skills they point to and follow them strictly."
+
+Ruling: `guides/` holds guides alone — the package's own guide, the map, and the catalog mirrors.
+The cascade ledger is part of `guides/veneer.md`. The vendored policy sweep that refused
+`guides/ledger.md` states this law; a nested path that escapes its glob is refused. Carrier:
+L1 LEDGER-HOME reverts the move; every live unit writes its ledger rows into `guides/veneer.md`
+§ Tokens › § Departures and § Additions from its integration onward.
