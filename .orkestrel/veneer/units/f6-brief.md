@@ -69,8 +69,8 @@ before the engine changes, recorded red then green in the report.
 
 **Standing conditions.** The tracked tree is clean at the launch commit; `tmp/` is untracked and
 ignored. `tests/setupPolicy.ts` and `tests/policy.test.ts` are restored by `scaffold repair` and
-off-limits, so the policy sweep's own mirror is not yours; the mirror this brief names is the
-package's partial-to-proof case in `tests/setupStyles.test.ts`. `configs/src/vite.styles.config.ts`
+off-limits, so the policy sweep's mirror is read, never edited; the mirror this brief names is the
+guide sentence Obligation 8 rewrites, proved by that vendored sweep. `configs/src/vite.styles.config.ts`
 is a package-owned wrapper and is yours for the plugin's removal only. `tests/guides.test.ts` reads
 the guide's table shapes; keep every table's heading order and column form.
 
@@ -89,7 +89,7 @@ the guide's table shapes; keep every table's heading order and column form.
 `src/browser/types.ts` only where a changed guard's type demands it (the user's type edits are
 never undone), `tests/src/browser/ColorMode.test.ts`, `tests/src/browser/Delegate.test.ts`,
 `tests/src/browser/validators.test.ts`, `configs/src/vite.styles.config.ts` (the RTL plugin
-removed), `tests/setupStyles.test.ts` (the RTL proofs removed; the mirror case compared by path),
+removed), `tests/setupStyles.test.ts` (the RTL proofs removed),
 `tests/src/styles/tokens.test.ts` (the RTL partition case removed; the role-token matrix added),
 `tests/src/styles/theme.test.ts`, `tests/src/styles/components/table.test.ts` (the caption opt-out
 case), `src/styles/components/_table.scss` (the caption opt-out class), `tests/setupCases.ts` and
@@ -218,17 +218,22 @@ either case, write one doc sentence on each retained guard naming why no Contrac
   siblings use (a field names the property, so the `dd` colour field is named for that), updating
   the `dl` proof's read.
 
-### Obligation 8 — the mirror instrument by path
+### Obligation 8 — the mirror sentence by path
 
-The `tests/setupStyles.test.ts` case that maps partials to proofs compares full relative paths
-(`src/styles/<dir>/_name.scss` to `tests/src/styles/<dir>/name.test.ts`), not base names, so a
-proof moved between directories reddens it. Prove the binding with a planted mismatch over a
-scratch listing, and correct the guide's § Tests sentence to the statement the instrument proves.
+The partial-to-proof mirror the guide's § Tests sentence claims ("Each partial has one proof of
+the same name under the `tests/src/styles/` directory") is proved by the vendored policy sweep,
+which derives each module test's extensionless workspace-relative stem and resolves a
+leading-underscore partial from it (`tests/setupPolicy.ts`, the stem derivation near
+`POLICY_MODULE_EXTENSIONS` and `POLICY_TEST_GLOB`; read it, do not edit it). Rewrite the sentence
+to the statement that instrument proves: one proof at the same relative path under
+`tests/src/styles/` for every partial under `src/styles/`, enforced by `npm run test:policy`. Add
+no package instrument for it; the retained campaign script that compared the two listings is
+superseded by that sentence.
 
 ## Output
 
 Write `./tmp/units/f6-report.md` and return its full content as your final message, nothing else:
-the red-then-green readings for Obligations 1 and 8; per obligation what changed with the files
+the red-then-green reading for Obligation 1; per obligation what changed with the files
 touched; the guard ruling per symbol; the `dist/src/styles/` listing after Obligation 3; the
 commands you ran with exit codes, the gate chain run after your final edit and said to be so;
 `git status --porcelain` and `git diff --stat`; every `ROADMAP.md` or ledger patch; every deviation
@@ -251,7 +256,7 @@ wording.
 2. `npm run test:src:browser` exits 0 with the island, restoration, and acquisition cases present.
 3. `npm run build:src && ls dist/src/styles` lists no `index.rtl.css`; `grep -rn 'rtl' configs src
    tests guides` prints nothing outside a retained ledger row.
-4. `npm run test:setup` exits 0 with the mirror case comparing paths and its plant present.
+4. `npm run test:setup` exits 0.
 5. `npm run test:src:styles` exits 0 with the matrix, the escape proof, and the caption case present.
 6. `npm run test:app` exits 0 with the `main` proof reading through the host.
 7. `npm run test:conformance`, `npm run test:guides`, and `npm run test:policy` exit 0.
