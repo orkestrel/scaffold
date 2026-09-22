@@ -1,0 +1,33 @@
+=== before: 7df1d56f37f97ef1f187dbab49035a9c0111bfec71737a1b41752b50f89d76b1  tests/setupBrowser.ts
+=== baseline test:setup:browser (19:52:12)
+ Test Files  1 passed (1)
+      Tests  54 passed (54)
+=== baseline test:setup:browser exit=0 (19:52:27)
+=== baseline test:journey (19:52:27)
+ Test Files  4 passed (4)
+      Tests  100 passed (100)
+=== baseline test:journey exit=0 (19:53:13)
+mutation applied: the tree half always reads its fallback
+=== mutated test:setup:browser (19:53:13)
+ FAIL  |setup:browser (chromium)| tests/setupBrowser.test.ts:283:2 > browser setup > describes a control-rooted subject through a scope that encloses it
+ Test Files  1 failed (1)
+      Tests  1 failed | 53 passed (54)
+=== mutated test:setup:browser exit=1 (19:53:29)
+=== mutated test:journey (19:53:29)
+ FAIL  |journey:light-1280 (chromium)| tests/app/browser/integration.test.ts:804:2 > portfolio > writes each subject its own accessibility artifact for the variant that rendered it
+ FAIL  |journey:dark-1280 (chromium)| tests/app/browser/integration.test.ts:804:2 > portfolio > writes each subject its own accessibility artifact for the variant that rendered it
+ FAIL  |journey:light-390 (chromium)| tests/app/browser/integration.test.ts:804:2 > portfolio > writes each subject its own accessibility artifact for the variant that rendered it
+ FAIL  |journey:dark-390 (chromium)| tests/app/browser/integration.test.ts:804:2 > portfolio > writes each subject its own accessibility artifact for the variant that rendered it
+ Test Files  4 failed (4)
+      Tests  4 failed | 96 passed (100)
+=== mutated test:journey exit=1 (19:54:18)
+=== after: 7df1d56f37f97ef1f187dbab49035a9c0111bfec71737a1b41752b50f89d76b1  tests/setupBrowser.ts
+=== restored test:setup:browser (19:54:18)
+ Test Files  1 passed (1)
+      Tests  54 passed (54)
+=== restored test:setup:browser exit=0 (19:54:34)
+=== restored test:journey (19:54:34)
+ Test Files  4 passed (4)
+      Tests  100 passed (100)
+=== restored test:journey exit=0 (19:55:24)
+=== control done
