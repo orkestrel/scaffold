@@ -1,0 +1,1151 @@
+diff --git a/app/browser/Showcase.ts b/app/browser/Showcase.ts
+index 94aceb8..a75430c 100644
+--- a/app/browser/Showcase.ts
++++ b/app/browser/Showcase.ts
+@@ -1,7 +1,7 @@
+ import type { ColorModeInterface } from '@src/browser'
+ import type { SectionInterface, ShowcaseInterface } from './types.js'
+ import { ColorMode } from '@src/browser'
+-import { SHOWCASE_COPY } from './constants.js'
++import { SHOWCASE_CONTROL, SHOWCASE_COPY } from './constants.js'
+ import { ButtonSection } from './sections/ButtonSection.js'
+ import { ContentSection } from './sections/ContentSection.js'
+ import { LayoutSection } from './sections/LayoutSection.js'
+@@ -33,7 +33,6 @@ export class Showcase implements ShowcaseInterface {
+ 		this.#controller = new ColorMode({ root: document.documentElement })
+ 		this.#header = document.createElement('header')
+ 		this.#main = document.createElement('main')
+-		this.#main.id = 'main'
+ 		this.#button = document.createElement('button')
+ 		this.#listener = this.#toggle.bind(this)
+ 		this.#sections = this.#mount()
+@@ -59,6 +58,7 @@ export class Showcase implements ShowcaseInterface {
+ 		const heading = document.createElement('h1')
+ 		heading.textContent = SHOWCASE_COPY.heading
+ 		this.#button.type = 'button'
++		this.#button.className = SHOWCASE_CONTROL
+ 		this.#button.textContent = SHOWCASE_COPY.theme
+ 		this.#button.setAttribute('aria-pressed', String(this.#controller.mode === 'dark'))
+ 		this.#button.addEventListener('click', this.#listener)
+diff --git a/app/browser/constants.ts b/app/browser/constants.ts
+index 54e18e6..6ad6321 100644
+--- a/app/browser/constants.ts
++++ b/app/browser/constants.ts
+@@ -9,6 +9,9 @@ export const SHOWCASE_COPY = Object.freeze({
+ 	paragraph: 'Explore the color mode with the Dark mode control.',
+ })
+ 
++/** Names the class the showcase's color-mode control carries. */
++export const SHOWCASE_CONTROL = 'control'
++
+ /** Holds the Button section's visible copy and accessible name. */
+ export const BUTTON_COPY = Object.freeze({
+ 	region: 'Buttons',
+diff --git a/app/browser/styles/_shell.scss b/app/browser/styles/_shell.scss
+index d7032d0..2848b95 100644
+--- a/app/browser/styles/_shell.scss
++++ b/app/browser/styles/_shell.scss
+@@ -3,11 +3,11 @@
+ @layer shell {
+ 	// The showcase is framework-free, so this file is the whole document shell, and the shell owns
+ 	// the document's color scheme in each mode. The published cascade declares `color-scheme` under
+-	// the theme attribute alone, and the color-mode engine removes that attribute for light, so
+-	// these rules carry the scheme through the state the removal leaves behind. `shell` sits outside
+-	// that order statement and therefore sorts after every published layer, so a rule here beats the
+-	// published cascade: the shell paints its own chrome and never a specimen, because a specimen is
+-	// what the showcase exists to prove.
++	// the theme attribute alone, and a document arrives with no attribute on it, so these rules
++	// carry the scheme through the state before the color-mode engine has applied a mode. `shell`
++	// sits outside that order statement and therefore sorts after every published layer, so a rule
++	// here beats the published cascade: the shell paints its own chrome and never a specimen,
++	// because a specimen is what the showcase exists to prove.
+ 	:root {
+ 		color-scheme: light;
+ 	}
+@@ -20,9 +20,9 @@
+ 	// published `elements` treatment for a bare button paints no border over a transparent fill, so
+ 	// the control reads as the prose beside it until a pointer rests on it and the state mix — whose
+ 	// mixer retunes with the mode — paints the only mark it ever gets. The border reads the same in
+-	// both modes and takes the shipped border token, and the selector reaches the header alone, so
+-	// no specimen is painted here: the sections mount into `main`.
+-	header button {
++	// both modes and takes the shipped border token. The selector is the class the showcase sets on
++	// that one button, so no specimen is painted here whatever the shell's markup grows into.
++	.control {
+ 		border: var(--vn-border-width) var(--vn-border-style) var(--vn-border-color);
+ 	}
+ 
+diff --git a/configs/src/vite.styles.config.ts b/configs/src/vite.styles.config.ts
+index d0b9b36..68969db 100644
+--- a/configs/src/vite.styles.config.ts
++++ b/configs/src/vite.styles.config.ts
+@@ -16,20 +16,7 @@ const {
+ // every other array, so the setup files and the include list would double.
+ export default defineConfig({
+ 	...browser,
+-	plugins: [
+-		outputBoundary('dist/src/styles'),
+-		{
+-			name: 'veneer-logical-rtl',
+-			enforce: 'post',
+-			generateBundle(_options, bundle) {
+-				const css = bundle['index.css']
+-				if (css?.type !== 'asset') throw new Error('The styles build emitted no index.css')
+-				// The twin is the same byte stream: nothing flips the cascade, so a right-to-left
+-				// document receives the declarations a left-to-right one receives. F6 removes both.
+-				this.emitFile({ type: 'asset', fileName: 'index.rtl.css', source: css.source })
+-			},
+-		},
+-	],
++	plugins: [outputBoundary('dist/src/styles')],
+ 	build: {
+ 		outDir: 'dist/src/styles',
+ 		emptyOutDir: true,
+diff --git a/guides/veneer.md b/guides/veneer.md
+index 7358e4c..34325c8 100644
+--- a/guides/veneer.md
++++ b/guides/veneer.md
+@@ -17,7 +17,7 @@ publishes the color-mode controller. The token values those names carry are in 
+ | `ColorModeOptions`     | interface | Configures the root and optional persistence of a color-mode controller.                                                             |
+ | `ColorModeInterface`   | interface | Controls the color-mode attribute on one root element.                                                                               |
+ | `ColorMode`            | class     | Applies and optionally restores a root's color mode without registering listeners.                                                   |
+-| `isColorModeState`     | function  | Checks whether a value names a supported color mode.                                                                                 |
++| `isColorModeState`     | const     | Checks whether a value names a supported color mode.                                                                                 |
+ | `COLOR_MODE_ATTRIBUTE` | const     | Names the Bootstrap color-mode attribute.                                                                                            |
+ | `COLOR_MODE_KEY`       | const     | Names the storage key for the chosen color mode.                                                                                     |
+ | `AppError`             | class     | Describes a programmer error with a machine-readable code and optional context.                                                      |
+@@ -40,9 +40,13 @@ publishes the color-mode controller. The token values those names carry are in 
+ | `isButtonHost`         | function  | Checks whether a value is an HTML host in the current browser realm.                                                                 |
+ 
+ The controller reads its mode from the root on every access. A `dark` attribute selects dark mode;
+-every other value selects light mode. Applying light mode removes the attribute. Construction
+-restores a valid stored mode when you supply storage, and otherwise leaves the root unchanged.
+-Storage operations use the supplied browser storage directly and propagate its errors.
++every other value selects light mode. Applying a mode writes the attribute for that mode, light
++included, so a root inside an island of the other mode opens an island of its own rather than
++inheriting the one around it. Construction reads the attribute the root already carries, restores a
++valid stored mode when you supply storage, and otherwise leaves the root unchanged. Destruction
++writes that construction reading back, removes the attribute where the root carried none, and
++releases the root, so a later call writes nothing. Storage operations use the supplied browser
++storage directly and propagate its errors.
+ 
+ A button's destruction restores the active membership and the `aria-pressed` value it found at
+ construction, removes the `class` attribute when the host carried none and the toggle left the list
+@@ -52,7 +56,16 @@ The delegate acquires a host on its first delegated click and reuses that engine
+ host removed from the root, or moved outside it, keeps its toggled state until the next click that
+ reaches the root or the delegate's destruction, whichever comes first, and is restored and released
+ then. A host reinserted before that click keeps its engine and its state. A host reinserted after
+-its release is acquired again, with a fresh engine, on its next delegated click.
++its release is acquired again, with a fresh engine, on its next delegated click. The delegate reads
++no disabled state: a `disabled` host, a `.disabled` host, and an `aria-disabled="true"` host are
++acquired and toggled like any other, which is what Bootstrap's data API does with the click it
++receives.
++
++`emitEvent` dispatches a bubbling, non-cancelable event and cannot express a cancelable one, and
++`bindEventMap` and `Delegate` are shaped around Button: the event map, the selector, and the engine
++each name that one component. `emitEvent`, `bindEventMap`, and `Delegate` are mechanisms with one
++consumer, so they stay that shape until a second component needs them. B-COLLAPSE is the unit that
++generalizes them, because Collapse is the first component carrying a cancelable pre-change event.
+ 
+ ## Methods
+ 
+@@ -64,7 +77,7 @@ The interface exposes the following lifecycle operations.
+ | --------- | ----------------------------------------------------------- |
+ | `apply`   | Writes the mode to the root and to storage when configured. |
+ | `toggle`  | Flips the mode and returns the applied mode.                |
+-| `destroy` | Removes the attribute only when this controller wrote it.   |
++| `destroy` | Restores the attribute the root carried at construction.    |
+ 
+ #### `ButtonInterface`
+ 
+@@ -129,6 +142,33 @@ The specifier resolves to standalone CSS rather than to a JavaScript module, so
+ stylesheet and declares no binding. A consumer with no bundler resolves the same subpath and serves
+ the resolved file with a `<link>` element instead.
+ 
++The `src/styles/_tokens.scss` partial declares the cascade order
++`theme, reset, base, elements, components, utilities`, and the entry reaches that statement through
++the barrel's first `@use` rule, so the order is declared before any rule fills a layer.
++
++Every Bootstrap utility Veneer ships carries the `!important` Bootstrap writes for it, and Veneer
++adds none Bootstrap does not write. Outside the class utilities, the `[hidden]` rule in the `reset`
++layer and the calendar-picker indicator rule in the `elements` layer carry one as well, each
++matching Bootstrap's own declaration. Where a class name exists in Bootstrap and in Tailwind, the
++declaration Veneer ships is Bootstrap's.
++
++Override an important utility from inside that utility's own layer, which your sheet re-opens by
++name. An important declaration in a layer beats an important declaration outside every layer,
++because the cascade reverses layer order for important declarations and sorts the unlayered ones
++last, so an unlayered `!important` of your own leaves the shipped utility in place.
++
++```css
++@layer utilities {
++	.row-gap-1 {
++		row-gap: 2rem !important;
++	}
++}
++```
++
++The escape is executed in [token parity and values](../tests/src/styles/tokens.test.ts): that sheet
++loads after the shipped cascade and moves the resolved `row-gap` to `2rem`, beside an unlayered
++override of the same declaration that leaves the shipped `0.25rem` in place.
++
+ ### Files
+ 
+ The following files carry the axis.
+@@ -222,9 +262,10 @@ built showcase, and the shadow readers and the selector normalizer. They
+ read the installed cascade through the Node-only `tests/setupServer.ts`; `tests/setup.ts` carries
+ the shared helpers and `tests/setupBrowser.ts` the DOM helpers. Each setup module has its own
+ proof of the same name, and none imports a stylesheet: the styles project loads the built cascade
+-through its `setupFiles` array instead. Each partial has one proof of the
+-same name under the `tests/src/styles/` directory, and `tests/src/styles/integration.test.ts`
+-reads the customization recipe beside them. § Tests links the cascade-wide proofs, the document
++through its `setupFiles` array instead. Every module test under `tests/src/styles/` other than
++`integration.test.ts` names a source module at the same relative path under `src/styles/`, a
++leading-underscore partial resolved, which `npm run test:policy` enforces, and
++`tests/src/styles/integration.test.ts` reads the customization recipe beside them. § Tests links the cascade-wide proofs, the document
+ and body baselines, the class proofs, and the gutter utilities; each remaining tag proof sits
+ beside its element partial.
+ 
+@@ -252,6 +293,12 @@ The table key ships whole, including compact cells, bordered and borderless cell
+ stripes, active and hover states, contextual colors, the group divider, the caption class, and
+ responsive wrappers. The component partial loads after the grid in the components layer.
+ 
++Veneer's `elements` treatment puts a caption above its table, so the family carries a second caption
++class beside Bootstrap's `.caption-top`: `.caption-bottom` returns one caption to the bottom
++placement Bootstrap's own `caption` rule gives every caption. It is Veneer's own addition to that
++family, and both classes sit in the `components` layer at the same specificity, so a caption
++carrying the pair resolves to `bottom`, the later of the two rules.
++
+ Cells resolve state color before stripe color before base color. Their inset shadow resolves state
+ background before stripe background before accent background; the base background paints underneath.
+ The stripe alias reads the existing `--vn-state-stripe` percentage. Active and hover retain the
+@@ -319,8 +366,8 @@ These are the keys' recorded departures.
+   and rescales with `--vn-factor-motion`, as `.btn` does. A transition written outside those tokens
+   would ignore the motion factor the package publishes.
+ - **The shift's direction is physical.** `translate3d(0.25em, 0, 0)` moves the icon to the right,
+-  and one byte stream serves either writing direction, so the icon shifts the same way under each.
+-  Bootstrap's own right-to-left sheet flips it.
++  and Veneer declares that one transform, so the icon shifts the same way whatever the document's
++  writing direction.
+ 
+ ### Deferred selectors
+ 
+@@ -720,19 +767,19 @@ token. The dark mixer is white.
+ The hover and active percentages reproduce the run-6 filled-role readings in managed Chromium
+ and Edge; the bare fills carry the same endpoint at the corresponding alpha.
+ 
+-| Token                     | Value                                                                                   | Source                                                                                                  | Alias                                           |
+-| ------------------------- | --------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- | ----------------------------------------------- |
+-| `--vn-state-mixer`        | light `color(srgb 0.00742457 0.0232852 0.0925134)`; dark `var(--vn-palette-white-base)` | `elements` — the bare hover and active endpoints                                                        | Button hover and active backgrounds             |
+-| `--vn-state-hover`        | `12%`                                                                                   | `elements` — hover tint                                                                                 | Button hover backgrounds                        |
+-| `--vn-state-active`       | `22%`                                                                                   | `elements` — active tint                                                                                | Button active backgrounds                       |
+-| `--vn-state-stripe`       | `5%`                                                                                    | `bootstrap` — retained `$table-striped-bg-factor`, until an Elements table specimen measures a row tint | Striped table-row backgrounds                   |
+-| `--vn-button-opacity`     | `0.65`                                                                                  | `bootstrap` — retained disabled opacity; Elements' opacity was not calibrated                           | `--bs-btn-disabled-opacity`                     |
+-| `--vn-button-shadow`      | `none`                                                                                  | `elements` — button elevation                                                                           | `--bs-btn-box-shadow`, `--bs-btn-active-shadow` |
+-| `--vn-button-transparent` | `transparent`                                                                           | `elements` — bare resting fill                                                                          | Neutral Button backgrounds and borders          |
+-| `--vn-button-face`        | `ButtonFace`                                                                            | `derived` — system button surface under forced colors                                                   | Button background fallbacks                     |
+-| `--vn-button-text`        | `ButtonText`                                                                            | `derived` — system button foreground under forced colors                                                | Button foreground and border fallbacks          |
+-| `--vn-button-highlight`   | `Highlight`                                                                             | `derived` — system focus and selection under forced colors                                              | Button focus outline and state backgrounds      |
+-| `--vn-button-disabled`    | `GrayText`                                                                              | `derived` — system disabled foreground under forced colors                                              | Button disabled foreground and border fallbacks |
++| Token                     | Value                                                                                   | Source                                                                                                          | Alias                                           |
++| ------------------------- | --------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- | ----------------------------------------------- |
++| `--vn-state-mixer`        | light `color(srgb 0.00742457 0.0232852 0.0925134)`; dark `var(--vn-palette-white-base)` | `elements` — the bare hover and active endpoints                                                                | Button hover and active backgrounds             |
++| `--vn-state-hover`        | `12%`                                                                                   | `elements` — hover tint                                                                                         | Button hover backgrounds                        |
++| `--vn-state-active`       | `22%`                                                                                   | `elements` — active tint                                                                                        | Button active backgrounds                       |
++| `--vn-state-stripe`       | `5%`                                                                                    | `bootstrap` — retained `$table-striped-bg-factor` for the baseline; the Elements identity phase rules the value | Striped table-row backgrounds                   |
++| `--vn-button-opacity`     | `0.65`                                                                                  | `bootstrap` — retained disabled opacity; Elements' opacity was not calibrated                                   | `--bs-btn-disabled-opacity`                     |
++| `--vn-button-shadow`      | `none`                                                                                  | `elements` — button elevation                                                                                   | `--bs-btn-box-shadow`, `--bs-btn-active-shadow` |
++| `--vn-button-transparent` | `transparent`                                                                           | `elements` — bare resting fill                                                                                  | Neutral Button backgrounds and borders          |
++| `--vn-button-face`        | `ButtonFace`                                                                            | `derived` — system button surface under forced colors                                                           | Button background fallbacks                     |
++| `--vn-button-text`        | `ButtonText`                                                                            | `derived` — system button foreground under forced colors                                                        | Button foreground and border fallbacks          |
++| `--vn-button-highlight`   | `Highlight`                                                                             | `derived` — system focus and selection under forced colors                                                      | Button focus outline and state backgrounds      |
++| `--vn-button-disabled`    | `GrayText`                                                                              | `derived` — system disabled foreground under forced colors                                                      | Button disabled foreground and border fallbacks |
+ 
+ The state tokens are declared at the root and inside each explicit theme scope, so a light island
+ inside a dark island restores the light mixer. The declaration-only `focus-ring` mixin takes a
+@@ -920,7 +967,11 @@ Button recording. The Component column carries the inventory key, so later compo
+ the same table; engine names the shared official engine and is never shipped as CSS.
+ 
+ The table records the Reboot obligations, the typography and media class obligations, the Button
+-obligations, and the engine obligations assigned to its unit.
++obligations, and the engine obligations assigned to its unit. Each Obligation cell states what
++Bootstrap's own recorded engine does, which is what the named Proof step replays; no cell states
++what Veneer's engine does. The disabled-anchor accessibility row is where the recorded engine and
++Veneer's delegate diverge: Bootstrap's recorded engine refuses that pointer activation, and
++Veneer's delegate reads no disabled state, as § Surface states.
+ Button's forced-colors browser reading remains open: the installed Test `MediaOptions` contract
+ stages print and motion only. The cascade supplies system-color fallbacks, but a later Test unit
+ must add a forced-colors axis before this reading closes.
+@@ -1074,6 +1125,10 @@ key sits in the region whose subject it belongs to rather than in a region of it
+ every other section is grouped: the image classes and the figure classes share Media, and the
+ quotation classes sit in Type. Its button drives the controller and
+ announces the selected mode, and its entry constructs a `Delegate` instance beside the showcase.
++The shell's own stylesheet reaches that button through the `control` class the showcase sets on it,
++so no rule of the shell's reaches a specimen through the element it happens to be. The regions
++mount into a `main` element the shell carries no id on: a proof reaches it through the host it
++mounted the showcase into, and each region through its accessible name.
+ The application barrel is a workspace implementation surface and is outside this guide's published
+ API tables.
+ 
+@@ -1081,9 +1136,9 @@ Scaffold mandates the Vue toolchain for an `app/browser` environment, and this s
+ component in it: the shell is framework-free by design, so the showcase drives the published
+ cascade and the published engine with no framework between them and what renders.
+ 
+-The styles entry declares the cascade order `theme, reset, base, elements, components, utilities`,
+-every `--vn-*` token, every `--bs-*` root alias Bootstrap 5.3.8 declares, and the document and body
+-baseline. It also ships the bare button treatment in the `elements` layer, and the `.btn` treatments beside
++The cascade
++carries every `--vn-*` token, every `--bs-*` root alias Bootstrap 5.3.8 declares, and the document
++and body baseline. It also ships the bare button treatment in the `elements` layer, and the `.btn` treatments beside
+ the typography, list, quotation, image, link, container, grid, table, icon-link, ratio, and
+ vertical-rule classes in the `components` layer. The document baseline also
+ declares `interpolate-size: allow-keywords`, and `tests/src/styles/elements/html.test.ts` reads it
+@@ -1127,6 +1182,8 @@ The style proofs bind the cascade to the registry and to the calibration; see
+ [the vertical rule](../tests/src/styles/components/vr.test.ts),
+ [the gutter utilities](../tests/src/styles/utilities/gap.test.ts), and
+ [the customization recipe](../tests/src/styles/integration.test.ts).
++Those proofs resolve declarations against the cascade's layer order; § Styles states that order and
++names the partial that declares it.
+ 
+ The conformance proofs pin the official release and its artifact digests, reject runtime boundary
+ escapes, check shipped CSS vocabulary, compare each live Button step with its fixture, and
+diff --git a/package-lock.json b/package-lock.json
+index 4b278d2..27b9441 100644
+--- a/package-lock.json
++++ b/package-lock.json
+@@ -8,9 +8,11 @@
+ 			"name": "@orkestrel/veneer",
+ 			"version": "0.0.1",
+ 			"license": "MIT",
++			"dependencies": {
++				"@orkestrel/contract": "^0.0.17"
++			},
+ 			"devDependencies": {
+ 				"@microsoft/api-extractor": "^7.59.1",
+-				"@orkestrel/contract": "^0.0.17",
+ 				"@orkestrel/guide": "^0.0.20",
+ 				"@orkestrel/html": "^0.0.10",
+ 				"@orkestrel/markdown": "^0.0.15",
+@@ -229,7 +231,6 @@
+ 			"version": "0.0.17",
+ 			"resolved": "https://registry.npmjs.org/@orkestrel/contract/-/contract-0.0.17.tgz",
+ 			"integrity": "sha512-WuSVyX2Y3fMa5ZH6njjLpStmWxA91M1hfKWJgacD1GWNFnhd3oDcHlqOUwew3rzOSdny4eIYiN3OHCbym2UKdg==",
+-			"dev": true,
+ 			"license": "MIT",
+ 			"engines": {
+ 				"node": ">=22.12.0"
+diff --git a/package.json b/package.json
+index 09e51ca..5f8c20a 100644
+--- a/package.json
++++ b/package.json
+@@ -88,9 +88,11 @@
+ 		"prepack": "npm run build",
+ 		"prepublishOnly": "npm run format:check && npm run lint:check && npm run check && npm run build && npm test && npm run test:distribution -- --mode release"
+ 	},
++	"dependencies": {
++		"@orkestrel/contract": "^0.0.17"
++	},
+ 	"devDependencies": {
+ 		"@microsoft/api-extractor": "^7.59.1",
+-		"@orkestrel/contract": "^0.0.17",
+ 		"@orkestrel/guide": "^0.0.20",
+ 		"@orkestrel/html": "^0.0.10",
+ 		"@orkestrel/markdown": "^0.0.15",
+diff --git a/src/browser/ColorMode.ts b/src/browser/ColorMode.ts
+index 7c43dfe..5593b61 100644
+--- a/src/browser/ColorMode.ts
++++ b/src/browser/ColorMode.ts
+@@ -5,6 +5,12 @@ import { isColorModeState } from './validators.js'
+ /**
+  * Applies and optionally restores a root's color mode without registering listeners.
+  *
++ * @remarks
++ * Construction captures the root's own color-mode attribute, or its absence, and destruction puts
++ * that reading back and releases the root. Applying a mode writes the attribute for either mode,
++ * so a root nested inside an island of the other mode opens its own island rather than inheriting
++ * the one around it.
++ *
+  * @example
+  * ```ts
+  * const controller = new ColorMode({ root: document.documentElement })
+@@ -15,11 +21,16 @@ import { isColorModeState } from './validators.js'
+ export class ColorMode implements ColorModeInterface {
+ 	readonly #root: HTMLElement
+ 	readonly #storage: Storage | undefined
+-	#written = false
++	// The reading destruction restores: a string the root carried, `null` for a root that carried no
++	// attribute, and `undefined` after destruction has put that reading back. The three readings are
++	// what a second `destroy` call and a later external write are told apart by, so no separate flag
++	// records that this controller wrote anything.
++	#original: string | null | undefined
+ 
+ 	constructor(options?: ColorModeOptions) {
+ 		this.#root = options?.root ?? document.documentElement
+ 		this.#storage = options?.storage
++		this.#original = this.#root.getAttribute(COLOR_MODE_ATTRIBUTE)
+ 		const stored = this.#storage?.getItem(COLOR_MODE_KEY)
+ 		if (isColorModeState(stored)) this.apply(stored)
+ 	}
+@@ -33,9 +44,7 @@ export class ColorMode implements ColorModeInterface {
+ 	}
+ 
+ 	apply(mode: ColorModeState): void {
+-		if (mode === 'dark') this.#root.setAttribute(COLOR_MODE_ATTRIBUTE, mode)
+-		else this.#root.removeAttribute(COLOR_MODE_ATTRIBUTE)
+-		this.#written = mode === 'dark'
++		this.#root.setAttribute(COLOR_MODE_ATTRIBUTE, mode)
+ 		this.#storage?.setItem(COLOR_MODE_KEY, mode)
+ 	}
+ 
+@@ -46,8 +55,10 @@ export class ColorMode implements ColorModeInterface {
+ 	}
+ 
+ 	destroy(): void {
+-		if (!this.#written) return
+-		this.#root.removeAttribute(COLOR_MODE_ATTRIBUTE)
+-		this.#written = false
++		const original = this.#original
++		if (original === undefined) return
++		this.#original = undefined
++		if (original === null) this.#root.removeAttribute(COLOR_MODE_ATTRIBUTE)
++		else this.#root.setAttribute(COLOR_MODE_ATTRIBUTE, original)
+ 	}
+ }
+diff --git a/src/browser/Delegate.ts b/src/browser/Delegate.ts
+index 793bf7f..64aa9a1 100644
+--- a/src/browser/Delegate.ts
++++ b/src/browser/Delegate.ts
+@@ -59,13 +59,6 @@ export class Delegate implements DelegateInterface {
+ 		const host = event.target.closest(BUTTON_SELECTOR)
+ 		if (!isButtonHost(host) || !this.#root.contains(host)) return
+ 		event.preventDefault()
+-		if (
+-			('disabled' in host && host.disabled === true) ||
+-			host.classList.contains('disabled') ||
+-			host.getAttribute('aria-disabled') === 'true'
+-		) {
+-			return
+-		}
+ 		let button = this.#buttons.get(host)
+ 		if (!button) {
+ 			try {
+diff --git a/src/browser/types.ts b/src/browser/types.ts
+index d7a1054..3629d8b 100644
+--- a/src/browser/types.ts
++++ b/src/browser/types.ts
+@@ -19,7 +19,7 @@ export interface ColorModeInterface {
+ 	apply(mode: ColorModeState): void
+ 	/** Flips the mode and returns the applied mode. */
+ 	toggle(): ColorModeState
+-	/** Removes the attribute only when this controller wrote it. */
++	/** Restores the attribute the root carried at construction. */
+ 	destroy(): void
+ }
+ 
+diff --git a/src/browser/validators.ts b/src/browser/validators.ts
+index cb9bc1d..5907012 100644
+--- a/src/browser/validators.ts
++++ b/src/browser/validators.ts
+@@ -1,36 +1,40 @@
+ import type { ButtonEventMap, ColorModeState } from './types.js'
++import type { Guard } from '@orkestrel/contract'
++import { isInstance, literalOf } from '@orkestrel/contract'
+ 
+ /**
+  * Checks whether a value names a supported color mode.
+  *
+  * @param value - The value to inspect.
+  * @returns True if the value is `light` or `dark`; false otherwise.
++ * @remarks
++ * The `literalOf` combinator `@orkestrel/contract` publishes holds the membership check, and the
++ * mode vocabulary is what this name configures it with.
+  * @example
+  * ```ts
+  * isColorModeState('dark') // true
+  * isColorModeState('auto') // false
+  * ```
+  */
+-export function isColorModeState(value: unknown): value is ColorModeState {
+-	return value === 'light' || value === 'dark'
+-}
++export const isColorModeState: Guard<ColorModeState> = literalOf('light', 'dark')
+ 
+ /**
+  * Checks whether a value is an HTML host in the current browser realm.
+  *
+  * @param value - The value to inspect.
+  * @returns True if the value is an HTMLElement; false otherwise.
++ * @remarks
++ * The `isInstance` helper `@orkestrel/contract` publishes holds the containment a bare `instanceof`
++ * lacks. It is called with the DOM class rather than configured with it through `instanceOf`,
++ * because a configured guard reads that class when the module loads and this module is imported in
++ * a host that publishes no DOM.
+  * @example
+  * ```ts
+  * isButtonHost(document.createElement('button')) // true
+  * ```
+  */
+ export function isButtonHost(value: unknown): value is HTMLElement {
+-	try {
+-		return value instanceof HTMLElement
+-	} catch {
+-		return false
+-	}
++	return isInstance(value, HTMLElement)
+ }
+ 
+ /**
+@@ -38,6 +42,13 @@ export function isButtonHost(value: unknown): value is HTMLElement {
+  *
+  * @param value - The value to inspect.
+  * @returns True if the value is a CustomEvent with a boolean detail.pressed; false otherwise.
++ * @remarks
++ * The contract this narrows is a DOM event class and its detail shape together, which no guard
++ * `@orkestrel/contract` publishes expresses: its guards read plain values, and the nearest ones
++ * check a constructor or a record without reaching a `CustomEvent` payload. The class half does not
++ * route through `isInstance` either: that helper narrows a generic constructor to `object`, which
++ * drops the payload this guard goes on to read. The containment here covers both halves, because a
++ * `detail` accessor throws as readily as a hostile prototype does.
+  * @example
+  * ```ts
+  * isButtonEvent(new CustomEvent('toggle.vn.button', { detail: { pressed: true } })) // true
+diff --git a/src/core/errors.ts b/src/core/errors.ts
+index 689e69d..8abe1cc 100644
+--- a/src/core/errors.ts
++++ b/src/core/errors.ts
+@@ -1,3 +1,5 @@
++import { isInstance } from '@orkestrel/contract'
++
+ /**
+  * Describes a programmer error with a machine-readable code and optional context.
+  *
+@@ -36,6 +38,11 @@ export class AppError extends Error {
+  *
+  * @param value - The value to inspect.
+  * @returns True if the value is an instance of the application's error class; false otherwise.
++ * @remarks
++ * The `isInstance` helper `@orkestrel/contract` publishes holds the check and its containment, and
++ * this package's own error class is what this name calls it with. It takes the class as an argument
++ * rather than binding it through `instanceOf`, because a module-scope binding is data and this file
++ * holds a class and the functions that read it.
+  * @example
+  * ```ts
+  * isAppError(new AppError('Invalid host', 'BUTTON_HOST_INVALID')) // true
+@@ -43,9 +50,5 @@ export class AppError extends Error {
+  * ```
+  */
+ export function isAppError(value: unknown): value is AppError {
+-	try {
+-		return value instanceof AppError
+-	} catch {
+-		return false
+-	}
++	return isInstance(value, AppError)
+ }
+diff --git a/src/styles/_theme.scss b/src/styles/_theme.scss
+index 5f1d1ce..d93c9eb 100644
+--- a/src/styles/_theme.scss
++++ b/src/styles/_theme.scss
+@@ -5,8 +5,8 @@
+ @layer theme {
+ 	// The light selector and the dark selector are plain attribute selectors with no `:root`
+ 	// qualifier, so any element opens an island and a nested island returns its own subtree to its
+-	// own mode. `:root` carries the light closure too, which is the state the color-mode engine
+-	// leaves behind when it removes the attribute.
++	// own mode. `:root` carries the light closure too, which is the state a document is in before
++	// the color-mode engine has applied a mode to it.
+ 	[data-bs-theme='light'] {
+ 		color-scheme: light;
+ 		@include theme-tokens(tokens.$roles, tokens.$aliased, tokens.$light);
+diff --git a/src/styles/components/_table.scss b/src/styles/components/_table.scss
+index 21bea6e..8b6b525 100644
+--- a/src/styles/components/_table.scss
++++ b/src/styles/components/_table.scss
+@@ -50,6 +50,13 @@
+ 		caption-side: top;
+ 	}
+ 
++	// Veneer's `elements` treatment puts a caption above its table, so this class is the opt-out
++	// that returns one caption to the bottom placement Bootstrap's own `caption` rule gives every
++	// caption. It sits in the Bootstrap `.caption-top` family and is Veneer's own addition to it.
++	.caption-bottom {
++		caption-side: bottom;
++	}
++
+ 	.table-sm > :not(caption) > * > * {
+ 		padding: 0.25rem 0.25rem;
+ 	}
+diff --git a/tests/app/browser/Showcase.test.ts b/tests/app/browser/Showcase.test.ts
+index 63f2d1b..d645973 100644
+--- a/tests/app/browser/Showcase.test.ts
++++ b/tests/app/browser/Showcase.test.ts
+@@ -4,6 +4,7 @@ import {
+ 	LINK_SPECIMENS,
+ 	LAYOUT_SPECIMENS,
+ 	MEDIA_SPECIMENS,
++	SHOWCASE_COPY,
+ 	Showcase,
+ 	TYPE_SPECIMENS,
+ 	TABLE_SPECIMENS,
+@@ -98,14 +99,21 @@ describe('Showcase', () => {
+ 			// the ownership rule and would pass while the published one moved.
+ 			const owned = specimens.filter((element) => !element.matches(BUTTON_SELECTOR))
+ 			expect(owned).not.toStrictEqual([])
+-			// The shell paints the mode control's affordance with a `header button` rule, and what
+-			// keeps that rule off a specimen is where this tree puts each one: the header holds the
+-			// control and no other button, and every region and every specimen mounts inside `main`.
+-			// Each population is read here rather than taken from the collections earlier, so each
+-			// assertion reports the tree as it stands at the assertion.
++			// The shell paints the mode control's affordance through the class the showcase sets on
++			// that button, and what keeps every specimen out of the header is where this tree puts
++			// each one: the header holds the control and no other button, and every region and every
++			// specimen mounts inside `main`. Each population is read here rather than taken from the
++			// collections earlier, so each assertion reports the tree as it stands at the assertion.
++			// The `main` element is reached through the host it was mounted into, because the
++			// showcase claims no document-global id for it.
+ 			const header = requireValue(host.querySelector('header'), 'The showcase mounts no header')
+ 			const main = requireValue(host.querySelector('main'), 'The showcase mounts no main element')
+-			expect(document.getElementById('main')).toBe(main)
++			expect(main.hasAttribute('id')).toBe(false)
++			const region = requireValue(
++				main.querySelector('section[aria-label]'),
++				'The showcase mounts no region',
++			)
++			expect(readName(region)).toBe(SHOWCASE_COPY.region)
+ 			expect([...header.querySelectorAll('button')]).toStrictEqual([
+ 				resolveAccessible('button', 'Dark mode'),
+ 			])
+@@ -125,7 +133,8 @@ describe('Showcase', () => {
+ 			observer.observe(host, { childList: true, subtree: true })
+ 			showcase.destroy()
+ 			const removals = observer.takeRecords().flatMap((record) => [...record.removedNodes])
+-			expect(document.getElementById('main')).toBeNull()
++			expect(host.querySelector('main')).toBeNull()
++			expect(main.isConnected).toBe(false)
+ 			observer.disconnect()
+ 			expect(removals).toContain(content)
+ 			expect(removals.indexOf(content)).toBeLessThan(removals.indexOf(main))
+diff --git a/tests/app/browser/index.test.ts b/tests/app/browser/index.test.ts
+index 46175e3..ba1526d 100644
+--- a/tests/app/browser/index.test.ts
++++ b/tests/app/browser/index.test.ts
+@@ -23,6 +23,7 @@ describe('app browser entry', () => {
+ 			'MEDIA_COPY',
+ 			'MEDIA_SPECIMENS',
+ 			'MediaSection',
++			'SHOWCASE_CONTROL',
+ 			'SHOWCASE_COPY',
+ 			'Showcase',
+ 			'SpecimenSection',
+diff --git a/tests/app/browser/integration.test.ts b/tests/app/browser/integration.test.ts
+index 4d47096..1a010bc 100644
+--- a/tests/app/browser/integration.test.ts
++++ b/tests/app/browser/integration.test.ts
+@@ -186,7 +186,7 @@ describe('journey', () => {
+ 		await clickAccessible('button', 'Dark mode')
+ 		expect(await waitForState('button', 'Dark mode', 'pressed=false')).toContain('pressed=false')
+ 		await waitForAnimations(document.body)
+-		expect(document.documentElement.hasAttribute('data-bs-theme')).toBe(false)
++		expect(document.documentElement.getAttribute('data-bs-theme')).toBe('light')
+ 		expect(readStyle(document.body, 'background-color')).toBe(light)
+ 	})
+ 
+@@ -536,9 +536,7 @@ describe('journey', () => {
+ 			await applyTheme(mode)
+ 			const suffix = mode === DARK ? '-dark' : ''
+ 			await waitForAnimations(document.body)
+-			expect(document.documentElement.getAttribute('data-bs-theme')).toBe(
+-				mode === DARK ? 'dark' : null,
+-			)
++			expect(document.documentElement.getAttribute('data-bs-theme') === 'dark').toBe(mode === DARK)
+ 			expect(host.classList.contains('active')).toBe(false)
+ 			PLACED.add(`button-primary-rest${suffix}`)
+ 			await PORTFOLIO.place(`button-primary-rest${suffix}`)
+@@ -692,8 +690,8 @@ describe('matrix', () => {
+ 			await applyTheme(variant.name)
+ 			const background = readStyle(document.body, 'background-color')
+ 			readings.set(variant.name, background)
+-			expect(document.documentElement.getAttribute('data-bs-theme')).toBe(
+-				variant.name.startsWith('dark-') ? 'dark' : null,
++			expect(document.documentElement.getAttribute('data-bs-theme') === 'dark').toBe(
++				variant.name.startsWith('dark-'),
+ 			)
+ 			ARTIFACT.push(
+ 				JSON.stringify({
+diff --git a/tests/setupBrowser.test.ts b/tests/setupBrowser.test.ts
+index faf4a7c..2583a67 100644
+--- a/tests/setupBrowser.test.ts
++++ b/tests/setupBrowser.test.ts
+@@ -703,10 +703,10 @@ describe('browser setup', () => {
+ 			await applyTheme('dark-390')
+ 			expect(resolveAccessible('button', 'Dark mode').getAttribute('aria-pressed')).toBe('true')
+ 			await applyTheme('light-390')
+-			expect(document.documentElement.hasAttribute('data-bs-theme')).toBe(false)
++			expect(document.documentElement.getAttribute('data-bs-theme') === 'dark').toBe(false)
+ 			expect(resolveAccessible('button', 'Dark mode').getAttribute('aria-pressed')).toBe('false')
+ 			await applyTheme('light-1280')
+-			expect(document.documentElement.hasAttribute('data-bs-theme')).toBe(false)
++			expect(document.documentElement.getAttribute('data-bs-theme') === 'dark').toBe(false)
+ 			await expect(applyTheme('sepia-390')).rejects.toThrow(
+ 				'Unsupported color-mode variant: sepia-390',
+ 			)
+diff --git a/tests/setupStyles.test.ts b/tests/setupStyles.test.ts
+index accd341..2a5fbc2 100644
+--- a/tests/setupStyles.test.ts
++++ b/tests/setupStyles.test.ts
+@@ -345,9 +345,8 @@ describe('styles setup', () => {
+ 		expect(parseMediaWidth('(width >= 36rem)')).toBeUndefined()
+ 		expect(parseMediaWidth('(height >= 576px)')).toBeUndefined()
+ 	})
+-	it('requires the directional outputs from npm run build:src:styles', () => {
++	it('requires the built cascade from npm run build:src:styles', () => {
+ 		expect(existsSync('dist/src/styles/index.css')).toBe(true)
+-		expect(existsSync('dist/src/styles/index.rtl.css')).toBe(true)
+ 	})
+ 	it('refuses a breakpoint name the ramp does not carry, and gates each name it does', () => {
+ 		const loader = "@use 'mixins' as *; "
+diff --git a/tests/setupStyles.ts b/tests/setupStyles.ts
+index 9a8d2cf..8409401 100644
+--- a/tests/setupStyles.ts
++++ b/tests/setupStyles.ts
+@@ -706,7 +706,13 @@ export const TEXT_CODE_CASES = Object.freeze(
+ 	),
+ )
+ 
+-/** Holds the mode and resolved readings for the dl element family. */
++/**
++ * Holds the mode and resolved readings for the dl element family.
++ *
++ * @remarks
++ * The `color` field is the list's own resolved color, and `description` the color resolved on its
++ * `dd` element.
++ */
+ export const TEXT_DL_CASES = Object.freeze(
+ 	TEXT_MODES.map((mode) =>
+ 		Object.freeze({
+@@ -718,7 +724,7 @@ export const TEXT_DL_CASES = Object.freeze(
+ 				gap: '8px 16px',
+ 			}),
+ 			color: mode === 'light' ? 'oklch(0.208 0.042 265.755)' : 'oklch(0.929 0.013 255.508)',
+-			muted: mode === 'light' ? 'oklch(0.446 0.043 257.281)' : 'oklch(0.704 0.04 256.788)',
++			description: mode === 'light' ? 'oklch(0.446 0.043 257.281)' : 'oklch(0.704 0.04 256.788)',
+ 		}),
+ 	),
+ )
+diff --git a/tests/src/browser/ColorMode.test.ts b/tests/src/browser/ColorMode.test.ts
+index f88b984..a3b8bb2 100644
+--- a/tests/src/browser/ColorMode.test.ts
++++ b/tests/src/browser/ColorMode.test.ts
+@@ -8,19 +8,22 @@ afterEach(() => {
+ })
+ 
+ describe('ColorMode', () => {
+-	it('reads the root on every access without changing an existing attribute', () => {
++	it('reads the root on every access, and puts the construction reading back on destruction', () => {
+ 		const root = build('div')
+ 		root.setAttribute('data-bs-theme', 'dark')
+ 		const controller = new ColorMode({ root })
+ 		expect(controller.root).toBe(root)
++		expect(root.getAttribute('data-bs-theme')).toBe('dark')
+ 		expect(controller.mode).toBe('dark')
+ 		root.setAttribute('data-bs-theme', 'auto')
+ 		expect(controller.mode).toBe('light')
++		// The value the controller restores is the one construction read, so a value written over it
++		// while the controller is live is replaced rather than kept.
+ 		controller.destroy()
+-		expect(root.getAttribute('data-bs-theme')).toBe('auto')
++		expect(root.getAttribute('data-bs-theme')).toBe('dark')
+ 	})
+ 
+-	it('toggles, persists, and removes the light attribute', () => {
++	it('toggles, persists, and writes the light attribute', () => {
+ 		const root = build('div')
+ 		const controller = new ColorMode({ root, storage: sessionStorage })
+ 		expect(COLOR_MODE_ATTRIBUTE).toBe('data-bs-theme')
+@@ -29,7 +32,7 @@ describe('ColorMode', () => {
+ 		expect(root.getAttribute('data-bs-theme')).toBe('dark')
+ 		expect(sessionStorage.getItem('color-mode')).toBe('dark')
+ 		expect(controller.toggle()).toBe('light')
+-		expect(root.hasAttribute('data-bs-theme')).toBe(false)
++		expect(root.getAttribute('data-bs-theme')).toBe('light')
+ 		expect(sessionStorage.getItem('color-mode')).toBe('light')
+ 		controller.destroy()
+ 	})
+@@ -70,14 +73,15 @@ describe('ColorMode', () => {
+ 		controller.destroy()
+ 	})
+ 
+-	it('restores stored light by removing a preexisting dark attribute', () => {
++	it('restores stored light over a preexisting dark attribute, and puts the dark back', () => {
+ 		const root = build('div')
+ 		root.setAttribute('data-bs-theme', 'dark')
+ 		sessionStorage.setItem('color-mode', 'light')
+ 		const controller = new ColorMode({ root, storage: sessionStorage })
+-		expect(root.hasAttribute('data-bs-theme')).toBe(false)
++		expect(root.getAttribute('data-bs-theme')).toBe('light')
+ 		expect(controller.mode).toBe('light')
+ 		controller.destroy()
++		expect(root.getAttribute('data-bs-theme')).toBe('dark')
+ 	})
+ 
+ 	it('leaves the root untouched for an invalid stored mode', () => {
+@@ -91,15 +95,52 @@ describe('ColorMode', () => {
+ 		expect(sessionStorage.getItem('color-mode')).toBe('auto')
+ 	})
+ 
+-	it('leaves an external write in place after its own removal', () => {
++	it('restores its captured reading over a later external write, and writes nothing after that', () => {
+ 		const root = build('div')
+ 		const controller = new ColorMode({ root })
+ 		controller.apply('light')
+ 		root.setAttribute('data-bs-theme', 'dark')
+ 		controller.destroy()
++		expect(root.hasAttribute('data-bs-theme')).toBe(false)
++		root.setAttribute('data-bs-theme', 'dark')
++		controller.destroy()
+ 		expect(root.getAttribute('data-bs-theme')).toBe('dark')
+ 	})
+ 
++	it('writes the applied mode on a root nested inside a dark island', () => {
++		const island = build('div')
++		island.setAttribute('data-bs-theme', 'dark')
++		const root = build('div')
++		island.append(root)
++		const controller = new ColorMode({ root })
++		controller.apply('light')
++		expect(root.getAttribute('data-bs-theme')).toBe('light')
++		expect(controller.mode).toBe('light')
++		controller.apply('dark')
++		expect(root.getAttribute('data-bs-theme')).toBe('dark')
++		controller.destroy()
++		expect(root.hasAttribute('data-bs-theme')).toBe(false)
++	})
++
++	it('restores the attribute value the root carried before construction', () => {
++		const root = build('div')
++		root.setAttribute('data-bs-theme', 'dark')
++		const controller = new ColorMode({ root })
++		controller.apply('light')
++		expect(root.getAttribute('data-bs-theme')).toBe('light')
++		controller.destroy()
++		expect(root.getAttribute('data-bs-theme')).toBe('dark')
++	})
++
++	it('removes the attribute from a root that carried none before construction', () => {
++		const root = build('div')
++		const controller = new ColorMode({ root })
++		controller.apply('light')
++		expect(root.getAttribute('data-bs-theme')).toBe('light')
++		controller.destroy()
++		expect(root.hasAttribute('data-bs-theme')).toBe(false)
++	})
++
+ 	it('removes only its attribute after writing and preserves unrelated root content', () => {
+ 		const root = build('div')
+ 		root.setAttribute('aria-label', 'Existing root')
+diff --git a/tests/src/browser/Delegate.test.ts b/tests/src/browser/Delegate.test.ts
+index 79f0362..61bf56e 100644
+--- a/tests/src/browser/Delegate.test.ts
++++ b/tests/src/browser/Delegate.test.ts
+@@ -136,7 +136,11 @@ describe('Delegate', () => {
+ 		expect(host.getAttribute('aria-pressed')).toBe('true')
+ 	})
+ 
+-	it('refuses native disabled hosts before creating an engine', () => {
++	// A native disabled control drops a click the user interaction source queues, so the click this
++	// case dispatches is the one a consumer's own script sends. What the delegate does with the
++	// click it receives is the subject, and it is Bootstrap's data API's answer: acquire the host
++	// and toggle it.
++	it('acquires and toggles a native disabled host on a dispatched click', () => {
+ 		const root = build('div')
+ 		const host = build('button', { attributes: { 'data-bs-toggle': 'button', disabled: '' } })
+ 		root.append(host)
+@@ -145,17 +149,17 @@ describe('Delegate', () => {
+ 		const click = new MouseEvent('click', { bubbles: true, cancelable: true })
+ 		host.dispatchEvent(click)
+ 		expect(click.defaultPrevented).toBe(true)
++		expect(host.classList.contains('active')).toBe(true)
++		expect(host.getAttribute('aria-pressed')).toBe('true')
++		host.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }))
+ 		expect(host.classList.contains('active')).toBe(false)
++		expect(host.getAttribute('aria-pressed')).toBe('false')
++		expect(host.disabled).toBe(true)
++		delegate.destroy()
+ 		expect(host.hasAttribute('aria-pressed')).toBe(false)
+-		const button = new Button(host)
+-		onTestFinished(() => button.destroy())
+-		button.destroy()
+-		host.disabled = false
+-		host.click()
+-		expect(host.getAttribute('aria-pressed')).toBe('true')
+ 	})
+ 
+-	it('refuses the disabled class on an existing engine', () => {
++	it('keeps toggling a host through its engine after the disabled class arrives', () => {
+ 		const root = mount(build('div'))
+ 		onTestFinished(() => root.remove())
+ 		const host = build('button', { attributes: { 'data-bs-toggle': 'button' } })
+@@ -163,27 +167,55 @@ describe('Delegate', () => {
+ 		const delegate = new Delegate({ root })
+ 		onTestFinished(() => delegate.destroy())
+ 		host.click()
++		expect(host.getAttribute('aria-pressed')).toBe('true')
+ 		host.classList.add('disabled')
+ 		host.click()
++		expect(host.classList.contains('active')).toBe(false)
++		expect(host.getAttribute('aria-pressed')).toBe('false')
++		expect(host.classList.contains('disabled')).toBe(true)
++	})
++
++	// A refusal keyed on the class would sit in the acquisition branch, which the preceding case
++	// never enters with the class present: that host is acquired while enabled and gains the class
++	// afterwards. This one carries the class before the first click, so the branch reads it.
++	it('acquires and toggles a host already carrying the disabled class, and restores it', () => {
++		const root = mount(build('div'))
++		onTestFinished(() => root.remove())
++		const host = build('button', {
++			classes: 'disabled',
++			attributes: { 'data-bs-toggle': 'button' },
++		})
++		root.append(host)
++		const delegate = new Delegate({ root })
++		onTestFinished(() => delegate.destroy())
++		const click = new MouseEvent('click', { bubbles: true, cancelable: true })
++		expect(host.dispatchEvent(click)).toBe(false)
++		expect(click.defaultPrevented).toBe(true)
+ 		expect(host.classList.contains('active')).toBe(true)
+ 		expect(host.getAttribute('aria-pressed')).toBe('true')
++		expect(() => new Button(host)).toThrow(expect.objectContaining({ code: 'BUTTON_HOST_OWNED' }))
++		host.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }))
++		expect(host.classList.contains('active')).toBe(false)
++		expect(host.getAttribute('aria-pressed')).toBe('false')
++		delegate.destroy()
++		expect(host.hasAttribute('aria-pressed')).toBe(false)
++		expect(host.classList.contains('active')).toBe(false)
++		expect(host.classList.contains('disabled')).toBe(true)
+ 	})
+ 
+-	it('refuses aria-disabled anchors without acquiring their ownership', () => {
++	it('acquires and toggles an aria-disabled anchor, and leaves the attribute alone', () => {
+ 		const root = build('div')
+ 		const host = build('a', { attributes: { 'data-bs-toggle': 'button', 'aria-disabled': 'true' } })
+ 		root.append(host)
+ 		const delegate = new Delegate({ root })
+ 		onTestFinished(() => delegate.destroy())
+ 		host.click()
+-		expect(host.classList.contains('active')).toBe(false)
+-		expect(host.hasAttribute('aria-pressed')).toBe(false)
+-		const button = new Button(host)
+-		onTestFinished(() => button.destroy())
+-		button.destroy()
+-		host.setAttribute('aria-disabled', 'false')
+-		host.click()
++		expect(host.classList.contains('active')).toBe(true)
+ 		expect(host.getAttribute('aria-pressed')).toBe('true')
++		expect(host.getAttribute('aria-disabled')).toBe('true')
++		host.click()
++		expect(host.classList.contains('active')).toBe(false)
++		expect(host.getAttribute('aria-pressed')).toBe('false')
+ 	})
+ 
+ 	it('registers exactly one root listener and releases the listener and its engines', async () => {
+diff --git a/tests/src/styles/components/table.test.ts b/tests/src/styles/components/table.test.ts
+index 8b136f9..ed8b902 100644
+--- a/tests/src/styles/components/table.test.ts
++++ b/tests/src/styles/components/table.test.ts
+@@ -76,6 +76,21 @@ describe('table geometry', () => {
+ 		caption.classList.add('caption-top')
+ 		expect(readStyle(caption, 'caption-side')).toBe('top')
+ 	})
++	// The opt-out is read against the shipped top placement rather than against a written one: the
++	// `elements` treatment is what the class exists to leave, so a case loading its own bottom rule
++	// first would pass while the class declared nothing.
++	it('returns a caption to the bottom placement through the opt-out class', () => {
++		const host = scene.mount(`<table class="table">${TABLE_MARKUP}</table>`)
++		const table = requireValue(host.querySelector('table'), 'No table')
++		const caption = requireValue(table.querySelector('caption'), 'No caption')
++		expect(readStyle(caption, 'caption-side')).toBe('top')
++		caption.classList.add('caption-bottom')
++		expect(readStyle(caption, 'caption-side')).toBe('bottom')
++		caption.classList.add('caption-top')
++		// Both classes sit in the `components` layer at the same specificity, so source order
++		// decides and `.caption-bottom` is the later rule.
++		expect(readStyle(caption, 'caption-side')).toBe('bottom')
++	})
+ 	it('keeps the bordered cell edges on the same sides in every direction and writing mode', () => {
+ 		// The bordered cell carries a physical border-width shorthand, so neither a right-to-left
+ 		// document nor a vertical writing mode moves an edge. A logical shorthand would put the pair
+diff --git a/tests/src/styles/elements/dl.test.ts b/tests/src/styles/elements/dl.test.ts
+index 3138674..2af15c0 100644
+--- a/tests/src/styles/elements/dl.test.ts
++++ b/tests/src/styles/elements/dl.test.ts
+@@ -9,10 +9,10 @@ afterEach(() => {
+ })
+ 
+ describe('dl text treatment', () => {
+-	// The record supplies the geometry, the term weight, and the muted description text.
++	// The record supplies the geometry, the term weight, and the description color.
+ 	it.each(TEXT_DL_CASES)(
+ 		'resolves the dl values in $mode mode',
+-		({ mode, values, color, muted }) => {
++		({ mode, values, color, description }) => {
+ 			const host = scene.mount(
+ 				`<div data-bs-theme="${mode}" style="color: var(--vn-text-body-base)"><dl style="width: 520px"><dt>Term</dt><dd>Description</dd></dl></div>`,
+ 			)
+@@ -27,9 +27,9 @@ describe('dl text treatment', () => {
+ 			expect(readStyle(requireValue(host.querySelector('dt'), 'No term'), 'font-weight')).toBe(
+ 				'600',
+ 			)
+-			const description = requireValue(host.querySelector('dd'), 'No description')
+-			expect(readStyle(description, 'margin')).toBe('0px')
+-			expect(matchesColor(readStyle(description, 'color'), muted)).toBe(true)
++			const dd = requireValue(host.querySelector('dd'), 'No description')
++			expect(readStyle(dd, 'margin')).toBe('0px')
++			expect(matchesColor(readStyle(dd, 'color'), description)).toBe(true)
+ 		},
+ 	)
+ })
+diff --git a/tests/src/styles/theme.test.ts b/tests/src/styles/theme.test.ts
+index 98b8586..8a63554 100644
+--- a/tests/src/styles/theme.test.ts
++++ b/tests/src/styles/theme.test.ts
+@@ -1,5 +1,6 @@
+ import { requireValue } from '@orkestrel/test'
+ import { matchesColor, readStyle } from '@orkestrel/test/browser'
++import { ColorMode } from '@src/browser'
+ import { TOKEN_NAMES } from '@src/core'
+ import { afterEach, describe, expect, it } from 'vitest'
+ import { scene } from '../../setupBrowser.js'
+@@ -57,6 +58,79 @@ describe('theme scopes', () => {
+ 		document.documentElement.removeAttribute('data-bs-theme')
+ 		expect(readStyle(document.documentElement, 'color-scheme')).toBe('normal')
+ 	})
++	// The engine and the cascade meet here: the controller writes the attribute the theme layer
++	// scopes on, so a light island nested in a dark one is what the controller must produce rather
++	// than what a hand-written attribute produces.
++	it('returns a nested island to the light closure when the controller applies light inside a dark island', () => {
++		const container = scene.mount(
++			`<div data-bs-theme="dark"><div id="island">` +
++				`<p id="text" style="color: var(${TOKEN_NAMES.text.body.base})">Island</p>` +
++				`<p id="canvas" style="background-color: var(${TOKEN_NAMES.surface.body.base})"></p>` +
++				`</div></div>`,
++		)
++		const island = requireValue(container.querySelector('#island'), 'No island')
++		if (!(island instanceof HTMLElement)) throw new Error('The island is not an HTML element')
++		const text = requireValue(container.querySelector('#text'), 'No island text')
++		const canvas = requireValue(container.querySelector('#canvas'), 'No island canvas')
++		expect(matchesColor(readStyle(text, 'color'), 'oklch(0.929 0.013 255.508)')).toBe(true)
++		expect(matchesColor(readStyle(canvas, 'background-color'), 'oklch(0.21 0.013 256)')).toBe(true)
++		const controller = new ColorMode({ root: island })
++		try {
++			controller.apply('light')
++			expect(matchesColor(readStyle(text, 'color'), 'oklch(0.208 0.042 265.755)')).toBe(true)
++			expect(matchesColor(readStyle(canvas, 'background-color'), 'rgb(255, 255, 255)')).toBe(true)
++			expect(readStyle(island, 'color-scheme')).toBe('light')
++		} finally {
++			controller.destroy()
++		}
++		expect(matchesColor(readStyle(text, 'color'), 'oklch(0.929 0.013 255.508)')).toBe(true)
++		expect(readStyle(island, 'color-scheme')).toBe('dark')
++	})
++	// The role list comes from the registry, so a role added there is read here without this case
++	// being touched. Every tier but `rgb` resolves to a color, and `rgb` is a channel triplet the
++	// `color` property cannot carry, so it is the one tier read out.
++	it('resolves every role tier and the body tokens per island over nested modes', () => {
++		const container = scene.mount(
++			'<div data-bs-theme="light"><p id="root"></p>' +
++				'<div data-bs-theme="dark"><p id="dark"></p>' +
++				'<div data-bs-theme="light"><p id="inner"></p></div></div></div>' +
++				'<p id="outside"></p>',
++		)
++		const root = requireValue(container.querySelector('#root'), 'No root specimen')
++		const dark = requireValue(container.querySelector('#dark'), 'No dark island specimen')
++		const inner = requireValue(container.querySelector('#inner'), 'No nested light specimen')
++		const outside = requireValue(container.querySelector('#outside'), 'No outside specimen')
++		// Only the primary fill retunes with the mode among the role fills, so every other role's
++		// `base` reading is mode-independent and must agree across the modes. The mixed tiers and the
++		// body tokens all carry the mode.
++		const matrix: Array<readonly [token: string, independent: boolean]> = [
++			[TOKEN_NAMES.text.body.base, false],
++			[TOKEN_NAMES.surface.body.base, false],
++		]
++		for (const [role, tiers] of Object.entries(TOKEN_NAMES.color)) {
++			for (const [tier, token] of Object.entries(tiers)) {
++				if (tier !== 'rgb') matrix.push([token, tier === 'base' && role !== 'primary'])
++			}
++		}
++		for (const [token, independent] of matrix) {
++			for (const site of [root, dark, inner, outside]) {
++				site.setAttribute('style', `color: var(${token})`)
++			}
++			const light = readStyle(root, 'color')
++			expect({ token, agrees: matchesColor(readStyle(inner, 'color'), light) }).toEqual({
++				token,
++				agrees: true,
++			})
++			expect({ token, agrees: matchesColor(readStyle(outside, 'color'), light) }).toEqual({
++				token,
++				agrees: true,
++			})
++			expect({ token, agrees: matchesColor(readStyle(dark, 'color'), light) }).toEqual({
++				token,
++				agrees: independent,
++			})
++		}
++	})
+ 	it('carries the dark-only component assets in the dark scope alone', () => {
+ 		const specimen = requireValue(scene.mount('<div></div>').firstElementChild, 'No asset specimen')
+ 		expect(readStyle(specimen, '--bs-form-select-bg-img')).toBe('')
+diff --git a/tests/src/styles/tokens.test.ts b/tests/src/styles/tokens.test.ts
+index 0898403..0c3c510 100644
+--- a/tests/src/styles/tokens.test.ts
++++ b/tests/src/styles/tokens.test.ts
+@@ -9,7 +9,6 @@ import {
+ } from '@orkestrel/test/browser'
+ import { TOKEN_NAMES } from '@src/core'
+ import { afterEach, describe, expect, it } from 'vitest'
+-import rtlCascade from '../../../dist/src/styles/index.rtl.css?raw'
+ import {
+ 	collectNestedRules,
+ 	collectScopeProperties,
+@@ -43,17 +42,6 @@ describe('token cascade', () => {
+ 		expect([...compatible].sort()).toEqual([...BOOTSTRAP_ROOT_VARIABLES].sort())
+ 		expect(declared.length).toBe(canonical.length + compatible.length)
+ 	})
+-	it('declares the same partitions in the right-to-left cascade', () => {
+-		const element = scene.load(rtlCascade)
+-		const sheet = requireValue(element.sheet, 'The right-to-left cascade parsed to no sheet')
+-		const declared = collectScopeProperties(collectNestedRules(sheet.cssRules), ':root')
+-		expect([...declared.filter((name) => name.startsWith('--vn-'))].sort()).toEqual(
+-			[...collectTokenNames(TOKEN_NAMES)].sort(),
+-		)
+-		expect([...declared.filter((name) => name.startsWith('--bs-'))].sort()).toEqual(
+-			[...BOOTSTRAP_ROOT_VARIABLES].sort(),
+-		)
+-	})
+ 	it('re-declares every theme-dependent name inside each mode scope', () => {
+ 		const sheet = requireValue(readCascadeSheet(), 'The document loaded no Veneer cascade')
+ 		const rules = collectNestedRules(sheet.cssRules)
+@@ -433,6 +421,22 @@ describe('token cascade', () => {
+ 		expect(matchesColor(readStyle(outer, 'color'), 'oklch(0.929 0.013 255.508)')).toBe(true)
+ 		expect(matchesColor(readStyle(inner, 'color'), 'oklch(0.208 0.042 265.755)')).toBe(true)
+ 	})
++	// The escape § Styles documents, executed. A consumer sheet arrives unlayered and after the
++	// shipped cascade, which is the position `scene.load` puts it in, and an important declaration
++	// there loses to an important declaration in a layer: the cascade reverses layer order for
++	// important declarations and sorts unlayered last. Re-opening the utility's own layer is what
++	// puts the consumer's declaration where it wins.
++	it('holds an important utility against an unlayered override and yields to one in its own layer', () => {
++		const row = requireValue(
++			scene.mount('<div class="row-gap-1"></div>').firstElementChild,
++			'No gutter specimen',
++		)
++		expect(readPixels(row, 'row-gap')).toBe(4)
++		scene.load('.row-gap-1 { row-gap: 2rem !important; }')
++		expect(readPixels(row, 'row-gap')).toBe(4)
++		scene.load('@layer utilities { .row-gap-1 { row-gap: 2rem !important; } }')
++		expect(readPixels(row, 'row-gap')).toBe(32)
++	})
+ })
+ 
+ describe('code calibration tokens', () => {
