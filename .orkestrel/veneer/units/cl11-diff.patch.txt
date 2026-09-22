@@ -1,0 +1,1098 @@
+diff --git a/tests/app/browser/integration.test.ts b/tests/app/browser/integration.test.ts
+index de9497b..2cc55df 100644
+--- a/tests/app/browser/integration.test.ts
++++ b/tests/app/browser/integration.test.ts
+@@ -39,6 +39,8 @@ import { afterAll, afterEach, beforeEach, describe, expect, inject, it } from 'v
+ import { commands, page } from 'vitest/browser'
+ import {
+ 	BUTTON_STATES,
++	CASCADE_KEYS,
++	CASCADE_STATES,
+ 	CONTRAST_BAR,
+ 	DISABLED_OPACITY,
+ 	FOCUS_RING,
+@@ -54,7 +56,9 @@ import {
+ 	ORACLE_ACTIONS,
+ 	ORACLE_EXCLUDED,
+ 	recordState,
+-	resolveButton,
++	readButton,
++	readOracleButton,
++	readSpecimen,
+ } from '../../setupBrowser.js'
+ 
+ const VARIANT = inject('variant')
+@@ -198,7 +202,7 @@ describe('journey', () => {
+ 	})
+ 
+ 	it('toggles a delegated host through a click on the element carrying its label', async () => {
+-		const host = resolveButton(mounted.section, 'Label')
++		const host = readButton(mounted.section, 'Label')
+ 		const label = requireValue(
+ 			host.firstElementChild,
+ 			'The Label specimen carries no label element',
+@@ -252,25 +256,31 @@ describe('journey', () => {
+ 	})
+ 
+ 	it('refuses a native disabled host and an aria-disabled anchor with the unreachable voice', async () => {
+-		const blocked = resolveButton(mounted.section, 'Blocked')
+-		const disabled = resolveButton(mounted.section, 'Disabled')
++		const blocked = readButton(mounted.section, 'Blocked')
++		const disabled = readButton(mounted.section, 'Disabled')
+ 		expect(readStates(blocked)).toStrictEqual(['disabled'])
+ 		expect(readStates(disabled)).toStrictEqual(['disabled'])
+-		expect(readRefusal('button', 'Blocked')).toBe(
+-			'Interactive target "Blocked" is not visible and focus-reachable',
+-		)
+-		expect(readRefusal('button', 'Disabled')).toBe(
+-			'Interactive target "Disabled" is not visible and focus-reachable',
++		// The voice is the installed resolver's own, read from it for each host rather than copied
++		// into this file. The `refusal` family is where that voice is held against the sentence this
++		// workspace raises, so a wording the package moves reddens there rather than arriving here
++		// as two hosts asserting a sentence nothing produces.
++		const refusals = new Map(
++			['Blocked', 'Disabled'].map((name): readonly [string, string] => [
++				name,
++				requireValue(readRefusal('button', name), `The ${name} host refused nothing`),
++			]),
+ 		)
++		expect([...refusals].filter(([name, sentence]) => !sentence.includes(name))).toStrictEqual([])
++		expect(new Set(refusals.values()).size).toBe(refusals.size)
+ 		const reading = await recordState(disabled, () => clickAccessible('button', 'Disabled'))
+-		expect(reading.refusal).toBe('Interactive target "Disabled" is not visible and focus-reachable')
++		expect(reading.refusal).toBe(refusals.get('Disabled'))
+ 		expect(reading.mutations).toStrictEqual([])
+ 		expect(reading.clicks).toStrictEqual([])
+ 		JOURNAL.record('refuse', 'Disabled', requireValue(reading.refusal, 'The drive was not refused'))
+ 	})
+ 
+ 	it('refuses a covered host, then activates it once the cover is out of the way', async () => {
+-		const host = resolveButton(mounted.section, 'Toggle')
++		const host = readButton(mounted.section, 'Toggle')
+ 		const box = host.getBoundingClientRect()
+ 		const cover = mount(
+ 			build('div', {
+@@ -387,9 +397,9 @@ describe('journey', () => {
+ 			for (const specimen of collectPainted(mounted.section)) {
+ 				readings.set(`${mode}|${readName(specimen)}|rest`, readContrast(specimen))
+ 			}
+-			const pressed = resolveButton(mounted.section, 'Pressed')
++			const pressed = readButton(mounted.section, 'Pressed')
+ 			readings.set(`${mode}|Pressed|pressed`, readContrast(pressed))
+-			const blocked = resolveButton(mounted.section, 'Blocked')
++			const blocked = readButton(mounted.section, 'Blocked')
+ 			readings.set(`${mode}|Blocked|disabled`, readContrast(blocked))
+ 			dimmed.set(mode, readStyle(blocked, 'opacity'))
+ 		}
+@@ -432,7 +442,7 @@ describe('journey', () => {
+ 		for (const mode of [LIGHT, DARK]) {
+ 			await applyTheme(mode)
+ 			const suffix = mode === DARK ? '-dark' : ''
+-			const host = resolveButton(mounted.section, 'Primary')
++			const host = readButton(mounted.section, 'Primary')
+ 			const rest = readStyle(host, 'background-color')
+ 			// The pointer is aimed at the staged layout rather than the fitted one, because a host
+ 			// hovered before the pane is staged is no longer under the pointer at the shot and its
+@@ -505,7 +515,7 @@ describe('journey', () => {
+ 	})
+ 
+ 	it('holds the feedback transition off while reduced motion is staged', async () => {
+-		const host = resolveButton(mounted.section, 'Primary')
++		const host = readButton(mounted.section, 'Primary')
+ 		const moving = readStyle(host, 'transition-duration')
+ 		expect(moving).not.toBe('0s')
+ 		await stageMedia({ motion: false })
+@@ -520,7 +530,7 @@ describe('journey', () => {
+ 	})
+ 
+ 	it('renders the resting section and a driven pressed state in both modes', async () => {
+-		const host = resolveButton(mounted.section, 'Toggle')
++		const host = readButton(mounted.section, 'Toggle')
+ 		for (const mode of [LIGHT, DARK]) {
+ 			await applyTheme(mode)
+ 			const suffix = mode === DARK ? '-dark' : ''
+@@ -549,6 +559,66 @@ describe('journey', () => {
+ 		}
+ 	})
+ 
++	it('renders the container, the row, the table, and the link the cascade ships, in both modes', async () => {
++		// Each key is addressed by the specimen label its section declared, because one class
++		// answers for several specimens here: the Layout table alone renders several containers.
++		const rendered = new Map<string, string>()
++		const framed = new Map<string, string>()
++		for (const mode of [LIGHT, DARK]) {
++			await applyTheme(mode)
++			await waitForAnimations(document.body)
++			const suffix = mode === DARK ? '-dark' : ''
++			for (const key of CASCADE_KEYS) {
++				const specimen = readSpecimen(mounted.host, key.specimen)
++				const subject = requireValue(
++					specimen.querySelector(key.selector),
++					`The "${key.specimen}" specimen renders no ${key.selector}`,
++				)
++				// The frame is shot on a copy of the specimen lifted to the document's start. A
++				// page frame covers the whole document, so one shot at rest is one image whatever
++				// state name it carries; and an element frame taken where the showcase renders
++				// these specimens comes back blank white, measured at both registered widths. The
++				// lift is what the harness can photograph, and the reading below is what makes it
++				// a frame of this key rather than of a copy that paints differently.
++				const lifted = build('div')
++				lifted.append(specimen.cloneNode(true))
++				document.body.prepend(lifted)
++				try {
++					const copy = requireValue(
++						lifted.querySelector(key.selector),
++						`The lifted "${key.specimen}" specimen renders no ${key.selector}`,
++					)
++					rendered.set(`${mode}|${key.state}`, readStyle(subject, key.property))
++					framed.set(`${mode}|${key.state}`, readStyle(copy, key.property))
++					PLACED.add(`${key.state}${suffix}`)
++					await PORTFOLIO.place(`${key.state}${suffix}`, copy)
++				} finally {
++					lifted.remove()
++				}
++			}
++		}
++		ARTIFACT.push(JSON.stringify({ reading: 'cascade keys', readings: [...rendered] }))
++		// The copy each frame was shot on resolved what the showcase's own specimen resolves, key
++		// for key and mode for mode. A frame of a copy that painted anything else would be a frame
++		// of the lift rather than of the key.
++		expect([...framed]).toStrictEqual([...rendered])
++		// The row and the container are laid out by rules no mode retunes, so a reading that moved
++		// with the mode would be the theme reaching a layout rule.
++		expect(rendered.get(`${LIGHT}|row-numbered-rest`)).toBe('flex')
++		expect(rendered.get(`${DARK}|row-numbered-rest`)).toBe('flex')
++		expect(rendered.get(`${LIGHT}|container-capped-rest`)).toBe(
++			rendered.get(`${DARK}|container-capped-rest`),
++		)
++		// The table border and the link color are theme tokens, which is what earns each key its
++		// dark twin: a pair of frames whose paint never moved would be one frame registered twice.
++		expect(rendered.get(`${LIGHT}|table-base-rest`)).not.toBe(
++			rendered.get(`${DARK}|table-base-rest`),
++		)
++		expect(rendered.get(`${LIGHT}|link-role-rest`)).not.toBe(rendered.get(`${DARK}|link-role-rest`))
++		expect([...rendered].filter(([, value]) => value.length === 0)).toStrictEqual([])
++		JOURNAL.record('read', 'cascade keys', String(rendered.get(`${LIGHT}|link-role-rest`)))
++	})
++
+ 	it('matches the official recording step for step on the same markup', async () => {
+ 		// The recording excludes no step, so every step it carries is compared. A recording that
+ 		// gains an exclusion reddens here, and the unit that regenerated it rules on the exclusion
+@@ -579,11 +649,29 @@ describe('journey', () => {
+ })
+ 
+ describe('refusal', () => {
+-	it('reports the absent sign-in control with the absence voice', () => {
++	it('answers each refused reading in the voice the installed resolver raises for it', async () => {
+ 		PROVEN.add('refusal')
+-		expect(readRefusal('button', 'Sign in')).toBe(
+-			'No interactive element has the accessible name "Sign in"',
++		// The voices are read from the installed module rather than written out here, and the
++		// refusals this workspace raises are compared against them. A wording this package changes
++		// reddens here instead of drifting away from the voice a reader of the suite meets, and the
++		// sentences pinned as literals in `tests/setupBrowser.test.ts` are the other half of that
++		// pair: one side holds this workspace's own wording still, and this side holds it to the
++		// installed one.
++		const absent = readRefusal('button', 'Sign in')
++		const unreachable = requireValue(
++			readRefusal('button', 'Disabled'),
++			'The installed resolver refused nothing for the Disabled specimen',
+ 		)
++		// Absent and present-but-gated are different findings, so a module that collapsed them would
++		// leave every refusal below asserting the same sentence about two different conditions.
++		expect(absent).toBeDefined()
++		expect(absent).not.toBe(unreachable)
++		expect(readRefusal('button', 'Toggle')).toBeUndefined()
++		const disabled = readButton(mounted.section, 'Disabled')
++		expect(() => readOracleButton(mounted.section, 'Disabled')).toThrow(new Error(unreachable))
++		const reading = await recordState(disabled, () => clickAccessible('button', 'Disabled'))
++		expect(reading.refusal).toBe(unreachable)
++		JOURNAL.record('refuse', 'Disabled', unreachable)
+ 	})
+ })
+ 
+@@ -648,7 +736,7 @@ describe('portfolio', () => {
+ 		for (const variant of VARIANTS) {
+ 			expect(files).toContain(`home--${variant.name}.png`)
+ 			expect(files).toContain(`home-dark--${variant.name}.png`)
+-			for (const state of BUTTON_STATES) {
++			for (const state of [...BUTTON_STATES, ...CASCADE_STATES]) {
+ 				expect(files).toContain(`${state}--${variant.name}.png`)
+ 				expect(files).toContain(`${state}-dark--${variant.name}.png`)
+ 			}
+diff --git a/tests/app/browser/sections/ButtonSection.test.ts b/tests/app/browser/sections/ButtonSection.test.ts
+index bdd3a49..33aea71 100644
+--- a/tests/app/browser/sections/ButtonSection.test.ts
++++ b/tests/app/browser/sections/ButtonSection.test.ts
+@@ -14,7 +14,7 @@ import {
+ 	resolveAccessible,
+ } from '@orkestrel/test/browser'
+ import { beforeAll, describe, expect, it } from 'vitest'
+-import { BUTTON_CLASS, resolveButton } from '../../../setupBrowser.js'
++import { BUTTON_CLASS, readButton } from '../../../setupBrowser.js'
+ 
+ // The section renders the published cascade, so the cascade has to be in the document before a
+ // census or a resolved class reading means anything.
+@@ -55,10 +55,10 @@ describe('ButtonSection', () => {
+ 		const host = mount(build('div'))
+ 		const section = new ButtonSection(host)
+ 		try {
+-			const nested = resolveButton(host, 'Label')
++			const nested = readButton(host, 'Label')
+ 			expect(nested.firstElementChild?.localName).toBe('span')
+ 			expect(nested.firstElementChild?.textContent).toBe('Label')
+-			expect(resolveButton(host, 'Toggle').firstElementChild).toBeNull()
++			expect(readButton(host, 'Toggle').firstElementChild).toBeNull()
+ 		} finally {
+ 			section.destroy()
+ 			host.remove()
+@@ -79,7 +79,7 @@ describe('ButtonSection', () => {
+ 		const host = mount(build('div'))
+ 		const section = new ButtonSection(host)
+ 		try {
+-			const rendered = BUTTON_SPECIMENS.map((specimen) => resolveButton(host, specimen.name))
++			const rendered = BUTTON_SPECIMENS.map((specimen) => readButton(host, specimen.name))
+ 			const delegated = rendered.filter((element) => element.matches(BUTTON_SELECTOR))
+ 			const plain = rendered.filter((element) => !element.matches(BUTTON_SELECTOR))
+ 			// The rendered partition is set beside the table's own declaration, so the selector and the
+@@ -121,7 +121,7 @@ describe('ButtonSection', () => {
+ 			// both read off the one error the section's ownership produced.
+ 			let raised: unknown
+ 			try {
+-				raised = new Button(resolveButton(host, 'Primary'))
++				raised = new Button(readButton(host, 'Primary'))
+ 			} catch (error) {
+ 				raised = error
+ 			}
+@@ -136,8 +136,8 @@ describe('ButtonSection', () => {
+ 	it('releases every engine it owns on destruction, and leaves the authored markup alone', () => {
+ 		const host = mount(build('div'))
+ 		const section = new ButtonSection(host)
+-		const selected = resolveButton(host, 'Selected')
+-		const plain = BUTTON_SPECIMENS.map((specimen) => resolveButton(host, specimen.name)).filter(
++		const selected = readButton(host, 'Selected')
++		const plain = BUTTON_SPECIMENS.map((specimen) => readButton(host, specimen.name)).filter(
+ 			(element) => !element.matches(BUTTON_SELECTOR),
+ 		)
+ 		try {
+diff --git a/tests/distribution.test.ts b/tests/distribution.test.ts
+index fe3ae49..f6c8044 100644
+--- a/tests/distribution.test.ts
++++ b/tests/distribution.test.ts
+@@ -9,6 +9,7 @@ import type { Browser } from 'playwright'
+ import type { SpawnSyncReturns } from 'node:child_process'
+ import type { TestContext } from 'vitest'
+ import { spawnSync } from 'node:child_process'
++import { requireValue } from '@orkestrel/test'
+ import { readInventory } from '@orkestrel/test/server'
+ import {
+ 	existsSync,
+@@ -637,11 +638,25 @@ async function launchBrowser(options: PlaywrightProviderOptions): Promise<Browse
+ 	return chromium.launch({ ...options.launchOptions, headless: true })
+ }
+ 
++// The markup the `cascade` drive writes into the page, one element per shipped key
++// beside an unclassed twin of it. The twin is what separates the packed cascade's own
++// treatment from the treatment a browser gives the same tag with no stylesheet at all:
++// a page that loaded no CSS reports the twin's reading on both sides of each pair.
++const CASCADE_MARKUP = `<div class="container" id="capped">Capped</div>
++<div class="container-fluid" id="fluid">Fluid</div>
++<div class="row" id="row"><div class="col-6">First</div><div class="col-6">Second</div></div>
++<div id="plain"><div>First</div><div>Second</div></div>
++<table class="table" id="table"><caption>Shipments</caption><thead><tr><th scope="col">Material</th></tr></thead><tbody><tr><td id="cell">Oak</td></tr></tbody></table>
++<table id="bare"><tbody><tr><td id="bare-cell">Oak</td></tr></tbody></table>
++<p><a class="link-primary" href="#main" id="link">Primary link</a> <a class="link-danger" href="#main" id="danger">Danger link</a></p>`
++
+ // The consumer modules a bundled page is built from, each reporting its reading on
+-// `globalThis.subject` as a list of strings so one page reader answers for both. The
+-// `@subject` placeholder is replaced with the entry's own specifier. `exports` reads
+-// the names the entry publishes; `engine` drives the published Button engine and its
+-// delegation the way a consumer's own page does.
++// `globalThis.subject` as a list of strings so one page reader answers for all of
++// them. The `@subject` placeholder is replaced with the entry's own specifier.
++// `exports` reads the names the entry publishes; `engine` drives the published Button
++// engine and its delegation the way a consumer's own page does; `cascade` renders the
++// container, row, table, and link keys and reads what the packed stylesheet resolved
++// on each of them.
+ const BROWSER_DRIVES = Object.freeze({
+ 	exports: `import * as entry from '@subject'
+ globalThis.subject = Object.keys(entry).sort()
+@@ -670,6 +685,31 @@ delegate.destroy()
+ reading.push('released=' + String(host.getAttribute('aria-pressed')))
+ reading.push('restored=' + String(plain.classList.contains('active')))
+ globalThis.subject = reading
++`,
++	cascade: `import '@subject'
++document.body.innerHTML = @markup
++const reading = []
++for (const [key, id, property] of [
++	['container', 'capped', 'max-inline-size'],
++	['fluid', 'fluid', 'max-inline-size'],
++	['gutter', 'capped', 'padding-inline-start'],
++	['row', 'row', 'display'],
++	['plain', 'plain', 'display'],
++	['table', 'table', 'vertical-align'],
++	['bare', 'bare', 'vertical-align'],
++	['cell', 'cell', 'padding-inline-start'],
++	['bare-cell', 'bare-cell', 'padding-inline-start'],
++	['link', 'link', 'color'],
++	['danger', 'danger', 'color'],
++]) {
++	const element = document.getElementById(id)
++	if (element === null) throw new Error('The cascade page rendered no ' + id + ' element')
++	reading.push(key + '=' + getComputedStyle(element).getPropertyValue(property))
++}
++const token = getComputedStyle(document.documentElement).getPropertyValue('--vn-color-primary-rgb')
++reading.push('token=' + token)
++reading.push('width=' + String(document.documentElement.clientWidth))
++globalThis.subject = reading
+ `,
+ })
+ 
+@@ -687,7 +727,12 @@ async function bundleEntry(
+ 	const name = readManifestName(join(stage.installed, 'package.json'))
+ 	const styles = createRequire(join(stage.consumer, 'package.json')).resolve(`${name}/styles`)
+ 	writeFile(join(page, 'public', 'styles.css'), readFileSync(styles, 'utf8'))
+-	writeFile(join(page, 'main.js'), BROWSER_DRIVES[drive].replaceAll("'@subject'", specifier))
++	writeFile(
++		join(page, 'main.js'),
++		BROWSER_DRIVES[drive]
++			.replaceAll("'@subject'", specifier)
++			.replaceAll('@markup', JSON.stringify(CASCADE_MARKUP)),
++	)
+ 	await build({
+ 		base: './',
+ 		build: { emptyOutDir: true, outDir: 'bundle' },
+@@ -758,6 +803,27 @@ async function readBundleSubject(
+ 	}
+ }
+ 
++// The `key=value` rows a drive left on the page, as a map. The split is on the first
++// separator alone, because a resolved value carries its own: `rgb(8, 65, 234)` does
++// not, but a `font-family` list and a `background-image` gradient do.
++function collectReadings(subject: readonly string[]): ReadonlyMap<string, string> {
++	const readings = new Map<string, string>()
++	for (const row of subject) {
++		const separator = row.indexOf('=')
++		if (separator === -1) throw new Error(`The cascade drive reported ${row}, which names no key`)
++		readings.set(row.slice(0, separator), row.slice(separator + 1))
++	}
++	return readings
++}
++
++// One reading the cascade page reported, refused by name rather than compared as
++// `undefined`: a key the drive never wrote and a key whose value is empty are
++// different findings, and an absent key compared against an expected string reads as
++// a cascade failure.
++function readReading(readings: ReadonlyMap<string, string>, key: string): string {
++	return requireValue(readings.get(key), `The cascade page reported no ${key} reading`)
++}
++
+ // Pack this workspace, install the archive into an isolated consumer, and read the
+ // published surface back off the installed tree. Every later claim reads this
+ // result, so a failure here is raised where it happens rather than once per entry.
+@@ -976,6 +1042,62 @@ describe('installed package consumer', () => {
+ 		}
+ 	})
+ 
++	// The cascade's own consumer: a real page, bundled by a real bundler, served over a
++	// loopback server, reading the stylesheet the archive published through the export
++	// the package names it under. Every other proof of these keys reads the source
++	// cascade or the workspace's own build; this one reads what a consumer installs.
++	it('resolves the container, row, table, and link keys on a packed-CSS page [requires the registry]', async (context) => {
++		const stage = requireStage(context)
++		const entry = stage.entries.find((candidate) => candidate.browsable)
++		if (entry === undefined) throw new Error('The installed package publishes no browser entry')
++		const options = resolveBrowser(resolvePinnedBrowser(), process.platform, process.env)
++		const browser = await launchBrowser(options).catch((error: unknown) => {
++			const cause = `${describeBrowser(options)} was rejected: ${String(error)}`
++			if (RELEASE) throw new Error(`The release gate requires a browser, and ${cause}`)
++			return context.skip(`No browser launched. ${cause}`)
++		})
++		try {
++			const bundle = await bundleEntry(stage, entry, 'cascade')
++			const reading = await readBundleSubject(browser, bundle)
++			expect(reading.loaded).toBe(true)
++			const readings = collectReadings(reading.subject)
++			// Each key is read beside an unclassed twin of its own tag, so a page that resolved
++			// none of the packed cascade reports one value on both sides of every pair. The
++			// twins are what make these readings statements about the stylesheet rather than
++			// about what a browser does with the markup.
++			expect(readReading(readings, 'row')).toBe('flex')
++			expect(readReading(readings, 'plain')).toBe('block')
++			expect(readReading(readings, 'table')).toBe('top')
++			expect(readReading(readings, 'bare')).toBe('baseline')
++			// The packed cascade pads a bare cell from its elements layer and the component's own
++			// cell from its components layer, so the pair reads apart. A page that loaded no
++			// stylesheet reports the browser's own zero on both sides and reddens here.
++			expect(Number.parseFloat(readReading(readings, 'cell'))).toBeGreaterThan(0)
++			expect(Number.parseFloat(readReading(readings, 'bare-cell'))).toBeGreaterThan(0)
++			expect(readReading(readings, 'cell')).not.toBe(readReading(readings, 'bare-cell'))
++			// The capped container holds a width below the page's own, and the fluid one holds
++			// none: the pair is the cap, read where a consumer's page would meet it.
++			const width = Number.parseFloat(readReading(readings, 'width'))
++			const capped = readReading(readings, 'container')
++			expect(capped).toMatch(/^\d+(?:\.\d+)?px$/u)
++			expect(Number.parseFloat(capped)).toBeGreaterThan(0)
++			expect(Number.parseFloat(capped)).toBeLessThan(width)
++			expect(readReading(readings, 'fluid')).toBe('none')
++			expect(Number.parseFloat(readReading(readings, 'gutter'))).toBeGreaterThan(0)
++			// The link's color is compared against the channel triplet the packed theme layer
++			// declares, so the reading answers to the shipped token rather than to whatever the
++			// browser paints an anchor.
++			const channels = readReading(readings, 'token')
++				.split(',')
++				.map((channel) => channel.trim())
++			expect(channels).toHaveLength(3)
++			expect(readReading(readings, 'link')).toBe(`rgb(${channels.join(', ')})`)
++			expect(readReading(readings, 'link')).not.toBe(readReading(readings, 'danger'))
++		} finally {
++			await browser.close()
++		}
++	})
++
+ 	it('packs one archive and installs it in isolation [requires the registry]', (context) => {
+ 		const stage = requireStage(context)
+ 		expect(stage.archives).toHaveLength(1)
+diff --git a/tests/setup.test.ts b/tests/setup.test.ts
+index 85f9604..fef3915 100644
+--- a/tests/setup.test.ts
++++ b/tests/setup.test.ts
+@@ -3,6 +3,8 @@ import { describe, expect, it } from 'vitest'
+ import * as setup from './setup.js'
+ import {
+ 	BUTTON_STATES,
++	CASCADE_KEYS,
++	CASCADE_STATES,
+ 	collectTokenNodes,
+ 	CONTRAST_BAR,
+ 	DISABLED_OPACITY,
+@@ -44,6 +46,8 @@ describe('shared setup', () => {
+ 		expect(Object.keys(setup).sort()).toEqual(
+ 			[
+ 				'BUTTON_STATES',
++				'CASCADE_KEYS',
++				'CASCADE_STATES',
+ 				'CONTRAST_BAR',
+ 				'DISABLED_OPACITY',
+ 				'FOCUS_RING',
+@@ -65,11 +69,38 @@ describe('shared setup', () => {
+ 		expect(BUTTON_STATES.filter((state) => state.endsWith('-dark'))).toStrictEqual([])
+ 		expect(new Set(BUTTON_STATES).size).toBe(BUTTON_STATES.length)
+ 	})
+-	it('registers each Button state and the showcase home beside a dark twin, without repeating one', () => {
++	it('describes each photographed cascade key by its specimen, its element, and its property', () => {
++		expect(CASCADE_KEYS).not.toStrictEqual([])
++		expect(
++			CASCADE_KEYS.filter(
++				(key) =>
++					key.specimen.length === 0 || !key.selector.startsWith('.') || key.property.length === 0,
++			),
++		).toStrictEqual([])
++		// One specimen answers for one key here. Two rows reading one specimen would place two
++		// frames of the same markup, which is the duplication the registry refuses.
++		expect(new Set(CASCADE_KEYS.map((key) => key.specimen)).size).toBe(CASCADE_KEYS.length)
++		expect(new Set(CASCADE_KEYS.map((key) => key.selector)).size).toBe(CASCADE_KEYS.length)
++	})
++	it('registers one light state per photographed cascade key, and no dark twin among them', () => {
++		expect(CASCADE_STATES).not.toStrictEqual([])
++		expect(CASCADE_STATES.filter((state) => !/^[a-z]+-[a-z]+-rest$/u.test(state))).toStrictEqual([])
++		// A hand-written dark twin would be photographed twice, because the portfolio derives one.
++		expect(CASCADE_STATES.filter((state) => state.endsWith('-dark'))).toStrictEqual([])
++		expect(new Set(CASCADE_STATES).size).toBe(CASCADE_STATES.length)
++		// Each key is registered once: a second state naming one key would be a second frame of the
++		// same specimen at rest, which is the duplication the registry refuses.
++		const keys = CASCADE_STATES.map((state) => state.split('-')[0])
++		expect(new Set(keys).size).toBe(keys.length)
++		// The two registries name disjoint families, so neither grows a state the other already
++		// places.
++		expect(CASCADE_STATES.filter((state) => BUTTON_STATES.includes(state))).toStrictEqual([])
++	})
++	it('registers each Button state, each cascade key, and the home beside a dark twin, without repeating one', () => {
+ 		expect(new Set(PORTFOLIO_STATES).size).toBe(PORTFOLIO_STATES.length)
+ 		const twinned = PORTFOLIO_STATES.filter((state) => !state.endsWith('-dark'))
+ 		expect(twinned.filter((state) => !PORTFOLIO_STATES.includes(`${state}-dark`))).toStrictEqual([])
+-		expect(twinned).toStrictEqual(['home', ...BUTTON_STATES])
++		expect(twinned).toStrictEqual(['home', ...BUTTON_STATES, ...CASCADE_STATES])
+ 		expect(PORTFOLIO_STATES).toHaveLength(twinned.length * 2)
+ 	})
+ 	it('measures contrast against the ratio body text is read at, and dimming below full opacity', () => {
+diff --git a/tests/setup.ts b/tests/setup.ts
+index 9162015..13a7ee0 100644
+--- a/tests/setup.ts
++++ b/tests/setup.ts
+@@ -27,6 +27,89 @@ export const BUTTON_STATES: readonly string[] = Object.freeze([
+ 	'button-primary-active',
+ ])
+ 
++/** Describes one shipped cascade key a journey photographs and reads the treatment of. */
++export interface CascadeKey {
++	/** Holds the portfolio state the key's own light frame is registered under. */
++	readonly state: string
++	/** Names the showcase specimen the key is rendered as, as that section's own table declares it. */
++	readonly specimen: string
++	/** Holds the selector the key's own element answers to inside that specimen. */
++	readonly selector: string
++	/** Names the resolved property the journey reads the key's treatment from. */
++	readonly property: string
++}
++
++/**
++ * Lists the content and layout keys a journey photographs, each with the specimen that renders it
++ * and the property its treatment is read from.
++ *
++ * @remarks
++ * The rows are the keys the consumer page reads out of the packed stylesheet — the capped container,
++ * the numbered-column row, the base table, and the role link — so the portfolio and that page answer
++ * for one family rather than two. A key is addressed by its specimen label rather than by its class,
++ * because one class answers for several specimens: the Layout table alone renders several containers.
++ *
++ * Each property is one the key's own rule sets and a mode either retunes or leaves alone, so the
++ * journey reading says which of those two a frame's dark twin is for.
++ *
++ * Two placement rulings were measured rather than assumed, and each one is why these frames are
++ * shot the way they are.
++ *
++ * A **page frame** covers the whole document, so one shot of the resting page is one image whatever
++ * state name it carries: `home--light-1280.png` and `button-primary-rest--light-1280.png` are
++ * byte-identical files. A cascade state shot that way would duplicate the arrival frame rather than
++ * show the key it names.
++ *
++ * An **element frame** taken where the showcase renders these specimens comes back blank white. The
++ * capped container, the numbered-column row, the base table, and the role link sit around 3500 to
++ * 4700 CSS pixels down a document over 8000 pixels tall, and every one of them photographed blank at
++ * the 390-wide variants, as did the role link at the 1280-wide ones. The same specimens, copied and
++ * put at the document's start, photograph correctly at both widths — which is what the journey does,
++ * reading each key's resolved treatment on the showcase's own specimen and again on the copy so a
++ * frame is never placed on a copy that paints something else.
++ *
++ * A hover or focus frame is registered for none of them. The showcase renders each key at rest and
++ * the journey reads each key at rest, so a pointer state would be a claim about a paint no journey
++ * here drives. That is what separates these from the Button states, where the pointer journey drives
++ * hover and active and reads each one back after its own shot.
++ */
++export const CASCADE_KEYS: readonly CascadeKey[] = Object.freeze([
++	Object.freeze({
++		state: 'container-capped-rest',
++		specimen: 'Capped container',
++		selector: '.container',
++		property: 'max-inline-size',
++	}),
++	Object.freeze({
++		state: 'row-numbered-rest',
++		specimen: 'Numbered columns',
++		selector: '.row',
++		property: 'display',
++	}),
++	Object.freeze({
++		state: 'table-base-rest',
++		specimen: 'Base',
++		selector: '.table',
++		property: 'border-block-end-color',
++	}),
++	Object.freeze({
++		state: 'link-role-rest',
++		specimen: 'Role links',
++		selector: '.link-primary',
++		property: 'color',
++	}),
++])
++
++/**
++ * Lists the cascade-key states a journey photographs, each in the light mode its own frame shows.
++ *
++ * @remarks
++ * The list is derived from {@link CASCADE_KEYS} rather than written beside it, so a key the journey
++ * reaches and a state the portfolio registers cannot drift apart. The journey's own placement is
++ * what proves a registered state was reached.
++ */
++export const CASCADE_STATES: readonly string[] = Object.freeze(CASCADE_KEYS.map((key) => key.state))
++
+ /**
+  * Lists every state the showcase portfolio registers, in capture order.
+  *
+@@ -41,6 +124,8 @@ export const PORTFOLIO_STATES: readonly string[] = Object.freeze([
+ 	'home-dark',
+ 	...BUTTON_STATES,
+ 	...BUTTON_STATES.map((state) => `${state}-dark`),
++	...CASCADE_STATES,
++	...CASCADE_STATES.map((state) => `${state}-dark`),
+ ])
+ 
+ /**
+diff --git a/tests/setupBrowser.test.ts b/tests/setupBrowser.test.ts
+index 3f5b099..85183c7 100644
+--- a/tests/setupBrowser.test.ts
++++ b/tests/setupBrowser.test.ts
+@@ -4,8 +4,11 @@ import {
+ 	build,
+ 	clickAccessible,
+ 	findRule,
++	isOutsideViewport,
++	isReachable,
+ 	mount,
+ 	POINTER_HOLD,
++	readHit,
+ 	readPerception,
+ 	readRefusal,
+ 	readName,
+@@ -40,9 +43,11 @@ import {
+ 	readCascadeSheet,
+ 	recordListeners,
+ 	recordState,
+-	resolveButton,
++	readButton,
+ 	readOracleButton,
+ 	readParentOffset,
++	readSpecimen,
++	SPECIMEN_ATTRIBUTE,
+ 	specimens,
+ 	visitBreakpoint,
+ } from './setupBrowser.js'
+@@ -94,6 +99,38 @@ describe('breakpoint viewport restoration', () => {
+ 		})
+ 	})
+ 
++	it('keeps the reading failure when the restore is refused, and carries the refusal as its cause', async () => {
++		const failure = new Error('Breakpoint viewport reading failure')
++		const refusal = new Error('The tester refused the restoring viewport')
++		const sizes: Array<readonly [number, number]> = []
++		// The resizer is the case's own, because the installed verb refuses nothing a case can
++		// reach. It resizes for real on the visit and refuses the restore, which is the one call
++		// this case is about.
++		await expect(
++			visitBreakpoint(
++				576,
++				() => {
++					expect(window.innerWidth).toBe(576)
++					throw failure
++				},
++				async (width, height) => {
++					sizes.push([width, height])
++					if (sizes.length > 1) throw refusal
++					await page.viewport(width, height)
++				},
++			),
++		).rejects.toMatchObject({ message: failure.message, cause: refusal })
++		expect(sizes).toStrictEqual([
++			[576, original.height],
++			[original.width, original.height],
++		])
++		// The refused restore left the viewport at the visited width, so the case puts it back
++		// itself rather than leaving every case after it there.
++		expect(window.innerWidth).toBe(576)
++		await page.viewport(original.width, original.height)
++		expect({ width: window.innerWidth, height: window.innerHeight }).toEqual(original)
++	})
++
+ 	it('leaves the following case at the original viewport', () => {
+ 		expect({ width: window.innerWidth, height: window.innerHeight }).toEqual(original)
+ 	})
+@@ -127,6 +164,7 @@ describe('browser setup', () => {
+ 				'ORACLE_ACTIONS',
+ 				'ORACLE_EXCLUDED',
+ 				'PROBE_CASCADE',
++				'SPECIMEN_ATTRIBUTE',
+ 				'SpecimenManager',
+ 				'applyTheme',
+ 				'buildOracleComparison',
+@@ -142,9 +180,10 @@ describe('browser setup', () => {
+ 				'readCascadeSheet',
+ 				'recordListeners',
+ 				'recordState',
+-				'resolveButton',
++				'readButton',
+ 				'readOracleButton',
+ 				'readParentOffset',
++				'readSpecimen',
+ 				'specimens',
+ 				'visitBreakpoint',
+ 			].sort(),
+@@ -194,7 +233,7 @@ describe('browser setup', () => {
+ 			expect(new Set(ORACLE_ACTIONS.map((step) => step.action)).size).toBe(ORACLE_ACTIONS.length)
+ 			expect(
+ 				[...new Set(ORACLE_ACTIONS.map((step) => step.name))].map(
+-					(name) => `${name}: ${resolveButton(mounted.section, name).localName}`,
++					(name) => `${name}: ${readButton(mounted.section, name).localName}`,
+ 				),
+ 			).toStrictEqual(['Toggle: button', 'Pressed: button', 'Disabled: a'])
+ 		} finally {
+@@ -233,11 +272,11 @@ describe('browser setup', () => {
+ 	it('isolates the oracle drive from a duplicate Toggle in another mounted section', async () => {
+ 		const mounted = await mountShowcase()
+ 		const neighbor = mount(build('section'))
+-		const duplicate = resolveButton(mounted.section, 'Toggle').cloneNode(true)
++		const duplicate = readButton(mounted.section, 'Toggle').cloneNode(true)
+ 		neighbor.append(duplicate)
+ 		mounted.host.before(neighbor)
+ 		try {
+-			const host = resolveButton(neighbor, 'Toggle')
++			const host = readButton(neighbor, 'Toggle')
+ 			const pressed = host.getAttribute('aria-pressed')
+ 			host.focus()
+ 			const reading = await recordState(host, async () => {
+@@ -254,14 +293,14 @@ describe('browser setup', () => {
+ 			expect(reading.mutations).toStrictEqual([])
+ 			expect(host.getAttribute('aria-pressed')).toBe(pressed)
+ 			expect(host.classList.contains('active')).toBe(false)
+-			const target = resolveButton(mounted.section, 'Toggle')
++			const target = readButton(mounted.section, 'Toggle')
+ 			const active = target.classList.contains('active')
+ 			host.focus()
+ 			await pressOracleKeys(mounted.section, 'Toggle', ' ')
+ 			expect(target.getAttribute('aria-pressed')).toBe(String(!active))
+ 			expect(host.getAttribute('aria-pressed')).toBe(pressed)
+ 			await holdOraclePointer(mounted.section, 'Toggle')
+-			expect(resolveButton(mounted.section, 'Toggle').matches(':active')).toBe(true)
++			expect(readButton(mounted.section, 'Toggle').matches(':active')).toBe(true)
+ 			expect(host.matches(':active')).toBe(false)
+ 			await expect(holdOraclePointer(neighbor, 'Toggle')).rejects.toThrow('Pointer is already held')
+ 		} finally {
+@@ -308,6 +347,68 @@ describe('browser setup', () => {
+ 		}
+ 	})
+ 
++	it('preserves the pressed-state failure on its own when the pointer release succeeds', async () => {
++		const mounted = await mountShowcase()
++		const target = readButton(mounted.section, 'Toggle')
++		const box = target.getBoundingClientRect()
++		// The cover takes the press the hold sends, so the host never enters its pressed state while
++		// everything about the hold itself succeeds. That is the half of the refusal the neighbouring
++		// case cannot reach: there the release is refused too and the failure carries a cause.
++		const cover = mount(
++			build('div', {
++				attributes: {
++					style: `position: fixed; inset-block-start: ${String(box.top)}px; inset-inline-start: ${String(box.left)}px; inline-size: ${String(box.width)}px; block-size: ${String(box.height)}px; z-index: 9`,
++				},
++			}),
++		)
++		let refused: unknown
++		try {
++			expect(readHit(target)).toBe(cover)
++			try {
++				await holdOraclePointer(mounted.section, 'Toggle')
++			} catch (error) {
++				refused = error
++			}
++			expect(refused).toBeInstanceOf(Error)
++			if (!(refused instanceof Error)) throw new Error('The refused hold raised no Error')
++			expect(refused.message).toBe('Interactive target "Toggle" did not enter the pressed state')
++			// A cause here would mean the release had been refused as well, so its absence is what
++			// tells the two halves apart, and the missing property is what tells absence from a
++			// cause set to nothing.
++			expect(refused.cause).toBeUndefined()
++			expect('cause' in refused).toBe(false)
++			// The release the refusal took on its way out cleared the marker, so nothing is held.
++			expect(document.documentElement.hasAttribute(POINTER_HOLD)).toBe(false)
++			expect(target.hasAttribute('aria-pressed')).toBe(false)
++		} finally {
++			cover.remove()
++			try {
++				await releasePointer()
++			} finally {
++				mounted.cleanup()
++			}
++		}
++	})
++
++	it('refuses a hold on a host scrolling cannot bring into the viewport', async () => {
++		// The host is fixed to the viewport, so its containing block is the viewport itself and no
++		// scroll moves it. Nothing about reachability refuses it: it is connected, laid out, and in
++		// the focus order, which is why the refusal is the hold's own rather than the reader's.
++		const root = specimens.mount(
++			'<section><button type="button" class="btn btn-primary" style="position: fixed; inset-block-start: 10px; inset-inline-start: -400px; inline-size: 120px">Parked</button></section>',
++		)
++		const target = readButton(root, 'Parked')
++		expect(isReachable(target)).toBe(true)
++		expect(isOutsideViewport(target.getBoundingClientRect())).toBe(true)
++		await expect(holdOraclePointer(root, 'Parked')).rejects.toThrow(
++			new Error('Interactive target "Parked" is unreachable after scrolling'),
++		)
++		expect(isOutsideViewport(target.getBoundingClientRect())).toBe(true)
++		// The refusal is raised before the press, so no marker was ever set and the next case starts
++		// from an unheld pointer.
++		expect(document.documentElement.hasAttribute(POINTER_HOLD)).toBe(false)
++	})
++
+ 	it('sets one drive beside the recording, and reports an absent step rather than passing over it', async () => {
+ 		const mounted = await mountShowcase()
+ 		try {
+@@ -420,10 +521,10 @@ describe('browser setup', () => {
+ 		}
+ 	})
+ 
+-	it('resolves a button the acting resolvers refuse, and refuses a name no button carries', async () => {
++	it('reads a button the acting resolvers refuse, and refuses a name no button carries', async () => {
+ 		const mounted = await mountShowcase()
+ 		try {
+-			const refused = resolveButton(mounted.section, 'Disabled')
++			const refused = readButton(mounted.section, 'Disabled')
+ 			expect(refused.localName).toBe('a')
+ 			expect(refused.getAttribute('aria-disabled')).toBe('true')
+ 			expect(() => readOracleButton(mounted.section, 'Disabled')).toThrow(
+@@ -435,8 +536,8 @@ describe('browser setup', () => {
+ 			expect(readRefusal('button', 'Disabled')).toBe(
+ 				'Interactive target "Disabled" is not visible and focus-reachable',
+ 			)
+-			expect(resolveButton(mounted.section, 'Toggle')).toBe(resolveAccessible('button', 'Toggle'))
+-			expect(() => resolveButton(mounted.section, 'Sign in')).toThrow(
++			expect(readButton(mounted.section, 'Toggle')).toBe(resolveAccessible('button', 'Toggle'))
++			expect(() => readButton(mounted.section, 'Sign in')).toThrow(
+ 				'No button in the root announces the accessible name "Sign in"',
+ 			)
+ 		} finally {
+@@ -453,10 +554,57 @@ describe('browser setup', () => {
+ 			const control = resolveAccessible('button', 'Dark mode')
+ 			expect(control.classList.contains(BUTTON_CLASS)).toBe(false)
+ 			expect(mounted.host.contains(control)).toBe(true)
+-			expect(() => resolveButton(mounted.host, 'Dark mode')).toThrow(
++			expect(() => readButton(mounted.host, 'Dark mode')).toThrow(
+ 				'No button in the root announces the accessible name "Dark mode"',
+ 			)
+-			expect(resolveButton(mounted.host, 'Primary').classList.contains(BUTTON_CLASS)).toBe(true)
++			expect(readButton(mounted.host, 'Primary').classList.contains(BUTTON_CLASS)).toBe(true)
++		} finally {
++			mounted.cleanup()
++		}
++	})
++
++	it('refuses a name two buttons in one root announce, and answers for each root on its own', async () => {
++		const mounted = await mountShowcase()
++		const neighbor = mount(build('section'))
++		const twin = readButton(mounted.section, 'Toggle').cloneNode(true)
++		try {
++			mounted.section.append(twin)
++			// Document order would have answered with the section's own host and said nothing about
++			// the second, so every reading after it would have been about whichever came first.
++			expect(() => readButton(mounted.section, 'Toggle')).toThrow(
++				new Error('2 buttons in the root announce the accessible name "Toggle"'),
++			)
++			neighbor.append(twin)
++			expect(readButton(neighbor, 'Toggle')).toBe(twin)
++			expect(readButton(mounted.section, 'Toggle')).not.toBe(twin)
++		} finally {
++			neighbor.remove()
++			mounted.cleanup()
++		}
++	})
++
++	it('reads one labelled specimen, and refuses an absent label and a duplicated one', async () => {
++		const mounted = await mountShowcase()
++		try {
++			const capped = readSpecimen(mounted.host, 'Capped container')
++			expect(capped.getAttribute(SPECIMEN_ATTRIBUTE)).toBe('Capped container')
++			// The label is what addresses a specimen: the showcase renders several containers, so a
++			// class lookup would answer with whichever one its tables rendered first.
++			expect(capped.querySelector('.container')).not.toBeNull()
++			expect(mounted.host.querySelectorAll('.container').length).toBeGreaterThan(1)
++			expect(() => readSpecimen(mounted.host, 'Sign in')).toThrow(
++				new Error('No specimen in the root is named "Sign in"'),
++			)
++			const twin = build('div', { attributes: { [SPECIMEN_ATTRIBUTE]: 'Capped container' } })
++			capped.after(twin)
++			try {
++				expect(() => readSpecimen(mounted.host, 'Capped container')).toThrow(
++					new Error('2 specimens in the root are named "Capped container"'),
++				)
++			} finally {
++				twin.remove()
++			}
++			expect(readSpecimen(mounted.host, 'Capped container')).toBe(capped)
+ 		} finally {
+ 			mounted.cleanup()
+ 		}
+@@ -465,7 +613,7 @@ describe('browser setup', () => {
+ 	it('records a refusal the action raised rather than letting it end the drive', async () => {
+ 		const mounted = await mountShowcase()
+ 		try {
+-			const host = resolveButton(mounted.section, 'Disabled')
++			const host = readButton(mounted.section, 'Disabled')
+ 			const reading = await recordState(host, () => clickAccessible('button', 'Disabled'))
+ 			expect(reading.refusal).toBe(
+ 				'Interactive target "Disabled" is not visible and focus-reachable',
+diff --git a/tests/setupBrowser.ts b/tests/setupBrowser.ts
+index f9b7d0d..ee13e21 100644
+--- a/tests/setupBrowser.ts
++++ b/tests/setupBrowser.ts
+@@ -24,25 +24,48 @@ import { Delegate } from '@src/browser'
+ import oracle from './fixtures/oracle/button.json'
+ import { normalizeSelectorText, readingToProjection } from './setup.js'
+ 
++/** Resizes the tester viewport to one size in CSS pixels, the way the installed page verb does. */
++export type ViewportHandler = (width: number, height: number) => Promise<void>
++
+ /**
+  * Visits a breakpoint viewport and restores its starting size after the reading settles.
+  * @param width - The viewport width in CSS pixels; the starting height is retained.
+  * @param action - The reading to take at that viewport.
++ * @param resize - The resizer to visit and restore through. Default: the installed page verb.
+  * @returns The reading's result.
+- * @throws When resizing or the reading fails, after attempting restoration.
++ * @throws When resizing or the reading fails, after attempting restoration. A restore that is
++ *   refused after a failed reading raises the reading's own sentence carrying the refusal as its
++ *   `cause`, so the reading's failure is never replaced by the failure of putting the viewport back.
++ * @remarks
++ * The resizer is a parameter because the installed verb refuses nothing a case can reach: it posts
++ * to the runner and rejects only where the tester's own frame is unknown to the orchestrator. So the
++ * restore's refusal is driven through a real resizer of the case's own, which resizes for every call
++ * it accepts and refuses the one the case is about.
+  * @example
+  * ```ts
+  * await visitBreakpoint(576, () => window.innerWidth)
+  * ```
+  */
+-export async function visitBreakpoint<T>(width: number, action: () => T | Promise<T>): Promise<T> {
++export async function visitBreakpoint<T>(
++	width: number,
++	action: () => T | Promise<T>,
++	resize: ViewportHandler = page.viewport,
++): Promise<T> {
+ 	const starting = { width: window.innerWidth, height: window.innerHeight }
++	let reading: T
+ 	try {
+-		await page.viewport(width, starting.height)
+-		return await action()
+-	} finally {
+-		await page.viewport(starting.width, starting.height)
++		await resize(width, starting.height)
++		reading = await action()
++	} catch (error) {
++		try {
++			await resize(starting.width, starting.height)
++		} catch (cause) {
++			throw new Error(error instanceof Error ? error.message : String(error), { cause })
++		}
++		throw error
+ 	}
++	await resize(starting.width, starting.height)
++	return reading
+ }
+ 
+ declare module 'vitest' {
+@@ -94,18 +117,22 @@ export async function mountShowcase(): Promise<{
+ }
+ 
+ /**
+- * Names the class every rendered button host carries, which is the population
+- * {@link resolveButton} searches.
++ * Names the class every rendered button host carries, which is the population {@link readButton}
++ * searches.
+  */
+ export const BUTTON_CLASS = 'btn'
+ 
++/** Names the attribute the showcase labels each rendered specimen with. */
++export const SPECIMEN_ATTRIBUTE = 'data-specimen'
++
+ /**
+- * Resolves one rendered button inside a root by the accessible name it announces.
++ * Reads one rendered button inside a root by the accessible name it announces.
+  *
+  * @param root - The subtree holding the buttons, such as the Button region a mount exposes.
+  * @param name - The button's exact accessible name.
+  * @returns The button element, reachable or not.
+- * @throws An `Error` when the root renders no button of that name.
++ * @throws An `Error` when the root renders no button of that name, when it renders more than one,
++ *   and when the element carrying the name is not an HTML element.
+  *
+  * @remarks
+  * The population is every element carrying {@link BUTTON_CLASS}, so the reading is about the shipped
+@@ -114,19 +141,30 @@ export const BUTTON_CLASS = 'btn'
+  * The installed `resolveRendered` and `resolveAccessible` exports refuse a target that is not visible
+  * and focus-reachable, which is the right answer for a verb that acts and the wrong one for a reading
+  * about a refused button: a disabled host and an `aria-disabled` anchor are exactly the hosts a
+- * refusal journey has to hold a reference to. This resolves by the same accessible name the installed
++ * refusal journey has to hold a reference to. This reads by the same accessible name the installed
+  * readers compute, over the elements a root carries, and judges nothing about reachability.
+  *
++ * Two buttons announcing one name inside one root are refused rather than answered with the first of
++ * them. A reading that silently took document order would make every assertion after it a statement
++ * about whichever host the section happened to render first, and nothing would report the ambiguity.
++ * The refusal names the count, so a root that grew a second host of that name says so.
++ *
+  * @example
+  * ```ts
+- * resolveButton(mounted.section, 'Disabled')
++ * readButton(mounted.section, 'Disabled')
+  * ```
+  */
+-export function resolveButton(root: ParentNode, name: string): HTMLElement {
++export function readButton(root: ParentNode, name: string): HTMLElement {
++	const matched = [...root.querySelectorAll(`.${BUTTON_CLASS}`)].filter(
++		(candidate) => readName(candidate) === name,
++	)
++	if (matched.length > 1) {
++		throw new Error(
++			`${String(matched.length)} buttons in the root announce the accessible name "${name}"`,
++		)
++	}
+ 	const element = requireValue(
+-		[...root.querySelectorAll(`.${BUTTON_CLASS}`)].find(
+-			(candidate) => readName(candidate) === name,
+-		),
++		matched[0],
+ 		`No button in the root announces the accessible name "${name}"`,
+ 	)
+ 	if (!(element instanceof HTMLElement)) {
+@@ -135,6 +173,44 @@ export function resolveButton(root: ParentNode, name: string): HTMLElement {
+ 	return element
+ }
+ 
++/**
++ * Reads one rendered specimen inside a root by the name the showcase labelled it with.
++ *
++ * @param root - The subtree holding the specimens, such as the mounted showcase's own host.
++ * @param name - The specimen's exact declared name, as its section's table names it.
++ * @returns The container the section rendered that specimen's markup into.
++ * @throws An `Error` when the root renders no specimen of that name, when it renders more than one,
++ *   and when the container is not an HTML element.
++ *
++ * @remarks
++ * A specimen is addressed by its declared name rather than by the class its markup carries, because
++ * one class answers for many specimens: the Layout table alone renders several containers and
++ * several rows, and the Media table renders another container beside them. A class lookup would
++ * return whichever of them the showcase rendered first, and a frame placed on it would be labelled
++ * for a specimen it does not show.
++ *
++ * The duplicate refusal is {@link readButton}'s, for the reason stated there: a name that addresses
++ * two specimens addresses neither.
++ *
++ * @example
++ * ```ts
++ * readSpecimen(mounted.host, 'Capped container')
++ * ```
++ */
++export function readSpecimen(root: ParentNode, name: string): HTMLElement {
++	const matched = [...root.querySelectorAll(`[${SPECIMEN_ATTRIBUTE}]`)].filter(
++		(candidate) => candidate.getAttribute(SPECIMEN_ATTRIBUTE) === name,
++	)
++	if (matched.length > 1) {
++		throw new Error(`${String(matched.length)} specimens in the root are named "${name}"`)
++	}
++	const element = requireValue(matched[0], `No specimen in the root is named "${name}"`)
++	if (!(element instanceof HTMLElement)) {
++		throw new Error(`The "${name}" specimen is not an HTML element`)
++	}
++	return element
++}
++
+ /**
+  * Records one button host's observable state across one action.
+  *
+@@ -301,7 +377,7 @@ export const ORACLE_ACTIONS: ReadonlyArray<{
+  * @throws When the button is absent or refuses interaction.
+  */
+ export function readOracleButton(root: ParentNode, name: string): HTMLElement {
+-	const target = resolveButton(root, name)
++	const target = readButton(root, name)
+ 	if (!isReachable(target))
+ 		throw new Error(`Interactive target "${name}" is not visible and focus-reachable`)
+ 	return target
+@@ -414,7 +490,7 @@ export async function driveOracle(
+ ): Promise<ReadonlyMap<string, ButtonProjection>> {
+ 	const driven = new Map<string, ButtonProjection>()
+ 	for (const step of ORACLE_ACTIONS) {
+-		const host = resolveButton(root, step.name)
++		const host = readButton(root, step.name)
+ 		const reading = await recordState(host, () => step.drive(root))
+ 		driven.set(`button.${prefix}${step.action}`, readingToProjection(reading))
+ 	}

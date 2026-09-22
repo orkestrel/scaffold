@@ -1,0 +1,47 @@
+Cover the Content/layout family in journeys and captures (CL11)
+
+The capture registry was Button-only: five Button states, a home state, their dark twins, and
+a doc block still saying it lists the Button states a journey photographs. It never grew as
+the content family shipped. It now carries the container, the row, the table, and the link,
+derived from one table so a key added there reaches the portfolio, the journey, and the
+filename expansion with no second edit, and photographed at both registered widths in both
+modes.
+
+The packed artifact now renders that family. A consumer page built by a real bundler and
+served over a loopback server reads the container's cap, the row's layout, the table's cell
+padding, and the link's colour out of the stylesheet the archive publishes through its own
+export — the link bound to the channel triplet the theme layer declares rather than to a
+literal. That project runs only in the publish gate, so its reading is taken separately.
+
+Four findings carried since CL1 are closed. The breakpoint visitor now keeps the reading's
+failure and attaches a refused restore as its cause, matching the pointer hold in the same
+module; the installed viewport verb refuses nothing a case can reach, so the visitor takes an
+injected resizer and the case supplies one that resizes for real and refuses the restore. The
+pointer hold's two uncovered refusals have cases: one drives a cover that takes the press
+while the release still succeeds, and the other parks a fixed host no scroll can reach. The
+button resolver is renamed to the verb the naming rule fixes for obtaining a value from a live
+host. And the root-bounded reader no longer takes the first match: a name two hosts in one
+root announce is refused by count, because a reading that silently took document order made
+every later assertion a statement about whichever host rendered first.
+
+Frames now have to show something. The first attempt shipped a property comparison believed to
+guard fidelity; it compares one declared property per key, runs after the file is written, and
+cannot see a blank frame at all, because a blank frame resolves exactly what a painted one
+does. The capture case now reads every path the portfolio returns, decodes the written image,
+and refuses a uniform frame by name. Run against the mutation that defeated the old guard —
+photographing the offscreen specimen instead of the lifted copy — the pixel assertion fails on
+a named path while the property comparison stays green.
+
+The installed frame reader could not have answered that question: it samples the bottom row
+alone, and the painted control's bottom row is uniform while the whole image varies. The first
+attempt recorded the guard as unreachable for want of a base path; the portfolio had been
+returning absolute paths all along.
+
+Two registered dark twins rested on paint nothing read. Each now carries a colour reading
+asserted to differ across modes, proven per key. The case proving the visitor restores on
+failure did not restore on its own failure, so its restoration moved where it runs whatever
+happens. And a state assertion enforcing uniqueness of a name's first segment would have
+refused a legitimate second key in a family; specimen, selector, and full-name uniqueness
+carry that weight already.
+
+Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>

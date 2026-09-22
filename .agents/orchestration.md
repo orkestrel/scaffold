@@ -495,6 +495,11 @@ The harness bridge names the concrete mechanism for each of these.
   ignores rather than into the checkout root.
 - Before dispatching a successor or accepting a round, open every file the effective brief names
   and confirm it resolves from the executor's root. Refuse the transition when one does not.
+- Check the launch argument's own file list the same way. A driver prompt names records beside the
+  brief it points at, and those names are part of the effective instruction even though they sit
+  outside the brief file. Staging the brief and its terrain is not enough: list every path the prompt
+  mentions and confirm each one resolves, because the unit stops on the one that does not and the
+  stop is charged to the round rather than to the launch.
 - Send a decision taken mid-campaign to every unit already in flight whose brief it invalidates. An
   executor cannot see a change made after it was dispatched, so it writes the state its brief
   described and the defect surfaces as its own.

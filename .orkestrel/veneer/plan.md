@@ -2067,3 +2067,47 @@ one fix round. **The Content/layout family is closed.** The conformance listing 
   what the design row assumed. Its own findings in that module — the bare `finally` in the breakpoint
   visitor, the hold's uncased refusals, the button resolver's rename, and the oracle driver's root
   scoping — are untouched and still CL11's.
+
+## Re-baseline after CL11 (2026-09-22)
+
+CL11 landed at Veneer `eb1cd71`: journeys and captures, two audit rounds, and one fix round. The
+capture layer now covers the Content/layout family and the packed artifact renders it in a real
+consumer page.
+
+- **Satisfied: CL11.** Struck. Its verdicts are `cl11-audit-verdict.md` and `cl11-audit-2-verdict.md`.
+  Round 1 accepted the shipped behaviour and forced a fix round on test sufficiency; round 2 accepted
+  with both lanes agreeing on every claim.
+- **Satisfied: the four findings carried since CL1.** The breakpoint visitor's bare restore, the
+  pointer hold's two uncovered refusals, the button resolver's verb prefix, and the root-bounded
+  reader's first match are all closed, the last as a defect rather than stated as a bound.
+- **The lanes disagreed on forcing and the Orchestrator sided with the objective lane.** Both refuted
+  the same claims on the same evidence; the subjective lane called them non-forcing because the dark
+  twins "are distinct today" and "no obligation required the guard". A guard left unbuilt because
+  nothing forced it is how a hole stays open, and the fix round then produced the exact red the first
+  guard was blind to. **Record this as the campaign's standing tiebreak: where lanes agree on facts
+  and differ on forcing, a proof that cannot fail forces.**
+- **A method correction that generalises.** Round 1 recorded the frame guard as unreachable for want
+  of a base path the installed portfolio had been returning all along, and the obvious route would
+  have failed too — the installed frame reader samples the bottom row alone, and the painted control's
+  bottom row is uniform. Both facts came from reading the installed bytes rather than the declaration
+  summary. **Read an installed contract out of its own implementation before recording a gap as
+  irreducible.**
+- **Added, a bound on the ordinary chain:** the pixel guard runs only under the capture flag, so
+  `npm test` alone would accept a broken placement. Inherent — it reads written files — and the
+  Orchestrator's verifier now runs the capture path explicitly. Carried by the unit that next owns the
+  portfolio layer.
+- **Added, a successor's choice:** the sampler measures against the origin pixel rather than against
+  uniformity, so a frame blank except its origin pixel would pass. No producer exists in this harness.
+- **Added, a retention rule the next fix round follows:** retain both halves of a red-then-green, not
+  only the green. CL11's fix round retained the after log and left the before half to the report; the
+  objective lane derived it from the prior source shape instead, which was stronger, but that was luck
+  rather than design.
+- **Unchanged:** CL12 the guide, CL13 the portfolio verdict, and the two questions with the user.
+- **CL12 acquired a carry.** The browser setup module's public surface gained exports this campaign —
+  the renamed button reader, the specimen reader, the frame sampler, the capture controls, the state
+  table — and `.claude/rules/documentation.md` requires every public export documented. CL12 owns the
+  guide; name that drift in its brief.
+- **CL13 acquired two.** The Button-family duplicate frame, and the portfolio-layer bound above.
+- **Still carried, owner unknown:** the "specimen" term collision on the browser setup module's public
+  surface. Closing it renames call sites across files no remaining unit owns. Name the carrier at the
+  next dispatch that opens that module, per the carrier rule.

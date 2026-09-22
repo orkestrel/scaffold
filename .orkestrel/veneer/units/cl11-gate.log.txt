@@ -1,0 +1,36 @@
+CL11 gate evidence, round 1 — independent verifier on the native cheap tier, Veneer checkout,
+2026-09-22. Taken AFTER both judgment lanes exited, so its build rewrote no artifact a lane was
+reading. No audit lane could confirm these: claim 21 was UNPROVEN in both, by design.
+
+Managed Chromium, in order, each run bare:
+
+  npm run format:check      exit 0   All matched files use the correct format, 208 files, 815ms
+  npm run lint:check        exit 0   No warnings or errors (oxlint --deny-warnings)
+  npm run check             exit 0   tsc over src:core, src:browser, src:styles; vue-tsc for app:browser
+  npm run build             exit 0   every build target, ending built in 608ms
+  npm test                  exit 0   every project passed, ending test:guides 18 passed
+  npm run test:distribution exit 0   13 passed, 4 skipped (17)
+
+The distribution row is separate on purpose: npm test does not include that project, which runs only
+in the publish gate. CL11 is the unit that put content on its consumer page, so this is the reading
+that proves the packed artifact renders the family.
+
+Edge, through PLAYWRIGHT_CHANNEL=msedge:
+
+  npm run test:src:styles      exit 0   58 files, 411 tests
+  npm run test:setup:browser   exit 0   1 file, 40 tests
+  npm run test:app             exit 0   10 files, 26 tests
+  npm run test:journey         exit 0   4 files, 88 passed, 4 skipped (92)
+
+Overall: GREEN, every gate exit 0.
+
+The skips are pre-existing and named: four rows in the distribution project are runIf rows for entries
+publishing no such face, and four in the journey suite are the capture-only case in each variant
+project, which runs only under the capture flag.
+
+Reported anomaly, ruled benign: Vite console noise about externalizing Node built-ins for browser
+compatibility, present before this unit, no exit code affected.
+
+This chain proves round 1's gates. It does not bear on the round-1 verdict, which forced a fix round
+on test sufficiency rather than on any failing gate: every defect it names is a proof that passes and
+cannot fail.

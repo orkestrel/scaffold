@@ -36,12 +36,13 @@ verifier, and landed by a script that refuses any file outside the owned set.
 
 | Checkout | HEAD | Meaning |
 | --- | --- | --- |
-| Veneer | `0e0b055` | CL10 landed and pushed; the tracked tree is clean unless a unit is live |
-| Scaffold | confirm with `git log --oneline -1` | every record through CL10's landing retained and pushed |
+| Veneer | `eb1cd71` | CL11 landed and pushed; the tracked tree is clean unless a unit is live |
+| Scaffold | confirm with `git log --oneline -1` | every record through CL11's landing retained and pushed |
 
 Landed in Veneer: CL1 `00a5bdc`, CL2 `9f5ffda`, CL3 `9bb306e`, CL3b `d822d59`, CL4 `bc580c1`,
 CL4b `5240e36`, CL5 `ea82419`, CL5b `4f817db`, CL5c `c1c81a4`, CL6 `c8f53f8`, CL7 `a9172df`,
-CL8 `d2c5bb3`, CL8b `8c70787`, CL9 `5e011a3`, CL10 `0e0b055`. Each has a verdict file named for it.
+CL8 `d2c5bb3`, CL8b `8c70787`, CL9 `5e011a3`, CL10 `0e0b055`, CL11 `eb1cd71`. Each has a verdict file
+named for it.
 
 **The whole surface is measured**, in `units/remaining-surface.md`: the record carries 135 keys, and
 the conformance listing admits 31 after CL10 closed the Content/layout family. That leaves 104 keys to
@@ -87,24 +88,24 @@ table. It moves the family's exit criterion, so it is a rescope rather than a re
 gap-triple question is also still open**: whether to pull the `gap` and `column-gap` keys forward to
 sit with `row-gap`, which CL8b shipped because the `row` key required it.
 
-## What to do first: CL11, journeys and captures
+## What to do first: CL12, the guide
 
-**The Content/layout family is closed.** CL10 landed the last three keys and the conformance listing
-admits 31 keys.
+CL12 owns `guides/veneer.md` and `guides/README.md`. It routes to `opus`, so its audit lanes swap:
+Astra objective, the Opus reviewer subjective.
 
-CL11 owns `tests/app/browser/integration.test.ts`, `tests/setup.ts`, `tests/setupBrowser.ts`, and the
-distribution consumer page. It carries four findings of its own: the bare `finally` in the breakpoint
-visitor, the hold's uncased refusals, the button resolver's rename from the U7c round, and the oracle
-driver's root scoping.
+It carries every guide bound a unit reported, including CL7's stale token-table sentence, the missing
+container and gutter token rows, and the sentence still promising component surfaces will consume the
+raised-surface token. **It also carries new parity drift**: CL11 added exports to the browser setup
+module's public surface — the renamed button reader, the specimen reader, the frame sampler, the
+capture controls, and the cascade state table — and `.claude/rules/documentation.md` requires every
+public export documented.
 
-**Measure its terrain before writing its brief, and measure it against the post-CL10 tree.** CL10's
-fix round was granted `tests/setupBrowser.ts` narrowly and added one export there, `readParentOffset`,
-with its proof. Nothing else in that module moved, so CL11's four findings are untouched — but a
-terrain record measured before `0e0b055` cites a file that has since changed.
+Measure its terrain against the post-CL11 tree before writing its brief. Scope-read the brief before
+dispatching, and tell the scope read to derive each population by searching for the members the tree
+already holds — that method is what caught an unscoped file on CL11 and what a scope read missed on
+CL10.
 
-Route CL11 to `opus`. Its audit lanes then swap: Astra objective, the Opus reviewer subjective.
-
-## Then CL12 and CL13
+## Then CL13
 
 Per `content-layout-design-verdict.md` § Units (the routing ledger is there). Brief each from
 the design row, the planner's criteria (`units/content-layout-design-planner-report.md`), and

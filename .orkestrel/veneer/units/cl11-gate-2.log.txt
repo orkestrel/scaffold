@@ -1,0 +1,61 @@
+CL11 distribution reading, round 2 — the Orchestrator's own tracked command, Veneer checkout,
+2026-09-22, taken after the fix round exited.
+
+Why this reading exists. The fix round's own distribution run exited 0 with its registry-gated cases
+SKIPPED, because `npm ping` did not answer on that attempt. The unit reported that plainly and said it
+provides no fresh installed-consumer reading rather than banking the green — which is correct, and is
+the same "passes but cannot fail" shape the whole round is about, arriving as a transient.
+
+  npm ping                   PONG 245ms
+  npm run test:distribution  exit 0   13 passed | 4 skipped (17)
+
+  ···········----··
+
+That is the registry-reachable shape. `tests/distribution.test.ts` carries nine cases tagged
+`[requires the registry]`; when the registry is unreachable all nine skip, and the fix round's own run
+showed `1 passed | 8 skipped (9)` under `--reporter=verbose`. Four skips here means the nine ran,
+including the packed-CSS consumer case that renders the container, the row, the table, and the link
+from the installed archive.
+
+The four skips are the pre-existing `runIf` rows for entries that publish no such face.
+
+This closes the fix round's one open item. Round 1's distribution evidence in `cl11-gate.log.txt`
+stands on its own reading and is not replaced by this one; both show the same shape.
+
+The rest of the fix round's gate chain is the unit's own reading in `cl11-report-2.md`. The
+authoritative whole-chain run belongs to an independent verifier and is taken after the round-2
+judgment lanes exit, so no build rewrites artifacts a lane is reading.
+
+---
+
+Authoritative whole-chain run — independent verifier on the native cheap tier, 2026-09-22, taken
+after both round-2 judgment lanes exited.
+
+Managed Chromium, in order:
+
+  npm run format:check   exit 0   All matched files use the correct format, 208 files, 814ms
+  npm run lint:check     exit 0   No diagnostics (oxlint --deny-warnings)
+  npm run check          exit 0   tsc over core, browser, styles; vue-tsc for app:browser
+  npm run build          exit 0   every build step, dist/app/browser/assets/index-CbQmBJu7.js 33.20 kB
+  npm test               exit 0   every project passed, ending test:guides 18 passed
+
+Edge, through PLAYWRIGHT_CHANNEL=msedge:
+
+  npm run test:src:styles      exit 0   58 files, 411 tests, 38.96s
+  npm run test:setup:browser   exit 0   1 file, 42 tests, 5.31s
+  npm run test:app             exit 0   10 files, 26 tests, 3.40s
+  npm run test:journey         exit 0   4 files, 88 passed, 4 skipped (92), 27.31s
+
+The capture path, which is the ONLY run that evaluates the new frame guard:
+
+  CAPTURE=1 npm run test:journey   exit 0   4 files, 92 passed (92), 32.22s
+
+That row is why it was run explicitly. The ordinary journey run skips four cases — the frame guard in
+each variant project — so a chain without this row would accept the guard on the strength of its being
+skipped. Under the flag all 92 ran with no skips, so every registered frame was shot and every written
+image passed its pixel-variation assertion.
+
+Overall: GREEN, every gate exit 0.
+
+Reported anomaly, ruled benign: Vite console noise about externalizing Node built-ins, present before
+this unit, no exit code affected.
