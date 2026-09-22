@@ -1,0 +1,1023 @@
+diff --git a/guides/veneer.md b/guides/veneer.md
+index 7358e4c..178be17 100644
+--- a/guides/veneer.md
++++ b/guides/veneer.md
+@@ -488,6 +488,23 @@ cell can carry, and gives in each row what that value names.
+ 
+ ### Reference map
+ 
++The tables that follow state the value the cascade declares for each token, and
++`tests/src/styles/tokens.test.ts` resolves every stated value against the built cascade in each
++mode. Every value cell states a value: one code span for each token the row's first cell names,
++`` `light`, dark `dark` `` where a table's single value column carries the light and the dark
++reading together, or `the same expression` where the dark scope repeats the light cell. The
++`collectReferenceRows` reader in `tests/setupStyles.ts` refuses a cell written in any other form,
++so a law about a scale belongs in a sentence beside its table rather than in a cell. A `Role` cell
++names the role whose fill the row gives, so that row's token is the role's own
++`--vn-color-{role}-base`. A `Tier` row is a template over `{role}` and `{fill}`, and it expands over
++every role the preceding table names.
++
++The styles build shortens a number and a duration, so a stated value and the declaration are
++compared with every number written in full and every millisecond duration written in seconds. A
++percentage compares as its own number written in full, so `15%` and `15.0%` compare equal and `16%`
++does not. The build also rewrites a color channel into the engine's own serialization, so a pair
++that differs as text is compared again as the color each side paints.
++
+ #### Factors
+ 
+ Each factor is a registered `<number>` that inherits, so an invalid value falls back to `1` rather
+@@ -543,11 +560,11 @@ takes Bootstrap's role names as the compatibility axis and Elements' measured fi
+ Only the primary fill retunes by mode. Each role's tiers are oklab mixes over that role's own fill,
+ so a retuned fill carries its whole family with it.
+ 
+-| Tier                         | Light expression                                               | Dark expression                                           | Alias                       |
+-| ---------------------------- | -------------------------------------------------------------- | --------------------------------------------------------- | --------------------------- |
+-| `--vn-color-{role}-subtle`   | `color-mix(in oklab, {fill} 12%, var(--vn-surface-body-base))` | the same mix at `15%`                                     | `--bs-{role}-bg-subtle`     |
+-| `--vn-color-{role}-emphasis` | `color-mix(in oklab, {fill} 70%, var(--vn-text-body-base))`    | the same mix                                              | `--bs-{role}-text-emphasis` |
+-| `--vn-color-{role}-border`   | `color-mix(in oklab, {fill} 35%, var(--vn-surface-body-base))` | `color-mix(in oklab, {fill} 50%, oklch(0.235 0.013 256))` | `--bs-{role}-border-subtle` |
++| Tier                         | Light expression                                               | Dark expression                                                | Alias                       |
++| ---------------------------- | -------------------------------------------------------------- | -------------------------------------------------------------- | --------------------------- |
++| `--vn-color-{role}-subtle`   | `color-mix(in oklab, {fill} 12%, var(--vn-surface-body-base))` | `color-mix(in oklab, {fill} 15%, var(--vn-surface-body-base))` | `--bs-{role}-bg-subtle`     |
++| `--vn-color-{role}-emphasis` | `color-mix(in oklab, {fill} 70%, var(--vn-text-body-base))`    | the same expression                                            | `--bs-{role}-text-emphasis` |
++| `--vn-color-{role}-border`   | `color-mix(in oklab, {fill} 35%, var(--vn-surface-body-base))` | `color-mix(in oklab, {fill} 50%, oklch(0.235 0.013 256))`      | `--bs-{role}-border-subtle` |
+ 
+ The percentages are Elements' own, and `tests/src/styles/tokens.test.ts` resolves each measured
+ role's tier against the color Elements renders for it. The dark border tier mixes against a literal
+@@ -566,25 +583,23 @@ The table lists the body text tokens and the surface tokens they are painted on.
+ its light value, its dark value, the `Source` the preceding legend decides, and the `--bs-*`
+ variables it answers.
+ 
+-| Token                                 | Light                                                                                                     | Dark                                                                           | Source                                                 | Alias                                            |
+-| ------------------------------------- | --------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ | ------------------------------------------------------ | ------------------------------------------------ |
+-| `--vn-text-body-base`, `-rgb`         | `oklch(0.208 0.042 265.755)`, `15, 23, 43`                                                                | `oklch(0.929 0.013 255.508)`, `226, 232, 240`                                  | `elements` — text                                      | `--bs-body-color`, `--bs-body-color-rgb`         |
+-| `--vn-text-emphasis-base`, `-rgb`     | `var(--vn-palette-black-base)`, `var(--vn-palette-black-rgb)`                                             | `var(--vn-palette-white-base)`, `var(--vn-palette-white-rgb)`                  | `elements` — dialog text                               | `--bs-emphasis-color`, `--bs-emphasis-color-rgb` |
+-| `--vn-text-secondary`                 | `color-mix(in srgb, var(--vn-text-body-base) 75%, transparent)`                                           | the same expression                                                            | `derived` — Bootstrap's own 75% step                   | `--bs-secondary-color`                           |
+-| `--vn-text-tertiary`                  | the same expression at `50%`                                                                              | the same expression                                                            | `derived` — Bootstrap's own 50% step                   | `--bs-tertiary-color`                            |
+-| `--vn-text-muted`                     | `oklch(0.446 0.043 257.281)`                                                                              | `oklch(0.704 0.04 256.788)`                                                    | `elements` — address and description text              | none                                             |
+-| `--vn-text-heading`                   | `inherit`                                                                                                 | `inherit`                                                                      | `bootstrap` — headings take the body color             | `--bs-heading-color`                             |
+-| `--vn-text-code`                      | `var(--vn-text-body-base)`                                                                                | the same expression                                                            | `elements` — inline code text                          | `--bs-code-color`                                |
+-| `--vn-text-highlight`                 | `var(--vn-text-body-base)`                                                                                | the same expression                                                            | `bootstrap` — the highlight takes body copy            | `--bs-highlight-color`                           |
+-| `--vn-text-mark`                      | `marktext`                                                                                                | `marktext`                                                                     | `elements` — the mark highlight Elements binds         | none                                             |
+-| `--vn-surface-body-base`, `-rgb`      | `var(--vn-palette-white-base)`, `var(--vn-palette-white-rgb)`                                             | `oklch(0.21 0.013 256)`, `20, 25, 30`                                          | `elements` — the page canvas                           | `--bs-body-bg`, `--bs-body-bg-rgb`               |
+-| `--vn-surface-raised`                 | `oklch(0.968 0.007 247.896)`                                                                              | `oklch(0.265 0.014 256)`                                                       | `elements` — code block, sample, and variable surface  | none                                             |
+-| `--vn-surface-secondary-base`, `-rgb` | `var(--vn-gray-200)`, `233, 236, 239`                                                                     | `var(--vn-gray-800)`, `52, 58, 64`                                             | `bootstrap` — no Elements specimen renders the tier    | `--bs-secondary-bg`, `--bs-secondary-bg-rgb`     |
+-| `--vn-surface-tertiary-base`, `-rgb`  | `var(--vn-gray-100)`, `248, 249, 250`                                                                     | `color-mix(in srgb, var(--vn-gray-800) 50%, var(--vn-gray-900))`, `43, 48, 53` | `derived` — reaches Bootstrap's `#2b3035`              | `--bs-tertiary-bg`, `--bs-tertiary-bg-rgb`       |
+-| `--vn-surface-highlight`              | `color-mix(in srgb, var(--vn-palette-white-base) 80%, var(--vn-color-warning-base))`                      | the same mix over `var(--vn-palette-black-base) 60%`                           | `derived` — Bootstrap's own tint over the warning role | `--bs-highlight-bg`                              |
+-| `--vn-surface-mark`                   | `mark`                                                                                                    | `mark`                                                                         | `elements` — the mark highlight Elements binds         | none                                             |
+-| `--vn-surface-code`                   | `color-mix(in oklab, var(--vn-text-body-base) 12%, transparent)`                                          | the same expression                                                            | `elements` — inline code surface                       | none                                             |
+-| `--vn-surface-gradient`               | `linear-gradient(180deg, color-mix(in srgb, var(--vn-palette-white-base) 15%, transparent), transparent)` | the same expression                                                            | `bootstrap` — Bootstrap's own gradient                 | `--bs-gradient`                                  |
++| Token                                 | Light                                                                                                     | Dark                                                                           | Source                                                | Alias                                            |
++| ------------------------------------- | --------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ | ----------------------------------------------------- | ------------------------------------------------ |
++| `--vn-text-body-base`, `-rgb`         | `oklch(0.208 0.042 265.755)`, `15, 23, 43`                                                                | `oklch(0.929 0.013 255.508)`, `226, 232, 240`                                  | `elements` — text                                     | `--bs-body-color`, `--bs-body-color-rgb`         |
++| `--vn-text-emphasis-base`, `-rgb`     | `var(--vn-palette-black-base)`, `var(--vn-palette-black-rgb)`                                             | `var(--vn-palette-white-base)`, `var(--vn-palette-white-rgb)`                  | `elements` — dialog text                              | `--bs-emphasis-color`, `--bs-emphasis-color-rgb` |
++| `--vn-text-secondary`                 | `color-mix(in srgb, var(--vn-text-body-base) 75%, transparent)`                                           | the same expression                                                            | `derived` — Bootstrap's own 75% step                  | `--bs-secondary-color`                           |
++| `--vn-text-tertiary`                  | `color-mix(in srgb, var(--vn-text-body-base) 50%, transparent)`                                           | the same expression                                                            | `derived` — Bootstrap's own 50% step                  | `--bs-tertiary-color`                            |
++| `--vn-text-muted`                     | `oklch(0.446 0.043 257.281)`                                                                              | `oklch(0.704 0.04 256.788)`                                                    | `elements` — address and description text             | none                                             |
++| `--vn-text-heading`                   | `inherit`                                                                                                 | `inherit`                                                                      | `bootstrap` — headings take the body color            | `--bs-heading-color`                             |
++| `--vn-text-code`                      | `var(--vn-text-body-base)`                                                                                | the same expression                                                            | `elements` — inline code text                         | `--bs-code-color`                                |
++| `--vn-text-mark`                      | `marktext`                                                                                                | `marktext`                                                                     | `elements` — the mark highlight Elements binds        | none                                             |
++| `--vn-surface-body-base`, `-rgb`      | `var(--vn-palette-white-base)`, `var(--vn-palette-white-rgb)`                                             | `oklch(0.21 0.013 256)`, `20, 25, 30`                                          | `elements` — the page canvas                          | `--bs-body-bg`, `--bs-body-bg-rgb`               |
++| `--vn-surface-raised`                 | `oklch(0.968 0.007 247.896)`                                                                              | `oklch(0.265 0.014 256)`                                                       | `elements` — code block, sample, and variable surface | none                                             |
++| `--vn-surface-secondary-base`, `-rgb` | `var(--vn-gray-200)`, `233, 236, 239`                                                                     | `var(--vn-gray-800)`, `52, 58, 64`                                             | `bootstrap` — no Elements specimen renders the tier   | `--bs-secondary-bg`, `--bs-secondary-bg-rgb`     |
++| `--vn-surface-tertiary-base`, `-rgb`  | `var(--vn-gray-100)`, `248, 249, 250`                                                                     | `color-mix(in srgb, var(--vn-gray-800) 50%, var(--vn-gray-900))`, `43, 48, 53` | `derived` — reaches Bootstrap's `#2b3035`             | `--bs-tertiary-bg`, `--bs-tertiary-bg-rgb`       |
++| `--vn-surface-mark`                   | `mark`                                                                                                    | `mark`                                                                         | `elements` — the mark highlight Elements binds        | none                                             |
++| `--vn-surface-code`                   | `color-mix(in oklab, var(--vn-text-body-base) 12%, transparent)`                                          | the same expression                                                            | `elements` — inline code surface                      | none                                             |
++| `--vn-surface-gradient`               | `linear-gradient(180deg, color-mix(in srgb, var(--vn-palette-white-base) 15%, transparent), transparent)` | the same expression                                                            | `bootstrap` — Bootstrap's own gradient                | `--bs-gradient`                                  |
+ 
+ `--vn-surface-raised` is the color Elements paints behind a code block, a sample, and a variable,
+ and the `pre`, `samp`, and `var` tags read it. No other rule in the shipped cascade reads it.
+@@ -594,6 +609,14 @@ paints a bare `mark` with, which is what Elements binds its own mark tokens to.
+ value in each mode and answer no `--bs-*` variable, so a consumer retunes the mark highlight
+ through them rather than through `--bs-highlight-bg`.
+ 
++`--bs-highlight-color` and `--bs-highlight-bg` answer no canonical token. A consumer's own
++Bootstrap markup reads them, which is why the compatibility contract retains them, and no rule in
++the shipped cascade reads them, which is why no canonical token stands in front of them. Veneer
++declares `--bs-highlight-color` as the body text and `--bs-highlight-bg` as
++Bootstrap's own tint over the warning role:
++`color-mix(in srgb, var(--vn-palette-white-base) 80%, var(--vn-color-warning-base))` in light, and
++the same mix over `var(--vn-palette-black-base) 60%` in dark.
++
+ `--vn-text-muted` is the muted text Elements renders on an address and on a description in a
+ description list, and those two tags read it. `--vn-text-secondary` is Bootstrap's own 75% step over
+ the body text and answers `--bs-secondary-color`, which Bootstrap's `.text-muted` class reads, so
+@@ -604,26 +627,35 @@ the two names carry different values for different consumers.
+ The table lists the link tokens: the resting color, the hover color, and the decoration. Each row
+ gives its light value, its dark value, its `Source`, and the `--bs-*` variables it answers.
+ 
+-| Token                          | Light                                                                                     | Dark                                                                                                 | Source                                                                                                 | Alias                                                |
+-| ------------------------------ | ----------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ | ---------------------------------------------------- |
+-| `--vn-link-base`, `-rgb`       | `var(--vn-color-primary-base)`, `8, 65, 234`                                              | `color-mix(in srgb, var(--vn-palette-white-base) 40%, var(--vn-color-primary-base))`, `85, 205, 243` | `derived` — light takes the primary fill unchanged, and dark is Bootstrap's own 40% white tint over it | `--bs-link-color`, `--bs-link-color-rgb`             |
+-| `--vn-link-hover-base`, `-rgb` | `color-mix(in srgb, var(--vn-palette-black-base) 20%, var(--vn-link-base))`, `6, 52, 187` | `color-mix(in srgb, var(--vn-palette-white-base) 20%, var(--vn-link-base))`, `119, 215, 246`         | `derived` — Bootstrap's own shade step                                                                 | `--bs-link-hover-color`, `--bs-link-hover-color-rgb` |
+-| `--vn-link-decoration`         | `underline`                                                                               | `underline`                                                                                          | `bootstrap` — retained, because no Elements specimen measures a link's decoration                      | `--bs-link-decoration`                               |
++| Token                          | Light                                                                                            | Dark                                                                                              | Source                                                                                         | Alias                                                |
++| ------------------------------ | ------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- | ---------------------------------------------------- |
++| `--vn-link-base`, `-rgb`       | `color-mix(in oklab, var(--vn-color-primary-base) 70%, var(--vn-text-body-base))`, `13, 54, 172` | `color-mix(in oklab, var(--vn-color-primary-base) 80%, var(--vn-text-body-base))`, `79, 185, 238` | `derived` — the primary fill carried toward the body text, at `70%` in light and `80%` in dark | `--bs-link-color`, `--bs-link-color-rgb`             |
++| `--vn-link-hover-base`, `-rgb` | `color-mix(in srgb, var(--vn-link-base) 80%, black)`, `10, 43, 137`                              | `color-mix(in srgb, var(--vn-link-base) 80%, black)`, `63, 148, 190`                              | `derived` — the resting link shaded toward black in each mode                                  | `--bs-link-hover-color`, `--bs-link-hover-color-rgb` |
++| `--vn-link-decoration`         | `underline`                                                                                      | `underline`                                                                                       | `bootstrap` — retained, because no Elements specimen measures a link's decoration              | `--bs-link-decoration`                               |
++
++`--vn-link-base` departs from Bootstrap's own link color, and the preceding Links row states the
++value each mode carries. Bootstrap paints `#0d6efd` in light and `#6ea8fe` in dark, and shades its
++hover toward black in light and toward white in dark. Veneer carries the primary fill toward the
++body text in each mode instead, and shades the hover toward black in each mode. The departure
++ledger carries no link row, because its comparison reaches no theme-scope token;
++§ Outside the ledger records that limit, and the preceding Links table is where a canonical link
++value is recorded. `tests/src/styles/elements/a.test.ts` reads the `a` tag's resting and hover
++colors in each mode against the recorded readings of `--vn-link-base` and `--vn-link-hover-base`.
+ 
+ #### Type
+ 
+ The table lists the type tokens: the families, the size scale, the line heights, and the weights.
+ Each row gives one value for every mode, its `Source`, and the `--bs-*` variables it answers.
+ 
+-| Token                                                   | Value                                                                                              | Source                                                                                     | Alias                                            |
+-| ------------------------------------------------------- | -------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ | ------------------------------------------------ |
+-| `--vn-font-sans`                                        | Elements' system stack, beginning `system-ui`                                                      | `elements` — the family on every specimen                                                  | `--bs-font-sans-serif`, `--bs-body-font-family`  |
+-| `--vn-font-mono-base`                                   | `SFMono-Regular`, `Menlo`, `Monaco`, `Consolas`, `'Liberation Mono'`, `'Courier New'`, `monospace` | `elements` — the code family's stack, after the leading `ui-monospace` each partial writes | `--bs-font-monospace`                            |
+-| `--vn-font-mono-short`                                  | `SFMono-Regular`, `Menlo`, `monospace`                                                             | `elements` — the shorter stack a variable takes                                            | none                                             |
+-| `--vn-size-1` through `--vn-size-8`                     | `0.75rem`, `0.875rem`, `1rem`, `1.125rem`, `1.25rem`, `1.5rem`, `1.875rem`, `2.25rem`              | `elements` — the type table's 12 to 36 px steps                                            | `--bs-body-font-size` reads `--vn-size-2`        |
+-| `--vn-display-1` through `--vn-display-6`               | `5rem`, `4.5rem`, `4rem`, `3.5rem`, `3rem`, `2.5rem`                                               | `bootstrap` — `$display-font-sizes`                                                        | none                                             |
+-| `--vn-line-body`, `--vn-line-heading`, `--vn-line-code` | `1.5`, `1.2`, `1.6`                                                                                | `elements` — the type table's rhythm, and the looser rhythm a code block takes             | `--bs-body-line-height` reads `--vn-line-body`   |
+-| `--vn-weight-body`, `--vn-weight-heading`               | `400`, `600`                                                                                       | `elements` — the type table's weights                                                      | `--bs-body-font-weight` reads `--vn-weight-body` |
++| Token                                                   | Value                                                                                                                                         | Source                                                                                     | Alias                                            |
++| ------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ | ------------------------------------------------ |
++| `--vn-font-sans`                                        | `system-ui, -apple-system, "Segoe UI", roboto, "Helvetica Neue", arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"` | `elements` — the family on every specimen                                                  | `--bs-font-sans-serif`, `--bs-body-font-family`  |
++| `--vn-font-mono-base`                                   | `SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace`                                                        | `elements` — the code family's stack, after the leading `ui-monospace` each partial writes | `--bs-font-monospace`                            |
++| `--vn-font-mono-short`                                  | `SFMono-Regular, Menlo, monospace`                                                                                                            | `elements` — the shorter stack a variable takes                                            | none                                             |
++| `--vn-size-1` through `--vn-size-8`                     | `0.75rem`, `0.875rem`, `1rem`, `1.125rem`, `1.25rem`, `1.5rem`, `1.875rem`, `2.25rem`                                                         | `elements` — the type table's 12 to 36 px steps                                            | `--bs-body-font-size` reads `--vn-size-2`        |
++| `--vn-display-1` through `--vn-display-6`               | `5rem`, `4.5rem`, `4rem`, `3.5rem`, `3rem`, `2.5rem`                                                                                          | `bootstrap` — `$display-font-sizes`                                                        | none                                             |
++| `--vn-line-body`, `--vn-line-heading`, `--vn-line-code` | `1.5`, `1.2`, `1.6`                                                                                                                           | `elements` — the type table's rhythm, and the looser rhythm a code block takes             | `--bs-body-line-height` reads `--vn-line-body`   |
++| `--vn-weight-body`, `--vn-weight-heading`               | `400`, `600`                                                                                                                                  | `elements` — the type table's weights                                                      | `--bs-body-font-weight` reads `--vn-weight-body` |
+ 
+ #### Space, border, radius, and elevation
+ 
+@@ -631,18 +663,28 @@ The table lists the length tokens the layout is built from: the space scale, the
+ scale, and the elevation rungs. Each row gives its value, its `Source`, and the `--bs-*` variables
+ it answers, and a row whose dark mode differs writes the dark reading into its own `Value` cell.
+ 
+-| Token                                     | Value                                                                                                                                                                                                                                                                                                                                                                                 | Source                                              | Alias                                                                  |
+-| ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------- | ---------------------------------------------------------------------- |
+-| `--vn-space-1`                            | `calc(0.125rem * var(--vn-factor-density))`, giving 2 px                                                                                                                                                                                                                                                                                                                              | `derived` — the scale expression at N = 1           | none                                                                   |
+-| `--vn-space-2` through `--vn-space-8`     | the scale expression `calc(N * 0.125rem * var(--vn-factor-density))` at N = 2 through 8, giving 4 to 16 px                                                                                                                                                                                                                                                                            | `elements` — the space table's paddings             | none                                                                   |
+-| `--vn-space-12`, `--vn-space-24`          | the same expression at N = 12 and N = 24, giving 24 px and 48 px                                                                                                                                                                                                                                                                                                                      | `bootstrap` — `$spacers` 4 and 5                    | none                                                                   |
+-| `--vn-border-width`, `--vn-border-style`  | `1px`, `solid`                                                                                                                                                                                                                                                                                                                                                                        | `elements` — every bordered specimen draws 1 px     | `--bs-border-width`, `--bs-border-style`                               |
+-| `--vn-border-color`                       | `oklch(0.869 0.022 252.894)`, dark `oklch(0.4 0.022 256)`                                                                                                                                                                                                                                                                                                                             | `elements` — border                                 | `--bs-border-color`                                                    |
+-| `--vn-border-translucent`                 | `color-mix(in srgb, var(--vn-palette-black-base) 17.5%, transparent)`, dark white at `15%`                                                                                                                                                                                                                                                                                            | `bootstrap` — Bootstrap's own translucent edge      | `--bs-border-color-translucent`                                        |
+-| `--vn-radius-small`, `-base`, `-large`    | `calc(0.25rem * var(--vn-factor-radius))`, `0.375rem`, `0.5rem` scaled the same way                                                                                                                                                                                                                                                                                                   | `elements` — the 4, 6, 8 px radius scale            | `--bs-border-radius-sm`, `--bs-border-radius`, `--bs-border-radius-lg` |
+-| `--vn-radius-xlarge`, `-xxlarge`, `-pill` | `1rem` and `2rem` scaled the same way, then `50rem`                                                                                                                                                                                                                                                                                                                                   | `bootstrap` — no Elements specimen renders them     | `--bs-border-radius-xl`, `-xxl`, `-2xl`, `-pill`                       |
+-| `--vn-shadow-1`, `-2`, `-3`               | Elements' hint, popover, and dialog pairs, each length in `rem` scaled by `var(--vn-factor-elevation)` and each color `rgba(var(--vn-palette-black-rgb), α)`: `0 0.0625rem 0.125rem` at `0.05` over `0 0.0625rem 0.1875rem` at `0.09`; `0 0.125rem 0.25rem` at `0.06` over `0 0.5rem 1rem -0.25rem` at `0.12`; `0 0.25rem 0.5rem` at `0.07` over `0 1.5rem 2.75rem -0.5rem` at `0.22` | `elements` — the elevation table                    | `--bs-box-shadow-sm`, `--bs-box-shadow`, `--bs-box-shadow-lg`          |
+-| `--vn-shadow-inset`                       | `inset 0 0.0625rem 0.125rem` at `0.075`, each length scaled by `var(--vn-factor-elevation)` and the color written the same way as the preceding rungs                                                                                                                                                                                                                                 | `bootstrap` — no Elements specimen renders an inset | `--bs-box-shadow-inset`                                                |
++| Token                                     | Value                                                                                                                                                                                                                                                                                                             | Source                                              | Alias                                                                  |
++| ----------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------- | ---------------------------------------------------------------------- |
++| `--vn-space-1`                            | `calc(0.125rem * var(--vn-factor-density))`                                                                                                                                                                                                                                                                       | `derived` — the scale's first step                  | none                                                                   |
++| `--vn-space-2` through `--vn-space-8`     | `calc(0.25rem * var(--vn-factor-density))`, `calc(0.375rem * var(--vn-factor-density))`, `calc(0.5rem * var(--vn-factor-density))`, `calc(0.625rem * var(--vn-factor-density))`, `calc(0.75rem * var(--vn-factor-density))`, `calc(0.875rem * var(--vn-factor-density))`, `calc(1rem * var(--vn-factor-density))` | `elements` — the space table's paddings             | none                                                                   |
++| `--vn-space-12`, `--vn-space-24`          | `calc(1.5rem * var(--vn-factor-density))`, `calc(3rem * var(--vn-factor-density))`                                                                                                                                                                                                                                | `bootstrap` — `$spacers` 4 and 5                    | none                                                                   |
++| `--vn-border-width`, `--vn-border-style`  | `1px`, `solid`                                                                                                                                                                                                                                                                                                    | `elements` — every bordered specimen draws 1 px     | `--bs-border-width`, `--bs-border-style`                               |
++| `--vn-border-color`                       | `oklch(0.869 0.022 252.894)`, dark `oklch(0.4 0.022 256)`                                                                                                                                                                                                                                                         | `elements` — border                                 | `--bs-border-color`                                                    |
++| `--vn-border-translucent`                 | `color-mix(in srgb, var(--vn-palette-black-base) 17.5%, transparent)`, dark `color-mix(in srgb, var(--vn-palette-white-base) 15%, transparent)`                                                                                                                                                                   | `bootstrap` — Bootstrap's own translucent edge      | `--bs-border-color-translucent`                                        |
++| `--vn-radius-small`, `-base`, `-large`    | `calc(0.25rem * var(--vn-factor-radius))`, `calc(0.375rem * var(--vn-factor-radius))`, `calc(0.5rem * var(--vn-factor-radius))`                                                                                                                                                                                   | `elements` — the 4, 6, 8 px radius scale            | `--bs-border-radius-sm`, `--bs-border-radius`, `--bs-border-radius-lg` |
++| `--vn-radius-xlarge`, `-xxlarge`, `-pill` | `calc(1rem * var(--vn-factor-radius))`, `calc(2rem * var(--vn-factor-radius))`, `50rem`                                                                                                                                                                                                                           | `bootstrap` — no Elements specimen renders them     | `--bs-border-radius-xl`, `-xxl`, `-2xl`, `-pill`                       |
++| `--vn-shadow-1`                           | `0 calc(0.0625rem * var(--vn-factor-elevation)) calc(0.125rem * var(--vn-factor-elevation)) rgba(var(--vn-palette-black-rgb), 0.05), 0 calc(0.0625rem * var(--vn-factor-elevation)) calc(0.1875rem * var(--vn-factor-elevation)) rgba(var(--vn-palette-black-rgb), 0.09)`                                         | `elements` — the elevation table's hint pair        | `--bs-box-shadow-sm`                                                   |
++| `--vn-shadow-2`                           | `0 calc(0.125rem * var(--vn-factor-elevation)) calc(0.25rem * var(--vn-factor-elevation)) rgba(var(--vn-palette-black-rgb), 0.06), 0 calc(0.5rem * var(--vn-factor-elevation)) calc(1rem * var(--vn-factor-elevation)) calc(-0.25rem * var(--vn-factor-elevation)) rgba(var(--vn-palette-black-rgb), 0.12)`       | `elements` — the elevation table's popover pair     | `--bs-box-shadow`                                                      |
++| `--vn-shadow-3`                           | `0 calc(0.25rem * var(--vn-factor-elevation)) calc(0.5rem * var(--vn-factor-elevation)) rgba(var(--vn-palette-black-rgb), 0.07), 0 calc(1.5rem * var(--vn-factor-elevation)) calc(2.75rem * var(--vn-factor-elevation)) calc(-0.5rem * var(--vn-factor-elevation)) rgba(var(--vn-palette-black-rgb), 0.22)`       | `elements` — the elevation table's dialog pair      | `--bs-box-shadow-lg`                                                   |
++| `--vn-shadow-inset`                       | `inset 0 calc(0.0625rem * var(--vn-factor-elevation)) calc(0.125rem * var(--vn-factor-elevation)) rgba(var(--vn-palette-black-rgb), 0.075)`                                                                                                                                                                       | `bootstrap` — no Elements specimen renders an inset | `--bs-box-shadow-inset`                                                |
++
++Each space step is its own number times `0.125rem`, so at the default density factor the scale runs
++2 px at `--vn-space-1`, 4 to 16 px across `--vn-space-2` through `--vn-space-8`, 24 px at
++`--vn-space-12`, and 48 px at `--vn-space-24`. The radius scale runs 4, 6, and 8 px across
++`--vn-radius-small`, `-base`, and `-large` at the default radius factor, then 16 px and 32 px, and
++`--vn-radius-pill` takes a fixed `50rem` that no factor scales. Each elevation rung is a pair of
++layers — Elements' hint, popover, and dialog readings — with every length scaled by
++`var(--vn-factor-elevation)` and every color written as `rgba(var(--vn-palette-black-rgb), α)`.
+ 
+ The container widths and the default gutters are fixed lengths, and neither scale carries a factor.
+ Bootstrap writes each container width as a literal inside its own breakpoint rule, so a container
+@@ -684,19 +726,20 @@ The table lists the durations and easings, the focus ring, the validation pair,
+ ladder, and the stacking ladder. Each row gives its value, its `Source`, and the `--bs-*` variables
+ it answers, and a row whose dark mode differs writes the dark reading into its own cell.
+ 
+-| Token                                                    | Value                                                                                               | Source                                                                                                                                              | Alias                                                                                                                |
+-| -------------------------------------------------------- | --------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+-| `--vn-motion-feedback`, `--vn-motion-panel`              | `calc(150ms * var(--vn-factor-motion))`, `calc(250ms * …)`                                          | `elements` — the motion table's durations                                                                                                           | none                                                                                                                 |
+-| `--vn-ease-standard`, `--vn-ease-out`, `--vn-ease-panel` | `ease`, `ease-out`, `cubic-bezier(0.32, 0.72, 0, 1)`                                                | `elements` — the motion table's easings                                                                                                             | none                                                                                                                 |
+-| `--vn-focus-width`, `--vn-focus-opacity`                 | `0.1875rem`, `0.45`                                                                                 | `elements` — the focus-visible ring                                                                                                                 | `--bs-focus-ring-width`, `-opacity`                                                                                  |
+-| `--vn-focus-color`                                       | `color-mix(in oklab, var(--vn-color-primary-base) 45%, transparent)`                                | `derived` — reproduces the calibrated ring: `oklab(0.48 -0.0266547 -0.253603 / 0.45)` in light and `oklab(0.7 -0.0902723 -0.119795 / 0.45)` in dark | `--bs-focus-ring-color`                                                                                              |
+-| `--vn-focus-highlight`, `--vn-focus-reset`               | `Highlight`, `none`                                                                                 | `derived` — system outline and shadow reset for the shared focus mixin                                                                              | none                                                                                                                 |
+-| `--vn-form-valid`, `--vn-form-invalid`                   | `var(--vn-color-success-base)` and `var(--vn-color-danger-base)`, dark the `-emphasis` tier of each | `bootstrap` — Bootstrap's own pairing                                                                                                               | `--bs-form-valid-color`, `--bs-form-valid-border-color`, `--bs-form-invalid-color`, `--bs-form-invalid-border-color` |
+-| `--vn-breakpoint-xs` through `--vn-breakpoint-xxl`       | `0`, `576px`, `768px`, `992px`, `1200px`, `1400px`                                                  | `bootstrap` — the documented wire vocabulary                                                                                                        | `--bs-breakpoint-xs` … `-xxl`                                                                                        |
+-| `--vn-stack-dropdown`, `-sticky`, `-fixed`               | `1000`, `1020`, `1030`                                                                              | `bootstrap` — retained from `$zindex-dropdown`, `$zindex-sticky`, and `$zindex-fixed`                                                               | none                                                                                                                 |
+-| `--vn-stack-drawer-backdrop`, `-drawer-base`             | `1040`, `1045`                                                                                      | `bootstrap` — retained from `$zindex-offcanvas-backdrop` and `$zindex-offcanvas`                                                                    | none                                                                                                                 |
+-| `--vn-stack-dialog-backdrop`, `-dialog-base`             | `1050`, `1055`                                                                                      | `bootstrap` — retained from `$zindex-modal-backdrop` and `$zindex-modal`                                                                            | none                                                                                                                 |
+-| `--vn-stack-popover`, `-hint`, `-toast`                  | `1070`, `1080`, `1090`                                                                              | `bootstrap` — retained from `$zindex-popover`, `$zindex-tooltip`, and `$zindex-toast`                                                               | none                                                                                                                 |
++| Token                                                    | Value                                                                            | Source                                                                                                                                              | Alias                                                       |
++| -------------------------------------------------------- | -------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------- |
++| `--vn-motion-feedback`, `--vn-motion-panel`              | `calc(150ms * var(--vn-factor-motion))`, `calc(250ms * var(--vn-factor-motion))` | `elements` — the motion table's durations                                                                                                           | none                                                        |
++| `--vn-ease-standard`, `--vn-ease-out`, `--vn-ease-panel` | `ease`, `ease-out`, `cubic-bezier(0.32, 0.72, 0, 1)`                             | `elements` — the motion table's easings                                                                                                             | none                                                        |
++| `--vn-focus-width`, `--vn-focus-opacity`                 | `0.1875rem`, `0.45`                                                              | `elements` — the focus-visible ring                                                                                                                 | `--bs-focus-ring-width`, `-opacity`                         |
++| `--vn-focus-color`                                       | `color-mix(in oklab, var(--vn-color-primary-base) 45%, transparent)`             | `derived` — reproduces the calibrated ring: `oklab(0.48 -0.0266547 -0.253603 / 0.45)` in light and `oklab(0.7 -0.0902723 -0.119795 / 0.45)` in dark | `--bs-focus-ring-color`                                     |
++| `--vn-focus-highlight`, `--vn-focus-reset`               | `Highlight`, `none`                                                              | `derived` — system outline and shadow reset for the shared focus mixin                                                                              | none                                                        |
++| `--vn-form-valid`                                        | `var(--vn-color-success-base)`, dark `var(--vn-color-success-emphasis)`          | `bootstrap` — Bootstrap's own pairing                                                                                                               | `--bs-form-valid-color`, `--bs-form-valid-border-color`     |
++| `--vn-form-invalid`                                      | `var(--vn-color-danger-base)`, dark `var(--vn-color-danger-emphasis)`            | `bootstrap` — Bootstrap's own pairing                                                                                                               | `--bs-form-invalid-color`, `--bs-form-invalid-border-color` |
++| `--vn-breakpoint-xs` through `--vn-breakpoint-xxl`       | `0`, `576px`, `768px`, `992px`, `1200px`, `1400px`                               | `bootstrap` — the documented wire vocabulary                                                                                                        | `--bs-breakpoint-xs` … `-xxl`                               |
++| `--vn-stack-dropdown`, `-sticky`, `-fixed`               | `1000`, `1020`, `1030`                                                           | `bootstrap` — retained from `$zindex-dropdown`, `$zindex-sticky`, and `$zindex-fixed`                                                               | none                                                        |
++| `--vn-stack-drawer-backdrop`, `-drawer-base`             | `1040`, `1045`                                                                   | `bootstrap` — retained from `$zindex-offcanvas-backdrop` and `$zindex-offcanvas`                                                                    | none                                                        |
++| `--vn-stack-dialog-backdrop`, `-dialog-base`             | `1050`, `1055`                                                                   | `bootstrap` — retained from `$zindex-modal-backdrop` and `$zindex-modal`                                                                            | none                                                        |
++| `--vn-stack-popover`, `-hint`, `-toast`                  | `1070`, `1080`, `1090`                                                           | `bootstrap` — retained from `$zindex-popover`, `$zindex-tooltip`, and `$zindex-toast`                                                               | none                                                        |
+ 
+ Veneer keeps Bootstrap's breakpoint names verbatim because a consumer predicts `--bs-breakpoint-md`
+ from `--vn-breakpoint-md`. `src/styles/_mixins.scss` holds the one Sass source those widths are
+diff --git a/src/core/constants.ts b/src/core/constants.ts
+index e43f24a..82cc248 100644
+--- a/src/core/constants.ts
++++ b/src/core/constants.ts
+@@ -130,7 +130,6 @@ export const TOKEN_NAMES = Object.freeze({
+ 		muted: '--vn-text-muted',
+ 		heading: '--vn-text-heading',
+ 		code: '--vn-text-code',
+-		highlight: '--vn-text-highlight',
+ 		mark: '--vn-text-mark',
+ 	} as const),
+ 	surface: Object.freeze({
+@@ -147,7 +146,6 @@ export const TOKEN_NAMES = Object.freeze({
+ 			base: '--vn-surface-tertiary-base',
+ 			rgb: '--vn-surface-tertiary-rgb',
+ 		} as const),
+-		highlight: '--vn-surface-highlight',
+ 		mark: '--vn-surface-mark',
+ 		code: '--vn-surface-code',
+ 		gradient: '--vn-surface-gradient',
+diff --git a/src/styles/_mixins.scss b/src/styles/_mixins.scss
+index 9b3a95b..c1e38c7 100644
+--- a/src/styles/_mixins.scss
++++ b/src/styles/_mixins.scss
+@@ -246,7 +246,6 @@
+ 	--vn-text-tertiary: color-mix(in srgb, var(--vn-text-body-base) 50%, transparent);
+ 	--vn-text-muted: #{map.get($values, 'muted')};
+ 	--vn-text-code: #{map.get($values, 'code')};
+-	--vn-text-highlight: var(--vn-text-body-base);
+ 	--vn-surface-body-base: #{map.get($values, 'canvas')};
+ 	--vn-surface-body-rgb: #{map.get($values, 'canvas-rgb')};
+ 	--vn-surface-raised: #{map.get($values, 'raised')};
+@@ -254,7 +253,6 @@
+ 	--vn-surface-secondary-rgb: #{map.get($values, 'surface-secondary-rgb')};
+ 	--vn-surface-tertiary-base: #{map.get($values, 'surface-tertiary')};
+ 	--vn-surface-tertiary-rgb: #{map.get($values, 'surface-tertiary-rgb')};
+-	--vn-surface-highlight: #{map.get($values, 'highlight')};
+ 	--vn-surface-code: #{map.get($values, 'surface-code')};
+ 	--vn-link-base: #{map.get($values, 'link')};
+ 	--vn-link-rgb: #{map.get($values, 'link-rgb')};
+@@ -295,8 +293,8 @@
+ 	--bs-link-hover-color: var(--vn-link-hover-base);
+ 	--bs-link-hover-color-rgb: var(--vn-link-hover-rgb);
+ 	--bs-code-color: var(--vn-text-code);
+-	--bs-highlight-color: var(--vn-text-highlight);
+-	--bs-highlight-bg: var(--vn-surface-highlight);
++	--bs-highlight-color: var(--vn-text-body-base);
++	--bs-highlight-bg: #{map.get($values, 'highlight')};
+ 	--bs-border-color: var(--vn-border-color);
+ 	--bs-border-color-translucent: var(--vn-border-translucent);
+ 	--bs-form-valid-color: var(--vn-form-valid);
+diff --git a/tests/setupStyles.test.ts b/tests/setupStyles.test.ts
+index accd341..408b85f 100644
+--- a/tests/setupStyles.test.ts
++++ b/tests/setupStyles.test.ts
+@@ -43,6 +43,7 @@ import {
+ 	MANDATED_TAG_PAIRS,
+ 	QUOTE_FOOTER_CASES,
+ 	RATIO_CASES,
++	REFERENCE_MARKUP,
+ 	RETAINED_COLOR_ALIASES,
+ 	RETAINED_LENGTH_ALIASES,
+ 	TABLE_GEOMETRY_CASES,
+@@ -61,6 +62,8 @@ import {
+ 	TYPE_TEXT_CASES,
+ 	VENEER_GUIDE_PATH,
+ 	collectGridVocabulary,
++	collectReferenceRows,
++	collectRowTokens,
+ 	collectTokenNames,
+ 	collectTripletGroups,
+ 	compileBreakpointRamp,
+@@ -68,17 +71,20 @@ import {
+ 	extractShadowLayers,
+ 	matchesCSSWhitespace,
+ 	normalizeComplexSelector,
++	normalizeDeclaration,
+ 	parseMediaWidth,
+ 	readEscape,
+ 	readIdentifier,
++	splitCellSpans,
+ 	splitTopLevelList,
+ 	splitTopLevelValues,
++	substituteRole,
+ 	trimCSSWhitespace,
+ 	walkSelector,
+ } from './setupStyles.js'
+ 
+ describe('styles setup', () => {
+-	it('exports the cascade readers, the selector grammar the normalizer stands on, the frozen case tables, and the retained value lists', () => {
++	it('exports the cascade and guide readers, the selector grammar the normalizer stands on, the frozen case tables, and the retained value lists', () => {
+ 		expect(Object.keys(setup).sort()).toEqual(
+ 			[
+ 				'BOOTSTRAP_DARK_VARIABLES',
+@@ -115,6 +121,7 @@ describe('styles setup', () => {
+ 				'MANDATED_TAG_PAIRS',
+ 				'QUOTE_FOOTER_CASES',
+ 				'RATIO_CASES',
++				'REFERENCE_MARKUP',
+ 				'RETAINED_COLOR_ALIASES',
+ 				'RETAINED_LENGTH_ALIASES',
+ 				'TABLE_GEOMETRY_CASES',
+@@ -152,8 +159,11 @@ describe('styles setup', () => {
+ 				'TYPE_MARK_CASES',
+ 				'TYPE_MARK_TOKEN_CASES',
+ 				'TYPE_TEXT_CASES',
++				'UNMAPPED_TOKENS',
+ 				'VENEER_GUIDE_PATH',
+ 				'collectGridVocabulary',
++				'collectReferenceRows',
++				'collectRowTokens',
+ 				'collectTokenNames',
+ 				'collectTripletGroups',
+ 				'compileBreakpointRamp',
+@@ -161,11 +171,14 @@ describe('styles setup', () => {
+ 				'extractShadowLayers',
+ 				'matchesCSSWhitespace',
+ 				'normalizeComplexSelector',
++				'normalizeDeclaration',
+ 				'parseMediaWidth',
+ 				'readEscape',
+ 				'readIdentifier',
++				'splitCellSpans',
+ 				'splitTopLevelList',
+ 				'splitTopLevelValues',
++				'substituteRole',
+ 				'trimCSSWhitespace',
+ 				'walkSelector',
+ 			].sort(),
+@@ -1192,4 +1205,129 @@ describe('styles setup', () => {
+ 	it('carries the customization fence the guide publishes, byte for byte', () => {
+ 		expect(readFileSync(VENEER_GUIDE_PATH, 'utf8')).toContain(CUSTOMIZATION_RECIPE)
+ 	})
++	it('reads a reference map into one row per token, each carrying a value for both modes', () => {
++		expect(
++			collectReferenceRows(REFERENCE_MARKUP, ['--vn-probe-1', '--vn-probe-2', '--vn-probe-3']),
++		).toEqual([
++			{
++				token: '--vn-color-primary-base',
++				light: 'oklch(0.5 0.1 200)',
++				dark: 'oklch(0.8 0.1 200)',
++				source: 'elements',
++			},
++			{
++				token: '--vn-probe-color-primary-subtle',
++				light: 'color-mix(in oklab, var(--vn-color-primary-base) 12%, white)',
++				dark: 'color-mix(in oklab, var(--vn-color-primary-base) 15%, white)',
++				source: undefined,
++			},
++			{
++				token: '--vn-probe-color-primary-emphasis',
++				light: 'color-mix(in oklab, var(--vn-color-primary-base) 70%, black)',
++				dark: 'color-mix(in oklab, var(--vn-color-primary-base) 70%, black)',
++				source: undefined,
++			},
++			{ token: '--vn-probe-1', light: '1px', dark: '1px', source: 'bootstrap' },
++			{ token: '--vn-probe-2', light: '2px', dark: '2px', source: 'bootstrap' },
++			{ token: '--vn-probe-3', light: '3px', dark: '3px', source: 'bootstrap' },
++			{ token: '--vn-probe-base', light: '#000', dark: '#000', source: 'derived' },
++			{ token: '--vn-probe-rgb', light: '0, 0, 0', dark: '0, 0, 0', source: 'derived' },
++			{ token: '--vn-probe-edge', light: '1px', dark: '2px', source: 'derived' },
++		])
++	})
++	it('reads a cell as stated values only where one separator joins its spans', () => {
++		expect(splitCellSpans('`1px`, `solid`', ', ')).toEqual(['1px', 'solid'])
++		expect(splitCellSpans('`0, 0, 0`', ', ')).toEqual(['0, 0, 0'])
++		expect(splitCellSpans('`1rem` and `2rem` scaled the same way', ', ')).toEqual([])
++		expect(splitCellSpans('`oklch(0.4 0.1 20)`, dark `oklch(0.8 0.1 20)`', ', dark ')).toEqual([
++			'oklch(0.4 0.1 20)',
++			'oklch(0.8 0.1 20)',
++		])
++		expect(splitCellSpans('the same expression', ', ')).toEqual([])
++	})
++	it('expands a suffix over the token before it, and a range over the registry order', () => {
++		expect(collectRowTokens('`--vn-text-body-base`, `-rgb`', [])).toEqual([
++			'--vn-text-body-base',
++			'--vn-text-body-rgb',
++		])
++		expect(collectRowTokens('`--vn-stack-drawer-backdrop`, `-drawer-base`', [])).toEqual([
++			'--vn-stack-drawer-backdrop',
++			'--vn-stack-drawer-base',
++		])
++		expect(
++			collectRowTokens('`--vn-gray-100` through `--vn-gray-300`', [
++				'--vn-gray-100',
++				'--vn-gray-200',
++				'--vn-gray-300',
++				'--vn-gray-400',
++			]),
++		).toEqual(['--vn-gray-100', '--vn-gray-200', '--vn-gray-300'])
++		expect(collectRowTokens('the scale expression at N = 1', [])).toEqual([])
++		expect(substituteRole('color-mix(in oklab, {fill} 12%, white)', 'info')).toBe(
++			'color-mix(in oklab, var(--vn-color-info-base) 12%, white)',
++		)
++	})
++	it('writes every number in full and every millisecond duration in seconds', () => {
++		expect(normalizeDeclaration('calc(150ms * var(--vn-factor-motion))')).toBe(
++			'calc(0.15s * var(--vn-factor-motion))',
++		)
++		expect(normalizeDeclaration('.75rem')).toBe(normalizeDeclaration('0.75rem'))
++		expect(normalizeDeclaration('cubic-bezier(.32, .72, 0, 1)')).toBe(
++			normalizeDeclaration('cubic-bezier(0.32,0.72,0,1)'),
++		)
++		expect(normalizeDeclaration('linear-gradient(\n\t180deg,\n\t#fff,\n\ttransparent\n)')).toBe(
++			'linear-gradient(180deg,#fff,transparent)',
++		)
++		expect(normalizeDeclaration('#0d6efd')).toBe('#0d6efd')
++		expect(normalizeDeclaration('calc(-0.25rem * 1)')).toBe(
++			normalizeDeclaration('calc(-.25rem * 1)'),
++		)
++		expect(normalizeDeclaration('0.75rem')).not.toBe(normalizeDeclaration('0.8rem'))
++	})
++})
++
++describe('reference map refusals', () => {
++	it('refuses a range whose endpoint the registry order does not carry', () => {
++		expect(() =>
++			collectReferenceRows(REFERENCE_MARKUP.replace('--vn-probe-3`', '--vn-probe-9`'), [
++				'--vn-probe-1',
++				'--vn-probe-2',
++				'--vn-probe-3',
++			]),
++		).toThrow('--vn-probe-9')
++	})
++	it('refuses a table whose value column it cannot resolve', () => {
++		expect(() =>
++			collectReferenceRows(REFERENCE_MARKUP.replace('| Value  ', '| Amount '), [
++				'--vn-probe-1',
++				'--vn-probe-2',
++				'--vn-probe-3',
++			]),
++		).toThrow('Value')
++	})
++	it('refuses a value cell written in a form it cannot read', () => {
++		expect(() =>
++			collectReferenceRows(
++				REFERENCE_MARKUP.replace('`1px`, dark `2px`', 'the scale expression at N = 1'),
++				['--vn-probe-1', '--vn-probe-2', '--vn-probe-3'],
++			),
++		).toThrow('--vn-probe-edge')
++	})
++	it('states a dark value the dark cell alone decides', () => {
++		const names = collectTokenNames(TOKEN_NAMES)
++		const guide = readFileSync(VENEER_GUIDE_PATH, 'utf8')
++		const tier = (source: string): string | undefined =>
++			collectReferenceRows(source, names).find((row) => row.token === '--vn-color-primary-subtle')
++				?.dark
++		expect(tier(guide)).toBe(
++			'color-mix(in oklab, var(--vn-color-primary-base) 15%, var(--vn-surface-body-base))',
++		)
++		expect(tier(guide.replace('{fill} 15%', '{fill} 16%'))).toBe(
++			'color-mix(in oklab, var(--vn-color-primary-base) 16%, var(--vn-surface-body-base))',
++		)
++	})
++	it('compares a percentage as its own number written in full', () => {
++		expect(normalizeDeclaration('15%')).toBe(normalizeDeclaration('15.0%'))
++		expect(normalizeDeclaration('15%')).not.toBe(normalizeDeclaration('16%'))
++	})
+ })
+diff --git a/tests/setupStyles.ts b/tests/setupStyles.ts
+index 9a8d2cf..9ba7e67 100644
+--- a/tests/setupStyles.ts
++++ b/tests/setupStyles.ts
+@@ -7,11 +7,16 @@
+ 
+ import type { AnyNode } from 'postcss'
+ import { isRecord } from '@orkestrel/contract'
++import { extractCellText, findColumnIndex, selectSectionBlocks } from '@orkestrel/guide'
++import { createMarkdown, flattenText } from '@orkestrel/markdown'
++import { requireValue } from '@orkestrel/test'
+ import { TOKEN_NAMES } from '@src/core'
+ import { parse } from 'postcss'
+ import { collectTokenNodes, normalizeSelectorText } from './setup.js'
+ 
+-// Cascade readers and the selector grammar the normalizer stands on.
++// Cascade readers, the selector grammar the normalizer stands on, and the guide readers that walk
++// the token registry's reference map. A guide reader takes the Markdown as a string, so the
++// browser project reaches the guide through a `?raw` import and the Node project reads the file.
+ 
+ /**
+  * Compiles the shared breakpoint ramp into its zero keys and non-zero members.
+@@ -573,6 +578,295 @@ export function collectTripletGroups(value: unknown): ReadonlyArray<readonly [st
+ 	})
+ }
+ 
++/** Carries one reference-map row: a token and the value the guide states for it in each mode. */
++export interface ReferenceRow {
++	/** Holds the custom-property name the row's first cell names. */
++	readonly token: string
++	/** Holds the value the row states for the light scope. */
++	readonly light: string
++	/** Holds the value the row states for the dark scope. */
++	readonly dark: string
++	/** Holds the `Source` legend word the row carries, and nothing where its table has no such column. */
++	readonly source: string | undefined
++}
++
++/**
++ * Splits a guide table cell into the code spans it states.
++ *
++ * @param text - The cell text, as `extractCellText` returns it, with each code span in backticks.
++ * @param separator - The exact text the cell writes between one span and the next.
++ * @returns Each span's inner text in cell order, and nothing where the cell carries prose beside
++ *   its spans, because such a cell describes a value rather than stating one.
++ *
++ * @example
++ * ```ts
++ * splitCellSpans('`1px`, `solid`', ', ') // ['1px', 'solid']
++ * ```
++ */
++export function splitCellSpans(text: string, separator: string): readonly string[] {
++	const spans = [...text.matchAll(/`([^`]+)`/gu)].map((match) => match[1] ?? '')
++	return text === spans.map((span) => `\`${span}\``).join(separator) ? spans : []
++}
++
++/**
++ * Substitutes a tier template's placeholders for one semantic role.
++ *
++ * @param text - The template text, carrying `{role}` for the role's own name and `{fill}` for the
++ *   token that holds its fill.
++ * @param role - The role name to write in.
++ * @returns The text with every placeholder replaced.
++ *
++ * @example
++ * ```ts
++ * substituteRole('--vn-color-{role}-subtle', 'info') // '--vn-color-info-subtle'
++ * ```
++ */
++export function substituteRole(text: string, role: string): string {
++	return text.replaceAll('{fill}', `var(--vn-color-${role}-base)`).replaceAll('{role}', role)
++}
++
++/**
++ * Collects the tokens a reference-map row's first cell names.
++ *
++ * @param text - The first cell's text.
++ * @param names - The registry's names in registry order, which a range is sliced from.
++ * @returns Each token the cell names, in cell order, and nothing where the cell carries prose.
++ * @throws When a range names an endpoint the registry order does not carry, or names its endpoints
++ *   in the reverse of that order. Returning nothing there drops the whole range silently, and a
++ *   row the reader drops is a row no value gate can compare.
++ *
++ * @remarks
++ * A cell writes its tokens as a comma-separated list, or as a `through` range over two registry
++ * names. A list member beginning with one dash is a suffix over the member before it and replaces
++ * as many of that member's trailing segments as the suffix carries, so `--vn-text-body-base`,
++ * `-rgb` names `--vn-text-body-rgb` and `--vn-stack-drawer-backdrop`, `-drawer-base` names
++ * `--vn-stack-drawer-base`.
++ *
++ * @example
++ * ```ts
++ * collectRowTokens('`--vn-radius-small`, `-base`', []) // ['--vn-radius-small', '--vn-radius-base']
++ * ```
++ */
++export function collectRowTokens(text: string, names: readonly string[]): readonly string[] {
++	const range = splitCellSpans(text, ' through ')
++	if (range.length === 2) {
++		const first = requireValue(range[0], `Reference range ${text}: names no first endpoint`)
++		const last = requireValue(range[1], `Reference range ${text}: names no last endpoint`)
++		const start = names.indexOf(first)
++		const end = names.indexOf(last)
++		if (start < 0)
++			throw new Error(`Reference range ${text}: ${first} is outside the registry order`)
++		if (end < 0) throw new Error(`Reference range ${text}: ${last} is outside the registry order`)
++		if (end < start)
++			throw new Error(`Reference range ${text}: ${last} precedes ${first} in the registry order`)
++		return names.slice(start, end + 1)
++	}
++	const tokens: string[] = []
++	for (const span of splitCellSpans(text, ', ')) {
++		const previous = tokens.at(-1)
++		const suffix = span.startsWith('-') && !span.startsWith('--')
++		if (!suffix || previous === undefined) {
++			tokens.push(span)
++			continue
++		}
++		tokens.push(
++			previous
++				.split('-')
++				.slice(0, -(span.split('-').length - 1))
++				.join('-') + span,
++		)
++	}
++	return tokens
++}
++
++/**
++ * Normalizes a declaration value to the form two writings of the same value share.
++ *
++ * @param value - The declaration text, from a guide cell or from the cascade.
++ * @returns The text with every whitespace run collapsed, the space beside a bracket or a comma
++ *   dropped, every number written in full, and every millisecond duration written in seconds, so
++ *   the Sass source's wrapped expression, the styles build's shortened rewriting, and the guide's
++ *   single line compare equal.
++ *
++ * @remarks
++ * The styles build shortens a number and a duration, so `0.75rem` ships as `.75rem` and `150ms`
++ * ships as `.15s`. Both are the same value written another way, and this puts each writing in one
++ * form. The build also rewrites a color channel into the engine's own serialization, which no
++ * text rule can undo: compare such a pair as the color each side paints.
++ *
++ * @example
++ * ```ts
++ * normalizeDeclaration('calc(150ms * var(--vn-factor-motion))') // 'calc(0.15s * var(--vn-factor-motion))'
++ * ```
++ */
++export function normalizeDeclaration(value: string): string {
++	return value
++		.replaceAll(/\s+/gu, ' ')
++		.replaceAll(/ ?([(),]) ?/gu, '$1')
++		.replaceAll(
++			/(?<![\w.#])(-?(?:\d*\.\d+|\d+))ms\b/gu,
++			(_match, time: string) => `${String(Number(time) / 1000)}s`,
++		)
++		.replaceAll(/(?<![\w.#])(-?(?:\d*\.\d+|\d+))/gu, (_match, number: string) =>
++			String(Number(number)),
++		)
++		.trim()
++}
++
++/**
++ * Collects the token values the guide's Tokens section states under its reference map.
++ *
++ * @param source - The guide's Markdown text.
++ * @param names - The registry's names in registry order, for the ranges a row writes.
++ * @returns One row per token the reference map's tables name, in document order, each carrying a
++ *   value for both modes.
++ * @throws When the subsection, a table, a column, or a cell is missing or written in a form this
++ *   reader cannot read. Every refusal names what it read, because a row this reader drops is a row
++ *   no value gate can compare and a dropped row reads exactly like a correct one.
++ *
++ * @remarks
++ * A table keyed by `Token` names its tokens in the first cell and pairs them with the value cell's
++ * spans in the same order. A table keyed by `Role` names the role whose fill the row gives, so the
++ * row's token is that role's own `--vn-color-{role}-base`. A table keyed by `Tier` writes one
++ * templated row per tier, and each such row expands over every role the `Role` table named before
++ * it.
++ *
++ * A value cell states its values as one code span per token of the row, as `` `light`, dark
++ * `dark` `` where a single-value column gives both modes, or as `the same expression` where the
++ * dark scope repeats the light cell. A cell in any other form is refused, so a law about a scale
++ * belongs in a sentence beside its table rather than in a cell.
++ */
++export function collectReferenceRows(
++	source: string,
++	names: readonly string[],
++): readonly ReferenceRow[] {
++	const rows: ReferenceRow[] = []
++	const roles: string[] = []
++	let active = false
++	let found = false
++	let tabled = false
++	for (const block of selectSectionBlocks(createMarkdown(source).document, 'Tokens')) {
++		if (block.element === 'heading' && block.level === 3) {
++			if (active) break
++			active = flattenText(block).trim() === 'Reference map'
++			if (active) found = true
++			continue
++		}
++		if (!active || block.element !== 'table') continue
++		tabled = true
++		const role = findColumnIndex(block, 'Role')
++		const tier = findColumnIndex(block, 'Tier')
++		const keyed = requireValue(
++			role ?? tier ?? findColumnIndex(block, 'Token'),
++			'Reference row <header>: missing Role, Tier, or Token column',
++		)
++		const valued = requireValue(
++			findColumnIndex(block, 'Light') ??
++				findColumnIndex(block, 'Light expression') ??
++				findColumnIndex(block, 'Fill') ??
++				findColumnIndex(block, 'Value'),
++			'Reference row <header>: missing Light, Light expression, Fill, or Value column',
++		)
++		// A table under the heading that contributes no row is the coverage hole this reader exists
++		// to close, so it is refused here rather than left to a floor the gate would have to guess.
++		if (block.rows.length === 0) throw new Error('Reference row <header>: the table states no row')
++		if (tier !== undefined && roles.length === 0)
++			throw new Error('Reference row <header>: a Tier table precedes every Role table')
++		const shaded = findColumnIndex(block, 'Dark') ?? findColumnIndex(block, 'Dark expression')
++		const legend = findColumnIndex(block, 'Source')
++		for (const cells of block.rows) {
++			const keyText = extractCellText(cells[keyed] ?? []).trim()
++			const lightText = extractCellText(cells[valued] ?? []).trim()
++			const shadedText = shaded === undefined ? '' : extractCellText(cells[shaded] ?? []).trim()
++			const darkText = shadedText === 'the same expression' ? lightText : shadedText
++			const named =
++				legend === undefined
++					? undefined
++					: requireValue(
++							/^`([^`]+)`/u.exec(extractCellText(cells[legend] ?? []).trim())?.[1],
++							`Reference row ${keyText}: the Source cell opens with no legend word`,
++						)
++			const light = splitCellSpans(lightText, ', ')
++			const dark = shaded === undefined ? light : splitCellSpans(darkText, ', ')
++			if (tier !== undefined) {
++				const templates = splitCellSpans(keyText, ', ')
++				if (templates.length !== 1)
++					throw new Error(`Reference row ${keyText}: a Tier cell names one template`)
++				const template = requireValue(templates[0], `Reference row ${keyText}: names no template`)
++				if (light.length !== 1 || dark.length !== 1)
++					throw new Error(
++						`Reference row ${keyText}: the cells ${lightText} and ${darkText} state no single expression for each mode`,
++					)
++				const tinted = requireValue(
++					light[0],
++					`Reference row ${keyText}: the value cell ${lightText} states no light expression`,
++				)
++				const retuned = requireValue(
++					dark[0],
++					`Reference row ${keyText}: the value cell ${darkText} states no dark expression`,
++				)
++				for (const name of roles) {
++					rows.push({
++						token: substituteRole(template, name),
++						light: substituteRole(tinted, name),
++						dark: substituteRole(retuned, name),
++						source: named,
++					})
++				}
++				continue
++			}
++			// A single-value column writes a mode-dependent value as the light reading followed by
++			// the dark one, which is the only place the two modes share one cell.
++			const modes = splitCellSpans(lightText, ', dark ')
++			const split = shaded === undefined && modes.length === 2
++			if (role !== undefined) {
++				const keys = splitCellSpans(keyText, ', ')
++				if (keys.length !== 1)
++					throw new Error(`Reference row ${keyText}: a Role cell names one role`)
++				const name = requireValue(keys[0], `Reference row ${keyText}: names no role`)
++				roles.push(name)
++				rows.push({
++					token: `--vn-color-${name}-base`,
++					light: requireValue(
++						split ? modes[0] : light[0],
++						`Reference row ${keyText}: the value cell ${lightText} states no light fill`,
++					),
++					dark: requireValue(
++						split ? modes[1] : light[0],
++						`Reference row ${keyText}: the value cell ${lightText} states no dark fill`,
++					),
++					source: named,
++				})
++				continue
++			}
++			const tokens = collectRowTokens(keyText, names)
++			if (tokens.length === 0) throw new Error(`Reference row ${keyText}: names no token`)
++			const paired = split && tokens.length === 1
++			if (!paired && (light.length !== tokens.length || dark.length !== tokens.length))
++				throw new Error(
++					`Reference row ${keyText}: the value cell ${lightText} states no value for each token it names`,
++				)
++			for (const [index, token] of tokens.entries()) {
++				rows.push({
++					token,
++					light: requireValue(
++						paired ? modes[0] : light[index],
++						`Reference row ${token}: the value cell ${lightText} states no light value`,
++					),
++					dark: requireValue(
++						paired ? modes[1] : dark[index],
++						`Reference row ${token}: the value cell ${darkText} states no dark value`,
++					),
++					source: named,
++				})
++			}
++		}
++	}
++	if (!found) throw new Error('Reference row <header>: missing Tokens / Reference map subsection')
++	if (!tabled) throw new Error('Reference row <header>: missing table')
++	return rows
++}
++
+ // The frozen case tables and markup strings the style proofs drive their scenarios from. A table
+ // here carries written data and nothing that reads a cascade.
+ 
+@@ -1170,6 +1464,47 @@ export const TABLE_GEOMETRY_CASES = Object.freeze([
+ export const TABLE_MARKUP =
+ 	'<caption>Shipments</caption><thead><tr><th scope="col">Material</th><th scope="col">Status</th></tr></thead><tbody><tr><th scope="row">Oak</th><td>Ready</td></tr><tr><th scope="row">Ash</th><td>Queued</td></tr></tbody>'
+ 
++/**
++ * Supplies a reference map written in the guide's own shape, for the guide reader to walk.
++ *
++ * @remarks
++ * The tables are written here rather than read from `guides/veneer.md`, so the reader is measured
++ * against a document a case can vary instead of against the document it is used to read. Every cell
++ * form the reader answers for is present: a mode-splitting `Role` cell, a `{role}` template with a
++ * dark expression of its own, a second template repeating its light cell, a range, a suffix list,
++ * and a single value column carrying both modes. The trailing section is outside the reference
++ * map, so a row it carries proves the walk stops at the heading.
++ */
++export const REFERENCE_MARKUP = `## Tokens
++
++### Reference map
++
++#### Roles
++
++| Role      | Fill                                            | Source            | Alias |
++| --------- | ----------------------------------------------- | ----------------- | ----- |
++| \`primary\` | \`oklch(0.5 0.1 200)\`, dark \`oklch(0.8 0.1 200)\` | \`elements\` — fill | none  |
++
++| Tier                               | Light expression                         | Dark expression                          | Alias |
++| ---------------------------------- | ---------------------------------------- | ---------------------------------------- | ----- |
++| \`--vn-probe-color-{role}-subtle\`   | \`color-mix(in oklab, {fill} 12%, white)\` | \`color-mix(in oklab, {fill} 15%, white)\` | none  |
++| \`--vn-probe-color-{role}-emphasis\` | \`color-mix(in oklab, {fill} 70%, black)\` | the same expression                      | none  |
++
++#### Scale
++
++| Token                                     | Value                     | Source        | Alias |
++| ----------------------------------------- | ------------------------- | ------------- | ----- |
++| \`--vn-probe-1\` through \`--vn-probe-3\` | \`1px\`, \`2px\`, \`3px\` | \`bootstrap\` | none  |
++| \`--vn-probe-base\`, \`-rgb\`             | \`#000\`, \`0, 0, 0\`     | \`derived\`   | none  |
++| \`--vn-probe-edge\`                       | \`1px\`, dark \`2px\`     | \`derived\`   | none  |
++
++### Outside the map
++
++| Token                 | Value   |
++| --------------------- | ------- |
++| \`--vn-probe-outside\` | \`9px\` |
++`
++
+ /** Lists the numbered column steps retained by the grid inventory. */
+ export const GRID_COLUMN_STEPS = Object.freeze([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12])
+ 
+@@ -1872,6 +2207,44 @@ export const BOOTSTRAP_SCOPE_PATTERNS: Readonly<Record<BootstrapScope, RegExp>>
+  */
+ export const VENEER_GUIDE_PATH = 'guides/veneer.md'
+ 
++/**
++ * Names every canonical token the guide's Tokens section states outside its reference map.
++ *
++ * @remarks
++ * The reference map is the guide's machine-readable statement of the cascade, so the registry
++ * minus the map is the population the value gate cannot reach. Naming that population here is what
++ * makes the gate's coverage a membership assertion rather than a total: a table the reader stops
++ * contributing rows for reddens as a name that appears in neither list.
++ *
++ * Each role's channel triplet sits here because the roles subsection states it as a law — the
++ * fill's sRGB rendering, clamped where the fill leaves the gamut — and `collectTripletGroups`
++ * pairs it with its own fill for the proof that reads it. The state and button names sit here
++ * because the Button states and bindings subsection states them, and that subsection is outside
++ * the reference map heading the reader walks.
++ */
++export const UNMAPPED_TOKENS: readonly string[] = Object.freeze([
++	'--vn-color-primary-rgb',
++	'--vn-color-secondary-rgb',
++	'--vn-color-tertiary-rgb',
++	'--vn-color-success-rgb',
++	'--vn-color-info-rgb',
++	'--vn-color-warning-rgb',
++	'--vn-color-danger-rgb',
++	'--vn-color-light-rgb',
++	'--vn-color-dark-rgb',
++	'--vn-state-mixer',
++	'--vn-state-hover',
++	'--vn-state-active',
++	'--vn-state-stripe',
++	'--vn-button-opacity',
++	'--vn-button-shadow',
++	'--vn-button-transparent',
++	'--vn-button-face',
++	'--vn-button-text',
++	'--vn-button-highlight',
++	'--vn-button-disabled',
++])
++
+ /**
+  * Names every `--bs-*` variable Bootstrap declares at `:root`, in declaration order.
+  *
+diff --git a/tests/src/styles/tokens.test.ts b/tests/src/styles/tokens.test.ts
+index 0898403..34d0565 100644
+--- a/tests/src/styles/tokens.test.ts
++++ b/tests/src/styles/tokens.test.ts
+@@ -4,12 +4,15 @@ import {
+ 	parseCSSColor,
+ 	readPixels,
+ 	readRootToken,
++	readRules,
+ 	readStyle,
+ 	readToken,
+ } from '@orkestrel/test/browser'
+ import { TOKEN_NAMES } from '@src/core'
+ import { afterEach, describe, expect, it } from 'vitest'
+ import rtlCascade from '../../../dist/src/styles/index.rtl.css?raw'
++import guide from '../../../guides/veneer.md?raw'
++import { normalizeSelectorText } from '../../setup.js'
+ import {
+ 	collectNestedRules,
+ 	collectScopeProperties,
+@@ -20,13 +23,16 @@ import {
+ 	BOOTSTRAP_DARK_VARIABLES,
+ 	BOOTSTRAP_ROOT_VARIABLES,
+ 	CALIBRATED_TIERS,
++	collectReferenceRows,
+ 	collectTokenNames,
+ 	collectTripletGroups,
+ 	extractShadowLayers,
++	normalizeDeclaration,
+ 	RETAINED_COLOR_ALIASES,
+ 	RETAINED_LENGTH_ALIASES,
+ 	TEXT_MODES,
+ 	THEME_DARK_ADDITIONS,
++	UNMAPPED_TOKENS,
+ } from '../../setupStyles.js'
+ 
+ afterEach(() => {
+@@ -43,6 +49,87 @@ describe('token cascade', () => {
+ 		expect([...compatible].sort()).toEqual([...BOOTSTRAP_ROOT_VARIABLES].sort())
+ 		expect(declared.length).toBe(canonical.length + compatible.length)
+ 	})
++	// The reference map is the guide's own statement of what the cascade declares, so it is read
++	// here as a second mechanism that can disagree with the cascade rather than as documentation.
++	// Every row the reader returns carries a value for both modes — a cell it cannot read is a
++	// refusal rather than an absence — so this gate compares every row and skips none.
++	//
++	// Each stated value is resolved in its own scope through a probe property, because the browser
++	// substitutes every `var()` reference into an unregistered custom property's computed value, and
++	// a cell naming another token cannot be compared to that reading as written. The two computed
++	// values then compare as written, a `color-mix` expression included. The styles build rewrites a
++	// color channel into the engine's own serialization, which no text rule undoes, so a pair that
++	// differs as text is compared again as the color each side paints. A CSS-wide keyword computes
++	// to nothing, so a row reading empty on both sides is compared against the built declaration in
++	// the mode's own scope, falling back to `:root` for a name that scope does not re-declare.
++	it('resolves every value the reference map states to the value its own token carries, in each mode', () => {
++		const rows = collectReferenceRows(guide, collectTokenNames(TOKEN_NAMES))
++		const declared = new Map<string, Map<string, string>>()
++		for (const rule of readRules()) {
++			if (!(rule instanceof CSSStyleRule)) continue
++			const selector = normalizeSelectorText(rule.selectorText)
++			const scope = declared.get(selector) ?? new Map<string, string>()
++			declared.set(selector, scope)
++			for (const name of Array.from(rule.style)) {
++				if (name.startsWith('--')) scope.set(name, rule.style.getPropertyValue(name).trim())
++			}
++		}
++		const root = requireValue(declared.get(':root'), 'The cascade declares no :root scope')
++		const container = scene.mount(
++			'<div id="light"><div id="dark" data-bs-theme="dark"></div></div>',
++		)
++		const scopes = [
++			{
++				mode: 'light',
++				selector: "[data-bs-theme='light']",
++				element: requireValue(container.querySelector<HTMLElement>('#light'), 'No light scope'),
++			},
++			{
++				mode: 'dark',
++				selector: "[data-bs-theme='dark']",
++				element: requireValue(container.querySelector<HTMLElement>('#dark'), 'No dark scope'),
++			},
++		]
++		const drift: string[][] = []
++		for (const row of rows) {
++			if (!root.has(row.token)) drift.push([row.token, 'root', 'undeclared', ''])
++		}
++		for (const { mode, selector, element } of scopes) {
++			const scope = declared.get(normalizeSelectorText(selector))
++			for (const row of rows) {
++				const value = mode === 'dark' ? row.dark : row.light
++				element.style.setProperty('--vn-guide-probe', value)
++				const stated = normalizeDeclaration(readToken(element, '--vn-guide-probe'))
++				element.style.removeProperty('--vn-guide-probe')
++				const resolved = normalizeDeclaration(readToken(element, row.token))
++				if (resolved === stated && resolved !== '') continue
++				if (resolved === '' && stated === '') {
++					const written = normalizeDeclaration(scope?.get(row.token) ?? root.get(row.token) ?? '')
++					if (written === normalizeDeclaration(value)) continue
++					drift.push([row.token, mode, written, normalizeDeclaration(value)])
++					continue
++				}
++				if (matchesColor(resolved, stated)) continue
++				drift.push([row.token, mode, resolved, stated])
++			}
++		}
++		// The coverage floor is a membership reading rather than a total: a table the reader stops
++		// contributing rows for leaves its tokens in neither the map nor the named population that
++		// the Tokens section states outside the map.
++		const stated = new Set(rows.map((row) => row.token))
++		expect(collectTokenNames(TOKEN_NAMES).filter((name) => !stated.has(name))).toEqual([
++			...UNMAPPED_TOKENS,
++		])
++		// The mode scope the fallback reads first carries its own values, so a dark row resolved
++		// there cannot silently read the light declaration.
++		expect(
++			requireValue(
++				declared.get(normalizeSelectorText("[data-bs-theme='dark']")),
++				'The cascade declares no dark scope',
++			).get('--vn-text-body-base'),
++		).not.toBe(root.get('--vn-text-body-base'))
++		expect(drift).toEqual([])
++	})
+ 	it('declares the same partitions in the right-to-left cascade', () => {
+ 		const element = scene.load(rtlCascade)
+ 		const sheet = requireValue(element.sheet, 'The right-to-left cascade parsed to no sheet')

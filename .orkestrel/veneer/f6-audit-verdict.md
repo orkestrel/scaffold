@@ -36,4 +36,15 @@ The fix round runs on `opus` in the same worktree from `units/f6-brief-2.md`; it
 `units/f6-report-2.md`, its evidence `units/f6-fix.diff`, its gate log `units/f6-fix-gates.log.txt`,
 and its objective auditor `analyst` on Astra (`units/f6-fix-audit-analyst-verdict.md`).
 
-ROUND-2 OUTCOME: pending
+ROUND-2 OUTCOME: accepted 2026-09-22, landed on the session branch as `04114c5` (cherry-pick of
+`unit/f6` `d034b5d`; the § Helper classes shift bullet took the fix round's text over F5d's, and the
+auto-merged `package.json` carries `@orkestrel/contract` under `dependencies` beside the Tailwind
+development dependencies). `analyst` on Astra ruled `VERDICT: FAIL 2; outside the claims: none`
+(`units/f6-fix-audit-analyst-verdict.md`): claims 1, 3, 4, 5, 6, and 7 CONFIRMED, claim 2 UNRESOLVED
+only because the read-only sandbox runs no browser project. The Orchestrator took that control on the
+host (`units/f6-claim2-control.sh`, log `units/f6-claim2-control.log.txt`): the Delegate file passes
+every case at baseline; with `if (host.classList.contains('disabled')) return` inserted before
+construction in the acquisition branch, exactly `acquires and toggles a host already carrying the
+disabled class, and restores it` fails and every other case passes; the restored file matches the
+pre-mutation digest and passes again. Claim 2 CONFIRMED on that run. The gate chain over the worktree
+is green on every gate (`units/f6-fix-gates.log.txt`).

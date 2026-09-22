@@ -1,0 +1,4 @@
+=== npm run test:journey alone on the idle F5c worktree (19:32:34)
+ Test Files  4 passed (4)
+      Tests  88 passed | 4 skipped (92)
+=== test:journey exit=0 (19:33:41)
