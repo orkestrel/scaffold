@@ -1,0 +1,4 @@
+=== login state after wait: Logged in on https://
+=== whoami: mikesaintsg
+=== publish exit=0
+=== window done

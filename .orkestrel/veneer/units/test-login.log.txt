@@ -1,0 +1,7 @@
+Script started on 2026-09-22 13:47:47+00:00 [COMMAND="npm login --browser=false --registry=https://registry.npmjs.org" <not executed on terminal>]
+npm notice Log in on https://registry.npmjs.org/
+\npm notice npm tokens that bypass 2FA are being restricted for account changes and direct publishing. Learn how to prepare: https://gh.io/npm-gat-bypass2fa-deprecation
+\Login at:
+https://www.npmjs.com/login?next=/login/cli/1ece0253-244f-46fd-915f-d029784da61e
+\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/-\|/Logged in on https://registry.npmjs.org/.
+Script done on 2026-09-22 13:48:13+00:00 [COMMAND_EXIT_CODE="0"]
