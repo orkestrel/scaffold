@@ -9,7 +9,7 @@ phase queue with its family keys, the carrier register, and the open decisions.
 This folder keeps only what the open units still read; git history archives every closed round:
 
 - `tenets.txt` is the judging standard for the design and every implementation unit.
-- `units/decisions-round-2.md` carries the user's rulings D2 to D12 verbatim.
+- `units/decisions-round-2.md` carries the user's rulings D2 to D13 verbatim.
 - `veneer-audit-verdict.md` and `cl13-verdict.md` are the verdicts the F5c, F6, and F7 briefs cite.
 - `units/f5-terrain-report.md`, `units/f6-terrain-report.md`, `units/f7-terrain-report.md`, and
   `units/f5d-terrain.md` are the terrain records the queued briefs point at, with
