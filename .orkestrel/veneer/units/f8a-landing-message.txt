@@ -1,0 +1,29 @@
+Land the Tailwind profiles: one order line, exclusion by construction, the profiles proved in their own project
+
+Unit F8a PROFILES on Opus, audited by analyst on Astra and reviewer on
+Opus, with a fix round on Opus audited by analyst on Astra.
+
+- The src:tailwind project (configs/src/vite.tailwind.config.ts) attaches
+  @tailwindcss/postcss, derives the candidate class names from the built
+  cascade before Tailwind compiles, and runs tests/tailwind/ through
+  npm run test:src:tailwind inside test:src.
+- tests/setup.css carries the tailwind profile (the order line, the
+  composable theme and utilities imports, the derived candidates, and the
+  exclusion line naming every shared class name Veneer declares without
+  !important); tests/fixtures/tailwind/ carries the preflight profile and
+  the unexcluded instrument with its candidate control.
+- The profiles proof reads the order line, the layers each profile fills,
+  the generated properties layer, the exclusion's completeness against
+  the instrument, every written copy of the exclusion line, the profile's
+  own imports, and the Veneer sheet reader's signature; the standalone
+  project proves no Tailwind stylesheet reaches its document.
+- readCascadeSheet identifies Veneer's sheet by TOKEN_PREFIX inside a
+  theme block; the sheet readers the proofs share live in
+  tests/setupBrowser.ts.
+- The guide's § Tailwind states the profiles, the consumer recipes, the
+  exclusion line's membership rule, what Tailwind emits, and the executed
+  consumer recipe F8b lands; the workspace departure rows record where
+  tests/setup.css is wired and where the bare import sits.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_016FizZRKTTm49XXhLB8eGTK

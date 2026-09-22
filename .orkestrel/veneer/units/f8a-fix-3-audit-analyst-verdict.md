@@ -1,0 +1,13 @@
+1. **CONFIRMED** — [setupBrowser.ts:1016](/home/user/veneer-f8/tests/setupBrowser.ts:1016) scopes rules by layer; `collectLayer` retains cascade resolution and refusal. The export inventory and helper case are present. Independent compilation and PostCSS inspection reproduced the named mutation: relabelling `theme` removed its scoped variables while preserving the whole-sheet variables and utility selectors. The assertions at [profiles.test.ts:87](/home/user/veneer-f8/tests/tailwind/profiles.test.ts:87) distinguish these readings. This probe measured compiled output; it did not run a browser.
+
+2. **CONFIRMED** — [veneer.md:290](/home/user/veneer-f8/guides/veneer.md:290) bounds empty emission to the composable imports before explaining preflight. Independent compilation with empty candidates produced no filled layers for the composable profile and `['theme', 'base']` for preflight, matching [profiles.test.ts:70](/home/user/veneer-f8/tests/tailwind/profiles.test.ts:70). The generated-`properties` explanation retains its substance.
+
+3. **CONFIRMED** — Executing the actual helper at [setupBrowser.ts:1264](/home/user/veneer-f8/tests/setupBrowser.ts:1264) accepted single quotes and whitespace and explicitly refused the unquoted and mismatched forms. Reproducing the comparison at [profiles.test.ts:159](/home/user/veneer-f8/tests/tailwind/profiles.test.ts:159) retained the guide fences and fixture. The named single-quoted mutation missing `col-7` failed; changing quotation marks alone passed. Installed Tailwind also accepted the mutated directive and emitted `.col-7`.
+
+4. **CONFIRMED** — [f8a-fix-3-status.txt:1](.orkestrel/veneer/units/f8a-fix-3-status.txt:1) matches live status. Comparison against `6e74ec9` found only the declared changes; protected paths are untouched. The exclusion copies at [veneer.md:319](/home/user/veneer-f8/guides/veneer.md:319) and line 332 use double quotes. No single-quoted copy or `tmp/probe/` remains.
+
+5. **UNRESOLVED** — The log records successful formatting and linting, then reaches [the application typecheck](.orkestrel/veneer/units/f8a-fix-3-gates.log.txt:44). When read last, it lacked subsequent gate results and `=== gates done`. Completion of the named host chain would settle this claim. My local `npm run check` stopped before typechecking because npm 10.9.7 fails the declared minimum.
+
+Attacked and held: quotation-only changes preserve the exclusion list; empty composable emission and preflight’s retained reset are legitimate. No substantiated findings outside the claims.
+
+VERDICT: FAIL 5; outside the claims: none

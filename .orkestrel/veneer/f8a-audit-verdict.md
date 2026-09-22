@@ -44,4 +44,17 @@ gate, `test:src:tailwind` included (`units/f8a-fix-gates.log.txt`).
 
 ## Round 3
 
-ROUND-3 OUTCOME: pending
+ROUND-3 OUTCOME: `analyst` on Astra ruled `VERDICT: FAIL 5; outside the claims: none`
+(`units/f8a-fix-3-audit-analyst-verdict.md`, thread `01a0cb00-c513-7e93-a062-22df82e6d597`): claims
+1 to 4 CONFIRMED by independent compilation and by executing the readers (the scoped theme reading
+distinguishes the relabelled block; the bounded emission statement matches the compiled profiles;
+the directive reader accepts both quotation marks and refuses the unquoted and mismatched forms;
+the status matches the declared changes). Claim 5 named the host chain, which the lane read mid-run,
+so it is settled by the finished log rather than by the lane: the worktree chain
+(`units/f8a-fix-3-gates.log.txt`) is green through `test:app` and reports three timeouts
+(`test:journey` at 15 s, `test:policy` at 5 s, `test:setup` at 10.1 s) taken while seven sibling
+units and a second chain ran on the container, which § Writing concurrency rule 10 makes a timing
+reading rather than a defect. The unit landed on the session branch as `0783b2b` (the conflicts in
+`guides/veneer.md` § Files and the `tests/setupBrowser.test.ts` inventory resolved by
+`units/f8a-landing-resolve.py`); the deciding chain is `units/f8a-landing-gates.sh` over that
+commit, recorded in § Landing when it finishes.
