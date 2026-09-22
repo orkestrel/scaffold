@@ -187,18 +187,6 @@ if a reader can bind its two rows to a measured absence, add the reader and the 
 delete the section and carry its two facts into the ledger or the deferral table, and say which in
 the report.
 
-### Obligation 6 — the elements layer's tag population binds `ELEMENT_TAGS` (F5a reviewer F4)
-
-The tag column of `ELEMENT_TAGS` in `tests/setupCases.ts` is written by hand and bound to no
-reading (its doc says so). Add to `tests/setupConformance.ts` a reader over the unminified compile
-that returns, for the `elements` layer, the set of type selectors its rules select (the leading
-type token of each compound in each selector, read from the `postcss` rule's `selector` string —
-this is a string read of compiled output, not a selector grammar, and it reports a compound it
-cannot read rather than skipping it), and add the case to `tests/conformance.test.ts` that requires
-that set to equal the distinct values of the table's tag column, with a plant in
-`tests/setupConformance.test.ts` over a scratch sheet that proves the reader binds. Correct the
-table's doc to name the binding.
-
 ### Obligation 5 — no right-to-left support in the conformance proof (D5)
 
 Delete `BOOTSTRAP_RTL_CSS_DIGEST` and every read of it: the assertion in `tests/conformance.test.ts`
@@ -211,6 +199,18 @@ indent, then formats the file with the scoped `oxfmt` command; delete the script
 return, and report the digest of the file before and after. Touch no other field. F6 removes the
 built `index.rtl.css` twin, its plugin, and its proofs; you remove nothing under `configs/**` or
 `tests/setupStyles.test.ts`.
+
+### Obligation 6 — the elements layer's tag population binds `ELEMENT_TAGS` (F5a reviewer F4)
+
+The tag column of `ELEMENT_TAGS` in `tests/setupCases.ts` is written by hand and bound to no
+reading (its doc says so). Add to `tests/setupConformance.ts` a reader over the unminified compile
+that returns, for the `elements` layer, the set of type selectors its rules select (the leading
+type token of each compound in each selector, read from the `postcss` rule's `selector` string —
+this is a string read of compiled output, not a selector grammar, and it reports a compound it
+cannot read rather than skipping it), and add the case to `tests/conformance.test.ts` that requires
+that set to equal the distinct values of the table's tag column, with a plant in
+`tests/setupConformance.test.ts` over a scratch sheet that proves the reader binds. Correct the
+table's doc to name the binding.
 
 ### Obligation 7 — the prose
 
