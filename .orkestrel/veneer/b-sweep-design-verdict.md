@@ -56,3 +56,18 @@ B-PASSIVE-D, and B-FORMS-RANGE returned.
 | B-FORMS-RANGE-3 | `builder` on Sonnet, worktree `veneer-bfr` | `src/styles/_mixins.scss`, `src/styles/elements/_fieldset.scss`, `src/styles/components/_form-range.scss` (the exact reverse of the fix round's D2) | none |
 
 Audit: B-SWEEP by `analyst` on Astra and `reviewer` on Opus over a staged claims file.
+
+## Amendment (2026-09-22, after B-PASSIVE-C returned)
+
+C measured a further pair, `.card-img-overlay` and `.ratio > *` sharing `position: absolute`,
+`top: 0`, `left: 0` (3 of 7 and 5 declarations), which the first arm above reports while the
+divergence test rules it a coincidence. The predicate is amended to the planner's form:
+`(shared >= 4 && shared * 2 > Math.min(left, right)) || shared >= 6`. Every measured pair across A,
+B, C, D, E, and RANGE is refused by it; a whole copy of a two- or three-declaration rule is admitted
+and recorded as such in the function's `@remarks`. `list-reset` is refused with the rest: under
+family ruling 1 no author changes either copy, so the divergence test refuses it like every other
+recorded pair, and the styles rule's coincidence line reads the same way. The plant's cases move
+accordingly: a copied four-declaration block reported; the tie of three shared between six and six
+refused beside a twin with four shared reported; a two-of-two whole copy refused as the recorded
+boundary; a six-shared pair inside twelve and fourteen reported by the absolute arm beside a
+five-shared twin refused; the measurement unmoved.

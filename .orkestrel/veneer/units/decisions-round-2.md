@@ -148,11 +148,19 @@ L1 LEDGER-HOME reverts the move; every live unit writes its ledger rows into `gu
 
 Orchestrator ruling from the B-SWEEP design round (`b-sweep-design-verdict.md`): both copies stay
 inline; the sweep reports duplication through `findDuplicates` beside an unchanged `scanStyleBlocks`
-under `(shared >= 2 && shared * 2 > min(left, right)) || shared >= 6`; the styles rule states the
-coincidence line; `list-reset` is the one accepted mixin because it is Bootstrap's own.
+under `(shared >= 4 && shared * 2 > min(left, right)) || shared >= 6` (amended after C's
+measurements); the styles rule states the coincidence line; no coincidence mixin lands, `list-reset`
+included.
 
 ## D17 — an empty resting paint registers no frame (2026-09-22)
 
 Orchestrator amendment to the B-PASSIVE design verdict's ruling 5 (recorded there): a specimen
 whose only paint is an animation frame after its first step (the grow spinners) renders in the
 showcase, registers no capture scenario with the reason recorded, and its proof reads the timeline.
+
+## D18 — a partial loads only the modules it reads (2026-09-22)
+
+Orchestrator amendment to family ruling 8, from the B-PASSIVE-E audit: `@use '../tokens'` and
+`@use '../mixins'` open a partial only where the partial reads that module; an unread `@use` is a
+dead load, which is the tree's precedent (`_icon-link.scss`, `_type.scss`, `_image.scss` load mixins
+alone; `_vr.scss` and `_ratio.scss` load neither).

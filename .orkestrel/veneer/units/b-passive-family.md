@@ -82,8 +82,9 @@ siblings, on `opus`. A mirrored proof `tests/src/styles/components/<stem>.test.t
    in the voice of the `btn` and `table` rows; add the key to the `listed` literal in
    `tests/conformance.test.ts`; `collectShippedComponents` and `scanCompatibilityPresence` then bind
    the key. `btn-toolbar` and `placeholder` take no variable row.
-8. **The barrel and the layer.** A partial opens `@layer components` after `@use '../tokens'` and
-   `@use '../mixins'`; `src/styles/index.scss` loads it with `@use 'components/<stem>'` appended after
+8. **The barrel and the layer.** A partial opens `@layer components` after the `@use` lines it
+   reads (`../tokens` only where it reads the tokens module's Sass API, `../mixins` only where it
+   includes a mixin; an unread `@use` is a dead load — D18); `src/styles/index.scss` loads it with `@use 'components/<stem>'` appended after
    `@use 'components/vr'` in Bootstrap's order — `button-group`, `card`, `breadcrumb`, `pagination`,
    `badge`, `progress`, `list-group`, `close`, `spinner`, `placeholder` — with `as
    progress-component` on `progress` alone (`elements/progress` holds the namespace). A unit inserts
