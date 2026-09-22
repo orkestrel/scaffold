@@ -1,0 +1,5 @@
+START 2026-09-22 07:55:43 UTC
+npm notice run @orkestrel/veneer@0.0.1 lint:check
+npm notice run oxlint --config .oxlintrc.json --deny-warnings .
+
+EXIT 0

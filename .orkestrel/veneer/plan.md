@@ -2111,3 +2111,42 @@ consumer page.
 - **Still carried, owner unknown:** the "specimen" term collision on the browser setup module's public
   surface. Closing it renames call sites across files no remaining unit owns. Name the carrier at the
   next dispatch that opens that module, per the carrier rule.
+
+## Re-baseline after CL12 (2026-09-22)
+
+CL12 landed at Veneer `a04fb7c`: the guide, two audit rounds, and one fix round. **Only CL13 remains.**
+
+- **Satisfied: CL12.** Struck. Verdicts `cl12-audit-verdict.md` and `cl12-audit-2-verdict.md`.
+- **Satisfied: the retained guide carry files.** CL12 ruled every entry in both closed, open, out of
+  scope under the prose ruling, or false, with evidence. `units/u7c-guide-bounds.md` is historical:
+  U7e closed its ten. Neither file carries an open guide bound.
+- **A false published contract is gone.** A compatibility row claimed the mark class paints from the
+  highlight aliases; the cascade gives it two Veneer tokens. That row is what a consumer reads.
+- **Two sentences claimed readings the tree does not produce, and one of them this campaign added.**
+  The container paragraph was wrong about how the cascade caps, and it shipped in round 1 under an
+  objective whose whole point is sentence truth. Its supplied replacement came from an audit lane and
+  carried an unmeasured clause; the fix round measured it rather than trusting the source. **Record
+  this: a sentence from an audit lane is a hypothesis like any other.**
+- **Added, the successor's trap is named.** A gate over the token table's completeness cannot take the
+  obvious form: a token deleted from its row survives in the prose beside it, so a backticked-name
+  check passes. The gate must read the table's name cells, compare against the registered set, and
+  carry a negative control that deletes a row while leaving its prose. Four registered tokens appear
+  nowhere in the guide at all, written only as suffix fragments, so the expansion rule is part of it.
+- **Added, a bound on the guide's own conventions:** the tokens section uses range rows and composite
+  rows that cover members they never spell, and never declares it. That ambiguity is the condition the
+  nine missing rows grew in — nobody could tell "covered by shorthand" from "absent". Carried by the
+  gate unit.
+- **Added, a reader population correction:** seven files parse this guide, not the three the CL12 brief
+  named nor the six its fix round named. The seventh constructs the guide and reads its sections and
+  surface from the policy sweep.
+- **Added, a retention rule:** retain the executed runner in the same action that retains its output. A
+  script that writes its own provenance header stops being evidence the moment it is edited, and the
+  edit is invisible in the retained logs.
+- **Unchanged: CL13**, the portfolio verdict. It carries the Button-family duplicate frame and the
+  portfolio-layer bound from CL11, and the capture ruling from CL10.
+- **Still carried, owner unknown:** the "specimen" term collision on the browser setup module's public
+  surface, and the mirror instrument's base-name comparison. Neither has a remaining unit that owns its
+  file. Name the carrier at the next dispatch that opens those files, per the carrier rule.
+- **Still with the user, neither blocking:** the cross-cutting reconciliation unit in
+  `units/value-accounting-finding.md`, which now also carries the compatibility table's two
+  granularities and the departures mechanism's name-only surfacing; and CL8b's gap-triple question.

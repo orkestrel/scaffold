@@ -1,0 +1,15 @@
+START 2026-09-22 08:01:46 UTC
+npm notice run @orkestrel/veneer@0.0.1 test:policy
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project policy
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/veneer
+
+····································································································-·········
+
+ Test Files  1 passed (1)
+      Tests  109 passed | 1 skipped (110)
+   Start at  04:01:47
+   Duration  2.00s (transform 96ms, setup 44ms, import 248ms, tests 1.56s, environment 0ms)
+
+
+EXIT 0

@@ -1,0 +1,65 @@
+npm notice run @orkestrel/veneer@0.0.1 build
+npm notice run npm run clean && npm run build:src && npm run build:app
+npm notice run @orkestrel/veneer@0.0.1 clean
+npm notice run node -e "require('node:fs').rmSync('dist',{recursive:true,force:true})"
+npm notice run @orkestrel/veneer@0.0.1 build:src
+npm notice run npm run build:src:core && npm run build:src:browser && npm run build:src:styles
+npm notice run @orkestrel/veneer@0.0.1 build:src:core
+npm notice run vite build --config configs/src/vite.core.config.ts && npm run copy dist/src/core/index.d.ts dist/src/core/index.d.cts
+[36mvite v8.3.0 [32mbuilding client environment for production...[36m[39m
+transforming...
+✓ 5 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/core/index.js  9.48 kB │ gzip: 2.46 kB │ map: 14.91 kB
+
+transforming...
+✓ 5 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/core/index.cjs  9.61 kB │ gzip: 2.51 kB │ map: 14.92 kB
+
+[32m✓ built in 67ms[39m
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+npm notice run @orkestrel/veneer@0.0.1 copy
+npm notice run node -e "const fs=require('node:fs'),p=require('node:path'),a=process.argv[1],b=process.argv[2];fs.mkdirSync(p.dirname(b),{recursive:true});fs.cpSync(a,b,{force:true});console.log('Copied: '+a+' to '+b)" dist/src/core/index.d.ts dist/src/core/index.d.cts
+Copied: dist/src/core/index.d.ts to dist/src/core/index.d.cts
+npm notice run @orkestrel/veneer@0.0.1 build:src:browser
+npm notice run vite build --config configs/src/vite.browser.config.ts
+[36mvite v8.3.0 [32mbuilding client environment for production...[36m[39m
+transforming...
+✓ 9 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/browser/index.js  8.82 kB │ gzip: 2.76 kB │ map: 14.60 kB
+
+[32m✓ built in 65ms[39m
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+npm notice run @orkestrel/veneer@0.0.1 build:src:styles
+npm notice run vite build --config configs/src/vite.styles.config.ts
+[36mvite v8.3.0 [32mbuilding client environment for production...[36m[39m
+transforming...
+✓ 3 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/styles/index.css      91.35 kB │ gzip: 11.43 kB
+dist/src/styles/index.rtl.css  91.35 kB │ gzip: 11.43 kB
+dist/src/styles/index.js        0.00 kB │ gzip:  0.02 kB
+
+[32m✓ built in 470ms[39m
+npm notice run @orkestrel/veneer@0.0.1 build:app
+npm notice run npm run build:app:browser
+npm notice run @orkestrel/veneer@0.0.1 build:app:browser
+npm notice run vite build --config configs/app/vite.browser.config.ts
+[36mvite v8.3.0 [32mbuilding client environment for production...[36m[39m
+transforming...
+✓ 28 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/app/browser/index.html                  0.35 kB │ gzip:  0.25 kB
+dist/app/browser/assets/index-YtFWPP6F.css  91.69 kB │ gzip: 11.53 kB
+dist/app/browser/assets/index-CbQmBJu7.js   33.20 kB │ gzip:  8.23 kB
+
+[32m✓ built in 595ms[39m

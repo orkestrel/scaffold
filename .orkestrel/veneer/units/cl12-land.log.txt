@@ -1,0 +1,7 @@
+== 2026-09-22T08:20:29Z land start
+eb1cd71 Cover the Content/layout family in journeys and captures (CL11)
+ M guides/veneer.md
+changed: guides/veneer.md 
+a04fb7c Make the guide true (CL12)
+## main...origin/main
+== 2026-09-22T08:20:32Z land end

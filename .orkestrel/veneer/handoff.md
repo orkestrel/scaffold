@@ -36,12 +36,12 @@ verifier, and landed by a script that refuses any file outside the owned set.
 
 | Checkout | HEAD | Meaning |
 | --- | --- | --- |
-| Veneer | `eb1cd71` | CL11 landed and pushed; the tracked tree is clean unless a unit is live |
-| Scaffold | confirm with `git log --oneline -1` | every record through CL11's landing retained and pushed |
+| Veneer | `a04fb7c` | CL12 landed and pushed; the tracked tree is clean unless a unit is live |
+| Scaffold | confirm with `git log --oneline -1` | every record through CL12's landing retained and pushed |
 
 Landed in Veneer: CL1 `00a5bdc`, CL2 `9f5ffda`, CL3 `9bb306e`, CL3b `d822d59`, CL4 `bc580c1`,
 CL4b `5240e36`, CL5 `ea82419`, CL5b `4f817db`, CL5c `c1c81a4`, CL6 `c8f53f8`, CL7 `a9172df`,
-CL8 `d2c5bb3`, CL8b `8c70787`, CL9 `5e011a3`, CL10 `0e0b055`, CL11 `eb1cd71`. Each has a verdict file
+CL8 `d2c5bb3`, CL8b `8c70787`, CL9 `5e011a3`, CL10 `0e0b055`, CL11 `eb1cd71`, CL12 `a04fb7c`. Each has a verdict file
 named for it.
 
 **The whole surface is measured**, in `units/remaining-surface.md`: the record carries 135 keys, and
@@ -88,24 +88,29 @@ table. It moves the family's exit criterion, so it is a rescope rather than a re
 gap-triple question is also still open**: whether to pull the `gap` and `column-gap` keys forward to
 sit with `row-gap`, which CL8b shipped because the `row` key required it.
 
-## What to do first: CL12, the guide
+## What to do first: CL13, the portfolio verdict — the last unit
 
-CL12 owns `guides/veneer.md` and `guides/README.md`. It routes to `opus`, so its audit lanes swap:
-Astra objective, the Opus reviewer subjective.
+**CL12 landed, so CL13 is all that remains of the Content/layout family.**
 
-It carries every guide bound a unit reported, including CL7's stale token-table sentence, the missing
-container and gutter token rows, and the sentence still promising component surfaces will consume the
-raised-surface token. **It also carries new parity drift**: CL11 added exports to the browser setup
-module's public surface — the renamed button reader, the specimen reader, the frame sampler, the
-capture controls, and the cascade state table — and `.claude/rules/documentation.md` requires every
-public export documented.
+CL13 is not an implementation unit. Per `content-layout-design-verdict.md` § Units it runs lanes over
+a portfolio: `reviewer` on Opus 5 for subjective design fit, `analyst` on Astra for objective state
+truth, `checker` for mechanical inventory, under the `orkestrel-polish-surface` skill, with `builder`
+for the Elements and Bootstrap harness. It owns nothing in Veneer — the harness and the verdict record
+are its subject.
 
-Measure its terrain against the post-CL11 tree before writing its brief. Scope-read the brief before
-dispatching, and tell the scope read to derive each population by searching for the members the tree
-already holds — that method is what caught an unscoped file on CL11 and what a scope read missed on
-CL10.
+Its design criterion: each portfolio item carries a per-lane verdict with evidence, the second side
+named per key as Elements or the pinned official Bootstrap page, and one terminal line per lane. Frames
+are preflighted for non-blank content, non-empty accessibility trees, step logs, and empty console
+logs, with the capture run taken last.
 
-## Then CL13
+It carries three things from earlier rounds: the Button-family duplicate frame (a frame byte-comparable
+to the home frame, whose subject no earlier unit owned), the portfolio-layer bound that the pixel guard
+runs only under the capture flag, and CL10's capture ruling.
+
+**Reuse the U7f portfolio shape.** Measure its terrain against the post-CL12 tree before writing its
+brief, and scope-read the brief before dispatching.
+
+## Then the family closes
 
 Per `content-layout-design-verdict.md` § Units (the routing ledger is there). Brief each from
 the design row, the planner's criteria (`units/content-layout-design-planner-report.md`), and
