@@ -1,0 +1,22 @@
+# position-probe.mjs readings, 2026-09-22, Chromium 141.0.7390.37 over dist/src/styles/index.css at Veneer 751c3ed (copied to the scratchpad before the run)
+
+== without plant
+{
+ "plant": false,
+ "elapsedMs": 1001,
+ "rules": 80,
+ "usable": 80,
+ "unusable": [],
+ "findings": []
+}
+== with plant
+{
+ "plant": true,
+ "elapsedMs": 1079,
+ "rules": 81,
+ "usable": 81,
+ "unusable": [],
+ "findings": [
+  "h1 + p"
+ ]
+}
