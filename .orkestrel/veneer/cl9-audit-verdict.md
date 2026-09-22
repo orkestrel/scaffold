@@ -158,7 +158,7 @@ Carried forward:
 - **To CL10 and every later key unit**: the vocabulary comparison is the only assertion in the tree
   that catches an *extra* emitted selector — the presence scan reports a missing name and never an
   extra one. A unit that emits a selector the record does not carry is caught there and nowhere else.
-- **To whichever unit next touches the freeze assertions or the normalizer**: objective findings 9,
+- **To a carrier named in `units/setupstyles-carry.md`**: objective findings 9,
   10, and 11.
 - **Unchanged and still the user's call**: the cross-cutting reconciliation unit in
   `units/value-accounting-finding.md`, and the gap-triple question from CL8b.

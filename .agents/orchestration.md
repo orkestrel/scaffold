@@ -666,6 +666,11 @@ filled.
 After reconciling findings into briefs, walk the retained finding list once. Every finding names
 the brief item that carries it. A finding with no carrier is a dropped finding.
 
+Name a carrier by the unit, never by a condition. "Whichever unit next touches this file" is a
+description that stops being true the moment the next unit is chosen, and nobody re-reads the verdict
+at that moment — so the finding reads as assigned and is not. Where the carrying unit is not yet
+known, say that plainly and re-check the assignment at the next dispatch.
+
 Every finding names exactly one carrier. A further brief claiming the same finding is not redundancy
 that costs a little duplicated work — it is a conflict the executor discovers mid-unit, between
 documents you told it to obey, with no way to tell which you meant. It will either implement the row
