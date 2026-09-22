@@ -86,8 +86,9 @@ the key's rows. It depends on CL0 and CL8, both landed.
 
 ## The downward equivalence is arithmetic, not just spelling
 
-Measured after the probe. `breakpoint-down` exists at `src/styles/_mixins.scss:127` and emits the
-range form:
+Measured after the probe. The `breakpoint-down` mixin exists in `src/styles/_mixins.scss` — cited by
+name rather than by line, because CL8b later added a mixin above it and a line citation here went
+stale the moment that landed. It emits the range form:
 
 ```scss
 @media (width < #{$width}) { @content }

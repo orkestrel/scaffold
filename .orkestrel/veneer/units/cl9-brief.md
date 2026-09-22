@@ -84,6 +84,19 @@ record minus the guide's deferrals, for the keys its tuple names. Bring this key
 same number. This key's conditions are downward, where the record's boundary and the mixin's boundary
 differ by a fraction as well as in spelling. Teach the normalizer that equivalence.
 
+**The two sites are these, named by symbol because line numbers shift as the file grows.** The
+recorded key tuple is the `as const` array inside the case that binds the built selector and
+media-condition multiset to the inventory minus deferrals, in `tests/setupStyles.test.ts` — currently
+around line 168. The normalizer is the `replace` over the media parameters inside
+`collectGridVocabulary` in `tests/setupStyles.ts` — currently around line 499. Locate each by its
+surrounding code rather than by that number, and say in your report where you found them.
+
+**An existing helper is adjacent but not a drop-in.** `parseMediaWidth` in the same setup module
+reads the width out of either spelling, the range form or the legacy pair, and returns the number.
+It **discards the direction**, so it cannot by itself decide whether two conditions name the same
+region — a downward and an upward condition at the same number are opposites. Read it before writing,
+reuse what it establishes about the two spellings, and say whether you extended it or wrote beside it.
+
 Then prove the extension in both directions with controls you plant and remove: a recorded selector
 removed from the built cascade, and an unrecorded selector under this key's prefix added to it.
 **Add a third control for the normalizer itself**: a condition whose boundary is shifted off the

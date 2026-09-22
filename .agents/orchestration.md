@@ -600,6 +600,12 @@ filled.
   obligations that point at it. A measurement restated in a brief is a second copy that can drift
   from the first, and the drift is invisible because both artifacts look authoritative. Tell the unit
   which artifact wins when they disagree, and to stop rather than resolve it.
+- Cite a site by its symbol in any artifact meant to outlive a landing, and name a line only as
+  "currently around". A record written before one unit lands and read after another does is the
+  normal case, not the exception: a line citation that was exact when measured goes stale the moment
+  something is inserted above it, and the reader cannot tell a stale number from a wrong one. Name
+  the function, the mixin, the case title, or the surrounding construct, and tell the reader to
+  locate it by that.
 - Take every measurement under the conditions the unit runs in, or have the unit take it before
   doing anything else.
 - Ask what the change does to every fact you measured, and fix each criterion to the state the unit
