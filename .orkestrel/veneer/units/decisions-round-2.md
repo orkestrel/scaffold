@@ -68,3 +68,19 @@ of writing); until then this record is the ruling's home.
 - **D10 (the Test release).** Approved: T1 TEST-SCOPED and T2 TEST-FORCED-COLORS in one release,
   on a session branch pushed to `main` at the window, published on the user's one-time code, which
   the Orchestrator asks for when the window opens.
+
+## Routing ruling, 2026-09-22 (later the same day)
+
+> Continue your work, for now, do as much as you can with Opus when it comes to implementation,
+> ease off of Astra unless you really need it for the adversarial and objective runs. Also do some
+> work on your end, I want you to also get into implementation where it needs the extra white
+> glove treatment to get everything just right.
+
+As read: every implementation unit after F4 routes to `opus` on native Opus 5, or to the
+Orchestrator itself where precision on a small surface justifies it; a part the Orchestrator
+writes is briefed, owned, and audited like any other, with `analyst` on Astra as its objective
+auditor. Astra keeps the objective audit lane of every round (the engine that did not write the
+work) and the objective design lane of every design round. F4 round 3, already running on Astra
+when the ruling arrived, runs to completion and is audited with `reviewer` on Opus holding the
+objective lane. The roadmap's § Routing and the unit table take this when the Veneer checkout
+frees.
