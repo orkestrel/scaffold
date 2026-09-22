@@ -1,0 +1,31 @@
+## Token reuse and literal rulings, per value
+
+Routed onto an existing `--vn-*` token, because the token already resolves to Bootstrap's recorded
+bytes and `.claude/rules/styles.md` refuses a literal color in a partial. Each one takes a
+`tokenized` departure row:
+
+| Recorded value              | Veneer writes                             | Token's declared value in `_tokens.scss` |
+| --------------------------- | ----------------------------------------- | ---------------------------------------- |
+| `#fff`                      | `var(--vn-palette-white-base)`            | `#fff`                                   |
+| `#0d6efd`                   | `var(--vn-palette-blue)`                  | `#0d6efd`                                |
+| `rgba(255, 255, 255, 0.15)` | `rgba(var(--vn-palette-white-rgb), 0.15)` | `255, 255, 255`                          |
+| `#000`                      | `var(--vn-palette-black-base)`            | `#000`                                   |
+| `rgba(0, 0, 0, 0.8)`        | `rgba(var(--vn-palette-black-rgb), 0.8)`  | `0, 0, 0`                                |
+
+Passed through byte for byte, because the recorded value already reads a `--bs-*` global this tree
+declares. No row: `var(--bs-secondary-bg)`, `var(--bs-border-radius)`, `var(--bs-box-shadow-inset)`.
+
+Written as Bootstrap's literal, because no existing `--vn-*` token resolves to the recorded value
+and family ruling 4 forbids adding one: `1rem` and `0.75rem` (progress height and font size),
+`width 0.6s ease`, `1s linear infinite`, `45deg` and the stripe stops, `2rem`, `1rem`, `-0.125em`,
+`0.25em`, `0.2em`, `0.75s`, `1.5s`, `50%`, `1em`, `0.6em`, `0.8em`, `1.2em`, `0.5`, `0.2`,
+`130deg`, `200% 100%`, `-200% 0%`, `2s`. `transparent` and `currentcolor` are written bare, which is
+the treatment `_table.scss` and `_vr.scss` already give them.
+
+`--vn-size-1` resolves to `0.75rem` and `--vn-space-8` to `1rem` at the default factors, so the
+tokenizing ceiling would admit them for `--bs-progress-font-size` and `--bs-progress-height`. They
+are refused deliberately: routing them would make a recorded fixed measure follow
+`--vn-factor-density`, which is a behavioral change rather than a notation change, and family
+ruling 1 is Bootstrap's set exactly. The radius factor still reaches the track, through
+`--bs-border-radius`, and the proof reads it.
+
