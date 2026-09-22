@@ -199,6 +199,11 @@ answers by inventory iteration order when several keys record a selector, so `.b
 `btn` and `.btn-group-lg > .btn` under `btn`, where the release writes them under `btn-close` and
 `btn-group`. Orchestrator ruling: the ladder prefers, among the keys that record the selector, the
 one the release authors it under (the most specific key), and the departure ledger regroups the moved
-rows (`#### btn-close`, the size twins under `btn-group`). `tests/setupServer.ts` is off-limits to
-the family units, so B-PASSIVE-CLOSE carries it with the ledger regroup and the `attributeSelector`
-proof; selectors recorded under one key are untouched.
+rows (`#### btn-close`, the size twins under `btn-group`). B-FORMS-VALIDATION already lands the ladder
+(`attributeSelector` prefers, among the recorded keys, the one the selector's own classes name,
+longest first, and falls back to the first recorded member), with its proof in
+`tests/setupServer.test.ts`; so `.btn-close` moves to `btn-close` the moment VALIDATION lands, while
+`.btn-group-lg > .btn` stays under `btn` because `btn-group` is not one of that selector's classes.
+The ledger regroup for the moved rows is the Orchestrator's integration edit at B-PASSIVE-A's
+landing (`#### btn-close`), proved by the conformance gate; selectors recorded under one key are
+untouched.
