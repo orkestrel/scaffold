@@ -1,0 +1,18 @@
+=== before: range ^0.0.19, installed 0.0.19, status  (16:30:10)
+=== npm install --save-dev @orkestrel/test@^0.0.20 (16:30:10)
+
+changed 1 package in 2s
+=== install exit=0 (16:30:13)
+=== after install: range ^0.0.20, lock resolved 0.0.20 https://registry.npmjs.org/@orkestrel/test/-/test-0.0.20.tgz (16:30:13)
+=== npm ci from the lockfile alone (16:30:13)
+
+added 178 packages, and audited 179 packages in 4s
+
+38 packages are looking for funding
+  run `npm fund` for details
+
+found 0 vulnerabilities
+=== npm ci exit=0 (16:30:17)
+=== installed test 0.0.20; driveHold declared: 4; marker 37aa84bac5c77d4c (16:30:17)
+=== status:  M package-lock.json  M package.json ; diff:  2 files changed, 5 insertions(+), 5 deletions(-) (16:30:17)
+=== pin done
