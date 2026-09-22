@@ -10,7 +10,7 @@
 			"storage": "CLAUDE.md",
 			"destination": "CLAUDE.md",
 			"executable": false,
-			"digest": "37071aac55bb49a24f8fa1a084bbdc351b9ce95ebf1dfc4b91d2d794123b8475"
+			"digest": "f98ede17037104d0eca43598f6332fddc582d573ad20f6cfda85667f0e1bc8f2"
 		},
 		{
 			"storage": "LICENSE",
@@ -22,7 +22,7 @@
 			"storage": "agents/orchestration.md",
 			"destination": ".agents/orchestration.md",
 			"executable": false,
-			"digest": "79665a163e76744984cefb41e335bd53d5f88f4830d52ad966112e23903b0f6b"
+			"digest": "7aeeb20489b78b65030ae9542e4ea4d36ce7b90246e66e5f516db95fa52c4214"
 		},
 		{
 			"storage": "agents/skills/enterprise-bootstrap/SKILL.md",
@@ -304,37 +304,37 @@
 			"storage": "agents/transports/claude.md",
 			"destination": ".agents/transports/claude.md",
 			"executable": false,
-			"digest": "fa9f4892e73f7bbc56b89d7283ccff2fc774fe68a68d274a931f5a45231d19a8"
+			"digest": "619a15d6b38f90b0d086f9cadb9be14f6d91e96b0a9170a8a9b707630ae93524"
 		},
 		{
 			"storage": "agents/transports/codex.md",
 			"destination": ".agents/transports/codex.md",
 			"executable": false,
-			"digest": "830a8f702996c0e8f8f332dbd2555699488d09473b56062985fe4e5d88a501e6"
+			"digest": "bac6d8f2b18c65ecbfdac51b9fdacfd49f1b1164321480c95da882efb5bae57d"
 		},
 		{
 			"storage": "agents/transports/cursor.md",
 			"destination": ".agents/transports/cursor.md",
 			"executable": false,
-			"digest": "0f9253a58446d255bc88740ae5300a33eb66d6cfa5734c36ac8bae9ade80c278"
+			"digest": "18a2ad7a77f9460b0dfdd9106388a8c8ebdc45c0ade89f7bfb04e2926f95f9ca"
 		},
 		{
 			"storage": "claude/agents/analyst.md",
 			"destination": ".claude/agents/analyst.md",
 			"executable": false,
-			"digest": "1ac3763736474bdc691162b22e8f9e189b22d85102f81e68f0314392f640c5b6"
+			"digest": "c4194fa19d83d9990be6938345bf01f6b8890374bb4130f55c4792337ad80cf0"
 		},
 		{
 			"storage": "claude/agents/application.md",
 			"destination": ".claude/agents/application.md",
 			"executable": false,
-			"digest": "19c91ffbad81bb64a83f25ba46fb10dadc5c1404057b40ea216d23ec5a7216f3"
+			"digest": "52d68fb4abaad9fa8c7bc2cf7b440a58856ee311fe999ae338a2ba06b97cf38f"
 		},
 		{
 			"storage": "claude/agents/builder.md",
 			"destination": ".claude/agents/builder.md",
 			"executable": false,
-			"digest": "03aed37b151f91d378ff6eecd3be68f5545f580174737b61796faf9370a802a9"
+			"digest": "d79ab7499464e8a4605c9539c6e65d261cca7b8435a2cef4c8468442869bdb83"
 		},
 		{
 			"storage": "claude/agents/checker.md",
@@ -358,7 +358,7 @@
 			"storage": "claude/agents/opus.md",
 			"destination": ".claude/agents/opus.md",
 			"executable": false,
-			"digest": "99a4564c13f49807c4226a2d09cb698fc6caab9a132219ad5cedd5e04d4d6409"
+			"digest": "463f5552212837e86d23bd20e1bbdcba808f95365eb0d050fb8b9a8bb80263f5"
 		},
 		{
 			"storage": "claude/agents/orkestrel.md",
@@ -370,7 +370,7 @@
 			"storage": "claude/agents/planner.md",
 			"destination": ".claude/agents/planner.md",
 			"executable": false,
-			"digest": "06f2b6317c3a0f32ad163eb5e90505790b55d3536d0c984b9d8dac49ccff1324"
+			"digest": "7e066ed9c5794cf95b16dd14b00c228456b2a8e005e1b995bb60196fd31feb9f"
 		},
 		{
 			"storage": "claude/agents/researcher.md",
@@ -382,7 +382,7 @@
 			"storage": "claude/agents/reviewer.md",
 			"destination": ".claude/agents/reviewer.md",
 			"executable": false,
-			"digest": "fbd9737b3d1049797c900d80af21a2cdb46338516c3c5f8b0089cd5fa3494202"
+			"digest": "ac9e4cefcf8ba9a92399d1ac0ebbdbaf21ea5af0d0737f5e26764f77eb7eefcb"
 		},
 		{
 			"storage": "claude/agents/scout.md",
@@ -394,7 +394,7 @@
 			"storage": "claude/agents/sol.md",
 			"destination": ".claude/agents/sol.md",
 			"executable": false,
-			"digest": "bedefa0eb3606d10d418c6af1df54cbffae0342a31c22a115e9d112edb2b5364"
+			"digest": "3ae5a22af093181db6746a036a38fdda81095e59a45d1ccd0beb12c2a5c3af3f"
 		},
 		{
 			"storage": "claude/agents/verifier.md",
@@ -544,7 +544,7 @@
 			"storage": "codex/agents/analyst.toml",
 			"destination": ".codex/agents/analyst.toml",
 			"executable": false,
-			"digest": "a373d3db220adca3f606e97ef88e20ae3241c44e9c2f5bfa3c811c08f1ab9683"
+			"digest": "f23c2221bbe760a42dcecdc336b67900f09d8609b225a4613cdd0b384ca0f8ac"
 		},
 		{
 			"storage": "codex/agents/application.toml",
@@ -592,7 +592,7 @@
 			"storage": "codex/agents/planner.toml",
 			"destination": ".codex/agents/planner.toml",
 			"executable": false,
-			"digest": "d5d77bff51bf730d3303be8ecb651b4265ded4a4c386cd0b819d8418d9f97cb5"
+			"digest": "cd35d4dd43a190d9f82f1b1a5a83b1c630ff178558bf4480c198b3c10e7207c8"
 		},
 		{
 			"storage": "codex/agents/researcher.toml",
@@ -604,7 +604,7 @@
 			"storage": "codex/agents/reviewer.toml",
 			"destination": ".codex/agents/reviewer.toml",
 			"executable": false,
-			"digest": "3ca906198e9dc50d2fe637aa7adb215999b3b01b9a6a9464f8c88750f484bba3"
+			"digest": "5a091b9ab0ab28d7241ac9e3e321d0287c8c748a8a35c7233e62f5c654b16cbb"
 		},
 		{
 			"storage": "codex/agents/scout.toml",
@@ -616,7 +616,7 @@
 			"storage": "codex/agents/sol.toml",
 			"destination": ".codex/agents/sol.toml",
 			"executable": false,
-			"digest": "3f8dc5123da5d3d44949ec5c5f0b0832a2069258063903b18ddf2132bdbe1bf0"
+			"digest": "bcb65b994c03d28d038546981d84ed02c0872ff6c8174c5b353326e9901d93cd"
 		},
 		{
 			"storage": "codex/agents/verifier.toml",
@@ -628,7 +628,7 @@
 			"storage": "codex/config.toml",
 			"destination": ".codex/config.toml",
 			"executable": false,
-			"digest": "c8364a20fca401e65f3c092968b1f6b4d4e025a1efd91e22beb01b3fcd39e076"
+			"digest": "b6888e0b5c739770b7142f1112352155828aa89f2b5f168e2c6e5e1ace4427af"
 		},
 		{
 			"storage": "configs/helpers.ts",
@@ -652,7 +652,7 @@
 			"storage": "cursor/rules/orchestration.mdc",
 			"destination": ".cursor/rules/orchestration.mdc",
 			"executable": false,
-			"digest": "0a18350c6f0a211e42b7d0f3b40a483a57be6ac6a81c83814f147d39fe2016d3"
+			"digest": "0498c733a5cf9b54e96604632c8b4afc26924f57405b229a7adafc997e4aaaf1"
 		},
 		{
 			"storage": "dotfiles/editorconfig",
@@ -1012,7 +1012,7 @@
 			"storage": "scripts/codex.sh",
 			"destination": "scripts/codex.sh",
 			"executable": true,
-			"digest": "747afc870663de1874fc5580cb6a1425dfb2fb112db2f31ed703d1dc5512cf38"
+			"digest": "440b1ab79eb2f67a84aa134fba90f2e480f21417bd3ec43965b665c83dabf703"
 		},
 		{
 			"storage": "scripts/cursor.sh",
@@ -2001,5 +2001,5 @@
 			]
 		}
 	],
-	"digest": "88c796ee06464183378d3918ab25854ad2c5b0211f072f3b904e00d49bcdf26c"
+	"digest": "668e3a634fd6be141f27c03f3949ea02e8a26b7f5d9c3fb2e8c744eb7e79e96d"
 }
