@@ -1,0 +1,172 @@
+[2026-09-22T08:28:52.571Z] starting static server
+[2026-09-22T08:28:52.577Z] server listening on 127.0.0.1:60240
+[2026-09-22T08:28:52.577Z] launching chromium
+[2026-09-22T08:28:52.652Z] chromium launched
+[2026-09-22T08:28:52.713Z] navigating to http://127.0.0.1:60240/?specimen=capped-container&theme=light at width 1280
+[2026-09-22T08:28:52.735Z] navigation ok, status 200
+[2026-09-22T08:28:53.268Z] captured page frame capped-container--light--1280.page.png
+[2026-09-22T08:28:53.287Z] variation for capped-container--light--1280.page: 0.0013248697916666667
+[2026-09-22T08:28:53.303Z] selector .container matched 1 element(s) for capped-container--light--1280
+[2026-09-22T08:28:53.364Z] captured element frame capped-container--light--1280.element.png
+[2026-09-22T08:28:53.366Z] variation for capped-container--light--1280.element: 0.04462719298245614
+[2026-09-22T08:28:53.370Z] element frame capped-container--light--1280.element dimensions: 1140x24
+[2026-09-22T08:28:53.376Z] wrote accessibility snapshot capped-container--light--1280.accessibility.yaml
+[2026-09-22T08:28:53.377Z] wrote step log capped-container--light--1280.steps.log.txt
+[2026-09-22T08:28:53.425Z] navigating to http://127.0.0.1:60240/?specimen=capped-container&theme=light at width 390
+[2026-09-22T08:28:53.442Z] navigation ok, status 200
+[2026-09-22T08:28:53.967Z] captured page frame capped-container--light--390.page.png
+[2026-09-22T08:28:53.976Z] variation for capped-container--light--390.page: 0.004348290598290598
+[2026-09-22T08:28:53.991Z] selector .container matched 1 element(s) for capped-container--light--390
+[2026-09-22T08:28:54.063Z] captured element frame capped-container--light--390.element.png
+[2026-09-22T08:28:54.065Z] variation for capped-container--light--390.element: 0.13044871794871796
+[2026-09-22T08:28:54.068Z] element frame capped-container--light--390.element dimensions: 390x24
+[2026-09-22T08:28:54.073Z] wrote accessibility snapshot capped-container--light--390.accessibility.yaml
+[2026-09-22T08:28:54.074Z] wrote step log capped-container--light--390.steps.log.txt
+[2026-09-22T08:28:54.118Z] navigating to http://127.0.0.1:60240/?specimen=capped-container&theme=dark at width 1280
+[2026-09-22T08:28:54.136Z] navigation ok, status 200
+[2026-09-22T08:28:54.658Z] captured page frame capped-container--dark--1280.page.png
+[2026-09-22T08:28:54.675Z] variation for capped-container--dark--1280.page: 0.0013248697916666667
+[2026-09-22T08:28:54.688Z] selector .container matched 1 element(s) for capped-container--dark--1280
+[2026-09-22T08:28:54.747Z] captured element frame capped-container--dark--1280.element.png
+[2026-09-22T08:28:54.749Z] variation for capped-container--dark--1280.element: 0.04462719298245614
+[2026-09-22T08:28:54.752Z] element frame capped-container--dark--1280.element dimensions: 1140x24
+[2026-09-22T08:28:54.757Z] wrote accessibility snapshot capped-container--dark--1280.accessibility.yaml
+[2026-09-22T08:28:54.757Z] wrote step log capped-container--dark--1280.steps.log.txt
+[2026-09-22T08:28:54.804Z] navigating to http://127.0.0.1:60240/?specimen=capped-container&theme=dark at width 390
+[2026-09-22T08:28:54.820Z] navigation ok, status 200
+[2026-09-22T08:28:55.337Z] captured page frame capped-container--dark--390.page.png
+[2026-09-22T08:28:55.346Z] variation for capped-container--dark--390.page: 0.004348290598290598
+[2026-09-22T08:28:55.358Z] selector .container matched 1 element(s) for capped-container--dark--390
+[2026-09-22T08:28:55.429Z] captured element frame capped-container--dark--390.element.png
+[2026-09-22T08:28:55.431Z] variation for capped-container--dark--390.element: 0.13044871794871796
+[2026-09-22T08:28:55.434Z] element frame capped-container--dark--390.element dimensions: 390x24
+[2026-09-22T08:28:55.439Z] wrote accessibility snapshot capped-container--dark--390.accessibility.yaml
+[2026-09-22T08:28:55.439Z] wrote step log capped-container--dark--390.steps.log.txt
+[2026-09-22T08:28:55.485Z] navigating to http://127.0.0.1:60240/?specimen=numbered-columns&theme=light at width 1280
+[2026-09-22T08:28:55.503Z] navigation ok, status 200
+[2026-09-22T08:28:56.042Z] captured page frame numbered-columns--light--1280.page.png
+[2026-09-22T08:28:56.058Z] variation for numbered-columns--light--1280.page: 0.0012782118055555557
+[2026-09-22T08:28:56.071Z] selector .row matched 1 element(s) for numbered-columns--light--1280
+[2026-09-22T08:28:56.130Z] captured element frame numbered-columns--light--1280.element.png
+[2026-09-22T08:28:56.132Z] variation for numbered-columns--light--1280.element: 0.038346354166666666
+[2026-09-22T08:28:56.135Z] element frame numbered-columns--light--1280.element dimensions: 1280x24
+[2026-09-22T08:28:56.140Z] wrote accessibility snapshot numbered-columns--light--1280.accessibility.yaml
+[2026-09-22T08:28:56.140Z] wrote step log numbered-columns--light--1280.steps.log.txt
+[2026-09-22T08:28:56.185Z] navigating to http://127.0.0.1:60240/?specimen=numbered-columns&theme=light at width 390
+[2026-09-22T08:28:56.202Z] navigation ok, status 200
+[2026-09-22T08:28:56.722Z] captured page frame numbered-columns--light--390.page.png
+[2026-09-22T08:28:56.730Z] variation for numbered-columns--light--390.page: 0.004344729344729344
+[2026-09-22T08:28:56.742Z] selector .row matched 1 element(s) for numbered-columns--light--390
+[2026-09-22T08:28:56.814Z] captured element frame numbered-columns--light--390.element.png
+[2026-09-22T08:28:56.816Z] variation for numbered-columns--light--390.element: 0.06517094017094018
+[2026-09-22T08:28:56.819Z] element frame numbered-columns--light--390.element dimensions: 390x48
+[2026-09-22T08:28:56.824Z] wrote accessibility snapshot numbered-columns--light--390.accessibility.yaml
+[2026-09-22T08:28:56.827Z] wrote step log numbered-columns--light--390.steps.log.txt
+[2026-09-22T08:28:56.872Z] navigating to http://127.0.0.1:60240/?specimen=numbered-columns&theme=dark at width 1280
+[2026-09-22T08:28:56.889Z] navigation ok, status 200
+[2026-09-22T08:28:57.425Z] captured page frame numbered-columns--dark--1280.page.png
+[2026-09-22T08:28:57.441Z] variation for numbered-columns--dark--1280.page: 0.0012782118055555557
+[2026-09-22T08:28:57.454Z] selector .row matched 1 element(s) for numbered-columns--dark--1280
+[2026-09-22T08:28:57.513Z] captured element frame numbered-columns--dark--1280.element.png
+[2026-09-22T08:28:57.516Z] variation for numbered-columns--dark--1280.element: 0.038346354166666666
+[2026-09-22T08:28:57.519Z] element frame numbered-columns--dark--1280.element dimensions: 1280x24
+[2026-09-22T08:28:57.523Z] wrote accessibility snapshot numbered-columns--dark--1280.accessibility.yaml
+[2026-09-22T08:28:57.524Z] wrote step log numbered-columns--dark--1280.steps.log.txt
+[2026-09-22T08:28:57.569Z] navigating to http://127.0.0.1:60240/?specimen=numbered-columns&theme=dark at width 390
+[2026-09-22T08:28:57.586Z] navigation ok, status 200
+[2026-09-22T08:28:58.104Z] captured page frame numbered-columns--dark--390.page.png
+[2026-09-22T08:28:58.112Z] variation for numbered-columns--dark--390.page: 0.004344729344729344
+[2026-09-22T08:28:58.125Z] selector .row matched 1 element(s) for numbered-columns--dark--390
+[2026-09-22T08:28:58.196Z] captured element frame numbered-columns--dark--390.element.png
+[2026-09-22T08:28:58.198Z] variation for numbered-columns--dark--390.element: 0.06517094017094018
+[2026-09-22T08:28:58.202Z] element frame numbered-columns--dark--390.element dimensions: 390x48
+[2026-09-22T08:28:58.206Z] wrote accessibility snapshot numbered-columns--dark--390.accessibility.yaml
+[2026-09-22T08:28:58.207Z] wrote step log numbered-columns--dark--390.steps.log.txt
+[2026-09-22T08:28:58.253Z] navigating to http://127.0.0.1:60240/?specimen=base-table&theme=light at width 1280
+[2026-09-22T08:28:58.271Z] navigation ok, status 200
+[2026-09-22T08:28:58.810Z] captured page frame base-table--light--1280.page.png
+[2026-09-22T08:28:58.828Z] variation for base-table--light--1280.page: 0.006978081597222222
+[2026-09-22T08:28:58.840Z] selector .table matched 1 element(s) for base-table--light--1280
+[2026-09-22T08:28:58.900Z] captured element frame base-table--light--1280.element.png
+[2026-09-22T08:28:58.904Z] variation for base-table--light--1280.element: 0.03082342791411043
+[2026-09-22T08:28:58.908Z] element frame base-table--light--1280.element dimensions: 1280x163
+[2026-09-22T08:28:58.915Z] wrote accessibility snapshot base-table--light--1280.accessibility.yaml
+[2026-09-22T08:28:58.915Z] wrote step log base-table--light--1280.steps.log.txt
+[2026-09-22T08:28:58.961Z] navigating to http://127.0.0.1:60240/?specimen=base-table&theme=light at width 390
+[2026-09-22T08:28:58.977Z] navigation ok, status 200
+[2026-09-22T08:28:59.503Z] captured page frame base-table--light--390.page.png
+[2026-09-22T08:28:59.512Z] variation for base-table--light--390.page: 0.013486467236467237
+[2026-09-22T08:28:59.524Z] selector .table matched 1 element(s) for base-table--light--390
+[2026-09-22T08:28:59.598Z] captured element frame base-table--light--390.element.png
+[2026-09-22T08:28:59.600Z] variation for base-table--light--390.element: 0.059572125216297
+[2026-09-22T08:28:59.604Z] element frame base-table--light--390.element dimensions: 390x163
+[2026-09-22T08:28:59.611Z] wrote accessibility snapshot base-table--light--390.accessibility.yaml
+[2026-09-22T08:28:59.611Z] wrote step log base-table--light--390.steps.log.txt
+[2026-09-22T08:28:59.655Z] navigating to http://127.0.0.1:60240/?specimen=base-table&theme=dark at width 1280
+[2026-09-22T08:28:59.672Z] navigation ok, status 200
+[2026-09-22T08:29:00.200Z] captured page frame base-table--dark--1280.page.png
+[2026-09-22T08:29:00.217Z] variation for base-table--dark--1280.page: 0.006978081597222222
+[2026-09-22T08:29:00.229Z] selector .table matched 1 element(s) for base-table--dark--1280
+[2026-09-22T08:29:00.300Z] captured element frame base-table--dark--1280.element.png
+[2026-09-22T08:29:00.304Z] variation for base-table--dark--1280.element: 0.03082342791411043
+[2026-09-22T08:29:00.308Z] element frame base-table--dark--1280.element dimensions: 1280x163
+[2026-09-22T08:29:00.315Z] wrote accessibility snapshot base-table--dark--1280.accessibility.yaml
+[2026-09-22T08:29:00.315Z] wrote step log base-table--dark--1280.steps.log.txt
+[2026-09-22T08:29:00.359Z] navigating to http://127.0.0.1:60240/?specimen=base-table&theme=dark at width 390
+[2026-09-22T08:29:00.376Z] navigation ok, status 200
+[2026-09-22T08:29:00.901Z] captured page frame base-table--dark--390.page.png
+[2026-09-22T08:29:00.909Z] variation for base-table--dark--390.page: 0.013486467236467237
+[2026-09-22T08:29:00.921Z] selector .table matched 1 element(s) for base-table--dark--390
+[2026-09-22T08:29:00.997Z] captured element frame base-table--dark--390.element.png
+[2026-09-22T08:29:01.000Z] variation for base-table--dark--390.element: 0.059572125216297
+[2026-09-22T08:29:01.004Z] element frame base-table--dark--390.element dimensions: 390x163
+[2026-09-22T08:29:01.011Z] wrote accessibility snapshot base-table--dark--390.accessibility.yaml
+[2026-09-22T08:29:01.011Z] wrote step log base-table--dark--390.steps.log.txt
+[2026-09-22T08:29:01.057Z] navigating to http://127.0.0.1:60240/?specimen=role-links&theme=light at width 1280
+[2026-09-22T08:29:01.074Z] navigation ok, status 200
+[2026-09-22T08:29:01.594Z] captured page frame role-links--light--1280.page.png
+[2026-09-22T08:29:01.610Z] variation for role-links--light--1280.page: 0.005359157986111111
+[2026-09-22T08:29:01.622Z] selector .link-primary matched 1 element(s) for role-links--light--1280
+[2026-09-22T08:29:01.696Z] captured element frame role-links--light--1280.element.png
+[2026-09-22T08:29:01.697Z] variation for role-links--light--1280.element: 0.3092369477911647
+[2026-09-22T08:29:01.701Z] element frame role-links--light--1280.element dimensions: 83x21
+[2026-09-22T08:29:01.708Z] wrote accessibility snapshot role-links--light--1280.accessibility.yaml
+[2026-09-22T08:29:01.708Z] wrote step log role-links--light--1280.steps.log.txt
+[2026-09-22T08:29:01.754Z] navigating to http://127.0.0.1:60240/?specimen=role-links&theme=light at width 390
+[2026-09-22T08:29:01.771Z] navigation ok, status 200
+[2026-09-22T08:29:02.293Z] captured page frame role-links--light--390.page.png
+[2026-09-22T08:29:02.302Z] variation for role-links--light--390.page: 0.017517806267806267
+[2026-09-22T08:29:02.314Z] selector .link-primary matched 1 element(s) for role-links--light--390
+[2026-09-22T08:29:02.379Z] captured element frame role-links--light--390.element.png
+[2026-09-22T08:29:02.381Z] variation for role-links--light--390.element: 0.3092369477911647
+[2026-09-22T08:29:02.384Z] element frame role-links--light--390.element dimensions: 83x21
+[2026-09-22T08:29:02.391Z] wrote accessibility snapshot role-links--light--390.accessibility.yaml
+[2026-09-22T08:29:02.391Z] wrote step log role-links--light--390.steps.log.txt
+[2026-09-22T08:29:02.436Z] navigating to http://127.0.0.1:60240/?specimen=role-links&theme=dark at width 1280
+[2026-09-22T08:29:02.453Z] navigation ok, status 200
+[2026-09-22T08:29:02.976Z] captured page frame role-links--dark--1280.page.png
+[2026-09-22T08:29:02.993Z] variation for role-links--dark--1280.page: 0.004925130208333333
+[2026-09-22T08:29:03.006Z] selector .link-primary matched 1 element(s) for role-links--dark--1280
+[2026-09-22T08:29:03.063Z] captured element frame role-links--dark--1280.element.png
+[2026-09-22T08:29:03.065Z] variation for role-links--dark--1280.element: 0.3092369477911647
+[2026-09-22T08:29:03.068Z] element frame role-links--dark--1280.element dimensions: 83x21
+[2026-09-22T08:29:03.075Z] wrote accessibility snapshot role-links--dark--1280.accessibility.yaml
+[2026-09-22T08:29:03.075Z] wrote step log role-links--dark--1280.steps.log.txt
+[2026-09-22T08:29:03.118Z] navigating to http://127.0.0.1:60240/?specimen=role-links&theme=dark at width 390
+[2026-09-22T08:29:03.135Z] navigation ok, status 200
+[2026-09-22T08:29:03.656Z] captured page frame role-links--dark--390.page.png
+[2026-09-22T08:29:03.665Z] variation for role-links--dark--390.page: 0.01617877492877493
+[2026-09-22T08:29:03.677Z] selector .link-primary matched 1 element(s) for role-links--dark--390
+[2026-09-22T08:29:03.746Z] captured element frame role-links--dark--390.element.png
+[2026-09-22T08:29:03.748Z] variation for role-links--dark--390.element: 0.3092369477911647
+[2026-09-22T08:29:03.751Z] element frame role-links--dark--390.element dimensions: 83x21
+[2026-09-22T08:29:03.758Z] wrote accessibility snapshot role-links--dark--390.accessibility.yaml
+[2026-09-22T08:29:03.758Z] wrote step log role-links--dark--390.steps.log.txt
+[2026-09-22T08:29:03.761Z] running blank-frame control on a fresh page
+[2026-09-22T08:29:03.809Z] blank-frame control: uniform image variation = 0
+[2026-09-22T08:29:03.809Z] blank-frame control: painted image variation = 0.75
+[2026-09-22T08:29:03.809Z] blank-frame control, applied to the uniform image: RED (assertion threw, as required for a blank frame): Error: frame reported zero pixel variation; capture is blank
+[2026-09-22T08:29:03.809Z] blank-frame control, applied to the painted image: GREEN (assertion passed, as required for a non-blank frame)
+[2026-09-22T08:29:03.813Z] capture complete: 16 frames written
+[2026-09-22T08:29:03.843Z] chromium closed
+[2026-09-22T08:29:03.843Z] server closed

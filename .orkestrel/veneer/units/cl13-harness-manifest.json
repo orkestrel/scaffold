@@ -1,0 +1,132 @@
+{
+  "frames": [
+    {
+      "stem": "capped-container--light--1280",
+      "page": "capped-container--light--1280.page.png",
+      "element": "capped-container--light--1280.element.png",
+      "elementSelector": ".container",
+      "elementMatchCount": 1,
+      "elementDimensions": "1140x24"
+    },
+    {
+      "stem": "capped-container--light--390",
+      "page": "capped-container--light--390.page.png",
+      "element": "capped-container--light--390.element.png",
+      "elementSelector": ".container",
+      "elementMatchCount": 1,
+      "elementDimensions": "390x24"
+    },
+    {
+      "stem": "capped-container--dark--1280",
+      "page": "capped-container--dark--1280.page.png",
+      "element": "capped-container--dark--1280.element.png",
+      "elementSelector": ".container",
+      "elementMatchCount": 1,
+      "elementDimensions": "1140x24"
+    },
+    {
+      "stem": "capped-container--dark--390",
+      "page": "capped-container--dark--390.page.png",
+      "element": "capped-container--dark--390.element.png",
+      "elementSelector": ".container",
+      "elementMatchCount": 1,
+      "elementDimensions": "390x24"
+    },
+    {
+      "stem": "numbered-columns--light--1280",
+      "page": "numbered-columns--light--1280.page.png",
+      "element": "numbered-columns--light--1280.element.png",
+      "elementSelector": ".row",
+      "elementMatchCount": 1,
+      "elementDimensions": "1280x24"
+    },
+    {
+      "stem": "numbered-columns--light--390",
+      "page": "numbered-columns--light--390.page.png",
+      "element": "numbered-columns--light--390.element.png",
+      "elementSelector": ".row",
+      "elementMatchCount": 1,
+      "elementDimensions": "390x48"
+    },
+    {
+      "stem": "numbered-columns--dark--1280",
+      "page": "numbered-columns--dark--1280.page.png",
+      "element": "numbered-columns--dark--1280.element.png",
+      "elementSelector": ".row",
+      "elementMatchCount": 1,
+      "elementDimensions": "1280x24"
+    },
+    {
+      "stem": "numbered-columns--dark--390",
+      "page": "numbered-columns--dark--390.page.png",
+      "element": "numbered-columns--dark--390.element.png",
+      "elementSelector": ".row",
+      "elementMatchCount": 1,
+      "elementDimensions": "390x48"
+    },
+    {
+      "stem": "base-table--light--1280",
+      "page": "base-table--light--1280.page.png",
+      "element": "base-table--light--1280.element.png",
+      "elementSelector": ".table",
+      "elementMatchCount": 1,
+      "elementDimensions": "1280x163"
+    },
+    {
+      "stem": "base-table--light--390",
+      "page": "base-table--light--390.page.png",
+      "element": "base-table--light--390.element.png",
+      "elementSelector": ".table",
+      "elementMatchCount": 1,
+      "elementDimensions": "390x163"
+    },
+    {
+      "stem": "base-table--dark--1280",
+      "page": "base-table--dark--1280.page.png",
+      "element": "base-table--dark--1280.element.png",
+      "elementSelector": ".table",
+      "elementMatchCount": 1,
+      "elementDimensions": "1280x163"
+    },
+    {
+      "stem": "base-table--dark--390",
+      "page": "base-table--dark--390.page.png",
+      "element": "base-table--dark--390.element.png",
+      "elementSelector": ".table",
+      "elementMatchCount": 1,
+      "elementDimensions": "390x163"
+    },
+    {
+      "stem": "role-links--light--1280",
+      "page": "role-links--light--1280.page.png",
+      "element": "role-links--light--1280.element.png",
+      "elementSelector": ".link-primary",
+      "elementMatchCount": 1,
+      "elementDimensions": "83x21"
+    },
+    {
+      "stem": "role-links--light--390",
+      "page": "role-links--light--390.page.png",
+      "element": "role-links--light--390.element.png",
+      "elementSelector": ".link-primary",
+      "elementMatchCount": 1,
+      "elementDimensions": "83x21"
+    },
+    {
+      "stem": "role-links--dark--1280",
+      "page": "role-links--dark--1280.page.png",
+      "element": "role-links--dark--1280.element.png",
+      "elementSelector": ".link-primary",
+      "elementMatchCount": 1,
+      "elementDimensions": "83x21"
+    },
+    {
+      "stem": "role-links--dark--390",
+      "page": "role-links--dark--390.page.png",
+      "element": "role-links--dark--390.element.png",
+      "elementSelector": ".link-primary",
+      "elementMatchCount": 1,
+      "elementDimensions": "83x21"
+    }
+  ]
+}

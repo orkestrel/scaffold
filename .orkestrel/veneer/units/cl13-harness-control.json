@@ -1,0 +1,6 @@
+{
+  "blankVariation": 0,
+  "paintedVariation": 0.75,
+  "blankReading": "RED (assertion threw, as required for a blank frame): Error: frame reported zero pixel variation; capture is blank",
+  "paintedReading": "GREEN (assertion passed, as required for a non-blank frame)"
+}
