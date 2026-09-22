@@ -1,0 +1,70 @@
+# Decisions D2 to D10 — the user's rulings, 2026-09-22
+
+The user's message, verbatim, and the Orchestrator's reading of each ruling. The roadmap's
+§ Decisions and § Carriers take these when the Veneer checkout frees (F4 is its writer at the time
+of writing); until then this record is the ruling's home.
+
+## Verbatim
+
+> D2 approved, the aim is to make bootstrap and tailwind as compatible, favoring bootstrap.
+> D3 we'll eventually make a vue adapter for the JavaScript we come up with to replace bootstrap
+> JavaScript but we will have a src/vue instead since we will treat vue as a service with a
+> separate export, no dependency at all and it leaves it up to the user to pull vue in when they
+> decide to import from there.
+> D4 not sure I understand what it is, get rid of it if it is superfluous.
+> D5 get rid of any RTL, no plans to support.
+> D6 provide more information on this, we should keep all of bootstrap utilities and we're adding
+> tailwindcss utilities as well and favoring bootstrap on conflict.
+> D7 no aliasing, nothing superfluous, no backwards compatibility, wrappers, deprecations, etc when
+> it comes to veneer, just compatibility with bootstrap and tailwindcss as I have described
+> before, all else is greenfield and meant to be broken to fix for a proper foundation.
+> D8 not sure the issue.
+> D9 approved.
+> D10 approved, let me know when you need the OTP code.
+
+## Rulings as read
+
+- **D2 (Tailwind tooling).** Approved. `tailwindcss` and its PostCSS plugin are development
+  dependencies for the profile proofs; the Orchestrator installs them as a tracked command when F8
+  opens. The product aim: Bootstrap and Tailwind compatible, Bootstrap favoured on conflict. F8's
+  design round takes that aim as its brief.
+- **D3 (Vue).** Later, as a `src/vue` environment with its own package export
+  (`@orkestrel/veneer/vue`), no declared dependency of any kind; the consumer supplies Vue when
+  importing from that entry. Replaces the injected-adapter recommendation. E-VUE's description and
+  the workspace environments change accordingly when E-VUE opens; nothing lands before then.
+- **D4 (Delegate refusals).** The refusal of `disabled`, `.disabled`, and `aria-disabled="true"`
+  hosts is a Veneer addition over Bootstrap's data API, which toggles whatever host the delegated
+  click reaches and leaves refusal to the cascade's `pointer-events: none`. Under the baseline
+  ruling it is superfluous: remove it, match Bootstrap, and record no departure. Carrier: F6
+  FOUNDATION (the engine change and the Delegate proofs), with the guide's engine rows.
+- **D5 (RTL).** No right-to-left support. Remove the `index.rtl.css` emission and its plugin, the
+  proofs that read the twin, the guide's direction sentences, the Bootstrap RTL artifact digest
+  pin, and the inventory's `rtl` fields at the next inventory regeneration. Carrier: F6 FOUNDATION
+  for the emission, plugin, proofs, and guide; F5b ACCOUNTING-LEDGER for the digest and the
+  inventory fields.
+  Open question for the user (D11): the cascade is written in logical properties
+  (`margin-inline-start` where Bootstrap writes `margin-left`), which was chosen for direction
+  neutrality and is a systematic departure from Bootstrap's declarations. With RTL out, revert to
+  Bootstrap's physical declarations (recommended, because it shrinks the departure surface and
+  favours Bootstrap), or keep the logical form as a recorded departure.
+- **D6 (important utilities).** Keep every Bootstrap utility with its `!important`, exactly as
+  Bootstrap ships it; document in the guide that a consumer overrides one with its own
+  `!important`; and rule the Tailwind conflict Bootstrap's way: where a class name exists in both
+  (`.container`, `.border`, `.rounded`, `.shadow`, `.collapse`, `.visible`, `.invisible`,
+  `.text-center`, and the like), Bootstrap's declaration wins. The mechanism (layer order, or
+  Bootstrap's `!important` where it already carries one) is F8's design question. Carriers: F6
+  FOUNDATION states the contract and the escape in the guide; F8 TAILWIND proves the conflict rule.
+- **D7 (aliases and the older highlight pair).** Remove the older highlight token pair and every
+  token whose only job is to alias an earlier Veneer name. Read narrowly: the retained `--bs-*`
+  variables are the Bootstrap contract itself, not aliases, and stay. Carrier: F5c TOKENS-TRUTH.
+  The general rule (no alias, no wrapper, no deprecation, no compatibility shim inside Veneer;
+  compatibility means Bootstrap and Tailwind only) binds every later unit and is already
+  `AGENTS.md` law.
+- **D8 (toolchain majors and the pool pin).** The registry serves later majors of
+  `@vitest/browser-playwright`, `typescript`, and `vitest` than the tree pins, and the vendored
+  Vitest config pins `pool: 'forks'`. The question was whether to move them inside this campaign.
+  Read as: leave them outside it, per the recommendation; X-EXIT records the exclusion.
+- **D9 (the prune).** Approved for the set the prune record presents at X-RETENTION.
+- **D10 (the Test release).** Approved: T1 TEST-SCOPED and T2 TEST-FORCED-COLORS in one release,
+  on a session branch pushed to `main` at the window, published on the user's one-time code, which
+  the Orchestrator asks for when the window opens.
