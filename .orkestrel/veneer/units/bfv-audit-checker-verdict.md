@@ -1,1 +1,0 @@
-Verdict delivered to caller: claims 1, 8, 9, and the export-name probe CONFIRMED; claim 7 UNRESOLVED on its gate-green sub-claim (self-reported only) though its file-checkable facts are CONFIRMED; terminal line `VERDICT: FAIL 7; outside the claims: none`.
