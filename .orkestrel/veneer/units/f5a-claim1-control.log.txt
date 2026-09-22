@@ -1,0 +1,9 @@
+=== F5a claim 1 control (Orchestrator, 2026-09-22, Veneer working tree over d93bb85), read-only
+Command: export-name sets from `git show d93bb85:tests/setupStyles.ts` and from the three modules
+(`tests/setupStyles.ts`, `tests/setupCases.ts`, `tests/setupCalibration.ts`), pattern
+`^export (async )?(function|const|class|interface|type) [A-Za-z_]+`, compared with `comm`.
+old exports: 111; new exports across the three modules: 103
+in old, absent now: SelectorCombinator SelectorCompound extractCompoundTags extractSelectorCompounds extractSelectorIdentifiers findGroupEnd matchesLooseTagPair scanUnreadForm splitTopLevelCompounds
+new, absent in old: ELEMENT_TAGS
+exported by more than one module: none
+Reading: 111 - 9 deleted + 1 added = 103; every surviving export lives in exactly one module.
