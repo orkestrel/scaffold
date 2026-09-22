@@ -1,0 +1,1143 @@
+diff --git a/app/browser/constants.ts b/app/browser/constants.ts
+index 9ff439b..54e18e6 100644
+--- a/app/browser/constants.ts
++++ b/app/browser/constants.ts
+@@ -413,7 +413,8 @@ export const TYPE_SPECIMENS: readonly MarkupSpecimen[] = Object.freeze([
+ /** Holds the Media section's visible copy and accessible name. */
+ export const MEDIA_COPY = Object.freeze({
+ 	region: 'Media',
+-	paragraph: 'Fluid and framed images, and the figure family that captions them.',
++	paragraph:
++		'Fluid and framed images, the figure family that captions them, and the aspect-ratio boxes that hold a proportion at any width.',
+ })
+ 
+ /** Lists the Media specimens in their rendering order. */
+@@ -433,13 +434,27 @@ export const MEDIA_SPECIMENS: readonly MarkupSpecimen[] = Object.freeze([
+ 		markup:
+ 			'<figure class="figure"><img class="figure-img" alt="Figure class specimen" width="120" height="80" src="data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'120\' height=\'80\'%3E%3Cpath d=\'M10 70L60 10L110 70Z\'/%3E%3C/svg%3E"><figcaption class="figure-caption">A figure with its caption.</figcaption></figure>',
+ 	}),
++	Object.freeze({
++		name: 'Aspect ratios',
++		markup: `<div class="container-fluid"><div class="row row-cols-4">${[
++			'1x1',
++			'4x3',
++			'16x9',
++			'21x9',
++		]
++			.map(
++				(aspect) =>
++					`<div><div class="ratio ratio-${aspect}"><span>Held at ${aspect}</span></div></div>`,
++			)
++			.join('')}</div></div>`,
++	}),
+ ])
+ 
+ /** Holds the Links section's visible copy and accessible name. */
+ export const LINK_COPY = Object.freeze({
+ 	region: 'Links',
+ 	paragraph:
+-		'Explore link colors, opacity, underline spacing, and independent underline colors. Hover or focus a link to compare its states.',
++		'Explore link colors, opacity, underline spacing, independent underline colors, and the icon links that shift their icon. Hover or focus a link to compare its states.',
+ })
+ 
+ /** Lists the link specimens in their rendering order. */
+@@ -464,6 +479,11 @@ export const LINK_SPECIMENS: readonly MarkupSpecimen[] = Object.freeze([
+ 		markup:
+ 			'<p><a href="#main" class="link-underline-primary">Primary underline</a> <a href="#main" class="link-underline-secondary">Secondary underline</a> <a href="#main" class="link-underline-success">Success underline</a> <a href="#main" class="link-underline-info">Info underline</a> <a href="#main" class="link-underline-warning">Warning underline</a> <a href="#main" class="link-underline-danger">Danger underline</a> <a href="#main" class="link-underline-light">Light underline</a> <a href="#main" class="link-underline-dark">Dark underline</a> <a href="#main" class="link-underline">Link underline</a></p>',
+ 	}),
++	Object.freeze({
++		name: 'Icon links',
++		markup:
++			'<p><a href="#main" class="icon-link">Resting icon link<svg class="bi" aria-hidden="true" viewBox="0 0 16 16"><path d="M2 8h9l-3-3m3 3-3 3" fill="none" stroke="currentColor"></path></svg></a> <a href="#main" class="icon-link icon-link-hover">Shifting icon link<svg class="bi" aria-hidden="true" viewBox="0 0 16 16"><path d="M2 8h9l-3-3m3 3-3 3" fill="none" stroke="currentColor"></path></svg></a></p>',
++	}),
+ 	Object.freeze({
+ 		name: 'Underline opacity',
+ 		markup:
+@@ -474,7 +494,7 @@ export const LINK_SPECIMENS: readonly MarkupSpecimen[] = Object.freeze([
+ export const LAYOUT_COPY = Object.freeze({
+ 	region: 'Layout',
+ 	paragraph:
+-		'Containers center content with inline gutters. Resize the viewport to compare their caps, grid columns, offsets, row counts, and gutter and row-gap steps.',
++		'Containers center content with inline gutters, and a vertical rule separates inline content. Resize the viewport to compare their caps, grid columns, offsets, row counts, and gutter and row-gap steps.',
+ })
+ 
+ /** Lists the container and grid specimens. */
+@@ -549,6 +569,11 @@ export const LAYOUT_SPECIMENS: readonly MarkupSpecimen[] = Object.freeze([
+ 		markup:
+ 			'<div class="container-fluid"><div class="row row-cols-2 g-0 g-md-3 gx-lg-5 gy-xl-2 row-gap-1 row-gap-md-4"><div>Resize for gutter steps</div><div>Independent row gap</div><div>Next row</div></div></div>',
+ 	}),
++	Object.freeze({
++		name: 'Vertical rule',
++		markup:
++			'<div class="navbar"><div class="container-fluid"><span>Leading content</span><div class="vr"></div><span>Trailing content</span></div></div>',
++	}),
+ ])
+ 
+ /** Holds the Table section's visible copy and accessible name. */
+diff --git a/guides/veneer.md b/guides/veneer.md
+index 3ba977e..733aba4 100644
+--- a/guides/veneer.md
++++ b/guides/veneer.md
+@@ -123,59 +123,62 @@ the resolved file with a `<link>` element instead.
+ 
+ The following files carry the axis.
+ 
+-| File                                   | Role                                                                                             |
+-| -------------------------------------- | ------------------------------------------------------------------------------------------------ |
+-| `src/styles/elements/_button.scss`     | The bare button and its same-element states in the elements layer.                               |
+-| `src/styles/components/_button.scss`   | The Button class vocabulary and state relationships in the components layer.                     |
+-| `src/styles/components/_type.scss`     | The heading, display, lead, small, mark, and initialism classes in the components layer.         |
+-| `src/styles/components/_list.scss`     | The unstyled and inline list classes in the components layer.                                    |
+-| `src/styles/components/_quote.scss`    | The quotation class, its last-child rule, and its footer in the components layer.                |
+-| `src/styles/components/_table.scss`    | The table classes, state layers, caption class, and responsive wrappers in the components layer. |
+-| `src/styles/components/_image.scss`    | The image and figure classes in the components layer.                                            |
+-| `src/styles/_reset.scss`               | The universal box model, hidden state, and motion-aware root scrolling in the reset layer.       |
+-| `src/styles/elements/_heading.scss`    | The heading family text treatment in the elements layer.                                         |
+-| `src/styles/elements/_p.scss`          | The p text treatment in the elements layer.                                                      |
+-| `src/styles/elements/_hr.scss`         | The hr text treatment in the elements layer.                                                     |
+-| `src/styles/elements/_a.scss`          | The a text treatment in the elements layer.                                                      |
+-| `src/styles/elements/_ul.scss`         | The ul text treatment in the elements layer.                                                     |
+-| `src/styles/elements/_ol.scss`         | The ol text treatment in the elements layer.                                                     |
+-| `src/styles/elements/_dl.scss`         | The dl text treatment in the elements layer.                                                     |
+-| `src/styles/elements/_blockquote.scss` | The blockquote text treatment in the elements layer.                                             |
+-| `src/styles/elements/_address.scss`    | The address text treatment in the elements layer.                                                |
+-| `src/styles/elements/_abbr.scss`       | The abbr text treatment in the elements layer.                                                   |
+-| `src/styles/elements/_strong.scss`     | The strong text treatment in the elements layer.                                                 |
+-| `src/styles/elements/_small.scss`      | The small text treatment in the elements layer.                                                  |
+-| `src/styles/elements/_mark.scss`       | The mark text treatment in the elements layer.                                                   |
+-| `src/styles/elements/_sub.scss`        | The sub text treatment in the elements layer.                                                    |
+-| `src/styles/elements/_sup.scss`        | The sup text treatment in the elements layer.                                                    |
+-| `src/styles/elements/_code.scss`       | The code text treatment in the elements layer.                                                   |
+-| `src/styles/elements/_pre.scss`        | The pre text treatment in the elements layer.                                                    |
+-| `src/styles/elements/_kbd.scss`        | The kbd text treatment in the elements layer.                                                    |
+-| `src/styles/elements/_samp.scss`       | The samp text treatment in the elements layer.                                                   |
+-| `src/styles/elements/_var.scss`        | The var text treatment in the elements layer.                                                    |
+-| `src/styles/elements/_b.scss`          | The b family and its mandated pairs in the elements layer.                                       |
+-| `src/styles/elements/_figure.scss`     | The figure family and its mandated pairs in the elements layer.                                  |
+-| `src/styles/elements/_img.scss`        | The img family and its mandated pairs in the elements layer.                                     |
+-| `src/styles/elements/_svg.scss`        | The svg family and its mandated pairs in the elements layer.                                     |
+-| `src/styles/elements/_table.scss`      | The table family and its mandated pairs in the elements layer.                                   |
+-| `src/styles/elements/_tr.scss`         | The tr family and its mandated pairs in the elements layer.                                      |
+-| `src/styles/elements/_label.scss`      | The label family and its mandated pairs in the elements layer.                                   |
+-| `src/styles/elements/_input.scss`      | The input family and its mandated pairs in the elements layer.                                   |
+-| `src/styles/elements/_select.scss`     | The select family and its mandated pairs in the elements layer.                                  |
+-| `src/styles/elements/_optgroup.scss`   | The optgroup family and its mandated pairs in the elements layer.                                |
+-| `src/styles/elements/_textarea.scss`   | The textarea family and its mandated pairs in the elements layer.                                |
+-| `src/styles/elements/_fieldset.scss`   | The fieldset family and its mandated pairs in the elements layer.                                |
+-| `src/styles/elements/_output.scss`     | The output family and its mandated pairs in the elements layer.                                  |
+-| `src/styles/elements/_iframe.scss`     | The iframe family and its mandated pairs in the elements layer.                                  |
+-| `src/styles/elements/_details.scss`    | The details family and its mandated pairs in the elements layer.                                 |
+-| `src/styles/elements/_progress.scss`   | The progress family and its mandated pairs in the elements layer.                                |
+-| `src/styles/utilities/_gap.scss`       | The gutter and row-gap step utilities in the utilities layer.                                    |
+-| `src/styles/index.scss`                | The compilation barrel.                                                                          |
+-| `src/styles/index.ts`                  | The side-effect entry, and the build's library entry.                                            |
+-| `configs/src/vite.styles.config.ts`    | The build and test wrapper, composed from the root's `srcBrowser` factory.                       |
+-| `configs/src/tsconfig.styles.json`     | The check-only TypeScript project.                                                               |
+-| `tests/setupStyles.ts`                 | The shared setup module the styles proofs read.                                                  |
+-| `tests/src/styles/`                    | The browser proofs of the shipped cascade.                                                       |
++| File                                    | Role                                                                                             |
++| --------------------------------------- | ------------------------------------------------------------------------------------------------ |
++| `src/styles/elements/_button.scss`      | The bare button and its same-element states in the elements layer.                               |
++| `src/styles/components/_button.scss`    | The Button class vocabulary and state relationships in the components layer.                     |
++| `src/styles/components/_type.scss`      | The heading, display, lead, small, mark, and initialism classes in the components layer.         |
++| `src/styles/components/_list.scss`      | The unstyled and inline list classes in the components layer.                                    |
++| `src/styles/components/_quote.scss`     | The quotation class, its last-child rule, and its footer in the components layer.                |
++| `src/styles/components/_table.scss`     | The table classes, state layers, caption class, and responsive wrappers in the components layer. |
++| `src/styles/components/_image.scss`     | The image and figure classes in the components layer.                                            |
++| `src/styles/components/_icon-link.scss` | The icon link, its icon combinator, and its hover and focus shifts in the components layer.      |
++| `src/styles/components/_ratio.scss`     | The aspect-ratio box, its pseudo-element, and the named aspects in the components layer.         |
++| `src/styles/components/_vr.scss`        | The vertical rule in the components layer.                                                       |
++| `src/styles/_reset.scss`                | The universal box model, hidden state, and motion-aware root scrolling in the reset layer.       |
++| `src/styles/elements/_heading.scss`     | The heading family text treatment in the elements layer.                                         |
++| `src/styles/elements/_p.scss`           | The p text treatment in the elements layer.                                                      |
++| `src/styles/elements/_hr.scss`          | The hr text treatment in the elements layer.                                                     |
++| `src/styles/elements/_a.scss`           | The a text treatment in the elements layer.                                                      |
++| `src/styles/elements/_ul.scss`          | The ul text treatment in the elements layer.                                                     |
++| `src/styles/elements/_ol.scss`          | The ol text treatment in the elements layer.                                                     |
++| `src/styles/elements/_dl.scss`          | The dl text treatment in the elements layer.                                                     |
++| `src/styles/elements/_blockquote.scss`  | The blockquote text treatment in the elements layer.                                             |
++| `src/styles/elements/_address.scss`     | The address text treatment in the elements layer.                                                |
++| `src/styles/elements/_abbr.scss`        | The abbr text treatment in the elements layer.                                                   |
++| `src/styles/elements/_strong.scss`      | The strong text treatment in the elements layer.                                                 |
++| `src/styles/elements/_small.scss`       | The small text treatment in the elements layer.                                                  |
++| `src/styles/elements/_mark.scss`        | The mark text treatment in the elements layer.                                                   |
++| `src/styles/elements/_sub.scss`         | The sub text treatment in the elements layer.                                                    |
++| `src/styles/elements/_sup.scss`         | The sup text treatment in the elements layer.                                                    |
++| `src/styles/elements/_code.scss`        | The code text treatment in the elements layer.                                                   |
++| `src/styles/elements/_pre.scss`         | The pre text treatment in the elements layer.                                                    |
++| `src/styles/elements/_kbd.scss`         | The kbd text treatment in the elements layer.                                                    |
++| `src/styles/elements/_samp.scss`        | The samp text treatment in the elements layer.                                                   |
++| `src/styles/elements/_var.scss`         | The var text treatment in the elements layer.                                                    |
++| `src/styles/elements/_b.scss`           | The b family and its mandated pairs in the elements layer.                                       |
++| `src/styles/elements/_figure.scss`      | The figure family and its mandated pairs in the elements layer.                                  |
++| `src/styles/elements/_img.scss`         | The img family and its mandated pairs in the elements layer.                                     |
++| `src/styles/elements/_svg.scss`         | The svg family and its mandated pairs in the elements layer.                                     |
++| `src/styles/elements/_table.scss`       | The table family and its mandated pairs in the elements layer.                                   |
++| `src/styles/elements/_tr.scss`          | The tr family and its mandated pairs in the elements layer.                                      |
++| `src/styles/elements/_label.scss`       | The label family and its mandated pairs in the elements layer.                                   |
++| `src/styles/elements/_input.scss`       | The input family and its mandated pairs in the elements layer.                                   |
++| `src/styles/elements/_select.scss`      | The select family and its mandated pairs in the elements layer.                                  |
++| `src/styles/elements/_optgroup.scss`    | The optgroup family and its mandated pairs in the elements layer.                                |
++| `src/styles/elements/_textarea.scss`    | The textarea family and its mandated pairs in the elements layer.                                |
++| `src/styles/elements/_fieldset.scss`    | The fieldset family and its mandated pairs in the elements layer.                                |
++| `src/styles/elements/_output.scss`      | The output family and its mandated pairs in the elements layer.                                  |
++| `src/styles/elements/_iframe.scss`      | The iframe family and its mandated pairs in the elements layer.                                  |
++| `src/styles/elements/_details.scss`     | The details family and its mandated pairs in the elements layer.                                 |
++| `src/styles/elements/_progress.scss`    | The progress family and its mandated pairs in the elements layer.                                |
++| `src/styles/utilities/_gap.scss`        | The gutter and row-gap step utilities in the utilities layer.                                    |
++| `src/styles/index.scss`                 | The compilation barrel.                                                                          |
++| `src/styles/index.ts`                   | The side-effect entry, and the build's library entry.                                            |
++| `configs/src/vite.styles.config.ts`     | The build and test wrapper, composed from the root's `srcBrowser` factory.                       |
++| `configs/src/tsconfig.styles.json`      | The check-only TypeScript project.                                                               |
++| `tests/setupStyles.ts`                  | The shared setup module the styles proofs read.                                                  |
++| `tests/src/styles/`                     | The browser proofs of the shipped cascade.                                                       |
+ 
+ The barrel's `@use` rules name the `_tokens.scss` and `_theme.scss` partials and the element
+ partials under the `elements/`, `components/`, and `utilities/` directories; the `_mixins.scss` partial reaches the build through the
+@@ -236,6 +239,59 @@ scrolls below the named boundary and is absent at and above it. The unconditiona
+ at every viewport. The vocabulary proof compares Bootstrap's `max-width: (N - 0.02)px` boundary
+ with Veneer's `width < Npx` form by adding 0.02 to the recorded boundary.
+ 
++### Helper classes
++
++The helper keys ship whole, each in its own partial after the table in the components layer: the
++icon link with its icon combinator and its hover and focus shifts, the aspect-ratio box with its
++named aspects, and the vertical rule.
++
++The icon link lays its content out as an inline flex row, tints its underline from `--vn-link-rgb`
++at the `--bs-link-opacity` a consumer sets, and offsets that underline by `0.25em`. Its icon
++combinator sizes the icon to `1em` on each axis, fills it from the current color, and transitions its
++transform. The `.icon-link-hover` class is what arms the shift: hover and keyboard focus each move
++the icon by `--bs-icon-link-transform`, and the resting `.icon-link` class alone moves nothing.
++
++The combinator names `.bi`, which is Bootstrap Icons' class. Veneer declares no rule for that class
++and no rule selects it alone, so the combinator matches nothing until a consumer brings the icon
++markup. This is the ruling the container's navigation combinators already carry: the declarations are
++self-contained on the element Veneer owns.
++
++The aspect-ratio box holds its own proportion through a pseudo-element whose block-start padding is a
++percentage, which resolves against the containing block's inline size. Each named aspect declares
++`--bs-aspect-ratio` as its own height over its width, so the name is the whole declaration of the
++value and a consumer setting the property directly retunes any box. Sass emits ten decimal places,
++which is the precision this family's official values carry; `_grid.scss` rounds its column
++percentages to eight instead, because the official arithmetic rounds there. The build then shortens
++every percentage to six significant digits, the shipped column widths included, so the widest aspect
++ships as `42.8571%` where the source declares `42.8571428571%`.
++
++The vertical rule reads `--bs-border-width` for its inline size, stretches to its flex line, holds a
++`1em` floor, and paints the current color at a literal `0.25` opacity. The alias `_tokens.scss`
++declares over `--vn-border-width` is what carries a retune of either name into the rule. The opacity
++stays a literal because no published scale retunes it, which is the treatment the `hr` rule gives its
++own opacity.
++
++`tests/src/styles/components/icon-link.test.ts`, `tests/src/styles/components/ratio.test.ts`, and
++`tests/src/styles/components/vr.test.ts` read each resolved treatment in the browser. The icon link's
++reduced-motion collapse is read under the staged preference, and the declaration the rule carries
++under that condition is read from the built cascade beside it.
++
++These are the keys' recorded departures.
++
++- **The prefixed backface property is absent.** The official cascade carries
++  `-webkit-backface-visibility` beside `backface-visibility`; the build's targets emit the standard
++  property alone. The prefixed `-webkit-text-decoration-color` alias is not a departure: the build
++  emits it from the standard property without the source declaring it.
++- **The icon's transition reads Veneer's motion tokens.** The official value is `0.2s ease-in-out`;
++  Veneer writes `var(--vn-motion-feedback) var(--vn-ease-standard)`, which resolves to `0.15s ease`
++  and rescales with `--vn-factor-motion`, as `.btn` does. A transition written outside those tokens
++  would ignore the motion factor the package publishes.
++- **The shift's inline direction is physical.** `translate3d(0.25em, 0, 0)` carries an inline
++  direction no logical property replaces, and one byte stream serves either writing direction, so
++  the icon shifts the same way under each. Bootstrap's own right-to-left sheet flips it.
++  The direction scanner's ruled families exclude transforms, so this is recorded here rather than
++  reported there.
++
+ ### Deferred selectors
+ 
+ Each row names an official selector or custom property withheld from the built cascade, its reason,
+@@ -899,6 +955,10 @@ must add a forced-colors axis before this reading closes.
+ | table         | variable       | The `--bs-table-active-bg` property ships with the recorded table fallback and override mechanism.                                                                                                                                | —                     | shipped  |
+ | table         | variable       | The `--bs-table-hover-color` property ships with the recorded table fallback and override mechanism.                                                                                                                              | —                     | shipped  |
+ | table         | variable       | The `--bs-table-hover-bg` property ships with the recorded table fallback and override mechanism.                                                                                                                                 | —                     | shipped  |
++| icon-link     | selector       | The `.icon-link` family ships in the components layer, its icon combinator and its hover and focus shifts included; resolved layout, motion, and states are proved in `tests/src/styles/components/icon-link.test.ts`.            | —                     | shipped  |
++| ratio         | selector       | Every official `.ratio` selector ships, the pseudo-element and the named aspects included; resolved boxes and child fill are proved in `tests/src/styles/components/ratio.test.ts`.                                               | —                     | shipped  |
++| ratio         | variable       | The `--bs-aspect-ratio` property carries each name's own height over its width, and a direct override retunes any box; both are proved in `tests/src/styles/components/ratio.test.ts`.                                            | —                     | shipped  |
++| vr            | selector       | The `.vr` family ships in the components layer, reading `--bs-border-width` for its inline size; resolved width, stretch, and paint are proved in `tests/src/styles/components/vr.test.ts`.                                       | —                     | shipped  |
+ | engine        | identity       | Cross-cutting engine: `VERSION` `'5.3.8'`; `DATA_KEY` `bs.${NAME}`; `EVENT_KEY` `.${DATA_KEY}`; `eventName(name)` returns `${name}${EVENT_KEY}`                                                                                   | —                     | accepted |
+ | engine        | option         | Cross-cutting engine: `Default`/`DefaultType` inherited empty from `Config` unless a component overrides                                                                                                                          | —                     | accepted |
+ | engine        | attribute      | Cross-cutting engine: `data-bs-config` JSON merges with `data-bs-*` attributes read by `Manipulator`; config object wins last                                                                                                     | —                     | accepted |
+@@ -944,7 +1004,12 @@ The private application renders the Veneer heading, the Dark mode button, a Show
+ Buttons region carrying every declared button specimen, a Content region carrying the
+ text specimens, lists, quotations, code, media, tables, form controls, and interactive tags, a Type
+ region carrying the typography, list, and quotation classes, and a Media region carrying the image
+-and figure classes, and a Table region carrying the table variant and responsive specimens. Its button drives the controller and
++and figure classes beside the aspect-ratio boxes, and a Links region carrying the link classes and
++the icon links, and a Layout region carrying the container, grid, and gutter specimens and the
++vertical rule, and a Table region carrying the table variant and responsive specimens. Each helper
++key sits in the region whose subject it belongs to rather than in a region of its own, which is how
++every other section is grouped: the image classes and the figure classes share Media, and the
++quotation classes sit in Type. Its button drives the controller and
+ announces the selected mode, and its entry constructs a `Delegate` instance beside the showcase.
+ The application barrel is a workspace implementation surface and is outside this guide's published
+ API tables.
+@@ -956,8 +1021,8 @@ cascade and the published engine with no framework between them and what renders
+ The styles entry declares the cascade order `theme, reset, base, elements, components, utilities`,
+ every `--vn-*` token, every `--bs-*` root alias Bootstrap 5.3.8 declares, and the document and body
+ baseline. It also ships the bare button treatment in the `elements` layer, and the `.btn` treatments beside
+-the typography, list, quotation, image, link, container, grid, and table classes in the
+-`components` layer. The document baseline also
++the typography, list, quotation, image, link, container, grid, table, icon-link, ratio, and
++vertical-rule classes in the `components` layer. The document baseline also
+ declares `interpolate-size: allow-keywords`, and `tests/src/styles/elements/html.test.ts` reads it
+ there.
+ That proves the declaration reaches the document; what it interpolates is proved by the first unit
+@@ -987,7 +1052,10 @@ The style proofs bind the cascade to the registry and to the calibration; see
+ [the typography classes](../tests/src/styles/components/type.test.ts),
+ [the list classes](../tests/src/styles/components/list.test.ts),
+ [the quotation classes](../tests/src/styles/components/quote.test.ts),
+-[the image classes](../tests/src/styles/components/image.test.ts), and
++[the image classes](../tests/src/styles/components/image.test.ts),
++[the icon link classes](../tests/src/styles/components/icon-link.test.ts),
++[the ratio classes](../tests/src/styles/components/ratio.test.ts),
++[the vertical rule](../tests/src/styles/components/vr.test.ts), and
+ [the customization recipe](../tests/src/styles/integration.test.ts).
+ 
+ The conformance proofs pin the official release and its artifact digests, reject runtime boundary
+diff --git a/src/styles/index.scss b/src/styles/index.scss
+index d797fb0..aa5292d 100644
+--- a/src/styles/index.scss
++++ b/src/styles/index.scss
+@@ -49,4 +49,7 @@
+ @use 'components/container';
+ @use 'components/grid';
+ @use 'components/table' as table-component;
++@use 'components/icon-link';
++@use 'components/ratio';
++@use 'components/vr';
+ @use 'utilities/gap';
+diff --git a/tests/app/browser/sections/LayoutSection.test.ts b/tests/app/browser/sections/LayoutSection.test.ts
+index a6e2c08..bfdd678 100644
+--- a/tests/app/browser/sections/LayoutSection.test.ts
++++ b/tests/app/browser/sections/LayoutSection.test.ts
+@@ -28,6 +28,7 @@ describe('LayoutSection', () => {
+ 				'Gutter steps',
+ 				'Independent gutters',
+ 				'Responsive gutters and row gap',
++				'Vertical rule',
+ 			])
+ 			expect(rendered.map((element) => element.innerHTML)).toEqual(
+ 				LAYOUT_SPECIMENS.map((specimen) => specimen.markup),
+@@ -57,6 +58,7 @@ describe('LayoutSection', () => {
+ 				'[data-specimen="Row-column count"] .row.row-cols-1.row-cols-md-3',
+ 				'[data-specimen="Independent gutters"] .row.gx-5.gy-2',
+ 				'[data-specimen="Responsive gutters and row gap"] .row.g-0.g-md-3.gx-lg-5.gy-xl-2.row-gap-1.row-gap-md-4',
++				'[data-specimen="Vertical rule"] span + .vr + span',
+ 			])
+ 				expect(region.querySelector(selector)).not.toBeNull()
+ 			for (const step of Object.keys(TOKEN_NAMES.gap))
+diff --git a/tests/app/browser/sections/LinkSection.test.ts b/tests/app/browser/sections/LinkSection.test.ts
+index c39498c..4269edd 100644
+--- a/tests/app/browser/sections/LinkSection.test.ts
++++ b/tests/app/browser/sections/LinkSection.test.ts
+@@ -18,6 +18,7 @@ describe('LinkSection', () => {
+ 				'Link opacity',
+ 				'Underline offsets',
+ 				'Underline colors',
++				'Icon links',
+ 				'Underline opacity',
+ 			])
+ 			expect(rendered.map((element) => element.innerHTML)).toEqual(
+@@ -33,8 +34,18 @@ describe('LinkSection', () => {
+ 					(anchor) => anchor.getAttribute('href') === '#main' && anchor.textContent !== '',
+ 				),
+ 			).toBe(true)
++			// The icon link is the only specimen whose anchor carries a child element, and the icon's own
++			// class belongs to Bootstrap Icons rather than to Veneer, so the pair is read here: the
++			// combinator ships and matches nothing until markup like this brings the class.
++			const icons = [...region.querySelectorAll('.icon-link > .bi')]
++			expect(icons).toHaveLength(2)
++			expect(icons.map((icon) => icon.localName)).toEqual(['svg', 'svg'])
++			expect(icons.every((icon) => icon.getAttribute('aria-hidden') === 'true')).toBe(true)
++			expect(region.querySelectorAll('.icon-link-hover > .bi')).toHaveLength(1)
+ 			expect([...new Set(anchors.flatMap((anchor) => [...anchor.classList]))].sort()).toEqual(
+ 				[
++					'icon-link',
++					'icon-link-hover',
+ 					...[
+ 						'primary',
+ 						'secondary',
+diff --git a/tests/app/browser/sections/MediaSection.test.ts b/tests/app/browser/sections/MediaSection.test.ts
+index ec37c27..b6cd3ae 100644
+--- a/tests/app/browser/sections/MediaSection.test.ts
++++ b/tests/app/browser/sections/MediaSection.test.ts
+@@ -19,6 +19,7 @@ describe('MediaSection', () => {
+ 				'Fluid image',
+ 				'Framed image',
+ 				'Captioned figure',
++				'Aspect ratios',
+ 			])
+ 			expect(rendered.map((element) => element.innerHTML)).toEqual(
+ 				MEDIA_SPECIMENS.map((specimen) => specimen.markup),
+@@ -30,12 +31,33 @@ describe('MediaSection', () => {
+ 				'<img class="img-fluid" alt="Fluid specimen" width="240" height="160" src="data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'240\' height=\'160\'%3E%3Cpath d=\'M20 140L120 20L220 140Z\'/%3E%3C/svg%3E">',
+ 				'<img class="img-thumbnail" alt="Framed specimen" width="120" height="80" src="data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'120\' height=\'80\'%3E%3Cpath d=\'M10 70L60 10L110 70Z\'/%3E%3C/svg%3E">',
+ 				'<figure class="figure"><img class="figure-img" alt="Figure class specimen" width="120" height="80" src="data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'120\' height=\'80\'%3E%3Cpath d=\'M10 70L60 10L110 70Z\'/%3E%3C/svg%3E"><figcaption class="figure-caption">A figure with its caption.</figcaption></figure>',
++				`<div class="container-fluid"><div class="row row-cols-4">${['1x1', '4x3', '16x9', '21x9']
++					.map(
++						(aspect) =>
++							`<div><div class="ratio ratio-${aspect}"><span>Held at ${aspect}</span></div></div>`,
++					)
++					.join('')}</div></div>`,
+ 			])
++			// Each named aspect reaches the page with its own class, so a specimen losing one reports
++			// here rather than in the markup comparison that derives the same list.
++			for (const aspect of ['1x1', '4x3', '16x9', '21x9'])
++				expect(
++					region.querySelector(`[data-specimen="Aspect ratios"] .ratio.ratio-${aspect} > span`),
++				).not.toBeNull()
+ 			expect(
+ 				rendered.flatMap((element) =>
+ 					[...element.querySelectorAll('*')].map((node) => node.localName),
+ 				),
+-			).toEqual(['img', 'img', 'figure', 'img', 'figcaption'])
++			).toEqual([
++				'img',
++				'img',
++				'figure',
++				'img',
++				'figcaption',
++				'div',
++				'div',
++				...['1x1', '4x3', '16x9', '21x9'].flatMap(() => ['div', 'div', 'span']),
++			])
+ 			expect(Object.isFrozen(MEDIA_SPECIMENS)).toBe(true)
+ 			expect(MEDIA_SPECIMENS.every((specimen) => Object.isFrozen(specimen))).toBe(true)
+ 		} finally {
+diff --git a/tests/conformance.test.ts b/tests/conformance.test.ts
+index 2aaefaa..67ee9db 100644
+--- a/tests/conformance.test.ts
++++ b/tests/conformance.test.ts
+@@ -94,6 +94,7 @@ describe('Bootstrap component oracle', () => {
+ 			'h4',
+ 			'h5',
+ 			'h6',
++			'icon-link',
+ 			'img',
+ 			'initialism',
+ 			'lead',
+@@ -102,11 +103,13 @@ describe('Bootstrap component oracle', () => {
+ 			'list-unstyled',
+ 			'mark',
+ 			'offset',
++			'ratio',
+ 			'reboot',
+ 			'row',
+ 			'row-gap',
+ 			'small',
+ 			'table',
++			'vr',
+ 		]
+ 		expect(
+ 			scanCompatibilityPresence(rows, readOracleInventory(), readDeferrals(), readBuiltCascade()),
+diff --git a/tests/setupConformance.test.ts b/tests/setupConformance.test.ts
+index 5c1ddcb..c71777a 100644
+--- a/tests/setupConformance.test.ts
++++ b/tests/setupConformance.test.ts
+@@ -947,6 +947,7 @@ describe('setupConformance', () => {
+ 				'h4',
+ 				'h5',
+ 				'h6',
++				'icon-link',
+ 				'img',
+ 				'initialism',
+ 				'lead',
+@@ -955,11 +956,13 @@ describe('setupConformance', () => {
+ 				'list-unstyled',
+ 				'mark',
+ 				'offset',
++				'ratio',
+ 				'reboot',
+ 				'row',
+ 				'row-gap',
+ 				'small',
+ 				'table',
++				'vr',
+ 			]),
+ 		)
+ 		expect(
+diff --git a/tests/setupStyles.test.ts b/tests/setupStyles.test.ts
+index fa37d64..ccc6ce0 100644
+--- a/tests/setupStyles.test.ts
++++ b/tests/setupStyles.test.ts
+@@ -1,5 +1,6 @@
+ import { existsSync, readFileSync } from 'node:fs'
+ import { dirname } from 'node:path'
++import { requireValue } from '@orkestrel/test'
+ import { TOKEN_NAMES } from '@src/core'
+ import { parse } from 'postcss'
+ import { compileString } from 'sass'
+@@ -49,6 +50,7 @@ import {
+ 	extractShadowLayers,
+ 	filterAsymmetricDeclarations,
+ 	findGroupEnd,
++	ICON_LINK_MARKUP,
+ 	MANDATED_TAG_PAIRS,
+ 	matchesCSSWhitespace,
+ 	matchesDirectionSensitive,
+@@ -62,6 +64,7 @@ import {
+ 	PHYSICAL_LONGHANDS,
+ 	QUOTE_FOOTER_CASES,
+ 	RADIUS_SHORTHAND,
++	RATIO_CASES,
+ 	readEscape,
+ 	readIdentifier,
+ 	RETAINED_COLOR_ALIASES,
+@@ -308,9 +311,11 @@ describe('styles setup', () => {
+ 			[1400, 1399, 1400, 1401],
+ 		])
+ 	})
+-	it('binds the built grid selector and media-condition multiset to the inventory minus deferrals', () => {
++	it('binds the built class-family selector and media-condition multiset to the inventory minus deferrals', () => {
+ 		const deferred = new Set(readDeferrals().map(({ name }) => name))
+-		const recorded = (['row', 'col', 'offset', 'g', 'gx', 'gy', 'table'] as const)
++		const recorded = (
++			['row', 'col', 'offset', 'g', 'gx', 'gy', 'table', 'icon-link', 'ratio', 'vr'] as const
++		)
+ 			.flatMap((key) => {
+ 				const component = oracle.components[key]
+ 				return component.selectors
+@@ -323,6 +328,80 @@ describe('styles setup', () => {
+ 			.join('\n')
+ 		expect(collectGridVocabulary(readBuiltCascade())).toEqual(collectGridVocabulary(recorded))
+ 	})
++	it('binds every named ratio to the inventory, to its own name, and to the scale the family carries', () => {
++		const recorded = oracle.components.ratio.properties['--bs-aspect-ratio']
++		expect(RATIO_CASES.map(({ name }) => `.ratio-${name}`)).toEqual(
++			recorded.map(({ selector }) => selector),
++		)
++		expect(RATIO_CASES.map(({ aspect }) => aspect)).toEqual(recorded.map(({ value }) => value))
++		// The percentage is derived here rather than read from the record a second time, so a case
++		// whose name and percentage disagree reddens even where the record agrees with the case.
++		expect(
++			RATIO_CASES.map(
++				({ width, height }) => `${String(Math.round((height / width) * 100 * 1e10) / 1e10)}%`,
++			),
++		).toEqual(RATIO_CASES.map(({ aspect }) => aspect))
++		// The control on the scale: `_grid.scss` rounds its column percentages to eight decimal
++		// places, and this family's widest ratio is the value that separates the two scales.
++		expect(
++			RATIO_CASES.map(
++				({ width, height }) => `${String(Math.round((height / width) * 100 * 1e8) / 1e8)}%`,
++			),
++		).not.toEqual(RATIO_CASES.map(({ aspect }) => aspect))
++		const authored = new Map<string, string>()
++		parse(compileString("@use 'components/ratio';", { loadPaths: ['src/styles'] }).css).walkRules(
++			(rule) => {
++				rule.walkDecls('--bs-aspect-ratio', ({ value }) => {
++					authored.set(rule.selector, value)
++				})
++			},
++		)
++		expect([...authored]).toEqual(RATIO_CASES.map(({ name, aspect }) => [`.ratio-${name}`, aspect]))
++		// The build shortens every percentage to six significant digits, which the grid's shipped
++		// column widths carry too, so the shipped text is read as the number it names.
++		const shipped = new Map<string, string>()
++		parse(readBuiltCascade()).walkRules((rule) => {
++			rule.walkDecls('--bs-aspect-ratio', ({ value }) => {
++				shipped.set(rule.selector, value)
++			})
++		})
++		for (const { name, aspect } of RATIO_CASES) {
++			const value = requireValue(shipped.get(`.ratio-${name}`), `No shipped .ratio-${name}`)
++			expect(Number.parseFloat(value)).toBeCloseTo(Number.parseFloat(aspect), 3)
++		}
++		expect(Object.isFrozen(RATIO_CASES)).toBe(true)
++		for (const entry of RATIO_CASES) expect(Object.isFrozen(entry)).toBe(true)
++	})
++	it('carries the official icon-link classes and the undefined icon class in the mounted markup', () => {
++		const classes = [...ICON_LINK_MARKUP.matchAll(/class="([^"]*)"/gu)].flatMap(([, list]) =>
++			(list ?? '').split(' '),
++		)
++		expect([...new Set(classes)].sort()).toEqual(['bi', 'icon-link', 'icon-link-hover'])
++		// Every class the markup carries beyond the icon's own belongs to this key's recorded
++		// vocabulary, and the icon's own belongs to none, which is what makes it the undefined class
++		// the combinator names.
++		const recorded = new Set(
++			oracle.components['icon-link'].selectors.flatMap(({ classes: names }) => names),
++		)
++		expect([...new Set(classes)].filter((name) => !recorded.has(name))).toEqual([])
++		expect(
++			oracle.components['icon-link'].selectors.filter(({ selector }) => selector.includes('.bi')),
++		).not.toEqual([])
++		// The combinator ships and the class it names stays undeclared, so no rule selects the icon
++		// class on its own. Comparing whole selectors rather than the text is what separates the
++		// undeclared class from the combinators that mention it: every selector carrying `.bi` names
++		// a Veneer class beside it.
++		const selectors = new Set<string>()
++		parse(readBuiltCascade()).walkRules((rule) => {
++			for (const selector of rule.selectors) selectors.add(normalizeComplexSelector(selector))
++		})
++		expect(selectors.has('.bi')).toBe(false)
++		expect([...selectors].filter((selector) => selector.includes('.bi'))).toEqual([
++			'.icon-link > .bi',
++			'.icon-link-hover:hover > .bi',
++			'.icon-link-hover:focus-visible > .bi',
++		])
++	})
+ 	it('binds the gap steps, values, and infixes to the inventory and ramp', async () => {
+ 		const ramp = await compileBreakpointRamp()
+ 		for (const key of ['g', 'gx', 'gy', 'row-gap'] as const) {
+@@ -361,6 +440,26 @@ describe('styles setup', () => {
+ 			collectGridVocabulary('.g-0, .gx-0 {} .g-0, .gy-0 {} .gap-0 {} .grid {} .column-gap-0 {}'),
+ 		).toEqual(['[".g-0",[]]', '[".g-0",[]]', '[".gx-0",[]]', '[".gy-0",[]]'])
+ 	})
++	// The helper prefixes are the ones an extra emitted selector arrives under, and the comparison
++	// is the only assertion in this workspace that reads an extra one at all: the presence scan
++	// reports a missing official name and never a surplus. So each prefix is read here against a
++	// longer name that merely begins with it, and the legacy pseudo-element the build lowers is read
++	// back in its double-colon form.
++	it('collects the helper prefixes and their preference condition without admitting longer names', () => {
++		expect(
++			collectGridVocabulary(
++				'.icon-link {} .icon-link-hover:hover > .bi {} .icon-linkage {} .ratio {} .ratio:before {} .ratio-21x9 {} .ratios {} .vr {} .vrs {} @media (prefers-reduced-motion: reduce) { .icon-link > .bi {} }',
++			),
++		).toEqual([
++			'[".icon-link > .bi",["(prefers-reduced-motion:reduce)"]]',
++			'[".icon-link",[]]',
++			'[".icon-link-hover:hover > .bi",[]]',
++			'[".ratio",[]]',
++			'[".ratio-21x9",[]]',
++			'[".ratio::before",[]]',
++			'[".vr",[]]',
++		])
++	})
+ 	it('normalizes grid selector spacing and minimum widths while retaining media ancestry and duplicates', () => {
+ 		expect(
+ 			collectGridVocabulary(
+@@ -496,6 +595,8 @@ describe('styles setup', () => {
+ 				'PHYSICAL_LONGHANDS',
+ 				'QUOTE_FOOTER_CASES',
+ 				'RADIUS_SHORTHAND',
++				'RATIO_CASES',
++				'ICON_LINK_MARKUP',
+ 				'RETAINED_COLOR_ALIASES',
+ 				'RETAINED_LENGTH_ALIASES',
+ 				'SIDE_KEYWORD_PROPERTIES',
+diff --git a/tests/setupStyles.ts b/tests/setupStyles.ts
+index 823e478..9ac381e 100644
+--- a/tests/setupStyles.ts
++++ b/tests/setupStyles.ts
+@@ -642,10 +642,14 @@ export async function compileBreakpointRamp(): Promise<{
+ }
+ 
+ /**
+- * Collects the grid and table selector and enclosing media-condition multiset from a CSS cascade.
++ * Collects the class-family selector and enclosing media-condition multiset from a CSS cascade.
+  * @param cascade - The CSS text to inspect, including withheld families when present.
+  * @returns Sorted serialized selector/condition pairs, retaining duplicate rules.
+- * @remarks Normalizes minimum widths and Bootstrap's maximum boundary N - 0.02px to width < Npx.
++ * @remarks Admits the grid, gutter, table, icon-link, ratio, and vertical-rule prefixes, and the
++ * caption class beside them; a name merely beginning with one of those words is not admitted.
++ * Normalizes minimum widths and Bootstrap's maximum boundary N - 0.02px to width < Npx. A
++ * preference condition such as `(prefers-reduced-motion: reduce)` passes through with its
++ * whitespace stripped and nothing else rewritten, so it compares equal only against the same text.
+  * Keeps direction, ancestry, and shifted boundaries distinct; declaration values are not compared.
+  */
+ export function collectGridVocabulary(cascade: string): readonly string[] {
+@@ -653,7 +657,7 @@ export function collectGridVocabulary(cascade: string): readonly string[] {
+ 	parse(cascade).walkRules((rule) => {
+ 		for (const selector of rule.selectors) {
+ 			if (
+-				!/^\.(?:(?:row|col|offset|g|gx|gy|table)(?:-|[^\w-]|$)|caption-top(?:[^\w-]|$))/u.test(
++				!/^\.(?:(?:row|col|offset|g|gx|gy|table|icon-link|ratio|vr)(?:-|[^\w-]|$)|caption-top(?:[^\w-]|$))/u.test(
+ 					selector,
+ 				)
+ 			)
+@@ -677,6 +681,37 @@ export function collectGridVocabulary(cascade: string): readonly string[] {
+ 	return vocabulary.sort()
+ }
+ 
++/**
++ * Pins each named aspect ratio against the percentage its own name derives.
++ *
++ * @remarks
++ * The `aspect` field is the authored percentage, which is the height over the width at the ten
++ * decimal places Sass emits. The build's own numeric precision then shortens the shipped value to
++ * six significant digits, so a case reading the cascade compares the ratio the resolved box holds
++ * rather than this text.
++ */
++export const RATIO_CASES = Object.freeze([
++	Object.freeze({ name: '1x1', width: 1, height: 1, aspect: '100%' }),
++	Object.freeze({ name: '4x3', width: 4, height: 3, aspect: '75%' }),
++	Object.freeze({ name: '16x9', width: 16, height: 9, aspect: '56.25%' }),
++	Object.freeze({ name: '21x9', width: 21, height: 9, aspect: '42.8571428571%' }),
++])
++
++/**
++ * Holds the icon-link markup the proofs mount, with the icon child the published combinator selects.
++ *
++ * @remarks
++ * The `bi` class is Bootstrap Icons' own and Veneer declares no rule for it, so the markup carries
++ * the class a consumer brings rather than one this package defines. The bare anchor and the bare
++ * icon beside the pair are the controls that tell the class treatment apart from what the `a` and
++ * `svg` element rules already give every anchor and every icon.
++ */
++export const ICON_LINK_MARKUP =
++	'<a href="#main" class="icon-link">Resting icon link<svg class="bi" viewBox="0 0 16 16"><path d="M2 8h12"></path></svg></a>' +
++	'<a href="#main" class="icon-link icon-link-hover">Shifting icon link<svg class="bi" viewBox="0 0 16 16"><path d="M2 8h12"></path></svg></a>' +
++	'<a href="#main">Bare anchor</a>' +
++	'<svg class="bi" viewBox="0 0 16 16"><path d="M2 8h12"></path></svg>'
++
+ /** Holds the transition durations and focus-ring lengths for the bare-button cases. */
+ export const BUTTON_BARE_VALUES = Object.freeze({
+ 	durations: Object.freeze(['0.15s', '0.15s', '0.15s', '0.15s', '0.15s']),
+diff --git a/src/styles/components/_icon-link.scss b/src/styles/components/_icon-link.scss
+new file mode 100644
+index 0000000..27cfec7
+--- /dev/null
++++ b/src/styles/components/_icon-link.scss
+@@ -0,0 +1,29 @@
++@use '../mixins' as *;
++
++@layer components {
++	.icon-link {
++		display: inline-flex;
++		align-items: center;
++		gap: 0.375rem;
++		text-decoration-color: rgba(var(--vn-link-rgb), var(--bs-link-opacity, 0.5));
++		text-underline-offset: 0.25em;
++		backface-visibility: hidden;
++	}
++
++	// `.bi` is Bootstrap Icons' class and nothing here declares it, so this rule matches nothing
++	// until a consumer brings the icon markup. The declarations are self-contained on the element
++	// Veneer owns, which is the ruling the navigation combinators in `_container.scss` already
++	// carry.
++	.icon-link > .bi {
++		flex-shrink: 0;
++		inline-size: 1em;
++		block-size: 1em;
++		fill: currentcolor;
++		@include transition(transform var(--vn-motion-feedback) var(--vn-ease-standard));
++	}
++
++	.icon-link-hover:hover > .bi,
++	.icon-link-hover:focus-visible > .bi {
++		transform: var(--bs-icon-link-transform, translate3d(0.25em, 0, 0));
++	}
++}
+diff --git a/src/styles/components/_ratio.scss b/src/styles/components/_ratio.scss
+new file mode 100644
+index 0000000..166c837
+--- /dev/null
++++ b/src/styles/components/_ratio.scss
+@@ -0,0 +1,40 @@
++@use 'sass:list';
++@use 'sass:math';
++
++@layer components {
++	.ratio {
++		position: relative;
++		inline-size: 100%;
++	}
++
++	// The percentage resolves against the containing block's inline size, so the pseudo-element's
++	// block size is the named fraction of the box's own width and the box keeps its aspect at every
++	// width.
++	.ratio::before {
++		display: block;
++		padding-block-start: var(--bs-aspect-ratio);
++		content: '';
++	}
++
++	.ratio > * {
++		position: absolute;
++		inset-block-start: 0;
++		inset-inline-start: 0;
++		inline-size: 100%;
++		block-size: 100%;
++	}
++
++	// Each ratio's percentage is its own name's height over its width, so the list is the whole
++	// declaration of the family and a name added here emits its own box. The division is written
++	// bare: Sass emits ten decimal places, which is the precision the official cascade carries for
++	// this family. `_grid.scss` rounds its column percentages to eight instead, because the
++	// official arithmetic rounds there; copying that rounding here would emit a value this family
++	// does not carry.
++	@each $aspect in (1 1), (4 3), (16 9), (21 9) {
++		$width: list.nth($aspect, 1);
++		$height: list.nth($aspect, 2);
++		.ratio-#{$width}x#{$height} {
++			--bs-aspect-ratio: #{math.div($height, $width) * 100%};
++		}
++	}
++}
+diff --git a/src/styles/components/_vr.scss b/src/styles/components/_vr.scss
+new file mode 100644
+index 0000000..c1ce7f2
+--- /dev/null
++++ b/src/styles/components/_vr.scss
+@@ -0,0 +1,14 @@
++@layer components {
++	// The inline size reads Bootstrap's own border-width variable, which `_tokens.scss` already
++	// declares over `--vn-border-width`, so a consumer retuning either one moves the rule. The
++	// opacity is the literal the official cascade carries, the way the `hr` treatment carries its
++	// own: no published scale retunes it, so a token here would be Veneer's own addition.
++	.vr {
++		display: inline-block;
++		align-self: stretch;
++		inline-size: var(--bs-border-width);
++		min-block-size: 1em;
++		background-color: currentcolor;
++		opacity: 0.25;
++	}
++}
+diff --git a/tests/src/styles/components/icon-link.test.ts b/tests/src/styles/components/icon-link.test.ts
+new file mode 100644
+index 0000000..e157401
+--- /dev/null
++++ b/tests/src/styles/components/icon-link.test.ts
+@@ -0,0 +1,178 @@
++import { TOKEN_NAMES } from '@src/core'
++import { requireValue } from '@orkestrel/test'
++import {
++	hoverAccessible,
++	matchesColor,
++	pressKeys,
++	readPixels,
++	readRootToken,
++	readStyle,
++	releaseMedia,
++	releasePointer,
++	stageMedia,
++	waitForAnimations,
++} from '@orkestrel/test/browser'
++import { afterEach, describe, expect, it } from 'vitest'
++import { collectLayer, collectMediaConditions, specimens } from '../../../setupBrowser.js'
++import { ICON_LINK_MARKUP } from '../../../setupStyles.js'
++
++afterEach(async () => {
++	await releasePointer()
++	await releaseMedia()
++	specimens.clear()
++})
++
++describe('icon link classes', () => {
++	it('lays the link out as an inline row and tints its underline from the link token', () => {
++		const host = specimens.mount(`<div>${ICON_LINK_MARKUP}</div>`)
++		const element = requireValue(host.querySelector('.icon-link'), 'No icon link')
++		const bare = requireValue(host.querySelector('a:not(.icon-link)'), 'No bare anchor')
++		expect(readStyle(element, 'display')).toBe('inline-flex')
++		expect(readStyle(element, 'align-items')).toBe('center')
++		expect(readPixels(element, 'row-gap')).toBe(6)
++		expect(readPixels(element, 'column-gap')).toBe(6)
++		// The offset is a quarter of the link's own font, so it is read against that font rather than
++		// against a pixel count: Veneer's body size is 0.875rem.
++		expect(readPixels(element, 'text-underline-offset')).toBe(readPixels(element, 'font-size') / 4)
++		// The underline reads the canonical link triplet at the opacity the Bootstrap variable
++		// carries, so the expectation is built from that token rather than written as a color.
++		const triplet = readRootToken(TOKEN_NAMES.link.rgb)
++		expect(triplet).not.toBe('')
++		expect(matchesColor(readStyle(element, 'text-decoration-color'), `rgba(${triplet}, 0.5)`)).toBe(
++			true,
++		)
++		expect(readStyle(element, 'backface-visibility')).toBe('hidden')
++		// The bare anchor carries none of these, so each reading belongs to the class rather than to
++		// the anchor treatment every link already reads.
++		expect(readStyle(bare, 'display')).toBe('inline')
++		expect(readStyle(bare, 'backface-visibility')).toBe('visible')
++		expect(matchesColor(readStyle(bare, 'text-decoration-color'), `rgba(${triplet}, 0.5)`)).toBe(
++			false,
++		)
++	})
++
++	it('sizes the icon from the link font and leaves an icon outside the combinator alone', () => {
++		const host = specimens.mount(`<div>${ICON_LINK_MARKUP}</div>`)
++		const element = requireValue(host.querySelector('.icon-link'), 'No icon link')
++		const icon = requireValue(element.querySelector('.bi'), 'No icon child')
++		const outside = requireValue(
++			[...host.querySelectorAll('.bi')].find((node) => node.closest('.icon-link') === null),
++			'No icon outside the link',
++		)
++		expect(readStyle(icon, 'flex-shrink')).toBe('0')
++		expect(readPixels(icon, 'inline-size')).toBe(readPixels(element, 'font-size'))
++		expect(readPixels(icon, 'block-size')).toBe(readPixels(element, 'font-size'))
++		expect(matchesColor(readStyle(icon, 'fill'), readStyle(icon, 'color'))).toBe(true)
++		// Veneer declares no rule for the icon class, so the combinator is the whole of what sizes an
++		// icon. The icon beside the link is the control on that: it reads the svg element treatment
++		// and nothing of this key's.
++		expect(readPixels(outside, 'inline-size')).not.toBe(readPixels(element, 'font-size'))
++		expect(readStyle(outside, 'flex-shrink')).toBe('1')
++	})
++
++	// The shift is read as the distance the icon actually moves, not as a computed transform string:
++	// Chrome serializes a translate on an outermost `svg` element with its translation components
++	// zeroed, so that string reports an identity matrix for every distance this rule could carry.
++	// The painted offset is the property the declaration exists to produce, and it is read after the
++	// transition settles so no reading lands mid-motion.
++	it('shifts the icon on hover and on keyboard focus only while the hover class is present', async () => {
++		const host = specimens.mount(`<div>${ICON_LINK_MARKUP}</div>`)
++		const resting = requireValue(host.querySelector('.icon-link:not(.icon-link-hover)'), 'No rest')
++		const shifting = requireValue(host.querySelector('.icon-link-hover'), 'No shifting link')
++		if (!(shifting instanceof HTMLElement)) throw new Error('The shifting link is not an element')
++		const restingIcon = requireValue(resting.querySelector('.bi'), 'No resting icon')
++		const shiftingIcon = requireValue(shifting.querySelector('.bi'), 'No shifting icon')
++		const distance = readPixels(shifting, 'font-size') / 4
++		const offset = (icon: Element): number =>
++			icon.getBoundingClientRect().left -
++			requireValue(icon.parentElement, 'No link').getBoundingClientRect().left
++		const restedShifting = offset(shiftingIcon)
++		const restedResting = offset(restingIcon)
++		expect(readStyle(shiftingIcon, 'transform')).toBe('none')
++		await hoverAccessible('Shifting icon link')
++		await waitForAnimations(shiftingIcon)
++		expect(readStyle(shiftingIcon, 'transform')).not.toBe('none')
++		expect(offset(shiftingIcon) - restedShifting).toBeCloseTo(distance, 1)
++		// The resting class arms no shift, which is what makes the hover class the thing under test
++		// rather than the combinator both links share.
++		expect(readStyle(restingIcon, 'transform')).toBe('none')
++		expect(offset(restingIcon)).toBeCloseTo(restedResting, 1)
++		await releasePointer()
++		await waitForAnimations(shiftingIcon)
++		expect(offset(shiftingIcon)).toBeCloseTo(restedShifting, 1)
++		shifting.focus()
++		await pressKeys('{ArrowRight}')
++		expect(shifting.matches(':focus-visible')).toBe(true)
++		await waitForAnimations(shiftingIcon)
++		expect(offset(shiftingIcon) - restedShifting).toBeCloseTo(distance, 1)
++		shifting.blur()
++		await waitForAnimations(shiftingIcon)
++		expect(offset(shiftingIcon)).toBeCloseTo(restedShifting, 1)
++		// The published property is what a consumer retunes the shift with, and the fallback behind it
++		// is what the readings so far measured. A block-axis retune moves the icon on the other axis,
++		// so it separates the property from the fallback rather than scaling the same shift.
++		shifting.style.setProperty('--bs-icon-link-transform', 'translate3d(0, 1em, 0)')
++		try {
++			const before = shiftingIcon.getBoundingClientRect().top
++			await hoverAccessible('Shifting icon link')
++			await waitForAnimations(shiftingIcon)
++			expect(offset(shiftingIcon)).toBeCloseTo(restedShifting, 1)
++			expect(shiftingIcon.getBoundingClientRect().top - before).toBeCloseTo(
++				readPixels(shiftingIcon, 'font-size'),
++				1,
++			)
++		} finally {
++			shifting.style.removeProperty('--bs-icon-link-transform')
++		}
++	})
++
++	it('reads the icon transition from the motion tokens and collapses it under reduced motion', async () => {
++		const host = specimens.mount(`<div>${ICON_LINK_MARKUP}</div>`)
++		const element = requireValue(host.querySelector('.icon-link'), 'No icon link')
++		const icon = requireValue(element.querySelector('.bi'), 'No icon child')
++		expect(readStyle(icon, 'transition-property')).toBe('transform')
++		expect(readStyle(icon, 'transition-duration')).toBe('0.15s')
++		expect(readStyle(icon, 'transition-timing-function')).toBe('ease')
++		// The duration reads the motion token, so the factor the package publishes rescales it. The
++		// override belongs on the document element, where the token is declared: setting it on the
++		// icon would leave the already-computed duration untouched.
++		document.documentElement.style.setProperty(TOKEN_NAMES.factor.motion, '2')
++		try {
++			expect(readStyle(icon, 'transition-duration')).toBe('0.3s')
++		} finally {
++			document.documentElement.style.removeProperty(TOKEN_NAMES.factor.motion)
++		}
++		expect(readStyle(icon, 'transition-duration')).toBe('0.15s')
++		await stageMedia({ motion: false })
++		expect(readStyle(icon, 'transition-duration')).toBe('0s')
++		await releaseMedia()
++		expect(readStyle(icon, 'transition-duration')).toBe('0.15s')
++	})
++
++	it('gates the collapsed transition on the preference condition in the shipped cascade', () => {
++		const rules = collectLayer('components')
++		expect(collectMediaConditions(rules, '.icon-link > .bi')).toEqual([
++			'(prefers-reduced-motion: reduce)',
++		])
++		// The staged reading proves what the browser resolves; this reads the declaration the gated
++		// rule carries, so a rule that collapsed the transition through some other property would
++		// report here even while the resolved duration agreed.
++		const gated = rules.flatMap((rule) =>
++			rule instanceof CSSMediaRule && rule.conditionText === '(prefers-reduced-motion: reduce)'
++				? [...rule.cssRules].flatMap((nested) =>
++						nested instanceof CSSStyleRule && nested.selectorText === '.icon-link > .bi'
++							? [nested.style]
++							: [],
++					)
++				: [],
++		)
++		const declarations = requireValue(gated[0], 'No gated icon rule')
++		expect(gated).toHaveLength(1)
++		// The shorthand arrives expanded, so the reading names the axis the collapse acts on rather
++		// than the text the source wrote: a rule declaring anything beyond the transition longhands
++		// would report here.
++		expect([...declarations].filter((name) => !name.startsWith('transition-'))).toEqual([])
++		expect(declarations.getPropertyValue('transition-property')).toBe('none')
++		expect(declarations.getPropertyValue('transition-duration')).toBe('0s')
++	})
++})
+diff --git a/tests/src/styles/components/ratio.test.ts b/tests/src/styles/components/ratio.test.ts
+new file mode 100644
+index 0000000..1bf501d
+--- /dev/null
++++ b/tests/src/styles/components/ratio.test.ts
+@@ -0,0 +1,75 @@
++import { requireValue } from '@orkestrel/test'
++import { readPixels, readStyle, readToken } from '@orkestrel/test/browser'
++import { afterEach, describe, expect, it } from 'vitest'
++import { specimens } from '../../../setupBrowser.js'
++import { RATIO_CASES } from '../../../setupStyles.js'
++
++afterEach(() => {
++	specimens.clear()
++})
++
++describe('ratio classes', () => {
++	it.each(RATIO_CASES)(
++		'holds the $name box at its own aspect and fills it',
++		({ name, width, height }) => {
++			const measure = 240
++			const host = specimens.mount(
++				`<div style="inline-size:${String(measure)}px"><div class="ratio ratio-${name}"><span>Embedded</span></div></div>`,
++			)
++			const element = requireValue(host.querySelector('.ratio'), `No .ratio-${name} specimen`)
++			const child = requireValue(element.firstElementChild, 'No embedded child')
++			expect(readStyle(element, 'position')).toBe('relative')
++			expect(readPixels(element, 'inline-size')).toBe(measure)
++			// The aspect is asserted as the relationship the box must hold, against a bound the
++			// roundings between the name and the box allow: the build shortens the shipped percentage to
++			// six significant digits, and the engine snaps a used length to a sixty-fourth of a pixel.
++			// Every other aspect in the family is tens of pixels away at this measure, so the bound
++			// separates them while admitting both roundings.
++			expect(Math.abs(readPixels(element, 'block-size') - (measure * height) / width)).toBeLessThan(
++				0.1,
++			)
++			// The child is taken out of flow and stretched over the whole box, so the box's own aspect is
++			// what sizes it. Reading both axes is what separates the fill from a child that merely
++			// inherits the inline size every block child already takes.
++			expect(readStyle(child, 'position')).toBe('absolute')
++			expect(readPixels(child, 'inline-size')).toBe(readPixels(element, 'inline-size'))
++			expect(readPixels(child, 'block-size')).toBe(readPixels(element, 'block-size'))
++			expect(readPixels(child, 'inset-block-start')).toBe(0)
++			expect(readPixels(child, 'inset-inline-start')).toBe(0)
++		},
++	)
++
++	it('reads the aspect from the named class and retunes it through the published property', () => {
++		const host = specimens.mount(
++			'<div style="inline-size:200px"><div class="ratio ratio-4x3"></div><div class="ratio"></div></div>',
++		)
++		const element = requireValue(host.querySelector('.ratio-4x3'), 'No named ratio')
++		const unnamed = requireValue(host.querySelector('.ratio:not(.ratio-4x3)'), 'No bare ratio')
++		if (!(element instanceof HTMLElement)) throw new Error('The ratio is not an HTML element')
++		expect(readPixels(element, 'block-size')).toBe(150)
++		// The name is the whole declaration of the value, so a box with no name resolves an invalid
++		// percentage and collapses. That is what makes the named class the thing under test rather
++		// than the pseudo-element beside it.
++		expect(readToken(unnamed, '--bs-aspect-ratio')).toBe('')
++		expect(readPixels(unnamed, 'block-size')).toBe(0)
++		element.style.setProperty('--bs-aspect-ratio', '25%')
++		try {
++			expect(readPixels(element, 'block-size')).toBe(50)
++		} finally {
++			element.style.removeProperty('--bs-aspect-ratio')
++		}
++		expect(readPixels(element, 'block-size')).toBe(150)
++	})
++
++	it('keeps the aspect through every inline size the box is given', async () => {
++		const host = specimens.mount('<div><div class="ratio ratio-16x9"></div></div>')
++		const element = requireValue(host.querySelector('.ratio'), 'No ratio specimen')
++		if (!(host instanceof HTMLElement)) throw new Error('The host is not an HTML element')
++		for (const measure of [80, 320, 501]) {
++			host.style.setProperty('inline-size', `${String(measure)}px`)
++			await Promise.resolve()
++			expect(readPixels(element, 'inline-size')).toBe(measure)
++			expect(Math.abs(readPixels(element, 'block-size') - (measure * 9) / 16)).toBeLessThan(0.1)
++		}
++	})
++})
+diff --git a/tests/src/styles/components/vr.test.ts b/tests/src/styles/components/vr.test.ts
+new file mode 100644
+index 0000000..374c940
+--- /dev/null
++++ b/tests/src/styles/components/vr.test.ts
+@@ -0,0 +1,79 @@
++import { TOKEN_NAMES } from '@src/core'
++import { requireValue } from '@orkestrel/test'
++import { matchesColor, readPixels, readStyle } from '@orkestrel/test/browser'
++import { afterEach, describe, expect, it } from 'vitest'
++import { specimens } from '../../../setupBrowser.js'
++
++afterEach(() => {
++	specimens.clear()
++})
++
++describe('vertical rule', () => {
++	// The case mounts a standalone rule and a flex item, because a flex item is blockified: only the
++	// standalone rule can report the inline-block display the class declares, and only the flex item
++	// can report the stretch.
++	it('reads the inline-block display standalone and stretches to its flex line', () => {
++		const host = specimens.mount(
++			'<div><div class="vr"></div><div style="display:flex;block-size:60px"><span>Before</span><div class="vr"></div><span>After</span></div><div></div></div>',
++		)
++		const standalone = requireValue(host.querySelector('.vr'), 'No standalone rule')
++		const item = requireValue(host.querySelector('[style*="flex"] > .vr'), 'No flex rule')
++		const bare = requireValue(host.lastElementChild, 'No bare control')
++		expect(readStyle(standalone, 'display')).toBe('inline-block')
++		expect(readStyle(item, 'align-self')).toBe('stretch')
++		expect(readPixels(item, 'block-size')).toBe(60)
++		// The floor is one em of the rule's own font, so it is read against that font rather than
++		// against a pixel count: Veneer's body size is 0.875rem, and a reading pinned to 16 would
++		// describe a document this package does not ship. It is read on the standalone host, whose
++		// line gives the box no height of its own.
++		expect(readPixels(standalone, 'min-block-size')).toBe(readPixels(standalone, 'font-size'))
++		expect(readPixels(standalone, 'block-size')).toBe(readPixels(standalone, 'font-size'))
++		expect(readPixels(standalone, 'font-size')).toBe(14)
++		// The bare host carries neither, so the readings belong to the class rather than to the
++		// document baseline every element already reads.
++		expect(readStyle(bare, 'align-self')).toBe('auto')
++		expect(readPixels(bare, 'min-block-size')).toBe(0)
++	})
++
++	it('reads its inline size from the Bootstrap alias and from the Veneer token behind it', () => {
++		const host = specimens.mount('<div><div class="vr"></div></div>')
++		const element = requireValue(host.querySelector('.vr'), 'No vertical rule')
++		if (!(element instanceof HTMLElement)) throw new Error('The rule is not an HTML element')
++		expect(readPixels(element, 'inline-size')).toBe(1)
++		element.style.setProperty('--bs-border-width', '5px')
++		try {
++			expect(readPixels(element, 'inline-size')).toBe(5)
++		} finally {
++			element.style.removeProperty('--bs-border-width')
++		}
++		expect(readPixels(element, 'inline-size')).toBe(1)
++		// The canonical token reaches the rule through the alias, and the alias computes where it is
++		// declared, so this override belongs on the document element: setting the token on the rule
++		// itself would leave the already-computed alias untouched and report nothing.
++		document.documentElement.style.setProperty(TOKEN_NAMES.border.width, '3px')
++		try {
++			expect(readPixels(element, 'inline-size')).toBe(3)
++		} finally {
++			document.documentElement.style.removeProperty(TOKEN_NAMES.border.width)
++		}
++		expect(readPixels(element, 'inline-size')).toBe(1)
++	})
++
++	it('paints the inherited color at a quarter opacity', () => {
++		const host = specimens.mount(
++			'<div style="color:rgb(10, 120, 200)"><div class="vr"></div><div></div></div>',
++		)
++		const element = requireValue(host.querySelector('.vr'), 'No vertical rule')
++		const bare = requireValue(host.lastElementChild, 'No bare control')
++		expect(readStyle(element, 'opacity')).toBe('0.25')
++		// The paint follows the inherited color rather than a token of its own, so the reading is
++		// taken against the color the host set. The bare control paints nothing, which is what tells
++		// the class's fill apart from the body surface behind it.
++		expect(matchesColor(readStyle(element, 'background-color'), 'rgb(10, 120, 200)')).toBe(true)
++		expect(matchesColor(readStyle(element, 'background-color'), readStyle(element, 'color'))).toBe(
++			true,
++		)
++		expect(readStyle(bare, 'background-color')).toBe('rgba(0, 0, 0, 0)')
++		expect(readStyle(bare, 'opacity')).toBe('1')
++	})
++})

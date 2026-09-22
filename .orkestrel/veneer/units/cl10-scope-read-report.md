@@ -1,3 +1,13 @@
+<!-- CORRECTION, added 2026-09-22 after the CL10 round-1 audit. This report's criterion-check
+finding is FALSE and is STRUCK, not carried. It reported the reduced-motion preference
+"confirmed-unreachable-as-scaffolded" after inspecting the browser page interface. The mechanism is
+`stageMedia`, an installed export of @orkestrel/test/browser carrying a motion field, already driven
+by sibling proofs in this same tree including tests/src/styles/mixins.test.ts. Both audit lanes
+confirmed the refutation and the Orchestrator verified it first-party. The Orchestrator folded this
+false finding into cl10-brief.md, which told the unit the question was settled; the unit refused the
+premise and read the preference anyway. See ../cl10-audit-verdict.md claim 23 and
+capability-question-finding.md. Nothing else in this report is disturbed. -->
+
 <!-- checker on sonnet, native subagent, clean context, read-only. Retained 2026-09-22. Subject: the
 CL10 brief and its terrain record as they stood before this report's additions were folded in.
 Terminal line: Dispatch: go, with no defects raised. Two of its readings were folded into the brief

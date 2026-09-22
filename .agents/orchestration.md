@@ -627,6 +627,15 @@ filled.
   holds only machinery. Grep the tree for a member the population already has; every file that comes
   back is a file the unit must own. Reasoning finds the obvious site and misses the rest, and the
   miss surfaces as the unit's stop.
+- Answer any question of the form "can this tree do X" the same way: search for X already being done,
+  never by inspecting the interface that would do it. Grep for the behaviour, the export, the staged
+  preference, the driven surface. A sibling already doing it is the answer, and its call site is the
+  pattern the unit copies. An interface's surface is evidence about that interface and never about the
+  tree, so a missing control there proves nothing — the mechanism is as often a function an installed
+  package exports as a method on the object in hand. Record the answer as unreachable only after a
+  search for the thing itself came back empty, and name the pattern that search used. A brief that
+  asserts a capability is absent tells the unit to stop looking, so this error costs the round even
+  when the tree is correct.
 - Diff the previous unit's actual status against this brief's owned set whenever a series of units
   adds members to one population. A grant the previous sibling needed and this brief omits is the
   likeliest gap, because each brief is written from the plan rather than from what the last unit
