@@ -409,3 +409,275 @@ The § Carriers rows are unchanged from the preceding section. F8b's `shared.tes
 
 `git diff 6e74ec9 --stat` is unchanged at 310 insertions and 26 deletions over five tracked files,
 because every moved and added file is untracked.
+
+## Round 2
+
+Successor brief `tmp/units/f8a-brief-2.md`, the fix round over the reconciled audit. Same worktree,
+baseline `6e74ec9`, 2026-09-22.
+
+### Obligation 1 — the composable imports are proved (analyst 3, reviewer F6)
+
+`tests/fixtures/tailwind/unexcluded.css` gains `@source inline("px-8 font-bold");`. Measured
+emission, with the control in place:
+
+```text
+[dump] statements ["properties","theme,reset,base,elements,components,utilities"]
+[dump] blocks     ["theme","utilities","properties"]
+[dump] props      ["--spacing","--font-weight-bold","--tw-font-weight"]
+[dump] selectors  [":root, :host",".col-1",…,".container",".table",".caption-bottom",".caption-top",".px-8",".font-bold","*, ::before, ::after, ::backdrop"]
+```
+
+The case `composes the theme and utilities imports, proved by a candidate the cascade never ships`
+reads the control names from the directive that declares them, asserts the `theme` block declares
+`--spacing` and `--font-weight-bold` (the variables `px-8` and `font-bold` resolve through), and
+asserts the `utilities` block declares a rule for each control name. Command for every reading here:
+
+```text
+npm exec -- vitest run --config configs/src/vite.tailwind.config.ts --no-cache --reporter=dot tests/tailwind/profiles.test.ts
+```
+
+| Mutation | Red reading |
+| --- | --- |
+| `tailwindcss/theme.css` import removed from the instrument | `2 failed \| 5 passed (7)`: `expected [] to include '--spacing'`, and `expected [ 'utilities' ] to include 'properties'` |
+| `tailwindcss/utilities.css` import removed from the instrument | `3 failed \| 4 passed (7)`: `expected [] to include '--spacing'`, `expected [] to include 'properties'`, `expected [] to include '.container'` |
+
+Green after both reverts: `Tests 8 passed (8)`.
+
+The completeness reading subtracts the control by reading the same `@source inline(…)` directive
+(`collectInlineSources(unexcludedSource)` filtered to the non-excluded entry), so the test declares
+no second list. Its own control is unchanged and re-measured: removing `col-7` from the exclusion
+line still reddens it.
+
+**Carried further, and recorded as a settled choice.** The brief's remedy binds the *instrument's*
+imports. I measured whether it binds the profile's, and it does not:
+
+```text
+$ grep -v "tailwindcss/theme.css" tests/setup.css.bak > tests/setup.css
+$ npm exec -- vitest run --config configs/src/vite.tailwind.config.ts …
+      Tests  7 passed (7)
+```
+
+That is reviewer F6's statement verbatim, still true after obligation 1 alone. I closed it with the
+same copy-equality mechanism obligation F4 installs, in a case of its own —
+`declares the Tailwind parts each profile is named for, and repeats them in the instrument` — which
+pins the profile's own import lines and holds the instrument's equal to them. The same mutation now
+reads:
+
+```text
+      Tests  1 failed | 7 passed (8)
+AssertionError: expected [ Array(1) ] to deeply equal [ …(2) ]
+  at tests/tailwind/profiles.test.ts:153 > declares the Tailwind parts each profile is named for
+```
+
+### Obligation 2 — the standalone case pins no minifier detail (analyst 5)
+
+`tests/src/styles/index.test.ts` now derives the namespace set, deletes `--lightningcss-` from it,
+and compares against `['--bs-', TOKEN_PREFIX]`. The foreign-namespace rejection, the cascade
+identity, the sheet isolation, and the `--tw-probe` plant all stay. The comment names
+`--lightningcss-` as the minifier's own lowering of `light-dark()`, permitted and not required.
+
+Two readings recorded, command
+`npm exec -- vitest run --config configs/src/vite.styles.config.ts --no-cache --reporter=dot tests/src/styles/index.test.ts`:
+
+| Mutation | Red reading |
+| --- | --- |
+| the `namespaces.delete('--lightningcss-')` line removed | `1 failed \| 4 passed (5)`: `expected [ '--bs-', '--lightningcss-', '--vn-' ] to deeply equal [ '--bs-', '--vn-' ]` |
+
+That reading also settles the analyst's point from the other side: the built cascade does emit the
+namespace today, so the equality was rejecting a Tailwind-free output for a toolchain fact.
+
+The exact-set reading needed its own control, because nothing on the standalone page could move it.
+The case now re-takes the same reading after the `--tw-probe` plant and expects
+`['--bs-', '--tw-', TOKEN_PREFIX]`, so the set comparison fails when a foreign namespace reaches the
+page rather than only when the narrower `--tw-` filter does.
+
+### Obligation 3 — the guide states what Tailwind emits (analyst 6, reviewer F2)
+
+§ Tailwind's layers column is headed `Layers Tailwind fills in a consumer build`, and a paragraph
+after the table states the conditional emission: Tailwind fills a layer only for the utilities it
+generates from the markup the `@source` rule names; `utilities` carries those rules, `theme` carries
+the variables those rules read and no others, `base` carries preflight under the bare import, and a
+build whose markup uses no utility fills none of them. It then states that a generated utility
+registering a custom property makes Tailwind generate a `properties` layer and declare
+`@layer properties;` ahead of the order line the entry wrote, that the placement leaves Veneer's
+named layers in their declared order, and that the proof reads both orders.
+
+The proof reads them in `places the generated properties layer before the order line, leaving the
+named layers in order`:
+
+- the compiled stylesheet's own order is `['properties', 'theme', 'reset', 'base', 'elements', 'components', 'utilities']`;
+- the document's effective order is `['theme', 'reset', 'base', 'elements', 'components', 'utilities', 'properties']`.
+
+**Deviation, measured.** The brief asks the case to assert that `properties` precedes `theme` **in
+the document's effective order**. It does not and cannot: the built cascade is a setup file, so it
+places the named layers before any profile arrives, and the generated layer takes the one position
+left. `properties` precedes `theme` in the *compiled stylesheet's own* order, which is what a
+consumer's single compiled entry carries. The case asserts both orders and the guide states the
+consumer-facing one, so the obligation's substance holds at the reading that is true.
+
+The same measurement moved the opening-statement case. `readLayerStatement` on the instrument
+answers `['properties']`, because Tailwind prepends its statement, so
+`opens every profile with the one order line` was false as written. It is now
+`declares the one order line in every profile, and leaves the document order unmoved`: the two
+profiles that generate no property-registering utility still open with the order line, the
+instrument's order line is read behind the generated statement, and Veneer's named layers keep their
+positions in the document either way.
+
+### Obligation 4 — no hidden helpers in the proof (F-INFRA)
+
+Every reusable reader moved to `tests/setupBrowser.ts`, exported, inventoried, and given a case.
+
+| Export | What it answers | Case in `tests/setupBrowser.test.ts` |
+| --- | --- | --- |
+| `collectSheetRules` | every rule the named sheets hold, skipping one the document refuses | `walks every named sheet and skips one whose rules the document refuses` |
+| `loadSheet` | the parsed sheet for loaded text, where the scene answers with the element | `loads a stylesheet and answers with the parsed sheet, …` |
+| `readLayerStatement` | the opening layer statement, refusing a sheet that opens with another rule | `reads the opening layer statement, and refuses a sheet that opens with another rule` |
+| `collectFilledLayers` | the layers a block was opened for, apart from the ones a statement placed | `reports the filled layers apart from the placed ones, …` |
+| `collectSelectors` | every declared selector, grouped rules included, repeats kept | `reports every declared selector, including the ones a grouping rule holds` |
+| `collectClassNames` | the class names those selectors declare, escapes resolved | `reads class names out of selector text, resolving the escapes a utility name carries` |
+| `collectInlineSources` + `InlineSource` | the `@source [not] inline(…)` directives a file's bytes declare | `reads the source directives a stylesheet declares, apart from what a compiler does with them` |
+
+`collectSheetRules` is a consolidation rather than an addition: `collectLayerOrder` and
+`collectCustomProperties` each carried their own copy of the sheet walk and its refusal, and both now
+route through it, as do the two new collectors.
+
+`collectClassNames` uses the grammar `configs/src/vite.tailwind.config.ts` offers candidates with, so
+the proof reads a name back in the form the wrapper offered it. It also removed the `.slice(1)`
+selector arithmetic the completeness reading carried.
+
+`tests/tailwind/profiles.test.ts` declares no function at module scope. The utilities-block reading
+in the control case is inlined into that case, per the obligation's own instruction.
+
+```text
+$ grep -c '^function\|^const [a-z][A-Za-z]* = (' tests/tailwind/profiles.test.ts
+0
+$ grep -n '^const ' tests/tailwind/profiles.test.ts
+26:const ORDER = …
+31:const FLOOR_SELECTORS = …
+37:const CONTROL_VARIABLES = …
+```
+
+### Obligation 5 — the reviewer's findings
+
+- **F1.** `CASCADE_PREFIX` deleted. `tests/setupBrowser.ts` imports `TOKEN_PREFIX` from `./setup.js`
+  and uses it at the `startsWith` predicate and the `{@link}`; the export-list entry is gone;
+  `tests/src/styles/index.test.ts` and `tests/setupBrowser.test.ts` import and expect `TOKEN_PREFIX`.
+  `grep -rn 'CASCADE_PREFIX' tests configs guides` prints nothing.
+- **F2.** Column headed `Layers Tailwind fills in a consumer build`; the closing paragraph states
+  that the workspace's profiles scan the derived candidate list rather than markup, that every name
+  that list offers is on the exclusion line, and that the executed `tailwind` profile therefore emits
+  nothing at all — and that the silence is what proves the exclusion complete. It then names the
+  instrument and its control as what makes the emission positive again.
+- **F3.** One sentence states the membership rule: a shared name Veneer ships with its `!important`
+  declaration wins by importance whatever the layer order and needs no entry; a shared name Veneer
+  declares normally would otherwise resolve to Tailwind's rule, so the line withholds it. No proof
+  prose; that stays F8b's.
+- **F4.** The one-home sentence is replaced by what holds, and by a mechanism that makes it hold:
+  `holds every written copy of the exclusion line equal to the profile that declares it` reads
+  `guides/veneer.md?raw` and `tests/fixtures/tailwind/preflight.css?raw`, extracts every
+  `@source not inline("…")` directive, and asserts each equals the one in `tests/setup.css`. Both
+  guide fences and the fixture are in that population, measured at `2` guide directives and `1`
+  fixture directive.
+- **F5, the cheap half.** Each fence carries `/* Your own markup directory. */` above its
+  `@source './src';` line, and the sentence naming it as the line you change now sits ahead of the
+  first fence. One sentence after the fences records that no proof compiles either recipe in the
+  shape it ships, and that the executed consumer-shaped profile lands with the shared-name proof.
+- **F7.** § Files gains rows for `configs/src/vite.tailwind.config.ts`, `tests/setup.css`,
+  `tests/fixtures/tailwind/`, and `tests/tailwind/`, and the hand-authored configuration paragraph
+  names the wrapper.
+- **Lesser, carried.** `REACHED` is `FLOOR_SELECTORS`; the entry column is headed `Entry`; the link
+  sentence reads `the profiles proof reads it from that file rather than repeating it, and holds
+  every written copy equal to it … see [stylesheet profiles](../tests/tailwind/profiles.test.ts)`;
+  the reader case is titled `reads Veneer's sheet while a Tailwind stylesheet is loaded`; the
+  `--lightningcss-` comment is in place.
+- **Referral R1.** Ruled by the brief; no change made.
+
+### Touched files
+
+| File | Summary |
+| --- | --- |
+| `/home/user/veneer-f8/tests/fixtures/tailwind/unexcluded.css` | Adds the `@source inline("px-8 font-bold")` candidate control. |
+| `/home/user/veneer-f8/tests/tailwind/profiles.test.ts` | Declares no module-scope function; adds the control case, the generated-layer case, the copy-equality case, and the Tailwind-parts case; restates the order-line case; retitles the reader case. |
+| `/home/user/veneer-f8/tests/setupBrowser.ts` | Drops `CASCADE_PREFIX` for `TOKEN_PREFIX`; adds `collectSheetRules`, `loadSheet`, `readLayerStatement`, `collectFilledLayers`, `collectSelectors`, `collectClassNames`, `collectInlineSources`, and `InlineSource`; routes `collectLayerOrder` and `collectCustomProperties` through the shared walk. |
+| `/home/user/veneer-f8/tests/setupBrowser.test.ts` | Updates the inventory and imports; adds a case per moved reader. |
+| `/home/user/veneer-f8/tests/src/styles/index.test.ts` | Permits `--lightningcss-` without requiring it; re-takes the namespace reading after the plant; uses `TOKEN_PREFIX`. |
+| `/home/user/veneer-f8/guides/veneer.md` | § Tailwind: conditional emission and the generated layer, the membership rule, the rewritten one-home sentence, the flagged source line, the unexecuted-recipe note, the column headers; § Files rows and the configuration paragraph. |
+
+### Gate exits
+
+| Gate | Exit | Reading |
+| --- | --- | --- |
+| `npm run format:check` | 0 | All matched files use the correct format (214 files) |
+| `npm run lint:check` | 0 | no output |
+| `npm run check` | 0 | root and every scoped project |
+| `npm run test:src:tailwind` | 0 | Test Files 1 passed (1); Tests 8 passed (8) |
+| `npm run test:src:styles` | 0 | Test Files 58 passed (58); Tests 416 passed (416) |
+| `npm run test:setup:browser` | 0 | Test Files 1 passed (1); Tests 55 passed (55) |
+| `npm run test:guides` | 0 | Test Files 1 passed (1); Tests 18 passed (18) |
+| `npm run test:policy` | 0 | Test Files 1 passed (1); Tests 109 passed, 1 skipped (110) |
+
+### Acceptance criteria
+
+1. `format:check`, `lint:check`, `check` exit 0. **Met.**
+2. `test:src:tailwind` exits 0 with the control case present and its two mutations recorded red. **Met.**
+3. `test:src:styles` exits 0 with the standalone case no longer requiring `--lightningcss-`. **Met.**
+4. `test:setup:browser` exits 0 with the moved readers' cases present. **Met.**
+5. `test:guides` and `test:policy` exit 0. **Met.**
+6. `grep -rn 'CASCADE_PREFIX' tests configs guides` prints nothing. **Met.**
+7. `grep -c '^function\|^const [a-z][A-Za-z]* = (' tests/tailwind/profiles.test.ts` prints `0`. **Met.**
+
+### `git status --porcelain`
+
+```text
+ M guides/veneer.md
+ M package.json
+ M tests/setupBrowser.test.ts
+ M tests/setupBrowser.ts
+ M tests/src/styles/index.test.ts
+?? configs/src/vite.tailwind.config.ts
+?? tests/fixtures/tailwind/
+?? tests/setup.css
+?? tests/tailwind/
+```
+
+`git diff 6e74ec9 --stat`:
+
+```text
+ guides/veneer.md               | 119 ++++++++++++++++--
+ package.json                   |   3 +-
+ tests/setupBrowser.test.ts     | 214 +++++++++++++++++++++++++++++++-
+ tests/setupBrowser.ts          | 269 +++++++++++++++++++++++++++++++++++++++--
+ tests/src/styles/index.test.ts |  67 ++++++++--
+ 5 files changed, 642 insertions(+), 30 deletions(-)
+```
+
+### Deviations
+
+- **Obligation 3's document-order half.** Recorded earlier with its measurement. `properties`
+  precedes `theme` in the compiled stylesheet's own order, not in the document's. Both orders are
+  asserted; the guide states the consumer-facing one.
+- **Obligation 1 extended by one case.** The brief's remedy leaves `tests/setup.css`'s own imports
+  unasserted, which I measured before adding the Tailwind-parts case. The addition uses obligation
+  F4's own copy-equality mechanism, touches owned files only, and closes reviewer F6 at its root.
+- **`loadSheet` is not yet the only home.** Pre-existing cases in `tests/setupBrowser.test.ts` and
+  `tests/src/styles/index.test.ts` still write `requireValue(scene.load(…).sheet, …)` inline with
+  their own refusal messages. I left them, to keep this round's edits to additions and the cases the
+  brief named. Carried.
+
+### Claims I flag unverified
+
+- **The refused-sheet control is a configured platform object.** The `collectSheetRules` case builds
+  a real `CSSStyleSheet` and defines a `cssRules` getter that throws `SecurityError`, because the
+  tester serves one origin and carries no sheet the document genuinely refuses. I read this as an
+  inert stub presenting the platform's own refusal rather than a fake of project-owned behaviour, and
+  I name it here so the lane can rule rather than discover it.
+- **The guide's consumer-build layer column is still reasoned, not executed.** F5's executed half is
+  F8b's, and the section now says so in its own text. The column's entries come from the parts each
+  recipe carries.
+- **`--tw-font-weight` now appears in the instrument's compiled output**, because the control
+  utility registers it. No document the standalone case reads loads the instrument, so the
+  `--tw-` readings there are unaffected; I checked that `test:src:styles` stays green rather than
+  reasoning about it.
+- **`npm test` was not run this round.** The brief's gate list does not name it, and this worktree
+  still carries no `dist/src/core/index.js`, which reddens `test:setup` and `test:conformance` for a
+  reason the first report records.
